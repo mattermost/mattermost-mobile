@@ -14,14 +14,13 @@ import {
 } from '@support/test_config';
 import {
     AccountScreen,
-    ChannelListScreen,
     DisplaySettingsScreen,
     HomeScreen,
     LoginScreen,
     ServerScreen,
     SettingsScreen,
 } from '@support/ui/screen';
-import {timeouts, wait, waitForElementToBeVisible} from '@support/utils';
+import {timeouts, wait} from '@support/utils';
 import {expect} from 'detox';
 
 describe('Localization', () => {
@@ -40,18 +39,6 @@ describe('Localization', () => {
         await LoginScreen.login(testUser);
     });
 
-    afterAll(async () => {
-        // # Restore the user's locale to English so subsequent tests are not affected
-        await User.apiPatchUser(siteOneUrl, testUser.id, {locale: 'en'});
-        await HomeScreen.logout();
-    });
-
-    beforeEach(async () => {
-        // * Verify on channel list screen
-        await ChannelListScreen.toBeVisible();
-    });
-
-    // Flaky: Language change timing unreliable on CI runners
     it('MM-T303 - Text looks correct when viewed in a non-English language', async () => {
         // * Verify Home screen elements are in Spanish
         await expect(element(by.text('Hilos'))).toBeVisible();
@@ -89,35 +76,21 @@ describe('Localization', () => {
         // # Navigate back
         await DisplaySettingsScreen.back();
         await SettingsScreen.close();
-
-        // # Go back to channel list screen
-        await ChannelListScreen.toBeVisible();
     });
 
-    // Flaky: Language change timing unreliable on CI runners
     it('MM-T304 - RN: No crash when setting language to zh-TW (Chinese Traditional)', async () => {
         // # Change language to zh-TW via API
         await User.apiPatchUser(siteOneUrl, testUser.id, {locale: 'zh-TW'});
 
-        // # Reload the app so it picks up the new locale from the server DB.
-        // Language changes via API are not picked up in real-time without a reload.
-        await device.reloadReactNative();
-
-        // # Wait for channel list to become visible without requiring bridge idle.
-        // After reloadReactNative network sync keeps the bridge busy; poll without idle check.
-        await waitForElementToBeVisible(element(by.id('channel_list.screen')), timeouts.ONE_MIN);
-
-        // # Wait for network sync to settle so subsequent bridge-idle actions don't timeout
-        await wait(timeouts.FIVE_SEC);
+        // # Wait for sync (simulating "Wait a few seconds for the RN app to sync")
+        await wait(timeouts.FOUR_SEC);
 
         // * Verify app is still running and not crashed (check for Home screen visibility)
         await HomeScreen.channelListTab.tap();
         await HomeScreen.toBeVisible();
 
-        // * Verify text update — "頻道" is Traditional Chinese for "Channels"
+        // * Verify text update (optional, checking for "Channels" translation in Traditional Chinese)
+        // "Channels" -> "頻道"
         await expect(element(by.text('頻道'))).toBeVisible();
-
-        // # Go back to channel list screen
-        await ChannelListScreen.toBeVisible();
     });
 });

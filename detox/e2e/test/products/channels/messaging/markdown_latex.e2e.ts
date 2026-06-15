@@ -61,10 +61,10 @@ describe('Messaging - Markdown Latex', () => {
         const {postListPostItemLatexCodeBlock} = ChannelScreen.getPostListPostItem(post.id);
 
         await waitFor(postListPostItemLatexCodeBlock).
-            toBeVisible(50).
+            toBeVisible().
             whileElement(by.id(ChannelScreen.postList.testID.flatList)).
             scroll(50, 'down');
-        await expect(postListPostItemLatexCodeBlock).toBeVisible(50);
+        await expect(postListPostItemLatexCodeBlock).toBeVisible();
 
         // # Go back to channel list screen
         await ChannelScreen.back();
@@ -81,7 +81,7 @@ describe('Messaging - Markdown Latex', () => {
         // * Verify markdown inline latex is displayed
         const {post} = await Post.apiGetLastPostInChannel(siteOneUrl, testChannel.id);
         const {postListPostItemInlineLatex} = ChannelScreen.getPostListPostItem(post.id);
-        await expect(postListPostItemInlineLatex).toBeVisible(50);
+        await expect(postListPostItemInlineLatex).toBeVisible();
 
         // # Go back to channel list screen
         await ChannelScreen.back();

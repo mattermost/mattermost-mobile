@@ -27,7 +27,7 @@ import {expect} from 'detox';
 describe('Messaging - Markdown Code', () => {
     const serverOneDisplayName = 'Server 1';
     const channelsCategory = 'channels';
-    let testChannel: {id: string; name: string};
+    let testChannel: any;
 
     beforeAll(async () => {
         const {channel, user} = await Setup.apiInit(siteOneUrl);
@@ -52,6 +52,7 @@ describe('Messaging - Markdown Code', () => {
         // # Open a channel screen and post a markdown code block
         const line1 = 'let x = 10;';
         const line2 = 'let y = 20;';
+        // eslint-disable-next-line no-template-curly-in-string
         const line3 = 'console.log(`sum: ${x + y}`);';
         const message = `${line1}\n${line2}\n${line3}`;
         const markdownCodeBlock = `\`\`\`\n${message}\n\`\`\``;
@@ -61,13 +62,8 @@ describe('Messaging - Markdown Code', () => {
         // * Verify markdown code block is displayed
         const {post} = await Post.apiGetLastPostInChannel(siteOneUrl, testChannel.id);
         const {postListPostItemCodeBlock} = ChannelScreen.getPostListPostItem(post.id);
-        await waitFor(postListPostItemCodeBlock).toExist().withTimeout(10000);
-
-        // toExist() only checks the element is in the view hierarchy, so we don't
-        // need to scroll it into view. Earlier versions used toBeVisible(50)
-        // which required clearing the soft keyboard via scroll, but the manual
-        // scroll fails on iOS 26 when the FlatList is already at the boundary.
-        await expect(postListPostItemCodeBlock).toExist();
+        await waitFor(postListPostItemCodeBlock).toBeVisible().whileElement(by.id(ChannelScreen.postList.testID.flatList)).scroll(50, 'down');
+        await expect(postListPostItemCodeBlock).toBeVisible();
 
         // # Go back to channel list screen
         await ChannelScreen.back();
@@ -83,11 +79,8 @@ describe('Messaging - Markdown Code', () => {
         // * Verify markdown html is displayed
         const {post} = await Post.apiGetLastPostInChannel(siteOneUrl, testChannel.id);
         const {postListPostItemCodeBlock} = ChannelScreen.getPostListPostItem(post.id);
-        await waitFor(postListPostItemCodeBlock).toExist().withTimeout(10000);
-
-        // toExist() doesn't require the element to be on-screen, so no manual
-        // scroll is needed. See MM-T4895_1 above for the reasoning.
-        await expect(postListPostItemCodeBlock).toExist();
+        await waitFor(postListPostItemCodeBlock).toBeVisible().whileElement(by.id(ChannelScreen.postList.testID.flatList)).scroll(50, 'down');
+        await expect(postListPostItemCodeBlock).toBeVisible();
 
         // # Go back to channel list screen
         await ChannelScreen.back();

@@ -2,13 +2,13 @@
 // See LICENSE.txt for license information.
 
 import {SettingsScreen} from '@support/ui/screen';
-import {isIos, tapNativeBackButton, timeouts} from '@support/utils';
-import {waitFor} from 'detox';
+import {timeouts} from '@support/utils';
+import {expect} from 'detox';
 
 class DisplaySettingsScreen {
     testID = {
         displaySettingsScreen: 'display_settings.screen',
-        backButton: 'navigation.header.back',
+        backButton: 'screen.back.button',
         scrollView: 'display_settings.scroll_view',
         themeOption: 'display_settings.theme.option',
         themeOptionInfo: 'display_settings.theme.option.info',
@@ -19,17 +19,7 @@ class DisplaySettingsScreen {
     };
 
     displaySettingsScreen = element(by.id(this.testID.displaySettingsScreen));
-
-    // expo-router native stack screen — the custom NavigationHeader's
-    // 'navigation.header.back' testID is not rendered here. iOS uses
-    // `accessibilityLabel="Back"`, Android uses the Toolbar's default
-    // navigation-icon contentDescription "Navigate up".
-    get backButton(): Detox.NativeElement {
-        return isIos()
-            ? element(by.label('Back')).atIndex(0)
-            : element(by.label('Navigate up')).atIndex(0);
-    }
-
+    backButton = element(by.id(this.testID.backButton));
     scrollView = element(by.id(this.testID.scrollView));
     themeOption = element(by.id(this.testID.themeOption));
     themeOptionInfo = element(by.id(this.testID.themeOptionInfo));
@@ -52,11 +42,8 @@ class DisplaySettingsScreen {
     };
 
     back = async () => {
-        // Use platform-native back chevron: Android via device.pressBack(),
-        // iOS via by.label('Back'). The custom NavigationHeader's testID
-        // does not exist on this screen (expo-router native stack).
-        await tapNativeBackButton();
-        await waitFor(this.displaySettingsScreen).not.toBeVisible().withTimeout(timeouts.TEN_SEC);
+        await this.backButton.tap();
+        await expect(this.displaySettingsScreen).not.toBeVisible();
     };
 }
 

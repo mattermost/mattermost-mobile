@@ -66,16 +66,11 @@ describe('Smoke Test - Server Login', () => {
         await ServerListScreen.toBeVisible();
 
         // # Add a second server and log in to the second server
-        const {error: adminLoginError} = await User.apiAdminLogin(siteTwoUrl);
-        if (adminLoginError) {
-            // Site 2 may be unavailable (e.g. admin account locked from prior CI failures).
-            // Skip the rest of this test rather than failing the smoke run.
-            return;
-        }
+        await User.apiAdminLogin(siteTwoUrl);
         const {user} = await Setup.apiInit(siteTwoUrl);
         await ServerListScreen.addServerButton.tap();
-        await wait(timeouts.TWO_SEC);
-        await waitFor(ServerScreen.headerTitleAddServer).toExist().withTimeout(timeouts.HALF_MIN);
+        await wait(timeouts.ONE_SEC);
+        await waitFor(ServerScreen.headerTitleAddServer).toBeVisible().withTimeout(timeouts.TEN_SEC);
         await ServerScreen.connectToServer(serverTwoUrl, serverTwoDisplayName);
         await LoginScreen.login(user);
 
@@ -107,7 +102,6 @@ describe('Smoke Test - Server Login', () => {
         await waitFor(ServerListScreen.getServerItemInactive(serverTwoDisplayName)).toBeVisible().withTimeout(timeouts.TEN_SEC);
         await ServerListScreen.getServerItemInactive(serverTwoDisplayName).swipe('left');
         await wait(timeouts.ONE_SEC);
-
         await ServerListScreen.getServerItemLogoutOption(serverTwoDisplayName).tap();
 
         // * Verify logout server alert is displayed

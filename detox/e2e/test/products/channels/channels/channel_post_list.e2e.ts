@@ -71,16 +71,16 @@ describe('Channels - Channel Post List', () => {
         await expect(attachmentAction).toExist();
         await attachmentAction.tap();
 
-        // * Verify file attachment options and its items are visible
-        // Note: The generic bottom sheet wrapper does not receive a testID, so there is no
-        // 'attachment_action.screen' element — verify presence via the first list item instead.
-        await waitFor(element(by.id('file_attachment.photo_library'))).toExist().withTimeout(timeouts.TWO_SEC);
+        // * Verify file attachment options screen and its options
+        const attachmentScreen = element(by.id('channel.post_draft.quick_actions.attachment_action.screen'));
+        await expect(attachmentScreen).toExist();
+        await expect(element(by.id('file_attachment.photo_library'))).toExist();
         await expect(element(by.id('file_attachment.take_photo'))).toExist();
         await expect(element(by.id('file_attachment.take_video'))).toExist();
         await expect(element(by.id('file_attachment.attach_file'))).toExist();
 
-        // # Close attachment options by swiping down on a sheet item
-        await element(by.id('file_attachment.photo_library')).swipe('down', 'fast', 0.5);
+        // # Close attachment options by swiping down (works on both iOS and Android)
+        await attachmentScreen.swipe('down', 'fast', 0.5);
 
         await expect(ChannelScreen.sendButtonDisabled).toExist();
 

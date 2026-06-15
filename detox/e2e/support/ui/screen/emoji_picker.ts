@@ -3,7 +3,8 @@
 
 import {SearchBar} from '@support/ui/component';
 import {PostOptionsScreen} from '@support/ui/screen';
-import {isAndroid, isIos, timeouts, wait} from '@support/utils';
+import {isIos, timeouts, wait} from '@support/utils';
+import {expect} from 'detox';
 
 class EmojiPickerScreen {
     testID = {
@@ -24,25 +25,17 @@ class EmojiPickerScreen {
     clearButton = SearchBar.getClearButton(this.testID.emojiPickerScreenPrefix);
 
     toBeVisible = async () => {
-        // On iOS 26, the search input can be partially obscured by the bottom-sheet
-        // chrome (dim overlay or gesture barrier reports < 100% visibility), so
-        // toExist() is more reliable than toBeVisible().
-        await waitFor(this.searchInput).toExist().withTimeout(timeouts.TEN_SEC);
-        if (isAndroid()) {
-            await waitFor(this.searchInput).toBeVisible().withTimeout(timeouts.TEN_SEC);
-        }
+        await waitFor(this.emojiPickerScreen).toExist().withTimeout(timeouts.TEN_SEC);
 
-        return this.searchInput;
+        return this.emojiPickerScreen;
     };
 
-    open = async () => {
+    open = async (closeToolTip = false) => {
         // # Open emoji picker screen
         await PostOptionsScreen.pickReactionButton.tap();
-        try {
-            await waitFor(this.toolTipCloseButton).toBeVisible().withTimeout(timeouts.TWO_SEC);
+        if (closeToolTip) {
+            await wait(timeouts.ONE_SEC);
             await this.toolTipCloseButton.tap();
-        } catch {
-            // Tooltip did not appear — continue normally
         }
 
         return this.toBeVisible();
@@ -50,32 +43,12 @@ class EmojiPickerScreen {
 
     close = async () => {
         if (isIos()) {
-            // Swipe down on the search input — it's at the top of the sheet
-            // content, and dragging it down dismisses the bottom-sheet
-            // identically to dragging the sheet container.
-            //
-            // On iOS 26 the search input may not pass the visibility threshold,
-            // so disable synchronization around the swipe to bypass hittability.
-            await device.disableSynchronization();
-            try {
-                await this.searchInput.swipe('down');
-            } finally {
-                await device.enableSynchronization();
-            }
+            await this.emojiPickerScreen.swipe('down');
         } else {
-            // First pressBack may dismiss the soft keyboard if it is still open
-            // (e.g. after search interactions). A second pressBack is then needed
-            // to actually close the emoji picker modal.
             await device.pressBack();
-            try {
-                await waitFor(this.searchInput).not.toExist().withTimeout(timeouts.ONE_SEC);
-            } catch {
-                // Picker is still visible — keyboard was dismissed first; close the picker now
-                await device.pressBack();
-            }
         }
         await wait(timeouts.ONE_SEC);
-        await waitFor(this.searchInput).not.toExist().withTimeout(timeouts.TEN_SEC);
+        await expect(this.emojiPickerScreen).not.toBeVisible();
         await wait(timeouts.ONE_SEC);
     };
 }

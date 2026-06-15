@@ -10,7 +10,6 @@
 import {
     Post,
     Setup,
-    System,
 } from '@support/server_api';
 import {
     serverOneUrl,
@@ -38,19 +37,6 @@ describe('Threads - Mark Thread as Read and Unread', () => {
     beforeAll(async () => {
         const {channel, user} = await Setup.apiInit(siteOneUrl);
         testChannel = channel;
-
-        // # Enable Collapsed Reply Threads so the global threads UI surfaces
-        // are rendered (ThreadsButton in the channel-list sidebar, follow
-        // button in thread navigation, etc.). Without `always_on` the
-        // `channel_list.threads.button` testID is conditionally removed
-        // (see app/screens/home/channel_list/categories_list/categories_list.tsx
-        // — `threadButtonComponent` returns null when `!isCRTEnabled`).
-        await System.apiUpdateConfig(siteOneUrl, {
-            ServiceSettings: {
-                CollapsedThreads: 'always_on',
-                ThreadAutoFollow: true,
-            },
-        });
 
         // # Log in to server
         await ServerScreen.connectToServer(serverOneUrl, serverOneDisplayName);

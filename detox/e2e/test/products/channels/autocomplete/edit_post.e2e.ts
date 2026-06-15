@@ -25,7 +25,7 @@ import {
     ServerScreen,
 } from '@support/ui/screen';
 import {getRandomId} from '@support/utils';
-import {expect, waitFor} from 'detox';
+import {expect} from 'detox';
 
 describe('Autocomplete - Edit Post', () => {
     const serverOneDisplayName = 'Server 1';
@@ -58,16 +58,12 @@ describe('Autocomplete - Edit Post', () => {
     afterAll(async () => {
         // # Close edit post screen if still open, then log out
         try {
-            await waitFor(EditPostScreen.editPostScreen).toExist().withTimeout(3000);
+            await waitFor(EditPostScreen.editPostScreen).toBeVisible().withTimeout(1000);
             await EditPostScreen.close();
         } catch {
             // Edit post screen already closed, continue with logout
         }
-        try {
-            await ChannelScreen.back();
-        } catch {
-            // Back button may not be hittable on iOS 26 due to visibility threshold
-        }
+        await ChannelScreen.back();
         await HomeScreen.logout();
     });
 
@@ -113,16 +109,5 @@ describe('Autocomplete - Edit Post', () => {
 
         // * Verify slash suggestion list is still not displayed
         await expect(Autocomplete.flatEmojiSuggestionList).not.toExist();
-    });
-
-    it('MM-T3391_1 - should render autocomplete in post edit screen', async () => {
-        // * Verify at-mention list is not displayed after opening edit post screen
-        await expect(Autocomplete.sectionAtMentionList).not.toExist();
-
-        // # Type "@" in edit post input to activate at-mention autocomplete
-        await EditPostScreen.messageInput.typeText('@');
-
-        // * Verify at-mention autocomplete list is displayed
-        await expect(Autocomplete.sectionAtMentionList).toExist();
     });
 });

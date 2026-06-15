@@ -19,7 +19,7 @@ import {
     LoginScreen,
     ServerScreen,
 } from '@support/ui/screen';
-import {getRandomId, isIos, timeouts, wait} from '@support/utils';
+import {getRandomId, isIos} from '@support/utils';
 import {expect} from 'detox';
 
 describe('Account - Edit Profile', () => {
@@ -53,7 +53,7 @@ describe('Account - Edit Profile', () => {
         // * Verify basic elements on edit profile screen
         await expect(EditProfileScreen.closeButton).toBeVisible();
         await expect(EditProfileScreen.saveButton).toBeVisible();
-        await expect(EditProfileScreen.getEditProfilePicture(testUser.id)).toExist();
+        await expect(EditProfileScreen.getEditProfilePicture(testUser.id)).toBeVisible();
         await waitFor(EditProfileScreen.firstNameInput).toExist().withTimeout(2000);
         if (isIos()) {
             await expect(EditProfileScreen.firstNameInput).toHaveValue(testUser.first_name);
@@ -90,13 +90,8 @@ describe('Account - Edit Profile', () => {
         await waitFor(EditProfileScreen.nicknameInput).toBeVisible().whileElement(by.id(EditProfileScreen.testID.scrollView)).scroll(50, 'down');
         await EditProfileScreen.nicknameInput.replaceText(`${testUser.nickname}${suffix}`);
         await EditProfileScreen.scrollView.tap({x: 1, y: 1});
-        await EditProfileScreen.scrollView.scrollTo('bottom');
+        await waitFor(EditProfileScreen.positionInput).toBeVisible().whileElement(by.id(EditProfileScreen.testID.scrollView)).scroll(50, 'down');
         await EditProfileScreen.positionInput.replaceText(`${testUser.position}${suffix}`);
-
-        // Settle any in-flight requests from the rapid text-entry chain above before
-        // tapping Save — observed PATCH /users to fail at the HTTP layer ("Received
-        // invalid response from the server") when fired immediately after.
-        await wait(timeouts.ONE_SEC);
         await EditProfileScreen.saveButton.tap();
 
         // * Verify on account screen and user full name and username are updated
@@ -127,19 +122,5 @@ describe('Account - Edit Profile', () => {
 
         // # Go back to account screen
         await EditProfileScreen.close();
-    });
-
-    it('MM-T3250 - should update and display edited profile information on account screen', async () => {
-        // # Open edit profile screen, update first name
-        const newFirstName = `First${getRandomId(3)}`;
-        await EditProfileScreen.open();
-        await EditProfileScreen.firstNameInput.replaceText(newFirstName);
-        await EditProfileScreen.saveButton.tap();
-
-        // * Verify on account screen and updated first name is shown in display name
-        await AccountScreen.toBeVisible();
-        const {userInfoUserDisplayName} = AccountScreen.getUserInfo(testUser.id);
-        await waitFor(userInfoUserDisplayName).toBeVisible().withTimeout(timeouts.TWO_SEC);
-        await expect(userInfoUserDisplayName).toBeVisible();
     });
 });

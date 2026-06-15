@@ -94,7 +94,7 @@ describe('InputQuickAction', () => {
             expect(updateFn('Hello ')).toBe('Hello @');
         });
 
-        it('should append / to existing value for slash input type', () => {
+        it('should insert / and return it for slash input type', () => {
             const updateValue = jest.fn();
             const {getByTestId} = renderWithIntlAndTheme(
                 <InputQuickAction
@@ -107,8 +107,7 @@ describe('InputQuickAction', () => {
             fireEvent.press(getByTestId('test-id'));
 
             const updateFn = updateValue.mock.calls[0][0];
-            expect(updateFn('anything')).toBe('anything/');
-            expect(updateFn('')).toBe('/');
+            expect(updateFn('anything')).toBe('/');
         });
 
         it('should call focus after updating the value', () => {

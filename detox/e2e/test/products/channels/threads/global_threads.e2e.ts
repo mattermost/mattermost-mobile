@@ -10,7 +10,6 @@
 import {
     Post,
     Setup,
-    System,
 } from '@support/server_api';
 import {
     serverOneUrl,
@@ -38,19 +37,6 @@ describe('Threads - Global Threads', () => {
         const {channel, user} = await Setup.apiInit(siteOneUrl);
         testChannel = channel;
         testUser = user;
-
-        // # Enable Collapsed Reply Threads so the global threads UI surfaces
-        // are rendered (ThreadsButton in the channel-list sidebar, follow
-        // button in thread navigation, etc.). Without `always_on` the
-        // `channel_list.threads.button` testID is conditionally removed
-        // (see app/screens/home/channel_list/categories_list/categories_list.tsx
-        // — `threadButtonComponent` returns null when `!isCRTEnabled`).
-        await System.apiUpdateConfig(siteOneUrl, {
-            ServiceSettings: {
-                CollapsedThreads: 'always_on',
-                ThreadAutoFollow: true,
-            },
-        });
 
         // # Log in to server
         await ServerScreen.connectToServer(serverOneUrl, serverOneDisplayName);
@@ -121,10 +107,7 @@ describe('Threads - Global Threads', () => {
 
         // * Verify on thread screen
         await ThreadScreen.toBeVisible();
-
-        // iOS 26: post items can be partially obscured by the input bar,
-        // so toExist() is more reliable than toBeVisible() for the post check.
-        await waitFor(replyPostListPostItem).toExist().withTimeout(timeouts.TEN_SEC);
+        await expect(replyPostListPostItem).toBeVisible();
 
         // # Go back to channel list screen
         await ThreadScreen.back();
@@ -193,10 +176,7 @@ describe('Threads - Global Threads', () => {
 
         // * Verify on thread screen
         await ThreadScreen.toBeVisible();
-
-        // iOS 26: post items can be partially obscured by the input bar,
-        // so toExist() is more reliable than toBeVisible() for the post check.
-        await waitFor(replyPostListPostItem).toExist().withTimeout(timeouts.TEN_SEC);
+        await expect(replyPostListPostItem).toBeVisible();
 
         // # Go back to channel list screen
         await ThreadScreen.back();

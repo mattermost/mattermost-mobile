@@ -12,13 +12,6 @@ class TeamDropdownMenuScreen {
 
     teamDropdownMenuScreen = element(by.id(this.testID.teamDropdownMenuScreen));
 
-    getAllTeamsItem = () => {
-        // ALL_TEAMS_ID is '' (empty string), so the testID becomes
-        // 'team_sidebar.team_list.team_list_item.' + '' + '.team_display_name'
-        // which produces a double-dot: '..team_display_name'
-        return element(by.id('team_sidebar.team_list.team_list_item..team_display_name'));
-    };
-
     getTeamIcon = (teamId: string) => {
         return element(by.id(`team_sidebar.team_list.team_list_item.${teamId}.team_display_name`));
     };

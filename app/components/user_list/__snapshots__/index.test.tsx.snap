@@ -727,7 +727,6 @@ exports[`components/channel_list_row should show results and tutorial 1`] = `
             "opacity": 1,
           }
         }
-        testID="create_direct_message.user_list.user_item.1.1"
       >
         <View
           style={
@@ -749,6 +748,7 @@ exports[`components/channel_list_row should show results and tutorial 1`] = `
               undefined,
             ]
           }
+          testID="create_direct_message.user_list.user_item.1.1"
         >
           <View
             style={
@@ -1091,7 +1091,6 @@ exports[`components/channel_list_row should show results no tutorial 1`] = `
             "opacity": 1,
           }
         }
-        testID="create_direct_message.user_list.user_item.1.1"
       >
         <View
           style={
@@ -1113,6 +1112,7 @@ exports[`components/channel_list_row should show results no tutorial 1`] = `
               undefined,
             ]
           }
+          testID="create_direct_message.user_list.user_item.1.1"
         >
           <View
             style={
@@ -1493,7 +1493,6 @@ exports[`components/channel_list_row should show results no tutorial 2 users 1`]
             "opacity": 1,
           }
         }
-        testID="create_direct_message.user_list.user_item.1.1"
       >
         <View
           style={
@@ -1515,6 +1514,7 @@ exports[`components/channel_list_row should show results no tutorial 2 users 1`]
               undefined,
             ]
           }
+          testID="create_direct_message.user_list.user_item.1.1"
         >
           <View
             style={
@@ -1756,7 +1756,6 @@ exports[`components/channel_list_row should show results no tutorial 2 users 1`]
             "opacity": 1,
           }
         }
-        testID="create_direct_message.user_list.user_item.2.2"
       >
         <View
           style={
@@ -1778,6 +1777,7 @@ exports[`components/channel_list_row should show results no tutorial 2 users 1`]
               undefined,
             ]
           }
+          testID="create_direct_message.user_list.user_item.2.2"
         >
           <View
             style={

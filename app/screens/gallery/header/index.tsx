@@ -63,7 +63,6 @@ const Header = ({index, onClose, style, total}: Props) => {
                 <PressableOpacity
                     onPress={onClose}
                     style={iconStyle}
-                    testID='gallery.header.close.button'
                 >
                     <CompassIcon
                         color='white'

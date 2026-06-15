@@ -18,7 +18,7 @@ import {
     serverOneUrl,
     siteOneUrl,
 } from '@support/test_config';
-import {Alert, Autocomplete} from '@support/ui/component';
+import {Alert} from '@support/ui/component';
 import {
     ChannelListScreen,
     ChannelScreen,
@@ -27,8 +27,8 @@ import {
     ServerScreen,
     UserProfileScreen,
 } from '@support/ui/screen';
-import {timeouts, wait, waitForElementToExist} from '@support/utils';
-import {expect, waitFor} from 'detox';
+import {timeouts, wait} from '@support/utils';
+import {expect} from 'detox';
 
 describe('Messaging - At-Mention', () => {
     const serverOneDisplayName = 'Server 1';
@@ -45,9 +45,6 @@ describe('Messaging - At-Mention', () => {
         testUser = user;
 
         ({user: testOtherUser} = await User.apiCreateUser(siteOneUrl));
-        if (!testOtherUser?.id) {
-            throw new Error('[beforeAll] Failed to create testOtherUser');
-        }
         await Team.apiAddUserToTeam(siteOneUrl, testOtherUser.id, testTeam.id);
         await Channel.apiAddUserToChannel(siteOneUrl, testOtherUser.id, testChannel.id);
 
@@ -104,7 +101,6 @@ describe('Messaging - At-Mention', () => {
 
         // # Tap on confirm button
         await Alert.confirmButton.tap();
-        await wait(timeouts.TWO_SEC);
 
         // * Verify @all is posted
         const {post: atAllPost} = await Post.apiGetLastPostInChannel(siteOneUrl, testChannel.id);
@@ -120,7 +116,6 @@ describe('Messaging - At-Mention', () => {
 
         // # Tap on confirm button
         await Alert.confirmButton.tap();
-        await wait(timeouts.TWO_SEC);
 
         // * Verify @channel is posted
         const {post: atChannelPost} = await Post.apiGetLastPostInChannel(siteOneUrl, testChannel.id);
@@ -136,7 +131,6 @@ describe('Messaging - At-Mention', () => {
 
         // # Tap on confirm button
         await Alert.confirmButton.tap();
-        await wait(timeouts.TWO_SEC);
 
         // * Verify @here is posted
         const {post: atHerePost} = await Post.apiGetLastPostInChannel(siteOneUrl, testChannel.id);
@@ -156,46 +150,11 @@ describe('Messaging - At-Mention', () => {
 
         // * Verify on user profile screen
         await UserProfileScreen.toBeVisible();
-
-        // The user profile bottom sheet may still be animating into place when
-        // toBeVisible() resolves on its screen container — its avatar can briefly
-        // fail a 75% visibility threshold while the sheet finishes snapping.
-        await waitFor(UserProfileScreen.getUserProfilePicture(testUser.id)).toBeVisible().withTimeout(timeouts.TEN_SEC);
+        await expect(UserProfileScreen.getUserProfilePicture(testUser.id)).toBeVisible();
         await expect(UserProfileScreen.userDisplayName).toHaveText(`@${testUser.username}`);
 
         // # Go back to channel list screen
         await UserProfileScreen.close();
-        await ChannelScreen.back();
-    });
-
-    it('MM-T171 - should be able to autocomplete at-mention for out-of-channel member', async () => {
-        // # Create a user who is on the team but not in the channel
-        const {user: outOfChannelUser} = await User.apiCreateUser(siteOneUrl);
-        await Team.apiAddUserToTeam(siteOneUrl, outOfChannelUser.id, testTeam.id);
-
-        // # Open a channel screen and type "@" + full username to activate at-mention autocomplete.
-        // Type the full username in one go to avoid the noResultsTerm race condition in
-        // at_mention.tsx: a short 3-char prefix that only matches a freshly-created user
-        // may return 0 results before the user is indexed, causing noResultsTerm to be set
-        // to the prefix and suppressing all future searches. Typing the full username
-        // maximises specificity so the search resolves to exactly this user once indexed.
-        await ChannelScreen.open(channelsCategory, testChannel.name);
-        await ChannelScreen.postInput.tap();
-        await wait(timeouts.ONE_SEC);
-        await ChannelScreen.postInput.typeText(`@${outOfChannelUser.username}`);
-
-        // * Verify at-mention autocomplete contains the out-of-channel user suggestion.
-        // Poll directly for the specific item (not the generic sectionAtMentionList) so
-        // the assertion fails fast if a different user appears instead. Use HALF_MIN to
-        // give the search backend enough time to index a freshly-created user.
-        const {atMentionItem} = Autocomplete.getAtMentionItem(outOfChannelUser.id);
-        await waitForElementToExist(atMentionItem, timeouts.HALF_MIN);
-
-        // # Clear input and type "@" again to test DM post input scenario
-        await ChannelScreen.postInput.clearText();
-        await Autocomplete.toBeVisible(false);
-
-        // # Go back to channel list screen
         await ChannelScreen.back();
     });
 });

@@ -25,6 +25,7 @@ import {
     ServerScreen,
     UserProfileScreen,
 } from '@support/ui/screen';
+import {timeouts, wait} from '@support/utils';
 import {expect} from 'detox';
 
 describe('Channels - Manage Own Channel Membership', () => {
@@ -58,7 +59,6 @@ describe('Channels - Manage Own Channel Membership', () => {
         const {channel} = await Channel.apiCreateChannel(siteOneUrl, {teamId: testTeam.id});
         await Channel.apiAddUserToChannel(siteOneUrl, testUser.id, channel.id);
         await device.reloadReactNative();
-        await ChannelListScreen.toBeVisible();
 
         // # Open the channel screen
         await ChannelScreen.open(channelsCategory, channel.name);
@@ -67,6 +67,8 @@ describe('Channels - Manage Own Channel Membership', () => {
         await ChannelInfoScreen.open();
 
         // # Open manage channel members screen
+        await ChannelInfoScreen.scrollView.scrollTo('bottom');
+        await wait(timeouts.ONE_SEC);
         await ManageChannelMembersScreen.open();
 
         // # Close tutorial
@@ -84,13 +86,14 @@ describe('Channels - Manage Own Channel Membership', () => {
         // * Verify manage mode is enabled (done button should be visible)
         await expect(ManageChannelMembersScreen.doneButton).toBeVisible();
 
-        // * Verify the current user can be selected in manage mode
+        // * Verify the current user can be selected in manage mode (they should have the manage mode icon visible)
+        // The manage mode icon (chevron-down) should be visible for the current user
         await expect(ManageChannelMembersScreen.getUserItem(testUser.id)).toBeVisible();
 
         // # Tap on the current user in manage mode
         await ManageChannelMembersScreen.getUserItem(testUser.id).tap();
 
-        // * Verify that tapping on own user in manage mode opens the user profile
+        // * Verify that tapping on own user in manage mode opens the user profile or shows manage options
         // This verifies that the restriction preventing users from managing their own membership has been removed
         await UserProfileScreen.toBeVisible();
 
@@ -109,3 +112,4 @@ describe('Channels - Manage Own Channel Membership', () => {
         await ChannelScreen.back();
     });
 });
+

@@ -251,14 +251,7 @@ export const generateRandomUser = ({prefix = 'user', randomIdLength = 6} = {}) =
     return {
         email: `${prefix}${randomId}@sample.mattermost.com`,
         username: `${prefix}${randomId}`,
-
-        // 16 chars to satisfy any server-side PasswordSettings.MinimumLength up
-        // to and including the FIPS-mode minimum of 14
-        // (server/public/model/config.go PasswordFIPSMinimumLength). The old
-        // `P${randomId}!1234` (12 chars) was rejected by local dev servers and
-        // FIPS-enabled cloud test servers, manifesting as cryptic "your account
-        // is locked" / 400 responses during apiInit.
-        password: `P${randomId}!Test1234`,
+        password: `P${randomId}!1234`,
         first_name: `F${randomId}`,
         last_name: `L${randomId}`,
         nickname: `N${randomId}`,

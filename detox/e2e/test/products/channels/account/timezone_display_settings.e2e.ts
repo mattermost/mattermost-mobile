@@ -68,8 +68,8 @@ describe('Account - Settings - Timezone Display Settings', () => {
         // * Verify on select timezone screen
         await SelectTimezoneScreen.toBeVisible();
 
-        // # Search for a timezone and tap on a timezone. Use "Nairobi"
-        await SelectTimezoneScreen.searchInput.replaceText('Nairobi');
+        // # Search for a timezone and tap on a timezone
+        await SelectTimezoneScreen.searchInput.replaceText('Africa');
         await SelectTimezoneScreen.getNonSelectedTimezoneRow('Africa/Nairobi').tap();
 
         // * Verify on timezone display settings screen and timezone is set

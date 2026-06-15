@@ -160,29 +160,21 @@ const File = ({
                 onPress={onGestureEvent}
             >
                 <Animated.View style={[styles, asCard ? style.imageVideo : null]}>
-                    {/* Inner-leaf testID on a plain <View>: the outer file-container
-                        has marginTop (Detox sees <100% visibility), and reanimated's
-                        Animated.View doesn't propagate testID to the native layer. */}
-                    <View
-                        testID={`${file.id}-file`}
-                        collapsable={false}
-                    >
-                        <VideoFile
-                            file={file}
-                            forwardRef={ref}
-                            inViewPort={inViewPort}
-                            isSingleImage={isSingleImage}
-                            contentFit={'cover'}
-                            wrapperWidth={wrapperWidth}
-                            updateFileForGallery={updateFileForGallery}
-                            index={index}
-                        />
-                        {Boolean(nonVisibleImagesCount) &&
-                            <ImageFileOverlay
-                                value={nonVisibleImagesCount}
-                            />
-                        }
-                    </View>
+                    <VideoFile
+                        file={file}
+                        forwardRef={ref}
+                        inViewPort={inViewPort}
+                        isSingleImage={isSingleImage}
+                        contentFit={'cover'}
+                        wrapperWidth={wrapperWidth}
+                        updateFileForGallery={updateFileForGallery}
+                        index={index}
+                    />
+                    {Boolean(nonVisibleImagesCount) &&
+                    <ImageFileOverlay
+                        value={nonVisibleImagesCount}
+                    />
+                    }
                 </Animated.View>
             </TouchableWithoutFeedback>
         );
@@ -195,25 +187,19 @@ const File = ({
                 disabled={isPressDisabled}
             >
                 <Animated.View style={[styles, asCard ? style.imageVideo : null]}>
-                    {/* Inner-leaf testID on a plain <View> — see video case above. */}
-                    <View
-                        testID={`${file.id}-file`}
-                        collapsable={false}
-                    >
-                        <ImageFile
-                            file={file}
-                            forwardRef={ref}
-                            inViewPort={inViewPort}
-                            isSingleImage={isSingleImage}
-                            contentFit={'cover'}
-                            wrapperWidth={wrapperWidth}
-                        />
-                        {Boolean(nonVisibleImagesCount) &&
-                            <ImageFileOverlay
-                                value={nonVisibleImagesCount}
-                            />
-                        }
-                    </View>
+                    <ImageFile
+                        file={file}
+                        forwardRef={ref}
+                        inViewPort={inViewPort}
+                        isSingleImage={isSingleImage}
+                        contentFit={'cover'}
+                        wrapperWidth={wrapperWidth}
+                    />
+                    {Boolean(nonVisibleImagesCount) &&
+                    <ImageFileOverlay
+                        value={nonVisibleImagesCount}
+                    />
+                    }
                 </Animated.View>
             </TouchableWithoutFeedback>
         );

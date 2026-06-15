@@ -57,7 +57,6 @@ describe('Channels - Leave Channel', () => {
         const {channel} = await Channel.apiCreateChannel(siteOneUrl, {teamId: testTeam.id});
         await Channel.apiAddUserToChannel(siteOneUrl, testUser.id, channel.id);
         await device.reloadReactNative();
-        await ChannelListScreen.toBeVisible();
         await ChannelScreen.open(channelsCategory, channel.name);
         await ChannelInfoScreen.open();
         await ChannelInfoScreen.leaveChannel({confirm: true});
@@ -72,7 +71,6 @@ describe('Channels - Leave Channel', () => {
         const {channel} = await Channel.apiCreateChannel(siteOneUrl, {teamId: testTeam.id});
         await Channel.apiAddUserToChannel(siteOneUrl, testUser.id, channel.id);
         await device.reloadReactNative();
-        await ChannelListScreen.toBeVisible();
         await ChannelScreen.open(channelsCategory, channel.name);
         await ChannelInfoScreen.open();
         await ChannelInfoScreen.leaveChannel({confirm: false});
@@ -90,7 +88,6 @@ describe('Channels - Leave Channel', () => {
         const {channel} = await Channel.apiCreateChannel(siteOneUrl, {teamId: testTeam.id});
         await Channel.apiAddUserToChannel(siteOneUrl, testUser.id, channel.id);
         await device.reloadReactNative();
-        await ChannelListScreen.toBeVisible();
         await ChannelScreen.open(channelsCategory, channel.name);
         await ChannelScreen.channelQuickActionsButton.tap();
         await wait(timeouts.ONE_SEC);

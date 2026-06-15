@@ -27,14 +27,13 @@ import {
     ChannelInfoScreen,
     ChannelListScreen,
     ChannelScreen,
-    ChannelSettingsScreen,
     CreateOrEditChannelScreen,
     LoginScreen,
     HomeScreen,
     ServerScreen,
 } from '@support/ui/screen';
 import {getRandomId, timeouts, wait} from '@support/utils';
-import {expect, waitFor} from 'detox';
+import {expect} from 'detox';
 
 describe('Channels', () => {
     const serverOneDisplayName = 'Server 1';
@@ -61,23 +60,12 @@ describe('Channels', () => {
             header: 'This is test header',
             purpose: 'Test purpose for copying',
         });
-        if (!metadataChannel?.id) {
-            throw new Error('[beforeAll] Failed to create channel with metadata');
-        }
         channelWithMetadata = metadataChannel;
 
         await wait(timeouts.THREE_SEC);
         await Channel.apiAddUserToChannel(siteOneUrl, testUser.id, channelWithMetadata.id);
         await ServerScreen.connectToServer(serverOneUrl, serverOneDisplayName);
         await LoginScreen.login(testUser);
-    });
-
-    beforeEach(async () => {
-        // Recovery anchor for every test: ensures the previous test's modal/stack state
-        // is dismissed and we are back on the channel list before proceeding.
-        // ChannelListScreen.toBeVisible() internally dismisses any open modals and pops
-        // back navigation until the channel list is visible (see channel_list.ts).
-        await ChannelListScreen.toBeVisible();
     });
 
     afterAll(async () => {
@@ -90,7 +78,6 @@ describe('Channels', () => {
         const channelPurpose = 'This is a test purpose for the channel';
         const channelHeader = ':taco:';
 
-        await waitFor(ChannelListScreen.headerPlusButton).toBeVisible().withTimeout(timeouts.TEN_SEC);
         await ChannelListScreen.headerPlusButton.tap();
         await ChannelListScreen.createNewChannelItem.tap();
 
@@ -126,7 +113,6 @@ describe('Channels', () => {
         const channelPurpose = 'This is a private test channel purpose';
         const channelHeader = 'Private channel header';
 
-        await waitFor(ChannelListScreen.headerPlusButton).toBeVisible().withTimeout(timeouts.TEN_SEC);
         await ChannelListScreen.headerPlusButton.tap();
         await ChannelListScreen.createNewChannelItem.tap();
 
@@ -182,14 +168,7 @@ describe('Channels', () => {
 
         await CreateOrEditChannelScreen.saveButton.tap();
 
-        // After saving, app pops back to ChannelSettings (not ChannelInfo directly).
-        // Anchor on the Edit Channel screen dismissing — a fixed 2s sleep is fragile when
-        // the save round-trip or pop animation is slower on CI. Waiting on the screen
-        // transition is deterministic and bounded by the same TEN_SEC envelope.
-        await waitFor(CreateOrEditChannelScreen.createOrEditChannelScreen).not.toBeVisible().withTimeout(timeouts.TEN_SEC);
-        await ChannelSettingsScreen.toBeVisible();
-        await ChannelSettingsScreen.close();
-
+        await wait(timeouts.TWO_SEC);
         await ChannelInfoScreen.toBeVisible();
         await expect(ChannelInfoScreen.publicPrivateTitleDisplayName).toHaveText(updatedDisplayName);
         await expect(ChannelInfoScreen.publicPrivateTitlePurpose).toHaveText(purposeText);
@@ -223,14 +202,7 @@ describe('Channels', () => {
 
         await CreateOrEditChannelScreen.saveButton.tap();
 
-        // After saving, app pops back to ChannelSettings (not ChannelInfo directly).
-        // Anchor on the Edit Channel screen dismissing — a fixed 2s sleep is fragile when
-        // the save round-trip or pop animation is slower on CI. Waiting on the screen
-        // transition is deterministic and bounded by the same TEN_SEC envelope.
-        await waitFor(CreateOrEditChannelScreen.createOrEditChannelScreen).not.toBeVisible().withTimeout(timeouts.TEN_SEC);
-        await ChannelSettingsScreen.toBeVisible();
-        await ChannelSettingsScreen.close();
-
+        await wait(timeouts.TWO_SEC);
         await ChannelInfoScreen.toBeVisible();
         await expect(ChannelInfoScreen.publicPrivateTitleDisplayName).toHaveText(updatedDisplayName);
         await expect(ChannelInfoScreen.publicPrivateTitlePurpose).toHaveText(purposeText);
@@ -240,8 +212,6 @@ describe('Channels', () => {
     });
 
     it('MM-T854 - RN apps Channel can be created using 2 non-latin characters', async () => {
-        await ChannelListScreen.toBeVisible();
-        await waitFor(ChannelListScreen.headerPlusButton).toBeVisible().withTimeout(timeouts.TEN_SEC);
         await ChannelListScreen.headerPlusButton.tap();
         await ChannelListScreen.createNewChannelItem.tap();
 
@@ -267,13 +237,6 @@ describe('Channels', () => {
     });
 
     it('MM-T867 - RN apps Copying channel header text', async () => {
-        // # Reload React Native to force a fresh WebSocket sync so the API-created
-        // channelWithMetadata (added in beforeAll) is present in the sidebar. Without
-        // this, the join event from beforeAll can fail to propagate by the time this
-        // test runs, leaving waitForSidebarPublicChannelDisplayNameVisible to time out.
-        await device.reloadReactNative();
-        await ChannelListScreen.toBeVisible();
-
         // # Navigate to the channel with metadata
         await ChannelScreen.open(channelsCategory, channelWithMetadata.name);
         await ChannelInfoScreen.open();
@@ -293,11 +256,6 @@ describe('Channels', () => {
     });
 
     it('MM-T865 - RN apps Copying channel purpose text', async () => {
-        // # Reload React Native for the same reason as MM-T867 — guarantees the sidebar
-        // reflects the API-joined channel even if MM-T867 was skipped or failed.
-        await device.reloadReactNative();
-        await ChannelListScreen.toBeVisible();
-
         // # Navigate to the channel with metadata
         await ChannelScreen.open(channelsCategory, channelWithMetadata.name);
         await ChannelInfoScreen.open();

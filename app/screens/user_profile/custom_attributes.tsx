@@ -67,7 +67,6 @@ const CustomAttributes = ({nickname, position, localTime, customAttributes}: Pro
                 showsVerticalScrollIndicator={true}
                 scrollEnabled={true}
                 removeClippedSubviews={true}
-                testID='user_profile.custom_attributes.list'
             />
         </View>
     );

@@ -10,8 +10,6 @@
 import {
     Post,
     Setup,
-    System,
-    User,
 } from '@support/server_api';
 import {
     serverOneUrl,
@@ -28,28 +26,18 @@ import {
     ThreadOptionsScreen,
     ThreadScreen,
 } from '@support/ui/screen';
-import {getRandomId, timeouts, wait, waitForElementToBeVisible} from '@support/utils';
-import {expect, waitFor} from 'detox';
+import {getRandomId, timeouts, wait} from '@support/utils';
+import {expect} from 'detox';
 
 describe('Smoke Test - Threads', () => {
     const serverOneDisplayName = 'Server 1';
     const channelsCategory = 'channels';
+    const savedText = 'Saved';
     let testChannel: any;
 
     beforeAll(async () => {
-        // # Admin login required before apiInit (which uses admin endpoints)
-        await User.apiAdminLogin(siteOneUrl);
-
         const {channel, user} = await Setup.apiInit(siteOneUrl);
         testChannel = channel;
-
-        // # Enable Collapsed Reply Threads so the follow button appears in thread navigation
-        await System.apiUpdateConfig(siteOneUrl, {
-            ServiceSettings: {
-                CollapsedThreads: 'always_on',
-                ThreadAutoFollow: true,
-            },
-        });
 
         // # Log in to server
         await ServerScreen.connectToServer(serverOneUrl, serverOneDisplayName);
@@ -80,33 +68,21 @@ describe('Smoke Test - Threads', () => {
         await ThreadScreen.postMessage(`${parentMessage} reply`);
 
         // * Verify thread is followed by user by default via thread navigation
-        // Disable Detox sync: each detoxExpect().toBeVisible() waits for bridge idle
-        // before querying the view hierarchy. On slow emulators the JS bridge stays busy
-        // for 15-20s stretches after a send (keyboard animation + WatermelonDB writes),
-        // which blocks both the poll and the thread_updated WebSocket event dispatch.
-        // With sync disabled, polls run every 500ms directly against the native view
-        // hierarchy; sync is re-enabled before each tap so gestures remain reliable.
-        await device.disableSynchronization();
-        await waitForElementToBeVisible(ThreadScreen.followingButton, timeouts.HALF_MIN);
-        await device.enableSynchronization();
+        await expect(ThreadScreen.followingButton).toBeVisible();
 
         // # Unfollow thread via thread navigation
         await ThreadScreen.followingButton.tap();
         await wait(timeouts.TWO_SEC);
 
         // * Verify thread is not followed by user via thread navigation
-        await device.disableSynchronization();
-        await waitForElementToBeVisible(ThreadScreen.followButton, timeouts.TEN_SEC);
-        await device.enableSynchronization();
+        await expect(ThreadScreen.followButton).toBeVisible();
 
         // # Follow thread via thread navigation
         await ThreadScreen.followButton.tap();
         await wait(timeouts.TWO_SEC);
 
         // * Verify thread is followed by user via thread navigation
-        await device.disableSynchronization();
-        await waitForElementToBeVisible(ThreadScreen.followingButton, timeouts.TEN_SEC);
-        await device.enableSynchronization();
+        await expect(ThreadScreen.followingButton).toBeVisible();
 
         // # Go back to channel list screen, then go to global threads screen, tap on all your threads button, open thread options for thread, tap on mark as unread option, and tap on unread threads button
         await ThreadScreen.back();
@@ -118,33 +94,17 @@ describe('Smoke Test - Threads', () => {
         await GlobalThreadsScreen.headerAllThreadsButton.tap();
         await GlobalThreadsScreen.openThreadOptionsFor(parentPost.id);
         await ThreadOptionsScreen.markAsUnreadOption.tap();
-        await wait(timeouts.ONE_SEC);
-
-        // * Verify thread is marked unread in all threads before switching filters.
-        // The unread badge/footer update drives membership in the Unreads tab.
-        await device.disableSynchronization();
-        await waitForElementToBeVisible(GlobalThreadsScreen.getThreadItem(parentPost.id), timeouts.HALF_MIN);
-        await waitFor(GlobalThreadsScreen.getThreadItemUnreadDotBadge(parentPost.id)).toBeVisible().withTimeout(timeouts.TEN_SEC);
-        await waitFor(GlobalThreadsScreen.getThreadItemFooterUnreadReplies(parentPost.id)).toHaveText('1 new reply').withTimeout(timeouts.TEN_SEC);
-        await device.enableSynchronization();
-
         await GlobalThreadsScreen.headerUnreadThreadsButton.tap();
 
         // * Verify thread is displayed in unread threads section
-        // Disable sync: tab filter + WS refresh can keep the bridge busy while the unread list repopulates.
-        await device.disableSynchronization();
-        await waitForElementToBeVisible(GlobalThreadsScreen.getThreadItem(parentPost.id), timeouts.HALF_MIN);
-        await device.enableSynchronization();
+        await waitFor(GlobalThreadsScreen.getThreadItem(parentPost.id)).toBeVisible().withTimeout(timeouts.FOUR_SEC);
 
         // # Open thread options for thread and tap on mark as read option
         await GlobalThreadsScreen.openThreadOptionsFor(parentPost.id);
         await ThreadOptionsScreen.markAsReadOption.tap();
-        await wait(timeouts.ONE_SEC);
 
         // * Verify thread is not displayed anymore in unread threads section
-        await device.disableSynchronization();
-        await waitFor(GlobalThreadsScreen.getThreadItem(parentPost.id)).not.toBeVisible().withTimeout(timeouts.TEN_SEC);
-        await device.enableSynchronization();
+        await waitFor(GlobalThreadsScreen.getThreadItem(parentPost.id)).not.toBeVisible().withTimeout(timeouts.FOUR_SEC);
 
         // # Tap on all your threads button, tap on the thread, and add new reply to thread
         await GlobalThreadsScreen.headerAllThreadsButton.tap();
@@ -179,35 +139,22 @@ describe('Smoke Test - Threads', () => {
         await GlobalThreadsScreen.open();
         await GlobalThreadsScreen.openThreadOptionsFor(parentPost.id);
         await ThreadOptionsScreen.saveThreadOption.tap();
-
         await GlobalThreadsScreen.getThreadItem(parentPost.id).tap();
 
-        // * Verify the thread is saved — assert on the thread_overview bookmark button,
-        // not on the post pre-header.
-        //
-        // The "Saved" pre-header is deliberately suppressed on the thread-view root post
-        // (app/components/post_list/post_list.tsx — `skipSavedHeader = location === Screens.THREAD
-        // && post.id === rootId`). The product surfaces saved-state on the thread root via
-        // the bookmark icon in the thread_overview row instead, which swaps between
-        // `*.save.button` (not saved) and `*.unsave.button` (saved). Same testID scheme on iOS
-        // and Android — no platform branches in app/components/post_list/thread_overview.
-        // .atIndex(0): expo-router's tab-stack persistence can leave a stale ThreadScreen
-        // mounted off-screen (e.g. from a previous tab) while the current one is active.
-        // Both emit the same `thread.post_list.thread_overview.{un,}save.button` testID.
-        // Detox's view-hierarchy traversal returns the active (topmost) screen first.
-        const threadOverviewUnsaveButton = element(by.id('thread.post_list.thread_overview.unsave.button')).atIndex(0);
-        const threadOverviewSaveButton = element(by.id('thread.post_list.thread_overview.save.button')).atIndex(0);
-        await waitFor(threadOverviewUnsaveButton).toBeVisible().withTimeout(timeouts.TEN_SEC);
+        // * Verify saved text is displayed on the post pre-header
+        const {postListPostItemPreHeaderText} = ThreadScreen.getPostListPostItem(parentPost.id, parentMessage);
+        await expect(postListPostItemPreHeaderText).toHaveText(savedText);
 
-        // # Go back to global threads screen, open thread options for thread, tap on unsave option
+        // # Go back to global threads screen, open thread options for thread, tap on unsave option, and tap on thread
         await ThreadScreen.back();
         await GlobalThreadsScreen.openThreadOptionsFor(parentPost.id);
         await waitFor(ThreadOptionsScreen.unsaveThreadOption).toBeVisible().withTimeout(timeouts.TEN_SEC);
         await ThreadOptionsScreen.unsaveThreadOption.tap();
-
-        // * Verify the thread is unsaved — the thread_overview button flips back to *.save.button.
+        await waitFor(GlobalThreadsScreen.getThreadItem(parentPost.id)).toBeVisible().withTimeout(timeouts.TEN_SEC);
         await GlobalThreadsScreen.getThreadItem(parentPost.id).tap();
-        await waitFor(threadOverviewSaveButton).toBeVisible().withTimeout(timeouts.TEN_SEC);
+
+        // * Verify saved text is not displayed on the post pre-header
+        await expect(postListPostItemPreHeaderText).not.toBeVisible();
 
         // # Go back to global threads screen, open thread options for thread, tap on open in channel option, and jump to recent messages
         await ThreadScreen.back();

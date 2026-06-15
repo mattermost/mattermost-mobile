@@ -21,7 +21,6 @@ type Props = {
     handleSuggestionClick: (status: UserCustomStatus) => void;
     isExpirySupported: boolean;
     separator: boolean;
-    testIdPrefix?: string;
     text?: string;
     theme: Theme;
 };
@@ -64,7 +63,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
     };
 });
 
-const CustomStatusSuggestion = ({duration, emoji, expires_at, handleClear, handleSuggestionClick, isExpirySupported, separator, testIdPrefix, text, theme}: Props) => {
+const CustomStatusSuggestion = ({duration, emoji, expires_at, handleClear, handleSuggestionClick, isExpirySupported, separator, text, theme}: Props) => {
     const style = getStyleSheet(theme);
     const intl = useIntl();
 
@@ -79,8 +78,7 @@ const CustomStatusSuggestion = ({duration, emoji, expires_at, handleClear, handl
     }, [duration, emoji, expires_at, handleClear, text]);
 
     const showCustomStatus = Boolean(duration && duration !== 'date_and_time' && isExpirySupported);
-    const prefix = testIdPrefix ?? 'custom_status.custom_status_suggestion';
-    const customStatusSuggestionTestId = `${prefix}.${text}`;
+    const customStatusSuggestionTestId = `custom_status.custom_status_suggestion.${text}`;
 
     const clearButton =
         handleClear && expires_at ? (

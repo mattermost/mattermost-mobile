@@ -25,7 +25,7 @@ import {
     ServerScreen,
 } from '@support/ui/screen';
 import {getRandomId, timeouts, wait} from '@support/utils';
-import {expect, waitFor} from 'detox';
+import {expect} from 'detox';
 
 describe('Autocomplete - Channel Mention', () => {
     const serverOneDisplayName = 'Server 1';
@@ -43,9 +43,6 @@ describe('Autocomplete - Channel Mention', () => {
         ({channelMentionItem: channelMentionAutocomplete} = Autocomplete.getChannelMentionItem(testChannel.name));
 
         ({channel: testOtherChannel} = await Channel.apiCreateChannel(siteOneUrl, {teamId: testTeam.id}));
-        if (!testOtherChannel?.id) {
-            throw new Error('[beforeAll] Failed to create testOtherChannel');
-        }
         await Channel.apiAddUserToChannel(siteOneUrl, user.id, testOtherChannel.id);
         ({channelMentionItem: otherChannelMentionAutocomplete} = Autocomplete.getChannelMentionItem(testOtherChannel.name));
 
@@ -69,42 +66,14 @@ describe('Autocomplete - Channel Mention', () => {
     });
 
     afterAll(async () => {
-        // Resilient cleanup. Previous version awaited ChannelScreen.back() then
-        // HomeScreen.logout() unconditionally — if a prior test (e.g. MM-T4879_7
-        // in CI run 26368981355) left the UI wedged, the back/logout sequence
-        // hit jest's 240s testTimeout, causing testExecError on the whole suite
-        // and (combined with the 60-min step timeout) ending the entire shard
-        // mid-test-run, dropping junit XMLs for every spec on it.
-        //
-        // Now: each step is best-effort with its own short timeout. If both
-        // fail, force a clean simulator state via launchApp so the next spec
-        // on this shard starts fresh instead of inheriting our wedge.
-        try {
-            await Promise.race([
-                ChannelScreen.back(),
-                new Promise((_, reject) => setTimeout(() => reject(new Error('back() timed out')), 15000)),
-            ]);
-        } catch {
-            // continue to logout — back() failing is not a reason to skip cleanup
-        }
-        try {
-            await Promise.race([
-                HomeScreen.logout(),
-                new Promise((_, reject) => setTimeout(() => reject(new Error('logout() timed out')), 30000)),
-            ]);
-        } catch {
-            // Defensive: if logout wedged, relaunch to reset state for next spec.
-            try {
-                await device.launchApp({newInstance: true});
-            } catch {
-                // last-ditch — give up and let the next spec's beforeAll handle it
-            }
-        }
+        // # Log out
+        await ChannelScreen.back();
+        await HomeScreen.logout();
     });
 
     it('MM-T4879_1 - should suggest channel based on channel name', async () => {
-        // # Tap tilde quick action to insert "~" and activate channel mention autocomplete.
-        await ChannelScreen.tildeInputQuickAction.tap();
+        // # Type in "~" to activate channel mention autocomplete
+        await ChannelScreen.postInput.typeText('~');
         await Autocomplete.toBeVisible();
 
         // * Verify channel mention list is displayed
@@ -118,8 +87,8 @@ describe('Autocomplete - Channel Mention', () => {
     });
 
     it('MM-T4879_2 - should suggest channel based on channel display name', async () => {
-        // # Tap tilde quick action to insert "~" and activate channel mention autocomplete
-        await ChannelScreen.tildeInputQuickAction.tap();
+        // # Type in "~" to activate channel mention autocomplete
+        await ChannelScreen.postInput.typeText('~');
         await Autocomplete.toBeVisible();
 
         // * Verify channel mention list is displayed
@@ -133,8 +102,8 @@ describe('Autocomplete - Channel Mention', () => {
     });
 
     it('MM-T4879_3 - should suggest channel based on lowercase channel display name', async () => {
-        // # Tap tilde quick action to insert "~" and activate channel mention autocomplete
-        await ChannelScreen.tildeInputQuickAction.tap();
+        // # Type in "~" to activate channel mention autocomplete
+        await ChannelScreen.postInput.typeText('~');
         await Autocomplete.toBeVisible();
 
         // * Verify channel mention list is displayed
@@ -148,8 +117,8 @@ describe('Autocomplete - Channel Mention', () => {
     });
 
     it('MM-T4879_4 - should suggest channel based on partial channel display name', async () => {
-        // # Tap tilde quick action to insert "~" and activate channel mention autocomplete
-        await ChannelScreen.tildeInputQuickAction.tap();
+        // # Type in "~" to activate channel mention autocomplete
+        await ChannelScreen.postInput.typeText('~');
         await Autocomplete.toBeVisible();
 
         // * Verify channel mention list is displayed
@@ -163,8 +132,8 @@ describe('Autocomplete - Channel Mention', () => {
     });
 
     it('MM-T4879_5 - should stop suggesting channel after channel display name with trailing space', async () => {
-        // # Tap tilde quick action to insert "~" and activate channel mention autocomplete
-        await ChannelScreen.tildeInputQuickAction.tap();
+        // # Type in "~" to activate channel mention autocomplete
+        await ChannelScreen.postInput.typeText('~');
         await Autocomplete.toBeVisible();
 
         // * Verify channel mention list is displayed
@@ -185,8 +154,8 @@ describe('Autocomplete - Channel Mention', () => {
     });
 
     it('MM-T4879_6 - should stop suggesting channel when keyword is not associated with any channel', async () => {
-        // # Tap tilde quick action to insert "~" and activate channel mention autocomplete
-        await ChannelScreen.tildeInputQuickAction.tap();
+        // # Type in "~" to activate channel mention autocomplete
+        await ChannelScreen.postInput.typeText('~');
         await Autocomplete.toBeVisible();
 
         // * Verify channel mention list is displayed
@@ -200,10 +169,9 @@ describe('Autocomplete - Channel Mention', () => {
     });
 
     it('MM-T4879_7 - should be able to select channel mention multiple times', async () => {
-        // # Tap tilde quick action to insert "~" and activate channel mention autocomplete
+        // # Type in "~" to activate channel mention autocomplete
         await expect(Autocomplete.sectionChannelMentionList).not.toExist();
-        await ChannelScreen.tildeInputQuickAction.tap();
-        await Autocomplete.toBeVisible();
+        await ChannelScreen.postInput.typeText('~');
 
         // * Verify channel mention list is displayed
         await expect(Autocomplete.sectionChannelMentionList).toExist();
@@ -212,27 +180,20 @@ describe('Autocomplete - Channel Mention', () => {
         await ChannelScreen.postInput.typeText(testChannel.name);
         await channelMentionAutocomplete.tap();
 
-        // * Verify channel mention list disappears.
-        // The dismissal is driven by a React state update after tap, so use
-        // waitFor(...).not.toExist() instead of a fixed sleep — it exits as soon
-        // as the list unmounts, and gives the update time to land on slower CI
-        // runners (iOS 26 / macos-15) without a hard wait.
-        await waitFor(Autocomplete.sectionChannelMentionList).not.toExist().withTimeout(timeouts.TEN_SEC);
+        // * Verify channel mention list disappears
+        await expect(Autocomplete.sectionChannelMentionList).not.toExist();
 
-        // # Clear the input (which now contains the inserted channel mention text),
-        // then re-activate channel mention list via the tilde quick action.
-        await ChannelScreen.postInput.clearText();
-        await ChannelScreen.tildeInputQuickAction.tap();
-        await Autocomplete.toBeVisible();
+        // # Type in "~" again to re-activate channel mention list
+        await ChannelScreen.postInput.typeText('~');
 
         // * Verify channel mention list is displayed
         await expect(Autocomplete.sectionChannelMentionList).toExist();
     });
 
     it('MM-T4879_8 - should be able to autocomplete archived channel', async () => {
-        // # Archive another team channel and tap tilde quick action to activate autocomplete
+        // # Archive another team channel and type in "~" to activate channel mention autocomplete
         await Channel.apiDeleteChannel(siteOneUrl, testOtherChannel.id);
-        await ChannelScreen.tildeInputQuickAction.tap();
+        await ChannelScreen.postInput.typeText('~');
         await Autocomplete.toBeVisible();
 
         // * Verify channel mention list is displayed
@@ -244,11 +205,11 @@ describe('Autocomplete - Channel Mention', () => {
         // * Verify channel mention autocomplete contains associated channel suggestion
         await expect(otherChannelMentionAutocomplete).toExist();
 
-        // # Unarchive channel, clear post input, and tap tilde quick action to activate autocomplete
+        // # Unarchive channel, clear post input, and type in "~" to activate channel mention list
         await Channel.apiRestoreChannel(siteOneUrl, testOtherChannel.id);
         await ChannelScreen.postInput.clearText();
         await Autocomplete.toBeVisible(false);
-        await ChannelScreen.tildeInputQuickAction.tap();
+        await ChannelScreen.postInput.typeText('~');
         await Autocomplete.toBeVisible();
 
         // * Verify channel mention list is displayed
@@ -262,10 +223,10 @@ describe('Autocomplete - Channel Mention', () => {
     });
 
     it('MM-T4879_9 - should not be able to autocomplete out of team channel', async () => {
-        // # Tap tilde quick action to insert "~" and activate channel mention autocomplete
+        // # Type in "~" to activate channel mention autocomplete
         const {team: otherTeam} = await Team.apiCreateTeam(siteOneUrl);
         const {channel: outOfTeamChannel} = await Channel.apiCreateChannel(siteOneUrl, {teamId: otherTeam.id});
-        await ChannelScreen.tildeInputQuickAction.tap();
+        await ChannelScreen.postInput.typeText('~');
         await Autocomplete.toBeVisible();
 
         // * Verify channel mention list is displayed
@@ -280,8 +241,8 @@ describe('Autocomplete - Channel Mention', () => {
     });
 
     it('MM-T4879_10 - should include current channel in autocomplete', async () => {
-        // # Tap tilde quick action to insert "~" and activate channel mention autocomplete
-        await ChannelScreen.tildeInputQuickAction.tap();
+        // # Type in "~" to activate channel mention autocomplete
+        await ChannelScreen.postInput.typeText('~');
         await Autocomplete.toBeVisible();
 
         // * Verify channel mention list is displayed

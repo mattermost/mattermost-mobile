@@ -40,24 +40,18 @@ describe('Channels', () => {
     let testChannel: any;
     let privateChannel: any;
 
-    // Pass an explicit timeout (8 min) so that on a slow Android CI shard the hook does
-    // not exceed the global testTimeout (240s). The hook creates two channels, adds users,
-    // connects to the server, and logs in — which can take > 4 min under load.
     beforeAll(async () => {
         const {user, channel, team} = await Setup.apiInit(siteOneUrl);
         testUser = user;
         testChannel = channel;
 
         const {channel: privateChannelData} = await Channel.apiCreateChannel(siteOneUrl, {type: 'P', prefix: 'channel', teamId: team.id});
-        if (!privateChannelData?.id) {
-            throw new Error('[beforeAll] Failed to create private channel');
-        }
         privateChannel = privateChannelData;
 
         await Channel.apiAddUserToChannel(siteOneUrl, testUser.id, privateChannel.id);
         await ServerScreen.connectToServer(serverOneUrl, serverOneDisplayName);
         await LoginScreen.login(testUser);
-    }, 480000);
+    });
 
     afterAll(async () => {
         await HomeScreen.logout();
@@ -82,10 +76,8 @@ describe('Channels', () => {
         await ChannelInfoScreen.leaveChannelOption.tap();
 
         await wait(timeouts.ONE_SEC);
-
-        // Use Alert.leaveChannelTitle (atIndex(0) on iOS) to avoid "multiple elements" error
-        // when both the channel menu item and alert dialog share "Leave channel" text.
-        await expect(Alert.leaveChannelTitle).toBeVisible();
+        const leaveAlertTitle = 'Leave channel';
+        await expect(element(by.text(leaveAlertTitle))).toBeVisible();
         await expect(element(by.text(`Are you sure you want to leave the public channel ${testChannel.display_name}? You can always rejoin.`))).toBeVisible();
 
         await Alert.leaveButton.tap();
@@ -103,7 +95,7 @@ describe('Channels', () => {
         await ChannelInfoScreen.leaveChannelOption.tap();
 
         await wait(timeouts.ONE_SEC);
-        await expect(Alert.leaveChannelTitle).toBeVisible();
+        await expect(element(by.text('Leave channel'))).toBeVisible();
         await expect(element(by.text(`Are you sure you want to leave the private channel ${privateChannel.display_name}? You cannot rejoin the channel unless you're invited again.`))).toBeVisible();
         await Alert.leaveButton.tap();
 

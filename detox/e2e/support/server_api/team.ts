@@ -209,31 +209,6 @@ export const generateRandomTeam = (type: string, prefix: string) => {
     };
 };
 
-/**
- * Update a team member's explicit roles (promote to team admin or demote to member).
- * Uses the /roles endpoint which sets the roles string directly — this is what
- * the mobile app reads via myTeam.roles in observePermissionForTeam.
- * See https://api.mattermost.com/#operation/UpdateTeamMemberRoles
- * @param {string} baseUrl - the base server URL
- * @param {string} teamId - The team ID
- * @param {string} userId - The user ID
- * @param {boolean} schemeAdmin - true to grant team_admin role, false to remove it
- * @return {Object} returns {status} on success or {error, status} on error
- */
-export const apiUpdateTeamMemberSchemeRoles = async (baseUrl: string, teamId: string, userId: string, schemeAdmin: boolean): Promise<any> => {
-    try {
-        const roles = schemeAdmin ? 'team_user team_admin' : 'team_user';
-        const response = await client.put(
-            `${baseUrl}/api/v4/teams/${teamId}/members/${userId}/roles`,
-            {roles},
-        );
-
-        return {status: response.status};
-    } catch (err) {
-        return getResponseFromError(err);
-    }
-};
-
 export const Team = {
     apiAddUserToTeam,
     apiCreateTeam,
@@ -244,7 +219,6 @@ export const Team = {
     apiGetTeamsForUser,
     apiPatchTeam,
     apiPatchTeams,
-    apiUpdateTeamMemberSchemeRoles,
     generateRandomTeam,
 };
 

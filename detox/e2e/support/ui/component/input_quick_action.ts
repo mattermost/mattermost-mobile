@@ -5,8 +5,6 @@ class InputQuickAction {
     testID = {
         atInputActionSuffix: 'post_draft.quick_actions.at_input_action',
         atInputActionDisabledSuffix: 'post_draft.quick_actions.at_input_action.disabled',
-        tildeInputActionSuffix: 'post_draft.quick_actions.tilde_input_action',
-        tildeInputActionDisabledSuffix: 'post_draft.quick_actions.tilde_input_action.disabled',
         slashInputActionSuffix: 'post_draft.quick_actions.slash_input_action',
         slashInputActionDisabledSuffix: 'post_draft.quick_actions.slash_input_action.disabled',
     };
@@ -17,14 +15,6 @@ class InputQuickAction {
 
     getAtInputQuickActionDisabled = (screenPrefix: string) => {
         return element(by.id(`${screenPrefix}${this.testID.atInputActionDisabledSuffix}`));
-    };
-
-    getTildeInputQuickAction = (screenPrefix: string) => {
-        return element(by.id(`${screenPrefix}${this.testID.tildeInputActionSuffix}`));
-    };
-
-    getTildeInputQuickActionDisabled = (screenPrefix: string) => {
-        return element(by.id(`${screenPrefix}${this.testID.tildeInputActionDisabledSuffix}`));
     };
 
     getSlashInputQuickAction = (screenPrefix: string) => {

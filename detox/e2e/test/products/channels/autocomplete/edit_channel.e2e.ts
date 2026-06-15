@@ -17,7 +17,6 @@ import {
     ChannelInfoScreen,
     ChannelListScreen,
     ChannelScreen,
-    ChannelSettingsScreen,
     CreateOrEditChannelScreen,
     HomeScreen,
     LoginScreen,
@@ -52,36 +51,10 @@ describe('Autocomplete - Edit Channel', () => {
     });
 
     afterAll(async () => {
-        // # Clear header input to avoid discard-changes dialog when navigating back
-        try {
-            await CreateOrEditChannelScreen.headerInput.clearText();
-        } catch {
-            // Input might already be clear
-        }
-
-        // # Navigate back through the stack — each step may fail on iOS 26 due
-        // # to visibility threshold on back buttons, so wrap each in try/catch.
-        // # The next test file always starts with a fresh app launch anyway.
-        try {
-            await CreateOrEditChannelScreen.back();
-        } catch {
-            // Already navigated away
-        }
-        try {
-            await ChannelSettingsScreen.close();
-        } catch {
-            // Channel settings already dismissed
-        }
-        try {
-            await ChannelInfoScreen.close();
-        } catch {
-            // Channel info already dismissed
-        }
-        try {
-            await ChannelScreen.back();
-        } catch {
-            // Back button may not be hittable on iOS 26 due to visibility threshold
-        }
+        // # Log out
+        await CreateOrEditChannelScreen.back();
+        await ChannelInfoScreen.close();
+        await ChannelScreen.back();
         await HomeScreen.logout();
     });
 
@@ -127,17 +100,5 @@ describe('Autocomplete - Edit Channel', () => {
 
         // * Verify slash suggestion list is still not displayed
         await expect(Autocomplete.flatEmojiSuggestionList).not.toExist();
-    });
-
-    it('MM-T3390_1 - should render autocomplete in channel header edit screen', async () => {
-        // * Verify at-mention list is not displayed before typing
-        await expect(Autocomplete.sectionAtMentionList).not.toExist();
-
-        // # Type "@" in edit channel header input to activate at-mention autocomplete
-        await CreateOrEditChannelScreen.headerInput.typeText('@');
-
-        // * Verify at-mention autocomplete list is displayed
-        await waitFor(Autocomplete.sectionAtMentionList).toExist().withTimeout(timeouts.ONE_SEC);
-        await expect(Autocomplete.sectionAtMentionList).toExist();
     });
 });

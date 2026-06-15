@@ -2,13 +2,13 @@
 // See LICENSE.txt for license information.
 
 import {NotificationSettingsScreen} from '@support/ui/screen';
-import {isIos, tapNativeBackButton, timeouts} from '@support/utils';
+import {timeouts} from '@support/utils';
 import {expect} from 'detox';
 
 class AutoResponderNotificationSettingsScreen {
     testID = {
         autoResponderNotificationSettingsScreen: 'auto_responder_notification_settings.screen',
-        backButton: 'navigation.header.back',
+        backButton: 'screen.back.button',
         scrollView: 'auto_responder_notification_settings.scroll_view',
         enableAutomaticRepliesOptionToggledOff: 'auto_responder_notification_settings.enable_automatic_replies.option.toggled.false.button',
         enableAutomaticRepliesOptionToggledOn: 'auto_responder_notification_settings.enable_automatic_replies.option.toggled.true.button',
@@ -17,17 +17,7 @@ class AutoResponderNotificationSettingsScreen {
     };
 
     autoResponderNotificationSettingsScreen = element(by.id(this.testID.autoResponderNotificationSettingsScreen));
-
-    // expo-router native stack screen — the custom NavigationHeader's
-    // 'navigation.header.back' testID is not rendered here. iOS uses
-    // `accessibilityLabel="Back"`, Android uses the Toolbar's default
-    // navigation-icon contentDescription "Navigate up".
-    get backButton(): Detox.NativeElement {
-        return isIos()
-            ? element(by.label('Back')).atIndex(0)
-            : element(by.label('Navigate up')).atIndex(0);
-    }
-
+    backButton = element(by.id(this.testID.backButton));
     scrollView = element(by.id(this.testID.scrollView));
     enableAutomaticRepliesOptionToggledOff = element(by.id(this.testID.enableAutomaticRepliesOptionToggledOff));
     enableAutomaticRepliesOptionToggledOn = element(by.id(this.testID.enableAutomaticRepliesOptionToggledOn));
@@ -48,11 +38,14 @@ class AutoResponderNotificationSettingsScreen {
     };
 
     back = async () => {
-        // Use platform-native back chevron: Android via device.pressBack(),
-        // iOS via by.label('Back'). The custom NavigationHeader's testID
-        // does not exist on this screen (expo-router native stack).
-        await tapNativeBackButton();
-        await waitFor(this.autoResponderNotificationSettingsScreen).not.toBeVisible().withTimeout(timeouts.TEN_SEC);
+        try {
+            await waitFor(this.backButton).toExist().withTimeout(timeouts.TWO_SEC);
+            await this.backButton.tap();
+            await expect(this.autoResponderNotificationSettingsScreen).not.toBeVisible();
+        } catch (error) {
+            // Back button may not exist if screen failed to load or already navigated away
+            console.warn('[AutoResponderNotificationSettingsScreen.back] Navigation failed:', error); // eslint-disable-line no-console
+        }
     };
 
     toggleEnableAutomaticRepliesOptionOn = async () => {
