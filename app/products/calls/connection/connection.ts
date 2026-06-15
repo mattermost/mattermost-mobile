@@ -464,7 +464,12 @@ export async function newConnection(
                 return;
             }
             setTimeout(() => {
-                if (peer?.connected) {
+                // Wait for both the WebRTC peer connection AND the Calls WS register
+                // (which populates ws.sessionID). Without the sessionID guard, a fast
+                // ICE path (direct host candidate) can beat the WS register and resolve
+                // with an empty sessionID, leaving downstream state (currentCall.mySessionId,
+                // mute toggles) effectively blank. See issue #9709.
+                if (peer?.connected && ws.sessionID) {
                     rtcMonitor?.start();
                     callback(ws.sessionID);
                 } else {

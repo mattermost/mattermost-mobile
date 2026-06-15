@@ -611,4 +611,53 @@ describe('newConnection', () => {
         jest.runAllTimers();
         await expect(res).resolves.toBe('sessionID');
     });
+
+    it('waitForPeerConnection does not resolve with empty sessionID when peer connects before WS register', async () => {
+        // Simulate the race where WebRTC peer connects (e.g. via direct host candidate)
+        // before the Calls WS register completes and populates ws.sessionID.
+        // The promise must NOT resolve with an empty sessionID — it should keep waiting
+        // (and time out if the register never arrives).
+
+        // eslint-disable-next-line
+        // @ts-ignore
+        RTCPeer.mockImplementation(() => {
+            return {
+                getStats: jest.fn(),
+                on: jest.fn(),
+                connected: true,
+            };
+        });
+
+        // eslint-disable-next-line
+        // @ts-ignore
+        WebSocketClient.mockImplementation(() => ({
+            initialize: jest.fn(),
+            on: (event: string, handler: any) => {
+                if (event === 'join') {
+                    handler();
+                }
+            },
+            send: jest.fn(),
+            sessionID: '',
+        }));
+
+        const connection = await newConnection(
+            'http://localhost:8065',
+            'channelID',
+            () => {},
+            () => {},
+            true,
+        );
+        expect(connection).toBeDefined();
+
+        await Promise.resolve();
+
+        jest.useFakeTimers();
+
+        const res = connection.waitForPeerConnection();
+        jest.runAllTimers();
+
+        await expect(res).rejects.toEqual('timed out waiting for peer connection');
+        jest.useRealTimers();
+    });
 });
