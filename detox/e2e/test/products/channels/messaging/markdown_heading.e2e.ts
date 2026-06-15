@@ -58,8 +58,8 @@ describe('Messaging - Markdown Heading', () => {
         // * Verify markdown heading is displayed
         const {post} = await Post.apiGetLastPostInChannel(siteOneUrl, testChannel.id);
         const {postListPostItemHeading} = ChannelScreen.getPostListPostItem(post.id, message);
-        await expect(postListPostItemHeading).toBeVisible(50);
-        await expect(element(by.text(message))).toBeVisible(50);
+        await expect(postListPostItemHeading).toBeVisible();
+        await expect(element(by.text(message))).toBeVisible();
 
         // # Go back to channel list screen
         await ChannelScreen.back();

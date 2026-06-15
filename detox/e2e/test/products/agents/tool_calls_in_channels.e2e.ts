@@ -8,9 +8,7 @@
 // *******************************************************************
 
 import {
-    AgentsPlugin,
     Channel,
-    Plugin,
     Setup,
     Team,
     User,
@@ -24,7 +22,6 @@ import {
 import {
     ChannelListScreen,
     ChannelScreen,
-    CreateDirectMessageScreen,
     HomeScreen,
     LoginScreen,
     ServerScreen,
@@ -106,18 +103,8 @@ describe('Agents - Tool Calls in Channels', () => {
     let testChannel: any;
     let testUser: any;
     let testTeam: any;
-    let agentsEnabled = false;
 
     beforeAll(async () => {
-        // # Ensure agents plugin is installed and active (installs from Marketplace if needed)
-        const pluginStatus = await Plugin.apiEnsurePluginInstalled(siteOneUrl, AgentsPlugin.id);
-        if (!pluginStatus.isActive) {
-            // eslint-disable-next-line no-console
-            console.warn(`Agents plugin (${AgentsPlugin.id}) could not be activated — skipping suite`);
-            return;
-        }
-        agentsEnabled = true;
-
         const {channel, team, user} = await Setup.apiInit(siteOneUrl);
         testChannel = channel;
         testUser = user;
@@ -126,35 +113,19 @@ describe('Agents - Tool Calls in Channels', () => {
         // # Log in to server
         await ServerScreen.connectToServer(serverOneUrl, serverOneDisplayName);
         await LoginScreen.login(user);
-
-        // # Wait for WebSocket to connect and agents status to be fetched
-        await wait(timeouts.FOUR_SEC);
     });
 
     beforeEach(async () => {
-        if (!agentsEnabled) {
-            return;
-        }
-
         // * Verify on channel list screen
         await ChannelListScreen.toBeVisible();
     });
 
     afterAll(async () => {
-        if (!agentsEnabled) {
-            return;
-        }
-
         // # Log out
         await HomeScreen.logout();
     });
 
-    // Skip: requires Agents plugin configured with at least one AI bot on CI server
     it('should display tool call card with tool name for pending tool calls', async () => {
-        if (!agentsEnabled) {
-            return;
-        }
-
         // # Create a tool call with a known name
         const toolCall = makeToolCall({name: 'search_documents'});
 
@@ -182,12 +153,7 @@ describe('Agents - Tool Calls in Channels', () => {
         await ChannelScreen.back();
     });
 
-    // Skip: requires Agents plugin configured with at least one AI bot on CI server
     it('should show Accept and Reject buttons for pending tool calls when user is requester', async () => {
-        if (!agentsEnabled) {
-            return;
-        }
-
         // # Create a pending tool call
         const toolCall = makeToolCall();
 
@@ -212,12 +178,7 @@ describe('Agents - Tool Calls in Channels', () => {
         await ChannelScreen.back();
     });
 
-    // Skip: requires Agents plugin configured with at least one AI bot on CI server
     it('should not show approval buttons when user is not the requester', async () => {
-        if (!agentsEnabled) {
-            return;
-        }
-
         // # Create a second user and add to the test channel
         const {user: otherUser} = await User.apiCreateUser(siteOneUrl, {prefix: 'other'});
         await Team.apiAddUserToTeam(siteOneUrl, otherUser.id, testTeam.id);
@@ -250,12 +211,7 @@ describe('Agents - Tool Calls in Channels', () => {
         await ChannelScreen.back();
     });
 
-    // Skip: requires Agents plugin configured with at least one AI bot on CI server
     it('should display tool calls with success status and results', async () => {
-        if (!agentsEnabled) {
-            return;
-        }
-
         // # Create a successful tool call with a result
         const toolCall = makeToolCall({
             name: 'fetch_data',
@@ -284,12 +240,7 @@ describe('Agents - Tool Calls in Channels', () => {
         await ChannelScreen.back();
     });
 
-    // Skip: requires Agents plugin configured with at least one AI bot on CI server
     it('should display rejected status for rejected tool calls', async () => {
-        if (!agentsEnabled) {
-            return;
-        }
-
         // # Create a rejected tool call
         const toolCall = makeToolCall({
             name: 'dangerous_action',
@@ -321,12 +272,7 @@ describe('Agents - Tool Calls in Channels', () => {
         await ChannelScreen.back();
     });
 
-    // Skip: requires Agents plugin configured with at least one AI bot on CI server
     it('should show Share and Keep Private buttons during result approval phase', async () => {
-        if (!agentsEnabled) {
-            return;
-        }
-
         // # Create a successful tool call (tool has executed)
         const toolCall = makeToolCall({
             name: 'web_search',
@@ -361,12 +307,7 @@ describe('Agents - Tool Calls in Channels', () => {
         await ChannelScreen.back();
     });
 
-    // Skip: requires Agents plugin configured with at least one AI bot on CI server
     it('should display warning callout during result approval phase', async () => {
-        if (!agentsEnabled) {
-            return;
-        }
-
         // # Create a successful tool call with result
         const toolCall = makeToolCall({
             name: 'code_search',
@@ -398,12 +339,7 @@ describe('Agents - Tool Calls in Channels', () => {
         await ChannelScreen.back();
     });
 
-    // Skip: requires Agents plugin configured with at least one AI bot on CI server
     it('should show pending decisions counter for multiple pending tool calls', async () => {
-        if (!agentsEnabled) {
-            return;
-        }
-
         // # Create multiple pending tool calls
         const toolCall1 = makeToolCall({name: 'search_web'});
         const toolCall2 = makeToolCall({name: 'read_file'});
@@ -432,12 +368,7 @@ describe('Agents - Tool Calls in Channels', () => {
         await ChannelScreen.back();
     });
 
-    // Skip: requires Agents plugin configured with at least one AI bot on CI server
     it('should show tool arguments when expanded in a DM channel', async () => {
-        if (!agentsEnabled) {
-            return;
-        }
-
         // # Get admin user info (the server API client is logged in as admin)
         const adminResponse = await client.get(`${siteOneUrl}/api/v4/users/me`);
         const adminUser = adminResponse.data;
@@ -462,15 +393,17 @@ describe('Agents - Tool Calls in Channels', () => {
         await wait(timeouts.TWO_SEC);
         await ChannelListScreen.toBeVisible();
 
-        // # Open create direct message screen and wait for SVG animation to clear
-        await CreateDirectMessageScreen.open();
-        await CreateDirectMessageScreen.toBeVisible();
+        // # Use find channels to navigate to the DM
+        const {headerPlusButton} = ChannelListScreen;
+        await headerPlusButton.tap();
+        await element(by.id('channel_list.header.plus_menu.open_direct_message')).tap();
 
         // # Search for admin user in the DM create screen
-        await CreateDirectMessageScreen.searchInput.typeText(adminUser.username);
+        await waitFor(element(by.id('create_direct_message.search_bar.search.input'))).toBeVisible().withTimeout(timeouts.FOUR_SEC);
+        await element(by.id('create_direct_message.search_bar.search.input')).typeText(adminUser.username);
         await wait(timeouts.ONE_SEC);
-        await CreateDirectMessageScreen.getUserItem(adminUser.id).tap();
-        await CreateDirectMessageScreen.startButton.tap();
+        await element(by.id(`create_direct_message.user_list.user_item.${adminUser.id}`)).tap();
+        await element(by.id('create_direct_message.start.button')).tap();
 
         await wait(timeouts.TWO_SEC);
 
@@ -484,12 +417,7 @@ describe('Agents - Tool Calls in Channels', () => {
         await ChannelScreen.back();
     });
 
-    // Skip: requires Agents plugin configured with at least one AI bot on CI server
     it('should display mix of pending and completed tool calls', async () => {
-        if (!agentsEnabled) {
-            return;
-        }
-
         // # Create a mix of tool calls in different states
         const pendingToolCall = makeToolCall({
             name: 'pending_action',

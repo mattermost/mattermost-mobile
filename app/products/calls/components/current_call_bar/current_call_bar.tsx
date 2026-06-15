@@ -223,7 +223,6 @@ const CurrentCallBar = ({
         <>
             <View style={style.wrapper}>
                 <Pressable
-                    testID='calls.current_call_bar'
                     style={style.container}
                     onPress={goToCallScreen}
                 >
@@ -253,7 +252,6 @@ const CurrentCallBar = ({
                     </View>
                     <View style={style.buttonContainer}>
                         <Pressable
-                            testID='calls.current_call_bar.mute'
                             onPress={muteUnmute}
                             style={[style.pressable, style.micIconContainer, mySession?.muted && style.muted]}
                             disabled={!micPermissionsGranted}
@@ -267,7 +265,6 @@ const CurrentCallBar = ({
                         </Pressable>
                         <View style={style.verticalLine}/>
                         <Pressable
-                            testID='calls.current_call_bar.leave'
                             onPress={leaveCallHandler}
                             style={[style.pressable, style.hangupIconContainer]}
                         >

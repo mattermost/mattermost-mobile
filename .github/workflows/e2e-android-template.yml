@@ -26,7 +26,7 @@ on:
       MOBILE_VERSION:
         description: "The mobile version to test"
         required: false
-        default: ""
+        default: ${{ github.head_ref || github.ref }}
         type: string
       run-android-tests:
         description: "Run Android tests"
@@ -44,33 +44,23 @@ on:
       record_tests_in_zephyr:
         description: "Record test results in Zephyr, typically for nightly and release runs"
         required: false
-        type: boolean
-        default: false
+        type: string
+        default: 'false'
       low_bandwidth_mode:
         description: "Enable low bandwidth mode"
         required: false
         type: boolean
         default: false
-      search_path:
-        description: "Path to search for test specs (use for smoke test subset)"
-        required: false
-        type: string
-        default: "detox/e2e/test"
-      parallelism:
-        description: "Number of parallel test shards"
-        required: false
-        type: string
-        default: "20"
       android_avd_name:
         description: "Android Emulator name"
         required: false
         type: string
-        default: "detox_pixel_8"
+        default: "detox_pixel_4_xl"
       android_api_level:
         description: "Android API level"
         required: false
         type: string
-        default: "35"
+        default: "34"
     outputs:
       STATUS:
         value: ${{ jobs.generate-report.outputs.STATUS }}
@@ -78,22 +68,12 @@ on:
         value: ${{ jobs.generate-report.outputs.TARGET_URL }}
       FAILURES:
         value: ${{ jobs.generate-report.outputs.FAILURES }}
-      PASSES:
-        value: ${{ jobs.generate-report.outputs.PASSES }}
-      TOTAL:
-        value: ${{ jobs.generate-report.outputs.TOTAL }}
-      SKIPPED:
-        value: ${{ jobs.generate-report.outputs.SKIPPED }}
-      ERRORS:
-        value: ${{ jobs.generate-report.outputs.ERRORS }}
-      PERCENTAGE:
-        value: ${{ jobs.generate-report.outputs.PERCENTAGE }}
 
 env:
   AWS_REGION: "us-east-1"
   ADMIN_EMAIL: ${{ secrets.MM_MOBILE_E2E_ADMIN_EMAIL }}
-  ADMIN_USERNAME: ${{ inputs.MM_TEST_USER_NAME || secrets.MM_MOBILE_E2E_ADMIN_USERNAME }}
-  ADMIN_PASSWORD: ${{ inputs.MM_TEST_PASSWORD || secrets.MM_MOBILE_E2E_ADMIN_PASSWORD }}
+  ADMIN_USERNAME: ${{ secrets.MM_MOBILE_E2E_ADMIN_USERNAME }}
+  ADMIN_PASSWORD: ${{ secrets.MM_MOBILE_E2E_ADMIN_PASSWORD }}
   BRANCH: ${{ github.event_name == 'pull_request' && github.head_ref || github.ref_name }}
   COMMIT_HASH: ${{ github.sha }}
   DEVICE_NAME: ${{ inputs.android_avd_name }} # This is needed to split tests as same code is used in iOS job
@@ -149,8 +129,8 @@ jobs:
         id: generate-specs
         uses: ./.github/actions/generate-specs
         with:
-          parallelism: ${{ inputs.parallelism }}
-          search_path: ${{ inputs.search_path }}
+          parallelism: 10
+          search_path: detox/e2e/test
           device_name: ${{ env.AVD_NAME }}
           device_os_version: ${{ env.SDK_VERSION }}
 
@@ -185,15 +165,13 @@ jobs:
           sudo udevadm control --reload-rules
           sudo udevadm trigger --name-match=kvm
 
-      - name: ci/prepare-node-deps
-        uses: ./.github/actions/prepare-node-deps
-
-      - name: Cache detox node_modules
-        uses: actions/cache@5a3ec84eff668545956fd18022155c47e93e2684 # v4.2.3
-        with:
-          path: detox/node_modules
-          key: ${{ runner.os }}-detox-deps-${{ hashFiles('detox/package-lock.json') }}
-          restore-keys: ${{ runner.os }}-detox-deps-
+      - name: Prepare Android Build
+        uses: ./.github/actions/prepare-android-build
+        env:
+          STORE_FILE: "${{ secrets.MM_MOBILE_STORE_FILE }}"
+          STORE_ALIAS: "${{ secrets.MM_MOBILE_STORE_ALIAS }}"
+          STORE_PASSWORD: "${{ secrets.MM_MOBILE_STORE_PASSWORD }}"
+          MATTERMOST_BUILD_GH_TOKEN: "${{ secrets.MATTERMOST_BUILD_GH_TOKEN }}"
 
       - name: Install Detox Dependencies
         run: |
@@ -206,6 +184,9 @@ jobs:
           RUNNING_E2E=true
           EOF
   
+      - name: Create destination path
+        run: mkdir -p android/app/build
+
       - name: Download APK artifact
         uses: actions/download-artifact@v4
         with:
@@ -239,48 +220,20 @@ jobs:
             exit 1
           fi
 
-      # Cache the SDK components themselves. Without this, every shard re-runs
-      # sdkmanager (~2-3 min per shard × 20 shards = 40-60 runner-minutes
-      # per workflow). With cache hit, install step skips entirely.
-      - name: Cache Android SDK components
-        id: android-sdk-cache
-        uses: actions/cache@5a3ec84eff668545956fd18022155c47e93e2684 # v4.2.3
-        with:
-          path: |
-            /usr/local/lib/android/sdk/platform-tools
-            /usr/local/lib/android/sdk/emulator
-            /usr/local/lib/android/sdk/platforms/android-${{ inputs.android_api_level }}
-            /usr/local/lib/android/sdk/system-images/android-${{ inputs.android_api_level }}
-          key: android-sdk-${{ inputs.android_api_level }}-google-apis-x86_64-v1
-
       - name: Install Android SDK components
-        if: steps.android-sdk-cache.outputs.cache-hit != 'true'
         run: |
-          for attempt in 1 2 3; do
-            echo "SDK install attempt $attempt..."
-            if yes | sdkmanager --install "platform-tools" "emulator" "platforms;android-${{ inputs.android_api_level }}" "system-images;android-${{ inputs.android_api_level }};google_apis;x86_64"; then
-              echo "SDK install succeeded on attempt $attempt"
-              break
-            fi
-            echo "Attempt $attempt failed, retrying..."
-            if [ "$attempt" = "3" ]; then
-              echo "SDK install failed after 3 attempts"
-              exit 1
-            fi
-            sleep 10
-          done
+          yes | sdkmanager --install "platform-tools" "emulator" "platforms;android-34" "system-images;android-34;default;x86_64" "system-images;android-34;google_apis;x86_64"
         env:
           JAVA_HOME: ${{ env.JAVA_HOME_17_X64 }}
 
-      # AVD-specific cache (created lazily per shard by create_android_emulator.sh).
-      # Smaller key — only covers ~/.android/avd which doesn't overlap with the
-      # SDK components cache above.
       - name: Cache Android Emulator & AVD
-        uses: actions/cache@5a3ec84eff668545956fd18022155c47e93e2684 # v4.2.3
+        uses: actions/cache@v4
         with:
           path: |
+            /usr/local/lib/android/sdk/system-images
+            /usr/local/lib/android/sdk/emulator
             ~/.android/avd
-          key: android-emulator-${{ runner.os }}-${{ runner.arch }}-api-${{ inputs.android_api_level }}
+          key: android-emulator-${{ runner.os }}-${{ runner.arch }}-api-34
           restore-keys: |
             android-emulator-${{ runner.os }}-${{ runner.arch }}-
 
@@ -288,12 +241,7 @@ jobs:
         run: |
           cd detox
           chmod +x ./create_android_emulator.sh
-          CI=true ./create_android_emulator.sh "$SDK_VERSION" "$AVD_NAME" $MATRIX_SPECS
-        env:
-          MATRIX_SPECS: ${{ matrix.specs }}
-          SITE_1_URL: ${{ env.SITE_1_URL }}
-          SITE_2_URL: ${{ env.SITE_2_URL }}
-          SITE_3_URL: ${{ env.SITE_3_URL }}
+          CI=true ./create_android_emulator.sh ${{ env.SDK_VERSION }} ${{ env.AVD_NAME }} ${{ matrix.specs }}
         continue-on-error: true # We want to run all the tests
 
       - name: Upload Android Test Report
@@ -304,7 +252,6 @@ jobs:
           path: detox/artifacts/
 
   generate-report:
-    if: always()
     runs-on: ubuntu-22.04
     needs:
       - generate-specs
@@ -313,11 +260,6 @@ jobs:
       TARGET_URL: ${{ steps.set-url.outputs.TARGET_URL }}
       STATUS: ${{ steps.determine-status.outputs.STATUS }}
       FAILURES: ${{ steps.summary.outputs.FAILURES }}
-      PASSES: ${{ steps.summary.outputs.PASSES }}
-      TOTAL: ${{ steps.summary.outputs.TOTAL }}
-      SKIPPED: ${{ steps.summary.outputs.SKIPPED }}
-      ERRORS: ${{ steps.summary.outputs.ERRORS }}
-      PERCENTAGE: ${{ steps.summary.outputs.PERCENTAGE }}
     steps:
       - name: Checkout Repository
         uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
@@ -358,22 +300,12 @@ jobs:
       - name: Calculate failures
         id: summary
         run: |
-          if [ -f detox/artifacts/summary.json ]; then
-            echo "FAILURES=$(cat detox/artifacts/summary.json | jq .stats.failures)" >> ${GITHUB_OUTPUT}
-            echo "PASSES=$(cat detox/artifacts/summary.json | jq .stats.passes)" >> ${GITHUB_OUTPUT}
-            echo "SKIPPED=$(cat detox/artifacts/summary.json | jq .stats.skipped)" >> ${GITHUB_OUTPUT}
-            echo "TOTAL=$(cat detox/artifacts/summary.json | jq .stats.tests)" >> ${GITHUB_OUTPUT}
-            echo "ERRORS=$(cat detox/artifacts/summary.json | jq .stats.errors)" >> ${GITHUB_OUTPUT}
-            echo "PERCENTAGE=$(cat detox/artifacts/summary.json | jq .stats.passPercent)" >> ${GITHUB_OUTPUT}
-          else
-            echo "⚠️ No summary.json found — all test machines likely failed before producing results"
-            echo "FAILURES=-1" >> ${GITHUB_OUTPUT}
-            echo "PASSES=0" >> ${GITHUB_OUTPUT}
-            echo "SKIPPED=0" >> ${GITHUB_OUTPUT}
-            echo "TOTAL=0" >> ${GITHUB_OUTPUT}
-            echo "ERRORS=0" >> ${GITHUB_OUTPUT}
-            echo "PERCENTAGE=0" >> ${GITHUB_OUTPUT}
-          fi
+          echo "FAILURES=$(cat detox/artifacts/summary.json | jq .stats.failures)" >> ${GITHUB_OUTPUT}
+          echo "PASSES=$(cat detox/artifacts/summary.json | jq .stats.passes)" >> ${GITHUB_OUTPUT}
+          echo "SKIPPED=$(cat detox/artifacts/summary.json | jq .stats.skipped)" >> ${GITHUB_OUTPUT}
+          echo "TOTAL=$(cat detox/artifacts/summary.json | jq .stats.tests)" >> ${GITHUB_OUTPUT}
+          echo "ERRORS=$(cat detox/artifacts/summary.json | jq .stats.errors)" >> ${GITHUB_OUTPUT}
+          echo "PERCENTAGE=$(cat detox/artifacts/summary.json | jq .stats.passPercent)" >> ${GITHUB_OUTPUT}
 
       - name: Set Target URL
         id: set-url
@@ -382,31 +314,51 @@ jobs:
 
       - name: Determine Status
         id: determine-status
-        env:
-          FAILURES: ${{ steps.summary.outputs.FAILURES }}
-          TESTCASE_FAILURE_FATAL: ${{ inputs.testcase_failure_fatal }}
         run: |
-          if [[ "$FAILURES" == "-1" ]]; then
-            echo "STATUS=failure" >> ${GITHUB_OUTPUT}
-          elif [[ "$FAILURES" -gt 0 && "$TESTCASE_FAILURE_FATAL" == "true" ]]; then
+          if [[ ${{ steps.summary.outputs.failures }} -gt 0 && "${{ inputs.testcase_failure_fatal }}" == "true" ]]; then
             echo "STATUS=failure" >> ${GITHUB_OUTPUT}
           else
             echo "STATUS=success" >> ${GITHUB_OUTPUT}
           fi
 
       - name: Generate Summary
-        env:
-          TOTAL: ${{ steps.summary.outputs.TOTAL }}
-          PASSES: ${{ steps.summary.outputs.PASSES }}
-          FAILURES: ${{ steps.summary.outputs.FAILURES }}
-          SKIPPED: ${{ steps.summary.outputs.SKIPPED }}
-          ERRORS: ${{ steps.summary.outputs.ERRORS }}
-          PERCENTAGE: ${{ steps.summary.outputs.PERCENTAGE }}
-          TARGET_URL: ${{ steps.set-url.outputs.TARGET_URL }}
         run: |
           echo "| Tests | Passed :white_check_mark: | Failed :x: | Skipped :fast_forward: | Errors :warning: | " >> ${GITHUB_STEP_SUMMARY}
           echo "|:---:|:---:|:---:|:---:|:---:|" >> ${GITHUB_STEP_SUMMARY}
-          echo "| ${TOTAL} | ${PASSES} | ${FAILURES} | ${SKIPPED} | ${ERRORS} |" >> ${GITHUB_STEP_SUMMARY}
+          echo "| ${{ steps.summary.outputs.TOTAL }} | ${{ steps.summary.outputs.PASSES }} | ${{ steps.summary.outputs.FAILURES }} | ${{ steps.summary.outputs.SKIPPED }} | ${{ steps.summary.outputs.ERRORS }} |" >> ${GITHUB_STEP_SUMMARY}
           echo "" >> ${GITHUB_STEP_SUMMARY}
-          echo "You can check the full report [here](${TARGET_URL})" >> ${GITHUB_STEP_SUMMARY}
-          echo "There was **${PERCENTAGE}%** success rate." >> ${GITHUB_STEP_SUMMARY}
+          echo "You can check the full report [here](${{ steps.set-url.outputs.TARGET_URL }})" >> ${GITHUB_STEP_SUMMARY}
+          echo "There was **${{ steps.summary.outputs.PERCENTAGE }}%** success rate." >> ${GITHUB_STEP_SUMMARY}
+
+      - name: Comment report on the PR
+        if: ${{ github.event_name == 'pull_request' }}
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const prNumber = context.payload.pull_request.number;
+
+            const commentBody = `**Android E2E Test Report**: ${process.env.MOBILE_SHA} | ${process.env.PERCENTAGE}% (${process.env.PASSES}/${process.env.TOTAL}) | [full report](${process.env.TARGET_URL})
+            | Tests | Passed ✅ | Failed ❌ | Skipped ⏭️ | Errors ⚠️ |
+            |:---:|:---:|:---:|:---:|:---:|
+            | ${process.env.TOTAL} | ${process.env.PASSES} | ${process.env.FAILURES} | ${process.env.SKIPPED} | ${process.env.ERRORS} |
+            `;
+
+            await github.rest.issues.createComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: prNumber,
+              body: commentBody,
+            });
+        env:
+          STATUS: ${{ steps.determine-status.outputs.STATUS }}
+          FAILURES: ${{ steps.summary.outputs.FAILURES }}
+          PASSES: ${{ steps.summary.outputs.PASSES }}
+          SKIPPED: ${{ steps.summary.outputs.SKIPPED }}
+          TOTAL: ${{ steps.summary.outputs.TOTAL }}
+          ERRORS: ${{ steps.summary.outputs.ERRORS }}
+          PERCENTAGE: ${{ steps.summary.outputs.PERCENTAGE }}
+          BUILD_ID: ${{ needs.generate-specs.outputs.build_id }}
+          RUN_TYPE: ${{ inputs.run-type }}
+          MOBILE_REF: ${{ needs.generate-specs.outputs.mobile_ref }}
+          MOBILE_SHA: ${{ needs.generate-specs.outputs.mobile_sha }}
+          TARGET_URL: ${{ steps.set-url.outputs.TARGET_URL }}

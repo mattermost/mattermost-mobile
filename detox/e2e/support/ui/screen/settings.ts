@@ -1,7 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {AccountScreen, NotificationSettingsScreen} from '@support/ui/screen';
+import {AccountScreen} from '@support/ui/screen';
 import {timeouts} from '@support/utils';
 import {expect} from 'detox';
 
@@ -29,7 +29,7 @@ class SettingsScreen {
     reportProblemOption = element(by.id(this.testID.reportProblemOption));
 
     toBeVisible = async () => {
-        await waitFor(this.settingsScreen).toExist().withTimeout(timeouts.HALF_MIN);
+        await waitFor(this.settingsScreen).toExist().withTimeout(timeouts.TEN_SEC);
 
         return this.settingsScreen;
     };
@@ -42,22 +42,8 @@ class SettingsScreen {
     };
 
     close = async () => {
-        try {
-            await waitFor(this.closeButton).toExist().withTimeout(timeouts.TEN_SEC);
-            await this.closeButton.tap();
-            await expect(this.settingsScreen).not.toBeVisible();
-        } catch (error) {
-            // Close button may not exist if the app is in an unexpected state after a prior test failure.
-            // Attempt to navigate back to a known safe state (notification settings → settings → close).
-            try {
-                await NotificationSettingsScreen.back();
-                await waitFor(this.closeButton).toExist().withTimeout(timeouts.TEN_SEC);
-                await this.closeButton.tap();
-                await expect(this.settingsScreen).not.toBeVisible();
-            } catch (secondError) {
-                console.warn('[SettingsScreen.close] Navigation failed after recovery attempt:', secondError); // eslint-disable-line no-console
-            }
-        }
+        await this.closeButton.tap();
+        await expect(this.settingsScreen).not.toBeVisible();
     };
 }
 

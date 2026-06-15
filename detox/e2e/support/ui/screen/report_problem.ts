@@ -2,27 +2,18 @@
 // See LICENSE.txt for license information.
 
 import {SettingsScreen} from '@support/ui/screen';
-import {isIos, tapNativeBackButton, timeouts} from '@support/utils';
+import {timeouts} from '@support/utils';
 
 class ReportProblemScreen {
     testID = {
         reportProblemScreen: 'report_problem.screen',
+        backButton: 'screen.back.button',
         enableLogAttachmentsToggleOff: 'report_problem.enable_log_attachments.toggled.false.button',
         enableLogAttachmentsToggleOn: 'report_problem.enable_log_attachments.toggled.true.button',
     };
 
     reportProblemScreen = element(by.id(this.testID.reportProblemScreen));
-
-    // expo-router native stack screen — the custom NavigationHeader's
-    // 'navigation.header.back' testID is not rendered here. iOS uses
-    // `accessibilityLabel="Back"`, Android uses the Toolbar's default
-    // navigation-icon contentDescription "Navigate up".
-    get backButton(): Detox.NativeElement {
-        return isIos()
-            ? element(by.label('Back')).atIndex(0)
-            : element(by.label('Navigate up')).atIndex(0);
-    }
-
+    backButton = element(by.id(this.testID.backButton));
     enableLogAttachmentsToggleOff = element(by.id(this.testID.enableLogAttachmentsToggleOff));
     enableLogAttachmentsToggleOn = element(by.id(this.testID.enableLogAttachmentsToggleOn));
 
@@ -39,10 +30,7 @@ class ReportProblemScreen {
     };
 
     back = async () => {
-        // Use platform-native back chevron: Android via device.pressBack(),
-        // iOS via by.label('Back'). The custom NavigationHeader's testID
-        // does not exist on this screen (expo-router native stack).
-        await tapNativeBackButton();
+        await this.backButton.tap();
         await waitFor(this.reportProblemScreen).not.toBeVisible().withTimeout(timeouts.TEN_SEC);
     };
 

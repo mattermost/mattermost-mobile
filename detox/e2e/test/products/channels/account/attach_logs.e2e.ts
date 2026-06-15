@@ -98,17 +98,15 @@ describe('Account - Attach App Logs', () => {
         const attachmentAction = element(by.id('channel.post_draft.quick_actions.attachment_action'));
         await attachmentAction.tap();
 
-        // * Wait for the attachment options bottom sheet to appear. The generic
-        // bottom sheet wrapper has no testID, so detect it via the always-present
-        // photo library item (same approach as channel_post_list.e2e.ts).
-        const photoLibraryOption = element(by.id('file_attachment.photo_library'));
-        await waitFor(photoLibraryOption).toExist().withTimeout(timeouts.TEN_SEC);
+        // * Wait for the attachment options bottom sheet to appear
+        const attachmentScreen = element(by.id('channel.post_draft.quick_actions.attachment_action.screen'));
+        await waitFor(attachmentScreen).toExist().withTimeout(timeouts.TEN_SEC);
 
         // * Verify "Attach app logs" option is visible in the bottom sheet
         await expect(element(by.id('file_attachment.attach_logs'))).toExist();
 
         // # Close the attachment options bottom sheet
-        await photoLibraryOption.swipe('down', 'fast', 0.5);
+        await attachmentScreen.swipe('down', 'fast', 0.5);
 
         // # Go back to channel list
         await ChannelScreen.back();
@@ -133,31 +131,30 @@ describe('Account - Attach App Logs', () => {
         const attachmentAction = element(by.id('channel.post_draft.quick_actions.attachment_action'));
         await attachmentAction.tap();
 
-        // * Wait for the attachment options bottom sheet to appear (no wrapper
-        // testID — detect via the always-present photo library item)
-        const photoLibraryOption = element(by.id('file_attachment.photo_library'));
-        await waitFor(photoLibraryOption).toExist().withTimeout(timeouts.TEN_SEC);
+        // * Wait for the attachment options bottom sheet to appear
+        const attachmentScreen = element(by.id('channel.post_draft.quick_actions.attachment_action.screen'));
+        await waitFor(attachmentScreen).toExist().withTimeout(timeouts.TEN_SEC);
 
         // * Verify "Attach app logs" option is NOT visible
         await expect(element(by.id('file_attachment.attach_logs'))).not.toExist();
 
         // * Verify other attachment options are still present
+        await expect(element(by.id('file_attachment.photo_library'))).toExist();
         await expect(element(by.id('file_attachment.attach_file'))).toExist();
 
         // # Close the attachment options bottom sheet
-        await photoLibraryOption.swipe('down', 'fast', 0.5);
+        await attachmentScreen.swipe('down', 'fast', 0.5);
 
         // # Go back to channel list
         await ChannelScreen.back();
     });
 
     it('MM-T67856_4 - should not show attach logs toggle when AllowDownloadLogs is disabled', async () => {
-        // # Disable AllowDownloadLogs and switch ReportAProblemType to 'link'.
+        // # Disable AllowDownloadLogs and reload so the client re-fetches the
+        //   updated config on startup
         await System.apiUpdateConfig(siteOneUrl, {
             SupportSettings: {
                 AllowDownloadLogs: false,
-                ReportAProblemType: 'link',
-                ReportAProblemLink: 'https://mattermost.com',
             },
         });
         await device.reloadReactNative();
@@ -176,12 +173,11 @@ describe('Account - Attach App Logs', () => {
             await ReportProblemScreen.back();
             await SettingsScreen.close();
         } finally {
-            // # Restore the provisioned config for subsequent test suites even if
+            // # Restore AllowDownloadLogs for subsequent test suites even if
             //   an assertion or interaction above fails
             await System.apiUpdateConfig(siteOneUrl, {
                 SupportSettings: {
                     AllowDownloadLogs: true,
-                    ReportAProblemType: 'default',
                 },
             });
         }

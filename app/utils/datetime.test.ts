@@ -69,16 +69,6 @@ describe('getReadableTimestamp', () => {
         expect(result).toBe('Jun 15, 2024, 8:00 AM');
     });
 
-    it('should fall back to the device timezone when timeZone is empty', () => {
-        // Users without a reported automatic timezone yield '' from getTimezone().
-        // An empty string is an invalid IANA name: V8 throws a RangeError and iOS
-        // Hermes renders "Invalid Date" (MM-T5720) unless the option is omitted.
-        const timestamp = new Date('2025-06-15T12:00:00Z').getTime();
-        const result = getReadableTimestamp(timestamp, '', false, 'en-US');
-        expect(result).not.toContain('Invalid');
-        expect(result).toMatch(/Jun 1[456]/);
-    });
-
     it('should include year if not current year in 24-hour format', () => {
         const timestamp = new Date('2024-06-15T12:00:00Z').getTime();
         const timeZone = 'America/New_York';

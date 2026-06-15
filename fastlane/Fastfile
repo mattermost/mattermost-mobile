@@ -469,10 +469,9 @@ platform :ios do
     UI.message("Building for #{build_arch} architecture on #{host_arch} host")
 
     build_ios_unsigned_or_simulator(
-      more_xc_args: "-sdk iphonesimulator -destination 'generic/platform=iOS Simulator'",
+      more_xc_args: "-sdk iphonesimulator -arch #{build_arch}",
       rel_build_dir: "Release-iphonesimulator",
       output_file: output_file,
-      ci_optimized: true,
     )
   end
 
@@ -791,7 +790,7 @@ platform :ios do
     )
   end
 
-  def build_ios_unsigned_or_simulator(more_xc_args:, rel_build_dir:, output_file:, ci_optimized: false)
+  def build_ios_unsigned_or_simulator(more_xc_args:, rel_build_dir:, output_file:)
     root_dir = Dir[File.expand_path('..')].first
     ios_build_dir = "#{root_dir}/ios/Build/Products"
 
@@ -803,12 +802,8 @@ platform :ios do
     update_settings
     replace_assets
 
-    unless ci_optimized
-      sh "rm -rf #{ios_build_dir}/"
-    end
-
-    ci_flags = ci_optimized ? " COMPILER_INDEX_STORE_ENABLE=NO DEBUG_INFORMATION_FORMAT=dwarf" : ""
-    sh "cd #{root_dir}/ios && xcodebuild -workspace Mattermost.xcworkspace -scheme Mattermost -configuration Release -parallelizeTargets CODE_SIGN_IDENTITY='' CODE_SIGNING_REQUIRED=NO SYMROOT='#{ios_build_dir}' #{more_xc_args}#{ci_flags}"
+    sh "rm -rf #{ios_build_dir}/"
+    sh "cd #{root_dir}/ios && xcodebuild -workspace Mattermost.xcworkspace -scheme Mattermost -configuration Release -parallelizeTargets CODE_SIGN_IDENTITY='' CODE_SIGNING_REQUIRED=NO SYMROOT='#{ios_build_dir}' #{more_xc_args} "
     sh "cd #{ios_build_dir}/#{rel_build_dir} && zip -r #{output_file} Mattermost.app"
     sh "mv #{ios_build_dir}/#{rel_build_dir}/#{output_file} #{root_dir}"
   end

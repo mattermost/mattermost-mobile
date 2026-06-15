@@ -2,13 +2,13 @@
 // See LICENSE.txt for license information.
 
 import {DisplaySettingsScreen} from '@support/ui/screen';
-import {tapNativeBackButton, timeouts} from '@support/utils';
+import {timeouts} from '@support/utils';
 import {expect} from 'detox';
 
 class ThemeDisplaySettingsScreen {
     testID = {
         themeDisplaySettingsScreen: 'theme_display_settings.screen',
-        backButton: 'navigation.header.back',
+        backButton: 'screen.back.button',
         scrollView: 'theme_display_settings.scroll_view',
         denimOption: 'theme_display_settings.denim.option',
         denimOptionSelected: 'theme_display_settings.denim.option.selected',
@@ -54,8 +54,7 @@ class ThemeDisplaySettingsScreen {
     };
 
     back = async () => {
-        // Native expo-router stack header — no testID on the back chevron.
-        await tapNativeBackButton();
+        await this.backButton.tap();
         await expect(this.themeDisplaySettingsScreen).not.toBeVisible();
     };
 }

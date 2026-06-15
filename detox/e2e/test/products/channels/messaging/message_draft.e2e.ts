@@ -24,7 +24,7 @@ import {
     ServerScreen,
     ThreadScreen,
 } from '@support/ui/screen';
-import {getRandomId, isIos, timeouts, wait} from '@support/utils';
+import {getRandomId, isIos} from '@support/utils';
 import {expect} from 'detox';
 
 describe('Messaging - Message Draft', () => {
@@ -102,18 +102,9 @@ describe('Messaging - Message Draft', () => {
             await expect(ChannelScreen.postInput).toHaveText(message);
         }
 
-        // # Go back to channel list, then fully close and re-open the app.
-        // Note: device.sendToHome() + launchApp({newInstance:false}) is unreliable on iOS 26 —
-        // Detox's waitForBackground handshake does not complete, so the test hangs for 240s.
-        // launchApp({newInstance:true}) starts a fresh process; the user session and the
-        // saved draft both persist in the local DB, which is what this test verifies.
-        await ChannelScreen.back();
-        await device.launchApp({newInstance: true});
-        await wait(timeouts.ONE_SEC);
-
-        // # Re-open the channel after relaunch
-        await ChannelListScreen.toBeVisible();
-        await ChannelScreen.open(channelsCategory, testChannel.name);
+        // # Send app to home and re-open
+        await device.sendToHome();
+        await device.launchApp({newInstance: false});
 
         // * Verify message draft still exists in post draft
         if (isIos()) {

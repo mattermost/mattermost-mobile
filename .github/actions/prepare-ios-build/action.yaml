@@ -13,89 +13,10 @@ inputs:
 runs:
   using: composite
   steps:
-    - name: ci/select-xcode-26
-      shell: bash
-      run: |
-        CURRENT_SDK=$(xcrun --sdk iphonesimulator --show-sdk-version 2>/dev/null || echo "0")
-        CURRENT_MAJOR="${CURRENT_SDK%%.*}"
-        echo "Default Xcode SDK version: ${CURRENT_SDK}"
-
-        if [ "$CURRENT_MAJOR" -ge 26 ]; then
-          echo "Default Xcode ($CURRENT_SDK) meets 26.x requirement; nothing to do."
-          exit 0
-        fi
-
-        # Find the highest pre-installed Xcode 26+ app.
-        XCODE_26=$(ls -d /Applications/Xcode_2[6-9]*.app 2>/dev/null | sort -V | tail -1)
-        if [ -z "$XCODE_26" ]; then
-          echo "::error::No Xcode 26+ found pre-installed on this runner and default is $CURRENT_SDK."
-          exit 1
-        fi
-
-        echo "Switching Xcode from default ($CURRENT_SDK) to ${XCODE_26##*/}"
-        sudo xcode-select -s "$XCODE_26"
-        NEW_SDK=$(xcrun --sdk iphonesimulator --show-sdk-version)
-        echo "Now using Xcode SDK version: ${NEW_SDK}"
-
-    - name: ci/ensure-ios-platform-installed
-      # The macos-26 runner image ships Xcode with iOS SDK headers but
-      # does not always pre-download the matching iOS Simulator runtime.
-      # Without it, xcodebuild fails with:
-      #   "Ineligible destinations ... error:iOS X.Y is not installed."
-      #
-      # We derive the required iOS version dynamically from the active
-      # Xcode (via xcrun --show-sdk-version) instead of hardcoding it,
-      # so this stays in sync whether the runner default changes or
-      # someone sets DEVELOPER_DIR / xcode-select.
-      shell: bash
-      run: |
-        # Derive the required iOS Simulator runtime version from the active
-        # Xcode.  This keeps the check in sync with whatever Xcode is
-        # selected (default, xcode-select, or DEVELOPER_DIR).
-        REQUIRED_IOS_RUNTIME=$(xcrun --sdk iphonesimulator --show-sdk-version)
-        echo "Active Xcode expects iOS Simulator runtime: ${REQUIRED_IOS_RUNTIME}"
-
-        # Wait up to 60s for CoreSimulator service to come up so the queries
-        # below are reliable. Fresh macos-26 runners can lag past job start.
-        for waited in 0 5 10 15 20 30 45 60; do
-          if xcrun simctl list runtimes >/dev/null 2>&1; then break; fi
-          echo "Waiting ${waited}s for CoreSimulator service..."
-          sleep 5
-        done
-
-        # No-op only when the EXACT required iOS runtime is already installed.
-        # Trailing space in pattern distinguishes "iOS X.Y" from "iOS X.YZ".
-        if xcrun simctl list runtimes 2>/dev/null | grep -qE "iOS ${REQUIRED_IOS_RUNTIME}( |$)"; then
-          echo "iOS ${REQUIRED_IOS_RUNTIME} Simulator runtime already installed; skipping -downloadPlatform."
-          exit 0
-        fi
-
-        echo "iOS ${REQUIRED_IOS_RUNTIME} Simulator runtime not installed. Currently installed runtimes:"
-        xcrun simctl list runtimes 2>/dev/null | grep -E "^iOS " || echo "(none)"
-
-        # Otherwise download with retry; daemon races still possible.
-        for attempt in 1 2 3; do
-          echo "xcodebuild -downloadPlatform iOS (attempt $attempt/3)..."
-          if xcodebuild -downloadPlatform iOS; then
-            echo "Download command succeeded. Installed iOS runtimes:"
-            xcrun simctl list runtimes 2>/dev/null | grep -E "^iOS " || echo "(none)"
-            # xcodebuild -downloadPlatform iOS can exit 0 while installing a
-            # different iOS major (it follows Xcode's bundled SDK, which
-            # occasionally lags). Re-run the exact version check so we fail
-            # loudly here instead of in later steps with the opaque
-            # "Ineligible destinations" error.
-            if xcrun simctl list runtimes 2>/dev/null | grep -qE "iOS ${REQUIRED_IOS_RUNTIME}( |$)"; then
-              echo "iOS ${REQUIRED_IOS_RUNTIME} runtime now installed."
-              exit 0
-            fi
-            echo "::error::xcodebuild -downloadPlatform iOS succeeded but iOS ${REQUIRED_IOS_RUNTIME} is still not present."
-            exit 1
-          fi
-          echo "Attempt $attempt failed; retrying in 30s..."
-          sleep 30
-        done
-        echo "::error::xcodebuild -downloadPlatform iOS failed after 3 attempts."
-        exit 1
+    - name: ci/setup-xcode
+      uses: maxim-lobanov/setup-xcode@60606e260d2fc5762a71e64e74b2174e8ea3c8bd # v1.6.0
+      with:
+        xcode-version: '26.1'
 
     - name: ci/prepare-mobile-build
       uses: ./.github/actions/prepare-mobile-build
@@ -124,9 +45,9 @@ runs:
         path: |
           ios/Pods
           libraries/@mattermost/intune/ios/Frameworks
-        key: ${{ runner.os }}-pods-v4-intune-${{ inputs.intune-enabled }}-${{ steps.intune-hash.outputs.hash }}-${{ hashFiles('ios/Podfile.lock') }}
+        key: ${{ runner.os }}-pods-v4-intune-${{ inputs.intune-enabled }}-${{ steps.intune-hash.outputs.hash }}-${{ hashFiles('ios/Podfile.lock') }}-${{ github.ref_name }}
         restore-keys: |
-          ${{ runner.os }}-pods-v4-intune-${{ inputs.intune-enabled }}-${{ steps.intune-hash.outputs.hash }}-
+          ${{ runner.os }}-pods-v4-intune-${{ inputs.intune-enabled }}-${{ steps.intune-hash.outputs.hash }}-${{ hashFiles('ios/Podfile.lock') }}-
 
     - name: ci/install-pods-dependencies
       shell: bash

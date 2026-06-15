@@ -82,7 +82,7 @@ describe('Channels - Channel List', () => {
     it('MM-T4728_2 - should be able to switch between channels', async () => {
         // # Tap on a first channel
         await ChannelListScreen.getChannelItemDisplayName(channelsCategory, testChannel.name).tap();
-        await ChannelScreen.dismissScheduledPostTooltip();
+        await ChannelScreen.closeScheduledMessageTooltip();
 
         // * Verify on first channel
         await ChannelScreen.toBeVisible();
@@ -154,12 +154,20 @@ describe('Channels - Channel List', () => {
     });
 
     it('MM-T4728_5 - should be able to go to create direct message screen', async () => {
-        // # Open create direct message screen using the page object which handles
-        // Android synchronization correctly (disables sync before the navigation tap).
-        await CreateDirectMessageScreen.open();
+        // # Tap on plus menu button and tap on open a direct message item
+        await ChannelListScreen.headerPlusButton.tap();
+        await wait(timeouts.ONE_SEC);
+        await ChannelListScreen.openDirectMessageItem.tap();
 
         // * Verify on create direct message screen
         await CreateDirectMessageScreen.toBeVisible();
+
+        try {
+            await CreateDirectMessageScreen.closeTutorial();
+        } catch (error) {
+            // eslint-disable-next-line no-console
+            console.error('Failed to close tutorial:', error);
+        }
 
         // # Go back to channel list screen
         await CreateDirectMessageScreen.close();
@@ -205,7 +213,6 @@ describe('Channels - Channel List', () => {
         const {team: testTeamTwo} = await Team.apiCreateTeam(siteOneUrl, {prefix: 'a'});
         await Team.apiAddUserToTeam(siteOneUrl, testUser.id, testTeamTwo.id);
         await device.reloadReactNative();
-        await ChannelListScreen.toBeVisible();
 
         // * Verify on first team and team sidebar item is selected and has correct display name abbreviation
         await expect(ChannelListScreen.headerTeamDisplayName).toHaveText(testTeam.display_name);

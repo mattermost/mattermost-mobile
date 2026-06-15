@@ -25,8 +25,8 @@ import {
     LoginScreen,
     ServerScreen,
 } from '@support/ui/screen';
-import {isAndroid, timeouts, wait} from '@support/utils';
-import {expect, waitFor} from 'detox';
+import {timeouts, wait} from '@support/utils';
+import {expect} from 'detox';
 
 describe('Channels - Create Direct Message', () => {
     const serverOneDisplayName = 'Server 1';
@@ -92,7 +92,8 @@ describe('Channels - Create Direct Message', () => {
 
         // # Tap on start button
         await CreateDirectMessageScreen.startButton.tap();
-        await ChannelScreen.dismissScheduledPostTooltip();
+        await waitFor(ChannelScreen.scheduledPostTooltipCloseButton).toBeVisible().withTimeout(timeouts.TEN_SEC);
+        await ChannelScreen.scheduledPostTooltipCloseButton.tap();
 
         // * Verify on direct message channel screen for the new user
         await ChannelScreen.toBeVisible();
@@ -164,15 +165,8 @@ describe('Channels - Create Direct Message', () => {
         await wait(timeouts.ONE_SEC);
 
         // * Verify empty search state for create direct message
-        // On Android edge-to-edge the empty-state text can render with <50% visible area
-        // due to system bar insets. Use toExist() on Android to bypass the threshold check.
-        if (isAndroid()) {
-            await waitFor(element(by.text(`No matches found for “${searchTerm}”`))).toExist().withTimeout(timeouts.HALF_MIN);
-            await waitFor(element(by.text('Check the spelling or try another search.'))).toExist().withTimeout(timeouts.HALF_MIN);
-        } else {
-            await expect(element(by.text(`No matches found for “${searchTerm}”`))).toBeVisible();
-            await expect(element(by.text('Check the spelling or try another search.'))).toBeVisible();
-        }
+        await expect(element(by.text(`No matches found for “${searchTerm}”`))).toBeVisible();
+        await expect(element(by.text('Check the spelling or try another search.'))).toBeVisible();
 
         // # Go back to channel list screen
         await CreateDirectMessageScreen.close();

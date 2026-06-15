@@ -1,6 +1,6 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
-/* eslint-disable no-console, no-process-env */
+/* eslint-disable no-console */
 
 const os = require('os');
 const path = require('path');
@@ -54,7 +54,7 @@ function getSimulators() {
     return simulators;
 }
 
-function disablePasswordAutofill(udid) {
+function disablePasswordAutofill(udid, simulator) {
     const settingsDir = path.join(
         os.homedir(),
         'Library/Developer/CoreSimulator/Devices',
@@ -62,11 +62,6 @@ function disablePasswordAutofill(udid) {
         'data/Containers/Shared/SystemGroup/systemgroup.com.apple.configurationprofiles/Library/ConfigurationProfiles',
     );
     const settingsPlist = path.join(settingsDir, 'UserSettings.plist');
-
-    // EffectiveUserSettings.plist is the merged/computed version iOS reads at runtime.
-    // Both files must be updated — UserSettings is the source, EffectiveUserSettings
-    // is what CoreRestrictions actually enforces.
-    const effectivePlist = path.join(settingsDir, 'EffectiveUserSettings.plist');
 
     console.log(`\nDisabling password autofill for simulator ${udid}...`);
 
@@ -86,29 +81,43 @@ function disablePasswordAutofill(udid) {
         }
     }
 
-    // Keys that actually exist in the iOS 26.2 UserSettings.plist and are
-    // recognized by CoreRestrictions. Verified by inspecting the plist on an
-    // iOS 26.2 simulator — only keys present in the system-initialized plist
-    // are honoured; unknown keys are silently ignored by iOS.
-    //
-    // NOTE: allowPasswordAutoFill=NO disables the AutoFill KEYBOARD TOOLBAR
-    // (the bar above the keyboard that suggests saved passwords). It does NOT
-    // prevent the "Save Password?" modal sheet shown by the Passwords.app
-    // credential provider on iOS 18+. That modal is handled separately via
-    // `xcrun simctl spawn defaults write com.apple.Passwords` in the workflow
-    // and by dismissing it in the test login flow after the channel list loads.
+    // Define all keys to set
     const keysToSet = [
         {
             path: 'restrictedBool.allowPasswordAutoFill.value',
             type: 'bool',
             value: 'NO',
-            description: 'allowPasswordAutoFill (disables keyboard autofill bar)',
+            description: 'allowPasswordAutoFill',
         },
         {
-            path: 'restrictedBool.allowCloudKeychainSync.value',
+            path: 'restrictedBool.allowPasswordAutoFillWithStrongPassword.value',
             type: 'bool',
             value: 'NO',
-            description: 'allowCloudKeychainSync (prevents iCloud Keychain sync)',
+            description: 'allowPasswordAutoFillWithStrongPassword (iOS 26+)',
+        },
+        {
+            path: 'restrictedBool.forceDisablePasswordAutoFill.value',
+            type: 'bool',
+            value: 'YES',
+            description: 'forceDisablePasswordAutoFill',
+        },
+        {
+            path: 'restrictedBool.allowiCloudKeychain.value',
+            type: 'bool',
+            value: 'NO',
+            description: 'allowiCloudKeychain',
+        },
+        {
+            path: 'restrictedValue.passwordAutoFillPasswords.value',
+            type: 'integer',
+            value: '0',
+            description: 'passwordAutoFillPasswords',
+        },
+        {
+            path: 'restrictedValue.allowAutoFillAuthenticationUI.value',
+            type: 'integer',
+            value: '0',
+            description: 'allowAutoFillAuthenticationUI',
         },
     ];
 
@@ -224,45 +233,31 @@ function disablePasswordAutofill(udid) {
 
     if (successCount === keysToSet.length) {
         console.log(`✅ Password autofill disabled successfully (${keysToSet.length} restriction keys set)`);
+        return true;
     } else if (successCount > 0) {
         console.log(`⚠️  Partially successful: ${successCount}/${keysToSet.length} keys set`);
-    } else {
-        console.error('⚠️  Failed to disable password autofill');
+
+        // Check if this is iOS 26+
+        const isIOS26Plus = simulator && simulator.os &&
+                            parseFloat(simulator.os.replace('iOS ', '')) >= 26;
+
+        if (isIOS26Plus) {
+            console.error('⚠️  CRITICAL: iOS 26+ requires ALL 6 keys to fully disable password autofill');
+            console.error('    Missing keys may allow "Strong Password" or iCloud Keychain prompts');
+        }
+
         return false;
     }
-
-    // Mirror the same keys to EffectiveUserSettings.plist — iOS reads the effective
-    // settings at runtime, not the source UserSettings.plist directly.
-    // All inputs (effectivePlist, key.path, key.type, key.value) are internal
-    // constants — no user-controlled data is interpolated.
-    if (shell.test('-f', effectivePlist)) {
-        console.log('\nMirroring keys to EffectiveUserSettings.plist...');
-        for (const key of keysToSet) {
-            const checkValue = shell.exec(
-                `plutil -extract ${key.path} xml1 -o - "${effectivePlist}" 2>/dev/null`,
-                {silent: true},
-            );
-            const cmd = checkValue.code === 0 ? 'replace' : 'insert';
-            const mirrorResult = shell.exec(
-                `plutil -${cmd} ${key.path} -${key.type} ${key.value} "${effectivePlist}"`,
-                {silent: true},
-            );
-            if (mirrorResult.code !== 0) {
-                console.log(`  ⚠️  Failed to mirror ${key.description} to EffectiveUserSettings.plist`);
-            }
-        }
-    }
-
-    return successCount > 0;
+    console.error('⚠️  Failed to disable password autofill');
+    return false;
 
 }
 
 async function main() {
     console.log('iOS Simulator - Disable Password Autofill\n');
-    console.log('This tool sets MDM restriction keys in UserSettings.plist to disable');
-    console.log('the AutoFill keyboard toolbar on iOS simulators.');
-    console.log('NOTE: This does NOT prevent the "Save Password?" modal on iOS 18+.');
-    console.log('That modal is handled via xcrun simctl spawn defaults write in CI.\n');
+    console.log('This tool disables password autofill on iOS simulators,');
+    console.log('which can interfere with Detox E2E test login flows.');
+    console.log('Sets 6 iOS restriction keys to fully disable autofill prompts.\n');
 
     // Check if running on macOS
     if (process.platform !== 'darwin') {
@@ -299,21 +294,15 @@ async function main() {
         console.log(`Target: ${selectedSimulator.name} (${selectedSimulator.os})`);
         console.log(`Using simulator: ${selectedSimulator.name} (${selectedSimulator.os})`);
     } else {
-        // Automatically select simulator using env-configurable device name and OS prefix.
-        // Priority: IOS_SIMULATOR_DEVICE > DEVICE_NAME > hardcoded default (and same for OS).
-        const defaultDeviceName = process.env.IOS_SIMULATOR_DEVICE || process.env.DEVICE_NAME || 'iPhone 17 Pro';
-        const defaultOsPrefix = process.env.IOS_SIMULATOR_OS_PREFIX || process.env.DEVICE_OS_VERSION || 'iOS 26.';
+        // Automatically select iPhone 17 Pro with iOS 26.2
         selectedSimulator = simulators.find((sim) =>
-            sim.name === defaultDeviceName &&
-            sim.os.startsWith(defaultOsPrefix),
+            sim.name === 'iPhone 17 Pro' &&
+            sim.os === 'iOS 26.2',
         );
 
         if (!selectedSimulator) {
-            // Append "x" only when the prefix is a major-version wildcard (ends with "."),
-            // e.g. "iOS 26." → "iOS 26.x"; a full version like "iOS 26.2" is shown as-is.
-            const osDisplay = defaultOsPrefix.endsWith('.') ? `${defaultOsPrefix}x` : defaultOsPrefix;
-            console.error(`Error: No ${defaultDeviceName} running ${osDisplay} found`);
-            console.error(`Please create a ${defaultDeviceName} simulator with ${osDisplay} in Xcode first.`);
+            console.error('Error: iPhone 17 Pro (iOS 26.2) simulator not found');
+            console.error('Please create this simulator in Xcode first.');
             console.error('\nAvailable simulators:');
             simulators.forEach((sim) => {
                 const stateIndicator = sim.state === 'Booted' ? '🟢' : '⚪';
@@ -327,7 +316,7 @@ async function main() {
     }
 
     // Apply the setting
-    const success = disablePasswordAutofill(selectedSimulator.udid);
+    const success = disablePasswordAutofill(selectedSimulator.udid, selectedSimulator);
 
     process.exit(success ? 0 : 1);
 }

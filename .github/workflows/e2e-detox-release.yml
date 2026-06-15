@@ -13,7 +13,7 @@ on:
         type: string
 
 env:
-  INTUNE_ENABLED: 'false'
+  INTUNE_ENABLED: 'true'
 
 jobs:
   update-initial-status-ios:
@@ -100,7 +100,7 @@ jobs:
         run: sudo apt-get clean && sudo apt-get update && sudo apt-get install -y default-jdk
 
       - name: Cache Gradle dependencies
-        uses: actions/cache@5a3ec84eff668545956fd18022155c47e93e2684 # v4.2.3
+        uses: actions/cache@v4
         with:
           path: ~/.gradle/caches/modules-2/
           key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
@@ -126,7 +126,7 @@ jobs:
       - build-ios-simulator
     with:
       run-type: "RELEASE"
-      record_tests_in_zephyr: true
+      record_tests_in_zephyr: 'true'
       MOBILE_VERSION: ${{ github.ref }}
     secrets: inherit
 
@@ -138,23 +138,8 @@ jobs:
     with:
       run-android-tests: true
       run-type: "RELEASE"
-      record_tests_in_zephyr: true
+      record_tests_in_zephyr: 'true'
       MOBILE_VERSION: ${{ github.ref }}
-    secrets: inherit
-
-  run-ios-ipad-tests-on-release:
-    name: iPad Tests on Release
-    needs:
-      - build-ios-simulator
-    uses: ./.github/workflows/e2e-ios-template.yml
-    with:
-      run-type: "RELEASE"
-      MOBILE_VERSION: ${{ github.ref }}
-      ios_device_name: "iPad Pro 13-inch (M5)"
-      ios_device_os_name: "iOS 26.2"
-      search_path: "detox/e2e/test/products/channels/ipad"
-      parallelism: "1"
-      detox_config: "ios.ipad.debug"
     secrets: inherit
 
   update-final-status-ios:

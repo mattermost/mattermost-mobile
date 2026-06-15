@@ -2,29 +2,19 @@
 // See LICENSE.txt for license information.
 
 import {SettingsScreen} from '@support/ui/screen';
-import {isIos, tapNativeBackButton, timeouts} from '@support/utils';
+import {timeouts} from '@support/utils';
+import {expect} from 'detox';
 
 class AdvancedSettingsScreen {
     testID = {
         advancedSettingsScreen: 'advanced_settings.screen',
-        backButton: 'navigation.header.back',
+        backButton: 'screen.back.button',
         scrollView: 'advanced_settings.scroll_view',
         deleteDataOption: 'advanced_settings.delete_data.option',
     };
 
     advancedSettingsScreen = element(by.id(this.testID.advancedSettingsScreen));
-
-    // expo-router native stack screen — the custom NavigationHeader's
-    // `navigation.header.back` testID is NOT rendered on either platform.
-    // iOS surfaces the chevron via `accessibilityLabel="Back"`; Android via
-    // the AppCompat Toolbar's default navigation-icon contentDescription
-    // `Navigate up` (react-native-screens does not override it).
-    get backButton(): Detox.NativeElement {
-        return isIos()
-            ? element(by.label('Back')).atIndex(0)
-            : element(by.label('Navigate up')).atIndex(0);
-    }
-
+    backButton = element(by.id(this.testID.backButton));
     scrollView = element(by.id(this.testID.scrollView));
     deleteDataOption = element(by.id(this.testID.deleteDataOption));
 
@@ -42,11 +32,8 @@ class AdvancedSettingsScreen {
     };
 
     back = async () => {
-        // Use platform-native back chevron: Android via device.pressBack(),
-        // iOS via by.label('Back'). The custom NavigationHeader's testID
-        // does not exist on this screen (expo-router native stack).
-        await tapNativeBackButton();
-        await waitFor(this.advancedSettingsScreen).not.toBeVisible().withTimeout(timeouts.TEN_SEC);
+        await this.backButton.tap();
+        await expect(this.advancedSettingsScreen).not.toBeVisible();
     };
 }
 

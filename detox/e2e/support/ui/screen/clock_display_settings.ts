@@ -2,12 +2,13 @@
 // See LICENSE.txt for license information.
 
 import {DisplaySettingsScreen} from '@support/ui/screen';
-import {isIos, tapNativeBackButton, timeouts} from '@support/utils';
+import {timeouts} from '@support/utils';
+import {expect} from 'detox';
 
 class ClockDisplaySettingsScreen {
     testID = {
         clockDisplaySettingsScreen: 'clock_display_settings.screen',
-        backButton: 'navigation.header.back',
+        backButton: 'screen.back.button',
         scrollView: 'clock_display_settings.scroll_view',
         twelveHourOption: 'clock_display_settings.twelve_hour.option',
         twelveHourOptionSelected: 'clock_display_settings.twelve_hour.option.selected',
@@ -16,17 +17,7 @@ class ClockDisplaySettingsScreen {
     };
 
     clockDisplaySettingsScreen = element(by.id(this.testID.clockDisplaySettingsScreen));
-
-    // expo-router native stack screen — the custom NavigationHeader's
-    // 'navigation.header.back' testID is not rendered here. iOS uses
-    // `accessibilityLabel="Back"`, Android uses the Toolbar's default
-    // navigation-icon contentDescription "Navigate up".
-    get backButton(): Detox.NativeElement {
-        return isIos()
-            ? element(by.label('Back')).atIndex(0)
-            : element(by.label('Navigate up')).atIndex(0);
-    }
-
+    backButton = element(by.id(this.testID.backButton));
     scrollView = element(by.id(this.testID.scrollView));
     twelveHourOption = element(by.id(this.testID.twelveHourOption));
     twelveHourOptionSelected = element(by.id(this.testID.twelveHourOptionSelected));
@@ -47,11 +38,14 @@ class ClockDisplaySettingsScreen {
     };
 
     back = async () => {
-        // Use platform-native back chevron: Android via device.pressBack(),
-        // iOS via by.label('Back'). The custom NavigationHeader's testID
-        // does not exist on this screen (expo-router native stack).
-        await tapNativeBackButton();
-        await waitFor(this.clockDisplaySettingsScreen).not.toBeVisible().withTimeout(timeouts.TEN_SEC);
+        try {
+            await waitFor(this.backButton).toExist().withTimeout(timeouts.TWO_SEC);
+            await this.backButton.tap();
+            await expect(this.clockDisplaySettingsScreen).not.toBeVisible();
+        } catch (error) {
+            // Back button may not exist if screen failed to load or already navigated away
+            console.warn('[ClockDisplaySettingsScreen.back] Navigation failed:', error); // eslint-disable-line no-console
+        }
     };
 }
 

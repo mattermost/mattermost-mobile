@@ -2,12 +2,13 @@
 // See LICENSE.txt for license information.
 
 import {SettingsScreen} from '@support/ui/screen';
-import {isIos, tapNativeBackButton, timeouts} from '@support/utils';
+import {timeouts} from '@support/utils';
+import {expect} from 'detox';
 
 class AboutScreen {
     testID = {
         aboutScreen: 'about.screen',
-        backButton: 'navigation.header.back',
+        backButton: 'screen.back.button',
         scrollView: 'about.scroll_view',
         logo: 'about.logo',
         title: 'about.title',
@@ -40,24 +41,7 @@ class AboutScreen {
     };
 
     aboutScreen = element(by.id(this.testID.aboutScreen));
-
-    // About is an expo-router stack screen (app/routes/(modals)/(settings)/about.tsx
-    // uses `getHeaderOptions(theme)` via useNavigationHeader). The custom
-    // NavigationHeader's `navigation.header.back` testID is NOT rendered here on
-    // either platform — verified by grep: that testID only appears in
-    // `app/components/navigation_header/header.tsx`, which neither About nor any
-    // expo-router native-stack screen uses. The chevron is owned by
-    // @react-navigation/native-stack: iOS surfaces it via
-    // `accessibilityLabel="Back"`, Android via the AppCompat Toolbar's default
-    // navigation-icon contentDescription `Navigate up` (react-native-screens
-    // doesn't override it — confirmed by searching ScreenStackHeaderConfig.kt
-    // for setNavigationContentDescription).
-    get backButton(): Detox.NativeElement {
-        return isIos()
-            ? element(by.label('Back')).atIndex(0)
-            : element(by.label('Navigate up')).atIndex(0);
-    }
-
+    backButton = element(by.id(this.testID.backButton));
     scrollView = element(by.id(this.testID.scrollView));
     logo = element(by.id(this.testID.logo));
     title = element(by.id(this.testID.title));
@@ -102,11 +86,8 @@ class AboutScreen {
     };
 
     back = async () => {
-        // Use platform-native back chevron: Android via device.pressBack(),
-        // iOS via by.label('Back'). The custom NavigationHeader's testID
-        // does not exist on this screen (expo-router native stack).
-        await tapNativeBackButton();
-        await waitFor(this.aboutScreen).not.toBeVisible().withTimeout(timeouts.TEN_SEC);
+        await this.backButton.tap();
+        await expect(this.aboutScreen).not.toBeVisible();
     };
 }
 

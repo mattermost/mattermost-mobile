@@ -91,7 +91,6 @@ const AccountScreen = ({currentUser, enableCustomUserStatuses, showFullName}: Ac
             alwaysBounceVertical={false}
             style={tabletSidebarStyle}
             contentContainerStyle={styles.totalHeight}
-            testID='account.scroll_view'
         >
             <AccountUserInfo
                 user={currentUser}

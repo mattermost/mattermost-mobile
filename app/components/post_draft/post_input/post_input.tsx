@@ -273,6 +273,7 @@ export default function PostInput({
     const handleTextChange = useCallback((newValue: string) => {
         updateValue(newValue);
         lastNativeValue.current = newValue;
+
         checkMessageLength(newValue);
 
         if (

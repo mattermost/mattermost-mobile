@@ -10,7 +10,6 @@
 import {
     Post,
     Setup,
-    System,
 } from '@support/server_api';
 import {
     serverOneUrl,
@@ -38,19 +37,6 @@ describe('Threads - Open Thread in Channel', () => {
     beforeAll(async () => {
         const {channel, user} = await Setup.apiInit(siteOneUrl);
         testChannel = channel;
-
-        // # Enable Collapsed Reply Threads so the global threads UI surfaces
-        // are rendered (ThreadsButton in the channel-list sidebar, follow
-        // button in thread navigation, etc.). Without `always_on` the
-        // `channel_list.threads.button` testID is conditionally removed
-        // (see app/screens/home/channel_list/categories_list/categories_list.tsx
-        // — `threadButtonComponent` returns null when `!isCRTEnabled`).
-        await System.apiUpdateConfig(siteOneUrl, {
-            ServiceSettings: {
-                CollapsedThreads: 'always_on',
-                ThreadAutoFollow: true,
-            },
-        });
 
         // # Log in to server
         await ServerScreen.connectToServer(serverOneUrl, serverOneDisplayName);
@@ -146,12 +132,7 @@ describe('Threads - Open Thread in Channel', () => {
         await ChannelScreen.toBeVisible();
         await ChannelScreen.dismissScheduledPostTooltip();
         const {postListPostItem: channelPostItem} = ChannelScreen.getPostListPostItem(parentPost.id, parentMessage);
-
-        // Use toExist() rather than toBeVisible(): after jumping from a permalink the
-        // post may be partially clipped by the message input bar or keyboard on iOS 26.x,
-        // failing any visibility-percent threshold. The post being in the view hierarchy
-        // is sufficient to confirm the permalink navigation landed correctly.
-        await expect(channelPostItem).toExist();
+        await expect(channelPostItem).toBeVisible();
 
         // # Go back to channel list screen
         await ChannelScreen.back();

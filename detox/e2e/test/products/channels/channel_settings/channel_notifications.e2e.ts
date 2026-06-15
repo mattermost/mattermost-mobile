@@ -14,16 +14,15 @@ import {
 } from '@support/test_config';
 import {
     ChannelInfoScreen,
-    ChannelListScreen,
     ChannelScreen,
-    HomeScreen,
     LoginScreen,
     ServerScreen,
+    HomeScreen,
 } from '@support/ui/screen';
-import {isAndroid, timeouts, wait} from '@support/utils';
+import {timeouts, wait} from '@support/utils';
 import {expect} from 'detox';
 
-describe('Channel Settings - Channel Notifications', () => {
+describe('Channels', () => {
     const serverOneDisplayName = 'Server 1';
     const channelsCategory = 'channels';
     let testUser: any;
@@ -38,46 +37,28 @@ describe('Channel Settings - Channel Notifications', () => {
         await LoginScreen.login(testUser);
     });
 
-    beforeEach(async () => {
-        // * Verify on channel list screen
-        await ChannelListScreen.toBeVisible();
-    });
-
     afterAll(async () => {
         await HomeScreen.logout();
     });
 
-    it('MM-T3119 - should be able to set channel-specific mobile push notification preferences', async () => {
-        // # Open a channel screen and open channel info screen
+    it('MM-T3198 - Channel notifications Mobile Push', async () => {
         await ChannelScreen.open(channelsCategory, testChannel.name);
+
         await ChannelInfoScreen.open();
         await wait(timeouts.ONE_SEC);
 
-        // * Verify notification preference option is visible
         await expect(ChannelInfoScreen.notificationPreferenceOption).toBeVisible();
-
-        // # Tap on notification preference option
         await ChannelInfoScreen.notificationPreferenceOption.tap();
         await wait(timeouts.TWO_SEC);
 
-        // * Verify push notification settings screen is displayed
         const notificationSettingsScreen = element(by.id('push_notification_settings.screen'));
         await expect(notificationSettingsScreen).toBeVisible();
 
-        // # Navigate back to channel info screen
-        // Android: navigation.header.back is the native Toolbar button with no React Native testID;
-        //   use the hardware back key which triggers useAndroidHardwareBackHandler.
-        // iOS 26: UITransitionView glass overlay blocks the 100% visibility threshold required
-        //   to tap navigation.header.back; use swipe-back gesture instead.
-        if (isAndroid()) {
-            await device.pressBack();
-        } else {
-            await element(by.id('push_notification_settings.screen')).swipe('right', 'fast', 0.8, 0.05, 0.5);
-        }
+        const backButton = element(by.id('screen.back.button'));
+        await backButton.tap();
         await wait(timeouts.ONE_SEC);
-        await ChannelInfoScreen.close();
 
-        // # Go back to channel list screen
+        await ChannelInfoScreen.close();
         await ChannelScreen.back();
     });
 });

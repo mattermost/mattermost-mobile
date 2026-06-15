@@ -6,7 +6,7 @@ import {
     ChannelListScreen,
     ThreadOptionsScreen,
 } from '@support/ui/screen';
-import {isAndroid, longPressWithRetry, timeouts, wait, waitForElementToExist} from '@support/utils';
+import {timeouts, wait} from '@support/utils';
 import {expect, waitFor} from 'detox';
 
 class GlobalThreadsScreen {
@@ -61,8 +61,7 @@ class GlobalThreadsScreen {
     };
 
     toBeVisible = async () => {
-        const timeout = isAndroid() ? timeouts.TWENTY_SEC : timeouts.TEN_SEC;
-        await waitForElementToExist(this.globalThreadsScreen, timeout);
+        await waitFor(this.globalThreadsScreen).toExist().withTimeout(timeouts.TEN_SEC);
 
         return this.globalThreadsScreen;
     };
@@ -75,11 +74,6 @@ class GlobalThreadsScreen {
     };
 
     back = async () => {
-        try {
-            await waitForElementToExist(this.globalThreadsScreen, timeouts.ONE_SEC);
-        } catch {
-            return;
-        }
         await this.backButton.tap();
         await waitFor(this.globalThreadsScreen).not.toBeVisible().withTimeout(timeouts.TEN_SEC);
     };
@@ -88,8 +82,9 @@ class GlobalThreadsScreen {
         const threadItem = this.getThreadItem(postId);
         await expect(threadItem).toBeVisible();
 
-        // # Open thread options (with retry — longPress can fail on Android during animations)
-        await longPressWithRetry(threadItem, ThreadOptionsScreen.threadOptionsScreen);
+        // # Open thread options
+        await threadItem.longPress(timeouts.FOUR_SEC);
+        await ThreadOptionsScreen.toBeVisible();
         await wait(timeouts.TWO_SEC);
     };
 }

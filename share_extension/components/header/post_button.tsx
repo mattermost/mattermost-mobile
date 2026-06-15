@@ -63,7 +63,6 @@ const PostButton = ({theme}: Props) => {
             disabled={disabled}
             onPress={onPress}
             hitSlop={hitSlop}
-            testID='share_extension.post.button'
         >
             <View style={[styles.right]}>
                 <CompassIcon

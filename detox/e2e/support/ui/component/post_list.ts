@@ -47,18 +47,12 @@ class PostList {
         return element(by.id(this.testID.threadOverviewNoReplies));
     };
 
-    // .atIndex(0): expo-router's tab-stack persistence can leave a stale ThreadScreen
-    // mounted off-screen (e.g. from a previous tab) while the current one is active.
-    // Both emit `${prefix}.thread_overview.{un,}save.button`, so an unqualified
-    // element(by.id(...)) raises "Multiple elements found" even though only one is
-    // visible. Detox's view-hierarchy traversal returns the active (topmost) screen
-    // first in practice for this app, so atIndex(0) selects the right instance.
     getThreadOverviewSaveButton = () => {
-        return element(by.id(this.testID.threadOverviewSaveButton)).atIndex(0);
+        return element(by.id(this.testID.threadOverviewSaveButton));
     };
 
     getThreadOverviewUnsaveButton = () => {
-        return element(by.id(this.testID.threadOverviewUnsaveButton)).atIndex(0);
+        return element(by.id(this.testID.threadOverviewUnsaveButton));
     };
 
     getThreadOverviewPostOptionsButton = () => {

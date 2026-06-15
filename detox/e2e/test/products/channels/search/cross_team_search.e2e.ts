@@ -11,7 +11,6 @@ import {
     Channel,
     Post,
     Setup,
-    System,
     Team,
 } from '@support/server_api';
 import {
@@ -28,8 +27,8 @@ import {
     ServerScreen,
     TeamDropdownMenuScreen,
 } from '@support/ui/screen';
-import {isAndroid, timeouts, wait, waitForElementToExist} from '@support/utils';
-import {expect, waitFor} from 'detox';
+import {timeouts, wait} from '@support/utils';
+import {expect} from 'detox';
 
 describe('Search - Cross Team Search', () => {
     const serverOneDisplayName = 'Server 1';
@@ -51,38 +50,20 @@ describe('Search - Cross Team Search', () => {
 
         // # Get Off-Topic channel for Rainforest team
         const {channel: offTopicChannelResult} = await Channel.apiGetChannelByName(siteOneUrl, teamRainforest.id, 'off-topic');
-        if (!offTopicChannelResult?.id) {
-            throw new Error("[beforeAll] Failed to get 'off-topic' channel for Rainforest team");
-        }
         offTopicChannel = offTopicChannelResult;
 
         // # Create second team (Team Open) and add user to it
         const {team: testTeamOpen} = await Team.apiCreateTeam(siteOneUrl, {prefix: 'team-open'});
-        if (!testTeamOpen?.id) {
-            throw new Error('[beforeAll] Failed to create Team Open');
-        }
         teamOpen = testTeamOpen;
         await Team.apiAddUserToTeam(siteOneUrl, testUser.id, teamOpen.id);
 
         // # Get Town Square channel for Team Open
         const {channel: townSquareChannelResult} = await Channel.apiGetChannelByName(siteOneUrl, teamOpen.id, 'town-square');
-        if (!townSquareChannelResult?.id) {
-            throw new Error("[beforeAll] Failed to get 'town-square' channel for Team Open");
-        }
         townSquareChannel = townSquareChannelResult;
-
-        // # Enable cross-team search so the "All teams" option appears in the team picker.
-        // The setting lives under ServiceSettings (not SearchSettings) — see
-        // github.com/mattermost/mattermost PR #30518 which moved this from a feature
-        // flag to ServiceSettings.EnableCrossTeamSearch in v10.7.
-        await System.apiUpdateConfig(siteOneUrl, {ServiceSettings: {EnableCrossTeamSearch: true}});
 
         // # Log in to server
         await ServerScreen.connectToServer(serverOneUrl, serverOneDisplayName);
         await LoginScreen.login(testUser);
-
-        // Ensure the channel has propagated to the sidebar before any test body runs.
-        await ChannelListScreen.waitForSidebarPublicChannelDisplayNameVisible(offTopicChannel.name);
     });
 
     beforeEach(async () => {
@@ -164,33 +145,17 @@ describe('Search - Cross Team Search', () => {
         await SearchMessagesScreen.toBeVisible();
         await expect(SearchMessagesScreen.largeHeaderTitle).toHaveText('Search');
 
-        // * i) Verify to the right of "Search Options" is "Team Open" with a drop-down arrow.
-        // The team display name can render multiple times (header + team picker button);
-        // match atIndex(0) — we only need ONE instance to be visible to prove the picker
-        // is on screen.
+        // * i) Verify to the right of "Search Options" is "Team Open" with a drop-down arrow
         await expect(SearchMessagesScreen.searchModifierHeader).toHaveText('Search options');
-        await expect(element(by.text(teamOpen.display_name)).atIndex(0)).toBeVisible();
+        await expect(element(by.text(teamOpen.display_name))).toBeVisible();
 
         // # j) Tap on Team Open with the drop-down arrow, then select All teams
         await SearchMessagesScreen.teamPickerButton.tap();
+        await wait(timeouts.ONE_SEC);
+        await element(by.text('All teams')).tap();
 
-        // On Android edge-to-edge the dropdown item can render with <50% visible area
-        // due to system bar insets. Use polling waitForElementToExist on Android to bypass
-        // both the 50% threshold and bridge-idle synchronization that blocks waitFor().toExist()
-        // when the team picker sheet animation keeps the bridge busy on API 35 CI emulators.
-        if (isAndroid()) {
-            await waitForElementToExist(TeamDropdownMenuScreen.getAllTeamsItem(), timeouts.HALF_MIN);
-        } else {
-            await waitFor(TeamDropdownMenuScreen.getAllTeamsItem()).toBeVisible().withTimeout(timeouts.TEN_SEC);
-        }
-        await TeamDropdownMenuScreen.getAllTeamsItem().tap();
-
-        // * j) Verify the All Teams selection was applied. Tapping the item
-        // calls `dismissBottomSheet()` (see app/screens/home/search/bottom_sheet_team_list.tsx)
-        // so the team picker sheet must be gone. A previous version of this
-        // step waited for `getAllTeamsItem()` to be visible again, which can
-        // never recover — the sheet is dismissed — producing a 10s timeout.
-        await waitFor(TeamDropdownMenuScreen.teamDropdownMenuScreen).not.toExist().withTimeout(timeouts.TEN_SEC);
+        // * j) Verify the selector changed to All teams
+        await expect(element(by.text('All teams'))).toBeVisible();
 
         // # k) In the "Search messages and files" field, type "horses" and press Enter
         await SearchMessagesScreen.searchInput.typeText('horses');
@@ -223,8 +188,7 @@ describe('Search - Cross Team Search', () => {
         await expect(element(by.text('Select a team to search'))).toBeVisible();
 
         // # n) Tap on "All teams" option
-        await waitFor(TeamDropdownMenuScreen.getAllTeamsItem()).toBeVisible().withTimeout(timeouts.TEN_SEC);
-        await TeamDropdownMenuScreen.getAllTeamsItem().tap();
+        await element(by.text('All teams')).tap();
 
         // * n) Verify only two options visible - "exclude search terms" and "messages with phrases"
         await expect(SearchMessagesScreen.searchModifierExclude).toBeVisible();

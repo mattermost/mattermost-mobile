@@ -2,13 +2,13 @@
 // See LICENSE.txt for license information.
 
 import {NotificationSettingsScreen} from '@support/ui/screen';
-import {isIos, tapNativeBackButton, timeouts} from '@support/utils';
+import {timeouts} from '@support/utils';
 import {expect} from 'detox';
 
 class EmailNotificationSettingsScreen {
     testID = {
         emailNotificationSettingsScreen: 'email_notification_settings.screen',
-        backButton: 'navigation.header.back',
+        backButton: 'screen.back.button',
         scrollView: 'email_notification_settings.scroll_view',
         immediatelyOption: 'email_notification_settings.immediately.option',
         immediatelyOptionSelected: 'email_notification_settings.immediately.option.selected',
@@ -23,17 +23,7 @@ class EmailNotificationSettingsScreen {
     };
 
     emailNotificationSettingsScreen = element(by.id(this.testID.emailNotificationSettingsScreen));
-
-    // expo-router native stack screen — the custom NavigationHeader's
-    // 'navigation.header.back' testID is not rendered here. iOS uses
-    // `accessibilityLabel="Back"`, Android uses the Toolbar's default
-    // navigation-icon contentDescription "Navigate up".
-    get backButton(): Detox.NativeElement {
-        return isIos()
-            ? element(by.label('Back')).atIndex(0)
-            : element(by.label('Navigate up')).atIndex(0);
-    }
-
+    backButton = element(by.id(this.testID.backButton));
     scrollView = element(by.id(this.testID.scrollView));
     immediatelyOption = element(by.id(this.testID.immediatelyOption));
     immediatelyOptionSelected = element(by.id(this.testID.immediatelyOptionSelected));
@@ -60,11 +50,8 @@ class EmailNotificationSettingsScreen {
     };
 
     back = async () => {
-        // Use platform-native back chevron: Android via device.pressBack(),
-        // iOS via by.label('Back'). The custom NavigationHeader's testID
-        // does not exist on this screen (expo-router native stack).
-        await tapNativeBackButton();
-        await waitFor(this.emailNotificationSettingsScreen).not.toBeVisible().withTimeout(timeouts.TEN_SEC);
+        await this.backButton.tap();
+        await expect(this.emailNotificationSettingsScreen).not.toBeVisible();
     };
 
     toggleEmailThreadsOptionOn = async () => {

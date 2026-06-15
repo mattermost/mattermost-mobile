@@ -2,7 +2,7 @@
 // See LICENSE.txt for license information.
 
 import {Alert} from '@support/ui/component';
-import {isAndroid, isIos, longPressWithRetry, timeouts, wait} from '@support/utils';
+import {isIos, timeouts, wait} from '@support/utils';
 import {expect} from 'detox';
 
 class PostOptionsScreen {
@@ -15,8 +15,8 @@ class PostOptionsScreen {
         followingThreadOption: 'post_options.following_thread.option',
         markAsUnreadOption: 'post_options.mark_as_unread.option',
         copyLinkOption: 'post_options.copy_permalink.option',
-        savePostOption: 'post_options.Save_post.option',
-        unsavePostOption: 'post_options.Unsave_post.option',
+        savePostOption: 'post_options.save_post.option',
+        unsavePostOption: 'post_options.unsave_post.option',
         copyTextOption: 'post_options.copy_text.option',
         pinPostOption: 'post_options.pin_post.option',
         unpinPostOption: 'post_options.unpin_post.option',
@@ -35,14 +35,10 @@ class PostOptionsScreen {
     markAsUnreadOption = element(by.id(this.testID.markAsUnreadOption));
     copyLinkOption = element(by.id(this.testID.copyLinkOption));
     savePostOption = element(by.id(this.testID.savePostOption));
-    savePostOptionLabel = element(by.id(`${this.testID.savePostOption}.label`));
     unsavePostOption = element(by.id(this.testID.unsavePostOption));
-    unsavePostOptionLabel = element(by.id(`${this.testID.unsavePostOption}.label`));
     copyTextOption = element(by.id(this.testID.copyTextOption));
     pinPostOption = element(by.id(this.testID.pinPostOption));
-    pinPostOptionLabel = element(by.id(`${this.testID.pinPostOption}.label`));
     unpinPostOption = element(by.id(this.testID.unpinPostOption));
-    unpinPostOptionLabel = element(by.id(`${this.testID.unpinPostOption}.label`));
     editPostOption = element(by.id(this.testID.editPostOption));
     deletePostOption = element(by.id(this.testID.deletePostOption));
 
@@ -51,8 +47,7 @@ class PostOptionsScreen {
     };
 
     toBeVisible = async () => {
-        const timeout = isAndroid() ? timeouts.TWENTY_SEC : timeouts.TEN_SEC;
-        await waitFor(this.postOptionsScreen).toExist().withTimeout(timeout);
+        await waitFor(this.postOptionsScreen).toExist().withTimeout(timeouts.TEN_SEC);
 
         return postOptionsScreen;
     };
@@ -81,24 +76,24 @@ class PostOptionsScreen {
         await expect(deleteButton).toBeVisible();
         if (confirm) {
             await deleteButton.tap();
-            await wait(timeouts.TWO_SEC);
+            await wait(timeouts.ONE_SEC);
             await expect(this.postOptionsScreen).not.toExist();
         } else {
             await cancelButton.tap();
-            await wait(timeouts.TWO_SEC);
+            await wait(timeouts.ONE_SEC);
             await expect(this.postOptionsScreen).toExist();
             await this.close();
         }
     };
 
     openPostOptionsForPinedPosts = async (postId: string) => {
-        await waitFor(this.pinnedPostListItem(postId)).toExist().withTimeout(timeouts.TEN_SEC);
-        await longPressWithRetry(this.pinnedPostListItem(postId), this.postOptionsScreen);
+        await waitFor(this.pinnedPostListItem(postId)).toExist().withTimeout(timeouts.TWO_SEC);
+        await this.pinnedPostListItem(postId).longPress(timeouts.TWO_SEC);
     };
 
     openPostOptionsForSearchedPosts = async (postId: string) => {
-        await waitFor(this.searchedPostListItem(postId)).toExist().withTimeout(timeouts.TEN_SEC);
-        await longPressWithRetry(this.searchedPostListItem(postId), this.postOptionsScreen);
+        await waitFor(this.searchedPostListItem(postId)).toExist().withTimeout(timeouts.TWO_SEC);
+        await this.searchedPostListItem(postId).longPress(timeouts.TWO_SEC);
     };
 }
 

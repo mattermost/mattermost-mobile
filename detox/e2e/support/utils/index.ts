@@ -33,14 +33,6 @@ export const isIos = (): boolean => {
 };
 
 /**
- * Check if running on iPad simulator.
- * @return {boolean} true if iPad
- */
-export const isIpad = (): boolean => {
-    return isIos() && device.name.toLowerCase().includes('ipad');
-};
-
-/**
  * Get random id.
  * @param {number} length - length on random string to return, e.g. 6 (default)
  * @return {string} random string
@@ -80,9 +72,7 @@ export const timeouts = {
     TWO_SEC: SECOND * 2,
     THREE_SEC: SECOND * 3,
     FOUR_SEC: SECOND * 4,
-    FIVE_SEC: SECOND * 5,
     TEN_SEC: SECOND * 10,
-    TWENTY_SEC: SECOND * 20,
     HALF_MIN: MINUTE / 2,
     ONE_MIN: MINUTE,
     TWO_MIN: MINUTE * 2,
@@ -131,139 +121,6 @@ export async function retryWithReload(
 }
 
 /**
- * Long-press an element with automatic retry, re-scrolling the list between attempts.
- *
- * After posting a message the keyboard dismiss animation temporarily blocks React Native's
- * gesture responder system. A plain longPress can fire without effect during this window
- * even after a fixed wait. This helper retries the gesture (with a fresh scroll to settle
- * the UI) so tests are self-healing regardless of animation timing.
- *
- * On iOS 26.2 the gesture responder system takes longer to become available after keyboard
- * dismiss animations complete. Use FIVE_SEC wait and press duration to ensure the gesture
- * lands correctly. On Android a shorter wait (TWO_SEC) and press (THREE_SEC) is sufficient
- * because Android gesture handling is more deterministic and reduces total elapsed time.
- *
- * Per-attempt budget:
- *   iOS:     5s wait + 5s press + 10s check = 20s × 5 attempts = 100s max
- *   Android: 2s wait + 3s press + 10s check = 15s × 5 attempts = 75s max
- *
- * Using HALF_MIN (30s) for the check risked blowing the 240s Jest per-test limit when a
- * test calls openPostOptionsFor twice (e.g. MM-T4786_1 edit then delete). TEN_SEC is
- * still generous — if the long-press lands the options sheet opens within ~1s.
- *
- * @param target - The element to long-press
- * @param scrollTarget - A scrollable list to scroll before each attempt (dismisses keyboard + settles UI)
- * @param checkElement - An element that should exist once the long-press succeeds (e.g. PostOptionsScreen)
- * @param maxAttempts - How many times to retry before throwing (default: 5)
- */
-export async function longPressWithScrollRetry(
-    target: Detox.NativeElement,
-    scrollTarget: Detox.NativeElement,
-    checkElement: Detox.NativeElement,
-    maxAttempts = 5,
-): Promise<void> {
-    /* eslint-disable no-await-in-loop */
-    for (let attempt = 1; attempt <= maxAttempts; attempt++) {
-        // Dismiss keyboard and settle the UI before long-pressing.
-        //
-        // On Android, the post list uses keyboardDismissMode='on-drag' which only
-        // triggers on real touch gestures, NOT on programmatic scroll. Detox's
-        // scroll() API can use programmatic scrolling that bypasses on-drag, so the
-        // keyboard stays open even after a successful scroll(). Use swipe() first
-        // (a real gesture) to reliably dismiss the keyboard, then scroll to settle.
-        //
-        // On iOS, a small scroll is sufficient to re-register the gesture responder
-        // and dismiss the keyboard via the interactive dismiss mode.
-        if (isAndroid()) {
-            try {
-                await scrollTarget.swipe('down', 'slow', 0.2);
-            } catch { /* ignore — list may be too short or already at edge */ }
-            try {
-                await scrollTarget.scroll(100, 'down', 0.5, 0.5);
-            } catch { /* ignore — list may be at the bottom boundary */ }
-        } else {
-            // On iOS no swipe/scroll is needed before the longPress.
-        }
-
-        // Increase Android wait/press durations: API 35 CI emulators need more time
-        // for the gesture responder to become available after keyboard dismiss animations.
-        const waitDuration = isAndroid() ? timeouts.THREE_SEC : timeouts.FIVE_SEC;
-        const pressDuration = isAndroid() ? timeouts.FOUR_SEC : timeouts.FIVE_SEC;
-        await wait(waitDuration);
-
-        // On iOS 26.x the gesture-recognizer hittability check can fail even when
-        // the target is visually on-screen (a residual UITransitionView / dim
-        // overlay from the previous screen transition keeps reporting a non-100%
-        // visibility percent). Disable synchronization around the gesture so the
-        // longPress dispatches regardless of Detox's hittability probe, then
-        // re-enable so subsequent matchers run normally.
-        if (isIos()) {
-            await device.disableSynchronization();
-        }
-        try {
-            await target.longPress(pressDuration);
-        } finally {
-            if (isIos()) {
-                await device.enableSynchronization();
-            }
-        }
-        try {
-            // Use polling waitForElementToExist instead of waitFor().toExist() to avoid
-            // bridge-idle synchronization blocking on Android API 35 CI emulators.
-            // waitFor().toExist() uses Espresso's IdlingResource sync and blocks until
-            // the JS bridge (mqt_js) is idle — which can take much longer than TEN_SEC
-            // when the post options sheet animation keeps the bridge busy after a gesture.
-            await waitForElementToExist(checkElement, timeouts.TEN_SEC);
-            return;
-        } catch {
-            if (attempt === maxAttempts) {
-                throw new Error(`Element did not appear after ${maxAttempts} longPress attempts`);
-            }
-        }
-    }
-    /* eslint-enable no-await-in-loop */
-}
-
-/**
- * Long-press an element with automatic retry (no scroll).
- *
- * Similar to `longPressWithScrollRetry` but for screens where scrolling is
- * unnecessary or the list reference is unavailable.  Between attempts the helper
- * simply waits a moment and retries with a longer press duration on Android,
- * where the gesture responder can be unresponsive during animations.
- *
- * @param target        - The element to long-press
- * @param checkElement  - An element that should exist once the long-press succeeds (e.g. PostOptionsScreen)
- * @param maxAttempts   - How many times to retry before throwing (default: 5)
- */
-export async function longPressWithRetry(
-    target: Detox.NativeElement,
-    checkElement: Detox.NativeElement,
-    maxAttempts = 5,
-): Promise<void> {
-    /* eslint-disable no-await-in-loop */
-    for (let attempt = 1; attempt <= maxAttempts; attempt++) {
-        // Use a longer press duration on Android where gestures are less reliable.
-        const pressDuration = isAndroid() ? timeouts.FOUR_SEC : timeouts.TWO_SEC;
-        await target.longPress(pressDuration);
-        try {
-            // Use polling waitForElementToExist instead of waitFor().toExist() to avoid
-            // bridge-idle synchronization blocking on Android API 35 CI emulators.
-            await waitForElementToExist(checkElement, timeouts.TEN_SEC);
-            return;
-        } catch {
-            if (attempt === maxAttempts) {
-                throw new Error(`Element did not appear after ${maxAttempts} longPress attempts`);
-            }
-
-            // Brief pause before retrying
-            await wait(timeouts.THREE_SEC);
-        }
-    }
-    /* eslint-enable no-await-in-loop */
-}
-
-/**
  * Poll for an element to become visible without waiting for React Native bridge to be idle.
  * This is useful when the bridge is busy with animations or state updates but the UI is already rendered.
  *
@@ -279,16 +136,15 @@ export async function longPressWithRetry(
  */
 export async function waitForElementToBeVisible(
     detoxElement: Detox.NativeElement,
-    timeout: number = isAndroid() ? timeouts.TWENTY_SEC : timeouts.TEN_SEC,
+    timeout: number = timeouts.TEN_SEC,
     pollInterval: number = timeouts.HALF_SEC,
-    visibilityPercent: number = isIos() ? 25 : 75,
 ): Promise<void> {
     const {expect: detoxExpect} = require('detox');
     const startTime = Date.now();
     /* eslint-disable no-await-in-loop */
     while (Date.now() - startTime < timeout) {
         try {
-            await detoxExpect(detoxElement).toBeVisible(visibilityPercent);
+            await detoxExpect(detoxElement).toBeVisible();
             return; // Element found and visible
         } catch (error) {
             // Element not visible yet, wait and try again
@@ -301,158 +157,5 @@ export async function waitForElementToBeVisible(
     }
     /* eslint-enable no-await-in-loop */
     // Final check - will throw if still not found
-    await detoxExpect(detoxElement).toBeVisible(visibilityPercent);
-}
-
-/**
- * Poll for element non-existence without Detox bridge-idle synchronization.
- *
- * On Android, waitFor().not.toExist().withTimeout() blocks until bridge-idle
- * before evaluating. After pressBack() or dismiss animations the bridge stays
- * busy, so the 10-second timeout can expire before the check even runs and the
- * catch block silently swallows the error. This helper polls expect().not.toExist()
- * directly, giving the element a chance to disappear across multiple poll intervals.
- *
- * @param {Detox.NativeElement} detoxElement - The Detox element to wait for disappearance
- * @param {number} timeout - Maximum time to wait in milliseconds (default: HALF_MIN)
- * @param {number} pollInterval - How often to check in milliseconds (default: 500ms)
- *
- * @example
- * await waitForElementToNotExist(tutorialOverlay, timeouts.TEN_SEC);
- */
-export async function waitForElementToNotExist(
-    detoxElement: Detox.NativeElement,
-    timeout: number = timeouts.HALF_MIN,
-    pollInterval: number = timeouts.HALF_SEC,
-): Promise<void> {
-    const {expect: detoxExpect} = require('detox');
-    const startTime = Date.now();
-    /* eslint-disable no-await-in-loop */
-    while (Date.now() - startTime < timeout) {
-        try {
-            await detoxExpect(detoxElement).not.toExist();
-            return; // Element no longer exists
-        } catch (error) {
-            if ((Date.now() - startTime) + pollInterval >= timeout) {
-                throw new Error(
-                    `waitForElementToNotExist: element still present after ${timeout}ms. Original: ${(error as Error)?.message ?? String(error)}`,
-                );
-            }
-            await wait(pollInterval);
-        }
-    }
-    /* eslint-enable no-await-in-loop */
-    // Final check - will throw if still exists
-    try {
-        await detoxExpect(detoxElement).not.toExist();
-    } catch (error) {
-        throw new Error(
-            `waitForElementToNotExist: element still present after ${timeout}ms. Original: ${(error as Error)?.message ?? String(error)}`,
-        );
-    }
-}
-
-/**
- * Poll for element existence without Detox bridge-idle synchronization.
- *
- * On Android the JS bridge (mqt_js) is often busy during animations and
- * bottom-sheet open/close transitions. waitFor().toExist().withTimeout()
- * uses bridge-idle sync and blocks until the bridge is idle before
- * evaluating, which can take much longer than the timeout on CI emulators.
- * This helper bypasses that by polling expect().toExist() directly.
- *
- * Use this instead of waitFor().toExist().withTimeout() when the element
- * may be present behind an overlay (like a tutorial), where toBeVisible()
- * would also fail due to the 50% visibility threshold.
- *
- * @param {Detox.NativeElement} detoxElement - The Detox element to wait for
- * @param {number} timeout - Maximum time to wait in milliseconds (default: HALF_MIN)
- * @param {number} pollInterval - How often to check in milliseconds (default: 500ms)
- *
- * @example
- * await waitForElementToExist(serverListScreen, timeouts.HALF_MIN);
- */
-export async function waitForElementToExist(
-    detoxElement: Detox.NativeElement,
-    timeout: number = timeouts.HALF_MIN,
-    pollInterval: number = timeouts.HALF_SEC,
-): Promise<void> {
-    const {expect: detoxExpect} = require('detox');
-    const startTime = Date.now();
-    /* eslint-disable no-await-in-loop */
-    while (Date.now() - startTime < timeout) {
-        try {
-            await detoxExpect(detoxElement).toExist();
-            return; // Element exists in hierarchy
-        } catch (error) {
-            if ((Date.now() - startTime) + pollInterval >= timeout) {
-                throw error;
-            }
-            await wait(pollInterval);
-        }
-    }
-    /* eslint-enable no-await-in-loop */
-    // Final check - will throw if still not found
-    await detoxExpect(detoxElement).toExist();
-}
-
-/**
- * Re-enable Detox synchronization safely after a screen transition.
- *
- * On Android with RN Fabric (New Architecture) + Detox 20.47, calling
- * `device.enableSynchronization()` immediately after a screen replace can
- * race the FabricUIManagerIdlingResource probe — the probe reads
- * `UIManagerModule.getReactContext()` while the bridge is between contexts
- * and throws "ReactContext is null!".
- *
- * The race window is short (the new ReactContext is bound within a frame),
- * so a single retry after a brief pause clears it. iOS has no such probe
- * and the call resolves immediately, so this helper is safe to use
- * unconditionally and behaves identically on both platforms.
- */
-export async function safeEnableSynchronization(): Promise<void> {
-    // Retry up to 3 times with backoff. CI Android emulator can hold the
-    // null-ReactContext window for longer than the original 500ms guess.
-    const delays = [timeouts.HALF_SEC, timeouts.ONE_SEC, timeouts.TWO_SEC];
-    /* eslint-disable no-await-in-loop */
-    for (let i = 0; i <= delays.length; i++) {
-        try {
-            await device.enableSynchronization();
-            return;
-        } catch (error) {
-            const message = (error as Error)?.message ?? String(error);
-            if (!message.includes('ReactContext is null') || i === delays.length) {
-                // Last attempt — leave sync disabled rather than failing the test.
-                // The next screen transition will re-attempt enable.
-                if (message.includes('ReactContext is null')) {
-                    return;
-                }
-                throw error;
-            }
-            await wait(delays[i]!);
-        }
-    }
-    /* eslint-enable no-await-in-loop */
-}
-
-/**
- * Navigate back one screen using the platform-appropriate mechanism.
- *
- * On Android, screens that use the native stack header (expo-router `presentation: 'card'`
- * with no custom `headerLeft`) render the back arrow as a native Toolbar view. That view
- * has no React Native `testID`, so Espresso's `view.getTag()` matcher never finds
- * `navigation.header.back`. The hardware/software back key is the correct substitute.
- *
- * On iOS, EarlGrey can tap the `navigation.header.back` element, but iOS 26's liquid-glass
- * transition leaves a `UITransitionView` overlay for ~2 seconds after a push navigation.
- * EarlGrey enforces a 100 % visibility threshold for taps, so we wait for the overlay to
- * clear before tapping.
- */
-export async function pressBack(): Promise<void> {
-    if (isAndroid()) {
-        await device.pressBack();
-    } else {
-        await wait(timeouts.TWO_SEC);
-        await element(by.id('navigation.header.back')).tap();
-    }
+    await detoxExpect(detoxElement).toBeVisible();
 }

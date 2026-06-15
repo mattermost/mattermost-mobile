@@ -2,7 +2,7 @@
 // See LICENSE.txt for license information.
 
 import {PostOptionsScreen} from '@support/ui/screen';
-import {isAndroid, timeouts} from '@support/utils';
+import {timeouts} from '@support/utils';
 import {expect} from 'detox';
 
 class EditPostScreen {
@@ -23,9 +23,8 @@ class EditPostScreen {
     messageInputErrorExtra = element(by.id(this.testID.messageInputErrorExtra));
 
     toBeVisible = async () => {
-        const timeout = isAndroid() ? timeouts.TWENTY_SEC : timeouts.TEN_SEC;
-        await waitFor(this.editPostScreen).toExist().withTimeout(timeout);
-        await waitFor(this.messageInput).toBeVisible().withTimeout(timeout);
+        await waitFor(this.editPostScreen).toExist().withTimeout(timeouts.TEN_SEC);
+        await waitFor(this.messageInput).toBeVisible().withTimeout(timeouts.TEN_SEC);
 
         return this.editPostScreen;
     };

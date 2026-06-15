@@ -23,7 +23,6 @@ import {
 } from '@support/ui/screen';
 import {
     getRandomId,
-    longPressWithRetry,
     timeouts,
     wait,
 } from '@support/utils';
@@ -38,10 +37,7 @@ describe('Messaging - Message Permalink Preview', () => {
     let testOtherUser: any;
 
     const copyLinkFromPost = async (postItem: any) => {
-        // Use longPressWithRetry to handle keyboard-dismiss animation blocking hit-testing.
-        // A bare longPress can fire without effect during the gesture-responder window
-        // that immediately follows typing/sending a message.
-        await longPressWithRetry(postItem, PostOptionsScreen.postOptionsScreen);
+        await postItem.longPress();
         await PostOptionsScreen.toBeVisible();
         await PostOptionsScreen.copyLinkOption.tap();
         await wait(timeouts.FOUR_SEC);
@@ -57,10 +53,7 @@ describe('Messaging - Message Permalink Preview', () => {
 
     const expectPermalinkPreviewVisible = async (message: string, channelName: string) => {
         const container = element(by.id('permalink-preview-container'));
-
-        // Use TEN_SEC: posting a permalink URL triggers a server fetch + re-render that
-        // can exceed 4s on a loaded CI runner, causing intermittent timeouts.
-        await waitFor(container).toBeVisible().withTimeout(timeouts.TEN_SEC);
+        await waitFor(container).toBeVisible().withTimeout(timeouts.FOUR_SEC);
         await expect(element(by.text(message).withAncestor(by.id('permalink-preview-container')))).toBeVisible();
         await expect(element(by.text(`Originally posted in ~${channelName}`).withAncestor(by.id('permalink-preview-container')))).toBeVisible();
     };
@@ -72,9 +65,6 @@ describe('Messaging - Message Permalink Preview', () => {
         testUser = user;
 
         ({user: testOtherUser} = await User.apiCreateUser(siteOneUrl));
-        if (!testOtherUser?.id) {
-            throw new Error('[beforeAll] Failed to create testOtherUser');
-        }
         await Team.apiAddUserToTeam(siteOneUrl, testOtherUser.id, testTeam.id);
         await Channel.apiAddUserToChannel(siteOneUrl, testOtherUser.id, testChannel.id);
 
@@ -179,17 +169,6 @@ describe('Messaging - Message Permalink Preview', () => {
         const permalinkPreview = element(by.id('permalink-preview-container'));
         await permalinkPreview.tap();
         await wait(timeouts.ONE_SEC);
-
-        // If the target channel was created after login, a "Join channel" modal may
-        // appear due to stale WebSocket sync. Handle it gracefully — the permalink
-        // navigation still works after joining.
-        try {
-            await waitFor(element(by.text('Join channel')).atIndex(0)).toExist().withTimeout(timeouts.FOUR_SEC);
-            await element(by.text('Join channel')).atIndex(1).tap();
-            await wait(timeouts.FOUR_SEC);
-        } catch {
-            // No Join modal — user was already a member, proceed normally.
-        }
 
         await PermalinkScreen.toBeVisible();
 

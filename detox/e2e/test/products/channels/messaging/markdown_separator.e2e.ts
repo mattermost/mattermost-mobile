@@ -60,7 +60,7 @@ describe('Messaging - Markdown Separator', () => {
         // * Verify markdown separator is displayed
         const {post} = await Post.apiGetLastPostInChannel(siteOneUrl, testChannel.id);
         const {postListPostItemThematicBreak} = ChannelScreen.getPostListPostItem(post.id);
-        await expect(postListPostItemThematicBreak).toBeVisible(50);
+        await expect(postListPostItemThematicBreak).toBeVisible();
 
         // # Go back to channel list screen
         await ChannelScreen.back();

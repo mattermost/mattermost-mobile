@@ -67,12 +67,7 @@ const BookmarkDetails = ({bookmark, children, file}: Props) => {
                 />
                 {children}
             </View>
-            <Text
-                style={styles.text}
-                testID={`channel_bookmark.${bookmark.id}.title`}
-            >
-                {bookmark.displayName}
-            </Text>
+            <Text style={styles.text}>{bookmark.displayName}</Text>
         </View>
     );
 };
