@@ -15,7 +15,7 @@ import {observeThreadById} from '@queries/servers/thread';
 import {observeUser} from '@queries/servers/user';
 import {isBoRPost} from '@utils/bor';
 import {fileModelsToFileInfo} from '@utils/file';
-import {areConsecutivePosts, isPostEphemeral} from '@utils/post';
+import {areConsecutivePosts, hasAiGeneratedMetadata, isPostEphemeral} from '@utils/post';
 
 import Post from './post';
 
@@ -124,7 +124,7 @@ const withPost = withObservables(
 
         // Don't combine consecutive Burn on Read posts as we want each BoR post
         // to display its header to allow displaying the remaining time.
-        const isConsecutivePost = isBoRPost(post) ? of$(false) : author.pipe(
+        const isConsecutivePost = (isBoRPost(post) || hasAiGeneratedMetadata(post)) ? of$(false) : author.pipe(
             switchMap((user) => of$(Boolean(post && previousPost && !user?.isBot && areConsecutivePosts(post, previousPost, currentUser.locale)))),
             distinctUntilChanged(),
         );
