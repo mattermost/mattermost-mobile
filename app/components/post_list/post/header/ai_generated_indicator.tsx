@@ -39,6 +39,8 @@ function AiGeneratedIndicator({post}: Props) {
 
     return (
         <View
+            accessible={true}
+            accessibilityRole='text'
             accessibilityLabel={accessibilityLabel}
             testID='post_header.ai_generated_indicator'
         >
