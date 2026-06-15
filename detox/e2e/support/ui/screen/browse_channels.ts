@@ -3,7 +3,7 @@
 
 import {ChannelListScreen} from '@support/ui/screen';
 import {timeouts, wait} from '@support/utils';
-import {expect} from 'detox';
+import {expect, waitFor} from 'detox';
 
 class BrowseChannelsScreen {
     testID = {
@@ -44,14 +44,46 @@ class BrowseChannelsScreen {
     };
 
     toBeVisible = async () => {
-        await waitFor(this.browseChannelsScreen).toExist().withTimeout(timeouts.TEN_SEC);
+        // Use TWENTY_SEC on both platforms — CI simulators/emulators are slower than
+        // local devices, so TEN_SEC was timing out on iOS CI before the screen appeared.
+        await waitFor(this.browseChannelsScreen).toExist().withTimeout(timeouts.TWENTY_SEC);
 
         return this.browseChannelsScreen;
     };
 
     open = async () => {
-        // # Open browse channels screen
-        await ChannelListScreen.headerPlusButton.tap();
+        // If Browse Channels is already open (e.g. a previous test failed mid-navigation
+        // and left the modal on screen), close it first so we start from the channel list.
+        try {
+            await waitFor(this.browseChannelsScreen).toExist().withTimeout(2000);
+            await this.closeButton.tap();
+            await waitFor(this.browseChannelsScreen).not.toExist().withTimeout(timeouts.TEN_SEC);
+        } catch {
+            // Browse Channels is not open — proceed normally
+        }
+
+        // # Open browse channels screen from the channel list header plus button.
+        await waitFor(ChannelListScreen.headerPlusButton).toExist().withTimeout(timeouts.HALF_MIN);
+
+        // On iOS, a UITransitionView (navigation animation overlay) can still be running
+        // when the element exists but is not yet hittable. Retry the tap up to 3 times
+        // with a short delay to let the transition complete.
+        let tapError: unknown;
+        /* eslint-disable no-await-in-loop -- sequential retry: each tap must complete before retrying */
+        for (let i = 0; i < 3; i++) {
+            try {
+                await ChannelListScreen.headerPlusButton.tap();
+                tapError = undefined;
+                break;
+            } catch (err) {
+                tapError = err;
+                await wait(timeouts.ONE_SEC);
+            }
+        }
+        /* eslint-enable no-await-in-loop */
+        if (tapError) {
+            throw tapError;
+        }
         await wait(timeouts.ONE_SEC);
         await ChannelListScreen.browseChannelsItem.tap();
 

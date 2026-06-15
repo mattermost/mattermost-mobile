@@ -44,7 +44,7 @@ export async function processChannelPostsByTeam(
 
         for (const [i, result] of chunkResults.entries()) {
             if (result.status === 'fulfilled') {
-                const {posts, order, previousPostId, authors} = result.value;
+                const {posts, order, previousPostId, authors, actionType} = result.value;
                 if (posts?.length) {
                     const channelId = channelIdsChunk[i];
                     allPosts.push(...posts);
@@ -53,7 +53,13 @@ export async function processChannelPostsByTeam(
                             serverUrl,
                             channelId,
                             posts,
-                            ActionType.POSTS.RECEIVED_IN_CHANNEL,
+
+                            // Use the action type fetchPostsForChannel resolved (RECEIVED_SINCE for a
+                            // since-fetch, RECEIVED_IN_CHANNEL for an initial page). A since-fetch is a
+                            // contiguous continuation of the existing chunk, so it must EXTEND it rather
+                            // than create a disjoint interval — otherwise posts newer than the chunk
+                            // create an orphaned interval that can hide the channel (MM-66467).
+                            actionType ?? ActionType.POSTS.RECEIVED_IN_CHANNEL,
                             order || [],
                             previousPostId || '',
                             authors || [],

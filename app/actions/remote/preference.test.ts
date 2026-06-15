@@ -46,6 +46,7 @@ const throwFunc = () => {
 };
 
 jest.mock('@queries/servers/preference');
+jest.mock('@store/ephemeral_store');
 
 const mockClient = {
     getMyPreferences: jest.fn(() => [preference1]),
@@ -114,6 +115,7 @@ describe('preferences', () => {
         expect(result.preferences).toBeDefined();
         expect(result.preferences?.length).toBe(1);
         expect(result.preferences?.[0].category).toBe(Preferences.CATEGORIES.SAVED_POST);
+        expect(EphemeralStore.clearRecentlyUnsavedSavedPost).toHaveBeenCalledWith(serverUrl, post1.id);
     });
 
     it('savePreference - handle error', async () => {
@@ -170,6 +172,27 @@ describe('preferences', () => {
         expect(unsavedSpy).toHaveBeenCalledWith(serverUrl, post1.id);
 
         unsavedSpy.mockRestore();
+    });
+
+    it('deleteSavedPost - does not mark ephemeral store when API call fails', async () => {
+        await operator.handleSystem({systems: [{id: SYSTEM_IDENTIFIERS.CURRENT_USER_ID, value: user1.id}], prepareRecordsOnly: false});
+
+        const prefModel = {
+            user_id: user1.id,
+            name: post1.id,
+            category: Preferences.CATEGORIES.SAVED_POST,
+            value: 'true',
+            prepareDestroyPermanently: jest.fn(),
+        } as unknown as PreferenceModel;
+        (querySavedPostsPreferences as jest.Mock).mockReturnValueOnce({fetch: jest.fn(() => [prefModel])});
+        mockClient.deletePreferences.mockImplementationOnce(jest.fn(throwFunc));
+
+        const result = await deleteSavedPost(serverUrl, post1.id);
+        expect(result.error).toBeDefined();
+
+        // EphemeralStore.addRecentlyUnsavedSavedPost must NOT be called on failure
+        expect(EphemeralStore.addRecentlyUnsavedSavedPost).not.toHaveBeenCalled();
+        expect(prefModel.prepareDestroyPermanently).not.toHaveBeenCalled();
     });
 
     it('openChannelIfNeeded - handle not found database', async () => {

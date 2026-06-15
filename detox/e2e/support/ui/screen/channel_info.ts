@@ -6,7 +6,7 @@ import {
     ProfilePicture,
 } from '@support/ui/component';
 import {ChannelScreen} from '@support/ui/screen';
-import {isAndroid, timeouts, wait} from '@support/utils';
+import {isAndroid, timeouts, wait, waitForElementToExist} from '@support/utils';
 import {expect, waitFor} from 'detox';
 
 class ChannelInfoScreen {
@@ -85,7 +85,12 @@ class ChannelInfoScreen {
     };
 
     toBeVisible = async () => {
-        await waitFor(this.channelInfoScreen).toExist().withTimeout(timeouts.TEN_SEC);
+        // Use HALF_MIN for iOS (up from TEN_SEC): after unarchiving/converting a channel,
+        // the navigation stack settles slowly on iOS 26.x, and the channel info screen
+        // can take >10 s to appear. Use polling waitForElementToExist to avoid bridge-idle
+        // sync stalls on both platforms.
+        const timeout = isAndroid() ? timeouts.TWENTY_SEC : timeouts.HALF_MIN;
+        await waitForElementToExist(this.channelInfoScreen, timeout);
 
         return this.channelInfoScreen;
     };
@@ -99,8 +104,9 @@ class ChannelInfoScreen {
     };
 
     close = async () => {
+        await waitFor(this.closeButton).toBeVisible().withTimeout(timeouts.TEN_SEC);
         await this.closeButton.tap();
-        await expect(this.channelInfoScreen).not.toBeVisible();
+        await waitFor(this.channelInfoScreen).not.toBeVisible().withTimeout(timeouts.TEN_SEC);
     };
 
     openChannelSettings = async () => {
@@ -110,7 +116,11 @@ class ChannelInfoScreen {
 
     leaveChannel = async ({confirm = true} = {}) => {
         await this.scrollView.tap({x: 1, y: 1});
-        await this.scrollView.scroll(200, 'down');
+        try {
+            await this.scrollView.scroll(200, 'down');
+        } catch {
+            // Content may not require scrolling; proceed
+        }
         await waitFor(this.leaveChannelOption).toExist().withTimeout(timeouts.TWO_SEC);
         if (isAndroid()) {
             await this.scrollView.scrollTo('bottom');
@@ -126,11 +136,11 @@ class ChannelInfoScreen {
         await expect(leaveButton).toBeVisible();
         if (confirm) {
             await leaveButton.tap();
-            await wait(timeouts.ONE_SEC);
+            await wait(timeouts.TWO_SEC);
             await expect(this.channelInfoScreen).not.toExist();
         } else {
             await cancelButton.tap();
-            await wait(timeouts.ONE_SEC);
+            await wait(timeouts.TWO_SEC);
             await expect(this.channelInfoScreen).toExist();
         }
     };

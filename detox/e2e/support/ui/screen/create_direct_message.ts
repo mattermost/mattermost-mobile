@@ -3,8 +3,8 @@
 
 import {ProfilePicture} from '@support/ui/component';
 import {ChannelListScreen} from '@support/ui/screen';
-import {isIos, timeouts, wait} from '@support/utils';
-import {expect} from 'detox';
+import {isAndroid, isIos, safeEnableSynchronization, timeouts, wait, waitForElementToBeVisible, waitForElementToExist, waitForElementToNotExist} from '@support/utils';
+import {expect, waitFor} from 'detox';
 
 class CreateDirectMessageScreen {
     testID = {
@@ -65,20 +65,48 @@ class CreateDirectMessageScreen {
     };
 
     toBeVisible = async () => {
-        if (isIos()) {
-            await waitFor(this.createDirectMessageScreen).toExist().withTimeout(timeouts.TEN_SEC);
+        // On iOS wait for the screen root and then the search input.
+        // A RNSVGGroup (part of the plus-menu icon animation) sits on top of the
+        // input immediately after navigation and intercepts taps even though the element
+        // is in the hierarchy. Waiting for the input to be visible gives the SVG layer
+        // time to finish its animation.
+        // On Android, sync was disabled before the navigation tap (in open()), so
+        // waitFor().toExist() here is pure polling — no bridge-idle blocking.
+        await waitFor(this.createDirectMessageScreen).toExist().withTimeout(timeouts.ONE_MIN);
+        if (!isAndroid()) {
+            await waitFor(this.searchInput).toBeVisible().withTimeout(timeouts.TEN_SEC);
         }
+        await wait(timeouts.HALF_SEC);
 
         return this.createDirectMessageScreen;
     };
 
     open = async () => {
-        // # Open create direct message screen
+        await waitForElementToExist(ChannelListScreen.headerPlusButton, timeouts.HALF_MIN);
         await ChannelListScreen.headerPlusButton.tap();
+        await waitForElementToBeVisible(ChannelListScreen.openDirectMessageItem, timeouts.TEN_SEC);
+
+        if (isAndroid()) {
+            await device.disableSynchronization();
+        }
+        try {
+            await ChannelListScreen.openDirectMessageItem.tap();
+            await this.toBeVisible();
+        } finally {
+            if (isAndroid()) {
+                await safeEnableSynchronization();
+            }
+        }
+
+        // Wait for any SVG animation overlay to clear before proceeding.
+        // The plus-menu icon animation layer (RNSVGGroup) can intercept taps
+        // on the search input even after toBeVisible() passes. Dismissing the
+        // "Long-press on an item" tutorial overlay here makes the dismissal explicit
+        // regardless of the searchInput visibility approach.
         await wait(timeouts.ONE_SEC);
-        await ChannelListScreen.openDirectMessageItem.tap();
-        await wait(timeouts.FOUR_SEC);
-        return this.toBeVisible();
+        await this.closeTutorial();
+
+        return this.createDirectMessageScreen;
     };
 
     close = async () => {
@@ -91,13 +119,23 @@ class CreateDirectMessageScreen {
             if (isIos()) {
                 await waitFor(this.tutorialHighlight).toExist().withTimeout(timeouts.TEN_SEC);
                 await this.tutorialSwipeLeft.tap();
+                await waitFor(this.tutorialHighlight).not.toExist().withTimeout(timeouts.TEN_SEC);
             } else {
+                // On Android the TutorialHighlight uses a React Native Modal, which creates a
+                // separate Dialog window. Espresso's onView() searches the currently focused window
+                // — the Dialog — not the Activity. The 'tutorial_highlight' testID is on the Modal
+                // itself (not a View), so it is never found. The 'tutorial_swipe_left' View sits
+                // inside the Modal and IS accessible from the Dialog window.
+                await waitForElementToExist(this.tutorialSwipeLeft, timeouts.TEN_SEC);
                 await device.pressBack();
+
+                // Poll until tutorial disappears. waitFor().not.toExist() blocks on bridge-idle
+                // after the pressBack() dismiss animation, which can exceed TEN_SEC and cause
+                // a spurious timeout that the catch block silently swallows.
+                await waitForElementToNotExist(this.tutorialSwipeLeft, timeouts.TEN_SEC);
             }
-            await waitFor(this.tutorialHighlight).not.toExist().withTimeout(timeouts.TEN_SEC);
         } catch {
-            // eslint-disable-next-line no-console
-            console.log('Tutorial element not visible, skipping action:');
+            // Tutorial may not appear if already dismissed in a previous run
         }
     };
 }

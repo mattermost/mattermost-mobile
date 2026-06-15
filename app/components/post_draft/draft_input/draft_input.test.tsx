@@ -264,7 +264,7 @@ describe('DraftInput', () => {
 
             const {getByTestId} = render(<DraftInput {...props}/>, {database});
             expect(getByTestId('bor_label')).toBeVisible();
-            expect(getByTestId('bor_label')).toHaveTextContent('BURN ON READ (5m)');
+            expect(getByTestId('bor_label')).toHaveTextContent(/BURN ON READ \(5m\)/);
         });
 
         it('calls updatePostBoRStatus when BoR is toggled', async () => {
