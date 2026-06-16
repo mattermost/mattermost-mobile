@@ -348,9 +348,13 @@ describe('ToolCard', () => {
             const props = getBaseProps();
             props.tool = createMockTool({status: ToolCallStatus.AutoApproved, result: 'done'});
             props.isCollapsed = true;
-            const {getByTestId} = renderWithIntlAndTheme(<ToolCard {...props}/>);
+            const {getByTestId, queryByTestId} = renderWithIntlAndTheme(<ToolCard {...props}/>);
 
             expect(getByTestId('agents.tool_card.tool-123.auto_approved_badge')).toBeTruthy();
+
+            // The badge lives in the always-visible header: the collapsed body
+            // (arguments/result markdown) must not be rendered.
+            expect(queryByTestId('mock-markdown')).toBeNull();
         });
 
         it('should show a processing spinner for an in-flight accepted tool', () => {

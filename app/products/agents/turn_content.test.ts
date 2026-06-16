@@ -395,6 +395,41 @@ describe('buildRoundsFromTurns', () => {
         expect(rounds.map((r) => r.id)).toEqual(['turn-1', 'turn-3']);
     });
 
+    it('should attribute tools to their own round across multiple tool-bearing turns', () => {
+        const conversation = makeConversation([
+            makeTurn({sequence: 0, role: 'user', content: []}),
+            makeTurn({
+                sequence: 1,
+                role: 'assistant',
+                content: [
+                    {type: BlockType.Text, text: 'first'},
+                    {type: BlockType.ToolUse, id: 'callA', name: 'search', status: ToolCallStatusString.Success},
+                ],
+            }),
+            makeTurn({sequence: 2, role: 'tool_result', content: [{type: BlockType.ToolResult, tool_use_id: 'callA', content: 'resultA'}]}),
+            makeTurn({
+                sequence: 3,
+                role: 'assistant',
+                content: [
+                    {type: BlockType.Text, text: 'second'},
+                    {type: BlockType.ToolUse, id: 'callB', name: 'read', status: ToolCallStatusString.Success},
+                ],
+            }),
+            makeTurn({sequence: 4, role: 'tool_result', content: [{type: BlockType.ToolResult, tool_use_id: 'callB', content: 'resultB'}]}),
+            makeTurn({sequence: 5, role: 'assistant', post_id: POST_ID, content: [{type: BlockType.Text, text: 'final'}]}),
+        ]);
+
+        const rounds = buildRoundsFromTurns(conversation, POST_ID);
+
+        expect(rounds).toHaveLength(3);
+        expect(rounds.map((r) => r.text)).toEqual(['first', 'second', 'final']);
+        expect(rounds[0].toolCalls.map((t) => t.id)).toEqual(['callA']);
+        expect(rounds[0].toolCalls[0].result).toBe('resultA');
+        expect(rounds[1].toolCalls.map((t) => t.id)).toEqual(['callB']);
+        expect(rounds[1].toolCalls[0].result).toBe('resultB');
+        expect(rounds[2].toolCalls).toHaveLength(0);
+    });
+
     it('should attach reasoning to its own round rather than flattening onto the anchor', () => {
         const conversation = makeConversation([
             makeTurn({sequence: 0, role: 'user', content: []}),

@@ -496,7 +496,7 @@ describe('AgentPostNew — multi-round rendering (A1)', () => {
         });
         mockFetchConversation.mockResolvedValue({data: conversation});
 
-        const {findByText, getByText} = renderWithIntlAndTheme(
+        const {findByText, getByText, getAllByTestId} = renderWithIntlAndTheme(
             <AgentPostNew
                 post={makePost({message: 'Final answer'})}
                 conversationId={CONV_ID}
@@ -506,8 +506,14 @@ describe('AgentPostNew — multi-round rendering (A1)', () => {
             />,
         );
 
-        expect(await findByText('Looking it up')).toBeTruthy();
-        expect(getByText('Final answer')).toBeTruthy();
+        await findByText('Looking it up');
+
+        // The round texts render as separate blocks in conversation order — a
+        // regression that flattened or reordered the rounds would change this.
+        const renderedText = getAllByTestId('mock-markdown').map((node) => node.props.children);
+        expect(renderedText).toEqual(['Looking it up', 'Final answer']);
+
+        // The tool from round 1 is attributed to its round, not dropped.
         expect(getByText('Search Docs')).toBeTruthy();
     });
 });
@@ -551,6 +557,40 @@ describe('AgentPostNew — regenerate gating (C9 no_regen)', () => {
 
         await findByText('Answer');
         expect(queryByTestId('agents.controls_bar.regenerate_button')).toBeNull();
+    });
+
+    it('should hide the regenerate button when no_regen is the boolean true', async () => {
+        mockFetchConversation.mockResolvedValue({data: regenConversation});
+
+        const {findByText, queryByTestId} = renderWithIntlAndTheme(
+            <AgentPostNew
+                post={makePost({message: 'Answer', props: {conversation_id: CONV_ID, no_regen: true}})}
+                conversationId={CONV_ID}
+                currentUserId={USER_ID}
+                location={Screens.CHANNEL}
+                isDM={true}
+            />,
+        );
+
+        await findByText('Answer');
+        expect(queryByTestId('agents.controls_bar.regenerate_button')).toBeNull();
+    });
+
+    it('should show the regenerate button when no_regen is the string "false"', async () => {
+        mockFetchConversation.mockResolvedValue({data: regenConversation});
+
+        const {findByText, queryByTestId} = renderWithIntlAndTheme(
+            <AgentPostNew
+                post={makePost({message: 'Answer', props: {conversation_id: CONV_ID, no_regen: 'false'}})}
+                conversationId={CONV_ID}
+                currentUserId={USER_ID}
+                location={Screens.CHANNEL}
+                isDM={true}
+            />,
+        );
+
+        await findByText('Answer');
+        expect(queryByTestId('agents.controls_bar.regenerate_button')).toBeTruthy();
     });
 });
 
