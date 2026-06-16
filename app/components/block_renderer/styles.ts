@@ -63,6 +63,7 @@ export const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
             flexWrap: 'wrap',
             width: '100%',
             minWidth: 0,
+            alignItems: 'center',
         },
         columnStretch: {
             flexGrow: 1,

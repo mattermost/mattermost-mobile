@@ -3,7 +3,7 @@
 
 import {LinearGradient} from 'expo-linear-gradient';
 import React, {useCallback, useMemo, useState, type ReactNode} from 'react';
-import {type LayoutChangeEvent, Platform, Pressable, ScrollView, View} from 'react-native';
+import {type LayoutChangeEvent, Platform, Pressable, type PressableStateCallbackType, ScrollView, View} from 'react-native';
 
 import CompassIcon from '@components/compass_icon';
 import {useTheme} from '@context/theme';
@@ -94,10 +94,7 @@ const ClippedScrollContent = ({
     }, [containerPadding, isOverflowing, styles.moreBelow, theme.centerChannelColor]);
 
     const expandButton = useMemo(() => {
-        let expandButtonOffset = containerWidth - 20;
-        if (Platform.OS === 'android') {
-            expandButtonOffset -= 10;
-        }
+        const expandButtonOffset = containerWidth - 20 - Platform.select({android: 10, default: 0});
 
         if (expandButtonOffset <= 0 || !isOverflowing) {
             return null;
@@ -125,10 +122,16 @@ const ClippedScrollContent = ({
 
     const maxHeightStyle = useMemo(() => ({maxHeight}), [maxHeight]);
 
+    const pressableStyle = useCallback(
+        ({pressed}: PressableStateCallbackType) => pressed && isOverflowing && {opacity: 0.72},
+        [isOverflowing],
+    );
+
     return (
         <Pressable
             onPress={handleExpand}
             disabled={!isOverflowing}
+            style={pressableStyle}
             testID={testID}
         >
             <ScrollView

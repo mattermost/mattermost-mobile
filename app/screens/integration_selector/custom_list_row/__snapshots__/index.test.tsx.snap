@@ -22,7 +22,9 @@ exports[`components/integration_selector/custom_list_row should match snapshot 1
   accessible={true}
   collapsable={false}
   focusable={true}
+  onBlur={[Function]}
   onClick={[Function]}
+  onFocus={[Function]}
   onResponderGrant={[Function]}
   onResponderMove={[Function]}
   onResponderRelease={[Function]}
@@ -30,13 +32,15 @@ exports[`components/integration_selector/custom_list_row should match snapshot 1
   onResponderTerminationRequest={[Function]}
   onStartShouldSetResponder={[Function]}
   style={
-    {
-      "alignItems": "center",
-      "flex": 1,
-      "flexDirection": "row",
-      "height": 48,
-      "opacity": 1,
-    }
+    [
+      {
+        "alignItems": "center",
+        "flex": 1,
+        "flexDirection": "row",
+        "height": 48,
+      },
+      false,
+    ]
   }
 >
   <View

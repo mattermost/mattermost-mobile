@@ -1,11 +1,12 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React from 'react';
+import React, {useCallback, useMemo} from 'react';
 import {
     type GestureResponderEvent,
+    Pressable,
+    type PressableStateCallbackType,
     StyleSheet,
-    TouchableOpacity,
     View,
 } from 'react-native';
 
@@ -59,9 +60,23 @@ const style = StyleSheet.create({
 const CustomListRow = ({
     onPress, children, enabled, selectable, selected, id, testID,
 }: Props) => {
+    const pressableStyle = useCallback(
+        ({pressed}: PressableStateCallbackType) => [style.container, pressed && {opacity: 0.72}],
+        [],
+    );
+
+    const selectorStyle = useMemo(
+        () => [
+            style.selector,
+            (selected && style.selectorFilled),
+            (!enabled && style.selectorDisabled),
+        ],
+        [selected, enabled],
+    );
+
     return (
-        <TouchableOpacity
-            style={style.container}
+        <Pressable
+            style={pressableStyle}
             testID={testID}
             onPress={onPress}
         >
@@ -69,8 +84,7 @@ const CustomListRow = ({
                 <View style={style.selectorContainer}>
                     <View
                         testID={id}
-                        style={[style.selector, (selected && style.selectorFilled), (!enabled &&
- style.selectorDisabled)]}
+                        style={selectorStyle}
                     >
                         {selected &&
                             <CompassIcon
@@ -89,7 +103,7 @@ const CustomListRow = ({
             >
                 {children}
             </View>
-        </TouchableOpacity>
+        </Pressable>
     );
 };
 
