@@ -95,6 +95,8 @@ describe('newConnection', () => {
             return {
                 getStats: jest.fn(),
                 on: jest.fn(),
+                once: jest.fn(),
+                off: jest.fn(),
             };
         });
 
@@ -140,6 +142,8 @@ describe('newConnection', () => {
         // @ts-ignore
         RTCPeer.mockImplementation(() => ({
             on: jest.fn(),
+            once: jest.fn(),
+            off: jest.fn(),
             getStats: jest.fn(),
         }));
 
@@ -188,6 +192,8 @@ describe('newConnection', () => {
             replaceTrack: mockReplaceTrack,
             addStream: mockAddStream,
             on: jest.fn(),
+            once: jest.fn(),
+            off: jest.fn(),
             getStats: jest.fn(),
         }));
 
@@ -383,6 +389,8 @@ describe('newConnection', () => {
             on: (event: string, handler: any) => {
                 handlers[event] = handler;
             },
+            once: jest.fn(),
+            off: jest.fn(),
             getStats: jest.fn(),
             destroy: peerDestroy,
             signal: peerSignal,
@@ -472,6 +480,8 @@ describe('newConnection', () => {
             on: (event: string, handler: any) => {
                 handlers[event] = handler;
             },
+            once: jest.fn(),
+            off: jest.fn(),
             getStats: jest.fn(),
             destroy: peerDestroy,
             signal: peerSignal,
@@ -566,7 +576,9 @@ describe('newConnection', () => {
     });
 
     it('waitForPeerConnection', async () => {
-        let connection = await newConnection(
+        // Default mock: ws.on('join') never fires → peer never created →
+        // onPeerConnected resolver never called → timeout fires.
+        const connection = await newConnection(
             'http://localhost:8065',
             'channelID',
             () => {},
@@ -578,21 +590,30 @@ describe('newConnection', () => {
 
         await Promise.resolve();
 
-        let res = connection.waitForPeerConnection();
-
+        const res = connection.waitForPeerConnection();
         jest.runAllTimers();
+        await expect(res).rejects.toEqual(new Error('timed out waiting for peer connection'));
+    });
 
-        await expect(res).rejects.toEqual('timed out waiting for peer connection');
+    it('waitForPeerConnection resolves when peer connects', async () => {
+        // Capture the 'connect' callback registered by peer.once() inside
+        // ws.on('join'). We fire it after waitForPeerConnection has had a
+        // chance to set its onPeerConnected resolver.
+        let connectCb: (() => void) | null = null;
 
         // eslint-disable-next-line
         // @ts-ignore
-        RTCPeer.mockImplementation(() => {
-            return {
-                getStats: jest.fn(),
-                on: jest.fn(),
-                connected: true,
-            };
-        });
+        RTCPeer.mockImplementation(() => ({
+            getStats: jest.fn(),
+            on: jest.fn(),
+            once: jest.fn().mockImplementation((event: string, cb: () => void) => {
+                if (event === 'connect') {
+                    connectCb = cb;
+                }
+            }),
+            off: jest.fn(),
+            connected: false,
+        }));
 
         // eslint-disable-next-line
         // @ts-ignore
@@ -607,7 +628,7 @@ describe('newConnection', () => {
             sessionID: 'sessionID',
         }));
 
-        connection = await newConnection(
+        const connection = await newConnection(
             'http://localhost:8065',
             'channelID',
             () => {},
@@ -616,11 +637,15 @@ describe('newConnection', () => {
             mockIntl,
         );
         expect(connection).toBeDefined();
+        expect(connectCb).not.toBeNull();
 
         await Promise.resolve();
 
-        res = connection.waitForPeerConnection();
-        jest.runAllTimers();
+        const res = connection.waitForPeerConnection();
+
+        // Now fire the connect event — onPeerConnected is set.
+        connectCb!();
+
         await expect(res).resolves.toBe('sessionID');
     });
 });

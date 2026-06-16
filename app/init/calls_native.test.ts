@@ -317,7 +317,7 @@ describe('onCallAnswered', () => {
         expect(CallsNative.reportConnected).not.toHaveBeenCalled();
     });
 
-    it('reports connected, mutes, and switches to the channel on successful join', async () => {
+    it('reports connected and unmutes on successful join', async () => {
         (getNativeCallMapping as jest.Mock).mockReturnValueOnce(mapping);
         (getCurrentUser as jest.Mock).mockResolvedValueOnce({id: 'user1', locale: 'en'});
         (getCurrentCall as jest.Mock).mockReturnValueOnce(null);
@@ -331,7 +331,8 @@ describe('onCallAnswered', () => {
         expect(setMicPermissionsGranted).toHaveBeenCalledWith(true);
         expect(joinCall).toHaveBeenCalledWith(SERVER_URL, 'ch1', 'user1', true, expect.anything(), undefined, 't1');
         expect(CallsNative.reportConnected).toHaveBeenCalledWith('u1');
-        expect(CallsNative.setMuted).toHaveBeenCalledWith('u1', true);
+        expect(unmuteMyself).toHaveBeenCalled();
+        expect(CallsNative.setMuted).not.toHaveBeenCalled();
     });
 
     it('switches the active server when answering for a different server than the active one', async () => {
