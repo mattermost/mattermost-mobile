@@ -68,25 +68,37 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
 interface ReasoningDisplayProps {
     reasoningSummary: string;
     isReasoningLoading: boolean;
+
+    // Optional controlled expand state. When `isExpanded` is provided the
+    // parent owns the open/closed state (used for per-round reasoning); when
+    // omitted the component manages its own state (legacy single-block usage).
+    isExpanded?: boolean;
+    onToggle?: (expanded: boolean) => void;
 }
 
 /**
  * Display component for agent reasoning summaries
  * Shows collapsible section with reasoning text and loading state
  */
-const ReasoningDisplay = ({reasoningSummary, isReasoningLoading}: ReasoningDisplayProps) => {
+const ReasoningDisplay = ({reasoningSummary, isReasoningLoading, isExpanded: isExpandedProp, onToggle}: ReasoningDisplayProps) => {
     const theme = useTheme();
     const styles = getStyleSheet(theme);
-    const [isExpanded, setIsExpanded] = useState(false);
+    const isControlled = isExpandedProp !== undefined;
+    const [localExpanded, setLocalExpanded] = useState(false);
+    const isExpanded = isControlled ? isExpandedProp : localExpanded;
     const rotation = useSharedValue(0);
     const contentOpacity = useSharedValue(0);
 
     const handleToggle = useCallback(() => {
         const newExpanded = !isExpanded;
-        setIsExpanded(newExpanded);
+        if (isControlled) {
+            onToggle?.(newExpanded);
+        } else {
+            setLocalExpanded(newExpanded);
+        }
         rotation.value = withTiming(newExpanded ? 90 : 0, {duration: 200});
         contentOpacity.value = withTiming(newExpanded ? 1 : 0, {duration: 250});
-    }, [isExpanded, rotation, contentOpacity]);
+    }, [isExpanded, isControlled, onToggle, rotation, contentOpacity]);
 
     const chevronAnimatedStyle = useAnimatedStyle(() => ({
         transform: [{rotate: `${rotation.value}deg`}],

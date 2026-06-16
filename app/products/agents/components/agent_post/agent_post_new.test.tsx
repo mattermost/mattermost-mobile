@@ -9,7 +9,7 @@ import {CONTROL_SIGNALS} from '@agents/constants';
 import streamingStore from '@agents/store/streaming_store';
 import {BlockType, ToolCallStatusString, type ConversationResponse} from '@agents/types';
 import {Screens} from '@constants';
-import {renderWithIntlAndTheme} from '@test/intl-test-helper';
+import {fireEvent, renderWithIntlAndTheme} from '@test/intl-test-helper';
 import TestHelper from '@test/test_helper';
 
 import AgentPostNew from './agent_post_new';
@@ -468,5 +468,153 @@ describe('AgentPostNew — old conversation tool calls (Bug #2)', () => {
         expect(await findByText('Get Channel Info')).toBeTruthy();
         expect(await findByTestId('agents.tool_card.tu_pending.approve')).toBeTruthy();
         expect(await findByTestId('agents.tool_card.tu_pending.reject')).toBeTruthy();
+    });
+});
+
+describe('AgentPostNew — multi-round rendering (A1)', () => {
+    it('should render each assistant round so intermediate text/tools are not flattened away', async () => {
+        // text -> tools (round 1) then final text (round 2). Flattening would
+        // drop the intermediate 'Looking it up'.
+        const conversation = makeConversation({
+            turns: [
+                {id: 't0', post_id: null, role: 'user', content: [], sequence: 0, tokens_in: 0, tokens_out: 0},
+                {
+                    id: 't1',
+                    post_id: null,
+                    role: 'assistant',
+                    sequence: 1,
+                    tokens_in: 0,
+                    tokens_out: 0,
+                    content: [
+                        {type: BlockType.Text, text: 'Looking it up'},
+                        {type: BlockType.ToolUse, id: 'tu1', name: 'search_docs', input: {q: 'x'}, status: ToolCallStatusString.Success},
+                    ],
+                },
+                {id: 't2', post_id: null, role: 'tool_result', sequence: 2, tokens_in: 0, tokens_out: 0, content: [{type: BlockType.ToolResult, tool_use_id: 'tu1', content: 'res'}]},
+                {id: 't3', post_id: POST_ID, role: 'assistant', sequence: 3, tokens_in: 0, tokens_out: 0, content: [{type: BlockType.Text, text: 'Final answer'}]},
+            ],
+        });
+        mockFetchConversation.mockResolvedValue({data: conversation});
+
+        const {findByText, getByText} = renderWithIntlAndTheme(
+            <AgentPostNew
+                post={makePost({message: 'Final answer'})}
+                conversationId={CONV_ID}
+                currentUserId={USER_ID}
+                location={Screens.CHANNEL}
+                isDM={true}
+            />,
+        );
+
+        expect(await findByText('Looking it up')).toBeTruthy();
+        expect(getByText('Final answer')).toBeTruthy();
+        expect(getByText('Search Docs')).toBeTruthy();
+    });
+});
+
+describe('AgentPostNew — regenerate gating (C9 no_regen)', () => {
+    const regenConversation = makeConversation({
+        turns: [
+            {id: 't1', post_id: POST_ID, role: 'assistant', sequence: 1, tokens_in: 0, tokens_out: 0, content: [{type: BlockType.Text, text: 'Answer'}]},
+        ],
+    });
+
+    it('should show the regenerate button for the requester in a DM with content', async () => {
+        mockFetchConversation.mockResolvedValue({data: regenConversation});
+
+        const {findByText, queryByTestId} = renderWithIntlAndTheme(
+            <AgentPostNew
+                post={makePost({message: 'Answer'})}
+                conversationId={CONV_ID}
+                currentUserId={USER_ID}
+                location={Screens.CHANNEL}
+                isDM={true}
+            />,
+        );
+
+        await findByText('Answer');
+        expect(queryByTestId('agents.controls_bar.regenerate_button')).toBeTruthy();
+    });
+
+    it('should hide the regenerate button when the post is marked no_regen', async () => {
+        mockFetchConversation.mockResolvedValue({data: regenConversation});
+
+        const {findByText, queryByTestId} = renderWithIntlAndTheme(
+            <AgentPostNew
+                post={makePost({message: 'Answer', props: {conversation_id: CONV_ID, no_regen: 'true'}})}
+                conversationId={CONV_ID}
+                currentUserId={USER_ID}
+                location={Screens.CHANNEL}
+                isDM={true}
+            />,
+        );
+
+        await findByText('Answer');
+        expect(queryByTestId('agents.controls_bar.regenerate_button')).toBeNull();
+    });
+});
+
+describe('AgentPostNew — streaming control (C5 continue, C6 stop guard)', () => {
+    it('should clear live buffers and show the generating placeholder on a continue resume', async () => {
+        mockFetchConversation.mockResolvedValue({data: makeConversation()});
+
+        const {getByText, queryByText} = renderWithIntlAndTheme(
+            <AgentPostNew
+                post={makePost()}
+                conversationId={CONV_ID}
+                currentUserId={USER_ID}
+                location={Screens.CHANNEL}
+                isDM={true}
+            />,
+        );
+
+        await act(async () => {
+            streamingStore.handleWebSocketMessage('https://test.mattermost.com', {post_id: POST_ID, control: CONTROL_SIGNALS.START});
+            streamingStore.handleWebSocketMessage('https://test.mattermost.com', {post_id: POST_ID, next: 'first round text'});
+            await flush();
+        });
+        expect(getByText('first round text')).toBeTruthy();
+
+        await act(async () => {
+            streamingStore.handleWebSocketMessage('https://test.mattermost.com', {post_id: POST_ID, control: CONTROL_SIGNALS.CONTINUE});
+            await flush();
+        });
+
+        expect(queryByText('first round text')).toBeNull();
+        expect(getByText('Generating response...')).toBeTruthy();
+    });
+
+    it('should ignore late streaming text after the user taps Stop', async () => {
+        mockFetchConversation.mockResolvedValue({data: makeConversation()});
+
+        const {getByText, getByTestId, queryByText} = renderWithIntlAndTheme(
+            <AgentPostNew
+                post={makePost()}
+                conversationId={CONV_ID}
+                currentUserId={USER_ID}
+                location={Screens.CHANNEL}
+                isDM={true}
+            />,
+        );
+
+        await act(async () => {
+            streamingStore.handleWebSocketMessage('https://test.mattermost.com', {post_id: POST_ID, control: CONTROL_SIGNALS.START});
+            streamingStore.handleWebSocketMessage('https://test.mattermost.com', {post_id: POST_ID, next: 'partial answer'});
+            await flush();
+        });
+        expect(getByText('partial answer')).toBeTruthy();
+
+        await act(async () => {
+            fireEvent.press(getByTestId('agents.controls_bar.stop_button'));
+            await flush();
+        });
+
+        await act(async () => {
+            streamingStore.handleWebSocketMessage('https://test.mattermost.com', {post_id: POST_ID, next: 'late text'});
+            await flush();
+        });
+
+        expect(queryByText('late text')).toBeNull();
+        expect(getByText('partial answer')).toBeTruthy();
     });
 });

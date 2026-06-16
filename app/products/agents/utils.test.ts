@@ -5,7 +5,7 @@ import {AGENT_POST_TYPES} from '@agents/constants';
 import {ToolApprovalStage, ToolCallStatus, type ToolCall} from '@agents/types';
 import TestHelper from '@test/test_helper';
 
-import {isAgentPost, isPostRequester, isToolCallRedacted, isPendingToolResult, getToolApprovalStage, mergeToolCalls} from './utils';
+import {isAgentMentionReminderPost, isAgentPost, isPostRequester, isToolCallRedacted, isPendingToolResult, getToolApprovalStage, mergeToolCalls} from './utils';
 
 describe('isAgentPost', () => {
     describe('with Post objects', () => {
@@ -43,6 +43,26 @@ describe('isAgentPost', () => {
             const postModel = TestHelper.fakePostModel({type: ''});
             expect(isAgentPost(postModel)).toBe(false);
         });
+    });
+
+    it('returns false for the mention reminder type so it is not routed to the streaming renderer', () => {
+        const post = TestHelper.fakePost({type: AGENT_POST_TYPES.AGENT_MENTION_REMINDER});
+        expect(isAgentPost(post)).toBe(false);
+    });
+});
+
+describe('isAgentMentionReminderPost', () => {
+    it('returns true for the mention reminder type', () => {
+        const post = TestHelper.fakePost({type: AGENT_POST_TYPES.AGENT_MENTION_REMINDER});
+        expect(isAgentMentionReminderPost(post)).toBe(true);
+
+        const postModel = TestHelper.fakePostModel({type: AGENT_POST_TYPES.AGENT_MENTION_REMINDER});
+        expect(isAgentMentionReminderPost(postModel)).toBe(true);
+    });
+
+    it('returns false for other agent and non-agent post types', () => {
+        expect(isAgentMentionReminderPost(TestHelper.fakePost({type: AGENT_POST_TYPES.LLMBOT}))).toBe(false);
+        expect(isAgentMentionReminderPost(TestHelper.fakePost({type: ''}))).toBe(false);
     });
 });
 

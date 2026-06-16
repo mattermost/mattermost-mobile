@@ -17,6 +17,14 @@ jest.mock('@components/markdown', () => {
     return MockMarkdown;
 });
 
+// Mock Loading so the in-flight status spinner is queryable.
+jest.mock('@components/loading', () => {
+    const {View} = require('react-native');
+    const MockLoading = () => <View testID='tool-loading'/>;
+    MockLoading.displayName = 'MockLoading';
+    return MockLoading;
+});
+
 describe('ToolCard', () => {
     const createMockTool = (overrides: Partial<ToolCall> = {}): ToolCall => ({
         id: 'tool-123',
@@ -325,6 +333,32 @@ describe('ToolCard', () => {
             const {queryByTestId} = renderWithIntlAndTheme(<ToolCard {...props}/>);
 
             expect(queryByTestId('agents.tool_card.tool-123.warning')).toBeNull();
+        });
+
+        it('should hide the warning callout when the viewer cannot approve (C1)', () => {
+            const props = {...getResultPhaseProps(), canApprove: false};
+            const {queryByTestId} = renderWithIntlAndTheme(<ToolCard {...props}/>);
+
+            expect(queryByTestId('agents.tool_card.tool-123.warning')).toBeNull();
+        });
+    });
+
+    describe('auto-approved badge (C4)', () => {
+        it('should show a persistent auto-approved badge even when collapsed', () => {
+            const props = getBaseProps();
+            props.tool = createMockTool({status: ToolCallStatus.AutoApproved, result: 'done'});
+            props.isCollapsed = true;
+            const {getByTestId} = renderWithIntlAndTheme(<ToolCard {...props}/>);
+
+            expect(getByTestId('agents.tool_card.tool-123.auto_approved_badge')).toBeTruthy();
+        });
+
+        it('should show a processing spinner for an in-flight accepted tool', () => {
+            const props = getBaseProps();
+            props.tool = createMockTool({status: ToolCallStatus.Accepted});
+            const {getByTestId} = renderWithIntlAndTheme(<ToolCard {...props}/>);
+
+            expect(getByTestId('tool-loading')).toBeTruthy();
         });
     });
 

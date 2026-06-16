@@ -9,6 +9,7 @@ import {
     type Annotation,
     type ContentBlock,
     type ConversationResponse,
+    type Round,
     type ToolCall,
     type Turn,
 } from '@agents/types';
@@ -65,6 +66,33 @@ export function collectResponseTurns(conversation: ConversationResponse, postId:
     return out;
 }
 
+// Index every tool_result block in the conversation by tool_use_id. Results
+// may land after the anchor when newly-approved tools resolve, so search every
+// turn instead of only the collected response range.
+function buildToolResultMap(conversation: ConversationResponse): Map<string, ContentBlock> {
+    const resultMap = new Map<string, ContentBlock>();
+    for (const t of conversation.turns) {
+        for (const block of t.content) {
+            if (block.type === BlockType.ToolResult && block.tool_use_id) {
+                resultMap.set(block.tool_use_id, block);
+            }
+        }
+    }
+    return resultMap;
+}
+
+function toolUseBlockToToolCall(block: ContentBlock, resultMap: Map<string, ContentBlock>): ToolCall {
+    const resultBlock = block.id ? resultMap.get(block.id) : undefined;
+    return {
+        id: block.id ?? '',
+        name: block.name ?? '',
+        description: '',
+        arguments: block.input ?? undefined,
+        result: resultBlock?.content ?? undefined,
+        status: statusStringToEnum(block.status),
+    };
+}
+
 export function extractToolCallsForPost(conversation: ConversationResponse, postId: string): ToolCall[] {
     const turns = collectResponseTurns(conversation, postId);
     if (turns.length === 0) {
@@ -84,28 +112,8 @@ export function extractToolCallsForPost(conversation: ConversationResponse, post
         return [];
     }
 
-    // Results may land after the anchor when newly-approved tools resolve, so
-    // search every turn instead of only the collected response range.
-    const resultMap = new Map<string, ContentBlock>();
-    for (const t of conversation.turns) {
-        for (const block of t.content) {
-            if (block.type === BlockType.ToolResult && block.tool_use_id) {
-                resultMap.set(block.tool_use_id, block);
-            }
-        }
-    }
-
-    return toolUseBlocks.map((block): ToolCall => {
-        const resultBlock = block.id ? resultMap.get(block.id) : undefined;
-        return {
-            id: block.id ?? '',
-            name: block.name ?? '',
-            description: '',
-            arguments: block.input ?? undefined,
-            result: resultBlock?.content ?? undefined,
-            status: statusStringToEnum(block.status),
-        };
-    });
+    const resultMap = buildToolResultMap(conversation);
+    return toolUseBlocks.map((block) => toolUseBlockToToolCall(block, resultMap));
 }
 
 export function extractReasoningFromTurn(turn: Turn | undefined): {summary: string; signature: string} {
@@ -146,6 +154,39 @@ export function extractAnnotationsFromTurn(turn: Turn | undefined): Annotation[]
     }
 
     return annotations;
+}
+
+// Build the ordered rounds for a post's response: one Round per assistant turn,
+// in sequence order, so multi-step tool answers render in their true order
+// instead of being flattened into a single block.
+export function buildRoundsFromTurns(conversation: ConversationResponse, postId: string): Round[] {
+    const turns = collectResponseTurns(conversation, postId);
+    if (turns.length === 0) {
+        return [];
+    }
+
+    const resultMap = buildToolResultMap(conversation);
+    const rounds: Round[] = [];
+    for (const turn of turns) {
+        if (turn.role !== 'assistant') {
+            continue;
+        }
+        const text = turn.content.
+            filter((b) => b.type === BlockType.Text).
+            map((b) => b.text ?? '').
+            join('');
+        const toolCalls = turn.content.
+            filter((b) => b.type === BlockType.ToolUse).
+            map((block) => toolUseBlockToToolCall(block, resultMap));
+        rounds.push({
+            id: turn.id,
+            text,
+            toolCalls,
+            reasoning: extractReasoningFromTurn(turn),
+            annotations: extractAnnotationsFromTurn(turn),
+        });
+    }
+    return rounds;
 }
 
 // Defaults to Done when the anchor or approval_state is missing so the UI

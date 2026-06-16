@@ -81,6 +81,31 @@ describe('ReasoningDisplay', () => {
         });
     });
 
+    describe('controlled mode', () => {
+        it('should follow the isExpanded prop and call onToggle instead of managing its own state', () => {
+            const onToggle = jest.fn();
+            const props = {...getBaseProps(), isExpanded: true, onToggle};
+            const {getByText, queryByText, rerender} = renderWithIntlAndTheme(<ReasoningDisplay {...props}/>);
+
+            // Controlled-expanded renders the content without an internal toggle.
+            expect(getByText('I am thinking about the problem step by step...')).toBeTruthy();
+
+            // Pressing reports the requested next state to the parent...
+            fireEvent.press(getByText('Thinking'));
+            expect(onToggle).toHaveBeenCalledWith(false);
+
+            // ...but the open/closed state only changes when the parent updates the prop.
+            expect(getByText('I am thinking about the problem step by step...')).toBeTruthy();
+            rerender(
+                <ReasoningDisplay
+                    {...props}
+                    isExpanded={false}
+                />,
+            );
+            expect(queryByText('I am thinking about the problem step by step...')).toBeNull();
+        });
+    });
+
     describe('reasoning content', () => {
         it('should render reasoning text when expanded', () => {
             const props = getBaseProps();

@@ -6,6 +6,7 @@ import {BlockType, ToolApprovalStage, ToolCallStatus, ToolCallStatusString, type
 import {
     anyToolHasArguments,
     anyToolHasResult,
+    buildRoundsFromTurns,
     collectResponseTurns,
     deriveApprovalStageForPost,
     extractAnnotationsFromTurn,
@@ -339,6 +340,80 @@ describe('deriveApprovalStageForPost', () => {
         ]);
 
         expect(deriveApprovalStageForPost(conversation, POST_ID)).toBe(ToolApprovalStage.Done);
+    });
+});
+
+describe('buildRoundsFromTurns', () => {
+    it('should return empty when no turn matches the post', () => {
+        const conversation = makeConversation([
+            makeTurn({sequence: 0, role: 'user', content: []}),
+        ]);
+
+        expect(buildRoundsFromTurns(conversation, POST_ID)).toEqual([]);
+    });
+
+    it('should build one round per assistant turn in sequence order, separating text and tools', () => {
+        const conversation = makeConversation([
+            makeTurn({sequence: 0, role: 'user', content: []}),
+            makeTurn({
+                sequence: 1,
+                role: 'assistant',
+                content: [
+                    {type: BlockType.Text, text: 'Looking it up'},
+                    {type: BlockType.ToolUse, id: 'call1', name: 'search', input: {q: 'hi'}, status: ToolCallStatusString.Success},
+                ],
+            }),
+            makeTurn({
+                sequence: 2,
+                role: 'tool_result',
+                content: [{type: BlockType.ToolResult, tool_use_id: 'call1', content: 'result text'}],
+            }),
+            makeTurn({sequence: 3, role: 'assistant', post_id: POST_ID, content: [{type: BlockType.Text, text: 'Done'}]}),
+        ]);
+
+        const rounds = buildRoundsFromTurns(conversation, POST_ID);
+
+        expect(rounds).toHaveLength(2);
+        expect(rounds[0].text).toBe('Looking it up');
+        expect(rounds[0].toolCalls).toHaveLength(1);
+        expect(rounds[0].toolCalls[0]).toMatchObject({id: 'call1', result: 'result text', status: ToolCallStatus.Success});
+        expect(rounds[1].text).toBe('Done');
+        expect(rounds[1].toolCalls).toHaveLength(0);
+    });
+
+    it('should skip non-assistant turns so round count equals the assistant-turn count', () => {
+        const conversation = makeConversation([
+            makeTurn({sequence: 0, role: 'user', content: []}),
+            makeTurn({sequence: 1, role: 'assistant', content: [{type: BlockType.ToolUse, id: 't1', name: 'x', status: ToolCallStatusString.Success}]}),
+            makeTurn({sequence: 2, role: 'tool_result', content: [{type: BlockType.ToolResult, tool_use_id: 't1', content: 'ok'}]}),
+            makeTurn({sequence: 3, role: 'assistant', post_id: POST_ID, content: [{type: BlockType.Text, text: 'final'}]}),
+        ]);
+
+        const rounds = buildRoundsFromTurns(conversation, POST_ID);
+
+        expect(rounds).toHaveLength(2);
+        expect(rounds.map((r) => r.id)).toEqual(['turn-1', 'turn-3']);
+    });
+
+    it('should attach reasoning to its own round rather than flattening onto the anchor', () => {
+        const conversation = makeConversation([
+            makeTurn({sequence: 0, role: 'user', content: []}),
+            makeTurn({
+                sequence: 1,
+                role: 'assistant',
+                content: [
+                    {type: BlockType.Thinking, text: 'early thought'},
+                    {type: BlockType.ToolUse, id: 't1', name: 'x', status: ToolCallStatusString.Success},
+                ],
+            }),
+            makeTurn({sequence: 2, role: 'tool_result', content: [{type: BlockType.ToolResult, tool_use_id: 't1', content: 'ok'}]}),
+            makeTurn({sequence: 3, role: 'assistant', post_id: POST_ID, content: [{type: BlockType.Text, text: 'final'}]}),
+        ]);
+
+        const rounds = buildRoundsFromTurns(conversation, POST_ID);
+
+        expect(rounds[0].reasoning.summary).toBe('early thought');
+        expect(rounds[1].reasoning.summary).toBe('');
     });
 });
 
