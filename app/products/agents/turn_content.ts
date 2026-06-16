@@ -9,6 +9,7 @@ import {
     type Annotation,
     type ContentBlock,
     type ConversationResponse,
+    type Reasoning,
     type Round,
     type ToolCall,
     type Turn,
@@ -93,30 +94,7 @@ function toolUseBlockToToolCall(block: ContentBlock, resultMap: Map<string, Cont
     };
 }
 
-export function extractToolCallsForPost(conversation: ConversationResponse, postId: string): ToolCall[] {
-    const turns = collectResponseTurns(conversation, postId);
-    if (turns.length === 0) {
-        return [];
-    }
-
-    const toolUseBlocks: ContentBlock[] = [];
-    for (const t of turns) {
-        for (const block of t.content) {
-            if (block.type === BlockType.ToolUse) {
-                toolUseBlocks.push(block);
-            }
-        }
-    }
-
-    if (toolUseBlocks.length === 0) {
-        return [];
-    }
-
-    const resultMap = buildToolResultMap(conversation);
-    return toolUseBlocks.map((block) => toolUseBlockToToolCall(block, resultMap));
-}
-
-export function extractReasoningFromTurn(turn: Turn | undefined): {summary: string; signature: string} {
+export function extractReasoningFromTurn(turn: Turn | undefined): Reasoning {
     if (!turn) {
         return {summary: '', signature: ''};
     }

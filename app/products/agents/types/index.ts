@@ -56,6 +56,14 @@ export interface Annotation {
 }
 
 /**
+ * Reasoning summary extracted from an assistant turn's thinking blocks.
+ */
+export interface Reasoning {
+    summary: string;
+    signature: string;
+}
+
+/**
  * One assistant turn in a response. A multi-step answer renders these as a
  * vertical sequence: text -> tools -> text -> tools -> final text.
  */
@@ -63,7 +71,7 @@ export interface Round {
     id: string;
     text: string;
     toolCalls: ToolCall[];
-    reasoning: {summary: string; signature: string};
+    reasoning: Reasoning;
     annotations: Annotation[];
 }
 
@@ -73,7 +81,7 @@ export interface Round {
 export interface PostUpdateWebsocketMessage {
     post_id: string;
     next?: string; // Full accumulated message text
-    control?: string; // Control signals: 'start', 'end', 'cancel', 'reasoning_summary', 'tool_call', 'annotations'
+    control?: string; // Control signals: 'start', 'end', 'cancel', 'continue', 'reasoning_summary', 'reasoning_summary_done', 'tool_call', 'annotations'
     tool_call?: string; // JSON-encoded tool calls
     reasoning?: string; // Reasoning summary text
     annotations?: string; // JSON-encoded citations

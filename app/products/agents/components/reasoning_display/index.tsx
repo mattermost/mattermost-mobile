@@ -1,7 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React, {useCallback, useEffect, useState} from 'react';
+import React, {useCallback, useEffect, useRef, useState} from 'react';
 import {Pressable, Text, View} from 'react-native';
 import Animated, {useAnimatedStyle, useSharedValue, withTiming} from 'react-native-reanimated';
 
@@ -86,8 +86,12 @@ const ReasoningDisplay = ({reasoningSummary, isReasoningLoading, isExpanded: isE
     const isControlled = isExpandedProp !== undefined;
     const [localExpanded, setLocalExpanded] = useState(false);
     const isExpanded = isControlled ? isExpandedProp : localExpanded;
-    const rotation = useSharedValue(0);
-    const contentOpacity = useSharedValue(0);
+
+    // Seed from the initial expanded state so a round that mounts already
+    // expanded renders open instantly instead of animating in from 0.
+    const rotation = useSharedValue(isExpanded ? 90 : 0);
+    const contentOpacity = useSharedValue(isExpanded ? 1 : 0);
+    const hasAnimated = useRef(false);
 
     const handleToggle = useCallback(() => {
         const newExpanded = !isExpanded;
@@ -99,9 +103,14 @@ const ReasoningDisplay = ({reasoningSummary, isReasoningLoading, isExpanded: isE
     }, [isExpanded, isControlled, onToggle]);
 
     // Drive the chevron + content animations from the (possibly controlled)
-    // expanded state so they stay in sync with the prop, including its initial
-    // value on mount.
+    // expanded state so they stay in sync with the prop. The shared values are
+    // seeded from the initial state above, so skip the first run and animate
+    // only on subsequent toggles.
     useEffect(() => {
+        if (!hasAnimated.current) {
+            hasAnimated.current = true;
+            return;
+        }
         rotation.value = withTiming(isExpanded ? 90 : 0, {duration: 200});
         contentOpacity.value = withTiming(isExpanded ? 1 : 0, {duration: 250});
     }, [isExpanded, rotation, contentOpacity]);

@@ -5,12 +5,15 @@ import {act} from '@testing-library/react-native';
 import React from 'react';
 
 import {loopInAgent} from '@agents/actions/remote/loop_in_agent';
+import loopInStore from '@agents/store/loop_in_store';
 import {fireEvent, renderWithIntlAndTheme} from '@test/intl-test-helper';
 import TestHelper from '@test/test_helper';
 
 import AgentMentionReminderPost from './index';
 
 import type PostModel from '@typings/database/models/servers/post';
+
+const SERVER_URL = 'https://test.mattermost.com';
 
 jest.mock('@agents/actions/remote/loop_in_agent', () => ({
     loopInAgent: jest.fn(),
@@ -34,6 +37,10 @@ const makePost = (props: Record<string, unknown>, message = 'raw reminder messag
 
 beforeEach(() => {
     jest.clearAllMocks();
+
+    // Real store (not mocked) so the remount-persistence behavior is exercised;
+    // clear it between tests so a looped-in target from one test doesn't leak.
+    loopInStore.removeServer(SERVER_URL);
 });
 
 describe('AgentMentionReminderPost', () => {
@@ -45,7 +52,7 @@ describe('AgentMentionReminderPost', () => {
     });
 
     it('should fall back to the bot username when no display name is provided', () => {
-        const {getByText} = renderWithIntlAndTheme(<AgentMentionReminderPost post={makePost({bot_username: 'ai-bot'})}/>);
+        const {getByText} = renderWithIntlAndTheme(<AgentMentionReminderPost post={makePost({bot_username: 'ai-bot', target_post_id: 'target-1'})}/>);
 
         expect(getByText('click here to loop in @ai-bot')).toBeTruthy();
     });
@@ -55,6 +62,17 @@ describe('AgentMentionReminderPost', () => {
             <AgentMentionReminderPost post={makePost({}, 'You must @mention an agent.')}/>,
         );
 
+        expect(getByText('You must @mention an agent.')).toBeTruthy();
+        expect(queryByTestId(LINK_TESTID)).toBeNull();
+    });
+
+    it('should render the raw message with no link when the target post id is missing', () => {
+        const {getByText, queryByTestId} = renderWithIntlAndTheme(
+            <AgentMentionReminderPost post={makePost({bot_username: 'ai-bot'}, 'You must @mention an agent.')}/>,
+        );
+
+        // Without a target post id there is nothing to loop the agent into, so the
+        // interactive link is suppressed rather than retargeting the reminder itself.
         expect(getByText('You must @mention an agent.')).toBeTruthy();
         expect(queryByTestId(LINK_TESTID)).toBeNull();
     });
@@ -100,5 +118,23 @@ describe('AgentMentionReminderPost', () => {
         });
 
         expect(getByText('Failed to loop in @AI Bot. Please try again.')).toBeTruthy();
+    });
+
+    it('should keep showing the confirmation after the row is recycled (remount)', async () => {
+        (loopInAgent as jest.Mock).mockResolvedValue({});
+
+        const first = renderWithIntlAndTheme(<AgentMentionReminderPost post={makePost(botProps)}/>);
+        await act(async () => {
+            fireEvent.press(first.getByTestId(LINK_TESTID));
+        });
+        expect(first.getByText('Looped in @AI Bot.')).toBeTruthy();
+        first.unmount();
+
+        // A fresh mount of the same reminder (the post scrolled back into view)
+        // reads the looped-in state from the session store instead of resetting
+        // to an actionable link.
+        const remounted = renderWithIntlAndTheme(<AgentMentionReminderPost post={makePost(botProps)}/>);
+        expect(remounted.getByText('Looped in @AI Bot.')).toBeTruthy();
+        expect(remounted.queryByTestId(LINK_TESTID)).toBeNull();
     });
 });

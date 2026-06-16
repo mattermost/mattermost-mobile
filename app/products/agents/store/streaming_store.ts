@@ -25,7 +25,9 @@ function isResolvedToolCallEvent(toolCalls: ToolCall[]): boolean {
 
 // Merge incoming tool calls into the existing list by id: update in place when
 // the id is known (status transitions), append when new, preserving order.
-function mergeToolCalls(existing: ToolCall[], incoming: ToolCall[]): ToolCall[] {
+// Named distinctly from the unrelated `mergeToolCalls` in @agents/utils (which
+// merges public + private redaction data) to avoid conflating the two.
+function mergeToolCallsById(existing: ToolCall[], incoming: ToolCall[]): ToolCall[] {
     const byId = new Map<string, number>();
     const merged = [...existing];
     for (let i = 0; i < merged.length; i++) {
@@ -133,8 +135,9 @@ class StreamingStoreSingleton {
         });
     };
 
-    // Set when the user taps Stop so late `next` events are ignored until the
-    // next start/cancel/end/continue. Mirrors the webapp stopped flag.
+    // Set when the user taps Stop so late streaming events (message text,
+    // reasoning, tool calls, annotations) are ignored until the next
+    // start/cancel/end/continue. Mirrors the webapp stopped flag.
     markStopped = (serverUrl: string, postId: string): void => {
         const state = this.getStreamingState(serverUrl, postId);
         if (!state) {
@@ -203,7 +206,7 @@ class StreamingStoreSingleton {
 
         try {
             const parsedToolCalls = JSON.parse(toolCallsJson) as ToolCall[];
-            const merged = mergeToolCalls(state.toolCalls, parsedToolCalls);
+            const merged = mergeToolCallsById(state.toolCalls, parsedToolCalls);
 
             if (isResolvedToolCallEvent(merged)) {
                 const round: Round = {
@@ -275,6 +278,14 @@ class StreamingStoreSingleton {
             return;
         }
 
+        // Once the user taps Stop, ignore every late content event (reasoning,
+        // tool calls, annotations, message text) until one of the control
+        // signals handled above clears the stopped flag.
+        if (this.getStreamingState(serverUrl, post_id)?.stopped) {
+            logDebug('[StreamingStoreSingleton.handleWebSocketMessage] ignoring event while stopped', {serverUrl, postId: post_id, control});
+            return;
+        }
+
         // Handle reasoning summary updates
         if (control === CONTROL_SIGNALS.REASONING_SUMMARY && reasoning) {
             // Replace entire reasoning with accumulated text from backend
@@ -314,14 +325,6 @@ class StreamingStoreSingleton {
 
         // Handle message updates
         if (next) {
-            // Ignore late `next` events after the user stopped generation, until
-            // a start/cancel/end/continue control clears the stopped flag.
-            const current = this.getStreamingState(serverUrl, post_id);
-            if (current?.stopped) {
-                logDebug('[StreamingStoreSingleton.handleWebSocketMessage] ignoring next while stopped', {serverUrl, postId: post_id});
-                return;
-            }
-
             // Message comes as full accumulated text, not delta
             this.updateMessage(serverUrl, post_id, next);
         }

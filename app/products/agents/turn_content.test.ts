@@ -11,7 +11,6 @@ import {
     deriveApprovalStageForPost,
     extractAnnotationsFromTurn,
     extractReasoningFromTurn,
-    extractToolCallsForPost,
     statusStringToEnum,
 } from './turn_content';
 
@@ -117,93 +116,6 @@ describe('collectResponseTurns', () => {
         const turns = collectResponseTurns(conversation, POST_ID);
 
         expect(turns.map((t) => t.sequence)).toEqual([1, 2]);
-    });
-});
-
-describe('extractToolCallsForPost', () => {
-    it('should pair tool_use blocks with their matching tool_result by id', () => {
-        const conversation = makeConversation([
-            makeTurn({sequence: 0, role: 'user', content: []}),
-            makeTurn({
-                sequence: 1,
-                role: 'assistant',
-                content: [{
-                    type: BlockType.ToolUse,
-                    id: 'call1',
-                    name: 'search',
-                    input: {q: 'hi'},
-                    status: ToolCallStatusString.Success,
-                }],
-            }),
-            makeTurn({
-                sequence: 2,
-                role: 'tool_result',
-                content: [{type: BlockType.ToolResult, tool_use_id: 'call1', content: 'result text'}],
-            }),
-            makeTurn({sequence: 3, role: 'assistant', post_id: POST_ID, content: [{type: BlockType.Text, text: ''}]}),
-        ]);
-
-        const calls = extractToolCallsForPost(conversation, POST_ID);
-
-        expect(calls).toHaveLength(1);
-        expect(calls[0]).toMatchObject({
-            id: 'call1',
-            name: 'search',
-            arguments: {q: 'hi'},
-            result: 'result text',
-            status: ToolCallStatus.Success,
-        });
-    });
-
-    it('should find results that arrive in turns after the anchor', () => {
-        const conversation = makeConversation([
-            makeTurn({sequence: 0, role: 'user', content: []}),
-            makeTurn({
-                sequence: 1,
-                role: 'assistant',
-                post_id: POST_ID,
-                content: [{
-                    type: BlockType.ToolUse,
-                    id: 'call1',
-                    name: 'search',
-                    input: {q: 'hi'},
-                    status: ToolCallStatusString.Pending,
-                }],
-            }),
-            makeTurn({
-                sequence: 2,
-                role: 'tool_result',
-                content: [{type: BlockType.ToolResult, tool_use_id: 'call1', content: 'late result'}],
-            }),
-        ]);
-
-        const calls = extractToolCallsForPost(conversation, POST_ID);
-
-        expect(calls).toHaveLength(1);
-        expect(calls[0].result).toBe('late result');
-    });
-
-    it('should return empty arguments when the tool_use input is nulled by the server privacy filter', () => {
-        const conversation = makeConversation([
-            makeTurn({sequence: 0, role: 'user', content: []}),
-            makeTurn({
-                sequence: 1,
-                role: 'assistant',
-                post_id: POST_ID,
-                content: [{
-                    type: BlockType.ToolUse,
-                    id: 'call1',
-                    name: 'search',
-                    input: null,
-                    status: ToolCallStatusString.Success,
-                }],
-            }),
-        ]);
-
-        const calls = extractToolCallsForPost(conversation, POST_ID);
-
-        expect(calls).toHaveLength(1);
-        expect(calls[0].arguments).toBeUndefined();
     });
 });
 
@@ -449,6 +361,41 @@ describe('buildRoundsFromTurns', () => {
 
         expect(rounds[0].reasoning.summary).toBe('early thought');
         expect(rounds[1].reasoning.summary).toBe('');
+    });
+
+    it('should pair a tool with a result that lands in a turn after the anchor', () => {
+        const conversation = makeConversation([
+            makeTurn({sequence: 0, role: 'user', content: []}),
+            makeTurn({
+                sequence: 1,
+                role: 'assistant',
+                post_id: POST_ID,
+                content: [{type: BlockType.ToolUse, id: 'call1', name: 'search', input: {q: 'hi'}, status: ToolCallStatusString.Pending}],
+            }),
+            makeTurn({sequence: 2, role: 'tool_result', content: [{type: BlockType.ToolResult, tool_use_id: 'call1', content: 'late result'}]}),
+        ]);
+
+        const rounds = buildRoundsFromTurns(conversation, POST_ID);
+
+        expect(rounds).toHaveLength(1);
+        expect(rounds[0].toolCalls).toHaveLength(1);
+        expect(rounds[0].toolCalls[0].result).toBe('late result');
+    });
+
+    it('should yield undefined arguments when the tool_use input was nulled by the privacy filter', () => {
+        const conversation = makeConversation([
+            makeTurn({sequence: 0, role: 'user', content: []}),
+            makeTurn({
+                sequence: 1,
+                role: 'assistant',
+                post_id: POST_ID,
+                content: [{type: BlockType.ToolUse, id: 'call1', name: 'search', input: null, status: ToolCallStatusString.Success}],
+            }),
+        ]);
+
+        const rounds = buildRoundsFromTurns(conversation, POST_ID);
+
+        expect(rounds[0].toolCalls[0].arguments).toBeUndefined();
     });
 });
 

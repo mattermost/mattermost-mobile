@@ -1,12 +1,12 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {useEffect, useMemo, useState} from 'react';
+import {useEffect, useState} from 'react';
 import {BehaviorSubject, type Observable} from 'rxjs';
 
 import {ensureConversation} from '@agents/actions/remote/conversation';
 
-import type {ConversationResponse, Turn} from '@agents/types';
+import type {ConversationResponse} from '@agents/types';
 
 export interface ConversationState {
     conversation?: ConversationResponse;
@@ -87,15 +87,6 @@ export function useConversation(serverUrl: string, conversationId?: string): Con
     }, [serverUrl, conversationId]);
 
     return state;
-}
-
-export function useTurnForPost(conversation: ConversationResponse | undefined, postId: string): Turn | undefined {
-    return useMemo(() => {
-        if (!conversation) {
-            return undefined;
-        }
-        return conversation.turns.find((turn) => turn.post_id === postId);
-    }, [conversation, postId]);
 }
 
 export default conversationStore;

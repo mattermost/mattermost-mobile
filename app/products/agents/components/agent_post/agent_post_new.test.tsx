@@ -658,3 +658,44 @@ describe('AgentPostNew — streaming control (C5 continue, C6 stop guard)', () =
         expect(getByText('partial answer')).toBeTruthy();
     });
 });
+
+describe('AgentPostNew — combined Sources aggregation', () => {
+    it('should keep distinct citations that lack a url rather than collapsing them by empty url', async () => {
+        const conversation = makeConversation({
+            turns: [
+                {id: 't0', post_id: null, role: 'user', content: [], sequence: 0, tokens_in: 0, tokens_out: 0},
+                {
+                    id: 't1',
+                    post_id: POST_ID,
+                    role: 'assistant',
+                    sequence: 1,
+                    tokens_in: 0,
+                    tokens_out: 0,
+                    content: [{
+                        type: BlockType.Text,
+                        text: 'Answer',
+                        citations: [
+                            {type: 'url_citation', start_index: 0, end_index: 1, title: 'First source'},
+                            {type: 'url_citation', start_index: 1, end_index: 2, title: 'Second source'},
+                        ],
+                    }],
+                },
+            ],
+        });
+        mockFetchConversation.mockResolvedValue({data: conversation});
+
+        const {findByText} = renderWithIntlAndTheme(
+            <AgentPostNew
+                post={makePost({message: 'Answer'})}
+                conversationId={CONV_ID}
+                currentUserId={USER_ID}
+                location={Screens.CHANNEL}
+                isDM={true}
+            />,
+        );
+
+        // Both url-less citations survive; a strict dedup-by-url would have
+        // collapsed them into a single 'Sources (1)'.
+        expect(await findByText('Sources (2)')).toBeTruthy();
+    });
+});

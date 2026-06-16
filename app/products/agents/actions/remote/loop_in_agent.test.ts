@@ -36,7 +36,6 @@ describe('loopInAgent', () => {
         expect(NetworkManager.getClient).toHaveBeenCalledWith(serverUrl);
         expect(mockClient.doLoopInAgent).toHaveBeenCalledWith(postId, botUsername);
         expect(result).toEqual({});
-        expect(result.error).toBeUndefined();
     });
 
     it('should return error object and log error on failure', async () => {

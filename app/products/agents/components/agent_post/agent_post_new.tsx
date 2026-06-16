@@ -278,16 +278,19 @@ const AgentPostNew = ({post, conversationId, currentUserId, location, isDM}: Age
     const anchorStage = conversation ? deriveApprovalStageForPost(conversation, post.id) : ToolApprovalStage.Done;
     const lastRenderedIdx = renderedRounds.length - 1;
 
-    // Combined Sources list at the bottom, aggregated across rounds (deduped by url).
+    // Combined Sources list at the bottom, aggregated across rounds. Dedupe only
+    // by non-empty url; citations without a url can't be meaningfully deduped and
+    // are all kept (matches the legacy renderer + CitationsList, which key on index).
     const annotations = useMemo<Annotation[]>(() => {
         const seen = new Set<string>();
         const all: Annotation[] = [];
         for (const round of renderedRounds) {
             for (const annotation of round.annotations) {
-                if (!seen.has(annotation.url)) {
-                    seen.add(annotation.url);
-                    all.push(annotation);
+                if (annotation.url && seen.has(annotation.url)) {
+                    continue;
                 }
+                seen.add(annotation.url);
+                all.push(annotation);
             }
         }
         return all;

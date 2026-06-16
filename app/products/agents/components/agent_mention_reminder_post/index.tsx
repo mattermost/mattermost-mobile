@@ -6,6 +6,7 @@ import {defineMessages, useIntl} from 'react-intl';
 import {Text, View} from 'react-native';
 
 import {loopInAgent} from '@agents/actions/remote/loop_in_agent';
+import loopInStore from '@agents/store/loop_in_store';
 import FormattedText from '@components/formatted_text';
 import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
@@ -73,22 +74,32 @@ const AgentMentionReminderPost = ({post}: Props) => {
     const botUsername = (props?.bot_username as string) ?? '';
     const rawDisplayName = (props?.bot_display_name as string)?.trim();
     const botDisplayName = rawDisplayName || botUsername;
-    const targetPostId = (props?.target_post_id as string) || post.id;
+    const targetPostId = (props?.target_post_id as string) ?? '';
 
-    const [status, setStatus] = useState<LoopInStatus>('idle');
+    // Seed from the session store so a recycled row (scrolled away and back)
+    // keeps the looped-in confirmation instead of resetting to an actionable link.
+    const [status, setStatus] = useState<LoopInStatus>(
+        () => (targetPostId && loopInStore.hasLoopedIn(serverUrl, targetPostId) ? 'done' : 'idle'),
+    );
     const pending = status === 'pending';
 
     const onPress = usePreventDoubleTap(useCallback(async () => {
-        if (pending || status === 'done' || !botUsername || !targetPostId) {
+        if (pending || status === 'done') {
             return;
         }
         setStatus('pending');
         const {error} = await loopInAgent(serverUrl, targetPostId, botUsername);
-        setStatus(error ? 'error' : 'done');
+        if (error) {
+            setStatus('error');
+            return;
+        }
+        loopInStore.markLoopedIn(serverUrl, targetPostId);
+        setStatus('done');
     }, [pending, status, botUsername, targetPostId, serverUrl]));
 
-    // Without a bot username the server sent a plain reminder; render its text.
-    if (!botUsername) {
+    // Without a bot username or a target post id the server sent a plain
+    // reminder; render its text rather than a dead loop-in link.
+    if (!botUsername || !targetPostId) {
         return (
             <Text style={styles.hint}>{post.message}</Text>
         );
