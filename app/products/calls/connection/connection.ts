@@ -47,6 +47,11 @@ export async function newConnection(
     let onCallEnd: EmitterSubscription | null = null;
     let audioDeviceChanged: EmitterSubscription | null = null;
     let wiredHeadsetEvent: EmitterSubscription | null = null;
+
+    // Resolver for waitForPeerConnection. Set before peer exists;
+    // called from inside ws.on('join') once peer emits 'connect'.
+    let onPeerConnected: ((sessionId: string) => void) | null = null;
+
     const streams: MediaStream[] = [];
     let rtcMonitor: RTCMonitor | null = null;
     const logger = {
@@ -99,6 +104,9 @@ export async function newConnection(
     }
 
     const ws = new WebSocketClient(serverUrl, client.getWebSocketUrl(), credentials?.token);
+
+    InCallManager.start();
+    InCallManager.stopProximitySensor();
 
     // Throws an error, to be caught by caller.
     await ws.initialize();
@@ -300,7 +308,6 @@ export async function newConnection(
             });
         } else {
             logDebug('calls: ws open, sending join msg');
-
             ws.send('join', {
                 channelID,
                 title,
@@ -322,9 +329,6 @@ export async function newConnection(
                 logWarning('calls: failed to fetch TURN credentials:', getFullErrorMessage(err));
             }
         }
-
-        InCallManager.start();
-        InCallManager.stopProximitySensor();
 
         let btInitialized = false;
         let speakerInitialized = false;
@@ -438,6 +442,14 @@ export async function newConnection(
                 disconnect();
             }
         });
+
+        peer.once('connect', () => {
+            if (onPeerConnected) {
+                rtcMonitor?.start();
+                onPeerConnected(ws.sessionID);
+                onPeerConnected = null;
+            }
+        });
     });
 
     ws.on('message', ({data}: { data: string }) => {
@@ -451,23 +463,15 @@ export async function newConnection(
     });
 
     const waitForPeerConnection = () => {
-        const waitForReadyImpl = (callback: (sessionId: string) => void, fail: (reason: string) => void, timeout: number) => {
-            if (timeout <= 0) {
-                fail('timed out waiting for peer connection');
-                return;
-            }
-            setTimeout(() => {
-                if (peer?.connected) {
-                    rtcMonitor?.start();
-                    callback(ws.sessionID);
-                } else {
-                    waitForReadyImpl(callback, fail, timeout - 200);
-                }
-            }, 200);
-        };
-
         return new Promise<string>((resolve, reject) => {
-            waitForReadyImpl(resolve, reject, peerConnectTimeout);
+            onPeerConnected = resolve;
+
+            setTimeout(() => {
+                if (onPeerConnected) {
+                    onPeerConnected = null;
+                    reject(new Error('timed out waiting for peer connection'));
+                }
+            }, peerConnectTimeout);
         });
     };
 

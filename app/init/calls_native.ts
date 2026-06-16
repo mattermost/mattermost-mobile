@@ -160,10 +160,10 @@ class CallsNativeSingleton {
             // returning, so we know RTC is up at this point.
             CallsNative.reportConnected(uuid);
 
-            // Mattermost calls always start muted regardless of mic
-            // permission. Sync Native so its lock-screen mic icon matches
-            // the JS-side mute state from the moment the call connects.
-            CallsNative.setMuted(uuid, true);
+            // Ring notifications only fire for DM/GM, so an answered native
+            // call is always DM/GM — match the in-app DM/GM join behavior
+            // and unmute. unmuteMyself mirrors the state to the native UI.
+            unmuteMyself();
         } catch (error) {
             logError('onCallAnswered failed', error);
             CallsNative.reportEnded(uuid, 'failed');
