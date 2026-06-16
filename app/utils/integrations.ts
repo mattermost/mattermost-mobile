@@ -121,7 +121,7 @@ export function checkDialogElementForError(elem: DialogElement, value: any, intl
         }
     } else if (type === DialogElementTypes.DATE || type === DialogElementTypes.DATETIME) {
         // Required date/datetime fields must have a value
-        if (!elem.optional && (typeof value === 'undefined' || value === '' || value === null)) {
+        if (!elem.optional && (value == null || value === '')) {
             return fieldRequiredError;
         }
     }

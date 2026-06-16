@@ -1,37 +1,29 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {withDatabase, withObservables} from '@nozbe/watermelondb/react';
 import moment, {type Moment} from 'moment-timezone';
 import React, {useCallback, useMemo} from 'react';
 import {useIntl} from 'react-intl';
 import {View, Text} from 'react-native';
-import {of as of$} from 'rxjs';
-import {switchMap} from 'rxjs/operators';
 
 import AutocompleteSelector from '@components/autocomplete_selector';
 import DateTimeSelector from '@components/date_time_selector';
 import FormattedDate from '@components/formatted_date';
+import FormattedText from '@components/formatted_text';
 import FormattedTime from '@components/formatted_time';
 import Markdown from '@components/markdown';
 import BoolSetting from '@components/settings/bool_setting';
 import RadioSetting from '@components/settings/radio_setting';
 import TextSetting from '@components/settings/text_setting';
-import {Preferences, Screens, View as ViewConstants} from '@constants';
+import {Screens, View as ViewConstants} from '@constants';
 import {AppFieldTypes, DEFAULT_TIME_INTERVAL_MINUTES, SelectableAppFieldTypes} from '@constants/apps';
 import {useTheme} from '@context/theme';
-import {getDisplayNamePreferenceAsBool} from '@helpers/api/preference';
-import {queryDisplayNamePreferences} from '@queries/servers/preference';
-import {observeCurrentUser} from '@queries/servers/user';
-import {parseDateInTimezone, resolveRelativeDate} from '@utils/date_utils';
+import {getDateValue, parseDateInTimezone, resolveRelativeDate} from '@utils/date_utils';
 import {isAppSelectOption} from '@utils/dialog_utils';
 import {getCurrentMomentForTimezone} from '@utils/helpers';
 import {selectKeyboardType} from '@utils/integrations';
 import {makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
-import {getTimezone} from '@utils/user';
-
-import type {WithDatabaseArgs} from '@typings/database/database';
 
 const TEXT_DEFAULT_MAX_LENGTH = 150;
 const TEXTAREA_DEFAULT_MAX_LENGTH = 3000;
@@ -58,29 +50,6 @@ const appSelectOptionToDialogOption = (option: AppSelectOption): DialogOption =>
 });
 
 const extractOptionValue = (v: AppSelectOption) => v.value || '';
-
-export const isTimeOffset = (dateStr: string): boolean => /^[+-]\d{1,4}[HMS]$/.test(dateStr);
-
-export const getDateValue = (value: AppFormValue, timezone?: string, isDateTime = false): Moment | undefined => {
-    if (typeof value === 'string' && value) {
-        // Resolve relative dates FIRST (today, +1d, etc.)
-        const resolvedValue = resolveRelativeDate(value, timezone);
-
-        // Then parse the resolved date
-        const parsed = parseDateInTimezone(resolvedValue, timezone);
-
-        // For datetime fields with date-only relative values (today, +1d, +2w),
-        // set the time to current time. Skip for time offsets (+2H, +30M, +90S)
-        // which already have the correct timestamp from resolveRelativeDate.
-        if (isDateTime && parsed && value !== resolvedValue && !isTimeOffset(value)) {
-            const currentTime = getCurrentMomentForTimezone(timezone || null);
-            return parsed.clone().hour(currentTime.hour()).minute(currentTime.minute()).second(0);
-        }
-
-        return parsed || undefined;
-    }
-    return undefined;
-};
 
 const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
     return {
@@ -381,11 +350,12 @@ const AppsFormFieldComponent = React.memo(({
 
                     {showTimezoneIndicator && (
                         <View style={dateTimeStyles.timezoneIndicator}>
-                            <Text style={dateTimeStyles.timezoneText}>
-                                {intl.formatMessage({id: 'date_time_selector.times_in', defaultMessage: 'Times in'})}
-                                {' '}
-                                {timezoneAbbr}
-                            </Text>
+                            <FormattedText
+                                style={dateTimeStyles.timezoneText}
+                                id='date_time_selector.times_in'
+                                defaultMessage='Times in {timezone}'
+                                values={{timezone: timezoneAbbr}}
+                            />
                         </View>
                     )}
 
@@ -423,16 +393,4 @@ const AppsFormFieldComponent = React.memo(({
 
 AppsFormFieldComponent.displayName = 'AppsFormField';
 
-const enhanced = withObservables([], ({database}: WithDatabaseArgs) => ({
-    userTimezone: observeCurrentUser(database).pipe(
-        switchMap((user) => of$(getTimezone(user?.timezone))),
-    ),
-    isMilitaryTime: queryDisplayNamePreferences(database).
-        observeWithColumns(['value']).pipe(
-            switchMap(
-                (preferences) => of$(getDisplayNamePreferenceAsBool(preferences, Preferences.USE_MILITARY_TIME, false)),
-            ),
-        ),
-}));
-
-export default withDatabase(enhanced(AppsFormFieldComponent));
+export default AppsFormFieldComponent;

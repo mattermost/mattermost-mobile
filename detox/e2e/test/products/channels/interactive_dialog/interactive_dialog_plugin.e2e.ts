@@ -9,7 +9,6 @@
 // - Use element testID when selecting an element. Create one if none.
 // *******************************************************************
 
-import {downloadPluginIfMissing} from '@support/plugin_download';
 import {
     DemoPlugin,
     Plugin,

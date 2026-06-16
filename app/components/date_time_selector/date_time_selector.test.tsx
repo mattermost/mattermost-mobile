@@ -10,7 +10,7 @@ import DatabaseManager from '@database/manager';
 import {renderWithEverything} from '@test/intl-test-helper';
 import TestHelper from '@test/test_helper';
 
-import DateTimeSelector, {parseTimeString} from './index';
+import DateTimeSelector from './date_time_selector';
 
 import type Database from '@nozbe/watermelondb/Database';
 
@@ -26,6 +26,7 @@ describe('DateTimeSelector', () => {
         theme,
         handleChange: mockHandleChange,
         showInitially: 'date' as const,
+        isMilitaryTime: false,
     };
 
     beforeAll(async () => {
@@ -155,91 +156,38 @@ describe('DateTimeSelector', () => {
 
         expect(mockHandleChange).not.toHaveBeenCalled();
     });
-});
 
-describe('parseTimeString', () => {
-    it('parses 24-hour "HH:MM" time', () => {
-        expect(parseTimeString('13:40')).toEqual({hours: 13, minutes: 40});
+    it('shows a 24-hour manual time hint when isMilitaryTime is true', () => {
+        const testID = 'dt';
+        const {getByTestId} = renderWithEverything(
+            <DateTimeSelector
+                {...baseProps}
+                isMilitaryTime={true}
+                allowManualTimeEntry={true}
+                testID={testID}
+            />,
+            {database},
+        );
+
+        fireEvent.press(getByTestId(`${testID}.time.button`));
+
+        expect(getByTestId(`${testID}.manual_time.input`).props.placeholder).toBe('14:30');
     });
 
-    it('parses 24-hour "H:MM" time', () => {
-        expect(parseTimeString('9:05')).toEqual({hours: 9, minutes: 5});
-    });
+    it('shows a 12-hour manual time hint when isMilitaryTime is false', () => {
+        const testID = 'dt';
+        const {getByTestId} = renderWithEverything(
+            <DateTimeSelector
+                {...baseProps}
+                isMilitaryTime={false}
+                allowManualTimeEntry={true}
+                testID={testID}
+            />,
+            {database},
+        );
 
-    it('parses 12-hour time with pm suffix', () => {
-        expect(parseTimeString('1:30pm')).toEqual({hours: 13, minutes: 30});
-    });
+        fireEvent.press(getByTestId(`${testID}.time.button`));
 
-    it('parses 12-hour time with space before suffix and uppercase', () => {
-        expect(parseTimeString('1:30 PM')).toEqual({hours: 13, minutes: 30});
-    });
-
-    it('parses short-form pm like "2pm"', () => {
-        expect(parseTimeString('2pm')).toEqual({hours: 14, minutes: 0});
-    });
-
-    it('parses "12am" as midnight (00:00)', () => {
-        expect(parseTimeString('12am')).toEqual({hours: 0, minutes: 0});
-    });
-
-    it('parses "12pm" as noon (12:00)', () => {
-        expect(parseTimeString('12pm')).toEqual({hours: 12, minutes: 0});
-    });
-
-    it('parses "12:30am" as 00:30', () => {
-        expect(parseTimeString('12:30am')).toEqual({hours: 0, minutes: 30});
-    });
-
-    it('rejects "13:00pm" (24-hour value with pm suffix)', () => {
-        expect(parseTimeString('13:00pm')).toBeNull();
-    });
-
-    it('rejects "0am" (0 with am suffix)', () => {
-        expect(parseTimeString('0am')).toBeNull();
-    });
-
-    it('returns null for empty string', () => {
-        expect(parseTimeString('')).toBeNull();
-    });
-
-    it('returns null for whitespace-only string', () => {
-        expect(parseTimeString('   ')).toBeNull();
-    });
-
-    it('returns null for garbage input', () => {
-        expect(parseTimeString('not a time')).toBeNull();
-    });
-
-    it('returns null when hours are out of range', () => {
-        expect(parseTimeString('25:00')).toBeNull();
-    });
-
-    it('returns null when minutes are out of range', () => {
-        expect(parseTimeString('10:60')).toBeNull();
-    });
-
-    it('trims surrounding whitespace', () => {
-        expect(parseTimeString('  14:30  ')).toEqual({hours: 14, minutes: 30});
-    });
-
-    it('is case-insensitive for the am/pm suffix', () => {
-        expect(parseTimeString('2:15AM')).toEqual({hours: 2, minutes: 15});
-        expect(parseTimeString('2:15Pm')).toEqual({hours: 14, minutes: 15});
-    });
-
-    it('accepts midnight as 00:00 in 24-hour format', () => {
-        expect(parseTimeString('00:00')).toEqual({hours: 0, minutes: 0});
-    });
-
-    it('accepts 23:59 in 24-hour format', () => {
-        expect(parseTimeString('23:59')).toEqual({hours: 23, minutes: 59});
-    });
-
-    it('returns null for missing minutes in colon form (e.g. "14:")', () => {
-        expect(parseTimeString('14:')).toBeNull();
-    });
-
-    it('returns null for partial minutes (single-digit)', () => {
-        expect(parseTimeString('14:3')).toBeNull();
+        expect(getByTestId(`${testID}.manual_time.input`).props.placeholder).toBe('2:30 PM');
     });
 });

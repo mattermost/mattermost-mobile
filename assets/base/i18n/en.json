@@ -425,7 +425,7 @@
   "date_time_selector.manual_time_hint": "Enter time (e.g. {example})",
   "date_time_selector.select_date": "Select Date",
   "date_time_selector.select_time": "Select Time",
-  "date_time_selector.times_in": "Times in",
+  "date_time_selector.times_in": "Times in {timezone}",
   "date.unknown": "Unknown",
   "default_skin_tone": "Default Skin Tone",
   "display_settings.clock.military": "24-hour",

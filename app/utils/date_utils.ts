@@ -1,7 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import moment from 'moment-timezone';
+import moment, {type Moment} from 'moment-timezone';
 
 import {getCurrentMomentForTimezone} from './helpers';
 import {logWarning} from './log';
@@ -132,3 +132,26 @@ export function parseDateInTimezone(value: string | null | undefined, timezone?:
     const parsed = timezone ? moment.tz(value, timezone) : moment(value);
     return parsed.isValid() ? parsed : null;
 }
+
+export const isTimeOffset = (dateStr: string): boolean => /^[+-]\d{1,4}[HMS]$/.test(dateStr);
+
+export const getDateValue = (value: AppFormValue, timezone?: string, isDateTime = false): Moment | undefined => {
+    if (typeof value === 'string' && value) {
+        // Resolve relative dates FIRST (today, +1d, etc.)
+        const resolvedValue = resolveRelativeDate(value, timezone);
+
+        // Then parse the resolved date
+        const parsed = parseDateInTimezone(resolvedValue, timezone);
+
+        // For datetime fields with date-only relative values (today, +1d, +2w),
+        // set the time to current time. Skip for time offsets (+2H, +30M, +90S)
+        // which already have the correct timestamp from resolveRelativeDate.
+        if (isDateTime && parsed && value !== resolvedValue && !isTimeOffset(value)) {
+            const currentTime = getCurrentMomentForTimezone(timezone || null);
+            return parsed.clone().hour(currentTime.hour()).minute(currentTime.minute()).second(0);
+        }
+
+        return parsed || undefined;
+    }
+    return undefined;
+};
