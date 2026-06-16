@@ -24,7 +24,7 @@ import {useTheme} from '@context/theme';
 import useDidMount from '@hooks/did_mount';
 import {alertFailedToOpenDocument, alertOnlyPDFSupported} from '@utils/document';
 import {getFullErrorMessage} from '@utils/errors';
-import {deleteFile, fileExists, getLocalFilePathFromFile, hasWriteStoragePermission, isPdf, pathWithPrefix} from '@utils/file';
+import {deleteFile, fileExists, getLocalFilePathFromFile, hasWriteStoragePermission, isImage, isPdf, isVideo, pathWithPrefix} from '@utils/file';
 import {galleryItemToFileInfo} from '@utils/gallery';
 import {logDebug} from '@utils/log';
 import {previewPdf} from '@utils/navigation';
@@ -206,10 +206,11 @@ const DownloadWithAction = ({action, enableSecureFilePreview, item, onShareCallb
         }
     };
 
-    const saveImageOrVideo = async (path: string) => {
+    const saveImageOrVideo = async (path: string, actualType?: string) => {
         if (mounted.current) {
             try {
-                const cameraType = item.type === 'avatar' ? 'image' : item.type;
+                const resolvedType = actualType || item.type;
+                const cameraType = resolvedType === 'avatar' ? 'image' : resolvedType;
                 await CameraRoll.saveAsset(path, {
                     type: cameraType === 'image' ? 'photo' : 'video',
                     album: applicationName || '',
@@ -231,12 +232,18 @@ const DownloadWithAction = ({action, enableSecureFilePreview, item, onShareCallb
             const hasPermission = await hasWriteStoragePermission(intl);
 
             if (hasPermission) {
-                switch (item.type) {
+                // Re-check actual file type from mime_type/extension, since
+                // servers may send generic mime types like application/octet-stream
+                // for videos, causing them to be misclassified as 'file'.
+                const fileInfo = galleryItemToFileInfo(item);
+                const actualType = isVideo(fileInfo) ? 'video' : (isImage(fileInfo) ? 'image' : item.type);
+
+                switch (actualType) {
                     case 'file':
                         saveFile(path);
                         break;
                     default:
-                        saveImageOrVideo(path);
+                        saveImageOrVideo(path, actualType);
                         break;
                 }
             }
