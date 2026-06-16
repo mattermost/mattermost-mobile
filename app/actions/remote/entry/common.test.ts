@@ -209,6 +209,7 @@ describe('actions/remote/entry/common', () => {
                 false,
                 nativeApplicationVersion,
                 undefined,
+                undefined,
             );
         });
 
@@ -225,6 +226,7 @@ describe('actions/remote/entry/common', () => {
                 expect.any(String),
                 false,
                 nativeApplicationVersion,
+                undefined,
                 undefined,
             );
         });
