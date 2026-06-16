@@ -3,12 +3,13 @@
 
 import {markTeamThreadsAsRead, processReceivedThreads, updateThread} from '@actions/local/thread';
 import DatabaseManager from '@database/manager';
-import {getCurrentTeamId} from '@queries/servers/system';
+import {adjustThreadInBlob, clearTeamThreadsInBlob, getCurrentTeamId} from '@queries/servers/system';
 import EphemeralStore from '@store/ephemeral_store';
+import ThreadsSyncStore from '@store/threads_sync_store';
 
 export async function handleThreadUpdatedEvent(serverUrl: string, msg: WebSocketMessage): Promise<void> {
     try {
-        const {database} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
+        const {database, operator} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
 
         const thread: Thread = JSON.parse(msg.data.thread);
         let teamId = msg.broadcast.team_id;
@@ -20,6 +21,18 @@ export async function handleThreadUpdatedEvent(serverUrl: string, msg: WebSocket
         // Mark it as following
         thread.is_following = true;
         processReceivedThreads(serverUrl, [thread], teamId);
+
+        const previousUnreadMentions: number | undefined = msg.data.previous_unread_mentions;
+        if (
+            EphemeralStore.getExperienceAPIEnabled(serverUrl) &&
+            previousUnreadMentions !== undefined &&
+            previousUnreadMentions !== thread.unread_mentions &&
+            !ThreadsSyncStore.hasThreadsBeenFetched(serverUrl, teamId)
+        ) {
+            const mentionDelta = previousUnreadMentions - thread.unread_mentions;
+            const hasUnreadsAfter = thread.unread_replies > 0 || thread.unread_mentions > 0;
+            await adjustThreadInBlob(operator, teamId, mentionDelta, hasUnreadsAfter);
+        }
     } catch (error) {
         // Do nothing
     }
@@ -27,7 +40,7 @@ export async function handleThreadUpdatedEvent(serverUrl: string, msg: WebSocket
 
 export async function handleThreadReadChangedEvent(serverUrl: string, msg: WebSocketMessage<ThreadReadChangedData>): Promise<void> {
     try {
-        const {thread_id, timestamp, unread_mentions, unread_replies} = msg.data;
+        const {thread_id, timestamp, unread_mentions, unread_replies, previous_unread_mentions, thread_team_id} = msg.data;
         if (thread_id) {
             const data: Partial<ThreadWithViewedAt> = {
                 unread_mentions,
@@ -42,8 +55,26 @@ export async function handleThreadReadChangedEvent(serverUrl: string, msg: WebSo
             }
 
             await updateThread(serverUrl, thread_id, data);
+
+            // thread_team_id is the channel's TeamId; '' routes to the direct slot.
+            if (EphemeralStore.getExperienceAPIEnabled(serverUrl) &&
+                thread_team_id !== undefined && previous_unread_mentions !== undefined &&
+                !ThreadsSyncStore.hasThreadsBeenFetched(serverUrl, thread_team_id)) {
+                const {operator} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
+                const mentionDelta = previous_unread_mentions - unread_mentions;
+                const hasUnreadsAfter = unread_replies > 0 || unread_mentions > 0;
+                await adjustThreadInBlob(operator, thread_team_id, mentionDelta, hasUnreadsAfter);
+            }
         } else {
-            await markTeamThreadsAsRead(serverUrl, msg.broadcast.team_id);
+            const teamId = msg.broadcast.team_id;
+            await markTeamThreadsAsRead(serverUrl, teamId);
+
+            // MarkAllAsReadByTeam clears DM/GM threads too — zero both slots.
+            if (EphemeralStore.getExperienceAPIEnabled(serverUrl) &&
+                !ThreadsSyncStore.hasThreadsBeenFetched(serverUrl, teamId)) {
+                const {operator} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
+                await clearTeamThreadsInBlob(operator, teamId);
+            }
         }
     } catch (error) {
         // Do nothing

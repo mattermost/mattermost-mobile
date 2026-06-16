@@ -19,8 +19,9 @@ import {PostTypes} from '@constants/post';
 import DatabaseManager from '@database/manager';
 import {getChannelById, getMyChannel} from '@queries/servers/channel';
 import {getPostById, syncPermalinkPreviewsForEditedPost} from '@queries/servers/post';
-import {getCurrentChannelId, getCurrentTeamId, getCurrentUserId} from '@queries/servers/system';
+import {getCurrentChannelId, getCurrentTeamId, getCurrentUserId, incrementTeamBlob} from '@queries/servers/system';
 import {getIsCRTEnabled} from '@queries/servers/thread';
+import ChannelsSyncStore from '@store/channels_sync_store';
 import EphemeralStore from '@store/ephemeral_store';
 import {NavigationStore} from '@store/navigation_store';
 import {hasArrayChanged, isTablet} from '@utils/helpers';
@@ -196,6 +197,22 @@ export async function handleNewPostEvent(serverUrl: string, msg: WebSocketMessag
     models.push(...postModels);
 
     await operator.batchRecords(models, 'handleNewPostEvent');
+
+    // Skip when: team fetched, DM/GM, own post, muted, missing mute_for_recipient
+    // (older server), or CRT thread reply (thread_updated handles that path).
+    const postTeamId: string | undefined = msg.data.team_id;
+    const muteForRecipient: boolean | undefined = msg.data.mute_for_recipient;
+    if (
+        EphemeralStore.getExperienceAPIEnabled(serverUrl) &&
+        postTeamId &&
+        post.user_id !== currentUserId &&
+        muteForRecipient === false &&
+        (!isCRTEnabled || !post.root_id) &&
+        !ChannelsSyncStore.hasChannelsBeenFetched(serverUrl, postTeamId)
+    ) {
+        const mentionDelta = msg.data.mentions?.includes(currentUserId) ? 1 : 0;
+        await incrementTeamBlob(operator, postTeamId, mentionDelta);
+    }
 }
 
 export async function handlePostEdited(serverUrl: string, msg: WebSocketMessage) {
@@ -342,10 +359,11 @@ export async function handlePostUnread(serverUrl: string, msg: WebSocketMessage)
         last_viewed_at: lastViewedAt,
     } = msg.data;
 
-    const database = DatabaseManager.serverDatabases[serverUrl]?.database;
-    if (!database) {
+    const operator = DatabaseManager.serverDatabases[serverUrl]?.operator;
+    if (!operator) {
         return;
     }
+    const {database} = operator;
     const [myChannel, isCRTEnabled] = await Promise.all([
         getMyChannel(database, channelId),
         getIsCRTEnabled(database),
@@ -365,6 +383,14 @@ export async function handlePostUnread(serverUrl: string, msg: WebSocketMessage)
         const delta = postNumber ? postNumber - messages : messages;
 
         markChannelAsUnread(serverUrl, channelId, delta, mentions, lastViewedAt);
+    }
+
+    if (
+        EphemeralStore.getExperienceAPIEnabled(serverUrl) &&
+        teamId &&
+        !ChannelsSyncStore.hasChannelsBeenFetched(serverUrl, teamId)
+    ) {
+        await incrementTeamBlob(operator, teamId, mentions);
     }
 }
 

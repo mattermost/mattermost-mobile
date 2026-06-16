@@ -15,7 +15,6 @@ import {openAllUnreadChannels} from '@actions/remote/preference';
 import {autoUpdateTimezone} from '@actions/remote/user';
 import {checkIsAgentsPluginEnabled} from '@agents/actions/remote/agents_status';
 import {handleAgentsReconnect} from '@agents/actions/websocket/reconnect';
-import {UseInitialLoadEndpoint} from '@assets/config.json';
 import {loadConfigAndCalls} from '@calls/actions/calls';
 import {isSupportedServerCalls} from '@calls/utils';
 import {Screens} from '@constants';
@@ -71,10 +70,9 @@ async function doReconnect(serverUrl: string, groupLabel?: BaseRequestGroupLabel
         const currentChannelId = await getCurrentChannelId(database);
 
         setTeamLoading(serverUrl, true);
-        if (!UseInitialLoadEndpoint) {
+        if (!EphemeralStore.getExperienceAPIEnabled(serverUrl)) {
             const entryData = await entry(serverUrl, currentTeamId, currentChannelId, lastFullSync, undefined, undefined, groupLabel);
             if ('error' in entryData) {
-                setTeamLoading(serverUrl, false);
                 return entryData.error;
             }
             const {models, initialTeamId, initialChannelId, prefData, teamData, chData, meData, gmConverted} = entryData;

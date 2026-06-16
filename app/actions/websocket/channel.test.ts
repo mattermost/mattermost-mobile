@@ -4,7 +4,7 @@
 import {addChannelToDefaultCategory, handleConvertedGMCategories} from '@actions/local/category';
 import {markChannelAsViewed, removeCurrentUserFromChannel, setChannelDeleteAt, storeMyChannelsForTeam, updateChannelInfoFromChannel, updateMyChannelFromWebsocket, deletePostsForChannel} from '@actions/local/channel';
 import {storePostsForChannel} from '@actions/local/post';
-import {fetchMyChannel, fetchChannelById, fetchMissingDirectChannelsInfo} from '@actions/remote/channel';
+import {fetchMyChannel, fetchMissingDirectChannelsInfo} from '@actions/remote/channel';
 import {fetchPostsForChannel} from '@actions/remote/post';
 import {fetchRolesIfNeeded} from '@actions/remote/role';
 import {fetchUsersByIds, updateUsersNoLongerVisible} from '@actions/remote/user';
@@ -13,8 +13,10 @@ import {getCurrentCall} from '@calls/state';
 import {General} from '@constants';
 import DatabaseManager from '@database/manager';
 import {deleteChannelMembership, getChannelById, getCurrentChannel, prepareMyChannelsForTeam} from '@queries/servers/channel';
-import {setCurrentTeamId, getCurrentChannelId, getCurrentTeamId, canViewArchivedChannels} from '@queries/servers/system';
+import {canViewArchivedChannels, setCurrentTeamId, getCurrentChannelId, getCurrentTeamId, decrementTeamBlob, incrementTeamBlob, migrateChannelFromDirectToTeamBlob} from '@queries/servers/system';
+import {getIsCRTEnabled} from '@queries/servers/thread';
 import {getCurrentUser, getTeammateNameDisplay, getUserById} from '@queries/servers/user';
+import ChannelsSyncStore from '@store/channels_sync_store';
 import EphemeralStore from '@store/ephemeral_store';
 
 import {handleChannelCreatedEvent, handleChannelUnarchiveEvent, handleChannelConvertedEvent, handleChannelUpdatedEvent, handleMultipleChannelsViewedEvent, handleChannelMemberUpdatedEvent, handleChannelDeletedEvent, handleDirectAddedEvent, handleUserAddedToChannelEvent, handleUserRemovedFromChannelEvent} from './channel';
@@ -23,6 +25,7 @@ import type ServerDataOperator from '@database/operator/server_data_operator';
 import type ChannelModel from '@typings/database/models/servers/channel';
 
 jest.mock('@database/manager');
+jest.mock('@store/channels_sync_store');
 jest.mock('@store/ephemeral_store');
 jest.mock('@actions/local/category');
 jest.mock('@actions/remote/category');
@@ -34,6 +37,7 @@ jest.mock('@actions/local/channel');
 jest.mock('@actions/local/post');
 jest.mock('@queries/servers/channel');
 jest.mock('@queries/servers/system');
+jest.mock('@queries/servers/thread');
 jest.mock('@queries/servers/user');
 jest.mock('@calls/actions');
 jest.mock('@actions/local/user');
@@ -65,7 +69,6 @@ describe('WebSocket Channel Actions', () => {
     const mockedGetChannelById = jest.mocked(getChannelById);
     const mockedFetchMyChannel = jest.mocked(fetchMyChannel);
     const mockedPrepareMyChannelsForTeam = jest.mocked(prepareMyChannelsForTeam);
-    const mockedFetchChannelById = jest.mocked(fetchChannelById);
 
     beforeEach(async () => {
         await DatabaseManager.init([serverUrl]);
@@ -179,37 +182,164 @@ describe('WebSocket Channel Actions', () => {
 
             expect(setChannelDeleteAt).not.toHaveBeenCalled();
         });
+
+        describe('TEAM_BADGE_COUNTS blob mirror', () => {
+            const baseMsg = (overrides: Record<string, unknown> = {}): WebSocketMessage => {
+                const built = {
+                    data: {
+                        channel_id: channelId,
+                        team_id: teamId,
+                        member_unreads_mentions: {mention_count: 2, mention_count_root: 1, is_unread: true},
+                        ...overrides,
+                    },
+                    broadcast: {channel_id: channelId},
+                };
+                return built as unknown as WebSocketMessage;
+            };
+
+            beforeEach(() => {
+                (EphemeralStore.isArchivingChannel as jest.Mock).mockReturnValue(false);
+                jest.mocked(EphemeralStore.getExperienceAPIEnabled).mockReturnValue(true);
+                jest.mocked(ChannelsSyncStore.hasChannelsBeenFetched).mockReturnValue(false);
+                jest.mocked(getIsCRTEnabled).mockResolvedValue(false);
+            });
+
+            it('increments with mention_count when CRT is off', async () => {
+                await handleChannelUnarchiveEvent(serverUrl, baseMsg());
+
+                expect(incrementTeamBlob).toHaveBeenCalledWith(operator, teamId, 2, 0);
+            });
+
+            it('increments with mention_count_root and thread delta when CRT is on', async () => {
+                jest.mocked(getIsCRTEnabled).mockResolvedValue(true);
+
+                await handleChannelUnarchiveEvent(serverUrl, baseMsg());
+
+                // mention_count_root=1 → channel mentions; mention_count - mention_count_root = 2-1 = 1 → thread mentions
+                expect(incrementTeamBlob).toHaveBeenCalledWith(operator, teamId, 1, 1);
+            });
+
+            it('skips when experience API is disabled', async () => {
+                jest.mocked(EphemeralStore.getExperienceAPIEnabled).mockReturnValue(false);
+
+                await handleChannelUnarchiveEvent(serverUrl, baseMsg());
+
+                expect(incrementTeamBlob).not.toHaveBeenCalled();
+            });
+
+            it('skips when the team is already fully fetched', async () => {
+                jest.mocked(ChannelsSyncStore.hasChannelsBeenFetched).mockReturnValue(true);
+
+                await handleChannelUnarchiveEvent(serverUrl, baseMsg());
+
+                expect(incrementTeamBlob).not.toHaveBeenCalled();
+            });
+
+            it('skips DM/GM channels (team_id === "")', async () => {
+                await handleChannelUnarchiveEvent(serverUrl, baseMsg({team_id: ''}));
+
+                expect(incrementTeamBlob).not.toHaveBeenCalled();
+            });
+
+            it('skips when team_id is absent', async () => {
+                await handleChannelUnarchiveEvent(serverUrl, baseMsg({team_id: undefined}));
+
+                expect(incrementTeamBlob).not.toHaveBeenCalled();
+            });
+
+            it('skips when member_unreads_mentions is absent', async () => {
+                await handleChannelUnarchiveEvent(serverUrl, baseMsg({member_unreads_mentions: undefined}));
+
+                expect(incrementTeamBlob).not.toHaveBeenCalled();
+            });
+
+            it('skips when mention count is zero', async () => {
+                await handleChannelUnarchiveEvent(serverUrl, baseMsg({
+                    member_unreads_mentions: {mention_count: 0, mention_count_root: 0, is_unread: true},
+                }));
+
+                expect(incrementTeamBlob).not.toHaveBeenCalled();
+            });
+        });
     });
 
     describe('handleChannelConvertedEvent', () => {
-        it('should handle channel converted event', async () => {
-            (EphemeralStore.isConvertingChannel as jest.Mock).mockReturnValue(false);
-            mockedFetchChannelById.mockResolvedValue({channel});
-            jest.spyOn(operator, 'handleChannel').mockResolvedValueOnce([]);
-
-            await handleChannelConvertedEvent(serverUrl, msg);
-
-            expect(EphemeralStore.isConvertingChannel).toHaveBeenCalledWith(channelId);
-            expect(fetchChannelById).toHaveBeenCalled();
-            expect(operator.handleChannel).toHaveBeenCalled();
-        });
-
-        it('should handle channel converted event - no channel', async () => {
-            (EphemeralStore.isConvertingChannel as jest.Mock).mockReturnValue(false);
-            mockedFetchChannelById.mockResolvedValue({error: 'some error'});
-            jest.spyOn(operator, 'handleChannel').mockResolvedValueOnce([]);
-
-            await handleChannelConvertedEvent(serverUrl, msg);
-
-            expect(fetchChannelById).toHaveBeenCalled();
-            expect(operator.handleChannel).not.toHaveBeenCalled();
-        });
-
         it('should return if channel is being converted', async () => {
             (EphemeralStore.isConvertingChannel as jest.Mock).mockReturnValue(true);
 
             await handleChannelConvertedEvent(serverUrl, msg);
-            expect(fetchChannelById).not.toHaveBeenCalled();
+
+            expect(migrateChannelFromDirectToTeamBlob).not.toHaveBeenCalled();
+        });
+
+        describe('TEAM_BADGE_COUNTS blob mirror', () => {
+            const baseMsg = (overrides: Record<string, unknown> = {}): WebSocketMessage => {
+                const built = {
+                    data: {
+                        channel_id: channelId,
+                        team_id: teamId,
+                        member_unreads_mentions: {mention_count: 2, mention_count_root: 1, is_unread: true},
+                        ...overrides,
+                    },
+                    broadcast: {channel_id: channelId},
+                };
+                return built as unknown as WebSocketMessage;
+            };
+
+            beforeEach(() => {
+                (EphemeralStore.isConvertingChannel as jest.Mock).mockReturnValue(false);
+                jest.mocked(EphemeralStore.getExperienceAPIEnabled).mockReturnValue(true);
+                jest.mocked(ChannelsSyncStore.hasChannelsBeenFetched).mockReturnValue(false);
+                jest.mocked(getIsCRTEnabled).mockResolvedValue(false);
+            });
+
+            it('migrates with mention_count when CRT is off', async () => {
+                await handleChannelConvertedEvent(serverUrl, baseMsg());
+
+                expect(migrateChannelFromDirectToTeamBlob).toHaveBeenCalledWith(operator, teamId, 2, true);
+            });
+
+            it('migrates with mention_count_root when CRT is on', async () => {
+                jest.mocked(getIsCRTEnabled).mockResolvedValue(true);
+
+                await handleChannelConvertedEvent(serverUrl, baseMsg());
+
+                expect(migrateChannelFromDirectToTeamBlob).toHaveBeenCalledWith(operator, teamId, 1, true);
+            });
+
+            it('skips when experience API is disabled', async () => {
+                jest.mocked(EphemeralStore.getExperienceAPIEnabled).mockReturnValue(false);
+
+                await handleChannelConvertedEvent(serverUrl, baseMsg());
+
+                expect(migrateChannelFromDirectToTeamBlob).not.toHaveBeenCalled();
+            });
+
+            it('skips when the team is already fully fetched', async () => {
+                jest.mocked(ChannelsSyncStore.hasChannelsBeenFetched).mockReturnValue(true);
+
+                await handleChannelConvertedEvent(serverUrl, baseMsg());
+
+                expect(migrateChannelFromDirectToTeamBlob).not.toHaveBeenCalled();
+            });
+
+            it('skips when team_id is empty', async () => {
+                await handleChannelConvertedEvent(serverUrl, baseMsg({team_id: ''}));
+
+                expect(migrateChannelFromDirectToTeamBlob).not.toHaveBeenCalled();
+            });
+
+            it('skips when team_id is absent', async () => {
+                await handleChannelConvertedEvent(serverUrl, baseMsg({team_id: undefined}));
+
+                expect(migrateChannelFromDirectToTeamBlob).not.toHaveBeenCalled();
+            });
+
+            it('skips when member_unreads_mentions is absent', async () => {
+                await handleChannelConvertedEvent(serverUrl, baseMsg({member_unreads_mentions: undefined}));
+
+                expect(migrateChannelFromDirectToTeamBlob).not.toHaveBeenCalled();
+            });
         });
     });
 
@@ -322,6 +452,74 @@ describe('WebSocket Channel Actions', () => {
             expect(markChannelAsViewed).not.toHaveBeenCalledWith(serverUrl, 'channel_id_1', false, true);
             expect(markChannelAsViewed).toHaveBeenCalledWith(serverUrl, 'channel_id_2', false, true);
         });
+
+        it('should decrement the blob for an unfetched team', async () => {
+            jest.mocked(EphemeralStore.getExperienceAPIEnabled).mockReturnValue(true);
+            msg.data.channel_times = {channel_id_1: 123};
+            msg.data.cleared_mentions = {channel_id_1: 3};
+            msg.data.team_ids = {channel_id_1: 'team_a'};
+            (DatabaseManager.getActiveServerUrl as jest.Mock).mockResolvedValue(serverUrl);
+            (getCurrentChannelId as jest.Mock).mockResolvedValue('different_channel_id');
+            (EphemeralStore.isSwitchingToChannel as jest.Mock).mockReturnValue(false);
+            (markChannelAsViewed as jest.Mock).mockResolvedValue({member: {}});
+            (ChannelsSyncStore.hasChannelsBeenFetched as jest.Mock).mockReturnValue(false);
+
+            await handleMultipleChannelsViewedEvent(serverUrl, msg);
+
+            expect(ChannelsSyncStore.hasChannelsBeenFetched).toHaveBeenCalledWith(serverUrl, 'team_a');
+            expect(decrementTeamBlob).toHaveBeenCalledWith(operator, 'team_a', 3);
+            jest.mocked(EphemeralStore.getExperienceAPIEnabled).mockReturnValue(false);
+        });
+
+        it('should skip blob decrement for a team that is already fetched', async () => {
+            jest.mocked(EphemeralStore.getExperienceAPIEnabled).mockReturnValue(true);
+            msg.data.channel_times = {channel_id_1: 123};
+            msg.data.cleared_mentions = {channel_id_1: 3};
+            msg.data.team_ids = {channel_id_1: 'team_a'};
+            (DatabaseManager.getActiveServerUrl as jest.Mock).mockResolvedValue(serverUrl);
+            (getCurrentChannelId as jest.Mock).mockResolvedValue('different_channel_id');
+            (EphemeralStore.isSwitchingToChannel as jest.Mock).mockReturnValue(false);
+            (markChannelAsViewed as jest.Mock).mockResolvedValue({member: {}});
+            (ChannelsSyncStore.hasChannelsBeenFetched as jest.Mock).mockReturnValue(true);
+
+            await handleMultipleChannelsViewedEvent(serverUrl, msg);
+
+            expect(ChannelsSyncStore.hasChannelsBeenFetched).toHaveBeenCalledWith(serverUrl, 'team_a');
+            expect(decrementTeamBlob).not.toHaveBeenCalled();
+            jest.mocked(EphemeralStore.getExperienceAPIEnabled).mockReturnValue(false);
+        });
+
+        it('should always call decrementTeamBlob for DM/GM channels regardless of gate', async () => {
+            jest.mocked(EphemeralStore.getExperienceAPIEnabled).mockReturnValue(true);
+            msg.data.channel_times = {dm_channel_id: 123};
+            msg.data.cleared_mentions = {dm_channel_id: 2};
+            msg.data.team_ids = {dm_channel_id: ''};
+            (DatabaseManager.getActiveServerUrl as jest.Mock).mockResolvedValue(serverUrl);
+            (getCurrentChannelId as jest.Mock).mockResolvedValue('different_channel_id');
+            (EphemeralStore.isSwitchingToChannel as jest.Mock).mockReturnValue(false);
+            (markChannelAsViewed as jest.Mock).mockResolvedValue({member: {}});
+
+            await handleMultipleChannelsViewedEvent(serverUrl, msg);
+
+            expect(ChannelsSyncStore.hasChannelsBeenFetched).not.toHaveBeenCalled();
+            expect(decrementTeamBlob).toHaveBeenCalledWith(operator, '', 2);
+            jest.mocked(EphemeralStore.getExperienceAPIEnabled).mockReturnValue(false);
+        });
+
+        it('should be backwards-compatible when cleared_mentions and team_ids are absent', async () => {
+            jest.mocked(EphemeralStore.getExperienceAPIEnabled).mockReturnValue(true);
+            msg.data.channel_times = {channel_id_1: 123};
+            (DatabaseManager.getActiveServerUrl as jest.Mock).mockResolvedValue(serverUrl);
+            (getCurrentChannelId as jest.Mock).mockResolvedValue('different_channel_id');
+            (EphemeralStore.isSwitchingToChannel as jest.Mock).mockReturnValue(false);
+            (markChannelAsViewed as jest.Mock).mockResolvedValue({member: {}});
+
+            await handleMultipleChannelsViewedEvent(serverUrl, msg);
+
+            expect(markChannelAsViewed).toHaveBeenCalledWith(serverUrl, 'channel_id_1', false, true);
+            expect(decrementTeamBlob).not.toHaveBeenCalled();
+            jest.mocked(EphemeralStore.getExperienceAPIEnabled).mockReturnValue(false);
+        });
     });
 
     describe('handleChannelMemberUpdatedEvent', () => {
@@ -338,6 +536,127 @@ describe('WebSocket Channel Actions', () => {
 
             expect(fetchRolesIfNeeded).toHaveBeenCalled();
             expect(operator.batchRecords).toHaveBeenCalled();
+        });
+
+        describe('TEAM_BADGE_COUNTS blob mirror (mute toggle)', () => {
+            const baseMsg = (overrides: Record<string, unknown> = {}): WebSocketMessage => {
+                const built = {
+                    data: {
+                        channelMember: JSON.stringify({id: 'member_id', channel_id: channelId, user_id: userId, roles: ''}),
+                        team_id: teamId,
+                        member_unreads_mentions: {mention_count: 2, mention_count_root: 1, is_unread: true},
+                        previous_muted: false,
+                        current_muted: true,
+                        ...overrides,
+                    },
+                    broadcast: {user_id: userId},
+                };
+                return built as unknown as WebSocketMessage;
+            };
+
+            beforeEach(() => {
+                (updateMyChannelFromWebsocket as jest.Mock).mockResolvedValue({model: {}});
+                (fetchRolesIfNeeded as jest.Mock).mockResolvedValue({roles: []});
+                jest.spyOn(operator, 'batchRecords').mockResolvedValueOnce();
+                jest.mocked(EphemeralStore.getExperienceAPIEnabled).mockReturnValue(true);
+                jest.mocked(ChannelsSyncStore.hasChannelsBeenFetched).mockReturnValue(false);
+                jest.mocked(getIsCRTEnabled).mockResolvedValue(false);
+            });
+
+            it('decrements blob with mention_count on mute-on (CRT off)', async () => {
+                await handleChannelMemberUpdatedEvent(serverUrl, baseMsg());
+
+                expect(decrementTeamBlob).toHaveBeenCalledWith(operator, teamId, 2, 0);
+                expect(incrementTeamBlob).not.toHaveBeenCalled();
+            });
+
+            it('decrements blob with mention_count_root and thread delta on mute-on (CRT on)', async () => {
+                jest.mocked(getIsCRTEnabled).mockResolvedValue(true);
+
+                await handleChannelMemberUpdatedEvent(serverUrl, baseMsg());
+
+                expect(decrementTeamBlob).toHaveBeenCalledWith(operator, teamId, 1, 1);
+            });
+
+            it('increments blob on mute-off (CRT off)', async () => {
+                await handleChannelMemberUpdatedEvent(serverUrl, baseMsg({
+                    previous_muted: true,
+                    current_muted: false,
+                }));
+
+                expect(incrementTeamBlob).toHaveBeenCalledWith(operator, teamId, 2, 0);
+                expect(decrementTeamBlob).not.toHaveBeenCalled();
+            });
+
+            it('increments blob with mention_count_root and thread delta on mute-off (CRT on)', async () => {
+                jest.mocked(getIsCRTEnabled).mockResolvedValue(true);
+
+                await handleChannelMemberUpdatedEvent(serverUrl, baseMsg({
+                    previous_muted: true,
+                    current_muted: false,
+                }));
+
+                expect(incrementTeamBlob).toHaveBeenCalledWith(operator, teamId, 1, 1);
+                expect(decrementTeamBlob).not.toHaveBeenCalled();
+            });
+
+            it('skips when experience API is disabled', async () => {
+                jest.mocked(EphemeralStore.getExperienceAPIEnabled).mockReturnValue(false);
+
+                await handleChannelMemberUpdatedEvent(serverUrl, baseMsg());
+
+                expect(decrementTeamBlob).not.toHaveBeenCalled();
+                expect(incrementTeamBlob).not.toHaveBeenCalled();
+            });
+
+            it('skips when the team is already fully fetched', async () => {
+                jest.mocked(ChannelsSyncStore.hasChannelsBeenFetched).mockReturnValue(true);
+
+                await handleChannelMemberUpdatedEvent(serverUrl, baseMsg());
+
+                expect(decrementTeamBlob).not.toHaveBeenCalled();
+                expect(incrementTeamBlob).not.toHaveBeenCalled();
+            });
+
+            it('skips DM/GM channels (team_id === "")', async () => {
+                await handleChannelMemberUpdatedEvent(serverUrl, baseMsg({team_id: ''}));
+
+                expect(decrementTeamBlob).not.toHaveBeenCalled();
+                expect(incrementTeamBlob).not.toHaveBeenCalled();
+            });
+
+            it('skips when team_id is absent (non-mute notify_props update)', async () => {
+                await handleChannelMemberUpdatedEvent(serverUrl, baseMsg({team_id: undefined}));
+
+                expect(decrementTeamBlob).not.toHaveBeenCalled();
+                expect(incrementTeamBlob).not.toHaveBeenCalled();
+            });
+
+            it('skips when previous_muted equals current_muted (mute did not change)', async () => {
+                await handleChannelMemberUpdatedEvent(serverUrl, baseMsg({
+                    previous_muted: true,
+                    current_muted: true,
+                }));
+
+                expect(decrementTeamBlob).not.toHaveBeenCalled();
+                expect(incrementTeamBlob).not.toHaveBeenCalled();
+            });
+
+            it('skips when member_unreads_mentions is absent', async () => {
+                await handleChannelMemberUpdatedEvent(serverUrl, baseMsg({member_unreads_mentions: undefined}));
+
+                expect(decrementTeamBlob).not.toHaveBeenCalled();
+                expect(incrementTeamBlob).not.toHaveBeenCalled();
+            });
+
+            it('skips when mention count is zero', async () => {
+                await handleChannelMemberUpdatedEvent(serverUrl, baseMsg({
+                    member_unreads_mentions: {mention_count: 0, mention_count_root: 0, is_unread: false},
+                }));
+
+                expect(decrementTeamBlob).not.toHaveBeenCalled();
+                expect(incrementTeamBlob).not.toHaveBeenCalled();
+            });
         });
     });
 
@@ -552,6 +871,91 @@ describe('WebSocket Channel Actions', () => {
             expect(updateUsersNoLongerVisible).toHaveBeenCalledWith(serverUrl, true);
             expect(leaveCall).toHaveBeenCalled();
         });
+
+        describe('TEAM_BADGE_COUNTS blob mirror', () => {
+            const baseMsg = (overrides: Record<string, unknown> = {}) => ({
+                data: {
+                    channel_id: channelId,
+                    remover_id: userId,
+                    team_id: teamId,
+                    member_unreads_mentions: {mention_count: 2, mention_count_root: 1, is_unread: true},
+                    ...overrides,
+                },
+                broadcast: {user_id: userId},
+            });
+
+            beforeEach(() => {
+                (getCurrentUser as jest.Mock).mockResolvedValue({id: userId, isGuest: false});
+                (getCurrentChannelId as jest.Mock).mockResolvedValue('other_channel');
+                jest.mocked(EphemeralStore.getExperienceAPIEnabled).mockReturnValue(true);
+                jest.mocked(ChannelsSyncStore.hasChannelsBeenFetched).mockReturnValue(false);
+                jest.mocked(getIsCRTEnabled).mockResolvedValue(false);
+            });
+
+            it('decrements with mention_count when CRT is off', async () => {
+                await handleUserRemovedFromChannelEvent(serverUrl, baseMsg());
+
+                expect(decrementTeamBlob).toHaveBeenCalledWith(operator, teamId, 2, 0);
+            });
+
+            it('decrements with mention_count_root and thread delta when CRT is on', async () => {
+                jest.mocked(getIsCRTEnabled).mockResolvedValue(true);
+
+                await handleUserRemovedFromChannelEvent(serverUrl, baseMsg());
+
+                expect(decrementTeamBlob).toHaveBeenCalledWith(operator, teamId, 1, 1);
+            });
+
+            it('skips when experience API is disabled', async () => {
+                jest.mocked(EphemeralStore.getExperienceAPIEnabled).mockReturnValue(false);
+
+                await handleUserRemovedFromChannelEvent(serverUrl, baseMsg());
+
+                expect(decrementTeamBlob).not.toHaveBeenCalled();
+            });
+
+            it('skips when the team is already fully fetched', async () => {
+                jest.mocked(ChannelsSyncStore.hasChannelsBeenFetched).mockReturnValue(true);
+
+                await handleUserRemovedFromChannelEvent(serverUrl, baseMsg());
+
+                expect(decrementTeamBlob).not.toHaveBeenCalled();
+            });
+
+            it('skips DM/GM channels (team_id === "")', async () => {
+                await handleUserRemovedFromChannelEvent(serverUrl, baseMsg({team_id: ''}));
+
+                expect(decrementTeamBlob).not.toHaveBeenCalled();
+            });
+
+            it('skips when team_id is absent', async () => {
+                await handleUserRemovedFromChannelEvent(serverUrl, baseMsg({team_id: undefined}));
+
+                expect(decrementTeamBlob).not.toHaveBeenCalled();
+            });
+
+            it('skips when member_unreads_mentions is absent', async () => {
+                await handleUserRemovedFromChannelEvent(serverUrl, baseMsg({member_unreads_mentions: undefined}));
+
+                expect(decrementTeamBlob).not.toHaveBeenCalled();
+            });
+
+            it('skips when mention count is zero', async () => {
+                await handleUserRemovedFromChannelEvent(serverUrl, baseMsg({
+                    member_unreads_mentions: {mention_count: 0, mention_count_root: 0, is_unread: false},
+                }));
+
+                expect(decrementTeamBlob).not.toHaveBeenCalled();
+            });
+
+            it('skips when current user is not the removed user', async () => {
+                (getCurrentUser as jest.Mock).mockResolvedValue({id: 'other_user', isGuest: false});
+
+                await handleUserRemovedFromChannelEvent(serverUrl, baseMsg());
+
+                expect(decrementTeamBlob).not.toHaveBeenCalled();
+            });
+        });
     });
 
     describe('handleChannelDeletedEvent', () => {
@@ -604,6 +1008,90 @@ describe('WebSocket Channel Actions', () => {
             expect(getCurrentUser).toHaveBeenCalled();
             expect(setChannelDeleteAt).toHaveBeenCalledWith(serverUrl, channelId, undefined);
             expect(removeCurrentUserFromChannel).not.toHaveBeenCalled();
+        });
+
+        describe('TEAM_BADGE_COUNTS blob mirror', () => {
+            const baseMsg = (overrides: Record<string, unknown> = {}): WebSocketMessage => {
+                const built = {
+                    data: {
+                        channel_id: channelId,
+                        delete_at: 12345,
+                        team_id: teamId,
+                        member_unreads_mentions: {mention_count: 2, mention_count_root: 1, is_unread: true},
+                        ...overrides,
+                    },
+                    broadcast: {channel_id: channelId, userId, user_id: userId},
+                };
+                return built as unknown as WebSocketMessage;
+            };
+
+            beforeEach(() => {
+                (EphemeralStore.isLeavingChannel as jest.Mock).mockReturnValue(false);
+                (EphemeralStore.isArchivingChannel as jest.Mock).mockReturnValue(false);
+                (getCurrentUser as jest.Mock).mockResolvedValue({id: userId, isGuest: false});
+                (getCurrentChannel as jest.Mock).mockResolvedValue({id: channelId});
+                (canViewArchivedChannels as jest.Mock).mockResolvedValue(false);
+                jest.mocked(EphemeralStore.getExperienceAPIEnabled).mockReturnValue(true);
+                jest.mocked(ChannelsSyncStore.hasChannelsBeenFetched).mockReturnValue(false);
+                jest.mocked(getIsCRTEnabled).mockResolvedValue(false);
+            });
+
+            it('decrements with mention_count when CRT is off', async () => {
+                await handleChannelDeletedEvent(serverUrl, baseMsg());
+
+                expect(decrementTeamBlob).toHaveBeenCalledWith(operator, teamId, 2, 0);
+            });
+
+            it('decrements with mention_count_root and thread delta when CRT is on', async () => {
+                jest.mocked(getIsCRTEnabled).mockResolvedValue(true);
+
+                await handleChannelDeletedEvent(serverUrl, baseMsg());
+
+                // mention_count_root=1 → channel mentions; mention_count - mention_count_root = 2-1 = 1 → thread mentions
+                expect(decrementTeamBlob).toHaveBeenCalledWith(operator, teamId, 1, 1);
+            });
+
+            it('skips when experience API is disabled', async () => {
+                jest.mocked(EphemeralStore.getExperienceAPIEnabled).mockReturnValue(false);
+
+                await handleChannelDeletedEvent(serverUrl, baseMsg());
+
+                expect(decrementTeamBlob).not.toHaveBeenCalled();
+            });
+
+            it('skips when the team is already fully fetched', async () => {
+                jest.mocked(ChannelsSyncStore.hasChannelsBeenFetched).mockReturnValue(true);
+
+                await handleChannelDeletedEvent(serverUrl, baseMsg());
+
+                expect(decrementTeamBlob).not.toHaveBeenCalled();
+            });
+
+            it('skips DM/GM channels (team_id === "")', async () => {
+                await handleChannelDeletedEvent(serverUrl, baseMsg({team_id: ''}));
+
+                expect(decrementTeamBlob).not.toHaveBeenCalled();
+            });
+
+            it('skips when team_id is absent (older server / flag-off server)', async () => {
+                await handleChannelDeletedEvent(serverUrl, baseMsg({team_id: undefined}));
+
+                expect(decrementTeamBlob).not.toHaveBeenCalled();
+            });
+
+            it('skips when member_unreads_mentions is absent (not a member)', async () => {
+                await handleChannelDeletedEvent(serverUrl, baseMsg({member_unreads_mentions: undefined}));
+
+                expect(decrementTeamBlob).not.toHaveBeenCalled();
+            });
+
+            it('skips when mention count is zero (no contribution to decrement)', async () => {
+                await handleChannelDeletedEvent(serverUrl, baseMsg({
+                    member_unreads_mentions: {mention_count: 0, mention_count_root: 0, is_unread: true},
+                }));
+
+                expect(decrementTeamBlob).not.toHaveBeenCalled();
+            });
         });
     });
 });
