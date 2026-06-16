@@ -12,6 +12,7 @@ import Loading from '@components/loading';
 import {SNACK_BAR_TYPE} from '@constants/snack_bar';
 import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
+import {usePreventDoubleTap} from '@hooks/utils';
 import {showSnackBar} from '@utils/snack_bar';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
@@ -213,8 +214,8 @@ const ToolApprovalSet = ({postId, toolCalls, approvalStage, canApprove, canExpan
         await submitDecisions(decisions);
     }, [isSubmitting, actionableTools, submitDecisions]);
 
-    const handleAcceptAll = useCallback(() => handleBatchDecision(true), [handleBatchDecision]);
-    const handleRejectAll = useCallback(() => handleBatchDecision(false), [handleBatchDecision]);
+    const handleAcceptAll = usePreventDoubleTap(useCallback(() => handleBatchDecision(true), [handleBatchDecision]));
+    const handleRejectAll = usePreventDoubleTap(useCallback(() => handleBatchDecision(false), [handleBatchDecision]));
 
     const toggleCollapse = useCallback((toolId: string) => {
         const tool = toolCalls.find((t) => t.id === toolId);

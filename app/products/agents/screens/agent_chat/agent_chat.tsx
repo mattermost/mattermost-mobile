@@ -175,8 +175,11 @@ const AgentChat = ({bots}: Props) => {
     const handleBotSelect = useCallback((bot: AiBotModel) => {
         setSelectedBot(bot);
 
-        // Switching bots starts a fresh conversation.
+        // Switching bots starts a fresh conversation against the new bot's DM.
+        // Clear the channel immediately too, so a fast send can't post into the
+        // previous bot's DM before the new channel resolves.
         setRootId(null);
+        setChannelId(null);
         dismissBottomSheet();
     }, []);
 

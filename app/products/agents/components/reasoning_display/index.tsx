@@ -1,7 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React, {useCallback, useState} from 'react';
+import React, {useCallback, useEffect, useState} from 'react';
 import {Pressable, Text, View} from 'react-native';
 import Animated, {useAnimatedStyle, useSharedValue, withTiming} from 'react-native-reanimated';
 
@@ -96,9 +96,15 @@ const ReasoningDisplay = ({reasoningSummary, isReasoningLoading, isExpanded: isE
         } else {
             setLocalExpanded(newExpanded);
         }
-        rotation.value = withTiming(newExpanded ? 90 : 0, {duration: 200});
-        contentOpacity.value = withTiming(newExpanded ? 1 : 0, {duration: 250});
-    }, [isExpanded, isControlled, onToggle, rotation, contentOpacity]);
+    }, [isExpanded, isControlled, onToggle]);
+
+    // Drive the chevron + content animations from the (possibly controlled)
+    // expanded state so they stay in sync with the prop, including its initial
+    // value on mount.
+    useEffect(() => {
+        rotation.value = withTiming(isExpanded ? 90 : 0, {duration: 200});
+        contentOpacity.value = withTiming(isExpanded ? 1 : 0, {duration: 250});
+    }, [isExpanded, rotation, contentOpacity]);
 
     const chevronAnimatedStyle = useAnimatedStyle(() => ({
         transform: [{rotate: `${rotation.value}deg`}],

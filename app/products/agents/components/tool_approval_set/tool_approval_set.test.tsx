@@ -192,7 +192,7 @@ describe('ToolApprovalSet — batch decisions (B10) and canApprove gating (C1)',
             fireEvent.press(getByTestId('agents.tool_approval_set.accept_all'));
         });
 
-        expect(submitToolApproval).toHaveBeenCalledWith('https://test.mattermost.com', 'p1', expect.arrayContaining(['a', 'b']));
+        expect(submitToolApproval).toHaveBeenCalledWith('https://test.mattermost.com', 'p1', ['a', 'b']);
     });
 
     it('should reject every actionable tool with an empty approved list', async () => {

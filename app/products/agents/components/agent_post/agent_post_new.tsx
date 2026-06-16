@@ -247,6 +247,10 @@ const AgentPostNew = ({post, conversationId, currentUserId, location, isDM}: Age
         if (continueSeq > lastContinueSeqRef.current) {
             lastContinueSeqRef.current = continueSeq;
             refetchConversation(serverUrl, conversationId);
+        } else if (continueSeq < lastContinueSeqRef.current) {
+            // Streaming state was cleared (continueSeq reset to 0); realign the
+            // ref so a later continue in a fresh stream triggers a refetch again.
+            lastContinueSeqRef.current = continueSeq;
         }
     }, [serverUrl, conversationId, continueSeq]);
 
@@ -289,7 +293,8 @@ const AgentPostNew = ({post, conversationId, currentUserId, location, isDM}: Age
         return all;
     }, [renderedRounds]);
 
-    const noRegen = Boolean((post.props as Record<string, unknown>)?.no_regen);
+    const noRegenProp = (post.props as Record<string, unknown>)?.no_regen;
+    const noRegen = noRegenProp === true || noRegenProp === 'true';
     const hasContent = renderedRounds.length > 0;
     const showStopButton = isGenerationInProgress && isRequester;
     const showRegenerateButton = !isGenerationInProgress && isRequester && hasContent && isDM && !noRegen;

@@ -11,6 +11,7 @@ import {Screens} from '@constants';
 import {useServerUrl} from '@context/server';
 import {useFetchingThreadState} from '@hooks/fetching_thread';
 import {useDebounce} from '@hooks/utils';
+import {logDebug} from '@utils/log';
 
 import type PostModel from '@typings/database/models/servers/post';
 
@@ -37,6 +38,7 @@ const AgentChatPostList = ({rootPost, posts, channelLastViewedAt}: Props) => {
     const canLoadMorePosts = useRef(true);
     const onEndReached = useDebounce(useCallback(async () => {
         if (!rootPost || isFetchingThread || !canLoadMorePosts.current || !posts.length) {
+            logDebug('[AgentChatPostList.onEndReached] skipping pagination', {hasRootPost: Boolean(rootPost), isFetchingThread, canLoadMore: canLoadMorePosts.current, postCount: posts.length});
             return;
         }
         const options: FetchPaginatedThreadOptions = {perPage: PER_PAGE_DEFAULT};
@@ -47,8 +49,12 @@ const AgentChatPostList = ({rootPost, posts, channelLastViewedAt}: Props) => {
         }
         const result = await fetchPostThread(serverUrl, rootPost.id, options);
 
-        // Root post is always fetched, so the result would include +1.
-        canLoadMorePosts.current = (result?.posts?.length || 0) > PER_PAGE_DEFAULT;
+        // Only adjust the flag on a successful fetch — a transient error must
+        // not permanently disable pagination. The root post is always fetched,
+        // so a full page would include +1.
+        if (!result?.error) {
+            canLoadMorePosts.current = (result?.posts?.length || 0) > PER_PAGE_DEFAULT;
+        }
     }, [rootPost, isFetchingThread, posts, serverUrl]), 500);
 
     const threadPosts = useMemo(() => (rootPost ? [...posts, rootPost] : []), [posts, rootPost]);

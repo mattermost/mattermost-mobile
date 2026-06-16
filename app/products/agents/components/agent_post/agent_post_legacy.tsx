@@ -228,7 +228,8 @@ const AgentPostLegacy = ({post, currentUserId, location, isDM}: AgentPostLegacyP
     const isGenerationInProgress = isGenerating || isReasoningLoading;
 
     // Show controls based on state and permissions
-    const noRegen = Boolean((post.props as Record<string, unknown>)?.no_regen);
+    const noRegenProp = (post.props as Record<string, unknown>)?.no_regen;
+    const noRegen = noRegenProp === true || noRegenProp === 'true';
     const showStopButton = isGenerationInProgress && isRequester;
     const hasContent = displayMessage !== '' || reasoningSummary !== '';
     const showRegenerateButton = !isGenerationInProgress && isRequester && hasContent && isDM && !noRegen;
