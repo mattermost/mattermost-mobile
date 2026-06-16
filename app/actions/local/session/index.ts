@@ -150,6 +150,7 @@ export const terminateSession = async (serverUrl: string, removeServer: boolean)
     });
 
     EphemeralStore.clearManagedCategoryPropertyIds(serverUrl);
+    EphemeralStore.clearExperienceAPIEnabled(serverUrl);
 
     // Drop ephemeral agents caches for this server only; other connected
     // servers must keep their cached conversations and in-flight streams.

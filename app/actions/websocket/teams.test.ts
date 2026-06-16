@@ -9,8 +9,10 @@ import {updateUsersNoLongerVisible} from '@actions/remote/user';
 import {handleTeamArchived, handleTeamRestored, handleLeaveTeamEvent, handleUpdateTeamEvent, handleUserAddedToTeamEvent} from '@actions/websocket/teams';
 import DatabaseManager from '@database/manager';
 import NetworkManager from '@managers/network_manager';
+import {removeTeamFromBlob} from '@queries/servers/system';
 import {getCurrentTeam, queryMyTeamsByIds} from '@queries/servers/team';
 import {getCurrentUser} from '@queries/servers/user';
+import ChannelsSyncStore from '@store/channels_sync_store';
 import EphemeralStore from '@store/ephemeral_store';
 import {setTeamLoading} from '@store/team_load_store';
 import TestHelper from '@test/test_helper';
@@ -44,10 +46,18 @@ jest.mock('@managers/network_manager', () => ({
     getClient: jest.fn(),
 }));
 
+jest.mock('@queries/servers/system', () => ({
+    removeTeamFromBlob: jest.fn(),
+}));
+
 jest.mock('@queries/servers/team', () => ({
     ...jest.requireActual('@queries/servers/team'),
     getCurrentTeam: jest.fn(),
     queryMyTeamsByIds: jest.fn(),
+}));
+
+jest.mock('@store/channels_sync_store', () => ({
+    markChannelsFetched: jest.fn(),
 }));
 
 jest.mock('@queries/servers/user', () => ({
@@ -58,6 +68,7 @@ jest.mock('@store/ephemeral_store', () => ({
     isAddingToTeam: jest.fn(),
     startAddingToTeam: jest.fn(),
     finishAddingToTeam: jest.fn(),
+    getExperienceAPIEnabled: jest.fn(),
 }));
 
 jest.mock('@store/team_load_store', () => ({
@@ -148,6 +159,32 @@ describe('WebSocket Team Actions', () => {
             expect(mockedRemoveUserFromTeam).toHaveBeenCalledWith(serverUrl, 'team1');
             expect(mockedUpdateUsersNoLongerVisible).not.toHaveBeenCalled();
             expect(mockedUpdateCanJoinTeams).toHaveBeenCalledWith(serverUrl);
+        });
+
+        it('should remove team from blob when experience API is enabled', async () => {
+            jest.mocked(queryMyTeamsByIds).mockReturnValue(TestHelper.fakeQuery([TestHelper.fakeMyTeamModel({id: 'team1'})]));
+            jest.mocked(getCurrentTeam).mockResolvedValue(TestHelper.fakeTeamModel({id: 'team2'}));
+            jest.mocked(removeUserFromTeam).mockResolvedValue({error: undefined});
+            jest.mocked(getCurrentUser).mockResolvedValue(TestHelper.fakeUserModel({id: 'user1', isGuest: false}));
+            jest.mocked(updateCanJoinTeams).mockResolvedValue({error: undefined});
+            jest.mocked(EphemeralStore.getExperienceAPIEnabled).mockReturnValue(true);
+
+            await handleTeamArchived(serverUrl, msg);
+
+            expect(removeTeamFromBlob).toHaveBeenCalledWith(operator, 'team1');
+        });
+
+        it('should not remove team from blob when experience API is disabled', async () => {
+            jest.mocked(queryMyTeamsByIds).mockReturnValue(TestHelper.fakeQuery([TestHelper.fakeMyTeamModel({id: 'team1'})]));
+            jest.mocked(getCurrentTeam).mockResolvedValue(TestHelper.fakeTeamModel({id: 'team2'}));
+            jest.mocked(removeUserFromTeam).mockResolvedValue({error: undefined});
+            jest.mocked(getCurrentUser).mockResolvedValue(TestHelper.fakeUserModel({id: 'user1', isGuest: false}));
+            jest.mocked(updateCanJoinTeams).mockResolvedValue({error: undefined});
+            jest.mocked(EphemeralStore.getExperienceAPIEnabled).mockReturnValue(false);
+
+            await handleTeamArchived(serverUrl, msg);
+
+            expect(removeTeamFromBlob).not.toHaveBeenCalled();
         });
 
         it('should log error if an exception occurs', async () => {
@@ -256,6 +293,30 @@ describe('WebSocket Team Actions', () => {
             expect(mockedRemoveUserFromTeam).toHaveBeenCalledWith(serverUrl, 'team1');
         });
 
+        it('should remove team from blob when experience API is enabled', async () => {
+            jest.mocked(getCurrentUser).mockResolvedValue(TestHelper.fakeUserModel({id: 'user1', isGuest: false}));
+            jest.mocked(getCurrentTeam).mockResolvedValue(TestHelper.fakeTeamModel({id: 'team2'}));
+            jest.mocked(removeUserFromTeam).mockResolvedValue({error: undefined});
+            jest.mocked(updateCanJoinTeams).mockResolvedValue({error: undefined});
+            jest.mocked(EphemeralStore.getExperienceAPIEnabled).mockReturnValue(true);
+
+            await handleLeaveTeamEvent(serverUrl, msg);
+
+            expect(removeTeamFromBlob).toHaveBeenCalledWith(operator, 'team1');
+        });
+
+        it('should not remove team from blob when experience API is disabled', async () => {
+            jest.mocked(getCurrentUser).mockResolvedValue(TestHelper.fakeUserModel({id: 'user1', isGuest: false}));
+            jest.mocked(getCurrentTeam).mockResolvedValue(TestHelper.fakeTeamModel({id: 'team2'}));
+            jest.mocked(removeUserFromTeam).mockResolvedValue({error: undefined});
+            jest.mocked(updateCanJoinTeams).mockResolvedValue({error: undefined});
+            jest.mocked(EphemeralStore.getExperienceAPIEnabled).mockReturnValue(false);
+
+            await handleLeaveTeamEvent(serverUrl, msg);
+
+            expect(removeTeamFromBlob).not.toHaveBeenCalled();
+        });
+
         it('should log error if an exception occurs', async () => {
             const mockedGetServerDatabaseAndOperator = jest.spyOn(DatabaseManager, 'getServerDatabaseAndOperator');
 
@@ -314,6 +375,30 @@ describe('WebSocket Team Actions', () => {
             expect(mockedSetTeamLoading).toHaveBeenCalledWith(serverUrl, true);
             expect(mockedSetTeamLoading).toHaveBeenCalledWith(serverUrl, false);
             expect(mockedFinishAddingToTeam).toHaveBeenCalledWith('team1');
+        });
+
+        it('should mark channels fetched when teams and memberships are loaded', async () => {
+            jest.mocked(EphemeralStore.isAddingToTeam).mockReturnValue(false);
+            jest.mocked(fetchMyTeam).mockResolvedValue({
+                teams: [TestHelper.fakeTeam({id: 'team1'})],
+                memberships: [TestHelper.fakeTeamMember('user1', 'teamId')],
+            });
+            jest.mocked(fetchMyChannelsForTeam).mockResolvedValue({channels: [], memberships: [], categories: []});
+            jest.mocked(fetchRoles).mockResolvedValue({roles: []});
+            jest.spyOn(operator, 'batchRecords').mockResolvedValueOnce();
+
+            await handleUserAddedToTeamEvent(serverUrl, msg);
+
+            expect(ChannelsSyncStore.markChannelsFetched).toHaveBeenCalledWith(serverUrl, 'team1');
+        });
+
+        it('should not mark channels fetched when fetch returns no teams', async () => {
+            jest.mocked(EphemeralStore.isAddingToTeam).mockReturnValue(false);
+            jest.mocked(fetchMyTeam).mockResolvedValue({teams: [], memberships: []});
+
+            await handleUserAddedToTeamEvent(serverUrl, msg);
+
+            expect(ChannelsSyncStore.markChannelsFetched).not.toHaveBeenCalled();
         });
 
         it('should handle user added to team event - already adding', async () => {

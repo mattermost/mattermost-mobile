@@ -16,8 +16,9 @@ import DatabaseManager from '@database/manager';
 import {PostsInChannelModel} from '@database/models/server';
 import {getChannelById, getMyChannel} from '@queries/servers/channel';
 import {getPostById, syncPermalinkPreviewsForEditedPost} from '@queries/servers/post';
-import {getCurrentUserId, getCurrentChannelId} from '@queries/servers/system';
+import {getCurrentUserId, getCurrentChannelId, incrementTeamBlob} from '@queries/servers/system';
 import {getIsCRTEnabled} from '@queries/servers/thread';
+import ChannelsSyncStore from '@store/channels_sync_store';
 import EphemeralStore from '@store/ephemeral_store';
 import {NavigationStore} from '@store/navigation_store';
 import TestHelper from '@test/test_helper';
@@ -32,6 +33,8 @@ jest.mock('@queries/servers/post');
 jest.mock('@queries/servers/channel');
 jest.mock('@queries/servers/system');
 jest.mock('@queries/servers/thread');
+jest.mock('@store/channels_sync_store');
+jest.mock('@store/ephemeral_store');
 jest.mock('@actions/local/channel');
 jest.mock('@actions/local/post');
 jest.mock('@actions/local/thread');
@@ -275,6 +278,120 @@ describe('WebSocket Post Actions', () => {
 
             expect(mockedGetCurrentUserId).not.toHaveBeenCalled();
             expect(batchRecordsSpy).not.toHaveBeenCalled();
+        });
+
+        describe('TEAM_BADGE_COUNTS blob mirror', () => {
+            // Post by user2 so it isn't treated as "the recipient is the poster".
+            const otherUserPost = TestHelper.fakePost({id: 'post2', channel_id: 'channel1', user_id: 'user2', create_at: 12345, message: 'hi'});
+            const teamId = 'team1';
+            const baseMsg = (overrides: Record<string, unknown> = {}) => ({
+                data: {
+                    post: JSON.stringify(otherUserPost),
+                    team_id: teamId,
+                    mentions: ['user1'],
+                    mute_for_recipient: false,
+                    ...overrides,
+                },
+            } as WebSocketMessage);
+
+            beforeEach(() => {
+                // Reset to drain any mockResolvedValueOnce queued by upstream tests
+                // (e.g. the malformed-post test queues a value that goes unused when
+                // the handler errors early, polluting the next call to getPostById).
+                mockedGetPostById.mockReset().mockResolvedValue(undefined);
+                jest.spyOn(operator, 'batchRecords').mockImplementation(jest.fn());
+                jest.spyOn(operator, 'handlePosts').mockResolvedValue(postModels);
+                mockedGetMyChannel.mockResolvedValue(myChannelModel);
+                mockedGetIsCRTEnabled.mockResolvedValue(false);
+                mockedShouldIgnorePost.mockReturnValue(false);
+                mockedMarkChannelAsUnread.mockResolvedValue({member: myChannelModel});
+                jest.mocked(ChannelsSyncStore.hasChannelsBeenFetched).mockReturnValue(false);
+                jest.mocked(EphemeralStore.getExperienceAPIEnabled).mockReturnValue(true);
+            });
+
+            it('increments blob with mention=1 when recipient is mentioned and not muted', async () => {
+                await handleNewPostEvent(serverUrl, baseMsg());
+
+                expect(incrementTeamBlob).toHaveBeenCalledWith(operator, teamId, 1);
+            });
+
+            it('increments blob with mention=0 when recipient is not in mentions list', async () => {
+                await handleNewPostEvent(serverUrl, baseMsg({mentions: ['user99']}));
+
+                expect(incrementTeamBlob).toHaveBeenCalledWith(operator, teamId, 0);
+            });
+
+            it('skips blob update when the team is already fetched', async () => {
+                jest.mocked(ChannelsSyncStore.hasChannelsBeenFetched).mockReturnValue(true);
+
+                await handleNewPostEvent(serverUrl, baseMsg());
+
+                expect(incrementTeamBlob).not.toHaveBeenCalled();
+            });
+
+            it('skips blob update when the channel is muted for the recipient', async () => {
+                await handleNewPostEvent(serverUrl, baseMsg({mute_for_recipient: true}));
+
+                expect(incrementTeamBlob).not.toHaveBeenCalled();
+            });
+
+            it('skips blob update when mute_for_recipient is absent (older server)', async () => {
+                await handleNewPostEvent(serverUrl, baseMsg({mute_for_recipient: undefined}));
+
+                expect(incrementTeamBlob).not.toHaveBeenCalled();
+            });
+
+            it('skips blob update for DM/GM posts (no team_id in payload)', async () => {
+                await handleNewPostEvent(serverUrl, baseMsg({team_id: ''}));
+
+                expect(incrementTeamBlob).not.toHaveBeenCalled();
+            });
+
+            it('skips blob update when the recipient is the poster (own post)', async () => {
+                const ownPost = TestHelper.fakePost({id: 'post3', channel_id: 'channel1', user_id: 'user1', create_at: 12345, message: 'self'});
+                await handleNewPostEvent(serverUrl, {
+                    data: {
+                        post: JSON.stringify(ownPost),
+                        team_id: teamId,
+                        mentions: [],
+                        mute_for_recipient: false,
+                    },
+                } as WebSocketMessage);
+
+                expect(incrementTeamBlob).not.toHaveBeenCalled();
+            });
+
+            it('skips blob update when CRT is on and the post is a thread reply', async () => {
+                mockedGetIsCRTEnabled.mockResolvedValue(true);
+                const reply = TestHelper.fakePost({id: 'post4', channel_id: 'channel1', user_id: 'user2', root_id: 'rootPostId', create_at: 12345, message: 'reply'});
+
+                await handleNewPostEvent(serverUrl, {
+                    data: {
+                        post: JSON.stringify(reply),
+                        team_id: teamId,
+                        mentions: ['user1'],
+                        mute_for_recipient: false,
+                    },
+                } as WebSocketMessage);
+
+                expect(incrementTeamBlob).not.toHaveBeenCalled();
+            });
+
+            it('updates the blob when CRT is off even for thread replies (server bumps MentionCount)', async () => {
+                mockedGetIsCRTEnabled.mockResolvedValue(false);
+                const reply = TestHelper.fakePost({id: 'post5', channel_id: 'channel1', user_id: 'user2', root_id: 'rootPostId', create_at: 12345, message: 'reply'});
+
+                await handleNewPostEvent(serverUrl, {
+                    data: {
+                        post: JSON.stringify(reply),
+                        team_id: teamId,
+                        mentions: ['user1'],
+                        mute_for_recipient: false,
+                    },
+                } as WebSocketMessage);
+
+                expect(incrementTeamBlob).toHaveBeenCalledWith(operator, teamId, 1);
+            });
         });
     });
 

@@ -35,9 +35,6 @@ jest.mock('@actions/remote/post');
 jest.mock('@actions/remote/scheduled_post');
 jest.mock('@actions/remote/preference');
 jest.mock('@actions/remote/user');
-jest.mock('@assets/config', () => ({
-    UseInitialLoadEndpoint: false,
-}));
 jest.mock('@calls/actions/calls');
 jest.mock('@calls/utils');
 jest.mock('@database/manager');

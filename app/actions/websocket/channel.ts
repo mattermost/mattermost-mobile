@@ -8,7 +8,7 @@ import {
 } from '@actions/local/channel';
 import {storePostsForChannel} from '@actions/local/post';
 import {addChannelToManagedCategoryIfNeeded} from '@actions/remote/category';
-import {fetchMissingDirectChannelsInfo, fetchMyChannel, fetchChannelStats, fetchChannelById, handleKickFromChannel} from '@actions/remote/channel';
+import {fetchMissingDirectChannelsInfo, fetchMyChannel, fetchChannelStats, handleKickFromChannel} from '@actions/remote/channel';
 import {fetchPostsForChannel} from '@actions/remote/post';
 import {fetchRolesIfNeeded} from '@actions/remote/role';
 import {fetchUsersByIds, updateUsersNoLongerVisible} from '@actions/remote/user';
@@ -18,13 +18,47 @@ import {getCurrentCall} from '@calls/state';
 import {Events, General} from '@constants';
 import DatabaseManager from '@database/manager';
 import {deleteChannelMembership, getChannelById, prepareMyChannelsForTeam, getCurrentChannel} from '@queries/servers/channel';
-import {canViewArchivedChannels, getCurrentChannelId, getCurrentTeamId, setCurrentTeamId} from '@queries/servers/system';
+import {canViewArchivedChannels, decrementTeamBlob, getCurrentChannelId, getCurrentTeamId, incrementTeamBlob, migrateChannelFromDirectToTeamBlob, setCurrentTeamId} from '@queries/servers/system';
+import {getIsCRTEnabled} from '@queries/servers/thread';
 import {getCurrentUser, getTeammateNameDisplay, getUserById} from '@queries/servers/user';
+import ChannelsSyncStore from '@store/channels_sync_store';
 import EphemeralStore from '@store/ephemeral_store';
 import MyChannelModel from '@typings/database/models/servers/my_channel';
 import {logDebug} from '@utils/log';
 
 import type {Model} from '@nozbe/watermelondb';
+
+// Applies member_unreads_mentions from a WS payload to the team blob slot.
+// No-op when the experience API is off, teamId is empty, or the team is already fetched.
+const applyMemberUnreadsToBlob = async (
+    serverUrl: string,
+    teamId: string | undefined,
+    memberUnreadsMentions: ChannelMemberUnreadsAndMentions | undefined,
+    action: 'increment' | 'decrement',
+): Promise<void> => {
+    if (
+        !EphemeralStore.getExperienceAPIEnabled(serverUrl) ||
+        !teamId || teamId === '' ||
+        !memberUnreadsMentions ||
+        ChannelsSyncStore.hasChannelsBeenFetched(serverUrl, teamId)
+    ) {
+        return;
+    }
+
+    const {database, operator} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
+    const isCRTEnabled = await getIsCRTEnabled(database);
+    const mention = isCRTEnabled ? memberUnreadsMentions.mention_count_root : memberUnreadsMentions.mention_count;
+
+    // CRT: mention_count_root = channel-level, remainder = thread-level.
+    const threadMention = isCRTEnabled ? memberUnreadsMentions.mention_count - memberUnreadsMentions.mention_count_root : 0;
+    if (mention > 0 || threadMention > 0) {
+        if (action === 'decrement') {
+            await decrementTeamBlob(operator, teamId, mention, threadMention);
+        } else {
+            await incrementTeamBlob(operator, teamId, mention, threadMention);
+        }
+    }
+};
 
 // Received when current user created a channel in a different client
 export async function handleChannelCreatedEvent(serverUrl: string, msg: any) {
@@ -73,6 +107,8 @@ export async function handleChannelUnarchiveEvent(serverUrl: string, msg: any) {
         }
 
         await setChannelDeleteAt(serverUrl, msg.data.channel_id, 0);
+
+        await applyMemberUnreadsToBlob(serverUrl, msg.data.team_id, msg.data.member_unreads_mentions as ChannelMemberUnreadsAndMentions | undefined, 'increment');
     } catch {
         // do nothing
     }
@@ -80,16 +116,30 @@ export async function handleChannelUnarchiveEvent(serverUrl: string, msg: any) {
 
 export async function handleChannelConvertedEvent(serverUrl: string, msg: any) {
     try {
-        const {operator} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
-
-        const channelId = msg.data.channel_id;
+        const channelId: string = msg.data.channel_id;
         if (EphemeralStore.isConvertingChannel(channelId)) {
             return;
         }
 
-        const {channel} = await fetchChannelById(serverUrl, channelId);
-        if (channel) {
-            operator.handleChannel({channels: [channel], prepareRecordsOnly: false});
+        const teamId: string | undefined = msg.data.team_id;
+        const memberUnreadsMentions = msg.data.member_unreads_mentions as ChannelMemberUnreadsAndMentions | undefined;
+
+        if (
+            EphemeralStore.getExperienceAPIEnabled(serverUrl) &&
+            teamId && teamId !== '' &&
+            memberUnreadsMentions &&
+            !ChannelsSyncStore.hasChannelsBeenFetched(serverUrl, teamId)
+        ) {
+            const {database, operator} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
+            const isCRTEnabled = await getIsCRTEnabled(database);
+            const mention = isCRTEnabled ? memberUnreadsMentions.mention_count_root : memberUnreadsMentions.mention_count;
+
+            await migrateChannelFromDirectToTeamBlob(
+                operator,
+                teamId,
+                mention,
+                memberUnreadsMentions.is_unread,
+            );
         }
     } catch {
         // do nothing
@@ -142,17 +192,19 @@ export async function handleMultipleChannelsViewedEvent(serverUrl: string, msg: 
     try {
         const {database, operator} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
 
-        const {channel_times: channelTimes} = msg.data;
+        const {channel_times: channelTimes, cleared_mentions: clearedMentions, team_ids: teamIDs} = msg.data;
 
         const activeServerUrl = await DatabaseManager.getActiveServerUrl();
         const currentChannelId = await getCurrentChannelId(database);
 
         const promises: Array<ReturnType<typeof markChannelAsViewed>> = [];
+        const viewedChannelIds: string[] = [];
         for (const id of Object.keys(channelTimes)) {
             if (activeServerUrl === serverUrl && (currentChannelId === id || EphemeralStore.isSwitchingToChannel(id))) {
                 continue;
             }
             promises.push(markChannelAsViewed(serverUrl, id, false, true));
+            viewedChannelIds.push(id);
         }
 
         const members = (await Promise.allSettled(promises)).reduce<MyChannelModel[]>((acum, v) => {
@@ -169,6 +221,25 @@ export async function handleMultipleChannelsViewedEvent(serverUrl: string, msg: 
 
         if (members.length) {
             await operator.batchRecords(members, 'handleMultipleCahnnelViewedEvent');
+        }
+
+        if (EphemeralStore.getExperienceAPIEnabled(serverUrl) && clearedMentions && teamIDs) {
+            for (const id of viewedChannelIds) {
+                const teamId = teamIDs[id];
+                const cleared = clearedMentions[id];
+                if (teamId === undefined || cleared === undefined) {
+                    continue;
+                }
+
+                // Team slots skip when already fetched.
+                if (teamId !== '' && ChannelsSyncStore.hasChannelsBeenFetched(serverUrl, teamId)) {
+                    continue;
+                }
+
+                // Sequential await prevents read-modify-write races on the same System row.
+                // eslint-disable-next-line no-await-in-loop
+                await decrementTeamBlob(operator, teamId, cleared);
+            }
         }
     } catch {
         // do nothing
@@ -203,6 +274,14 @@ export async function handleChannelMemberUpdatedEvent(serverUrl: string, msg: an
             models.push(...await operator.handleRole({roles: rolesRequest.roles, prepareRecordsOnly: true}));
         }
         await operator.batchRecords(models, 'handleChannelMemberUpdatedEvent');
+
+        const teamId: string | undefined = msg.data.team_id;
+        const previousMuted: boolean | undefined = msg.data.previous_muted;
+        const currentMuted: boolean | undefined = msg.data.current_muted;
+        const memberUnreadsMentions = msg.data.member_unreads_mentions;
+        if (previousMuted !== undefined && currentMuted !== undefined && previousMuted !== currentMuted) {
+            await applyMemberUnreadsToBlob(serverUrl, teamId, memberUnreadsMentions, currentMuted ? 'decrement' : 'increment');
+        }
     } catch {
         // do nothing
     }
@@ -396,6 +475,8 @@ export async function handleUserRemovedFromChannelEvent(serverUrl: string, msg: 
             if (getCurrentCall()?.channelId === channelId) {
                 leaveCall(userRemovedFromChannelErr);
             }
+
+            await applyMemberUnreadsToBlob(serverUrl, msg.data.team_id, msg.data.member_unreads_mentions, 'decrement');
         } else {
             const {models: deleteMemberModels} = await deleteChannelMembership(operator, userId, channelId, true);
             if (deleteMemberModels) {
@@ -441,6 +522,8 @@ export async function handleChannelDeletedEvent(serverUrl: string, msg: WebSocke
         if (channelBeforeDelete?.teamId) {
             await removeChannelFromManagedCategoryIfNeeded(serverUrl, channelBeforeDelete.teamId, channelId);
         }
+
+        await applyMemberUnreadsToBlob(serverUrl, msg.data.team_id, msg.data.member_unreads_mentions, 'decrement');
     } catch {
         // Do nothing
     }

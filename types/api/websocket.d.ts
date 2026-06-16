@@ -15,11 +15,54 @@ type WebSocketMessage<T = any> = {
     seq: number;
 }
 
+// Wire shape of the `posted` event payload. Several fields arrive as
+// JSON-encoded strings (post, mentions, followers) rather than parsed objects.
+type PostedData = {
+    post: string; // JSON-encoded Post — call JSON.parse(post) to get a Post
+    channel_type?: ChannelType;
+    channel_display_name?: string;
+    channel_name?: string;
+    sender_name?: string;
+    team_id?: string;
+    set_online?: boolean;
+    mentions?: string; // JSON-encoded string[] of user IDs; per-recipient via broadcast hook
+    followers?: string; // JSON-encoded string[] of user IDs; per-recipient via broadcast hook
+    mute_for_recipient?: boolean; // per-recipient; true when this user has the channel muted
+    otherFile?: string;
+    image?: string;
+    should_ack?: boolean;
+};
+
 type ThreadReadChangedData = {
     thread_id: string;
     timestamp: number;
     unread_mentions: number;
     unread_replies: number;
+    previous_unread_mentions?: number;
+    previous_unread_replies?: number;
+    channel_id?: string;
+    thread_team_id?: string;
+};
+
+type ChannelMemberUnreadsAndMentions = {
+    mention_count: number;
+    mention_count_root: number;
+    is_unread: boolean;
+};
+
+type ChannelDeletedData = {
+    channel_id: string;
+    delete_at: number;
+    team_id?: string;
+    member_unreads_mentions?: ChannelMemberUnreadsAndMentions;
+};
+
+type UserRemovedData = {
+    user_id?: string;
+    channel_id?: string;
+    remover_id?: string;
+    team_id?: string;
+    member_unreads_mentions?: ChannelMemberUnreadsAndMentions;
 };
 
 type PostTranslationUpdateData = {

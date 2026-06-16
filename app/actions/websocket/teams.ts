@@ -10,8 +10,10 @@ import DatabaseManager from '@database/manager';
 import NetworkManager from '@managers/network_manager';
 import {prepareCategoriesAndCategoriesChannels} from '@queries/servers/categories';
 import {prepareMyChannelsForTeam} from '@queries/servers/channel';
+import {removeTeamFromBlob} from '@queries/servers/system';
 import {getCurrentTeam, prepareMyTeams, queryMyTeamsByIds} from '@queries/servers/team';
 import {getCurrentUser} from '@queries/servers/user';
+import ChannelsSyncStore from '@store/channels_sync_store';
 import EphemeralStore from '@store/ephemeral_store';
 import {setTeamLoading} from '@store/team_load_store';
 import {getFullErrorMessage} from '@utils/errors';
@@ -22,7 +24,7 @@ import type {Model} from '@nozbe/watermelondb';
 
 export async function handleTeamArchived(serverUrl: string, msg: WebSocketMessage) {
     try {
-        const {database} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
+        const {database, operator} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
         const team: Team = JSON.parse(msg.data.team);
 
         const membership = (await queryMyTeamsByIds(database, [team.id]).fetch())[0];
@@ -33,6 +35,10 @@ export async function handleTeamArchived(serverUrl: string, msg: WebSocketMessag
             }
 
             await removeUserFromTeam(serverUrl, team.id);
+
+            if (EphemeralStore.getExperienceAPIEnabled(serverUrl)) {
+                await removeTeamFromBlob(operator, team.id);
+            }
 
             const user = await getCurrentUser(database);
             if (user?.isGuest) {
@@ -95,6 +101,12 @@ export async function handleLeaveTeamEvent(serverUrl: string, msg: WebSocketMess
             }
 
             await removeUserFromTeam(serverUrl, teamId);
+
+            if (EphemeralStore.getExperienceAPIEnabled(serverUrl)) {
+                const {operator} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
+                await removeTeamFromBlob(operator, teamId);
+            }
+
             updateCanJoinTeams(serverUrl);
 
             if (user.isGuest) {
@@ -161,4 +173,8 @@ const fetchAndStoreJoinedTeamInfo = async (serverUrl: string, operator: ServerDa
 
     const models = await Promise.all(modelPromises);
     await operator.batchRecords(models.flat(), 'fetchAndStoreJoinedTeamInfo');
+
+    if (teams?.length && teamMemberships?.length) {
+        ChannelsSyncStore.markChannelsFetched(serverUrl, teamId);
+    }
 };

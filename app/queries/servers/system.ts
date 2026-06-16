@@ -480,6 +480,246 @@ export const observeTeamBadgeCounts = (database: Database): Observable<TeamBadge
     );
 };
 
+const getTeamBadgeCountsRaw = async (database: Database): Promise<TeamBadgeCounts | undefined> => {
+    try {
+        const record = await database.get<SystemModel>(SYSTEM).find(SYSTEM_IDENTIFIERS.TEAM_BADGE_COUNTS);
+        return typeof record.value === 'string' ? JSON.parse(record.value) : record.value;
+    } catch {
+        return undefined;
+    }
+};
+
+// Removes mentions from a team slot. hasUnreads is left as-is for team slots
+// (can't tell if other channels still have unreads); for the direct slot it
+// follows mentionCount (DM unreads are mention-driven).
+export const decrementTeamBlob = async (
+    operator: ServerDataOperator,
+    teamId: string,
+    clearedMentions: number,
+    clearedThreadMentions = 0,
+): Promise<void> => {
+    const blob = await getTeamBadgeCountsRaw(operator.database);
+    if (!blob) {
+        return;
+    }
+
+    const isDirect = teamId === '';
+    const slot: TeamBadge | undefined = isDirect ? blob.direct : blob.teams[teamId];
+    if (!slot) {
+        return;
+    }
+
+    const newMentionCount = Math.max(0, slot.mentionCount - clearedMentions);
+    const newHasUnreads = isDirect ? newMentionCount > 0 : slot.hasUnreads;
+    const newThreadMentionCount = Math.max(0, slot.threadMentionCount - clearedThreadMentions);
+    const newThreadHasUnreads = isDirect ? newThreadMentionCount > 0 : slot.threadHasUnreads;
+
+    if (
+        newMentionCount === slot.mentionCount &&
+        newHasUnreads === slot.hasUnreads &&
+        newThreadMentionCount === slot.threadMentionCount &&
+        newThreadHasUnreads === slot.threadHasUnreads
+    ) {
+        return;
+    }
+
+    const updatedSlot: TeamBadge = {
+        ...slot,
+        mentionCount: newMentionCount,
+        hasUnreads: newHasUnreads,
+        threadMentionCount: newThreadMentionCount,
+        threadHasUnreads: newThreadHasUnreads,
+    };
+
+    const updated: TeamBadgeCounts = isDirect ? {...blob, direct: updatedSlot} : {...blob, teams: {...blob.teams, [teamId]: updatedSlot}};
+
+    await operator.handleSystem({
+        systems: [{id: SYSTEM_IDENTIFIERS.TEAM_BADGE_COUNTS, value: JSON.stringify(updated)}],
+        prepareRecordsOnly: false,
+    });
+};
+
+// Adds mentions to a team slot and flips hasUnreads to true.
+export const incrementTeamBlob = async (
+    operator: ServerDataOperator,
+    teamId: string,
+    mentionDelta: number,
+    threadMentionDelta = 0,
+): Promise<void> => {
+    const blob = await getTeamBadgeCountsRaw(operator.database);
+    if (!blob) {
+        return;
+    }
+
+    const slot: TeamBadge | undefined = blob.teams[teamId];
+    if (!slot) {
+        return;
+    }
+
+    const newMentionCount = slot.mentionCount + mentionDelta;
+    const newThreadMentionCount = slot.threadMentionCount + threadMentionDelta;
+    const newHasUnreads = true;
+    const newThreadHasUnreads = newThreadMentionCount > 0 ? true : slot.threadHasUnreads;
+
+    if (
+        newMentionCount === slot.mentionCount &&
+        newHasUnreads === slot.hasUnreads &&
+        newThreadMentionCount === slot.threadMentionCount &&
+        newThreadHasUnreads === slot.threadHasUnreads
+    ) {
+        return;
+    }
+
+    const updatedSlot: TeamBadge = {
+        ...slot,
+        mentionCount: newMentionCount,
+        hasUnreads: newHasUnreads,
+        threadMentionCount: newThreadMentionCount,
+        threadHasUnreads: newThreadHasUnreads,
+    };
+
+    const updated: TeamBadgeCounts = {...blob, teams: {...blob.teams, [teamId]: updatedSlot}};
+
+    await operator.handleSystem({
+        systems: [{id: SYSTEM_IDENTIFIERS.TEAM_BADGE_COUNTS, value: JSON.stringify(updated)}],
+        prepareRecordsOnly: false,
+    });
+};
+
+// Zeroes thread fields for a team slot and the direct slot. Mirrors
+// server-side MarkAllAsReadByTeam which clears both in one SQL update.
+export const clearTeamThreadsInBlob = async (
+    operator: ServerDataOperator,
+    teamId: string,
+): Promise<void> => {
+    const blob = await getTeamBadgeCountsRaw(operator.database);
+    if (!blob) {
+        return;
+    }
+
+    const teamSlot = blob.teams[teamId];
+    const directSlot = blob.direct;
+
+    const teamNeedsUpdate = teamSlot && (teamSlot.threadMentionCount !== 0 || teamSlot.threadHasUnreads);
+    const directNeedsUpdate = directSlot && (directSlot.threadMentionCount !== 0 || directSlot.threadHasUnreads);
+
+    if (!teamNeedsUpdate && !directNeedsUpdate) {
+        return;
+    }
+
+    const updated: TeamBadgeCounts = {
+        teams: teamNeedsUpdate ? {...blob.teams, [teamId]: {...teamSlot, threadMentionCount: 0, threadHasUnreads: false}} : blob.teams,
+        direct: directNeedsUpdate ? {...directSlot, threadMentionCount: 0, threadHasUnreads: false} : directSlot,
+    };
+
+    await operator.handleSystem({
+        systems: [{id: SYSTEM_IDENTIFIERS.TEAM_BADGE_COUNTS, value: JSON.stringify(updated)}],
+        prepareRecordsOnly: false,
+    });
+};
+
+// Applies a thread mention delta. Positive delta = mentions removed (read/deleted);
+// negative = added. '' targets the direct slot. Team slots are conservative on
+// threadHasUnreads (only flip to true); the direct slot trusts hasUnreadsAfter directly.
+export const adjustThreadInBlob = async (
+    operator: ServerDataOperator,
+    threadTeamId: string,
+    mentionDelta: number,
+    hasUnreadsAfter: boolean,
+): Promise<void> => {
+    const blob = await getTeamBadgeCountsRaw(operator.database);
+    if (!blob) {
+        return;
+    }
+
+    const isDirect = threadTeamId === '';
+    const slot: TeamBadge | undefined = isDirect ? blob.direct : blob.teams[threadTeamId];
+    if (!slot) {
+        return;
+    }
+
+    const newMentionCount = Math.max(0, slot.threadMentionCount - mentionDelta);
+    const newHasUnreads = isDirect ? hasUnreadsAfter : (slot.threadHasUnreads || hasUnreadsAfter);
+
+    if (newMentionCount === slot.threadMentionCount && newHasUnreads === slot.threadHasUnreads) {
+        return;
+    }
+
+    const updatedSlot: TeamBadge = {
+        ...slot,
+        threadMentionCount: newMentionCount,
+        threadHasUnreads: newHasUnreads,
+    };
+
+    const updated: TeamBadgeCounts = isDirect ? {...blob, direct: updatedSlot} : {...blob, teams: {...blob.teams, [threadTeamId]: updatedSlot}};
+
+    await operator.handleSystem({
+        systems: [{id: SYSTEM_IDENTIFIERS.TEAM_BADGE_COUNTS, value: JSON.stringify(updated)}],
+        prepareRecordsOnly: false,
+    });
+};
+
+export const removeTeamFromBlob = async (
+    operator: ServerDataOperator,
+    teamId: string,
+): Promise<void> => {
+    const blob = await getTeamBadgeCountsRaw(operator.database);
+    if (!blob || !(teamId in blob.teams)) {
+        return;
+    }
+
+    const {[teamId]: _, ...remainingTeams} = blob.teams;
+    const updated: TeamBadgeCounts = {...blob, teams: remainingTeams};
+
+    await operator.handleSystem({
+        systems: [{id: SYSTEM_IDENTIFIERS.TEAM_BADGE_COUNTS, value: JSON.stringify(updated)}],
+        prepareRecordsOnly: false,
+    });
+};
+
+// Moves a channel's mentions from the direct slot to a team slot.
+// Used when a GM is converted to a private channel.
+export const migrateChannelFromDirectToTeamBlob = async (
+    operator: ServerDataOperator,
+    teamId: string,
+    mentionCount: number,
+    hasUnreads: boolean,
+): Promise<void> => {
+    const blob = await getTeamBadgeCountsRaw(operator.database);
+    if (!blob) {
+        return;
+    }
+
+    const directSlot = blob.direct;
+    const teamSlot = blob.teams[teamId];
+
+    const newDirectMentionCount = directSlot ? Math.max(0, directSlot.mentionCount - mentionCount) : 0;
+    const newDirectHasUnreads = newDirectMentionCount > 0;
+
+    const updatedDirect: TeamBadge | undefined = directSlot ? {
+        ...directSlot,
+        mentionCount: newDirectMentionCount,
+        hasUnreads: newDirectHasUnreads,
+    } : directSlot;
+
+    const updatedTeam: TeamBadge | undefined = teamSlot ? {
+        ...teamSlot,
+        mentionCount: teamSlot.mentionCount + mentionCount,
+        hasUnreads: teamSlot.hasUnreads || hasUnreads,
+    } : teamSlot;
+
+    const updated: TeamBadgeCounts = {
+        ...blob,
+        ...(updatedDirect === undefined ? {} : {direct: updatedDirect}),
+        teams: updatedTeam === undefined ? blob.teams : {...blob.teams, [teamId]: updatedTeam},
+    };
+
+    await operator.handleSystem({
+        systems: [{id: SYSTEM_IDENTIFIERS.TEAM_BADGE_COUNTS, value: JSON.stringify(updated)}],
+        prepareRecordsOnly: false,
+    });
+};
+
 export const getTeamHistory = async (serverDatabase: Database): Promise<string[]> => {
     try {
         const teamHistory = await serverDatabase.get<SystemModel>(SYSTEM).find(SYSTEM_IDENTIFIERS.TEAM_HISTORY);

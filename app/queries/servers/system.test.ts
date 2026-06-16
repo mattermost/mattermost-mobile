@@ -20,6 +20,7 @@ import {
     setCurrentChannelId, setCurrentTeamId, setCurrentTeamAndChannelId,
     getLastUnreadChannelId, getExpiredSession,
     getLastInitialLoad, setLastInitialLoad, getLastTeamLoad, setLastTeamLoad, prepareDeleteTeamLoadCursor,
+    decrementTeamBlob, adjustThreadInBlob, incrementTeamBlob,
     observeCurrentChannelId, observeCurrentTeamId, observeCurrentUserId, observeGlobalThreadsTab,
     observePushVerificationStatus, observeConfig, observeConfigValue, observeMaxFileCount,
     observeIsCustomStatusExpirySupported, observeConfigBooleanValue, observeConfigIntValue,
@@ -30,6 +31,7 @@ import {
 
 import type ServerDataOperator from '@database/operator/server_data_operator';
 import type {Database} from '@nozbe/watermelondb';
+import type SystemModel from '@typings/database/models/servers/system';
 
 jest.mock('expo-application', () => {
     return {
@@ -37,6 +39,22 @@ jest.mock('expo-application', () => {
         nativeBuildVersion: '456',
     };
 });
+
+const makeSeedTeamBadgeBlob = (operator: ServerDataOperator) => async (blob: TeamBadgeCounts) => {
+    await operator.handleSystem({
+        systems: [{id: SYSTEM_IDENTIFIERS.TEAM_BADGE_COUNTS, value: JSON.stringify(blob)}],
+        prepareRecordsOnly: false,
+    });
+};
+
+const makeReadTeamBadgeBlob = (database: Database) => async (): Promise<TeamBadgeCounts | undefined> => {
+    try {
+        const record = await database.get<SystemModel>('System').find(SYSTEM_IDENTIFIERS.TEAM_BADGE_COUNTS);
+        return typeof record.value === 'string' ? JSON.parse(record.value) : record.value;
+    } catch {
+        return undefined;
+    }
+};
 
 describe('observeReportAProblemMetadata', () => {
     const serverUrl = 'baseHandler.test.com';
@@ -827,5 +845,294 @@ describe('getLastTeamLoad / setLastTeamLoad / prepareDeleteTeamLoadCursor', () =
         });
         const result = await getLastTeamLoad(database, teamId);
         expect(result).toBe(0);
+    });
+});
+
+describe('decrementTeamBlob', () => {
+    const serverUrl = 'baseHandler.test.com';
+    const teamId = 'team1';
+    let database: ReturnType<typeof DatabaseManager.getServerDatabaseAndOperator>['database'];
+    let operator: ReturnType<typeof DatabaseManager.getServerDatabaseAndOperator>['operator'];
+    let seedBlob: ReturnType<typeof makeSeedTeamBadgeBlob>;
+    let readBlob: ReturnType<typeof makeReadTeamBadgeBlob>;
+
+    beforeEach(async () => {
+        await DatabaseManager.init([serverUrl]);
+        ({database, operator} = DatabaseManager.getServerDatabaseAndOperator(serverUrl));
+        seedBlob = makeSeedTeamBadgeBlob(operator);
+        readBlob = makeReadTeamBadgeBlob(database);
+    });
+
+    afterEach(async () => {
+        await DatabaseManager.destroyServerDatabase(serverUrl);
+    });
+
+    it('should subtract clearedMentions from the team slot', async () => {
+        await seedBlob({
+            teams: {[teamId]: {mentionCount: 5, hasUnreads: true, threadMentionCount: 0, threadHasUnreads: false}},
+            direct: {mentionCount: 0, hasUnreads: false, threadMentionCount: 0, threadHasUnreads: false},
+        });
+
+        await decrementTeamBlob(operator, teamId, 3);
+
+        const blob = await readBlob();
+        expect(blob?.teams[teamId].mentionCount).toBe(2);
+        expect(blob?.teams[teamId].hasUnreads).toBe(true);
+    });
+
+    it('should leave hasUnreads true on a team slot even when mentionCount drops to 0 (conservative)', async () => {
+        await seedBlob({
+            teams: {[teamId]: {mentionCount: 3, hasUnreads: true, threadMentionCount: 0, threadHasUnreads: false}},
+            direct: {mentionCount: 0, hasUnreads: false, threadMentionCount: 0, threadHasUnreads: false},
+        });
+
+        await decrementTeamBlob(operator, teamId, 3);
+
+        const blob = await readBlob();
+        expect(blob?.teams[teamId].mentionCount).toBe(0);
+
+        // Conservative — other channels might still contribute plain unreads.
+        expect(blob?.teams[teamId].hasUnreads).toBe(true);
+    });
+
+    it('should flip direct.hasUnreads to false when direct mentionCount reaches 0', async () => {
+        await seedBlob({
+            teams: {},
+            direct: {mentionCount: 2, hasUnreads: true, threadMentionCount: 0, threadHasUnreads: false},
+        });
+
+        await decrementTeamBlob(operator, '', 2);
+
+        const blob = await readBlob();
+        expect(blob?.direct.mentionCount).toBe(0);
+
+        // DM/GM: every message is a mention, so hasUnreads cleanly flips off.
+        expect(blob?.direct.hasUnreads).toBe(false);
+    });
+
+    it('should clamp the decrement at 0 instead of going negative', async () => {
+        await seedBlob({
+            teams: {[teamId]: {mentionCount: 1, hasUnreads: true, threadMentionCount: 0, threadHasUnreads: false}},
+            direct: {mentionCount: 0, hasUnreads: false, threadMentionCount: 0, threadHasUnreads: false},
+        });
+
+        await decrementTeamBlob(operator, teamId, 999);
+
+        const blob = await readBlob();
+        expect(blob?.teams[teamId].mentionCount).toBe(0);
+    });
+
+    it('should be a no-op when there is no blob in the system table', async () => {
+        // No seed.
+        await expect(decrementTeamBlob(operator, teamId, 5)).resolves.not.toThrow();
+    });
+
+    it('should be a no-op when the team slot does not exist in the blob', async () => {
+        await seedBlob({
+            teams: {other_team: {mentionCount: 2, hasUnreads: true, threadMentionCount: 0, threadHasUnreads: false}},
+            direct: {mentionCount: 0, hasUnreads: false, threadMentionCount: 0, threadHasUnreads: false},
+        });
+
+        await decrementTeamBlob(operator, teamId, 5);
+
+        const blob = await readBlob();
+        expect(blob?.teams.other_team.mentionCount).toBe(2);
+        expect(blob?.teams[teamId]).toBeUndefined();
+    });
+});
+
+describe('adjustThreadInBlob', () => {
+    const serverUrl = 'baseHandler.test.com';
+    const teamId = 'team1';
+    let database: ReturnType<typeof DatabaseManager.getServerDatabaseAndOperator>['database'];
+    let operator: ReturnType<typeof DatabaseManager.getServerDatabaseAndOperator>['operator'];
+    let seedBlob: ReturnType<typeof makeSeedTeamBadgeBlob>;
+    let readBlob: ReturnType<typeof makeReadTeamBadgeBlob>;
+
+    beforeEach(async () => {
+        await DatabaseManager.init([serverUrl]);
+        ({database, operator} = DatabaseManager.getServerDatabaseAndOperator(serverUrl));
+        seedBlob = makeSeedTeamBadgeBlob(operator);
+        readBlob = makeReadTeamBadgeBlob(database);
+    });
+
+    afterEach(async () => {
+        await DatabaseManager.destroyServerDatabase(serverUrl);
+    });
+
+    it('should subtract a positive mentionDelta from the team slot threadMentionCount', async () => {
+        await seedBlob({
+            teams: {[teamId]: {mentionCount: 0, hasUnreads: false, threadMentionCount: 4, threadHasUnreads: true}},
+            direct: {mentionCount: 0, hasUnreads: false, threadMentionCount: 0, threadHasUnreads: false},
+        });
+
+        // previous=3, after=1 -> delta=2 mentions cleared, thread still unread
+        await adjustThreadInBlob(operator, teamId, 2, true);
+
+        const blob = await readBlob();
+        expect(blob?.teams[teamId].threadMentionCount).toBe(2);
+        expect(blob?.teams[teamId].threadHasUnreads).toBe(true);
+    });
+
+    it('should add a negative mentionDelta back to the team slot (mark-unread)', async () => {
+        await seedBlob({
+            teams: {[teamId]: {mentionCount: 0, hasUnreads: false, threadMentionCount: 1, threadHasUnreads: true}},
+            direct: {mentionCount: 0, hasUnreads: false, threadMentionCount: 0, threadHasUnreads: false},
+        });
+
+        // previous=0, after=2 -> delta=-2 (re-introduce)
+        await adjustThreadInBlob(operator, teamId, -2, true);
+
+        const blob = await readBlob();
+        expect(blob?.teams[teamId].threadMentionCount).toBe(3);
+        expect(blob?.teams[teamId].threadHasUnreads).toBe(true);
+    });
+
+    it('should leave threadHasUnreads true on a team slot even when threadMentionCount drops to 0 (conservative)', async () => {
+        await seedBlob({
+            teams: {[teamId]: {mentionCount: 0, hasUnreads: false, threadMentionCount: 2, threadHasUnreads: true}},
+            direct: {mentionCount: 0, hasUnreads: false, threadMentionCount: 0, threadHasUnreads: false},
+        });
+
+        await adjustThreadInBlob(operator, teamId, 2, false);
+
+        const blob = await readBlob();
+        expect(blob?.teams[teamId].threadMentionCount).toBe(0);
+
+        // Conservative — other threads in the team may still be unread.
+        expect(blob?.teams[teamId].threadHasUnreads).toBe(true);
+    });
+
+    it('should flip direct.threadHasUnreads to false when hasUnreadsAfter is false', async () => {
+        await seedBlob({
+            teams: {},
+            direct: {mentionCount: 0, hasUnreads: false, threadMentionCount: 1, threadHasUnreads: true},
+        });
+
+        await adjustThreadInBlob(operator, '', 1, false);
+
+        const blob = await readBlob();
+        expect(blob?.direct.threadMentionCount).toBe(0);
+        expect(blob?.direct.threadHasUnreads).toBe(false);
+    });
+
+    it('should clamp the decrement at 0 instead of going negative', async () => {
+        await seedBlob({
+            teams: {[teamId]: {mentionCount: 0, hasUnreads: false, threadMentionCount: 1, threadHasUnreads: true}},
+            direct: {mentionCount: 0, hasUnreads: false, threadMentionCount: 0, threadHasUnreads: false},
+        });
+
+        await adjustThreadInBlob(operator, teamId, 999, false);
+
+        const blob = await readBlob();
+        expect(blob?.teams[teamId].threadMentionCount).toBe(0);
+    });
+
+    it('should be a no-op when there is no blob in the system table', async () => {
+        // No seed.
+        await expect(adjustThreadInBlob(operator, teamId, 2, false)).resolves.not.toThrow();
+    });
+
+    it('should be a no-op when the team slot does not exist in the blob', async () => {
+        await seedBlob({
+            teams: {other_team: {mentionCount: 0, hasUnreads: false, threadMentionCount: 5, threadHasUnreads: true}},
+            direct: {mentionCount: 0, hasUnreads: false, threadMentionCount: 0, threadHasUnreads: false},
+        });
+
+        await adjustThreadInBlob(operator, teamId, 2, true);
+
+        const blob = await readBlob();
+        expect(blob?.teams.other_team.threadMentionCount).toBe(5);
+        expect(blob?.teams[teamId]).toBeUndefined();
+    });
+});
+
+describe('incrementTeamBlob', () => {
+    const serverUrl = 'baseHandler.test.com';
+    const teamId = 'team1';
+    let database: ReturnType<typeof DatabaseManager.getServerDatabaseAndOperator>['database'];
+    let operator: ReturnType<typeof DatabaseManager.getServerDatabaseAndOperator>['operator'];
+    let seedBlob: ReturnType<typeof makeSeedTeamBadgeBlob>;
+    let readBlob: ReturnType<typeof makeReadTeamBadgeBlob>;
+
+    beforeEach(async () => {
+        await DatabaseManager.init([serverUrl]);
+        ({database, operator} = DatabaseManager.getServerDatabaseAndOperator(serverUrl));
+        seedBlob = makeSeedTeamBadgeBlob(operator);
+        readBlob = makeReadTeamBadgeBlob(database);
+    });
+
+    afterEach(async () => {
+        await DatabaseManager.destroyServerDatabase(serverUrl);
+    });
+
+    it('should increment mentionCount by 1 when mentionDelta is 1', async () => {
+        await seedBlob({
+            teams: {[teamId]: {mentionCount: 2, hasUnreads: true, threadMentionCount: 0, threadHasUnreads: false}},
+            direct: {mentionCount: 0, hasUnreads: false, threadMentionCount: 0, threadHasUnreads: false},
+        });
+
+        await incrementTeamBlob(operator, teamId, 1);
+
+        const blob = await readBlob();
+        expect(blob?.teams[teamId].mentionCount).toBe(3);
+        expect(blob?.teams[teamId].hasUnreads).toBe(true);
+    });
+
+    it('should increment mentionCount by N when mentionDelta is N (e.g. unmute restores historical mentions)', async () => {
+        await seedBlob({
+            teams: {[teamId]: {mentionCount: 1, hasUnreads: true, threadMentionCount: 0, threadHasUnreads: false}},
+            direct: {mentionCount: 0, hasUnreads: false, threadMentionCount: 0, threadHasUnreads: false},
+        });
+
+        await incrementTeamBlob(operator, teamId, 5);
+
+        const blob = await readBlob();
+        expect(blob?.teams[teamId].mentionCount).toBe(6);
+        expect(blob?.teams[teamId].hasUnreads).toBe(true);
+    });
+
+    it('should leave mentionCount unchanged when mentionDelta is 0 but flip hasUnreads', async () => {
+        await seedBlob({
+            teams: {[teamId]: {mentionCount: 0, hasUnreads: false, threadMentionCount: 0, threadHasUnreads: false}},
+            direct: {mentionCount: 0, hasUnreads: false, threadMentionCount: 0, threadHasUnreads: false},
+        });
+
+        await incrementTeamBlob(operator, teamId, 0);
+
+        const blob = await readBlob();
+        expect(blob?.teams[teamId].mentionCount).toBe(0);
+        expect(blob?.teams[teamId].hasUnreads).toBe(true);
+    });
+
+    it('should leave hasUnreads true when already true and mentionDelta is 0', async () => {
+        await seedBlob({
+            teams: {[teamId]: {mentionCount: 0, hasUnreads: true, threadMentionCount: 0, threadHasUnreads: false}},
+            direct: {mentionCount: 0, hasUnreads: false, threadMentionCount: 0, threadHasUnreads: false},
+        });
+
+        await incrementTeamBlob(operator, teamId, 0);
+
+        const blob = await readBlob();
+        expect(blob?.teams[teamId].mentionCount).toBe(0);
+        expect(blob?.teams[teamId].hasUnreads).toBe(true);
+    });
+
+    it('should be a no-op when there is no blob in the system table', async () => {
+        // No seed.
+        await expect(incrementTeamBlob(operator, teamId, 1)).resolves.not.toThrow();
+    });
+
+    it('should be a no-op when the team slot does not exist in the blob', async () => {
+        await seedBlob({
+            teams: {other_team: {mentionCount: 0, hasUnreads: false, threadMentionCount: 0, threadHasUnreads: false}},
+            direct: {mentionCount: 0, hasUnreads: false, threadMentionCount: 0, threadHasUnreads: false},
+        });
+
+        await incrementTeamBlob(operator, teamId, 1);
+
+        const blob = await readBlob();
+        expect(blob?.teams.other_team.mentionCount).toBe(0);
+        expect(blob?.teams[teamId]).toBeUndefined();
     });
 });
