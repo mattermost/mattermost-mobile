@@ -98,7 +98,7 @@ class NavigationStoreSingleton {
             setTimeout(() => {
                 subscription.unsubscribe();
                 resolve();
-            }, 30000);
+            }, 3000);
         });
     }
 
@@ -141,7 +141,7 @@ class NavigationStoreSingleton {
             setTimeout(() => {
                 subscription.unsubscribe();
                 resolve();
-            }, 30000);
+            }, 3000);
         });
     }
 

@@ -171,6 +171,36 @@ PODS:
   - LoggerAPI (1.9.200):
     - Logging (~> 1.1)
   - Logging (1.4.0)
+  - mattermost-calls-native (0.0.0):
+    - boost
+    - DoubleConversion
+    - fast_float
+    - fmt
+    - Gekidou
+    - glog
+    - hermes-engine
+    - JitsiWebRTC (~> 124.0.0)
+    - RCT-Folly
+    - RCT-Folly/Fabric
+    - RCTRequired
+    - RCTTypeSafety
+    - React-Core
+    - React-debug
+    - React-Fabric
+    - React-featureflags
+    - React-graphics
+    - React-ImageManager
+    - React-jsi
+    - React-NativeModulesApple
+    - React-RCTFabric
+    - React-renderercss
+    - React-rendererdebug
+    - React-utils
+    - ReactCodegen
+    - ReactCommon/turbomodule/bridging
+    - ReactCommon/turbomodule/core
+    - SocketRocket
+    - Yoga
   - mattermost-hardware-keyboard (0.0.0):
     - boost
     - DoubleConversion
@@ -3972,6 +4002,7 @@ DEPENDENCIES:
   - Gekidou (from `./Gekidou`)
   - glog (from `../node_modules/react-native/third-party-podspecs/glog.podspec`)
   - hermes-engine (from `../node_modules/react-native/sdks/hermes-engine/hermes-engine.podspec`)
+  - "mattermost-calls-native (from `../libraries/@mattermost/calls-native`)"
   - "mattermost-hardware-keyboard (from `../libraries/@mattermost/hardware-keyboard`)"
   - "mattermost-react-native-turbo-log (from `../node_modules/@mattermost/react-native-turbo-log`)"
   - "mattermost-rnutils (from `../libraries/@mattermost/rnutils`)"
@@ -4171,6 +4202,8 @@ EXTERNAL SOURCES:
   hermes-engine:
     :podspec: "../node_modules/react-native/sdks/hermes-engine/hermes-engine.podspec"
     :tag: hermes-v0.14.1
+  mattermost-calls-native:
+    :path: "../libraries/@mattermost/calls-native"
   mattermost-hardware-keyboard:
     :path: "../libraries/@mattermost/hardware-keyboard"
   mattermost-react-native-turbo-log:
@@ -4436,6 +4469,7 @@ SPEC CHECKSUMS:
   libwebp: 02b23773aedb6ff1fd38cec7a77b81414c6842a8
   LoggerAPI: ad9c4a6f1e32f518fdb43a1347ac14d765ab5e3d
   Logging: beeb016c9c80cf77042d62e83495816847ef108b
+  mattermost-calls-native: 51d049f98b8c356184b8c0f273ccc8d725db990e
   mattermost-hardware-keyboard: 95eb9c1e3d32b9e9921abcbb8765c516beaba9fd
   mattermost-react-native-turbo-log: 4aa8e7add21cd5df616cdbcdd70dd24cc541deba
   mattermost-rnutils: 4e564bc3e775c80e653adeff4225ec7f0f807583

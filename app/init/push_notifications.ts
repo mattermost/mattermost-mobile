@@ -83,6 +83,9 @@ class PushNotificationsSingleton {
             await requestNotifications(['alert', 'sound', 'badge']);
         }
         Notifications.registerRemoteNotifications();
+
+        // Never call Notifications.registerPushKit() — PushKit is owned by
+        // @mattermost/calls-native; a second PKPushRegistry would break it.
     }
 
     createReplyCategory = () => {
