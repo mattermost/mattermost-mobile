@@ -377,7 +377,6 @@ describe('layout_blocks', () => {
                     channelId: 'channel-id',
                     postId: 'post-id',
                     location: Screens.CHANNEL,
-                    childLayout: 'column',
                 }),
             );
             expect(navigateToScreen).toHaveBeenCalledWith(Screens.MM_BLOCKS_CONTENT);

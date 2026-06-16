@@ -14,6 +14,7 @@ export type ActionHandler = (
 
 export type BlockSwitchProps = {
     block: MmBlock;
+    currentLayout?: 'column' | 'row';
     onAction: ActionHandler;
     theme: Theme;
 };

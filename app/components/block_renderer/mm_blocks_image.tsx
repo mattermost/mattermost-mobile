@@ -8,8 +8,7 @@ import Animated from 'react-native-reanimated';
 import {SvgUri} from 'react-native-svg';
 
 import ExpoImage from '@components/expo_image';
-import ExternalImage from '@components/external_image';
-import {isSVGImage} from '@components/external_image/is_svg_image';
+import ExternalImage, {isSVGImage} from '@components/external_image';
 import FileIcon from '@components/files/file_icon';
 import {GalleryInit} from '@context/gallery';
 import {useIsTablet} from '@hooks/device';
@@ -21,7 +20,7 @@ import {urlSafeBase64Encode} from '@utils/security';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {extractFilenameFromUrl, isValidUrl} from '@utils/url';
 
-import {MmBlocksInteractionContext, MmBlocksLayoutWidthContext, MmBlocksRenderContext} from './context';
+import {MmBlocksLayoutWidthContext, MmBlocksRenderContext} from './context';
 import {
     computeMmBlocksImageLayout,
     refineMmBlocksImageLayoutFromIntrinsic,
@@ -64,7 +63,6 @@ const MmBlocksImageContent = ({
 }: MmBlocksImageContentProps) => {
     const layoutWidth = useContext(MmBlocksLayoutWidthContext);
     const {location, postId} = useContext(MmBlocksRenderContext)!;
-    const interactionsEnabled = useContext(MmBlocksInteractionContext);
     const galleryIdentifier = `${postId}-MmBlocksImage-${location}`;
     const isTablet = useIsTablet();
     const viewPortWidth = getViewPortWidth(false, isTablet);
@@ -173,7 +171,7 @@ const MmBlocksImageContent = ({
         );
     };
 
-    const imageContent = interactionsEnabled ? (
+    const imageContent = (
         <Pressable
             onPress={onGestureEvent}
             style={({pressed}) => pressed && {opacity: 0.72}}
@@ -182,8 +180,6 @@ const MmBlocksImageContent = ({
         >
             {renderImage()}
         </Pressable>
-    ) : (
-        renderImage()
     );
 
     return (

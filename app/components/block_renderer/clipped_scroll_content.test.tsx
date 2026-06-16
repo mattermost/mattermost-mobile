@@ -8,7 +8,6 @@ import {ScrollView, Text} from 'react-native';
 import {renderWithIntlAndTheme} from '@test/intl-test-helper';
 
 import ClippedScrollContent from './clipped_scroll_content';
-import {MmBlocksInteractionContext} from './context';
 
 describe('ClippedScrollContent', () => {
     const onExpand = jest.fn();
@@ -17,22 +16,17 @@ describe('ClippedScrollContent', () => {
         jest.clearAllMocks();
     });
 
-    function renderClipped(
-        maxHeight: number,
-        interactionsEnabled = true,
-    ) {
+    function renderClipped(maxHeight: number) {
         const textContent = 'Tall content';
         return renderWithIntlAndTheme(
-            <MmBlocksInteractionContext.Provider value={interactionsEnabled}>
-                <ClippedScrollContent
-                    maxHeight={maxHeight}
-                    onExpand={onExpand}
-                    containerPadding={0}
-                    testID='clipped.content'
-                >
-                    <Text>{textContent}</Text>
-                </ClippedScrollContent>
-            </MmBlocksInteractionContext.Provider>,
+            <ClippedScrollContent
+                maxHeight={maxHeight}
+                onExpand={onExpand}
+                containerPadding={0}
+                testID='clipped.content'
+            >
+                <Text>{textContent}</Text>
+            </ClippedScrollContent>,
         );
     }
 
@@ -54,17 +48,5 @@ describe('ClippedScrollContent', () => {
 
         fireEvent.press(getByTestId('clipped.content.expand.button'));
         expect(onExpand).toHaveBeenCalledTimes(1);
-    });
-
-    it('should not call onExpand from outer pressable when parent interactions are disabled', () => {
-        const {UNSAFE_getByType: getByType, getByTestId} = renderClipped(100, false);
-
-        fireEvent(getByType(ScrollView), 'layout', {
-            nativeEvent: {layout: {width: 300, height: 100, x: 0, y: 0}},
-        });
-        fireEvent(getByType(ScrollView), 'contentSizeChange', 0, 250);
-
-        fireEvent.press(getByTestId('clipped.content'));
-        expect(onExpand).not.toHaveBeenCalled();
     });
 });

@@ -78,22 +78,6 @@ const ChannelListRow = ({
         onPress(channel);
     }, [onPress, channel]);
 
-    const renderPurpose = (channelPurpose: string): React.ReactNode => {
-        if (!channelPurpose) {
-            return null;
-        }
-
-        return (
-            <Text
-                style={style.purpose}
-                ellipsizeMode='tail'
-                numberOfLines={1}
-            >
-                {channel.purpose}
-            </Text>
-        );
-    };
-
     const itemTestID = `${testID}.${id}`;
     const channelDisplayNameTestID = `${testID}.display_name`;
     const channelIcon = getIconForChannel(channel);
@@ -124,8 +108,6 @@ const ChannelListRow = ({
                             {channel.display_name}
                         </Text>
                     </View>
-
-                    {renderPurpose(channel.purpose)}
                 </View>
             </CustomListRow>
         </View>

@@ -7,8 +7,7 @@ exports[`components/integration_selector/option_list_row should match snapshot f
       "alignItems": "center",
       "backgroundColor": "#ffffff",
       "flexDirection": "row",
-      "height": 65,
-      "paddingHorizontal": 15,
+      "height": 40,
     }
   }
 >
@@ -45,7 +44,7 @@ exports[`components/integration_selector/option_list_row should match snapshot f
         "alignItems": "center",
         "flex": 1,
         "flexDirection": "row",
-        "height": 65,
+        "height": 48,
         "opacity": 1,
       }
     }
@@ -65,7 +64,6 @@ exports[`components/integration_selector/option_list_row should match snapshot f
             "flex": 1,
             "flexDirection": "column",
             "justifyContent": "center",
-            "marginLeft": 10,
           }
         }
       >

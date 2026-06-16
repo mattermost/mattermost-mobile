@@ -34,6 +34,7 @@ jest.mock('@managers/network_manager', () => ({
 jest.mock('@components/external_image', () => ({
     __esModule: true,
     default: jest.fn(),
+    isSVGImage: jest.requireActual('@components/external_image/is_svg_image').isSVGImage,
 }));
 
 jest.mock('@hooks/device', () => ({
@@ -122,7 +123,6 @@ describe('MmBlocksImage', () => {
 
     function renderImage(
         props: Partial<React.ComponentProps<typeof MmBlocksImage>> = {},
-        interactionsEnabled = true,
     ) {
         return renderWithIntlAndTheme(
             <MmBlocksContextProvider
@@ -130,7 +130,6 @@ describe('MmBlocksImage', () => {
                 location={Screens.CHANNEL}
                 postId='post-id'
                 layoutWidth={400}
-                interactionsEnabled={interactionsEnabled}
             >
                 <MmBlocksImage
                     altText='Photo'
@@ -224,7 +223,7 @@ describe('MmBlocksImage', () => {
         expect(getExpoImageDimensions(getByTestId)).toEqual(initialDimensions);
     });
 
-    it('should open gallery on press when interactions are enabled', () => {
+    it('should open gallery on press', () => {
         const {getByRole} = renderImage();
 
         fireEvent.press(getByRole('imagebutton'));
@@ -239,15 +238,6 @@ describe('MmBlocksImage', () => {
                 type: 'image',
             })],
         );
-    });
-
-    it('should not wrap image in a pressable when interactions are disabled', () => {
-        const {queryByRole, getByTestId} = renderImage({}, false);
-
-        expect(queryByRole('imagebutton')).toBeNull();
-        expect(getByTestId('expo-image')).toBeTruthy();
-        fireEvent.press(getByTestId('expo-image'));
-        expect(openGalleryAtIndex).not.toHaveBeenCalled();
     });
 
     it('should render error frame after expo image onError', () => {

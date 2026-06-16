@@ -37,7 +37,6 @@ function getPayload(overrides: Partial<MmBlocksExpandedContentPayload> = {}): Mm
         channelId: 'channel-id',
         location: Screens.CHANNEL,
         postId: 'post-id',
-        childLayout: 'row',
         renderContent: () => React.createElement(Text, {testID: 'mm_blocks_content.rendered'}, 'Expanded content'),
         imagesMetadata: {'https://example.com/a.png': {width: 100, height: 100}},
         inlineMarkdownActions: {mmBlocksActionCookie: 'cookie'},
@@ -76,7 +75,6 @@ describe('MmBlocksContent', () => {
         expect(contextProvider).toHaveProp('channelId', payload.channelId);
         expect(contextProvider).toHaveProp('location', payload.location);
         expect(contextProvider).toHaveProp('postId', payload.postId);
-        expect(contextProvider).toHaveProp('childLayout', payload.childLayout);
         expect(contextProvider).toHaveProp('imagesMetadata', payload.imagesMetadata);
         expect(contextProvider).toHaveProp('inlineMarkdownActions', payload.inlineMarkdownActions);
         expect(contextProvider).toHaveProp('layoutWidth', undefined);

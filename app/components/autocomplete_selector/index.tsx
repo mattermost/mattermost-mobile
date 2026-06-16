@@ -84,13 +84,9 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
         },
         input,
         dropdownPlaceholder: {
-            top: 3,
-            marginLeft: 5,
             ...baseText,
         },
         dropdownSelected: {
-            top: 3,
-            marginLeft: 5,
             ...baseText,
         },
         icon: {

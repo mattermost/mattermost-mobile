@@ -1,7 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React from 'react';
+import React, {useMemo} from 'react';
 
 import {ContainerBlock} from './layout_blocks';
 import {MmBlocksContextProvider} from './mm_blocks_context_provider';
@@ -18,6 +18,11 @@ export const BlockRenderer = ({
     postId,
     theme,
 }: BlockRendererProps) => {
+    const block = useMemo(() => ({
+        type: 'container' as const,
+        content: blocks,
+    }), [blocks]);
+
     return (
         <MmBlocksContextProvider
             channelId={channelId}
@@ -27,10 +32,7 @@ export const BlockRenderer = ({
             postId={postId}
         >
             <ContainerBlock
-                block={{
-                    type: 'container',
-                    content: blocks,
-                }}
+                block={block}
                 onAction={onAction}
                 theme={theme}
             />

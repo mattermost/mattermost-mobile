@@ -2,7 +2,7 @@
 // See LICENSE.txt for license information.
 
 import React, {useCallback, useContext, useEffect, useMemo, useState} from 'react';
-import {Pressable, View, type LayoutChangeEvent, type ViewStyle} from 'react-native';
+import {Pressable, View, type LayoutChangeEvent, type PressableStateCallbackType, type ViewStyle} from 'react-native';
 import Animated, {Easing, useAnimatedStyle, useSharedValue, withTiming} from 'react-native-reanimated';
 
 import CompassIcon from '@components/compass_icon';
@@ -13,7 +13,7 @@ import CallbackStore from '@store/callback_store';
 
 import {ButtonElement} from './button_element';
 import ClippedScrollContent from './clipped_scroll_content';
-import {MmBlocksChildLayoutContext, MmBlocksImagesMetadataContext, MmBlocksInlineMarkdownActionsContext, MmBlocksInteractionContext, MmBlocksLayoutWidthContext, MmBlocksRenderContext} from './context';
+import {MmBlocksLayoutWidthContext, MmBlocksRenderContext} from './context';
 import {DividerBlock} from './divider_block';
 import {ImageBlock} from './image_block';
 import {type MmBlocksExpandedContentPayload} from './mm_blocks_context_provider';
@@ -30,7 +30,7 @@ import type {BlockSwitchProps} from './types';
 
 const COLLAPSIBLE_ANIMATION_MS = 250;
 
-export const BlockSwitch = ({block, onAction, theme}: BlockSwitchProps) => {
+export const BlockSwitch = ({block, currentLayout, onAction, theme}: BlockSwitchProps) => {
     switch (block.type) {
         case 'text':
             return (
@@ -47,7 +47,12 @@ export const BlockSwitch = ({block, onAction, theme}: BlockSwitchProps) => {
                 />
             );
         case 'divider':
-            return <DividerBlock theme={theme}/>;
+            return (
+                <DividerBlock
+                    currentLayout={currentLayout}
+                    theme={theme}
+                />
+            );
         case 'column_set':
             return (
                 <ColumnSetBlock
@@ -97,6 +102,12 @@ type ColumnSetBlockProps = BlockSwitchProps & {block: MmColumnSetBlock};
 const ColumnSetBlock = ({block, ...switchProps}: ColumnSetBlockProps) => {
     const {theme} = switchProps;
     const style = getStyleSheet(theme);
+
+    const columnSetStyle = useMemo(
+        () => [style.columnSet, containerGapStyle(block.gap)],
+        [block.gap, style],
+    );
+
     if (!block.columns || block.columns.length === 0) {
         return null;
     }
@@ -104,7 +115,7 @@ const ColumnSetBlock = ({block, ...switchProps}: ColumnSetBlockProps) => {
     // We use the index on the key since we don't have a unique id for the columns,
     // and we do not expect the number or order of columns to change.
     return (
-        <View style={[style.columnSet, containerGapStyle(block.gap)]}>
+        <View style={columnSetStyle}>
             {block.columns.map((column, i) => (
                 <ColumnBlock
                     key={i}
@@ -121,19 +132,22 @@ type ColumnBlockProps = BlockSwitchProps & {block: MmColumnBlock};
 const ColumnBlock = ({block, ...switchProps}: ColumnBlockProps) => {
     const {theme} = switchProps;
     const style = getStyleSheet(theme);
+
+    const innerBlock = useMemo(() => ({
+        type: 'container' as const,
+        content: block.items,
+        ...(block.gap ? {gap: block.gap} : {}),
+    }), [block.items, block.gap]);
+
     if (!block.items || block.items.length === 0) {
         return null;
     }
+
     const columnStyle = block.width === 'stretch' ? style.columnStretch : style.columnAuto;
-    const innerContainer: MmContainerBlock = {
-        type: 'container',
-        content: block.items,
-        ...(block.gap ? {gap: block.gap} : {}),
-    };
     return (
         <View style={columnStyle}>
             <ContainerBlock
-                block={innerContainer}
+                block={innerBlock}
                 {...switchProps}
             />
         </View>
@@ -147,11 +161,53 @@ export const ContainerBlock = ({block, ...switchProps}: ContainerBlockProps) => 
     const style = getStyleSheet(theme);
     const parentLayoutWidth = useContext(MmBlocksLayoutWidthContext);
     const renderContext = useContext(MmBlocksRenderContext);
-    const imagesMetadata = useContext(MmBlocksImagesMetadataContext);
-    const inlineMarkdownActions = useContext(MmBlocksInlineMarkdownActionsContext);
     const [measuredLayoutWidth, setMeasuredLayoutWidth] = useState<number | undefined>(undefined);
 
     const contextLayoutWidth = measuredLayoutWidth ?? parentLayoutWidth;
+
+    const currentLayout: 'column' | 'row' = block.flow === 'horizontal' ? 'row' : 'column';
+
+    const maxHeightKey = block.max_height === 'small' || block.max_height === 'medium' || block.max_height === 'large' ? block.max_height : null;
+    const maxHeightPx = maxHeightKey ? MM_CONTAINER_MAX_HEIGHT_PX[maxHeightKey] : null;
+
+    const containerStyle = useMemo(() => {
+        const containerBaseStyle = [block.border && style.containerBorder, block.background === 'gray' && style.containerBgGray];
+        const accent = block.accent_color;
+
+        let accentStyles: ViewStyle[] = [];
+        if (accent) {
+            let accentStyle: ViewStyle = {};
+            if (isMmContainerSemanticAccent(accent)) {
+                switch (accent) {
+                    case 'primary':
+                        accentStyle = style.accentPrimary;
+                        break;
+                    case 'good':
+                        accentStyle = style.accentGood;
+                        break;
+                    case 'warning':
+                        accentStyle = style.accentWarning;
+                        break;
+                    case 'danger':
+                        accentStyle = style.accentDanger;
+                        break;
+                    default:
+                        accentStyle = style.accentDefault;
+                        break;
+                }
+            } else {
+                accentStyle = {borderLeftColor: accent};
+            }
+            accentStyles = [style.containerAccent, accentStyle];
+        }
+        return [containerBaseStyle, accentStyles];
+    }, [block.border, block.background, block.accent_color, style]);
+
+    const innerContentStyle = useMemo(() => {
+        const flowStyle = block.flow === 'horizontal' ? style.containerHorizontal : style.containerVertical;
+        const gapStyle = containerGapStyle(block.gap);
+        return [style.container, flowStyle, gapStyle];
+    }, [block.flow, block.gap, style]);
 
     const handleLayout = useCallback((event: LayoutChangeEvent) => {
         const width = Math.round(event.nativeEvent.layout.width);
@@ -160,15 +216,7 @@ export const ContainerBlock = ({block, ...switchProps}: ContainerBlockProps) => 
         }
     }, []);
 
-    const containerChildLayout: 'column' | 'row' = block.flow === 'horizontal' ? 'row' : 'column';
-    const flowStyle = block.flow === 'horizontal' ? style.containerHorizontal : style.containerVertical;
-    const gapStyle = containerGapStyle(block.gap);
-    const accent = block.accent_color;
-
-    const maxHeightKey = block.max_height === 'small' || block.max_height === 'medium' || block.max_height === 'large' ? block.max_height : null;
-    const maxHeightPx = maxHeightKey ? MM_CONTAINER_MAX_HEIGHT_PX[maxHeightKey] : null;
-
-    const handleExpandBoundedContent = usePreventDoubleTap(useCallback(() => {
+    const handleExpandBoundedContent = useCallback(() => {
         if (!block.content?.length || !renderContext) {
             return;
         }
@@ -179,12 +227,7 @@ export const ContainerBlock = ({block, ...switchProps}: ContainerBlockProps) => 
         };
 
         const payload: MmBlocksExpandedContentPayload = {
-            channelId: renderContext.channelId,
-            location: renderContext.location,
-            postId: renderContext.postId,
-            imagesMetadata,
-            inlineMarkdownActions,
-            childLayout: containerChildLayout,
+            ...renderContext,
             renderContent: () => (
                 <ContainerBlock
                     block={expandedBlock}
@@ -195,7 +238,7 @@ export const ContainerBlock = ({block, ...switchProps}: ContainerBlockProps) => 
 
         CallbackStore.setCallback(payload);
         navigateToScreen(Screens.MM_BLOCKS_CONTENT);
-    }, [block, containerChildLayout, imagesMetadata, inlineMarkdownActions, renderContext, switchProps]));
+    }, [block, renderContext, switchProps]);
 
     if (!block.content || block.content.length === 0) {
         return null;
@@ -207,6 +250,7 @@ export const ContainerBlock = ({block, ...switchProps}: ContainerBlockProps) => 
         <BlockSwitch
             key={i}
             block={item}
+            currentLayout={currentLayout}
             {...switchProps}
         />
     ));
@@ -227,45 +271,15 @@ export const ContainerBlock = ({block, ...switchProps}: ContainerBlockProps) => 
 
     const inner = (
         <MmBlocksLayoutWidthContext.Provider value={contextLayoutWidth}>
-            <MmBlocksChildLayoutContext.Provider value={containerChildLayout}>
-                <View style={[style.container, flowStyle, gapStyle]}>
-                    {boundedContent}
-                </View>
-            </MmBlocksChildLayoutContext.Provider>
+            <View style={innerContentStyle}>
+                {boundedContent}
+            </View>
         </MmBlocksLayoutWidthContext.Provider>
     );
 
-    const containerBaseStyle = [block.border && style.containerBorder, block.background === 'gray' && style.containerBgGray];
-    let accentStyles: ViewStyle[] = [];
-    if (accent) {
-        let accentStyle: ViewStyle = {};
-        if (isMmContainerSemanticAccent(accent)) {
-            switch (accent) {
-                case 'primary':
-                    accentStyle = style.accentPrimary;
-                    break;
-                case 'good':
-                    accentStyle = style.accentGood;
-                    break;
-                case 'warning':
-                    accentStyle = style.accentWarning;
-                    break;
-                case 'danger':
-                    accentStyle = style.accentDanger;
-                    break;
-                default:
-                    accentStyle = style.accentDefault;
-                    break;
-            }
-        } else {
-            accentStyle = {borderLeftColor: accent};
-        }
-        accentStyles = [style.containerAccent, accentStyle];
-    }
-
     return (
         <View
-            style={[containerBaseStyle, accentStyles]}
+            style={containerStyle}
             onLayout={handleLayout}
         >
             {inner}
@@ -278,7 +292,6 @@ type CollapsibleBlockProps = BlockSwitchProps & {block: MmCollapsibleBlock};
 const CollapsibleBlock = ({block, ...switchProps}: CollapsibleBlockProps) => {
     const {theme} = switchProps;
     const style = getStyleSheet(theme);
-    const interactionsEnabled = useContext(MmBlocksInteractionContext);
     const [collapsed, setCollapsed] = useState(block.collapsed !== false);
     const contentHeight = useSharedValue(0);
     const isExpanded = useSharedValue(!(block.collapsed !== false));
@@ -324,6 +337,13 @@ const CollapsibleBlock = ({block, ...switchProps}: CollapsibleBlockProps) => {
         content: block.content,
     }), [block.content]);
 
+    const pressableStyle = useCallback(({pressed}: PressableStateCallbackType) => [
+        style.collapsibleHeader,
+        pressed && style.collapsibleHeaderPressed,
+    ], [style.collapsibleHeader, style.collapsibleHeaderPressed]);
+
+    const accessibilityState = useMemo(() => ({expanded: !collapsed}), [collapsed]);
+
     if (!block.header?.length || !block.content?.length) {
         return null;
     }
@@ -332,13 +352,9 @@ const CollapsibleBlock = ({block, ...switchProps}: CollapsibleBlockProps) => {
         <View style={style.collapsible}>
             <Pressable
                 onPress={toggleCollapsed}
-                disabled={!interactionsEnabled}
-                style={({pressed}) => [
-                    style.collapsibleHeader,
-                    interactionsEnabled && pressed && style.collapsibleHeaderPressed,
-                ]}
+                style={pressableStyle}
                 accessibilityRole='button'
-                accessibilityState={{expanded: !collapsed}}
+                accessibilityState={accessibilityState}
             >
                 <Animated.View style={chevronAnimatedStyle}>
                     <CompassIcon

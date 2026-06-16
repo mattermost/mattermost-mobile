@@ -1,11 +1,11 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React, {useContext} from 'react';
+import React, {useContext, useMemo} from 'react';
 
 import Markdown from '@components/markdown';
 
-import {MmBlocksInlineMarkdownActionsContext, MmBlocksInteractionContext, MmBlocksRenderContext} from './context';
+import {MmBlocksRenderContext} from './context';
 import {getStyleSheet} from './styles';
 
 type TextBlockProps = {
@@ -16,34 +16,27 @@ type TextBlockProps = {
 export const TextBlock = ({block, theme}: TextBlockProps) => {
     const style = getStyleSheet(theme);
     const renderContext = useContext(MmBlocksRenderContext);
-    const {mmBlocksActionCookie, integrationFormat} = useContext(MmBlocksInlineMarkdownActionsContext);
-    const interactionsEnabled = useContext(MmBlocksInteractionContext);
+
+    const textStyle = useMemo(() => [
+        style.message,
+        block.is_subtle && style.textSubtle,
+        block.size === 'small' && style.textSmall,
+    ], [block.is_subtle, block.size, style]);
 
     if (!block.text || !renderContext) {
         return null;
     }
 
-    const {channelId, location, postId} = renderContext;
-
-    const textStyle = [
-        style.message,
-        block.is_subtle && style.textSubtle,
-        block.size === 'small' && style.textSmall,
-    ];
+    const {channelId, inlineMarkdownActions, location, postId} = renderContext;
+    const {mmBlocksActionCookie, integrationFormat} = inlineMarkdownActions;
 
     return (
         <Markdown
-            allowInlineActions={interactionsEnabled}
+            allowInlineActions={true}
             baseTextStyle={textStyle}
             channelId={channelId}
-            disableGallery={!interactionsEnabled}
-            disableHashtags={!interactionsEnabled}
-            disableLinks={!interactionsEnabled}
-            enableInlineLatex={true}
-            enableLatex={true}
             integrationFormat={integrationFormat}
             location={location}
-            maxNodes={1000}
             mmBlocksActionCookie={mmBlocksActionCookie}
             postId={postId}
             theme={theme}

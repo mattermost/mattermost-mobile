@@ -54,14 +54,12 @@ describe('StaticSelectElement', () => {
 
     function renderSelect(
         props: ComponentProps<typeof StaticSelectElement>,
-        interactionsEnabled = true,
     ) {
         return renderWithIntlAndTheme(
             <MmBlocksContextProvider
                 channelId='channel-id'
                 location={Screens.CHANNEL}
                 postId='post-id'
-                interactionsEnabled={interactionsEnabled}
             >
                 <StaticSelectElement {...props}/>
             </MmBlocksContextProvider>,
@@ -132,12 +130,5 @@ describe('StaticSelectElement', () => {
 
         expect(onAction).toHaveBeenCalledWith('pick_one', 'b', {source: 'mm_blocks'}, 'select-cookie');
         expect(getByText('b')).toBeTruthy();
-    });
-
-    it('should disable selector when interactions are disabled', () => {
-        const {getByTestId} = renderSelect(getBaseProps(), false);
-
-        fireEvent.press(getByTestId('mm_blocks.static_select.pick_one'));
-        expect(onAction).not.toHaveBeenCalled();
     });
 });

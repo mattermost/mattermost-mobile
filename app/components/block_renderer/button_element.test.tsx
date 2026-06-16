@@ -8,7 +8,6 @@ import {Preferences} from '@constants';
 import {renderWithIntlAndTheme} from '@test/intl-test-helper';
 
 import {ButtonElement} from './button_element';
-import {MmBlocksInteractionContext} from './context';
 
 describe('ButtonElement', () => {
     const theme = Preferences.THEMES.denim;
@@ -33,12 +32,9 @@ describe('ButtonElement', () => {
 
     function renderButton(
         props: ComponentProps<typeof ButtonElement>,
-        interactionsEnabled = true,
     ) {
         return renderWithIntlAndTheme(
-            <MmBlocksInteractionContext.Provider value={interactionsEnabled}>
-                <ButtonElement {...props}/>
-            </MmBlocksInteractionContext.Provider>,
+            <ButtonElement {...props}/>,
         );
     }
 
@@ -50,12 +46,10 @@ describe('ButtonElement', () => {
         expect(queryByTestId('mm_blocks.button.submit_action')).toBeNull();
 
         rerender(
-            <MmBlocksInteractionContext.Provider value={true}>
-                <ButtonElement
-                    {...getBaseProps()}
-                    element={{type: 'button', text: 'Submit', action_id: ''}}
-                />
-            </MmBlocksInteractionContext.Provider>,
+            <ButtonElement
+                {...getBaseProps()}
+                element={{type: 'button', text: 'Submit', action_id: ''}}
+            />,
         );
         expect(queryByTestId('mm_blocks.button.')).toBeNull();
     });
@@ -83,13 +77,6 @@ describe('ButtonElement', () => {
         });
 
         expect(onAction).toHaveBeenCalledWith('submit_action', undefined, {row: '1'}, 'attachment-cookie');
-    });
-
-    it('should disable button when interactions are disabled', () => {
-        const {getByTestId} = renderButton(getBaseProps(), false);
-
-        fireEvent.press(getByTestId('mm_blocks.button.submit_action'));
-        expect(onAction).not.toHaveBeenCalled();
     });
 
     it('should not dispatch twice on rapid double press', async () => {

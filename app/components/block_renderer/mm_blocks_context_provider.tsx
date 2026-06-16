@@ -4,13 +4,10 @@
 import React, {useMemo, type ReactNode} from 'react';
 
 import {
-    MmBlocksChildLayoutContext,
-    MmBlocksImagesMetadataContext,
-    MmBlocksInlineMarkdownActionsContext,
-    MmBlocksInteractionContext,
     MmBlocksLayoutWidthContext,
     MmBlocksRenderContext,
     type MmBlocksInlineMarkdownActions,
+    type MmBlocksRenderContextValue,
 } from './context';
 
 import type {AvailableScreens} from '@typings/screens/navigation';
@@ -20,10 +17,8 @@ export type MmBlocksContextProviderProps = {
     location: AvailableScreens;
     postId: string;
     children: ReactNode;
-    childLayout?: 'column' | 'row';
     imagesMetadata?: Record<string, PostImage>;
     inlineMarkdownActions?: MmBlocksInlineMarkdownActions;
-    interactionsEnabled?: boolean;
     layoutWidth?: number;
 };
 
@@ -32,45 +27,30 @@ export const MmBlocksContextProvider = ({
     location,
     postId,
     children,
-    childLayout = 'column',
     imagesMetadata,
     inlineMarkdownActions,
-    interactionsEnabled = true,
     layoutWidth,
 }: MmBlocksContextProviderProps) => {
-    const metadataValue = useMemo(() => imagesMetadata, [imagesMetadata]);
-    const inlineMarkdownActionsValue = useMemo(
-        () => inlineMarkdownActions ?? {},
-        [inlineMarkdownActions],
-    );
     const renderContextValue = useMemo(
-        () => ({channelId, location, postId}),
-        [channelId, location, postId],
+        (): MmBlocksRenderContextValue => ({
+            channelId,
+            location,
+            postId,
+            imagesMetadata,
+            inlineMarkdownActions: inlineMarkdownActions ?? {},
+        }),
+        [channelId, imagesMetadata, inlineMarkdownActions, location, postId],
     );
 
     return (
-        <MmBlocksInteractionContext.Provider value={interactionsEnabled}>
-            <MmBlocksRenderContext.Provider value={renderContextValue}>
-                <MmBlocksImagesMetadataContext.Provider value={metadataValue}>
-                    <MmBlocksInlineMarkdownActionsContext.Provider value={inlineMarkdownActionsValue}>
-                        <MmBlocksLayoutWidthContext.Provider value={layoutWidth}>
-                            <MmBlocksChildLayoutContext.Provider value={childLayout}>
-                                {children}
-                            </MmBlocksChildLayoutContext.Provider>
-                        </MmBlocksLayoutWidthContext.Provider>
-                    </MmBlocksInlineMarkdownActionsContext.Provider>
-                </MmBlocksImagesMetadataContext.Provider>
-            </MmBlocksRenderContext.Provider>
-        </MmBlocksInteractionContext.Provider>
+        <MmBlocksRenderContext.Provider value={renderContextValue}>
+            <MmBlocksLayoutWidthContext.Provider value={layoutWidth}>
+                {children}
+            </MmBlocksLayoutWidthContext.Provider>
+        </MmBlocksRenderContext.Provider>
     );
 };
 
-export type MmBlocksExpandedContentPayload = {
-    channelId: string;
-    location: AvailableScreens;
-    postId: string;
-    childLayout: 'column' | 'row';
+export type MmBlocksExpandedContentPayload = MmBlocksRenderContextValue & {
     renderContent: () => ReactNode;
-    imagesMetadata?: Record<string, PostImage>;
-    inlineMarkdownActions?: MmBlocksInlineMarkdownActions;
 };

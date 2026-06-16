@@ -79,7 +79,6 @@ const MmBlocksContent = () => {
                 imagesMetadata={payload.imagesMetadata}
                 inlineMarkdownActions={payload.inlineMarkdownActions}
                 layoutWidth={layoutWidth}
-                childLayout={payload.childLayout}
             >
                 <ScrollView
                     style={styles.fullHeight}

@@ -7,7 +7,6 @@ import {View} from 'react-native';
 import {Preferences} from '@constants';
 import {renderWithIntlAndTheme} from '@test/intl-test-helper';
 
-import {MmBlocksChildLayoutContext} from './context';
 import {DividerBlock} from './divider_block';
 
 describe('DividerBlock', () => {
@@ -15,9 +14,7 @@ describe('DividerBlock', () => {
 
     it('should render horizontal divider in column layout', () => {
         const {UNSAFE_getByType: getByType} = renderWithIntlAndTheme(
-            <MmBlocksChildLayoutContext.Provider value='column'>
-                <DividerBlock theme={theme}/>
-            </MmBlocksChildLayoutContext.Provider>,
+            <DividerBlock theme={theme}/>,
         );
 
         const divider = getByType(View);
@@ -26,9 +23,10 @@ describe('DividerBlock', () => {
 
     it('should render vertical divider in row layout', () => {
         const {UNSAFE_getByType: getByType} = renderWithIntlAndTheme(
-            <MmBlocksChildLayoutContext.Provider value='row'>
-                <DividerBlock theme={theme}/>
-            </MmBlocksChildLayoutContext.Provider>,
+            <DividerBlock
+                currentLayout='row'
+                theme={theme}
+            />,
         );
 
         const divider = getByType(View);

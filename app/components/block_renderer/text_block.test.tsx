@@ -25,14 +25,13 @@ describe('TextBlock', () => {
         ));
     });
 
-    function renderTextBlock(block: MmTextBlock, interactionsEnabled = true) {
+    function renderTextBlock(block: MmTextBlock) {
         return renderWithIntlAndTheme(
             <MmBlocksContextProvider
                 channelId='channel-id'
                 location={Screens.CHANNEL}
                 postId='post-id'
                 inlineMarkdownActions={{mmBlocksActionCookie: 'cookie', integrationFormat: 'attachment'}}
-                interactionsEnabled={interactionsEnabled}
             >
                 <TextBlock
                     block={block}
@@ -58,25 +57,8 @@ describe('TextBlock', () => {
                 postId: 'post-id',
                 location: Screens.CHANNEL,
                 allowInlineActions: true,
-                disableGallery: false,
-                disableHashtags: false,
-                disableLinks: false,
                 mmBlocksActionCookie: 'cookie',
                 integrationFormat: 'attachment',
-            }),
-            undefined,
-        );
-    });
-
-    it('should disable interactions when context disables them', () => {
-        renderTextBlock({type: 'text', text: 'Read only'}, false);
-
-        expect(jest.mocked(Markdown)).toHaveBeenCalledWith(
-            expect.objectContaining({
-                allowInlineActions: false,
-                disableGallery: true,
-                disableHashtags: true,
-                disableLinks: true,
             }),
             undefined,
         );

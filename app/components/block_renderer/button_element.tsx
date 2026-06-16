@@ -1,13 +1,12 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React, {useCallback, useContext, useMemo, useState} from 'react';
+import React, {useCallback, useMemo, useState} from 'react';
 import {type StyleProp, type TextStyle, type ViewStyle} from 'react-native';
 
 import Button from '@components/button';
 import {usePreventDoubleTap} from '@hooks/utils';
 
-import {MmBlocksInteractionContext} from './context';
 import {resolveMmButtonColors} from './utils/button';
 
 import type {ActionHandler} from './types';
@@ -20,11 +19,14 @@ type ButtonElementProps = {
 
 export const ButtonElement = ({element, onAction, theme}: ButtonElementProps) => {
     const [isExecuting, setIsExecuting] = useState(false);
-    const interactionsEnabled = useContext(MmBlocksInteractionContext);
     const isPrimary = element.style === 'primary';
-    const isDisabled = element.disabled === true || !interactionsEnabled || isExecuting;
-    const buttonColors = resolveMmButtonColors(element.style, theme);
+    const isDisabled = element.disabled === true || isExecuting;
     const useStyledTertiary = !isPrimary && !isDisabled;
+
+    const buttonColors = useMemo(
+        () => resolveMmButtonColors(element.style, theme),
+        [element.style, theme],
+    );
 
     const backgroundStyle = useMemo((): StyleProp<ViewStyle> => {
         if (!useStyledTertiary) {

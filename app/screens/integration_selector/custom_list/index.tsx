@@ -42,7 +42,10 @@ const keyExtractor = (item: any): string => {
 
 const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
     return {
-        flex: {flex: 1},
+        flex: {
+            flex: 1,
+            paddingLeft: 12,
+        },
         list: {
             backgroundColor: theme.centerChannelBg,
             flex: 1,
@@ -56,9 +59,6 @@ const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
             height: 1,
             flex: 1,
             backgroundColor: changeOpacity(theme.centerChannelColor, 0.1),
-        },
-        contentContainer: {
-            gap: 8,
         },
     };
 });
@@ -121,7 +121,6 @@ function CustomList({
     return (
         <KeyboardAvoidingView style={style.flex}>
             <FlatList
-                contentContainerStyle={style.contentContainer}
                 data={data}
                 keyboardShouldPersistTaps='always'
                 keyboardDismissMode='on-drag'

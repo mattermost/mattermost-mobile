@@ -2,15 +2,13 @@
 // See LICENSE.txt for license information.
 
 import {LinearGradient} from 'expo-linear-gradient';
-import React, {useCallback, useContext, useMemo, useState, type ReactNode} from 'react';
+import React, {useCallback, useMemo, useState, type ReactNode} from 'react';
 import {type LayoutChangeEvent, Platform, Pressable, ScrollView, View} from 'react-native';
 
 import CompassIcon from '@components/compass_icon';
 import {useTheme} from '@context/theme';
 import {usePreventDoubleTap} from '@hooks/utils';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
-
-import {MmBlocksInteractionContext} from './context';
 
 type ClippedScrollContentProps = {
     children: ReactNode;
@@ -41,13 +39,8 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
             height: 34,
         },
         icon: {
-            fontSize: 14,
+            fontSize: Platform.select({ios: 13, default: 14}),
             color: theme.linkColor,
-            ...Platform.select({
-                ios: {
-                    fontSize: 13,
-                },
-            }),
         },
         moreBelow: {
             height: 20,
@@ -78,9 +71,7 @@ const ClippedScrollContent = ({
         setContentHeight(height);
     }, []);
 
-    const parentInteractionsEnabled = useContext(MmBlocksInteractionContext);
     const isOverflowing = contentHeight > maxHeight;
-    const interactionsEnabled = isOverflowing ? false : parentInteractionsEnabled;
 
     const moreBelow = useMemo(() => {
         if (!isOverflowing) {
@@ -132,10 +123,12 @@ const ClippedScrollContent = ({
         );
     }, [containerWidth, handleExpand, isOverflowing, styles.expandButton, styles.icon, styles.iconButton, testID]);
 
+    const maxHeightStyle = useMemo(() => ({maxHeight}), [maxHeight]);
+
     return (
         <Pressable
             onPress={handleExpand}
-            disabled={!isOverflowing || !parentInteractionsEnabled}
+            disabled={!isOverflowing}
             testID={testID}
         >
             <ScrollView
@@ -143,11 +136,11 @@ const ClippedScrollContent = ({
                 onLayout={handleContainerLayout}
                 scrollEnabled={false}
                 showsVerticalScrollIndicator={false}
-                style={{maxHeight}}
+                style={maxHeightStyle}
             >
-                <MmBlocksInteractionContext.Provider value={interactionsEnabled}>
+                <View pointerEvents={isOverflowing ? 'none' : 'auto'}>
                     {children}
-                </MmBlocksInteractionContext.Provider>
+                </View>
             </ScrollView>
             {moreBelow}
             {expandButton}

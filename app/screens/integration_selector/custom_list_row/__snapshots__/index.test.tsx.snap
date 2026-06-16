@@ -34,7 +34,7 @@ exports[`components/integration_selector/custom_list_row should match snapshot 1
       "alignItems": "center",
       "flex": 1,
       "flexDirection": "row",
-      "height": 65,
+      "height": 48,
       "opacity": 1,
     }
   }

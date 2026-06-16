@@ -7,7 +7,7 @@ import AutocompleteSelector from '@components/autocomplete_selector';
 import {usePreventDoubleTap} from '@hooks/utils';
 import {filterOptions} from '@utils/message_attachment';
 
-import {MmBlocksInteractionContext, MmBlocksRenderContext} from './context';
+import {MmBlocksRenderContext} from './context';
 
 import type {ActionHandler} from './types';
 
@@ -18,7 +18,6 @@ type StaticSelectElementProps = {
 
 export const StaticSelectElement = ({element, onAction}: StaticSelectElementProps) => {
     const renderContext = useContext(MmBlocksRenderContext);
-    const interactionsEnabled = useContext(MmBlocksInteractionContext);
     const filteredOptions = useMemo(() => filterOptions(element.options), [element.options]);
     const [selected, setSelected] = useState(() => {
         if (element.initial_option && element.options) {
@@ -51,7 +50,7 @@ export const StaticSelectElement = ({element, onAction}: StaticSelectElementProp
             options={filteredOptions}
             selected={selected}
             onSelected={handleSelect}
-            disabled={element.disabled || !interactionsEnabled}
+            disabled={element.disabled}
             testID={`mm_blocks.static_select.${element.action_id}`}
             location={renderContext.location}
             omitMargins={true}

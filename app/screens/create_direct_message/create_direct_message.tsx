@@ -64,7 +64,7 @@ const getStyleFromTheme = makeStyleSheetFromTheme((theme: Theme) => {
         listContainer: {
             flex: 1,
             marginLeft: 12,
-            marginRight: Platform.select({ios: 4, default: 12}),
+            marginRight: 12,
         },
         searchBar: {
             marginLeft: 12,

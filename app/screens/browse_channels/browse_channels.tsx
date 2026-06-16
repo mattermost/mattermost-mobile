@@ -4,7 +4,7 @@
 import {useNavigation} from 'expo-router';
 import React, {useCallback, useEffect, useState} from 'react';
 import {useIntl} from 'react-intl';
-import {Keyboard, Platform, StyleSheet, View} from 'react-native';
+import {Keyboard, StyleSheet, View} from 'react-native';
 
 import {joinChannel, switchToChannelById} from '@actions/remote/channel';
 import Loading from '@components/loading';
@@ -36,7 +36,7 @@ const style = StyleSheet.create({
     },
     searchBar: {
         marginLeft: 12,
-        marginRight: Platform.select({ios: 4, default: 12}),
+        marginRight: 12,
         marginTop: 12,
     },
     loadingContainer: {

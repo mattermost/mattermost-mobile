@@ -15,3 +15,5 @@ const enhance = withObservables([], ({database}: WithDatabaseArgs) => ({
 }));
 
 export default withDatabase(enhance(ExternalImage));
+
+export {isSVGImage} from './is_svg_image';

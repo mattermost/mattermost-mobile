@@ -26,6 +26,7 @@ const style = StyleSheet.create({
         flexDirection: 'row',
         flex: 1,
         alignItems: 'center',
+        height: 48,
     },
     children: {
         flex: 1,

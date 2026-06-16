@@ -1,7 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React, {memo} from 'react';
+import React, {useMemo} from 'react';
 
 import {useServerUrl} from '@context/server';
 import NetworkManager from '@managers/network_manager';
@@ -20,19 +20,20 @@ export type ExternalImageProps = {
 const ExternalImage = ({children, enableSVGs, hasImageProxy, imageMetadata, src}: ExternalImageProps) => {
     const serverUrl = useServerUrl();
 
-    let baseRoute = '';
-    try {
-        baseRoute = NetworkManager.getClient(serverUrl).getBaseRoute();
-    } catch {
-        // Client unavailable; proxying is skipped below when baseRoute is empty.
-    }
+    const baseRoute = useMemo(() => {
+        try {
+            return NetworkManager.getClient(serverUrl).getBaseRoute();
+        } catch {
+            return '';
+        }
+    }, [serverUrl]);
 
     const shouldRenderImage = enableSVGs || !isSVGImage(imageMetadata, src);
-    let safeSrc = getImageSrc(src, baseRoute, hasImageProxy && Boolean(baseRoute));
-    if (!shouldRenderImage) {
-        safeSrc = '';
+    let safeSrc = '';
+    if (shouldRenderImage) {
+        safeSrc = getImageSrc(src, baseRoute, hasImageProxy && Boolean(baseRoute));
     }
     return <>{children(safeSrc)}</>;
 };
 
-export default memo(ExternalImage);
+export default ExternalImage;
