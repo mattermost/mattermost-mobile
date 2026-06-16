@@ -65,7 +65,7 @@ jobs:
         env:
           SNYK_TOKEN: "${{ secrets.SNYK_TOKEN }}"
         run: |
-          snyk sbom --format=cyclonedx1.6+json --json-file-output=../sbom-ios.json --all-projects
+          snyk sbom --format=cyclonedx1.6+json --file=Podfile.lock --json-file-output=../sbom-ios.json
         working-directory: ./ios
         shell: bash
 
