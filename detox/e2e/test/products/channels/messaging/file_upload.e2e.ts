@@ -18,6 +18,7 @@ import {
     serverOneUrl,
     siteOneUrl,
 } from '@support/test_config';
+import {AttachmentOptions} from '@support/ui/component';
 import {
     ChannelListScreen,
     ChannelScreen,
@@ -213,10 +214,10 @@ describe('Messaging - File Upload', () => {
             await ChannelScreen.open(channelsCategory, testChannel.name);
             await wait(timeouts.TWO_SEC);
             await ChannelScreen.fileQuickAction.tap();
-            await waitFor(element(by.id('file_attachment.photo_library'))).toExist().withTimeout(timeouts.TWO_SEC);
+            await waitFor(AttachmentOptions.photoLibrary).toExist().withTimeout(timeouts.TWO_SEC);
 
             if (isIos()) {
-                await element(by.id('file_attachment.photo_library')).tap();
+                await AttachmentOptions.photoLibrary.tap();
                 const firstPhoto = element(by.type('PHAssetCollectionViewCell')).atIndex(0);
                 await waitFor(firstPhoto).toExist().withTimeout(timeouts.TEN_SEC);
                 await firstPhoto.tap();
@@ -233,8 +234,8 @@ describe('Messaging - File Upload', () => {
             } else {
                 // Android native picker is not fully automatable — verify the attachment sheet opens
                 // and the server-side rejection above covers the max-size enforcement path.
-                await expect(element(by.id('file_attachment.attach_file'))).toExist();
-                await element(by.id('file_attachment.photo_library')).swipe('down', 'fast');
+                await expect(AttachmentOptions.attachFile).toExist();
+                await AttachmentOptions.photoLibrary.swipe('down', 'fast');
             }
 
             // # Go back to channel list screen

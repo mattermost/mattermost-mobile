@@ -50,7 +50,6 @@ concurrency:
 
 permissions:
   contents: read
-  statuses: write
 
 env:
   INTUNE_ENABLED: 'false'
@@ -60,6 +59,9 @@ jobs:
   update-initial-status-ios:
     if: inputs.PLATFORM == 'ios' || inputs.PLATFORM == 'both'
     runs-on: ubuntu-22.04
+    permissions:
+      contents: read
+      statuses: write
     steps:
       - uses: mattermost/actions/delivery/update-commit-status@main
         env:
@@ -74,6 +76,9 @@ jobs:
   update-initial-status-android:
     if: inputs.PLATFORM == 'android' || inputs.PLATFORM == 'both'
     runs-on: ubuntu-22.04
+    permissions:
+      contents: read
+      statuses: write
     steps:
       - uses: mattermost/actions/delivery/update-commit-status@main
         env:
@@ -88,6 +93,9 @@ jobs:
   update-initial-status-ipad:
     if: inputs.PLATFORM == 'ios' || inputs.PLATFORM == 'both'
     runs-on: ubuntu-22.04
+    permissions:
+      contents: read
+      statuses: write
     steps:
       - uses: mattermost/actions/delivery/update-commit-status@d5174b860704729f4c14ef8489ae075742bfa08a
         env:
@@ -319,6 +327,9 @@ jobs:
   update-final-status-ios:
     runs-on: ubuntu-22.04
     if: always() && (inputs.PLATFORM == 'ios' || inputs.PLATFORM == 'both')
+    permissions:
+      contents: read
+      statuses: write
     needs:
       - run-ios-tests
     steps:
@@ -350,6 +361,9 @@ jobs:
   update-final-status-android:
     runs-on: ubuntu-22.04
     if: always() && (inputs.PLATFORM == 'android' || inputs.PLATFORM == 'both')
+    permissions:
+      contents: read
+      statuses: write
     needs:
       - run-android-tests
     steps:
@@ -400,6 +414,9 @@ jobs:
   update-final-status-ipad:
     runs-on: ubuntu-22.04
     if: always() && (inputs.PLATFORM == 'ios' || inputs.PLATFORM == 'both')
+    permissions:
+      contents: read
+      statuses: write
     needs:
       - run-ios-ipad-tests
     steps:

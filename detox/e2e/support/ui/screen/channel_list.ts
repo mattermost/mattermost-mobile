@@ -303,8 +303,9 @@ class ChannelListScreen {
                 // Polling helper bypasses iOS 26 app-idle sync stall.
                 await waitForElementToExist(this.channelListScreen, timeouts.TWO_MIN);
 
-                // Recovery relaunch resets Detox sync state — restore the harness default
-                // (sync disabled globally in setup.ts) so downstream waits behave consistently.
+                // Recovery relaunch uses detoxEnableSynchronization: 0 to bypass iOS 26
+                // app-idle stalls during the wait above. Restore the harness default from
+                // setup.ts (sync disabled) so downstream polling waits behave consistently.
                 await device.disableSynchronization();
             } catch (recoveryError) {
                 // Log recovery failure, then re-throw the original error so the test failure message is meaningful
