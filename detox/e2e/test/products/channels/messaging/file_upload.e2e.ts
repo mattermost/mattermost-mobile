@@ -7,6 +7,8 @@
 // - Use element testID when selecting an element. Create one if none.
 // *******************************************************************
 
+import path from 'path';
+
 import {
     Post,
     Setup,
@@ -26,7 +28,6 @@ import {
 } from '@support/ui/screen';
 import {getRandomId, isAndroid, isIos, timeouts, wait} from '@support/utils';
 import {expect} from 'detox';
-import path from 'path';
 
 describe('Messaging - File Upload', () => {
     const serverOneDisplayName = 'Server 1';
