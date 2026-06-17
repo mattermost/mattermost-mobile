@@ -11,17 +11,27 @@ import {forceLogoutIfNecessary} from './session';
 import type {Client} from '@client/rest';
 import type {ClientResponse, ClientResponseError} from '@mattermost/react-native-network-client';
 
-export const downloadFile = (serverUrl: string, fileId: string, desitnation: string) => { // Let it throw and handle it accordingly
+export const downloadFile = async (serverUrl: string, fileId: string, desitnation: string) => {
     const client = NetworkManager.getClient(serverUrl);
-    return client.apiClient.download(client.getFileRoute(fileId), desitnation.replace('file://', ''), {timeoutInterval: DOWNLOAD_TIMEOUT});
+    const headers = await client.prepareRequestHeaders('GET');
+    return client.apiClient.download(
+        client.getFileRoute(fileId),
+        desitnation.replace('file://', ''),
+        {timeoutInterval: DOWNLOAD_TIMEOUT, headers},
+    );
 };
 
-export const downloadProfileImage = (serverUrl: string, userId: string, lastPictureUpdate: number, destination: string) => { // Let it throw and handle it accordingly
+export const downloadProfileImage = async (serverUrl: string, userId: string, lastPictureUpdate: number, destination: string) => {
     const client = NetworkManager.getClient(serverUrl);
-    return client.apiClient.download(client.getProfilePictureUrl(userId, lastPictureUpdate), destination.replace('file://', ''), {timeoutInterval: DOWNLOAD_TIMEOUT});
+    const headers = await client.prepareRequestHeaders('GET');
+    return client.apiClient.download(
+        client.getProfilePictureUrl(userId, lastPictureUpdate),
+        destination.replace('file://', ''),
+        {timeoutInterval: DOWNLOAD_TIMEOUT, headers},
+    );
 };
 
-export const uploadFile = (
+export const uploadFile = async (
     serverUrl: string,
     file: FileInfo | ExtractedFileInfo,
     channelId: string,
@@ -33,7 +43,7 @@ export const uploadFile = (
 ) => {
     try {
         const client = NetworkManager.getClient(serverUrl);
-        return {cancel: client.uploadAttachment(file, channelId, onProgress, onComplete, onError, skipBytes, isBookmark)};
+        return {cancel: await client.uploadAttachment(file, channelId, onProgress, onComplete, onError, skipBytes, isBookmark)};
     } catch (error) {
         logDebug('error on uploadFile', getFullErrorMessage(error));
         return {error};

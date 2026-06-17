@@ -10,6 +10,7 @@ import {setServerCredentials} from '@init/credentials';
 import NetworkPerformanceManager from '@managers/network_performance_manager';
 import PerformanceMetricsManager from '@managers/performance_metrics_manager';
 import {NetworkRequestMetrics} from '@managers/performance_metrics_manager/constant';
+import SessionAttributesManager from '@managers/session_attributes_manager';
 import {isErrorWithStatusCode} from '@utils/errors';
 import {getFormattedFileSize} from '@utils/file';
 import {logDebug, logInfo} from '@utils/log';
@@ -101,6 +102,19 @@ export default class ClientTracking {
 
         return headers;
     }
+
+    prepareRequestHeaders = async (requestMethod: string) => {
+        const headers = this.getRequestHeaders(requestMethod);
+
+        if (headers[ClientConstants.HEADER_AUTH]) {
+            const sessionAttributesHeader = await SessionAttributesManager.getOutboundHeader(this.apiClient.baseUrl);
+            if (sessionAttributesHeader) {
+                headers[ClientConstants.HEADER_X_MM_SESSION_ATTRIBUTES] = sessionAttributesHeader;
+            }
+        }
+
+        return headers;
+    };
 
     initTrackGroup(groupLabel: RequestGroupLabel) {
         if (!this.requestGroups.has(groupLabel)) {
@@ -337,10 +351,10 @@ export default class ClientTracking {
         });
     }
 
-    buildRequestOptions(options: ClientOptions): RequestOptions {
+    async buildRequestOptions(options: ClientOptions): Promise<RequestOptions> {
         const requestOptions: RequestOptions = {
             body: options.body,
-            headers: this.getRequestHeaders(options.method!.toLowerCase()),
+            headers: await this.prepareRequestHeaders(options.method!.toLowerCase()),
         };
         if (options.noRetry) {
             requestOptions.retryPolicyConfiguration = {retryLimit: 0};
@@ -387,8 +401,9 @@ export default class ClientTracking {
         const performanceRequestId = NetworkPerformanceManager.startRequestTracking(this.apiClient.baseUrl, url);
 
         let response: ClientResponse;
+        const requestOptions = await this.buildRequestOptions(options);
         try {
-            response = await request!(url, this.buildRequestOptions(options));
+            response = await request!(url, requestOptions);
         } catch (error) {
             NetworkPerformanceManager.cancelRequestTracking(this.apiClient.baseUrl, performanceRequestId);
             const response_error = error as ClientError;

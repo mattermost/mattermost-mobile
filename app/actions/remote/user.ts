@@ -780,13 +780,14 @@ export const uploadUserProfileImage = async (serverUrl: string, localPath: strin
         if (currentUser) {
             const endpoint = `${client.getUserRoute(currentUser.id)}/image`;
 
+            const uploadHeaders = await client.prepareRequestHeaders('POST');
             await client.apiClient.upload(endpoint, localPath, {
                 skipBytes: 0,
                 method: 'POST',
                 multipart: {
                     fileKey: 'image',
                 },
-                headers: client.getRequestHeaders('POST'),
+                headers: uploadHeaders,
             });
         }
         return {};

@@ -29,7 +29,15 @@ import {handleUserRoleUpdatedEvent, handleTeamMemberRoleUpdatedEvent, handleRole
 import {handleLicenseChangedEvent, handleConfigChangedEvent} from './system';
 import * as teams from './teams';
 import {handleThreadUpdatedEvent, handleThreadReadChangedEvent, handleThreadFollowChangedEvent} from './threads';
-import {handleUserUpdatedEvent, handleUserTypingEvent, handleStatusChangedEvent, handleCustomProfileAttributesValuesUpdatedEvent, handleCustomProfileAttributesFieldUpdatedEvent, handleCustomProfileAttributesFieldDeletedEvent} from './users';
+import {
+    handleCustomProfileAttributesFieldDeletedEvent,
+    handleCustomProfileAttributesFieldUpdatedEvent,
+    handleCustomProfileAttributesValuesUpdatedEvent,
+    handleSessionAttributesPropertyFieldEvent,
+    handleStatusChangedEvent,
+    handleUserTypingEvent,
+    handleUserUpdatedEvent,
+} from './users';
 
 export async function handleWebSocketEvent(serverUrl: string, msg: WebSocketMessage) {
     switch (msg.event) {
@@ -315,6 +323,12 @@ export async function handleWebSocketEvent(serverUrl: string, msg: WebSocketMess
 
         case WebsocketEvents.PROPERTY_VALUES_UPDATED:
             handleManagedChannelCategoriesPropertyValuesUpdated(serverUrl, msg);
+            break;
+
+        case WebsocketEvents.PROPERTY_FIELD_CREATED:
+        case WebsocketEvents.PROPERTY_FIELD_UPDATED:
+        case WebsocketEvents.PROPERTY_FIELD_DELETED:
+            handleSessionAttributesPropertyFieldEvent(serverUrl, msg);
             break;
 
         // Agents
