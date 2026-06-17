@@ -510,6 +510,8 @@
   "global_threads.options.open_in_channel": "Otwórz na kanale",
   "global_threads.options.title": "Wątek Akcji",
   "global_threads.unreads": "Nieprzeczytane",
+  "inline_action_button.executing": "W trakcie wykonywania...",
+  "inline_action_button.timeout": "Czas na wykonanie operacji upłynął. Spróbuj jeszcze raz.",
   "integration_selector.multiselect.submit": "Ukończono",
   "interactive_dialog.refresh_failed": "Nie udało się odświeżyć pól formularza",
   "interactive_dialog.submission_failed": "Zgłoszenie nie powiodło się",
