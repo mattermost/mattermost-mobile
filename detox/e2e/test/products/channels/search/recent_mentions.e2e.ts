@@ -153,13 +153,6 @@ describe('Search - Recent Mentions', () => {
         await ChannelListScreen.open();
     });
 
-    // SKIPPED — Saved Messages list does not re-render after unsave because
-    // the WatermelonDB observable backing the screen (querySavedPostsPreferences
-    // filtered by value='true') does not emit when a matching row is destroyed.
-    // The unsave action itself works correctly: the local pref row is removed,
-    // EphemeralStore.addRecentlyUnsavedSavedPost fires, and the post-options
-    // observable reflects "Save" — but the list stays stale until the screen
-    // remounts (app close/reopen). Track separately as an app-side bug.
     it('MM-T4909_4 - should be able to save/unsave a recent mention from recent mentions screen', async () => {
         // # Open recent mentions screen
         await RecentMentionsScreen.open();
@@ -230,8 +223,7 @@ describe('Search - Recent Mentions', () => {
         await ChannelListScreen.open();
     });
 
-    // Must run last: edits/replies-to/deletes the testUser-owned mention fixture.
-    // Stale renders were fixed in post_with_channel_info.tsx (custom memo compare on post.updateAt).
+    // Must run last — mutates the shared mention fixture.
     it('MM-T4909_3 - should be able to edit, reply to, and delete a recent mention from recent mentions screen', async () => {
         // # Open recent mentions screen
         await RecentMentionsScreen.open();

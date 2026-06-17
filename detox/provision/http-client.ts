@@ -1,12 +1,28 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import fs from 'node:fs';
 import http from 'node:http';
 import https from 'node:https';
+import path from 'node:path';
+
+import axios from 'axios';
+import FormData from 'form-data';
 
 import {logInfo} from './log';
 
 import type {ApiResponse, HttpMethod, MattermostClient, ProvisionCredentials} from './types';
+
+function parseJsonBody<T>(data: string): T {
+    if (!data) {
+        return {} as T;
+    }
+    try {
+        return JSON.parse(data) as T;
+    } catch {
+        return {message: data} as T;
+    }
+}
 
 export function sleep(ms: number): Promise<void> {
     return new Promise((resolve) => {
@@ -17,12 +33,12 @@ export function sleep(ms: number): Promise<void> {
 export function createMattermostClient(serverUrl: string): MattermostClient {
     const request = <T = unknown>(
         method: HttpMethod,
-        path: string,
+        requestPath: string,
         body?: unknown,
         token?: string,
     ): Promise<ApiResponse<T>> => {
         return new Promise((resolve, reject) => {
-            const url = new URL(serverUrl + path);
+            const url = new URL(serverUrl + requestPath);
             const lib = url.protocol === 'https:' ? https : http;
             const payload = body ? JSON.stringify(body) : null;
             const options: http.RequestOptions = {
@@ -43,22 +59,17 @@ export function createMattermostClient(serverUrl: string): MattermostClient {
                     data += chunk;
                 });
                 res.on('end', () => {
-                    if (!data) {
-                        resolve({data: {} as T, status: res.statusCode || 0, headers: res.headers});
-                        return;
-                    }
-                    try {
-                        const parsed = JSON.parse(data) as T;
-                        resolve({data: parsed, status: res.statusCode || 0, headers: res.headers});
-                    } catch {
-                        reject(new Error(`Failed to parse JSON response (HTTP ${res.statusCode || 0})`));
-                    }
+                    resolve({
+                        data: parseJsonBody<T>(data),
+                        status: res.statusCode || 0,
+                        headers: res.headers,
+                    });
                 });
             });
 
             req.setTimeout(30_000, () => {
                 req.destroy();
-                reject(new Error(`Request to ${serverUrl}${path} timed out`));
+                reject(new Error(`Request to ${serverUrl}${requestPath} timed out`));
             });
             req.on('error', reject);
             if (payload) {
@@ -69,6 +80,39 @@ export function createMattermostClient(serverUrl: string): MattermostClient {
     };
 
     return {serverUrl, request};
+}
+
+export async function uploadMultipartFile<T = unknown>(
+    client: MattermostClient,
+    method: HttpMethod,
+    requestPath: string,
+    filePath: string,
+    fieldName: string,
+    token?: string,
+): Promise<ApiResponse<T>> {
+    const form = new FormData();
+    form.append(fieldName, fs.createReadStream(filePath), path.basename(filePath));
+
+    const response = await axios.request({
+        url: `${client.serverUrl}${requestPath}`,
+        method,
+        data: form,
+        headers: {
+            ...form.getHeaders(),
+            ...(token ? {Authorization: `Bearer ${token}`} : {}),
+        },
+        maxBodyLength: Infinity,
+        maxContentLength: Infinity,
+        validateStatus: () => true,
+    });
+
+    const responseData = typeof response.data === 'string' ? parseJsonBody<T>(response.data) : (response.data as T);
+
+    return {
+        data: responseData,
+        status: response.status,
+        headers: response.headers as Record<string, string | string[] | undefined>,
+    };
 }
 
 type LoginErrorBody = {message?: string};

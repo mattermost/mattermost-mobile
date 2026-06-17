@@ -69,22 +69,15 @@ class Alert {
     removedFromChannelTitle = isAndroid() ? element(by.text('Removed from channel')) : element(by.label('Removed from channel')).atIndex(0);
     archivedChannelTitle = isAndroid() ? element(by.text('Archived channel')) : element(by.label('Archived channel')).atIndex(0);
 
-    /**
-     * Dismiss "Removed from channel" or "Archived channel" dialogs if present.
-     * These dialogs appear asynchronously via WebSocket events when a channel is
-     * archived or the user is removed from a channel. Both use an "OK" button.
-     * Safe to call even when no dialog is present — the catch block handles that.
-     */
+    // Dismiss async "Removed from channel" / "Archived channel" alerts if present.
     dismissChannelRemoveOrArchiveAlert = async () => {
         try {
-            // Check for "Removed from channel" first
             await waitFor(this.removedFromChannelTitle).toBeVisible().withTimeout(timeouts.FOUR_SEC);
             await this.okButton.tap();
             return;
         } catch { /* not present */ }
 
         try {
-            // Check for "Archived channel"
             await waitFor(this.archivedChannelTitle).toBeVisible().withTimeout(timeouts.ONE_SEC);
             await this.okButton.tap();
         } catch { /* not present */ }

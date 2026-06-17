@@ -87,8 +87,7 @@ class ChannelListScreen {
             const headerTimeout = Math.min(timeouts.TEN_SEC, timeout);
             await waitForElementToExist(channelsHeader, headerTimeout);
         } catch {
-            // Category header still not visible — continue with the polling loop anyway
-            // in case it appears during iteration (e.g. custom categories, DM-only server).
+            // Header not visible yet — keep polling categories.
         }
 
         /* eslint-disable no-await-in-loop */
@@ -99,8 +98,6 @@ class ChannelListScreen {
                     break;
                 }
                 try {
-                    // Use polling waitForElementToExist — bypasses bridge-idle sync so
-                    // the timer always counts real wall-clock time on iOS 26.x and Android.
                     await waitForElementToExist(
                         this.getChannelItemDisplayName(cat, channelName),
                         Math.min(timeouts.THREE_SEC, remaining),
@@ -146,9 +143,6 @@ class ChannelListScreen {
 
         /* eslint-disable no-await-in-loop -- sequential fallback: each probe must complete */
         for (const cat of categories) {
-            // Prefer tapping the channel_item container (full row): the display_name text
-            // is clipped by the narrow iPad sidebar column and fails Detox's 100% visibility
-            // check even though the row itself is hittable.
             const container = this.getChannelItem(cat, channelName);
             const label = this.getChannelItemDisplayName(cat, channelName);
             try {
@@ -167,7 +161,6 @@ class ChannelListScreen {
             }
         }
         /* eslint-enable no-await-in-loop */
-        // All categories failed — include the searched categories in the error for easier CI debugging
         throw new Error(`Sidebar channel item not found for channel: ${channelName}; searched categories: [${categories.join(', ')}]`);
     };
 
@@ -227,7 +220,7 @@ class ChannelListScreen {
             await this.dismissAnyOpenModals();
             await this.popBackUntilChannelList();
         } catch {
-            // Recovery is best-effort. Always fall through to the assertion.
+            // Recovery is best-effort.
         }
         try {
             await waitForElementToExist(this.channelListScreen, timeout);
@@ -260,15 +253,9 @@ class ChannelListScreen {
                 }
                 /* eslint-enable no-await-in-loop */
 
-                // Polling helper bypasses iOS 26 app-idle sync stall.
                 await waitForElementToExist(this.channelListScreen, timeouts.TWO_MIN);
-
-                // Recovery relaunch uses detoxEnableSynchronization: 0 to bypass iOS 26
-                // app-idle stalls during the wait above. Restore the harness default from
-                // setup.ts (sync disabled) so downstream polling waits behave consistently.
                 await device.disableSynchronization();
             } catch (recoveryError) {
-                // Log recovery failure, then re-throw the original error so the test failure message is meaningful
                 // eslint-disable-next-line no-console
                 console.warn('[ChannelListScreen.toBeVisible] Recovery relaunch also failed:', recoveryError);
                 throw firstError;

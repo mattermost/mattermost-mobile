@@ -1,25 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-// *******************************************************************
-// - [#] indicates a test step (e.g. # Go to a screen)
-// - [*] indicates an assertion (e.g. * Check the title)
-// - Use element testID when selecting an element. Create one if none.
-// *******************************************************************
-//
-// Post-level interactions on archived channels (reactions, saved posts, read-only
-// post input). Split out of ./archived_channel_interactions.e2e.ts (which kept
-// the channel-/membership-level tests). Combined the file ran 14.6 min per-test
-// sum (16.1 min wall-clock with Detox overhead) in CI run 26368981355 — over the
-// 15-min wall-clock cap for a single spec on a 60-min shard step budget.
-// After split: this file holds 4 tests (~7.7 min); the original holds 4 tests
-// (~6.8 min). Each archived channel is created per-test (no shared setup), so
-// the split does not duplicate any expensive beforeAll work.
-//
-// The helpers (waitForArchivedChannelScreen, tapChannelAndWaitForArchivedChannelScreen,
-// openArchivedChannelsFilter, closeBrowseChannelsChannel) are duplicated here from
-// the parent file — matching the same duplication-pattern already used by
-// archive_channel_from_settings.e2e.ts in this codebase.
+// Post-level archived-channel tests split from archived_channel_interactions.e2e.ts for CI time limits.
 
 import {Channel, Post, Setup, System} from '@support/server_api';
 import client from '@support/server_api/client';
@@ -47,32 +29,14 @@ import {
 } from '@support/utils';
 import {expect, waitFor} from 'detox';
 
-/**
- * Tap an archived channel item in Browse Channels and wait for the channel screen.
- *
- * On iOS, tapping a channel in Browse Channels triggers concurrent modal dismissal
- * and channel screen push, producing a UITransitionView overlay that blocks Detox's
- * visibility/hittability checks. The bridge also stays busy during these transitions,
- * causing standard waitFor().toExist() to block waiting for bridge-idle that never
- * arrives within the timeout. Critically, the tap itself can stall if sync is still
- * enabled when the bridge is busy — so synchronization must be disabled before the
- * tap, not after.
- */
+// Tap an archived channel and wait for the read-only channel screen to load.
 async function tapChannelAndWaitForArchivedChannelScreen(channelItem: Detox.NativeElement) {
     if (isIos()) {
         await device.disableSynchronization();
     }
     try {
-        // Tap while sync is disabled so the gesture fires immediately even if the
-        // bridge is still processing the modal-dismiss transition.
         await channelItem.tap();
-
-        // Wait for the channel screen element to appear in the hierarchy.
         await waitForElementToExist(ChannelScreen.channelScreen, timeouts.ONE_MIN);
-
-        // Wait for the UITransitionView overlay from modal dismissal to clear.
-        // The archived post draft element is a reliable indicator that the channel
-        // has fully loaded and the transition animation is complete.
         await waitForElementToBeVisible(ChannelScreen.postDraftArchived, timeouts.HALF_MIN);
     } finally {
         if (isIos()) {
@@ -81,18 +45,7 @@ async function tapChannelAndWaitForArchivedChannelScreen(channelItem: Detox.Nati
     }
 }
 
-/**
- * Open the Browse Channels dropdown and select the Archived Channels filter.
- *
- * On Android with Detox 20.47.0 + React Native Fabric (New Architecture), once the
- * Fabric UI manager starts processing mount items — which happens after significant UI
- * activity such as leaving a channel — Detox's FabricUIManagerIdlingResources tries to
- * reflect on mMountItemDispatcher, a field that no longer exists in this RN version.
- * This causes a NoSuchFieldException crash inside Espresso's idle check before any tap.
- *
- * Disabling synchronization on Android prevents the idle check from firing, avoiding
- * the crash. A one-second explicit wait after the tap compensates for the disabled sync.
- */
+// Open Browse Channels and select the Archived filter.
 async function openArchivedChannelsFilter() {
     await ChannelDropdownMenuScreen.open();
 
@@ -110,32 +63,19 @@ async function openArchivedChannelsFilter() {
     await wait(timeouts.ONE_SEC);
 }
 
-/**
- * Navigate back from a channel that was opened via Browse Channels.
- * Channel back → Browse Channels, then close Browse Channels.
- */
 async function closeBrowseChannelsChannel() {
     await ChannelScreen.back();
     await wait(timeouts.ONE_SEC);
 
-    // After Channel.back() the Browse Channels modal may already be dismissed
-    // (dismissAllModalsAndPopToScreen closes it during navigation). Tap close
-    // only if it is still present; swallow if already gone.
     try {
         await waitFor(BrowseChannelsScreen.closeButton).toExist().withTimeout(timeouts.FOUR_SEC);
         await BrowseChannelsScreen.closeButton.tap();
     } catch {
-        // Browse Channels was already dismissed — no action needed
+        // Browse Channels already dismissed.
     }
 }
 
-// Android: skipped entirely. Detox's FabricUIManagerIdlingResources throws
-// `NoSuchFieldException: mMountItemDispatcher` whenever any text input
-// receives `replaceText`/`typeText` (keyboard activation triggers idle
-// polling, which reflects on a Fabric field stripped/renamed by R8 at
-// build time on API 35). All tests in this spec involve text entry, so the
-// per-test conditional skip wasn't enough. iOS passes all 4 tests reliably.
-// Track separately as a Detox-Android patch-package task.
+// Android skipped — Detox/Fabric text-input idle check crashes on API 35.
 describe('Channels - Archived Channel Post Interactions', () => {
     const serverOneDisplayName = 'Server 1';
     let testTeam: any;

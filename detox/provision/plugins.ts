@@ -10,7 +10,7 @@ import {
     PLUGIN_STATE_RUNNING,
 } from './constants';
 import {getLatestMasterPluginUrl, resolveAgentsPluginCandidates} from './github-releases';
-import {sleep} from './http-client';
+import {sleep, uploadMultipartFile} from './http-client';
 import {logInfo, logWarn} from './log';
 import {semverGte} from './semver';
 
@@ -160,16 +160,24 @@ export async function installPluginFromFile(
         };
     }
 
-    const FormData = (await import('form-data')).default;
-    const form = new FormData();
-    form.append('plugin', fs.createReadStream(filePath), path.basename(filePath));
+    let res: Awaited<ReturnType<typeof uploadMultipartFile<ApiErrorBody>>>;
+    try {
+        res = await uploadMultipartFile<ApiErrorBody>(
+            client,
+            'POST',
+            `/api/v4/plugins${force ? '?force=true' : ''}`,
+            filePath,
+            'plugin',
+            token,
+        );
+    } catch (err) {
+        return {
+            ok: false,
+            status: 0,
+            message: err instanceof Error ? err.message : String(err),
+        };
+    }
 
-    const res = await client.request<ApiErrorBody>(
-        'POST',
-        `/api/v4/plugins${force ? '?force=true' : ''}`,
-        form as unknown as Record<string, unknown>,
-        token,
-    );
     if (res.status >= 400) {
         return {
             ok: false,
@@ -178,8 +186,12 @@ export async function installPluginFromFile(
         };
     }
 
-    const enableRes = await client.request<ApiErrorBody>('POST', `/api/v4/plugins/${encodeURIComponent(pluginId)}/enable`, {}, token);
-    if (enableRes.status >= 400) {
+    const enableRes = await client.request<ApiErrorBody>('POST', `/api/v4/plugins/${encodeURIComponent(pluginId)}/enable`, {}, token).catch((err: unknown) => ({
+        data: {message: err instanceof Error ? err.message : String(err)},
+        status: 0,
+        headers: {},
+    }));
+    if (enableRes.status === 0 || enableRes.status >= 400) {
         return {
             ok: false,
             status: enableRes.status,

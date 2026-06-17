@@ -11,15 +11,8 @@ class InviteScreen {
         screenSummary: 'invite.screen.summary',
         screenSelection: 'invite.screen.selection',
 
-        // The invite screen's close (X) button is rendered via the route's
-        // navigation header at app/routes/(modals)/invite.tsx:19 using the
-        // testID `close.invite.button` (note the prefix order).
         closeButton: 'close.invite.button',
         sendButton: 'invite.send.button',
-
-        // After sending invites the screen replaces with the Summary view,
-        // which has a "Done" button (testID `invite.summary_button.DONE`) in
-        // place of the header close X.
         summaryDoneButton: 'invite.summary_button.DONE',
         teamIcon: 'invite.team_icon',
         teamDisplayName: 'invite.team_display_name',
@@ -132,12 +125,7 @@ class InviteScreen {
     };
 
     close = async () => {
-        // The invite modal has two leaf states with different "close affordance":
-        //   1. Selection screen (default after open) — header X (closeButton).
-        //   2. Summary screen (after Send completes) — "Done" button in body.
-        // Tests that send invites (e.g. MM-T5365) land on Summary at end of
-        // body, then `afterAll` calls close(). The header X is unmounted on
-        // Summary, so try X first and fall through to Done when absent.
+        // Summary screen uses Done instead of the header close button.
         try {
             await waitFor(this.closeButton).toBeVisible().withTimeout(timeouts.TWO_SEC);
             await this.closeButton.tap();

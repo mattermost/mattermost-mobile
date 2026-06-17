@@ -236,12 +236,6 @@ describe('Search - Pinned Messages', () => {
         await ChannelScreen.back();
     });
 
-    // SKIPPED — After tapping Unsave on a pinned post, the post stays
-    // visible on the SavedMessages list. Same root cause as MM-T4909_4
-    // and MM-T4910_2: the SavedMessages screen observable
-    // (`querySavedPostsPreferences(...value='true').observeWithColumns(['name'])`)
-    // does not re-emit when a matching preference row is destroyed.
-    // Track separately as an app-side observable bug.
     it('MM-T4918_5 - should be able to save/unsave a pinned message from pinned messages screen', async () => {
         // # Open a channel screen, post a message, open post options for message, tap on pin to channel option, open channel info screen, and open pinned messages screen
         const message = `Message ${getRandomId()}`;

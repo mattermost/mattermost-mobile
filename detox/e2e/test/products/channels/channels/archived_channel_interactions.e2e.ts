@@ -34,8 +34,7 @@ import {
 } from '@support/utils';
 import {expect, waitFor} from 'detox';
 
-// Wait for the archived channel screen after a non-tap navigation (e.g. permalink jump).
-// Disables sync on iOS to avoid bridge-idle blocking during the modal-dismiss transition.
+// Wait for archived channel screen after non-tap navigation (e.g. permalink).
 async function waitForArchivedChannelScreen() {
     if (isIos()) {
         await device.disableSynchronization();
@@ -50,9 +49,7 @@ async function waitForArchivedChannelScreen() {
     }
 }
 
-// Tap an archived channel in Browse Channels and wait for the channel screen.
-// iOS: sync MUST be disabled BEFORE the tap — the bridge stays busy during the modal-dismiss
-// + channel-push transition, which would otherwise block the gesture indefinitely.
+// Tap an archived channel and wait for the read-only channel screen.
 async function tapChannelAndWaitForArchivedChannelScreen(channelItem: Detox.NativeElement) {
     if (isIos()) {
         await device.disableSynchronization();
@@ -60,8 +57,6 @@ async function tapChannelAndWaitForArchivedChannelScreen(channelItem: Detox.Nati
     try {
         await channelItem.tap();
         await waitForElementToExist(ChannelScreen.channelScreen, timeouts.ONE_MIN);
-
-        // postDraftArchived appearing = channel fully loaded and UITransitionView cleared.
         await waitForElementToBeVisible(ChannelScreen.postDraftArchived, timeouts.HALF_MIN);
     } finally {
         if (isIos()) {
@@ -70,9 +65,7 @@ async function tapChannelAndWaitForArchivedChannelScreen(channelItem: Detox.Nati
     }
 }
 
-// Open the Browse Channels dropdown and select the Archived Channels filter.
-// Android: disable sync to avoid FabricUIManagerIdlingResources NoSuchFieldException
-// (Detox 20.47.0 reflects on a field that no longer exists in this RN version).
+// Open Browse Channels and select the Archived filter.
 async function openArchivedChannelsFilter() {
     await ChannelDropdownMenuScreen.open();
 
@@ -90,24 +83,19 @@ async function openArchivedChannelsFilter() {
     await wait(timeouts.ONE_SEC);
 }
 
-// Navigate back from a channel opened via Browse Channels (channel → maybe-browse → list).
 async function closeBrowseChannelsChannel() {
     await ChannelScreen.back();
     await wait(timeouts.ONE_SEC);
 
-    // Browse Channels may already be dismissed by dismissAllModalsAndPopToScreen.
     try {
         await waitFor(BrowseChannelsScreen.closeButton).toExist().withTimeout(timeouts.FOUR_SEC);
         await BrowseChannelsScreen.closeButton.tap();
     } catch {
-        // Browse Channels was already dismissed — no action needed
+        // Browse Channels already dismissed.
     }
 }
 
-// Android: skipped entirely. Same Detox <-> Fabric incompatibility as
-// archived_channel_post_interactions.e2e.ts — `replaceText`/`typeText`
-// triggers a NoSuchFieldException crash on mMountItemDispatcher. iOS
-// passes all 4 tests. Track separately.
+// Android skipped: Detox/Fabric incompatibility with text input on archived channels.
 describe('Channels - Archived Channel Interactions', () => {
     const serverOneDisplayName = 'Server 1';
     let testTeam: any;

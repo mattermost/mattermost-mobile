@@ -185,16 +185,7 @@ describe('Smoke Test - Threads', () => {
         // * Verify the thread is saved — assert on the thread_overview bookmark button,
         // not on the post pre-header.
         //
-        // The "Saved" pre-header is deliberately suppressed on the thread-view root post
-        // (app/components/post_list/post_list.tsx — `skipSavedHeader = location === Screens.THREAD
-        // && post.id === rootId`). The product surfaces saved-state on the thread root via
-        // the bookmark icon in the thread_overview row instead, which swaps between
-        // `*.save.button` (not saved) and `*.unsave.button` (saved). Same testID scheme on iOS
-        // and Android — no platform branches in app/components/post_list/thread_overview.
-        // .atIndex(0): expo-router's tab-stack persistence can leave a stale ThreadScreen
-        // mounted off-screen (e.g. from a previous tab) while the current one is active.
-        // Both emit the same `thread.post_list.thread_overview.{un,}save.button` testID.
-        // Detox's view-hierarchy traversal returns the active (topmost) screen first.
+        // Saved state shows on thread_overview; use atIndex(0) for stale off-screen ThreadScreen mounts.
         const threadOverviewUnsaveButton = element(by.id('thread.post_list.thread_overview.unsave.button')).atIndex(0);
         const threadOverviewSaveButton = element(by.id('thread.post_list.thread_overview.save.button')).atIndex(0);
         await waitFor(threadOverviewUnsaveButton).toBeVisible().withTimeout(timeouts.TEN_SEC);

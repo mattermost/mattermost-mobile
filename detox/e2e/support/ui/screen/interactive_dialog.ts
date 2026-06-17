@@ -19,13 +19,10 @@ class InteractiveDialogScreen {
     closeButton = element(by.id(this.testID.closeButton));
     cancelButton = element(by.id(this.testID.cancelButton));
 
-    // Platform-specific cancel button (following Alert pattern)
     platformCancelButton = isAndroid() ? element(by.text('CANCEL')) : element(by.label('Cancel')).atIndex(0);
-
-    // AppsForm close button (X button in header)
     appsFormCloseButton = element(by.id('close.apps_form.button'));
 
-    // Set text without typeText — avoids the iOS paste-permission dialog (MM-66558).
+    // replaceText avoids the iOS paste-permission dialog (MM-66558).
     setDialogInputText = async (input: Detox.NativeElement, value: string) => {
         await input.tap();
         try {
@@ -36,9 +33,7 @@ class InteractiveDialogScreen {
         await input.replaceText(value);
     };
 
-    // Helper to fill a text input in AppsForm
     fillTextElement = async (elementName: string, value: string) => {
-        // For password and textarea fields, we need special handling for keyboard visibility
         const isPasswordOrTextarea = elementName === 'password_field' || elementName === 'textarea_field';
 
         try {
@@ -56,27 +51,20 @@ class InteractiveDialogScreen {
 
         await expect(appsFormElement).toExist();
         await this.setDialogInputText(appsFormElement, value);
-
-        // Enhanced keyboard dismissal for problematic fields
         await wait(isPasswordOrTextarea ? 1500 : 1000);
 
-        // Try multiple ways to dismiss keyboard
         try {
-            // Method 1: Tap dialog header
             const dialogHeader = element(by.id(this.testID.dialogTitle));
             await dialogHeader.tap();
-        } catch (headerTapError) {
+        } catch {
             try {
-                // Method 2: Tap outside the field
                 await this.interactiveDialogScreen.tap();
-            } catch (containerTapError) {
-                // Method 3: Just wait for keyboard to settle
+            } catch {
                 await wait(1000);
             }
         }
     };
 
-    // Helper to toggle a boolean element (checkbox/switch) - tries known AppsForm patterns
     toggleBooleanElement = async (elementName: string) => {
         const patterns = [
             `AppFormElement.${elementName}.toggled..button`,
@@ -104,14 +92,13 @@ class InteractiveDialogScreen {
         throw new Error(`Could not find boolean field: ${elementName}`);
     };
 
-    // Submit the dialog
     submit = async () => {
         await expect(this.submitButton).toExist();
         await this.submitButton.tap();
         await wait(timeouts.ONE_SEC);
     };
 
-    // Cancel the dialog - tries close buttons first, then fallback to platform-specific
+    // Try close buttons, then platform cancel.
     cancel = async () => {
         try {
             await waitFor(this.closeButton).toExist().withTimeout(timeouts.TWO_SEC);
@@ -137,7 +124,6 @@ class InteractiveDialogScreen {
         await wait(timeouts.ONE_SEC);
     };
 
-    // Helper to select an option from a select field (opens IntegrationSelector, selects option)
     selectOption = async (elementName: string, optionValue: string) => {
         // Tap the select element to open IntegrationSelector
         const selectButton = element(by.id(`AppFormElement.${elementName}.select.button`));
@@ -157,12 +143,11 @@ class InteractiveDialogScreen {
             await expect(doneButton).toExist();
             await doneButton.tap();
             await wait(1000);
-        } catch (error) {
-            // No Done button needed, selection was immediate
+        } catch {
+            // No Done button.
         }
     };
 
-    // Helper to select a radio option
     selectRadioOption = async (elementName: string, optionValue: string) => {
         const radioOption = element(by.id(`AppFormElement.${elementName}.radio.${optionValue}.button`));
         await expect(radioOption).toExist();
@@ -170,7 +155,6 @@ class InteractiveDialogScreen {
         await wait(500);
     };
 
-    // Helper to fill text element with specific input pattern for apps form
     fillTextElementWithAppForm = async (elementName: string, value: string) => {
         const textInput = element(by.id(`AppFormElement.${elementName}.text.input`));
         await expect(textInput).toExist();

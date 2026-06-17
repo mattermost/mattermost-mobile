@@ -240,22 +240,7 @@ export const apiGetPluginStatus = async (baseUrl: string, pluginId: string, vers
     }
 };
 
-/**
- * Upload and enable demo plugin, preferring a committed/cached fixture file over
- * downloading from GitHub on every run. This avoids Cloudflare rate-limiting the
- * `install_from_url` server endpoint in CI.
- *
- * Resolution order:
- * 1. If `filename` is provided and the fixture exists, upload it directly.
- * 2. Otherwise fall back to `apiGetLatestPluginVersion` + `apiInstallPluginFromUrl`.
- *
- * @param {Object} options - configuration object
- * @param {string} options.baseUrl - the base server URL
- * @param {string} options.version - expected plugin version
- * @param {boolean} options.force - whether to force install if already exists
- * @param {string} options.filename - optional fixture filename under `detox/e2e/support/fixtures/`
- * @return {Object} returns plugin data on success or {error, status} on error
- */
+// Upload and enable demo plugin from a local fixture when available, otherwise from GitHub.
 export const apiUploadAndEnablePlugin = async (options: {
     baseUrl: string;
     version?: string;
@@ -265,10 +250,6 @@ export const apiUploadAndEnablePlugin = async (options: {
     const {baseUrl, version, force = false, filename} = options;
     const id = DemoPlugin.id;
 
-    // If a fixture is provided and present locally, upload it directly instead of
-    // asking the server to download from GitHub (avoids Cloudflare timeouts in CI).
-    // When the fixture is absent (e.g. test runners after provision-servers installed
-    // the plugin), fall through to the status/enable path below.
     if (filename) {
         const absFilePath = path.resolve(__dirname, `../../support/fixtures/${filename}`);
         if (fs.existsSync(absFilePath)) {

@@ -26,8 +26,7 @@ import {
 import {isAndroid, timeouts, wait, waitForElementToExist} from '@support/utils';
 import {expect, waitFor} from 'detox';
 
-// Dismiss the gallery overlay and wait for it to unmount.
-// iOS: RNGH Pressable exposes the same testID on wrapper and inner button, so atIndex(0).
+// iOS gallery close uses atIndex(0) because RNGH duplicates the testID.
 const dismissGallery = async () => {
     if (isAndroid()) {
         await device.pressBack();

@@ -4,23 +4,6 @@
 import client from './client';
 import {getResponseFromError} from './common';
 
-// ****************************************************************
-// Custom Profile Attributes
-// See https://api.mattermost.com/#tag/custom-profile-attributes
-//
-// Exported API function should have the following:
-// - documented using JSDoc
-// - meaningful description
-// - match the referenced API endpoints
-// - parameter/s defined by `@param`
-// - return value defined by `@return`
-// ****************************************************************
-
-/**
- * List all custom profile attribute fields (admin only).
- * @param {string} baseUrl - the base server URL
- * @return {Object} returns {fields} on success or {error, status} on error
- */
 export const apiListCustomProfileAttributeFields = async (baseUrl: string): Promise<any> => {
     try {
         const response = await client.get(
@@ -32,12 +15,6 @@ export const apiListCustomProfileAttributeFields = async (baseUrl: string): Prom
     }
 };
 
-/**
- * Create a custom profile attribute field (admin only).
- * @param {string} baseUrl - the base server URL
- * @param {Object} field - field definition ({name, type})
- * @return {Object} returns {field} on success or {error, status} on error
- */
 export const apiCreateCustomProfileAttributeField = async (baseUrl: string, field: {name: string; type?: string}): Promise<any> => {
     try {
         const response = await client.post(
@@ -53,12 +30,6 @@ export const apiCreateCustomProfileAttributeField = async (baseUrl: string, fiel
     }
 };
 
-/**
- * Delete a custom profile attribute field (admin only).
- * @param {string} baseUrl - the base server URL
- * @param {string} fieldId - the field ID to delete
- * @return {Object} returns response on success or {error, status} on error
- */
 export const apiDeleteCustomProfileAttributeField = async (baseUrl: string, fieldId: string): Promise<any> => {
     try {
         return await client.delete(`${baseUrl}/api/v4/custom_profile_attributes/fields/${fieldId}`);
@@ -67,12 +38,6 @@ export const apiDeleteCustomProfileAttributeField = async (baseUrl: string, fiel
     }
 };
 
-/**
- * Update custom profile attribute values for the current user.
- * @param {string} baseUrl - the base server URL
- * @param {Object} values - map of field ID to value string
- * @return {Object} returns response on success or {error, status} on error
- */
 export const apiUpdateCustomProfileAttributeValues = async (baseUrl: string, values: Record<string, string>): Promise<any> => {
     try {
         return await client.patch(

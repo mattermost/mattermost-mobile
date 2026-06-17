@@ -155,11 +155,6 @@ describe('Channels - Archive Channel from Settings', () => {
         await HomeScreen.logout();
     });
 
-    // SKIPPED — `channel.post_draft.archived` testID never appears after archive.
-    // `channelIsArchived` observable in `post_draft/index.ts` doesn't fire when
-    // `setChannelDeleteAt` writes via `prepareUpdate + batchRecords`. Same
-    // WatermelonDB cached-subscribable family as the saved_messages bug.
-    // Track separately as an app-side observable bug.
     it('MM-T4932_1 - should be able to archive a public channel and confirm', async () => {
         // # Open a public channel screen, open channel info screen, go to channel settings, and tap on archive channel option and confirm
         const publicChannel = channelForT4932_1;
@@ -213,7 +208,6 @@ describe('Channels - Archive Channel from Settings', () => {
         await ChannelScreen.back();
     });
 
-    // SKIPPED — Same archive-observable bug as MM-T4932_1.
     it('MM-T4932_3 - should be able to archive a private channel and confirm', async () => {
         // # Open a private channel screen, open channel info screen, go to channel settings, and tap on archive channel option and confirm
         const privateChannel = channelForT4932_3;
@@ -246,7 +240,6 @@ describe('Channels - Archive Channel from Settings', () => {
         await BrowseChannelsScreen.close();
     });
 
-    // SKIPPED — Same archive-observable bug as MM-T4932_1.
     it('MM-T3208 - should show confirmation dialog when archiving a channel and archive on confirm', async () => {
         // # Navigate to a pre-created public channel
         const publicChannel = channelForT3208;
@@ -310,9 +303,6 @@ describe('Channels - Archive Channel from Settings', () => {
         await BrowseChannelsScreen.close();
     });
 
-    // SKIPPED — Same archive-observable bug as MM-T4932_1. The test opens an
-    // archived channel and expects the archived-state UI; same observable that
-    // doesn't fire on `c.deleteAt` change.
     it('MM-T1703 - should be able to open archived channels and verify read-only state', async () => {
         // # Use pre-created channel (created before login to avoid WebSocket delay on Android)
         const archivedChannel = channelForT1703;

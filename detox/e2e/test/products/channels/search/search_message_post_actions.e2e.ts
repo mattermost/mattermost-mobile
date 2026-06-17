@@ -1,18 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-// *******************************************************************
-// - [#] indicates a test step (e.g. # Go to a screen)
-// - [*] indicates an assertion (e.g. * Check the title)
-// - Use element testID when selecting an element. Create one if none.
-// *******************************************************************
-//
-// This file holds the post-action variants of the MM-T5294 family (edit/reply/
-// delete, save/unsave, pin/unpin a message FROM the search results screen).
-// They were split out of ./search_messages.e2e.ts (which kept the query-variation
-// tests MM-T5294_1..9). The combined file ran 20.3 min per-test runtime in CI
-// run 26368981355 — too close to a single shard's 60-min step budget. Splitting
-// caps each file at ~14.7 min and ~5.6 min respectively.
+// Post-action search tests split from search_messages.e2e.ts for CI time limits.
 
 import {
     Post,
@@ -40,12 +29,6 @@ import {
 import {getRandomId, timeouts, wait, waitForElementToBeVisible} from '@support/utils';
 import {expect, waitFor} from 'detox';
 
-// SKIPPED — entire spec has 2 distinct failure modes across runs:
-//   1. MM-T5294_10: edit-then-reply timing race; "Following" assertion
-//      removed and CRT auto-follow config added, but flake persists 3/4 runs.
-//   2. beforeAll 240s timeout: Setup.apiInit() hangs against the test server
-//      intermittently, blocking the whole spec.
-// Track separately. When the test server hang root cause is found, un-skip and verify.
 describe('Search - Search Message Post Actions', () => {
     const serverOneDisplayName = 'Server 1';
     const channelsCategory = 'channels';

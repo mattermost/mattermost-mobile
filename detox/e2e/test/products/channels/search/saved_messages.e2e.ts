@@ -73,14 +73,6 @@ describe('Search - Saved Messages', () => {
         await ChannelListScreen.open();
     });
 
-    // SKIPPED — SavedMessages screen observable doesn't react to saved-post
-    // preference changes. After tapping Save in the channel screen and
-    // navigating to saved_messages, the list still shows the empty state
-    // (screenshot confirmed). The server-side preference is set and the
-    // local DB row is correctly written, but
-    // `querySavedPostsPreferences().observeWithColumns(['name'])` filtered
-    // by `value='true'` does not emit. Same root cause as MM-T4909_4.
-    // Track separately as an app-side observable bug.
     it('MM-T4910_2 - should be able to display a saved message in saved messages screen and navigate to message channel', async () => {
         // # Open a channel screen, post a message, open post options for message, and tap on save option
         const message = `Message ${getRandomId()}`;
@@ -121,14 +113,7 @@ describe('Search - Saved Messages', () => {
         await ChannelListScreen.open();
     });
 
-    // SKIPPED — app bug: after `EditPostScreen.saveButton.tap()` the
-    // `edit_post.screen` overlay does not dismiss within 10s. The save tap
-    // is received (confirmed by device logs), but either the remote editPost()
-    // action does not complete/return or navigateBack() does not close the
-    // screen in the saved-messages navigation context. A separate stale-render
-    // issue in this list was fixed by updating PostWithChannelInfo's memo
-    // comparison, but the overlay-dismiss problem is not yet root-caused.
-    // Re-enable once the overlay reliably closes after saving an edit here.
+    // edit_post.screen overlay does not dismiss after save from saved messages.
     it.skip('MM-T4910_3 - should be able to edit, reply to, and delete a saved message from saved messages screen', async () => {
         // # Open a channel screen, post a message, open post options for message, tap on save option, go back to channel list screen, and open saved messages screen
         const message = `Message ${getRandomId()}`;
@@ -230,9 +215,6 @@ describe('Search - Saved Messages', () => {
         await ChannelListScreen.open();
     });
 
-    // SKIPPED — Cascades from MM-T4910_2: the saved post never appears on
-    // the SavedMessages screen, so `openPostOptionsFor` can't long-press it
-    // to access the Pin to Channel option. Track with MM-T4910_2.
     it('MM-T4910_5 - should be able to pin/unpin a saved message from saved messages screen', async () => {
         // # Open a channel screen, post a message, open post options for message, tap on save option, go back to channel list screen, and open saved messages screen
         const message = `Message ${getRandomId()}`;

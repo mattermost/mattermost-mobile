@@ -34,9 +34,7 @@ import {
 import {wait, isAndroid} from '@support/utils';
 import {expect} from 'detox';
 
-// MM-66558 mitigations: slash-command send keeps the send button visible (handled in
-// ChannelScreen.tapSendButtonForMessage) and dialog fields use replaceText not typeText.
-// Track: https://mattermost.atlassian.net/browse/MM-66558
+// MM-66558: dialog fields use replaceText instead of typeText.
 
 // ===== Helper Functions =====
 async function selectUser() {
