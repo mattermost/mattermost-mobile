@@ -26,10 +26,11 @@ type Props = {
     visible: boolean;
     levelName: string;
     color: string;
+    classificationEnabled: boolean;
     children: React.ReactNode;
 }
 
-export default function GlobalClassificationBannerContainer({visible, levelName, color, children}: Props) {
+export default function GlobalClassificationBannerContainer({visible, levelName, color, classificationEnabled, children}: Props) {
     const serverUrl = useServerUrl();
     const realInsets = useSafeAreaInsets();
     const bannerHeight = visible ? CLASSIFICATION_BANNER_TOTAL_HEIGHT : 0;
@@ -39,9 +40,11 @@ export default function GlobalClassificationBannerContainer({visible, levelName,
         [realInsets, bannerHeight],
     );
 
+    // Re-fetch on mount and whenever the feature flag flips, so a runtime toggle
+    // (delivered via the config_changed websocket event) refreshes the banner data.
     useEffect(() => {
         fetchClassificationBanner(serverUrl);
-    }, [serverUrl]);
+    }, [serverUrl, classificationEnabled]);
 
     return (
         <>

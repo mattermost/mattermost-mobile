@@ -4,7 +4,6 @@
 import {updateDmGmDisplayName} from '@actions/local/channel';
 import {storeConfig} from '@actions/local/systems';
 import {fetchCategories} from '@actions/remote/category';
-import {fetchClassificationBanner} from '@actions/remote/classification';
 import {SYSTEM_IDENTIFIERS} from '@constants/database';
 import DatabaseManager from '@database/manager';
 import {getConfig, getCurrentTeamId, getLicense} from '@queries/servers/system';
@@ -36,9 +35,6 @@ export async function handleConfigChangedEvent(serverUrl: string, msg: WebSocket
         await storeConfig(serverUrl, config);
         if (config?.LockTeammateNameDisplay && (prevConfig?.LockTeammateNameDisplay !== config.LockTeammateNameDisplay)) {
             updateDmGmDisplayName(serverUrl);
-        }
-        if (config?.FeatureFlagClassificationMarkings !== prevConfig?.FeatureFlagClassificationMarkings) {
-            fetchClassificationBanner(serverUrl);
         }
 
         const prevManagedSetting = prevConfig?.EnableManagedChannelCategories;
