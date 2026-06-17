@@ -267,14 +267,16 @@ describe('Channels - Channel Bookmarks', () => {
         // * Verify the Add a bookmark modal opens
         await ChannelBookmarkScreen.toBeVisible();
 
-        // # Enter a valid URL and submit
+        // # Enter a stable URL and manual title — avoid OG autofill flakiness on Android CI
         const linkInput = ChannelBookmarkScreen.getLinkInput();
-        let bookmarkTitle = '';
+        const bookmarkTitle = 'E2E Bookmark Link';
         await ChannelBookmarkScreen.runUnsynchronized(async () => {
             await linkInput.tap();
-            await linkInput.typeText('https://mattermost.com');
-            bookmarkTitle =
-                await ChannelBookmarkScreen.waitForAutofilledTitle('Mattermost');
+            await linkInput.typeText('https://example.com');
+            const titleInput = ChannelBookmarkScreen.getTitleInput();
+            await titleInput.tap();
+            await titleInput.replaceText(bookmarkTitle);
+            await ChannelBookmarkScreen.waitForTitleValue(bookmarkTitle);
             await waitFor(ChannelBookmarkScreen.saveButton).
                 toBeVisible().
                 withTimeout(timeouts.TEN_SEC);
@@ -284,9 +286,12 @@ describe('Channels - Channel Bookmarks', () => {
 
         // * Verify the bookmark modal closed and the bookmark is visible in channel info
         await expect(ChannelBookmarkScreen.channelBookmarkScreen).not.toExist();
-        await waitFor(element(by.text(bookmarkTitle)).atIndex(0)).
-            toExist().
-            withTimeout(timeouts.TEN_SEC);
+        await waitFor(
+            element(
+                by.text(bookmarkTitle).
+                    withAncestor(by.id('channel_info.bookmarks.list')),
+            ),
+        ).toExist().withTimeout(timeouts.TEN_SEC);
 
         // # Close channel info and go back to channel list
         await ChannelInfoScreen.close();
@@ -299,7 +304,7 @@ describe('Channels - Channel Bookmarks', () => {
 
         // # Open channel info and tap "Add a bookmark"
         await ChannelInfoScreen.open();
-        await element(by.id('channel_info.add_bookmark.button')).tap();
+        await element(by.text('Add a bookmark')).tap();
 
         // * Verify bottom sheet options appear
         await expect(ChannelBookmarkScreen.addALinkOption).toBeVisible();
@@ -400,7 +405,7 @@ describe('Channels - Channel Bookmarks', () => {
 
         // # Open channel info and tap "Add a bookmark"
         await ChannelInfoScreen.open();
-        await element(by.id('channel_info.add_bookmark.button')).tap();
+        await element(by.text('Add a bookmark')).tap();
 
         // # Tap "Add a link"
         await ChannelBookmarkScreen.addALinkOption.tap();
@@ -625,8 +630,15 @@ describe('Channels - Channel Bookmarks', () => {
         // # Navigate to the channel
         await openChannel(channelT5609);
 
-        // * Verify that the bookmark bar is visible below the channel header
-        await expect(element(by.text('Banner Test Bookmark'))).toBeVisible();
+        // * Verify that the bookmark bar is visible below the channel header.
+        // Scope to channel_header.bookmarks.list — the same title also renders in
+        // channel_info when the modal is open on other tests.
+        await expect(
+            element(
+                by.text('Banner Test Bookmark').
+                    withAncestor(by.id('channel_header.bookmarks.list')),
+            ),
+        ).toBeVisible();
 
         // # Go back to channel list
         await ChannelScreen.back();

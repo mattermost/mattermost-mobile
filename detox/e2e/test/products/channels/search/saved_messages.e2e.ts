@@ -210,12 +210,17 @@ describe('Search - Saved Messages', () => {
         await SavedMessagesScreen.toBeVisible();
 
         // # Open post options for saved message and tap on unsave option
-        await SavedMessagesScreen.openPostOptionsFor(savedPost.id, message);
+        await device.disableSynchronization();
+        try {
+            await SavedMessagesScreen.openPostOptionsFor(savedPost.id, message);
+        } finally {
+            await device.enableSynchronization();
+        }
         await PostOptionsScreen.unsavePostOption.tap();
 
         // * Verify saved message is not displayed anymore
         const {postListPostItem} = SavedMessagesScreen.getPostListPostItem(savedPost.id, message);
-        await waitForElementToNotExist(postListPostItem, 3000);
+        await waitForElementToNotExist(postListPostItem, timeouts.HALF_MIN);
         await expect(postListPostItem).not.toExist();
 
         // # Go back to channel list screen

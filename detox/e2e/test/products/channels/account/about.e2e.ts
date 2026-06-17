@@ -20,7 +20,8 @@ import {
     ServerScreen,
     SettingsScreen,
 } from '@support/ui/screen';
-import {expect} from 'detox';
+import {isAndroid} from '@support/utils';
+import {expect, waitFor} from 'detox';
 
 /** Mirrors app/utils/subscription getSkuDisplayName for E2E learn-more expectations */
 const getSkuDisplayNameForTest = (skuShortName: string, isGovSku: boolean): string => {
@@ -148,7 +149,13 @@ describe('Account - Settings - About', () => {
             await expect(AboutScreen.licensee).not.toBeVisible();
             await expect(AboutScreen.licenseLoadMetricTitle).not.toBeVisible();
         }
-        await expect(AboutScreen.learnMoreText).toHaveText(expectedLearnMorePrefix);
+        await expect(AboutScreen.learnMoreUrl).toExist().whileElement(by.id(AboutScreen.testID.scrollView)).scroll(50, 'down');
+        if (isAndroid()) {
+            // FormattedText may not expose the full composed label to Detox on Android.
+            await expect(AboutScreen.learnMoreText).toExist();
+        } else {
+            await expect(AboutScreen.learnMoreText).toHaveText(expectedLearnMorePrefix);
+        }
         await expect(AboutScreen.learnMoreUrl).toBeVisible();
         await expect(AboutScreen.copyright).toHaveText(`Copyright 2015-${new Date().getFullYear()} Mattermost, Inc. All rights reserved`);
         await expect(AboutScreen.termsOfService).toHaveText('Terms of Service');

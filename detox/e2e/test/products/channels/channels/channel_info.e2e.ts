@@ -21,7 +21,7 @@ import {
     ChannelInfoScreen,
     ChannelSettingsScreen,
 } from '@support/ui/screen';
-import {timeouts, wait} from '@support/utils';
+import {timeouts} from '@support/utils';
 import {expect, waitFor} from 'detox';
 
 describe('Channels - Channel Info', () => {
@@ -135,8 +135,13 @@ describe('Channels - Channel Info', () => {
     it('MM-T4928_3 - should be able to view channel info from channel quick actions', async () => {
         // # Open a channel screen, tap on channel quick actions button, and tap on channel info action
         await ChannelScreen.open(channelsCategory, testChannel.name);
+        await waitFor(ChannelScreen.channelQuickActionsButton).
+            toBeVisible().
+            withTimeout(timeouts.TEN_SEC);
         await ChannelScreen.channelQuickActionsButton.tap();
-        await wait(timeouts.ONE_SEC);
+        await waitFor(ChannelScreen.channelInfoQuickAction).
+            toBeVisible().
+            withTimeout(timeouts.TEN_SEC);
         await ChannelScreen.channelInfoQuickAction.tap();
 
         // * Verify on channel info screen

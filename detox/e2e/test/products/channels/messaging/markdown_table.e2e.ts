@@ -23,8 +23,8 @@ import {
     ServerScreen,
     TableScreen,
 } from '@support/ui/screen';
-import {isIos} from '@support/utils';
-import {expect} from 'detox';
+import {isIos, timeouts, wait} from '@support/utils';
+import {expect, waitFor} from 'detox';
 
 describe('Messaging - Markdown Table', () => {
     const serverOneDisplayName = 'Server 1';
@@ -204,7 +204,7 @@ describe('Messaging - Markdown Table', () => {
         await ChannelScreen.back();
     });
 
-    it('MM-T1442 - should display markdown table with multiple row heights correctly', async () => {
+    it('MM-T1442_1 - should display markdown table with multiple row heights correctly', async () => {
         // # Open a channel screen and post a markdown table with multiple row heights
         const markdownTable =
             '| Header | Header | Header |\n' +
@@ -256,8 +256,22 @@ describe('Messaging - Markdown Table', () => {
         });
         await ChannelScreen.open(channelsCategory, testChannel.name);
 
-        // * Verify table is displayed with some right columns and bottom rows not visible
-        const {post} = await Post.apiGetLastPostInChannel(siteOneUrl, testChannel.id);
+        // * Verify table is displayed with some right columns and bottom rows not visible.
+        // Poll for the post — large table posts can take a moment to persist via API sync.
+        let post: {id: string} | undefined;
+        const postDeadline = Date.now() + timeouts.TEN_SEC;
+        /* eslint-disable no-await-in-loop */
+        while (!post?.id && Date.now() < postDeadline) {
+            const result = await Post.apiGetLastPostInChannel(siteOneUrl, testChannel.id);
+            post = result?.post;
+            if (!post?.id) {
+                await wait(500);
+            }
+        }
+        /* eslint-enable no-await-in-loop */
+        if (!post?.id) {
+            throw new Error('Expected markdown table post to exist in channel');
+        }
         const {postListPostItemTable, postListPostItemTableExpandButton} = ChannelScreen.getPostListPostItem(post.id);
         await expect(postListPostItemTable).toBeVisible(50);
         await expect(element(by.text('Header last'))).not.toBeVisible();

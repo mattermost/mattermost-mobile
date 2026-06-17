@@ -230,13 +230,18 @@ describe('Search - Modifiers', () => {
 
         // # Open search messages screen and search for the full special username
         await SearchMessagesScreen.open();
-        await SearchMessagesScreen.searchInput.typeText(specialUser.username);
-        await SearchMessagesScreen.searchInput.tapReturnKey();
-        await wait(timeouts.TWO_SEC);
+        await device.disableSynchronization();
+        try {
+            await SearchMessagesScreen.searchInput.typeText(specialUser.username);
+            await SearchMessagesScreen.searchInput.tapReturnKey();
+            await wait(timeouts.TWO_SEC);
 
-        // * Verify the post containing the username mention appears in results
-        const {postListPostItem} = SearchMessagesScreen.getPostListPostItem(mentionPost.id, mentionMessage);
-        await waitFor(postListPostItem).toBeVisible().withTimeout(timeouts.HALF_MIN);
+            // * Verify the post containing the username mention appears in results
+            const {postListPostItem} = SearchMessagesScreen.getPostListPostItem(mentionPost.id, mentionMessage);
+            await waitForElementToBeVisible(postListPostItem, timeouts.HALF_MIN);
+        } finally {
+            await device.enableSynchronization();
+        }
 
         // # Clear search, remove recent search item, and go back to channel list screen
         await SearchMessagesScreen.searchClearButton.tap();
