@@ -120,7 +120,7 @@ describe('Account - User Attributes', () => {
 
         await waitFor(element(by.id(`edit_profile_form.customAttributes.${fieldId0}.input`))).
             toExist().
-            withTimeout(timeouts.HALF_MIN);
+            withTimeout(timeouts.TEN_SEC);
 
         if (isAndroid()) {
             // Android: scroll each field into view then tap + clearText + replaceText

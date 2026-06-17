@@ -6,31 +6,10 @@ import {
     PlusMenu,
     TeamSidebar,
 } from '@support/ui/component';
+import {dismissKnownModals} from '@support/ui/modal_dismiss';
 import {HomeScreen} from '@support/ui/screen';
 import {tapNativeBackButton, timeouts, wait, waitForElementToExist} from '@support/utils';
 import {waitFor} from 'detox';
-
-const KNOWN_MODAL_CLOSE_BUTTON_IDS: readonly string[] = Object.freeze([
-    'close.create_or_edit_channel.button',
-    'close.channel_info.button',
-    'close.channel_add_members.button',
-    'close.channel_bookmark.button',
-    'close.channel_files.button',
-    'close.channel_configuration.button',
-    'close.create_direct_message.button',
-    'close.find_channels.button',
-    'close.browse_channels.button',
-    'close.edit_post.button',
-    'close.edit_profile.button',
-    'close.edit_server.button',
-    'close.invite.button',
-    'close.join_team.button',
-    'close.reschedule_draft.button',
-    'close.settings.button',
-    'close.custom_status.button',
-    'close.apps_form.button',
-    'close.interactive_dialog.button',
-] as const);
 
 class ChannelListScreen {
     testID = {
@@ -205,26 +184,7 @@ class ChannelListScreen {
     };
 
     private dismissAnyOpenModals = async (): Promise<void> => {
-        /* eslint-disable no-await-in-loop -- sequential modal dismissals */
-        for (let depth = 0; depth < 5; depth++) {
-            let dismissedOne = false;
-            for (const closeId of KNOWN_MODAL_CLOSE_BUTTON_IDS) {
-                const btn = element(by.id(closeId));
-                try {
-                    await waitFor(btn).toExist().withTimeout(timeouts.HALF_SEC);
-                    await btn.tap();
-                    await wait(timeouts.ONE_SEC);
-                    dismissedOne = true;
-                    break;
-                } catch {
-                    // Not this modal — try the next id.
-                }
-            }
-            if (!dismissedOne) {
-                return;
-            }
-        }
-        /* eslint-enable no-await-in-loop */
+        await dismissKnownModals(5);
     };
 
     private popBackUntilChannelList = async (): Promise<void> => {

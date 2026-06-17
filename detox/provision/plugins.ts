@@ -151,7 +151,6 @@ export async function installPluginFromFile(
     {force = false}: {force?: boolean} = {},
 ): Promise<PluginInstallResult> {
     const fs = await import('node:fs');
-    const nodePath = await import('node:path');
 
     if (!fs.existsSync(filePath)) {
         return {
@@ -163,10 +162,14 @@ export async function installPluginFromFile(
 
     const FormData = (await import('form-data')).default;
     const form = new FormData();
-    form.append('plugin', fs.createReadStream(filePath), nodePath.basename(filePath));
-    form.append('force', String(force));
+    form.append('plugin', fs.createReadStream(filePath), path.basename(filePath));
 
-    const res = await client.request<ApiErrorBody>('POST', '/api/v4/plugins', form as unknown as Record<string, unknown>, token);
+    const res = await client.request<ApiErrorBody>(
+        'POST',
+        `/api/v4/plugins${force ? '?force=true' : ''}`,
+        form as unknown as Record<string, unknown>,
+        token,
+    );
     if (res.status >= 400) {
         return {
             ok: false,

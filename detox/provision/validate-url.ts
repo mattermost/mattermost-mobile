@@ -20,7 +20,7 @@ export function validateServerUrl(url: string): void {
 
     const hostname = parsed.hostname.toLowerCase();
 
-    if (/^(127\.|10\.|172\.(1[6-9]|2\d|3[01])\.|192\.168\.|0\.|localhost|::1|\[::1\])/.test(hostname)) {
+    if (/^(127\.\d{1,3}\.\d{1,3}\.\d{1,3}|10\.\d{1,3}\.\d{1,3}\.\d{1,3}|172\.(1[6-9]|2\d|3[01])\.\d{1,3}\.\d{1,3}|192\.168\.\d{1,3}\.\d{1,3}|0\.0\.0\.0|localhost|::1)$/.test(hostname)) {
         logError(`Private/internal URLs are not allowed: ${hostname}`);
         process.exit(1);
     }

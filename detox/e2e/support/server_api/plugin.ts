@@ -179,12 +179,14 @@ export const apiRemovePluginById = async (baseUrl: string, pluginId: string): Pr
  * See https://api.mattermost.com/#operation/UploadPlugin
  * @param {string} baseUrl - the base server URL
  * @param {string} filename - the filename of plugin to be uploaded
+ * @param {boolean} force - overwrite an existing plugin install
  * @return {Object} returns response on success or {error, status} on error
  */
-export const apiUploadPlugin = async (baseUrl: string, filename: string): Promise<any> => {
+export const apiUploadPlugin = async (baseUrl: string, filename: string, force = false): Promise<any> => {
     try {
         const absFilePath = path.resolve(__dirname, `../../support/fixtures/${filename}`);
-        return await apiUploadFile('plugin', absFilePath, {url: `${baseUrl}/api/v4/plugins`, method: 'POST'});
+        const forceQuery = force ? '?force=true' : '';
+        return await apiUploadFile('plugin', absFilePath, {url: `${baseUrl}/api/v4/plugins${forceQuery}`, method: 'POST'});
     } catch (err) {
         return getResponseFromError(err);
     }
@@ -270,7 +272,7 @@ export const apiUploadAndEnablePlugin = async (options: {
     if (filename) {
         const absFilePath = path.resolve(__dirname, `../../support/fixtures/${filename}`);
         if (fs.existsSync(absFilePath)) {
-            const uploadResult = await apiUploadPlugin(baseUrl, filename);
+            const uploadResult = await apiUploadPlugin(baseUrl, filename, force);
             if (uploadResult.error) {
                 return uploadResult;
             }

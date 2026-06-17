@@ -12,24 +12,34 @@ import type {GitHubRelease, GitHubReleaseAsset, PluginReleaseCandidate} from './
 
 function externalGet<T>(url: string): Promise<{status: number; data: T}> {
     return new Promise((resolve, reject) => {
-        https.get(url, {
+        const req = https.get(url, {
             headers: {
                 'User-Agent': 'mattermost-mobile-provision',
                 Accept: 'application/vnd.github+json',
             },
+            timeout: 30_000,
         }, (res) => {
             let data = '';
             res.on('data', (chunk: string) => {
                 data += chunk;
             });
             res.on('end', () => {
+                if (!data) {
+                    resolve({status: res.statusCode || 0, data: {} as T});
+                    return;
+                }
                 try {
                     resolve({status: res.statusCode || 0, data: JSON.parse(data) as T});
                 } catch {
-                    resolve({status: res.statusCode || 0, data: data as T});
+                    reject(new Error(`Failed to parse JSON response from ${url} (HTTP ${res.statusCode || 0})`));
                 }
             });
-        }).on('error', reject);
+        });
+        req.on('error', reject);
+        req.on('timeout', () => {
+            req.destroy();
+            reject(new Error(`Request to ${url} timed out`));
+        });
     });
 }
 

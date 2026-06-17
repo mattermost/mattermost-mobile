@@ -43,15 +43,23 @@ export function createMattermostClient(serverUrl: string): MattermostClient {
                     data += chunk;
                 });
                 res.on('end', () => {
+                    if (!data) {
+                        resolve({data: {} as T, status: res.statusCode || 0, headers: res.headers});
+                        return;
+                    }
                     try {
                         const parsed = JSON.parse(data) as T;
                         resolve({data: parsed, status: res.statusCode || 0, headers: res.headers});
                     } catch {
-                        resolve({data: data as T, status: res.statusCode || 0, headers: res.headers});
+                        reject(new Error(`Failed to parse JSON response (HTTP ${res.statusCode || 0})`));
                     }
                 });
             });
 
+            req.setTimeout(30_000, () => {
+                req.destroy();
+                reject(new Error(`Request to ${serverUrl}${path} timed out`));
+            });
             req.on('error', reject);
             if (payload) {
                 req.write(payload);

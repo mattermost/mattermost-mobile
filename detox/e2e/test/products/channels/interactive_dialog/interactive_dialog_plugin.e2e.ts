@@ -34,8 +34,8 @@ import {
 import {wait, isAndroid} from '@support/utils';
 import {expect} from 'detox';
 
-// Quarantined MM-T4103–MM-T4986: interactive dialog slash command leaves the send
-// button visible and the iOS paste permission dialog blocks Detox UI.
+// MM-66558 mitigations: slash-command send keeps the send button visible (handled in
+// ChannelScreen.tapSendButtonForMessage) and dialog fields use replaceText not typeText.
 // Track: https://mattermost.atlassian.net/browse/MM-66558
 
 // ===== Helper Functions =====
@@ -254,7 +254,7 @@ describe('Interactive Dialog - Basic Dialog (Plugin)', () => {
         if (!pluginAvailable) {
             return;
         }
-        await ChannelScreen.postMessage('/dialog basic');
+        await ChannelScreen.postSlashCommand('/dialog basic');
         await ensureDialogOpen();
         await InteractiveDialogScreen.cancel();
         await ensureDialogClosed();
@@ -264,7 +264,7 @@ describe('Interactive Dialog - Basic Dialog (Plugin)', () => {
         if (!pluginAvailable) {
             return;
         }
-        await ChannelScreen.postMessage('/dialog basic');
+        await ChannelScreen.postSlashCommand('/dialog basic');
         await ensureDialogOpen();
         await InteractiveDialogScreen.submit();
         await ensureDialogClosed();
@@ -272,13 +272,12 @@ describe('Interactive Dialog - Basic Dialog (Plugin)', () => {
         await ChannelScreen.hasPostMessage(post.id, 'Dialog Submitted:');
     });
 
-    // Quarantined (MM-66558).
-    it.skip('MM-T4103 should fill text field and submit dialog (Plugin)', async () => {
+    it('MM-T4103 should fill text field and submit dialog (Plugin)', async () => {
         if (!pluginAvailable) {
             return;
         }
         await ensureDialogClosed();
-        await ChannelScreen.postMessage('/dialog basic');
+        await ChannelScreen.postSlashCommand('/dialog basic');
         await ensureDialogOpen();
         await InteractiveDialogScreen.fillTextElement('optional_text', 'Plugin Test Value');
         await InteractiveDialogScreen.submit();
@@ -287,13 +286,12 @@ describe('Interactive Dialog - Basic Dialog (Plugin)', () => {
         await ChannelScreen.hasPostMessage(post.id, 'Dialog Submitted:');
     });
 
-    // Quarantined (MM-66558).
-    it.skip('MM-T4104 should handle server error on dialog submission (Plugin)', async () => {
+    it('MM-T4104 should handle server error on dialog submission (Plugin)', async () => {
         if (!pluginAvailable) {
             return;
         }
         await ensureDialogClosed();
-        await ChannelScreen.postMessage('/dialog error');
+        await ChannelScreen.postSlashCommand('/dialog error');
         await ensureDialogOpen();
         await InteractiveDialogScreen.fillTextElement('optional_text', 'This will trigger server error');
         await InteractiveDialogScreen.submit();
@@ -304,13 +302,12 @@ describe('Interactive Dialog - Basic Dialog (Plugin)', () => {
         await ensureDialogClosed();
     });
 
-    // Quarantined (MM-66558).
-    it.skip('MM-T4401 should toggle boolean fields and submit (Plugin)', async () => {
+    it('MM-T4401 should toggle boolean fields and submit (Plugin)', async () => {
         if (!pluginAvailable) {
             return;
         }
         await ensureDialogClosed();
-        await ChannelScreen.postMessage('/dialog boolean');
+        await ChannelScreen.postSlashCommand('/dialog boolean');
         await ensureDialogOpen();
         await expect(element(by.id('AppFormElement.required_boolean.toggled..button'))).toExist();
         await expect(element(by.id('AppFormElement.optional_boolean.toggled..button'))).toExist();
@@ -324,13 +321,12 @@ describe('Interactive Dialog - Basic Dialog (Plugin)', () => {
         await ChannelScreen.hasPostMessage(post.id, 'Dialog Submitted:');
     });
 
-    // Quarantined (MM-66558).
-    it.skip('MM-T4402 should handle boolean field validation (Plugin)', async () => {
+    it('MM-T4402 should handle boolean field validation (Plugin)', async () => {
         if (!pluginAvailable) {
             return;
         }
         await ensureDialogClosed();
-        await ChannelScreen.postMessage('/dialog boolean');
+        await ChannelScreen.postSlashCommand('/dialog boolean');
         await ensureDialogOpen();
         await InteractiveDialogScreen.submit();
         await wait(300);
@@ -343,13 +339,12 @@ describe('Interactive Dialog - Basic Dialog (Plugin)', () => {
         await ChannelScreen.hasPostMessage(post.id, 'Dialog Submitted:');
     });
 
-    // Quarantined (MM-66558).
-    it.skip('MM-T4498 should open and handle interactive dialog with select fields (Plugin)', async () => {
+    it('MM-T4498 should open and handle interactive dialog with select fields (Plugin)', async () => {
         if (!pluginAvailable) {
             return;
         }
         await ensureDialogClosed();
-        await ChannelScreen.postMessage('/dialog selectfields');
+        await ChannelScreen.postSlashCommand('/dialog selectfields');
         await ensureDialogOpen();
         const engineeringRadioButton = element(by.id('AppFormElement.someradiooptions.radio.engineering.button'));
         await expect(engineeringRadioButton).toExist();
@@ -377,13 +372,12 @@ describe('Interactive Dialog - Basic Dialog (Plugin)', () => {
         await ChannelScreen.hasPostMessage(post.id, 'Dialog Submitted:');
     });
 
-    // Quarantined (MM-66558).
-    it.skip('MM-T4499 should handle required select field validation (Plugin)', async () => {
+    it('MM-T4499 should handle required select field validation (Plugin)', async () => {
         if (!pluginAvailable) {
             return;
         }
         await ensureDialogClosed();
-        await ChannelScreen.postMessage('/dialog selectfields');
+        await ChannelScreen.postSlashCommand('/dialog selectfields');
         await ensureDialogOpen();
         await InteractiveDialogScreen.submit();
         await wait(300);
@@ -409,13 +403,12 @@ describe('Interactive Dialog - Basic Dialog (Plugin)', () => {
         await ChannelScreen.hasPostMessage(post.id, 'Dialog Submitted:');
     });
 
-    // Quarantined (MM-66558).
-    it.skip('MM-T4500 should handle different selector types (Plugin)', async () => {
+    it('MM-T4500 should handle different selector types (Plugin)', async () => {
         if (!pluginAvailable) {
             return;
         }
         await ensureDialogClosed();
-        await ChannelScreen.postMessage('/dialog selectfields');
+        await ChannelScreen.postSlashCommand('/dialog selectfields');
         await ensureDialogOpen();
         const engineeringRadioButton = element(by.id('AppFormElement.someradiooptions.radio.engineering.button'));
         await expect(engineeringRadioButton).toExist();
@@ -443,13 +436,12 @@ describe('Interactive Dialog - Basic Dialog (Plugin)', () => {
         await ChannelScreen.hasPostMessage(post.id, 'Dialog Submitted:');
     });
 
-    // Quarantined (MM-66558).
-    it.skip('MM-T4201 should fill and submit all text field types (Plugin)', async () => {
+    it('MM-T4201 should fill and submit all text field types (Plugin)', async () => {
         if (!pluginAvailable) {
             return;
         }
         await ensureDialogClosed();
-        await ChannelScreen.postMessage('/dialog textfields');
+        await ChannelScreen.postSlashCommand('/dialog textfields');
         await ensureDialogOpen();
         await InteractiveDialogScreen.fillTextElement('text_field', 'Regular text input');
         await InteractiveDialogScreen.fillTextElement('required_text', 'Required field value');
@@ -463,13 +455,12 @@ describe('Interactive Dialog - Basic Dialog (Plugin)', () => {
         await ChannelScreen.hasPostMessage(post.id, 'Dialog Submitted:');
     });
 
-    // Quarantined (MM-66558).
-    it.skip('MM-T4202 should validate required text field (Plugin)', async () => {
+    it('MM-T4202 should validate required text field (Plugin)', async () => {
         if (!pluginAvailable) {
             return;
         }
         await ensureDialogClosed();
-        await ChannelScreen.postMessage('/dialog textfields');
+        await ChannelScreen.postSlashCommand('/dialog textfields');
         await ensureDialogOpen();
         await InteractiveDialogScreen.fillTextElement('text_field', 'Optional text');
         await InteractiveDialogScreen.fillTextElement('email_field', 'optional@example.com');
@@ -488,13 +479,12 @@ describe('Interactive Dialog - Basic Dialog (Plugin)', () => {
         await ChannelScreen.hasPostMessage(post.id, 'Dialog Submitted:');
     });
 
-    // Quarantined (MM-66558).
-    it.skip('MM-T4203 should handle different text input subtypes (Plugin)', async () => {
+    it('MM-T4203 should handle different text input subtypes (Plugin)', async () => {
         if (!pluginAvailable) {
             return;
         }
         await ensureDialogClosed();
-        await ChannelScreen.postMessage('/dialog textfields');
+        await ChannelScreen.postSlashCommand('/dialog textfields');
         await ensureDialogOpen();
         await InteractiveDialogScreen.fillTextElement('email_field', 'valid.email+test@example.com');
         await InteractiveDialogScreen.fillTextElement('number_field', '12345');
@@ -505,13 +495,12 @@ describe('Interactive Dialog - Basic Dialog (Plugin)', () => {
         await ChannelScreen.hasPostMessage(post.id, 'Dialog Submitted:');
     });
 
-    // Quarantined (MM-66558).
-    it.skip('MM-T4976 should handle multiselect fields dialog (Plugin)', async () => {
+    it('MM-T4976 should handle multiselect fields dialog (Plugin)', async () => {
         if (!pluginAvailable) {
             return;
         }
         await ensureDialogClosed();
-        await ChannelScreen.postMessage('/dialog multi-select');
+        await ChannelScreen.postSlashCommand('/dialog multi-select');
         await ensureDialogOpen();
         const multiselectUsersButton = element(by.id('AppFormElement.multiselect_users.select.button'));
         await expect(multiselectUsersButton).toExist();
@@ -548,13 +537,12 @@ describe('Interactive Dialog - Basic Dialog (Plugin)', () => {
         await ensureDialogClosed();
     });
 
-    // Quarantined (MM-66558).
-    it.skip('MM-T4977 should handle dynamic select fields dialog (Plugin)', async () => {
+    it('MM-T4977 should handle dynamic select fields dialog (Plugin)', async () => {
         if (!pluginAvailable) {
             return;
         }
         await ensureDialogClosed();
-        await ChannelScreen.postMessage('/dialog dynamic-select');
+        await ChannelScreen.postSlashCommand('/dialog dynamic-select');
         await ensureDialogOpen();
         const dynamicProductsButton = element(by.id('AppFormElement.dynamic_products.select.button'));
         await expect(dynamicProductsButton).toExist();
@@ -577,13 +565,12 @@ describe('Interactive Dialog - Basic Dialog (Plugin)', () => {
         await ensureDialogClosed();
     });
 
-    // Quarantined (MM-66558).
-    it.skip('MM-T4980 should complete multistep dialog progression (Plugin)', async () => {
+    it('MM-T4980 should complete multistep dialog progression (Plugin)', async () => {
         if (!pluginAvailable) {
             return;
         }
         await ensureDialogClosed();
-        await ChannelScreen.postMessage('/dialog multistep');
+        await ChannelScreen.postSlashCommand('/dialog multistep');
         await ensureDialogOpen();
         const individualRadioButton = element(by.id('AppFormElement.user_type.radio.individual.button'));
         await expect(individualRadioButton).toExist();
@@ -620,13 +607,12 @@ describe('Interactive Dialog - Basic Dialog (Plugin)', () => {
         await waitFor(postElement).toBeVisible().whileElement(by.id('channel.post_list.flat_list')).scroll(500, 'down');
     });
 
-    // Quarantined (MM-66558).
-    it.skip('MM-T4981 should handle multistep dialog cancellation (Plugin)', async () => {
+    it('MM-T4981 should handle multistep dialog cancellation (Plugin)', async () => {
         if (!pluginAvailable) {
             return;
         }
         await ensureDialogClosed();
-        await ChannelScreen.postMessage('/dialog multistep');
+        await ChannelScreen.postSlashCommand('/dialog multistep');
         await ensureDialogOpen();
         const individualRadioButton = element(by.id('AppFormElement.user_type.radio.individual.button'));
         await expect(individualRadioButton).toExist();
@@ -646,13 +632,12 @@ describe('Interactive Dialog - Basic Dialog (Plugin)', () => {
         await ensureDialogClosed();
     });
 
-    // Quarantined (MM-66558).
-    it.skip('MM-T4983 should handle field refresh basic interaction (Plugin)', async () => {
+    it('MM-T4983 should handle field refresh basic interaction (Plugin)', async () => {
         if (!pluginAvailable) {
             return;
         }
         await ensureDialogClosed();
-        await ChannelScreen.postMessage('/dialog field-refresh');
+        await ChannelScreen.postSlashCommand('/dialog field-refresh');
         await ensureDialogOpen();
         const projectTypeButton = element(by.id('AppFormElement.project_type.select.button'));
         await expect(projectTypeButton).toExist();
@@ -678,13 +663,12 @@ describe('Interactive Dialog - Basic Dialog (Plugin)', () => {
         await waitFor(postElement).toBeVisible().whileElement(by.id('channel.post_list.flat_list')).scroll(500, 'down');
     });
 
-    // Quarantined (MM-66558).
-    it.skip('MM-T4986 should handle field refresh changes and cancellation (Plugin)', async () => {
+    it('MM-T4986 should handle field refresh changes and cancellation (Plugin)', async () => {
         if (!pluginAvailable) {
             return;
         }
         await ensureDialogClosed();
-        await ChannelScreen.postMessage('/dialog field-refresh');
+        await ChannelScreen.postSlashCommand('/dialog field-refresh');
         await ensureDialogOpen();
         const projectTypeButton = element(by.id('AppFormElement.project_type.select.button'));
         await projectTypeButton.tap();

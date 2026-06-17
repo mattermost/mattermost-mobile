@@ -12,6 +12,7 @@ import {
     PostList,
     SendButton,
 } from '@support/ui/component';
+import {dismissKnownModals} from '@support/ui/modal_dismiss';
 import {
     ChannelListScreen,
     FindChannelsScreen,
@@ -20,6 +21,8 @@ import {
 } from '@support/ui/screen';
 import {isAndroid, isIos, longPressWithScrollRetry, timeouts, wait, waitForElementToBeVisible, waitForElementToExist} from '@support/utils';
 import {by, element, expect, waitFor} from 'detox';
+
+import InteractiveDialogScreen from './interactive_dialog';
 
 class ChannelScreen {
     testID = {
@@ -272,46 +275,11 @@ class ChannelScreen {
         await ThreadScreen.toBeVisible();
     };
 
-    postMessage = async (message: string) => {
-        // # Post message — first dismiss any leftover modal from a prior test that
-        // would otherwise intercept touches even though postInput is still discoverable.
-        try {
-            const knownCloseIds = [
-                'close.create_or_edit_channel.button',
-                'close.channel_info.button',
-                'close.channel_add_members.button',
-                'close.channel_bookmark.button',
-                'close.edit_post.button',
-                'close.edit_profile.button',
-                'close.find_channels.button',
-                'close.browse_channels.button',
-                'close.settings.button',
-                'close.create_direct_message.button',
-                'close.custom_status.button',
-                'close.apps_form.button',
-                'close.interactive_dialog.button',
-            ];
-            /* eslint-disable no-await-in-loop -- short-circuit at first match */
-            for (const closeId of knownCloseIds) {
-                const btn = element(by.id(closeId));
-                try {
-                    await waitFor(btn).toExist().withTimeout(timeouts.HALF_SEC);
-                    await btn.tap();
-                    await wait(timeouts.ONE_SEC);
-                    break;
-                } catch { /* not this modal */ }
-            }
-            /* eslint-enable no-await-in-loop */
-        } catch {
-            // Best-effort recovery. Fall through.
-        }
+    composePostDraft = async (message: string) => {
+        await dismissKnownModals();
 
-        // # Dismiss the scheduled-post tooltip — it can overlay the PasteInputTextView.
         await this.dismissScheduledPostTooltip();
 
-        // # iOS: tap the FlatList top-corner to dismiss any persisting keyboard. Avoid the
-        // center because on an empty channel it lands on the IntroOptions row (SetHeaderBox)
-        // and opens the Edit Channel Header modal.
         if (isIos()) {
             try {
                 await waitFor(this.postList.getFlatList()).toExist().withTimeout(timeouts.ONE_SEC);
@@ -328,12 +296,9 @@ class ChannelScreen {
             // Input not hittable — replaceText below will still focus the field.
         }
 
-        // # Bounded polling loop: PasteInputTextView is briefly occluded on iOS by
-        // intro header / tooltip / UITransitionView / unsettled keyboard inset.
-        // Retry replaceText for TEN_SEC on hittability errors; re-throw anything else.
         const replaceDeadline = Date.now() + timeouts.TEN_SEC;
         let lastError: unknown;
-        /* eslint-disable no-await-in-loop -- sequential retry on transient occlusion */
+        /* eslint-disable no-await-in-loop -- retry on transient iOS occlusion */
         while (Date.now() < replaceDeadline) {
             try {
                 await this.postInput.replaceText(message);
@@ -352,23 +317,31 @@ class ChannelScreen {
         if (lastError) {
             throw lastError;
         }
+    };
 
+    postMessage = async (message: string) => {
+        await this.composePostDraft(message);
         await this.tapSendButton();
         await wait(timeouts.TWO_SEC);
+    };
+
+    postSlashCommand = async (command: string) => {
+        await this.composePostDraft(command);
+        await waitForElementToBeVisible(this.sendButton, timeouts.FOUR_SEC);
+        await this.sendButton.tap();
+        await waitFor(InteractiveDialogScreen.interactiveDialogScreen).toExist().withTimeout(timeouts.FIVE_SEC);
+    };
+
+    tapSendButton = async () => {
+        await waitForElementToBeVisible(this.sendButton, timeouts.FOUR_SEC);
+        await this.sendButton.tap();
+        await waitFor(this.sendButton).not.toExist().withTimeout(timeouts.FIVE_SEC);
     };
 
     enterMessageToSchedule = async (message: string) => {
         await this.postInput.tap();
         await this.postInput.clearText();
         await this.postInput.replaceText(message);
-    };
-
-    tapSendButton = async () => {
-        // # Wait for Send button via polling — bridge-sync visibility can falsely fail when
-        // replaceText() keeps the bridge busy even though the button is rendered.
-        await waitForElementToBeVisible(this.sendButton, timeouts.FOUR_SEC);
-        await this.sendButton.tap();
-        await waitFor(this.sendButton).not.toExist().withTimeout(timeouts.FIVE_SEC);
     };
 
     longPressSendButton = async () => {

@@ -28,6 +28,17 @@ class InteractiveDialogScreen {
         return element(by.id(`${this.testID.dialogElementPrefix}${elementName}.${elementType}`));
     };
 
+    // Set text without typeText — avoids the iOS paste-permission dialog (MM-66558).
+    setDialogInputText = async (input: Detox.NativeElement, value: string) => {
+        await input.tap();
+        try {
+            await input.clearText();
+        } catch {
+            // Field may already be empty.
+        }
+        await input.replaceText(value);
+    };
+
     // Helper to fill a text input - supports both InteractiveDialog and AppsForm patterns
     fillTextElement = async (elementName: string, value: string) => {
         // For password and textarea fields, we need special handling for keyboard visibility
@@ -56,7 +67,7 @@ class InteractiveDialogScreen {
 
         try {
             await expect(appsFormElement).toExist();
-            await appsFormElement.typeText(value);
+            await this.setDialogInputText(appsFormElement, value);
 
             // Enhanced keyboard dismissal for problematic fields
             await wait(isPasswordOrTextarea ? 1500 : 1000);
@@ -81,7 +92,7 @@ class InteractiveDialogScreen {
             const interactiveDialogElement = this.getDialogElement(elementName, 'text_input');
             try {
                 await expect(interactiveDialogElement).toExist();
-                await interactiveDialogElement.typeText(value);
+                await this.setDialogInputText(interactiveDialogElement, value);
 
                 // Same enhanced keyboard handling for fallback
                 await wait(isPasswordOrTextarea ? 1500 : 1000);
@@ -279,7 +290,7 @@ class InteractiveDialogScreen {
     fillTextElementWithAppForm = async (elementName: string, value: string) => {
         const textInput = element(by.id(`AppFormElement.${elementName}.text.input`));
         await expect(textInput).toExist();
-        await textInput.typeText(value);
+        await this.setDialogInputText(textInput, value);
         await wait(1000);
 
         // Dismiss keyboard by tapping outside

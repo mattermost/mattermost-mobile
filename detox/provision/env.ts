@@ -21,7 +21,7 @@ export function readCredentialsFromEnv(): ProvisionCredentials {
     const password = process.env.ADMIN_PASSWORD;
 
     if (!username || !password) {
-        logError('ADMIN_USERNAME and ADMIN_PASSWORD environment variables are required');
+        logError('ADMIN_USERNAME (or ADMIN_EMAIL) and ADMIN_PASSWORD environment variables are required');
         process.exit(1);
     }
 
