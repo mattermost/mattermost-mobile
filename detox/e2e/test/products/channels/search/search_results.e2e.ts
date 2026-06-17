@@ -234,6 +234,7 @@ describe('Search - Result Interactions', () => {
             await device.enableSynchronization();
         }
         await PostOptionsScreen.savePostOption.tap();
+        await wait(timeouts.TWO_SEC);
 
         // # Navigate to Saved Messages
         await SavedMessagesScreen.open();
@@ -248,6 +249,7 @@ describe('Search - Result Interactions', () => {
         // # Unsave the post to clean up, then go back to channel list
         await SavedMessagesScreen.openPostOptionsFor(searchedPostId, message);
         await PostOptionsScreen.unsavePostOption.tap();
+        await wait(timeouts.TWO_SEC);
 
         // # Go back to search screen to clean up recent searches
         await SearchMessagesScreen.open();

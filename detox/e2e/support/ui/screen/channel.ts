@@ -288,6 +288,8 @@ class ChannelScreen {
                 'close.settings.button',
                 'close.create_direct_message.button',
                 'close.custom_status.button',
+                'close.apps_form.button',
+                'close.interactive_dialog.button',
             ];
             /* eslint-disable no-await-in-loop -- short-circuit at first match */
             for (const closeId of knownCloseIds) {

@@ -257,7 +257,7 @@ describe('Server Login - Server List', () => {
         } else {
             await wait(timeouts.ONE_SEC);
         }
-        await ServerListScreen.getServerItemRemoveOption(serverOneDisplayName).tap();
+        await ServerListScreen.getServerItemRemoveOption(serverOneDisplayName).atIndex(0).tap();
 
         // * Verify remove server alert is displayed
         await waitForElementToBeVisible(Alert.removeServerTitle(serverOneDisplayName), timeouts.HALF_MIN);
@@ -305,7 +305,7 @@ describe('Server Login - Server List', () => {
 
         // TWO_SEC lets the reveal animation fully settle before tapping the action button.
         await wait(timeouts.TWO_SEC);
-        await ServerListScreen.getServerItemLogoutOption(serverThreeDisplayName).tap();
+        await ServerListScreen.getServerItemLogoutOption(serverThreeDisplayName).atIndex(0).tap();
 
         // * Verify logout server alert is displayed
         await waitForElementToBeVisible(Alert.logoutTitle(serverThreeDisplayName), timeouts.TEN_SEC);
@@ -391,7 +391,7 @@ describe('Server Login - Server List', () => {
 
         // TWO_SEC lets the reveal animation fully settle before tapping the action button.
         await wait(timeouts.TWO_SEC);
-        await ServerListScreen.getServerItemLogoutOption(serverTwoDisplayName).tap();
+        await ServerListScreen.getServerItemLogoutOption(serverTwoDisplayName).atIndex(0).tap();
         await wait(timeouts.FOUR_SEC);
         await waitForElementToBeVisible(Alert.logoutButton, timeouts.HALF_MIN);
         await Alert.logoutButton.tap();

@@ -10,6 +10,7 @@ class InteractiveDialogScreen {
         dialogTitle: 'interactive_dialog.dialog_title',
         dialogIntroText: 'interactive_dialog.dialog_introduction_text',
         submitButton: 'interactive_dialog.submit.button',
+        closeButton: 'close.interactive_dialog.button',
         cancelButton: 'interactive_dialog.cancel.button',
 
         // Dialog elements use a pattern: dialog_element.{element_name}.{element_type}
@@ -19,13 +20,8 @@ class InteractiveDialogScreen {
 
     interactiveDialogScreen = element(by.id(this.testID.interactiveDialogScreen));
     submitButton = element(by.id(this.testID.submitButton));
+    closeButton = element(by.id(this.testID.closeButton));
     cancelButton = element(by.id(this.testID.cancelButton));
-
-    // Platform-specific cancel button (following Alert pattern)
-    platformCancelButton = isAndroid() ? element(by.text('CANCEL')) : element(by.label('Cancel')).atIndex(0);
-
-    // AppsForm close button (X button in header) - using the testID from buildNavigationButton
-    appsFormCloseButton = element(by.id('close.more_direct_messages.button'));
 
     // Helper to get a dialog element by name and type
     getDialogElement = (elementName: string, elementType: string = 'text') => {
@@ -226,21 +222,21 @@ class InteractiveDialogScreen {
         }
     };
 
-    // Cancel the dialog - tries AppsForm close button first, then fallback to platform-specific
+    // Cancel the dialog via the modal header close (X) button.
     cancel = async () => {
         try {
-            // Try AppsForm close button (X in header) - this should be the correct one
-            await expect(this.appsFormCloseButton).toExist();
-            await this.appsFormCloseButton.tap();
-        } catch (appsFormError) {
+            await waitFor(this.closeButton).toExist().withTimeout(timeouts.TWO_SEC);
+            await this.closeButton.tap();
+        } catch {
             try {
-                // Try the specific dialog cancel button ID
                 await expect(this.cancelButton).toExist();
                 await this.cancelButton.tap();
-            } catch (idError) {
-                // Fall back to platform-specific cancel button (like Alert pattern)
-                await expect(this.platformCancelButton).toExist();
-                await this.platformCancelButton.tap();
+            } catch {
+                if (isAndroid()) {
+                    await device.pressBack();
+                } else {
+                    throw new Error('Could not dismiss interactive dialog');
+                }
             }
         }
         await wait(timeouts.ONE_SEC);

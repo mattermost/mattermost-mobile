@@ -82,6 +82,8 @@ class CreateOrEditChannelScreen {
         if (tapError) {
             throw tapError;
         }
+        await wait(timeouts.ONE_SEC);
+        await waitFor(ChannelListScreen.createNewChannelItem).toBeVisible().withTimeout(timeouts.TEN_SEC);
         await ChannelListScreen.createNewChannelItem.tap();
 
         return this.toBeVisible();

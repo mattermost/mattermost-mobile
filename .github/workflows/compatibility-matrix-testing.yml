@@ -209,6 +209,9 @@ jobs:
   update-final-status:
     runs-on: ubuntu-22.04
     if: always()
+    permissions:
+      contents: read
+      statuses: write
     needs:
       - calculate-commit-hash
       - detox-e2e

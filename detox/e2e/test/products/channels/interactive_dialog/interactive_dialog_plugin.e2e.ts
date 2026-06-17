@@ -89,7 +89,12 @@ async function selectChannel() {
 async function ensureDialogClosed() {
     try {
         await waitFor(InteractiveDialogScreen.interactiveDialogScreen).not.toExist().withTimeout(3000);
-    } catch {}
+    } catch {
+        try {
+            await InteractiveDialogScreen.cancel();
+            await waitFor(InteractiveDialogScreen.interactiveDialogScreen).not.toExist().withTimeout(3000);
+        } catch {}
+    }
 
     // Swipe up on post list to reveal new posts that might be hidden behind input
     try {
@@ -116,6 +121,7 @@ async function pluginInstallAndEnable(siteUrl: string, latestVersion: string) {
         baseUrl: siteUrl,
         version: latestVersion,
         force: true,
+        filename: 'mattermost-plugin-demo-v0.11.1-linux-amd64.tar.gz',
     });
     await wait(3000);
     if (pluginResult.error) {
@@ -157,38 +163,48 @@ describe('Interactive Dialog - Basic Dialog (Plugin)', () => {
 
         await User.apiAdminLogin(siteOneUrl);
 
-        // Check if demo plugin can be set up; any failure skips the entire suite gracefully
+        // Check if demo plugin can be set up; any failure or excessive wait
+        // skips the entire suite gracefully. The plugin download from GitHub can
+        // hang behind Cloudflare in CI, so cap the setup phase to avoid the
+        // default 240 s Jest hook timeout.
+        const PLUGIN_SETUP_TIMEOUT = 60000;
         try {
-            await System.shouldHavePluginUploadEnabled(siteOneUrl);
+            await Promise.race([
+                (async () => {
+                    await System.shouldHavePluginUploadEnabled(siteOneUrl);
 
-            pluginSetupTouchedServer = true;
-            await System.apiUpdateConfig(siteOneUrl, {
-                ServiceSettings: {EnableGifPicker: true},
-                FileSettings: {EnablePublicLink: true},
-                FeatureFlags: {InteractiveDialogAppsForm: true},
-                PluginSettings: {
-                    Enable: true,
-                    AllowInsecureDownloadUrl: true,
-                    EnableUploads: true,
-                    PluginStates: {
-                        'com.mattermost.demo-plugin': {'Enable': true},
-                    },
-                    Plugins: {
-                        'com.mattermost.demo-plugin': {
-                            'DialogOnlyMode': true,
-                        },
-                    }},
-            });
+                    pluginSetupTouchedServer = true;
+                    await System.apiUpdateConfig(siteOneUrl, {
+                        ServiceSettings: {EnableGifPicker: true},
+                        FileSettings: {EnablePublicLink: true},
+                        FeatureFlags: {InteractiveDialogAppsForm: true},
+                        PluginSettings: {
+                            Enable: true,
+                            AllowInsecureDownloadUrl: true,
+                            EnableUploads: true,
+                            PluginStates: {
+                                'com.mattermost.demo-plugin': {'Enable': true},
+                            },
+                            Plugins: {
+                                'com.mattermost.demo-plugin': {
+                                    'DialogOnlyMode': true,
+                                },
+                            }},
+                    });
 
-            const latestVersion = await Plugin.apiGetLatestPluginVersion(DemoPlugin.repo);
-            await pluginInstallAndEnable(siteOneUrl, latestVersion);
+                    const latestVersion = await Plugin.apiGetLatestPluginVersion(DemoPlugin.repo);
+                    await pluginInstallAndEnable(siteOneUrl, latestVersion);
 
-            // Verify the plugin is actually active before continuing
-            const statusCheck = await Plugin.apiGetPluginStatus(siteOneUrl, DemoPlugin.id);
-            if (!statusCheck.isActive) {
-                console.warn(`Demo plugin (${DemoPlugin.id}) is not active after installation — skipping suite`);
-                return;
-            }
+                    // Verify the plugin is actually active before continuing
+                    const statusCheck = await Plugin.apiGetPluginStatus(siteOneUrl, DemoPlugin.id);
+                    if (!statusCheck.isActive) {
+                        throw new Error(`Demo plugin (${DemoPlugin.id}) is not active after installation`);
+                    }
+                })(),
+                new Promise((_resolve, reject) =>
+                    setTimeout(() => reject(new Error(`plugin setup did not complete within ${PLUGIN_SETUP_TIMEOUT}ms`)), PLUGIN_SETUP_TIMEOUT),
+                ),
+            ]);
         } catch (err: any) {
             console.warn(`Demo plugin setup failed — skipping interactive dialog suite: ${err.message || err}`);
             return;

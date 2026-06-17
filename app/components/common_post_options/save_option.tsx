@@ -31,7 +31,7 @@ const SaveOption = ({isSaved, postId}: CopyTextProps) => {
     const onHandlePress = useCallback(async () => {
         const remoteAction = isSaved ? deleteSavedPost : savePostPreference;
         await dismissBottomSheet();
-        remoteAction(serverUrl, postId);
+        await remoteAction(serverUrl, postId);
     }, [isSaved, postId, serverUrl]);
 
     const message = isSaved ? messages.unsave : messages.save;

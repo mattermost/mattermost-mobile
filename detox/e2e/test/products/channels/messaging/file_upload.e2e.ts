@@ -208,7 +208,9 @@ describe('Messaging - File Upload', () => {
         try {
             // * Server rejects over-limit uploads
             const {error: uploadError} = await Post.apiUploadFileToChannel(siteOneUrl, testChannel.id, imagePath);
-            expect(uploadError).toBeTruthy();
+            if (!uploadError) {
+                throw new Error('Expected server to reject over-limit file upload');
+            }
 
             // # Open channel screen and attempt a client-side file attach
             await ChannelScreen.open(channelsCategory, testChannel.name);

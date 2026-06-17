@@ -7,7 +7,7 @@
 // - Use element testID when selecting an element. Create one if none.
 // *******************************************************************
 
-import {Setup} from '@support/server_api';
+import {Setup, Team} from '@support/server_api';
 import {serverTwoUrl, siteTwoUrl} from '@support/test_config';
 import {Alert} from '@support/ui/component';
 import {
@@ -27,9 +27,12 @@ describe('Channels - Unarchive Channel', () => {
     const serverOneDisplayName = 'Server 1';
 
     beforeAll(async () => {
-        // ExperimentalViewArchivedChannels is set by detox/provision_server.js at
+        // ExperimentalViewArchivedChannels is set by detox/provision at
         // server startup — no runtime admin login or config API call needed.
-        const {user} = await Setup.apiInit(siteTwoUrl);
+        const {user, team} = await Setup.apiInit(siteTwoUrl);
+
+        // Unarchive requires MANAGE_TEAM; channel creators can archive but not unarchive.
+        await Team.apiUpdateTeamMemberSchemeRoles(siteTwoUrl, team.id, user.id, true);
 
         await ServerScreen.connectToServer(serverTwoUrl, serverOneDisplayName);
         await LoginScreen.login(user);

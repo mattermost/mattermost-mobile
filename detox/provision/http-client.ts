@@ -6,7 +6,7 @@ import https from 'node:https';
 
 import {logInfo} from './log';
 
-import type {ApiResponse, HttpMethod, MattermostClient} from './types';
+import type {ApiResponse, HttpMethod, MattermostClient, ProvisionCredentials} from './types';
 
 export function sleep(ms: number): Promise<void> {
     return new Promise((resolve) => {

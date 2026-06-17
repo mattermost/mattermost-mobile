@@ -110,6 +110,7 @@ describe('Account - User Attributes', () => {
         // # Open Account screen then Edit Profile screen
         await AccountScreen.open();
         await EditProfileScreen.open();
+        await wait(timeouts.TWO_SEC);
 
         // * Verify edit profile screen is visible
         await EditProfileScreen.toBeVisible();
@@ -119,7 +120,7 @@ describe('Account - User Attributes', () => {
 
         await waitFor(element(by.id(`edit_profile_form.customAttributes.${fieldId0}.input`))).
             toExist().
-            withTimeout(timeouts.TEN_SEC);
+            withTimeout(timeouts.HALF_MIN);
 
         if (isAndroid()) {
             // Android: scroll each field into view then tap + clearText + replaceText

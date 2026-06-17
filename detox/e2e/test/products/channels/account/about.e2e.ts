@@ -20,7 +20,7 @@ import {
     ServerScreen,
     SettingsScreen,
 } from '@support/ui/screen';
-import {isAndroid} from '@support/utils';
+import {isAndroid, timeouts} from '@support/utils';
 import {expect, waitFor} from 'detox';
 
 /** Mirrors app/utils/subscription getSkuDisplayName for E2E learn-more expectations */
@@ -149,7 +149,25 @@ describe('Account - Settings - About', () => {
             await expect(AboutScreen.licensee).not.toBeVisible();
             await expect(AboutScreen.licenseLoadMetricTitle).not.toBeVisible();
         }
-        await waitFor(AboutScreen.learnMoreUrl).toBeVisible().whileElement(by.id(AboutScreen.testID.scrollView)).scroll(50, 'down');
+
+        // Scroll to footer elements with a bounded retry — unbounded whileElement scroll
+        // can hang until the 240s test timeout on Android when elements are off-screen.
+        const scrollToAboutElement = async (target: Detox.IndexableNativeElement) => {
+            const scrollView = by.id(AboutScreen.testID.scrollView);
+            /* eslint-disable no-await-in-loop -- bounded scroll retry */
+            for (let attempt = 0; attempt < 8; attempt++) {
+                try {
+                    await waitFor(target).toBeVisible().withTimeout(timeouts.TWO_SEC);
+                    return;
+                } catch {
+                    await element(scrollView).scroll(100, 'down');
+                }
+            }
+            /* eslint-enable no-await-in-loop */
+            await expect(target).toBeVisible();
+        };
+
+        await scrollToAboutElement(AboutScreen.learnMoreUrl);
         if (isAndroid()) {
             // FormattedText may not expose the full composed label to Detox on Android.
             await expect(AboutScreen.learnMoreText).toExist();
@@ -161,7 +179,7 @@ describe('Account - Settings - About', () => {
         await expect(AboutScreen.termsOfService).toHaveText('Terms of Service');
         await expect(AboutScreen.privacyPolicy).toHaveText('Privacy Policy');
         await expect(AboutScreen.noticeText).toHaveText('Mattermost is made possible by the open source software used in our server and mobile apps.');
-        await waitFor(AboutScreen.buildDateValue).toBeVisible().whileElement(by.id(AboutScreen.testID.scrollView)).scroll(50, 'down');
+        await scrollToAboutElement(AboutScreen.buildDateValue);
         await expect(AboutScreen.buildHashTitle).toHaveText('Build Hash:');
         await expect(AboutScreen.buildHashValue).toBeVisible();
         await expect(AboutScreen.buildHashEnterpriseTitle).toHaveText('EE Build Hash:');

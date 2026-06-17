@@ -187,14 +187,22 @@ async function serverSetup() {
         throw new Error(`Server health check failed: ${JSON.stringify(ping.data)}`);
     }
     process.stdout.write('[globalSetup] ✅ Server health check passed\n');
+
+    // Version/build metadata lives on /config/client, not /system/ping.
+    // Ping only returns status + backend health (and mobile min/latest versions).
+    const clientConfig = await retryAxios(
+        () => axios.get(`${SITE_URL}/api/v4/config/client?format=old`),
+        {label: 'client config'},
+    );
+    const cfg = clientConfig.data || {};
     process.stdout.write(
         '[globalSetup] Server info:\n' +
         `  URL:          ${SITE_URL}\n` +
-        `  Version:      ${ping.data.version}\n` +
-        `  Build number: ${ping.data.build_number}\n` +
-        `  Build date:   ${ping.data.build_date}\n` +
-        `  Build hash:   ${ping.data.build_hash}\n` +
-        `  Enterprise:   ${ping.data.enterprise_ready}\n`,
+        `  Version:      ${cfg.Version}\n` +
+        `  Build number: ${cfg.BuildNumber}\n` +
+        `  Build date:   ${cfg.BuildDate}\n` +
+        `  Build hash:   ${cfg.BuildHash}\n` +
+        `  Enterprise:   ${cfg.BuildEnterpriseReady}\n`,
     );
 
     // 2. Admin login — get Bearer token for subsequent API calls

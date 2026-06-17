@@ -7,11 +7,8 @@
 // - Use element testID when selecting an element. Create one if none.
 // *******************************************************************
 
-import {
-    AgentsPlugin,
-    Plugin,
-    Setup,
-} from '@support/server_api';
+import {isAgentsPluginActive, itWhenAgentsReady} from '@support/agents_plugin';
+import {AgentsPlugin, Setup} from '@support/server_api';
 import {
     serverOneUrl,
     siteOneUrl,
@@ -24,7 +21,7 @@ import {
     ServerScreen,
 } from '@support/ui/screen';
 import {isAndroid, timeouts, wait} from '@support/utils';
-import {expect} from 'detox';
+import {device, expect, waitFor} from 'detox';
 
 describe('Agents - Channel Summary', () => {
     const serverOneDisplayName = 'Server 1';
@@ -33,8 +30,8 @@ describe('Agents - Channel Summary', () => {
     let didLogin = false;
 
     beforeAll(async () => {
-        const pluginStatus = await Plugin.apiGetPluginStatus(siteOneUrl, AgentsPlugin.id);
-        if (!pluginStatus.isActive) {
+        const pluginActive = await isAgentsPluginActive(siteOneUrl);
+        if (!pluginActive) {
             // eslint-disable-next-line no-console
             console.warn(`Agents plugin (${AgentsPlugin.id}) is not active — skipping suite`);
             return;
@@ -86,7 +83,7 @@ describe('Agents - Channel Summary', () => {
         await HomeScreen.logout();
     });
 
-    it('should show Ask Agents option in public channel', async () => {
+    itWhenAgentsReady(() => didLogin, 'should show Ask Agents option in public channel', async () => {
         // # Open a channel screen
         await ChannelScreen.open(channelsCategory, testChannel.name);
 
@@ -102,7 +99,7 @@ describe('Agents - Channel Summary', () => {
         await ChannelScreen.back();
     });
 
-    it('should open summary sheet and show options', async () => {
+    itWhenAgentsReady(() => didLogin, 'should open summary sheet and show options', async () => {
         // # Open a channel screen
         await ChannelScreen.open(channelsCategory, testChannel.name);
 

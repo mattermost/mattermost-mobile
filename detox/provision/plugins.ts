@@ -1,6 +1,8 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import path from 'node:path';
+
 import {
     AGENTS_PLUGIN_ID,
     LOADTEST_MOCK_MIN_MM_VERSION,
@@ -141,10 +143,55 @@ export async function ensureAgentsPlugin(
     return false;
 }
 
+export async function installPluginFromFile(
+    client: MattermostClient,
+    token: string,
+    pluginId: string,
+    filePath: string,
+    {force = false}: {force?: boolean} = {},
+): Promise<PluginInstallResult> {
+    const fs = await import('node:fs');
+    const nodePath = await import('node:path');
+
+    if (!fs.existsSync(filePath)) {
+        return {
+            ok: false,
+            status: 0,
+            message: `Plugin fixture not found: ${filePath}`,
+        };
+    }
+
+    const FormData = (await import('form-data')).default;
+    const form = new FormData();
+    form.append('plugin', fs.createReadStream(filePath), nodePath.basename(filePath));
+    form.append('force', String(force));
+
+    const res = await client.request<ApiErrorBody>('POST', '/api/v4/plugins', form as unknown as Record<string, unknown>, token);
+    if (res.status >= 400) {
+        return {
+            ok: false,
+            status: res.status,
+            message: res.data.message || JSON.stringify(res.data),
+        };
+    }
+
+    const enableRes = await client.request<ApiErrorBody>('POST', `/api/v4/plugins/${encodeURIComponent(pluginId)}/enable`, {}, token);
+    if (enableRes.status >= 400) {
+        return {
+            ok: false,
+            status: enableRes.status,
+            message: enableRes.data.message || JSON.stringify(enableRes.data),
+        };
+    }
+
+    await sleep(3000);
+    return {ok: true};
+}
+
 export async function installRequiredPlugin(
     client: MattermostClient,
     token: string,
-    {id: pluginId, url: pluginUrl}: RequiredPlugin,
+    {id: pluginId, url: pluginUrl, fixture: fixtureFilename}: RequiredPlugin,
 ): Promise<void> {
     const pluginsRes = await client.request<PluginsPayload>('GET', '/api/v4/plugins', undefined, token);
     if (pluginsRes.status >= 400) {
@@ -170,6 +217,17 @@ export async function installRequiredPlugin(
             logInfo(`Plugin ${pluginId} enabled.`);
         }
         return;
+    }
+
+    if (fixtureFilename) {
+        const fixturePath = path.resolve(__dirname, `../e2e/support/fixtures/${fixtureFilename}`);
+        logInfo(`Installing ${pluginId} from fixture: ${fixturePath}`);
+        const installResult = await installPluginFromFile(client, token, pluginId, fixturePath, {force: true});
+        if (installResult.ok) {
+            logInfo(`Plugin ${pluginId} installed and enabled from fixture.`);
+            return;
+        }
+        logWarn(`Fixture install failed for ${pluginId}: ${installResult.message}`);
     }
 
     if (pluginUrl) {

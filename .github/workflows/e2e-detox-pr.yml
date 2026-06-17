@@ -251,6 +251,25 @@ jobs:
           ref: ${{ inputs.MOBILE_VERSION }}
           persist-credentials: false
 
+      # Download the demo plugin once per workflow (or on cache miss) so
+      # provision can upload from a local fixture instead of install_from_url.
+      # Test runners rely on the server already being provisioned — they do not
+      # download this artifact.
+      - name: Cache demo plugin fixture
+        id: demo-plugin-cache
+        uses: actions/cache@5a3ec84eff668545956fd18022155c47e93e2684 # v4.2.3
+        with:
+          path: detox/e2e/support/fixtures/mattermost-plugin-demo-v0.11.1-linux-amd64.tar.gz
+          key: mattermost-plugin-demo-linux-amd64-v0.11.1
+
+      - name: Download demo plugin fixture
+        if: steps.demo-plugin-cache.outputs.cache-hit != 'true'
+        run: |
+          mkdir -p detox/e2e/support/fixtures
+          curl -fsSL -o detox/e2e/support/fixtures/mattermost-plugin-demo-v0.11.1-linux-amd64.tar.gz \
+            "https://github.com/mattermost/mattermost-plugin-demo/releases/download/v0.11.1/mattermost-plugin-demo-v0.11.1-linux-amd64.tar.gz"
+          ls -lh detox/e2e/support/fixtures/mattermost-plugin-demo-v0.11.1-linux-amd64.tar.gz
+
       - name: Provision servers (license + plugins)
         run: |
           cd detox

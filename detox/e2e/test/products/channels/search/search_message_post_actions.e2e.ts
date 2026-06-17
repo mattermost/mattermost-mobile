@@ -38,18 +38,14 @@ import {
     ThreadScreen,
 } from '@support/ui/screen';
 import {getRandomId, timeouts, wait, waitForElementToBeVisible} from '@support/utils';
-import {expect} from 'detox';
+import {expect, waitFor} from 'detox';
 
-// SKIPPED — entire spec has 3 distinct failure modes across runs:
+// SKIPPED — entire spec has 2 distinct failure modes across runs:
 //   1. MM-T5294_10: edit-then-reply timing race; "Following" assertion
 //      removed and CRT auto-follow config added, but flake persists 3/4 runs.
-//   2. MM-T5294_11: saved-messages observable bug — after unsave the
-//      preference row is destroyed but the SavedMessages screen observable
-//      doesn't re-emit (same root cause as MM-T4909_4, MM-T4910_2, MM-T4918_5).
-//   3. beforeAll 240s timeout: Setup.apiInit() hangs against the test server
+//   2. beforeAll 240s timeout: Setup.apiInit() hangs against the test server
 //      intermittently, blocking the whole spec.
-// Track separately. When the saved-messages observable bug is fixed app-side
-// and the test server hang root cause is found, un-skip and verify.
+// Track separately. When the test server hang root cause is found, un-skip and verify.
 describe('Search - Search Message Post Actions', () => {
     const serverOneDisplayName = 'Server 1';
     const channelsCategory = 'channels';
@@ -156,13 +152,6 @@ describe('Search - Search Message Post Actions', () => {
         await ChannelListScreen.open();
     });
 
-    // SKIPPED — Same WatermelonDB observable bug as MM-T4909_4, MM-T4910_2,
-    // MM-T4918_5. After unsave, the post stays visible on the SavedMessages
-    // screen because `querySavedPostsPreferences(...value='true')` doesn't
-    // re-emit when the matching preference row is destroyed. The screenshot
-    // at testFnFailure confirms "Message <id>" stays on the list. State
-    // corruption from this failure cascaded into MM-T5294_12 — skipping
-    // unblocks the pin/unpin test downstream. Track separately as app-side.
     it('MM-T5294_11 - should be able to save/unsave a searched message from search results screen', async () => {
         // # Open a channel screen, post a message, go back to channel list screen, and open search messages screen
         const searchTerm = getRandomId();
@@ -182,6 +171,7 @@ describe('Search - Search Message Post Actions', () => {
         const {post: searchedPost} = await Post.apiGetLastPostInChannel(siteOneUrl, testChannel.id);
         await SearchMessagesScreen.openPostOptionsFor(searchedPost.id, message);
         await PostOptionsScreen.savePostOption.tap();
+        await wait(timeouts.TWO_SEC);
         await SavedMessagesScreen.open();
 
         // * Verify searched message is displayed on saved messages screen
@@ -192,10 +182,12 @@ describe('Search - Search Message Post Actions', () => {
         await SearchMessagesScreen.open();
         await SearchMessagesScreen.openPostOptionsFor(searchedPost.id, message);
         await PostOptionsScreen.unsavePostOption.tap();
+        await wait(timeouts.TWO_SEC);
         await SavedMessagesScreen.open();
 
-        // * Verify searched message is not displayed anymore on saved messages screen
-        await expect(postListPostItem).not.toExist();
+        // * Verify searched message is not displayed anymore on saved messages screen.
+        // Poll: unsave preference deletion propagates through the observable.
+        await waitFor(postListPostItem).not.toExist().withTimeout(timeouts.TEN_SEC);
 
         // # Go back to searched messages screen, clear search input, remove recent search item, and go back to channel list screen
         await SearchMessagesScreen.open();

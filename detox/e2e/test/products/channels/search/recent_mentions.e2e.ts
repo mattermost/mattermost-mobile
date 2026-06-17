@@ -230,17 +230,8 @@ describe('Search - Recent Mentions', () => {
         await ChannelListScreen.open();
     });
 
-    // SKIPPED — `edited_indicator` never appears on the Recent Mentions screen
-    // after `EditPostScreen.saveButton.tap()`. Device.log confirms the save
-    // tap fired and replaceText() set the new content, but the post displayed
-    // in recent_mentions still shows the original (un-edited) text 10s later.
-    // Recent mentions is a search-result feed; it's unclear whether the screen
-    // observes Post model updates or shows cached search results. Track
-    // separately as an app-side bug.
-    //
-    // (Originally must-run-last because it edits/replies-to/deletes the
-    // testUser-owned mention. With the test skipped that ordering constraint
-    // no longer matters, but the comment is preserved for context.)
+    // Must run last: edits/replies-to/deletes the testUser-owned mention fixture.
+    // Stale renders were fixed in post_with_channel_info.tsx (custom memo compare on post.updateAt).
     it('MM-T4909_3 - should be able to edit, reply to, and delete a recent mention from recent mentions screen', async () => {
         // # Open recent mentions screen
         await RecentMentionsScreen.open();

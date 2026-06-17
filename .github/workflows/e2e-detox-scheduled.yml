@@ -30,6 +30,9 @@ env:
 jobs:
   update-initial-status-ios:
     runs-on: ubuntu-22.04
+    permissions:
+      contents: read
+      statuses: write
     steps:
       - uses: mattermost/actions/delivery/update-commit-status@main
         env:
@@ -43,6 +46,9 @@ jobs:
 
   update-initial-status-android:
     runs-on: ubuntu-22.04
+    permissions:
+      contents: read
+      statuses: write
     steps:
       - uses: mattermost/actions/delivery/update-commit-status@main
         env:
@@ -165,6 +171,9 @@ jobs:
   update-final-status-ios:
     runs-on: ubuntu-22.04
     if: always()
+    permissions:
+      contents: read
+      statuses: write
     needs:
       - run-ios-tests-on-main-scheduled
       - run-ios-ipad-tests-scheduled
@@ -182,6 +191,10 @@ jobs:
 
   update-final-status-android:
     runs-on: ubuntu-22.04
+    if: always()
+    permissions:
+      contents: read
+      statuses: write
     needs:
       - run-android-tests-on-main-scheduled
     steps:
@@ -192,8 +205,8 @@ jobs:
           repository_full_name: ${{ github.repository }}
           commit_sha: ${{ github.sha }}
           context: e2e/detox-android-tests
-          description: Completed with ${{ needs.run-android-tests-on-main-scheduled.outputs.FAILURES }} failures
-          status: ${{ needs.run-android-tests-on-main-scheduled.outputs.STATUS }}
+          description: Completed with ${{ needs.run-android-tests-on-main-scheduled.outputs.FAILURES || '?' }} failures
+          status: ${{ needs.run-android-tests-on-main-scheduled.outputs.STATUS || 'failure' }}
           target_url: ${{ needs.run-android-tests-on-main-scheduled.outputs.TARGET_URL }}
 
   run-ios-ipad-tests-scheduled:

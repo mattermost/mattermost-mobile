@@ -61,6 +61,7 @@ export type AgentsPluginAgent = {
 export type RequiredPlugin = {
     id: string;
     url: string | null;
+    fixture?: string | null;
 };
 
 export type ProvisionCredentials = {

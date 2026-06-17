@@ -158,3 +158,4 @@ node_modules/@mattermost/intune
 
 # Editor/backup files
 *.bak
+detox/e2e/support/fixtures/*.tar.gz

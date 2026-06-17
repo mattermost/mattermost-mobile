@@ -137,7 +137,7 @@ describe('Messaging - Message Draft', () => {
 
         // * Verify warning message is displayed and send button is disabled
         await expect(Alert.messageLengthTitle).toBeVisible();
-        await expect(element(by.text('Your current message is too long. Current character count: 16384/16383'))).toBeVisible();
+        await expect(element(by.text('Your current message is too long. Current character count: 16384/16383')).atIndex(0)).toBeVisible();
         await Alert.okButton.tap();
         await expect(ChannelScreen.sendButtonDisabled).toBeVisible();
 
@@ -147,7 +147,7 @@ describe('Messaging - Message Draft', () => {
 
         // * Verify warning message is not displayed and send button is enabled
         await expect(Alert.messageLengthTitle).not.toBeVisible();
-        await expect(element(by.text('Your current message is too long. Current character count: 16383/16383'))).not.toBeVisible();
+        await expect(element(by.text('Your current message is too long. Current character count: 16383/16383')).atIndex(0)).not.toBeVisible();
         await expect(ChannelScreen.sendButton).toBeVisible();
 
         // # Clear post draft and go back to channel list screen

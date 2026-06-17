@@ -1,6 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import fs from 'fs';
 import path from 'path';
 
 import client from './client';
@@ -197,12 +198,17 @@ export const apiUploadPlugin = async (baseUrl: string, filename: string): Promis
  * @return {Object} returns {isInstalled, isActive, plugin} on success or {error, status} on error
  */
 export const apiGetPluginStatus = async (baseUrl: string, pluginId: string, version?: string): Promise<any> => {
-    try {
-        const {plugins} = await apiGetAllPlugins(baseUrl);
-        if (!plugins) {
-            return {isInstalled: false, isActive: false};
-        }
+    const allPluginsResult = await apiGetAllPlugins(baseUrl);
+    if (allPluginsResult.error) {
+        return allPluginsResult;
+    }
 
+    const {plugins} = allPluginsResult;
+    if (!plugins) {
+        return {isInstalled: false, isActive: false};
+    }
+
+    try {
         // Check if plugin is installed (in either active or inactive list)
         let plugin = plugins.active?.find((p: any) => p.id === pluginId);
         if (plugin) {
@@ -233,21 +239,50 @@ export const apiGetPluginStatus = async (baseUrl: string, pluginId: string, vers
 };
 
 /**
- * Upload and enable demo plugin, handling various states.
- * Uses DemoPlugin.getLatestDownloadUrl() internally to avoid SSRF concerns.
+ * Upload and enable demo plugin, preferring a committed/cached fixture file over
+ * downloading from GitHub on every run. This avoids Cloudflare rate-limiting the
+ * `install_from_url` server endpoint in CI.
+ *
+ * Resolution order:
+ * 1. If `filename` is provided and the fixture exists, upload it directly.
+ * 2. Otherwise fall back to `apiGetLatestPluginVersion` + `apiInstallPluginFromUrl`.
+ *
  * @param {Object} options - configuration object
  * @param {string} options.baseUrl - the base server URL
  * @param {string} options.version - expected plugin version
  * @param {boolean} options.force - whether to force install if already exists
+ * @param {string} options.filename - optional fixture filename under `detox/e2e/support/fixtures/`
  * @return {Object} returns plugin data on success or {error, status} on error
  */
 export const apiUploadAndEnablePlugin = async (options: {
     baseUrl: string;
     version?: string;
     force?: boolean;
+    filename?: string;
 }): Promise<any> => {
-    const {baseUrl, version, force = false} = options;
+    const {baseUrl, version, force = false, filename} = options;
     const id = DemoPlugin.id;
+
+    // If a fixture is provided and present locally, upload it directly instead of
+    // asking the server to download from GitHub (avoids Cloudflare timeouts in CI).
+    // When the fixture is absent (e.g. test runners after provision-servers installed
+    // the plugin), fall through to the status/enable path below.
+    if (filename) {
+        const absFilePath = path.resolve(__dirname, `../../support/fixtures/${filename}`);
+        if (fs.existsSync(absFilePath)) {
+            const uploadResult = await apiUploadPlugin(baseUrl, filename);
+            if (uploadResult.error) {
+                return uploadResult;
+            }
+            await new Promise((resolve) => setTimeout(resolve, 1000));
+            const enableResult = await apiEnablePluginById(baseUrl, id);
+            if (enableResult.error) {
+                return enableResult;
+            }
+            await new Promise((resolve) => setTimeout(resolve, 1000));
+            return apiGetPluginStatus(baseUrl, id, version);
+        }
+    }
 
     try {
         // Check current plugin status

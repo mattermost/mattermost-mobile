@@ -7,6 +7,7 @@
 // - Use element testID when selecting an element. Create one if none.
 // *******************************************************************
 
+import {isAgentsPluginActive} from '@support/agents_plugin';
 import {
     Bot,
     Channel,
@@ -35,26 +36,7 @@ import {expect} from 'detox';
 // Agent API helpers
 // ****************************************************************
 
-const AGENTS_PLUGIN_ID = 'mattermost-ai';
 const E2E_AGENT_USERNAME = 'ai-bot';
-
-/**
- * Check if the agents plugin (mattermost-ai) is installed and active.
- * @param {string} baseUrl - the base server URL
- * @return {boolean} true if the plugin is installed and active
- */
-const isAgentsPluginActive = async (baseUrl: string): Promise<boolean> => {
-    try {
-        const response = await client.get(`${baseUrl}/api/v4/plugins`);
-        const plugins = response.data;
-        return plugins.active?.some((p: any) => p.id === AGENTS_PLUGIN_ID) ?? false;
-    } catch (err) {
-        const {error, status} = getResponseFromError(err);
-        throw new Error(
-            `[isAgentsPluginActive] Failed to read plugins (status ${status}): ${JSON.stringify(error)}`,
-        );
-    }
-};
 
 /**
  * Get all bots from the server.
@@ -187,7 +169,7 @@ describe('Autocomplete - Agent Mention', () => {
         await HomeScreen.logout();
     });
 
-    it('should display regular bot with BOT tag in at-mention autocomplete', async () => {
+    it('should display regular bot in at-mention autocomplete', async () => {
         // # Tap @ quick action to activate at-mention autocomplete.
         // typeText('@') on an unfocused input does not fire onSelectionChange on
         // Android API 35, leaving cursorPosition=0 so matchTerm=null and
@@ -203,12 +185,10 @@ describe('Autocomplete - Agent Mention', () => {
         await ChannelScreen.postInput.typeText(regularBot.username);
         await wait(timeouts.TWO_SEC);
 
-        // * Verify regular bot appears in autocomplete
+        // * Verify regular bot appears in autocomplete (user rows do not show BOT tags on main)
         const {atMentionItem, atMentionItemBotTag} = Autocomplete.getAtMentionItem(regularBot.user_id);
         await expect(atMentionItem).toExist();
-
-        // * Verify BOT tag is displayed for regular bot
-        await expect(atMentionItemBotTag).toExist();
+        await expect(atMentionItemBotTag).not.toExist();
     });
 
     it('should not display AGENT tag for regular bot in at-mention autocomplete', async () => {
