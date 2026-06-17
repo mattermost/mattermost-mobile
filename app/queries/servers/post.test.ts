@@ -128,20 +128,7 @@ describe('Post Queries', () => {
             const [preference] = await querySavedPostsPreferences(database, postId).fetch();
             await operator.batchRecords([preference.prepareDestroyPermanently()], 'test');
 
-            await new Promise<void>((resolve, reject) => {
-                const timeout = setTimeout(() => {
-                    subscription.unsubscribe();
-                    reject(new Error('observeSavedPostIds did not emit after preference destroy'));
-                }, 5000);
-
-                const subscription = observeSavedPostIds(database, serverUrl).subscribe((ids) => {
-                    if (!ids.includes(postId)) {
-                        clearTimeout(timeout);
-                        subscription.unsubscribe();
-                        resolve();
-                    }
-                });
-            });
+            expect(await firstValueFrom(observeSavedPostIds(database, serverUrl))).toEqual([]);
         });
     });
 
