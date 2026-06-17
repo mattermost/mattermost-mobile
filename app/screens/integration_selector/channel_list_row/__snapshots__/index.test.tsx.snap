@@ -31,7 +31,9 @@ exports[`components/integration_selector/channel_list_row should match snapshot 
     accessible={true}
     collapsable={false}
     focusable={true}
+    onBlur={[Function]}
     onClick={[Function]}
+    onFocus={[Function]}
     onResponderGrant={[Function]}
     onResponderMove={[Function]}
     onResponderRelease={[Function]}
@@ -39,13 +41,15 @@ exports[`components/integration_selector/channel_list_row should match snapshot 
     onResponderTerminationRequest={[Function]}
     onStartShouldSetResponder={[Function]}
     style={
-      {
-        "alignItems": "center",
-        "flex": 1,
-        "flexDirection": "row",
-        "height": 48,
-        "opacity": 1,
-      }
+      [
+        {
+          "alignItems": "center",
+          "flex": 1,
+          "flexDirection": "row",
+          "height": 48,
+        },
+        false,
+      ]
     }
     testID="ChannelListRow"
   >
@@ -155,7 +159,9 @@ exports[`components/integration_selector/channel_list_row should match snapshot 
     accessible={true}
     collapsable={false}
     focusable={true}
+    onBlur={[Function]}
     onClick={[Function]}
+    onFocus={[Function]}
     onResponderGrant={[Function]}
     onResponderMove={[Function]}
     onResponderRelease={[Function]}
@@ -163,13 +169,15 @@ exports[`components/integration_selector/channel_list_row should match snapshot 
     onResponderTerminationRequest={[Function]}
     onStartShouldSetResponder={[Function]}
     style={
-      {
-        "alignItems": "center",
-        "flex": 1,
-        "flexDirection": "row",
-        "height": 48,
-        "opacity": 1,
-      }
+      [
+        {
+          "alignItems": "center",
+          "flex": 1,
+          "flexDirection": "row",
+          "height": 48,
+        },
+        false,
+      ]
     }
     testID="ChannelListRow"
   >
@@ -279,7 +287,9 @@ exports[`components/integration_selector/channel_list_row should match snapshot 
     accessible={true}
     collapsable={false}
     focusable={true}
+    onBlur={[Function]}
     onClick={[Function]}
+    onFocus={[Function]}
     onResponderGrant={[Function]}
     onResponderMove={[Function]}
     onResponderRelease={[Function]}
@@ -287,13 +297,15 @@ exports[`components/integration_selector/channel_list_row should match snapshot 
     onResponderTerminationRequest={[Function]}
     onStartShouldSetResponder={[Function]}
     style={
-      {
-        "alignItems": "center",
-        "flex": 1,
-        "flexDirection": "row",
-        "height": 48,
-        "opacity": 1,
-      }
+      [
+        {
+          "alignItems": "center",
+          "flex": 1,
+          "flexDirection": "row",
+          "height": 48,
+        },
+        false,
+      ]
     }
     testID="ChannelListRow"
   >
@@ -403,7 +415,9 @@ exports[`components/integration_selector/channel_list_row should match snapshot 
     accessible={true}
     collapsable={false}
     focusable={true}
+    onBlur={[Function]}
     onClick={[Function]}
+    onFocus={[Function]}
     onResponderGrant={[Function]}
     onResponderMove={[Function]}
     onResponderRelease={[Function]}
@@ -411,13 +425,15 @@ exports[`components/integration_selector/channel_list_row should match snapshot 
     onResponderTerminationRequest={[Function]}
     onStartShouldSetResponder={[Function]}
     style={
-      {
-        "alignItems": "center",
-        "flex": 1,
-        "flexDirection": "row",
-        "height": 48,
-        "opacity": 1,
-      }
+      [
+        {
+          "alignItems": "center",
+          "flex": 1,
+          "flexDirection": "row",
+          "height": 48,
+        },
+        false,
+      ]
     }
     testID="ChannelListRow"
   >
@@ -527,7 +543,9 @@ exports[`components/integration_selector/channel_list_row should match snapshot 
     accessible={true}
     collapsable={false}
     focusable={true}
+    onBlur={[Function]}
     onClick={[Function]}
+    onFocus={[Function]}
     onResponderGrant={[Function]}
     onResponderMove={[Function]}
     onResponderRelease={[Function]}
@@ -535,13 +553,15 @@ exports[`components/integration_selector/channel_list_row should match snapshot 
     onResponderTerminationRequest={[Function]}
     onStartShouldSetResponder={[Function]}
     style={
-      {
-        "alignItems": "center",
-        "flex": 1,
-        "flexDirection": "row",
-        "height": 48,
-        "opacity": 1,
-      }
+      [
+        {
+          "alignItems": "center",
+          "flex": 1,
+          "flexDirection": "row",
+          "height": 48,
+        },
+        false,
+      ]
     }
     testID="ChannelListRow"
   >
