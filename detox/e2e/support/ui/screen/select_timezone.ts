@@ -11,7 +11,7 @@ class SelectTimezoneScreen {
         selectTimezoneScreenPrefix: 'select_timezone.',
         timezoneRowPrefix: 'select_timezone.timezone_row.',
         selectTimezoneScreen: 'select_timezone.screen',
-        backButton: 'screen.back.button',
+        backButton: 'navigation.header.back',
         flatTimezoneList: 'select_timezone.timezone.flat_list',
     };
 

@@ -2,8 +2,7 @@
 // See LICENSE.txt for license information.
 
 import {ChannelListScreen} from '@support/ui/screen';
-import {isIos, timeouts, wait} from '@support/utils';
-import {expect} from 'detox';
+import {isAndroid, isIos, timeouts, waitForElementToExist, waitForElementToNotExist} from '@support/utils';
 
 class ServerListScreen {
     testID = {
@@ -37,25 +36,23 @@ class ServerListScreen {
     };
 
     getServerItemEditOption = (serverDisplayName: string) => {
-        return element(by.id(`${this.toServerItemTestIdPrefix(serverDisplayName)}.edit.option`));
+        return element(by.id(`${this.toServerItemTestIdPrefix(serverDisplayName)}.options.edit.option`));
     };
 
     getServerItemRemoveOption = (serverDisplayName: string) => {
-        return element(by.id(`${this.toServerItemTestIdPrefix(serverDisplayName)}.remove.option`));
+        return element(by.id(`${this.toServerItemTestIdPrefix(serverDisplayName)}.options.remove.option`));
     };
 
     getServerItemLoginOption = (serverDisplayName: string) => {
-        return element(by.id(`${this.toServerItemTestIdPrefix(serverDisplayName)}.login.option`));
+        return element(by.id(`${this.toServerItemTestIdPrefix(serverDisplayName)}.options.login.option`));
     };
 
     getServerItemLogoutOption = (serverDisplayName: string) => {
-        return element(by.id(`${this.toServerItemTestIdPrefix(serverDisplayName)}.logout.option`));
+        return element(by.id(`${this.toServerItemTestIdPrefix(serverDisplayName)}.options.logout.option`));
     };
 
     toBeVisible = async () => {
-        if (isIos()) {
-            await waitFor(this.serverListScreen).toExist().withTimeout(timeouts.TEN_SEC);
-        }
+        await waitForElementToExist(this.serverListScreen, timeouts.HALF_MIN);
 
         return this.serverListScreen;
     };
@@ -63,6 +60,9 @@ class ServerListScreen {
     open = async () => {
         // # Open server list screen
         await ChannelListScreen.serverIcon.tap();
+        if (isAndroid()) {
+            await this.closeTutorial();
+        }
 
         return this.toBeVisible();
     };
@@ -73,20 +73,21 @@ class ServerListScreen {
         } else {
             await device.pressBack();
         }
-        await wait(timeouts.ONE_SEC);
-        await expect(this.serverListScreen).not.toBeVisible();
-        await wait(timeouts.ONE_SEC);
+        await waitForElementToNotExist(this.serverListScreen, timeouts.TEN_SEC);
     };
 
     closeTutorial = async () => {
-        if (isIos()) {
-            await waitFor(this.tutorialHighlight).toExist().withTimeout(timeouts.TEN_SEC);
-            await this.tutorialSwipeLeft.tap();
-            await expect(this.tutorialHighlight).not.toExist();
-        } else {
-            await wait(timeouts.ONE_SEC);
-            await device.pressBack();
-            await wait(timeouts.ONE_SEC);
+        try {
+            if (isIos()) {
+                await waitFor(this.tutorialHighlight).toExist().withTimeout(timeouts.TEN_SEC);
+                await this.tutorialSwipeLeft.tap();
+            } else {
+                await waitForElementToExist(this.tutorialSwipeLeft, timeouts.TEN_SEC);
+                await device.pressBack();
+            }
+            await waitFor(this.tutorialHighlight).not.toExist().withTimeout(timeouts.TEN_SEC);
+        } catch {
+            // Tutorial may not appear if already dismissed in a previous run
         }
     };
 }

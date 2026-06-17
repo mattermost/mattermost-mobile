@@ -102,7 +102,10 @@ const ChannelListItem = ({
     }
 
     return (
-        <TouchableOpacity onPress={handleOnPress}>
+        <TouchableOpacity
+            testID={`channel_item.${channel.name}`}
+            onPress={handleOnPress}
+        >
             <>
                 <View style={containerStyle}>
                     <View style={styles.wrapper}>

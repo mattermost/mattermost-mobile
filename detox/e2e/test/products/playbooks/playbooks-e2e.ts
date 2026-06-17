@@ -21,7 +21,13 @@ import {ServerScreen, LoginScreen, ChannelScreen, ChannelListScreen, ThreadScree
 
         // Create additional test users
         ({user: secondUser} = await User.apiCreateUser(siteOneUrl));
+        if (!secondUser?.id) {
+            throw new Error('[beforeAll] Failed to create secondUser');
+        }
         ({user: thirdUser} = await User.apiCreateUser(siteOneUrl));
+        if (!thirdUser?.id) {
+            throw new Error('[beforeAll] Failed to create thirdUser');
+        }
 
         await Team.apiAddUserToTeam(siteOneUrl, secondUser.id, testTeam.id);
         await Team.apiAddUserToTeam(siteOneUrl, thirdUser.id, testTeam.id);
