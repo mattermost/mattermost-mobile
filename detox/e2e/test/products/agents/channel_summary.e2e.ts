@@ -30,7 +30,6 @@ describe('Agents - Channel Summary', () => {
     const serverOneDisplayName = 'Server 1';
     const channelsCategory = 'channels';
     let testChannel: any;
-    let agentsEnabled = false;
     let didLogin = false;
 
     beforeAll(async () => {
@@ -41,7 +40,6 @@ describe('Agents - Channel Summary', () => {
             console.warn(`Agents plugin (${AgentsPlugin.id}) could not be activated — skipping suite`);
             return;
         }
-        agentsEnabled = true;
 
         const {channel, user} = await Setup.apiInit(siteOneUrl);
         testChannel = channel;
@@ -55,9 +53,6 @@ describe('Agents - Channel Summary', () => {
         await wait(timeouts.TEN_SEC);
 
         // # On Android, verify the Ask Agents UI element actually appears in quick actions.
-        // The API check above confirms the plugin is installed, but on Android the quick
-        // actions sheet may not expose the element when the plugin is not fully configured.
-        // Open quick actions, probe for the element, then close the sheet before tests run.
         if (isAndroid()) {
             await ChannelListScreen.toBeVisible();
             await ChannelScreen.open(channelsCategory, testChannel.name);
@@ -67,8 +62,7 @@ describe('Agents - Channel Summary', () => {
                 await waitFor(element(by.id('channel.quick_actions.ask_agents'))).toBeVisible().withTimeout(timeouts.FOUR_SEC);
             } catch {
                 // eslint-disable-next-line no-console
-                console.warn('Ask Agents quick action not visible on Android — skipping suite');
-                agentsEnabled = false;
+                console.warn('Ask Agents quick action not visible on Android — tests remain skipped');
             }
             await device.pressBack();
             await ChannelScreen.back();
@@ -76,7 +70,7 @@ describe('Agents - Channel Summary', () => {
     });
 
     beforeEach(async () => {
-        if (!agentsEnabled) {
+        if (!didLogin) {
             return;
         }
 
@@ -94,11 +88,7 @@ describe('Agents - Channel Summary', () => {
     });
 
     // Skip: requires Agents plugin configured with at least one AI bot on CI server
-    it('should show Ask Agents option in public channel', async function () {
-        if (!agentsEnabled) {
-            this.skip();
-        }
-
+    it.skip('should show Ask Agents option in public channel', async () => {
         // # Open a channel screen
         await ChannelScreen.open(channelsCategory, testChannel.name);
 
@@ -115,11 +105,7 @@ describe('Agents - Channel Summary', () => {
     });
 
     // Skip: requires Agents plugin configured with at least one AI bot on CI server
-    it('should open summary sheet and show options', async function () {
-        if (!agentsEnabled) {
-            this.skip();
-        }
-
+    it.skip('should open summary sheet and show options', async () => {
         // # Open a channel screen
         await ChannelScreen.open(channelsCategory, testChannel.name);
 
