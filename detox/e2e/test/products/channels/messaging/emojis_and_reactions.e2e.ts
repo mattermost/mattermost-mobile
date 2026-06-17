@@ -352,7 +352,7 @@ describe('Messaging - Emojis and Reactions', () => {
             // * Verify the screen survives the emoji removal without crashing
             await waitFor(
                 element(by.id('reaction.emoji.fire').withAncestor(by.id(ReactionsScreen.testID.reactionsScreen))),
-            ).not.toBeVisible().withTimeout(timeouts.TEN_SEC);
+            ).not.toExist().withTimeout(timeouts.TEN_SEC);
             await expect(ReactionsScreen.reactionsScreen).toExist();
         } finally {
             await device.enableSynchronization();
