@@ -54,8 +54,10 @@ export async function fetchClassificationBanner(serverUrl: string): Promise<{err
             logDebug('fetchClassificationBanner', 'No classification fields returned');
         }
 
-        // Feature disabled or no active fields returned: drop any locally stored classification data
-        // by marking the stored fields as deleted, letting handlePropertyFields cascade to their values.
+        // Feature disabled or no active fields returned: remove any locally stored classification data.
+        // We look up the stored fields by name and re-submit them stamped with a non-zero delete_at.
+        // handlePropertyFields treats a non-zero delete_at as a deletion, so the operator removes those
+        // fields and cascades the removal to each field's property values in a single batch.
         const stale = await getPropertyFieldsByNames(database, CLASSIFICATION_FIELD_NAMES);
         if (stale.length) {
             await operator.handlePropertyFields({

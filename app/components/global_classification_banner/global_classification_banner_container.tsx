@@ -40,10 +40,8 @@ export default function GlobalClassificationBannerContainer({visible, levelName,
     );
 
     useEffect(() => {
-        if (!visible) {
-            fetchClassificationBanner(serverUrl);
-        }
-    }, [serverUrl, visible]);
+        fetchClassificationBanner(serverUrl);
+    }, [serverUrl]);
 
     return (
         <>

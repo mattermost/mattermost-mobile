@@ -35,7 +35,7 @@ const PropertiesHandler = <TBase extends Constructor<ServerDataOperatorBase>>(su
      */
     handlePropertyFields = async ({fields = [], groupId, prepareRecordsOnly = true}: HandlePropertyFieldsArgs): Promise<Model[]> => {
         if (!fields.length && !groupId) {
-            logWarning('An empty or undefined "fields" array has been passed to the handlePropertyFields method');
+            logWarning('handlePropertyFields was called without any fields to sync or a groupId to prune');
             return [];
         }
 
@@ -92,7 +92,7 @@ const PropertiesHandler = <TBase extends Constructor<ServerDataOperatorBase>>(su
      */
     handlePropertyValues = async ({values = [], targetId, prepareRecordsOnly = true}: HandlePropertyValuesArgs): Promise<Model[]> => {
         if (!values.length && !targetId) {
-            logWarning('An empty or undefined "values" array has been passed to the handlePropertyValues method');
+            logWarning('handlePropertyValues was called without any values to sync or a targetId to prune');
             return [];
         }
 
