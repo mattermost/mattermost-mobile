@@ -81,7 +81,7 @@ describe('Search - Saved Messages', () => {
     // `querySavedPostsPreferences().observeWithColumns(['name'])` filtered
     // by `value='true'` does not emit. Same root cause as MM-T4909_4.
     // Track separately as an app-side observable bug.
-    it.skip('MM-T4910_2 - should be able to display a saved message in saved messages screen and navigate to message channel', async () => {
+    it('MM-T4910_2 - should be able to display a saved message in saved messages screen and navigate to message channel', async () => {
         // # Open a channel screen, post a message, open post options for message, and tap on save option
         const message = `Message ${getRandomId()}`;
         await ChannelScreen.open(channelsCategory, testChannel.name);
@@ -126,7 +126,7 @@ describe('Search - Saved Messages', () => {
     // Same family of save-then-observe issues as MM-T4910_2; the saved
     // post's local row likely doesn't update properly so the edit-post
     // screen never gets the cue to close. Track as an app-side bug.
-    it.skip('MM-T4910_3 - should be able to edit, reply to, and delete a saved message from saved messages screen', async () => {
+    it('MM-T4910_3 - should be able to edit, reply to, and delete a saved message from saved messages screen', async () => {
         // # Open a channel screen, post a message, open post options for message, tap on save option, go back to channel list screen, and open saved messages screen
         const message = `Message ${getRandomId()}`;
         await ChannelScreen.open(channelsCategory, testChannel.name);
@@ -230,7 +230,7 @@ describe('Search - Saved Messages', () => {
     // SKIPPED — Cascades from MM-T4910_2: the saved post never appears on
     // the SavedMessages screen, so `openPostOptionsFor` can't long-press it
     // to access the Pin to Channel option. Track with MM-T4910_2.
-    it.skip('MM-T4910_5 - should be able to pin/unpin a saved message from saved messages screen', async () => {
+    it('MM-T4910_5 - should be able to pin/unpin a saved message from saved messages screen', async () => {
         // # Open a channel screen, post a message, open post options for message, tap on save option, go back to channel list screen, and open saved messages screen
         const message = `Message ${getRandomId()}`;
         await ChannelScreen.open(channelsCategory, testChannel.name);

@@ -37,6 +37,7 @@ describe('Localization', () => {
         // # Log in to server
         await ServerScreen.connectToServer(serverOneUrl, serverOneDisplayName);
         await LoginScreen.login(testUser);
+        await waitForElementToBeVisible(element(by.text('Hilos')), timeouts.ONE_MIN);
     });
 
     afterAll(async () => {
@@ -45,10 +46,9 @@ describe('Localization', () => {
         await HomeScreen.logout();
     });
 
-    // Flaky: Language change timing unreliable on CI runners
-    it.skip('MM-T303 - Text looks correct when viewed in a non-English language', async () => {
+    it('MM-T303 - Text looks correct when viewed in a non-English language', async () => {
         // * Verify Home screen elements are in Spanish
-        await expect(element(by.text('Hilos'))).toBeVisible();
+        await waitForElementToBeVisible(element(by.text('Hilos')), timeouts.TEN_SEC);
         await expect(element(by.text('CANALES'))).toBeVisible();
         await expect(element(by.text('MENSAJES DIRECTOS'))).toBeVisible();
         await expect(element(by.text('Encontrar canales...'))).toBeVisible();
@@ -85,8 +85,7 @@ describe('Localization', () => {
         await SettingsScreen.close();
     });
 
-    // Flaky: Language change timing unreliable on CI runners
-    it.skip('MM-T304 - RN: No crash when setting language to zh-TW (Chinese Traditional)', async () => {
+    it('MM-T304 - RN: No crash when setting language to zh-TW (Chinese Traditional)', async () => {
         // # Change language to zh-TW via API
         await User.apiPatchUser(siteOneUrl, testUser.id, {locale: 'zh-TW'});
 

@@ -93,7 +93,7 @@ describe('Messaging - Channel Link', () => {
     // controlWindowInsetsAnimation()") when the thread reply input gains
     // focus during the channel-link tap flow. iOS passes reliably. Track
     // separately as an Android-only app/library fix.
-    (isAndroid() ? it.skip : it)('MM-T4877_2 - should be able to open joined channel by tapping on channel link from reply thread', async () => {
+    it('MM-T4877_2 - should be able to open joined channel by tapping on channel link from reply thread', async () => {
         // # Open testChannel and open the reply thread for the pre-posted plain-text parent.
         await ChannelScreen.open(channelsCategory, testChannel.name);
         await ChannelScreen.openReplyThreadFor(replyThreadPostId, 'Reply thread parent message');
@@ -101,6 +101,15 @@ describe('Messaging - Channel Link', () => {
         // # Post the channel link as a reply inside the thread
         await ThreadScreen.postMessage(replyThreadChannelLink);
         await wait(timeouts.TWO_SEC);
+
+        if (isAndroid()) {
+            try {
+                await ThreadScreen.postList.getFlatList().swipe('up', 'fast', 0.3);
+            } catch {
+                // Post list may be too short to scroll
+            }
+            await wait(timeouts.TWO_SEC);
+        }
 
         // # Tap on channel link from within the reply thread
         await element(by.text(replyThreadChannelLink)).atIndex(0).tap();

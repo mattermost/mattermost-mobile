@@ -4,10 +4,10 @@
 import {withDatabase, withObservables} from '@nozbe/watermelondb/react';
 import React from 'react';
 import {combineLatest, of as of$} from 'rxjs';
-import {filter, switchMap} from 'rxjs/operators';
+import {switchMap} from 'rxjs/operators';
 
 import {General, Permissions} from '@constants';
-import {observeChannel, observeIsReadOnlyChannel} from '@queries/servers/channel';
+import {observeChannel, observeChannelIsArchived, observeIsReadOnlyChannel} from '@queries/servers/channel';
 import {queryDraft, observeFirstDraft} from '@queries/servers/drafts';
 import {observePermissionForChannel} from '@queries/servers/role';
 import {observeCurrentChannelId} from '@queries/servers/system';
@@ -48,11 +48,18 @@ const enhanced = withObservables(['channelId', 'rootId', 'channelIsArchived'], (
 
     const canPost = combineLatest([channel, currentUser]).pipe(switchMap(([c, u]) => (c && u ? observePermissionForChannel(database, c, u, Permissions.CREATE_POST, true) : of$(true))));
 
-    // Filter transient `undefined` emissions so the archived banner doesn't
-    // flicker off during the archive-modal dismiss transition.
-    const channelIsArchived = channel.pipe(
-        filter((c): c is NonNullable<typeof c> => c != null),
-        switchMap((c) => (ownProps.channelIsArchived ? of$(true) : of$(c.deleteAt !== 0))),
+    // Observe delete_at at the query level — model.observe() does not reliably
+    // re-emit when deleteAt is updated via prepareUpdate + batchRecords.
+    const channelIsArchived = channelId.pipe(
+        switchMap((id) => {
+            if (!id) {
+                return of$(false);
+            }
+            if (ownProps.channelIsArchived) {
+                return of$(true);
+            }
+            return observeChannelIsArchived(database, id);
+        }),
     );
 
     const channelIsReadOnly = observeIsReadOnlyChannel(database, ownProps.channelId);

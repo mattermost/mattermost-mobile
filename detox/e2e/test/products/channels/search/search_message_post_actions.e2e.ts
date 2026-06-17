@@ -50,7 +50,7 @@ import {expect} from 'detox';
 //      intermittently, blocking the whole spec.
 // Track separately. When the saved-messages observable bug is fixed app-side
 // and the test server hang root cause is found, un-skip and verify.
-describe.skip('Search - Search Message Post Actions', () => {
+describe('Search - Search Message Post Actions', () => {
     const serverOneDisplayName = 'Server 1';
     const channelsCategory = 'channels';
     let testChannel: any;
@@ -163,7 +163,7 @@ describe.skip('Search - Search Message Post Actions', () => {
     // at testFnFailure confirms "Message <id>" stays on the list. State
     // corruption from this failure cascaded into MM-T5294_12 — skipping
     // unblocks the pin/unpin test downstream. Track separately as app-side.
-    it.skip('MM-T5294_11 - should be able to save/unsave a searched message from search results screen', async () => {
+    it('MM-T5294_11 - should be able to save/unsave a searched message from search results screen', async () => {
         // # Open a channel screen, post a message, go back to channel list screen, and open search messages screen
         const searchTerm = getRandomId();
         const message = `Message ${searchTerm}`;

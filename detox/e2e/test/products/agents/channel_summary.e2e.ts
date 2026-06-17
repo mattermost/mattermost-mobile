@@ -50,7 +50,7 @@ describe('Agents - Channel Summary', () => {
         await LoginScreen.login(user);
 
         // # Wait for WebSocket to connect and agents status to be fetched
-        await wait(timeouts.FOUR_SEC);
+        await wait(timeouts.TEN_SEC);
 
         // # On Android, verify the Ask Agents UI element actually appears in quick actions.
         // The API check above confirms the plugin is installed, but on Android the quick
@@ -92,7 +92,7 @@ describe('Agents - Channel Summary', () => {
     });
 
     // Skip: requires Agents plugin configured with at least one AI bot on CI server
-    it.skip('should show Ask Agents option in public channel', async () => {
+    it('should show Ask Agents option in public channel', async () => {
         if (!agentsEnabled) {
             return;
         }
@@ -113,7 +113,7 @@ describe('Agents - Channel Summary', () => {
     });
 
     // Skip: requires Agents plugin configured with at least one AI bot on CI server
-    it.skip('should open summary sheet and show options', async () => {
+    it('should open summary sheet and show options', async () => {
         if (!agentsEnabled) {
             return;
         }

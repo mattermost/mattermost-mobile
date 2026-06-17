@@ -257,7 +257,7 @@ describe('Interactive Dialog - Basic Dialog (Plugin)', () => {
     });
 
     // Quarantined (MM-66558).
-    it.skip('MM-T4103 should fill text field and submit dialog (Plugin)', async () => {
+    it('MM-T4103 should fill text field and submit dialog (Plugin)', async () => {
         if (!pluginAvailable) {
             return;
         }
@@ -272,7 +272,7 @@ describe('Interactive Dialog - Basic Dialog (Plugin)', () => {
     });
 
     // Quarantined (MM-66558).
-    it.skip('MM-T4104 should handle server error on dialog submission (Plugin)', async () => {
+    it('MM-T4104 should handle server error on dialog submission (Plugin)', async () => {
         if (!pluginAvailable) {
             return;
         }
@@ -289,7 +289,7 @@ describe('Interactive Dialog - Basic Dialog (Plugin)', () => {
     });
 
     // Quarantined (MM-66558).
-    it.skip('MM-T4401 should toggle boolean fields and submit (Plugin)', async () => {
+    it('MM-T4401 should toggle boolean fields and submit (Plugin)', async () => {
         if (!pluginAvailable) {
             return;
         }
@@ -309,7 +309,7 @@ describe('Interactive Dialog - Basic Dialog (Plugin)', () => {
     });
 
     // Quarantined (MM-66558).
-    it.skip('MM-T4402 should handle boolean field validation (Plugin)', async () => {
+    it('MM-T4402 should handle boolean field validation (Plugin)', async () => {
         if (!pluginAvailable) {
             return;
         }
@@ -328,7 +328,7 @@ describe('Interactive Dialog - Basic Dialog (Plugin)', () => {
     });
 
     // Quarantined (MM-66558).
-    it.skip('MM-T4498 should open and handle interactive dialog with select fields (Plugin)', async () => {
+    it('MM-T4498 should open and handle interactive dialog with select fields (Plugin)', async () => {
         if (!pluginAvailable) {
             return;
         }
@@ -362,7 +362,7 @@ describe('Interactive Dialog - Basic Dialog (Plugin)', () => {
     });
 
     // Quarantined (MM-66558).
-    it.skip('MM-T4499 should handle required select field validation (Plugin)', async () => {
+    it('MM-T4499 should handle required select field validation (Plugin)', async () => {
         if (!pluginAvailable) {
             return;
         }
@@ -394,7 +394,7 @@ describe('Interactive Dialog - Basic Dialog (Plugin)', () => {
     });
 
     // Quarantined (MM-66558).
-    it.skip('MM-T4500 should handle different selector types (Plugin)', async () => {
+    it('MM-T4500 should handle different selector types (Plugin)', async () => {
         if (!pluginAvailable) {
             return;
         }
@@ -428,7 +428,7 @@ describe('Interactive Dialog - Basic Dialog (Plugin)', () => {
     });
 
     // Quarantined (MM-66558).
-    it.skip('MM-T4201 should fill and submit all text field types (Plugin)', async () => {
+    it('MM-T4201 should fill and submit all text field types (Plugin)', async () => {
         if (!pluginAvailable) {
             return;
         }
@@ -448,7 +448,7 @@ describe('Interactive Dialog - Basic Dialog (Plugin)', () => {
     });
 
     // Quarantined (MM-66558).
-    it.skip('MM-T4202 should validate required text field (Plugin)', async () => {
+    it('MM-T4202 should validate required text field (Plugin)', async () => {
         if (!pluginAvailable) {
             return;
         }
@@ -473,7 +473,7 @@ describe('Interactive Dialog - Basic Dialog (Plugin)', () => {
     });
 
     // Quarantined (MM-66558).
-    it.skip('MM-T4203 should handle different text input subtypes (Plugin)', async () => {
+    it('MM-T4203 should handle different text input subtypes (Plugin)', async () => {
         if (!pluginAvailable) {
             return;
         }
@@ -490,7 +490,7 @@ describe('Interactive Dialog - Basic Dialog (Plugin)', () => {
     });
 
     // Quarantined (MM-66558).
-    it.skip('MM-T4976 should handle multiselect fields dialog (Plugin)', async () => {
+    it('MM-T4976 should handle multiselect fields dialog (Plugin)', async () => {
         if (!pluginAvailable) {
             return;
         }
@@ -533,7 +533,7 @@ describe('Interactive Dialog - Basic Dialog (Plugin)', () => {
     });
 
     // Quarantined (MM-66558).
-    it.skip('MM-T4977 should handle dynamic select fields dialog (Plugin)', async () => {
+    it('MM-T4977 should handle dynamic select fields dialog (Plugin)', async () => {
         if (!pluginAvailable) {
             return;
         }
@@ -562,7 +562,7 @@ describe('Interactive Dialog - Basic Dialog (Plugin)', () => {
     });
 
     // Quarantined (MM-66558).
-    it.skip('MM-T4980 should complete multistep dialog progression (Plugin)', async () => {
+    it('MM-T4980 should complete multistep dialog progression (Plugin)', async () => {
         if (!pluginAvailable) {
             return;
         }
@@ -605,7 +605,7 @@ describe('Interactive Dialog - Basic Dialog (Plugin)', () => {
     });
 
     // Quarantined (MM-66558).
-    it.skip('MM-T4981 should handle multistep dialog cancellation (Plugin)', async () => {
+    it('MM-T4981 should handle multistep dialog cancellation (Plugin)', async () => {
         if (!pluginAvailable) {
             return;
         }
@@ -631,7 +631,7 @@ describe('Interactive Dialog - Basic Dialog (Plugin)', () => {
     });
 
     // Quarantined (MM-66558).
-    it.skip('MM-T4983 should handle field refresh basic interaction (Plugin)', async () => {
+    it('MM-T4983 should handle field refresh basic interaction (Plugin)', async () => {
         if (!pluginAvailable) {
             return;
         }
@@ -663,7 +663,7 @@ describe('Interactive Dialog - Basic Dialog (Plugin)', () => {
     });
 
     // Quarantined (MM-66558).
-    it.skip('MM-T4986 should handle field refresh changes and cancellation (Plugin)', async () => {
+    it('MM-T4986 should handle field refresh changes and cancellation (Plugin)', async () => {
         if (!pluginAvailable) {
             return;
         }

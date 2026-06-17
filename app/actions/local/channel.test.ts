@@ -4,11 +4,12 @@
 /* eslint-disable max-lines */
 
 import {DeviceEventEmitter} from 'react-native';
+import {firstValueFrom} from 'rxjs';
 
 import {ActionType, Events, Navigation} from '@constants';
 import {SYSTEM_IDENTIFIERS} from '@constants/database';
 import DatabaseManager from '@database/manager';
-import {getMyChannel} from '@queries/servers/channel';
+import {getMyChannel, observeChannelIsArchived} from '@queries/servers/channel';
 import {getPostById} from '@queries/servers/post';
 import {getCommonSystemValues, getTeamHistory} from '@queries/servers/system';
 import {getTeamChannelHistory} from '@queries/servers/team';
@@ -568,6 +569,17 @@ describe('setChannelDeleteAt', () => {
         expect(error).toBeUndefined();
         expect(models?.length).toBe(1); // Deleted channel
         expect(models![0].deleteAt).toBe(123);
+    });
+
+    it('should update observeChannelIsArchived when deleteAt changes', async () => {
+        await operator.handleChannel({channels: [channel], prepareRecordsOnly: false});
+        const {database} = DatabaseManager.serverDatabases[serverUrl]!;
+
+        expect(await firstValueFrom(observeChannelIsArchived(database, channelId))).toBe(false);
+
+        const {error} = await setChannelDeleteAt(serverUrl, channelId, 123);
+        expect(error).toBeUndefined();
+        expect(await firstValueFrom(observeChannelIsArchived(database, channelId))).toBe(true);
     });
 });
 
