@@ -37,7 +37,8 @@ import {expect} from 'detox';
 //      provisioner (one-time setup, no admin login at test runtime), OR
 //   2. Splitting setup into smaller chunks with explicit waits between
 //      admin-only API calls and UI interactions.
-// Track separately.
+// Quarantined (MM-T4944): re-enable when provisioner sets ExperimentalViewArchivedChannels
+// or admin setup is split out of beforeAll. Track: MM-T4944.
 describe.skip('Channels - Unarchive Channel', () => {
     const serverOneDisplayName = 'Server 1';
 

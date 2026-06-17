@@ -57,11 +57,17 @@ runs:
 
         # Wait up to 60s for CoreSimulator service to come up so the queries
         # below are reliable. Fresh macos-26 runners can lag past job start.
-        for waited in 0 5 10 15 20 30 45 60; do
-          if xcrun simctl list runtimes >/dev/null 2>&1; then break; fi
-          echo "Waiting ${waited}s for CoreSimulator service..."
+        for attempt in {1..12}; do
+          if xcrun simctl list runtimes >/dev/null 2>&1; then
+            break
+          fi
+          echo "Waiting for CoreSimulator service... (${attempt}/12)"
           sleep 5
         done
+        if ! xcrun simctl list runtimes >/dev/null 2>&1; then
+          echo "::error::CoreSimulator service did not become ready within 60s."
+          exit 1
+        fi
 
         # No-op only when the EXACT required iOS runtime is already installed.
         # Trailing space in pattern distinguishes "iOS X.Y" from "iOS X.YZ".

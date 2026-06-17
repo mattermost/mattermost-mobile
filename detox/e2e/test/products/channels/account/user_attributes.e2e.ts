@@ -182,7 +182,7 @@ describe('Account - User Attributes', () => {
         await UserProfileScreen.toBeVisible();
 
         // # Expand the bottom sheet to its full height so all custom attributes are in the viewport
-        await element(by.id('user_profile_options.send_message.option')).swipe('up', 'fast', 0.8);
+        await UserProfileScreen.sendMessageProfileOption.swipe('up', 'fast', 0.8);
         await wait(timeouts.TWO_SEC);
 
         // * Verify first custom attribute (Bio) title and value

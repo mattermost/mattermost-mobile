@@ -57,8 +57,6 @@ class CreateOrEditChannelScreen {
             try {
                 await waitFor(element(by.text('Not Now'))).toBeVisible().withTimeout(3000);
                 await element(by.text('Not Now')).tap();
-
-                console.log('[debug:2a0143] openCreateChannel dismissed lingering system alert'); // eslint-disable-line no-console
             } catch {
                 // No system alert — proceed normally
             }

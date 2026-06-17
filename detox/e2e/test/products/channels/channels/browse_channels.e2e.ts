@@ -250,7 +250,7 @@ describe('Channels - Browse Channels', () => {
         await BrowseChannelsScreen.close();
     });
 
-    it('MM-T864 - should be able to search for a public channel, cancel search, and join via browse channels', async () => {
+    it('MM-T864_1 - should be able to search for a public channel, cancel search, and join via browse channels', async () => {
         // # Create an unjoined public channel to search for
         const {channel: unjoinedChannel} = await Channel.apiCreateChannel(siteOneUrl, {teamId: testTeam.id});
 

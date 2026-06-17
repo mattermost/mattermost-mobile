@@ -12,7 +12,7 @@ import axios from 'axios';
 
 /**
  * Assert that the webhook server at the given base URL is reachable.
- * Throws if the server does not respond with a 2xx status.
+ * Throws only if the server is unreachable; HTTP error responses still prove it is listening.
  * @param {string} baseUrl - base URL of the webhook server (e.g. http://localhost:3000)
  * @return {Promise<void>}
  */

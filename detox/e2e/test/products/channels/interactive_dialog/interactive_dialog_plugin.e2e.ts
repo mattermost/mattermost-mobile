@@ -25,6 +25,7 @@ import {
 import {
     ChannelListScreen,
     ChannelScreen,
+    HomeScreen,
     IntegrationSelectorScreen,
     InteractiveDialogScreen,
     LoginScreen,
@@ -32,6 +33,10 @@ import {
 } from '@support/ui/screen';
 import {wait, isAndroid} from '@support/utils';
 import {expect} from 'detox';
+
+// Quarantined MM-T4103–MM-T4986: interactive dialog slash command leaves the send
+// button visible and the iOS paste permission dialog blocks Detox UI.
+// Track: https://mattermost.atlassian.net/browse/MM-66558
 
 // ===== Helper Functions =====
 async function selectUser() {
@@ -142,6 +147,7 @@ describe('Interactive Dialog - Basic Dialog (Plugin)', () => {
     let testChannel: any;
     let testUser: any;
     let pluginAvailable = false;
+    let pluginSetupTouchedServer = false;
 
     beforeAll(async () => {
         // Log environment info for debugging CI vs local differences
@@ -155,6 +161,7 @@ describe('Interactive Dialog - Basic Dialog (Plugin)', () => {
         try {
             await System.shouldHavePluginUploadEnabled(siteOneUrl);
 
+            pluginSetupTouchedServer = true;
             await System.apiUpdateConfig(siteOneUrl, {
                 ServiceSettings: {EnableGifPicker: true},
                 FileSettings: {EnablePublicLink: true},
@@ -196,10 +203,21 @@ describe('Interactive Dialog - Basic Dialog (Plugin)', () => {
     });
 
     afterAll(async () => {
-        if (!pluginAvailable) {
-            return;
+        try {
+            if (pluginAvailable) {
+                await HomeScreen.logout();
+            }
+        } catch {
+            // best-effort logout so later specs on this shard start clean
         }
-        await apiDisablePluginById(siteOneUrl, DemoPlugin.id);
+
+        if (pluginSetupTouchedServer) {
+            try {
+                await apiDisablePluginById(siteOneUrl, DemoPlugin.id);
+            } catch {
+                // best-effort plugin cleanup even when setup only partially succeeded
+            }
+        }
     });
 
     afterEach(async () => {
@@ -238,7 +256,7 @@ describe('Interactive Dialog - Basic Dialog (Plugin)', () => {
         await ChannelScreen.hasPostMessage(post.id, 'Dialog Submitted:');
     });
 
-    // TODO: Re-enable when interactive dialog slash command is fixed on iOS/Android (product bug: send button persists, iOS paste permission dialog blocks UI)
+    // Quarantined (MM-66558).
     it.skip('MM-T4103 should fill text field and submit dialog (Plugin)', async () => {
         if (!pluginAvailable) {
             return;
@@ -253,7 +271,7 @@ describe('Interactive Dialog - Basic Dialog (Plugin)', () => {
         await ChannelScreen.hasPostMessage(post.id, 'Dialog Submitted:');
     });
 
-    // TODO: Re-enable when interactive dialog slash command is fixed on iOS/Android (product bug: send button persists, iOS paste permission dialog blocks UI)
+    // Quarantined (MM-66558).
     it.skip('MM-T4104 should handle server error on dialog submission (Plugin)', async () => {
         if (!pluginAvailable) {
             return;
@@ -270,7 +288,7 @@ describe('Interactive Dialog - Basic Dialog (Plugin)', () => {
         await ensureDialogClosed();
     });
 
-    // TODO: Re-enable when interactive dialog slash command is fixed on iOS/Android (product bug: send button persists, iOS paste permission dialog blocks UI)
+    // Quarantined (MM-66558).
     it.skip('MM-T4401 should toggle boolean fields and submit (Plugin)', async () => {
         if (!pluginAvailable) {
             return;
@@ -290,7 +308,7 @@ describe('Interactive Dialog - Basic Dialog (Plugin)', () => {
         await ChannelScreen.hasPostMessage(post.id, 'Dialog Submitted:');
     });
 
-    // TODO: Re-enable when interactive dialog slash command is fixed on iOS/Android (product bug: send button persists, iOS paste permission dialog blocks UI)
+    // Quarantined (MM-66558).
     it.skip('MM-T4402 should handle boolean field validation (Plugin)', async () => {
         if (!pluginAvailable) {
             return;
@@ -309,7 +327,7 @@ describe('Interactive Dialog - Basic Dialog (Plugin)', () => {
         await ChannelScreen.hasPostMessage(post.id, 'Dialog Submitted:');
     });
 
-    // TODO: Re-enable when interactive dialog slash command is fixed on iOS/Android (product bug: send button persists, iOS paste permission dialog blocks UI)
+    // Quarantined (MM-66558).
     it.skip('MM-T4498 should open and handle interactive dialog with select fields (Plugin)', async () => {
         if (!pluginAvailable) {
             return;
@@ -343,7 +361,7 @@ describe('Interactive Dialog - Basic Dialog (Plugin)', () => {
         await ChannelScreen.hasPostMessage(post.id, 'Dialog Submitted:');
     });
 
-    // TODO: Re-enable when interactive dialog slash command is fixed on iOS/Android (product bug: send button persists, iOS paste permission dialog blocks UI)
+    // Quarantined (MM-66558).
     it.skip('MM-T4499 should handle required select field validation (Plugin)', async () => {
         if (!pluginAvailable) {
             return;
@@ -375,7 +393,7 @@ describe('Interactive Dialog - Basic Dialog (Plugin)', () => {
         await ChannelScreen.hasPostMessage(post.id, 'Dialog Submitted:');
     });
 
-    // TODO: Re-enable when interactive dialog slash command is fixed on iOS/Android (product bug: send button persists, iOS paste permission dialog blocks UI)
+    // Quarantined (MM-66558).
     it.skip('MM-T4500 should handle different selector types (Plugin)', async () => {
         if (!pluginAvailable) {
             return;
@@ -409,7 +427,7 @@ describe('Interactive Dialog - Basic Dialog (Plugin)', () => {
         await ChannelScreen.hasPostMessage(post.id, 'Dialog Submitted:');
     });
 
-    // TODO: Re-enable when interactive dialog slash command is fixed on iOS/Android (product bug: send button persists, iOS paste permission dialog blocks UI)
+    // Quarantined (MM-66558).
     it.skip('MM-T4201 should fill and submit all text field types (Plugin)', async () => {
         if (!pluginAvailable) {
             return;
@@ -429,7 +447,7 @@ describe('Interactive Dialog - Basic Dialog (Plugin)', () => {
         await ChannelScreen.hasPostMessage(post.id, 'Dialog Submitted:');
     });
 
-    // TODO: Re-enable when interactive dialog slash command is fixed on iOS/Android (product bug: send button persists, iOS paste permission dialog blocks UI)
+    // Quarantined (MM-66558).
     it.skip('MM-T4202 should validate required text field (Plugin)', async () => {
         if (!pluginAvailable) {
             return;
@@ -454,7 +472,7 @@ describe('Interactive Dialog - Basic Dialog (Plugin)', () => {
         await ChannelScreen.hasPostMessage(post.id, 'Dialog Submitted:');
     });
 
-    // TODO: Re-enable when interactive dialog slash command is fixed on iOS/Android (product bug: send button persists, iOS paste permission dialog blocks UI)
+    // Quarantined (MM-66558).
     it.skip('MM-T4203 should handle different text input subtypes (Plugin)', async () => {
         if (!pluginAvailable) {
             return;
@@ -471,7 +489,7 @@ describe('Interactive Dialog - Basic Dialog (Plugin)', () => {
         await ChannelScreen.hasPostMessage(post.id, 'Dialog Submitted:');
     });
 
-    // TODO: Re-enable when interactive dialog slash command is fixed on iOS/Android (product bug: send button persists, iOS paste permission dialog blocks UI)
+    // Quarantined (MM-66558).
     it.skip('MM-T4976 should handle multiselect fields dialog (Plugin)', async () => {
         if (!pluginAvailable) {
             return;
@@ -514,7 +532,7 @@ describe('Interactive Dialog - Basic Dialog (Plugin)', () => {
         await ensureDialogClosed();
     });
 
-    // TODO: Re-enable when interactive dialog slash command is fixed on iOS/Android (product bug: send button persists, iOS paste permission dialog blocks UI)
+    // Quarantined (MM-66558).
     it.skip('MM-T4977 should handle dynamic select fields dialog (Plugin)', async () => {
         if (!pluginAvailable) {
             return;
@@ -543,7 +561,7 @@ describe('Interactive Dialog - Basic Dialog (Plugin)', () => {
         await ensureDialogClosed();
     });
 
-    // TODO: Re-enable when interactive dialog slash command is fixed on iOS/Android (product bug: send button persists, iOS paste permission dialog blocks UI)
+    // Quarantined (MM-66558).
     it.skip('MM-T4980 should complete multistep dialog progression (Plugin)', async () => {
         if (!pluginAvailable) {
             return;
@@ -586,7 +604,7 @@ describe('Interactive Dialog - Basic Dialog (Plugin)', () => {
         await waitFor(postElement).toBeVisible().whileElement(by.id('channel.post_list.flat_list')).scroll(500, 'down');
     });
 
-    // TODO: Re-enable when interactive dialog slash command is fixed on iOS/Android (product bug: send button persists, iOS paste permission dialog blocks UI)
+    // Quarantined (MM-66558).
     it.skip('MM-T4981 should handle multistep dialog cancellation (Plugin)', async () => {
         if (!pluginAvailable) {
             return;
@@ -612,7 +630,7 @@ describe('Interactive Dialog - Basic Dialog (Plugin)', () => {
         await ensureDialogClosed();
     });
 
-    // TODO: Re-enable when interactive dialog slash command is fixed on iOS/Android (product bug: send button persists, iOS paste permission dialog blocks UI)
+    // Quarantined (MM-66558).
     it.skip('MM-T4983 should handle field refresh basic interaction (Plugin)', async () => {
         if (!pluginAvailable) {
             return;
@@ -644,7 +662,7 @@ describe('Interactive Dialog - Basic Dialog (Plugin)', () => {
         await waitFor(postElement).toBeVisible().whileElement(by.id('channel.post_list.flat_list')).scroll(500, 'down');
     });
 
-    // TODO: Re-enable when interactive dialog slash command is fixed on iOS/Android (product bug: send button persists, iOS paste permission dialog blocks UI)
+    // Quarantined (MM-66558).
     it.skip('MM-T4986 should handle field refresh changes and cancellation (Plugin)', async () => {
         if (!pluginAvailable) {
             return;

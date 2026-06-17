@@ -96,9 +96,14 @@ describe('Post Queries', () => {
 
             EphemeralStore.addRecentlyUnsavedSavedPost(serverUrl, postId);
 
-            const savedPosts = await firstValueFrom(observeSavedPostsByIds(database, [postId, otherPostId], serverUrl));
-            expect(savedPosts.has(postId)).toBe(false);
-            expect(savedPosts.has(otherPostId)).toBe(true);
+            try {
+                const savedPosts = await firstValueFrom(observeSavedPostsByIds(database, [postId, otherPostId], serverUrl));
+                expect(savedPosts.has(postId)).toBe(false);
+                expect(savedPosts.has(otherPostId)).toBe(true);
+            } finally {
+                EphemeralStore.clearRecentlyUnsavedSavedPost(serverUrl, postId);
+                EphemeralStore.clearRecentlyUnsavedSavedPost(serverUrl, otherPostId);
+            }
         });
     });
 

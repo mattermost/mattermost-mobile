@@ -90,7 +90,7 @@ describe('Account - Settings - Clock Display Settings', () => {
         await expect(ClockDisplaySettingsScreen.twelveHourOptionSelected).toBeVisible();
     });
 
-    it('MM-T291 - should display time in 12-hour format when 12-hour clock is selected', async () => {
+    it('MM-T291_1 - should display time in 12-hour format when 12-hour clock is selected', async () => {
         // # Select 12-hour option and go back
         await ClockDisplaySettingsScreen.twelveHourOption.tap();
         await ClockDisplaySettingsScreen.back();
@@ -106,7 +106,7 @@ describe('Account - Settings - Clock Display Settings', () => {
         await expect(ClockDisplaySettingsScreen.twelveHourOptionSelected).toBeVisible();
     });
 
-    it('MM-T292 - should display time in 24-hour format when 24-hour clock is selected', async () => {
+    it('MM-T292_1 - should display time in 24-hour format when 24-hour clock is selected', async () => {
         // # Select 24-hour option and go back
         await ClockDisplaySettingsScreen.twentyFourHourOption.tap();
         await ClockDisplaySettingsScreen.back();

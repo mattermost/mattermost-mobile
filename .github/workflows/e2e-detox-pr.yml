@@ -211,7 +211,7 @@ jobs:
             hostname=$(python3 -c 'import sys; from urllib.parse import urlparse; print(urlparse(sys.argv[1]).hostname or "")' "$url" | tr '[:upper:]' '[:lower:]')
 
             # Block private/internal IPs
-            if echo "$hostname" | grep -qE '^(127\.|10\.|172\.(1[6-9]|2[0-9]|3[01])\.|192\.168\.|0\.|localhost)'; then
+            if echo "$hostname" | grep -qE '^(127\.|10\.|172\.(1[6-9]|2[0-9]|3[01])\.|192\.168\.|0\.|localhost|::1$|::ffff:|fe80:)'; then
               echo "::error::$label points to a private/internal address: $hostname"
               exit 1
             fi

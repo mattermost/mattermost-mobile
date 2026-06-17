@@ -104,7 +104,7 @@ describe('Channels - Channel Bookmarks Permissions', () => {
         await HomeScreen.logout();
     });
 
-    it('MM-T5615_1 - users without manage permissions should not see add/edit/delete/reorder bookmark options', async () => {
+    it('MM-T5615_1 - users without manage permissions should not see add bookmark option but can edit and delete existing bookmarks', async () => {
         // # Log out the admin user and log in as the regular channel member
         await HomeScreen.logout();
         await ServerScreen.connectToServer(serverOneUrl, serverOneDisplayName);

@@ -168,7 +168,7 @@ describe('Messaging - At-Mention', () => {
         await ChannelScreen.back();
     });
 
-    it('MM-T171 - should be able to autocomplete at-mention for out-of-channel member', async () => {
+    it('MM-T0171_1 - should be able to autocomplete at-mention for out-of-channel member', async () => {
         // # Create a user who is on the team but not in the channel
         const {user: outOfChannelUser} = await User.apiCreateUser(siteOneUrl);
         await Team.apiAddUserToTeam(siteOneUrl, outOfChannelUser.id, testTeam.id);

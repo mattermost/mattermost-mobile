@@ -525,12 +525,12 @@ const waitForCustomStatusOnAccount = async (status: {emoji: string; duration: st
 const openEmojiPickerForDefault = async () => {
     const defaultEmoji = CustomStatusScreen.getCustomStatusEmoji('default');
     try {
-        await waitFor(defaultEmoji).toBeVisible().withTimeout(timeouts.TEN_SEC);
+        await waitFor(defaultEmoji).toExist().withTimeout(timeouts.TEN_SEC);
     } catch {
         try {
             await waitFor(CustomStatusScreen.statusInputClearButton).toBeVisible().withTimeout(timeouts.TWO_SEC);
             await CustomStatusScreen.statusInputClearButton.tap();
-            await waitFor(defaultEmoji).toBeVisible().withTimeout(timeouts.FIVE_SEC);
+            await waitFor(defaultEmoji).toExist().withTimeout(timeouts.FIVE_SEC);
         } catch {
             // No clear button to use — fall through to the picker open below.
         }

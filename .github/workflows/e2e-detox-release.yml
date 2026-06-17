@@ -149,8 +149,8 @@ jobs:
     uses: ./.github/workflows/e2e-ios-template.yml
     with:
       run-type: "RELEASE"
+      record_tests_in_zephyr: true
       MOBILE_VERSION: ${{ github.ref }}
-      ios_device_name: "iPad Pro 13-inch (M5)"
       ios_device_os_name: "iOS 26.2"
       search_path: "detox/e2e/test/products/channels/ipad"
       parallelism: "1"
