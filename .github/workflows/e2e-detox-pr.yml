@@ -253,6 +253,8 @@ jobs:
 
       - name: Provision servers (license + plugins)
         run: |
+          cd detox
+          npm ci --prefer-offline --no-audit --no-fund
           # Quote every variable in the iteration. Without quotes, bash word-splits
           # on whitespace and would treat e.g. "https://a https://b" as two URLs,
           # bypassing the per-variable validation in the previous step (which
@@ -262,9 +264,9 @@ jobs:
             if [ -n "$url" ]; then
               echo "--- Provisioning $url ---"
               if [ "$url" = "$SITE_1_URL" ]; then
-                node detox/provision_server.js "$url"
+                npm run provision -- "$url"
               else
-                node detox/provision_server.js "$url" || echo "Warning: provisioning $url failed (non-fatal)"
+                npm run provision -- "$url" || echo "Warning: provisioning $url failed (non-fatal)"
               fi
             fi
           done

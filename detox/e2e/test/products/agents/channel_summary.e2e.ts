@@ -33,11 +33,10 @@ describe('Agents - Channel Summary', () => {
     let didLogin = false;
 
     beforeAll(async () => {
-        // # Ensure agents plugin is installed and active (installs from Marketplace if needed)
-        const pluginStatus = await Plugin.apiEnsurePluginInstalled(siteOneUrl, AgentsPlugin.id);
+        const pluginStatus = await Plugin.apiGetPluginStatus(siteOneUrl, AgentsPlugin.id);
         if (!pluginStatus.isActive) {
             // eslint-disable-next-line no-console
-            console.warn(`Agents plugin (${AgentsPlugin.id}) could not be activated — skipping suite`);
+            console.warn(`Agents plugin (${AgentsPlugin.id}) is not active — skipping suite`);
             return;
         }
 
@@ -87,8 +86,7 @@ describe('Agents - Channel Summary', () => {
         await HomeScreen.logout();
     });
 
-    // Skip: requires Agents plugin configured with at least one AI bot on CI server
-    it.skip('should show Ask Agents option in public channel', async () => {
+    it('should show Ask Agents option in public channel', async () => {
         // # Open a channel screen
         await ChannelScreen.open(channelsCategory, testChannel.name);
 
@@ -104,8 +102,7 @@ describe('Agents - Channel Summary', () => {
         await ChannelScreen.back();
     });
 
-    // Skip: requires Agents plugin configured with at least one AI bot on CI server
-    it.skip('should open summary sheet and show options', async () => {
+    it('should open summary sheet and show options', async () => {
         // # Open a channel screen
         await ChannelScreen.open(channelsCategory, testChannel.name);
 

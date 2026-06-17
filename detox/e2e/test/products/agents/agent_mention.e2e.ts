@@ -36,6 +36,7 @@ import {expect} from 'detox';
 // ****************************************************************
 
 const AGENTS_PLUGIN_ID = 'mattermost-ai';
+const E2E_AGENT_USERNAME = 'ai-bot';
 
 /**
  * Check if the agents plugin (mattermost-ai) is installed and active.
@@ -71,12 +72,7 @@ const apiGetBots = async (baseUrl: string): Promise<any> => {
 
 /**
  * Find agents among bots by cross-referencing with the autocomplete API.
- * The server identifies agents internally and returns them in a separate
- * `agents` field from the autocomplete endpoint — the same mechanism the
- * mobile app uses.
- * @param {string} baseUrl - the base server URL
- * @param {string} teamId - the team ID to scope the autocomplete query
- * @return {Array} list of agent bot objects
+ * Falls back to the plugin agents API when autocomplete omits the agents field.
  */
 const getAgentBots = async (baseUrl: string, teamId: string): Promise<any[]> => {
     const {bots, error} = await apiGetBots(baseUrl);
@@ -86,6 +82,8 @@ const getAgentBots = async (baseUrl: string, teamId: string): Promise<any[]> => 
         );
     }
 
+    const activeBots = bots.filter((bot: any) => bot.delete_at === 0);
+
     try {
         const response = await client.get(
             `${baseUrl}/api/v4/users/autocomplete?in_team=${teamId}&name=`,
@@ -94,13 +92,34 @@ const getAgentBots = async (baseUrl: string, teamId: string): Promise<any[]> => 
             (response.data?.agents ?? []).map((a: any) => a.id),
         );
 
-        return bots.filter((bot: any) => bot.delete_at === 0 && agentUserIds.has(bot.user_id));
+        if (agentUserIds.size > 0) {
+            return activeBots.filter((bot: any) => agentUserIds.has(bot.user_id));
+        }
     } catch (err) {
         const {error: autocompleteError, status} = getResponseFromError(err);
         throw new Error(
             `[getAgentBots] Failed to fetch autocomplete agents (status ${status}): ${JSON.stringify(autocompleteError)}`,
         );
     }
+
+    try {
+        const pluginAgentsRes = await client.get(`${baseUrl}/plugins/mattermost-ai/agents`);
+        const pluginAgents = Array.isArray(pluginAgentsRes.data) ? pluginAgentsRes.data : [];
+        const agentNames = new Set(pluginAgents.map((agent: any) => agent.name));
+
+        const fromPlugin = activeBots.filter((bot: any) => agentNames.has(bot.username));
+        if (fromPlugin.length > 0) {
+            return fromPlugin;
+        }
+    } catch (err) {
+        const {error: pluginError, status} = getResponseFromError(err);
+        throw new Error(
+            `[getAgentBots] Failed to fetch plugin agents (status ${status}): ${JSON.stringify(pluginError)}`,
+        );
+    }
+
+    const e2eBot = activeBots.find((bot: any) => bot.username === E2E_AGENT_USERNAME);
+    return e2eBot ? [e2eBot] : [];
 };
 
 // ****************************************************************
