@@ -45,8 +45,9 @@ export async function fetchClassificationBanner(serverUrl: string): Promise<{err
 
                 const values = await client.getSystemPropertyValues<string>(CLASSIFICATIONS_GROUP_NAME);
 
-                await operator.handlePropertyFields({groupId, fields: allFields, prepareRecordsOnly: false});
-                await operator.handlePropertyValues({targetId: CLASSIFICATIONS_SYSTEM_VALUE_TARGET_ID, values, prepareRecordsOnly: false});
+                const fieldModels = await operator.handlePropertyFields({groupId, fields: allFields, prepareRecordsOnly: true});
+                const valueModels = await operator.handlePropertyValues({targetId: CLASSIFICATIONS_SYSTEM_VALUE_TARGET_ID, values, prepareRecordsOnly: true});
+                await operator.batchRecords([...fieldModels, ...valueModels], 'fetchClassificationBanner');
 
                 return {};
             }
