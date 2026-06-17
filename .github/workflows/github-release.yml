@@ -13,7 +13,7 @@ on:
 
 env:
   RELEASE_TAG: ${{ inputs.tag || github.ref_name }}
-  SNYK_VERSION: "1.1297.2"
+  SNYK_VERSION: "1.1305.1"
   CYCLONEDX_VERSION: "v0.27.2"
   INTUNE_ENABLED: 'true'
 
@@ -65,7 +65,7 @@ jobs:
         env:
           SNYK_TOKEN: "${{ secrets.SNYK_TOKEN }}"
         run: |
-          snyk sbom --format=cyclonedx1.6+json --json-file-output=../sbom-ios.json --all-projects
+          snyk sbom --format=cyclonedx1.6+json --file=Podfile.lock --json-file-output=../sbom-ios.json
         working-directory: ./ios
         shell: bash
 
