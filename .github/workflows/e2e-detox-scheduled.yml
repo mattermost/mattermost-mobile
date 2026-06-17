@@ -164,8 +164,10 @@ jobs:
 
   update-final-status-ios:
     runs-on: ubuntu-22.04
+    if: always()
     needs:
       - run-ios-tests-on-main-scheduled
+      - run-ios-ipad-tests-scheduled
     steps:
       - uses: mattermost/actions/delivery/update-commit-status@main
         env:
@@ -174,8 +176,8 @@ jobs:
           repository_full_name: ${{ github.repository }}
           commit_sha: ${{ github.sha }}
           context: e2e/detox-ios-tests
-          description: Completed with ${{ needs.run-ios-tests-on-main-scheduled.outputs.FAILURES }} failures
-          status: ${{ needs.run-ios-tests-on-main-scheduled.outputs.STATUS }}
+          description: iOS+iPad scheduled detox completed
+          status: ${{ needs.run-ios-tests-on-main-scheduled.outputs.STATUS == 'success' && needs.run-ios-ipad-tests-scheduled.outputs.STATUS == 'success' && 'success' || 'failure' }}
           target_url: ${{ needs.run-ios-tests-on-main-scheduled.outputs.TARGET_URL }}
 
   update-final-status-android:

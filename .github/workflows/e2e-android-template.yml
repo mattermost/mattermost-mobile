@@ -256,9 +256,14 @@ jobs:
       - name: Install Android SDK components
         if: steps.android-sdk-cache.outputs.cache-hit != 'true'
         run: |
+          API_LEVEL='${{ inputs.android_api_level }}'
+          if ! [[ "$API_LEVEL" =~ ^[0-9]+$ ]]; then
+            echo "Invalid android_api_level: $API_LEVEL"
+            exit 1
+          fi
           for attempt in 1 2 3; do
             echo "SDK install attempt $attempt..."
-            if yes | sdkmanager --install "platform-tools" "emulator" "platforms;android-${{ inputs.android_api_level }}" "system-images;android-${{ inputs.android_api_level }};google_apis;x86_64"; then
+            if yes | sdkmanager --install "platform-tools" "emulator" "platforms;android-${API_LEVEL}" "system-images;android-${API_LEVEL};google_apis;x86_64"; then
               echo "SDK install succeeded on attempt $attempt"
               break
             fi
@@ -288,7 +293,7 @@ jobs:
         run: |
           cd detox
           chmod +x ./create_android_emulator.sh
-          CI=true ./create_android_emulator.sh "$SDK_VERSION" "$AVD_NAME" $MATRIX_SPECS
+          CI=true ./create_android_emulator.sh "$SDK_VERSION" "$AVD_NAME" "$MATRIX_SPECS"
         env:
           MATRIX_SPECS: ${{ matrix.specs }}
           SITE_1_URL: ${{ env.SITE_1_URL }}

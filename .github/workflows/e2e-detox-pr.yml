@@ -48,6 +48,10 @@ concurrency:
   group: "${{ github.workflow }}-${{ inputs.pr_number || github.run_id }}"
   cancel-in-progress: true
 
+permissions:
+  contents: read
+  statuses: write
+
 env:
   INTUNE_ENABLED: 'false'
   DETOX_AWS_S3_BUCKET: "mattermost-detox-report"
@@ -237,6 +241,7 @@ jobs:
         uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
         with:
           ref: ${{ inputs.MOBILE_VERSION }}
+          persist-credentials: false
 
       - name: Provision servers (license + plugins)
         run: |
@@ -248,7 +253,11 @@ jobs:
           for url in "$SITE_1_URL" "$SITE_2_URL" "$SITE_3_URL"; do
             if [ -n "$url" ]; then
               echo "--- Provisioning $url ---"
-              node detox/provision_server.js "$url" || echo "Warning: provisioning $url failed (non-fatal)"
+              if [ "$url" = "$SITE_1_URL" ]; then
+                node detox/provision_server.js "$url"
+              else
+                node detox/provision_server.js "$url" || echo "Warning: provisioning $url failed (non-fatal)"
+              fi
             fi
           done
         env:
@@ -272,7 +281,15 @@ jobs:
       MM_TEST_SERVER_URL: ${{ inputs.SITE_1_URL }}
       MM_TEST_SERVER_URL_2: ${{ inputs.SITE_2_URL }}
       MM_TEST_SERVER_URL_3: ${{ inputs.SITE_3_URL }}
-    secrets: inherit
+    secrets:
+      MM_MOBILE_E2E_ADMIN_EMAIL: ${{ secrets.MM_MOBILE_E2E_ADMIN_EMAIL }}
+      MM_MOBILE_E2E_ADMIN_USERNAME: ${{ secrets.MM_MOBILE_E2E_ADMIN_USERNAME }}
+      MM_MOBILE_E2E_ADMIN_PASSWORD: ${{ secrets.MM_MOBILE_E2E_ADMIN_PASSWORD }}
+      MM_MOBILE_E2E_ZEPHYR_API_KEY: ${{ secrets.MM_MOBILE_E2E_ZEPHYR_API_KEY }}
+      MM_MOBILE_E2E_TEST_CYCLE_LINK_PREFIX: ${{ secrets.MM_MOBILE_E2E_TEST_CYCLE_LINK_PREFIX }}
+      MM_MOBILE_E2E_WEBHOOK_URL: ${{ secrets.MM_MOBILE_E2E_WEBHOOK_URL }}
+      MM_MOBILE_DETOX_AWS_ACCESS_KEY_ID: ${{ secrets.MM_MOBILE_DETOX_AWS_ACCESS_KEY_ID }}
+      MM_MOBILE_DETOX_AWS_SECRET_ACCESS_KEY: ${{ secrets.MM_MOBILE_DETOX_AWS_SECRET_ACCESS_KEY }}
 
   run-android-tests:
     if: inputs.PLATFORM == 'android' || inputs.PLATFORM == 'both'
@@ -289,7 +306,15 @@ jobs:
       MM_TEST_SERVER_URL: ${{ inputs.SITE_1_URL }}
       MM_TEST_SERVER_URL_2: ${{ inputs.SITE_2_URL }}
       MM_TEST_SERVER_URL_3: ${{ inputs.SITE_3_URL }}
-    secrets: inherit
+    secrets:
+      MM_MOBILE_E2E_ADMIN_EMAIL: ${{ secrets.MM_MOBILE_E2E_ADMIN_EMAIL }}
+      MM_MOBILE_E2E_ADMIN_USERNAME: ${{ secrets.MM_MOBILE_E2E_ADMIN_USERNAME }}
+      MM_MOBILE_E2E_ADMIN_PASSWORD: ${{ secrets.MM_MOBILE_E2E_ADMIN_PASSWORD }}
+      MM_MOBILE_E2E_ZEPHYR_API_KEY: ${{ secrets.MM_MOBILE_E2E_ZEPHYR_API_KEY }}
+      MM_MOBILE_E2E_TEST_CYCLE_LINK_PREFIX: ${{ secrets.MM_MOBILE_E2E_TEST_CYCLE_LINK_PREFIX }}
+      MM_MOBILE_E2E_WEBHOOK_URL: ${{ secrets.MM_MOBILE_E2E_WEBHOOK_URL }}
+      MM_MOBILE_DETOX_AWS_ACCESS_KEY_ID: ${{ secrets.MM_MOBILE_DETOX_AWS_ACCESS_KEY_ID }}
+      MM_MOBILE_DETOX_AWS_SECRET_ACCESS_KEY: ${{ secrets.MM_MOBILE_DETOX_AWS_SECRET_ACCESS_KEY }}
 
   update-final-status-ios:
     runs-on: ubuntu-22.04
@@ -362,7 +387,15 @@ jobs:
       search_path: "detox/e2e/test/products/channels/ipad"
       parallelism: "1"
       detox_config: "ios.ipad.debug"
-    secrets: inherit
+    secrets:
+      MM_MOBILE_E2E_ADMIN_EMAIL: ${{ secrets.MM_MOBILE_E2E_ADMIN_EMAIL }}
+      MM_MOBILE_E2E_ADMIN_USERNAME: ${{ secrets.MM_MOBILE_E2E_ADMIN_USERNAME }}
+      MM_MOBILE_E2E_ADMIN_PASSWORD: ${{ secrets.MM_MOBILE_E2E_ADMIN_PASSWORD }}
+      MM_MOBILE_E2E_ZEPHYR_API_KEY: ${{ secrets.MM_MOBILE_E2E_ZEPHYR_API_KEY }}
+      MM_MOBILE_E2E_TEST_CYCLE_LINK_PREFIX: ${{ secrets.MM_MOBILE_E2E_TEST_CYCLE_LINK_PREFIX }}
+      MM_MOBILE_E2E_WEBHOOK_URL: ${{ secrets.MM_MOBILE_E2E_WEBHOOK_URL }}
+      MM_MOBILE_DETOX_AWS_ACCESS_KEY_ID: ${{ secrets.MM_MOBILE_DETOX_AWS_ACCESS_KEY_ID }}
+      MM_MOBILE_DETOX_AWS_SECRET_ACCESS_KEY: ${{ secrets.MM_MOBILE_DETOX_AWS_SECRET_ACCESS_KEY }}
 
   update-final-status-ipad:
     runs-on: ubuntu-22.04

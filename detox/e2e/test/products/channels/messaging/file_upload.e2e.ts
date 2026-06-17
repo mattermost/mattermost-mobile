@@ -26,6 +26,7 @@ import {
 } from '@support/ui/screen';
 import {getRandomId, isAndroid, isIos, timeouts, wait} from '@support/utils';
 import {expect} from 'detox';
+import path from 'path';
 
 describe('Messaging - File Upload', () => {
     const serverOneDisplayName = 'Server 1';
@@ -193,7 +194,7 @@ describe('Messaging - File Upload', () => {
     });
 
     it('MM-T339_1 - should show an error when the server max file size is set to a very small value', async () => {
-        // Full over-limit upload flow needs native file picker — only verifies config can be set.
+        const imagePath = path.resolve(__dirname, '../../../../support/fixtures/image.png');
 
         // # Set MaxFileSize to 1 byte (effectively blocks all uploads)
         const {config: originalConfig} = await System.apiGetConfig(siteOneUrl);
@@ -203,12 +204,37 @@ describe('Messaging - File Upload', () => {
             },
         });
         try {
-            // # Open channel screen
+            // * Server rejects over-limit uploads
+            const {error: uploadError} = await Post.apiUploadFileToChannel(siteOneUrl, testChannel.id, imagePath);
+            expect(uploadError).toBeTruthy();
+
+            // # Open channel screen and attempt a client-side file attach
             await ChannelScreen.open(channelsCategory, testChannel.name);
             await wait(timeouts.TWO_SEC);
+            await ChannelScreen.fileQuickAction.tap();
+            await waitFor(element(by.id('file_attachment.photo_library'))).toExist().withTimeout(timeouts.TWO_SEC);
 
-            // * Verify the channel screen is visible
-            await ChannelScreen.toBeVisible();
+            if (isIos()) {
+                await element(by.id('file_attachment.photo_library')).tap();
+                const firstPhoto = element(by.type('PHAssetCollectionViewCell')).atIndex(0);
+                await waitFor(firstPhoto).toExist().withTimeout(timeouts.TEN_SEC);
+                await firstPhoto.tap();
+                try {
+                    await element(by.label('Add')).tap();
+                } catch {
+                    try {
+                        await element(by.text('Add')).tap();
+                    } catch {
+                        // Single-select library — no confirmation button
+                    }
+                }
+                await waitFor(element(by.text(/Files must be less than/i))).toBeVisible().withTimeout(timeouts.TEN_SEC);
+            } else {
+                // Android native picker is not fully automatable — verify the attachment sheet opens
+                // and the server-side rejection above covers the max-size enforcement path.
+                await expect(element(by.id('file_attachment.attach_file'))).toExist();
+                await element(by.id('file_attachment.photo_library')).swipe('down', 'fast');
+            }
 
             // # Go back to channel list screen
             await ChannelScreen.back();

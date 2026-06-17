@@ -29,57 +29,12 @@ describe('Channel Settings - Copy Tests', () => {
     const channelsCategory = 'channels';
     let testUser: any;
     let testTeam: any;
-    let channelWithPurpose: any;
-    let channelWithHeaderUrl: any;
 
     beforeAll(async () => {
         const {user, team} = await Setup.apiInit(siteOneUrl);
         testUser = user;
         testTeam = team;
 
-        // Create a channel with a purpose text for MM-T868
-        const purposeText = `Purpose text for copying ${getRandomId()}`;
-        const {channel: purposeChannel} = await Channel.apiCreateChannel(siteOneUrl, {
-            teamId: testTeam.id,
-            type: 'O',
-            channel: {
-                team_id: testTeam.id,
-                name: `purpose-channel-${getRandomId()}`,
-                display_name: `Purpose Channel ${getRandomId()}`,
-                type: 'O',
-                purpose: purposeText,
-                header: '',
-            },
-        });
-        if (!purposeChannel?.id) {
-            throw new Error('[beforeAll] Failed to create channel with purpose');
-        }
-        channelWithPurpose = purposeChannel;
-        channelWithPurpose.purposeText = purposeText;
-
-        // Create a channel with a URL in the header for MM-T869
-        const headerUrl = 'https://mattermost.com';
-        const {channel: headerUrlChannel} = await Channel.apiCreateChannel(siteOneUrl, {
-            teamId: testTeam.id,
-            type: 'O',
-            channel: {
-                team_id: testTeam.id,
-                name: `header-url-channel-${getRandomId()}`,
-                display_name: `Header URL Channel ${getRandomId()}`,
-                type: 'O',
-                purpose: '',
-                header: headerUrl,
-            },
-        });
-        if (!headerUrlChannel?.id) {
-            throw new Error('[beforeAll] Failed to create channel with header URL');
-        }
-        channelWithHeaderUrl = headerUrlChannel;
-        channelWithHeaderUrl.headerUrl = headerUrl;
-
-        await wait(timeouts.TWO_SEC);
-        await Channel.apiAddUserToChannel(siteOneUrl, testUser.id, channelWithPurpose.id);
-        await Channel.apiAddUserToChannel(siteOneUrl, testUser.id, channelWithHeaderUrl.id);
         await ServerScreen.connectToServer(serverOneUrl, serverOneDisplayName);
         await LoginScreen.login(testUser);
     });
@@ -125,6 +80,24 @@ describe('Channel Settings - Copy Tests', () => {
     });
 
     it('MM-T868_1 - should show Copy option when long-pressing channel purpose text', async () => {
+        const purposeText = `Purpose text for copying ${getRandomId()}`;
+        const {channel: channelWithPurpose} = await Channel.apiCreateChannel(siteOneUrl, {
+            teamId: testTeam.id,
+            type: 'O',
+            channel: {
+                team_id: testTeam.id,
+                name: `purpose-channel-${getRandomId()}`,
+                display_name: `Purpose Channel ${getRandomId()}`,
+                type: 'O',
+                purpose: purposeText,
+                header: '',
+            },
+        });
+        if (!channelWithPurpose?.id) {
+            throw new Error('[MM-T868_1] Failed to create channel with purpose');
+        }
+        await Channel.apiAddUserToChannel(siteOneUrl, testUser.id, channelWithPurpose.id);
+
         // # Navigate to the channel with a purpose
         await ChannelScreen.open(channelsCategory, channelWithPurpose.name);
         await ChannelInfoScreen.open();
@@ -136,7 +109,7 @@ describe('Channel Settings - Copy Tests', () => {
         // # Long-press the purpose text to open the copy bottom sheet, verify Copy option,
         // and tap Copy — uses ChannelInfoScreen.copyChannelPurpose helper which handles
         // the long-press, waitFor on the bottom sheet, and taps the copy action.
-        await ChannelInfoScreen.copyChannelPurpose(channelWithPurpose.purposeText);
+        await ChannelInfoScreen.copyChannelPurpose(purposeText);
 
         // * Verify bottom sheet is dismissed and we're still on channel info screen
         await wait(timeouts.ONE_SEC);
@@ -149,6 +122,24 @@ describe('Channel Settings - Copy Tests', () => {
     });
 
     it('MM-T869_1 - should show Copy URL option when long-pressing a URL in the channel header', async () => {
+        const headerUrl = 'https://mattermost.com';
+        const {channel: channelWithHeaderUrl} = await Channel.apiCreateChannel(siteOneUrl, {
+            teamId: testTeam.id,
+            type: 'O',
+            channel: {
+                team_id: testTeam.id,
+                name: `header-url-channel-${getRandomId()}`,
+                display_name: `Header URL Channel ${getRandomId()}`,
+                type: 'O',
+                purpose: '',
+                header: headerUrl,
+            },
+        });
+        if (!channelWithHeaderUrl?.id) {
+            throw new Error('[MM-T869_1] Failed to create channel with header URL');
+        }
+        await Channel.apiAddUserToChannel(siteOneUrl, testUser.id, channelWithHeaderUrl.id);
+
         // # Navigate to the channel with a URL in the header
         await ChannelScreen.open(channelsCategory, channelWithHeaderUrl.name);
         await ChannelInfoScreen.open();
@@ -163,7 +154,7 @@ describe('Channel Settings - Copy Tests', () => {
         // appears only when onLinkLongPress fires on a URL link within the markdown header.
         // Long-pressing the outer TouchableWithFeedback wrapper shows only copy_header_text.
         // TODO: Trigger onLinkLongPress on the URL text directly and assert copy_url option appears.
-        await ChannelInfoScreen.cancelCopyChannelHeader(channelWithHeaderUrl.headerUrl);
+        await ChannelInfoScreen.cancelCopyChannelHeader(headerUrl);
 
         // * Verify still on channel info screen
         await wait(timeouts.ONE_SEC);

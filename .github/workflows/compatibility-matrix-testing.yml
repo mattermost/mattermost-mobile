@@ -142,7 +142,15 @@ jobs:
     strategy:
       fail-fast: false
       matrix: ${{ fromJson(inputs.CMT_MATRIX) }}
-    secrets: inherit
+    secrets:
+      MM_MOBILE_E2E_ADMIN_EMAIL: ${{ secrets.MM_MOBILE_E2E_ADMIN_EMAIL }}
+      MM_MOBILE_E2E_ADMIN_USERNAME: ${{ secrets.MM_MOBILE_E2E_ADMIN_USERNAME }}
+      MM_MOBILE_E2E_ADMIN_PASSWORD: ${{ secrets.MM_MOBILE_E2E_ADMIN_PASSWORD }}
+      MM_MOBILE_E2E_ZEPHYR_API_KEY: ${{ secrets.MM_MOBILE_E2E_ZEPHYR_API_KEY }}
+      MM_MOBILE_E2E_TEST_CYCLE_LINK_PREFIX: ${{ secrets.MM_MOBILE_E2E_TEST_CYCLE_LINK_PREFIX }}
+      MM_MOBILE_E2E_WEBHOOK_URL: ${{ secrets.MM_MOBILE_E2E_WEBHOOK_URL }}
+      MM_MOBILE_DETOX_AWS_ACCESS_KEY_ID: ${{ secrets.MM_MOBILE_DETOX_AWS_ACCESS_KEY_ID }}
+      MM_MOBILE_DETOX_AWS_SECRET_ACCESS_KEY: ${{ secrets.MM_MOBILE_DETOX_AWS_SECRET_ACCESS_KEY }}
     with:
       run-type: "RELEASE"
       MM_TEST_SERVER_URL: ${{ matrix.server.url }}
@@ -156,7 +164,15 @@ jobs:
     strategy:
       fail-fast: false
       matrix: ${{ fromJson(inputs.CMT_MATRIX) }}
-    secrets: inherit
+    secrets:
+      MM_MOBILE_E2E_ADMIN_EMAIL: ${{ secrets.MM_MOBILE_E2E_ADMIN_EMAIL }}
+      MM_MOBILE_E2E_ADMIN_USERNAME: ${{ secrets.MM_MOBILE_E2E_ADMIN_USERNAME }}
+      MM_MOBILE_E2E_ADMIN_PASSWORD: ${{ secrets.MM_MOBILE_E2E_ADMIN_PASSWORD }}
+      MM_MOBILE_E2E_ZEPHYR_API_KEY: ${{ secrets.MM_MOBILE_E2E_ZEPHYR_API_KEY }}
+      MM_MOBILE_E2E_TEST_CYCLE_LINK_PREFIX: ${{ secrets.MM_MOBILE_E2E_TEST_CYCLE_LINK_PREFIX }}
+      MM_MOBILE_E2E_WEBHOOK_URL: ${{ secrets.MM_MOBILE_E2E_WEBHOOK_URL }}
+      MM_MOBILE_DETOX_AWS_ACCESS_KEY_ID: ${{ secrets.MM_MOBILE_DETOX_AWS_ACCESS_KEY_ID }}
+      MM_MOBILE_DETOX_AWS_SECRET_ACCESS_KEY: ${{ secrets.MM_MOBILE_DETOX_AWS_SECRET_ACCESS_KEY }}
     with:
       run-type: "RELEASE"
       MM_TEST_SERVER_URL: ${{ matrix.server.url }}
@@ -175,7 +191,15 @@ jobs:
     strategy:
       fail-fast: false
       matrix: ${{ fromJson(inputs.CMT_MATRIX) }}
-    secrets: inherit
+    secrets:
+      MM_MOBILE_E2E_ADMIN_EMAIL: ${{ secrets.MM_MOBILE_E2E_ADMIN_EMAIL }}
+      MM_MOBILE_E2E_ADMIN_USERNAME: ${{ secrets.MM_MOBILE_E2E_ADMIN_USERNAME }}
+      MM_MOBILE_E2E_ADMIN_PASSWORD: ${{ secrets.MM_MOBILE_E2E_ADMIN_PASSWORD }}
+      MM_MOBILE_E2E_ZEPHYR_API_KEY: ${{ secrets.MM_MOBILE_E2E_ZEPHYR_API_KEY }}
+      MM_MOBILE_E2E_TEST_CYCLE_LINK_PREFIX: ${{ secrets.MM_MOBILE_E2E_TEST_CYCLE_LINK_PREFIX }}
+      MM_MOBILE_E2E_WEBHOOK_URL: ${{ secrets.MM_MOBILE_E2E_WEBHOOK_URL }}
+      MM_MOBILE_DETOX_AWS_ACCESS_KEY_ID: ${{ secrets.MM_MOBILE_DETOX_AWS_ACCESS_KEY_ID }}
+      MM_MOBILE_DETOX_AWS_SECRET_ACCESS_KEY: ${{ secrets.MM_MOBILE_DETOX_AWS_SECRET_ACCESS_KEY }}
     with:
       run-android-tests: true
       run-type: "RELEASE"

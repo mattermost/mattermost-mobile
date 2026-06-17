@@ -53,10 +53,11 @@ describe('Messaging - Channel Link', () => {
         replyThreadChannelLink = `${serverOneUrl}/${testTeam.name}/channels/${targetChannel.name}`;
         replyThreadTargetDisplayName = targetChannel.display_name;
 
-        await Post.apiCreatePost(siteOneUrl, {channelId: testChannel.id, message: 'Reply thread parent message'});
-
-        const {post} = await Post.apiGetLastPostInChannel(siteOneUrl, testChannel.id);
-        replyThreadPostId = post.id;
+        const {post: parentPost} = await Post.apiCreatePost(siteOneUrl, {
+            channelId: testChannel.id,
+            message: 'Reply thread parent message',
+        });
+        replyThreadPostId = parentPost.id;
     });
 
     beforeEach(async () => {

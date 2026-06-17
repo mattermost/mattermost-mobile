@@ -107,6 +107,7 @@ describe('Agents - Tool Calls in Channels', () => {
     let testUser: any;
     let testTeam: any;
     let agentsEnabled = false;
+    let didLogin = false;
 
     beforeAll(async () => {
         // # Ensure agents plugin is installed and active (installs from Marketplace if needed)
@@ -126,14 +127,15 @@ describe('Agents - Tool Calls in Channels', () => {
         // # Log in to server
         await ServerScreen.connectToServer(serverOneUrl, serverOneDisplayName);
         await LoginScreen.login(user);
+        didLogin = true;
 
         // # Wait for WebSocket to connect and agents status to be fetched
         await wait(timeouts.TEN_SEC);
     });
 
-    beforeEach(async () => {
+    beforeEach(async function () {
         if (!agentsEnabled) {
-            return;
+            this.skip();
         }
 
         // * Verify on channel list screen
@@ -141,7 +143,7 @@ describe('Agents - Tool Calls in Channels', () => {
     });
 
     afterAll(async () => {
-        if (!agentsEnabled) {
+        if (!didLogin) {
             return;
         }
 
@@ -150,9 +152,9 @@ describe('Agents - Tool Calls in Channels', () => {
     });
 
     // Skip: requires Agents plugin configured with at least one AI bot on CI server
-    it('should display tool call card with tool name for pending tool calls', async () => {
+    it('should display tool call card with tool name for pending tool calls', async function () {
         if (!agentsEnabled) {
-            return;
+            this.skip();
         }
 
         // # Create a tool call with a known name
@@ -183,9 +185,9 @@ describe('Agents - Tool Calls in Channels', () => {
     });
 
     // Skip: requires Agents plugin configured with at least one AI bot on CI server
-    it('should show Accept and Reject buttons for pending tool calls when user is requester', async () => {
+    it('should show Accept and Reject buttons for pending tool calls when user is requester', async function () {
         if (!agentsEnabled) {
-            return;
+            this.skip();
         }
 
         // # Create a pending tool call
@@ -213,9 +215,9 @@ describe('Agents - Tool Calls in Channels', () => {
     });
 
     // Skip: requires Agents plugin configured with at least one AI bot on CI server
-    it('should not show approval buttons when user is not the requester', async () => {
+    it('should not show approval buttons when user is not the requester', async function () {
         if (!agentsEnabled) {
-            return;
+            this.skip();
         }
 
         // # Create a second user and add to the test channel
@@ -251,9 +253,9 @@ describe('Agents - Tool Calls in Channels', () => {
     });
 
     // Skip: requires Agents plugin configured with at least one AI bot on CI server
-    it('should display tool calls with success status and results', async () => {
+    it('should display tool calls with success status and results', async function () {
         if (!agentsEnabled) {
-            return;
+            this.skip();
         }
 
         // # Create a successful tool call with a result
@@ -285,9 +287,9 @@ describe('Agents - Tool Calls in Channels', () => {
     });
 
     // Skip: requires Agents plugin configured with at least one AI bot on CI server
-    it('should display rejected status for rejected tool calls', async () => {
+    it('should display rejected status for rejected tool calls', async function () {
         if (!agentsEnabled) {
-            return;
+            this.skip();
         }
 
         // # Create a rejected tool call
@@ -322,9 +324,9 @@ describe('Agents - Tool Calls in Channels', () => {
     });
 
     // Skip: requires Agents plugin configured with at least one AI bot on CI server
-    it('should show Share and Keep Private buttons during result approval phase', async () => {
+    it('should show Share and Keep Private buttons during result approval phase', async function () {
         if (!agentsEnabled) {
-            return;
+            this.skip();
         }
 
         // # Create a successful tool call (tool has executed)
@@ -362,9 +364,9 @@ describe('Agents - Tool Calls in Channels', () => {
     });
 
     // Skip: requires Agents plugin configured with at least one AI bot on CI server
-    it('should display warning callout during result approval phase', async () => {
+    it('should display warning callout during result approval phase', async function () {
         if (!agentsEnabled) {
-            return;
+            this.skip();
         }
 
         // # Create a successful tool call with result
@@ -399,9 +401,9 @@ describe('Agents - Tool Calls in Channels', () => {
     });
 
     // Skip: requires Agents plugin configured with at least one AI bot on CI server
-    it('should show pending decisions counter for multiple pending tool calls', async () => {
+    it('should show pending decisions counter for multiple pending tool calls', async function () {
         if (!agentsEnabled) {
-            return;
+            this.skip();
         }
 
         // # Create multiple pending tool calls
@@ -433,9 +435,9 @@ describe('Agents - Tool Calls in Channels', () => {
     });
 
     // Skip: requires Agents plugin configured with at least one AI bot on CI server
-    it('should show tool arguments when expanded in a DM channel', async () => {
+    it('should show tool arguments when expanded in a DM channel', async function () {
         if (!agentsEnabled) {
-            return;
+            this.skip();
         }
 
         // # Get admin user info (the server API client is logged in as admin)
@@ -485,9 +487,9 @@ describe('Agents - Tool Calls in Channels', () => {
     });
 
     // Skip: requires Agents plugin configured with at least one AI bot on CI server
-    it('should display mix of pending and completed tool calls', async () => {
+    it('should display mix of pending and completed tool calls', async function () {
         if (!agentsEnabled) {
-            return;
+            this.skip();
         }
 
         // # Create a mix of tool calls in different states

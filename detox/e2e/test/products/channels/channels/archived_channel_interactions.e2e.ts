@@ -344,6 +344,10 @@ describe('Channels - Archived Channel Interactions', () => {
         // showManageMode so no remove controls appear in the rows.
         await expect(ManageChannelMembersScreen.manageButton).toBeVisible();
 
+        // # Enter manage mode and verify remove controls are not offered
+        await ManageChannelMembersScreen.toggleManageMode();
+        await expect(ManageChannelMembersScreen.removeButton).not.toBeVisible();
+
         // # Go back — Android pressBack() is more reliable when back button is occluded post-tutorial.
         if (isAndroid()) {
             await device.pressBack();

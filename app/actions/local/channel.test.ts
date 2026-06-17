@@ -5,6 +5,7 @@
 
 import {DeviceEventEmitter} from 'react-native';
 import {firstValueFrom} from 'rxjs';
+import {skip, take} from 'rxjs/operators';
 
 import {ActionType, Events, Navigation} from '@constants';
 import {SYSTEM_IDENTIFIERS} from '@constants/database';
@@ -574,12 +575,14 @@ describe('setChannelDeleteAt', () => {
     it('should update observeChannelIsArchived when deleteAt changes', async () => {
         await operator.handleChannel({channels: [channel], prepareRecordsOnly: false});
         const {database} = DatabaseManager.serverDatabases[serverUrl]!;
+        const archived$ = observeChannelIsArchived(database, channelId);
 
-        expect(await firstValueFrom(observeChannelIsArchived(database, channelId))).toBe(false);
+        expect(await firstValueFrom(archived$.pipe(take(1)))).toBe(false);
+        const nextArchived = firstValueFrom(archived$.pipe(skip(1), take(1)));
 
         const {error} = await setChannelDeleteAt(serverUrl, channelId, 123);
         expect(error).toBeUndefined();
-        expect(await firstValueFrom(observeChannelIsArchived(database, channelId))).toBe(true);
+        expect(await nextArchived).toBe(true);
     });
 });
 

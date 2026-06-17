@@ -22,6 +22,7 @@
 // archive_channel_from_settings.e2e.ts in this codebase.
 
 import {Channel, Post, Setup, System} from '@support/server_api';
+import client from '@support/server_api/client';
 import {serverOneUrl, siteOneUrl} from '@support/test_config';
 import {Alert} from '@support/ui/component';
 import {
@@ -234,14 +235,16 @@ describe('Channels - Archived Channel Post Interactions', () => {
             archivedChannel.id,
         );
         const message = 'Test message for existing reaction test';
-        await Post.apiCreatePost(siteOneUrl, {
+        const {post} = await Post.apiCreatePost(siteOneUrl, {
             channelId: archivedChannel.id,
             message,
         });
-        const {post} = await Post.apiGetLastPostInChannel(
-            siteOneUrl,
-            archivedChannel.id,
-        );
+        await client.post(`${siteOneUrl}/api/v4/reactions`, {
+            user_id: testUser.id,
+            post_id: post.id,
+            emoji_name: '+1',
+            create_at: 0,
+        });
         await Channel.apiDeleteChannel(siteOneUrl, archivedChannel.id);
         await wait(timeouts.FOUR_SEC);
 
@@ -257,6 +260,12 @@ describe('Channels - Archived Channel Post Interactions', () => {
 
         // * Tap and wait with sync disabled on iOS so the gesture fires immediately.
         await tapChannelAndWaitForArchivedChannelScreen(BrowseChannelsScreen.getChannelItem(archivedChannel.name));
+
+        // * Verify the existing reaction is visible on the archived post
+        const reactionEmoji = element(
+            by.id('reaction.emoji.+1').withAncestor(by.id(`channel.post_list.post.${post.id}`)),
+        );
+        await waitFor(reactionEmoji).toExist().withTimeout(timeouts.TEN_SEC);
 
         // # Long-press on the post to open post options and verify reactions cannot be added
         await ChannelScreen.openPostOptionsFor(post.id, message);

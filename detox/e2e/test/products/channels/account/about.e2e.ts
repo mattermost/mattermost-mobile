@@ -149,7 +149,7 @@ describe('Account - Settings - About', () => {
             await expect(AboutScreen.licensee).not.toBeVisible();
             await expect(AboutScreen.licenseLoadMetricTitle).not.toBeVisible();
         }
-        await expect(AboutScreen.learnMoreUrl).toExist().whileElement(by.id(AboutScreen.testID.scrollView)).scroll(50, 'down');
+        await waitFor(AboutScreen.learnMoreUrl).toBeVisible().whileElement(by.id(AboutScreen.testID.scrollView)).scroll(50, 'down');
         if (isAndroid()) {
             // FormattedText may not expose the full composed label to Detox on Android.
             await expect(AboutScreen.learnMoreText).toExist();

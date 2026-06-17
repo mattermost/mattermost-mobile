@@ -9,7 +9,7 @@ import {
     HomeScreen,
     PostOptionsScreen,
 } from '@support/ui/screen';
-import {isAndroid, longPressWithRetry, timeouts, wait} from '@support/utils';
+import {isAndroid, longPressWithRetry, timeouts, wait, waitForElementToBeVisible} from '@support/utils';
 import {expect, waitFor} from 'detox';
 
 class SavedMessagesScreen {

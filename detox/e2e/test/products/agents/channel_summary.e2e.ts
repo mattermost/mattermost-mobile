@@ -31,6 +31,7 @@ describe('Agents - Channel Summary', () => {
     const channelsCategory = 'channels';
     let testChannel: any;
     let agentsEnabled = false;
+    let didLogin = false;
 
     beforeAll(async () => {
         // # Ensure agents plugin is installed and active (installs from Marketplace if needed)
@@ -48,6 +49,7 @@ describe('Agents - Channel Summary', () => {
         // # Log in to server
         await ServerScreen.connectToServer(serverOneUrl, serverOneDisplayName);
         await LoginScreen.login(user);
+        didLogin = true;
 
         // # Wait for WebSocket to connect and agents status to be fetched
         await wait(timeouts.TEN_SEC);
@@ -83,7 +85,7 @@ describe('Agents - Channel Summary', () => {
     });
 
     afterAll(async () => {
-        if (!agentsEnabled) {
+        if (!didLogin) {
             return;
         }
 
@@ -92,9 +94,9 @@ describe('Agents - Channel Summary', () => {
     });
 
     // Skip: requires Agents plugin configured with at least one AI bot on CI server
-    it('should show Ask Agents option in public channel', async () => {
+    it('should show Ask Agents option in public channel', async function () {
         if (!agentsEnabled) {
-            return;
+            this.skip();
         }
 
         // # Open a channel screen
@@ -113,9 +115,9 @@ describe('Agents - Channel Summary', () => {
     });
 
     // Skip: requires Agents plugin configured with at least one AI bot on CI server
-    it('should open summary sheet and show options', async () => {
+    it('should open summary sheet and show options', async function () {
         if (!agentsEnabled) {
-            return;
+            this.skip();
         }
 
         // # Open a channel screen
