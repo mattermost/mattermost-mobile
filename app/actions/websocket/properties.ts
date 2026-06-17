@@ -1,13 +1,14 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {updatePropertyField, removePropertyFieldById, updatePropertyValues} from '@store/system_property_store';
+import DatabaseManager from '@database/manager';
 import {safeParseJSON} from '@utils/helpers';
-import {logDebug} from '@utils/log';
+import {logDebug, logError} from '@utils/log';
 
-export function handlePropertyFieldCreatedOrUpdated(serverUrl: string, msg: WebSocketMessage) {
+export async function handlePropertyFieldCreatedOrUpdated(serverUrl: string, msg: WebSocketMessage) {
     const data = msg.data as {property_field?: string; object_type?: string};
     if (!data.property_field) {
+        logDebug('handlePropertyFieldCreatedOrUpdated', 'No property_field in WS event');
         return;
     }
 
@@ -17,19 +18,30 @@ export function handlePropertyFieldCreatedOrUpdated(serverUrl: string, msg: WebS
         return;
     }
 
-    updatePropertyField(serverUrl, field);
+    try {
+        const {operator} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
+        await operator.handlePropertyFields({fields: [field], prepareRecordsOnly: false});
+    } catch (error) {
+        logError('handlePropertyFieldCreatedOrUpdated', error);
+    }
 }
 
-export function handlePropertyFieldDeleted(serverUrl: string, msg: WebSocketMessage) {
+export async function handlePropertyFieldDeleted(serverUrl: string, msg: WebSocketMessage) {
     const data = msg.data as {field_id?: string; object_type?: string};
     if (!data.field_id) {
+        logDebug('handlePropertyFieldDeleted', 'No field_id in WS event');
         return;
     }
 
-    removePropertyFieldById(serverUrl, data.field_id);
+    try {
+        const {operator} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
+        await operator.handlePropertyFields({fields: [{id: data.field_id, delete_at: Date.now()} as PropertyField], prepareRecordsOnly: false});
+    } catch (error) {
+        logError('handlePropertyFieldDeleted', error);
+    }
 }
 
-export function handlePropertyValuesUpdated(serverUrl: string, msg: WebSocketMessage) {
+export async function handlePropertyValuesUpdated(serverUrl: string, msg: WebSocketMessage) {
     const data = msg.data as PropertyValuesUpdatedData;
     if (!data.values) {
         return;
@@ -45,16 +57,10 @@ export function handlePropertyValuesUpdated(serverUrl: string, msg: WebSocketMes
         return;
     }
 
-    const byKey: Record<string, {targetId: string; groupId: string; values: Array<PropertyValue<string>>}> = Object.create(null) as Record<string, {targetId: string; groupId: string; values: Array<PropertyValue<string>>}>;
-    for (const v of values) {
-        const key = `${v.target_id}\0${v.group_id}`;
-        if (!byKey[key]) {
-            byKey[key] = {targetId: v.target_id, groupId: v.group_id, values: []};
-        }
-        byKey[key].values.push(v);
-    }
-
-    for (const entry of Object.values(byKey)) {
-        updatePropertyValues(serverUrl, entry.targetId, entry.groupId, entry.values);
+    try {
+        const {operator} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
+        await operator.handlePropertyValues({values, prepareRecordsOnly: false});
+    } catch (error) {
+        logError('handlePropertyValuesUpdated', error);
     }
 }

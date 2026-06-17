@@ -1,20 +1,22 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React, {useCallback, useMemo} from 'react';
+import React, {useCallback, useEffect, useMemo} from 'react';
 import {useIntl} from 'react-intl';
 import {Text, TouchableOpacity, View} from 'react-native';
 
+import {fetchChannelClassificationValue} from '@actions/remote/classification';
 import ExpandedAnnouncementBanner from '@components/announcement_banner/expanded_announcement_banner';
 import RemoveMarkdown from '@components/remove_markdown';
 import {CHANNEL_BANNER_HEIGHT} from '@constants/view';
 import {useServerUrl} from '@context/server';
 import {useDefaultHeaderHeight} from '@hooks/header';
-import {useChannelClassificationBanner} from '@hooks/use_channel_classification_banner';
 import {bottomSheet} from '@screens/navigation';
 import {getContrastingSimpleColor} from '@utils/general';
 import {bottomSheetSnapPoint} from '@utils/helpers';
 import {typography} from '@utils/typography';
+
+import type {ChannelClassificationBannerState} from '@utils/classification';
 
 const BUTTON_HEIGHT = 48; // From /app/utils/buttonStyles.ts, lg button
 const TITLE_HEIGHT = 30 + 12; // typography 600 line height
@@ -54,17 +56,21 @@ const getStyleSheet = (bannerTextColor: string) => ({
 type Props = {
     channelId: string;
     bannerInfo?: ChannelBannerInfo;
+    channelClassification: ChannelClassificationBannerState;
     isTopItem?: boolean;
     skipHeaderOffset?: boolean;
 }
 
-export function ChannelBanner({channelId, bannerInfo, isTopItem, skipHeaderOffset}: Props) {
+export function ChannelBanner({channelId, bannerInfo, channelClassification, isTopItem, skipHeaderOffset}: Props) {
     const intl = useIntl();
     const serverUrl = useServerUrl();
-    const classification = useChannelClassificationBanner(serverUrl, channelId, bannerInfo);
 
-    const effectiveBanner = classification.hasClassification
-        ? classification.classificationBanner
+    useEffect(() => {
+        fetchChannelClassificationValue(serverUrl, channelId);
+    }, [serverUrl, channelId]);
+
+    const effectiveBanner = channelClassification.hasClassification
+        ? channelClassification.classificationBanner
         : bannerInfo;
 
     const bannerTextColor = getContrastingSimpleColor(effectiveBanner?.background_color || '');

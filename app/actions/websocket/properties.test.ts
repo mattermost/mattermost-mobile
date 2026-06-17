@@ -1,13 +1,16 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import * as store from '@store/system_property_store';
+import {Q, type Database} from '@nozbe/watermelondb';
+
+import {MM_TABLES} from '@constants/database';
+import DatabaseManager from '@database/manager';
 
 import {handlePropertyFieldCreatedOrUpdated, handlePropertyFieldDeleted, handlePropertyValuesUpdated} from './properties';
 
-jest.mock('@utils/log', () => ({
-    logDebug: jest.fn(),
-}));
+import type {PropertyFieldModel, PropertyValueModel} from '@database/models/server';
+
+const {PROPERTY_FIELD, PROPERTY_VALUE} = MM_TABLES.SERVER;
 
 const serverUrl = 'ws-properties.test.com';
 const groupId = 'test_group';
@@ -27,7 +30,7 @@ const makeField = (id: string, overrides?: Partial<PropertyField>): PropertyFiel
     ...overrides,
 });
 
-const makeValue = (fieldId: string, value: string): PropertyValue<string> => ({
+const makeValue = (fieldId: string, value: string, overrides?: Partial<PropertyValue<string>>): PropertyValue<string> => ({
     id: `val-${fieldId}`,
     target_id: 'system',
     target_type: 'system',
@@ -37,17 +40,29 @@ const makeValue = (fieldId: string, value: string): PropertyValue<string> => ({
     create_at: 1000,
     update_at: 1000,
     delete_at: 0,
+    ...overrides,
 });
 
-const systemTargetId = 'system';
+const getStoredFields = async (database: Database) => {
+    const records = await database.get<PropertyFieldModel>(PROPERTY_FIELD).query(Q.where('group_id', groupId)).fetch();
+    return records;
+};
 
-beforeEach(() => {
-    store.setPropertyFields(serverUrl, groupId, []);
-    store.setPropertyValues(serverUrl, systemTargetId, groupId, []);
+const getStoredValues = async (database: Database, targetId: string) => {
+    const records = await database.get<PropertyValueModel>(PROPERTY_VALUE).query(Q.where('target_id', targetId)).fetch();
+    return records;
+};
+
+beforeEach(async () => {
+    await DatabaseManager.init([serverUrl]);
+});
+
+afterEach(async () => {
+    await DatabaseManager.destroyServerDatabase(serverUrl);
 });
 
 describe('handlePropertyFieldCreatedOrUpdated', () => {
-    it('should add a field to the store', () => {
+    it('should add a field to the DB', async () => {
         const field = makeField('f1');
         const msg = {
             event: 'property_field_created',
@@ -56,15 +71,17 @@ describe('handlePropertyFieldCreatedOrUpdated', () => {
             seq: 1,
         } as WebSocketMessage;
 
-        handlePropertyFieldCreatedOrUpdated(serverUrl, msg);
+        await handlePropertyFieldCreatedOrUpdated(serverUrl, msg);
 
-        const fields = store.getPropertyFields(serverUrl, groupId);
+        const {database} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
+        const fields = await getStoredFields(database);
         expect(fields).toHaveLength(1);
         expect(fields[0].id).toBe('f1');
     });
 
-    it('should update an existing field in the store', () => {
-        store.setPropertyFields(serverUrl, groupId, [makeField('f1')]);
+    it('should update an existing field in the DB', async () => {
+        const {operator, database} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
+        await operator.handlePropertyFields({fields: [makeField('f1')], prepareRecordsOnly: false});
 
         const updated = makeField('f1', {name: 'updated'});
         const msg = {
@@ -74,14 +91,14 @@ describe('handlePropertyFieldCreatedOrUpdated', () => {
             seq: 1,
         } as WebSocketMessage;
 
-        handlePropertyFieldCreatedOrUpdated(serverUrl, msg);
+        await handlePropertyFieldCreatedOrUpdated(serverUrl, msg);
 
-        const fields = store.getPropertyFields(serverUrl, groupId);
+        const fields = await getStoredFields(database);
         expect(fields).toHaveLength(1);
         expect(fields[0].name).toBe('updated');
     });
 
-    it('should ignore events with no property_field data', () => {
+    it('should ignore events with no property_field data', async () => {
         const msg = {
             event: 'property_field_created',
             data: {},
@@ -89,11 +106,13 @@ describe('handlePropertyFieldCreatedOrUpdated', () => {
             seq: 1,
         } as WebSocketMessage;
 
-        handlePropertyFieldCreatedOrUpdated(serverUrl, msg);
-        expect(store.getPropertyFields(serverUrl, groupId)).toHaveLength(0);
+        await handlePropertyFieldCreatedOrUpdated(serverUrl, msg);
+
+        const {database} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
+        expect(await getStoredFields(database)).toHaveLength(0);
     });
 
-    it('should ignore events with invalid JSON', () => {
+    it('should ignore events with invalid JSON', async () => {
         const msg = {
             event: 'property_field_created',
             data: {property_field: 'not-json'},
@@ -101,14 +120,18 @@ describe('handlePropertyFieldCreatedOrUpdated', () => {
             seq: 1,
         } as WebSocketMessage;
 
-        handlePropertyFieldCreatedOrUpdated(serverUrl, msg);
-        expect(store.getPropertyFields(serverUrl, groupId)).toHaveLength(0);
+        await handlePropertyFieldCreatedOrUpdated(serverUrl, msg);
+
+        const {database} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
+        expect(await getStoredFields(database)).toHaveLength(0);
     });
 });
 
 describe('handlePropertyFieldDeleted', () => {
-    it('should remove a field from the store by id', () => {
-        store.setPropertyFields(serverUrl, groupId, [makeField('f1'), makeField('f2')]);
+    it('should remove a field and its values from the DB by id', async () => {
+        const {operator, database} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
+        await operator.handlePropertyFields({fields: [makeField('f1'), makeField('f2')], prepareRecordsOnly: false});
+        await operator.handlePropertyValues({values: [makeValue('f1', 'v1')], prepareRecordsOnly: false});
 
         const msg = {
             event: 'property_field_deleted',
@@ -117,15 +140,17 @@ describe('handlePropertyFieldDeleted', () => {
             seq: 1,
         } as WebSocketMessage;
 
-        handlePropertyFieldDeleted(serverUrl, msg);
+        await handlePropertyFieldDeleted(serverUrl, msg);
 
-        const fields = store.getPropertyFields(serverUrl, groupId);
+        const fields = await getStoredFields(database);
         expect(fields).toHaveLength(1);
         expect(fields[0].id).toBe('f2');
+        expect(await getStoredValues(database, 'system')).toHaveLength(0);
     });
 
-    it('should do nothing when field_id is missing', () => {
-        store.setPropertyFields(serverUrl, groupId, [makeField('f1')]);
+    it('should do nothing when field_id is missing', async () => {
+        const {operator, database} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
+        await operator.handlePropertyFields({fields: [makeField('f1')], prepareRecordsOnly: false});
 
         const msg = {
             event: 'property_field_deleted',
@@ -134,16 +159,13 @@ describe('handlePropertyFieldDeleted', () => {
             seq: 1,
         } as WebSocketMessage;
 
-        handlePropertyFieldDeleted(serverUrl, msg);
-        expect(store.getPropertyFields(serverUrl, groupId)).toHaveLength(1);
+        await handlePropertyFieldDeleted(serverUrl, msg);
+        expect(await getStoredFields(database)).toHaveLength(1);
     });
 
-    it('should do nothing when field_id does not match any stored field', () => {
-        store.setPropertyFields(serverUrl, groupId, [makeField('f1')]);
-
-        const listener = jest.fn();
-        const unsub = store.subscribe(listener);
-        listener.mockClear();
+    it('should do nothing when field_id does not match any stored field', async () => {
+        const {operator, database} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
+        await operator.handlePropertyFields({fields: [makeField('f1')], prepareRecordsOnly: false});
 
         const msg = {
             event: 'property_field_deleted',
@@ -152,16 +174,13 @@ describe('handlePropertyFieldDeleted', () => {
             seq: 1,
         } as WebSocketMessage;
 
-        handlePropertyFieldDeleted(serverUrl, msg);
-        expect(store.getPropertyFields(serverUrl, groupId)).toHaveLength(1);
-        expect(listener).not.toHaveBeenCalled();
-
-        unsub();
+        await handlePropertyFieldDeleted(serverUrl, msg);
+        expect(await getStoredFields(database)).toHaveLength(1);
     });
 });
 
 describe('handlePropertyValuesUpdated', () => {
-    it('should add new values to the store grouped by group_id', () => {
+    it('should add new values to the DB', async () => {
         const values = [makeValue('f1', 'v1'), makeValue('f2', 'v2')];
         const msg = {
             event: 'property_values_updated',
@@ -170,14 +189,15 @@ describe('handlePropertyValuesUpdated', () => {
             seq: 1,
         } as WebSocketMessage;
 
-        handlePropertyValuesUpdated(serverUrl, msg);
+        await handlePropertyValuesUpdated(serverUrl, msg);
 
-        const stored = store.getPropertyValuesForTarget(serverUrl, systemTargetId);
-        expect(stored).toHaveLength(2);
+        const {database} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
+        expect(await getStoredValues(database, 'system')).toHaveLength(2);
     });
 
-    it('should update existing values in the store', () => {
-        store.setPropertyValues(serverUrl, systemTargetId, groupId, [makeValue('f1', 'old')]);
+    it('should update existing values in the DB', async () => {
+        const {operator, database} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
+        await operator.handlePropertyValues({values: [makeValue('f1', 'old')], prepareRecordsOnly: false});
 
         const updated = [makeValue('f1', 'new')];
         const msg = {
@@ -187,35 +207,14 @@ describe('handlePropertyValuesUpdated', () => {
             seq: 1,
         } as WebSocketMessage;
 
-        handlePropertyValuesUpdated(serverUrl, msg);
+        await handlePropertyValuesUpdated(serverUrl, msg);
 
-        const stored = store.getPropertyValuesForTarget(serverUrl, systemTargetId);
+        const stored = await getStoredValues(database, 'system');
         expect(stored).toHaveLength(1);
         expect(stored[0].value).toBe('new');
     });
 
-    it('should handle values from multiple groups', () => {
-        const otherGroupId = 'other_group';
-        const v1 = makeValue('f1', 'v1');
-        const v2 = {...makeValue('f2', 'v2'), group_id: otherGroupId};
-
-        const msg = {
-            event: 'property_values_updated',
-            data: {values: JSON.stringify([v1, v2])},
-            broadcast: {},
-            seq: 1,
-        } as WebSocketMessage;
-
-        handlePropertyValuesUpdated(serverUrl, msg);
-
-        expect(store.getPropertyValuesForTarget(serverUrl, systemTargetId)).toHaveLength(2);
-    });
-
-    it('should ignore events with no values', () => {
-        const listener = jest.fn();
-        const unsub = store.subscribe(listener);
-        listener.mockClear();
-
+    it('should ignore events with no values', async () => {
         const msg = {
             event: 'property_values_updated',
             data: {},
@@ -223,17 +222,13 @@ describe('handlePropertyValuesUpdated', () => {
             seq: 1,
         } as WebSocketMessage;
 
-        handlePropertyValuesUpdated(serverUrl, msg);
-        expect(listener).not.toHaveBeenCalled();
+        await handlePropertyValuesUpdated(serverUrl, msg);
 
-        unsub();
+        const {database} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
+        expect(await getStoredValues(database, 'system')).toHaveLength(0);
     });
 
-    it('should ignore events with invalid JSON', () => {
-        const listener = jest.fn();
-        const unsub = store.subscribe(listener);
-        listener.mockClear();
-
+    it('should ignore events with invalid JSON', async () => {
         const msg = {
             event: 'property_values_updated',
             data: {values: 'not-json'},
@@ -241,17 +236,13 @@ describe('handlePropertyValuesUpdated', () => {
             seq: 1,
         } as WebSocketMessage;
 
-        handlePropertyValuesUpdated(serverUrl, msg);
-        expect(listener).not.toHaveBeenCalled();
+        await handlePropertyValuesUpdated(serverUrl, msg);
 
-        unsub();
+        const {database} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
+        expect(await getStoredValues(database, 'system')).toHaveLength(0);
     });
 
-    it('should ignore events with empty values array', () => {
-        const listener = jest.fn();
-        const unsub = store.subscribe(listener);
-        listener.mockClear();
-
+    it('should ignore events with empty values array', async () => {
         const msg = {
             event: 'property_values_updated',
             data: {values: '[]'},
@@ -259,25 +250,15 @@ describe('handlePropertyValuesUpdated', () => {
             seq: 1,
         } as WebSocketMessage;
 
-        handlePropertyValuesUpdated(serverUrl, msg);
-        expect(listener).not.toHaveBeenCalled();
+        await handlePropertyValuesUpdated(serverUrl, msg);
 
-        unsub();
+        const {database} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
+        expect(await getStoredValues(database, 'system')).toHaveLength(0);
     });
 
-    it('should store channel property values by their target_id', () => {
+    it('should store channel property values by their target_id', async () => {
         const channelId = 'channel-abc';
-        const channelValue: PropertyValue<string> = {
-            id: 'val-chan',
-            target_id: channelId,
-            target_type: 'channel',
-            group_id: groupId,
-            field_id: 'chan-field',
-            value: 'level-1',
-            create_at: 1000,
-            update_at: 1000,
-            delete_at: 0,
-        };
+        const channelValue = makeValue('chan-field', 'level-1', {id: 'val-chan', target_id: channelId, target_type: 'channel'});
         const msg = {
             event: 'property_values_updated',
             data: {values: JSON.stringify([channelValue])},
@@ -285,26 +266,18 @@ describe('handlePropertyValuesUpdated', () => {
             seq: 1,
         } as WebSocketMessage;
 
-        handlePropertyValuesUpdated(serverUrl, msg);
+        await handlePropertyValuesUpdated(serverUrl, msg);
 
-        expect(store.getPropertyValuesForTarget(serverUrl, channelId)).toHaveLength(1);
-        expect(store.getPropertyValuesForTarget(serverUrl, channelId)[0].value).toBe('level-1');
+        const {database} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
+        const stored = await getStoredValues(database, channelId);
+        expect(stored).toHaveLength(1);
+        expect(stored[0].value).toBe('level-1');
     });
 
-    it('should isolate values across different target ids', () => {
+    it('should isolate values across different target ids', async () => {
         const channelId = 'channel-xyz';
         const systemVal = makeValue('sys-field', 'sys-val');
-        const channelVal: PropertyValue<string> = {
-            id: 'val-chan',
-            target_id: channelId,
-            target_type: 'channel',
-            group_id: groupId,
-            field_id: 'chan-field',
-            value: 'chan-val',
-            create_at: 1000,
-            update_at: 1000,
-            delete_at: 0,
-        };
+        const channelVal = makeValue('chan-field', 'chan-val', {id: 'val-chan', target_id: channelId, target_type: 'channel'});
 
         const msg = {
             event: 'property_values_updated',
@@ -313,9 +286,10 @@ describe('handlePropertyValuesUpdated', () => {
             seq: 1,
         } as WebSocketMessage;
 
-        handlePropertyValuesUpdated(serverUrl, msg);
+        await handlePropertyValuesUpdated(serverUrl, msg);
 
-        expect(store.getPropertyValuesForTarget(serverUrl, systemTargetId)).toHaveLength(1);
-        expect(store.getPropertyValuesForTarget(serverUrl, channelId)).toHaveLength(1);
+        const {database} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
+        expect(await getStoredValues(database, 'system')).toHaveLength(1);
+        expect(await getStoredValues(database, channelId)).toHaveLength(1);
     });
 });

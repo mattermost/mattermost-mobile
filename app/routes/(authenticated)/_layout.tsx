@@ -5,9 +5,8 @@ import {PortalHost} from '@gorhom/portal';
 import {Stack, Redirect} from 'expo-router';
 import {useMemo} from 'react';
 import {View} from 'react-native';
-import {SafeAreaInsetsContext, useSafeAreaInsets} from 'react-native-safe-area-context';
 
-import GlobalBannerContainer, {GLOBAL_BANNER_PORTAL_HOST, useGlobalBannerHeight} from '@components/global_banner_overlay';
+import GlobalClassificationBannerContainer, {GLOBAL_BANNER_PORTAL_HOST} from '@components/global_classification_banner';
 import {useTheme} from '@context/theme';
 import {withServerDatabase} from '@database/components';
 import {useHasCredentials} from '@hooks/use_has_credentials';
@@ -30,13 +29,6 @@ function AuthenticatedLayout() {
     const hasCredentials = useHasCredentials();
     const theme = useTheme();
     const styles = getStyleSheet(theme);
-    const realInsets = useSafeAreaInsets();
-    const bannerHeight = useGlobalBannerHeight();
-
-    const adjustedInsets = useMemo(
-        () => ({...realInsets, top: realInsets.top + bannerHeight}),
-        [realInsets, bannerHeight],
-    );
 
     const stackScreenOptions = useMemo<NativeStackNavigationOptions>(() => ({
         headerShown: false,
@@ -61,13 +53,12 @@ function AuthenticatedLayout() {
 
     return (
         <View style={styles.safeAreaView}>
-            <SafeAreaInsetsContext.Provider value={adjustedInsets}>
+            <GlobalClassificationBannerContainer>
                 <Stack screenOptions={stackScreenOptions}>
                     <Stack.Screen name='(home)'/>
                 </Stack>
-            </SafeAreaInsetsContext.Provider>
+            </GlobalClassificationBannerContainer>
             <PortalHost name={GLOBAL_BANNER_PORTAL_HOST}/>
-            {bannerHeight > 0 && <GlobalBannerContainer/>}
         </View>
     );
 }
