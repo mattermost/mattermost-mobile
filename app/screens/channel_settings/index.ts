@@ -8,7 +8,7 @@ import {distinctUntilChanged, map, switchMap, combineLatestWith} from 'rxjs/oper
 import {observeIsCallsEnabledInChannel} from '@calls/observers';
 import {observeCallsConfig} from '@calls/state';
 import {General, Permissions} from '@constants';
-import {observeChannel, observeChannelIsArchived} from '@queries/servers/channel';
+import {observeChannel} from '@queries/servers/channel';
 import {observePermissionForChannel, observePermissionForTeam, observeCanManageChannelSettings, observeCanManageChannelAutotranslations, observeCanManageSharedChannel} from '@queries/servers/role';
 import {
     observeConfigValue,
@@ -117,7 +117,8 @@ const enhanced = withObservables(['channelId'], ({channelId, serverUrl, database
         }),
     );
 
-    const isArchived = observeChannelIsArchived(database, channelId);
+    // Archive observables
+    const isArchived = channel.pipe(switchMap((c) => of$((c?.deleteAt || 0) > 0)));
     const canLeave = channel.pipe(
         combineLatestWith(currentUser),
         switchMap(([ch, u]) => {

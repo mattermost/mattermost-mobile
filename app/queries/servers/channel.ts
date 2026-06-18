@@ -324,13 +324,6 @@ export const observeChannel = (database: Database, channelId: string) => {
     );
 };
 
-export const observeChannelIsArchived = (database: Database, channelId: string) => {
-    return database.get<ChannelModel>(CHANNEL).query(Q.where('id', channelId), Q.take(1)).observeWithColumns(['delete_at']).pipe(
-        map((channels) => (channels[0]?.deleteAt ?? 0) !== 0),
-        distinctUntilChanged(),
-    );
-};
-
 export const getChannelByName = async (database: Database, teamId: string, channelName: string) => {
     const clauses: Clause[] = [];
     if (teamId) {

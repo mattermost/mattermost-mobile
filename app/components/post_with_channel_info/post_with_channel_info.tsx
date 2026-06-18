@@ -82,31 +82,4 @@ function PostWithChannelInfo({
     );
 }
 
-function postPropsEqual(prevProps: Props, nextProps: Props) {
-    // WatermelonDB models mutate in place, so a shallow prop comparison is
-    // not enough. Re-render when post id, updateAt, or editAt change.
-    if (prevProps.post?.id !== nextProps.post?.id) {
-        return false;
-    }
-    if (prevProps.post?.updateAt !== nextProps.post?.updateAt) {
-        return false;
-    }
-    if (prevProps.post?.editAt !== nextProps.post?.editAt) {
-        return false;
-    }
-
-    return (
-        prevProps.appsEnabled === nextProps.appsEnabled &&
-        prevProps.currentUser?.id === nextProps.currentUser?.id &&
-        prevProps.customEmojiNames === nextProps.customEmojiNames &&
-        prevProps.isCRTEnabled === nextProps.isCRTEnabled &&
-        prevProps.location === nextProps.location &&
-        prevProps.testID === nextProps.testID &&
-        prevProps.searchPatterns === nextProps.searchPatterns &&
-        prevProps.skipSavedPostsHighlight === nextProps.skipSavedPostsHighlight &&
-        prevProps.isSaved === nextProps.isSaved &&
-        prevProps.isChannelAutotranslated === nextProps.isChannelAutotranslated
-    );
-}
-
-export default memo(PostWithChannelInfo, postPropsEqual);
+export default memo(PostWithChannelInfo);

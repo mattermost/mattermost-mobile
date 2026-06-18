@@ -6,7 +6,7 @@ import {combineLatest, of as of$} from 'rxjs';
 import {switchMap} from 'rxjs/operators';
 
 import {General, Permissions} from '@constants';
-import {observeChannel, observeChannelIsArchived} from '@queries/servers/channel';
+import {observeChannel} from '@queries/servers/channel';
 import {observePermissionForChannel} from '@queries/servers/role';
 import {observeConfigBooleanValue, observeCurrentChannelId} from '@queries/servers/system';
 import {observeCurrentUser, observeUser} from '@queries/servers/user';
@@ -35,9 +35,7 @@ const enhanced = withObservables(['channelId', 'rootId'], (ownProps: WithDatabas
     );
 
     const canPost = combineLatest([channel, currentUser]).pipe(switchMap(([c, u]) => (c && u ? observePermissionForChannel(database, c, u, Permissions.CREATE_POST, true) : of$(true))));
-    const channelIsArchived = channelId.pipe(
-        switchMap((id) => (id ? observeChannelIsArchived(database, id) : of$(false))),
-    );
+    const channelIsArchived = channel.pipe(switchMap((c) => (of$(c?.deleteAt !== 0))));
 
     const experimentalTownSquareIsReadOnly = observeConfigBooleanValue(database, 'ExperimentalTownSquareIsReadOnly');
     const channelIsReadOnly = combineLatest([currentUser, channel, experimentalTownSquareIsReadOnly]).pipe(

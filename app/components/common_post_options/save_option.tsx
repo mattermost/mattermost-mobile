@@ -31,7 +31,7 @@ const SaveOption = ({isSaved, postId}: CopyTextProps) => {
     const onHandlePress = useCallback(async () => {
         const remoteAction = isSaved ? deleteSavedPost : savePostPreference;
         await dismissBottomSheet();
-        await remoteAction(serverUrl, postId);
+        remoteAction(serverUrl, postId);
     }, [isSaved, postId, serverUrl]);
 
     const message = isSaved ? messages.unsave : messages.save;
@@ -41,7 +41,7 @@ const SaveOption = ({isSaved, postId}: CopyTextProps) => {
             message={message}
             iconName='bookmark-outline'
             onPress={onHandlePress}
-            testID={`post_options.${isSaved ? 'Unsave' : 'Save'}_post.option`}
+            testID={`post_options.${message.defaultMessage}_post.option`}
         />
     );
 };
