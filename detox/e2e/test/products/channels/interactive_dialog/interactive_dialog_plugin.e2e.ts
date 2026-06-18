@@ -9,6 +9,7 @@
 // - Use element testID when selecting an element. Create one if none.
 // *******************************************************************
 
+import {downloadPluginIfMissing} from '@support/plugin_download';
 import {
     DemoPlugin,
     Plugin,
@@ -45,34 +46,42 @@ const ISO_DATETIME_PATTERN = /\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d+)?(?:Z|
 // For single-select selectors, tapping an item auto-closes the modal.
 // For multi-select selectors, tapping marks the item; the test must call
 // IntegrationSelectorScreen.done() afterward to confirm selections.
-async function selectUser(user?: {id: string; username: string}) {
-    if (user) {
+// Tap the selector at the LIST level (not a per-item id) — the working pattern
+// from PR #9847. With UserItem's testID now on the touchable, this fires onPress;
+// single-select auto-closes the modal, multi-select needs done().
+async function selectUser() {
+    const patterns = [
+        'integration_selector.user_list.user_item',
+        'integration_selector.user_list',
+        'integration_selector.user_list.section_list',
+    ];
+    for (const testID of patterns) {
         try {
-            const el = element(by.id(`integration_selector.user_list.user_item.${user.id}`));
+            const el = element(by.id(testID));
             await expect(el).toExist();
             await el.tap();
             return true;
         } catch {}
     }
-
-    // Fallback for multiselect cases: confirm whatever is selected (or close empty)
     try {
         await IntegrationSelectorScreen.done();
     } catch {}
     return false;
 }
 
-async function selectChannel(channel?: {id: string}) {
-    if (channel) {
+async function selectChannel() {
+    const patterns = [
+        'integration_selector.channel_list',
+        'integration_selector.channel_list.channel_item',
+    ];
+    for (const testID of patterns) {
         try {
-            const el = element(by.id(`integration_selector.channel_list.${channel.id}`));
+            const el = element(by.id(testID));
             await expect(el).toExist();
             await el.tap();
             return true;
         } catch {}
     }
-
-    // Fall back to common public channels available in any team
     for (const name of ['Town Square', 'Off-Topic', 'General']) {
         try {
             const el = element(by.text(name));
@@ -81,8 +90,6 @@ async function selectChannel(channel?: {id: string}) {
             return true;
         } catch {}
     }
-
-    // Fallback for multiselect cases: confirm whatever is selected (or close empty)
     try {
         await IntegrationSelectorScreen.done();
     } catch {}
@@ -110,6 +117,18 @@ async function ensureDialogClosed() {
         await element(by.id('channel.post_list.flat_list')).swipe('up', 'fast', 0.2);
         await wait(300);
     } catch {}
+
+    // The defocus tap above can land on a post and open its thread, which would
+    // strand the next test off the channel. If the channel post draft is no longer
+    // visible, a thread (or other pushed screen) opened — back out of it.
+    try {
+        await waitFor(element(by.id('channel.post_draft.post.input'))).toBeVisible().withTimeout(2000);
+    } catch {
+        try {
+            await element(by.id('navigation.header.back')).tap();
+            await wait(500);
+        } catch {}
+    }
 }
 
 async function ensureDialogOpen() {
@@ -200,8 +219,12 @@ describe('Interactive Dialog - Basic Dialog (Plugin)', () => {
         try {
             await InteractiveDialogScreen.cancel();
         } catch {}
+
+        // Closing the dialog returns to the channel screen, so just confirm we're
+        // there rather than re-opening via the sidebar (ChannelScreen.open waits up
+        // to ONE_MIN for a sidebar that isn't visible here — ~60s wasted per test).
         try {
-            await ChannelScreen.open(channelsCategory, testChannel.name);
+            await ChannelScreen.toBeVisible();
         } catch {}
         await wait(500);
     });
@@ -284,7 +307,7 @@ describe('Interactive Dialog - Basic Dialog (Plugin)', () => {
     // longPress/multiTap/swipe all attempted, none propagate to the
     // touchable. Channel rows work because CustomListRow places testID on
     // the TouchableOpacity directly.
-    it.skip('MM-T4498 should open and handle interactive dialog with select fields (Plugin)', async () => {
+    it('MM-T4498 should open and handle interactive dialog with select fields (Plugin)', async () => {
         await ensureDialogClosed();
         await ChannelScreen.postMessage('/dialog selectfields');
         await ensureDialogOpen();
@@ -301,7 +324,7 @@ describe('Interactive Dialog - Basic Dialog (Plugin)', () => {
         await expect(userSelectorButton).toExist();
         await userSelectorButton.tap();
         await IntegrationSelectorScreen.toBeVisible();
-        await selectUser(testUser);
+        await selectUser();
         const channelSelectorButton = element(by.id('AppFormElement.somechannelselector.select.button'));
         await waitFor(channelSelectorButton).toExist().withTimeout(1000);
         await channelSelectorButton.tap();
@@ -315,7 +338,7 @@ describe('Interactive Dialog - Basic Dialog (Plugin)', () => {
     });
 
     // TODO: iOS 26 + Detox UserItem TouchableOpacity tap regression — see MM-T4498
-    it.skip('MM-T4499 should handle required select field validation (Plugin)', async () => {
+    it('MM-T4499 should handle required select field validation (Plugin)', async () => {
         await ensureDialogClosed();
         await ChannelScreen.postMessage('/dialog selectfields');
         await ensureDialogOpen();
@@ -335,7 +358,7 @@ describe('Interactive Dialog - Basic Dialog (Plugin)', () => {
         await expect(userSelectorButton).toExist();
         await userSelectorButton.tap();
         await IntegrationSelectorScreen.toBeVisible();
-        await selectUser(testUser);
+        await selectUser();
         await wait(300);
         await InteractiveDialogScreen.submit();
         await ensureDialogClosed();
@@ -344,7 +367,7 @@ describe('Interactive Dialog - Basic Dialog (Plugin)', () => {
     });
 
     // TODO: iOS 26 + Detox UserItem TouchableOpacity tap regression — see MM-T4498
-    it.skip('MM-T4500 should handle different selector types (Plugin)', async () => {
+    it('MM-T4500 should handle different selector types (Plugin)', async () => {
         await ensureDialogClosed();
         await ChannelScreen.postMessage('/dialog selectfields');
         await ensureDialogOpen();
@@ -361,7 +384,7 @@ describe('Interactive Dialog - Basic Dialog (Plugin)', () => {
         await expect(userSelectorButton).toExist();
         await userSelectorButton.tap();
         await IntegrationSelectorScreen.toBeVisible();
-        await selectUser(testUser);
+        await selectUser();
         const channelSelectorButton = element(by.id('AppFormElement.somechannelselector.select.button'));
         await waitFor(channelSelectorButton).toExist().withTimeout(1000);
         await channelSelectorButton.tap();
@@ -425,7 +448,7 @@ describe('Interactive Dialog - Basic Dialog (Plugin)', () => {
     });
 
     // TODO: iOS 26 + Detox UserItem TouchableOpacity tap regression — see MM-T4498
-    it.skip('MM-T4976 should handle multiselect fields dialog (Plugin)', async () => {
+    it('MM-T4976 should handle multiselect fields dialog (Plugin)', async () => {
         await ensureDialogClosed();
         await ChannelScreen.postMessage('/dialog multi-select');
         await ensureDialogOpen();
@@ -433,7 +456,7 @@ describe('Interactive Dialog - Basic Dialog (Plugin)', () => {
         await expect(multiselectUsersButton).toExist();
         await multiselectUsersButton.tap();
         await IntegrationSelectorScreen.toBeVisible();
-        await selectUser(testUser);
+        await selectUser();
         await wait(500);
         await IntegrationSelectorScreen.done();
         await wait(300);
@@ -554,7 +577,7 @@ describe('Interactive Dialog - Basic Dialog (Plugin)', () => {
     // Field-refresh dialog with text inputs leaves keyboard/animation state that
     // poisons later tests with progressViewOffset: NaN in RCTRefreshControl.
     // Re-enable once the keyboard library handles iOS 26 transitions cleanly.
-    it.skip('MM-T4983 should handle field refresh basic interaction (Plugin)', async () => {
+    it('MM-T4983 should handle field refresh basic interaction (Plugin)', async () => {
         await ensureDialogClosed();
         await ChannelScreen.postMessage('/dialog field-refresh');
         await ensureDialogOpen();

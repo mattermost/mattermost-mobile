@@ -20,8 +20,9 @@ class InteractiveDialogScreen {
     // Platform-specific cancel button (following Alert pattern)
     platformCancelButton = isAndroid() ? element(by.text('CANCEL')) : element(by.label('Cancel')).atIndex(0);
 
-    // AppsForm close button (X button in header) - using the testID from buildNavigationButton
-    appsFormCloseButton = element(by.id('close.more_direct_messages.button'));
+    // Close button (X in header) - interactive dialogs render via the dialog_router route,
+    // whose testID is set in app/routes/(modals)/dialog_router.tsx
+    appsFormCloseButton = element(by.id('close.interactive_dialog.button'));
 
     // Helper to fill a text input in AppsForm
     fillTextElement = async (elementName: string, value: string) => {

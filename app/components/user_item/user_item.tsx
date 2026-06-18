@@ -160,11 +160,11 @@ const UserItem = ({
             onLongPress={onLongPress}
             disabled={!(onUserPress || onUserLongPress)}
             onLayout={onLayout}
+            testID={userItemTestId}
         >
             <View
                 ref={viewRef}
                 style={[containerViewStyle, containerStyle]}
-                testID={userItemTestId}
             >
                 <ProfilePicture
                     author={user}
