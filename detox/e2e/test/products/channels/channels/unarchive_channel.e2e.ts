@@ -20,7 +20,8 @@ import {
     ChannelInfoScreen,
     ChannelSettingsScreen,
 } from '@support/ui/screen';
-import {getRandomId, timeouts, wait} from '@support/utils';
+import {getRandomId, timeouts, wait, waitForElementToBeVisible} from '@support/utils';
+import {expect} from 'detox';
 
 describe('Channels - Unarchive Channel', () => {
     const serverOneDisplayName = 'Server 1';
@@ -61,24 +62,20 @@ describe('Channels - Unarchive Channel', () => {
         await ChannelSettingsScreen.toBeVisible();
         await ChannelSettingsScreen.archivePublicChannel({confirm: true});
 
+        await ChannelInfoScreen.close();
+        await waitForElementToBeVisible(ChannelScreen.postDraftArchived, timeouts.TEN_SEC);
+
         await ChannelInfoScreen.open();
         await ChannelInfoScreen.openChannelSettings();
         await ChannelSettingsScreen.toBeVisible();
         await ChannelSettingsScreen.unarchivePublicChannel({confirm: true});
         await wait(timeouts.FOUR_SEC);
 
-        // Use waitFor (polling) instead of expect (one-shot) — the UI may need
-        // extra time to reflect the unarchived state after the API call completes.
-        await waitFor(ChannelScreen.postDraft).toBeVisible().withTimeout(timeouts.TEN_SEC);
+        await expect(ChannelScreen.postDraft).toBeVisible();
         await ChannelScreen.back();
     });
 
     it('MM-T4944_2 - should be able to unarchive a private channel and confirm', async () => {
-        // The "Removed from channel" alert from the prior test's archive/unarchive
-        // cycle can appear with a delay (after beforeEach already ran) because the
-        // WebSocket "user_removed" event arrives async. Dismiss any lingering alert
-        // here so it does not cover the channel-list plus button on iOS.
-        await Alert.dismissChannelRemoveOrArchiveAlert();
         const channelDisplayName = `Channel ${getRandomId()}`;
         await CreateOrEditChannelScreen.openCreateChannel();
         await CreateOrEditChannelScreen.toggleMakePrivateOn();
@@ -91,16 +88,17 @@ describe('Channels - Unarchive Channel', () => {
         await ChannelSettingsScreen.toBeVisible();
         await ChannelSettingsScreen.archivePrivateChannel({confirm: true});
 
+        await ChannelInfoScreen.close();
+        await waitForElementToBeVisible(ChannelScreen.postDraftArchived, timeouts.TEN_SEC);
+
         await ChannelInfoScreen.open();
         await ChannelInfoScreen.openChannelSettings();
         await ChannelSettingsScreen.toBeVisible();
         await ChannelSettingsScreen.unarchivePrivateChannel({confirm: true});
         await wait(timeouts.FOUR_SEC);
 
-        // Use waitFor (polling) instead of expect (one-shot) — the UI may need
-        // extra time to reflect the unarchived state after the API call completes.
-        await waitFor(ChannelScreen.channelScreen).toBeVisible().withTimeout(timeouts.TEN_SEC);
-        await waitFor(ChannelScreen.postDraft).toBeVisible().withTimeout(timeouts.TEN_SEC);
+        await ChannelScreen.toBeVisible();
+        await expect(ChannelScreen.postDraft).toBeVisible();
         await ChannelScreen.back();
     });
 });

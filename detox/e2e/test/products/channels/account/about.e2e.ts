@@ -155,29 +155,26 @@ describe('Account - Settings - About', () => {
         const scrollToAboutElement = async (target: Detox.IndexableNativeElement) => {
             const scrollView = by.id(AboutScreen.testID.scrollView);
             /* eslint-disable no-await-in-loop -- bounded scroll retry */
-            for (let attempt = 0; attempt < 12; attempt++) {
+            for (let attempt = 0; attempt < 8; attempt++) {
                 try {
                     await waitFor(target).toBeVisible().withTimeout(timeouts.TWO_SEC);
                     return;
                 } catch {
-                    await element(scrollView).scroll(200, 'down');
+                    await element(scrollView).scroll(100, 'down');
                 }
             }
             /* eslint-enable no-await-in-loop */
             await expect(target).toBeVisible();
         };
 
-        // On iOS, learnMoreUrl is a nested <Text> inside another <Text>; the testID
-        // may not surface to Detox. Use learnMoreText (always present as a sibling)
-        // as the scroll target instead.
-        await scrollToAboutElement(AboutScreen.learnMoreText);
+        await scrollToAboutElement(AboutScreen.learnMoreUrl);
         if (isAndroid()) {
             // FormattedText may not expose the full composed label to Detox on Android.
             await expect(AboutScreen.learnMoreText).toExist();
         } else {
             await expect(AboutScreen.learnMoreText).toHaveText(expectedLearnMorePrefix);
         }
-        await expect(AboutScreen.learnMoreText).toBeVisible();
+        await expect(AboutScreen.learnMoreUrl).toBeVisible();
         await expect(AboutScreen.copyright).toHaveText(`Copyright 2015-${new Date().getFullYear()} Mattermost, Inc. All rights reserved`);
         await expect(AboutScreen.termsOfService).toHaveText('Terms of Service');
         await expect(AboutScreen.privacyPolicy).toHaveText('Privacy Policy');

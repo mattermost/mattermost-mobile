@@ -280,6 +280,9 @@ describe('Search - Pinned Messages', () => {
         await wait(timeouts.TWO_SEC);
 
         // * Verify pinned message is not displayed anymore on saved messages screen.
+        // Poll: the unsave preference deletion propagates through the DB observable to
+        // the saved messages list, which can take longer than a single-shot expect()
+        // allows on slower devices.
         await waitFor(postListPostItem).not.toExist().withTimeout(timeouts.TEN_SEC);
 
         // # Go back to channel list screen

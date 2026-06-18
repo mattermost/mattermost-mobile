@@ -7,8 +7,11 @@
 // - Use element testID when selecting an element. Create one if none.
 // *******************************************************************
 
-import {isAgentsPluginActive, itWhenAgentsReady} from '@support/agents_plugin';
-import {AgentsPlugin, Setup} from '@support/server_api';
+import {
+    AgentsPlugin,
+    Plugin,
+    Setup,
+} from '@support/server_api';
 import {
     serverOneUrl,
     siteOneUrl,
@@ -30,8 +33,8 @@ describe('Agents - Channel Summary', () => {
     let didLogin = false;
 
     beforeAll(async () => {
-        const pluginActive = await isAgentsPluginActive(siteOneUrl);
-        if (!pluginActive) {
+        const pluginStatus = await Plugin.apiGetPluginStatus(siteOneUrl, AgentsPlugin.id);
+        if (!pluginStatus.isActive) {
             // eslint-disable-next-line no-console
             console.warn(`Agents plugin (${AgentsPlugin.id}) is not active — skipping suite`);
             return;
@@ -44,10 +47,6 @@ describe('Agents - Channel Summary', () => {
         await ServerScreen.connectToServer(serverOneUrl, serverOneDisplayName);
         await LoginScreen.login(user);
         didLogin = true;
-
-        // Reload after login — prior suites may leave the app logged out or on the wrong screen.
-        await device.reloadReactNative();
-        await ChannelListScreen.toBeVisible();
 
         // # Wait for WebSocket to connect and agents status to be fetched
         await wait(timeouts.TEN_SEC);
@@ -87,7 +86,16 @@ describe('Agents - Channel Summary', () => {
         await HomeScreen.logout();
     });
 
-    itWhenAgentsReady(() => didLogin && Boolean(testChannel), 'should show Ask Agents option in public channel', async () => {
+    const itWhenLoggedIn = (name: string, fn: () => Promise<void>) => {
+        it(name, async () => {
+            if (!didLogin) {
+                return;
+            }
+            await fn();
+        });
+    };
+
+    itWhenLoggedIn('should show Ask Agents option in public channel', async () => {
         // # Open a channel screen
         await ChannelScreen.open(channelsCategory, testChannel.name);
 
@@ -103,7 +111,7 @@ describe('Agents - Channel Summary', () => {
         await ChannelScreen.back();
     });
 
-    itWhenAgentsReady(() => didLogin && Boolean(testChannel), 'should open summary sheet and show options', async () => {
+    itWhenLoggedIn('should open summary sheet and show options', async () => {
         // # Open a channel screen
         await ChannelScreen.open(channelsCategory, testChannel.name);
 

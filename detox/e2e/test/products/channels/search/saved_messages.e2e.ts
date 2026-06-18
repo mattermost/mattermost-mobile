@@ -233,11 +233,6 @@ describe('Search - Saved Messages', () => {
         await SavedMessagesScreen.toBeVisible();
 
         // # Open post options for saved message, tap on pin to channel option, go back to channel list screen, open the channel screen where saved message is posted, open channel info screen, and open pinned messages screen
-        // Wait for the saved post to appear before opening its options — the
-        // observable that drives the Saved Messages list (observeSavedPostIds)
-        // can take a moment to emit after the navigation.
-        const {postListPostItem: savedPostItem} = SavedMessagesScreen.getPostListPostItem(savedPost.id, message);
-        await waitFor(savedPostItem).toBeVisible().withTimeout(timeouts.TEN_SEC);
         await SavedMessagesScreen.openPostOptionsFor(savedPost.id, message);
         await PostOptionsScreen.pinPostOption.tap();
         await ChannelListScreen.open();

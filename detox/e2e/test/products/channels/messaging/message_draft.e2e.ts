@@ -186,12 +186,7 @@ describe('Messaging - Message Draft', () => {
         await ThreadScreen.back();
         await parentPostListPostItem.tap();
 
-        // * Verify reply message draft still exists in post draft.
-        // Wait for the thread screen to fully mount before asserting on its
-        // post input — re-opening a thread on iOS can briefly leave the input
-        // unmounted while navigation transitions complete.
-        await ThreadScreen.toBeVisible();
-        await waitFor(ThreadScreen.postInput).toBeVisible().withTimeout(timeouts.TEN_SEC);
+        // * Verify reply message draft still exists in post draft
         if (isIos()) {
             await expect(ThreadScreen.postInput).toHaveValue(replyMessage);
         } else {

@@ -191,14 +191,12 @@ describe('Channels - Channel Bookmarks', () => {
         // Press Back up to 4 times — but only if the channel list is NOT already visible — to avoid
         // accidentally navigating past the channel list (pressing Back there minimizes the app).
         if (isAndroid()) {
-            let reachedChannelList = false;
             for (let i = 0; i < 4; i++) {
                 try {
                     // eslint-disable-next-line no-await-in-loop
                     await waitFor(element(by.id('channel_list.screen'))).
                         toExist().
                         withTimeout(timeouts.ONE_SEC);
-                    reachedChannelList = true;
                     break; // Channel list is already showing — stop pressing back
                 } catch {
                     // Not at channel list yet — dismiss the top-most layer
@@ -207,16 +205,6 @@ describe('Channels - Channel Bookmarks', () => {
                     // eslint-disable-next-line no-await-in-loop
                     await wait(timeouts.ONE_SEC);
                 }
-            }
-
-            // Fallback: if back-navigation couldn't reach the channel list (e.g. a modal
-            // like the bookmark form is stuck open due to an app-side bug), reload React
-            // Native to get a clean state for the next test. Without this, one test leaving
-            // the app on a stuck modal cascades failures to every subsequent test in the shard.
-            if (!reachedChannelList) {
-                await device.reloadReactNative();
-                await wait(timeouts.TWO_SEC);
-                await ChannelListScreen.toBeVisible();
             }
         }
         try {
@@ -297,10 +285,6 @@ describe('Channels - Channel Bookmarks', () => {
         await wait(timeouts.TWO_SEC);
 
         // * Verify the bookmark modal closed and the bookmark is visible in channel info
-        // TODO(app): MM-T5602_1 — Save button tap does not dismiss the bookmark form on Android.
-        // The button appears visible but the tap has no effect; the screen stays on
-        // channel_bookmark.screen. This cascades to MM-T5608_1 (can't find channel list).
-        // Root cause likely in the bookmark form's onSave handler or the modal dismiss logic.
         await expect(ChannelBookmarkScreen.channelBookmarkScreen).not.toExist();
         await waitFor(
             element(
@@ -424,9 +408,6 @@ describe('Channels - Channel Bookmarks', () => {
         await element(by.text('Add a bookmark')).tap();
 
         // # Tap "Add a link"
-        // TODO(app): MM-T5604_1 — "Add a link" text not found in view hierarchy.
-        // The bottom sheet that should appear after tapping "Add a bookmark" in
-        // channel info either doesn't open or doesn't contain the "Add a link" option.
         await ChannelBookmarkScreen.addALinkOption.tap();
 
         // * Verify the Add a bookmark modal opens
@@ -672,10 +653,6 @@ describe('Channels - Channel Bookmarks', () => {
         await openChannel(channelT5612);
 
         // * Verify that the first bookmark is visible
-        // TODO(app): MM-T5612_1 — channel_header.bookmarks.list testID not found
-        // in view hierarchy. The bookmark bar is not rendered below the channel
-        // header on Android. Either the component doesn't mount or the testID is
-        // missing from the app code.
         await expect(element(firstBookmarkMatcher)).toBeVisible();
 
         // * Verify that the last bookmark starts off-screen
@@ -690,27 +667,6 @@ describe('Channels - Channel Bookmarks', () => {
         //   item (which previously opened a bookmark action sheet mid-test, see CI run
         //   26337780597 testFnFailure for MM-T5612_1). Poll-and-scroll via whileElement
         //   so it stops as soon as the target bookmark is visible.
-        // Helper: on iOS the fast horizontal swipe over a bookmark item can be
-        // misinterpreted as a long-press, opening the bookmark actions bottom sheet
-        // (Edit / Copy Link / Share / Delete). When that happens the sheet occludes
-        // the bookmark bar's ScrollView and subsequent swipes fail with "View does
-        // not pass visibility percent threshold". Dismiss the sheet between swipes
-        // by tapping outside it. See CI run y4xsz4tojr-8 testFnFailure for MM-T5612_1.
-        const dismissBookmarkActionSheetIfOpen = async () => {
-            if (!isIos()) {
-                return;
-            }
-            try {
-                await waitFor(ChannelBookmarkScreen.deleteOption).toBeVisible().withTimeout(timeouts.HALF_SEC);
-
-                // Sheet is open — swipe it down to dismiss.
-                await ChannelBookmarkScreen.deleteOption.swipe('down', 'fast', 0.9, 0.5, 0.1);
-                await wait(timeouts.HALF_SEC);
-            } catch {
-                // Sheet not open — nothing to do.
-            }
-        };
-
         if (isAndroid()) {
             await waitFor(element(lastBookmarkMatcher)).
                 toBeVisible().
@@ -719,10 +675,8 @@ describe('Channels - Channel Bookmarks', () => {
         } else {
             /* eslint-disable no-await-in-loop */
             for (let i = 0; i < 5; i++) {
-                await dismissBookmarkActionSheetIfOpen();
                 await element(channelHeaderBookmarksList).swipe('left', 'fast', 0.9, 0.5, 0.5);
             }
-            await dismissBookmarkActionSheetIfOpen();
             /* eslint-enable no-await-in-loop */
             await waitFor(element(lastBookmarkMatcher)).
                 toBeVisible().
@@ -738,10 +692,8 @@ describe('Channels - Channel Bookmarks', () => {
         } else {
             /* eslint-disable no-await-in-loop */
             for (let i = 0; i < 5; i++) {
-                await dismissBookmarkActionSheetIfOpen();
                 await element(channelHeaderBookmarksList).swipe('right', 'fast', 0.9, 0.5, 0.5);
             }
-            await dismissBookmarkActionSheetIfOpen();
             /* eslint-enable no-await-in-loop */
         }
 

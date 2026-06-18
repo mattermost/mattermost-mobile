@@ -22,7 +22,8 @@ jobs:
       contents: read
       statuses: write
     steps:
-      - uses: mattermost/actions/delivery/update-commit-status@main
+      - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
+      - uses: ./.github/actions/update-commit-status
         env:
           GITHUB_TOKEN: ${{ github.token }}
         with:
@@ -38,7 +39,8 @@ jobs:
       contents: read
       statuses: write
     steps:
-      - uses: mattermost/actions/delivery/update-commit-status@main
+      - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
+      - uses: ./.github/actions/update-commit-status
         env:
           GITHUB_TOKEN: ${{ github.token }}
         with:
@@ -108,7 +110,7 @@ jobs:
       - name: Cache Gradle dependencies
         uses: actions/cache@27d5ce7f107fe9357f9df03efb73ab90386fccae # v5.0.5
         with:
-          path: ~/.gradle/caches/modules-2/
+          path: /home/runner/.gradle/caches/modules-2/
           key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
           restore-keys: ${{ runner.os }}-gradle-
 
@@ -173,7 +175,8 @@ jobs:
       - run-ios-tests-on-release
       - run-ios-ipad-tests-on-release
     steps:
-      - uses: mattermost/actions/delivery/update-commit-status@main
+      - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
+      - uses: ./.github/actions/update-commit-status
         env:
           GITHUB_TOKEN: ${{ github.token }}
         with:
@@ -193,7 +196,8 @@ jobs:
     needs:
       - run-android-tests-on-release
     steps:
-      - uses: mattermost/actions/delivery/update-commit-status@main
+      - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
+      - uses: ./.github/actions/update-commit-status
         env:
           GITHUB_TOKEN: ${{ github.token }}
         with:

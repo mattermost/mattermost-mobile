@@ -154,44 +154,21 @@ describe('Interactive Dialog - Basic Dialog (Plugin)', () => {
     let pluginSetupTouchedServer = false;
 
     beforeAll(async () => {
-        // The full hook (plugin install from GitHub + UI navigation on the
-        // simulator) has been observed to exceed Jest's 240s default and
-        // cascade-skip the entire suite on iOS shards. Cap the whole hook to a
-        // hard wall-clock budget and, if anything inside hangs, skip the suite
-        // gracefully instead of letting Jest abort it.
-        const HOOK_BUDGET_MS = 180000;
+        // Log environment info for debugging CI vs local differences
+        const {channel, user} = await Setup.apiInit(siteOneUrl);
+        testChannel = channel;
+        testUser = user;
+
+        await User.apiAdminLogin(siteOneUrl);
+
+        // Check if demo plugin can be set up; any failure or excessive wait
+        // skips the entire suite gracefully. The plugin download from GitHub can
+        // hang behind Cloudflare in CI, so cap the setup phase to avoid the
+        // default 240 s Jest hook timeout.
         const PLUGIN_SETUP_TIMEOUT = 60000;
-
-        // Helper: race `task` against a timer that we can cancel on success so
-        // it doesn't keep the event loop alive past hook completion.
-        const withTimeout = async <T>(task: Promise<T>, ms: number, label: string): Promise<T> => {
-            let timer: NodeJS.Timeout | undefined;
-            try {
-                return await Promise.race([
-                    task,
-                    new Promise<T>((_resolve, reject) => {
-                        timer = setTimeout(() => reject(new Error(`${label} did not complete within ${ms}ms`)), ms);
-                    }),
-                ]);
-            } finally {
-                if (timer) {
-                    clearTimeout(timer);
-                }
-            }
-        };
-
         try {
-            await withTimeout((async () => {
-                // Log environment info for debugging CI vs local differences
-                const {channel, user} = await Setup.apiInit(siteOneUrl);
-                testChannel = channel;
-                testUser = user;
-
-                await User.apiAdminLogin(siteOneUrl);
-
-                // Plugin setup gets its own inner cap because the download from
-                // GitHub is the most common hang point (Cloudflare 524, etc.).
-                await withTimeout((async () => {
+            await Promise.race([
+                (async () => {
                     await System.shouldHavePluginUploadEnabled(siteOneUrl);
 
                     pluginSetupTouchedServer = true;
@@ -221,22 +198,22 @@ describe('Interactive Dialog - Basic Dialog (Plugin)', () => {
                     if (!statusCheck.isActive) {
                         throw new Error(`Demo plugin (${DemoPlugin.id}) is not active after installation`);
                     }
-                })(), PLUGIN_SETUP_TIMEOUT, 'plugin setup');
-
-                pluginAvailable = true;
-
-                await ServerScreen.connectToServer(serverOneUrl, serverOneDisplayName);
-                await LoginScreen.login(testUser);
-                await ChannelListScreen.toBeVisible();
-                await ChannelScreen.open(channelsCategory, testChannel.name);
-            })(), HOOK_BUDGET_MS, 'interactive dialog suite setup');
+                })(),
+                new Promise((_resolve, reject) =>
+                    setTimeout(() => reject(new Error(`plugin setup did not complete within ${PLUGIN_SETUP_TIMEOUT}ms`)), PLUGIN_SETUP_TIMEOUT),
+                ),
+            ]);
         } catch (err: any) {
-            // Any hang or failure in setup (plugin install, login, sidebar
-            // sync) skips the suite gracefully instead of Jest cascade-aborting
-            // every test in the file.
-            pluginAvailable = false;
-            console.warn(`Interactive dialog suite setup failed — skipping: ${err?.message || err}`);
+            console.warn(`Demo plugin setup failed — skipping interactive dialog suite: ${err.message || err}`);
+            return;
         }
+
+        pluginAvailable = true;
+
+        await ServerScreen.connectToServer(serverOneUrl, serverOneDisplayName);
+        await LoginScreen.login(testUser);
+        await ChannelListScreen.toBeVisible();
+        await ChannelScreen.open(channelsCategory, testChannel.name);
     });
 
     afterAll(async () => {

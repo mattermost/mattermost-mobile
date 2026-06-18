@@ -256,19 +256,35 @@ jobs:
             exit 1
           fi
 
-      # Cache the SDK components themselves. Without this, every shard re-runs
-      # sdkmanager (~2-3 min per shard × 20 shards = 40-60 runner-minutes
-      # per workflow). With cache hit, install step skips entirely.
+      # Cache SDK under the workspace (not /usr/local) — tar restore into system
+      # SDK dirs often fails with exit code 2 when paths already exist on the image.
       - name: Cache Android SDK components
         id: android-sdk-cache
         uses: actions/cache@27d5ce7f107fe9357f9df03efb73ab90386fccae # v5.0.5
         with:
-          path: |
-            /usr/local/lib/android/sdk/platform-tools
-            /usr/local/lib/android/sdk/emulator
-            /usr/local/lib/android/sdk/platforms/android-${{ inputs.android_api_level }}
-            /usr/local/lib/android/sdk/system-images/android-${{ inputs.android_api_level }}
-          key: android-sdk-${{ inputs.android_api_level }}-google-apis-x86_64-v1
+          path: .android-sdk-cache
+          key: android-sdk-${{ inputs.android_api_level }}-google-apis-x86_64-v2
+
+      - name: Apply cached Android SDK components
+        if: steps.android-sdk-cache.outputs.cache-hit == 'true'
+        run: |
+          API_LEVEL='${{ inputs.android_api_level }}'
+          for component in platform-tools emulator; do
+            if [ -d ".android-sdk-cache/${component}" ]; then
+              rm -rf "${ANDROID_HOME:?}/${component}"
+              cp -a ".android-sdk-cache/${component}" "${ANDROID_HOME}/"
+            fi
+          done
+          if [ -d ".android-sdk-cache/platforms/android-${API_LEVEL}" ]; then
+            rm -rf "${ANDROID_HOME}/platforms/android-${API_LEVEL}"
+            mkdir -p "${ANDROID_HOME}/platforms"
+            cp -a ".android-sdk-cache/platforms/android-${API_LEVEL}" "${ANDROID_HOME}/platforms/"
+          fi
+          if [ -d ".android-sdk-cache/system-images/android-${API_LEVEL}" ]; then
+            rm -rf "${ANDROID_HOME}/system-images/android-${API_LEVEL}"
+            mkdir -p "${ANDROID_HOME}/system-images"
+            cp -a ".android-sdk-cache/system-images/android-${API_LEVEL}" "${ANDROID_HOME}/system-images/"
+          fi
 
       - name: Install Android SDK components
         if: steps.android-sdk-cache.outputs.cache-hit != 'true'
@@ -291,19 +307,24 @@ jobs:
             fi
             sleep 10
           done
+          mkdir -p .android-sdk-cache/platforms .android-sdk-cache/system-images
+          cp -a "${ANDROID_HOME}/platform-tools" .android-sdk-cache/
+          cp -a "${ANDROID_HOME}/emulator" .android-sdk-cache/
+          cp -a "${ANDROID_HOME}/platforms/android-${API_LEVEL}" .android-sdk-cache/platforms/
+          cp -a "${ANDROID_HOME}/system-images/android-${API_LEVEL}" .android-sdk-cache/system-images/
         env:
           JAVA_HOME: ${{ env.JAVA_HOME_17_X64 }}
 
-      # AVD-specific cache (created lazily per shard by create_android_emulator.sh).
-      # Smaller key — only covers ~/.android/avd which doesn't overlap with the
-      # SDK components cache above.
+      # CI AVDs live under detox/.android/avd (see create_android_emulator.sh), not ~/.android/avd.
       - name: Cache Android Emulator & AVD
         uses: actions/cache@27d5ce7f107fe9357f9df03efb73ab90386fccae # v5.0.5
         with:
           path: |
-            ~/.android/avd
-          key: android-emulator-${{ runner.os }}-${{ runner.arch }}-api-${{ inputs.android_api_level }}
+            detox/.android
+            detox/${{ env.AVD_NAME }}_api_${{ inputs.android_api_level }}
+          key: android-emulator-${{ runner.os }}-${{ runner.arch }}-${{ env.AVD_NAME }}-api-${{ inputs.android_api_level }}-v2
           restore-keys: |
+            android-emulator-${{ runner.os }}-${{ runner.arch }}-${{ env.AVD_NAME }}-api-${{ inputs.android_api_level }}-
             android-emulator-${{ runner.os }}-${{ runner.arch }}-
 
       - name: Create and run Android Emulator

@@ -131,13 +131,8 @@ export const deleteSavedPost = async (serverUrl: string, postId: string) => {
         };
 
         if (postPreferenceRecord) {
+            await client.deletePreferences(userId, [pref]);
             EphemeralStore.addRecentlyUnsavedSavedPost(serverUrl, postId);
-            try {
-                await client.deletePreferences(userId, [pref]);
-            } catch (error) {
-                EphemeralStore.clearRecentlyUnsavedSavedPost(serverUrl, postId);
-                throw error;
-            }
 
             // Use prepareDestroyPermanently + batchRecords (the codebase convention,
             // e.g. app/queries/servers/preference.ts:59 in `deletePreferences`).

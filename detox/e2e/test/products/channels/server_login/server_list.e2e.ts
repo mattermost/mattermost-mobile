@@ -248,9 +248,12 @@ describe('Server Login - Server List', () => {
         await waitForElementToExist(ServerListScreen.getServerItemActive(serverOneDisplayName), timeouts.TEN_SEC);
         await ServerListScreen.getServerItemActive(serverOneDisplayName).atIndex(0).swipe('left', 'slow');
         if (isIos()) {
+            // On iOS, the Logout button (higher z-order than Remove) partially overlaps Remove
+            // during the reveal animation.  Use waitFor with 100% threshold so we only tap once
+            // the Logout Animated.View has fully translated to its own position (progress == 1).
             await waitFor(ServerListScreen.getServerItemRemoveOption(serverOneDisplayName)).
                 toBeVisible(100).
-                withTimeout(timeouts.TEN_SEC);
+                withTimeout(timeouts.FIVE_SEC);
         } else {
             await wait(timeouts.ONE_SEC);
         }

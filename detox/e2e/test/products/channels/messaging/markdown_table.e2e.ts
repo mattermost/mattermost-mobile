@@ -110,8 +110,12 @@ describe('Messaging - Markdown Table', () => {
         // here first to avoid asserting them after they have been scrolled away.
         await expect(element(by.text('Left text that wraps row'))).toBeVisible(50);
         await expect(element(by.text('Center text that wraps row'))).toBeVisible(50);
-        await waitFor(element(by.text('Right header that wraps'))).toBeVisible(25).whileElement(by.id(TableScreen.testID.tableScrollView)).scroll(150, 'right');
-        await waitFor(element(by.text('Right text that wraps row'))).toBeVisible(25).whileElement(by.id(TableScreen.testID.tableScrollView)).scroll(150, 'right');
+
+        // Right-side columns render beyond the viewport on Android (the table's
+        // minimum column width pushes the third column off-screen). Scroll the
+        // table horizontally until the right header/row become visible.
+        await waitFor(element(by.text('Right header that wraps'))).toBeVisible(50).whileElement(by.id(TableScreen.testID.tableScrollView)).scroll(150, 'right');
+        await waitFor(element(by.text('Right text that wraps row'))).toBeVisible(50).whileElement(by.id(TableScreen.testID.tableScrollView)).scroll(150, 'right');
 
         // # Go back to channel list screen
         await TableScreen.back();

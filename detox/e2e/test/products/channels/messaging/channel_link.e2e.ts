@@ -112,17 +112,8 @@ describe('Messaging - Channel Link', () => {
             await wait(timeouts.TWO_SEC);
         }
 
-        // # Tap on channel link from within the reply thread.
-        if (isAndroid()) {
-            await device.disableSynchronization();
-        }
-        try {
-            await element(by.text(replyThreadChannelLink)).atIndex(0).tap();
-        } finally {
-            if (isAndroid()) {
-                await device.enableSynchronization();
-            }
-        }
+        // # Tap on channel link from within the reply thread
+        await element(by.text(replyThreadChannelLink)).atIndex(0).tap();
         await wait(timeouts.FOUR_SEC);
 
         // * Verify redirected to target channel

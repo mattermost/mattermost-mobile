@@ -50,7 +50,10 @@ jobs:
     needs:
       - calculate-commit-hash
     steps:
-      - uses: mattermost/actions/delivery/update-commit-status@d5174b860704729f4c14ef8489ae075742bfa08a
+      - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
+        with:
+          ref: ${{ inputs.MOBILE_VERSION }}
+      - uses: ./.github/actions/update-commit-status
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
@@ -230,7 +233,11 @@ jobs:
             echo "status=failure" >> $GITHUB_OUTPUT
           fi
 
-      - uses: mattermost/actions/delivery/update-commit-status@d5174b860704729f4c14ef8489ae075742bfa08a
+      - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
+        with:
+          ref: ${{ inputs.MOBILE_VERSION }}
+
+      - uses: ./.github/actions/update-commit-status
         env:
           GITHUB_TOKEN: ${{ github.token }}
         with:

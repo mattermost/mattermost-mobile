@@ -7,10 +7,11 @@
 // - Use element testID when selecting an element. Create one if none.
 // *******************************************************************
 
-import {isAgentsPluginActive} from '@support/agents_plugin';
 import {
+    AgentsPlugin,
     Bot,
     Channel,
+    Plugin,
     Setup,
     System,
     Team,
@@ -123,7 +124,8 @@ describe('Autocomplete - Agent Mention', () => {
         testTeam = team;
 
         // # Check if agents plugin is active
-        pluginActive = await isAgentsPluginActive(siteOneUrl);
+        const pluginStatus = await Plugin.apiGetPluginStatus(siteOneUrl, AgentsPlugin.id);
+        pluginActive = pluginStatus.isActive;
 
         // # Enable bot account creation (disabled by default on fresh servers)
         await System.apiUpdateConfig(siteOneUrl, {ServiceSettings: {EnableBotAccountCreation: true}});

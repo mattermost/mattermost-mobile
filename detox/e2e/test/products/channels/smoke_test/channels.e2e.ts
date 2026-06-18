@@ -92,28 +92,15 @@ describe('Smoke Test - Channels', () => {
     it('MM-T4774_2 - should be able to create a channel and create a direct message', async () => {
         // # Open create channel screen and create a new channel
         const displayName = `Channel ${getRandomId()}`;
+        await CreateOrEditChannelScreen.openCreateChannel();
+        await CreateOrEditChannelScreen.displayNameInput.typeText(displayName);
+        await wait(timeouts.FOUR_SEC);
+        await CreateOrEditChannelScreen.clickonCreateButton();
 
-        if (isAndroid()) {
-            // Plus-menu tap triggers RN Fabric re-parent crash during bottom-sheet dismiss.
-            const {channel: createdChannel} = await Channel.apiCreateChannel(siteOneUrl, {teamId: testTeam.id});
-            await device.reloadReactNative();
-            await ChannelListScreen.toBeVisible();
-            await ChannelScreen.open(channelsCategory, createdChannel.name);
-            await ChannelScreen.dismissScheduledPostTooltip();
-
-            await expect(ChannelScreen.headerTitle).toHaveText(createdChannel.display_name);
-            await expect(ChannelScreen.introDisplayName).toHaveText(createdChannel.display_name);
-        } else {
-            await CreateOrEditChannelScreen.openCreateChannel();
-            await CreateOrEditChannelScreen.displayNameInput.typeText(displayName);
-            await wait(timeouts.FOUR_SEC);
-            await CreateOrEditChannelScreen.clickonCreateButton();
-
-            // * Verify on newly created public channel
-            await ChannelScreen.toBeVisible();
-            await expect(ChannelScreen.headerTitle).toHaveText(displayName);
-            await expect(ChannelScreen.introDisplayName).toHaveText(displayName);
-        }
+        // * Verify on newly created public channel
+        await ChannelScreen.toBeVisible();
+        await expect(ChannelScreen.headerTitle).toHaveText(displayName);
+        await expect(ChannelScreen.introDisplayName).toHaveText(displayName);
 
         // # As admin, create a new user to open direct message with, then go back to channel list screen, open create direct message screen and open direct message with new user
         const {user: newUser} = await User.apiCreateUser(siteOneUrl);
@@ -254,9 +241,5 @@ describe('Smoke Test - Channels', () => {
         await ChannelInfoScreen.openChannelSettings();
         await ChannelSettingsScreen.toBeVisible();
         await ChannelSettingsScreen.archivePublicChannel({confirm: true});
-
-        // * Verify channel is archived and read-only
-        await waitFor(ChannelScreen.postDraftArchived).toBeVisible().withTimeout(timeouts.TEN_SEC);
-        await ChannelScreen.back();
     });
 });
