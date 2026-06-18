@@ -7,7 +7,7 @@
 // - Use element testID when selecting an element. Create one if none.
 // *******************************************************************
 
-import {CustomProfileAttributes, Post, Setup, User} from '@support/server_api';
+import {CustomProfileAttributes, Post, Setup, System, User} from '@support/server_api';
 import {serverOneUrl, siteOneUrl} from '@support/test_config';
 import {
     AccountScreen,
@@ -20,7 +20,7 @@ import {
     UserProfileScreen,
 } from '@support/ui/screen';
 import {isAndroid, timeouts, wait} from '@support/utils';
-import {expect} from 'detox';
+import {expect, waitFor} from 'detox';
 
 describe('Account - User Attributes', () => {
     const serverOneDisplayName = 'Server 1';
@@ -39,10 +39,25 @@ describe('Account - User Attributes', () => {
         // # Login as admin to probe feature availability and create custom profile attribute fields
         await User.apiAdminLogin(siteOneUrl);
 
+        // Ensure the CustomProfileAttributes feature flag is enabled.
+        // The app reads FeatureFlagCustomProfileAttributes from the client config
+        // (flattened from server config FeatureFlags.CustomProfileAttributes).
+        // Provisioning sets this, but verify it's still enabled — if the server
+        // config was reset or the flag is missing, the Edit Profile screen won't
+        // render custom attribute fields.
+        const {config} = await System.apiGetConfig(siteOneUrl);
+        const featureFlags = (config?.FeatureFlags || {}) as Record<string, unknown>;
+        if (!featureFlags.CustomProfileAttributes) {
+            await System.apiUpdateConfig(siteOneUrl, {
+                FeatureFlags: {...featureFlags, CustomProfileAttributes: true},
+            });
+            await wait(timeouts.TWO_SEC);
+        }
+
         const fieldNames = ['Bio', 'Department', 'Team'];
         const {fields: existingFields, error: listError} = await CustomProfileAttributes.apiListCustomProfileAttributeFields(siteOneUrl);
         if (listError) {
-            return;
+            throw new Error(`Could not list custom profile attribute fields: ${JSON.stringify(listError)}`);
         }
 
         const leaked = Array.isArray(existingFields) ? existingFields : [];
@@ -56,7 +71,7 @@ describe('Account - User Attributes', () => {
             // eslint-disable-next-line no-await-in-loop -- sequential create keeps order deterministic
             const {field, error} = await CustomProfileAttributes.apiCreateCustomProfileAttributeField(siteOneUrl, {name, type: 'text'});
             if (error || !field?.id) {
-                return; // licenseAvailable stays false → tests skip
+                throw new Error(`Could not create custom profile attribute field "${name}": ${JSON.stringify(error)}`);
             }
             createdFieldIds.push(field.id);
         }
@@ -102,9 +117,8 @@ describe('Account - User Attributes', () => {
     });
 
     it('MM-T5781_1 - should display custom attribute fields in Edit Profile and allow saving values', async () => {
-        // # Skip if license feature is unavailable or fields were not created
         if (!licenseAvailable || createdFieldIds.length < 3) {
-            return;
+            throw new Error('Custom profile attribute fields were not created during beforeAll');
         }
 
         // # Open Account screen then Edit Profile screen
@@ -161,9 +175,8 @@ describe('Account - User Attributes', () => {
     });
 
     it('MM-T5781_2 - should display user attribute values in profile pop-over when tapping on post username', async () => {
-        // # Skip if license feature is unavailable or fields were not created
         if (!licenseAvailable || createdFieldIds.length < 3) {
-            return;
+            throw new Error('Custom profile attribute fields were not created during beforeAll');
         }
 
         // # Open test channel and post a message

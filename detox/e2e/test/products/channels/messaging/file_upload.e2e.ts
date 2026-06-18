@@ -205,6 +205,19 @@ describe('Messaging - File Upload', () => {
                 MaxFileSize: 1,
             },
         });
+        await wait(timeouts.TWO_SEC);
+        const {config: updatedConfig} = await System.apiGetConfig(siteOneUrl);
+        const appliedMaxFileSize = updatedConfig?.FileSettings?.MaxFileSize;
+        if (appliedMaxFileSize !== 1) {
+            // Retry: config cache may need a second patch cycle to take effect.
+            await System.apiUpdateConfig(siteOneUrl, {
+                FileSettings: {
+                    MaxFileSize: 1,
+                },
+            });
+            await wait(timeouts.TWO_SEC);
+        }
+
         try {
             // * Server rejects over-limit uploads
             const {error: uploadError} = await Post.apiUploadFileToChannel(siteOneUrl, testChannel.id, imagePath);

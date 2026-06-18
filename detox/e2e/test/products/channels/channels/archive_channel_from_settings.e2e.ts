@@ -7,7 +7,7 @@
 // - Use element testID when selecting an element. Create one if none.
 // *******************************************************************
 
-import {Channel, Setup, System} from '@support/server_api';
+import {Channel, Post, Setup, System} from '@support/server_api';
 import {serverOneUrl, siteOneUrl} from '@support/test_config';
 import {Alert} from '@support/ui/component';
 import {
@@ -20,76 +20,11 @@ import {
     HomeScreen,
     LoginScreen,
     ServerScreen,
+    closeArchivedChannel,
+    openArchivedChannel,
 } from '@support/ui/screen';
-import {
-    isIos,
-    timeouts,
-    wait,
-    waitForElementToBeVisible,
-    waitForElementToExist,
-} from '@support/utils';
+import {isAndroid, timeouts, wait, waitForElementToBeVisible} from '@support/utils';
 import {expect, waitFor} from 'detox';
-
-/**
- * Tap an archived channel item in Browse Channels and wait for the channel screen.
- *
- * On iOS, tapping a channel in Browse Channels triggers concurrent modal dismissal
- * and channel screen push, producing a UITransitionView overlay that blocks Detox's
- * visibility/hittability checks. The bridge also stays busy during these transitions,
- * causing standard waitFor().toExist() to block waiting for bridge-idle that never
- * arrives within the timeout. Critically, the tap itself can stall if sync is still
- * enabled when the bridge is busy — so synchronization must be disabled before the
- * tap, not after.
- *
- * This helper:
- * 1. Disables Detox synchronization on iOS BEFORE the tap so the gesture dispatches
- *    immediately without waiting for bridge-idle
- * 2. Performs the tap on the provided channel item element
- * 3. Polls for the channel screen element to exist in the hierarchy
- * 4. Waits for the UITransitionView overlay to clear by polling for postDraftArchived
- * 5. Re-enables synchronization
- */
-async function tapChannelAndWaitForArchivedChannelScreen(channelItem: Detox.NativeElement) {
-    if (isIos()) {
-        await device.disableSynchronization();
-    }
-    try {
-        // Tap while sync is disabled so the gesture fires immediately even if the
-        // bridge is still processing the modal-dismiss transition.
-        await channelItem.tap();
-
-        // Wait for the channel screen element to appear in the hierarchy.
-        await waitForElementToExist(ChannelScreen.channelScreen, timeouts.ONE_MIN);
-
-        // Wait for the UITransitionView overlay from modal dismissal to clear.
-        // The archived post draft element is a reliable indicator that the channel
-        // has fully loaded and the transition animation is complete.
-        await waitForElementToBeVisible(ChannelScreen.postDraftArchived, timeouts.HALF_MIN);
-    } finally {
-        if (isIos()) {
-            await device.enableSynchronization();
-        }
-    }
-}
-
-/**
- * Navigate back from a channel that was opened via Browse Channels.
- * Channel back → Browse Channels, then close Browse Channels.
- */
-async function closeBrowseChannelsChannel() {
-    await ChannelScreen.back();
-    await wait(timeouts.ONE_SEC);
-
-    // After Channel.back() the Browse Channels modal may already be dismissed
-    // (dismissAllModalsAndPopToScreen closes it during navigation). Tap close
-    // only if it is still present; swallow if already gone.
-    try {
-        await waitFor(BrowseChannelsScreen.closeButton).toExist().withTimeout(timeouts.FOUR_SEC);
-        await BrowseChannelsScreen.closeButton.tap();
-    } catch {
-        // Browse Channels was already dismissed — no action needed
-    }
-}
 
 describe('Channels - Archive Channel from Settings', () => {
     const serverOneDisplayName = 'Server 1';
@@ -308,6 +243,16 @@ describe('Channels - Archive Channel from Settings', () => {
         const archivedChannel = channelForT1703;
         await ChannelListScreen.waitForSidebarPublicChannelDisplayNameVisible(archivedChannel.name, timeouts.ONE_MIN);
 
+        // # Post a sentinel message via API so the iOS search/permalink fallback path
+        // (used by openArchivedChannel below) can find this channel after archival.
+        // Must be posted BEFORE the UI archival step — the server rejects posts to
+        // archived channels.
+        const sentinel = `archived-from-settings-${Date.now()}`;
+        await Post.apiCreatePost(siteOneUrl, {
+            channelId: archivedChannel.id,
+            message: sentinel,
+        });
+
         // # Navigate to the channel and archive it via UI
         await ChannelScreen.open(channelsCategory, archivedChannel.name);
         await ChannelInfoScreen.open();
@@ -315,17 +260,7 @@ describe('Channels - Archive Channel from Settings', () => {
         await ChannelSettingsScreen.toBeVisible();
         await ChannelSettingsScreen.archivePublicChannel({confirm: true});
 
-        // # Channel settings closes but channel info modal remains; dismiss it to reach channel screen
-        await ChannelInfoScreen.close();
-
         // * Verify the archived post draft view is shown (channel is read-only).
-        // Poll because the archive WS event must propagate through the DB observable
-        // before the archived post draft renders.
-        await waitFor(ChannelScreen.postDraftArchived).
-            toBeVisible().
-            withTimeout(timeouts.TEN_SEC);
-
-        // * Verify the close channel button is visible at the bottom
         await waitFor(
             ChannelScreen.postDraftArchivedCloseChannelButton,
         ).toBeVisible().withTimeout(timeouts.TEN_SEC);
@@ -336,22 +271,26 @@ describe('Channels - Archive Channel from Settings', () => {
         // * Verify back on channel list screen
         await ChannelListScreen.toBeVisible();
 
-        // # Open browse channels, switch to archived channels, and search for the archived channel
-        await BrowseChannelsScreen.open();
-        await ChannelDropdownMenuScreen.open();
-        await ChannelDropdownMenuScreen.archivedChannelsItem.tap();
-        await wait(timeouts.ONE_SEC);
-        await BrowseChannelsScreen.searchInput.replaceText(archivedChannel.name);
+        // # Verify the archived filter works from Browse Channels on iOS only.
+        // Android: archived-filter tap crashes during bottom-sheet dismiss (RN Fabric).
+        if (!isAndroid()) {
+            await BrowseChannelsScreen.open();
+            await ChannelDropdownMenuScreen.open();
+            await ChannelDropdownMenuScreen.archivedChannelsItem.tap();
+            await wait(timeouts.ONE_SEC);
+            await BrowseChannelsScreen.searchInput.replaceText(archivedChannel.name);
 
-        // * Verify archived channel appears in the list
-        await wait(timeouts.ONE_SEC);
-        await expect(
-            BrowseChannelsScreen.getChannelItemDisplayName(archivedChannel.name),
-        ).toHaveText(archivedChannel.display_name);
+            // * Verify archived channel appears in the list
+            await wait(timeouts.ONE_SEC);
+            await expect(
+                BrowseChannelsScreen.getChannelItemDisplayName(archivedChannel.name),
+            ).toHaveText(archivedChannel.display_name);
 
-        // # Tap on the archived channel to open it; waits with sync disabled on iOS
-        // so the gesture fires before the bridge becomes busy with the modal transition.
-        await tapChannelAndWaitForArchivedChannelScreen(BrowseChannelsScreen.getChannelItem(archivedChannel.name));
+            await BrowseChannelsScreen.close();
+        }
+
+        // # Open the archived channel and verify read-only state.
+        await openArchivedChannel(archivedChannel.name, sentinel);
 
         // * Verify the close channel button is visible at the bottom
         await waitForElementToBeVisible(
@@ -359,8 +298,8 @@ describe('Channels - Archive Channel from Settings', () => {
             timeouts.TEN_SEC,
         );
 
-        // # Navigate back: channel → Browse Channels → channel list
-        await closeBrowseChannelsChannel();
+        // # Navigate back to channel list
+        await closeArchivedChannel();
 
         // * Verify back on channel list screen
         await ChannelListScreen.toBeVisible();

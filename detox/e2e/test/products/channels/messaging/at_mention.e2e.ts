@@ -159,8 +159,12 @@ describe('Messaging - At-Mention', () => {
 
         // The user profile bottom sheet may still be animating into place when
         // toBeVisible() resolves on its screen container — its avatar can briefly
-        // fail a 75% visibility threshold while the sheet finishes snapping.
-        await waitFor(UserProfileScreen.getUserProfilePicture(testUser.id)).toBeVisible().withTimeout(timeouts.TEN_SEC);
+        // fail the default visibility threshold while the sheet finishes snapping.
+        // Wait for the sheet to settle, then poll with a lower visibility threshold
+        // since the avatar can be partially obscured behind the sheet's rounded
+        // corners or status bar dimming.
+        await wait(timeouts.TWO_SEC);
+        await waitFor(UserProfileScreen.getUserProfilePicture(testUser.id)).toBeVisible(25).withTimeout(timeouts.TEN_SEC);
         await expect(UserProfileScreen.userDisplayName).toHaveText(`@${testUser.username}`);
 
         // # Go back to channel list screen

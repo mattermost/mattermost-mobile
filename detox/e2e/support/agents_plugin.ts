@@ -18,15 +18,17 @@ export async function isAgentsPluginActive(baseUrl: string): Promise<boolean> {
     }
 }
 
-// No-op the test when mattermost-ai is not active after provisioning.
+// Fail fast when the agents suite was not fully provisioned so CI does not
+// report false greens. `ready` should return true only when beforeAll completed
+// successfully: login finished AND any fixtures the test body reads are populated.
 export function itWhenAgentsReady(
-    didLogin: () => boolean,
+    ready: () => boolean,
     name: string,
     fn: () => Promise<void>,
 ): void {
     it(name, async () => {
-        if (!didLogin()) {
-            return;
+        if (!ready()) {
+            throw new Error(`[itWhenAgentsReady] suite prerequisites not ready for "${name}"`);
         }
         await fn();
     });

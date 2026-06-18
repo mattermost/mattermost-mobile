@@ -50,7 +50,15 @@ class EmojiPickerScreen {
             // Swipe down on the search input — it's at the top of the sheet
             // content, and dragging it down dismisses the bottom-sheet
             // identically to dragging the sheet container.
-            await this.searchInput.swipe('down');
+            // The bottom-sheet drag handle can clip the top ~4px of the search
+            // input on iOS 26.x, dropping visibility just below the 100% hit
+            // threshold. Fall back to the sheet's scroll view if that happens.
+            try {
+                await this.searchInput.swipe('down');
+            } catch {
+                // Swipe on the emoji picker screen container instead.
+                await this.emojiPickerScreen.swipe('down', 'slow', 0.6);
+            }
         } else {
             // First pressBack may dismiss the soft keyboard if it is still open
             // (e.g. after search interactions). A second pressBack is then needed

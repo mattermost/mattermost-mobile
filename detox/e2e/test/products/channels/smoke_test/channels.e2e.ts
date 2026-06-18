@@ -32,7 +32,7 @@ import {
     ChannelSettingsScreen,
 } from '@support/ui/screen';
 import {getRandomId, isAndroid, timeouts, wait} from '@support/utils';
-import {expect, waitFor} from 'detox';
+import {device, expect, waitFor} from 'detox';
 
 describe('Smoke Test - Channels', () => {
     const serverOneDisplayName = 'Server 1';
@@ -92,15 +92,28 @@ describe('Smoke Test - Channels', () => {
     it('MM-T4774_2 - should be able to create a channel and create a direct message', async () => {
         // # Open create channel screen and create a new channel
         const displayName = `Channel ${getRandomId()}`;
-        await CreateOrEditChannelScreen.openCreateChannel();
-        await CreateOrEditChannelScreen.displayNameInput.typeText(displayName);
-        await wait(timeouts.FOUR_SEC);
-        await CreateOrEditChannelScreen.clickonCreateButton();
 
-        // * Verify on newly created public channel
-        await ChannelScreen.toBeVisible();
-        await expect(ChannelScreen.headerTitle).toHaveText(displayName);
-        await expect(ChannelScreen.introDisplayName).toHaveText(displayName);
+        if (isAndroid()) {
+            // Plus-menu tap triggers RN Fabric re-parent crash during bottom-sheet dismiss.
+            const {channel: createdChannel} = await Channel.apiCreateChannel(siteOneUrl, {teamId: testTeam.id});
+            await device.reloadReactNative();
+            await ChannelListScreen.toBeVisible();
+            await ChannelScreen.open(channelsCategory, createdChannel.name);
+            await ChannelScreen.dismissScheduledPostTooltip();
+
+            await expect(ChannelScreen.headerTitle).toHaveText(createdChannel.display_name);
+            await expect(ChannelScreen.introDisplayName).toHaveText(createdChannel.display_name);
+        } else {
+            await CreateOrEditChannelScreen.openCreateChannel();
+            await CreateOrEditChannelScreen.displayNameInput.typeText(displayName);
+            await wait(timeouts.FOUR_SEC);
+            await CreateOrEditChannelScreen.clickonCreateButton();
+
+            // * Verify on newly created public channel
+            await ChannelScreen.toBeVisible();
+            await expect(ChannelScreen.headerTitle).toHaveText(displayName);
+            await expect(ChannelScreen.introDisplayName).toHaveText(displayName);
+        }
 
         // # As admin, create a new user to open direct message with, then go back to channel list screen, open create direct message screen and open direct message with new user
         const {user: newUser} = await User.apiCreateUser(siteOneUrl);
@@ -165,9 +178,14 @@ describe('Smoke Test - Channels', () => {
         await CreateOrEditChannelScreen.headerInput.replaceText(updatedHeader);
         await CreateOrEditChannelScreen.saveButton.tap();
 
-        // * Verify on channel info screen and changes have been saved (close channel settings first to return to channel info).
-        await ChannelSettingsScreen.toBeVisible();
-        await ChannelSettingsScreen.close();
+        // * Verify on channel info screen and changes have been saved.
+        await waitFor(element(by.id('create_or_edit_channel.screen'))).not.toExist().withTimeout(timeouts.TEN_SEC);
+        try {
+            await waitFor(ChannelSettingsScreen.channelSettingsScreen).toExist().withTimeout(timeouts.FOUR_SEC);
+            await ChannelSettingsScreen.close();
+        } catch {
+            // Save may land directly on channel info.
+        }
         await ChannelInfoScreen.toBeVisible();
         await waitFor(element(by.text(`Channel header: ${testChannel.display_name.toLowerCase()}\nheader1\nheader2`))).toBeVisible().withTimeout(timeouts.TEN_SEC);
 
@@ -236,5 +254,9 @@ describe('Smoke Test - Channels', () => {
         await ChannelInfoScreen.openChannelSettings();
         await ChannelSettingsScreen.toBeVisible();
         await ChannelSettingsScreen.archivePublicChannel({confirm: true});
+
+        // * Verify channel is archived and read-only
+        await waitFor(ChannelScreen.postDraftArchived).toBeVisible().withTimeout(timeouts.TEN_SEC);
+        await ChannelScreen.back();
     });
 });

@@ -11,10 +11,8 @@ import {Channel, Post, Setup, System} from '@support/server_api';
 import {serverOneUrl, siteOneUrl} from '@support/test_config';
 import {Alert} from '@support/ui/component';
 import {
-    BrowseChannelsScreen,
     ChannelScreen,
     ChannelListScreen,
-    ChannelDropdownMenuScreen,
     ChannelInfoScreen,
     HomeScreen,
     LoginScreen,
@@ -22,17 +20,19 @@ import {
     PermalinkScreen,
     SearchMessagesScreen,
     ServerScreen,
+    closeArchivedChannel,
+    openArchivedChannel,
+    postArchivedChannelSentinel,
 } from '@support/ui/screen';
 import {
     isAndroid,
     isIos,
-    safeEnableSynchronization,
     timeouts,
     wait,
     waitForElementToBeVisible,
     waitForElementToExist,
 } from '@support/utils';
-import {expect, waitFor} from 'detox';
+import {expect} from 'detox';
 
 // Wait for archived channel screen after non-tap navigation (e.g. permalink).
 async function waitForArchivedChannelScreen() {
@@ -46,52 +46,6 @@ async function waitForArchivedChannelScreen() {
         if (isIos()) {
             await device.enableSynchronization();
         }
-    }
-}
-
-// Tap an archived channel and wait for the read-only channel screen.
-async function tapChannelAndWaitForArchivedChannelScreen(channelItem: Detox.NativeElement) {
-    if (isIos()) {
-        await device.disableSynchronization();
-    }
-    try {
-        await channelItem.tap();
-        await waitForElementToExist(ChannelScreen.channelScreen, timeouts.ONE_MIN);
-        await waitForElementToBeVisible(ChannelScreen.postDraftArchived, timeouts.HALF_MIN);
-    } finally {
-        if (isIos()) {
-            await device.enableSynchronization();
-        }
-    }
-}
-
-// Open Browse Channels and select the Archived filter.
-async function openArchivedChannelsFilter() {
-    await ChannelDropdownMenuScreen.open();
-
-    if (isAndroid()) {
-        await wait(timeouts.ONE_SEC);
-        await device.disableSynchronization();
-    }
-    try {
-        await ChannelDropdownMenuScreen.archivedChannelsItem.tap();
-    } finally {
-        if (isAndroid()) {
-            await safeEnableSynchronization();
-        }
-    }
-    await wait(timeouts.ONE_SEC);
-}
-
-async function closeBrowseChannelsChannel() {
-    await ChannelScreen.back();
-    await wait(timeouts.ONE_SEC);
-
-    try {
-        await waitFor(BrowseChannelsScreen.closeButton).toExist().withTimeout(timeouts.FOUR_SEC);
-        await BrowseChannelsScreen.closeButton.tap();
-    } catch {
-        // Browse Channels already dismissed.
     }
 }
 
@@ -132,7 +86,15 @@ describe('Channels - Archived Channel Interactions', () => {
     });
 
     it('MM-T1671_1 - should be able to view members in an archived channel', async () => {
-        // # Create a public channel, add user, and archive it via API
+        // iOS: tapping an archived channel in the Browse Channels modal does NOT
+        // reliably navigate to channel.screen in CI (modal stays open). Production
+        // users have not reported this; only the Detox synthetic-tap path is affected.
+        // We use the search/permalink fallback (MM-T1679_1 path) on iOS, which is
+        // why we post a sentinel message before archival. Android uses the original
+        // Browse-Channels tap flow. See openArchivedChannel() in
+        // detox/e2e/support/ui/screen/archived_channel_navigation.ts.
+
+        // # Create a public channel, add user, post a sentinel message, then archive.
         const {channel: archivedChannel} = await Channel.apiCreateChannel(
             siteOneUrl,
             {type: 'O', teamId: testTeam.id},
@@ -142,38 +104,28 @@ describe('Channels - Archived Channel Interactions', () => {
             testUser.id,
             archivedChannel.id,
         );
+        const sentinel = await postArchivedChannelSentinel(archivedChannel.id);
         await Channel.apiDeleteChannel(siteOneUrl, archivedChannel.id);
         await wait(timeouts.FOUR_SEC);
 
-        // # Open browse channels, switch to archived filter, and open the archived channel
-        await BrowseChannelsScreen.open();
-        await BrowseChannelsScreen.dismissScheduledPostTooltip();
-        await openArchivedChannelsFilter();
-        await BrowseChannelsScreen.searchInput.replaceText(archivedChannel.name);
-
-        // # Wait for the channel item to appear after search (API 35 renders slowly).
-        await waitFor(BrowseChannelsScreen.getChannelItem(archivedChannel.name)).toExist().withTimeout(timeouts.TEN_SEC);
-
-        // # Tap with sync disabled on iOS so the gesture fires immediately.
-        await tapChannelAndWaitForArchivedChannelScreen(BrowseChannelsScreen.getChannelItem(archivedChannel.name));
+        // # Open the archived channel via the platform-appropriate path.
+        await openArchivedChannel(archivedChannel.name, sentinel);
 
         // # Open channel info
         await ChannelInfoScreen.open();
 
         // * Verify the Members section option is visible in channel info
-        await waitFor(ChannelInfoScreen.membersOption).
-            toExist().
-            withTimeout(timeouts.TEN_SEC);
+        await waitForElementToExist(ChannelInfoScreen.membersOption, timeouts.TEN_SEC);
         await expect(ChannelInfoScreen.membersOption).toBeVisible();
 
         // # Go back to channel list screen
         await ChannelInfoScreen.close();
-        await closeBrowseChannelsChannel();
+        await closeArchivedChannel();
         await ChannelListScreen.toBeVisible();
     });
 
     it('MM-T1685_1 - should be able to leave an archived public channel from channel info', async () => {
-        // # Create a public channel, add user, and archive it via API
+        // # Create a public channel, add user, post a sentinel message, then archive.
         const {channel: archivedChannel} = await Channel.apiCreateChannel(
             siteOneUrl,
             {type: 'O', teamId: testTeam.id},
@@ -183,20 +135,12 @@ describe('Channels - Archived Channel Interactions', () => {
             testUser.id,
             archivedChannel.id,
         );
+        const sentinel = await postArchivedChannelSentinel(archivedChannel.id);
         await Channel.apiDeleteChannel(siteOneUrl, archivedChannel.id);
         await wait(timeouts.FOUR_SEC);
 
-        // # Open browse channels, switch to archived filter, and open the archived channel
-        await BrowseChannelsScreen.open();
-        await BrowseChannelsScreen.dismissScheduledPostTooltip();
-        await openArchivedChannelsFilter();
-        await BrowseChannelsScreen.searchInput.replaceText(archivedChannel.name);
-
-        // # Wait for the channel item to appear after search (API 35 renders slowly).
-        await waitFor(BrowseChannelsScreen.getChannelItem(archivedChannel.name)).toExist().withTimeout(timeouts.TEN_SEC);
-
-        // # Tap with sync disabled on iOS so the gesture fires immediately.
-        await tapChannelAndWaitForArchivedChannelScreen(BrowseChannelsScreen.getChannelItem(archivedChannel.name));
+        // # Open the archived channel via the platform-appropriate path.
+        await openArchivedChannel(archivedChannel.name, sentinel);
 
         // # Open channel info and leave the channel
         await ChannelInfoScreen.open();
@@ -279,7 +223,11 @@ describe('Channels - Archived Channel Interactions', () => {
     });
 
     it('MM-T1719_1 - should not be able to remove members from an archived channel', async () => {
-        // # Create a public channel, add user, and archive it via API
+        // iOS uses the search/permalink fallback path (MM-T1679_1 path) because
+        // tapping an archived channel in Browse Channels does not reliably navigate
+        // on iOS in CI. See openArchivedChannel().
+
+        // # Create a public channel, add user, post a sentinel message, then archive.
         const {channel: archivedChannel} = await Channel.apiCreateChannel(
             siteOneUrl,
             {type: 'O', teamId: testTeam.id},
@@ -289,28 +237,18 @@ describe('Channels - Archived Channel Interactions', () => {
             testUser.id,
             archivedChannel.id,
         );
+        const sentinel = await postArchivedChannelSentinel(archivedChannel.id);
         await Channel.apiDeleteChannel(siteOneUrl, archivedChannel.id);
         await wait(timeouts.FOUR_SEC);
 
-        // # Open browse channels, switch to archived filter, and open the archived channel
-        await BrowseChannelsScreen.open();
-        await BrowseChannelsScreen.dismissScheduledPostTooltip();
-        await openArchivedChannelsFilter();
-        await BrowseChannelsScreen.searchInput.replaceText(archivedChannel.name);
-
-        // # Wait for the channel item to appear after search (API 35 renders slowly).
-        await waitFor(BrowseChannelsScreen.getChannelItem(archivedChannel.name)).toExist().withTimeout(timeouts.TEN_SEC);
-
-        // # Tap with sync disabled on iOS so the gesture fires immediately.
-        await tapChannelAndWaitForArchivedChannelScreen(BrowseChannelsScreen.getChannelItem(archivedChannel.name));
+        // # Open the archived channel via the platform-appropriate path.
+        await openArchivedChannel(archivedChannel.name, sentinel);
 
         // # Open channel info
         await ChannelInfoScreen.open();
 
         // # Tap Members — Android: tutorial Dialog blocks Espresso from finding the screen behind it.
-        await waitFor(ChannelInfoScreen.membersOption).
-            toExist().
-            withTimeout(timeouts.TEN_SEC);
+        await waitForElementToExist(ChannelInfoScreen.membersOption, timeouts.TEN_SEC);
         await ChannelInfoScreen.membersOption.tap();
 
         // # Dismiss the long-press tutorial on BOTH platforms — its Modal overlay consumes
@@ -343,7 +281,7 @@ describe('Channels - Archived Channel Interactions', () => {
             await ManageChannelMembersScreen.close();
         }
         await ChannelInfoScreen.close();
-        await closeBrowseChannelsChannel();
+        await closeArchivedChannel();
         await ChannelListScreen.toBeVisible();
     });
 });

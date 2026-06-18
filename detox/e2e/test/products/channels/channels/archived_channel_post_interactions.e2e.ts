@@ -3,77 +3,27 @@
 
 // Post-level archived-channel tests split from archived_channel_interactions.e2e.ts for CI time limits.
 
-import {Channel, Post, Setup, System} from '@support/server_api';
+import {Channel, Post, Setup, System, User} from '@support/server_api';
 import client from '@support/server_api/client';
 import {serverOneUrl, siteOneUrl} from '@support/test_config';
 import {Alert} from '@support/ui/component';
 import {
-    BrowseChannelsScreen,
     ChannelScreen,
     ChannelListScreen,
-    ChannelDropdownMenuScreen,
     HomeScreen,
     LoginScreen,
     PostOptionsScreen,
     SavedMessagesScreen,
     ServerScreen,
+    closeArchivedChannel,
+    openArchivedChannel,
 } from '@support/ui/screen';
 import {
-    isAndroid,
-    isIos,
-    safeEnableSynchronization,
     timeouts,
     wait,
     waitForElementToBeVisible,
-    waitForElementToExist,
 } from '@support/utils';
 import {expect, waitFor} from 'detox';
-
-// Tap an archived channel and wait for the read-only channel screen to load.
-async function tapChannelAndWaitForArchivedChannelScreen(channelItem: Detox.NativeElement) {
-    if (isIos()) {
-        await device.disableSynchronization();
-    }
-    try {
-        await channelItem.tap();
-        await waitForElementToExist(ChannelScreen.channelScreen, timeouts.ONE_MIN);
-        await waitForElementToBeVisible(ChannelScreen.postDraftArchived, timeouts.HALF_MIN);
-    } finally {
-        if (isIos()) {
-            await device.enableSynchronization();
-        }
-    }
-}
-
-// Open Browse Channels and select the Archived filter.
-async function openArchivedChannelsFilter() {
-    await ChannelDropdownMenuScreen.open();
-
-    if (isAndroid()) {
-        await wait(timeouts.ONE_SEC);
-        await device.disableSynchronization();
-    }
-    try {
-        await ChannelDropdownMenuScreen.archivedChannelsItem.tap();
-    } finally {
-        if (isAndroid()) {
-            await safeEnableSynchronization();
-        }
-    }
-    await wait(timeouts.ONE_SEC);
-}
-
-async function closeBrowseChannelsChannel() {
-    await ChannelScreen.back();
-    await wait(timeouts.ONE_SEC);
-
-    try {
-        await waitFor(BrowseChannelsScreen.closeButton).toExist().withTimeout(timeouts.FOUR_SEC);
-        await BrowseChannelsScreen.closeButton.tap();
-    } catch {
-        // Browse Channels already dismissed.
-    }
-}
 
 // Android skipped — Detox/Fabric text-input idle check crashes on API 35.
 describe('Channels - Archived Channel Post Interactions', () => {
@@ -115,7 +65,8 @@ describe('Channels - Archived Channel Post Interactions', () => {
     });
 
     it('MM-T1718_1 - should not show add reaction option in post options for archived channels', async () => {
-        // # Create a public channel, post a message, and archive it via API
+        // # Create a public channel, post a unique searchable message, and archive it.
+        const message = `archived-channel-reaction-test-${Date.now()}`;
         const {channel: archivedChannel} = await Channel.apiCreateChannel(
             siteOneUrl,
             {type: 'O', teamId: testTeam.id},
@@ -125,7 +76,6 @@ describe('Channels - Archived Channel Post Interactions', () => {
             testUser.id,
             archivedChannel.id,
         );
-        const message = 'Test message for archived channel reaction test';
         await Post.apiCreatePost(siteOneUrl, {
             channelId: archivedChannel.id,
             message,
@@ -137,18 +87,8 @@ describe('Channels - Archived Channel Post Interactions', () => {
         await Channel.apiDeleteChannel(siteOneUrl, archivedChannel.id);
         await wait(timeouts.FOUR_SEC);
 
-        // # Open browse channels, switch to archived filter, and open the archived channel
-        await BrowseChannelsScreen.open();
-        await BrowseChannelsScreen.dismissScheduledPostTooltip();
-        await openArchivedChannelsFilter();
-        await BrowseChannelsScreen.searchInput.replaceText(archivedChannel.name);
-
-        // Wait for the channel item to appear after search — fixed 1s sleep was
-        // insufficient on API 35 where the archived list renders more slowly.
-        await waitFor(BrowseChannelsScreen.getChannelItem(archivedChannel.name)).toExist().withTimeout(timeouts.TEN_SEC);
-
-        // * Tap and wait with sync disabled on iOS so the gesture fires immediately.
-        await tapChannelAndWaitForArchivedChannelScreen(BrowseChannelsScreen.getChannelItem(archivedChannel.name));
+        // # Open the archived channel via the platform-appropriate path.
+        await openArchivedChannel(archivedChannel.name, message);
 
         // # Long-press on the post to open post options
         await ChannelScreen.openPostOptionsFor(post.id, message);
@@ -159,12 +99,21 @@ describe('Channels - Archived Channel Post Interactions', () => {
 
         // # Close post options and return to channel list
         await PostOptionsScreen.close();
-        await closeBrowseChannelsChannel();
+        await closeArchivedChannel();
         await ChannelListScreen.toBeVisible();
     });
 
     it('MM-T1720_1 - should not be able to interact with existing reactions in an archived channel', async () => {
-        // # Create a public channel, post a message, add a reaction via API, and archive the channel
+        // # Create a public channel, post a unique searchable message,
+        // add a reaction via API, and archive the channel.
+        //
+        // Log in as testUser before adding the reaction: the shared API client
+        // is authenticated as admin, but POST /api/v4/reactions requires the
+        // user_id in the payload to match the session user. Admin has
+        // manage_system permission but the server may still reject mismatched
+        // user_id on some versions (returns 403). Logging in as the target
+        // user avoids this — same pattern as emojis_and_reactions.e2e.ts.
+        const message = `archived-reaction-existing-${Date.now()}`;
         const {channel: archivedChannel} = await Channel.apiCreateChannel(
             siteOneUrl,
             {type: 'O', teamId: testTeam.id},
@@ -174,32 +123,25 @@ describe('Channels - Archived Channel Post Interactions', () => {
             testUser.id,
             archivedChannel.id,
         );
-        const message = 'Test message for existing reaction test';
         const {post} = await Post.apiCreatePost(siteOneUrl, {
             channelId: archivedChannel.id,
             message,
         });
+
+        await User.apiLogin(siteOneUrl, {username: testUser.newUser.username, password: testUser.newUser.password});
         await client.post(`${siteOneUrl}/api/v4/reactions`, {
             user_id: testUser.id,
             post_id: post.id,
             emoji_name: '+1',
             create_at: 0,
         });
+        await User.apiAdminLogin(siteOneUrl);
+
         await Channel.apiDeleteChannel(siteOneUrl, archivedChannel.id);
         await wait(timeouts.FOUR_SEC);
 
-        // # Open browse channels, switch to archived filter, and open the archived channel
-        await BrowseChannelsScreen.open();
-        await BrowseChannelsScreen.dismissScheduledPostTooltip();
-        await openArchivedChannelsFilter();
-        await BrowseChannelsScreen.searchInput.replaceText(archivedChannel.name);
-
-        // Wait for the channel item to appear after search — fixed 1s sleep was
-        // insufficient on API 35 where the archived list renders more slowly.
-        await waitFor(BrowseChannelsScreen.getChannelItem(archivedChannel.name)).toExist().withTimeout(timeouts.TEN_SEC);
-
-        // * Tap and wait with sync disabled on iOS so the gesture fires immediately.
-        await tapChannelAndWaitForArchivedChannelScreen(BrowseChannelsScreen.getChannelItem(archivedChannel.name));
+        // # Open the archived channel via the platform-appropriate path.
+        await openArchivedChannel(archivedChannel.name, message);
 
         // * Verify the existing reaction is visible on the archived post
         const reactionEmoji = element(
@@ -216,12 +158,17 @@ describe('Channels - Archived Channel Post Interactions', () => {
 
         // # Close post options and return to channel list
         await PostOptionsScreen.close();
-        await closeBrowseChannelsChannel();
+        await closeArchivedChannel();
         await ChannelListScreen.toBeVisible();
     });
 
     it('MM-T1722_1 - should show reply/jump arrow in saved messages for posts from archived channels', async () => {
-        // # Create a public channel, post a message, and archive the channel via API
+        // iOS uses the search/permalink fallback path (MM-T1679_1 path) because
+        // tapping an archived channel in Browse Channels does not reliably navigate
+        // on iOS in CI. See openArchivedChannel().
+
+        // # Create a public channel, post a unique searchable message,
+        // and archive the channel via API.
         const message = `saved-post-archived-channel-${Date.now()}`;
         const {channel: archivedChannel} = await Channel.apiCreateChannel(
             siteOneUrl,
@@ -243,18 +190,8 @@ describe('Channels - Archived Channel Post Interactions', () => {
         await Channel.apiDeleteChannel(siteOneUrl, archivedChannel.id);
         await wait(timeouts.FOUR_SEC);
 
-        // # Open browse channels, switch to archived filter, and open the archived channel
-        await BrowseChannelsScreen.open();
-        await BrowseChannelsScreen.dismissScheduledPostTooltip();
-        await openArchivedChannelsFilter();
-        await BrowseChannelsScreen.searchInput.replaceText(archivedChannel.name);
-
-        // Wait for the channel item to appear after search — fixed 1s sleep was
-        // insufficient on API 35 where the archived list renders more slowly.
-        await waitFor(BrowseChannelsScreen.getChannelItem(archivedChannel.name)).toExist().withTimeout(timeouts.TEN_SEC);
-
-        // * Tap and wait with sync disabled on iOS so the gesture fires immediately.
-        await tapChannelAndWaitForArchivedChannelScreen(BrowseChannelsScreen.getChannelItem(archivedChannel.name));
+        // # Open the archived channel via the platform-appropriate path.
+        await openArchivedChannel(archivedChannel.name, message);
 
         // # Long-press the post to open post options, then save it
         await ChannelScreen.openPostOptionsFor(post.id, message);
@@ -266,7 +203,7 @@ describe('Channels - Archived Channel Post Interactions', () => {
         await wait(timeouts.ONE_SEC);
 
         // # Close the archived channel and navigate to saved messages
-        await closeBrowseChannelsChannel();
+        await closeArchivedChannel();
         await ChannelListScreen.toBeVisible();
 
         // # Open saved messages screen
@@ -294,7 +231,12 @@ describe('Channels - Archived Channel Post Interactions', () => {
     });
 
     it('MM-T1716 - should not show post input box in archived channels (read-only, cannot post)', async () => {
-        // # Create a public channel, add user, and archive it via API
+        // iOS uses the search/permalink fallback path (MM-T1679_1 path) because
+        // tapping an archived channel in Browse Channels does not reliably navigate
+        // on iOS in CI. See openArchivedChannel().
+
+        // # Create a public channel, post a unique searchable sentinel, and archive it.
+        const message = `archived-no-postbox-${Date.now()}`;
         const {channel: archivedChannel} = await Channel.apiCreateChannel(
             siteOneUrl,
             {type: 'O', teamId: testTeam.id},
@@ -304,27 +246,15 @@ describe('Channels - Archived Channel Post Interactions', () => {
             testUser.id,
             archivedChannel.id,
         );
+        await Post.apiCreatePost(siteOneUrl, {
+            channelId: archivedChannel.id,
+            message,
+        });
         await Channel.apiDeleteChannel(siteOneUrl, archivedChannel.id);
         await wait(timeouts.FOUR_SEC);
 
-        // # Open browse channels, switch to archived filter, search for the archived channel
-        await BrowseChannelsScreen.open();
-        await BrowseChannelsScreen.dismissScheduledPostTooltip();
-
-        // * Verify the channel dropdown is visible before tapping
-        await expect(BrowseChannelsScreen.channelDropdown).toBeVisible();
-        await openArchivedChannelsFilter();
-        await BrowseChannelsScreen.searchInput.replaceText(archivedChannel.name);
-
-        // * Verify archived channel appears in the list
-        await wait(timeouts.ONE_SEC);
-        await expect(
-            BrowseChannelsScreen.getChannelItemDisplayName(archivedChannel.name),
-        ).toHaveText(archivedChannel.display_name);
-
-        // # Tap on the archived channel to open it
-        // * Tap and wait with sync disabled on iOS so the gesture fires immediately.
-        await tapChannelAndWaitForArchivedChannelScreen(BrowseChannelsScreen.getChannelItem(archivedChannel.name));
+        // # Open the archived channel via the platform-appropriate path.
+        await openArchivedChannel(archivedChannel.name, message);
 
         // * Verify main thread has no active post input box
         await expect(ChannelScreen.postInput).not.toBeVisible();
@@ -335,8 +265,8 @@ describe('Channels - Archived Channel Post Interactions', () => {
             timeouts.TEN_SEC,
         );
 
-        // # Navigate back: channel → Browse Channels → channel list
-        await closeBrowseChannelsChannel();
+        // # Navigate back to channel list
+        await closeArchivedChannel();
 
         // * Verify back on channel list screen
         await ChannelListScreen.toBeVisible();

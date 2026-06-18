@@ -174,7 +174,7 @@ describe('preferences', () => {
         unsavedSpy.mockRestore();
     });
 
-    it('deleteSavedPost - does not mark ephemeral store when API call fails', async () => {
+    it('deleteSavedPost - clears ephemeral store when API call fails', async () => {
         await operator.handleSystem({systems: [{id: SYSTEM_IDENTIFIERS.CURRENT_USER_ID, value: user1.id}], prepareRecordsOnly: false});
 
         const prefModel = {
@@ -187,12 +187,18 @@ describe('preferences', () => {
         (querySavedPostsPreferences as jest.Mock).mockReturnValueOnce({fetch: jest.fn(() => [prefModel])});
         mockClient.deletePreferences.mockImplementationOnce(jest.fn(throwFunc));
 
+        const unsavedSpy = jest.spyOn(EphemeralStore, 'addRecentlyUnsavedSavedPost').mockImplementation(() => {});
+        const clearSpy = jest.spyOn(EphemeralStore, 'clearRecentlyUnsavedSavedPost').mockImplementation(() => {});
+
         const result = await deleteSavedPost(serverUrl, post1.id);
         expect(result.error).toBeDefined();
 
-        // EphemeralStore.addRecentlyUnsavedSavedPost must NOT be called on failure
-        expect(EphemeralStore.addRecentlyUnsavedSavedPost).not.toHaveBeenCalled();
+        expect(unsavedSpy).toHaveBeenCalledWith(serverUrl, post1.id);
+        expect(clearSpy).toHaveBeenCalledWith(serverUrl, post1.id);
         expect(prefModel.prepareDestroyPermanently).not.toHaveBeenCalled();
+
+        unsavedSpy.mockRestore();
+        clearSpy.mockRestore();
     });
 
     it('openChannelIfNeeded - handle not found database', async () => {

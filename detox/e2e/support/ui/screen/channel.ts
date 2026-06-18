@@ -241,6 +241,14 @@ class ChannelScreen {
         }
 
         if (isIos()) {
+            // Dismiss soft keyboard if it is still up after postMessage. The keyboard
+            // overlays the bottom half of the post list and prevents longPress from
+            // hitting posts in a short channel. Tapping a non-input area of the
+            // flat list dismisses it (mirrors the pattern in composePostDraft).
+            try {
+                await this.postList.getFlatList().tap({x: 5, y: 5});
+                await wait(timeouts.HALF_SEC);
+            } catch { /* ignore */ }
             try {
                 await this.postList.getFlatList().swipe('up', 'fast', 0.3);
                 await wait(timeouts.ONE_SEC);
@@ -324,7 +332,10 @@ class ChannelScreen {
     };
 
     tapSendButton = async () => {
-        await waitForElementToBeVisible(this.sendButton, timeouts.FOUR_SEC);
+        // Bump from 4s to 10s — on slow iOS CI runners the send button can fail
+        // the visibility threshold for a few seconds while the keyboard finishes
+        // animating up and the post draft layout settles.
+        await waitForElementToBeVisible(this.sendButton, timeouts.TEN_SEC);
         await this.sendButton.tap();
         await waitFor(this.sendButton).not.toExist().withTimeout(timeouts.FIVE_SEC);
     };

@@ -72,6 +72,13 @@ describe('Autocomplete - Search', () => {
                 // header may be off-screen after expansion; fall through
             }
             await wait(timeouts.HALF_SEC);
+
+            // Dismiss the soft keyboard so the bottom tab bar becomes hittable.
+            // Tapping the searchClearButton has a side-effect of removing focus.
+            try {
+                await SearchMessagesScreen.searchClearButton.tap();
+            } catch { /* clear button may not be visible */ }
+            await wait(timeouts.HALF_SEC);
         }
         await ChannelListScreen.open();
     });

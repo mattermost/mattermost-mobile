@@ -8,6 +8,9 @@ import {timeouts, wait} from '@support/utils';
 import {tapNativeBackButton} from '@support/utils/detoxhelpers';
 import {expect, waitFor} from 'detox';
 
+import channelScreen from './channel';
+import channelInfoScreen from './channel_info';
+
 class ChannelSettingsScreen {
     testID = {
         channelSettingsScreen: 'channel_settings.screen',
@@ -51,7 +54,7 @@ class ChannelSettingsScreen {
     };
 
     archiveChannel = async (alertArchiveChannelTitle: Detox.NativeElement, {confirm = true} = {}) => {
-        await waitFor(this.archiveChannelOption).toBeVisible().whileElement(by.id(this.testID.scrollView)).scroll(50, 'down');
+        await waitFor(this.archiveChannelOption).toBeVisible().whileElement(by.id(this.testID.scrollView)).scroll(200, 'down');
         await this.archiveChannelOption.tap({x: 1, y: 1});
         const {
             noButton,
@@ -68,7 +71,23 @@ class ChannelSettingsScreen {
             // is insufficient on slow iOS CI runners where the dismiss animation can take
             // longer, leaving the dimming view blocking subsequent taps.
             await waitFor(alertArchiveChannelTitle).not.toExist().withTimeout(timeouts.TEN_SEC);
-            await expect(this.channelSettingsScreen).not.toExist();
+
+            // Archive keeps settings mounted; navigate back to the read-only channel screen.
+            try {
+                await waitFor(this.channelSettingsScreen).toExist().withTimeout(timeouts.FOUR_SEC);
+                await tapNativeBackButton();
+            } catch {
+                // Already navigated away from settings.
+            }
+
+            try {
+                await waitFor(channelInfoScreen.channelInfoScreen).toExist().withTimeout(timeouts.FOUR_SEC);
+                await tapNativeBackButton();
+            } catch {
+                // Already on the channel screen.
+            }
+
+            await waitFor(channelScreen.postDraftArchived).toBeVisible().withTimeout(timeouts.TEN_SEC);
         } else {
             await noButton.tap();
             await waitFor(alertArchiveChannelTitle).not.toExist().withTimeout(timeouts.TEN_SEC);
@@ -128,7 +147,14 @@ class ChannelSettingsScreen {
     };
 
     unarchiveChannel = async (alertUnarchiveChannelTitle: Detox.NativeElement, {confirm = true} = {}) => {
-        await waitFor(this.unarchiveChannelOption).toBeVisible().whileElement(by.id(this.testID.scrollView)).scroll(50, 'down');
+        // The unarchive option is rendered conditionally based on the `canUnarchive`
+        // permission, which depends on the freshly-archived channel state being synced
+        // back to the client. On slow iOS CI runners the option can be missing for a
+        // few seconds after entering the settings screen. Poll for it to exist before
+        // attempting to scroll/tap to avoid an "Unable to scroll down ... no elements
+        // found" failure when the option simply hasn't been rendered yet.
+        await waitFor(this.unarchiveChannelOption).toExist().withTimeout(timeouts.TEN_SEC);
+        await waitFor(this.unarchiveChannelOption).toBeVisible().whileElement(by.id(this.testID.scrollView)).scroll(200, 'down');
         await wait(timeouts.TWO_SEC);
         await this.unarchiveChannelOption.tap({x: 1, y: 1});
         const {
@@ -145,7 +171,15 @@ class ChannelSettingsScreen {
             // is insufficient on slow iOS CI runners where the dismiss animation can take
             // longer, leaving the dimming view blocking subsequent taps.
             await waitFor(alertUnarchiveChannelTitle).not.toExist().withTimeout(timeouts.TEN_SEC);
-            await expect(this.channelSettingsScreen).not.toExist();
+
+            try {
+                await waitFor(this.channelSettingsScreen).toExist().withTimeout(timeouts.FOUR_SEC);
+                await tapNativeBackButton();
+            } catch {
+                // Already navigated away from settings.
+            }
+
+            await waitFor(channelScreen.postDraft).toBeVisible().withTimeout(timeouts.TEN_SEC);
         } else {
             await noButton.tap();
             await waitFor(alertUnarchiveChannelTitle).not.toExist().withTimeout(timeouts.TEN_SEC);

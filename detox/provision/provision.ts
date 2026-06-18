@@ -3,6 +3,7 @@
 
 import {ensureAgentsE2EBot, verifyAgentsSetup} from './agents';
 import {AGENTS_PLUGIN_ID, LOADTEST_MOCK_MIN_MM_VERSION, REQUIRED_PLUGINS} from './constants';
+import {ensureCustomProfileAttributeFields} from './custom-profile-attributes';
 import {shouldUseLoadtestMock} from './env';
 import {createMattermostClient, login} from './http-client';
 import {ensureTrialLicense} from './license';
@@ -21,6 +22,7 @@ export async function provisionServer(serverUrl: string, credentials: ProvisionC
 
     await ensureTrialLicense(client, token);
     await configureTestServer(client, token);
+    await ensureCustomProfileAttributeFields(client, token);
 
     const useMockLlm = shouldUseLoadtestMock() && semverGte(serverMmVersion, LOADTEST_MOCK_MIN_MM_VERSION);
 

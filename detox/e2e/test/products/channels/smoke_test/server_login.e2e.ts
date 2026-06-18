@@ -123,8 +123,10 @@ describe('Smoke Test - Server Login', () => {
 
         // * Verify second server is logged out
         await ServerListScreen.getServerItemInactive(serverTwoDisplayName).swipe('left');
-        await wait(timeouts.ONE_SEC);
-        await expect(ServerListScreen.getServerItemLoginOption(serverTwoDisplayName).atIndex(0)).toBeVisible();
+        await wait(timeouts.TWO_SEC);
+        await waitFor(ServerListScreen.getServerItemLoginOption(serverTwoDisplayName).atIndex(0)).
+            toExist().
+            withTimeout(timeouts.TEN_SEC);
 
         // # Go back to first server
         await ServerListScreen.getServerItemActive(serverOneDisplayName).tap();

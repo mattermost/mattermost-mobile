@@ -29,7 +29,7 @@ import {
     ServerScreen,
 } from '@support/ui/screen';
 import {getRandomId, timeouts, wait} from '@support/utils';
-import {expect} from 'detox';
+import {device, expect, waitFor} from 'detox';
 
 // ****************************************************************
 // Agent post helpers
@@ -108,7 +108,11 @@ describe('Agents - Tool Calls in Channels', () => {
     let didLogin = false;
 
     const itWithAgents = (name: string, fn: () => Promise<void>) => {
-        itWhenAgentsReady(() => didLogin, name, fn);
+        itWhenAgentsReady(
+            () => didLogin && Boolean(testChannel) && Boolean(testUser) && Boolean(testTeam),
+            name,
+            fn,
+        );
     };
 
     beforeAll(async () => {
@@ -128,6 +132,10 @@ describe('Agents - Tool Calls in Channels', () => {
         await ServerScreen.connectToServer(serverOneUrl, serverOneDisplayName);
         await LoginScreen.login(user);
         didLogin = true;
+
+        // Reload after login — prior suites may leave the app logged out or on the wrong screen.
+        await device.reloadReactNative();
+        await ChannelListScreen.toBeVisible();
 
         // # Wait for WebSocket to connect and agents status to be fetched
         await wait(timeouts.TEN_SEC);

@@ -45,6 +45,10 @@ describe('Agents - Channel Summary', () => {
         await LoginScreen.login(user);
         didLogin = true;
 
+        // Reload after login — prior suites may leave the app logged out or on the wrong screen.
+        await device.reloadReactNative();
+        await ChannelListScreen.toBeVisible();
+
         // # Wait for WebSocket to connect and agents status to be fetched
         await wait(timeouts.TEN_SEC);
 
@@ -83,7 +87,7 @@ describe('Agents - Channel Summary', () => {
         await HomeScreen.logout();
     });
 
-    itWhenAgentsReady(() => didLogin, 'should show Ask Agents option in public channel', async () => {
+    itWhenAgentsReady(() => didLogin && Boolean(testChannel), 'should show Ask Agents option in public channel', async () => {
         // # Open a channel screen
         await ChannelScreen.open(channelsCategory, testChannel.name);
 
@@ -99,7 +103,7 @@ describe('Agents - Channel Summary', () => {
         await ChannelScreen.back();
     });
 
-    itWhenAgentsReady(() => didLogin, 'should open summary sheet and show options', async () => {
+    itWhenAgentsReady(() => didLogin && Boolean(testChannel), 'should open summary sheet and show options', async () => {
         // # Open a channel screen
         await ChannelScreen.open(channelsCategory, testChannel.name);
 

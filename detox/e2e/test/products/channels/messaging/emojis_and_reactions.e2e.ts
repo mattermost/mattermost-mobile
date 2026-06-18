@@ -134,6 +134,11 @@ describe('Messaging - Emojis and Reactions', () => {
         // * Verify user who reacted with the emoji
         await ReactionsScreen.toBeVisible();
         const {reactorItemEmojiAliases, reactorItemUserProfilePicture, reactorItemUser} = ReactionsScreen.getReactorItem(testUser.id, 'fire');
+
+        // Wait for the bottom-sheet to finish animating in; on iOS 26.x the
+        // profile picture can fall just below the 75% visibility threshold
+        // mid-animation, causing "not visible" assertion failures.
+        await waitFor(reactorItemUserProfilePicture).toBeVisible().withTimeout(timeouts.TEN_SEC);
         await expect(reactorItemEmojiAliases).toHaveText(':fire:');
         await expect(reactorItemUserProfilePicture).toBeVisible();
         await expect(reactorItemUser).toBeVisible();

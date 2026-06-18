@@ -216,10 +216,10 @@ describe('Autocomplete - Channel Mention', () => {
         // After selecting a channel mention, the autocomplete dismissal is driven
         // by a React state update; on iOS 26 CI the assertion can race the update
         // (see MM-T4879_5 which uses the same settle-then-assert pattern after
-        // typing a trailing space). Brief settle keeps this deterministic without
-        // a timeout bump.
+        // typing a trailing space). Poll for non-existence with a generous
+        // timeout — a fixed 1s settle is sometimes too short on slow runners.
         await wait(timeouts.ONE_SEC);
-        await expect(Autocomplete.sectionChannelMentionList).not.toExist();
+        await waitFor(Autocomplete.sectionChannelMentionList).not.toExist().withTimeout(timeouts.TEN_SEC);
 
         // # Clear the input (which now contains the inserted channel mention text),
         // then re-activate channel mention list by typing "~".

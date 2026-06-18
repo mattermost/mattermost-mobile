@@ -267,7 +267,23 @@ class ChannelListScreen {
 
     open = async () => {
         // # Open channel list screen
-        await HomeScreen.channelListTab.tap();
+        // On iOS 26.x the bottom tab can briefly fail Detox's 100% visibility
+        // threshold due to a sub-pixel layout difference between view bounds and
+        // visible bounds. Wait for visibility, then fall back to toExist + retry
+        // if the threshold check fails.
+        try {
+            await waitFor(HomeScreen.channelListTab).toBeVisible().withTimeout(timeouts.FIVE_SEC);
+        } catch {
+            await waitFor(HomeScreen.channelListTab).toExist().withTimeout(timeouts.TEN_SEC);
+            await wait(timeouts.ONE_SEC);
+        }
+        try {
+            await HomeScreen.channelListTab.tap();
+        } catch {
+            // Retry once after a short settle; addresses transient hit-test misses.
+            await wait(timeouts.ONE_SEC);
+            await HomeScreen.channelListTab.tap();
+        }
 
         return this.toBeVisible();
     };

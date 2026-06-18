@@ -175,7 +175,6 @@ describe('Search - Recent Mentions', () => {
         await SavedMessagesScreen.open();
 
         // * Verify mention is no longer on saved messages screen.
-        // Poll: unsave preference deletion propagates through the observable.
         await waitFor(postListPostItem).not.toExist().withTimeout(timeouts.TEN_SEC);
 
         // # Go back to channel list screen
@@ -239,10 +238,14 @@ describe('Search - Recent Mentions', () => {
         await EditPostScreen.messageInput.replaceText(updatedMessage);
         await EditPostScreen.saveButton.tap();
 
-        // * Verify post displays the edited indicator (single testID — combined-text
-        // regex doesn't work because @mention is a separate React node).
+        // * Verify post displays the edited indicator. The `edited_indicator` testID
+        // is set on an inline <Text> inside Markdown — on iOS RN collapses nested
+        // <Text> nodes and the testID is not exposed to the accessibility tree.
+        // The combined-text regex (`<message>.*Edited`) also fails here because the
+        // @mention is rendered as a separate React node, so the "Edited" string lives
+        // in a sibling Text. Match on the "Edited" text scoped to this post instead.
         await waitFor(
-            element(by.id('edited_indicator').withAncestor(by.id(`recent_mentions.post_list.post.${ownMentionPost.id}`))),
+            element(by.text('Edited').withAncestor(by.id(`recent_mentions.post_list.post.${ownMentionPost.id}`))),
         ).toExist().withTimeout(timeouts.TEN_SEC);
 
         // # Open post options via header date_time long-press (avoids the @mention tap handler)

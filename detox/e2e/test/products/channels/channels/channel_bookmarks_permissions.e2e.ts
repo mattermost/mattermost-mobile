@@ -200,6 +200,12 @@ describe('Channels - Channel Bookmarks Permissions', () => {
         await ChannelSettingsScreen.toBeVisible();
         await ChannelSettingsScreen.archivePublicChannel({confirm: true});
 
+        // # Close the channel info modal so the channel screen below it is hittable.
+        // On iOS the channel info modal remains open after archivePublicChannel and
+        // occludes channel.post_draft.archived. Matches the pattern used by
+        // archive_channel_from_settings MM-T4932_1.
+        await ChannelInfoScreen.close();
+
         // * Verify channel is archived (draft area shows archived state).
         // Poll because the archive WS event must propagate through the DB observable
         // before the archived post draft renders.
