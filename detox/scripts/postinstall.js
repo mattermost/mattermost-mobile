@@ -27,30 +27,6 @@ if (fs.existsSync(nativePath)) {
     console.log('postinstall: detox native.js not found, skipping VisibleMatcher patch');
 }
 
-// Patch Detox's FabricUIManagerIdlingResources to null-guard the UIManager lookup.
-//
-// Bug: Detox 20.50.4 calls
-//   UIManagerHelper.getUIManager(reactContext, UIManagerType.FABRIC)
-// and passes the result directly to `Reflect.on(...)`. The Kotlin signature of
-// `getUIManager` returns `UIManager?` (nullable), and RN returns null during
-// brief React-context teardown / screen-replace windows. joor's
-//   `Reflect.on(null)` falls back to `Object.class` as the reflection target.
-//   `Object.class.getField/getDeclaredField("mMountItemDispatcher")` then
-//   throws `NoSuchFieldException`.
-// This crashes whatever test happens to be running when Detox's periodic
-// QueryStatusActionHandler sync poll fires (MM-T868_1, MM-T1697,
-// Teams - Invite suite — observed varying victims across CI runs).
-//
-// The previous attempt (a field-name version-gate) was based on the wrong
-// hypothesis that RN 0.83 had renamed the field. It hadn't — RN 0.83.9
-// FabricUIManager.java:177 still declares
-//   `private final MountItemDispatcher mMountItemDispatcher;`.
-// The lookup target class was the issue (Object, due to null), not the name.
-//
-// Fix: null-guard the UIManager lookup; if it's null, treat the queue as
-// empty (size 0) — semantically correct because a non-existent UIManager
-// trivially has nothing to mount.
-//
 // NOTE: This patch modifies the .kt source in `node_modules/detox`. It only
 // takes effect at runtime if gradle compiles Detox from source — see
 // `android/settings.gradle` for the `include ':detox'` block. With the
@@ -139,4 +115,114 @@ if (fs.existsSync(fabricIdlingPath)) {
     console.log(`postinstall: FabricUIManagerIdlingResources ${msg}`);
 } else {
     console.log('postinstall: FabricUIManagerIdlingResources.kt not found, skipping null-guard patch');
+}
+
+// Patch Detox's JavaTimersReflected to null-guard the reactHost/reactInstance chain.
+//
+// Bug: Detox 20.51.x calls Reflect.on(reactContext).field("reactHost").get<Any>()
+// and chains through reactInstance -> javaTimerManager without null checks. RN 0.83
+// returns null during brief React-context teardown windows, and joor's
+// Reflect.on(null) falls back to Object.class, which then throws
+// NoSuchFieldException: javaTimerManager. This crashes MM-T5114_1-4 on Android
+// when Detox's periodic sync poll fires during screen transitions.
+//
+// Fix: null-guard each hop; a missing timers manager means no active timers (idle).
+const javaTimersPath = path.join(
+    __dirname, '..', 'node_modules', 'detox',
+    'android', 'detox', 'src', 'full', 'java', 'com', 'wix', 'detox',
+    'reactnative', 'idlingresources', 'timers',
+    'JavaTimersReflected.kt',
+);
+
+function applyJavaTimersPatch(kt) {
+    const patchedMarker = '// mattermost-mobile patch: null-guard reactInstance chain';
+    if (kt.includes(patchedMarker)) {
+        return {kt, msg: 'already applied (null-guard)'};
+    }
+
+    const originalHasActiveTimers =
+        '    fun hasActiveTimers(reactContext: ReactContext): Boolean {\n' +
+        '        val timersManager = getTimersManager(reactContext)\n';
+    const patchedHasActiveTimers =
+        '    fun hasActiveTimers(reactContext: ReactContext): Boolean {\n' +
+        '        ' + patchedMarker + ':\n' +
+        '        // a null timers manager means the instance is starting up or tearing\n' +
+        '        // down, which trivially has no active timers.\n' +
+        '        val timersManager = getTimersManager(reactContext) ?: return false\n';
+
+    const originalGetter =
+        '    private fun getTimersManager(reactContext: ReactContext): JavaTimerManager {\n' +
+        '        val reactHostFieldName = if (ReactNativeInfo.rnVersion().minor > 79) {\n' +
+        '            "reactHost"\n' +
+        '        } else {\n' +
+        '            "mReactHost"\n' +
+        '        }\n' +
+        '\n' +
+        '        val reactInstanceFieldName = if (ReactNativeInfo.rnVersion().minor > 80) {\n' +
+        '            "reactInstance"\n' +
+        '        } else {\n' +
+        '            "mReactInstance"\n' +
+        '        }\n' +
+        '\n' +
+        '        val javaTimerManagerFieldName = if (ReactNativeInfo.rnVersion().minor > 79) {\n' +
+        '            "javaTimerManager"\n' +
+        '        } else {\n' +
+        '            "mJavaTimerManager"\n' +
+        '        }\n' +
+        '\n' +
+        '        val reactHost = Reflect.on(reactContext).field(reactHostFieldName).get<Any>()\n' +
+        '        val reactInstance = Reflect.on(reactHost).field(reactInstanceFieldName).get<Any>()\n' +
+        '        return Reflect.on(reactInstance).field(javaTimerManagerFieldName).get() as JavaTimerManager\n' +
+        '    }';
+
+    const patchedGetter =
+        '    private fun getTimersManager(reactContext: ReactContext): JavaTimerManager? {\n' +
+        '        val reactHostFieldName = if (ReactNativeInfo.rnVersion().minor > 79) {\n' +
+        '            "reactHost"\n' +
+        '        } else {\n' +
+        '            "mReactHost"\n' +
+        '        }\n' +
+        '\n' +
+        '        val reactInstanceFieldName = if (ReactNativeInfo.rnVersion().minor > 80) {\n' +
+        '            "reactInstance"\n' +
+        '        } else {\n' +
+        '            "mReactInstance"\n' +
+        '        }\n' +
+        '\n' +
+        '        val javaTimerManagerFieldName = if (ReactNativeInfo.rnVersion().minor > 79) {\n' +
+        '            "javaTimerManager"\n' +
+        '        } else {\n' +
+        '            "mJavaTimerManager"\n' +
+        '        }\n' +
+        '\n' +
+        '        val reactHost = Reflect.on(reactContext).field(reactHostFieldName).get<Any?>()\n' +
+        '            ?: return null\n' +
+        '        val reactInstance = Reflect.on(reactHost).field(reactInstanceFieldName).get<Any?>()\n' +
+        '            ?: return null\n' +
+        '        return Reflect.on(reactInstance).field(javaTimerManagerFieldName).get() as? JavaTimerManager\n' +
+        '    }';
+
+    let out = kt;
+    if (!out.includes(originalHasActiveTimers)) {
+        return {kt, msg: 'hasActiveTimers pattern not found (Detox source layout changed?), skipping'};
+    }
+    out = out.replace(originalHasActiveTimers, patchedHasActiveTimers);
+
+    if (!out.includes(originalGetter)) {
+        return {kt, msg: 'getTimersManager pattern not found (Detox source layout changed?), skipping'};
+    }
+    out = out.replace(originalGetter, patchedGetter);
+
+    return {kt: out, msg: 'patched (null-guard)'};
+}
+
+if (fs.existsSync(javaTimersPath)) {
+    const kt = fs.readFileSync(javaTimersPath, 'utf8');
+    const {kt: patched, msg} = applyJavaTimersPatch(kt);
+    if (patched !== kt) {
+        fs.writeFileSync(javaTimersPath, patched, 'utf8');
+    }
+    console.log(`postinstall: JavaTimersReflected ${msg}`);
+} else {
+    console.log('postinstall: JavaTimersReflected.kt not found, skipping null-guard patch');
 }

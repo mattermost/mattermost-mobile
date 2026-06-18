@@ -133,6 +133,14 @@ run_detox_tests() {
     npm run e2e:android-test -- "$@"
 }
 
+stop_emulator() {
+    echo "Stopping emulator..."
+    adb -e emu kill 2>/dev/null || true
+    pkill -9 -f 'qemu-system-x86_64' 2>/dev/null || true
+    pkill -9 -f "emulator.*${AVD_NAME}" 2>/dev/null || true
+    sleep 3
+}
+
 main() {
     setup_avd_home
 
@@ -154,6 +162,10 @@ main() {
     fi
 
     run_detox_tests "${TEST_FILES[@]}"
+
+    if [[ "$CI" == "true" ]]; then
+        stop_emulator
+    fi
 }
 
 main

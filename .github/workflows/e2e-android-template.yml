@@ -322,7 +322,7 @@ jobs:
           path: |
             detox/.android
             detox/${{ env.AVD_NAME }}_api_${{ inputs.android_api_level }}
-          key: android-emulator-${{ runner.os }}-${{ runner.arch }}-${{ env.AVD_NAME }}-api-${{ inputs.android_api_level }}-v2
+          key: android-emulator-${{ runner.os }}-${{ runner.arch }}-${{ env.AVD_NAME }}-api-${{ inputs.android_api_level }}-v3
           restore-keys: |
             android-emulator-${{ runner.os }}-${{ runner.arch }}-${{ env.AVD_NAME }}-api-${{ inputs.android_api_level }}-
             android-emulator-${{ runner.os }}-${{ runner.arch }}-
@@ -338,6 +338,19 @@ jobs:
           SITE_2_URL: ${{ env.SITE_2_URL }}
           SITE_3_URL: ${{ env.SITE_3_URL }}
         continue-on-error: true # We want to run all the tests
+
+      # Stop QEMU and drop mutable disk images before actions/cache tars AVD paths.
+      # Otherwise tar exits 1: "userdata-qemu.img.qcow2: file changed as we read it".
+      - name: Prepare AVD for cache
+        if: always()
+        run: |
+          adb -e emu kill 2>/dev/null || true
+          pkill -9 -f 'qemu-system-x86_64' 2>/dev/null || true
+          pkill -9 -f "emulator.*${AVD_NAME}" 2>/dev/null || true
+          sleep 3
+          AVD_DIR="detox/${AVD_NAME}_api_${SDK_VERSION}"
+          rm -f "${AVD_DIR}"/userdata*.img* "${AVD_DIR}"/cache.img* 2>/dev/null || true
+          rm -rf "${AVD_DIR}"/snapshots 2>/dev/null || true
 
       - name: Upload Android Test Report
         if: always()
