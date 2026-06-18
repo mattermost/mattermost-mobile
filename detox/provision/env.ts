@@ -7,11 +7,6 @@ import {logError} from './log';
 
 import type {ProvisionCredentials} from './types';
 
-/** E2E provisioning defaults to loadtest_mock (no real LLM). Set AGENTS_USE_LOADTEST_MOCK=0 to disable. */
-export function shouldUseLoadtestMock(): boolean {
-    return process.env.AGENTS_USE_LOADTEST_MOCK !== '0';
-}
-
 export function getAgentsPluginDownloadUrl(): string | undefined {
     return process.env.AGENTS_PLUGIN_DOWNLOAD_URL;
 }

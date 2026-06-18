@@ -43,8 +43,11 @@ export async function configureTestServer(client: MattermostClient, token: strin
     serviceSettings.MaximumLoginAttempts = 999999;
     serviceSettings.EnableBotAccountCreation = true;
     serviceSettings.EnableChannelBookmarks = true;
-    serviceSettings.ReportAProblemType = 'default';
-    serviceSettings.AllowDownloadLogs = true;
+
+    config.SupportSettings = config.SupportSettings || {};
+    const supportSettings = config.SupportSettings as Record<string, unknown>;
+    supportSettings.ReportAProblemType = 'default';
+    supportSettings.AllowDownloadLogs = true;
 
     config.PasswordSettings = config.PasswordSettings || {};
     (config.PasswordSettings as Record<string, unknown>).MinimumLength = 8;

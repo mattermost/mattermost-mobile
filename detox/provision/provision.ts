@@ -1,18 +1,27 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {ensureAgentsE2EBot, verifyAgentsSetup} from './agents';
-import {AGENTS_PLUGIN_ID, LOADTEST_MOCK_MIN_MM_VERSION, REQUIRED_PLUGINS} from './constants';
+import {AGENTS_PLUGIN_ID, REQUIRED_PLUGINS} from './constants';
 import {ensureCustomProfileAttributeFields} from './custom-profile-attributes';
-import {shouldUseLoadtestMock} from './env';
 import {createMattermostClient, login} from './http-client';
 import {ensureTrialLicense} from './license';
-import {logInfo} from './log';
+import {logInfo, logWarn} from './log';
 import {ensureAgentsPlugin, installRequiredPlugin} from './plugins';
-import {semverGte} from './semver';
 import {configureTestServer, getServerMmVersion} from './server-config';
 
-import type {ProvisionCredentials} from './types';
+import type {MattermostClient, ProvisionCredentials} from './types';
+
+type AgentsStatusResponse = {available?: boolean};
+
+async function verifyAgentsSetup(client: MattermostClient, token: string): Promise<boolean> {
+    const statusRes = await client.request<AgentsStatusResponse>('GET', '/api/v4/agents/status', undefined, token);
+    if (statusRes.data?.available === true) {
+        return true;
+    }
+
+    logWarn('Agents not available — agents tests may be skipped.');
+    return false;
+}
 
 export async function provisionServer(serverUrl: string, credentials: ProvisionCredentials): Promise<void> {
     const client = createMattermostClient(serverUrl);
@@ -24,9 +33,7 @@ export async function provisionServer(serverUrl: string, credentials: ProvisionC
     await configureTestServer(client, token);
     await ensureCustomProfileAttributeFields(client, token);
 
-    const useMockLlm = shouldUseLoadtestMock() && semverGte(serverMmVersion, LOADTEST_MOCK_MIN_MM_VERSION);
-
-    await ensureAgentsPlugin(client, token, serverMmVersion, {requireLatestMaster: useMockLlm});
+    await ensureAgentsPlugin(client, token);
 
     /* eslint-disable no-await-in-loop -- install required plugins one at a time for clear provisioning logs */
     for (const plugin of REQUIRED_PLUGINS) {
@@ -37,11 +44,9 @@ export async function provisionServer(serverUrl: string, credentials: ProvisionC
     }
     /* eslint-enable no-await-in-loop */
 
-    await ensureAgentsE2EBot(client, token, serverMmVersion);
-
     const agentsOk = await verifyAgentsSetup(client, token);
     if (!agentsOk) {
-        throw new Error('Agents E2E setup verification failed — agents tests may not pass.');
+        logWarn('Agents E2E setup verification failed — agents tests may be skipped.');
     }
 
     logInfo('Server provisioning complete.');

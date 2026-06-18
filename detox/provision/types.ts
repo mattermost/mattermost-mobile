@@ -9,21 +9,6 @@ export type ApiResponse<T = unknown> = {
     headers: Record<string, string | string[] | undefined>;
 };
 
-export type GitHubReleaseAsset = {
-    name: string;
-    browser_download_url: string;
-};
-
-export type GitHubRelease = {
-    tag_name: string;
-    assets?: GitHubReleaseAsset[];
-};
-
-export type PluginReleaseCandidate = {
-    tag: string;
-    url: string;
-};
-
 export type PluginInstallResult = {
     ok: boolean;
     status?: number;
@@ -45,17 +30,6 @@ export type PluginStatus = {
     state: number;
     error?: string;
     version?: string;
-};
-
-export type AgentsPluginService = {
-    id: string;
-    name: string;
-    type: string;
-};
-
-export type AgentsPluginAgent = {
-    id: string;
-    name: string;
 };
 
 export type RequiredPlugin = {

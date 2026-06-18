@@ -5,12 +5,10 @@ import type {RequiredPlugin} from './types';
 
 export const LOG_PREFIX = '[provision]';
 
-export const GITHUB_AGENTS_RELEASES_API = 'https://api.github.com/repos/mattermost/mattermost-plugin-agents/releases';
-
 export const AGENTS_PLUGIN_ID = 'mattermost-ai';
-export const E2E_AGENT_USERNAME = 'ai-bot';
-export const LOADTEST_MOCK_MIN_MM_VERSION = '11.8.0';
-export const E2E_MOCK_SERVICE_ID = 'e2e-mock-svc-001';
+export const AGENTS_PLUGIN_REPO = 'mattermost/mattermost-plugin-agents';
+export const AGENTS_PLUGIN_ASSET_NAME = 'mattermost-plugin-agents';
+export const AGENTS_PLUGIN_FALLBACK_VERSION = '1.14.0';
 
 export const PLUGIN_STATE_RUNNING = 2;
 export const PLUGIN_STATE_FAILED = 3;

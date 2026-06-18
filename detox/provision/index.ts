@@ -9,7 +9,6 @@
  * Environment variables:
  *   ADMIN_USERNAME / ADMIN_PASSWORD - admin credentials (required)
  *   AGENTS_PLUGIN_DOWNLOAD_URL - optional override for mattermost-ai install URL
- *   AGENTS_USE_LOADTEST_MOCK=0 - disable loadtest_mock fallback (enabled by default for E2E)
  */
 
 import {readCredentialsFromEnv} from './env';

@@ -1,32 +1,104 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+/* eslint-disable no-process-env */
+
+import https from 'node:https';
 import path from 'node:path';
 
 import {
     AGENTS_PLUGIN_ID,
-    LOADTEST_MOCK_MIN_MM_VERSION,
+    AGENTS_PLUGIN_ASSET_NAME,
+    AGENTS_PLUGIN_FALLBACK_VERSION,
+    AGENTS_PLUGIN_REPO,
     PLUGIN_STATE_FAILED,
     PLUGIN_STATE_RUNNING,
 } from './constants';
-import {getLatestMasterPluginUrl, resolveAgentsPluginCandidates} from './github-releases';
+import {getAgentsPluginDownloadUrl} from './env';
 import {sleep, uploadMultipartFile} from './http-client';
 import {logInfo, logWarn} from './log';
-import {semverGte} from './semver';
 
 import type {
     MattermostClient,
     PluginInstallResult,
     PluginListEntry,
-    PluginReleaseCandidate,
     PluginStatus,
     PluginsPayload,
     RequiredPlugin,
 } from './types';
 
 type ApiErrorBody = {message?: string};
+type GitHubLatestRelease = {tag_name?: string};
 
-export async function getPluginStatus(client: MattermostClient, token: string, pluginId: string): Promise<PluginStatus | null> {
+function fetchLatestPluginVersion(repo: string): Promise<string> {
+    return new Promise((resolve, reject) => {
+        const req = https.request({
+            hostname: 'api.github.com',
+            port: 443,
+            path: `/repos/${repo}/releases/latest`,
+            method: 'GET',
+            headers: {
+                'User-Agent': 'mattermost-mobile-provision',
+                Accept: 'application/vnd.github+json',
+                ...(process.env.GITHUB_TOKEN ? {Authorization: `Bearer ${process.env.GITHUB_TOKEN}`} : {}),
+            },
+            timeout: 30_000,
+        }, (res) => {
+            let data = '';
+            res.on('data', (chunk: string) => {
+                data += chunk;
+            });
+            res.on('end', () => {
+                if ((res.statusCode || 0) >= 400) {
+                    reject(new Error(`GitHub API ${res.statusCode}: ${data.slice(0, 200)}`));
+                    return;
+                }
+
+                try {
+                    const parsed = JSON.parse(data) as GitHubLatestRelease;
+                    if (!parsed.tag_name) {
+                        reject(new Error(`GitHub API response missing tag_name: ${data.slice(0, 200)}`));
+                        return;
+                    }
+
+                    const tag = parsed.tag_name;
+                    resolve(tag.startsWith('v') ? tag.slice(1) : tag);
+                } catch (err) {
+                    reject(err instanceof Error ? err : new Error(String(err)));
+                }
+            });
+        });
+        req.on('error', reject);
+        req.on('timeout', () => {
+            req.destroy();
+            reject(new Error(`Request to GitHub releases/latest timed out for ${repo}`));
+        });
+        req.end();
+    });
+}
+
+function buildPluginDownloadUrl(repo: string, assetName: string, version: string): string {
+    return `https://github.com/${repo}/releases/download/v${version}/${assetName}-v${version}-linux-amd64.tar.gz`;
+}
+
+async function resolveAgentsPluginUrl(): Promise<string> {
+    const override = getAgentsPluginDownloadUrl();
+    if (override) {
+        return override;
+    }
+
+    try {
+        const version = await fetchLatestPluginVersion(AGENTS_PLUGIN_REPO);
+        logInfo(`${AGENTS_PLUGIN_REPO}: latest=v${version}`);
+        return buildPluginDownloadUrl(AGENTS_PLUGIN_REPO, AGENTS_PLUGIN_ASSET_NAME, version);
+    } catch (err) {
+        const message = err instanceof Error ? err.message : String(err);
+        logWarn(`${AGENTS_PLUGIN_REPO}: GitHub API lookup failed (${message}); falling back to v${AGENTS_PLUGIN_FALLBACK_VERSION}.`);
+        return buildPluginDownloadUrl(AGENTS_PLUGIN_REPO, AGENTS_PLUGIN_ASSET_NAME, AGENTS_PLUGIN_FALLBACK_VERSION);
+    }
+}
+
+async function getPluginStatus(client: MattermostClient, token: string, pluginId: string): Promise<PluginStatus | null> {
     const res = await client.request<PluginStatus[]>('GET', '/api/v4/plugins/statuses', undefined, token);
     if (res.status >= 400 || !Array.isArray(res.data)) {
         return null;
@@ -35,7 +107,7 @@ export async function getPluginStatus(client: MattermostClient, token: string, p
     return res.data.find((plugin) => plugin.plugin_id === pluginId) || null;
 }
 
-export async function installPluginFromUrl(
+async function installPluginFromUrl(
     client: MattermostClient,
     token: string,
     pluginId: string,
@@ -71,40 +143,25 @@ export async function installPluginFromUrl(
     return {ok: true};
 }
 
-function toCandidateList(candidates: PluginReleaseCandidate[] | string): PluginReleaseCandidate[] {
-    if (typeof candidates === 'string') {
-        return [{tag: 'override', url: candidates}];
+async function installAgentsPluginFromMarketplace(client: MattermostClient, token: string): Promise<boolean> {
+    logInfo(`Installing ${AGENTS_PLUGIN_ID} from Marketplace...`);
+    const installRes = await client.request<ApiErrorBody>('POST', '/api/v4/plugins/marketplace', {id: AGENTS_PLUGIN_ID}, token);
+    if (installRes.status >= 400) {
+        logWarn(`Marketplace install failed for ${AGENTS_PLUGIN_ID} (HTTP ${installRes.status}): ${installRes.data.message || JSON.stringify(installRes.data)}`);
+        return false;
     }
-    return candidates;
+
+    const enableRes = await client.request<ApiErrorBody>('POST', `/api/v4/plugins/${encodeURIComponent(AGENTS_PLUGIN_ID)}/enable`, {}, token);
+    if (enableRes.status >= 400) {
+        logWarn(`Failed to enable ${AGENTS_PLUGIN_ID} after Marketplace install (HTTP ${enableRes.status}): ${enableRes.data.message || JSON.stringify(enableRes.data)}`);
+        return false;
+    }
+
+    await sleep(3000);
+    return true;
 }
 
-export async function ensureAgentsPlugin(
-    client: MattermostClient,
-    token: string,
-    serverMmVersion: string,
-    {requireLatestMaster = false}: {requireLatestMaster?: boolean} = {},
-): Promise<boolean> {
-    if (requireLatestMaster && semverGte(serverMmVersion, LOADTEST_MOCK_MIN_MM_VERSION)) {
-        const masterUrl = await getLatestMasterPluginUrl();
-        if (masterUrl) {
-            logInfo('Installing latest-master mattermost-ai for E2E mock LLM...');
-            const installResult = await installPluginFromUrl(client, token, AGENTS_PLUGIN_ID, masterUrl, {force: true});
-            if (installResult.ok) {
-                const postStatus = await getPluginStatus(client, token, AGENTS_PLUGIN_ID);
-                if (postStatus?.state !== PLUGIN_STATE_FAILED) {
-                    logInfo(`Plugin ${AGENTS_PLUGIN_ID} ready (${postStatus?.version || 'unknown version'}).`);
-                    return true;
-                }
-                logWarn(`latest-master install failed to start: ${postStatus?.error}`);
-            } else {
-                logWarn(`latest-master install failed (HTTP ${installResult.status}): ${installResult.message}`);
-            }
-        }
-    }
-
-    const candidates = await resolveAgentsPluginCandidates(serverMmVersion);
-    const candidateList = toCandidateList(candidates);
-
+export async function ensureAgentsPlugin(client: MattermostClient, token: string): Promise<boolean> {
     const pluginsRes = await client.request<PluginsPayload>('GET', '/api/v4/plugins', undefined, token);
     const status = await getPluginStatus(client, token, AGENTS_PLUGIN_ID);
     const isActive = pluginsRes.data?.active?.some((plugin) => plugin.id === AGENTS_PLUGIN_ID);
@@ -119,31 +176,34 @@ export async function ensureAgentsPlugin(
         logWarn(`Plugin ${AGENTS_PLUGIN_ID} is in failed state: ${status?.error || 'unknown error'}`);
     }
 
-    for (const candidate of candidateList) {
-        logInfo(`Installing ${AGENTS_PLUGIN_ID} from ${candidate.tag}: ${candidate.url}`);
-        /* eslint-disable no-await-in-loop -- try release candidates sequentially until one installs */
-        const installResult = await installPluginFromUrl(client, token, AGENTS_PLUGIN_ID, candidate.url, {force: true});
-        if (!installResult.ok) {
-            logWarn(`Install from ${candidate.tag} failed (HTTP ${installResult.status}): ${installResult.message}`);
-            continue;
-        }
-
+    const pluginUrl = await resolveAgentsPluginUrl();
+    logInfo(`Installing ${AGENTS_PLUGIN_ID} from URL...`);
+    const installResult = await installPluginFromUrl(client, token, AGENTS_PLUGIN_ID, pluginUrl, {force: true});
+    if (installResult.ok) {
         const postStatus = await getPluginStatus(client, token, AGENTS_PLUGIN_ID);
-        /* eslint-enable no-await-in-loop */
-        if (postStatus?.state === PLUGIN_STATE_FAILED) {
-            logWarn(`Plugin ${AGENTS_PLUGIN_ID} failed after ${candidate.tag} install: ${postStatus.error}`);
-            continue;
+        if (postStatus?.state !== PLUGIN_STATE_FAILED) {
+            logInfo(`Plugin ${AGENTS_PLUGIN_ID} installed (${postStatus?.version || 'unknown version'}).`);
+            return true;
         }
+        logWarn(`Plugin ${AGENTS_PLUGIN_ID} failed after URL install: ${postStatus?.error}`);
+    } else {
+        logWarn(`URL install failed for ${AGENTS_PLUGIN_ID} (HTTP ${installResult.status}): ${installResult.message}`);
+    }
 
-        logInfo(`Plugin ${AGENTS_PLUGIN_ID} installed from ${candidate.tag} (${postStatus?.version || 'unknown version'}).`);
-        return true;
+    if (await installAgentsPluginFromMarketplace(client, token)) {
+        const postStatus = await getPluginStatus(client, token, AGENTS_PLUGIN_ID);
+        if (postStatus?.state !== PLUGIN_STATE_FAILED) {
+            logInfo(`Plugin ${AGENTS_PLUGIN_ID} installed from Marketplace (${postStatus?.version || 'unknown version'}).`);
+            return true;
+        }
+        logWarn(`Plugin ${AGENTS_PLUGIN_ID} failed after Marketplace install: ${postStatus?.error}`);
     }
 
     logWarn('Could not install a compatible mattermost-ai plugin build.');
     return false;
 }
 
-export async function installPluginFromFile(
+async function installPluginFromFile(
     client: MattermostClient,
     token: string,
     pluginId: string,
