@@ -3,6 +3,7 @@
 
 import {CallsManager} from '@calls/calls_manager';
 import DatabaseManager from '@database/manager';
+import CallsNative from '@init/calls_native';
 import {getAllServerCredentials} from '@init/credentials';
 import ManagedApp from '@init/managed_app';
 import PushNotifications from '@init/push_notifications';
@@ -59,6 +60,7 @@ export async function initialize() {
     ManagedApp.init();
     SessionManager.init();
     CallsManager.initialize();
+    CallsNative.init();
 
     PushNotifications.init(serverCredentials.length > 0);
 }
@@ -69,6 +71,7 @@ export function cleanup() {
     SecurityManager.cleanup();
     SessionManager.cleanup();
     CallsManager.cleanup();
+    CallsNative.cleanup();
     PushNotifications.cleanup();
     OfflinePersistenceManager.cleanup();
 }

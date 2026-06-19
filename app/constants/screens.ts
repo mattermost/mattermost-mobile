@@ -44,7 +44,6 @@ const GLOBAL_DRAFTS = 'global_drafts';
 const GLOBAL_THREADS = 'global_threads';
 const HOME = '(home)';
 const INTEGRATION_SELECTOR = 'integration_selector';
-const INTERACTIVE_DIALOG = 'interactive_dialog';
 const INVITE = 'invite';
 const JOIN_TEAM = 'join_team';
 const LATEX = 'latex';
@@ -130,7 +129,6 @@ export default {
     GENERIC_BOTTOM_SHEET,
     HOME,
     INTEGRATION_SELECTOR,
-    INTERACTIVE_DIALOG,
     DIALOG_ROUTER,
     INVITE,
 
@@ -195,7 +193,6 @@ export const MODAL_SCREENS = new Set<string>([
     EDIT_SERVER,
     FIND_CHANNELS,
     INTEGRATION_SELECTOR,
-    INTERACTIVE_DIALOG,
     INVITE,
     MANAGE_CHANNEL_MEMBERS,
     PDF_VIEWER,

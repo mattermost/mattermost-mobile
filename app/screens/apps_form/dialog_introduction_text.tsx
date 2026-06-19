@@ -37,7 +37,7 @@ function DialogIntroductionText({value}: Props) {
                 disableHashtags={true}
                 disableAtMentions={true}
                 disableChannelLink={true}
-                location={Screens.INTERACTIVE_DIALOG}
+                location={Screens.APPS_FORM}
                 theme={theme}
             />
         </View>

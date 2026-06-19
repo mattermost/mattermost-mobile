@@ -7,7 +7,7 @@ import {SYSTEM_IDENTIFIERS} from '@constants/database';
 import DatabaseManager from '@database/manager';
 import NetworkManager from '@managers/network_manager';
 import {prepareMissingChannelsForAllTeams} from '@queries/servers/channel';
-import {getConfigValue, getCurrentTeamId} from '@queries/servers/system';
+import {canViewArchivedChannels, getCurrentTeamId} from '@queries/servers/system';
 import {getIsCRTEnabled, prepareThreadsFromReceivedPosts} from '@queries/servers/thread';
 import {getCurrentUser} from '@queries/servers/user';
 import {getFullErrorMessage} from '@utils/errors';
@@ -58,14 +58,14 @@ export const searchPosts = async (serverUrl: string, teamId: string, params: Pos
     try {
         const {database, operator} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
         const client = NetworkManager.getClient(serverUrl);
-        const viewArchivedChannels = await getConfigValue(database, 'ExperimentalViewArchivedChannels');
+        const viewArchivedChannels = await canViewArchivedChannels(database);
         const user = await getCurrentUser(database);
         const timezoneOffset = getUtcOffsetForTimeZone(getUserTimezone(user)) * 60;
 
         let postsArray: Post[] = [];
         const data = await client.searchPostsWithParams(teamId, {
             ...params,
-            include_deleted_channels: Boolean(viewArchivedChannels),
+            include_deleted_channels: viewArchivedChannels,
             time_zone_offset: timezoneOffset,
         });
 

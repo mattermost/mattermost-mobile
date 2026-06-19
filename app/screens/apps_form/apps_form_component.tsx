@@ -25,9 +25,8 @@ import {logDebug, logWarning} from '@utils/log';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {secureGetFromRecord} from '@utils/types';
 
-import DialogIntroductionText from '../interactive_dialog/dialog_introduction_text';
-
 import AppsFormField from './apps_form_field';
+import DialogIntroductionText from './dialog_introduction_text';
 
 const getStyleFromTheme = makeStyleSheetFromTheme((theme: Theme) => {
     return {

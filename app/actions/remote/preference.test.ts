@@ -1,13 +1,12 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-/* eslint-disable max-lines */
-
 import {Preferences} from '@constants';
 import {SYSTEM_IDENTIFIERS} from '@constants/database';
 import DatabaseManager from '@database/manager';
 import NetworkManager from '@managers/network_manager';
 import {querySavedPostsPreferences, queryPreferencesByCategoryAndName} from '@queries/servers/preference';
+import EphemeralStore from '@store/ephemeral_store';
 import TestHelper from '@test/test_helper';
 
 import {
@@ -55,7 +54,7 @@ const mockClient = {
 };
 
 beforeAll(() => {
-    // eslint-disable-next-line
+
     // @ts-ignore
     NetworkManager.getClient = () => mockClient;
 });
@@ -142,20 +141,35 @@ describe('preferences', () => {
     it('deleteSavedPost - base case', async () => {
         await operator.handleSystem({systems: [{id: SYSTEM_IDENTIFIERS.CURRENT_USER_ID, value: user1.id}], prepareRecordsOnly: false});
 
+        // deleteSavedPost removes the local row via prepareDestroyPermanently() +
+        // operator.batchRecords (the codebase convention), not destroyPermanently().
+        const preparedRecord = {} as PreferenceModel;
         const prefModel = {
             user_id: user1.id,
             name: post1.id,
             category: Preferences.CATEGORIES.SAVED_POST,
             value: 'true',
-            destroyPermanently: jest.fn(),
+            prepareDestroyPermanently: jest.fn(() => preparedRecord),
         } as unknown as PreferenceModel;
         (querySavedPostsPreferences as jest.Mock).mockReturnValueOnce({fetch: jest.fn(() => [prefModel])});
+        const batchSpy = jest.spyOn(operator, 'batchRecords').mockResolvedValueOnce(undefined);
+
+        // Mock out the real implementation: it schedules a 2-minute timer that
+        // would otherwise leak across tests. We only need to assert it is called.
+        const unsavedSpy = jest.spyOn(EphemeralStore, 'addRecentlyUnsavedSavedPost').mockImplementation(() => {});
 
         const result = await deleteSavedPost(serverUrl, post1.id);
         expect(result).toBeDefined();
         expect(result.error).toBeUndefined();
         expect(result.preference).toBeDefined();
-        expect(prefModel.destroyPermanently).toHaveBeenCalledTimes(1);
+        expect(prefModel.prepareDestroyPermanently).toHaveBeenCalledTimes(1);
+        expect(batchSpy).toHaveBeenCalledWith([preparedRecord], 'deleteSavedPost');
+
+        // The unsave must be recorded so the echoed websocket re-save is ignored.
+        expect(unsavedSpy).toHaveBeenCalledTimes(1);
+        expect(unsavedSpy).toHaveBeenCalledWith(serverUrl, post1.id);
+
+        unsavedSpy.mockRestore();
     });
 
     it('openChannelIfNeeded - handle not found database', async () => {

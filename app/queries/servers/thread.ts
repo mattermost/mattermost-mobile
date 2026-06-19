@@ -132,7 +132,8 @@ export const prepareThreadsFromReceivedPosts = async (operator: ServerDataOperat
                 participants: post.participants,
                 reply_count: post.reply_count,
                 last_reply_at: post.last_reply_at || post.create_at,
-                is_following: post.is_following,
+
+                is_following: post.is_following ?? false,
                 lastFetchedAt: post.create_at,
             } as ThreadWithLastFetchedAt);
         } else if (post.root_id && updateLastFetchAt) {

@@ -17,6 +17,7 @@ import Members from './members';
 import MyAutotranslation from './my_autotranslation';
 import NotificationPreference from './notification_preference';
 import PinnedMessages from './pinned_messages';
+import ResetChannelPosts from './reset_channel_posts';
 
 type Props = {
     channelId: string;
@@ -83,6 +84,7 @@ const Options = ({
                     testID='channel_info.options.copy_channel_link.option'
                 />
             }
+            <ResetChannelPosts channelId={channelId}/>
         </>
     );
 };

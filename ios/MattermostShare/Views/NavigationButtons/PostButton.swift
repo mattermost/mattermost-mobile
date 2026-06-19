@@ -52,6 +52,7 @@ struct PostButton: View {
     .padding(.leading, 10)
     .padding(.vertical, 5)
     .disabled(disabled || pressed)
+    .accessibilityIdentifier("share_extension.post.button")
     .onReceive(submitPublisher) {_ in
       submit()
     }

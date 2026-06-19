@@ -56,6 +56,7 @@ struct ContentView: View {
           ) {
             ChannelListView()
           }
+          .accessibilityIdentifier("share_extension.channel.option")
           .frame(height: 48)
         }
       }
