@@ -1,6 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import {entryInitialLoad as mockEntryInitialLoadImport} from '@actions/remote/entry/initial_load';
 import {ActionType} from '@constants';
 import DatabaseManager from '@database/manager';
 import NetworkManager from '@managers/network_manager';
@@ -16,6 +17,9 @@ import type ServerDataOperator from '@database/operator/server_data_operator';
 
 jest.mock('@managers/performance_metrics_manager');
 jest.mock('@store/navigation_store');
+
+jest.mock('@actions/remote/entry/initial_load');
+const mockEntryInitialLoad = jest.mocked(mockEntryInitialLoadImport);
 
 const mockDismissKeyboard = jest.fn();
 jest.mock('@utils/keyboard', () => ({
@@ -200,5 +204,81 @@ describe('Performance metrics are set correctly', () => {
         });
 
         expect(PerformanceMetricsManager.setLoadTarget).toHaveBeenCalledWith('CHANNEL');
+    });
+});
+
+describe('pushNotificationEntry — ExperienceAPI sync path', () => {
+    const serverUrl = 'http://www.someserverurl.com';
+    let operator: ServerDataOperator;
+
+    beforeEach(async () => {
+        const client = await NetworkManager.createClient(serverUrl);
+        expect(client).toBeTruthy();
+        operator = (await TestHelper.setupServerDatabase(serverUrl)).operator;
+        await DatabaseManager.setActiveServerDatabase(serverUrl);
+
+        // Seed FeatureFlagEnableExperienceAPI so pushNotificationEntry enables the flag.
+        await operator.handleConfigs({
+            configs: [{id: 'FeatureFlagEnableExperienceAPI', value: 'true'}],
+            configsToDelete: [],
+            prepareRecordsOnly: false,
+        });
+        mockedNavigationStore.waitUntilScreenIsTop.mockImplementation(() => Promise.resolve());
+        mockedNavigationStore.getScreensInStack.mockImplementation(() => []);
+    });
+
+    afterEach(async () => {
+        await TestHelper.tearDown();
+        NetworkManager.invalidateClient(serverUrl);
+    });
+
+    it('calls entryInitialLoad instead of individual fetches when ExperienceAPI is enabled and data is missing', async () => {
+        // Use IDs not in the DB so both myTeam and myChannel are missing.
+        const missingTeamId = 'missing-team-id';
+        const missingChannelId = 'missing-channel-id';
+
+        mockEntryInitialLoad.mockResolvedValueOnce({
+            models: [],
+            initialTeamId: missingTeamId,
+            initialChannelId: missingChannelId,
+            prefData: {preferences: []},
+            teamData: {teams: [], memberships: []},
+            gmConverted: false,
+        });
+
+        await pushNotificationEntry(serverUrl, {
+            channel_id: missingChannelId,
+            team_id: missingTeamId,
+            isCRTEnabled: false,
+            post_id: '',
+            type: '',
+            version: '',
+        }, 'Notification');
+
+        expect(mockEntryInitialLoad).toHaveBeenCalledWith(
+            serverUrl,
+            missingTeamId,
+            missingChannelId,
+            undefined,
+            undefined,
+            'Notification',
+        );
+    });
+
+    it('calls entryInitialLoad and returns gracefully when it fails', async () => {
+        mockEntryInitialLoad.mockResolvedValueOnce({error: 'network failure'});
+
+        const result = await pushNotificationEntry(serverUrl, {
+            channel_id: 'missing-channel-id',
+            team_id: 'missing-team-id',
+            isCRTEnabled: false,
+            post_id: '',
+            type: '',
+            version: '',
+        });
+
+        // Error is emitted and WS is opened, but {} is returned (not the error itself).
+        expect(result).toBeDefined();
+        expect(mockEntryInitialLoad).toHaveBeenCalled();
     });
 });

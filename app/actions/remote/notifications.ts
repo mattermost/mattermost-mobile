@@ -7,9 +7,8 @@ import {addChannelToDefaultCategory, storeCategories} from '@actions/local/categ
 import {storeMyChannelsForTeam} from '@actions/local/channel';
 import {storePostsForChannel} from '@actions/local/post';
 import {fetchDirectChannelsInfo, fetchMyChannel, switchToChannelById} from '@actions/remote/channel';
-import {fetchPostsForChannel, fetchPostThread} from '@actions/remote/post';
 import {forceLogoutIfNecessary} from '@actions/remote/session';
-import {fetchMyTeam} from '@actions/remote/team';
+import {fetchMyTeam, fetchTeamLoad} from '@actions/remote/team';
 import {fetchAndSwitchToThread} from '@actions/remote/thread';
 import {ActionType} from '@constants';
 import DatabaseManager from '@database/manager';
@@ -25,72 +24,72 @@ import {processPostsFetched} from '@utils/post';
 
 import type {Model} from '@nozbe/watermelondb';
 
-export const fetchNotificationData = async (serverUrl: string, notification: NotificationWithData, skipEvents = false) => {
+export const fetchNotificationData = async (serverUrl: string, notification: NotificationWithData, skipEvents = false): Promise<{error?: unknown}> => {
     const channelId = notification.payload?.channel_id;
 
     if (!channelId) {
         return {error: 'No channel Id was specified'};
     }
 
+    const emitError = (type: 'Team' | 'Channel' | 'Post' | 'Connection', err: unknown = type) => {
+        if (!skipEvents) {
+            emitNotificationError(type);
+        }
+        return {error: err};
+    };
+
     try {
         const {database} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
 
         const currentTeamId = await getCurrentTeamId(database);
-        let teamId = notification.payload?.team_id;
-        let isDirectChannel = false;
+        const payloadTeamId = notification.payload?.team_id;
 
-        if (!teamId) {
-            // If the notification payload does not have a teamId we assume is a DM/GM
-            isDirectChannel = true;
-            teamId = currentTeamId;
-        }
+        // No team_id in payload → notification is for a DM/GM.
+        // Use currentTeamId only as a fallback for the membership lookup.
+        let teamId = payloadTeamId || currentTeamId;
 
-        // To make the switch faster we determine if we already have the team & channel
         const myChannel = await getMyChannel(database, channelId);
-        const myTeam = await getMyTeamById(database, teamId);
+        const myTeam = payloadTeamId ? await getMyTeamById(database, teamId) : true; // DM/GM: skip team check
 
-        if (!myTeam) {
-            const teamsReq = await fetchMyTeam(serverUrl, teamId, false);
-            if (teamsReq.error || !teamsReq.memberships?.length) {
-                if (!skipEvents) {
-                    emitNotificationError('Team');
+        if (!myTeam || !myChannel) {
+            if (payloadTeamId && EphemeralStore.getExperienceAPIEnabled(serverUrl)) {
+                const isCRTEnabled = await getIsCRTEnabled(database);
+                const result = await fetchTeamLoad(serverUrl, teamId, isCRTEnabled);
+                if (result.error) {
+                    // fetchTeamLoad already cleaned up local data on 403.
+                    return emitError('Connection', result.error);
                 }
-                return {error: teamsReq.error || 'Team'};
-            }
-        }
-
-        if (!myChannel) {
-            // We only fetch the channel that the notification belongs to
-            const channelReq = await fetchMyChannel(serverUrl, teamId, channelId);
-            if (channelReq.error ||
-                !channelReq.channels?.find((c) => c.id === channelId && c.delete_at === 0) ||
-                !channelReq.memberships?.find((m) => m.channel_id === channelId)) {
-                if (!skipEvents) {
-                    emitNotificationError('Channel');
-                }
-                return {error: channelReq.error || 'Channel'};
-            }
-
-            if (isDirectChannel) {
-                const channel = await getChannelById(database, channelId);
-                if (channel) {
-                    fetchDirectChannelsInfo(serverUrl, [channel]);
-                }
-            }
-        }
-
-        if (Platform.OS === 'android') {
-            // on Android we only fetched the post data on the native side
-            // when the RN context is not running, thus we need to fetch the
-            // data here as well
-            const isCRTEnabled = await getIsCRTEnabled(database);
-            const isThreadNotification = isCRTEnabled && Boolean(notification.payload?.root_id);
-            if (isThreadNotification) {
-                fetchPostThread(serverUrl, notification.payload!.root_id!);
             } else {
-                fetchPostsForChannel(serverUrl, channelId);
+                if (!myTeam) {
+                    const teamsReq = await fetchMyTeam(serverUrl, teamId, false);
+                    if (teamsReq.error || !teamsReq.memberships?.length) {
+                        return emitError('Team', teamsReq.error || 'Team');
+                    }
+                }
+
+                if (!myChannel) {
+                    const channelReq = await fetchMyChannel(serverUrl, teamId, channelId);
+                    if (channelReq.error ||
+                        !channelReq.channels?.find((c) => c.id === channelId && c.delete_at === 0) ||
+                        !channelReq.memberships?.find((m) => m.channel_id === channelId)) {
+                        return emitError('Channel', channelReq.error || 'Channel');
+                    }
+
+                    // Re-read the channel — a GM may have been converted to a team channel
+                    // and now has a team_id. Fetch its DM profile info only if still direct.
+                    const channelAfterFetch = await getChannelById(database, channelId);
+                    if (channelAfterFetch) {
+                        if (!channelAfterFetch.teamId) {
+                            fetchDirectChannelsInfo(serverUrl, [channelAfterFetch]);
+                        } else if (!payloadTeamId) {
+                            // Was a DM/GM in the payload but is now a team channel.
+                            teamId = channelAfterFetch.teamId;
+                        }
+                    }
+                }
             }
         }
+
         return {};
     } catch (error) {
         forceLogoutIfNecessary(serverUrl, error);
