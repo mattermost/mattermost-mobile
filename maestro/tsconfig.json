@@ -1,8 +1,8 @@
 {
   "compilerOptions": {
     "target": "ES2020",
-    "module": "CommonJS",
-    "moduleResolution": "node",
+    "module": "Node16",
+    "moduleResolution": "Node16",
     "esModuleInterop": true,
     "allowSyntheticDefaultImports": true,
     "strict": false,
@@ -10,5 +10,6 @@
     "outDir": "dist",
     "types": ["node"]
   },
-  "include": ["fixtures/**/*.ts", "scripts/**/*.ts"]
+  "include": ["fixtures/**/*.ts", "scripts/**/*.ts", "utils/**/*.ts"],
+  "exclude": ["fixtures/calls_seed.ts"]
 }
