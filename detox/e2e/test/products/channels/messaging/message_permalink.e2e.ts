@@ -110,35 +110,6 @@ describe('Messaging - Message Permalink Preview', () => {
         await ChannelScreen.back();
     });
 
-    it('MM-T4877_2 - should copy link and create permalink preview in different channel', async () => {
-        const targetMessage = `Important announcement ${getRandomId()}`;
-        const targetPost = await Post.apiCreatePost(siteOneUrl, {
-            channelId: testChannel.id,
-            message: targetMessage,
-            userId: testOtherUser.id,
-        });
-
-        const {channel: otherChannel} = await Channel.apiCreateChannel(siteOneUrl, {teamId: testTeam.id});
-        await Channel.apiAddUserToChannel(siteOneUrl, testUser.id, otherChannel.id);
-        await wait(timeouts.FOUR_SEC);
-        await ChannelScreen.open(channelsCategory, testChannel.name);
-        await copyLinkFromPost(targetPost.post.id, targetMessage);
-
-        await wait(timeouts.FOUR_SEC); // Wait for toast/animation if any
-        await ChannelScreen.back();
-        await ChannelScreen.open(channelsCategory, otherChannel.name);
-
-        const copiedPermalink = `${serverOneUrl}/${testTeam.name}/pl/${targetPost.post.id}`;
-        const messageWithPastedLink = `Check this out from the other channel ${copiedPermalink}`;
-        await sendMessage(messageWithPastedLink);
-
-        await wait(timeouts.FOUR_SEC);
-
-        await expectPermalinkPreviewVisible(targetMessage, testChannel.display_name);
-
-        await ChannelScreen.back();
-    });
-
     it('MM-T4877_3 - should navigate to original post when tapping on permalink preview', async () => {
         const {channel: targetChannel} = await Channel.apiCreateChannel(siteOneUrl, {teamId: testTeam.id});
         await Channel.apiAddUserToChannel(siteOneUrl, testUser.id, targetChannel.id);

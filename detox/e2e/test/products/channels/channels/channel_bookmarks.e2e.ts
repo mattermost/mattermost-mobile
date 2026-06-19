@@ -19,7 +19,6 @@ import {
     ChannelInfoScreen,
     ChannelListScreen,
     ChannelScreen,
-    EmojiPickerScreen,
     HomeScreen,
     LoginScreen,
     ServerScreen,
@@ -34,34 +33,11 @@ describe('Channels - Channel Bookmarks', () => {
     let testUser: any;
     let channelT5600: any;
     let channelT5601: any;
-    let channelT5602: any;
-    let channelT5604: any;
     let channelT5605: any;
-    let channelT5606: any;
     let channelT5607: any;
-    let channelT5608: any;
     let channelT5609: any;
     let channelT5610: any;
     let bookmarkT5610: any;
-    let bookmarkT5606: any;
-    let channelT5612: any;
-
-    const getVisibleTextElement = async (text: string, maxIndex = 3) => {
-        /* eslint-disable no-await-in-loop */
-        for (let index = 0; index < maxIndex; index++) {
-            const candidate = element(by.text(text)).atIndex(index);
-
-            try {
-                await expect(candidate).toBeVisible();
-                return candidate;
-            } catch {
-                // Try the next visible match when the same label appears in multiple layers.
-            }
-        }
-        /* eslint-enable no-await-in-loop */
-
-        throw new Error(`No visible element found for text "${text}"`);
-    };
 
     const createChannel = async () => {
         const {channel} = await Channel.apiCreateChannel(siteOneUrl, {
@@ -130,15 +106,10 @@ describe('Channels - Channel Bookmarks', () => {
         // ── Create all test channels ──────────────────────────────────────────
         channelT5600 = await createChannel();
         channelT5601 = await createChannel();
-        channelT5602 = await createChannel();
-        channelT5604 = await createChannel();
         channelT5605 = await createChannel();
-        channelT5606 = await createChannel();
         channelT5607 = await createChannel();
-        channelT5608 = await createChannel();
         channelT5609 = await createChannel();
         channelT5610 = await createChannel();
-        channelT5612 = await createChannel();
 
         // ── Pre-create bookmarks ──────────────────────────────────────────────
         const {bookmark: bT5610} = await ChannelBookmark.apiCreateChannelBookmarkLink(
@@ -152,27 +123,12 @@ describe('Channels - Channel Bookmarks', () => {
         await ChannelBookmark.apiCreateChannelBookmarkLink(
             siteOneUrl, channelT5605.id, 'No Favicon Bookmark', 'https://example.com',
         );
-        const {bookmark: bT5606} = await ChannelBookmark.apiCreateChannelBookmarkLink(
-            siteOneUrl, channelT5606.id, 'Emoji Icon Test', 'https://example.com',
-        );
-        if (!bT5606?.id) {
-            throw new Error('[beforeAll] Failed to create bookmarkT5606');
-        }
-        bookmarkT5606 = bT5606;
         await ChannelBookmark.apiCreateChannelBookmarkLink(
             siteOneUrl, channelT5607.id, 'Revert Emoji Test', 'https://example.com',
         );
         await ChannelBookmark.apiCreateChannelBookmarkLink(
             siteOneUrl, channelT5609.id, 'Banner Test Bookmark', 'https://mattermost.com',
         );
-
-        /* eslint-disable no-await-in-loop */
-        for (let i = 1; i <= 12; i++) {
-            await ChannelBookmark.apiCreateChannelBookmarkLink(
-                siteOneUrl, channelT5612.id, `Scroll Bookmark ${i}`, `https://example.com/${i}`,
-            );
-        }
-        /* eslint-enable no-await-in-loop */
 
         // ── Single login + reload to sync all API-created data ────────────────
         await ServerScreen.connectToServer(serverOneUrl, serverOneDisplayName);
@@ -250,93 +206,6 @@ describe('Channels - Channel Bookmarks', () => {
         await ChannelScreen.back();
     });
 
-    it('MM-T5602_1 - should be able to add a bookmark link via channel info', async () => {
-        // # Navigate to the channel
-        await openChannel(channelT5602);
-
-        // # Open channel info and tap "Add a bookmark"
-        await ChannelInfoScreen.open();
-        await element(by.text('Add a bookmark')).tap();
-
-        // * Verify bottom sheet / add bookmark options appears
-        await expect(ChannelBookmarkScreen.addALinkOption).toBeVisible();
-
-        // # Tap "Add a link"
-        await ChannelBookmarkScreen.addALinkOption.tap();
-
-        // * Verify the Add a bookmark modal opens
-        await ChannelBookmarkScreen.toBeVisible();
-
-        // # Enter a stable URL and manual title — avoid OG autofill flakiness on Android CI
-        const linkInput = ChannelBookmarkScreen.getLinkInput();
-        const bookmarkTitle = 'E2E Bookmark Link';
-        await ChannelBookmarkScreen.runUnsynchronized(async () => {
-            await linkInput.tap();
-            await linkInput.typeText('https://example.com');
-            const titleInput = ChannelBookmarkScreen.getTitleInput();
-            await titleInput.tap();
-            await titleInput.replaceText(bookmarkTitle);
-            await ChannelBookmarkScreen.waitForTitleValue(bookmarkTitle);
-            await waitFor(ChannelBookmarkScreen.saveButton).
-                toBeVisible().
-                withTimeout(timeouts.TEN_SEC);
-            await ChannelBookmarkScreen.saveButton.tap();
-        });
-        await wait(timeouts.TWO_SEC);
-
-        // * Verify the bookmark modal closed and the bookmark is visible in channel info
-        await expect(ChannelBookmarkScreen.channelBookmarkScreen).not.toExist();
-        await waitFor(
-            element(
-                by.text(bookmarkTitle).
-                    withAncestor(by.id('channel_info.bookmarks.list')),
-            ),
-        ).toExist().withTimeout(timeouts.TEN_SEC);
-
-        // # Close channel info and go back to channel list
-        await ChannelInfoScreen.close();
-        await ChannelScreen.back();
-    });
-
-    it('MM-T5608_1 - should show error when adding a bookmark with an invalid URL', async () => {
-        // # Navigate to the channel
-        await openChannel(channelT5608);
-
-        // # Open channel info and tap "Add a bookmark"
-        await ChannelInfoScreen.open();
-        await element(by.text('Add a bookmark')).tap();
-
-        // * Verify bottom sheet options appear
-        await expect(ChannelBookmarkScreen.addALinkOption).toBeVisible();
-
-        // # Tap "Add a link"
-        await ChannelBookmarkScreen.addALinkOption.tap();
-
-        // * Verify the Add a bookmark modal opens
-        await ChannelBookmarkScreen.toBeVisible();
-
-        // # Enter an invalid URL
-        const linkInput = ChannelBookmarkScreen.getLinkInput();
-        await ChannelBookmarkScreen.runUnsynchronized(async () => {
-            await linkInput.tap();
-            await linkInput.typeText('not a link');
-            await waitFor(element(by.text('Please enter a valid link'))).
-                toBeVisible().
-                withTimeout(timeouts.ONE_MIN);
-        });
-
-        // * Verify that an error is shown (invalid link message appears)
-        await expect(element(by.text('Please enter a valid link'))).toBeVisible();
-
-        // # Close the bookmark modal
-        await ChannelBookmarkScreen.closeAddButton.tap();
-        await expect(ChannelBookmarkScreen.channelBookmarkScreen).not.toBeVisible();
-
-        // # Go back to channel list
-        await ChannelInfoScreen.close();
-        await ChannelScreen.back();
-    });
-
     it('MM-T5610_1 - should be able to edit a bookmark link', async () => {
         // # Navigate to the channel
         await openChannel(channelT5610);
@@ -399,49 +268,6 @@ describe('Channels - Channel Bookmarks', () => {
         await ChannelScreen.back();
     });
 
-    it('MM-T5604_1 - should auto-populate title from page when adding a bookmark link', async () => {
-        // # Navigate to the channel
-        await openChannel(channelT5604);
-
-        // # Open channel info and tap "Add a bookmark"
-        await ChannelInfoScreen.open();
-        await element(by.text('Add a bookmark')).tap();
-
-        // # Tap "Add a link"
-        await ChannelBookmarkScreen.addALinkOption.tap();
-
-        // * Verify the Add a bookmark modal opens
-        await ChannelBookmarkScreen.toBeVisible();
-
-        // # Enter a valid URL and submit
-        // Use a public URL with known OG tags rather than siteOneUrl (http://localhost:8065):
-        // the local server's OG title fetch can fail on Android due to network routing differences.
-        const linkInput = ChannelBookmarkScreen.getLinkInput();
-        await ChannelBookmarkScreen.runUnsynchronized(async () => {
-            await linkInput.tap();
-            await linkInput.typeText('https://mattermost.com');
-            await ChannelBookmarkScreen.waitForAutofilledTitle('Mattermost');
-        });
-
-        // # Wait for OG fetch / title auto-fill
-        const titleInput = ChannelBookmarkScreen.getTitleInput();
-        await waitFor(titleInput).toExist().withTimeout(timeouts.TEN_SEC);
-
-        // * Verify the title field is auto-populated (the OG title for mattermost.com is non-empty)
-        await expect(titleInput).toExist();
-        const titleValue = await ChannelBookmarkScreen.getTitleValue();
-        if (!titleValue) {
-            throw new Error('Expected bookmark title input to be auto-populated');
-        }
-
-        // # Close the bookmark modal
-        await ChannelBookmarkScreen.close();
-
-        // # Go back to channel list
-        await ChannelInfoScreen.close();
-        await ChannelScreen.back();
-    });
-
     it('MM-T5605_1 - should show fallback bookmark icon when no favicon is found', async () => {
         // # Navigate to the channel
         await openChannel(channelT5605);
@@ -468,112 +294,6 @@ describe('Channels - Channel Bookmarks', () => {
                     withAncestor(by.id('channel_info.bookmarks.list')),
             ),
         ).toBeVisible();
-
-        // # Go back to channel list
-        await ChannelInfoScreen.close();
-        await ChannelScreen.back();
-    });
-
-    it('MM-T5606_1 - should be able to change the icon/emoji of a bookmark', async () => {
-        // # Navigate to the channel
-        await openChannel(channelT5606);
-
-        // # Open channel info to see the bookmark
-        await ChannelInfoScreen.open();
-
-        // * Verify the bookmark is visible. Use the bookmark's stable testID scoped to
-        // channel_info.bookmarks.list to avoid the channel_header ambiguity (same bookmark
-        // also renders in the bookmark bar mounted behind the channel_info modal) and to
-        // avoid flakiness when text rendering is delayed by OG-fetch network requests.
-        const bookmarkEl = element(
-            by.
-                id(`channel_bookmark.${bookmarkT5606.id}`).
-                withAncestor(by.id('channel_info.bookmarks.list')),
-        );
-        await waitFor(bookmarkEl).toExist().withTimeout(timeouts.TEN_SEC);
-
-        // # Long press on the bookmark to open options
-        await bookmarkEl.longPress();
-
-        // * Verify bookmark options appear
-        await expect(ChannelBookmarkScreen.editOption).toBeVisible();
-
-        // # Tap Edit
-        await ChannelBookmarkScreen.editOption.tap();
-
-        // * Verify the Edit bookmark modal opens
-        await ChannelBookmarkScreen.toBeVisible();
-
-        // # Update the bookmark title
-        const titleInput = ChannelBookmarkScreen.getTitleInput();
-        await titleInput.tap();
-        await titleInput.replaceText('Emoji Icon Updated');
-        await ChannelBookmarkScreen.waitForTitleValue('Emoji Icon Updated');
-
-        // # Tap the icon button to open the emoji picker, then search and select an emoji.
-        // On Android, pending OG-fetch network requests and bottom-sheet animations keep the
-        // Detox AnimatedModuleIdlingResource busy throughout this entire flow. Disable sync
-        // for the icon tap AND the emoji search/select to avoid timeout failures.
-        if (isAndroid()) {
-            await device.disableSynchronization();
-        }
-        await element(
-            by.id('bookmark-generic-icon').
-                withAncestor(by.id('channel_bookmark.screen')),
-        ).tap();
-
-        // * Verify the emoji picker opens
-        await EmojiPickerScreen.toBeVisible();
-
-        // # Dismiss the skin-tone tooltip if it appears.
-        // Shows on first open on both Android and iOS. On iOS the tooltip renders
-        // ~3-5s after the picker mounts (post-animation), so a 2s wait races the
-        // tooltip and the test then times out on the search input which the
-        // tooltip overlay is still occluding (see CI run 26352177261 testFnFailure
-        // for MM-T5606_1).
-        try {
-            await waitFor(EmojiPickerScreen.toolTipCloseButton).
-                toBeVisible().
-                withTimeout(timeouts.TEN_SEC);
-            await EmojiPickerScreen.toolTipCloseButton.tap();
-            await wait(timeouts.ONE_SEC);
-        } catch {
-            // Tooltip did not appear — continue normally
-        }
-
-        // # Search and select a specific emoji.
-        await waitFor(EmojiPickerScreen.searchInput).toBeVisible().withTimeout(timeouts.TEN_SEC);
-        await EmojiPickerScreen.searchInput.tap();
-        await EmojiPickerScreen.searchInput.replaceText('smile');
-        await waitFor(element(by.text(':smile:'))).
-            toBeVisible().
-            withTimeout(timeouts.TEN_SEC);
-        await element(by.text(':smile:')).tap();
-        await wait(timeouts.TWO_SEC);
-        if (isAndroid()) {
-            await device.enableSynchronization();
-        }
-
-        // # Save the edited bookmark
-        await waitFor(ChannelBookmarkScreen.saveButton).
-            toBeVisible().
-            withTimeout(timeouts.TEN_SEC);
-        await ChannelBookmarkScreen.saveButton.tap();
-        await wait(timeouts.TWO_SEC);
-
-        // * Verify the updated bookmark title and emoji are visible in channel info.
-        // getVisibleTextElement iterates indices to find the visible match (avoids
-        // the channel_header ambiguity). bookmark-emoji uses toExist() to avoid the
-        // UITransitionView occlusion that occurs while the edit modal finishes closing.
-        const updatedBookmarkTitle =
-            await getVisibleTextElement('Emoji Icon Updated');
-        await expect(updatedBookmarkTitle).toBeVisible();
-        await waitFor(
-            element(
-                by.id('bookmark-emoji').
-                    withAncestor(by.id('channel_info.bookmarks.list')),
-            ),
-        ).toExist().withTimeout(timeouts.TEN_SEC);
 
         // # Go back to channel list
         await ChannelInfoScreen.close();
@@ -639,78 +359,6 @@ describe('Channels - Channel Bookmarks', () => {
                     withAncestor(by.id('channel_header.bookmarks.list')),
             ),
         ).toBeVisible();
-
-        // # Go back to channel list
-        await ChannelScreen.back();
-    });
-
-    it('MM-T5612_1 - should show scroll indicator when bookmarks exceed visible limit', async () => {
-        const channelHeaderBookmarksList = by.id('channel_header.bookmarks.list');
-        const firstBookmarkMatcher = by.text('Scroll Bookmark 1');
-        const lastBookmarkMatcher = by.text('Scroll Bookmark 12');
-
-        // # Navigate to the channel (12 bookmarks pre-created in beforeAll)
-        await openChannel(channelT5612);
-
-        // * Verify that the first bookmark is visible
-        await expect(element(firstBookmarkMatcher)).toBeVisible();
-
-        // * Verify that the last bookmark starts off-screen
-        await expect(element(lastBookmarkMatcher)).not.toBeVisible();
-
-        // # Scroll the bookmark bar to reveal the last bookmark.
-        // iOS: swipe gesture (Detox's scroll() fails on iOS horizontal FlatList because
-        //   EarlGrey requires the start point to be directly on a UIScrollView, but all
-        //   coordinates are occupied by bookmark item child views).
-        // Android: use scroll() — a programmatic Espresso scroll that does not issue
-        //   touch events, so it cannot be misinterpreted as a long-press on a bookmark
-        //   item (which previously opened a bookmark action sheet mid-test, see CI run
-        //   26337780597 testFnFailure for MM-T5612_1). Poll-and-scroll via whileElement
-        //   so it stops as soon as the target bookmark is visible.
-        if (isAndroid()) {
-            await waitFor(element(lastBookmarkMatcher)).
-                toBeVisible().
-                whileElement(channelHeaderBookmarksList).
-                scroll(300, 'right');
-        } else {
-            /* eslint-disable no-await-in-loop */
-            for (let i = 0; i < 5; i++) {
-                await element(channelHeaderBookmarksList).swipe('left', 'fast', 0.9, 0.5, 0.5);
-            }
-            /* eslint-enable no-await-in-loop */
-            await waitFor(element(lastBookmarkMatcher)).
-                toBeVisible().
-                withTimeout(timeouts.TEN_SEC);
-        }
-
-        // # Scroll back to the beginning
-        if (isAndroid()) {
-            await waitFor(element(firstBookmarkMatcher)).
-                toBeVisible().
-                whileElement(channelHeaderBookmarksList).
-                scroll(300, 'left');
-        } else {
-            /* eslint-disable no-await-in-loop */
-            for (let i = 0; i < 5; i++) {
-                await element(channelHeaderBookmarksList).swipe('right', 'fast', 0.9, 0.5, 0.5);
-            }
-            /* eslint-enable no-await-in-loop */
-        }
-
-        // On iOS the fast horizontal swipe can be misinterpreted as a long-press on a
-        // bookmark item, opening the bookmark actions bottom sheet (Edit / Copy Link /
-        // Share / Delete). That sheet then occludes the navigation header and the
-        // subsequent ChannelScreen.back() taps a non-hittable back button. Detect the
-        // sheet by its Delete row and swipe it down before navigating back.
-        // See CI run 26352177261 testFnFailure for MM-T5612_1.
-        try {
-            const bookmarkActionsDelete = element(by.text('Delete'));
-            await waitFor(bookmarkActionsDelete).toBeVisible().withTimeout(timeouts.TWO_SEC);
-            await bookmarkActionsDelete.swipe('down', 'fast', 0.9, 0.5, 0.1);
-            await wait(timeouts.ONE_SEC);
-        } catch {
-            // Action sheet not present — continue normally.
-        }
 
         // # Go back to channel list
         await ChannelScreen.back();

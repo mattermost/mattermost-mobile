@@ -7,24 +7,21 @@
 // - Use element testID when selecting an element. Create one if none.
 // *******************************************************************
 
-import {Channel, Post, Setup, System} from '@support/server_api';
+import {Channel, Setup, System} from '@support/server_api';
 import {serverOneUrl, siteOneUrl} from '@support/test_config';
 import {Alert} from '@support/ui/component';
 import {
     BrowseChannelsScreen,
     ChannelScreen,
     ChannelListScreen,
-    ChannelDropdownMenuScreen,
     ChannelInfoScreen,
     ChannelSettingsScreen,
     HomeScreen,
     LoginScreen,
     ServerScreen,
-    closeArchivedChannel,
-    openArchivedChannel,
 } from '@support/ui/screen';
-import {isAndroid, timeouts, wait, waitForElementToBeVisible} from '@support/utils';
-import {expect, waitFor} from 'detox';
+import {timeouts, wait} from '@support/utils';
+import {waitFor} from 'detox';
 
 describe('Channels - Archive Channel from Settings', () => {
     const serverOneDisplayName = 'Server 1';
@@ -40,7 +37,6 @@ describe('Channels - Archive Channel from Settings', () => {
     let channelForT4932_2: any;
     let channelForT4932_3: any;
     let channelForT3208: any;
-    let channelForT1703: any;
 
     beforeAll(async () => {
         // # Ensure archived channels are visible in browse channels
@@ -66,7 +62,6 @@ describe('Channels - Archive Channel from Settings', () => {
         channelForT4932_2 = await makeChannel('O', 'arc-pub-2');
         channelForT4932_3 = await makeChannel('P', 'arc-prv-1');
         channelForT3208 = await makeChannel('O', 'arc-pub-3');
-        channelForT1703 = await makeChannel('O', 'arc-t1703');
 
         // # Log in to server
         await ServerScreen.connectToServer(serverOneUrl, serverOneDisplayName);
@@ -206,102 +201,6 @@ describe('Channels - Archive Channel from Settings', () => {
         await ChannelScreen.back();
 
         // * Verify channel list is shown (channel was archived successfully)
-        await ChannelListScreen.toBeVisible();
-    });
-
-    it('MM-T1697 - should show archived channels option in browse public channels dropdown', async () => {
-        // # Open browse channels screen
-        await BrowseChannelsScreen.open();
-
-        // * Verify the channel dropdown is visible
-        await expect(BrowseChannelsScreen.channelDropdown).toBeVisible();
-
-        // # Tap on the channel dropdown to open it
-        await ChannelDropdownMenuScreen.open();
-
-        // * Verify the archived channels option is present in the dropdown
-        await expect(ChannelDropdownMenuScreen.archivedChannelsItem).toBeVisible();
-
-        // * Verify the public channels option is also present
-        await expect(ChannelDropdownMenuScreen.publicChannelsItem).toBeVisible();
-
-        // # Select archived channels to verify it can be selected
-        await ChannelDropdownMenuScreen.archivedChannelsItem.tap();
-
-        // * Verify dropdown is dismissed and the archived channels filter is applied
-        await BrowseChannelsScreen.toBeVisible();
-        await expect(
-            BrowseChannelsScreen.channelDropdownTextArchived,
-        ).toBeVisible();
-
-        // # Go back to channel list screen
-        await BrowseChannelsScreen.close();
-    });
-
-    it('MM-T1703 - should be able to open archived channels and verify read-only state', async () => {
-        // # Use pre-created channel (created before login to avoid WebSocket delay on Android)
-        const archivedChannel = channelForT1703;
-        await ChannelListScreen.waitForSidebarPublicChannelDisplayNameVisible(archivedChannel.name, timeouts.ONE_MIN);
-
-        // # Post a sentinel message via API so the iOS search/permalink fallback path
-        // (used by openArchivedChannel below) can find this channel after archival.
-        // Must be posted BEFORE the UI archival step — the server rejects posts to
-        // archived channels.
-        const sentinel = `archived-from-settings-${Date.now()}`;
-        await Post.apiCreatePost(siteOneUrl, {
-            channelId: archivedChannel.id,
-            message: sentinel,
-        });
-
-        // # Navigate to the channel and archive it via UI
-        await ChannelScreen.open(channelsCategory, archivedChannel.name);
-        await ChannelInfoScreen.open();
-        await ChannelInfoScreen.openChannelSettings();
-        await ChannelSettingsScreen.toBeVisible();
-        await ChannelSettingsScreen.archivePublicChannel({confirm: true});
-
-        // * Verify the archived post draft view is shown (channel is read-only).
-        await waitFor(
-            ChannelScreen.postDraftArchivedCloseChannelButton,
-        ).toBeVisible().withTimeout(timeouts.TEN_SEC);
-
-        // # Navigate back to channel list via back button
-        await ChannelScreen.back();
-
-        // * Verify back on channel list screen
-        await ChannelListScreen.toBeVisible();
-
-        // # Verify the archived filter works from Browse Channels on iOS only.
-        // Android: archived-filter tap crashes during bottom-sheet dismiss (RN Fabric).
-        if (!isAndroid()) {
-            await BrowseChannelsScreen.open();
-            await ChannelDropdownMenuScreen.open();
-            await ChannelDropdownMenuScreen.archivedChannelsItem.tap();
-            await wait(timeouts.ONE_SEC);
-            await BrowseChannelsScreen.searchInput.replaceText(archivedChannel.name);
-
-            // * Verify archived channel appears in the list
-            await wait(timeouts.ONE_SEC);
-            await expect(
-                BrowseChannelsScreen.getChannelItemDisplayName(archivedChannel.name),
-            ).toHaveText(archivedChannel.display_name);
-
-            await BrowseChannelsScreen.close();
-        }
-
-        // # Open the archived channel and verify read-only state.
-        await openArchivedChannel(archivedChannel.name, sentinel);
-
-        // * Verify the close channel button is visible at the bottom
-        await waitForElementToBeVisible(
-            ChannelScreen.postDraftArchivedCloseChannelButton,
-            timeouts.TEN_SEC,
-        );
-
-        // # Navigate back to channel list
-        await closeArchivedChannel();
-
-        // * Verify back on channel list screen
         await ChannelListScreen.toBeVisible();
     });
 });

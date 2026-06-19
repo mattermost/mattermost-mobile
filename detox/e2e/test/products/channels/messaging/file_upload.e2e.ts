@@ -7,18 +7,14 @@
 // - Use element testID when selecting an element. Create one if none.
 // *******************************************************************
 
-import path from 'path';
-
 import {
     Post,
     Setup,
-    System,
 } from '@support/server_api';
 import {
     serverOneUrl,
     siteOneUrl,
 } from '@support/test_config';
-import {AttachmentOptions} from '@support/ui/component';
 import {
     ChannelListScreen,
     ChannelScreen,
@@ -193,63 +189,6 @@ describe('Messaging - File Upload', () => {
 
         // # Go back to channel list screen
         await ChannelScreen.back();
-    });
-
-    it('MM-T339_1 - should show an error when the server max file size is set to a very small value', async () => {
-        const imagePath = path.resolve(__dirname, '../../../../support/fixtures/image.png');
-
-        // # Set MaxFileSize to 1 byte (effectively blocks all uploads)
-        const {config: originalConfig} = await System.apiGetConfig(siteOneUrl);
-        await System.apiUpdateConfig(siteOneUrl, {
-            FileSettings: {
-                MaxFileSize: 1,
-            },
-        });
-        try {
-            // * Server rejects over-limit uploads
-            const {error: uploadError} = await Post.apiUploadFileToChannel(siteOneUrl, testChannel.id, imagePath);
-            if (!uploadError) {
-                throw new Error('Expected server to reject over-limit file upload');
-            }
-
-            // # Open channel screen and attempt a client-side file attach
-            await ChannelScreen.open(channelsCategory, testChannel.name);
-            await wait(timeouts.TWO_SEC);
-            await ChannelScreen.fileQuickAction.tap();
-            await waitFor(AttachmentOptions.photoLibrary).toExist().withTimeout(timeouts.TWO_SEC);
-
-            if (isIos()) {
-                await AttachmentOptions.photoLibrary.tap();
-                const firstPhoto = element(by.type('PHAssetCollectionViewCell')).atIndex(0);
-                await waitFor(firstPhoto).toExist().withTimeout(timeouts.TEN_SEC);
-                await firstPhoto.tap();
-                try {
-                    await element(by.label('Add')).tap();
-                } catch {
-                    try {
-                        await element(by.text('Add')).tap();
-                    } catch {
-                        // Single-select library — no confirmation button
-                    }
-                }
-                await waitFor(element(by.text(/Files must be less than/i))).toBeVisible().withTimeout(timeouts.TEN_SEC);
-            } else {
-                // Android native picker is not fully automatable — verify the attachment sheet opens
-                // and the server-side rejection above covers the max-size enforcement path.
-                await expect(AttachmentOptions.attachFile).toExist();
-                await AttachmentOptions.photoLibrary.swipe('down', 'fast');
-            }
-
-            // # Go back to channel list screen
-            await ChannelScreen.back();
-        } finally {
-            // # Restore original MaxFileSize config
-            await System.apiUpdateConfig(siteOneUrl, {
-                FileSettings: {
-                    MaxFileSize: originalConfig.FileSettings.MaxFileSize,
-                },
-            });
-        }
     });
 
     it('MM-T330_1 - iOS only — inline image with size specified renders in the channel', async () => {

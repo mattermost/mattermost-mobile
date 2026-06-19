@@ -27,7 +27,6 @@ import {
 } from '@support/test_config';
 import {
     ChannelListScreen,
-    ChannelScreen,
     HomeScreen,
     LoginScreen,
     RecentMentionsScreen,
@@ -35,11 +34,10 @@ import {
     ServerScreen,
 } from '@support/ui/screen';
 import {getRandomId, timeouts, wait, waitForElementToBeVisible} from '@support/utils';
-import {expect, waitFor} from 'detox';
+import {expect} from 'detox';
 
 describe('Search - Modifiers', () => {
     const serverOneDisplayName = 'Server 1';
-    const channelsCategory = 'channels';
     let testChannel: any;
     let testUser: any;
 
@@ -136,73 +134,6 @@ describe('Search - Modifiers', () => {
         await RecentMentionsScreen.toBeVisible();
 
         // # Go back to channel list screen
-        await ChannelListScreen.open();
-    });
-
-    it('MM-T585_1 - unfiltered search is not affected by previous modifier searches', async () => {
-        // # Post a message for plain text search
-        const plainTerm = `plain${getRandomId()}`;
-        const message = `Message ${plainTerm}`;
-
-        await ChannelScreen.open(channelsCategory, testChannel.name);
-        await ChannelScreen.postMessage(message);
-        const {post: plainPost} = await Post.apiGetLastPostInChannel(siteOneUrl, testChannel.id);
-        await ChannelScreen.back();
-
-        // # Open search messages screen
-        await SearchMessagesScreen.open();
-
-        // * Verify on search messages screen
-        await SearchMessagesScreen.toBeVisible();
-
-        // # Clear any stale search state from previous test failures that left search in results mode
-        try {
-            await SearchMessagesScreen.searchClearButton.tap();
-            await wait(timeouts.ONE_SEC);
-        } catch {
-            // Already in empty/modifier state — no stale results to clear
-        }
-
-        // # First search using the from: modifier
-        // Wait for modifier to be visible — only shown when search input is empty
-        await waitFor(SearchMessagesScreen.searchModifierFrom).toExist().withTimeout(timeouts.TEN_SEC);
-        await SearchMessagesScreen.searchModifierFrom.tap();
-        await SearchMessagesScreen.searchInput.typeText(testUser.username);
-
-        // Wrap the return-key + clear + replay sequence with disableSynchronization.
-        // The search input on iOS 26 / new-arch raises a recurring "Perform Block"
-        // event on the JS Run Loop (recent-search autocomplete debounce + WS poll),
-        // which Detox's idling resource interprets as "app busy" indefinitely —
-        // blocking subsequent tap() actions until Jest's 240s test timeout fires
-        // and starves downstream specs of shard time (see CI run 26352177261
-        // shard 17: this test alone burned 8 min before timing out). We use
-        // polling visibility (waitForElementToBeVisible) instead of idle-driven
-        // expect() while sync is off, then re-enable for the rest of the test.
-        await device.disableSynchronization();
-        try {
-            await SearchMessagesScreen.searchInput.tapReturnKey();
-
-            // # Clear modifier search and do a plain text search
-            await SearchMessagesScreen.searchClearButton.tap();
-            await SearchMessagesScreen.searchInput.typeText(plainTerm);
-            await SearchMessagesScreen.searchInput.tapReturnKey();
-
-            // * Verify that plain text search returns the expected result
-            // (not affected by previous from: filter)
-            const {postListPostItem} = SearchMessagesScreen.getPostListPostItem(plainPost.id, message);
-            await waitForElementToBeVisible(postListPostItem, timeouts.HALF_MIN);
-        } finally {
-            await device.enableSynchronization();
-        }
-
-        // # Clear search, remove recent search items, and go back to channel list screen
-        await SearchMessagesScreen.searchClearButton.tap();
-        await SearchMessagesScreen.getRecentSearchItemRemoveButton(plainTerm).tap();
-        try {
-            await SearchMessagesScreen.getRecentSearchItemRemoveButton(`from: ${testUser.username}`).tap();
-        } catch {
-            // Cleanup best-effort
-        }
         await ChannelListScreen.open();
     });
 

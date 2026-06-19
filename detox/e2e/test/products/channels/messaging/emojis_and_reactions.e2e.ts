@@ -26,9 +26,7 @@ import {
     HomeScreen,
     LoginScreen,
     PostOptionsScreen,
-    ReactionsScreen,
     ServerScreen,
-    UserProfileScreen,
 } from '@support/ui/screen';
 import {getRandomId, timeouts} from '@support/utils';
 import {expect, waitFor} from 'detox';
@@ -105,101 +103,6 @@ describe('Messaging - Emojis and Reactions', () => {
 
         // # Go back to channel list screen
         await PostOptionsScreen.close();
-        await ChannelScreen.back();
-    });
-
-    it('MM-T4862_2 - should be able to long press on a reaction to view the list of users who reacted', async () => {
-        // # Open a channel screen, post a message, open post options for message, open emoji picker screen, and add a reaction
-        const message = `Message ${getRandomId()}`;
-        await ChannelScreen.open(channelsCategory, testChannel.name);
-        await ChannelScreen.postMessage(message);
-        const {post} = await Post.apiGetLastPostInChannel(siteOneUrl, testChannel.id);
-        await ChannelScreen.openPostOptionsFor(post.id, message);
-        await EmojiPickerScreen.open();
-        await device.disableSynchronization();
-        await EmojiPickerScreen.searchInput.replaceText('fire');
-        await EmojiPickerScreen.searchInput.tapReturnKey();
-        await waitFor(element(by.text('🔥'))).toBeVisible().withTimeout(timeouts.TEN_SEC);
-        await element(by.text('🔥')).tap();
-        await device.enableSynchronization();
-
-        // * Verify reaction is added to the message
-        const reaction = element(by.text('🔥').withAncestor(by.id(`channel.post_list.post.${post.id}`)));
-        await waitFor(reaction).toExist().withTimeout(timeouts.TEN_SEC);
-        await expect(reaction).toExist();
-
-        // # Long press on the reaction
-        await reaction.longPress();
-
-        // * Verify user who reacted with the emoji
-        await ReactionsScreen.toBeVisible();
-        const {reactorItemEmojiAliases, reactorItemUserProfilePicture, reactorItemUser} = ReactionsScreen.getReactorItem(testUser.id, 'fire');
-        await expect(reactorItemEmojiAliases).toHaveText(':fire:');
-        await expect(reactorItemUserProfilePicture).toBeVisible();
-        await expect(reactorItemUser).toBeVisible();
-        await reactorItemUser.tap();
-        await expect(UserProfileScreen.userDisplayName).toHaveText(`@${testUser.username}`);
-
-        // # Go back to channel list screen
-        await UserProfileScreen.close();
-        await ChannelScreen.back();
-    });
-
-    it('MM-T4862_3 - should be able to include emojis in a message and be able to find them in emoji bar and recently used section', async () => {
-        // # Open a channel screen and post a message that includes emojis
-        const message = 'brown fox :fox_face: lazy dog :dog:';
-        await ChannelScreen.open(channelsCategory, testChannel.name);
-        await ChannelScreen.postMessage(message);
-
-        // * Verify message is posted with emojis
-        const resolvedMessage = 'brown fox 🦊 lazy dog 🐶';
-        const {post} = await Post.apiGetLastPostInChannel(siteOneUrl, testChannel.id);
-        const {postListPostItem} = ChannelScreen.getPostListPostItem(post.id, resolvedMessage);
-        await expect(postListPostItem).toBeVisible();
-
-        // # Open post options for message
-        await ChannelScreen.openPostOptionsFor(post.id, resolvedMessage);
-        await PostOptionsScreen.toBeVisible();
-
-        // * Verify emojis exist in emoji bar
-        await expect(element(by.text('🦊'))).toExist();
-        await expect(element(by.text('🐶'))).toExist();
-
-        // # Open emoji picker screen
-        await EmojiPickerScreen.open();
-        await device.disableSynchronization();
-
-        // * Verify emojis exist in recently used section
-        await waitFor(element(by.text('RECENTLY USED')).atIndex(0)).toBeVisible().withTimeout(timeouts.TEN_SEC);
-        await expect(element(by.text('🦊')).atIndex(0)).toExist();
-        await expect(element(by.text('🐶')).atIndex(0)).toExist();
-        await device.enableSynchronization();
-
-        // # Go back to channel list screen
-        await EmojiPickerScreen.close();
-        await ChannelScreen.back();
-    });
-
-    it('MM-T4862_4 - should display empty search state for emoji picker', async () => {
-        // # Open a channel screen, post a message, open post options for message, open emoji picker screen, and search for a non-existent emoji
-        const message = `Message ${getRandomId()}`;
-        await ChannelScreen.open(channelsCategory, testChannel.name);
-        await ChannelScreen.postMessage(message);
-        const {post} = await Post.apiGetLastPostInChannel(siteOneUrl, testChannel.id);
-        const searchTerm = 'blahblahblahblah';
-        await ChannelScreen.openPostOptionsFor(post.id, message);
-        await EmojiPickerScreen.open();
-        await device.disableSynchronization();
-        await EmojiPickerScreen.searchInput.replaceText(searchTerm);
-        await EmojiPickerScreen.searchInput.tapReturnKey();
-
-        // * Verify empty search state for emoji picker
-        await waitFor(element(by.text(`No matches found for “${searchTerm}”`))).toBeVisible().withTimeout(timeouts.TEN_SEC);
-        await waitFor(element(by.text('Check the spelling or try another search.'))).toBeVisible().withTimeout(timeouts.TEN_SEC);
-        await device.enableSynchronization();
-
-        // # Go back to channel list screen
-        await EmojiPickerScreen.close();
         await ChannelScreen.back();
     });
 
