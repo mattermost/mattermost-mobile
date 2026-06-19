@@ -31,7 +31,7 @@ jobs:
 
             core.info(`Label "${removedLabel}" removed from PR #${prNumber} (branch: ${headBranch}, sha: ${headSha})`);
 
-            // Find the E2E workflow by name
+            // Find the E2E workflow by name (e2e-detox-pr.yml)
             const workflows = await github.rest.actions.listRepoWorkflows({ owner, repo });
             const e2eWorkflow = workflows.data.workflows.find(w => w.name === 'E2E');
             if (!e2eWorkflow) {
@@ -41,7 +41,6 @@ jobs:
 
             core.info(`Found E2E workflow (id: ${e2eWorkflow.id})`);
 
-            // Find in-progress or queued runs on the same branch
             const statuses = ['in_progress', 'queued', 'waiting'];
             let cancelled = 0;
 
@@ -55,14 +54,11 @@ jobs:
               });
 
               for (const run of runs.data.workflow_runs) {
-                // Verify run belongs to same PR and commit before cancelling
-                // This prevents cancelling unrelated runs with matching branch names
                 if (run.head_sha !== headSha) {
                   core.info(`Skipping run ${run.id}: different commit (${run.head_sha} vs ${headSha})`);
                   continue;
                 }
 
-                // Additional check: verify pull_request reference if available
                 if (run.pull_requests && run.pull_requests.length > 0) {
                   const isCurrentPr = run.pull_requests.some(pr => pr.number === prNumber);
                   if (!isCurrentPr) {

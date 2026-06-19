@@ -179,13 +179,14 @@ Single source of truth: [`maestro/maestro-version.json`](./maestro-version.json)
 
 | Workflow | Role |
 |---|---|
-| `e2e-detox-pr.yml` | Detox builds, server provisioning, Detox test runs |
-| `e2e-maestro-pr.yml` | Maestro status contexts, orchestration, final status |
+| `e2e-detox-pr.yml` | Matterwick entry point: builds, server provisioning, dispatches Detox + Maestro |
+| `e2e-detox.yml` | Detox test runs (reusable) |
+| `e2e-maestro-pr.yml` | Maestro status contexts, orchestration, final status (reusable) |
 | `e2e-maestro-template.yml` | Reusable Maestro runner (simulator/emulator, seed, test, report) |
 
-`e2e-detox-pr.yml` calls `e2e-maestro-pr.yml` and passes `artifact_run_id: ${{ github.run_id }}` so the iOS `.app` artifact from the Detox build job is reused. The template passes that id to `actions/download-artifact` as `run-id` because reusable workflows have a distinct `github.run_id`.
+`e2e-detox-pr.yml` calls `e2e-maestro-pr.yml` and passes `artifact_run_id: ${{ github.run_id }}` so Maestro reuses the iOS `.app` and Android APK artifacts from the build jobs. The template passes that id to `actions/download-artifact` as `run-id` because reusable workflows have a distinct `github.run_id`.
 
-Maestro can also be dispatched standalone via `workflow_dispatch` on `e2e-maestro-pr.yml`.
+`e2e-maestro-pr.yml` is only invocable via `workflow_call` from `e2e-detox-pr.yml` — it does not build apps or provision servers on its own.
 
 ---
 

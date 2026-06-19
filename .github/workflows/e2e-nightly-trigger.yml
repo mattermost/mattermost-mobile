@@ -2,8 +2,8 @@ name: E2E Nightly Trigger
 
 # This is a lightweight trigger workflow.
 # Matterwick receives the workflow_run:requested event, provisions 3 Mattermost cloud
-# instances, and dispatches e2e-detox-pr.yml (Detox + Maestro via e2e-maestro-pr.yml)
-# with the instance URLs. When e2e-detox-pr.yml completes, Matterwick destroys the instances.
+# instances, and dispatches e2e-detox-pr.yml with the instance URLs.
+# When e2e-detox-pr.yml completes, Matterwick destroys the provisioned instances.
 on:
   push:
     branches:

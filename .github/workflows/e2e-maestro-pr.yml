@@ -1,51 +1,10 @@
-# Maestro E2E orchestration for PR / Matterwick-dispatched runs.
-#
-# Kept separate from e2e-detox-pr.yml so Maestro CI can evolve independently
-# (build strategy, server assignment, status contexts) without touching Detox.
-#
-# Triggered either:
-#   - directly via workflow_dispatch (standalone Maestro run), or
-#   - as a reusable workflow from e2e-detox-pr.yml (shared iOS build artifact).
+# Maestro E2E orchestration — reusable workflow only.
+# Called from e2e-detox-pr.yml after shared builds and server provisioning complete.
+# Downloads ios-build-simulator-* and android-build-files-* from the parent run
+# via artifact_run_id; does not build apps or provision servers on its own.
 name: Maestro E2E
 
 on:
-  workflow_dispatch:
-    inputs:
-      MOBILE_VERSION:
-        description: "The mobile app commit SHA to test"
-        required: true
-        type: string
-      PLATFORM:
-        description: "Mobile platform to test: ios, android, or both"
-        required: false
-        default: "both"
-        type: choice
-        options:
-          - ios
-          - android
-          - both
-      SITE_1_URL:
-        description: "URL of the first Mattermost test server (provisioned by Matterwick)"
-        required: true
-        type: string
-      SITE_2_URL:
-        description: "URL of the second Mattermost test server (iOS Maestro; optional)"
-        required: false
-        type: string
-      SITE_3_URL:
-        description: "URL of the third Mattermost test server (Android Maestro; optional)"
-        required: false
-        type: string
-      run_type:
-        description: "Run type for test reporting (PR/RELEASE/NIGHTLY/MASTER). Defaults to PR."
-        required: false
-        default: "PR"
-        type: string
-      artifact_run_id:
-        description: "GitHub run ID of the workflow that uploaded ios-build-simulator-* (defaults to this run)"
-        required: false
-        type: string
-
   workflow_call:
     inputs:
       MOBILE_VERSION:
@@ -69,8 +28,8 @@ on:
         type: string
         default: "PR"
       artifact_run_id:
-        description: "Run ID of the parent workflow that uploaded the iOS simulator artifact"
-        required: false
+        description: "Run ID of the parent workflow that uploaded build artifacts"
+        required: true
         type: string
 
 concurrency:
@@ -78,10 +37,7 @@ concurrency:
   cancel-in-progress: true
 
 env:
-  INTUNE_ENABLED: 'true'
-  # When called from e2e-detox-pr.yml, the iOS .app artifact is keyed to the
-  # parent run ID. Standalone dispatches fall back to this workflow's run ID.
-  ARTIFACT_RUN_ID: ${{ inputs.artifact_run_id || github.run_id }}
+  ARTIFACT_RUN_ID: ${{ inputs.artifact_run_id }}
 
 jobs:
   update-initial-status-maestro-ios:
@@ -112,149 +68,38 @@ jobs:
           description: Maestro Android tests for mattermost mobile app have started ...
           status: pending
 
-  # Standalone workflow_dispatch builds its own iOS artifact. When invoked via
-  # workflow_call from e2e-detox-pr.yml this job is skipped — the parent already
-  # built and uploaded ios-build-simulator-<parent_run_id>.
-  build-ios-simulator:
-    if: |
-      (inputs.PLATFORM == 'ios' || inputs.PLATFORM == 'both') &&
-      inputs.artifact_run_id == ''
-    runs-on: macos-26
-    needs:
-      - update-initial-status-maestro-ios
-    steps:
-      - name: Checkout Repository
-        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
-        with:
-          ref: ${{ inputs.MOBILE_VERSION }}
-
-      - name: Prepare iOS Build
-        uses: ./.github/actions/prepare-ios-build
-        with:
-          intune-enabled: ${{ env.INTUNE_ENABLED }}
-          intune-ssh-private-key: ${{ secrets.MM_MOBILE_INTUNE_DEPLOY_KEY }}
-
-      - name: Set .env with RUNNING_E2E=true
-        run: echo "RUNNING_E2E=true" > .env
-
-      - name: Build iOS Simulator
-        env:
-          TAG: ${{ inputs.MOBILE_VERSION }}
-          GITHUB_TOKEN: ${{ secrets.MM_MOBILE_GITHUB_TOKEN }}
-        run: bundle exec fastlane ios simulator --env ios.simulator
-        working-directory: ./fastlane
-
-      - name: Upload iOS Simulator Build
-        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
-        with:
-          name: ios-build-simulator-${{ github.run_id }}
-          path: Mattermost-simulator-*.app.zip
-
-  provision-servers:
-    # Skipped when called from e2e-detox-pr.yml — parent already provisioned.
-    if: inputs.artifact_run_id == ''
-    name: Provision test servers
-    runs-on: ubuntu-22.04
-    steps:
-      - name: Validate server URLs
-        run: |
-          validate_url() {
-            local url="$1" label="$2"
-            if [ -z "$url" ]; then return 0; fi
-
-            if [[ "$url" =~ [[:space:]] ]]; then
-              echo "::error::$label contains whitespace: $url"
-              exit 1
-            fi
-
-            if [[ ! "$url" =~ ^https:// ]]; then
-              echo "::error::$label must use HTTPS: $url"
-              exit 1
-            fi
-
-            hostname=$(python3 -c 'import sys; from urllib.parse import urlparse; print(urlparse(sys.argv[1]).hostname or "")' "$url" | tr '[:upper:]' '[:lower:]')
-
-            if echo "$hostname" | grep -qE '^(127\.|10\.|172\.(1[6-9]|2[0-9]|3[01])\.|192\.168\.|0\.|localhost)'; then
-              echo "::error::$label points to a private/internal address: $hostname"
-              exit 1
-            fi
-
-            if ! echo "$hostname" | grep -qE '\.(cloud\.mattermost\.com|test\.mattermost\.cloud|mattermost\.com|mattermost\.cloud)$'; then
-              echo "::error::$label domain not in allowlist: $hostname"
-              exit 1
-            fi
-
-            echo "✓ $label validated: $hostname"
-          }
-
-          validate_url "$SITE_1_URL" "SITE_1_URL"
-          validate_url "$SITE_2_URL" "SITE_2_URL"
-          validate_url "$SITE_3_URL" "SITE_3_URL"
-        env:
-          SITE_1_URL: ${{ inputs.SITE_1_URL }}
-          SITE_2_URL: ${{ inputs.SITE_2_URL }}
-          SITE_3_URL: ${{ inputs.SITE_3_URL }}
-
-      - name: Checkout Repository
-        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
-        with:
-          ref: ${{ inputs.MOBILE_VERSION }}
-
-      - name: Provision servers (license + plugins)
-        run: |
-          for url in "$SITE_1_URL" "$SITE_2_URL" "$SITE_3_URL"; do
-            if [ -n "$url" ]; then
-              echo "--- Provisioning $url ---"
-              node detox/provision_server.js "$url" || echo "Warning: provisioning $url failed (non-fatal)"
-            fi
-          done
-        env:
-          SITE_1_URL: ${{ inputs.SITE_1_URL }}
-          SITE_2_URL: ${{ inputs.SITE_2_URL }}
-          SITE_3_URL: ${{ inputs.SITE_3_URL }}
-          ADMIN_USERNAME: ${{ secrets.MM_MOBILE_E2E_ADMIN_USERNAME }}
-          ADMIN_PASSWORD: ${{ secrets.MM_MOBILE_E2E_ADMIN_PASSWORD }}
-
   run-maestro-ios:
     name: Maestro iOS
     needs:
       - update-initial-status-maestro-ios
-      - build-ios-simulator
-      - provision-servers
-    # build-ios-simulator / provision-servers are skipped when invoked from
-    # e2e-detox-pr.yml (parent already built + provisioned). Allow skipped deps.
     if: |
       always() &&
       (inputs.PLATFORM == 'ios' || inputs.PLATFORM == 'both') &&
-      needs.update-initial-status-maestro-ios.result == 'success' &&
-      (needs.build-ios-simulator.result == 'success' || needs.build-ios-simulator.result == 'skipped') &&
-      (needs.provision-servers.result == 'success' || needs.provision-servers.result == 'skipped')
+      needs.update-initial-status-maestro-ios.result == 'success'
     uses: ./.github/workflows/e2e-maestro-template.yml
     with:
       platform: ios
       run-type: ${{ inputs.run_type || 'PR' }}
       MOBILE_VERSION: ${{ inputs.MOBILE_VERSION }}
       MM_TEST_SERVER_URL: ${{ inputs.SITE_2_URL || inputs.SITE_1_URL }}
-      artifact_run_id: ${{ inputs.artifact_run_id || github.run_id }}
+      artifact_run_id: ${{ inputs.artifact_run_id }}
     secrets: inherit
 
   run-maestro-android:
     name: Maestro Android
     needs:
       - update-initial-status-maestro-android
-      - provision-servers
     if: |
       always() &&
       (inputs.PLATFORM == 'android' || inputs.PLATFORM == 'both') &&
-      needs.update-initial-status-maestro-android.result == 'success' &&
-      (needs.provision-servers.result == 'success' || needs.provision-servers.result == 'skipped')
+      needs.update-initial-status-maestro-android.result == 'success'
     uses: ./.github/workflows/e2e-maestro-template.yml
     with:
       platform: android
       run-type: ${{ inputs.run_type || 'PR' }}
       MOBILE_VERSION: ${{ inputs.MOBILE_VERSION }}
       MM_TEST_SERVER_URL: ${{ inputs.SITE_3_URL || inputs.SITE_1_URL }}
-      artifact_run_id: ${{ inputs.artifact_run_id || github.run_id }}
+      artifact_run_id: ${{ inputs.artifact_run_id }}
     secrets: inherit
 
   update-final-status-maestro-ios:
@@ -293,7 +138,7 @@ jobs:
           commit_sha: ${{ inputs.MOBILE_VERSION }}
           context: e2e/maestro-android-tests
           description: >-
-            ${{ needs.run-maestro-android.result == 'skipped' && 'Provisioning failed — Maestro Android tests did not run'
+            ${{ needs.run-maestro-android.result == 'skipped' && 'Build failed — Maestro Android tests did not run'
               || needs.run-maestro-android.outputs.FAILURES == '-1' && 'All test machines failed before producing results'
               || (needs.run-maestro-android.outputs.FAILURES == '0' && needs.run-maestro-android.outputs.SKIPPED > '0') && format('{0} passed, {1} skipped', needs.run-maestro-android.outputs.PASSES, needs.run-maestro-android.outputs.SKIPPED)
               || needs.run-maestro-android.outputs.FAILURES == '0' && format('All {0} tests passed', needs.run-maestro-android.outputs.TOTAL)

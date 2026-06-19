@@ -61,7 +61,7 @@ env:
   TYPE: ${{ inputs.run-type }}
   DETOX_AWS_S3_BUCKET: "mattermost-detox-report"
   AWS_REGION: "us-east-1"
-  # iOS .app artifact is uploaded by e2e-detox-pr.yml / e2e-maestro-pr.yml under
+  # iOS .app artifact is uploaded by e2e-detox-pr.yml under ios-build-simulator-<run_id>.
   # ios-build-simulator-<run_id>. When this template is nested, that run_id is
   # the parent's, not this workflow's.
   ARTIFACT_RUN_ID: ${{ inputs.artifact_run_id || github.run_id }}
@@ -128,7 +128,7 @@ jobs:
         with:
           name: ios-build-simulator-${{ env.ARTIFACT_RUN_ID }}
           # Reusable workflows have their own github.run_id; when Maestro is
-          # nested under e2e-detox-pr.yml the .app artifact lives on the caller run.
+          # Reusable workflows have their own github.run_id; artifacts live on the parent e2e-detox-pr.yml run.
           run-id: ${{ env.ARTIFACT_RUN_ID }}
           github-token: ${{ secrets.GITHUB_TOKEN }}
           path: mobile-artifacts

@@ -1,7 +1,14 @@
-# E2E tests are triggered exclusively by Matterwick via workflow_dispatch.
-# Matterwick provisions dedicated cloud servers and passes their URLs here.
-# No static/permanent server fallback is used — if Matterwick doesn't dispatch
-# this workflow, no E2E tests run.
+# Matterwick E2E entry point (workflow_dispatch only).
+#
+# Matterwick dispatches this file via:
+#   POST /repos/{owner}/{repo}/actions/workflows/e2e-detox-pr.yml/dispatches
+# and watches workflow_run "completed" events where workflow name is "E2E".
+#
+# Phase 1 — builds & setup (parallel):
+#   build-ios-simulator, build-android-apk, provision-servers, validate-maestro-flow-headers
+# Phase 2 — tests (parallel, after phase 1):
+#   run-detox  → e2e-detox.yml
+#   run-maestro → e2e-maestro-pr.yml (downloads phase-1 artifacts via artifact_run_id)
 name: E2E
 
 on:
@@ -48,15 +55,25 @@ concurrency:
   group: "${{ github.workflow }}-${{ inputs.pr_number || github.run_id }}"
   cancel-in-progress: true
 
+permissions:
+  contents: read
+
 env:
-  INTUNE_ENABLED: 'true'
+  INTUNE_ENABLED: 'false'
+  DETOX_AWS_S3_BUCKET: "mattermost-detox-report"
 
 jobs:
   update-initial-status-ios:
     if: inputs.PLATFORM == 'ios' || inputs.PLATFORM == 'both'
     runs-on: ubuntu-22.04
+    permissions:
+      contents: read
+      statuses: write
     steps:
-      - uses: mattermost/actions/delivery/update-commit-status@d5174b860704729f4c14ef8489ae075742bfa08a
+      - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
+        with:
+          ref: ${{ inputs.MOBILE_VERSION }}
+      - uses: ./.github/actions/update-commit-status
         env:
           GITHUB_TOKEN: ${{ github.token }}
         with:
@@ -69,8 +86,14 @@ jobs:
   update-initial-status-android:
     if: inputs.PLATFORM == 'android' || inputs.PLATFORM == 'both'
     runs-on: ubuntu-22.04
+    permissions:
+      contents: read
+      statuses: write
     steps:
-      - uses: mattermost/actions/delivery/update-commit-status@d5174b860704729f4c14ef8489ae075742bfa08a
+      - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
+        with:
+          ref: ${{ inputs.MOBILE_VERSION }}
+      - uses: ./.github/actions/update-commit-status
         env:
           GITHUB_TOKEN: ${{ github.token }}
         with:
@@ -80,6 +103,26 @@ jobs:
           description: Detox Android tests for mattermost mobile app have started ...
           status: pending
 
+  update-initial-status-ipad:
+    if: inputs.PLATFORM == 'ios' || inputs.PLATFORM == 'both'
+    runs-on: ubuntu-22.04
+    permissions:
+      contents: read
+      statuses: write
+    steps:
+      - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
+        with:
+          ref: ${{ inputs.MOBILE_VERSION }}
+      - uses: ./.github/actions/update-commit-status
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        with:
+          repository_full_name: ${{ github.repository }}
+          commit_sha: ${{ inputs.MOBILE_VERSION }}
+          context: e2e/detox-ipad-tests
+          description: Detox iPad tests for mattermost mobile app have started ...
+          status: pending
+
   build-ios-simulator:
     if: inputs.PLATFORM == 'ios' || inputs.PLATFORM == 'both'
     runs-on: macos-26
@@ -87,7 +130,7 @@ jobs:
       - update-initial-status-ios
     steps:
       - name: Checkout Repository
-        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
         with:
           ref: ${{ inputs.MOBILE_VERSION }}
 
@@ -108,7 +151,7 @@ jobs:
         working-directory: ./fastlane
 
       - name: Upload iOS Simulator Build
-        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
           name: ios-build-simulator-${{ github.run_id }}
           path: Mattermost-simulator-*.app.zip
@@ -125,7 +168,7 @@ jobs:
         run: docker system prune -af
 
       - name: Checkout Repository
-        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
         with:
           ref: ${{ inputs.MOBILE_VERSION }}
 
@@ -137,16 +180,25 @@ jobs:
           STORE_PASSWORD: ${{ secrets.MM_MOBILE_STORE_PASSWORD }}
           MATTERMOST_BUILD_GH_TOKEN: ${{ secrets.MATTERMOST_BUILD_GH_TOKEN }}
 
+      # Cache Gradle dependencies — same key as e2e-detox-release.yml so the
+      # PR + release workflows share cache. Saves 3-5 min on warm runs by
+      # skipping gradle plugin resolution + Maven dep downloads.
+      - name: Cache Gradle dependencies
+        uses: actions/cache@27d5ce7f107fe9357f9df03efb73ab90386fccae # v5.0.5
+        with:
+          path: /home/runner/.gradle/caches/modules-2/
+          key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
+          restore-keys: ${{ runner.os }}-gradle-
+
       - name: Detox build
         run: |
           cd detox
           npm ci --prefer-offline --no-audit --no-fund
           npm install -g detox-cli
-          npm run e2e:android-inject-settings
           npm run e2e:android-build
 
       - name: Upload Android Build
-        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
           name: android-build-files-${{ github.run_id }}
           path: "android/app/build/**/*"
@@ -187,7 +239,7 @@ jobs:
             hostname=$(python3 -c 'import sys; from urllib.parse import urlparse; print(urlparse(sys.argv[1]).hostname or "")' "$url" | tr '[:upper:]' '[:lower:]')
 
             # Block private/internal IPs
-            if echo "$hostname" | grep -qE '^(127\.|10\.|172\.(1[6-9]|2[0-9]|3[01])\.|192\.168\.|0\.|localhost)'; then
+            if echo "$hostname" | grep -qE '^(127\.|10\.|172\.(1[6-9]|2[0-9]|3[01])\.|192\.168\.|0\.|localhost|::1$|::ffff:|fe80:)'; then
               echo "::error::$label points to a private/internal address: $hostname"
               exit 1
             fi
@@ -210,12 +262,34 @@ jobs:
           SITE_3_URL: ${{ inputs.SITE_3_URL }}
 
       - name: Checkout Repository
-        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
         with:
           ref: ${{ inputs.MOBILE_VERSION }}
+          persist-credentials: false
+
+      # Download the demo plugin once per workflow (or on cache miss) so
+      # provision can upload from a local fixture instead of install_from_url.
+      # Test runners rely on the server already being provisioned — they do not
+      # download this artifact.
+      - name: Cache demo plugin fixture
+        id: demo-plugin-cache
+        uses: actions/cache@27d5ce7f107fe9357f9df03efb73ab90386fccae # v5.0.5
+        with:
+          path: detox/e2e/support/fixtures/mattermost-plugin-demo-v0.11.1-linux-amd64.tar.gz
+          key: mattermost-plugin-demo-linux-amd64-v0.11.1
+
+      - name: Download demo plugin fixture
+        if: steps.demo-plugin-cache.outputs.cache-hit != 'true'
+        run: |
+          mkdir -p detox/e2e/support/fixtures
+          curl -fsSL -o detox/e2e/support/fixtures/mattermost-plugin-demo-v0.11.1-linux-amd64.tar.gz \
+            "https://github.com/mattermost/mattermost-plugin-demo/releases/download/v0.11.1/mattermost-plugin-demo-v0.11.1-linux-amd64.tar.gz"
+          ls -lh detox/e2e/support/fixtures/mattermost-plugin-demo-v0.11.1-linux-amd64.tar.gz
 
       - name: Provision servers (license + plugins)
         run: |
+          cd detox
+          npm ci --prefer-offline --no-audit --no-fund
           # Quote every variable in the iteration. Without quotes, bash word-splits
           # on whitespace and would treat e.g. "https://a https://b" as two URLs,
           # bypassing the per-variable validation in the previous step (which
@@ -224,7 +298,11 @@ jobs:
           for url in "$SITE_1_URL" "$SITE_2_URL" "$SITE_3_URL"; do
             if [ -n "$url" ]; then
               echo "--- Provisioning $url ---"
-              node detox/provision_server.js "$url" || echo "Warning: provisioning $url failed (non-fatal)"
+              if [ "$url" = "$SITE_1_URL" ]; then
+                npm run provision -- "$url"
+              else
+                npm run provision -- "$url" || echo "Warning: provisioning $url failed (non-fatal)"
+              fi
             fi
           done
         env:
@@ -234,77 +312,34 @@ jobs:
           ADMIN_USERNAME: ${{ secrets.MM_MOBILE_E2E_ADMIN_USERNAME }}
           ADMIN_PASSWORD: ${{ secrets.MM_MOBILE_E2E_ADMIN_PASSWORD }}
 
-  run-ios-tests:
-    if: inputs.PLATFORM == 'ios' || inputs.PLATFORM == 'both'
-    name: iOS
+  run-detox:
+    name: Detox E2E
     needs:
       - build-ios-simulator
-    uses: ./.github/workflows/e2e-ios-template.yml
-    with:
-      run-type: ${{ inputs.run_type || 'PR' }}
-      record_tests_in_zephyr: ${{ (inputs.run_type == 'RELEASE' || inputs.run_type == 'NIGHTLY' || inputs.run_type == 'MASTER') && 'true' || 'false' }}
-      MOBILE_VERSION: ${{ inputs.MOBILE_VERSION }}
-      MM_TEST_SERVER_URL: ${{ inputs.SITE_1_URL }}
-      MM_TEST_SERVER_URL_2: ${{ inputs.SITE_2_URL }}
-      MM_TEST_SERVER_URL_3: ${{ inputs.SITE_3_URL }}
-    secrets: inherit
-
-  run-android-tests:
-    if: inputs.PLATFORM == 'android' || inputs.PLATFORM == 'both'
-    name: Android
-    needs:
       - build-android-apk
-    uses: ./.github/workflows/e2e-android-template.yml
+      - provision-servers
+    if: |
+      always() &&
+      needs.provision-servers.result == 'success' &&
+      (needs.build-ios-simulator.result == 'success' || needs.build-ios-simulator.result == 'skipped') &&
+      (needs.build-android-apk.result == 'success' || needs.build-android-apk.result == 'skipped')
+    uses: ./.github/workflows/e2e-detox.yml
     with:
-      run-android-tests: true
-      run-type: ${{ inputs.run_type || 'PR' }}
-      record_tests_in_zephyr: ${{ (inputs.run_type == 'RELEASE' || inputs.run_type == 'NIGHTLY' || inputs.run_type == 'MASTER') && 'true' || 'false' }}
       MOBILE_VERSION: ${{ inputs.MOBILE_VERSION }}
-      MM_TEST_SERVER_URL: ${{ inputs.SITE_1_URL }}
-      MM_TEST_SERVER_URL_2: ${{ inputs.SITE_2_URL }}
-      MM_TEST_SERVER_URL_3: ${{ inputs.SITE_3_URL }}
+      PLATFORM: ${{ inputs.PLATFORM }}
+      SITE_1_URL: ${{ inputs.SITE_1_URL }}
+      SITE_2_URL: ${{ inputs.SITE_2_URL }}
+      SITE_3_URL: ${{ inputs.SITE_3_URL }}
+      run_type: ${{ inputs.run_type || 'PR' }}
+      artifact_run_id: ${{ github.run_id }}
     secrets: inherit
-
-  update-final-status-ios:
-    runs-on: ubuntu-22.04
-    if: always() && (inputs.PLATFORM == 'ios' || inputs.PLATFORM == 'both')
-    needs:
-      - run-ios-tests
-    steps:
-      - uses: mattermost/actions/delivery/update-commit-status@d5174b860704729f4c14ef8489ae075742bfa08a
-        env:
-          GITHUB_TOKEN: ${{ github.token }}
-        with:
-          repository_full_name: ${{ github.repository }}
-          commit_sha: ${{ inputs.MOBILE_VERSION }}
-          context: e2e/detox-ios-tests
-          description: Completed with ${{ needs.run-ios-tests.outputs.FAILURES }} failures
-          status: ${{ needs.run-ios-tests.outputs.STATUS }}
-          target_url: ${{ needs.run-ios-tests.outputs.TARGET_URL }}
-
-  update-final-status-android:
-    runs-on: ubuntu-22.04
-    if: always() && (inputs.PLATFORM == 'android' || inputs.PLATFORM == 'both')
-    needs:
-      - run-android-tests
-    steps:
-      - uses: mattermost/actions/delivery/update-commit-status@d5174b860704729f4c14ef8489ae075742bfa08a
-        env:
-          GITHUB_TOKEN: ${{ github.token }}
-        with:
-          repository_full_name: ${{ github.repository }}
-          commit_sha: ${{ inputs.MOBILE_VERSION }}
-          context: e2e/detox-android-tests
-          description: Completed with ${{ needs.run-android-tests.outputs.FAILURES }} failures
-          status: ${{ needs.run-android-tests.outputs.STATUS }}
-          target_url: ${{ needs.run-android-tests.outputs.TARGET_URL }}
 
   validate-maestro-flow-headers:
     name: Validate Maestro flow headers
     runs-on: ubuntu-22.04
     steps:
       - name: Checkout Repository
-        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
         with:
           ref: ${{ inputs.MOBILE_VERSION }}
 
@@ -312,8 +347,9 @@ jobs:
         run: bash maestro/scripts/validate-flow-headers.sh
 
   # Maestro orchestration lives in e2e-maestro-pr.yml so Detox and Maestro CI
-  # can evolve independently. artifact_run_id ties the iOS .app download to
-  # build-ios-simulator above (same github.run_id).
+  # can evolve independently. Both Maestro platforms download the same CI
+  # artifacts that Detox uses (ios-build-simulator-* / android-build-files-*)
+  # from this workflow run via artifact_run_id — Maestro does not rebuild apps.
   run-maestro:
     name: Maestro E2E
     needs:
@@ -321,11 +357,12 @@ jobs:
       - build-android-apk
       - provision-servers
       - validate-maestro-flow-headers
-    # build-ios-simulator / build-android-apk are skipped for PLATFORM=ios / PLATFORM=android
-    # respectively; Maestro still runs (the skipped platform's template job is also skipped).
+    # Phase 2: run after shared builds finish. Skipped platform builds (e.g.
+    # build-ios-simulator when PLATFORM=android) do not block Maestro.
     if: |
       always() &&
       needs.provision-servers.result == 'success' &&
+      needs.validate-maestro-flow-headers.result == 'success' &&
       (needs.build-ios-simulator.result == 'success' || needs.build-ios-simulator.result == 'skipped') &&
       (needs.build-android-apk.result == 'success' || needs.build-android-apk.result == 'skipped')
     uses: ./.github/workflows/e2e-maestro-pr.yml
@@ -343,18 +380,41 @@ jobs:
     name: Remove Matterwick E2E label from PR
     runs-on: ubuntu-22.04
     needs:
-      - run-ios-tests
-      - run-android-tests
+      - run-detox
       - run-maestro
-    if: always() && inputs.pr_number != ''
+    # IMPORTANT: !cancelled() prevents label removal when the workflow is cancelled
+    # (e.g. by concurrency cancel-in-progress). Without this, Matterwick sees the
+    # label removed and deletes the test servers while the replacement run is still
+    # using them.
+    if: always() && !cancelled()
     steps:
       - name: e2e/remove-label-from-pr
-        uses: actions/github-script@e7aeb8c663f696059ebb5f9ab1425ed2ef511bdb # v7.0.1
+        uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9.0.0
         continue-on-error: true # Label might have been removed manually
         with:
           script: |
-            const prNumber = parseInt(process.env.PR_NUMBER);
-            if (!prNumber) return;
+            // Use pr_number input if provided, otherwise look up from branch
+            let prNumber = parseInt(process.env.PR_NUMBER);
+            if (!prNumber) {
+              const branch = process.env.BRANCH;
+              if (branch) {
+                const {data: prs} = await github.rest.pulls.list({
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  head: `${context.repo.owner}:${branch}`,
+                  state: 'open',
+                  per_page: 1,
+                });
+                if (prs.length > 0) {
+                  prNumber = prs[0].number;
+                }
+              }
+            }
+            if (!prNumber) {
+              console.log('No PR found — skipping label removal');
+              return;
+            }
+            console.log(`Removing E2E labels from PR #${prNumber}`);
             const labels = ['E2E/Run', 'E2E/Run-iOS', 'E2E/Run-Android'];
             for (const label of labels) {
               try {
@@ -370,3 +430,4 @@ jobs:
             }
         env:
           PR_NUMBER: ${{ inputs.pr_number }}
+          BRANCH: ${{ github.ref_name }}

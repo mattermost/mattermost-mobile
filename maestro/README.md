@@ -180,7 +180,7 @@ DEVICE_A_UDID=<udid-a> DEVICE_B_UDID=<udid-b> \
    ```
    Or build the Detox APK and install it:
    ```bash
-   cd detox && npm run e2e:android-inject-settings && npm run e2e:android-build
+   cd detox && npm run e2e:android-build
    adb install -r android/app/build/outputs/apk/debug/app-debug.apk
    ```
 3. **Set env vars** (e.g. `SITE_1_URL`, `TEST_USER_EMAIL`, `TEST_USER_PASSWORD`, `TEST_CHANNEL_NAME`). Optionally run `npx tsx maestro/fixtures/seed.ts` and `source .maestro-test-env.sh`.
@@ -247,13 +247,13 @@ appId: ${MAESTRO_APP_ID}
 
 | Workflow | Purpose |
 |---|---|
-| `e2e-maestro-pr.yml` | Maestro orchestration (status checks, platform jobs, final status) |
+| `e2e-detox-pr.yml` | Matterwick entry point: builds, provision, Detox + Maestro |
+| `e2e-detox.yml` | Detox test runs (reusable; called from `e2e-detox-pr.yml`) |
+| `e2e-maestro-pr.yml` | Maestro orchestration (reusable; called from `e2e-detox-pr.yml`) |
 | `e2e-maestro-template.yml` | Reusable runner (device setup, seed, `maestro test`, reports) |
-| `e2e-detox-pr.yml` | Detox + calls `e2e-maestro-pr.yml` with shared iOS build artifact |
 
-- **PR gate**: Matterwick dispatches `e2e-detox-pr.yml`, which runs Detox and delegates Maestro to `e2e-maestro-pr.yml`. Maestro iOS uses `SITE_2_URL`; Android uses `SITE_3_URL`.
-- **Standalone Maestro**: `workflow_dispatch` on `e2e-maestro-pr.yml`.
-- **On-demand / nightly / release**: Other workflows call `e2e-maestro-template.yml` directly.
+- **PR gate**: Matterwick dispatches `e2e-detox-pr.yml`. Phase 1 builds apps and provisions servers; phase 2 runs Detox and Maestro in parallel, both downloading build artifacts via `artifact_run_id`. Maestro iOS uses `SITE_2_URL`; Android uses `SITE_3_URL`.
+- **On-demand / nightly / release / CMT**: Other workflows call `e2e-maestro-template.yml` directly.
 
 Additional CI notes:
 
