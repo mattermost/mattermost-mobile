@@ -47,12 +47,13 @@ class PostList {
         return element(by.id(this.testID.threadOverviewNoReplies));
     };
 
+    // Use atIndex(0) when expo-router leaves a stale off-screen ThreadScreen mounted.
     getThreadOverviewSaveButton = () => {
-        return element(by.id(this.testID.threadOverviewSaveButton));
+        return element(by.id(this.testID.threadOverviewSaveButton)).atIndex(0);
     };
 
     getThreadOverviewUnsaveButton = () => {
-        return element(by.id(this.testID.threadOverviewUnsaveButton));
+        return element(by.id(this.testID.threadOverviewUnsaveButton)).atIndex(0);
     };
 
     getThreadOverviewPostOptionsButton = () => {

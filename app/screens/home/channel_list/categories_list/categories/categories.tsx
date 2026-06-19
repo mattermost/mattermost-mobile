@@ -222,6 +222,7 @@ const Categories = ({flattenedItems, unreadChannelIds, onlyUnreads, isTablet, li
             {!switchingTeam && !initialLoad && (
                 <FlashList<FlattenedItem>
                     ref={listRef}
+                    testID='channel_list.flat_list'
                     data={flattenedItems}
                     renderItem={renderItem}
                     keyExtractor={keyExtractor}

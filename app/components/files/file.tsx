@@ -169,6 +169,7 @@ const File = ({
                         wrapperWidth={wrapperWidth}
                         updateFileForGallery={updateFileForGallery}
                         index={index}
+                        testID={`${file.id}-file`}
                     />
                     {Boolean(nonVisibleImagesCount) &&
                     <ImageFileOverlay
@@ -194,6 +195,7 @@ const File = ({
                         isSingleImage={isSingleImage}
                         contentFit={'cover'}
                         wrapperWidth={wrapperWidth}
+                        testID={`${file.id}-file`}
                     />
                     {Boolean(nonVisibleImagesCount) &&
                     <ImageFileOverlay

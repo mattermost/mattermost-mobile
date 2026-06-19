@@ -2,6 +2,7 @@
 // See LICENSE.txt for license information.
 
 import Alert from './alert';
+import AttachmentOptions from './attachment_options';
 import Autocomplete from './autocomplete';
 import CameraQuickAction from './camera_quick_action';
 import FileQuickAction from './file_quick_action';
@@ -20,6 +21,7 @@ import TeamSidebar from './team_sidebar';
 
 export {
     Alert,
+    AttachmentOptions,
     Autocomplete,
     CameraQuickAction,
     FileQuickAction,

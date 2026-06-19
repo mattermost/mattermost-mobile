@@ -84,7 +84,13 @@ describe('Smoke Test - Account', () => {
         // * Verify on account screen and custom status is set
         await AccountScreen.toBeVisible();
         const {accountCustomStatusEmoji, accountCustomStatusText, accountCustomStatusExpiry} = AccountScreen.getCustomStatus(customStatusEmojiName, customStatusDuration);
-        await expect(accountCustomStatusEmoji).toBeVisible();
+
+        // Use 50% visibility threshold for the small emoji glyph. On iOS 26 the
+        // online-status indicator dot composites over a corner of the emoji
+        // bounds, dropping below Detox's default 75% threshold even though the
+        // emoji is rendered correctly. Same pattern as the markdown-emoji
+        // assertions in messaging/markdown_*.e2e.ts.
+        await expect(accountCustomStatusEmoji).toBeVisible(50);
         await expect(accountCustomStatusText).toHaveText(customStatusText);
         await expect(accountCustomStatusExpiry).toBeVisible();
 

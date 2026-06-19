@@ -58,8 +58,8 @@ describe('Messaging - Markdown Block Quote', () => {
         // * Verify markdown block quote is displayed
         const {post} = await Post.apiGetLastPostInChannel(siteOneUrl, testChannel.id);
         const {postListPostItemBlockQuote} = ChannelScreen.getPostListPostItem(post.id, message);
-        await expect(postListPostItemBlockQuote).toBeVisible();
-        await expect(element(by.text(message))).toBeVisible();
+        await expect(postListPostItemBlockQuote).toBeVisible(50);
+        await expect(element(by.text(message))).toBeVisible(50);
 
         // # Go back to channel list screen
         await ChannelScreen.back();

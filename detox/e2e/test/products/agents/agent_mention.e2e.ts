@@ -8,9 +8,12 @@
 // *******************************************************************
 
 import {
+    AgentsPlugin,
     Bot,
     Channel,
+    Plugin,
     Setup,
+    System,
     Team,
 } from '@support/server_api';
 import client from '@support/server_api/client';
@@ -34,25 +37,7 @@ import {expect} from 'detox';
 // Agent API helpers
 // ****************************************************************
 
-const AGENTS_PLUGIN_ID = 'mattermost-ai';
-
-/**
- * Check if the agents plugin (mattermost-ai) is installed and active.
- * @param {string} baseUrl - the base server URL
- * @return {boolean} true if the plugin is installed and active
- */
-const isAgentsPluginActive = async (baseUrl: string): Promise<boolean> => {
-    try {
-        const response = await client.get(`${baseUrl}/api/v4/plugins`);
-        const plugins = response.data;
-        return plugins.active?.some((p: any) => p.id === AGENTS_PLUGIN_ID) ?? false;
-    } catch (err) {
-        const {error, status} = getResponseFromError(err);
-        throw new Error(
-            `[isAgentsPluginActive] Failed to read plugins (status ${status}): ${JSON.stringify(error)}`,
-        );
-    }
-};
+const E2E_AGENT_USERNAME = 'ai-bot';
 
 /**
  * Get all bots from the server.
@@ -70,12 +55,7 @@ const apiGetBots = async (baseUrl: string): Promise<any> => {
 
 /**
  * Find agents among bots by cross-referencing with the autocomplete API.
- * The server identifies agents internally and returns them in a separate
- * `agents` field from the autocomplete endpoint — the same mechanism the
- * mobile app uses.
- * @param {string} baseUrl - the base server URL
- * @param {string} teamId - the team ID to scope the autocomplete query
- * @return {Array} list of agent bot objects
+ * Falls back to the plugin agents API when autocomplete omits the agents field.
  */
 const getAgentBots = async (baseUrl: string, teamId: string): Promise<any[]> => {
     const {bots, error} = await apiGetBots(baseUrl);
@@ -85,6 +65,8 @@ const getAgentBots = async (baseUrl: string, teamId: string): Promise<any[]> => 
         );
     }
 
+    const activeBots = bots.filter((bot: any) => bot.delete_at === 0);
+
     try {
         const response = await client.get(
             `${baseUrl}/api/v4/users/autocomplete?in_team=${teamId}&name=`,
@@ -93,13 +75,34 @@ const getAgentBots = async (baseUrl: string, teamId: string): Promise<any[]> => 
             (response.data?.agents ?? []).map((a: any) => a.id),
         );
 
-        return bots.filter((bot: any) => bot.delete_at === 0 && agentUserIds.has(bot.user_id));
+        if (agentUserIds.size > 0) {
+            return activeBots.filter((bot: any) => agentUserIds.has(bot.user_id));
+        }
     } catch (err) {
         const {error: autocompleteError, status} = getResponseFromError(err);
         throw new Error(
             `[getAgentBots] Failed to fetch autocomplete agents (status ${status}): ${JSON.stringify(autocompleteError)}`,
         );
     }
+
+    try {
+        const pluginAgentsRes = await client.get(`${baseUrl}/plugins/mattermost-ai/agents`);
+        const pluginAgents = Array.isArray(pluginAgentsRes.data) ? pluginAgentsRes.data : [];
+        const agentNames = new Set(pluginAgents.map((agent: any) => agent.name));
+
+        const fromPlugin = activeBots.filter((bot: any) => agentNames.has(bot.username));
+        if (fromPlugin.length > 0) {
+            return fromPlugin;
+        }
+    } catch (err) {
+        const {error: pluginError, status} = getResponseFromError(err);
+        throw new Error(
+            `[getAgentBots] Failed to fetch plugin agents (status ${status}): ${JSON.stringify(pluginError)}`,
+        );
+    }
+
+    const e2eBot = activeBots.find((bot: any) => bot.username === E2E_AGENT_USERNAME);
+    return e2eBot ? [e2eBot] : [];
 };
 
 // ****************************************************************
@@ -113,6 +116,7 @@ describe('Autocomplete - Agent Mention', () => {
     let testTeam: any;
     let pluginActive: boolean;
     let regularBot: any;
+    let channelOpened = false;
 
     beforeAll(async () => {
         const {channel, team, user} = await Setup.apiInit(siteOneUrl);
@@ -120,11 +124,20 @@ describe('Autocomplete - Agent Mention', () => {
         testTeam = team;
 
         // # Check if agents plugin is active
-        pluginActive = await isAgentsPluginActive(siteOneUrl);
+        const pluginStatus = await Plugin.apiGetPluginStatus(siteOneUrl, AgentsPlugin.id);
+        pluginActive = pluginStatus.isActive;
+
+        // # Enable bot account creation (disabled by default on fresh servers)
+        await System.apiUpdateConfig(siteOneUrl, {ServiceSettings: {EnableBotAccountCreation: true}});
 
         // # Create a regular bot (not an agent) for comparison testing
-        const {bot} = await Bot.apiCreateBot(siteOneUrl, {prefix: 'regularbot'});
-        regularBot = bot;
+        const botResult = await Bot.apiCreateBot(siteOneUrl, {prefix: 'regularbot'});
+        if (!botResult.bot) {
+            throw new Error(
+                `[beforeAll] Failed to create regular bot: ${JSON.stringify(botResult.error ?? 'unknown error')}`,
+            );
+        }
+        regularBot = botResult.bot;
 
         // # Add bot to team and channel
         await Team.apiAddUserToTeam(siteOneUrl, regularBot.user_id, testTeam.id);
@@ -139,6 +152,7 @@ describe('Autocomplete - Agent Mention', () => {
 
         // # Open a channel screen
         await ChannelScreen.open(channelsCategory, testChannel.name);
+        channelOpened = true;
     });
 
     beforeEach(async () => {
@@ -150,14 +164,20 @@ describe('Autocomplete - Agent Mention', () => {
     });
 
     afterAll(async () => {
-        // # Log out
-        await ChannelScreen.back();
+        // # Navigate back only if beforeAll successfully opened the channel
+        if (channelOpened) {
+            await ChannelScreen.back();
+        }
         await HomeScreen.logout();
     });
 
-    it('should display regular bot with BOT tag in at-mention autocomplete', async () => {
-        // # Type in "@" to activate at-mention autocomplete
-        await ChannelScreen.postInput.typeText('@');
+    it('should display regular bot in at-mention autocomplete', async () => {
+        // # Tap @ quick action to activate at-mention autocomplete.
+        // typeText('@') on an unfocused input does not fire onSelectionChange on
+        // Android API 35, leaving cursorPosition=0 so matchTerm=null and
+        // autocomplete never appears. The quick action directly sets cursorPosition
+        // in React state, bypassing onSelectionChange.
+        await ChannelScreen.atInputQuickAction.tap();
         await Autocomplete.toBeVisible();
 
         // * Verify at-mention list is displayed
@@ -167,17 +187,15 @@ describe('Autocomplete - Agent Mention', () => {
         await ChannelScreen.postInput.typeText(regularBot.username);
         await wait(timeouts.TWO_SEC);
 
-        // * Verify regular bot appears in autocomplete
+        // * Verify regular bot appears in autocomplete (user rows do not show BOT tags on main)
         const {atMentionItem, atMentionItemBotTag} = Autocomplete.getAtMentionItem(regularBot.user_id);
         await expect(atMentionItem).toExist();
-
-        // * Verify BOT tag is displayed for regular bot
-        await expect(atMentionItemBotTag).toExist();
+        await expect(atMentionItemBotTag).not.toExist();
     });
 
     it('should not display AGENT tag for regular bot in at-mention autocomplete', async () => {
-        // # Type in "@" to activate at-mention autocomplete
-        await ChannelScreen.postInput.typeText('@');
+        // # Tap @ quick action to activate at-mention autocomplete
+        await ChannelScreen.atInputQuickAction.tap();
         await Autocomplete.toBeVisible();
 
         // * Verify at-mention list is displayed
@@ -196,8 +214,8 @@ describe('Autocomplete - Agent Mention', () => {
     });
 
     it('should be able to select regular bot from at-mention autocomplete', async () => {
-        // # Type in "@" to activate at-mention autocomplete
-        await ChannelScreen.postInput.typeText('@');
+        // # Tap @ quick action to activate at-mention autocomplete
+        await ChannelScreen.atInputQuickAction.tap();
         await Autocomplete.toBeVisible();
 
         // * Verify at-mention list is displayed
@@ -262,10 +280,10 @@ describe('Autocomplete - Agent Mention', () => {
                 return;
             }
 
-            // # Clear and type in "@" to activate at-mention autocomplete
+            // # Clear input and tap @ quick action to activate at-mention autocomplete
             await ChannelScreen.postInput.clearText();
             await Autocomplete.toBeVisible(false);
-            await ChannelScreen.postInput.typeText('@');
+            await ChannelScreen.atInputQuickAction.tap();
             await Autocomplete.toBeVisible();
 
             // * Verify at-mention list is displayed
@@ -288,10 +306,10 @@ describe('Autocomplete - Agent Mention', () => {
                 return;
             }
 
-            // # Clear and type in "@" to activate at-mention autocomplete
+            // # Clear input and tap @ quick action to activate at-mention autocomplete
             await ChannelScreen.postInput.clearText();
             await Autocomplete.toBeVisible(false);
-            await ChannelScreen.postInput.typeText('@');
+            await ChannelScreen.atInputQuickAction.tap();
             await Autocomplete.toBeVisible();
 
             // * Verify at-mention list is displayed
@@ -314,10 +332,10 @@ describe('Autocomplete - Agent Mention', () => {
                 return;
             }
 
-            // # Clear and type in "@" to activate at-mention autocomplete
+            // # Clear input and tap @ quick action to activate at-mention autocomplete
             await ChannelScreen.postInput.clearText();
             await Autocomplete.toBeVisible(false);
-            await ChannelScreen.postInput.typeText('@');
+            await ChannelScreen.atInputQuickAction.tap();
             await Autocomplete.toBeVisible();
 
             // * Verify at-mention list is displayed
@@ -337,10 +355,10 @@ describe('Autocomplete - Agent Mention', () => {
                 return;
             }
 
-            // # Clear and type in "@" to activate at-mention autocomplete
+            // # Clear input and tap @ quick action to activate at-mention autocomplete
             await ChannelScreen.postInput.clearText();
             await Autocomplete.toBeVisible(false);
-            await ChannelScreen.postInput.typeText('@');
+            await ChannelScreen.atInputQuickAction.tap();
             await Autocomplete.toBeVisible();
 
             // * Verify at-mention list is displayed

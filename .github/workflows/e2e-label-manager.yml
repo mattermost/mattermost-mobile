@@ -1,0 +1,129 @@
+# Manages the E2E label lifecycle on pull requests.
+#
+# Three steps in a single job, each gated by event type:
+#
+#   1. Add E2E/Run (opened / synchronize):
+#      Adds E2E/Run unless E2E/Override is present (opt-out for docs-only PRs).
+#
+#   2. Honor E2E/Override (labeled E2E/Override):
+#      Removes E2E/Run so in-flight test runs are cancelled (see step 3).
+#
+#   3. Cancel in-progress E2E runs (E2E/Run* unlabeled):
+#      Cancels in-progress E2E workflow runs for the PR's head SHA.
+#      Also fires on the benign post-test cleanup that strips labels at the end
+#      of a normal run — by then no runs are in-progress, so the loop is a no-op.
+#
+# Fork PR guard (github.event.pull_request.head.repo.full_name == github.repository)
+# is applied per-step. Fork PR contexts only get a read-only GITHUB_TOKEN, so
+# addLabels / removeLabel / gh-run-cancel would all 403. Mandatory E2E for fork
+# PRs is enforced separately.
+#
+name: E2E label manager
+
+on:
+  pull_request:
+    types:
+      - opened
+      - synchronize
+      - labeled
+      - unlabeled
+
+jobs:
+  e2e-label-manager:
+    runs-on: ubuntu-22.04
+    permissions:
+      pull-requests: write
+      actions: write
+    steps:
+
+      # ── Step 1: Add E2E/Run on PR open / push ─────────────────────────────
+      - name: Add E2E/Run
+        if: >-
+          (github.event.action == 'opened' || github.event.action == 'synchronize')
+          && github.event.pull_request.head.repo.full_name == github.repository
+        uses: actions/github-script@e7aeb8c663f696059ebb5f9ab1425ed2ef511bdb # v7.0.1
+        with:
+          script: |
+            const owner = context.repo.owner;
+            const repo = context.repo.repo;
+            const prNumber = context.payload.pull_request.number;
+
+            const {data: labels} = await github.rest.issues.listLabelsOnIssue({
+              owner, repo, issue_number: prNumber,
+            });
+            const labelNames = labels.map(l => l.name);
+
+            if (labelNames.includes('E2E/Override')) {
+              core.info(`PR #${prNumber} has E2E/Override label — skipping E2E/Run.`);
+              return;
+            }
+            if (labelNames.includes('E2E/Run')) {
+              core.info(`PR #${prNumber} already has E2E/Run — Matterwick will pick up; skipping.`);
+              return;
+            }
+
+            core.info(`PR #${prNumber} ${context.payload.action} — adding E2E/Run label.`);
+            await github.rest.issues.addLabels({
+              owner, repo, issue_number: prNumber,
+              labels: ['E2E/Run'],
+            });
+
+      # ── Step 2: Strip E2E/Run when E2E/Override is applied ─────────────────
+      - name: Honor E2E/Override
+        if: >-
+          github.event.action == 'labeled'
+          && github.event.label.name == 'E2E/Override'
+          && github.event.pull_request.head.repo.full_name == github.repository
+        uses: actions/github-script@e7aeb8c663f696059ebb5f9ab1425ed2ef511bdb # v7.0.1
+        with:
+          script: |
+            const owner = context.repo.owner;
+            const repo = context.repo.repo;
+            const prNumber = context.payload.pull_request.number;
+
+            try {
+              await github.rest.issues.removeLabel({
+                owner, repo, issue_number: prNumber, name: 'E2E/Run',
+              });
+              core.info(`Removed E2E/Run from PR #${prNumber} (E2E/Override applied).`);
+            } catch (err) {
+              if (err.status === 404) {
+                core.info(`E2E/Run was not set on PR #${prNumber}; nothing to remove.`);
+                return;
+              }
+              throw err;
+            }
+
+      # ── Step 3: Cancel in-progress E2E runs when E2E/Run* label is removed ─
+      - name: Cancel in-progress E2E runs
+        if: >-
+          github.event.action == 'unlabeled'
+          && (github.event.label.name == 'E2E/Run'
+              || github.event.label.name == 'E2E/Run-iOS'
+              || github.event.label.name == 'E2E/Run-Android')
+          && github.event.pull_request.head.repo.full_name == github.repository
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+          REMOVED_LABEL: ${{ github.event.label.name }}
+        run: |
+          echo "Label \"$REMOVED_LABEL\" removed from PR #$PR_NUMBER (sha: $HEAD_SHA)"
+          cancelled=0
+          for status in in_progress queued waiting; do
+            ids=$(gh run list \
+              --workflow "e2e-detox-pr.yml" \
+              --status "$status" \
+              --json databaseId,headSha \
+              --jq ".[] | select(.headSha==\"$HEAD_SHA\") | .databaseId")
+            for id in $ids; do
+              echo "Cancelling run $id (status: $status)"
+              if gh run cancel "$id"; then
+                cancelled=$((cancelled + 1))
+              else
+                echo "::warning::Failed to cancel run $id"
+              fi
+            done
+          done
+          echo "Cancelled $cancelled E2E workflow run(s) for PR #$PR_NUMBER"

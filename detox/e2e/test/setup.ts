@@ -2,160 +2,305 @@
 // See LICENSE.txt for license information.
 /* eslint-disable no-await-in-loop, no-console */
 
+import {execSync} from 'child_process';
+import {existsSync} from 'fs';
+
 import {ClaudePromptHandler} from '@support/pilot/ClaudePromptHandler';
-import {Plugin, System, User} from '@support/server_api';
+import {System, User} from '@support/server_api';
 import {siteOneUrl} from '@support/test_config';
 
-// Number of retry attempts
-const MAX_RETRY_ATTEMPTS = 3;
+const BUNDLE_ID = 'com.mattermost.rnbeta';
 
-// Delay between retries (in milliseconds)
-const RETRY_DELAY = 5000;
-
-let isFirstLaunch = true;
-
-/**
- * Verify Detox connection to app is healthy
- * @param maxAttempts - Maximum number of verification attempts
- * @param delayMs - Delay between attempts in milliseconds
- * @returns {Promise<void>}
- */
-async function verifyDetoxConnection(maxAttempts = 3, delayMs = 2000): Promise<void> {
-    for (let attempt = 1; attempt <= maxAttempts; attempt++) {
-        try {
-            // Simple health check: verify device is responsive
-            device.getPlatform();
-            console.info(`✅ Detox connection verified on attempt ${attempt}`);
-            return;
-        } catch (error) {
-            console.warn(`❌ Detox connection check failed on attempt ${attempt}/${maxAttempts}: ${(error as Error).message}`);
-
-            if (attempt < maxAttempts) {
-                await new Promise((resolve) => setTimeout(resolve, delayMs * attempt)); // Exponential backoff
-            }
-        }
-    }
-
-    throw new Error('Detox connection verification failed after maximum attempts');
-}
-
-/**
- * Wait for app to be ready (database initialized, bridge ready)
- * @param timeoutMs - Maximum time to wait in milliseconds
- * @returns {Promise<void>}
- */
-async function waitForAppReady(timeoutMs = 10000): Promise<void> {
-    const startTime = Date.now();
-
-    while (Date.now() - startTime < timeoutMs) {
-        try {
-            // Check if app is responsive by looking for a basic UI element
-            // Try server screen first, then channel list screen
-            try {
-                await waitFor(element(by.id('server.screen'))).toBeVisible().withTimeout(2000);
-            } catch {
-                await waitFor(element(by.id('channel_list.screen'))).toBeVisible().withTimeout(2000);
-            }
-            console.info('✅ App is ready');
-            return;
-        } catch {
-            // App not ready yet, wait a bit
-            await new Promise((resolve) => setTimeout(resolve, 500));
-        }
-    }
-
-    throw new Error(`App failed to become ready within ${timeoutMs}ms`);
-}
-
-/**
- * Launch the app with retry mechanism
- * @returns {Promise<void>}
- */
-export async function launchAppWithRetry(): Promise<void> {
-    let lastError;
-
-    for (let attempt = 1; attempt <= MAX_RETRY_ATTEMPTS; attempt++) {
-        try {
-            if (isFirstLaunch) {
-                // For first launch, clean install
-                await device.launchApp({
-                    newInstance: true,
-                    delete: true,
-                    permissions: {
-                        notifications: 'YES',
-                        camera: 'NO',
-                        medialibrary: 'NO',
-                        photos: 'NO',
-                    },
-                    launchArgs: {
-                        detoxPrintBusyIdleResources: 'YES',
-                        detoxDebugVisibility: 'YES',
-                        detoxDisableSynchronization: 'YES',
-                        detoxDisableHierarchyDump: 'YES',
-                        reduceMotion: 'YES',
-                    },
-                });
-                isFirstLaunch = false;
-            } else {
-                // For subsequent launches, reuse instance
-                await device.launchApp({
-                    newInstance: false,
-                    launchArgs: {
-                        detoxPrintBusyIdleResources: 'YES',
-                        detoxDebugVisibility: 'YES',
-                        detoxDisableSynchronization: 'YES',
-                        detoxURLBlacklistRegex: '.*localhost.*',
-                    },
-                });
-            }
-
-            console.info(`✅ App launched successfully on attempt ${attempt}`);
-            return;
-
-        } catch (error) {
-            lastError = error;
-            console.warn(`❌ App launch failed on attempt ${attempt}/${MAX_RETRY_ATTEMPTS}: ${(error as Error).message}`);
-
-            if (attempt < MAX_RETRY_ATTEMPTS) {
-                console.warn(`Waiting ${RETRY_DELAY}ms before retrying...`);
-                await new Promise((resolve) => setTimeout(resolve, RETRY_DELAY));
-            }
-        }
-    }
-
-    throw new Error(`Failed to launch app after ${MAX_RETRY_ATTEMPTS} attempts. Last error: ${(lastError as Error).message}`);
-}
-
-/**
- * Initialize ClaudePromptHandler if ANTHROPIC_API_KEY is set
- * @returns {Promise<void>}
- */
-async function initializeClaudePromptHandler(): Promise<void> {
+function getSimulatorId(): string {
     try {
-        if (!process.env.ANTHROPIC_API_KEY) {
-            return;
-        }
-        const promptHandler = new ClaudePromptHandler(process.env.ANTHROPIC_API_KEY);
-        pilot.init(promptHandler);
-    } catch (e) {
-        console.warn('Claude init failed, continuing without AI:', e);
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const udid = (device as any)._deviceId || (device as any).id || process.env.SIMULATOR_ID || '';
+        return typeof udid === 'string' ? udid : '';
+    } catch {
+        return process.env.SIMULATOR_ID || '';
     }
 }
+
+let cachedDataContainer: string | undefined;
+let cachedAppGroupContainer: string | undefined;
+
+function resolveContainerPath(simId: string, kind: string): string | undefined {
+    try {
+        const path = execSync(
+            `xcrun simctl get_app_container "${simId}" ${BUNDLE_ID} ${kind} 2>/dev/null`,
+            {encoding: 'utf8', stdio: ['pipe', 'pipe', 'pipe']},
+        ).trim();
+        return path || undefined;
+    } catch {
+        return undefined;
+    }
+}
+
+function clearIOSAppData(): void {
+    const simId = getSimulatorId();
+    if (!simId) {
+        console.warn('[clearIOSAppData] No simulator ID — skipping data wipe');
+        return;
+    }
+
+    try {
+        const appPid = execSync(
+            `xcrun simctl spawn "${simId}" launchctl list 2>/dev/null | grep "${BUNDLE_ID}" | awk '{print $1}' | grep -E '^[0-9]+$' || true`,
+            {encoding: 'utf8', stdio: ['pipe', 'pipe', 'pipe']},
+        ).trim();
+
+        if (appPid) {
+            execSync(`xcrun simctl spawn "${simId}" kill -9 "${appPid}"`, {stdio: 'pipe'});
+
+            execSync('sleep 1', {stdio: 'pipe'});
+        }
+    } catch {
+        // App might not be running — that's fine
+    }
+
+    // 2. Find the app's data container and delete its contents.
+    if (!cachedDataContainer) {
+        cachedDataContainer = resolveContainerPath(simId, 'data');
+    }
+    if (cachedDataContainer) {
+        try {
+            // Remove all contents of Documents, Library, tmp (but keep the container dir)
+            execSync(`find "${cachedDataContainer}" -mindepth 1 -maxdepth 1 -exec rm -rf {} +`, {stdio: 'pipe'});
+            console.info(`[clearIOSAppData] Cleared data container: ${cachedDataContainer}`);
+        } catch {
+            console.warn('[clearIOSAppData] data-container wipe failed');
+        }
+    } else {
+        console.warn('[clearIOSAppData] Could not resolve data container (app may not be installed yet)');
+    }
+
+    if (!cachedAppGroupContainer) {
+        cachedAppGroupContainer = resolveContainerPath(simId, 'group.com.mattermost.rnbeta');
+    }
+    if (cachedAppGroupContainer) {
+        if (existsSync(cachedAppGroupContainer)) {
+            try {
+                execSync(`find "${cachedAppGroupContainer}" -mindepth 1 -maxdepth 1 -exec rm -rf {} +`, {stdio: 'pipe'});
+                console.info(`[clearIOSAppData] Cleared App Group container: ${cachedAppGroupContainer}`);
+            } catch {
+                console.warn('[clearIOSAppData] App-Group-container wipe failed');
+            }
+        }
+    } else {
+        console.warn('[clearIOSAppData] Could not resolve App Group container');
+    }
+
+    // 3. Clear the keychain (removes stored auth tokens, certificates)
+    try {
+        execSync(`xcrun simctl keychain "${simId}" reset`, {stdio: 'pipe'});
+    } catch {
+        // Older simctl versions may not support keychain reset — non-fatal
+    }
+}
+
+// ─── Admin API login ─────────────────────────────────────────────────────────
+
+async function loginAdmin(): Promise<void> {
+    const HEALTH_MAX_ATTEMPTS = 5;
+    for (let healthAttempt = 1; healthAttempt <= HEALTH_MAX_ATTEMPTS; healthAttempt++) {
+        try {
+            await System.apiCheckSystemHealth(siteOneUrl);
+            break;
+        } catch (error) {
+            if (healthAttempt === HEALTH_MAX_ATTEMPTS) {
+                throw error;
+            }
+            console.warn(`⚠️ System health check attempt ${healthAttempt} failed, retrying...`);
+            await new Promise((resolve) => setTimeout(resolve, 3000 * healthAttempt));
+        }
+    }
+
+    const MAX_ATTEMPTS = 3;
+    for (let attempt = 1; attempt <= MAX_ATTEMPTS; attempt++) {
+        const {error: loginError} = await User.apiAdminLogin(siteOneUrl);
+        if (loginError) {
+            if (attempt === MAX_ATTEMPTS) {
+                throw new Error(`Admin login failed after ${MAX_ATTEMPTS} attempts: ${JSON.stringify(loginError)}`);
+            }
+            console.warn(`⚠️ Admin login attempt ${attempt} failed, retrying...`);
+            await new Promise((resolve) => setTimeout(resolve, 2000 * attempt));
+            continue;
+        }
+
+        const {error: meError} = await User.apiGetMe(siteOneUrl);
+        if (!meError) {
+            console.info(`✅ Admin session verified on attempt ${attempt}`);
+            return;
+        }
+        if (attempt === MAX_ATTEMPTS) {
+            throw new Error(`Admin session not usable after ${MAX_ATTEMPTS} login attempts`);
+        }
+        console.warn(`⚠️ Session check failed on attempt ${attempt}, retrying...`);
+        await new Promise((resolve) => setTimeout(resolve, 2000 * attempt));
+    }
+}
+
+// Android 13+ (API 33+): the `permissions` key in device.launchApp() only works
+// on iOS simulators. On Android, notification permission must be granted via adb.
+async function grantAndroidNotificationPermission(): Promise<void> {
+    if (device.getPlatform() !== 'android') {
+        return;
+    }
+    try {
+        execSync(`adb shell pm grant ${BUNDLE_ID} android.permission.POST_NOTIFICATIONS`, {stdio: 'pipe'});
+    } catch {
+        // API < 33 or already granted
+    }
+}
+
+// ─── Global beforeAll ────────────────────────────────────────────────────────
+// Runs before each test file.
+// Responsibilities: launch app with clean state, admin login, plugin cleanup.
 
 beforeAll(async () => {
-    // Reset flag to ensure each test file starts with a clean app launch
-    isFirstLaunch = true;
-    await launchAppWithRetry();
+    if (device.getPlatform() === 'android') {
+        try {
+            execSync(`adb shell am force-stop ${BUNDLE_ID}`, {stdio: 'pipe'});
+        } catch { /* app may not be running */ }
+        try {
+            execSync(`adb shell pm clear ${BUNDLE_ID}`, {stdio: 'pipe'});
+        } catch {
+            // Package might not be installed yet on first run
+        }
 
-    // Verify Detox connection is healthy after app launch
-    await verifyDetoxConnection();
+        try {
+            execSync('adb shell settings put secure show_ime_with_hard_keyboard 0', {stdio: 'pipe'});
+            execSync('adb shell settings put secure spell_checker_enabled 0', {stdio: 'pipe'});
+            execSync('adb shell settings put secure auto_text_enabled 0', {stdio: 'pipe'});
+        } catch {
+            // Older AVDs may not support these — non-fatal.
+        }
+    }
 
-    // Wait for app to be fully ready (database initialized, bridge ready)
-    await waitForAppReady();
-    await initializeClaudePromptHandler();
+    const isFirstFile = !process.env.DETOX_SETUP_DONE;
+    const launchArgs = {detoxDisableSynchronization: 'YES'};
 
-    // Login as sysadmin and reset server configuration
-    await System.apiCheckSystemHealth(siteOneUrl);
-    await User.apiAdminLogin(siteOneUrl);
-    await Plugin.apiDisableNonPrepackagedPlugins(siteOneUrl);
-});
+    const APP_READY_TIMEOUT = device.getPlatform() === 'android' ? 60_000 : 30_000;
+
+    async function forceAndroidDataClear(): Promise<void> {
+        if (device.getPlatform() !== 'android') {
+            return;
+        }
+        try {
+            // Stop the app process first so pm clear can safely wipe its data dir.
+            execSync(`adb shell am force-stop ${BUNDLE_ID}`, {stdio: 'pipe'});
+        } catch { /* app may not be running */ }
+        try {
+            execSync(`adb shell pm clear ${BUNDLE_ID}`, {stdio: 'pipe'});
+            console.info('[forceAndroidDataClear] pm clear succeeded');
+        } catch (e) {
+            console.warn('[forceAndroidDataClear] pm clear failed:', String(e).slice(0, 200));
+        }
+    }
+
+    async function launchAndVerify(): Promise<void> {
+        await grantAndroidNotificationPermission();
+
+        await device.launchApp({
+            newInstance: true,
+            ...(device.getPlatform() === 'ios' ? {permissions: {notifications: 'YES'}} : {}),
+            launchArgs,
+        });
+
+        await device.disableSynchronization();
+
+        const serverScreenEl = element(by.id('server.screen'));
+
+        try {
+            await waitFor(serverScreenEl).toExist().withTimeout(APP_READY_TIMEOUT);
+        } catch {
+            if (device.getPlatform() === 'android') {
+                const channelListEl = element(by.id('channel_list.screen'));
+                try {
+                    await waitFor(channelListEl).toExist().withTimeout(5_000);
+                    console.warn(
+                        '[launchAndVerify] App launched in logged-in state (channel_list visible). ' +
+                        'pm clear did not take effect. Retrying with force-stop + pm clear.',
+                    );
+                    await forceAndroidDataClear();
+
+                    await grantAndroidNotificationPermission();
+                    await device.launchApp({newInstance: true, launchArgs});
+                    await waitFor(serverScreenEl).toExist().withTimeout(APP_READY_TIMEOUT);
+                } catch {
+                    throw new Error(
+                        `[launchAndVerify] Neither server.screen nor channel_list.screen appeared within ${APP_READY_TIMEOUT / 1000}s`,
+                    );
+                }
+            } else {
+                const channelListEl = element(by.id('channel_list.screen'));
+                try {
+                    await waitFor(channelListEl).toExist().withTimeout(5_000);
+                    console.warn(
+                        '[launchAndVerify] iOS app launched with stale state (channel_list visible). ' +
+                        'clearIOSAppData wipe incomplete. Re-clearing and relaunching.',
+                    );
+                    clearIOSAppData();
+                    await device.launchApp({
+                        newInstance: true,
+                        ...(device.getPlatform() === 'ios' ? {permissions: {notifications: 'YES'}} : {}),
+                        launchArgs,
+                    });
+                    await waitFor(serverScreenEl).toExist().withTimeout(APP_READY_TIMEOUT);
+                } catch {
+                    throw new Error(
+                        `[launchAndVerify] server.screen did not appear within ${APP_READY_TIMEOUT / 1000}s`,
+                    );
+                }
+            }
+        } finally {
+            // Always re-enable synchronization so subsequent test operations
+            // (tap, typeText, expect) re-enter the normal synchronized path.
+            await device.enableSynchronization();
+        }
+    }
+
+    if (isFirstFile) {
+        process.env.DETOX_SETUP_DONE = 'true';
+    }
+
+    if (device.getPlatform() === 'ios') {
+        clearIOSAppData();
+    }
+
+    const MAX_LAUNCH_ATTEMPTS = 2;
+    for (let attempt = 1; attempt <= MAX_LAUNCH_ATTEMPTS; attempt++) {
+        try {
+            await launchAndVerify();
+            break;
+        } catch (launchError) {
+            console.warn(
+                `⚠️ Launch attempt ${attempt}/${MAX_LAUNCH_ATTEMPTS} failed:`,
+                String(launchError).slice(0, 300),
+            );
+            if (attempt === MAX_LAUNCH_ATTEMPTS) {
+                throw launchError;
+            }
+
+            if (device.getPlatform() === 'ios') {
+                clearIOSAppData();
+            } else if (device.getPlatform() === 'android') {
+                await forceAndroidDataClear();
+            }
+            await new Promise((resolve) => setTimeout(resolve, 3000));
+        }
+    }
+
+    console.info('✅ App launched');
+
+    // Initialize Claude AI prompt handler if available
+    try {
+        if (process.env.ANTHROPIC_API_KEY) {
+            pilot.init(new ClaudePromptHandler(process.env.ANTHROPIC_API_KEY));
+        }
+    } catch (e) {
+        console.warn('Claude init failed:', e);
+    }
+
+    await loginAdmin();
+}, 360_000);
