@@ -49,6 +49,13 @@ update_existing_avd_memory() {
     fi
 }
 
+prepare_avd_for_boot() {
+    # Cached AVDs may include snapshot/userdata state that causes
+    # "snapshot operation is pending and timeout has expired" on boot.
+    rm -rf "${AVD_NAME}/snapshots" 2>/dev/null || true
+    rm -f "${AVD_NAME}"/userdata*.img* "${AVD_NAME}"/cache.img* 2>/dev/null || true
+}
+
 start_adb_server() {
     echo "Restarting ADB server..."
     adb kill-server
@@ -57,7 +64,7 @@ start_adb_server() {
 
 start_emulator() {
     echo "Starting the emulator..."
-    local emulator_opts="-avd $AVD_NAME -no-snapshot -no-boot-anim -no-audio -gpu off -no-window"
+    local emulator_opts="-avd $AVD_NAME -no-snapshot -no-snapshot-load -no-snapshot-save -no-boot-anim -no-audio -gpu off -no-window"
 
     if [[ "$CI" == "true" || "$(uname -s)" == "Linux" ]]; then
         emulator $emulator_opts -gpu swiftshader_indirect -accel on -qemu -m "$EMULATOR_RAM_MB" &
@@ -66,17 +73,39 @@ start_emulator() {
     fi
 }
 
+emulator_process_running() {
+    pgrep -f "emulator.*${AVD_NAME}" >/dev/null 2>&1 || pgrep -f 'qemu-system-x86_64' >/dev/null 2>&1
+}
+
 wait_for_emulator() {
     if [[ "$CI" != "true" ]]; then return; fi
 
     echo "Waiting for emulator to boot..."
-    adb wait-for-device
+    local device_timeout=120
+    local device_elapsed=0
+    until adb devices | grep -qE '^emulator-[0-9]+\s+device'; do
+        if [[ $device_elapsed -ge $device_timeout ]]; then
+            echo "Emulator device did not appear within ${device_timeout}s"
+            adb devices -l || true
+            exit 1
+        fi
+        if ! emulator_process_running; then
+            echo "Emulator process exited before device appeared (check snapshot/cache state)"
+            exit 1
+        fi
+        sleep 5
+        device_elapsed=$((device_elapsed + 5))
+    done
 
     local boot_timeout=300  # 5 minutes max
     local boot_elapsed=0
-    until [[ "$(adb shell getprop sys.boot_completed | tr -d '\r')" == "1" ]]; do
+    until [[ "$(adb shell getprop sys.boot_completed 2>/dev/null | tr -d '\r')" == "1" ]]; do
         if [[ $boot_elapsed -ge $boot_timeout ]]; then
             echo "Emulator failed to boot within 5 minutes"
+            exit 1
+        fi
+        if ! emulator_process_running; then
+            echo "Emulator process exited during boot"
             exit 1
         fi
         echo "Waiting for emulator to fully boot..."
@@ -133,14 +162,6 @@ run_detox_tests() {
     npm run e2e:android-test -- "$@"
 }
 
-stop_emulator() {
-    echo "Stopping emulator..."
-    adb -e emu kill 2>/dev/null || true
-    pkill -9 -f 'qemu-system-x86_64' 2>/dev/null || true
-    pkill -9 -f "emulator.*${AVD_NAME}" 2>/dev/null || true
-    sleep 3
-}
-
 main() {
     setup_avd_home
 
@@ -151,6 +172,7 @@ main() {
         update_existing_avd_memory
     fi
 
+    prepare_avd_for_boot
     start_adb_server
     start_emulator
     wait_for_emulator
@@ -162,10 +184,6 @@ main() {
     fi
 
     run_detox_tests "${TEST_FILES[@]}"
-
-    if [[ "$CI" == "true" ]]; then
-        stop_emulator
-    fi
 }
 
 main
