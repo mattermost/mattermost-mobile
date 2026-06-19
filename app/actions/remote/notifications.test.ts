@@ -86,6 +86,14 @@ const mockClient = {
     getTeamMember: jest.fn((id: string, userId: string) => ({id: userId + '-' + id, user_id: userId === 'me' ? user1.id : userId, team_id: id, roles: ''})),
     getChannel: jest.fn((_channelId: string) => ({...channel, id: _channelId})),
     getChannelMember: jest.fn((_channelId: string, userId: string) => ({id: userId + '-' + _channelId, user_id: userId === 'me' ? user1.id : userId, channel_id: _channelId, roles: ''})),
+    getTeamLoad: jest.fn(() => ({
+        channels: [],
+        channel_members: {members: [], removed_channel_ids: []},
+        sidebar_categories: undefined,
+        sidebar_version: 0,
+        roles: [],
+        timestamp: 1706000000001,
+    })),
     sendTestNotification: jest.fn(),
 };
 
@@ -156,13 +164,57 @@ describe('notifications', () => {
         expect(result.error).toBe('Channel');
     });
 
-    it('fetchNotificationData - base case', async () => {
+    it('fetchNotificationData - base case (DM/GM, no team_id)', async () => {
         Platform.OS = 'android';
         await operator.handleSystem({systems: [{id: SYSTEM_IDENTIFIERS.CURRENT_USER_ID, value: user1.id}, {id: SYSTEM_IDENTIFIERS.CURRENT_TEAM_ID, value: teamId}], prepareRecordsOnly: false});
 
         const result = await fetchNotificationData(serverUrl, {payload: {...notificationData, team_id: ''}} as NotificationWithData);
         expect(result).toBeDefined();
         expect(result.error).toBeUndefined();
+    });
+
+    it('fetchNotificationData - uses fetchTeamLoad when ExperienceAPI enabled and team/channel missing', async () => {
+        const EphemeralStore = require('@store/ephemeral_store').default;
+        EphemeralStore.setExperienceAPIEnabled(serverUrl, true);
+
+        const result = await fetchNotificationData(serverUrl, notificationWithData);
+
+        EphemeralStore.setExperienceAPIEnabled(serverUrl, false);
+
+        expect(result.error).toBeUndefined();
+        expect(mockClient.getTeamLoad).toHaveBeenCalledWith(teamId, undefined);
+
+        // Legacy individual fetches should NOT have been called.
+        expect(mockClient.getTeamMember).not.toHaveBeenCalled();
+        expect(mockClient.getChannelMember).not.toHaveBeenCalled();
+    });
+
+    it('fetchNotificationData - returns Connection error when fetchTeamLoad fails with ExperienceAPI enabled', async () => {
+        const EphemeralStore = require('@store/ephemeral_store').default;
+        EphemeralStore.setExperienceAPIEnabled(serverUrl, true);
+        mockClient.getTeamLoad.mockImplementationOnce(() => {
+            throw new Error('network');
+        });
+
+        const result = await fetchNotificationData(serverUrl, notificationWithData);
+
+        EphemeralStore.setExperienceAPIEnabled(serverUrl, false);
+
+        expect(result.error).toBeDefined();
+        expect(mockEmitNotificationError).toHaveBeenCalledWith('Connection');
+    });
+
+    it('fetchNotificationData - skips fetchTeamLoad for DM/GM even when ExperienceAPI enabled', async () => {
+        const EphemeralStore = require('@store/ephemeral_store').default;
+        EphemeralStore.setExperienceAPIEnabled(serverUrl, true);
+        await operator.handleSystem({systems: [{id: SYSTEM_IDENTIFIERS.CURRENT_USER_ID, value: user1.id}, {id: SYSTEM_IDENTIFIERS.CURRENT_TEAM_ID, value: teamId}], prepareRecordsOnly: false});
+
+        const result = await fetchNotificationData(serverUrl, {payload: {...notificationData, team_id: ''}} as NotificationWithData);
+
+        EphemeralStore.setExperienceAPIEnabled(serverUrl, false);
+
+        expect(result.error).toBeUndefined();
+        expect(mockClient.getTeamLoad).not.toHaveBeenCalled();
     });
 
     it('backgroundNotification - handle not found database', async () => {

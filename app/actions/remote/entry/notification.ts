@@ -2,6 +2,7 @@
 // See LICENSE.txt for license information.
 
 import {fetchMyChannel, switchToChannelById} from '@actions/remote/channel';
+import {entryInitialLoad} from '@actions/remote/entry/initial_load';
 import {fetchPostById} from '@actions/remote/post';
 import {fetchMyTeam} from '@actions/remote/team';
 import {fetchAndSwitchToThread} from '@actions/remote/thread';
@@ -73,33 +74,47 @@ export async function pushNotificationEntry(serverUrl: string, notification: Not
         updateThemeIfNeeded(theme, true);
     }
 
-    // To make the switch faster we determine if we already have the team & channel
-    let myChannel: MyChannelModel | ChannelMembership | undefined = await getMyChannel(database, channelId);
-    let myTeam: MyTeamModel | TeamMembership | undefined = await getMyTeamById(database, teamId);
+    let myChannel: MyChannelModel | ChannelMembership | undefined;
+    let myTeam: MyTeamModel | TeamMembership | undefined;
 
-    if (!myTeam) {
-        const resp = await fetchMyTeam(serverUrl, teamId, false, groupLabel);
-        if (resp.error) {
-            if (isErrorWithStatusCode(resp.error) && resp.error.status_code === 403) {
-                emitNotificationError('Team');
-            } else {
-                emitNotificationError('Connection');
-            }
-        } else {
-            myTeam = resp.memberships?.[0];
+    if (EphemeralStore.getExperienceAPIEnabled(serverUrl)) {
+        const result = await entryInitialLoad(serverUrl, teamId, channelId, undefined, undefined, groupLabel);
+        if ('error' in result) {
+            emitNotificationError('Connection');
         }
-    }
 
-    if (!myChannel) {
-        const resp = await fetchMyChannel(serverUrl, teamId, channelId, false, groupLabel);
-        if (resp.error) {
-            if (isErrorWithStatusCode(resp.error) && resp.error.status_code === 403) {
-                emitNotificationError('Channel');
+        // Re-query — access may have been revoked while the app was offline.
+        myTeam = await getMyTeamById(database, teamId);
+        myChannel = await getMyChannel(database, channelId);
+    } else {
+        // Legacy path: doReconnect syncs the rest, so only fetch what is missing.
+        myChannel = await getMyChannel(database, channelId);
+        myTeam = await getMyTeamById(database, teamId);
+
+        if (!myTeam) {
+            const resp = await fetchMyTeam(serverUrl, teamId, false, groupLabel);
+            if (resp.error) {
+                if (isErrorWithStatusCode(resp.error) && resp.error.status_code === 403) {
+                    emitNotificationError('Team');
+                } else {
+                    emitNotificationError('Connection');
+                }
             } else {
-                emitNotificationError('Connection');
+                myTeam = resp.memberships?.[0];
             }
-        } else {
-            myChannel = resp.memberships?.[0];
+        }
+
+        if (!myChannel) {
+            const resp = await fetchMyChannel(serverUrl, teamId, channelId, false, groupLabel);
+            if (resp.error) {
+                if (isErrorWithStatusCode(resp.error) && resp.error.status_code === 403) {
+                    emitNotificationError('Channel');
+                } else {
+                    emitNotificationError('Connection');
+                }
+            } else {
+                myChannel = resp.memberships?.[0];
+            }
         }
     }
 

@@ -13,7 +13,7 @@ import {removeDuplicatesModels} from '@helpers/database';
 import NetworkManager from '@managers/network_manager';
 import {getActiveServerUrl} from '@queries/app/servers';
 import {prepareCategoriesAndCategoriesChannels} from '@queries/servers/categories';
-import {prepareMyChannelsForTeam, getDefaultChannelForTeam, prepareDeleteChannel, queryChannelsById, queryMyChannelsByTeam} from '@queries/servers/channel';
+import {prepareMyChannelsForTeam, getDefaultChannelForTeam, prepareDeleteChannel, queryChannelsById, queryMyChannelsByTeam, queryAllChannelsForTeam} from '@queries/servers/channel';
 import {prepareEntryModels} from '@queries/servers/entry';
 import {prepareCommonSystemValues, getCurrentTeamId, getCurrentUserId, getLastTeamLoad, setLastTeamLoad} from '@queries/servers/system';
 import {addTeamToTeamHistory, prepareDeleteTeam, prepareMyTeams, getNthLastChannelFromTeam, queryTeamsById, getLastTeam, getTeamById, removeTeamFromTeamHistory} from '@queries/servers/team';
@@ -22,7 +22,7 @@ import {navigateToRoot} from '@screens/navigation';
 import ChannelsSyncStore from '@store/channels_sync_store';
 import EphemeralStore from '@store/ephemeral_store';
 import {setTeamLoading} from '@store/team_load_store';
-import {getFullErrorMessage} from '@utils/errors';
+import {getFullErrorMessage, isErrorWithStatusCode} from '@utils/errors';
 import {isTablet} from '@utils/helpers';
 import {logDebug} from '@utils/log';
 
@@ -532,7 +532,13 @@ export async function fetchTeamLoad(serverUrl: string, teamId: string, isCRTEnab
         return {};
     } catch (error) {
         logDebug('error on fetchTeamLoad', getFullErrorMessage(error));
-        forceLogoutIfNecessary(serverUrl, error);
+        if (isErrorWithStatusCode(error) && error.status_code === 403) {
+            // Team deleted, user removed, or no longer a member — clean up local data.
+            await localRemoveUserFromTeam(serverUrl, teamId);
+            await handleKickFromTeam(serverUrl, teamId);
+        } else {
+            forceLogoutIfNecessary(serverUrl, error);
+        }
         return {error};
     }
 }
@@ -551,7 +557,10 @@ export async function handleTeamChange(serverUrl: string, teamId: string) {
     }
 
     let channelId = '';
-    DeviceEventEmitter.emit(Events.TEAM_SWITCH, true);
+    const teamHasChannels = (await queryAllChannelsForTeam(database, teamId).fetch()).length > 0;
+    if (!teamHasChannels) {
+        DeviceEventEmitter.emit(Events.TEAM_SWITCH, true);
+    }
 
     if (EphemeralStore.getExperienceAPIEnabled(serverUrl)) {
         // Fetch channels + members + sidebar for this team before completing the switch
@@ -561,7 +570,12 @@ export async function handleTeamChange(serverUrl: string, teamId: string) {
         if (hasChannels) {
             fetchTeamLoad(serverUrl, teamId, isCRTEnabled);
         } else {
-            await fetchTeamLoad(serverUrl, teamId, isCRTEnabled);
+            const result = await fetchTeamLoad(serverUrl, teamId, isCRTEnabled);
+            if (result.error) {
+                // fetchTeamLoad already cleaned up local data and navigated away on 403.
+                DeviceEventEmitter.emit(Events.TEAM_SWITCH, false);
+                return {error: result.error};
+            }
         }
     }
 

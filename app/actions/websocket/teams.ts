@@ -4,7 +4,7 @@
 import {removeUserFromTeam} from '@actions/local/team';
 import {fetchMyChannelsForTeam} from '@actions/remote/channel';
 import {fetchRoles} from '@actions/remote/role';
-import {fetchMyTeam, handleKickFromTeam, updateCanJoinTeams} from '@actions/remote/team';
+import {fetchMyTeam, fetchTeamLoad, handleKickFromTeam, updateCanJoinTeams} from '@actions/remote/team';
 import {updateUsersNoLongerVisible} from '@actions/remote/user';
 import DatabaseManager from '@database/manager';
 import NetworkManager from '@managers/network_manager';
@@ -12,6 +12,7 @@ import {prepareCategoriesAndCategoriesChannels} from '@queries/servers/categorie
 import {prepareMyChannelsForTeam} from '@queries/servers/channel';
 import {removeTeamFromBlob} from '@queries/servers/system';
 import {getCurrentTeam, prepareMyTeams, queryMyTeamsByIds} from '@queries/servers/team';
+import {getIsCRTEnabled} from '@queries/servers/thread';
 import {getCurrentUser} from '@queries/servers/user';
 import ChannelsSyncStore from '@store/channels_sync_store';
 import EphemeralStore from '@store/ephemeral_store';
@@ -55,7 +56,7 @@ export async function handleTeamRestored(serverUrl: string, msg: WebSocketMessag
     let markedAsLoading = false;
     try {
         const client = NetworkManager.getClient(serverUrl);
-        const {operator} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
+        const {database, operator} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
         const team: Team = JSON.parse(msg.data.team);
 
         const teamMembership = await client.getTeamMember(team.id, 'me');
@@ -68,7 +69,12 @@ export async function handleTeamRestored(serverUrl: string, msg: WebSocketMessag
 
             setTeamLoading(serverUrl, true);
             markedAsLoading = true;
-            await fetchAndStoreJoinedTeamInfo(serverUrl, operator, team.id, [team], [teamMembership]);
+            if (EphemeralStore.getExperienceAPIEnabled(serverUrl)) {
+                const isCRTEnabled = await getIsCRTEnabled(database);
+                await fetchTeamLoad(serverUrl, team.id, isCRTEnabled);
+            } else {
+                await fetchAndStoreJoinedTeamInfo(serverUrl, operator, team.id, [team], [teamMembership]);
+            }
             setTeamLoading(serverUrl, false);
             markedAsLoading = false;
 
@@ -143,10 +149,15 @@ export async function handleUserAddedToTeamEvent(serverUrl: string, msg: WebSock
 
     try {
         setTeamLoading(serverUrl, true);
-        const {operator} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
-        const {teams, memberships: teamMemberships} = await fetchMyTeam(serverUrl, teamId, true);
+        const {database, operator} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
 
-        await fetchAndStoreJoinedTeamInfo(serverUrl, operator, teamId, teams, teamMemberships);
+        if (EphemeralStore.getExperienceAPIEnabled(serverUrl)) {
+            const isCRTEnabled = await getIsCRTEnabled(database);
+            await fetchTeamLoad(serverUrl, teamId, isCRTEnabled);
+        } else {
+            const {teams, memberships: teamMemberships} = await fetchMyTeam(serverUrl, teamId, true);
+            await fetchAndStoreJoinedTeamInfo(serverUrl, operator, teamId, teams, teamMemberships);
+        }
     } catch (error) {
         logDebug('could not handle user added to team websocket event');
     }

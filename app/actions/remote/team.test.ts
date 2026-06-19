@@ -3,6 +3,8 @@
 
 /* eslint-disable max-lines */
 
+import ClientError from '@client/rest/error';
+import {Events} from '@constants';
 import {SYSTEM_IDENTIFIERS} from '@constants/database';
 import DatabaseManager from '@database/manager';
 import NetworkManager from '@managers/network_manager';
@@ -582,7 +584,7 @@ describe('remote team actions', () => {
         });
 
         it('buildTeamIconUrl - base case', async () => {
-            const url = await buildTeamIconUrl(serverUrl, teamId);
+            const url = buildTeamIconUrl(serverUrl, teamId);
             expect(url).toBeDefined();
         });
     });
@@ -742,6 +744,49 @@ describe('remote team actions', () => {
 
             expect(result.error).toBeDefined();
             expect(ChannelsSyncStore.hasChannelsBeenFetched(serverUrl, teamId)).toBe(false);
+        });
+
+        it('should remove team from local DB on 403', async () => {
+            mockClient.getTeamLoad.mockImplementationOnce(() => {
+                throw new ClientError(serverUrl, {url: '/teams/load', message: 'Forbidden', status_code: 403});
+            });
+
+            // Pre-seed the team so removeUserFromTeam has something to delete.
+            await operator.handleMyTeam({myTeams: [{id: teamId, roles: ''}], prepareRecordsOnly: false});
+            await operator.handleTeam({teams: [team], prepareRecordsOnly: false});
+
+            const result = await fetchTeamLoad(serverUrl, teamId, false);
+
+            expect(result.error).toBeDefined();
+
+            // Verify localRemoveUserFromTeam ran — MyTeam row should be gone.
+            const {getMyTeamById} = require('@queries/servers/team');
+            const myTeam = await getMyTeamById(operator.database, teamId);
+            expect(myTeam).toBeUndefined();
+        });
+    });
+
+    describe('handleTeamChange - 403 path', () => {
+        it('should bail out with error and emit TEAM_SWITCH false when fetchTeamLoad returns 403', async () => {
+            const {DeviceEventEmitter} = require('react-native');
+            const emitSpy = jest.spyOn(DeviceEventEmitter, 'emit');
+
+            mockClient.getTeamLoad.mockImplementationOnce(() => {
+                throw new ClientError(serverUrl, {url: '/teams/load', message: 'Forbidden', status_code: 403});
+            });
+
+            // Seed ExperienceAPI flag so the fetchTeamLoad branch is entered.
+            const EphemeralStore = require('@store/ephemeral_store').default;
+            EphemeralStore.setExperienceAPIEnabled(serverUrl, true);
+
+            // Ensure no channels cached so the awaited path is taken.
+            const result = await handleTeamChange(serverUrl, 'otherteam');
+
+            EphemeralStore.setExperienceAPIEnabled(serverUrl, false);
+
+            expect(result.error).toBeDefined();
+            expect(emitSpy).toHaveBeenCalledWith(Events.TEAM_SWITCH, false);
+            emitSpy.mockRestore();
         });
     });
 });
