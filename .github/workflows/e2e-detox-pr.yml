@@ -57,6 +57,10 @@ concurrency:
 
 permissions:
   contents: read
+  statuses: write
+  actions: write
+  pull-requests: write
+  issues: write
 
 env:
   INTUNE_ENABLED: 'false'
