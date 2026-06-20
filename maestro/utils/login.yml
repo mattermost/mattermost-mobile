@@ -32,6 +32,12 @@ appId: ${MAESTRO_APP_ID}
       - tapOn:
           text: "Allow"
           optional: true
+      # Match Detox ServerScreen.toBeVisible(): wait for the connect-server UI after
+      # the embedded JS bundle loads (Release simulator build; no Metro on iOS CI).
+      - extendedWaitUntil:
+          visible:
+            id: "server_form.server_url.input"
+          timeout: 90000
 - runFlow:
     when:
       platform: Android

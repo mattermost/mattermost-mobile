@@ -24,7 +24,8 @@ Maestro flows run against ephemeral cloud test servers provisioned by Matterwick
 | `RateLimitSettings.Enable=false` | `detox/provision_server.js:201` | Prevents 429s on burst test traffic |
 | `SupportSettings.AllowDownloadLogs=false` (only for `MM-T67856_4`) | CI step around the flow | See attach-logs flow notes below |
 
-Local parity command:
+Local parity command (server + seed — still build/install the app separately; see
+[README.md § Official local workflow](./README.md#official-local-workflow)):
 
 ```bash
 export ADMIN_USERNAME=admin
@@ -32,6 +33,9 @@ export ADMIN_PASSWORD=<password-from-matterwick-comment>
 export SITE_URL=https://mobile-pr-XXXX-site-N-XXXX.test.mattermost.cloud
 ./maestro/scripts/setup_local.sh
 source maestro/.maestro-test-env.sh
+
+# iOS: release sim .app via preboot_ios_simulator.sh
+# Android: release APK via create_android_emulator.sh MAESTRO_ANDROID=true
 ~/.maestro/bin/maestro test maestro/flows/<flow>.yml
 ```
 

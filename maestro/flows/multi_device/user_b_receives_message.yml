@@ -22,7 +22,7 @@ appId: ${MAESTRO_APP_ID}
 
 # Poll the Mattermost API until the message from Device A appears
 # This ensures Device B does not assert before the message is delivered
-- runScript: ../../fixtures/poll_for_message.js
+- runScript: ../../fixtures/poll_for_message.ts
 
 # Verify the message from Device A is visible on Device B's screen
 - assertVisible:

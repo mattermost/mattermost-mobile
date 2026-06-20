@@ -45,6 +45,16 @@ Maestro platform rules, CLI version pin, CI layout, and the AI evaluation checkl
 
 ## Setup
 
+### Device targets (local and CI)
+
+Maestro uses the **same simulators and emulators as Detox**. Targets are defined in
+`detox/.detoxrc.json` and mirrored in `.github/workflows/e2e-maestro-template.yml`:
+
+| Platform | Device | Notes |
+|---|---|---|
+| iOS | iPhone 17 Pro, iOS 26.2 | Release simulator build with embedded JS bundle (no Metro in CI) |
+| Android | `detox_pixel_8_api_35` (API 35) | Release APK with embedded JS bundle (no Metro in CI) |
+
 ### 1. Install Maestro CLI
 
 Version is pinned in [`maestro-version.json`](./maestro-version.json) (currently `2.3.0` at commit `f3dd692`).
@@ -65,12 +75,15 @@ npm install
 
 ### 3. Set environment variables
 
-All flows use the same environment variables as Detox:
+Flows read the same variables as Detox. For Matterwick cloud servers, use
+[`scripts/setup_local.sh`](./scripts/setup_local.sh) (see [Official local workflow](#official-local-workflow)).
+
+Manual exports:
 
 ```bash
-export SITE_1_URL="http://localhost:8065"
+export SITE_1_URL="https://your-server.test.mattermost.cloud"
 export ADMIN_USERNAME="admin"             # username, not email
-export ADMIN_PASSWORD="Admin1234!"
+export ADMIN_PASSWORD="..."
 export TEST_USER_EMAIL="testuser@example.com"
 export TEST_USER_PASSWORD="User1234!"
 export TEST_CHANNEL_NAME="town-square"
@@ -79,30 +92,35 @@ export MAESTRO_APP_ID="com.mattermost.rnbeta"   # optional, defaults to rnbeta
 
 ### 4. Build and install the app
 
-Maestro **does not build the app**. Flows run against whatever app is already installed on the simulator or device. See [Building the app for Maestro](#building-the-app-for-maestro) below for options.
+Maestro **does not build the app**. Install a build that matches CI: **release simulator
+.app on iOS** and **release APK on Android**, both with `RUNNING_E2E=true` baked into the
+JS bundle at build time. See [Building the app for Maestro](#building-the-app-for-maestro).
 
-**Quick local option:** from the repo root, set `RUNNING_E2E=true` in `.env` (required to suppress the LogBox red screen that otherwise blocks tests), then build and install on the booted simulator:
-
-```bash
-echo "RUNNING_E2E=true" > .env
-npm run ios   # starts Metro and installs the debug build
-```
+> **Important:** `RUNNING_E2E` is read via `@env` at **bundle time**. Set `RUNNING_E2E=true`
+> in a repo-root `.env` file **before** building — not only when running Maestro.
 
 ### 5. Configure the simulator for stable test runs (iOS)
 
-These settings mirror what CI applies automatically. They prevent flakiness from system
-dialogs and animations interfering with flows:
+These settings mirror what CI applies automatically. For CI-parity boot, install, and
+pre-warm, use [`detox/scripts/preboot_ios_simulator.sh`](../detox/scripts/preboot_ios_simulator.sh)
+after placing the `.app` under `mobile-artifacts/`:
+
+```bash
+echo "RUNNING_E2E=true" > .env
+# Build release sim .app (same as CI build-ios-simulator job):
+cd fastlane && bundle exec fastlane ios simulator --env ios.simulator && cd ..
+unzip -o Mattermost-simulator-*.app.zip -d mobile-artifacts/
+
+DEVICE_NAME="iPhone 17 Pro" DEVICE_OS_VERSION="iOS 26.2" \
+  bash detox/scripts/preboot_ios_simulator.sh
+```
+
+Additional local tweaks (optional):
 
 ```bash
 # Disable auto-correct and predictive text (prevents unexpected input mutations)
 xcrun simctl spawn booted defaults write -g KeyboardAutocorrection -bool false
 xcrun simctl spawn booted defaults write -g UIKeyboardPrediction -bool false
-
-# Disable slow animations (optional but makes flows faster locally)
-xcrun simctl spawn booted defaults write com.apple.UIKit UIAnimationDragCoefficient 0.01
-
-# Grant location permission to the app (avoids unexpected dialog mid-test)
-xcrun simctl privacy booted grant location-always com.mattermost.rnbeta
 
 # Grant photo library permission (required for share_image_to_channel)
 xcrun simctl privacy booted grant photos com.mattermost.rnbeta
@@ -111,86 +129,181 @@ xcrun simctl privacy booted grant photos com.mattermost.rnbeta
 ### 6. Seed test data
 
 ```bash
-# From the repo root:
+# From the repo root (after SITE_1_URL / admin creds are set):
 npx tsx maestro/fixtures/seed.ts
-source .maestro-test-env.sh   # exports TEST_USER_EMAIL, TEST_USER_PASSWORD, etc.
+source maestro/.maestro-test-env.sh   # exports TEST_USER_EMAIL, TEST_USER_PASSWORD, etc.
+```
+
+Or use the all-in-one provision + seed script for Matterwick servers:
+
+```bash
+export SITE_URL="https://mobile-pr-XXXX-site-1-XXXX.test.mattermost.cloud"
+export ADMIN_USERNAME=admin
+export ADMIN_PASSWORD="<from Matterwick PR comment>"
+./maestro/scripts/setup_local.sh
+source maestro/.maestro-test-env.sh
 ```
 
 > **Note**: `maestro/utils/setup.yml` is a placeholder — it does NOT run the seed script.
 > Maestro's `runScript` command runs in a sandboxed JS environment and cannot execute
-> Node.js modules. Always seed via the shell command above before starting flows.
+> Node.js modules. Always seed via the shell commands above before starting flows.
+
+---
+
+## Official local workflow
+
+End-to-end steps that mirror CI (recommended before opening a Maestro PR):
+
+### iOS
+
+```bash
+# 1. Server + seed (Matterwick cloud)
+export SITE_URL="https://...site-1....test.mattermost.cloud"
+export ADMIN_USERNAME=admin ADMIN_PASSWORD="..."
+./maestro/scripts/setup_local.sh
+source maestro/.maestro-test-env.sh
+
+# 2. Build + boot simulator (CI-parity)
+echo "RUNNING_E2E=true" > .env
+cd fastlane && bundle exec fastlane ios simulator --env ios.simulator && cd ..
+unzip -o Mattermost-simulator-*.app.zip -d mobile-artifacts/
+DEVICE_NAME="iPhone 17 Pro" DEVICE_OS_VERSION="iOS 26.2" \
+  bash detox/scripts/preboot_ios_simulator.sh
+
+# 3. Run flows
+~/.maestro/bin/maestro test --platform ios maestro/flows/
+```
+
+### Android
+
+```bash
+# 1. Server + seed (same as iOS)
+./maestro/scripts/setup_local.sh
+source maestro/.maestro-test-env.sh
+
+# 2. Build release APK + boot emulator (CI-parity)
+echo "RUNNING_E2E=true" > .env
+cd android && ./gradlew assembleRelease -PreactNativeArchitectures=x86_64 && cd ..
+cd detox
+BOOTSTRAP_ONLY=true MAESTRO_ANDROID=true CI=true \
+  ./create_android_emulator.sh 35 detox_pixel_8
+cd ..
+
+# 3. Run flows
+~/.maestro/bin/maestro test --platform android maestro/flows/
+```
+
+Use `-PreactNativeArchitectures=arm64-v8a` (or your device ABI) when testing on a physical
+Android device instead of the x86_64 emulator.
+
+### Fast iteration (debug builds)
+
+For quick local iteration you may use debug builds + Metro (`npm run ios` / `npm run android`).
+CI always uses release builds with embedded bundles; validate with the official workflow above
+before relying on a PR E2E run.
 
 ---
 
 ## Building the app for Maestro
 
-Maestro has **no build step of its own**. It only runs against an app that is already built and installed. You can use the same app build you use for development or for Detox.
+Maestro has **no build step of its own**. It runs against an app that is already built and
+installed. **CI and the official local workflow use release builds with embedded JS bundles**
+— the same model as the iOS simulator artifact Detox and Maestro share.
 
 ### Summary
 
-| | Maestro builds the app? | Can use Detox build? |
-|---|------------------------|----------------------|
-| **Answer** | **No** — you must build/install separately | **Yes** — same `.app` / APK works for both |
+| Platform | CI build job | Artifact | Metro at test time? |
+|---|---|---|---|
+| iOS | `build-ios-simulator` | `ios-build-simulator-<run_id>` (release `.app`) | No — shared with Detox |
+| Android (Maestro) | `build-android-apk-maestro` | `android-maestro-build-files-<run_id>` (release APK) | No |
+| Android (Detox) | `build-android-apk` | `android-build-files-<run_id>` (debug APK + androidTest) | Yes |
 
-### Local runs
+Maestro Android **does not** reuse Detox's debug APK. Detox needs Metro; Maestro uses a
+parallel release build (see `.github/actions/build-android-maestro-apk`).
 
-- **Option A (simplest):** From the repo root, build and install once, then run Maestro:
-  ```bash
-  npm run ios   # build and install on the default booted simulator
-  maestro test maestro/flows/
-  ```
-- **Option B (reuse Detox build):** If you already built the app for Detox (e.g. `cd detox && npm run e2e:ios-build`), install that build on the simulator and run Maestro against it. No separate Maestro build is needed.
-- **Pre-built `.app`:** To install an existing build manually:
-  ```bash
-  xcrun simctl install booted path/to/Mattermost.app
-  ```
+### iOS — local
 
-### CI
+**CI-parity (recommended):**
 
-The Maestro workflow (`.github/workflows/e2e-maestro-template.yml`) **does not compile the app**. It downloads an artifact named `ios-build-simulator-${{ github.run_id }}` — the **same artifact name** used by the Detox iOS simulator build. The workflow that triggers Maestro must build the iOS app (same process as for Detox), upload that artifact, then call the Maestro template. So in CI, **one iOS build is used for both Detox and Maestro**; there are no separate build steps for Maestro.
+```bash
+echo "RUNNING_E2E=true" > .env
+cd fastlane && bundle exec fastlane ios simulator --env ios.simulator
+# Produces Mattermost-simulator-*.app.zip in repo root; unzip to mobile-artifacts/
+unzip -o Mattermost-simulator-*.app.zip -d mobile-artifacts/
+DEVICE_NAME="iPhone 17 Pro" DEVICE_OS_VERSION="iOS 26.2" \
+  bash detox/scripts/preboot_ios_simulator.sh
+```
+
+**Quick debug build:** `npm run ios` after `echo "RUNNING_E2E=true" > .env` (Metro required).
+
+### Android — local
+
+**CI-parity (recommended):**
+
+```bash
+echo "RUNNING_E2E=true" > .env
+cd android
+./gradlew assembleRelease -PreactNativeArchitectures=x86_64
+adb install -r app/build/outputs/apk/release/app-release.apk
+```
+
+Or reuse the Detox emulator bootstrap script (installs APK, grants permissions, pushes
+fixtures — same as CI):
+
+```bash
+echo "RUNNING_E2E=true" > .env
+cd android && ./gradlew assembleRelease -PreactNativeArchitectures=x86_64 && cd ..
+cd detox
+BOOTSTRAP_ONLY=true MAESTRO_ANDROID=true CI=true \
+  ./create_android_emulator.sh 35 detox_pixel_8
+```
+
+**Do not use** `npm run e2e:android-build` / `app-debug.apk` for Maestro unless Metro is
+running with `adb reverse tcp:8081 tcp:8081`. That path is for Detox only.
 
 ---
 
 ## Running Flows
 
 ```bash
-# Run all flows
-cd /path/to/mattermost-mobile
-npm run test:ios          # targets iOS simulator (explicit --platform ios)
-npm run test:android      # targets Android emulator (explicit --platform android)
+# From repo root, after seed + source maestro/.maestro-test-env.sh:
 
-# Run a specific suite or single flow by passing the path directly
-maestro test --platform ios maestro/flows/share_extension/
-maestro test --platform ios maestro/flows/calls/call_ui_permission.yml
+# Run all flows
+cd maestro
+npm run test:ios          # --platform ios flows/
+npm run test:android      # --platform android flows/
+
+# Run a specific suite or single flow
+~/.maestro/bin/maestro test --platform ios maestro/flows/share_extension/
+~/.maestro/bin/maestro test --platform ios maestro/flows/calls/call_ui_permission.yml
 
 # Dry-run (validate YAML syntax without executing on a device)
-npm run dry-run           # equivalent to: maestro test --dry-run maestro/flows/
+npm run dry-run           # maestro test --dry-run flows/
 
 # Two-device sync test
 DEVICE_A_UDID=<udid-a> DEVICE_B_UDID=<udid-b> \
   bash maestro/scripts/run_two_device.sh
 ```
 
+When multiple simulators are booted, pass `--device <UDID>` (same as CI). After
+`preboot_ios_simulator.sh`, use the printed `SIMULATOR_ID`.
+
 ### Running on Android
 
-1. **Start an Android emulator** (or connect a device) and ensure it appears in `adb devices`.
-2. **Build and install the app** (Maestro does not build; use one of these):
+1. **Start the emulator** — use `detox_pixel_8_api_35` to match CI:
    ```bash
-   npm run android   # from repo root — builds and installs debug APK on default emulator
+   cd detox
+   BOOTSTRAP_ONLY=true MAESTRO_ANDROID=true CI=true \
+     ./create_android_emulator.sh 35 detox_pixel_8
    ```
-   Or build the Detox APK and install it:
+   Or ensure any emulator appears in `adb devices` and install the release APK manually.
+2. **Seed and env** — `./maestro/scripts/setup_local.sh` then `source maestro/.maestro-test-env.sh`.
+3. **Run Maestro** with `--platform android`:
    ```bash
-   cd detox && npm run e2e:android-build
-   adb install -r android/app/build/outputs/apk/debug/app-debug.apk
+   ~/.maestro/bin/maestro test --platform android maestro/flows/
+   ~/.maestro/bin/maestro test --platform android maestro/flows/account/help_url.yml
    ```
-3. **Set env vars** (e.g. `SITE_1_URL`, `TEST_USER_EMAIL`, `TEST_USER_PASSWORD`, `TEST_CHANNEL_NAME`). Optionally run `npx tsx maestro/fixtures/seed.ts` and `source .maestro-test-env.sh`.
-4. **Run Maestro** with `--platform android` so it targets the Android device instead of iOS:
-   ```bash
-   maestro test --platform android maestro/flows/
-   maestro test --platform android maestro/flows/account/help_url.yml
-   maestro test --platform android maestro/flows/channels/
-   ```
-   If only one device is connected, Maestro may pick it automatically; use `--platform android` when both an iOS simulator and an Android emulator are running.
+   Use `--platform android` when both an iOS simulator and Android emulator are running.
 
 ---
 
@@ -241,26 +354,76 @@ appId: ${MAESTRO_APP_ID}
 | `ADMIN_TOKEN` | — | Mattermost personal access token for API polling |
 | `TEST_CHANNEL_ID` | — | Channel ID used in `poll_for_message.ts` |
 
+`RUNNING_E2E=true` must be set in repo-root `.env` **before building** the app (not at
+Maestro run time). It is baked into the JS bundle via `@env` and suppresses LogBox during E2E.
+
 ---
 
 ## CI Integration
+
+### Workflows
 
 | Workflow | Purpose |
 |---|---|
 | `e2e-detox-pr.yml` | Matterwick entry point: builds, provision, Detox + Maestro |
 | `e2e-detox.yml` | Detox test runs (reusable; called from `e2e-detox-pr.yml`) |
-| `e2e-maestro-pr.yml` | Maestro orchestration (reusable; called from `e2e-detox-pr.yml`) |
-| `e2e-maestro-template.yml` | Reusable runner (device setup, seed, `maestro test`, reports) |
+| `e2e-maestro-pr.yml` | Maestro orchestration + commit statuses (reusable) |
+| `e2e-maestro-template.yml` | Reusable runner: device bootstrap, seed, `maestro test`, reports |
 
-- **PR gate**: Matterwick dispatches `e2e-detox-pr.yml`. Phase 1 builds apps and provisions servers; phase 2 runs Detox and Maestro in parallel, both downloading build artifacts via `artifact_run_id`. Maestro iOS uses `SITE_2_URL`; Android uses `SITE_3_URL`.
-- **On-demand / nightly / release / CMT**: Other workflows call `e2e-maestro-template.yml` directly.
+Nightly, release, and CMT workflows call `e2e-maestro-template.yml` directly with
+`artifact_run_id: ${{ github.run_id }}` so they download artifacts from the same workflow run.
 
-Additional CI notes:
+### Phase 1 — builds (parallel)
 
-- All PR flows run on an **iOS simulator** (iPhone 17 Pro, iOS 26.2) on `macos-26` runners and on an **Android emulator** (API 34) on `ubuntu-latest-8-cores`. No real devices needed for CI.
-- `start_call.yml` and `file_type_preview.yml` are **excluded from the default CI run** because they require separate seed scripts (`calls_seed.ts`, `seed_file_preview.ts`) that are not part of the standard PR setup.
-- Multi-device sync tests (`MM-T3055`/`MM-T3056`) require two physical devices and are run separately via `maestro/scripts/run_two_device.sh`.
-- JUnit XML reports are written to `build/maestro-report.xml` and uploaded as CI artifacts.
+| Job | Output artifact | Used by |
+|---|---|---|
+| `build-ios-simulator` | `ios-build-simulator-<run_id>` | Detox iOS + Maestro iOS |
+| `build-android-apk` | `android-build-files-<run_id>` | Detox Android only (debug APK + androidTest) |
+| `build-android-apk-maestro` | `android-maestro-build-files-<run_id>` | Maestro Android only (release APK) |
+| `provision-servers` | — | Detox + Maestro (license, plugins) |
+| `validate-maestro-flow-headers` | — | Maestro (header contract) |
+
+The Maestro Android build runs `.github/actions/build-android-maestro-apk`: sets
+`RUNNING_E2E=true` in `.env`, then `./gradlew assembleRelease -PreactNativeArchitectures=x86_64`.
+No Detox dependency is installed (see `android/settings.gradle`).
+
+### Phase 2 — tests (parallel)
+
+- **`run-detox`** → `e2e-detox.yml` — downloads debug APK; Android starts Metro + `adb reverse`.
+- **`run-maestro`** → `e2e-maestro-pr.yml` → `e2e-maestro-template.yml` — downloads build
+  artifacts via `artifact_run_id` from the parent `e2e-detox-pr.yml` run (reusable workflows
+  have their own `github.run_id`, so the parent run id must be passed explicitly).
+
+### Device setup in CI (matches Detox)
+
+| Platform | Runner | Bootstrap |
+|---|---|---|
+| iOS | `macos-26`, iPhone 17 Pro / iOS 26.2 | `detox/scripts/preboot_ios_simulator.sh` (autofill off, install, pre-warm) |
+| Android | `ubuntu-latest-8-cores`, `detox_pixel_8_api_35` | `detox/create_android_emulator.sh` with `BOOTSTRAP_ONLY=true` + `MAESTRO_ANDROID=true` (no Metro) |
+
+### Test servers (PR runs)
+
+Matterwick provisions `SITE_1_URL`, `SITE_2_URL`, and `SITE_3_URL`. Maestro maps them in
+`e2e-maestro-pr.yml`:
+
+- **Maestro iOS** → `SITE_2_URL` (fallback `SITE_1_URL`)
+- **Maestro Android** → `SITE_3_URL` (fallback `SITE_1_URL`)
+
+Detox uses `SITE_1_URL` (and additional sites per shard config).
+
+### Default flow sets and exclusions
+
+- Flow lists are enumerated in `e2e-maestro-template.yml` (`resolve-flow-path` step); iOS and
+  Android defaults differ (e.g. Android excludes `share_image_to_channel.yml`).
+- `start_call.yml` and `file_type_preview.yml` are **not** in the default PR run (need extra seed scripts).
+- `MM-T67856_4` runs in a dedicated CI step with `AllowDownloadLogs=false` patched on the server.
+- Multi-device sync (`MM-T3055`/`MM-T3056`) requires two physical devices via `run_two_device.sh`.
+
+### Reports
+
+- JUnit XML: `build/maestro-report.xml`
+- HTML report + screenshots uploaded to S3 and as GitHub Actions artifacts
+- Commit statuses: `e2e/maestro-ios-tests`, `e2e/maestro-android-tests`
 
 ---
 

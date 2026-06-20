@@ -65,6 +65,12 @@ env:
   # ios-build-simulator-<run_id>. When this template is nested, that run_id is
   # the parent's, not this workflow's.
   ARTIFACT_RUN_ID: ${{ inputs.artifact_run_id || github.run_id }}
+  # Keep Maestro device targets identical to detox/.detoxrc.json and e2e-*-template.yml.
+  E2E_IOS_DEVICE_NAME: iPhone 17 Pro
+  E2E_IOS_DEVICE_OS_VERSION: iOS 26.2
+  E2E_ANDROID_AVD_NAME: detox_pixel_8
+  E2E_ANDROID_API_LEVEL: "35"
+  RUNNING_E2E: "true"
 
 jobs:
   e2e-maestro-ios:
@@ -102,7 +108,7 @@ jobs:
         uses: actions/cache@0057852bfaa89a56745cba8c7296529d2fc39830 # v4
         with:
           path: ~/.maestro
-          key: maestro-f3dd692588e86691dfe79889d1a6117ab7a94d50
+          key: maestro-00f516729f57d48f36ded55244cfbe358ada6b00
 
       - name: Install Maestro CLI
         if: steps.maestro-cache.outputs.cache-hit != 'true'
@@ -138,70 +144,10 @@ jobs:
           unzip -o mobile-artifacts/*.zip -d mobile-artifacts/
           rm -f mobile-artifacts/*.zip
 
-      - name: Pre-boot iOS Simulator
-        run: |
-          set -e
-          DEVICE_NAME="iPhone 17 Pro"
-          DEVICE_OS_VERSION="iOS 26.2"
-
-          echo "Looking for simulator: $DEVICE_NAME with $DEVICE_OS_VERSION"
-
-          SIMULATOR_ID=$(xcrun simctl list devices | grep "$DEVICE_NAME" | grep "$DEVICE_OS_VERSION" | head -1 | grep -oE '([0-9A-F-]{36})' || true)
-
-          if [ -z "$SIMULATOR_ID" ]; then
-            echo "Simulator not found. Creating simulator $DEVICE_NAME with $DEVICE_OS_VERSION"
-
-            DEVICE_TYPE=$(xcrun simctl list devicetypes | grep "$DEVICE_NAME (" | head -1 | awk -F'[()]' '{print $(NF-1)}')
-            if [ -z "$DEVICE_TYPE" ]; then
-              echo "Error: Could not find device type for $DEVICE_NAME"
-              exit 1
-            fi
-            echo "Found device type: $DEVICE_TYPE"
-
-            RUNTIME=$(xcrun simctl list runtimes | grep "$DEVICE_OS_VERSION" | head -1 | sed 's/.* - \(.*\)/\1/')
-            if [ -z "$RUNTIME" ]; then
-              echo "Error: Could not find runtime for $DEVICE_OS_VERSION"
-              exit 1
-            fi
-            echo "Found runtime: $RUNTIME"
-
-            SIMULATOR_ID=$(xcrun simctl create "CI-$DEVICE_NAME" "$DEVICE_TYPE" "$RUNTIME")
-            echo "Created simulator with ID: $SIMULATOR_ID"
-          else
-            echo "Found existing simulator: $SIMULATOR_ID"
-          fi
-
-          xcrun simctl boot "$SIMULATOR_ID"
-          xcrun simctl bootstatus "$SIMULATOR_ID"
-
-          # Disable password autofill to prevent "Save Password?" dialogs blocking tests
-          echo "Shutting down to apply password autofill restrictions..."
-          xcrun simctl shutdown "$SIMULATOR_ID"
-          sleep 3
-
-          SETTINGS_DIR="$HOME/Library/Developer/CoreSimulator/Devices/$SIMULATOR_ID/data/Containers/Shared/SystemGroup/systemgroup.com.apple.configurationprofiles/Library/ConfigurationProfiles"
-          mkdir -p "$SETTINGS_DIR"
-          node detox/utils/disable_ios_autofill.js --simulator-id "$SIMULATOR_ID"
-          if [ $? -ne 0 ]; then
-            echo "⚠️ Failed to disable password autofill"
-            exit 1
-          fi
-
-          echo "Booting simulator with password autofill disabled..."
-          xcrun simctl boot "$SIMULATOR_ID"
-          xcrun simctl bootstatus "$SIMULATOR_ID"
-
-          open -a Simulator --args -CurrentDeviceUDID "$SIMULATOR_ID"
-          # Poll until Simulator.app has rendered the device (listapps succeeds only
-          # once SpringBoard is fully running and Simulator.app has attached).
-          for i in $(seq 1 30); do
-            xcrun simctl listapps "$SIMULATOR_ID" &>/dev/null && break
-            sleep 2
-          done
-
-          echo "SIMULATOR_ID=$SIMULATOR_ID" >> $GITHUB_ENV
-
-      - name: Install app on iOS Simulator
+      # Maestro-only: enable Files-app access for channel_bookmark_file picker flows.
+      # Must patch Info.plist before simctl install (see e2e-maestro-template comment
+      # in the prior Install step).
+      - name: Patch iOS app Info.plist for file-sharing flows
         run: |
           APP_PATH=$(find mobile-artifacts -name "*.app" -maxdepth 2 | head -1)
           if [ -z "$APP_PATH" ]; then
@@ -209,22 +155,18 @@ jobs:
             ls -la mobile-artifacts/
             exit 1
           fi
-          echo "Installing app from: $APP_PATH"
-
-          # Patch UIFileSharingEnabled BEFORE install so iOS registers file sharing
-          # at install time. Patching post-install is cached by iOS and ignored until
-          # the next simulator reboot, making the Documents folder invisible in Files app.
           plutil -replace UIFileSharingEnabled -bool true "$APP_PATH/Info.plist" 2>/dev/null || \
             plutil -insert UIFileSharingEnabled -bool true "$APP_PATH/Info.plist" 2>/dev/null || true
           plutil -replace LSSupportsOpeningDocumentsInPlace -bool true "$APP_PATH/Info.plist" 2>/dev/null || \
             plutil -insert LSSupportsOpeningDocumentsInPlace -bool true "$APP_PATH/Info.plist" 2>/dev/null || true
-          echo "UIFileSharingEnabled patched in Info.plist"
+          echo "UIFileSharingEnabled patched in $APP_PATH/Info.plist"
 
-          xcrun simctl install "$SIMULATOR_ID" "$APP_PATH"
-
-          # Grant all privacy permissions (camera, photos, microphone, notifications, etc.)
-          xcrun simctl privacy "$SIMULATOR_ID" grant all com.mattermost.rnbeta
-          echo "All privacy permissions granted"
+      # Same simulator boot / autofill / install / pre-warm sequence as Detox iOS CI.
+      - name: Pre-boot iOS Simulator (Detox-compatible)
+        env:
+          DEVICE_NAME: ${{ env.E2E_IOS_DEVICE_NAME }}
+          DEVICE_OS_VERSION: ${{ env.E2E_IOS_DEVICE_OS_VERSION }}
+        run: bash detox/scripts/preboot_ios_simulator.sh
 
       - name: Place test fixture file in app Documents (channel_bookmark_file flow)
         run: |
@@ -340,6 +282,7 @@ jobs:
           # AllowDownloadLogs=false on the server, set in the dedicated step
           # below. All other flows assume the default `true`.
           ~/.maestro/bin/maestro test \
+            --device "$SIMULATOR_ID" \
             --format junit \
             --output build/maestro-report.xml \
             --test-output-dir build/maestro-artifacts \
@@ -386,6 +329,7 @@ jobs:
             echo "==> Restored AllowDownloadLogs=true"' EXIT
 
           ~/.maestro/bin/maestro test \
+            --device "$SIMULATOR_ID" \
             --format junit \
             --output build/maestro-report-T67856_4.xml \
             --test-output-dir build/maestro-artifacts-T67856_4 \
@@ -519,7 +463,7 @@ jobs:
         uses: actions/cache@0057852bfaa89a56745cba8c7296529d2fc39830 # v4
         with:
           path: ~/.maestro
-          key: maestro-f3dd692588e86691dfe79889d1a6117ab7a94d50-linux
+          key: maestro-00f516729f57d48f36ded55244cfbe358ada6b00-linux
 
       - name: Install Maestro CLI
         if: steps.maestro-cache.outputs.cache-hit != 'true'
@@ -540,13 +484,13 @@ jobs:
       - name: Verify Maestro installation
         run: ~/.maestro/bin/maestro --version
 
-      - name: Download Android Build
+      - name: Download Maestro Android Build
         uses: actions/download-artifact@c850b930e6ba138125429b7e5c93fc707a7f8427 # v4.1.4
         with:
-          name: android-build-files-${{ env.ARTIFACT_RUN_ID }}
+          name: android-maestro-build-files-${{ env.ARTIFACT_RUN_ID }}
           run-id: ${{ env.ARTIFACT_RUN_ID }}
           github-token: ${{ secrets.GITHUB_TOKEN }}
-          path: mobile-artifacts
+          path: android/app/build/outputs/apk/release
 
       - name: Seed test data
         run: |
@@ -586,126 +530,118 @@ jobs:
             printf 'flow_path=%s\n' "maestro/flows/account maestro/flows/calls maestro/flows/channels/channel_bookmark_file.yml maestro/flows/channels/channel_bookmark_link_external.yml maestro/flows/share_extension/share_link_to_channel.yml maestro/flows/share_extension/share_text_to_channel.yml maestro/flows/timezone" >> "$GITHUB_OUTPUT"
           fi
 
+      - name: Install system dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libpulse0 scrot ffmpeg xvfb
+
       - name: Enable KVM
         run: |
           echo 'KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS+="static_node=kvm"' | sudo tee /etc/udev/rules.d/99-kvm4all.rules
           sudo udevadm control --reload-rules
           sudo udevadm trigger --name-match=kvm
 
+      - name: Set up Android SDK
+        run: |
+          export ANDROID_HOME=/usr/local/lib/android/sdk
+          export ANDROID_SDK_ROOT=/usr/local/lib/android/sdk
+          export PATH=$ANDROID_HOME/cmdline-tools/latest/bin:$ANDROID_HOME/emulator:$ANDROID_HOME/tools/bin:$ANDROID_HOME/platform-tools:$PATH
+          echo "ANDROID_HOME=$ANDROID_HOME" >> $GITHUB_ENV
+          echo "ANDROID_SDK_ROOT=$ANDROID_SDK_ROOT" >> $GITHUB_ENV
+          echo "PATH=$PATH" >> $GITHUB_ENV
+
+      - name: Start Xvfb
+        run: |
+          Xvfb :99 -screen 0 1920x1080x24 &
+          echo "DISPLAY=:99" >> $GITHUB_ENV
+
+      - name: Accept Android licenses
+        run: |
+          mkdir -p ~/.android
+          yes | sdkmanager --licenses > sdk_licenses_output.txt || true
+          if grep -q "All SDK package licenses accepted" sdk_licenses_output.txt; then
+            echo "All licenses accepted successfully."
+          else
+            echo "Licenses not fully accepted."
+            cat sdk_licenses_output.txt
+            exit 1
+          fi
+
+      # Same SDK cache strategy as e2e-android-template.yml (API 35, workspace cache).
       - name: Cache Android SDK components
         id: android-sdk-cache
         uses: actions/cache@0057852bfaa89a56745cba8c7296529d2fc39830 # v4
         with:
-          path: |
-            /usr/local/lib/android/sdk/platform-tools
-            /usr/local/lib/android/sdk/emulator
-            /usr/local/lib/android/sdk/platforms/android-34
-            /usr/local/lib/android/sdk/system-images/android-34
-          key: android-sdk-34-google-apis-x86_64-v1
+          path: .android-sdk-cache
+          key: android-sdk-${{ env.E2E_ANDROID_API_LEVEL }}-google-apis-x86_64-v2
+
+      - name: Apply cached Android SDK components
+        if: steps.android-sdk-cache.outputs.cache-hit == 'true'
+        run: |
+          API_LEVEL='${{ env.E2E_ANDROID_API_LEVEL }}'
+          for component in platform-tools emulator; do
+            if [ -d ".android-sdk-cache/${component}" ]; then
+              rm -rf "${ANDROID_HOME:?}/${component}"
+              cp -a ".android-sdk-cache/${component}" "${ANDROID_HOME}/"
+            fi
+          done
+          if [ -d ".android-sdk-cache/platforms/android-${API_LEVEL}" ]; then
+            rm -rf "${ANDROID_HOME}/platforms/android-${API_LEVEL}"
+            mkdir -p "${ANDROID_HOME}/platforms"
+            cp -a ".android-sdk-cache/platforms/android-${API_LEVEL}" "${ANDROID_HOME}/platforms/"
+          fi
+          if [ -d ".android-sdk-cache/system-images/android-${API_LEVEL}" ]; then
+            rm -rf "${ANDROID_HOME}/system-images/android-${API_LEVEL}"
+            mkdir -p "${ANDROID_HOME}/system-images"
+            cp -a ".android-sdk-cache/system-images/android-${API_LEVEL}" "${ANDROID_HOME}/system-images/"
+          fi
 
       - name: Install Android SDK components
         if: steps.android-sdk-cache.outputs.cache-hit != 'true'
         env:
           JAVA_HOME: ${{ env.JAVA_HOME_17_X64 }}
         run: |
-          export ANDROID_HOME=/usr/local/lib/android/sdk
-          export PATH=$ANDROID_HOME/cmdline-tools/latest/bin:$PATH
+          API_LEVEL='${{ env.E2E_ANDROID_API_LEVEL }}'
           for attempt in 1 2 3; do
-            yes | sdkmanager --install \
-              "platform-tools" "emulator" \
-              "platforms;android-34" \
-              "system-images;android-34;google_apis;x86_64" && break
-            echo "Attempt $attempt failed, retrying in 10s..."
-            sleep 10
-          done
-
-      - name: Create and boot Android emulator
-        env:
-          JAVA_HOME: ${{ env.JAVA_HOME_17_X64 }}
-        run: |
-          export ANDROID_HOME=/usr/local/lib/android/sdk
-          export ANDROID_AVD_HOME=$(pwd)/.android/avd
-          export PATH=$ANDROID_HOME/cmdline-tools/latest/bin:$ANDROID_HOME/emulator:$ANDROID_HOME/platform-tools:$PATH
-          mkdir -p "$ANDROID_AVD_HOME"
-
-          echo "no" | avdmanager create avd -n maestro_avd \
-            -k "system-images;android-34;google_apis;x86_64" \
-            -d "pixel_4_xl" --force
-
-          nohup emulator -avd maestro_avd \
-            -no-snapshot-save -no-window -gpu swiftshader_indirect \
-            -noaudio -no-boot-anim -camera-back none \
-            -accel on -qemu -m 8192 &
-
-          # Wait for boot with 5-minute timeout
-          adb wait-for-device
-          boot_timeout=300
-          boot_elapsed=0
-          until [ "$(adb shell getprop sys.boot_completed 2>/dev/null | tr -d '\r')" = "1" ]; do
-            if [ $boot_elapsed -ge $boot_timeout ]; then
-              echo "Emulator failed to boot within 5 minutes"
+            echo "SDK install attempt $attempt..."
+            if yes | sdkmanager --install "platform-tools" "emulator" "platforms;android-${API_LEVEL}" "system-images;android-${API_LEVEL};google_apis;x86_64"; then
+              echo "SDK install succeeded on attempt $attempt"
+              break
+            fi
+            echo "Attempt $attempt failed, retrying..."
+            if [ "$attempt" = "3" ]; then
+              echo "SDK install failed after 3 attempts"
               exit 1
             fi
-            echo "Waiting for emulator to fully boot... (${boot_elapsed}s)"
             sleep 10
-            boot_elapsed=$((boot_elapsed + 10))
           done
+          mkdir -p .android-sdk-cache/platforms .android-sdk-cache/system-images
+          cp -a "${ANDROID_HOME}/platform-tools" .android-sdk-cache/
+          cp -a "${ANDROID_HOME}/emulator" .android-sdk-cache/
+          cp -a "${ANDROID_HOME}/platforms/android-${API_LEVEL}" .android-sdk-cache/platforms/
+          cp -a "${ANDROID_HOME}/system-images/android-${API_LEVEL}" .android-sdk-cache/system-images/
 
-          # Wait for package manager to be ready (more reliable than sleep 15)
-          for i in $(seq 1 30); do
-            adb shell pm list packages > /dev/null 2>&1 && break
-            sleep 2
-          done
-          echo "Emulator is fully ready."
+      - name: Cache Android Emulator & AVD
+        uses: actions/cache@0057852bfaa89a56745cba8c7296529d2fc39830 # v4
+        with:
+          path: |
+            detox/.android
+            detox/${{ env.E2E_ANDROID_AVD_NAME }}_api_${{ env.E2E_ANDROID_API_LEVEL }}
+          key: android-emulator-${{ runner.os }}-${{ runner.arch }}-${{ env.E2E_ANDROID_AVD_NAME }}-api-${{ env.E2E_ANDROID_API_LEVEL }}-v3
+          restore-keys: |
+            android-emulator-${{ runner.os }}-${{ runner.arch }}-${{ env.E2E_ANDROID_AVD_NAME }}-api-${{ env.E2E_ANDROID_API_LEVEL }}-
+            android-emulator-${{ runner.os }}-${{ runner.arch }}-
 
-          # Persist SDK env for subsequent steps
-          echo "ANDROID_HOME=$ANDROID_HOME" >> $GITHUB_ENV
-          echo "ANDROID_AVD_HOME=$ANDROID_AVD_HOME" >> $GITHUB_ENV
-          echo "$ANDROID_HOME/platform-tools" >> $GITHUB_PATH
-          echo "$ANDROID_HOME/emulator" >> $GITHUB_PATH
-
-      - name: Configure emulator
+      # Boot API-35 detox_pixel_8 and install release APK (embedded JS bundle, no Metro).
+      - name: Bootstrap Android emulator (Detox-compatible)
+        env:
+          BOOTSTRAP_ONLY: "true"
+          MAESTRO_ANDROID: "true"
+          JAVA_HOME: ${{ env.JAVA_HOME_17_X64 }}
         run: |
-          # Disable animations to prevent flakiness
-          adb shell settings put global window_animation_scale 0
-          adb shell settings put global transition_animation_scale 0
-          adb shell settings put global animator_duration_scale 0
-          adb shell input keyevent 82
-
-          # Set timezone for MM-T1325 timezone flow.
-          # persist.sys.timezone survives reboots but only takes effect at boot time.
-          # Setting sys.timezone and broadcasting TIMEZONE_CHANGED forces the running
-          # system to pick up the new timezone without a reboot.
-          adb root
-          adb shell setprop persist.sys.timezone "America/New_York"
-          adb shell setprop sys.timezone "America/New_York"
-          adb shell am broadcast -a android.intent.action.TIMEZONE_CHANGED \
-            --ez bypassUserRestrictions true 2>/dev/null || true
-
-      - name: Install APK on emulator
-        run: |
-          # APK built by Detox's build-android-apk job and downloaded from the
-          # android-build-files-* artifact (same artifact used by Detox Android).
-          APK_PATH=$(find mobile-artifacts -name "*.apk" | head -1)
-          if [ -z "$APK_PATH" ]; then
-            echo "Error: Could not find APK in mobile-artifacts/"
-            ls -laR mobile-artifacts/ || true
-            exit 1
-          fi
-          echo "Installing APK from: $APK_PATH"
-          # Retry install up to 3 times — adb install can fail transiently on CI
-          for attempt in 1 2 3; do
-            adb install -r "$APK_PATH" && break
-            echo "Install attempt $attempt failed, retrying..."
-            sleep 5
-          done
-
-          # Push test fixture file for bookmark flow
-          FIXTURE="detox/e2e/support/fixtures/image.png"
-          if [ -f "$FIXTURE" ]; then
-            adb push "$FIXTURE" /sdcard/Download/test_bookmark.png
-            echo "Pushed test fixture to /sdcard/Download/test_bookmark.png"
-          fi
+          cd detox
+          chmod +x ./create_android_emulator.sh
+          CI=true ./create_android_emulator.sh "${{ env.E2E_ANDROID_API_LEVEL }}" "${{ env.E2E_ANDROID_AVD_NAME }}"
 
       - name: Run Maestro Flows (Android)
         env:

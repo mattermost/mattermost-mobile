@@ -137,6 +137,38 @@ jobs:
           name: android-build-files-${{ github.run_id }}
           path: "android/app/build/outputs/apk/**/*.apk"
 
+  build-android-apk-maestro:
+    runs-on: ubuntu-latest-8-cores
+    needs:
+      - update-initial-status
+    env:
+      ORG_GRADLE_PROJECT_jvmargs: -Xmx8g
+    steps:
+      - name: Prune Docker to free up space
+        run: docker system prune -af
+
+      - name: Checkout Repository
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          ref: ${{ inputs.MOBILE_VERSION }}
+
+      - name: Prepare Android Build
+        uses: ./.github/actions/prepare-android-build
+        env:
+          STORE_FILE: ${{ secrets.MM_MOBILE_STORE_FILE }}
+          STORE_ALIAS: ${{ secrets.MM_MOBILE_STORE_ALIAS }}
+          STORE_PASSWORD: ${{ secrets.MM_MOBILE_STORE_PASSWORD }}
+          MATTERMOST_BUILD_GH_TOKEN: ${{ secrets.MATTERMOST_BUILD_GH_TOKEN }}
+
+      - name: Build Maestro Android APK
+        uses: ./.github/actions/build-android-maestro-apk
+
+      - name: Upload Maestro Android Build
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: android-maestro-build-files-${{ github.run_id }}
+          path: android/app/build/outputs/apk/release/
+
   detox-e2e:
     name: mobile-cmt-${{ matrix.server.version }}
     uses: ./.github/workflows/e2e-ios-template.yml
@@ -225,7 +257,7 @@ jobs:
     name: mobile-cmt-maestro-android-${{ matrix.server.version }}
     uses: ./.github/workflows/e2e-maestro-template.yml
     needs:
-      - build-android-apk
+      - build-android-apk-maestro
     strategy:
       fail-fast: false
       matrix: ${{ fromJson(inputs.CMT_MATRIX) }}
@@ -235,6 +267,7 @@ jobs:
       run-type: "RELEASE"
       MM_TEST_SERVER_URL: ${{ matrix.server.url }}
       MOBILE_VERSION: ${{ inputs.MOBILE_VERSION }}
+      artifact_run_id: ${{ github.run_id }}
 
   update-final-status:
     runs-on: ubuntu-22.04

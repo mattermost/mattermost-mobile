@@ -5,7 +5,8 @@
 # and watches workflow_run "completed" events where workflow name is "E2E".
 #
 # Phase 1 — builds & setup (parallel):
-#   build-ios-simulator, build-android-apk, provision-servers, validate-maestro-flow-headers
+#   build-ios-simulator, build-android-apk, build-android-apk-maestro,
+#   provision-servers, validate-maestro-flow-headers
 # Phase 2 — tests (parallel, after phase 1):
 #   run-detox  → e2e-detox.yml
 #   run-maestro → e2e-maestro-pr.yml (downloads phase-1 artifacts via artifact_run_id)
@@ -161,7 +162,7 @@ jobs:
           path: Mattermost-simulator-*.app.zip
 
   build-android-apk:
-    if: inputs.PLATFORM == 'android' || inputs.PLATFORM == 'both'
+    if: false # TEMP: Detox disabled while Maestro CI is being validated — re-enable when ready
     runs-on: ubuntu-latest-8-cores
     needs:
       - update-initial-status-android
@@ -198,7 +199,6 @@ jobs:
         run: |
           cd detox
           npm ci --prefer-offline --no-audit --no-fund
-          npm install -g detox-cli
           npm run e2e:android-build
 
       - name: Upload Android Build
@@ -206,6 +206,39 @@ jobs:
         with:
           name: android-build-files-${{ github.run_id }}
           path: "android/app/build/**/*"
+
+  build-android-apk-maestro:
+    if: inputs.PLATFORM == 'android' || inputs.PLATFORM == 'both'
+    runs-on: ubuntu-latest-8-cores
+    needs:
+      - update-initial-status-android
+    env:
+      ORG_GRADLE_PROJECT_jvmargs: -Xmx8g
+    steps:
+      - name: Prune Docker to free up space
+        run: docker system prune -af
+
+      - name: Checkout Repository
+        uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
+        with:
+          ref: ${{ inputs.MOBILE_VERSION }}
+
+      - name: Prepare Android Build
+        uses: ./.github/actions/prepare-android-build
+        env:
+          STORE_FILE: ${{ secrets.MM_MOBILE_STORE_FILE }}
+          STORE_ALIAS: ${{ secrets.MM_MOBILE_STORE_ALIAS }}
+          STORE_PASSWORD: ${{ secrets.MM_MOBILE_STORE_PASSWORD }}
+          MATTERMOST_BUILD_GH_TOKEN: ${{ secrets.MATTERMOST_BUILD_GH_TOKEN }}
+
+      - name: Build Maestro Android APK
+        uses: ./.github/actions/build-android-maestro-apk
+
+      - name: Upload Maestro Android Build
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: android-maestro-build-files-${{ github.run_id }}
+          path: android/app/build/outputs/apk/release/
 
   provision-servers:
     name: Provision test servers
@@ -322,11 +355,8 @@ jobs:
       - build-ios-simulator
       - build-android-apk
       - provision-servers
-    if: |
-      always() &&
-      needs.provision-servers.result == 'success' &&
-      (needs.build-ios-simulator.result == 'success' || needs.build-ios-simulator.result == 'skipped') &&
-      (needs.build-android-apk.result == 'success' || needs.build-android-apk.result == 'skipped')
+    # TEMP: disabled while Maestro CI is being validated — restore the always() condition when ready
+    if: false
     uses: ./.github/workflows/e2e-detox.yml
     with:
       MOBILE_VERSION: ${{ inputs.MOBILE_VERSION }}
@@ -351,14 +381,14 @@ jobs:
         run: bash maestro/scripts/validate-flow-headers.sh
 
   # Maestro orchestration lives in e2e-maestro-pr.yml so Detox and Maestro CI
-  # can evolve independently. Both Maestro platforms download the same CI
-  # artifacts that Detox uses (ios-build-simulator-* / android-build-files-*)
-  # from this workflow run via artifact_run_id — Maestro does not rebuild apps.
+  # can evolve independently. Maestro downloads ios-build-simulator-* and
+  # android-maestro-build-files-* (release APK with embedded bundle) from this
+  # workflow run via artifact_run_id.
   run-maestro:
     name: Maestro E2E
     needs:
       - build-ios-simulator
-      - build-android-apk
+      - build-android-apk-maestro
       - provision-servers
       - validate-maestro-flow-headers
     # Phase 2: run after shared builds finish. Skipped platform builds (e.g.
@@ -368,7 +398,7 @@ jobs:
       needs.provision-servers.result == 'success' &&
       needs.validate-maestro-flow-headers.result == 'success' &&
       (needs.build-ios-simulator.result == 'success' || needs.build-ios-simulator.result == 'skipped') &&
-      (needs.build-android-apk.result == 'success' || needs.build-android-apk.result == 'skipped')
+      (needs.build-android-apk-maestro.result == 'success' || needs.build-android-apk-maestro.result == 'skipped')
     uses: ./.github/workflows/e2e-maestro-pr.yml
     with:
       MOBILE_VERSION: ${{ inputs.MOBILE_VERSION }}

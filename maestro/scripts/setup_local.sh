@@ -7,6 +7,9 @@
 # .github/workflows/e2e-maestro-template.yml "Seed test data" step) so a
 # developer-run flow exercises the same server state as CI.
 #
+# Does NOT build or install the app. After this script, build/install per
+# maestro/README.md (release sim .app on iOS, release APK on Android).
+#
 # Usage:
 #   export ADMIN_USERNAME=admin
 #   export ADMIN_PASSWORD=<the admin password Matterwick printed>
@@ -64,4 +67,5 @@ echo
 echo "✓ Setup complete."
 echo "  Next steps:"
 echo "    source maestro/.maestro-test-env.sh"
+echo "    Build + install app (see maestro/README.md — Official local workflow)"
 echo "    ~/.maestro/bin/maestro test maestro/flows/<flow>.yml"

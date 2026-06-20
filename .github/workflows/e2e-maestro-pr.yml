@@ -1,6 +1,6 @@
 # Maestro E2E orchestration — reusable workflow only.
 # Called from e2e-detox-pr.yml after shared builds and server provisioning complete.
-# Downloads ios-build-simulator-* and android-build-files-* from the parent run
+# Downloads ios-build-simulator-* and android-maestro-build-files-* from the parent run
 # via artifact_run_id; does not build apps or provision servers on its own.
 name: Maestro E2E
 

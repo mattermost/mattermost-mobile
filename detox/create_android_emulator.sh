@@ -122,13 +122,59 @@ wait_for_emulator() {
     echo "Emulator is fully ready."
 }
 
+resolve_app_apk() {
+    if [[ "${MAESTRO_ANDROID:-}" == "true" ]]; then
+        local release_apk="../android/app/build/outputs/apk/release/app-release.apk"
+        if [[ -f "$release_apk" ]]; then
+            echo "$release_apk"
+            return 0
+        fi
+        echo "Maestro release APK not found at $release_apk" >&2
+        ls -la ../android/app/build/outputs/apk/release/ 2>/dev/null || true
+        exit 1
+    fi
+    echo "../android/app/build/outputs/apk/debug/app-debug.apk"
+}
+
 install_app() {
-    echo "Installing the app..."
-    adb install -r ../android/app/build/outputs/apk/debug/app-debug.apk
-    # Install the test/instrumentation APK — required by Detox (reinstallApp: false assumes
-    # both the main APK and the test APK are already present on the device).
-    adb install -r ../android/app/build/outputs/apk/androidTest/debug/app-debug-androidTest.apk
+    local app_apk
+    app_apk=$(resolve_app_apk)
+    echo "Installing the app from $app_apk..."
+    adb install -r "$app_apk"
+    if [[ "${MAESTRO_ANDROID:-}" != "true" && "${BOOTSTRAP_ONLY:-}" != "true" ]]; then
+        # Install the test/instrumentation APK — required by Detox (reinstallApp: false assumes
+        # both the main APK and the test APK are already present on the device).
+        adb install -r ../android/app/build/outputs/apk/androidTest/debug/app-debug-androidTest.apk
+    fi
     adb shell pm list packages | grep "com.mattermost.rnbeta" && echo "App is installed." || echo "App is not installed."
+}
+
+grant_android_runtime_permissions() {
+    local bundle_id="com.mattermost.rnbeta"
+    adb shell pm grant "$bundle_id" android.permission.POST_NOTIFICATIONS 2>/dev/null || true
+    adb shell settings put secure show_ime_with_hard_keyboard 0 2>/dev/null || true
+    adb shell settings put secure spell_checker_enabled 0 2>/dev/null || true
+    adb shell settings put secure auto_text_enabled 0 2>/dev/null || true
+}
+
+configure_emulator_for_tests() {
+    adb shell settings put global window_animation_scale 0
+    adb shell settings put global transition_animation_scale 0
+    adb shell settings put global animator_duration_scale 0
+    adb shell input keyevent 82 2>/dev/null || true
+    adb root 2>/dev/null || true
+    adb shell setprop persist.sys.timezone "America/New_York" 2>/dev/null || true
+    adb shell setprop sys.timezone "America/New_York" 2>/dev/null || true
+    adb shell am broadcast -a android.intent.action.TIMEZONE_CHANGED \
+        --ez bypassUserRestrictions true 2>/dev/null || true
+}
+
+push_e2e_fixtures() {
+    local fixture="../detox/e2e/support/fixtures/image.png"
+    if [[ -f "$fixture" ]]; then
+        adb push "$fixture" /sdcard/Download/test_bookmark.png
+        echo "Pushed test fixture to /sdcard/Download/test_bookmark.png"
+    fi
 }
 
 start_server() {
@@ -179,8 +225,19 @@ main() {
 
     if [[ "$CI" == "true" ]]; then
         install_app
-        start_server
-        setup_adb_reverse
+        # Maestro uses a release APK with an embedded bundle (mirrors iOS simulator builds).
+        if [[ "${MAESTRO_ANDROID:-}" != "true" ]]; then
+            start_server
+            setup_adb_reverse
+        fi
+        grant_android_runtime_permissions
+        configure_emulator_for_tests
+        push_e2e_fixtures
+    fi
+
+    if [[ "${BOOTSTRAP_ONLY:-}" == "true" ]]; then
+        echo "Bootstrap complete (BOOTSTRAP_ONLY=true) — skipping Detox tests"
+        exit 0
     fi
 
     run_detox_tests "${TEST_FILES[@]}"
