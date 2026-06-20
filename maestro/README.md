@@ -398,7 +398,7 @@ No Detox dependency is installed (see `android/settings.gradle`).
 
 | Platform | Runner | Bootstrap |
 |---|---|---|
-| iOS | `macos-26`, iPhone 17 Pro / iOS 26.2 | `detox/scripts/preboot_ios_simulator.sh` (autofill off, install, pre-warm) |
+| iOS | `macos-26`, iPhone 17 Pro / iOS 26.2 | `preboot_ios_simulator.sh` with `PREBOOT_SKIP_PREWARM=1`, then `listapps` readiness poll |
 | Android | `ubuntu-latest-8-cores`, `detox_pixel_8_api_35` | `detox/create_android_emulator.sh` with `BOOTSTRAP_ONLY=true` + `MAESTRO_ANDROID=true` (no Metro) |
 
 ### Test servers (PR runs)

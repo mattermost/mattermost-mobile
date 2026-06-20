@@ -149,6 +149,9 @@ find_or_create_simulator() {
 
     log "Looking for simulator: $device_name ($os_version)"
     SIMULATOR_ID=$(xcrun simctl list devices | grep "$device_name" | grep "$os_version" | head -1 | grep -oE '([0-9A-F-]{36})' || true)
+    if [ -z "$SIMULATOR_ID" ]; then
+        SIMULATOR_ID=$(xcrun simctl list devices "$os_version" 2>/dev/null | grep "$device_name" | head -1 | grep -oE '([0-9A-F-]{36})' || true)
+    fi
 
     if [ -n "$SIMULATOR_ID" ]; then
         log "Found existing simulator: $SIMULATOR_ID"

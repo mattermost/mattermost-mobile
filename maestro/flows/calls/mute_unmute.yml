@@ -28,32 +28,11 @@ appId: ${MAESTRO_APP_ID}
 - waitForAnimationToEnd:
     timeout: 25000
 
-# Open the channel quick actions sheet via the three-dots (⋮) button.
-- tapOn:
-    id: "channel_header.channel_quick_actions.button"
+- runFlow: ../../utils/join_channel_call.yml
 
-# Wait for the Start/Join Call action (60s: WS config propagation on first login).
-- extendedWaitUntil:
-    visible:
-      id: "channel_info.channel_actions.join_start_call.action"
-    timeout: 60000
-- tapOn:
-    id: "channel_info.channel_actions.join_start_call.action"
-
-# Grant microphone permission (first-time prompt)
-- tapOn:
-    text: "Allow"
-    optional: true
-- tapOn:
-    text: "Allow"
-    optional: true
-
-# Starting the call dismisses the bottom sheet and returns to the channel view.
-# Wait for the minimized CurrentCallBar to appear (confirms WebRTC is connected).
-- extendedWaitUntil:
-    visible:
-      id: "calls.current_call_bar"
-    timeout: 20000
+# Brief wait after call bar appears to let the WebSocket session event arrive.
+- waitForAnimationToEnd:
+    timeout: 3000
 
 # Tap the CurrentCallBar to navigate to the full call screen.
 - tapOn:

@@ -13,13 +13,11 @@
 #   - Current call bar is no longer visible after leave
 #
 # testIDs:
-#   - channel_header.channel_quick_actions.button
-#   - channel_info.channel_actions.join_start_call.action
+#   - calls.collapse.button
 #   - calls.current_call_bar
+#   - calls.current_call_bar.leave
 #   - mute-unmute
 #   - leave
-#   - navigation.header.back
-#   - calls.current_call_bar.leave
 tags:
   - MM-T4833
 appId: ${MAESTRO_APP_ID}
@@ -33,62 +31,26 @@ appId: ${MAESTRO_APP_ID}
 - waitForAnimationToEnd:
     timeout: 25000
 
-# Open the channel quick actions sheet via the three-dots (⋮) button.
-- tapOn:
-    id: "channel_header.channel_quick_actions.button"
+- runFlow: ../../utils/join_channel_call.yml
 
-# Wait for the Start/Join Call action (60s: WS config propagation on first login).
-- extendedWaitUntil:
-    visible:
-      id: "channel_info.channel_actions.join_start_call.action"
-    timeout: 60000
-- tapOn:
-    id: "channel_info.channel_actions.join_start_call.action"
+- waitForAnimationToEnd:
+    timeout: 3000
 
-# Grant permissions
-- tapOn:
-    text: "Allow"
-    optional: true
-- tapOn:
-    text: "Allow"
-    optional: true
-
-# Starting the call dismisses the bottom sheet and returns to the channel view.
-# Wait for the minimized CurrentCallBar to appear (confirms WebRTC is connected).
-# 40s: WebRTC connection can take longer on iOS 26 simulators or under CI load.
-- extendedWaitUntil:
-    visible:
-      id: "calls.current_call_bar"
-    timeout: 40000
-
-# Tap the CurrentCallBar to navigate to the full call screen.
 - tapOn:
     id: "calls.current_call_bar"
 
-# Verify call screen is up
 - extendedWaitUntil:
     visible:
       id: "mute-unmute"
     timeout: 30000
 - takeScreenshot: calls-leave-full-screen-before-leave
 
-# Tap Leave on the full call screen; confirm the dialog that appears.
 - tapOn:
     id: "leave"
 - tapOn:
     text: "Leave call"
     optional: true
 
-# Verify the call screen is dismissed (mute button gone). This is the test's
-# real intent — confirm the Leave action ended the call.
-#
-# We deliberately do NOT assert `channel.post_draft.post.input` here. On
-# Android the native back-stack pop on Leave can dismiss BOTH the full-screen
-# call view AND the channel screen in a single transition, landing the user
-# on the channel list rather than the channel. The post-draft input only
-# renders on the channel screen, so asserting it would fail for a reason
-# unrelated to the Leave behavior under test. `start_call.yml` already uses
-# the same `mute-unmute notVisible` check after its own leave step.
 - extendedWaitUntil:
     notVisible:
       id: "mute-unmute"
@@ -97,34 +59,13 @@ appId: ${MAESTRO_APP_ID}
 
 # ── Path 2: Leave from the minimized CurrentCallBar ─────────────────────────
 
-# Re-navigate to the channel for Path 2. Path 1's Leave on Android can drop
-# the user to the channel list (see comment above); navigate_to_channel.yml
-# is a no-op when already on the channel screen on iOS, so this is
-# cross-platform safe.
 - runFlow: ../../utils/navigate_to_channel.yml
 
-# Start a second call — Calls config already propagated, use shorter timeout.
-- tapOn:
-    id: "channel_header.channel_quick_actions.button"
-- extendedWaitUntil:
-    visible:
-      id: "channel_info.channel_actions.join_start_call.action"
-    timeout: 30000
-- tapOn:
-    id: "channel_info.channel_actions.join_start_call.action"
-- tapOn:
-    text: "Allow"
-    optional: true
-- tapOn:
-    text: "Allow"
-    optional: true
+- runFlow: ../../utils/join_channel_call.yml
 
-# Wait for CurrentCallBar then navigate to full call screen.
-# 40s: WebRTC connection can take longer on iOS 26 simulators or under CI load.
-- extendedWaitUntil:
-    visible:
-      id: "calls.current_call_bar"
-    timeout: 40000
+- waitForAnimationToEnd:
+    timeout: 3000
+
 - tapOn:
     id: "calls.current_call_bar"
 - extendedWaitUntil:
@@ -132,27 +73,60 @@ appId: ${MAESTRO_APP_ID}
       id: "mute-unmute"
     timeout: 30000
 
-# Navigate back to the channel view — call continues minimized as CurrentCallBar.
+# Minimize the full call screen back to CurrentCallBar.
+# Prefer testID collapse; CI APK may lack calls.collapse.button until rebuilt.
+# iOS 26+: Maestro `back` triggers leave-call confirmation — do not use it here.
 - tapOn:
-    id: "navigation.header.back"
+    id: "calls.collapse.button"
     optional: true
-- back
+- runFlow:
+    when:
+      visible:
+        id: "mute-unmute"
+    commands:
+      - runFlow:
+          when:
+            platform: iOS
+          commands:
+            # Collapse icon sits in the call-screen header (top-right); no testID on older builds.
+            - tapOn:
+                point: "92%, 9%"
+      - runFlow:
+          when:
+            platform: Android
+          commands:
+            - pressKey: Back
+      - waitForAnimationToEnd:
+          timeout: 3000
+# Last resort: relaunch keeps the session and usually lands on channel with call minimized.
+- runFlow:
+    when:
+      visible:
+        id: "mute-unmute"
+    commands:
+      - launchApp:
+          stopApp: true
+          clearState: false
+      - waitForAnimationToEnd:
+          timeout: 30000
+      - runFlow:
+          when:
+            visible:
+              id: "tab_bar.home.tab"
+          file: ../../utils/navigate_to_channel.yml
 
-# The CurrentCallBar should be visible in the channel view
 - extendedWaitUntil:
     visible:
       id: "calls.current_call_bar"
     timeout: 10000
 - takeScreenshot: calls-leave-current-call-bar-visible
 
-# Leave via the CurrentCallBar's leave (hangup) button; confirm the dialog.
 - tapOn:
     id: "calls.current_call_bar.leave"
 - tapOn:
     text: "Leave call"
     optional: true
 
-# Verify the CurrentCallBar disappears
 - extendedWaitUntil:
     notVisible:
       id: "calls.current_call_bar"

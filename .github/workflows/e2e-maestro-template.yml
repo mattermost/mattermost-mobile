@@ -161,12 +161,25 @@ jobs:
             plutil -insert LSSupportsOpeningDocumentsInPlace -bool true "$APP_PATH/Info.plist" 2>/dev/null || true
           echo "UIFileSharingEnabled patched in $APP_PATH/Info.plist"
 
-      # Same simulator boot / autofill / install / pre-warm sequence as Detox iOS CI.
+      # Same simulator boot / autofill / install sequence as Detox iOS CI.
+      # Skip pre-warm: Maestro login.yml uses clearState:true every flow, so a
+      # pre-warm launch is discarded immediately and can leave launchd in a
+      # bad state on iOS 26 before the first Maestro launchApp.
       - name: Pre-boot iOS Simulator (Detox-compatible)
         env:
           DEVICE_NAME: ${{ env.E2E_IOS_DEVICE_NAME }}
           DEVICE_OS_VERSION: ${{ env.E2E_IOS_DEVICE_OS_VERSION }}
+          PREBOOT_SKIP_PREWARM: "1"
         run: bash detox/scripts/preboot_ios_simulator.sh
+
+      # Old inline Maestro boot waited for SpringBoard via listapps before tests.
+      - name: Wait for Simulator UI readiness
+        run: |
+          for i in $(seq 1 30); do
+            xcrun simctl listapps "$SIMULATOR_ID" &>/dev/null && exit 0
+            sleep 2
+          done
+          echo "Warning: listapps did not succeed within 60s"
 
       - name: Place test fixture file in app Documents (channel_bookmark_file flow)
         run: |

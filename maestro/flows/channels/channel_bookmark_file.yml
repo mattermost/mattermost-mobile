@@ -99,15 +99,19 @@ appId: ${MAESTRO_APP_ID}
     visible:
       text: "test_bookmark.png"
     timeout: 30000
+# Wait for upload to finish before saving (save stays disabled until file_id is set).
+- extendedWaitUntil:
+    visible:
+      id: "channel_bookmark.file.upload_complete"
+    timeout: 30000
 # --- Tap Save to create the bookmark ---
-# iOS: RNN UIBarButtonItem exposes testID in accessibility tree.
-# Android: RNN top-bar button shows text "SAVE" (uppercased) but no testID.
+# iOS: header NavigationButton testID tap may not fire onPress on CI builds; use label text.
 - runFlow:
     when:
       platform: iOS
     commands:
       - tapOn:
-          id: "channel_bookmark.edit.save_button"
+          text: "Save"
 - runFlow:
     when:
       platform: Android

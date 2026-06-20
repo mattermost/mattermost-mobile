@@ -384,25 +384,47 @@ jobs:
   # can evolve independently. Maestro downloads ios-build-simulator-* and
   # android-maestro-build-files-* (release APK with embedded bundle) from this
   # workflow run via artifact_run_id.
-  run-maestro:
-    name: Maestro E2E
+  # iOS and Android are separate jobs so each platform starts as soon as its
+  # own build finishes — Android does not wait for build-ios-simulator.
+  run-maestro-ios:
+    name: Maestro iOS E2E
     needs:
       - build-ios-simulator
+      - provision-servers
+      - validate-maestro-flow-headers
+    if: |
+      always() &&
+      (inputs.PLATFORM == 'ios' || inputs.PLATFORM == 'both') &&
+      needs.provision-servers.result == 'success' &&
+      needs.validate-maestro-flow-headers.result == 'success' &&
+      (needs.build-ios-simulator.result == 'success' || needs.build-ios-simulator.result == 'skipped')
+    uses: ./.github/workflows/e2e-maestro-pr.yml
+    with:
+      MOBILE_VERSION: ${{ inputs.MOBILE_VERSION }}
+      PLATFORM: ios
+      SITE_1_URL: ${{ inputs.SITE_1_URL }}
+      SITE_2_URL: ${{ inputs.SITE_2_URL }}
+      SITE_3_URL: ${{ inputs.SITE_3_URL }}
+      run_type: ${{ inputs.run_type || 'PR' }}
+      artifact_run_id: ${{ github.run_id }}
+    secrets: inherit
+
+  run-maestro-android:
+    name: Maestro Android E2E
+    needs:
       - build-android-apk-maestro
       - provision-servers
       - validate-maestro-flow-headers
-    # Phase 2: run after shared builds finish. Skipped platform builds (e.g.
-    # build-ios-simulator when PLATFORM=android) do not block Maestro.
     if: |
       always() &&
+      (inputs.PLATFORM == 'android' || inputs.PLATFORM == 'both') &&
       needs.provision-servers.result == 'success' &&
       needs.validate-maestro-flow-headers.result == 'success' &&
-      (needs.build-ios-simulator.result == 'success' || needs.build-ios-simulator.result == 'skipped') &&
       (needs.build-android-apk-maestro.result == 'success' || needs.build-android-apk-maestro.result == 'skipped')
     uses: ./.github/workflows/e2e-maestro-pr.yml
     with:
       MOBILE_VERSION: ${{ inputs.MOBILE_VERSION }}
-      PLATFORM: ${{ inputs.PLATFORM }}
+      PLATFORM: android
       SITE_1_URL: ${{ inputs.SITE_1_URL }}
       SITE_2_URL: ${{ inputs.SITE_2_URL }}
       SITE_3_URL: ${{ inputs.SITE_3_URL }}
@@ -415,7 +437,8 @@ jobs:
     runs-on: ubuntu-22.04
     needs:
       - run-detox
-      - run-maestro
+      - run-maestro-ios
+      - run-maestro-android
     # IMPORTANT: !cancelled() prevents label removal when the workflow is cancelled
     # (e.g. by concurrency cancel-in-progress). Without this, Matterwick sees the
     # label removed and deletes the test servers while the replacement run is still

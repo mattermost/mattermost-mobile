@@ -19,8 +19,8 @@
 #   - channel_info.add_bookmark.button
 #   - channel_bookmark.type.link
 #   - channel_bookmark.screen
-#   - channel_bookmark_add.link.input
-#   - channel_bookmark_add.title.input
+#   - channel_bookmark_add.link.input (CI APK may only expose accessibility label "Link")
+#   - channel_bookmark.add.title.input
 #   - channel_bookmark.edit.save_button
 #   - close.channel_info.button
 #   - channel_header.bookmarks.list
@@ -66,8 +66,19 @@ appId: ${MAESTRO_APP_ID}
     timeout: 10000
 
 # --- Enter the bookmark URL ---
-- tapOn:
-    id: "channel_bookmark_add.link.input"
+# CI APK: FloatingTextInput testID may not be in the accessibility tree; label "Link" is.
+- runFlow:
+    when:
+      platform: iOS
+    commands:
+      - tapOn:
+          text: "Link"
+- runFlow:
+    when:
+      platform: Android
+    commands:
+      - tapOn:
+          id: "channel_bookmark_add.link.input"
 - inputText: "https://mattermost.com"
 
 # --- Wait for link metadata fetch to complete ---
@@ -78,24 +89,22 @@ appId: ${MAESTRO_APP_ID}
     notVisible:
       id: "channel_bookmark_add.link.loading"
     timeout: 60000
-
-# --- Set a predictable bookmark title ---
-# The autofilled title varies by site content; using a fixed title lets us reliably
-# identify the bookmark in the channel header bar when we tap it later.
-- tapOn:
-    id: "channel_bookmark_add.title.input"
-- eraseText: 100
-- inputText: "Test Link Bookmark"
+- extendedWaitUntil:
+    visible:
+      id: "channel_bookmark.add.title.input"
+    timeout: 10000
+# Use OG-autofilled title on CI; overwriting the title field can race metadata fetch.
+- waitForAnimationToEnd:
+    timeout: 2000
 
 # --- Save the bookmark ---
-# iOS: the save button is exposed as an accessibility element with its testID.
-# Android: RNN top-bar button shows text "SAVE" (uppercased) but no testID.
+# iOS: header NavigationButton testID tap may not fire onPress on CI builds; use label text.
 - runFlow:
     when:
       platform: iOS
     commands:
       - tapOn:
-          id: "channel_bookmark.edit.save_button"
+          text: "Save"
 - runFlow:
     when:
       platform: Android
@@ -144,15 +153,17 @@ appId: ${MAESTRO_APP_ID}
     timeout: 10000
 
 # --- Tap the bookmark to open it in the browser ---
-# On iOS, the bookmark title matches the text we typed above.
-# On Android, OG metadata may append to the title after save, so use the
-# title element ID pattern instead of text matching.
+# OG metadata sets the title (e.g. "Mattermost"); tap the bookmark bar item by URL text.
 - runFlow:
     when:
       platform: iOS
     commands:
       - tapOn:
-          text: "Test Link Bookmark"
+          text: "mattermost.com"
+          optional: true
+      - tapOn:
+          text: "Mattermost"
+          optional: true
 - runFlow:
     when:
       platform: Android

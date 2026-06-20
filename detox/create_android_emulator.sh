@@ -54,6 +54,16 @@ prepare_avd_for_boot() {
     # "snapshot operation is pending and timeout has expired" on boot.
     rm -rf "${AVD_NAME}/snapshots" 2>/dev/null || true
     rm -f "${AVD_NAME}"/userdata*.img* "${AVD_NAME}"/cache.img* 2>/dev/null || true
+
+    if [[ "$CI" == "true" ]]; then
+        # Restored AVD caches can retain lock files from a crashed prior boot, which
+        # makes the emulator exit with "Running multiple emulators with the same AVD".
+        rm -f "${AVD_NAME}"/*.lock "${AVD_NAME}"/multiinstance.lock 2>/dev/null || true
+        adb devices 2>/dev/null | grep -E '^emulator-' | cut -f1 | while read -r serial; do
+            adb -s "$serial" emu kill 2>/dev/null || true
+        done
+        sleep 2
+    fi
 }
 
 start_adb_server() {

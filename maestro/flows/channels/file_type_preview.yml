@@ -33,11 +33,19 @@ appId: ${MAESTRO_APP_ID}
     id: "scroll-to-end-view"
     optional: true
 
+# Allow posts to sync after fresh login before scrolling to file attachments.
+- waitForAnimationToEnd:
+    timeout: 5000
+
 # ── 1. IMAGE — opens in the in-app gallery viewer ─────────────────────────
-# The channel opens at the intro/top. All file posts are BELOW the current
-# viewport (below the channel intro and system messages). Scroll DOWN to reveal them.
-# IMAGE is the first (oldest) file post so it appears just above the others.
-# On iOS the channel opens scrolled below the file posts; scroll UP to find them.
+# File posts may be above or below the initial viewport depending on iOS scroll
+# position; try DOWN first (newest posts at bottom), then UP as fallback.
+- scrollUntilVisible:
+    element:
+      id: "${IMAGE_FILE_ID}-file-container"
+    direction: DOWN
+    timeout: 10000
+    optional: true
 - scrollUntilVisible:
     element:
       id: "${IMAGE_FILE_ID}-file-container"
@@ -171,6 +179,13 @@ appId: ${MAESTRO_APP_ID}
       - tapOn:
           text: "Close"
           optional: true
+# Quick Look dismisses with Done; only fall back to back navigation for in-app viewers.
+- runFlow:
+    when:
+      platform: iOS
+      notVisible:
+        id: "channel.post_draft.post.input"
+    commands:
       - tapOn:
           id: "navigation.header.back"
           optional: true

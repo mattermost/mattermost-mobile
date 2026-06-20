@@ -203,15 +203,19 @@ async function enableCallsInChannel(adminToken: string, channelId: string): Prom
 async function ensureEnterpriseLicense(adminToken: string): Promise<void> {
     try {
         const license = await request('GET', '/api/v4/license/client?format=old', null, adminToken);
-        if (license.IsLicensed === 'true') {
+        const sku = String(license.SkuShortName || '').toLowerCase();
+        if (license.IsLicensed === 'true' && sku && sku !== 'entry') {
             console.log('[seed] Server already has Enterprise license.');
             return;
+        }
+        if (license.IsLicensed === 'true') {
+            console.log('[seed] Entry license detected — requesting trial upgrade for in-app Report a Problem flows...');
         }
     } catch (err: any) {
         console.warn(`[seed] License check failed: ${err.message}. Will try requesting trial anyway.`);
     }
 
-    console.log('[seed] No Enterprise license — requesting trial...');
+    console.log('[seed] Requesting trial Enterprise license...');
     try {
         await request('POST', '/api/v4/trial-license', {
             users: 1000,

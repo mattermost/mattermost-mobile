@@ -4,14 +4,35 @@
 # Requires: SITE_1_URL env var
 appId: ${MAESTRO_APP_ID}
 ---
-- tapOn:
-    id: "server_form.server_url.input"
-- eraseText: 50
-- inputText: ${SITE_1_URL}
-- tapOn:
-    id: "server_form.server_display_name.input"
-- eraseText: 50
-- inputText: "Server 1"
+# iOS FloatingTextInput exposes label text to accessibility, not testID.
+- runFlow:
+    when:
+      platform: iOS
+    commands:
+      - tapOn:
+          text: "Enter Server URL"
+      - eraseText: 50
+      - inputText: ${SITE_1_URL}
+      - tapOn:
+          text: "Display Name"
+      - eraseText: 50
+      - inputText: "Server 1"
+- runFlow:
+    when:
+      platform: Android
+    commands:
+      - tapOn:
+          id: "server_form.server_url.input"
+      - eraseText: 50
+      - inputText: ${SITE_1_URL}
+      - tapOn:
+          id: "server_form.server_display_name.input"
+      - eraseText: 50
+      - inputText: "Server 1"
+- extendedWaitUntil:
+    visible:
+      id: "server_form.connect.button"
+    timeout: 5000
 - tapOn:
     id: "server_form.connect.button"
 # Wait for the connection to complete before dismissing any optional dialogs.
@@ -36,5 +57,5 @@ appId: ${MAESTRO_APP_ID}
 # 60s covers slower cloud connections and iOS first-connect overhead.
 - extendedWaitUntil:
     notVisible:
-      id: "server_form.server_url.input"
+      id: "server_form.display_help"
     timeout: 60000

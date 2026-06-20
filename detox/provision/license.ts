@@ -5,17 +5,22 @@ import {logInfo, logWarn} from './log';
 
 import type {MattermostClient} from './types';
 
-type LicenseClientResponse = {IsLicensed?: string};
+type LicenseClientResponse = {IsLicensed?: string; SkuShortName?: string};
 type ApiErrorBody = {message?: string};
 
 export async function ensureTrialLicense(client: MattermostClient, token: string): Promise<void> {
     const licenseRes = await client.request<LicenseClientResponse>('GET', '/api/v4/license/client?format=old', undefined, token);
-    if (licenseRes.data.IsLicensed === 'true') {
+    const sku = licenseRes.data.SkuShortName?.toLowerCase();
+    if (licenseRes.data.IsLicensed === 'true' && sku && sku !== 'entry') {
         logInfo('Server already has Enterprise license.');
         return;
     }
 
-    logInfo('No Enterprise license — requesting trial...');
+    if (licenseRes.data.IsLicensed === 'true') {
+        logInfo('Entry license detected — requesting trial upgrade for in-app Report a Problem flows...');
+    } else {
+        logInfo('No Enterprise license — requesting trial...');
+    }
     const trialRes = await client.request<ApiErrorBody>('POST', '/api/v4/trial-license', {
         users: 1000,
         terms_accepted: true,

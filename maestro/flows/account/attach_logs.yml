@@ -72,7 +72,24 @@ appId: ${MAESTRO_APP_ID}
               id: "report_problem.screen"
           commands:
             - takeScreenshot: report-problem-in-app
-            - back
+            # iOS 26+: modal Report a Problem ignores Maestro `back`; relaunch keeps session.
+            - launchApp:
+                stopApp: true
+                clearState: false
+            - waitForAnimationToEnd:
+                timeout: 30000
+            - extendedWaitUntil:
+                visible:
+                  id: "tab_bar.home.tab"
+                timeout: 15000
+            - tapOn:
+                id: "tab_bar.account.tab"
+            - extendedWaitUntil:
+                visible:
+                  id: "account.settings.option"
+                timeout: 10000
+            - tapOn:
+                id: "account.settings.option"
 
 # Android: Chrome Custom Tab opens; Settings option leaves the tree until Back is pressed.
 - runFlow:
