@@ -1,6 +1,6 @@
-# Cancel in-progress E2E workflow runs when the E2E/Run label is removed from a PR.
-# When the label is removed, Matterwick tears down the provisioned test servers,
-# so there is no point in letting the E2E jobs continue — they will fail mid-way.
+# Cancel in-progress E2E workflow runs when the E2E/Run label is removed from a PR
+# by a human. Skips removals by github-actions[bot] (label refresh / post-run cleanup)
+# so synchronize refreshes do not race Matterwick dispatch.
 name: Cancel E2E on label removal
 
 on:
@@ -11,9 +11,10 @@ on:
 jobs:
   cancel-e2e-runs:
     if: >-
-      github.event.label.name == 'E2E/Run'
-      || github.event.label.name == 'E2E/Run-iOS'
-      || github.event.label.name == 'E2E/Run-Android'
+      (github.event.label.name == 'E2E/Run'
+        || github.event.label.name == 'E2E/Run-iOS'
+        || github.event.label.name == 'E2E/Run-Android')
+      && github.event.sender.login != 'github-actions[bot]'
     runs-on: ubuntu-22.04
     permissions:
       actions: write
