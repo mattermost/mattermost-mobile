@@ -38,7 +38,7 @@ jobs:
       pull-requests: write
     steps:
       - name: Strip stale E2E/Run labels before refresh
-        uses: actions/github-script@e7aeb8c663f696059ebb5f9ab1425ed2ef511bdb # v7.0.1
+        uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9.0.0
         with:
           script: |
             const owner = context.repo.owner;
@@ -80,7 +80,7 @@ jobs:
       pull-requests: write
     steps:
       - name: Add E2E/Run (PAT — emits labeled webhook for Matterwick)
-        uses: actions/github-script@e7aeb8c663f696059ebb5f9ab1425ed2ef511bdb # v7.0.1
+        uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9.0.0
         with:
           github-token: ${{ secrets.MATTERMOST_BUILD_GH_TOKEN }}
           script: |
@@ -138,7 +138,7 @@ jobs:
           github.event.action == 'labeled'
           && github.event.label.name == 'E2E/Override'
           && github.event.pull_request.head.repo.full_name == github.repository
-        uses: actions/github-script@e7aeb8c663f696059ebb5f9ab1425ed2ef511bdb # v7.0.1
+        uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9.0.0
         with:
           script: |
             const owner = context.repo.owner;

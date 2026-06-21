@@ -212,6 +212,7 @@ jobs:
 
       - name: Install Homebrew Dependencies
         run: |
+          brew trust wix/brew 2>/dev/null || true
           brew tap wix/brew
           brew install applesimutils
           # Re-link after potential cache restore: cache restores Cellar files but not

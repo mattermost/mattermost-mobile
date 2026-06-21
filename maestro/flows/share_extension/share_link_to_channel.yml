@@ -102,35 +102,8 @@ appId: ${MAESTRO_APP_ID}
           timeout: 5000
       - tapOn:
           id: "com.android.chrome:id/share_menu_id"
-      # On older Android the share sheet shows a truncated list and requires
-      # tapping "More" to see all targets. On API 34+ all targets are shown
-      # directly. Try "More" first, and if it's absent tap Mattermost Beta
-      # directly instead.
       - runFlow:
-          when:
-            visible:
-              text: "More"
-          commands:
-            - tapOn:
-                text: "More"
-      - extendedWaitUntil:
-          visible:
-            text: "Mattermost"
-          timeout: 10000
-      - runFlow:
-          when:
-            visible:
-              text: "Mattermost Beta"
-          commands:
-            - tapOn:
-                text: "Mattermost Beta"
-      - runFlow:
-          when:
-            notVisible:
-              text: "Mattermost Beta"
-          commands:
-            - tapOn:
-                text: "Mattermost"
+          file: ../../utils/select_mattermost_android_share_sheet.yml
 
 # Share extension opens: tap Channel option to open channel picker
 - extendedWaitUntil:

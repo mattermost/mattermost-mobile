@@ -1,0 +1,54 @@
+# Select Mattermost in the Android system share sheet.
+# Handles truncated lists on API 34/35: "See all", scroll, and "Mattermost Beta" label.
+# Usage: - runFlow: ../../utils/select_mattermost_android_share_sheet.yml
+appId: ${MAESTRO_APP_ID}
+---
+- tapOn:
+    text: "See all"
+    optional: true
+- tapOn:
+    text: "More"
+    optional: true
+# Compact share sheets on API 35 may hide targets below the fold.
+- runFlow:
+    when:
+      notVisible:
+        text: "Mattermost"
+    commands:
+      - swipe:
+          start: "50%, 85%"
+          end: "50%, 45%"
+      - swipe:
+          start: "50%, 85%"
+          end: "50%, 45%"
+          optional: true
+- scrollUntilVisible:
+    element:
+      text: "Mattermost"
+    direction: DOWN
+    timeout: 15000
+    optional: true
+- scrollUntilVisible:
+    element:
+      text: "Mattermost Beta"
+    direction: DOWN
+    timeout: 15000
+    optional: true
+- extendedWaitUntil:
+    visible:
+      text: "Mattermost"
+    timeout: 30000
+- runFlow:
+    when:
+      visible:
+        text: "Mattermost Beta"
+    commands:
+      - tapOn:
+          text: "Mattermost Beta"
+- runFlow:
+    when:
+      notVisible:
+        text: "Mattermost Beta"
+    commands:
+      - tapOn:
+          text: "Mattermost"

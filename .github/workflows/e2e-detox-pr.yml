@@ -8,8 +8,8 @@
 #   build-ios-simulator, build-android-apk, build-android-apk-maestro,
 #   provision-servers, validate-maestro-flow-headers
 # Phase 2 — tests (parallel, after phase 1):
-#   run-detox  → e2e-detox.yml
-#   run-maestro → e2e-maestro-pr.yml (downloads phase-1 artifacts via artifact_run_id)
+#   run-detox-ios / run-detox-android → e2e-detox.yml (each starts when its build finishes)
+#   run-maestro-ios / run-maestro-android → e2e-maestro-pr.yml (downloads phase-1 artifacts via artifact_run_id)
 name: E2E
 
 on:
@@ -78,7 +78,7 @@ jobs:
     steps:
       - name: Check PR labels for E2E/Override
         id: policy
-        uses: actions/github-script@e7aeb8c663f696059ebb5f9ab1425ed2ef511bdb # v7.0.1
+        uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9.0.0
         with:
           script: |
             const prInput = parseInt('${{ inputs.pr_number }}', 10);
@@ -426,11 +426,39 @@ jobs:
           ADMIN_USERNAME: ${{ secrets.MM_MOBILE_E2E_ADMIN_USERNAME }}
           ADMIN_PASSWORD: ${{ secrets.MM_MOBILE_E2E_ADMIN_PASSWORD }}
 
-  run-detox:
-    name: Detox E2E
+  # iOS and Android Detox jobs are separate so each platform starts as soon as its
+  # own build finishes — Android does not wait for build-ios-simulator.
+  run-detox-ios:
+    name: Detox iOS E2E
     needs:
       - resolve-e2e-policy
       - build-ios-simulator
+      - provision-servers
+    permissions:
+      contents: read
+      statuses: write
+      actions: read
+    if: |
+      always() &&
+      needs.resolve-e2e-policy.outputs.e2e_override != 'true' &&
+      (inputs.PLATFORM == 'ios' || inputs.PLATFORM == 'both') &&
+      needs.provision-servers.result == 'success' &&
+      (needs.build-ios-simulator.result == 'success' || needs.build-ios-simulator.result == 'skipped')
+    uses: ./.github/workflows/e2e-detox.yml
+    with:
+      MOBILE_VERSION: ${{ inputs.MOBILE_VERSION }}
+      PLATFORM: ios
+      SITE_1_URL: ${{ inputs.SITE_1_URL }}
+      SITE_2_URL: ${{ inputs.SITE_2_URL }}
+      SITE_3_URL: ${{ inputs.SITE_3_URL }}
+      run_type: ${{ inputs.run_type || 'PR' }}
+      artifact_run_id: ${{ github.run_id }}
+    secrets: inherit
+
+  run-detox-android:
+    name: Detox Android E2E
+    needs:
+      - resolve-e2e-policy
       - build-android-apk
       - provision-servers
     permissions:
@@ -440,13 +468,13 @@ jobs:
     if: |
       always() &&
       needs.resolve-e2e-policy.outputs.e2e_override != 'true' &&
+      (inputs.PLATFORM == 'android' || inputs.PLATFORM == 'both') &&
       needs.provision-servers.result == 'success' &&
-      (needs.build-ios-simulator.result == 'success' || needs.build-ios-simulator.result == 'skipped') &&
       (needs.build-android-apk.result == 'success' || needs.build-android-apk.result == 'skipped')
     uses: ./.github/workflows/e2e-detox.yml
     with:
       MOBILE_VERSION: ${{ inputs.MOBILE_VERSION }}
-      PLATFORM: ${{ inputs.PLATFORM }}
+      PLATFORM: android
       SITE_1_URL: ${{ inputs.SITE_1_URL }}
       SITE_2_URL: ${{ inputs.SITE_2_URL }}
       SITE_3_URL: ${{ inputs.SITE_3_URL }}
@@ -541,7 +569,8 @@ jobs:
       pull-requests: read
     needs:
       - resolve-e2e-policy
-      - run-detox
+      - run-detox-ios
+      - run-detox-android
       - run-maestro-ios
       - run-maestro-android
     # Run after success OR failure so Matterwick can re-trigger on the next push.
@@ -550,7 +579,8 @@ jobs:
       always() &&
       !cancelled() &&
       needs.resolve-e2e-policy.outputs.e2e_override != 'true' &&
-      contains(fromJSON('["success","failure","skipped"]'), needs.run-detox.result) &&
+      contains(fromJSON('["success","failure","skipped"]'), needs.run-detox-ios.result) &&
+      contains(fromJSON('["success","failure","skipped"]'), needs.run-detox-android.result) &&
       contains(fromJSON('["success","failure","skipped"]'), needs.run-maestro-ios.result) &&
       contains(fromJSON('["success","failure","skipped"]'), needs.run-maestro-android.result)
     steps:

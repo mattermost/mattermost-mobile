@@ -32,10 +32,11 @@ appId: ${MAESTRO_APP_ID}
 
 - tapOn:
     id: "account.settings.option"
+# Help can take up to 30s to appear while server config syncs on first login.
 - extendedWaitUntil:
     visible:
       id: "settings.help.option"
-    timeout: 10000
+    timeout: 30000
 
 - tapOn:
     id: "settings.help.option"

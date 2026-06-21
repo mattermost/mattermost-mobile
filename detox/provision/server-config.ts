@@ -48,6 +48,7 @@ export async function configureTestServer(client: MattermostClient, token: strin
     const supportSettings = config.SupportSettings as Record<string, unknown>;
     supportSettings.ReportAProblemType = 'default';
     supportSettings.AllowDownloadLogs = true;
+    supportSettings.HelpLink = 'https://docs.mattermost.com/';
 
     config.PasswordSettings = config.PasswordSettings || {};
     (config.PasswordSettings as Record<string, unknown>).MinimumLength = 8;

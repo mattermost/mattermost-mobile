@@ -47,7 +47,7 @@ jobs:
       contents: read
       statuses: write
     steps:
-      - uses: mattermost/actions/delivery/update-commit-status@d5174b860704729f4c14ef8489ae075742bfa08a
+      - uses: ./.github/actions/update-commit-status
         env:
           GITHUB_TOKEN: ${{ github.token }}
         with:
@@ -64,7 +64,7 @@ jobs:
       contents: read
       statuses: write
     steps:
-      - uses: mattermost/actions/delivery/update-commit-status@d5174b860704729f4c14ef8489ae075742bfa08a
+      - uses: ./.github/actions/update-commit-status
         env:
           GITHUB_TOKEN: ${{ github.token }}
         with:
@@ -117,7 +117,7 @@ jobs:
     needs:
       - run-maestro-ios
     steps:
-      - uses: mattermost/actions/delivery/update-commit-status@d5174b860704729f4c14ef8489ae075742bfa08a
+      - uses: ./.github/actions/update-commit-status
         env:
           GITHUB_TOKEN: ${{ github.token }}
         with:
@@ -142,7 +142,7 @@ jobs:
     needs:
       - run-maestro-android
     steps:
-      - uses: mattermost/actions/delivery/update-commit-status@d5174b860704729f4c14ef8489ae075742bfa08a
+      - uses: ./.github/actions/update-commit-status
         env:
           GITHUB_TOKEN: ${{ github.token }}
         with:

@@ -72,7 +72,9 @@ if [[ "$PLATFORM" == "ios" ]]; then
     "maestro/flows/calls"
     "maestro/flows/channels/channel_bookmark_file.yml"
     "maestro/flows/account/help_url.yml"
-    "maestro/flows/share_extension"
+    "maestro/flows/share_extension/share_link_to_channel.yml"
+    "maestro/flows/share_extension/share_text_to_channel.yml"
+    "maestro/flows/share_extension/share_image_to_channel.yml"
   )
 else
   BATCHES=(
@@ -81,7 +83,8 @@ else
     "maestro/flows/calls"
     "maestro/flows/channels/channel_bookmark_file.yml"
     "maestro/flows/account/help_url.yml"
-    "maestro/flows/share_extension/share_link_to_channel.yml maestro/flows/share_extension/share_text_to_channel.yml"
+    "maestro/flows/share_extension/share_link_to_channel.yml"
+    "maestro/flows/share_extension/share_text_to_channel.yml"
   )
 fi
 
@@ -108,6 +111,48 @@ ensure_ios_simulator_healthy() {
   echo "Warning: simulator may still be unhealthy after reboot"
 }
 
+ensure_android_app_launchable() {
+  [[ "$PLATFORM" != "android" ]] && return 0
+  command -v adb >/dev/null 2>&1 || return 0
+
+  echo "==> Ensuring Android app $MAESTRO_APP_ID is launchable"
+  adb shell am force-stop "$MAESTRO_APP_ID" 2>/dev/null || true
+  if ! adb shell monkey -p "$MAESTRO_APP_ID" -c android.intent.category.LAUNCHER 1 >/dev/null 2>&1; then
+    adb shell am start -n "$MAESTRO_APP_ID/.MainActivity" >/dev/null 2>&1 || true
+  fi
+  sleep 2
+  adb shell input keyevent KEYCODE_HOME 2>/dev/null || true
+  sleep 1
+}
+
+# macOS CI uses bash 3.2; with `set -u`, expanding an empty array via "${arr[@]}"
+# throws "unbound variable". Build the maestro argv explicitly instead.
+run_maestro_batch() {
+  local batch_xml=$1
+  shift
+  local -a flows=("$@")
+  local -a cmd=( "$MAESTRO_BIN" test )
+
+  if ((${#DEVICE_ARGS[@]})); then
+    cmd+=("${DEVICE_ARGS[@]}")
+  fi
+  if ((${#platform_args[@]})); then
+    cmd+=("${platform_args[@]}")
+  fi
+
+  cmd+=(
+    --format junit
+    --output "$batch_xml"
+    --test-output-dir "$ARTIFACTS_DIR"
+    --flatten-debug-output
+    --exclude-tags=MM-T67856_4
+  )
+  cmd+=("${maestro_env_args[@]}")
+  cmd+=("${flows[@]}")
+
+  "${cmd[@]}"
+}
+
 BATCH_XMLS=()
 BATCH_FAILED=0
 batch_idx=0
@@ -121,29 +166,27 @@ for batch_paths in "${BATCHES[@]}"; do
   echo ""
   echo "==> Maestro batch $batch_idx/${#BATCHES[@]}: ${path_arr[*]}"
   ensure_ios_simulator_healthy
+  ensure_android_app_launchable
 
   set +e
-  "$MAESTRO_BIN" test \
-    "${DEVICE_ARGS[@]}" \
-    "${platform_args[@]}" \
-    --format junit \
-    --output "$batch_xml" \
-    --test-output-dir "$ARTIFACTS_DIR" \
-    --flatten-debug-output \
-    --exclude-tags=MM-T67856_4 \
-    "${maestro_env_args[@]}" \
-    "${path_arr[@]}"
+  run_maestro_batch "$batch_xml" "${path_arr[@]}"
   rc=$?
   set -e
 
   if [[ $rc -ne 0 ]]; then
     echo "==> Batch $batch_idx failed (exit $rc) — continuing with remaining batches"
     BATCH_FAILED=1
+    if [[ "$PLATFORM" == "ios" ]]; then
+      ensure_ios_simulator_healthy
+    fi
   fi
 
-  # Browser batches can wedge the driver; recover before the next batch on iOS.
+  # Browser/share batches can wedge the driver; recover before the next batch.
   if [[ "$PLATFORM" == "ios" ]] && [[ "$batch_paths" == *help_url* || "$batch_paths" == *share_extension* ]]; then
     ensure_ios_simulator_healthy
+  fi
+  if [[ "$PLATFORM" == "android" ]] && [[ "$batch_paths" == *help_url* || "$batch_paths" == *share_* ]]; then
+    ensure_android_app_launchable
   fi
 done
 
