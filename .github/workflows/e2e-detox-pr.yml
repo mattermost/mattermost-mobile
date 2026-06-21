@@ -226,8 +226,8 @@ jobs:
 
   build-android-apk:
     if: >-
-      false
-      && needs.resolve-e2e-policy.outputs.e2e_override != 'true'
+      needs.resolve-e2e-policy.outputs.e2e_override != 'true'
+      && (inputs.PLATFORM == 'android' || inputs.PLATFORM == 'both')
     runs-on: ubuntu-latest-8-cores
     needs:
       - resolve-e2e-policy
@@ -433,10 +433,16 @@ jobs:
       - build-ios-simulator
       - build-android-apk
       - provision-servers
-    # TEMP: disabled while Maestro CI is being validated — restore the always() condition when ready
-    if: >-
-      false
-      && needs.resolve-e2e-policy.outputs.e2e_override != 'true'
+    permissions:
+      contents: read
+      statuses: write
+      actions: read
+    if: |
+      always() &&
+      needs.resolve-e2e-policy.outputs.e2e_override != 'true' &&
+      needs.provision-servers.result == 'success' &&
+      (needs.build-ios-simulator.result == 'success' || needs.build-ios-simulator.result == 'skipped') &&
+      (needs.build-android-apk.result == 'success' || needs.build-android-apk.result == 'skipped')
     uses: ./.github/workflows/e2e-detox.yml
     with:
       MOBILE_VERSION: ${{ inputs.MOBILE_VERSION }}
@@ -475,6 +481,10 @@ jobs:
       - build-ios-simulator
       - provision-servers
       - validate-maestro-flow-headers
+    permissions:
+      contents: read
+      statuses: write
+      actions: read
     if: |
       always() &&
       needs.resolve-e2e-policy.outputs.e2e_override != 'true' &&
@@ -500,6 +510,10 @@ jobs:
       - build-android-apk-maestro
       - provision-servers
       - validate-maestro-flow-headers
+    permissions:
+      contents: read
+      statuses: write
+      actions: read
     if: |
       always() &&
       needs.resolve-e2e-policy.outputs.e2e_override != 'true' &&
