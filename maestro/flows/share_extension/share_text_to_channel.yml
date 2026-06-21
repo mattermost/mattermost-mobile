@@ -113,24 +113,10 @@ appId: ${MAESTRO_APP_ID}
     when:
       platform: Android
     commands:
-      - stopApp:
-          appId: "com.android.chrome"
-      - launchApp:
-          appId: "com.android.chrome"
-      - tapOn:
-          text: "Use without an account"
-          optional: true
-      - tapOn:
-          text: "No thanks"
-          optional: true
-      - tapOn:
-          id: "com.android.chrome:id/search_box_text"
-          optional: true
-      - tapOn:
-          id: "com.android.chrome:id/url_bar"
-          optional: true
-      - inputText: "https://example.com"
-      - pressKey: Enter
+      - runFlow:
+          file: ../../utils/open_url_in_chrome_android.yml
+          env:
+            CHROME_URL: "https://example.com"
       - extendedWaitUntil:
           visible:
             text: "Example Domain"

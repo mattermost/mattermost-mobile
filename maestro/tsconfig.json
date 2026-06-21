@@ -5,11 +5,12 @@
     "moduleResolution": "Node16",
     "esModuleInterop": true,
     "allowSyntheticDefaultImports": true,
-    "strict": false,
+    "strict": true,
     "skipLibCheck": true,
-    "outDir": "dist",
+    "noEmit": true,
+    "forceConsistentCasingInFileNames": true,
     "types": ["node"]
   },
-  "include": ["fixtures/**/*.ts", "scripts/**/*.ts", "utils/**/*.ts"],
+  "include": ["fixtures/**/*.ts", "utils/**/*.ts"],
   "exclude": ["fixtures/calls_seed.ts"]
 }

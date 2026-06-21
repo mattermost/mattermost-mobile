@@ -22,6 +22,9 @@ appId: ${MAESTRO_APP_ID}
       text: "Recent"
     timeout: 15000
 - tapOn:
+    text: "Downloads"
+    optional: true
+- tapOn:
     id: "com.google.android.documentsui:id/option_menu_search"
 - extendedWaitUntil:
     visible:

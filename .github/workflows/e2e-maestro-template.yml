@@ -50,9 +50,10 @@ on:
 
 # Least-privilege token: maestro jobs only check out code and talk to the test
 # server / AWS via dedicated secrets — they never use GITHUB_TOKEN for writes.
-# Setting this here caps the token for every caller of this reusable workflow.
+# actions: read is required to download build artifacts from the parent workflow run.
 permissions:
   contents: read
+  actions: read
 env:
   ADMIN_EMAIL: ${{ secrets.MM_MOBILE_E2E_ADMIN_EMAIL }}
   ADMIN_USERNAME: ${{ secrets.MM_MOBILE_E2E_ADMIN_USERNAME }}
@@ -281,34 +282,15 @@ jobs:
       - name: Run Maestro Flows (iOS)
         env:
           FLOW_PATH: ${{ steps.resolve-flow-path.outputs.flow_path }}
+          E2E_IOS_DEVICE_NAME: ${{ env.E2E_IOS_DEVICE_NAME }}
+          E2E_IOS_DEVICE_OS_VERSION: ${{ env.E2E_IOS_DEVICE_OS_VERSION }}
+          MAESTRO_DRIVER_STARTUP_TIMEOUT: "180000"
         run: |
           set -a
           source maestro/.maestro-test-env.sh
           set +a
-
-          mkdir -p build
-          # Split the (already validated) space-separated path list into an
-          # array so it expands as distinct args without re-globbing/injection.
-          read -r -a FLOW_PATH_ARR <<< "$FLOW_PATH"
-
-          # Exclude MM-T67856_4 from the main run — it requires
-          # AllowDownloadLogs=false on the server, set in the dedicated step
-          # below. All other flows assume the default `true`.
-          ~/.maestro/bin/maestro test \
-            --device "$SIMULATOR_ID" \
-            --format junit \
-            --output build/maestro-report.xml \
-            --test-output-dir build/maestro-artifacts \
-            --flatten-debug-output \
-            --exclude-tags=MM-T67856_4 \
-            --env SITE_1_URL="${SITE_1_URL}" \
-            --env TEST_USER_EMAIL="${TEST_USER_EMAIL}" \
-            --env TEST_USER_PASSWORD="${TEST_USER_PASSWORD}" \
-            --env TEST_CHANNEL_NAME="${TEST_CHANNEL_NAME}" \
-            --env TEST_TEAM_NAME="${TEST_TEAM_NAME}" \
-            --env ADMIN_TOKEN="${ADMIN_TOKEN}" \
-            --env MAESTRO_APP_ID="com.mattermost.rnbeta" \
-            "${FLOW_PATH_ARR[@]}"
+          chmod +x maestro/scripts/run_ci_batches.sh
+          maestro/scripts/run_ci_batches.sh --platform ios --device "$SIMULATOR_ID"
 
       - name: Run MM-T67856_4 with AllowDownloadLogs=false (iOS)
         # Isolated step: patch the server config to AllowDownloadLogs=false,
@@ -659,33 +641,13 @@ jobs:
       - name: Run Maestro Flows (Android)
         env:
           FLOW_PATH: ${{ steps.resolve-flow-path.outputs.flow_path }}
+          MAESTRO_DRIVER_STARTUP_TIMEOUT: "180000"
         run: |
           set -a
           source maestro/.maestro-test-env.sh
           set +a
-
-          mkdir -p build
-          # Split the (already validated) space-separated path list into an
-          # array so it expands as distinct args without re-globbing/injection.
-          read -r -a FLOW_PATH_ARR <<< "$FLOW_PATH"
-
-          # Exclude MM-T67856_4 from the main run (requires
-          # AllowDownloadLogs=false; handled by the dedicated step below).
-          ~/.maestro/bin/maestro test \
-            --format junit \
-            --output build/maestro-report.xml \
-            --test-output-dir build/maestro-artifacts \
-            --flatten-debug-output \
-            --platform android \
-            --exclude-tags=MM-T67856_4 \
-            --env SITE_1_URL="${SITE_1_URL}" \
-            --env TEST_USER_EMAIL="${TEST_USER_EMAIL}" \
-            --env TEST_USER_PASSWORD="${TEST_USER_PASSWORD}" \
-            --env TEST_CHANNEL_NAME="${TEST_CHANNEL_NAME}" \
-            --env TEST_TEAM_NAME="${TEST_TEAM_NAME}" \
-            --env ADMIN_TOKEN="${ADMIN_TOKEN}" \
-            --env MAESTRO_APP_ID="com.mattermost.rnbeta" \
-            "${FLOW_PATH_ARR[@]}"
+          chmod +x maestro/scripts/run_ci_batches.sh
+          maestro/scripts/run_ci_batches.sh --platform android
 
       - name: Run MM-T67856_4 with AllowDownloadLogs=false (Android)
         # Isolated step: patch server config to AllowDownloadLogs=false, run

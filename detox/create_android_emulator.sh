@@ -179,6 +179,15 @@ configure_emulator_for_tests() {
     adb shell setprop sys.timezone "America/New_York" 2>/dev/null || true
     adb shell am broadcast -a android.intent.action.TIMEZONE_CHANGED \
         --ez bypassUserRestrictions true 2>/dev/null || true
+    configure_chrome_for_ci
+}
+
+configure_chrome_for_ci() {
+    adb shell 'mkdir -p /data/local/tmp' 2>/dev/null || true
+    adb shell 'echo "chrome --disable-fre --no-first-run --no-default-browser-check" > /data/local/tmp/chrome-command-line' 2>/dev/null || true
+    adb shell am start -n com.android.chrome/com.google.android.apps.chrome.Main 2>/dev/null || true
+    sleep 3
+    adb shell input keyevent 4 2>/dev/null || true
 }
 
 push_e2e_fixtures() {
@@ -186,6 +195,8 @@ push_e2e_fixtures() {
     if [[ -f "$fixture" ]]; then
         adb push "$fixture" /sdcard/Download/test_bookmark.png
         echo "Pushed test fixture to /sdcard/Download/test_bookmark.png"
+        adb shell am broadcast -a android.intent.action.MEDIA_SCANNER_SCAN_FILE \
+            -d file:///sdcard/Download/test_bookmark.png 2>/dev/null || true
     fi
 }
 

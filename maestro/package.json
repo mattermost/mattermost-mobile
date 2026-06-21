@@ -3,6 +3,7 @@
   "version": "1.0.0",
   "description": "Maestro system-level E2E tests for Mattermost Mobile",
   "scripts": {
+    "check": "tsc --noEmit",
     "test:ios": "maestro test --platform ios flows/",
     "test:android": "maestro test --platform android flows/",
     "dry-run": "maestro test --dry-run flows/",

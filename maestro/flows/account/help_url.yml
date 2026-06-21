@@ -23,7 +23,6 @@ appId: ${MAESTRO_APP_ID}
 ---
 - runFlow: ../../utils/login.yml
 
-# Open Account screen
 - tapOn:
     id: "tab_bar.account.tab"
 - extendedWaitUntil:
@@ -31,7 +30,6 @@ appId: ${MAESTRO_APP_ID}
       id: "account.screen"
     timeout: 10000
 
-# Open Settings — wait for a known child element so the screen is fully rendered
 - tapOn:
     id: "account.settings.option"
 - extendedWaitUntil:
@@ -39,32 +37,32 @@ appId: ${MAESTRO_APP_ID}
       id: "settings.help.option"
     timeout: 10000
 
-# Tap Help
 - tapOn:
     id: "settings.help.option"
 
-# iOS: dismiss SFSafariViewController.
-# iOS 26+: uses a breadcrumb button (resource-id "breadcrumb", text "Return to <AppName>").
-# iOS ≤ 18: uses a "Done" button in the top-left corner.
+# iOS: dismiss SFSafariViewController (same branches as attach_logs.yml).
 - runFlow:
     when:
       platform: iOS
     commands:
-      - extendedWaitUntil:
-          visible:
-            id: "breadcrumb"
-          timeout: 8000
-      - takeScreenshot: help-browser-opened
-      - tapOn:
-          id: "breadcrumb"
-          optional: true
-      - tapOn:
-          text: "Done"
-          optional: true
+      - runFlow:
+          when:
+            visible:
+              id: "breadcrumb"
+          commands:
+            - takeScreenshot: help-browser-opened
+            - tapOn:
+                id: "breadcrumb"
+      - runFlow:
+          when:
+            visible:
+              text: "Done"
+          commands:
+            - takeScreenshot: help-browser-opened
+            - tapOn:
+                text: "Done"
 
-# Android: Chrome Custom Tab opens in foreground (settings.help.option leaves the tree).
-# Wait for the settings option to disappear (Chrome is now in front), screenshot, then
-# press Back to return to the app.
+# Android: Chrome Custom Tab — dismiss ads/FRE overlays before Back.
 - runFlow:
     when:
       platform: Android
@@ -73,10 +71,39 @@ appId: ${MAESTRO_APP_ID}
           notVisible:
             id: "settings.help.option"
           timeout: 8000
+      - runFlow:
+          file: ../../utils/dismiss_chrome_interstitial.yml
       - takeScreenshot: help-browser-opened
       - pressKey: Back
+      - runFlow:
+          file: ../../utils/dismiss_chrome_interstitial.yml
+      - pressKey: Back
 
-# Verify settings screen is visible again
+# iOS fallback: if browser wedged the session, relaunch and reopen Settings.
+- runFlow:
+    when:
+      platform: iOS
+      notVisible:
+        id: "settings.help.option"
+    commands:
+      - launchApp:
+          stopApp: true
+          clearState: false
+      - waitForAnimationToEnd:
+          timeout: 30000
+      - extendedWaitUntil:
+          visible:
+            id: "tab_bar.home.tab"
+          timeout: 30000
+      - tapOn:
+          id: "tab_bar.account.tab"
+      - extendedWaitUntil:
+          visible:
+            id: "account.settings.option"
+          timeout: 10000
+      - tapOn:
+          id: "account.settings.option"
+
 - extendedWaitUntil:
     visible:
       id: "settings.help.option"

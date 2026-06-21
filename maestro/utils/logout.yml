@@ -29,7 +29,7 @@ appId: ${MAESTRO_APP_ID}
 # index: 1 does NOT reliably target the UIAlertController button.
 #
 # UIAlertController is a system-level overlay (no app testID). Using point: is
-# acceptable for system overlays per project conventions (CLAUDE.md).
+# acceptable for system overlays per project conventions (GUIDELINES.md).
 #
 # Wait for "Cancel" first — it ONLY exists in the alert dialog (not the account screen),
 # which confirms the dialog is fully rendered and the button bounds are stable.

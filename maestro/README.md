@@ -39,7 +39,12 @@ Does the test cross app boundaries (share sheet, deep link from another app)?
 ## Authoring guidelines
 
 See **[GUIDELINES.md](./GUIDELINES.md)** for the flow header contract, comment style,
-Maestro platform rules, CLI version pin, CI layout, and the AI evaluation checklist.
+Maestro platform rules, CLI version pin, CI layout, and the pre-PR checklist.
+
+**TypeScript fixtures:** `npm run check` in this directory runs `tsc --noEmit` against
+`fixtures/*.ts` and `utils/env.ts`. `fixtures/calls_seed.ts` is excluded — it imports
+Detox `@support/*` helpers and must be type-checked with
+`tsx --tsconfig detox/tsconfig.json` (see `run_calls_two_device.sh`).
 
 ---
 
