@@ -86,6 +86,12 @@ grant_notifications() {
     xcrun simctl privacy "$SIMULATOR_ID" grant notifications "$BUNDLE_ID" || true
 }
 
+grant_calls_permissions() {
+    log "Pre-granting microphone and camera for Calls..."
+    xcrun simctl privacy "$SIMULATOR_ID" grant microphone "$BUNDLE_ID" || true
+    xcrun simctl privacy "$SIMULATOR_ID" grant camera "$BUNDLE_ID" || true
+}
+
 kill_app_via_launchd() {
     local app_pid
     app_pid=$(xcrun simctl spawn "$SIMULATOR_ID" launchctl list 2>/dev/null | \
@@ -204,6 +210,7 @@ fi
 seed_password_defaults
 install_app
 grant_notifications
+grant_calls_permissions
 
 if [ "${PREBOOT_SKIP_PREWARM:-}" != "1" ]; then
     if ! prewarm_app "$PREWARM_SECS"; then

@@ -67,8 +67,25 @@ appId: ${MAESTRO_APP_ID}
     point: "8%, 96%"
 
 - takeScreenshot: share-sheet-open
-- tapOn:
-    text: "Mattermost Beta"
+# CI .app label is "Mattermost"; local builds may show "Mattermost Beta".
+- extendedWaitUntil:
+    visible:
+      text: "Mattermost"
+    timeout: 30000
+- runFlow:
+    when:
+      visible:
+        text: "Mattermost Beta"
+    commands:
+      - tapOn:
+          text: "Mattermost Beta"
+- runFlow:
+    when:
+      notVisible:
+        text: "Mattermost Beta"
+    commands:
+      - tapOn:
+          text: "Mattermost"
 
 # Share extension opens: tap Channel option to open channel picker
 - extendedWaitUntil:

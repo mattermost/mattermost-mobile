@@ -59,9 +59,11 @@ prepare_avd_for_boot() {
         # Restored AVD caches can retain lock files from a crashed prior boot, which
         # makes the emulator exit with "Running multiple emulators with the same AVD".
         rm -f "${AVD_NAME}"/*.lock "${AVD_NAME}"/multiinstance.lock 2>/dev/null || true
-        adb devices 2>/dev/null | grep -E '^emulator-' | cut -f1 | while read -r serial; do
+        # grep exits 1 when no emulators are listed; pipefail would abort bootstrap.
+        while read -r serial; do
+            [[ -z "$serial" ]] && continue
             adb -s "$serial" emu kill 2>/dev/null || true
-        done
+        done < <( (adb devices 2>/dev/null | grep -E '^emulator-' | cut -f1) || true)
         sleep 2
     fi
 }

@@ -17,24 +17,33 @@ appId: ${MAESTRO_APP_ID}
     when:
       platform: iOS
     commands:
-      - tapOn:
-          id: "channel_header.channel_quick_actions.button"
-      - extendedWaitUntil:
-          visible:
-            id: "channel_info.channel_actions.join_start_call.action"
-          timeout: 60000
-      - tapOn:
-          id: "channel_info.channel_actions.join_start_call.action"
-      - tapOn:
-          text: "Allow"
-          optional: true
-      - tapOn:
-          text: "Allow"
-          optional: true
-      - extendedWaitUntil:
-          visible:
-            id: "calls.current_call_bar"
-          timeout: 40000
+      - retry:
+          maxRetries: 3
+          commands:
+            - tapOn:
+                text: "OK"
+                optional: true
+            - tapOn:
+                text: "Okay"
+                optional: true
+            - tapOn:
+                id: "channel_header.channel_quick_actions.button"
+            - extendedWaitUntil:
+                visible:
+                  id: "channel_info.channel_actions.join_start_call.action"
+                timeout: 60000
+            - tapOn:
+                id: "channel_info.channel_actions.join_start_call.action"
+            - tapOn:
+                text: "Allow"
+                optional: true
+            - tapOn:
+                text: "Allow"
+                optional: true
+            - extendedWaitUntil:
+                visible:
+                  id: "calls.current_call_bar"
+                timeout: 40000
 
 - runFlow:
     when:

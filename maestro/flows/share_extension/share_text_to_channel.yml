@@ -28,6 +28,10 @@ appId: ${MAESTRO_APP_ID}
     when:
       platform: iOS
     commands:
+      - stopApp:
+          appId: "${MAESTRO_APP_ID}"
+      - stopApp:
+          appId: "com.apple.mobilesafari"
       - launchApp:
           appId: "com.apple.mobilesafari"
       - extendedWaitUntil:
@@ -50,41 +54,55 @@ appId: ${MAESTRO_APP_ID}
       - tapOn:
           text: "Continue"
           optional: true
-      # iOS 26: Safari Share button moved into the toolbar "More" menu.
-      # Tap "More" first, then "Share" in the popover.
-      - tapOn:
-          text: "More"
-      - tapOn:
-          text: "Share"
-      # If the share sheet did NOT open, fall back to long-press → "Share..."
+      # Share TEXT via text-selection context menu, not Safari page-level
+      # More→Share. Page-level share shows Mattermost but does not open the
+      # share extension on iOS 26 (confirmed via failing share_link run).
+      - longPressOn:
+          text: "Example Domain"
+      - takeScreenshot: after-longpress-text
+      # iOS 26: compact selection bar hides Share... behind a chevron.
+      # Try accessible labels first; swipe the bar if Share... stays hidden.
       - runFlow:
           when:
             notVisible:
-              text: "Mattermost"
+              text: "Share..."
           commands:
-            - extendedWaitUntil:
-                visible:
-                  text: "Example Domain"
-                timeout: 10000
-            - longPressOn:
-                text: "Example Domain"
-            - takeScreenshot: after-longpress-text
+            - tapOn:
+                text: ">"
+                optional: true
+            - tapOn:
+                text: "More"
+                optional: true
             - runFlow:
                 when:
-                  visible:
+                  notVisible:
                     text: "Share..."
                 commands:
-                  - tapOn:
-                      text: "Share..."
-            - takeScreenshot: after-tap-share
-      # Tap "Mattermost Beta" in the share sheet to open the share extension.
+                  - swipe:
+                      start: "85%, 26%"
+                      end: "35%, 26%"
+      - tapOn:
+          text: "Share..."
+      - takeScreenshot: after-tap-share
+      # CI .app label is "Mattermost"; local builds may show "Mattermost Beta".
       - extendedWaitUntil:
           visible:
-            text: "Mattermost Beta"
+            text: "Mattermost"
           timeout: 30000
-      - tapOn:
-          text: "Mattermost Beta"
-      - takeScreenshot: after-tap-mattermost-beta
+      - runFlow:
+          when:
+            visible:
+              text: "Mattermost Beta"
+          commands:
+            - tapOn:
+                text: "Mattermost Beta"
+      - runFlow:
+          when:
+            notVisible:
+              text: "Mattermost Beta"
+          commands:
+            - tapOn:
+                text: "Mattermost"
       - extendedWaitUntil:
           visible:
             id: "share_extension.channel.option"
@@ -111,11 +129,11 @@ appId: ${MAESTRO_APP_ID}
       - tapOn:
           id: "com.android.chrome:id/url_bar"
           optional: true
-      - inputText: "https://wikipedia.org"
+      - inputText: "https://example.com"
       - pressKey: Enter
       - extendedWaitUntil:
           visible:
-            text: "Wikipedia"
+            text: "Example Domain"
           timeout: 30000
       - tapOn:
           id: "com.android.chrome:id/menu_button"
@@ -138,10 +156,22 @@ appId: ${MAESTRO_APP_ID}
                 text: "More"
       - extendedWaitUntil:
           visible:
-            text: "Mattermost Beta"
+            text: "Mattermost"
           timeout: 10000
-      - tapOn:
-          text: "Mattermost Beta"
+      - runFlow:
+          when:
+            visible:
+              text: "Mattermost Beta"
+          commands:
+            - tapOn:
+                text: "Mattermost Beta"
+      - runFlow:
+          when:
+            notVisible:
+              text: "Mattermost Beta"
+          commands:
+            - tapOn:
+                text: "Mattermost"
 
 # Share extension opens: tap Channel option to open channel picker
 - extendedWaitUntil:
