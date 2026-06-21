@@ -4,9 +4,11 @@
 #
 #   1. Add E2E/Run (opened / synchronize):
 #      Adds E2E/Run unless E2E/Override is present (opt-out for docs-only PRs).
+#      On synchronize, strips stale E2E/Run* labels first so Matterwick re-triggers
+#      even when a prior run failed/cancelled without cleaning up labels.
 #
 #   2. Honor E2E/Override (labeled E2E/Override):
-#      Removes E2E/Run so in-flight test runs are cancelled (see step 3).
+#      Removes all E2E/Run* labels so in-flight test runs are cancelled (see step 3).
 #
 #   3. Cancel in-progress E2E runs (E2E/Run* unlabeled):
 #      Cancels in-progress E2E workflow runs for the PR's head SHA.
@@ -47,6 +49,7 @@ jobs:
             const owner = context.repo.owner;
             const repo = context.repo.repo;
             const prNumber = context.payload.pull_request.number;
+            const runLabels = ['E2E/Run', 'E2E/Run-iOS', 'E2E/Run-Android'];
 
             const {data: labels} = await github.rest.issues.listLabelsOnIssue({
               owner, repo, issue_number: prNumber,
@@ -55,9 +58,46 @@ jobs:
 
             if (labelNames.includes('E2E/Override')) {
               core.info(`PR #${prNumber} has E2E/Override label — skipping E2E/Run.`);
+              // Clean up stale run labels so the next push after Override is removed
+              // does not inherit a stuck E2E/Run from a prior run.
+              for (const label of runLabels) {
+                if (!labelNames.includes(label)) {
+                  continue;
+                }
+                try {
+                  await github.rest.issues.removeLabel({
+                    owner, repo, issue_number: prNumber, name: label,
+                  });
+                  core.info(`Removed stale ${label} from PR #${prNumber} (E2E/Override active).`);
+                } catch (err) {
+                  if (err.status !== 404) {
+                    throw err;
+                  }
+                }
+              }
               return;
             }
-            if (labelNames.includes('E2E/Run')) {
+
+            // On synchronize, refresh E2E/Run* so Matterwick re-triggers even when
+            // a prior workflow failed/cancelled without removing labels (label manager
+            // previously skipped add when E2E/Run was already present).
+            if (context.payload.action === 'synchronize') {
+              for (const label of runLabels) {
+                if (!labelNames.includes(label)) {
+                  continue;
+                }
+                try {
+                  await github.rest.issues.removeLabel({
+                    owner, repo, issue_number: prNumber, name: label,
+                  });
+                  core.info(`Removed ${label} from PR #${prNumber} before refresh (synchronize).`);
+                } catch (err) {
+                  if (err.status !== 404) {
+                    throw err;
+                  }
+                }
+              }
+            } else if (labelNames.includes('E2E/Run')) {
               core.info(`PR #${prNumber} already has E2E/Run — Matterwick will pick up; skipping.`);
               return;
             }
@@ -68,7 +108,7 @@ jobs:
               labels: ['E2E/Run'],
             });
 
-      # ── Step 2: Strip E2E/Run when E2E/Override is applied ─────────────────
+      # ── Step 2: Strip E2E/Run* when E2E/Override is applied ────────────────
       - name: Honor E2E/Override
         if: >-
           github.event.action == 'labeled'
@@ -80,18 +120,21 @@ jobs:
             const owner = context.repo.owner;
             const repo = context.repo.repo;
             const prNumber = context.payload.pull_request.number;
+            const runLabels = ['E2E/Run', 'E2E/Run-iOS', 'E2E/Run-Android'];
 
-            try {
-              await github.rest.issues.removeLabel({
-                owner, repo, issue_number: prNumber, name: 'E2E/Run',
-              });
-              core.info(`Removed E2E/Run from PR #${prNumber} (E2E/Override applied).`);
-            } catch (err) {
-              if (err.status === 404) {
-                core.info(`E2E/Run was not set on PR #${prNumber}; nothing to remove.`);
-                return;
+            for (const label of runLabels) {
+              try {
+                await github.rest.issues.removeLabel({
+                  owner, repo, issue_number: prNumber, name: label,
+                });
+                core.info(`Removed ${label} from PR #${prNumber} (E2E/Override applied).`);
+              } catch (err) {
+                if (err.status === 404) {
+                  core.info(`${label} was not set on PR #${prNumber}; nothing to remove.`);
+                  continue;
+                }
+                throw err;
               }
-              throw err;
             }
 
       # ── Step 3: Cancel in-progress E2E runs when E2E/Run* label is removed ─

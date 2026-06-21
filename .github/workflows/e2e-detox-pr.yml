@@ -66,8 +66,61 @@ env:
   DETOX_AWS_S3_BUCKET: "mattermost-detox-report"
 
 jobs:
+  resolve-e2e-policy:
+    name: Resolve E2E policy (Override label)
+    runs-on: ubuntu-22.04
+    permissions:
+      contents: read
+      pull-requests: read
+      issues: read
+    outputs:
+      e2e_override: ${{ steps.policy.outputs.e2e_override }}
+    steps:
+      - name: Check PR labels for E2E/Override
+        id: policy
+        uses: actions/github-script@e7aeb8c663f696059ebb5f9ab1425ed2ef511bdb # v7.0.1
+        with:
+          script: |
+            const prInput = parseInt('${{ inputs.pr_number }}', 10);
+            let prNumber = Number.isFinite(prInput) ? prInput : null;
+
+            if (!prNumber && '${{ inputs.MOBILE_VERSION }}') {
+              try {
+                const {data: prs} = await github.rest.repos.listPullRequestsAssociatedWithCommit({
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  commit_sha: '${{ inputs.MOBILE_VERSION }}',
+                });
+                const openPr = prs.find((pr) => pr.state === 'open');
+                if (openPr) {
+                  prNumber = openPr.number;
+                  core.info(`Resolved PR #${prNumber} from commit ${{ inputs.MOBILE_VERSION }}`);
+                }
+              } catch (err) {
+                core.warning(`Could not resolve PR from commit: ${err.message}`);
+              }
+            }
+
+            if (!prNumber) {
+              core.info('No PR number available — assuming E2E/Override is not set.');
+              core.setOutput('e2e_override', 'false');
+              return;
+            }
+
+            const {data: labels} = await github.rest.issues.listLabelsOnIssue({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: prNumber,
+            });
+            const override = labels.some((label) => label.name === 'E2E/Override');
+            core.info(`PR #${prNumber} E2E/Override=${override}`);
+            core.setOutput('e2e_override', override ? 'true' : 'false');
+
   update-initial-status-ios:
-    if: inputs.PLATFORM == 'ios' || inputs.PLATFORM == 'both'
+    needs: resolve-e2e-policy
+    if: >-
+      needs.resolve-e2e-policy.outputs.e2e_override != 'true'
+      && (inputs.PLATFORM == 'ios' || inputs.PLATFORM == 'both')
     runs-on: ubuntu-22.04
     permissions:
       contents: read
@@ -87,7 +140,10 @@ jobs:
           status: pending
 
   update-initial-status-android:
-    if: inputs.PLATFORM == 'android' || inputs.PLATFORM == 'both'
+    needs: resolve-e2e-policy
+    if: >-
+      needs.resolve-e2e-policy.outputs.e2e_override != 'true'
+      && (inputs.PLATFORM == 'android' || inputs.PLATFORM == 'both')
     runs-on: ubuntu-22.04
     permissions:
       contents: read
@@ -107,7 +163,10 @@ jobs:
           status: pending
 
   update-initial-status-ipad:
-    if: inputs.PLATFORM == 'ios' || inputs.PLATFORM == 'both'
+    needs: resolve-e2e-policy
+    if: >-
+      needs.resolve-e2e-policy.outputs.e2e_override != 'true'
+      && (inputs.PLATFORM == 'ios' || inputs.PLATFORM == 'both')
     runs-on: ubuntu-22.04
     permissions:
       contents: read
@@ -127,9 +186,12 @@ jobs:
           status: pending
 
   build-ios-simulator:
-    if: inputs.PLATFORM == 'ios' || inputs.PLATFORM == 'both'
+    if: >-
+      needs.resolve-e2e-policy.outputs.e2e_override != 'true'
+      && (inputs.PLATFORM == 'ios' || inputs.PLATFORM == 'both')
     runs-on: macos-26
     needs:
+      - resolve-e2e-policy
       - update-initial-status-ios
     permissions:
       contents: read
@@ -163,9 +225,12 @@ jobs:
           path: Mattermost-simulator-*.app.zip
 
   build-android-apk:
-    if: false # TEMP: Detox disabled while Maestro CI is being validated — re-enable when ready
+    if: >-
+      false
+      && needs.resolve-e2e-policy.outputs.e2e_override != 'true'
     runs-on: ubuntu-latest-8-cores
     needs:
+      - resolve-e2e-policy
       - update-initial-status-android
     permissions:
       contents: read
@@ -212,9 +277,12 @@ jobs:
           path: "android/app/build/**/*"
 
   build-android-apk-maestro:
-    if: inputs.PLATFORM == 'android' || inputs.PLATFORM == 'both'
+    if: >-
+      needs.resolve-e2e-policy.outputs.e2e_override != 'true'
+      && (inputs.PLATFORM == 'android' || inputs.PLATFORM == 'both')
     runs-on: ubuntu-latest-8-cores
     needs:
+      - resolve-e2e-policy
       - update-initial-status-android
     permissions:
       contents: read
@@ -249,6 +317,8 @@ jobs:
 
   provision-servers:
     name: Provision test servers
+    needs: resolve-e2e-policy
+    if: needs.resolve-e2e-policy.outputs.e2e_override != 'true'
     runs-on: ubuntu-22.04
     steps:
       - name: Validate server URLs
@@ -359,11 +429,14 @@ jobs:
   run-detox:
     name: Detox E2E
     needs:
+      - resolve-e2e-policy
       - build-ios-simulator
       - build-android-apk
       - provision-servers
     # TEMP: disabled while Maestro CI is being validated — restore the always() condition when ready
-    if: false
+    if: >-
+      false
+      && needs.resolve-e2e-policy.outputs.e2e_override != 'true'
     uses: ./.github/workflows/e2e-detox.yml
     with:
       MOBILE_VERSION: ${{ inputs.MOBILE_VERSION }}
@@ -377,6 +450,8 @@ jobs:
 
   validate-maestro-flow-headers:
     name: Validate Maestro flow headers
+    needs: resolve-e2e-policy
+    if: needs.resolve-e2e-policy.outputs.e2e_override != 'true'
     runs-on: ubuntu-22.04
     steps:
       - name: Checkout Repository
@@ -396,11 +471,13 @@ jobs:
   run-maestro-ios:
     name: Maestro iOS E2E
     needs:
+      - resolve-e2e-policy
       - build-ios-simulator
       - provision-servers
       - validate-maestro-flow-headers
     if: |
       always() &&
+      needs.resolve-e2e-policy.outputs.e2e_override != 'true' &&
       (inputs.PLATFORM == 'ios' || inputs.PLATFORM == 'both') &&
       needs.provision-servers.result == 'success' &&
       needs.validate-maestro-flow-headers.result == 'success' &&
@@ -419,11 +496,13 @@ jobs:
   run-maestro-android:
     name: Maestro Android E2E
     needs:
+      - resolve-e2e-policy
       - build-android-apk-maestro
       - provision-servers
       - validate-maestro-flow-headers
     if: |
       always() &&
+      needs.resolve-e2e-policy.outputs.e2e_override != 'true' &&
       (inputs.PLATFORM == 'android' || inputs.PLATFORM == 'both') &&
       needs.provision-servers.result == 'success' &&
       needs.validate-maestro-flow-headers.result == 'success' &&
@@ -447,29 +526,48 @@ jobs:
       issues: write
       pull-requests: read
     needs:
+      - resolve-e2e-policy
       - run-detox
       - run-maestro-ios
       - run-maestro-android
-    # IMPORTANT: !cancelled() prevents label removal when the workflow is cancelled
-    # (e.g. by concurrency cancel-in-progress). Without this, Matterwick sees the
-    # label removed and deletes the test servers while the replacement run is still
-    # using them.
-    if: always() && !cancelled()
+    # Run after success OR failure so Matterwick can re-trigger on the next push.
+    # Skip when cancelled (concurrency hand-off) or when E2E/Override opted out.
+    if: |
+      always() &&
+      !cancelled() &&
+      needs.resolve-e2e-policy.outputs.e2e_override != 'true' &&
+      contains(fromJSON('["success","failure","skipped"]'), needs.run-detox.result) &&
+      contains(fromJSON('["success","failure","skipped"]'), needs.run-maestro-ios.result) &&
+      contains(fromJSON('["success","failure","skipped"]'), needs.run-maestro-android.result)
     steps:
       - name: e2e/remove-label-from-pr
         uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9.0.0
-        continue-on-error: true # Label might have been removed manually
         with:
           script: |
-            // Use pr_number input if provided, otherwise look up from branch
-            let prNumber = parseInt(process.env.PR_NUMBER);
-            if (!prNumber) {
+            const owner = context.repo.owner;
+            const repo = context.repo.repo;
+            const runLabels = ['E2E/Run', 'E2E/Run-iOS', 'E2E/Run-Android'];
+
+            let prNumber = parseInt(process.env.PR_NUMBER, 10);
+            if (!Number.isFinite(prNumber) && process.env.MOBILE_VERSION) {
+              const {data: prs} = await github.rest.repos.listPullRequestsAssociatedWithCommit({
+                owner,
+                repo,
+                commit_sha: process.env.MOBILE_VERSION,
+              });
+              const openPr = prs.find((pr) => pr.state === 'open');
+              if (openPr) {
+                prNumber = openPr.number;
+                console.log(`Resolved PR #${prNumber} from commit ${process.env.MOBILE_VERSION}`);
+              }
+            }
+            if (!Number.isFinite(prNumber)) {
               const branch = process.env.BRANCH;
               if (branch) {
                 const {data: prs} = await github.rest.pulls.list({
-                  owner: context.repo.owner,
-                  repo: context.repo.repo,
-                  head: `${context.repo.owner}:${branch}`,
+                  owner,
+                  repo,
+                  head: `${owner}:${branch}`,
                   state: 'open',
                   per_page: 1,
                 });
@@ -478,24 +576,29 @@ jobs:
                 }
               }
             }
-            if (!prNumber) {
-              console.log('No PR found — skipping label removal');
+            if (!Number.isFinite(prNumber)) {
+              core.warning('No PR found — skipping label removal');
               return;
             }
-            console.log(`Removing E2E labels from PR #${prNumber}`);
-            const labels = ['E2E/Run', 'E2E/Run-iOS', 'E2E/Run-Android'];
-            for (const label of labels) {
+
+            console.log(`Removing E2E labels from PR #${prNumber} (workflow conclusion: ${process.env.WORKFLOW_CONCLUSION || 'unknown'})`);
+            for (const label of runLabels) {
               try {
                 await github.rest.issues.removeLabel({
                   issue_number: prNumber,
-                  owner: context.repo.owner,
-                  repo: context.repo.repo,
+                  owner,
+                  repo,
                   name: label,
                 });
-              } catch (_) {
-                // Label may not exist on this PR, ignore
+                console.log(`Removed ${label}`);
+              } catch (err) {
+                if (err.status !== 404) {
+                  throw err;
+                }
               }
             }
         env:
           PR_NUMBER: ${{ inputs.pr_number }}
+          MOBILE_VERSION: ${{ inputs.MOBILE_VERSION }}
           BRANCH: ${{ github.ref_name }}
+          WORKFLOW_CONCLUSION: ${{ job.status }}
