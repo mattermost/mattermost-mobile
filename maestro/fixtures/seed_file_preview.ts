@@ -11,7 +11,7 @@ import http, {type IncomingMessage, type RequestOptions} from 'http';
 import https from 'https';
 import path from 'path';
 
-import {env, required, MAESTRO_ENV_FILE, writeMaestroEnvFile} from '../utils/env';
+import {MAESTRO_ENV_FILE, required, testUserPassword, writeMaestroEnvFile} from '../utils/env';
 
 const SITE_1_URL = required('SITE_1_URL');
 const ADMIN_USERNAME = required('ADMIN_USERNAME');
@@ -265,10 +265,12 @@ async function main(): Promise<void> {
     }, adminToken);
     console.log(`[seed_file_preview] Created channel: ${channel.name}`);
 
+    const testUserPasswordValue = testUserPassword();
+
     const testUser = await request('POST', '/api/v4/users', {
         email: `fp_${prefix}@example.com`,
         username: `fp_${prefix}`,
-        password: env('TEST_USER_PASSWORD', 'Test1234567890!'),
+        password: testUserPasswordValue,
         first_name: 'File',
         last_name: 'Preview',
     }, adminToken);
@@ -300,7 +302,7 @@ async function main(): Promise<void> {
         TEST_TEAM_NAME: team.name,
         TEST_CHANNEL_NAME: channel.name,
         TEST_USER_EMAIL: testUser.email,
-        TEST_USER_PASSWORD: env('TEST_USER_PASSWORD', 'Test1234567890!'),
+        TEST_USER_PASSWORD: testUserPasswordValue,
         IMAGE_FILE_ID: fileIds.IMAGE,
         VIDEO_FILE_ID: fileIds.VIDEO,
         AUDIO_FILE_ID: fileIds.AUDIO,

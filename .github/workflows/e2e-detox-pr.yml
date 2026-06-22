@@ -565,8 +565,7 @@ jobs:
     runs-on: ubuntu-22.04
     permissions:
       contents: read
-      issues: write
-      pull-requests: read
+      pull-requests: write
     needs:
       - resolve-e2e-policy
       - run-detox-ios
@@ -587,6 +586,7 @@ jobs:
       - name: e2e/remove-label-from-pr
         uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9.0.0
         with:
+          github-token: ${{ secrets.MATTERMOST_BUILD_GH_TOKEN }}
           script: |
             const owner = context.repo.owner;
             const repo = context.repo.repo;

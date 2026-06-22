@@ -7,7 +7,7 @@
 import http, {type IncomingMessage, type RequestOptions} from 'http';
 import https from 'https';
 
-import {env, required, writeMaestroEnvFile} from '../utils/env';
+import {required, testUserPassword, writeMaestroEnvFile} from '../utils/env';
 
 const SITE_1_URL = required('SITE_1_URL');
 const ADMIN_USERNAME = required('ADMIN_USERNAME');
@@ -118,7 +118,7 @@ async function createUser(adminToken: string, prefix: string, index: string | nu
     const suffix = index ? `_${index}` : '';
     const email = `maestro_${prefix}${suffix}@example.com`;
     const username = `maestro_${prefix}${suffix}`;
-    const password = env('TEST_USER_PASSWORD', 'Test1234567890!');
+    const password = testUserPassword();
 
     const user = await request('POST', '/api/v4/users', {
         email,

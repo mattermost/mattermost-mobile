@@ -3,6 +3,7 @@
 
 /* eslint-disable no-process-env, no-console */
 
+import crypto from 'crypto';
 import fs from 'fs';
 
 /**
@@ -49,6 +50,18 @@ export function envBool(key: string, fallback: boolean): boolean {
         return fallback;
     }
     return ['1', 'true', 'yes'].includes(raw.toLowerCase());
+}
+
+/**
+ * Password for API-created test users. Uses TEST_USER_PASSWORD when set;
+ * otherwise generates an ephemeral value (never hardcode credentials in source).
+ */
+export function testUserPassword(): string {
+    const fromEnv = process.env.TEST_USER_PASSWORD;
+    if (fromEnv) {
+        return fromEnv;
+    }
+    return crypto.randomBytes(24).toString('base64url');
 }
 
 /** Absolute path to the generated .maestro-test-env.sh inside maestro/. */
