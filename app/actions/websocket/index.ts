@@ -11,6 +11,7 @@ import {
     setExtraSessionProps,
 } from '@actions/remote/entry/common';
 import {deferredAppEntryActions} from '@actions/remote/entry/deferred';
+import {entryInitialLoad} from '@actions/remote/entry/initial_load';
 import {fetchPostsForChannel, fetchPostThread} from '@actions/remote/post';
 import {openAllUnreadChannels} from '@actions/remote/preference';
 import {autoUpdateTimezone} from '@actions/remote/user';
@@ -31,6 +32,7 @@ import {
     getLicense,
     getLastFullSync,
     setLastFullSync,
+    getConfigBooleanValue,
 } from '@queries/servers/system';
 import {getIsCRTEnabled} from '@queries/servers/thread';
 import {getCurrentUser} from '@queries/servers/user';
@@ -38,11 +40,36 @@ import EphemeralStore from '@store/ephemeral_store';
 import {NavigationStore} from '@store/navigation_store';
 import {setTeamLoading} from '@store/team_load_store';
 import {isTablet} from '@utils/helpers';
-import {logDebug, logInfo} from '@utils/log';
+import {logDebug, logError, logInfo, logWarning} from '@utils/log';
 
 export async function handleFirstConnect(serverUrl: string, groupLabel?: BaseRequestGroupLabel) {
     setExtraSessionProps(serverUrl, groupLabel);
     autoUpdateTimezone(serverUrl, groupLabel);
+
+    const activeServerUrl = await DatabaseManager.getActiveServerUrl();
+
+    try {
+        if (activeServerUrl !== serverUrl) {
+            const {database} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
+            const experienceFlag = await getConfigBooleanValue(database, 'FeatureFlagEnableExperienceAPI');
+
+            if (experienceFlag) {
+                const teamId = await getCurrentTeamId(database);
+                const initial = await entryInitialLoad(serverUrl, teamId, undefined, undefined, undefined, groupLabel);
+
+                if ('error' in initial) {
+                    logWarning('handleFirstConnect', 'entryInitialLoad error', initial.error);
+                } else {
+                    // only set the flag if there are no errors, that way the fallback would use the legacy path.
+                    EphemeralStore.setExperienceAPIEnabled(serverUrl, experienceFlag);
+                    return undefined;
+                }
+            }
+        }
+    } catch (e) {
+        logError('handleFirstConnect', e);
+    }
+
     return doReconnect(serverUrl, groupLabel);
 }
 
