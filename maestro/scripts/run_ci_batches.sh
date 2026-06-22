@@ -67,7 +67,7 @@ platform_args=()
 # help_url runs alone — it can wedge the iOS Maestro driver on CI simulators.
 if [[ "$PLATFORM" == "ios" ]]; then
   BATCHES=(
-    "maestro/flows/channels/channel_bookmark_link_external.yml maestro/flows/timezone"
+    "maestro/flows/timezone maestro/flows/channels/channel_bookmark_link_external.yml"
     "maestro/flows/account/attach_logs.yml maestro/flows/account/attach_logs_toggle_visible.yml maestro/flows/account/attach_logs_toggle_on_surfaces_option.yml maestro/flows/account/attach_logs_toggle_off_hides_option.yml"
     "maestro/flows/calls"
     "maestro/flows/channels/channel_bookmark_file.yml"
@@ -78,7 +78,7 @@ if [[ "$PLATFORM" == "ios" ]]; then
   )
 else
   BATCHES=(
-    "maestro/flows/channels/channel_bookmark_link_external.yml maestro/flows/timezone"
+    "maestro/flows/timezone maestro/flows/channels/channel_bookmark_link_external.yml"
     "maestro/flows/account/attach_logs.yml"
     "maestro/flows/account/attach_logs_toggle_visible.yml"
     "maestro/flows/account/attach_logs_toggle_on_surfaces_option.yml"
@@ -128,6 +128,16 @@ ensure_android_app_launchable() {
   sleep 1
 }
 
+reset_android_app_state() {
+  [[ "$PLATFORM" != "android" ]] && return 0
+  command -v adb >/dev/null 2>&1 || return 0
+
+  echo "==> Resetting Android app state ($MAESTRO_APP_ID)"
+  adb shell am force-stop "$MAESTRO_APP_ID" 2>/dev/null || true
+  adb shell pm clear "$MAESTRO_APP_ID" 2>/dev/null || true
+  sleep 3
+}
+
 # macOS CI uses bash 3.2; with `set -u`, expanding an empty array via "${arr[@]}"
 # throws "unbound variable". Build the maestro argv explicitly instead.
 run_maestro_batch() {
@@ -169,6 +179,9 @@ for batch_paths in "${BATCHES[@]}"; do
   echo ""
   echo "==> Maestro batch $batch_idx/${#BATCHES[@]}: ${path_arr[*]}"
   ensure_ios_simulator_healthy
+  if [[ "$PLATFORM" == "android" ]] && [[ "$batch_paths" == *share_extension* ]]; then
+    reset_android_app_state
+  fi
   ensure_android_app_launchable
 
   set +e

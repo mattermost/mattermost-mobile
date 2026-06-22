@@ -1,0 +1,37 @@
+# Sub-flow: open a URL in Mobile Safari (iOS CI simulators).
+# Usage:
+#   - runFlow:
+#       file: ../utils/open_url_in_safari_ios.yml
+#       env:
+#         SAFARI_URL: "https://example.com"
+# Requires: SAFARI_URL env var
+appId: com.apple.mobilesafari
+---
+- stopApp:
+    appId: "com.apple.mobilesafari"
+- launchApp:
+    appId: "com.apple.mobilesafari"
+- waitForAnimationToEnd:
+    timeout: 5000
+- extendedWaitUntil:
+    visible:
+      id: "TabBarItemTitle"
+    timeout: 30000
+- tapOn:
+    id: "TabBarItemTitle"
+- runFlow:
+    when:
+      notVisible:
+        text: "https://"
+    commands:
+      - tapOn:
+          text: "Search or enter website name"
+          optional: true
+      - tapOn:
+          point: "50%, 95%"
+          optional: true
+- inputText: ${SAFARI_URL}
+- pressKey: Enter
+- tapOn:
+    text: "Continue"
+    optional: true

@@ -220,7 +220,15 @@ start_server() {
 
 setup_adb_reverse() {
     echo "Setting up ADB reverse port forwarding..."
+    # adb root (in configure_emulator_for_tests) restarts adbd and drops prior reverse mappings.
+    adb reverse --remove-all 2>/dev/null || true
     adb reverse tcp:8081 tcp:8081
+    if ! adb reverse --list | grep -q 'tcp:8081'; then
+        echo "ERROR: adb reverse tcp:8081 is not active after setup"
+        adb reverse --list || true
+        exit 1
+    fi
+    echo "adb reverse verified: $(adb reverse --list)"
 }
 
 run_detox_tests() {
@@ -251,10 +259,12 @@ main() {
         # Maestro uses a release APK with an embedded bundle (mirrors iOS simulator builds).
         if [[ "${MAESTRO_ANDROID:-}" != "true" ]]; then
             start_server
-            setup_adb_reverse
         fi
         grant_android_runtime_permissions
         configure_emulator_for_tests
+        if [[ "${MAESTRO_ANDROID:-}" != "true" ]]; then
+            setup_adb_reverse
+        fi
         push_e2e_fixtures
     fi
 

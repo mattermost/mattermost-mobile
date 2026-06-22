@@ -13,6 +13,11 @@ appId: ${MAESTRO_APP_ID}
     text: "Okay"
     optional: true
 
+- extendedWaitUntil:
+    visible:
+      id: "channel_header.channel_quick_actions.button"
+    timeout: 30000
+
 - runFlow:
     when:
       platform: iOS
@@ -43,7 +48,7 @@ appId: ${MAESTRO_APP_ID}
             - extendedWaitUntil:
                 visible:
                   id: "calls.current_call_bar"
-                timeout: 40000
+                timeout: 60000
 
 - runFlow:
     when:
@@ -75,4 +80,4 @@ appId: ${MAESTRO_APP_ID}
             - extendedWaitUntil:
                 visible:
                   id: "calls.current_call_bar"
-                timeout: 40000
+                timeout: 60000

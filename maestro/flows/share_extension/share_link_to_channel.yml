@@ -30,23 +30,14 @@ appId: ${MAESTRO_APP_ID}
     commands:
       - stopApp:
           appId: "${MAESTRO_APP_ID}"
-      - stopApp:
-          appId: "com.apple.mobilesafari"
-      - launchApp:
-          appId: "com.apple.mobilesafari"
-      - waitForAnimationToEnd:
-          timeout: 5000
-      - tapOn:
-          id: "TabBarItemTitle"
-      - inputText: "https://example.com"
-      - pressKey: Enter
+      - runFlow:
+          file: ../../utils/open_url_in_safari_ios.yml
+          env:
+            SAFARI_URL: "https://example.com"
       - extendedWaitUntil:
           visible:
             text: "Example Domain"
           timeout: 30000
-      - tapOn:
-          text: "Continue"
-          optional: true
       # Share the page URL via the address bar context menu. Page-level
       # More→Share shows Mattermost but does not open the share extension
       # on iOS 26 (same failure mode as share_text).

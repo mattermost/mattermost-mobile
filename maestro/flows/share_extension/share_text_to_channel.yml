@@ -30,30 +30,14 @@ appId: ${MAESTRO_APP_ID}
     commands:
       - stopApp:
           appId: "${MAESTRO_APP_ID}"
-      - stopApp:
-          appId: "com.apple.mobilesafari"
-      - launchApp:
-          appId: "com.apple.mobilesafari"
-      - extendedWaitUntil:
-          visible:
-            id: "TabBarItemTitle"
-          timeout: 15000
-      - tapOn:
-          id: "TabBarItemTitle"
-      # example.com is preferred over wikipedia.org: Wikipedia shows a
-      # persistent fundraising overlay on iOS Safari that covers the page
-      # text, blocking long-press selection and turning the fallback
-      # coordinate tap into "Donate now" (confirmed via failing-run
-      # screenshot: after-longpress-text.png shows the donation banner).
-      - inputText: "https://example.com"
-      - pressKey: Enter
+      - runFlow:
+          file: ../../utils/open_url_in_safari_ios.yml
+          env:
+            SAFARI_URL: "https://example.com"
       - extendedWaitUntil:
           visible:
             text: "Example Domain"
           timeout: 30000
-      - tapOn:
-          text: "Continue"
-          optional: true
       # Share TEXT via text-selection context menu, not Safari page-level
       # More→Share. Page-level share shows Mattermost but does not open the
       # share extension on iOS 26 (confirmed via failing share_link run).

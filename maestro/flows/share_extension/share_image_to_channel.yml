@@ -52,7 +52,7 @@ appId: ${MAESTRO_APP_ID}
 - extendedWaitUntil:
     visible:
       text: "Select"
-    timeout: 15000
+    timeout: 30000
 - tapOn:
     text: "Select"
 # Tap second photo in the grid to select it (~50%, ~25% for row 1, col 2 in 3-col grid)

@@ -6,6 +6,10 @@
 # Dismiss it via testID if present.
 appId: ${MAESTRO_APP_ID}
 ---
+- extendedWaitUntil:
+    visible:
+      id: "channel_list.category.channels.channel_item.${TEST_CHANNEL_NAME}"
+    timeout: 30000
 - tapOn:
     id: "channel_list.category.channels.channel_item.${TEST_CHANNEL_NAME}"
 # Wait until the channel list item scrolls off-screen (confirms navigation started)

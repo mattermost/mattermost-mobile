@@ -406,6 +406,25 @@ No Detox dependency is installed (see `android/settings.gradle`).
 | iOS | `macos-26`, iPhone 17 Pro / iOS 26.2 | `preboot_ios_simulator.sh` with `PREBOOT_SKIP_PREWARM=1`, then `listapps` readiness poll |
 | Android | `ubuntu-latest-8-cores`, `detox_pixel_8_api_35` | `detox/create_android_emulator.sh` with `BOOTSTRAP_ONLY=true` + `MAESTRO_ANDROID=true` (no Metro) |
 
+### iOS CI runtime (optional parallelization)
+
+Maestro iOS currently runs ~8 sequential batches on one `macos-26` runner (~60+ minutes).
+Each batch repeats `login.yml` with `clearState:true`, which dominates wall time.
+
+**Option A — matrix split (recommended if infra approves):** add a `batch-range` input to
+`e2e-maestro-template.yml` and run 2–3 parallel macOS jobs (e.g. batches 1–3 / 4–6 / 7–8).
+Wall time drops roughly proportionally; runner cost increases. Requires separate JUnit merge
+across matrix legs (already supported via `mergeMaestroJunitReports`).
+
+**Option B — smoke gate:** run `account/login.yml` + one channel flow on every PR; run the
+full suite only when labeled `run-maestro-full` or on nightly.
+
+**Option C — combine stable batches:** merge attach_logs batches (already split on Android
+for isolation). Risk: one wedged flow blocks the whole combined batch.
+
+Discuss Option A with GitHub infra + Maestro owners before enabling — parallel simulators on
+one host are not supported; each matrix leg needs its own runner + simulator UDID.
+
 ### Test servers (PR runs)
 
 Matterwick provisions `SITE_1_URL`, `SITE_2_URL`, and `SITE_3_URL`. Maestro maps them in
