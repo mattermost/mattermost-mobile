@@ -189,8 +189,8 @@ appId: ${MAESTRO_APP_ID}
 - tapOn:
     text: "Not Now"
     optional: true
-# Wait for home screen
+# Wait for home screen — Android CI emulators can lag after first cloud login.
 - extendedWaitUntil:
     visible:
       id: "tab_bar.home.tab"
-    timeout: 30000
+    timeout: 45000

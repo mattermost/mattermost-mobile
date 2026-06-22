@@ -79,34 +79,18 @@ appId: ${MAESTRO_APP_ID}
       - runFlow:
           file: ../../utils/dismiss_chrome_interstitial.yml
       - pressKey: Back
+      - runFlow:
+          file: ../../utils/dismiss_chrome_interstitial.yml
 
-# iOS fallback: if browser wedged the session, relaunch and reopen Settings.
+# Browser hand-off recovery when Settings is not visible after dismiss.
 - runFlow:
     when:
-      platform: iOS
       notVisible:
         id: "settings.help.option"
-    commands:
-      - launchApp:
-          stopApp: true
-          clearState: false
-      - waitForAnimationToEnd:
-          timeout: 30000
-      - extendedWaitUntil:
-          visible:
-            id: "tab_bar.home.tab"
-          timeout: 30000
-      - tapOn:
-          id: "tab_bar.account.tab"
-      - extendedWaitUntil:
-          visible:
-            id: "account.settings.option"
-          timeout: 10000
-      - tapOn:
-          id: "account.settings.option"
+    file: ../../utils/reopen_settings_screen.yml
 
 - extendedWaitUntil:
     visible:
       id: "settings.help.option"
-    timeout: 10000
+    timeout: 30000
 - takeScreenshot: help-browser-dismissed

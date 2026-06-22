@@ -1,5 +1,6 @@
 # Select Mattermost in the Android system share sheet.
-# Handles truncated lists on API 34/35: "See all", scroll, and "Mattermost Beta" label.
+# CI APK label is "Mattermost Beta" (see android/app/src/main/res/values/strings.xml).
+# Handles truncated lists on API 34/35: "See all", scroll, and both app labels.
 # Usage: - runFlow: ../../utils/select_mattermost_android_share_sheet.yml
 appId: ${MAESTRO_APP_ID}
 ---
@@ -7,37 +8,36 @@ appId: ${MAESTRO_APP_ID}
     text: "See all"
     optional: true
 - tapOn:
+    text: "See all apps"
+    optional: true
+- tapOn:
     text: "More"
     optional: true
+- tapOn:
+    text: "All apps"
+    optional: true
 # Compact share sheets on API 35 may hide targets below the fold.
-- runFlow:
-    when:
-      notVisible:
-        text: "Mattermost"
-    commands:
-      - swipe:
-          start: "50%, 85%"
-          end: "50%, 45%"
-      - swipe:
-          start: "50%, 85%"
-          end: "50%, 45%"
-          optional: true
-- scrollUntilVisible:
-    element:
-      text: "Mattermost"
-    direction: DOWN
-    timeout: 15000
+- swipe:
+    start: "50%, 85%"
+    end: "50%, 45%"
+    optional: true
+- swipe:
+    start: "50%, 85%"
+    end: "50%, 45%"
     optional: true
 - scrollUntilVisible:
     element:
       text: "Mattermost Beta"
     direction: DOWN
-    timeout: 15000
+    timeout: 20000
     optional: true
-- extendedWaitUntil:
-    visible:
+- scrollUntilVisible:
+    element:
       text: "Mattermost"
-    timeout: 30000
+    direction: DOWN
+    timeout: 20000
+    optional: true
+# Prefer the CI APK label; fall back to production label for local release builds.
 - runFlow:
     when:
       visible:
@@ -50,5 +50,9 @@ appId: ${MAESTRO_APP_ID}
       notVisible:
         text: "Mattermost Beta"
     commands:
+      - extendedWaitUntil:
+          visible:
+            text: "Mattermost"
+          timeout: 15000
       - tapOn:
           text: "Mattermost"

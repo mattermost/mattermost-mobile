@@ -79,7 +79,10 @@ if [[ "$PLATFORM" == "ios" ]]; then
 else
   BATCHES=(
     "maestro/flows/channels/channel_bookmark_link_external.yml maestro/flows/timezone"
-    "maestro/flows/account/attach_logs.yml maestro/flows/account/attach_logs_toggle_visible.yml maestro/flows/account/attach_logs_toggle_on_surfaces_option.yml maestro/flows/account/attach_logs_toggle_off_hides_option.yml"
+    "maestro/flows/account/attach_logs.yml"
+    "maestro/flows/account/attach_logs_toggle_visible.yml"
+    "maestro/flows/account/attach_logs_toggle_on_surfaces_option.yml"
+    "maestro/flows/account/attach_logs_toggle_off_hides_option.yml"
     "maestro/flows/calls"
     "maestro/flows/channels/channel_bookmark_file.yml"
     "maestro/flows/account/help_url.yml"

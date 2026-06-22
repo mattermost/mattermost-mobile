@@ -54,8 +54,31 @@ appId: ${MAESTRO_APP_ID}
     text: "OKAY"
     optional: true
 # Wait for the server form to navigate away (login form or home screen).
-# 60s covers slower cloud connections and iOS first-connect overhead.
+# Matterwick cloud connects can exceed 60s on a cold CI emulator.
 - extendedWaitUntil:
     notVisible:
       id: "server_form.display_help"
-    timeout: 60000
+    timeout: 90000
+# Retry Connect once when validation is slow or the first tap did not register.
+- runFlow:
+    when:
+      visible:
+        id: "server_form.display_help"
+    commands:
+      - tapOn:
+          id: "server_form.connect.button"
+      - waitForAnimationToEnd:
+          timeout: 5000
+      - tapOn:
+          text: "Allow"
+          optional: true
+      - tapOn:
+          text: "Okay"
+          optional: true
+      - tapOn:
+          text: "OKAY"
+          optional: true
+      - extendedWaitUntil:
+          notVisible:
+            id: "server_form.display_help"
+          timeout: 90000

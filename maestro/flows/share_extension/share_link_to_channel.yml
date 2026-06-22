@@ -86,6 +86,8 @@ appId: ${MAESTRO_APP_ID}
       platform: Android
     commands:
       - runFlow:
+          file: ../../utils/warm_android_share_target.yml
+      - runFlow:
           file: ../../utils/open_url_in_chrome_android.yml
           env:
             CHROME_URL: "https://example.com"
