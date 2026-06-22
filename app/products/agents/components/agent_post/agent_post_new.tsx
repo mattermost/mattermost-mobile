@@ -1,7 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React, {useCallback, useEffect, useMemo, useRef, useState} from 'react';
+import React, {useCallback, useEffect, useMemo, useRef} from 'react';
 import {View} from 'react-native';
 
 import {refetchConversation} from '@agents/actions/remote/conversation';
@@ -79,9 +79,7 @@ interface RoundViewProps {
     canExpand: boolean;
     showCursor: boolean;
     isReasoningLoading: boolean;
-    isReasoningExpanded: boolean;
     isFirst: boolean;
-    onToggleReasoning: (roundId: string, expanded: boolean) => void;
 }
 
 // Renders one assistant round as a vertical sequence reasoning -> text -> tools,
@@ -96,9 +94,7 @@ const RoundView = ({
     canExpand,
     showCursor,
     isReasoningLoading,
-    isReasoningExpanded,
     isFirst,
-    onToggleReasoning,
 }: RoundViewProps) => {
     const theme = useTheme();
     const styles = getStyleSheet(theme);
@@ -108,18 +104,12 @@ const RoundView = ({
     const showArguments = isDM || anyToolHasArguments(round.toolCalls);
     const showResults = isDM || anyToolHasResult(round.toolCalls);
 
-    const handleToggleReasoning = useCallback((expanded: boolean) => {
-        onToggleReasoning(round.id, expanded);
-    }, [onToggleReasoning, round.id]);
-
     return (
         <View style={isFirst ? undefined : styles.roundSpacing}>
             {round.reasoning.summary !== '' && (
                 <ReasoningDisplay
                     reasoningSummary={round.reasoning.summary}
                     isReasoningLoading={isReasoningLoading}
-                    isExpanded={isReasoningExpanded}
-                    onToggle={handleToggleReasoning}
                 />
             )}
             {round.text !== '' && (
@@ -177,16 +167,6 @@ const AgentPostNew = ({post, conversationId, currentUserId, location, isDM}: Age
         [conversation, post.id],
     );
 
-    // Keep the last persisted rounds visible through the brief refetch gap when
-    // the cached conversation is momentarily unavailable.
-    const lastPersistedRef = useRef<Round[]>([]);
-    useEffect(() => {
-        if (conversation) {
-            lastPersistedRef.current = persistedRounds;
-        }
-    }, [conversation, persistedRounds]);
-    const stablePersisted = conversation ? persistedRounds : lastPersistedRef.current;
-
     // The in-progress round assembled from the live streaming buffers.
     const liveRound = useMemo<Round | null>(() => {
         if (!streamingState) {
@@ -213,18 +193,18 @@ const AgentPostNew = ({post, conversationId, currentUserId, location, isDM}: Age
     const {renderedRounds, lastPersistedIdx} = useMemo(() => {
         const storeRounds = streamingState?.rounds ?? [];
         if (isGenerationInProgress) {
-            const out = [...stablePersisted, ...storeRounds];
+            const out = [...persistedRounds, ...storeRounds];
             if (liveRound) {
                 out.push(liveRound);
             }
-            return {renderedRounds: out, lastPersistedIdx: stablePersisted.length - 1};
+            return {renderedRounds: out, lastPersistedIdx: persistedRounds.length - 1};
         }
         if (persistedRounds.length > 0) {
             return {renderedRounds: persistedRounds, lastPersistedIdx: persistedRounds.length - 1};
         }
         const out = liveRound ? [...storeRounds, liveRound] : [...storeRounds];
         return {renderedRounds: out, lastPersistedIdx: -1};
-    }, [isGenerationInProgress, stablePersisted, streamingState, liveRound, persistedRounds]);
+    }, [isGenerationInProgress, streamingState, liveRound, persistedRounds]);
 
     // Invalidate the cached conversation when a stream finishes so the next
     // fetch surfaces the finalised turns.
@@ -262,11 +242,6 @@ const AgentPostNew = ({post, conversationId, currentUserId, location, isDM}: Age
             streamingStore.removePost(serverUrl, post.id);
         }
     }, [streamingState, isGenerationInProgress, persistedRounds.length, serverUrl, post.id]);
-
-    const [expandedReasoning, setExpandedReasoning] = useState<Record<string, boolean>>({});
-    const handleToggleReasoning = useCallback((roundId: string, expanded: boolean) => {
-        setExpandedReasoning((prev) => ({...prev, [roundId]: expanded}));
-    }, []);
 
     const isRequester = isConversationRequester({post, conversation, currentUserId});
     const canApprove = isRequester;
@@ -347,9 +322,7 @@ const AgentPostNew = ({post, conversationId, currentUserId, location, isDM}: Age
                         canExpand={canExpand}
                         showCursor={isLive && showCursorOnLive}
                         isReasoningLoading={isLive && isReasoningLoading}
-                        isReasoningExpanded={Boolean(expandedReasoning[round.id])}
                         isFirst={idx === 0}
-                        onToggleReasoning={handleToggleReasoning}
                     />
                 );
             })}

@@ -1,7 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React, {useCallback, useEffect, useRef, useState} from 'react';
+import React, {useCallback, useState} from 'react';
 import {Pressable, Text, View} from 'react-native';
 import Animated, {useAnimatedStyle, useSharedValue, withTiming} from 'react-native-reanimated';
 
@@ -68,51 +68,24 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
 interface ReasoningDisplayProps {
     reasoningSummary: string;
     isReasoningLoading: boolean;
-
-    // Optional controlled expand state. When `isExpanded` is provided the
-    // parent owns the open/closed state (used for per-round reasoning); when
-    // omitted the component manages its own state (legacy single-block usage).
-    isExpanded?: boolean;
-    onToggle?: (expanded: boolean) => void;
 }
 
 /**
  * Display component for agent reasoning summaries
  * Shows collapsible section with reasoning text and loading state
  */
-const ReasoningDisplay = ({reasoningSummary, isReasoningLoading, isExpanded: isExpandedProp, onToggle}: ReasoningDisplayProps) => {
+const ReasoningDisplay = ({reasoningSummary, isReasoningLoading}: ReasoningDisplayProps) => {
     const theme = useTheme();
     const styles = getStyleSheet(theme);
-    const isControlled = isExpandedProp !== undefined;
-    const [localExpanded, setLocalExpanded] = useState(false);
-    const isExpanded = isControlled ? isExpandedProp : localExpanded;
-
-    // Seed from the initial expanded state so a round that mounts already
-    // expanded renders open instantly instead of animating in from 0.
-    const rotation = useSharedValue(isExpanded ? 90 : 0);
-    const contentOpacity = useSharedValue(isExpanded ? 1 : 0);
-    const hasAnimated = useRef(false);
+    const [isExpanded, setIsExpanded] = useState(false);
+    const rotation = useSharedValue(0);
+    const contentOpacity = useSharedValue(0);
 
     const handleToggle = useCallback(() => {
         const newExpanded = !isExpanded;
-        if (isControlled) {
-            onToggle?.(newExpanded);
-        } else {
-            setLocalExpanded(newExpanded);
-        }
-    }, [isExpanded, isControlled, onToggle]);
-
-    // Drive the chevron + content animations from the (possibly controlled)
-    // expanded state so they stay in sync with the prop. The shared values are
-    // seeded from the initial state above, so skip the first run and animate
-    // only on subsequent toggles.
-    useEffect(() => {
-        if (!hasAnimated.current) {
-            hasAnimated.current = true;
-            return;
-        }
-        rotation.value = withTiming(isExpanded ? 90 : 0, {duration: 200});
-        contentOpacity.value = withTiming(isExpanded ? 1 : 0, {duration: 250});
+        setIsExpanded(newExpanded);
+        rotation.value = withTiming(newExpanded ? 90 : 0, {duration: 200});
+        contentOpacity.value = withTiming(newExpanded ? 1 : 0, {duration: 250});
     }, [isExpanded, rotation, contentOpacity]);
 
     const chevronAnimatedStyle = useAnimatedStyle(() => ({
