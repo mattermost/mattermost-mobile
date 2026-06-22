@@ -8,6 +8,7 @@ import {dataRetentionCleanup, expiredBoRPostCleanup} from '@actions/local/system
 import {markChannelAsRead} from '@actions/remote/channel';
 import {entry, handleEntryAfterLoadNavigation} from '@actions/remote/entry/common';
 import {deferredAppEntryActions} from '@actions/remote/entry/deferred';
+import {entryInitialLoad} from '@actions/remote/entry/initial_load';
 import {fetchPostsForChannel, fetchPostThread} from '@actions/remote/post';
 import {openAllUnreadChannels} from '@actions/remote/preference';
 import {loadConfigAndCalls} from '@calls/actions/calls';
@@ -17,7 +18,7 @@ import AppsManager from '@managers/apps_manager';
 import {handlePlaybookReconnect} from '@playbooks/actions/websocket/reconnect';
 import {getActiveServerUrl} from '@queries/app/servers';
 import {getLastPostInThread} from '@queries/servers/post';
-import {getConfig, getCurrentChannelId, getCurrentTeamId, setLastFullSync} from '@queries/servers/system';
+import {getConfig, getCurrentChannelId, getCurrentTeamId, getConfigBooleanValue, setLastFullSync} from '@queries/servers/system';
 import {getIsCRTEnabled} from '@queries/servers/thread';
 import {getCurrentUser} from '@queries/servers/user';
 import EphemeralStore from '@store/ephemeral_store';
@@ -31,6 +32,7 @@ jest.mock('@actions/local/systems');
 jest.mock('@actions/remote/channel');
 jest.mock('@actions/remote/entry/common');
 jest.mock('@actions/remote/entry/deferred');
+jest.mock('@actions/remote/entry/initial_load');
 jest.mock('@actions/remote/post');
 jest.mock('@actions/remote/scheduled_post');
 jest.mock('@actions/remote/preference');
@@ -79,7 +81,23 @@ describe('WebSocket Index Actions', () => {
     });
 
     describe('handleFirstConnect', () => {
-        it('should handle first connection successfully', async () => {
+        const activeServerUrl = serverUrl;
+        const nonActiveServerUrl = 'non-active.server.com';
+
+        beforeEach(() => {
+            DatabaseManager.getActiveServerUrl = jest.fn().mockResolvedValue(activeServerUrl);
+            DatabaseManager.serverDatabases[nonActiveServerUrl] = {
+                operator: {
+                    database: {},
+                    batchRecords: jest.fn(),
+                },
+            } as unknown as typeof DatabaseManager.serverDatabases[string];
+            jest.mocked(getCurrentTeamId).mockResolvedValue(currentTeamId);
+            jest.mocked(getConfigBooleanValue).mockResolvedValue(false);
+        });
+
+        // Active server — falls straight through to doReconnect (legacy path)
+        it('should handle first connection successfully for active server', async () => {
             const mockEntryData = {
                 models: [],
                 initialTeamId: currentTeamId,
@@ -98,24 +116,75 @@ describe('WebSocket Index Actions', () => {
             jest.mocked(getConfig).mockResolvedValue({Version: '9.0.0'} as ClientConfig);
             jest.mocked(isSupportedServerCalls).mockReturnValue(true);
 
-            const error = await handleFirstConnect(serverUrl, groupLabel);
+            const error = await handleFirstConnect(activeServerUrl, groupLabel);
 
             expect(error).toBeUndefined();
+            expect(entryInitialLoad).not.toHaveBeenCalled();
             expect(entry).toHaveBeenCalled();
             expect(handleEntryAfterLoadNavigation).toHaveBeenCalled();
             expect(setLastFullSync).toHaveBeenCalled();
             expect(loadConfigAndCalls).toHaveBeenCalled();
             expect(deferredAppEntryActions).toHaveBeenCalled();
-            expect(handlePlaybookReconnect).toHaveBeenCalledWith(serverUrl);
+            expect(handlePlaybookReconnect).toHaveBeenCalledWith(activeServerUrl);
         });
 
         it('should handle error when server database not found', async () => {
             DatabaseManager.serverDatabases = {};
 
-            const error = await handleFirstConnect(serverUrl);
+            const error = await handleFirstConnect(activeServerUrl);
 
             expect(error).toBeInstanceOf(Error);
             expect((error as Error).message).toBe('cannot find server database');
+        });
+
+        // Non-active server — new 2G path
+        it('should run entryInitialLoad and set ExperienceAPI flag for non-active server when flag is enabled', async () => {
+            jest.mocked(getConfigBooleanValue).mockResolvedValue(true);
+            (entryInitialLoad as jest.Mock).mockResolvedValue({models: [], initialTeamId: currentTeamId, initialChannelId: '', prefData: {}, teamData: {}, gmConverted: false});
+
+            const result = await handleFirstConnect(nonActiveServerUrl, groupLabel);
+
+            expect(entryInitialLoad).toHaveBeenCalledWith(nonActiveServerUrl, currentTeamId, undefined, undefined, undefined, groupLabel);
+            expect(EphemeralStore.setExperienceAPIEnabled).toHaveBeenCalledWith(nonActiveServerUrl, true);
+            expect(result).toBeUndefined();
+            expect(entry).not.toHaveBeenCalled();
+        });
+
+        it('should fall through to doReconnect and not set flag when entryInitialLoad fails for non-active server', async () => {
+            jest.mocked(getConfigBooleanValue).mockResolvedValue(true);
+            (entryInitialLoad as jest.Mock).mockResolvedValue({error: new Error('network error')});
+            (entry as jest.Mock).mockResolvedValue({error: new Error('entry error')});
+
+            await handleFirstConnect(nonActiveServerUrl, groupLabel);
+
+            expect(entryInitialLoad).toHaveBeenCalled();
+            expect(EphemeralStore.setExperienceAPIEnabled).not.toHaveBeenCalled();
+            expect(entry).toHaveBeenCalled();
+        });
+
+        it('should skip entryInitialLoad and fall through to doReconnect when ExperienceAPI flag is false for non-active server', async () => {
+            jest.mocked(getConfigBooleanValue).mockResolvedValue(false);
+            (entry as jest.Mock).mockResolvedValue({error: new Error('entry error')});
+
+            await handleFirstConnect(nonActiveServerUrl, groupLabel);
+
+            expect(entryInitialLoad).not.toHaveBeenCalled();
+            expect(EphemeralStore.setExperienceAPIEnabled).not.toHaveBeenCalled();
+            expect(entry).toHaveBeenCalled();
+        });
+
+        it('should fall through to doReconnect when getServerDatabaseAndOperator throws for non-active server', async () => {
+            jest.mocked(getConfigBooleanValue).mockResolvedValue(true);
+            DatabaseManager.getServerDatabaseAndOperator = jest.fn().mockImplementation(() => {
+                throw new Error('db not found');
+            });
+            (entry as jest.Mock).mockResolvedValue({error: new Error('entry error')});
+
+            await handleFirstConnect(nonActiveServerUrl, groupLabel);
+
+            expect(entryInitialLoad).not.toHaveBeenCalled();
+            expect(EphemeralStore.setExperienceAPIEnabled).not.toHaveBeenCalled();
+            expect(entry).toHaveBeenCalled();
         });
     });
 
