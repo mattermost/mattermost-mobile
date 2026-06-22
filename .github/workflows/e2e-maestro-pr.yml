@@ -52,7 +52,7 @@ jobs:
           COMMIT_SHA: ${{ inputs.MOBILE_VERSION }}
         with:
           script: |
-            const [owner, repo] = context.repo;
+            const { owner, repo } = context.repo;
             await github.rest.repos.createCommitStatus({
               owner,
               repo,
@@ -74,7 +74,7 @@ jobs:
           COMMIT_SHA: ${{ inputs.MOBILE_VERSION }}
         with:
           script: |
-            const [owner, repo] = context.repo;
+            const { owner, repo } = context.repo;
             await github.rest.repos.createCommitStatus({
               owner,
               repo,
@@ -140,7 +140,7 @@ jobs:
               || format('{0} passed, {1} failed, {2} skipped', needs.run-maestro-ios.outputs.PASSES || '?', needs.run-maestro-ios.outputs.FAILURES || '?', needs.run-maestro-ios.outputs.SKIPPED || '0') }}
         with:
           script: |
-            const [owner, repo] = context.repo;
+            const { owner, repo } = context.repo;
             const targetUrl = process.env.TARGET_URL?.trim();
             await github.rest.repos.createCommitStatus({
               owner,
@@ -174,7 +174,7 @@ jobs:
               || format('{0} passed, {1} failed, {2} skipped', needs.run-maestro-android.outputs.PASSES || '?', needs.run-maestro-android.outputs.FAILURES || '?', needs.run-maestro-android.outputs.SKIPPED || '0') }}
         with:
           script: |
-            const [owner, repo] = context.repo;
+            const { owner, repo } = context.repo;
             const targetUrl = process.env.TARGET_URL?.trim();
             await github.rest.repos.createCommitStatus({
               owner,
