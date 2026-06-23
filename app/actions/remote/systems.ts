@@ -102,7 +102,7 @@ export const fetchConfigAndLicense = async (serverUrl: string, fetchOnly = false
             if (needsModeChange) {
                 const {error: modeChangeError} = await applyPersistenceModeChange(serverUrl);
                 if (modeChangeError) {
-                    throw new Error('cannot apply persistence mode change');
+                    throw modeChangeError;
                 }
             }
         }
