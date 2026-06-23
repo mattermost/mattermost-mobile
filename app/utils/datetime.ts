@@ -42,6 +42,12 @@ export function toSeconds({days, hours, minutes, seconds}: {days?: number; hours
 
 export function getReadableTimestamp(timestamp: number, timeZone: string, isMilitaryTime: boolean, currentUserLocale: string): string {
     const date = new Date(timestamp);
+    if (Number.isNaN(date.getTime())) {
+        // Guard: callers (e.g. scheduled-message "Send on …" label) may pass an undefined/NaN
+        // timestamp during reschedule transitions. Returning '' avoids rendering the literal
+        // string "Invalid Date" in the UI (surfaced as MM-T5720 on the Drafts > Scheduled tab).
+        return '';
+    }
     const now = new Date();
     const isCurrentYear = date.getFullYear() === now.getFullYear();
 
@@ -51,7 +57,12 @@ export function getReadableTimestamp(timestamp: number, timeZone: string, isMili
         hour: 'numeric',
         minute: '2-digit',
         hour12: !isMilitaryTime,
-        timeZone: timeZone as string,
+
+        // Omit timeZone when empty (users without a reported automatic timezone):
+        // an empty string is an invalid IANA name — V8 throws a RangeError and
+        // iOS Hermes renders the literal string "Invalid Date" for a valid date
+        // (MM-T5720 "Send on Invalid Date").
+        ...(timeZone ? {timeZone} : {}),
         ...(isCurrentYear ? {} : {year: 'numeric'}),
     };
 

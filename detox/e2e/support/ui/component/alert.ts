@@ -1,7 +1,8 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {isAndroid} from '@support/utils';
+import {isAndroid, timeouts} from '@support/utils';
+import {waitFor} from 'detox';
 
 class Alert {
     // alert titles
@@ -28,12 +29,14 @@ class Alert {
     };
     markAllAsReadTitle = isAndroid() ? element(by.text('Are you sure you want to mark all threads as read?')) : element(by.label('Are you sure you want to mark all threads as read?')).atIndex(0);
     messageLengthTitle = isAndroid() ? element(by.text('Message Length')) : element(by.label('Message Length')).atIndex(0);
-    notificationsCannotBeReceivedTitle = isAndroid() ? element(by.text('Notifications cannot be received from this server')) : element(by.label('Notifications cannot be received from this server')).atIndex(0);
+    notificationsCannotBeReceivedTitle = isAndroid() ? element(by.text('Notifications could not be received from this server')) : element(by.label('Notifications could not be received from this server')).atIndex(0);
     removeServerTitle = (serverDisplayName: string) => {
         const title = `Are you sure you want to remove ${serverDisplayName}?`;
 
         return isAndroid() ? element(by.text(title)) : element(by.label(title)).atIndex(0);
     };
+    logoutNotCompleteTitle = isAndroid() ? element(by.text('Logout not complete')) : element(by.label('Logout not complete')).atIndex(0);
+    removedFromTeamTitle = isAndroid() ? element(by.text('Removed from team')) : element(by.label('Removed from team')).atIndex(0);
     unarchivePrivateChannelTitle = isAndroid() ? element(by.text('Unarchive Private Channel')) : element(by.label('Unarchive Private Channel')).atIndex(0);
     unarchivePublicChannelTitle = isAndroid() ? element(by.text('Unarchive Public Channel')) : element(by.label('Unarchive Public Channel')).atIndex(0);
 
@@ -58,8 +61,34 @@ class Alert {
     removeButton3 = isAndroid() ? element(by.text('REMOVE')) : element(by.label('Remove')).atIndex(3);
     yesButton = isAndroid() ? element(by.text('YES')) : element(by.label('Yes')).atIndex(0);
     yesButton2 = isAndroid() ? element(by.text('YES')) : element(by.label('Yes')).atIndex(1);
+    continueAnywayButton = isAndroid() ? element(by.text('CONTINUE ANYWAY')) : element(by.label('Continue Anyway')).atIndex(0);
     sendButton = isAndroid() ? element(by.text('SEND')) : element(by.label('Send')).atIndex(1);
     saveButton = isAndroid() ? element(by.text('SAVE')) : element(by.label('Save')).atIndex(1);
+
+    // alert titles for channel removal/archival dialogs
+    removedFromChannelTitle = isAndroid() ? element(by.text('Removed from channel')) : element(by.label('Removed from channel')).atIndex(0);
+    archivedChannelTitle = isAndroid() ? element(by.text('Archived channel')) : element(by.label('Archived channel')).atIndex(0);
+
+    /**
+     * Dismiss "Removed from channel" or "Archived channel" dialogs if present.
+     * These dialogs appear asynchronously via WebSocket events when a channel is
+     * archived or the user is removed from a channel. Both use an "OK" button.
+     * Safe to call even when no dialog is present — the catch block handles that.
+     */
+    dismissChannelRemoveOrArchiveAlert = async () => {
+        try {
+            // Check for "Removed from channel" first
+            await waitFor(this.removedFromChannelTitle).toBeVisible().withTimeout(timeouts.FOUR_SEC);
+            await this.okButton.tap();
+            return;
+        } catch { /* not present */ }
+
+        try {
+            // Check for "Archived channel"
+            await waitFor(this.archivedChannelTitle).toBeVisible().withTimeout(timeouts.ONE_SEC);
+            await this.okButton.tap();
+        } catch { /* not present */ }
+    };
 }
 
 const alert = new Alert();

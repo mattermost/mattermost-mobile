@@ -96,7 +96,7 @@ export async function switchToChannel(serverUrl: string, channelId: string, team
                     }
                     DeviceEventEmitter.emit(NavigationConstants.NAVIGATION_HOME, Screens.CHANNEL);
                 } else {
-                    await NavigationStore.waitUntilScreenHasLoaded(Screens.CHANNEL_LIST);
+                    await NavigationStore.waitUntilScreenHasLoaded(Screens.HOME);
                     await dismissAllRoutesAndPopToScreen(Screens.CHANNEL);
                 }
 

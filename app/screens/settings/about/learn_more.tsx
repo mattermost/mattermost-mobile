@@ -2,11 +2,10 @@
 // See LICENSE.txt for license information.
 
 import React from 'react';
-import {defineMessages} from 'react-intl';
+import {useIntl} from 'react-intl';
 import {Text, View} from 'react-native';
 
 import Config from '@assets/config.json';
-import FormattedText from '@components/formatted_text';
 import {useTheme} from '@context/theme';
 import {getSkuDisplayName} from '@utils/subscription';
 import {makeStyleSheetFromTheme} from '@utils/theme';
@@ -36,22 +35,8 @@ type LearnMoreProps = {
     onPress: () => void;
 };
 
-const messages = defineMessages({
-    teamEditionLearn: {
-        id: 'about.teamEditionLearn',
-        defaultMessage: 'Join the Mattermost community at ',
-    },
-    enterpriseEditionLearn: {
-        id: 'about.enterpriseEditionLearn',
-        defaultMessage: 'Learn more about Enterprise Edition at ',
-    },
-    planNameLearn: {
-        id: 'about.planNameLearn',
-        defaultMessage: 'Learn more about Mattermost {planName} at ',
-    },
-});
-
 const LearnMore = ({config, license, onPress}: LearnMoreProps) => {
+    const intl = useIntl();
     const theme = useTheme();
     const style = getStyleSheet(theme);
     const url = Config.WebsiteURL;
@@ -59,40 +44,31 @@ const LearnMore = ({config, license, onPress}: LearnMoreProps) => {
     const isEnterpriseReady = config.BuildEnterpriseReady === 'true';
     const isLicensed = license?.IsLicensed === 'true';
 
-    const learnIntro = (() => {
-        if (!isEnterpriseReady) {
-            return (
-                <FormattedText
-                    {...messages.teamEditionLearn}
-                    testID='about.learn_more.text'
-                />
-            );
-        }
-        if (isLicensed) {
-            const planName = getSkuDisplayName(
-                license?.SkuShortName ?? '',
-                license?.IsGovSku === 'true',
-            );
-            return (
-                <FormattedText
-                    {...messages.planNameLearn}
-                    testID='about.learn_more.text'
-                    values={{planName}}
-                />
-            );
-        }
-        return (
-            <FormattedText
-                {...messages.enterpriseEditionLearn}
-                testID='about.learn_more.text'
-            />
+    let learnText: string;
+    if (!isEnterpriseReady) {
+        learnText = intl.formatMessage({id: 'about.teamEditionLearn', defaultMessage: 'Join the Mattermost community at '});
+    } else if (isLicensed) {
+        const planName = getSkuDisplayName(
+            license?.SkuShortName ?? '',
+            license?.IsGovSku === 'true',
         );
-    })();
+        learnText = intl.formatMessage({id: 'about.planNameLearn', defaultMessage: 'Learn more about Mattermost {planName} at '}, {planName});
+    } else {
+        learnText = intl.formatMessage({id: 'about.enterpriseEditionLearn', defaultMessage: 'Learn more about Enterprise Edition at '});
+    }
 
     return (
         <View style={style.learnContainer}>
-            <Text style={style.learn}>
-                {learnIntro}
+            {/* Use View instead of Text wrapper so Fabric doesn't flatten
+                inner Text elements and drop their testIDs on iOS 26
+                (MM-T5104_1). */}
+            <View style={{flexDirection: 'row', flexWrap: 'wrap'}}>
+                <Text
+                    style={style.learn}
+                    testID='about.learn_more.text'
+                >
+                    {learnText}
+                </Text>
                 <Text
                     accessibilityRole='link'
                     style={style.learnLink}
@@ -101,7 +77,7 @@ const LearnMore = ({config, license, onPress}: LearnMoreProps) => {
                 >
                     {url}
                 </Text>
-            </Text>
+            </View>
         </View>
     );
 };

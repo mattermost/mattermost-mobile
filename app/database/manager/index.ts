@@ -69,6 +69,7 @@ class DatabaseManagerSingleton {
     * @returns {Promise<void>}
     */
     public init = async (serverUrls: string[]): Promise<void> => {
+        logDebug('DatabaseManager: Initializing');
         await this.createAppDatabase();
         const buildNumber = nativeBuildVersion;
         const versionNumber = nativeApplicationVersion;

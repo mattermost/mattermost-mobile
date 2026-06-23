@@ -103,7 +103,10 @@ describe('Messaging - Message Draft', () => {
         await ChannelScreen.postInput.replaceText(SecondMessage);
         await ChannelScreen.back();
 
-        // # Verify the draft message is updated
+        // # Re-open the drafts screen so the updated draft preview is visible
+        await ChannelListScreen.draftsButton.tap();
+
+        // * Verify the draft message is updated
         await expect(element(by.text(SecondMessage))).toBeVisible();
         await cleanupDrafts();
         await DraftScreen.backButton.tap();

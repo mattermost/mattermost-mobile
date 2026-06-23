@@ -121,11 +121,54 @@ post_install do |installer|
 
   end
 
-  # make sure the main app is NOT extension-only
-  app_target = installer.aggregate_targets.flat_map(&:user_project).flat_map(&:targets).find { |t| t.name == 'Mattermost' }
-  if app_target
-    app_target.build_configurations.each do |c|
-      c.build_settings.delete('APPLICATION_EXTENSION_API_ONLY')
+    # react-native-network-client's prepare_command applies Alamofire+5.9.1.diff,
+    # which inserts an `allHeaders` / `sizeString` block for uncompressed content
+    # length support. Alamofire 5.10.x incorporated this natively, so the patch
+    # creates a duplicate `let allHeaders` declaration in the same function scope.
+    # Xcode 26 / Swift 6 treats duplicate `let` in the same scope as a hard error.
+    # Remove the first (patch-inserted) copy; the native one at the bottom remains.
+    alamofire_delegate = File.join(installer.sandbox.root, 'Alamofire/Source/Core/SessionDelegate.swift')
+    if File.exist?(alamofire_delegate)
+      content = File.read(alamofire_delegate)
+      patch_marker = '// [PATCHED] removed duplicate allHeaders redeclaration'
+      unless content.include?(patch_marker)
+        if content.scan('let allHeaders = (downloadRequest.response)').length >= 2
+          patched = content.sub(
+            "        let allHeaders = (downloadRequest.response)?.allHeaderFields as? NSDictionary ?? NSDictionary()\n" \
+            "        let sizeString = (allHeaders[\"X-Uncompressed-Content-Length\"] ?? allHeaders[\"x-uncompressed-content-length\"]) as? String\n" \
+            "        if (sizeString != nil) {\n" \
+            "            let size = Int64(sizeString!)\n" \
+            "            downloadRequest.updateDownloadProgress(bytesWritten: bytesWritten,\n" \
+            "                                               totalBytesExpectedToWrite: size!)\n" \
+            "            return\n" \
+            "        }\n\n",
+            "        #{patch_marker}\n"
+          )
+          if patched != content
+            File.chmod(0644, alamofire_delegate)
+            File.write(alamofire_delegate, patched)
+            Pod::UI.puts 'Patched Alamofire/SessionDelegate.swift: removed duplicate allHeaders block (>= 5.10.x compatibility).'
+          end
+        end
+      end
     end
-  end
+
+
+    # ensure stdlib is embedded for Gekidou to work correctly in extensions
+    %w[NotificationService MattermostShare].each do |ext_name|
+      target = installer.aggregate_targets.flat_map(&:user_project).flat_map(&:targets).find { |x| x.name == ext_name }
+      next unless target
+      target.build_configurations.each do |c|
+        c.build_settings['APPLICATION_EXTENSION_API_ONLY'] = 'YES'
+        c.build_settings['ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES'] = 'YES'
+      end
+    end
+
+    # make sure the main app is NOT extension-only
+    app_target = installer.aggregate_targets.flat_map(&:user_project).flat_map(&:targets).find { |t| t.name == 'Mattermost' }
+    if app_target
+      app_target.build_configurations.each do |c|
+        c.build_settings.delete('APPLICATION_EXTENSION_API_ONLY')
+      end
+    end
 end

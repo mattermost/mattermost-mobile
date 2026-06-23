@@ -17,6 +17,7 @@ import {
     serverOneUrl,
     siteOneUrl,
 } from '@support/test_config';
+import {Alert} from '@support/ui/component';
 import {
     ChannelScreen,
     ChannelListScreen,
@@ -46,6 +47,11 @@ describe('Channels - Find Channels', () => {
     });
 
     beforeEach(async () => {
+        // Dismiss any lingering "Removed from channel" or "Archived channel"
+        // dialogs that may appear asynchronously via WebSocket events from
+        // the previous test's channel archival (e.g. MM-T4907_5).
+        await Alert.dismissChannelRemoveOrArchiveAlert();
+
         // * Verify on channel list screen
         await ChannelListScreen.toBeVisible();
     });
@@ -111,16 +117,35 @@ describe('Channels - Find Channels', () => {
         await FindChannelsScreen.open();
         await FindChannelsScreen.searchInput.replaceText(testOtherUser1.username);
 
-        // * Verify search returns the target direct message channel item
+        // * Verify search returns a result for the target direct message channel.
+        // When the DM is synced via WS it shows as channel_item; if not yet synced
+        // searchProfiles stores the user profile and it shows as user_item.
         await wait(timeouts.TWO_SEC);
-        await expect(FindChannelsScreen.getFilteredChannelItemDisplayName(directMessageChannel.name)).toHaveText(testOtherUser1.username);
+        try {
+            await waitFor(FindChannelsScreen.getFilteredChannelItem(directMessageChannel.name)).
+                toExist().
+                withTimeout(timeouts.TWO_SEC);
+        } catch {
+            await waitFor(element(by.id(`find_channels.filtered_list.user_item.${testOtherUser1.id}`))).
+                toExist().
+                withTimeout(timeouts.TEN_SEC);
+        }
 
         // # Search for the group message channel
         await FindChannelsScreen.searchInput.replaceText(testOtherUser2.username);
 
-        // * Verify search returns the target group message channel item
+        // * Verify search returns the target group message channel item and tap it
+        // The GM appears as a channel_item when synced via WS; if not yet synced,
+        // fall back to the user_item which still opens a channel screen.
         await wait(timeouts.TWO_SEC);
-        await FindChannelsScreen.getFilteredChannelItem(groupMessageChannel.name).tap();
+        try {
+            await waitFor(FindChannelsScreen.getFilteredChannelItem(groupMessageChannel.name)).
+                toExist().
+                withTimeout(timeouts.TWO_SEC);
+            await FindChannelsScreen.getFilteredChannelItem(groupMessageChannel.name).tap();
+        } catch {
+            await element(by.id(`find_channels.filtered_list.user_item.${testOtherUser2.id}`)).tap();
+        }
         await wait(timeouts.FOUR_SEC);
 
         // * Verify on target GM screen

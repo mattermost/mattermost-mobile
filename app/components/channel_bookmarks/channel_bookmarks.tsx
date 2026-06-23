@@ -144,6 +144,7 @@ const ChannelBookmarks = ({
                             alwaysBounceHorizontal={false}
                             data={bookmarks}
                             horizontal={true}
+                            testID={showInInfo ? 'channel_info.bookmarks.list' : 'channel_header.bookmarks.list'}
                             renderItem={renderItem}
                             ItemSeparatorComponent={renderItemSeparator}
                             onScroll={onScrolled}

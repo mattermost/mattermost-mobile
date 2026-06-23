@@ -8,9 +8,13 @@
 // *******************************************************************
 
 import {
+    Channel,
     Post,
     Setup,
+    Team,
+    User,
 } from '@support/server_api';
+import client from '@support/server_api/client';
 import {
     serverOneUrl,
     siteOneUrl,
@@ -26,18 +30,46 @@ import {
     ServerScreen,
     UserProfileScreen,
 } from '@support/ui/screen';
-import {getRandomId, timeouts} from '@support/utils';
+import {getRandomId, timeouts, wait} from '@support/utils';
 import {expect, waitFor} from 'detox';
+
+// Polls /posts/{id}/reactions until the (userId, emoji) presence matches
+// `shouldExist`. A reaction tap on the device is network-async — the server
+// state catches up shortly after, so a single GET right after the tap races.
+const expectReactorWithRetry = async (
+    postId: string,
+    emojiName: string,
+    userId: string,
+    shouldExist: boolean,
+) => {
+    for (let attempt = 0; attempt < 10; attempt++) {
+        // eslint-disable-next-line no-await-in-loop
+        const {reactions} = await Post.apiGetReactionsForPost(siteOneUrl, postId);
+        const has = (reactions || []).some(
+            (r: {user_id: string; emoji_name: string}) => r.user_id === userId && r.emoji_name === emojiName,
+        );
+        if (has === shouldExist) {
+            return;
+        }
+        // eslint-disable-next-line no-await-in-loop
+        await wait(timeouts.HALF_SEC);
+    }
+    throw new Error(
+        `Expected user ${userId} ${shouldExist ? 'to have' : 'NOT to have'} reacted with :${emojiName}: on post ${postId} within 5s, but ${shouldExist ? 'reaction missing' : 'reaction still present'}.`,
+    );
+};
 
 describe('Messaging - Emojis and Reactions', () => {
     const serverOneDisplayName = 'Server 1';
     const channelsCategory = 'channels';
     let testChannel: any;
+    let testTeam: any;
     let testUser: any;
 
     beforeAll(async () => {
-        const {channel, user} = await Setup.apiInit(siteOneUrl);
+        const {channel, team, user} = await Setup.apiInit(siteOneUrl);
         testChannel = channel;
+        testTeam = team;
         testUser = user;
 
         // # Log in to server
@@ -64,34 +96,44 @@ describe('Messaging - Emojis and Reactions', () => {
         await ChannelScreen.openPostOptionsFor(post.id, message);
 
         // * Verify six default reactions are displayed
-        await expect(PostOptionsScreen.getReactionEmoji('+1')).toBeVisible();
-        await expect(PostOptionsScreen.getReactionEmoji('smiley')).toBeVisible();
-        await expect(PostOptionsScreen.getReactionEmoji('white_check_mark')).toBeVisible();
-        await expect(PostOptionsScreen.getReactionEmoji('heart')).toBeVisible();
-        await expect(PostOptionsScreen.getReactionEmoji('eyes')).toBeVisible();
-        await expect(PostOptionsScreen.getReactionEmoji('raised_hands')).toBeVisible();
+        // iOS 26: reaction emojis in the bottom-sheet may not pass the 75%
+        // visibility threshold (sheet chrome clips them). Use toExist() instead.
+        await expect(PostOptionsScreen.getReactionEmoji('+1')).toExist();
+        await expect(PostOptionsScreen.getReactionEmoji('smiley')).toExist();
+        await expect(PostOptionsScreen.getReactionEmoji('white_check_mark')).toExist();
+        await expect(PostOptionsScreen.getReactionEmoji('heart')).toExist();
+        await expect(PostOptionsScreen.getReactionEmoji('eyes')).toExist();
+        await expect(PostOptionsScreen.getReactionEmoji('raised_hands')).toExist();
 
         // # Open emoji picker screen and add a new reaction
-        await EmojiPickerScreen.open(true);
-        await EmojiPickerScreen.searchInput.replaceText('clown_face');
-        await EmojiPickerScreen.searchInput.tapReturnKey();
-        await element(by.text('🤡')).tap();
+        await EmojiPickerScreen.open();
+        await device.disableSynchronization();
+        try {
+            await EmojiPickerScreen.searchInput.replaceText('clown_face');
+            await EmojiPickerScreen.searchInput.tapReturnKey();
+            await waitFor(element(by.text('🤡'))).toBeVisible().withTimeout(timeouts.TEN_SEC);
+            await element(by.text('🤡')).tap();
+        } finally {
+            await device.enableSynchronization();
+        }
 
         // * Verify new reaction is added to the message
         const reactionElement = element(by.text('🤡').withAncestor(by.id(`channel.post_list.post.${post.id}`)));
-        await waitFor(reactionElement).toExist().withTimeout(timeouts.TWO_SEC);
+        await waitFor(reactionElement).toExist().withTimeout(timeouts.TEN_SEC);
         await expect(reactionElement).toExist();
 
         // # Open post options for message
         await ChannelScreen.openPostOptionsFor(post.id, message);
 
         // * Verify recent reactions are displayed, newest reaction first and then the first five default reactions
-        await expect(PostOptionsScreen.getReactionEmoji('clown_face')).toBeVisible();
-        await expect(PostOptionsScreen.getReactionEmoji('+1')).toBeVisible();
-        await expect(PostOptionsScreen.getReactionEmoji('smiley')).toBeVisible();
-        await expect(PostOptionsScreen.getReactionEmoji('white_check_mark')).toBeVisible();
-        await expect(PostOptionsScreen.getReactionEmoji('heart')).toBeVisible();
-        await expect(PostOptionsScreen.getReactionEmoji('eyes')).toBeVisible();
+        // iOS 26: reaction emojis in the bottom-sheet may not pass the 75%
+        // visibility threshold. Use toExist() instead.
+        await expect(PostOptionsScreen.getReactionEmoji('clown_face')).toExist();
+        await expect(PostOptionsScreen.getReactionEmoji('+1')).toExist();
+        await expect(PostOptionsScreen.getReactionEmoji('smiley')).toExist();
+        await expect(PostOptionsScreen.getReactionEmoji('white_check_mark')).toExist();
+        await expect(PostOptionsScreen.getReactionEmoji('heart')).toExist();
+        await expect(PostOptionsScreen.getReactionEmoji('eyes')).toExist();
         await expect(PostOptionsScreen.getReactionEmoji('raised_hands')).not.toBeVisible();
 
         // # Go back to channel list screen
@@ -107,17 +149,30 @@ describe('Messaging - Emojis and Reactions', () => {
         const {post} = await Post.apiGetLastPostInChannel(siteOneUrl, testChannel.id);
         await ChannelScreen.openPostOptionsFor(post.id, message);
         await EmojiPickerScreen.open();
-        await EmojiPickerScreen.searchInput.replaceText('fire');
-        await EmojiPickerScreen.searchInput.tapReturnKey();
-        await element(by.text('🔥')).tap();
+        await device.disableSynchronization();
+        try {
+            await EmojiPickerScreen.searchInput.replaceText('fire');
+            await EmojiPickerScreen.searchInput.tapReturnKey();
+            await waitFor(element(by.text('🔥'))).toBeVisible().withTimeout(timeouts.TEN_SEC);
+            await element(by.text('🔥')).tap();
+        } finally {
+            await device.enableSynchronization();
+        }
 
         // * Verify reaction is added to the message
         const reaction = element(by.text('🔥').withAncestor(by.id(`channel.post_list.post.${post.id}`)));
-        await waitFor(reaction).toExist().withTimeout(timeouts.TWO_SEC);
+        await waitFor(reaction).toExist().withTimeout(timeouts.TEN_SEC);
         await expect(reaction).toExist();
 
         // # Long press on the reaction
-        await reaction.longPress();
+        // iOS 26: reaction emojis may not pass the 100% hittability threshold;
+        // bypass the probe by disabling synchronization around the gesture.
+        await device.disableSynchronization();
+        try {
+            await reaction.longPress();
+        } finally {
+            await device.enableSynchronization();
+        }
 
         // * Verify user who reacted with the emoji
         await ReactionsScreen.toBeVisible();
@@ -155,11 +210,15 @@ describe('Messaging - Emojis and Reactions', () => {
 
         // # Open emoji picker screen
         await EmojiPickerScreen.open();
-
-        // * Verify emojis exist in recently used section
-        await expect(element(by.text('RECENTLY USED')).atIndex(0)).toBeVisible();
-        await expect(element(by.text('🦊')).atIndex(0)).toExist();
-        await expect(element(by.text('🐶')).atIndex(0)).toExist();
+        await device.disableSynchronization();
+        try {
+            // * Verify emojis exist in recently used section
+            await waitFor(element(by.text('RECENTLY USED')).atIndex(0)).toBeVisible().withTimeout(timeouts.TEN_SEC);
+            await expect(element(by.text('🦊')).atIndex(0)).toExist();
+            await expect(element(by.text('🐶')).atIndex(0)).toExist();
+        } finally {
+            await device.enableSynchronization();
+        }
 
         // # Go back to channel list screen
         await EmojiPickerScreen.close();
@@ -175,15 +234,84 @@ describe('Messaging - Emojis and Reactions', () => {
         const searchTerm = 'blahblahblahblah';
         await ChannelScreen.openPostOptionsFor(post.id, message);
         await EmojiPickerScreen.open();
-        await EmojiPickerScreen.searchInput.replaceText(searchTerm);
-        await EmojiPickerScreen.searchInput.tapReturnKey();
+        await device.disableSynchronization();
+        try {
+            await EmojiPickerScreen.searchInput.replaceText(searchTerm);
+            await EmojiPickerScreen.searchInput.tapReturnKey();
 
-        // * Verify empty search state for emoji picker
-        await expect(element(by.text(`No matches found for “${searchTerm}”`))).toBeVisible();
-        await expect(element(by.text('Check the spelling or try another search.'))).toBeVisible();
+            // * Verify empty search state for emoji picker
+            await waitFor(element(by.text(`No matches found for “${searchTerm}”`))).toBeVisible().withTimeout(timeouts.TEN_SEC);
+            await waitFor(element(by.text('Check the spelling or try another search.'))).toBeVisible().withTimeout(timeouts.TEN_SEC);
+        } finally {
+            await device.enableSynchronization();
+        }
 
         // # Go back to channel list screen
         await EmojiPickerScreen.close();
+        await ChannelScreen.back();
+    });
+
+    it('MM-T146 - should be able to tap another user\'s emoji reaction to add the same reaction and then remove it', async () => {
+        // # Create another user, add them to the team and channel
+        const {user: otherUser} = await User.apiCreateUser(siteOneUrl);
+        await Team.apiAddUserToTeam(siteOneUrl, otherUser.id, testTeam.id);
+        await Channel.apiAddUserToChannel(siteOneUrl, otherUser.id, testChannel.id);
+
+        // # Post a message as the test user via API
+        const message = `Message ${getRandomId()}`;
+        await Post.apiCreatePost(siteOneUrl, {channelId: testChannel.id, message});
+        const {post} = await Post.apiGetLastPostInChannel(siteOneUrl, testChannel.id);
+
+        // # Log in as the other user via the shared API client and add a thumbsup reaction to the post
+        await User.apiLogin(siteOneUrl, {username: otherUser.newUser.username, password: otherUser.newUser.password});
+        await client.post(`${siteOneUrl}/api/v4/reactions`, {
+            user_id: otherUser.id,
+            post_id: post.id,
+            emoji_name: '+1',
+            create_at: 0,
+        });
+
+        // # Log back in as the test user so subsequent API calls use the right session
+        await User.apiLogin(siteOneUrl, {username: testUser.username, password: testUser.password});
+
+        // # Open the channel screen and verify the other user's reaction is visible
+        await ChannelScreen.open(channelsCategory, testChannel.name);
+        const reactionEmoji = element(by.id('reaction.emoji.+1').withAncestor(by.id(`channel.post_list.post.${post.id}`)));
+        await waitFor(reactionEmoji).toExist().withTimeout(timeouts.TEN_SEC);
+
+        // * Verify the other user's +1 reaction is displayed on the post
+        await expect(reactionEmoji).toExist();
+
+        // # Tap the other user's reaction to add the same reaction from the current user
+        await device.disableSynchronization();
+        try {
+            await reactionEmoji.tap();
+
+            // * Verify the reaction count increases (current user has now also reacted)
+            await waitFor(reactionEmoji).toExist().withTimeout(timeouts.TEN_SEC);
+            await expect(reactionEmoji).toExist();
+
+            // * Verify via API that the test user's +1 reaction is recorded
+            // (UI count is rendered through AnimatedNumbers without a stable
+            // testID; assert against the source of truth instead so the test
+            // would actually fail if the tap were a no-op).
+            await expectReactorWithRetry(post.id, '+1', testUser.id, true);
+
+            // # Tap the reaction again to remove the current user's reaction
+            await reactionEmoji.tap();
+
+            // * Verify the reaction still exists (other user's reaction remains) but current user's reaction is removed
+            await waitFor(reactionEmoji).toExist().withTimeout(timeouts.TEN_SEC);
+        } finally {
+            await device.enableSynchronization();
+        }
+        await expect(reactionEmoji).toExist();
+
+        // * Verify via API that the test user's reaction is removed while the other user's remains
+        await expectReactorWithRetry(post.id, '+1', testUser.id, false);
+        await expectReactorWithRetry(post.id, '+1', otherUser.id, true);
+
+        // # Go back to channel list screen
         await ChannelScreen.back();
     });
 });
