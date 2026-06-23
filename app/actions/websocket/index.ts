@@ -37,7 +37,7 @@ import EphemeralStore from '@store/ephemeral_store';
 import {NavigationStore} from '@store/navigation_store';
 import {setTeamLoading} from '@store/team_load_store';
 import {isTablet} from '@utils/helpers';
-import {logDebug} from '@utils/log';
+import {logDebug, logInfo} from '@utils/log';
 
 export async function handleFirstConnect(serverUrl: string, groupLabel?: BaseRequestGroupLabel) {
     setExtraSessionProps(serverUrl, groupLabel);
@@ -79,10 +79,12 @@ async function doReconnect(serverUrl: string, groupLabel?: BaseRequestGroupLabel
 
         await handleEntryAfterLoadNavigation(serverUrl, teamData.memberships || [], chData?.memberships || [], currentTeamId || '', currentChannelId || '', initialTeamId, initialChannelId, gmConverted);
 
+        const dt = Date.now();
         if (models?.length) {
             await operator.batchRecords(models, 'doReconnect');
         }
 
+        logInfo('WEBSOCKET RECONNECT MODELS BATCHING TOOK', `${Date.now() - dt}ms`);
         await fetchPostDataIfNeeded(serverUrl, groupLabel);
 
         const {id: currentUserId, locale: currentUserLocale} = (await getCurrentUser(database))!;
