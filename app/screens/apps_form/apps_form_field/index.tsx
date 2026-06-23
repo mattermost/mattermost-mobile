@@ -19,7 +19,7 @@ const enhanced = withObservables([], ({database}: WithDatabaseArgs) => ({
     userTimezone: observeCurrentUser(database).pipe(
         switchMap((user) => of$(getTimezone(user?.timezone))),
     ),
-    isMilitaryTime: queryDisplayNamePreferences(database).
+    isMilitaryTime: queryDisplayNamePreferences(database, Preferences.USE_MILITARY_TIME).
         observeWithColumns(['value']).pipe(
             switchMap(
                 (preferences) => of$(getDisplayNamePreferenceAsBool(preferences, Preferences.USE_MILITARY_TIME, false)),

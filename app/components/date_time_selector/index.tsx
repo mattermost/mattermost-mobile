@@ -14,7 +14,7 @@ import DateTimeSelector from './date_time_selector';
 import type {WithDatabaseArgs} from '@typings/database/database';
 
 const enhanced = withObservables([], ({database}: WithDatabaseArgs) => ({
-    isMilitaryTime: queryDisplayNamePreferences(database).
+    isMilitaryTime: queryDisplayNamePreferences(database, Preferences.USE_MILITARY_TIME).
         observeWithColumns(['value']).pipe(
             switchMap(
                 (preferences) => of$(getDisplayNamePreferenceAsBool(preferences, Preferences.USE_MILITARY_TIME, false)),
