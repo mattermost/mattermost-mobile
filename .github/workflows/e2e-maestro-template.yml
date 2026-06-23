@@ -256,36 +256,17 @@ jobs:
             echo "Warning: FileProvider.LocalStorage container not found; channel_bookmark_file.yml may fail"
           fi
 
-      - name: Resolve flow path
-        id: resolve-flow-path
-        env:
-          FLOW_PATH_INPUT: ${{ inputs.flow-path }}
-        run: |
-          if [ -n "$FLOW_PATH_INPUT" ]; then
-            # Reject anything outside a safe whitelist (paths, spaces, dashes)
-            # to prevent command injection via the workflow input.
-            if ! printf '%s' "$FLOW_PATH_INPUT" | grep -Eq '^[A-Za-z0-9_./ -]+$'; then
-              echo "Invalid flow-path input: $FLOW_PATH_INPUT"
-              exit 1
-            fi
-            printf 'flow_path=%s\n' "$FLOW_PATH_INPUT" >> "$GITHUB_OUTPUT"
-          else
-            # iOS: run single-device flows. seed.ts now enables Calls in the
-            # test channel (POST /plugins/com.mattermost.calls/{channelId}),
-            # so start_call / mute_unmute / leave_call run here without a
-            # separate calls_seed.ts step.
-            # Excluded: file_type_preview.yml (requires seed_file_preview.ts for file IDs)
-            #           channel_bookmark_file_android_picker.yml (Android-only picker)
-            printf 'flow_path=%s\n' "maestro/flows/account maestro/flows/calls maestro/flows/channels/channel_bookmark_file.yml maestro/flows/channels/channel_bookmark_link_external.yml maestro/flows/share_extension maestro/flows/timezone" >> "$GITHUB_OUTPUT"
-          fi
-
       - name: Run Maestro Flows (iOS)
         env:
-          FLOW_PATH: ${{ steps.resolve-flow-path.outputs.flow_path }}
+          FLOW_PATH: ${{ inputs.flow-path }}
           E2E_IOS_DEVICE_NAME: ${{ env.E2E_IOS_DEVICE_NAME }}
           E2E_IOS_DEVICE_OS_VERSION: ${{ env.E2E_IOS_DEVICE_OS_VERSION }}
           MAESTRO_DRIVER_STARTUP_TIMEOUT: "180000"
         run: |
+          if [ -n "${FLOW_PATH:-}" ] && ! printf '%s' "$FLOW_PATH" | grep -Eq '^[A-Za-z0-9_./ -]+$'; then
+            echo "Invalid flow-path input: $FLOW_PATH"
+            exit 1
+          fi
           set -a
           source maestro/.maestro-test-env.sh
           set +a
@@ -498,33 +479,6 @@ jobs:
           ADMIN_USERNAME: ${{ env.ADMIN_USERNAME }}
           ADMIN_PASSWORD: ${{ env.ADMIN_PASSWORD }}
 
-      - name: Resolve flow path
-        id: resolve-flow-path
-        env:
-          FLOW_PATH_INPUT: ${{ inputs.flow-path }}
-        run: |
-          if [ -n "$FLOW_PATH_INPUT" ]; then
-            # Reject anything outside a safe whitelist (paths, spaces, dashes)
-            # to prevent command injection via the workflow input.
-            if ! printf '%s' "$FLOW_PATH_INPUT" | grep -Eq '^[A-Za-z0-9_./ -]+$'; then
-              echo "Invalid flow-path input: $FLOW_PATH_INPUT"
-              exit 1
-            fi
-            printf 'flow_path=%s\n' "$FLOW_PATH_INPUT" >> "$GITHUB_OUTPUT"
-          else
-            # Android: share_image_to_channel.yml has no Android branch (uses iOS
-            # Photos app). share_link_to_channel.yml and share_text_to_channel.yml
-            # use Chrome and have full Android implementations.
-            # Multi-device flows are excluded (two-device only).
-            #
-            # Channel bookmarks: channel_bookmark_file.yml is cross-platform
-            # — it branches into the OS-specific *_picker.yml sub-flow via
-            # `platform:` clauses. File fixture is pushed via `adb push` in
-            # the "Install APK" step. channel_bookmark_link_external is
-            # also cross-platform.
-            printf 'flow_path=%s\n' "maestro/flows/account maestro/flows/calls maestro/flows/channels/channel_bookmark_file.yml maestro/flows/channels/channel_bookmark_link_external.yml maestro/flows/share_extension/share_link_to_channel.yml maestro/flows/share_extension/share_text_to_channel.yml maestro/flows/timezone" >> "$GITHUB_OUTPUT"
-          fi
-
       - name: Install system dependencies
         run: |
           sudo apt-get update
@@ -640,9 +594,13 @@ jobs:
 
       - name: Run Maestro Flows (Android)
         env:
-          FLOW_PATH: ${{ steps.resolve-flow-path.outputs.flow_path }}
+          FLOW_PATH: ${{ inputs.flow-path }}
           MAESTRO_DRIVER_STARTUP_TIMEOUT: "180000"
         run: |
+          if [ -n "${FLOW_PATH:-}" ] && ! printf '%s' "$FLOW_PATH" | grep -Eq '^[A-Za-z0-9_./ -]+$'; then
+            echo "Invalid flow-path input: $FLOW_PATH"
+            exit 1
+          fi
           set -a
           source maestro/.maestro-test-env.sh
           set +a

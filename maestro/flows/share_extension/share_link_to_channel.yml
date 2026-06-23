@@ -34,42 +34,15 @@ appId: ${MAESTRO_APP_ID}
           file: ../../utils/open_url_in_safari_ios.yml
           env:
             SAFARI_URL: "https://example.com"
+            SAFARI_PAGE_TITLE: "Example Domain"
       - extendedWaitUntil:
           visible:
             text: "Example Domain"
           timeout: 30000
-      # Share the page URL via the address bar context menu. Page-level
-      # More→Share shows Mattermost but does not open the share extension
-      # on iOS 26 (same failure mode as share_text).
-      - tapOn:
-          id: "TabBarItemTitle"
-      - longPressOn:
-          id: "TabBarItemTitle"
-      - tapOn:
-          text: "Share..."
-      # CI .app label is "Mattermost"; local builds may show "Mattermost Beta".
-      - extendedWaitUntil:
-          visible:
-            text: "Mattermost"
-          timeout: 30000
       - runFlow:
-          when:
-            visible:
-              text: "Mattermost Beta"
-          commands:
-            - tapOn:
-                text: "Mattermost Beta"
+          file: ../../utils/share_safari_url_ios.yml
       - runFlow:
-          when:
-            notVisible:
-              text: "Mattermost Beta"
-          commands:
-            - tapOn:
-                text: "Mattermost"
-      - extendedWaitUntil:
-          visible:
-            id: "share_extension.channel.option"
-          timeout: 40000
+          file: ../../utils/select_mattermost_ios_share_sheet.yml
 
 # --- Android: use Chrome ---
 - runFlow:

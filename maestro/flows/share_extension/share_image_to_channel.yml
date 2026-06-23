@@ -23,69 +23,15 @@ appId: ${MAESTRO_APP_ID}
 - runFlow: ../../utils/login.yml
 - runFlow: ../../utils/navigate_to_channel.yml
 
-# Open Photos app fresh (stopApp resets it to Library grid, avoiding photo-detail resume state)
-- stopApp:
-    appId: "com.apple.mobileslideshow"
-- launchApp:
-    appId: "com.apple.mobileslideshow"
-# Wait for Photos to finish launching before checking for onboarding.
-# Without this wait, the optional "Continue" tap fires before the
-# "What's New in Photos" screen has rendered and Photos remains stuck
-# on the onboarding overlay (confirmed via failing iOS run screenshot).
-- waitForAnimationToEnd:
-    timeout: 5000
-# Dismiss "What's New in Photos" onboarding if present.
-# Loop the tap until the Continue button is gone or Select is visible.
 - runFlow:
     when:
-      visible:
-        text: "Continue"
+      platform: iOS
     commands:
-      - tapOn:
-          text: "Continue"
-      - extendedWaitUntil:
-          notVisible:
-            text: "Continue"
-          timeout: 10000
-# iOS 26: "Select" button text IS accessible from the Library grid.
-# Wait for it (not all simulator runs land directly on the grid).
-- extendedWaitUntil:
-    visible:
-      text: "Select"
-    timeout: 30000
-- tapOn:
-    text: "Select"
-# Tap second photo in the grid to select it (~50%, ~25% for row 1, col 2 in 3-col grid)
-- tapOn:
-    point: "50%, 25%"
-- takeScreenshot: photo-selected
-# iOS 26: share icon in selection toolbar is at bottom-left.
-# Coordinate: ~8% x, ~96% y (within the safe area zone on iPhone 17 Pro Max).
-# No text label accessible for this icon; use coordinate tap.
-# TODO: Revisit once Photos share icon is accessible via text/id in Maestro on iOS 26.
-- tapOn:
-    point: "8%, 96%"
-
-- takeScreenshot: share-sheet-open
-# CI .app label is "Mattermost"; local builds may show "Mattermost Beta".
-- extendedWaitUntil:
-    visible:
-      text: "Mattermost"
-    timeout: 30000
-- runFlow:
-    when:
-      visible:
-        text: "Mattermost Beta"
-    commands:
-      - tapOn:
-          text: "Mattermost Beta"
-- runFlow:
-    when:
-      notVisible:
-        text: "Mattermost Beta"
-    commands:
-      - tapOn:
-          text: "Mattermost"
+      - runFlow:
+          file: ../../utils/share_photo_from_library_ios.yml
+      - takeScreenshot: share-sheet-open
+      - runFlow:
+          file: ../../utils/select_mattermost_ios_share_sheet.yml
 
 # Share extension opens: tap Channel option to open channel picker
 - extendedWaitUntil:

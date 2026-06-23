@@ -33,6 +33,15 @@ appId: ${MAESTRO_APP_ID}
 - waitForAnimationToEnd:
     timeout: 25000
 
+- extendedWaitUntil:
+    visible:
+      id: "channel.post_draft.post.input"
+    timeout: 30000
+- extendedWaitUntil:
+    visible:
+      id: "channel_header.channel_quick_actions.button"
+    timeout: 30000
+
 # Open the channel quick actions sheet via the three-dots (⋮) button.
 # The Start/Join Call button lives in this sheet.
 - tapOn:

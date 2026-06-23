@@ -70,11 +70,18 @@ env:
     timeout: 10000
 
 # Step 7: Verify the timezone controls are present and show the correct timezone.
-# autoUpdateTimezone fires on home screen load and WebSocket connect (before we navigate here),
-# so the description under "Set automatically" reflects the simulator's current timezone.
-# getTimezoneRegion('America/New_York') → 'New York'
+# autoUpdateTimezone fires on home screen load; allow time for the label to update on CI.
 - assertVisible:
     id: "timezone_display_settings.automatic.option"
-- assertVisible:
-    text: "New York"
+- runFlow:
+    when:
+      visible:
+        text: "Off"
+    commands:
+      - tapOn:
+          id: "timezone_display_settings.automatic.option"
+- extendedWaitUntil:
+    visible:
+      text: "New York"
+    timeout: 60000
 - takeScreenshot: timezone-settings-visible

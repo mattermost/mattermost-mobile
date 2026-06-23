@@ -1,0 +1,78 @@
+# Sub-flow: share a photo from the iOS Photos library via the share extension.
+#
+# Photos grid/toolbar lack testIDs on iOS 26 — coordinate taps are system-overlay
+# exceptions per GUIDELINES §3 (same pattern as logout alert point tap).
+appId: com.apple.mobileslideshow
+---
+- stopApp:
+    appId: "com.apple.mobileslideshow"
+- launchApp:
+    appId: "com.apple.mobileslideshow"
+- extendedWaitUntil:
+    visible:
+      text: "Photos"
+    timeout: 15000
+- runFlow:
+    when:
+      visible:
+        text: "Continue"
+    commands:
+      - tapOn:
+          text: "Continue"
+      - extendedWaitUntil:
+          notVisible:
+            text: "Continue"
+          timeout: 10000
+# Path A: multi-select toolbar (Select button visible).
+- runFlow:
+    when:
+      visible:
+        text: "Select"
+    commands:
+      - tapOn:
+          text: "Select"
+      - tapOn:
+          point: "50%, 25%"
+      - retry:
+          label: Tap Photos selection share icon
+          maxRetries: 2
+          commands:
+            - tapOn:
+                point: "8%, 96%"
+            - extendedWaitUntil:
+                visible:
+                  text: "Mattermost"
+                timeout: 5000
+# Path B: tap a thumbnail → detail screen → share (iOS 26.2+ library layout).
+- runFlow:
+    when:
+      notVisible:
+        text: "Select"
+    commands:
+      - tapOn:
+          point: "25%, 28%"
+      - extendedWaitUntil:
+          notVisible:
+            text: "Photos"
+          timeout: 10000
+      - retry:
+          label: Tap photo detail share action
+          maxRetries: 2
+          commands:
+            - tapOn:
+                point: "92%, 9%"
+            - extendedWaitUntil:
+                visible:
+                  text: "Mattermost"
+                timeout: 5000
+            - runFlow:
+                when:
+                  notVisible:
+                    text: "Mattermost"
+                commands:
+                  - tapOn:
+                      point: "8%, 96%"
+                  - extendedWaitUntil:
+                      visible:
+                        text: "Mattermost"
+                      timeout: 5000

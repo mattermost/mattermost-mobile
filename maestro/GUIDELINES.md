@@ -92,6 +92,7 @@ These align with [Maestro docs](https://docs.maestro.dev/) and lessons from Matt
 ### Selectors
 
 - **Always** `id:` (testID). **Never** `point:` except to dismiss system overlays with no accessibility node.
+- **Exception**: Apple system apps (Photos library grid/share toolbar, Safari share sheet) have no testIDs — coordinate taps in `maestro/utils/share_*_ios.yml` are allowed when `text:`/`id:` selectors are unavailable on that iOS version.
 - If an element lacks a testID, add one in `app/` — do not work around with coordinates.
 - Verify hierarchy before authoring: `maestro --device <id> hierarchy`
 
@@ -264,7 +265,7 @@ Single source of truth: [`maestro-version.json`](./maestro-version.json)
 | `e2e-maestro-pr.yml` | Maestro status contexts, orchestration (reusable) |
 | `e2e-maestro-template.yml` | Simulator/emulator, seed, batch test runner, report |
 
-Maestro runs via `maestro/scripts/run_ci_batches.sh` — isolated batches so one browser-risk flow cannot wedge the driver for unrelated flows. JUnit reports are merged before HTML generation.
+Maestro runs via `maestro/scripts/run_ci_batches.sh` (one flow per batch). JUnit reports are merged before HTML generation.
 
 Device targets (same as Detox):
 

@@ -185,12 +185,9 @@ appId: ${MAESTRO_APP_ID}
 - tapOn:
     id: "login_form.signin.button"
 # iOS 26: dismiss "Save Password?" Keychain dialog before it blocks the home tab assertion.
-# Maestro's default element-wait (~5 s) is enough; optional so it skips if the dialog is absent.
 - tapOn:
     text: "Not Now"
     optional: true
-# Wait for home screen — Android CI emulators can lag after first cloud login.
-- extendedWaitUntil:
-    visible:
-      id: "tab_bar.home.tab"
-    timeout: 45000
+- runFlow:
+    file: wait_for_home_tab.yml
+    label: Wait for channel list home tab after login

@@ -13,6 +13,7 @@
 # Environment:
 #   MAESTRO_BIN          — default ~/.maestro/bin/maestro
 #   MAESTRO_APP_ID       — default com.mattermost.rnbeta
+#   FLOW_PATH            — optional; space-separated flow dirs (default: maestro/flows/* categories)
 #   SITE_1_URL, TEST_*   — passed through to maestro --env
 #   MAESTRO_DRIVER_STARTUP_TIMEOUT — default 180000 (Maestro CI recommendation)
 
@@ -63,33 +64,64 @@ maestro_env_args=(
 platform_args=()
 [[ "$PLATFORM" == "android" ]] && platform_args=(--platform android)
 
-# Batch order: in-app first, file picker, calls, browser-risk (isolated), cross-app share last.
-# help_url runs alone — it can wedge the iOS Maestro driver on CI simulators.
-if [[ "$PLATFORM" == "ios" ]]; then
-  BATCHES=(
-    "maestro/flows/timezone maestro/flows/channels/channel_bookmark_link_external.yml"
-    "maestro/flows/account/attach_logs.yml maestro/flows/account/attach_logs_toggle_visible.yml maestro/flows/account/attach_logs_toggle_on_surfaces_option.yml maestro/flows/account/attach_logs_toggle_off_hides_option.yml"
-    "maestro/flows/calls"
-    "maestro/flows/channels/channel_bookmark_file.yml"
-    "maestro/flows/account/help_url.yml"
-    "maestro/flows/share_extension/share_link_to_channel.yml"
-    "maestro/flows/share_extension/share_text_to_channel.yml"
-    "maestro/flows/share_extension/share_image_to_channel.yml"
-  )
-else
-  BATCHES=(
-    "maestro/flows/timezone maestro/flows/channels/channel_bookmark_link_external.yml"
-    "maestro/flows/account/attach_logs.yml"
-    "maestro/flows/account/attach_logs_toggle_visible.yml"
-    "maestro/flows/account/attach_logs_toggle_on_surfaces_option.yml"
-    "maestro/flows/account/attach_logs_toggle_off_hides_option.yml"
-    "maestro/flows/calls"
-    "maestro/flows/channels/channel_bookmark_file.yml"
-    "maestro/flows/account/help_url.yml"
-    "maestro/flows/share_extension/share_link_to_channel.yml"
-    "maestro/flows/share_extension/share_text_to_channel.yml"
-  )
+DEFAULT_FLOW_PATH="maestro/flows/timezone maestro/flows/channels maestro/flows/account maestro/flows/calls maestro/flows/share_extension"
+
+flow_sort_key() {
+  case "$1" in
+    maestro/flows/timezone/*) echo "1:$1" ;;
+    maestro/flows/channels/*) echo "2:$1" ;;
+    maestro/flows/account/*) echo "3:$1" ;;
+    maestro/flows/calls/*) echo "4:$1" ;;
+    maestro/flows/share_extension/*) echo "5:$1" ;;
+    *) echo "9:$1" ;;
+  esac
+}
+
+should_skip_flow() {
+  local flow=$1
+  local base=${flow##*/}
+  [[ "$flow" == *"/multi_device/"* ]] && return 0
+  [[ "$base" == _* ]] && return 0
+  [[ "$base" == *_picker.yml ]] && return 0
+  [[ "$base" == "attach_logs_disabled_when_download_logs_off.yml" ]] && return 0
+  [[ "$base" == "file_type_preview.yml" ]] && return 0
+  [[ "$PLATFORM" == "android" && "$base" == "share_image_to_channel.yml" ]] && return 0
+  return 1
+}
+
+BATCHES=()
+flow_path="${FLOW_PATH:-}"
+[[ -z "$flow_path" ]] && flow_path="$DEFAULT_FLOW_PATH"
+read -r -a flow_entries <<< "$flow_path"
+for entry in "${flow_entries[@]}"; do
+  if [[ -d "$entry" ]]; then
+    while IFS= read -r flow; do
+      should_skip_flow "$flow" && continue
+      BATCHES+=("$(flow_sort_key "$flow")")
+    done < <(find "$entry" -maxdepth 1 -name '*.yml' | sort)
+  elif [[ -f "$entry" ]]; then
+    should_skip_flow "$entry" || BATCHES+=("$(flow_sort_key "$entry")")
+  else
+    echo "Flow path not found: $entry" >&2
+    exit 1
+  fi
+done
+
+# Sort by category order, then strip sort prefix.
+if ((${#BATCHES[@]})); then
+  sorted=()
+  while IFS= read -r line; do
+    sorted+=("${line#*:}")
+  done < <(printf '%s\n' "${BATCHES[@]}" | sort)
+  BATCHES=("${sorted[@]}")
 fi
+
+if ((${#BATCHES[@]} == 0)); then
+  echo "No Maestro flows to run (FLOW_PATH=$flow_path)" >&2
+  exit 1
+fi
+
+echo "==> Running ${#BATCHES[@]} Maestro flow(s)"
 
 ensure_ios_simulator_healthy() {
   [[ "$PLATFORM" != "ios" ]] && return 0
@@ -133,9 +165,22 @@ reset_android_app_state() {
   command -v adb >/dev/null 2>&1 || return 0
 
   echo "==> Resetting Android app state ($MAESTRO_APP_ID)"
+  adb shell am force-stop com.android.chrome 2>/dev/null || true
   adb shell am force-stop "$MAESTRO_APP_ID" 2>/dev/null || true
   adb shell pm clear "$MAESTRO_APP_ID" 2>/dev/null || true
   sleep 3
+}
+
+reset_ios_cross_app_state() {
+  [[ "$PLATFORM" != "ios" ]] && return 0
+  local udid="${DEVICE_ARGS[1]:-}"
+  [[ -n "$udid" ]] || return 0
+
+  echo "==> Terminating cross-app targets on iOS simulator $udid"
+  xcrun simctl terminate "$udid" com.apple.mobilesafari 2>/dev/null || true
+  xcrun simctl terminate "$udid" com.apple.mobileslideshow 2>/dev/null || true
+  xcrun simctl terminate "$udid" "$MAESTRO_APP_ID" 2>/dev/null || true
+  sleep 2
 }
 
 # macOS CI uses bash 3.2; with `set -u`, expanding an empty array via "${arr[@]}"
@@ -179,8 +224,9 @@ for batch_paths in "${BATCHES[@]}"; do
   echo ""
   echo "==> Maestro batch $batch_idx/${#BATCHES[@]}: ${path_arr[*]}"
   ensure_ios_simulator_healthy
-  if [[ "$PLATFORM" == "android" ]] && [[ "$batch_paths" == *share_extension* ]]; then
-    reset_android_app_state
+  if [[ "$batch_paths" == *share_extension* ]]; then
+    [[ "$PLATFORM" == "android" ]] && reset_android_app_state
+    [[ "$PLATFORM" == "ios" ]] && reset_ios_cross_app_state
   fi
   ensure_android_app_launchable
 
@@ -198,11 +244,9 @@ for batch_paths in "${BATCHES[@]}"; do
   fi
 
   # Browser/share batches can wedge the driver; recover before the next batch.
-  if [[ "$PLATFORM" == "ios" ]] && [[ "$batch_paths" == *help_url* || "$batch_paths" == *share_extension* ]]; then
-    ensure_ios_simulator_healthy
-  fi
-  if [[ "$PLATFORM" == "android" ]] && [[ "$batch_paths" == *help_url* || "$batch_paths" == *share_* ]]; then
-    ensure_android_app_launchable
+  if [[ "$batch_paths" == *share_extension* || "$batch_paths" == *help_url* ]]; then
+    [[ "$PLATFORM" == "ios" ]] && ensure_ios_simulator_healthy
+    [[ "$PLATFORM" == "android" ]] && ensure_android_app_launchable
   fi
 done
 

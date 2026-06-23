@@ -34,63 +34,15 @@ appId: ${MAESTRO_APP_ID}
           file: ../../utils/open_url_in_safari_ios.yml
           env:
             SAFARI_URL: "https://example.com"
+            SAFARI_PAGE_TITLE: "Example Domain"
       - extendedWaitUntil:
           visible:
             text: "Example Domain"
           timeout: 30000
-      # Share TEXT via text-selection context menu, not Safari page-level
-      # More→Share. Page-level share shows Mattermost but does not open the
-      # share extension on iOS 26 (confirmed via failing share_link run).
-      - longPressOn:
-          text: "Example Domain"
-      - takeScreenshot: after-longpress-text
-      # iOS 26: compact selection bar hides Share... behind a chevron.
-      # Try accessible labels first; swipe the bar if Share... stays hidden.
       - runFlow:
-          when:
-            notVisible:
-              text: "Share..."
-          commands:
-            - tapOn:
-                text: ">"
-                optional: true
-            - tapOn:
-                text: "More"
-                optional: true
-            - runFlow:
-                when:
-                  notVisible:
-                    text: "Share..."
-                commands:
-                  - swipe:
-                      start: "85%, 26%"
-                      end: "35%, 26%"
-      - tapOn:
-          text: "Share..."
-      - takeScreenshot: after-tap-share
-      # CI .app label is "Mattermost"; local builds may show "Mattermost Beta".
-      - extendedWaitUntil:
-          visible:
-            text: "Mattermost"
-          timeout: 30000
+          file: ../../utils/share_safari_text_ios.yml
       - runFlow:
-          when:
-            visible:
-              text: "Mattermost Beta"
-          commands:
-            - tapOn:
-                text: "Mattermost Beta"
-      - runFlow:
-          when:
-            notVisible:
-              text: "Mattermost Beta"
-          commands:
-            - tapOn:
-                text: "Mattermost"
-      - extendedWaitUntil:
-          visible:
-            id: "share_extension.channel.option"
-          timeout: 40000
+          file: ../../utils/select_mattermost_ios_share_sheet.yml
 
 # --- Android: use Chrome ---
 - runFlow:

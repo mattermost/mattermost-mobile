@@ -15,6 +15,11 @@ appId: ${MAESTRO_APP_ID}
 
 - extendedWaitUntil:
     visible:
+      id: "channel.post_draft.post.input"
+    timeout: 30000
+
+- extendedWaitUntil:
+    visible:
       id: "channel_header.channel_quick_actions.button"
     timeout: 30000
 

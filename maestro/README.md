@@ -437,8 +437,8 @@ Detox uses `SITE_1_URL` (and additional sites per shard config).
 
 ### Default flow sets and exclusions
 
-- Flow lists are enumerated in `e2e-maestro-template.yml` (`resolve-flow-path` step); iOS and
-  Android defaults differ (e.g. Android excludes `share_image_to_channel.yml`).
+- Default flow dirs live in `maestro/scripts/run_ci_batches.sh`; override with `FLOW_PATH` or workflow `flow-path` input.
+- One flow per `maestro test` batch on iOS and Android.
 - `start_call.yml` and `file_type_preview.yml` are **not** in the default PR run (need extra seed scripts).
 - `MM-T67856_4` runs in a dedicated CI step with `AllowDownloadLogs=false` patched on the server.
 - Multi-device sync (`MM-T3055`/`MM-T3056`) requires two physical devices via `run_two_device.sh`.

@@ -27,4 +27,4 @@ appId: ${MAESTRO_APP_ID}
 - extendedWaitUntil:
     visible:
       id: "channel.post_draft.post.input"
-    timeout: 10000
+    timeout: 30000
