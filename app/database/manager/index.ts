@@ -460,7 +460,7 @@ class DatabaseManagerSingleton {
     * @param  {string} serverUrl
     * @returns {Promise<void>}
     */
-    public deleteServerDatabaseFiles = async (serverUrl: string): Promise<void> => {
+    private deleteServerDatabaseFiles = async (serverUrl: string): Promise<void> => {
         const databaseName = urlSafeBase64Encode(serverUrl);
         return this.deleteServerDatabaseFilesByName(databaseName);
     };

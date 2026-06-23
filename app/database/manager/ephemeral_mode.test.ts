@@ -54,7 +54,7 @@ describe('DatabaseManager ZPM wiring', () => {
 
     it('createServerDatabase deletes stale SQLite files when persistenceFlag is zero-persistence', async () => {
         jest.mocked(getServer).mockResolvedValue({persistenceFlag: 'zero-persistence'} as unknown as ServersModel);
-        const deleteDbSpy = jest.spyOn(DatabaseManager, 'deleteServerDatabaseFiles').mockResolvedValue();
+        const deleteDbSpy = jest.spyOn(DatabaseManager as any, 'deleteServerDatabaseFiles').mockResolvedValue(undefined);
 
         await DatabaseManager.createServerDatabase({
             config: {dbName: serverUrl, serverUrl},
@@ -65,7 +65,7 @@ describe('DatabaseManager ZPM wiring', () => {
 
     it('createServerDatabase does not delete SQLite files when persistenceFlag is not set', async () => {
         jest.mocked(getServer).mockResolvedValue({persistenceFlag: ''} as unknown as ServersModel);
-        const deleteDbSpy = jest.spyOn(DatabaseManager, 'deleteServerDatabaseFiles').mockResolvedValue();
+        const deleteDbSpy = jest.spyOn(DatabaseManager as any, 'deleteServerDatabaseFiles').mockResolvedValue(undefined);
 
         await DatabaseManager.createServerDatabase({
             config: {dbName: serverUrl, serverUrl},
@@ -76,7 +76,7 @@ describe('DatabaseManager ZPM wiring', () => {
 
     it('createServerDatabase does not delete SQLite files when persistenceFlag is wiped', async () => {
         jest.mocked(getServer).mockResolvedValue({persistenceFlag: 'wiped'} as unknown as ServersModel);
-        const deleteDbSpy = jest.spyOn(DatabaseManager, 'deleteServerDatabaseFiles').mockResolvedValue();
+        const deleteDbSpy = jest.spyOn(DatabaseManager as any, 'deleteServerDatabaseFiles').mockResolvedValue(undefined);
 
         await DatabaseManager.createServerDatabase({
             config: {dbName: serverUrl, serverUrl},
