@@ -751,6 +751,10 @@ describe('Interactive Dialog - Basic Dialog (Plugin)', () => {
     });
 
     it('MM-T2530A should open date/datetime dialog and display fields', async () => {
+        if (!pluginAvailable) {
+            return;
+        }
+
         // # Open datetime-basic dialog
         await ChannelScreen.postMessage('/dialog datetime-basic');
         await wait(500);
@@ -772,6 +776,10 @@ describe('Interactive Dialog - Basic Dialog (Plugin)', () => {
     });
 
     it('MM-T2530B should validate required date/datetime fields', async () => {
+        if (!pluginAvailable) {
+            return;
+        }
+
         // # Open dialog
         await ChannelScreen.postMessage('/dialog datetime-basic');
         await wait(500);
@@ -792,6 +800,10 @@ describe('Interactive Dialog - Basic Dialog (Plugin)', () => {
     });
 
     it('MM-T2530C should select date and display formatted value', async () => {
+        if (!pluginAvailable) {
+            return;
+        }
+
         // # Open dialog
         await ChannelScreen.postMessage('/dialog datetime-basic');
         await wait(500);
@@ -816,6 +828,10 @@ describe('Interactive Dialog - Basic Dialog (Plugin)', () => {
     });
 
     it('MM-T2530D should display relative date defaults', async () => {
+        if (!pluginAvailable) {
+            return;
+        }
+
         // # Open dialog
         await ChannelScreen.postMessage('/dialog datetime-basic');
         await wait(500);
@@ -832,6 +848,10 @@ describe('Interactive Dialog - Basic Dialog (Plugin)', () => {
     });
 
     it('MM-T2530F should verify UTC conversion for datetime values', async () => {
+        if (!pluginAvailable) {
+            return;
+        }
+
         // # Open dialog
         await ChannelScreen.postMessage('/dialog datetime-basic');
         await wait(500);
@@ -875,6 +895,10 @@ describe('Interactive Dialog - Basic Dialog (Plugin)', () => {
     });
 
     it('MM-T2530G should display timezone indicator and convert to UTC correctly', async () => {
+        if (!pluginAvailable) {
+            return;
+        }
+
         // # Open datetime-timezone dialog (has Europe/London timezone fields)
         await ChannelScreen.postMessage('/dialog datetime-timezone');
         await wait(500);
@@ -938,6 +962,10 @@ describe('Interactive Dialog - Basic Dialog (Plugin)', () => {
     });
 
     it('MM-T2530H should accept manual time entry on datetime field', async () => {
+        if (!pluginAvailable) {
+            return;
+        }
+
         // NOTE: Placed last in the file — manual TextInput entry leaves keyboard/animation
         // state on iOS 26 + react-native-keyboard-controller that can break subsequent dialog tests.
         // # Open datetime-timezone dialog (has fields with allow_manual_time_entry)

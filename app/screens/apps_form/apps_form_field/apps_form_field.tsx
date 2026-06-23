@@ -226,6 +226,12 @@ const AppsFormFieldComponent = React.memo(({
                     multiline={field.subtype === 'textarea'}
                     keyboardType={selectKeyboardType(field.subtype)}
                     secureTextEntry={field.subtype === 'password'}
+
+                    // Use 'oneTimeCode' for password fields so iOS doesn't treat the
+                    // dialog as a login form and pop the "Save Password?" credential
+                    // sheet on submit — these are arbitrary plugin fields, not app login
+                    // credentials. The field stays masked via secureTextEntry.
+                    textContentType={field.subtype === 'password' ? 'oneTimeCode' : undefined}
                     disabled={Boolean(field.readonly)}
                     testID={testID}
                     location={Screens.APPS_FORM}
