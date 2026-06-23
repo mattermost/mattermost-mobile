@@ -187,9 +187,11 @@ describe('WebSocketClient', () => {
 
         await client.initialize();
 
-        mockConn.onError.mock.calls[0][0]({url: 'wss://example.com/api/v4/websocket'});
+        mockConn.onError.mock.calls[0][0]({url: 'wss://example.com/api/v4/websocket', code: 1006, reason: 'abnormal closure'});
 
-        expect(logError).toHaveBeenCalledWith('websocket error', 'wss://example.com/api/v4/websocket');
+        // The URL is not logged (it is sensitive); only the code/reason are.
+        expect(logError).toHaveBeenCalledWith('websocket error', 'code', 1006, 'reason', 'abnormal closure');
+        expect(logError).not.toHaveBeenCalledWith('websocket error', 'wss://example.com/api/v4/websocket');
         expect(errorCallback).toHaveBeenCalled();
     });
 
