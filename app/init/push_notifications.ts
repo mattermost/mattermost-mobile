@@ -247,7 +247,7 @@ class PushNotificationsSingleton {
             return;
         }
         const notification = convertToNotificationData(incoming, false);
-        this.processNotification(notification);
+        await this.processNotification(notification);
 
         completion(NotificationBackgroundFetchResult.NEW_DATA);
     };
