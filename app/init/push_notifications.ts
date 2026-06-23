@@ -262,12 +262,6 @@ class PushNotificationsSingleton {
         }
         const notification = convertToNotificationData(incoming, false);
 
-        // TEMP (device verification, remove before merge — MM-69124): grep MMLogs
-        // for "onNotificationReceivedBackground". A "processing" line followed by a
-        // "processed" line (no truncation between) means the DB work finished before
-        // completion, i.e. the fix held.
-        logDebug('onNotificationReceivedBackground: processing', notification.payload?.ack_id);
-
         // Wait until the notification is fully processed (including its DB
         // read/write) before signaling completion. iOS keeps the app alive
         // until the fetch completion handler is called; calling it early lets
@@ -277,9 +271,6 @@ class PushNotificationsSingleton {
         // including failures, for the same reason.
         try {
             await this.processNotification(notification);
-
-            // TEMP (device verification, remove before merge — MM-69124)
-            logDebug('onNotificationReceivedBackground: processed → completion(NEW_DATA)');
             completion(NotificationBackgroundFetchResult.NEW_DATA);
         } catch (error) {
             logWarning('onNotificationReceivedBackground', error);
