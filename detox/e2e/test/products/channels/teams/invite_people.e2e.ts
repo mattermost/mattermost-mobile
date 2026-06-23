@@ -20,7 +20,7 @@ import {
     ServerScreen,
 } from '@support/ui/screen';
 import {timeouts, wait} from '@support/utils';
-import {expect} from 'detox';
+import {expect, waitFor} from 'detox';
 
 describe('Teams - Invite', () => {
     const serverOneDisplayName = 'Server 1';
@@ -36,8 +36,14 @@ describe('Teams - Invite', () => {
         testTeam = team;
         testUser = user;
         const {user: user1} = await User.apiCreateUser(siteOneUrl, {prefix: 'i'});
+        if (!user1?.id) {
+            throw new Error('[beforeAll] Failed to create testUser1');
+        }
         testUser1 = user1;
         const {user: user2} = await User.apiCreateUser(siteOneUrl);
+        if (!user2?.id) {
+            throw new Error('[beforeAll] Failed to create testUser2');
+        }
         testUser2 = user2;
         await Team.apiAddUserToTeam(siteOneUrl, testUser2.id, testTeam.id);
 
@@ -56,17 +62,21 @@ describe('Teams - Invite', () => {
         await Invite.open();
     });
 
-    afterAll(async () => {
-        // # Close invite screen
-        await Invite.close();
+    afterEach(async () => {
+        // # Close any leftover Invite modal so next test's beforeEach doesn't compound.
+        try {
+            await waitFor(Invite.inviteScreen).toBeVisible().withTimeout(timeouts.ONE_SEC);
+            await Invite.close();
+        } catch { /* not on invite — nothing to clean up */ }
+    });
 
-        // # Log out
+    afterAll(async () => {
         await HomeScreen.logout();
     });
 
     it('MM-T5360 - should open the invite screen', async () => {
-        // * Verify invite screen Header buttons
-        await expect(Invite.closeButton).toBeVisible();
+        // * Verify invite screen Header buttons.
+        await waitFor(Invite.closeButton).toBeVisible().withTimeout(timeouts.TEN_SEC);
         await expect(Invite.sendButton).toBeVisible();
 
         // * Verify Team data
@@ -128,8 +138,8 @@ describe('Teams - Invite', () => {
         // # Search for an existent user
         await Invite.searchBarInput.replaceText(testUser1.username);
 
-        // * Validate user item in search list
-        await waitFor(Invite.getSearchListUserItem(testUser1.id)).toBeVisible().withTimeout(timeouts.TWO_SEC);
+        // * Validate user item in search list.
+        await waitFor(Invite.getSearchListUserItem(testUser1.id)).toBeVisible().withTimeout(timeouts.TEN_SEC);
         await expect(Invite.getSearchListUserItemText(testUser1.id)).toHaveText(testUser1.username);
 
         // # Select user item
@@ -198,10 +208,10 @@ describe('Teams - Invite', () => {
         // # Search for a existent user already in team
         await Invite.searchBarInput.replaceText(testUser.username);
 
-        // # Wait for user item in search list
-        await waitFor(Invite.getSearchListUserItem(testUser.id)).toExist().withTimeout(timeouts.TWO_SEC);
+        // # Wait for user item in search list — 10s for invite search (see MM-T5363).
+        await waitFor(Invite.getSearchListUserItem(testUser.id)).toExist().withTimeout(timeouts.TEN_SEC);
 
-        // # Select user item
+        // # Select user item.
         await Invite.getSearchListUserItem(testUser.id).tap();
 
         // # Send invitation

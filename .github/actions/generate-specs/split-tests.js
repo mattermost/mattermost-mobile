@@ -39,6 +39,11 @@ class Specs {
         const stats = fs.statSync(filePath);
 
         if (stats.isDirectory()) {
+          // iPad tests are iOS-only; exclude from Android and other non-iPad runs.
+          // They run in their own isolated job with search_path pointing directly at ipad/.
+          if (file === 'ipad') {
+            return;
+          }
           walkSync(filePath);
         } else if (fileRegex.test(filePath)) {
           const relativeFilePath = filePath.replace(dirPath + '/', '');

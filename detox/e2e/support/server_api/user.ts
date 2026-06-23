@@ -251,7 +251,9 @@ export const generateRandomUser = ({prefix = 'user', randomIdLength = 6} = {}) =
     return {
         email: `${prefix}${randomId}@sample.mattermost.com`,
         username: `${prefix}${randomId}`,
-        password: `P${randomId}!1234`,
+
+        // 16-char password satisfies FIPS minimum length on cloud test servers.
+        password: `P${randomId}!Test1234`,
         first_name: `F${randomId}`,
         last_name: `L${randomId}`,
         nickname: `N${randomId}`,

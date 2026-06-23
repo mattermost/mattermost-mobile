@@ -55,11 +55,11 @@ const ServerOption = ({color, icon, onPress, positionX, progress, style, testID,
         <Animated.View style={{transform: [{translateX: trans}]}}>
             <View
                 style={containerStyle}
-                testID={testID}
             >
                 <RectButton
                     style={centeredStyle}
                     onPress={onPress}
+                    testID={testID}
                 >
                     <CompassIcon
                         color={theme.buttonColor}

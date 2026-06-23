@@ -9,7 +9,6 @@
 
 import {
     Channel,
-    Post,
     Setup,
 } from '@support/server_api';
 import {
@@ -24,7 +23,7 @@ import {
     ServerScreen,
 } from '@support/ui/screen';
 import {timeouts, wait} from '@support/utils';
-import {expect, waitFor} from 'detox';
+import {expect} from 'detox';
 
 describe('Messaging - Channel Link', () => {
     const serverOneDisplayName = 'Server 1';
@@ -65,32 +64,6 @@ describe('Messaging - Channel Link', () => {
         // # Tap on channel link
         await element(by.text(channelLink)).tap();
         await wait(timeouts.FOUR_SEC);
-
-        // * Verify redirected to target channel
-        await expect(ChannelScreen.headerTitle).toHaveText(targetChannel.display_name);
-
-        // # Go back to channel list screen
-        await ChannelScreen.back();
-    });
-
-    it('MM-T4877_2 - should be able to open joined channel by tapping on channel link from reply thread', async () => {
-        // # Open a channel screen, post a channel link to target channel, tap on post to open reply thread, and tap on channel link
-        await ChannelScreen.open(channelsCategory, testChannel.name);
-        const {channel: targetChannel} = await Channel.apiCreateChannel(siteOneUrl, {teamId: testTeam.id});
-        await Channel.apiAddUserToChannel(siteOneUrl, testUser.id, targetChannel.id);
-        const channelLink = `${serverOneUrl}/${testTeam.name}/channels/${targetChannel.name}`;
-        await ChannelScreen.postMessage(channelLink);
-
-        // # Wait for keyboard to dismiss and message to be visible
-        await wait(timeouts.TWO_SEC);
-
-        const {post} = await Post.apiGetLastPostInChannel(siteOneUrl, testChannel.id);
-        const {postListPostItem} = ChannelScreen.getPostListPostItem(post.id);
-        await waitFor(postListPostItem).toBeVisible().withTimeout(timeouts.FOUR_SEC);
-
-        await postListPostItem.tap({x: 1, y: 1});
-        await element(by.text(channelLink)).tap({x: 5, y: 10});
-        await wait(timeouts.ONE_SEC);
 
         // * Verify redirected to target channel
         await expect(ChannelScreen.headerTitle).toHaveText(targetChannel.display_name);

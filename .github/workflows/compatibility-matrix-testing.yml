@@ -50,7 +50,10 @@ jobs:
     needs:
       - calculate-commit-hash
     steps:
-      - uses: mattermost/actions/delivery/update-commit-status@d5174b860704729f4c14ef8489ae075742bfa08a
+      - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
+        with:
+          ref: ${{ inputs.MOBILE_VERSION }}
+      - uses: ./.github/actions/update-commit-status
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
@@ -99,6 +102,41 @@ jobs:
           name: ios-build-simulator-${{ github.run_id }}
           path: Mattermost-simulator-x86_64.app.zip
 
+  build-android-apk:
+    runs-on: ubuntu-latest-8-cores
+    needs:
+      - update-initial-status
+    env:
+      ORG_GRADLE_PROJECT_jvmargs: -Xmx8g
+    steps:
+      - name: Prune Docker to free up space
+        run: docker system prune -af
+
+      - name: Checkout Repository
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          ref: ${{ inputs.MOBILE_VERSION }}
+
+      - name: Prepare Android Build
+        uses: ./.github/actions/prepare-android-build
+        env:
+          STORE_FILE: ${{ secrets.MM_MOBILE_STORE_FILE }}
+          STORE_ALIAS: ${{ secrets.MM_MOBILE_STORE_ALIAS }}
+          STORE_PASSWORD: ${{ secrets.MM_MOBILE_STORE_PASSWORD }}
+          MATTERMOST_BUILD_GH_TOKEN: ${{ secrets.MATTERMOST_BUILD_GH_TOKEN }}
+
+      - name: Detox build
+        run: |
+          cd detox
+          npm ci --prefer-offline --no-audit --no-fund
+          npm run e2e:android-build
+
+      - name: Upload Android Build
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: android-build-files-${{ github.run_id }}
+          path: "android/app/build/outputs/apk/**/*.apk"
+
   detox-e2e:
     name: mobile-cmt-${{ matrix.server.version }}
     uses: ./.github/workflows/e2e-ios-template.yml
@@ -107,8 +145,66 @@ jobs:
     strategy:
       fail-fast: false
       matrix: ${{ fromJson(inputs.CMT_MATRIX) }}
-    secrets: inherit
+    secrets:
+      MM_MOBILE_E2E_ADMIN_EMAIL: ${{ secrets.MM_MOBILE_E2E_ADMIN_EMAIL }}
+      MM_MOBILE_E2E_ADMIN_USERNAME: ${{ secrets.MM_MOBILE_E2E_ADMIN_USERNAME }}
+      MM_MOBILE_E2E_ADMIN_PASSWORD: ${{ secrets.MM_MOBILE_E2E_ADMIN_PASSWORD }}
+      MM_MOBILE_E2E_ZEPHYR_API_KEY: ${{ secrets.MM_MOBILE_E2E_ZEPHYR_API_KEY }}
+      MM_MOBILE_E2E_TEST_CYCLE_LINK_PREFIX: ${{ secrets.MM_MOBILE_E2E_TEST_CYCLE_LINK_PREFIX }}
+      MM_MOBILE_E2E_WEBHOOK_URL: ${{ secrets.MM_MOBILE_E2E_WEBHOOK_URL }}
+      MM_MOBILE_DETOX_AWS_ACCESS_KEY_ID: ${{ secrets.MM_MOBILE_DETOX_AWS_ACCESS_KEY_ID }}
+      MM_MOBILE_DETOX_AWS_SECRET_ACCESS_KEY: ${{ secrets.MM_MOBILE_DETOX_AWS_SECRET_ACCESS_KEY }}
     with:
+      run-type: "RELEASE"
+      MM_TEST_SERVER_URL: ${{ matrix.server.url }}
+      MOBILE_VERSION: ${{ inputs.MOBILE_VERSION }}
+
+  detox-ipad-e2e:
+    name: mobile-cmt-ipad-${{ matrix.server.version }}
+    uses: ./.github/workflows/e2e-ios-template.yml
+    needs:
+      - build-ios-simulator
+    strategy:
+      fail-fast: false
+      matrix: ${{ fromJson(inputs.CMT_MATRIX) }}
+    secrets:
+      MM_MOBILE_E2E_ADMIN_EMAIL: ${{ secrets.MM_MOBILE_E2E_ADMIN_EMAIL }}
+      MM_MOBILE_E2E_ADMIN_USERNAME: ${{ secrets.MM_MOBILE_E2E_ADMIN_USERNAME }}
+      MM_MOBILE_E2E_ADMIN_PASSWORD: ${{ secrets.MM_MOBILE_E2E_ADMIN_PASSWORD }}
+      MM_MOBILE_E2E_ZEPHYR_API_KEY: ${{ secrets.MM_MOBILE_E2E_ZEPHYR_API_KEY }}
+      MM_MOBILE_E2E_TEST_CYCLE_LINK_PREFIX: ${{ secrets.MM_MOBILE_E2E_TEST_CYCLE_LINK_PREFIX }}
+      MM_MOBILE_E2E_WEBHOOK_URL: ${{ secrets.MM_MOBILE_E2E_WEBHOOK_URL }}
+      MM_MOBILE_DETOX_AWS_ACCESS_KEY_ID: ${{ secrets.MM_MOBILE_DETOX_AWS_ACCESS_KEY_ID }}
+      MM_MOBILE_DETOX_AWS_SECRET_ACCESS_KEY: ${{ secrets.MM_MOBILE_DETOX_AWS_SECRET_ACCESS_KEY }}
+    with:
+      run-type: "RELEASE"
+      MM_TEST_SERVER_URL: ${{ matrix.server.url }}
+      MOBILE_VERSION: ${{ inputs.MOBILE_VERSION }}
+      ios_device_name: "iPad Pro 13-inch (M5)"
+      ios_device_os_name: "iOS 26.2"
+      search_path: "detox/e2e/test/products/channels/ipad"
+      parallelism: "1"
+      detox_config: "ios.ipad.debug"
+
+  detox-android-e2e:
+    name: mobile-cmt-android-${{ matrix.server.version }}
+    uses: ./.github/workflows/e2e-android-template.yml
+    needs:
+      - build-android-apk
+    strategy:
+      fail-fast: false
+      matrix: ${{ fromJson(inputs.CMT_MATRIX) }}
+    secrets:
+      MM_MOBILE_E2E_ADMIN_EMAIL: ${{ secrets.MM_MOBILE_E2E_ADMIN_EMAIL }}
+      MM_MOBILE_E2E_ADMIN_USERNAME: ${{ secrets.MM_MOBILE_E2E_ADMIN_USERNAME }}
+      MM_MOBILE_E2E_ADMIN_PASSWORD: ${{ secrets.MM_MOBILE_E2E_ADMIN_PASSWORD }}
+      MM_MOBILE_E2E_ZEPHYR_API_KEY: ${{ secrets.MM_MOBILE_E2E_ZEPHYR_API_KEY }}
+      MM_MOBILE_E2E_TEST_CYCLE_LINK_PREFIX: ${{ secrets.MM_MOBILE_E2E_TEST_CYCLE_LINK_PREFIX }}
+      MM_MOBILE_E2E_WEBHOOK_URL: ${{ secrets.MM_MOBILE_E2E_WEBHOOK_URL }}
+      MM_MOBILE_DETOX_AWS_ACCESS_KEY_ID: ${{ secrets.MM_MOBILE_DETOX_AWS_ACCESS_KEY_ID }}
+      MM_MOBILE_DETOX_AWS_SECRET_ACCESS_KEY: ${{ secrets.MM_MOBILE_DETOX_AWS_SECRET_ACCESS_KEY }}
+    with:
+      run-android-tests: true
       run-type: "RELEASE"
       MM_TEST_SERVER_URL: ${{ matrix.server.url }}
       MOBILE_VERSION: ${{ inputs.MOBILE_VERSION }}
@@ -116,11 +212,32 @@ jobs:
   update-final-status:
     runs-on: ubuntu-22.04
     if: always()
+    permissions:
+      contents: read
+      statuses: write
     needs:
       - calculate-commit-hash
       - detox-e2e
+      - detox-android-e2e
+      - detox-ipad-e2e
     steps:
-      - uses: mattermost/actions/delivery/update-commit-status@main
+      - name: Determine overall status
+        id: status
+        run: |
+          # Check if all jobs passed
+          if [[ "${{ needs.detox-e2e.result }}" == "success" && \
+                "${{ needs.detox-android-e2e.result }}" == "success" && \
+                "${{ needs.detox-ipad-e2e.result }}" == "success" ]]; then
+            echo "status=success" >> $GITHUB_OUTPUT
+          else
+            echo "status=failure" >> $GITHUB_OUTPUT
+          fi
+
+      - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
+        with:
+          ref: ${{ inputs.MOBILE_VERSION }}
+
+      - uses: ./.github/actions/update-commit-status
         env:
           GITHUB_TOKEN: ${{ github.token }}
         with:
@@ -128,7 +245,7 @@ jobs:
           commit_sha: ${{ needs.calculate-commit-hash.outputs.MOBILE_SHA }}
           context: e2e/compatibility-matrix-testing
           description: Compatibility Matrix Testing for ${{ inputs.MOBILE_VERSION }} version
-          status: ${{ needs.detox-e2e.outputs.STATUS }}
+          status: ${{ steps.status.outputs.status }}
           target_url: ${{ needs.detox-e2e.outputs.TARGET_URL }}
 
       - name: cmt/cleanup-instances

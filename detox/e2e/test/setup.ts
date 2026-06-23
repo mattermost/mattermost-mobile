@@ -101,7 +101,19 @@ function clearIOSAppData(): void {
 // ─── Admin API login ─────────────────────────────────────────────────────────
 
 async function loginAdmin(): Promise<void> {
-    await System.apiCheckSystemHealth(siteOneUrl);
+    const HEALTH_MAX_ATTEMPTS = 5;
+    for (let healthAttempt = 1; healthAttempt <= HEALTH_MAX_ATTEMPTS; healthAttempt++) {
+        try {
+            await System.apiCheckSystemHealth(siteOneUrl);
+            break;
+        } catch (error) {
+            if (healthAttempt === HEALTH_MAX_ATTEMPTS) {
+                throw error;
+            }
+            console.warn(`⚠️ System health check attempt ${healthAttempt} failed, retrying...`);
+            await new Promise((resolve) => setTimeout(resolve, 3000 * healthAttempt));
+        }
+    }
 
     const MAX_ATTEMPTS = 3;
     for (let attempt = 1; attempt <= MAX_ATTEMPTS; attempt++) {

@@ -2450,7 +2450,7 @@ PODS:
     - ReactCommon/turbomodule/core
     - SocketRocket
     - Yoga
-  - react-native-keyboard-controller (1.21.7):
+  - react-native-keyboard-controller (1.21.10):
     - boost
     - DoubleConversion
     - fast_float
@@ -2468,7 +2468,7 @@ PODS:
     - React-graphics
     - React-ImageManager
     - React-jsi
-    - react-native-keyboard-controller/common (= 1.21.7)
+    - react-native-keyboard-controller/common (= 1.21.10)
     - React-NativeModulesApple
     - React-RCTFabric
     - React-renderercss
@@ -2479,7 +2479,7 @@ PODS:
     - ReactCommon/turbomodule/core
     - SocketRocket
     - Yoga
-  - react-native-keyboard-controller/common (1.21.7):
+  - react-native-keyboard-controller/common (1.21.10):
     - boost
     - DoubleConversion
     - fast_float
@@ -2535,7 +2535,7 @@ PODS:
     - ReactCommon/turbomodule/core
     - SocketRocket
     - Yoga
-  - react-native-network-client (1.10.2):
+  - react-native-network-client (1.10.3):
     - Alamofire (~> 5.11.2)
     - boost
     - DoubleConversion
@@ -4519,9 +4519,9 @@ SPEC CHECKSUMS:
   react-native-document-viewer: 0ed0f600b005a4b85b0a319ba329b6b4f5ed17f9
   react-native-emm: 469f5ff2c0d6c33ba7bdc43c29e38d1fb32b7ffc
   react-native-image-picker: 6051cfd030121b880a58f1cc0e5e33e9887804e4
-  react-native-keyboard-controller: c610d1f839ad9cd41f4420db14beaa1cf64263f6
+  react-native-keyboard-controller: f8979f50dc2752ff5dc1656bd315d58cd6e78bba
   react-native-netinfo: 9fad4eedfec9840a10e73ac4591ea1158523309b
-  react-native-network-client: 5a456b5a6952ac5e99cf02583b8768ab6daa44e4
+  react-native-network-client: e4cfbb74a68be0411e0023f08caa224f9748b595
   react-native-notifications: e2d3c022d6077de7e420ba5c01b4bd9464f3941d
   react-native-paste-input: 4b1423c882afacf39d7e2617e6c94835dcefaf39
   react-native-performance: a7a65d0b0f3055c5db33e1433e4345143ef6a100

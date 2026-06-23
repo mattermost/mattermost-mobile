@@ -2,13 +2,13 @@
 // See LICENSE.txt for license information.
 
 import {SettingsScreen} from '@support/ui/screen';
-import {timeouts} from '@support/utils';
-import {expect} from 'detox';
+import {isIos, tapNativeBackButton, timeouts} from '@support/utils';
+import {waitFor} from 'detox';
 
 class DisplaySettingsScreen {
     testID = {
         displaySettingsScreen: 'display_settings.screen',
-        backButton: 'screen.back.button',
+        backButton: 'navigation.header.back',
         scrollView: 'display_settings.scroll_view',
         themeOption: 'display_settings.theme.option',
         themeOptionInfo: 'display_settings.theme.option.info',
@@ -19,7 +19,14 @@ class DisplaySettingsScreen {
     };
 
     displaySettingsScreen = element(by.id(this.testID.displaySettingsScreen));
-    backButton = element(by.id(this.testID.backButton));
+
+    // Native-stack back chevron via accessibility label.
+    get backButton(): Detox.NativeElement {
+        return isIos()
+            ? element(by.label('Back')).atIndex(0)
+            : element(by.label('Navigate up')).atIndex(0);
+    }
+
     scrollView = element(by.id(this.testID.scrollView));
     themeOption = element(by.id(this.testID.themeOption));
     themeOptionInfo = element(by.id(this.testID.themeOptionInfo));
@@ -42,8 +49,9 @@ class DisplaySettingsScreen {
     };
 
     back = async () => {
-        await this.backButton.tap();
-        await expect(this.displaySettingsScreen).not.toBeVisible();
+        // Native-stack back chevron.
+        await tapNativeBackButton();
+        await waitFor(this.displaySettingsScreen).not.toBeVisible().withTimeout(timeouts.TEN_SEC);
     };
 }
 
