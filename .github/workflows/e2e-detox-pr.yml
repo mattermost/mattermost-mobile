@@ -565,6 +565,7 @@ jobs:
     runs-on: ubuntu-22.04
     permissions:
       contents: read
+      issues: write
       pull-requests: write
     needs:
       - resolve-e2e-policy
@@ -572,18 +573,18 @@ jobs:
       - run-detox-android
       - run-maestro-ios
       - run-maestro-android
-    # Run after success OR failure so Matterwick can re-trigger on the next push.
-    # Skip when cancelled (concurrency hand-off) or when E2E/Override opted out.
+    # Always strip E2E/Run* after tests finish (pass, fail, or cancel) unless another
+    # run is still in-flight for the same PR (concurrency hand-off).
     if: |
       always() &&
-      !cancelled() &&
       needs.resolve-e2e-policy.outputs.e2e_override != 'true' &&
-      contains(fromJSON('["success","failure","skipped"]'), needs.run-detox-ios.result) &&
-      contains(fromJSON('["success","failure","skipped"]'), needs.run-detox-android.result) &&
-      contains(fromJSON('["success","failure","skipped"]'), needs.run-maestro-ios.result) &&
-      contains(fromJSON('["success","failure","skipped"]'), needs.run-maestro-android.result)
+      contains(fromJSON('["success","failure","skipped","cancelled"]'), needs.run-detox-ios.result) &&
+      contains(fromJSON('["success","failure","skipped","cancelled"]'), needs.run-detox-android.result) &&
+      contains(fromJSON('["success","failure","skipped","cancelled"]'), needs.run-maestro-ios.result) &&
+      contains(fromJSON('["success","failure","skipped","cancelled"]'), needs.run-maestro-android.result)
     steps:
       - name: e2e/remove-label-from-pr
+        continue-on-error: true
         uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9.0.0
         with:
           github-token: ${{ secrets.MATTERMOST_BUILD_GH_TOKEN }}
@@ -623,6 +624,32 @@ jobs:
             if (!Number.isFinite(prNumber)) {
               core.warning('No PR found — skipping label removal');
               return;
+            }
+
+            const {data: workflows} = await github.rest.actions.listRepoWorkflows({owner, repo});
+            const e2eWorkflow = workflows.workflows.find((workflow) => workflow.name === 'E2E');
+            if (e2eWorkflow) {
+              for (const status of ['queued', 'in_progress', 'waiting']) {
+                const {data: activeRuns} = await github.rest.actions.listWorkflowRuns({
+                  owner,
+                  repo,
+                  workflow_id: e2eWorkflow.id,
+                  status,
+                });
+                const otherActive = activeRuns.workflow_runs.filter((run) => {
+                  if (run.id === context.runId) {
+                    return false;
+                  }
+                  if (run.pull_requests?.length) {
+                    return run.pull_requests.some((pr) => pr.number === prNumber);
+                  }
+                  return run.head_sha === process.env.MOBILE_VERSION;
+                });
+                if (otherActive.length > 0) {
+                  core.info(`PR #${prNumber} has another active E2E run — skipping label removal (run ${otherActive[0].id}).`);
+                  return;
+                }
+              }
             }
 
             console.log(`Removing E2E labels from PR #${prNumber} (workflow conclusion: ${process.env.WORKFLOW_CONCLUSION || 'unknown'})`);

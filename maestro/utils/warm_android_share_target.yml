@@ -1,14 +1,11 @@
 # Sub-flow: register Mattermost in Android direct-share before opening Chrome.
-# Chrome share sheets on API 34/35 often omit cold targets until the app was
-# recently foregrounded. Call after login, before cross-app share steps.
-# Usage: - runFlow: ../utils/warm_android_share_target.yml
+# Foreground the app briefly so Chrome share sheets list Mattermost on API 34/35.
+# Does not require the home tab — login may leave the app on any screen.
 appId: ${MAESTRO_APP_ID}
 ---
 - launchApp:
     stopApp: false
     clearState: false
-- extendedWaitUntil:
-    visible:
-      id: "tab_bar.home.tab"
-    timeout: 30000
+- waitForAnimationToEnd:
+    timeout: 5000
 - pressKey: Home

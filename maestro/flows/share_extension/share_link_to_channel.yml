@@ -21,7 +21,6 @@ tags:
 appId: ${MAESTRO_APP_ID}
 ---
 - runFlow: ../../utils/login.yml
-- runFlow: ../../utils/navigate_to_channel.yml
 
 # --- iOS: use Safari (Notes app not available on all simulators) ---
 - runFlow:

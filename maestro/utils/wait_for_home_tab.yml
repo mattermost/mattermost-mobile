@@ -11,7 +11,19 @@ appId: ${MAESTRO_APP_ID}
 - tapOn:
     text: "Skip"
     optional: true
-- extendedWaitUntil:
-    visible:
-      id: "tab_bar.home.tab"
-    timeout: 120000
+- runFlow:
+    when:
+      platform: Android
+    commands:
+      - extendedWaitUntil:
+          visible:
+            id: "tab_bar.home.tab"
+          timeout: 180000
+- runFlow:
+    when:
+      platform: iOS
+    commands:
+      - extendedWaitUntil:
+          visible:
+            id: "tab_bar.home.tab"
+          timeout: 120000

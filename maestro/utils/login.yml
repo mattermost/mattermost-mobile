@@ -188,6 +188,9 @@ appId: ${MAESTRO_APP_ID}
 - tapOn:
     text: "Not Now"
     optional: true
+- tapOn:
+    text: "Save"
+    optional: true
 - runFlow:
     file: wait_for_home_tab.yml
     label: Wait for channel list home tab after login

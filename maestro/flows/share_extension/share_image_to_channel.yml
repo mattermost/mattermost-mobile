@@ -21,7 +21,6 @@ tags:
 appId: ${MAESTRO_APP_ID}
 ---
 - runFlow: ../../utils/login.yml
-- runFlow: ../../utils/navigate_to_channel.yml
 
 - runFlow:
     when:
@@ -29,7 +28,6 @@ appId: ${MAESTRO_APP_ID}
     commands:
       - runFlow:
           file: ../../utils/share_photo_from_library_ios.yml
-      - takeScreenshot: share-sheet-open
       - runFlow:
           file: ../../utils/select_mattermost_ios_share_sheet.yml
 
@@ -62,4 +60,3 @@ appId: ${MAESTRO_APP_ID}
     timeout: 20000
 - assertVisible:
     id: "channel.post_list.post"
-- takeScreenshot: share-image-success

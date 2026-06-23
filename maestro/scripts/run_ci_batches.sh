@@ -71,8 +71,8 @@ flow_sort_key() {
     maestro/flows/timezone/*) echo "1:$1" ;;
     maestro/flows/channels/*) echo "2:$1" ;;
     maestro/flows/account/*) echo "3:$1" ;;
-    maestro/flows/calls/*) echo "4:$1" ;;
-    maestro/flows/share_extension/*) echo "5:$1" ;;
+    maestro/flows/share_extension/*) echo "4:$1" ;;
+    maestro/flows/calls/*) echo "5:$1" ;;
     *) echo "9:$1" ;;
   esac
 }
@@ -164,11 +164,11 @@ reset_android_app_state() {
   [[ "$PLATFORM" != "android" ]] && return 0
   command -v adb >/dev/null 2>&1 || return 0
 
-  echo "==> Resetting Android app state ($MAESTRO_APP_ID)"
+  echo "==> Resetting Android cross-app state ($MAESTRO_APP_ID)"
   adb shell am force-stop com.android.chrome 2>/dev/null || true
   adb shell am force-stop "$MAESTRO_APP_ID" 2>/dev/null || true
-  adb shell pm clear "$MAESTRO_APP_ID" 2>/dev/null || true
-  sleep 3
+  adb reverse tcp:8081 tcp:8081 2>/dev/null || true
+  sleep 2
 }
 
 reset_ios_cross_app_state() {
