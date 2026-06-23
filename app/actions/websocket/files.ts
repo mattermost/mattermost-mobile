@@ -3,6 +3,7 @@
 
 import {SNACK_BAR_TYPE} from '@constants/snack_bar';
 import EphemeralStore from '@store/ephemeral_store';
+import {getFullErrorMessage} from '@utils/errors';
 import {logDebug} from '@utils/log';
 import {showSnackBar} from '@utils/snack_bar';
 
@@ -10,9 +11,9 @@ export async function handleFileDownloadRejected(serverUrl: string, msg: WebSock
     try {
         const data = msg.data as FileDownloadRejectedEvent;
 
-        logDebug('[handleFileDownloadRejected] Received event data:', JSON.stringify(data));
-
         const {file_id: fileId, rejection_reason: rejectionReason, download_type: downloadType} = data;
+
+        logDebug('[handleFileDownloadRejected] Received event for download type', downloadType, 'hasFileId', Boolean(fileId));
 
         if (!fileId) {
             logDebug('[handleFileDownloadRejected] No file_id in event, skipping');
@@ -53,7 +54,7 @@ export async function handleFileDownloadRejected(serverUrl: string, msg: WebSock
             type: 'error',
         });
     } catch (error) {
-        logDebug('[handleFileDownloadRejected] Error handling event:', error);
+        logDebug('[handleFileDownloadRejected] Error handling event:', getFullErrorMessage(error));
 
         // Silently fail - don't crash the app for file rejection events
     }
