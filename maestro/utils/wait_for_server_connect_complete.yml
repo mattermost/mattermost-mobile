@@ -1,0 +1,18 @@
+# Sub-flow: Wait for server connect to finish navigating off the server form.
+# Expected outcomes: login form (fresh server) or home tab (reused session).
+appId: ${MAESTRO_APP_ID}
+---
+- extendedWaitUntil:
+    visible:
+      id: "login_form.forgot_password.button"
+    timeout: 90000
+    optional: true
+- runFlow:
+    when:
+      notVisible:
+        id: "login_form.forgot_password.button"
+    commands:
+      - extendedWaitUntil:
+          visible:
+            id: "tab_bar.home.tab"
+          timeout: 90000

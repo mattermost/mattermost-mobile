@@ -116,7 +116,7 @@ appId: ${MAESTRO_APP_ID}
       - runFlow:
           when:
             notVisible:
-              id: "server_form.display_help"
+              id: "server_form.server_url.input"
           commands:
             - runFlow:
                 when:
@@ -145,7 +145,7 @@ appId: ${MAESTRO_APP_ID}
 - runFlow:
     when:
       visible:
-        id: "server_form.display_help"
+        id: "server_form.server_url.input"
     file: connect_server.yml
 # If connect_server navigated to an already-logged-in home screen (server was
 # previously registered with an active session), logout to reach the login form.

@@ -29,9 +29,21 @@ env:
 ---
 # Step 1: Launch app fresh so native timezone is registered at startup
 # (Simulator timezone must be set externally before this step — see PRE-REQUISITE above)
-- launchApp:
-    clearState: false
-    stopApp: true
+- runFlow:
+    when:
+      platform: iOS
+    commands:
+      - launchApp:
+          clearState: false
+          stopApp: true
+- runFlow:
+    when:
+      platform: Android
+    commands:
+      # stopApp:true sets Android's force-stopped flag and breaks Maestro relaunch.
+      - launchApp:
+          clearState: false
+          stopApp: false
 
 # Step 2: Login and navigate to timezone display settings
 - runFlow: ../../utils/login.yml

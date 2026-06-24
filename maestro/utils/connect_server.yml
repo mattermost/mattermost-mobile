@@ -17,6 +17,7 @@ appId: ${MAESTRO_APP_ID}
           text: "Display Name"
       - eraseText: 50
       - inputText: "Server 1"
+      - hideKeyboard
 - runFlow:
     when:
       platform: Android
@@ -25,10 +26,18 @@ appId: ${MAESTRO_APP_ID}
           id: "server_form.server_url.input"
       - eraseText: 50
       - inputText: ${SITE_1_URL}
+      - hideKeyboard
       - tapOn:
           id: "server_form.server_display_name.input"
       - eraseText: 50
       - inputText: "Server 1"
+      - hideKeyboard
+- scrollUntilVisible:
+    element:
+      id: "server_form.connect.button"
+    direction: DOWN
+    timeout: 10000
+    optional: true
 - extendedWaitUntil:
     visible:
       id: "server_form.connect.button"
@@ -53,18 +62,21 @@ appId: ${MAESTRO_APP_ID}
 - tapOn:
     text: "OKAY"
     optional: true
-# Wait for the server form to navigate away (login form or home screen).
 # Matterwick cloud connects can exceed 60s on a cold CI emulator.
-- extendedWaitUntil:
-    notVisible:
-      id: "server_form.display_help"
-    timeout: 90000
+- runFlow: wait_for_server_connect_complete.yml
 # Retry Connect once when validation is slow or the first tap did not register.
 - runFlow:
     when:
       visible:
-        id: "server_form.display_help"
+        id: "server_form.server_url.input"
     commands:
+      - hideKeyboard
+      - scrollUntilVisible:
+          element:
+            id: "server_form.connect.button"
+          direction: DOWN
+          timeout: 10000
+          optional: true
       - tapOn:
           id: "server_form.connect.button"
       - waitForAnimationToEnd:
@@ -78,7 +90,4 @@ appId: ${MAESTRO_APP_ID}
       - tapOn:
           text: "OKAY"
           optional: true
-      - extendedWaitUntil:
-          notVisible:
-            id: "server_form.display_help"
-          timeout: 90000
+      - runFlow: wait_for_server_connect_complete.yml

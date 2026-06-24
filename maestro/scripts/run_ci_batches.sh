@@ -48,6 +48,9 @@ done
 
 [[ -n "$PLATFORM" ]] || usage
 [[ -x "$MAESTRO_BIN" ]] || { echo "Maestro not found at $MAESTRO_BIN"; exit 1; }
+[[ -n "${SITE_1_URL:-}" ]] || { echo "SITE_1_URL is required for Maestro server connect" >&2; exit 1; }
+[[ -n "${TEST_USER_EMAIL:-}" ]] || { echo "TEST_USER_EMAIL is required" >&2; exit 1; }
+[[ -n "${TEST_USER_PASSWORD:-}" ]] || { echo "TEST_USER_PASSWORD is required" >&2; exit 1; }
 
 mkdir -p "$OUTPUT_DIR" "$ARTIFACTS_DIR"
 
@@ -150,14 +153,9 @@ ensure_android_app_launchable() {
   [[ "$PLATFORM" != "android" ]] && return 0
   command -v adb >/dev/null 2>&1 || return 0
 
-  echo "==> Ensuring Android app $MAESTRO_APP_ID is launchable"
+  echo "==> Preparing Android app $MAESTRO_APP_ID for Maestro launch"
   adb shell am force-stop "$MAESTRO_APP_ID" 2>/dev/null || true
-  if ! adb shell monkey -p "$MAESTRO_APP_ID" -c android.intent.category.LAUNCHER 1 >/dev/null 2>&1; then
-    adb shell am start -n "$MAESTRO_APP_ID/.MainActivity" >/dev/null 2>&1 || true
-  fi
-  sleep 2
-  adb shell input keyevent KEYCODE_HOME 2>/dev/null || true
-  sleep 1
+  adb reverse tcp:8081 tcp:8081 2>/dev/null || true
 }
 
 grant_ios_calls_permissions() {
@@ -304,6 +302,7 @@ for batch_paths in "${BATCHES[@]}"; do
   if [[ "$batch_paths" == *"/calls/"* ]]; then
     grant_ios_calls_permissions
   fi
+  [[ "$PLATFORM" == "android" ]] && reset_android_app_state
   ensure_android_app_launchable
 
   set +e
@@ -311,9 +310,6 @@ for batch_paths in "${BATCHES[@]}"; do
     run_android_share_flow_batch "$batch_paths" "$batch_xml"
     rc=$?
   else
-    if [[ "$batch_paths" == *share_extension* && "$PLATFORM" == "android" ]]; then
-      reset_android_app_state
-    fi
     run_maestro_batch "$batch_xml" "${path_arr[@]}"
     rc=$?
   fi

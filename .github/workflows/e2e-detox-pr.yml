@@ -4,6 +4,9 @@
 #   POST /repos/{owner}/{repo}/actions/workflows/e2e-detox-pr.yml/dispatches
 # and watches workflow_run "completed" events where workflow name is "E2E".
 #
+# Newer dispatches cancel older in-flight runs on the same branch (resolve-e2e-policy
+# first step) so the latest SHA starts immediately instead of queueing behind a long run.
+#
 # Phase 1 — builds & setup (parallel):
 #   build-ios-simulator, build-android-apk-maestro (when resolve-e2e-policy detox_enabled=false),
 #   build-android-apk (Detox debug APK, when detox_enabled=true),
@@ -51,12 +54,6 @@ on:
         default: "PR"
         type: string
 
-concurrency:
-  # Key on pr_number (or run_id for non-PR runs like nightly/push) so
-  # simultaneous dispatches for different PRs don't cancel each other.
-  group: "${{ github.workflow }}-${{ inputs.pr_number || github.run_id }}"
-  cancel-in-progress: true
-
 # Default least-privilege token; jobs that upload artifacts, post statuses, or
 # manage PR labels declare the extra scopes they need.
 permissions:
@@ -71,6 +68,7 @@ jobs:
     name: Resolve E2E policy (Override label)
     runs-on: ubuntu-22.04
     permissions:
+      actions: write
       contents: read
       pull-requests: read
       issues: read
@@ -79,6 +77,51 @@ jobs:
       # Set to 'true' to re-enable Detox builds/tests alongside Maestro.
       detox_enabled: 'false'
     steps:
+      - name: Cancel superseded E2E runs on this branch
+        uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9.0.0
+        with:
+          script: |
+            const owner = context.repo.owner;
+            const repo = context.repo.repo;
+            const currentRunId = context.runId;
+            const branch = context.ref.replace('refs/heads/', '');
+
+            const {data: workflows} = await github.rest.actions.listRepoWorkflows({owner, repo});
+            const e2eWorkflow = workflows.workflows.find((workflow) => workflow.name === 'E2E');
+            if (!e2eWorkflow) {
+              core.info('No E2E workflow found — skipping superseded run cancellation');
+              return;
+            }
+
+            const statuses = ['in_progress', 'queued', 'waiting'];
+            let cancelled = 0;
+
+            for (const status of statuses) {
+              const {data: runsPage} = await github.rest.actions.listWorkflowRuns({
+                owner,
+                repo,
+                workflow_id: e2eWorkflow.id,
+                status,
+                branch,
+              });
+
+              for (const run of runsPage.workflow_runs) {
+                if (run.id >= currentRunId) {
+                  continue;
+                }
+
+                core.info(`Cancelling superseded E2E run ${run.id} (${run.status}, sha ${run.head_sha})`);
+                try {
+                  await github.rest.actions.cancelWorkflowRun({owner, repo, run_id: run.id});
+                  cancelled++;
+                } catch (err) {
+                  core.warning(`Failed to cancel run ${run.id}: ${err.message}`);
+                }
+              }
+            }
+
+            core.info(`Cancelled ${cancelled} superseded E2E run(s) on branch ${branch}`);
+
       - name: Check PR labels for E2E/Override
         id: policy
         uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9.0.0
@@ -587,7 +630,7 @@ jobs:
       - run-maestro-ios
       - run-maestro-android
     # Always strip E2E/Run* after tests finish (pass, fail, or cancel) unless another
-    # run is still in-flight for the same PR (concurrency hand-off).
+    # run is still in-flight for the same PR.
     if: |
       always() &&
       needs.resolve-e2e-policy.outputs.e2e_override != 'true' &&
