@@ -164,6 +164,8 @@ install_app() {
 grant_android_runtime_permissions() {
     local bundle_id="com.mattermost.rnbeta"
     adb shell pm grant "$bundle_id" android.permission.POST_NOTIFICATIONS 2>/dev/null || true
+    adb shell pm grant "$bundle_id" android.permission.RECORD_AUDIO 2>/dev/null || true
+    adb shell pm grant "$bundle_id" android.permission.CAMERA 2>/dev/null || true
     adb shell settings put secure show_ime_with_hard_keyboard 0 2>/dev/null || true
     adb shell settings put secure spell_checker_enabled 0 2>/dev/null || true
     adb shell settings put secure auto_text_enabled 0 2>/dev/null || true

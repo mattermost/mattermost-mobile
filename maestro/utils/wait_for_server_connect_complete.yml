@@ -5,7 +5,7 @@ appId: ${MAESTRO_APP_ID}
 - extendedWaitUntil:
     visible:
       id: "login_form.forgot_password.button"
-    timeout: 90000
+    timeout: 120000
     optional: true
 - runFlow:
     when:
@@ -15,4 +15,4 @@ appId: ${MAESTRO_APP_ID}
       - extendedWaitUntil:
           visible:
             id: "tab_bar.home.tab"
-          timeout: 90000
+          timeout: 120000

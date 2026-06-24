@@ -2,4 +2,7 @@
 # Must stay on com.apple.mobilesafari while the system sheet is visible.
 appId: com.apple.mobilesafari
 ---
-- runFlow: tap_mattermost_ios_share_target.yml
+- runFlow:
+    file: tap_mattermost_ios_share_target.yml
+    env:
+      SHARE_HOST_APP_ID: com.apple.mobilesafari

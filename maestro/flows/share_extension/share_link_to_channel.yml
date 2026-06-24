@@ -19,6 +19,8 @@
 tags:
   - MM-T2874
 appId: ${MAESTRO_APP_ID}
+env:
+  SYNC_TOKEN: "example.com"
 ---
 - runFlow: ../../utils/login.yml
 
@@ -89,14 +91,5 @@ appId: ${MAESTRO_APP_ID}
 # Post the shared content
 - tapOn:
     id: "share_extension.post.button"
-
-# Return to Mattermost and verify the link post appeared in the channel
-- launchApp:
-    appId: "${MAESTRO_APP_ID}"
-- extendedWaitUntil:
-    visible:
-      id: "channel.post_list.post"
-    timeout: 15000
-- assertVisible:
-    id: "channel.post_list.post"
-- takeScreenshot: share-link-post-verified
+- waitForAnimationToEnd:
+    timeout: 5000

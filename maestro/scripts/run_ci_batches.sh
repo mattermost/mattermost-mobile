@@ -54,15 +54,30 @@ done
 
 mkdir -p "$OUTPUT_DIR" "$ARTIFACTS_DIR"
 
-maestro_env_args=(
-  --env "SITE_1_URL=${SITE_1_URL:-}"
-  --env "TEST_USER_EMAIL=${TEST_USER_EMAIL:-}"
-  --env "TEST_USER_PASSWORD=${TEST_USER_PASSWORD:-}"
-  --env "TEST_CHANNEL_NAME=${TEST_CHANNEL_NAME:-}"
-  --env "TEST_TEAM_NAME=${TEST_TEAM_NAME:-}"
-  --env "ADMIN_TOKEN=${ADMIN_TOKEN:-}"
-  --env "MAESTRO_APP_ID=${MAESTRO_APP_ID}"
-)
+# shellcheck source=maestro/utils/timezone_region.sh
+source "$REPO_ROOT/maestro/utils/timezone_region.sh"
+SIMULATOR_TIMEZONE="${SIMULATOR_TIMEZONE:-America/New_York}"
+EXPECTED_TIMEZONE_REGION="${EXPECTED_TIMEZONE_REGION:-$(timezone_region_from_iana "$SIMULATOR_TIMEZONE")}"
+
+build_maestro_env_args() {
+  maestro_env_args=(
+    --env "SITE_1_URL=${SITE_1_URL:-}"
+    --env "TEST_USER_EMAIL=${TEST_USER_EMAIL:-}"
+    --env "TEST_USER_PASSWORD=${TEST_USER_PASSWORD:-}"
+    --env "TEST_CHANNEL_NAME=${TEST_CHANNEL_NAME:-}"
+    --env "TEST_CHANNEL_ID=${TEST_CHANNEL_ID:-}"
+    --env "TEST_TEAM_NAME=${TEST_TEAM_NAME:-}"
+    --env "ADMIN_TOKEN=${ADMIN_TOKEN:-}"
+    --env "MAESTRO_APP_ID=${MAESTRO_APP_ID}"
+    --env "MAESTRO_CI=true"
+    --env "SIMULATOR_TIMEZONE=${SIMULATOR_TIMEZONE}"
+    --env "EXPECTED_TIMEZONE_REGION=${EXPECTED_TIMEZONE_REGION}"
+    --env "SYNC_TOKEN=${SYNC_TOKEN:-}"
+    --env "SHARE_VERIFY_TEXT=${SHARE_VERIFY_TEXT:-${SYNC_TOKEN:-}}"
+  )
+}
+
+build_maestro_env_args
 
 platform_args=()
 [[ "$PLATFORM" == "android" ]] && platform_args=(--platform android)
@@ -168,6 +183,15 @@ grant_ios_calls_permissions() {
   xcrun simctl privacy "$udid" grant camera "$MAESTRO_APP_ID" 2>/dev/null || true
 }
 
+grant_android_calls_permissions() {
+  [[ "$PLATFORM" != "android" ]] && return 0
+  command -v adb >/dev/null 2>&1 || return 0
+
+  echo "==> Re-granting Android microphone/camera for Calls ($MAESTRO_APP_ID)"
+  adb shell pm grant "$MAESTRO_APP_ID" android.permission.RECORD_AUDIO 2>/dev/null || true
+  adb shell pm grant "$MAESTRO_APP_ID" android.permission.CAMERA 2>/dev/null || true
+}
+
 reset_android_app_state() {
   [[ "$PLATFORM" != "android" ]] && return 0
   command -v adb >/dev/null 2>&1 || return 0
@@ -200,7 +224,7 @@ trigger_android_share_intent() {
 
   case "$flow_basename" in
     share_text_to_channel.yml)
-      payload="Example Domain — Maestro share text E2E"
+      payload="Example Domain - Maestro share text E2E"
       ;;
     share_link_to_channel.yml)
       payload="https://example.com"
@@ -212,9 +236,9 @@ trigger_android_share_intent() {
   esac
 
   echo "==> Opening Android share extension via SEND intent ($flow_basename)"
-  adb shell am start -a android.intent.action.SEND -t text/plain \
-    --es android.intent.extra.TEXT "$payload" \
-    -n "$component" >/dev/null 2>&1 || {
+  local payload_escaped
+  payload_escaped=$(printf '%s' "$payload" | sed "s/'/'\\\\''/g")
+  adb shell "am start -a android.intent.action.SEND -t text/plain --es android.intent.extra.TEXT '${payload_escaped}' -n '${component}'" >/dev/null 2>&1 || {
       echo "Failed to launch $component" >&2
       return 1
     }
@@ -223,12 +247,80 @@ trigger_android_share_intent() {
 
 is_android_share_flow_batch() {
   [[ "$PLATFORM" == "android" ]] || return 1
+  is_share_flow_batch "$1"
+}
+
+is_share_flow_batch() {
   [[ "$1" == *share_extension/share_* ]] || return 1
   local base=${1##*/}
   case "$base" in
     share_text_to_channel.yml|share_link_to_channel.yml) return 0 ;;
     *) return 1 ;;
   esac
+}
+
+share_sync_token_for_flow() {
+  case "${1##*/}" in
+    share_text_to_channel.yml) echo "Example Domain - Maestro share text E2E" ;;
+    share_link_to_channel.yml) echo "example.com" ;;
+    *) return 1 ;;
+  esac
+}
+
+share_verify_text_for_flow() {
+  case "${1##*/}" in
+    share_text_to_channel.yml) echo "Example Domain - Maestro share text E2E" ;;
+    share_link_to_channel.yml) echo "Example Domain" ;;
+    *) return 1 ;;
+  esac
+}
+
+poll_for_shared_post() {
+  local token=$1
+  [[ -n "$token" ]] || { echo "poll_for_shared_post: token required" >&2; return 1; }
+  [[ -n "${TEST_CHANNEL_ID:-}" ]] || { echo "TEST_CHANNEL_ID required for poll" >&2; return 1; }
+  [[ -n "${ADMIN_TOKEN:-}" ]] || { echo "ADMIN_TOKEN required for poll" >&2; return 1; }
+
+  echo "==> Polling API for shared post containing: $token"
+  SITE_1_URL="$SITE_1_URL" SYNC_TOKEN="$token" TEST_CHANNEL_ID="$TEST_CHANNEL_ID" ADMIN_TOKEN="$ADMIN_TOKEN" \
+    npx tsx "$REPO_ROOT/maestro/fixtures/poll_for_message.ts"
+}
+
+run_share_flow_batch() {
+  local batch_paths=$1
+  local batch_xml=$2
+
+  SYNC_TOKEN="$(share_sync_token_for_flow "$batch_paths")" || return 1
+  SHARE_VERIFY_TEXT="$(share_verify_text_for_flow "$batch_paths")" || return 1
+  export SYNC_TOKEN SHARE_VERIFY_TEXT
+  build_maestro_env_args
+
+  if [[ "$PLATFORM" == "android" ]]; then
+    run_android_share_flow_batch "$batch_paths" "$batch_xml"
+    return $?
+  fi
+
+  reset_ios_cross_app_state
+
+  local post_xml="${batch_xml%.xml}-post.xml"
+  set +e
+  run_maestro_batch "$post_xml" "$batch_paths"
+  local post_rc=$?
+  set -e
+  if [[ $post_rc -ne 0 ]]; then
+    cp -f "$post_xml" "$batch_xml" 2>/dev/null || true
+    return "$post_rc"
+  fi
+
+  poll_for_shared_post "$SYNC_TOKEN" || return 1
+
+  local verify_xml="${batch_xml%.xml}-verify.xml"
+  set +e
+  run_maestro_batch "$verify_xml" maestro/utils/verify_shared_post_in_channel.yml
+  post_rc=$?
+  set -e
+  cp -f "$verify_xml" "$batch_xml" 2>/dev/null || cp -f "$post_xml" "$batch_xml" 2>/dev/null || true
+  return "$post_rc"
 }
 
 run_android_share_flow_batch() {
@@ -252,12 +344,35 @@ run_android_share_flow_batch() {
 
   trigger_android_share_intent "$flow_basename" || return 1
 
-  run_maestro_batch "$batch_xml" maestro/utils/android_post_share_to_channel.yml
+  local post_xml="${batch_xml%.xml}-post.xml"
+  set +e
+  run_maestro_batch "$post_xml" maestro/utils/android_post_share_submit.yml
+  local post_rc=$?
+  set -e
+  if [[ $post_rc -ne 0 ]]; then
+    echo "==> Android share submit failed (exit $post_rc)" >&2
+    return "$post_rc"
+  fi
+
+  poll_for_shared_post "$SYNC_TOKEN" || return 1
+
+  local verify_xml="${batch_xml%.xml}-verify.xml"
+  set +e
+  run_maestro_batch "$verify_xml" maestro/utils/verify_shared_post_in_channel.yml
+  post_rc=$?
+  set -e
+  if [[ $post_rc -ne 0 ]]; then
+    cp -f "$verify_xml" "$batch_xml" 2>/dev/null || true
+  else
+    cp -f "$verify_xml" "$batch_xml" 2>/dev/null || true
+  fi
+  return "$post_rc"
 }
 
 # macOS CI uses bash 3.2; with `set -u`, expanding an empty array via "${arr[@]}"
 # throws "unbound variable". Build the maestro argv explicitly instead.
 run_maestro_batch() {
+  build_maestro_env_args
   local batch_xml=$1
   shift
   local -a flows=("$@")
@@ -286,6 +401,37 @@ run_maestro_batch() {
 BATCH_XMLS=()
 BATCH_FAILED=0
 batch_idx=0
+MERGE_DONE=0
+
+merge_batch_reports() {
+  [[ "$MERGE_DONE" == "1" ]] && return 0
+  [[ ${#BATCH_XMLS[@]} -eq 0 ]] && return 0
+  MERGE_DONE=1
+  echo ""
+  echo "==> Merging ${#BATCH_XMLS[@]} JUnit reports -> $MERGED_XML"
+  local xml_json
+  xml_json=$(printf '"%s",' "${BATCH_XMLS[@]}")
+  xml_json="[${xml_json%,}]"
+  node -e "
+const {mergeMaestroJunitReports} = require('./detox/utils/maestro_report');
+mergeMaestroJunitReports(${xml_json}, '${MERGED_XML}');
+"
+}
+
+trap merge_batch_reports EXIT
+
+ensure_android_timezone() {
+  [[ "$PLATFORM" != "android" ]] && return 0
+  command -v adb >/dev/null 2>&1 || return 0
+
+  echo "==> Setting Android emulator timezone to America/New_York (MM-T1325)"
+  adb root 2>/dev/null || true
+  adb shell cmd alarm set-timezone "America/New_York" 2>/dev/null || true
+  adb shell setprop persist.sys.timezone "America/New_York" 2>/dev/null || true
+  adb shell setprop sys.timezone "America/New_York" 2>/dev/null || true
+  adb shell am force-stop "$MAESTRO_APP_ID" 2>/dev/null || true
+  sleep 2
+}
 
 for batch_paths in "${BATCHES[@]}"; do
   batch_idx=$((batch_idx + 1))
@@ -295,19 +441,21 @@ for batch_paths in "${BATCHES[@]}"; do
 
   echo ""
   echo "==> Maestro batch $batch_idx/${#BATCHES[@]}: ${path_arr[*]}"
+  [[ "$batch_paths" == *"/timezone/"* ]] && ensure_android_timezone
   ensure_ios_simulator_healthy
   if [[ "$batch_paths" == *share_extension* ]]; then
-    [[ "$PLATFORM" == "ios" ]] && reset_ios_cross_app_state
+    [[ "$PLATFORM" == "ios" ]] && ! is_share_flow_batch "$batch_paths" && reset_ios_cross_app_state
   fi
   if [[ "$batch_paths" == *"/calls/"* ]]; then
     grant_ios_calls_permissions
+    grant_android_calls_permissions
   fi
   [[ "$PLATFORM" == "android" ]] && reset_android_app_state
   ensure_android_app_launchable
 
   set +e
-  if is_android_share_flow_batch "$batch_paths"; then
-    run_android_share_flow_batch "$batch_paths" "$batch_xml"
+  if is_share_flow_batch "$batch_paths"; then
+    run_share_flow_batch "$batch_paths" "$batch_xml"
     rc=$?
   else
     run_maestro_batch "$batch_xml" "${path_arr[@]}"
@@ -330,14 +478,7 @@ for batch_paths in "${BATCHES[@]}"; do
   fi
 done
 
-echo ""
-echo "==> Merging ${#BATCH_XMLS[@]} JUnit reports -> $MERGED_XML"
-XML_JSON=$(printf '"%s",' "${BATCH_XMLS[@]}")
-XML_JSON="[${XML_JSON%,}]"
-node -e "
-const {mergeMaestroJunitReports} = require('./detox/utils/maestro_report');
-mergeMaestroJunitReports(${XML_JSON}, '${MERGED_XML}');
-"
+merge_batch_reports
 
 if [[ $BATCH_FAILED -ne 0 ]]; then
   echo "==> One or more Maestro batches failed"

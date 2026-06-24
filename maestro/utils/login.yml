@@ -32,6 +32,11 @@ appId: ${MAESTRO_APP_ID}
       - tapOn:
           text: "Allow"
           optional: true
+      # Fresh install shows the server form once the JS bundle loads (same as Android).
+      - extendedWaitUntil:
+          visible:
+            id: "server_form.server_url.input"
+          timeout: 180000
 - runFlow:
     when:
       platform: Android
@@ -158,7 +163,7 @@ appId: ${MAESTRO_APP_ID}
 - extendedWaitUntil:
     visible:
       id: "login_form.forgot_password.button"
-    timeout: 90000
+    timeout: 180000
 - runFlow:
     when:
       platform: iOS

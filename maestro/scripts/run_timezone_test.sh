@@ -66,6 +66,10 @@ fi
 
 echo "[timezone_test] Running clock_display flow..."
 
+# shellcheck source=maestro/utils/timezone_region.sh
+source "$(dirname "$0")/../utils/timezone_region.sh"
+REGION="$(timezone_region_from_iana "$TIMEZONE")"
+
 # shellcheck disable=SC2086
 ~/.maestro/bin/maestro test \
   $MAESTRO_DEVICE_FLAG \
@@ -75,6 +79,7 @@ echo "[timezone_test] Running clock_display flow..."
   --env TEST_USER_PASSWORD="${TEST_USER_PASSWORD}" \
   --env MAESTRO_APP_ID="${MAESTRO_APP_ID:-com.mattermost.rnbeta}" \
   --env SIMULATOR_TIMEZONE="$TIMEZONE" \
+  --env EXPECTED_TIMEZONE_REGION="$REGION" \
   "$(dirname "$0")/../flows/timezone/clock_display.yml"
 
 EXIT_CODE=$?

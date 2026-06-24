@@ -570,4 +570,40 @@ h2 { font-size:16px; font-weight:600; margin:24px 0 12px; color:var(--muted); te
     return true;
 }
 
-module.exports = {parseMaestroReport, generateMaestroHtmlReport, mergeMaestroJunitReports, buildScreenshotMapFromCommandLogs};
+/**
+ * When the batch runner exits before merging (e.g. set -e abort), reconstruct
+ * maestro-report.xml from maestro-batch-*.xml so PR status reflects real counts.
+ */
+function mergeMaestroBatchReportsFromDir(buildDir, outputPath) {
+    if (fse.existsSync(outputPath)) {
+        return outputPath;
+    }
+
+    if (!fse.existsSync(buildDir)) {
+        return null;
+    }
+
+    const batchFiles = fse.readdirSync(buildDir).
+        filter((name) => /^maestro-batch-\d+\.xml$/.test(name)).
+        sort((a, b) => {
+            const num = (file) => parseInt(file.match(/maestro-batch-(\d+)\.xml/)[1], 10);
+            return num(a) - num(b);
+        }).
+        map((name) => path.join(buildDir, name));
+
+    if (!batchFiles.length) {
+        return null;
+    }
+
+    console.log(`Merging ${batchFiles.length} batch JUnit files from ${buildDir}`);
+    mergeMaestroJunitReports(batchFiles, outputPath);
+    return fse.existsSync(outputPath) ? outputPath : null;
+}
+
+module.exports = {
+    parseMaestroReport,
+    generateMaestroHtmlReport,
+    mergeMaestroJunitReports,
+    mergeMaestroBatchReportsFromDir,
+    buildScreenshotMapFromCommandLogs,
+};

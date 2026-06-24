@@ -333,8 +333,12 @@ jobs:
           cd detox
           npm ci --prefer-offline --no-audit --no-fund
           node -e "
-            const {parseMaestroReport, generateMaestroHtmlReport} = require('./utils/maestro_report');
-            const summary = parseMaestroReport('../build/maestro-report.xml');
+            const path = require('path');
+            const {parseMaestroReport, generateMaestroHtmlReport, mergeMaestroBatchReportsFromDir} = require('./utils/maestro_report');
+            const buildDir = path.resolve('..', 'build');
+            const xmlPath = path.join(buildDir, 'maestro-report.xml');
+            mergeMaestroBatchReportsFromDir(buildDir, xmlPath);
+            const summary = parseMaestroReport(xmlPath);
             const fs = require('fs');
             if (summary) {
               const s = summary.stats;
@@ -352,9 +356,9 @@ jobs:
               // inline screenshots + log links). Lives next to maestro-artifacts/
               // so relative <img src> URLs resolve when viewed from S3.
               generateMaestroHtmlReport({
-                xmlPath: '../build/maestro-report.xml',
-                artifactsDir: '../build/maestro-artifacts',
-                outputPath: '../build/maestro-report.html',
+                xmlPath: xmlPath,
+                artifactsDir: path.join(buildDir, 'maestro-artifacts'),
+                outputPath: path.join(buildDir, 'maestro-report.html'),
                 platform: 'iOS',
                 commitSha: process.env.GITHUB_SHA || '',
               });
@@ -664,8 +668,12 @@ jobs:
           cd detox
           npm ci --prefer-offline --no-audit --no-fund
           node -e "
-            const {parseMaestroReport, generateMaestroHtmlReport} = require('./utils/maestro_report');
-            const summary = parseMaestroReport('../build/maestro-report.xml');
+            const path = require('path');
+            const {parseMaestroReport, generateMaestroHtmlReport, mergeMaestroBatchReportsFromDir} = require('./utils/maestro_report');
+            const buildDir = path.resolve('..', 'build');
+            const xmlPath = path.join(buildDir, 'maestro-report.xml');
+            mergeMaestroBatchReportsFromDir(buildDir, xmlPath);
+            const summary = parseMaestroReport(xmlPath);
             const fs = require('fs');
             if (summary) {
               const s = summary.stats;
@@ -682,9 +690,9 @@ jobs:
               // Generate a rich HTML report (stats + per-flow drill-down with
               // inline screenshots + log links). See maestro iOS notes above.
               generateMaestroHtmlReport({
-                xmlPath: '../build/maestro-report.xml',
-                artifactsDir: '../build/maestro-artifacts',
-                outputPath: '../build/maestro-report.html',
+                xmlPath: xmlPath,
+                artifactsDir: path.join(buildDir, 'maestro-artifacts'),
+                outputPath: path.join(buildDir, 'maestro-report.html'),
                 platform: 'Android',
                 commitSha: process.env.GITHUB_SHA || '',
               });

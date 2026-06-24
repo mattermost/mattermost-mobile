@@ -50,8 +50,8 @@ REPO_ROOT="$(cd "$SCRIPT_DIR/../.." && pwd)"
 
 cd "$REPO_ROOT"
 
-echo "==> Provisioning $SITE_URL via detox/provision_server.js"
-node detox/provision_server.js "$SITE_URL"
+echo "==> Provisioning $SITE_URL via detox/provision"
+(cd "$REPO_ROOT/detox" && npm run provision -- "$SITE_URL")
 
 echo "==> Installing maestro fixtures dependencies"
 cd "$REPO_ROOT/maestro"

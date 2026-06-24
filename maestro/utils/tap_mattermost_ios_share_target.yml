@@ -7,6 +7,7 @@
 # Photos also shows a "◀ Mattermost" navbar back affordance — never wait on bare
 # text "Mattermost" alone; anchor the share sheet first, then use relational
 # selectors (Maestro relational selectors docs).
+appId: ${SHARE_HOST_APP_ID}
 ---
 - waitForAnimationToEnd:
     timeout: 3000
