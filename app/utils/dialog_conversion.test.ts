@@ -2,6 +2,7 @@
 // See LICENSE.txt for license information.
 
 import {
+    collectFileIds,
     convertAppFormValuesToDialogSubmission,
     convertDialogElementToAppField,
     convertDialogToAppForm,
@@ -387,9 +388,59 @@ describe('dialog_conversion', () => {
             });
             expect(result.errors).toEqual([]);
         });
+
+        it('should convert file element values to a comma-joined id string', () => {
+            const fileElement: DialogElement = {
+                name: 'attachment',
+                type: DialogElementTypes.FILE,
+                display_name: 'Attachment',
+                optional: true,
+                allow_multiple: true,
+                default: '',
+                placeholder: '',
+                help_text: '',
+                min_length: 0,
+                max_length: 0,
+                data_source: '',
+                options: [],
+            };
+
+            const values: AppFormValues = {
+                attachment: 'file-id-1,file-id-2',
+            };
+
+            const result = convertAppFormValuesToDialogSubmission(values, [fileElement]);
+
+            expect(result.submission).toEqual({attachment: 'file-id-1,file-id-2'});
+            expect(result.errors).toEqual([]);
+        });
     });
 
     describe('convertDialogElementToAppField', () => {
+        it('should convert a file element and carry allow_multiple', () => {
+            const element: DialogElement = {
+                name: 'attachment',
+                type: DialogElementTypes.FILE,
+                display_name: 'Attachment',
+                help_text: 'Upload files',
+                placeholder: '',
+                default: '',
+                optional: true,
+                allow_multiple: true,
+                min_length: 0,
+                max_length: 0,
+                data_source: '',
+                options: [],
+            };
+
+            const result = convertDialogElementToAppField(element);
+
+            expect(result.type).toBe('file');
+            expect(result.allow_multiple).toBe(true);
+            expect(result.is_required).toBe(false);
+            expect(result.label).toBe('Attachment');
+        });
+
         it('should convert text element correctly', () => {
             const element: DialogElement = {
                 name: 'text_field',
@@ -948,6 +999,44 @@ describe('dialog_conversion', () => {
                 path: 'https://example.com/custom-refresh',
                 expand: {},
             });
+        });
+    });
+
+    describe('collectFileIds', () => {
+        const fileEl = (name: string): DialogElement => ({
+            name,
+            type: DialogElementTypes.FILE,
+            display_name: '',
+            subtype: undefined,
+            default: '',
+            placeholder: '',
+            help_text: '',
+            optional: true,
+            min_length: 0,
+            max_length: 0,
+            data_source: '',
+            options: [],
+        });
+
+        it('collects and trims comma-joined IDs from FILE elements', () => {
+            expect(collectFileIds({f1: ' a , b ,c'}, [fileEl('f1')])).toEqual(['a', 'b', 'c']);
+        });
+
+        it('collects across multiple FILE fields', () => {
+            expect(collectFileIds({f1: 'a,b', f2: 'c'}, [fileEl('f1'), fileEl('f2')])).toEqual(['a', 'b', 'c']);
+        });
+
+        it('deduplicates repeated IDs', () => {
+            expect(collectFileIds({f1: 'a,a', f2: 'a,b'}, [fileEl('f1'), fileEl('f2')])).toEqual(['a', 'b']);
+        });
+
+        it('ignores non-FILE elements and empty values', () => {
+            const textEl: DialogElement = {...fileEl('t1'), type: DialogElementTypes.TEXT};
+            expect(collectFileIds({t1: 'x,y', f1: ''}, [textEl, fileEl('f1')])).toEqual([]);
+        });
+
+        it('returns an empty array when elements is omitted', () => {
+            expect(collectFileIds({f1: 'a'})).toEqual([]);
         });
     });
 });

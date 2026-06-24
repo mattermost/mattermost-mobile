@@ -118,7 +118,10 @@ describe('DialogRouter', () => {
 
     it('should render AppsFormComponent when conversion succeeds', () => {
         const {getByTestId} = renderWithIntl(
-            <DialogRouter config={mockConfig}/>,
+            <DialogRouter
+                config={mockConfig}
+                channelId='channel-id-1'
+            />,
         );
 
         expect(getByTestId('apps-form-component')).toBeTruthy();
@@ -127,17 +130,28 @@ describe('DialogRouter', () => {
             submit: expect.any(Function),
             performLookupCall: expect.any(Function),
             refreshOnSelect: expect.any(Function),
+            channelId: 'channel-id-1',
         }, undefined);
     });
 
     it('should call dialog conversion with correct config', () => {
-        renderWithIntl(<DialogRouter config={mockConfig}/>);
+        renderWithIntl(
+            <DialogRouter
+                config={mockConfig}
+                channelId='channel-id-1'
+            />,
+        );
 
         expect(mockInteractiveDialogAdapter.convertToAppForm).toHaveBeenCalledWith(mockConfig);
     });
 
     it('should create submit handler with correct parameters', () => {
-        renderWithIntl(<DialogRouter config={mockConfig}/>);
+        renderWithIntl(
+            <DialogRouter
+                config={mockConfig}
+                channelId='channel-id-1'
+            />,
+        );
 
         // Submit handler is created when handleSubmit callback is used
         const submitHandler = mockAppsFormComponent.mock.calls[0][0].submit;
@@ -150,7 +164,10 @@ describe('DialogRouter', () => {
         });
 
         const {queryByTestId} = renderWithIntl(
-            <DialogRouter config={mockConfig}/>,
+            <DialogRouter
+                config={mockConfig}
+                channelId='channel-id-1'
+            />,
         );
 
         expect(queryByTestId('apps-form-component')).toBeNull();
@@ -163,7 +180,10 @@ describe('DialogRouter', () => {
         });
 
         const {queryByTestId} = renderWithIntl(
-            <DialogRouter config={mockConfig}/>,
+            <DialogRouter
+                config={mockConfig}
+                channelId='channel-id-1'
+            />,
         );
 
         expect(queryByTestId('apps-form-component')).toBeNull();
@@ -176,7 +196,10 @@ describe('DialogRouter', () => {
         });
 
         const {getByTestId} = renderWithIntl(
-            <DialogRouter config={mockConfig}/>,
+            <DialogRouter
+                config={mockConfig}
+                channelId='channel-id-1'
+            />,
         );
 
         // Component should still render AppsForm even with empty fields
@@ -186,7 +209,12 @@ describe('DialogRouter', () => {
 
     describe('stub action handlers', () => {
         it('should provide performLookupCall that returns empty items', async () => {
-            renderWithIntl(<DialogRouter config={mockConfig}/>);
+            renderWithIntl(
+                <DialogRouter
+                    config={mockConfig}
+                    channelId='channel-id-1'
+                />,
+            );
 
             const performLookupCall = mockAppsFormComponent.mock.calls[0][0].performLookupCall;
             const mockField = {name: 'test_field'} as AppField;
@@ -205,7 +233,12 @@ describe('DialogRouter', () => {
         });
 
         it('should provide refreshOnSelect that returns ok response', async () => {
-            renderWithIntl(<DialogRouter config={mockConfig}/>);
+            renderWithIntl(
+                <DialogRouter
+                    config={mockConfig}
+                    channelId='channel-id-1'
+                />,
+            );
 
             const refreshOnSelect = mockAppsFormComponent.mock.calls[0][0].refreshOnSelect;
             const mockField = {name: 'test_field'} as AppField;
@@ -223,7 +256,10 @@ describe('DialogRouter', () => {
     describe('React.memo optimization', () => {
         it('should not re-render when props are unchanged', () => {
             const {rerender} = renderWithIntl(
-                <DialogRouter config={mockConfig}/>,
+                <DialogRouter
+                    config={mockConfig}
+                    channelId='channel-id-1'
+                />,
             );
 
             const initialCallCount = mockAppsFormComponent.mock.calls.length;
@@ -234,7 +270,10 @@ describe('DialogRouter', () => {
                     locale='en'
                     messages={getTranslations('en')}
                 >
-                    <DialogRouter config={mockConfig}/>
+                    <DialogRouter
+                        config={mockConfig}
+                        channelId='channel-id-1'
+                    />
                 </IntlProvider>,
             );
 
@@ -244,7 +283,10 @@ describe('DialogRouter', () => {
 
         it('should re-render when config changes', () => {
             const {rerender} = renderWithIntl(
-                <DialogRouter config={mockConfig}/>,
+                <DialogRouter
+                    config={mockConfig}
+                    channelId='channel-id-1'
+                />,
             );
 
             const initialCallCount = mockAppsFormComponent.mock.calls.length;
@@ -262,7 +304,10 @@ describe('DialogRouter', () => {
                     locale='en'
                     messages={getTranslations('en')}
                 >
-                    <DialogRouter config={newConfig}/>
+                    <DialogRouter
+                        config={newConfig}
+                        channelId='channel-id-1'
+                    />
                 </IntlProvider>,
             );
 
@@ -276,7 +321,10 @@ describe('DialogRouter', () => {
             // This test verifies the component doesn't crash with invalid props
             expect(() => {
                 renderWithIntl(
-                    <DialogRouter config={null as any}/>,
+                    <DialogRouter
+                        config={null as any}
+                        channelId='channel-id-1'
+                    />,
                 );
             }).not.toThrow();
         });
@@ -289,7 +337,10 @@ describe('DialogRouter', () => {
 
             expect(() => {
                 renderWithIntl(
-                    <DialogRouter config={invalidConfig}/>,
+                    <DialogRouter
+                        config={invalidConfig}
+                        channelId='channel-id-1'
+                    />,
                 );
             }).not.toThrow();
         });

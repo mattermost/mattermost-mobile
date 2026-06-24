@@ -49,6 +49,7 @@ type DialogSubmission = {
         [x: string]: string;
     };
     cancelled: boolean;
+    file_ids?: string[];
 };
 
 type DialogOption = {
@@ -75,6 +76,7 @@ type DialogElement = {
     data_source_url?: string;
     options: DialogOption[];
     multiselect?: boolean;
+    allow_multiple?: boolean;
     refresh?: boolean;
 };
 
@@ -123,5 +125,5 @@ type PostActionResponse = {
     trigger_id: string;
 };
 
-type InteractiveDialogElementType = 'text' | 'textarea' | 'select' | 'radio' | 'bool'
+type InteractiveDialogElementType = 'text' | 'textarea' | 'select' | 'radio' | 'bool' | 'file'
 type InteractiveDialogTextSubtype = 'email' | 'number' | 'tel' | 'url' | 'password'

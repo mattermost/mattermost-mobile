@@ -208,6 +208,39 @@ describe('checkDialogElementForError', () => {
         expect(checkDialogElementForError(elemRadio, 'option1', intl)).toBeNull();
     });
 
+    describe('FILE validation', () => {
+        const fileElem = (optional: boolean): DialogElement => ({
+            name: 'attachment',
+            type: 'file',
+            optional,
+            display_name: '',
+            subtype: undefined,
+            default: '',
+            placeholder: '',
+            help_text: '',
+            min_length: 0,
+            max_length: 0,
+            data_source: '',
+            options: [],
+        });
+
+        it('errors when a required FILE field has no file IDs', () => {
+            expect(checkDialogElementForError(fileElem(false), '', makeIntl())).toBe('This field is required.');
+        });
+
+        it('errors when a required FILE field has only whitespace/commas', () => {
+            expect(checkDialogElementForError(fileElem(false), ' , ', makeIntl())).toBe('This field is required.');
+        });
+
+        it('passes when a required FILE field has file IDs', () => {
+            expect(checkDialogElementForError(fileElem(false), 'id1,id2', makeIntl())).toBeNull();
+        });
+
+        it('passes when an optional FILE field is empty', () => {
+            expect(checkDialogElementForError(fileElem(true), '', makeIntl())).toBeNull();
+        });
+    });
+
     describe('multiselect SELECT validation', () => {
         const multiselectElement: DialogElement = {
             name: 'multiselect_field',

@@ -28,6 +28,7 @@ export const DialogElementTypes = {
     SELECT: 'select' as const,
     RADIO: 'radio' as const,
     BOOL: 'bool' as const,
+    FILE: 'file' as const,
 } as const;
 
 /**
@@ -65,6 +66,8 @@ export function mapDialogTypeToAppFieldType(dialogType: InteractiveDialogElement
             return 'radio';
         case DialogElementTypes.BOOL:
             return 'bool';
+        case DialogElementTypes.FILE:
+            return 'file';
         default:
             return 'text';
     }
@@ -86,6 +89,8 @@ export function mapAppFieldTypeToDialogType(appFieldType: AppFieldType): Interac
             return DialogElementTypes.RADIO;
         case 'bool':
             return DialogElementTypes.BOOL;
+        case 'file':
+            return DialogElementTypes.FILE;
         default:
             return DialogElementTypes.TEXT;
     }

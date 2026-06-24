@@ -9,6 +9,7 @@ import {submitInteractiveDialog, lookupInteractiveDialog} from '@actions/remote/
 import {AppCallResponseTypes} from '@constants/apps';
 import {useServerUrl} from '@context/server';
 import AppsFormComponent from '@screens/apps_form/apps_form_component';
+import {collectFileIds} from '@utils/dialog_conversion';
 import {isAppSelectOption} from '@utils/dialog_utils';
 import {getFullErrorMessage} from '@utils/errors';
 import {InteractiveDialogAdapter} from '@utils/interactive_dialog_adapter';
@@ -16,6 +17,10 @@ import {logDebug} from '@utils/log';
 
 export type DialogRouterProps = {
     config: InteractiveDialogConfig;
+};
+
+type Props = DialogRouterProps & {
+    channelId: string;
 };
 
 /**
@@ -49,8 +54,9 @@ function getSubmissionErrorMessage(error: unknown, intl: IntlShape): string {
     }, {error: error.message});
 }
 
-export const DialogRouter = React.memo<DialogRouterProps>(({
+export const DialogRouter = React.memo<Props>(({
     config,
+    channelId,
 }) => {
     const navigation = useNavigation();
     const serverUrl = useServerUrl();
@@ -61,6 +67,11 @@ export const DialogRouter = React.memo<DialogRouterProps>(({
 
     // State to accumulate values across multiform steps
     const [accumulatedValues, setAccumulatedValues] = useState<AppFormValues>({});
+
+    // Accumulate uploaded file IDs from FILE fields completed on earlier steps, so a
+    // multiform final submit keeps every file_id (the current step's elements alone
+    // can't see earlier steps' file fields).
+    const [accumulatedFileIds, setAccumulatedFileIds] = useState<string[]>([]);
 
     // Helper to convert select options array to comma-separated string
     const convertSelectOptionsToString = (optionsArray: AppSelectOption[]): string => {
@@ -130,6 +141,11 @@ export const DialogRouter = React.memo<DialogRouterProps>(({
                 // This is a multiform submission - include ALL accumulated values
                 const multiformSubmission = convertAppFormValuesToSubmission(allValues);
 
+                // Earlier steps' file IDs (accumulated) + this step's file IDs.
+                // Collect from this step's values only (not allValues) so an earlier
+                // step's file field re-declared here can't double-count; Set dedups.
+                const fileIds = [...new Set([...accumulatedFileIds, ...collectFileIds(convertAppFormValuesToSubmission(values), currentConfig.dialog.elements)])];
+
                 legacySubmission = {
                     url: currentConfig.url || '',
                     callback_id: currentConfig.dialog.callback_id || '',
@@ -139,6 +155,7 @@ export const DialogRouter = React.memo<DialogRouterProps>(({
                     channel_id: '', // Will be populated by mobile action
                     team_id: '', // Will be populated by mobile action
                     cancelled: false,
+                    ...(fileIds.length > 0 && {file_ids: fileIds}),
                 };
             } else {
                 // Single-step dialog - use normal conversion
@@ -158,6 +175,12 @@ export const DialogRouter = React.memo<DialogRouterProps>(({
                 const newAccumulatedValues = {...accumulatedValues, ...values};
                 setAccumulatedValues(newAccumulatedValues);
 
+                // Carry forward this step's uploaded file IDs so the final submit keeps them
+                const stepFileIds = collectFileIds(convertAppFormValuesToSubmission(values), currentConfig.dialog.elements);
+                if (stepFileIds.length) {
+                    setAccumulatedFileIds((prev) => [...new Set([...prev, ...stepFileIds])]);
+                }
+
                 // Use the raw dialog data from server - it's already in the correct format!
                 const newDialogConfig: InteractiveDialogConfig = {
                     ...currentConfig,
@@ -171,8 +194,9 @@ export const DialogRouter = React.memo<DialogRouterProps>(({
 
                 setCurrentConfig(newDialogConfig);
             } else {
-            // Clear accumulated values since dialog is completing
+            // Clear accumulated state since dialog is completing
                 setAccumulatedValues({});
+                setAccumulatedFileIds([]);
             }
 
             return result;
@@ -189,7 +213,7 @@ export const DialogRouter = React.memo<DialogRouterProps>(({
                 },
             };
         }
-    }, [currentConfig, serverUrl, intl, accumulatedValues, convertAppFormValuesToSubmission]);
+    }, [currentConfig, serverUrl, intl, accumulatedValues, accumulatedFileIds, convertAppFormValuesToSubmission]);
 
     // Memoize form conversion to avoid recalculation on every render
     const appForm = useMemo(() => {
@@ -290,6 +314,14 @@ export const DialogRouter = React.memo<DialogRouterProps>(({
                 const newAccumulatedValues = {...accumulatedValues, ...values};
                 setAccumulatedValues(newAccumulatedValues);
 
+                // Carry forward this step's uploaded file IDs BEFORE the refresh
+                // replaces currentConfig — the refreshed form may drop the FILE
+                // element, which would otherwise lose those IDs on final submit.
+                const refreshedFileIds = collectFileIds(convertAppFormValuesToSubmission(values), currentConfig.dialog.elements);
+                if (refreshedFileIds.length) {
+                    setAccumulatedFileIds((prev) => [...new Set([...prev, ...refreshedFileIds])]);
+                }
+
                 // Update the dialog config state with new form data
                 const newConfig = {
                     ...currentConfig,
@@ -333,7 +365,7 @@ export const DialogRouter = React.memo<DialogRouterProps>(({
                 },
             };
         }
-    }, [currentConfig, serverUrl, intl, setCurrentConfig, accumulatedValues]);
+    }, [currentConfig, serverUrl, intl, setCurrentConfig, accumulatedValues, convertAppFormValuesToSubmission]);
 
     if (!appForm || !appForm.fields) {
         return null;
@@ -359,6 +391,7 @@ export const DialogRouter = React.memo<DialogRouterProps>(({
             submit={handleSubmit}
             performLookupCall={performLookupCall}
             refreshOnSelect={refreshOnSelect}
+            channelId={channelId}
         />
     );
 });
