@@ -1,0 +1,27 @@
+# Shared tail for Android share_extension CI (after adb SEND intent opens ShareActivity).
+# Invoked by run_ci_batches.sh — not a standalone Maestro flow file under flows/.
+appId: ${MAESTRO_APP_ID}
+---
+- extendedWaitUntil:
+    visible:
+      id: "share_extension.channel.option"
+    timeout: 20000
+- tapOn:
+    id: "share_extension.channel.option"
+- extendedWaitUntil:
+    visible:
+      id: "channel_item.${TEST_CHANNEL_NAME}"
+    timeout: 10000
+- tapOn:
+    id: "channel_item.${TEST_CHANNEL_NAME}"
+- tapOn:
+    id: "share_extension.post.button"
+- launchApp:
+    appId: "${MAESTRO_APP_ID}"
+- extendedWaitUntil:
+    visible:
+      id: "channel.post_list.post"
+    timeout: 15000
+- assertVisible:
+    id: "channel.post_list.post"
+- takeScreenshot: share-post-verified

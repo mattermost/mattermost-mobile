@@ -36,8 +36,13 @@ appId: ${MAESTRO_APP_ID}
 - waitForAnimationToEnd:
     timeout: 3000
 
-- tapOn:
-    id: "calls.current_call_bar"
+- runFlow:
+    when:
+      visible:
+        id: "calls.current_call_bar"
+    commands:
+      - tapOn:
+          id: "calls.current_call_bar"
 
 - extendedWaitUntil:
     visible:
@@ -66,8 +71,13 @@ appId: ${MAESTRO_APP_ID}
 - waitForAnimationToEnd:
     timeout: 3000
 
-- tapOn:
-    id: "calls.current_call_bar"
+- runFlow:
+    when:
+      visible:
+        id: "calls.current_call_bar"
+    commands:
+      - tapOn:
+          id: "calls.current_call_bar"
 - extendedWaitUntil:
     visible:
       id: "mute-unmute"

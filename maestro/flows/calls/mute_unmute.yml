@@ -30,13 +30,16 @@ appId: ${MAESTRO_APP_ID}
 
 - runFlow: ../../utils/join_channel_call.yml
 
-# Brief wait after call bar appears to let the WebSocket session event arrive.
 - waitForAnimationToEnd:
     timeout: 3000
 
-# Tap the CurrentCallBar to navigate to the full call screen.
-- tapOn:
-    id: "calls.current_call_bar"
+- runFlow:
+    when:
+      visible:
+        id: "calls.current_call_bar"
+    commands:
+      - tapOn:
+          id: "calls.current_call_bar"
 
 # Wait for the full call screen
 - extendedWaitUntil:

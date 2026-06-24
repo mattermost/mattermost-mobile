@@ -1,0 +1,5 @@
+# Pick Mattermost from the iOS Safari share sheet (share link/text flows).
+# Must stay on com.apple.mobilesafari while the system sheet is visible.
+appId: com.apple.mobilesafari
+---
+- runFlow: tap_mattermost_ios_share_target.yml

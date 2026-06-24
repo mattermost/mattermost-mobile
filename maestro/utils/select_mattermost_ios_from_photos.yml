@@ -1,0 +1,5 @@
+# Pick Mattermost from the iOS Photos share sheet (share image flow).
+# Must stay on com.apple.mobileslideshow while the system sheet is visible.
+appId: com.apple.mobileslideshow
+---
+- runFlow: tap_mattermost_ios_share_target.yml

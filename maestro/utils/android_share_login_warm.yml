@@ -1,0 +1,6 @@
+# Sub-flow: login + warm Android share target (CI intent path for share_extension flows).
+# Used by run_ci_batches.sh before adb SEND intent — avoids flaky system share sheet UI.
+appId: ${MAESTRO_APP_ID}
+---
+- runFlow: login.yml
+- runFlow: warm_android_share_target.yml

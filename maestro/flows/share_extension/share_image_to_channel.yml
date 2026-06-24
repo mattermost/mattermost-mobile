@@ -29,7 +29,7 @@ appId: ${MAESTRO_APP_ID}
       - runFlow:
           file: ../../utils/share_photo_from_library_ios.yml
       - runFlow:
-          file: ../../utils/select_mattermost_ios_share_sheet.yml
+          file: ../../utils/select_mattermost_ios_from_photos.yml
 
 # Share extension opens: tap Channel option to open channel picker
 - extendedWaitUntil:
@@ -60,3 +60,4 @@ appId: ${MAESTRO_APP_ID}
     timeout: 20000
 - assertVisible:
     id: "channel.post_list.post"
+- takeScreenshot: share-image-post-verified

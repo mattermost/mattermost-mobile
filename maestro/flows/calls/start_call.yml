@@ -33,59 +33,21 @@ appId: ${MAESTRO_APP_ID}
 - waitForAnimationToEnd:
     timeout: 25000
 
-- extendedWaitUntil:
-    visible:
-      id: "channel.post_draft.post.input"
-    timeout: 30000
-- extendedWaitUntil:
-    visible:
-      id: "channel_header.channel_quick_actions.button"
-    timeout: 30000
-
-# Open the channel quick actions sheet via the three-dots (⋮) button.
-# The Start/Join Call button lives in this sheet.
-- tapOn:
-    id: "channel_header.channel_quick_actions.button"
-
-# Wait for the Start/Join Call action.
-# 60s: WS first-connect triggers a full doReconnect() which can take 10-30s on
-# a cloud server before loadConfigAndCalls() fires and sets pluginEnabled=true.
-- extendedWaitUntil:
-    visible:
-      id: "channel_info.channel_actions.join_start_call.action"
-    timeout: 60000
+- runFlow: ../../utils/join_channel_call.yml
 - takeScreenshot: calls-start-channel-info-open
 
-# Tap the Start Call button
-- tapOn:
-    id: "channel_info.channel_actions.join_start_call.action"
-
-# Grant microphone permission (first-time prompt)
-- tapOn:
-    text: "Allow"
-    optional: true
-
-# Grant camera permission (first-time prompt, Android)
-- tapOn:
-    text: "Allow"
-    optional: true
-
-# Starting the call dismisses the bottom sheet and returns to the channel view.
-# Wait for the minimized CurrentCallBar to appear (confirms WebRTC is connected).
-- extendedWaitUntil:
-    visible:
-      id: "calls.current_call_bar"
-    timeout: 60000
-
-# Brief wait after call bar appears to let the WebSocket session event arrive and
-# populate currentCall.sessions. Without this, mySession may be undefined when the
-# full call screen opens, causing it to render blank (null return at the guard check).
+# Brief wait after call starts to let the WebSocket session event arrive.
 - waitForAnimationToEnd:
     timeout: 3000
 
-# Tap the CurrentCallBar to navigate to the full call screen.
-- tapOn:
-    id: "calls.current_call_bar"
+# Full-screen call UI may appear directly; otherwise tap the minimized bar.
+- runFlow:
+    when:
+      visible:
+        id: "calls.current_call_bar"
+    commands:
+      - tapOn:
+          id: "calls.current_call_bar"
 
 # Verify call screen is visible — mute-unmute is the reliable call-screen anchor
 - extendedWaitUntil:

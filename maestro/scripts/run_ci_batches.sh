@@ -160,6 +160,16 @@ ensure_android_app_launchable() {
   sleep 1
 }
 
+grant_ios_calls_permissions() {
+  [[ "$PLATFORM" != "ios" ]] && return 0
+  local udid="${DEVICE_ARGS[1]:-}"
+  [[ -n "$udid" ]] || return 0
+
+  echo "==> Re-granting iOS microphone/camera for Calls ($MAESTRO_APP_ID)"
+  xcrun simctl privacy "$udid" grant microphone "$MAESTRO_APP_ID" 2>/dev/null || true
+  xcrun simctl privacy "$udid" grant camera "$MAESTRO_APP_ID" 2>/dev/null || true
+}
+
 reset_android_app_state() {
   [[ "$PLATFORM" != "android" ]] && return 0
   command -v adb >/dev/null 2>&1 || return 0
@@ -181,6 +191,70 @@ reset_ios_cross_app_state() {
   xcrun simctl terminate "$udid" com.apple.mobileslideshow 2>/dev/null || true
   xcrun simctl terminate "$udid" "$MAESTRO_APP_ID" 2>/dev/null || true
   sleep 2
+}
+
+# Android API 35 share sheets often expose icon-only targets Maestro cannot tap by
+# "Mattermost" text. Open ShareActivity directly after login (same UX under test).
+trigger_android_share_intent() {
+  local flow_basename=$1
+  local component="${MAESTRO_APP_ID}/com.mattermost.rnshare.ShareActivity"
+  local payload=""
+
+  case "$flow_basename" in
+    share_text_to_channel.yml)
+      payload="Example Domain — Maestro share text E2E"
+      ;;
+    share_link_to_channel.yml)
+      payload="https://example.com"
+      ;;
+    *)
+      echo "No Android share intent mapping for $flow_basename" >&2
+      return 1
+      ;;
+  esac
+
+  echo "==> Opening Android share extension via SEND intent ($flow_basename)"
+  adb shell am start -a android.intent.action.SEND -t text/plain \
+    --es android.intent.extra.TEXT "$payload" \
+    -n "$component" >/dev/null 2>&1 || {
+      echo "Failed to launch $component" >&2
+      return 1
+    }
+  sleep 3
+}
+
+is_android_share_flow_batch() {
+  [[ "$PLATFORM" == "android" ]] || return 1
+  [[ "$1" == *share_extension/share_* ]] || return 1
+  local base=${1##*/}
+  case "$base" in
+    share_text_to_channel.yml|share_link_to_channel.yml) return 0 ;;
+    *) return 1 ;;
+  esac
+}
+
+run_android_share_flow_batch() {
+  local batch_paths=$1
+  local batch_xml=$2
+  local flow_basename=${batch_paths##*/}
+  local login_xml="${batch_xml%.xml}-login.xml"
+
+  reset_android_app_state
+  ensure_android_app_launchable
+
+  set +e
+  run_maestro_batch "$login_xml" maestro/utils/android_share_login_warm.yml
+  local login_rc=$?
+  set -e
+  if [[ $login_rc -ne 0 ]]; then
+    echo "==> Android share login failed (exit $login_rc)" >&2
+    cp -f "$login_xml" "$batch_xml" 2>/dev/null || true
+    return "$login_rc"
+  fi
+
+  trigger_android_share_intent "$flow_basename" || return 1
+
+  run_maestro_batch "$batch_xml" maestro/utils/android_post_share_to_channel.yml
 }
 
 # macOS CI uses bash 3.2; with `set -u`, expanding an empty array via "${arr[@]}"
@@ -225,14 +299,24 @@ for batch_paths in "${BATCHES[@]}"; do
   echo "==> Maestro batch $batch_idx/${#BATCHES[@]}: ${path_arr[*]}"
   ensure_ios_simulator_healthy
   if [[ "$batch_paths" == *share_extension* ]]; then
-    [[ "$PLATFORM" == "android" ]] && reset_android_app_state
     [[ "$PLATFORM" == "ios" ]] && reset_ios_cross_app_state
+  fi
+  if [[ "$batch_paths" == *"/calls/"* ]]; then
+    grant_ios_calls_permissions
   fi
   ensure_android_app_launchable
 
   set +e
-  run_maestro_batch "$batch_xml" "${path_arr[@]}"
-  rc=$?
+  if is_android_share_flow_batch "$batch_paths"; then
+    run_android_share_flow_batch "$batch_paths" "$batch_xml"
+    rc=$?
+  else
+    if [[ "$batch_paths" == *share_extension* && "$PLATFORM" == "android" ]]; then
+      reset_android_app_state
+    fi
+    run_maestro_batch "$batch_xml" "${path_arr[@]}"
+    rc=$?
+  fi
   set -e
 
   if [[ $rc -ne 0 ]]; then

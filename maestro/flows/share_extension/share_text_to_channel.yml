@@ -41,7 +41,7 @@ appId: ${MAESTRO_APP_ID}
       - runFlow:
           file: ../../utils/share_safari_text_ios.yml
       - runFlow:
-          file: ../../utils/select_mattermost_ios_share_sheet.yml
+          file: ../../utils/select_mattermost_ios_from_safari.yml
 
 # --- Android: use Chrome ---
 - runFlow:
@@ -98,3 +98,4 @@ appId: ${MAESTRO_APP_ID}
     timeout: 15000
 - assertVisible:
     id: "channel.post_list.post"
+- takeScreenshot: share-text-post-verified

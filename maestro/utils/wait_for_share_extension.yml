@@ -1,0 +1,7 @@
+# Wait for Mattermost share extension UI after selecting the app in the system share sheet.
+appId: ${MAESTRO_APP_ID}
+---
+- extendedWaitUntil:
+    visible:
+      id: "share_extension.channel.option"
+    timeout: 40000

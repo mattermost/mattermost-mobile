@@ -215,7 +215,7 @@ curl -sS -X PUT \
 
 ### Cross-platform notes
 
-- **iOS share extension**: Maestro must be attached to the host app (Safari/Photos) before the share sheet opens; after tapping Mattermost the extension process becomes the visible UI.
+- **iOS share extension**: Maestro must be attached to the host app (Safari/Photos) before the share sheet opens; after tapping Mattermost the share extension UI owns `share_extension.*` testIDs. The share target label is **Mattermost** (`MattermostShare.appex` display name), not **Mattermost Beta** (main app display name). Use `select_mattermost_ios_from_safari.yml` or `select_mattermost_ios_from_photos.yml`.
 - **Android Chrome**: Fresh emulators show first-run / ads interstitials — use `utils/dismiss_chrome_interstitial.yml` or CI Chrome pre-warm (see `create_android_emulator.sh`).
 - **Android port forwarding**: `adb reverse tcp:8065 tcp:8065` when using localhost URLs.
 - **iOS timezone**: `xcrun simctl spawn $SIMULATOR_ID launchctl setenv TZ "America/New_York"` (Xcode 26 removed `simctl timezone`).

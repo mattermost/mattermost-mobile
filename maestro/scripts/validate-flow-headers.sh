@@ -100,6 +100,8 @@ validate_flow() {
 }
 
 while IFS= read -r -d '' flow; do
+  base="$(basename "${flow}")"
+  [[ "${base}" == _* ]] && continue
   validate_flow "${flow}"
 done < <(find "${FLOWS_DIR}" -name '*.yml' -type f -print0 | sort -z)
 

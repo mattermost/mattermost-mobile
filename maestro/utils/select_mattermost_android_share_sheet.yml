@@ -1,9 +1,12 @@
 # Select Mattermost in the Android system share sheet.
-# CI APK label is "Mattermost Beta" (see android/app/src/main/res/values/strings.xml).
-# Handles truncated lists on API 34/35: "See all", scroll, and both app labels.
+# Stay on com.android.chrome while the system share sheet is visible.
+# CI APK label is "Mattermost Beta" (android/app/src/main/res/values/strings.xml).
 # Usage: - runFlow: ../../utils/select_mattermost_android_share_sheet.yml
-appId: ${MAESTRO_APP_ID}
+appId: com.android.chrome
 ---
+- waitForAnimationToEnd:
+    timeout: 3000
+- takeScreenshot: android-share-sheet-open
 - tapOn:
     text: "See all"
     optional: true
@@ -16,7 +19,9 @@ appId: ${MAESTRO_APP_ID}
 - tapOn:
     text: "All apps"
     optional: true
-# Compact share sheets on API 35 may hide targets below the fold.
+- tapOn:
+    text: "Apps"
+    optional: true
 - swipe:
     start: "50%, 85%"
     end: "50%, 45%"
@@ -29,30 +34,7 @@ appId: ${MAESTRO_APP_ID}
     element:
       text: "Mattermost Beta"
     direction: DOWN
-    timeout: 20000
-    optional: true
-- scrollUntilVisible:
-    element:
-      text: "Mattermost"
-    direction: DOWN
-    timeout: 20000
-    optional: true
-# Prefer the CI APK label; fall back to production label for local release builds.
-- runFlow:
-    when:
-      visible:
-        text: "Mattermost Beta"
-    commands:
-      - tapOn:
-          text: "Mattermost Beta"
-- runFlow:
-    when:
-      notVisible:
-        text: "Mattermost Beta"
-    commands:
-      - extendedWaitUntil:
-          visible:
-            text: "Mattermost"
-          timeout: 15000
-      - tapOn:
-          text: "Mattermost"
+    timeout: 30000
+- tapOn:
+    text: "Mattermost Beta"
+- runFlow: wait_for_share_extension.yml

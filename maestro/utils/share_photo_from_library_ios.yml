@@ -41,7 +41,7 @@ appId: com.apple.mobileslideshow
                 point: "8%, 96%"
             - extendedWaitUntil:
                 visible:
-                  text: "Mattermost"
+                  text: "Share..."
                 timeout: 5000
 # Path B: tap a thumbnail → detail screen → share (iOS 26.2+ library layout).
 - runFlow:
@@ -63,16 +63,16 @@ appId: com.apple.mobileslideshow
                 point: "92%, 9%"
             - extendedWaitUntil:
                 visible:
-                  text: "Mattermost"
+                  text: "Share..."
                 timeout: 5000
             - runFlow:
                 when:
                   notVisible:
-                    text: "Mattermost"
+                    text: "Share..."
                 commands:
                   - tapOn:
                       point: "8%, 96%"
                   - extendedWaitUntil:
                       visible:
-                        text: "Mattermost"
+                        text: "Share..."
                       timeout: 5000
