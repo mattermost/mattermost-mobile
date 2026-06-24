@@ -5,10 +5,11 @@
 # and watches workflow_run "completed" events where workflow name is "E2E".
 #
 # Phase 1 — builds & setup (parallel):
-#   build-ios-simulator, build-android-apk, build-android-apk-maestro,
+#   build-ios-simulator, build-android-apk-maestro (when resolve-e2e-policy detox_enabled=false),
+#   build-android-apk (Detox debug APK, when detox_enabled=true),
 #   provision-servers, validate-maestro-flow-headers
 # Phase 2 — tests (parallel, after phase 1):
-#   run-detox-ios / run-detox-android → e2e-detox.yml (each starts when its build finishes)
+#   run-detox-ios / run-detox-android → e2e-detox.yml (when detox_enabled=true)
 #   run-maestro-ios / run-maestro-android → e2e-maestro-pr.yml (downloads phase-1 artifacts via artifact_run_id)
 name: E2E
 
@@ -75,6 +76,8 @@ jobs:
       issues: read
     outputs:
       e2e_override: ${{ steps.policy.outputs.e2e_override }}
+      # Set to 'true' to re-enable Detox builds/tests alongside Maestro.
+      detox_enabled: 'false'
     steps:
       - name: Check PR labels for E2E/Override
         id: policy
@@ -119,7 +122,8 @@ jobs:
   update-initial-status-ios:
     needs: resolve-e2e-policy
     if: >-
-      needs.resolve-e2e-policy.outputs.e2e_override != 'true'
+      needs.resolve-e2e-policy.outputs.detox_enabled == 'true'
+      && needs.resolve-e2e-policy.outputs.e2e_override != 'true'
       && (inputs.PLATFORM == 'ios' || inputs.PLATFORM == 'both')
     runs-on: ubuntu-22.04
     permissions:
@@ -142,7 +146,8 @@ jobs:
   update-initial-status-android:
     needs: resolve-e2e-policy
     if: >-
-      needs.resolve-e2e-policy.outputs.e2e_override != 'true'
+      needs.resolve-e2e-policy.outputs.detox_enabled == 'true'
+      && needs.resolve-e2e-policy.outputs.e2e_override != 'true'
       && (inputs.PLATFORM == 'android' || inputs.PLATFORM == 'both')
     runs-on: ubuntu-22.04
     permissions:
@@ -165,7 +170,8 @@ jobs:
   update-initial-status-ipad:
     needs: resolve-e2e-policy
     if: >-
-      needs.resolve-e2e-policy.outputs.e2e_override != 'true'
+      needs.resolve-e2e-policy.outputs.detox_enabled == 'true'
+      && needs.resolve-e2e-policy.outputs.e2e_override != 'true'
       && (inputs.PLATFORM == 'ios' || inputs.PLATFORM == 'both')
     runs-on: ubuntu-22.04
     permissions:
@@ -187,8 +193,10 @@ jobs:
 
   build-ios-simulator:
     if: >-
-      needs.resolve-e2e-policy.outputs.e2e_override != 'true'
+      always()
+      && needs.resolve-e2e-policy.outputs.e2e_override != 'true'
       && (inputs.PLATFORM == 'ios' || inputs.PLATFORM == 'both')
+      && (needs.update-initial-status-ios.result == 'success' || needs.update-initial-status-ios.result == 'skipped')
     runs-on: macos-26
     needs:
       - resolve-e2e-policy
@@ -226,7 +234,8 @@ jobs:
 
   build-android-apk:
     if: >-
-      needs.resolve-e2e-policy.outputs.e2e_override != 'true'
+      needs.resolve-e2e-policy.outputs.detox_enabled == 'true'
+      && needs.resolve-e2e-policy.outputs.e2e_override != 'true'
       && (inputs.PLATFORM == 'android' || inputs.PLATFORM == 'both')
     runs-on: ubuntu-latest-8-cores
     needs:
@@ -278,8 +287,10 @@ jobs:
 
   build-android-apk-maestro:
     if: >-
-      needs.resolve-e2e-policy.outputs.e2e_override != 'true'
+      always()
+      && needs.resolve-e2e-policy.outputs.e2e_override != 'true'
       && (inputs.PLATFORM == 'android' || inputs.PLATFORM == 'both')
+      && (needs.update-initial-status-android.result == 'success' || needs.update-initial-status-android.result == 'skipped')
     runs-on: ubuntu-latest-8-cores
     needs:
       - resolve-e2e-policy
@@ -440,6 +451,7 @@ jobs:
       actions: read
     if: |
       always() &&
+      needs.resolve-e2e-policy.outputs.detox_enabled == 'true' &&
       needs.resolve-e2e-policy.outputs.e2e_override != 'true' &&
       (inputs.PLATFORM == 'ios' || inputs.PLATFORM == 'both') &&
       needs.provision-servers.result == 'success' &&
@@ -467,6 +479,7 @@ jobs:
       actions: read
     if: |
       always() &&
+      needs.resolve-e2e-policy.outputs.detox_enabled == 'true' &&
       needs.resolve-e2e-policy.outputs.e2e_override != 'true' &&
       (inputs.PLATFORM == 'android' || inputs.PLATFORM == 'both') &&
       needs.provision-servers.result == 'success' &&
