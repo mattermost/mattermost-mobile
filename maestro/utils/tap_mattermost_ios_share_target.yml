@@ -24,8 +24,8 @@ appId: ${SHARE_HOST_APP_ID}
     timeout: 30000
     optional: true
 - swipe:
-    from: "88%, 82%"
-    to: "12%, 82%"
+    start: "88%, 82%"
+    end: "12%, 82%"
     optional: true
 # Photos layout: Reminders | Mattermost | Preview | More (CI artifact share-sheet-open.png)
 - runFlow:

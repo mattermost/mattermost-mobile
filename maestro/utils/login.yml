@@ -27,15 +27,18 @@ appId: ${MAESTRO_APP_ID}
       # After clearState, the JS bundle loads fresh + notification dialog
       # may appear. Wait longer for bundle + permission dialog.
       - waitForAnimationToEnd:
-          timeout: 90000
+          timeout: 45000
       # Notification permission dialog — dismiss if present.
       - tapOn:
           text: "Allow"
           optional: true
       # Fresh install shows the server form once the JS bundle loads (same as Android).
+      # iOS: FloatingTextInput testID (server_url.input) is NOT exposed to the
+      # native accessibility tree that Maestro queries — use display_help
+      # (a FormattedText) as the anchor instead. See connect_server.yml note.
       - extendedWaitUntil:
           visible:
-            id: "server_form.server_url.input"
+            id: "server_form.display_help"
           timeout: 180000
 - runFlow:
     when:
@@ -121,7 +124,7 @@ appId: ${MAESTRO_APP_ID}
       - runFlow:
           when:
             notVisible:
-              id: "server_form.server_url.input"
+              id: "server_form.display_help"
           commands:
             - runFlow:
                 when:
@@ -150,7 +153,7 @@ appId: ${MAESTRO_APP_ID}
 - runFlow:
     when:
       visible:
-        id: "server_form.server_url.input"
+        id: "server_form.display_help"
     file: connect_server.yml
 # If connect_server navigated to an already-logged-in home screen (server was
 # previously registered with an active session), logout to reach the login form.
@@ -171,7 +174,16 @@ appId: ${MAESTRO_APP_ID}
       - tapOn:
           text: "Email, Username or AD/LDAP Username"
       - inputText: ${TEST_USER_EMAIL}
-      - pressKey: Enter
+      # Tap the keyboard's "Next" key (returnKeyType=next) to advance focus to
+      # the password field. pressKey Enter does not reliably trigger iOS
+      # onSubmitEditing, so the password would land in the email field.
+      # The password field's own testID/label are not in the iOS accessibility
+      # tree (FloatingTextInput + secureTextEntry), so it cannot be tapped
+      # directly — focus advancement via the Next key is the reliable path.
+      # NB: do NOT insert a waitForAnimationToEnd here — it dismisses the
+      # keyboard so the Next key is no longer the matched target.
+      - tapOn:
+          text: "Next"
       - inputText: ${TEST_USER_PASSWORD}
 - runFlow:
     when:
@@ -187,15 +199,26 @@ appId: ${MAESTRO_APP_ID}
     visible:
       id: "login_form.signin.button"
     timeout: 10000
-- tapOn:
-    id: "login_form.signin.button"
-# iOS 26: dismiss "Save Password?" Keychain dialog before it blocks the home tab assertion.
-- tapOn:
-    text: "Not Now"
-    optional: true
-- tapOn:
-    text: "Save"
-    optional: true
-- runFlow:
-    file: wait_for_home_tab.yml
-    label: Wait for channel list home tab after login
+# iOS: URLSession can drop the first login POST right after server connect on cold sims.
+# Brief settle + one retry if home tab never appears (still on login form).
+- retry:
+    maxRetries: 1
+    commands:
+      - runFlow:
+          when:
+            platform: iOS
+          commands:
+            - waitForAnimationToEnd:
+                timeout: 5000
+      - tapOn:
+          id: "login_form.signin.button"
+      # iOS 26: dismiss "Save Password?" before it blocks the home tab assertion.
+      - tapOn:
+          text: "Not Now"
+          optional: true
+      - tapOn:
+          text: "Save"
+          optional: true
+      - runFlow:
+          file: wait_for_home_tab.yml
+          label: Wait for channel list home tab after login

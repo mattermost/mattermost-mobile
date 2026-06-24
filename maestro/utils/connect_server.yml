@@ -65,10 +65,11 @@ appId: ${MAESTRO_APP_ID}
 # Matterwick cloud connects can exceed 60s on a cold CI emulator.
 - runFlow: wait_for_server_connect_complete.yml
 # Retry Connect once when validation is slow or the first tap did not register.
+# (display_help — not server_url.input — is the iOS-accessible server-form anchor.)
 - runFlow:
     when:
       visible:
-        id: "server_form.server_url.input"
+        id: "server_form.display_help"
     commands:
       - hideKeyboard
       - scrollUntilVisible:
