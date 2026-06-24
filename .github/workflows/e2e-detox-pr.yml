@@ -76,7 +76,24 @@ jobs:
       e2e_override: ${{ steps.policy.outputs.e2e_override }}
       # Set to 'true' to re-enable Detox builds/tests alongside Maestro.
       detox_enabled: 'false'
+      # TEMP(revert before merge): prior E2E run with successful iOS/Android Maestro builds.
+      # Empty run_id skips reuse and restores normal build jobs.
+      maestro_reuse_build_run_id: ${{ steps.maestro_reuse_builds.outputs.run_id }}
+      maestro_artifact_run_id: ${{ steps.maestro_reuse_builds.outputs.artifact_run_id }}
     steps:
+      # TEMP: set run_id= to restore build-ios-simulator + build-android-apk-maestro.
+      - name: TEMP Maestro reuse build run id
+        id: maestro_reuse_builds
+        env:
+          REUSE_RUN_ID: "28107902444"
+        run: |
+          echo "run_id=${REUSE_RUN_ID}" >> "$GITHUB_OUTPUT"
+          if [ -n "${REUSE_RUN_ID}" ]; then
+            echo "artifact_run_id=${REUSE_RUN_ID}" >> "$GITHUB_OUTPUT"
+          else
+            echo "artifact_run_id=${GITHUB_RUN_ID}" >> "$GITHUB_OUTPUT"
+          fi
+
       - name: Cancel superseded E2E runs on this branch
         uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9.0.0
         with:
@@ -234,9 +251,46 @@ jobs:
           description: Detox iPad tests for mattermost mobile app have started ...
           status: pending
 
+  # TEMP: skipped while maestro_reuse_build_run_id is set (resolve-e2e-policy output).
+  maestro-verify-reused-build-artifacts:
+    name: Download reused Maestro build artifacts
+    if: >-
+      needs.resolve-e2e-policy.outputs.maestro_reuse_build_run_id != ''
+      && needs.resolve-e2e-policy.outputs.e2e_override != 'true'
+    needs:
+      - resolve-e2e-policy
+    runs-on: ubuntu-22.04
+    permissions:
+      actions: read
+    steps:
+      - name: Download reused iOS simulator build
+        if: inputs.PLATFORM == 'ios' || inputs.PLATFORM == 'both'
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+        with:
+          name: ios-build-simulator-${{ needs.resolve-e2e-policy.outputs.maestro_reuse_build_run_id }}
+          run-id: ${{ needs.resolve-e2e-policy.outputs.maestro_reuse_build_run_id }}
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          path: /tmp/maestro-reuse-ios
+
+      - name: Download reused Android Maestro APK
+        if: inputs.PLATFORM == 'android' || inputs.PLATFORM == 'both'
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+        with:
+          name: android-maestro-build-files-${{ needs.resolve-e2e-policy.outputs.maestro_reuse_build_run_id }}
+          run-id: ${{ needs.resolve-e2e-policy.outputs.maestro_reuse_build_run_id }}
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          path: /tmp/maestro-reuse-android
+
+      - name: Log reused artifact source run
+        run: |
+          echo "Reusing Maestro app builds from E2E run ${{ needs.resolve-e2e-policy.outputs.maestro_reuse_build_run_id }}"
+          echo "  ios-build-simulator-${{ needs.resolve-e2e-policy.outputs.maestro_reuse_build_run_id }}"
+          echo "  android-maestro-build-files-${{ needs.resolve-e2e-policy.outputs.maestro_reuse_build_run_id }}"
+
   build-ios-simulator:
     if: >-
       always()
+      && needs.resolve-e2e-policy.outputs.maestro_reuse_build_run_id == ''
       && needs.resolve-e2e-policy.outputs.e2e_override != 'true'
       && (inputs.PLATFORM == 'ios' || inputs.PLATFORM == 'both')
       && (needs.update-initial-status-ios.result == 'success' || needs.update-initial-status-ios.result == 'skipped')
@@ -331,6 +385,7 @@ jobs:
   build-android-apk-maestro:
     if: >-
       always()
+      && needs.resolve-e2e-policy.outputs.maestro_reuse_build_run_id == ''
       && needs.resolve-e2e-policy.outputs.e2e_override != 'true'
       && (inputs.PLATFORM == 'android' || inputs.PLATFORM == 'both')
       && (needs.update-initial-status-android.result == 'success' || needs.update-initial-status-android.result == 'skipped')
@@ -563,6 +618,7 @@ jobs:
     needs:
       - resolve-e2e-policy
       - build-ios-simulator
+      - maestro-verify-reused-build-artifacts
       - provision-servers
       - validate-maestro-flow-headers
     permissions:
@@ -575,8 +631,11 @@ jobs:
       (inputs.PLATFORM == 'ios' || inputs.PLATFORM == 'both') &&
       needs.provision-servers.result == 'success' &&
       needs.validate-maestro-flow-headers.result == 'success' &&
-      (needs.build-ios-simulator.result == 'success' || needs.build-ios-simulator.result == 'skipped')
-    uses: ./.github/workflows/e2e-maestro-pr.yml
+      (needs.build-ios-simulator.result == 'success' || needs.build-ios-simulator.result == 'skipped') &&
+      (needs.maestro-verify-reused-build-artifacts.result == 'success' || needs.maestro-verify-reused-build-artifacts.result == 'skipped')
+    # TEMP(revert to ./.github/workflows/e2e-maestro-pr.yml before merge): branch ref
+    # so IDE/linters resolve the reusable workflow before it lands on main.
+    uses: mattermost/mattermost-mobile/.github/workflows/e2e-maestro-pr.yml@rf-split/maestro
     with:
       MOBILE_VERSION: ${{ inputs.MOBILE_VERSION }}
       PLATFORM: ios
@@ -584,7 +643,7 @@ jobs:
       SITE_2_URL: ${{ inputs.SITE_2_URL }}
       SITE_3_URL: ${{ inputs.SITE_3_URL }}
       run_type: ${{ inputs.run_type || 'PR' }}
-      artifact_run_id: ${{ github.run_id }}
+      artifact_run_id: ${{ needs.resolve-e2e-policy.outputs.maestro_artifact_run_id }}
     secrets: inherit
 
   run-maestro-android:
@@ -592,6 +651,7 @@ jobs:
     needs:
       - resolve-e2e-policy
       - build-android-apk-maestro
+      - maestro-verify-reused-build-artifacts
       - provision-servers
       - validate-maestro-flow-headers
     permissions:
@@ -604,8 +664,9 @@ jobs:
       (inputs.PLATFORM == 'android' || inputs.PLATFORM == 'both') &&
       needs.provision-servers.result == 'success' &&
       needs.validate-maestro-flow-headers.result == 'success' &&
-      (needs.build-android-apk-maestro.result == 'success' || needs.build-android-apk-maestro.result == 'skipped')
-    uses: ./.github/workflows/e2e-maestro-pr.yml
+      (needs.build-android-apk-maestro.result == 'success' || needs.build-android-apk-maestro.result == 'skipped') &&
+      (needs.maestro-verify-reused-build-artifacts.result == 'success' || needs.maestro-verify-reused-build-artifacts.result == 'skipped')
+    uses: mattermost/mattermost-mobile/.github/workflows/e2e-maestro-pr.yml@rf-split/maestro
     with:
       MOBILE_VERSION: ${{ inputs.MOBILE_VERSION }}
       PLATFORM: android
@@ -613,7 +674,7 @@ jobs:
       SITE_2_URL: ${{ inputs.SITE_2_URL }}
       SITE_3_URL: ${{ inputs.SITE_3_URL }}
       run_type: ${{ inputs.run_type || 'PR' }}
-      artifact_run_id: ${{ github.run_id }}
+      artifact_run_id: ${{ needs.resolve-e2e-policy.outputs.maestro_artifact_run_id }}
     secrets: inherit
 
   e2e-remove-matterwick-label:
