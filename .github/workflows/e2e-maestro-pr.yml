@@ -32,8 +32,10 @@ on:
         required: true
         type: string
 
+# iOS and Android are invoked as separate workflow_call runs from e2e-detox-pr.yml;
+# include PLATFORM so parallel calls do not cancel each other (same github.run_id).
 concurrency:
-  group: "${{ github.workflow }}-${{ inputs.MOBILE_VERSION }}-${{ github.run_id }}"
+  group: "${{ github.workflow }}-${{ inputs.PLATFORM }}-${{ inputs.MOBILE_VERSION }}-${{ github.run_id }}"
   cancel-in-progress: true
 
 env:
