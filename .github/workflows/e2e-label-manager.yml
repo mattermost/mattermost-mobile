@@ -12,8 +12,8 @@
 #      Removes all E2E/Run* labels and cancels in-progress E2E workflow runs.
 #
 #   4. Cancel in-progress E2E runs (E2E/Run* unlabeled by a human):
-#      Skips when github-actions[bot] removed the label (refresh strip or post-run
-#      cleanup) so synchronize refresh does not race Matterwick dispatch.
+#      Skips when mattermost-build (the PAT user) removed the label (refresh strip
+#      or post-run cleanup) so synchronize refresh does not race Matterwick dispatch.
 #
 # Fork PR guard (github.event.pull_request.head.repo.full_name == github.repository)
 # is applied per-step. Fork PR contexts only get a read-only GITHUB_TOKEN, so
@@ -219,7 +219,7 @@ jobs:
               && (github.event.label.name == 'E2E/Run'
                   || github.event.label.name == 'E2E/Run-iOS'
                   || github.event.label.name == 'E2E/Run-Android')
-              && github.event.sender.login != 'github-actions[bot]'
+              && github.event.sender.login != 'mattermost-build'
             )
           )
         uses: ./.github/actions/cancel-e2e-runs

@@ -1,6 +1,6 @@
 # Cancel in-progress E2E workflow runs when the E2E/Run label is removed from a PR
-# by a human. Skips removals by github-actions[bot] (label refresh / post-run cleanup)
-# so synchronize refreshes do not race Matterwick dispatch.
+# by a human. Skips removals by mattermost-build (the PAT user used by the label
+# refresh job) so synchronize refreshes do not race Matterwick dispatch.
 name: Cancel E2E on label removal
 
 on:
@@ -14,7 +14,7 @@ jobs:
       (github.event.label.name == 'E2E/Run'
         || github.event.label.name == 'E2E/Run-iOS'
         || github.event.label.name == 'E2E/Run-Android')
-      && github.event.sender.login != 'github-actions[bot]'
+      && github.event.sender.login != 'mattermost-build'
     runs-on: ubuntu-22.04
     permissions:
       actions: write
