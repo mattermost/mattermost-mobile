@@ -1,7 +1,7 @@
 # MM-T4829: User can start a call from channel quick actions and see the call screen.
 #
 # PRE-CONDITIONS:
-#   - Calls plugin enabled on test channel (fixtures/calls_seed.ts)
+#   - Calls plugin enabled on test channel (seeded by the Calls provisioner)
 #   - Logged-in user in the test channel
 #
 # REQUIRED ENV VARS:
@@ -25,13 +25,6 @@ appId: ${MAESTRO_APP_ID}
 ---
 - runFlow: ../../subflows/auth/login.yml
 - runFlow: ../../subflows/navigation/navigate_to_channel.yml
-
-# Wait for the WS-driven Calls config to propagate before opening Channel Info.
-# On first login doReconnect() runs entry() (a full server sync) before calling
-# loadConfigAndCalls(), so pluginEnabled starts as false and takes 10-30s to
-# flip to true on a cloud server.
-- waitForAnimationToEnd:
-    timeout: 25000
 
 - runFlow: ../../subflows/calls/join_channel_call.yml
 - takeScreenshot: calls-start-channel-info-open

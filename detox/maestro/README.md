@@ -435,7 +435,7 @@ Detox uses `SITE_1_URL` (and additional sites per shard config).
 - Default flow dirs live in `detox/maestro/scripts/run_ci_batches.sh`; override with `FLOW_PATH` or workflow `flow-path` input.
 - One flow per `maestro test` batch on iOS and Android.
 - `start_call.yml` and `file_type_preview.yml` are **not** in the default PR run (need extra seed scripts).
-- `MM-T67856_4` runs in a dedicated CI step with `AllowDownloadLogs=false` patched on the server.
+- `MM-T67856_4` runs in a dedicated CI step with `AllowDownloadLogs=false` patched on the server. Tags excluded from the default batch are listed in `detox/maestro/config/exclude_tags.json` (`default` key) and consumed by `run_ci_batches.sh`. Add a new server-config variant by appending to that array — no script edit required.
 - Multi-device sync (`MM-T3055`/`MM-T3056`) requires two physical devices via `run_two_device.sh`.
 
 ### Reports

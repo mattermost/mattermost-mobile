@@ -59,6 +59,17 @@ source "$REPO_ROOT/detox/maestro/lib/timezone_region.sh"
 SIMULATOR_TIMEZONE="${SIMULATOR_TIMEZONE:-America/New_York}"
 EXPECTED_TIMEZONE_REGION="${EXPECTED_TIMEZONE_REGION:-$(timezone_region_from_iana "$SIMULATOR_TIMEZONE")}"
 
+EXCLUDE_TAGS_FILE="$REPO_ROOT/detox/maestro/config/exclude_tags.json"
+load_exclude_tags() {
+  # Reads detox/maestro/config/exclude_tags.json and emits a comma-joined list
+  # from the "default" key. Returns empty string if the file or key is missing.
+  [[ -f "$EXCLUDE_TAGS_FILE" ]] || { echo ""; return 0; }
+  node -e "
+const cfg = require('$EXCLUDE_TAGS_FILE');
+process.stdout.write((cfg.default || []).join(','));
+"
+}
+
 build_maestro_env_args() {
   maestro_env_args=(
     --env "SITE_1_URL=${SITE_1_URL:-}"
@@ -192,6 +203,22 @@ grant_android_calls_permissions() {
   adb shell pm grant "$MAESTRO_APP_ID" android.permission.CAMERA 2>/dev/null || true
 }
 
+ensure_calls_channel_enabled() {
+  [[ -n "${TEST_CHANNEL_ID:-}" && -n "${ADMIN_TOKEN:-}" && -n "${SITE_1_URL:-}" ]] || {
+    echo "Warning: missing TEST_CHANNEL_ID/ADMIN_TOKEN/SITE_1_URL; skipping calls channel enable" >&2
+    return 0
+  }
+
+  echo "==> Ensuring Calls enabled in channel ${TEST_CHANNEL_ID}"
+  if ! curl -fsS -X POST \
+    -H "Authorization: Bearer $ADMIN_TOKEN" \
+    -H "Content-Type: application/json" \
+    -d '{"enabled":true}' \
+    "${SITE_1_URL}/plugins/com.mattermost.calls/${TEST_CHANNEL_ID}" >/dev/null; then
+    echo "Warning: could not POST calls enable for channel ${TEST_CHANNEL_ID}" >&2
+  fi
+}
+
 reset_android_app_state() {
   [[ "$PLATFORM" != "android" ]] && return 0
   command -v adb >/dev/null 2>&1 || return 0
@@ -224,8 +251,12 @@ run_maestro_batch() {
     --output "$batch_xml"
     --test-output-dir "$ARTIFACTS_DIR"
     --flatten-debug-output
-    --exclude-tags=MM-T67856_4
   )
+  local exclude_tags
+  exclude_tags=$(load_exclude_tags)
+  if [[ -n "$exclude_tags" ]]; then
+    cmd+=("--exclude-tags=$exclude_tags")
+  fi
   cmd+=("${maestro_env_args[@]}")
   cmd+=("${flows[@]}")
 
@@ -278,6 +309,7 @@ for batch_paths in "${BATCHES[@]}"; do
   [[ "$batch_paths" == *"/timezone/"* ]] && ensure_android_timezone
   ensure_ios_simulator_healthy
   if [[ "$batch_paths" == *"/calls/"* ]]; then
+    ensure_calls_channel_enabled
     grant_ios_calls_permissions
     grant_android_calls_permissions
   fi

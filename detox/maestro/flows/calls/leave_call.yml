@@ -1,7 +1,7 @@
 # MM-T4833: User can leave a call from the call screen or the minimized call bar.
 #
 # PRE-CONDITIONS:
-#   - Calls plugin enabled on test channel (fixtures/calls_seed.ts)
+#   - Calls plugin enabled on test channel (seeded by the Calls provisioner)
 #   - Active call started during the flow
 #
 # REQUIRED ENV VARS:
@@ -26,10 +26,6 @@ appId: ${MAESTRO_APP_ID}
 - runFlow: ../../subflows/navigation/navigate_to_channel.yml
 
 # ── Path 1: Leave from the full call screen ──────────────────────────────────
-
-# Wait for the WS-driven Calls config to propagate before opening quick actions.
-- waitForAnimationToEnd:
-    timeout: 25000
 
 - runFlow: ../../subflows/calls/join_channel_call.yml
 
@@ -84,31 +80,12 @@ appId: ${MAESTRO_APP_ID}
     timeout: 30000
 
 # Minimize the full call screen back to CurrentCallBar.
-# Prefer testID collapse; CI APK may lack calls.collapse.button until rebuilt.
 # iOS 26+: Maestro `back` triggers leave-call confirmation — do not use it here.
 - tapOn:
     id: "calls.collapse.button"
-    optional: true
-- runFlow:
-    when:
-      visible:
-        id: "mute-unmute"
-    commands:
-      - runFlow:
-          when:
-            platform: iOS
-          commands:
-            # Collapse icon sits in the call-screen header (top-right); no testID on older builds.
-            - tapOn:
-                point: "92%, 9%"
-      - runFlow:
-          when:
-            platform: Android
-          commands:
-            - pressKey: Back
-      - waitForAnimationToEnd:
-          timeout: 3000
-# Last resort: relaunch keeps the session and usually lands on channel with call minimized.
+- waitForAnimationToEnd:
+    timeout: 3000
+# Safety net: relaunch keeps the session and usually lands on channel with call minimized.
 - runFlow:
     when:
       visible:
