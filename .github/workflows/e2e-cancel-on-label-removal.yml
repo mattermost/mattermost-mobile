@@ -1,6 +1,6 @@
-# Cancel in-progress E2E workflow runs when the E2E/Run label is removed from a PR.
-# When the label is removed, Matterwick tears down the provisioned test servers,
-# so there is no point in letting the E2E jobs continue — they will fail mid-way.
+# Cancel in-progress E2E workflow runs when the E2E/Run label is removed from a PR
+# by a human. Skips removals by github-actions[bot] (label refresh / post-run cleanup)
+# so synchronize refreshes do not race Matterwick dispatch.
 name: Cancel E2E on label removal
 
 on:
@@ -11,15 +11,16 @@ on:
 jobs:
   cancel-e2e-runs:
     if: >-
-      github.event.label.name == 'E2E/Run'
-      || github.event.label.name == 'E2E/Run-iOS'
-      || github.event.label.name == 'E2E/Run-Android'
+      (github.event.label.name == 'E2E/Run'
+        || github.event.label.name == 'E2E/Run-iOS'
+        || github.event.label.name == 'E2E/Run-Android')
+      && github.event.sender.login != 'github-actions[bot]'
     runs-on: ubuntu-22.04
     permissions:
       actions: write
     steps:
       - name: Cancel in-progress E2E workflow runs
-        uses: actions/github-script@e7aeb8c663f696059ebb5f9ab1425ed2ef511bdb # v7.0.1
+        uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9.0.0
         with:
           script: |
             const prNumber = context.payload.pull_request.number;
@@ -31,7 +32,7 @@ jobs:
 
             core.info(`Label "${removedLabel}" removed from PR #${prNumber} (branch: ${headBranch}, sha: ${headSha})`);
 
-            // Find the E2E workflow by name
+            // Find the E2E workflow by name (e2e-detox-pr.yml)
             const workflows = await github.rest.actions.listRepoWorkflows({ owner, repo });
             const e2eWorkflow = workflows.data.workflows.find(w => w.name === 'E2E');
             if (!e2eWorkflow) {
@@ -41,7 +42,6 @@ jobs:
 
             core.info(`Found E2E workflow (id: ${e2eWorkflow.id})`);
 
-            // Find in-progress or queued runs on the same branch
             const statuses = ['in_progress', 'queued', 'waiting'];
             let cancelled = 0;
 
@@ -55,14 +55,11 @@ jobs:
               });
 
               for (const run of runs.data.workflow_runs) {
-                // Verify run belongs to same PR and commit before cancelling
-                // This prevents cancelling unrelated runs with matching branch names
                 if (run.head_sha !== headSha) {
                   core.info(`Skipping run ${run.id}: different commit (${run.head_sha} vs ${headSha})`);
                   continue;
                 }
 
-                // Additional check: verify pull_request reference if available
                 if (run.pull_requests && run.pull_requests.length > 0) {
                   const isCurrentPr = run.pull_requests.some(pr => pr.number === prNumber);
                   if (!isCurrentPr) {
