@@ -1,0 +1,55 @@
+# Sub-flow: Start/join a call from the channel quick-actions sheet.
+# Usage: - runFlow: ../../subflows/calls/join_channel_call.yml
+# Requires: user is already on the test channel screen.
+#
+# Android emulators can fail WebRTC with "timed out waiting for peer connection";
+# this flow retries up to 3 times after dismissing the error alert.
+appId: ${MAESTRO_APP_ID}
+---
+- tapOn:
+    text: "OK"
+    optional: true
+- tapOn:
+    text: "Okay"
+    optional: true
+- tapOn:
+    text: "Dismiss"
+    optional: true
+
+- extendedWaitUntil:
+    visible:
+      id: "channel.post_draft.post.input"
+    timeout: 30000
+
+- extendedWaitUntil:
+    visible:
+      id: "channel_header.channel_quick_actions.button"
+    timeout: 30000
+
+- retry:
+    maxRetries: 3
+    commands:
+      - tapOn:
+          text: "OK"
+          optional: true
+      - tapOn:
+          text: "Okay"
+          optional: true
+      - tapOn:
+          text: "Dismiss"
+          optional: true
+      - tapOn:
+          id: "channel_header.channel_quick_actions.button"
+      - extendedWaitUntil:
+          visible:
+            id: "channel_info.channel_actions.join_start_call.action"
+          timeout: 60000
+      - tapOn:
+          id: "channel_info.channel_actions.join_start_call.action"
+      - tapOn:
+          text: "Allow"
+          optional: true
+      - tapOn:
+          text: "Allow"
+          optional: true
+      - runFlow: wait_for_active_call.yml

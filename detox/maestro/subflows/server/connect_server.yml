@@ -1,0 +1,98 @@
+# Sub-flow: Connect to Mattermost server (server form step only).
+# Called by login.yml when the server form is visible (no server registered yet).
+# Usage: - runFlow: ../../subflows/server/connect_server.yml
+# Requires: SITE_1_URL env var
+appId: ${MAESTRO_APP_ID}
+---
+# iOS FloatingTextInput exposes label text to accessibility, not testID.
+- runFlow:
+    when:
+      platform: iOS
+    commands:
+      - tapOn:
+          text: "Enter Server URL"
+      - eraseText: 50
+      - inputText: ${SITE_1_URL}
+      - tapOn:
+          text: "Display Name"
+      - eraseText: 50
+      - inputText: "Server 1"
+
+- runFlow:
+    when:
+      platform: Android
+    commands:
+      - tapOn:
+          id: "server_form.server_url.input"
+      - eraseText: 50
+      - inputText: ${SITE_1_URL}
+      - hideKeyboard
+      - tapOn:
+          id: "server_form.server_display_name.input"
+      - eraseText: 50
+      - inputText: "Server 1"
+      - hideKeyboard
+- scrollUntilVisible:
+    element:
+      id: "server_form.connect.button"
+    direction: DOWN
+    timeout: 10000
+    optional: true
+- extendedWaitUntil:
+    visible:
+      id: "server_form.connect.button"
+    timeout: 5000
+- tapOn:
+    id: "server_form.connect.button"
+# Wait for the connection to complete before dismissing any optional dialogs.
+# Without this, optional taps fire immediately and may land on stale UI elements
+# before the server-validation dialog has appeared.
+- waitForAnimationToEnd:
+    timeout: 5000
+# iOS: dismiss system-level "Allow notifications?" or network-access permission
+# dialogs that may block navigation after tapping Connect.
+- tapOn:
+    text: "Allow"
+    optional: true
+# App-level "Notifications cannot be received" alert (non-blocking info).
+# Dismiss if present; safe to skip if absent.
+- tapOn:
+    text: "Okay"
+    optional: true
+- tapOn:
+    text: "OKAY"
+    optional: true
+# Matterwick cloud connects can exceed 60s on a cold CI emulator.
+- runFlow: ../waits/wait_for_server_connect_complete.yml
+# Retry Connect once when validation is slow or the first tap did not register.
+# (display_help — not server_url.input — is the iOS-accessible server-form anchor.)
+- runFlow:
+    when:
+      visible:
+        id: "server_form.display_help"
+    commands:
+      - runFlow:
+          when:
+            platform: Android
+          commands:
+            - hideKeyboard
+      - scrollUntilVisible:
+          element:
+            id: "server_form.connect.button"
+          direction: DOWN
+          timeout: 10000
+          optional: true
+      - tapOn:
+          id: "server_form.connect.button"
+      - waitForAnimationToEnd:
+          timeout: 5000
+      - tapOn:
+          text: "Allow"
+          optional: true
+      - tapOn:
+          text: "Okay"
+          optional: true
+      - tapOn:
+          text: "OKAY"
+          optional: true
+      - runFlow: ../waits/wait_for_server_connect_complete.yml

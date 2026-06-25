@@ -1,0 +1,20 @@
+# Wait until a channel call is active — minimized bar or full call screen.
+# CI simulators may connect WebRTC slowly; accept either UI state (GUIDELINES §3 waits).
+appId: ${MAESTRO_APP_ID}
+---
+- extendedWaitUntil:
+    visible:
+      id: "calls.current_call_bar"
+    timeout: 90000
+    optional: true
+- runFlow:
+    when:
+      notVisible:
+        id: "calls.current_call_bar"
+    commands:
+      - extendedWaitUntil:
+          visible:
+            id: "mute-unmute"
+          timeout: 15000
+      - assertVisible:
+          id: "mute-unmute"
