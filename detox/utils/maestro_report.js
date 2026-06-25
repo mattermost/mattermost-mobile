@@ -59,7 +59,7 @@ function parseMaestroReport(xmlPath) {
             const classname = tc.classname?.[0] || suite.name?.[0] || '';
 
             // The XML's `file` attribute is the flow's full path
-            // (e.g. "maestro/flows/calls/start_call.yml"). We extract the
+            // (e.g. "detox/maestro/flows/calls/start_call.yml"). We extract the
             // category (parent directory under flows/) so screenshots whose
             // filename starts with the category prefix can be matched even
             // when the flow filename token isn't a substring of the screenshot
@@ -177,7 +177,7 @@ function normalizeFlowToken(name) {
  *   + 10 per shared word (>= 2 chars) between the flow's name tokens and
  *        the file's name tokens — picks up `mute` in `calls-mute-initial-state`.
  *   +  1 if the screenshot's leading prefix equals the flow's category
- *        (e.g. `calls-...` for a flow under `maestro/flows/calls/`) — a weak
+ *        (e.g. `calls-...` for a flow under `detox/maestro/flows/calls/`) — a weak
  *        tie-breaker so screenshots stay within their suite.
  *
  * Returns 0 when there's no plausible link; bucketing falls back to
@@ -206,11 +206,110 @@ function scoreFlowMatch(flow, fileToken, fileWords, filePrefix) {
 }
 
 /**
+ * Build authoritative screenshot → flow mapping from Maestro command logs.
+ * Maestro writes commands-(<flow>).json under the test-output dir.
+ */
+function buildScreenshotMapFromCommandLogs(artifactsDir) {
+    const map = new Map();
+    if (!fse.existsSync(artifactsDir)) {
+        return map;
+    }
+
+    const files = walkFiles(artifactsDir).filter((p) => /commands-\(.+\)\.json$/i.test(path.basename(p)));
+    for (const relPath of files) {
+        const absPath = path.join(artifactsDir, relPath);
+        const base = path.basename(relPath);
+        const flowMatch = base.match(/^commands-\((.+)\)\.json$/i);
+        const flowName = flowMatch ? flowMatch[1] : null;
+        if (!flowName) {
+            continue;
+        }
+
+        let commands;
+        try {
+            commands = fse.readJsonSync(absPath);
+        } catch {
+            continue;
+        }
+
+        const list = Array.isArray(commands) ? commands : (commands.commands || []);
+        for (const cmd of list) {
+            const shot = cmd.takeScreenshotCommand || cmd.takeScreenshot;
+            const shotPath = shot?.path || shot?.screenshot;
+            if (!shotPath) {
+                continue;
+            }
+            const png = shotPath.endsWith('.png') ? shotPath : `${shotPath}.png`;
+            const rel = png.includes('/') ? png : path.join('screenshots', png);
+            map.set(rel.replace(/\\/g, '/'), flowName);
+        }
+    }
+    return map;
+}
+
+/**
+ * Merge multiple Maestro JUnit XML files into one report (CI batch runner).
+ */
+function mergeMaestroJunitReports(xmlPaths, outputPath) {
+    const existing = xmlPaths.filter((p) => fse.existsSync(p));
+    if (!existing.length) {
+        console.log('No Maestro JUnit files to merge');
+        return false;
+    }
+
+    const mergedFlows = [];
+    let device = '';
+    let totalTime = 0;
+
+    for (const xmlPath of existing) {
+        const summary = parseMaestroReport(xmlPath);
+        if (!summary) {
+            continue;
+        }
+        totalTime += summary.stats.duration || 0;
+        mergedFlows.push(...summary.flows);
+        if (!device && summary.stats.device) {
+            device = summary.stats.device;
+        }
+    }
+
+    const tests = mergedFlows.length;
+    const failures = mergedFlows.filter((f) => f.status === 'failed').length;
+    const errors = mergedFlows.filter((f) => f.status === 'error').length;
+    const timeSec = (totalTime / 1000).toFixed(1);
+
+    const testcaseXml = mergedFlows.map((f) => {
+        const statusAttr = f.status === 'passed' ? 'SUCCESS' : f.status.toUpperCase();
+        const fileAttr = f.file ? ` file="${escapeXmlAttr(f.file)}"` : '';
+        const failureBlock = f.failureMessage ?
+            `\n      <failure>${escapeXmlText(f.failureMessage)}</failure>` : '';
+        return `    <testcase id="${escapeXmlAttr(f.name)}" name="${escapeXmlAttr(f.name)}" classname="${escapeXmlAttr(f.classname || f.name)}"${fileAttr} time="${f.time.toFixed(1)}" status="${statusAttr}">${failureBlock}\n    </testcase>`;
+    }).join('\n');
+
+    const xml = `<?xml version='1.0' encoding='UTF-8'?>\n<testsuites>\n  <testsuite name="Test Suite" device="${escapeXmlAttr(device)}" tests="${tests}" failures="${failures + errors}" time="${timeSec}">\n${testcaseXml}\n  </testsuite>\n</testsuites>\n`;
+    fse.outputFileSync(outputPath, xml, 'utf-8');
+    console.log(`Merged ${existing.length} Maestro JUnit files -> ${outputPath} (${tests} tests, ${failures + errors} failures)`);
+    return true;
+}
+
+function escapeXmlAttr(s) {
+    return String(s ?? '').replace(/[&"<>]/g, (c) => ({
+        '&': '&amp;', '"': '&quot;', '<': '&lt;', '>': '&gt;',
+    }[c]));
+}
+
+function escapeXmlText(s) {
+    return String(s ?? '').replace(/[<>&]/g, (c) => ({
+        '&': '&amp;', '<': '&lt;', '>': '&gt;',
+    }[c]));
+}
+
+/**
  * Group artifact files by which flow they belong to. Each file is scored
  * against every flow (see scoreFlowMatch); the highest-scoring flow wins.
  * Files with no plausible link land in `__unattributed`.
  */
-function bucketArtifactsByFlow(flows, artifactPaths) {
+function bucketArtifactsByFlow(flows, artifactPaths, commandLogMap = new Map()) {
     const buckets = {__unattributed: []};
     for (const flow of flows) {
         buckets[flow.name] = [];
@@ -227,6 +326,13 @@ function bucketArtifactsByFlow(flows, artifactPaths) {
     });
 
     for (const relPath of artifactPaths) {
+        const normalized = relPath.replace(/\\/g, '/');
+        const fromCommandLog = commandLogMap.get(normalized);
+        if (fromCommandLog && buckets[fromCommandLog]) {
+            buckets[fromCommandLog].push(relPath);
+            continue;
+        }
+
         const lower = relPath.toLowerCase();
         const fileToken = lower.replace(/[^a-z0-9/]+/g, '_');
         const fileWords = path.basename(lower).
@@ -359,7 +465,8 @@ function generateMaestroHtmlReport({xmlPath, artifactsDir, outputPath, platform,
     }
     const {stats, flows} = summary;
     const allFiles = walkFiles(artifactsDir);
-    const buckets = bucketArtifactsByFlow(flows, allFiles);
+    const commandLogMap = buildScreenshotMapFromCommandLogs(artifactsDir);
+    const buckets = bucketArtifactsByFlow(flows, allFiles, commandLogMap);
 
     // Artifact links from the HTML are relative to the report file's location.
     // We place the HTML at the same level as the artifacts dir so the relative
@@ -463,4 +570,40 @@ h2 { font-size:16px; font-weight:600; margin:24px 0 12px; color:var(--muted); te
     return true;
 }
 
-module.exports = {parseMaestroReport, generateMaestroHtmlReport};
+/**
+ * When the batch runner exits before merging (e.g. set -e abort), reconstruct
+ * maestro-report.xml from maestro-batch-*.xml so PR status reflects real counts.
+ */
+function mergeMaestroBatchReportsFromDir(buildDir, outputPath) {
+    if (fse.existsSync(outputPath)) {
+        return outputPath;
+    }
+
+    if (!fse.existsSync(buildDir)) {
+        return null;
+    }
+
+    const batchFiles = fse.readdirSync(buildDir).
+        filter((name) => /^maestro-batch-\d+\.xml$/.test(name)).
+        sort((a, b) => {
+            const num = (file) => parseInt(file.match(/maestro-batch-(\d+)\.xml/)[1], 10);
+            return num(a) - num(b);
+        }).
+        map((name) => path.join(buildDir, name));
+
+    if (!batchFiles.length) {
+        return null;
+    }
+
+    console.log(`Merging ${batchFiles.length} batch JUnit files from ${buildDir}`);
+    mergeMaestroJunitReports(batchFiles, outputPath);
+    return fse.existsSync(outputPath) ? outputPath : null;
+}
+
+module.exports = {
+    parseMaestroReport,
+    generateMaestroHtmlReport,
+    mergeMaestroJunitReports,
+    mergeMaestroBatchReportsFromDir,
+    buildScreenshotMapFromCommandLogs,
+};
