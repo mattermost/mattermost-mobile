@@ -42,6 +42,8 @@ class EphemeralStoreSingleton {
     private acknowledgingPost = new Set<string>();
     private unacknowledgingPost = new Set<string>();
     private currentThreadId = '';
+    private currentChannelOldestVisibleCreateAt: number | undefined = undefined;
+    private currentFileViewerPostId = '';
     private notificationTapped = false;
     private enablingCRT = false;
 
@@ -336,6 +338,20 @@ class EphemeralStoreSingleton {
 
     setCurrentThreadId = (id: string) => {
         this.currentThreadId = id;
+    };
+
+    getCurrentChannelOldestVisibleCreateAt = () => this.currentChannelOldestVisibleCreateAt;
+    setCurrentChannelOldestVisibleCreateAt = (value: number | undefined) => {
+        this.currentChannelOldestVisibleCreateAt = value;
+    };
+
+    // Protects the backing post from eviction while a file viewer is open.
+    getCurrentFileViewerPostId = () => this.currentFileViewerPostId;
+    setCurrentFileViewerPostId = (id: string) => {
+        this.currentFileViewerPostId = id;
+    };
+    clearCurrentFileViewerPostId = () => {
+        this.currentFileViewerPostId = '';
     };
 
     // Ephemeral control when (un)archiving a channel locally

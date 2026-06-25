@@ -414,6 +414,43 @@ export async function deletePosts(serverUrl: string, postIds: string[]) {
     }
 }
 
+export async function deletePostsInChannelsByCutoff(
+    serverUrl: string,
+    channelIds: string[],
+    cutoff: number,
+    excludedPostIds: Set<string> = new Set(),
+): Promise<{error: unknown}> {
+    try {
+        const {database} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
+
+        const channels = `'${channelIds.join("','")}'`;
+        const exclusionClause = excludedPostIds.size > 0
+            ? ` AND id NOT IN ('${[...excludedPostIds].join("','")}')`
+            : '';
+
+        const postCondition = `channel_id IN (${channels}) AND create_at < ${cutoff}${exclusionClause}`;
+        const postSubquery = `SELECT id FROM ${POST} WHERE ${postCondition}`;
+
+        await database.write(() => {
+            return database.adapter.unsafeExecute({
+                sqls: [
+                    [`DELETE FROM ${REACTION} WHERE post_id IN (${postSubquery})`, []],
+                    [`DELETE FROM ${FILE} WHERE post_id IN (${postSubquery})`, []],
+                    [`DELETE FROM ${DRAFT} WHERE root_id IN (${postSubquery})`, []],
+                    [`DELETE FROM ${POSTS_IN_THREAD} WHERE root_id IN (${postSubquery})`, []],
+                    [`DELETE FROM ${THREAD} WHERE id IN (${postSubquery})`, []],
+                    [`DELETE FROM ${THREAD_PARTICIPANT} WHERE thread_id IN (${postSubquery})`, []],
+                    [`DELETE FROM ${THREADS_IN_TEAM} WHERE thread_id IN (${postSubquery})`, []],
+                    [`DELETE FROM ${POST} WHERE ${postCondition}`, []],
+                ],
+            });
+        });
+        return {error: undefined};
+    } catch (error) {
+        return {error};
+    }
+}
+
 export function getUsersCountFromMentions(serverUrl: string, mentions: string[]): Promise<number> {
     try {
         const {database} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);

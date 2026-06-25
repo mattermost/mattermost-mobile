@@ -2,7 +2,7 @@
 // See LICENSE.txt for license information.
 
 import React, {useCallback, useEffect, useMemo, useRef, useState} from 'react';
-import {type StyleProp, StyleSheet, type ViewStyle, DeviceEventEmitter} from 'react-native';
+import {type StyleProp, StyleSheet, type ViewStyle, type ViewToken, DeviceEventEmitter} from 'react-native';
 import {type Edge, SafeAreaView} from 'react-native-safe-area-context';
 
 import {markChannelAsRead, unsetActiveChannelOnServer} from '@actions/remote/channel';
@@ -90,10 +90,13 @@ const ChannelPostList = ({
     }, [fetchingPosts, posts]);
 
     useDidUpdate(() => {
-        if (oldPostsCount.current < posts.length && appState === 'active') {
-            oldPostsCount.current = posts.length;
+        if (posts.length < oldPostsCount.current) {
+            // Cache cleanup evicted posts — allow paginating older posts again.
+            canLoadPostsBefore.current = true;
+        } else if (posts.length > oldPostsCount.current && appState === 'active') {
             markChannelAsRead(serverUrl, channelId, true);
         }
+        oldPostsCount.current = posts.length;
     }, [posts.length]);
 
     useDidUpdate(() => {
@@ -107,9 +110,27 @@ const ChannelPostList = ({
 
     useDidMount(() => {
         return () => {
+            // Clear the viewport anchor when leaving the channel so a stale value
+            // cannot influence a cleanup run that fires before the next channel is opened.
+            EphemeralStore.setCurrentChannelOldestVisibleCreateAt(undefined);
             unsetActiveChannelOnServer(serverUrl);
         };
     });
+
+    const onViewablePostsChanged = useCallback((viewableItems: ViewToken[]) => {
+        let oldest = Infinity;
+        for (const {item, isViewable} of viewableItems) {
+            if (isViewable && item.type === 'post') {
+                const createAt = item.value.currentPost.createAt;
+                if (createAt < oldest) {
+                    oldest = createAt;
+                }
+            }
+        }
+        if (oldest < Infinity) {
+            EphemeralStore.setCurrentChannelOldestVisibleCreateAt(oldest);
+        }
+    }, []);
 
     const intro = useMemo(() => (<Intro channelId={channelId}/>), [channelId]);
 
@@ -122,6 +143,7 @@ const ChannelPostList = ({
             lastViewedAt={lastViewedAt}
             location={Screens.CHANNEL}
             onEndReached={onEndReached}
+            onViewableItemsChanged={onViewablePostsChanged}
             posts={posts}
             shouldShowJoinLeaveMessages={shouldShowJoinLeaveMessages}
             showMoreMessages={true}

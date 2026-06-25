@@ -427,3 +427,52 @@ export const syncPermalinkPreviewsForEditedPost = async (
         return [];
     }
 };
+
+export const fetchPostIdsByBucket = async (
+    database: Database,
+    channelIds: string[],
+    cutoff: number,
+    exclusions: Set<string>,
+): Promise<string[]> => {
+    const ids = await database.get<PostModel>(POST).query(
+        Q.where('channel_id', Q.oneOf(channelIds)),
+        Q.where('create_at', Q.lt(cutoff)),
+        Q.where('delete_at', Q.eq(0)),
+    ).fetchIds();
+    return ids.filter((id) => !exclusions.has(id));
+};
+
+// Returns the create_at of the nth post in channelId that is strictly older
+// than anchor (sorted descending). Returns undefined when fewer than n such
+// posts exist
+export const createAtOfNthPostOlderThan = async (
+    database: Database,
+    channelId: string,
+    anchor: number,
+    n: number,
+): Promise<number | undefined> => {
+    const posts = await database.get<PostModel>(POST).query(
+        Q.where('channel_id', Q.eq(channelId)),
+        Q.where('create_at', Q.lt(anchor)),
+        Q.where('delete_at', Q.eq(0)),
+        Q.sortBy('create_at', Q.desc),
+        Q.take(n),
+    ).fetch();
+    if (posts.length < n) {
+        return undefined;
+    }
+    return posts[posts.length - 1].createAt;
+};
+
+// Returns the root IDs of all PostsInThread rows whose latest >= cutoff.
+// These are live threads — their root post must not be evicted even if its
+// create_at is below the cutoff.
+export const queryActiveThreadRootIds = async (
+    database: Database,
+    cutoff: number,
+): Promise<Set<string>> => {
+    const rows = await database.get<PostsInThreadModel>(POSTS_IN_THREAD).query(
+        Q.where('latest', Q.gte(cutoff)),
+    ).fetch();
+    return new Set(rows.map((r) => r.rootId));
+};
