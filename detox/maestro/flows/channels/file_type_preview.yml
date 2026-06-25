@@ -1,7 +1,7 @@
 # MM-T3244: Channel posts preview image, video, audio, PDF, and zip attachments correctly.
 #
 # PRE-CONDITIONS:
-#   - seed_file_preview.js run to post file attachments and set file-id env vars
+#   - seed_file_preview.ts run to post file attachments and set file-id env vars
 #   - Logged-in user in the seeded test channel
 #
 # REQUIRED ENV VARS:

@@ -23,7 +23,7 @@ FORBIDDEN_RE=(
   'app/components'
   'app/routes'
   '\.tsx'
-  '\.ts:'
+  '\.ts[):]?'
   'describe\.skip'
   'WatermelonDB'
   'SFSafariViewController'

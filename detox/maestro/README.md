@@ -19,7 +19,7 @@ Maestro is a secondary E2E testing layer covering system-level scenarios that De
 
 ### Decision Flowchart
 
-```
+```text
 Does the test cross app boundaries (share sheet, deep link from another app)?
   YES → Maestro
   NO  →
@@ -107,7 +107,7 @@ JS bundle at build time. See [Building the app for Maestro](#building-the-app-fo
 ### 5. Configure the simulator for stable test runs (iOS)
 
 These settings mirror what CI applies automatically. For CI-parity boot, install, and
-pre-warm, use [`detox/scripts/preboot_ios_simulator.sh`](../detox/scripts/preboot_ios_simulator.sh)
+pre-warm, use [`detox/scripts/preboot_ios_simulator.sh`](../scripts/preboot_ios_simulator.sh)
 after placing the `.app` under `mobile-artifacts/`:
 
 ```bash
@@ -448,7 +448,7 @@ Detox uses `SITE_1_URL` (and additional sites per shard config).
 
 ## File Structure
 
-```
+```text
 detox/maestro/
   package.json                         # Maestro CLI version pin + npm scripts
   README.md                            # This file

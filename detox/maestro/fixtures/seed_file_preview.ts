@@ -16,7 +16,7 @@ const SITE_1_URL = required('SITE_1_URL');
 const ADMIN_USERNAME = required('ADMIN_USERNAME');
 const ADMIN_PASSWORD = required('ADMIN_PASSWORD');
 
-const DETOX_FIXTURES = path.join(__dirname, '../../detox/e2e/support/fixtures');
+const DETOX_FIXTURES = path.join(__dirname, '../../e2e/support/fixtures');
 
 // Minimal valid MP4: ftyp box (24 bytes) + free box (8 bytes).
 // The 'ftyp isom' magic causes Mattermost server to return video/mp4 MIME type.

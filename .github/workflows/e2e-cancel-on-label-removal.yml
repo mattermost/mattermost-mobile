@@ -55,11 +55,6 @@ jobs:
               });
 
               for (const run of runs.data.workflow_runs) {
-                if (run.head_sha !== headSha) {
-                  core.info(`Skipping run ${run.id}: different commit (${run.head_sha} vs ${headSha})`);
-                  continue;
-                }
-
                 if (run.pull_requests && run.pull_requests.length > 0) {
                   const isCurrentPr = run.pull_requests.some(pr => pr.number === prNumber);
                   if (!isCurrentPr) {

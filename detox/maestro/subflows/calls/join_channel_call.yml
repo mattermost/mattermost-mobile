@@ -52,4 +52,4 @@ appId: ${MAESTRO_APP_ID}
       - tapOn:
           text: "Allow"
           optional: true
-      - runFlow: wait_for_active_call.yml
+      - runFlow: ../waits/wait_for_active_call.yml

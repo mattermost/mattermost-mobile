@@ -190,6 +190,7 @@ jobs:
       platform: ios
       run-type: "RELEASE"
       MOBILE_VERSION: ${{ github.ref }}
+      MM_TEST_SERVER_URL: ${{ vars.MM_TEST_SERVER_URL }}
     secrets: inherit
 
   run-maestro-android-on-release:
@@ -201,6 +202,7 @@ jobs:
       platform: android
       run-type: "RELEASE"
       MOBILE_VERSION: ${{ github.ref }}
+      MM_TEST_SERVER_URL: ${{ vars.MM_TEST_SERVER_URL }}
       artifact_run_id: ${{ github.run_id }}
     secrets: inherit
 

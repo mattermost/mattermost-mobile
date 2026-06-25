@@ -24,7 +24,6 @@
 # Related flows (in-app report screen path):
 #   - MM-T67856_1 attach_logs_toggle_visible.yml
 #   - MM-T67856_2 attach_logs_toggle_on_surfaces_option.yml
-#   - MM-T67856_3 attach_logs_toggle_off_hides_option.yml
 #   - MM-T67856_4 attach_logs_disabled_when_download_logs_off.yml
 tags:
   - MM-T67856

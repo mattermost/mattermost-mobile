@@ -243,6 +243,7 @@ jobs:
       run-type: "MAIN"
       MOBILE_VERSION: ${{ inputs.MOBILE_VERSION || github.ref }}
       MM_TEST_SERVER_URL: ${{ inputs.MM_TEST_SERVER_URL_3 }}
+      testcase_failure_fatal: true
     secrets: inherit
 
   run-maestro-android:
@@ -256,4 +257,5 @@ jobs:
       MOBILE_VERSION: ${{ inputs.MOBILE_VERSION || github.ref }}
       MM_TEST_SERVER_URL: ${{ inputs.MM_TEST_SERVER_URL_3 }}
       artifact_run_id: ${{ github.run_id }}
+      testcase_failure_fatal: true
     secrets: inherit

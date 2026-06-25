@@ -82,6 +82,7 @@ req.end();
 sleep 20
 
 echo "--- Starting Device B (joins call via banner) ---"
+DEVICE_B_EXIT=0
 ~/.maestro/bin/maestro \
     --device "$DEVICE_B_UDID" \
     test \
@@ -92,11 +93,9 @@ echo "--- Starting Device B (joins call via banner) ---"
     --env "TEST_USER_PASSWORD=${USER_B_PASSWORD}" \
     --env "SITE_1_URL=${SITE_1_URL}" \
     --env "TEST_CHANNEL_NAME=${TEST_CHANNEL_NAME}" \
-    --env "MAESTRO_APP_ID=${MAESTRO_APP_ID}"
+    --env "MAESTRO_APP_ID=${MAESTRO_APP_ID}" || DEVICE_B_EXIT=$?
 
-DEVICE_B_EXIT=$?
-
-# Device B is done — signal Device A to clean up (leave the call)
+# Device B is done — always signal Device A to clean up (leave the call)
 kill "$DEVICE_A_PID" 2>/dev/null || true
 wait "$DEVICE_A_PID" 2>/dev/null || true
 

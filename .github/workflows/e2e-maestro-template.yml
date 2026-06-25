@@ -286,7 +286,7 @@ jobs:
           # in the Mattermost server config — verified during local maestro
           # iteration against SITE_1_URL.
           echo "==> Patching SupportSettings.AllowDownloadLogs=false on ${SITE_1_URL}"
-          curl -sS -X PUT \
+          curl -f -sS --show-error -X PUT \
             -H "Authorization: Bearer $ADMIN_TOKEN" \
             -H "Content-Type: application/json" \
             -d '{"SupportSettings":{"AllowDownloadLogs":false}}' \
@@ -294,7 +294,7 @@ jobs:
 
           # Always restore the default before exiting this step, regardless
           # of whether the maestro run passes.
-          trap 'curl -sS -X PUT \
+          trap 'curl -f -sS --show-error -X PUT \
             -H "Authorization: Bearer $ADMIN_TOKEN" \
             -H "Content-Type: application/json" \
             -d "{\"SupportSettings\":{\"AllowDownloadLogs\":true}}" \
@@ -627,13 +627,13 @@ jobs:
           # in the Mattermost server config — verified during local maestro
           # iteration against SITE_1_URL.
           echo "==> Patching SupportSettings.AllowDownloadLogs=false on ${SITE_1_URL}"
-          curl -sS -X PUT \
+          curl -f -sS --show-error -X PUT \
             -H "Authorization: Bearer $ADMIN_TOKEN" \
             -H "Content-Type: application/json" \
             -d '{"SupportSettings":{"AllowDownloadLogs":false}}' \
             "${SITE_1_URL}/api/v4/config/patch" > /dev/null
 
-          trap 'curl -sS -X PUT \
+          trap 'curl -f -sS --show-error -X PUT \
             -H "Authorization: Bearer $ADMIN_TOKEN" \
             -H "Content-Type: application/json" \
             -d "{\"SupportSettings\":{\"AllowDownloadLogs\":true}}" \

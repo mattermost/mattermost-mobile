@@ -122,22 +122,25 @@ jobs:
       - name: Check PR labels for E2E/Override
         id: policy
         uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9.0.0
+        env:
+          PR_NUMBER: ${{ inputs.pr_number }}
+          MOBILE_VERSION: ${{ inputs.MOBILE_VERSION }}
         with:
           script: |
-            const prInput = parseInt('${{ inputs.pr_number }}', 10);
+            const prInput = parseInt(process.env.PR_NUMBER, 10);
             let prNumber = Number.isFinite(prInput) ? prInput : null;
 
-            if (!prNumber && '${{ inputs.MOBILE_VERSION }}') {
+            if (!prNumber && process.env.MOBILE_VERSION) {
               try {
                 const {data: prs} = await github.rest.repos.listPullRequestsAssociatedWithCommit({
                   owner: context.repo.owner,
                   repo: context.repo.repo,
-                  commit_sha: '${{ inputs.MOBILE_VERSION }}',
+                  commit_sha: process.env.MOBILE_VERSION,
                 });
                 const openPr = prs.find((pr) => pr.state === 'open');
                 if (openPr) {
                   prNumber = openPr.number;
-                  core.info(`Resolved PR #${prNumber} from commit ${{ inputs.MOBILE_VERSION }}`);
+                  core.info(`Resolved PR #${prNumber} from commit ${process.env.MOBILE_VERSION}`);
                 }
               } catch (err) {
                 core.warning(`Could not resolve PR from commit: ${err.message}`);
@@ -147,6 +150,17 @@ jobs:
             if (!prNumber) {
               core.info('No PR number available — assuming E2E/Override is not set.');
               core.setOutput('e2e_override', 'false');
+              return;
+            }
+
+            const {data: pr} = await github.rest.pulls.get({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              pull_number: prNumber,
+            });
+            if (pr.base.ref !== 'main') {
+              core.info(`PR #${prNumber} targets ${pr.base.ref}, not main — skipping E2E.`);
+              core.setOutput('e2e_override', 'true');
               return;
             }
 
@@ -459,11 +473,7 @@ jobs:
           for url in "$SITE_1_URL" "$SITE_2_URL" "$SITE_3_URL"; do
             if [ -n "$url" ]; then
               echo "--- Provisioning $url ---"
-              if [ "$url" = "$SITE_1_URL" ]; then
-                npm run provision -- "$url"
-              else
-                npm run provision -- "$url" || echo "Warning: provisioning $url failed (non-fatal)"
-              fi
+              npm run provision -- "$url"
             fi
           done
         env:

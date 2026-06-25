@@ -101,6 +101,7 @@ should_skip_flow() {
   [[ "$base" == *_picker.yml ]] && return 0
   [[ "$base" == "attach_logs_disabled_when_download_logs_off.yml" ]] && return 0
   [[ "$base" == "file_type_preview.yml" ]] && return 0
+  [[ "$base" == "start_call.yml" ]] && return 0
   return 1
 }
 

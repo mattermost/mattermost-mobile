@@ -50,6 +50,17 @@ reset_timezone_android() {
     echo "[timezone_test] Android emulator timezone reset to UTC"
 }
 
+cleanup_timezone() {
+    echo "[timezone_test] Resetting $PLATFORM timezone..."
+    if [ "$PLATFORM" = "android" ]; then
+        reset_timezone_android "$DEVICE"
+    else
+        reset_timezone_ios "$DEVICE"
+    fi
+}
+
+trap cleanup_timezone EXIT
+
 echo "[timezone_test] Setting $PLATFORM timezone to $TIMEZONE..."
 if [ "$PLATFORM" = "android" ]; then
     set_timezone_android "$DEVICE" "$TIMEZONE"
@@ -70,6 +81,7 @@ echo "[timezone_test] Running clock_display flow..."
 source "$(dirname "$0")/../lib/timezone_region.sh"
 REGION="$(timezone_region_from_iana "$TIMEZONE")"
 
+EXIT_CODE=0
 # shellcheck disable=SC2086
 ~/.maestro/bin/maestro test \
   $MAESTRO_DEVICE_FLAG \
@@ -80,15 +92,6 @@ REGION="$(timezone_region_from_iana "$TIMEZONE")"
   --env MAESTRO_APP_ID="${MAESTRO_APP_ID:-com.mattermost.rnbeta}" \
   --env SIMULATOR_TIMEZONE="$TIMEZONE" \
   --env EXPECTED_TIMEZONE_REGION="$REGION" \
-  "$(dirname "$0")/../flows/timezone/clock_display.yml"
-
-EXIT_CODE=$?
-
-echo "[timezone_test] Resetting $PLATFORM timezone..."
-if [ "$PLATFORM" = "android" ]; then
-    reset_timezone_android "$DEVICE"
-else
-    reset_timezone_ios "$DEVICE"
-fi
+  "$(dirname "$0")/../flows/timezone/clock_display.yml" || EXIT_CODE=$?
 
 exit $EXIT_CODE

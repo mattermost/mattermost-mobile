@@ -23,6 +23,13 @@ npx tsx detox/maestro/fixtures/seed.ts --two-users
 # shellcheck disable=SC1091
 source detox/maestro/.maestro-test-env.sh
 
+cleanup() {
+  kill "$DEVICE_A_PID" 2>/dev/null || true
+  wait "$DEVICE_A_PID" 2>/dev/null || true
+}
+
+trap cleanup EXIT
+
 echo "--- Starting Device A (sends message) ---"
 ~/.maestro/bin/maestro \
   --device "$DEVICE_A_UDID" \
@@ -46,7 +53,10 @@ until npx tsx detox/maestro/fixtures/poll_for_message.ts; do
   POLL_COUNT=$((POLL_COUNT + 1))
   if [ $POLL_COUNT -ge $MAX_POLLS ]; then
     echo "Error: Device A did not post message within timeout"
-    kill "$DEVICE_A_PID" 2>/dev/null || true
+    exit 1
+  fi
+  if ! kill -0 "$DEVICE_A_PID" 2>/dev/null; then
+    echo "Error: Device A process exited unexpectedly"
     exit 1
   fi
   sleep 2

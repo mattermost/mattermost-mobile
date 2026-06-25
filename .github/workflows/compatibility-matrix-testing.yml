@@ -232,6 +232,7 @@ jobs:
       run-type: "RELEASE"
       MM_TEST_SERVER_URL: ${{ matrix.server.url }}
       MOBILE_VERSION: ${{ inputs.MOBILE_VERSION }}
+      testcase_failure_fatal: true
 
   detox-android-e2e:
     name: mobile-cmt-android-${{ matrix.server.version }}
@@ -252,6 +253,9 @@ jobs:
       MM_MOBILE_DETOX_AWS_SECRET_ACCESS_KEY: ${{ secrets.MM_MOBILE_DETOX_AWS_SECRET_ACCESS_KEY }}
     with:
       run-android-tests: true
+      run-type: "RELEASE"
+      MM_TEST_SERVER_URL: ${{ matrix.server.url }}
+      MOBILE_VERSION: ${{ inputs.MOBILE_VERSION }}
 
   maestro-android-e2e:
     name: mobile-cmt-maestro-android-${{ matrix.server.version }}
@@ -268,6 +272,7 @@ jobs:
       MM_TEST_SERVER_URL: ${{ matrix.server.url }}
       MOBILE_VERSION: ${{ inputs.MOBILE_VERSION }}
       artifact_run_id: ${{ github.run_id }}
+      testcase_failure_fatal: true
 
   update-final-status:
     runs-on: ubuntu-22.04

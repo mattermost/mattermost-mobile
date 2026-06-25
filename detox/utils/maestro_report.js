@@ -276,19 +276,27 @@ function mergeMaestroJunitReports(xmlPaths, outputPath) {
     const tests = mergedFlows.length;
     const failures = mergedFlows.filter((f) => f.status === 'failed').length;
     const errors = mergedFlows.filter((f) => f.status === 'error').length;
+    const skipped = mergedFlows.filter((f) => f.status === 'skipped').length;
     const timeSec = (totalTime / 1000).toFixed(1);
 
     const testcaseXml = mergedFlows.map((f) => {
         const statusAttr = f.status === 'passed' ? 'SUCCESS' : f.status.toUpperCase();
         const fileAttr = f.file ? ` file="${escapeXmlAttr(f.file)}"` : '';
-        const failureBlock = f.failureMessage ?
-            `\n      <failure>${escapeXmlText(f.failureMessage)}</failure>` : '';
-        return `    <testcase id="${escapeXmlAttr(f.name)}" name="${escapeXmlAttr(f.name)}" classname="${escapeXmlAttr(f.classname || f.name)}"${fileAttr} time="${f.time.toFixed(1)}" status="${statusAttr}">${failureBlock}\n    </testcase>`;
+        let innerBlock = '';
+        if (f.status === 'skipped') {
+            innerBlock = '\n      <skipped/>';
+        } else if (f.status === 'error') {
+            innerBlock = f.failureMessage ?
+                `\n      <error>${escapeXmlText(f.failureMessage)}</error>` : '\n      <error/>';
+        } else if (f.failureMessage) {
+            innerBlock = `\n      <failure>${escapeXmlText(f.failureMessage)}</failure>`;
+        }
+        return `    <testcase id="${escapeXmlAttr(f.name)}" name="${escapeXmlAttr(f.name)}" classname="${escapeXmlAttr(f.classname || f.name)}"${fileAttr} time="${f.time.toFixed(1)}" status="${statusAttr}">${innerBlock}\n    </testcase>`;
     }).join('\n');
 
-    const xml = `<?xml version='1.0' encoding='UTF-8'?>\n<testsuites>\n  <testsuite name="Test Suite" device="${escapeXmlAttr(device)}" tests="${tests}" failures="${failures + errors}" time="${timeSec}">\n${testcaseXml}\n  </testsuite>\n</testsuites>\n`;
+    const xml = `<?xml version='1.0' encoding='UTF-8'?>\n<testsuites>\n  <testsuite name="Test Suite" device="${escapeXmlAttr(device)}" tests="${tests}" failures="${failures}" errors="${errors}" skipped="${skipped}" time="${timeSec}">\n${testcaseXml}\n  </testsuite>\n</testsuites>\n`;
     fse.outputFileSync(outputPath, xml, 'utf-8');
-    console.log(`Merged ${existing.length} Maestro JUnit files -> ${outputPath} (${tests} tests, ${failures + errors} failures)`);
+    console.log(`Merged ${existing.length} Maestro JUnit files -> ${outputPath} (${tests} tests, ${failures} failures, ${errors} errors, ${skipped} skipped)`);
     return true;
 }
 

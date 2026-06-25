@@ -33,8 +33,9 @@ export async function ensureTrialLicense(client: MattermostClient, token: string
     }, token);
 
     if (trialRes.status >= 400) {
-        logWarn(`Trial license request failed (HTTP ${trialRes.status}): ${trialRes.data.message || JSON.stringify(trialRes.data)}`);
-        return;
+        const msg = `Trial license request failed (HTTP ${trialRes.status}): ${trialRes.data.message || JSON.stringify(trialRes.data)}`;
+        logWarn(msg);
+        throw new Error(msg);
     }
 
     logInfo('Trial Enterprise license activated.');

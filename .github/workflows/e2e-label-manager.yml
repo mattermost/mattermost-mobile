@@ -17,6 +17,10 @@
 # addLabels / removeLabel / gh-run-cancel would all 403. Mandatory E2E for fork
 # PRs is enforced separately.
 #
+# Base-branch guard: auto E2E/Run refresh only runs for PRs targeting main.
+# Stacked PRs (base != main) are skipped so Matterwick is not triggered on every
+# intermediate-branch push.
+#
 name: E2E label manager
 
 on:
@@ -32,9 +36,11 @@ jobs:
   strip-e2e-run-labels:
     if: >-
       github.event.action == 'synchronize'
+      && github.event.pull_request.base.ref == 'main'
       && github.event.pull_request.head.repo.full_name == github.repository
     runs-on: ubuntu-22.04
     permissions:
+      issues: write
       pull-requests: write
     steps:
       - name: Strip stale E2E/Run labels before refresh
@@ -74,9 +80,11 @@ jobs:
       && !cancelled()
       && (needs.strip-e2e-run-labels.result == 'success' || needs.strip-e2e-run-labels.result == 'skipped')
       && (github.event.action == 'opened' || github.event.action == 'synchronize')
+      && github.event.pull_request.base.ref == 'main'
       && github.event.pull_request.head.repo.full_name == github.repository
     runs-on: ubuntu-22.04
     permissions:
+      issues: write
       pull-requests: write
     steps:
       - name: Add E2E/Run (PAT — emits labeled webhook for Matterwick)
@@ -87,7 +95,13 @@ jobs:
             const owner = context.repo.owner;
             const repo = context.repo.repo;
             const prNumber = context.payload.pull_request.number;
+            const baseRef = context.payload.pull_request.base.ref;
             const runLabels = ['E2E/Run', 'E2E/Run-iOS', 'E2E/Run-Android'];
+
+            if (baseRef !== 'main') {
+              core.info(`PR #${prNumber} targets ${baseRef}, not main — skipping E2E/Run.`);
+              return;
+            }
 
             const {data: labels} = await github.rest.issues.listLabelsOnIssue({
               owner, repo, issue_number: prNumber,
@@ -128,6 +142,7 @@ jobs:
   e2e-label-manager:
     runs-on: ubuntu-22.04
     permissions:
+      issues: write
       pull-requests: write
       actions: write
     steps:

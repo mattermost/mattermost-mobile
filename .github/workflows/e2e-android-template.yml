@@ -275,8 +275,9 @@ jobs:
 
       - name: Apply cached Android SDK components
         if: steps.android-sdk-cache.outputs.cache-hit == 'true'
+        env:
+          API_LEVEL: ${{ inputs.android_api_level }}
         run: |
-          API_LEVEL='${{ inputs.android_api_level }}'
           for component in platform-tools emulator; do
             if [ -d ".android-sdk-cache/${component}" ]; then
               rm -rf "${ANDROID_HOME:?}/${component}"
@@ -296,8 +297,10 @@ jobs:
 
       - name: Install Android SDK components
         if: steps.android-sdk-cache.outputs.cache-hit != 'true'
+        env:
+          API_LEVEL: ${{ inputs.android_api_level }}
+          JAVA_HOME: ${{ env.JAVA_HOME_17_X64 }}
         run: |
-          API_LEVEL='${{ inputs.android_api_level }}'
           if ! [[ "$API_LEVEL" =~ ^[0-9]+$ ]]; then
             echo "Invalid android_api_level: $API_LEVEL"
             exit 1
@@ -320,8 +323,6 @@ jobs:
           cp -a "${ANDROID_HOME}/emulator" .android-sdk-cache/
           cp -a "${ANDROID_HOME}/platforms/android-${API_LEVEL}" .android-sdk-cache/platforms/
           cp -a "${ANDROID_HOME}/system-images/android-${API_LEVEL}" .android-sdk-cache/system-images/
-        env:
-          JAVA_HOME: ${{ env.JAVA_HOME_17_X64 }}
 
       # CI AVDs live under detox/.android/avd (see create_android_emulator.sh), not ~/.android/avd.
       - name: Cache Android Emulator & AVD
