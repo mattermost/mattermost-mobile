@@ -57,19 +57,12 @@ export const wipeServerFiles = (serverUrl: string): {success: boolean} => {
     return {success};
 };
 
-const derivePersistenceFlag = (config: ClientConfig | undefined): PersistenceFlag => {
-    if (!config) {
-        return '';
-    }
-    return config.MobileEphemeralModeEnabled === 'true' && config.MobileEphemeralModeAutoCacheCleanupDays === '0' ? 'zero-persistence' : '';
-};
-
 export const reconcilePersistenceFlag = async (serverUrl: string, config: ClientConfig | undefined): Promise<boolean> => {
     const server = await getServer(serverUrl);
     if (!server) {
         return false;
     }
-    const nextFlag = derivePersistenceFlag(config);
+    const nextFlag: PersistenceFlag = config?.MobileEphemeralModeEnabled === 'true' && config.MobileEphemeralModeAutoCacheCleanupDays === '0' ? 'zero-persistence' : '';
     if (server.persistenceFlag === nextFlag) {
         return false;
     }

@@ -201,6 +201,15 @@ describe('reconcilePersistenceFlag', () => {
         expect(updatePersistenceFlagSpy).toHaveBeenCalledWith(serverUrl, '');
     });
 
+    it('clears the zero-persistence flag and returns true when the config is undefined', async () => {
+        setStoredFlag('zero-persistence');
+
+        const result = await reconcilePersistenceFlag(serverUrl, undefined);
+
+        expect(result).toBe(true);
+        expect(updatePersistenceFlagSpy).toHaveBeenCalledWith(serverUrl, '');
+    });
+
     it('clears a wiped flag and returns false without crossing zero-persistence', async () => {
         setStoredFlag('wiped');
 
