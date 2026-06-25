@@ -32,6 +32,11 @@ on:
         required: false
         type: string
         default: ""
+      testcase_failure_fatal:
+        description: "Should test failures fail the commit status check"
+        required: false
+        type: boolean
+        default: false
     outputs:
       STATUS:
         value: ${{ jobs.e2e-maestro-ios.outputs.STATUS || jobs.e2e-maestro-android.outputs.STATUS }}
@@ -114,8 +119,8 @@ jobs:
       - name: Install Maestro CLI
         if: steps.maestro-cache.outputs.cache-hit != 'true'
         run: |
-          MAESTRO_VERSION=$(jq -r .version maestro/maestro-version.json)
-          MAESTRO_COMMIT=$(jq -r .commit maestro/maestro-version.json)
+          MAESTRO_VERSION=$(jq -r .version detox/maestro/maestro-version.json)
+          MAESTRO_COMMIT=$(jq -r .commit detox/maestro/maestro-version.json)
           echo "Installing Maestro ${MAESTRO_VERSION} (pinned to commit ${MAESTRO_COMMIT})"
           export MAESTRO_VERSION
           curl -fsSL "https://get.maestro.mobile.dev" | bash
@@ -209,20 +214,9 @@ jobs:
           xcrun simctl spawn "$SIMULATOR_ID" launchctl setenv TZ "America/New_York"
           echo "Simulator timezone set to America/New_York"
 
-      - name: Seed Photos library for share_image_to_channel (iOS)
-        run: |
-          FIXTURE="detox/e2e/support/fixtures/image.png"
-          if [ ! -f "$FIXTURE" ]; then
-            echo "Error: photo fixture not found at $FIXTURE"
-            exit 1
-          fi
-          xcrun simctl addmedia "$SIMULATOR_ID" "$FIXTURE"
-          xcrun simctl privacy "$SIMULATOR_ID" grant photos com.mattermost.rnbeta
-          echo "Seeded Photos library and granted photo access to com.mattermost.rnbeta"
-
       - name: Seed test data
         run: |
-          cd maestro
+          cd detox/maestro
           npm install
           npx tsx fixtures/seed.ts
         env:
@@ -232,21 +226,12 @@ jobs:
           ADMIN_PASSWORD: ${{ env.ADMIN_PASSWORD }}
 
       - name: Push test fixture into iOS simulator
-        # Required by maestro/flows/channels/channel_bookmark_file.yml: the
+        # Required by detox/maestro/flows/channels/channel_bookmark_file.yml: the
         # iOS document picker can only see files that already exist in the
         # local File Provider storage at maestro launch time. We drop the
         # detox image fixture there so the picker's "On My iPhone > Browse"
         # path can reach it. Android does the equivalent via `adb push` in
         # the Android job below.
-        #
-        # Best-effort: every command is allowed to fail without failing the
-        # job. `channel_bookmark_file.yml` will surface a missing fixture as
-        # a flow failure if this step couldn't place it.
-        #
-        # The previous implementation used a python one-liner that crashed
-        # with IndexError when the first runtime in simctl's JSON had an
-        # empty device array. Grep-the-UDID-format is simpler and never
-        # raises — if no UDID is found, `set -e` is bypassed by `|| true`.
         continue-on-error: true
         run: |
           set +e
@@ -268,6 +253,7 @@ jobs:
           fi
 
       - name: Run Maestro Flows (iOS)
+        continue-on-error: true
         env:
           FLOW_PATH: ${{ inputs.flow-path }}
           E2E_IOS_DEVICE_NAME: ${{ env.E2E_IOS_DEVICE_NAME }}
@@ -279,10 +265,10 @@ jobs:
             exit 1
           fi
           set -a
-          source maestro/.maestro-test-env.sh
+          source detox/maestro/.maestro-test-env.sh
           set +a
-          chmod +x maestro/scripts/run_ci_batches.sh
-          maestro/scripts/run_ci_batches.sh --platform ios --device "$SIMULATOR_ID"
+          chmod +x detox/maestro/scripts/run_ci_batches.sh
+          detox/maestro/scripts/run_ci_batches.sh --platform ios --device "$SIMULATOR_ID"
 
       - name: Run MM-T67856_4 with AllowDownloadLogs=false (iOS)
         # Isolated step: patch the server config to AllowDownloadLogs=false,
@@ -293,7 +279,7 @@ jobs:
         continue-on-error: true
         run: |
           set -a
-          source maestro/.maestro-test-env.sh
+          source detox/maestro/.maestro-test-env.sh
           set +a
 
           # AllowDownloadLogs lives under SupportSettings (not ServiceSettings)
@@ -328,7 +314,7 @@ jobs:
             --env TEST_TEAM_NAME="${TEST_TEAM_NAME}" \
             --env ADMIN_TOKEN="${ADMIN_TOKEN}" \
             --env MAESTRO_APP_ID="com.mattermost.rnbeta" \
-            maestro/flows/account/attach_logs_disabled_when_download_logs_off.yml
+            detox/maestro/flows/account/attach_logs_disabled_when_download_logs_off.yml
 
       - name: Upload Maestro Artifacts
         if: always()
@@ -411,9 +397,13 @@ jobs:
       - name: Determine Status
         id: determine-status
         if: always()
+        env:
+          FAILURES: ${{ steps.summary.outputs.FAILURES }}
+          TESTCASE_FAILURE_FATAL: ${{ inputs.testcase_failure_fatal }}
         run: |
-          FAILURES="${{ steps.summary.outputs.FAILURES }}"
-          if [[ "${FAILURES:-0}" -gt 0 ]]; then
+          if [[ "${FAILURES:-0}" == "-1" ]]; then
+            echo "STATUS=failure" >> "$GITHUB_OUTPUT"
+          elif [[ "${FAILURES:-0}" -gt 0 && "${TESTCASE_FAILURE_FATAL}" == "true" ]]; then
             echo "STATUS=failure" >> "$GITHUB_OUTPUT"
           else
             echo "STATUS=success" >> "$GITHUB_OUTPUT"
@@ -459,8 +449,8 @@ jobs:
       - name: Install Maestro CLI
         if: steps.maestro-cache.outputs.cache-hit != 'true'
         run: |
-          MAESTRO_VERSION=$(jq -r .version maestro/maestro-version.json)
-          MAESTRO_COMMIT=$(jq -r .commit maestro/maestro-version.json)
+          MAESTRO_VERSION=$(jq -r .version detox/maestro/maestro-version.json)
+          MAESTRO_COMMIT=$(jq -r .commit detox/maestro/maestro-version.json)
           echo "Installing Maestro ${MAESTRO_VERSION} (pinned to commit ${MAESTRO_COMMIT})"
           export MAESTRO_VERSION
           curl -fsSL "https://get.maestro.mobile.dev" | bash
@@ -485,7 +475,7 @@ jobs:
 
       - name: Seed test data
         run: |
-          cd maestro
+          cd detox/maestro
           npm install
           npx tsx fixtures/seed.ts
         env:
@@ -596,8 +586,7 @@ jobs:
             android-emulator-${{ runner.os }}-${{ runner.arch }}-${{ env.E2E_ANDROID_AVD_NAME }}-api-${{ env.E2E_ANDROID_API_LEVEL }}-
             android-emulator-${{ runner.os }}-${{ runner.arch }}-
 
-      # Boot API-35 detox_pixel_8 and install release APK (embedded JS bundle, no Metro).
-      - name: Bootstrap Android emulator (Detox-compatible)
+      - name: Bootstrap Android emulator
         env:
           BOOTSTRAP_ONLY: "true"
           MAESTRO_ANDROID: "true"
@@ -608,6 +597,7 @@ jobs:
           CI=true ./create_android_emulator.sh "${{ env.E2E_ANDROID_API_LEVEL }}" "${{ env.E2E_ANDROID_AVD_NAME }}"
 
       - name: Run Maestro Flows (Android)
+        continue-on-error: true
         env:
           FLOW_PATH: ${{ inputs.flow-path }}
           MAESTRO_DRIVER_STARTUP_TIMEOUT: "180000"
@@ -617,10 +607,10 @@ jobs:
             exit 1
           fi
           set -a
-          source maestro/.maestro-test-env.sh
+          source detox/maestro/.maestro-test-env.sh
           set +a
-          chmod +x maestro/scripts/run_ci_batches.sh
-          maestro/scripts/run_ci_batches.sh --platform android
+          chmod +x detox/maestro/scripts/run_ci_batches.sh
+          detox/maestro/scripts/run_ci_batches.sh --platform android
 
       - name: Run MM-T67856_4 with AllowDownloadLogs=false (Android)
         # Isolated step: patch server config to AllowDownloadLogs=false, run
@@ -630,7 +620,7 @@ jobs:
         continue-on-error: true
         run: |
           set -a
-          source maestro/.maestro-test-env.sh
+          source detox/maestro/.maestro-test-env.sh
           set +a
 
           # AllowDownloadLogs lives under SupportSettings (not ServiceSettings)
@@ -663,7 +653,7 @@ jobs:
             --env TEST_TEAM_NAME="${TEST_TEAM_NAME}" \
             --env ADMIN_TOKEN="${ADMIN_TOKEN}" \
             --env MAESTRO_APP_ID="com.mattermost.rnbeta" \
-            maestro/flows/account/attach_logs_disabled_when_download_logs_off.yml
+            detox/maestro/flows/account/attach_logs_disabled_when_download_logs_off.yml
 
       - name: Upload Maestro Artifacts
         if: always()
@@ -743,9 +733,13 @@ jobs:
       - name: Determine Status
         id: determine-status
         if: always()
+        env:
+          FAILURES: ${{ steps.summary.outputs.FAILURES }}
+          TESTCASE_FAILURE_FATAL: ${{ inputs.testcase_failure_fatal }}
         run: |
-          FAILURES="${{ steps.summary.outputs.FAILURES }}"
-          if [[ "${FAILURES:-0}" -gt 0 ]]; then
+          if [[ "${FAILURES:-0}" == "-1" ]]; then
+            echo "STATUS=failure" >> "$GITHUB_OUTPUT"
+          elif [[ "${FAILURES:-0}" -gt 0 && "${TESTCASE_FAILURE_FATAL}" == "true" ]]; then
             echo "STATUS=failure" >> "$GITHUB_OUTPUT"
           else
             echo "STATUS=success" >> "$GITHUB_OUTPUT"

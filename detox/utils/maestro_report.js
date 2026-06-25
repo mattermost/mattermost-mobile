@@ -59,7 +59,7 @@ function parseMaestroReport(xmlPath) {
             const classname = tc.classname?.[0] || suite.name?.[0] || '';
 
             // The XML's `file` attribute is the flow's full path
-            // (e.g. "maestro/flows/calls/start_call.yml"). We extract the
+            // (e.g. "detox/maestro/flows/calls/start_call.yml"). We extract the
             // category (parent directory under flows/) so screenshots whose
             // filename starts with the category prefix can be matched even
             // when the flow filename token isn't a substring of the screenshot
@@ -177,7 +177,7 @@ function normalizeFlowToken(name) {
  *   + 10 per shared word (>= 2 chars) between the flow's name tokens and
  *        the file's name tokens — picks up `mute` in `calls-mute-initial-state`.
  *   +  1 if the screenshot's leading prefix equals the flow's category
- *        (e.g. `calls-...` for a flow under `maestro/flows/calls/`) — a weak
+ *        (e.g. `calls-...` for a flow under `detox/maestro/flows/calls/`) — a weak
  *        tie-breaker so screenshots stay within their suite.
  *
  * Returns 0 when there's no plausible link; bucketing falls back to

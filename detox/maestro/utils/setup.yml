@@ -1,0 +1,11 @@
+# Sub-flow: Seed test data
+# NOTE: Maestro's runScript runs in a sandboxed JS environment and cannot execute
+# Node.js modules. Seeding must be done as a shell step BEFORE running Maestro:
+#
+#   npx tsx detox/maestro/fixtures/seed.ts
+#   source .maestro-test-env.sh   # exports TEST_USER_EMAIL, TEST_USER_PASSWORD, etc.
+#
+# This file is intentionally left empty. Any flow that declares
+#   - runFlow: ../../utils/setup.yml
+# will simply continue without error.
+---
