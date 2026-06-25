@@ -51,7 +51,7 @@ jobs:
       issues: write
       pull-requests: write
     steps:
-      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+      - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
       - name: Force-cancel in-flight E2E runs for the previous commit
         uses: ./.github/actions/cancel-e2e-runs
         with:
@@ -178,7 +178,7 @@ jobs:
       actions: write
       statuses: write
     steps:
-      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+      - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
 
       # ── Honor E2E/Override: strip run labels + cancel in-flight E2E ─────────
       - name: Honor E2E/Override
