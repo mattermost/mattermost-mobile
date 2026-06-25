@@ -165,8 +165,4 @@ describe('Account - Profile Picture', () => {
         await HomeScreen.channelListTab.tap();
         await ChannelListScreen.toBeVisible();
     });
-
-    // MM-T3260 moved to detox/maestro/flows/account/help_url.yml
-    // Reason: tapping Help opens Chrome on Android (cross-process) and SFSafariViewController
-    // on iOS — both are system-level UI that Detox cannot reliably control.
 });
