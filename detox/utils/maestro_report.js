@@ -258,7 +258,6 @@ function mergeMaestroJunitReports(xmlPaths, outputPath) {
     }
 
     const mergedFlows = [];
-    let device = '';
     let totalTime = 0;
 
     for (const xmlPath of existing) {
@@ -268,9 +267,6 @@ function mergeMaestroJunitReports(xmlPaths, outputPath) {
         }
         totalTime += summary.stats.duration || 0;
         mergedFlows.push(...summary.flows);
-        if (!device && summary.stats.device) {
-            device = summary.stats.device;
-        }
     }
 
     const tests = mergedFlows.length;
@@ -286,7 +282,7 @@ function mergeMaestroJunitReports(xmlPaths, outputPath) {
         return `    <testcase id="${escapeXmlAttr(f.name)}" name="${escapeXmlAttr(f.name)}" classname="${escapeXmlAttr(f.classname || f.name)}"${fileAttr} time="${f.time.toFixed(1)}" status="${statusAttr}">${failureBlock}\n    </testcase>`;
     }).join('\n');
 
-    const xml = `<?xml version='1.0' encoding='UTF-8'?>\n<testsuites>\n  <testsuite name="Test Suite" device="${escapeXmlAttr(device)}" tests="${tests}" failures="${failures + errors}" time="${timeSec}">\n${testcaseXml}\n  </testsuite>\n</testsuites>\n`;
+    const xml = `<?xml version='1.0' encoding='UTF-8'?>\n<testsuites>\n  <testsuite name="Test Suite" tests="${tests}" failures="${failures + errors}" time="${timeSec}">\n${testcaseXml}\n  </testsuite>\n</testsuites>\n`;
     fse.outputFileSync(outputPath, xml, 'utf-8');
     console.log(`Merged ${existing.length} Maestro JUnit files -> ${outputPath} (${tests} tests, ${failures + errors} failures)`);
     return true;

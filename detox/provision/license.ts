@@ -11,7 +11,7 @@ type ApiErrorBody = {message?: string};
 export async function ensureTrialLicense(client: MattermostClient, token: string): Promise<void> {
     const licenseRes = await client.request<LicenseClientResponse>('GET', '/api/v4/license/client?format=old', undefined, token);
     const sku = licenseRes.data.SkuShortName?.toLowerCase();
-    if (licenseRes.data.IsLicensed === 'true' && sku && sku !== 'entry') {
+    if (licenseRes.data.IsLicensed === 'true' && sku !== 'entry') {
         logInfo('Server already has Enterprise license.');
         return;
     }

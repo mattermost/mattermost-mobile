@@ -193,7 +193,9 @@ configure_chrome_for_ci() {
 }
 
 push_e2e_fixtures() {
-    local fixture="../detox/e2e/support/fixtures/image.png"
+    local script_dir
+    script_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+    local fixture="$script_dir/e2e/support/fixtures/image.png"
     if [[ -f "$fixture" ]]; then
         adb push "$fixture" /sdcard/Download/test_bookmark.png
         echo "Pushed test fixture to /sdcard/Download/test_bookmark.png"

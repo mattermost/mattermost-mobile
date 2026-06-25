@@ -25,7 +25,6 @@
     },
     "include": [
       "e2e/**/*.ts",
-      "provision/**/*.ts",
-      "maestro/fixtures/calls_seed.ts"
+      "provision/**/*.ts"
     ]
 }

@@ -16,7 +16,8 @@ set -euo pipefail
 readonly BUNDLE_ID="com.mattermost.rnbeta"
 readonly AUTOFILL_MARKER="mattermost-ci-autofill-v1"
 readonly PREWARM_SECS="${PREBOOT_PREWARM_SECS:-15}"
-readonly REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
+REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
+readonly REPO_ROOT
 
 log() {
     echo "[preboot $(date +%H:%M:%S)] $*"
@@ -45,10 +46,17 @@ boot_and_wait() {
     xcrun simctl bootstatus "$SIMULATOR_ID"
 }
 
+autofill_key_disabled() {
+    local plist="$1"
+    local key="$2"
+    [ -f "$plist" ] || return 1
+    plutil -extract "$key" raw "$plist" 2>/dev/null | grep -Eqi '^(false|0)$'
+}
+
 autofill_already_configured() {
-    [ -f "$AUTOFILL_STAMP" ] && return 0
-    [ -f "$SETTINGS_PLIST" ] || return 1
-    plutil -extract restrictedBool.allowPasswordAutoFill.value raw "$SETTINGS_PLIST" 2>/dev/null | grep -qi 'false'
+    [ -f "$AUTOFILL_STAMP" ] || return 1
+    autofill_key_disabled "$SETTINGS_PLIST" restrictedBool.allowPasswordAutoFill.value &&
+        autofill_key_disabled "$SETTINGS_PLIST" restrictedBool.allowCloudKeychainSync.value
 }
 
 configure_autofill_offline() {
@@ -145,6 +153,8 @@ verify_health() {
     if ! xcrun simctl get_app_container "$SIMULATOR_ID" "$BUNDLE_ID" 2>/dev/null; then
         log "App missing — reinstalling..."
         install_app
+        grant_notifications
+        grant_calls_permissions
     fi
     sudo mdutil -a -i off 2>/dev/null || true
 }
