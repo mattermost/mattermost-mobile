@@ -162,9 +162,9 @@ jobs:
             exit 1
           fi
           plutil -replace UIFileSharingEnabled -bool true "$APP_PATH/Info.plist" 2>/dev/null || \
-            plutil -insert UIFileSharingEnabled -bool true "$APP_PATH/Info.plist" 2>/dev/null || true
+            plutil -insert UIFileSharingEnabled -bool true "$APP_PATH/Info.plist"
           plutil -replace LSSupportsOpeningDocumentsInPlace -bool true "$APP_PATH/Info.plist" 2>/dev/null || \
-            plutil -insert LSSupportsOpeningDocumentsInPlace -bool true "$APP_PATH/Info.plist" 2>/dev/null || true
+            plutil -insert LSSupportsOpeningDocumentsInPlace -bool true "$APP_PATH/Info.plist"
           echo "UIFileSharingEnabled patched in $APP_PATH/Info.plist"
 
       # Same simulator boot / autofill / install sequence as Detox iOS CI.
@@ -286,7 +286,7 @@ jobs:
           # in the Mattermost server config — verified during local maestro
           # iteration against SITE_1_URL.
           echo "==> Patching SupportSettings.AllowDownloadLogs=false on ${SITE_1_URL}"
-          curl -sS -X PUT \
+          curl -fsS -X PUT \
             -H "Authorization: Bearer $ADMIN_TOKEN" \
             -H "Content-Type: application/json" \
             -d '{"SupportSettings":{"AllowDownloadLogs":false}}' \
@@ -294,7 +294,7 @@ jobs:
 
           # Always restore the default before exiting this step, regardless
           # of whether the maestro run passes.
-          trap 'curl -sS -X PUT \
+          trap 'curl -fsS -X PUT \
             -H "Authorization: Bearer $ADMIN_TOKEN" \
             -H "Content-Type: application/json" \
             -d "{\"SupportSettings\":{\"AllowDownloadLogs\":true}}" \
@@ -399,9 +399,12 @@ jobs:
         if: always()
         env:
           FAILURES: ${{ steps.summary.outputs.FAILURES }}
+          NO_REPORT: ${{ steps.summary.outputs.NO_REPORT }}
           TESTCASE_FAILURE_FATAL: ${{ inputs.testcase_failure_fatal }}
         run: |
-          if [[ "${FAILURES:-0}" == "-1" ]]; then
+          if [[ "${NO_REPORT}" == "true" ]]; then
+            echo "STATUS=failure" >> "$GITHUB_OUTPUT"
+          elif [[ "${FAILURES:-0}" == "-1" ]]; then
             echo "STATUS=failure" >> "$GITHUB_OUTPUT"
           elif [[ "${FAILURES:-0}" -gt 0 && "${TESTCASE_FAILURE_FATAL}" == "true" ]]; then
             echo "STATUS=failure" >> "$GITHUB_OUTPUT"
@@ -627,13 +630,13 @@ jobs:
           # in the Mattermost server config — verified during local maestro
           # iteration against SITE_1_URL.
           echo "==> Patching SupportSettings.AllowDownloadLogs=false on ${SITE_1_URL}"
-          curl -sS -X PUT \
+          curl -fsS -X PUT \
             -H "Authorization: Bearer $ADMIN_TOKEN" \
             -H "Content-Type: application/json" \
             -d '{"SupportSettings":{"AllowDownloadLogs":false}}' \
             "${SITE_1_URL}/api/v4/config/patch" > /dev/null
 
-          trap 'curl -sS -X PUT \
+          trap 'curl -fsS -X PUT \
             -H "Authorization: Bearer $ADMIN_TOKEN" \
             -H "Content-Type: application/json" \
             -d "{\"SupportSettings\":{\"AllowDownloadLogs\":true}}" \
@@ -735,9 +738,12 @@ jobs:
         if: always()
         env:
           FAILURES: ${{ steps.summary.outputs.FAILURES }}
+          NO_REPORT: ${{ steps.summary.outputs.NO_REPORT }}
           TESTCASE_FAILURE_FATAL: ${{ inputs.testcase_failure_fatal }}
         run: |
-          if [[ "${FAILURES:-0}" == "-1" ]]; then
+          if [[ "${NO_REPORT}" == "true" ]]; then
+            echo "STATUS=failure" >> "$GITHUB_OUTPUT"
+          elif [[ "${FAILURES:-0}" == "-1" ]]; then
             echo "STATUS=failure" >> "$GITHUB_OUTPUT"
           elif [[ "${FAILURES:-0}" -gt 0 && "${TESTCASE_FAILURE_FATAL}" == "true" ]]; then
             echo "STATUS=failure" >> "$GITHUB_OUTPUT"

@@ -122,22 +122,25 @@ jobs:
       - name: Check PR labels for E2E/Override
         id: policy
         uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9.0.0
+        env:
+          PR_NUMBER: ${{ inputs.pr_number }}
+          MOBILE_VERSION: ${{ inputs.MOBILE_VERSION }}
         with:
           script: |
-            const prInput = parseInt('${{ inputs.pr_number }}', 10);
+            const prInput = parseInt(process.env.PR_NUMBER || '', 10);
             let prNumber = Number.isFinite(prInput) ? prInput : null;
 
-            if (!prNumber && '${{ inputs.MOBILE_VERSION }}') {
+            if (!prNumber && process.env.MOBILE_VERSION) {
               try {
                 const {data: prs} = await github.rest.repos.listPullRequestsAssociatedWithCommit({
                   owner: context.repo.owner,
                   repo: context.repo.repo,
-                  commit_sha: '${{ inputs.MOBILE_VERSION }}',
+                  commit_sha: process.env.MOBILE_VERSION,
                 });
                 const openPr = prs.find((pr) => pr.state === 'open');
                 if (openPr) {
                   prNumber = openPr.number;
-                  core.info(`Resolved PR #${prNumber} from commit ${{ inputs.MOBILE_VERSION }}`);
+                  core.info(`Resolved PR #${prNumber} from commit ${process.env.MOBILE_VERSION}`);
                 }
               } catch (err) {
                 core.warning(`Could not resolve PR from commit: ${err.message}`);
