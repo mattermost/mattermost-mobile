@@ -1,5 +1,5 @@
 # Dismiss Chrome first-run / ads interstitials on a fresh API 35 emulator.
-# Usage: - runFlow: ../utils/dismiss_chrome_interstitial.yml
+# Usage: - runFlow: ../../subflows/browser/dismiss_chrome_interstitial.yml
 appId: ${MAESTRO_APP_ID}
 ---
 - tapOn:

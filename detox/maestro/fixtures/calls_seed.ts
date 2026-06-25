@@ -1,25 +1,7 @@
-#!/usr/bin/env tsx
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
 /* eslint-disable no-console */
-
-// Seed script for Maestro Calls E2E tests.
-//
-// Delegates to the same Detox server API methods used by the Detox test suite
-// (Setup.apiInit, User.apiAdminLogin, etc.) so Maestro flows run against the
-// same server configuration — including the prepackaged Calls plugin.
-//
-// Usage (single user):
-//   tsx --tsconfig detox/tsconfig.json detox/maestro/fixtures/calls_seed.ts
-//
-// Usage (two users for multi-device call tests):
-//   tsx --tsconfig detox/tsconfig.json detox/maestro/fixtures/calls_seed.ts --two-users
-//
-// Writes env vars to .maestro-test-env.sh in the repo root.
-//
-// NOTE: Run with --tsconfig detox/tsconfig.json so the @support/* path aliases
-// used inside detox/e2e/support/**/*.ts resolve correctly.
 
 import {Channel} from '../../detox/e2e/support/server_api/channel';
 import client from '../../detox/e2e/support/server_api/client';
@@ -28,7 +10,7 @@ import {Setup} from '../../detox/e2e/support/server_api/setup';
 import {Team} from '../../detox/e2e/support/server_api/team';
 import {User} from '../../detox/e2e/support/server_api/user';
 import {siteOneUrl} from '../../detox/e2e/support/test_config';
-import {writeMaestroEnvFile} from '../utils/env';
+import {writeMaestroEnvFile} from '../lib/env';
 
 const TWO_USERS = process.argv.includes('--two-users');
 

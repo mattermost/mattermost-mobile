@@ -27,8 +27,8 @@ tags:
 appId: ${MAESTRO_APP_ID}
 ---
 # --- Setup: login and navigate to the test channel ---
-- runFlow: ../../utils/login.yml
-- runFlow: ../../utils/navigate_to_channel.yml
+- runFlow: ../../subflows/auth/login.yml
+- runFlow: ../../subflows/navigation/navigate_to_channel.yml
 
 # --- Open channel info ---
 # navigation.header.title has opacity:0 in iOS 26 when the channel is not scrolled.

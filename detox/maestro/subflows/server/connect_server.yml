@@ -1,6 +1,6 @@
 # Sub-flow: Connect to Mattermost server (server form step only).
 # Called by login.yml when the server form is visible (no server registered yet).
-# Usage: - runFlow: ../utils/connect_server.yml
+# Usage: - runFlow: ../../subflows/server/connect_server.yml
 # Requires: SITE_1_URL env var
 appId: ${MAESTRO_APP_ID}
 ---
@@ -63,7 +63,7 @@ appId: ${MAESTRO_APP_ID}
     text: "OKAY"
     optional: true
 # Matterwick cloud connects can exceed 60s on a cold CI emulator.
-- runFlow: wait_for_server_connect_complete.yml
+- runFlow: ../waits/wait_for_server_connect_complete.yml
 # Retry Connect once when validation is slow or the first tap did not register.
 # (display_help — not server_url.input — is the iOS-accessible server-form anchor.)
 - runFlow:
@@ -95,4 +95,4 @@ appId: ${MAESTRO_APP_ID}
       - tapOn:
           text: "OKAY"
           optional: true
-      - runFlow: wait_for_server_connect_complete.yml
+      - runFlow: ../waits/wait_for_server_connect_complete.yml

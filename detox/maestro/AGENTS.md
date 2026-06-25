@@ -6,7 +6,7 @@ Quick rules:
 
 - Use `id:` testIDs only — never `point:` except system overlays with no accessibility node.
 - Every flow needs the header block in GUIDELINES §2; run `cd detox/maestro && npm run validate-headers`.
-- Start authenticated flows with `runFlow: ../../utils/login.yml`.
+- Start authenticated flows with `runFlow: ../../subflows/auth/login.yml`.
 - Setup and CI: [README.md](./README.md).
 
 Do not duplicate rules here — update GUIDELINES.md instead.

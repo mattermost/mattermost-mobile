@@ -54,8 +54,8 @@ done
 
 mkdir -p "$OUTPUT_DIR" "$ARTIFACTS_DIR"
 
-# shellcheck source=detox/maestro/utils/timezone_region.sh
-source "$REPO_ROOT/detox/maestro/utils/timezone_region.sh"
+# shellcheck source=detox/maestro/lib/timezone_region.sh
+source "$REPO_ROOT/detox/maestro/lib/timezone_region.sh"
 SIMULATOR_TIMEZONE="${SIMULATOR_TIMEZONE:-America/New_York}"
 EXPECTED_TIMEZONE_REGION="${EXPECTED_TIMEZONE_REGION:-$(timezone_region_from_iana "$SIMULATOR_TIMEZONE")}"
 

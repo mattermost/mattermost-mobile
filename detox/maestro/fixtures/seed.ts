@@ -1,4 +1,3 @@
-#!/usr/bin/env tsx
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
@@ -7,7 +6,7 @@
 import http, {type IncomingMessage, type RequestOptions} from 'http';
 import https from 'https';
 
-import {required, testUserPassword, writeMaestroEnvFile} from '../utils/env';
+import {required, testUserPassword, writeMaestroEnvFile} from '../lib/env';
 
 const SITE_1_URL = required('SITE_1_URL');
 const ADMIN_USERNAME = required('ADMIN_USERNAME');

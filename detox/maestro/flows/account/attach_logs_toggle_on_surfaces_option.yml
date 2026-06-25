@@ -25,7 +25,7 @@ tags:
   - MM-T67856_2
 appId: ${MAESTRO_APP_ID}
 ---
-- runFlow: ../../utils/login.yml
+- runFlow: ../../subflows/auth/login.yml
 
 # Open Account > Settings > Report a Problem
 - tapOn:
@@ -97,7 +97,7 @@ appId: ${MAESTRO_APP_ID}
             id: "channel_list.category.channels.channel_item.${TEST_CHANNEL_NAME}"
           timeout: 30000
 
-      - runFlow: ../../utils/navigate_to_channel.yml
+      - runFlow: ../../subflows/navigation/navigate_to_channel.yml
 
       # Open the post-draft attachment menu. Adjust the id if `inspect_screen`
       # shows a different prefix on your build.

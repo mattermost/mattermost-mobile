@@ -1,7 +1,7 @@
 # MM-T4832: User can mute and unmute the microphone during an active call.
 #
 # PRE-CONDITIONS:
-#   - Calls plugin enabled on test channel (detox/maestro/fixtures/calls_seed.ts)
+#   - Calls plugin enabled on test channel (fixtures/calls_seed.ts)
 #   - Active call started during the flow
 #
 # REQUIRED ENV VARS:
@@ -21,14 +21,14 @@ tags:
   - MM-T4832
 appId: ${MAESTRO_APP_ID}
 ---
-- runFlow: ../../utils/login.yml
-- runFlow: ../../utils/navigate_to_channel.yml
+- runFlow: ../../subflows/auth/login.yml
+- runFlow: ../../subflows/navigation/navigate_to_channel.yml
 
 # Wait for the WS-driven Calls config to propagate before opening quick actions.
 - waitForAnimationToEnd:
     timeout: 25000
 
-- runFlow: ../../utils/join_channel_call.yml
+- runFlow: ../../subflows/calls/join_channel_call.yml
 
 - waitForAnimationToEnd:
     timeout: 3000

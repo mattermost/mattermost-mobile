@@ -1,7 +1,7 @@
 # MM-T3055: Device A sends a sync message for Device B to receive (multi-device).
 #
 # PRE-CONDITIONS:
-#   - Two devices orchestrated via detox/maestro/scripts/run_two_device.sh
+#   - Two devices orchestrated via scripts/run_two_device.sh
 #   - User A logged in on Device A in the test channel
 #
 # REQUIRED ENV VARS:
@@ -18,8 +18,8 @@ tags:
   - MM-T3055
 appId: ${MAESTRO_APP_ID}
 ---
-- runFlow: ../../utils/login.yml
-- runFlow: ../../utils/navigate_to_channel.yml
+- runFlow: ../../subflows/auth/login.yml
+- runFlow: ../../subflows/navigation/navigate_to_channel.yml
 
 # Type and send a message containing SYNC_TOKEN so Device B can detect it via API
 - tapOn:

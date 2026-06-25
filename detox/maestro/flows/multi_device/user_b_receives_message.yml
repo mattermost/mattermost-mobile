@@ -17,8 +17,8 @@ tags:
   - MM-T3056
 appId: ${MAESTRO_APP_ID}
 ---
-- runFlow: ../../utils/login.yml
-- runFlow: ../../utils/navigate_to_channel.yml
+- runFlow: ../../subflows/auth/login.yml
+- runFlow: ../../subflows/navigation/navigate_to_channel.yml
 
 # Poll the Mattermost API until the message from Device A appears
 # This ensures Device B does not assert before the message is delivered

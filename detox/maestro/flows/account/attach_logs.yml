@@ -1,7 +1,7 @@
 # MM-T67856: Tapping Report a Problem leaves Settings and opens the report form.
 #
 # PRE-CONDITIONS:
-#   - Logged-in test user (via utils/login.yml)
+#   - Logged-in test user (via subflows/auth/login.yml)
 #   - Unlicensed / free-edition server (default Matterwick provisioning)
 #
 # REQUIRED ENV VARS:
@@ -30,7 +30,7 @@ tags:
   - MM-T67856
 appId: ${MAESTRO_APP_ID}
 ---
-- runFlow: ../../utils/login.yml
+- runFlow: ../../subflows/auth/login.yml
 
 - tapOn:
     id: "tab_bar.account.tab"

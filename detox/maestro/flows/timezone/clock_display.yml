@@ -2,7 +2,7 @@
 #
 # PRE-CONDITIONS:
 #   - CI: run_ci_batches.sh sets emulator/sim TZ to SIMULATOR_TIMEZONE (default America/New_York)
-#   - Local: use detox/maestro/scripts/run_timezone_test.sh to set device TZ and EXPECTED_TIMEZONE_REGION
+#   - Local: use scripts/run_timezone_test.sh to set device TZ and EXPECTED_TIMEZONE_REGION
 #
 # REQUIRED ENV VARS:
 #   - MAESTRO_APP_ID, TEST_USER_EMAIL, TEST_USER_PASSWORD
@@ -31,7 +31,7 @@ env:
   EXPECTED_TIMEZONE_REGION: ${EXPECTED_TIMEZONE_REGION || ""}
 ---
 # Step 1: Login (login.yml clearState:true relaunch picks up CI TZ from launchctl setenv).
-- runFlow: ../../utils/login.yml
+- runFlow: ../../subflows/auth/login.yml
 
 # Step 2: Open Account settings
 - tapOn:
@@ -81,9 +81,9 @@ env:
 - runFlow:
     when:
       true: ${EXPECTED_TIMEZONE_REGION != ""}
-    file: ../../utils/assert_timezone_region_label.yml
+    file: ../../subflows/timezone/assert_timezone_region_label.yml
 - runFlow:
     when:
       true: ${EXPECTED_TIMEZONE_REGION == ""}
-    file: ../../utils/assert_timezone_region_local.yml
+    file: ../../subflows/timezone/assert_timezone_region_local.yml
 - takeScreenshot: timezone-settings-visible

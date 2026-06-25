@@ -1,5 +1,5 @@
 # Sub-flow: return to Settings list from an unknown screen (browser hand-off recovery).
-# Usage: - runFlow: ../utils/reopen_settings_screen.yml
+# Usage: - runFlow: ../../subflows/browser/reopen_settings_screen.yml
 appId: ${MAESTRO_APP_ID}
 ---
 - runFlow:

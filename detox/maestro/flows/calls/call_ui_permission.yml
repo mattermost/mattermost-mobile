@@ -23,8 +23,8 @@ tags:
   - MM-T1411
 appId: ${MAESTRO_APP_ID}
 ---
-- runFlow: ../../utils/login.yml
-- runFlow: ../../utils/navigate_to_channel.yml
+- runFlow: ../../subflows/auth/login.yml
+- runFlow: ../../subflows/navigation/navigate_to_channel.yml
 
 # Wait for the WS-driven Calls config to propagate before opening Channel Info.
 # On first login doReconnect() runs entry() (a full server sync) before calling
@@ -33,7 +33,7 @@ appId: ${MAESTRO_APP_ID}
 - waitForAnimationToEnd:
     timeout: 25000
 
-- runFlow: ../../utils/join_channel_call.yml
+- runFlow: ../../subflows/calls/join_channel_call.yml
 
 # Brief wait after call starts to let the WebSocket session event arrive.
 - waitForAnimationToEnd:

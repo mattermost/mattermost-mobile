@@ -11,6 +11,6 @@
     "forceConsistentCasingInFileNames": true,
     "types": ["node"]
   },
-  "include": ["fixtures/**/*.ts", "utils/**/*.ts"],
+  "include": ["fixtures/**/*.ts", "lib/**/*.ts"],
   "exclude": ["fixtures/calls_seed.ts"]
 }

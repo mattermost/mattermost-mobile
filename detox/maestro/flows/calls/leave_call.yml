@@ -1,7 +1,7 @@
 # MM-T4833: User can leave a call from the call screen or the minimized call bar.
 #
 # PRE-CONDITIONS:
-#   - Calls plugin enabled on test channel (detox/maestro/fixtures/calls_seed.ts)
+#   - Calls plugin enabled on test channel (fixtures/calls_seed.ts)
 #   - Active call started during the flow
 #
 # REQUIRED ENV VARS:
@@ -22,8 +22,8 @@ tags:
   - MM-T4833
 appId: ${MAESTRO_APP_ID}
 ---
-- runFlow: ../../utils/login.yml
-- runFlow: ../../utils/navigate_to_channel.yml
+- runFlow: ../../subflows/auth/login.yml
+- runFlow: ../../subflows/navigation/navigate_to_channel.yml
 
 # ── Path 1: Leave from the full call screen ──────────────────────────────────
 
@@ -31,7 +31,7 @@ appId: ${MAESTRO_APP_ID}
 - waitForAnimationToEnd:
     timeout: 25000
 
-- runFlow: ../../utils/join_channel_call.yml
+- runFlow: ../../subflows/calls/join_channel_call.yml
 
 - waitForAnimationToEnd:
     timeout: 3000
@@ -64,9 +64,9 @@ appId: ${MAESTRO_APP_ID}
 
 # ── Path 2: Leave from the minimized CurrentCallBar ─────────────────────────
 
-- runFlow: ../../utils/navigate_to_channel.yml
+- runFlow: ../../subflows/navigation/navigate_to_channel.yml
 
-- runFlow: ../../utils/join_channel_call.yml
+- runFlow: ../../subflows/calls/join_channel_call.yml
 
 - waitForAnimationToEnd:
     timeout: 3000
@@ -123,7 +123,7 @@ appId: ${MAESTRO_APP_ID}
           when:
             visible:
               id: "tab_bar.home.tab"
-          file: ../../utils/navigate_to_channel.yml
+          file: ../../subflows/navigation/navigate_to_channel.yml
 
 - extendedWaitUntil:
     visible:

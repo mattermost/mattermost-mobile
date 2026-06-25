@@ -14,7 +14,7 @@ import fs from 'fs';
  *   • Local dev gets sensible defaults without hardcoding secrets
  *
  * Usage:
- *   import {env, envNum, envBool, maestroEnvFile} from '../utils/env';
+ *   import {env, envNum, envBool, maestroEnvFile} from '../lib/env';
  *   const url = env('SITE_1_URL', 'http://localhost:8065');
  */
 

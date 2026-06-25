@@ -66,8 +66,8 @@ fi
 
 echo "[timezone_test] Running clock_display flow..."
 
-# shellcheck source=detox/maestro/utils/timezone_region.sh
-source "$(dirname "$0")/../utils/timezone_region.sh"
+# shellcheck source=detox/maestro/lib/timezone_region.sh
+source "$(dirname "$0")/../lib/timezone_region.sh"
 REGION="$(timezone_region_from_iana "$TIMEZONE")"
 
 # shellcheck disable=SC2086

@@ -143,7 +143,7 @@ Never hardcode server URLs, credentials, or channel names:
 
 ### App launch
 
-Use `runFlow: ../../utils/login.yml` — do not add raw `launchApp` when login already handles stale sessions, call screens, and permission dialogs. Follow with `navigate_to_channel.yml` when needed.
+Use `runFlow: ../../subflows/auth/login.yml` — do not add raw `launchApp` when login already handles stale sessions, call screens, and permission dialogs. Follow with `navigate_to_channel.yml` when needed.
 
 ### Toggles
 
@@ -193,8 +193,8 @@ Allowed **only** on toggle taps (idempotent state) and genuinely intermittent sy
 
 ### Sub-flows
 
-1. `runFlow: ../../utils/login.yml` first when auth is required.
-2. `runFlow: ../../utils/navigate_to_channel.yml` before channel actions.
+1. `runFlow: ../../subflows/auth/login.yml` first when auth is required.
+2. `runFlow: ../../subflows/navigation/navigate_to_channel.yml` before channel actions.
 3. Seed via shell (`npx tsx detox/maestro/fixtures/seed.ts`) — not inside the YAML.
 
 ### Server config beyond defaults
@@ -216,7 +216,7 @@ curl -sS -X PUT \
 ### Cross-platform notes
 
 - **iOS share extension** (deferred branch `rf-split/maestro-ios-deferred-flows`): Maestro must be attached to the host app (Safari/Photos) before the share sheet opens; share target label is **Mattermost**, not **Mattermost Beta**.
-- **Android Chrome**: Fresh emulators show first-run / ads interstitials — use `utils/dismiss_chrome_interstitial.yml` or CI Chrome pre-warm (see `create_android_emulator.sh`).
+- **Android Chrome**: Fresh emulators show first-run / ads interstitials — use `subflows/browser/dismiss_chrome_interstitial.yml` or CI Chrome pre-warm (see `create_android_emulator.sh`).
 - **Android port forwarding**: `adb reverse tcp:8065 tcp:8065` when using localhost URLs.
 - **iOS timezone**: `xcrun simctl spawn $SIMULATOR_ID launchctl setenv TZ "America/New_York"` (Xcode 26 removed `simctl timezone`).
 - **Android timezone**: `adb shell setprop persist.sys.timezone "America/New_York"`.

@@ -23,7 +23,7 @@ tags:
   - MM-T67856_4
 appId: ${MAESTRO_APP_ID}
 ---
-- runFlow: ../../utils/login.yml
+- runFlow: ../../subflows/auth/login.yml
 
 # Navigate Settings > Report a Problem.
 - tapOn:

@@ -1,5 +1,5 @@
 # Sub-flow: Login to Mattermost
-# Usage: - runFlow: ../utils/login.yml
+# Usage: - runFlow: ../../subflows/auth/login.yml
 # Requires: SITE_1_URL, TEST_USER_EMAIL, TEST_USER_PASSWORD env vars
 # Optional: MAESTRO_APP_ID (defaults to com.mattermost.rnbeta)
 #
@@ -154,7 +154,7 @@ appId: ${MAESTRO_APP_ID}
     when:
       visible:
         id: "server_form.display_help"
-    file: connect_server.yml
+    file: ../server/connect_server.yml
 # If connect_server navigated to an already-logged-in home screen (server was
 # previously registered with an active session), logout to reach the login form.
 - runFlow:
@@ -220,5 +220,5 @@ appId: ${MAESTRO_APP_ID}
           text: "Save"
           optional: true
       - runFlow:
-          file: wait_for_home_tab.yml
+          file: ../waits/wait_for_home_tab.yml
           label: Wait for channel list home tab after login

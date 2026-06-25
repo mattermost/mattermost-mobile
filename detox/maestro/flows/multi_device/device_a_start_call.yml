@@ -1,7 +1,7 @@
 # MM-T4830: Device A starts a call so Device B can see the join banner (multi-device).
 #
 # PRE-CONDITIONS:
-#   - Two devices orchestrated via detox/maestro/scripts/run_calls_two_device.sh
+#   - Two devices orchestrated via scripts/run_calls_two_device.sh
 #   - Calls plugin enabled; User A logged in on Device A
 #
 # REQUIRED ENV VARS:
@@ -22,8 +22,8 @@ tags:
   - MM-T4830
 appId: ${MAESTRO_APP_ID}
 ---
-- runFlow: ../../utils/login.yml
-- runFlow: ../../utils/navigate_to_channel.yml
+- runFlow: ../../subflows/auth/login.yml
+- runFlow: ../../subflows/navigation/navigate_to_channel.yml
 
 # Open the channel quick actions sheet via the three-dots (⋮) button.
 - tapOn:
@@ -61,7 +61,7 @@ appId: ${MAESTRO_APP_ID}
 - takeScreenshot: calls-device-a-call-active
 
 # Post the sync token to the channel so Device B is unblocked to join.
-# Device B polls the API (via tsx detox/maestro/fixtures/poll_for_message.ts) and starts
+# Device B polls the API (via fixtures/poll_for_message.ts) and starts
 # its flow only after this message appears.
 - tapOn:
     id: "navigation.header.back"

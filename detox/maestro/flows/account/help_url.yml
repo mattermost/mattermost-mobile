@@ -1,7 +1,7 @@
 # MM-T3260: Tapping Help in Settings opens the help URL in a browser.
 #
 # PRE-CONDITIONS:
-#   - Logged-in test user (via utils/login.yml)
+#   - Logged-in test user (via subflows/auth/login.yml)
 #
 # REQUIRED ENV VARS:
 #   - MAESTRO_APP_ID, TEST_USER_EMAIL, TEST_USER_PASSWORD
@@ -21,7 +21,7 @@ tags:
   - MM-T3260
 appId: ${MAESTRO_APP_ID}
 ---
-- runFlow: ../../utils/login.yml
+- runFlow: ../../subflows/auth/login.yml
 
 - tapOn:
     id: "tab_bar.account.tab"
@@ -73,21 +73,21 @@ appId: ${MAESTRO_APP_ID}
             id: "settings.help.option"
           timeout: 8000
       - runFlow:
-          file: ../../utils/dismiss_chrome_interstitial.yml
+          file: ../../subflows/browser/dismiss_chrome_interstitial.yml
       - takeScreenshot: help-browser-opened
       - pressKey: Back
       - runFlow:
-          file: ../../utils/dismiss_chrome_interstitial.yml
+          file: ../../subflows/browser/dismiss_chrome_interstitial.yml
       - pressKey: Back
       - runFlow:
-          file: ../../utils/dismiss_chrome_interstitial.yml
+          file: ../../subflows/browser/dismiss_chrome_interstitial.yml
 
 # Browser hand-off recovery when Settings is not visible after dismiss.
 - runFlow:
     when:
       notVisible:
         id: "settings.help.option"
-    file: ../../utils/reopen_settings_screen.yml
+    file: ../../subflows/browser/reopen_settings_screen.yml
 
 - extendedWaitUntil:
     visible:

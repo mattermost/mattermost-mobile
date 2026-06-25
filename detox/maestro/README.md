@@ -42,7 +42,7 @@ See **[GUIDELINES.md](./GUIDELINES.md)** for the flow header contract, comment s
 Maestro platform rules, CLI version pin, CI layout, and the pre-PR checklist.
 
 **TypeScript fixtures:** `npm run check` in this directory runs `tsc --noEmit` against
-`fixtures/*.ts` and `utils/env.ts`. `fixtures/calls_seed.ts` is excluded — it imports
+`fixtures/*.ts` and `lib/env.ts`. `fixtures/calls_seed.ts` is excluded — it imports
 Detox `@support/*` helpers and must be type-checked with
 `tsx --tsconfig detox/tsconfig.json` (see `run_calls_two_device.sh`).
 
@@ -146,7 +146,6 @@ export ADMIN_PASSWORD="<from Matterwick PR comment>"
 source detox/maestro/.maestro-test-env.sh
 ```
 
-> **Note**: `detox/maestro/utils/setup.yml` is a placeholder — it does NOT run the seed script.
 > Maestro's `runScript` command runs in a sandboxed JS environment and cannot execute
 > Node.js modules. Always seed via the shell commands above before starting flows.
 
@@ -313,8 +312,8 @@ When multiple simulators are booted, pass `--device <UDID>` (same as CI). After
 Every flow file **must** follow [GUIDELINES.md](./GUIDELINES.md). In short:
 
 1. **Standard header block** — ticket, PRE-CONDITIONS, REQUIRED ENV VARS, ASSERTIONS, testIDs.
-2. **Use `utils/login.yml`** as the first sub-flow to authenticate.
-3. **Use `utils/navigate_to_channel.yml`** before any channel interaction.
+2. **Use `subflows/auth/login.yml`** as the first sub-flow to authenticate.
+3. **Use `subflows/navigation/navigate_to_channel.yml`** before any channel interaction.
 4. **Seed data before the flow, not inside it**: run `npx tsx detox/maestro/fixtures/seed.ts` in the
    shell before invoking Maestro.
 5. **Include Zephyr tags**: every flow must declare `tags: [MM-TXXXX]`.
@@ -326,8 +325,8 @@ Every flow file **must** follow [GUIDELINES.md](./GUIDELINES.md). In short:
 ```yaml
 appId: ${MAESTRO_APP_ID}
 ---
-- runFlow: ../../utils/login.yml
-- runFlow: ../../utils/navigate_to_channel.yml
+- runFlow: ../../subflows/auth/login.yml
+- runFlow: ../../subflows/navigation/navigate_to_channel.yml
 - tapOn:
     id: "channel.post_draft.post.input"
 - inputText: "Hello from Maestro"
@@ -453,11 +452,31 @@ Detox uses `SITE_1_URL` (and additional sites per shard config).
 detox/maestro/
   package.json                         # Maestro CLI version pin + npm scripts
   README.md                            # This file
-  utils/
-    login.yml                          # Reusable: app launch + login
-    logout.yml                         # Reusable: logout from app
-    navigate_to_channel.yml            # Reusable: tap channel in sidebar
-    setup.yml                          # Placeholder — seed via shell (see Setup §6)
+  subflows/
+    auth/
+      login.yml                        # Reusable: app launch + login
+      logout.yml                       # Reusable: logout from app
+    navigation/
+      navigate_to_channel.yml          # Reusable: tap channel in sidebar
+      expand_channels_category.yml
+      dismiss_scheduled_post_tooltip.yml
+    calls/
+      join_channel_call.yml
+      wait_for_active_call.yml
+    waits/
+      wait_for_home_tab.yml
+      wait_for_server_connect_complete.yml
+    server/
+      connect_server.yml
+    browser/
+      dismiss_chrome_interstitial.yml
+      reopen_settings_screen.yml
+    timezone/
+      assert_timezone_region_label.yml
+      assert_timezone_region_local.yml
+  lib/
+    env.ts                             # Env helpers for fixture scripts
+    timezone_region.sh                 # Shell helper for timezone CI
   fixtures/
     seed.ts                            # Node script: create team/channel/user via API
     seed_file_preview.ts               # Node script: seed for file_type_preview flows

@@ -1,5 +1,5 @@
 # Sub-flow: Navigate to a channel
-# Usage: - runFlow: ../utils/navigate_to_channel.yml
+# Usage: - runFlow: ../../subflows/navigation/navigate_to_channel.yml
 # Requires: TEST_CHANNEL_NAME env var
 #
 # NOTE: The "Schedule a message" tutorial tooltip may appear on the first channel visit.

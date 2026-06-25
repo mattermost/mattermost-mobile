@@ -1,5 +1,5 @@
 # Sub-flow: Logout from Mattermost (called by login.yml when app is already logged in).
-# Usage: - runFlow: ../utils/logout.yml
+# Usage: - runFlow: ../../subflows/auth/logout.yml
 # Requires: MAESTRO_APP_ID env var
 appId: ${MAESTRO_APP_ID}
 ---

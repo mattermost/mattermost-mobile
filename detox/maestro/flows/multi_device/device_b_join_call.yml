@@ -20,8 +20,8 @@ tags:
   - MM-T4831
 appId: ${MAESTRO_APP_ID}
 ---
-- runFlow: ../../utils/login.yml
-- runFlow: ../../utils/navigate_to_channel.yml
+- runFlow: ../../subflows/auth/login.yml
+- runFlow: ../../subflows/navigation/navigate_to_channel.yml
 
 # The JoinCallBanner should appear at the top of the channel since Device A
 # started a call while Device B was logged in.

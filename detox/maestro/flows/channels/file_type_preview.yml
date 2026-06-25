@@ -23,8 +23,8 @@ tags:
 appId: ${MAESTRO_APP_ID}
 ---
 # ── Setup: login and navigate to the test channel ─────────────────────────
-- runFlow: ../../utils/login.yml
-- runFlow: ../../utils/navigate_to_channel.yml
+- runFlow: ../../subflows/auth/login.yml
+- runFlow: ../../subflows/navigation/navigate_to_channel.yml
 
 # Jump to the latest message so all file posts are in view at the bottom.
 # The "scroll-to-end-view" button appears when the channel opens away from the

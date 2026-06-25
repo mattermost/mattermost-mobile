@@ -1,5 +1,5 @@
 # Sub-flow: Start/join a call from the channel quick-actions sheet.
-# Usage: - runFlow: ../utils/join_channel_call.yml
+# Usage: - runFlow: ../../subflows/calls/join_channel_call.yml
 # Requires: user is already on the test channel screen.
 #
 # Android emulators can fail WebRTC with "timed out waiting for peer connection";
