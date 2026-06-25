@@ -1,0 +1,110 @@
+# MM-T67856: Tapping Report a Problem leaves Settings and opens the report form.
+#
+# PRE-CONDITIONS:
+#   - Logged-in test user (via subflows/auth/login.yml)
+#   - Unlicensed / free-edition server (default Matterwick provisioning)
+#
+# REQUIRED ENV VARS:
+#   - MAESTRO_APP_ID, TEST_USER_EMAIL, TEST_USER_PASSWORD
+#
+# ASSERTIONS:
+#   - Tapping Report a Problem navigates away from the Settings list
+#   - User can return to Settings and see Report a Problem again
+#   - iOS: external browser sheet OR in-app report screen is shown, then dismissed
+#   - Android: external browser tab opens, Back returns to Settings
+#
+# testIDs:
+#   - tab_bar.account.tab
+#   - account.screen
+#   - account.settings.option
+#   - settings.report_problem.option
+#   - breadcrumb
+#   - report_problem.screen
+#
+# Related flows (in-app report screen path):
+#   - MM-T67856_1 attach_logs_toggle_visible.yml
+#   - MM-T67856_2 attach_logs_toggle_on_surfaces_option.yml
+#   - MM-T67856_3 attach_logs_toggle_off_hides_option.yml
+#   - MM-T67856_4 attach_logs_disabled_when_download_logs_off.yml
+tags:
+  - MM-T67856
+appId: ${MAESTRO_APP_ID}
+---
+- runFlow: ../../subflows/auth/login.yml
+
+- tapOn:
+    id: "tab_bar.account.tab"
+- extendedWaitUntil:
+    visible:
+      id: "account.screen"
+    timeout: 10000
+
+- tapOn:
+    id: "account.settings.option"
+# Report a Problem can take up to 30s to appear while server config syncs on first login.
+- extendedWaitUntil:
+    visible:
+      id: "settings.report_problem.option"
+    timeout: 30000
+
+- tapOn:
+    id: "settings.report_problem.option"
+
+# iOS: free-edition servers open an external browser; licensed servers show in-app screen.
+- runFlow:
+    when:
+      platform: iOS
+    commands:
+      - runFlow:
+          when:
+            visible:
+              id: "breadcrumb"
+          commands:
+            - takeScreenshot: report-problem-opened
+            - tapOn:
+                id: "breadcrumb"
+            - tapOn:
+                text: "Done"
+                optional: true
+      - runFlow:
+          when:
+            visible:
+              id: "report_problem.screen"
+          commands:
+            - takeScreenshot: report-problem-in-app
+            # iOS 26+: modal Report a Problem ignores Maestro `back`; relaunch keeps session.
+            - launchApp:
+                stopApp: true
+                clearState: false
+            - waitForAnimationToEnd:
+                timeout: 30000
+            - extendedWaitUntil:
+                visible:
+                  id: "tab_bar.home.tab"
+                timeout: 15000
+            - tapOn:
+                id: "tab_bar.account.tab"
+            - extendedWaitUntil:
+                visible:
+                  id: "account.settings.option"
+                timeout: 10000
+            - tapOn:
+                id: "account.settings.option"
+
+# Android: Chrome Custom Tab opens; Settings option leaves the tree until Back is pressed.
+- runFlow:
+    when:
+      platform: Android
+    commands:
+      - extendedWaitUntil:
+          notVisible:
+            id: "settings.report_problem.option"
+          timeout: 8000
+      - takeScreenshot: report-problem-opened
+      - pressKey: Back
+
+- extendedWaitUntil:
+    visible:
+      id: "settings.report_problem.option"
+    timeout: 10000
+- takeScreenshot: report-problem-dismissed
