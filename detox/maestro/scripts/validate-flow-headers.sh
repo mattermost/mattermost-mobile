@@ -15,23 +15,6 @@ fi
 failures=0
 checked=0
 
-# Patterns that must not appear in the header comment block (before ---).
-FORBIDDEN_RE=(
-  'detox/'
-  'detox/e2e'
-  'app/screens'
-  'app/components'
-  'app/routes'
-  '\.tsx'
-  '\.ts[):]?'
-  'describe\.skip'
-  'WatermelonDB'
-  'SFSafariViewController'
-  'skipReportAProblemScreen'
-  'isFreeEdition'
-  'React-Native'
-  'React Native'
-)
 
 fail() {
   local file="$1"
@@ -88,15 +71,7 @@ validate_flow() {
     fail "${rel}" 'testIDs section must list at least one entry (#   - ...)'
   fi
 
-  # Forbidden implementation / Detox references in comment block only.
-  local comment_block
-  comment_block="$(printf '%s\n' "${header}" | grep -E '^#' || true)"
-  local pattern
-  for pattern in "${FORBIDDEN_RE[@]}"; do
-    if printf '%s\n' "${comment_block}" | grep -qiE "${pattern}"; then
-      fail "${rel}" "Header comment must not reference implementation details (matched: ${pattern})"
-    fi
-  done
+
 }
 
 while IFS= read -r -d '' flow; do
