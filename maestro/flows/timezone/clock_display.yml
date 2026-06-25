@@ -30,20 +30,10 @@ env:
   SIMULATOR_TIMEZONE: ${SIMULATOR_TIMEZONE || "America/New_York"}
   EXPECTED_TIMEZONE_REGION: ${EXPECTED_TIMEZONE_REGION || ""}
 ---
-# Step 1: Launch app fresh so native timezone is registered at startup (iOS only).
-# Android CI sets persist.sys.timezone before this batch; login.yml clearState relaunch picks it up.
-- runFlow:
-    when:
-      platform: iOS
-    commands:
-      - launchApp:
-          clearState: false
-          stopApp: true
-
-# Step 2: Login and navigate to timezone display settings
+# Step 1: Login (login.yml clearState:true relaunch picks up CI TZ from launchctl setenv).
 - runFlow: ../../utils/login.yml
 
-# Step 3: Open Account settings
+# Step 2: Open Account settings
 - tapOn:
     id: "tab_bar.account.tab"
 - extendedWaitUntil:
@@ -51,7 +41,7 @@ env:
       id: "account.screen"
     timeout: 10000
 
-# Step 4: Open Settings
+# Step 3: Open Settings
 - tapOn:
     id: "account.settings.option"
 - extendedWaitUntil:
@@ -59,7 +49,7 @@ env:
       id: "settings.display.option"
     timeout: 10000
 
-# Step 5: Open Display settings
+# Step 4: Open Display settings
 - tapOn:
     id: "settings.display.option"
 - extendedWaitUntil:
@@ -67,7 +57,7 @@ env:
       id: "display_settings.screen"
     timeout: 10000
 
-# Step 6: Open Timezone settings
+# Step 5: Open Timezone settings
 - tapOn:
     id: "display_settings.timezone.option"
 - extendedWaitUntil:
@@ -75,7 +65,7 @@ env:
       id: "timezone_display_settings.screen"
     timeout: 10000
 
-# Step 7: Enable automatic timezone if needed; assert region label.
+# Step 6: Enable automatic timezone if needed; assert region label.
 - assertVisible:
     id: "timezone_display_settings.automatic.option"
 - runFlow:

@@ -6,6 +6,7 @@
 # Dismiss it via testID if present.
 appId: ${MAESTRO_APP_ID}
 ---
+- runFlow: expand_channels_category.yml
 - extendedWaitUntil:
     visible:
       id: "channel_list.category.channels.channel_item.${TEST_CHANNEL_NAME}"
@@ -18,12 +19,7 @@ appId: ${MAESTRO_APP_ID}
       id: "channel_list.category.channels.channel_item.${TEST_CHANNEL_NAME}"
     timeout: 10000
 # Dismiss any "Schedule a message" tutorial tooltip if present
-- tapOn:
-    id: "scheduled_post.tooltip.close.button"
-    optional: true
-- tapOn:
-    id: "scheduled_post_tutorial_tooltip.close"
-    optional: true
+- runFlow: dismiss_scheduled_post_tooltip.yml
 - extendedWaitUntil:
     visible:
       id: "channel.post_draft.post.input"

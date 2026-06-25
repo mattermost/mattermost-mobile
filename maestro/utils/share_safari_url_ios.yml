@@ -1,29 +1,40 @@
-# Sub-flow: share the current Safari page URL via the address-bar context menu.
-# Page-level More→Share shows Mattermost but does not open the share extension on iOS 26.
+# Sub-flow: open the iOS Safari share sheet for the current page URL.
+# iOS 26: toolbar ⋯ (Page Menu) → Share → system share sheet.
+# Page-level Share... on selected text is handled by share_safari_text_ios.yml.
 appId: com.apple.mobilesafari
 ---
 - retry:
-    label: Open Safari address-bar share menu
-    maxRetries: 2
+    label: Open Safari page-menu share sheet
+    maxRetries: 3
     commands:
-      - runFlow:
-          when:
-            visible:
-              id: "TabBarItemTitle"
-          commands:
-            - longPressOn:
-                id: "TabBarItemTitle"
+      - waitForAnimationToEnd:
+          timeout: 3000
       - runFlow:
           when:
             notVisible:
-              id: "TabBarItemTitle"
+              text: "Share"
           commands:
-            # System overlay — address bar on iOS 26 CI simulators.
-            - longPressOn:
-                point: "50%, 9%"
+            - tapOn:
+                text: "More"
+                rightOf:
+                  id: "TabBarItemTitle"
+                retryTapIfNoChange: true
+                optional: true
+      - runFlow:
+          when:
+            notVisible:
+              text: "Share"
+          commands:
+            # Bottom-toolbar ⋯ page menu — no stable testID on iOS 26 Safari.
+            - tapOn:
+                point: "86%, 93%"
       - extendedWaitUntil:
           visible:
-            text: "Share..."
-          timeout: 5000
-- tapOn:
-    text: "Share..."
+            text: "Share"
+          timeout: 8000
+      - tapOn:
+          text: "Share"
+      - extendedWaitUntil:
+          visible:
+            text: "Copy"
+          timeout: 15000

@@ -1,0 +1,25 @@
+# Dismiss the first-visit scheduled-post send-button tooltip (blocks channel UI on iOS).
+appId: ${MAESTRO_APP_ID}
+---
+- runFlow:
+    when:
+      visible:
+        id: "scheduled_post_tutorial_tooltip"
+    commands:
+      - tapOn:
+          id: "scheduled_post.tooltip.close.button"
+      - extendedWaitUntil:
+          notVisible:
+            id: "scheduled_post_tutorial_tooltip"
+          timeout: 5000
+- runFlow:
+    when:
+      visible:
+        text: "Type a message and long press the send button"
+    commands:
+      - tapOn:
+          id: "scheduled_post.tooltip.close.button"
+          optional: true
+      - tapOn:
+          id: "scheduled_post_tutorial_tooltip.close"
+          optional: true

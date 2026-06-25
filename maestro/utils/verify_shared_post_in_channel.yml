@@ -12,12 +12,11 @@ env:
     id: "scroll-to-end-view"
     optional: true
 - waitForAnimationToEnd:
-    timeout: 5000
-- scrollUntilVisible:
-    element:
+    timeout: 10000
+- extendedWaitUntil:
+    visible:
       id: "channel.post_list.post"
-    direction: UP
-    timeout: 60000
+    timeout: 90000
 - assertVisible:
     id: "channel.post_list.post"
 - extendedWaitUntil:

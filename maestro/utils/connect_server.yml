@@ -17,7 +17,7 @@ appId: ${MAESTRO_APP_ID}
           text: "Display Name"
       - eraseText: 50
       - inputText: "Server 1"
-      - hideKeyboard
+
 - runFlow:
     when:
       platform: Android
@@ -71,7 +71,11 @@ appId: ${MAESTRO_APP_ID}
       visible:
         id: "server_form.display_help"
     commands:
-      - hideKeyboard
+      - runFlow:
+          when:
+            platform: Android
+          commands:
+            - hideKeyboard
       - scrollUntilVisible:
           element:
             id: "server_form.connect.button"

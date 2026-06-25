@@ -1,55 +1,111 @@
 # Tap the Mattermost share-extension target in an open iOS share sheet.
 # Inherits appId from the host-app wrapper (Safari or Photos).
 #
-# MattermostShare.appex display name is "Mattermost" (ios/MattermostShare/Info.plist),
-# not "Mattermost Beta" (main app CFBundleDisplayName).
-#
-# Photos also shows a "◀ Mattermost" navbar back affordance — never wait on bare
-# text "Mattermost" alone; anchor the share sheet first, then use relational
-# selectors (Maestro relational selectors docs).
+# iOS 26.3: use More → Apps list → Mattermost (direct app-row taps hit wrong targets).
 appId: ${SHARE_HOST_APP_ID}
 ---
 - waitForAnimationToEnd:
     timeout: 3000
-- takeScreenshot: ios-share-sheet-open
-# Confirm the share sheet is open before targeting the app row.
-- extendedWaitUntil:
-    visible:
-      text: "Copy Photo"
-    timeout: 30000
-    optional: true
-- extendedWaitUntil:
-    visible:
-      text: "Reminders"
-    timeout: 30000
-    optional: true
-- swipe:
-    start: "88%, 82%"
-    end: "12%, 82%"
-    optional: true
-# Photos layout: Reminders | Mattermost | Preview | More (CI artifact share-sheet-open.png)
+
+# Safari link / Photos image share sheets — horizontal app row ends with More.
 - runFlow:
     when:
       visible:
-        text: "Reminders"
+        text: "More"
+      notVisible:
+        id: "share_extension.channel.option"
     commands:
+      - takeScreenshot: ios-share-sheet-open
+      - retry:
+          label: Tap share-sheet app-row More (not Safari toolbar More)
+          maxRetries: 3
+          commands:
+            - runFlow:
+                when:
+                  notVisible:
+                    text: "Suggestions"
+                commands:
+                  - tapOn:
+                      text: "More"
+                      above: "Copy"
+                      retryTapIfNoChange: true
+            - runFlow:
+                when:
+                  notVisible:
+                    text: "Suggestions"
+                commands:
+                  - tapOn:
+                      text: "More"
+                      rightOf: "Mattermost"
+                      retryTapIfNoChange: true
+                      optional: true
+            - runFlow:
+                when:
+                  notVisible:
+                    text: "Suggestions"
+                commands:
+                  - tapOn:
+                      point: "88%, 58%"
+            - extendedWaitUntil:
+                visible:
+                  text: "Suggestions"
+                timeout: 10000
+      - takeScreenshot: ios-share-apps-list
       - tapOn:
           text: "Mattermost"
-          rightOf: "Reminders"
+          below: "Suggestions"
           retryTapIfNoChange: true
-# Safari / compact sheets without Reminders — tap the app-row label.
+      - runFlow:
+          when:
+            notVisible:
+              id: "share_extension.channel.option"
+            notVisible:
+              text: "Share to Mattermost"
+          commands:
+            - tapOn:
+                text: "Mattermost Beta"
+                retryTapIfNoChange: true
+      - extendedWaitUntil:
+          visible:
+            text: "Share to Mattermost"
+          timeout: 15000
+          optional: true
+      - runFlow: wait_for_share_extension.yml
+
+# Fallback: compact share sheet without More (older Safari layouts).
 - runFlow:
     when:
       notVisible:
-        text: "Reminders"
+        text: "More"
+      notVisible:
+        id: "share_extension.channel.option"
     commands:
-      - scrollUntilVisible:
-          element:
-            text: "Mattermost"
-          direction: RIGHT
-          timeout: 20000
+      - extendedWaitUntil:
+          visible:
+            text: "Reminders"
+          timeout: 30000
           optional: true
-      - tapOn:
-          text: "Mattermost"
-          retryTapIfNoChange: true
-- runFlow: wait_for_share_extension.yml
+      - runFlow:
+          when:
+            visible:
+              text: "Reminders"
+          commands:
+            - tapOn:
+                text: "Mattermost"
+                rightOf: "Reminders"
+                retryTapIfNoChange: true
+      - runFlow:
+          when:
+            notVisible:
+              text: "Reminders"
+          commands:
+            - scrollUntilVisible:
+                element:
+                  text: "Mattermost"
+                direction: RIGHT
+                timeout: 20000
+                optional: true
+            - tapOn:
+                text: "Mattermost"
+                retryTapIfNoChange: true
+      - runFlow: wait_for_share_extension.yml

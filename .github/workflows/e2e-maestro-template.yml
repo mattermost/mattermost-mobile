@@ -209,6 +209,17 @@ jobs:
           xcrun simctl spawn "$SIMULATOR_ID" launchctl setenv TZ "America/New_York"
           echo "Simulator timezone set to America/New_York"
 
+      - name: Seed Photos library for share_image_to_channel (iOS)
+        run: |
+          FIXTURE="detox/e2e/support/fixtures/image.png"
+          if [ ! -f "$FIXTURE" ]; then
+            echo "Error: photo fixture not found at $FIXTURE"
+            exit 1
+          fi
+          xcrun simctl addmedia "$SIMULATOR_ID" "$FIXTURE"
+          xcrun simctl privacy "$SIMULATOR_ID" grant photos com.mattermost.rnbeta
+          echo "Seeded Photos library and granted photo access to com.mattermost.rnbeta"
+
       - name: Seed test data
         run: |
           cd maestro

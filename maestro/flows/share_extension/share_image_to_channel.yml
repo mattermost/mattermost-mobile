@@ -50,14 +50,30 @@ appId: ${MAESTRO_APP_ID}
 # Post the shared content
 - tapOn:
     id: "share_extension.post.button"
+- waitForAnimationToEnd:
+    timeout: 20000
 
 # Return to Mattermost and verify the image post appeared in the channel
 - launchApp:
     appId: "${MAESTRO_APP_ID}"
+    stopApp: false
+- runFlow: ../../utils/expand_channels_category.yml
+- extendedWaitUntil:
+    visible:
+      id: "channel_list.category.channels.channel_item.${TEST_CHANNEL_NAME}"
+    timeout: 60000
+- tapOn:
+    id: "channel_list.category.channels.channel_item.${TEST_CHANNEL_NAME}"
+- runFlow: ../../utils/dismiss_scheduled_post_tooltip.yml
+- tapOn:
+    id: "scroll-to-end-view"
+    optional: true
+- waitForAnimationToEnd:
+    timeout: 10000
 - extendedWaitUntil:
     visible:
       id: "channel.post_list.post"
-    timeout: 20000
+    timeout: 90000
 - assertVisible:
     id: "channel.post_list.post"
 - takeScreenshot: share-image-post-verified

@@ -200,16 +200,16 @@ appId: ${MAESTRO_APP_ID}
       id: "login_form.signin.button"
     timeout: 10000
 # iOS: URLSession can drop the first login POST right after server connect on cold sims.
-# Brief settle + one retry if home tab never appears (still on login form).
+# Brief settle + retries if home tab never appears (still on login form).
 - retry:
-    maxRetries: 1
+    maxRetries: 2
     commands:
       - runFlow:
           when:
             platform: iOS
           commands:
             - waitForAnimationToEnd:
-                timeout: 5000
+                timeout: 8000
       - tapOn:
           id: "login_form.signin.button"
       # iOS 26: dismiss "Save Password?" before it blocks the home tab assertion.

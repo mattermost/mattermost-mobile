@@ -2,32 +2,77 @@
 #
 # Photos grid/toolbar lack testIDs on iOS 26 — coordinate taps are system-overlay
 # exceptions per GUIDELINES §3 (same pattern as logout alert point tap).
+# CI seeds detox/e2e/support/fixtures/image.png via simctl addmedia before batches.
 appId: com.apple.mobileslideshow
 ---
 - stopApp:
     appId: "com.apple.mobileslideshow"
 - launchApp:
     appId: "com.apple.mobileslideshow"
-- extendedWaitUntil:
-    visible:
-      text: "Photos"
-    timeout: 15000
-- runFlow:
-    when:
-      visible:
-        text: "Continue"
+- waitForAnimationToEnd:
+    timeout: 5000
+# iOS 26 Photos onboarding — dismiss before waiting on library chrome.
+- tapOn:
+    text: "Continue"
+    optional: true
+- tapOn:
+    text: "OK"
+    optional: true
+# Library chrome varies on iOS 26 (Photos / Library / Collections tab labels).
+- retry:
+    label: Wait for Photos library UI
+    maxRetries: 2
     commands:
       - tapOn:
           text: "Continue"
+          optional: true
       - extendedWaitUntil:
-          notVisible:
-            text: "Continue"
-          timeout: 10000
+          visible:
+            text: "Photos"
+          timeout: 20000
+          optional: true
+      - runFlow:
+          when:
+            notVisible:
+              text: "Photos"
+          commands:
+            - extendedWaitUntil:
+                visible:
+                  text: "Library"
+                timeout: 20000
+                optional: true
+      - runFlow:
+          when:
+            notVisible:
+              text: "Photos"
+            notVisible:
+              text: "Library"
+          commands:
+            - extendedWaitUntil:
+                visible:
+                  text: "Collections"
+                timeout: 20000
+                optional: true
+      - runFlow:
+          when:
+            notVisible:
+              text: "Photos"
+            notVisible:
+              text: "Library"
+            notVisible:
+              text: "Collections"
+          commands:
+            - extendedWaitUntil:
+                visible:
+                  text: "Select"
+                timeout: 20000
 # Path A: multi-select toolbar (Select button visible).
 - runFlow:
     when:
       visible:
         text: "Select"
+      notVisible:
+        text: "Reminders"
     commands:
       - tapOn:
           text: "Select"
@@ -37,27 +82,57 @@ appId: com.apple.mobileslideshow
           label: Tap Photos selection share icon
           maxRetries: 2
           commands:
+            # Bottom-left share icon on the multi-select toolbar (not the app row).
             - tapOn:
                 point: "8%, 96%"
+            # iOS 26.3 opens the full share sheet directly — no "Share..." menu step.
             - extendedWaitUntil:
                 visible:
-                  text: "Share..."
-                timeout: 5000
+                  text: "1 Photo Selected"
+                timeout: 10000
+            - extendedWaitUntil:
+                visible:
+                  text: "Reminders"
+                timeout: 15000
+# Path A2: Library grid — tap thumbnail to select, then bottom-left share (no Select button).
+- runFlow:
+    when:
+      visible:
+        text: "Library"
+      notVisible:
+        text: "Select"
+      notVisible:
+        text: "Reminders"
+    commands:
+      - tapOn:
+          point: "25%, 28%"
+      - extendedWaitUntil:
+          visible:
+            text: "1 Photo Selected"
+          timeout: 10000
+      - tapOn:
+          point: "8%, 96%"
+      - extendedWaitUntil:
+          visible:
+            text: "Reminders"
+          timeout: 15000
 # Path B: tap a thumbnail → detail screen → share (iOS 26.2+ library layout).
 - runFlow:
     when:
       notVisible:
         text: "Select"
+      notVisible:
+        text: "Library"
+      notVisible:
+        text: "Reminders"
     commands:
       - tapOn:
           point: "25%, 28%"
-      - extendedWaitUntil:
-          notVisible:
-            text: "Photos"
-          timeout: 10000
+      - waitForAnimationToEnd:
+          timeout: 3000
       - retry:
           label: Tap photo detail share action
-          maxRetries: 2
+          maxRetries: 3
           commands:
             - tapOn:
                 point: "92%, 9%"
@@ -65,14 +140,26 @@ appId: com.apple.mobileslideshow
                 visible:
                   text: "Share..."
                 timeout: 5000
+                optional: true
+            - extendedWaitUntil:
+                visible:
+                  text: "Share"
+                timeout: 5000
             - runFlow:
                 when:
                   notVisible:
                     text: "Share..."
+                  notVisible:
+                    text: "Share"
                 commands:
                   - tapOn:
                       point: "8%, 96%"
                   - extendedWaitUntil:
                       visible:
                         text: "Share..."
+                      timeout: 5000
+                      optional: true
+                  - extendedWaitUntil:
+                      visible:
+                        text: "Share"
                       timeout: 5000
