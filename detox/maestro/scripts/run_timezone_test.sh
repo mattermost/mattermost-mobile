@@ -71,6 +71,7 @@ source "$(dirname "$0")/../lib/timezone_region.sh"
 REGION="$(timezone_region_from_iana "$TIMEZONE")"
 
 # shellcheck disable=SC2086
+set +e
 ~/.maestro/bin/maestro test \
   $MAESTRO_DEVICE_FLAG \
   $MAESTRO_PLATFORM_FLAG \
@@ -83,6 +84,7 @@ REGION="$(timezone_region_from_iana "$TIMEZONE")"
   "$(dirname "$0")/../flows/timezone/clock_display.yml"
 
 EXIT_CODE=$?
+set -e
 
 echo "[timezone_test] Resetting $PLATFORM timezone..."
 if [ "$PLATFORM" = "android" ]; then

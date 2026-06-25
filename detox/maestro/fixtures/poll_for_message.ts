@@ -29,19 +29,25 @@ function get(url: string, token: string): Promise<any> {
             method: 'GET',
             headers: {Authorization: `Bearer ${token}`},
         };
-        lib.get(options, (res) => {
+        const req = lib.get(options, (res) => {
             let data = '';
             res.on('data', (chunk: string) => {
                 data += chunk;
             });
             res.on('end', () => {
+                if (!res.statusCode || res.statusCode < 200 || res.statusCode >= 300) {
+                    reject(new Error(`[poll_for_message.get] HTTP ${res.statusCode}: ${data}`));
+                    return;
+                }
                 try {
                     resolve(JSON.parse(data));
                 } catch (e) {
                     reject(new Error(`[poll_for_message] Failed to parse response: ${data}`));
                 }
             });
-        }).on('error', reject);
+        });
+        req.setTimeout(10000, () => req.destroy(new Error('[poll_for_message.get] Request timeout')));
+        req.on('error', reject);
     });
 }
 
@@ -52,7 +58,7 @@ async function pollForMessage(): Promise<void> {
             `${SITE_1_URL}/api/v4/channels/${TEST_CHANNEL_ID}/posts?per_page=10`,
             ADMIN_TOKEN,
         );
-        const found = Object.values(posts.posts || {}).some(
+        const found = Object.values(posts.posts ?? {}).some(
             (p: any) => p.message && p.message.includes(SYNC_TOKEN),
         );
         if (found) {

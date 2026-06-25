@@ -124,8 +124,14 @@ async function main(): Promise<void> {
         const userB = userBResult.user;
         console.log(`[calls_seed] Created user B: ${userB.username} (id: ${userB.id})`);
 
-        await Team.apiAddUserToTeam(siteOneUrl, userB.id, team.id);
-        await Channel.apiAddUserToChannel(siteOneUrl, userB.id, channel.id);
+        const teamMembership = await Team.apiAddUserToTeam(siteOneUrl, userB.id, team.id);
+        if (teamMembership.error) {
+            throw new Error(`Failed to add user B to team: ${JSON.stringify(teamMembership.error)}`);
+        }
+        const channelMembership = await Channel.apiAddUserToChannel(siteOneUrl, userB.id, channel.id);
+        if (channelMembership.error) {
+            throw new Error(`Failed to add user B to channel: ${JSON.stringify(channelMembership.error)}`);
+        }
 
         envVars.USER_A_EMAIL = userA.email;
         envVars.USER_A_PASSWORD = userA.newUser.password;
