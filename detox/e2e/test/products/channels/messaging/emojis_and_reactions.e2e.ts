@@ -156,4 +156,52 @@ describe('Messaging - Emojis and Reactions', () => {
         // # Go back to channel list screen
         await ChannelScreen.back();
     });
+
+    it('MM-66558 - should not crash when the selected emoji is removed while ReactionsScreen is open', async () => {
+        // # Set up a second user and add a 'fire' reaction via API
+        const {user: otherUser} = await User.apiCreateUser(siteOneUrl);
+        await Team.apiAddUserToTeam(siteOneUrl, otherUser.id, testTeam.id);
+        await Channel.apiAddUserToChannel(siteOneUrl, otherUser.id, testChannel.id);
+
+        const message = `Message ${getRandomId()}`;
+        await Post.apiCreatePost(siteOneUrl, {channelId: testChannel.id, message});
+        const {post} = await Post.apiGetLastPostInChannel(siteOneUrl, testChannel.id);
+
+        await User.apiLogin(siteOneUrl, {username: otherUser.newUser.username, password: otherUser.newUser.password});
+        await client.post(`${siteOneUrl}/api/v4/reactions`, {
+            user_id: otherUser.id,
+            post_id: post.id,
+            emoji_name: 'fire',
+            create_at: 0,
+        });
+        await User.apiLogin(siteOneUrl, {username: testUser.username, password: testUser.password});
+
+        // # Open the channel and long-press the fire reaction to open ReactionsScreen
+        await ChannelScreen.open(channelsCategory, testChannel.name);
+        const fireReaction = element(by.id('reaction.emoji.fire').withAncestor(by.id(`channel.post_list.post.${post.id}`)));
+        await waitFor(fireReaction).toExist().withTimeout(timeouts.TEN_SEC);
+
+        await device.disableSynchronization();
+        try {
+            await fireReaction.longPress();
+            await waitFor(ReactionsScreen.reactionsScreen).toExist().withTimeout(timeouts.TEN_SEC);
+
+            // # Remove the 'fire' reaction via API while ReactionsScreen is open
+            await User.apiLogin(siteOneUrl, {username: otherUser.newUser.username, password: otherUser.newUser.password});
+            await client.delete(`${siteOneUrl}/api/v4/users/${otherUser.id}/posts/${post.id}/reactions/fire`);
+            await User.apiLogin(siteOneUrl, {username: testUser.username, password: testUser.password});
+
+            // * Verify the screen survives the emoji removal without crashing
+            await waitFor(
+                element(by.id('reaction.emoji.fire').withAncestor(by.id(ReactionsScreen.testID.reactionsScreen))),
+            ).not.toExist().withTimeout(timeouts.TEN_SEC);
+            await expect(ReactionsScreen.reactionsScreen).toExist();
+        } finally {
+            await device.enableSynchronization();
+        }
+
+        // # Go back to channel list screen
+        await ReactionsScreen.close();
+        await ChannelScreen.back();
+    });
 });
