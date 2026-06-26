@@ -200,7 +200,7 @@ export async function handleNewPostEvent(serverUrl: string, msg: WebSocketMessag
 
     models.push(...postModels);
 
-    operator.batchRecords(models, 'handleNewPostEvent');
+    await operator.batchRecords(models, 'handleNewPostEvent');
 }
 
 export async function handlePostEdited(serverUrl: string, msg: WebSocketMessage) {
@@ -233,7 +233,7 @@ export async function handlePostEdited(serverUrl: string, msg: WebSocketMessage)
 
         // If we have permalink updates but no post to process, batch just the permalinks
         if (permalinkModels.length) {
-            operator.batchRecords(permalinkModels, 'handlePostEdited - permalink sync only');
+            await operator.batchRecords(permalinkModels, 'handlePostEdited - permalink sync only');
         }
         return;
     }

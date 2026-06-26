@@ -1,13 +1,14 @@
 #!/bin/bash
-# Reference: Download Android (AOSP) Emulators - https://github.com/wix/Detox/blob/master/docs/guide/android-dev-env.md#android-aosp-emulators
+# Reference: https://wix.github.io/Detox/docs/guide/android-dev-env
 
 set -ex
 set -o pipefail
 
-SDK_VERSION=${1:-34}  # First argument is SDK version
-AVD_BASE_NAME=${2:-"detox_pixel_4_xl_api_34"}  # Second argument is AVD base name
+SDK_VERSION=${1:-35}           # First argument is SDK version
+AVD_BASE_NAME=${2:-"detox_pixel_8"}  # Second argument is AVD base name (no api suffix — added below)
 AVD_NAME="${AVD_BASE_NAME}_api_${SDK_VERSION}"
-TEST_FILES=${@:3} # Capture all remaining arguments as Detox test files
+TEST_FILES=("${@:3}")          # Capture all remaining arguments as Detox test files
+EMULATOR_RAM_MB=${MM_ANDROID_EMULATOR_RAM_MB:-3072}
 
 setup_avd_home() {
     if [[ "$CI" == "true" ]]; then
@@ -28,18 +29,31 @@ create_avd() {
     local cpu_arch_family cpu_arch
     read cpu_arch_family cpu_arch < <(get_cpu_architecture)
 
-    avdmanager create avd -n "$AVD_NAME" -k "system-images;android-${SDK_VERSION};google_apis;${cpu_arch_family}" -p "$AVD_NAME" -d 'pixel_5'
+    avdmanager create avd -n "$AVD_NAME" -k "system-images;android-${SDK_VERSION};google_apis;${cpu_arch_family}" -p "$AVD_NAME" -d 'pixel_4_xl'
 
     cp -r android_emulator/ "$AVD_NAME/"
     sed -i -e "s|AvdId = change_avd_id|AvdId = ${AVD_NAME}|g" "$AVD_NAME/config.ini"
-    sed -i -e "s|avd.ini.displayname = change_avd_displayname|avd.ini.displayname = Detox Pixel 4 XL API ${SDK_VERSION}|g" "$AVD_NAME/config.ini"
+    sed -i -e "s|avd.ini.displayname = change_avd_displayname|avd.ini.displayname = Detox Pixel 8 API ${SDK_VERSION}|g" "$AVD_NAME/config.ini"
     sed -i -e "s|abi.type = change_type|abi.type = ${cpu_arch_family}|g" "$AVD_NAME/config.ini"
     sed -i -e "s|hw.cpu.arch = change_cpu_arch|hw.cpu.arch = ${cpu_arch}|g" "$AVD_NAME/config.ini"
-    sed -i -e "s|image.sysdir.1 = change_to_image_sysdir/|image.sysdir.1 = system-images/android-${SDK_VERSION}/default/${cpu_arch_family}/|g" "$AVD_NAME/config.ini"
-    sed -i -e "s|skin.path = change_to_absolute_path/pixel_4_xl_skin|skin.path = $(pwd)/${AVD_NAME}/pixel_4_xl_skin|g" "$AVD_NAME/config.ini"
+    sed -i -e "s|image.sysdir.1 = change_to_image_sysdir/|image.sysdir.1 = system-images/android-${SDK_VERSION}/google_apis/${cpu_arch_family}/|g" "$AVD_NAME/config.ini"
+    sed -i -e "s|hw.ramSize = .*|hw.ramSize = ${EMULATOR_RAM_MB}|g" "$AVD_NAME/config.ini"
 
-    echo "hw.cpu.ncore=7" >> "$AVD_NAME/config.ini"
     echo "Android virtual device successfully created: ${AVD_NAME}"
+}
+
+update_existing_avd_memory() {
+    local config_path="${AVD_NAME}/config.ini"
+    if [[ -f "$config_path" ]]; then
+        sed -i -e "s|hw.ramSize = .*|hw.ramSize = ${EMULATOR_RAM_MB}|g" "$config_path"
+    fi
+}
+
+prepare_avd_for_boot() {
+    # Cached AVDs may include snapshot/userdata state that causes
+    # "snapshot operation is pending and timeout has expired" on boot.
+    rm -rf "${AVD_NAME}/snapshots" 2>/dev/null || true
+    rm -f "${AVD_NAME}"/userdata*.img* "${AVD_NAME}"/cache.img* 2>/dev/null || true
 }
 
 start_adb_server() {
@@ -50,26 +64,48 @@ start_adb_server() {
 
 start_emulator() {
     echo "Starting the emulator..."
-    local emulator_opts="-avd $AVD_NAME -no-snapshot -no-boot-anim -no-audio -gpu off -no-window"
+    local emulator_opts="-avd $AVD_NAME -no-snapshot -no-snapshot-load -no-snapshot-save -no-boot-anim -no-audio -gpu off -no-window"
 
     if [[ "$CI" == "true" || "$(uname -s)" == "Linux" ]]; then
-        emulator $emulator_opts -gpu host -accel on -qemu -m 8192 &
+        emulator $emulator_opts -gpu swiftshader_indirect -accel on -qemu -m "$EMULATOR_RAM_MB" &
     else
         emulator $emulator_opts -gpu guest -verbose -qemu -vnc :0
     fi
+}
+
+emulator_process_running() {
+    pgrep -f "emulator.*${AVD_NAME}" >/dev/null 2>&1 || pgrep -f 'qemu-system-x86_64' >/dev/null 2>&1
 }
 
 wait_for_emulator() {
     if [[ "$CI" != "true" ]]; then return; fi
 
     echo "Waiting for emulator to boot..."
-    adb wait-for-device
+    local device_timeout=120
+    local device_elapsed=0
+    until adb devices | grep -qE '^emulator-[0-9]+\s+device'; do
+        if [[ $device_elapsed -ge $device_timeout ]]; then
+            echo "Emulator device did not appear within ${device_timeout}s"
+            adb devices -l || true
+            exit 1
+        fi
+        if ! emulator_process_running; then
+            echo "Emulator process exited before device appeared (check snapshot/cache state)"
+            exit 1
+        fi
+        sleep 5
+        device_elapsed=$((device_elapsed + 5))
+    done
 
     local boot_timeout=300  # 5 minutes max
     local boot_elapsed=0
-    until [[ "$(adb shell getprop sys.boot_completed | tr -d '\r')" == "1" ]]; do
+    until [[ "$(adb shell getprop sys.boot_completed 2>/dev/null | tr -d '\r')" == "1" ]]; do
         if [[ $boot_elapsed -ge $boot_timeout ]]; then
             echo "Emulator failed to boot within 5 minutes"
+            exit 1
+        fi
+        if ! emulator_process_running; then
+            echo "Emulator process exited during boot"
             exit 1
         fi
         echo "Waiting for emulator to fully boot..."
@@ -77,7 +113,11 @@ wait_for_emulator() {
         boot_elapsed=$((boot_elapsed + 10))
     done
     echo "Emulator is fully booted."
-    sleep 15
+
+    # API 35 emulators take longer to stabilize the instrumentation layer after
+    # sys.boot_completed — 15s was insufficient, causing the first Detox app
+    # launch to fail with "No activities in stage RESUMED".
+    sleep 30
     adb shell pm list packages > /dev/null 2>&1
     echo "Emulator is fully ready."
 }
@@ -85,6 +125,9 @@ wait_for_emulator() {
 install_app() {
     echo "Installing the app..."
     adb install -r ../android/app/build/outputs/apk/debug/app-debug.apk
+    # Install the test/instrumentation APK — required by Detox (reinstallApp: false assumes
+    # both the main APK and the test APK are already present on the device).
+    adb install -r ../android/app/build/outputs/apk/androidTest/debug/app-debug-androidTest.apk
     adb shell pm list packages | grep "com.mattermost.rnbeta" && echo "App is installed." || echo "App is not installed."
 }
 
@@ -115,18 +158,21 @@ run_detox_tests() {
     echo "Running Detox tests... $@"
 
     cd detox
+    AVD_NAME="$AVD_NAME" npm run detox:config-gen
     npm run e2e:android-test -- "$@"
 }
 
 main() {
     setup_avd_home
-    
+
     if ! emulator -list-avds | grep -q "$AVD_NAME"; then
         create_avd
     else
         echo "'${AVD_NAME}' Android virtual device already exists."
+        update_existing_avd_memory
     fi
 
+    prepare_avd_for_boot
     start_adb_server
     start_emulator
     wait_for_emulator
@@ -137,7 +183,7 @@ main() {
         setup_adb_reverse
     fi
 
-    run_detox_tests $TEST_FILES
+    run_detox_tests "${TEST_FILES[@]}"
 }
 
 main

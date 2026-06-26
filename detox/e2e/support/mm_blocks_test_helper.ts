@@ -46,19 +46,6 @@ export class MmBlocksTestHelper {
         await Webhook.requireWebhookServer(this.WEBHOOK_BASE_URL);
     }
 
-    static isWebhookSidecarReachable(): Promise<boolean> {
-        return Webhook.isWebhookTestServerReachable(this.WEBHOOK_BASE_URL);
-    }
-
-    static async isWebhookSidecarReachableOrSkip(): Promise<boolean> {
-        const reachable = await this.isWebhookSidecarReachable();
-        if (!reachable) {
-            // eslint-disable-next-line no-console
-            console.warn('Skipping: webhook sidecar not reachable at', this.WEBHOOK_BASE_URL);
-        }
-        return reachable;
-    }
-
     static async postIncomingWebhookBlocks(
         channelId: string,
         displayName: string,

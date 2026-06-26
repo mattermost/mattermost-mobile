@@ -1,35 +1,37 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import client from './client';
+import axios from 'axios';
+
+// ****************************************************************
+// Webhook helpers
+//
+// Utilities for verifying external webhook/integration servers
+// are reachable before running interactive dialog tests.
+// ****************************************************************
 
 /**
- * Health check for the webhook sidecar (`detox/webhook_server.js`, default http://localhost:3000).
+ * Assert that the webhook server at the given base URL is reachable.
+ * Throws only if the server is unreachable; HTTP error responses still prove it is listening.
+ * @param {string} baseUrl - base URL of the webhook server (e.g. http://localhost:3000)
+ * @return {Promise<void>}
  */
-export const isWebhookTestServerReachable = async (webhookBaseUrl: string): Promise<boolean> => {
+export const requireWebhookServer = async (baseUrl: string): Promise<void> => {
     try {
-        const response = await client.get(webhookBaseUrl, {timeout: 5000});
-        return response.status === 200;
-    } catch {
-        return false;
-    }
-};
-
-/**
- * Fail fast when integration tests require the webhook sidecar.
- */
-export const requireWebhookServer = async (webhookBaseUrl: string): Promise<void> => {
-    const reachable = await isWebhookTestServerReachable(webhookBaseUrl);
-    if (!reachable) {
+        await axios.get(baseUrl, {timeout: 5000});
+    } catch (err: any) {
+        // A 4xx/5xx response still means the server is up
+        if (err.response) {
+            return;
+        }
         throw new Error(
-            `Webhook test server is not reachable at ${webhookBaseUrl}. ` +
-            'Start it from the repo: cd detox && node webhook_server.js',
+            `Webhook server is not reachable at ${baseUrl}. ` +
+            'Start the webhook server before running interactive dialog tests.',
         );
     }
 };
 
 export const Webhook = {
-    isWebhookTestServerReachable,
     requireWebhookServer,
 };
 

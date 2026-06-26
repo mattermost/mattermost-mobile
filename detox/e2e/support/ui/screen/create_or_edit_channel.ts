@@ -7,14 +7,14 @@ import {
     ChannelListScreen,
     ChannelSettingsScreen,
 } from '@support/ui/screen';
-import {timeouts} from '@support/utils';
-import {expect} from 'detox';
+import {isIos, tapNativeBackButton, timeouts, wait} from '@support/utils';
+import {expect, waitFor} from 'detox';
 
 class CreateOrEditChannelScreen {
     testID = {
         createOrEditChannelScreen: 'create_or_edit_channel.screen',
         closeButton: 'close.create_or_edit_channel.button',
-        backButton: 'screen.back.button',
+        backButton: 'navigation.header.back',
         createButton: 'create_or_edit_channel.create.button',
         saveButton: 'create_or_edit_channel.save.button',
         scrollView: 'create_or_edit_channel.scroll_view',
@@ -50,8 +50,34 @@ class CreateOrEditChannelScreen {
     };
 
     openCreateChannel = async () => {
-        // # Open create channel screen
-        await ChannelListScreen.headerPlusButton.tap();
+        if (isIos()) {
+            try {
+                await waitFor(element(by.text('Not Now'))).toBeVisible().withTimeout(3000);
+                await element(by.text('Not Now')).tap();
+            } catch {
+                // No system alert.
+            }
+        }
+
+        await waitFor(ChannelListScreen.headerPlusButton).toBeVisible().withTimeout(timeouts.HALF_MIN);
+        let tapError: unknown;
+        /* eslint-disable no-await-in-loop -- sequential retry: each tap must complete before retrying */
+        for (let i = 0; i < 3; i++) {
+            try {
+                await ChannelListScreen.headerPlusButton.tap();
+                tapError = undefined;
+                break;
+            } catch (err) {
+                tapError = err;
+                await wait(timeouts.ONE_SEC);
+            }
+        }
+        /* eslint-enable no-await-in-loop */
+        if (tapError) {
+            throw tapError;
+        }
+        await wait(timeouts.ONE_SEC);
+        await waitFor(ChannelListScreen.createNewChannelItem).toBeVisible().withTimeout(timeouts.TEN_SEC);
         await ChannelListScreen.createNewChannelItem.tap();
 
         return this.toBeVisible();
@@ -78,7 +104,7 @@ class CreateOrEditChannelScreen {
     };
 
     back = async () => {
-        await this.backButton.tap();
+        await tapNativeBackButton();
         await expect(this.createOrEditChannelScreen).not.toBeVisible();
     };
 
