@@ -87,6 +87,11 @@ public class NotificationReplyBroadcastReceiver extends BroadcastReceiver {
             @Override
             public void resolve(@Nullable Object value) {
                 if (value != null) {
+                    if (!(value instanceof ReadableMap)) {
+                        TurboLog.Companion.i("ReactNative", String.format("Reply FAILED unexpected response type: %s", value.getClass().getSimpleName()));
+                        onReplyFailed(notificationId);
+                        return;
+                    }
                     ReadableMap response = (ReadableMap)value;
                     ReadableMap data = null;
                     if (response.hasKey("data") && response.getType("data") == ReadableType.Map) {
