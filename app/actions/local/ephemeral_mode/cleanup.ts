@@ -2,6 +2,7 @@
 // See LICENSE.txt for license information.
 
 import {deletePostsInChannelsByCutoff} from '@actions/local/post';
+import {queryAIThreadsBefore} from '@agents/database/queries/thread';
 import {Screens} from '@constants';
 import {MM_TABLES, SYSTEM_IDENTIFIERS} from '@constants/database';
 import DateConstants from '@constants/datetime';
@@ -218,12 +219,26 @@ async function cleanupPosts(
     }
 }
 
-// Stubs for Stage 3 and Stage 4.
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-async function cleanupAiThreads(_database: Database, _cutoff: number, _isActive: boolean) {
-    // Implemented in Stage 3.
+// AI threads self-heal on next open (re-fetched from the server), so the only
+// protection is the currently-viewed thread. viewedThreadId is the open thread's
+// root post id, which equals the AiThread id; it is undefined on non-active servers.
+async function cleanupAiThreads(
+    database: Database,
+    operator: {batchRecords: (models: Model[], description: string) => Promise<void>},
+    cutoff: number,
+    viewedThreadId: string | undefined,
+) {
+    const staleThreads = await queryAIThreadsBefore(database, cutoff).fetch();
+    const prepared = staleThreads.
+        filter((thread) => thread.id !== viewedThreadId).
+        map((thread) => thread.prepareDestroyPermanently());
+
+    if (prepared.length > 0) {
+        await operator.batchRecords(prepared, 'cleanupAiThreads');
+    }
 }
 
+// Stub for Stage 4.
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 async function cleanupPlaybookRuns(_database: Database, _cutoff: number, _isActive: boolean) {
     // Implemented in Stage 4.
@@ -279,7 +294,7 @@ export async function autoCacheCleanup(serverUrl: string): Promise<void> {
         );
 
         await cleanupPosts(serverUrl, database, operator, cutoff, limits);
-        await cleanupAiThreads(database, cutoff, isActive);
+        await cleanupAiThreads(database, operator, cutoff, limits.viewedThreadId);
         await cleanupPlaybookRuns(database, cutoff, isActive);
 
         await database.unsafeVacuum();

@@ -2,6 +2,7 @@
 // See LICENSE.txt for license information.
 
 import * as LocalPost from '@actions/local/post';
+import {AGENTS_TABLES} from '@agents/constants/database';
 import {Screens} from '@constants';
 import {MM_TABLES, SYSTEM_IDENTIFIERS} from '@constants/database';
 import {AUTO_CACHE_CLEANUP_PROTECTION_BUFFER} from '@constants/post';
@@ -14,6 +15,7 @@ import {logError} from '@utils/log';
 
 import {autoCacheCleanup} from './cleanup';
 
+import type AiThreadModel from '@agents/types/database/models/ai_thread';
 import type ServerDataOperator from '@database/operator/server_data_operator';
 import type {Database} from '@nozbe/watermelondb';
 import type MyChannelModel from '@typings/database/models/servers/my_channel';
@@ -21,6 +23,7 @@ import type PostsInChannelModel from '@typings/database/models/servers/posts_in_
 import type PostsInThreadModel from '@typings/database/models/servers/posts_in_thread';
 
 const {SERVER: {MY_CHANNEL, POST, POSTS_IN_CHANNEL, POSTS_IN_THREAD}} = MM_TABLES;
+const {AI_THREAD} = AGENTS_TABLES;
 
 jest.mock('@managers/offline_persistence_manager', () => ({
     __esModule: true,
@@ -53,9 +56,9 @@ jest.mock('@actions/local/post', () => ({
 const SERVER_URL = 'cleanup.test.com';
 
 // Fixed clock so Date.now() inside autoCacheCleanup is deterministic.
-// cleanupDays=1 in debug mode → cutoff = NOW - 1*3_600_000
-const NOW = 10_000_000;
-const CUTOFF = NOW - 3_600_000; // 6_400_000
+// cleanupDays=1 → cutoff = NOW - 1 day (DateConstants.SECONDS.DAY * 1000).
+const NOW = 100_000_000;
+const CUTOFF = NOW - (86_400 * 1000); // 13_600_000
 const OLD = 1_000_000; // clearly below CUTOFF
 const RECENT = NOW; // clearly above CUTOFF
 
@@ -114,6 +117,19 @@ async function writePost(id: string, channelId: string, createAt: number): Promi
             r.type = '';
             r.updateAt = 0;
             r.userId = '';
+        });
+    });
+}
+
+async function writeAiThread(id: string, updateAt: number): Promise<void> {
+    await database.write(async () => {
+        await database.get<AiThreadModel>(AI_THREAD).create((r) => {
+            r._raw.id = id;
+            r.channelId = 'bot-dm';
+            r.message = '';
+            r.title = '';
+            r.replyCount = 0;
+            r.updateAt = updateAt;
         });
     });
 }
@@ -375,5 +391,40 @@ describe('autoCacheCleanup', () => {
 
         expect(vacuumSpy).not.toHaveBeenCalled();
         expect(logError).toHaveBeenCalledWith('autoCacheCleanup', expect.any(Error));
+    });
+
+    // TC-14
+    it('deletes AI threads older than the cutoff and keeps newer ones', async () => {
+        await writeAiThread('ai-old', OLD);
+        await writeAiThread('ai-recent', RECENT);
+
+        await autoCacheCleanup(SERVER_URL);
+
+        const ids = (await database.get(AI_THREAD).query().fetch()).map((r) => r.id);
+        expect(ids).toEqual(['ai-recent']);
+    });
+
+    // TC-15
+    it('spares the currently-viewed AI thread on the active server even when it is stale', async () => {
+        jest.spyOn(DatabaseManager, 'getActiveServerUrl').mockResolvedValue(SERVER_URL);
+        jest.mocked(EphemeralStore.getCurrentThreadId).mockReturnValue('open-ai-thread');
+        await writeAiThread('open-ai-thread', OLD);
+        await writeAiThread('other', OLD);
+
+        await autoCacheCleanup(SERVER_URL);
+
+        const ids = (await database.get(AI_THREAD).query().fetch()).map((r) => r.id);
+        expect(ids).toEqual(['open-ai-thread']);
+    });
+
+    // TC-16
+    it('deletes all stale AI threads on a non-active server regardless of the viewed thread id', async () => {
+        jest.mocked(EphemeralStore.getCurrentThreadId).mockReturnValue('open-ai-thread');
+        await writeAiThread('open-ai-thread', OLD);
+
+        await autoCacheCleanup(SERVER_URL);
+
+        const threads = await database.get(AI_THREAD).query().fetch();
+        expect(threads.length).toBe(0);
     });
 });
