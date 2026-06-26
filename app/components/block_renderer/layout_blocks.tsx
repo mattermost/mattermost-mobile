@@ -19,16 +19,23 @@ import {ImageBlock} from './image_block';
 import {type MmBlocksExpandedContentPayload} from './mm_blocks_context_provider';
 import {StaticSelectElement} from './static_select_element';
 import {
-    MM_CONTAINER_MAX_HEIGHT_PX,
     containerGapStyle,
+    containerMaxHeightPx,
     getStyleSheet,
     isMmContainerSemanticAccent,
 } from './styles';
 import {TextBlock} from './text_block';
 
-import type {BlockSwitchProps} from './types';
+import type {ActionHandler} from './types';
 
 const COLLAPSIBLE_ANIMATION_MS = 250;
+
+export type BlockSwitchProps = {
+    block: MmBlock;
+    currentLayout?: 'column' | 'row';
+    onAction: ActionHandler;
+    theme: Theme;
+};
 
 export const BlockSwitch = ({block, currentLayout, onAction, theme}: BlockSwitchProps) => {
     switch (block.type) {
@@ -167,8 +174,7 @@ export const ContainerBlock = ({block, ...switchProps}: ContainerBlockProps) => 
 
     const currentLayout: 'column' | 'row' = block.flow === 'horizontal' ? 'row' : 'column';
 
-    const maxHeightKey = block.max_height === 'small' || block.max_height === 'medium' || block.max_height === 'large' ? block.max_height : null;
-    const maxHeightPx = maxHeightKey ? MM_CONTAINER_MAX_HEIGHT_PX[maxHeightKey] : null;
+    const maxHeightPx = containerMaxHeightPx(block.max_height);
 
     const containerStyle = useMemo(() => {
         const containerBaseStyle = [block.border && style.containerBorder, block.background === 'gray' && style.containerBgGray];

@@ -52,7 +52,7 @@ export const postActionWithCookie = async (
     actionCookie: string,
     selectedOption = '',
     query?: Record<string, string>,
-    integrationFormat: PostActionIntegrationFormat | '' = '',
+    integrationFormat: PostActionIntegrationFormat = 'attachment',
 ) => {
     try {
         const client = NetworkManager.getClient(serverUrl);

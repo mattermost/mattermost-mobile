@@ -7,14 +7,16 @@ import {getStatusColors} from '@utils/message_attachment';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
 
-const MM_CONTAINER_GAP_PX: Record<'small' | 'medium' | 'large' | 'xlarge', number> = {
+const MM_CONTAINER_GAP_PX: Record<MmContainerGap, number> = {
+    none: 0,
     small: 8,
     medium: 12,
     large: 16,
     xlarge: 20,
 };
 
-export const MM_CONTAINER_MAX_HEIGHT_PX: Record<'small' | 'medium' | 'large', number> = {
+const MM_CONTAINER_MAX_HEIGHT_PX: Record<MmContainerMaxHeight, number | undefined> = {
+    none: undefined,
     small: 160,
     medium: 280,
     large: 420,
@@ -32,12 +34,20 @@ export function isMmContainerSemanticAccent(accent: string): accent is MmContain
     return MM_CONTAINER_ACCENT_SEMANTIC.has(accent as MmContainerAccentSemantic);
 }
 
-export function containerGapStyle(gap: MmContainerBlock['gap'] | undefined): ViewStyle {
-    const key = gap === 'none' || gap === 'small' || gap === 'medium' || gap === 'large' || gap === 'xlarge' ? gap : 'medium';
-    if (key === 'none') {
-        return {gap: 0};
+export function containerGapStyle(gap: MmContainerGap | undefined): ViewStyle {
+    let key: MmContainerGap = 'medium';
+    if (gap === 'none' || gap === 'small' || gap === 'medium' || gap === 'large' || gap === 'xlarge') {
+        key = gap;
     }
     return {gap: MM_CONTAINER_GAP_PX[key]};
+}
+
+export function containerMaxHeightPx(maxHeight: MmContainerMaxHeight | undefined): number | undefined {
+    let key: MmContainerMaxHeight = 'none';
+    if (maxHeight === 'none' || maxHeight === 'small' || maxHeight === 'medium' || maxHeight === 'large') {
+        key = maxHeight;
+    }
+    return MM_CONTAINER_MAX_HEIGHT_PX[key];
 }
 
 export const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {

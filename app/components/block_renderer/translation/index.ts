@@ -9,6 +9,9 @@
 //
 // The server stores all formats as opaque data; all translation is client-side.
 
+import {getFullErrorMessage} from '@utils/errors';
+import {logDebug} from '@utils/log';
+
 import {translateAdaptiveCards} from './adaptive_cards';
 import {translateAttachments} from './attachments';
 import {translateBlockKit} from './block_kit';
@@ -85,7 +88,7 @@ export function translatePostProps(props: Record<string, unknown>, intl: IntlSha
         }
         return applyBlockTranslationLimits(blocks);
     } catch (error) {
-        console.log('error translating post props', error); // eslint-disable-line no-console
+        logDebug('error on translatePostProps', getFullErrorMessage(error));
         return buildTranslationErrorBlocks(intl, error);
     }
 }

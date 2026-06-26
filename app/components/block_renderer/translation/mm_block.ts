@@ -23,13 +23,6 @@ const MM_IMAGE_SIZES = new Set<MmImageSize>(['auto', 'xsmall', 'small', 'medium'
 const MM_CONTAINER_GAPS = new Set<MmContainerGap>(['none', 'small', 'medium', 'large', 'xlarge']);
 const MM_CONTAINER_BACKGROUNDS = new Set<MmContainerBackground>(['none', 'gray']);
 const MM_CONTAINER_MAX_HEIGHTS = new Set<MmContainerMaxHeight>(['none', 'small', 'medium', 'large']);
-const MM_CONTAINER_ACCENT_SEMANTIC = new Set<MmContainerAccentSemantic>([
-    'default',
-    'primary',
-    'good',
-    'warning',
-    'danger',
-]);
 
 function isRecord(v: unknown): v is Record<string, unknown> {
     return typeof v === 'object' && v !== null && !Array.isArray(v);
@@ -85,9 +78,7 @@ function translateAccentColor(v: unknown): MmContainerBlock['accent_color'] | un
     if (typeof v !== 'string') {
         return undefined;
     }
-    if (MM_CONTAINER_ACCENT_SEMANTIC.has(v as MmContainerAccentSemantic)) {
-        return v as MmContainerAccentSemantic;
-    }
+
     return v;
 }
 

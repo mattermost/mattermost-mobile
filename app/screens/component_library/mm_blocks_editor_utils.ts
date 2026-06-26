@@ -65,8 +65,6 @@ export function blockTypeLabel(type: BlockTypeId): string {
 
 export function createDefaultBlock(type: BlockTypeId): MmBlock {
     switch (type) {
-        case 'text':
-            return {type: 'text', text: 'New text'};
         case 'divider':
             return {type: 'divider'};
         case 'button':
@@ -117,6 +115,7 @@ export function createDefaultBlock(type: BlockTypeId): MmBlock {
                 header: [{type: 'text', text: 'Header'}],
                 content: [{type: 'text', text: 'Collapsed content'}],
             };
+        case 'text':
         default:
             return {type: 'text', text: 'New text'};
     }

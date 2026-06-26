@@ -31,7 +31,7 @@ export interface ClientPostsMix {
     searchPostsWithParams: (teamId: string, params: PostSearchParams) => Promise<SearchPostResponse>;
     searchPosts: (teamId: string, terms: string, isOrSearch: boolean) => Promise<SearchPostResponse>;
     doPostAction: (postId: string, actionId: string, selectedOption?: string) => Promise<any>;
-    doPostActionWithCookie: (postId: string, actionId: string, actionCookie: string, selectedOption?: string, query?: Record<string, string>, integrationFormat?: PostActionIntegrationFormat | '') => Promise<any>;
+    doPostActionWithCookie: (postId: string, actionId: string, actionCookie: string, selectedOption?: string, query?: Record<string, string>, integrationFormat?: PostActionIntegrationFormat) => Promise<any>;
     acknowledgePost: (postId: string, userId: string) => Promise<PostAcknowledgement>;
     unacknowledgePost: (postId: string, userId: string) => Promise<any>;
     sendTestNotification: () => Promise<{status: 'OK'}>;
@@ -205,7 +205,7 @@ const ClientPosts = <TBase extends Constructor<ClientBase>>(superclass: TBase) =
         return this.doPostActionWithCookie(postId, actionId, '', selectedOption);
     };
 
-    doPostActionWithCookie = async (postId: string, actionId: string, actionCookie: string, selectedOption = '', query?: Record<string, string>, integrationFormat: PostActionIntegrationFormat | '' = '') => {
+    doPostActionWithCookie = async (postId: string, actionId: string, actionCookie: string, selectedOption = '', query?: Record<string, string>, integrationFormat: PostActionIntegrationFormat = 'attachment') => {
         const msg: Record<string, unknown> = {
             selected_option: selectedOption,
         };
