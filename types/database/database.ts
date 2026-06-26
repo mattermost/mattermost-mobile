@@ -251,6 +251,12 @@ export type HandleGroupMembershipForMemberArgs = PrepareOnly & {
   groups?: Array<Pick<Group, 'id'>>;
 }
 
+export type HandleGroupMembershipsDeltaArgs = PrepareOnly & {
+  userId: string;
+  addedGroupIds: string[];
+  removedGroupIds: string[];
+}
+
 export type HandleGroupTeamsForTeamArgs = PrepareOnly & {
   teamId: string;
   groups?: Array<Pick<Group, 'id'>>;
@@ -287,6 +293,7 @@ export type HandleTeamMembershipArgs = PrepareOnly & {
 export type HandlePreferencesArgs = PrepareOnly & {
   preferences?: PreferenceType[];
   sync?: boolean;
+  tombstones?: PreferenceTombstone[];
 };
 
 export type HandleUsersArgs = PrepareOnly & {

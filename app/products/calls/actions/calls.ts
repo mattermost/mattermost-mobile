@@ -179,12 +179,29 @@ export const createCallAndAddToIds = (channelId: string, call: CallState, ids?: 
     return convertedCall;
 };
 
-export const loadConfigAndCalls = async (serverUrl: string, userId: string, groupLabel?: RequestGroupLabel) => {
-    const res = await checkIsCallsPluginEnabled(serverUrl);
-    if (res.data) {
+export const loadConfigAndCallsIfEnabled = (serverUrl: string, userId: string, manifests: ClientPluginManifest[], groupLabel?: RequestGroupLabel) => {
+    const {data: enabled} = setCallsPluginEnabledFromManifests(serverUrl, manifests);
+    if (enabled) {
         loadConfig(serverUrl, true, groupLabel);
         loadCalls(serverUrl, userId, groupLabel);
     }
+};
+
+export const loadConfigAndCalls = async (serverUrl: string, userId: string, groupLabel?: RequestGroupLabel) => {
+    const res = await checkIsCallsPluginEnabled(serverUrl);
+    if ('data' in res && res.data) {
+        loadConfig(serverUrl, true, groupLabel);
+        loadCalls(serverUrl, userId, groupLabel);
+    }
+};
+
+export const setCallsPluginEnabledFromManifests = (serverUrl: string, manifests: ClientPluginManifest[]) => {
+    const enabled = manifests.findIndex((m) => m.id === Calls.PluginId) !== -1;
+    const curEnabled = getCallsConfig(serverUrl).pluginEnabled;
+    if (enabled !== curEnabled) {
+        setPluginEnabled(serverUrl, enabled);
+    }
+    return {data: enabled};
 };
 
 export const checkIsCallsPluginEnabled = async (serverUrl: string) => {
@@ -198,13 +215,7 @@ export const checkIsCallsPluginEnabled = async (serverUrl: string) => {
         return {error};
     }
 
-    const enabled = data.findIndex((m) => m.id === Calls.PluginId) !== -1;
-    const curEnabled = getCallsConfig(serverUrl).pluginEnabled;
-    if (enabled !== curEnabled) {
-        setPluginEnabled(serverUrl, enabled);
-    }
-
-    return {data: enabled};
+    return setCallsPluginEnabledFromManifests(serverUrl, data);
 };
 
 export const enableChannelCalls = async (serverUrl: string, channelId: string, enable: boolean) => {
@@ -233,7 +244,8 @@ export const joinCall = async (
 ): Promise<{ error?: unknown; data?: string }> => {
     // Edge case: calls was disabled when app loaded, and then enabled, but app hasn't
     // reconnected its websocket since then (i.e., hasn't called batchLoadCalls yet)
-    const {data: enabled} = await checkIsCallsPluginEnabled(serverUrl);
+    const res = await checkIsCallsPluginEnabled(serverUrl);
+    const enabled = 'data' in res && res.data;
     if (!enabled) {
         return {error: 'calls plugin not enabled'};
     }

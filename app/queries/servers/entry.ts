@@ -106,8 +106,8 @@ export async function prepareEntryModels({operator, teamData, chData, prefData, 
         modelPromises.push(...await prepareAllMyChannels(operator, channels, memberships, isCRTEnabled, memberCountOverrides));
     }
 
-    if (prefData?.preferences?.length) {
-        modelPromises.push(prepareMyPreferences(operator, prefData.preferences, true));
+    if (prefData?.preferences?.length || prefData?.tombstones?.length) {
+        modelPromises.push(prepareMyPreferences(operator, prefData?.preferences ?? [], true, prefData?.tombstones));
     }
 
     if (meData?.user) {

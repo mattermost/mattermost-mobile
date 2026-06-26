@@ -15,8 +15,9 @@ import {getTeamById} from '@queries/servers/team';
 import ChannelsSyncStore from '@store/channels_sync_store';
 import EphemeralStore from '@store/ephemeral_store';
 
-import {entryInitialLoad} from './index';
+import {cancelExperienceAPIEntryActions, entryInitialLoad} from './index';
 
+jest.mock('@actions/local/systems');
 jest.mock('@actions/remote/channel');
 jest.mock('@actions/remote/scheduled_post');
 jest.mock('@actions/remote/preference');
@@ -26,6 +27,11 @@ jest.mock('@actions/remote/user');
 jest.mock('@actions/remote/post');
 jest.mock('@actions/remote/groups');
 jest.mock('@actions/remote/thread');
+jest.mock('@agents/actions/remote/agents_status');
+jest.mock('@agents/actions/remote/version');
+jest.mock('@calls/actions/calls');
+jest.mock('@playbooks/actions/remote/version');
+jest.mock('@managers/apps_manager', () => ({default: {refreshAppBindings: jest.fn()}}));
 jest.mock('@queries/servers/entry');
 jest.mock('react-native-permissions');
 jest.mock('expo-application', () => ({
@@ -68,7 +74,8 @@ const mockLicense = {} as ClientLicense;
 let operator: ServerDataOperator;
 const mockClient = {
     getInitialLoad: jest.fn().mockResolvedValue(mockInitialLoad),
-};
+    getPluginsManifests: jest.fn().mockResolvedValue([]),
+} as Record<string, jest.Mock>;
 
 beforeAll(() => {
     NetworkManager.getClient = jest.fn().mockReturnValue(mockClient);
@@ -346,5 +353,261 @@ describe('entryInitialLoad', () => {
             expect(teamIds).not.toContain('stale-team');
             expect(teamIds).toContain('team1');
         });
+    });
+
+    describe('runActions parameter', () => {
+        it('should call getPluginsManifests when runActions is true (default)', async () => {
+            mockClient.getPluginsManifests = jest.fn().mockResolvedValue([]);
+
+            await entryInitialLoad(serverUrl, 'team1');
+
+            // runExperienceAPIEntryActions is fire-and-forget; flush microtasks so setProductsPluginStatus resolves.
+            await Promise.resolve();
+            await Promise.resolve();
+
+            expect(mockClient.getPluginsManifests).toHaveBeenCalledTimes(1);
+        });
+
+        it('should not call getPluginsManifests when runActions is false', async () => {
+            mockClient.getPluginsManifests = jest.fn().mockResolvedValue([]);
+
+            await entryInitialLoad(serverUrl, 'team1', undefined, undefined, undefined, undefined, false);
+
+            await Promise.resolve();
+            await Promise.resolve();
+
+            expect(mockClient.getPluginsManifests).not.toHaveBeenCalled();
+        });
+    });
+});
+
+describe('cancelExperienceAPIEntryActions', () => {
+    beforeEach(() => {
+        jest.useFakeTimers({doNotFake: ['nextTick']});
+    });
+
+    afterEach(() => {
+        jest.useRealTimers();
+    });
+
+    it('should cancel a pending idle callback before it fires', async () => {
+        await DatabaseManager.init([serverUrl]);
+        const idleCb = jest.fn();
+
+        // Simulate scheduling via entryInitialLoad by calling the exported cancel directly
+        // after we verify a handle was registered — use requestIdleCallback spy.
+        const originalRequest = global.requestIdleCallback;
+        const originalCancel = global.cancelIdleCallback;
+        let capturedHandle: number | undefined;
+        global.requestIdleCallback = jest.fn((cb) => {
+            capturedHandle = originalRequest(cb);
+            idleCb.mockImplementation(cb);
+            return capturedHandle!;
+        });
+        global.cancelIdleCallback = jest.fn((handle) => {
+            originalCancel(handle);
+        });
+
+        // Run entryInitialLoad to schedule the idle callback.
+        (require('@actions/remote/systems').fetchConfigAndLicense as jest.Mock).mockResolvedValue({
+            config: {Version: '9.0.0', CollapsedThreads: 'default_off', FeatureFlagCollapsedThreads: 'true', FeatureFlagEnableExperienceAPI: 'true'},
+            license: {},
+            error: undefined,
+        });
+        NetworkManager.getClient = jest.fn().mockReturnValue({
+            getInitialLoad: jest.fn().mockResolvedValue({
+                me: {id: 'user1', username: 'user1', roles: '', update_at: 1706000000000},
+                teams: [],
+                team_members: {members: [], removed_team_ids: []},
+                active_team: null,
+                direct_channel_counts: null,
+                direct_profiles: [],
+                roles: [],
+                preferences: [],
+                timestamp: 1706000001000,
+                can_join_other_teams: false,
+            }),
+            getPluginsManifests: jest.fn().mockResolvedValue([]),
+        });
+        (require('@queries/servers/entry').prepareEntryModels as jest.Mock).mockResolvedValue([]);
+
+        await entryInitialLoad(serverUrl);
+
+        // Cancel before idle fires.
+        cancelExperienceAPIEntryActions(serverUrl);
+
+        expect(global.cancelIdleCallback).toHaveBeenCalled();
+
+        global.requestIdleCallback = originalRequest;
+        global.cancelIdleCallback = originalCancel;
+        NetworkManager.getClient = jest.fn().mockReturnValue(mockClient);
+        await DatabaseManager.destroyServerDatabase(serverUrl);
+    });
+
+    it('should be a no-op when no idle callback is pending', () => {
+        // Should not throw when called with no pending handle.
+        expect(() => cancelExperienceAPIEntryActions('https://no-pending.test')).not.toThrow();
+    });
+});
+
+describe('entryInitialLoad group_memberships', () => {
+    let localOperator: typeof operator;
+
+    beforeEach(async () => {
+        await DatabaseManager.init([serverUrl]);
+        localOperator = DatabaseManager.serverDatabases[serverUrl]!.operator;
+        mockClient.getInitialLoad.mockResolvedValue(mockInitialLoad);
+        mockClient.getPluginsManifests.mockResolvedValue([]);
+        (fetchConfigAndLicense as jest.Mock).mockResolvedValue({config: mockConfig, license: mockLicense, error: undefined});
+        (prepareEntryModels as jest.Mock).mockResolvedValue([]);
+    });
+
+    afterEach(async () => {
+        await DatabaseManager.destroyServerDatabase(serverUrl);
+        jest.clearAllMocks();
+    });
+
+    it('should call handleGroupMembershipsDelta when group_memberships is present', async () => {
+        const spyOnDelta = jest.spyOn(localOperator, 'handleGroupMembershipsDelta');
+        mockClient.getInitialLoad.mockResolvedValueOnce({
+            ...mockInitialLoad,
+            me: {id: 'user1', username: 'user1', roles: '', update_at: 1706000000000},
+            group_memberships: {
+                members: [{group_id: 'group1', user_id: 'user1', create_at: 1706000000000}],
+                removed_group_ids: [],
+            },
+        });
+
+        await entryInitialLoad(serverUrl, 'team1', undefined, undefined, undefined, undefined, false);
+
+        expect(spyOnDelta).toHaveBeenCalledWith({
+            userId: 'user1',
+            addedGroupIds: ['group1'],
+            removedGroupIds: [],
+            prepareRecordsOnly: true,
+        });
+    });
+
+    it('should pass removed_group_ids as removedGroupIds to handleGroupMembershipsDelta', async () => {
+        const spyOnDelta = jest.spyOn(localOperator, 'handleGroupMembershipsDelta');
+        mockClient.getInitialLoad.mockResolvedValueOnce({
+            ...mockInitialLoad,
+            me: {id: 'user1', username: 'user1', roles: '', update_at: 1706000000000},
+            group_memberships: {
+                members: [],
+                removed_group_ids: ['group-removed'],
+            },
+        });
+
+        await entryInitialLoad(serverUrl, 'team1', undefined, undefined, undefined, undefined, false);
+
+        expect(spyOnDelta).toHaveBeenCalledWith({
+            userId: 'user1',
+            addedGroupIds: [],
+            removedGroupIds: ['group-removed'],
+            prepareRecordsOnly: true,
+        });
+    });
+
+    it('should write new preferences and delete tombstoned ones in the same batch', async () => {
+        // Use the real prepareEntryModels so handlePreferences is actually called.
+        const {prepareEntryModels: realPrepareEntryModels} = jest.requireActual('@queries/servers/entry');
+        (prepareEntryModels as jest.Mock).mockImplementationOnce(realPrepareEntryModels);
+
+        // Seed an existing preference that will be tombstoned.
+        await localOperator.handlePreferences({
+            preferences: [
+                {user_id: 'user1', category: 'direct_channel_show', name: 'chan1', value: 'true'},
+            ],
+            prepareRecordsOnly: false,
+        });
+
+        const spyOnPreferences = jest.spyOn(localOperator, 'handlePreferences');
+
+        mockClient.getInitialLoad.mockResolvedValueOnce({
+            ...mockInitialLoad,
+            me: {id: 'user1', username: 'user1', roles: '', update_at: 1706000000000},
+            preferences: [
+
+                // New preference being added
+                {user_id: 'user1', category: 'theme', name: '', value: 'dark'},
+            ],
+            preference_tombstones: [
+
+                // Existing preference being deleted
+                {user_id: 'user1', category: 'direct_channel_show', name: 'chan1', delete_at: 1706000001000},
+            ],
+        });
+
+        await entryInitialLoad(serverUrl, 'team1', undefined, undefined, undefined, undefined, false);
+
+        await Promise.resolve();
+        await Promise.resolve();
+
+        // handlePreferences called with both new prefs and tombstones in the same call.
+        expect(spyOnPreferences).toHaveBeenCalledWith(expect.objectContaining({
+            preferences: expect.arrayContaining([
+                expect.objectContaining({category: 'theme'}),
+            ]),
+            tombstones: [{user_id: 'user1', category: 'direct_channel_show', name: 'chan1', delete_at: 1706000001000}],
+        }));
+    });
+
+    it('should not call handlePreferences with tombstones when preference_tombstones is absent', async () => {
+        const spyOnPreferences = jest.spyOn(localOperator, 'handlePreferences');
+        mockClient.getInitialLoad.mockResolvedValueOnce({
+            ...mockInitialLoad,
+            preference_tombstones: undefined,
+        });
+
+        await entryInitialLoad(serverUrl, 'team1', undefined, undefined, undefined, undefined, false);
+
+        await Promise.resolve();
+
+        const callsWithTombstones = spyOnPreferences.mock.calls.filter(
+            ([args]) => args.tombstones !== undefined,
+        );
+        expect(callsWithTombstones).toHaveLength(0);
+    });
+
+    it('should not call handleGroupMembershipsDelta when group_memberships is absent', async () => {
+        const spyOnDelta = jest.spyOn(localOperator, 'handleGroupMembershipsDelta');
+        mockClient.getInitialLoad.mockResolvedValueOnce({
+            ...mockInitialLoad,
+            group_memberships: undefined,
+        });
+
+        await entryInitialLoad(serverUrl, 'team1', undefined, undefined, undefined, undefined, false);
+
+        expect(spyOnDelta).not.toHaveBeenCalled();
+    });
+
+    it('should fall back to me.id from meData when initialLoad.me is null in delta mode', async () => {
+        const spyOnDelta = jest.spyOn(localOperator, 'handleGroupMembershipsDelta');
+
+        // Seed a prior timestamp so me is omitted (delta — nothing changed).
+        await operator.handleSystem({
+            systems: [{id: SYSTEM_IDENTIFIERS.LAST_INITIAL_LOAD, value: 1705999999000}],
+            prepareRecordsOnly: false,
+        });
+        await operator.handleUsers({
+            users: [{id: 'user1', username: 'user1', roles: '', update_at: 1705000000000} as UserProfile],
+            prepareRecordsOnly: false,
+        });
+
+        mockClient.getInitialLoad.mockResolvedValueOnce({
+            ...mockInitialLoad,
+            me: null,
+            group_memberships: {
+                members: [{group_id: 'group-delta', user_id: 'user1', create_at: 1706000000001}],
+                removed_group_ids: [],
+            },
+        });
+
+        await entryInitialLoad(serverUrl, 'team1', undefined, undefined, undefined, undefined, false);
+
+        expect(spyOnDelta).toHaveBeenCalledWith(expect.objectContaining({
+            addedGroupIds: ['group-delta'],
+        }));
     });
 });

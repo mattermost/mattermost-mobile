@@ -155,10 +155,30 @@ describe('*** Operator: User Handlers tests ***', () => {
         expect(spyOnHandleRecords).toHaveBeenCalledWith({
             fieldName: 'user_id',
             createOrUpdateRawValues: preferences.filter((p) => p.category !== 'tutorial_step'),
+            deleteRawValues: [],
             tableName: 'Preference',
             prepareRecordsOnly: true,
             buildKeyRecordBy: buildPreferenceKey,
             transformer: transformPreferenceRecord,
         }, 'handlePreferences(NEVER)');
+    });
+
+    it('should pass tombstones as deleteRawValues to handleRecords', async () => {
+        expect.assertions(1);
+
+        const spyOnHandleRecords = jest.spyOn(operator, 'handleRecords');
+
+        const tombstones: PreferenceTombstone[] = [
+            {user_id: '9ciscaqbrpd6d8s68k76xb9bte', category: 'theme', name: '', delete_at: 1706000001000},
+        ];
+
+        await operator.handlePreferences({
+            tombstones,
+            prepareRecordsOnly: false,
+        });
+
+        expect(spyOnHandleRecords).toHaveBeenCalledWith(expect.objectContaining({
+            deleteRawValues: tombstones,
+        }), 'handlePreferences(NEVER)');
     });
 });
