@@ -1,6 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import fs from 'fs';
 import path from 'path';
 
 import client from './client';
@@ -36,15 +37,11 @@ const prepackagedPlugins = new Set([
 ]);
 
 /**
- * Get the latest release version from GitHub releases.
- * On API failure (rate limit / outage / private repo), falls back to the
- * caller-supplied last-known-good version so CI can keep moving instead of
- * failing the entire provisioning step on a transient GitHub blip.
+ * Get the latest release version from GitHub releases
  * @param {string} repo - GitHub repository in format 'owner/repo'
- * @param {string} fallback - version to return if the GitHub API call fails
  * @return {Promise<string>} returns latest version string without 'v' prefix
  */
-export const apiGetLatestPluginVersion = async (repo: string, fallback = '0.10.3'): Promise<string> => {
+export const apiGetLatestPluginVersion = async (repo: string): Promise<string> => {
     try {
         const response = await client.get(`https://api.github.com/repos/${repo}/releases/latest`);
         const tagName = response.data.tag_name;
@@ -52,44 +49,30 @@ export const apiGetLatestPluginVersion = async (repo: string, fallback = '0.10.3
         // Remove 'v' prefix if present (e.g., 'v0.10.2' -> '0.10.2')
         return tagName.startsWith('v') ? tagName.substring(1) : tagName;
     } catch (err) {
-        return fallback;
+        // Fallback to hardcoded version if API fails
+        return '0.10.3';
     }
 };
 
-// Agents Plugin Constants — version resolved at call-time via GitHub releases.
-// fallbackVersion is the last-known-good if the GitHub API is unavailable.
+// Agents Plugin Constants
 export const AgentsPlugin = {
     id: 'mattermost-ai',
-    repo: 'mattermost/mattermost-plugin-agents',
-    fallbackVersion: '1.14.0',
-
-    async getLatestDownloadUrl() {
-        const v = await apiGetLatestPluginVersion(this.repo, this.fallbackVersion);
-        return `https://github.com/${this.repo}/releases/download/v${v}/mattermost-plugin-agents-v${v}-linux-amd64.tar.gz`;
-    },
 } as const;
 
-// Calls Plugin Constants — version resolved at call-time via GitHub releases.
+// Calls Plugin Constants
 export const CallsPlugin = {
     id: 'com.mattermost.calls',
-    repo: 'mattermost/mattermost-plugin-calls',
-    fallbackVersion: '1.11.5',
-
-    async getLatestDownloadUrl() {
-        const v = await apiGetLatestPluginVersion(this.repo, this.fallbackVersion);
-        return `https://github.com/${this.repo}/releases/download/v${v}/mattermost-plugin-calls-v${v}-linux-amd64.tar.gz`;
-    },
+    url: 'https://github.com/mattermost/mattermost-plugin-calls/releases/download/v1.5.0/com.mattermost.calls-1.5.0.tar.gz',
 } as const;
 
 // Demo Plugin Constants
 export const DemoPlugin = {
     id: 'com.mattermost.demo-plugin',
     repo: 'mattermost/mattermost-plugin-demo',
-    fallbackVersion: '0.11.1',
 
     // Get download URL for latest version (linux-amd64 for CI compatibility)
     async getLatestDownloadUrl() {
-        const latestVersion = await apiGetLatestPluginVersion(this.repo, this.fallbackVersion);
+        const latestVersion = await apiGetLatestPluginVersion(this.repo);
 
         // return `https://github.com/${this.repo}/releases/download/v${latestVersion}/mattermost-plugin-demo-v${latestVersion}.tar.gz`;
         return `https://github.com/${this.repo}/releases/download/v${latestVersion}/mattermost-plugin-demo-v${latestVersion}-linux-amd64.tar.gz`;
@@ -196,12 +179,14 @@ export const apiRemovePluginById = async (baseUrl: string, pluginId: string): Pr
  * See https://api.mattermost.com/#operation/UploadPlugin
  * @param {string} baseUrl - the base server URL
  * @param {string} filename - the filename of plugin to be uploaded
+ * @param {boolean} force - overwrite an existing plugin install
  * @return {Object} returns response on success or {error, status} on error
  */
-export const apiUploadPlugin = async (baseUrl: string, filename: string): Promise<any> => {
+export const apiUploadPlugin = async (baseUrl: string, filename: string, force = false): Promise<any> => {
     try {
         const absFilePath = path.resolve(__dirname, `../../support/fixtures/${filename}`);
-        return await apiUploadFile('plugin', absFilePath, {url: `${baseUrl}/api/v4/plugins`, method: 'POST'});
+        const forceQuery = force ? '?force=true' : '';
+        return await apiUploadFile('plugin', absFilePath, {url: `${baseUrl}/api/v4/plugins${forceQuery}`, method: 'POST'});
     } catch (err) {
         return getResponseFromError(err);
     }
@@ -215,12 +200,17 @@ export const apiUploadPlugin = async (baseUrl: string, filename: string): Promis
  * @return {Object} returns {isInstalled, isActive, plugin} on success or {error, status} on error
  */
 export const apiGetPluginStatus = async (baseUrl: string, pluginId: string, version?: string): Promise<any> => {
-    try {
-        const {plugins} = await apiGetAllPlugins(baseUrl);
-        if (!plugins) {
-            return {isInstalled: false, isActive: false};
-        }
+    const allPluginsResult = await apiGetAllPlugins(baseUrl);
+    if (allPluginsResult.error) {
+        return allPluginsResult;
+    }
 
+    const {plugins} = allPluginsResult;
+    if (!plugins) {
+        return {isInstalled: false, isActive: false};
+    }
+
+    try {
         // Check if plugin is installed (in either active or inactive list)
         let plugin = plugins.active?.find((p: any) => p.id === pluginId);
         if (plugin) {
@@ -250,22 +240,32 @@ export const apiGetPluginStatus = async (baseUrl: string, pluginId: string, vers
     }
 };
 
-/**
- * Upload and enable demo plugin, handling various states.
- * Uses DemoPlugin.getLatestDownloadUrl() internally to avoid SSRF concerns.
- * @param {Object} options - configuration object
- * @param {string} options.baseUrl - the base server URL
- * @param {string} options.version - expected plugin version
- * @param {boolean} options.force - whether to force install if already exists
- * @return {Object} returns plugin data on success or {error, status} on error
- */
+// Upload and enable demo plugin from a local fixture when available, otherwise from GitHub.
 export const apiUploadAndEnablePlugin = async (options: {
     baseUrl: string;
     version?: string;
     force?: boolean;
+    filename?: string;
 }): Promise<any> => {
-    const {baseUrl, version, force = false} = options;
+    const {baseUrl, version, force = false, filename} = options;
     const id = DemoPlugin.id;
+
+    if (filename) {
+        const absFilePath = path.resolve(__dirname, `../../support/fixtures/${filename}`);
+        if (fs.existsSync(absFilePath)) {
+            const uploadResult = await apiUploadPlugin(baseUrl, filename, force);
+            if (uploadResult.error) {
+                return uploadResult;
+            }
+            await new Promise((resolve) => setTimeout(resolve, 1000));
+            const enableResult = await apiEnablePluginById(baseUrl, id);
+            if (enableResult.error) {
+                return enableResult;
+            }
+            await new Promise((resolve) => setTimeout(resolve, 1000));
+            return apiGetPluginStatus(baseUrl, id, version);
+        }
+    }
 
     try {
         // Check current plugin status

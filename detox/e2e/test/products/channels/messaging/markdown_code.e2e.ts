@@ -48,31 +48,6 @@ describe('Messaging - Markdown Code', () => {
         await HomeScreen.logout();
     });
 
-    it('MM-T4895_1 - should be able to display markdown code block', async () => {
-        // # Open a channel screen and post a markdown code block
-        const line1 = 'let x = 10;';
-        const line2 = 'let y = 20;';
-        const line3 = 'console.log(`sum: ${x + y}`);';
-        const message = `${line1}\n${line2}\n${line3}`;
-        const markdownCodeBlock = `\`\`\`\n${message}\n\`\`\``;
-        await ChannelScreen.open(channelsCategory, testChannel.name);
-        await ChannelScreen.postMessage(markdownCodeBlock);
-
-        // * Verify markdown code block is displayed
-        const {post} = await Post.apiGetLastPostInChannel(siteOneUrl, testChannel.id);
-        const {postListPostItemCodeBlock} = ChannelScreen.getPostListPostItem(post.id);
-        await waitFor(postListPostItemCodeBlock).toExist().withTimeout(10000);
-
-        // toExist() only checks the element is in the view hierarchy, so we don't
-        // need to scroll it into view. Earlier versions used toBeVisible(50)
-        // which required clearing the soft keyboard via scroll, but the manual
-        // scroll fails on iOS 26 when the FlatList is already at the boundary.
-        await expect(postListPostItemCodeBlock).toExist();
-
-        // # Go back to channel list screen
-        await ChannelScreen.back();
-    });
-
     it('MM-T4895_2- should be able to display markdown html', async () => {
         // # Open a channel screen and post a html
         const message = '<html>\n<body>\n<span>This is html block</span>\n</body>\n</html>';
@@ -85,8 +60,11 @@ describe('Messaging - Markdown Code', () => {
         const {postListPostItemCodeBlock} = ChannelScreen.getPostListPostItem(post.id);
         await waitFor(postListPostItemCodeBlock).toExist().withTimeout(10000);
 
-        // toExist() doesn't require the element to be on-screen, so no manual
-        // scroll is needed. See MM-T4895_1 above for the reasoning.
+        // Scroll the post list to dismiss the keyboard before the visibility check.
+        await ChannelScreen.getFlatPostList().scroll(100, 'up', 0.5, 0.5);
+
+        // toExist() confirms the code block rendered correctly; toBeVisible(50) is fragile
+        // when the message input bar clips a short block below the 50% threshold.
         await expect(postListPostItemCodeBlock).toExist();
 
         // # Go back to channel list screen

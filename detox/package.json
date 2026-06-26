@@ -40,6 +40,7 @@
     "tough-cookie": "5.0.0",
     "ts-jest": "29.2.5",
     "tslib": "2.8.1",
+    "tsx": "^4.19.3",
     "typescript": "5.7.2",
     "uuid": "11.0.3",
     "xml2js": "0.6.2"
@@ -62,6 +63,7 @@
     "lint": "eslint --ignore-pattern node_modules --quiet .",
     "e2e:save-report": "node save_report.js",
     "start:webhook": "node webhook_server.js",
+    "provision": "tsx provision/index.ts",
     "tsc": "NODE_OPTIONS=--max_old_space_size=12000 tsc --noEmit",
     "postinstall": "node scripts/postinstall.js"
   },

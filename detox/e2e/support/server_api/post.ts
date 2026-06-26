@@ -178,28 +178,11 @@ export const apiCreatePostWithImageAttachment = async (baseUrl: string, channelI
     return {post, fileId};
 };
 
-/**
- * Get the list of reactions on a post.
- * See https://api.mattermost.com/#operation/GetReactions
- * @param {string} baseUrl - the base server URL
- * @param {string} postId - the post ID
- * @return {Object} returns {reactions} on success or {error, status} on error
- */
-export const apiGetReactionsForPost = async (baseUrl: string, postId: string): Promise<any> => {
-    try {
-        const response = await client.get(`${baseUrl}/api/v4/posts/${postId}/reactions`);
-        return {reactions: response.data as Array<{user_id: string; post_id: string; emoji_name: string; create_at: number}>};
-    } catch (error) {
-        return getResponseFromError(error);
-    }
-};
-
 export const Post = {
     apiCreatePost,
     apiCreatePostWithImageAttachment,
     apiGetLastPostInChannel,
     apiGetPostsInChannel,
-    apiGetReactionsForPost,
     apiPinPost,
     apiPatchPost,
     apiUploadFileToChannel,

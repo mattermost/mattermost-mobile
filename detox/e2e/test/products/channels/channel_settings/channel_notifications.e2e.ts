@@ -18,6 +18,7 @@ import {
     ChannelScreen,
     HomeScreen,
     LoginScreen,
+    PushNotificationSettingsScreen,
     ServerScreen,
 } from '@support/ui/screen';
 import {isAndroid, timeouts, wait} from '@support/utils';
@@ -61,8 +62,7 @@ describe('Channel Settings - Channel Notifications', () => {
         await wait(timeouts.TWO_SEC);
 
         // * Verify push notification settings screen is displayed
-        const notificationSettingsScreen = element(by.id('push_notification_settings.screen'));
-        await expect(notificationSettingsScreen).toBeVisible();
+        await PushNotificationSettingsScreen.toBeVisible();
 
         // # Navigate back to channel info screen
         // Android: navigation.header.back is the native Toolbar button with no React Native testID;
@@ -72,7 +72,7 @@ describe('Channel Settings - Channel Notifications', () => {
         if (isAndroid()) {
             await device.pressBack();
         } else {
-            await element(by.id('push_notification_settings.screen')).swipe('right', 'fast', 0.8, 0.05, 0.5);
+            await PushNotificationSettingsScreen.pushNotificationSettingsScreen.swipe('right', 'fast', 0.8, 0.05, 0.5);
         }
         await wait(timeouts.ONE_SEC);
         await ChannelInfoScreen.close();

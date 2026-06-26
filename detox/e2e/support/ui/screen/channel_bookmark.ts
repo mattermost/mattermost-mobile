@@ -12,7 +12,7 @@ class ChannelBookmarkScreen {
         linkInput: 'channel_bookmark_add.link.input',
         linkLoading: 'channel_bookmark_add.link.loading',
         linkInputDescription: 'channel_bookmark_add.link.input.description',
-        titleInput: 'channel_bookmark_add.title.input',
+        titleInput: 'channel_bookmark.add.title.input',
     };
 
     channelBookmarkScreen = element(by.id(this.testID.channelBookmarkScreen));

@@ -114,7 +114,11 @@ describe('Smoke Test - Server Login', () => {
         await ServerListScreen.getServerItemInactive(serverTwoDisplayName).swipe('left');
         await wait(timeouts.ONE_SEC);
 
-        await ServerListScreen.getServerItemLogoutOption(serverTwoDisplayName).tap();
+        // .atIndex(0): the Swipeable's revealed Logout option can render twice
+        // briefly on iOS during the swipe-pan animation ("Multiple elements found"
+        // in CI run 26368981355). Matches the .atIndex(0) pattern used throughout
+        // the dedicated server_list spec.
+        await ServerListScreen.getServerItemLogoutOption(serverTwoDisplayName).atIndex(0).tap();
 
         // * Verify logout server alert is displayed
         await expect(Alert.logoutTitle(serverTwoDisplayName)).toBeVisible();
@@ -126,7 +130,7 @@ describe('Smoke Test - Server Login', () => {
         // * Verify second server is logged out
         await ServerListScreen.getServerItemInactive(serverTwoDisplayName).swipe('left');
         await wait(timeouts.ONE_SEC);
-        await expect(ServerListScreen.getServerItemLoginOption(serverTwoDisplayName)).toBeVisible();
+        await expect(ServerListScreen.getServerItemLoginOption(serverTwoDisplayName).atIndex(0)).toBeVisible();
 
         // # Go back to first server
         await ServerListScreen.getServerItemActive(serverOneDisplayName).tap();

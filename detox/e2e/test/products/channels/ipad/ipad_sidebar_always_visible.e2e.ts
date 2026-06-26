@@ -6,12 +6,14 @@
 // - [*] indicates an assertion (e.g. * Check the title)
 // - Use element testID when selecting an element. Create one if none.
 // *******************************************************************
+// iPad sidebar tests use interim MM-T6001_N IDs pending Zephyr assignment.
+// *******************************************************************
 
 import {Setup} from '@support/server_api';
 import {serverOneUrl, siteOneUrl} from '@support/test_config';
 import {ChannelListScreen, HomeScreen, LoginScreen, ServerScreen} from '@support/ui/screen';
 import {isIpad, timeouts} from '@support/utils';
-import {expect, waitFor} from 'detox';
+import {expect} from 'detox';
 
 describe('iPad - Sidebar Always Visible', () => {
     const serverOneDisplayName = 'Server 1';
@@ -36,7 +38,7 @@ describe('iPad - Sidebar Always Visible', () => {
         await HomeScreen.logout();
     });
 
-    it('MM-TIPAD_1 - should show the channel list sidebar without any swipe gesture on iPad', async () => {
+    it('MM-T6001_1 - should show the channel list sidebar without any swipe gesture on iPad', async () => {
         if (!isIpad()) {
             return;
         }
@@ -46,7 +48,7 @@ describe('iPad - Sidebar Always Visible', () => {
         await expect(ChannelListScreen.channelListScreen).toBeVisible();
     });
 
-    it('MM-TIPAD_2 - should display the server display name in the channel list header on iPad', async () => {
+    it('MM-T6001_2 - should display the server display name in the channel list header on iPad', async () => {
         if (!isIpad()) {
             return;
         }
@@ -56,7 +58,7 @@ describe('iPad - Sidebar Always Visible', () => {
         await expect(ChannelListScreen.headerServerDisplayName).toBeVisible();
     });
 
-    it('MM-TIPAD_3 - should show the team display name in the channel list header on iPad', async () => {
+    it('MM-T6001_3 - should show the team display name in the channel list header on iPad', async () => {
         if (!isIpad()) {
             return;
         }
@@ -66,7 +68,7 @@ describe('iPad - Sidebar Always Visible', () => {
         await expect(ChannelListScreen.headerTeamDisplayName).toBeVisible();
     });
 
-    it('MM-TIPAD_4 - should show the plus button in the channel list header on iPad', async () => {
+    it('MM-T6001_4 - should show the plus button in the channel list header on iPad', async () => {
         if (!isIpad()) {
             return;
         }
@@ -76,7 +78,7 @@ describe('iPad - Sidebar Always Visible', () => {
         await expect(ChannelListScreen.headerPlusButton).toBeVisible();
     });
 
-    it('MM-TIPAD_5 - should show the threads button in the channel list sidebar on iPad', async () => {
+    it('MM-T6001_5 - should show the threads button in the channel list sidebar on iPad', async () => {
         if (!isIpad()) {
             return;
         }

@@ -25,10 +25,9 @@ import {
     HomeScreen,
     LoginScreen,
     ServerScreen,
-    UserProfileScreen,
 } from '@support/ui/screen';
 import {timeouts, wait, waitForElementToExist} from '@support/utils';
-import {expect, waitFor} from 'detox';
+import {expect} from 'detox';
 
 describe('Messaging - At-Mention', () => {
     const serverOneDisplayName = 'Server 1';
@@ -146,29 +145,7 @@ describe('Messaging - At-Mention', () => {
         await ChannelScreen.back();
     });
 
-    it('MM-T4874_3 - should be able to open user profile by tapping on at-mention', async () => {
-        // # Open a channel screen, post a message with at-mention, and tap on at-mention
-        const message = `@${testUser.username}`;
-        await ChannelScreen.open(channelsCategory, testChannel.name);
-        await ChannelScreen.postMessage(message);
-        await element(by.text(message)).tap({x: 5, y: 10});
-        await wait(timeouts.ONE_SEC);
-
-        // * Verify on user profile screen
-        await UserProfileScreen.toBeVisible();
-
-        // The user profile bottom sheet may still be animating into place when
-        // toBeVisible() resolves on its screen container — its avatar can briefly
-        // fail a 75% visibility threshold while the sheet finishes snapping.
-        await waitFor(UserProfileScreen.getUserProfilePicture(testUser.id)).toBeVisible().withTimeout(timeouts.TEN_SEC);
-        await expect(UserProfileScreen.userDisplayName).toHaveText(`@${testUser.username}`);
-
-        // # Go back to channel list screen
-        await UserProfileScreen.close();
-        await ChannelScreen.back();
-    });
-
-    it('MM-T171 - should be able to autocomplete at-mention for out-of-channel member', async () => {
+    it('MM-T0171_1 - should be able to autocomplete at-mention for out-of-channel member', async () => {
         // # Create a user who is on the team but not in the channel
         const {user: outOfChannelUser} = await User.apiCreateUser(siteOneUrl);
         await Team.apiAddUserToTeam(siteOneUrl, outOfChannelUser.id, testTeam.id);

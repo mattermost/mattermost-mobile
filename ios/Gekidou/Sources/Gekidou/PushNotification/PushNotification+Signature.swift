@@ -12,8 +12,23 @@ extension PushNotification {
         return self.verifySignature(notification.userInfo)
     }
     public func verifySignature(_ userInfo: [AnyHashable : Any]) -> Bool {
+        return verifySignature(userInfo, storedDeviceToken: Database.default.getDeviceToken(), requireSignature: false)
+    }
+    public func verifyVoIPSignature(_ userInfo: [AnyHashable : Any]) -> Bool {
+        // VoIP pushes are a new feature with no legacy proxies in the wild,
+        // so the "missing signature → accept" fallback used for standard
+        // pushes must NOT apply here. An unsigned VoIP payload would let an
+        // attacker trigger the CallKit incoming-call UI without
+        // authentication, so always require a signature.
+        return verifySignature(userInfo, storedDeviceToken: Database.default.getVoIPDeviceToken(), requireSignature: true)
+    }
+    private func verifySignature(_ userInfo: [AnyHashable : Any], storedDeviceToken: String?, requireSignature: Bool) -> Bool {
         guard let signature =  userInfo["signature"] as? String
         else {
+            if requireSignature {
+                GekidouLogger.shared.log(.info, "Gekidou PushNotification: Signature verification: No signature in the notification (required)")
+                return false
+            }
             // Backward compatibility with old push proxies
             GekidouLogger.shared.log(.info, "Gekidou PushNotification: Signature verification: No signature in the notification")
             return true
@@ -32,6 +47,12 @@ extension PushNotification {
         }
         
         if signature == "NO_SIGNATURE" {
+            if requireSignature {
+                // Same reasoning as the missing-signature case above —
+                // VoIP must always carry a real signature.
+                GekidouLogger.shared.log(.info, "Gekidou PushNotification: Signature verification: NO_SIGNATURE sentinel rejected (signature required)")
+                return false
+            }
             guard let version = Database.default.getConfig(serverUrl, "Version")
             else {
                 GekidouLogger.shared.log(.info, "Gekidou PushNotification: Signature verification: No server version")
@@ -142,7 +163,7 @@ extension PushNotification {
             return false
         }
 
-        guard let storedDeviceToken = Database.default.getDeviceToken()
+        guard let storedDeviceToken = storedDeviceToken
         else {
             GekidouLogger.shared.log(.info, "Gekidou PushNotification: Signature verification: No device token")
             return false

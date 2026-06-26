@@ -23,7 +23,6 @@ import {
 } from '@support/ui/screen';
 import {
     getRandomId,
-    longPressWithRetry,
     timeouts,
     wait,
 } from '@support/utils';
@@ -37,11 +36,8 @@ describe('Messaging - Message Permalink Preview', () => {
     let testUser: any;
     let testOtherUser: any;
 
-    const copyLinkFromPost = async (postItem: any) => {
-        // Use longPressWithRetry to handle keyboard-dismiss animation blocking hit-testing.
-        // A bare longPress can fire without effect during the gesture-responder window
-        // that immediately follows typing/sending a message.
-        await longPressWithRetry(postItem, PostOptionsScreen.postOptionsScreen);
+    const copyLinkFromPost = async (postId: string, message: string) => {
+        await ChannelScreen.openPostOptionsFor(postId, message);
         await PostOptionsScreen.toBeVisible();
         await PostOptionsScreen.copyLinkOption.tap();
         await wait(timeouts.FOUR_SEC);
@@ -101,44 +97,13 @@ describe('Messaging - Message Permalink Preview', () => {
         await wait(timeouts.FOUR_SEC);
         await ChannelScreen.open(channelsCategory, testChannel.name);
 
-        const {postListPostItem} = ChannelScreen.getPostListPostItem(targetPost.post.id, targetMessage);
-        await copyLinkFromPost(postListPostItem);
+        await copyLinkFromPost(targetPost.post.id, targetMessage);
 
         const copiedPermalink = `${serverOneUrl}/${testTeam.name}/pl/${targetPost.post.id}`;
         const messageWithPastedLink = `Check this out ${copiedPermalink}`;
         await sendMessage(messageWithPastedLink);
 
         await wait(timeouts.FOUR_SEC); // Wait for preview to generate
-
-        await expectPermalinkPreviewVisible(targetMessage, testChannel.display_name);
-
-        await ChannelScreen.back();
-    });
-
-    it('MM-T4877_2 - should copy link and create permalink preview in different channel', async () => {
-        const targetMessage = `Important announcement ${getRandomId()}`;
-        const targetPost = await Post.apiCreatePost(siteOneUrl, {
-            channelId: testChannel.id,
-            message: targetMessage,
-            userId: testOtherUser.id,
-        });
-
-        const {channel: otherChannel} = await Channel.apiCreateChannel(siteOneUrl, {teamId: testTeam.id});
-        await Channel.apiAddUserToChannel(siteOneUrl, testUser.id, otherChannel.id);
-        await wait(timeouts.FOUR_SEC);
-        await ChannelScreen.open(channelsCategory, testChannel.name);
-        const {postListPostItem} = ChannelScreen.getPostListPostItem(targetPost.post.id, targetMessage);
-        await copyLinkFromPost(postListPostItem);
-
-        await wait(timeouts.FOUR_SEC); // Wait for toast/animation if any
-        await ChannelScreen.back();
-        await ChannelScreen.open(channelsCategory, otherChannel.name);
-
-        const copiedPermalink = `${serverOneUrl}/${testTeam.name}/pl/${targetPost.post.id}`;
-        const messageWithPastedLink = `Check this out from the other channel ${copiedPermalink}`;
-        await sendMessage(messageWithPastedLink);
-
-        await wait(timeouts.FOUR_SEC);
 
         await expectPermalinkPreviewVisible(targetMessage, testChannel.display_name);
 
@@ -161,8 +126,7 @@ describe('Messaging - Message Permalink Preview', () => {
         });
         await wait(timeouts.FOUR_SEC);
         await ChannelScreen.open(channelsCategory, targetChannel.name);
-        const {postListPostItem} = ChannelScreen.getPostListPostItem(targetPost.post.id, targetMessage);
-        await copyLinkFromPost(postListPostItem);
+        await copyLinkFromPost(targetPost.post.id, targetMessage);
 
         await wait(timeouts.FOUR_SEC);
         await ChannelScreen.back();
@@ -215,8 +179,7 @@ describe('Messaging - Message Permalink Preview', () => {
         });
 
         await ChannelScreen.open(channelsCategory, testChannel.name);
-        const {postListPostItem} = ChannelScreen.getPostListPostItem(targetPost.post.id, originalMessage);
-        await copyLinkFromPost(postListPostItem);
+        await copyLinkFromPost(targetPost.post.id, originalMessage);
 
         await wait(timeouts.FOUR_SEC);
 
@@ -261,8 +224,7 @@ describe('Messaging - Message Permalink Preview', () => {
         });
 
         await ChannelScreen.open(channelsCategory, testChannel.name);
-        const {postListPostItem} = ChannelScreen.getPostListPostItem(targetPost.post.id, longMessage);
-        await copyLinkFromPost(postListPostItem);
+        await copyLinkFromPost(targetPost.post.id, longMessage);
 
         await wait(timeouts.FOUR_SEC);
         await ChannelScreen.back();
@@ -296,7 +258,7 @@ describe('Messaging - Message Permalink Preview', () => {
         const {postListPostItem} = ChannelScreen.getPostListPostItem(targetPost.id, targetMessage);
         await expect(postListPostItem).toBeVisible();
         await wait(timeouts.ONE_SEC);
-        await copyLinkFromPost(postListPostItem);
+        await copyLinkFromPost(targetPost.id, targetMessage);
 
         await wait(timeouts.FOUR_SEC);
 

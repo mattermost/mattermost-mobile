@@ -119,7 +119,7 @@ const BookmarkDetail = ({disabled, emoji, file, imageUrl, setBookmarkDisplayName
                 <TextInput
                     editable={!disabled}
                     onChangeText={setBookmarkDisplayName}
-                    testID='channel_bookmark_add.title.input'
+                    testID='channel_bookmark.add.title.input'
                     value={title}
                     style={styles.input}
                 />

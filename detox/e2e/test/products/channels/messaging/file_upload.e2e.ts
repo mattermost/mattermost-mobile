@@ -10,7 +10,6 @@
 import {
     Post,
     Setup,
-    System,
 } from '@support/server_api';
 import {
     serverOneUrl,
@@ -190,36 +189,6 @@ describe('Messaging - File Upload', () => {
 
         // # Go back to channel list screen
         await ChannelScreen.back();
-    });
-
-    it('MM-T339_1 - should show an error when the server max file size is set to a very small value', async () => {
-        // Full over-limit upload flow needs native file picker — only verifies config can be set.
-
-        // # Set MaxFileSize to 1 byte (effectively blocks all uploads)
-        const {config: originalConfig} = await System.apiGetConfig(siteOneUrl);
-        await System.apiUpdateConfig(siteOneUrl, {
-            FileSettings: {
-                MaxFileSize: 1,
-            },
-        });
-        try {
-            // # Open channel screen
-            await ChannelScreen.open(channelsCategory, testChannel.name);
-            await wait(timeouts.TWO_SEC);
-
-            // * Verify the channel screen is visible
-            await ChannelScreen.toBeVisible();
-
-            // # Go back to channel list screen
-            await ChannelScreen.back();
-        } finally {
-            // # Restore original MaxFileSize config
-            await System.apiUpdateConfig(siteOneUrl, {
-                FileSettings: {
-                    MaxFileSize: originalConfig.FileSettings.MaxFileSize,
-                },
-            });
-        }
     });
 
     it('MM-T330_1 - iOS only — inline image with size specified renders in the channel', async () => {

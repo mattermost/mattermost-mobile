@@ -6,7 +6,7 @@ import {
     ProfilePicture,
 } from '@support/ui/component';
 import {ChannelScreen} from '@support/ui/screen';
-import {isAndroid, timeouts, wait, waitForElementToExist} from '@support/utils';
+import {isAndroid, timeouts, wait} from '@support/utils';
 import {expect, waitFor} from 'detox';
 
 class ChannelInfoScreen {
@@ -90,7 +90,7 @@ class ChannelInfoScreen {
         // can take >10 s to appear. Use polling waitForElementToExist to avoid bridge-idle
         // sync stalls on both platforms.
         const timeout = isAndroid() ? timeouts.TWENTY_SEC : timeouts.HALF_MIN;
-        await waitForElementToExist(this.channelInfoScreen, timeout);
+        await waitFor(this.channelInfoScreen).toExist().withTimeout(timeout);
 
         return this.channelInfoScreen;
     };

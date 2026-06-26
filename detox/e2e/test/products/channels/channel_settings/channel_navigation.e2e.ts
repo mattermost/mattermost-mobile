@@ -130,10 +130,7 @@ describe('Channels', () => {
         await expect(ChannelListScreen.getChannelItemDisplayName(channelsCategory, testChannel.name)).toBeVisible();
     });
 
-    // SKIPPED — Same archive-observable bug as
-    // archive_channel_from_settings.e2e.ts MM-T4932_1. The `channelIsArchived`
-    // observable in post_draft doesn't fire on `c.deleteAt` change written via
-    // `prepareUpdate + batchRecords`. Track separately as an app-side bug.
+    // Archive observable in post_draft was fixed (observeChannelIsArchived); keep running in CI.
     it('MM-T3197 - RN apps Archive public or private channel', async () => {
         // # Navigate to the archive channel
         await ChannelScreen.open(channelsCategory, archiveChannel.name);

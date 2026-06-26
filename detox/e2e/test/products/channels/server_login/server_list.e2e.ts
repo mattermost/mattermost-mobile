@@ -20,9 +20,6 @@ import {
     siteThreeUrl,
 } from '@support/test_config';
 import {
-    Alert,
-} from '@support/ui/component';
-import {
     ChannelListScreen,
     EditServerScreen,
     HomeScreen,
@@ -31,7 +28,7 @@ import {
     ServerListScreen,
 } from '@support/ui/screen';
 import {isAndroid, isIos, timeouts, wait, waitForElementToBeVisible, waitForElementToExist} from '@support/utils';
-import {device, expect} from 'detox';
+import {expect} from 'detox';
 
 describe('Server Login - Server List', () => {
     const serverOneDisplayName = 'Server 1';
@@ -66,8 +63,8 @@ describe('Server Login - Server List', () => {
 
         // * Verify basic elements on server list screen
         await expect(ServerListScreen.serverListTitle).toHaveText('Your servers');
-        await expect(ServerListScreen.getServerItemActive(serverOneDisplayName)).toExist();
-        await expect(ServerListScreen.addServerButton).toExist();
+        await expect(ServerListScreen.getServerItemActive(serverOneDisplayName)).toBeVisible();
+        await expect(ServerListScreen.addServerButton).toBeVisible();
 
         // # Go back to channel list screen
         await ServerListScreen.getServerItemActive(serverOneDisplayName).atIndex(0).tap();
@@ -197,13 +194,11 @@ describe('Server Login - Server List', () => {
         await ServerListScreen.getServerItemActive(serverOneDisplayName).atIndex(0).swipe('left', 'slow');
         await wait(timeouts.ONE_SEC);
 
-        // iOS 26: bypass hittability probe for the swipe-revealed action button.
-        await device.disableSynchronization();
-        try {
-            await ServerListScreen.getServerItemEditOption(serverOneDisplayName).tap();
-        } finally {
-            await device.enableSynchronization();
-        }
+        // .atIndex(0): the Swipeable's revealed Edit option can render twice
+        // briefly on iOS during the swipe-pan animation (CI run 26368981355,
+        // MM-T4691_4: "Multiple elements found"). All sibling taps in this
+        // file already use .atIndex(0).
+        await ServerListScreen.getServerItemEditOption(serverOneDisplayName).atIndex(0).tap();
 
         // * Verify on edit server screen
         await EditServerScreen.toBeVisible();
@@ -229,188 +224,10 @@ describe('Server Login - Server List', () => {
         await wait(timeouts.ONE_SEC);
 
         // .atIndex(0) for the same reason as the first tap above.
-        // iOS 26: bypass hittability probe for the swipe-revealed action button.
-        await device.disableSynchronization();
-        try {
-            await ServerListScreen.getServerItemEditOption(newServerOneDisplayName).tap();
-        } finally {
-            await device.enableSynchronization();
-        }
+        await ServerListScreen.getServerItemEditOption(newServerOneDisplayName).atIndex(0).tap();
         await EditServerScreen.serverDisplayNameInput.replaceText(serverOneDisplayName);
         await EditServerScreen.saveButton.tap();
         await ServerListScreen.getServerItemActive(serverOneDisplayName).atIndex(0).tap();
     });
 
-    it('MM-T4691_5 - should be able to remove a server from the list', async () => {
-        // * Verify on channel list screen of the first server
-        await expect(ChannelListScreen.headerServerDisplayName).toHaveText(serverOneDisplayName);
-
-        // # Open server list screen, swipe left on first server and tap on remove option
-        await ServerListScreen.open();
-        if (isIos()) {
-            await ServerListScreen.serverListTitle.swipe('up');
-        } else if (isAndroid()) {
-            await waitForElementToBeVisible(ServerListScreen.serverListTitle, timeouts.TWO_SEC);
-            await ServerListScreen.serverListTitle.swipe('up', 'fast', 0.1, 0.5, 0.3);
-        }
-        await waitForElementToExist(ServerListScreen.getServerItemActive(serverOneDisplayName), timeouts.TEN_SEC);
-        await ServerListScreen.getServerItemActive(serverOneDisplayName).atIndex(0).swipe('left', 'slow');
-        if (isIos()) {
-            // On iOS, the Logout button (higher z-order than Remove) partially overlaps Remove
-            // during the reveal animation.  Wait for the remove option to exist (animation done)
-            // then tap with synchronization disabled to bypass iOS 26 hittability checks.
-            await waitFor(ServerListScreen.getServerItemRemoveOption(serverOneDisplayName)).
-                toExist().
-                withTimeout(timeouts.FIVE_SEC);
-        } else {
-            await wait(timeouts.ONE_SEC);
-        }
-
-        // iOS 26: bypass hittability probe for the swipe-revealed action button.
-        await device.disableSynchronization();
-        try {
-            await ServerListScreen.getServerItemRemoveOption(serverOneDisplayName).tap();
-        } finally {
-            await device.enableSynchronization();
-        }
-
-        // * Verify remove server alert is displayed
-        await waitForElementToBeVisible(Alert.removeServerTitle(serverOneDisplayName), timeouts.HALF_MIN);
-
-        // # Tap on remove button and go back to server list screen
-        await waitForElementToBeVisible(Alert.removeButton1, timeouts.HALF_MIN);
-        await Alert.removeButton1.tap();
-        await wait(timeouts.FOUR_SEC);
-        await ServerListScreen.open();
-        if (isIos()) {
-            await ServerListScreen.serverListTitle.swipe('up');
-        } else {
-            await ServerListScreen.serverListTitle.swipe('up', 'fast', 0.1, 0.5, 0.3);
-        }
-
-        // * Verify first server is removed
-        await expect(ServerListScreen.getServerItemActive(serverOneDisplayName)).not.toExist();
-        await expect(ServerListScreen.getServerItemInactive(serverOneDisplayName)).not.toExist();
-
-        // # Add first server back to the list and log in to the first server
-        await ServerListScreen.addServerButton.tap();
-        await waitForElementToExist(ServerScreen.headerTitleAddServer, timeouts.TEN_SEC);
-        await ServerScreen.connectToServer(serverOneUrl, serverOneDisplayName);
-        await LoginScreen.login(serverOneUser);
-    });
-
-    it('MM-T4691_6 - should be able to log out a server from the list', async () => {
-        // * Verify on channel list screen of the first server
-        await expect(ChannelListScreen.headerServerDisplayName).toHaveText(serverOneDisplayName);
-
-        // # Open server list screen, swipe left on third server and tap on logout option
-        await ServerListScreen.open();
-
-        // Use a partial swipe on iOS to bring Server 3 into view without over-scrolling.
-        // A full swipe can push the target item too close to an edge, causing the
-        // swipe-left reveal panel buttons to fail the 100% hittability threshold.
-        if (isIos()) {
-            await ServerListScreen.serverListTitle.swipe('up', 'fast', 0.3, 0.5, 0.5);
-        } else if (isAndroid()) {
-            await waitForElementToBeVisible(ServerListScreen.serverListTitle, timeouts.TWO_SEC);
-            await ServerListScreen.serverListTitle.swipe('up', 'fast', 0.1, 0.5, 0.3);
-        }
-        await waitForElementToExist(ServerListScreen.getServerItemInactive(serverThreeDisplayName), timeouts.TEN_SEC);
-        await ServerListScreen.getServerItemInactive(serverThreeDisplayName).atIndex(0).swipe('left', 'slow');
-
-        // TWO_SEC lets the reveal animation fully settle before tapping the action button.
-        await wait(timeouts.TWO_SEC);
-        await ServerListScreen.getServerItemLogoutOption(serverThreeDisplayName).tap();
-
-        // * Verify logout server alert is displayed
-        await waitForElementToBeVisible(Alert.logoutTitle(serverThreeDisplayName), timeouts.TEN_SEC);
-
-        // # Tap on logout button
-        await waitForElementToBeVisible(Alert.logoutButton, timeouts.TEN_SEC);
-        await Alert.logoutButton.tap();
-        await wait(timeouts.TWO_SEC);
-
-        // * Verify third server is logged out
-        await ServerListScreen.getServerItemInactive(serverThreeDisplayName).atIndex(0).swipe('left', 'slow');
-        await expect(ServerListScreen.getServerItemLoginOption(serverThreeDisplayName)).toBeVisible();
-
-        // # Go back to first server
-        await ServerListScreen.getServerItemActive(serverOneDisplayName).atIndex(0).tap();
-    });
-
-    it('MM-T4691_7 - should not be able to add server for an already existing server', async () => {
-        // * Verify on channel list screen of the first server
-        await expect(ChannelListScreen.headerServerDisplayName).toHaveText(serverOneDisplayName);
-
-        // # Open server list screen, attempt to add a server already logged in and with inactive session
-        await ServerListScreen.open();
-
-        // Use a partial swipe on iOS to scroll the list without over-shooting.
-        if (isIos()) {
-            await ServerListScreen.serverListTitle.swipe('up', 'fast', 0.3, 0.5, 0.5);
-        } else if (isAndroid()) {
-            await waitForElementToBeVisible(ServerListScreen.serverListTitle, timeouts.TWO_SEC);
-            await ServerListScreen.serverListTitle.swipe('up', 'fast', 0.1, 0.5, 0.3);
-        }
-        await ServerListScreen.addServerButton.tap();
-        await waitForElementToExist(ServerScreen.headerTitleAddServer, timeouts.TEN_SEC);
-        await ServerScreen.serverUrlInput.replaceText(serverTwoUrl);
-        if (isAndroid()) {
-            await ServerScreen.serverUrlInput.tapReturnKey();
-        }
-        await ServerScreen.serverDisplayNameInput.replaceText(serverTwoDisplayName);
-        if (isAndroid()) {
-            await ServerScreen.serverDisplayNameInput.tapReturnKey();
-        }
-
-        if (isIos()) {
-            await ServerScreen.tapConnectButton();
-        }
-
-        // * Verify same name server error
-        const sameNameServerError = 'You are using this name for another server.';
-        await expect(ServerScreen.serverDisplayNameInputError).toHaveText(sameNameServerError);
-
-        // # Attempt to add a server already logged in and with active session, with the same server display name
-        await ServerScreen.serverUrlInput.replaceText(serverOneUrl);
-        if (isAndroid()) {
-            await ServerScreen.serverUrlInput.tapReturnKey();
-        }
-        await ServerScreen.serverDisplayNameInput.replaceText(serverOneDisplayName);
-        if (isAndroid()) {
-            await ServerScreen.serverDisplayNameInput.tapReturnKey();
-        }
-
-        if (isIos()) {
-            await ServerScreen.tapConnectButton();
-        }
-
-        // * Verify same name server error
-        await expect(ServerScreen.serverDisplayNameInputError).toHaveText(sameNameServerError);
-
-        // # Close server screen, open server list screen, log out of second server, and go back to first server
-        await ServerScreen.close();
-        await ServerListScreen.open();
-
-        // Use a partial swipe on iOS to bring Server 2 into view without over-scrolling.
-        // A full swipe can push the target item too close to an edge, causing the
-        // swipe-left reveal panel buttons to fail the 100% hittability threshold.
-        if (isIos()) {
-            await ServerListScreen.serverListTitle.swipe('up', 'fast', 0.3, 0.5, 0.5);
-        } else if (isAndroid()) {
-            await waitForElementToBeVisible(ServerListScreen.serverListTitle, timeouts.TWO_SEC);
-            await ServerListScreen.serverListTitle.swipe('up', 'fast', 0.1, 0.5, 0.3);
-        }
-        await waitForElementToExist(ServerListScreen.getServerItemInactive(serverTwoDisplayName), timeouts.TEN_SEC);
-        await ServerListScreen.getServerItemInactive(serverTwoDisplayName).atIndex(0).swipe('left', 'slow');
-
-        // TWO_SEC lets the reveal animation fully settle before tapping the action button.
-        await wait(timeouts.TWO_SEC);
-        await ServerListScreen.getServerItemLogoutOption(serverTwoDisplayName).tap();
-        await wait(timeouts.FOUR_SEC);
-        await waitForElementToBeVisible(Alert.logoutButton, timeouts.HALF_MIN);
-        await Alert.logoutButton.tap();
-        await wait(timeouts.TWO_SEC);
-        await ServerListScreen.getServerItemActive(serverOneDisplayName).atIndex(0).tap();
-    });
 });

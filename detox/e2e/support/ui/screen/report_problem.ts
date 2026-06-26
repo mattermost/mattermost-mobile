@@ -7,16 +7,14 @@ import {isIos, tapNativeBackButton, timeouts} from '@support/utils';
 class ReportProblemScreen {
     testID = {
         reportProblemScreen: 'report_problem.screen',
+        backButton: 'navigation.header.back',
         enableLogAttachmentsToggleOff: 'report_problem.enable_log_attachments.toggled.false.button',
         enableLogAttachmentsToggleOn: 'report_problem.enable_log_attachments.toggled.true.button',
     };
 
     reportProblemScreen = element(by.id(this.testID.reportProblemScreen));
 
-    // expo-router native stack screen — the custom NavigationHeader's
-    // 'navigation.header.back' testID is not rendered here. iOS uses
-    // `accessibilityLabel="Back"`, Android uses the Toolbar's default
-    // navigation-icon contentDescription "Navigate up".
+    // Native-stack back chevron via accessibility label.
     get backButton(): Detox.NativeElement {
         return isIos()
             ? element(by.label('Back')).atIndex(0)
@@ -32,16 +30,32 @@ class ReportProblemScreen {
         return this.reportProblemScreen;
     };
 
-    open = async () => {
+    /**
+     * Opens the Report a Problem screen from Settings.
+     *
+     * On servers where the in-app screen is not available (unlicensed, or config
+     * not yet synced), tapping "Report a Problem" opens an external browser
+     * instead. This method detects that case, dismisses the browser, and returns
+     * false so callers can skip in-app assertions.
+     *
+     * @returns true if the in-app screen opened, false if an external browser opened
+     */
+    open = async (): Promise<boolean> => {
         await SettingsScreen.reportProblemOption.tap();
 
-        return this.toBeVisible();
+        try {
+            await this.toBeVisible();
+            return true;
+        } catch {
+            // In-app screen didn't appear — external browser/email opened instead.
+            // Dismiss it so the app returns to Settings.
+            await tapNativeBackButton();
+            return false;
+        }
     };
 
     back = async () => {
-        // Use platform-native back chevron: Android via device.pressBack(),
-        // iOS via by.label('Back'). The custom NavigationHeader's testID
-        // does not exist on this screen (expo-router native stack).
+        // Native-stack back chevron.
         await tapNativeBackButton();
         await waitFor(this.reportProblemScreen).not.toBeVisible().withTimeout(timeouts.TEN_SEC);
     };

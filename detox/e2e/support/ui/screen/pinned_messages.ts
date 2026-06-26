@@ -6,8 +6,8 @@ import {
     ChannelInfoScreen,
     PostOptionsScreen,
 } from '@support/ui/screen';
-import {isAndroid, longPressWithRetry, timeouts, wait, waitForElementToBeVisible, waitForElementToExist, waitForElementToNotExist} from '@support/utils';
-import {expect} from 'detox';
+import {isAndroid, longPressWithRetry, timeouts, wait, waitForElementToBeVisible, waitForElementToNotExist} from '@support/utils';
+import {expect, waitFor} from 'detox';
 
 class PinnedMessagesScreen {
     testID = {
@@ -39,7 +39,7 @@ class PinnedMessagesScreen {
 
     toBeVisible = async () => {
         const timeout = isAndroid() ? timeouts.HALF_MIN : timeouts.TEN_SEC;
-        await waitForElementToExist(this.pinnedMessagesScreen, timeout);
+        await waitFor(this.pinnedMessagesScreen).toExist().withTimeout(timeout);
 
         return this.pinnedMessagesScreen;
     };

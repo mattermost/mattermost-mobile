@@ -22,8 +22,8 @@ import {
     LoginScreen,
     ServerScreen,
 } from '@support/ui/screen';
-import {isAndroid, timeouts, wait} from '@support/utils';
-import {by, element, expect} from 'detox';
+import {isAndroid, tapNativeBackButton, timeouts, wait} from '@support/utils';
+import {expect} from 'detox';
 
 describe('Messaging - Code Block Dismisses Keyboard', () => {
     const serverOneDisplayName = 'Server 1';
@@ -68,7 +68,7 @@ describe('Messaging - Code Block Dismisses Keyboard', () => {
         if (isAndroid()) {
             await device.pressBack();
         } else {
-            await element(by.label('Back')).atIndex(0).tap();
+            await tapNativeBackButton();
         }
         await ChannelScreen.toBeVisible();
 

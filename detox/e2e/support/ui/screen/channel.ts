@@ -12,6 +12,7 @@ import {
     PostList,
     SendButton,
 } from '@support/ui/component';
+import {dismissKnownModals} from '@support/ui/modal_dismiss';
 import {
     ChannelListScreen,
     FindChannelsScreen,
@@ -19,7 +20,9 @@ import {
     ThreadScreen,
 } from '@support/ui/screen';
 import {isAndroid, isIos, longPressWithScrollRetry, timeouts, wait, waitForElementToBeVisible, waitForElementToExist} from '@support/utils';
-import {by, device, element, expect, waitFor} from 'detox';
+import {by, element, expect, waitFor} from 'detox';
+
+import InteractiveDialogScreen from './interactive_dialog';
 
 class ChannelScreen {
     testID = {
@@ -103,8 +106,6 @@ class ChannelScreen {
     headerTitle = NavigationHeader.headerTitle;
     atInputQuickAction = InputQuickAction.getAtInputQuickAction(this.testID.channelScreenPrefix);
     atInputQuickActionDisabled = InputQuickAction.getAtInputQuickActionDisabled(this.testID.channelScreenPrefix);
-    tildeInputQuickAction = InputQuickAction.getTildeInputQuickAction(this.testID.channelScreenPrefix);
-    tildeInputQuickActionDisabled = InputQuickAction.getTildeInputQuickActionDisabled(this.testID.channelScreenPrefix);
     slashInputQuickAction = InputQuickAction.getSlashInputQuickAction(this.testID.channelScreenPrefix);
     slashInputQuickActionDisabled = InputQuickAction.getSlashInputQuickActionDisabled(this.testID.channelScreenPrefix);
     fileQuickAction = FileQuickAction.getFileQuickAction(this.testID.channelScreenPrefix);
@@ -149,40 +150,23 @@ class ChannelScreen {
 
     toBeVisible = async (timeout = isAndroid() ? timeouts.HALF_MIN : timeouts.TEN_SEC) => {
         await wait(timeouts.ONE_SEC);
-
-        // Polling helper avoids bridge-idle sync stalls during channel navigation on both platforms.
         await waitForElementToExist(this.channelScreen, timeout);
 
         return this.channelScreen;
     };
 
     dismissScheduledPostTooltip = async () => {
-        // Try to close scheduled post tooltip if it exists (try both regular and admin account versions).
-        // After tapping, VERIFY the tooltip is gone and re-tap once if not: on iOS
-        // the tooltip can still be animating in when the first tap lands, so the
-        // tap misses and the tooltip stays, blocking every later interaction
-        // (run 27342307081: agents tool_calls suite stranded behind the tooltip).
-        const tapAndVerify = async (closeButton: Detox.NativeElement) => {
-            await closeButton.tap();
-            await wait(timeouts.HALF_SEC);
-            try {
-                await waitFor(closeButton).not.toBeVisible().withTimeout(timeouts.TWO_SEC);
-            } catch {
-                await closeButton.tap();
-                await wait(timeouts.HALF_SEC);
-            }
-        };
-
         try {
             await waitFor(this.scheduledPostTooltipCloseButton).toBeVisible().withTimeout(timeouts.FOUR_SEC);
-            await tapAndVerify(this.scheduledPostTooltipCloseButton);
+            await this.scheduledPostTooltipCloseButton.tap();
+            await wait(timeouts.HALF_SEC);
         } catch {
-            // Try admin account version
             try {
                 await waitFor(this.scheduledPostTooltipCloseButtonAdminAccount).toBeVisible().withTimeout(timeouts.FOUR_SEC);
-                await tapAndVerify(this.scheduledPostTooltipCloseButtonAdminAccount);
+                await this.scheduledPostTooltipCloseButtonAdminAccount.tap();
+                await wait(timeouts.HALF_SEC);
             } catch {
-                // Tooltip not visible, continue
+                // Tooltip not visible.
             }
         }
     };
@@ -200,7 +184,7 @@ class ChannelScreen {
         return this.toBeVisible();
     };
 
-    // Open a channel via Find Channels — for API-created private channels not in the sidebar yet.
+    // For API-created private channels not yet in the sidebar.
     openViaFindChannels = async (channelName: string) => {
         await ChannelListScreen.toBeVisible();
         await FindChannelsScreen.open();
@@ -247,25 +231,20 @@ class ChannelScreen {
     openPostOptionsFor = async (postId: string, text: string) => {
         const {postListPostItem} = this.getPostListPostItem(postId, text);
 
-        // Poll toExist — subsequent longPressWithScrollRetry handles visibility on its own.
         await waitForElementToExist(postListPostItem, timeouts.HALF_MIN);
 
-        // Android: swipe (not scroll) to dismiss the soft keyboard via keyboardDismissMode='on-drag'
-        // — programmatic scroll() doesn't trigger it.
         if (isAndroid()) {
             try {
                 await this.postList.getFlatList().swipe('up', 'fast', 0.3);
-            } catch { /* ignore — list may be too short */ }
+            } catch { /* ignore */ }
             await wait(timeouts.TWO_SEC);
         }
 
-        // iOS: same swipe-dismiss-keyboard pattern — post-input bar + keyboard otherwise
-        // occlude the bottom post and fail the iOS-26 Fabric visibility-percent probe.
         if (isIos()) {
             try {
                 await this.postList.getFlatList().swipe('up', 'fast', 0.3);
                 await wait(timeouts.ONE_SEC);
-            } catch { /* ignore — list may be at the boundary */ }
+            } catch { /* ignore */ }
         }
 
         const postTestID = `${this.testID.channelScreenPrefix}post_list.post.${postId}`;
@@ -287,66 +266,30 @@ class ChannelScreen {
         await ThreadScreen.toBeVisible();
     };
 
-    postMessage = async (message: string) => {
-        // # Post message — first dismiss any leftover modal from a prior test that
-        // would otherwise intercept touches even though postInput is still discoverable.
-        try {
-            const knownCloseIds = [
-                'close.create_or_edit_channel.button',
-                'close.channel_info.button',
-                'close.channel_add_members.button',
-                'close.channel_bookmark.button',
-                'close.edit_post.button',
-                'close.edit_profile.button',
-                'close.find_channels.button',
-                'close.browse_channels.button',
-                'close.settings.button',
-                'close.create_direct_message.button',
-                'close.custom_status.button',
-            ];
-            /* eslint-disable no-await-in-loop -- short-circuit at first match */
-            for (const closeId of knownCloseIds) {
-                const btn = element(by.id(closeId));
-                try {
-                    await waitFor(btn).toExist().withTimeout(timeouts.HALF_SEC);
-                    await btn.tap();
-                    await wait(timeouts.ONE_SEC);
-                    break;
-                } catch { /* not this modal */ }
-            }
-            /* eslint-enable no-await-in-loop */
-        } catch {
-            // Best-effort recovery. Fall through.
-        }
+    composePostDraft = async (message: string) => {
+        await dismissKnownModals();
 
-        // # Dismiss the scheduled-post tooltip — it can overlay the PasteInputTextView.
         await this.dismissScheduledPostTooltip();
 
-        // # iOS: tap the FlatList top-corner to dismiss any persisting keyboard. Avoid the
-        // center because on an empty channel it lands on the IntroOptions row (SetHeaderBox)
-        // and opens the Edit Channel Header modal.
         if (isIos()) {
             try {
                 await waitFor(this.postList.getFlatList()).toExist().withTimeout(timeouts.ONE_SEC);
                 await this.postList.getFlatList().tap({x: 5, y: 5});
                 await wait(timeouts.HALF_SEC);
             } catch {
-                // FlatList not present (channel intro) — no keyboard to dismiss.
+                // Channel intro has no post list yet.
             }
         }
 
         try {
             await this.postInput.tap();
         } catch {
-            // Input not hittable — replaceText below will still focus the field.
+            // replaceText below still focuses the field.
         }
 
-        // # Bounded polling loop: PasteInputTextView is briefly occluded on iOS by
-        // intro header / tooltip / UITransitionView / unsettled keyboard inset.
-        // Retry replaceText for TEN_SEC on hittability errors; re-throw anything else.
         const replaceDeadline = Date.now() + timeouts.TEN_SEC;
         let lastError: unknown;
-        /* eslint-disable no-await-in-loop -- sequential retry on transient occlusion */
+        /* eslint-disable no-await-in-loop -- retry on transient iOS occlusion */
         while (Date.now() < replaceDeadline) {
             try {
                 await this.postInput.replaceText(message);
@@ -365,9 +308,25 @@ class ChannelScreen {
         if (lastError) {
             throw lastError;
         }
+    };
 
+    postMessage = async (message: string) => {
+        await this.composePostDraft(message);
         await this.tapSendButton();
         await wait(timeouts.TWO_SEC);
+    };
+
+    postSlashCommand = async (command: string) => {
+        await this.composePostDraft(command);
+        await waitForElementToBeVisible(this.sendButton, timeouts.FOUR_SEC);
+        await this.sendButton.tap();
+        await waitFor(InteractiveDialogScreen.interactiveDialogScreen).toExist().withTimeout(timeouts.FIVE_SEC);
+    };
+
+    tapSendButton = async () => {
+        await waitForElementToBeVisible(this.sendButton, timeouts.FOUR_SEC);
+        await this.sendButton.tap();
+        await waitFor(this.sendButton).not.toExist().withTimeout(timeouts.FIVE_SEC);
     };
 
     enterMessageToSchedule = async (message: string) => {
@@ -376,44 +335,17 @@ class ChannelScreen {
         await this.postInput.replaceText(message);
     };
 
-    tapSendButton = async () => {
-        // # Wait for Send button via polling — bridge-sync visibility can falsely fail when
-        // replaceText() keeps the bridge busy even though the button is rendered.
-        await waitForElementToBeVisible(this.sendButton, timeouts.FOUR_SEC);
-
-        // iOS 26: the send button may not pass the 100% hittability threshold (keyboard or
-        // input bar clips the bottom). Bypass the probe by disabling synchronization.
-        if (isIos()) {
-            await device.disableSynchronization();
-        }
-        try {
-            await this.sendButton.tap();
-        } finally {
-            if (isIos()) {
-                await device.enableSynchronization();
-            }
-        }
-        await waitFor(this.sendButton).not.toExist().withTimeout(timeouts.FIVE_SEC);
-    };
-
     longPressSendButton = async () => {
-        // # Dismiss the scheduled-post tooltip — its overlay intercepts long-press on Android.
         await this.dismissScheduledPostTooltip();
-
-        // # Poll for the send button (bridge can stay busy after replaceText on iOS 26 / API 35).
         await waitForElementToBeVisible(this.sendButton, timeouts.FOUR_SEC);
 
-        // # Android: swipe to dismiss keyboard BEFORE disabling sync, otherwise the keyboard
-        // intercepts the long-press once sync is off.
         if (isAndroid()) {
             try {
                 await this.postList.getFlatList().swipe('up', 'fast', 0.3);
-            } catch { /* ignore — post list may be too short to scroll */ }
+            } catch { /* ignore */ }
             await wait(timeouts.ONE_SEC);
         }
 
-        // # Disable sync — iOS 26 main run loop / Android JS bridge stays busy and would
-        // otherwise hang longPress for 30s. Poll for the bottom sheet afterwards.
         await device.disableSynchronization();
         try {
             await this.sendButton.longPress();
@@ -430,11 +362,7 @@ class ChannelScreen {
     hasPostMessage = async (postId: string, postMessage: string) => {
         const {postListPostItem} = this.getPostListPostItem(postId, postMessage);
 
-        // Wait for the row to exist first — windowed FlatList may not have rendered yet
-        // right after a send + WebSocket POSTED flush.
         await waitFor(postListPostItem).toExist().withTimeout(timeouts.TEN_SEC);
-
-        // 50% threshold — the message input bar can clip the bottom post on iOS 26.x.
         await waitFor(postListPostItem).toBeVisible(50).withTimeout(timeouts.TEN_SEC);
     };
 
@@ -469,35 +397,29 @@ class ChannelScreen {
     };
 
     scheduleMessageForTomorrow = async () => {
-        // Polling helper — avoids Detox idle-sync stalls on both iOS and Android.
         await waitForElementToExist(this.scheduleMessageTomorrowOption, timeouts.HALF_MIN);
         await this.scheduleMessageTomorrowOption.tap();
         await waitForElementToExist(this.scheduledPostOptionTomorrowSelected, timeouts.TEN_SEC);
     };
 
     scheduleMessageForMonday = async () => {
-        // Use polling helper — see scheduleMessageForTomorrow for rationale.
         await waitForElementToExist(this.scheduleMessageOnMondayOption, timeouts.HALF_MIN);
         await this.scheduleMessageOnMondayOption.tap();
         await waitForElementToExist(this.scheduledPostOptionMondaySelected, timeouts.TEN_SEC);
     };
 
     scheduleMessageForNextMonday = async () => {
-        // Use polling helper — see scheduleMessageForTomorrow for rationale.
         await waitForElementToExist(this.scheduledPostOptionNextMonday, timeouts.HALF_MIN);
         await this.scheduledPostOptionNextMonday.tap();
         await waitForElementToExist(this.scheduledPostOptionNextMondaySelected, timeouts.TEN_SEC);
     };
 
-    // Picks a stable schedule option regardless of the current weekday.
-    // Monday: pick "Next Monday"; all other days: pick "Monday" (always present).
+    // Monday uses Next Monday; other days use Monday.
     scheduleMessageForAvailableOption = async () => {
-        const day = new Date().getDay(); // 0 = Sunday … 6 = Saturday
+        const day = new Date().getDay();
         if (day === 1) {
-            // Monday: "Tomorrow" and "Next Monday" are available; pick "Next Monday"
             await this.scheduleMessageForNextMonday();
         } else {
-            // Sunday, Tue–Sat: "Monday" is always a valid and stable choice
             await this.scheduleMessageForMonday();
         }
     };
@@ -523,7 +445,6 @@ class ChannelScreen {
             await waitFor(this.scheduledDraftTooltipText).toBeVisible().withTimeout(timeouts.TEN_SEC);
             await this.scheduledDraftTooltipText.tap();
         } else {
-            // The page re-renders and then opens the tooltip again. Wait for the tooltip to be stable and then tap it.
             await wait(timeouts.TEN_SEC);
             await this.scheduleDraftInforMessage.tap();
         }
@@ -543,8 +464,6 @@ class ChannelScreen {
             recent_mentions_page: 'recent_mentions.post_list.post',
         };
 
-        // Wait for the Edit Message modal to close — its dismiss can lag a frame or two
-        // after saveButton.tap() and would otherwise race the assertion below.
         await waitFor(element(by.id('edit_post.screen'))).
             not.toExist().
             withTimeout(timeouts.TEN_SEC);
@@ -553,7 +472,6 @@ class ChannelScreen {
         const postItemElement = `${postItemTestID}.${postId}`;
         const postItemMatcher = by.id(postItemElement);
 
-        // Escape special characters in the message for regex
         const escapedMessage = updatedMessage.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 
         if (isAndroid()) {
@@ -561,8 +479,6 @@ class ChannelScreen {
             const combinedMatcher = by.text(combinedPattern).withAncestor(postItemMatcher);
             await waitFor(element(combinedMatcher)).toExist().withTimeout(timeouts.TEN_SEC);
         } else {
-            // iOS: nested <Text> shares one UITextView container so the regex matches the
-            // body + "Edited" in one view. toExist — intro card can push it below 75% visibility.
             const completeTextPattern = new RegExp(`${escapedMessage}.*Edited`, 'i');
             const completeTextMatcher = by.text(completeTextPattern).withAncestor(postItemMatcher);
             await waitFor(element(completeTextMatcher)).toExist().withTimeout(timeouts.TEN_SEC);

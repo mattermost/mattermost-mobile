@@ -1,0 +1,39 @@
+# MM-T5603: Sub-flow — Android document picker search for file bookmark (parent flow).
+#
+# PRE-CONDITIONS:
+#   - Invoked from channel_bookmark_file.yml after File bookmark type is selected
+#   - test_bookmark.png on emulator storage and media-scanned (CI staging step)
+#
+# REQUIRED ENV VARS:
+#   - MAESTRO_APP_ID
+#
+# ASSERTIONS:
+#   - Document picker search finds and selects test_bookmark.png
+#
+# testIDs:
+#   - com.google.android.documentsui:id/option_menu_search
+#   - com.google.android.documentsui:id/search_src_text
+tags:
+  - MM-T5603
+appId: ${MAESTRO_APP_ID}
+---
+- extendedWaitUntil:
+    visible:
+      text: "Recent"
+    timeout: 15000
+- tapOn:
+    text: "Downloads"
+    optional: true
+- tapOn:
+    id: "com.google.android.documentsui:id/option_menu_search"
+- extendedWaitUntil:
+    visible:
+      id: "com.google.android.documentsui:id/search_src_text"
+    timeout: 10000
+- inputText: "test_bookmark"
+- extendedWaitUntil:
+    visible:
+      text: "test_bookmark.png"
+    timeout: 10000
+- tapOn:
+    text: "test_bookmark.png"

@@ -25,7 +25,7 @@ import {
     ServerScreen,
 } from '@support/ui/screen';
 import {getRandomId} from '@support/utils';
-import {expect, waitFor} from 'detox';
+import {expect} from 'detox';
 
 describe('Autocomplete - Edit Post', () => {
     const serverOneDisplayName = 'Server 1';

@@ -24,23 +24,21 @@ import {
     ServerScreen,
 } from '@support/ui/screen';
 import {isAndroid, timeouts, wait} from '@support/utils';
-import {expect} from 'detox';
+import {device, expect, waitFor} from 'detox';
 
 describe('Agents - Channel Summary', () => {
     const serverOneDisplayName = 'Server 1';
     const channelsCategory = 'channels';
     let testChannel: any;
-    let agentsEnabled = false;
+    let didLogin = false;
 
     beforeAll(async () => {
-        // # Ensure agents plugin is installed and active (installs from Marketplace if needed)
-        const pluginStatus = await Plugin.apiEnsurePluginInstalled(siteOneUrl, AgentsPlugin.id);
+        const pluginStatus = await Plugin.apiGetPluginStatus(siteOneUrl, AgentsPlugin.id);
         if (!pluginStatus.isActive) {
             // eslint-disable-next-line no-console
-            console.warn(`Agents plugin (${AgentsPlugin.id}) could not be activated — skipping suite`);
+            console.warn(`Agents plugin (${AgentsPlugin.id}) is not active — skipping suite`);
             return;
         }
-        agentsEnabled = true;
 
         const {channel, user} = await Setup.apiInit(siteOneUrl);
         testChannel = channel;
@@ -48,45 +46,30 @@ describe('Agents - Channel Summary', () => {
         // # Log in to server
         await ServerScreen.connectToServer(serverOneUrl, serverOneDisplayName);
         await LoginScreen.login(user);
+        didLogin = true;
 
         // # Wait for WebSocket to connect and agents status to be fetched
-        await wait(timeouts.FOUR_SEC);
+        await wait(timeouts.TEN_SEC);
 
-        // # Verify the Ask Agents UI element actually appears in quick actions.
-        // The API check above confirms the plugin is installed, but the quick
-        // actions sheet only exposes the element when the plugin is fully
-        // configured (agents/status available). Probe on BOTH platforms and
-        // soft-skip when hidden — previously iOS skipped the probe and its two
-        // tests failed outright (runs 27302480506, 27342307081) while Android
-        // soft-skipped the identical condition.
-        await ChannelListScreen.toBeVisible();
-        await ChannelScreen.open(channelsCategory, testChannel.name);
-        await wait(timeouts.ONE_SEC);
-        await ChannelScreen.channelQuickActionsButton.tap();
-        try {
-            await waitFor(element(by.id('channel.quick_actions.ask_agents'))).toBeVisible().withTimeout(timeouts.FOUR_SEC);
-        } catch {
-            // eslint-disable-next-line no-console
-            console.warn('Ask Agents quick action not visible — skipping suite');
-            agentsEnabled = false;
-        }
+        // # On Android, verify the Ask Agents UI element actually appears in quick actions.
         if (isAndroid()) {
-            await device.pressBack();
-        } else {
-            // iOS: dismiss the quick-actions bottom sheet by swiping down on an
-            // always-present sheet row (favorite/unfavorite is first in the sheet)
-            try {
-                await element(by.id(ChannelScreen.testID.favoriteQuickAction)).swipe('down', 'fast', 0.5);
-            } catch {
-                await element(by.id(ChannelScreen.testID.unfavoriteQuickAction)).swipe('down', 'fast', 0.5);
-            }
+            await ChannelListScreen.toBeVisible();
+            await ChannelScreen.open(channelsCategory, testChannel.name);
             await wait(timeouts.ONE_SEC);
+            await ChannelScreen.channelQuickActionsButton.tap();
+            try {
+                await waitFor(element(by.id('channel.quick_actions.ask_agents'))).toBeVisible().withTimeout(timeouts.FOUR_SEC);
+            } catch {
+                // eslint-disable-next-line no-console
+                console.warn('Ask Agents quick action not visible on Android — tests remain skipped');
+            }
+            await device.pressBack();
+            await ChannelScreen.back();
         }
-        await ChannelScreen.back();
     });
 
     beforeEach(async () => {
-        if (!agentsEnabled) {
+        if (!didLogin) {
             return;
         }
 
@@ -95,7 +78,7 @@ describe('Agents - Channel Summary', () => {
     });
 
     afterAll(async () => {
-        if (!agentsEnabled) {
+        if (!didLogin) {
             return;
         }
 
@@ -103,12 +86,16 @@ describe('Agents - Channel Summary', () => {
         await HomeScreen.logout();
     });
 
-    // Skip: requires Agents plugin configured with at least one AI bot on CI server
-    it('should show Ask Agents option in public channel', async () => {
-        if (!agentsEnabled) {
-            return;
-        }
+    const itWhenLoggedIn = (name: string, fn: () => Promise<void>) => {
+        it(name, async () => {
+            if (!didLogin) {
+                return;
+            }
+            await fn();
+        });
+    };
 
+    itWhenLoggedIn('should show Ask Agents option in public channel', async () => {
         // # Open a channel screen
         await ChannelScreen.open(channelsCategory, testChannel.name);
 
@@ -124,12 +111,7 @@ describe('Agents - Channel Summary', () => {
         await ChannelScreen.back();
     });
 
-    // Skip: requires Agents plugin configured with at least one AI bot on CI server
-    it('should open summary sheet and show options', async () => {
-        if (!agentsEnabled) {
-            return;
-        }
-
+    itWhenLoggedIn('should open summary sheet and show options', async () => {
         // # Open a channel screen
         await ChannelScreen.open(channelsCategory, testChannel.name);
 

@@ -2,6 +2,23 @@ name: Detox Android E2E Tests Template
 
 on:
   workflow_call:
+    secrets:
+      MM_MOBILE_E2E_ADMIN_EMAIL:
+        required: false
+      MM_MOBILE_E2E_ADMIN_USERNAME:
+        required: false
+      MM_MOBILE_E2E_ADMIN_PASSWORD:
+        required: false
+      MM_MOBILE_E2E_ZEPHYR_API_KEY:
+        required: false
+      MM_MOBILE_E2E_TEST_CYCLE_LINK_PREFIX:
+        required: false
+      MM_MOBILE_E2E_WEBHOOK_URL:
+        required: false
+      MM_MOBILE_DETOX_AWS_ACCESS_KEY_ID:
+        required: false
+      MM_MOBILE_DETOX_AWS_SECRET_ACCESS_KEY:
+        required: false
     inputs:
       MM_TEST_SERVER_URL:
         description: "The test server URL (SITE_1)"
@@ -71,6 +88,11 @@ on:
         required: false
         type: string
         default: "35"
+      artifact_run_id:
+        description: "Run ID of the workflow that uploaded android-build-files-* (defaults to caller run)"
+        required: false
+        type: string
+        default: ""
     outputs:
       STATUS:
         value: ${{ jobs.generate-report.outputs.STATUS }}
@@ -116,6 +138,7 @@ env:
   RUNNING_E2E: "true"
   AVD_NAME: ${{ inputs.android_avd_name }}
   SDK_VERSION: ${{ inputs.android_api_level }}
+  ARTIFACT_RUN_ID: ${{ inputs.artifact_run_id || github.run_id }}
 
 jobs:
   generate-specs:
@@ -128,7 +151,7 @@ jobs:
       workflow_hash: ${{ steps.resolve-device.outputs.WORKFLOW_HASH }}
     steps:
       - name: Checkout Repository
-        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
         with:
           ref: ${{ inputs.MOBILE_VERSION }}
 
@@ -169,7 +192,7 @@ jobs:
       matrix: ${{ fromJSON(needs.generate-specs.outputs.specs) }}
     steps:
       - name: Checkout Repository
-        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
         with:
           ref: ${{ inputs.MOBILE_VERSION }}
 
@@ -189,7 +212,7 @@ jobs:
         uses: ./.github/actions/prepare-node-deps
 
       - name: Cache detox node_modules
-        uses: actions/cache@5a3ec84eff668545956fd18022155c47e93e2684 # v4.2.3
+        uses: actions/cache@27d5ce7f107fe9357f9df03efb73ab90386fccae # v5.0.5
         with:
           path: detox/node_modules
           key: ${{ runner.os }}-detox-deps-${{ hashFiles('detox/package-lock.json') }}
@@ -207,9 +230,11 @@ jobs:
           EOF
   
       - name: Download APK artifact
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
         with:
-          name: android-build-files-${{ github.run_id }}
+          name: android-build-files-${{ env.ARTIFACT_RUN_ID }}
+          run-id: ${{ env.ARTIFACT_RUN_ID }}
+          github-token: ${{ github.token }}
           path: android/app/build
 
       - name: Set up Android SDK
@@ -239,26 +264,50 @@ jobs:
             exit 1
           fi
 
-      # Cache the SDK components themselves. Without this, every shard re-runs
-      # sdkmanager (~2-3 min per shard × 20 shards = 40-60 runner-minutes
-      # per workflow). With cache hit, install step skips entirely.
+      # Cache SDK under the workspace (not /usr/local) — tar restore into system
+      # SDK dirs often fails with exit code 2 when paths already exist on the image.
       - name: Cache Android SDK components
         id: android-sdk-cache
-        uses: actions/cache@5a3ec84eff668545956fd18022155c47e93e2684 # v4.2.3
+        uses: actions/cache@27d5ce7f107fe9357f9df03efb73ab90386fccae # v5.0.5
         with:
-          path: |
-            /usr/local/lib/android/sdk/platform-tools
-            /usr/local/lib/android/sdk/emulator
-            /usr/local/lib/android/sdk/platforms/android-${{ inputs.android_api_level }}
-            /usr/local/lib/android/sdk/system-images/android-${{ inputs.android_api_level }}
-          key: android-sdk-${{ inputs.android_api_level }}-google-apis-x86_64-v1
+          path: .android-sdk-cache
+          key: android-sdk-${{ inputs.android_api_level }}-google-apis-x86_64-v2
+
+      - name: Apply cached Android SDK components
+        if: steps.android-sdk-cache.outputs.cache-hit == 'true'
+        env:
+          API_LEVEL: ${{ inputs.android_api_level }}
+        run: |
+          for component in platform-tools emulator; do
+            if [ -d ".android-sdk-cache/${component}" ]; then
+              rm -rf "${ANDROID_HOME:?}/${component}"
+              cp -a ".android-sdk-cache/${component}" "${ANDROID_HOME}/"
+            fi
+          done
+          if [ -d ".android-sdk-cache/platforms/android-${API_LEVEL}" ]; then
+            rm -rf "${ANDROID_HOME}/platforms/android-${API_LEVEL}"
+            mkdir -p "${ANDROID_HOME}/platforms"
+            cp -a ".android-sdk-cache/platforms/android-${API_LEVEL}" "${ANDROID_HOME}/platforms/"
+          fi
+          if [ -d ".android-sdk-cache/system-images/android-${API_LEVEL}" ]; then
+            rm -rf "${ANDROID_HOME}/system-images/android-${API_LEVEL}"
+            mkdir -p "${ANDROID_HOME}/system-images"
+            cp -a ".android-sdk-cache/system-images/android-${API_LEVEL}" "${ANDROID_HOME}/system-images/"
+          fi
 
       - name: Install Android SDK components
         if: steps.android-sdk-cache.outputs.cache-hit != 'true'
+        env:
+          API_LEVEL: ${{ inputs.android_api_level }}
+          JAVA_HOME: ${{ env.JAVA_HOME_17_X64 }}
         run: |
+          if ! [[ "$API_LEVEL" =~ ^[0-9]+$ ]]; then
+            echo "Invalid android_api_level: $API_LEVEL"
+            exit 1
+          fi
           for attempt in 1 2 3; do
             echo "SDK install attempt $attempt..."
-            if yes | sdkmanager --install "platform-tools" "emulator" "platforms;android-${{ inputs.android_api_level }}" "system-images;android-${{ inputs.android_api_level }};google_apis;x86_64"; then
+            if yes | sdkmanager --install "platform-tools" "emulator" "platforms;android-${API_LEVEL}" "system-images;android-${API_LEVEL};google_apis;x86_64"; then
               echo "SDK install succeeded on attempt $attempt"
               break
             fi
@@ -269,19 +318,22 @@ jobs:
             fi
             sleep 10
           done
-        env:
-          JAVA_HOME: ${{ env.JAVA_HOME_17_X64 }}
+          mkdir -p .android-sdk-cache/platforms .android-sdk-cache/system-images
+          cp -a "${ANDROID_HOME}/platform-tools" .android-sdk-cache/
+          cp -a "${ANDROID_HOME}/emulator" .android-sdk-cache/
+          cp -a "${ANDROID_HOME}/platforms/android-${API_LEVEL}" .android-sdk-cache/platforms/
+          cp -a "${ANDROID_HOME}/system-images/android-${API_LEVEL}" .android-sdk-cache/system-images/
 
-      # AVD-specific cache (created lazily per shard by create_android_emulator.sh).
-      # Smaller key — only covers ~/.android/avd which doesn't overlap with the
-      # SDK components cache above.
+      # CI AVDs live under detox/.android/avd (see create_android_emulator.sh), not ~/.android/avd.
       - name: Cache Android Emulator & AVD
-        uses: actions/cache@5a3ec84eff668545956fd18022155c47e93e2684 # v4.2.3
+        uses: actions/cache@27d5ce7f107fe9357f9df03efb73ab90386fccae # v5.0.5
         with:
           path: |
-            ~/.android/avd
-          key: android-emulator-${{ runner.os }}-${{ runner.arch }}-api-${{ inputs.android_api_level }}
+            detox/.android
+            detox/${{ env.AVD_NAME }}_api_${{ inputs.android_api_level }}
+          key: android-emulator-${{ runner.os }}-${{ runner.arch }}-${{ env.AVD_NAME }}-api-${{ inputs.android_api_level }}-v3
           restore-keys: |
+            android-emulator-${{ runner.os }}-${{ runner.arch }}-${{ env.AVD_NAME }}-api-${{ inputs.android_api_level }}-
             android-emulator-${{ runner.os }}-${{ runner.arch }}-
 
       - name: Create and run Android Emulator
@@ -297,8 +349,8 @@ jobs:
         continue-on-error: true # We want to run all the tests
 
       - name: Upload Android Test Report
-        if: always()
-        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        if: always() && hashFiles('detox/artifacts/**') != ''
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
           name: android-results-${{ needs.generate-specs.outputs.workflow_hash }}-${{ matrix.runId }}
           path: detox/artifacts/
@@ -320,7 +372,7 @@ jobs:
       PERCENTAGE: ${{ steps.summary.outputs.PERCENTAGE }}
     steps:
       - name: Checkout Repository
-        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
         with:
           ref: ${{ inputs.MOBILE_VERSION }}
 
@@ -328,7 +380,7 @@ jobs:
         uses: ./.github/actions/prepare-node-deps
 
       - name: Download Android Artifacts
-        uses: actions/download-artifact@c850b930e6ba138125429b7e5c93fc707a7f8427 # v4.1.4
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
         with:
           path: detox/artifacts/
           pattern: android-results-${{ needs.generate-specs.outputs.workflow_hash }}-*

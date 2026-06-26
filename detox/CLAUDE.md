@@ -3,10 +3,10 @@
 This file is the authoritative guide for AI agents working in the `detox/` directory.
 Follow these rules exactly. Do not improvise on conventions that are explicitly defined here.
 
-> **Working on Maestro flows?** See `maestro/CLAUDE.md` for flow gotchas
+> **Working on Maestro flows?** See `maestro/GUIDELINES.md` for the authoring spec and flow gotchas.
 > (toggle-tap pattern, modal back-nav on iOS 26.3, server preference persistence,
 > `AllowDownloadLogs` path under `SupportSettings`, etc.) and per-flow server-setting
-> requirements. Server provisioning lives in `detox/provision_server.js` and is
+> requirements. Server provisioning lives in `detox/provision/` (run via `npm run provision` in the detox package) and is
 > shared between Detox and Maestro.
 
 ---
@@ -387,7 +387,7 @@ const {channel} = await Channel.apiCreateChannel(siteOneUrl, {
 const {user} = await User.apiCreateUser(siteOneUrl);
 await Team.apiAddUserToTeam(siteOneUrl, user.id, team.id);
 await Channel.apiAddUserToChannel(siteOneUrl, user.id, channel.id);
-await Channel.apiCreatePost(siteOneUrl, {channelId: channel.id, message: 'Hello'});
+await Post.apiCreatePost(siteOneUrl, {channelId: channel.id, message: 'Hello'});
 ```
 
 ### URL Constants
@@ -506,9 +506,9 @@ This rule overrides any default tendency to "patch first and see." If a detox te
    > Side effect occurred (HTTP/DB/nav): YES/NO (evidence: `<log line>`)
    > UI re-rendered: YES/NO (evidence: viewHierarchy testIDs)
    > Therefore root cause is: <pick one>
-   >   - test (selector/timing/missing wait)
-   >   - detox/native (tap missed, sync stuck, simulator)
-   >   - app (handler didn't fire / state didn't update / observer didn't emit)
+   > - test (selector/timing/missing wait)
+   > - detox/native (tap missed, sync stuck, simulator)
+   > - app (handler didn't fire / state didn't update / observer didn't emit)
 
 Only after stating those four findings may you propose a fix. If finding 4 says "app bug," the fix is NOT a retry loop or longer timeout in the test — say so and either fix the app or stop and report.
 

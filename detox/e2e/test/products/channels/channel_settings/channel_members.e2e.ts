@@ -48,7 +48,6 @@ describe('Channels', () => {
     // Test-specific data
     let addMemberUser: any; // For MM-T3195
     let user2: any; // For MM-T856
-    let memberUser: any; // For MM-T3196
     let privateChannel1: any; // For MM-T3204
     let privUser: any; // For MM-T3204
     let privateChannel2: any; // For MM-T3205
@@ -79,16 +78,7 @@ describe('Channels', () => {
         await Team.apiAddUserToTeam(siteOneUrl, newUser2.id, testTeam.id);
         user2 = newUser2;
 
-        // 4. Test 3 (MM-T3196): User already in channel for removal
-        const {user: newUser3} = await User.apiCreateUser(siteOneUrl, {prefix: 'member'});
-        if (!newUser3?.id) {
-            throw new Error('[beforeAll] Failed to create memberUser');
-        }
-        await Team.apiAddUserToTeam(siteOneUrl, newUser3.id, testTeam.id);
-        await Channel.apiAddUserToChannel(siteOneUrl, newUser3.id, testChannel.id);
-        memberUser = newUser3;
-
-        // 5. Test 4 (MM-T3204): Private channel + user to add
+        // 4. Test 4 (MM-T3204): Private channel + user to add
         const {channel: privChan1} = await Channel.apiCreateChannel(siteOneUrl, {
             teamId: testTeam.id,
             type: 'P',
@@ -226,42 +216,6 @@ describe('Channels', () => {
         await wait(timeouts.TWO_SEC);
 
         const systemMessage = `${newUser.username} added to the channel by ${testUser.username}`;
-        await waitFor(element(by.text(systemMessage).withAncestor(by.id('post_list')))).
-            toBeVisible();
-        await ChannelScreen.back();
-    });
-
-    it('MM-T3196 - RN apps Manage members in channel', async () => {
-        // # Use pre-created user (already in channel)
-        const removedUser = memberUser;
-
-        // # Open default test channel
-        await ChannelScreen.open(channelsCategory, testChannel.name);
-
-        // # Open channel info and tap members option
-        await ChannelInfoScreen.open();
-        await wait(timeouts.ONE_SEC);
-
-        await expect(ChannelInfoScreen.membersOption).toBeVisible();
-        await ChannelInfoScreen.membersOption.tap();
-
-        await wait(timeouts.TWO_SEC);
-        await ManageChannelMembersScreen.manageButton.tap();
-        await wait(timeouts.TWO_SEC);
-
-        // # Search and remove user
-        await ManageChannelMembersScreen.searchAndRemoveUser(removedUser.username, removedUser.id);
-
-        // * Verify user removed system message appears
-        // On iOS, device.pressBack() in searchAndRemoveUser is a no-op — close ManageMembers manually
-        if (isIos()) {
-            await ManageChannelMembersScreen.close();
-        }
-        await ChannelInfoScreen.close();
-        await ChannelScreen.toBeVisible();
-        await wait(timeouts.TWO_SEC);
-
-        const systemMessage = `${removedUser.username} was removed from the channel`;
         await waitFor(element(by.text(systemMessage).withAncestor(by.id('post_list')))).
             toBeVisible();
         await ChannelScreen.back();

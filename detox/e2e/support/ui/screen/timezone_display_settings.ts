@@ -18,10 +18,7 @@ class TimezoneDisplaySettingsScreen {
 
     timezoneDisplaySettingsScreen = element(by.id(this.testID.timezoneDisplaySettingsScreen));
 
-    // expo-router native stack screen — the custom NavigationHeader's
-    // 'navigation.header.back' testID is not rendered here. iOS uses
-    // `accessibilityLabel="Back"`, Android uses the Toolbar's default
-    // navigation-icon contentDescription "Navigate up".
+    // Native-stack back chevron via accessibility label.
     get backButton(): Detox.NativeElement {
         return isIos()
             ? element(by.label('Back')).atIndex(0)
@@ -48,9 +45,7 @@ class TimezoneDisplaySettingsScreen {
     };
 
     back = async () => {
-        // Use platform-native back chevron: Android via device.pressBack(),
-        // iOS via by.label('Back'). The custom NavigationHeader's testID
-        // does not exist on this screen (expo-router native stack).
+        // Native-stack back chevron.
         await tapNativeBackButton();
         await waitFor(this.timezoneDisplaySettingsScreen).not.toBeVisible().withTimeout(timeouts.TEN_SEC);
     };

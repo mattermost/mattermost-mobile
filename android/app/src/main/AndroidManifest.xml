@@ -107,13 +107,6 @@
           </intent-filter>
       </activity>
 
-        <!-- For Calls microphone to work in the background -->
-        <service
-                android:name="com.voximplant.foregroundservice.VIForegroundService"
-                android:foregroundServiceType="microphone"
-                android:exported="false"
-        />
-
       <!-- Android 14 requires the correct Foreground Service (FGS) type for RNShare -->
       <service
           android:name="androidx.work.impl.foreground.SystemForegroundService"

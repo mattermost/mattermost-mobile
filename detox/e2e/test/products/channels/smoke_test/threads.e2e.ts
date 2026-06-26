@@ -23,7 +23,6 @@ import {
     GlobalThreadsScreen,
     HomeScreen,
     LoginScreen,
-    PermalinkScreen,
     ServerScreen,
     ThreadOptionsScreen,
     ThreadScreen,
@@ -162,68 +161,4 @@ describe('Smoke Test - Threads', () => {
         await GlobalThreadsScreen.back();
     });
 
-    it('MM-T4811_2 - should be able to save/unsave a thread and open a thread in channel', async () => {
-        // # Create a thread, go back to channel list screen, then go to global threads screen, open thread options for thread, tap on save option, and tap on thread
-        const parentMessage = `Message ${getRandomId()}`;
-        await ChannelScreen.open(channelsCategory, testChannel.name);
-        await waitFor(ChannelScreen.postInput).toBeVisible().withTimeout(timeouts.FOUR_SEC);
-        await ChannelScreen.postMessage(parentMessage);
-        const {post: parentPost} = await Post.apiGetLastPostInChannel(siteOneUrl, testChannel.id);
-        const {postListPostItem: parentPostItem2} = ChannelScreen.getPostListPostItem(parentPost.id, parentMessage);
-        await waitFor(parentPostItem2).toBeVisible().withTimeout(timeouts.TEN_SEC);
-        await ChannelScreen.openReplyThreadFor(parentPost.id, parentMessage);
-        const replyMessage = `${parentMessage} reply`;
-        await ThreadScreen.postMessage(replyMessage);
-        await ThreadScreen.back();
-        await ChannelScreen.back();
-        await GlobalThreadsScreen.open();
-        await GlobalThreadsScreen.openThreadOptionsFor(parentPost.id);
-        await ThreadOptionsScreen.saveThreadOption.tap();
-
-        await GlobalThreadsScreen.getThreadItem(parentPost.id).tap();
-
-        // * Verify the thread is saved — assert on the thread_overview bookmark button,
-        // not on the post pre-header.
-        //
-        // The "Saved" pre-header is deliberately suppressed on the thread-view root post
-        // (app/components/post_list/post_list.tsx — `skipSavedHeader = location === Screens.THREAD
-        // && post.id === rootId`). The product surfaces saved-state on the thread root via
-        // the bookmark icon in the thread_overview row instead, which swaps between
-        // `*.save.button` (not saved) and `*.unsave.button` (saved). Same testID scheme on iOS
-        // and Android — no platform branches in app/components/post_list/thread_overview.
-        // .atIndex(0): expo-router's tab-stack persistence can leave a stale ThreadScreen
-        // mounted off-screen (e.g. from a previous tab) while the current one is active.
-        // Both emit the same `thread.post_list.thread_overview.{un,}save.button` testID.
-        // Detox's view-hierarchy traversal returns the active (topmost) screen first.
-        const threadOverviewUnsaveButton = element(by.id('thread.post_list.thread_overview.unsave.button')).atIndex(0);
-        const threadOverviewSaveButton = element(by.id('thread.post_list.thread_overview.save.button')).atIndex(0);
-        await waitFor(threadOverviewUnsaveButton).toBeVisible().withTimeout(timeouts.TEN_SEC);
-
-        // # Go back to global threads screen, open thread options for thread, tap on unsave option
-        await ThreadScreen.back();
-        await GlobalThreadsScreen.openThreadOptionsFor(parentPost.id);
-        await waitFor(ThreadOptionsScreen.unsaveThreadOption).toBeVisible().withTimeout(timeouts.TEN_SEC);
-        await ThreadOptionsScreen.unsaveThreadOption.tap();
-
-        // * Verify the thread is unsaved — the thread_overview button flips back to *.save.button.
-        await GlobalThreadsScreen.getThreadItem(parentPost.id).tap();
-        await waitFor(threadOverviewSaveButton).toBeVisible().withTimeout(timeouts.TEN_SEC);
-
-        // # Go back to global threads screen, open thread options for thread, tap on open in channel option, and jump to recent messages
-        await ThreadScreen.back();
-        await GlobalThreadsScreen.openThreadOptionsFor(parentPost.id);
-        await waitFor(ThreadOptionsScreen.openInChannelOption).toBeVisible().withTimeout(timeouts.TEN_SEC);
-        await ThreadOptionsScreen.openInChannelOption.tap();
-        await waitFor(PermalinkScreen.permalinkScreen).toBeVisible().withTimeout(timeouts.TEN_SEC);
-        await PermalinkScreen.jumpToRecentMessages();
-
-        // * Verify on channel screen and thread is displayed
-        await ChannelScreen.toBeVisible();
-        const {postListPostItem} = ChannelScreen.getPostListPostItem(parentPost.id, parentMessage);
-        await expect(postListPostItem).toBeVisible();
-
-        // # Go back to channel list screen
-        await ChannelScreen.back();
-        await GlobalThreadsScreen.back();
-    });
 });

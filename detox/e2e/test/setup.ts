@@ -101,7 +101,19 @@ function clearIOSAppData(): void {
 // ─── Admin API login ─────────────────────────────────────────────────────────
 
 async function loginAdmin(): Promise<void> {
-    await System.apiCheckSystemHealth(siteOneUrl);
+    const HEALTH_MAX_ATTEMPTS = 5;
+    for (let healthAttempt = 1; healthAttempt <= HEALTH_MAX_ATTEMPTS; healthAttempt++) {
+        try {
+            await System.apiCheckSystemHealth(siteOneUrl);
+            break;
+        } catch (error) {
+            if (healthAttempt === HEALTH_MAX_ATTEMPTS) {
+                throw error;
+            }
+            console.warn(`⚠️ System health check attempt ${healthAttempt} failed, retrying...`);
+            await new Promise((resolve) => setTimeout(resolve, 3000 * healthAttempt));
+        }
+    }
 
     const MAX_ATTEMPTS = 3;
     for (let attempt = 1; attempt <= MAX_ATTEMPTS; attempt++) {
@@ -186,8 +198,24 @@ beforeAll(async () => {
         }
     }
 
+    async function ensureAndroidMetroReverse(): Promise<void> {
+        if (device.getPlatform() !== 'android') {
+            return;
+        }
+        try {
+            execSync('adb reverse tcp:8081 tcp:8081', {stdio: 'pipe'});
+            const reverseList = execSync('adb reverse --list', {encoding: 'utf8'});
+            if (!reverseList.includes('tcp:8081')) {
+                console.warn('[ensureAndroidMetroReverse] tcp:8081 reverse missing after setup');
+            }
+        } catch (e) {
+            console.warn('[ensureAndroidMetroReverse] failed:', String(e).slice(0, 200));
+        }
+    }
+
     async function launchAndVerify(): Promise<void> {
         await grantAndroidNotificationPermission();
+        await ensureAndroidMetroReverse();
 
         await device.launchApp({
             newInstance: true,
@@ -213,6 +241,7 @@ beforeAll(async () => {
                     await forceAndroidDataClear();
 
                     await grantAndroidNotificationPermission();
+                    await ensureAndroidMetroReverse();
                     await device.launchApp({newInstance: true, launchArgs});
                     await waitFor(serverScreenEl).toExist().withTimeout(APP_READY_TIMEOUT);
                 } catch {
@@ -274,6 +303,7 @@ beforeAll(async () => {
                 clearIOSAppData();
             } else if (device.getPlatform() === 'android') {
                 await forceAndroidDataClear();
+                await ensureAndroidMetroReverse();
             }
             await new Promise((resolve) => setTimeout(resolve, 3000));
         }

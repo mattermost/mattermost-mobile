@@ -1,0 +1,42 @@
+# MM-T5603: Sub-flow — iOS document picker navigation for file bookmark (parent flow).
+#
+# PRE-CONDITIONS:
+#   - Invoked from channel_bookmark_file.yml after File bookmark type is selected
+#   - test_bookmark.png in simulator File Provider Local Storage (CI staging step)
+#
+# REQUIRED ENV VARS:
+#   - MAESTRO_APP_ID
+#
+# ASSERTIONS:
+#   - Picker navigates Recents → Browse → On My iPhone → test_bookmark.png
+#
+# testIDs:
+#   - (system Files UI — text selectors: Recents, Browse, On My iPhone, test_bookmark.png)
+tags:
+  - MM-T5603
+appId: ${MAESTRO_APP_ID}
+---
+- extendedWaitUntil:
+    visible:
+      text: "Recents"
+    timeout: 15000
+- extendedWaitUntil:
+    visible:
+      text: "Browse"
+    timeout: 10000
+- tapOn:
+    text: "Browse"
+- extendedWaitUntil:
+    visible:
+      text: "On My iPhone"
+    timeout: 10000
+- tapOn:
+    text: "On My iPhone"
+# Tap by resource-id (iOS file picker assigns resource-id="<filename>, <ext>").
+# Using text: "test_bookmark" only matches the label sub-element and does NOT trigger selection.
+- extendedWaitUntil:
+    visible:
+      id: "test_bookmark, png"
+    timeout: 10000
+- tapOn:
+    id: "test_bookmark, png"

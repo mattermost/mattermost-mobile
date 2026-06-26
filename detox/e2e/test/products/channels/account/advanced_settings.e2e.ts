@@ -57,7 +57,7 @@ describe('Account - Settings - Advanced Settings', () => {
         await expect(AdvancedSettingsScreen.deleteDataOption).toBeVisible();
     });
 
-    it('MM-T3262 - should show confirmation dialog for delete local files and dismiss on cancel', async () => {
+    it('MM-T3262_1 - should show confirmation dialog for delete local files and dismiss on cancel', async () => {
         // # Tap on delete data option
         await AdvancedSettingsScreen.deleteDataOption.tap();
 

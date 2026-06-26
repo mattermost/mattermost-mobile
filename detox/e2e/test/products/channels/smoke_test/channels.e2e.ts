@@ -32,7 +32,7 @@ import {
     ChannelSettingsScreen,
 } from '@support/ui/screen';
 import {getRandomId, isAndroid, timeouts, wait} from '@support/utils';
-import {expect, waitFor} from 'detox';
+import {device, expect, waitFor} from 'detox';
 
 describe('Smoke Test - Channels', () => {
     const serverOneDisplayName = 'Server 1';
@@ -165,9 +165,14 @@ describe('Smoke Test - Channels', () => {
         await CreateOrEditChannelScreen.headerInput.replaceText(updatedHeader);
         await CreateOrEditChannelScreen.saveButton.tap();
 
-        // * Verify on channel info screen and changes have been saved (close channel settings first to return to channel info).
-        await ChannelSettingsScreen.toBeVisible();
-        await ChannelSettingsScreen.close();
+        // * Verify on channel info screen and changes have been saved.
+        await waitFor(element(by.id('create_or_edit_channel.screen'))).not.toExist().withTimeout(timeouts.TEN_SEC);
+        try {
+            await waitFor(ChannelSettingsScreen.channelSettingsScreen).toExist().withTimeout(timeouts.FOUR_SEC);
+            await ChannelSettingsScreen.close();
+        } catch {
+            // Save may land directly on channel info.
+        }
         await ChannelInfoScreen.toBeVisible();
         await waitFor(element(by.text(`Channel header: ${testChannel.display_name.toLowerCase()}\nheader1\nheader2`))).toBeVisible().withTimeout(timeouts.TEN_SEC);
 
