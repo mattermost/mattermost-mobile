@@ -91,7 +91,7 @@ describe('WebSocketClient', () => {
         await client.initialize();
 
         expect(mockedGetOrCreateWebSocketClient).toHaveBeenCalledWith('wss://example.com/api/v4/websocket', {headers: {origin: 'wss://example.com'}, timeoutInterval: 30000});
-        expect(logInfo).toHaveBeenCalledWith('websocket connecting to', 'https://example.com');
+        expect(logInfo).toHaveBeenCalledWith('websocket connecting to wss://example.com/api/v4/websocket');
     });
 
     it('should handle WebSocket open event - skip sync', async () => {
@@ -102,7 +102,7 @@ describe('WebSocketClient', () => {
 
         expect(mockConn.readyState).toBe(WebSocketReadyState.OPEN);
 
-        expect(logInfo).toHaveBeenCalledWith('websocket connected to', 'https://example.com');
+        expect(logInfo).toHaveBeenCalledWith('websocket connected to', 'wss://example.com/api/v4/websocket');
         expect(firstConnectCallback).toHaveBeenCalled();
     });
 
@@ -112,7 +112,7 @@ describe('WebSocketClient', () => {
 
         await client.initialize();
 
-        expect(logInfo).toHaveBeenCalledWith('websocket re-established connection to', 'https://example.com');
+        expect(logInfo).toHaveBeenCalledWith('websocket re-established connection to', 'wss://example.com/api/v4/websocket');
         expect(reconnectCallback).toHaveBeenCalled();
     });
 
@@ -132,7 +132,7 @@ describe('WebSocketClient', () => {
 
         mockConn.onOpen.mock.calls[0][0]();
 
-        expect(logInfo).toHaveBeenCalledWith('websocket re-established connection to', 'https://example.com');
+        expect(logInfo).toHaveBeenCalledWith('websocket re-established connection to', 'wss://example.com/api/v4/websocket?connection_id=&sequence_number=0');
         expect(reliableReconnectCallback).toHaveBeenCalled();
         expect(missedEventsCallback).toHaveBeenCalled();
     });
@@ -145,7 +145,7 @@ describe('WebSocketClient', () => {
 
         mockConn.close();
 
-        expect(logInfo).toHaveBeenCalledWith('websocket closed', 'https://example.com');
+        expect(logInfo).toHaveBeenCalledWith('websocket closed', 'wss://example.com/api/v4/websocket');
         expect(closeCallback).toHaveBeenCalled();
     });
 
@@ -178,7 +178,7 @@ describe('WebSocketClient', () => {
 
         mockConn.onClose.mock.calls[0][0]({message});
 
-        expect(logDebug).toHaveBeenCalledWith('websocket did not connect', 'https://example.com', message.reason);
+        expect(logDebug).toHaveBeenCalledWith('websocket did not connect', 'wss://example.com/api/v4/websocket', message.reason);
     });
 
     it('should handle WebSocket error event', async () => {
@@ -189,7 +189,6 @@ describe('WebSocketClient', () => {
 
         mockConn.onError.mock.calls[0][0]({url: 'wss://example.com/api/v4/websocket', code: 1006, reason: 'abnormal closure'});
 
-        // The URL is not logged (it is sensitive); only the server URL, code, and reason are.
         expect(logError).toHaveBeenCalledWith('websocket error', 'server', 'https://example.com', 'code', 1006, 'reason', 'abnormal closure');
         expect(logError).not.toHaveBeenCalledWith('websocket error', 'wss://example.com/api/v4/websocket');
         expect(errorCallback).toHaveBeenCalled();
@@ -253,7 +252,7 @@ describe('WebSocketClient', () => {
         const message = {seq: 1, event: 'test_event'};
         mockConn.onMessage.mock.calls[0][0]({message});
 
-        expect(logInfo).toHaveBeenCalledWith('https://example.com', 'missed websocket event, act_seq=1 exp_seq=0');
+        expect(logInfo).toHaveBeenCalledWith('wss://example.com/api/v4/websocket?connection_id=&sequence_number=0', 'missed websocket event, act_seq=1 exp_seq=0');
         expect(client.getConnectionId()).toBe('');
         expect(client.getServerSequence()).toBe(0); // does not increment
         expect(eventCallback).not.toHaveBeenCalled();
