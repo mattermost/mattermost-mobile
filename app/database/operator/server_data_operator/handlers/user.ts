@@ -35,17 +35,17 @@ const UserHandler = <TBase extends Constructor<ServerDataOperatorBase>>(supercla
      * @param {boolean} preferencesArgs.prepareRecordsOnly
      * @returns {Promise<PreferenceModel[]>}
      */
-    handlePreferences = async ({preferences, prepareRecordsOnly = true, sync = false}: HandlePreferencesArgs): Promise<PreferenceModel[]> => {
+    handlePreferences = async ({preferences, prepareRecordsOnly = true, sync = false, tombstones}: HandlePreferencesArgs): Promise<PreferenceModel[]> => {
         const records: PreferenceModel[] = [];
 
-        if (!preferences?.length) {
+        if (!preferences?.length && !tombstones?.length) {
             logWarning(
                 'An empty or undefined "preferences" array has been passed to the handlePreferences method',
             );
             return records;
         }
 
-        const filtered = filterPreferences(preferences);
+        const filtered = filterPreferences(preferences ?? []);
 
         // WE NEED TO SYNC THE PREFS FROM WHAT WE GOT AND WHAT WE HAVE
         const deleteValues: PreferenceModel[] = [];
@@ -53,7 +53,7 @@ const UserHandler = <TBase extends Constructor<ServerDataOperatorBase>>(supercla
         const storedPreferencesMap = new Map(stored.map((p) => {
             return [`${p.category}-${p.name}`, p];
         }));
-        if (sync) {
+        if (sync && !tombstones) {
             const rawPreferencesMap = new Map(filtered.map((p) => [`${p.category}-${p.name}`, p]));
             for (const pref of stored) {
                 const exists = rawPreferencesMap.get(`${pref.category}-${pref.name}`);
@@ -79,17 +79,18 @@ const UserHandler = <TBase extends Constructor<ServerDataOperatorBase>>(supercla
             return res;
         }, []);
 
-        if (!createOrUpdateRawValues.length && !deleteValues.length) {
+        if (!createOrUpdateRawValues.length && !deleteValues.length && !tombstones?.length) {
             return records;
         }
 
-        if (createOrUpdateRawValues.length) {
+        if (createOrUpdateRawValues.length || tombstones?.length) {
             const createOrUpdate: PreferenceModel[] = await this.handleRecords({
                 fieldName: 'user_id',
                 buildKeyRecordBy: buildPreferenceKey,
                 transformer: transformPreferenceRecord,
                 prepareRecordsOnly: true,
                 createOrUpdateRawValues,
+                deleteRawValues: (tombstones ?? []) as unknown as PreferenceType[],
                 tableName: PREFERENCE,
             }, 'handlePreferences(NEVER)');
             records.push(...createOrUpdate);

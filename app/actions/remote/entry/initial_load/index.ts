@@ -3,18 +3,26 @@
 
 import {DeviceEventEmitter} from 'react-native';
 
+import {dataRetentionCleanup, expiredBoRPostCleanup} from '@actions/local/systems';
 import {entryInitialChannelId, handleAutotranslationChanges} from '@actions/remote/entry/effects';
 import {fetchGroupsForTeamIfConstrained} from '@actions/remote/groups';
+import {openAllUnreadChannels, type MyPreferencesRequest} from '@actions/remote/preference';
 import {fetchScheduledPosts} from '@actions/remote/scheduled_post';
 import {fetchConfigAndLicense} from '@actions/remote/systems';
+import {updateAllUsersSince, type MyUserRequest} from '@actions/remote/user';
+import {checkIsAgentsPluginEnabled} from '@agents/actions/remote/agents_status';
+import {setAgentsVersionFromManifests} from '@agents/actions/remote/version';
+import {loadConfigAndCallsIfEnabled} from '@calls/actions/calls';
 import {Events, General} from '@constants';
 import {SYSTEM_IDENTIFIERS} from '@constants/database';
 import DatabaseManager from '@database/manager';
+import AppsManager from '@managers/apps_manager';
 import NetworkManager from '@managers/network_manager';
+import {setPlaybooksVersionFromManifests} from '@playbooks/actions/remote/version';
 import {getChannelById, prepareDeleteChannel, queryChannelsById} from '@queries/servers/channel';
 import {prepareEntryModels, truncateCrtRelatedTables} from '@queries/servers/entry';
 import {getHasCRTChanged} from '@queries/servers/preference';
-import {getLastInitialLoad} from '@queries/servers/system';
+import {getCurrentUserId, getLastFullSync, getLastInitialLoad} from '@queries/servers/system';
 import {getTeamById, prepareDeleteTeam, queryTeamsById, removeTeamsFromTeamHistory} from '@queries/servers/team';
 import ChannelsSyncStore from '@store/channels_sync_store';
 import EphemeralStore from '@store/ephemeral_store';
@@ -24,9 +32,67 @@ import {processIsCRTEnabled} from '@utils/thread';
 
 import type {MyChannelsRequest} from '@actions/remote/channel';
 import type {EntryResponse} from '@actions/remote/entry/types';
-import type {MyPreferencesRequest} from '@actions/remote/preference';
 import type {MyTeamsRequest} from '@actions/remote/team';
-import type {MyUserRequest} from '@actions/remote/user';
+
+const idleCallbackHandles = new Map<string, number>();
+
+export function cancelExperienceAPIEntryActions(serverUrl: string) {
+    const handle = idleCallbackHandles.get(serverUrl);
+    if (handle !== undefined) {
+        cancelIdleCallback(handle);
+        idleCallbackHandles.delete(serverUrl);
+    }
+}
+
+async function setProductsPluginStatus(serverUrl: string, groupLabel?: RequestGroupLabel) {
+    try {
+        const client = NetworkManager.getClient(serverUrl);
+        const {database} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
+        const [manifests, currentUserId] = await Promise.all([
+            client.getPluginsManifests(),
+            getCurrentUserId(database),
+        ]);
+        setPlaybooksVersionFromManifests(serverUrl, manifests);
+        setAgentsVersionFromManifests(serverUrl, manifests);
+        checkIsAgentsPluginEnabled(serverUrl);
+        loadConfigAndCallsIfEnabled(serverUrl, currentUserId, manifests, groupLabel);
+    } catch (e) {
+        logError('setProductsPluginStatus', e);
+    }
+}
+
+async function runExperienceAPIEntryActions(serverUrl: string, initialTeamId: string, teamHasGroupConstraint: boolean, groupLabel?: RequestGroupLabel) {
+    try {
+        const {database} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
+        const [lastInitialLoad, lastFullSync] = await Promise.all([
+            getLastInitialLoad(database),
+            getLastFullSync(database),
+        ]);
+        const since = Math.max(lastInitialLoad, lastFullSync);
+
+        setProductsPluginStatus(serverUrl, groupLabel);
+
+        if (teamHasGroupConstraint) {
+            fetchGroupsForTeamIfConstrained(serverUrl, initialTeamId);
+        }
+
+        fetchScheduledPosts(serverUrl, initialTeamId, true, groupLabel);
+
+        dataRetentionCleanup(serverUrl);
+        expiredBoRPostCleanup(serverUrl);
+
+        cancelExperienceAPIEntryActions(serverUrl);
+        const handle = requestIdleCallback(() => {
+            idleCallbackHandles.delete(serverUrl);
+            updateAllUsersSince(serverUrl, since, false, groupLabel);
+            openAllUnreadChannels(serverUrl, groupLabel);
+            AppsManager.refreshAppBindings(serverUrl, groupLabel);
+        });
+        idleCallbackHandles.set(serverUrl, handle);
+    } catch (e) {
+        logError('runExperienceAPIEntryActions', e);
+    }
+}
 
 const buildTeamBadgeCounts = (teams: InitialLoadTeam[] | undefined, dc: InitialLoadDirectCounts | undefined, isCRTEnabled: boolean): TeamBadgeCounts => {
     const pickMentionCount = (count: number = 0, countRoot: number = 0) => (isCRTEnabled ? countRoot : count);
@@ -50,7 +116,7 @@ const buildTeamBadgeCounts = (teams: InitialLoadTeam[] | undefined, dc: InitialL
     };
 };
 
-export const entryInitialLoad = async (serverUrl: string, teamId?: string, channelId?: string, config?: ClientConfig, license?: ClientLicense, groupLabel?: RequestGroupLabel): Promise<EntryResponse> => {
+export const entryInitialLoad = async (serverUrl: string, teamId?: string, channelId?: string, config?: ClientConfig, license?: ClientLicense, groupLabel?: RequestGroupLabel, runActions = true): Promise<EntryResponse> => {
     try {
         const {database, operator} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
 
@@ -80,7 +146,10 @@ export const entryInitialLoad = async (serverUrl: string, teamId?: string, chann
         }
 
         // initial_load always returns full preferences (no UpdateAt filtering).
-        const prefData: MyPreferencesRequest = {preferences: initialLoad.preferences ?? []};
+        const prefData: MyPreferencesRequest = {
+            preferences: initialLoad.preferences ?? [],
+            tombstones: initialLoad.preference_tombstones,
+        };
 
         const isCRTEnabled = Boolean(
             prefData.preferences?.length &&
@@ -290,6 +359,17 @@ export const entryInitialLoad = async (serverUrl: string, teamId?: string, chann
             modelPromises.push(operator.handleUsers({users: directProfiles, prepareRecordsOnly: true}));
         }
 
+        if (initialLoad.group_memberships) {
+            const currentUserId = initialLoad.me?.id ?? meData?.user?.id ?? '';
+            const {members = [], removed_group_ids: removedGroupIds = []} = initialLoad.group_memberships;
+            modelPromises.push(operator.handleGroupMembershipsDelta({
+                userId: currentUserId,
+                addedGroupIds: members.map((m) => m.group_id),
+                removedGroupIds,
+                prepareRecordsOnly: true,
+            }));
+        }
+
         // Roles are included in the initial_load response — store them directly without
         // a separate network call. prepareRecordsOnly so we can batch with everything else.
         if (initialLoad.roles?.length) {
@@ -341,17 +421,15 @@ export const entryInitialLoad = async (serverUrl: string, teamId?: string, chann
         // "Join Another Team" UI doesn't have to wait for the deferred-actions queue.
         EphemeralStore.setCanJoinOtherTeams(serverUrl, initialLoad.can_join_other_teams);
 
-        if (activeTeam?.team.group_constrained) {
-            fetchGroupsForTeamIfConstrained(serverUrl, initialTeamId);
-        }
-
-        fetchScheduledPosts(serverUrl, initialTeamId, true, groupLabel);
-
         if (initialTeamId && currentTeam && initialTeamId !== teamId) {
             DeviceEventEmitter.emit(Events.LEAVE_TEAM, currentTeam?.displayName);
         }
 
         logDebug('entryInitialLoad models batched', groupLabel, models.length);
+
+        if (runActions) {
+            runExperienceAPIEntryActions(serverUrl, initialTeamId, activeTeam?.team.group_constrained ?? false, groupLabel);
+        }
 
         return {models, initialChannelId, initialTeamId, prefData, teamData: teamData ?? {}, chData, meData, gmConverted};
     } catch (error) {

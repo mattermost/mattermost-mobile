@@ -2,8 +2,9 @@
 // See LICENSE.txt for license information.
 
 import {DatabaseProvider} from '@nozbe/watermelondb/react';
-import React, {type ComponentType, useEffect, useState} from 'react';
+import React, {type ComponentType, useEffect, useRef, useState} from 'react';
 
+import {cancelExperienceAPIEntryActions} from '@actions/remote/entry/initial_load';
 import DeviceInfoProvider from '@context/device';
 import ServerProvider from '@context/server';
 import ThemeProvider from '@context/theme';
@@ -24,6 +25,7 @@ type State = {
 export function withServerDatabase<T extends React.JSX.IntrinsicAttributes>(Component: ComponentType<T>): ComponentType<T> {
     return function ServerDatabaseComponent(props: T) {
         const [state, setState] = useState<State | undefined>();
+        const prevServerUrlRef = useRef<string | undefined>(undefined);
 
         const observer = (servers: ServersModel[]) => {
             const server = servers?.length ? servers.reduce((a, b) =>
@@ -53,6 +55,17 @@ export function withServerDatabase<T extends React.JSX.IntrinsicAttributes>(Comp
                 subscription?.unsubscribe();
             };
         }, []);
+
+        useEffect(() => {
+            const prev = prevServerUrlRef.current;
+            prevServerUrlRef.current = state?.serverUrl;
+
+            return () => {
+                if (prev) {
+                    cancelExperienceAPIEntryActions(prev);
+                }
+            };
+        }, [state?.serverUrl]);
 
         if (!state?.database) {
             return null;

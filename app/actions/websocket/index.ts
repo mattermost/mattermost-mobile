@@ -55,7 +55,7 @@ export async function handleFirstConnect(serverUrl: string, groupLabel?: BaseReq
 
             if (experienceFlag) {
                 const teamId = await getCurrentTeamId(database);
-                const initial = await entryInitialLoad(serverUrl, teamId, undefined, undefined, undefined, groupLabel);
+                const initial = await entryInitialLoad(serverUrl, teamId, undefined, undefined, undefined, groupLabel, false);
 
                 if ('error' in initial) {
                     logWarning('handleFirstConnect', 'entryInitialLoad error', initial.error);

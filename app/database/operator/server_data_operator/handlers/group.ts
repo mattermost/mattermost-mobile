@@ -9,7 +9,7 @@ import {generateGroupAssociationId} from '@utils/groups';
 import {logWarning} from '@utils/log';
 
 import type ServerDataOperatorBase from '.';
-import type {HandleGroupArgs, HandleGroupChannelsForChannelArgs, HandleGroupMembershipForMemberArgs, HandleGroupTeamsForTeamArgs} from '@typings/database/database';
+import type {HandleGroupArgs, HandleGroupChannelsForChannelArgs, HandleGroupMembershipForMemberArgs, HandleGroupMembershipsDeltaArgs, HandleGroupTeamsForTeamArgs} from '@typings/database/database';
 import type GroupModel from '@typings/database/models/servers/group';
 import type GroupChannelModel from '@typings/database/models/servers/group_channel';
 import type GroupMembershipModel from '@typings/database/models/servers/group_membership';
@@ -21,6 +21,7 @@ export interface GroupHandlerMix {
     handleGroups: ({groups, prepareRecordsOnly}: HandleGroupArgs) => Promise<GroupModel[]>;
     handleGroupChannelsForChannel: ({channelId, groups, prepareRecordsOnly}: HandleGroupChannelsForChannelArgs) => Promise<GroupChannelModel[]>;
     handleGroupMembershipsForMember: ({userId, groups, prepareRecordsOnly}: HandleGroupMembershipForMemberArgs) => Promise<GroupMembershipModel[]>;
+    handleGroupMembershipsDelta: ({userId, addedGroupIds, removedGroupIds, prepareRecordsOnly}: HandleGroupMembershipsDeltaArgs) => Promise<GroupMembershipModel[]>;
     handleGroupTeamsForTeam: ({teamId, groups, prepareRecordsOnly}: HandleGroupTeamsForTeamArgs) => Promise<GroupTeamModel[]>;
 }
 
@@ -161,6 +162,39 @@ const GroupHandler = <TBase extends Constructor<ServerDataOperatorBase>>(supercl
         // Batch update if there are records
         if (records.length && !prepareRecordsOnly) {
             await this.batchRecords(records, 'handleGroupMembershipsForMember');
+        }
+
+        return records;
+    };
+
+    handleGroupMembershipsDelta = async ({userId, addedGroupIds, removedGroupIds, prepareRecordsOnly = true}: HandleGroupMembershipsDeltaArgs): Promise<GroupMembershipModel[]> => {
+        const records: GroupMembershipModel[] = [];
+
+        if (addedGroupIds.length) {
+            const createOrUpdateRawValues = addedGroupIds.map((groupId) => ({
+                id: generateGroupAssociationId(groupId, userId),
+                user_id: userId,
+                group_id: groupId,
+            }));
+            records.push(...(await this.handleRecords({
+                fieldName: 'id',
+                transformer: transformGroupMembershipRecord,
+                createOrUpdateRawValues,
+                tableName: GROUP_MEMBERSHIP,
+                prepareRecordsOnly: true,
+            }, 'handleGroupMembershipsDelta')));
+        }
+
+        if (removedGroupIds.length) {
+            const existingMemberships = await queryGroupMembershipForMember(this.database, userId).fetch();
+            const removedSet = new Set(removedGroupIds);
+            existingMemberships.
+                filter((gm) => removedSet.has(gm.groupId)).
+                forEach((gm) => records.push(gm.prepareDestroyPermanently()));
+        }
+
+        if (records.length && !prepareRecordsOnly) {
+            await this.batchRecords(records, 'handleGroupMembershipsDelta');
         }
 
         return records;

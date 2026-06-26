@@ -108,8 +108,27 @@ type InitialLoadResponse = {
     direct_profiles?: UserProfile[];
     roles: RoleLoadItem[];
     preferences?: PreferenceType[];
-    preference_tombstones?: Array<{user_id: string; category: string; name: string; delete_at: number}>;
+    preference_tombstones?: PreferenceTombstone[];
     timestamp: number;
     priority_hints?: InitialLoadPriorityHints;
     can_join_other_teams: boolean;
+    group_memberships?: InitialLoadGroupMembershipList;
+};
+
+type InitialLoadGroupMembershipList = {
+    members: InitialLoadGroupMembership[];
+    removed_group_ids?: string[];
+};
+
+type InitialLoadGroupMembership = {
+    group_id: string;
+    user_id: string;
+    create_at: number;
+};
+
+type PreferenceTombstone = {
+    user_id: string;
+    category: string;
+    name: string;
+    delete_at: number;
 };

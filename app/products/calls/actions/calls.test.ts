@@ -1017,19 +1017,19 @@ describe('Actions.Calls', () => {
     it('checkIsCallsPluginEnabled', async () => {
         // Test successful case - plugin enabled
         const successResult = await CallsActions.checkIsCallsPluginEnabled('server1');
-        expect(successResult.data).toBe(true);
         expect(mockClient.getPluginsManifests).toHaveBeenCalled();
+        expect('data' in successResult ? successResult.data : undefined).toBe(true);
 
         // Test successful case - plugin disabled
         mockClient.getPluginsManifests.mockReturnValueOnce([{id: 'other-plugin'}]);
         const disabledResult = await CallsActions.checkIsCallsPluginEnabled('server1');
-        expect(disabledResult.data).toBe(false);
+        expect('data' in disabledResult ? disabledResult.data : undefined).toBe(false);
 
         // Test error case
         mockClient.getPluginsManifests = jest.fn().mockRejectedValueOnce(forceLogoutError);
 
         const errorResult = await CallsActions.checkIsCallsPluginEnabled('server1');
-        expect(errorResult.error).toBe(forceLogoutError);
+        expect('error' in errorResult ? errorResult.error : undefined).toBe(forceLogoutError);
         expect(forceLogout).toHaveBeenCalledWith('server1', forceLogoutError);
     });
 

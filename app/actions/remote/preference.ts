@@ -25,6 +25,7 @@ import type ChannelModel from '@typings/database/models/servers/channel';
 
 export type MyPreferencesRequest = {
     preferences?: PreferenceType[];
+    tombstones?: PreferenceTombstone[];
     error?: unknown;
 };
 
