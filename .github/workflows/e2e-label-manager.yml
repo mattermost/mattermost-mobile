@@ -1,22 +1,28 @@
-# Manages the E2E label lifecycle on pull requests.
+# Matterwick triggers E2E only on pull_request:labeled (see matterwick/server/pull_request.go).
+# synchronize alone does nothing — on push we must cancel stale runs, remove E2E/Run*,
+# and re-add E2E/Run in one job so Matterwick receives a fresh labeled webhook.
 #
-# Three steps in a single job, each gated by event type:
+#   1. refresh-e2e-run-label (synchronize):
+#      Force-cancel in-flight E2E, then remove + re-add E2E/Run via PAT.
 #
-#   1. Add E2E/Run (opened / synchronize):
-#      Adds E2E/Run unless E2E/Override is present (opt-out for docs-only PRs).
+#   2. add-e2e-run-label (opened):
+#      Add E2E/Run unless already present. Skips when E2E/Override is set.
 #
-#   2. Honor E2E/Override (labeled E2E/Override):
-#      Removes E2E/Run so in-flight test runs are cancelled (see step 3).
+#   3. Honor E2E/Override (labeled E2E/Override):
+#      Removes all E2E/Run* labels and cancels in-progress E2E workflow runs.
 #
-#   3. Cancel in-progress E2E runs (E2E/Run* unlabeled):
-#      Cancels in-progress E2E workflow runs for the PR's head SHA.
-#      Also fires on the benign post-test cleanup that strips labels at the end
-#      of a normal run — by then no runs are in-progress, so the loop is a no-op.
+#   4. Cancel in-progress E2E runs (E2E/Run* unlabeled by a human):
+#      Skips when mattermost-build (the PAT user) removed the label (refresh strip
+#      or post-run cleanup) so synchronize refresh does not race Matterwick dispatch.
 #
 # Fork PR guard (github.event.pull_request.head.repo.full_name == github.repository)
 # is applied per-step. Fork PR contexts only get a read-only GITHUB_TOKEN, so
 # addLabels / removeLabel / gh-run-cancel would all 403. Mandatory E2E for fork
 # PRs is enforced separately.
+#
+# Base-branch guard: auto E2E/Run refresh only runs for PRs targeting main.
+# Stacked PRs (base != main) are skipped so Matterwick is not triggered on every
+# intermediate-branch push.
 #
 name: E2E label manager
 
@@ -28,102 +34,199 @@ on:
       - labeled
       - unlabeled
 
+concurrency:
+  group: e2e-label-manager-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
 jobs:
-  e2e-label-manager:
+  refresh-e2e-run-label:
+    if: >-
+      github.event.action == 'synchronize'
+      && github.event.pull_request.base.ref == 'main'
+      && github.event.pull_request.head.repo.full_name == github.repository
     runs-on: ubuntu-22.04
     permissions:
-      pull-requests: write
       actions: write
+      statuses: write
+      issues: write
+      pull-requests: write
     steps:
-
-      # ── Step 1: Add E2E/Run on PR open / push ─────────────────────────────
-      - name: Add E2E/Run
-        if: >-
-          (github.event.action == 'opened' || github.event.action == 'synchronize')
-          && github.event.pull_request.head.repo.full_name == github.repository
-        uses: actions/github-script@e7aeb8c663f696059ebb5f9ab1425ed2ef511bdb # v7.0.1
+      - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
+      - name: Force-cancel in-flight E2E runs for the previous commit
+        uses: ./.github/actions/cancel-e2e-runs
         with:
+          head_branch: ${{ github.event.pull_request.head.ref }}
+          pr_number: ${{ github.event.pull_request.number }}
+          exclude_head_sha: ${{ github.event.pull_request.head.sha }}
+          reason: E2E superseded by new commit push
+
+      - name: Remove and re-add E2E/Run for Matterwick
+        uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9.0.0
+        with:
+          github-token: ${{ secrets.MATTERMOST_BUILD_GH_TOKEN }}
           script: |
             const owner = context.repo.owner;
             const repo = context.repo.repo;
             const prNumber = context.payload.pull_request.number;
+            const runLabels = ['E2E/Run', 'E2E/Run-iOS', 'E2E/Run-Android'];
 
             const {data: labels} = await github.rest.issues.listLabelsOnIssue({
               owner, repo, issue_number: prNumber,
             });
-            const labelNames = labels.map(l => l.name);
+            const labelNames = labels.map((label) => label.name);
 
             if (labelNames.includes('E2E/Override')) {
-              core.info(`PR #${prNumber} has E2E/Override label — skipping E2E/Run.`);
-              return;
-            }
-            if (labelNames.includes('E2E/Run')) {
-              core.info(`PR #${prNumber} already has E2E/Run — Matterwick will pick up; skipping.`);
+              core.info(`PR #${prNumber} has E2E/Override — stripping run labels only.`);
+              for (const label of runLabels) {
+                if (!labelNames.includes(label)) {
+                  continue;
+                }
+                try {
+                  await github.rest.issues.removeLabel({
+                    owner, repo, issue_number: prNumber, name: label,
+                  });
+                } catch (err) {
+                  if (err.status !== 404) {
+                    throw err;
+                  }
+                }
+              }
               return;
             }
 
-            core.info(`PR #${prNumber} ${context.payload.action} — adding E2E/Run label.`);
+            // Remove first so re-adding always emits pull_request:labeled for Matterwick.
+            for (const label of runLabels) {
+              try {
+                await github.rest.issues.removeLabel({
+                  owner, repo, issue_number: prNumber, name: label,
+                });
+                core.info(`Removed ${label} from PR #${prNumber} before refresh.`);
+              } catch (err) {
+                if (err.status !== 404) {
+                  throw err;
+                }
+              }
+            }
+
+            core.info(`PR #${prNumber} synchronize — re-adding E2E/Run (Matterwick labeled hook).`);
             await github.rest.issues.addLabels({
               owner, repo, issue_number: prNumber,
               labels: ['E2E/Run'],
             });
 
-      # ── Step 2: Strip E2E/Run when E2E/Override is applied ─────────────────
+  add-e2e-run-label:
+    if: >-
+      github.event.action == 'opened'
+      && github.event.pull_request.base.ref == 'main'
+      && github.event.pull_request.head.repo.full_name == github.repository
+    runs-on: ubuntu-22.04
+    permissions:
+      issues: write
+      pull-requests: write
+    steps:
+      - name: Add E2E/Run (PAT — emits labeled webhook for Matterwick)
+        uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9.0.0
+        with:
+          github-token: ${{ secrets.MATTERMOST_BUILD_GH_TOKEN }}
+          script: |
+            const owner = context.repo.owner;
+            const repo = context.repo.repo;
+            const prNumber = context.payload.pull_request.number;
+            const runLabels = ['E2E/Run', 'E2E/Run-iOS', 'E2E/Run-Android'];
+
+            const {data: labels} = await github.rest.issues.listLabelsOnIssue({
+              owner, repo, issue_number: prNumber,
+            });
+            const labelNames = labels.map((label) => label.name);
+
+            if (labelNames.includes('E2E/Override')) {
+              core.info(`PR #${prNumber} has E2E/Override label — skipping E2E/Run.`);
+              for (const label of runLabels) {
+                if (!labelNames.includes(label)) {
+                  continue;
+                }
+                try {
+                  await github.rest.issues.removeLabel({
+                    owner, repo, issue_number: prNumber, name: label,
+                  });
+                  core.info(`Removed stale ${label} from PR #${prNumber} (E2E/Override active).`);
+                } catch (err) {
+                  if (err.status !== 404) {
+                    throw err;
+                  }
+                }
+              }
+              return;
+            }
+
+            if (labelNames.includes('E2E/Run')) {
+              core.info(`PR #${prNumber} already has E2E/Run on open — skipping add.`);
+              return;
+            }
+
+            core.info(`PR #${prNumber} opened — adding E2E/Run via PAT (Matterwick labeled hook).`);
+            await github.rest.issues.addLabels({
+              owner, repo, issue_number: prNumber,
+              labels: ['E2E/Run'],
+            });
+
+  e2e-label-manager:
+    runs-on: ubuntu-22.04
+    permissions:
+      issues: write
+      pull-requests: write
+      actions: write
+      statuses: write
+    steps:
+      - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
+
+      # ── Honor E2E/Override: strip run labels + cancel in-flight E2E ─────────
       - name: Honor E2E/Override
         if: >-
           github.event.action == 'labeled'
           && github.event.label.name == 'E2E/Override'
           && github.event.pull_request.head.repo.full_name == github.repository
-        uses: actions/github-script@e7aeb8c663f696059ebb5f9ab1425ed2ef511bdb # v7.0.1
+        uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9.0.0
         with:
           script: |
             const owner = context.repo.owner;
             const repo = context.repo.repo;
             const prNumber = context.payload.pull_request.number;
+            const runLabels = ['E2E/Run', 'E2E/Run-iOS', 'E2E/Run-Android'];
 
-            try {
-              await github.rest.issues.removeLabel({
-                owner, repo, issue_number: prNumber, name: 'E2E/Run',
-              });
-              core.info(`Removed E2E/Run from PR #${prNumber} (E2E/Override applied).`);
-            } catch (err) {
-              if (err.status === 404) {
-                core.info(`E2E/Run was not set on PR #${prNumber}; nothing to remove.`);
-                return;
+            for (const label of runLabels) {
+              try {
+                await github.rest.issues.removeLabel({
+                  owner, repo, issue_number: prNumber, name: label,
+                });
+                core.info(`Removed ${label} from PR #${prNumber} (E2E/Override applied).`);
+              } catch (err) {
+                if (err.status === 404) {
+                  core.info(`${label} was not set on PR #${prNumber}; nothing to remove.`);
+                  continue;
+                }
+                throw err;
               }
-              throw err;
             }
 
-      # ── Step 3: Cancel in-progress E2E runs when E2E/Run* label is removed ─
       - name: Cancel in-progress E2E runs
         if: >-
-          github.event.action == 'unlabeled'
-          && (github.event.label.name == 'E2E/Run'
-              || github.event.label.name == 'E2E/Run-iOS'
-              || github.event.label.name == 'E2E/Run-Android')
-          && github.event.pull_request.head.repo.full_name == github.repository
-        env:
-          GH_TOKEN: ${{ github.token }}
-          GH_REPO: ${{ github.repository }}
-          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
-          PR_NUMBER: ${{ github.event.pull_request.number }}
-          REMOVED_LABEL: ${{ github.event.label.name }}
-        run: |
-          echo "Label \"$REMOVED_LABEL\" removed from PR #$PR_NUMBER (sha: $HEAD_SHA)"
-          cancelled=0
-          for status in in_progress queued waiting; do
-            ids=$(gh run list \
-              --workflow "e2e-detox-pr.yml" \
-              --status "$status" \
-              --json databaseId,headSha \
-              --jq ".[] | select(.headSha==\"$HEAD_SHA\") | .databaseId")
-            for id in $ids; do
-              echo "Cancelling run $id (status: $status)"
-              if gh run cancel "$id"; then
-                cancelled=$((cancelled + 1))
-              else
-                echo "::warning::Failed to cancel run $id"
-              fi
-            done
-          done
-          echo "Cancelled $cancelled E2E workflow run(s) for PR #$PR_NUMBER"
+          github.event.pull_request.head.repo.full_name == github.repository
+          && (
+            (github.event.action == 'labeled' && github.event.label.name == 'E2E/Override')
+            || (
+              github.event.action == 'unlabeled'
+              && (github.event.label.name == 'E2E/Run'
+                  || github.event.label.name == 'E2E/Run-iOS'
+                  || github.event.label.name == 'E2E/Run-Android')
+              && github.event.sender.login != 'mattermost-build'
+            )
+          )
+        uses: ./.github/actions/cancel-e2e-runs
+        with:
+          head_branch: ${{ github.event.pull_request.head.ref }}
+          pr_number: ${{ github.event.pull_request.number }}
+          reason: >-
+            ${{ github.event.action == 'labeled'
+                && 'E2E cancelled (E2E/Override label applied)'
+                || 'E2E cancelled (E2E/Run label removed)' }}

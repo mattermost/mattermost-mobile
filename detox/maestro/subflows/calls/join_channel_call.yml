@@ -1,0 +1,61 @@
+# Sub-flow: Start/join a call from the channel quick-actions sheet.
+# Usage: - runFlow: ../../subflows/calls/join_channel_call.yml
+# Requires: user is already on the test channel screen.
+#
+# Root cause this flow guards against (PR #9788 iOS Maestro):
+#   The header three-dots button is always present right after navigation (proven by the
+#   passing bookmark flows in the same run). The earlier calls flows failed because they
+#   inserted a waitForAnimationToEnd before touching the header; the bookmark flows that
+#   tap it immediately pass. So here we open the sheet the same way bookmark does and never
+#   wait on the channel screen before the header tap.
+#
+#   The Start/Join action only renders once the Calls plugin config has propagated over
+#   WebSocket (10-30s after login). The quick-actions sheet is a one-shot snapshot, so if
+#   the action is missing we dismiss and reopen (handled inside open_channel_quick_actions)
+#   on the next retry iteration until it appears.
+#
+# Android emulators can fail WebRTC with "timed out waiting for peer connection"; the retry
+# also dismisses any error alert before reopening.
+appId: ${MAESTRO_APP_ID}
+---
+- tapOn:
+    text: "OK"
+    optional: true
+- tapOn:
+    text: "Okay"
+    optional: true
+- tapOn:
+    text: "Dismiss"
+    optional: true
+
+- extendedWaitUntil:
+    visible:
+      id: "channel.post_draft.post.input"
+    timeout: 30000
+
+- retry:
+    maxRetries: 6
+    commands:
+      - tapOn:
+          text: "OK"
+          optional: true
+      - tapOn:
+          text: "Okay"
+          optional: true
+      - tapOn:
+          text: "Dismiss"
+          optional: true
+      - runFlow: ../navigation/open_channel_quick_actions.yml
+      - extendedWaitUntil:
+          visible:
+            id: "channel_info.channel_actions.join_start_call.action"
+          timeout: 12000
+      - tapOn:
+          id: "channel_info.channel_actions.join_start_call.action"
+      - tapOn:
+          text: "Allow"
+          optional: true
+      - tapOn:
+          text: "Allow"
+          optional: true
+      - runFlow: wait_for_active_call.yml
