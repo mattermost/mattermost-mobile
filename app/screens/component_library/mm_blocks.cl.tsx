@@ -2,6 +2,7 @@
 // See LICENSE.txt for license information.
 
 import React, {useCallback, useMemo, useState} from 'react';
+import {useIntl, type IntlShape} from 'react-intl';
 import {Alert, Switch, Text, View} from 'react-native';
 
 import AutocompleteSelector from '@components/autocomplete_selector';
@@ -116,7 +117,7 @@ function normalizeAdaptiveCardsPayload(parsed: unknown): unknown[] | null {
     return null;
 }
 
-function parsePayload(text: string, mode: InputMode): ParseResult {
+function parsePayload(text: string, mode: InputMode, intl: IntlShape): ParseResult {
     const json = tryParseJson(text);
     if (!json.ok) {
         return json;
@@ -134,7 +135,7 @@ function parsePayload(text: string, mode: InputMode): ParseResult {
         if (!Array.isArray(parsed)) {
             return {ok: false, error: 'Expected a JSON array of attachment objects (same as props.attachments).'};
         }
-        return {ok: true, blocks: translateAttachments(parsed)};
+        return {ok: true, blocks: translateAttachments(parsed, intl)};
     }
 
     if (mode === 'block_kit') {
@@ -189,6 +190,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
 
 const MmBlocksComponentLibrary = () => {
     const theme = useTheme();
+    const intl = useIntl();
     const style = getStyleSheet(theme);
     const [inputMode, setInputMode] = useState<InputMode>('mm_blocks');
     const [drafts, setDrafts] = useState<Record<InputMode, string>>(() => ({...INITIAL_DRAFTS}));
@@ -196,7 +198,7 @@ const MmBlocksComponentLibrary = () => {
     const [simulateSlowAction, setSimulateSlowAction] = useState(false);
 
     const jsonText = drafts[inputMode];
-    const parsed = useMemo(() => parsePayload(jsonText, inputMode), [jsonText, inputMode]);
+    const parsed = useMemo(() => parsePayload(jsonText, inputMode, intl), [jsonText, inputMode, intl]);
 
     const onSelectMode = useCallback((value: SelectedDialogOption) => {
         if (!value || Array.isArray(value)) {

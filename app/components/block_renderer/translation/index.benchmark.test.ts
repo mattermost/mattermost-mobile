@@ -10,6 +10,12 @@ import {
 
 import {translatePostProps} from './index';
 
+import type {IntlShape} from 'react-intl';
+
+const mockIntl = {
+    formatMessage: jest.fn((descriptor) => descriptor.defaultMessage),
+} as unknown as IntlShape;
+
 /** Typical max posts visible in a channel list at once. */
 const POST_COUNT = 600;
 
@@ -34,14 +40,14 @@ const BENCHMARK_FORMATS: BenchmarkFormat[] = [
 
 function runTranslationBenchmark({label, props}: BenchmarkFormat) {
     for (let i = 0; i < WARMUP_ITERATIONS; i++) {
-        translatePostProps(props);
+        translatePostProps(props, mockIntl);
     }
 
     const start = highResNowMs();
     let totalBlocks = 0;
 
     for (let i = 0; i < POST_COUNT; i++) {
-        const result = translatePostProps(props);
+        const result = translatePostProps(props, mockIntl);
         totalBlocks += result?.length ?? 0;
     }
 
@@ -59,7 +65,7 @@ function runTranslationBenchmark({label, props}: BenchmarkFormat) {
 }
 
 describe('translatePostProps benchmark', () => {
-    it.each(BENCHMARK_FORMATS)('should translate $label complex payloads 60 times', ({label, props}) => {
+    it.each(BENCHMARK_FORMATS)('should translate $label complex payloads 600 times', ({label, props}) => {
         const {elapsedMs, totalBlocks} = runTranslationBenchmark({label, props});
 
         expect(elapsedMs).toBeGreaterThanOrEqual(0);

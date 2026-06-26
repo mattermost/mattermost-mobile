@@ -12,26 +12,82 @@
 import {translateAdaptiveCards} from './adaptive_cards';
 import {translateAttachments} from './attachments';
 import {translateBlockKit} from './block_kit';
+import {applyBlockTranslationLimits} from './limits';
 import {translateMMBlocks} from './mm_block';
+
+import type {IntlShape} from 'react-intl';
+
+function translationErrorMessage(error: unknown): string {
+    if (error instanceof Error && error.message) {
+        return error.message;
+    }
+    if (typeof error === 'string' && error) {
+        return error;
+    }
+    return 'Unknown error';
+}
+
+/** Fallback blocks when format translation throws (e.g. stack overflow on deep recursion). */
+export function buildTranslationErrorBlocks(intl: IntlShape, error: unknown): MmBlock[] {
+    const title = intl.formatMessage({
+        id: 'interactive_messages.translation_error',
+        defaultMessage: 'This interactive message could not be displayed.',
+    });
+    return [{
+        type: 'container',
+        accent_color: 'danger',
+        border: true,
+        content: [
+            {type: 'text', text: `**${title}**`},
+            {type: 'text', text: translationErrorMessage(error), is_subtle: true},
+        ],
+    }];
+}
+
+/** True when post props include a non-empty interactive payload (any supported format). */
+export function hasInteractiveMessageProps(props: Record<string, unknown> | undefined): boolean {
+    if (!props) {
+        return false;
+    }
+    const mb = props.mm_blocks;
+    if (Array.isArray(mb) && mb.length > 0) {
+        return true;
+    }
+    if (Array.isArray(props.blocks) && props.blocks.length > 0) {
+        return true;
+    }
+    if (Array.isArray(props.cards) && props.cards.length > 0) {
+        return true;
+    }
+    return Array.isArray(props.attachments) && props.attachments.length > 0;
+}
 
 /**
  * Detects the format present in the post props and returns normalised `MmBlock[]`,
  * or null if no supported interactive content is found.
  */
-export function translatePostProps(props: Record<string, unknown>): MmBlock[] | null {
-    if (Array.isArray(props.mm_blocks) && props.mm_blocks.length > 0) {
-        return translateMMBlocks(props.mm_blocks);
+export function translatePostProps(props: Record<string, unknown>, intl: IntlShape): MmBlock[] | null {
+    try {
+        let blocks: MmBlock[];
+        if (Array.isArray(props.mm_blocks) && props.mm_blocks.length > 0) {
+            blocks = translateMMBlocks(props.mm_blocks);
+        } else if (Array.isArray(props.blocks) && props.blocks.length > 0) {
+            blocks = translateBlockKit(props.blocks);
+        } else if (Array.isArray(props.cards) && props.cards.length > 0) {
+            blocks = translateAdaptiveCards(props.cards);
+        } else if (Array.isArray(props.attachments) && props.attachments.length > 0) {
+            blocks = translateAttachments(props.attachments, intl);
+        } else {
+            return null;
+        }
+        if (blocks.length === 0) {
+            return [];
+        }
+        return applyBlockTranslationLimits(blocks);
+    } catch (error) {
+        console.log('error translating post props', error); // eslint-disable-line no-console
+        return buildTranslationErrorBlocks(intl, error);
     }
-    if (Array.isArray(props.blocks) && props.blocks.length > 0) {
-        return translateBlockKit(props.blocks);
-    }
-    if (Array.isArray(props.cards) && props.cards.length > 0) {
-        return translateAdaptiveCards(props.cards);
-    }
-    if (Array.isArray(props.attachments) && props.attachments.length > 0) {
-        return translateAttachments(props.attachments);
-    }
-    return null;
 }
 
 /**

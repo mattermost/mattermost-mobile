@@ -3,12 +3,12 @@
 
 // Legacy Attachments (`props.attachments`) → mm_blocks
 
-import truncate from 'lodash/truncate';
-
-import {MAX_ATTACHMENT_FOOTER_LENGTH} from '@constants/integrations';
-import {isUrlSafe, isValidUrl} from '@utils/url';
+import {ensureString} from '@utils/types';
+import {isUrlSafe} from '@utils/url';
 
 import {parseMmButtonStyle} from '../utils/button';
+
+import type {IntlShape} from 'react-intl';
 
 const AUTHOR_ICON_MAX_PX = 20;
 const FOOTER_ICON_MAX_PX = 16;
@@ -22,7 +22,7 @@ type ParsedAttachmentField = {
     short: boolean;
 };
 
-export function translateAttachments(attachments: unknown[]): MmBlock[] {
+export function translateAttachments(attachments: unknown[], intl: IntlShape): MmBlock[] {
     const result: MmBlock[] = [];
     for (const attachment of attachments) {
         if (typeof attachment !== 'object' || attachment === null) {
@@ -30,32 +30,30 @@ export function translateAttachments(attachments: unknown[]): MmBlock[] {
         }
         const a = attachment as Record<string, unknown>;
 
-        const colorRaw = typeof a.color === 'string' ? a.color.trim() : '';
-        const accentColor = colorRaw.length > 0 ? colorRaw : 'default';
+        const colorRaw = ensureString(a.color).trim();
+        const accentColor = colorRaw.length > 0 ? colorRaw : undefined;
         const pretext =
             typeof a.pretext === 'string' && a.pretext.length > 0 ? a.pretext : undefined;
         const thumbUrl =
             typeof a.thumb_url === 'string' && a.thumb_url.length > 0 ? a.thumb_url : undefined;
 
-        const prefixItems: MmBlock[] = [];
+        const items: MmBlock[] = [];
 
-        const authorBlock = wrapInlineAuthorBlocks(
-            buildAttachmentAuthorBlocks(
-                typeof a.author_name === 'string' ? a.author_name : undefined,
-                typeof a.author_link === 'string' ? a.author_link : undefined,
-                typeof a.author_icon === 'string' ? a.author_icon : undefined,
-            ),
+        const authorBlock = buildAttachmentAuthorBlocks(
+            ensureString(a.author_name),
+            ensureString(a.author_link),
+            ensureString(a.author_icon),
         );
         if (authorBlock) {
-            prefixItems.push(authorBlock);
+            items.push(authorBlock);
         }
 
         if (typeof a.title === 'string' && a.title) {
-            prefixItems.push({
+            items.push({
                 type: 'text',
                 text: buildAttachmentTitleMarkdown(
                     a.title,
-                    typeof a.title_link === 'string' ? a.title_link : undefined,
+                    ensureString(a.title_link),
                 ),
             });
         }
@@ -83,16 +81,15 @@ export function translateAttachments(attachments: unknown[]): MmBlock[] {
             }
         }
 
-        if (typeof a.footer === 'string' && a.footer) {
-            const footerBody = truncate(a.footer, {length: MAX_ATTACHMENT_FOOTER_LENGTH, omission: '…'});
-            const footerIconUrl =
-                typeof a.footer_icon === 'string' && a.footer_icon ? a.footer_icon : undefined;
+        const footer = ensureString(a.footer);
+        if (footer.trim()) {
+            const footerIconUrl = ensureString(a.footer_icon);
             const footerPieces: MmBlock[] = [];
             if (footerIconUrl) {
                 footerPieces.push({
                     type: 'image',
                     url: footerIconUrl,
-                    alt_text: 'Attachment footer icon',
+                    alt_text: intl.formatMessage({id: 'attachment.footerIconAltText', defaultMessage: 'Attachment footer icon'}),
                     size: 'auto',
                     max_width: FOOTER_ICON_MAX_PX,
                     max_height: FOOTER_ICON_MAX_PX,
@@ -100,7 +97,7 @@ export function translateAttachments(attachments: unknown[]): MmBlock[] {
             }
             footerPieces.push({
                 type: 'text',
-                text: footerBody,
+                text: footer,
                 is_subtle: true,
                 size: 'small',
             });
@@ -111,8 +108,6 @@ export function translateAttachments(attachments: unknown[]): MmBlock[] {
         if (Array.isArray(a.actions) && a.actions.length > 0) {
             actionsBlock = translateAttachmentActions(a.actions);
         }
-
-        const items: MmBlock[] = [...prefixItems];
 
         if (thumbUrl) {
             const leftColumnItems: MmBlock[] = [...mainBodyItems];
@@ -125,7 +120,7 @@ export function translateAttachments(attachments: unknown[]): MmBlock[] {
                 items: [{
                     type: 'image',
                     url: thumbUrl,
-                    alt_text: 'Attachment image',
+                    alt_text: intl.formatMessage({id: 'attachment.imageAltText', defaultMessage: 'Attachment image'}),
                     size: 'small',
                 }],
             };
@@ -145,27 +140,20 @@ export function translateAttachments(attachments: unknown[]): MmBlock[] {
             items.push(actionsBlock);
         }
 
-        const hasInnerBody = items.length > 0;
-        if (!hasInnerBody && !pretext) {
-            continue;
-        }
-
         // Pretext is a sibling `text` block before the bordered `container`, matching legacy layout
         // (pretext outside `.attachment__content` — see `message_attachment.tsx`).
         if (pretext) {
             result.push({type: 'text', text: pretext});
         }
 
-        if (!hasInnerBody) {
-            continue;
+        if (items.length) {
+            result.push({
+                type: 'container',
+                border: true,
+                accent_color: accentColor,
+                content: items,
+            });
         }
-
-        result.push({
-            type: 'container',
-            border: true,
-            accent_color: accentColor,
-            content: items,
-        });
     }
     return result;
 }
@@ -174,7 +162,7 @@ function buildAttachmentAuthorBlocks(
     authorName: string | undefined,
     authorLink: string | undefined,
     authorIcon: string | undefined,
-): MmBlock[] {
+): MmBlock | null {
     const blocks: MmBlock[] = [];
     if (authorIcon) {
         blocks.push({
@@ -190,31 +178,6 @@ function buildAttachmentAuthorBlocks(
     if (nameMarkdown) {
         blocks.push({type: 'text', text: nameMarkdown});
     }
-    return blocks;
-}
-
-function isSafeAttachmentLink(link: string): boolean {
-    if (!isUrlSafe(link)) {
-        return false;
-    }
-    return isValidUrl(link) || link.startsWith('/') || link.startsWith('#');
-}
-
-function buildAttachmentAuthorNameMarkdown(
-    authorName: string | undefined,
-    authorLink: string | undefined,
-): string | null {
-    if (!authorName) {
-        return null;
-    }
-    if (authorLink && isSafeAttachmentLink(authorLink)) {
-        return `[${authorName}](${authorLink})`;
-    }
-    return authorName;
-}
-
-/** Single block, or a horizontal row when both author icon and name are present. */
-function wrapInlineAuthorBlocks(blocks: MmBlock[]): MmBlock | null {
     if (blocks.length === 0) {
         return null;
     }
@@ -227,6 +190,19 @@ function wrapInlineAuthorBlocks(blocks: MmBlock[]): MmBlock | null {
         gap: 'small',
         content: blocks,
     };
+}
+
+function buildAttachmentAuthorNameMarkdown(
+    authorName: string | undefined,
+    authorLink: string | undefined,
+): string | null {
+    if (!authorName) {
+        return null;
+    }
+    if (authorLink && isUrlSafe(authorLink)) {
+        return `[${authorName}](${authorLink})`;
+    }
+    return authorName;
 }
 
 /** Footer text alone stays a single text block; icon + text uses a horizontal container. */
@@ -243,7 +219,7 @@ function wrapHorizontalFooterRow(blocks: MmBlock[]): MmBlock {
 }
 
 function buildAttachmentTitleMarkdown(title: string, titleLink: string | undefined): string {
-    if (titleLink && isSafeAttachmentLink(titleLink)) {
+    if (titleLink && isUrlSafe(titleLink)) {
         return `**[${title}](${titleLink})**`;
     }
     return `**${title}**`;
@@ -275,13 +251,20 @@ function parseAttachmentFields(fields: unknown): ParsedAttachmentField[] {
     return result;
 }
 
-function attachmentFieldMarkdown(f: ParsedAttachmentField): string {
-    const title = f.title.trim();
-    const value = f.value.trim();
+function attachmentFieldBlocks(f: ParsedAttachmentField): MmBlock[] {
+    const blocks: MmBlock[] = [];
+    blocks.push({type: 'text', text: `**${f.title}:**`});
+    blocks.push({type: 'text', text: f.value});
+    return blocks;
+}
 
-    // Two spaces before newline = Markdown hard line break: label on its own line, value below,
-    // without the large gap that `\n\n` (new paragraph) creates.
-    return `**${title}:**  \n${value}`;
+function wrapAttachmenFieldBlocks(blocks: MmBlock[]): MmBlock {
+    return {
+        type: 'container',
+        flow: 'vertical',
+        gap: 'none',
+        content: blocks,
+    };
 }
 
 function attachmentFieldsToMmBlocks(parsed: ParsedAttachmentField[]): MmContainerBlock | null {
@@ -297,18 +280,14 @@ function attachmentFieldsToMmBlocks(parsed: ParsedAttachmentField[]): MmContaine
                 const left: MmColumnBlock = {
                     type: 'column',
                     width: 'stretch',
-                    items: [{
-                        type: 'text',
-                        text: attachmentFieldMarkdown(pending),
-                    }],
+                    gap: 'none',
+                    items: attachmentFieldBlocks(pending),
                 };
                 const right: MmColumnBlock = {
                     type: 'column',
                     width: 'stretch',
-                    items: [{
-                        type: 'text',
-                        text: attachmentFieldMarkdown(field),
-                    }],
+                    gap: 'none',
+                    items: attachmentFieldBlocks(field),
                 };
                 content.push({type: 'column_set', columns: [left, right]});
                 pending = null;
@@ -317,23 +296,14 @@ function attachmentFieldsToMmBlocks(parsed: ParsedAttachmentField[]): MmContaine
             }
         } else {
             if (pending) {
-                content.push({
-                    type: 'text',
-                    text: attachmentFieldMarkdown(pending),
-                });
+                content.push(wrapAttachmenFieldBlocks(attachmentFieldBlocks(pending)));
                 pending = null;
             }
-            content.push({
-                type: 'text',
-                text: attachmentFieldMarkdown(field),
-            });
+            content.push(wrapAttachmenFieldBlocks(attachmentFieldBlocks(field)));
         }
     }
     if (pending) {
-        content.push({
-            type: 'text',
-            text: attachmentFieldMarkdown(pending),
-        });
+        content.push(wrapAttachmenFieldBlocks(attachmentFieldBlocks(pending)));
     }
     return {
         type: 'container',
@@ -372,12 +342,12 @@ function translateAttachmentActions(actions: unknown[]) {
         }
         const act = action as Record<string, unknown>;
         if (act.type === 'select') {
-            const placeholder = typeof act.name === 'string' ? act.name : '';
-            const actionId = typeof act.id === 'string' ? act.id : '';
+            const placeholder = ensureString(act.name);
+            const actionId = ensureString(act.id);
             if (!actionId) {
                 continue;
             }
-            const dataSource = typeof act.data_source === 'string' ? act.data_source : undefined;
+            const dataSource = ensureString(act.data_source);
             let options;
             if (dataSource !== 'users' && dataSource !== 'channels') {
                 options = translateAttachmentSelectOptions(act.options);
@@ -391,15 +361,15 @@ function translateAttachmentActions(actions: unknown[]) {
                 action_id: actionId,
                 placeholder,
                 options,
-                initial_option: typeof act.default_option === 'string' ? act.default_option : undefined,
+                initial_option: ensureString(act.default_option),
                 disabled: act.disabled === true ? true : undefined,
-                cookie: typeof act.cookie === 'string' ? act.cookie : undefined,
-                data_source: typeof act.data_source === 'string' ? act.data_source : undefined,
+                cookie: ensureString(act.cookie),
+                data_source: dataSource,
             });
         } else {
             // Legacy attachment actions without `type` render as buttons (see message_attachment.tsx).
-            const text = typeof act.name === 'string' ? act.name : '';
-            const actionId = typeof act.id === 'string' ? act.id : '';
+            const text = ensureString(act.name);
+            const actionId = ensureString(act.id);
             if (!text || !actionId) {
                 continue;
             }
@@ -407,10 +377,10 @@ function translateAttachmentActions(actions: unknown[]) {
                 type: 'button',
                 action_id: actionId,
                 text,
-                style: parseMmButtonStyle(typeof act.style === 'string' ? act.style : undefined),
-                tooltip: typeof act.tooltip === 'string' ? act.tooltip : undefined,
+                style: parseMmButtonStyle(ensureString(act.style)),
+                tooltip: ensureString(act.tooltip),
                 disabled: act.disabled === true ? true : undefined,
-                cookie: typeof act.cookie === 'string' ? act.cookie : undefined,
+                cookie: ensureString(act.cookie),
             });
         }
     }

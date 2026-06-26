@@ -29,8 +29,8 @@ const InteractiveMessages = ({channelId, location, post, theme}: Props) => {
     const integrationFormat = getPostInteractiveIntegrationFormat(props ?? {});
 
     const blocks = useMemo(() => {
-        return translatePostProps(props ?? {});
-    }, [props]);
+        return translatePostProps(props ?? {}, intl);
+    }, [props, intl]);
 
     const inlineMarkdownActions = useMemo(() => {
         return {
