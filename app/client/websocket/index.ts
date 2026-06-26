@@ -133,7 +133,7 @@ export default class WebSocketClient {
         }
 
         if (this.connectFailCount === 0) {
-            logInfo('websocket connecting to ' + this.url);
+            logInfo('websocket connecting to', this.serverUrl);
         }
 
         this.shouldSkipSync = shouldSkipSync;
@@ -198,10 +198,10 @@ export default class WebSocketClient {
             }
 
             if (this.shouldSkipSync) {
-                logInfo('websocket connected to', this.url);
+                logInfo('websocket connected to', this.serverUrl);
                 this.firstConnectCallback?.();
             } else {
-                logInfo('websocket re-established connection to', this.url);
+                logInfo('websocket re-established connection to', this.serverUrl);
                 if (!reliableWebSockets && this.reconnectCallback) {
                     this.reconnectCallback();
                 } else if (reliableWebSockets) {
@@ -257,13 +257,13 @@ export default class WebSocketClient {
             this.shouldSkipSync = false;
 
             if (ev.message && typeof ev.message === 'object' && 'code' in ev.message && ev.message.code === TLS_HANDSHARE_ERROR) {
-                logDebug('websocket did not connect', this.url, ev.message.reason);
+                logDebug('websocket did not connect', this.serverUrl, ev.message.reason);
                 this.closeCallback?.(this.connectFailCount);
                 return;
             }
 
             if (this.connectFailCount === 0) {
-                logInfo('websocket closed', this.url);
+                logInfo('websocket closed', this.serverUrl);
             }
 
             this.connectFailCount++;
@@ -324,7 +324,7 @@ export default class WebSocketClient {
                 if (reliableWebSockets) {
                     // We check the hello packet, which is always the first packet in a stream.
                     if (msg.event === WebsocketEvents.HELLO) {
-                        logInfo(this.url, 'got connection id ', msg.data.connection_id);
+                        logInfo(this.serverUrl, 'got connection id ', msg.data.connection_id);
 
                         // If we already have a connectionId present, and server sends a different one,
                         // that means it's either a long timeout, or server restart, or sequence number is not found.
@@ -333,9 +333,9 @@ export default class WebSocketClient {
                         // Then we do the sync calls, and reset sequence number to 0.
                         if (this.connectionId !== msg.data.connection_id) {
                             if (this.connectionId) {
-                                logInfo(this.url, 'got a new connection due to long timeout, or server restart, or sequence number is not found');
+                                logInfo(this.serverUrl, 'got a new connection due to long timeout, or server restart, or sequence number is not found');
                             } else {
-                                logInfo(this.url, 'got the expected new connection id');
+                                logInfo(this.serverUrl, 'got the expected new connection id');
                             }
                             if (!this.shouldSkipSync) {
                                 this.reconnectCallback?.();
@@ -351,13 +351,13 @@ export default class WebSocketClient {
                     // Now we check for sequence number, and if it does not match,
                     // we just disconnect and reconnect.
                     if (msg.seq !== this.serverSequence) {
-                        logInfo(this.url, 'missed websocket event, act_seq=' + msg.seq + ' exp_seq=' + this.serverSequence);
+                        logInfo(this.serverUrl, 'missed websocket event, act_seq=' + msg.seq + ' exp_seq=' + this.serverSequence);
                         this.connectionId = ''; // There was some problem with the sequence number, so we reset the connection
                         this.close(false); // Will auto-reconnect after MIN_WEBSOCKET_RETRY_TIME.
                         return;
                     }
                 } else if (msg.seq !== this.serverSequence) {
-                    logInfo(this.url, 'missed websocket event, act_seq=' + msg.seq + ' exp_seq=' + this.serverSequence);
+                    logInfo(this.serverUrl, 'missed websocket event, act_seq=' + msg.seq + ' exp_seq=' + this.serverSequence);
                     this.reconnectCallback?.();
                 }
 

@@ -13,7 +13,7 @@ export async function handleFileDownloadRejected(serverUrl: string, msg: WebSock
 
         const {file_id: fileId, rejection_reason: rejectionReason, download_type: downloadType} = data;
 
-        logDebug('[handleFileDownloadRejected] Received event for download type', downloadType, 'hasFileId', Boolean(fileId));
+        logDebug('[handleFileDownloadRejected] Received event for download type', downloadType, 'hasFileId', Boolean(fileId), 'hasRejectionReason', Boolean(rejectionReason));
 
         if (!fileId) {
             logDebug('[handleFileDownloadRejected] No file_id in event, skipping');
@@ -44,7 +44,7 @@ export async function handleFileDownloadRejected(serverUrl: string, msg: WebSock
             // Fall through to show snackbar
         }
 
-        logDebug('[handleFileDownloadRejected] Showing snackbar with rejection reason:', rejectionReason);
+        logDebug('[handleFileDownloadRejected] Showing snackbar, hasRejectionReason:', Boolean(rejectionReason));
 
         // Show snackbar with the plugin's rejection message directly
         // Only pass customMessage if there's actually a message to show

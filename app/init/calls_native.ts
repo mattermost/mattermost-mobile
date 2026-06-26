@@ -84,8 +84,12 @@ class CallsNativeSingleton {
     private onIncomingCall = async (payload: IncomingCallPayload) => {
         const {uuid, serverId, channelId, postId, threadId} = payload;
 
-        if (!serverId || !channelId) {
-            logDebug('onIncomingCall received without serverId/channelId; ignoring', uuid, {hasServerId: Boolean(serverId), hasChannelId: Boolean(channelId)});
+        if (!serverId) {
+            logDebug('onIncomingCall received without serverId; ignoring', uuid);
+            return;
+        }
+        if (!channelId) {
+            logDebug('onIncomingCall received without channelId; ignoring', uuid);
             return;
         }
 
