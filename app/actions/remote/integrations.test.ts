@@ -47,7 +47,7 @@ describe('postActionWithCookie', () => {
             actionCookie,
             '',
             undefined,
-            '',
+            'attachment',
         );
         expect(result).toEqual({data: response});
     });

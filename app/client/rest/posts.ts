@@ -215,9 +215,8 @@ const ClientPosts = <TBase extends Constructor<ClientBase>>(superclass: TBase) =
         if (query && Object.keys(query).length > 0) {
             msg.query = query;
         }
-        if (integrationFormat) {
-            msg.integration_format = integrationFormat;
-        }
+
+        msg.integration_format = integrationFormat;
         return this.doFetch(
             `${this.getPostRoute(postId)}/actions/${encodeURIComponent(actionId)}`,
             {method: 'post', body: msg},

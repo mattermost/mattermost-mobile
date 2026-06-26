@@ -290,7 +290,7 @@ describe('ClientPosts', () => {
 
             expect(client.doFetch).toHaveBeenCalledWith(
                 getEndpoint(),
-                {method: 'post', body: {selected_option: selectedOption, cookie: actionCookie}},
+                {method: 'post', body: {selected_option: selectedOption, cookie: actionCookie, integration_format: 'attachment'}},
             );
         });
 
@@ -299,7 +299,7 @@ describe('ClientPosts', () => {
 
             expect(client.doFetch).toHaveBeenCalledWith(
                 getEndpoint(),
-                {method: 'post', body: {selected_option: 'option'}},
+                {method: 'post', body: {selected_option: 'option', integration_format: 'attachment'}},
             );
         });
 
@@ -309,7 +309,7 @@ describe('ClientPosts', () => {
 
             expect(client.doFetch).toHaveBeenCalledWith(
                 getEndpoint(),
-                {method: 'post', body: {selected_option: '', cookie: 'cookie', query}},
+                {method: 'post', body: {selected_option: '', cookie: 'cookie', query, integration_format: 'attachment'}},
             );
         });
 
@@ -318,7 +318,7 @@ describe('ClientPosts', () => {
 
             expect(client.doFetch).toHaveBeenCalledWith(
                 getEndpoint(),
-                {method: 'post', body: {selected_option: '', cookie: 'cookie'}},
+                {method: 'post', body: {selected_option: '', cookie: 'cookie', integration_format: 'attachment'}},
             );
         });
 
@@ -337,7 +337,7 @@ describe('ClientPosts', () => {
 
             expect(client.doFetch).toHaveBeenCalledWith(
                 getEndpoint(encodedActionId),
-                {method: 'post', body: {selected_option: '', cookie: 'cookie'}},
+                {method: 'post', body: {selected_option: '', cookie: 'cookie', integration_format: 'attachment'}},
             );
         });
 

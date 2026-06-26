@@ -5,13 +5,33 @@ import {act, fireEvent} from '@testing-library/react-native';
 import React, {type ComponentProps} from 'react';
 
 import {Preferences} from '@constants';
-import {renderWithIntlAndTheme} from '@test/intl-test-helper';
+import DatabaseManager from '@database/manager';
+import {renderWithEverything} from '@test/intl-test-helper';
+import TestHelper from '@test/test_helper';
 
 import {ButtonElement} from './button_element';
 
+import type Database from '@nozbe/watermelondb/Database';
+
 describe('ButtonElement', () => {
+    const serverUrl = 'https://server.com';
     const theme = Preferences.THEMES.denim;
     const onAction = jest.fn();
+    let database: Database;
+
+    beforeAll(async () => {
+        const server = await TestHelper.setupServerDatabase(serverUrl);
+        database = server.database;
+        await server.operator.handleConfigs({
+            configs: [{id: 'MaxMarkdownNodes', value: '1000'}],
+            configsToDelete: [],
+            prepareRecordsOnly: false,
+        });
+    });
+
+    afterAll(async () => {
+        await DatabaseManager.destroyServerDatabase(serverUrl);
+    });
 
     beforeEach(() => {
         jest.clearAllMocks();
@@ -33,8 +53,9 @@ describe('ButtonElement', () => {
     function renderButton(
         props: ComponentProps<typeof ButtonElement>,
     ) {
-        return renderWithIntlAndTheme(
+        return renderWithEverything(
             <ButtonElement {...props}/>,
+            {database, serverUrl},
         );
     }
 
