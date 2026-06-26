@@ -16,6 +16,7 @@ import androidx.core.app.Person;
 
 import com.facebook.react.bridge.Arguments;
 import com.facebook.react.bridge.ReadableMap;
+import com.facebook.react.bridge.ReadableType;
 import com.facebook.react.bridge.WritableMap;
 
 import com.mattermost.helpers.*;
@@ -87,7 +88,10 @@ public class NotificationReplyBroadcastReceiver extends BroadcastReceiver {
             public void resolve(@Nullable Object value) {
                 if (value != null) {
                     ReadableMap response = (ReadableMap)value;
-                    ReadableMap data = response.getMap("data");
+                    ReadableMap data = null;
+                    if (response.hasKey("data") && response.getType("data") == ReadableType.Map) {
+                        data = response.getMap("data");
+                    }
                     if (data != null && data.hasKey("status_code") && !isSuccessful(data.getInt("status_code"))) {
                         TurboLog.Companion.i("ReactNative", String.format("Reply FAILED exception %s", data.getString("message")));
                         onReplyFailed(notificationId);
