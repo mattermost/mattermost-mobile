@@ -250,8 +250,10 @@ jobs:
 
   build-android-apk:
     if: >-
-      needs.resolve-e2e-policy.outputs.e2e_override != 'true'
+      !cancelled()
+      && needs.resolve-e2e-policy.outputs.e2e_override != 'true'
       && (inputs.PLATFORM == 'android' || inputs.PLATFORM == 'both')
+      && (needs.update-initial-status-android.result == 'success' || needs.update-initial-status-android.result == 'skipped')
     runs-on: ubuntu-latest-8-cores
     needs:
       - resolve-e2e-policy
@@ -651,25 +653,54 @@ jobs:
             const {data: workflows} = await github.rest.actions.listRepoWorkflows({owner, repo});
             const e2eWorkflow = workflows.workflows.find((workflow) => workflow.name === 'E2E');
             if (e2eWorkflow) {
+              // Cache PR lookups per head_sha so a long active-runs list doesn't fan out
+              // into a quadratic number of API calls.
+              const prsForSha = new Map();
+              const lookupPRsForSha = async (sha) => {
+                if (!sha) return [];
+                if (prsForSha.has(sha)) return prsForSha.get(sha);
+                try {
+                  const {data} = await github.rest.repos.listPullRequestsAssociatedWithCommit({
+                    owner,
+                    repo,
+                    commit_sha: sha,
+                  });
+                  const numbers = (data || []).map((p) => p.number);
+                  prsForSha.set(sha, numbers);
+                  return numbers;
+                } catch (err) {
+                  core.warning(`listPullRequestsAssociatedWithCommit failed for ${sha}: ${err.message}`);
+                  prsForSha.set(sha, []);
+                  return [];
+                }
+              };
+
               for (const status of ['queued', 'in_progress', 'waiting']) {
                 const {data: activeRuns} = await github.rest.actions.listWorkflowRuns({
                   owner,
                   repo,
                   workflow_id: e2eWorkflow.id,
                   status,
+                  branch: process.env.BRANCH,
                 });
-                const otherActive = activeRuns.workflow_runs.filter((run) => {
+                for (const run of activeRuns.workflow_runs) {
                   if (run.id === context.runId) {
-                    return false;
+                    continue;
                   }
+                  // Prefer the run's own pull_requests array; when GitHub leaves it empty
+                  // (common for fork PRs and some webhook timings), fall back to a per-SHA
+                  // PR lookup so runs on a different commit of the same PR are still caught.
+                  let belongsToPR;
                   if (run.pull_requests?.length) {
-                    return run.pull_requests.some((pr) => pr.number === prNumber);
+                    belongsToPR = run.pull_requests.some((pr) => pr.number === prNumber);
+                  } else {
+                    const numbers = await lookupPRsForSha(run.head_sha);
+                    belongsToPR = numbers.includes(prNumber);
                   }
-                  return run.head_sha === process.env.MOBILE_VERSION;
-                });
-                if (otherActive.length > 0) {
-                  core.info(`PR #${prNumber} has another active E2E run — skipping label removal (run ${otherActive[0].id}).`);
-                  return;
+                  if (belongsToPR) {
+                    core.info(`PR #${prNumber} has another active E2E run — skipping label removal (run ${run.id}).`);
+                    return;
+                  }
                 }
               }
             }

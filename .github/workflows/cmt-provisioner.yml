@@ -7,7 +7,7 @@ name: CMT Provisioner
 # releases, with `CMTServerVersions` in matterwick config as a manual override) and dispatches
 # compatibility-matrix-testing.yml with the CMT_MATRIX input. When that test workflow completes,
 # Matterwick destroys the provisioned instances (cleanup is keyed off the completed workflow_run,
-# matched by commit SHA).
+# matched by the dispatched test workflow run id).
 #
 # Triggers:
 #   - Mobile release-build branch push (`build-release-NNN`, 3+ digit build number, e.g.
