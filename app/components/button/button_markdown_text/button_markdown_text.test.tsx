@@ -18,6 +18,7 @@ describe('ButtonMarkdownText', () => {
                 value='Approve'
                 baseStyle={baseStyle}
                 theme={theme}
+                maxNodes={1000}
             />,
         );
 
@@ -30,6 +31,7 @@ describe('ButtonMarkdownText', () => {
                 value='**Approve**'
                 baseStyle={baseStyle}
                 theme={theme}
+                maxNodes={1000}
             />,
         );
 
@@ -42,6 +44,7 @@ describe('ButtonMarkdownText', () => {
                 value='[Docs](https://example.com)'
                 baseStyle={baseStyle}
                 theme={theme}
+                maxNodes={1000}
             />,
         );
 

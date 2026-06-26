@@ -15,6 +15,7 @@ type ButtonMarkdownTextProps = {
     baseStyle: TextStyle;
     theme: Theme;
     value: string;
+    maxNodes: number;
     testID?: string;
 };
 
@@ -27,7 +28,7 @@ const styles = StyleSheet.create({
     },
 });
 
-const ButtonMarkdownText = ({baseStyle, theme, value, testID}: ButtonMarkdownTextProps) => {
+const ButtonMarkdownText = ({baseStyle, theme, value, maxNodes, testID}: ButtonMarkdownTextProps) => {
     const markdownTextStyles = useMemo(() => getMarkdownTextStyles(theme), [theme]);
 
     const renderText = useCallback(({context, literal}: MarkdownBaseRenderer) => {
@@ -120,6 +121,7 @@ const ButtonMarkdownText = ({baseStyle, theme, value, testID}: ButtonMarkdownTex
                 checkbox: renderNull,
                 editedIndicator: renderNull,
             } as Record<string, unknown>,
+            maxNodes,
         });
     }, [
         renderAtMention,
@@ -132,6 +134,7 @@ const ButtonMarkdownText = ({baseStyle, theme, value, testID}: ButtonMarkdownTex
         renderNull,
         renderParagraph,
         renderText,
+        maxNodes,
     ]);
 
     const parserRef = useRef<Parser | null>(null);
