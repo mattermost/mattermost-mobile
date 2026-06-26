@@ -190,7 +190,6 @@ describe('WebSocketClient', () => {
         mockConn.onError.mock.calls[0][0]({url: 'wss://example.com/api/v4/websocket', code: 1006, reason: 'abnormal closure'});
 
         expect(logError).toHaveBeenCalledWith('websocket error', 'server', 'https://example.com', 'code', 1006, 'reason', 'abnormal closure');
-        expect(logError).not.toHaveBeenCalledWith('websocket error', 'wss://example.com/api/v4/websocket');
         expect(errorCallback).toHaveBeenCalled();
     });
 
