@@ -109,7 +109,7 @@ describe('Channels - Archived Channel Interactions', () => {
         await wait(timeouts.FOUR_SEC);
 
         // # Open the archived channel via the platform-appropriate path.
-        await openArchivedChannel(archivedChannel.name, sentinel);
+        await openArchivedChannel(archivedChannel.name, sentinel, testTeam.name);
 
         // # Open channel info
         await ChannelInfoScreen.open();
@@ -140,7 +140,7 @@ describe('Channels - Archived Channel Interactions', () => {
         await wait(timeouts.FOUR_SEC);
 
         // # Open the archived channel via the platform-appropriate path.
-        await openArchivedChannel(archivedChannel.name, sentinel);
+        await openArchivedChannel(archivedChannel.name, sentinel, testTeam.name);
 
         // # Open channel info and leave the channel
         await ChannelInfoScreen.open();
@@ -242,7 +242,7 @@ describe('Channels - Archived Channel Interactions', () => {
         await wait(timeouts.FOUR_SEC);
 
         // # Open the archived channel via the platform-appropriate path.
-        await openArchivedChannel(archivedChannel.name, sentinel);
+        await openArchivedChannel(archivedChannel.name, sentinel, testTeam.name);
 
         // # Open channel info
         await ChannelInfoScreen.open();

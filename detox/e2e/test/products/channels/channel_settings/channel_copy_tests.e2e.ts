@@ -79,7 +79,15 @@ describe('Channel Settings - Copy Tests', () => {
         await ChannelListScreen.toBeVisible();
     });
 
-    it('MM-T868_1 - should show Copy option when long-pressing channel purpose text', async () => {
+    // Skipped: Detox + RN New Architecture (Fabric) idling-resource deadlock.
+    // Tapping the channel_info bottom-sheet copy_purpose / copy_header item
+    // wedges FabricUIManagerIdlingResources.checkIdle on Android (repeated
+    // ReactNoCrashSoftException: "Cannot get UIManager because the instance
+    // hasn't been initialized yet"). Espresso loopMainThreadUntilIdle never
+    // returns → 240s test/hook timeout, plus a cascade poisoning the next
+    // test's beforeEach. Needs a Detox/Fabric idling-resource fix, not a
+    // test-logic change. Verified in CI run 28290273101 (m5 device.log).
+    it.skip('MM-T868_1 - should show Copy option when long-pressing channel purpose text', async () => {
         const purposeText = `Purpose text for copying ${getRandomId()}`;
         const {channel: channelWithPurpose} = await Channel.apiCreateChannel(siteOneUrl, {
             teamId: testTeam.id,
@@ -121,7 +129,11 @@ describe('Channel Settings - Copy Tests', () => {
         await ChannelListScreen.toBeVisible();
     });
 
-    it('MM-T869_1 - should show Copy URL option when long-pressing a URL in the channel header', async () => {
+    // Skipped: same Fabric idling-resource deadlock as MM-T868_1 above —
+    // copy_header_text bottom-sheet item triggers the same wedged
+    // loopMainThreadUntilIdle. See MM-T868_1 skip comment for the full
+    // diagnosis.
+    it.skip('MM-T869_1 - should show Copy URL option when long-pressing a URL in the channel header', async () => {
         const headerUrl = 'https://mattermost.com';
         const {channel: channelWithHeaderUrl} = await Channel.apiCreateChannel(siteOneUrl, {
             teamId: testTeam.id,

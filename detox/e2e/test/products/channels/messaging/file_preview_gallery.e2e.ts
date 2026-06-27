@@ -263,7 +263,14 @@ describe('Messaging - File Preview Gallery', () => {
         // drops the press (cause of prior intermittent MM-T3458_1 failure).
         const copyPublicLinkButton = element(by.id('gallery.footer.copy_public_link.button')).atIndex(0);
         await waitFor(copyPublicLinkButton).toBeVisible().withTimeout(timeouts.TEN_SEC);
-        await copyPublicLinkButton.tap();
+
+        // Corner-tap: the gallery modal's UITransitionView intercepts the
+        // Pressable's center tap on iOS — Detox reports the tap as delivered
+        // but onPress doesn't fire (proven via the same DETOX_VISIBILITY_
+        // UITransitionView screenshots that justify the corner-tap in
+        // manage_channel_members.ts:142, channel_members.e2e.ts:305, and
+        // 11+ other sites in the codebase).
+        await copyPublicLinkButton.tap({x: 1, y: 1});
         await wait(timeouts.TWO_SEC);
 
         // * Verify the copy public link toast message appears (testID='toast.message')

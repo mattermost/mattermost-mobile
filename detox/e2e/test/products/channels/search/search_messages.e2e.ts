@@ -207,7 +207,11 @@ describe('Search - Search Messages', () => {
 
         // # Collapse the keyboard
         await element(by.id('search.modifier.header')).tap();
-        await SearchMessagesScreen.searchModifierPhrases.tap();
+
+        // Corner-tap: searchModifierPhrases is 1.3px clipped (visible 47px vs
+        // bounds 48.33px) and fails Detox's 100% visibility threshold. Same
+        // workaround as searchModifierIn at :138 (MM-T5294_3).
+        await SearchMessagesScreen.searchModifierPhrases.tap({x: 1, y: 1});
         await SearchMessagesScreen.searchInput.tapBackspaceKey();
         await SearchMessagesScreen.searchInput.tapReturnKey();
 

@@ -256,6 +256,27 @@ jobs:
             echo "Warning: FileProvider.LocalStorage container not found; channel_bookmark_file.yml may fail"
           fi
 
+      # Start the iOS Simulator device-log stream BEFORE maestro runs so any
+      # WebRTC / calls / connection lifecycle errors land in an artifact for
+      # post-hoc diagnosis. Local repro of the failing iOS calls flow (PR #9800
+      # diagnostic run) showed the flow PASSES on the simulator with a 1.0s
+      # peer connect, ruling out the obvious code-defect hypotheses. The CI
+      # failure's actual trigger is unknown precisely because the device log
+      # was never captured. Cheap to keep on permanently — log is small and
+      # only consulted on failure.
+      - name: Start iOS Simulator device log capture
+        if: always()
+        run: |
+          mkdir -p build
+          # Predicate filters to the Mattermost app processes — keeps the log
+          # focused on calls/WebRTC/connection messages, not the full sim noise.
+          xcrun simctl spawn "$SIMULATOR_ID" log stream \
+            --level=debug \
+            --predicate 'process == "Mattermost" OR process == "MattermostRN" OR senderImagePath CONTAINS "WebRTC" OR senderImagePath CONTAINS "calls-native"' \
+            > build/sim-device.log 2> build/sim-device.err &
+          echo $! > build/sim-device.pid
+          echo "==> Device log capture started (pid $(cat build/sim-device.pid))"
+
       - name: Run Maestro Flows (iOS)
         continue-on-error: true
         env:
@@ -273,6 +294,26 @@ jobs:
           set +a
           chmod +x detox/maestro/scripts/run_ci_batches.sh
           detox/maestro/scripts/run_ci_batches.sh --platform ios --device "$SIMULATOR_ID"
+
+      - name: Stop iOS Simulator device log capture
+        if: always()
+        run: |
+          if [ -f build/sim-device.pid ]; then
+            pid=$(cat build/sim-device.pid)
+            kill "$pid" 2>/dev/null || true
+            wait "$pid" 2>/dev/null || true
+            echo "==> Device log capture stopped (pid $pid)"
+          fi
+          # Print the tail so a quick failure scan doesn't require downloading
+          # the artifact for trivial cases.
+          if [ -f build/sim-device.log ]; then
+            sz=$(wc -c < build/sim-device.log)
+            echo "==> build/sim-device.log size=${sz}B"
+            echo "==> Last 100 lines of sim-device.log:"
+            tail -100 build/sim-device.log || true
+            echo "==> Lines matching calls/webrtc/peer/timed-out:"
+            grep -iE 'calls:|RTCPeer|WebRTC|peer connect|unable to get media|wired ?headset|timed out waiting' build/sim-device.log | head -100 || true
+          fi
 
       - name: Run MM-T67856_4 with AllowDownloadLogs=false (iOS)
         # Isolated step: patch the server config to AllowDownloadLogs=false,

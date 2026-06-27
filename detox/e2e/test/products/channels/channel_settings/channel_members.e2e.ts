@@ -302,7 +302,12 @@ describe('Channels', () => {
         await CreateDirectMessageScreen.searchInput.replaceText(`${gmUser1.username}`);
         await CreateDirectMessageScreen.searchInput.tapReturnKey();
         await wait(timeouts.ONE_SEC);
-        await CreateDirectMessageScreen.getUserItem(gmUser1.id).tap();
+
+        // Corner-tap: the create-DM modal's UITransitionView drops the row's
+        // center tap on iOS (Detox marks tap as delivered but onPress never
+        // fires → user never selected → assertion below fails). Same iOS
+        // gesture-interception pattern as manage_channel_members.ts:142.
+        await CreateDirectMessageScreen.getUserItem(gmUser1.id).tap({x: 1, y: 1});
 
         // * Verify the first new user is selected
         await expect(CreateDirectMessageScreen.getSelectedDMUserDisplayName(gmUser1.id)).toBeVisible();
@@ -311,7 +316,7 @@ describe('Channels', () => {
         await CreateDirectMessageScreen.searchInput.replaceText(`${gmUser2.username}`);
         await CreateDirectMessageScreen.searchInput.tapReturnKey();
         await wait(timeouts.ONE_SEC);
-        await CreateDirectMessageScreen.getUserItem(gmUser2.id).tap();
+        await CreateDirectMessageScreen.getUserItem(gmUser2.id).tap({x: 1, y: 1});
 
         // * Verify the second new user is selected
         await expect(CreateDirectMessageScreen.getSelectedDMUserDisplayName(gmUser2.id)).toBeVisible();

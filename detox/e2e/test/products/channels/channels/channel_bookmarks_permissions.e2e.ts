@@ -11,7 +11,6 @@ import {
     ChannelBookmark,
     Channel,
     Setup,
-    System,
     Team,
     User,
 } from '@support/server_api';
@@ -60,7 +59,8 @@ describe('Channels - Channel Bookmarks Permissions', () => {
         testTeam = team;
         testUser = user;
 
-        await System.apiUpdateConfig(siteOneUrl, {FeatureFlags: {ChannelBookmarks: true}});
+        // FeatureFlags.ChannelBookmarks enabled once per shard in setup.ts.
+        // See channel_bookmarks.e2e.ts beforeAll for the WebSocket-contention rationale.
 
         const {user: rUser} = await User.apiCreateUser(siteOneUrl);
         if (!rUser?.id) {
@@ -87,7 +87,8 @@ describe('Channels - Channel Bookmarks Permissions', () => {
     });
 
     afterAll(async () => {
-        await System.apiUpdateConfig(siteOneUrl, {FeatureFlags: {ChannelBookmarks: false}});
+        // Do NOT unset FeatureFlags.ChannelBookmarks — would clobber other shards.
+        // See channel_bookmarks.e2e.ts afterAll for rationale.
         await HomeScreen.logout();
     });
 

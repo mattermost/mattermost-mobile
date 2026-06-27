@@ -96,6 +96,13 @@ describe('Search - Result Interactions', () => {
         await SearchMessagesScreen.searchInput.tapReturnKey();
         await wait(timeouts.TWO_SEC);
 
+        // # Collapse keyboard before the visibility check — otherwise the
+        // keyboard obscures the result list and Detox fails toBeVisible at
+        // the default 75% visibility threshold (same pattern as
+        // search_messages.e2e.ts uses via search.modifier.header tap).
+        await element(by.id('search.modifier.header')).tap();
+        await wait(timeouts.ONE_SEC);
+
         // * Verify at least one result is visible
         const flatList = SearchMessagesScreen.getFlatPostList();
         await expect(flatList).toBeVisible();

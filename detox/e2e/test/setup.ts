@@ -130,6 +130,7 @@ async function loginAdmin(): Promise<void> {
         const {error: meError} = await User.apiGetMe(siteOneUrl);
         if (!meError) {
             console.info(`✅ Admin session verified on attempt ${attempt}`);
+            await ensureServerConfigForE2E();
             return;
         }
         if (attempt === MAX_ATTEMPTS) {
@@ -137,6 +138,30 @@ async function loginAdmin(): Promise<void> {
         }
         console.warn(`⚠️ Session check failed on attempt ${attempt}, retrying...`);
         await new Promise((resolve) => setTimeout(resolve, 2000 * attempt));
+    }
+}
+
+// Feature flags that must be ON for E2E. Set once per shard process — never
+// toggled to false in afterAll, which would broadcast CONFIG_CHANGED over
+// WebSocket to all concurrent shards sharing this PR's SITE_1_URL and unmount
+// the feature mid-session in the other shards.
+// Confirmed root cause of ChannelBookmarks shared-flag contention in run
+// 28290273101 (13 cross-platform failures, see channel_bookmarks artifacts).
+let configInitializedForE2E = false;
+async function ensureServerConfigForE2E(): Promise<void> {
+    if (configInitializedForE2E) {
+        return;
+    }
+    try {
+        await System.apiUpdateConfig(siteOneUrl, {
+            FeatureFlags: {ChannelBookmarks: true},
+        });
+        configInitializedForE2E = true;
+        console.info('✅ E2E server config initialized (FeatureFlags.ChannelBookmarks=true)');
+    } catch (err) {
+        // Non-fatal: tests gated on the flag will surface as their own failures
+        // if this setup didn't take. Don't block login on a config-patch hiccup.
+        console.warn(`⚠️ ensureServerConfigForE2E failed: ${(err as Error).message}`);
     }
 }
 
