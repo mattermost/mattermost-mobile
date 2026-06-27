@@ -132,7 +132,10 @@ class ManageChannelMembersScreen {
             } catch { /* keyboard may already be dismissed */ }
             await wait(timeouts.HALF_SEC);
         }
-        await userDisplayName.tap();
+
+        // Corner-tap: the member row's center is obscured by the manage-members
+        // modal's UITransitionView (same workaround as PostOptionsScreen.deletePost).
+        await userDisplayName.tap({x: 1, y: 1});
         await wait(timeouts.TWO_SEC);
 
         await expect(this.removeButton).toBeVisible();

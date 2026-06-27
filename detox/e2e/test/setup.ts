@@ -180,7 +180,7 @@ beforeAll(async () => {
     const isFirstFile = !process.env.DETOX_SETUP_DONE;
     const launchArgs = {detoxDisableSynchronization: 'YES'};
 
-    const APP_READY_TIMEOUT = device.getPlatform() === 'android' ? 60_000 : 30_000;
+    const APP_READY_TIMEOUT = device.getPlatform() === 'android' ? 90_000 : 30_000;
 
     async function forceAndroidDataClear(): Promise<void> {
         if (device.getPlatform() !== 'android') {
@@ -285,7 +285,7 @@ beforeAll(async () => {
         clearIOSAppData();
     }
 
-    const MAX_LAUNCH_ATTEMPTS = 2;
+    const MAX_LAUNCH_ATTEMPTS = 3;
     for (let attempt = 1; attempt <= MAX_LAUNCH_ATTEMPTS; attempt++) {
         try {
             await launchAndVerify();

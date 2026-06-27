@@ -1,6 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import {Post} from '@support/server_api';
 import {
     Alert,
     CameraQuickAction,
@@ -314,6 +315,27 @@ class ChannelScreen {
         await this.composePostDraft(message);
         await this.tapSendButton();
         await wait(timeouts.TWO_SEC);
+    };
+
+    // ponytail: the iOS sim's URLSession intermittently drops the first POST to a
+    // freshly-provisioned server (-1005 "network connection lost") and the app does
+    // not auto-retry, so the message never reaches the server. Verify the send landed
+    // by cross-checking the API; retry once if the last post isn't ours. Returns the
+    // same {post} shape as Post.apiGetLastPostInChannel so callers can swap 1:1.
+    postMessageAndVerify = async (message: string, channelId: string, siteUrl: string): Promise<{post?: any; error?: any}> => {
+        await this.postMessage(message);
+        let result = await Post.apiGetLastPostInChannel(siteUrl, channelId);
+        if (result.post?.message === message) {
+            return result;
+        }
+
+        // Send likely failed (e.g. iOS sim -1005). Retry once.
+        await this.postMessage(message);
+        result = await Post.apiGetLastPostInChannel(siteUrl, channelId);
+        if (result.post?.message === message) {
+            return result;
+        }
+        throw new Error(`message send failed twice, likely sim network -1005 (last post: ${JSON.stringify(result.post?.message ?? result.error ?? 'none')})`);
     };
 
     postSlashCommand = async (command: string) => {

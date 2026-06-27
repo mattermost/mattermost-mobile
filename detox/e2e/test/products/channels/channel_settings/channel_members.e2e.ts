@@ -272,7 +272,9 @@ describe('Channels', () => {
         await ChannelInfoScreen.membersOption.tap();
         await wait(timeouts.TWO_SEC);
 
-        await ManageChannelMembersScreen.manageButton.tap();
+        // Corner-tap: manage button is obscured by the manage-members modal's
+        // UITransitionView (same workaround as PostOptionsScreen.deletePost).
+        await ManageChannelMembersScreen.manageButton.tap({x: 1, y: 1});
         await wait(timeouts.TWO_SEC);
 
         // # Search and remove user
