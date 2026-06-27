@@ -285,8 +285,15 @@ export async function installRequiredPlugin(
 
     if (isInactive) {
         logInfo(`Plugin ${pluginId} is installed but inactive, enabling...`);
-        const enableRes = await client.request<ApiErrorBody>('POST', `/api/v4/plugins/${encodeURIComponent(pluginId)}/enable`, {}, token);
-        if (enableRes.status >= 400) {
+        // ponytail: .catch — a transient enable timeout (e.g. demo-plugin on a
+        // freshly-provisioned server) must not crash the whole provision run.
+        // Other enable sites below already swallow this; this one didn't.
+        const enableRes = await client.request<ApiErrorBody>('POST', `/api/v4/plugins/${encodeURIComponent(pluginId)}/enable`, {}, token).catch((err: unknown) => ({
+            data: {message: err instanceof Error ? err.message : String(err)} as ApiErrorBody,
+            status: 0,
+            headers: {},
+        }));
+        if (enableRes.status === 0 || enableRes.status >= 400) {
             logWarn(`Failed to enable ${pluginId} (HTTP ${enableRes.status}): ${enableRes.data.message || JSON.stringify(enableRes.data)}`);
         } else {
             logInfo(`Plugin ${pluginId} enabled.`);
