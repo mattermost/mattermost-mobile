@@ -246,7 +246,7 @@ describe('Channels', () => {
         await ChannelInfoScreen.membersOption.tap();
 
         await wait(timeouts.TWO_SEC);
-        await ManageChannelMembersScreen.manageButton.tap();
+        await ManageChannelMembersScreen.manageButton.tap({x: 1, y: 1});
         await wait(timeouts.TWO_SEC);
 
         // # Search and remove user
@@ -318,7 +318,7 @@ describe('Channels', () => {
         await ChannelInfoScreen.membersOption.tap();
         await wait(timeouts.TWO_SEC);
 
-        await ManageChannelMembersScreen.manageButton.tap();
+        await ManageChannelMembersScreen.manageButton.tap({x: 1, y: 1});
         await wait(timeouts.TWO_SEC);
 
         // # Search and remove user

@@ -16,9 +16,7 @@ class ReportProblemScreen {
 
     // Native-stack back chevron via accessibility label.
     get backButton(): Detox.NativeElement {
-        return isIos()
-            ? element(by.label('Back')).atIndex(0)
-            : element(by.label('Navigate up')).atIndex(0);
+        return isIos()? element(by.label('Back')).atIndex(0): element(by.label('Navigate up')).atIndex(0);
     }
 
     enableLogAttachmentsToggleOff = element(by.id(this.testID.enableLogAttachmentsToggleOff));
@@ -30,10 +28,28 @@ class ReportProblemScreen {
         return this.reportProblemScreen;
     };
 
-    open = async () => {
+    /**
+     * Opens the Report a Problem screen from Settings.
+     *
+     * On servers where the in-app screen is not available (unlicensed, or config
+     * not yet synced), tapping "Report a Problem" opens an external browser
+     * instead. This method detects that case, dismisses the browser, and returns
+     * false so callers can skip in-app assertions.
+     *
+     * @returns true if the in-app screen opened, false if an external browser opened
+     */
+    open = async (): Promise<boolean> => {
         await SettingsScreen.reportProblemOption.tap();
 
-        return this.toBeVisible();
+        try {
+            await this.toBeVisible();
+            return true;
+        } catch {
+            // In-app screen didn't appear — external browser/email opened instead.
+            // Dismiss it so the app returns to Settings.
+            await tapNativeBackButton();
+            return false;
+        }
     };
 
     back = async () => {

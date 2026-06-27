@@ -128,7 +128,7 @@ describe('Messaging - Pin and Unpin Message', () => {
 
         // # Open post options for message and tap on pin to channel option
         await openChannelPostOptionsForPin(post.id, message);
-        await PostOptionsScreen.pinPostOption.tap();
+        await PostOptionsScreen.pinPostOption.tap({x: 1, y: 1});
 
         // * Verify pinned text is displayed on the post pre-header
         // Use polling to wait for the pre-header to appear after pin operation.
@@ -139,7 +139,7 @@ describe('Messaging - Pin and Unpin Message', () => {
 
         // # Open post options for message and tap on unpin from channel option
         await openChannelPostOptionsForPin(post.id, message);
-        await PostOptionsScreen.unpinPostOption.tap();
+        await PostOptionsScreen.unpinPostOption.tap({x: 1, y: 1});
 
         // * Verify pinned text is not displayed on the post pre-header
         // Wait for the pre-header element to disappear after unpin operation.
@@ -163,7 +163,7 @@ describe('Messaging - Pin and Unpin Message', () => {
         await wait(timeouts.TWO_SEC);
         await ThreadScreen.toBeVisible();
         await ThreadScreen.openPostOptionsFor(post.id, message);
-        await PostOptionsScreen.pinPostOption.tap();
+        await PostOptionsScreen.pinPostOption.tap({x: 1, y: 1});
 
         // * Verify pinned text is displayed on the post pre-header
         // Use polling to wait for the pre-header to appear after pin operation.
@@ -172,7 +172,7 @@ describe('Messaging - Pin and Unpin Message', () => {
 
         // # Open post options for message and tap on unpin from channel option
         await ThreadScreen.openPostOptionsFor(post.id, message);
-        await PostOptionsScreen.unpinPostOption.tap();
+        await PostOptionsScreen.unpinPostOption.tap({x: 1, y: 1});
 
         // * Verify pinned text is not displayed on the post pre-header
         // Wait for the pre-header element to disappear after unpin operation.
@@ -202,7 +202,7 @@ describe('Messaging - Pin and Unpin Message', () => {
 
         // # Long press the older (not the most recent) post and pin it to channel
         await openChannelPostOptionsForPin(olderPost.id, olderMessage);
-        await PostOptionsScreen.pinPostOption.tap();
+        await PostOptionsScreen.pinPostOption.tap({x: 1, y: 1});
 
         // * Verify the older message shows a Pinned pre-header (it is pinned)
         // Use polling to wait for the pre-header to appear after pin operation.
@@ -253,7 +253,7 @@ describe('Messaging - Pin and Unpin Message', () => {
 
         // # Unpin the older message from the pinned messages screen
         await PinnedMessagesScreen.openPostOptionsFor(olderPost.id, olderMessage);
-        await PostOptionsScreen.unpinPostOption.tap();
+        await PostOptionsScreen.unpinPostOption.tap({x: 1, y: 1});
 
         // * Verify the unpinned message no longer appears in the pinned messages list
         // Wait for the item to be removed after unpin operation.

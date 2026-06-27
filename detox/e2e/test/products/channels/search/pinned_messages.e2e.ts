@@ -223,7 +223,11 @@ describe('Search - Pinned Messages', () => {
 
         // # Open post options for pinned message and tap on unpin from channel option
         await PinnedMessagesScreen.openPostOptionsFor(pinnedPost.id, message);
-        await PostOptionsScreen.unpinPostOption.tap();
+
+        // The post-options sheet's presentation overlay can obscure the option row's
+        // center; tap a corner (same workaround as PostOptionsScreen.deletePost).
+        await waitFor(PostOptionsScreen.unpinPostOption).toBeVisible().withTimeout(timeouts.FIVE_SEC);
+        await PostOptionsScreen.unpinPostOption.tap({x: 1, y: 1});
 
         // * Verify pinned message is not displayed anymore
         await wait(timeouts.ONE_SEC);

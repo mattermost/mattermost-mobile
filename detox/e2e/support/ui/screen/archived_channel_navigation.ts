@@ -63,6 +63,12 @@ async function openArchivedChannelViaBrowseChannels(channelName: string) {
     await BrowseChannelsScreen.open();
     await BrowseChannelsScreen.dismissScheduledPostTooltip();
     await openArchivedChannelsFilter();
+
+    // The archived-filter bottom sheet dismissal (reanimated) can still be in
+    // flight on Android when sync is disabled, leaving searchInput not-yet-visible
+    // ("No views in hierarchy found matching ... effective visibility <VISIBLE>").
+    // Wait for it to be visible before typing.
+    await waitForElementToBeVisible(BrowseChannelsScreen.searchInput, timeouts.TEN_SEC);
     await BrowseChannelsScreen.searchInput.replaceText(channelName);
 
     await waitFor(BrowseChannelsScreen.getChannelItem(channelName)).toExist().withTimeout(timeouts.TEN_SEC);
@@ -88,7 +94,14 @@ async function openArchivedChannelViaSearchPermalink(searchableMessage: string) 
     await device.disableSynchronization();
     try {
         await SearchMessagesScreen.searchInput.tapReturnKey();
-        await waitForElementToBeVisible(searchResultText, timeouts.ONE_MIN);
+        try {
+            await waitForElementToBeVisible(searchResultText, timeouts.TWENTY_SEC);
+        } catch {
+            // Search-index lag: the sentinel was posted pre-archival and may not
+            // be indexed yet on the first query. Re-submit the search once.
+            await SearchMessagesScreen.searchInput.tapReturnKey();
+            await waitForElementToBeVisible(searchResultText, timeouts.ONE_MIN);
+        }
     } finally {
         await device.enableSynchronization();
     }
