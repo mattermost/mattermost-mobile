@@ -3,7 +3,7 @@
 
 import React, {useCallback} from 'react';
 import {useIntl} from 'react-intl';
-import {Pressable, View} from 'react-native';
+import {TouchableOpacity, View} from 'react-native';
 
 import ClearButton from '@components/custom_status/clear_button';
 import CustomStatusText from '@components/custom_status/custom_status_text';
@@ -96,9 +96,8 @@ const CustomStatusSuggestion = ({duration, emoji, expires_at, handleClear, handl
         ) : null;
 
     return (
-        <Pressable
+        <TouchableOpacity
             onPress={handleClick}
-            style={({pressed}) => [pressed && {opacity: 0.72}]}
             testID={customStatusSuggestionTestId}
         >
             <View style={style.container}>
@@ -140,7 +139,7 @@ const CustomStatusSuggestion = ({duration, emoji, expires_at, handleClear, handl
                 </View>
                 {clearButton}
             </View>
-        </Pressable>
+        </TouchableOpacity>
     );
 };
 
