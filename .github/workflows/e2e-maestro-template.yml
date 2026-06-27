@@ -615,29 +615,47 @@ jobs:
       # ready, snapshot corruption, AVD cache miss + slow download) and recover on retry.
       # Test failures must not be auto-retried because run_ci_batches.sh exits non-zero on
       # any test failure — retrying would silently re-run the whole 25-min suite for one
-      # flaky assertion. on_retry_command kills any half-booted emulator before the next
-      # attempt so qemu state doesn't bleed between boots.
+      # flaky assertion. Cleanup between attempts kills any half-booted emulator so qemu
+      # state doesn't bleed between boots.
+      # Inline bash retry (not nick-fields/retry) because Mattermost's org action
+      # allowlist blocks third-party actions; this is the same semantics.
       - name: Bootstrap Android emulator
-        uses: nick-fields/retry@7152eba30c6575329ac0576536151aca5a72780e # v3.0.0
         env:
           BOOTSTRAP_ONLY: "true"
           MAESTRO_ANDROID: "true"
           JAVA_HOME: ${{ env.JAVA_HOME_17_X64 }}
-        with:
-          shell: bash
-          timeout_minutes: 15
-          max_attempts: 2
-          retry_on: error
-          on_retry_command: |
-            echo "==> Cleaning up after failed emulator boot before retry"
-            adb -s emulator-5554 emu kill 2>/dev/null || true
-            pkill -9 -f qemu-system 2>/dev/null || true
-            pkill -9 -f emulator 2>/dev/null || true
-            sleep 5
-          command: |
-            cd detox
-            chmod +x ./create_android_emulator.sh
-            CI=true ./create_android_emulator.sh "${{ env.E2E_ANDROID_API_LEVEL }}" "${{ env.E2E_ANDROID_AVD_NAME }}"
+          API_LEVEL: ${{ env.E2E_ANDROID_API_LEVEL }}
+          AVD_NAME: ${{ env.E2E_ANDROID_AVD_NAME }}
+          MAX_ATTEMPTS: "2"
+          ATTEMPT_TIMEOUT_MIN: "15"
+        shell: bash
+        run: |
+          set +e
+          attempt=1
+          while (( attempt <= MAX_ATTEMPTS )); do
+            echo "==> Boot attempt ${attempt}/${MAX_ATTEMPTS} (timeout ${ATTEMPT_TIMEOUT_MIN}m)"
+            timeout "${ATTEMPT_TIMEOUT_MIN}m" bash -c '
+              cd detox
+              chmod +x ./create_android_emulator.sh
+              CI=true ./create_android_emulator.sh "$API_LEVEL" "$AVD_NAME"
+            '
+            rc=$?
+            if (( rc == 0 )); then
+              echo "==> Boot succeeded on attempt ${attempt}"
+              exit 0
+            fi
+            echo "==> Boot attempt ${attempt} failed with exit ${rc}"
+            if (( attempt < MAX_ATTEMPTS )); then
+              echo "==> Cleaning up before retry"
+              adb -s emulator-5554 emu kill 2>/dev/null || true
+              pkill -9 -f qemu-system 2>/dev/null || true
+              pkill -9 -f emulator 2>/dev/null || true
+              sleep 5
+            fi
+            attempt=$(( attempt + 1 ))
+          done
+          echo "==> All ${MAX_ATTEMPTS} boot attempts failed"
+          exit 1
 
       - name: Run Maestro Flows (Android)
         continue-on-error: true
