@@ -285,6 +285,7 @@ export async function installRequiredPlugin(
 
     if (isInactive) {
         logInfo(`Plugin ${pluginId} is installed but inactive, enabling...`);
+
         // ponytail: .catch — a transient enable timeout (e.g. demo-plugin on a
         // freshly-provisioned server) must not crash the whole provision run.
         // Other enable sites below already swallow this; this one didn't.
@@ -330,8 +331,14 @@ export async function installRequiredPlugin(
     }
 
     logInfo(`Enabling ${pluginId}...`);
-    const postInstallEnableRes = await client.request<ApiErrorBody>('POST', `/api/v4/plugins/${encodeURIComponent(pluginId)}/enable`, {}, token);
-    if (postInstallEnableRes.status >= 400) {
+
+    // ponytail: .catch — same transient-enable-timeout guard as the inactive branch above.
+    const postInstallEnableRes = await client.request<ApiErrorBody>('POST', `/api/v4/plugins/${encodeURIComponent(pluginId)}/enable`, {}, token).catch((err: unknown) => ({
+        data: {message: err instanceof Error ? err.message : String(err)} as ApiErrorBody,
+        status: 0,
+        headers: {},
+    }));
+    if (postInstallEnableRes.status === 0 || postInstallEnableRes.status >= 400) {
         logWarn(`Failed to enable ${pluginId} after install (HTTP ${postInstallEnableRes.status}): ${postInstallEnableRes.data.message || JSON.stringify(postInstallEnableRes.data)}`);
     } else {
         logInfo(`Plugin ${pluginId} installed and enabled from Marketplace.`);

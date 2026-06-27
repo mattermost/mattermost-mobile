@@ -31,7 +31,9 @@ export async function provisionServer(serverUrl: string, credentials: ProvisionC
 
     await ensureTrialLicense(client, token);
     await configureTestServer(client, token);
-    await ensureCustomProfileAttributeFields(client, token);
+    if (!await ensureCustomProfileAttributeFields(client, token)) {
+        logWarn('Custom profile attribute setup incomplete.');
+    }
 
     await ensureAgentsPlugin(client, token);
 

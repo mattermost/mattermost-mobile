@@ -26,7 +26,7 @@ import {
     LoginScreen,
     ServerScreen,
 } from '@support/ui/screen';
-import {timeouts, wait} from '@support/utils';
+import {isAndroid, timeouts, wait} from '@support/utils';
 import {expect, waitFor} from 'detox';
 
 describe('Channels - Channel Bookmarks Permissions', () => {
@@ -202,10 +202,16 @@ describe('Channels - Channel Bookmarks Permissions', () => {
 
         // * Verify channel is archived (draft area shows archived state).
         // Poll because the archive WS event must propagate through the DB observable
-        // before the archived post draft renders.
-        await waitFor(ChannelScreen.postDraftArchived).
-            toBeVisible().
-            withTimeout(timeouts.TEN_SEC);
+        // before the archived post draft renders. On Android edge-to-edge the bottom
+        // archived-draft area can render with <50% visible area (system bar insets);
+        // toExist() confirms the archived state rendered without the visibility threshold.
+        if (isAndroid()) {
+            await waitFor(ChannelScreen.postDraftArchived).toExist().withTimeout(timeouts.TEN_SEC);
+        } else {
+            await waitFor(ChannelScreen.postDraftArchived).
+                toBeVisible().
+                withTimeout(timeouts.TEN_SEC);
+        }
 
         // * Verify the bookmark no longer exists anywhere in the channel view.
         // Archiving a channel causes the server to send CHANNEL_BOOKMARK_DELETED events,

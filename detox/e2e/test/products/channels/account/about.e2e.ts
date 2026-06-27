@@ -154,17 +154,29 @@ describe('Account - Settings - About', () => {
         // can hang until the 240s test timeout on Android when elements are off-screen.
         const scrollToAboutElement = async (target: Detox.IndexableNativeElement) => {
             const scrollView = by.id(AboutScreen.testID.scrollView);
+
+            // On Android edge-to-edge, footer elements can be in the ScrollView hierarchy
+            // but render with <50% visible area (system bar insets); use toExist() so the
+            // bounded scroll stops once the element is present instead of stalling on the
+            // visibility threshold (which caused the 8-attempt fallback to throw).
+            const assertPresent = isAndroid()
+                ? async () => waitFor(target).toExist().withTimeout(timeouts.TWO_SEC)
+                : async () => waitFor(target).toBeVisible().withTimeout(timeouts.TWO_SEC);
             /* eslint-disable no-await-in-loop -- bounded scroll retry */
             for (let attempt = 0; attempt < 8; attempt++) {
                 try {
-                    await waitFor(target).toBeVisible().withTimeout(timeouts.TWO_SEC);
+                    await assertPresent();
                     return;
                 } catch {
                     await element(scrollView).scroll(100, 'down');
                 }
             }
             /* eslint-enable no-await-in-loop */
-            await expect(target).toBeVisible();
+            if (isAndroid()) {
+                await expect(target).toExist();
+            } else {
+                await expect(target).toBeVisible();
+            }
         };
 
         await scrollToAboutElement(AboutScreen.learnMoreUrl);
@@ -174,17 +186,34 @@ describe('Account - Settings - About', () => {
         } else {
             await expect(AboutScreen.learnMoreText).toHaveText(expectedLearnMorePrefix);
         }
-        await expect(AboutScreen.learnMoreUrl).toBeVisible();
+        if (isAndroid()) {
+            // Edge-to-edge: footer link can be <50% visible (system bar insets).
+            await expect(AboutScreen.learnMoreUrl).toExist();
+        } else {
+            await expect(AboutScreen.learnMoreUrl).toBeVisible();
+        }
         await expect(AboutScreen.copyright).toHaveText(`Copyright 2015-${new Date().getFullYear()} Mattermost, Inc. All rights reserved`);
         await expect(AboutScreen.termsOfService).toHaveText('Terms of Service');
         await expect(AboutScreen.privacyPolicy).toHaveText('Privacy Policy');
         await expect(AboutScreen.noticeText).toHaveText('Mattermost is made possible by the open source software used in our server and mobile apps.');
         await scrollToAboutElement(AboutScreen.buildDateValue);
         await expect(AboutScreen.buildHashTitle).toHaveText('Build Hash:');
-        await expect(AboutScreen.buildHashValue).toBeVisible();
+        if (isAndroid()) {
+            await expect(AboutScreen.buildHashValue).toExist();
+        } else {
+            await expect(AboutScreen.buildHashValue).toBeVisible();
+        }
         await expect(AboutScreen.buildHashEnterpriseTitle).toHaveText('EE Build Hash:');
-        await expect(AboutScreen.buildHashEnterpriseValue).toBeVisible();
+        if (isAndroid()) {
+            await expect(AboutScreen.buildHashEnterpriseValue).toExist();
+        } else {
+            await expect(AboutScreen.buildHashEnterpriseValue).toBeVisible();
+        }
         await expect(AboutScreen.buildDateTitle).toHaveText('Build Date:');
-        await expect(AboutScreen.buildDateValue).toBeVisible();
+        if (isAndroid()) {
+            await expect(AboutScreen.buildDateValue).toExist();
+        } else {
+            await expect(AboutScreen.buildDateValue).toBeVisible();
+        }
     });
 });

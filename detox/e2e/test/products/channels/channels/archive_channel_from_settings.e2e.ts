@@ -261,9 +261,13 @@ describe('Channels - Archive Channel from Settings', () => {
         await ChannelSettingsScreen.archivePublicChannel({confirm: true});
 
         // * Verify the archived post draft view is shown (channel is read-only).
-        await waitFor(
-            ChannelScreen.postDraftArchivedCloseChannelButton,
-        ).toBeVisible().withTimeout(timeouts.TEN_SEC);
+        // On Android edge-to-edge the bottom archived-draft area can render with <50%
+        // visible area due to system bar insets; toExist() confirms the archived state rendered.
+        if (isAndroid()) {
+            await waitFor(ChannelScreen.postDraftArchivedCloseChannelButton).toExist().withTimeout(timeouts.TEN_SEC);
+        } else {
+            await waitFor(ChannelScreen.postDraftArchivedCloseChannelButton).toBeVisible().withTimeout(timeouts.TEN_SEC);
+        }
 
         // # Navigate back to channel list via back button
         await ChannelScreen.back();

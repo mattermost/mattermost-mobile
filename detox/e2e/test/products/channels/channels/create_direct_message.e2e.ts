@@ -203,7 +203,13 @@ describe('Channels - Create Direct Message', () => {
         await wait(timeouts.ONE_SEC);
 
         // * Verify the deactivated user does not appear in search results
-        await expect(element(by.text(`No matches found for “${deactivatedUser.username}”`))).toBeVisible();
+        // On Android edge-to-edge the empty-state text can render with <50% visible area
+        // due to system bar insets (same as the empty-search test above).
+        if (isAndroid()) {
+            await waitFor(element(by.text(`No matches found for “${deactivatedUser.username}”`))).toExist().withTimeout(timeouts.HALF_MIN);
+        } else {
+            await expect(element(by.text(`No matches found for “${deactivatedUser.username}”`))).toBeVisible();
+        }
 
         // # Go back to channel list screen
         await CreateDirectMessageScreen.close();

@@ -111,13 +111,23 @@ describe('Channel Settings - Copy Tests', () => {
         // the long-press, waitFor on the bottom sheet, and taps the copy action.
         await ChannelInfoScreen.copyChannelPurpose(purposeText);
 
-        // * Verify bottom sheet is dismissed and we're still on channel info screen
-        await wait(timeouts.ONE_SEC);
-        await expect(ChannelInfoScreen.channelInfoScreen).toBeVisible();
+        // The copy action tears down the bottom sheet's Fabric surface; Detox's next
+        // tap then loops loopMainThreadUntilIdle polling a UIManager that's gone
+        // ("Cannot get UIManager ... hasn't been initialized"), hanging until the 240s
+        // test timeout. Disable sync for the post-copy navigation so Detox doesn't
+        // invoke the Fabric idling resource on the torn-down surface.
+        await device.disableSynchronization();
+        try {
+            // * Verify bottom sheet is dismissed and we're still on channel info screen
+            await wait(timeouts.ONE_SEC);
+            await expect(ChannelInfoScreen.channelInfoScreen).toBeVisible();
 
-        // # Close channel info and go back to channel list
-        await ChannelInfoScreen.close();
-        await ChannelScreen.back();
+            // # Close channel info and go back to channel list
+            await ChannelInfoScreen.close();
+            await ChannelScreen.back();
+        } finally {
+            await device.enableSynchronization();
+        }
         await ChannelListScreen.toBeVisible();
     });
 
@@ -156,13 +166,20 @@ describe('Channel Settings - Copy Tests', () => {
         // TODO: Trigger onLinkLongPress on the URL text directly and assert copy_url option appears.
         await ChannelInfoScreen.cancelCopyChannelHeader(headerUrl);
 
-        // * Verify still on channel info screen
-        await wait(timeouts.ONE_SEC);
-        await expect(ChannelInfoScreen.channelInfoScreen).toBeVisible();
+        // Same Fabric idling hang as MM-T868_1: the copy bottom sheet tears down its
+        // surface and the next tap's loopMainThreadUntilIdle polls a gone UIManager.
+        await device.disableSynchronization();
+        try {
+            // * Verify still on channel info screen
+            await wait(timeouts.ONE_SEC);
+            await expect(ChannelInfoScreen.channelInfoScreen).toBeVisible();
 
-        // # Close channel info and go back to channel list
-        await ChannelInfoScreen.close();
-        await ChannelScreen.back();
+            // # Close channel info and go back to channel list
+            await ChannelInfoScreen.close();
+            await ChannelScreen.back();
+        } finally {
+            await device.enableSynchronization();
+        }
         await ChannelListScreen.toBeVisible();
     });
 });

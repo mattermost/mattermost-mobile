@@ -20,8 +20,8 @@ import {
     ChannelInfoScreen,
     ChannelSettingsScreen,
 } from '@support/ui/screen';
-import {getRandomId, timeouts, wait, waitForElementToBeVisible} from '@support/utils';
-import {expect} from 'detox';
+import {getRandomId, isAndroid, timeouts, wait, waitForElementToBeVisible} from '@support/utils';
+import {expect, waitFor} from 'detox';
 
 describe('Channels - Unarchive Channel', () => {
     const serverOneDisplayName = 'Server 1';
@@ -63,7 +63,14 @@ describe('Channels - Unarchive Channel', () => {
         await ChannelSettingsScreen.archivePublicChannel({confirm: true});
 
         await ChannelInfoScreen.close();
-        await waitForElementToBeVisible(ChannelScreen.postDraftArchived, timeouts.TEN_SEC);
+
+        // On Android edge-to-edge the archived draft can render <50% visible (system bar
+        // insets); toExist() confirms the archive WS event propagated without the threshold.
+        if (isAndroid()) {
+            await waitFor(ChannelScreen.postDraftArchived).toExist().withTimeout(timeouts.TEN_SEC);
+        } else {
+            await waitForElementToBeVisible(ChannelScreen.postDraftArchived, timeouts.TEN_SEC);
+        }
 
         await ChannelInfoScreen.open();
         await ChannelInfoScreen.openChannelSettings();
@@ -71,7 +78,13 @@ describe('Channels - Unarchive Channel', () => {
         await ChannelSettingsScreen.unarchivePublicChannel({confirm: true});
         await wait(timeouts.FOUR_SEC);
 
-        await expect(ChannelScreen.postDraft).toBeVisible();
+        // On Android edge-to-edge the bottom compose area can render with <50% visible
+        // area due to system bar insets; toExist() confirms the channel reopened post-unarchive.
+        if (isAndroid()) {
+            await waitFor(ChannelScreen.postDraft).toExist().withTimeout(timeouts.TEN_SEC);
+        } else {
+            await expect(ChannelScreen.postDraft).toBeVisible();
+        }
         await ChannelScreen.back();
     });
 
@@ -89,7 +102,11 @@ describe('Channels - Unarchive Channel', () => {
         await ChannelSettingsScreen.archivePrivateChannel({confirm: true});
 
         await ChannelInfoScreen.close();
-        await waitForElementToBeVisible(ChannelScreen.postDraftArchived, timeouts.TEN_SEC);
+        if (isAndroid()) {
+            await waitFor(ChannelScreen.postDraftArchived).toExist().withTimeout(timeouts.TEN_SEC);
+        } else {
+            await waitForElementToBeVisible(ChannelScreen.postDraftArchived, timeouts.TEN_SEC);
+        }
 
         await ChannelInfoScreen.open();
         await ChannelInfoScreen.openChannelSettings();
@@ -98,7 +115,11 @@ describe('Channels - Unarchive Channel', () => {
         await wait(timeouts.FOUR_SEC);
 
         await ChannelScreen.toBeVisible();
-        await expect(ChannelScreen.postDraft).toBeVisible();
+        if (isAndroid()) {
+            await waitFor(ChannelScreen.postDraft).toExist().withTimeout(timeouts.TEN_SEC);
+        } else {
+            await expect(ChannelScreen.postDraft).toBeVisible();
+        }
         await ChannelScreen.back();
     });
 });

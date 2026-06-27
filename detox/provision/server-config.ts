@@ -1,6 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import {sleep} from './http-client';
 import {logInfo, logWarn} from './log';
 
 import type {MattermostClient} from './types';
@@ -8,6 +9,38 @@ import type {MattermostClient} from './types';
 type ApiErrorBody = {message?: string};
 
 type ServerConfig = Record<string, unknown>;
+
+type ClientConfigOld = {FeatureFlagCustomProfileAttributes?: string};
+
+async function waitForCustomProfileAttributesClientFlag(
+    client: MattermostClient,
+    token: string,
+    {maxAttempts = 30, intervalMs = 1000} = {},
+): Promise<boolean> {
+    /* eslint-disable no-await-in-loop -- poll until client flag propagates */
+    for (let attempt = 0; attempt < maxAttempts; attempt++) {
+        const res = await client.request<ClientConfigOld>(
+            'GET',
+            '/api/v4/config/client?format=old',
+            undefined,
+            token,
+        );
+        if (res.data?.FeatureFlagCustomProfileAttributes === 'true') {
+            logInfo('CustomProfileAttributes enabled in client config.');
+            return true;
+        }
+
+        if (attempt === 0) {
+            logInfo('Waiting for CustomProfileAttributes client flag...');
+        }
+
+        await sleep(intervalMs);
+    }
+    /* eslint-enable no-await-in-loop */
+
+    logWarn('FeatureFlagCustomProfileAttributes not true after config update — user_attributes E2E may fail.');
+    return false;
+}
 
 export async function getServerMmVersion(client: MattermostClient, token: string): Promise<string> {
     const res = await client.request<{Version?: string; version?: string}>('GET', '/api/v4/config/client?format=old', undefined, token);
@@ -82,5 +115,8 @@ export async function configureTestServer(client: MattermostClient, token: strin
     const updateRes = await client.request<ApiErrorBody>('PUT', '/api/v4/config', config, token);
     if (updateRes.status >= 400) {
         logWarn(`Config update failed (HTTP ${updateRes.status}): ${updateRes.data?.message ?? JSON.stringify(updateRes.data)}`);
+        return;
     }
+
+    await waitForCustomProfileAttributesClientFlag(client, token);
 }
