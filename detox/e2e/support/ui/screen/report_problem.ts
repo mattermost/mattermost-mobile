@@ -16,7 +16,9 @@ class ReportProblemScreen {
 
     // Native-stack back chevron via accessibility label.
     get backButton(): Detox.NativeElement {
-        return isIos()? element(by.label('Back')).atIndex(0): element(by.label('Navigate up')).atIndex(0);
+        return isIos()
+            ? element(by.label('Back')).atIndex(0)
+            : element(by.label('Navigate up')).atIndex(0);
     }
 
     enableLogAttachmentsToggleOff = element(by.id(this.testID.enableLogAttachmentsToggleOff));

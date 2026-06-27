@@ -1,0 +1,32 @@
+# Subflow: Dismiss Chrome first-run / ads interstitials on a fresh API 35 emulator.
+#
+# PRE-CONDITIONS:
+#   - Chrome (or Android System WebView) is in the foreground with a first-run dialog
+#
+# REQUIRED ENV VARS:
+#   - MAESTRO_APP_ID
+#
+# ASSERTIONS:
+#   - Chrome first-run and consent dialogs are dismissed so the host flow can proceed
+#
+# testIDs:
+#   - (none — taps on system Chrome text labels, no testIDs)
+#
+# Usage: - runFlow: ../../subflows/browser/dismiss_chrome_interstitial.yml
+appId: ${MAESTRO_APP_ID}
+---
+- tapOn:
+    text: "Use without an account"
+    optional: true
+- tapOn:
+    text: "No thanks"
+    optional: true
+- tapOn:
+    text: "Accept & continue"
+    optional: true
+- tapOn:
+    text: "Got it"
+    optional: true
+- tapOn:
+    text: "Use Chrome without an account"
+    optional: true

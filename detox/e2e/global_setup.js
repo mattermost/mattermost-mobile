@@ -131,7 +131,7 @@ async function serverSetup() {
     const nodeIndex = parseInt(process.env.CI_NODE_INDEX || '0', 10);
     if (nodeIndex > 0) {
         process.stdout.write(`[globalSetup] Shard ${nodeIndex}: staggering startup by ${nodeIndex * 1500}ms\n`);
-        await new Promise((r) => setTimeout(r, nodeIndex * 1500));
+        await new Promise((r) => setTimeout(r, nodeIndex * 1500)); // eslint-disable-line no-promise-executor-return
     }
 
     http.globalAgent.options.family = 4;
@@ -184,7 +184,6 @@ async function serverSetup() {
     } catch (err) {
         process.stderr.write(`[globalSetup] ⚠️ post-login ping failed (${err.message}) — continuing\n`);
     }
-
     try {
         await axios.put(`${SITE_URL}/api/v4/config/patch`, {
             ServiceSettings: {
