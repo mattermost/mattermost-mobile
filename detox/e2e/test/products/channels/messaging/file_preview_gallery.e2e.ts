@@ -264,11 +264,10 @@ describe('Messaging - File Preview Gallery', () => {
         const copyPublicLinkButton = element(by.id('gallery.footer.copy_public_link.button')).atIndex(0);
         await waitFor(copyPublicLinkButton).toBeVisible().withTimeout(timeouts.TEN_SEC);
         await copyPublicLinkButton.tap();
-        await wait(timeouts.TWO_SEC);
 
         // * Verify the copy public link toast message appears (testID='toast.message')
         const toastMessage = element(by.id('toast.message'));
-        await waitFor(toastMessage).toExist().withTimeout(timeouts.TEN_SEC);
+        await waitForElementToExist(toastMessage, timeouts.TWENTY_SEC);
 
         // # Dismiss the gallery and wait for overlay to clear
         await dismissGallery();

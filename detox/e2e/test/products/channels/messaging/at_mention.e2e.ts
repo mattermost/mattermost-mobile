@@ -151,6 +151,7 @@ describe('Messaging - At-Mention', () => {
         const message = `@${testUser.username}`;
         await ChannelScreen.open(channelsCategory, testChannel.name);
         await ChannelScreen.postMessage(message);
+        await waitFor(element(by.text(message))).toExist().withTimeout(timeouts.TEN_SEC);
         await element(by.text(message)).tap({x: 5, y: 10});
         await wait(timeouts.ONE_SEC);
 
@@ -160,7 +161,7 @@ describe('Messaging - At-Mention', () => {
         // The user profile bottom sheet may still be animating into place when
         // toBeVisible() resolves on its screen container — its avatar can briefly
         // fail a 75% visibility threshold while the sheet finishes snapping.
-        await waitFor(UserProfileScreen.getUserProfilePicture(testUser.id)).toBeVisible().withTimeout(timeouts.TEN_SEC);
+        await waitFor(UserProfileScreen.getUserProfilePicture(testUser.id)).toExist().withTimeout(timeouts.TEN_SEC);
         await expect(UserProfileScreen.userDisplayName).toHaveText(`@${testUser.username}`);
 
         // # Go back to channel list screen

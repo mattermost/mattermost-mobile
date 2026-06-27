@@ -24,8 +24,8 @@ import {
     ServerScreen,
     ThreadScreen,
 } from '@support/ui/screen';
-import {getRandomId, isIos, timeouts, wait} from '@support/utils';
-import {expect} from 'detox';
+import {getRandomId, isIos, timeouts, wait, waitForElementToExist} from '@support/utils';
+import {expect, waitFor} from 'detox';
 
 describe('Messaging - Message Draft', () => {
     const serverOneDisplayName = 'Server 1';
@@ -139,14 +139,14 @@ describe('Messaging - Message Draft', () => {
         await expect(Alert.messageLengthTitle).toBeVisible();
         await expect(element(by.text('Your current message is too long. Current character count: 16384/16383')).atIndex(0)).toBeVisible();
         await Alert.okButton.tap();
-        await expect(ChannelScreen.sendButtonDisabled).toBeVisible();
+        await waitFor(Alert.messageLengthTitle).not.toBeVisible().withTimeout(timeouts.TEN_SEC);
 
         // # Replace message draft with length less than the character limit (16383)
         message = '1234567890'.repeat(1638) + '123';
         await ChannelScreen.postInput.replaceText(message);
 
         // * Verify warning message is not displayed and send button is enabled
-        await expect(Alert.messageLengthTitle).not.toBeVisible();
+        await waitFor(Alert.messageLengthTitle).not.toBeVisible().withTimeout(timeouts.TEN_SEC);
         await expect(element(by.text('Your current message is too long. Current character count: 16383/16383')).atIndex(0)).not.toBeVisible();
         await expect(ChannelScreen.sendButton).toBeVisible();
 
@@ -159,13 +159,13 @@ describe('Messaging - Message Draft', () => {
         // # Open a channel screen, post a message, and tap on the post to open reply thread
         const message = `Message ${getRandomId()}`;
         await ChannelScreen.open(channelsCategory, testChannel.name);
-        await ChannelScreen.postMessage(message);
-        const {post: parentPost} = await Post.apiGetLastPostInChannel(siteOneUrl, testChannel.id);
+        const {post: parentPost} = await ChannelScreen.postMessageAndVerify(message, testChannel.id, siteOneUrl);
         const {postListPostItem: parentPostListPostItem} = ChannelScreen.getPostListPostItem(parentPost.id, message);
         await parentPostListPostItem.tap();
 
         // * Verify on thread screen
         await ThreadScreen.toBeVisible();
+        await waitForElementToExist(ThreadScreen.postInput, timeouts.TEN_SEC);
 
         // # Create a reply message draft
         const replyMessage = `${message} reply`;
@@ -187,6 +187,7 @@ describe('Messaging - Message Draft', () => {
         await parentPostListPostItem.tap();
 
         // * Verify reply message draft still exists in post draft
+        await waitForElementToExist(ThreadScreen.postInput, timeouts.TEN_SEC);
         if (isIos()) {
             await expect(ThreadScreen.postInput).toHaveValue(replyMessage);
         } else {

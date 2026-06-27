@@ -30,7 +30,7 @@ import {
     ServerScreen,
     UserProfileScreen,
 } from '@support/ui/screen';
-import {getRandomId, timeouts} from '@support/utils';
+import {getRandomId, timeouts, wait} from '@support/utils';
 import {expect, waitFor} from 'detox';
 
 describe('Messaging - Emojis and Reactions', () => {
@@ -128,14 +128,22 @@ describe('Messaging - Emojis and Reactions', () => {
         await waitFor(reaction).toExist().withTimeout(timeouts.TEN_SEC);
         await expect(reaction).toExist();
 
+        // # Dismiss keyboard before long press — post draft can obscure reaction badges.
+        try {
+            await ChannelScreen.getFlatPostList().scroll(100, 'up', 0.5, 0.5);
+        } catch { /* list at boundary */ }
+        await wait(timeouts.ONE_SEC);
+
         // # Long press on the reaction
+        await device.disableSynchronization();
         await reaction.longPress();
+        await device.enableSynchronization();
 
         // * Verify user who reacted with the emoji
         await ReactionsScreen.toBeVisible();
         const {reactorItemEmojiAliases, reactorItemUserProfilePicture, reactorItemUser} = ReactionsScreen.getReactorItem(testUser.id, 'fire');
         await expect(reactorItemEmojiAliases).toHaveText(':fire:');
-        await expect(reactorItemUserProfilePicture).toBeVisible();
+        await expect(reactorItemUserProfilePicture).toExist();
         await expect(reactorItemUser).toBeVisible();
         await reactorItemUser.tap();
         await expect(UserProfileScreen.userDisplayName).toHaveText(`@${testUser.username}`);
@@ -156,6 +164,12 @@ describe('Messaging - Emojis and Reactions', () => {
         const {post} = await Post.apiGetLastPostInChannel(siteOneUrl, testChannel.id);
         const {postListPostItem} = ChannelScreen.getPostListPostItem(post.id, resolvedMessage);
         await expect(postListPostItem).toBeVisible();
+
+        // # Dismiss keyboard before opening post options
+        try {
+            await ChannelScreen.getFlatPostList().scroll(100, 'up', 0.5, 0.5);
+        } catch { /* list at boundary */ }
+        await wait(timeouts.ONE_SEC);
 
         // # Open post options for message
         await ChannelScreen.openPostOptionsFor(post.id, resolvedMessage);

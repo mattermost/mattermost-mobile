@@ -67,15 +67,23 @@ async function openArchivedChannelViaBrowseChannels(channelName: string) {
     // The archived-filter bottom sheet dismissal (reanimated) can still be in
     // flight on Android when sync is disabled, leaving searchInput not-yet-visible
     // ("No views in hierarchy found matching ... effective visibility <VISIBLE>").
-    // Wait for it to be visible before typing.
-    await waitForElementToBeVisible(BrowseChannelsScreen.searchInput, timeouts.TEN_SEC);
+    // On Android edge-to-edge, toExist() avoids the 50%-visible-area threshold.
+    if (isAndroid()) {
+        await waitForElementToExist(BrowseChannelsScreen.searchInput, timeouts.TEN_SEC);
+    } else {
+        await waitForElementToBeVisible(BrowseChannelsScreen.searchInput, timeouts.TEN_SEC);
+    }
     await BrowseChannelsScreen.searchInput.replaceText(channelName);
 
     await waitFor(BrowseChannelsScreen.getChannelItem(channelName)).toExist().withTimeout(timeouts.TEN_SEC);
     await BrowseChannelsScreen.getChannelItem(channelName).tap();
 
     await waitForElementToExist(ChannelScreen.channelScreen, timeouts.ONE_MIN);
-    await waitForElementToBeVisible(ChannelScreen.postDraftArchived, timeouts.HALF_MIN);
+    if (isAndroid()) {
+        await waitForElementToExist(ChannelScreen.postDraftArchived, timeouts.HALF_MIN);
+    } else {
+        await waitForElementToBeVisible(ChannelScreen.postDraftArchived, timeouts.HALF_MIN);
+    }
 }
 
 // Navigate to an archived channel via the search results permalink flow.
@@ -93,15 +101,24 @@ async function openArchivedChannelViaSearchPermalink(searchableMessage: string) 
     // Sync MUST be disabled before tapReturnKey — search keeps the dispatch queue busy.
     await device.disableSynchronization();
     try {
-        await SearchMessagesScreen.searchInput.tapReturnKey();
-        try {
-            await waitForElementToBeVisible(searchResultText, timeouts.TWENTY_SEC);
-        } catch {
-            // Search-index lag: the sentinel was posted pre-archival and may not
-            // be indexed yet on the first query. Re-submit the search once.
+        /* eslint-disable no-await-in-loop -- search-index lag may need multiple submits */
+        for (let attempt = 0; attempt < 3; attempt++) {
+            if (attempt > 0) {
+                await SearchMessagesScreen.searchInput.clearText();
+                await wait(timeouts.TWO_SEC);
+                await SearchMessagesScreen.searchInput.replaceText(searchableMessage);
+            }
             await SearchMessagesScreen.searchInput.tapReturnKey();
-            await waitForElementToBeVisible(searchResultText, timeouts.ONE_MIN);
+            try {
+                await waitForElementToExist(searchResultText, timeouts.TWENTY_SEC);
+                break;
+            } catch (error) {
+                if (attempt === 2) {
+                    throw error;
+                }
+            }
         }
+        /* eslint-enable no-await-in-loop */
     } finally {
         await device.enableSynchronization();
     }

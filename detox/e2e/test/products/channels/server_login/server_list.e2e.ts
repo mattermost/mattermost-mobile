@@ -31,7 +31,7 @@ import {
     ServerListScreen,
 } from '@support/ui/screen';
 import {isAndroid, isIos, timeouts, wait, waitForElementToBeVisible, waitForElementToExist} from '@support/utils';
-import {expect} from 'detox';
+import {expect, waitFor} from 'detox';
 
 describe('Server Login - Server List', () => {
     const serverOneDisplayName = 'Server 1';
@@ -52,6 +52,14 @@ describe('Server Login - Server List', () => {
     beforeEach(async () => {
         // * Verify on channel list screen
         await ChannelListScreen.toBeVisible();
+
+        // Dismiss a leftover server-list bottom sheet from a prior test.
+        try {
+            await waitFor(ServerListScreen.serverListScreen).toExist().withTimeout(timeouts.ONE_SEC);
+            await ServerListScreen.close();
+        } catch {
+            // Server list not open.
+        }
     });
 
     afterAll(async () => {

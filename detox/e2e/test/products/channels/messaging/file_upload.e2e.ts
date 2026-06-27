@@ -7,12 +7,14 @@
 // - Use element testID when selecting an element. Create one if none.
 // *******************************************************************
 
+import fs from 'fs';
 import path from 'path';
 
 import {
     Post,
     Setup,
     System,
+    User,
 } from '@support/server_api';
 import {
     serverOneUrl,
@@ -33,6 +35,9 @@ import {expect} from 'detox';
 describe('Messaging - File Upload', () => {
     const serverOneDisplayName = 'Server 1';
     const channelsCategory = 'channels';
+
+    // Fallback when GET /config omits cloud_restrictable FileSettings (100 MiB default).
+    const FALLBACK_MAX_FILE_SIZE = 104857600;
     let testChannel: any;
 
     beforeAll(async () => {
@@ -197,14 +202,45 @@ describe('Messaging - File Upload', () => {
 
     it('MM-T339_1 - should show an error when the server max file size is set to a very small value', async () => {
         const imagePath = path.resolve(__dirname, '../../../../support/fixtures/image.png');
+        const fileSize = fs.statSync(imagePath).size;
+        const maxFileSizeLimit = fileSize - 1;
 
-        // # Set MaxFileSize to 1 byte (effectively blocks all uploads)
+        await User.apiAdminLogin(siteOneUrl);
+
         const {config: originalConfig} = await System.apiGetConfig(siteOneUrl);
-        await System.apiUpdateConfig(siteOneUrl, {
-            FileSettings: {
-                MaxFileSize: 1,
-            },
-        });
+        const originalMaxFileSize = originalConfig?.FileSettings?.MaxFileSize ?? FALLBACK_MAX_FILE_SIZE;
+
+        const patchMaxFileSize = async (limit: number) => {
+            const {error} = await System.apiUpdateConfig(siteOneUrl, {
+                FileSettings: {
+                    MaxFileSize: limit,
+                },
+            });
+            if (error) {
+                return {applied: false, appliedLimit: 0, error};
+            }
+            await wait(timeouts.TWO_SEC);
+            const {config: clientConfig} = await System.apiGetClientConfigOld(siteOneUrl);
+            const appliedLimit = parseInt(clientConfig?.MaxFileSize ?? '0', 10);
+            return {
+                applied: appliedLimit > 0 && appliedLimit <= limit,
+                appliedLimit,
+                error: undefined,
+            };
+        };
+
+        // # Set MaxFileSize just under the fixture size so the upload is rejected
+        let {applied, appliedLimit, error: patchError} = await patchMaxFileSize(maxFileSizeLimit);
+        if (!applied) {
+            ({applied, appliedLimit, error: patchError} = await patchMaxFileSize(maxFileSizeLimit));
+        }
+        if (!applied) {
+            throw new Error(
+                `MaxFileSize patch to ${maxFileSizeLimit} did not apply (client MaxFileSize=${appliedLimit}). ` +
+                `${patchError ? JSON.stringify(patchError) : 'Server may lock FileSettings via env override.'}`,
+            );
+        }
+
         try {
             // * Server rejects over-limit uploads
             const {error: uploadError} = await Post.apiUploadFileToChannel(siteOneUrl, testChannel.id, imagePath);
@@ -243,10 +279,11 @@ describe('Messaging - File Upload', () => {
             // # Go back to channel list screen
             await ChannelScreen.back();
         } finally {
-            // # Restore original MaxFileSize config
+            // # Restore the pre-test MaxFileSize so later suites keep the server baseline
+            await User.apiAdminLogin(siteOneUrl);
             await System.apiUpdateConfig(siteOneUrl, {
                 FileSettings: {
-                    MaxFileSize: originalConfig.FileSettings.MaxFileSize,
+                    MaxFileSize: originalMaxFileSize,
                 },
             });
         }

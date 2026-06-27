@@ -38,6 +38,18 @@ describe('Channels - Channel Bookmarks Permissions', () => {
     let channelT5615: any;
     let channelT5725: any;
 
+    const waitForChannelBookmarksClientFlag = async () => {
+        /* eslint-disable no-await-in-loop */
+        for (let attempt = 0; attempt < 30; attempt++) {
+            const {config} = await System.apiGetClientConfigOld(siteOneUrl);
+            if (config?.FeatureFlagChannelBookmarks === 'true') {
+                return;
+            }
+            await wait(timeouts.ONE_SEC);
+        }
+        /* eslint-enable no-await-in-loop */
+    };
+
     const createChannel = async () => {
         const {channel} = await Channel.apiCreateChannel(siteOneUrl, {
             type: 'O',
@@ -66,6 +78,7 @@ describe('Channels - Channel Bookmarks Permissions', () => {
 
         // ── Enable channel bookmarks feature flag ────────────────────────────
         await System.apiUpdateConfig(siteOneUrl, {FeatureFlags: {ChannelBookmarks: true}});
+        await waitForChannelBookmarksClientFlag();
 
         // Create the regular user needed for the permission test (MM-T5615_1).
         const {user: rUser} = await User.apiCreateUser(siteOneUrl);
@@ -116,6 +129,7 @@ describe('Channels - Channel Bookmarks Permissions', () => {
 
         // # Open channel info
         await ChannelInfoScreen.open();
+        await ChannelInfoScreen.waitForBookmarksList();
 
         // * Verify the bookmark is visible in channel_info — scope to avoid matching
         // channel_header.bookmarks.list (mounted behind the modal on iOS).
@@ -126,7 +140,7 @@ describe('Channels - Channel Bookmarks Permissions', () => {
         await expect(permissionBookmarkEl).toBeVisible();
 
         // * Verify "Add a bookmark" option is NOT visible for non-admin user
-        await expect(element(by.text('Add a bookmark'))).not.toBeVisible();
+        await ChannelInfoScreen.expectAddBookmarkNotVisible();
 
         // # Long press on the bookmark to check available options
         await permissionBookmarkEl.longPress();
@@ -171,6 +185,7 @@ describe('Channels - Channel Bookmarks Permissions', () => {
         // Checking before archive avoids a race with the CHANNEL_BOOKMARK_DELETED WebSocket
         // event the server emits on archive, which physically removes the record from local DB.
         await ChannelInfoScreen.open();
+        await ChannelInfoScreen.waitForBookmarksList();
 
         // * Verify the bookmark is visible in channel info before archiving.
         // Scope to channel_info.bookmarks.list to avoid matching the header list behind the modal.
@@ -199,6 +214,9 @@ describe('Channels - Channel Bookmarks Permissions', () => {
         await ChannelInfoScreen.openChannelSettings();
         await ChannelSettingsScreen.toBeVisible();
         await ChannelSettingsScreen.archivePublicChannel({confirm: true});
+
+        // # Channel settings closes but channel info modal remains; dismiss it to reach channel screen.
+        await ChannelInfoScreen.close();
 
         // * Verify channel is archived (draft area shows archived state).
         // Poll because the archive WS event must propagate through the DB observable

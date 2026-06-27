@@ -33,7 +33,7 @@ import {
     ServerScreen,
     ThreadScreen,
 } from '@support/ui/screen';
-import {getRandomId, timeouts, wait, waitForElementToBeVisible} from '@support/utils';
+import {getRandomId, isAndroid, timeouts, wait, waitForElementToBeVisible} from '@support/utils';
 import {by, element, expect, waitFor} from 'detox';
 
 describe('Search - Recent Mentions', () => {
@@ -237,13 +237,35 @@ describe('Search - Recent Mentions', () => {
         // # Edit the message and save
         const updatedMessage = `${ownMentionPost.messageText} edit`;
         await EditPostScreen.messageInput.replaceText(updatedMessage);
+        if (isAndroid()) {
+            await wait(timeouts.ONE_SEC);
+        }
         await EditPostScreen.saveButton.tap();
 
-        // * Verify post displays the edited indicator (single testID — combined-text
-        // regex doesn't work because @mention is a separate React node).
-        await waitFor(
-            element(by.id('edited_indicator').withAncestor(by.id(`recent_mentions.post_list.post.${ownMentionPost.id}`))),
-        ).toExist().withTimeout(timeouts.TEN_SEC);
+        // * Verify post displays the edited indicator after save completes.
+        // PostWithChannelInfo uses default memo and skips in-place editAt updates;
+        // scroll the FlatList (removeClippedSubviews) to recycle the cell so it
+        // remounts with fresh DB state. Match pinned_messages Android polling.
+        await waitForElementToBeVisible(RecentMentionsScreen.recentMentionsScreen, timeouts.TWENTY_SEC);
+        try {
+            const flatList = RecentMentionsScreen.getFlatPostList();
+            await flatList.scroll(300, 'down', 0.5, 0.5);
+            await wait(timeouts.HALF_SEC);
+            await flatList.scrollTo('top');
+        } catch { /* list may not scroll */ }
+
+        const postItemTestID = `recent_mentions.post_list.post.${ownMentionPost.id}`;
+        const {postListPostItemEditedIndicator} = RecentMentionsScreen.getPostListPostItem(ownMentionPost.id);
+        if (isAndroid()) {
+            await waitForElementToBeVisible(postListPostItemEditedIndicator, timeouts.TWENTY_SEC);
+        } else {
+            // iOS collapses nested Text testIDs; @mention is a separate node so
+            // assertPostMessageEdited's combined-text regex also fails here.
+            await waitForElementToBeVisible(
+                element(by.text('Edited').withAncestor(by.id(postItemTestID))),
+                timeouts.TWENTY_SEC,
+            );
+        }
 
         // # Open post options via header date_time long-press (avoids the @mention tap handler)
         await element(by.id('post_header.date_time').withAncestor(by.id(`recent_mentions.post_list.post.${ownMentionPost.id}`))).longPress(timeouts.TWO_SEC);

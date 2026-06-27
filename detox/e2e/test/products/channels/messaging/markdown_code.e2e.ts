@@ -22,7 +22,8 @@ import {
     LoginScreen,
     ServerScreen,
 } from '@support/ui/screen';
-import {expect} from 'detox';
+import {timeouts, wait} from '@support/utils';
+import {expect, waitFor} from 'detox';
 
 describe('Messaging - Markdown Code', () => {
     const serverOneDisplayName = 'Server 1';
@@ -64,9 +65,10 @@ describe('Messaging - Markdown Code', () => {
         await waitFor(postListPostItemCodeBlock).toExist().withTimeout(10000);
 
         // Scroll the post list to dismiss the keyboard and bring the code block fully
-        // into view. 300px is enough to clear the soft keyboard + message input bar so
-        // the block passes the 50% visibility threshold.
-        await ChannelScreen.getFlatPostList().scroll(300, 'up', 0.5, 0.5);
+        // into view. Short lists cannot scroll — ignore boundary failures.
+        try {
+            await ChannelScreen.getFlatPostList().scroll(300, 'up', 0.5, 0.5);
+        } catch { /* list at boundary */ }
 
         // Use toBeVisible(50): multi-line code blocks can be 50–74% visible when the
         // bottom is clipped by the message input bar.
@@ -91,7 +93,9 @@ describe('Messaging - Markdown Code', () => {
         await waitFor(postListPostItemCodeBlock).toExist().withTimeout(10000);
 
         // Scroll the post list to dismiss the keyboard before the visibility check.
-        await ChannelScreen.getFlatPostList().scroll(100, 'up', 0.5, 0.5);
+        try {
+            await ChannelScreen.getFlatPostList().scroll(100, 'up', 0.5, 0.5);
+        } catch { /* list at boundary */ }
 
         // toExist() confirms the code block rendered correctly; toBeVisible(50) is fragile
         // when the message input bar clips a short block below the 50% threshold.

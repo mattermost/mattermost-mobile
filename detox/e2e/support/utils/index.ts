@@ -107,6 +107,15 @@ export async function longPressWithScrollRetry(
             } catch { /* ignore */ }
         }
 
+        if (isIos()) {
+            try {
+                await scrollTarget.scroll(100, 'down', 0.5, 0.5);
+            } catch { /* ignore */ }
+            try {
+                await scrollTarget.swipe('down', 'slow', 0.2);
+            } catch { /* ignore */ }
+        }
+
         const waitDuration = isAndroid() ? timeouts.THREE_SEC : timeouts.FIVE_SEC;
         const pressDuration = isAndroid() ? timeouts.FOUR_SEC : timeouts.FIVE_SEC;
         await wait(waitDuration);

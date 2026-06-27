@@ -37,6 +37,8 @@ class ChannelInfoScreen {
         copyChannelLinkOption: 'channel_info.options.copy_channel_link.option',
         channelSettingsOption: 'channel_info.options.channel_settings.option',
         leaveChannelOption: 'channel_info.options.leave_channel.option',
+        addBookmarkButton: 'channel_info.add_bookmark.button',
+        bookmarksList: 'channel_info.bookmarks.list',
     };
 
     channelInfoScreen = element(by.id(this.testID.channelInfoScreen));
@@ -64,6 +66,37 @@ class ChannelInfoScreen {
     copyChannelLinkOption = element(by.id(this.testID.copyChannelLinkOption));
     channelSettingsOption = element(by.id(this.testID.channelSettingsOption));
     leaveChannelOption = element(by.id(this.testID.leaveChannelOption));
+    addBookmarkButton = element(by.id(this.testID.addBookmarkButton));
+    bookmarksList = element(by.id(this.testID.bookmarksList));
+
+    waitForAddBookmarkButton = async () => {
+        await waitFor(this.addBookmarkButton).toExist().withTimeout(timeouts.TEN_SEC);
+        return this.addBookmarkButton;
+    };
+
+    expectAddBookmarkVisible = async () => {
+        const button = await this.waitForAddBookmarkButton();
+        if (isAndroid()) {
+            await expect(button).toBeVisible();
+        } else {
+            // iOS: channel_info modal UITransitionView layers can block the 75% visibility threshold.
+            await expect(button).toExist();
+        }
+    };
+
+    tapAddBookmark = async () => {
+        const button = await this.waitForAddBookmarkButton();
+        await button.tap();
+    };
+
+    expectAddBookmarkNotVisible = async () => {
+        await expect(this.addBookmarkButton).not.toExist();
+    };
+
+    waitForBookmarksList = async () => {
+        await waitFor(this.bookmarksList).toExist().withTimeout(timeouts.TEN_SEC);
+        return this.bookmarksList;
+    };
 
     getDirectMessageTitle = (userId: string) => {
         const directMessageTitleTestId = `${this.testID.directMessageTitlePrefix}${userId}`;

@@ -260,6 +260,9 @@ describe('Channels - Archive Channel from Settings', () => {
         await ChannelSettingsScreen.toBeVisible();
         await ChannelSettingsScreen.archivePublicChannel({confirm: true});
 
+        // # Dismiss channel info so the archived post draft is reachable (same as MM-T4932_*).
+        await ChannelInfoScreen.close();
+
         // * Verify the archived post draft view is shown (channel is read-only).
         // On Android edge-to-edge the bottom archived-draft area can render with <50%
         // visible area due to system bar insets; toExist() confirms the archived state rendered.
@@ -297,10 +300,14 @@ describe('Channels - Archive Channel from Settings', () => {
         await openArchivedChannel(archivedChannel.name, sentinel);
 
         // * Verify the close channel button is visible at the bottom
-        await waitForElementToBeVisible(
-            ChannelScreen.postDraftArchivedCloseChannelButton,
-            timeouts.TEN_SEC,
-        );
+        if (isAndroid()) {
+            await waitFor(ChannelScreen.postDraftArchivedCloseChannelButton).toExist().withTimeout(timeouts.TEN_SEC);
+        } else {
+            await waitForElementToBeVisible(
+                ChannelScreen.postDraftArchivedCloseChannelButton,
+                timeouts.TEN_SEC,
+            );
+        }
 
         // # Navigate back to channel list
         await closeArchivedChannel();

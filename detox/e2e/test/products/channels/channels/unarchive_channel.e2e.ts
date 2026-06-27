@@ -76,6 +76,7 @@ describe('Channels - Unarchive Channel', () => {
         await ChannelInfoScreen.openChannelSettings();
         await ChannelSettingsScreen.toBeVisible();
         await ChannelSettingsScreen.unarchivePublicChannel({confirm: true});
+        await ChannelInfoScreen.close();
         await wait(timeouts.FOUR_SEC);
 
         // On Android edge-to-edge the bottom compose area can render with <50% visible
@@ -112,12 +113,13 @@ describe('Channels - Unarchive Channel', () => {
         await ChannelInfoScreen.openChannelSettings();
         await ChannelSettingsScreen.toBeVisible();
         await ChannelSettingsScreen.unarchivePrivateChannel({confirm: true});
+        await ChannelInfoScreen.close();
         await wait(timeouts.FOUR_SEC);
 
-        await ChannelScreen.toBeVisible();
         if (isAndroid()) {
             await waitFor(ChannelScreen.postDraft).toExist().withTimeout(timeouts.TEN_SEC);
         } else {
+            await ChannelScreen.toBeVisible();
             await expect(ChannelScreen.postDraft).toBeVisible();
         }
         await ChannelScreen.back();

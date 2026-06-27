@@ -12,6 +12,26 @@ type ServerConfig = Record<string, unknown>;
 
 type ClientConfigOld = {FeatureFlagCustomProfileAttributes?: string};
 
+export async function ensureCustomProfileAttributesEnabled(
+    client: MattermostClient,
+    token: string,
+): Promise<boolean> {
+    const patchRes = await client.request<ApiErrorBody>(
+        'PUT',
+        '/api/v4/config/patch',
+        {FeatureFlags: {CustomProfileAttributes: true}},
+        token,
+    );
+    if (patchRes.status >= 400) {
+        logWarn(
+            `ensureCustomProfileAttributesEnabled failed (HTTP ${patchRes.status}): ${patchRes.data?.message ?? 'unknown error'}`,
+        );
+        return false;
+    }
+
+    return waitForCustomProfileAttributesClientFlag(client, token);
+}
+
 async function waitForCustomProfileAttributesClientFlag(
     client: MattermostClient,
     token: string,
@@ -70,6 +90,9 @@ export async function configureTestServer(client: MattermostClient, token: strin
     config.RateLimitSettings = config.RateLimitSettings || {};
     (config.RateLimitSettings as Record<string, unknown>).Enable = false;
 
+    config.FileSettings = config.FileSettings || {};
+    (config.FileSettings as Record<string, unknown>).MaxFileSize = 104857600;
+
     config.ServiceSettings = config.ServiceSettings || {};
     const serviceSettings = config.ServiceSettings as Record<string, unknown>;
     serviceSettings.MaximumActiveUsers = 999999;
@@ -100,9 +123,7 @@ export async function configureTestServer(client: MattermostClient, token: strin
     const experimentalSettings = config.ExperimentalSettings as Record<string, unknown>;
     experimentalSettings.EnableSharedChannels = true;
     experimentalSettings.EnableRemoteClusterService = true;
-
-    config.FeatureFlags = config.FeatureFlags || {};
-    (config.FeatureFlags as Record<string, unknown>).CustomProfileAttributes = true;
+    experimentalSettings.RestrictSystemAdmin = false;
 
     pluginSettings.Plugins = pluginSettings.Plugins || {};
     const plugins = pluginSettings.Plugins as Record<string, Record<string, unknown>>;
@@ -118,5 +139,5 @@ export async function configureTestServer(client: MattermostClient, token: strin
         return;
     }
 
-    await waitForCustomProfileAttributesClientFlag(client, token);
+    await ensureCustomProfileAttributesEnabled(client, token);
 }

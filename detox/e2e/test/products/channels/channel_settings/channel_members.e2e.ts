@@ -33,8 +33,8 @@ import {
     ManageChannelMembersScreen,
     ServerScreen,
 } from '@support/ui/screen';
-import {isIos, timeouts, wait} from '@support/utils';
-import {expect} from 'detox';
+import {isIos, timeouts, wait, waitForElementToExist} from '@support/utils';
+import {expect, waitFor} from 'detox';
 
 describe('Channels', () => {
     const serverOneDisplayName = 'Server 1';
@@ -245,7 +245,8 @@ describe('Channels', () => {
         await expect(ChannelInfoScreen.membersOption).toBeVisible();
         await ChannelInfoScreen.membersOption.tap();
 
-        await wait(timeouts.TWO_SEC);
+        await ManageChannelMembersScreen.closeTutorial();
+        await ManageChannelMembersScreen.toBeVisible();
         await ManageChannelMembersScreen.manageButton.tap({x: 1, y: 1});
         await wait(timeouts.TWO_SEC);
 
@@ -316,8 +317,9 @@ describe('Channels', () => {
 
         await expect(ChannelInfoScreen.membersOption).toBeVisible();
         await ChannelInfoScreen.membersOption.tap();
-        await wait(timeouts.TWO_SEC);
 
+        await ManageChannelMembersScreen.closeTutorial();
+        await ManageChannelMembersScreen.toBeVisible();
         await ManageChannelMembersScreen.manageButton.tap({x: 1, y: 1});
         await wait(timeouts.TWO_SEC);
 
@@ -346,19 +348,21 @@ describe('Channels', () => {
         await CreateDirectMessageScreen.searchInput.replaceText(`${gmUser1.username}`);
         await CreateDirectMessageScreen.searchInput.tapReturnKey();
         await wait(timeouts.ONE_SEC);
+        await waitForElementToExist(CreateDirectMessageScreen.getUserItem(gmUser1.id), timeouts.TEN_SEC);
         await CreateDirectMessageScreen.getUserItem(gmUser1.id).tap();
 
-        // * Verify the first new user is selected
-        await expect(CreateDirectMessageScreen.getSelectedDMUserDisplayName(gmUser1.id)).toBeVisible();
+        // * Verify the first new user is selected (chip panel animates in after tap)
+        await waitFor(CreateDirectMessageScreen.getSelectedDMUserDisplayName(gmUser1.id)).toExist().withTimeout(timeouts.TEN_SEC);
 
         // # Search for the second new user and tap on the second new user item
         await CreateDirectMessageScreen.searchInput.replaceText(`${gmUser2.username}`);
         await CreateDirectMessageScreen.searchInput.tapReturnKey();
         await wait(timeouts.ONE_SEC);
+        await waitForElementToExist(CreateDirectMessageScreen.getUserItem(gmUser2.id), timeouts.TEN_SEC);
         await CreateDirectMessageScreen.getUserItem(gmUser2.id).tap();
 
         // * Verify the second new user is selected
-        await expect(CreateDirectMessageScreen.getSelectedDMUserDisplayName(gmUser2.id)).toBeVisible();
+        await waitFor(CreateDirectMessageScreen.getSelectedDMUserDisplayName(gmUser2.id)).toExist().withTimeout(timeouts.TEN_SEC);
 
         // # Tap on start button
         await CreateDirectMessageScreen.startButton.tap();

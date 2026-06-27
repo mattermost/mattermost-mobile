@@ -209,7 +209,7 @@ describe('Scheduled Draft,', () => {
         await ScheduleMessageScreen.verifyCountOnScheduledTab('1');
         await ScheduleMessageScreen.assertScheduledMessageExists(scheduledMessageText);
 
-        await ScheduleMessageScreen.assertScheduleTimeTextIsVisible(await ScheduleMessageScreen.nextMonday());
+        await ScheduleMessageScreen.assertScheduleTimeTextIsVisible(await ScheduleMessageScreen.expectedScheduleTimeFromAvailableOption());
         if (isIos()) {
             // Andoid uses native date picker which is not supported by detox asit cannot interact with native UI
             await DraftScreen.openDraftPostActions();

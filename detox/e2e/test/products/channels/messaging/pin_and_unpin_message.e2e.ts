@@ -26,15 +26,10 @@ import {
     ServerScreen,
     ThreadScreen,
 } from '@support/ui/screen';
-import {getRandomId, isAndroid, timeouts, wait} from '@support/utils';
+import {getRandomId, timeouts, wait} from '@support/utils';
 import {expect, waitFor} from 'detox';
 
 async function openChannelPostOptionsForPin(postId: string, message: string) {
-    if (!isAndroid()) {
-        await ChannelScreen.openPostOptionsFor(postId, message);
-        return;
-    }
-
     const flatList = ChannelScreen.getFlatPostList();
     const target = element(
         by.text(message).withAncestor(by.id(`channel.post_list.post.${postId}`)),
@@ -63,7 +58,7 @@ async function openChannelPostOptionsForPin(postId: string, message: string) {
             return;
         } catch {
             if (attempt === 3) {
-                throw new Error(`Post options did not appear for "${message}" after ${attempt} attempts`);
+                await ChannelScreen.openPostOptionsFor(postId, message);
             }
         }
     }

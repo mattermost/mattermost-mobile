@@ -72,7 +72,7 @@ describe('Messaging - Message Edit', () => {
         // # Wait for the bottom-sheet edit option to fully slide in before tapping
         // (iOS 26.x can leave the row clipped mid-animation and fail with "not hittable").
         await waitFor(PostOptionsScreen.editPostOption).toBeVisible().withTimeout(timeouts.TEN_SEC);
-        await PostOptionsScreen.editPostOption.tap();
+        await PostOptionsScreen.editPostOption.tap({x: 1, y: 1});
 
         // * Verify on edit post screen
         await EditPostScreen.toBeVisible();
@@ -119,7 +119,7 @@ describe('Messaging - Message Edit', () => {
 
         // # Wait for the bottom-sheet edit option to fully slide in before tapping.
         await waitFor(PostOptionsScreen.editPostOption).toBeVisible().withTimeout(timeouts.TEN_SEC);
-        await PostOptionsScreen.editPostOption.tap();
+        await PostOptionsScreen.editPostOption.tap({x: 1, y: 1});
 
         // * Verify on edit post screen
         await EditPostScreen.toBeVisible();
@@ -174,7 +174,7 @@ describe('Messaging - Message Edit', () => {
 
         // # Wait for the bottom-sheet edit option to fully slide in.
         await waitFor(PostOptionsScreen.editPostOption).toBeVisible().withTimeout(timeouts.TEN_SEC);
-        await PostOptionsScreen.editPostOption.tap();
+        await PostOptionsScreen.editPostOption.tap({x: 1, y: 1});
 
         // * Verify on edit post screen
         await EditPostScreen.toBeVisible();

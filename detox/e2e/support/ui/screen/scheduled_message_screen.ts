@@ -2,7 +2,7 @@
 // See LICENSE.txt for license information.
 
 import {Alert} from '@support/ui/component';
-import {isIos, timeouts, wait} from '@support/utils';
+import {isIos, timeouts, wait, waitForElementToExist} from '@support/utils';
 import {expect} from 'detox';
 
 class ScheduledMessageScreen {
@@ -90,12 +90,25 @@ class ScheduledMessageScreen {
      * @param expectedText - The text you expect in the element
      */
     assertScheduleTimeTextIsVisible = async (expectedText: string) => {
+        await waitForElementToExist(this.scheduledDraftTime, timeouts.TWENTY_SEC);
+
+        const deadline = Date.now() + timeouts.TWENTY_SEC;
+        /* eslint-disable no-await-in-loop */
+        while (Date.now() < deadline) {
+            const attr = await this.scheduledDraftTime.getAttributes();
+            const actualText = 'text' in attr ? attr.text : null;
+
+            if (actualText && !actualText.includes('Invalid Date') &&
+                this.normalize(actualText) === this.normalize(expectedText)) {
+                return;
+            }
+            await wait(timeouts.HALF_SEC);
+        }
+        /* eslint-enable no-await-in-loop */
+
         const attr = await this.scheduledDraftTime.getAttributes();
         const actualText = 'text' in attr ? attr.text : null;
-
-        if (this.normalize(actualText || '') !== this.normalize(expectedText)) {
-            throw new Error(`Expected text "${expectedText}" but found "${actualText}"`);
-        }
+        throw new Error(`Expected text "${expectedText}" but found "${actualText}"`);
     };
 
     getRoundedTime = async (): Promise<Date> => {
@@ -117,38 +130,57 @@ class ScheduledMessageScreen {
         return now;
     };
 
-    nextMonday = async () => {
+    // Mirrors ChannelScreen.scheduleMessageForAvailableOption + core_options date math.
+    expectedScheduleTimeFromAvailableOption = async () => {
         const today = new Date();
         const dayOfWeek = today.getDay();
-        const daysUntilNextMonday = (8 - dayOfWeek) % 7 || 7;
+
+        if (dayOfWeek === 0) {
+            return this.tomorrowAtNineAm();
+        }
+
+        if (dayOfWeek === 1) {
+            return this.nextMondayAtNineAm();
+        }
+
+        return this.nextMondayAtNineAm();
+    };
+
+    tomorrowAtNineAm = async () => {
+        const tomorrow = new Date();
+        tomorrow.setDate(tomorrow.getDate() + 1);
+        tomorrow.setHours(9, 0, 0, 0);
+        return this.formatSendOnLabel(tomorrow);
+    };
+
+    nextMondayAtNineAm = async () => {
+        const today = new Date();
+        const dayOfWeek = today.getDay();
+        const daysUntilMonday = dayOfWeek === 1 ? 7 : ((8 - dayOfWeek) % 7) || 7;
 
         const nextMonday = new Date(today);
-        nextMonday.setDate(today.getDate() + daysUntilNextMonday);
-        nextMonday.setHours(9, 0, 0, 0); // Hardcoded 9:00 AM
+        nextMonday.setDate(today.getDate() + daysUntilMonday);
+        nextMonday.setHours(9, 0, 0, 0);
 
-        const locale = 'en-US';
-        const dateOptions: Intl.DateTimeFormatOptions = {month: 'short', day: 'numeric'};
-        const timeOptions: Intl.DateTimeFormatOptions = {hour: 'numeric', minute: '2-digit', hour12: true};
+        return this.formatSendOnLabel(nextMonday);
+    };
 
-        const datePart = nextMonday.toLocaleDateString(locale, dateOptions);
-        const timePart = nextMonday.toLocaleTimeString(locale, timeOptions);
-
-        return this.normalize(`Send on ${datePart}, ${timePart}`);
+    nextMonday = async () => {
+        return this.nextMondayAtNineAm();
     };
 
     currentDay = async () => {
         const adjustedTime = await this.getRoundedTime();
+        return this.formatSendOnLabel(adjustedTime);
+    };
 
+    formatSendOnLabel = (date: Date) => {
         const locale = 'en-US';
         const dateOptions: Intl.DateTimeFormatOptions = {month: 'short', day: 'numeric'};
-        const timeOptions: Intl.DateTimeFormatOptions = {
-            hour: 'numeric',
-            minute: '2-digit',
-            hour12: true,
-        };
+        const timeOptions: Intl.DateTimeFormatOptions = {hour: 'numeric', minute: '2-digit', hour12: true};
 
-        const datePart = adjustedTime.toLocaleDateString(locale, dateOptions);
-        const timePart = adjustedTime.toLocaleTimeString(locale, timeOptions);
+        const datePart = date.toLocaleDateString(locale, dateOptions);
+        const timePart = date.toLocaleTimeString(locale, timeOptions);
 
         return this.normalize(`Send on ${datePart}, ${timePart}`);
     };

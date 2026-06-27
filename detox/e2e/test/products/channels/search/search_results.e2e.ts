@@ -31,7 +31,7 @@ import {
     SearchMessagesScreen,
     ServerScreen,
 } from '@support/ui/screen';
-import {getRandomId, timeouts, wait, waitForElementToBeVisible} from '@support/utils';
+import {getRandomId, isAndroid, timeouts, wait, waitForElementToBeVisible, waitForElementToExist} from '@support/utils';
 import {expect, waitFor} from 'detox';
 
 describe('Search - Result Interactions', () => {
@@ -227,7 +227,14 @@ describe('Search - Result Interactions', () => {
             searchedPostId = searchedPost.id;
 
             const {postListPostItem} = SearchMessagesScreen.getPostListPostItem(searchedPostId, message);
-            await waitForElementToBeVisible(postListPostItem, timeouts.HALF_MIN);
+
+            // On Android edge-to-edge search results can render with <50% visible area
+            // (getGlobalVisibleRect null); use polling toExist inside the no-sync block.
+            if (isAndroid()) {
+                await waitForElementToExist(postListPostItem, timeouts.HALF_MIN);
+            } else {
+                await waitForElementToBeVisible(postListPostItem, timeouts.HALF_MIN);
+            }
 
             await SearchMessagesScreen.openPostOptionsFor(searchedPostId, message);
         } finally {

@@ -7,7 +7,7 @@ import {createMattermostClient, login} from './http-client';
 import {ensureTrialLicense} from './license';
 import {logInfo, logWarn} from './log';
 import {ensureAgentsPlugin, installRequiredPlugin} from './plugins';
-import {configureTestServer, getServerMmVersion} from './server-config';
+import {configureTestServer, ensureCustomProfileAttributesEnabled, getServerMmVersion} from './server-config';
 
 import type {MattermostClient, ProvisionCredentials} from './types';
 
@@ -31,9 +31,6 @@ export async function provisionServer(serverUrl: string, credentials: ProvisionC
 
     await ensureTrialLicense(client, token);
     await configureTestServer(client, token);
-    if (!await ensureCustomProfileAttributeFields(client, token)) {
-        logWarn('Custom profile attribute setup incomplete.');
-    }
 
     await ensureAgentsPlugin(client, token);
 
@@ -49,6 +46,14 @@ export async function provisionServer(serverUrl: string, credentials: ProvisionC
     const agentsOk = await verifyAgentsSetup(client, token);
     if (!agentsOk) {
         logWarn('Agents E2E setup verification failed — agents tests may be skipped.');
+    }
+
+    // Plugin installs can reload config and reset feature flags — re-apply after all setup.
+    if (!await ensureCustomProfileAttributesEnabled(client, token)) {
+        logWarn('Custom profile attributes feature flag not enabled after provisioning.');
+    }
+    if (!await ensureCustomProfileAttributeFields(client, token)) {
+        logWarn('Custom profile attribute setup incomplete.');
     }
 
     logInfo('Server provisioning complete.');

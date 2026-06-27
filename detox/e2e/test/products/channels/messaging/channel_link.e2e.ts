@@ -25,7 +25,7 @@ import {
     ThreadScreen,
 } from '@support/ui/screen';
 import {isAndroid, timeouts, wait} from '@support/utils';
-import {expect} from 'detox';
+import {expect, waitFor} from 'detox';
 
 describe('Messaging - Channel Link', () => {
     const serverOneDisplayName = 'Server 1';
@@ -89,11 +89,6 @@ describe('Messaging - Channel Link', () => {
         await ChannelScreen.back();
     });
 
-    // Android: KeyboardAnimationController crash via react-native-keyboard-controller
-    // ("Animation in progress. Can not start a new request to
-    // controlWindowInsetsAnimation()") when the thread reply input gains
-    // focus during the channel-link tap flow. iOS passes reliably. Track
-    // separately as an Android-only app/library fix.
     it('MM-T4877_2 - should be able to open joined channel by tapping on channel link from reply thread', async () => {
         // # Open testChannel and open the reply thread for the pre-posted plain-text parent.
         await ChannelScreen.open(channelsCategory, testChannel.name);
@@ -110,9 +105,15 @@ describe('Messaging - Channel Link', () => {
                 // Post list may be too short to scroll
             }
             await wait(timeouts.TWO_SEC);
+
+            // Dismiss keyboard before tapping the channel link — react-native-keyboard-controller
+            // crashes with "Animation in progress" if controlWindowInsetsAnimation() races the tap.
+            await device.pressBack();
+            await wait(timeouts.TWO_SEC);
         }
 
         // # Tap on channel link from within the reply thread
+        await waitFor(element(by.text(replyThreadChannelLink)).atIndex(0)).toExist().withTimeout(timeouts.TEN_SEC);
         await element(by.text(replyThreadChannelLink)).atIndex(0).tap();
         await wait(timeouts.FOUR_SEC);
 

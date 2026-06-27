@@ -128,12 +128,16 @@ const DraftAndScheduledPostHeader: React.FC<Props> = ({
         }
 
         const isSent = scheduledPostErrorCode === 'post_send_success_delete_failed';
-        const scheduledTime = getReadableTimestamp(
-            postScheduledAt!,
+        const scheduledTime = postScheduledAt ? getReadableTimestamp(
+            postScheduledAt,
             getUserTimezone(currentUser),
             isMilitaryTime,
             currentUser?.locale || DEFAULT_LOCALE,
-        );
+        ) : '';
+
+        if (!isSent && !scheduledTime) {
+            return null;
+        }
 
         return (
             <View style={style.scheduledContainer}>
@@ -141,7 +145,7 @@ const DraftAndScheduledPostHeader: React.FC<Props> = ({
                     style={style.scheduledAtText}
                     testID='scheduled_post_header.scheduled_at'
                 >
-                    {isSent? intl.formatMessage({id: 'scheduled_post.header.sent', defaultMessage: 'Sent'}): intl.formatMessage(
+                    {isSent ? intl.formatMessage({id: 'scheduled_post.header.sent', defaultMessage: 'Sent'}) : intl.formatMessage(
                         {id: 'channel_info.scheduled', defaultMessage: 'Send on {time}'},
                         {time: scheduledTime},
                     )}

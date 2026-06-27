@@ -138,8 +138,10 @@ class ManageChannelMembersScreen {
         await userDisplayName.tap({x: 1, y: 1});
         await wait(timeouts.TWO_SEC);
 
-        await expect(this.removeButton).toBeVisible();
-        await this.removeButton.tap();
+        await waitFor(this.removeButton).toBeVisible().withTimeout(timeouts.TEN_SEC);
+        // Corner-tap: remove row action is obscured by the manage-members modal's
+        // UITransitionView (same workaround as userDisplayName tap above).
+        await this.removeButton.tap({x: 1, y: 1});
         await wait(timeouts.TWO_SEC);
 
         await Alert.removeButton.tap();

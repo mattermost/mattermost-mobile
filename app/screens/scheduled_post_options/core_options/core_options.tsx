@@ -53,7 +53,8 @@ export function ScheduledPostCoreOptions({userTimezone, isMilitaryTime, onSelect
         switch (optionKey) {
             case optionKeyOptionNextMonday:
             case optionKeysOptionMonday: {
-                selectedTime = now.clone().isoWeekday(1).add(1, 'week').startOf('day').hour(9).minute(0);
+                const daysUntilMonday = ((8 - now.isoWeekday()) % 7) || 7;
+                selectedTime = now.clone().add(daysUntilMonday, 'days').startOf('day').hour(9).minute(0);
                 break;
             }
             case optionKeyOptionTomorrow: {
@@ -111,7 +112,7 @@ export function ScheduledPostCoreOptions({userTimezone, isMilitaryTime, onSelect
 
     switch (now.weekday()) {
         // Sunday
-        case 7:
+        case 0:
             options = [optionTomorrow];
             break;
 

@@ -95,7 +95,7 @@ describe('Smoke Test - Autocomplete', () => {
         await expect(channelMentionItem).toExist();
 
         // # Select and post channel mention suggestion
-        await channelMentionItem.tap();
+        await channelMentionItem.tap({x: 1, y: 1});
         await ChannelScreen.sendButton.tap();
 
         // * Verify channel mention suggestion is posted

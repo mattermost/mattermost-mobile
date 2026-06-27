@@ -55,7 +55,7 @@ describe('Autocomplete - Search', () => {
         await expect(Autocomplete.sectionChannelMentionList).not.toExist();
 
         // # Tap the in: modifier to trigger channel mention autocomplete
-        await SearchMessagesScreen.searchModifierIn.tap();
+        await SearchMessagesScreen.searchModifierIn.tap({x: 1, y: 1});
 
         // * Verify channel mention autocomplete list is displayed
         await waitFor(Autocomplete.sectionChannelMentionList).toExist().withTimeout(timeouts.TEN_SEC);

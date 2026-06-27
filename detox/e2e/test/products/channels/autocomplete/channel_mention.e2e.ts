@@ -24,7 +24,7 @@ import {
     LoginScreen,
     ServerScreen,
 } from '@support/ui/screen';
-import {getRandomId, timeouts, wait} from '@support/utils';
+import {isAndroid, isIos, timeouts, wait, waitForElementToNotExist} from '@support/utils';
 import {expect} from 'detox';
 
 describe('Autocomplete - Channel Mention', () => {
@@ -210,16 +210,11 @@ describe('Autocomplete - Channel Mention', () => {
 
         // # Type in channel name and tap on channel mention autocomplete
         await ChannelScreen.postInput.typeText(testChannel.name);
-        await channelMentionAutocomplete.tap();
+        await channelMentionAutocomplete.tap({x: 1, y: 1});
 
         // * Verify channel mention list disappears
-        // After selecting a channel mention, the autocomplete dismissal is driven
-        // by a React state update; on iOS 26 CI the assertion can race the update
-        // (see MM-T4879_5 which uses the same settle-then-assert pattern after
-        // typing a trailing space). Brief settle keeps this deterministic without
-        // a timeout bump.
         await wait(timeouts.ONE_SEC);
-        await expect(Autocomplete.sectionChannelMentionList).not.toExist();
+        await waitForElementToNotExist(Autocomplete.sectionChannelMentionList, timeouts.TEN_SEC);
 
         // # Clear the input (which now contains the inserted channel mention text),
         // then re-activate channel mention list by typing "~".

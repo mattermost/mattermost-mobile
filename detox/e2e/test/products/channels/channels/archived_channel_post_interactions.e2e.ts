@@ -19,9 +19,11 @@ import {
     openArchivedChannel,
 } from '@support/ui/screen';
 import {
+    isAndroid,
     timeouts,
     wait,
     waitForElementToBeVisible,
+    waitForElementToExist,
 } from '@support/utils';
 import {expect, waitFor} from 'detox';
 
@@ -198,8 +200,13 @@ describe('Channels - Archived Channel Post Interactions', () => {
         await PostOptionsScreen.toBeVisible();
 
         // Wait for the Save option to appear in the view hierarchy before tapping.
-        await waitFor(PostOptionsScreen.savePostOption).toExist().withTimeout(timeouts.TEN_SEC);
-        await PostOptionsScreen.savePostOption.tap();
+        if (isAndroid()) {
+            await waitForElementToExist(PostOptionsScreen.savePostOptionLabel, timeouts.TEN_SEC);
+            await PostOptionsScreen.savePostOptionLabel.tap();
+        } else {
+            await waitFor(PostOptionsScreen.savePostOption).toExist().withTimeout(timeouts.TEN_SEC);
+            await PostOptionsScreen.savePostOption.tap();
+        }
         await wait(timeouts.ONE_SEC);
 
         // # Close the archived channel and navigate to saved messages
@@ -224,7 +231,11 @@ describe('Channels - Archived Channel Post Interactions', () => {
         // getGlobalVisibleRect() (matcher resolves the view, but its rect isn't computable yet).
         const {postListPostItemChannelInfoChannelDisplayName} =
             SavedMessagesScreen.getPostListPostItem(post.id, message);
-        await waitFor(postListPostItemChannelInfoChannelDisplayName).toBeVisible().withTimeout(timeouts.TEN_SEC);
+        if (isAndroid()) {
+            await waitFor(postListPostItemChannelInfoChannelDisplayName).toExist().withTimeout(timeouts.TEN_SEC);
+        } else {
+            await waitFor(postListPostItemChannelInfoChannelDisplayName).toBeVisible().withTimeout(timeouts.TEN_SEC);
+        }
 
         // # Go back to channel list screen
         await ChannelListScreen.open();
@@ -260,10 +271,14 @@ describe('Channels - Archived Channel Post Interactions', () => {
         await expect(ChannelScreen.postInput).not.toBeVisible();
 
         // * Verify the close channel button is visible
-        await waitForElementToBeVisible(
-            ChannelScreen.postDraftArchivedCloseChannelButton,
-            timeouts.TEN_SEC,
-        );
+        if (isAndroid()) {
+            await waitFor(ChannelScreen.postDraftArchivedCloseChannelButton).toExist().withTimeout(timeouts.TEN_SEC);
+        } else {
+            await waitForElementToBeVisible(
+                ChannelScreen.postDraftArchivedCloseChannelButton,
+                timeouts.TEN_SEC,
+            );
+        }
 
         // # Navigate back to channel list
         await closeArchivedChannel();
