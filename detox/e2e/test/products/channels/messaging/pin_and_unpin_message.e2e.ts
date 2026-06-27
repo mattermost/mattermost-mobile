@@ -58,6 +58,7 @@ async function openChannelPostOptionsForPin(postId: string, message: string) {
             return;
         } catch {
             if (attempt === 3) {
+                // eslint-disable-next-line no-await-in-loop
                 await ChannelScreen.openPostOptionsFor(postId, message);
             }
         }

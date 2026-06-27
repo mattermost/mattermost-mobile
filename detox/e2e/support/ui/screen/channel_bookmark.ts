@@ -93,11 +93,12 @@ class ChannelBookmarkScreen {
         await waitFor(this.linkLoading).not.toExist().withTimeout(timeout);
     };
 
-    runUnsynchronized = async <T>(action: () => Promise<T>): Promise<T> => {
-        if (device.getPlatform() !== 'ios') {
-            return action();
-        }
+    waitForTitleInputReady = async (timeout = timeouts.TEN_SEC) => {
+        await waitFor(this.titleInput).toExist().withTimeout(timeout);
+        return this.titleInput;
+    };
 
+    runUnsynchronized = async <T>(action: () => Promise<T>): Promise<T> => {
         await device.disableSynchronization();
 
         try {

@@ -80,8 +80,7 @@ describe('Messaging - Save and Unsave Message', () => {
         await PostOptionsScreen.unsavePostOption.tap();
 
         // * Verify saved text is not displayed on the post pre-header
-        await wait(timeouts.ONE_SEC);
-        await expect(postListPostItemPreHeaderText).not.toBeVisible();
+        await waitFor(postListPostItemPreHeaderText).not.toExist().withTimeout(timeouts.TEN_SEC);
 
         // # Go back to channel list screen
         await ChannelScreen.back();
@@ -119,8 +118,7 @@ describe('Messaging - Save and Unsave Message', () => {
         await PostOptionsScreen.unsavePostOption.tap();
 
         // * Verify saved text is not displayed on the reply's pre-header
-        await wait(timeouts.ONE_SEC);
-        await expect(postListPostItemPreHeaderText).not.toBeVisible();
+        await waitFor(postListPostItemPreHeaderText).not.toExist().withTimeout(timeouts.TEN_SEC);
 
         // # Go back to channel list screen
         await ThreadScreen.back();

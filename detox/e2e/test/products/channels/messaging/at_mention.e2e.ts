@@ -28,7 +28,7 @@ import {
     UserProfileScreen,
 } from '@support/ui/screen';
 import {timeouts, wait, waitForElementToExist} from '@support/utils';
-import {expect, waitFor} from 'detox';
+import {by, element, expect, waitFor} from 'detox';
 
 describe('Messaging - At-Mention', () => {
     const serverOneDisplayName = 'Server 1';

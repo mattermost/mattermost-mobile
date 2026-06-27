@@ -64,7 +64,16 @@ export function getReadableTimestamp(timestamp: number, timeZone: string, isMili
     try {
         return date.toLocaleString(currentUserLocale, options);
     } catch {
-        return '';
+        const fallbackOptions: Intl.DateTimeFormatOptions = {
+            month: 'short',
+            day: 'numeric',
+            hour: 'numeric',
+            minute: '2-digit',
+            hour12: !isMilitaryTime,
+            ...(isCurrentYear ? {} : {year: 'numeric'}),
+        };
+
+        return date.toLocaleString('en-US', fallbackOptions);
     }
 }
 

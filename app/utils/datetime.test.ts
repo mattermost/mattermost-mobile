@@ -87,6 +87,13 @@ describe('getReadableTimestamp', () => {
         expect(deResult).toBe('15. Juni, 8:00 AM');
     });
 
+    it('should fall back to en-US when locale formatting fails', () => {
+        const timestamp = new Date('2025-06-15T12:00:00Z').getTime();
+        const result = getReadableTimestamp(timestamp, 'America/New_York', false, 'invalid-locale-tag');
+        expect(result).not.toBe('');
+        expect(result.length).toBeGreaterThan(0);
+    });
+
     it('should return empty string for invalid timestamps', () => {
         expect(getReadableTimestamp(Number.NaN, 'America/New_York', false, 'en-US')).toBe('');
     });

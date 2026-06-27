@@ -22,8 +22,12 @@ import {
     LoginScreen,
     ServerScreen,
 } from '@support/ui/screen';
-import {timeouts, wait} from '@support/utils';
 import {expect, waitFor} from 'detox';
+
+const isScrollBoundaryError = (error: unknown) => {
+    const message = error instanceof Error ? error.message : String(error);
+    return message.includes('Unable to scroll');
+};
 
 describe('Messaging - Markdown Code', () => {
     const serverOneDisplayName = 'Server 1';
@@ -68,7 +72,11 @@ describe('Messaging - Markdown Code', () => {
         // into view. Short lists cannot scroll — ignore boundary failures.
         try {
             await ChannelScreen.getFlatPostList().scroll(300, 'up', 0.5, 0.5);
-        } catch { /* list at boundary */ }
+        } catch (error) {
+            if (!isScrollBoundaryError(error)) {
+                throw error;
+            }
+        }
 
         // Use toBeVisible(50): multi-line code blocks can be 50–74% visible when the
         // bottom is clipped by the message input bar.
@@ -95,7 +103,11 @@ describe('Messaging - Markdown Code', () => {
         // Scroll the post list to dismiss the keyboard before the visibility check.
         try {
             await ChannelScreen.getFlatPostList().scroll(100, 'up', 0.5, 0.5);
-        } catch { /* list at boundary */ }
+        } catch (error) {
+            if (!isScrollBoundaryError(error)) {
+                throw error;
+            }
+        }
 
         // toExist() confirms the code block rendered correctly; toBeVisible(50) is fragile
         // when the message input bar clips a short block below the 50% threshold.

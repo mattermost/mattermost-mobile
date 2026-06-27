@@ -178,7 +178,6 @@ beforeAll(async () => {
     }
 
     const isFirstFile = !process.env.DETOX_SETUP_DONE;
-    const launchArgs = {detoxDisableSynchronization: 'YES'};
 
     const APP_READY_TIMEOUT = device.getPlatform() === 'android' ? 90_000 : 30_000;
 
@@ -196,6 +195,7 @@ beforeAll(async () => {
         } catch (e) {
             console.warn('[forceAndroidDataClear] pm clear failed:', String(e).slice(0, 200));
         }
+        await new Promise((resolve) => setTimeout(resolve, 1000));
     }
 
     async function ensureAndroidMetroReverse(): Promise<void> {
@@ -217,63 +217,40 @@ beforeAll(async () => {
         await grantAndroidNotificationPermission();
         await ensureAndroidMetroReverse();
 
-        await device.launchApp({
+        const launchOptions = {
             newInstance: true,
-            ...(device.getPlatform() === 'ios' ? {permissions: {notifications: 'YES'}} : {}),
-            launchArgs,
-        });
+            ...(device.getPlatform() === 'ios' ? {permissions: {notifications: 'YES' as const}} : {}),
+        };
 
-        await device.disableSynchronization();
+        await device.launchApp(launchOptions);
+        await device.enableSynchronization();
 
         const serverScreenEl = element(by.id('server.screen'));
+        const channelListEl = element(by.id('channel_list.screen'));
 
         try {
             await waitFor(serverScreenEl).toExist().withTimeout(APP_READY_TIMEOUT);
         } catch {
-            if (device.getPlatform() === 'android') {
-                const channelListEl = element(by.id('channel_list.screen'));
-                try {
-                    await waitFor(channelListEl).toExist().withTimeout(5_000);
-                    console.warn(
-                        '[launchAndVerify] App launched in logged-in state (channel_list visible). ' +
-                        'pm clear did not take effect. Retrying with force-stop + pm clear.',
-                    );
+            try {
+                await waitFor(channelListEl).toExist().withTimeout(5_000);
+                console.warn(
+                    '[launchAndVerify] App launched with stale logged-in state. Clearing data and relaunching.',
+                );
+                if (device.getPlatform() === 'android') {
                     await forceAndroidDataClear();
-
-                    await grantAndroidNotificationPermission();
-                    await ensureAndroidMetroReverse();
-                    await device.launchApp({newInstance: true, launchArgs});
-                    await waitFor(serverScreenEl).toExist().withTimeout(APP_READY_TIMEOUT);
-                } catch {
-                    throw new Error(
-                        `[launchAndVerify] Neither server.screen nor channel_list.screen appeared within ${APP_READY_TIMEOUT / 1000}s`,
-                    );
-                }
-            } else {
-                const channelListEl = element(by.id('channel_list.screen'));
-                try {
-                    await waitFor(channelListEl).toExist().withTimeout(5_000);
-                    console.warn(
-                        '[launchAndVerify] iOS app launched with stale state (channel_list visible). ' +
-                        'clearIOSAppData wipe incomplete. Re-clearing and relaunching.',
-                    );
+                } else {
                     clearIOSAppData();
-                    await device.launchApp({
-                        newInstance: true,
-                        ...(device.getPlatform() === 'ios' ? {permissions: {notifications: 'YES'}} : {}),
-                        launchArgs,
-                    });
-                    await waitFor(serverScreenEl).toExist().withTimeout(APP_READY_TIMEOUT);
-                } catch {
-                    throw new Error(
-                        `[launchAndVerify] server.screen did not appear within ${APP_READY_TIMEOUT / 1000}s`,
-                    );
                 }
+                await grantAndroidNotificationPermission();
+                await ensureAndroidMetroReverse();
+                await device.launchApp(launchOptions);
+                await device.enableSynchronization();
+                await waitFor(serverScreenEl).toExist().withTimeout(APP_READY_TIMEOUT);
+            } catch {
+                throw new Error(
+                    `[launchAndVerify] server.screen did not appear within ${APP_READY_TIMEOUT / 1000}s`,
+                );
             }
-        } finally {
-            // Always re-enable synchronization so subsequent test operations
-            // (tap, typeText, expect) re-enter the normal synchronized path.
-            await device.enableSynchronization();
         }
     }
 

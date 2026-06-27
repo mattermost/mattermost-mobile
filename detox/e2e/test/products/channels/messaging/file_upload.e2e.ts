@@ -10,6 +10,7 @@
 import fs from 'fs';
 import path from 'path';
 
+import {DEFAULT_MAX_FILE_SIZE_BYTES} from '@support/constants/file_settings';
 import {
     Post,
     Setup,
@@ -36,8 +37,8 @@ describe('Messaging - File Upload', () => {
     const serverOneDisplayName = 'Server 1';
     const channelsCategory = 'channels';
 
-    // Fallback when GET /config omits cloud_restrictable FileSettings (100 MiB default).
-    const FALLBACK_MAX_FILE_SIZE = 104857600;
+    // Fallback when GET /config omits cloud_restrictable FileSettings.
+    const FALLBACK_MAX_FILE_SIZE = DEFAULT_MAX_FILE_SIZE_BYTES;
     let testChannel: any;
 
     beforeAll(async () => {
@@ -229,6 +230,16 @@ describe('Messaging - File Upload', () => {
             };
         };
 
+        const verifyClientMaxFileSize = async (expectedLimit: number) => {
+            await wait(timeouts.TWO_SEC);
+            const {config: clientConfig} = await System.apiGetClientConfigOld(siteOneUrl);
+            const appliedLimit = parseInt(clientConfig?.MaxFileSize ?? '0', 10);
+            return {
+                applied: appliedLimit === expectedLimit,
+                appliedLimit,
+            };
+        };
+
         // # Set MaxFileSize just under the fixture size so the upload is rejected
         let {applied, appliedLimit, error: patchError} = await patchMaxFileSize(maxFileSizeLimit);
         if (!applied) {
@@ -281,11 +292,32 @@ describe('Messaging - File Upload', () => {
         } finally {
             // # Restore the pre-test MaxFileSize so later suites keep the server baseline
             await User.apiAdminLogin(siteOneUrl);
-            await System.apiUpdateConfig(siteOneUrl, {
+            const {error: restoreError} = await System.apiUpdateConfig(siteOneUrl, {
                 FileSettings: {
                     MaxFileSize: originalMaxFileSize,
                 },
             });
+            if (restoreError) {
+                throw new Error(`Failed to restore MaxFileSize: ${JSON.stringify(restoreError)}`);
+            }
+
+            let {applied: restored, appliedLimit: restoredLimit} = await verifyClientMaxFileSize(originalMaxFileSize);
+            if (!restored) {
+                const {error: retryRestoreError} = await System.apiUpdateConfig(siteOneUrl, {
+                    FileSettings: {
+                        MaxFileSize: originalMaxFileSize,
+                    },
+                });
+                if (retryRestoreError) {
+                    throw new Error(`Failed to restore MaxFileSize on retry: ${JSON.stringify(retryRestoreError)}`);
+                }
+                ({applied: restored, appliedLimit: restoredLimit} = await verifyClientMaxFileSize(originalMaxFileSize));
+            }
+            if (!restored) {
+                throw new Error(
+                    `MaxFileSize restore to ${originalMaxFileSize} did not apply (client MaxFileSize=${restoredLimit}).`,
+                );
+            }
         }
     });
 

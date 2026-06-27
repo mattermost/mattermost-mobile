@@ -7,7 +7,7 @@ import {createMattermostClient, login} from './http-client';
 import {ensureTrialLicense} from './license';
 import {logInfo, logWarn} from './log';
 import {ensureAgentsPlugin, installRequiredPlugin} from './plugins';
-import {configureTestServer, ensureCustomProfileAttributesEnabled, getServerMmVersion} from './server-config';
+import {configureTestServer, ensureChannelBookmarksEnabled, ensureCustomProfileAttributesEnabled, getServerMmVersion} from './server-config';
 
 import type {MattermostClient, ProvisionCredentials} from './types';
 
@@ -51,6 +51,9 @@ export async function provisionServer(serverUrl: string, credentials: ProvisionC
     // Plugin installs can reload config and reset feature flags — re-apply after all setup.
     if (!await ensureCustomProfileAttributesEnabled(client, token)) {
         logWarn('Custom profile attributes feature flag not enabled after provisioning.');
+    }
+    if (!await ensureChannelBookmarksEnabled(client, token)) {
+        logWarn('Channel bookmarks feature flag not enabled after provisioning.');
     }
     if (!await ensureCustomProfileAttributeFields(client, token)) {
         logWarn('Custom profile attribute setup incomplete.');

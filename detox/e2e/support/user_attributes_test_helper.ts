@@ -21,7 +21,10 @@ const waitForCustomProfileAttributesClientFlag = async (
 ): Promise<boolean> => {
     /* eslint-disable no-await-in-loop -- poll until client flag propagates */
     for (let attempt = 0; attempt < maxAttempts; attempt++) {
-        const {config} = await System.apiGetClientConfigOld(siteOneUrl);
+        const {config, error} = await System.apiGetClientConfigOld(siteOneUrl);
+        if (error) {
+            throw new Error(`Could not read client config: ${JSON.stringify(error)}`);
+        }
         if (config?.FeatureFlagCustomProfileAttributes === 'true') {
             return true;
         }

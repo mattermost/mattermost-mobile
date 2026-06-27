@@ -42,8 +42,48 @@ describe('Search - Recent Mentions', () => {
     let testChannel: any;
     let testTeam: any;
     let testUser: any;
-    let mentionPost: any;
-    let ownMentionPost: any;
+    let mentioner: any;
+
+    const loginAsMentioner = async () => {
+        await User.apiLogin(siteOneUrl, {
+            username: mentioner.username,
+            password: mentioner.newUser.password,
+        });
+    };
+
+    const loginAsTestUser = async () => {
+        await User.apiLogin(siteOneUrl, {
+            username: testUser.username,
+            password: testUser.newUser.password,
+        });
+    };
+
+    const createOtherUserMentionPost = async () => {
+        await loginAsMentioner();
+        const mentionText = `Other mention ${getRandomId()} @${testUser.username}`;
+        const {post} = await Post.apiCreatePost(siteOneUrl, {
+            channelId: testChannel.id,
+            message: mentionText,
+        });
+        if (!post?.id) {
+            throw new Error('Failed to post mention as User A');
+        }
+        await loginAsTestUser();
+        return {...post, messageText: mentionText};
+    };
+
+    const createOwnMentionPost = async () => {
+        await loginAsTestUser();
+        const ownText = `Own mention ${getRandomId()} @${testUser.username}`;
+        const {post} = await Post.apiCreatePost(siteOneUrl, {
+            channelId: testChannel.id,
+            message: ownText,
+        });
+        if (!post?.id) {
+            throw new Error('Failed to post own mention as testUser');
+        }
+        return {...post, messageText: ownText};
+    };
 
     beforeAll(async () => {
         // # User B = testUser (the one who will be mentioned and who logs in)
@@ -53,52 +93,13 @@ describe('Search - Recent Mentions', () => {
         testUser = user;
 
         // # User A = mentioner. Add to team + channel.
-        const {user: mentioner} = await User.apiCreateUser(siteOneUrl, {prefix: 'mentioner'});
-        if (!mentioner?.id) {
+        const {user: createdMentioner} = await User.apiCreateUser(siteOneUrl, {prefix: 'mentioner'});
+        if (!createdMentioner?.id) {
             throw new Error('[beforeAll] Failed to create mentioner');
         }
+        mentioner = createdMentioner;
         await Team.apiAddUserToTeam(siteOneUrl, mentioner.id, team.id);
         await Channel.apiAddUserToChannel(siteOneUrl, mentioner.id, channel.id);
-
-        // # Fixture 1: User A posts @testUser — used by tests that don't require
-        // ownership (display, save/unsave, pin/unpin).
-        await User.apiLogin(siteOneUrl, {
-            username: mentioner.username,
-            password: mentioner.newUser.password,
-        });
-
-        // Unique suffix on mentionText so the matcher can't collide with
-        // ownMentionPost (which also embeds @testUser.username). Without the
-        // suffix, both posts share descendant text "@<username>", so a
-        // `not.toExist()` assertion for mentionPost would still match the
-        // sibling post's text node and fail.
-        const mentionText = `Other mention ${getRandomId()} @${testUser.username}`;
-        const {post: postByOther} = await Post.apiCreatePost(siteOneUrl, {
-            channelId: testChannel.id,
-            message: mentionText,
-        });
-        if (!postByOther?.id) {
-            throw new Error('[beforeAll] Failed to post mention as User A');
-        }
-        mentionPost = {...postByOther, messageText: mentionText};
-
-        // # Fixture 2: testUser self-posts a message containing @testUser — used
-        // by MM-T4909_3 (edit/reply/delete) which requires testUser to OWN the
-        // post. Self-mention text is still picked up by the recent-mentions
-        // search-based feed (it matches the user's @username key).
-        await User.apiLogin(siteOneUrl, {
-            username: testUser.username,
-            password: testUser.newUser.password,
-        });
-        const ownText = `Own mention ${getRandomId()} @${testUser.username}`;
-        const {post: postByOwn} = await Post.apiCreatePost(siteOneUrl, {
-            channelId: testChannel.id,
-            message: ownText,
-        });
-        if (!postByOwn?.id) {
-            throw new Error('[beforeAll] Failed to post own mention as testUser');
-        }
-        ownMentionPost = {...postByOwn, messageText: ownText};
 
         // # User B (testUser) logs in via UI.
         await ServerScreen.connectToServer(serverOneUrl, serverOneDisplayName);
@@ -116,6 +117,8 @@ describe('Search - Recent Mentions', () => {
     });
 
     it('MM-T4909_2 - should be able to display a recent mention in recent mentions screen and navigate to message channel', async () => {
+        const mentionPost = await createOtherUserMentionPost();
+
         // # Open recent mentions screen
         await RecentMentionsScreen.open();
         await RecentMentionsScreen.toBeVisible();
@@ -154,6 +157,8 @@ describe('Search - Recent Mentions', () => {
     });
 
     it('MM-T4909_4 - should be able to save/unsave a recent mention from recent mentions screen', async () => {
+        const mentionPost = await createOtherUserMentionPost();
+
         // # Open recent mentions screen
         await RecentMentionsScreen.open();
         await RecentMentionsScreen.toBeVisible();
@@ -183,6 +188,8 @@ describe('Search - Recent Mentions', () => {
     });
 
     it('MM-T4909_5 - should be able to pin/unpin a recent mention from recent mentions screen', async () => {
+        const mentionPost = await createOtherUserMentionPost();
+
         // # Open recent mentions screen
         await RecentMentionsScreen.open();
         await RecentMentionsScreen.toBeVisible();
@@ -223,8 +230,9 @@ describe('Search - Recent Mentions', () => {
         await ChannelListScreen.open();
     });
 
-    // Must run last — mutates the shared mention fixture.
     it('MM-T4909_3 - should be able to edit, reply to, and delete a recent mention from recent mentions screen', async () => {
+        const ownMentionPost = await createOwnMentionPost();
+
         // # Open recent mentions screen
         await RecentMentionsScreen.open();
         await RecentMentionsScreen.toBeVisible();
@@ -289,8 +297,12 @@ describe('Search - Recent Mentions', () => {
         await element(by.id('post_header.date_time').withAncestor(by.id(`recent_mentions.post_list.post.${ownMentionPost.id}`))).longPress(timeouts.TWO_SEC);
         await PostOptionsScreen.deletePost({confirm: true});
 
-        // * Verify mention is removed
-        await expect(postListPostItem).not.toExist();
+        // * Verify mention is removed from recent mentions
+        const {postListPostItem: deletedMentionItem} = RecentMentionsScreen.getPostListPostItem(
+            ownMentionPost.id,
+            ownMentionPost.messageText,
+        );
+        await expect(deletedMentionItem).not.toExist();
 
         // # Go back to channel list screen
         await ChannelListScreen.open();

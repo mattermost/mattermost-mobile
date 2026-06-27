@@ -76,8 +76,7 @@ describe('Channels - Favorite and Unfavorite Channel', () => {
         await ChannelScreen.back();
 
         // * Verify channel is listed under favorites category
-        await ChannelListScreen.ensureCategoryExpanded(favoritesCategory);
-        await ChannelListScreen.waitForSidebarPublicChannelDisplayNameVisible(testChannel.name, timeouts.HALF_MIN);
+        await ChannelListScreen.waitForFavoritesChannelDisplayNameVisible(testChannel.name, timeouts.HALF_MIN);
 
         // # Go back to the favorited channel, tap on channel quick actions button, and tap on favorited quick action to unfavorite the channel
         await ChannelScreen.open(favoritesCategory, testChannel.name);

@@ -132,10 +132,10 @@ const DraftAndScheduledPostHeader: React.FC<Props> = ({
             postScheduledAt,
             getUserTimezone(currentUser),
             isMilitaryTime,
-            currentUser?.locale || DEFAULT_LOCALE,
+            currentUser?.locale ?? DEFAULT_LOCALE,
         ) : '';
 
-        if (!isSent && !scheduledTime) {
+        if (!isSent && !scheduledTime && !scheduledPostErrorCode) {
             return null;
         }
 

@@ -97,7 +97,7 @@ describe('Threads - Save and Unsave Thread', () => {
 
         // * Verify the thread is unsaved.
         await waitFor(element(by.id('thread.post_list.thread_overview.save.button')).atIndex(0)).toBeVisible().withTimeout(timeouts.TEN_SEC);
-        await expect(element(by.id('thread.post_list.thread_overview.unsave.button')).atIndex(0)).not.toBeVisible();
+        await waitFor(element(by.id('thread.post_list.thread_overview.unsave.button')).atIndex(0)).not.toExist().withTimeout(timeouts.TEN_SEC);
 
         // # Go back to channel list screen
         await ThreadScreen.back();

@@ -295,14 +295,11 @@ describe('Channels - Channel Bookmarks', () => {
         // # Enter a stable URL and manual title — avoid OG autofill flakiness on Android CI
         const linkInput = ChannelBookmarkScreen.getLinkInput();
         const bookmarkTitle = 'E2E Bookmark Link';
-        if (isAndroid()) {
-            await device.disableSynchronization();
-        }
         await ChannelBookmarkScreen.runUnsynchronized(async () => {
             await linkInput.tap();
             await linkInput.typeText('https://example.com');
             await ChannelBookmarkScreen.waitForLinkLoadingToFinish();
-            const titleInput = ChannelBookmarkScreen.getTitleInput();
+            const titleInput = await ChannelBookmarkScreen.waitForTitleInputReady();
             await titleInput.tap();
             await titleInput.replaceText(bookmarkTitle);
             await ChannelBookmarkScreen.waitForTitleValue(bookmarkTitle);
@@ -311,9 +308,6 @@ describe('Channels - Channel Bookmarks', () => {
                 withTimeout(timeouts.TEN_SEC);
             await ChannelBookmarkScreen.saveButton.tap();
         });
-        if (isAndroid()) {
-            await device.enableSynchronization();
-        }
 
         // * Verify the bookmark modal closed and the bookmark is visible in channel info
         await waitFor(ChannelBookmarkScreen.channelBookmarkScreen).
@@ -550,48 +544,37 @@ describe('Channels - Channel Bookmarks', () => {
         await ChannelBookmarkScreen.waitForTitleValue('Emoji Icon Updated');
 
         // # Tap the icon button to open the emoji picker, then search and select an emoji.
-        // On Android, pending OG-fetch network requests and bottom-sheet animations keep the
-        // Detox AnimatedModuleIdlingResource busy throughout this entire flow. Disable sync
-        // for the icon tap AND the emoji search/select to avoid timeout failures.
-        if (isAndroid()) {
-            await device.disableSynchronization();
-        }
-        await element(
-            by.id('bookmark-generic-icon').
-                withAncestor(by.id('channel_bookmark.screen')),
-        ).tap();
+        // OG-fetch network requests and bottom-sheet animations keep Detox idling busy.
+        await ChannelBookmarkScreen.runUnsynchronized(async () => {
+            await element(
+                by.id('bookmark-generic-icon').
+                    withAncestor(by.id('channel_bookmark.screen')),
+            ).tap();
 
-        // * Verify the emoji picker opens
-        await EmojiPickerScreen.toBeVisible();
+            // * Verify the emoji picker opens
+            await EmojiPickerScreen.toBeVisible();
 
-        // # Dismiss the skin-tone tooltip if it appears.
-        // Shows on first open on both Android and iOS. On iOS the tooltip renders
-        // ~3-5s after the picker mounts (post-animation), so a 2s wait races the
-        // tooltip and the test then times out on the search input which the
-        // tooltip overlay is still occluding (see CI run 26352177261 testFnFailure
-        // for MM-T5606_1).
-        try {
-            await waitFor(EmojiPickerScreen.toolTipCloseButton).
+            // # Dismiss the skin-tone tooltip if it appears.
+            try {
+                await waitFor(EmojiPickerScreen.toolTipCloseButton).
+                    toBeVisible().
+                    withTimeout(timeouts.TEN_SEC);
+                await EmojiPickerScreen.toolTipCloseButton.tap();
+                await wait(timeouts.ONE_SEC);
+            } catch {
+                // Tooltip did not appear — continue normally
+            }
+
+            // # Search and select a specific emoji.
+            await waitFor(EmojiPickerScreen.searchInput).toBeVisible().withTimeout(timeouts.TEN_SEC);
+            await EmojiPickerScreen.searchInput.tap();
+            await EmojiPickerScreen.searchInput.replaceText('smile');
+            await waitFor(element(by.text(':smile:'))).
                 toBeVisible().
                 withTimeout(timeouts.TEN_SEC);
-            await EmojiPickerScreen.toolTipCloseButton.tap();
-            await wait(timeouts.ONE_SEC);
-        } catch {
-            // Tooltip did not appear — continue normally
-        }
-
-        // # Search and select a specific emoji.
-        await waitFor(EmojiPickerScreen.searchInput).toBeVisible().withTimeout(timeouts.TEN_SEC);
-        await EmojiPickerScreen.searchInput.tap();
-        await EmojiPickerScreen.searchInput.replaceText('smile');
-        await waitFor(element(by.text(':smile:'))).
-            toBeVisible().
-            withTimeout(timeouts.TEN_SEC);
-        await element(by.text(':smile:')).tap();
-        await wait(timeouts.TWO_SEC);
-        if (isAndroid()) {
-            await device.enableSynchronization();
-        }
+            await element(by.text(':smile:')).tap();
+            await wait(timeouts.TWO_SEC);
+        });
 
         // # Save the edited bookmark
         await waitFor(ChannelBookmarkScreen.saveButton).

@@ -278,6 +278,7 @@ describe('Server Login - Server List', () => {
         if (isIos()) {
             await ServerListScreen.serverListTitle.swipe('up');
         } else {
+            await waitForElementToBeVisible(ServerListScreen.serverListTitle, timeouts.TWO_SEC);
             await ServerListScreen.serverListTitle.swipe('up', 'fast', 0.1, 0.5, 0.3);
         }
 

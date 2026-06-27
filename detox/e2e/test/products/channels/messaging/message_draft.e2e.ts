@@ -172,15 +172,16 @@ describe('Messaging - Message Draft', () => {
         await ThreadScreen.postInput.tap();
         await ThreadScreen.postInput.replaceText(replyMessage);
 
+        const {post: lastPostBeforeDraft} = await Post.apiGetLastPostInChannel(siteOneUrl, testChannel.id);
+
         // * Verify reply message exists in post draft and is not yet added to post list
         if (isIos()) {
             await expect(ThreadScreen.postInput).toHaveValue(replyMessage);
         } else {
             await expect(ThreadScreen.postInput).toHaveText(replyMessage);
         }
-        const {post} = await Post.apiGetLastPostInChannel(siteOneUrl, testChannel.id);
-        const {postListPostItem: replyPostListPostItem} = ThreadScreen.getPostListPostItem(post.id, replyMessage);
-        await expect(replyPostListPostItem).not.toExist();
+        const {post: lastPostAfterDraft} = await Post.apiGetLastPostInChannel(siteOneUrl, testChannel.id);
+        expect(lastPostAfterDraft.id).toBe(lastPostBeforeDraft.id);
 
         // # Go back to channel screen and tap on parent post again
         await ThreadScreen.back();

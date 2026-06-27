@@ -70,7 +70,22 @@ class ChannelInfoScreen {
     bookmarksList = element(by.id(this.testID.bookmarksList));
 
     waitForAddBookmarkButton = async () => {
-        await waitFor(this.addBookmarkButton).toExist().withTimeout(timeouts.TEN_SEC);
+        const deadline = Date.now() + timeouts.TEN_SEC;
+        /* eslint-disable no-await-in-loop */
+        while (Date.now() < deadline) {
+            try {
+                await waitFor(this.addBookmarkButton).toExist().withTimeout(timeouts.TWO_SEC);
+                return this.addBookmarkButton;
+            } catch {
+                try {
+                    await this.scrollView.scroll(200, 'down');
+                } catch {
+                    // Content may not require scrolling
+                }
+            }
+        }
+        /* eslint-enable no-await-in-loop */
+        await waitFor(this.addBookmarkButton).toExist().withTimeout(timeouts.ONE_SEC);
         return this.addBookmarkButton;
     };
 

@@ -64,7 +64,9 @@ describe('Messaging - Message Edit', () => {
         await waitFor(originalPostListPostItem).toBeVisible().withTimeout(timeouts.FOUR_SEC);
 
         // # Scroll the post list (not the post item) to dismiss the keyboard and ensure post is tappable
-        await ChannelScreen.getFlatPostList().scroll(100, 'up', 0.5, 0.5);
+        try {
+            await ChannelScreen.getFlatPostList().scroll(100, 'up', 0.5, 0.5);
+        } catch { /* list at boundary — nothing to scroll */ }
 
         // # Open post options for the message that was just posted and tap edit option
         await ChannelScreen.openPostOptionsFor(post.id, message);
@@ -112,7 +114,9 @@ describe('Messaging - Message Edit', () => {
         await waitFor(postListPostItem).toBeVisible().withTimeout(timeouts.FOUR_SEC);
 
         // # Scroll the post list (not the post item) to dismiss the keyboard and ensure post is tappable
-        await ChannelScreen.getFlatPostList().scroll(100, 'up', 0.5, 0.5);
+        try {
+            await ChannelScreen.getFlatPostList().scroll(100, 'up', 0.5, 0.5);
+        } catch { /* list at boundary — nothing to scroll */ }
 
         // # Open post options for the message that was just posted and tap edit option
         await ChannelScreen.openPostOptionsFor(post.id, message);

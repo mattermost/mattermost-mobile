@@ -76,6 +76,11 @@ class ChannelListScreen {
         }
     };
 
+    waitForFavoritesChannelDisplayNameVisible = async (channelName: string, timeout = timeouts.TWENTY_SEC) => {
+        await this.ensureCategoryExpanded('favorites');
+        await waitForElementToExist(this.getChannelItemDisplayName('favorites', channelName), timeout);
+    };
+
     waitForSidebarPublicChannelDisplayNameVisible = async (channelName: string, timeout = timeouts.ONE_MIN) => {
         const deadline = Date.now() + timeout;
         const categories = ['channels', 'unreads', 'favorites'] as const;

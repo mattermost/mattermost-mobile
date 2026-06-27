@@ -24,7 +24,7 @@ import {
     LoginScreen,
     ServerScreen,
 } from '@support/ui/screen';
-import {isAndroid, isIos, timeouts, wait, waitForElementToNotExist} from '@support/utils';
+import {getRandomId, timeouts, wait, waitForElementToNotExist} from '@support/utils';
 import {expect} from 'detox';
 
 describe('Autocomplete - Channel Mention', () => {
