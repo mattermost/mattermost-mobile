@@ -336,16 +336,35 @@ jobs:
             android-emulator-${{ runner.os }}-${{ runner.arch }}-${{ env.AVD_NAME }}-api-${{ inputs.android_api_level }}-
             android-emulator-${{ runner.os }}-${{ runner.arch }}-
 
+      # Retry the whole emulator+tests command, not individual tests, so a mid-run
+      # emulator crash (signature: one shard reports ~all specs as failed) re-runs
+      # on a fresh AVD. on_retry_command kills the wedged emulator and clears the
+      # previous attempt's JUnit output so it doesn't mix into the upload.
+      # continue-on-error preserved: if all attempts exhaust, the job still proceeds
+      # to upload partial artifacts and generate-report decides overall status.
       - name: Create and run Android Emulator
-        run: |
-          cd detox
-          chmod +x ./create_android_emulator.sh
-          CI=true ./create_android_emulator.sh "$SDK_VERSION" "$AVD_NAME" $MATRIX_SPECS
+        uses: nick-fields/retry@7152eba30c6575329ac0576536151aca5a72780e # v3.0.0
         env:
           MATRIX_SPECS: ${{ matrix.specs }}
           SITE_1_URL: ${{ env.SITE_1_URL }}
           SITE_2_URL: ${{ env.SITE_2_URL }}
           SITE_3_URL: ${{ env.SITE_3_URL }}
+        with:
+          shell: bash
+          timeout_minutes: 60
+          max_attempts: 2
+          retry_on: error
+          on_retry_command: |
+            echo "==> Cleaning up after failed Detox attempt before retry"
+            adb -s emulator-5554 emu kill 2>/dev/null || true
+            pkill -9 -f qemu-system 2>/dev/null || true
+            pkill -9 -f emulator 2>/dev/null || true
+            rm -rf detox/artifacts/* 2>/dev/null || true
+            sleep 5
+          command: |
+            cd detox
+            chmod +x ./create_android_emulator.sh
+            CI=true ./create_android_emulator.sh "$SDK_VERSION" "$AVD_NAME" $MATRIX_SPECS
         continue-on-error: true # We want to run all the tests
 
       - name: Upload Android Test Report

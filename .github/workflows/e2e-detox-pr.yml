@@ -597,15 +597,15 @@ jobs:
       - run-detox-android
       - run-maestro-ios
       - run-maestro-android
-    # Always strip E2E/Run* after tests finish (pass, fail, or cancel) unless another
-    # run is still in-flight for the same PR.
+    # Strip E2E/Run* after tests finish unless Maestro was externally cancelled
+    # (leave the label so the suite can be re-triggered).
     if: |
       !cancelled() &&
       needs.resolve-e2e-policy.outputs.e2e_override != 'true' &&
-      contains(fromJSON('["success","failure","skipped","cancelled"]'), needs.run-detox-ios.result) &&
-      contains(fromJSON('["success","failure","skipped","cancelled"]'), needs.run-detox-android.result) &&
-      contains(fromJSON('["success","failure","skipped","cancelled"]'), needs.run-maestro-ios.result) &&
-      contains(fromJSON('["success","failure","skipped","cancelled"]'), needs.run-maestro-android.result)
+      contains(fromJSON('["success","failure","skipped"]'), needs.run-detox-ios.result) &&
+      contains(fromJSON('["success","failure","skipped"]'), needs.run-detox-android.result) &&
+      contains(fromJSON('["success","failure","skipped"]'), needs.run-maestro-ios.result) &&
+      contains(fromJSON('["success","failure","skipped"]'), needs.run-maestro-android.result)
     steps:
       - name: e2e/remove-label-from-pr
         continue-on-error: true

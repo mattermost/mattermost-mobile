@@ -212,9 +212,10 @@ jobs:
 
       - name: Install Homebrew Dependencies
         run: |
-          brew trust wix/brew 2>/dev/null || true
           brew tap wix/brew
-          brew install applesimutils || true
+          # Homebrew 5.2+/6.0 requires explicit trust before loading third-party formulae.
+          brew trust wix/brew
+          brew install applesimutils
           # Cache restores Cellar without /opt/homebrew/bin symlinks — link the tap formula explicitly.
           brew link --overwrite --force wix/brew/applesimutils 2>/dev/null \
             || brew link --overwrite applesimutils
