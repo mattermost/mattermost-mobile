@@ -22,7 +22,6 @@ import {
     isAndroid,
     timeouts,
     wait,
-    waitForElementToBeVisible,
     waitForElementToExist,
 } from '@support/utils';
 import {expect, waitFor} from 'detox';

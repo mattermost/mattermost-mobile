@@ -198,6 +198,7 @@ describe('Account - Settings - About', () => {
             await expect(element(by.text('https://mattermost.com'))).toExist();
         } else {
             await expect(AboutScreen.learnMoreText).toHaveText(expectedLearnMorePrefix);
+
             // Nested Text testIDs are not exposed on iOS (scrollToAboutElement note above).
         }
         await expect(AboutScreen.copyright).toHaveText(`Copyright 2015-${new Date().getFullYear()} Mattermost, Inc. All rights reserved`);

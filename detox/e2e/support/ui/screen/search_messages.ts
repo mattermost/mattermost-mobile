@@ -81,6 +81,7 @@ class SearchMessagesScreen {
 
     open = async () => {
         await HomeScreen.toBeVisible();
+
         // Corner-tap is for Android overlays; iOS CI fails to open search with {x:1,y:1} (MM-T5294_6–9).
         if (isIos()) {
             await this.searchTab.tap();
