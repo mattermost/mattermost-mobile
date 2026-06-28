@@ -141,22 +141,24 @@ async function loginAdmin(): Promise<void> {
     }
 }
 
-// Feature flags that must be ON for E2E. Set once per shard process — never
-// toggled to false in afterAll, which would broadcast CONFIG_CHANGED over
-// WebSocket to all concurrent shards sharing this PR's SITE_1_URL and unmount
-// the feature mid-session in the other shards.
-// Confirmed root cause of ChannelBookmarks shared-flag contention in run
-// 28290273101 (13 cross-platform failures, see channel_bookmarks artifacts).
-let configInitializedForE2E = false;
+// Feature flags that must be ON for E2E.
+// IMPORTANT: setupFilesAfterEnv re-evaluates this module for every test file, so a
+// module-level boolean flag resets to false each time and cannot prevent cross-file
+// re-execution. Gate on the server's actual config state instead: if the flag is
+// already true (set by an earlier test file's setup), skip the PATCH entirely.
+// Mattermost server triggers a full config reload + CONFIG_CHANGED WebSocket broadcast
+// on every config/patch request (~10s of elevated server load), even when the value
+// is unchanged. Skipping the redundant patch eliminates the load that previously
+// caused connectToServer to fail immediately after setup.
 async function ensureServerConfigForE2E(): Promise<void> {
-    if (configInitializedForE2E) {
-        return;
-    }
     try {
+        const {config, error} = await System.apiGetConfig(siteOneUrl);
+        if (!error && config?.FeatureFlags?.ChannelBookmarks === true) {
+            return; // Already set — skip the patch and the resulting server load.
+        }
         await System.apiUpdateConfig(siteOneUrl, {
             FeatureFlags: {ChannelBookmarks: true},
         });
-        configInitializedForE2E = true;
         console.info('✅ E2E server config initialized (FeatureFlags.ChannelBookmarks=true)');
     } catch (err) {
         // Non-fatal: tests gated on the flag will surface as their own failures

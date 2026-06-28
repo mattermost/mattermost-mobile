@@ -66,7 +66,35 @@ class ServerScreen {
         if (isAndroid()) {
             await this.waitForAndroidLoginAvailable(timeouts.ONE_MIN);
         } else {
-            await waitForElementToExist(this.usernameInput, timeouts.HALF_MIN);
+            // iOS: retry if the server returns "Cannot connect" (transient infra issue).
+            // Re-entering the URL re-validates the form and re-enables the Connect button.
+            const MAX_CONNECT_ATTEMPTS = 3;
+            let lastError: unknown;
+            /* eslint-disable no-await-in-loop -- sequential retry: each attempt must complete before deciding to retry */
+            for (let attempt = 1; attempt <= MAX_CONNECT_ATTEMPTS; attempt++) {
+                if (attempt > 1) {
+                    await this.serverUrlInput.clearText();
+                    await wait(timeouts.TWO_SEC);
+                    await this.serverUrlInput.replaceText(serverUrl);
+                    await wait(timeouts.ONE_SEC);
+                    await this.tapConnectButton();
+                }
+                try {
+                    await waitForElementToExist(this.usernameInput, timeouts.HALF_MIN);
+                    lastError = undefined;
+                    break;
+                } catch (e) {
+                    lastError = e;
+                    if (attempt < MAX_CONNECT_ATTEMPTS) {
+                        // eslint-disable-next-line no-console
+                        console.warn(`[connectToServer] Attempt ${attempt}/${MAX_CONNECT_ATTEMPTS} — login form did not appear, retrying`);
+                    }
+                }
+            }
+            /* eslint-enable no-await-in-loop */
+            if (lastError) {
+                throw lastError;
+            }
         }
 
         if (isIos()) {
