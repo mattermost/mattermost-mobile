@@ -24,7 +24,9 @@ import {WebSocketClient, wsReconnectionTimeoutErr} from './websocket_client';
 import type {EmojiData} from '@mattermost/calls/lib/types';
 import type {IntlShape} from 'react-intl';
 
-const peerConnectTimeout = 5000;
+// iOS outbound calls go through CallKit before WebRTC; simulators (especially
+// CI Release builds) can take longer than 5s for didActivate → peer connect.
+const peerConnectTimeout = Platform.OS === 'ios' ? 15000 : 5000;
 const rtcMonitorInterval = 10000;
 
 const InCallManagerEmitter = new NativeEventEmitter(NativeModules.InCallManager);
