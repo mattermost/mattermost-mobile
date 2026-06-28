@@ -10,6 +10,8 @@
 # Phase 1 — builds & setup (parallel):
 #   build-ios-simulator, build-android-apk-maestro, build-android-apk (Detox debug APK),
 #   provision-servers, validate-maestro-flow-headers
+#   resolve-artifact-source may skip Detox app builds on detox/-only commits and reuse
+#   artifacts from a prior successful E2E run (or reuse_artifact_run_id input).
 # Phase 2 — tests (parallel, after phase 1):
 #   run-detox-ios / run-detox-android → e2e-detox.yml
 #   run-maestro-ios / run-maestro-android → e2e-maestro-pr.yml (downloads phase-1 artifacts via artifact_run_id)
@@ -51,6 +53,10 @@ on:
         description: "Run type for test reporting (PR/RELEASE/NIGHTLY/MASTER). Defaults to PR."
         required: false
         default: "PR"
+        type: string
+      reuse_artifact_run_id:
+        description: "Optional E2E workflow run ID to reuse ios-build-simulator-* / android-build-files-* from (skips Detox app builds). When empty, auto-detected for detox/-only commits."
+        required: false
         type: string
 
 # Default least-privilege token; jobs that upload artifacts, post statuses, or
@@ -138,6 +144,133 @@ jobs:
             core.info(`PR #${prNumber} E2E/Override=${override}`);
             core.setOutput('e2e_override', override ? 'true' : 'false');
 
+  # TEMP(revert-when-detox-green): Skip Detox app builds when the commit only touches
+  # the E2E harness (detox/) and reuse artifacts from a prior successful E2E run.
+  # Manual override: pass reuse_artifact_run_id on workflow_dispatch.
+  resolve-artifact-source:
+    name: Resolve app artifact source
+    needs: resolve-e2e-policy
+    if: needs.resolve-e2e-policy.outputs.e2e_override != 'true'
+    runs-on: ubuntu-22.04
+    permissions:
+      contents: read
+      actions: read
+    outputs:
+      artifact_run_id: ${{ steps.resolve.outputs.artifact_run_id }}
+      skip_ios_build: ${{ steps.resolve.outputs.skip_ios_build }}
+      skip_android_build: ${{ steps.resolve.outputs.skip_android_build }}
+    steps:
+      - name: Checkout commit under test
+        uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
+        with:
+          ref: ${{ inputs.MOBILE_VERSION }}
+          fetch-depth: 2
+
+      - name: Resolve artifact run ID and skip-build flags
+        id: resolve
+        uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9.0.0
+        env:
+          MOBILE_VERSION: ${{ inputs.MOBILE_VERSION }}
+          REUSE_ARTIFACT_RUN_ID: ${{ inputs.reuse_artifact_run_id }}
+          PLATFORM: ${{ inputs.PLATFORM }}
+        with:
+          script: |
+            const {execSync} = require('child_process');
+            const platform = process.env.PLATFORM || 'both';
+            const needIos = platform === 'ios' || platform === 'both';
+            const needAndroid = platform === 'android' || platform === 'both';
+
+            const detoxOnlyPatterns = [
+              /^detox\//,
+              /^\.github\/workflows\/e2e-/,
+              /^\.github\/actions\/cancel-e2e-runs\//,
+              /^\.github\/actions\/update-commit-status\//,
+            ];
+
+            const isDetoxOnlyCommit = () => {
+              try {
+                const changed = execSync(
+                  `git diff-tree --no-commit-id --name-only -r ${process.env.MOBILE_VERSION}`,
+                  {encoding: 'utf8'},
+                ).split('\n').filter(Boolean);
+                if (changed.length === 0) {
+                  return false;
+                }
+                return changed.every((file) => detoxOnlyPatterns.some((pattern) => pattern.test(file)));
+              } catch (err) {
+                core.warning(`Could not classify commit as detox-only: ${err.message}`);
+                return false;
+              }
+            };
+
+            const runHasArtifacts = async (runId) => {
+              const {data} = await github.rest.actions.listWorkflowRunArtifacts({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                run_id: runId,
+              });
+              const names = data.artifacts.map((artifact) => artifact.name);
+              const hasIos = names.some((name) => name.startsWith('ios-build-simulator-'));
+              const hasAndroid = names.some((name) => name.startsWith('android-build-files-'));
+              return (!needIos || hasIos) && (!needAndroid || hasAndroid);
+            };
+
+            const findPreviousArtifactRun = async () => {
+              const branch = context.ref.replace('refs/heads/', '');
+              const {data} = await github.rest.actions.listWorkflowRuns({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                workflow_id: 'e2e-detox-pr.yml',
+                branch,
+                status: 'success',
+                event: 'workflow_dispatch',
+                per_page: 30,
+              });
+              for (const run of data.workflow_runs) {
+                if (run.id >= context.runId) {
+                  continue;
+                }
+                // eslint-disable-next-line no-await-in-loop
+                if (await runHasArtifacts(run.id)) {
+                  return String(run.id);
+                }
+              }
+              return null;
+            };
+
+            const finish = (artifactRunId, skipIos, skipAndroid, reason) => {
+              core.info(`Artifact source: run ${artifactRunId} (${reason}); skip_ios_build=${skipIos}; skip_android_build=${skipAndroid}`);
+              core.setOutput('artifact_run_id', artifactRunId);
+              core.setOutput('skip_ios_build', skipIos ? 'true' : 'false');
+              core.setOutput('skip_android_build', skipAndroid ? 'true' : 'false');
+            };
+
+            const manualRunId = (process.env.REUSE_ARTIFACT_RUN_ID || '').trim();
+            if (manualRunId) {
+              const parsed = Number.parseInt(manualRunId, 10);
+              if (!Number.isFinite(parsed)) {
+                core.setFailed(`reuse_artifact_run_id must be numeric, got "${manualRunId}"`);
+                return;
+              }
+              if (!(await runHasArtifacts(parsed))) {
+                core.setFailed(`Run ${parsed} is missing required app artifacts for platform=${platform}`);
+                return;
+              }
+              finish(String(parsed), needIos, needAndroid, 'manual reuse_artifact_run_id input');
+              return;
+            }
+
+            if (isDetoxOnlyCommit()) {
+              const previousRunId = await findPreviousArtifactRun();
+              if (previousRunId) {
+                finish(previousRunId, needIos, needAndroid, 'detox-only commit reusing prior E2E run');
+                return;
+              }
+              core.info('Detox-only commit but no prior successful E2E run with artifacts — building app');
+            }
+
+            finish(String(context.runId), false, false, 'full app build in this run');
+
   update-initial-status-ios:
     needs: resolve-e2e-policy
     if: >-
@@ -212,11 +345,13 @@ jobs:
     if: >-
       !cancelled()
       && needs.resolve-e2e-policy.outputs.e2e_override != 'true'
+      && needs.resolve-artifact-source.outputs.skip_ios_build != 'true'
       && (inputs.PLATFORM == 'ios' || inputs.PLATFORM == 'both')
       && (needs.update-initial-status-ios.result == 'success' || needs.update-initial-status-ios.result == 'skipped')
     runs-on: macos-26
     needs:
       - resolve-e2e-policy
+      - resolve-artifact-source
       - update-initial-status-ios
     permissions:
       contents: read
@@ -252,10 +387,12 @@ jobs:
   build-android-apk:
     if: >-
       needs.resolve-e2e-policy.outputs.e2e_override != 'true'
+      && needs.resolve-artifact-source.outputs.skip_android_build != 'true'
       && (inputs.PLATFORM == 'android' || inputs.PLATFORM == 'both')
     runs-on: ubuntu-latest-8-cores
     needs:
       - resolve-e2e-policy
+      - resolve-artifact-source
       - update-initial-status-android
     permissions:
       contents: read
@@ -457,6 +594,7 @@ jobs:
     name: Detox iOS E2E
     needs:
       - resolve-e2e-policy
+      - resolve-artifact-source
       - build-ios-simulator
       - provision-servers
     permissions:
@@ -477,13 +615,14 @@ jobs:
       SITE_2_URL: ${{ inputs.SITE_2_URL }}
       SITE_3_URL: ${{ inputs.SITE_3_URL }}
       run_type: ${{ inputs.run_type || 'PR' }}
-      artifact_run_id: ${{ github.run_id }}
+      artifact_run_id: ${{ needs.resolve-artifact-source.outputs.artifact_run_id }}
     secrets: inherit
 
   run-detox-android:
     name: Detox Android E2E
     needs:
       - resolve-e2e-policy
+      - resolve-artifact-source
       - build-android-apk
       - provision-servers
     permissions:
@@ -504,7 +643,7 @@ jobs:
       SITE_2_URL: ${{ inputs.SITE_2_URL }}
       SITE_3_URL: ${{ inputs.SITE_3_URL }}
       run_type: ${{ inputs.run_type || 'PR' }}
-      artifact_run_id: ${{ github.run_id }}
+      artifact_run_id: ${{ needs.resolve-artifact-source.outputs.artifact_run_id }}
     secrets: inherit
 
   validate-maestro-flow-headers:
@@ -531,6 +670,7 @@ jobs:
     name: Maestro iOS E2E
     needs:
       - resolve-e2e-policy
+      - resolve-artifact-source
       - build-ios-simulator
       - provision-servers
       - validate-maestro-flow-headers
@@ -553,7 +693,7 @@ jobs:
       SITE_2_URL: ${{ inputs.SITE_2_URL }}
       SITE_3_URL: ${{ inputs.SITE_3_URL }}
       run_type: ${{ inputs.run_type || 'PR' }}
-      artifact_run_id: ${{ github.run_id }}
+      artifact_run_id: ${{ needs.resolve-artifact-source.outputs.artifact_run_id }}
     secrets: inherit
 
   update-status-maestro-android-temp-disabled:
