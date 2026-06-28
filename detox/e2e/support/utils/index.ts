@@ -2,6 +2,7 @@
 // See LICENSE.txt for license information.
 
 import {adminEmail, adminPassword, adminUsername} from '@support/test_config';
+import {waitFor} from 'detox';
 import {v4 as uuidv4} from 'uuid';
 
 export * from './email';
@@ -96,6 +97,11 @@ export async function longPressWithScrollRetry(
     checkElement: Detox.NativeElement,
     maxAttempts = 5,
 ): Promise<void> {
+    const isIosHittableError = (error: unknown) => {
+        const msg = String(error);
+        return msg.includes('hittable') || msg.includes('visibility percent');
+    };
+
     /* eslint-disable no-await-in-loop */
     for (let attempt = 1; attempt <= maxAttempts; attempt++) {
         if (isAndroid()) {
@@ -108,6 +114,13 @@ export async function longPressWithScrollRetry(
         }
 
         if (isIos()) {
+            try {
+                await waitFor(target).toBeVisible().whileElement(scrollTarget).scroll(80, 'down');
+            } catch {
+                try {
+                    await scrollTarget.scroll(120, 'up', 0.5, 0.5);
+                } catch { /* ignore */ }
+            }
             try {
                 await scrollTarget.scroll(100, 'down', 0.5, 0.5);
             } catch { /* ignore */ }
@@ -123,12 +136,22 @@ export async function longPressWithScrollRetry(
         if (isIos()) {
             await device.disableSynchronization();
         }
+        let longPressFailed = false;
         try {
             await target.longPress(pressDuration);
+        } catch (pressError) {
+            if (isIos() && attempt < maxAttempts && isIosHittableError(pressError)) {
+                longPressFailed = true;
+            } else {
+                throw pressError;
+            }
         } finally {
             if (isIos()) {
                 await device.enableSynchronization();
             }
+        }
+        if (longPressFailed) {
+            continue;
         }
         try {
             await waitForElementToExist(checkElement, timeouts.TEN_SEC);
