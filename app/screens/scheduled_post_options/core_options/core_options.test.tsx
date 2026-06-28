@@ -35,8 +35,8 @@ describe('ScheduledPostCoreOptions', () => {
     });
 
     it('renders correctly for Sunday', () => {
-        // Sunday is weekday 0 in moment (en locale)
-        jest.spyOn(moment.prototype, 'weekday').mockReturnValue(0);
+        // Sunday is weekday 7 in moment
+        jest.spyOn(moment.prototype, 'weekday').mockReturnValue(7);
 
         const {getByText, queryByText} = renderWithEverything(
             <ScheduledPostCoreOptions {...baseProps}/>,

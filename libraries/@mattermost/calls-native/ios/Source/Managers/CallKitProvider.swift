@@ -191,11 +191,6 @@ private struct CallInfo {
                 completion(nil, error)
                 return
             }
-            // Outbound calls must configure AVAudioSession before WebRTC starts.
-            // Incoming calls do this in CXAnswerCallAction; without it here,
-            // RTCAudioSession may never activate on CI simulators and peer
-            // connection times out before CurrentCallBar appears.
-            self.bridge?.audioSession.configureForCall()
             self.provider.reportOutgoingCall(with: uuid, startedConnectingAt: nil)
             GekidouLogger.shared.log(.info,
                 "CallKitProvider: reported outgoing call uuid=\(uuid.uuidString)")
@@ -303,9 +298,9 @@ private struct CallInfo {
     }
 
     public func provider(_ provider: CXProvider, perform action: CXStartCallAction) {
-        // Mirror CXAnswerCallAction: configure audio before fulfill so
-        // react-native-webrtc's RTCAudioSession is ready when JS joins.
-        bridge?.audioSession.configureForCall()
+        // For Phase 1 we don't need to do anything here — outbound calls go
+        // through reportOutgoingCall above which already requested the
+        // transaction. iOS still calls this delegate; just fulfill.
         action.fulfill()
     }
 

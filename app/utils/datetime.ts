@@ -57,24 +57,11 @@ export function getReadableTimestamp(timestamp: number, timeZone: string, isMili
         hour: 'numeric',
         minute: '2-digit',
         hour12: !isMilitaryTime,
-        ...(timeZone ? {timeZone} : {}),
+        timeZone: timeZone as string,
         ...(isCurrentYear ? {} : {year: 'numeric'}),
     };
 
-    try {
-        return date.toLocaleString(currentUserLocale, options);
-    } catch {
-        const fallbackOptions: Intl.DateTimeFormatOptions = {
-            month: 'short',
-            day: 'numeric',
-            hour: 'numeric',
-            minute: '2-digit',
-            hour12: !isMilitaryTime,
-            ...(isCurrentYear ? {} : {year: 'numeric'}),
-        };
-
-        return date.toLocaleString('en-US', fallbackOptions);
-    }
+    return date.toLocaleString(currentUserLocale, options);
 }
 
 export function formatTime(seconds: number, textTime: boolean = false, intl?: IntlShape) {
