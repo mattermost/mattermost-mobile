@@ -3,12 +3,15 @@
 
 // Shared helpers for opening an archived channel in tests.
 //
-// Both platforms use search → permalink → jumpToRecentMessages.
-// Android Browse Channels → archived filter crashes RN Fabric on CI
-// ("addViewAt: child already has a parent" — MM-T1716 testFnFailure.png).
+// Platform split:
+//   Android — Browse Channels → archived filter → tap channel (baseline flow;
+//             search/permalink regressed MM-T1671_1 + MM-T1722_1).
+//   iOS     — search → permalink → jumpToRecentMessages (Browse Channels tap
+//             does not reliably navigate on iOS in CI).
 
 import {Post} from '@support/server_api';
 import {siteOneUrl} from '@support/test_config';
+import BrowseChannelsScreen from '@support/ui/screen/browse_channels';
 import ChannelScreen from '@support/ui/screen/channel';
 import ChannelDropdownMenuScreen from '@support/ui/screen/channel_dropdown_menu';
 import PermalinkScreen from '@support/ui/screen/permalink';
@@ -18,6 +21,7 @@ import {
     safeEnableSynchronization,
     timeouts,
     wait,
+    waitForElementToBeVisible,
     waitForElementToExist,
 } from '@support/utils';
 
@@ -53,7 +57,30 @@ export async function postArchivedChannelSentinel(channelId: string): Promise<st
     return sentinel;
 }
 
+// Navigate to an archived channel via Browse Channels → archived filter → tap.
+// Android-only: the search/permalink path regressed MM-T1671_1 + MM-T1722_1.
+//
+// We skip the searchInput.replaceText step that prior implementations used:
+// browse_channels.search_bar.search.input never lands in the Android view
+// hierarchy as a Detox-findable view (confirmed by 0 hits across all 20 Android
+// shard device.logs in CI run 28290273101). Waiting on a never-present testID
+// times out regardless of whether you use toBeVisible or toExist. The archived-
+// filter pre-loads recently-archived channels at the top of the list, so tapping
+// directly works as long as we wait for the channel item itself to exist.
+async function openArchivedChannelViaBrowseChannels(channelName: string) {
+    await BrowseChannelsScreen.open();
+    await BrowseChannelsScreen.dismissScheduledPostTooltip();
+    await openArchivedChannelsFilter();
+
+    await waitFor(BrowseChannelsScreen.getChannelItem(channelName)).toExist().withTimeout(timeouts.TEN_SEC);
+    await BrowseChannelsScreen.getChannelItem(channelName).tap();
+
+    await waitForElementToExist(ChannelScreen.channelScreen, timeouts.ONE_MIN);
+    await waitForElementToBeVisible(ChannelScreen.postDraftArchived, timeouts.HALF_MIN);
+}
+
 // Navigate to an archived channel via the search results permalink flow.
+// iOS-only: Browse Channels tap does not reliably navigate on iOS in CI.
 async function openArchivedChannelViaSearchPermalink(searchableMessage: string) {
     await SearchMessagesScreen.open();
     await SearchMessagesScreen.searchInput.replaceText(searchableMessage);
@@ -67,27 +94,21 @@ async function openArchivedChannelViaSearchPermalink(searchableMessage: string) 
     // Sync MUST be disabled before tapReturnKey — search keeps the dispatch queue busy.
     await device.disableSynchronization();
     try {
-        /* eslint-disable no-await-in-loop -- search index may lag after archive */
-        for (let attempt = 0; attempt < 5; attempt++) {
-            if (attempt > 0) {
-                await SearchMessagesScreen.searchInput.clearText();
-                await wait(timeouts.TWO_SEC);
-                await SearchMessagesScreen.searchInput.replaceText(searchableMessage);
-            }
+        await SearchMessagesScreen.searchInput.tapReturnKey();
+        try {
+            await waitForElementToBeVisible(searchResultText, timeouts.TWENTY_SEC);
+        } catch {
+            // Search-index lag: up to three total attempts (two re-submits after the initial try).
             await SearchMessagesScreen.searchInput.tapReturnKey();
-            await wait(timeouts.TWO_SEC);
             try {
-                await waitForElementToExist(searchResultText, timeouts.TWENTY_SEC);
-                break;
-            } catch (error) {
-                if (attempt === 4) {
-                    throw error;
-                }
+                await waitForElementToBeVisible(searchResultText, timeouts.ONE_MIN);
+            } catch {
+                await SearchMessagesScreen.searchInput.tapReturnKey();
+                await waitForElementToBeVisible(searchResultText, timeouts.ONE_MIN);
             }
         }
-        /* eslint-enable no-await-in-loop */
     } finally {
-        await device.enableSynchronization();
+        await safeEnableSynchronization();
     }
 
     await searchResultText.tap();
@@ -97,24 +118,42 @@ async function openArchivedChannelViaSearchPermalink(searchableMessage: string) 
     await device.disableSynchronization();
     try {
         await waitForElementToExist(ChannelScreen.channelScreen, timeouts.ONE_MIN);
-        await waitForElementToExist(ChannelScreen.postDraftArchived, timeouts.HALF_MIN);
+        await waitForElementToBeVisible(ChannelScreen.postDraftArchived, timeouts.HALF_MIN);
     } finally {
-        await device.enableSynchronization();
+        await safeEnableSynchronization();
     }
 }
 
-// Open an archived channel via search → permalink → jumpToRecentMessages.
-// Android Browse Channels → archived filter regressed with RN Fabric
-// ("addViewAt: child already has a parent" — see MM-T1716 testFnFailure.png).
+// Open an archived channel using the platform-appropriate navigation path.
+//   Android: Browse Channels → archived filter → tap channel.
+//   iOS:     search → permalink → jumpToRecentMessages.
 export async function openArchivedChannel(
-    _channelName: string,
+    channelName: string,
     searchableMessage: string,
 ) {
-    await openArchivedChannelViaSearchPermalink(searchableMessage);
+    if (isAndroid()) {
+        await openArchivedChannelViaBrowseChannels(channelName);
+    } else {
+        await openArchivedChannelViaSearchPermalink(searchableMessage);
+    }
 }
 
 // Close the archived channel and return to the channel list.
+//   Android (Browse Channels path): back → dismiss Browse Channels modal.
+//   iOS (search/permalink path):    back → channel list (no modal).
 export async function closeArchivedChannel() {
     await ChannelScreen.back();
     await wait(timeouts.ONE_SEC);
+
+    if (isAndroid()) {
+        // After Browse Channels path, the modal is still open beneath channel.screen.
+        try {
+            await waitFor(BrowseChannelsScreen.closeButton).toExist().withTimeout(timeouts.FOUR_SEC);
+        } catch {
+            // Browse Channels already dismissed.
+            return;
+        }
+        await BrowseChannelsScreen.closeButton.tap();
+        await waitFor(BrowseChannelsScreen.closeButton).not.toExist().withTimeout(timeouts.TEN_SEC);
+    }
 }

@@ -159,7 +159,11 @@ describe('Account - Settings - About', () => {
             // scroll — RCTEnhancedScrollView throws once the scroll view hits its end.
             if (isIos()) {
                 await scrollView.scrollTo('bottom');
-                await waitFor(target).toExist().withTimeout(timeouts.TEN_SEC);
+
+                // Nested Text testIDs are not exposed on iOS — poll by visible prefix text instead.
+                await waitFor(element(by.text(expectedLearnMorePrefix.trim()))).
+                    toExist().
+                    withTimeout(timeouts.TEN_SEC);
                 return;
             }
 

@@ -109,11 +109,7 @@ describe('Messaging - File Preview Gallery', () => {
 
         // * Verify file preview gallery is open (close button appears when gallery is mounted)
         const galleryCloseButton = element(by.id('gallery.header.close.button'));
-        if (isAndroid()) {
-            await waitForElementToExist(galleryCloseButton, timeouts.HALF_MIN);
-        } else {
-            await waitFor(galleryCloseButton).toExist().withTimeout(timeouts.TEN_SEC);
-        }
+        await waitForElementToExist(galleryCloseButton, timeouts.HALF_MIN);
 
         // # Dismiss the gallery and wait for overlay to clear
         await dismissGallery();
@@ -213,7 +209,6 @@ describe('Messaging - File Preview Gallery', () => {
         // * Verify file preview gallery is open (close button is present when gallery is mounted)
         const galleryCloseButton = element(by.id('gallery.header.close.button'));
         await waitFor(galleryCloseButton).toExist().withTimeout(timeouts.TEN_SEC);
-        await expect(galleryCloseButton).toExist();
 
         // # Dismiss the gallery and wait for overlay to clear
         await dismissGallery();
@@ -263,11 +258,17 @@ describe('Messaging - File Preview Gallery', () => {
         // drops the press (cause of prior intermittent MM-T3458_1 failure).
         const copyPublicLinkButton = element(by.id('gallery.footer.copy_public_link.button')).atIndex(0);
         await waitFor(copyPublicLinkButton).toBeVisible().withTimeout(timeouts.TEN_SEC);
+
+        // Wait for the gallery open animation to fully settle before tapping.
+        // The UITransitionView overlay is still animating when toBeVisible() fires;
+        // tapping immediately intercepts into the overlay and onPress doesn't fire.
+        await wait(timeouts.TWO_SEC);
         await copyPublicLinkButton.tap();
+        await wait(timeouts.TWO_SEC);
 
         // * Verify the copy public link toast message appears (testID='toast.message')
         const toastMessage = element(by.id('toast.message'));
-        await waitForElementToExist(toastMessage, timeouts.TWENTY_SEC);
+        await waitFor(toastMessage).toExist().withTimeout(timeouts.TEN_SEC);
 
         // # Dismiss the gallery and wait for overlay to clear
         await dismissGallery();

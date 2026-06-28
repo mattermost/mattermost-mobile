@@ -6,7 +6,7 @@ import {
     ProfilePicture,
 } from '@support/ui/component';
 import {ChannelScreen} from '@support/ui/screen';
-import {isAndroid, timeouts, wait, waitForElementToExist} from '@support/utils';
+import {isAndroid, timeouts, wait} from '@support/utils';
 import {expect, waitFor} from 'detox';
 
 class ChannelInfoScreen {
@@ -37,8 +37,6 @@ class ChannelInfoScreen {
         copyChannelLinkOption: 'channel_info.options.copy_channel_link.option',
         channelSettingsOption: 'channel_info.options.channel_settings.option',
         leaveChannelOption: 'channel_info.options.leave_channel.option',
-        addBookmarkButton: 'channel_info.add_bookmark.button',
-        bookmarksList: 'channel_info.bookmarks.list',
     };
 
     channelInfoScreen = element(by.id(this.testID.channelInfoScreen));
@@ -66,62 +64,6 @@ class ChannelInfoScreen {
     copyChannelLinkOption = element(by.id(this.testID.copyChannelLinkOption));
     channelSettingsOption = element(by.id(this.testID.channelSettingsOption));
     leaveChannelOption = element(by.id(this.testID.leaveChannelOption));
-    addBookmarkButton = element(by.id(this.testID.addBookmarkButton));
-    bookmarksList = element(by.id(this.testID.bookmarksList));
-
-    waitForAddBookmarkButton = async () => {
-        const deadline = Date.now() + timeouts.TEN_SEC;
-        /* eslint-disable no-await-in-loop */
-        while (Date.now() < deadline) {
-            try {
-                await waitFor(this.addBookmarkButton).toExist().withTimeout(timeouts.TWO_SEC);
-                return this.addBookmarkButton;
-            } catch {
-                try {
-                    await this.scrollView.scroll(200, 'down');
-                } catch {
-                    // Content may not require scrolling
-                }
-            }
-        }
-        /* eslint-enable no-await-in-loop */
-        await waitFor(this.addBookmarkButton).toExist().withTimeout(timeouts.ONE_SEC);
-        return this.addBookmarkButton;
-    };
-
-    expectAddBookmarkVisible = async () => {
-        const button = await this.waitForAddBookmarkButton();
-        if (isAndroid()) {
-            await expect(button).toBeVisible();
-        } else {
-            // iOS: channel_info modal UITransitionView layers can block the 75% visibility threshold.
-            await expect(button).toExist();
-        }
-    };
-
-    tapAddBookmark = async () => {
-        const button = await this.waitForAddBookmarkButton();
-        await button.tap();
-        await waitFor(element(by.id('channel_bookmark.type.link'))).
-            toExist().
-            withTimeout(timeouts.TEN_SEC);
-    };
-
-    expectAddBookmarkNotVisible = async () => {
-        await expect(this.addBookmarkButton).not.toExist();
-    };
-
-    waitForBookmarksList = async () => {
-        await waitForElementToExist(this.bookmarksList, timeouts.HALF_MIN);
-        return this.bookmarksList;
-    };
-
-    waitForBookmarkTitleInList = async (title: string) => {
-        await waitForElementToExist(
-            element(by.text(title).withAncestor(by.id(this.testID.bookmarksList))),
-            timeouts.HALF_MIN,
-        );
-    };
 
     getDirectMessageTitle = (userId: string) => {
         const directMessageTitleTestId = `${this.testID.directMessageTitlePrefix}${userId}`;
@@ -162,11 +104,7 @@ class ChannelInfoScreen {
     };
 
     close = async () => {
-        if (isAndroid()) {
-            await waitFor(this.closeButton).toExist().withTimeout(timeouts.TEN_SEC);
-        } else {
-            await waitFor(this.closeButton).toBeVisible().withTimeout(timeouts.TEN_SEC);
-        }
+        await waitFor(this.closeButton).toBeVisible().withTimeout(timeouts.TEN_SEC);
         await this.closeButton.tap();
         await waitFor(this.channelInfoScreen).not.toBeVisible().withTimeout(timeouts.TEN_SEC);
     };

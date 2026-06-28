@@ -125,6 +125,8 @@ describe('Search - Search Messages', () => {
         await SearchMessagesScreen.toBeVisible();
 
         // # Tap on in-search-modifier, type in channel name, tap on channel mention autocomplete, and tap on search key
+        // Corner-tap: the search modifier row's center is obscured by the search
+        // modal's UITransitionView (same workaround as PostOptionsScreen.deletePost).
         await SearchMessagesScreen.searchModifierIn.tap({x: 1, y: 1});
         await SearchMessagesScreen.searchInput.typeText(testChannel.name);
         const {channelMentionItem} = Autocomplete.getChannelMentionItem(testChannel.name);
@@ -199,13 +201,19 @@ describe('Search - Search Messages', () => {
         await SearchMessagesScreen.toBeVisible();
 
         // # Type in the message prefix plus included term inside double quotes and tap on search key
-        await SearchMessagesScreen.searchModifierPhrases.tap();
+        // Corner-tap: searchModifierPhrases is 1.3px clipped at this state too (same
+        // 100% threshold failure as at :214 below). Apply the same workaround.
+        await SearchMessagesScreen.searchModifierPhrases.tap({x: 1, y: 1});
         await SearchMessagesScreen.searchInput.tapBackspaceKey();
         await SearchMessagesScreen.searchInput.typeText(messageWithIncludedTerm);
 
         // # Collapse the keyboard
         await element(by.id('search.modifier.header')).tap();
-        await SearchMessagesScreen.searchModifierPhrases.tap();
+
+        // Corner-tap: searchModifierPhrases is 1.3px clipped (visible 47px vs
+        // bounds 48.33px) and fails Detox's 100% visibility threshold. Same
+        // workaround as searchModifierIn at :138 (MM-T5294_3).
+        await SearchMessagesScreen.searchModifierPhrases.tap({x: 1, y: 1});
         await SearchMessagesScreen.searchInput.tapBackspaceKey();
         await SearchMessagesScreen.searchInput.tapReturnKey();
 

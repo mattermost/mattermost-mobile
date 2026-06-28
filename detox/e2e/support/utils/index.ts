@@ -117,6 +117,11 @@ export async function scrollElementIntoView(
     await waitFor(target).toBeVisible(100).withTimeout(timeouts.FIVE_SEC);
 }
 
+const isIosHittableError = (error: unknown) => {
+    const msg = String(error);
+    return msg.includes('hittable') || msg.includes('visibility percent');
+};
+
 // Long-press with scroll/swipe retry for flaky post-option gestures after keyboard dismiss.
 export async function longPressWithScrollRetry(
     target: Detox.NativeElement,
@@ -132,6 +137,9 @@ export async function longPressWithScrollRetry(
             try {
                 await element(scrollContainer).swipe('down', 'slow', 0.2);
             } catch { /* ignore */ }
+            try {
+                await element(scrollContainer).scroll(100, 'down', 0.5, 0.5);
+            } catch { /* ignore */ }
         }
 
         const waitDuration = isAndroid() ? timeouts.TWO_SEC : timeouts.THREE_SEC;
@@ -141,12 +149,22 @@ export async function longPressWithScrollRetry(
         if (isIos()) {
             await device.disableSynchronization();
         }
+        let longPressFailed = false;
         try {
             await target.longPress(pressDuration);
+        } catch (pressError) {
+            if (isIos() && attempt < maxAttempts && isIosHittableError(pressError)) {
+                longPressFailed = true;
+            } else {
+                throw pressError;
+            }
         } finally {
             if (isIos()) {
-                await device.enableSynchronization();
+                await safeEnableSynchronization();
             }
+        }
+        if (longPressFailed) {
+            continue;
         }
         try {
             await waitForElementToExist(checkElement, timeouts.TEN_SEC);
@@ -160,16 +178,37 @@ export async function longPressWithScrollRetry(
     /* eslint-enable no-await-in-loop */
 }
 
-// Long-press retry without scrolling the list first.
+// Long-press retry; pass scrollContainer to scroll the post into view first.
 export async function longPressWithRetry(
     target: Detox.NativeElement,
     checkElement: Detox.NativeElement,
     maxAttempts = 5,
+    scrollContainer?: Detox.NativeMatcher,
 ): Promise<void> {
     /* eslint-disable no-await-in-loop */
     for (let attempt = 1; attempt <= maxAttempts; attempt++) {
+        if (scrollContainer) {
+            await scrollElementIntoView(target, scrollContainer);
+            if (isAndroid()) {
+                try {
+                    await element(scrollContainer).swipe('down', 'slow', 0.2);
+                } catch { /* ignore */ }
+            }
+            await wait(isAndroid() ? timeouts.TWO_SEC : timeouts.ONE_SEC);
+        }
+
         const pressDuration = isAndroid() ? timeouts.FOUR_SEC : timeouts.TWO_SEC;
-        await target.longPress(pressDuration);
+
+        if (isAndroid()) {
+            await device.disableSynchronization();
+        }
+        try {
+            await target.longPress(pressDuration);
+        } finally {
+            if (isAndroid()) {
+                await safeEnableSynchronization();
+            }
+        }
         try {
             await waitForElementToExist(checkElement, timeouts.TEN_SEC);
             return;

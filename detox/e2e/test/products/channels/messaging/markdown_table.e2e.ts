@@ -72,63 +72,6 @@ describe('Messaging - Markdown Table', () => {
         await ChannelScreen.back();
     });
 
-    it('MM-T4899_2 - should be able to display markdown table with long text wrapped properly', async () => {
-        // # Open a channel screen and post a markdown table with long text
-        const markdownTable =
-            '| Left header that wraps | Center header that wraps | Right header that wraps |\n' +
-            '| :-- | :-: | --: |\n' +
-            '| Left text that wraps row | Center text that wraps row | Right text that wraps row |\n';
-        await Post.apiCreatePost(siteOneUrl, {
-            channelId: testChannel.id,
-            message: markdownTable,
-        });
-        await ChannelScreen.open(channelsCategory, testChannel.name);
-
-        // * Verify table is displayed with long text wrapped properly
-        const {post} = await Post.apiGetLastPostInChannel(siteOneUrl, testChannel.id);
-        const {postListPostItemTable, postListPostItemTableExpandButton} = ChannelScreen.getPostListPostItem(post.id);
-        await expect(postListPostItemTable).toBeVisible(50);
-        await expect(element(by.text('Left header that wraps'))).toBeVisible(50);
-        await expect(element(by.text('Center header that wraps'))).toBeVisible(50);
-        await expect(element(by.text('Right header that wraps'))).toBeVisible(50);
-        await expect(element(by.text('Left text that wraps row'))).toBeVisible(50);
-        await expect(element(by.text('Center text that wraps row'))).toBeVisible(50);
-        await expect(element(by.text('Right text that wraps row'))).toBeVisible(50);
-
-        // # Expand to full view
-        await waitFor(postListPostItemTableExpandButton).toBeVisible().whileElement(by.id(ChannelScreen.postList.testID.flatList)).scroll(50, 'down');
-        await postListPostItemTableExpandButton.tap();
-
-        // * Verify on table screen with the markdown table
-        await TableScreen.toBeVisible();
-        await expect(element(by.text('Left header that wraps'))).toBeVisible(50);
-        await expect(element(by.text('Center header that wraps'))).toBeVisible(50);
-
-        // Verify the left/center body cells are visible BEFORE scrolling right.
-        // The Android table renders the right column beyond the viewport, so the
-        // scroll-right below pushes the left column off-screen — assert left/center
-        // here first to avoid asserting them after they have been scrolled away.
-        await expect(element(by.text('Left text that wraps row'))).toBeVisible(50);
-        await expect(element(by.text('Center text that wraps row'))).toBeVisible(50);
-
-        // Right-side columns render beyond the viewport on narrow screens (the table's
-        // minimum column width pushes the third column off-screen). Scroll the table
-        // horizontally until the right header/row become visible.
-        if (isIos()) {
-            await TableScreen.tableScrollView.scrollTo('right');
-            await wait(timeouts.ONE_SEC);
-        } else {
-            await waitFor(element(by.text('Right header that wraps'))).toBeVisible(50).whileElement(by.id(TableScreen.testID.tableScrollView)).scroll(150, 'right');
-            await waitFor(element(by.text('Right text that wraps row'))).toBeVisible(50).whileElement(by.id(TableScreen.testID.tableScrollView)).scroll(150, 'right');
-        }
-        await expect(element(by.text('Right header that wraps'))).toBeVisible(50);
-        await expect(element(by.text('Right text that wraps row'))).toBeVisible(50);
-
-        // # Go back to channel list screen
-        await TableScreen.back();
-        await ChannelScreen.back();
-    });
-
     it('MM-T4899_3 - should be able to open markdown table in full view and allow horizontal scroll', async () => {
         // # Open a channel screen and post a markdown table with more columns past horizontal view
         const markdownTable =

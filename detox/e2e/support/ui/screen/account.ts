@@ -5,6 +5,7 @@ import {
     Alert,
     ProfilePicture,
 } from '@support/ui/component';
+import {dismissKnownModals} from '@support/ui/modal_dismiss';
 import {HomeScreen} from '@support/ui/screen';
 import {isAndroid, timeouts, wait} from '@support/utils';
 import {expect, waitFor} from 'detox';
@@ -95,6 +96,14 @@ class AccountScreen {
     };
 
     open = async () => {
+        await dismissKnownModals(2);
+
+        try {
+            await waitFor(HomeScreen.channelListTab).toExist().withTimeout(timeouts.FIVE_SEC);
+            await HomeScreen.channelListTab.tap();
+            await wait(timeouts.ONE_SEC);
+        } catch { /* tab bar may already show channels */ }
+
         // Dismiss any lingering "Logout not complete" dialog left over from a
         // previous test's logout. This can happen on both platforms when the
         // server was unreachable and the handler in logout() didn't dismiss it.

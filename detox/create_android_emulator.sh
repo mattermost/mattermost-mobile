@@ -218,6 +218,19 @@ start_server() {
         elapsed=$((elapsed + interval))
     done
     echo "Server is ready."
+
+    echo "Pre-warming Metro Android bundle before Detox launchApp..."
+    local bundle_timeout=180 bundle_elapsed=0 bundle_interval=5
+    until curl -sf "http://127.0.0.1:8081/index.bundle?platform=android&dev=true&minify=false" 2>/dev/null | head -c 200 | grep -q "__d"; do
+        if [[ $bundle_elapsed -ge $bundle_timeout ]]; then
+            echo "ERROR: Metro Android bundle did not become ready within ${bundle_timeout}s"
+            exit 1
+        fi
+        echo "Waiting for Metro Android bundle... (${bundle_elapsed}s)"
+        sleep $bundle_interval
+        bundle_elapsed=$((bundle_elapsed + bundle_interval))
+    done
+    echo "Metro Android bundle is ready."
 }
 
 setup_adb_reverse() {

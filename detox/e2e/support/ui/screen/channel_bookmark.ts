@@ -1,7 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {isAndroid, isIos, timeouts, wait} from '@support/utils';
+import {safeEnableSynchronization, timeouts} from '@support/utils';
 import {expect, waitFor} from 'detox';
 
 class ChannelBookmarkScreen {
@@ -31,11 +31,9 @@ class ChannelBookmarkScreen {
     linkInputDescription = element(by.id(this.testID.linkInputDescription));
     titleInput = element(by.id(this.testID.titleInput));
 
-    // Bottom sheet options — use testIDs (by.text is unreliable on Android gorhom sheets).
-    addALinkOption = element(by.id('channel_bookmark.type.link'));
-    attachAFileOption = element(by.id('channel_bookmark.type.file'));
-    addLinkOptionLabel = element(by.text('Add a link'));
-    attachFileOptionLabel = element(by.text('Attach a file'));
+    // Add bookmark bottom sheet options (by text)
+    addALinkOption = element(by.text('Add a link'));
+    attachAFileOption = element(by.text('Attach a file'));
 
     // Edit options (long press on bookmark)
     editOption = element(by.text('Edit'));
@@ -95,80 +93,17 @@ class ChannelBookmarkScreen {
         await waitFor(this.linkLoading).not.toExist().withTimeout(timeout);
     };
 
-    waitForTitleInputReady = async (timeout = timeouts.TEN_SEC) => {
-        await waitFor(this.titleInput).toExist().withTimeout(timeout);
-        return this.titleInput;
-    };
-
-    waitForAddLinkSheet = async (timeout = timeouts.TEN_SEC) => {
-        await waitFor(this.addALinkOption).toExist().withTimeout(timeout);
-    };
-
-    tapAddLink = async () => {
-        await this.waitForAddLinkSheet();
-        await this.addALinkOption.tap();
-        await this.toBeVisible();
-    };
-
-    // Android Detox replaceText often skips onChangeText, leaving Save disabled (CI MM-T5602 screenshot).
-    fillLinkAndTitle = async (url: string, title: string) => {
-        await this.runUnsynchronized(async () => {
-            const linkInput = this.getLinkInput();
-            await linkInput.tap();
-            if (isAndroid()) {
-                await linkInput.clearText();
-                await linkInput.typeText(url);
-            } else {
-                await linkInput.replaceText(url);
-            }
-            await this.waitForLinkLoadingToFinish();
-            const titleInput = await this.waitForTitleInputReady();
-            await titleInput.tap();
-            if (isAndroid()) {
-                await titleInput.clearText();
-                await titleInput.typeText(title);
-            } else {
-                await titleInput.replaceText(title);
-            }
-            await this.waitForTitleValue(title);
-        });
-    };
-
-    tapSave = async () => {
-        if (isIos()) {
-            await waitFor(this.saveButton).toExist().withTimeout(timeouts.TEN_SEC);
-            await this.saveButton.tap();
-            return;
-        }
-
-        // Header NavigationButton — tap label text once form validation enables Save.
-        const saveHeader = element(by.text('Save'));
-        /* eslint-disable no-await-in-loop */
-        for (let attempt = 0; attempt < 20; attempt++) {
-            try {
-                await saveHeader.tap();
-                await waitFor(this.channelBookmarkScreen).not.toExist().withTimeout(timeouts.FIVE_SEC);
-                return;
-            } catch {
-                await wait(timeouts.HALF_SEC);
-            }
-        }
-        /* eslint-enable no-await-in-loop */
-        throw new Error('tapSave: channelBookmarkScreen did not dismiss after 20 attempts — Save button may be disabled');
-    };
-
-    saveLinkBookmark = async (url: string, title: string) => {
-        await this.fillLinkAndTitle(url, title);
-        await this.tapSave();
-    };
-
     runUnsynchronized = async <T>(action: () => Promise<T>): Promise<T> => {
+        if (device.getPlatform() !== 'ios') {
+            return action();
+        }
+
         await device.disableSynchronization();
 
         try {
             return await action();
         } finally {
-            await device.enableSynchronization();
+            await safeEnableSynchronization();
         }
     };
 

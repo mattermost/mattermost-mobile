@@ -5,7 +5,7 @@ import {
     AccountScreen,
     LoginScreen,
 } from '@support/ui/screen';
-import {isAndroid, timeouts, wait} from '@support/utils';
+import {isAndroid, isIos, timeouts, wait} from '@support/utils';
 import {expect, waitFor} from 'detox';
 
 class HomeScreen {
@@ -38,27 +38,24 @@ class HomeScreen {
     };
 
     logout = async (serverDisplayName: string | null = null) => {
-        if (isAndroid()) {
-            // pm clear in the next file's beforeAll resets app state; UI logout is flaky
-            // when tests end on modals/keyboards and poisons the following file's launch.
-            try {
-                await device.terminateApp();
-            } catch (error) {
-                console.warn('[HomeScreen.logout] terminateApp failed:', error); // eslint-disable-line no-console
-            }
-            return;
-        }
-
         try {
-            try {
-                await waitFor(this.channelListTab).toExist().withTimeout(timeouts.TWO_SEC);
-                await this.channelListTab.tap();
-                await wait(timeouts.ONE_SEC);
-            } catch { /* tab bar inaccessible — proceed anyway */ }
+            if (isIos()) {
+                // On iOS, tests can end with keyboard open, autocomplete showing, or
+                // mid-channel — all of which make the account tab non-hittable.
+                // Tapping the home tab first navigates to channel list AND dismisses
+                // any open keyboard (iOS dismisses the soft keyboard on tab-bar taps).
+                try {
+                    await waitFor(this.channelListTab).toExist().withTimeout(timeouts.TWO_SEC);
+                    await this.channelListTab.tap();
+                    await wait(timeouts.ONE_SEC);
+                } catch { /* tab bar inaccessible — proceed anyway */ }
+            }
             await AccountScreen.open();
             await AccountScreen.logout(serverDisplayName);
             await expect(this.channelListTab).not.toBeVisible();
         } catch (error) {
+            // Logout may fail if app is in unexpected state during cleanup
+            // Log error but don't throw to allow test cleanup to continue
             console.warn('[HomeScreen.logout] Logout failed:', error); // eslint-disable-line no-console
         }
     };

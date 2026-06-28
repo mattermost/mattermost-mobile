@@ -91,12 +91,14 @@ class CreateDirectMessageScreen {
         }
         try {
             await ChannelListScreen.openDirectMessageItem.tap();
-            await this.toBeVisible();
         } finally {
             if (isAndroid()) {
+                // Re-enable sync before waiting for the screen — navigation must settle while
+                // the bridge is tracked (machine-9 log: 60s toExist timeout with sync off).
                 await safeEnableSynchronization();
             }
         }
+        await this.toBeVisible();
 
         // Wait for any SVG animation overlay to clear before proceeding.
         // The plus-menu icon animation layer (RNSVGGroup) can intercept taps

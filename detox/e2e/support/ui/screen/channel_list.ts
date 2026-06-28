@@ -76,11 +76,6 @@ class ChannelListScreen {
         }
     };
 
-    waitForFavoritesChannelDisplayNameVisible = async (channelName: string, timeout = timeouts.TWENTY_SEC) => {
-        await this.ensureCategoryExpanded('favorites');
-        await waitForElementToExist(this.getChannelItemDisplayName('favorites', channelName), timeout);
-    };
-
     waitForSidebarPublicChannelDisplayNameVisible = async (channelName: string, timeout = timeouts.ONE_MIN) => {
         const deadline = Date.now() + timeout;
         const categories = ['channels', 'unreads', 'favorites'] as const;
@@ -123,7 +118,7 @@ class ChannelListScreen {
             {name: 'category_header.direct_messages.display_name', el: this.getCategoryHeaderDisplayName('direct_messages')},
         ];
         const probeResults: string[] = [];
-        /* eslint-disable no-await-in-loop, no-console */
+        /* eslint-disable no-await-in-loop */
         for (const probe of probes) {
             try {
                 await waitForElementToExist(probe.el, timeouts.HALF_SEC);
@@ -132,7 +127,7 @@ class ChannelListScreen {
                 probeResults.push(`${probe.name}=absent`);
             }
         }
-        /* eslint-enable no-await-in-loop, no-console */
+        /* eslint-enable no-await-in-loop */
         // eslint-disable-next-line no-console
         console.warn(
             `[waitForSidebarPublicChannelDisplayNameVisible] FAIL channelName=${channelName} ` +
@@ -195,13 +190,32 @@ class ChannelListScreen {
                 // Not on channel list yet.
             }
             let popped = false;
+
+            // Search & permalink are bottom-tabs — no close button and no back
+            // button. The search.cancel.button in KNOWN_MODAL_CLOSE_BUTTON_IDS
+            // only clears the search text (and only renders while the search
+            // input is focused), so it cannot navigate off the search tab.
+            // Switch to the channel-list tab first; this is the same tap the
+            // tests' own ChannelListScreen.open() uses. Avoids the otherwise-
+            // inevitable nuclear newInstance relaunch with disableSynchronization,
+            // which poisons every downstream test on the shard.
             try {
-                await waitFor(NavigationHeader.backButton).toExist().withTimeout(timeouts.TWO_SEC);
-                await NavigationHeader.backButton.tap();
+                await waitFor(HomeScreen.channelListTab).toExist().withTimeout(timeouts.TWO_SEC);
+                await HomeScreen.channelListTab.tap();
                 await wait(timeouts.ONE_SEC);
                 popped = true;
             } catch {
-                // No custom NavigationHeader back — fall through to native back.
+                // Home tab not hittable — fall through to back-button probes.
+            }
+            if (!popped) {
+                try {
+                    await waitFor(NavigationHeader.backButton).toExist().withTimeout(timeouts.TWO_SEC);
+                    await NavigationHeader.backButton.tap();
+                    await wait(timeouts.ONE_SEC);
+                    popped = true;
+                } catch {
+                    // No custom NavigationHeader back — fall through to native back.
+                }
             }
             if (!popped) {
                 try {

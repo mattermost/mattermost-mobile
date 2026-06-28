@@ -192,22 +192,16 @@ describe('Search - Cross Team Search', () => {
         // never recover — the sheet is dismissed — producing a 10s timeout.
         await waitFor(TeamDropdownMenuScreen.teamDropdownMenuScreen).not.toExist().withTimeout(timeouts.TEN_SEC);
 
+        // # k) In the "Search messages and files" field, type "horses" and press Enter
+        await SearchMessagesScreen.searchInput.typeText('horses');
+        await SearchMessagesScreen.searchInput.tapReturnKey();
+        await wait(timeouts.TWO_SEC);
+
+        // * k) Verify search results contain messages from both teams
         const {postListPostItem: offTopicSearchResult} = SearchMessagesScreen.getPostListPostItem(offTopicPost.id, searchTerm);
         const {postListPostItem: townSquareSearchResult} = SearchMessagesScreen.getPostListPostItem(townSquarePost.id, searchTerm);
-
-        // # k) In the "Search messages and files" field, type "horses" and press Enter
-        await device.disableSynchronization();
-        try {
-            await SearchMessagesScreen.searchInput.typeText('horses');
-            await SearchMessagesScreen.searchInput.tapReturnKey();
-            await wait(timeouts.TWO_SEC);
-
-            // * k) Verify search results contain messages from both teams
-            await waitForElementToExist(offTopicSearchResult, timeouts.HALF_MIN);
-            await waitForElementToExist(townSquareSearchResult, timeouts.HALF_MIN);
-        } finally {
-            await device.enableSynchronization();
-        }
+        await expect(offTopicSearchResult).toBeVisible();
+        await expect(townSquareSearchResult).toBeVisible();
 
         // # l) Tap on the "All teams" with the drop-down arrow selector and select "Team Open"
         await SearchMessagesScreen.teamPickerButton.tap();
@@ -276,5 +270,11 @@ describe('Search - Cross Team Search', () => {
 
         // # Go back to channel list screen
         await ChannelScreen.back();
-    });
+
+    // Per-test timeout override: the cross-team flow runs ~200 detox invokes
+    // (~236s total) on iOS 26.2 sim — the liquid-glass dimming overlays plus
+    // multiple team-switch round-trips push the linear pass right up against
+    // the 240s jest default. No app/test-logic fault; just budget. Verified
+    // in CI run 28290273101 (m15 invoke timing analysis).
+    }, 360000);
 });

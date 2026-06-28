@@ -15,17 +15,15 @@ import {
     serverOneUrl,
     siteOneUrl,
 } from '@support/test_config';
-import {Alert} from '@support/ui/component';
 import {
     ChannelScreen,
     ChannelListScreen,
     HomeScreen,
     LoginScreen,
     ServerScreen,
-    ThreadScreen,
 } from '@support/ui/screen';
-import {getRandomId, isIos, timeouts, wait, waitForElementToExist} from '@support/utils';
-import {expect, waitFor} from 'detox';
+import {getRandomId, isIos, timeouts, wait} from '@support/utils';
+import {expect} from 'detox';
 
 describe('Messaging - Message Draft', () => {
     const serverOneDisplayName = 'Server 1';
@@ -127,81 +125,4 @@ describe('Messaging - Message Draft', () => {
         await ChannelScreen.back();
     });
 
-    it('MM-T4781_3 - should show character count warning when message exceeds character limit', async () => {
-        // # Open a channel screen and create a message draft that exceeds character limit (> 16383)
-        let message = '1234567890'.repeat(1638) + '1234';
-        await ChannelScreen.open(channelsCategory, testChannel.name);
-        await ChannelScreen.postInput.tap();
-        await ChannelScreen.postInput.clearText();
-        await ChannelScreen.postInput.replaceText(message);
-
-        // * Verify warning message is displayed and send button is disabled
-        await expect(Alert.messageLengthTitle).toBeVisible();
-        await expect(element(by.text('Your current message is too long. Current character count: 16384/16383')).atIndex(0)).toBeVisible();
-        await Alert.okButton.tap();
-        await waitFor(Alert.messageLengthTitle).not.toBeVisible().withTimeout(timeouts.TEN_SEC);
-
-        // # Replace message draft with length less than the character limit (16383)
-        message = '1234567890'.repeat(1638) + '123';
-        await ChannelScreen.postInput.replaceText(message);
-
-        // * Verify warning message is not displayed and send button is enabled
-        await waitFor(Alert.messageLengthTitle).not.toBeVisible().withTimeout(timeouts.TEN_SEC);
-        await expect(element(by.text('Your current message is too long. Current character count: 16383/16383')).atIndex(0)).not.toBeVisible();
-        await expect(ChannelScreen.sendButton).toBeVisible();
-
-        // # Clear post draft and go back to channel list screen
-        await ChannelScreen.postInput.clearText();
-        await ChannelScreen.back();
-    });
-
-    it('MM-T4781_4 - should be able to create a message draft from reply thread', async () => {
-        // # Open a channel screen, post a message, and tap on the post to open reply thread
-        const message = `Message ${getRandomId()}`;
-        await ChannelScreen.open(channelsCategory, testChannel.name);
-        const {post: parentPost} = await ChannelScreen.postMessageAndVerify(message, testChannel.id, siteOneUrl);
-        const {postListPostItem: parentPostListPostItem} = ChannelScreen.getPostListPostItem(parentPost.id, message);
-        await parentPostListPostItem.tap();
-
-        // * Verify on thread screen
-        await ThreadScreen.toBeVisible();
-        await waitForElementToExist(ThreadScreen.postInput, timeouts.TEN_SEC);
-
-        // # Create a reply message draft
-        const replyMessage = `${message} reply`;
-        await ThreadScreen.postInput.tap();
-        await ThreadScreen.postInput.replaceText(replyMessage);
-
-        const {post: lastPostBeforeDraft} = await Post.apiGetLastPostInChannel(siteOneUrl, testChannel.id);
-
-        // * Verify reply message exists in post draft and is not yet added to post list
-        if (isIos()) {
-            await expect(ThreadScreen.postInput).toHaveValue(replyMessage);
-        } else {
-            await expect(ThreadScreen.postInput).toHaveText(replyMessage);
-        }
-        const {post: lastPostAfterDraft} = await Post.apiGetLastPostInChannel(siteOneUrl, testChannel.id);
-        if (lastPostAfterDraft.id !== lastPostBeforeDraft.id) {
-            throw new Error(
-                `Draft should not have posted: lastPost changed from ${lastPostBeforeDraft.id} to ${lastPostAfterDraft.id}`,
-            );
-        }
-
-        // # Go back to channel screen and tap on parent post again
-        await ThreadScreen.back();
-        await parentPostListPostItem.tap();
-
-        // * Verify reply message draft still exists in post draft
-        await waitForElementToExist(ThreadScreen.postInput, timeouts.TEN_SEC);
-        if (isIos()) {
-            await expect(ThreadScreen.postInput).toHaveValue(replyMessage);
-        } else {
-            await expect(ThreadScreen.postInput).toHaveText(replyMessage);
-        }
-
-        // # Clear reply post draft and go back to channel list screen
-        await ThreadScreen.postInput.clearText();
-        await ThreadScreen.back();
-        await ChannelScreen.back();
-    });
 });

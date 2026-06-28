@@ -5,12 +5,13 @@ import {
     NavigationHeader,
     PostList,
 } from '@support/ui/component';
+import {dismissKnownModals} from '@support/ui/modal_dismiss';
 import {
     HomeScreen,
     PostOptionsScreen,
 } from '@support/ui/screen';
-import {isAndroid, isIos, longPressWithRetry, timeouts, wait, waitForElementToBeVisible} from '@support/utils';
-import {expect} from 'detox';
+import {isAndroid, isIos, longPressWithScrollRetry, timeouts, wait, waitForElementToBeVisible} from '@support/utils';
+import {expect, waitFor} from 'detox';
 
 class SearchMessagesScreen {
     testID = {
@@ -81,6 +82,9 @@ class SearchMessagesScreen {
 
     open = async () => {
         await HomeScreen.toBeVisible();
+        await dismissKnownModals(2);
+
+        await waitFor(HomeScreen.searchTab).toExist().withTimeout(timeouts.TEN_SEC);
 
         // Corner-tap is for Android overlays; iOS CI fails to open search with {x:1,y:1} (MM-T5294_6–9).
         if (isIos()) {
@@ -108,8 +112,15 @@ class SearchMessagesScreen {
         // Poll for the post to become visible without waiting for idle bridge
         await waitForElementToBeVisible(postListPostItem, timeouts.TEN_SEC);
 
-        // # Open post options (with retry — longPress can fail on Android during animations)
-        await longPressWithRetry(postListPostItem, PostOptionsScreen.postOptionsScreen);
+        const longPressTarget = isAndroid()
+            ? element(by.id(`${this.testID.searchResultsScreenPrefix}post_list.post.${postId}`))
+            : postListPostItem;
+
+        await longPressWithScrollRetry(
+            longPressTarget,
+            by.id(this.postList.testID.flatList),
+            PostOptionsScreen.postOptionsScreen,
+        );
         await wait(timeouts.TWO_SEC);
     };
 

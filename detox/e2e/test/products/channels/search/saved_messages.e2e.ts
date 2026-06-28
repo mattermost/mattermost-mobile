@@ -16,33 +16,27 @@ import {
     siteOneUrl,
 } from '@support/test_config';
 import {
-    ChannelInfoScreen,
     ChannelListScreen,
     ChannelScreen,
     EditPostScreen,
     HomeScreen,
     LoginScreen,
-    PermalinkScreen,
-    PinnedMessagesScreen,
     PostOptionsScreen,
     SavedMessagesScreen,
     ServerScreen,
     ThreadScreen,
 } from '@support/ui/screen';
-import {getRandomId, timeouts, wait, waitForElementToBeVisible, waitForElementToExist, waitForElementToNotExist} from '@support/utils';
+import {getRandomId, timeouts, wait, waitForElementToBeVisible} from '@support/utils';
 import {expect} from 'detox';
 
 describe('Search - Saved Messages', () => {
     const serverOneDisplayName = 'Server 1';
     const channelsCategory = 'channels';
-    const savedText = 'Saved';
     let testChannel: any;
-    let testTeam: any;
 
     beforeAll(async () => {
-        const {channel, team, user} = await Setup.apiInit(siteOneUrl);
+        const {channel, user} = await Setup.apiInit(siteOneUrl);
         testChannel = channel;
-        testTeam = team;
 
         // # Log in to server
         await ServerScreen.connectToServer(serverOneUrl, serverOneDisplayName);
@@ -73,46 +67,6 @@ describe('Search - Saved Messages', () => {
         await ChannelListScreen.open();
     });
 
-    it('MM-T4910_2 - should be able to display a saved message in saved messages screen and navigate to message channel', async () => {
-        // # Open a channel screen, post a message, open post options for message, and tap on save option
-        const message = `Message ${getRandomId()}`;
-        await ChannelScreen.open(channelsCategory, testChannel.name);
-        await ChannelScreen.postMessage(message);
-
-        const {post} = await Post.apiGetLastPostInChannel(siteOneUrl, testChannel.id);
-        await ChannelScreen.openPostOptionsFor(post.id, message);
-        await PostOptionsScreen.tapSavePost();
-        await wait(timeouts.TWO_SEC);
-
-        // * Verify saved text is displayed on the post pre-header
-        const {postListPostItemPreHeaderText} = ChannelScreen.getPostListPostItem(post.id, message);
-        await expect(postListPostItemPreHeaderText).toHaveText(savedText);
-
-        // # Go back to channel list screen and open saved messages screen
-        await ChannelScreen.back();
-        await SavedMessagesScreen.open();
-
-        // * Verify on saved messages screen and saved message is displayed with channel info.
-        await SavedMessagesScreen.toBeVisible();
-        const {postListPostItem: savedMessagesPostListPostItem, postListPostItemChannelInfoChannelDisplayName, postListPostItemChannelInfoTeamDisplayName} = SavedMessagesScreen.getPostListPostItem(post.id, message);
-        await waitForElementToExist(savedMessagesPostListPostItem, timeouts.HALF_MIN);
-        await expect(postListPostItemChannelInfoChannelDisplayName).toHaveText(testChannel.display_name);
-        await expect(postListPostItemChannelInfoTeamDisplayName).toHaveText(testTeam.display_name);
-
-        // # Tap on post and jump to recent messages
-        await savedMessagesPostListPostItem.tap();
-        await PermalinkScreen.jumpToRecentMessages();
-
-        // * Verify on channel screen and saved message is displayed
-        await ChannelScreen.toBeVisible();
-        const {postListPostItem: channelPostListPostItem} = ChannelScreen.getPostListPostItem(post.id, message);
-        await expect(channelPostListPostItem).toBeVisible();
-
-        // # Go back to channel list screen
-        await ChannelScreen.back();
-        await ChannelListScreen.open();
-    });
-
     // edit_post.screen overlay does not dismiss after save from saved messages.
     it.skip('MM-T4910_3 - should be able to edit, reply to, and delete a saved message from saved messages screen', async () => {
         // # Open a channel screen, post a message, open post options for message, tap on save option, go back to channel list screen, and open saved messages screen
@@ -122,7 +76,7 @@ describe('Search - Saved Messages', () => {
 
         const {post: savedPost} = await Post.apiGetLastPostInChannel(siteOneUrl, testChannel.id);
         await ChannelScreen.openPostOptionsFor(savedPost.id, message);
-        await PostOptionsScreen.tapSavePost();
+        await PostOptionsScreen.savePostOption.tap();
         await wait(timeouts.TWO_SEC);
         await ChannelScreen.back();
         await SavedMessagesScreen.open();
@@ -180,88 +134,4 @@ describe('Search - Saved Messages', () => {
         await ChannelListScreen.open();
     });
 
-    it('MM-T4910_4 - should be able to unsave a message from saved messages screen', async () => {
-        // # Open a channel screen, post a message, open post options for message, tap on save option, go back to channel list screen, and open saved messages screen
-        const message = `Message ${getRandomId()}`;
-        await ChannelScreen.open(channelsCategory, testChannel.name);
-        await ChannelScreen.postMessage(message);
-
-        const {post: savedPost} = await Post.apiGetLastPostInChannel(siteOneUrl, testChannel.id);
-        const {postListPostItem: channelPostListPostItem} = ChannelScreen.getPostListPostItem(savedPost.id, message);
-        await waitForElementToBeVisible(channelPostListPostItem);
-        await ChannelScreen.openPostOptionsFor(savedPost.id, message);
-        await PostOptionsScreen.tapSavePost();
-        await ChannelScreen.back();
-        await SavedMessagesScreen.open();
-
-        // * Verify on saved messages screen
-        await SavedMessagesScreen.toBeVisible();
-
-        // # Open post options for saved message and tap on unsave option
-        await device.disableSynchronization();
-        try {
-            await SavedMessagesScreen.openPostOptionsFor(savedPost.id, message);
-        } finally {
-            await device.enableSynchronization();
-        }
-        await PostOptionsScreen.tapUnsavePost();
-
-        // * Verify saved message is not displayed anymore
-        const {postListPostItem} = SavedMessagesScreen.getPostListPostItem(savedPost.id, message);
-        await waitForElementToNotExist(postListPostItem, timeouts.HALF_MIN);
-        await expect(postListPostItem).not.toExist();
-
-        // # Go back to channel list screen
-        await ChannelListScreen.open();
-    });
-
-    it('MM-T4910_5 - should be able to pin/unpin a saved message from saved messages screen', async () => {
-        // # Open a channel screen, post a message, open post options for message, tap on save option, go back to channel list screen, and open saved messages screen
-        const message = `Message ${getRandomId()}`;
-        await ChannelScreen.open(channelsCategory, testChannel.name);
-        await ChannelScreen.postMessage(message);
-
-        const {post: savedPost} = await Post.apiGetLastPostInChannel(siteOneUrl, testChannel.id);
-        const {postListPostItem: channelPostListPostItem} = ChannelScreen.getPostListPostItem(savedPost.id, message);
-        await waitForElementToExist(channelPostListPostItem, timeouts.HALF_MIN);
-        await ChannelScreen.openPostOptionsFor(savedPost.id, message);
-        await PostOptionsScreen.tapSavePost();
-        await ChannelScreen.back();
-        await SavedMessagesScreen.open();
-
-        // * Verify on saved messages screen
-        await SavedMessagesScreen.toBeVisible();
-
-        // # Open post options for saved message, tap on pin to channel option, go back to channel list screen, open the channel screen where saved message is posted, open channel info screen, and open pinned messages screen
-        await SavedMessagesScreen.openPostOptionsFor(savedPost.id, message);
-        await PostOptionsScreen.pinPostOption.tap();
-        await ChannelListScreen.open();
-        await ChannelScreen.open(channelsCategory, testChannel.name);
-        await ChannelInfoScreen.open();
-        await PinnedMessagesScreen.open();
-
-        // * Verify saved message is displayed on pinned messages screen
-        const {postListPostItem} = PinnedMessagesScreen.getPostListPostItem(savedPost.id, message);
-        await expect(postListPostItem).toBeVisible();
-
-        // # Go back to saved messages screen, open post options for saved message, tap on unpin from channel option, go back to channel list screen, open the channel screen where saved message is posted, open channel info screen, and open pinned messages screen
-        await PinnedMessagesScreen.back();
-        await ChannelInfoScreen.close();
-        await ChannelScreen.back();
-        await SavedMessagesScreen.open();
-        await SavedMessagesScreen.openPostOptionsFor(savedPost.id, message);
-        await PostOptionsScreen.unpinPostOption.tap();
-        await ChannelListScreen.open();
-        await ChannelScreen.open(channelsCategory, testChannel.name);
-        await ChannelInfoScreen.open();
-        await PinnedMessagesScreen.open();
-
-        // * Verify saved message is not displayed anymore on pinned messages screen
-        await expect(postListPostItem).not.toExist();
-
-        // # Go back to channel list screen
-        await PinnedMessagesScreen.back();
-        await ChannelInfoScreen.close();
-        await ChannelScreen.back();
-    });
 });

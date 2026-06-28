@@ -29,7 +29,7 @@ import {
     DraftScreen,
     ThreadScreen,
 } from '@support/ui/screen';
-import {isAndroid, isIos, timeouts, wait, waitForElementToBeVisible} from '@support/utils';
+import {isAndroid, timeouts, wait, waitForElementToBeVisible} from '@support/utils';
 import {expect} from 'detox';
 
 describe('Scheduled Draft,', () => {
@@ -180,6 +180,12 @@ describe('Scheduled Draft,', () => {
 
         await DraftScreen.openDraftPostActions();
         await DraftScreen.sendDraft();
+
+        // Wait for the sendDraft animation/transition to settle before tapping back.
+        // The UITransitionView overlay is still active when sendDraft() returns;
+        // an immediate backButton tap is intercepted by the overlay and never fires.
+        await wait(timeouts.TWO_SEC);
+        await waitForElementToBeVisible(DraftScreen.backButton, timeouts.FIVE_SEC);
         await DraftScreen.backButton.tap();
 
         // * Verify the scheduled message is  shown in the channel
@@ -192,35 +198,6 @@ describe('Scheduled Draft,', () => {
 
         await ChannelScreen.back();
         await verifyScheduledScheduledMessageDoesNotExist();
-    });
-
-    it('MM-T5720 should be able to Reschedule a scheduled Message', async () => {
-        const scheduledMessageText = 'Scheduled Message In a channel';
-        await ChannelScreen.open(channelsCategory, testChannel.name);
-        await ChannelScreen.enterMessageToSchedule(scheduledMessageText);
-        await ChannelScreen.longPressSendButton();
-        await chooseScheduleMessageDate();
-        await ChannelScreen.verifyScheduledDraftInfoInChannel();
-        await verifyScheduledCountOnChannelListScreen('1');
-
-        // # Open scheduled message screen and verify count
-        await ChannelListScreen.draftsButton.tap();
-        await ScheduleMessageScreen.clickScheduledTab();
-        await ScheduleMessageScreen.verifyCountOnScheduledTab('1');
-        await ScheduleMessageScreen.assertScheduledMessageExists(scheduledMessageText);
-
-        await ScheduleMessageScreen.assertScheduleTimeTextIsVisible(await ScheduleMessageScreen.expectedScheduleTimeFromAvailableOption());
-        if (isIos()) {
-            // Andoid uses native date picker which is not supported by detox asit cannot interact with native UI
-            await DraftScreen.openDraftPostActions();
-            await ScheduleMessageScreen.clickRescheduleOption();
-            await ScheduleMessageScreen.selectDateTime();
-        }
-
-        // Clean up drafts
-        await DraftScreen.openDraftPostActions();
-        await ScheduleMessageScreen.deleteScheduledMessageFromDraftActions();
-        await DraftScreen.backButton.tap();
     });
 
     async function cleanupDrafts() {

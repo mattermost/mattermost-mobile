@@ -4,7 +4,7 @@
 import {
     Alert,
 } from '@support/ui/component';
-import {timeouts, wait} from '@support/utils';
+import {timeouts, wait, waitForElementToNotExist} from '@support/utils';
 import {tapNativeBackButton} from '@support/utils/detoxhelpers';
 import {expect, waitFor} from 'detox';
 
@@ -68,7 +68,7 @@ class ChannelSettingsScreen {
             // is insufficient on slow iOS CI runners where the dismiss animation can take
             // longer, leaving the dimming view blocking subsequent taps.
             await waitFor(alertArchiveChannelTitle).not.toExist().withTimeout(timeouts.TEN_SEC);
-            await expect(this.channelSettingsScreen).not.toExist();
+            await waitForElementToNotExist(this.channelSettingsScreen, timeouts.TEN_SEC);
         } else {
             await noButton.tap();
             await waitFor(alertArchiveChannelTitle).not.toExist().withTimeout(timeouts.TEN_SEC);
