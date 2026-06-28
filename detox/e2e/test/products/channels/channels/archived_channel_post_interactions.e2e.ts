@@ -85,7 +85,7 @@ describe('Channels - Archived Channel Post Interactions', () => {
         await wait(timeouts.FOUR_SEC);
 
         // # Open the archived channel via the platform-appropriate path.
-        await openArchivedChannel(archivedChannel.name, message, testTeam.name);
+        await openArchivedChannel(archivedChannel.name, message);
 
         // # Long-press on the post to open post options
         await ChannelScreen.openPostOptionsFor(post.id, message);

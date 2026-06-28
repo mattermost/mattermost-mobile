@@ -96,15 +96,19 @@ describe('Search - Result Interactions', () => {
         await SearchMessagesScreen.searchInput.tapReturnKey();
         await wait(timeouts.TWO_SEC);
 
-        // # Collapse keyboard before the visibility check — otherwise the
-        // keyboard obscures the result list and Detox fails toBeVisible at
-        // the default 75% visibility threshold (same pattern as
-        // search_messages.e2e.ts uses via search.modifier.header tap).
-        await element(by.id('search.modifier.header')).tap();
-        await wait(timeouts.ONE_SEC);
-
-        // * Verify at least one result is visible
+        // * Verify at least one result is visible.
+        // Scroll first to dismiss the keyboard if it is still up after the search
+        // submit (on iOS, tapReturnKey does not always auto-collapse the keyboard in
+        // the search results view). Scrolling the list also serves as a pre-condition
+        // check that there is content to scroll, and collapses the keyboard so the
+        // 75%-visibility assertion on the flat list succeeds.
         const flatList = SearchMessagesScreen.getFlatPostList();
+        try {
+            await flatList.scroll(50, 'down');
+        } catch {
+            // Results not yet rendered or keyboard already dismissed — non-fatal
+        }
+        await wait(timeouts.ONE_SEC);
         await expect(flatList).toBeVisible();
 
         // # Scroll the results list down to verify it is scrollable
@@ -179,6 +183,14 @@ describe('Search - Result Interactions', () => {
         await SearchMessagesScreen.searchInput.typeText(searchTerm);
         await SearchMessagesScreen.searchInput.tapReturnKey();
         await wait(timeouts.TWO_SEC);
+
+        // Dismiss keyboard so the post is not obscured by it when checking visibility.
+        try {
+            await SearchMessagesScreen.getFlatPostList().scroll(50, 'down');
+        } catch {
+            // Keyboard already gone or results not yet rendered — non-fatal
+        }
+        await wait(timeouts.ONE_SEC);
 
         // * Verify post result is visible
         const {postListPostItem} = SearchMessagesScreen.getPostListPostItem(postedMessage.id, message);

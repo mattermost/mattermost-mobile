@@ -79,31 +79,8 @@ async function openArchivedChannelViaBrowseChannels(channelName: string) {
     await waitForElementToBeVisible(ChannelScreen.postDraftArchived, timeouts.HALF_MIN);
 }
 
-// Navigate to an archived channel via channel deep-link.
-// iOS preferred path: the search/permalink flow times out on a freshly-provisioned
-// PR test server because the sentinel post created pre-archival isn't indexed
-// before the 20-second search wait window expires (re-submitting the same query
-// does not force re-indexing). app/utils/deep_link/index.ts routes the
-// /<team>/channels/<channel> URL via openURL even for archived channels the
-// test user is a member of.
-async function openArchivedChannelViaDeepLink(channelName: string, teamName: string) {
-    await device.openURL({url: `${siteOneUrl}/${teamName}/channels/${channelName}`});
-
-    // Deep-link navigation triggers the channel screen mount before the JS
-    // bridge fully settles; disable sync briefly to avoid racing the assertion
-    // against in-flight animations on iOS 26.2.
-    await device.disableSynchronization();
-    try {
-        await waitForElementToExist(ChannelScreen.channelScreen, timeouts.ONE_MIN);
-        await waitForElementToBeVisible(ChannelScreen.postDraftArchived, timeouts.HALF_MIN);
-    } finally {
-        await device.enableSynchronization();
-    }
-}
-
-// Legacy iOS search/permalink path — retained as a fallback for callers that
-// don't have a teamName available. Not the recommended path: regresses
-// MM-T1671_1 on freshly-provisioned servers due to search-index lag.
+// Navigate to an archived channel via the search results permalink flow.
+// iOS-only: Browse Channels tap does not reliably navigate on iOS in CI.
 async function openArchivedChannelViaSearchPermalink(searchableMessage: string) {
     await SearchMessagesScreen.open();
     await SearchMessagesScreen.searchInput.replaceText(searchableMessage);
@@ -121,8 +98,8 @@ async function openArchivedChannelViaSearchPermalink(searchableMessage: string) 
         try {
             await waitForElementToBeVisible(searchResultText, timeouts.TWENTY_SEC);
         } catch {
-            // Search-index lag retry. Note: this rarely helps because re-submitting
-            // doesn't force re-indexing. The deep-link path above is preferred.
+            // Search-index lag: the sentinel was posted pre-archival and may not
+            // be indexed yet on the first query. Re-submit the search once.
             await SearchMessagesScreen.searchInput.tapReturnKey();
             await waitForElementToBeVisible(searchResultText, timeouts.ONE_MIN);
         }
@@ -144,18 +121,14 @@ async function openArchivedChannelViaSearchPermalink(searchableMessage: string) 
 }
 
 // Open an archived channel using the platform-appropriate navigation path.
-//   Android: Browse Channels → archived filter → tap channel (no searchInput).
-//   iOS:     deep-link via device.openURL — preferred. Falls back to
-//            search/permalink if teamName is not provided.
+//   Android: Browse Channels → archived filter → tap channel.
+//   iOS:     search → permalink → jumpToRecentMessages.
 export async function openArchivedChannel(
     channelName: string,
     searchableMessage: string,
-    teamName?: string,
 ) {
     if (isAndroid()) {
         await openArchivedChannelViaBrowseChannels(channelName);
-    } else if (teamName) {
-        await openArchivedChannelViaDeepLink(channelName, teamName);
     } else {
         await openArchivedChannelViaSearchPermalink(searchableMessage);
     }

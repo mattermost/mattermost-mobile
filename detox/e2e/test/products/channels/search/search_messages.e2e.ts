@@ -201,7 +201,9 @@ describe('Search - Search Messages', () => {
         await SearchMessagesScreen.toBeVisible();
 
         // # Type in the message prefix plus included term inside double quotes and tap on search key
-        await SearchMessagesScreen.searchModifierPhrases.tap();
+        // Corner-tap: searchModifierPhrases is 1.3px clipped at this state too (same
+        // 100% threshold failure as at :214 below). Apply the same workaround.
+        await SearchMessagesScreen.searchModifierPhrases.tap({x: 1, y: 1});
         await SearchMessagesScreen.searchInput.tapBackspaceKey();
         await SearchMessagesScreen.searchInput.typeText(messageWithIncludedTerm);
 
