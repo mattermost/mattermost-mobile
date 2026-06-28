@@ -93,7 +93,7 @@ export async function retryWithReload(
 // Scroll a post row into the visible viewport before long-press (iOS header/draft clip).
 export async function scrollElementIntoView(
     target: Detox.NativeElement,
-    scrollContainer: Detox.NativeElement,
+    scrollContainer: Detox.NativeMatcher,
     maxScrolls = 15,
 ): Promise<void> {
     /* eslint-disable no-await-in-loop */
@@ -104,14 +104,13 @@ export async function scrollElementIntoView(
         } catch {
             for (const direction of ['down', 'up'] as const) {
                 try {
-                    await scrollContainer.scroll(250, direction);
-                    await waitFor(target).toBeVisible(100).withTimeout(timeouts.TWO_SEC);
+                    await waitFor(target).
+                        toBeVisible(100).
+                        whileElement(scrollContainer).
+                        scroll(250, direction);
                     return;
                 } catch { /* try opposite direction */ }
             }
-            try {
-                await scrollContainer.scroll(150, 'down', 0.5, 0.5);
-            } catch { /* ignore */ }
         }
     }
     /* eslint-enable no-await-in-loop */
@@ -121,17 +120,17 @@ export async function scrollElementIntoView(
 // Long-press with scroll/swipe retry for flaky post-option gestures after keyboard dismiss.
 export async function longPressWithScrollRetry(
     target: Detox.NativeElement,
-    scrollTarget: Detox.NativeElement,
+    scrollContainer: Detox.NativeMatcher,
     checkElement: Detox.NativeElement,
     maxAttempts = 8,
 ): Promise<void> {
     /* eslint-disable no-await-in-loop */
     for (let attempt = 1; attempt <= maxAttempts; attempt++) {
-        await scrollElementIntoView(target, scrollTarget);
+        await scrollElementIntoView(target, scrollContainer);
 
         if (isAndroid()) {
             try {
-                await scrollTarget.swipe('down', 'slow', 0.2);
+                await element(scrollContainer).swipe('down', 'slow', 0.2);
             } catch { /* ignore */ }
         }
 

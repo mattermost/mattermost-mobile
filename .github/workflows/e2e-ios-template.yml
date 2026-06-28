@@ -137,7 +137,7 @@ env:
   FAILURE_MESSAGE: "Something has failed"
   IOS: "true"
   RUNNING_E2E: "true"
-  ARTIFACT_RUN_ID: ${{ inputs.artifact_run_id || github.run_id }}
+  ARTIFACT_RUN_ID: ${{ inputs.artifact_run_id }}
 
 jobs:
   generate-specs:
@@ -219,10 +219,11 @@ jobs:
           brew link --overwrite --force wix/brew/applesimutils 2>/dev/null \
             || brew link --overwrite applesimutils
 
-      - name: Download iOS Simulator Build
+      - name: Download iOS Simulator Build from parent workflow
         uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
         with:
           name: ios-build-simulator-${{ env.ARTIFACT_RUN_ID }}
+          repository: ${{ github.repository }}
           run-id: ${{ env.ARTIFACT_RUN_ID }}
           github-token: ${{ github.token }}
           path: mobile-artifacts
@@ -230,8 +231,24 @@ jobs:
       - name: Unzip iOS Simulator Build
         run: |
           unzip -o mobile-artifacts/*.zip -d mobile-artifacts/
-          # delete zip file
           rm -f mobile-artifacts/*.zip
+
+      - name: Verify Detox iOS app from parent build
+        run: |
+          if [ -z "${ARTIFACT_RUN_ID}" ]; then
+            echo "❌ ARTIFACT_RUN_ID is empty — parent workflow must pass artifact_run_id from build-ios-simulator"
+            exit 1
+          fi
+          APP_PATH=$(find mobile-artifacts -name "*.app" -maxdepth 2 | head -1)
+          if [ -z "$APP_PATH" ]; then
+            echo "❌ No .app in mobile-artifacts/ from ios-build-simulator-${ARTIFACT_RUN_ID}"
+            ls -la mobile-artifacts/ || true
+            exit 1
+          fi
+          echo "✅ Detox will use iOS app from parent workflow run ${ARTIFACT_RUN_ID}: ${APP_PATH}"
+          ls -ld "$APP_PATH"
+        env:
+          ARTIFACT_RUN_ID: ${{ env.ARTIFACT_RUN_ID }}
 
       - name: Prepare Low Bandwidth Environment
         id: prepare-low-bandwidth

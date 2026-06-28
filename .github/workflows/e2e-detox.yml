@@ -34,6 +34,7 @@ on:
 
 permissions:
   contents: read
+  actions: read
 
 env:
   ARTIFACT_RUN_ID: ${{ inputs.artifact_run_id }}

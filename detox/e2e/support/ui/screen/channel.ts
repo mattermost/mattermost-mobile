@@ -253,7 +253,7 @@ class ChannelScreen {
 
         await longPressWithScrollRetry(
             longPressTarget,
-            this.postList.getFlatList(),
+            by.id(this.postList.testID.flatList),
             PostOptionsScreen.postOptionsScreen,
         );
         await wait(timeouts.TWO_SEC);
