@@ -180,6 +180,12 @@ describe('Scheduled Draft,', () => {
 
         await DraftScreen.openDraftPostActions();
         await DraftScreen.sendDraft();
+
+        // Wait for the sendDraft animation/transition to settle before tapping back.
+        // The UITransitionView overlay is still active when sendDraft() returns;
+        // an immediate backButton tap is intercepted by the overlay and never fires.
+        await wait(timeouts.TWO_SEC);
+        await waitForElementToBeVisible(DraftScreen.backButton, timeouts.FIVE_SEC);
         await DraftScreen.backButton.tap();
 
         // * Verify the scheduled message is  shown in the channel

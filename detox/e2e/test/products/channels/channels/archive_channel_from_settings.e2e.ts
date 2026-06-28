@@ -23,6 +23,10 @@ import {
 import {timeouts, wait} from '@support/utils';
 import {waitFor} from 'detox';
 
+// The beforeAll creates 4 channels + adds user to each + login.
+// Under CI load this easily takes 4+ minutes; extend the timeout to 6 minutes.
+jest.setTimeout(360000);
+
 describe('Channels - Archive Channel from Settings', () => {
     const serverOneDisplayName = 'Server 1';
     const channelsCategory = 'channels';

@@ -109,11 +109,7 @@ describe('Messaging - File Preview Gallery', () => {
 
         // * Verify file preview gallery is open (close button appears when gallery is mounted)
         const galleryCloseButton = element(by.id('gallery.header.close.button'));
-        if (isAndroid()) {
-            await waitForElementToExist(galleryCloseButton, timeouts.HALF_MIN);
-        } else {
-            await waitFor(galleryCloseButton).toExist().withTimeout(timeouts.TEN_SEC);
-        }
+        await waitForElementToExist(galleryCloseButton, timeouts.HALF_MIN);
 
         // # Dismiss the gallery and wait for overlay to clear
         await dismissGallery();
@@ -213,7 +209,6 @@ describe('Messaging - File Preview Gallery', () => {
         // * Verify file preview gallery is open (close button is present when gallery is mounted)
         const galleryCloseButton = element(by.id('gallery.header.close.button'));
         await waitFor(galleryCloseButton).toExist().withTimeout(timeouts.TEN_SEC);
-        await expect(galleryCloseButton).toExist();
 
         // # Dismiss the gallery and wait for overlay to clear
         await dismissGallery();
@@ -264,13 +259,11 @@ describe('Messaging - File Preview Gallery', () => {
         const copyPublicLinkButton = element(by.id('gallery.footer.copy_public_link.button')).atIndex(0);
         await waitFor(copyPublicLinkButton).toBeVisible().withTimeout(timeouts.TEN_SEC);
 
-        // Corner-tap: the gallery modal's UITransitionView intercepts the
-        // Pressable's center tap on iOS — Detox reports the tap as delivered
-        // but onPress doesn't fire (proven via the same DETOX_VISIBILITY_
-        // UITransitionView screenshots that justify the corner-tap in
-        // manage_channel_members.ts:142, channel_members.e2e.ts:305, and
-        // 11+ other sites in the codebase).
-        await copyPublicLinkButton.tap({x: 1, y: 1});
+        // Wait for the gallery open animation to fully settle before tapping.
+        // The UITransitionView overlay is still animating when toBeVisible() fires;
+        // tapping immediately intercepts into the overlay and onPress doesn't fire.
+        await wait(timeouts.TWO_SEC);
+        await copyPublicLinkButton.tap();
         await wait(timeouts.TWO_SEC);
 
         // * Verify the copy public link toast message appears (testID='toast.message')

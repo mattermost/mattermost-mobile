@@ -126,9 +126,16 @@ describe('Channels - Edit Channel', () => {
         }
         await CreateOrEditChannelScreen.saveButton.tap();
 
-        // * Verify on channel info screen and changes have been saved (back from CreateOrEditChannel lands on Channel Settings, close to get to Channel Info)
-        await ChannelSettingsScreen.toBeVisible();
-        await ChannelSettingsScreen.close();
+        // * Verify on channel info screen and changes have been saved
+        // On iOS, saveButton pops back to ChannelSettingsScreen (the navigation parent).
+        // On Android, the same save navigates directly to ChannelInfoScreen, skipping
+        // ChannelSettingsScreen — wrap in try-catch to handle both platforms.
+        try {
+            await ChannelSettingsScreen.toBeVisible();
+            await ChannelSettingsScreen.close();
+        } catch {
+            // Android: save navigated directly to ChannelInfoScreen
+        }
         await ChannelInfoScreen.toBeVisible();
         await expect(ChannelInfoScreen.publicPrivateTitleDisplayName).toHaveText(`${testChannel.display_name} name`);
         await expect(ChannelInfoScreen.publicPrivateTitlePurpose).toHaveText(`Channel purpose: ${testChannel.display_name.toLowerCase()} purpose`);

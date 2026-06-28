@@ -98,10 +98,14 @@ async function openArchivedChannelViaSearchPermalink(searchableMessage: string) 
         try {
             await waitForElementToBeVisible(searchResultText, timeouts.TWENTY_SEC);
         } catch {
-            // Search-index lag: the sentinel was posted pre-archival and may not
-            // be indexed yet on the first query. Re-submit the search once.
+            // Search-index lag: up to three total attempts (two re-submits after the initial try).
             await SearchMessagesScreen.searchInput.tapReturnKey();
-            await waitForElementToBeVisible(searchResultText, timeouts.ONE_MIN);
+            try {
+                await waitForElementToBeVisible(searchResultText, timeouts.ONE_MIN);
+            } catch {
+                await SearchMessagesScreen.searchInput.tapReturnKey();
+                await waitForElementToBeVisible(searchResultText, timeouts.ONE_MIN);
+            }
         }
     } finally {
         await device.enableSynchronization();
