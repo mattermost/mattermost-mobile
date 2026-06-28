@@ -104,10 +104,8 @@ export async function scrollElementIntoView(
         } catch {
             for (const direction of ['down', 'up'] as const) {
                 try {
-                    await waitFor(target).
-                        toBeVisible(100).
-                        whileElement(scrollContainer).
-                        scroll(250, direction);
+                    await scrollContainer.scroll(250, direction);
+                    await waitFor(target).toBeVisible(100).withTimeout(timeouts.TWO_SEC);
                     return;
                 } catch { /* try opposite direction */ }
             }
