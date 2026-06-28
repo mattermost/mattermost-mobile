@@ -192,6 +192,9 @@ describe('Search - Cross Team Search', () => {
         // never recover — the sheet is dismissed — producing a 10s timeout.
         await waitFor(TeamDropdownMenuScreen.teamDropdownMenuScreen).not.toExist().withTimeout(timeouts.TEN_SEC);
 
+        const {postListPostItem: offTopicSearchResult} = SearchMessagesScreen.getPostListPostItem(offTopicPost.id, searchTerm);
+        const {postListPostItem: townSquareSearchResult} = SearchMessagesScreen.getPostListPostItem(townSquarePost.id, searchTerm);
+
         // # k) In the "Search messages and files" field, type "horses" and press Enter
         await device.disableSynchronization();
         try {
@@ -200,8 +203,6 @@ describe('Search - Cross Team Search', () => {
             await wait(timeouts.TWO_SEC);
 
             // * k) Verify search results contain messages from both teams
-            const {postListPostItem: offTopicSearchResult} = SearchMessagesScreen.getPostListPostItem(offTopicPost.id, searchTerm);
-            const {postListPostItem: townSquareSearchResult} = SearchMessagesScreen.getPostListPostItem(townSquarePost.id, searchTerm);
             await waitForElementToExist(offTopicSearchResult, timeouts.HALF_MIN);
             await waitForElementToExist(townSquareSearchResult, timeouts.HALF_MIN);
         } finally {
