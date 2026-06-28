@@ -8,7 +8,7 @@ import {existsSync} from 'fs';
 import {ClaudePromptHandler} from '@support/pilot/ClaudePromptHandler';
 import {System, User} from '@support/server_api';
 import {siteOneUrl} from '@support/test_config';
-import {safeEnableSynchronization, timeouts, wait, waitForElementToExist} from '@support/utils';
+import {timeouts, wait, waitForElementToExist} from '@support/utils';
 
 const BUNDLE_ID = 'com.mattermost.rnbeta';
 
@@ -212,34 +212,6 @@ beforeAll(async () => {
         }
     }
 
-    async function isAndroidAppAlive(): Promise<boolean> {
-        try {
-            const out = execSync(`adb shell pidof ${BUNDLE_ID} 2>/dev/null || true`, {encoding: 'utf8', stdio: ['pipe', 'pipe', 'pipe']}).trim();
-            return out.length > 0;
-        } catch {
-            return false;
-        }
-    }
-
-    async function dismissAndroidSystemDialog(): Promise<boolean> {
-        try {
-            const dump = execSync(
-                'adb shell dumpsys window windows 2>/dev/null | grep -i "mCurrentFocus\\|mFocusedApp" || true',
-                {encoding: 'utf8', stdio: ['pipe', 'pipe', 'pipe']},
-            );
-            const isSystemDialog = dump.toLowerCase().includes('com.android.systemui') ||
-                dump.toLowerCase().includes('forcecloseactivity') ||
-                dump.toLowerCase().includes('appnotrespondingdialog');
-            if (isSystemDialog) {
-                execSync('adb shell input keyevent 66', {stdio: 'pipe'}); // KEYCODE_ENTER → dismiss
-                await new Promise((resolve) => setTimeout(resolve, 1000));
-                console.warn('[dismissAndroidSystemDialog] Dismissed system crash/ANR dialog');
-                return true;
-            }
-        } catch { /* non-fatal */ }
-        return false;
-    }
-
     async function launchAndVerify(): Promise<void> {
         await grantAndroidNotificationPermission();
         await ensureAndroidMetroReverse();
@@ -249,96 +221,30 @@ beforeAll(async () => {
             ...(device.getPlatform() === 'ios' ? {permissions: {notifications: 'YES' as const}} : {}),
         };
 
-        const isAndroidPlatform = device.getPlatform() === 'android';
-
-        // Disable sync on Android before launch — prevents Fabric idling resource
-        // deadlock (FabricUIManagerIdlingResources.checkIdle) before RN is up.
-        if (isAndroidPlatform) {
-            await device.disableSynchronization();
-        }
+        // Launch first, then enable sync — disableSynchronization() before launchApp()
+        // fails with "Detox can't seem to connect" after pm clear (CI run 28306039412).
         await device.launchApp(launchOptions);
-        if (isAndroidPlatform) {
-            await safeEnableSynchronization();
-        }
+        await device.enableSynchronization();
         await wait(timeouts.TWO_SEC);
 
         const serverScreenEl = element(by.id('server.screen'));
         const channelListEl = element(by.id('channel_list.screen'));
 
-        // Fast-fail crash probe (Android only): after 15s, if neither screen appeared,
-        // check for a dead process or blocking system dialog before burning the full 90s.
-        const FAST_PROBE_MS = 15_000;
-        if (isAndroidPlatform) {
-            let staleSessionDetected = false;
-            try {
-                await waitForElementToExist(serverScreenEl, FAST_PROBE_MS);
-                return; // server.screen visible — done
-            } catch { /* not yet */ }
-
-            try {
-                await waitForElementToExist(channelListEl, timeouts.TWO_SEC);
-                staleSessionDetected = true;
-            } catch { /* not visible either */ }
-
-            if (staleSessionDetected) {
-                // Stale session detected in fast probe — clear data and relaunch immediately
-                // rather than falling through and burning the full remainingMs budget waiting
-                // for server.screen that will never appear.
-                console.warn('[launchAndVerify] Stale logged-in state detected in fast probe. Clearing data and relaunching.');
-                await forceAndroidDataClear();
-                await grantAndroidNotificationPermission();
-                await ensureAndroidMetroReverse();
-                await device.disableSynchronization();
-                await device.launchApp(launchOptions);
-                await safeEnableSynchronization();
-                await wait(5_000);
-                await waitForElementToExist(serverScreenEl, APP_READY_TIMEOUT);
-                return;
-            }
-
-            // Neither server.screen nor channel_list.screen appeared — check for crash.
-            const alive = await isAndroidAppAlive();
-            const dismissed = await dismissAndroidSystemDialog();
-            if (!alive || dismissed) {
-                console.warn(`[launchAndVerify] Crash detected (alive=${alive}, dismissedDialog=${dismissed}) — force-relaunching.`);
-                await forceAndroidDataClear();
-                await grantAndroidNotificationPermission();
-                await ensureAndroidMetroReverse();
-                await device.disableSynchronization();
-                await device.launchApp(launchOptions);
-                await safeEnableSynchronization();
-                await wait(5_000); // longer settle after pm clear wipes the data dir
-                await waitForElementToExist(serverScreenEl, APP_READY_TIMEOUT);
-                return;
-            }
-
-            // Process alive, no system dialog — fall through to full-timeout wait.
-        }
-
-        // Full-timeout wait — remaining budget after fast probe on Android, full budget on iOS.
-        const remainingMs = isAndroidPlatform? Math.max(APP_READY_TIMEOUT - FAST_PROBE_MS - timeouts.TWO_SEC, 10_000): APP_READY_TIMEOUT;
-
         try {
-            await waitForElementToExist(serverScreenEl, remainingMs);
+            await waitForElementToExist(serverScreenEl, APP_READY_TIMEOUT);
         } catch {
-            // server.screen not found — check for stale logged-in state
             try {
                 await waitForElementToExist(channelListEl, timeouts.FIVE_SEC);
                 console.warn('[launchAndVerify] App launched with stale logged-in state. Clearing data and relaunching.');
-                if (isAndroidPlatform) {
+                if (device.getPlatform() === 'android') {
                     await forceAndroidDataClear();
                 } else {
                     clearIOSAppData();
                 }
                 await grantAndroidNotificationPermission();
                 await ensureAndroidMetroReverse();
-                if (isAndroidPlatform) {
-                    await device.disableSynchronization();
-                }
                 await device.launchApp(launchOptions);
-                if (isAndroidPlatform) {
-                    await safeEnableSynchronization();
-                }
+                await device.enableSynchronization();
                 await wait(timeouts.TWO_SEC);
                 await waitForElementToExist(serverScreenEl, APP_READY_TIMEOUT);
             } catch {
@@ -351,11 +257,6 @@ beforeAll(async () => {
 
     if (device.getPlatform() === 'ios') {
         clearIOSAppData();
-    } else if (device.getPlatform() === 'android') {
-        // Clear for every file — non-first files may have dirty state from a failed
-        // logout or a test that ended on a modal/crashed process.
-        await forceAndroidDataClear();
-        await ensureAndroidMetroReverse();
     }
 
     const MAX_LAUNCH_ATTEMPTS = 3;
@@ -379,8 +280,7 @@ beforeAll(async () => {
                 await ensureAndroidMetroReverse();
             }
 
-            // Give pm clear extra settle time on Android before the next launch attempt.
-            await new Promise((resolve) => setTimeout(resolve, device.getPlatform() === 'android' ? 6000 : 3000));
+            await new Promise((resolve) => setTimeout(resolve, 3000));
         }
     }
 
