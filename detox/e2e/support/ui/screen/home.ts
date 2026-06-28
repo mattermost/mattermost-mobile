@@ -38,17 +38,6 @@ class HomeScreen {
     };
 
     logout = async (serverDisplayName: string | null = null) => {
-        if (isAndroid()) {
-            // pm clear in the next file's beforeAll resets app state; UI logout is flaky
-            // when tests end on modals/keyboards and poisons the following file's launch.
-            try {
-                await device.terminateApp();
-            } catch (error) {
-                console.warn('[HomeScreen.logout] terminateApp failed:', error); // eslint-disable-line no-console
-            }
-            return;
-        }
-
         try {
             try {
                 await waitFor(this.channelListTab).toExist().withTimeout(timeouts.TWO_SEC);

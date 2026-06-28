@@ -141,17 +141,17 @@ describe('Account - User Attributes', () => {
         await wait(timeouts.TWO_SEC);
 
         await waitFor(element(by.id(`custom_attribute.${fieldIds![0]}.title`))).
-            toBeVisible().
+            toExist().
             withTimeout(timeouts.TEN_SEC);
         await expect(element(by.id(`custom_attribute.${fieldIds![0]}.text`))).toHaveText(attrValue1);
 
         await waitFor(element(by.id(`custom_attribute.${fieldIds![1]}.title`))).
-            toBeVisible().
+            toExist().
             withTimeout(timeouts.TEN_SEC);
         await expect(element(by.id(`custom_attribute.${fieldIds![1]}.text`))).toHaveText(attrValue2);
 
         await waitFor(element(by.id(`custom_attribute.${fieldIds![2]}.title`))).
-            toBeVisible().
+            toExist().
             withTimeout(timeouts.TEN_SEC);
         await expect(element(by.id(`custom_attribute.${fieldIds![2]}.text`))).toHaveText(attrValue3);
 

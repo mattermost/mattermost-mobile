@@ -23,7 +23,6 @@ import {
     timeouts,
     wait,
     waitForElementToBeVisible,
-    waitForElementToExist,
 } from '@support/utils';
 import {expect, waitFor} from 'detox';
 
@@ -199,14 +198,7 @@ describe('Channels - Archived Channel Post Interactions', () => {
         await ChannelScreen.openPostOptionsFor(post.id, message);
         await PostOptionsScreen.toBeVisible();
 
-        // Wait for the Save option to appear in the view hierarchy before tapping.
-        if (isAndroid()) {
-            await waitForElementToExist(PostOptionsScreen.savePostOptionLabel, timeouts.TEN_SEC);
-            await PostOptionsScreen.savePostOptionLabel.tap();
-        } else {
-            await waitFor(PostOptionsScreen.savePostOption).toExist().withTimeout(timeouts.TEN_SEC);
-            await PostOptionsScreen.savePostOption.tap();
-        }
+        await PostOptionsScreen.tapSavePost();
         await wait(timeouts.ONE_SEC);
 
         // # Close the archived channel and navigate to saved messages

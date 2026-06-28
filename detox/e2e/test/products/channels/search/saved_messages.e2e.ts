@@ -81,7 +81,7 @@ describe('Search - Saved Messages', () => {
 
         const {post} = await Post.apiGetLastPostInChannel(siteOneUrl, testChannel.id);
         await ChannelScreen.openPostOptionsFor(post.id, message);
-        await PostOptionsScreen.savePostOption.tap();
+        await PostOptionsScreen.tapSavePost();
         await wait(timeouts.TWO_SEC);
 
         // * Verify saved text is displayed on the post pre-header
@@ -122,7 +122,7 @@ describe('Search - Saved Messages', () => {
 
         const {post: savedPost} = await Post.apiGetLastPostInChannel(siteOneUrl, testChannel.id);
         await ChannelScreen.openPostOptionsFor(savedPost.id, message);
-        await PostOptionsScreen.savePostOption.tap();
+        await PostOptionsScreen.tapSavePost();
         await wait(timeouts.TWO_SEC);
         await ChannelScreen.back();
         await SavedMessagesScreen.open();
@@ -190,7 +190,7 @@ describe('Search - Saved Messages', () => {
         const {postListPostItem: channelPostListPostItem} = ChannelScreen.getPostListPostItem(savedPost.id, message);
         await waitForElementToBeVisible(channelPostListPostItem);
         await ChannelScreen.openPostOptionsFor(savedPost.id, message);
-        await PostOptionsScreen.savePostOption.tap();
+        await PostOptionsScreen.tapSavePost();
         await ChannelScreen.back();
         await SavedMessagesScreen.open();
 
@@ -204,7 +204,7 @@ describe('Search - Saved Messages', () => {
         } finally {
             await device.enableSynchronization();
         }
-        await PostOptionsScreen.unsavePostOption.tap();
+        await PostOptionsScreen.tapUnsavePost();
 
         // * Verify saved message is not displayed anymore
         const {postListPostItem} = SavedMessagesScreen.getPostListPostItem(savedPost.id, message);
@@ -225,7 +225,7 @@ describe('Search - Saved Messages', () => {
         const {postListPostItem: channelPostListPostItem} = ChannelScreen.getPostListPostItem(savedPost.id, message);
         await waitForElementToBeVisible(channelPostListPostItem);
         await ChannelScreen.openPostOptionsFor(savedPost.id, message);
-        await PostOptionsScreen.savePostOption.tap();
+        await PostOptionsScreen.tapSavePost();
         await ChannelScreen.back();
         await SavedMessagesScreen.open();
 

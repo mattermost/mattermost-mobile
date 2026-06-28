@@ -28,7 +28,7 @@ import {
     ThreadScreen,
     ChannelInfoScreen,
 } from '@support/ui/screen';
-import {getRandomId, isAndroid, timeouts, wait, waitForElementToBeVisible} from '@support/utils';
+import {getRandomId, isAndroid, timeouts, wait, waitForElementToBeVisible, waitForElementToNotExist} from '@support/utils';
 import {expect, waitFor} from 'detox';
 
 describe('Search - Pinned Messages', () => {
@@ -232,7 +232,7 @@ describe('Search - Pinned Messages', () => {
         // * Verify pinned message is not displayed anymore
         await wait(timeouts.ONE_SEC);
         const {postListPostItem} = PinnedMessagesScreen.getPostListPostItem(pinnedPost.id, message);
-        await expect(postListPostItem).not.toExist();
+        await waitForElementToNotExist(postListPostItem, timeouts.HALF_MIN);
 
         // # Go back to channel list screen
         await PinnedMessagesScreen.back();
@@ -260,7 +260,7 @@ describe('Search - Pinned Messages', () => {
 
         // # Open post options for pinned message, tap on save option, go back to channel list screen, and open saved messages screen
         await PinnedMessagesScreen.openPostOptionsFor(pinnedPost.id, message);
-        await PostOptionsScreen.savePostOption.tap();
+        await PostOptionsScreen.tapSavePost();
         await PinnedMessagesScreen.back();
         await ChannelInfoScreen.close();
         await ChannelScreen.back();
@@ -276,7 +276,7 @@ describe('Search - Pinned Messages', () => {
         await ChannelInfoScreen.open();
         await PinnedMessagesScreen.open();
         await PinnedMessagesScreen.openPostOptionsFor(pinnedPost.id, message);
-        await PostOptionsScreen.unsavePostOption.tap();
+        await PostOptionsScreen.tapUnsavePost();
         await PinnedMessagesScreen.back();
         await ChannelInfoScreen.close();
         await ChannelScreen.back();
@@ -287,7 +287,7 @@ describe('Search - Pinned Messages', () => {
         // Poll: the unsave preference deletion propagates through the DB observable to
         // the saved messages list, which can take longer than a single-shot expect()
         // allows on slower devices.
-        await waitFor(postListPostItem).not.toExist().withTimeout(timeouts.TEN_SEC);
+        await waitForElementToNotExist(postListPostItem, timeouts.HALF_MIN);
 
         // # Go back to channel list screen
         await ChannelListScreen.open();

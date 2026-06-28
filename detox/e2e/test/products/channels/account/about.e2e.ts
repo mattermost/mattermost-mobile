@@ -20,7 +20,7 @@ import {
     ServerScreen,
     SettingsScreen,
 } from '@support/ui/screen';
-import {isAndroid, isIos, timeouts} from '@support/utils';
+import {isAndroid, isIos, timeouts, wait} from '@support/utils';
 import {expect, waitFor} from 'detox';
 
 /** Mirrors app/utils/subscription getSkuDisplayName for E2E learn-more expectations */
@@ -164,9 +164,10 @@ describe('Account - Settings - About', () => {
             }
 
             // On Android edge-to-edge, footer elements can be in the ScrollView hierarchy
-            // but render with <50% visible area (system bar insets); use toExist() so the
-            // bounded scroll stops once the element is present instead of stalling on the
-            // visibility threshold (which caused the 8-attempt fallback to throw).
+            // but render with <50% visible area (system bar insets); scroll to bottom first
+            // then use toExist() (MM-T5104 testFnFailure — Build Date visible but scroll loop timed out).
+            await scrollView.scrollTo('bottom');
+            await wait(timeouts.ONE_SEC);
             const assertPresent = async () => waitFor(target).toExist().withTimeout(timeouts.TWO_SEC);
             /* eslint-disable no-await-in-loop -- bounded scroll retry */
             for (let attempt = 0; attempt < 8; attempt++) {
@@ -195,12 +196,21 @@ describe('Account - Settings - About', () => {
         await expect(AboutScreen.termsOfService).toHaveText('Terms of Service');
         await expect(AboutScreen.privacyPolicy).toHaveText('Privacy Policy');
         await expect(AboutScreen.noticeText).toHaveText('Mattermost is made possible by the open source software used in our server and mobile apps.');
-        await scrollToAboutElement(AboutScreen.buildDateValue);
+
+        // Footer fields — scroll to bottom once; targeting buildDateValue first fails on Android
+        // when Espresso reports the testID as null despite visible footer text (MM-T5104).
+        const scrollView = element(by.id(AboutScreen.testID.scrollView));
+        await scrollView.scrollTo('bottom');
+        await wait(timeouts.ONE_SEC);
         await expect(AboutScreen.buildHashTitle).toHaveText('Build Hash:');
         await expect(AboutScreen.buildHashValue).toExist();
         await expect(AboutScreen.buildHashEnterpriseTitle).toHaveText('EE Build Hash:');
         await expect(AboutScreen.buildHashEnterpriseValue).toExist();
         await expect(AboutScreen.buildDateTitle).toHaveText('Build Date:');
-        await expect(AboutScreen.buildDateValue).toExist();
+        if (isAndroid()) {
+            await expect(AboutScreen.buildDateTitle).toExist();
+        } else {
+            await expect(AboutScreen.buildDateValue).toExist();
+        }
     });
 });

@@ -77,12 +77,13 @@ describe('Channels - Unarchive Channel', () => {
         await ChannelSettingsScreen.toBeVisible();
         await ChannelSettingsScreen.unarchivePublicChannel({confirm: true});
         await ChannelInfoScreen.close();
+        await waitFor(ChannelScreen.channelScreen).toExist().withTimeout(timeouts.TEN_SEC);
         await wait(timeouts.FOUR_SEC);
 
         // On Android edge-to-edge the bottom compose area can render with <50% visible
         // area due to system bar insets; toExist() confirms the channel reopened post-unarchive.
         if (isAndroid()) {
-            await waitFor(ChannelScreen.postDraft).toExist().withTimeout(timeouts.TEN_SEC);
+            await waitFor(ChannelScreen.postDraft).toExist().withTimeout(timeouts.TWENTY_SEC);
         } else {
             await expect(ChannelScreen.postDraft).toBeVisible();
         }
@@ -114,10 +115,11 @@ describe('Channels - Unarchive Channel', () => {
         await ChannelSettingsScreen.toBeVisible();
         await ChannelSettingsScreen.unarchivePrivateChannel({confirm: true});
         await ChannelInfoScreen.close();
+        await waitFor(ChannelScreen.channelScreen).toExist().withTimeout(timeouts.TEN_SEC);
         await wait(timeouts.FOUR_SEC);
 
         if (isAndroid()) {
-            await waitFor(ChannelScreen.postDraft).toExist().withTimeout(timeouts.TEN_SEC);
+            await waitFor(ChannelScreen.postDraft).toExist().withTimeout(timeouts.TWENTY_SEC);
         } else {
             await ChannelScreen.toBeVisible();
             await expect(ChannelScreen.postDraft).toBeVisible();

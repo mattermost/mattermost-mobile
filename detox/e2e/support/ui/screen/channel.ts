@@ -341,8 +341,18 @@ class ChannelScreen {
     postSlashCommand = async (command: string) => {
         await this.composePostDraft(command);
         await waitForElementToBeVisible(this.sendButton, timeouts.FOUR_SEC);
+
+        // On Android the autocomplete suggestion row can still be intercepting input when send
+        // fires, causing the text to post as plain text rather than execute as a slash command.
+        if (isAndroid()) {
+            await wait(timeouts.ONE_SEC);
+        }
         await this.sendButton.tap();
-        await waitFor(InteractiveDialogScreen.interactiveDialogScreen).toExist().withTimeout(timeouts.FIVE_SEC);
+
+        // Use polling waitForElementToExist — waitFor(...).withTimeout() stalls on Android
+        // when the dialog bottom sheet animation keeps the JS bridge busy (times out at 5s
+        // even when the dialog is visible). The polling variant bypasses bridge-idle sync.
+        await waitForElementToExist(InteractiveDialogScreen.interactiveDialogScreen, timeouts.HALF_MIN);
     };
 
     tapSendButton = async () => {

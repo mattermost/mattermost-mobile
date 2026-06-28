@@ -53,7 +53,25 @@ const ensureCustomProfileAttributesFeatureFlag = async (siteOneUrl: string): Pro
         return `Failed to enable CustomProfileAttributes: ${JSON.stringify(patchError)}`;
     }
 
-    const ready = await waitForCustomProfileAttributesClientFlag(siteOneUrl);
+    let ready = await waitForCustomProfileAttributesClientFlag(siteOneUrl);
+    if (ready) {
+        return undefined;
+    }
+
+    // Plugin reloads can reset flags — re-apply via full config PUT (same as detox/provision).
+    const {config: serverConfig, error: getConfigError} = await System.apiGetConfig(siteOneUrl);
+    if (getConfigError || !serverConfig) {
+        return `Could not read server config for CustomProfileAttributes retry: ${JSON.stringify(getConfigError)}`;
+    }
+
+    serverConfig.FeatureFlags = serverConfig.FeatureFlags || {};
+    (serverConfig.FeatureFlags as Record<string, unknown>).CustomProfileAttributes = true;
+    const {error: fullUpdateError} = await System.apiUpdateConfig(siteOneUrl, serverConfig);
+    if (fullUpdateError) {
+        return `Full config update for CustomProfileAttributes failed: ${JSON.stringify(fullUpdateError)}`;
+    }
+
+    ready = await waitForCustomProfileAttributesClientFlag(siteOneUrl, {maxAttempts: 60});
     if (ready) {
         return undefined;
     }

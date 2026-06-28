@@ -24,8 +24,8 @@ import {
     SearchMessagesScreen,
     ServerScreen,
 } from '@support/ui/screen';
-import {timeouts, wait} from '@support/utils';
-import {expect} from 'detox';
+import {isAndroid, timeouts, wait} from '@support/utils';
+import {expect, waitFor} from 'detox';
 
 describe('Channels - Channel Bookmarks Search', () => {
     const serverOneDisplayName = 'Server 1';
@@ -165,9 +165,15 @@ describe('Channels - Channel Bookmarks Search', () => {
         await SearchMessagesScreen.searchInput.typeText('\n');
 
         // * Wait for the Files tab to appear (requires search submission to complete)
-        await waitFor(element(by.id('search.tabs.FILES.button'))).
-            toBeVisible().
-            withTimeout(timeouts.TEN_SEC);
+        if (isAndroid()) {
+            await waitFor(element(by.id('search.tabs.FILES.button'))).
+                toExist().
+                withTimeout(timeouts.TEN_SEC);
+        } else {
+            await waitFor(element(by.id('search.tabs.FILES.button'))).
+                toBeVisible().
+                withTimeout(timeouts.TEN_SEC);
+        }
 
         // # Tap the Files tab
         await element(by.id('search.tabs.FILES.button')).tap();
@@ -183,7 +189,11 @@ describe('Channels - Channel Bookmarks Search', () => {
     it('MM-T5614_1 - file bookmark should no longer appear in search after bookmark is deleted', async () => {
         // # Navigate to the channel and verify the bookmark is visible
         await openChannel(channelT5614);
-        await expect(element(by.text(deleteSearchTitle))).toBeVisible();
+        if (isAndroid()) {
+            await expect(element(by.text(deleteSearchTitle))).toExist();
+        } else {
+            await expect(element(by.text(deleteSearchTitle))).toBeVisible();
+        }
 
         // # Delete the bookmark via API
         await ChannelBookmark.apiDeleteChannelBookmark(siteOneUrl, channelT5614.id, bookmarkT5614.id);
@@ -200,9 +210,15 @@ describe('Channels - Channel Bookmarks Search', () => {
         await SearchMessagesScreen.searchInput.typeText('\n');
 
         // * Wait for the Files tab (requires search submission)
-        await waitFor(element(by.id('search.tabs.FILES.button'))).
-            toBeVisible().
-            withTimeout(timeouts.TEN_SEC);
+        if (isAndroid()) {
+            await waitFor(element(by.id('search.tabs.FILES.button'))).
+                toExist().
+                withTimeout(timeouts.TEN_SEC);
+        } else {
+            await waitFor(element(by.id('search.tabs.FILES.button'))).
+                toBeVisible().
+                withTimeout(timeouts.TEN_SEC);
+        }
 
         // # Tap the Files tab
         await element(by.id('search.tabs.FILES.button')).tap();

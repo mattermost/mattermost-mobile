@@ -240,10 +240,12 @@ describe('Search - Result Interactions', () => {
         } finally {
             await device.enableSynchronization();
         }
-        await PostOptionsScreen.savePostOption.tap();
-        await wait(timeouts.TWO_SEC);
+        await PostOptionsScreen.tapSavePost();
+        await waitFor(PostOptionsScreen.postOptionsScreen).not.toBeVisible().withTimeout(timeouts.TEN_SEC);
 
-        // # Navigate to Saved Messages
+        // # Navigate to Saved Messages — leave search first (MM-T372 screenshot shows polluted search term blocking saved tab).
+        await HomeScreen.channelListTab.tap();
+        await wait(timeouts.ONE_SEC);
         await SavedMessagesScreen.open();
 
         // * Verify on Saved Messages screen
@@ -251,11 +253,15 @@ describe('Search - Result Interactions', () => {
 
         // * Verify the message appears in Saved Messages (without search highlighting context)
         const {postListPostItem: savedPostItem} = SavedMessagesScreen.getPostListPostItem(searchedPostId, message);
-        await waitForElementToBeVisible(savedPostItem, timeouts.HALF_MIN);
+        if (isAndroid()) {
+            await waitForElementToExist(savedPostItem, timeouts.HALF_MIN);
+        } else {
+            await waitForElementToBeVisible(savedPostItem, timeouts.HALF_MIN);
+        }
 
         // # Unsave the post to clean up, then go back to channel list
         await SavedMessagesScreen.openPostOptionsFor(searchedPostId, message);
-        await PostOptionsScreen.unsavePostOption.tap();
+        await PostOptionsScreen.tapUnsavePost();
         await wait(timeouts.TWO_SEC);
 
         // # Go back to search screen to clean up recent searches

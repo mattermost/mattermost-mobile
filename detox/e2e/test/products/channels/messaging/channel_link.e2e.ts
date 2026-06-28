@@ -99,17 +99,13 @@ describe('Messaging - Channel Link', () => {
         await wait(timeouts.TWO_SEC);
 
         if (isAndroid()) {
+            await device.disableSynchronization();
             try {
-                await ThreadScreen.postList.getFlatList().swipe('up', 'fast', 0.3);
-            } catch {
-                // Post list may be too short to scroll
+                await device.pressBack();
+                await wait(timeouts.THREE_SEC);
+            } finally {
+                await device.enableSynchronization();
             }
-            await wait(timeouts.TWO_SEC);
-
-            // Dismiss keyboard before tapping the channel link — react-native-keyboard-controller
-            // crashes with "Animation in progress" if controlWindowInsetsAnimation() races the tap.
-            await device.pressBack();
-            await wait(timeouts.TWO_SEC);
         }
 
         // # Tap on channel link from within the reply thread

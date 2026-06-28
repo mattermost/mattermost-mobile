@@ -33,7 +33,7 @@ import {
     ServerScreen,
     ThreadScreen,
 } from '@support/ui/screen';
-import {getRandomId, isAndroid, timeouts, wait, waitForElementToBeVisible} from '@support/utils';
+import {getRandomId, isAndroid, timeouts, wait, waitForElementToBeVisible, waitForElementToNotExist} from '@support/utils';
 import {by, element, expect, waitFor} from 'detox';
 
 describe('Search - Recent Mentions', () => {
@@ -165,7 +165,7 @@ describe('Search - Recent Mentions', () => {
 
         // # Open post options for the fixture mention and tap Save
         await RecentMentionsScreen.openPostOptionsFor(mentionPost.id, mentionPost.messageText);
-        await PostOptionsScreen.savePostOption.tap();
+        await PostOptionsScreen.tapSavePost();
         await SavedMessagesScreen.open();
 
         // * Verify mention appears on saved messages screen
@@ -175,13 +175,13 @@ describe('Search - Recent Mentions', () => {
         // # Unsave: back to recent mentions, open post options, tap Unsave
         await RecentMentionsScreen.open();
         await RecentMentionsScreen.openPostOptionsFor(mentionPost.id, mentionPost.messageText);
-        await PostOptionsScreen.unsavePostOption.tap();
+        await PostOptionsScreen.tapUnsavePost();
         await wait(timeouts.TWO_SEC);
         await SavedMessagesScreen.open();
 
         // * Verify mention is no longer on saved messages screen.
         // Poll: unsave preference deletion propagates through the observable.
-        await waitFor(postListPostItem).not.toExist().withTimeout(timeouts.TEN_SEC);
+        await waitForElementToNotExist(postListPostItem, timeouts.HALF_MIN);
 
         // # Go back to channel list screen
         await ChannelListScreen.open();

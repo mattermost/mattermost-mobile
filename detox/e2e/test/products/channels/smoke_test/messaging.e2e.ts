@@ -189,11 +189,7 @@ describe('Smoke Test - Messaging', () => {
         // # Open post options for message and tap on save option
         await ChannelScreen.openPostOptionsFor(post.id, message);
 
-        if (isAndroid()) {
-            await PostOptionsScreen.savePostOptionLabel.tap();
-        } else {
-            await PostOptionsScreen.savePostOption.tap();
-        }
+        await PostOptionsScreen.tapSavePost();
 
         // * Verify post options closed and saved text is displayed on the post pre-header
         await waitFor(PostOptionsScreen.postOptionsScreen).not.toBeVisible().withTimeout(timeouts.FOUR_SEC);
@@ -205,11 +201,7 @@ describe('Smoke Test - Messaging', () => {
         await ThreadScreen.toBeVisible();
         await wait(timeouts.ONE_SEC);
         await ThreadScreen.openPostOptionsFor(post.id, message);
-        if (isAndroid()) {
-            await PostOptionsScreen.unsavePostOptionLabel.tap();
-        } else {
-            await PostOptionsScreen.unsavePostOption.tap();
-        }
+        await PostOptionsScreen.tapUnsavePost();
 
         // * Verify post options closed and saved text is not displayed on the post pre-header
         await waitFor(PostOptionsScreen.postOptionsScreen).not.toBeVisible().withTimeout(timeouts.TWO_SEC);

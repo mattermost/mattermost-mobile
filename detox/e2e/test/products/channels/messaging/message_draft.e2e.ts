@@ -181,7 +181,11 @@ describe('Messaging - Message Draft', () => {
             await expect(ThreadScreen.postInput).toHaveText(replyMessage);
         }
         const {post: lastPostAfterDraft} = await Post.apiGetLastPostInChannel(siteOneUrl, testChannel.id);
-        expect(lastPostAfterDraft.id).toBe(lastPostBeforeDraft.id);
+        if (lastPostAfterDraft.id !== lastPostBeforeDraft.id) {
+            throw new Error(
+                `Draft should not have posted: lastPost changed from ${lastPostBeforeDraft.id} to ${lastPostAfterDraft.id}`,
+            );
+        }
 
         // # Go back to channel screen and tap on parent post again
         await ThreadScreen.back();

@@ -26,8 +26,8 @@ import {
     ServerScreen,
     ThreadScreen,
 } from '@support/ui/screen';
-import {getRandomId, timeouts, wait, waitForElementToBeVisible} from '@support/utils';
-import {expect, waitFor} from 'detox';
+import {getRandomId, timeouts, wait, waitForElementToBeVisible, waitForElementToNotExist} from '@support/utils';
+import {expect} from 'detox';
 
 describe('Search - Search Message Post Actions', () => {
     const serverOneDisplayName = 'Server 1';
@@ -153,7 +153,7 @@ describe('Search - Search Message Post Actions', () => {
         await wait(timeouts.TWO_SEC);
         const {post: searchedPost} = await Post.apiGetLastPostInChannel(siteOneUrl, testChannel.id);
         await SearchMessagesScreen.openPostOptionsFor(searchedPost.id, message);
-        await PostOptionsScreen.savePostOption.tap();
+        await PostOptionsScreen.tapSavePost();
         await wait(timeouts.TWO_SEC);
         await SavedMessagesScreen.open();
 
@@ -164,13 +164,13 @@ describe('Search - Search Message Post Actions', () => {
         // # Go back to searched messages screen, open post options for searched message, tap on usave option, and open saved messages screen
         await SearchMessagesScreen.open();
         await SearchMessagesScreen.openPostOptionsFor(searchedPost.id, message);
-        await PostOptionsScreen.unsavePostOption.tap();
+        await PostOptionsScreen.tapUnsavePost();
         await wait(timeouts.TWO_SEC);
         await SavedMessagesScreen.open();
 
         // * Verify searched message is not displayed anymore on saved messages screen.
         // Poll: unsave preference deletion propagates through the observable.
-        await waitFor(postListPostItem).not.toExist().withTimeout(timeouts.TEN_SEC);
+        await waitForElementToNotExist(postListPostItem, timeouts.HALF_MIN);
 
         // # Go back to searched messages screen, clear search input, remove recent search item, and go back to channel list screen
         await SearchMessagesScreen.open();

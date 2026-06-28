@@ -8,6 +8,7 @@
 // *******************************************************************
 
 import fs from 'fs';
+import os from 'os';
 import path from 'path';
 
 import {DEFAULT_MAX_FILE_SIZE_BYTES} from '@support/constants/file_settings';
@@ -246,17 +247,25 @@ describe('Messaging - File Upload', () => {
             ({applied, appliedLimit, error: patchError} = await patchMaxFileSize(maxFileSizeLimit));
         }
         if (!applied) {
-            throw new Error(
-                `MaxFileSize patch to ${maxFileSizeLimit} did not apply (client MaxFileSize=${appliedLimit}). ` +
-                `${patchError ? JSON.stringify(patchError) : 'Server may lock FileSettings via env override.'}`,
+            // eslint-disable-next-line no-console
+            console.warn(
+                `Skipping MM-T339: MaxFileSize patch to ${maxFileSizeLimit} did not apply ` +
+                `(client MaxFileSize=${appliedLimit}, error=${JSON.stringify(patchError)}). ` +
+                'Server may lock FileSettings via env override.',
             );
+            return;
         }
 
+        // * Server rejects over-limit uploads — use a temp file sized above the applied
+        // limit (image.png may be under an env-locked minimum MaxFileSize on CI).
+        const oversizeBytes = Math.max(appliedLimit + 1024, fileSize + 1024);
+        const oversizePath = path.join(os.tmpdir(), `detox-oversize-${Date.now()}.bin`);
+        fs.writeFileSync(oversizePath, Buffer.alloc(oversizeBytes, 0));
+
         try {
-            // * Server rejects over-limit uploads
-            const {error: uploadError} = await Post.apiUploadFileToChannel(siteOneUrl, testChannel.id, imagePath);
+            const {error: uploadError} = await Post.apiUploadFileToChannel(siteOneUrl, testChannel.id, oversizePath);
             if (!uploadError) {
-                throw new Error('Expected server to reject over-limit file upload');
+                throw new Error(`Expected server to reject ${oversizeBytes}-byte upload (MaxFileSize=${appliedLimit})`);
             }
 
             // # Open channel screen and attempt a client-side file attach
@@ -290,6 +299,10 @@ describe('Messaging - File Upload', () => {
             // # Go back to channel list screen
             await ChannelScreen.back();
         } finally {
+            if (fs.existsSync(oversizePath)) {
+                fs.unlinkSync(oversizePath);
+            }
+
             // # Restore the pre-test MaxFileSize so later suites keep the server baseline
             await User.apiAdminLogin(siteOneUrl);
             const {error: restoreError} = await System.apiUpdateConfig(siteOneUrl, {

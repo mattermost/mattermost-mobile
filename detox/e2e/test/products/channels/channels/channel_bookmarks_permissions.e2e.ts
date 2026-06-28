@@ -137,7 +137,11 @@ describe('Channels - Channel Bookmarks Permissions', () => {
             by.text('Permission Test Bookmark').
                 withAncestor(by.id('channel_info.bookmarks.list')),
         );
-        await expect(permissionBookmarkEl).toBeVisible();
+        if (isAndroid()) {
+            await expect(permissionBookmarkEl).toExist();
+        } else {
+            await expect(permissionBookmarkEl).toBeVisible();
+        }
 
         // * Verify "Add a bookmark" option is NOT visible for non-admin user
         await ChannelInfoScreen.expectAddBookmarkNotVisible();
@@ -193,7 +197,11 @@ describe('Channels - Channel Bookmarks Permissions', () => {
             by.text('Archive Test Bookmark').
                 withAncestor(by.id('channel_info.bookmarks.list')),
         );
-        await waitFor(archiveBookmarkEl).toBeVisible().withTimeout(timeouts.TEN_SEC);
+        if (isAndroid()) {
+            await waitFor(archiveBookmarkEl).toExist().withTimeout(timeouts.TEN_SEC);
+        } else {
+            await waitFor(archiveBookmarkEl).toBeVisible().withTimeout(timeouts.TEN_SEC);
+        }
 
         // # Long-press the bookmark to verify Edit and Delete ARE available before archiving.
         // channel_user role has edit_bookmark and delete_bookmark permissions in active channels.

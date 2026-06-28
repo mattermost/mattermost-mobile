@@ -102,6 +102,9 @@ class ChannelInfoScreen {
     tapAddBookmark = async () => {
         const button = await this.waitForAddBookmarkButton();
         await button.tap();
+        await waitFor(element(by.id('channel_bookmark.type.link'))).
+            toExist().
+            withTimeout(timeouts.TEN_SEC);
     };
 
     expectAddBookmarkNotVisible = async () => {
@@ -152,7 +155,11 @@ class ChannelInfoScreen {
     };
 
     close = async () => {
-        await waitFor(this.closeButton).toBeVisible().withTimeout(timeouts.TEN_SEC);
+        if (isAndroid()) {
+            await waitFor(this.closeButton).toExist().withTimeout(timeouts.TEN_SEC);
+        } else {
+            await waitFor(this.closeButton).toBeVisible().withTimeout(timeouts.TEN_SEC);
+        }
         await this.closeButton.tap();
         await waitFor(this.channelInfoScreen).not.toBeVisible().withTimeout(timeouts.TEN_SEC);
     };

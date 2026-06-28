@@ -2,7 +2,7 @@
 // See LICENSE.txt for license information.
 
 import {Alert} from '@support/ui/component';
-import {isAndroid, isIos, longPressWithRetry, timeouts, wait} from '@support/utils';
+import {isAndroid, isIos, longPressWithRetry, safeEnableSynchronization, timeouts, wait} from '@support/utils';
 import {expect} from 'detox';
 
 class PostOptionsScreen {
@@ -99,6 +99,52 @@ class PostOptionsScreen {
     openPostOptionsForSearchedPosts = async (postId: string) => {
         await waitFor(this.searchedPostListItem(postId)).toExist().withTimeout(timeouts.TEN_SEC);
         await longPressWithRetry(this.searchedPostListItem(postId), this.postOptionsScreen);
+    };
+
+    private tapPostOption = async (
+        option: Detox.NativeElement,
+        optionLabel: Detox.NativeElement,
+        labelText: string,
+    ) => {
+        await this.toBeVisible();
+
+        if (isIos()) {
+            await option.tap();
+            return;
+        }
+
+        // Android gorhom sheets + edge-to-edge: testID visibility can fail while the
+        // label text is hittable (CI MM-T4864 testFnFailure — Save visible, matcher not).
+        await device.disableSynchronization();
+        try {
+            const candidates = [
+                optionLabel,
+                option,
+                element(by.text(labelText).withAncestor(by.id(this.testID.postOptionsScreen))),
+            ];
+            /* eslint-disable no-await-in-loop */
+            for (const candidate of candidates) {
+                try {
+                    await waitFor(candidate).toExist().withTimeout(timeouts.TWO_SEC);
+                    await candidate.tap();
+                    return;
+                } catch {
+                    // try next matcher
+                }
+            }
+            /* eslint-enable no-await-in-loop */
+            await optionLabel.tap();
+        } finally {
+            await safeEnableSynchronization();
+        }
+    };
+
+    tapSavePost = async () => {
+        await this.tapPostOption(this.savePostOption, this.savePostOptionLabel, 'Save');
+    };
+
+    tapUnsavePost = async () => {
+        await this.tapPostOption(this.unsavePostOption, this.unsavePostOptionLabel, 'Unsave');
     };
 }
 

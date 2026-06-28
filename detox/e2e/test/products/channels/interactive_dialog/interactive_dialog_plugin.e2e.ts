@@ -31,7 +31,7 @@ import {
     LoginScreen,
     ServerScreen,
 } from '@support/ui/screen';
-import {wait, isAndroid} from '@support/utils';
+import {wait, isAndroid, safeEnableSynchronization, timeouts, waitForElementToExist} from '@support/utils';
 import {expect} from 'detox';
 
 // MM-66558: dialog fields use replaceText instead of typeText.
@@ -102,9 +102,13 @@ async function ensureDialogClosed() {
 }
 
 async function ensureDialogOpen() {
-    await waitFor(InteractiveDialogScreen.interactiveDialogScreen).toExist().withTimeout(3000);
-    await InteractiveDialogScreen.toBeVisible();
-    await expect(InteractiveDialogScreen.interactiveDialogScreen).toExist();
+    // Disable sync so the bottom sheet animation does not block the poll.
+    await device.disableSynchronization();
+    try {
+        await waitForElementToExist(InteractiveDialogScreen.interactiveDialogScreen, timeouts.HALF_MIN);
+    } finally {
+        await safeEnableSynchronization();
+    }
 }
 
 async function dismissErrorAlert() {
@@ -359,7 +363,9 @@ describe('Interactive Dialog - Basic Dialog (Plugin)', () => {
         await IntegrationSelectorScreen.toBeVisible();
         await selectUser();
         const channelSelectorButton = element(by.id('AppFormElement.somechannelselector.select.button'));
-        await waitFor(channelSelectorButton).toExist().withTimeout(1000);
+
+        // 1s bridge-idle waitFor fails on Android after IntegrationSelector dismissal animation.
+        await waitForElementToExist(channelSelectorButton, timeouts.FIVE_SEC);
         await channelSelectorButton.tap();
         await IntegrationSelectorScreen.toBeVisible();
         await selectChannel();
@@ -423,7 +429,9 @@ describe('Interactive Dialog - Basic Dialog (Plugin)', () => {
         await IntegrationSelectorScreen.toBeVisible();
         await selectUser();
         const channelSelectorButton = element(by.id('AppFormElement.somechannelselector.select.button'));
-        await waitFor(channelSelectorButton).toExist().withTimeout(1000);
+
+        // 1s bridge-idle waitFor fails on Android after IntegrationSelector dismissal animation.
+        await waitForElementToExist(channelSelectorButton, timeouts.FIVE_SEC);
         await channelSelectorButton.tap();
         await IntegrationSelectorScreen.toBeVisible();
         await selectChannel();

@@ -212,7 +212,7 @@ describe('Search - Hashtag Search', () => {
         // # Get the post ID and save the post via post options
         const {post: savedPost} = await Post.apiGetLastPostInChannel(siteOneUrl, testChannel.id);
         await ChannelScreen.openPostOptionsFor(savedPost.id, message);
-        await PostOptionsScreen.savePostOption.tap();
+        await PostOptionsScreen.tapSavePost();
         await wait(timeouts.TWO_SEC);
 
         // # Go back to channel list screen and open saved messages screen
