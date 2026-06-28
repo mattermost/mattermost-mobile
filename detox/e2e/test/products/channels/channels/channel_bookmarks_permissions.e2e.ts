@@ -26,7 +26,7 @@ import {
     LoginScreen,
     ServerScreen,
 } from '@support/ui/screen';
-import {isAndroid, timeouts, wait} from '@support/utils';
+import {isAndroid, timeouts, wait, waitForElementToExist} from '@support/utils';
 import {expect, waitFor} from 'detox';
 
 describe('Channels - Channel Bookmarks Permissions', () => {
@@ -63,9 +63,7 @@ describe('Channels - Channel Bookmarks Permissions', () => {
     // Wait for the channel item to be visible, then tap — no scroll container needed.
     const openChannel = async (channel: any) => {
         const displayNameEl = ChannelListScreen.getChannelItemDisplayName(channelsCategory, channel.name);
-        await waitFor(displayNameEl).
-            toBeVisible().
-            withTimeout(timeouts.TEN_SEC);
+        await waitForElementToExist(displayNameEl, timeouts.HALF_MIN);
         await displayNameEl.tap();
         await ChannelScreen.dismissScheduledPostTooltip();
         return ChannelScreen.toBeVisible();

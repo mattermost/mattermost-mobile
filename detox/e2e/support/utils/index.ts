@@ -90,68 +90,66 @@ export async function retryWithReload(
     }
 }
 
+// Scroll a post row into the visible viewport before long-press (iOS header/draft clip).
+export async function scrollElementIntoView(
+    target: Detox.NativeElement,
+    scrollContainer: Detox.NativeElement,
+    maxScrolls = 15,
+): Promise<void> {
+    /* eslint-disable no-await-in-loop */
+    for (let i = 0; i < maxScrolls; i++) {
+        try {
+            await waitFor(target).toBeVisible(100).withTimeout(timeouts.TWO_SEC);
+            return;
+        } catch {
+            for (const direction of ['down', 'up'] as const) {
+                try {
+                    await waitFor(target).
+                        toBeVisible(100).
+                        whileElement(scrollContainer).
+                        scroll(250, direction);
+                    return;
+                } catch { /* try opposite direction */ }
+            }
+            try {
+                await scrollContainer.scroll(150, 'down', 0.5, 0.5);
+            } catch { /* ignore */ }
+        }
+    }
+    /* eslint-enable no-await-in-loop */
+    await waitFor(target).toBeVisible(100).withTimeout(timeouts.FIVE_SEC);
+}
+
 // Long-press with scroll/swipe retry for flaky post-option gestures after keyboard dismiss.
 export async function longPressWithScrollRetry(
     target: Detox.NativeElement,
     scrollTarget: Detox.NativeElement,
     checkElement: Detox.NativeElement,
-    maxAttempts = 5,
+    maxAttempts = 8,
 ): Promise<void> {
-    const isIosHittableError = (error: unknown) => {
-        const msg = String(error);
-        return msg.includes('hittable') || msg.includes('visibility percent');
-    };
-
     /* eslint-disable no-await-in-loop */
     for (let attempt = 1; attempt <= maxAttempts; attempt++) {
+        await scrollElementIntoView(target, scrollTarget);
+
         if (isAndroid()) {
             try {
                 await scrollTarget.swipe('down', 'slow', 0.2);
             } catch { /* ignore */ }
-            try {
-                await scrollTarget.scroll(100, 'down', 0.5, 0.5);
-            } catch { /* ignore */ }
         }
 
-        if (isIos()) {
-            try {
-                await waitFor(target).toBeVisible().whileElement(scrollTarget).scroll(80, 'down');
-            } catch {
-                try {
-                    await scrollTarget.scroll(120, 'up', 0.5, 0.5);
-                } catch { /* ignore */ }
-            }
-            try {
-                await scrollTarget.scroll(100, 'down', 0.5, 0.5);
-            } catch { /* ignore */ }
-            try {
-                await scrollTarget.swipe('down', 'slow', 0.2);
-            } catch { /* ignore */ }
-        }
-
-        const waitDuration = isAndroid() ? timeouts.THREE_SEC : timeouts.FIVE_SEC;
+        const waitDuration = isAndroid() ? timeouts.TWO_SEC : timeouts.THREE_SEC;
         const pressDuration = isAndroid() ? timeouts.FOUR_SEC : timeouts.FIVE_SEC;
         await wait(waitDuration);
 
         if (isIos()) {
             await device.disableSynchronization();
         }
-        let longPressFailed = false;
         try {
             await target.longPress(pressDuration);
-        } catch (pressError) {
-            if (isIos() && attempt < maxAttempts && isIosHittableError(pressError)) {
-                longPressFailed = true;
-            } else {
-                throw pressError;
-            }
         } finally {
             if (isIos()) {
                 await device.enableSynchronization();
             }
-        }
-        if (longPressFailed) {
-            continue;
         }
         try {
             await waitForElementToExist(checkElement, timeouts.TEN_SEC);

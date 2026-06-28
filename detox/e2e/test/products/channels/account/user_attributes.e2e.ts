@@ -140,19 +140,30 @@ describe('Account - User Attributes', () => {
         await UserProfileScreen.sendMessageProfileOption.swipe('up', 'fast', 0.8);
         await wait(timeouts.TWO_SEC);
 
-        await waitFor(element(by.id(`custom_attribute.${fieldIds![0]}.title`))).
-            toExist().
-            withTimeout(timeouts.TEN_SEC);
+        const scrollCustomAttributeIntoView = async (fieldId: string) => {
+            const titleEl = element(by.id(`custom_attribute.${fieldId}.title`));
+            /* eslint-disable no-await-in-loop */
+            for (let attempt = 0; attempt < 10; attempt++) {
+                try {
+                    await waitFor(titleEl).toExist().withTimeout(timeouts.TWO_SEC);
+                    return titleEl;
+                } catch {
+                    await UserProfileScreen.sendMessageProfileOption.swipe('up', 'slow', 0.5);
+                    await wait(timeouts.HALF_SEC);
+                }
+            }
+            /* eslint-enable no-await-in-loop */
+            await waitFor(titleEl).toExist().withTimeout(timeouts.TEN_SEC);
+            return titleEl;
+        };
+
+        await scrollCustomAttributeIntoView(fieldIds![0]);
         await expect(element(by.id(`custom_attribute.${fieldIds![0]}.text`))).toHaveText(attrValue1);
 
-        await waitFor(element(by.id(`custom_attribute.${fieldIds![1]}.title`))).
-            toExist().
-            withTimeout(timeouts.TEN_SEC);
+        await scrollCustomAttributeIntoView(fieldIds![1]);
         await expect(element(by.id(`custom_attribute.${fieldIds![1]}.text`))).toHaveText(attrValue2);
 
-        await waitFor(element(by.id(`custom_attribute.${fieldIds![2]}.title`))).
-            toExist().
-            withTimeout(timeouts.TEN_SEC);
+        await scrollCustomAttributeIntoView(fieldIds![2]);
         await expect(element(by.id(`custom_attribute.${fieldIds![2]}.text`))).toHaveText(attrValue3);
 
         await UserProfileScreen.close();

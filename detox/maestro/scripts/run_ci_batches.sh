@@ -113,6 +113,12 @@ should_skip_flow() {
   [[ "$base" == "attach_logs_disabled_when_download_logs_off.yml" ]] && return 0
   [[ "$base" == "file_type_preview.yml" ]] && return 0
   [[ "$base" == "start_call.yml" ]] && return 0
+  # iOS Simulator cannot reliably run CallKit + WebRTC (Maestro CI run 28306039412:
+  # call_ui_permission, leave_call, mute_unmute fail waiting for id mute-unmute).
+  # See CallKitProvider.swift — "RTCAudioSession may never activate on CI simulators
+  # and peer connection times out before CurrentCallBar appears."
+  # libraries/@mattermost/calls-native/ios/Source/Managers/CallKitProvider.swift
+  [[ "$PLATFORM" == "ios" && "$flow" == *"/calls/"* ]] && return 0
   return 1
 }
 

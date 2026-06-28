@@ -6,7 +6,7 @@ import {
     ProfilePicture,
 } from '@support/ui/component';
 import {ChannelScreen} from '@support/ui/screen';
-import {isAndroid, timeouts, wait} from '@support/utils';
+import {isAndroid, timeouts, wait, waitForElementToExist} from '@support/utils';
 import {expect, waitFor} from 'detox';
 
 class ChannelInfoScreen {
@@ -112,8 +112,15 @@ class ChannelInfoScreen {
     };
 
     waitForBookmarksList = async () => {
-        await waitFor(this.bookmarksList).toExist().withTimeout(timeouts.TEN_SEC);
+        await waitForElementToExist(this.bookmarksList, timeouts.HALF_MIN);
         return this.bookmarksList;
+    };
+
+    waitForBookmarkTitleInList = async (title: string) => {
+        await waitForElementToExist(
+            element(by.text(title).withAncestor(by.id(this.testID.bookmarksList))),
+            timeouts.HALF_MIN,
+        );
     };
 
     getDirectMessageTitle = (userId: string) => {

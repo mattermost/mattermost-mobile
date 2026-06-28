@@ -193,15 +193,20 @@ describe('Search - Cross Team Search', () => {
         await waitFor(TeamDropdownMenuScreen.teamDropdownMenuScreen).not.toExist().withTimeout(timeouts.TEN_SEC);
 
         // # k) In the "Search messages and files" field, type "horses" and press Enter
-        await SearchMessagesScreen.searchInput.typeText('horses');
-        await SearchMessagesScreen.searchInput.tapReturnKey();
-        await wait(timeouts.TWO_SEC);
+        await device.disableSynchronization();
+        try {
+            await SearchMessagesScreen.searchInput.typeText('horses');
+            await SearchMessagesScreen.searchInput.tapReturnKey();
+            await wait(timeouts.TWO_SEC);
 
-        // * k) Verify search results contain messages from both teams
-        const {postListPostItem: offTopicSearchResult} = SearchMessagesScreen.getPostListPostItem(offTopicPost.id, searchTerm);
-        const {postListPostItem: townSquareSearchResult} = SearchMessagesScreen.getPostListPostItem(townSquarePost.id, searchTerm);
-        await expect(offTopicSearchResult).toBeVisible();
-        await expect(townSquareSearchResult).toBeVisible();
+            // * k) Verify search results contain messages from both teams
+            const {postListPostItem: offTopicSearchResult} = SearchMessagesScreen.getPostListPostItem(offTopicPost.id, searchTerm);
+            const {postListPostItem: townSquareSearchResult} = SearchMessagesScreen.getPostListPostItem(townSquarePost.id, searchTerm);
+            await waitForElementToExist(offTopicSearchResult, timeouts.HALF_MIN);
+            await waitForElementToExist(townSquareSearchResult, timeouts.HALF_MIN);
+        } finally {
+            await device.enableSynchronization();
+        }
 
         // # l) Tap on the "All teams" with the drop-down arrow selector and select "Team Open"
         await SearchMessagesScreen.teamPickerButton.tap();

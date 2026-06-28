@@ -33,7 +33,7 @@ import {
     ServerScreen,
     ThreadScreen,
 } from '@support/ui/screen';
-import {getRandomId, isAndroid, timeouts, wait, waitForElementToBeVisible, waitForElementToNotExist} from '@support/utils';
+import {getRandomId, isAndroid, timeouts, wait, waitForElementToBeVisible, waitForElementToExist, waitForElementToNotExist} from '@support/utils';
 import {by, element, expect, waitFor} from 'detox';
 
 describe('Search - Recent Mentions', () => {
@@ -263,17 +263,10 @@ describe('Search - Recent Mentions', () => {
         } catch { /* list may not scroll */ }
 
         const postItemTestID = `recent_mentions.post_list.post.${ownMentionPost.id}`;
-        const {postListPostItemEditedIndicator} = RecentMentionsScreen.getPostListPostItem(ownMentionPost.id);
-        if (isAndroid()) {
-            await waitForElementToBeVisible(postListPostItemEditedIndicator, timeouts.TWENTY_SEC);
-        } else {
-            // iOS collapses nested Text testIDs; @mention is a separate node so
-            // assertPostMessageEdited's combined-text regex also fails here.
-            await waitForElementToBeVisible(
-                element(by.text('Edited').withAncestor(by.id(postItemTestID))),
-                timeouts.TWENTY_SEC,
-            );
-        }
+        const editedMatcher = isAndroid() ?
+            element(by.text('Edited').withAncestor(by.id(postItemTestID))) :
+            element(by.text('Edited').withAncestor(by.id(postItemTestID)));
+        await waitForElementToExist(editedMatcher, timeouts.TWENTY_SEC);
 
         // # Open post options via header date_time long-press (avoids the @mention tap handler)
         await element(by.id('post_header.date_time').withAncestor(by.id(`recent_mentions.post_list.post.${ownMentionPost.id}`))).longPress(timeouts.TWO_SEC);

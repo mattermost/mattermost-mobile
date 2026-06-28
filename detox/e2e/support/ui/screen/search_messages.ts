@@ -9,7 +9,7 @@ import {
     HomeScreen,
     PostOptionsScreen,
 } from '@support/ui/screen';
-import {isAndroid, longPressWithRetry, timeouts, wait, waitForElementToBeVisible} from '@support/utils';
+import {isAndroid, isIos, longPressWithRetry, timeouts, wait, waitForElementToBeVisible} from '@support/utils';
 import {expect} from 'detox';
 
 class SearchMessagesScreen {
@@ -80,10 +80,13 @@ class SearchMessagesScreen {
     };
 
     open = async () => {
-        // # Open search messages screen
-        // Corner-tap: the search tab's center can be obscured by a lingering overlay
-        // (same workaround as PostOptionsScreen.deletePost).
-        await HomeScreen.searchTab.tap({x: 1, y: 1});
+        await HomeScreen.toBeVisible();
+        // Corner-tap is for Android overlays; iOS CI fails to open search with {x:1,y:1} (MM-T5294_6–9).
+        if (isIos()) {
+            await this.searchTab.tap();
+        } else {
+            await HomeScreen.searchTab.tap({x: 1, y: 1});
+        }
 
         return this.toBeVisible();
     };

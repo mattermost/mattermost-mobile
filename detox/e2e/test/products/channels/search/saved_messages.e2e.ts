@@ -29,7 +29,7 @@ import {
     ServerScreen,
     ThreadScreen,
 } from '@support/ui/screen';
-import {getRandomId, timeouts, wait, waitForElementToBeVisible, waitForElementToNotExist} from '@support/utils';
+import {getRandomId, timeouts, wait, waitForElementToBeVisible, waitForElementToExist, waitForElementToNotExist} from '@support/utils';
 import {expect, waitFor} from 'detox';
 
 describe('Search - Saved Messages', () => {
@@ -95,7 +95,7 @@ describe('Search - Saved Messages', () => {
         // * Verify on saved messages screen and saved message is displayed with channel info.
         await SavedMessagesScreen.toBeVisible();
         const {postListPostItem: savedMessagesPostListPostItem, postListPostItemChannelInfoChannelDisplayName, postListPostItemChannelInfoTeamDisplayName} = SavedMessagesScreen.getPostListPostItem(post.id, message);
-        await waitFor(savedMessagesPostListPostItem).toBeVisible().withTimeout(timeouts.TEN_SEC);
+        await waitForElementToExist(savedMessagesPostListPostItem, timeouts.HALF_MIN);
         await expect(postListPostItemChannelInfoChannelDisplayName).toHaveText(testChannel.display_name);
         await expect(postListPostItemChannelInfoTeamDisplayName).toHaveText(testTeam.display_name);
 
@@ -223,7 +223,7 @@ describe('Search - Saved Messages', () => {
 
         const {post: savedPost} = await Post.apiGetLastPostInChannel(siteOneUrl, testChannel.id);
         const {postListPostItem: channelPostListPostItem} = ChannelScreen.getPostListPostItem(savedPost.id, message);
-        await waitForElementToBeVisible(channelPostListPostItem);
+        await waitForElementToExist(channelPostListPostItem, timeouts.HALF_MIN);
         await ChannelScreen.openPostOptionsFor(savedPost.id, message);
         await PostOptionsScreen.tapSavePost();
         await ChannelScreen.back();

@@ -24,7 +24,7 @@ import {
     LoginScreen,
     ServerScreen,
 } from '@support/ui/screen';
-import {isAndroid, isIos, timeouts, wait} from '@support/utils';
+import {isAndroid, isIos, timeouts, wait, waitForElementToNotExist} from '@support/utils';
 import {expect, waitFor} from 'detox';
 
 describe('Channels - Channel Bookmarks', () => {
@@ -314,15 +314,8 @@ describe('Channels - Channel Bookmarks', () => {
         await ChannelBookmarkScreen.saveLinkBookmark('https://example.com', bookmarkTitle);
 
         // * Verify the bookmark modal closed and the bookmark is visible in channel info
-        await waitFor(ChannelBookmarkScreen.channelBookmarkScreen).
-            not.toExist().
-            withTimeout(timeouts.TEN_SEC);
-        await waitFor(
-            element(
-                by.text(bookmarkTitle).
-                    withAncestor(by.id('channel_info.bookmarks.list')),
-            ),
-        ).toExist().withTimeout(timeouts.TEN_SEC);
+        await waitForElementToNotExist(ChannelBookmarkScreen.channelBookmarkScreen, timeouts.HALF_MIN);
+        await ChannelInfoScreen.waitForBookmarkTitleInList(bookmarkTitle);
 
         // # Close channel info and go back to channel list
         await ChannelInfoScreen.close();

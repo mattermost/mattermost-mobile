@@ -37,6 +37,11 @@ import {expect} from 'detox';
 // MM-66558: dialog fields use replaceText instead of typeText.
 
 // ===== Helper Functions =====
+async function waitForDialogSelectorButton(testId: string) {
+    await wait(timeouts.HALF_SEC);
+    await waitForElementToExist(element(by.id(testId)), timeouts.TEN_SEC);
+}
+
 async function selectUser() {
     const patterns = [
         'integration_selector.user_list.user_item',
@@ -357,15 +362,15 @@ describe('Interactive Dialog - Basic Dialog (Plugin)', () => {
         await IntegrationSelectorScreen.toBeVisible();
         await expect(element(by.text('Option2'))).toExist();
         await element(by.text('Option2')).tap();
+        await waitForDialogSelectorButton('AppFormElement.someuserselector.select.button');
         const userSelectorButton = element(by.id('AppFormElement.someuserselector.select.button'));
-        await expect(userSelectorButton).toExist();
         await userSelectorButton.tap();
         await IntegrationSelectorScreen.toBeVisible();
         await selectUser();
         const channelSelectorButton = element(by.id('AppFormElement.somechannelselector.select.button'));
 
         // 1s bridge-idle waitFor fails on Android after IntegrationSelector dismissal animation.
-        await waitForElementToExist(channelSelectorButton, timeouts.FIVE_SEC);
+        await waitForDialogSelectorButton('AppFormElement.somechannelselector.select.button');
         await channelSelectorButton.tap();
         await IntegrationSelectorScreen.toBeVisible();
         await selectChannel();
@@ -395,8 +400,8 @@ describe('Interactive Dialog - Basic Dialog (Plugin)', () => {
         await IntegrationSelectorScreen.toBeVisible();
         await expect(element(by.text('Option1'))).toExist();
         await element(by.text('Option1')).tap();
+        await waitForDialogSelectorButton('AppFormElement.someuserselector.select.button');
         const userSelectorButton = element(by.id('AppFormElement.someuserselector.select.button'));
-        await expect(userSelectorButton).toExist();
         await userSelectorButton.tap();
         await IntegrationSelectorScreen.toBeVisible();
         await selectUser();
@@ -423,15 +428,15 @@ describe('Interactive Dialog - Basic Dialog (Plugin)', () => {
         await IntegrationSelectorScreen.toBeVisible();
         await expect(element(by.text('Option2'))).toExist();
         await element(by.text('Option2')).tap();
+        await waitForDialogSelectorButton('AppFormElement.someuserselector.select.button');
         const userSelectorButton = element(by.id('AppFormElement.someuserselector.select.button'));
-        await expect(userSelectorButton).toExist();
         await userSelectorButton.tap();
         await IntegrationSelectorScreen.toBeVisible();
         await selectUser();
         const channelSelectorButton = element(by.id('AppFormElement.somechannelselector.select.button'));
 
         // 1s bridge-idle waitFor fails on Android after IntegrationSelector dismissal animation.
-        await waitForElementToExist(channelSelectorButton, timeouts.FIVE_SEC);
+        await waitForDialogSelectorButton('AppFormElement.somechannelselector.select.button');
         await channelSelectorButton.tap();
         await IntegrationSelectorScreen.toBeVisible();
         await selectChannel();

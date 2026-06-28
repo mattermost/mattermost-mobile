@@ -131,7 +131,7 @@ describe('Channels - Channel Bookmarks Search', () => {
                 id(`channel_bookmark.${bookmarkDelete.id}`).
                 withAncestor(by.id('channel_info.bookmarks.list')),
         );
-        await waitFor(bookmarkEl).toExist().withTimeout(timeouts.TEN_SEC);
+        await waitFor(bookmarkEl).toExist().withTimeout(timeouts.HALF_MIN);
 
         // # Long press on the bookmark to open options
         await bookmarkEl.longPress();

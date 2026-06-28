@@ -446,13 +446,23 @@ class ChannelScreen {
         await waitForElementToExist(this.scheduledPostOptionNextMondaySelected, timeouts.TEN_SEC);
     };
 
-    // Monday uses Next Monday; other days use Monday.
+    // Mirror scheduled_post_options/core_options weekday availability (CI MM-T5762 on Sunday).
     scheduleMessageForAvailableOption = async () => {
-        const day = new Date().getDay();
-        if (day === 1) {
-            await this.scheduleMessageForNextMonday();
-        } else {
-            await this.scheduleMessageForMonday();
+        const weekday = new Date().getDay();
+        switch (weekday) {
+            case 0:
+                await this.scheduleMessageForTomorrow();
+                break;
+            case 1:
+                await this.scheduleMessageForNextMonday();
+                break;
+            case 5:
+            case 6:
+                await this.scheduleMessageForMonday();
+                break;
+            default:
+                await this.scheduleMessageForMonday();
+                break;
         }
     };
 

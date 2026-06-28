@@ -222,19 +222,14 @@ describe('Search - Result Interactions', () => {
         try {
             await SearchMessagesScreen.searchInput.typeText(searchTerm);
             await SearchMessagesScreen.searchInput.tapReturnKey();
+            await wait(timeouts.TWO_SEC);
 
             const {post: searchedPost} = await Post.apiGetLastPostInChannel(siteOneUrl, testChannel.id);
             searchedPostId = searchedPost.id;
 
             const {postListPostItem} = SearchMessagesScreen.getPostListPostItem(searchedPostId, message);
 
-            // On Android edge-to-edge search results can render with <50% visible area
-            // (getGlobalVisibleRect null); use polling toExist inside the no-sync block.
-            if (isAndroid()) {
-                await waitForElementToExist(postListPostItem, timeouts.HALF_MIN);
-            } else {
-                await waitForElementToBeVisible(postListPostItem, timeouts.HALF_MIN);
-            }
+            await waitForElementToExist(postListPostItem, timeouts.HALF_MIN);
 
             await SearchMessagesScreen.openPostOptionsFor(searchedPostId, message);
         } finally {

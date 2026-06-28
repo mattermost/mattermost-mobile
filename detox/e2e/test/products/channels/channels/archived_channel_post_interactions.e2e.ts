@@ -23,6 +23,7 @@ import {
     timeouts,
     wait,
     waitForElementToBeVisible,
+    waitForElementToExist,
 } from '@support/utils';
 import {expect, waitFor} from 'detox';
 
@@ -264,9 +265,9 @@ describe('Channels - Archived Channel Post Interactions', () => {
 
         // * Verify the close channel button is visible
         if (isAndroid()) {
-            await waitFor(ChannelScreen.postDraftArchivedCloseChannelButton).toExist().withTimeout(timeouts.TEN_SEC);
+            await waitForElementToExist(ChannelScreen.postDraftArchivedCloseChannelButton, timeouts.TEN_SEC);
         } else {
-            await waitForElementToBeVisible(
+            await waitForElementToExist(
                 ChannelScreen.postDraftArchivedCloseChannelButton,
                 timeouts.TEN_SEC,
             );

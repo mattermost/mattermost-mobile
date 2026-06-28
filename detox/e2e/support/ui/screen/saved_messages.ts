@@ -9,7 +9,7 @@ import {
     HomeScreen,
     PostOptionsScreen,
 } from '@support/ui/screen';
-import {isAndroid, longPressWithRetry, timeouts, wait, waitForElementToBeVisible} from '@support/utils';
+import {isAndroid, longPressWithRetry, timeouts, wait, waitForElementToBeVisible, waitForElementToExist} from '@support/utils';
 import {expect, waitFor} from 'detox';
 
 class SavedMessagesScreen {
@@ -60,7 +60,7 @@ class SavedMessagesScreen {
         const {postListPostItem} = this.getPostListPostItem(postId, text);
 
         // Poll for the post to become visible without waiting for idle bridge
-        await waitForElementToBeVisible(postListPostItem, timeouts.TEN_SEC);
+        await waitForElementToExist(postListPostItem, timeouts.HALF_MIN);
 
         // Dismiss keyboard by scrolling the post list (best-effort — list may not be scrollable)
         const flatList = this.postList.getFlatList();

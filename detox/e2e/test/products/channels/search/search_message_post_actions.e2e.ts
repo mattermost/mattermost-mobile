@@ -169,7 +169,6 @@ describe('Search - Search Message Post Actions', () => {
         await SavedMessagesScreen.open();
 
         // * Verify searched message is not displayed anymore on saved messages screen.
-        // Poll: unsave preference deletion propagates through the observable.
         await waitForElementToNotExist(postListPostItem, timeouts.HALF_MIN);
 
         // # Go back to searched messages screen, clear search input, remove recent search item, and go back to channel list screen

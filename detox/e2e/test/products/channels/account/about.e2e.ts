@@ -168,6 +168,14 @@ describe('Account - Settings - About', () => {
             // then use toExist() (MM-T5104 testFnFailure — Build Date visible but scroll loop timed out).
             await scrollView.scrollTo('bottom');
             await wait(timeouts.ONE_SEC);
+            try {
+                await waitFor(target).
+                    toExist().
+                    whileElement(by.id(AboutScreen.testID.scrollView)).
+                    scroll(150, 'down');
+            } catch {
+                /* fall through to bounded retry */
+            }
             const assertPresent = async () => waitFor(target).toExist().withTimeout(timeouts.TWO_SEC);
             /* eslint-disable no-await-in-loop -- bounded scroll retry */
             for (let attempt = 0; attempt < 8; attempt++) {

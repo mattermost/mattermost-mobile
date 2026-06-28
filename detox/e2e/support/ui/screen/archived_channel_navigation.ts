@@ -67,19 +67,20 @@ async function openArchivedChannelViaSearchPermalink(searchableMessage: string) 
     // Sync MUST be disabled before tapReturnKey — search keeps the dispatch queue busy.
     await device.disableSynchronization();
     try {
-        /* eslint-disable no-await-in-loop -- search-index lag may need multiple submits */
-        for (let attempt = 0; attempt < 3; attempt++) {
+        /* eslint-disable no-await-in-loop -- search index may lag after archive */
+        for (let attempt = 0; attempt < 5; attempt++) {
             if (attempt > 0) {
                 await SearchMessagesScreen.searchInput.clearText();
                 await wait(timeouts.TWO_SEC);
                 await SearchMessagesScreen.searchInput.replaceText(searchableMessage);
             }
             await SearchMessagesScreen.searchInput.tapReturnKey();
+            await wait(timeouts.TWO_SEC);
             try {
                 await waitForElementToExist(searchResultText, timeouts.TWENTY_SEC);
                 break;
             } catch (error) {
-                if (attempt === 2) {
+                if (attempt === 4) {
                     throw error;
                 }
             }

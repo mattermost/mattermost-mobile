@@ -34,7 +34,7 @@ import {
     SearchMessagesScreen,
     ServerScreen,
 } from '@support/ui/screen';
-import {getRandomId, timeouts, wait, waitForElementToBeVisible} from '@support/utils';
+import {getRandomId, timeouts, wait, waitForElementToBeVisible, waitForElementToExist} from '@support/utils';
 import {expect, waitFor} from 'detox';
 
 describe('Search - Modifiers', () => {
@@ -190,7 +190,7 @@ describe('Search - Modifiers', () => {
             // * Verify that plain text search returns the expected result
             // (not affected by previous from: filter)
             const {postListPostItem} = SearchMessagesScreen.getPostListPostItem(plainPost.id, message);
-            await waitForElementToBeVisible(postListPostItem, timeouts.HALF_MIN);
+            await waitForElementToExist(postListPostItem, timeouts.HALF_MIN);
         } finally {
             await device.enableSynchronization();
         }

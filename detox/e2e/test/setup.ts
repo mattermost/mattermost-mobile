@@ -8,7 +8,6 @@ import {existsSync} from 'fs';
 import {ClaudePromptHandler} from '@support/pilot/ClaudePromptHandler';
 import {System, User} from '@support/server_api';
 import {siteOneUrl} from '@support/test_config';
-import {timeouts, wait, waitForElementToExist} from '@support/utils';
 
 const BUNDLE_ID = 'com.mattermost.rnbeta';
 
@@ -178,6 +177,8 @@ beforeAll(async () => {
         }
     }
 
+    const isFirstFile = !process.env.DETOX_SETUP_DONE;
+
     const APP_READY_TIMEOUT = device.getPlatform() === 'android' ? 90_000 : 30_000;
 
     async function forceAndroidDataClear(): Promise<void> {
@@ -221,21 +222,20 @@ beforeAll(async () => {
             ...(device.getPlatform() === 'ios' ? {permissions: {notifications: 'YES' as const}} : {}),
         };
 
-        // Launch first, then enable sync — disableSynchronization() before launchApp()
-        // fails with "Detox can't seem to connect" after pm clear (CI run 28306039412).
         await device.launchApp(launchOptions);
         await device.enableSynchronization();
-        await wait(timeouts.TWO_SEC);
 
         const serverScreenEl = element(by.id('server.screen'));
         const channelListEl = element(by.id('channel_list.screen'));
 
         try {
-            await waitForElementToExist(serverScreenEl, APP_READY_TIMEOUT);
+            await waitFor(serverScreenEl).toExist().withTimeout(APP_READY_TIMEOUT);
         } catch {
             try {
-                await waitForElementToExist(channelListEl, timeouts.FIVE_SEC);
-                console.warn('[launchAndVerify] App launched with stale logged-in state. Clearing data and relaunching.');
+                await waitFor(channelListEl).toExist().withTimeout(5_000);
+                console.warn(
+                    '[launchAndVerify] App launched with stale logged-in state. Clearing data and relaunching.',
+                );
                 if (device.getPlatform() === 'android') {
                     await forceAndroidDataClear();
                 } else {
@@ -245,14 +245,17 @@ beforeAll(async () => {
                 await ensureAndroidMetroReverse();
                 await device.launchApp(launchOptions);
                 await device.enableSynchronization();
-                await wait(timeouts.TWO_SEC);
-                await waitForElementToExist(serverScreenEl, APP_READY_TIMEOUT);
+                await waitFor(serverScreenEl).toExist().withTimeout(APP_READY_TIMEOUT);
             } catch {
                 throw new Error(
-                    `[launchAndVerify] Neither server.screen nor channel_list.screen appeared within ${APP_READY_TIMEOUT / 1000}s`,
+                    `[launchAndVerify] server.screen did not appear within ${APP_READY_TIMEOUT / 1000}s`,
                 );
             }
         }
+    }
+
+    if (isFirstFile) {
+        process.env.DETOX_SETUP_DONE = 'true';
     }
 
     if (device.getPlatform() === 'ios') {
@@ -279,7 +282,6 @@ beforeAll(async () => {
                 await forceAndroidDataClear();
                 await ensureAndroidMetroReverse();
             }
-
             await new Promise((resolve) => setTimeout(resolve, 3000));
         }
     }
