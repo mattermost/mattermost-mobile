@@ -6,7 +6,7 @@ import {
     ProfilePicture,
 } from '@support/ui/component';
 import {ChannelScreen} from '@support/ui/screen';
-import {isAndroid, safeEnableSynchronization, timeouts, wait} from '@support/utils';
+import {isAndroid, safeEnableSynchronization, timeouts, wait, waitForElementToBeVisible} from '@support/utils';
 import {expect, waitFor} from 'detox';
 
 class ChannelInfoScreen {
@@ -224,6 +224,19 @@ class ChannelInfoScreen {
 
         // Cancel
         await element(by.id('channel_info.title.public_private.bottom_sheet.cancel')).tap();
+    };
+
+    tapAddBookmark = async () => {
+        const addBookmark = element(by.text('Add a bookmark'));
+        try {
+            await waitForElementToBeVisible(addBookmark, timeouts.FIVE_SEC);
+        } catch {
+            try {
+                await this.scrollView.scrollTo('bottom');
+            } catch { /* content may not scroll */ }
+            await waitForElementToBeVisible(addBookmark, timeouts.TEN_SEC);
+        }
+        await addBookmark.tap();
     };
 }
 

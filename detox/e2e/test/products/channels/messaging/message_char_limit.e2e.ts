@@ -23,8 +23,7 @@ import {
     LoginScreen,
     ServerScreen,
 } from '@support/ui/screen';
-import {timeouts} from '@support/utils';
-import {expect, waitFor} from 'detox';
+import {expect} from 'detox';
 
 describe('Messaging - Message Character Limit', () => {
     const serverOneDisplayName = 'Server 1';
@@ -64,8 +63,7 @@ describe('Messaging - Message Character Limit', () => {
         await expect(element(by.text(`Your current message is too long. Current character count: ${overLimitMessage.trim().length}/${maxPostSize}`)).atIndex(0)).toBeVisible();
 
         // # Dismiss the alert
-        await Alert.okButton.tap();
-        await waitFor(Alert.messageLengthTitle).not.toBeVisible().withTimeout(timeouts.TEN_SEC);
+        await Alert.dismissMessageLengthAlert();
 
         // * Verify send button is disabled
         await expect(ChannelScreen.sendButtonDisabled).toBeVisible();

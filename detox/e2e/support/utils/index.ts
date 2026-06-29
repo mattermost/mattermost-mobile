@@ -359,3 +359,13 @@ export async function pressBack(): Promise<void> {
         await element(by.id('navigation.header.back')).tap();
     }
 }
+
+// Poll visibility then assert — avoids Android 60s expect() flakes on off-screen elements.
+export async function expectVisible(
+    detoxElement: Detox.NativeElement,
+    timeout: number = isAndroid() ? timeouts.TWENTY_SEC : timeouts.TEN_SEC,
+): Promise<void> {
+    await waitForElementToBeVisible(detoxElement, timeout);
+    const {expect: detoxExpect} = require('detox');
+    await detoxExpect(detoxElement).toBeVisible();
+}

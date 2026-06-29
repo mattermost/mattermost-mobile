@@ -510,14 +510,26 @@ const openCustomStatusScreen = async () => {
 
 const selectSuggestedStatus = async (status: {emoji: string; text: string; duration: string}) => {
     const suggested = CustomStatusScreen.getSuggestedCustomStatus(status.emoji, status.text, status.duration);
+    const scrollIntoView = async (target: Detox.NativeElement) => {
+        if (isIos()) {
+            try {
+                await waitFor(target).toBeVisible(50).whileElement(by.id(CustomStatusScreen.testID.scrollView)).scroll(100, 'down');
+            } catch {
+                try {
+                    await waitFor(target).toBeVisible(50).whileElement(by.id(CustomStatusScreen.testID.scrollView)).scroll(100, 'up');
+                } catch { /* already in view */ }
+            }
+        }
+        await waitFor(target).toExist().withTimeout(timeouts.FIVE_SEC);
+        await target.tap();
+    };
     try {
-        await waitFor(suggested.customStatusSuggestion).toBeVisible().withTimeout(timeouts.TWO_SEC);
-        await suggested.customStatusSuggestion.tap();
+        await waitFor(suggested.customStatusSuggestion).toExist().withTimeout(timeouts.TWO_SEC);
+        await scrollIntoView(suggested.customStatusSuggestion);
         return;
     } catch { /* try recents */ }
     const recent = CustomStatusScreen.getRecentCustomStatus(status.emoji, status.text, status.duration);
-    await waitFor(recent.customStatusSuggestion).toBeVisible().withTimeout(timeouts.FIVE_SEC);
-    await recent.customStatusSuggestion.tap();
+    await scrollIntoView(recent.customStatusSuggestion);
 };
 
 const waitForCustomStatusOnAccount = async (status: {emoji: string; duration: string}) => {

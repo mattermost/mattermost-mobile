@@ -24,7 +24,7 @@ import {
     LoginScreen,
     ServerScreen,
 } from '@support/ui/screen';
-import {isAndroid, isIos, timeouts, wait} from '@support/utils';
+import {isAndroid, isIos, timeouts, wait, waitForElementToExist} from '@support/utils';
 import {expect} from 'detox';
 
 describe('Channels - Channel Bookmarks', () => {
@@ -256,7 +256,7 @@ describe('Channels - Channel Bookmarks', () => {
 
         // # Open channel info and tap "Add a bookmark"
         await ChannelInfoScreen.open();
-        await element(by.text('Add a bookmark')).tap();
+        await ChannelInfoScreen.tapAddBookmark();
 
         // * Verify bottom sheet / add bookmark options appears
         await expect(ChannelBookmarkScreen.addALinkOption).toBeVisible();
@@ -274,6 +274,7 @@ describe('Channels - Channel Bookmarks', () => {
             await linkInput.tap();
             await linkInput.typeText('https://example.com');
             const titleInput = ChannelBookmarkScreen.getTitleInput();
+            await waitForElementToExist(titleInput, timeouts.TEN_SEC);
             await titleInput.tap();
             await titleInput.replaceText(bookmarkTitle);
             await ChannelBookmarkScreen.waitForTitleValue(bookmarkTitle);
@@ -304,7 +305,7 @@ describe('Channels - Channel Bookmarks', () => {
 
         // # Open channel info and tap "Add a bookmark"
         await ChannelInfoScreen.open();
-        await element(by.text('Add a bookmark')).tap();
+        await ChannelInfoScreen.tapAddBookmark();
 
         // * Verify bottom sheet options appear
         await expect(ChannelBookmarkScreen.addALinkOption).toBeVisible();
@@ -405,7 +406,7 @@ describe('Channels - Channel Bookmarks', () => {
 
         // # Open channel info and tap "Add a bookmark"
         await ChannelInfoScreen.open();
-        await element(by.text('Add a bookmark')).tap();
+        await ChannelInfoScreen.tapAddBookmark();
 
         // # Tap "Add a link"
         await ChannelBookmarkScreen.addALinkOption.tap();

@@ -3,7 +3,7 @@
 
 import {ChannelListScreen} from '@support/ui/screen';
 import {isIos, timeouts, wait} from '@support/utils';
-import {expect} from 'detox';
+import {expect, waitFor} from 'detox';
 
 class ServerListScreen {
     testID = {
@@ -62,6 +62,7 @@ class ServerListScreen {
 
     open = async () => {
         // # Open server list screen
+        await waitFor(ChannelListScreen.serverIcon).toExist().withTimeout(timeouts.TEN_SEC);
         await ChannelListScreen.serverIcon.tap();
 
         return this.toBeVisible();

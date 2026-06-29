@@ -70,7 +70,7 @@ describe('Search - Saved Messages', () => {
         await expect(SavedMessagesScreen.emptyParagraph).toHaveText('To save something for later, long-press on a message and choose Save from the menu. Saved messages are only visible to you.');
 
         // # Go back to channel list screen
-        await ChannelListScreen.open();
+        await SavedMessagesScreen.close();
     });
 
     it('MM-T4910_2 - should be able to display a saved message in saved messages screen and navigate to message channel', async () => {
@@ -110,7 +110,7 @@ describe('Search - Saved Messages', () => {
 
         // # Go back to channel list screen
         await ChannelScreen.back();
-        await ChannelListScreen.open();
+        await SavedMessagesScreen.close();
     });
 
     // Harness: edit_post.screen can linger after save — EditPostScreen.save() dismisses it.
@@ -177,7 +177,7 @@ describe('Search - Saved Messages', () => {
         await expect(postListPostItem).not.toExist();
 
         // # Go back to channel list screen
-        await ChannelListScreen.open();
+        await SavedMessagesScreen.close();
     });
 
     it('MM-T4910_4 - should be able to unsave a message from saved messages screen', async () => {
@@ -212,7 +212,7 @@ describe('Search - Saved Messages', () => {
         await expect(postListPostItem).not.toExist();
 
         // # Go back to channel list screen
-        await ChannelListScreen.open();
+        await SavedMessagesScreen.close();
     });
 
     it('MM-T4910_5 - should be able to pin/unpin a saved message from saved messages screen', async () => {
@@ -235,7 +235,7 @@ describe('Search - Saved Messages', () => {
         // # Open post options for saved message, tap on pin to channel option, go back to channel list screen, open the channel screen where saved message is posted, open channel info screen, and open pinned messages screen
         await SavedMessagesScreen.openPostOptionsFor(savedPost.id, message);
         await PostOptionsScreen.pinPostOption.tap();
-        await ChannelListScreen.open();
+        await SavedMessagesScreen.close();
         await ChannelScreen.open(channelsCategory, testChannel.name);
         await ChannelInfoScreen.open();
         await PinnedMessagesScreen.open();
@@ -251,7 +251,7 @@ describe('Search - Saved Messages', () => {
         await SavedMessagesScreen.open();
         await SavedMessagesScreen.openPostOptionsFor(savedPost.id, message);
         await PostOptionsScreen.unpinPostOption.tap();
-        await ChannelListScreen.open();
+        await SavedMessagesScreen.close();
         await ChannelScreen.open(channelsCategory, testChannel.name);
         await ChannelInfoScreen.open();
         await PinnedMessagesScreen.open();

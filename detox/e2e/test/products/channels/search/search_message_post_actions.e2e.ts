@@ -131,8 +131,9 @@ describe('Search - Search Message Post Actions', () => {
 
         // # Clear search input, remove recent search item, and go back to channel list screen
         await SearchMessagesScreen.searchClearButton.tap();
-        await SearchMessagesScreen.getRecentSearchItemRemoveButton(searchTerm).tap();
-        await ChannelListScreen.open();
+        await SearchMessagesScreen.removeRecentSearchItem(searchTerm);
+        await SearchMessagesScreen.close();
+        await ChannelListScreen.toBeVisible();
     });
 
     it('MM-T5294_11 - should be able to save/unsave a searched message from search results screen', async () => {
@@ -175,8 +176,9 @@ describe('Search - Search Message Post Actions', () => {
         // # Go back to searched messages screen, clear search input, remove recent search item, and go back to channel list screen
         await SearchMessagesScreen.open();
         await SearchMessagesScreen.searchClearButton.tap();
-        await SearchMessagesScreen.getRecentSearchItemRemoveButton(searchTerm).tap();
-        await ChannelListScreen.open();
+        await SearchMessagesScreen.removeRecentSearchItem(searchTerm);
+        await SearchMessagesScreen.close();
+        await ChannelListScreen.toBeVisible();
     });
 
     it('MM-T5294_12 - should be able to pin/unpin a searched message from search results screen', async () => {
@@ -229,7 +231,8 @@ describe('Search - Search Message Post Actions', () => {
         await ChannelScreen.back();
         await SearchMessagesScreen.open();
         await SearchMessagesScreen.searchClearButton.tap();
-        await SearchMessagesScreen.getRecentSearchItemRemoveButton(searchTerm).tap();
-        await ChannelListScreen.open();
+        await SearchMessagesScreen.removeRecentSearchItem(searchTerm);
+        await SearchMessagesScreen.close();
+        await ChannelListScreen.toBeVisible();
     });
 });

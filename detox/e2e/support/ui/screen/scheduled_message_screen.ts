@@ -164,6 +164,28 @@ class ScheduledMessageScreen {
         return this.normalize(`Send on ${datePart}, ${timePart}`);
     };
 
+    tomorrowAtNineAm = () => {
+        const tomorrow = new Date();
+        tomorrow.setDate(tomorrow.getDate() + 1);
+        tomorrow.setHours(9, 0, 0, 0);
+
+        const locale = 'en-US';
+        const dateOptions: Intl.DateTimeFormatOptions = {month: 'short', day: 'numeric'};
+        const timeOptions: Intl.DateTimeFormatOptions = {hour: 'numeric', minute: '2-digit', hour12: true};
+
+        const datePart = tomorrow.toLocaleDateString(locale, dateOptions);
+        const timePart = tomorrow.toLocaleTimeString(locale, timeOptions);
+
+        return this.normalize(`Send on ${datePart}, ${timePart}`);
+    };
+
+    expectedLabelForScheduleOption = async (option: 'tomorrow' | 'next_monday' | 'monday') => {
+        if (option === 'tomorrow') {
+            return this.tomorrowAtNineAm();
+        }
+        return this.nextMonday();
+    };
+
     /**
      * Normalizes text by trimming, collapsing spaces, and replacing narrow no-break spaces.
      */

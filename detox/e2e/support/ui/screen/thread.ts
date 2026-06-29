@@ -110,6 +110,7 @@ class ThreadScreen {
     toBeVisible = async () => {
         const timeout = isAndroid() ? timeouts.HALF_MIN : timeouts.TEN_SEC;
         await waitForElementToExist(this.threadScreen, timeout);
+        await waitForElementToExist(this.postInput, timeouts.TEN_SEC);
 
         return this.threadScreen;
     };

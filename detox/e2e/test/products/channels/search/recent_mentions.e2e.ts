@@ -179,7 +179,7 @@ describe('Search - Recent Mentions', () => {
         await waitFor(postListPostItem).not.toExist().withTimeout(timeouts.TEN_SEC);
 
         // # Go back to channel list screen
-        await ChannelListScreen.open();
+        await SavedMessagesScreen.close();
     });
 
     it('MM-T4909_5 - should be able to pin/unpin a recent mention from recent mentions screen', async () => {

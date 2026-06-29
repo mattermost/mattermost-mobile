@@ -138,7 +138,7 @@ describe('Messaging - Message Draft', () => {
         // * Verify warning message is displayed and send button is disabled
         await expect(Alert.messageLengthTitle).toBeVisible();
         await expect(element(by.text('Your current message is too long. Current character count: 16384/16383')).atIndex(0)).toBeVisible();
-        await Alert.okButton.tap();
+        await Alert.dismissMessageLengthAlert();
         await expect(ChannelScreen.sendButtonDisabled).toBeVisible();
 
         // # Replace message draft with length less than the character limit (16383)

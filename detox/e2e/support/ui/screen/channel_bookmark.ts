@@ -1,7 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {safeEnableSynchronization, timeouts} from '@support/utils';
+import {safeEnableSynchronization, timeouts, waitForElementToExist} from '@support/utils';
 import {expect, waitFor} from 'detox';
 
 class ChannelBookmarkScreen {
@@ -108,7 +108,8 @@ class ChannelBookmarkScreen {
     };
 
     toBeVisible = async () => {
-        await waitFor(this.channelBookmarkScreen).toExist().withTimeout(timeouts.TEN_SEC);
+        await waitForElementToExist(this.channelBookmarkScreen, timeouts.TEN_SEC);
+        await waitForElementToExist(this.linkInput, timeouts.TEN_SEC);
         return this.channelBookmarkScreen;
     };
 

@@ -481,7 +481,7 @@ class ChannelScreen {
     };
 
     // Probe whichever schedule option the picker shows (UTC vs America/New_York weekday mismatch on CI).
-    scheduleMessageForAvailableOption = async () => {
+    scheduleMessageForAvailableOption = async (): Promise<'tomorrow' | 'next_monday' | 'monday'> => {
         const tryOption = async (
             select: () => Promise<void>,
             option: Detox.NativeElement,
@@ -496,13 +496,13 @@ class ChannelScreen {
         };
 
         if (await tryOption(() => this.scheduleMessageForTomorrow(), this.scheduleMessageTomorrowOption)) {
-            return;
+            return 'tomorrow';
         }
         if (await tryOption(() => this.scheduleMessageForNextMonday(), this.scheduledPostOptionNextMonday)) {
-            return;
+            return 'next_monday';
         }
         if (await tryOption(() => this.scheduleMessageForMonday(), this.scheduleMessageOnMondayOption)) {
-            return;
+            return 'monday';
         }
 
         throw new Error('scheduleMessageForAvailableOption: no schedule option visible in picker');

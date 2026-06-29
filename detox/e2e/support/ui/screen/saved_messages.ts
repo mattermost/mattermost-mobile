@@ -51,9 +51,16 @@ class SavedMessagesScreen {
 
     open = async () => {
         // # Open saved messages screen
+        await waitFor(HomeScreen.savedMessagesTab).toExist().withTimeout(timeouts.TEN_SEC);
         await HomeScreen.savedMessagesTab.tap();
 
         return this.toBeVisible();
+    };
+
+    close = async () => {
+        await waitFor(HomeScreen.channelListTab).toExist().withTimeout(timeouts.TEN_SEC);
+        await HomeScreen.channelListTab.tap();
+        await waitFor(this.savedMessagesScreen).not.toExist().withTimeout(timeouts.TEN_SEC);
     };
 
     openPostOptionsFor = async (postId: string, text: string) => {

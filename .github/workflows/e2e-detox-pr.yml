@@ -15,6 +15,12 @@
 # Phase 2 — tests (parallel, after phase 1):
 #   run-detox-ios / run-detox-android → e2e-detox.yml
 #   run-maestro-ios / run-maestro-android → e2e-maestro-pr.yml (downloads phase-1 artifacts via artifact_run_id)
+#
+# Failing-spec CI mode (workflow_dispatch failing_only=true):
+#   Shards only detox/e2e/failing-specs.manifest.json across failing_parallelism runners (default 6).
+#   Skips Maestro. Regenerate manifest after a full run:
+#     node detox/scripts/generate-failing-specs-manifest.js <ios-junit-dir> <android-junit-dir>
+#   Revert failing_only default / remove manifest when the suite is green.
 name: E2E
 
 on:
@@ -58,6 +64,21 @@ on:
         description: "Optional E2E workflow run ID to reuse ios-build-simulator-* / android-build-files-* from (skips Detox app builds). When empty, auto-detected for detox/-only commits."
         required: false
         type: string
+      failing_only:
+        description: "Run only failing specs from spec_list_file on fewer shards (saves CI cost). Revert when green."
+        required: false
+        type: boolean
+        default: false
+      failing_parallelism:
+        description: "Shard count when failing_only is true (default 6)"
+        required: false
+        type: string
+        default: "6"
+      spec_list_file:
+        description: "JSON manifest of failing spec paths (default detox/e2e/failing-specs.manifest.json)"
+        required: false
+        type: string
+        default: "detox/e2e/failing-specs.manifest.json"
 
 # Default least-privilege token; jobs that upload artifacts, post statuses, or
 # manage PR labels declare the extra scopes they need.
@@ -328,7 +349,9 @@ jobs:
           repository_full_name: ${{ github.repository }}
           commit_sha: ${{ inputs.MOBILE_VERSION }}
           context: e2e/detox-ios-tests
-          description: Detox iOS tests for mattermost mobile app have started ...
+          description: >-
+            ${{ inputs.failing_only && 'Detox iOS failing-spec subset started (see detox/e2e/failing-specs.manifest.json)...'
+              || 'Detox iOS tests for mattermost mobile app have started ...' }}
           status: pending
 
   update-initial-status-android:
@@ -351,7 +374,9 @@ jobs:
           repository_full_name: ${{ github.repository }}
           commit_sha: ${{ inputs.MOBILE_VERSION }}
           context: e2e/detox-android-tests
-          description: Detox Android tests for mattermost mobile app have started ...
+          description: >-
+            ${{ inputs.failing_only && 'Detox Android failing-spec subset started (see detox/e2e/failing-specs.manifest.json)...'
+              || 'Detox Android tests for mattermost mobile app have started ...' }}
           status: pending
 
   update-initial-status-ipad:
@@ -653,6 +678,9 @@ jobs:
       SITE_3_URL: ${{ inputs.SITE_3_URL }}
       run_type: ${{ inputs.run_type || 'PR' }}
       artifact_run_id: ${{ needs.resolve-artifact-source.outputs.artifact_run_id }}
+      failing_only: ${{ inputs.failing_only }}
+      failing_parallelism: ${{ inputs.failing_parallelism }}
+      spec_list_file: ${{ inputs.spec_list_file }}
     secrets: inherit
 
   run-detox-android:
@@ -681,12 +709,17 @@ jobs:
       SITE_3_URL: ${{ inputs.SITE_3_URL }}
       run_type: ${{ inputs.run_type || 'PR' }}
       artifact_run_id: ${{ needs.resolve-artifact-source.outputs.artifact_run_id }}
+      failing_only: ${{ inputs.failing_only }}
+      failing_parallelism: ${{ inputs.failing_parallelism }}
+      spec_list_file: ${{ inputs.spec_list_file }}
     secrets: inherit
 
   validate-maestro-flow-headers:
     name: Validate Maestro flow headers
     needs: resolve-e2e-policy
-    if: needs.resolve-e2e-policy.outputs.e2e_override != 'true'
+    if: >-
+      needs.resolve-e2e-policy.outputs.e2e_override != 'true'
+      && inputs.failing_only != true
     runs-on: ubuntu-22.04
     steps:
       - name: Checkout Repository
@@ -718,6 +751,7 @@ jobs:
     if: |
       !cancelled() &&
       needs.resolve-e2e-policy.outputs.e2e_override != 'true' &&
+      inputs.failing_only != true &&
       (inputs.PLATFORM == 'ios' || inputs.PLATFORM == 'both') &&
       needs.provision-servers.result == 'success' &&
       needs.validate-maestro-flow-headers.result == 'success' &&

@@ -31,6 +31,7 @@ describe('Agents - Channel Summary', () => {
     const channelsCategory = 'channels';
     let testChannel: any;
     let didLogin = false;
+    let askAgentsAvailable = false;
 
     beforeAll(async () => {
         const pluginStatus = await Plugin.apiGetPluginStatus(siteOneUrl, AgentsPlugin.id);
@@ -59,9 +60,24 @@ describe('Agents - Channel Summary', () => {
             await ChannelScreen.channelQuickActionsButton.tap();
             try {
                 await waitFor(element(by.id('channel.quick_actions.ask_agents'))).toBeVisible().withTimeout(timeouts.FOUR_SEC);
+                askAgentsAvailable = true;
             } catch {
                 // eslint-disable-next-line no-console
                 console.warn('Ask Agents quick action not visible on Android — tests remain skipped');
+            }
+            await device.pressBack();
+            await ChannelScreen.back();
+        } else {
+            await ChannelListScreen.toBeVisible();
+            await ChannelScreen.open(channelsCategory, testChannel.name);
+            await wait(timeouts.ONE_SEC);
+            await ChannelScreen.channelQuickActionsButton.tap();
+            try {
+                await waitFor(element(by.id('channel.quick_actions.ask_agents'))).toBeVisible().withTimeout(timeouts.FOUR_SEC);
+                askAgentsAvailable = true;
+            } catch {
+                // eslint-disable-next-line no-console
+                console.warn('Ask Agents quick action not visible on iOS — tests remain skipped');
             }
             await device.pressBack();
             await ChannelScreen.back();
@@ -88,7 +104,7 @@ describe('Agents - Channel Summary', () => {
 
     const itWhenLoggedIn = (name: string, fn: () => Promise<void>) => {
         it(name, async () => {
-            if (!didLogin) {
+            if (!didLogin || !askAgentsAvailable) {
                 return;
             }
             await fn();

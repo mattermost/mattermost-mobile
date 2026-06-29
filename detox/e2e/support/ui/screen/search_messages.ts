@@ -72,6 +72,18 @@ class SearchMessagesScreen {
         return element(by.id(`search.recent_item.${searchTerm}.remove.button`)).atIndex(0);
     };
 
+    removeRecentSearchItem = async (searchTerm: string) => {
+        const removeButton = this.getRecentSearchItemRemoveButton(searchTerm);
+        await waitFor(this.getRecentSearchItem(searchTerm)).toExist().withTimeout(timeouts.TEN_SEC);
+        if (isIos()) {
+            try {
+                await waitFor(removeButton).toBeVisible(50).whileElement(by.id('search.recents_list')).scroll(100, 'down');
+            } catch { /* item already in view */ }
+        }
+        await waitFor(removeButton).toExist().withTimeout(timeouts.TEN_SEC);
+        await removeButton.tap();
+    };
+
     toBeVisible = async () => {
         await wait(timeouts.ONE_SEC);
         const timeout = isAndroid() ? timeouts.TWENTY_SEC : timeouts.TEN_SEC;
@@ -94,6 +106,15 @@ class SearchMessagesScreen {
         }
 
         return this.toBeVisible();
+    };
+
+    close = async () => {
+        if (isIos()) {
+            await this.searchCancelButton.tap();
+        } else {
+            await device.pressBack();
+        }
+        await waitFor(this.searchMessagesScreen).not.toExist().withTimeout(timeouts.TEN_SEC);
     };
 
     openPostOptionsFor = async (postId: string, text: string) => {
