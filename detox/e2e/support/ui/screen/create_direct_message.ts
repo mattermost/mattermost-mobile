@@ -123,7 +123,7 @@ class CreateDirectMessageScreen {
             await device.disableSynchronization();
         }
         try {
-            await waitForElementToBeVisible(ChannelListScreen.openDirectMessageItem, timeouts.TEN_SEC);
+            await waitForElementToExist(ChannelListScreen.openDirectMessageItem, timeouts.TEN_SEC);
 
             /* eslint-disable no-await-in-loop -- retry menu item tap while plus-menu animation settles */
             for (let i = 0; i < 3; i++) {

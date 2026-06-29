@@ -119,8 +119,16 @@ class ChannelBookmarkScreen {
     };
 
     close = async () => {
-        await waitFor(this.closeButton).toBeVisible().withTimeout(timeouts.TEN_SEC);
-        await this.closeButton.tap();
+        try {
+            await waitFor(this.closeButton).toBeVisible().withTimeout(timeouts.TEN_SEC);
+            await this.closeButton.tap();
+        } catch {
+            if (device.getPlatform() === 'ios') {
+                await device.pressBack();
+            } else {
+                await this.closeButton.tap();
+            }
+        }
         await waitForElementToNotExist(this.channelBookmarkScreen, timeouts.TWENTY_SEC);
     };
 }

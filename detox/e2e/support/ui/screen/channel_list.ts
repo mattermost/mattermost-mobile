@@ -341,6 +341,9 @@ class ChannelListScreen {
                 throw plusTapError;
             }
             await wait(timeouts.ONE_SEC);
+
+            // Android: menu items mount before they pass the 15% visibility threshold.
+            await waitForElementToExist(this.openDirectMessageItem, timeouts.TEN_SEC);
         } finally {
             if (disableSyncForOpen) {
                 await safeEnableSynchronization();

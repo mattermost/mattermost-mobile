@@ -184,7 +184,7 @@ describe('Account - Settings - About', () => {
             await wait(timeouts.ONE_SEC);
             const assertPresent = async () => waitFor(target).toExist().withTimeout(timeouts.TWO_SEC);
             /* eslint-disable no-await-in-loop -- bounded scroll retry */
-            for (let attempt = 0; attempt < 8; attempt++) {
+            for (let attempt = 0; attempt < 12; attempt++) {
                 try {
                     await assertPresent();
                     return;

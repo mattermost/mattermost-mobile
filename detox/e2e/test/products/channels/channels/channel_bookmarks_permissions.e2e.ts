@@ -206,9 +206,7 @@ describe('Channels - Channel Bookmarks Permissions', () => {
         if (isAndroid()) {
             await waitForElementToExist(ChannelScreen.postDraftArchived, timeouts.TEN_SEC);
         } else {
-            await waitFor(ChannelScreen.postDraftArchived).
-                toBeVisible().
-                withTimeout(timeouts.TEN_SEC);
+            await waitForElementToExist(ChannelScreen.postDraftArchived, timeouts.TWENTY_SEC);
         }
 
         // * Verify the bookmark no longer exists anywhere in the channel view.

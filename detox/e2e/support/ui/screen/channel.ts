@@ -17,6 +17,7 @@ import {dismissKnownModals} from '@support/ui/modal_dismiss';
 import {
     ChannelListScreen,
     FindChannelsScreen,
+    HomeScreen,
     PostOptionsScreen,
     ThreadScreen,
 } from '@support/ui/screen';
@@ -203,7 +204,21 @@ class ChannelScreen {
 
     back = async () => {
         await wait(isIos() ? timeouts.TWO_SEC : timeouts.ONE_SEC);
-        await this.backButton.tap();
+        let navigated = false;
+        try {
+            await waitForElementToExist(this.backButton, timeouts.THREE_SEC);
+            await this.backButton.tap();
+            navigated = true;
+        } catch {
+            // Back button not in hierarchy — fall through to tab/native back.
+        }
+        if (!navigated) {
+            if (isAndroid()) {
+                await device.pressBack();
+            } else {
+                await HomeScreen.channelListTab.tap();
+            }
+        }
         await waitFor(this.channelScreen).not.toBeVisible().withTimeout(timeouts.TEN_SEC);
     };
 

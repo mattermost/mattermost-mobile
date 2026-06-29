@@ -6,7 +6,7 @@ import {
     ProfilePicture,
 } from '@support/ui/component';
 import {ChannelScreen} from '@support/ui/screen';
-import {isAndroid, safeEnableSynchronization, timeouts, wait, waitForElementToBeVisible} from '@support/utils';
+import {isAndroid, safeEnableSynchronization, timeouts, wait, waitForElementToExist} from '@support/utils';
 import {expect, waitFor} from 'detox';
 
 class ChannelInfoScreen {
@@ -226,17 +226,41 @@ class ChannelInfoScreen {
         await element(by.id('channel_info.title.public_private.bottom_sheet.cancel')).tap();
     };
 
+    scrollToBookmarks = async () => {
+        const bookmarksList = element(by.id('channel_info.bookmarks.list'));
+        try {
+            await waitForElementToExist(bookmarksList, timeouts.THREE_SEC);
+            return;
+        } catch {
+            // Bookmarks section may be below the fold — scroll channel info.
+        }
+        try {
+            await waitFor(bookmarksList).
+                toExist().
+                whileElement(by.id(this.testID.scrollView)).
+                scroll(200, 'down');
+        } catch {
+            try {
+                await this.scrollView.scrollTo('bottom');
+            } catch {
+                // Content may not require scrolling
+            }
+        }
+        await wait(timeouts.ONE_SEC);
+    };
+
     tapAddBookmark = async () => {
+        await this.scrollToBookmarks();
         const addBookmark = element(by.text('Add a bookmark'));
         try {
-            await waitForElementToBeVisible(addBookmark, timeouts.FIVE_SEC);
+            await waitForElementToExist(addBookmark, timeouts.FIVE_SEC);
         } catch {
             try {
                 await this.scrollView.scrollTo('bottom');
             } catch { /* content may not scroll */ }
-            await waitForElementToBeVisible(addBookmark, timeouts.TEN_SEC);
+            await waitForElementToExist(addBookmark, timeouts.TEN_SEC);
         }
-        await addBookmark.tap();
+        await addBookmark.tap({x: 1, y: 1});
     };
 }
 

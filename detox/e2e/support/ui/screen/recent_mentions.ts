@@ -10,7 +10,7 @@ import {
     PostOptionsScreen,
 } from '@support/ui/screen';
 import {isAndroid, longPressWithRetry, scrollElementIntoView, timeouts, wait, waitForElementToBeVisible, waitForElementToExist} from '@support/utils';
-import {expect} from 'detox';
+import {expect, waitFor} from 'detox';
 
 class RecentMentionsScreen {
     testID = {
@@ -86,20 +86,37 @@ class RecentMentionsScreen {
         const flatList = this.postList.getFlatList();
 
         try {
+            await flatList.scrollTo('top');
+        } catch {
+            // List too short to scroll
+        }
+        try {
             await flatList.scroll(100, 'down');
         } catch {
             // List too short to scroll; keyboard already dismissed
         }
         await wait(timeouts.ONE_SEC);
 
-        await scrollElementIntoView(postListPostItem, by.id(this.postList.testID.flatList));
-        await waitForElementToBeVisible(postListPostItem, timeouts.TEN_SEC);
+        try {
+            await waitForElementToExist(postListPostItem, timeouts.FIVE_SEC);
+        } catch {
+            if (isAndroid()) {
+                try {
+                    await waitFor(postListPostItem).
+                        toExist().
+                        whileElement(by.id(this.postList.testID.flatList)).
+                        scroll(250, 'down');
+                } catch {
+                    // Fall through to scrollElementIntoView
+                }
+            }
+        }
 
-        // Long-press the post's TouchableHighlight directly (always rendered).
-        // post_header.date_time is only rendered on non-consecutive posts —
-        // see app/components/post_list/post/post.tsx:315.
+        await scrollElementIntoView(postListPostItem, by.id(this.postList.testID.flatList));
+        await waitForElementToExist(postListPostItem, timeouts.TEN_SEC);
+
         const longPressTarget = element(by.id(`${this.testID.recentMentionPostList}.${postId}`));
-        await waitForElementToBeVisible(longPressTarget, timeouts.TEN_SEC);
+        await waitForElementToExist(longPressTarget, timeouts.TEN_SEC);
         await wait(timeouts.ONE_SEC);
 
         // # Open post options (with retry — longPress can fail on Android during animations)

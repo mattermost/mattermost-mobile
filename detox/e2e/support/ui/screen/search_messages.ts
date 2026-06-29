@@ -11,7 +11,7 @@ import {
     HomeScreen,
     PostOptionsScreen,
 } from '@support/ui/screen';
-import {isAndroid, isIos, longPressWithScrollRetry, timeouts, wait, waitForElementToBeVisible} from '@support/utils';
+import {isAndroid, isIos, longPressWithScrollRetry, timeouts, wait, waitForElementToBeVisible, waitForElementToExist} from '@support/utils';
 import {expect, waitFor} from 'detox';
 
 class SearchMessagesScreen {
@@ -111,15 +111,8 @@ class SearchMessagesScreen {
     };
 
     close = async () => {
-        if (isIos()) {
-            await this.searchCancelButton.tap();
-        } else {
-            // Search is a bottom tab — pressBack only dismisses the keyboard.
-            // CI (MM-T5294_*): search_messages.screen stays mounted in the tab
-            // navigator after switching tabs, so not.toExist() never passes.
-            await waitFor(HomeScreen.channelListTab).toExist().withTimeout(timeouts.TEN_SEC);
-            await HomeScreen.channelListTab.tap();
-        }
+        await waitFor(HomeScreen.channelListTab).toExist().withTimeout(timeouts.TEN_SEC);
+        await HomeScreen.channelListTab.tap();
         await ChannelListScreen.toBeVisible();
     };
 
@@ -137,7 +130,12 @@ class SearchMessagesScreen {
         await wait(timeouts.ONE_SEC);
 
         // Poll for the post to become visible without waiting for idle bridge
-        await waitForElementToBeVisible(postListPostItem, timeouts.TEN_SEC);
+        await waitForElementToExist(postListPostItem, timeouts.TEN_SEC);
+        try {
+            await waitForElementToBeVisible(postListPostItem, timeouts.FIVE_SEC);
+        } catch {
+            // Android: post row may exist before passing visibility threshold
+        }
 
         const longPressTarget = isAndroid()
             ? element(by.id(`${this.testID.searchResultsScreenPrefix}post_list.post.${postId}`))

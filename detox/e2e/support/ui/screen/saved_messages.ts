@@ -9,7 +9,7 @@ import {
     HomeScreen,
     PostOptionsScreen,
 } from '@support/ui/screen';
-import {isAndroid, longPressWithRetry, scrollElementIntoView, timeouts, wait, waitForElementToBeVisible, waitForElementToNotExist} from '@support/utils';
+import {isAndroid, longPressWithRetry, scrollElementIntoView, timeouts, wait, waitForElementToExist, waitForElementToNotExist} from '@support/utils';
 import {expect, waitFor} from 'detox';
 
 class SavedMessagesScreen {
@@ -64,24 +64,65 @@ class SavedMessagesScreen {
     };
 
     openPostOptionsFor = async (postId: string, text: string) => {
+        await this.ensurePostVisible(postId, text);
         const {postListPostItem} = this.getPostListPostItem(postId, text);
-        const flatList = this.postList.getFlatList();
-
-        // Dismiss keyboard first so visibility checks are not blocked by the soft keyboard.
-        try {
-            await flatList.scroll(100, 'down');
-        } catch {
-            // List too short to scroll; keyboard already dismissed
-        }
-        await wait(timeouts.ONE_SEC);
-
-        await scrollElementIntoView(postListPostItem, by.id(this.postList.testID.flatList));
-        await waitForElementToBeVisible(postListPostItem, timeouts.TEN_SEC);
-        await wait(timeouts.ONE_SEC);
 
         // # Open post options (with retry — longPress can fail on Android during animations)
         await longPressWithRetry(postListPostItem, PostOptionsScreen.postOptionsScreen);
         await wait(timeouts.TWO_SEC);
+    };
+
+    ensurePostVisible = async (postId: string, text: string) => {
+        const {postListPostItem} = this.getPostListPostItem(postId, text);
+        const flatList = this.postList.getFlatList();
+
+        try {
+            await flatList.scrollTo('top');
+        } catch {
+            // List too short to scroll
+        }
+        await wait(timeouts.ONE_SEC);
+
+        try {
+            await waitFor(postListPostItem).toExist().withTimeout(timeouts.FIVE_SEC);
+        } catch {
+            if (isAndroid()) {
+                try {
+                    await waitFor(postListPostItem).
+                        toExist().
+                        whileElement(by.id(this.postList.testID.flatList)).
+                        scroll(250, 'down');
+                } catch {
+                    // Fall through to scrollElementIntoView
+                }
+            }
+        }
+
+        await scrollElementIntoView(postListPostItem, by.id(this.postList.testID.flatList));
+        await waitForElementToExist(postListPostItem, timeouts.TEN_SEC);
+        await wait(timeouts.ONE_SEC);
+    };
+
+    verifyPostUnsaved = async (postId: string, text: string) => {
+        const postWithText = element(
+            by.id(`${this.postList.testID.postListPostItem}.${postId}`).withDescendant(by.text(text)),
+        );
+        const deadline = Date.now() + timeouts.HALF_MIN;
+
+        /* eslint-disable no-await-in-loop -- poll until unsave propagates or tab refresh exhausts retries */
+        while (Date.now() < deadline) {
+            try {
+                await expect(postWithText).not.toExist();
+                return;
+            } catch {
+                await HomeScreen.channelListTab.tap();
+                await wait(timeouts.ONE_SEC);
+                await HomeScreen.savedMessagesTab.tap();
+                await this.toBeVisible();
+            }
+        }
+        /* eslint-enable no-await-in-loop */
+        await expect(postWithText).not.toExist();
     };
 
     hasPostMessage = async (postId: string, postMessage: string) => {

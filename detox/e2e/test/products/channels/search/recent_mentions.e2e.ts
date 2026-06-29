@@ -175,8 +175,7 @@ describe('Search - Recent Mentions', () => {
         await SavedMessagesScreen.open();
 
         // * Verify mention is no longer on saved messages screen.
-        // Poll: unsave preference deletion propagates through the observable.
-        await waitForElementToNotExist(postListPostItem, timeouts.TWENTY_SEC);
+        await SavedMessagesScreen.verifyPostUnsaved(mentionPost.id, mentionPost.messageText);
 
         // # Go back to channel list screen
         await SavedMessagesScreen.close();

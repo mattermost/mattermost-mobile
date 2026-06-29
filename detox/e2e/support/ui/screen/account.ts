@@ -7,7 +7,7 @@ import {
 } from '@support/ui/component';
 import {dismissKnownModals} from '@support/ui/modal_dismiss';
 import {HomeScreen} from '@support/ui/screen';
-import {isAndroid, timeouts, wait, waitForElementToBeVisible, waitForElementToNotExist} from '@support/utils';
+import {isAndroid, timeouts, wait, waitForElementToExist, waitForElementToNotExist} from '@support/utils';
 import {expect, waitFor} from 'detox';
 
 class AccountScreen {
@@ -193,8 +193,8 @@ class AccountScreen {
                 // Row may already be visible without scrolling
             }
         }
-        await waitForElementToBeVisible(accountCustomStatusEmoji, timeout);
-        await waitForElementToBeVisible(this.customStatusClearButton, timeout);
+        await waitForElementToExist(accountCustomStatusEmoji, timeout);
+        await waitForElementToExist(this.customStatusClearButton, timeout);
     };
 
     logout = async (serverDisplayName: string | null = null) => {

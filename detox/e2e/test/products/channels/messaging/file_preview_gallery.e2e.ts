@@ -257,7 +257,11 @@ describe('Messaging - File Preview Gallery', () => {
         // after the header, and tapping a still-mounting Pressable silently
         // drops the press (cause of prior intermittent MM-T3458_1 failure).
         const copyPublicLinkButton = element(by.id('gallery.footer.copy_public_link.button')).atIndex(0);
-        await waitFor(copyPublicLinkButton).toBeVisible().withTimeout(timeouts.TEN_SEC);
+        if (isAndroid()) {
+            await waitFor(copyPublicLinkButton).toExist().withTimeout(timeouts.TEN_SEC);
+        } else {
+            await waitFor(copyPublicLinkButton).toBeVisible().withTimeout(timeouts.TEN_SEC);
+        }
 
         // Wait for the gallery open animation to fully settle before tapping.
         // The UITransitionView overlay is still animating when toBeVisible() fires;

@@ -178,6 +178,7 @@ describe('Smoke Test - Channels', () => {
         // # Go back to channel list screen
         await ChannelInfoScreen.close();
         await ChannelScreen.back();
+        await ChannelListScreen.toBeVisible();
     });
 
     it('MM-T4774_5 - should be able to favorite and mute a channel', async () => {

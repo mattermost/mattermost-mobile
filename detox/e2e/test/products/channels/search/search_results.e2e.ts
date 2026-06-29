@@ -220,7 +220,7 @@ describe('Search - Result Interactions', () => {
         await device.disableSynchronization();
         let searchedPostId: string;
         try {
-            await SearchMessagesScreen.searchInput.typeText(searchTerm);
+            await SearchMessagesScreen.searchInput.replaceText(searchTerm);
             await SearchMessagesScreen.searchInput.tapReturnKey();
 
             const {post: searchedPost} = await Post.apiGetLastPostInChannel(siteOneUrl, testChannel.id);

@@ -69,8 +69,7 @@ describe('Channels - Edit Channel', () => {
     });
 
     afterAll(async () => {
-        // # Log out
-        await ChannelScreen.back();
+        await ChannelListScreen.open();
         await HomeScreen.logout();
     });
 

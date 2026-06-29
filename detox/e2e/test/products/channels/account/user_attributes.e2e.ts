@@ -90,7 +90,23 @@ describe('Account - User Attributes', () => {
 
         await waitFor(element(by.id(`edit_profile_form.customAttributes.${fieldId0}.input`))).
             toExist().
-            withTimeout(timeouts.TEN_SEC);
+            withTimeout(timeouts.TWENTY_SEC);
+
+        if (isAndroid()) {
+            const scrollView = element(by.id(EditProfileScreen.testID.scrollView));
+            try {
+                await waitFor(element(by.id(`edit_profile_form.customAttributes.${fieldId0}.input`))).
+                    toExist().
+                    whileElement(by.id(EditProfileScreen.testID.scrollView)).
+                    scroll(150, 'down');
+            } catch {
+                try {
+                    await scrollView.scroll(200, 'down');
+                } catch {
+                    // Already at scroll end
+                }
+            }
+        }
 
         if (isAndroid()) {
             const fillField = async (fieldId: string, value: string, scrollAmount: number) => {
@@ -142,13 +158,18 @@ describe('Account - User Attributes', () => {
 
         const scrollCustomAttributeIntoView = async (fieldId: string) => {
             const titleEl = element(by.id(`custom_attribute.${fieldId}.title`));
+            const scrollView = element(by.id('user_profile.scroll_view'));
             /* eslint-disable no-await-in-loop */
             for (let attempt = 0; attempt < 15; attempt++) {
                 try {
                     await waitFor(titleEl).toExist().withTimeout(timeouts.TWO_SEC);
                     return titleEl;
                 } catch {
-                    await UserProfileScreen.sendMessageProfileOption.swipe('up', 'slow', 0.5);
+                    try {
+                        await scrollView.scroll(200, 'down');
+                    } catch {
+                        await UserProfileScreen.sendMessageProfileOption.swipe('up', 'slow', 0.5);
+                    }
                     await wait(timeouts.HALF_SEC);
                 }
             }

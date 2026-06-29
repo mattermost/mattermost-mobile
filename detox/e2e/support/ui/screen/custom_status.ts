@@ -5,7 +5,7 @@ import {
     AccountScreen,
     EmojiPickerScreen,
 } from '@support/ui/screen';
-import {timeouts} from '@support/utils';
+import {isAndroid, timeouts, waitForElementToExist} from '@support/utils';
 import {expect, waitFor} from 'detox';
 
 class CustomStatusScreen {
@@ -113,7 +113,16 @@ class CustomStatusScreen {
         // ScrollView until the setStatusOption is fully visible, then tap.
         // This handles both fresh drawer state (top of ScrollView) and
         // scrolled state from prior tests (MM-T3892).
-        await waitFor(AccountScreen.setStatusOption).toBeVisible().whileElement(by.id('account.scroll_view')).scroll(150, 'down');
+        if (isAndroid()) {
+            try {
+                await waitFor(AccountScreen.setStatusOption).toExist().whileElement(by.id('account.scroll_view')).scroll(150, 'down');
+            } catch {
+                // Row may already be in view without scrolling.
+            }
+            await waitForElementToExist(AccountScreen.setStatusOption, timeouts.TEN_SEC);
+        } else {
+            await waitFor(AccountScreen.setStatusOption).toBeVisible().whileElement(by.id('account.scroll_view')).scroll(150, 'down');
+        }
         await AccountScreen.setStatusOption.tap();
 
         return this.toBeVisible();

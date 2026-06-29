@@ -10,12 +10,7 @@ const path = require('path');
 const repoRoot = path.resolve(__dirname, '../..');
 
 function decodeXml(text) {
-    return text
-        .replace(/&lt;/g, '<')
-        .replace(/&gt;/g, '>')
-        .replace(/&amp;/g, '&')
-        .replace(/&quot;/g, '"')
-        .replace(/&apos;/g, "'");
+    return text.replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&amp;/g, '&').replace(/&quot;/g, '"').replace(/&apos;/g, "'");
 }
 
 function extractFailures(junitPath) {
