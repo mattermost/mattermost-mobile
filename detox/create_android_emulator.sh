@@ -220,16 +220,29 @@ start_server() {
     echo "Server is ready."
 
     echo "Pre-warming Metro Android bundle before Detox launchApp..."
-    local bundle_timeout=180 bundle_elapsed=0 bundle_interval=5
-    until curl -sf "http://127.0.0.1:8081/index.bundle?platform=android&dev=true&minify=false" 2>/dev/null | head -c 200 | grep -q "__d"; do
-        if [[ $bundle_elapsed -ge $bundle_timeout ]]; then
-            echo "ERROR: Metro Android bundle did not become ready within ${bundle_timeout}s"
+    local bundle_url="http://127.0.0.1:8081/index.bundle?platform=android&dev=true&minify=false"
+    local metro_status_url="http://127.0.0.1:8081/status"
+    local status_timeout=120 status_elapsed=0 status_interval=2
+
+    # Wait for Metro HTTP — does not trigger a bundle build.
+    until curl -sf "$metro_status_url" 2>/dev/null | grep -q "packager-status:running"; do
+        if [[ $status_elapsed -ge $status_timeout ]]; then
+            echo "ERROR: Metro packager did not report running within ${status_timeout}s"
             exit 1
         fi
-        echo "Waiting for Metro Android bundle... (${bundle_elapsed}s)"
-        sleep $bundle_interval
-        bundle_elapsed=$((bundle_elapsed + bundle_interval))
+        echo "Waiting for Metro packager status... (${status_elapsed}s)"
+        sleep $status_interval
+        status_elapsed=$((status_elapsed + status_interval))
     done
+
+    # One bundle request only. Polling the bundle URL in a loop starts a fresh Metro
+    # build on every curl (CI log: 94% → 0% repeatedly) and never finishes.
+    echo "Compiling Android bundle (single request, up to 300s)..."
+    local bundle_timeout=300
+    if ! curl -sf --max-time "$bundle_timeout" "$bundle_url" 2>/dev/null | head -c 512 | grep -q "__d"; then
+        echo "ERROR: Metro Android bundle did not become ready within ${bundle_timeout}s"
+        exit 1
+    fi
     echo "Metro Android bundle is ready."
 }
 

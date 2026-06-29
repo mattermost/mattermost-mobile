@@ -204,19 +204,55 @@ jobs:
             };
 
             const runHasArtifacts = async (runId) => {
-              const {data} = await github.rest.actions.listWorkflowRunArtifacts({
+              const expected = [];
+              if (needIos) {
+                expected.push(`ios-build-simulator-${runId}`);
+              }
+              if (needAndroid) {
+                expected.push(`android-build-files-${runId}`);
+              }
+              const artifacts = await github.paginate(github.rest.actions.listWorkflowRunArtifacts, {
                 owner: context.repo.owner,
                 repo: context.repo.repo,
                 run_id: runId,
+                per_page: 100,
               });
-              const names = data.artifacts.map((artifact) => artifact.name);
-              const hasIos = names.some((name) => name.startsWith('ios-build-simulator-'));
-              const hasAndroid = names.some((name) => name.startsWith('android-build-files-'));
-              return (!needIos || hasIos) && (!needAndroid || hasAndroid);
+              const names = new Set(artifacts.map((artifact) => artifact.name));
+              return expected.every((name) => names.has(name));
+            };
+
+            const resolveHeadBranch = async () => {
+              const {data: currentRun} = await github.rest.actions.getWorkflowRun({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                run_id: context.runId,
+              });
+              if (currentRun.head_branch) {
+                return currentRun.head_branch;
+              }
+
+              if (process.env.MOBILE_VERSION) {
+                try {
+                  const {data: prs} = await github.rest.repos.listPullRequestsAssociatedWithCommit({
+                    owner: context.repo.owner,
+                    repo: context.repo.repo,
+                    commit_sha: process.env.MOBILE_VERSION,
+                  });
+                  const openPr = prs.find((pr) => pr.state === 'open');
+                  if (openPr?.head?.ref) {
+                    return openPr.head.ref;
+                  }
+                } catch (err) {
+                  core.warning(`Could not resolve PR branch from commit: ${err.message}`);
+                }
+              }
+
+              return context.ref.replace('refs/heads/', '');
             };
 
             const findPreviousArtifactRun = async () => {
-              const branch = context.ref.replace('refs/heads/', '');
+              const branch = await resolveHeadBranch();
+              core.info(`Searching prior E2E runs on branch ${branch} for reusable app artifacts`);
               const {data} = await github.rest.actions.listWorkflowRuns({
                 owner: context.repo.owner,
                 repo: context.repo.repo,
@@ -232,6 +268,7 @@ jobs:
                 }
                 // eslint-disable-next-line no-await-in-loop
                 if (await runHasArtifacts(run.id)) {
+                  core.info(`Found reusable app artifacts on prior run ${run.id} (${run.head_sha})`);
                   return String(run.id);
                 }
               }
