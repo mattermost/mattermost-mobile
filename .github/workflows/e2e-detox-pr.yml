@@ -65,10 +65,10 @@ on:
         required: false
         type: string
       failing_only:
-        description: "Run only failing specs from spec_list_file on fewer shards (saves CI cost). Revert when green."
+        description: "Run only specs listed in spec_list_file (fewer shards, lower CI cost). TEMP: default true until suite is green — revert with manifest."
         required: false
         type: boolean
-        default: false
+        default: true
       failing_parallelism:
         description: "Shard count when failing_only is true (default 6)"
         required: false

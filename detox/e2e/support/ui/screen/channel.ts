@@ -20,7 +20,7 @@ import {
     PostOptionsScreen,
     ThreadScreen,
 } from '@support/ui/screen';
-import {isAndroid, isIos, longPressWithScrollRetry, timeouts, wait, waitForElementToBeVisible, waitForElementToExist} from '@support/utils';
+import {isAndroid, isIos, longPressWithScrollRetry, safeEnableSynchronization, timeouts, wait, waitForElementToBeVisible, waitForElementToExist} from '@support/utils';
 import {by, element, expect, waitFor} from 'detox';
 
 import InteractiveDialogScreen from './interactive_dialog';
@@ -389,7 +389,7 @@ class ChannelScreen {
                 timeouts.HALF_MIN,
             );
         } finally {
-            await device.enableSynchronization();
+            await safeEnableSynchronization();
         }
     };
 

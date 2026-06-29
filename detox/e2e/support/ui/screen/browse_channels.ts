@@ -2,7 +2,7 @@
 // See LICENSE.txt for license information.
 
 import {ChannelListScreen} from '@support/ui/screen';
-import {isAndroid, timeouts, wait} from '@support/utils';
+import {isAndroid, safeEnableSynchronization, timeouts, wait} from '@support/utils';
 import {expect, waitFor} from 'detox';
 
 class BrowseChannelsScreen {
@@ -93,7 +93,7 @@ class BrowseChannelsScreen {
             await ChannelListScreen.browseChannelsItem.tap();
         } finally {
             if (disableSyncForOpen) {
-                await device.enableSynchronization();
+                await safeEnableSynchronization();
             }
         }
 

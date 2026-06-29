@@ -11,7 +11,7 @@ import {
     SendButton,
 } from '@support/ui/component';
 import {PostOptionsScreen} from '@support/ui/screen';
-import {isAndroid, longPressWithScrollRetry, timeouts, wait, waitForElementToBeVisible, waitForElementToExist} from '@support/utils';
+import {isAndroid, longPressWithScrollRetry, safeEnableSynchronization, timeouts, wait, waitForElementToBeVisible, waitForElementToExist} from '@support/utils';
 import {by, element, expect, waitFor} from 'detox';
 
 class ThreadScreen {
@@ -199,7 +199,7 @@ class ThreadScreen {
                 timeouts.HALF_MIN,
             );
         } finally {
-            await device.enableSynchronization();
+            await safeEnableSynchronization();
         }
     };
 
