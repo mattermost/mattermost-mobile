@@ -30,10 +30,15 @@ name: CMT Provisioner
 
 on:
   push:
-    # Mobile release-build branch (3+ digit build number). The leading [0-9][0-9][0-9]
-    # excludes platform-specific variants like `build-release-ios-NNN`.
+    # Mobile release-build branch — exactly 3- or 4-digit build numbers. Glob `[0-9]` is
+    # a single-char class; chaining 3 or 4 of them with no trailing `*` enforces the
+    # exact length. Excludes platform-specific variants like `build-release-ios-NNN`
+    # (the literal "i" doesn't match `[0-9]`). Matterwick's regex
+    # `^build-release-\d{3,4}$` is the authoritative gate; this glob is a coarse
+    # GitHub-side filter so the workflow doesn't run on unrelated branches.
     branches:
-      - "build-release-[0-9][0-9][0-9]*"
+      - "build-release-[0-9][0-9][0-9]"
+      - "build-release-[0-9][0-9][0-9][0-9]"
   # Manual runs from the Actions tab (any ref).
   workflow_dispatch: {}
 
