@@ -9,7 +9,7 @@ import {
     HomeScreen,
     PostOptionsScreen,
 } from '@support/ui/screen';
-import {isAndroid, longPressWithRetry, timeouts, wait, waitForElementToBeVisible, waitForElementToExist} from '@support/utils';
+import {isAndroid, longPressWithRetry, scrollElementIntoView, timeouts, wait, waitForElementToBeVisible, waitForElementToExist} from '@support/utils';
 import {expect} from 'detox';
 
 class RecentMentionsScreen {
@@ -83,8 +83,16 @@ class RecentMentionsScreen {
 
     openPostOptionsFor = async (postId: string, text: string) => {
         const {postListPostItem} = this.getPostListPostItem(postId, text);
+        const flatList = this.postList.getFlatList();
 
-        // Poll for the post to become visible without waiting for idle bridge
+        try {
+            await flatList.scroll(100, 'down');
+        } catch {
+            // List too short to scroll; keyboard already dismissed
+        }
+        await wait(timeouts.ONE_SEC);
+
+        await scrollElementIntoView(postListPostItem, by.id(this.postList.testID.flatList));
         await waitForElementToBeVisible(postListPostItem, timeouts.TEN_SEC);
 
         // Long-press the post's TouchableHighlight directly (always rendered).

@@ -143,7 +143,7 @@ describe('Account - User Attributes', () => {
         const scrollCustomAttributeIntoView = async (fieldId: string) => {
             const titleEl = element(by.id(`custom_attribute.${fieldId}.title`));
             /* eslint-disable no-await-in-loop */
-            for (let attempt = 0; attempt < 10; attempt++) {
+            for (let attempt = 0; attempt < 15; attempt++) {
                 try {
                     await waitFor(titleEl).toExist().withTimeout(timeouts.TWO_SEC);
                     return titleEl;

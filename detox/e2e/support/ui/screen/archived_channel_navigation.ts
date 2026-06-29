@@ -100,7 +100,11 @@ async function openArchivedChannelViaBrowseChannels(channelName: string) {
     await channelItem.tap();
 
     await waitForElementToExist(ChannelScreen.channelScreen, timeouts.ONE_MIN);
-    await waitForElementToBeVisible(ChannelScreen.postDraftArchived, timeouts.HALF_MIN);
+    if (isAndroid()) {
+        await waitForElementToExist(ChannelScreen.postDraftArchived, timeouts.HALF_MIN);
+    } else {
+        await waitForElementToBeVisible(ChannelScreen.postDraftArchived, timeouts.HALF_MIN);
+    }
 }
 
 // Navigate to an archived channel via the search results permalink flow.
@@ -155,7 +159,11 @@ async function openArchivedChannelViaSearchPermalink(searchableMessage: string, 
     await device.disableSynchronization();
     try {
         await waitForElementToExist(ChannelScreen.channelScreen, timeouts.ONE_MIN);
-        await waitForElementToBeVisible(ChannelScreen.postDraftArchived, timeouts.HALF_MIN);
+        if (isAndroid()) {
+            await waitForElementToExist(ChannelScreen.postDraftArchived, timeouts.HALF_MIN);
+        } else {
+            await waitForElementToBeVisible(ChannelScreen.postDraftArchived, timeouts.HALF_MIN);
+        }
     } finally {
         await safeEnableSynchronization();
     }

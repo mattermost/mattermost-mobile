@@ -1,9 +1,9 @@
 {
     "source_run": "28375328964",
-    "source_commit": "4c6934b6c",
+    "source_commit": "8d9d08c68",
     "generated_at": "2026-06-29",
     "note": "Regenerate: node detox/scripts/generate-failing-specs-manifest.js <junit-dirs>",
-    "failed_mm_t_count": 70,
+    "failed_mm_t_count": 72,
     "specs": [
         "detox/e2e/test/products/channels/account/about.e2e.ts",
         "detox/e2e/test/products/channels/account/custom_status.e2e.ts",
@@ -24,6 +24,7 @@
         "detox/e2e/test/products/channels/messaging/message_draft.e2e.ts",
         "detox/e2e/test/products/channels/messaging/message_edit.e2e.ts",
         "detox/e2e/test/products/channels/messaging/permalink.e2e.ts",
+        "detox/e2e/test/products/channels/scheduled_messages/create_schedule_message.e2e.ts",
         "detox/e2e/test/products/channels/search/pinned_messages.e2e.ts",
         "detox/e2e/test/products/channels/search/recent_mentions.e2e.ts",
         "detox/e2e/test/products/channels/search/saved_messages.e2e.ts",

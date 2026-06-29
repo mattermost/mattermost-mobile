@@ -21,7 +21,8 @@ import {
     LoginScreen,
     ServerScreen,
 } from '@support/ui/screen';
-import {expect} from 'detox';
+import {timeouts} from '@support/utils';
+import {expect, waitFor} from 'detox';
 
 describe('Channels - Team Switching', () => {
     const serverOneDisplayName = 'Server 1';
@@ -58,6 +59,18 @@ describe('Channels - Team Switching', () => {
     });
 
     it('MM-T3249 - should switch between teams via the sidebar', async () => {
+        // Prior tests may leave the second team selected — normalize before asserting.
+        try {
+            await waitFor(ChannelListScreen.headerTeamDisplayName).
+                toHaveText(testTeam.display_name).
+                withTimeout(timeouts.TWO_SEC);
+        } catch {
+            await ChannelListScreen.getTeamItemNotSelected(testTeam.id).tap();
+            await waitFor(ChannelListScreen.headerTeamDisplayName).
+                toHaveText(testTeam.display_name).
+                withTimeout(timeouts.TEN_SEC);
+        }
+
         // * Verify on first team with correct channel list header and sidebar selection
         await expect(ChannelListScreen.headerTeamDisplayName).toHaveText(testTeam.display_name);
         await expect(ChannelListScreen.getTeamItemSelected(testTeam.id)).toBeVisible();

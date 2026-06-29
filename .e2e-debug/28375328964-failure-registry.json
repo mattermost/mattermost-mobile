@@ -1,0 +1,370 @@
+[
+  {
+    "mm_t": "MM-T1703",
+    "shard": "6ynhyfgm5t-7",
+    "classname": "Channels - Archive Channel from Settings MM-T1703 - should be able to open archived channels and verify read-only state",
+    "error_snippet": "Error: thrown: \"Exceeded timeout of 300000 ms for a test. Add a timeout value to this test to increase the timeout, if this is a long-running test. See https://jestjs.io/docs/api#testname-fn-timeout.\" at /home/runner/work/mattermost-mobile/mattermost-mobile/detox/e2e/test/products/channels/channels/archive_channel_from_settings.e2e.ts:241:5 at _dispatchDescribe (/home/runner/work/mattermost-mobile/mattermost-mobile/detox/node_modules/jest-circus/build/index.js:91:26) at describe (/home/runner/wo",
+    "screenshots": [],
+    "junit": ".e2e-debug/28375328964-full/android-results-6ynhyfgm5t-7/android-junit.xml"
+  },
+  {
+    "mm_t": "MM-T1719_1",
+    "shard": "6ynhyfgm5t-7",
+    "classname": "Channels - Archived Channel Interactions MM-T1719_1 - should not be able to remove members from an archived channel",
+    "error_snippet": "Error: thrown: \"Exceeded timeout of 300000 ms for a test. Add a timeout value to this test to increase the timeout, if this is a long-running test. See https://jestjs.io/docs/api#testname-fn-timeout.\" at /home/runner/work/mattermost-mobile/mattermost-mobile/detox/e2e/test/products/channels/channels/archived_channel_interactions.e2e.ts:225:5 at _dispatchDescribe (/home/runner/work/mattermost-mobile/mattermost-mobile/detox/node_modules/jest-circus/build/index.js:91:26) at describe (/home/runner/wo",
+    "screenshots": [],
+    "junit": ".e2e-debug/28375328964-full/android-results-6ynhyfgm5t-7/android-junit.xml"
+  },
+  {
+    "mm_t": "MM-T2507",
+    "shard": "6ynhyfgm5t-16",
+    "classname": "Search - Search Cycle MM-T2507 - should find DM channel by username, first name, last name, and nickname",
+    "error_snippet": "Test Failed: 60.0sec timeout expired without matching of given matcher: not null at CreateDirectMessageScreen.open (/home/runner/work/mattermost-mobile/mattermost-mobile/detox/e2e/support/ui/screen/create_direct_message.ts:115:69) at processTicksAndRejections (node:internal/process/task_queues:104:5) at Object.<anonymous> (/home/runner/work/mattermost-mobile/mattermost-mobile/detox/e2e/test/products/channels/search/search_cycle.e2e.ts:182:9)",
+    "screenshots": [],
+    "junit": ".e2e-debug/28375328964-full/android-results-6ynhyfgm5t-16/android-junit.xml"
+  },
+  {
+    "mm_t": "MM-T3458_1",
+    "shard": "6ynhyfgm5t-11",
+    "classname": "Messaging - File Preview Gallery MM-T3458_1 - should show gallery footer actions and copy public link when enabled",
+    "error_snippet": "Test Failed: '(view has effective visibility <VISIBLE> and view.getGlobalVisibleRect() covers at least <50> percent of the view's area)' doesn't match the selected view. Expected: (view has effective visibility <VISIBLE> and view.getGlobalVisibleRect() covers at least <50> percent of the view's area) Got: was null at waitForElementToBeVisible (/home/runner/work/mattermost-mobile/mattermost-mobile/detox/e2e/support/utils/index.ts:255:45) at waitForElementToExist (/home/runner/work/mattermost-mobi",
+    "screenshots": [],
+    "junit": ".e2e-debug/28375328964-full/android-results-6ynhyfgm5t-11/android-junit.xml"
+  },
+  {
+    "mm_t": "MM-T372_1",
+    "shard": "6ynhyfgm5t-17",
+    "classname": "Search - Result Interactions MM-T372_1 - highlighting does not persist in Saved Messages",
+    "error_snippet": "Test Failed: '(view has effective visibility <VISIBLE> and view.getGlobalVisibleRect() covers at least <50> percent of the view's area)' doesn't match the selected view. Expected: (view has effective visibility <VISIBLE> and view.getGlobalVisibleRect() covers at least <50> percent of the view's area) Got: was null at waitForElementToBeVisible (/home/runner/work/mattermost-mobile/mattermost-mobile/detox/e2e/support/utils/index.ts:255:45) at Object.<anonymous> (/home/runner/work/mattermost-mobile/",
+    "screenshots": [],
+    "junit": ".e2e-debug/28375328964-full/android-results-6ynhyfgm5t-17/android-junit.xml"
+  },
+  {
+    "mm_t": "MM-T4401",
+    "shard": "6ynhyfgm5t-10",
+    "classname": "Interactive Dialog - Basic Dialog (Plugin) MM-T4401 should toggle boolean fields and submit (Plugin)",
+    "error_snippet": "Test Failed: '(view has effective visibility <VISIBLE> and view.getGlobalVisibleRect() covers at least <50> percent of the view's area)' doesn't match the selected view. Expected: (view has effective visibility <VISIBLE> and view.getGlobalVisibleRect() covers at least <50> percent of the view's area) Got: was null at waitForElementToBeVisible (/home/runner/work/mattermost-mobile/mattermost-mobile/detox/e2e/support/utils/index.ts:255:45) at waitForElementToExist (/home/runner/work/mattermost-mobi",
+    "screenshots": [],
+    "junit": ".e2e-debug/28375328964-full/android-results-6ynhyfgm5t-10/android-junit.xml"
+  },
+  {
+    "mm_t": "MM-T4691_2",
+    "shard": "6ynhyfgm5t-18",
+    "classname": "Server Login - Server List MM-T4691_2 - should be able to add and log in to new servers",
+    "error_snippet": "Test Failed: '(view has effective visibility <VISIBLE> and view.getGlobalVisibleRect() covers at least <50> percent of the view's area)' doesn't match the selected view. Expected: (view has effective visibility <VISIBLE> and view.getGlobalVisibleRect() covers at least <50> percent of the view's area) Got: view was <22> percent visible to the user View Details: ReactViewGroup{id=912, visibility=VISIBLE, width=1300, height=252, has-focus=false, has-focusable=false, has-window-focus=true, is-clicka",
+    "screenshots": [],
+    "junit": ".e2e-debug/28375328964-full/android-results-6ynhyfgm5t-18/android-junit.xml"
+  },
+  {
+    "mm_t": "MM-T4691_3",
+    "shard": "6ynhyfgm5t-18",
+    "classname": "Server Login - Server List MM-T4691_3 - should be able to switch to another existing server",
+    "error_snippet": "Test Failed: '(view has effective visibility <VISIBLE> and view.getGlobalVisibleRect() covers at least <50> percent of the view's area)' doesn't match the selected view. Expected: (view has effective visibility <VISIBLE> and view.getGlobalVisibleRect() covers at least <50> percent of the view's area) Got: was null at waitForElementToBeVisible (/home/runner/work/mattermost-mobile/mattermost-mobile/detox/e2e/support/utils/index.ts:255:45) at Object.<anonymous> (/home/runner/work/mattermost-mobile/",
+    "screenshots": [],
+    "junit": ".e2e-debug/28375328964-full/android-results-6ynhyfgm5t-18/android-junit.xml"
+  },
+  {
+    "mm_t": "MM-T4691_5",
+    "shard": "6ynhyfgm5t-18",
+    "classname": "Server Login - Server List MM-T4691_5 - should be able to remove a server from the list",
+    "error_snippet": "Test Failed: 10.0sec timeout expired without matching of given matcher: not null at ServerListScreen.open (/home/runner/work/mattermost-mobile/mattermost-mobile/detox/e2e/support/ui/screen/server_list.ts:65:63) at Object.<anonymous> (/home/runner/work/mattermost-mobile/mattermost-mobile/detox/e2e/test/products/channels/server_login/server_list.e2e.ts:269:32)",
+    "screenshots": [],
+    "junit": ".e2e-debug/28375328964-full/android-results-6ynhyfgm5t-18/android-junit.xml"
+  },
+  {
+    "mm_t": "MM-T4691_6",
+    "shard": "6ynhyfgm5t-18",
+    "classname": "Server Login - Server List MM-T4691_6 - should be able to log out a server from the list",
+    "error_snippet": "Test Failed: '(view has effective visibility <VISIBLE> and view.getGlobalVisibleRect() covers at least <50> percent of the view's area)' doesn't match the selected view. Expected: (view has effective visibility <VISIBLE> and view.getGlobalVisibleRect() covers at least <50> percent of the view's area) Got: was null at waitForElementToBeVisible (/home/runner/work/mattermost-mobile/mattermost-mobile/detox/e2e/support/utils/index.ts:255:45) at waitForElementToExist (/home/runner/work/mattermost-mobi",
+    "screenshots": [],
+    "junit": ".e2e-debug/28375328964-full/android-results-6ynhyfgm5t-18/android-junit.xml"
+  },
+  {
+    "mm_t": "MM-T4691_7",
+    "shard": "6ynhyfgm5t-18",
+    "classname": "Server Login - Server List MM-T4691_7 - should not be able to add server for an already existing server",
+    "error_snippet": "Test Failed: '(view has effective visibility <VISIBLE> and view.getGlobalVisibleRect() covers at least <50> percent of the view's area)' doesn't match the selected view. Expected: (view has effective visibility <VISIBLE> and view.getGlobalVisibleRect() covers at least <50> percent of the view's area) Got: was null at waitForElementToBeVisible (/home/runner/work/mattermost-mobile/mattermost-mobile/detox/e2e/support/utils/index.ts:255:45) at waitForElementToExist (/home/runner/work/mattermost-mobi",
+    "screenshots": [],
+    "junit": ".e2e-debug/28375328964-full/android-results-6ynhyfgm5t-18/android-junit.xml"
+  },
+  {
+    "mm_t": "MM-T4728_5",
+    "shard": "6ynhyfgm5t-8",
+    "classname": "Channels - Channel List MM-T4728_5 - should be able to go to create direct message screen",
+    "error_snippet": "Test Failed: 60.0sec timeout expired without matching of given matcher: not null at CreateDirectMessageScreen.open (/home/runner/work/mattermost-mobile/mattermost-mobile/detox/e2e/support/ui/screen/create_direct_message.ts:115:69) at processTicksAndRejections (node:internal/process/task_queues:104:5) at Object.<anonymous> (/home/runner/work/mattermost-mobile/mattermost-mobile/detox/e2e/test/products/channels/channels/channel_list.e2e.ts:155:9)",
+    "screenshots": [],
+    "junit": ".e2e-debug/28375328964-full/android-results-6ynhyfgm5t-8/android-junit.xml"
+  },
+  {
+    "mm_t": "MM-T4729_3",
+    "shard": "6ynhyfgm5t-8",
+    "classname": "Channels - Browse Channels MM-T4729_3 - should display empty search state for browse channels",
+    "error_snippet": "Test Failed: ReactContext is null! at BrowseChannelsScreen.open (/home/runner/work/mattermost-mobile/mattermost-mobile/detox/e2e/support/ui/screen/browse_channels.ts:96:30) at processTicksAndRejections (node:internal/process/task_queues:104:5) at Object.<anonymous> (/home/runner/work/mattermost-mobile/mattermost-mobile/detox/e2e/test/products/channels/channels/browse_channels.e2e.ts:115:9)",
+    "screenshots": [],
+    "junit": ".e2e-debug/28375328964-full/android-results-6ynhyfgm5t-8/android-junit.xml"
+  },
+  {
+    "mm_t": "MM-T4774_2",
+    "shard": "6ynhyfgm5t-18",
+    "classname": "Smoke Test - Channels MM-T4774_2 - should be able to create a channel and create a direct message",
+    "error_snippet": "Test Failed: 60.0sec timeout expired without matching of given matcher: not null at CreateDirectMessageScreen.open (/home/runner/work/mattermost-mobile/mattermost-mobile/detox/e2e/support/ui/screen/create_direct_message.ts:115:69) at processTicksAndRejections (node:internal/process/task_queues:104:5) at Object.<anonymous> (/home/runner/work/mattermost-mobile/mattermost-mobile/detox/e2e/test/products/channels/smoke_test/channels.e2e.ts:110:9)",
+    "screenshots": [],
+    "junit": ".e2e-debug/28375328964-full/android-results-6ynhyfgm5t-18/android-junit.xml"
+  },
+  {
+    "mm_t": "MM-T4774_4",
+    "shard": "6ynhyfgm5t-18",
+    "classname": "Smoke Test - Channels MM-T4774_4 - should be able to find and edit a channel",
+    "error_snippet": "Test Failed: 20.0sec timeout expired without matching of given matcher: not not null at CreateOrEditChannelScreen.save (/home/runner/work/mattermost-mobile/mattermost-mobile/detox/e2e/support/ui/screen/create_or_edit_channel.ts:118:69) at processTicksAndRejections (node:internal/process/task_queues:104:5) at Object.<anonymous> (/home/runner/work/mattermost-mobile/mattermost-mobile/detox/e2e/test/products/channels/smoke_test/channels.e2e.ts:166:9)",
+    "screenshots": [],
+    "junit": ".e2e-debug/28375328964-full/android-results-6ynhyfgm5t-18/android-junit.xml"
+  },
+  {
+    "mm_t": "MM-T4786_3",
+    "shard": "6ynhyfgm5t-18",
+    "classname": "Smoke Test - Messaging MM-T4786_3 - should be able to include emojis in a message and add reaction to a message",
+    "error_snippet": "Test Failed: 10.0sec timeout expired without matching of given matcher: not null at Object.<anonymous> (/home/runner/work/mattermost-mobile/mattermost-mobile/detox/e2e/test/products/channels/smoke_test/messaging.e2e.ts:147:13)",
+    "screenshots": [],
+    "junit": ".e2e-debug/28375328964-full/android-results-6ynhyfgm5t-18/android-junit.xml"
+  },
+  {
+    "mm_t": "MM-T4876_3",
+    "shard": "6ynhyfgm5t-15",
+    "classname": "Messaging - Permalink MM-T4876_3 - should be able to jump to target DM post by tapping on permalink with team name",
+    "error_snippet": "Test Failed: 4.0sec timeout expired without matching of given matcher: (view has effective visibility <VISIBLE> and view.getGlobalVisibleRect() covers at least <50> percent of the view's area) at expectPermalinkTargetMessage (/home/runner/work/mattermost-mobile/mattermost-mobile/detox/e2e/test/products/channels/messaging/permalink.e2e.ts:69:55) at Object.<anonymous> (/home/runner/work/mattermost-mobile/mattermost-mobile/detox/e2e/test/products/channels/messaging/permalink.e2e.ts:152:9)",
+    "screenshots": [],
+    "junit": ".e2e-debug/28375328964-full/android-results-6ynhyfgm5t-15/android-junit.xml"
+  },
+  {
+    "mm_t": "MM-T4876_4",
+    "shard": "6ynhyfgm5t-15",
+    "classname": "Messaging - Permalink MM-T4876_4 - should be able to jump to target DM post by tapping on permalink with _redirect",
+    "error_snippet": "Test Failed: 4.0sec timeout expired without matching of given matcher: (view has effective visibility <VISIBLE> and view.getGlobalVisibleRect() covers at least <50> percent of the view's area) at expectPermalinkTargetMessage (/home/runner/work/mattermost-mobile/mattermost-mobile/detox/e2e/test/products/channels/messaging/permalink.e2e.ts:69:55) at Object.<anonymous> (/home/runner/work/mattermost-mobile/mattermost-mobile/detox/e2e/test/products/channels/messaging/permalink.e2e.ts:168:9)",
+    "screenshots": [],
+    "junit": ".e2e-debug/28375328964-full/android-results-6ynhyfgm5t-15/android-junit.xml"
+  },
+  {
+    "mm_t": "MM-T4909_3",
+    "shard": "6ynhyfgm5t-16",
+    "classname": "Search - Recent Mentions MM-T4909_3 - should be able to edit, reply to, and delete a recent mention from recent mentions screen",
+    "error_snippet": "Test Failed: 10.0sec timeout expired without matching of given matcher: not null at Object.<anonymous> (/home/runner/work/mattermost-mobile/mattermost-mobile/detox/e2e/test/products/channels/search/recent_mentions.e2e.ts:246:21) at processTicksAndRejections (node:internal/process/task_queues:104:5)",
+    "screenshots": [],
+    "junit": ".e2e-debug/28375328964-full/android-results-6ynhyfgm5t-16/android-junit.xml"
+  },
+  {
+    "mm_t": "MM-T4909_4",
+    "shard": "6ynhyfgm5t-16",
+    "classname": "Search - Recent Mentions MM-T4909_4 - should be able to save/unsave a recent mention from recent mentions screen",
+    "error_snippet": "Test Failed: 10.0sec timeout expired without matching of given matcher: not not null at Object.<anonymous> (/home/runner/work/mattermost-mobile/mattermost-mobile/detox/e2e/test/products/channels/search/recent_mentions.e2e.ts:179:55) at processTicksAndRejections (node:internal/process/task_queues:104:5)",
+    "screenshots": [],
+    "junit": ".e2e-debug/28375328964-full/android-results-6ynhyfgm5t-16/android-junit.xml"
+  },
+  {
+    "mm_t": "MM-T4909_5",
+    "shard": "6ynhyfgm5t-16",
+    "classname": "Search - Recent Mentions MM-T4909_5 - should be able to pin/unpin a recent mention from recent mentions screen",
+    "error_snippet": "Error: Element did not appear after 5 longPress attempts at longPressWithRetry (/home/runner/work/mattermost-mobile/mattermost-mobile/detox/e2e/support/utils/index.ts:235:23) at processTicksAndRejections (node:internal/process/task_queues:104:5) at RecentMentionsScreen.openPostOptionsFor (/home/runner/work/mattermost-mobile/mattermost-mobile/detox/e2e/support/ui/screen/recent_mentions.ts:98:9) at Object.<anonymous> (/home/runner/work/mattermost-mobile/mattermost-mobile/detox/e2e/test/products/ch",
+    "screenshots": [],
+    "junit": ".e2e-debug/28375328964-full/android-results-6ynhyfgm5t-16/android-junit.xml"
+  },
+  {
+    "mm_t": "MM-T4910_2",
+    "shard": "6ynhyfgm5t-16",
+    "classname": "Search - Saved Messages MM-T4910_2 - should be able to display a saved message in saved messages screen and navigate to message channel",
+    "error_snippet": "Test Failed: 10.0sec timeout expired without matching of given matcher: (view has effective visibility <VISIBLE> and view.getGlobalVisibleRect() covers at least <50> percent of the view's area) at Object.<anonymous> (/home/runner/work/mattermost-mobile/mattermost-mobile/detox/e2e/test/products/channels/search/saved_messages.e2e.ts:98:68) at processTicksAndRejections (node:internal/process/task_queues:104:5)",
+    "screenshots": [],
+    "junit": ".e2e-debug/28375328964-full/android-results-6ynhyfgm5t-16/android-junit.xml"
+  },
+  {
+    "mm_t": "MM-T4910_3",
+    "shard": "6ynhyfgm5t-16",
+    "classname": "Search - Saved Messages MM-T4910_3 - should be able to edit, reply to, and delete a saved message from saved messages screen",
+    "error_snippet": "Test Failed: '(view has effective visibility <VISIBLE> and view.getGlobalVisibleRect() covers at least <50> percent of the view's area)' doesn't match the selected view. Expected: (view has effective visibility <VISIBLE> and view.getGlobalVisibleRect() covers at least <50> percent of the view's area) Got: was null at waitForElementToBeVisible (/home/runner/work/mattermost-mobile/mattermost-mobile/detox/e2e/support/utils/index.ts:255:45) at SavedMessagesScreen.openPostOptionsFor (/home/runner/wor",
+    "screenshots": [],
+    "junit": ".e2e-debug/28375328964-full/android-results-6ynhyfgm5t-16/android-junit.xml"
+  },
+  {
+    "mm_t": "MM-T4910_4",
+    "shard": "6ynhyfgm5t-16",
+    "classname": "Search - Saved Messages MM-T4910_4 - should be able to unsave a message from saved messages screen",
+    "error_snippet": "Test Failed: '(view has effective visibility <VISIBLE> and view.getGlobalVisibleRect() covers at least <50> percent of the view's area)' doesn't match the selected view. Expected: (view has effective visibility <VISIBLE> and view.getGlobalVisibleRect() covers at least <50> percent of the view's area) Got: was null at waitForElementToBeVisible (/home/runner/work/mattermost-mobile/mattermost-mobile/detox/e2e/support/utils/index.ts:255:45) at SavedMessagesScreen.openPostOptionsFor (/home/runner/wor",
+    "screenshots": [],
+    "junit": ".e2e-debug/28375328964-full/android-results-6ynhyfgm5t-16/android-junit.xml"
+  },
+  {
+    "mm_t": "MM-T4910_5",
+    "shard": "6ynhyfgm5t-16",
+    "classname": "Search - Saved Messages MM-T4910_5 - should be able to pin/unpin a saved message from saved messages screen",
+    "error_snippet": "Test Failed: '(view has effective visibility <VISIBLE> and view.getGlobalVisibleRect() covers at least <50> percent of the view's area)' doesn't match the selected view. Expected: (view has effective visibility <VISIBLE> and view.getGlobalVisibleRect() covers at least <50> percent of the view's area) Got: was null at waitForElementToBeVisible (/home/runner/work/mattermost-mobile/mattermost-mobile/detox/e2e/support/utils/index.ts:255:45) at SavedMessagesScreen.openPostOptionsFor (/home/runner/wor",
+    "screenshots": [],
+    "junit": ".e2e-debug/28375328964-full/android-results-6ynhyfgm5t-16/android-junit.xml"
+  },
+  {
+    "mm_t": "MM-T4918_5",
+    "shard": "6ynhyfgm5t-16",
+    "classname": "Search - Pinned Messages MM-T4918_5 - should be able to save/unsave a pinned message from pinned messages screen",
+    "error_snippet": "Test Failed: 10.0sec timeout expired without matching of given matcher: not not null at Object.<anonymous> (/home/runner/work/mattermost-mobile/mattermost-mobile/detox/e2e/test/products/channels/search/pinned_messages.e2e.ts:290:55)",
+    "screenshots": [],
+    "junit": ".e2e-debug/28375328964-full/android-results-6ynhyfgm5t-16/android-junit.xml"
+  },
+  {
+    "mm_t": "MM-T4944_1",
+    "shard": "6ynhyfgm5t-10",
+    "classname": "Channels - Unarchive Channel MM-T4944_1 - should be able to unarchive a public channel and confirm",
+    "error_snippet": "Error: thrown: \"Exceeded timeout of 300000 ms for a test. Add a timeout value to this test to increase the timeout, if this is a long-running test. See https://jestjs.io/docs/api#testname-fn-timeout.\" at /home/runner/work/mattermost-mobile/mattermost-mobile/detox/e2e/test/products/channels/channels/unarchive_channel.e2e.ts:51:5 at _dispatchDescribe (/home/runner/work/mattermost-mobile/mattermost-mobile/detox/node_modules/jest-circus/build/index.js:91:26) at describe (/home/runner/work/mattermost",
+    "screenshots": [],
+    "junit": ".e2e-debug/28375328964-full/android-results-6ynhyfgm5t-10/android-junit.xml"
+  },
+  {
+    "mm_t": "MM-T4944_2",
+    "shard": "6ynhyfgm5t-10",
+    "classname": "Channels - Unarchive Channel MM-T4944_2 - should be able to unarchive a private channel and confirm",
+    "error_snippet": "Error: thrown: \"Exceeded timeout of 300000 ms for a hook. Add a timeout value to this test to increase the timeout, if this is a long-running test. See https://jestjs.io/docs/api#testname-fn-timeout.\" at /home/runner/work/mattermost-mobile/mattermost-mobile/detox/e2e/test/products/channels/channels/unarchive_channel.e2e.ts:42:5 at _dispatchDescribe (/home/runner/work/mattermost-mobile/mattermost-mobile/detox/node_modules/jest-circus/build/index.js:91:26) at describe (/home/runner/work/mattermost",
+    "screenshots": [],
+    "junit": ".e2e-debug/28375328964-full/android-results-6ynhyfgm5t-10/android-junit.xml"
+  },
+  {
+    "mm_t": "MM-T5294_1",
+    "shard": "6ynhyfgm5t-17",
+    "classname": "Search - Search Messages MM-T5294_1 - should match elements on search messages screen",
+    "error_snippet": "Test Failed: 10.0sec timeout expired without matching of given matcher: not not null at SearchMessagesScreen.close (/home/runner/work/mattermost-mobile/mattermost-mobile/detox/e2e/support/ui/screen/search_messages.ts:117:64) at processTicksAndRejections (node:internal/process/task_queues:104:5) at Object.<anonymous> (/home/runner/work/mattermost-mobile/mattermost-mobile/detox/e2e/test/products/channels/search/search_messages.e2e.ts:83:9)",
+    "screenshots": [],
+    "junit": ".e2e-debug/28375328964-full/android-results-6ynhyfgm5t-17/android-junit.xml"
+  },
+  {
+    "mm_t": "MM-T5294_10",
+    "shard": "6ynhyfgm5t-16",
+    "classname": "Search - Search Message Post Actions MM-T5294_10 - should be able to edit, reply to, and delete a searched message from search results screen",
+    "error_snippet": "Test Failed: 10.0sec timeout expired without matching of given matcher: not not null at SearchMessagesScreen.close (/home/runner/work/mattermost-mobile/mattermost-mobile/detox/e2e/support/ui/screen/search_messages.ts:117:64) at processTicksAndRejections (node:internal/process/task_queues:104:5) at Object.<anonymous> (/home/runner/work/mattermost-mobile/mattermost-mobile/detox/e2e/test/products/channels/search/search_message_post_actions.e2e.ts:135:9)",
+    "screenshots": [],
+    "junit": ".e2e-debug/28375328964-full/android-results-6ynhyfgm5t-16/android-junit.xml"
+  },
+  {
+    "mm_t": "MM-T5294_11",
+    "shard": "6ynhyfgm5t-16",
+    "classname": "Search - Search Message Post Actions MM-T5294_11 - should be able to save/unsave a searched message from search results screen",
+    "error_snippet": "Test Failed: 10.0sec timeout expired without matching of given matcher: not not null at Object.<anonymous> (/home/runner/work/mattermost-mobile/mattermost-mobile/detox/e2e/test/products/channels/search/search_message_post_actions.e2e.ts:174:55) at processTicksAndRejections (node:internal/process/task_queues:104:5)",
+    "screenshots": [],
+    "junit": ".e2e-debug/28375328964-full/android-results-6ynhyfgm5t-16/android-junit.xml"
+  },
+  {
+    "mm_t": "MM-T5294_12",
+    "shard": "6ynhyfgm5t-16",
+    "classname": "Search - Search Message Post Actions MM-T5294_12 - should be able to pin/unpin a searched message from search results screen",
+    "error_snippet": "Test Failed: 10.0sec timeout expired without matching of given matcher: not not null at SearchMessagesScreen.close (/home/runner/work/mattermost-mobile/mattermost-mobile/detox/e2e/support/ui/screen/search_messages.ts:117:64) at processTicksAndRejections (node:internal/process/task_queues:104:5) at Object.<anonymous> (/home/runner/work/mattermost-mobile/mattermost-mobile/detox/e2e/test/products/channels/search/search_message_post_actions.e2e.ts:235:9)",
+    "screenshots": [],
+    "junit": ".e2e-debug/28375328964-full/android-results-6ynhyfgm5t-16/android-junit.xml"
+  },
+  {
+    "mm_t": "MM-T5294_2",
+    "shard": "6ynhyfgm5t-17",
+    "classname": "Search - Search Messages MM-T5294_2 - should be able to search messages from a specific user",
+    "error_snippet": "Test Failed: '(view.getTag() is \"search.recent_item.from: userfe1826\" and view has effective visibility <VISIBLE>)' matches 2 views in the hierarchy: - [1] ReactViewGroup{id=1910, visibility=VISIBLE, width=1314, height=169, has-focus=false, has-focusable=false, has-window-focus=true, is-clickable=false, is-enabled=true, is-focused=false, is-focusable=false, is-layout-requested=false, is-selected=false, layout-params=android.view.ViewGroup$LayoutParams@YYYYYY, tag=search.recent_item.from: userfe1",
+    "screenshots": [],
+    "junit": ".e2e-debug/28375328964-full/android-results-6ynhyfgm5t-17/android-junit.xml"
+  },
+  {
+    "mm_t": "MM-T5294_3",
+    "shard": "6ynhyfgm5t-17",
+    "classname": "Search - Search Messages MM-T5294_3 - should be able to search messages in a specific channel",
+    "error_snippet": "Test Failed: '(view.getTag() is \"search.recent_item.channel: channel-3a5380\" and view has effective visibility <VISIBLE>)' matches 2 views in the hierarchy: - [1] ReactViewGroup{id=3202, visibility=VISIBLE, width=1314, height=169, has-focus=false, has-focusable=false, has-window-focus=true, is-clickable=false, is-enabled=true, is-focused=false, is-focusable=false, is-layout-requested=false, is-selected=false, layout-params=android.view.ViewGroup$LayoutParams@YYYYYY, tag=search.recent_item.channe",
+    "screenshots": [],
+    "junit": ".e2e-debug/28375328964-full/android-results-6ynhyfgm5t-17/android-junit.xml"
+  },
+  {
+    "mm_t": "MM-T5294_4",
+    "shard": "6ynhyfgm5t-17",
+    "classname": "Search - Search Messages MM-T5294_4 - should be able to search messages excluding search terms",
+    "error_snippet": "Test Failed: 10.0sec timeout expired without matching of given matcher: not not null at SearchMessagesScreen.close (/home/runner/work/mattermost-mobile/mattermost-mobile/detox/e2e/support/ui/screen/search_messages.ts:117:64) at processTicksAndRejections (node:internal/process/task_queues:104:5) at Object.<anonymous> (/home/runner/work/mattermost-mobile/mattermost-mobile/detox/e2e/test/products/channels/search/search_messages.e2e.ts:184:9)",
+    "screenshots": [],
+    "junit": ".e2e-debug/28375328964-full/android-results-6ynhyfgm5t-17/android-junit.xml"
+  },
+  {
+    "mm_t": "MM-T5294_5",
+    "shard": "6ynhyfgm5t-17",
+    "classname": "Search - Search Messages MM-T5294_5 - should be able to search messages with phrases",
+    "error_snippet": "Test Failed: 10.0sec timeout expired without matching of given matcher: not not null at SearchMessagesScreen.close (/home/runner/work/mattermost-mobile/mattermost-mobile/detox/e2e/support/ui/screen/search_messages.ts:117:64) at processTicksAndRejections (node:internal/process/task_queues:104:5) at Object.<anonymous> (/home/runner/work/mattermost-mobile/mattermost-mobile/detox/e2e/test/products/channels/search/search_messages.e2e.ts:232:9)",
+    "screenshots": [],
+    "junit": ".e2e-debug/28375328964-full/android-results-6ynhyfgm5t-17/android-junit.xml"
+  },
+  {
+    "mm_t": "MM-T5294_6",
+    "shard": "6ynhyfgm5t-17",
+    "classname": "Search - Search Messages MM-T5294_6 - should be able to search messages using combination of modifiers",
+    "error_snippet": "Test Failed: 10.0sec timeout expired without matching of given matcher: not not null at SearchMessagesScreen.close (/home/runner/work/mattermost-mobile/mattermost-mobile/detox/e2e/support/ui/screen/search_messages.ts:117:64) at processTicksAndRejections (node:internal/process/task_queues:104:5) at Object.<anonymous> (/home/runner/work/mattermost-mobile/mattermost-mobile/detox/e2e/test/products/channels/search/search_messages.e2e.ts:260:9)",
+    "screenshots": [],
+    "junit": ".e2e-debug/28375328964-full/android-results-6ynhyfgm5t-17/android-junit.xml"
+  },
+  {
+    "mm_t": "MM-T5294_7",
+    "shard": "6ynhyfgm5t-17",
+    "classname": "Search - Search Messages MM-T5294_7 - should be able to search messages using recent searches",
+    "error_snippet": "Test Failed: 10.0sec timeout expired without matching of given matcher: not not null at SearchMessagesScreen.close (/home/runner/work/mattermost-mobile/mattermost-mobile/detox/e2e/support/ui/screen/search_messages.ts:117:64) at processTicksAndRejections (node:internal/process/task_queues:104:5) at Object.<anonymous> (/home/runner/work/mattermost-mobile/mattermost-mobile/detox/e2e/test/products/channels/search/search_messages.e2e.ts:297:9)",
+    "screenshots": [],
+    "junit": ".e2e-debug/28375328964-full/android-results-6ynhyfgm5t-17/android-junit.xml"
+  },
+  {
+    "mm_t": "MM-T5294_8",
+    "shard": "6ynhyfgm5t-17",
+    "classname": "Search - Search Messages MM-T5294_8 - should be able to search messages on a another joined team",
+    "error_snippet": "Test Failed: 10.0sec timeout expired without matching of given matcher: not not null at SearchMessagesScreen.close (/home/runner/work/mattermost-mobile/mattermost-mobile/detox/e2e/support/ui/screen/search_messages.ts:117:64) at processTicksAndRejections (node:internal/process/task_queues:104:5) at Object.<anonymous> (/home/runner/work/mattermost-mobile/mattermost-mobile/detox/e2e/test/products/channels/search/search_messages.e2e.ts:352:9)",
+    "screenshots": [],
+    "junit": ".e2e-debug/28375328964-full/android-results-6ynhyfgm5t-17/android-junit.xml"
+  },
+  {
+    "mm_t": "MM-T5294_9",
+    "shard": "6ynhyfgm5t-17",
+    "classname": "Search - Search Messages MM-T5294_9 - should show empty search results screen when search result is empty",
+    "error_snippet": "Test Failed: 10.0sec timeout expired without matching of given matcher: not not null at SearchMessagesScreen.close (/home/runner/work/mattermost-mobile/mattermost-mobile/detox/e2e/support/ui/screen/search_messages.ts:117:64) at processTicksAndRejections (node:internal/process/task_queues:104:5) at Object.<anonymous> (/home/runner/work/mattermost-mobile/mattermost-mobile/detox/e2e/test/products/channels/search/search_messages.e2e.ts:380:9)",
+    "screenshots": [],
+    "junit": ".e2e-debug/28375328964-full/android-results-6ynhyfgm5t-17/android-junit.xml"
+  },
+  {
+    "mm_t": "MM-T5602_1",
+    "shard": "6ynhyfgm5t-8",
+    "classname": "Channels - Channel Bookmarks MM-T5602_1 - should be able to add a bookmark link via channel info",
+    "error_snippet": "Test Failed: 'not not null' doesn't match the selected view. Expected: not not null Got: was <com.th3rdwave.safeareacontext.SafeAreaView{eaf9228 V.E...... ........ 0,0-1440,2760 #c80}> View Details: SafeAreaView{id=3200, visibility=VISIBLE, width=1440, height=2760, has-focus=false, has-focusable=true, has-window-focus=true, is-clickable=false, is-enabled=true, is-focused=false, is-focusable=false, is-layout-requested=false, is-selected=false, layout-params=android.view.ViewGroup$LayoutParams@YYY",
+    "screenshots": [],
+    "junit": ".e2e-debug/28375328964-full/android-results-6ynhyfgm5t-8/android-junit.xml"
+  },
+  {
+    "mm_t": "MM-T5604_1",
+    "shard": "6ynhyfgm5t-8",
+    "classname": "Channels - Channel Bookmarks MM-T5604_1 - should auto-populate title from page when adding a bookmark link",
+    "error_snippet": "Test Failed: No views in hierarchy found matching: (an instance of android.widget.TextView and view.getText() with or without transformation to match: is \"Add a link\" and view has effective visibility <VISIBLE>) HINT: To print view hierarchy on failed actions/matches, use log-level verbose or higher. at Object.<anonymous> (/home/runner/work/mattermost-mobile/mattermost-mobile/detox/e2e/test/products/channels/channels/channel_bookmarks.e2e.ts:412:52) at processTicksAndRejections (node:internal/pr",
+    "screenshots": [],
+    "junit": ".e2e-debug/28375328964-full/android-results-6ynhyfgm5t-8/android-junit.xml"
+  },
+  {
+    "mm_t": "MM-T5606_1",
+    "shard": "6ynhyfgm5t-8",
+    "classname": "Channels - Channel Bookmarks MM-T5606_1 - should be able to change the icon/emoji of a bookmark",
+    "error_snippet": "Test Failed: 10.0sec timeout expired without matching of given matcher: not null at EmojiPickerScreen.toBeVisible (/home/runner/work/mattermost-mobile/mattermost-mobile/detox/e2e/support/ui/screen/emoji_picker.ts:34:51) at processTicksAndRejections (node:internal/process/task_queues:104:5) at Object.<anonymous> (/home/runner/work/mattermost-mobile/mattermost-mobile/detox/e2e/test/products/channels/channels/channel_bookmarks.e2e.ts:527:9)",
+    "screenshots": [],
+    "junit": ".e2e-debug/28375328964-full/android-results-6ynhyfgm5t-8/android-junit.xml"
+  },
+  {
+    "mm_t": "MM-T5608_1",
+    "shard": "6ynhyfgm5t-8",
+    "classname": "Channels - Channel Bookmarks MM-T5608_1 - should show error when adding a bookmark with an invalid URL",
+    "error_snippet": "Test Failed: '(view has effective visibility <VISIBLE> and view.getGlobalVisibleRect() covers at least <50> percent of the view's area)' doesn't match the selected view. Expected: (view has effective visibility <VISIBLE> and view.getGlobalVisibleRect() covers at least <50> percent of the view's area) Got: was null at Object.<anonymous> (/home/runner/work/mattermost-mobile/mattermost-mobile/detox/e2e/test/products/channels/channels/channel_bookmarks.e2e.ts:311:60) at processTicksAndRejections (no",
+    "screenshots": [],
+    "junit": ".e2e-debug/28375328964-full/android-results-6ynhyfgm5t-8/android-junit.xml"
+  },
+  {
+    "mm_t": "MM-T5612_1",
+    "shard": "6ynhyfgm5t-8",
+    "classname": "Channels - Channel Bookmarks MM-T5612_1 - should show scroll indicator when bookmarks exceed visible limit",
+    "error_snippet": "Error: thrown: \"Exceeded timeout of 300000 ms for a test. Add a timeout value to this test to increase the timeout, if this is a long-running test. See https://jestjs.io/docs/api#testname-fn-timeout.\" at /home/runner/work/mattermost-mobile/mattermost-mobile/detox/e2e/test/products/channels/channels/channel_bookmarks.e2e.ts:648:5 at _dispatchDescribe (/home/runner/work/mattermost-mobile/mattermost-mobile/detox/node_modules/jest-circus/build/index.js:91:26) at describe (/home/runner/work/mattermos",
+    "screenshots": [],
+    "junit": ".e2e-debug/28375328964-full/android-results-6ynhyfgm5t-8/android-junit.xml"
+  },
+  {
+    "mm_t": "MM-T5725_1",
+    "shard": "6ynhyfgm5t-8",
+    "classname": "Channels - Channel Bookmarks Permissions MM-T5725_1 - should not be able to add, edit, or delete bookmarks in an archived channel",
+    "error_snippet": "Test Failed: 10.0sec timeout expired without matching of given matcher: (view has effective visibility <VISIBLE> and view.getGlobalVisibleRect() covers at least <50> percent of the view's area) at Object.<anonymous> (/home/runner/work/mattermost-mobile/mattermost-mobile/detox/e2e/test/products/channels/channels/channel_bookmarks_permissions.e2e.ts:208:13) at processTicksAndRejections (node:internal/process/task_queues:104:5)",
+    "screenshots": [],
+    "junit": ".e2e-debug/28375328964-full/android-results-6ynhyfgm5t-8/android-junit.xml"
+  }
+]

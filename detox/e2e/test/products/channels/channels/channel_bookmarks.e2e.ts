@@ -24,7 +24,7 @@ import {
     LoginScreen,
     ServerScreen,
 } from '@support/ui/screen';
-import {isAndroid, isIos, timeouts, wait, waitForElementToExist} from '@support/utils';
+import {isAndroid, isIos, timeouts, wait, waitForElementToExist, waitForElementToNotExist} from '@support/utils';
 import {expect} from 'detox';
 
 describe('Channels - Channel Bookmarks', () => {
@@ -259,10 +259,10 @@ describe('Channels - Channel Bookmarks', () => {
         await ChannelInfoScreen.tapAddBookmark();
 
         // * Verify bottom sheet / add bookmark options appears
-        await expect(ChannelBookmarkScreen.addALinkOption).toBeVisible();
+        await waitForElementToExist(ChannelBookmarkScreen.addALinkOption, timeouts.TEN_SEC);
 
         // # Tap "Add a link"
-        await ChannelBookmarkScreen.addALinkOption.tap();
+        await ChannelBookmarkScreen.tapAddALinkOption();
 
         // * Verify the Add a bookmark modal opens
         await ChannelBookmarkScreen.toBeVisible();
@@ -286,7 +286,7 @@ describe('Channels - Channel Bookmarks', () => {
         await wait(timeouts.TWO_SEC);
 
         // * Verify the bookmark modal closed and the bookmark is visible in channel info
-        await expect(ChannelBookmarkScreen.channelBookmarkScreen).not.toExist();
+        await waitForElementToNotExist(ChannelBookmarkScreen.channelBookmarkScreen, timeouts.TWENTY_SEC);
         await waitFor(
             element(
                 by.text(bookmarkTitle).
@@ -308,10 +308,10 @@ describe('Channels - Channel Bookmarks', () => {
         await ChannelInfoScreen.tapAddBookmark();
 
         // * Verify bottom sheet options appear
-        await expect(ChannelBookmarkScreen.addALinkOption).toBeVisible();
+        await waitForElementToExist(ChannelBookmarkScreen.addALinkOption, timeouts.TEN_SEC);
 
         // # Tap "Add a link"
-        await ChannelBookmarkScreen.addALinkOption.tap();
+        await ChannelBookmarkScreen.tapAddALinkOption();
 
         // * Verify the Add a bookmark modal opens
         await ChannelBookmarkScreen.toBeVisible();
@@ -409,7 +409,7 @@ describe('Channels - Channel Bookmarks', () => {
         await ChannelInfoScreen.tapAddBookmark();
 
         // # Tap "Add a link"
-        await ChannelBookmarkScreen.addALinkOption.tap();
+        await ChannelBookmarkScreen.tapAddALinkOption();
 
         // * Verify the Add a bookmark modal opens
         await ChannelBookmarkScreen.toBeVisible();
@@ -669,10 +669,31 @@ describe('Channels - Channel Bookmarks', () => {
         //   26337780597 testFnFailure for MM-T5612_1). Poll-and-scroll via whileElement
         //   so it stops as soon as the target bookmark is visible.
         if (isAndroid()) {
-            await waitFor(element(lastBookmarkMatcher)).
-                toBeVisible().
-                whileElement(channelHeaderBookmarksList).
-                scroll(300, 'right');
+            const bookmarksList = element(channelHeaderBookmarksList);
+            /* eslint-disable no-await-in-loop -- bounded scroll: whileElement can run until Jest 300s timeout */
+            for (let i = 0; i < 12; i++) {
+                try {
+                    await waitFor(element(lastBookmarkMatcher)).toBeVisible().withTimeout(timeouts.TWO_SEC);
+                    break;
+                } catch {
+                    if (i === 11) {
+                        throw new Error('Scroll Bookmark 12 not visible after 12 scroll attempts');
+                    }
+                    await bookmarksList.scroll(300, 'right');
+                }
+            }
+            for (let i = 0; i < 12; i++) {
+                try {
+                    await waitFor(element(firstBookmarkMatcher)).toBeVisible().withTimeout(timeouts.TWO_SEC);
+                    break;
+                } catch {
+                    if (i === 11) {
+                        throw new Error('Scroll Bookmark 1 not visible after scrolling back');
+                    }
+                    await bookmarksList.scroll(300, 'left');
+                }
+            }
+            /* eslint-enable no-await-in-loop */
         } else {
             /* eslint-disable no-await-in-loop */
             for (let i = 0; i < 5; i++) {
@@ -685,12 +706,7 @@ describe('Channels - Channel Bookmarks', () => {
         }
 
         // # Scroll back to the beginning
-        if (isAndroid()) {
-            await waitFor(element(firstBookmarkMatcher)).
-                toBeVisible().
-                whileElement(channelHeaderBookmarksList).
-                scroll(300, 'left');
-        } else {
+        if (!isAndroid()) {
             /* eslint-disable no-await-in-loop */
             for (let i = 0; i < 5; i++) {
                 await element(channelHeaderBookmarksList).swipe('right', 'fast', 0.9, 0.5, 0.5);

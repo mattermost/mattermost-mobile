@@ -1,8 +1,8 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {safeEnableSynchronization, timeouts, waitForElementToExist} from '@support/utils';
-import {expect, waitFor} from 'detox';
+import {safeEnableSynchronization, timeouts, waitForElementToExist, waitForElementToNotExist} from '@support/utils';
+import {waitFor} from 'detox';
 
 class ChannelBookmarkScreen {
     testID = {
@@ -34,6 +34,11 @@ class ChannelBookmarkScreen {
     // Add bookmark bottom sheet options (by text)
     addALinkOption = element(by.text('Add a link'));
     attachAFileOption = element(by.text('Attach a file'));
+
+    tapAddALinkOption = async () => {
+        await waitForElementToExist(this.addALinkOption, timeouts.TEN_SEC);
+        await this.addALinkOption.tap();
+    };
 
     // Edit options (long press on bookmark)
     editOption = element(by.text('Edit'));
@@ -116,7 +121,7 @@ class ChannelBookmarkScreen {
     close = async () => {
         await waitFor(this.closeButton).toBeVisible().withTimeout(timeouts.TEN_SEC);
         await this.closeButton.tap();
-        await expect(this.channelBookmarkScreen).not.toBeVisible();
+        await waitForElementToNotExist(this.channelBookmarkScreen, timeouts.TWENTY_SEC);
     };
 }
 

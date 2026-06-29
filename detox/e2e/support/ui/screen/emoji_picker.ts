@@ -3,7 +3,7 @@
 
 import {SearchBar} from '@support/ui/component';
 import {PostOptionsScreen} from '@support/ui/screen';
-import {isIos, timeouts, wait} from '@support/utils';
+import {isAndroid, isIos, timeouts, wait, waitForElementToBeVisible, waitForElementToExist} from '@support/utils';
 
 class EmojiPickerScreen {
     testID = {
@@ -31,8 +31,13 @@ class EmojiPickerScreen {
             // Skin-tone tooltip may not appear on every open.
         }
 
-        await waitFor(this.searchInput).toExist().withTimeout(timeouts.TEN_SEC);
-        await waitFor(this.searchInput).toBeVisible().withTimeout(timeouts.TEN_SEC);
+        const inputTimeout = isAndroid() ? timeouts.TWENTY_SEC : timeouts.TEN_SEC;
+        await waitForElementToExist(this.searchInput, inputTimeout);
+        if (isAndroid()) {
+            await waitForElementToBeVisible(this.searchInput, inputTimeout);
+        } else {
+            await waitFor(this.searchInput).toBeVisible().withTimeout(inputTimeout);
+        }
 
         return this.searchInput;
     };
@@ -75,8 +80,13 @@ class EmojiPickerScreen {
 
     tapSearchResultEmoji = async (glyph: string) => {
         const emojiInPicker = element(by.text(glyph).withAncestor(by.id(this.testID.emojiPickerScreen)));
-        await waitFor(emojiInPicker.atIndex(0)).toBeVisible().withTimeout(timeouts.TEN_SEC);
-        await emojiInPicker.atIndex(0).tap();
+        const emoji = emojiInPicker.atIndex(0);
+        if (isAndroid()) {
+            await waitForElementToBeVisible(emoji, timeouts.TWENTY_SEC);
+        } else {
+            await waitFor(emoji).toBeVisible().withTimeout(timeouts.TEN_SEC);
+        }
+        await emoji.tap();
     };
 }
 

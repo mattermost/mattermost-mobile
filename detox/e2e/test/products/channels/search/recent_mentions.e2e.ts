@@ -33,7 +33,7 @@ import {
     ServerScreen,
     ThreadScreen,
 } from '@support/ui/screen';
-import {getRandomId, timeouts, wait, waitForElementToBeVisible} from '@support/utils';
+import {getRandomId, timeouts, wait, waitForElementToBeVisible, waitForElementToNotExist} from '@support/utils';
 import {by, element, expect, waitFor} from 'detox';
 
 describe('Search - Recent Mentions', () => {
@@ -176,7 +176,7 @@ describe('Search - Recent Mentions', () => {
 
         // * Verify mention is no longer on saved messages screen.
         // Poll: unsave preference deletion propagates through the observable.
-        await waitFor(postListPostItem).not.toExist().withTimeout(timeouts.TEN_SEC);
+        await waitForElementToNotExist(postListPostItem, timeouts.TWENTY_SEC);
 
         // # Go back to channel list screen
         await SavedMessagesScreen.close();
@@ -214,7 +214,7 @@ describe('Search - Recent Mentions', () => {
         await ChannelScreen.open(channelsCategory, testChannel.name);
         await ChannelInfoScreen.open();
         await PinnedMessagesScreen.open();
-        await waitFor(postListPostItem).not.toExist().withTimeout(timeouts.TEN_SEC);
+        await waitForElementToNotExist(postListPostItem, timeouts.TWENTY_SEC);
 
         // # Go back to channel list screen
         await PinnedMessagesScreen.back();

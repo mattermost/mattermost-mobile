@@ -28,7 +28,7 @@ import {
     ThreadScreen,
     ChannelInfoScreen,
 } from '@support/ui/screen';
-import {getRandomId, isAndroid, timeouts, wait, waitForElementToBeVisible} from '@support/utils';
+import {getRandomId, isAndroid, timeouts, wait, waitForElementToBeVisible, waitForElementToNotExist} from '@support/utils';
 import {expect, waitFor} from 'detox';
 
 describe('Search - Pinned Messages', () => {
@@ -287,7 +287,7 @@ describe('Search - Pinned Messages', () => {
         // Poll: the unsave preference deletion propagates through the DB observable to
         // the saved messages list, which can take longer than a single-shot expect()
         // allows on slower devices.
-        await waitFor(postListPostItem).not.toExist().withTimeout(timeouts.TEN_SEC);
+        await waitForElementToNotExist(postListPostItem, timeouts.TWENTY_SEC);
 
         // # Go back to channel list screen
         await ChannelListScreen.open();

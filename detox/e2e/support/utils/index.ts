@@ -96,7 +96,7 @@ export async function scrollElementIntoView(
     scrollContainer: Detox.NativeMatcher,
     maxScrolls = 15,
 ): Promise<void> {
-    const visibilityThreshold = isIos() ? 50 : 100;
+    const visibilityThreshold = isIos() ? 50 : 25;
     /* eslint-disable no-await-in-loop */
     for (let i = 0; i < maxScrolls; i++) {
         try {

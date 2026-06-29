@@ -197,7 +197,7 @@ describe('Account - Settings - About', () => {
                 }
             }
             /* eslint-enable no-await-in-loop */
-            await expect(target).toExist();
+            await waitFor(target).toExist().withTimeout(timeouts.TEN_SEC);
         };
 
         // Nested Text testIDs (learnMoreUrl) are not exposed to Espresso on Android;

@@ -269,7 +269,7 @@ describe('Account - Custom Status', () => {
         await expect(CustomStatusScreen.customStatusScreen).not.toBeVisible();
 
         // * Verify status is set and visible in account screen
-        await AccountScreen.toBeVisible();
+        await AccountScreen.waitForCustomStatus(status);
         const {accountCustomStatusEmoji, accountCustomStatusText} =
             AccountScreen.getCustomStatus(status.emoji, status.duration);
 
@@ -450,7 +450,7 @@ describe('Account - Custom Status', () => {
         // * Verify status is set with expiry time
         // iOS-26 wrapper-View visibility quirk for the emoji (see MM-T3890 above);
         // text and expiry are plain <Text> nodes and use toBeVisible normally.
-        await AccountScreen.toBeVisible();
+        await AccountScreen.waitForCustomStatus(status);
         const {accountCustomStatusEmoji, accountCustomStatusText, accountCustomStatusExpiry} =
             AccountScreen.getCustomStatus(status.emoji, status.duration);
         await expect(accountCustomStatusEmoji).toExist();

@@ -27,7 +27,7 @@ import {
     ServerScreen,
     ThreadScreen,
 } from '@support/ui/screen';
-import {getRandomId, isAndroid, timeouts, wait} from '@support/utils';
+import {getRandomId, isAndroid, timeouts, wait, waitForElementToExist} from '@support/utils';
 import {expect, waitFor} from 'detox';
 
 describe('Smoke Test - Messaging', () => {
@@ -140,16 +140,14 @@ describe('Smoke Test - Messaging', () => {
         await ChannelScreen.open(channelsCategory, testChannel.name);
         await ChannelScreen.postMessage(message);
 
-        // * Verify message is posted with emojis (wait for UI before API poll)
+        // * Verify message is posted with emojis (wait for post row by id — emoji text nodes can lag)
         const resolvedMessage = 'The quick brown fox 🦊 jumps over the lazy dog 🐶';
-        await waitFor(element(by.text(resolvedMessage).withAncestor(by.id('post_list')))).
-            toExist().
-            withTimeout(timeouts.TEN_SEC);
         const {post} = await Post.apiGetLastPostInChannel(siteOneUrl, testChannel.id);
         if (!post?.id) {
             throw new Error('MM-T4786_3: expected post after emoji message');
         }
         const {postListPostItem} = ChannelScreen.getPostListPostItem(post.id, resolvedMessage);
+        await waitForElementToExist(postListPostItem, timeouts.TWENTY_SEC);
         await expect(postListPostItem).toBeVisible();
 
         // # Open post options for message, open emoji picker screen, and add a reaction

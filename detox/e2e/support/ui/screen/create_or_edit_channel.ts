@@ -7,7 +7,7 @@ import {
     ChannelListScreen,
     ChannelSettingsScreen,
 } from '@support/ui/screen';
-import {isIos, tapNativeBackButton, timeouts, wait} from '@support/utils';
+import {isIos, tapNativeBackButton, timeouts, wait, waitForElementToNotExist} from '@support/utils';
 import {expect, waitFor} from 'detox';
 
 class CreateOrEditChannelScreen {
@@ -115,7 +115,7 @@ class CreateOrEditChannelScreen {
 
     save = async () => {
         await this.saveButton.tap();
-        await waitFor(this.createOrEditChannelScreen).not.toExist().withTimeout(timeouts.TWENTY_SEC);
+        await waitForElementToNotExist(this.createOrEditChannelScreen, timeouts.HALF_MIN);
     };
 
     toggleMakePrivateOn = async () => {
