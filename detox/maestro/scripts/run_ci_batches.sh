@@ -62,11 +62,14 @@ EXPECTED_TIMEZONE_REGION="${EXPECTED_TIMEZONE_REGION:-$(timezone_region_from_ian
 EXCLUDE_TAGS_FILE="$REPO_ROOT/detox/maestro/config/exclude_tags.json"
 load_exclude_tags() {
   # Reads detox/maestro/config/exclude_tags.json and emits a comma-joined list
-  # from the "default" key. Returns empty string if the file or key is missing.
+  # merging the "default" key with the platform-specific key (ios|android).
+  # Returns empty string if the file is missing.
   [[ -f "$EXCLUDE_TAGS_FILE" ]] || { echo ""; return 0; }
-  node -e "
+  PLATFORM="$PLATFORM" node -e "
 const cfg = require('$EXCLUDE_TAGS_FILE');
-process.stdout.write((cfg.default || []).join(','));
+const platform = process.env.PLATFORM || '';
+const tags = [...(cfg.default || []), ...(cfg[platform] || [])];
+process.stdout.write(tags.join(','));
 "
 }
 

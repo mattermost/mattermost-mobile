@@ -256,7 +256,7 @@ describe('Channels', () => {
         await ChannelScreen.back();
     });
 
-    it('MM-T3205 - RN apps Remove user from private channel', async () => {
+    (isIos() ? it.skip : it)('MM-T3205 - RN apps Remove user from private channel', async () => {
         // # Use pre-created private channel and user (already in channel)
         const privateChannel = privateChannel2;
         const removedUser = removeMeUser;

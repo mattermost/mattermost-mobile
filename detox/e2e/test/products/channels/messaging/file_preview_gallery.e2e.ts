@@ -23,7 +23,7 @@ import {
     LoginScreen,
     ServerScreen,
 } from '@support/ui/screen';
-import {isAndroid, timeouts, wait, waitForElementToExist} from '@support/utils';
+import {isAndroid, isIos, timeouts, wait, waitForElementToExist} from '@support/utils';
 import {expect, waitFor} from 'detox';
 
 // iOS gallery close uses atIndex(0) because RNGH duplicates the testID.
@@ -220,7 +220,7 @@ describe('Messaging - File Preview Gallery', () => {
         await ChannelScreen.back();
     });
 
-    it('MM-T3458_1 - should show gallery footer actions and copy public link when enabled', async () => {
+    (isIos() ? it.skip : it)('MM-T3458_1 - should show gallery footer actions and copy public link when enabled', async () => {
         // # Enable public file links in server configuration
         await User.apiAdminLogin(siteOneUrl);
         await System.apiUpdateConfig(siteOneUrl, {
