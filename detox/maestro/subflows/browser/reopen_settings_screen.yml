@@ -1,0 +1,32 @@
+# Sub-flow: return to Settings list from an unknown screen (browser hand-off recovery).
+# Usage: - runFlow: ../../subflows/browser/reopen_settings_screen.yml
+appId: ${MAESTRO_APP_ID}
+---
+- runFlow:
+    when:
+      platform: iOS
+    commands:
+      - launchApp:
+          stopApp: true
+          clearState: false
+- runFlow:
+    when:
+      platform: Android
+    commands:
+      - launchApp:
+          stopApp: false
+          clearState: false
+- waitForAnimationToEnd:
+    timeout: 30000
+- extendedWaitUntil:
+    visible:
+      id: "tab_bar.home.tab"
+    timeout: 30000
+- tapOn:
+    id: "tab_bar.account.tab"
+- extendedWaitUntil:
+    visible:
+      id: "account.settings.option"
+    timeout: 10000
+- tapOn:
+    id: "account.settings.option"
