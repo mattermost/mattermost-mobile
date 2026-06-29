@@ -81,6 +81,16 @@ describe('Channels - Archive Channel from Settings', () => {
         // block all Detox interactions until dismissed.
         await Alert.dismissChannelRemoveOrArchiveAlert();
 
+        // Close Browse Channels if a prior test timed out mid-navigation — an open
+        // modal blocks ChannelListScreen.toBeVisible() and causes 300s hook timeouts.
+        try {
+            await waitFor(BrowseChannelsScreen.browseChannelsScreen).toExist().withTimeout(timeouts.TWO_SEC);
+            await BrowseChannelsScreen.close();
+            await wait(timeouts.ONE_SEC);
+        } catch {
+            // Browse Channels is not open
+        }
+
         // * Verify on channel list screen
         await ChannelListScreen.toBeVisible();
     });
@@ -214,7 +224,7 @@ describe('Channels - Archive Channel from Settings', () => {
         await BrowseChannelsScreen.open();
 
         // * Verify the channel dropdown is visible
-        await expect(BrowseChannelsScreen.channelDropdown).toBeVisible();
+        await waitForElementToBeVisible(BrowseChannelsScreen.channelDropdown, timeouts.TEN_SEC);
 
         // # Tap on the channel dropdown to open it
         await ChannelDropdownMenuScreen.open();

@@ -124,7 +124,7 @@ export async function scrollElementIntoView(
         }
     }
     /* eslint-enable no-await-in-loop */
-    await waitFor(target).toBeVisible(visibilityThreshold).withTimeout(timeouts.FIVE_SEC);
+    await waitForElementToBeVisible(target, timeouts.FIVE_SEC, timeouts.HALF_SEC, visibilityThreshold);
 }
 
 const isIosHittableError = (error: unknown) => {

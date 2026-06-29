@@ -7,7 +7,7 @@ import {
     ChannelListScreen,
     ChannelSettingsScreen,
 } from '@support/ui/screen';
-import {isIos, tapNativeBackButton, timeouts, wait, waitForElementToNotExist} from '@support/utils';
+import {isIos, tapNativeBackButton, timeouts, waitForElementToBeVisible, waitForElementToNotExist} from '@support/utils';
 import {expect, waitFor} from 'detox';
 
 class CreateOrEditChannelScreen {
@@ -59,25 +59,8 @@ class CreateOrEditChannelScreen {
             }
         }
 
-        await waitFor(ChannelListScreen.headerPlusButton).toBeVisible().withTimeout(timeouts.HALF_MIN);
-        let tapError: unknown;
-        /* eslint-disable no-await-in-loop -- sequential retry: each tap must complete before retrying */
-        for (let i = 0; i < 3; i++) {
-            try {
-                await ChannelListScreen.headerPlusButton.tap();
-                tapError = undefined;
-                break;
-            } catch (err) {
-                tapError = err;
-                await wait(timeouts.ONE_SEC);
-            }
-        }
-        /* eslint-enable no-await-in-loop */
-        if (tapError) {
-            throw tapError;
-        }
-        await wait(timeouts.ONE_SEC);
-        await waitFor(ChannelListScreen.createNewChannelItem).toBeVisible().withTimeout(timeouts.TEN_SEC);
+        await ChannelListScreen.openPlusMenu();
+        await waitForElementToBeVisible(ChannelListScreen.createNewChannelItem, timeouts.TEN_SEC);
         await ChannelListScreen.createNewChannelItem.tap();
 
         return this.toBeVisible();

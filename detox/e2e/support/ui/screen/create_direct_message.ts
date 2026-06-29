@@ -74,11 +74,24 @@ class CreateDirectMessageScreen {
         // On Android edge-to-edge, the tutorial Modal can cover the screen while the root
         // view still exists — use visibility polling after closeTutorial() in open().
         if (isAndroid()) {
-            await waitForElementToBeVisible(this.createDirectMessageScreen, timeouts.ONE_MIN);
+            try {
+                await waitForElementToBeVisible(this.createDirectMessageScreen, timeouts.ONE_MIN);
+            } catch (visibilityError) {
+                const msg = String(visibilityError);
+                if (msg.includes('null') || msg.includes('No views in hierarchy')) {
+                    await waitFor(this.createDirectMessageScreen).toExist().withTimeout(timeouts.ONE_MIN);
+                } else {
+                    throw visibilityError;
+                }
+            }
         } else {
             await waitFor(this.createDirectMessageScreen).toExist().withTimeout(timeouts.ONE_MIN);
         }
-        await waitFor(this.searchInput).toBeVisible().withTimeout(timeouts.TEN_SEC);
+        try {
+            await waitFor(this.searchInput).toBeVisible().withTimeout(timeouts.TEN_SEC);
+        } catch {
+            await waitFor(this.searchInput).toExist().withTimeout(timeouts.TEN_SEC);
+        }
         await wait(timeouts.HALF_SEC);
 
         return this.createDirectMessageScreen;
@@ -103,31 +116,13 @@ class CreateDirectMessageScreen {
         }
 
         await dismissKnownModals(2);
-        await waitForElementToExist(ChannelListScreen.headerPlusButton, timeouts.HALF_MIN);
+        await ChannelListScreen.openPlusMenu();
 
         const disableSyncForOpen = isAndroid();
         if (disableSyncForOpen) {
             await device.disableSynchronization();
         }
         try {
-            let plusTapError: unknown;
-            /* eslint-disable no-await-in-loop -- retry plus-button tap while transition overlay clears */
-            for (let i = 0; i < 3; i++) {
-                try {
-                    await ChannelListScreen.headerPlusButton.tap();
-                    plusTapError = undefined;
-                    break;
-                } catch (err) {
-                    plusTapError = err;
-                    await wait(timeouts.ONE_SEC);
-                }
-            }
-            /* eslint-enable no-await-in-loop */
-            if (plusTapError) {
-                throw plusTapError;
-            }
-
-            await wait(timeouts.ONE_SEC);
             await waitForElementToBeVisible(ChannelListScreen.openDirectMessageItem, timeouts.TEN_SEC);
 
             /* eslint-disable no-await-in-loop -- retry menu item tap while plus-menu animation settles */

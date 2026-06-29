@@ -2,7 +2,7 @@
 // See LICENSE.txt for license information.
 
 import {ChannelListScreen} from '@support/ui/screen';
-import {isAndroid, safeEnableSynchronization, timeouts, wait} from '@support/utils';
+import {isAndroid, safeEnableSynchronization, timeouts} from '@support/utils';
 import {expect, waitFor} from 'detox';
 
 class BrowseChannelsScreen {
@@ -63,33 +63,13 @@ class BrowseChannelsScreen {
         }
 
         // # Open browse channels screen from the channel list header plus button.
-        await waitFor(ChannelListScreen.headerPlusButton).toExist().withTimeout(timeouts.HALF_MIN);
+        await ChannelListScreen.openPlusMenu();
 
         const disableSyncForOpen = isAndroid();
         if (disableSyncForOpen) {
             await device.disableSynchronization();
         }
         try {
-            // On iOS, a UITransitionView (navigation animation overlay) can still be running
-            // when the element exists but is not yet hittable. Retry the tap up to 3 times
-            // with a short delay to let the transition complete.
-            let tapError: unknown;
-            /* eslint-disable no-await-in-loop -- sequential retry: each tap must complete before retrying */
-            for (let i = 0; i < 3; i++) {
-                try {
-                    await ChannelListScreen.headerPlusButton.tap();
-                    tapError = undefined;
-                    break;
-                } catch (err) {
-                    tapError = err;
-                    await wait(timeouts.ONE_SEC);
-                }
-            }
-            /* eslint-enable no-await-in-loop */
-            if (tapError) {
-                throw tapError;
-            }
-            await wait(timeouts.ONE_SEC);
             await ChannelListScreen.browseChannelsItem.tap();
         } finally {
             if (disableSyncForOpen) {

@@ -27,7 +27,7 @@ import {
     LoginScreen,
     ServerScreen,
 } from '@support/ui/screen';
-import {timeouts, expectVisible, wait} from '@support/utils';
+import {timeouts, expectVisible, wait, waitForElementToBeVisible} from '@support/utils';
 import {expect} from 'detox';
 
 describe('Channels - Channel List', () => {
@@ -138,8 +138,7 @@ describe('Channels - Channel List', () => {
 
     it('MM-T4728_4 - should be able to go to browse channels screen', async () => {
         // # Tap on plus menu button and tap on browse channels item
-        await ChannelListScreen.headerPlusButton.tap();
-        await wait(timeouts.ONE_SEC);
+        await ChannelListScreen.openPlusMenu();
         await ChannelListScreen.browseChannelsItem.tap();
 
         // * Verify on browse channels screen
@@ -163,8 +162,8 @@ describe('Channels - Channel List', () => {
 
     it('MM-T4728_6 - should be able to go to create channel screen', async () => {
         // # Tap on plus menu button and tap on create new channel item
-        await ChannelListScreen.headerPlusButton.tap();
-        await wait(timeouts.ONE_SEC);
+        await ChannelListScreen.openPlusMenu();
+        await waitForElementToBeVisible(ChannelListScreen.createNewChannelItem, timeouts.TEN_SEC);
         await ChannelListScreen.createNewChannelItem.tap();
 
         // * Verify on create channel screen

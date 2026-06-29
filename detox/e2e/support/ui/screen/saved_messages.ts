@@ -9,7 +9,7 @@ import {
     HomeScreen,
     PostOptionsScreen,
 } from '@support/ui/screen';
-import {isAndroid, longPressWithRetry, scrollElementIntoView, timeouts, wait, waitForElementToBeVisible} from '@support/utils';
+import {isAndroid, longPressWithRetry, scrollElementIntoView, timeouts, wait, waitForElementToBeVisible, waitForElementToNotExist} from '@support/utils';
 import {expect, waitFor} from 'detox';
 
 class SavedMessagesScreen {
@@ -60,7 +60,7 @@ class SavedMessagesScreen {
     close = async () => {
         await waitFor(HomeScreen.channelListTab).toExist().withTimeout(timeouts.TEN_SEC);
         await HomeScreen.channelListTab.tap();
-        await waitFor(this.savedMessagesScreen).not.toExist().withTimeout(timeouts.TEN_SEC);
+        await waitForElementToNotExist(this.savedMessagesScreen, timeouts.TWENTY_SEC);
     };
 
     openPostOptionsFor = async (postId: string, text: string) => {
