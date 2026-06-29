@@ -79,17 +79,35 @@ export const apiGetPostsInChannel = async (baseUrl: string, channelId: string): 
  * @param {string} channelId - The channel ID to get the last post
  * @return {Object} returns {post} on success or {error, status} on error
  */
-export const apiGetLastPostInChannel = async (baseUrl: string, channelId: string): Promise<any> => {
-    await wait(timeouts.TWO_SEC);
-    const response = await apiGetPostsInChannel(baseUrl, channelId);
-    if (response.error) {
-        return response;
+export const apiGetLastPostInChannel = async (
+    baseUrl: string,
+    channelId: string,
+    {maxAttempts = 6, intervalMs = timeouts.TWO_SEC} = {},
+): Promise<any> => {
+    /* eslint-disable no-await-in-loop -- poll until the post is indexed */
+    for (let attempt = 0; attempt < maxAttempts; attempt++) {
+        if (attempt > 0) {
+            await wait(intervalMs);
+        } else {
+            await wait(timeouts.TWO_SEC);
+        }
+
+        const response = await apiGetPostsInChannel(baseUrl, channelId);
+        if (response.error) {
+            if (attempt === maxAttempts - 1) {
+                return response;
+            }
+            continue;
+        }
+
+        const {posts} = response;
+        if (posts?.length) {
+            return {post: posts[0]};
+        }
     }
-    const {posts} = response;
-    if (!posts?.length) {
-        return {error: {message: `No posts found in channel ${channelId}`}};
-    }
-    return {post: posts[0]};
+    /* eslint-enable no-await-in-loop */
+
+    return {error: {message: `No posts found in channel ${channelId} after ${maxAttempts} attempts`}};
 };
 
 /**
@@ -147,6 +165,9 @@ export const apiUploadFileToChannel = async (baseUrl: string, channelId: string,
         return result;
     }
     const fileId = result.data?.file_infos?.[0]?.id;
+    if (!fileId) {
+        return {error: {message: 'Upload response missing file_infos[0].id'}};
+    }
     return {fileId};
 };
 

@@ -48,12 +48,23 @@ describe('Channels', () => {
     // Test-specific data
     let addMemberUser: any; // For MM-T3195
     let user2: any; // For MM-T856
+    let memberUser: any; // For MM-T3196
     let privateChannel1: any; // For MM-T3204
     let privUser: any; // For MM-T3204
     let privateChannel2: any; // For MM-T3205
     let removeMeUser: any; // For MM-T3205
     let gmUser1: any; // For MM-T878
     let gmUser2: any; // For MM-T878
+
+    const tapMembersOption = async () => {
+        try {
+            await ChannelInfoScreen.scrollView.scroll(200, 'down');
+        } catch {
+            // scrollView may not need scrolling
+        }
+        await waitFor(ChannelInfoScreen.membersOption).toBeVisible().withTimeout(timeouts.TEN_SEC);
+        await ChannelInfoScreen.membersOption.tap();
+    };
 
     beforeAll(async () => {
         // 1. Base setup (shared across all tests)
@@ -78,7 +89,16 @@ describe('Channels', () => {
         await Team.apiAddUserToTeam(siteOneUrl, newUser2.id, testTeam.id);
         user2 = newUser2;
 
-        // 4. Test 4 (MM-T3204): Private channel + user to add
+        // 4. Test 3 (MM-T3196): User already in channel for removal
+        const {user: newUser3} = await User.apiCreateUser(siteOneUrl, {prefix: 'member'});
+        if (!newUser3?.id) {
+            throw new Error('[beforeAll] Failed to create memberUser');
+        }
+        await Team.apiAddUserToTeam(siteOneUrl, newUser3.id, testTeam.id);
+        await Channel.apiAddUserToChannel(siteOneUrl, newUser3.id, testChannel.id);
+        memberUser = newUser3;
+
+        // 5. Test 4 (MM-T3204): Private channel + user to add
         const {channel: privChan1} = await Channel.apiCreateChannel(siteOneUrl, {
             teamId: testTeam.id,
             type: 'P',
@@ -221,6 +241,41 @@ describe('Channels', () => {
         await ChannelScreen.back();
     });
 
+    it('MM-T3196 - RN apps Manage members in channel', async () => {
+        // # Use pre-created user (already in channel)
+        const removedUser = memberUser;
+
+        // # Open default test channel
+        await ChannelScreen.open(channelsCategory, testChannel.name);
+
+        // # Open channel info and tap members option
+        await ChannelInfoScreen.open();
+        await wait(timeouts.ONE_SEC);
+
+        await tapMembersOption();
+
+        await wait(timeouts.TWO_SEC);
+        await ManageChannelMembersScreen.manageButton.tap({x: 1, y: 1});
+        await wait(timeouts.TWO_SEC);
+
+        // # Search and remove user
+        await ManageChannelMembersScreen.searchAndRemoveUser(removedUser.username, removedUser.id);
+
+        // * Verify user removed system message appears
+        // On iOS, device.pressBack() in searchAndRemoveUser is a no-op — close ManageMembers manually
+        if (isIos()) {
+            await ManageChannelMembersScreen.close();
+        }
+        await ChannelInfoScreen.close();
+        await ChannelScreen.toBeVisible();
+        await wait(timeouts.TWO_SEC);
+
+        const systemMessage = `${removedUser.username} was removed from the channel`;
+        await waitFor(element(by.text(systemMessage).withAncestor(by.id('post_list')))).
+            toBeVisible();
+        await ChannelScreen.back();
+    });
+
     it('MM-T3204 - RN apps Add user to private channel', async () => {
         // # Use pre-created private channel and user
         const privateChannel = privateChannel1;
@@ -268,12 +323,9 @@ describe('Channels', () => {
         await ChannelInfoScreen.open();
         await wait(timeouts.ONE_SEC);
 
-        await expect(ChannelInfoScreen.membersOption).toBeVisible();
-        await ChannelInfoScreen.membersOption.tap();
+        await tapMembersOption();
         await wait(timeouts.TWO_SEC);
 
-        // Corner-tap: manage button is obscured by the manage-members modal's
-        // UITransitionView (same workaround as PostOptionsScreen.deletePost).
         await ManageChannelMembersScreen.manageButton.tap({x: 1, y: 1});
         await wait(timeouts.TWO_SEC);
 
@@ -302,12 +354,7 @@ describe('Channels', () => {
         await CreateDirectMessageScreen.searchInput.replaceText(`${gmUser1.username}`);
         await CreateDirectMessageScreen.searchInput.tapReturnKey();
         await wait(timeouts.ONE_SEC);
-
-        // Corner-tap: the create-DM modal's UITransitionView drops the row's
-        // center tap on iOS (Detox marks tap as delivered but onPress never
-        // fires → user never selected → assertion below fails). Same iOS
-        // gesture-interception pattern as manage_channel_members.ts:142.
-        await CreateDirectMessageScreen.getUserItem(gmUser1.id).tap({x: 1, y: 1});
+        await CreateDirectMessageScreen.getUserItem(gmUser1.id).tap();
 
         // * Verify the first new user is selected
         await expect(CreateDirectMessageScreen.getSelectedDMUserDisplayName(gmUser1.id)).toBeVisible();
@@ -316,17 +363,12 @@ describe('Channels', () => {
         await CreateDirectMessageScreen.searchInput.replaceText(`${gmUser2.username}`);
         await CreateDirectMessageScreen.searchInput.tapReturnKey();
         await wait(timeouts.ONE_SEC);
-        await CreateDirectMessageScreen.getUserItem(gmUser2.id).tap({x: 1, y: 1});
+        await CreateDirectMessageScreen.getUserItem(gmUser2.id).tap();
 
         // * Verify the second new user is selected
         await expect(CreateDirectMessageScreen.getSelectedDMUserDisplayName(gmUser2.id)).toBeVisible();
 
         // # Tap on start button
-        // Wait for the chip-add animation (triggered by the second getUserItem tap)
-        // to finish before tapping startButton. The UITransitionView overlay is still
-        // animating when control returns from getUserItem, and an immediate center-tap
-        // is intercepted by the overlay — onPress never fires and channel.screen never mounts.
-        await wait(timeouts.ONE_SEC);
         await CreateDirectMessageScreen.startButton.tap();
         await ChannelScreen.dismissScheduledPostTooltip();
         await ChannelScreen.toBeVisible();
@@ -335,8 +377,7 @@ describe('Channels', () => {
         await ChannelInfoScreen.open();
         await wait(timeouts.ONE_SEC);
 
-        await expect(ChannelInfoScreen.membersOption).toBeVisible();
-        await ChannelInfoScreen.membersOption.tap();
+        await tapMembersOption();
         await wait(timeouts.TWO_SEC);
 
         // * Verify members list is visible

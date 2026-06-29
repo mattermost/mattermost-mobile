@@ -248,7 +248,7 @@ describe('Channels - Archive Channel from Settings', () => {
         // Must be posted BEFORE the UI archival step — the server rejects posts to
         // archived channels.
         const sentinel = `archived-from-settings-${Date.now()}`;
-        await Post.apiCreatePost(siteOneUrl, {
+        const {post} = await Post.apiCreatePost(siteOneUrl, {
             channelId: archivedChannel.id,
             message: sentinel,
         });
@@ -297,7 +297,7 @@ describe('Channels - Archive Channel from Settings', () => {
         }
 
         // # Open the archived channel and verify read-only state.
-        await openArchivedChannel(archivedChannel.name, sentinel);
+        await openArchivedChannel(archivedChannel.name, sentinel, post.id);
 
         // * Verify the close channel button is visible at the bottom
         if (isAndroid()) {

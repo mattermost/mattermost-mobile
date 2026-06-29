@@ -61,12 +61,17 @@ class ManageChannelMembersScreen {
     };
 
     open = async () => {
-        // # Tap on members option to navigate to manage members screen.
-        // Wait for the element to be visible first to ensure it is on-screen and
-        // tappable before interacting with it.
+        // Scroll down to bring the members option into view — on iOS 26.x the channel
+        // info screen is taller than the viewport and the members option can be clipped.
+        try {
+            await ChannelInfoScreen.scrollView.scroll(200, 'down');
+        } catch {
+            // scrollView may not need scrolling
+        }
         await waitFor(ChannelInfoScreen.membersOption).toBeVisible().withTimeout(timeouts.TEN_SEC);
         await ChannelInfoScreen.membersOption.tap();
-        await wait(timeouts.ONE_SEC);
+
+        return this.toBeVisible();
     };
 
     close = async () => {
@@ -145,8 +150,8 @@ class ManageChannelMembersScreen {
         // covers the first interaction; this row is rendered under the same
         // transition layer.
         await this.removeButton.tap({x: 1, y: 1});
-        await wait(timeouts.TWO_SEC);
 
+        await waitFor(Alert.removeButton).toBeVisible().withTimeout(timeouts.TEN_SEC);
         await Alert.removeButton.tap();
         await wait(timeouts.TWO_SEC);
 

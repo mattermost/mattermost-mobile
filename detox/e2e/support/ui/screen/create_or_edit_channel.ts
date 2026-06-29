@@ -113,6 +113,11 @@ class CreateOrEditChannelScreen {
         await expect(this.createOrEditChannelScreen).not.toBeVisible();
     };
 
+    save = async () => {
+        await this.saveButton.tap();
+        await waitFor(this.createOrEditChannelScreen).not.toExist().withTimeout(timeouts.TWENTY_SEC);
+    };
+
     toggleMakePrivateOn = async () => {
         await this.makePrivateToggledOff.tap();
         await expect(this.makePrivateToggledOn).toBeVisible();

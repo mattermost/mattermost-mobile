@@ -23,7 +23,7 @@ import {
     LoginScreen,
     ServerScreen,
 } from '@support/ui/screen';
-import {isAndroid, timeouts, wait, waitForElementToExist} from '@support/utils';
+import {isAndroid, timeouts, wait, waitForElementToExist, safeEnableSynchronization} from '@support/utils';
 import {expect, waitFor} from 'detox';
 
 // iOS gallery close uses atIndex(0) because RNGH duplicates the testID.
@@ -263,12 +263,15 @@ describe('Messaging - File Preview Gallery', () => {
         // The UITransitionView overlay is still animating when toBeVisible() fires;
         // tapping immediately intercepts into the overlay and onPress doesn't fire.
         await wait(timeouts.TWO_SEC);
-        await copyPublicLinkButton.tap();
-        await wait(timeouts.TWO_SEC);
+        await device.disableSynchronization();
+        try {
+            await copyPublicLinkButton.tap();
 
-        // * Verify the copy public link toast message appears (testID='toast.message')
-        const toastMessage = element(by.id('toast.message'));
-        await waitFor(toastMessage).toExist().withTimeout(timeouts.TEN_SEC);
+            // fetchPublicLink is async; toast mounts after API returns (CopyPublicLink useDidMount).
+            await waitForElementToExist(element(by.id('toast.message')), timeouts.HALF_MIN);
+        } finally {
+            await safeEnableSynchronization();
+        }
 
         // # Dismiss the gallery and wait for overlay to clear
         await dismissGallery();

@@ -142,9 +142,7 @@ class ThreadScreen {
 
         // On Android, long-press on the inner text element — more reliable than the
         // compound-matched post container, which can silently swallow the gesture.
-        const longPressTarget = isAndroid()
-            ? element(by.text(text).withAncestor(by.id(`${this.testID.threadScreenPrefix}post_list.post.${postId}`)))
-            : postListPostItem;
+        const longPressTarget = isAndroid()? element(by.text(text).withAncestor(by.id(`${this.testID.threadScreenPrefix}post_list.post.${postId}`))): postListPostItem;
 
         await longPressWithScrollRetry(
             longPressTarget,
@@ -178,6 +176,15 @@ class ThreadScreen {
             try {
                 await this.postList.getFlatList().swipe('up', 'fast', 0.3);
             } catch { /* ignore — post list may be too short to scroll */ }
+            await wait(timeouts.ONE_SEC);
+        } else {
+            try {
+                await this.postList.getFlatList().swipe('down', 'slow', 0.1);
+            } catch {
+                try {
+                    await element(by.id('navigation.header.title')).tap({x: 1, y: 1});
+                } catch { /* ignore */ }
+            }
             await wait(timeouts.ONE_SEC);
         }
 

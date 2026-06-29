@@ -27,10 +27,11 @@ import {
     LoginScreen,
     PermalinkScreen,
     PostOptionsScreen,
+    SavedMessagesScreen,
     SearchMessagesScreen,
     ServerScreen,
 } from '@support/ui/screen';
-import {getRandomId, timeouts, wait} from '@support/utils';
+import {getRandomId, timeouts, wait, waitForElementToBeVisible} from '@support/utils';
 import {expect, waitFor} from 'detox';
 
 describe('Search - Result Interactions', () => {
@@ -96,19 +97,8 @@ describe('Search - Result Interactions', () => {
         await SearchMessagesScreen.searchInput.tapReturnKey();
         await wait(timeouts.TWO_SEC);
 
-        // * Verify at least one result is visible.
-        // Scroll first to dismiss the keyboard if it is still up after the search
-        // submit (on iOS, tapReturnKey does not always auto-collapse the keyboard in
-        // the search results view). Scrolling the list also serves as a pre-condition
-        // check that there is content to scroll, and collapses the keyboard so the
-        // 75%-visibility assertion on the flat list succeeds.
+        // * Verify at least one result is visible
         const flatList = SearchMessagesScreen.getFlatPostList();
-        try {
-            await flatList.scroll(50, 'down');
-        } catch {
-            // Results not yet rendered or keyboard already dismissed — non-fatal
-        }
-        await wait(timeouts.ONE_SEC);
         await expect(flatList).toBeVisible();
 
         // # Scroll the results list down to verify it is scrollable
@@ -184,14 +174,6 @@ describe('Search - Result Interactions', () => {
         await SearchMessagesScreen.searchInput.tapReturnKey();
         await wait(timeouts.TWO_SEC);
 
-        // Dismiss keyboard so the post is not obscured by it when checking visibility.
-        try {
-            await SearchMessagesScreen.getFlatPostList().scroll(50, 'down');
-        } catch {
-            // Keyboard already gone or results not yet rendered — non-fatal
-        }
-        await wait(timeouts.ONE_SEC);
-
         // * Verify post result is visible
         const {postListPostItem} = SearchMessagesScreen.getPostListPostItem(postedMessage.id, message);
         await waitFor(postListPostItem).toBeVisible().withTimeout(timeouts.TEN_SEC);
@@ -212,6 +194,71 @@ describe('Search - Result Interactions', () => {
 
         // # Go back to channel list screen
         await ChannelScreen.back();
+        await ChannelListScreen.open();
+    });
+
+    it('MM-T372_1 - highlighting does not persist in Saved Messages', async () => {
+        // # Post a message and search for it to establish search highlighting context
+        const searchTerm = `highlight${getRandomId()}`;
+        const message = `Message ${searchTerm}`;
+
+        await ChannelScreen.open(channelsCategory, testChannel.name);
+        await ChannelScreen.postMessage(message);
+        await ChannelScreen.back();
+
+        // # Open search, search for term, and save the result
+        await SearchMessagesScreen.open();
+
+        // Wrap the return-key + openPostOptions sequence with disableSynchronization.
+        // See search_modifiers.e2e.ts MM-T585_1 for the same iOS 26 / new-arch
+        // JS-Runloop "Perform Block" issue: recent-search autocomplete and WS
+        // polling keep JS busy in Detox's eyes, blocking idle-driven tap() for
+        // the full 240s Jest test timeout (observed: this test alone burned
+        // 8 min in CI run 26352177261 shard 17 before starving downstream
+        // specs). Use polling visibility (waitForElementToBeVisible) inside
+        // the no-sync block.
+        await device.disableSynchronization();
+        let searchedPostId: string;
+        try {
+            await SearchMessagesScreen.searchInput.typeText(searchTerm);
+            await SearchMessagesScreen.searchInput.tapReturnKey();
+
+            const {post: searchedPost} = await Post.apiGetLastPostInChannel(siteOneUrl, testChannel.id);
+            searchedPostId = searchedPost.id;
+
+            const {postListPostItem} = SearchMessagesScreen.getPostListPostItem(searchedPostId, message);
+            await waitForElementToBeVisible(postListPostItem, timeouts.HALF_MIN);
+
+            await SearchMessagesScreen.openPostOptionsFor(searchedPostId, message);
+        } finally {
+            await device.enableSynchronization();
+        }
+        await PostOptionsScreen.savePostOption.tap();
+        await wait(timeouts.TWO_SEC);
+
+        // # Navigate to Saved Messages
+        await SavedMessagesScreen.open();
+
+        // * Verify on Saved Messages screen
+        await SavedMessagesScreen.toBeVisible();
+
+        // * Verify the message appears in Saved Messages (without search highlighting context)
+        const {postListPostItem: savedPostItem} = SavedMessagesScreen.getPostListPostItem(searchedPostId, message);
+        await waitForElementToBeVisible(savedPostItem, timeouts.HALF_MIN);
+
+        // # Unsave the post to clean up, then go back to channel list
+        await SavedMessagesScreen.openPostOptionsFor(searchedPostId, message);
+        await PostOptionsScreen.unsavePostOption.tap();
+        await wait(timeouts.TWO_SEC);
+
+        // # Go back to search screen to clean up recent searches
+        await SearchMessagesScreen.open();
+        await SearchMessagesScreen.searchClearButton.tap();
+        try {
+            await SearchMessagesScreen.getRecentSearchItemRemoveButton(searchTerm).tap();
+        } catch {
+            // Cleanup best-effort
+        }
         await ChannelListScreen.open();
     });
 });

@@ -156,6 +156,47 @@ describe('Threads - Global Threads', () => {
         await GlobalThreadsScreen.back();
     });
 
+    it('MM-T4805_4 - should be able to go to a thread a user replied to and followed', async () => {
+        // # Create a thread started by another user which the current user replied to
+        const parentMessage = `Message ${getRandomId()}`;
+        const {post: parentPost} = await Post.apiCreatePost(siteOneUrl, {
+            channelId: testChannel.id,
+            message: parentMessage,
+        });
+        await ChannelScreen.open(channelsCategory, testChannel.name);
+        await ChannelScreen.openReplyThreadFor(parentPost.id, parentMessage);
+        const replyMessage = `${parentMessage} reply`;
+        await ThreadScreen.postMessage(replyMessage);
+        await wait(timeouts.TWO_SEC);
+        const {post: replyPost} = await Post.apiGetLastPostInChannel(siteOneUrl, testChannel.id);
+        const {postListPostItem: replyPostListPostItem} = ThreadScreen.getPostListPostItem(replyPost.id, replyMessage);
+
+        // * Verify thread is followed by the current user by default after replying to post
+        await expect(ThreadScreen.followingButton).toBeVisible();
+
+        // # Go back to channel list screen, then go to global threads screen, and tap on all your threads button
+        await ThreadScreen.back();
+        await ChannelScreen.back();
+        await GlobalThreadsScreen.open();
+        await GlobalThreadsScreen.headerAllThreadsButton.tap();
+
+        // * Verify the thread replied to by the current user is displayed
+        await expect(GlobalThreadsScreen.getThreadItem(parentPost.id)).toBeVisible();
+        await expect(GlobalThreadsScreen.getThreadItemThreadStarterUserDisplayName(parentPost.id)).toHaveText('admin');
+        await expect(GlobalThreadsScreen.getThreadItemThreadStarterChannelDisplayName(parentPost.id)).toHaveText(testChannel.display_name.toUpperCase());
+
+        // # Tap on the thread
+        await GlobalThreadsScreen.getThreadItem(parentPost.id).tap();
+
+        // * Verify on thread screen
+        await ThreadScreen.toBeVisible();
+        await expect(replyPostListPostItem).toBeVisible();
+
+        // # Go back to channel list screen
+        await ThreadScreen.back();
+        await GlobalThreadsScreen.back();
+    });
+
     it('MM-T4805_5 - should not display a thread a user replied to but not followed', async () => {
         // # Create a thread started by another user which the current user replied to and current user unfollows the thread
         const parentMessage = `Message ${getRandomId()}`;

@@ -73,7 +73,7 @@ describe('Smoke Test - Account', () => {
         const customStatusDuration = 'today';
         await CustomStatusScreen.open();
         await wait(timeouts.ONE_SEC);
-        await CustomStatusScreen.openEmojiPicker('default', true);
+        await CustomStatusScreen.openEmojiPicker('default');
         await EmojiPickerScreen.searchInput.replaceText(customStatusEmojiName);
         await EmojiPickerScreen.searchInput.tapReturnKey();
         await element(by.text('🤡')).tap();

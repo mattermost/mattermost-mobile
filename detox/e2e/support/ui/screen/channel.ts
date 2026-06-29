@@ -376,6 +376,8 @@ class ChannelScreen {
                 await this.postList.getFlatList().swipe('up', 'fast', 0.3);
             } catch { /* ignore */ }
             await wait(timeouts.ONE_SEC);
+        } else {
+            await this.dismissKeyboardForSchedulePicker();
         }
 
         await device.disableSynchronization();
@@ -388,6 +390,41 @@ class ChannelScreen {
             );
         } finally {
             await device.enableSynchronization();
+        }
+    };
+
+    dismissKeyboardForSchedulePicker = async () => {
+        if (!isIos()) {
+            return;
+        }
+        try {
+            await this.postList.getFlatList().swipe('down', 'slow', 0.1);
+        } catch {
+            try {
+                await this.headerTitle.tap({x: 1, y: 1});
+            } catch { /* ignore */ }
+        }
+        await wait(timeouts.ONE_SEC);
+    };
+
+    tapScheduleOption = async (option: Detox.NativeElement) => {
+        await this.dismissKeyboardForSchedulePicker();
+
+        const bottomSheetMatcher = by.id(this.testID.scheduledPostOptionsBottomSheet);
+        await waitForElementToExist(option, timeouts.HALF_MIN);
+
+        if (isIos()) {
+            try {
+                await waitFor(option).toBeVisible(50).whileElement(bottomSheetMatcher).scroll(100, 'down');
+            } catch {
+                try {
+                    await waitFor(option).toBeVisible(50).whileElement(bottomSheetMatcher).scroll(100, 'up');
+                } catch { /* option may already be in view */ }
+            }
+            await waitForElementToExist(option, timeouts.TEN_SEC);
+            await option.tap({x: 1, y: 1});
+        } else {
+            await option.tap();
         }
     };
 
@@ -429,41 +466,46 @@ class ChannelScreen {
     };
 
     scheduleMessageForTomorrow = async () => {
-        await waitForElementToExist(this.scheduleMessageTomorrowOption, timeouts.HALF_MIN);
-        await this.scheduleMessageTomorrowOption.tap();
+        await this.tapScheduleOption(this.scheduleMessageTomorrowOption);
         await waitForElementToExist(this.scheduledPostOptionTomorrowSelected, timeouts.TEN_SEC);
     };
 
     scheduleMessageForMonday = async () => {
-        await waitForElementToExist(this.scheduleMessageOnMondayOption, timeouts.HALF_MIN);
-        await this.scheduleMessageOnMondayOption.tap();
+        await this.tapScheduleOption(this.scheduleMessageOnMondayOption);
         await waitForElementToExist(this.scheduledPostOptionMondaySelected, timeouts.TEN_SEC);
     };
 
     scheduleMessageForNextMonday = async () => {
-        await waitForElementToExist(this.scheduledPostOptionNextMonday, timeouts.HALF_MIN);
-        await this.scheduledPostOptionNextMonday.tap();
+        await this.tapScheduleOption(this.scheduledPostOptionNextMonday);
         await waitForElementToExist(this.scheduledPostOptionNextMondaySelected, timeouts.TEN_SEC);
     };
 
-    // Mirror scheduled_post_options/core_options weekday availability (CI MM-T5762 on Sunday).
+    // Probe whichever schedule option the picker shows (UTC vs America/New_York weekday mismatch on CI).
     scheduleMessageForAvailableOption = async () => {
-        const weekday = new Date().getDay();
-        switch (weekday) {
-            case 0:
-                await this.scheduleMessageForTomorrow();
-                break;
-            case 1:
-                await this.scheduleMessageForNextMonday();
-                break;
-            case 5:
-            case 6:
-                await this.scheduleMessageForMonday();
-                break;
-            default:
-                await this.scheduleMessageForMonday();
-                break;
+        const tryOption = async (
+            select: () => Promise<void>,
+            option: Detox.NativeElement,
+        ): Promise<boolean> => {
+            try {
+                await waitFor(option).toExist().withTimeout(timeouts.TWO_SEC);
+                await select();
+                return true;
+            } catch {
+                return false;
+            }
+        };
+
+        if (await tryOption(() => this.scheduleMessageForTomorrow(), this.scheduleMessageTomorrowOption)) {
+            return;
         }
+        if (await tryOption(() => this.scheduleMessageForNextMonday(), this.scheduledPostOptionNextMonday)) {
+            return;
+        }
+        if (await tryOption(() => this.scheduleMessageForMonday(), this.scheduleMessageOnMondayOption)) {
+            return;
+        }
+
+        throw new Error('scheduleMessageForAvailableOption: no schedule option visible in picker');
     };
 
     clickOnScheduledMessage = async () => {

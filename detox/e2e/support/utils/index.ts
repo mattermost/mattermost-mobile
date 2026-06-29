@@ -96,25 +96,35 @@ export async function scrollElementIntoView(
     scrollContainer: Detox.NativeMatcher,
     maxScrolls = 15,
 ): Promise<void> {
+    const visibilityThreshold = isIos() ? 50 : 100;
     /* eslint-disable no-await-in-loop */
     for (let i = 0; i < maxScrolls; i++) {
         try {
-            await waitFor(target).toBeVisible(100).withTimeout(timeouts.TWO_SEC);
+            await waitFor(target).toBeVisible(visibilityThreshold).withTimeout(timeouts.TWO_SEC);
             return;
         } catch {
-            for (const direction of ['down', 'up'] as const) {
-                try {
-                    await waitFor(target).
-                        toBeVisible(100).
-                        whileElement(scrollContainer).
-                        scroll(250, direction);
-                    return;
-                } catch { /* try opposite direction */ }
+            if (isIos()) {
+                await device.disableSynchronization();
+            }
+            try {
+                for (const direction of ['down', 'up'] as const) {
+                    try {
+                        await waitFor(target).
+                            toBeVisible(visibilityThreshold).
+                            whileElement(scrollContainer).
+                            scroll(250, direction);
+                        return;
+                    } catch { /* try opposite direction */ }
+                }
+            } finally {
+                if (isIos()) {
+                    await safeEnableSynchronization();
+                }
             }
         }
     }
     /* eslint-enable no-await-in-loop */
-    await waitFor(target).toBeVisible(100).withTimeout(timeouts.FIVE_SEC);
+    await waitFor(target).toBeVisible(visibilityThreshold).withTimeout(timeouts.FIVE_SEC);
 }
 
 const isIosHittableError = (error: unknown) => {
@@ -203,7 +213,15 @@ export async function longPressWithRetry(
             await device.disableSynchronization();
         }
         try {
-            await target.longPress(pressDuration);
+            try {
+                await target.longPress(pressDuration);
+            } catch (error) {
+                if (attempt === maxAttempts) {
+                    throw error;
+                }
+                await wait(timeouts.THREE_SEC);
+                continue;
+            }
         } finally {
             if (isAndroid()) {
                 await safeEnableSynchronization();
@@ -280,11 +298,18 @@ export async function waitForElementToNotExist(
 }
 
 // Poll for existence without Detox bridge-idle synchronization.
+// Android edge-to-edge: elements can exist in hierarchy with <50% visible area;
+// use toBeVisible so post-menu and dialog waits match Espresso visibility rules.
 export async function waitForElementToExist(
     detoxElement: Detox.NativeElement,
     timeout: number = timeouts.HALF_MIN,
     pollInterval: number = timeouts.HALF_SEC,
 ): Promise<void> {
+    if (isAndroid()) {
+        await waitForElementToBeVisible(detoxElement, timeout, pollInterval);
+        return;
+    }
+
     const {expect: detoxExpect} = require('detox');
     const startTime = Date.now();
     /* eslint-disable no-await-in-loop */
@@ -313,10 +338,10 @@ export async function safeEnableSynchronization(): Promise<void> {
             return;
         } catch (error) {
             const message = (error as Error)?.message ?? String(error);
-            if (!message.includes('ReactContext is null') || i === delays.length) {
-                if (message.includes('ReactContext is null')) {
-                    return;
-                }
+            if (!message.includes('ReactContext is null')) {
+                throw error;
+            }
+            if (i === delays.length) {
                 throw error;
             }
             await wait(delays[i]!);

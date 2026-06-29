@@ -2,7 +2,7 @@
 // See LICENSE.txt for license information.
 
 import {Alert} from '@support/ui/component';
-import {isAndroid, isIos, longPressWithRetry, safeEnableSynchronization, timeouts, wait} from '@support/utils';
+import {isAndroid, isIos, longPressWithRetry, safeEnableSynchronization, timeouts, wait, waitForElementToNotExist} from '@support/utils';
 import {expect, waitFor} from 'detox';
 
 class PostOptionsScreen {
@@ -84,11 +84,26 @@ class PostOptionsScreen {
         await expect(deleteButton).toBeVisible();
         if (confirm) {
             await deleteButton.tap();
-            await waitFor(this.postOptionsScreen).not.toExist().withTimeout(timeouts.FIVE_SEC);
+            try {
+                await waitForElementToNotExist(this.postOptionsScreen, timeouts.TEN_SEC);
+            } catch {
+                await this.close();
+                await waitForElementToNotExist(this.postOptionsScreen, timeouts.FIVE_SEC);
+            }
         } else {
             await cancelButton.tap();
             await wait(timeouts.TWO_SEC);
             await waitFor(this.postOptionsScreen).toExist().withTimeout(timeouts.FIVE_SEC);
+            await this.close();
+        }
+    };
+
+    replyToPost = async () => {
+        await waitFor(this.replyPostOption).toExist().withTimeout(timeouts.TWO_SEC);
+        await this.replyPostOption.tap();
+        try {
+            await waitForElementToNotExist(this.postOptionsScreen, timeouts.TEN_SEC);
+        } catch {
             await this.close();
         }
     };

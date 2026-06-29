@@ -212,9 +212,24 @@ jobs:
 
       - name: Install Homebrew Dependencies
         run: |
-          brew trust wix/brew 2>/dev/null || true
-          brew tap wix/brew
-          brew install applesimutils || true
+          # Runner images ship aws/tap untrusted; Detox does not use it.
+          if brew tap 2>/dev/null | grep -qx 'aws/tap'; then
+            brew untap aws/tap
+          fi
+
+          brew trust wix/brew
+
+          # Clone wix/brew manually so we can patch deprecated cask syntax before
+          # Homebrew loads the tap (brew tap audits Casks/detox-instruments.rb).
+          TAP_DIR="$(brew --repository wix/brew)"
+          if [ ! -f "$TAP_DIR/Formula/applesimutils.rb" ]; then
+            mkdir -p "$(dirname "$TAP_DIR")"
+            git clone --depth 1 https://github.com/wix/homebrew-brew.git "$TAP_DIR"
+          fi
+          sed -i '' 's/depends_on macos: ">= :catalina"/depends_on macos: :catalina/' \
+            "$TAP_DIR/Casks/detox-instruments.rb"
+
+          brew install wix/brew/applesimutils || true
           # Cache restores Cellar without /opt/homebrew/bin symlinks — link the tap formula explicitly.
           brew link --overwrite --force wix/brew/applesimutils 2>/dev/null \
             || brew link --overwrite applesimutils

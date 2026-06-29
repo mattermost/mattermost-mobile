@@ -82,9 +82,7 @@ describe('Messaging - Message Edit', () => {
         // # Edit post message and tap save button
         const updatedMessage = `${message} edit`;
         await EditPostScreen.messageInput.replaceText(updatedMessage);
-        await EditPostScreen.saveButton.tap();
-
-        await expect(EditPostScreen.editPostScreen).not.toBeVisible();
+        await EditPostScreen.save();
 
         // # Dismiss the keyboard — try/catch because empty channel has no scroll overflow.
         // Use toExist below since channel-intro card pushes a single post under 75% visibility.
@@ -186,9 +184,7 @@ describe('Messaging - Message Edit', () => {
         // # Edit reply post message and tap save button
         const updatedReplyMessage = `${replyMessage} edit`;
         await EditPostScreen.messageInput.replaceText(updatedReplyMessage);
-        await EditPostScreen.saveButton.tap();
-
-        await expect(EditPostScreen.editPostScreen).not.toBeVisible();
+        await EditPostScreen.save();
 
         // # Dismiss keyboard (see above for try/catch + toExist rationale).
         try {

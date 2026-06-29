@@ -104,12 +104,12 @@ describe('Channels - Archived Channel Interactions', () => {
             testUser.id,
             archivedChannel.id,
         );
-        const sentinel = await postArchivedChannelSentinel(archivedChannel.id);
+        const {sentinel, postId} = await postArchivedChannelSentinel(archivedChannel.id);
         await Channel.apiDeleteChannel(siteOneUrl, archivedChannel.id);
         await wait(timeouts.FOUR_SEC);
 
         // # Open the archived channel via the platform-appropriate path.
-        await openArchivedChannel(archivedChannel.name, sentinel);
+        await openArchivedChannel(archivedChannel.name, sentinel, postId);
 
         // # Open channel info
         await ChannelInfoScreen.open();
@@ -135,12 +135,12 @@ describe('Channels - Archived Channel Interactions', () => {
             testUser.id,
             archivedChannel.id,
         );
-        const sentinel = await postArchivedChannelSentinel(archivedChannel.id);
+        const {sentinel, postId} = await postArchivedChannelSentinel(archivedChannel.id);
         await Channel.apiDeleteChannel(siteOneUrl, archivedChannel.id);
         await wait(timeouts.FOUR_SEC);
 
         // # Open the archived channel via the platform-appropriate path.
-        await openArchivedChannel(archivedChannel.name, sentinel);
+        await openArchivedChannel(archivedChannel.name, sentinel, postId);
 
         // # Open channel info and leave the channel
         await ChannelInfoScreen.open();
@@ -237,12 +237,12 @@ describe('Channels - Archived Channel Interactions', () => {
             testUser.id,
             archivedChannel.id,
         );
-        const sentinel = await postArchivedChannelSentinel(archivedChannel.id);
+        const {sentinel, postId} = await postArchivedChannelSentinel(archivedChannel.id);
         await Channel.apiDeleteChannel(siteOneUrl, archivedChannel.id);
         await wait(timeouts.FOUR_SEC);
 
         // # Open the archived channel via the platform-appropriate path.
-        await openArchivedChannel(archivedChannel.name, sentinel);
+        await openArchivedChannel(archivedChannel.name, sentinel, postId);
 
         // # Open channel info
         await ChannelInfoScreen.open();

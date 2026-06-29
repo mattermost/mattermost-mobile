@@ -31,7 +31,7 @@ import {
     LoginScreen,
     ServerScreen,
 } from '@support/ui/screen';
-import {wait, isAndroid, safeEnableSynchronization, timeouts, waitForElementToExist} from '@support/utils';
+import {wait, isAndroid, safeEnableSynchronization, timeouts, waitForElementToBeVisible, waitForElementToExist} from '@support/utils';
 import {expect} from 'detox';
 
 // MM-66558: dialog fields use replaceText instead of typeText.
@@ -110,7 +110,7 @@ async function ensureDialogOpen() {
     // Disable sync so the bottom sheet animation does not block the poll.
     await device.disableSynchronization();
     try {
-        await waitForElementToExist(InteractiveDialogScreen.interactiveDialogScreen, timeouts.HALF_MIN);
+        await waitForElementToBeVisible(InteractiveDialogScreen.interactiveDialogScreen, timeouts.HALF_MIN);
     } finally {
         await safeEnableSynchronization();
     }

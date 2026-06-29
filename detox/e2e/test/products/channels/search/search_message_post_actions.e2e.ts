@@ -13,18 +13,21 @@ import {
     siteOneUrl,
 } from '@support/test_config';
 import {
+    ChannelInfoScreen,
     ChannelListScreen,
     ChannelScreen,
     EditPostScreen,
     HomeScreen,
     LoginScreen,
+    PinnedMessagesScreen,
     PostOptionsScreen,
+    SavedMessagesScreen,
     SearchMessagesScreen,
     ServerScreen,
     ThreadScreen,
 } from '@support/ui/screen';
 import {getRandomId, timeouts, wait, waitForElementToBeVisible} from '@support/utils';
-import {expect} from 'detox';
+import {expect, waitFor} from 'detox';
 
 describe('Search - Search Message Post Actions', () => {
     const serverOneDisplayName = 'Server 1';
@@ -132,4 +135,101 @@ describe('Search - Search Message Post Actions', () => {
         await ChannelListScreen.open();
     });
 
+    it('MM-T5294_11 - should be able to save/unsave a searched message from search results screen', async () => {
+        // # Open a channel screen, post a message, go back to channel list screen, and open search messages screen
+        const searchTerm = getRandomId();
+        const message = `Message ${searchTerm}`;
+        await ChannelScreen.open(channelsCategory, testChannel.name);
+        await ChannelScreen.postMessage(message);
+        await ChannelScreen.back();
+        await SearchMessagesScreen.open();
+
+        // * Verify on search messages screen
+        await SearchMessagesScreen.toBeVisible();
+
+        // # Type in a search term that will yield results, tap on search key, open post options for searched message, tap on save option, and open saved messages screen
+        await SearchMessagesScreen.searchInput.replaceText(searchTerm);
+        await SearchMessagesScreen.searchInput.tapReturnKey();
+        await wait(timeouts.TWO_SEC);
+        const {post: searchedPost} = await Post.apiGetLastPostInChannel(siteOneUrl, testChannel.id);
+        await SearchMessagesScreen.openPostOptionsFor(searchedPost.id, message);
+        await PostOptionsScreen.savePostOption.tap();
+        await wait(timeouts.TWO_SEC);
+        await SavedMessagesScreen.open();
+
+        // * Verify searched message is displayed on saved messages screen
+        const {postListPostItem} = SavedMessagesScreen.getPostListPostItem(searchedPost.id, message);
+        await expect(postListPostItem).toBeVisible();
+
+        // # Go back to searched messages screen, open post options for searched message, tap on usave option, and open saved messages screen
+        await SearchMessagesScreen.open();
+        await SearchMessagesScreen.openPostOptionsFor(searchedPost.id, message);
+        await PostOptionsScreen.unsavePostOption.tap();
+        await wait(timeouts.TWO_SEC);
+        await SavedMessagesScreen.open();
+
+        // * Verify searched message is not displayed anymore on saved messages screen.
+        // Poll: unsave preference deletion propagates through the observable.
+        await waitFor(postListPostItem).not.toExist().withTimeout(timeouts.TEN_SEC);
+
+        // # Go back to searched messages screen, clear search input, remove recent search item, and go back to channel list screen
+        await SearchMessagesScreen.open();
+        await SearchMessagesScreen.searchClearButton.tap();
+        await SearchMessagesScreen.getRecentSearchItemRemoveButton(searchTerm).tap();
+        await ChannelListScreen.open();
+    });
+
+    it('MM-T5294_12 - should be able to pin/unpin a searched message from search results screen', async () => {
+        // # Open a channel screen, post a message, go back to channel list screen, and open search messages screen
+        const searchTerm = getRandomId();
+        const message = `Message ${searchTerm}`;
+        await ChannelScreen.open(channelsCategory, testChannel.name);
+        await ChannelScreen.postMessage(message);
+        await ChannelScreen.back();
+        await SearchMessagesScreen.open();
+
+        // * Verify on search messages screen
+        await SearchMessagesScreen.toBeVisible();
+
+        // # Type in a search term that will yield results, tap on search key, open post options for searched message, tap on pin to channel option, go back to channel list screen, open the channel screen where searched message is posted, open channel info screen, and open pinned messages screen
+        await SearchMessagesScreen.searchInput.replaceText(searchTerm);
+        await SearchMessagesScreen.searchInput.tapReturnKey();
+        await wait(timeouts.TWO_SEC);
+
+        const {post: searchedPost} = await Post.apiGetLastPostInChannel(siteOneUrl, testChannel.id);
+        await SearchMessagesScreen.openPostOptionsFor(searchedPost.id, message);
+        await PostOptionsScreen.pinPostOption.tap();
+        await ChannelListScreen.open();
+        await ChannelScreen.open(channelsCategory, testChannel.name);
+        await ChannelInfoScreen.open();
+        await PinnedMessagesScreen.open();
+
+        // * Verify searched message is displayed on pinned messages screen
+        const {postListPostItem} = PinnedMessagesScreen.getPostListPostItem(searchedPost.id, message);
+        await expect(postListPostItem).toBeVisible();
+
+        // # Go back to searched messages screen, open post options for searched message, tap on unpin from channel option, go back to channel list screen, open the channel screen where searched message is posted, open channel info screen, and open pinned messages screen
+        await PinnedMessagesScreen.back();
+        await ChannelInfoScreen.close();
+        await ChannelScreen.back();
+        await SearchMessagesScreen.open();
+        await SearchMessagesScreen.openPostOptionsFor(searchedPost.id, message);
+        await PostOptionsScreen.unpinPostOption.tap();
+        await ChannelListScreen.open();
+        await ChannelScreen.open(channelsCategory, testChannel.name);
+        await ChannelInfoScreen.open();
+        await PinnedMessagesScreen.open();
+
+        // * Verify searched message is not displayed anymore on pinned messages screen
+        await expect(postListPostItem).not.toExist();
+
+        // # Go back to searched messages screen, clear search input, remove recent search item, and go back to channel list screen
+        await PinnedMessagesScreen.back();
+        await ChannelInfoScreen.close();
+        await ChannelScreen.back();
+        await SearchMessagesScreen.open();
+        await SearchMessagesScreen.searchClearButton.tap();
+        await SearchMessagesScreen.getRecentSearchItemRemoveButton(searchTerm).tap();
+        await ChannelListScreen.open();
+    });
 });

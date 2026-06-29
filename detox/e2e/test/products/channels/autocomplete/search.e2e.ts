@@ -55,7 +55,11 @@ describe('Autocomplete - Search', () => {
         await expect(Autocomplete.sectionChannelMentionList).not.toExist();
 
         // # Tap the in: modifier to trigger channel mention autocomplete
-        await SearchMessagesScreen.searchModifierIn.tap({x: 1, y: 1});
+        if (isIos()) {
+            await SearchMessagesScreen.searchModifierIn.tap();
+        } else {
+            await SearchMessagesScreen.searchModifierIn.tap({x: 1, y: 1});
+        }
 
         // * Verify channel mention autocomplete list is displayed
         await waitFor(Autocomplete.sectionChannelMentionList).toExist().withTimeout(timeouts.TEN_SEC);
@@ -66,13 +70,8 @@ describe('Autocomplete - Search', () => {
             await wait(timeouts.ONE_SEC);
         }
         if (isIos()) {
-            try {
-                await SearchMessagesScreen.searchModifierHeader.tap();
-            } catch {
-                // header may be off-screen after expansion; fall through
-            }
-            await wait(timeouts.HALF_SEC);
+            await SearchMessagesScreen.searchCancelButton.tap();
         }
-        await ChannelListScreen.open();
+        await ChannelListScreen.toBeVisible();
     });
 });

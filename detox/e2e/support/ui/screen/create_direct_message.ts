@@ -70,15 +70,26 @@ class CreateDirectMessageScreen {
         // input immediately after navigation and intercepts taps even though the element
         // is in the hierarchy. Waiting for the input to be visible gives the SVG layer
         // time to finish its animation.
-        // On Android, sync was disabled before the navigation tap (in open()), so
-        // waitFor().toExist() here is pure polling — no bridge-idle blocking.
-        await waitFor(this.createDirectMessageScreen).toExist().withTimeout(timeouts.ONE_MIN);
-        if (!isAndroid()) {
-            await waitFor(this.searchInput).toBeVisible().withTimeout(timeouts.TEN_SEC);
+        // On Android edge-to-edge, the tutorial Modal can cover the screen while the root
+        // view still exists — use visibility polling after closeTutorial() in open().
+        if (isAndroid()) {
+            await waitForElementToBeVisible(this.createDirectMessageScreen, timeouts.ONE_MIN);
+        } else {
+            await waitFor(this.createDirectMessageScreen).toExist().withTimeout(timeouts.ONE_MIN);
         }
+        await waitFor(this.searchInput).toBeVisible().withTimeout(timeouts.TEN_SEC);
         await wait(timeouts.HALF_SEC);
 
         return this.createDirectMessageScreen;
+    };
+
+    dismissScheduledPostTooltip = async () => {
+        try {
+            await waitFor(this.scheduledPostTooltipCloseButton).toBeVisible().withTimeout(timeouts.TWO_SEC);
+            await this.scheduledPostTooltipCloseButton.tap();
+        } catch {
+            // Tooltip is optional on first open
+        }
     };
 
     open = async () => {
@@ -98,15 +109,21 @@ class CreateDirectMessageScreen {
                 await safeEnableSynchronization();
             }
         }
+
+        if (isAndroid()) {
+            // Tutorial Modal is a separate Dialog window — dismiss it before visibility checks.
+            await waitFor(this.createDirectMessageScreen).toExist().withTimeout(timeouts.ONE_MIN);
+            await wait(timeouts.ONE_SEC);
+            await this.closeTutorial();
+            await this.dismissScheduledPostTooltip();
+        }
+
         await this.toBeVisible();
 
         // Wait for any SVG animation overlay to clear before proceeding.
-        // The plus-menu icon animation layer (RNSVGGroup) can intercept taps
-        // on the search input even after toBeVisible() passes. Dismissing the
-        // "Long-press on an item" tutorial overlay here makes the dismissal explicit
-        // regardless of the searchInput visibility approach.
         await wait(timeouts.ONE_SEC);
         await this.closeTutorial();
+        await this.dismissScheduledPostTooltip();
 
         return this.createDirectMessageScreen;
     };
@@ -128,13 +145,19 @@ class CreateDirectMessageScreen {
                 // — the Dialog — not the Activity. The 'tutorial_highlight' testID is on the Modal
                 // itself (not a View), so it is never found. The 'tutorial_swipe_left' View sits
                 // inside the Modal and IS accessible from the Dialog window.
-                await waitForElementToExist(this.tutorialSwipeLeft, timeouts.TEN_SEC);
-                await device.pressBack();
-
-                // Poll until tutorial disappears. waitFor().not.toExist() blocks on bridge-idle
-                // after the pressBack() dismiss animation, which can exceed TEN_SEC and cause
-                // a spurious timeout that the catch block silently swallows.
-                await waitForElementToNotExist(this.tutorialSwipeLeft, timeouts.TEN_SEC);
+                /* eslint-disable no-await-in-loop -- bounded tutorial dismiss retries */
+                for (let attempt = 0; attempt < 3; attempt++) {
+                    try {
+                        await waitForElementToExist(this.tutorialSwipeLeft, timeouts.THREE_SEC);
+                        await this.tutorialSwipeLeft.tap();
+                        await device.pressBack();
+                        await waitForElementToNotExist(this.tutorialSwipeLeft, timeouts.FIVE_SEC);
+                        return;
+                    } catch {
+                        await device.pressBack();
+                    }
+                }
+                /* eslint-enable no-await-in-loop */
             }
         } catch {
             // Tutorial may not appear if already dismissed in a previous run

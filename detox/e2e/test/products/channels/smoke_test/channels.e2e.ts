@@ -163,10 +163,9 @@ describe('Smoke Test - Channels', () => {
         await ChannelInfoScreen.open();
         await CreateOrEditChannelScreen.openEditChannel();
         await CreateOrEditChannelScreen.headerInput.replaceText(updatedHeader);
-        await CreateOrEditChannelScreen.saveButton.tap();
+        await CreateOrEditChannelScreen.save();
 
         // * Verify on channel info screen and changes have been saved.
-        await waitFor(element(by.id('create_or_edit_channel.screen'))).not.toExist().withTimeout(timeouts.TEN_SEC);
         try {
             await waitFor(ChannelSettingsScreen.channelSettingsScreen).toExist().withTimeout(timeouts.FOUR_SEC);
             await ChannelSettingsScreen.close();

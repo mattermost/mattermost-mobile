@@ -23,6 +23,7 @@ import {
     PermalinkScreen,
     PostOptionsScreen,
     PinnedMessagesScreen,
+    SavedMessagesScreen,
     ServerScreen,
     ThreadScreen,
     ChannelInfoScreen,
@@ -145,7 +146,7 @@ describe('Search - Pinned Messages', () => {
         // # Edit post message and tap save button
         const updatedMessage = `${message} edit`;
         await EditPostScreen.messageInput.replaceText(updatedMessage);
-        await EditPostScreen.saveButton.tap();
+        await EditPostScreen.save();
 
         // * Verify post message is updated and displays edited indicator '(edited)'
         const {postListPostItem: updatedPostListPostItem} = PinnedMessagesScreen.getPostListPostItem(pinnedPost.id);
@@ -161,7 +162,7 @@ describe('Search - Pinned Messages', () => {
 
         // # Open post options for updated pinned message and tap on reply option
         await PostOptionsScreen.openPostOptionsForPinedPosts(pinnedPost.id);
-        await PostOptionsScreen.replyPostOption.tap();
+        await PostOptionsScreen.replyToPost();
 
         // * Verify on thread screen
         await ThreadScreen.toBeVisible();
@@ -206,7 +207,9 @@ describe('Search - Pinned Messages', () => {
         // # Open a channel screen, post a message, open post options for message, tap on pin to channel option, open channel info screen, and open pinned messages screen
         const message = `Message ${getRandomId()}`;
         await ChannelScreen.open(channelsCategory, testChannel.name);
-        const {post: pinnedPost} = await ChannelScreen.postMessageAndVerify(message, testChannel.id, siteOneUrl);
+        await ChannelScreen.postMessage(message);
+
+        const {post: pinnedPost} = await Post.apiGetLastPostInChannel(siteOneUrl, testChannel.id);
         const {postListPostItem: channelPostItem} = ChannelScreen.getPostListPostItem(pinnedPost.id, message);
         await expect(channelPostItem).toBeVisible();
 
@@ -235,5 +238,58 @@ describe('Search - Pinned Messages', () => {
         await PinnedMessagesScreen.back();
         await ChannelInfoScreen.close();
         await ChannelScreen.back();
+    });
+
+    it('MM-T4918_5 - should be able to save/unsave a pinned message from pinned messages screen', async () => {
+        // # Open a channel screen, post a message, open post options for message, tap on pin to channel option, open channel info screen, and open pinned messages screen
+        const message = `Message ${getRandomId()}`;
+        await ChannelScreen.open(channelsCategory, testChannel.name);
+        await ChannelScreen.postMessage(message);
+
+        const {post: pinnedPost} = await Post.apiGetLastPostInChannel(siteOneUrl, testChannel.id);
+        const {postListPostItem: channelPostItem} = ChannelScreen.getPostListPostItem(pinnedPost.id, message);
+        await expect(channelPostItem).toBeVisible();
+
+        await ChannelScreen.openPostOptionsFor(pinnedPost.id, message);
+        await PostOptionsScreen.pinPostOption.tap();
+        await ChannelInfoScreen.open();
+        await PinnedMessagesScreen.open();
+
+        // * Verify on pinned messages screen
+        await PinnedMessagesScreen.toBeVisible();
+
+        // # Open post options for pinned message, tap on save option, go back to channel list screen, and open saved messages screen
+        await PinnedMessagesScreen.openPostOptionsFor(pinnedPost.id, message);
+        await PostOptionsScreen.savePostOption.tap();
+        await PinnedMessagesScreen.back();
+        await ChannelInfoScreen.close();
+        await ChannelScreen.back();
+        await SavedMessagesScreen.open();
+
+        // * Verify pinned message is displayed on saved messages screen
+        const {postListPostItem} = SavedMessagesScreen.getPostListPostItem(pinnedPost.id, message);
+        await expect(postListPostItem).toBeVisible();
+
+        // # Go back to pinned messages screen, open post options for pinned message, tap on usave option, go back to channel list screen, and open saved messages screen
+        await ChannelListScreen.open();
+        await ChannelScreen.open(channelsCategory, testChannel.name);
+        await ChannelInfoScreen.open();
+        await PinnedMessagesScreen.open();
+        await PinnedMessagesScreen.openPostOptionsFor(pinnedPost.id, message);
+        await PostOptionsScreen.unsavePostOption.tap();
+        await PinnedMessagesScreen.back();
+        await ChannelInfoScreen.close();
+        await ChannelScreen.back();
+        await SavedMessagesScreen.open();
+        await wait(timeouts.TWO_SEC);
+
+        // * Verify pinned message is not displayed anymore on saved messages screen.
+        // Poll: the unsave preference deletion propagates through the DB observable to
+        // the saved messages list, which can take longer than a single-shot expect()
+        // allows on slower devices.
+        await waitFor(postListPostItem).not.toExist().withTimeout(timeouts.TEN_SEC);
+
+        // # Go back to channel list screen
+        await ChannelListScreen.open();
     });
 });

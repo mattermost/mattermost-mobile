@@ -286,6 +286,9 @@ class ChannelListScreen {
 
     open = async () => {
         // # Open channel list screen
+        await waitFor(HomeScreen.channelListTab).toExist().withTimeout(timeouts.TEN_SEC);
+
+        // iOS 26.x: corner-tap fails 100% visibility on tab_bar.home.tab (MM-T3393_2 trace).
         await HomeScreen.channelListTab.tap();
 
         return this.toBeVisible();

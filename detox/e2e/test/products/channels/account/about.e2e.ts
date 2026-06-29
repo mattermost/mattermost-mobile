@@ -168,18 +168,20 @@ describe('Account - Settings - About', () => {
             }
 
             // On Android edge-to-edge, footer elements can be in the ScrollView hierarchy
-            // but render with <50% visible area (system bar insets); scroll to bottom first
-            // then use toExist() (MM-T5104 testFnFailure — Build Date visible but scroll loop timed out).
-            await scrollView.scrollTo('bottom');
-            await wait(timeouts.ONE_SEC);
+            // but render with <50% visible area (system bar insets). scrollTo('bottom') can
+            // loop until timeout when content already fits the viewport (MM-T5104).
             try {
-                await waitFor(target).
-                    toExist().
-                    whileElement(by.id(AboutScreen.testID.scrollView)).
-                    scroll(150, 'down');
+                await waitFor(target).toExist().withTimeout(timeouts.THREE_SEC);
+                return;
             } catch {
-                /* fall through to bounded retry */
+                /* need incremental scroll */
             }
+            try {
+                await scrollView.scroll(400, 'down');
+            } catch {
+                // Already at scroll end
+            }
+            await wait(timeouts.ONE_SEC);
             const assertPresent = async () => waitFor(target).toExist().withTimeout(timeouts.TWO_SEC);
             /* eslint-disable no-await-in-loop -- bounded scroll retry */
             for (let attempt = 0; attempt < 8; attempt++) {
@@ -187,7 +189,11 @@ describe('Account - Settings - About', () => {
                     await assertPresent();
                     return;
                 } catch {
-                    await scrollView.scroll(100, 'down');
+                    try {
+                        await scrollView.scroll(150, 'down');
+                    } catch {
+                        // Already at scroll end
+                    }
                 }
             }
             /* eslint-enable no-await-in-loop */
@@ -210,11 +216,23 @@ describe('Account - Settings - About', () => {
         await expect(AboutScreen.privacyPolicy).toHaveText('Privacy Policy');
         await expect(AboutScreen.noticeText).toHaveText('Mattermost is made possible by the open source software used in our server and mobile apps.');
 
-        // Footer fields — scroll to bottom once; targeting buildDateValue first fails on Android
-        // when Espresso reports the testID as null despite visible footer text (MM-T5104).
+        // Footer fields — avoid scrollTo('bottom') on Android when footer is already on screen.
         const scrollView = element(by.id(AboutScreen.testID.scrollView));
-        await scrollView.scrollTo('bottom');
-        await wait(timeouts.ONE_SEC);
+        if (isAndroid()) {
+            try {
+                await waitFor(AboutScreen.buildDateTitle).toExist().withTimeout(timeouts.THREE_SEC);
+            } catch {
+                try {
+                    await scrollView.scroll(400, 'down');
+                } catch {
+                    // Already at scroll end
+                }
+                await wait(timeouts.ONE_SEC);
+            }
+        } else {
+            await scrollView.scrollTo('bottom');
+            await wait(timeouts.ONE_SEC);
+        }
         await expect(AboutScreen.buildHashTitle).toHaveText('Build Hash:');
         await expect(AboutScreen.buildHashValue).toExist();
         await expect(AboutScreen.buildHashEnterpriseTitle).toHaveText('EE Build Hash:');

@@ -109,11 +109,43 @@ const ensureUserAttributeFields = async (siteOneUrl: string): Promise<string | u
     return undefined;
 };
 
+const resolveUserAttributeFieldIds = (fields: CustomProfileField[]): UserAttributesFieldIds | undefined => {
+    const byName = new Map<string, string>();
+    for (const field of fields ?? []) {
+        if (field?.name && field?.id) {
+            byName.set(field.name, field.id);
+        }
+    }
+
+    const missing = USER_ATTRIBUTE_FIELD_NAMES.filter((name) => !byName.has(name));
+    if (missing.length > 0) {
+        return undefined;
+    }
+
+    return USER_ATTRIBUTE_FIELD_NAMES.map((name) => byName.get(name)!) as UserAttributesFieldIds;
+};
+
 export const probeUserAttributesProvision = async (siteOneUrl: string): Promise<UserAttributesSetupResult> => {
     await User.apiAdminLogin(siteOneUrl);
 
+    const {fields: existingFields, error: listError} = await CustomProfileAttributes.apiListCustomProfileAttributeFields(siteOneUrl);
+    if (!listError) {
+        const existingIds = resolveUserAttributeFieldIds(existingFields as CustomProfileField[]);
+        if (existingIds) {
+            return {ready: true, fieldIds: existingIds};
+        }
+    }
+
     const flagError = await ensureCustomProfileAttributesFeatureFlag(siteOneUrl);
     if (flagError) {
+        const {fields: retryFields, error: retryListError} = await CustomProfileAttributes.apiListCustomProfileAttributeFields(siteOneUrl);
+        if (!retryListError) {
+            const retryIds = resolveUserAttributeFieldIds(retryFields as CustomProfileField[]);
+            if (retryIds) {
+                return {ready: true, fieldIds: retryIds};
+            }
+        }
+
         return {ready: false, reason: flagError};
     }
 
@@ -122,25 +154,19 @@ export const probeUserAttributesProvision = async (siteOneUrl: string): Promise<
         return {ready: false, reason: fieldsError};
     }
 
-    const {fields, error: listError} = await CustomProfileAttributes.apiListCustomProfileAttributeFields(siteOneUrl);
-    if (listError) {
-        return {ready: false, reason: `Could not list custom profile fields: ${JSON.stringify(listError)}`};
+    const {fields, error: finalListError} = await CustomProfileAttributes.apiListCustomProfileAttributeFields(siteOneUrl);
+    if (finalListError) {
+        return {ready: false, reason: `Could not list custom profile fields: ${JSON.stringify(finalListError)}`};
     }
 
-    const byName = new Map<string, string>();
-    for (const field of (fields as CustomProfileField[]) ?? []) {
-        if (field?.name && field?.id) {
-            byName.set(field.name, field.id);
-        }
-    }
-
-    const missing = USER_ATTRIBUTE_FIELD_NAMES.filter((name) => !byName.has(name));
-    if (missing.length > 0) {
+    const fieldIds = resolveUserAttributeFieldIds(fields as CustomProfileField[]);
+    if (!fieldIds) {
+        const byName = new Map((fields as CustomProfileField[] ?? []).map((field) => [field.name, field.id]));
+        const missing = USER_ATTRIBUTE_FIELD_NAMES.filter((name) => !byName.has(name));
         return {ready: false, reason: `Missing provisioned fields: ${missing.join(', ')}`};
     }
 
-    const fieldIds = USER_ATTRIBUTE_FIELD_NAMES.map((name) => byName.get(name)!);
-    return {ready: true, fieldIds: fieldIds as UserAttributesFieldIds};
+    return {ready: true, fieldIds};
 };
 
 export const seedUserAttributeValues = async (
