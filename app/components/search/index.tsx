@@ -64,6 +64,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
         borderRadius: 8,
         height: SEARCH_INPUT_HEIGHT,
         marginLeft: 0,
+        marginRight: 0,
     },
     inputStyle: {
         color: theme.centerChannelColor,

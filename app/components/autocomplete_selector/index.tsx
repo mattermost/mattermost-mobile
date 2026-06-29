@@ -19,11 +19,12 @@ import NetworkManager from '@managers/network_manager';
 import {getActiveServerUrl} from '@queries/app/servers';
 import {getChannelById} from '@queries/servers/channel';
 import {getUserById, observeTeammateNameDisplay} from '@queries/servers/user';
-import {navigateToScreen, navigateToSettingsScreen} from '@screens/navigation';
+import {navigateToScreen} from '@screens/navigation';
 import SettingsStore from '@store/settings_store';
 import {logDebug} from '@utils/log';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {secureGetFromRecord} from '@utils/types';
+import {typography} from '@utils/typography';
 import {displayUsername} from '@utils/user';
 
 import type {WithDatabaseArgs} from '@typings/database/database';
@@ -48,6 +49,11 @@ type AutoCompleteSelectorProps = {
     isMultiselect?: boolean;
     testID: string;
     location: AvailableScreens;
+
+    // Interim solution not to rewrite this component nor
+    // break any existing features that rely on it, until
+    // we apply blocks in all integration surfaces.
+    omitMargins?: boolean;
 }
 
 const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
@@ -59,6 +65,10 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
         paddingRight: 30,
         paddingVertical: 7,
         height: 40,
+    };
+    const baseText = {
+        ...typography('Body', 200),
+        color: theme.centerChannelColor,
     };
 
     return {
@@ -74,22 +84,23 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
         },
         input,
         dropdownPlaceholder: {
-            top: 3,
-            marginLeft: 5,
-            color: changeOpacity(theme.centerChannelColor, 0.5),
+            ...baseText,
         },
         dropdownSelected: {
-            top: 3,
-            marginLeft: 5,
-            color: theme.centerChannelColor,
+            ...baseText,
         },
         icon: {
             position: 'absolute',
-            top: 13,
+            top: 10,
             right: 12,
         },
         disabled: {
             opacity: 0.5,
+        },
+        noMargins: {
+            marginBottom: 0,
+            marginRight: 0,
+            marginTop: 0,
         },
     };
 });
@@ -169,6 +180,7 @@ function AutoCompleteSelector({
     isMultiselect = false,
     testID,
     location,
+    omitMargins = false,
 }: AutoCompleteSelectorProps) {
     const intl = useIntl();
     const theme = useTheme();
@@ -202,13 +214,8 @@ function AutoCompleteSelector({
     const goToSelectorScreen = usePreventDoubleTap(useCallback((() => {
         SettingsStore.setIntegrationsSelectCallback(handleSelect);
         SettingsStore.setIntegrationsDynamicOptionsCallback(getDynamicOptions);
-        const passProps = {dataSource, options, selected, title, isMultiselect};
-        if (location === Screens.COMPONENT_LIBRARY) {
-            navigateToSettingsScreen(Screens.INTEGRATION_SELECTOR, passProps);
-            return;
-        }
-        navigateToScreen(Screens.INTEGRATION_SELECTOR, passProps);
-    }), [handleSelect, getDynamicOptions, dataSource, options, selected, title, isMultiselect, location]));
+        navigateToScreen(Screens.INTEGRATION_SELECTOR, {dataSource, options, selected, title, isMultiselect});
+    }), [handleSelect, getDynamicOptions, dataSource, options, selected, title, isMultiselect]));
 
     // Handle the text for the default value.
     useEffect(() => {
@@ -231,7 +238,7 @@ function AutoCompleteSelector({
     }, [dataSource, teammateNameDisplay, intl, options, selected, serverUrl]);
 
     return (
-        <View style={style.container}>
+        <View style={[style.container, omitMargins && style.noMargins]}>
             {Boolean(label) && (
                 <Label
                     label={label!}
@@ -255,6 +262,7 @@ function AutoCompleteSelector({
                     </Text>
                     <CompassIcon
                         name='chevron-down'
+                        size={20}
                         color={changeOpacity(theme.centerChannelColor, 0.5)}
                         style={style.icon}
                     />

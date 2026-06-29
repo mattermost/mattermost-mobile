@@ -3,7 +3,7 @@
 
 import React, {useCallback, useMemo, type ReactNode} from 'react';
 import {useIntl} from 'react-intl';
-import {StyleSheet, Text, TouchableOpacity, View, type StyleProp, type ViewStyle} from 'react-native';
+import {StyleSheet, Text, TouchableOpacity, View} from 'react-native';
 
 import CompassIcon from '@components/compass_icon';
 import CustomStatusEmoji from '@components/custom_status/custom_status_emoji';
@@ -20,9 +20,7 @@ import type UserModel from '@typings/database/models/servers/user';
 export type UserItemProps = {
     FooterComponent?: ReactNode;
     user?: UserProfile | UserModel;
-    containerStyle?: StyleProp<ViewStyle>;
     currentUserId: string;
-    includeMargin?: boolean;
     isAgent?: boolean;
     size?: number;
     testID?: string;
@@ -36,7 +34,6 @@ export type UserItemProps = {
     onLayout?: () => void;
     disabled?: boolean;
     viewRef?: React.LegacyRef<View>;
-    padding?: number;
     hideGuestTags: boolean;
 }
 
@@ -64,13 +61,11 @@ const getThemedStyles = makeStyleSheetFromTheme((theme: Theme) => {
 
 const nonThemedStyles = StyleSheet.create({
     row: {
-        height: 40,
         paddingBottom: 8,
         paddingTop: 4,
         flexDirection: 'row',
         alignItems: 'center',
     },
-    margin: {marginVertical: 8},
     rowInfoBaseContainer: {
         flex: 1,
     },
@@ -91,7 +86,6 @@ const nonThemedStyles = StyleSheet.create({
 const UserItem = ({
     FooterComponent,
     user,
-    containerStyle,
     currentUserId,
     isAgent = false,
     size = 24,
@@ -106,8 +100,6 @@ const UserItem = ({
     onUserLongPress,
     disabled = false,
     viewRef,
-    padding,
-    includeMargin,
     hideGuestTags,
 }: UserItemProps) => {
     const theme = useTheme();
@@ -136,11 +128,9 @@ const UserItem = ({
             nonThemedStyles.row,
             {
                 opacity: disabled ? 0.32 : 1,
-                paddingHorizontal: padding || undefined,
             },
-            includeMargin && nonThemedStyles.margin,
         ];
-    }, [disabled, padding, includeMargin]);
+    }, [disabled]);
 
     const onPress = useCallback(() => {
         if (user) {
@@ -165,6 +155,7 @@ const UserItem = ({
             <View
                 ref={viewRef}
                 style={[containerViewStyle, containerStyle]}
+                testID={userItemTestId}
             >
                 <ProfilePicture
                     author={user}

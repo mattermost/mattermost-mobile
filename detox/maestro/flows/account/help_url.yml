@@ -1,0 +1,96 @@
+# MM-T3260: Tapping Help in Settings opens the help URL in a browser.
+#
+# PRE-CONDITIONS:
+#   - Logged-in test user (via subflows/auth/login.yml)
+#
+# REQUIRED ENV VARS:
+#   - MAESTRO_APP_ID, TEST_USER_EMAIL, TEST_USER_PASSWORD
+#
+# ASSERTIONS:
+#   - Help opens an external browser or in-app browser sheet
+#   - iOS: breadcrumb or Done dismisses back to Settings with Help visible again
+#   - Android: Back from Chrome Custom Tab returns to Settings with Help visible again
+#
+# testIDs:
+#   - tab_bar.account.tab
+#   - account.screen
+#   - account.settings.option
+#   - settings.help.option
+#   - breadcrumb
+tags:
+  - MM-T3260
+appId: ${MAESTRO_APP_ID}
+---
+- runFlow: ../../subflows/auth/login.yml
+
+- tapOn:
+    id: "tab_bar.account.tab"
+- extendedWaitUntil:
+    visible:
+      id: "account.screen"
+    timeout: 10000
+
+- tapOn:
+    id: "account.settings.option"
+# Help can take up to 30s to appear while server config syncs on first login.
+- extendedWaitUntil:
+    visible:
+      id: "settings.help.option"
+    timeout: 30000
+
+- tapOn:
+    id: "settings.help.option"
+
+# iOS: dismiss SFSafariViewController (same branches as attach_logs.yml).
+- runFlow:
+    when:
+      platform: iOS
+    commands:
+      - runFlow:
+          when:
+            visible:
+              id: "breadcrumb"
+          commands:
+            - takeScreenshot: help-browser-opened
+            - tapOn:
+                id: "breadcrumb"
+      - runFlow:
+          when:
+            visible:
+              text: "Done"
+          commands:
+            - takeScreenshot: help-browser-opened
+            - tapOn:
+                text: "Done"
+
+# Android: Chrome Custom Tab — dismiss ads/FRE overlays before Back.
+- runFlow:
+    when:
+      platform: Android
+    commands:
+      - extendedWaitUntil:
+          notVisible:
+            id: "settings.help.option"
+          timeout: 8000
+      - runFlow:
+          file: ../../subflows/browser/dismiss_chrome_interstitial.yml
+      - takeScreenshot: help-browser-opened
+      - pressKey: Back
+      - runFlow:
+          file: ../../subflows/browser/dismiss_chrome_interstitial.yml
+      - pressKey: Back
+      - runFlow:
+          file: ../../subflows/browser/dismiss_chrome_interstitial.yml
+
+# Browser hand-off recovery when Settings is not visible after dismiss.
+- runFlow:
+    when:
+      notVisible:
+        id: "settings.help.option"
+    file: ../../subflows/browser/reopen_settings_screen.yml
+
+- extendedWaitUntil:
+    visible:
+      id: "settings.help.option"
+    timeout: 30000
+- takeScreenshot: help-browser-dismissed

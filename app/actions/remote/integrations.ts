@@ -45,11 +45,19 @@ export const lookupInteractiveDialog = async (serverUrl: string, submission: Dia
     }
 };
 
-export const postActionWithCookie = async (serverUrl: string, postId: string, actionId: string, actionCookie: string, selectedOption = '') => {
+export const postActionWithCookie = async (
+    serverUrl: string,
+    postId: string,
+    actionId: string,
+    actionCookie: string,
+    selectedOption = '',
+    query?: Record<string, string>,
+    integrationFormat: PostActionIntegrationFormat = 'attachment',
+) => {
     try {
         const client = NetworkManager.getClient(serverUrl);
 
-        const data = await client.doPostActionWithCookie(postId, actionId, actionCookie, selectedOption);
+        const data = await client.doPostActionWithCookie(postId, actionId, actionCookie, selectedOption, query, integrationFormat);
         if (data?.trigger_id) {
             IntegrationsMananger.getManager(serverUrl)?.setTriggerId(data.trigger_id);
         }
@@ -57,23 +65,6 @@ export const postActionWithCookie = async (serverUrl: string, postId: string, ac
         return {data};
     } catch (error) {
         logDebug('error on postActionWithCookie', getFullErrorMessage(error));
-        forceLogoutIfNecessary(serverUrl, error);
-        return {error};
-    }
-};
-
-export const postActionWithQuery = async (serverUrl: string, postId: string, actionId: string, query: Record<string, string>) => {
-    try {
-        const client = NetworkManager.getClient(serverUrl);
-
-        const data = await client.doPostActionWithQuery(postId, actionId, query);
-        if (data?.trigger_id) {
-            IntegrationsMananger.getManager(serverUrl)?.setTriggerId(data.trigger_id);
-        }
-
-        return {data};
-    } catch (error) {
-        logDebug('error on postActionWithQuery', getFullErrorMessage(error));
         forceLogoutIfNecessary(serverUrl, error);
         return {error};
     }
