@@ -17,6 +17,14 @@ class SpecGroup {
   }
 }
 
+function toRepoRelative(filePath) {
+  const repoRoot = process.cwd();
+  if (path.isAbsolute(filePath)) {
+    return path.relative(repoRoot, filePath);
+  }
+  return filePath;
+}
+
 class Specs {
   constructor(searchPath, parallelism, deviceInfo, specListFile) {
     this.searchPath = searchPath;
@@ -37,14 +45,13 @@ class Specs {
       if (!Array.isArray(listed) || listed.length === 0) {
         throw new Error(`spec list manifest is empty: ${manifestPath}`);
       }
-      this.rawFiles = listed.map((relativePath) => {
-        const fullPath = path.isAbsolute(relativePath)
-          ? relativePath
-          : path.join(process.cwd(), relativePath);
+      this.rawFiles = listed.map((listedPath) => {
+        const repoRelative = toRepoRelative(listedPath);
+        const fullPath = path.join(process.cwd(), repoRelative);
         if (!fs.existsSync(fullPath)) {
           throw new Error(`spec from manifest not found: ${fullPath}`);
         }
-        return fullPath;
+        return repoRelative;
       });
       return;
     }
@@ -70,7 +77,7 @@ class Specs {
         } else if (fileRegex.test(filePath)) {
           const relativeFilePath = filePath.replace(dirPath + '/', '');
           const fullPath = path.join(this.searchPath, relativeFilePath);
-          this.rawFiles.push(fullPath);
+          this.rawFiles.push(toRepoRelative(fullPath));
         }
       });
     };
