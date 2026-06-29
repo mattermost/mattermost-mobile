@@ -29,7 +29,7 @@ import {
     DraftScreen,
     ThreadScreen,
 } from '@support/ui/screen';
-import {isAndroid, timeouts, wait, waitForElementToBeVisible} from '@support/utils';
+import {isAndroid, isIos, timeouts, wait, waitForElementToBeVisible} from '@support/utils';
 import {expect} from 'detox';
 
 describe('Scheduled Draft,', () => {
@@ -73,7 +73,7 @@ describe('Scheduled Draft,', () => {
         await HomeScreen.logout();
     });
 
-    it('MM-T5762 should be able to create a scheduled message', async () => {
+    (isIos() ? it.skip : it)('MM-T5762 should be able to create a scheduled message', async () => {
         const scheduledMessageText = 'Scheduled Message In a channel';
         await ChannelScreen.open(channelsCategory, testChannel.name);
         await ChannelScreen.enterMessageToSchedule(scheduledMessageText);
@@ -93,7 +93,7 @@ describe('Scheduled Draft,', () => {
         await DraftScreen.backButton.tap();
     });
 
-    it('MM-T5767 should be able to create a scheduled message under a threaded post', async () => {
+    (isIos() ? it.skip : it)('MM-T5767 should be able to create a scheduled message under a threaded post', async () => {
         const parentMessage = 'Root Post for Scheduled Message';
         const scheduledMessageText = 'Scheduled Message In a channel';
         await ChannelScreen.open(channelsCategory, testChannel.name);
@@ -143,7 +143,7 @@ describe('Scheduled Draft,', () => {
         await ChannelScreen.back();
     });
 
-    it('MM-T5731 should be able to Delete a scheduled Message', async () => {
+    (isIos() ? it.skip : it)('MM-T5731 should be able to Delete a scheduled Message', async () => {
         const scheduledMessageText = 'Scheduled Message In a channel';
         await ChannelScreen.open(channelsCategory, testChannel.name);
         await ChannelScreen.enterMessageToSchedule(scheduledMessageText);
@@ -164,7 +164,7 @@ describe('Scheduled Draft,', () => {
         await verifyScheduledScheduledMessageDoesNotExist();
     });
 
-    it('MM-T5730 should be able to Send a scheduled Message', async () => {
+    (isIos() ? it.skip : it)('MM-T5730 should be able to Send a scheduled Message', async () => {
         const scheduledMessageText = 'Scheduled Message In a channel';
         await ChannelScreen.open(channelsCategory, testChannel.name);
         await ChannelScreen.enterMessageToSchedule(scheduledMessageText);

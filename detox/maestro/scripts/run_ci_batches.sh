@@ -107,6 +107,9 @@ flow_sort_key() {
   esac
 }
 
+EXCLUDE_TAGS_STR=""
+EXCLUDE_TAGS_STR=$(load_exclude_tags)
+
 should_skip_flow() {
   local flow=$1
   local base=${flow##*/}
@@ -116,6 +119,15 @@ should_skip_flow() {
   [[ "$base" == "attach_logs_disabled_when_download_logs_off.yml" ]] && return 0
   [[ "$base" == "file_type_preview.yml" ]] && return 0
   [[ "$base" == "start_call.yml" ]] && return 0
+  # Skip flows whose tags appear in the platform-specific exclude list.
+  if [[ -n "$EXCLUDE_TAGS_STR" && -f "$flow" ]]; then
+    local flow_tags
+    flow_tags=$(awk '/^tags:/{found=1; next} found{if (!/^  - /) exit; print $2}' "$flow" 2>/dev/null || true)
+    local tag
+    for tag in $flow_tags; do
+      [[ ",$EXCLUDE_TAGS_STR," == *",$tag,"* ]] && return 0
+    done
+  fi
   return 1
 }
 
