@@ -7,7 +7,7 @@ import {existsSync} from 'fs';
 
 import {ClaudePromptHandler} from '@support/pilot/ClaudePromptHandler';
 import {System, User} from '@support/server_api';
-import {serverOneUrl, siteOneUrl} from '@support/test_config';
+import {siteOneUrl} from '@support/test_config';
 
 const BUNDLE_ID = 'com.mattermost.rnbeta';
 
@@ -101,8 +101,6 @@ function clearIOSAppData(): void {
 // ─── Admin API login ─────────────────────────────────────────────────────────
 
 async function loginAdmin(): Promise<void> {
-    console.info(`[loginAdmin] API URL: ${siteOneUrl}`);
-    console.info(`[loginAdmin] App URL (simulator uses this to connect): ${serverOneUrl}`);
     const HEALTH_MAX_ATTEMPTS = 5;
     for (let healthAttempt = 1; healthAttempt <= HEALTH_MAX_ATTEMPTS; healthAttempt++) {
         try {

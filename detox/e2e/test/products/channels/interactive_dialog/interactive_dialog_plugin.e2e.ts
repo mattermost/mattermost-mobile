@@ -746,7 +746,7 @@ describe('Interactive Dialog - Basic Dialog (Plugin)', () => {
     });
 
     describe('Interactive Dialog - File Upload (Plugin)', () => {
-        it.only('MM-T6070_1 - should render file upload dialog, open attachment options, and submit with no files (Plugin)', async () => {
+        it('MM-T6070_1 - should render file upload dialog, open attachment options, and submit with no files (Plugin)', async () => {
             if (!pluginAvailable) {
                 return;
             }
@@ -786,31 +786,33 @@ describe('Interactive Dialog - Basic Dialog (Plugin)', () => {
             }
         });
 
-        it.only('MM-T6072_1 - should disable file field choose when mobile upload is disabled (Plugin)', async () => {
+        it('MM-T6072_1 - should disable file field choose when mobile upload is disabled (Plugin)', async () => {
             if (!pluginAvailable) {
                 return;
             }
-            await ensureDialogClosed();
-            await System.apiUpdateConfig(siteOneUrl, {
-                FileSettings: {EnableMobileUpload: false},
-            });
-            await wait(2000);
+            try {
+                await ensureDialogClosed();
+                await System.apiUpdateConfig(siteOneUrl, {
+                    FileSettings: {EnableMobileUpload: false},
+                });
+                await wait(2000);
 
-            await postSlashCommandDirect('/dialog file-upload');
-            await ensureDialogOpen();
-            await InteractiveDialogScreen.expectFileFieldUploadDisabledWarning('single_file');
-            await InteractiveDialogScreen.expectFileFieldUploadDisabledWarning('multi_file');
+                await postSlashCommandDirect('/dialog file-upload');
+                await ensureDialogOpen();
+                await InteractiveDialogScreen.expectFileFieldUploadDisabledWarning('single_file');
+                await InteractiveDialogScreen.expectFileFieldUploadDisabledWarning('multi_file');
 
-            await InteractiveDialogScreen.cancel();
-            await ensureDialogClosed();
-
-            await System.apiUpdateConfig(siteOneUrl, {
-                FileSettings: {EnableMobileUpload: true},
-            });
-            await wait(2000);
+                await InteractiveDialogScreen.cancel();
+                await ensureDialogClosed();
+            } finally {
+                await System.apiUpdateConfig(siteOneUrl, {
+                    FileSettings: {EnableMobileUpload: true},
+                });
+                await wait(2000);
+            }
         });
 
-        it.only('MM-T6073_1 - should hydrate file field from plugin persisted file IDs on re-open (Plugin)', async () => {
+        it('MM-T6073_1 - should hydrate file field from plugin persisted file IDs on re-open (Plugin)', async () => {
             if (!pluginAvailable) {
                 return;
             }

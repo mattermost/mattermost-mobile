@@ -242,6 +242,18 @@ describe('AppsFormFileField', () => {
             expect(mockOnChange).not.toHaveBeenCalled();
         });
 
+        it('drops missing file IDs from onChange after hydration', async () => {
+            mockFetchFilesInfo.mockResolvedValue({files: [makeFileInfo({id: 'existing-1'})]});
+
+            renderWithIntlAndTheme(
+                <AppsFormFileField {...getBaseProps({value: 'existing-1,missing-id'})}/>,
+            );
+
+            await waitFor(() => {
+                expect(mockOnChange).toHaveBeenCalledWith('file_field', 'existing-1');
+            });
+        });
+
         it('does not clobber a user pick made while hydration is in flight', async () => {
             // Defer the hydration fetch so we can interact before it resolves.
             let resolveFetch: (v: {files: FileInfo[]}) => void = () => { /* set in executor */ };
@@ -359,6 +371,26 @@ describe('AppsFormFileField', () => {
             });
         });
 
+        it('shows a failed row when upload returns a synchronous error', async () => {
+            const extracted = makeExtractedFile();
+            mockUploadFile.mockReturnValue({error: new Error('Client unavailable')});
+
+            const {getByTestId} = renderWithIntlAndTheme(
+                <AppsFormFileField {...getBaseProps()}/>,
+            );
+
+            fireEvent.press(getByTestId('file_field.choose.button'));
+            const onUploadFiles = captureOnUploadFiles();
+
+            await act(async () => {
+                onUploadFiles([extracted]);
+            });
+
+            await waitFor(() => {
+                expect(getByTestId(`file_field.file.failed.${extracted.clientId}`)).toBeTruthy();
+            });
+        });
+
         it('shows a failed row when upload errors', async () => {
             const extracted = makeExtractedFile();
 
@@ -459,7 +491,9 @@ describe('AppsFormFileField', () => {
     });
 
     describe('allowMultiple behaviour', () => {
-        it('replaces files when allowMultiple is false and a second batch is picked', async () => {
+        it('disables choose until the single file is removed, then allows a new pick', async () => {
+            jest.useFakeTimers({doNotFake: ['nextTick']});
+
             const extracted1 = makeExtractedFile({clientId: 'stable-1', name: 'first.txt'});
             const extracted2 = makeExtractedFile({clientId: 'stable-2', name: 'second.txt'});
 
@@ -475,7 +509,6 @@ describe('AppsFormFileField', () => {
                 <AppsFormFileField {...getBaseProps({allowMultiple: false})}/>,
             );
 
-            // First pick
             fireEvent.press(getByTestId('file_field.choose.button'));
             const onUploadFiles1 = captureOnUploadFiles();
 
@@ -490,8 +523,25 @@ describe('AppsFormFileField', () => {
                 expect(getByTestId(`file_field.file.row.${extracted1.clientId}`)).toBeTruthy();
             });
 
-            // Second pick — should replace
+            expect(getByTestId('file_field.choose.button').props.accessibilityState?.disabled).toBe(true);
+            expect(mockOpenAttachmentOptions).toHaveBeenCalledTimes(1);
+
             fireEvent.press(getByTestId('file_field.choose.button'));
+            expect(mockOpenAttachmentOptions).toHaveBeenCalledTimes(1);
+
+            fireEvent.press(getByTestId(`file_field.file.remove.${extracted1.clientId}`));
+
+            await waitFor(() => {
+                expect(queryByTestId(`file_field.file.row.${extracted1.clientId}`)).toBeNull();
+                expect(getByTestId('file_field.choose.button').props.accessibilityState?.disabled).toBe(false);
+            });
+
+            await act(async () => {
+                jest.advanceTimersByTime(800);
+            });
+
+            fireEvent.press(getByTestId('file_field.choose.button'));
+            expect(mockOpenAttachmentOptions).toHaveBeenCalledTimes(2);
             const onUploadFiles2 = captureOnUploadFiles();
 
             await act(async () => {
@@ -505,6 +555,8 @@ describe('AppsFormFileField', () => {
                 expect(queryByTestId(`file_field.file.row.${extracted1.clientId}`)).toBeNull();
                 expect(getByTestId(`file_field.file.row.${extracted2.clientId}`)).toBeTruthy();
             });
+
+            jest.useRealTimers();
         });
 
         it('appends files when allowMultiple is true', async () => {
@@ -553,6 +605,30 @@ describe('AppsFormFileField', () => {
                 expect(getByTestId(`file_field.file.row.${extracted1.clientId}`)).toBeTruthy();
                 expect(getByTestId(`file_field.file.row.${extracted2.clientId}`)).toBeTruthy();
             });
+        });
+    });
+
+    describe('unmount cleanup', () => {
+        it('clears pending state on unmount', async () => {
+            const extracted = makeExtractedFile();
+            mockUploadFile.mockReturnValue({cancel: jest.fn()});
+
+            const {getByTestId, unmount} = renderWithIntlAndTheme(
+                <AppsFormFileField {...getBaseProps()}/>,
+            );
+
+            fireEvent.press(getByTestId('file_field.choose.button'));
+            const onUploadFiles = captureOnUploadFiles();
+
+            await act(async () => {
+                onUploadFiles([extracted]);
+            });
+
+            expect(mockOnPendingChange).toHaveBeenCalledWith(true);
+
+            unmount();
+
+            expect(mockOnPendingChange).toHaveBeenLastCalledWith(false);
         });
     });
 

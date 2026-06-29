@@ -79,6 +79,16 @@ const patchEntryUpdater = (stableId: string, patch: Partial<FileEntry>) =>
 const removeEntryUpdater = (stableId: string) =>
     (entries: FileEntry[]): FileEntry[] => removeEntryById(entries, stableId);
 
+const joinedUploadedFileIds = (entries: FileEntry[]): string => {
+    const ids: string[] = [];
+    for (const entry of entries) {
+        if (entry.fileId) {
+            ids.push(entry.fileId);
+        }
+    }
+    return ids.join(',');
+};
+
 export type Props = {
     name: string;
     displayName: string;
@@ -172,6 +182,8 @@ function AppsFormFileField({
     const hasInteractedRef = useRef(false);
     const onChangeRef = useRef(onChange);
     onChangeRef.current = onChange;
+    const onPendingChangeRef = useRef(onPendingChange);
+    onPendingChangeRef.current = onPendingChange;
 
     useEffect(() => {
         const cancelMap = cancelMapRef.current;
@@ -181,6 +193,7 @@ function AppsFormFileField({
                 cancel();
             }
             cancelMap.clear();
+            onPendingChangeRef.current?.(false);
         };
     }, []);
 
@@ -202,7 +215,14 @@ function AppsFormFileField({
                 return;
             }
 
-            setEntries(files.map(uploadedEntryFromFileInfo));
+            const hydratedEntries = files.map(uploadedEntryFromFileInfo);
+            setEntries(hydratedEntries);
+
+            const hydratedIds = joinedUploadedFileIds(hydratedEntries);
+            const requestedIds = ids.join(',');
+            if (hydratedIds !== requestedIds) {
+                onChangeRef.current(name, hydratedIds);
+            }
         })().catch((error) => {
             // fetchFilesInfo is designed not to throw, but guard the bare IIFE
             // against an unhandled rejection if that ever changes.
@@ -276,6 +296,11 @@ function AppsFormFileField({
         };
 
         const result = uploadFile(serverUrl, extractedFile, channelId, onProgress, onComplete, onError);
+        if ('error' in result && result.error) {
+            const msg = getFullErrorMessage(result.error) || intl.formatMessage(messages.uploadFailed);
+            setEntries(patchEntryUpdater(entry.stableId, {status: 'failed', error: msg}));
+            return;
+        }
         if ('cancel' in result && result.cancel) {
             cancelMapRef.current.set(entry.stableId, result.cancel);
         }

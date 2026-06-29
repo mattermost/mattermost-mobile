@@ -12,8 +12,6 @@ const path = require('path');
 
 const axios = require('axios');
 
-const {siteOneUrl, serverOneUrl, getLocalLanIpv4} = require('./support/server_urls');
-
 const DEVICE_REGISTRY_PATH = path.join(
     os.homedir(),
     'Library', 'Detox', 'device.registry.json',
@@ -85,7 +83,7 @@ function shutdownZombieSimulators() {
 
 // One-time server health check and CI config before tests load.
 
-const SITE_URL = siteOneUrl;
+const SITE_URL = process.env.SITE_1_URL || 'http://localhost:8065';
 const ADMIN_USERNAME = process.env.ADMIN_USERNAME || 'sysadmin';
 const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || 'Sys@dmin-sample1';
 
@@ -147,11 +145,6 @@ async function serverSetup() {
         throw new Error(`Server health check failed: ${JSON.stringify(ping.data)}`);
     }
     process.stdout.write('[globalSetup] ✅ Server health check passed\n');
-    process.stdout.write(`[globalSetup] API URL (host):      ${siteOneUrl}\n`);
-    process.stdout.write(`[globalSetup] App URL (simulator): ${serverOneUrl}\n`);
-    if (!process.env.SERVER_1_URL && !process.env.SITE_1_URL) {
-        process.stdout.write(`[globalSetup] Detected LAN IP: ${getLocalLanIpv4()} (override with SERVER_1_URL in detox/.env)\n`);
-    }
 
     const clientConfig = await retryAxios(
         () => axios.get(`${SITE_URL}/api/v4/config/client?format=old`),

@@ -30,6 +30,30 @@ export function collectFileIds(submission: {[key: string]: string}, elements: Di
     return [...new Set(fileIds)];
 }
 
+/** Merge FILE field values from a step into accumulated per-field state (replace, not append). */
+export function mergeFileFieldValues(
+    accumulated: Record<string, string>,
+    submission: Record<string, string>,
+    elements: DialogElement[] = [],
+): Record<string, string> {
+    const merged = {...accumulated};
+    elements.forEach((element) => {
+        if (element.type === 'file' && element.name in submission) {
+            merged[element.name] = submission[element.name];
+        }
+    });
+    return merged;
+}
+
+/** Flatten per-field comma-joined FILE values into a deduplicated file_ids array. */
+export function flattenFileFieldValues(byField: Record<string, string>): string[] {
+    const fileIds: string[] = [];
+    Object.values(byField).forEach((value) => {
+        fileIds.push(...String(value).split(',').map((id) => id.trim()).filter(Boolean));
+    });
+    return [...new Set(fileIds)];
+}
+
 /**
  * Converts AppForm values back to legacy DialogSubmission format
  * Used when submitting converted dialogs through legacy endpoints

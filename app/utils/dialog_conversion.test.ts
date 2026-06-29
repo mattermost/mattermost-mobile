@@ -6,6 +6,8 @@ import {
     convertAppFormValuesToDialogSubmission,
     convertDialogElementToAppField,
     convertDialogToAppForm,
+    flattenFileFieldValues,
+    mergeFileFieldValues,
 } from './dialog_conversion';
 import {DialogElementTypes} from './dialog_utils';
 
@@ -1037,6 +1039,59 @@ describe('dialog_conversion', () => {
 
         it('returns an empty array when elements is omitted', () => {
             expect(collectFileIds({f1: 'a'})).toEqual([]);
+        });
+    });
+
+    describe('mergeFileFieldValues', () => {
+        const fileEl = (name: string): DialogElement => ({
+            name,
+            type: DialogElementTypes.FILE,
+            display_name: '',
+            subtype: undefined,
+            default: '',
+            placeholder: '',
+            help_text: '',
+            optional: true,
+            min_length: 0,
+            max_length: 0,
+            data_source: '',
+            options: [],
+        });
+
+        it('replaces a field value instead of appending', () => {
+            const merged = mergeFileFieldValues(
+                {step1_file: 'old-id'},
+                {step1_file: 'new-id'},
+                [fileEl('step1_file')],
+            );
+            expect(merged).toEqual({step1_file: 'new-id'});
+        });
+
+        it('clears a field when the step submits an empty value', () => {
+            const merged = mergeFileFieldValues(
+                {step1_file: 'old-id'},
+                {step1_file: ''},
+                [fileEl('step1_file')],
+            );
+            expect(merged).toEqual({step1_file: ''});
+        });
+
+        it('preserves unrelated accumulated fields', () => {
+            const merged = mergeFileFieldValues(
+                {step1_file: 'a', step2_file: 'b'},
+                {step2_file: 'c'},
+                [fileEl('step2_file')],
+            );
+            expect(merged).toEqual({step1_file: 'a', step2_file: 'c'});
+        });
+    });
+
+    describe('flattenFileFieldValues', () => {
+        it('flattens and deduplicates per-field comma-joined IDs', () => {
+            expect(flattenFileFieldValues({
+                f1: 'a,b',
+                f2: 'b,c',
+            })).toEqual(['a', 'b', 'c']);
         });
     });
 });

@@ -9,7 +9,7 @@ import {submitInteractiveDialog, lookupInteractiveDialog} from '@actions/remote/
 import {AppCallResponseTypes} from '@constants/apps';
 import {useServerUrl} from '@context/server';
 import AppsFormComponent from '@screens/apps_form/apps_form_component';
-import {collectFileIds} from '@utils/dialog_conversion';
+import {flattenFileFieldValues, mergeFileFieldValues} from '@utils/dialog_conversion';
 import {isAppSelectOption} from '@utils/dialog_utils';
 import {getFullErrorMessage} from '@utils/errors';
 import {InteractiveDialogAdapter} from '@utils/interactive_dialog_adapter';
@@ -68,10 +68,8 @@ export const DialogRouter = React.memo<Props>(({
     // State to accumulate values across multiform steps
     const [accumulatedValues, setAccumulatedValues] = useState<AppFormValues>({});
 
-    // Accumulate uploaded file IDs from FILE fields completed on earlier steps, so a
-    // multiform final submit keeps every file_id (the current step's elements alone
-    // can't see earlier steps' file fields).
-    const [accumulatedFileIds, setAccumulatedFileIds] = useState<string[]>([]);
+    // Per-field FILE values from earlier multiform steps (field name → comma-joined IDs).
+    const [accumulatedFileFields, setAccumulatedFileFields] = useState<Record<string, string>>({});
 
     // Helper to convert select options array to comma-separated string
     const convertSelectOptionsToString = (optionsArray: AppSelectOption[]): string => {
@@ -140,11 +138,9 @@ export const DialogRouter = React.memo<Props>(({
             if (isMultiform) {
                 // This is a multiform submission - include ALL accumulated values
                 const multiformSubmission = convertAppFormValuesToSubmission(allValues);
-
-                // Earlier steps' file IDs (accumulated) + this step's file IDs.
-                // Collect from this step's values only (not allValues) so an earlier
-                // step's file field re-declared here can't double-count; Set dedups.
-                const fileIds = [...new Set([...accumulatedFileIds, ...collectFileIds(convertAppFormValuesToSubmission(values), currentConfig.dialog.elements)])];
+                const stepSubmission = convertAppFormValuesToSubmission(values);
+                const mergedFileFields = mergeFileFieldValues(accumulatedFileFields, stepSubmission, currentConfig.dialog.elements);
+                const fileIds = flattenFileFieldValues(mergedFileFields);
 
                 legacySubmission = {
                     url: currentConfig.url || '',
@@ -175,11 +171,8 @@ export const DialogRouter = React.memo<Props>(({
                 const newAccumulatedValues = {...accumulatedValues, ...values};
                 setAccumulatedValues(newAccumulatedValues);
 
-                // Carry forward this step's uploaded file IDs so the final submit keeps them
-                const stepFileIds = collectFileIds(convertAppFormValuesToSubmission(values), currentConfig.dialog.elements);
-                if (stepFileIds.length) {
-                    setAccumulatedFileIds((prev) => [...new Set([...prev, ...stepFileIds])]);
-                }
+                const stepSubmission = convertAppFormValuesToSubmission(values);
+                setAccumulatedFileFields((prev) => mergeFileFieldValues(prev, stepSubmission, currentConfig.dialog.elements));
 
                 // Use the raw dialog data from server - it's already in the correct format!
                 const newDialogConfig: InteractiveDialogConfig = {
@@ -196,7 +189,7 @@ export const DialogRouter = React.memo<Props>(({
             } else {
             // Clear accumulated state since dialog is completing
                 setAccumulatedValues({});
-                setAccumulatedFileIds([]);
+                setAccumulatedFileFields({});
             }
 
             return result;
@@ -213,7 +206,7 @@ export const DialogRouter = React.memo<Props>(({
                 },
             };
         }
-    }, [currentConfig, serverUrl, intl, accumulatedValues, accumulatedFileIds, convertAppFormValuesToSubmission]);
+    }, [currentConfig, serverUrl, intl, accumulatedValues, accumulatedFileFields, convertAppFormValuesToSubmission]);
 
     // Memoize form conversion to avoid recalculation on every render
     const appForm = useMemo(() => {
@@ -314,13 +307,8 @@ export const DialogRouter = React.memo<Props>(({
                 const newAccumulatedValues = {...accumulatedValues, ...values};
                 setAccumulatedValues(newAccumulatedValues);
 
-                // Carry forward this step's uploaded file IDs BEFORE the refresh
-                // replaces currentConfig — the refreshed form may drop the FILE
-                // element, which would otherwise lose those IDs on final submit.
-                const refreshedFileIds = collectFileIds(convertAppFormValuesToSubmission(values), currentConfig.dialog.elements);
-                if (refreshedFileIds.length) {
-                    setAccumulatedFileIds((prev) => [...new Set([...prev, ...refreshedFileIds])]);
-                }
+                const refreshedSubmission = convertAppFormValuesToSubmission(values);
+                setAccumulatedFileFields((prev) => mergeFileFieldValues(prev, refreshedSubmission, currentConfig.dialog.elements));
 
                 // Update the dialog config state with new form data
                 const newConfig = {

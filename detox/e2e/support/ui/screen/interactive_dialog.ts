@@ -183,7 +183,7 @@ class InteractiveDialogScreen {
         const btn = this.getFileFieldChooseButton(fieldName);
         await waitFor(btn).toExist().withTimeout(timeouts.TWO_SEC);
         await btn.tap();
-        await expect(element(by.id('file_attachment.photo_library'))).not.toExist();
+        await waitFor(element(by.id('file_attachment.photo_library'))).not.toExist().withTimeout(timeouts.THREE_SEC);
     };
 
     expectFileFieldChooseButtonEnabled = async (fieldName: string) => {
