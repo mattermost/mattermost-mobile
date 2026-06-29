@@ -35,8 +35,7 @@ export async function appEntry(serverUrl: string, since = 0) {
         // seed the current user before WS connects
         const existingUserId = await getCurrentUserId(database);
         if (!existingUserId) {
-            await refetchCurrentUser(serverUrl, undefined);
-            const seededUserId = await getCurrentUserId(database);
+            const {currentUserId: seededUserId} = await refetchCurrentUser(serverUrl, undefined);
             if (!seededUserId) {
                 throw new Error('appEntry: failed to seed current user');
             }

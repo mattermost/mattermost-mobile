@@ -56,7 +56,7 @@ describe('applyPersistenceModeChange', () => {
             database: {} as never,
             operator: mockOperator as never,
         });
-        jest.mocked(refetchCurrentUser).mockResolvedValue(undefined);
+        jest.mocked(refetchCurrentUser).mockResolvedValue({currentUserId: 'u1'});
         jest.mocked(getPushVerificationStatus).mockResolvedValue('');
         jest.mocked(getCurrentTeamId).mockResolvedValue('');
         jest.mocked(getCurrentChannelId).mockResolvedValue('');
@@ -137,5 +137,15 @@ describe('applyPersistenceModeChange', () => {
         expect(terminateSession).toHaveBeenCalledWith(serverUrl, false);
         expect(EphemeralModeManager.addServer).not.toHaveBeenCalled();
         expect(result).toEqual({error: fetchError});
+    });
+
+    it('should terminate the session when refetchCurrentUser resolves with an error', async () => {
+        jest.mocked(refetchCurrentUser).mockResolvedValue({error: 'No user fetched'});
+
+        const result = await applyPersistenceModeChange(serverUrl);
+
+        expect(terminateSession).toHaveBeenCalledWith(serverUrl, false);
+        expect(EphemeralModeManager.addServer).not.toHaveBeenCalled();
+        expect(result.error).toBeTruthy();
     });
 });

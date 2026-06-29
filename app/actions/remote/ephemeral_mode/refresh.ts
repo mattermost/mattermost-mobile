@@ -42,7 +42,10 @@ export const applyPersistenceModeChange = async (serverUrl: string): Promise<{er
 
         wipeServerFiles(serverUrl);
 
-        await refetchCurrentUser(serverUrl, undefined);
+        const {error: refetchError} = await refetchCurrentUser(serverUrl, undefined);
+        if (refetchError) {
+            throw new Error(`restartSession: failed to seed current user: ${refetchError}`);
+        }
 
         const {operator} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
         const systemModels = await prepareCommonSystemValues(operator, {
