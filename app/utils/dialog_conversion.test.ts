@@ -1084,6 +1084,19 @@ describe('dialog_conversion', () => {
             );
             expect(merged).toEqual({step1_file: 'a', step2_file: 'c'});
         });
+
+        it('ignores FILE elements whose names match inherited object keys', () => {
+            const submission = Object.create({toString: 'inherited-id'}) as Record<string, string>;
+            submission.attachment = 'real-id';
+
+            const merged = mergeFileFieldValues(
+                {},
+                submission,
+                [fileEl('toString'), fileEl('attachment')],
+            );
+
+            expect(merged).toEqual({attachment: 'real-id'});
+        });
     });
 
     describe('flattenFileFieldValues', () => {

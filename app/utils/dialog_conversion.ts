@@ -38,7 +38,7 @@ export function mergeFileFieldValues(
 ): Record<string, string> {
     const merged = {...accumulated};
     elements.forEach((element) => {
-        if (element.type === 'file' && element.name in submission) {
+        if (element.type === 'file' && Object.prototype.hasOwnProperty.call(submission, element.name)) {
             merged[element.name] = submission[element.name];
         }
     });
