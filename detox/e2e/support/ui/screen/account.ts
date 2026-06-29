@@ -180,6 +180,23 @@ class AccountScreen {
         }
     };
 
+    waitForCustomStatus = async (status: {emoji: string; duration: string}) => {
+        const customStatusScreen = element(by.id('custom_status.screen'));
+        await waitFor(customStatusScreen).not.toBeVisible().withTimeout(timeouts.TEN_SEC);
+        await this.toBeVisible();
+        const {accountCustomStatusEmoji} = this.getCustomStatus(status.emoji, status.duration);
+        const timeout = isAndroid() ? timeouts.TWENTY_SEC : timeouts.TEN_SEC;
+        if (isAndroid()) {
+            try {
+                await waitFor(accountCustomStatusEmoji).toBeVisible(25).whileElement(by.id(this.testID.accountScrollView)).scroll(100, 'down');
+            } catch {
+                // Row may already be visible without scrolling
+            }
+        }
+        await waitFor(accountCustomStatusEmoji).toExist().withTimeout(timeout);
+        await waitFor(this.customStatusClearButton).toBeVisible().withTimeout(timeout);
+    };
+
     logout = async (serverDisplayName: string | null = null) => {
         await this.logoutOption.tap();
         if (serverDisplayName) {

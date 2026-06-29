@@ -10,7 +10,7 @@ import {
     HomeScreen,
     PostOptionsScreen,
 } from '@support/ui/screen';
-import {isAndroid, isIos, longPressWithScrollRetry, timeouts, wait, waitForElementToBeVisible} from '@support/utils';
+import {isAndroid, isIos, longPressWithScrollRetry, timeouts, wait, waitForElementToBeVisible, waitForElementToNotExist} from '@support/utils';
 import {expect, waitFor} from 'detox';
 
 class SearchMessagesScreen {
@@ -65,7 +65,8 @@ class SearchMessagesScreen {
     };
 
     getRecentSearchItem = (searchTerm: string) => {
-        return element(by.id(`search.recent_item.${searchTerm}`));
+        // Recent rows can render twice in the hierarchy on Android (wrapper + row).
+        return element(by.id(`search.recent_item.${searchTerm}`)).atIndex(0);
     };
 
     getRecentSearchItemRemoveButton = (searchTerm: string) => {
@@ -112,9 +113,11 @@ class SearchMessagesScreen {
         if (isIos()) {
             await this.searchCancelButton.tap();
         } else {
-            await device.pressBack();
+            // Search is a bottom-tab — pressBack only dismisses the keyboard, not the tab.
+            await waitFor(HomeScreen.channelListTab).toExist().withTimeout(timeouts.TEN_SEC);
+            await HomeScreen.channelListTab.tap();
         }
-        await waitFor(this.searchMessagesScreen).not.toExist().withTimeout(timeouts.TEN_SEC);
+        await waitForElementToNotExist(this.searchMessagesScreen, timeouts.TWENTY_SEC);
     };
 
     openPostOptionsFor = async (postId: string, text: string) => {

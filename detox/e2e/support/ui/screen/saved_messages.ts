@@ -9,7 +9,7 @@ import {
     HomeScreen,
     PostOptionsScreen,
 } from '@support/ui/screen';
-import {isAndroid, longPressWithRetry, timeouts, wait, waitForElementToBeVisible} from '@support/utils';
+import {isAndroid, longPressWithRetry, scrollElementIntoView, timeouts, wait, waitForElementToBeVisible} from '@support/utils';
 import {expect, waitFor} from 'detox';
 
 class SavedMessagesScreen {
@@ -65,17 +65,18 @@ class SavedMessagesScreen {
 
     openPostOptionsFor = async (postId: string, text: string) => {
         const {postListPostItem} = this.getPostListPostItem(postId, text);
-
-        // Poll for the post to become visible without waiting for idle bridge
-        await waitForElementToBeVisible(postListPostItem, timeouts.TEN_SEC);
-
-        // Dismiss keyboard by scrolling the post list (best-effort — list may not be scrollable)
         const flatList = this.postList.getFlatList();
+
+        // Dismiss keyboard first so visibility checks are not blocked by the soft keyboard.
         try {
             await flatList.scroll(100, 'down');
         } catch {
             // List too short to scroll; keyboard already dismissed
         }
+        await wait(timeouts.ONE_SEC);
+
+        await scrollElementIntoView(postListPostItem, by.id(this.postList.testID.flatList));
+        await waitForElementToBeVisible(postListPostItem, timeouts.TEN_SEC);
         await wait(timeouts.ONE_SEC);
 
         // # Open post options (with retry — longPress can fail on Android during animations)

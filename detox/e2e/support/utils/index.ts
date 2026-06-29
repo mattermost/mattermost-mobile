@@ -246,13 +246,14 @@ export async function waitForElementToBeVisible(
     detoxElement: Detox.NativeElement,
     timeout: number = isAndroid() ? timeouts.TWENTY_SEC : timeouts.TEN_SEC,
     pollInterval: number = timeouts.HALF_SEC,
+    visibilityThreshold = isAndroid() ? 25 : 75,
 ): Promise<void> {
     const {expect: detoxExpect} = require('detox');
     const startTime = Date.now();
     /* eslint-disable no-await-in-loop */
     while (Date.now() - startTime < timeout) {
         try {
-            await detoxExpect(detoxElement).toBeVisible();
+            await detoxExpect(detoxElement).toBeVisible(visibilityThreshold);
             return;
         } catch (error) {
             if ((Date.now() - startTime) + pollInterval >= timeout) {
@@ -262,7 +263,7 @@ export async function waitForElementToBeVisible(
         }
     }
     /* eslint-enable no-await-in-loop */
-    await detoxExpect(detoxElement).toBeVisible();
+    await detoxExpect(detoxElement).toBeVisible(visibilityThreshold);
 }
 
 // Poll for non-existence without Detox bridge-idle synchronization.

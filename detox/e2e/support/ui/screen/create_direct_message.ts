@@ -93,17 +93,56 @@ class CreateDirectMessageScreen {
     };
 
     open = async () => {
-        await waitForElementToExist(ChannelListScreen.headerPlusButton, timeouts.HALF_MIN);
-        await ChannelListScreen.headerPlusButton.tap();
-        await waitForElementToBeVisible(ChannelListScreen.openDirectMessageItem, timeouts.TEN_SEC);
+        try {
+            await waitFor(this.createDirectMessageScreen).toExist().withTimeout(timeouts.TWO_SEC);
+            await this.closeButton.tap();
+            await waitForElementToNotExist(this.createDirectMessageScreen, timeouts.TEN_SEC);
+        } catch {
+            // DM screen is not already open
+        }
 
-        if (isAndroid()) {
+        await waitForElementToExist(ChannelListScreen.headerPlusButton, timeouts.HALF_MIN);
+
+        const disableSyncForOpen = isAndroid();
+        if (disableSyncForOpen) {
             await device.disableSynchronization();
         }
         try {
-            await ChannelListScreen.openDirectMessageItem.tap();
+            let plusTapError: unknown;
+            /* eslint-disable no-await-in-loop -- retry plus-button tap while transition overlay clears */
+            for (let i = 0; i < 3; i++) {
+                try {
+                    await ChannelListScreen.headerPlusButton.tap();
+                    plusTapError = undefined;
+                    break;
+                } catch (err) {
+                    plusTapError = err;
+                    await wait(timeouts.ONE_SEC);
+                }
+            }
+            /* eslint-enable no-await-in-loop */
+            if (plusTapError) {
+                throw plusTapError;
+            }
+
+            await wait(timeouts.ONE_SEC);
+            await waitForElementToBeVisible(ChannelListScreen.openDirectMessageItem, timeouts.TEN_SEC);
+
+            /* eslint-disable no-await-in-loop -- retry menu item tap while plus-menu animation settles */
+            for (let i = 0; i < 3; i++) {
+                try {
+                    await ChannelListScreen.openDirectMessageItem.tap();
+                    break;
+                } catch (err) {
+                    if (i === 2) {
+                        throw err;
+                    }
+                    await wait(timeouts.ONE_SEC);
+                }
+            }
+            /* eslint-enable no-await-in-loop */
         } finally {
-            if (isAndroid()) {
+            if (disableSyncForOpen) {
                 // Re-enable sync before waiting for the screen — navigation must settle while
                 // the bridge is tracked (machine-9 log: 60s toExist timeout with sync off).
                 await safeEnableSynchronization();
@@ -112,7 +151,7 @@ class CreateDirectMessageScreen {
 
         if (isAndroid()) {
             // Tutorial Modal is a separate Dialog window — dismiss it before visibility checks.
-            await waitFor(this.createDirectMessageScreen).toExist().withTimeout(timeouts.ONE_MIN);
+            await waitForElementToExist(this.createDirectMessageScreen, timeouts.ONE_MIN);
             await wait(timeouts.ONE_SEC);
             await this.closeTutorial();
             await this.dismissScheduledPostTooltip();
