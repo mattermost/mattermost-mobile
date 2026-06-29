@@ -9,6 +9,8 @@
 // - Use element testID when selecting an element. Create one if none.
 // *******************************************************************
 
+import path from 'path';
+
 import {
     DemoPlugin,
     Plugin,
@@ -17,11 +19,12 @@ import {
     User,
     Post,
 } from '@support/server_api';
-import {apiDisablePluginById} from '@support/server_api/plugin';
+import {apiDisablePluginById, apiSubmitDemoPluginFileUploadDialog} from '@support/server_api/plugin';
 import {
     serverOneUrl,
     siteOneUrl,
 } from '@support/test_config';
+import {AttachmentOptions} from '@support/ui/component';
 import {
     ChannelListScreen,
     ChannelScreen,
@@ -34,7 +37,58 @@ import {
 import {wait, isAndroid} from '@support/utils';
 import {expect} from 'detox';
 
+const FILE_UPLOAD_FIXTURE = path.resolve(__dirname, '../../../../support/fixtures/sample.txt');
+
 // MM-66558: dialog fields use replaceText instead of typeText.
+
+async function dismissAttachmentOptions() {
+    try {
+        await waitFor(AttachmentOptions.photoLibrary).toExist().withTimeout(3000);
+        await AttachmentOptions.photoLibrary.swipe('down', 'fast', 0.5);
+        await waitFor(AttachmentOptions.photoLibrary).not.toExist().withTimeout(3000);
+    } catch {}
+}
+
+async function clearFileUploadDialogState() {
+    await ChannelScreen.postSlashCommand('/dialog file-upload-clear');
+    await wait(500);
+}
+
+async function seedFileUploadDialogViaApi(
+    user: any,
+    testChannelId: string,
+    testTeamId: string,
+) {
+    await clearFileUploadDialogState();
+
+    const loginResult = await User.apiLogin(siteOneUrl, {
+        username: user.username,
+        password: user.newUser.password,
+    });
+    if (loginResult.error) {
+        throw new Error(`Failed to login as test user for file upload seed: ${JSON.stringify(loginResult.error)}`);
+    }
+
+    const {fileId, error: uploadError} = await Post.apiUploadFileToChannel(siteOneUrl, testChannelId, FILE_UPLOAD_FIXTURE);
+    if (uploadError || !fileId) {
+        throw new Error(`Failed to upload fixture for file upload seed: ${JSON.stringify(uploadError)}`);
+    }
+
+    const submitResult = await apiSubmitDemoPluginFileUploadDialog(siteOneUrl, {
+        userId: user.id,
+        channelId: testChannelId,
+        teamId: testTeamId,
+        submission: {single_file: fileId},
+        fileIds: [fileId],
+    });
+    if (submitResult.error) {
+        throw new Error(`Failed to seed file upload dialog via plugin: ${JSON.stringify(submitResult.error)}`);
+    }
+
+    await User.apiAdminLogin(siteOneUrl);
+
+    return fileId;
+}
 
 // ===== Helper Functions =====
 async function selectUser() {
@@ -149,14 +203,16 @@ describe('Interactive Dialog - Basic Dialog (Plugin)', () => {
     const serverOneDisplayName = 'Server 1';
     const channelsCategory = 'channels';
     let testChannel: any;
+    let testTeam: any;
     let testUser: any;
     let pluginAvailable = false;
     let pluginSetupTouchedServer = false;
 
     beforeAll(async () => {
         // Log environment info for debugging CI vs local differences
-        const {channel, user} = await Setup.apiInit(siteOneUrl);
+        const {channel, team, user} = await Setup.apiInit(siteOneUrl);
         testChannel = channel;
+        testTeam = team;
         testUser = user;
 
         await User.apiAdminLogin(siteOneUrl);
@@ -173,8 +229,14 @@ describe('Interactive Dialog - Basic Dialog (Plugin)', () => {
 
                     pluginSetupTouchedServer = true;
                     await System.apiUpdateConfig(siteOneUrl, {
-                        ServiceSettings: {EnableGifPicker: true},
-                        FileSettings: {EnablePublicLink: true},
+                        ServiceSettings: {
+                            EnableGifPicker: true,
+                            EnableMobileFileUpload: true,
+                        },
+                        FileSettings: {
+                            EnablePublicLink: true,
+                            EnableFileAttachments: true,
+                        },
                         FeatureFlags: {InteractiveDialogAppsForm: true},
                         PluginSettings: {
                             Enable: true,
@@ -683,5 +745,83 @@ describe('Interactive Dialog - Basic Dialog (Plugin)', () => {
         await expect(element(by.id('AppFormElement.min_os_version.input'))).toExist();
         await InteractiveDialogScreen.cancel();
         await ensureDialogClosed();
+    });
+
+    describe('Interactive Dialog - File Upload (Plugin)', () => {
+        it('MM-T6070_1 - should render file upload dialog, open attachment options, and submit with no files (Plugin)', async () => {
+            if (!pluginAvailable) {
+                return;
+            }
+            await ensureDialogClosed();
+            await clearFileUploadDialogState();
+            await ChannelScreen.postSlashCommand('/dialog file-upload');
+            await ensureDialogOpen();
+
+            await expect(element(by.text('File Upload Dialog Demo'))).toExist();
+            await expect(element(by.text('Single File Upload'))).toExist();
+            await expect(element(by.text('Multiple File Upload'))).toExist();
+            await expect(element(by.text('Choose File'))).toExist();
+            await expect(element(by.text('Choose Files'))).toExist();
+            await expect(InteractiveDialogScreen.getFileFieldChooseButton('single_file')).toExist();
+            await expect(InteractiveDialogScreen.getFileFieldChooseButton('multi_file')).toExist();
+
+            await InteractiveDialogScreen.tapFileFieldChooseButton('single_file');
+            await waitFor(AttachmentOptions.photoLibrary).toExist().withTimeout(3000);
+            await expect(AttachmentOptions.attachFile).toExist();
+            await dismissAttachmentOptions();
+
+            await InteractiveDialogScreen.submit();
+            await ensureDialogClosed();
+
+            const {post} = await Post.apiGetLastPostInChannel(siteOneUrl, testChannel.id);
+            await ChannelScreen.hasPostMessage(post.id, 'submitted a file upload dialog');
+            await ChannelScreen.hasPostMessage(post.id, 'Files: none');
+        });
+
+        it('MM-T6072_1 - should disable file field choose when mobile upload is disabled (Plugin)', async () => {
+            if (!pluginAvailable) {
+                return;
+            }
+            await ensureDialogClosed();
+            await System.apiUpdateConfig(siteOneUrl, {
+                ServiceSettings: {EnableMobileFileUpload: false},
+            });
+            await wait(2000);
+
+            await ChannelScreen.postSlashCommand('/dialog file-upload');
+            await ensureDialogOpen();
+            await InteractiveDialogScreen.expectFileFieldUploadDisabledWarning('single_file');
+            await InteractiveDialogScreen.expectFileFieldUploadDisabledWarning('multi_file');
+
+            await InteractiveDialogScreen.cancel();
+            await ensureDialogClosed();
+
+            await System.apiUpdateConfig(siteOneUrl, {
+                ServiceSettings: {EnableMobileFileUpload: true},
+            });
+            await wait(2000);
+        });
+
+        it('MM-T6073_1 - should hydrate file field from plugin persisted file IDs on re-open (Plugin)', async () => {
+            if (!pluginAvailable) {
+                return;
+            }
+            await ensureDialogClosed();
+
+            let fileId: string;
+            try {
+                fileId = await seedFileUploadDialogViaApi(testUser, testChannel.id, testTeam.id);
+            } catch (err: any) {
+                throw new Error(`File upload hydration seed failed (check file ownership / plugin file-upload support): ${err.message || err}`);
+            }
+
+            await ChannelScreen.postSlashCommand('/dialog file-upload');
+            await ensureDialogOpen();
+            await InteractiveDialogScreen.expectHydratedFilePreview('single_file', fileId);
+
+            await InteractiveDialogScreen.cancel();
+            await ensureDialogClosed();
+            await clearFileUploadDialogState();
+        });
     });
 });
