@@ -465,15 +465,17 @@ class DatabaseManagerSingleton {
             return;
         }
 
-        // On Android, we'll delete the *.db, the *.db-shm and *.db-wal files
+        // On Android, we'll delete the *.db, the *.db-shm, the *.db-wal and *.db-journal files
         const androidFilesDir = this.databaseDirectory;
         const databaseFile = `${androidFilesDir}${databaseName}.db`;
         const databaseShm = `${androidFilesDir}${databaseName}.db-shm`;
         const databaseWal = `${androidFilesDir}${databaseName}.db-wal`;
+        const databaseJournal = `${androidFilesDir}${databaseName}.db-journal`;
 
         deleteFile(databaseFile);
         deleteFile(databaseShm);
         deleteFile(databaseWal);
+        deleteFile(databaseJournal);
     };
 
     /**

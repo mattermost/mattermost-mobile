@@ -1,0 +1,121 @@
+# MM-T4833: User can leave a call from the call screen or the minimized call bar.
+#
+# PRE-CONDITIONS:
+#   - Calls plugin enabled on test channel (seeded by the Calls provisioner)
+#   - Active call started during the flow
+#
+# REQUIRED ENV VARS:
+#   - MAESTRO_APP_ID, SITE_1_URL, TEST_USER_EMAIL, TEST_USER_PASSWORD, TEST_CHANNEL_NAME
+#
+# ASSERTIONS:
+#   - Leaving from full call screen dismisses call UI
+#   - Leaving from minimized call bar after navigating away also ends the call
+#   - Current call bar is no longer visible after leave
+#
+# testIDs:
+#   - calls.collapse.button
+#   - calls.current_call_bar
+#   - calls.current_call_bar.leave
+#   - mute-unmute
+#   - leave
+tags:
+  - MM-T4833
+appId: ${MAESTRO_APP_ID}
+---
+- runFlow: ../../subflows/auth/login.yml
+- runFlow: ../../subflows/navigation/navigate_to_channel.yml
+
+# ── Path 1: Leave from the full call screen ──────────────────────────────────
+
+- runFlow: ../../subflows/calls/join_channel_call.yml
+
+- waitForAnimationToEnd:
+    timeout: 3000
+
+- runFlow:
+    when:
+      visible:
+        id: "calls.current_call_bar"
+    commands:
+      - tapOn:
+          id: "calls.current_call_bar"
+
+- extendedWaitUntil:
+    visible:
+      id: "mute-unmute"
+    timeout: 30000
+- takeScreenshot: calls-leave-full-screen-before-leave
+
+- tapOn:
+    id: "leave"
+- tapOn:
+    text: "Leave call"
+    optional: true
+
+- extendedWaitUntil:
+    notVisible:
+      id: "mute-unmute"
+    timeout: 10000
+- takeScreenshot: calls-leave-full-screen-after-leave
+
+# ── Path 2: Leave from the minimized CurrentCallBar ─────────────────────────
+
+- runFlow: ../../subflows/navigation/navigate_to_channel.yml
+
+- runFlow: ../../subflows/calls/join_channel_call.yml
+
+- waitForAnimationToEnd:
+    timeout: 3000
+
+- runFlow:
+    when:
+      visible:
+        id: "calls.current_call_bar"
+    commands:
+      - tapOn:
+          id: "calls.current_call_bar"
+- extendedWaitUntil:
+    visible:
+      id: "mute-unmute"
+    timeout: 30000
+
+# Minimize the full call screen back to CurrentCallBar.
+# iOS 26+: Maestro `back` triggers leave-call confirmation — do not use it here.
+- tapOn:
+    id: "calls.collapse.button"
+- waitForAnimationToEnd:
+    timeout: 3000
+# Safety net: relaunch keeps the session and usually lands on channel with call minimized.
+- runFlow:
+    when:
+      visible:
+        id: "mute-unmute"
+    commands:
+      - launchApp:
+          stopApp: true
+          clearState: false
+      - waitForAnimationToEnd:
+          timeout: 30000
+      - runFlow:
+          when:
+            visible:
+              id: "tab_bar.home.tab"
+          file: ../../subflows/navigation/navigate_to_channel.yml
+
+- extendedWaitUntil:
+    visible:
+      id: "calls.current_call_bar"
+    timeout: 10000
+- takeScreenshot: calls-leave-current-call-bar-visible
+
+- tapOn:
+    id: "calls.current_call_bar.leave"
+- tapOn:
+    text: "Leave call"
+    optional: true
+
+- extendedWaitUntil:
+    notVisible:
+      id: "calls.current_call_bar"
+    timeout: 10000
+- takeScreenshot: calls-leave-current-call-bar-after-leave

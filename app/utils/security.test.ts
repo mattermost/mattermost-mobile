@@ -72,6 +72,13 @@ describe('urlSafeBase64Encode function', () => {
 
         expect(result).toEqual(expectedOutput);
     });
+
+    it('should encode UTF-8 characters outside the Latin1 range', () => {
+        const input = 'https://ui-avatars.com/api/?name=Slack+↔+Entra+Sync';
+        const result = urlSafeBase64Encode(input);
+        expect(result.length).toBeGreaterThan(0);
+        expect(() => urlSafeBase64Encode(input)).not.toThrow();
+    });
 });
 
 describe('clearCookies function', () => {

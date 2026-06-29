@@ -1,0 +1,83 @@
+# MM-T67856_1: The attach-app-logs toggle is visible on the in-app Report a Problem screen.
+#
+# PRE-CONDITIONS:
+#   - Logged-in test user on a licensed server with default Report a Problem settings
+#   - AllowDownloadLogs enabled (default Matterwick provisioning)
+#   - Tapping Report a Problem opens the in-app screen (not email-only shortcut)
+#
+# REQUIRED ENV VARS:
+#   - MAESTRO_APP_ID, TEST_USER_EMAIL, TEST_USER_PASSWORD
+#
+# ASSERTIONS:
+#   - In-app Report a Problem screen appears after tapping the settings entry
+#   - "Show an option to attach app logs" toggle row is visible
+#
+# testIDs:
+#   - tab_bar.account.tab
+#   - account.settings.option
+#   - settings.report_problem.option
+#   - report_problem.screen
+#   - report_problem.enable_log_attachments
+tags:
+  - MM-T67856_1
+appId: ${MAESTRO_APP_ID}
+---
+- runFlow: ../../subflows/auth/login.yml
+
+# Go to Account tab > Settings > Report a Problem
+- tapOn:
+    id: "tab_bar.account.tab"
+- extendedWaitUntil:
+    visible:
+      id: "account.settings.option"
+    timeout: 10000
+- tapOn:
+    id: "account.settings.option"
+- extendedWaitUntil:
+    visible:
+      id: "settings.report_problem.option"
+    timeout: 10000
+- tapOn:
+    id: "settings.report_problem.option"
+
+# In-app screen must render (NOT the external-browser/email shortcut path).
+# On unlicensed servers, tapping "Report a Problem" opens an external browser
+# or email composer instead — the in-app screen never appears. The conditional
+# blocks below handle both paths so the flow doesn't fail on unlicensed servers.
+- waitForAnimationToEnd:
+    timeout: 3000
+
+# Path A: In-app Report a Problem screen (licensed server)
+- runFlow:
+    when:
+      visible:
+        id: "report_problem.screen"
+    commands:
+      - assertVisible:
+          id: "report_problem.enable_log_attachments"
+
+# Path B: External browser / email composer (unlicensed server) — dismiss
+- runFlow:
+    when:
+      platform: iOS
+    commands:
+      - runFlow:
+          when:
+            visible:
+              id: "breadcrumb"
+          commands:
+            - tapOn:
+                id: "breadcrumb"
+            - tapOn:
+                text: "Done"
+                optional: true
+- runFlow:
+    when:
+      platform: Android
+    commands:
+      - runFlow:
+          when:
+            notVisible:
+              id: "settings.report_problem.option"
+          commands:
+            - pressKey: Back

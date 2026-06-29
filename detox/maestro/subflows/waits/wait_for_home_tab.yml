@@ -1,0 +1,29 @@
+# Sub-flow: wait until the home tab is visible (end of login).
+# Cloud first-login on CI can exceed 45s; allow up to 120s and dismiss blocking dialogs.
+appId: ${MAESTRO_APP_ID}
+---
+- tapOn:
+    text: "Not Now"
+    optional: true
+- tapOn:
+    text: "Later"
+    optional: true
+- tapOn:
+    text: "Skip"
+    optional: true
+- runFlow:
+    when:
+      platform: Android
+    commands:
+      - extendedWaitUntil:
+          visible:
+            id: "tab_bar.home.tab"
+          timeout: 180000
+- runFlow:
+    when:
+      platform: iOS
+    commands:
+      - extendedWaitUntil:
+          visible:
+            id: "tab_bar.home.tab"
+          timeout: 120000

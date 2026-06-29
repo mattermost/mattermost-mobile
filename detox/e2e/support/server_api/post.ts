@@ -114,6 +114,69 @@ export const apiPatchPost = async (baseUrl: string, postId: string, postData: st
 };
 
 /**
+ * Create an ephemeral post visible only to the given user.
+ * See https://api.mattermost.com/#operation/CreatePostEphemeral
+ * @param {string} baseUrl - base server URL
+ * @param {string} userId - user ID that can see the ephemeral post
+ * @param {{channel_id: string, message: string, root_id?: string, props?: Record<string, unknown>}} post - ephemeral post payload
+ * @return {Object} returns {post} on success or {error, status} on error
+ */
+export const apiCreatePostEphemeral = async (
+    baseUrl: string,
+    userId: string,
+    post: {channel_id: string; message: string; root_id?: string; props?: Record<string, unknown>},
+): Promise<any> => {
+    try {
+        const response = await client.post(`${baseUrl}/api/v4/posts/ephemeral`, {
+            user_id: userId,
+            post,
+        });
+        return {post: response.data};
+    } catch (err) {
+        return getResponseFromError(err);
+    }
+};
+
+/**
+ * Create an incoming webhook.
+ * See https://api.mattermost.com/#operation/CreateIncomingWebhook
+ * @param {string} baseUrl - base server URL
+ * @param {{channel_id: string, display_name: string}} hook - incoming webhook payload
+ * @return {Object} returns {hook} on success or {error, status} on error
+ */
+export const apiCreateIncomingWebhook = async (
+    baseUrl: string,
+    hook: {channel_id: string; display_name: string},
+): Promise<any> => {
+    try {
+        const response = await client.post(`${baseUrl}/api/v4/hooks/incoming`, hook);
+        return {hook: response.data};
+    } catch (err) {
+        return getResponseFromError(err);
+    }
+};
+
+/**
+ * POST a payload to an incoming webhook URL path (`/hooks/{id}`).
+ * @param {string} baseUrl - base server URL
+ * @param {string} hookId - incoming webhook id/path
+ * @param {Record<string, unknown>} payload - body sent to the webhook
+ * @return {Object} returns {data} on success or {error, status} on error
+ */
+export const apiPostIncomingWebhook = async (
+    baseUrl: string,
+    hookId: string,
+    payload: Record<string, unknown>,
+): Promise<any> => {
+    try {
+        const response = await client.post(`${baseUrl}/hooks/${hookId}`, payload);
+        return {data: response.data};
+    } catch (err) {
+        return getResponseFromError(err);
+    }
+};
+
+/**
  * Pin a post in its channel.
  * See https://api.mattermost.com/#operation/PinPost
  * @param {string} baseUrl - the base server URL
@@ -180,11 +243,14 @@ export const apiCreatePostWithImageAttachment = async (baseUrl: string, channelI
 
 export const Post = {
     apiCreatePost,
+    apiCreatePostEphemeral,
+    apiCreateIncomingWebhook,
     apiCreatePostWithImageAttachment,
     apiGetLastPostInChannel,
     apiGetPostsInChannel,
     apiPinPost,
     apiPatchPost,
+    apiPostIncomingWebhook,
     apiUploadFileToChannel,
 };
 

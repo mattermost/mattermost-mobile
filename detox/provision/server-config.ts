@@ -48,6 +48,7 @@ export async function configureTestServer(client: MattermostClient, token: strin
     const supportSettings = config.SupportSettings as Record<string, unknown>;
     supportSettings.ReportAProblemType = 'default';
     supportSettings.AllowDownloadLogs = true;
+    supportSettings.HelpLink = 'https://docs.mattermost.com/';
 
     config.PasswordSettings = config.PasswordSettings || {};
     (config.PasswordSettings as Record<string, unknown>).MinimumLength = 8;
@@ -80,6 +81,6 @@ export async function configureTestServer(client: MattermostClient, token: strin
     logInfo('Updating plugin uploads, Marketplace, disabling rate limiting, and removing user caps...');
     const updateRes = await client.request<ApiErrorBody>('PUT', '/api/v4/config', config, token);
     if (updateRes.status >= 400) {
-        logWarn(`Config update failed (HTTP ${updateRes.status}): ${updateRes.data.message || JSON.stringify(updateRes.data)}`);
+        logWarn(`Config update failed (HTTP ${updateRes.status}): ${updateRes.data?.message ?? JSON.stringify(updateRes.data)}`);
     }
 }

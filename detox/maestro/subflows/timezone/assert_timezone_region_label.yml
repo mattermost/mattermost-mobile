@@ -1,0 +1,10 @@
+# Assert automatic timezone description matches EXPECTED_TIMEZONE_REGION.
+# Requires EXPECTED_TIMEZONE_REGION (e.g. "New York" for America/New_York).
+appId: ${MAESTRO_APP_ID}
+---
+- extendedWaitUntil:
+    visible:
+      id: "timezone_display_settings.automatic.option.description"
+    timeout: 60000
+- assertVisible:
+    text: ${EXPECTED_TIMEZONE_REGION}

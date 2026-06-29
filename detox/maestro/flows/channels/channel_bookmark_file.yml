@@ -1,0 +1,146 @@
+# MM-T5603: User can add a file bookmark via channel info and the native file picker.
+#
+# PRE-CONDITIONS:
+#   - Channel bookmarks enabled on server (default Matterwick provisioning)
+#   - test_bookmark.png staged on device before run (CI copies fixture to picker-visible storage)
+#   - Logged-in user in test channel
+#
+# REQUIRED ENV VARS:
+#   - MAESTRO_APP_ID, SITE_1_URL, TEST_USER_EMAIL, TEST_USER_PASSWORD, TEST_CHANNEL_NAME
+#
+# ASSERTIONS:
+#   - File bookmark type can be selected from channel info
+#   - Native document picker selects test_bookmark.png
+#   - Saved bookmark appears in channel info bookmarks list
+#
+# testIDs:
+#   - channel_header.channel_quick_actions.button
+#   - channel.quick_actions.channel_info.action
+#   - channel_info.screen
+#   - channel_info.add_bookmark.button
+#   - channel_bookmark.type.file
+#   - channel_bookmark.screen
+#   - channel_bookmark.edit.save_button
+#   - channel_info.bookmarks.list
+tags:
+  - MM-T5603
+appId: ${MAESTRO_APP_ID}
+---
+# --- Setup: login and navigate to the test channel ---
+- runFlow: ../../subflows/auth/login.yml
+- runFlow: ../../subflows/navigation/navigate_to_channel.yml
+
+# --- Open channel info ---
+# navigation.header.title has opacity:0 in iOS 26 when the channel is not scrolled.
+# The intro "Info" action is only visible when the channel has no posts yet — earlier
+# Maestro flows that posted to TEST_CHANNEL_NAME leave posts behind, so prefer the
+# always-available quick-actions entry (three-dots in header → "View Info").
+- tapOn:
+    id: "channel_header.channel_quick_actions.button"
+- extendedWaitUntil:
+    visible:
+      id: "channel.quick_actions.channel_info.action"
+    timeout: 10000
+- tapOn:
+    id: "channel.quick_actions.channel_info.action"
+- extendedWaitUntil:
+    visible:
+      id: "channel_info.screen"
+    timeout: 10000
+
+# --- Tap "Add a bookmark" to open the bookmark type picker ---
+- tapOn:
+    id: "channel_info.add_bookmark.button"
+# Wait for the bottom sheet to appear (animated in) and its accessibility tree to register.
+# accessibilityViewIsModal={true} on the content container ensures the gorhom BottomSheet
+# content is exposed to iOS XCUITest accessibility (required for Maestro testID matching).
+- extendedWaitUntil:
+    visible:
+      id: "channel_bookmark.type.file"
+    timeout: 10000
+# --- Tap "Attach a file" ---
+- tapOn:
+    id: "channel_bookmark.type.file"
+
+# --- Navigate the document picker and select the file ---
+# iOS: Recents -> Browse -> On My iPhone -> file (via ios_picker sub-flow)
+# Android: Recent -> search by name -> file (via android_picker sub-flow)
+- runFlow:
+    when:
+      platform: iOS
+    file: channel_bookmark_file_ios_picker.yml
+- runFlow:
+    when:
+      platform: Android
+    file: channel_bookmark_file_android_picker.yml
+
+# --- After selection the picker closes; back on channel_bookmark.screen.
+#     The app uploads the file — wait for the upload to finish (save button appears
+#     enabled with "Save" text — the button is disabled/loading during upload).
+#     iOS new-architecture can take 30-60s to navigate back from the document picker.
+- runFlow:
+    when:
+      platform: iOS
+    commands:
+      - extendedWaitUntil:
+          visible:
+            id: "channel_bookmark.screen"
+          timeout: 60000
+- runFlow:
+    when:
+      platform: Android
+    commands:
+      - extendedWaitUntil:
+          visible:
+            id: "channel_bookmark.screen"
+          timeout: 15000
+# Wait for the file selection to appear on the bookmark screen.
+- extendedWaitUntil:
+    visible:
+      text: "test_bookmark.png"
+    timeout: 30000
+# Wait for upload to finish before saving (save stays disabled until file_id is set).
+- extendedWaitUntil:
+    visible:
+      id: "channel_bookmark.file.upload_complete"
+    timeout: 30000
+# --- Tap Save to create the bookmark ---
+# iOS: header NavigationButton testID tap may not fire onPress on CI builds; use label text.
+- runFlow:
+    when:
+      platform: iOS
+    commands:
+      - tapOn:
+          text: "Save"
+- runFlow:
+    when:
+      platform: Android
+    commands:
+      - tapOn:
+          text: "SAVE"
+
+# --- Verify the file bookmark was created: modal closes, bookmark visible in channel info ---
+# Allow up to 30s — if upload was still completing when Save was tapped, the server
+# may take a moment to respond and pop the navigation stack.
+- extendedWaitUntil:
+    notVisible:
+      id: "channel_bookmark.screen"
+    timeout: 60000
+# iOS: FlatList container exposes its testID; individual item testIDs are not in the tree.
+# Android: FlatList container testID is not exposed; individual item testIDs are.
+- runFlow:
+    when:
+      platform: iOS
+    commands:
+      - extendedWaitUntil:
+          visible:
+            id: "channel_info.bookmarks.list"
+          timeout: 20000
+- runFlow:
+    when:
+      platform: Android
+    commands:
+      - extendedWaitUntil:
+          visible:
+            id: "channel_bookmark\\..+\\.title"
+          timeout: 20000

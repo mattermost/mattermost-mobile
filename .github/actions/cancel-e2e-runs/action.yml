@@ -1,0 +1,172 @@
+# yaml-language-server: $schema=https://json.schemastore.org/github-action.json
+name: Cancel E2E workflow runs
+description: >-
+  Cancel all active E2E (e2e-detox-pr.yml) runs for a PR branch, force-stop
+  every queued/in-progress job (including macOS build runners), and mark E2E
+  commit statuses as cancelled.
+
+inputs:
+  head_branch:
+    description: PR head branch name
+    required: true
+  pr_number:
+    description: Pull request number
+    required: true
+  exclude_head_sha:
+    description: Skip cancelling runs already targeting this commit SHA
+    required: false
+    default: ''
+  max_run_id_exclusive:
+    description: Only cancel runs with an ID lower than this value (newer dispatch safety)
+    required: false
+    default: ''
+  reason:
+    description: Commit status description when cancelling
+    required: false
+    default: E2E cancelled (E2E/Run label removed)
+
+runs:
+  using: composite
+  steps:
+    - uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9.0.0
+      env:
+        HEAD_BRANCH: ${{ inputs.head_branch }}
+        PR_NUMBER: ${{ inputs.pr_number }}
+        EXCLUDE_HEAD_SHA: ${{ inputs.exclude_head_sha }}
+        MAX_RUN_ID_EXCLUSIVE: ${{ inputs.max_run_id_exclusive }}
+        REASON: ${{ inputs.reason }}
+      with:
+        script: |
+          const headBranch = process.env.HEAD_BRANCH;
+          const prNumber = parseInt(process.env.PR_NUMBER, 10);
+          const hasPrNumber = Number.isFinite(prNumber);
+          const excludeHeadSha = process.env.EXCLUDE_HEAD_SHA || '';
+          const maxRunIdExclusive = process.env.MAX_RUN_ID_EXCLUSIVE
+            ? parseInt(process.env.MAX_RUN_ID_EXCLUSIVE, 10)
+            : null;
+          const reason = process.env.REASON || 'E2E cancelled';
+          const owner = context.repo.owner;
+          const repo = context.repo.repo;
+
+          const ACTIVE_RUN_STATUSES = ['in_progress', 'queued', 'waiting'];
+          const E2E_STATUS_CONTEXTS = [
+            'e2e/detox-ios-tests',
+            'e2e/detox-android-tests',
+            'e2e/detox-ipad-tests',
+            'e2e/maestro-ios-tests',
+            'e2e/maestro-android-tests',
+          ];
+
+          const runMatchesPr = (run) => {
+            if (!hasPrNumber) {
+              return true;
+            }
+            if (!run.pull_requests || run.pull_requests.length === 0) {
+              return true;
+            }
+            return run.pull_requests.some((pr) => pr.number === prNumber);
+          };
+
+          const cancelRun = async (runId) => {
+            try {
+              await github.rest.actions.cancelWorkflowRun({
+                owner,
+                repo,
+                run_id: runId,
+              });
+            } catch (err) {
+              core.warning(`cancelWorkflowRun ${runId}: ${err.message}`);
+            }
+
+            // Normal cancel skips jobs with if: always(). Run-level force-cancel
+            // stops those jobs (e.g. build-ios-simulator on macos-26).
+            try {
+              await github.request('POST /repos/{owner}/{repo}/actions/runs/{run_id}/force-cancel', {
+                owner,
+                repo,
+                run_id: runId,
+              });
+              core.info(`Force-cancelled E2E run ${runId}`);
+              return true;
+            } catch (err) {
+              core.warning(`force-cancel run ${runId}: ${err.message}`);
+              return false;
+            }
+          };
+
+          const markCommitStatusesCancelled = async (sha) => {
+            for (const statusContext of E2E_STATUS_CONTEXTS) {
+              try {
+                await github.rest.repos.createCommitStatus({
+                  owner,
+                  repo,
+                  sha,
+                  state: 'error',
+                  context: statusContext,
+                  description: reason.substring(0, 140),
+                });
+              } catch (err) {
+                core.warning(`createCommitStatus ${statusContext} on ${sha}: ${err.message}`);
+              }
+            }
+          };
+
+          core.info(`Cancelling active E2E runs for PR #${prNumber} on branch ${headBranch}`);
+
+          const {data: workflows} = await github.rest.actions.listRepoWorkflows({owner, repo});
+          const e2eWorkflow = workflows.workflows.find((workflow) => workflow.name === 'E2E');
+          if (!e2eWorkflow) {
+            core.info('No E2E workflow found in repository');
+            return;
+          }
+
+          const runsToCancel = new Map();
+
+          for (const status of ACTIVE_RUN_STATUSES) {
+            const {data} = await github.rest.actions.listWorkflowRuns({
+              owner,
+              repo,
+              workflow_id: e2eWorkflow.id,
+              status,
+              branch: headBranch,
+            });
+
+            for (const run of data.workflow_runs) {
+              if (!runMatchesPr(run)) {
+                core.info(`Skipping run ${run.id}: not associated with PR #${prNumber}`);
+                continue;
+              }
+              if (excludeHeadSha && run.head_sha === excludeHeadSha) {
+                core.info(`Skipping run ${run.id}: already on current commit ${excludeHeadSha}`);
+                continue;
+              }
+              if (maxRunIdExclusive !== null && run.id >= maxRunIdExclusive) {
+                core.info(`Skipping run ${run.id}: run id >= ${maxRunIdExclusive}`);
+                continue;
+              }
+              runsToCancel.set(run.id, run);
+            }
+          }
+
+          if (runsToCancel.size === 0) {
+            core.info(`No active E2E runs found for PR #${prNumber} on branch ${headBranch}`);
+            return;
+          }
+
+          let runsCancelled = 0;
+          const shasToUpdate = new Set();
+
+          for (const run of runsToCancel.values()) {
+            core.info(`Cancelling E2E run ${run.id} (${run.status}, sha ${run.head_sha})`);
+            shasToUpdate.add(run.head_sha);
+
+            if (await cancelRun(run.id)) {
+              runsCancelled++;
+            }
+          }
+
+          for (const sha of shasToUpdate) {
+            await markCommitStatusesCancelled(sha);
+          }
+
+          core.info(`Force-cancelled ${runsCancelled} E2E run(s) for PR #${prNumber}`);
