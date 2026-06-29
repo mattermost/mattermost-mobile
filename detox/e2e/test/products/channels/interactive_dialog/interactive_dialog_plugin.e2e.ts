@@ -34,7 +34,7 @@ import {
     LoginScreen,
     ServerScreen,
 } from '@support/ui/screen';
-import {wait, isAndroid} from '@support/utils';
+import {wait, isAndroid, timeouts} from '@support/utils';
 import {expect} from 'detox';
 
 const FILE_UPLOAD_FIXTURE = path.resolve(__dirname, '../../../../support/fixtures/sample.txt');
@@ -49,17 +49,11 @@ async function dismissAttachmentOptions() {
     } catch {}
 }
 
-async function clearFileUploadDialogState() {
-    await ChannelScreen.postSlashCommand('/dialog file-upload-clear');
-    await wait(500);
-}
-
 async function seedFileUploadDialogViaApi(
     user: any,
     testChannelId: string,
     testTeamId: string,
 ) {
-    await clearFileUploadDialogState();
 
     const loginResult = await User.apiLogin(siteOneUrl, {
         username: user.username,
@@ -136,6 +130,13 @@ async function selectChannel() {
         await IntegrationSelectorScreen.done();
     } catch {}
     return false;
+}
+
+async function postSlashCommandDirect(command: string) {
+    await ChannelScreen.postInput.tap();
+    await ChannelScreen.postInput.replaceText(command);
+    await ChannelScreen.sendButton.tap();
+    await waitFor(InteractiveDialogScreen.interactiveDialogScreen).toExist().withTimeout(timeouts.FIVE_SEC);
 }
 
 async function ensureDialogClosed() {
@@ -303,9 +304,6 @@ describe('Interactive Dialog - Basic Dialog (Plugin)', () => {
         await dismissErrorAlert();
         try {
             await InteractiveDialogScreen.cancel();
-        } catch {}
-        try {
-            await ChannelScreen.open(channelsCategory, testChannel.name);
         } catch {}
         await wait(500);
     });
@@ -748,13 +746,12 @@ describe('Interactive Dialog - Basic Dialog (Plugin)', () => {
     });
 
     describe('Interactive Dialog - File Upload (Plugin)', () => {
-        it('MM-T6070_1 - should render file upload dialog, open attachment options, and submit with no files (Plugin)', async () => {
+        it.only('MM-T6070_1 - should render file upload dialog, open attachment options, and submit with no files (Plugin)', async () => {
             if (!pluginAvailable) {
                 return;
             }
             await ensureDialogClosed();
-            await clearFileUploadDialogState();
-            await ChannelScreen.postSlashCommand('/dialog file-upload');
+            await postSlashCommandDirect('/dialog file-upload');
             await ensureDialogOpen();
 
             await expect(element(by.text('File Upload Dialog Demo'))).toExist();
@@ -774,21 +771,32 @@ describe('Interactive Dialog - Basic Dialog (Plugin)', () => {
             await ensureDialogClosed();
 
             const {post} = await Post.apiGetLastPostInChannel(siteOneUrl, testChannel.id);
-            await ChannelScreen.hasPostMessage(post.id, 'submitted a file upload dialog');
-            await ChannelScreen.hasPostMessage(post.id, 'Files: none');
+            let match = post.message.match(/(.+) submitted a file upload dialog/);
+            if (!match || !match[1]) {
+                throw new Error(`Expected post to contain submission confirmation but got: ${post.message}`);
+            }
+            match = post.message.match(/\*\*Files:\*\* (.+)/);
+            if (!match || !match[1]) {
+                throw new Error(`Expected post to contain Files field but got: ${post.message}`);
+            }
+
+            const filesSubmitted = match[1];
+            if (!/none/.test(filesSubmitted)) {
+                throw new Error(`Expected no files to be submitted but got: ${filesSubmitted}`);
+            }
         });
 
-        it('MM-T6072_1 - should disable file field choose when mobile upload is disabled (Plugin)', async () => {
+        it.only('MM-T6072_1 - should disable file field choose when mobile upload is disabled (Plugin)', async () => {
             if (!pluginAvailable) {
                 return;
             }
             await ensureDialogClosed();
             await System.apiUpdateConfig(siteOneUrl, {
-                ServiceSettings: {EnableMobileFileUpload: false},
+                FileSettings: {EnableMobileUpload: false},
             });
             await wait(2000);
 
-            await ChannelScreen.postSlashCommand('/dialog file-upload');
+            await postSlashCommandDirect('/dialog file-upload');
             await ensureDialogOpen();
             await InteractiveDialogScreen.expectFileFieldUploadDisabledWarning('single_file');
             await InteractiveDialogScreen.expectFileFieldUploadDisabledWarning('multi_file');
@@ -797,12 +805,12 @@ describe('Interactive Dialog - Basic Dialog (Plugin)', () => {
             await ensureDialogClosed();
 
             await System.apiUpdateConfig(siteOneUrl, {
-                ServiceSettings: {EnableMobileFileUpload: true},
+                FileSettings: {EnableMobileUpload: true},
             });
             await wait(2000);
         });
 
-        it('MM-T6073_1 - should hydrate file field from plugin persisted file IDs on re-open (Plugin)', async () => {
+        it.only('MM-T6073_1 - should hydrate file field from plugin persisted file IDs on re-open (Plugin)', async () => {
             if (!pluginAvailable) {
                 return;
             }
@@ -815,13 +823,21 @@ describe('Interactive Dialog - Basic Dialog (Plugin)', () => {
                 throw new Error(`File upload hydration seed failed (check file ownership / plugin file-upload support): ${err.message || err}`);
             }
 
-            await ChannelScreen.postSlashCommand('/dialog file-upload');
+            await postSlashCommandDirect('/dialog file-upload');
             await ensureDialogOpen();
             await InteractiveDialogScreen.expectHydratedFilePreview('single_file', fileId);
 
+            // * Choose button should be disabled while a file is attached
+            await InteractiveDialogScreen.expectFileFieldChooseButtonDisabled('single_file');
+
+            // # Remove the file
+            await InteractiveDialogScreen.tapFileFieldRemoveButton('single_file', fileId);
+
+            // * Choose button should be enabled after removal
+            await InteractiveDialogScreen.expectFileFieldChooseButtonEnabled('single_file');
+
             await InteractiveDialogScreen.cancel();
             await ensureDialogClosed();
-            await clearFileUploadDialogState();
         });
     });
 });

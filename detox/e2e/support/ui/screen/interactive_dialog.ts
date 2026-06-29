@@ -179,6 +179,28 @@ class InteractiveDialogScreen {
         await expect(fileRow).toExist();
     };
 
+    expectFileFieldChooseButtonDisabled = async (fieldName: string) => {
+        const btn = this.getFileFieldChooseButton(fieldName);
+        await waitFor(btn).toExist().withTimeout(timeouts.TWO_SEC);
+        await btn.tap();
+        await expect(element(by.id('file_attachment.photo_library'))).not.toExist();
+    };
+
+    expectFileFieldChooseButtonEnabled = async (fieldName: string) => {
+        const btn = this.getFileFieldChooseButton(fieldName);
+        await waitFor(btn).toExist().withTimeout(timeouts.TWO_SEC);
+        await btn.tap();
+        await waitFor(element(by.id('file_attachment.photo_library'))).toExist().withTimeout(timeouts.THREE_SEC);
+        await element(by.id('file_attachment.photo_library')).swipe('down', 'fast', 0.5);
+        await waitFor(element(by.id('file_attachment.photo_library'))).not.toExist().withTimeout(timeouts.THREE_SEC);
+    };
+
+    tapFileFieldRemoveButton = async (fieldName: string, fileId: string) => {
+        const removeBtn = element(by.id(`${fieldName}.file.remove.${fileId}`));
+        await waitFor(removeBtn).toExist().withTimeout(timeouts.TWO_SEC);
+        await removeBtn.tap();
+    };
+
     fillTextElementWithAppForm = async (elementName: string, value: string) => {
         const textInput = element(by.id(`AppFormElement.${elementName}.text.input`));
         await expect(textInput).toExist();
