@@ -2,6 +2,7 @@
 // See LICENSE.txt for license information.
 
 import {ProfilePicture} from '@support/ui/component';
+import {dismissKnownModals} from '@support/ui/modal_dismiss';
 import {ChannelListScreen} from '@support/ui/screen';
 import {isAndroid, isIos, safeEnableSynchronization, timeouts, wait, waitForElementToBeVisible, waitForElementToExist, waitForElementToNotExist} from '@support/utils';
 import {expect, waitFor} from 'detox';
@@ -101,6 +102,7 @@ class CreateDirectMessageScreen {
             // DM screen is not already open
         }
 
+        await dismissKnownModals(2);
         await waitForElementToExist(ChannelListScreen.headerPlusButton, timeouts.HALF_MIN);
 
         const disableSyncForOpen = isAndroid();

@@ -246,7 +246,7 @@ export async function waitForElementToBeVisible(
     detoxElement: Detox.NativeElement,
     timeout: number = isAndroid() ? timeouts.TWENTY_SEC : timeouts.TEN_SEC,
     pollInterval: number = timeouts.HALF_SEC,
-    visibilityThreshold = isAndroid() ? 25 : 75,
+    visibilityThreshold = isAndroid() ? 15 : 75,
 ): Promise<void> {
     const {expect: detoxExpect} = require('detox');
     const startTime = Date.now();

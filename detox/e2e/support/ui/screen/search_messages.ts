@@ -7,10 +7,11 @@ import {
 } from '@support/ui/component';
 import {dismissKnownModals} from '@support/ui/modal_dismiss';
 import {
+    ChannelListScreen,
     HomeScreen,
     PostOptionsScreen,
 } from '@support/ui/screen';
-import {isAndroid, isIos, longPressWithScrollRetry, timeouts, wait, waitForElementToBeVisible, waitForElementToNotExist} from '@support/utils';
+import {isAndroid, isIos, longPressWithScrollRetry, timeouts, wait, waitForElementToBeVisible} from '@support/utils';
 import {expect, waitFor} from 'detox';
 
 class SearchMessagesScreen {
@@ -113,11 +114,13 @@ class SearchMessagesScreen {
         if (isIos()) {
             await this.searchCancelButton.tap();
         } else {
-            // Search is a bottom-tab — pressBack only dismisses the keyboard, not the tab.
+            // Search is a bottom tab — pressBack only dismisses the keyboard.
+            // CI (MM-T5294_*): search_messages.screen stays mounted in the tab
+            // navigator after switching tabs, so not.toExist() never passes.
             await waitFor(HomeScreen.channelListTab).toExist().withTimeout(timeouts.TEN_SEC);
             await HomeScreen.channelListTab.tap();
         }
-        await waitForElementToNotExist(this.searchMessagesScreen, timeouts.TWENTY_SEC);
+        await ChannelListScreen.toBeVisible();
     };
 
     openPostOptionsFor = async (postId: string, text: string) => {

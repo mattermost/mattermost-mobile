@@ -3,7 +3,7 @@
 
 import {dismissKnownModals} from '@support/ui/modal_dismiss';
 import {ChannelListScreen} from '@support/ui/screen';
-import {isAndroid, isIos, timeouts, wait} from '@support/utils';
+import {isAndroid, isIos, timeouts, wait, waitForElementToExist} from '@support/utils';
 import {expect, waitFor} from 'detox';
 
 class ServerListScreen {
@@ -64,7 +64,7 @@ class ServerListScreen {
     open = async () => {
         await dismissKnownModals(2);
         const iconTimeout = isAndroid() ? timeouts.TWENTY_SEC : timeouts.TEN_SEC;
-        await waitFor(ChannelListScreen.serverIcon).toExist().withTimeout(iconTimeout);
+        await waitForElementToExist(ChannelListScreen.serverIcon, iconTimeout);
 
         /* eslint-disable no-await-in-loop -- retry server icon tap while header overlay clears */
         for (let i = 0; i < 3; i++) {
