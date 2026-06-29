@@ -66,7 +66,6 @@ const nonThemedStyles = StyleSheet.create({
         flexDirection: 'row',
         alignItems: 'center',
     },
-    margin: {marginVertical: 8},
     rowInfoBaseContainer: {
         flex: 1,
     },
