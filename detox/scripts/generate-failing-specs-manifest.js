@@ -1,6 +1,7 @@
 #!/usr/bin/env node
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
+/* eslint-disable no-console, no-process-env */
 
 /**
  * Build detox/e2e/failing-specs.manifest.json from downloaded CI junit artifacts.
@@ -10,9 +11,9 @@
  *   node detox/scripts/generate-failing-specs-manifest.js  # scans repo root for *-junit.xml
  */
 
+const {execSync} = require('child_process');
 const fs = require('fs');
 const path = require('path');
-const {execSync} = require('child_process');
 
 const repoRoot = path.resolve(__dirname, '../..');
 const defaultOut = path.join(repoRoot, 'detox/e2e/failing-specs.manifest.json');
