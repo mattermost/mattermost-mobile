@@ -25,7 +25,7 @@ import {
     computeMmBlocksImageLayout,
     refineMmBlocksImageLayoutFromIntrinsic,
     type MmBlocksImageLayout,
-} from './image_utils';
+} from './utils/image';
 
 import type {GalleryItemType} from '@typings/screens/gallery';
 

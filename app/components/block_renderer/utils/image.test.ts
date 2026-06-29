@@ -5,9 +5,9 @@ import {
     computeMmBlocksImageLayout,
     refineMmBlocksImageLayoutFromIntrinsic,
     resolveMmImageCaps,
-} from './image_utils';
+} from './image';
 
-describe('image_utils', () => {
+describe('image', () => {
     it('should resolve caps from block size', () => {
         expect(resolveMmImageCaps({type: 'image', url: 'https://x', size: 'small'})).toEqual({
             maxWidth: 204,

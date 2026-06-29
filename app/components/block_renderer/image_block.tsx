@@ -8,9 +8,9 @@ import {removeImageProxyForKey} from '@utils/markdown';
 import {secureGetFromRecord} from '@utils/types';
 
 import {MmBlocksRenderContext} from './context';
-import {resolveMmImageCaps} from './image_utils';
 import MmBlocksImage from './mm_blocks_image';
 import {getStyleSheet} from './styles';
+import {resolveMmImageCaps} from './utils/image';
 
 type ImageBlockProps = {
     block: MmImageBlock;
