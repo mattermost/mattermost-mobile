@@ -49,6 +49,7 @@ import type {AvailableScreens} from '@typings/screens/navigation';
 
 type PostProps = {
     appsEnabled: boolean;
+    mmBlocksEnabled: boolean;
     author?: UserModel;
     canDelete: boolean;
     commentCount: number;
@@ -124,6 +125,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
 
 const Post = ({
     appsEnabled,
+    mmBlocksEnabled,
     author,
     canDelete,
     commentCount,
@@ -177,6 +179,7 @@ const Post = ({
     const isAgentPostType = isAgentPost(post);
     const hasBeenDeleted = (post.deleteAt !== 0);
     const isWebHook = isFromWebhook(post);
+    const showEphemeralAuthor = isEphemeral && Boolean(post.userId);
     const [layoutWidth, setLayoutWidth] = useState(0);
     const shimmerAnimationProps = useShimmerAnimation(post, isChannelAutotranslated, intl.locale, layoutWidth, theme);
     const hasSameRoot = useMemo(() => {
@@ -318,7 +321,7 @@ const Post = ({
     } else {
         postAvatar = (
             <View style={[styles.profilePictureContainer, pendingPostStyle]}>
-                {(isAutoResponder || isSystemPost) ? (
+                {(isAutoResponder || (isSystemPost && !showEphemeralAuthor)) ? (
                     <SystemAvatar theme={theme}/>
                 ) : (
                     <Avatar
@@ -330,7 +333,7 @@ const Post = ({
             </View>
         );
 
-        if (isSystemPost && !isAutoResponder) {
+        if (isSystemPost && !isAutoResponder && !showEphemeralAuthor) {
             header = (
                 <SystemHeader
                     createAt={post.createAt}
@@ -398,6 +401,7 @@ const Post = ({
         body = (
             <Body
                 appsEnabled={appsEnabled}
+                mmBlocksEnabled={mmBlocksEnabled}
                 filesInfo={filesInfo}
                 hasReactions={hasReactions}
                 highlight={Boolean(highlightedStyle)}

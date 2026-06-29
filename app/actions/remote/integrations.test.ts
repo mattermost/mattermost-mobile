@@ -1,79 +1,137 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import IntegrationsMananger from '@managers/integrations_manager';
+import IntegrationsManager from '@managers/integrations_manager';
 import NetworkManager from '@managers/network_manager';
+import {logDebug} from '@utils/log';
 
-import {postActionWithQuery} from './integrations';
+import {postActionWithCookie} from './integrations';
 import {forceLogoutIfNecessary} from './session';
 
 import type {Client} from '@client/rest';
 
-jest.mock('@constants/device', () => ({}), {virtual: true});
-jest.mock('@database/manager', () => ({}), {virtual: true});
-
 jest.mock('@managers/network_manager');
-jest.mock('@managers/integrations_manager');
 jest.mock('./session');
+jest.mock('@utils/log');
 
-describe('Actions.Remote.Integrations', () => {
+describe('postActionWithCookie', () => {
     const serverUrl = 'https://server.com';
     const postId = 'post_id';
     const actionId = 'action_id';
-    const query = {row: '12', col: 'A'};
+    const actionCookie = 'action_cookie';
+    const error = new Error('API error');
+
+    const mockDoPostActionWithCookie = jest.fn();
 
     beforeEach(() => {
         jest.clearAllMocks();
+        jest.mocked(NetworkManager.getClient).mockReturnValue({
+            doPostActionWithCookie: mockDoPostActionWithCookie,
+        } as unknown as Client);
     });
 
-    describe('postActionWithQuery', () => {
-        it('should call client.doPostActionWithQuery and return data', async () => {
-            const mockSetTriggerId = jest.fn();
-            (IntegrationsMananger.getManager as jest.Mock).mockReturnValue({
-                setTriggerId: mockSetTriggerId,
-            });
+    afterEach(() => {
+        jest.restoreAllMocks();
+    });
 
-            const mockClient = {
-                doPostActionWithQuery: jest.fn().mockResolvedValue({trigger_id: 't123'}),
-            };
-            jest.mocked(NetworkManager.getClient).mockReturnValue(mockClient as unknown as Client);
+    it('should call doPostActionWithCookie with default optional args', async () => {
+        const response = {status: 'OK'};
+        mockDoPostActionWithCookie.mockResolvedValue(response);
 
-            const result = await postActionWithQuery(serverUrl, postId, actionId, query);
+        const result = await postActionWithCookie(serverUrl, postId, actionId, actionCookie);
 
-            expect(NetworkManager.getClient).toHaveBeenCalledWith(serverUrl);
-            expect(mockClient.doPostActionWithQuery).toHaveBeenCalledWith(postId, actionId, query);
-            expect(mockSetTriggerId).toHaveBeenCalledWith('t123');
-            expect(result).toEqual({data: {trigger_id: 't123'}});
+        expect(NetworkManager.getClient).toHaveBeenCalledWith(serverUrl);
+        expect(mockDoPostActionWithCookie).toHaveBeenCalledWith(
+            postId,
+            actionId,
+            actionCookie,
+            '',
+            undefined,
+            'attachment',
+        );
+        expect(result).toEqual({data: response});
+    });
+
+    it('should forward selectedOption, query, and integrationFormat', async () => {
+        const query = {row: '12', col: 'A'};
+        mockDoPostActionWithCookie.mockResolvedValue({});
+
+        await postActionWithCookie(
+            serverUrl,
+            postId,
+            actionId,
+            actionCookie,
+            'selected',
+            query,
+            'mm_block',
+        );
+
+        expect(mockDoPostActionWithCookie).toHaveBeenCalledWith(
+            postId,
+            actionId,
+            actionCookie,
+            'selected',
+            query,
+            'mm_block',
+        );
+    });
+
+    it('should set trigger id when response includes trigger_id', async () => {
+        const setTriggerId = jest.fn();
+        jest.spyOn(IntegrationsManager, 'getManager').mockReturnValue({
+            setTriggerId,
+        } as never);
+        mockDoPostActionWithCookie.mockResolvedValue({trigger_id: 'trigger_id'});
+
+        const result = await postActionWithCookie(serverUrl, postId, actionId, actionCookie);
+
+        expect(IntegrationsManager.getManager).toHaveBeenCalledWith(serverUrl);
+        expect(setTriggerId).toHaveBeenCalledWith('trigger_id');
+        expect(result).toEqual({data: {trigger_id: 'trigger_id'}});
+    });
+
+    it('should not set trigger id when response has no trigger_id', async () => {
+        const setTriggerId = jest.fn();
+        jest.spyOn(IntegrationsManager, 'getManager').mockReturnValue({
+            setTriggerId,
+        } as never);
+        mockDoPostActionWithCookie.mockResolvedValue({});
+
+        await postActionWithCookie(serverUrl, postId, actionId, actionCookie);
+
+        expect(setTriggerId).not.toHaveBeenCalled();
+    });
+
+    it('should not set trigger id when integrations manager is unavailable', async () => {
+        jest.spyOn(IntegrationsManager, 'getManager').mockReturnValue(undefined as never);
+        mockDoPostActionWithCookie.mockResolvedValue({trigger_id: 'trigger_id'});
+
+        const result = await postActionWithCookie(serverUrl, postId, actionId, actionCookie);
+
+        expect(result).toEqual({data: {trigger_id: 'trigger_id'}});
+    });
+
+    it('should return error and call forceLogoutIfNecessary when API call fails', async () => {
+        mockDoPostActionWithCookie.mockRejectedValue(error);
+
+        const result = await postActionWithCookie(serverUrl, postId, actionId, actionCookie);
+
+        expect(logDebug).toHaveBeenCalledWith('error on postActionWithCookie', error.message);
+        expect(forceLogoutIfNecessary).toHaveBeenCalledWith(serverUrl, error);
+        expect(result).toEqual({error});
+    });
+
+    it('should return error when getClient fails', async () => {
+        const clientError = new Error('client error');
+        jest.mocked(NetworkManager.getClient).mockImplementation(() => {
+            throw clientError;
         });
 
-        it('should not call setTriggerId when response lacks trigger_id', async () => {
-            const mockSetTriggerId = jest.fn();
-            (IntegrationsMananger.getManager as jest.Mock).mockReturnValue({
-                setTriggerId: mockSetTriggerId,
-            });
+        const result = await postActionWithCookie(serverUrl, postId, actionId, actionCookie);
 
-            const mockClient = {
-                doPostActionWithQuery: jest.fn().mockResolvedValue({status: 'OK'}),
-            };
-            jest.mocked(NetworkManager.getClient).mockReturnValue(mockClient as unknown as Client);
-
-            const result = await postActionWithQuery(serverUrl, postId, actionId, query);
-
-            expect(mockSetTriggerId).not.toHaveBeenCalled();
-            expect(result).toEqual({data: {status: 'OK'}});
-        });
-
-        it('should return error and call forceLogoutIfNecessary on failure', async () => {
-            const mockError = new Error('network failure');
-            const mockClient = {
-                doPostActionWithQuery: jest.fn().mockRejectedValue(mockError),
-            };
-            jest.mocked(NetworkManager.getClient).mockReturnValue(mockClient as unknown as Client);
-
-            const result = await postActionWithQuery(serverUrl, postId, actionId, query);
-
-            expect(forceLogoutIfNecessary).toHaveBeenCalledWith(serverUrl, mockError);
-            expect(result).toEqual({error: mockError});
-        });
+        expect(mockDoPostActionWithCookie).not.toHaveBeenCalled();
+        expect(logDebug).toHaveBeenCalledWith('error on postActionWithCookie', clientError.message);
+        expect(forceLogoutIfNecessary).toHaveBeenCalledWith(serverUrl, clientError);
+        expect(result).toEqual({error: clientError});
     });
 });

@@ -131,6 +131,7 @@ interface ClientConfig {
     FeatureFlagPostPriority?: string;
     FeatureFlagChannelBookmarks?: string;
     FeatureFlagCustomProfileAttributes?: string;
+    FeatureFlagMmBlocksEnabled?: string;
     ForgotPasswordLink?: string;
     GfycatApiKey: string;
     GfycatApiSecret: string;
