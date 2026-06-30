@@ -3,6 +3,7 @@
 
 import {useNavigation} from '@react-navigation/native';
 import React, {useCallback} from 'react';
+import {useIntl} from 'react-intl';
 import {Text, TouchableOpacity, View} from 'react-native';
 
 import CompassIcon from '@components/compass_icon';
@@ -14,6 +15,7 @@ import {removeProtocol, stripTrailingSlashes} from '@utils/url';
 import type ServersModel from '@typings/database/models/app/servers';
 
 type Props = {
+    disabled?: boolean;
     server: ServersModel;
     theme: Theme;
 }
@@ -26,6 +28,9 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
         flexDirection: 'row',
         height: 72,
         marginBottom: 12,
+    },
+    containerDisabled: {
+        opacity: 0.48,
     },
     details: {
         marginLeft: 14,
@@ -45,6 +50,11 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
         alignItems: 'center',
         marginHorizontal: 18,
     },
+    unavailable: {
+        color: changeOpacity(theme.centerChannelColor, 0.56),
+        marginRight: 7,
+        ...typography('Body', 75, 'Regular'),
+    },
     url: {
         color: changeOpacity(theme.centerChannelColor, 0.72),
         marginRight: 7,
@@ -52,8 +62,9 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
     },
 }));
 
-const ServerItem = ({server, theme}: Props) => {
+const ServerItem = ({disabled, server, theme}: Props) => {
     const navigation = useNavigation();
+    const {formatMessage} = useIntl();
     const styles = getStyleSheet(theme);
 
     const onServerPressed = useCallback(() => {
@@ -63,8 +74,9 @@ const ServerItem = ({server, theme}: Props) => {
 
     return (
         <TouchableOpacity
+            disabled={disabled}
             onPress={onServerPressed}
-            style={styles.container}
+            style={[styles.container, disabled && styles.containerDisabled]}
         >
             <View style={styles.row}>
                 <CompassIcon
@@ -89,6 +101,11 @@ const ServerItem = ({server, theme}: Props) => {
                     >
                         {removeProtocol(stripTrailingSlashes(server.url))}
                     </Text>
+                    {disabled &&
+                        <Text style={styles.unavailable}>
+                            {formatMessage({id: 'share_extension.server_item.zero_persistence_unavailable', defaultMessage: 'Sharing unavailable for this server'})}
+                        </Text>
+                    }
                 </View>
             </View>
         </TouchableOpacity>
