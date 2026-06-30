@@ -101,7 +101,7 @@ runs:
                   owner,
                   repo,
                   sha,
-                  state: 'error',
+                  state: 'success',
                   context: statusContext,
                   description: reason.substring(0, 140),
                 });

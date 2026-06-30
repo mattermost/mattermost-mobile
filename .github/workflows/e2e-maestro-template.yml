@@ -385,7 +385,7 @@ jobs:
 
       - name: Set Target URL
         id: set-url
-        if: always()
+        if: always() && steps.summary.conclusion == 'success' && steps.summary.outputs.FAILURES != '-1'
         env:
           S3_BUCKET: ${{ env.DETOX_AWS_S3_BUCKET }}
         run: |
@@ -723,7 +723,7 @@ jobs:
 
       - name: Set Target URL
         id: set-url
-        if: always()
+        if: always() && steps.summary.conclusion == 'success' && steps.summary.outputs.FAILURES != '-1'
         env:
           S3_BUCKET: ${{ env.DETOX_AWS_S3_BUCKET }}
         run: |
