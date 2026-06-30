@@ -262,6 +262,7 @@ async function determineAuthenticatedRoute(props: LaunchProps): Promise<ExpoRout
             break;
     }
 
+    // when running in zero persistence mode show last team if available
     const lastViewedTeam = await getLastViewedTeamIdAndServer();
     if (lastViewedTeam?.server_url === props.serverUrl && lastViewedTeam.team_id) {
         return {route: '/(authenticated)/(home)', params: props};
