@@ -212,9 +212,10 @@ jobs:
 
       - name: Install Homebrew Dependencies
         run: |
-          brew trust wix/brew 2>/dev/null || true
+          # Trust must come after tap — the tap directory must exist before brew trust can act on it.
           brew tap wix/brew
-          brew install applesimutils || true
+          brew trust wix/brew
+          brew install applesimutils
           # Cache restores Cellar without /opt/homebrew/bin symlinks — link the tap formula explicitly.
           brew link --overwrite --force wix/brew/applesimutils 2>/dev/null \
             || brew link --overwrite applesimutils
@@ -717,6 +718,7 @@ jobs:
 
       - name: Save report Detox Dependencies
         id: report-link
+        continue-on-error: true
         run: |
           cd detox
           npm ci

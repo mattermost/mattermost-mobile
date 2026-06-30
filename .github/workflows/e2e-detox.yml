@@ -134,7 +134,7 @@ jobs:
               || needs.run-ios-tests.outputs.FAILURES == '0' && format('All {0} tests passed', needs.run-ios-tests.outputs.TOTAL)
               || format('{0} passed, {1} failed, {2} skipped', needs.run-ios-tests.outputs.PASSES || '?', needs.run-ios-tests.outputs.FAILURES || '?', needs.run-ios-tests.outputs.SKIPPED || '0') }}
           status: ${{ (needs.run-ios-tests.result == 'skipped' && 'failure') || needs.run-ios-tests.outputs.STATUS || 'failure' }}
-          target_url: ${{ needs.run-ios-tests.outputs.TARGET_URL }}
+          target_url: ${{ needs.run-ios-tests.outputs.TARGET_URL || format('{0}/{1}/actions/runs/{2}', github.server_url, github.repository, github.run_id) }}
 
   update-final-status-android:
     runs-on: ubuntu-22.04
@@ -162,7 +162,7 @@ jobs:
               || needs.run-android-tests.outputs.FAILURES == '0' && format('All {0} tests passed', needs.run-android-tests.outputs.TOTAL)
               || format('{0} passed, {1} failed, {2} skipped', needs.run-android-tests.outputs.PASSES || '?', needs.run-android-tests.outputs.FAILURES || '?', needs.run-android-tests.outputs.SKIPPED || '0') }}
           status: ${{ (needs.run-android-tests.result == 'skipped' && 'failure') || needs.run-android-tests.outputs.STATUS || 'failure' }}
-          target_url: ${{ needs.run-android-tests.outputs.TARGET_URL }}
+          target_url: ${{ needs.run-android-tests.outputs.TARGET_URL || format('{0}/{1}/actions/runs/{2}', github.server_url, github.repository, github.run_id) }}
 
   update-final-status-ipad:
     runs-on: ubuntu-22.04
@@ -190,4 +190,4 @@ jobs:
               || needs.run-ios-ipad-tests.outputs.FAILURES == '0' && format('All {0} tests passed', needs.run-ios-ipad-tests.outputs.TOTAL)
               || format('{0} passed, {1} failed, {2} skipped', needs.run-ios-ipad-tests.outputs.PASSES || '?', needs.run-ios-ipad-tests.outputs.FAILURES || '?', needs.run-ios-ipad-tests.outputs.SKIPPED || '0') }}
           status: ${{ (needs.run-ios-ipad-tests.result == 'skipped' && 'failure') || needs.run-ios-ipad-tests.outputs.STATUS || 'failure' }}
-          target_url: ${{ needs.run-ios-ipad-tests.outputs.TARGET_URL }}
+          target_url: ${{ needs.run-ios-ipad-tests.outputs.TARGET_URL || format('{0}/{1}/actions/runs/{2}', github.server_url, github.repository, github.run_id) }}
