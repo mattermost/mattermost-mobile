@@ -151,10 +151,18 @@ class RecentMentionsScreen {
 
         /* eslint-disable no-await-in-loop -- poll until the edit propagates or tab refresh exhausts the deadline */
         while (Date.now() < deadline) {
+            const remaining = deadline - Date.now();
+            const pollTimeout = Math.min(timeouts.TEN_SEC, remaining);
+            if (pollTimeout <= 0) {
+                break;
+            }
             try {
-                await expect(editedIndicator).toExist();
+                await waitFor(editedIndicator).toExist().withTimeout(pollTimeout);
                 return;
             } catch {
+                if (Date.now() >= deadline) {
+                    break;
+                }
                 await HomeScreen.channelListTab.tap();
                 await wait(timeouts.ONE_SEC);
                 await HomeScreen.mentionsTab.tap();
@@ -162,7 +170,7 @@ class RecentMentionsScreen {
             }
         }
         /* eslint-enable no-await-in-loop */
-        await expect(editedIndicator).toExist();
+        await waitFor(editedIndicator).toExist().withTimeout(timeouts.FIVE_SEC);
     };
 }
 
