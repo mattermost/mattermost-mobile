@@ -9,6 +9,7 @@ import DateConstants from '@constants/datetime';
 import {AUTO_CACHE_CLEANUP_PROTECTION_BUFFER} from '@constants/post';
 import DatabaseManager from '@database/manager';
 import OfflinePersistenceManager from '@managers/offline_persistence_manager';
+import {queryPlaybookRunsBefore} from '@playbooks/database/queries/run';
 import {
     createAtOfNthPostOlderThan,
     getPostById,
@@ -35,6 +36,7 @@ interface CleanupProtections {
     viewedThreadId: string | undefined;
     activeThreadRootIds: Set<string>;
     fileViewerPostId: string | undefined;
+    viewedPlaybookRunId: string | undefined;
 }
 
 async function getLastAutoCacheCleanupRun(database: Database): Promise<number> {
@@ -76,6 +78,7 @@ async function computeCleanupProtections(
             threadParentLimit: Infinity,
             activeThreadRootIds,
             fileViewerPostId: undefined,
+            viewedPlaybookRunId: undefined,
         };
     }
 
@@ -108,6 +111,7 @@ async function computeCleanupProtections(
     }
 
     const fileViewerPostId = EphemeralStore.getCurrentFileViewerPostId() || undefined;
+    const viewedPlaybookRunId = EphemeralStore.getCurrentPlaybookRunId() || undefined;
 
     return {
         viewedChannelId,
@@ -117,6 +121,7 @@ async function computeCleanupProtections(
         threadParentLimit,
         activeThreadRootIds,
         fileViewerPostId,
+        viewedPlaybookRunId,
     };
 }
 
@@ -238,10 +243,24 @@ async function cleanupAiThreads(
     }
 }
 
-// Stub for Stage 4.
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-async function cleanupPlaybookRuns(_database: Database, _cutoff: number, _isActive: boolean) {
-    // Implemented in Stage 4.
+// Playbook runs re-fetch from the server on next open, so the only protection is
+// the currently-viewed run; viewedPlaybookRunId is undefined on non-active servers.
+async function cleanupPlaybookRuns(
+    database: Database,
+    operator: {batchRecords: (models: Model[], description: string) => Promise<void>},
+    cutoff: number,
+    viewedPlaybookRunId: string | undefined,
+) {
+    const staleRuns = await queryPlaybookRunsBefore(database, cutoff).fetch();
+    const prepared = (await Promise.all(
+        staleRuns.
+            filter((run) => run.id !== viewedPlaybookRunId).
+            map((run) => run.prepareDestroyWithRelations()),
+    )).flat();
+
+    if (prepared.length > 0) {
+        await operator.batchRecords(prepared, 'cleanupPlaybookRuns');
+    }
 }
 
 export async function autoCacheCleanup(serverUrl: string): Promise<void> {
@@ -291,11 +310,12 @@ export async function autoCacheCleanup(serverUrl: string): Promise<void> {
             '— currentThreadId:', limits.viewedThreadId,
             '— activeThreadRootIds count:', limits.activeThreadRootIds.size,
             '— fileViewerPostId:', limits.fileViewerPostId,
+            '— currentPlaybookRunId:', limits.viewedPlaybookRunId,
         );
 
         await cleanupPosts(serverUrl, database, operator, cutoff, limits);
         await cleanupAiThreads(database, operator, cutoff, limits.viewedThreadId);
-        await cleanupPlaybookRuns(database, cutoff, isActive);
+        await cleanupPlaybookRuns(database, operator, cutoff, limits.viewedPlaybookRunId);
 
         await database.unsafeVacuum();
         await setLastAutoCacheCleanupRun(serverUrl);

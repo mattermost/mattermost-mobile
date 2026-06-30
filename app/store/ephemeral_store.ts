@@ -44,6 +44,7 @@ class EphemeralStoreSingleton {
     private currentThreadId = '';
     private currentChannelOldestVisibleCreateAt: number | undefined = undefined;
     private currentFileViewerPostId = '';
+    private currentPlaybookRunId = '';
     private notificationTapped = false;
     private enablingCRT = false;
 
@@ -352,6 +353,15 @@ class EphemeralStoreSingleton {
     };
     clearCurrentFileViewerPostId = () => {
         this.currentFileViewerPostId = '';
+    };
+
+    // Protects the viewed playbook run from rolling cache eviction.
+    getCurrentPlaybookRunId = () => this.currentPlaybookRunId;
+    setCurrentPlaybookRunId = (id: string) => {
+        this.currentPlaybookRunId = id;
+    };
+    clearCurrentPlaybookRunId = () => {
+        this.currentPlaybookRunId = '';
     };
 
     // Ephemeral control when (un)archiving a channel locally

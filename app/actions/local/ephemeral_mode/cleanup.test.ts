@@ -8,6 +8,7 @@ import {MM_TABLES, SYSTEM_IDENTIFIERS} from '@constants/database';
 import {AUTO_CACHE_CLEANUP_PROTECTION_BUFFER} from '@constants/post';
 import DatabaseManager from '@database/manager';
 import OfflinePersistenceManager from '@managers/offline_persistence_manager';
+import {PLAYBOOK_TABLES} from '@playbooks/constants/database';
 import {getCurrentChannelId} from '@queries/servers/system';
 import EphemeralStore from '@store/ephemeral_store';
 import {NavigationStore} from '@store/navigation_store';
@@ -24,6 +25,7 @@ import type PostsInThreadModel from '@typings/database/models/servers/posts_in_t
 
 const {SERVER: {MY_CHANNEL, POST, POSTS_IN_CHANNEL, POSTS_IN_THREAD}} = MM_TABLES;
 const {AI_THREAD} = AGENTS_TABLES;
+const {PLAYBOOK_RUN, PLAYBOOK_CHECKLIST, PLAYBOOK_CHECKLIST_ITEM} = PLAYBOOK_TABLES;
 
 jest.mock('@managers/offline_persistence_manager', () => ({
     __esModule: true,
@@ -40,6 +42,7 @@ jest.mock('@store/ephemeral_store', () => ({
         getCurrentChannelOldestVisibleCreateAt: jest.fn(),
         getCurrentThreadId: jest.fn(),
         getCurrentFileViewerPostId: jest.fn(),
+        getCurrentPlaybookRunId: jest.fn(),
     },
 }));
 
@@ -134,6 +137,21 @@ async function writeAiThread(id: string, updateAt: number): Promise<void> {
     });
 }
 
+async function writePlaybookRun(id: string, createAt: number): Promise<void> {
+    await database.write(async () => {
+        const run = await database.get(PLAYBOOK_RUN).create((r: any) => {
+            r._raw.id = id;
+            r.createAt = createAt;
+        });
+        const checklist = await database.get(PLAYBOOK_CHECKLIST).create((r: any) => {
+            r.runId = run.id;
+        });
+        await database.get(PLAYBOOK_CHECKLIST_ITEM).create((r: any) => {
+            r.checklistId = checklist.id;
+        });
+    });
+}
+
 describe('autoCacheCleanup', () => {
     beforeEach(async () => {
         jest.clearAllMocks();
@@ -149,6 +167,7 @@ describe('autoCacheCleanup', () => {
         jest.mocked(EphemeralStore.getCurrentChannelOldestVisibleCreateAt).mockReturnValue(0);
         jest.mocked(EphemeralStore.getCurrentThreadId).mockReturnValue('');
         jest.mocked(EphemeralStore.getCurrentFileViewerPostId).mockReturnValue('');
+        jest.mocked(EphemeralStore.getCurrentPlaybookRunId).mockReturnValue('');
         jest.mocked(getCurrentChannelId).mockResolvedValue('');
         jest.mocked(LocalPost.deletePostsInChannelsByCutoff).mockResolvedValue({error: undefined});
     });
@@ -426,5 +445,52 @@ describe('autoCacheCleanup', () => {
 
         const threads = await database.get(AI_THREAD).query().fetch();
         expect(threads.length).toBe(0);
+    });
+
+    // TC-17
+    it('deletes playbook runs created before the cutoff and keeps newer ones', async () => {
+        await writePlaybookRun('run-old', OLD);
+        await writePlaybookRun('run-recent', RECENT);
+
+        await autoCacheCleanup(SERVER_URL);
+
+        const ids = (await database.get(PLAYBOOK_RUN).query().fetch()).map((r) => r.id);
+        expect(ids).toEqual(['run-recent']);
+    });
+
+    // TC-18
+    it('spares the currently-viewed playbook run on the active server even when it is stale', async () => {
+        jest.spyOn(DatabaseManager, 'getActiveServerUrl').mockResolvedValue(SERVER_URL);
+        jest.mocked(EphemeralStore.getCurrentPlaybookRunId).mockReturnValue('open-run');
+        await writePlaybookRun('open-run', OLD);
+        await writePlaybookRun('other-run', OLD);
+
+        await autoCacheCleanup(SERVER_URL);
+
+        const ids = (await database.get(PLAYBOOK_RUN).query().fetch()).map((r) => r.id);
+        expect(ids).toEqual(['open-run']);
+    });
+
+    // TC-19
+    it('deletes all stale playbook runs on a non-active server regardless of the viewed run id', async () => {
+        jest.mocked(EphemeralStore.getCurrentPlaybookRunId).mockReturnValue('open-run');
+        await writePlaybookRun('open-run', OLD);
+
+        await autoCacheCleanup(SERVER_URL);
+
+        const runs = await database.get(PLAYBOOK_RUN).query().fetch();
+        expect(runs.length).toBe(0);
+    });
+
+    // TC-20
+    it('cascades deletion of a stale run to its checklists and checklist items', async () => {
+        await writePlaybookRun('run-old', OLD);
+
+        await autoCacheCleanup(SERVER_URL);
+
+        const checklists = await database.get(PLAYBOOK_CHECKLIST).query().fetch();
+        const items = await database.get(PLAYBOOK_CHECKLIST_ITEM).query().fetch();
+        expect(checklists.length).toBe(0);
+        expect(items.length).toBe(0);
     });
 });
