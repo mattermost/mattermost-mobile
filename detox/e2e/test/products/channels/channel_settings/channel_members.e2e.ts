@@ -272,8 +272,6 @@ describe('Channels', () => {
         await ChannelInfoScreen.membersOption.tap();
         await wait(timeouts.TWO_SEC);
 
-        // Corner-tap: manage button is obscured by the manage-members modal's
-        // UITransitionView (same workaround as PostOptionsScreen.deletePost).
         await ManageChannelMembersScreen.manageButton.tap({x: 1, y: 1});
         await wait(timeouts.TWO_SEC);
 
@@ -303,10 +301,6 @@ describe('Channels', () => {
         await CreateDirectMessageScreen.searchInput.tapReturnKey();
         await wait(timeouts.ONE_SEC);
 
-        // Corner-tap: the create-DM modal's UITransitionView drops the row's
-        // center tap on iOS (Detox marks tap as delivered but onPress never
-        // fires → user never selected → assertion below fails). Same iOS
-        // gesture-interception pattern as manage_channel_members.ts:142.
         await CreateDirectMessageScreen.getUserItem(gmUser1.id).tap({x: 1, y: 1});
 
         // * Verify the first new user is selected

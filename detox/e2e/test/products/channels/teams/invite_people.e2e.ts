@@ -212,8 +212,6 @@ describe('Teams - Invite', () => {
         await waitFor(Invite.getSearchListUserItem(testUser.id)).toExist().withTimeout(timeouts.TEN_SEC);
 
         // # Select user item.
-        // Corner-tap: the invite user row's center is obscured by the invite modal's
-        // UITransitionView (same workaround as PostOptionsScreen.deletePost).
         await Invite.getSearchListUserItem(testUser.id).tap({x: 1, y: 1});
 
         // # Send invitation

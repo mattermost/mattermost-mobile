@@ -114,9 +114,6 @@ describe('Messaging - Pin and Unpin Message', () => {
         await PostOptionsScreen.pinPostOption.tap({x: 1, y: 1});
 
         // * Verify pinned text is displayed on the post pre-header
-        // Use polling to wait for the pre-header to appear after pin operation.
-        // On Android the bridge stays busy during bottom sheet dismissal + network
-        // request + DB update + re-render, so a fixed wait() is unreliable.
         const {postListPostItemPreHeaderText} = ChannelScreen.getPostListPostItem(post.id, message);
         await waitFor(postListPostItemPreHeaderText).toHaveText(pinnedText).withTimeout(timeouts.TEN_SEC);
 
@@ -126,7 +123,6 @@ describe('Messaging - Pin and Unpin Message', () => {
         await PostOptionsScreen.unpinPostOption.tap({x: 1, y: 1});
 
         // * Verify pinned text is not displayed on the post pre-header
-        // Wait for the pre-header element to disappear after unpin operation.
         await waitFor(postListPostItemPreHeaderText).not.toExist().withTimeout(timeouts.TEN_SEC);
 
         // # Go back to channel list screen
@@ -149,7 +145,6 @@ describe('Messaging - Pin and Unpin Message', () => {
         await PostOptionsScreen.pinPostOption.tap({x: 1, y: 1});
 
         // * Verify pinned text is displayed on the post pre-header
-        // Use polling to wait for the pre-header to appear after pin operation.
         const {postListPostItemPreHeaderText} = ThreadScreen.getPostListPostItem(post.id, message);
         await waitFor(postListPostItemPreHeaderText).toHaveText(pinnedText).withTimeout(timeouts.TEN_SEC);
 
@@ -163,7 +158,6 @@ describe('Messaging - Pin and Unpin Message', () => {
         await PostOptionsScreen.unpinPostOption.tap({x: 1, y: 1});
 
         // * Verify pinned text is not displayed on the post pre-header
-        // Wait for the pre-header element to disappear after unpin operation.
         await waitFor(postListPostItemPreHeaderText).not.toExist().withTimeout(timeouts.TEN_SEC);
 
         // # Go back to channel list screen

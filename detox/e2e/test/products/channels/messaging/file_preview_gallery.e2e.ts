@@ -85,9 +85,6 @@ describe('Messaging - File Preview Gallery', () => {
         await ChannelListScreen.toBeVisible();
     });
 
-    // No afterAll cleanup required: beforeAll resets state via
-    // device.launchApp({delete: true}) so the next describe starts clean.
-
     it('MM-T3462 - should render image preview for image file types', async () => {
         // # Upload an image and create a post via API
         const {post, fileId} = await Post.apiCreatePostWithImageAttachment(siteOneUrl, testChannel.id);
@@ -250,18 +247,10 @@ describe('Messaging - File Preview Gallery', () => {
         await waitFor(galleryCloseButton).toExist().withTimeout(timeouts.TEN_SEC);
 
         // # Tap the copy public link button in the gallery footer.
-        // .atIndex(0): the iOS native view hierarchy exposes the same testID on
-        // multiple ancestor views for RN Pressable, so direct .tap() throws
-        // "Multiple elements found". atIndex(0) is the touch-receiving view.
-        // Wait for visibility before tapping — the footer renders slightly
-        // after the header, and tapping a still-mounting Pressable silently
-        // drops the press (cause of prior intermittent MM-T3458_1 failure).
         const copyPublicLinkButton = element(by.id('gallery.footer.copy_public_link.button')).atIndex(0);
         await waitFor(copyPublicLinkButton).toBeVisible().withTimeout(timeouts.TEN_SEC);
 
         // Wait for the gallery open animation to fully settle before tapping.
-        // The UITransitionView overlay is still animating when toBeVisible() fires;
-        // tapping immediately intercepts into the overlay and onPress doesn't fire.
         await wait(timeouts.TWO_SEC);
         await copyPublicLinkButton.tap();
         await wait(timeouts.TWO_SEC);

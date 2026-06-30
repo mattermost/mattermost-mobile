@@ -133,17 +133,11 @@ class ManageChannelMembersScreen {
             await wait(timeouts.HALF_SEC);
         }
 
-        // Corner-tap: the member row's center is obscured by the manage-members
-        // modal's UITransitionView (same workaround as PostOptionsScreen.deletePost).
         await userDisplayName.tap({x: 1, y: 1});
         await wait(timeouts.TWO_SEC);
 
         await expect(this.removeButton).toBeVisible();
 
-        // Corner-tap: same modal UITransitionView interferes with this button's
-        // center tap as well — the corner-tap on userDisplayName above only
-        // covers the first interaction; this row is rendered under the same
-        // transition layer.
         await this.removeButton.tap({x: 1, y: 1});
         await wait(timeouts.TWO_SEC);
 

@@ -317,11 +317,6 @@ class ChannelScreen {
         await wait(timeouts.TWO_SEC);
     };
 
-    // ponytail: the iOS sim's URLSession intermittently drops the first POST to a
-    // freshly-provisioned server (-1005 "network connection lost") and the app does
-    // not auto-retry, so the message never reaches the server. Verify the send landed
-    // by cross-checking the API; retry once if the last post isn't ours. Returns the
-    // same {post} shape as Post.apiGetLastPostInChannel so callers can swap 1:1.
     postMessageAndVerify = async (message: string, channelId: string, siteUrl: string): Promise<{post?: any; error?: any}> => {
         await this.postMessage(message);
         let result = await Post.apiGetLastPostInChannel(siteUrl, channelId);
@@ -342,8 +337,6 @@ class ChannelScreen {
         await this.composePostDraft(command);
         await waitForElementToBeVisible(this.sendButton, timeouts.FOUR_SEC);
 
-        // Corner-tap: UITransitionView covers the send button on iOS 26 when the
-        // keyboard animation is in progress. Tapping at (1,1) bypasses the overlay.
         await this.sendButton.tap({x: 1, y: 1});
         await waitFor(InteractiveDialogScreen.interactiveDialogScreen).toExist().withTimeout(timeouts.FIVE_SEC);
     };

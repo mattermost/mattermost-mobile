@@ -97,11 +97,6 @@ describe('Search - Result Interactions', () => {
         await wait(timeouts.TWO_SEC);
 
         // * Verify at least one result is visible.
-        // Scroll first to dismiss the keyboard if it is still up after the search
-        // submit (on iOS, tapReturnKey does not always auto-collapse the keyboard in
-        // the search results view). Scrolling the list also serves as a pre-condition
-        // check that there is content to scroll, and collapses the keyboard so the
-        // 75%-visibility assertion on the flat list succeeds.
         const flatList = SearchMessagesScreen.getFlatPostList();
         try {
             await flatList.scroll(50, 'down');

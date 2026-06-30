@@ -144,12 +144,7 @@ async function loginAdmin(): Promise<void> {
 // Feature flags that must be ON for E2E.
 // IMPORTANT: setupFilesAfterEnv re-evaluates this module for every test file, so a
 // module-level boolean flag resets to false each time and cannot prevent cross-file
-// re-execution. Gate on the server's actual config state instead: if the flag is
-// already true (set by an earlier test file's setup), skip the PATCH entirely.
-// Mattermost server triggers a full config reload + CONFIG_CHANGED WebSocket broadcast
-// on every config/patch request (~10s of elevated server load), even when the value
-// is unchanged. Skipping the redundant patch eliminates the load that previously
-// caused connectToServer to fail immediately after setup.
+// re-execution.
 async function ensureServerConfigForE2E(): Promise<void> {
     try {
         const {config, error} = await System.apiGetConfig(siteOneUrl);

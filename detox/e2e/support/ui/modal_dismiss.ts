@@ -28,16 +28,6 @@ export const KNOWN_MODAL_CLOSE_BUTTON_IDS: readonly string[] = Object.freeze([
     'close.login.button', // entry/auth screen leftovers
     'close.server.button',
     'close.sso.button',
-
-    // tutorial_highlight: reactive dismissal of leftover tutorial overlays
-    // (MULTI_SERVER / PROFILE_LONG_PRESS). Tap at Modal center hits the
-    // <Svg onPress={onDismiss}> backdrop (item.tsx:33) when it lands outside
-    // the highlight cutout. If the tap lands INSIDE the cutout, the underlying
-    // item is tapped instead — side effect (e.g. user profile may briefly
-    // open). Acceptable as beforeEach fallback; subsequent tests still recover.
-    // Real fix is an app-side RUNNING_E2E gate in observeTutorialWatched
-    // (app/queries/app/global.ts:103) via @env — single chokepoint covering
-    // all six tutorial flags. Tracked separately.
     'tutorial_highlight',
 ] as const);
 

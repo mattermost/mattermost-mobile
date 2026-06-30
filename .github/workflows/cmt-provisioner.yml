@@ -1,44 +1,22 @@
 name: CMT Provisioner
 
-# Triggers:
-#   - Mobile release-build branch push (`build-release-NNN`, 3- or 4-digit build number, e.g.
-#     `build-release-786`, `build-release-1100`). The "Mattermost Mobile Release" external
-#     workflow creates this branch when a release build is dispatched to TestFlight / Play
-#     Store. Mobile does NOT cut RC git tags — `build-release-NNN` is mobile's RC mechanism.
-#     Platform-specific variants like `build-release-ios-NNN` / `-sim-NNN` / `-android-NNN`
-#     are intentionally excluded by the leading-three-digit glob (and re-checked by
-#     matterwick's strict regex).
-#     Creating a branch with `git push` fires this `push` trigger — there is no separate
-#     branch-creation step; the first push that creates the branch also triggers CMT.
-#     CMT runs the SMOKE suite across the multi-version matrix; subsequent pushes to the
-#     same branch (cherry-picks, hotfixes) re-run CMT against the updated RC.
-#   - Manual run from the Actions tab (`workflow_dispatch`, any ref).
+# Lightweight signal workflow for Compatibility Matrix Testing (CMT).
+# When this runs, matterwick detects the workflow_run:requested event, provisions one
+# cloud server per version in its CMT set, and dispatches compatibility-matrix-testing.yml.
+# Triggers: build-release-NNN branch pushes (mobile's RC mechanism) and manual workflow_dispatch.
 
 on:
   push:
-    # Mobile release-build branch — exactly 3- or 4-digit build numbers. Glob `[0-9]` is
-    # a single-char class; chaining 3 or 4 of them with no trailing `*` enforces the
-    # exact length. Excludes platform-specific variants like `build-release-ios-NNN`
-    # (the literal "i" doesn't match `[0-9]`). Matterwick's regex
-    # `^build-release-\d{3,4}$` is the authoritative gate; this glob is a coarse
-    # GitHub-side filter so the workflow doesn't run on unrelated branches.
     branches:
       - "build-release-[0-9][0-9][0-9]"
       - "build-release-[0-9][0-9][0-9][0-9]"
-  # Manual runs from the Actions tab (any ref).
   workflow_dispatch: {}
 
-# This workflow does not use GITHUB_TOKEN. Its only purpose is to emit a workflow_run event
-# that Matterwick reacts to; it does not check out the repo or call the GitHub API. Drop all
-# GITHUB_TOKEN scopes so the runner-issued token cannot modify the repo if a step is added later.
 permissions: {}
 
 jobs:
   signal:
     runs-on: ubuntu-22.04
     steps:
-      - name: Signal Matterwick to provision CMT servers
-        run: |
-          echo "CMT trigger started for ref: ${GITHUB_REF}"
-          echo "Matterwick provisions one server per configured version and then"
-          echo "dispatches compatibility-matrix-testing.yml automatically."
+      - name: Signal matterwick
+        run: echo "CMT provisioning requested — matterwick will handle provisioning and dispatch."

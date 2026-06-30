@@ -256,14 +256,6 @@ jobs:
             echo "Warning: FileProvider.LocalStorage container not found; channel_bookmark_file.yml may fail"
           fi
 
-      # Start the iOS Simulator device-log stream BEFORE maestro runs so any
-      # WebRTC / calls / connection lifecycle errors land in an artifact for
-      # post-hoc diagnosis. Local repro of the failing iOS calls flow (PR #9800
-      # diagnostic run) showed the flow PASSES on the simulator with a 1.0s
-      # peer connect, ruling out the obvious code-defect hypotheses. The CI
-      # failure's actual trigger is unknown precisely because the device log
-      # was never captured. Cheap to keep on permanently — log is small and
-      # only consulted on failure.
       - name: Start iOS Simulator device log capture
         if: always()
         run: |
@@ -652,14 +644,7 @@ jobs:
             android-emulator-${{ runner.os }}-${{ runner.arch }}-${{ env.E2E_ANDROID_AVD_NAME }}-api-${{ env.E2E_ANDROID_API_LEVEL }}-
             android-emulator-${{ runner.os }}-${{ runner.arch }}-
 
-      # Retry only the boot, not the test suite. Boot failures are pure infra (KVM not
-      # ready, snapshot corruption, AVD cache miss + slow download) and recover on retry.
-      # Test failures must not be auto-retried because run_ci_batches.sh exits non-zero on
-      # any test failure — retrying would silently re-run the whole 25-min suite for one
-      # flaky assertion. Cleanup between attempts kills any half-booted emulator so qemu
-      # state doesn't bleed between boots.
-      # Inline bash retry (not nick-fields/retry) because Mattermost's org action
-      # allowlist blocks third-party actions; this is the same semantics.
+      # Retry only the boot (infra failures); test failures must not be auto-retried.
       - name: Bootstrap Android emulator
         env:
           BOOTSTRAP_ONLY: "true"

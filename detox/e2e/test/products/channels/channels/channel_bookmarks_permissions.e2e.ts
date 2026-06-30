@@ -59,9 +59,6 @@ describe('Channels - Channel Bookmarks Permissions', () => {
         testTeam = team;
         testUser = user;
 
-        // FeatureFlags.ChannelBookmarks enabled once per shard in setup.ts.
-        // See channel_bookmarks.e2e.ts beforeAll for the WebSocket-contention rationale.
-
         const {user: rUser} = await User.apiCreateUser(siteOneUrl);
         if (!rUser?.id) {
             throw new Error('[beforeAll] Failed to create regularUser');
@@ -87,8 +84,6 @@ describe('Channels - Channel Bookmarks Permissions', () => {
     });
 
     afterAll(async () => {
-        // Do NOT unset FeatureFlags.ChannelBookmarks — would clobber other shards.
-        // See channel_bookmarks.e2e.ts afterAll for rationale.
         await HomeScreen.logout();
     });
 

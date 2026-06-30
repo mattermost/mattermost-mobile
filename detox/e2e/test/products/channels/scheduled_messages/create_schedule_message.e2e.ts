@@ -100,10 +100,6 @@ describe('Scheduled Draft,', () => {
         await waitForElementToBeVisible(ChannelScreen.postInput, timeouts.FOUR_SEC);
         await ChannelScreen.postMessage(parentMessage);
 
-        // # On Android the keyboard stays open after postMessage when the post list is
-        // short (only a system message + this post), so scroll(50, 'down') in
-        // longPressWithScrollRetry silently fails and never dismisses the keyboard.
-        // Swipe the post list to fire a touch event that dismisses it before long-press.
         if (isAndroid()) {
             try {
                 await ChannelScreen.postList.getFlatList().swipe('down', 'slow', 0.1);
@@ -181,9 +177,6 @@ describe('Scheduled Draft,', () => {
         await DraftScreen.openDraftPostActions();
         await DraftScreen.sendDraft();
 
-        // Wait for the sendDraft animation/transition to settle before tapping back.
-        // The UITransitionView overlay is still active when sendDraft() returns;
-        // an immediate backButton tap is intercepted by the overlay and never fires.
         await wait(timeouts.TWO_SEC);
         await waitForElementToBeVisible(DraftScreen.backButton, timeouts.FIVE_SEC);
         await DraftScreen.backButton.tap();

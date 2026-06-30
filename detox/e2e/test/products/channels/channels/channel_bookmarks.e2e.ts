@@ -99,11 +99,6 @@ describe('Channels - Channel Bookmarks', () => {
         testTeam = team;
         testUser = user;
 
-        // FeatureFlags.ChannelBookmarks is enabled once per shard process in
-        // detox/e2e/test/setup.ts (ensureServerConfigForE2E). Do NOT toggle here:
-        // a per-file true/false broadcast CONFIG_CHANGED over WebSocket clobbered
-        // the flag in other concurrent shards sharing SITE_1_URL.
-
         // ── Create all test channels ──────────────────────────────────────────
         channelT5600 = await createChannel();
         channelT5601 = await createChannel();
@@ -173,10 +168,6 @@ describe('Channels - Channel Bookmarks', () => {
     });
 
     afterAll(async () => {
-        // Do NOT set FeatureFlags.ChannelBookmarks=false here; broadcasts
-        // CONFIG_CHANGED to other concurrent shards and unmounts the bookmark
-        // UI mid-session in their app instance. The flag stays on for the run;
-        // the PR test server is destroyed at the end of the run by matterwick.
         await HomeScreen.logout();
     });
 

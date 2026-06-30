@@ -11,10 +11,7 @@ on:
         description: "The mattermost mobile version to test"
         required: true
 
-# Supersede an in-flight CMT run for the same ref (e.g. rapid build-release-NNN pushes) so we
-# don't pay for overlapping multi-version matrices. Matterwick reaps the cancelled run's
-# provisioned servers on its workflow_run "completed" (cancelled) event, matched by the
-# dispatched test workflow run id (not commit SHA).
+# Cancel overlapping CMT runs for the same ref; matterwick cleans up cancelled servers via workflow_run completed.
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
@@ -56,8 +53,7 @@ jobs:
           description: "Compatibility Matrix Testing for ${{ inputs.MOBILE_VERSION }} version"
           status: pending
 
-  # Maestro runs only against the latest server version. Job-level `if: matrix.*` is invalid
-  # for reusable-workflow callers (matrix is unavailable in jobs.<id>.if), so filter here.
+  # Maestro only runs against the latest server version; matrix filtering happens here since job-level if: can't access matrix.
   prepare-maestro-matrix:
     runs-on: ubuntu-22.04
     outputs:
@@ -180,12 +176,7 @@ jobs:
           name: android-maestro-build-files-${{ github.run_id }}
           path: android/app/build/outputs/apk/release/
 
-  # iOS phone: one matrix leg per server version. Matterwick marks the highest-semver entry with
-  # `latest: true`; that entry runs the whole detox suite at PR-default parallelism (full E2E on
-  # the version we're shipping). Older entries run the smoke slice at parallelism 1 (backward-
-  # compat sanity check). Detox runs on ALL server versions with varying inputs, so the
-  # latest-vs-smoke choice is made inside `with:` (job-level `if:` would skip the job entirely).
-  # Maestro, by contrast, runs only on the latest entry and uses job-level `if:` to skip the rest.
+  # latest entry runs full suite, older entries run smoke only. Job-level if: can't conditionally skip matrix legs, so inputs vary instead.
   detox-e2e:
     name: mobile-cmt-ios${{ matrix.server.latest && '-full' || '-smoke' }}-${{ matrix.server.version }}
     uses: ./.github/workflows/e2e-ios-template.yml
@@ -256,8 +247,6 @@ jobs:
       MOBILE_VERSION: ${{ inputs.MOBILE_VERSION }}
       testcase_failure_fatal: true
 
-  # Android: same latest=full / older=smoke shape as detox-e2e (iOS phone) — see that job's
-  # comment for the why-not-if explanation.
   detox-android-e2e:
     name: mobile-cmt-android${{ matrix.server.latest && '-full' || '-smoke' }}-${{ matrix.server.version }}
     uses: ./.github/workflows/e2e-android-template.yml
@@ -346,7 +335,5 @@ jobs:
           status: ${{ steps.status.outputs.status }}
           target_url: https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}
 
-      # Instance cleanup is handled by Matterwick: when this workflow completes, GitHub sends a
-      # workflow_run "completed" event and Matterwick destroys the servers it provisioned for
-      # this run (matched by the completing workflow run id). No in-workflow cleanup call is needed.
+      # Instance cleanup is handled by matterwick on workflow_run completed.
 

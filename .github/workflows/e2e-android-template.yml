@@ -336,14 +336,7 @@ jobs:
             android-emulator-${{ runner.os }}-${{ runner.arch }}-${{ env.AVD_NAME }}-api-${{ inputs.android_api_level }}-
             android-emulator-${{ runner.os }}-${{ runner.arch }}-
 
-      # Retry the whole emulator+tests command, not individual tests, so a mid-run
-      # emulator crash (signature: one shard reports ~all specs as failed) re-runs
-      # on a fresh AVD. Cleanup between attempts kills the wedged emulator and
-      # clears the previous attempt's JUnit output so it doesn't mix into the upload.
-      # continue-on-error preserved: if all attempts exhaust, the job still proceeds
-      # to upload partial artifacts and generate-report decides overall status.
-      # Inline bash retry (not nick-fields/retry) because Mattermost's org action
-      # allowlist blocks third-party actions; this is the same semantics.
+      # Retry on emulator crash (all-shards-fail signature); cleans up wedged AVD between attempts.
       - name: Create and run Android Emulator
         env:
           MATRIX_SPECS: ${{ matrix.specs }}

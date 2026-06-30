@@ -81,8 +81,6 @@ class SearchMessagesScreen {
 
     open = async () => {
         // # Open search messages screen
-        // Corner-tap: the search tab's center can be obscured by a lingering overlay
-        // (same workaround as PostOptionsScreen.deletePost).
         await HomeScreen.searchTab.tap({x: 1, y: 1});
 
         return this.toBeVisible();

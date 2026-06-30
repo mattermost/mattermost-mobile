@@ -191,14 +191,6 @@ class ChannelListScreen {
             }
             let popped = false;
 
-            // Search & permalink are bottom-tabs — no close button and no back
-            // button. The search.cancel.button in KNOWN_MODAL_CLOSE_BUTTON_IDS
-            // only clears the search text (and only renders while the search
-            // input is focused), so it cannot navigate off the search tab.
-            // Switch to the channel-list tab first; this is the same tap the
-            // tests' own ChannelListScreen.open() uses. Avoids the otherwise-
-            // inevitable nuclear newInstance relaunch with disableSynchronization,
-            // which poisons every downstream test on the shard.
             try {
                 await waitFor(HomeScreen.channelListTab).toExist().withTimeout(timeouts.TWO_SEC);
                 await HomeScreen.channelListTab.tap();

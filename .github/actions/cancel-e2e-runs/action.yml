@@ -95,13 +95,6 @@ runs:
           };
 
           const markCommitStatusesCancelled = async (sha) => {
-            // Use state: 'pending' (yellow dot) rather than 'error' (red X) for
-            // user-initiated cancellations. The user removed E2E/Run, added
-            // E2E/Override, or applied E2E/Reset-Servers — none of these are
-            // failures, they're intentional "no result" states. Red Xs against
-            // the PR misrepresent the situation and trip merge gates that
-            // distinguish failure from "not yet run". Description tells the
-            // human what happened and how to retry.
             for (const statusContext of E2E_STATUS_CONTEXTS) {
               try {
                 await github.rest.repos.createCommitStatus({
