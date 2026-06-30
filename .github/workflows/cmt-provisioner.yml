@@ -1,14 +1,5 @@
 name: CMT Provisioner
 
-# Lightweight trigger workflow for Compatibility Matrix Testing (CMT).
-#
-# Matterwick listens for this workflow's workflow_run:requested event, then provisions one
-# Mattermost cloud instance per version in its CMT version set (auto-derived from Mattermost
-# releases, with `CMTServerVersions` in matterwick config as a manual override) and dispatches
-# compatibility-matrix-testing.yml with the CMT_MATRIX input. When that test workflow completes,
-# Matterwick destroys the provisioned instances (cleanup is keyed off the completed workflow_run,
-# matched by the dispatched test workflow run id).
-#
 # Triggers:
 #   - Mobile release-build branch push (`build-release-NNN`, 3- or 4-digit build number, e.g.
 #     `build-release-786`, `build-release-1100`). The "Mattermost Mobile Release" external
@@ -17,16 +8,11 @@ name: CMT Provisioner
 #     Platform-specific variants like `build-release-ios-NNN` / `-sim-NNN` / `-android-NNN`
 #     are intentionally excluded by the leading-three-digit glob (and re-checked by
 #     matterwick's strict regex).
+#     Creating a branch with `git push` fires this `push` trigger — there is no separate
+#     branch-creation step; the first push that creates the branch also triggers CMT.
+#     CMT runs the SMOKE suite across the multi-version matrix; subsequent pushes to the
+#     same branch (cherry-picks, hotfixes) re-run CMT against the updated RC.
 #   - Manual run from the Actions tab (`workflow_dispatch`, any ref).
-#
-# Matterwick is the authoritative gate: its `shouldTriggerCMT` requires the head_branch to
-# match `^build-release-\d{3,4}$` (or be a manual dispatch). Anything that slips past the
-# GitHub-side glob is still rejected there.
-#
-# NOTE (intentional duplicate coverage): the branch the build-release-NNN was cut from also
-# gets a normal release E2E run (whole suite, latest server) on push events. CMT additionally
-# runs the SMOKE suite across the multi-version matrix at the build moment, whose set includes
-# the latest server — so the latest server is exercised by both flows. Expected and accepted.
 
 on:
   push:
