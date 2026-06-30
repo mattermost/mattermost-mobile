@@ -349,8 +349,8 @@ export async function newConnection(
                         btInitialized = true;
                     } else if (!speakerInitialized) {
                         // If we don't have bluetooth available, default to speakerphone on.
-                        setPreferredAudioRoute(AudioDevice.Speakerphone);
-                        speakerInitialized = true;
+                        // setPreferredAudioRoute(AudioDevice.Speakerphone);
+                        // speakerInitialized = true;
                     }
                 }
             });
@@ -378,7 +378,7 @@ export async function newConnection(
             if (report.isWiredHeadsetPluggedIn) {
                 setSpeakerphoneOn(false);
             } else {
-                setSpeakerphoneOn(true);
+                setSpeakerphoneOn(false);
             }
         }
 
