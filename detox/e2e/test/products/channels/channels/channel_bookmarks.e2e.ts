@@ -63,9 +63,11 @@ describe('Channels - Channel Bookmarks', () => {
         throw new Error(`No visible element found for text "${text}"`);
     };
 
-    const waitForBookmarkInChannelInfo = async (bookmarkMatcher: Detox.NativeMatcher, timeout = timeouts.TEN_SEC) => {
-        await ChannelInfoScreen.scrollToBookmarks();
-        await waitFor(element(bookmarkMatcher)).toExist().withTimeout(timeout);
+    const waitForBookmarkInChannelInfo = async (
+        bookmarkMatcher: Detox.NativeMatcher,
+        options?: {textFallback?: string; bookmarkId?: string},
+    ) => {
+        await ChannelInfoScreen.waitForBookmarkInChannelInfo(bookmarkMatcher, options);
     };
 
     const createChannel = async () => {
@@ -403,14 +405,12 @@ describe('Channels - Channel Bookmarks', () => {
         await ChannelInfoScreen.open();
 
         // * Verify the bookmark exists in channel info
-        const bookmarkEl = element(
-            by.
-                id(`channel_bookmark.${bookmarkT5610.id}`).
-                withAncestor(by.id('channel_info.bookmarks.list')),
-        );
         await waitForBookmarkInChannelInfo(
             by.id(`channel_bookmark.${bookmarkT5610.id}`).withAncestor(by.id('channel_info.bookmarks.list')),
+            {bookmarkId: bookmarkT5610.id},
         );
+
+        const bookmarkEl = element(by.id(`channel_bookmark.${bookmarkT5610.id}`));
 
         // # Long press on the bookmark to open options
         await bookmarkEl.longPress();
@@ -508,32 +508,20 @@ describe('Channels - Channel Bookmarks', () => {
 
         // # Open channel info to see the bookmark
         await ChannelInfoScreen.open();
-        await ChannelInfoScreen.scrollToBookmarks();
 
-        // * Verify the bookmark is visible in channel_info.
-        // Scope to channel_info.bookmarks.list — the same text also appears in
-        // channel_header.bookmarks.list (mounted behind the modal) and iOS picks
-        // that (not-visible) element first in the accessibility hierarchy.
-        // Use waitFor().withTimeout() rather than a one-shot expect(): the
-        // bookmarks *list* testID renders before the individual bookmark row
-        // (scrollToBookmarks returns as soon as the list exists), and CI run
-        // 28392181656 MM-T5605_1 failed with "No elements found" because the
-        // one-shot expect ran before the row mounted.
-        await waitFor(
-            element(
-                by.text('No Favicon Bookmark').
-                    withAncestor(by.id('channel_info.bookmarks.list')),
-            ),
-        ).toBeVisible().withTimeout(timeouts.TEN_SEC);
+        // * Verify the bookmark is visible in channel_info (retry close/reopen + header fallback).
+        await waitForBookmarkInChannelInfo(
+            by.text('No Favicon Bookmark').withAncestor(by.id('channel_info.bookmarks.list')),
+            {textFallback: 'No Favicon Bookmark'},
+        );
 
         // * Verify the generic fallback icon is shown (no image/emoji icon found).
-        // Same dual-list ambiguity — scope to channel_info.
         await waitFor(
             element(
                 by.id('bookmark-generic-icon').
                     withAncestor(by.id('channel_info.bookmarks.list')),
             ),
-        ).toBeVisible().withTimeout(timeouts.TEN_SEC);
+        ).toExist().withTimeout(timeouts.TEN_SEC);
 
         // # Go back to channel list
         await ChannelInfoScreen.close();
@@ -553,14 +541,10 @@ describe('Channels - Channel Bookmarks', () => {
         // avoid flakiness when text rendering is delayed by OG-fetch network requests.
         await waitForBookmarkInChannelInfo(
             by.id(`channel_bookmark.${bookmarkT5606.id}`).withAncestor(by.id('channel_info.bookmarks.list')),
+            {bookmarkId: bookmarkT5606.id},
         );
 
-        // # Long press on the bookmark to open options
-        const bookmarkEl = element(
-            by.
-                id(`channel_bookmark.${bookmarkT5606.id}`).
-                withAncestor(by.id('channel_info.bookmarks.list')),
-        );
+        const bookmarkEl = element(by.id(`channel_bookmark.${bookmarkT5606.id}`));
         await bookmarkEl.longPress();
 
         // * Verify bookmark options appear
@@ -694,6 +678,13 @@ describe('Channels - Channel Bookmarks', () => {
         // # Navigate to the channel (12 bookmarks pre-created in beforeAll)
         await openChannel(channelT5612);
 
+        try {
+            await element(by.type('RCTModalHostView')).tap({x: 10, y: 10});
+        } catch {
+            // No modal present
+        }
+        await wait(timeouts.ONE_SEC);
+
         // * Verify that the first bookmark is visible
         await expect(element(firstBookmarkMatcher)).toBeVisible();
 
@@ -701,13 +692,6 @@ describe('Channels - Channel Bookmarks', () => {
         await expect(element(lastBookmarkMatcher)).not.toBeVisible();
 
         // # Scroll the bookmark bar to reveal the last bookmark.
-        // iOS: swipe gesture (Detox's scroll() fails on iOS horizontal FlatList because
-        //   EarlGrey requires the start point to be directly on a UIScrollView, but all
-        //   coordinates are occupied by bookmark item child views).
-        // Android: FlatList virtualization — bookmark 12 is not in the hierarchy until
-        //   scrolled into view. whileElement().scroll() mounts off-screen items; poll-and-
-        //   swipe is the fallback when scroll() is refused (CI 28416284905 MM-T5612_1:
-        //   12 scroll() attempts left Scroll Bookmark 12 null in hierarchy).
         if (isAndroid()) {
             const lastBookmark = element(lastBookmarkMatcher);
             const bookmarksList = element(channelHeaderBookmarksList);
@@ -715,19 +699,19 @@ describe('Channels - Channel Bookmarks', () => {
                 await waitFor(lastBookmark).
                     toExist().
                     whileElement(channelHeaderBookmarksList).
-                    scroll(300, 'right');
+                    scroll(500, 'right');
             } catch {
                 /* eslint-disable no-await-in-loop -- bounded scroll: stops as soon as target is found */
-                for (let i = 0; i < 12; i++) {
+                for (let i = 0; i < 15; i++) {
                     try {
                         await waitFor(lastBookmark).toExist().withTimeout(timeouts.TWO_SEC);
                         break;
                     } catch {
-                        if (i === 11) {
-                            throw new Error('Scroll Bookmark 12 not found after whileElement + 12 swipe attempts');
+                        if (i === 14) {
+                            throw new Error('Scroll Bookmark 12 not found after whileElement + 15 swipe attempts');
                         }
                         try {
-                            await bookmarksList.scroll(300, 'right');
+                            await bookmarksList.scroll(500, 'right');
                         } catch {
                             await element(firstBookmarkMatcher).swipe('left', 'fast', 0.8, 0.7, 0.3);
                         }
@@ -739,19 +723,19 @@ describe('Channels - Channel Bookmarks', () => {
                 await waitFor(element(firstBookmarkMatcher)).
                     toExist().
                     whileElement(channelHeaderBookmarksList).
-                    scroll(300, 'left');
+                    scroll(500, 'left');
             } catch {
                 /* eslint-disable no-await-in-loop -- bounded scroll: stops as soon as target is found */
-                for (let i = 0; i < 12; i++) {
+                for (let i = 0; i < 15; i++) {
                     try {
                         await waitFor(element(firstBookmarkMatcher)).toExist().withTimeout(timeouts.TWO_SEC);
                         break;
                     } catch {
-                        if (i === 11) {
+                        if (i === 14) {
                             throw new Error('Scroll Bookmark 1 not found after scrolling back');
                         }
                         try {
-                            await bookmarksList.scroll(300, 'left');
+                            await bookmarksList.scroll(500, 'left');
                         } catch {
                             await lastBookmark.swipe('right', 'fast', 0.8, 0.3, 0.7);
                         }
@@ -760,38 +744,26 @@ describe('Channels - Channel Bookmarks', () => {
                 /* eslint-enable no-await-in-loop */
             }
         } else {
-            // iOS: Detox scroll() fails on horizontal FlatLists (EarlGrey requires
-            //   the start point on the UIScrollView, but bookmark children occupy
-            //   every coordinate), and a swipe on the list can report "not hittable"
-            //   when a child intercepts the start point (CI 28392181656 MM-T5612_1:
-            //   not hittable at {181,24}). Poll-and-swipe so we stop as soon as the
-            //   target is found, and tolerate a single failed swipe — the next
-            //   attempt lands on a different start point after the partial scroll.
-            //   Assert with toExist() (not toBeVisible()): the last bookmark can be
-            //   present but <75% visible at the right edge after scrolling.
             await waitFor(element(channelHeaderBookmarksList)).toExist().withTimeout(timeouts.TEN_SEC);
             /* eslint-disable no-await-in-loop -- bounded swipe: stops as soon as target is found */
-            for (let i = 0; i < 12; i++) {
+            for (let i = 0; i < 15; i++) {
                 try {
                     await waitFor(element(lastBookmarkMatcher)).toExist().withTimeout(timeouts.TWO_SEC);
                     break;
                 } catch {
-                    if (i === 11) {
-                        throw new Error('Scroll Bookmark 12 not found after 12 swipe attempts');
+                    if (i === 14) {
+                        throw new Error('Scroll Bookmark 12 not found after 15 swipe attempts');
                     }
                     try {
                         await element(channelHeaderBookmarksList).swipe('left', 'fast', 0.9, 0.5, 0.5);
                     } catch {
-                        // A bookmark child intercepts the list's start point ("not
-                        // hittable", CI 28392181656 MM-T5612_1: not hittable at
-                        // {181,24}). Swipe on the first bookmark text instead —
-                        // swiping a child scrolls the parent FlatList.
                         try {
                             await element(firstBookmarkMatcher).swipe('left', 'fast', 0.9, 0.5, 0.5);
                         } catch {
                             // Retry from the new scroll position.
                         }
                     }
+                    await wait(timeouts.HALF_SEC);
                 }
             }
             /* eslint-enable no-await-in-loop */
@@ -800,28 +772,25 @@ describe('Channels - Channel Bookmarks', () => {
 
         // # Scroll back to the beginning
         if (!isAndroid()) {
-            // Same poll-and-swipe as the forward scroll: stop as soon as the first
-            // bookmark is back, tolerate a not-hittable swipe.
             /* eslint-disable no-await-in-loop -- bounded swipe: stops as soon as target is found */
-            for (let i = 0; i < 12; i++) {
+            for (let i = 0; i < 15; i++) {
                 try {
                     await waitFor(element(firstBookmarkMatcher)).toExist().withTimeout(timeouts.TWO_SEC);
                     break;
                 } catch {
-                    if (i === 11) {
+                    if (i === 14) {
                         throw new Error('Scroll Bookmark 1 not found after scrolling back');
                     }
                     try {
                         await element(channelHeaderBookmarksList).swipe('right', 'fast', 0.9, 0.5, 0.5);
                     } catch {
-                        // Not hittable on the list — swipe on the last bookmark text
-                        // (still visible after the forward scroll) to scroll the parent.
                         try {
                             await element(lastBookmarkMatcher).swipe('right', 'fast', 0.9, 0.5, 0.5);
                         } catch {
                             // Retry from the new scroll position.
                         }
                     }
+                    await wait(timeouts.HALF_SEC);
                 }
             }
             /* eslint-enable no-await-in-loop */

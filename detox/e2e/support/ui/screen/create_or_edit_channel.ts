@@ -7,7 +7,7 @@ import {
     ChannelListScreen,
     ChannelSettingsScreen,
 } from '@support/ui/screen';
-import {isAndroid, isIos, tapNativeBackButton, timeouts, wait, waitForElementToBeVisible} from '@support/utils';
+import {isIos, tapNativeBackButton, timeouts, wait, waitForElementToBeVisible} from '@support/utils';
 import {expect, waitFor} from 'detox';
 
 class CreateOrEditChannelScreen {
@@ -97,15 +97,11 @@ class CreateOrEditChannelScreen {
     };
 
     save = async () => {
-        if (isAndroid()) {
-            try {
-                await device.pressBack();
-            } catch {
-                // Keyboard may already be hidden.
-            }
-            await wait(timeouts.HALF_SEC);
-        }
-
+        // The save button sits in the modal header, above the soft keyboard, so it
+        // is tappable without dismissing the keyboard first. A blind pressBack here
+        // is destructive: after replaceText the IME auto-hides, so pressBack
+        // dismisses create_or_edit_channel.screen itself and saveButton.tap() then
+        // fails to find the button (CI 28420130849 MM-T4774_4).
         await this.saveButton.tap();
 
         // Save dismisses the form but can leave an empty create_or_edit_channel.screen

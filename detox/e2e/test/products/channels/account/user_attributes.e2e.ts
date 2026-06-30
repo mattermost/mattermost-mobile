@@ -21,11 +21,15 @@ import {
 } from '@support/ui/screen';
 import {
     assertUserAttributesReady,
+    getCustomAttributeInputByName,
     probeUserAttributesProvision,
+    scrollProfileAttributeIntoView,
     seedUserAttributeValues,
+    USER_ATTRIBUTE_FIELD_NAMES,
+    waitForEditProfileCustomAttributes,
     type UserAttributesFieldIds,
 } from '@support/user_attributes_test_helper';
-import {isAndroid, safeEnableSynchronization, timeouts, wait, waitForElementToExist} from '@support/utils';
+import {isAndroid, timeouts, wait} from '@support/utils';
 import {expect, waitFor} from 'detox';
 
 describe('Account - User Attributes', () => {
@@ -73,6 +77,15 @@ describe('Account - User Attributes', () => {
         await ServerScreen.connectToServer(serverOneUrl, serverOneDisplayName);
         await LoginScreen.login(testUser);
         await ChannelListScreen.waitForSidebarPublicChannelDisplayNameVisible(testChannel.name);
+
+        // Reload so client config + custom profile fields sync after the flag was enabled.
+        await device.reloadReactNative();
+        await ChannelListScreen.toBeVisible();
+
+        const refreshed = await probeUserAttributesProvision(siteOneUrl);
+        if (refreshed.ready) {
+            fieldIds = refreshed.fieldIds;
+        }
     });
 
     beforeEach(async () => {
@@ -87,40 +100,14 @@ describe('Account - User Attributes', () => {
     });
 
     it('MM-T5781_1 - should display custom attribute fields in Edit Profile and allow saving values', async () => {
-        const [fieldId0, fieldId1, fieldId2] = fieldIds!;
-
         await AccountScreen.open();
         await EditProfileScreen.open();
-        await wait(timeouts.TWO_SEC);
         await EditProfileScreen.toBeVisible();
-
-        const firstCustomAttrInput = element(by.id(`edit_profile_form.customAttributes.${fieldId0}.input`));
-        await device.disableSynchronization();
-        try {
-            await waitForElementToExist(firstCustomAttrInput, timeouts.TWENTY_SEC);
-        } finally {
-            await safeEnableSynchronization();
-        }
+        await waitForEditProfileCustomAttributes();
 
         if (isAndroid()) {
-            const scrollView = element(by.id(EditProfileScreen.testID.scrollView));
-            try {
-                await waitFor(element(by.id(`edit_profile_form.customAttributes.${fieldId0}.input`))).
-                    toExist().
-                    whileElement(by.id(EditProfileScreen.testID.scrollView)).
-                    scroll(150, 'down');
-            } catch {
-                try {
-                    await scrollView.scroll(200, 'down');
-                } catch {
-                    // Already at scroll end
-                }
-            }
-        }
-
-        if (isAndroid()) {
-            const fillField = async (fieldId: string, value: string, scrollAmount: number) => {
-                const input = element(by.id(`edit_profile_form.customAttributes.${fieldId}.input`));
+            const fillField = async (fieldName: typeof USER_ATTRIBUTE_FIELD_NAMES[number], value: string, scrollAmount: number) => {
+                const input = getCustomAttributeInputByName(fieldName);
                 await waitFor(input).
                     toBeVisible().
                     whileElement(by.id(EditProfileScreen.testID.scrollView)).
@@ -129,13 +116,13 @@ describe('Account - User Attributes', () => {
                 await input.clearText();
                 await input.replaceText(value);
             };
-            await fillField(fieldId0, attrValue1, 300);
-            await fillField(fieldId1, attrValue2, 200);
-            await fillField(fieldId2, attrValue3, 200);
+            await fillField(USER_ATTRIBUTE_FIELD_NAMES[0], attrValue1, 300);
+            await fillField(USER_ATTRIBUTE_FIELD_NAMES[1], attrValue2, 200);
+            await fillField(USER_ATTRIBUTE_FIELD_NAMES[2], attrValue3, 200);
         } else {
-            const bioInput = element(by.id(`edit_profile_form.customAttributes.${fieldId0}.input`));
-            const deptInput = element(by.id(`edit_profile_form.customAttributes.${fieldId1}.input`));
-            const teamInput = element(by.id(`edit_profile_form.customAttributes.${fieldId2}.input`));
+            const bioInput = getCustomAttributeInputByName(USER_ATTRIBUTE_FIELD_NAMES[0]);
+            const deptInput = getCustomAttributeInputByName(USER_ATTRIBUTE_FIELD_NAMES[1]);
+            const teamInput = getCustomAttributeInputByName(USER_ATTRIBUTE_FIELD_NAMES[2]);
 
             await waitFor(bioInput).
                 toBeVisible().
@@ -166,41 +153,18 @@ describe('Account - User Attributes', () => {
         await UserProfileScreen.sendMessageProfileOption.swipe('up', 'fast', 0.8);
         await wait(timeouts.TWO_SEC);
 
-        const scrollCustomAttributeIntoView = async (fieldId: string) => {
-            const titleEl = element(by.id(`custom_attribute.${fieldId}.title`));
-            const scrollView = element(by.id('user_profile.scroll_view'));
-            await device.disableSynchronization();
-            try {
-                /* eslint-disable no-await-in-loop */
-                for (let attempt = 0; attempt < 15; attempt++) {
-                    try {
-                        await waitForElementToExist(titleEl, timeouts.TWO_SEC);
-                        return titleEl;
-                    } catch {
-                        try {
-                            await scrollView.scroll(200, 'down');
-                        } catch {
-                            await UserProfileScreen.sendMessageProfileOption.swipe('up', 'slow', 0.5);
-                        }
-                        await wait(timeouts.HALF_SEC);
-                    }
-                }
-                /* eslint-enable no-await-in-loop */
-                await waitForElementToExist(titleEl, timeouts.TEN_SEC);
-            } finally {
-                await safeEnableSynchronization();
-            }
-            return titleEl;
-        };
+        const profileList = by.id('user_profile.custom_attributes.list');
+        await scrollProfileAttributeIntoView(USER_ATTRIBUTE_FIELD_NAMES[0]);
+        await expect(element(by.text(USER_ATTRIBUTE_FIELD_NAMES[0]).withAncestor(profileList))).toExist();
+        await expect(element(by.text(attrValue1).withAncestor(profileList))).toExist();
 
-        await scrollCustomAttributeIntoView(fieldIds![0]);
-        await expect(element(by.id(`custom_attribute.${fieldIds![0]}.text`))).toHaveText(attrValue1);
+        await scrollProfileAttributeIntoView(USER_ATTRIBUTE_FIELD_NAMES[1]);
+        await expect(element(by.text(USER_ATTRIBUTE_FIELD_NAMES[1]).withAncestor(profileList))).toExist();
+        await expect(element(by.text(attrValue2).withAncestor(profileList))).toExist();
 
-        await scrollCustomAttributeIntoView(fieldIds![1]);
-        await expect(element(by.id(`custom_attribute.${fieldIds![1]}.text`))).toHaveText(attrValue2);
-
-        await scrollCustomAttributeIntoView(fieldIds![2]);
-        await expect(element(by.id(`custom_attribute.${fieldIds![2]}.text`))).toHaveText(attrValue3);
+        await scrollProfileAttributeIntoView(USER_ATTRIBUTE_FIELD_NAMES[2]);
+        await expect(element(by.text(USER_ATTRIBUTE_FIELD_NAMES[2]).withAncestor(profileList))).toExist();
+        await expect(element(by.text(attrValue3).withAncestor(profileList))).toExist();
 
         await UserProfileScreen.close();
         await ChannelScreen.back();

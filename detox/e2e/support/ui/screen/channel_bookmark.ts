@@ -14,6 +14,9 @@ class ChannelBookmarkScreen {
         linkInputDescription: 'channel_bookmark_add.link.input.description',
         titleInput: 'channel_bookmark.add.title.input',
         bookmarkGenericIcon: 'bookmark-generic-icon',
+        bookmarkImage: 'bookmark-image',
+        bookmarkEmoji: 'bookmark-emoji',
+        bookmarkFileIcon: 'bookmark-file-icon',
         emojiPickerScreen: 'emoji_picker.screen',
         emojiPickerSearchInput: 'emoji_picker.search_bar.search.input',
         emojiPickerToolTipCloseButton: 'skin_selector.tooltip.close.button',
@@ -122,15 +125,47 @@ class ChannelBookmarkScreen {
         return this.channelBookmarkScreen;
     };
 
-    getEditModalIconButton = () => element(
-        by.id(this.testID.bookmarkGenericIcon).
-            withAncestor(by.id(this.testID.channelBookmarkScreen)),
-    );
+    getEditModalIconButton = () => {
+        const ancestor = by.id(this.testID.channelBookmarkScreen);
+        return element(by.id(this.testID.bookmarkGenericIcon).withAncestor(ancestor));
+    };
+
+    getAnyBookmarkIcon = () => {
+        const ancestor = by.id(this.testID.channelBookmarkScreen);
+        const ids = [
+            this.testID.bookmarkGenericIcon,
+            this.testID.bookmarkImage,
+            this.testID.bookmarkEmoji,
+            this.testID.bookmarkFileIcon,
+        ];
+
+        // Return first matching icon element. Callers should use
+        // findExistingBookmarkIcon() for resilient tap targets.
+        return ids.map((id) => element(by.id(id).withAncestor(ancestor)));
+    };
+
+    findExistingBookmarkIcon = async () => {
+        const candidates = this.getAnyBookmarkIcon();
+
+        /* eslint-disable no-await-in-loop -- try each bookmark icon testID until one exists */
+        for (const candidate of candidates) {
+            try {
+                await waitFor(candidate).toExist().withTimeout(timeouts.ONE_SEC);
+                return candidate;
+            } catch {
+                // not this icon type
+            }
+        }
+        /* eslint-enable no-await-in-loop */
+
+        // Fall back to generic icon (may fail if none match)
+        return this.getEditModalIconButton();
+    };
 
     // CI 28416284905 MM-T5606_1: icon tap + EmojiPickerScreen.toBeVisible() timed out
     // with search input null — bottom-sheet animation / sync still busy on Android.
     openEmojiPickerFromEditModal = async () => {
-        const iconButton = this.getEditModalIconButton();
+        const iconButton = await this.findExistingBookmarkIcon();
         const emojiPickerScreen = element(by.id(this.testID.emojiPickerScreen));
         const searchInput = element(by.id(this.testID.emojiPickerSearchInput));
         const toolTipCloseButton = element(by.id(this.testID.emojiPickerToolTipCloseButton));

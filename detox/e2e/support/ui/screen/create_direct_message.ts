@@ -68,12 +68,20 @@ class CreateDirectMessageScreen {
     longPressProfileTutorialText = element(by.text("Long-press on an item to view a user's profile"));
 
     dismissLongPressProfileTutorial = async () => {
+        // The long-press profile tutorial is a RN Modal (a separate Dialog window
+        // on Android) whose content is pointerEvents='none' — tapping the
+        // "Long-press…" text or tutorial_swipe_left does NOT dismiss it (CI
+        // 28420130849 MM-T4730_1: text still present after tap at 00:30:47.898).
+        // The Modal's onRequestClose fires on hardware Back, which is the only
+        // dismissal. Press Back EXACTLY ONCE and only when the tutorial is
+        // actually present (detected via the findable "Long-press…" text) — a
+        // second pressBack dismisses create_direct_message.screen beneath.
         try {
             await waitFor(this.longPressProfileTutorialText).toBeVisible().withTimeout(timeouts.THREE_SEC);
-            await this.longPressProfileTutorialText.tap();
+            await device.pressBack();
             await waitFor(this.longPressProfileTutorialText).not.toExist().withTimeout(timeouts.FIVE_SEC);
         } catch {
-            // Tutorial not shown or already dismissed
+            // Tutorial not shown or already dismissed.
         }
     };
 
@@ -157,7 +165,6 @@ class CreateDirectMessageScreen {
             // the tutorial first, then probe the activity window.
             await wait(timeouts.ONE_SEC);
             await this.dismissLongPressProfileTutorial();
-            await this.closeTutorial();
             await waitFor(this.createDirectMessageScreen).toExist().withTimeout(timeouts.TWENTY_SEC);
             await this.dismissScheduledPostTooltip();
         }
@@ -184,26 +191,14 @@ class CreateDirectMessageScreen {
                 await this.tutorialSwipeLeft.tap();
                 await waitFor(this.tutorialHighlight).not.toExist().withTimeout(timeouts.TEN_SEC);
             } else {
+                // Android: the TutorialHighlight is a RN Modal (separate Dialog
+                // window). Its content is pointerEvents='none' (tapping does
+                // nothing) and tutorial_swipe_left is never found via Espresso.
+                // dismissLongPressProfileTutorial() handles the single pressBack
+                // dismissal guarded by the tutorial's presence -- do NOT blind
+                // pressBack here (CI 28420130849: 3x blind pressBack dismissed
+                // create_direct_message.screen after the 1st dismissed the Dialog).
                 await this.dismissLongPressProfileTutorial();
-
-                // On Android the TutorialHighlight uses a React Native Modal, which creates a
-                // separate Dialog window. Espresso's onView() searches the currently focused window
-                // — the Dialog — not the Activity. The 'tutorial_highlight' testID is on the Modal
-                // itself (not a View), so it is never found. The 'tutorial_swipe_left' View sits
-                // inside the Modal and IS accessible from the Dialog window.
-                /* eslint-disable no-await-in-loop -- bounded tutorial dismiss retries */
-                for (let attempt = 0; attempt < 3; attempt++) {
-                    try {
-                        await waitForElementToExist(this.tutorialSwipeLeft, timeouts.THREE_SEC);
-                        await this.tutorialSwipeLeft.tap();
-                        await device.pressBack();
-                        await waitForElementToNotExist(this.tutorialSwipeLeft, timeouts.FIVE_SEC);
-                        return;
-                    } catch {
-                        await device.pressBack();
-                    }
-                }
-                /* eslint-enable no-await-in-loop */
             }
         } catch {
             // Tutorial may not appear if already dismissed in a previous run

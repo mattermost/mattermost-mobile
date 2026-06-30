@@ -259,15 +259,27 @@ class ChannelInfoScreen {
             // threshold even after scrollView.scroll(150, 'down', 0.5, 0.5) at
             // channel_info.ts:271. whileElement().scroll() brings the row into the
             // Espresso-visible viewport; 25% threshold matches scrollElementIntoView.
-            try {
-                await waitFor(addBookmark).
-                    toBeVisible(25).
-                    whileElement(by.id(this.testID.scrollView)).
-                    scroll(150, 'down');
-            } catch {
-                // Row may already be visible without scrolling.
+            // Scroll in small steps with an explicit visible-centre start and a
+            // 15% threshold; stop as soon as the row is visible. A 150px whileElement
+            // step overshoots past the row (CI 28420130849 MM-T5602_1: row in hierarchy
+            // but toBeVisible(25) never passes after the overshoot).
+            /* eslint-disable no-await-in-loop -- bounded scroll: stops when row is visible */
+            for (let i = 0; i < 12; i++) {
+                try {
+                    await waitFor(addBookmark).toBeVisible(15).withTimeout(timeouts.ONE_SEC);
+                    break;
+                } catch (e) {
+                    if (i === 11) {
+                        throw e;
+                    }
+                    try {
+                        await this.scrollView.scroll(80, 'down', 0.5, 0.5);
+                    } catch {
+                        // Scroll view at the bottom edge.
+                    }
+                }
             }
-            await waitFor(addBookmark).toBeVisible(25).withTimeout(timeouts.TEN_SEC);
+            /* eslint-enable no-await-in-loop */
         } else {
             // iOS: partial-height channel_info sheet — whileElement().scroll() refuses
             // ("not scrollable at start point"). Probe + centre scroll (custom_status.ts).
@@ -282,6 +294,56 @@ class ChannelInfoScreen {
             }
         }
         await addBookmark.tap({x: 1, y: 1});
+    };
+
+    waitForBookmarkInChannelInfo = async (
+        bookmarkMatcher: Detox.NativeMatcher,
+        {
+            timeout = timeouts.TWENTY_SEC,
+            textFallback,
+            bookmarkId,
+        }: {timeout?: number; textFallback?: string; bookmarkId?: string} = {},
+    ) => {
+        const MAX_RETRIES = 3;
+        const perAttemptTimeout = Math.ceil(timeout / MAX_RETRIES);
+
+        /* eslint-disable no-await-in-loop -- close/reopen channel info to trigger bookmark sync */
+        for (let attempt = 1; attempt <= MAX_RETRIES; attempt++) {
+            await this.scrollToBookmarks();
+            try {
+                await waitFor(element(bookmarkMatcher)).toExist().withTimeout(perAttemptTimeout);
+                return;
+            } catch (error) {
+                if (attempt === MAX_RETRIES) {
+                    if (textFallback) {
+                        const headerMatcher = by.text(textFallback).
+                            withAncestor(by.id('channel_header.bookmarks.list'));
+                        try {
+                            await waitFor(element(headerMatcher)).toExist().withTimeout(timeouts.FIVE_SEC);
+                            return;
+                        } catch {
+                            // Fall through to bookmarkId / original error.
+                        }
+                    }
+                    if (bookmarkId) {
+                        const headerMatcher = by.id(`channel_bookmark.${bookmarkId}`).
+                            withAncestor(by.id('channel_header.bookmarks.list'));
+                        try {
+                            await waitFor(element(headerMatcher)).toExist().withTimeout(timeouts.FIVE_SEC);
+                            return;
+                        } catch {
+                            // Fall through to original error.
+                        }
+                    }
+                    throw error;
+                }
+
+                await this.close();
+                await wait(timeouts.ONE_SEC);
+                await this.open();
+            }
+        }
+        /* eslint-enable no-await-in-loop */
     };
 }
 

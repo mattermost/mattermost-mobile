@@ -200,10 +200,7 @@ describe('Channels - Channel Bookmarks Permissions', () => {
         await ChannelSettingsScreen.toBeVisible();
         await ChannelSettingsScreen.archivePublicChannel({confirm: true});
 
-        // # Return to the channel screen — channel_info may still cover the channel view
-        // after settings auto-dismisses on archive, so post_draft.archived never mounts in
-        // the visible hierarchy (CI 28416284905 MM-T5725_1: toExist null for 20s). Same
-        // close-after-archive pattern as unarchive_channel.e2e.ts MM-T4944_1.
+        await waitFor(ChannelInfoScreen.channelInfoScreen).toBeVisible().withTimeout(timeouts.TEN_SEC);
         await ChannelInfoScreen.close();
 
         // * Verify channel is archived (draft area shows archived state).

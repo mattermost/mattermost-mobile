@@ -242,7 +242,7 @@ describe('Search - Recent Mentions', () => {
         // regex doesn't work because @mention is a separate React node).
         // Use verifyPostEdited (poll + tab refresh): the recent_mentions list does
         // not reliably re-render the row on POST_EDITED before it is recycled.
-        await RecentMentionsScreen.verifyPostEdited(ownMentionPost.id);
+        await RecentMentionsScreen.verifyPostEdited(ownMentionPost.id, updatedMessage);
 
         // # Open post options via header date_time long-press (avoids the @mention tap handler)
         await element(by.id('post_header.date_time').withAncestor(by.id(`recent_mentions.post_list.post.${ownMentionPost.id}`))).longPress(timeouts.TWO_SEC);

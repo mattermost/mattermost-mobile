@@ -2,7 +2,7 @@
 // See LICENSE.txt for license information.
 
 import {CustomProfileAttributes, System, User} from '@support/server_api';
-import {timeouts, wait} from '@support/utils';
+import {safeEnableSynchronization, timeouts, wait, waitForElementToExist} from '@support/utils';
 
 // Keep in sync with detox/provision/custom-profile-attributes.ts
 export const USER_ATTRIBUTE_FIELD_NAMES = ['Bio', 'Department', 'Team'] as const;
@@ -192,5 +192,70 @@ export const seedUserAttributeValues = async (
 export const assertUserAttributesReady = (reason: string | undefined): void => {
     if (reason) {
         throw new Error(`[user_attributes] ${reason}`);
+    }
+};
+
+const customAttributeFieldContainerMatcher = (fieldName: string) =>
+    by.id(/^edit_profile_form\.customAttributes\.[^.]+$/).withDescendant(by.text(fieldName));
+
+export const getCustomAttributeInputByName = (fieldName: typeof USER_ATTRIBUTE_FIELD_NAMES[number]) =>
+    element(
+        by.id(/^edit_profile_form\.customAttributes\.[^.]+\.input$/).
+            withAncestor(customAttributeFieldContainerMatcher(fieldName)),
+    );
+
+export const waitForEditProfileCustomAttributes = async (): Promise<void> => {
+    const scrollView = element(by.id('edit_profile.scroll_view'));
+    const firstInput = getCustomAttributeInputByName(USER_ATTRIBUTE_FIELD_NAMES[0]);
+
+    await device.disableSynchronization();
+    try {
+        /* eslint-disable no-await-in-loop */
+        for (let attempt = 0; attempt < 15; attempt++) {
+            try {
+                await waitForElementToExist(firstInput, timeouts.TWO_SEC);
+                return;
+            } catch {
+                try {
+                    await scrollView.scroll(200, 'down');
+                } catch {
+                    // Already at scroll end
+                }
+                await wait(timeouts.HALF_SEC);
+            }
+        }
+        /* eslint-enable no-await-in-loop */
+        await waitForElementToExist(firstInput, timeouts.TEN_SEC);
+    } finally {
+        await safeEnableSynchronization();
+    }
+};
+
+export const scrollProfileAttributeIntoView = async (
+    fieldName: typeof USER_ATTRIBUTE_FIELD_NAMES[number],
+): Promise<void> => {
+    const titleEl = element(by.text(fieldName).withAncestor(by.id('user_profile.custom_attributes.list')));
+    const scrollView = element(by.id('user_profile.scroll_view'));
+
+    await device.disableSynchronization();
+    try {
+        /* eslint-disable no-await-in-loop */
+        for (let attempt = 0; attempt < 15; attempt++) {
+            try {
+                await waitForElementToExist(titleEl, timeouts.TWO_SEC);
+                return;
+            } catch {
+                try {
+                    await scrollView.scroll(200, 'down');
+                } catch {
+                    await element(by.id('user_profile.screen')).swipe('up', 'slow', 0.5);
+                }
+                await wait(timeouts.HALF_SEC);
+            }
+        }
+        /* eslint-enable no-await-in-loop */
+        await waitForElementToExist(titleEl, timeouts.TEN_SEC);
+    } finally {
+        await safeEnableSynchronization();
     }
 };

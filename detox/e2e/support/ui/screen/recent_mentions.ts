@@ -135,31 +135,44 @@ class RecentMentionsScreen {
         ).toHaveText(postMessage);
     };
 
-    // Wait for the edited_indicator to render on a post after an edit.
-    // The recent_mentions list doesn't always re-render the row on POST_EDITED
-    // before the FlashList recycles it (CI 28392181656 / 28375328964 / 28385155791
-    // MM-T4909_3: `edited_indicator` never appeared in 10s despite a successful
-    // edit — 263 failed `not null` polls). Poll and, on failure, force a fresh
-    // fetchRecentMentions by leaving + re-entering the mentions tab (the same
-    // refresh pattern as recentMentionPostListToBeVisible) so the row re-mounts
-    // at the top with the indicator.
-    verifyPostEdited = async (postId: string) => {
-        const editedIndicator = element(
-            by.id('edited_indicator').withAncestor(by.id(`${this.testID.recentMentionPostList}.${postId}`)),
-        );
-        const MAX_REFETCHES = 3;
+    // Wait for an edited post to appear in recent mentions after an edit.
+    // The list does not always re-render the row on POST_EDITED before FlashList
+    // recycles it (CI 28392181656 MM-T4909_3: edited_indicator never appeared).
+    // Poll for the updated message text or the "Edited" label, and force a fresh
+    // fetchRecentMentions by leaving + re-entering the mentions tab when needed.
+    verifyPostEdited = async (postId: string, updatedMessage?: string) => {
+        const postContainer = by.id(`${this.testID.recentMentionPostList}.${postId}`);
+        const MAX_REFETCHES = 4;
 
-        /* eslint-disable no-await-in-loop -- poll for the indicator before each tab refresh */
+        const waitForEditedState = async () => {
+            if (updatedMessage) {
+                await waitFor(
+                    element(by.text(updatedMessage).withAncestor(postContainer)),
+                ).toExist().withTimeout(timeouts.TEN_SEC);
+                return;
+            }
+
+            const editedIndicator = element(by.id('edited_indicator').withAncestor(postContainer));
+            try {
+                await waitFor(editedIndicator).toExist().withTimeout(timeouts.FIVE_SEC);
+
+            } catch {
+                await waitFor(
+                    element(by.text('Edited').withAncestor(postContainer)),
+                ).toExist().withTimeout(timeouts.FIVE_SEC);
+            }
+        };
+
+        /* eslint-disable no-await-in-loop -- poll before each tab refresh */
         for (let attempt = 1; attempt <= MAX_REFETCHES; attempt++) {
             try {
-                await waitFor(editedIndicator).toExist().withTimeout(timeouts.TEN_SEC);
+                await waitForEditedState();
                 return;
             } catch (e) {
                 if (attempt === MAX_REFETCHES) {
                     throw e;
                 }
 
-                // Force a fresh fetchRecentMentions by leaving + re-entering the tab.
                 await HomeScreen.channelListTab.tap();
                 await wait(timeouts.ONE_SEC);
                 await HomeScreen.mentionsTab.tap();

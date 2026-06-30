@@ -10,8 +10,8 @@
 # Phase 1 — builds & setup (parallel):
 #   build-ios-simulator, build-android-apk-maestro, build-android-apk (Detox debug APK),
 #   provision-servers, validate-maestro-flow-headers
-#   resolve-artifact-source may skip Detox app builds on detox/-only commits and reuse
-#   artifacts from a prior successful E2E run (or reuse_artifact_run_id input).
+#   resolve-artifact-source runs build-ios-simulator / build-android-apk on every E2E run
+#   unless reuse_artifact_run_id is passed on workflow_dispatch.
 # Phase 2 — tests (parallel, after phase 1):
 #   run-detox-ios / run-detox-android → e2e-detox.yml
 #   run-maestro-ios / run-maestro-android → e2e-maestro-pr.yml (downloads phase-1 artifacts via artifact_run_id)
@@ -165,9 +165,9 @@ jobs:
             core.info(`PR #${prNumber} E2E/Override=${override}`);
             core.setOutput('e2e_override', override ? 'true' : 'false');
 
-  # TEMP(revert-when-detox-green): Skip Detox app builds when the commit only touches
-  # the E2E harness (detox/) and reuse artifacts from a prior successful E2E run.
-  # Manual override: pass reuse_artifact_run_id on workflow_dispatch.
+  # resolve-artifact-source always runs build-ios-simulator / build-android-apk unless
+  # reuse_artifact_run_id is set manually. Detox-only artifact reuse is disabled while
+  # app-side E2E fixes (save_option, custom_status, etc.) require fresh binaries.
   resolve-artifact-source:
     name: Resolve app artifact source
     needs: resolve-e2e-policy
@@ -208,28 +208,34 @@ jobs:
               return;
             }
 
-            const detoxOnlyPatterns = [
-              /^detox\//,
-              /^\.github\/workflows\/e2e-/,
-              /^\.github\/actions\/cancel-e2e-runs\//,
-              /^\.github\/actions\/update-commit-status\//,
+            const appBuildPatterns = [
+              /^app\//,
+              /^libraries\/@mattermost\//,
+              /^ios\//,
+              /^android\//,
+              /^package\.json$/,
+              /^package-lock\.json$/,
             ];
 
-            const isDetoxOnlyCommit = () => {
+            const getChangedFiles = () => {
               try {
-                const changed = execFileSync(
+                return execFileSync(
                   'git',
                   ['diff-tree', '--no-commit-id', '--name-only', '-r', mobileVersion],
                   {encoding: 'utf8'},
                 ).split('\n').filter(Boolean);
-                if (changed.length === 0) {
-                  return false;
-                }
-                return changed.every((file) => detoxOnlyPatterns.some((pattern) => pattern.test(file)));
               } catch (err) {
-                core.warning(`Could not classify commit as detox-only: ${err.message}`);
+                core.warning(`Could not list changed files for ${mobileVersion}: ${err.message}`);
+                return [];
+              }
+            };
+
+            const requiresAppBuild = () => {
+              const changed = getChangedFiles();
+              if (changed.length === 0) {
                 return false;
               }
+              return changed.some((file) => appBuildPatterns.some((pattern) => pattern.test(file)));
             };
 
             const runHasArtifacts = async (runId) => {
@@ -248,60 +254,6 @@ jobs:
               });
               const names = new Set(artifacts.map((artifact) => artifact.name));
               return expected.every((name) => names.has(name));
-            };
-
-            const resolveHeadBranch = async () => {
-              const {data: currentRun} = await github.rest.actions.getWorkflowRun({
-                owner: context.repo.owner,
-                repo: context.repo.repo,
-                run_id: context.runId,
-              });
-              if (currentRun.head_branch) {
-                return currentRun.head_branch;
-              }
-
-              if (mobileVersion) {
-                try {
-                  const {data: prs} = await github.rest.repos.listPullRequestsAssociatedWithCommit({
-                    owner: context.repo.owner,
-                    repo: context.repo.repo,
-                    commit_sha: mobileVersion,
-                  });
-                  const openPr = prs.find((pr) => pr.state === 'open');
-                  if (openPr?.head?.ref) {
-                    return openPr.head.ref;
-                  }
-                } catch (err) {
-                  core.warning(`Could not resolve PR branch from commit: ${err.message}`);
-                }
-              }
-
-              return context.ref.replace('refs/heads/', '');
-            };
-
-            const findPreviousArtifactRun = async () => {
-              const branch = await resolveHeadBranch();
-              core.info(`Searching prior E2E runs on branch ${branch} for reusable app artifacts`);
-              const {data} = await github.rest.actions.listWorkflowRuns({
-                owner: context.repo.owner,
-                repo: context.repo.repo,
-                workflow_id: 'e2e-detox-pr.yml',
-                branch,
-                status: 'success',
-                event: 'workflow_dispatch',
-                per_page: 30,
-              });
-              for (const run of data.workflow_runs) {
-                if (run.id >= context.runId) {
-                  continue;
-                }
-                // eslint-disable-next-line no-await-in-loop
-                if (await runHasArtifacts(run.id)) {
-                  core.info(`Found reusable app artifacts on prior run ${run.id} (${run.head_sha})`);
-                  return String(run.id);
-                }
-              }
-              return null;
             };
 
             const finish = (artifactRunId, skipIos, skipAndroid, reason) => {
@@ -326,13 +278,9 @@ jobs:
               return;
             }
 
-            if (isDetoxOnlyCommit()) {
-              const previousRunId = await findPreviousArtifactRun();
-              if (previousRunId) {
-                finish(previousRunId, needIos, needAndroid, 'detox-only commit reusing prior E2E run');
-                return;
-              }
-              core.info('Detox-only commit but no prior successful E2E run with artifacts — building app');
+            if (requiresAppBuild()) {
+              finish(String(context.runId), false, false, 'app/native changes require full build');
+              return;
             }
 
             finish(String(context.runId), false, false, 'full app build in this run');
