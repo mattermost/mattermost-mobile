@@ -166,7 +166,7 @@ class DatabaseManagerSingleton {
 
                 // Registers the new server connection into the DEFAULT database
                 await this.addServerToAppDatabase({
-                    databaseFilePath,
+                    databaseFilePath: zpm ? '' : databaseFilePath,
                     displayName: displayName || dbName,
                     identifier,
                     serverUrl,

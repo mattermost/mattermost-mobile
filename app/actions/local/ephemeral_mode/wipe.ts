@@ -1,6 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import {removePushSigningKey, storePushSigningKey} from '@actions/app/global';
 import DatabaseManager from '@database/manager';
 import {getServer} from '@queries/app/servers';
 import {resetHasEverStartedSync} from '@store/team_load_store';
@@ -69,6 +70,11 @@ export const reconcilePersistenceFlag = async (serverUrl: string, config: Client
     const crossesZeroPersistence = server.persistenceFlag === 'zero-persistence' || nextFlag === 'zero-persistence';
     try {
         await DatabaseManager.updatePersistenceFlag(serverUrl, nextFlag);
+        if (nextFlag === 'zero-persistence' && config?.AsymmetricSigningPublicKey) {
+            await storePushSigningKey(serverUrl, config.AsymmetricSigningPublicKey);
+        } else if (server.persistenceFlag === 'zero-persistence') {
+            await removePushSigningKey(serverUrl);
+        }
         return crossesZeroPersistence;
     } catch (error) {
         // database cannot be updated, log error & return false so it will be retried on next config fetch

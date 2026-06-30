@@ -9,6 +9,7 @@ import {getDefaultThemeByAppearance} from '@context/theme';
 import DatabaseManager from '@database/manager';
 import PerformanceMetricsManager from '@managers/performance_metrics_manager';
 import WebsocketManager from '@managers/websocket_manager';
+import {getServer} from '@queries/app/servers';
 import {getMyChannel} from '@queries/servers/channel';
 import {getPostById} from '@queries/servers/post';
 import {queryThemePreferences} from '@queries/servers/preference';
@@ -20,6 +21,8 @@ import {isErrorWithStatusCode} from '@utils/errors';
 import {dismissKeyboard} from '@utils/keyboard';
 import {emitNotificationError} from '@utils/notification';
 import {setThemeDefaults, updateThemeIfNeeded} from '@utils/theme';
+
+import {appEntry} from './app';
 
 import type MyChannelModel from '@typings/database/models/servers/my_channel';
 import type MyTeamModel from '@typings/database/models/servers/my_team';
@@ -67,6 +70,9 @@ export async function pushNotificationEntry(serverUrl: string, notification: Not
         updateThemeIfNeeded(theme, true);
     }
 
+    const server = await getServer(serverUrl);
+    const isZeroPersistence = server?.persistenceFlag === 'zero-persistence';
+
     // To make the switch faster we determine if we already have the team & channel
     let myChannel: MyChannelModel | ChannelMembership | undefined = await getMyChannel(database, channelId);
     let myTeam: MyTeamModel | TeamMembership | undefined = await getMyTeamById(database, teamId);
@@ -76,12 +82,16 @@ export async function pushNotificationEntry(serverUrl: string, notification: Not
         if (resp.error) {
             if (isErrorWithStatusCode(resp.error) && resp.error.status_code === 403) {
                 emitNotificationError('Team');
-            } else {
-                emitNotificationError('Connection');
+                return {};
             }
-        } else {
-            myTeam = resp.memberships?.[0];
+            if (isZeroPersistence) {
+                appEntry(serverUrl);
+                return {};
+            }
+            emitNotificationError('Connection');
+            return {};
         }
+        myTeam = resp.memberships?.[0];
     }
 
     if (!myChannel) {
@@ -89,12 +99,16 @@ export async function pushNotificationEntry(serverUrl: string, notification: Not
         if (resp.error) {
             if (isErrorWithStatusCode(resp.error) && resp.error.status_code === 403) {
                 emitNotificationError('Channel');
-            } else {
-                emitNotificationError('Connection');
+                return {};
             }
-        } else {
-            myChannel = resp.memberships?.[0];
+            if (isZeroPersistence) {
+                appEntry(serverUrl);
+                return {};
+            }
+            emitNotificationError('Connection');
+            return {};
         }
+        myChannel = resp.memberships?.[0];
     }
 
     const isCRTEnabled = await getIsCRTEnabled(database);
