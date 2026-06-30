@@ -45,16 +45,31 @@ internal fun DatabaseHelper.handleMyChannel(db: WMDatabase, myChannel: ReadableM
         if (postsData != null && !receivingThreads) {
             val posts = ReadableMapUtils.toJSONObject(postsData.getMap("posts")).toMap()
             val postList = posts.toList()
-            val lastFetchedAt = postList.fold(0.0) { acc, next ->
+            val computedLastFetchedAt = postList.fold(0.0) { acc, next ->
                 val post = next.second as Map<*, *>
                 val createAt = post["create_at"] as Double
                 val updateAt = post["update_at"] as Double
                 val deleteAt = post["delete_at"] as Double
-                val value = maxOf(createAt, updateAt, deleteAt)
+                // For deleted posts, use only createAt — the server sets updateAt = deleteAt = T_del
+                // on deletion, so including either would advance last_fetched_at to "now" and cause
+                // subsequent fetchPostsSince calls to return 0 posts, making the channel appear empty.
+                val value = if (deleteAt > 0) createAt else maxOf(createAt, updateAt)
 
                 maxOf(value, acc)
             }
-            json.put("last_fetched_at", lastFetchedAt)
+            // Ensure monotonicity: never regress the cursor. An empty batch produces 0 and a
+            // deleted-only batch may produce an older create_at — clamp against the stored value.
+            val channelId = myChannel.getString("id") ?: ""
+            val existingLastFetchedAt = find(db, "MyChannel", channelId)?.let {
+                try { it.getDouble("last_fetched_at") } catch (e: Exception) {
+                    e.printStackTrace()
+                    0.0
+                }
+            } ?: 0.0
+            val clampedLastFetchedAt = maxOf(existingLastFetchedAt, computedLastFetchedAt)
+            if (clampedLastFetchedAt > 0) {
+                json.put("last_fetched_at", clampedLastFetchedAt)
+            }
         }
 
         if (exists) {
@@ -201,19 +216,36 @@ fun updateMyChannel(db: WMDatabase, myChanel: JSONObject) {
         val isUnread = try { myChanel.getBoolean("is_unread") } catch (e: JSONException) { false }
         val lastPostAt = try { myChanel.getDouble("last_post_at") } catch (e: JSONException) { 0 }
         val lastViewedAt = try { myChanel.getDouble("last_viewed_at") } catch (e: JSONException) { 0 }
-        val lastFetchedAt = try { myChanel.getDouble("last_fetched_at") } catch (e: JSONException) { 0 }
 
-        db.execute(
-                """
-                    UPDATE MyChannel SET message_count=?, mentions_count=?, is_unread=?, 
-                    last_post_at=?, last_viewed_at=?, last_fetched_at=?, _status = 'updated' 
-                    WHERE id=?
-                    """,
-                arrayOf(
-                        msgCount, mentionsCount, isUnread,
-                        lastPostAt, lastViewedAt, lastFetchedAt, id
-                )
-        )
+        // Only write last_fetched_at when the caller explicitly set it in the JSON.
+        // Falling back to 0 on a missing key and writing it unconditionally would regress
+        // the cursor (e.g. when postsData == null or receivingThreads == true).
+        if (myChanel.has("last_fetched_at")) {
+            val lastFetchedAt = myChanel.getDouble("last_fetched_at")
+            db.execute(
+                    """
+                        UPDATE MyChannel SET message_count=?, mentions_count=?, is_unread=?,
+                        last_post_at=?, last_viewed_at=?, last_fetched_at=?, _status = 'updated'
+                        WHERE id=?
+                        """,
+                    arrayOf(
+                            msgCount, mentionsCount, isUnread,
+                            lastPostAt, lastViewedAt, lastFetchedAt, id
+                    )
+            )
+        } else {
+            db.execute(
+                    """
+                        UPDATE MyChannel SET message_count=?, mentions_count=?, is_unread=?,
+                        last_post_at=?, last_viewed_at=?, _status = 'updated'
+                        WHERE id=?
+                        """,
+                    arrayOf(
+                            msgCount, mentionsCount, isUnread,
+                            lastPostAt, lastViewedAt, id
+                    )
+            )
+        }
     } catch (e: Exception) {
         e.printStackTrace()
     }

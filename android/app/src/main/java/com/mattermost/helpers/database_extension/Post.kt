@@ -247,7 +247,7 @@ fun DatabaseHelper.handlePosts(db: WMDatabase, postsData: ReadableMap?, channelI
                 }
             }
 
-            if (!receivingThreads) {
+            if (!receivingThreads && posts.isNotEmpty()) {
                 handlePostsInChannel(db, channelId, earliest, latest)
             }
             handlePostsInThread(db, postsInThread)
