@@ -97,16 +97,20 @@ runs:
           const markCommitStatusesCancelled = async (sha) => {
             for (const statusContext of E2E_STATUS_CONTEXTS) {
               try {
-                await github.rest.repos.createCommitStatus({
+                await github.rest.checks.create({
                   owner,
                   repo,
-                  sha,
-                  state: 'success',
-                  context: statusContext,
-                  description: reason.substring(0, 140),
+                  name: statusContext,
+                  head_sha: sha,
+                  status: 'completed',
+                  conclusion: 'skipped',
+                  output: {
+                    title: reason.substring(0, 140),
+                    summary: reason.substring(0, 140),
+                  },
                 });
               } catch (err) {
-                core.warning(`createCommitStatus ${statusContext} on ${sha}: ${err.message}`);
+                core.warning(`checks.create ${statusContext} on ${sha}: ${err.message}`);
               }
             }
           };
