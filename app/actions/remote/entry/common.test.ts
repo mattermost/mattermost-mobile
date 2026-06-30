@@ -20,7 +20,8 @@ import {getCurrentChannelId, getCurrentTeamId, setCurrentTeamAndChannelId} from 
 import {NavigationStore} from '@store/navigation_store';
 import {logDebug} from '@utils/log';
 
-import {entry, setExtraSessionProps, verifyPushProxy, handleEntryAfterLoadNavigation} from './common';
+import {entry, setExtraSessionProps, verifyPushProxy} from './common';
+import {handleEntryAfterLoadNavigation} from './effects';
 
 jest.mock('@actions/remote/channel');
 jest.mock('@actions/remote/scheduled_post');

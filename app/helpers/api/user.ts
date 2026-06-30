@@ -42,6 +42,12 @@ export const getNeededAtMentionedUsernames = (usernames: Set<string>, posts: Pos
             for (const attachment of attachments) {
                 findNeededUsernames(attachment.pretext);
                 findNeededUsernames(attachment.text);
+                findNeededUsernames(attachment.title);
+                for (const field of attachment.fields ?? []) {
+                    if (typeof field.value === 'string') {
+                        findNeededUsernames(field.value);
+                    }
+                }
             }
         }
     }

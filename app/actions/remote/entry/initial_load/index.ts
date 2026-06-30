@@ -1,19 +1,17 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {DeviceEventEmitter} from 'react-native';
-
 import {dataRetentionCleanup, expiredBoRPostCleanup} from '@actions/local/systems';
-import {entryInitialChannelId, handleAutotranslationChanges} from '@actions/remote/entry/effects';
+import {entryInitialChannelId, handleAutotranslationChanges, handleInitialLoadNavigation} from '@actions/remote/entry/effects';
 import {fetchGroupsForTeamIfConstrained} from '@actions/remote/groups';
 import {openAllUnreadChannels, type MyPreferencesRequest} from '@actions/remote/preference';
 import {fetchScheduledPosts} from '@actions/remote/scheduled_post';
-import {fetchConfigAndLicense} from '@actions/remote/systems';
+import {fetchConfigAndLicense, fetchDataRetentionPolicy} from '@actions/remote/systems';
 import {updateAllUsersSince, type MyUserRequest} from '@actions/remote/user';
 import {checkIsAgentsPluginEnabled} from '@agents/actions/remote/agents_status';
 import {setAgentsVersionFromManifests} from '@agents/actions/remote/version';
 import {loadConfigAndCallsIfEnabled} from '@calls/actions/calls';
-import {Events, General} from '@constants';
+import {General} from '@constants';
 import {SYSTEM_IDENTIFIERS} from '@constants/database';
 import DatabaseManager from '@database/manager';
 import AppsManager from '@managers/apps_manager';
@@ -23,7 +21,7 @@ import {getChannelById, prepareDeleteChannel, queryChannelsById} from '@queries/
 import {prepareEntryModels, truncateCrtRelatedTables} from '@queries/servers/entry';
 import {getHasCRTChanged} from '@queries/servers/preference';
 import {getCurrentUserId, getLastFullSync, getLastInitialLoad} from '@queries/servers/system';
-import {getTeamById, prepareDeleteTeam, queryTeamsById, removeTeamsFromTeamHistory} from '@queries/servers/team';
+import {prepareDeleteTeam, queryTeamsById, removeTeamsFromTeamHistory} from '@queries/servers/team';
 import ChannelsSyncStore from '@store/channels_sync_store';
 import EphemeralStore from '@store/ephemeral_store';
 import {isExperienceAPIEnabled} from '@utils/config';
@@ -61,7 +59,7 @@ async function setProductsPluginStatus(serverUrl: string, groupLabel?: RequestGr
     }
 }
 
-async function runExperienceAPIEntryActions(serverUrl: string, initialTeamId: string, teamHasGroupConstraint: boolean, groupLabel?: RequestGroupLabel) {
+export async function runExperienceAPIEntryActions(serverUrl: string, initialTeamId: string, teamHasGroupConstraint: boolean, groupLabel?: RequestGroupLabel) {
     try {
         const {database} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
         const [lastInitialLoad, lastFullSync] = await Promise.all([
@@ -78,7 +76,10 @@ async function runExperienceAPIEntryActions(serverUrl: string, initialTeamId: st
 
         fetchScheduledPosts(serverUrl, initialTeamId, true, groupLabel);
 
-        dataRetentionCleanup(serverUrl);
+        fetchDataRetentionPolicy(serverUrl, false, groupLabel).then(() => {
+            dataRetentionCleanup(serverUrl);
+        });
+
         expiredBoRPostCleanup(serverUrl);
 
         cancelExperienceAPIEntryActions(serverUrl);
@@ -94,7 +95,7 @@ async function runExperienceAPIEntryActions(serverUrl: string, initialTeamId: st
     }
 }
 
-const buildTeamBadgeCounts = (teams: InitialLoadTeam[] | undefined, dc: InitialLoadDirectCounts | undefined, isCRTEnabled: boolean): TeamBadgeCounts => {
+export const buildTeamBadgeCounts = (teams: InitialLoadTeam[] | undefined, dc: InitialLoadDirectCounts | undefined, isCRTEnabled: boolean): TeamBadgeCounts => {
     const pickMentionCount = (count: number = 0, countRoot: number = 0) => (isCRTEnabled ? countRoot : count);
     const teamBadgeTeams: Record<string, TeamBadge> = {};
     for (const t of teams ?? []) {
@@ -123,7 +124,6 @@ export const entryInitialLoad = async (serverUrl: string, teamId?: string, chann
         // Use the server-side timestamp from the last initial_load as the delta cursor.
         // This is distinct from SYSTEM_IDENTIFIERS.WEBSOCKET (set by doReconnect after WS sync).
         const since = await getLastInitialLoad(database);
-        const currentTeam = await getTeamById(database, teamId || '');
 
         // Config/license must be fetched separately — needed for CRT detection, calls support,
         // display name settings, and version checks. Fetch in parallel with initial_load.
@@ -396,8 +396,6 @@ export const entryInitialLoad = async (serverUrl: string, teamId?: string, chann
             {id: SYSTEM_IDENTIFIERS.TEAM_BADGE_COUNTS, value: JSON.stringify(teamBadgeCounts)},
         ];
         if (initialTeamId) {
-            systemRecords.push({id: SYSTEM_IDENTIFIERS.CURRENT_TEAM_ID, value: initialTeamId});
-
             // Seed the team load cursor for the active team so the first handleTeamChange
             // call uses the initial_load timestamp as a delta cursor instead of doing a full load.
             systemRecords.push({id: `${SYSTEM_IDENTIFIERS.LAST_TEAM_LOAD}_${initialTeamId}`, value: initialLoad.timestamp});
@@ -421,9 +419,15 @@ export const entryInitialLoad = async (serverUrl: string, teamId?: string, chann
         // "Join Another Team" UI doesn't have to wait for the deferred-actions queue.
         EphemeralStore.setCanJoinOtherTeams(serverUrl, initialLoad.can_join_other_teams);
 
-        if (initialTeamId && currentTeam && initialTeamId !== teamId) {
-            DeviceEventEmitter.emit(Events.LEAVE_TEAM, currentTeam?.displayName);
-        }
+        await handleInitialLoadNavigation(serverUrl, {
+            currentTeamId: teamId ?? '',
+            currentChannelId: channelId ?? '',
+            initialTeamId,
+            initialChannelId,
+            removedTeamIds,
+            removedChannelIds,
+            gmConverted,
+        });
 
         logDebug('entryInitialLoad models batched', groupLabel, models.length);
 

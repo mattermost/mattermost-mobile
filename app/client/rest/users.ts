@@ -51,6 +51,7 @@ export interface ClientUsersMix {
     exchangeSsoLoginCode: (loginCode: string, codeVerifier: string, state: string) => Promise<{token: string; csrf: string}>;
     getUserLoginType: (loginId: string, deviceId?: string) => Promise<{auth_service: LoginType; is_deactivated: boolean}>;
     getInitialLoad: (teamId?: string, since?: number, groupLabel?: RequestGroupLabel) => Promise<InitialLoadResponse>;
+    reconnectSync: (request: SyncRequest, groupLabel?: RequestGroupLabel) => Promise<SyncResponse>;
 }
 
 const ClientUsers = <TBase extends Constructor<ClientBase>>(superclass: TBase) => class extends superclass {
@@ -470,6 +471,13 @@ const ClientUsers = <TBase extends Constructor<ClientBase>>(superclass: TBase) =
 
         // Expected shape: { token: string, csrf: string }
         return resp?.data || resp;
+    };
+
+    reconnectSync = async (request: SyncRequest, groupLabel?: RequestGroupLabel) => {
+        return this.doFetch(
+            `${this.urlVersion}/sync`,
+            {method: 'post', body: request, groupLabel},
+        );
     };
 
     getInitialLoad = async (teamId?: string, since?: number, groupLabel?: RequestGroupLabel) => {

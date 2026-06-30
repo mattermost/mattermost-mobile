@@ -2,17 +2,20 @@
 // See LICENSE.txt for license information.
 
 import {deletePostsForChannel, deletePostsForChannelsWithAutotranslation} from '@actions/local/channel';
+import {handleKickFromChannel, type MyChannelsRequest} from '@actions/remote/channel';
+import {handleKickFromTeam} from '@actions/remote/team';
 import {General, Screens} from '@constants';
 import DatabaseManager from '@database/manager';
 import {queryChannelsById, queryMyChannelsByChannelIds} from '@queries/servers/channel';
-import {getConfigValue} from '@queries/servers/system';
+import {getCurrentChannelId, getCurrentTeamId, getConfigValue, setCurrentTeamAndChannelId} from '@queries/servers/system';
 import {getTeamChannelHistory} from '@queries/servers/team';
 import {getCurrentUser} from '@queries/servers/user';
+import {NavigationStore} from '@store/navigation_store';
 import {isDefaultChannel, isDMorGM, sortChannelsByDisplayName} from '@utils/channel';
 import {getFullErrorMessage} from '@utils/errors';
-import {logError} from '@utils/log';
+import {isTablet} from '@utils/helpers';
+import {logDebug, logError} from '@utils/log';
 
-import type {MyChannelsRequest} from '@actions/remote/channel';
 import type {MyUserRequest} from '@actions/remote/user';
 import type {Database} from '@nozbe/watermelondb';
 
@@ -111,4 +114,148 @@ export async function entryInitialChannelId(database: Database, requestedChannel
         membershipIds.has(c.id),
     ).sort(sortChannelsByDisplayName.bind(null, locale))[0];
     return myFirstTeamChannel?.id || '';
+}
+
+type HandleInitialLoadNavigationOptions = {
+    currentTeamId: string;
+    currentChannelId: string;
+    initialTeamId: string;
+    initialChannelId: string;
+    removedTeamIds: string[];
+    removedChannelIds: string[];
+    gmConverted: boolean;
+}
+
+/**
+ * Navigation handler for the entryInitialLoad (Experience API) path.
+ *
+ * Works entirely from explicit server data: the server tells us which team is active,
+ * which teams/channels were removed, and whether a GM was converted.
+ * No DB reads are required to make the navigation decision.
+ *
+ * handleEntryAfterLoadNavigation (legacy path) delegates here after deriving the
+ * same inputs from pre/post DB snapshots and membership lists.
+ */
+export async function handleInitialLoadNavigation(serverUrl: string, {
+    currentTeamId,
+    currentChannelId,
+    initialTeamId,
+    initialChannelId,
+    removedTeamIds,
+    removedChannelIds,
+    gmConverted,
+}: HandleInitialLoadNavigationOptions) {
+    try {
+        const {operator} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
+        const mountedScreens = NavigationStore.getScreensInStack();
+        const isChannelScreenMounted = mountedScreens.includes(Screens.CHANNEL);
+        const isThreadsMounted = mountedScreens.includes(Screens.THREAD);
+        const tabletDevice = isTablet();
+
+        const removedTeamSet = new Set(removedTeamIds);
+        const removedChannelSet = new Set(removedChannelIds);
+
+        if (!currentTeamId) {
+            // First load — no prior context in DB (e.g. cold start after fresh install or login).
+            if (tabletDevice) {
+                await setCurrentTeamAndChannelId(operator, initialTeamId, initialChannelId);
+            } else {
+                await setCurrentTeamAndChannelId(operator, initialTeamId, '');
+            }
+        } else if (removedTeamSet.has(currentTeamId)) {
+            // The current team was explicitly removed by the server.
+            await handleKickFromTeam(serverUrl, currentTeamId);
+        } else if (currentTeamId !== initialTeamId) {
+            // Server resolved a different active team than what the client had.
+            if (gmConverted) {
+                // Intentional: the active channel was a GM converted to a private/public
+                // channel that belongs to a different team.
+                await setCurrentTeamAndChannelId(operator, initialTeamId, currentChannelId);
+            } else {
+                // Current team is no longer accessible — treat as a kick.
+                await handleKickFromTeam(serverUrl, currentTeamId);
+            }
+        } else if (removedChannelSet.has(currentChannelId)) {
+            // The current channel was explicitly removed by the server.
+            if (tabletDevice || isChannelScreenMounted || isThreadsMounted) {
+                await handleKickFromChannel(serverUrl, currentChannelId);
+            } else {
+                await setCurrentTeamAndChannelId(operator, initialTeamId, initialChannelId);
+            }
+        } else if (currentChannelId && currentChannelId !== initialChannelId) {
+            // Server resolved a different channel (e.g. history led elsewhere).
+            if (tabletDevice || isChannelScreenMounted || isThreadsMounted) {
+                await handleKickFromChannel(serverUrl, currentChannelId);
+            } else {
+                await setCurrentTeamAndChannelId(operator, initialTeamId, initialChannelId);
+            }
+        } else {
+            // Team and channel are unchanged — persist the resolved ids.
+            await setCurrentTeamAndChannelId(operator, initialTeamId, tabletDevice ? initialChannelId : currentChannelId);
+        }
+    } catch (error) {
+        logDebug('could not manage the initial load navigation', error);
+    }
+}
+
+/**
+ * Navigation handler for the legacy entryRest path.
+ *
+ * Derives removed teams/channels by diffing membership lists and pre/post DB snapshots,
+ * then delegates to handleInitialLoadNavigation for the actual navigation logic.
+ */
+export async function handleEntryAfterLoadNavigation(
+    serverUrl: string,
+    teamMembers: TeamMembership[],
+    channelMembers: ChannelMember[],
+    currentTeamId: string,
+    currentChannelId: string,
+    initialTeamId: string,
+    initialChannelId: string,
+    gmConverted: boolean,
+) {
+    try {
+        const {database} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
+
+        // Read what the DB has after the entry batch completed. These reflect any
+        // team/channel switch the user made while the entry was running.
+        const currentTeamIdAfterLoad = await getCurrentTeamId(database);
+        const currentChannelIdAfterLoad = await getCurrentChannelId(database);
+
+        // Derive removed team ids: teams the user switched to during loading that are
+        // no longer in their membership list (delete_at > 0 means removed).
+        const removedTeamIds: string[] = [];
+        if (currentTeamIdAfterLoad && currentTeamIdAfterLoad !== currentTeamId) {
+            const stillMember = teamMembers.find((t) => t.team_id === currentTeamIdAfterLoad && t.delete_at === 0);
+            if (!stillMember) {
+                removedTeamIds.push(currentTeamIdAfterLoad);
+            }
+        } else if (currentTeamIdAfterLoad && currentTeamIdAfterLoad !== initialTeamId && !gmConverted) {
+            removedTeamIds.push(currentTeamIdAfterLoad);
+        }
+
+        // Derive removed channel ids: channels the user switched to during loading that
+        // are no longer in their channel membership list.
+        const removedChannelIds: string[] = [];
+        if (currentChannelIdAfterLoad && currentChannelIdAfterLoad !== currentChannelId) {
+            const stillMember = channelMembers.find((m) => m.channel_id === currentChannelIdAfterLoad);
+            if (!stillMember) {
+                removedChannelIds.push(currentChannelIdAfterLoad);
+            }
+        } else if (currentChannelIdAfterLoad && currentChannelIdAfterLoad !== initialChannelId) {
+            removedChannelIds.push(currentChannelIdAfterLoad);
+        }
+
+        await handleInitialLoadNavigation(serverUrl, {
+            currentTeamId: currentTeamIdAfterLoad ?? '',
+            currentChannelId: currentChannelIdAfterLoad ?? '',
+            initialTeamId,
+            initialChannelId,
+            removedTeamIds,
+            removedChannelIds,
+            gmConverted,
+        });
+    } catch (error) {
+        logDebug('could not manage the entry after load navigation', error);
+    }
 }

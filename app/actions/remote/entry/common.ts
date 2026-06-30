@@ -4,20 +4,16 @@
 import {nativeApplicationVersion} from 'expo-application';
 import {RESULTS, checkNotifications} from 'react-native-permissions';
 
-import {handleKickFromChannel} from '@actions/remote/channel';
 import {fetchDataRetentionPolicy} from '@actions/remote/systems';
-import {handleKickFromTeam} from '@actions/remote/team';
-import {Screens} from '@constants';
 import {SYSTEM_IDENTIFIERS} from '@constants/database';
 import {PUSH_PROXY_RESPONSE_NOT_AVAILABLE, PUSH_PROXY_RESPONSE_UNKNOWN, PUSH_PROXY_STATUS_NOT_AVAILABLE, PUSH_PROXY_STATUS_UNKNOWN, PUSH_PROXY_STATUS_VERIFIED} from '@constants/push_proxy';
 import DatabaseManager from '@database/manager';
 import NetworkManager from '@managers/network_manager';
 import {getDeviceToken, getVoIPDeviceToken} from '@queries/app/global';
-import {getCurrentChannelId, getCurrentTeamId, getIsDataRetentionEnabled, getPushVerificationStatus, setCurrentTeamAndChannelId, getConfigValue} from '@queries/servers/system';
+import {getIsDataRetentionEnabled, getPushVerificationStatus, getConfigValue} from '@queries/servers/system';
 import EphemeralStore from '@store/ephemeral_store';
-import {NavigationStore} from '@store/navigation_store';
 import {getFullErrorMessage} from '@utils/errors';
-import {isMinimumServerVersion, isTablet} from '@utils/helpers';
+import {isMinimumServerVersion} from '@utils/helpers';
 import {logDebug, logError} from '@utils/log';
 
 import {entryInitialLoad} from './initial_load';
@@ -113,61 +109,3 @@ export async function verifyPushProxy(serverUrl: string, groupLabel?: RequestGro
     }
 }
 
-export async function handleEntryAfterLoadNavigation(
-    serverUrl: string,
-    teamMembers: TeamMembership[],
-    channelMembers: ChannelMember[],
-    currentTeamId: string,
-    currentChannelId: string,
-    initialTeamId: string,
-    initialChannelId: string,
-    gmConverted: boolean,
-) {
-    try {
-        const {operator, database} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
-
-        const currentTeamIdAfterLoad = await getCurrentTeamId(database);
-        const currentChannelIdAfterLoad = await getCurrentChannelId(database);
-        const mountedScreens = NavigationStore.getScreensInStack();
-        const isChannelScreenMounted = mountedScreens.includes(Screens.CHANNEL);
-        const isThreadsMounted = mountedScreens.includes(Screens.THREAD);
-        const tabletDevice = isTablet();
-
-        if (!currentTeamIdAfterLoad) {
-            // First load or no team
-            if (tabletDevice) {
-                await setCurrentTeamAndChannelId(operator, initialTeamId, initialChannelId);
-            } else {
-                await setCurrentTeamAndChannelId(operator, initialTeamId, '');
-            }
-        } else if (currentTeamIdAfterLoad !== currentTeamId) {
-            // Switched teams while loading
-            if (!teamMembers.find((t) => t.team_id === currentTeamIdAfterLoad && t.delete_at === 0)) {
-                await handleKickFromTeam(serverUrl, currentTeamIdAfterLoad);
-            }
-        } else if (currentTeamIdAfterLoad !== initialTeamId) {
-            if (gmConverted) {
-                await setCurrentTeamAndChannelId(operator, initialTeamId, currentChannelId);
-            } else {
-                await handleKickFromTeam(serverUrl, currentTeamIdAfterLoad);
-            }
-        } else if (currentChannelIdAfterLoad !== currentChannelId) {
-            // Switched channels while loading
-            if (!channelMembers.find((m) => m.channel_id === currentChannelIdAfterLoad)) {
-                if (tabletDevice || isChannelScreenMounted || isThreadsMounted) {
-                    await handleKickFromChannel(serverUrl, currentChannelIdAfterLoad);
-                } else {
-                    await setCurrentTeamAndChannelId(operator, initialTeamId, initialChannelId);
-                }
-            }
-        } else if (currentChannelIdAfterLoad && currentChannelIdAfterLoad !== initialChannelId) {
-            if (tabletDevice || isChannelScreenMounted || isThreadsMounted) {
-                await handleKickFromChannel(serverUrl, currentChannelIdAfterLoad);
-            } else {
-                await setCurrentTeamAndChannelId(operator, initialTeamId, initialChannelId);
-            }
-        }
-    } catch (error) {
-        logDebug('could not manage the entry after load navigation', error);
-    }
-}
