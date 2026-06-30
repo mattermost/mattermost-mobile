@@ -135,7 +135,7 @@ const enhanced = withObservables([], ({combinedPost, post, showAddReaction, sour
         return of$(!isSystemMessage(post) && !isArchived && !isReadOnly);
     }));
 
-    const isSaved = observePostSaved(database, post.id);
+    const isSaved = observePostSaved(database, post.id, serverUrl);
 
     const canEdit = borPost ? of$(false) : combineLatest([postEditTimeLimit, isLicensed, channel, currentUser, channelIsArchived, channelIsReadOnly, canEditUntil, canPostPermission]).pipe(
         switchMap(([lt, ls, c, u, isArchived, isReadOnly, until, canPost]) => {

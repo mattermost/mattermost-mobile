@@ -7,10 +7,13 @@ import {fetchUsersByIds} from '@actions/remote/user';
 import {leaveCall, muteMyself, unraiseHand} from '@calls/actions';
 import {createCallAndAddToIds} from '@calls/actions/calls';
 import {hostRemovedErr} from '@calls/errors';
+import {endNativeCall, getNativeCallUUIDForCall} from '@calls/native_call';
 import {
     callEnded,
     callStarted,
     getCallsConfig,
+    getCallsState,
+    getChannelIdFromCallId,
     getCurrentCall,
     receivedCaption,
     removeIncomingCall,
@@ -28,7 +31,7 @@ import {
     userLeftCall,
     userReacted,
 } from '@calls/state';
-import {type HostControlsLowerHandMsgData, type HostControlsMsgData, DefaultCallsConfig, DefaultCurrentCall, DefaultCall} from '@calls/types/calls';
+import {type HostControlsLowerHandMsgData, type HostControlsMsgData, DefaultCallsConfig, DefaultCallsState, DefaultCurrentCall, DefaultCall} from '@calls/types/calls';
 import DatabaseManager from '@database/manager';
 import {getCurrentUserId} from '@queries/servers/system';
 
@@ -77,6 +80,10 @@ import type {
 
 jest.mock('@actions/remote/user');
 jest.mock('@calls/actions/calls');
+jest.mock('@calls/native_call', () => ({
+    endNativeCall: jest.fn(),
+    getNativeCallUUIDForCall: jest.fn(),
+}));
 jest.mock('@calls/state');
 jest.mock('@database/manager');
 jest.mock('@queries/servers/system');
@@ -97,6 +104,12 @@ describe('websocket event handlers', () => {
             ...DefaultCallsConfig,
             version: {version: '0.21.0'},
         });
+        jest.mocked(getCallsState).mockReturnValue({
+            ...DefaultCallsState,
+            myUserId: userId,
+        });
+        jest.mocked(getChannelIdFromCallId).mockReturnValue(undefined);
+        jest.mocked(getNativeCallUUIDForCall).mockReturnValue(undefined);
         jest.mocked(getCurrentCall).mockReturnValue({
             ...DefaultCurrentCall,
             serverUrl,
@@ -118,6 +131,42 @@ describe('websocket event handlers', () => {
             } as WebSocketMessage<UserJoinedData>);
             expect(fetchUsersByIds).toHaveBeenCalledWith(serverUrl, [userId]);
             expect(userJoinedCall).toHaveBeenCalledWith(serverUrl, channelId, userId, sessionId);
+        });
+
+        it('answeredElsewhere: my user joined on another session with a pending native ring', () => {
+            jest.mocked(getNativeCallUUIDForCall).mockReturnValue('uuid-1');
+            handleCallUserJoined(serverUrl, {
+                broadcast: {channel_id: channelId},
+                data: {user_id: userId, session_id: 'other-session'},
+            } as WebSocketMessage<UserJoinedData>);
+            expect(endNativeCall).toHaveBeenCalledWith(serverUrl, channelId, 'answeredElsewhere');
+        });
+
+        it('no endNativeCall when this device is the joining session', () => {
+            jest.mocked(getNativeCallUUIDForCall).mockReturnValue('uuid-1');
+            handleCallUserJoined(serverUrl, {
+                broadcast: {channel_id: channelId},
+                data: {user_id: userId, session_id: sessionId},
+            } as WebSocketMessage<UserJoinedData>);
+            expect(endNativeCall).not.toHaveBeenCalled();
+        });
+
+        it('no endNativeCall when a different user joined', () => {
+            jest.mocked(getNativeCallUUIDForCall).mockReturnValue('uuid-1');
+            handleCallUserJoined(serverUrl, {
+                broadcast: {channel_id: channelId},
+                data: {user_id: 'someone-else', session_id: 'other-session'},
+            } as WebSocketMessage<UserJoinedData>);
+            expect(endNativeCall).not.toHaveBeenCalled();
+        });
+
+        it('no endNativeCall when no native overlay exists for the call', () => {
+            jest.mocked(getNativeCallUUIDForCall).mockReturnValue(undefined);
+            handleCallUserJoined(serverUrl, {
+                broadcast: {channel_id: channelId},
+                data: {user_id: userId, session_id: 'other-session'},
+            } as WebSocketMessage<UserJoinedData>);
+            expect(endNativeCall).not.toHaveBeenCalled();
         });
 
         it('should handle user left', () => {
@@ -200,6 +249,7 @@ describe('websocket event handlers', () => {
             } as WebSocketMessage<EmptyData>);
             expect(DeviceEventEmitter.emit).toHaveBeenCalledWith('custom_com.mattermost.calls_call_end', {channelId});
             expect(callEnded).toHaveBeenCalledWith(serverUrl, channelId);
+            expect(endNativeCall).toHaveBeenCalledWith(serverUrl, channelId, 'remoteEnded');
         });
     });
 
@@ -359,6 +409,38 @@ describe('websocket event handlers', () => {
             } as WebSocketMessage<UserDismissedNotification>);
 
             expect(removeIncomingCall).toHaveBeenCalledWith(serverUrl, 'call-id');
+        });
+
+        it('fires endNativeCall declinedElsewhere when the dismissed call maps to a known channel', async () => {
+            const myUserId = 'my-user-id';
+            jest.mocked(getCurrentUserId).mockResolvedValue(myUserId);
+            jest.mocked(getChannelIdFromCallId).mockReturnValue(channelId);
+
+            await handleUserDismissedNotification(serverUrl, {
+                broadcast: {channel_id: channelId},
+                data: {
+                    userID: myUserId,
+                    callID: 'call-id',
+                },
+            } as WebSocketMessage<UserDismissedNotification>);
+
+            expect(endNativeCall).toHaveBeenCalledWith(serverUrl, channelId, 'declinedElsewhere');
+        });
+
+        it('does not call endNativeCall when callID cannot be mapped to a channel', async () => {
+            const myUserId = 'my-user-id';
+            jest.mocked(getCurrentUserId).mockResolvedValue(myUserId);
+            jest.mocked(getChannelIdFromCallId).mockReturnValue(undefined);
+
+            await handleUserDismissedNotification(serverUrl, {
+                broadcast: {channel_id: channelId},
+                data: {
+                    userID: myUserId,
+                    callID: 'call-id',
+                },
+            } as WebSocketMessage<UserDismissedNotification>);
+
+            expect(endNativeCall).not.toHaveBeenCalled();
         });
 
         it('should not handle user dismissed notification for other users', async () => {

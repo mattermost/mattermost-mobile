@@ -23,8 +23,8 @@ import {
     ServerScreen,
     TableScreen,
 } from '@support/ui/screen';
-import {isIos} from '@support/utils';
-import {expect} from 'detox';
+import {isIos, timeouts, wait} from '@support/utils';
+import {expect, waitFor} from 'detox';
 
 describe('Messaging - Markdown Table', () => {
     const serverOneDisplayName = 'Server 1';
@@ -66,50 +66,9 @@ describe('Messaging - Markdown Table', () => {
         // * Verify markdown table is displayed
         const {post} = await Post.apiGetLastPostInChannel(siteOneUrl, testChannel.id);
         const {postListPostItemTable} = ChannelScreen.getPostListPostItem(post.id);
-        await expect(postListPostItemTable).toBeVisible();
+        await expect(postListPostItemTable).toBeVisible(50);
 
         // # Go back to channel list screen
-        await ChannelScreen.back();
-    });
-
-    it('MM-T4899_2 - should be able to display markdown table with long text wrapped properly', async () => {
-        // # Open a channel screen and post a markdown table with long text
-        const markdownTable =
-            '| Left header that wraps | Center header that wraps | Right header that wraps |\n' +
-            '| :-- | :-: | --: |\n' +
-            '| Left text that wraps row | Center text that wraps row | Right text that wraps row |\n';
-        await Post.apiCreatePost(siteOneUrl, {
-            channelId: testChannel.id,
-            message: markdownTable,
-        });
-        await ChannelScreen.open(channelsCategory, testChannel.name);
-
-        // * Verify table is displayed with long text wrapped properly
-        const {post} = await Post.apiGetLastPostInChannel(siteOneUrl, testChannel.id);
-        const {postListPostItemTable, postListPostItemTableExpandButton} = ChannelScreen.getPostListPostItem(post.id);
-        await expect(postListPostItemTable).toBeVisible();
-        await expect(element(by.text('Left header that wraps'))).toBeVisible();
-        await expect(element(by.text('Center header that wraps'))).toBeVisible();
-        await expect(element(by.text('Right header that wraps'))).toBeVisible();
-        await expect(element(by.text('Left text that wraps row'))).toBeVisible();
-        await expect(element(by.text('Center text that wraps row'))).toBeVisible();
-        await expect(element(by.text('Right text that wraps row'))).toBeVisible();
-
-        // # Expand to full view
-        await waitFor(postListPostItemTableExpandButton).toBeVisible().whileElement(by.id(ChannelScreen.postList.testID.flatList)).scroll(50, 'down');
-        await postListPostItemTableExpandButton.tap();
-
-        // * Verify on table screen with the markdown table
-        await TableScreen.toBeVisible();
-        await expect(element(by.text('Left header that wraps'))).toBeVisible();
-        await expect(element(by.text('Center header that wraps'))).toBeVisible();
-        await expect(element(by.text('Right header that wraps'))).toBeVisible();
-        await expect(element(by.text('Left text that wraps row'))).toBeVisible();
-        await expect(element(by.text('Center text that wraps row'))).toBeVisible();
-        await expect(element(by.text('Right text that wraps row'))).toBeVisible();
-
-        // # Go back to channel list screen
-        await TableScreen.back();
         await ChannelScreen.back();
     });
 
@@ -129,7 +88,7 @@ describe('Messaging - Markdown Table', () => {
         // * Verify table is displayed with some right columns not visible
         const {post} = await Post.apiGetLastPostInChannel(siteOneUrl, testChannel.id);
         const {postListPostItemTable, postListPostItemTableExpandButton} = ChannelScreen.getPostListPostItem(post.id);
-        await expect(postListPostItemTable).toBeVisible();
+        await expect(postListPostItemTable).toBeVisible(50);
         await expect(element(by.text('Header HS last'))).not.toBeVisible();
         await expect(element(by.text('Right HS last'))).not.toBeVisible();
 
@@ -142,8 +101,8 @@ describe('Messaging - Markdown Table', () => {
 
         // * Verify table screen is scrollable to the right
         await TableScreen.tableScrollView.scrollTo('right');
-        await expect(element(by.text('Header HS last'))).toBeVisible();
-        await expect(element(by.text('Right HS last'))).toBeVisible();
+        await expect(element(by.text('Header HS last'))).toBeVisible(50);
+        await expect(element(by.text('Right HS last'))).toBeVisible(50);
 
         // # Go back to channel list screen
         await TableScreen.back();
@@ -166,15 +125,18 @@ describe('Messaging - Markdown Table', () => {
         // * Verify table is displayed with some bottom rows not visible
         const {post} = await Post.apiGetLastPostInChannel(siteOneUrl, testChannel.id);
         const {postListPostItemTable, postListPostItemTableExpandButton} = ChannelScreen.getPostListPostItem(post.id);
-        await expect(postListPostItemTable).toBeVisible();
-        await expect(element(by.text('Header VS last'))).toBeVisible();
+        await expect(postListPostItemTable).toBeVisible(50);
+        await expect(element(by.text('Header VS last'))).toBeVisible(50);
         await expect(element(by.text('Right VS last'))).not.toBeVisible();
 
         // # Expand to full view
         await waitFor(postListPostItemTableExpandButton).toBeVisible().whileElement(by.id(ChannelScreen.postList.testID.flatList)).scroll(50, 'down');
         await postListPostItemTableExpandButton.tap();
         await TableScreen.toBeVisible();
-        await expect(element(by.text('Header VS last'))).toBeVisible();
+
+        // The expanded table renders columns wider than the in-channel preview, so
+        // the 3rd column header is off-screen until the table is scrolled right.
+        await waitFor(element(by.text('Header VS last'))).toBeVisible(50).whileElement(by.id(TableScreen.testID.tableScrollView)).scroll(150, 'right');
         await expect(element(by.text('Right VS last'))).not.toBeVisible();
 
         // * Verify table screen is scrollable to the bottom
@@ -182,10 +144,49 @@ describe('Messaging - Markdown Table', () => {
         if (isIos()) {
             await waitFor(expectedElement).toBeVisible().whileElement(by.id(TableScreen.testID.tableScrollView)).scroll(150, 'down');
             await expect(element(by.text('Header VS last'))).not.toBeVisible();
-            await expect(expectedElement).toBeVisible();
+            await expect(expectedElement).toBeVisible(50);
         } else {
             await expect(expectedElement).toExist();
         }
+
+        // # Go back to channel list screen
+        await TableScreen.back();
+        await ChannelScreen.back();
+    });
+
+    it('MM-T1442_1 - should display markdown table with multiple row heights correctly', async () => {
+        // # Open a channel screen and post a markdown table with multiple row heights
+        const markdownTable =
+            '| Header | Header | Header |\n' +
+            '| :-- | :-: | --: |\n' +
+            '| Left | Center | Right |\n' +
+            '| Left | Center | Right |\n' +
+            '| This is a super looooooooooooooooooooong string | Center | Right |\n' +
+            '| Left | Center | Right |\n' +
+            '| Left | Center | Right |\n' +
+            '| Left | Center | Right |\n';
+        await Post.apiCreatePost(siteOneUrl, {
+            channelId: testChannel.id,
+            message: markdownTable,
+        });
+        await ChannelScreen.open(channelsCategory, testChannel.name);
+
+        // * Verify markdown table is displayed
+        const {post} = await Post.apiGetLastPostInChannel(siteOneUrl, testChannel.id);
+        const {postListPostItemTable, postListPostItemTableExpandButton} = ChannelScreen.getPostListPostItem(post.id);
+        await expect(postListPostItemTable).toBeVisible(50);
+
+        // * Verify the long-string row content is visible (it drives row height)
+        await expect(element(by.text('This is a super looooooooooooooooooooong string'))).toBeVisible(50);
+
+        // # Expand to full view
+        await waitFor(postListPostItemTableExpandButton).toBeVisible().whileElement(by.id(ChannelScreen.postList.testID.flatList)).scroll(50, 'down');
+        await postListPostItemTableExpandButton.tap();
+
+        // * Verify on table screen
+        await TableScreen.toBeVisible();
+        await expect(element(by.text('Header')).atIndex(0)).toBeVisible(50);
+        await expect(element(by.text('This is a super looooooooooooooooooooong string'))).toBeVisible(50);
 
         // # Go back to channel list screen
         await TableScreen.back();
@@ -205,10 +206,24 @@ describe('Messaging - Markdown Table', () => {
         });
         await ChannelScreen.open(channelsCategory, testChannel.name);
 
-        // * Verify table is displayed with some right columns and bottom rows not visible
-        const {post} = await Post.apiGetLastPostInChannel(siteOneUrl, testChannel.id);
+        // * Verify table is displayed with some right columns and bottom rows not visible.
+        // Poll for the post — large table posts can take a moment to persist via API sync.
+        let post: {id: string} | undefined;
+        const postDeadline = Date.now() + timeouts.TEN_SEC;
+        /* eslint-disable no-await-in-loop */
+        while (!post?.id && Date.now() < postDeadline) {
+            const result = await Post.apiGetLastPostInChannel(siteOneUrl, testChannel.id);
+            post = result?.post;
+            if (!post?.id) {
+                await wait(500);
+            }
+        }
+        /* eslint-enable no-await-in-loop */
+        if (!post?.id) {
+            throw new Error('Expected markdown table post to exist in channel');
+        }
         const {postListPostItemTable, postListPostItemTableExpandButton} = ChannelScreen.getPostListPostItem(post.id);
-        await expect(postListPostItemTable).toBeVisible();
+        await expect(postListPostItemTable).toBeVisible(50);
         await expect(element(by.text('Header last'))).not.toBeVisible();
         await expect(element(by.text('Right last'))).not.toBeVisible();
 
@@ -220,13 +235,13 @@ describe('Messaging - Markdown Table', () => {
         await expect(element(by.text('Right last'))).not.toBeVisible();
 
         // * Verify table screen is scrollable to the right and scrollable to the bottom
-        await waitFor(element(by.text('Header last'))).toBeVisible().whileElement(by.id(TableScreen.testID.tableScrollView)).scroll(150, 'right');
+        await waitFor(element(by.text('Header last'))).toBeVisible(50).whileElement(by.id(TableScreen.testID.tableScrollView)).scroll(150, 'right');
         await expect(element(by.text('Right last'))).not.toBeVisible();
         const expectedElement = element(by.text('Right last'));
         if (isIos()) {
             await waitFor(expectedElement).toBeVisible().whileElement(by.id(TableScreen.testID.tableScrollView)).scroll(150, 'down');
             await expect(element(by.text('Header last'))).not.toBeVisible();
-            await expect(expectedElement).toBeVisible();
+            await expect(expectedElement).toBeVisible(50);
         } else {
             await expect(expectedElement).toExist();
         }

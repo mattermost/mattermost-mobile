@@ -140,6 +140,24 @@ jest.mock('@mattermost/react-native-turbo-log', () => ({
     getLogPaths: jest.fn(),
 }));
 
+jest.mock('@mattermost/calls-native', () => ({
+    __esModule: true,
+    default: {
+        reportOutgoingCall: jest.fn(() => Promise.resolve({uuid: 'native-uuid'})),
+        reportConnected: jest.fn(() => Promise.resolve()),
+        reportEnded: jest.fn(() => Promise.resolve()),
+        setMuted: jest.fn(() => Promise.resolve()),
+        foregroundServiceStart: jest.fn(),
+        foregroundServiceStop: jest.fn(),
+        onVoIPTokenUpdated: jest.fn(() => ({remove: jest.fn()})),
+        onIncomingCall: jest.fn(() => ({remove: jest.fn()})),
+        onCallAnswered: jest.fn(() => ({remove: jest.fn()})),
+        onCallDeclined: jest.fn(() => ({remove: jest.fn()})),
+        onCallEnded: jest.fn(() => ({remove: jest.fn()})),
+        onMuteChanged: jest.fn(() => ({remove: jest.fn()})),
+    },
+}));
+
 jest.mock('@nozbe/watermelondb/utils/common/randomId/randomId', () => ({}));
 jest.mock('@nozbe/watermelondb/react/withObservables/garbageCollector', () => {
     return {

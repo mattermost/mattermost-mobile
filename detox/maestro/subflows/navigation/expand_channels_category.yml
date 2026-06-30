@@ -1,0 +1,16 @@
+# Expand the Channels sidebar category when collapsed (chevron points right).
+# Fresh installs / clearState logins often leave CHANNELS collapsed so channel_item
+# testIDs are not in the accessibility tree.
+appId: ${MAESTRO_APP_ID}
+---
+- runFlow:
+    when:
+      visible:
+        id: "channel_list.category_header.channels.collapsed.true"
+    commands:
+      - tapOn:
+          id: "channel_list.category_header.channels.collapsed.true"
+      - extendedWaitUntil:
+          visible:
+            id: "channel_list.category_header.channels.collapsed.false"
+          timeout: 10000

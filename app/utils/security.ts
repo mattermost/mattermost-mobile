@@ -1,8 +1,9 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import {Buffer} from 'buffer';
+
 import CookieManager, {type Cookie} from '@preeternal/react-native-cookie-manager';
-import base64 from 'base-64';
 import {Platform} from 'react-native';
 
 export async function getCSRFFromCookie(url: string) {
@@ -31,6 +32,8 @@ export async function clearCookiesForServer(serverUrl: string) {
     }
 }
 
+/** URL-safe base64 for cache keys and ids. UTF-8 safe (URLs may contain non-Latin1 characters). */
 export const urlSafeBase64Encode = (str: string): string => {
-    return base64.encode(str).replace(/\+/g, '-').replace(/\//g, '_');
+    const encoded = Buffer.from(str, 'utf8').toString('base64');
+    return encoded.replace(/\+/g, '-').replace(/\//g, '_');
 };

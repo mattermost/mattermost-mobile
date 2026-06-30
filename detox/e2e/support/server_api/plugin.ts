@@ -1,6 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import fs from 'fs';
 import path from 'path';
 
 import client from './client';
@@ -52,6 +53,17 @@ export const apiGetLatestPluginVersion = async (repo: string): Promise<string> =
         return '0.10.3';
     }
 };
+
+// Agents Plugin Constants
+export const AgentsPlugin = {
+    id: 'mattermost-ai',
+} as const;
+
+// Calls Plugin Constants
+export const CallsPlugin = {
+    id: 'com.mattermost.calls',
+    url: 'https://github.com/mattermost/mattermost-plugin-calls/releases/download/v1.5.0/com.mattermost.calls-1.5.0.tar.gz',
+} as const;
 
 // Demo Plugin Constants
 export const DemoPlugin = {
@@ -167,12 +179,14 @@ export const apiRemovePluginById = async (baseUrl: string, pluginId: string): Pr
  * See https://api.mattermost.com/#operation/UploadPlugin
  * @param {string} baseUrl - the base server URL
  * @param {string} filename - the filename of plugin to be uploaded
+ * @param {boolean} force - overwrite an existing plugin install
  * @return {Object} returns response on success or {error, status} on error
  */
-export const apiUploadPlugin = async (baseUrl: string, filename: string): Promise<any> => {
+export const apiUploadPlugin = async (baseUrl: string, filename: string, force = false): Promise<any> => {
     try {
         const absFilePath = path.resolve(__dirname, `../../support/fixtures/${filename}`);
-        return await apiUploadFile('plugin', absFilePath, {url: `${baseUrl}/api/v4/plugins`, method: 'POST'});
+        const forceQuery = force ? '?force=true' : '';
+        return await apiUploadFile('plugin', absFilePath, {url: `${baseUrl}/api/v4/plugins${forceQuery}`, method: 'POST'});
     } catch (err) {
         return getResponseFromError(err);
     }
@@ -186,12 +200,17 @@ export const apiUploadPlugin = async (baseUrl: string, filename: string): Promis
  * @return {Object} returns {isInstalled, isActive, plugin} on success or {error, status} on error
  */
 export const apiGetPluginStatus = async (baseUrl: string, pluginId: string, version?: string): Promise<any> => {
-    try {
-        const {plugins} = await apiGetAllPlugins(baseUrl);
-        if (!plugins) {
-            return {isInstalled: false, isActive: false};
-        }
+    const allPluginsResult = await apiGetAllPlugins(baseUrl);
+    if (allPluginsResult.error) {
+        return allPluginsResult;
+    }
 
+    const {plugins} = allPluginsResult;
+    if (!plugins) {
+        return {isInstalled: false, isActive: false};
+    }
+
+    try {
         // Check if plugin is installed (in either active or inactive list)
         let plugin = plugins.active?.find((p: any) => p.id === pluginId);
         if (plugin) {
@@ -221,22 +240,32 @@ export const apiGetPluginStatus = async (baseUrl: string, pluginId: string, vers
     }
 };
 
-/**
- * Upload and enable demo plugin, handling various states.
- * Uses DemoPlugin.getLatestDownloadUrl() internally to avoid SSRF concerns.
- * @param {Object} options - configuration object
- * @param {string} options.baseUrl - the base server URL
- * @param {string} options.version - expected plugin version
- * @param {boolean} options.force - whether to force install if already exists
- * @return {Object} returns plugin data on success or {error, status} on error
- */
+// Upload and enable demo plugin from a local fixture when available, otherwise from GitHub.
 export const apiUploadAndEnablePlugin = async (options: {
     baseUrl: string;
     version?: string;
     force?: boolean;
+    filename?: string;
 }): Promise<any> => {
-    const {baseUrl, version, force = false} = options;
+    const {baseUrl, version, force = false, filename} = options;
     const id = DemoPlugin.id;
+
+    if (filename) {
+        const absFilePath = path.resolve(__dirname, `../../support/fixtures/${filename}`);
+        if (fs.existsSync(absFilePath)) {
+            const uploadResult = await apiUploadPlugin(baseUrl, filename, force);
+            if (uploadResult.error) {
+                return uploadResult;
+            }
+            await new Promise((resolve) => setTimeout(resolve, 1000));
+            const enableResult = await apiEnablePluginById(baseUrl, id);
+            if (enableResult.error) {
+                return enableResult;
+            }
+            await new Promise((resolve) => setTimeout(resolve, 1000));
+            return apiGetPluginStatus(baseUrl, id, version);
+        }
+    }
 
     try {
         // Check current plugin status
@@ -431,13 +460,72 @@ export const apiUploadAndEnablePlugin = async (options: {
     }
 };
 
+/**
+ * Install a plugin from the Marketplace.
+ * See https://api.mattermost.com/#operation/InstallMarketplacePlugin
+ * @param {string} baseUrl - the base server URL
+ * @param {string} pluginId - the plugin ID to install from Marketplace
+ * @return {Object} returns {plugin} on success or {error, status} on error
+ */
+export const apiInstallPluginFromMarketplace = async (baseUrl: string, pluginId: string): Promise<any> => {
+    try {
+        const response = await client.post(`${baseUrl}/api/v4/plugins/marketplace`, {id: pluginId});
+        return {plugin: response.data};
+    } catch (err) {
+        return getResponseFromError(err);
+    }
+};
+
+/**
+ * Ensure a plugin is installed and active, installing from Marketplace if needed.
+ * @param {string} baseUrl - the base server URL
+ * @param {string} pluginId - the plugin ID
+ * @return {Object} returns {isInstalled, isActive} status
+ */
+export const apiEnsurePluginInstalled = async (baseUrl: string, pluginId: string): Promise<any> => {
+    // Check if already installed
+    const status = await apiGetPluginStatus(baseUrl, pluginId);
+    if (status.isActive) {
+        return status;
+    }
+
+    if (status.isInstalled && !status.isActive) {
+        // eslint-disable-next-line no-console
+        console.log(`[apiEnsurePluginInstalled] Plugin ${pluginId} installed but inactive, enabling...`);
+        await apiEnablePluginById(baseUrl, pluginId);
+        await new Promise((resolve) => setTimeout(resolve, 2000));
+        return apiGetPluginStatus(baseUrl, pluginId);
+    }
+
+    // Not installed — try Marketplace
+    // eslint-disable-next-line no-console
+    console.log(`[apiEnsurePluginInstalled] Plugin ${pluginId} not installed, installing from Marketplace...`);
+    const installResult = await apiInstallPluginFromMarketplace(baseUrl, pluginId);
+    if (installResult.error) {
+        // eslint-disable-next-line no-console
+        console.warn(`[apiEnsurePluginInstalled] Marketplace install failed for ${pluginId}:`, installResult.error.message || installResult.error);
+        return {isInstalled: false, isActive: false};
+    }
+
+    // Enable after install
+    await apiEnablePluginById(baseUrl, pluginId);
+    await new Promise((resolve) => setTimeout(resolve, 2000));
+
+    const finalStatus = await apiGetPluginStatus(baseUrl, pluginId);
+    // eslint-disable-next-line no-console
+    console.log(`[apiEnsurePluginInstalled] Plugin ${pluginId}: installed=${finalStatus.isInstalled}, active=${finalStatus.isActive}`);
+    return finalStatus;
+};
+
 export const Plugin = {
     apiDisableNonPrepackagedPlugins,
     apiDisablePluginById,
     apiEnablePluginById,
+    apiEnsurePluginInstalled,
     apiGetAllPlugins,
     apiGetLatestPluginVersion,
     apiGetPluginStatus,
+    apiInstallPluginFromMarketplace,
     apiInstallPluginFromUrl,
     apiRemovePluginById,
     apiUploadPlugin,

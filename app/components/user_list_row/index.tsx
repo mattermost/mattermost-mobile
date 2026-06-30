@@ -25,7 +25,6 @@ import type UserModel from '@typings/database/models/servers/user';
 type Props = {
     highlight?: boolean;
     id: string;
-    includeMargin?: boolean;
     isChannelAdmin: boolean;
     manageMode: boolean;
     onLongPress: (user: UserProfile | UserModel) => void;
@@ -80,7 +79,6 @@ const messages = defineMessages({
 
 function UserListRow({
     id,
-    includeMargin,
     highlight,
     isChannelAdmin,
     onPress,
@@ -180,8 +178,6 @@ function UserListRow({
                 rightDecorator={manageMode ? manageModeIcon : icon}
                 disabled={!(selectable || selected || !disabled)}
                 viewRef={viewRef}
-                padding={20}
-                includeMargin={includeMargin}
                 onLayout={onLayout}
             />
             {showTutorial &&

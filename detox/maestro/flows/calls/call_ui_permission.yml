@@ -1,0 +1,58 @@
+# MM-T1411: Starting a call shows the permission dialog and call screen UI.
+#
+# PRE-CONDITIONS:
+#   - Calls plugin installed and enabled on the test channel (Calls provisioner)
+#   - Logged-in user in the test channel
+#
+# REQUIRED ENV VARS:
+#   - MAESTRO_APP_ID, SITE_1_URL, TEST_USER_EMAIL, TEST_USER_PASSWORD, TEST_CHANNEL_NAME
+#
+# ASSERTIONS:
+#   - Start/Join Call action appears in channel quick actions
+#   - Microphone permission dialog handled (first run)
+#   - Call screen shows with mute control and participant list
+#
+# testIDs:
+#   - channel_header.channel_quick_actions.button
+#   - channel_info.channel_actions.join_start_call.action
+#   - calls.current_call_bar
+#   - mute-unmute
+#   - users-list
+#   - leave
+tags:
+  - MM-T1411
+appId: ${MAESTRO_APP_ID}
+---
+- runFlow: ../../subflows/auth/login.yml
+- runFlow: ../../subflows/navigation/navigate_to_channel.yml
+
+- runFlow: ../../subflows/calls/join_channel_call.yml
+
+# Brief wait after call starts to let the WebSocket session event arrive.
+- waitForAnimationToEnd:
+    timeout: 3000
+
+- runFlow:
+    when:
+      visible:
+        id: "calls.current_call_bar"
+    commands:
+      - tapOn:
+          id: "calls.current_call_bar"
+
+# Verify the full call screen is visible (mute-unmute button is the reliable call-screen indicator)
+- extendedWaitUntil:
+    visible:
+      id: "mute-unmute"
+    timeout: 30000
+- takeScreenshot: call-screen-visible
+
+# Leave the call to clean up state.
+# Tapping Leave shows a confirmation dialog; confirm with "Leave call".
+- tapOn:
+    id: "leave"
+    optional: true
+- tapOn:
+    text: "Leave call"
+    optional: true
+- takeScreenshot: call-ended

@@ -171,6 +171,11 @@ export const getConfigValue = async (database: Database, key: keyof ClientConfig
     return list.length ? list[0].value : undefined;
 };
 
+export const getConfigBooleanValue = async (database: Database, key: keyof ClientConfig, defaultValue = false) => {
+    const v = await getConfigValue(database, key);
+    return v ? v === 'true' : defaultValue;
+};
+
 export const getLastGlobalDataRetentionRun = async (database: Database) => {
     try {
         const data = await database.get<SystemModel>(SYSTEM).find(SYSTEM_IDENTIFIERS.LAST_DATA_RETENTION_RUN);
@@ -285,6 +290,26 @@ export const observeConfigBooleanValue = (database: Database, key: keyof ClientC
 export const observeConfigIntValue = (database: Database, key: keyof ClientConfig, defaultValue = 0) => {
     return observeConfigValue(database, key).pipe(
         switchMap((v) => of$((parseInt(v || '0', 10) || defaultValue))),
+    );
+};
+
+// The deprecated ExperimentalViewArchivedChannels setting was the last gate on viewing archived
+// channels. It is always enabled on servers newer than v10.11, which stopped sending it in the client
+// config, so an absent value means the feature is on. Supported older servers (down to v5.26.2) still
+// send it and may have explicitly disabled it, so only an explicit 'false' turns archived channels off.
+//
+// TODO: once we drop support for servers <= v10.11 the field is never sent, so these helpers and all of
+// their callers can be removed and archived channels treated as always viewable.
+const archivedChannelsViewable = (value?: string) => value !== 'false';
+
+export const canViewArchivedChannels = async (database: Database) => {
+    return archivedChannelsViewable(await getConfigValue(database, 'ExperimentalViewArchivedChannels'));
+};
+
+export const observeCanViewArchivedChannels = (database: Database) => {
+    return observeConfigValue(database, 'ExperimentalViewArchivedChannels').pipe(
+        switchMap((value) => of$(archivedChannelsViewable(value))),
+        distinctUntilChanged(),
     );
 };
 

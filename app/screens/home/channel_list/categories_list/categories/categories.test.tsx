@@ -82,6 +82,7 @@ describe('Categories', () => {
                     unreadChannelIds={new Set()}
                     onlyUnreads={false}
                     isTablet={false}
+                    listHeight={0}
                 />,
                 {database, serverUrl},
             );

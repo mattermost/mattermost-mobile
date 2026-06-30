@@ -96,7 +96,7 @@ export async function switchToChannel(serverUrl: string, channelId: string, team
                     }
                     DeviceEventEmitter.emit(NavigationConstants.NAVIGATION_HOME, Screens.CHANNEL);
                 } else {
-                    await NavigationStore.waitUntilScreenHasLoaded(Screens.CHANNEL_LIST);
+                    await NavigationStore.waitUntilScreenHasLoaded(Screens.HOME);
                     await dismissAllRoutesAndPopToScreen(Screens.CHANNEL);
                 }
 
@@ -313,7 +313,7 @@ export async function updateMyChannelFromWebsocket(serverUrl: string, channelMem
                 m.autotranslationDisabled = channelMember.autotranslation_disabled ?? false;
             });
             if (!prepareRecordsOnly) {
-                operator.batchRecords([member], 'updateMyChannelFromWebsocket');
+                await operator.batchRecords([member], 'updateMyChannelFromWebsocket');
             }
         }
         return {model: member};
@@ -333,7 +333,7 @@ export async function updateChannelInfoFromChannel(serverUrl: string, channel: C
         }],
         prepareRecordsOnly: true});
         if (!prepareRecordsOnly) {
-            operator.batchRecords(newInfo, 'updateChannelInfoFromChannel');
+            await operator.batchRecords(newInfo, 'updateChannelInfoFromChannel');
         }
         return {model: newInfo};
     } catch (error) {

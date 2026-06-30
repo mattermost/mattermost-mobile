@@ -3,12 +3,12 @@
 
 import {Alert, ProfilePicture} from '@support/ui/component';
 import {ChannelInfoScreen} from '@support/ui/screen';
-import {isIos, timeouts, wait} from '@support/utils';
+import {isAndroid, isIos, timeouts, wait, waitForElementToExist, waitForElementToNotExist} from '@support/utils';
 import {expect, waitFor} from 'detox';
 
 class ManageChannelMembersScreen {
     testID = {
-        backButton: 'screen.back.button',
+        backButton: 'navigation.header.back',
         manageMembersScreen: 'manage_members.screen',
         channelMembersScreen: 'channel_members.screen',
         manageDoneButton: 'manage_members.button', // Same button, text changes between "Manage" and "Done"
@@ -50,22 +50,35 @@ class ManageChannelMembersScreen {
     };
 
     toBeVisible = async () => {
-        if (isIos()) {
-            await waitFor(this.manageMembersScreen).toExist().withTimeout(timeouts.TEN_SEC);
-        }
+        // Use polling on both platforms: navigating to ManageChannelMembersScreen triggers
+        // a stack push and network/DB fetch for the member list. This keeps the JS bridge
+        // busy, causing waitFor().toExist() bridge-idle sync to block for the full timeout
+        // (especially for archived channels where member fetch is a distinct API path).
+        const timeout = isAndroid() ? timeouts.HALF_MIN : timeouts.TEN_SEC;
+        await waitForElementToExist(this.manageMembersScreen, timeout);
 
         return this.manageMembersScreen;
     };
 
     open = async () => {
-        // # Open channel info screen and tap on members option
+        // # Tap on members option to navigate to manage members screen.
+        // Wait for the element to be visible first to ensure it is on-screen and
+        // tappable before interacting with it.
+        await waitFor(ChannelInfoScreen.membersOption).toBeVisible().withTimeout(timeouts.TEN_SEC);
         await ChannelInfoScreen.membersOption.tap();
         await wait(timeouts.ONE_SEC);
-        return this.toBeVisible();
     };
 
     close = async () => {
-        await this.backButton.tap();
+        if (isIos()) {
+            // The navigation.header.back button on this screen is permanently obscured by
+            // iOS 26.3's liquid-glass UIVisualEffectView, causing EarlGrey's 100% visibility
+            // threshold tap to fail. Use the iOS interactive pop gesture (left-edge swipe)
+            // instead, which the UINavigationController intercepts at the system level.
+            await this.manageMembersScreen.swipe('right', 'slow', 0.75, 0.01, 0.5);
+        } else {
+            await device.pressBack();
+        }
         await expect(this.manageMembersScreen).not.toBeVisible();
     };
 
@@ -88,15 +101,21 @@ class ManageChannelMembersScreen {
             if (isIos()) {
                 await waitFor(this.tutorialHighlight).toExist().withTimeout(timeouts.HALF_MIN);
                 await this.tutorialSwipeLeft.tap();
-                await expect(this.tutorialHighlight).not.toExist();
+                await waitFor(this.tutorialHighlight).not.toExist().withTimeout(timeouts.TEN_SEC);
             } else {
-                await wait(timeouts.ONE_SEC);
+                // On Android, TutorialHighlight uses a React Native Modal (separate Dialog window).
+                // Espresso searches the focused Dialog window, not the Activity. The 'tutorial_highlight'
+                // testID is on the Modal element itself and is never found. The 'tutorial_swipe_left'
+                // View inside the Modal IS accessible from the Dialog window.
+                await waitForElementToExist(this.tutorialSwipeLeft, timeouts.HALF_MIN);
                 await device.pressBack();
-                await wait(timeouts.ONE_SEC);
+
+                // Poll until the tutorial disappears; waitFor().not.toExist() blocks on bridge-idle
+                // after the pressBack dismiss animation and can spuriously time out.
+                await waitForElementToNotExist(this.tutorialSwipeLeft, timeouts.TEN_SEC);
             }
         } catch {
-            // eslint-disable-next-line no-console
-            console.log('Tutorial element not visible, skipping action:');
+            // Tutorial may not appear if already dismissed in a previous run
         }
     };
 
@@ -105,9 +124,15 @@ class ManageChannelMembersScreen {
         await this.searchInput.typeText(`${username}`);
         await wait(timeouts.TWO_SEC);
 
-        const userItem = this.getUserItem(userId);
-        await waitFor(userItem).toBeVisible().withTimeout(timeouts.TEN_SEC);
-        await userItem.tap();
+        const userDisplayName = this.getUserItemDisplayName(userId);
+        await waitForElementToExist(userDisplayName, timeouts.TEN_SEC);
+        if (isIos()) {
+            try {
+                await this.searchInput.tapReturnKey();
+            } catch { /* keyboard may already be dismissed */ }
+            await wait(timeouts.HALF_SEC);
+        }
+        await userDisplayName.tap();
         await wait(timeouts.TWO_SEC);
 
         await expect(this.removeButton).toBeVisible();
@@ -117,7 +142,11 @@ class ManageChannelMembersScreen {
         await Alert.removeButton.tap();
         await wait(timeouts.TWO_SEC);
 
-        await device.pressBack();
+        // Dismiss the remove-member alert overlay on Android. On iOS pressBack() is not
+        // supported — callers use close() to pop ManageChannelMembersScreen instead.
+        if (isAndroid()) {
+            await device.pressBack();
+        }
     };
 }
 

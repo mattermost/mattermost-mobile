@@ -21,6 +21,7 @@ import {getAllServers, getServerDisplayName} from '@queries/app/servers';
 import EphemeralStore from '@store/ephemeral_store';
 import {deleteFileCacheByDir} from '@utils/file';
 import {isMainActivity} from '@utils/helpers';
+import {logDebug} from '@utils/log';
 import {addNewServer} from '@utils/server';
 
 import type {LaunchType} from '@typings/launch';
@@ -59,6 +60,7 @@ export class SessionManagerSingleton {
     }
 
     init() {
+        logDebug('SessionManager: Initializing');
         cancelAllSessionNotifications();
 
         let updateToMigrationDone = false;
@@ -153,7 +155,9 @@ export class SessionManagerSingleton {
                 }
                 const launchRoute = await determineRouteFromLaunchProps({launchType, serverUrl, displayName});
 
-                router.replace({pathname: launchRoute.route, params: launchRoute.params});
+                requestAnimationFrame(() => {
+                    router.replace({pathname: launchRoute.route, params: launchRoute.params});
+                });
             }
         } finally {
             this.terminatingSessionUrl.delete(serverUrl);

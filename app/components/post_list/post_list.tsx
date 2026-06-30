@@ -41,6 +41,7 @@ import type {AvailableScreens} from '@typings/screens/navigation';
 
 type Props = {
     appsEnabled: boolean;
+    mmBlocksEnabled: boolean;
     channelId: string;
     contentContainerStyle?: StyleProp<AnimatedStyle<ViewStyle>>;
     currentUser: UserModel;
@@ -90,6 +91,7 @@ const styles = StyleSheet.create({
 
 const PostList = ({
     appsEnabled,
+    mmBlocksEnabled,
     channelId,
     currentUser,
     customEmojiNames,
@@ -455,6 +457,7 @@ const PostList = ({
                 const skipSavedHeader = (location === Screens.THREAD && post.id === rootId);
                 const postProps = {
                     appsEnabled,
+                    mmBlocksEnabled,
                     currentUser,
                     customEmojiNames,
                     isCRTEnabled,
@@ -481,7 +484,7 @@ const PostList = ({
                 );
             }
         }
-    }, [appsEnabled, currentTimezone, currentUser, currentUsername, customEmojiNames, highlightPinnedOrSaved, highlightedId, isCRTEnabled, isChannelAutotranslated, isPostAcknowledgementEnabled, location, rootId, shouldRenderReplyButton, shouldShowJoinLeaveMessages, testID, theme]);
+    }, [appsEnabled, mmBlocksEnabled, currentTimezone, currentUser, currentUsername, customEmojiNames, highlightPinnedOrSaved, highlightedId, isCRTEnabled, isChannelAutotranslated, isPostAcknowledgementEnabled, location, rootId, shouldRenderReplyButton, shouldShowJoinLeaveMessages, testID, theme]);
 
     useEffect(() => {
         const t = setTimeout(() => {

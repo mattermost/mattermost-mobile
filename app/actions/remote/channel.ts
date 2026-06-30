@@ -18,7 +18,7 @@ import NetworkManager from '@managers/network_manager';
 import {getActiveServer} from '@queries/app/servers';
 import {prepareMyChannelsForTeam, getChannelById, getChannelByName, getMyChannel, getChannelInfo, queryMyChannelSettingsByIds, getMembersCountByChannelsId, deleteChannelMembership, queryChannelsById} from '@queries/servers/channel';
 import {queryDisplayNamePreferences} from '@queries/servers/preference';
-import {getCommonSystemValues, getConfig, getCurrentChannelId, getCurrentTeamId, getCurrentUserId, getLicense, setCurrentChannelId, setCurrentTeamAndChannelId} from '@queries/servers/system';
+import {canViewArchivedChannels, getCommonSystemValues, getConfig, getCurrentChannelId, getCurrentTeamId, getCurrentUserId, getLicense, setCurrentChannelId, setCurrentTeamAndChannelId} from '@queries/servers/system';
 import {getNthLastChannelFromTeam, getMyTeamById, getTeamByName, queryMyTeams, removeChannelFromTeamHistory, getTeamById} from '@queries/servers/team';
 import {getIsCRTEnabled} from '@queries/servers/thread';
 import {getCurrentUser} from '@queries/servers/user';
@@ -1055,7 +1055,7 @@ export async function createGroupChannel(serverUrl: string, userIds: string[]) {
                 }
 
                 models.push(...userModels);
-                operator.batchRecords(models, 'createGroupChannel');
+                await operator.batchRecords(models, 'createGroupChannel');
             }
         }
         EphemeralStore.creatingDMorGMTeammates = [];
@@ -1385,10 +1385,9 @@ export const archiveChannel = async (serverUrl: string, channelId: string) => {
         EphemeralStore.addArchivingChannel(channelId);
         const client = NetworkManager.getClient(serverUrl);
         const {database} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
-        const config = await getConfig(database);
         const channelBeforeArchive = await getChannelById(database, channelId);
         await client.deleteChannel(channelId);
-        if (config?.ExperimentalViewArchivedChannels === 'true') {
+        if (await canViewArchivedChannels(database)) {
             await setChannelDeleteAt(serverUrl, channelId, Date.now());
         } else {
             removeCurrentUserFromChannel(serverUrl, channelId);

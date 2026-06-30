@@ -11,6 +11,7 @@ import {setCurrentUserStatus} from '@actions/local/user';
 import {fetchStatusByIds} from '@actions/remote/user';
 import {handleFirstConnect, handleReconnect} from '@actions/websocket';
 import {handleWebSocketEvent} from '@actions/websocket/event';
+import {hasActiveNativeCall} from '@calls/native_call_mappings';
 import WebSocketClient from '@client/websocket';
 import {General} from '@constants';
 import DatabaseManager from '@database/manager';
@@ -18,7 +19,7 @@ import {getCurrentUserId} from '@queries/servers/system';
 import {queryAllUsers} from '@queries/servers/user';
 import {toMilliseconds} from '@utils/datetime';
 import {isMainActivity} from '@utils/helpers';
-import {logError} from '@utils/log';
+import {logDebug, logError} from '@utils/log';
 
 const WAIT_TO_CLOSE = toMilliseconds({seconds: 15});
 const WAIT_UNTIL_NEXT = toMilliseconds({seconds: 5});
@@ -44,6 +45,7 @@ class WebsocketManagerSingleton {
     }
 
     public init = async (serverCredentials: ServerCredential[]) => {
+        logDebug('WebSocketManager: Initializing');
         const netInfo = await NetInfo.fetch();
         this.netConnected = Boolean(netInfo.isConnected);
         this.netType = netInfo.type;
@@ -296,13 +298,33 @@ class WebsocketManagerSingleton {
             return;
         }
 
-        if (wentBackground && !this.isBackgroundTimerRunning) {
-            this.isBackgroundTimerRunning = true;
-            this.backgroundTimerId = BackgroundTimer.setTimeout(() => {
-                this.closeAll();
-                this.isBackgroundTimerRunning = false;
-            }, WAIT_TO_CLOSE);
+        if (wentBackground) {
+            this.startBackgroundCloseTimer();
         }
+    };
+
+    public scheduleBackgroundCloseIfNeeded = () => {
+        if (this.previousActiveState) {
+            return;
+        }
+        this.startBackgroundCloseTimer();
+    };
+
+    private startBackgroundCloseTimer = () => {
+        if (this.isBackgroundTimerRunning) {
+            return;
+        }
+        this.isBackgroundTimerRunning = true;
+        this.backgroundTimerId = BackgroundTimer.setTimeout(() => {
+            this.isBackgroundTimerRunning = false;
+
+            // Skip closing while a native call is active; closeAll would drop
+            // the WS that's carrying call lifecycle events.
+            if (hasActiveNativeCall()) {
+                return;
+            }
+            this.closeAll();
+        }, WAIT_TO_CLOSE);
     };
 
     public getClient = (serverUrl: string): WebSocketClient | undefined => {
