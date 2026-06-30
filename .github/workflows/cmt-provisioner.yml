@@ -10,7 +10,7 @@ name: CMT Provisioner
 # matched by the dispatched test workflow run id).
 #
 # Triggers:
-#   - Mobile release-build branch push (`build-release-NNN`, 3+ digit build number, e.g.
+#   - Mobile release-build branch push (`build-release-NNN`, 3- or 4-digit build number, e.g.
 #     `build-release-786`, `build-release-1100`). The "Mattermost Mobile Release" external
 #     workflow creates this branch when a release build is dispatched to TestFlight / Play
 #     Store. Mobile does NOT cut RC git tags — `build-release-NNN` is mobile's RC mechanism.
@@ -20,7 +20,7 @@ name: CMT Provisioner
 #   - Manual run from the Actions tab (`workflow_dispatch`, any ref).
 #
 # Matterwick is the authoritative gate: its `shouldTriggerCMT` requires the head_branch to
-# match `^build-release-\d{3,}$` (or be a manual dispatch). Anything that slips past the
+# match `^build-release-\d{3,4}$` (or be a manual dispatch). Anything that slips past the
 # GitHub-side glob is still rejected there.
 #
 # NOTE (intentional duplicate coverage): the branch the build-release-NNN was cut from also
