@@ -196,10 +196,17 @@ jobs:
           PLATFORM: ${{ inputs.PLATFORM }}
         with:
           script: |
-            const {execSync} = require('child_process');
+            const {execFileSync} = require('child_process');
             const platform = process.env.PLATFORM || 'both';
             const needIos = platform === 'ios' || platform === 'both';
             const needAndroid = platform === 'android' || platform === 'both';
+
+            const COMMIT_SHA_PATTERN = /^[0-9a-fA-F]{7,40}$/;
+            const mobileVersion = (process.env.MOBILE_VERSION || '').trim();
+            if (!COMMIT_SHA_PATTERN.test(mobileVersion)) {
+              core.setFailed(`MOBILE_VERSION must be a git commit SHA (7-40 hex digits), got "${process.env.MOBILE_VERSION}"`);
+              return;
+            }
 
             const detoxOnlyPatterns = [
               /^detox\//,
@@ -210,8 +217,9 @@ jobs:
 
             const isDetoxOnlyCommit = () => {
               try {
-                const changed = execSync(
-                  `git diff-tree --no-commit-id --name-only -r ${process.env.MOBILE_VERSION}`,
+                const changed = execFileSync(
+                  'git',
+                  ['diff-tree', '--no-commit-id', '--name-only', '-r', mobileVersion],
                   {encoding: 'utf8'},
                 ).split('\n').filter(Boolean);
                 if (changed.length === 0) {
@@ -252,12 +260,12 @@ jobs:
                 return currentRun.head_branch;
               }
 
-              if (process.env.MOBILE_VERSION) {
+              if (mobileVersion) {
                 try {
                   const {data: prs} = await github.rest.repos.listPullRequestsAssociatedWithCommit({
                     owner: context.repo.owner,
                     repo: context.repo.repo,
-                    commit_sha: process.env.MOBILE_VERSION,
+                    commit_sha: mobileVersion,
                   });
                   const openPr = prs.find((pr) => pr.state === 'open');
                   if (openPr?.head?.ref) {
