@@ -120,7 +120,9 @@ describe('Smoke Test - Autocomplete', () => {
         await waitFor(emojiSuggestionItem).toExist().withTimeout(timeouts.TEN_SEC);
 
         // # Select and post emoji suggestion
-        await emojiSuggestionItem.tap();
+        // Corner-tap: UITransitionView blocks the emoji row on iOS 26 during
+        // autocomplete animation. Same workaround as postSlashCommand/deletePost.
+        await emojiSuggestionItem.tap({x: 1, y: 1});
         await ChannelScreen.tapSendButton();
 
         // * Verify emoji suggestion is posted

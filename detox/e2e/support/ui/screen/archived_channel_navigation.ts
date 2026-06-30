@@ -75,7 +75,9 @@ async function openArchivedChannelViaBrowseChannels(channelName: string) {
         // searchInput not in view hierarchy on this config — fall through.
     }
 
-    await waitFor(BrowseChannelsScreen.getChannelItem(channelName)).toExist().withTimeout(timeouts.TEN_SEC);
+    // HALF_MIN: when replaceText falls through (element not in hierarchy on some
+    // API-35 configs), the unfiltered archived list takes longer to populate.
+    await waitFor(BrowseChannelsScreen.getChannelItem(channelName)).toExist().withTimeout(timeouts.HALF_MIN);
     await BrowseChannelsScreen.getChannelItem(channelName).tap();
 
     await waitForElementToExist(ChannelScreen.channelScreen, timeouts.ONE_MIN);

@@ -341,7 +341,9 @@ class ChannelScreen {
     postSlashCommand = async (command: string) => {
         await this.composePostDraft(command);
         await waitForElementToBeVisible(this.sendButton, timeouts.FOUR_SEC);
-        await this.sendButton.tap();
+        // Corner-tap: UITransitionView covers the send button on iOS 26 when the
+        // keyboard animation is in progress. Tapping at (1,1) bypasses the overlay.
+        await this.sendButton.tap({x: 1, y: 1});
         await waitFor(InteractiveDialogScreen.interactiveDialogScreen).toExist().withTimeout(timeouts.FIVE_SEC);
     };
 
