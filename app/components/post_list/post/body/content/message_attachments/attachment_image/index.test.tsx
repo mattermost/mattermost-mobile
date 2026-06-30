@@ -75,7 +75,7 @@ describe('AttachmentImage', () => {
         return calls[calls.length - 1][0].id;
     }
 
-    it('renders ProgressiveImage with the image and a cache id derived from imageUrl', () => {
+    it('should render ProgressiveImage with the image and a cache id derived from imageUrl', () => {
         renderImage();
 
         expect(ProgressiveImage).toHaveBeenCalledWith(
@@ -90,7 +90,7 @@ describe('AttachmentImage', () => {
     // Regression test for the stale-image bug: when the same post is edited in place
     // to a new image URL, the cache id must follow imageUrl. Previously it was frozen
     // via useRef, so the new image rendered under the old cache key and stayed stale.
-    it('updates the cache id when imageUrl changes on re-render', () => {
+    it('should update the cache id when imageUrl changes on re-render', () => {
         const {rerender} = renderImage({imageUrl: IMAGE_URL});
         const firstId = lastProgressiveImageId();
         expect(firstId).toBe(`uid-${urlSafeBase64Encode(IMAGE_URL)}`);
@@ -102,7 +102,7 @@ describe('AttachmentImage', () => {
         expect(secondId).not.toBe(firstId);
     });
 
-    it('opens the gallery with a cacheKey matching the current imageUrl', () => {
+    it('should open the gallery with a cacheKey matching the current imageUrl', () => {
         renderImage();
 
         // Trigger the gallery open via the captured gesture handler.
@@ -110,6 +110,8 @@ describe('AttachmentImage', () => {
         const onGestureEvent = jest.mocked(useGalleryItem).mock.results.at(-1)!.value.onGestureEvent;
         onGestureEvent();
 
+        const galleryItems = jest.mocked(openGalleryAtIndex).mock.calls[0][2];
+        expect(galleryItems).toHaveLength(1);
         expect(openGalleryAtIndex).toHaveBeenCalledWith(
             `post-id-AttachmentImage-${Screens.CHANNEL}`,
             0,
@@ -123,7 +125,7 @@ describe('AttachmentImage', () => {
         );
     });
 
-    it('renders an error frame for an invalid url and skips ProgressiveImage', () => {
+    it('should render an error frame for an invalid url and skip ProgressiveImage', () => {
         renderImage({imageUrl: 'not-a-url'});
         expect(ProgressiveImage).not.toHaveBeenCalled();
     });
