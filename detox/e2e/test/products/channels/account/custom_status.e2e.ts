@@ -152,6 +152,7 @@ describe('Account - Custom Status', () => {
 
         await openCustomStatusScreen();
         await selectSuggestedStatus(status);
+        await verifyStatusInInput(status);
         await CustomStatusScreen.doneButton.tap();
         await AccountScreen.waitForCustomStatus(status);
 
@@ -190,11 +191,11 @@ describe('Account - Custom Status', () => {
         await openEmojiPickerForDefault();
         await EmojiPickerScreen.searchInput.replaceText(customEmojiName);
         await EmojiPickerScreen.searchInput.tapReturnKey();
-        await EmojiPickerScreen.tapSearchResultEmoji('🤡');
+        await EmojiPickerScreen.tapSearchResultEmoji('🤡', 'clown_face');
         await wait(timeouts.ONE_SEC);
         await CustomStatusScreen.statusInput.replaceText(customStatusText);
         await CustomStatusScreen.doneButton.tap();
-        await AccountScreen.waitForCustomStatus({emoji: customEmojiName, duration: customStatusDuration});
+        await AccountScreen.waitForCustomStatus({emoji: customEmojiName, text: customStatusText, duration: customStatusDuration});
 
         // * Verify custom status is set
         await verifyStatusSetOnAccountScreen({emoji: customEmojiName, text: customStatusText, duration: customStatusDuration});
@@ -326,7 +327,7 @@ describe('Account - Custom Status', () => {
 
         // # Save status
         await CustomStatusScreen.doneButton.tap();
-        await AccountScreen.waitForCustomStatus({emoji: customEmojiName, duration: customStatusDuration});
+        await AccountScreen.waitForCustomStatus({emoji: customEmojiName, text: customStatusText, duration: customStatusDuration});
 
         // * Verify status is set in account screen
         await verifyStatusSetOnAccountScreen({emoji: customEmojiName, text: customStatusText, duration: customStatusDuration});
@@ -386,11 +387,11 @@ describe('Account - Custom Status', () => {
         await openEmojiPickerForDefault();
         await EmojiPickerScreen.searchInput.replaceText(customEmojiName);
         await EmojiPickerScreen.searchInput.tapReturnKey();
-        await EmojiPickerScreen.tapSearchResultEmoji('🤡');
+        await EmojiPickerScreen.tapSearchResultEmoji('🤡', 'clown_face');
         await wait(timeouts.ONE_SEC);
         await CustomStatusScreen.statusInput.replaceText(customStatusText);
         await CustomStatusScreen.doneButton.tap();
-        await AccountScreen.waitForCustomStatus({emoji: customEmojiName, duration: customStatusDuration});
+        await AccountScreen.waitForCustomStatus({emoji: customEmojiName, text: customStatusText, duration: customStatusDuration});
 
         // * Verify status is set
         await verifyStatusSetOnAccountScreen({emoji: customEmojiName, text: customStatusText, duration: customStatusDuration});
@@ -444,6 +445,7 @@ describe('Account - Custom Status', () => {
         // # Select status with 30 minutes expiry
         await selectSuggestedStatus(status);
         await expect(CustomStatusScreen.getCustomStatusExpiry(status.duration)).toBeVisible();
+        await verifyStatusInInput(status);
         await CustomStatusScreen.doneButton.tap();
         await wait(timeouts.ONE_SEC);
 

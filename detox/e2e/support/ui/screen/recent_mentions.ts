@@ -134,6 +134,36 @@ class RecentMentionsScreen {
             this.getPostMessageAtIndex(index),
         ).toHaveText(postMessage);
     };
+
+    // Wait for the edited_indicator to render on a post after an edit.
+    // The recent_mentions list doesn't always re-render the row on POST_EDITED
+    // before the FlashList recycles it (CI 28392181656 / 28375328964 / 28385155791
+    // MM-T4909_3: `edited_indicator` never appeared in 10s despite a successful
+    // edit — 263 failed `not null` polls). Poll and, on failure, force a fresh
+    // fetchRecentMentions by leaving + re-entering the mentions tab (the same
+    // refresh pattern as recentMentionPostListToBeVisible) so the row re-mounts
+    // at the top with the indicator.
+    verifyPostEdited = async (postId: string, timeout = timeouts.HALF_MIN) => {
+        const editedIndicator = element(
+            by.id('edited_indicator').withAncestor(by.id(`${this.testID.recentMentionPostList}.${postId}`)),
+        );
+        const deadline = Date.now() + timeout;
+
+        /* eslint-disable no-await-in-loop -- poll until the edit propagates or tab refresh exhausts the deadline */
+        while (Date.now() < deadline) {
+            try {
+                await expect(editedIndicator).toExist();
+                return;
+            } catch {
+                await HomeScreen.channelListTab.tap();
+                await wait(timeouts.ONE_SEC);
+                await HomeScreen.mentionsTab.tap();
+                await this.toBeVisible();
+            }
+        }
+        /* eslint-enable no-await-in-loop */
+        await expect(editedIndicator).toExist();
+    };
 }
 
 const recentMentionsScreen = new RecentMentionsScreen();

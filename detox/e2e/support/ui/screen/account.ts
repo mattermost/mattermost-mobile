@@ -7,7 +7,7 @@ import {
 } from '@support/ui/component';
 import {dismissKnownModals} from '@support/ui/modal_dismiss';
 import {HomeScreen} from '@support/ui/screen';
-import {isAndroid, timeouts, wait, waitForElementToExist, waitForElementToNotExist} from '@support/utils';
+import {isAndroid, timeouts, wait, waitForElementToNotExist} from '@support/utils';
 import {expect, waitFor} from 'detox';
 
 class AccountScreen {
@@ -180,21 +180,27 @@ class AccountScreen {
         }
     };
 
-    waitForCustomStatus = async (status: {emoji: string; duration: string}) => {
+    // Emoji wrapper Views fail Detox visibility on Android (15% rect via
+    // waitForElementToExist) and may be missing briefly on iOS after save.
+    // Sync on plain <Text> when known; require emoji/clear button toExist only.
+    waitForCustomStatus = async (status: {emoji: string; duration: string; text?: string}) => {
         const customStatusScreen = element(by.id('custom_status.screen'));
         await waitForElementToNotExist(customStatusScreen, timeouts.TEN_SEC);
         await this.toBeVisible();
-        const {accountCustomStatusEmoji} = this.getCustomStatus(status.emoji, status.duration);
+
+        const {accountCustomStatusEmoji, accountCustomStatusText} = this.getCustomStatus(status.emoji, status.duration);
         const timeout = isAndroid() ? timeouts.TWENTY_SEC : timeouts.TEN_SEC;
-        if (isAndroid()) {
-            try {
-                await waitFor(accountCustomStatusEmoji).toBeVisible(15).whileElement(by.id(this.testID.accountScrollView)).scroll(100, 'down');
-            } catch {
-                // Row may already be visible without scrolling
-            }
+
+        if (status.text === undefined) {
+            await waitFor(accountCustomStatusEmoji).toExist().withTimeout(timeout);
+            await waitFor(this.customStatusClearButton).toExist().withTimeout(timeout);
+            return;
         }
-        await waitForElementToExist(accountCustomStatusEmoji, timeout);
-        await waitForElementToExist(this.customStatusClearButton, timeout);
+
+        // Text node always exists (placeholder or status) — poll until value matches.
+        await waitFor(accountCustomStatusText).toHaveText(status.text).withTimeout(timeout);
+        await waitFor(accountCustomStatusEmoji).toExist().withTimeout(timeout);
+        await waitFor(this.customStatusClearButton).toExist().withTimeout(timeout);
     };
 
     logout = async (serverDisplayName: string | null = null) => {

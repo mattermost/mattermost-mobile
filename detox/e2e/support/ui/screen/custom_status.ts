@@ -121,7 +121,27 @@ class CustomStatusScreen {
             }
             await waitForElementToExist(AccountScreen.setStatusOption, timeouts.TEN_SEC);
         } else {
-            await waitFor(AccountScreen.setStatusOption).toBeVisible().whileElement(by.id('account.scroll_view')).scroll(150, 'down');
+            // iOS: the account drawer is a partial-height bottom sheet whose
+            // ScrollView is routinely <100% visible (clipped by the sheet's
+            // top edge / bottom safe area), so Detox's `whileElement().scroll()`
+            // refuses with "View is not scrollable at the given start point" —
+            // it picks a start point off-screen. This hard-crashes 5 tests in
+            // ios-junit 28392181656 (MM-T3890/3891/3892/4990_4/4091) at this
+            // exact call. The "Set a custom status" row is also frequently
+            // above the fold because a prior test left the drawer scrolled.
+            // Probe visibility first; on failure, scroll with an explicit
+            // start at the visible centre (always hittable — same convention
+            // as `support/utils/index.ts` longPressWithScrollRetry), then
+            // re-check. Tolerate a scroll refusal: 'down' is the right
+            // direction for both top-clipped and scrolled-past-below cases.
+            try {
+                await waitFor(AccountScreen.setStatusOption).toBeVisible().withTimeout(timeouts.TWO_SEC);
+            } catch {
+                try {
+                    await element(by.id('account.scroll_view')).scroll(150, 'down', 0.5, 0.5);
+                } catch { /* scroll_view fully clipped — nothing to scroll */ }
+                await waitFor(AccountScreen.setStatusOption).toBeVisible().withTimeout(timeouts.FIVE_SEC);
+            }
         }
         await AccountScreen.setStatusOption.tap();
 

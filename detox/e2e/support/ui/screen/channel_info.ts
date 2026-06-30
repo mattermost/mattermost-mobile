@@ -252,13 +252,23 @@ class ChannelInfoScreen {
     tapAddBookmark = async () => {
         await this.scrollToBookmarks();
         const addBookmark = element(by.text('Add a bookmark'));
+
+        // "Add a bookmark" can be clipped below the fold of the partial-height
+        // channel_info sheet. Probe visibility; if it isn't visible, scroll the
+        // channel_info ScrollView with an explicit visible-centre start point
+        // (the same probe + scroll(150, 'down', 0.5, 0.5) pattern as
+        // custom_status.ts open() on this branch — whileElement().scroll() refuses
+        // on the clipped iOS sheet, "not scrollable at start point"). Use
+        // toBeVisible (not toExist) so the subsequent tap lands on a hittable row
+        // (CI 28392181656 MM-T5604_1 / MM-T5608_1 iOS failed here on the clipped
+        // "Add a bookmark" row).
         try {
-            await waitForElementToExist(addBookmark, timeouts.FIVE_SEC);
+            await waitFor(addBookmark).toBeVisible().withTimeout(timeouts.TWO_SEC);
         } catch {
             try {
-                await this.scrollView.scrollTo('bottom');
+                await this.scrollView.scroll(150, 'down', 0.5, 0.5);
             } catch { /* content may not scroll */ }
-            await waitForElementToExist(addBookmark, timeouts.TEN_SEC);
+            await waitFor(addBookmark).toBeVisible().withTimeout(timeouts.FIVE_SEC);
         }
         await addBookmark.tap({x: 1, y: 1});
     };

@@ -64,8 +64,13 @@ describe('Channels - Edit Channel', () => {
     });
 
     beforeEach(async () => {
-        // * Verify on channel screen
-        await ChannelScreen.toBeVisible();
+        try {
+            await ChannelScreen.toBeVisible();
+        } catch {
+            // Prior test may have failed mid-flow (e.g. Create DM tutorial blocking channel).
+            await ChannelListScreen.toBeVisible();
+            await ChannelScreen.open(channelsCategory, testChannel.name);
+        }
     });
 
     afterAll(async () => {

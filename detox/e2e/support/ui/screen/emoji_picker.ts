@@ -78,15 +78,34 @@ class EmojiPickerScreen {
         await wait(timeouts.ONE_SEC);
     };
 
-    tapSearchResultEmoji = async (glyph: string) => {
-        const emojiInPicker = element(by.text(glyph).withAncestor(by.id(this.testID.emojiPickerScreen)));
-        const emoji = emojiInPicker.atIndex(0);
-        if (isAndroid()) {
-            await waitForElementToBeVisible(emoji, timeouts.TWENTY_SEC);
-        } else {
-            await waitFor(emoji).toBeVisible().withTimeout(timeouts.TEN_SEC);
+    tapSearchResultEmoji = async (glyph: string, emojiShortName?: string) => {
+        const ancestorMatchers = [
+            by.id(this.testID.emojiPickerScreen),
+            by.id('emoji_picker'),
+            by.id('custom_emoji_picker'),
+        ];
+        const labels = emojiShortName ? [glyph, `:${emojiShortName}:`] : [glyph];
+
+        /* eslint-disable no-await-in-loop -- try each ancestor/label combination until one taps */
+        for (const ancestor of ancestorMatchers) {
+            for (const label of labels) {
+                try {
+                    const emoji = element(by.text(label).withAncestor(ancestor)).atIndex(0);
+                    if (isAndroid()) {
+                        await waitFor(emoji).toExist().withTimeout(timeouts.FIVE_SEC);
+                    } else {
+                        await waitFor(emoji).toBeVisible().withTimeout(timeouts.TEN_SEC);
+                    }
+                    await emoji.tap();
+                    return;
+                } catch {
+                    // Try the next ancestor/label combination.
+                }
+            }
         }
-        await emoji.tap();
+        /* eslint-enable no-await-in-loop */
+
+        throw new Error(`tapSearchResultEmoji: could not tap ${glyph}`);
     };
 }
 

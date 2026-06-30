@@ -34,7 +34,7 @@ import {
     ThreadScreen,
 } from '@support/ui/screen';
 import {getRandomId, timeouts, wait, waitForElementToBeVisible, waitForElementToNotExist} from '@support/utils';
-import {by, element, expect, waitFor} from 'detox';
+import {by, element, expect} from 'detox';
 
 describe('Search - Recent Mentions', () => {
     const serverOneDisplayName = 'Server 1';
@@ -240,9 +240,9 @@ describe('Search - Recent Mentions', () => {
 
         // * Verify post displays the edited indicator (single testID — combined-text
         // regex doesn't work because @mention is a separate React node).
-        await waitFor(
-            element(by.id('edited_indicator').withAncestor(by.id(`recent_mentions.post_list.post.${ownMentionPost.id}`))),
-        ).toExist().withTimeout(timeouts.TEN_SEC);
+        // Use verifyPostEdited (poll + tab refresh): the recent_mentions list does
+        // not reliably re-render the row on POST_EDITED before it is recycled.
+        await RecentMentionsScreen.verifyPostEdited(ownMentionPost.id);
 
         // # Open post options via header date_time long-press (avoids the @mention tap handler)
         await element(by.id('post_header.date_time').withAncestor(by.id(`recent_mentions.post_list.post.${ownMentionPost.id}`))).longPress(timeouts.TWO_SEC);

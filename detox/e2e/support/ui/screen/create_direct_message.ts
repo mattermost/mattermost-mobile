@@ -4,7 +4,7 @@
 import {ProfilePicture} from '@support/ui/component';
 import {dismissKnownModals} from '@support/ui/modal_dismiss';
 import {ChannelListScreen} from '@support/ui/screen';
-import {isAndroid, isIos, safeEnableSynchronization, timeouts, wait, waitForElementToBeVisible, waitForElementToExist, waitForElementToNotExist} from '@support/utils';
+import {isAndroid, isIos, safeEnableSynchronization, timeouts, wait, waitForElementToExist, waitForElementToNotExist} from '@support/utils';
 import {expect, waitFor} from 'detox';
 
 class CreateDirectMessageScreen {
@@ -65,6 +65,18 @@ class CreateDirectMessageScreen {
         return element(by.id(`${this.testID.userItemPrefix}${userId}.${userId}.display_name`));
     };
 
+    longPressProfileTutorialText = element(by.text("Long-press on an item to view a user's profile"));
+
+    dismissLongPressProfileTutorial = async () => {
+        try {
+            await waitFor(this.longPressProfileTutorialText).toBeVisible().withTimeout(timeouts.THREE_SEC);
+            await this.longPressProfileTutorialText.tap();
+            await waitFor(this.longPressProfileTutorialText).not.toExist().withTimeout(timeouts.FIVE_SEC);
+        } catch {
+            // Tutorial not shown or already dismissed
+        }
+    };
+
     toBeVisible = async () => {
         // On iOS wait for the screen root and then the search input.
         // A RNSVGGroup (part of the plus-menu icon animation) sits on top of the
@@ -72,18 +84,10 @@ class CreateDirectMessageScreen {
         // is in the hierarchy. Waiting for the input to be visible gives the SVG layer
         // time to finish its animation.
         // On Android edge-to-edge, the tutorial Modal can cover the screen while the root
-        // view still exists — use visibility polling after closeTutorial() in open().
+        // view still exists — dismiss the long-press tooltip before visibility checks.
         if (isAndroid()) {
-            try {
-                await waitForElementToBeVisible(this.createDirectMessageScreen, timeouts.ONE_MIN);
-            } catch (visibilityError) {
-                const msg = String(visibilityError);
-                if (msg.includes('null') || msg.includes('No views in hierarchy')) {
-                    await waitFor(this.createDirectMessageScreen).toExist().withTimeout(timeouts.ONE_MIN);
-                } else {
-                    throw visibilityError;
-                }
-            }
+            await this.dismissLongPressProfileTutorial();
+            await waitFor(this.createDirectMessageScreen).toExist().withTimeout(timeouts.ONE_MIN);
         } else {
             await waitFor(this.createDirectMessageScreen).toExist().withTimeout(timeouts.ONE_MIN);
         }
@@ -147,9 +151,11 @@ class CreateDirectMessageScreen {
         }
 
         if (isAndroid()) {
-            // Tutorial Modal is a separate Dialog window — dismiss it before visibility checks.
-            await waitForElementToExist(this.createDirectMessageScreen, timeouts.ONE_MIN);
+            // Tutorial Modal is a separate Dialog window — wait for navigation, then dismiss
+            // the long-press tooltip before Espresso probes the activity window.
+            await waitFor(this.createDirectMessageScreen).toExist().withTimeout(timeouts.ONE_MIN);
             await wait(timeouts.ONE_SEC);
+            await this.dismissLongPressProfileTutorial();
             await this.closeTutorial();
             await this.dismissScheduledPostTooltip();
         }
@@ -176,6 +182,8 @@ class CreateDirectMessageScreen {
                 await this.tutorialSwipeLeft.tap();
                 await waitFor(this.tutorialHighlight).not.toExist().withTimeout(timeouts.TEN_SEC);
             } else {
+                await this.dismissLongPressProfileTutorial();
+
                 // On Android the TutorialHighlight uses a React Native Modal, which creates a
                 // separate Dialog window. Espresso's onView() searches the currently focused window
                 // — the Dialog — not the Activity. The 'tutorial_highlight' testID is on the Modal
