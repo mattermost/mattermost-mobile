@@ -62,11 +62,6 @@ class PostOptionsScreen {
             await this.postOptionsScreen.swipe('down');
         } else {
             await device.pressBack();
-            try {
-                await waitFor(this.postOptionsScreen).not.toExist().withTimeout(timeouts.TWO_SEC);
-            } catch {
-                await device.pressBack();
-            }
         }
         await waitFor(this.postOptionsScreen).not.toExist().withTimeout(timeouts.FIVE_SEC);
     };

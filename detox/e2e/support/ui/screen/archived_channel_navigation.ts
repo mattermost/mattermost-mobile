@@ -60,17 +60,20 @@ export async function postArchivedChannelSentinel(channelId: string): Promise<st
 // Navigate to an archived channel via Browse Channels → archived filter → tap.
 // Android-only: the search/permalink path regressed MM-T1671_1 + MM-T1722_1.
 //
-// We skip the searchInput.replaceText step that prior implementations used:
-// browse_channels.search_bar.search.input never lands in the Android view
-// hierarchy as a Detox-findable view (confirmed by 0 hits across all 20 Android
-// shard device.logs in CI run 28290273101). Waiting on a never-present testID
-// times out regardless of whether you use toBeVisible or toExist. The archived-
-// filter pre-loads recently-archived channels at the top of the list, so tapping
-// directly works as long as we wait for the channel item itself to exist.
+// searchInput.replaceText is attempted to narrow results, but silently skipped
+// when the element is not findable in the Android view hierarchy (observed on
+// some API-35 shard configs). The archived-filter pre-loads recently-archived
+// channels at the top of the list, so the channel item is still found either way.
 async function openArchivedChannelViaBrowseChannels(channelName: string) {
     await BrowseChannelsScreen.open();
     await BrowseChannelsScreen.dismissScheduledPostTooltip();
     await openArchivedChannelsFilter();
+
+    try {
+        await BrowseChannelsScreen.searchInput.replaceText(channelName);
+    } catch {
+        // searchInput not in view hierarchy on this config — fall through.
+    }
 
     await waitFor(BrowseChannelsScreen.getChannelItem(channelName)).toExist().withTimeout(timeouts.TEN_SEC);
     await BrowseChannelsScreen.getChannelItem(channelName).tap();
