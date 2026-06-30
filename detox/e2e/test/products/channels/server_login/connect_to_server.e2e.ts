@@ -23,7 +23,6 @@ describe('Server Login - Connect to Server', () => {
         displayHelp,
         headerDescription,
         headerTitleConnectToServer,
-        headerWelcome,
         serverDisplayNameInput,
         serverUrlInput,
         serverUrlInputError,
@@ -42,9 +41,8 @@ describe('Server Login - Connect to Server', () => {
 
     it('MM-T4676_1 - should match elements on server screen', async () => {
         // * Verify basic elements on server screen
-        await expect(headerWelcome).toHaveText('Welcome');
-        await expect(headerTitleConnectToServer).toHaveText('Let’s Connect to a Server');
-        await expect(headerDescription).toHaveText('A server is your team\'s communication hub accessed using a unique URL');
+        await expect(headerTitleConnectToServer).toHaveText('Connect securely to your server');
+        await expect(headerDescription).toHaveText('Enter your server details to get started.');
         await expect(serverUrlInput).toBeVisible();
         await expect(serverDisplayNameInput).toBeVisible();
         await expect(displayHelp).toHaveText('Choose a display name for your server');
