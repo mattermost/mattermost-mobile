@@ -143,26 +143,23 @@ class RecentMentionsScreen {
     // fetchRecentMentions by leaving + re-entering the mentions tab (the same
     // refresh pattern as recentMentionPostListToBeVisible) so the row re-mounts
     // at the top with the indicator.
-    verifyPostEdited = async (postId: string, timeout = timeouts.HALF_MIN) => {
+    verifyPostEdited = async (postId: string) => {
         const editedIndicator = element(
             by.id('edited_indicator').withAncestor(by.id(`${this.testID.recentMentionPostList}.${postId}`)),
         );
-        const deadline = Date.now() + timeout;
+        const MAX_REFETCHES = 3;
 
-        /* eslint-disable no-await-in-loop -- poll until the edit propagates or tab refresh exhausts the deadline */
-        while (Date.now() < deadline) {
-            const remaining = deadline - Date.now();
-            const pollTimeout = Math.min(timeouts.TEN_SEC, remaining);
-            if (pollTimeout <= 0) {
-                break;
-            }
+        /* eslint-disable no-await-in-loop -- poll for the indicator before each tab refresh */
+        for (let attempt = 1; attempt <= MAX_REFETCHES; attempt++) {
             try {
-                await waitFor(editedIndicator).toExist().withTimeout(pollTimeout);
+                await waitFor(editedIndicator).toExist().withTimeout(timeouts.TEN_SEC);
                 return;
-            } catch {
-                if (Date.now() >= deadline) {
-                    break;
+            } catch (e) {
+                if (attempt === MAX_REFETCHES) {
+                    throw e;
                 }
+
+                // Force a fresh fetchRecentMentions by leaving + re-entering the tab.
                 await HomeScreen.channelListTab.tap();
                 await wait(timeouts.ONE_SEC);
                 await HomeScreen.mentionsTab.tap();
@@ -170,7 +167,6 @@ class RecentMentionsScreen {
             }
         }
         /* eslint-enable no-await-in-loop */
-        await waitFor(editedIndicator).toExist().withTimeout(timeouts.FIVE_SEC);
     };
 }
 

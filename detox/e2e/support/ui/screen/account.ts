@@ -197,8 +197,15 @@ class AccountScreen {
             return;
         }
 
-        // Text node always exists (placeholder or status) — poll until value matches.
-        await waitFor(accountCustomStatusText).toHaveText(status.text).withTimeout(timeout);
+        // Android: toHaveText requires VISIBLE; the status text node may exist in
+        // the hierarchy before passing the 15% visibility threshold. Match id+text
+        // with toExist instead (android-junit 28416284905).
+        if (isAndroid()) {
+            const statusTextMatcher = by.id(`${this.testID.customStatusPrefix}custom_status_text`).and(by.text(status.text));
+            await waitFor(element(statusTextMatcher)).toExist().withTimeout(timeout);
+        } else {
+            await waitFor(accountCustomStatusText).toHaveText(status.text).withTimeout(timeout);
+        }
         await waitFor(accountCustomStatusEmoji).toExist().withTimeout(timeout);
         await waitFor(this.customStatusClearButton).toExist().withTimeout(timeout);
     };

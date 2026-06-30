@@ -151,12 +151,14 @@ class CreateDirectMessageScreen {
         }
 
         if (isAndroid()) {
-            // Tutorial Modal is a separate Dialog window — wait for navigation, then dismiss
-            // the long-press tooltip before Espresso probes the activity window.
-            await waitFor(this.createDirectMessageScreen).toExist().withTimeout(timeouts.ONE_MIN);
+            // CI 28416284905 MM-T4730_1 testFnFailure.png: navigation succeeds but a
+            // long-press tutorial Modal holds the Dialog window focus, so Espresso
+            // cannot see create_direct_message.screen in the Activity for 60s. Dismiss
+            // the tutorial first, then probe the activity window.
             await wait(timeouts.ONE_SEC);
             await this.dismissLongPressProfileTutorial();
             await this.closeTutorial();
+            await waitFor(this.createDirectMessageScreen).toExist().withTimeout(timeouts.TWENTY_SEC);
             await this.dismissScheduledPostTooltip();
         }
 

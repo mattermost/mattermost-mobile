@@ -30,7 +30,7 @@ import {
     ThreadScreen,
 } from '@support/ui/screen';
 import {getRandomId, timeouts, wait, waitForElementToBeVisible} from '@support/utils';
-import {expect, waitFor} from 'detox';
+import {expect} from 'detox';
 
 describe('Search - Saved Messages', () => {
     const serverOneDisplayName = 'Server 1';
@@ -95,7 +95,7 @@ describe('Search - Saved Messages', () => {
         // * Verify on saved messages screen and saved message is displayed with channel info.
         await SavedMessagesScreen.toBeVisible();
         const {postListPostItem: savedMessagesPostListPostItem, postListPostItemChannelInfoChannelDisplayName, postListPostItemChannelInfoTeamDisplayName} = SavedMessagesScreen.getPostListPostItem(post.id, message);
-        await waitFor(savedMessagesPostListPostItem).toExist().withTimeout(timeouts.TEN_SEC);
+        await SavedMessagesScreen.waitForPostInList(post.id, message);
         await expect(postListPostItemChannelInfoChannelDisplayName).toHaveText(testChannel.display_name);
         await expect(postListPostItemChannelInfoTeamDisplayName).toHaveText(testTeam.display_name);
 
@@ -207,7 +207,7 @@ describe('Search - Saved Messages', () => {
         await PostOptionsScreen.unsavePostOption.tap();
 
         // * Verify saved message is not displayed anymore
-        await SavedMessagesScreen.verifyPostUnsaved(savedPost.id, message);
+        await SavedMessagesScreen.verifyPostUnsaved(savedPost.id);
 
         // # Go back to channel list screen
         await SavedMessagesScreen.close();

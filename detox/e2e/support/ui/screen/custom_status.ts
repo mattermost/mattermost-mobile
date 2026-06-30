@@ -137,10 +137,25 @@ class CustomStatusScreen {
             try {
                 await waitFor(AccountScreen.setStatusOption).toBeVisible().withTimeout(timeouts.TWO_SEC);
             } catch {
-                try {
-                    await element(by.id('account.scroll_view')).scroll(150, 'down', 0.5, 0.5);
-                } catch { /* scroll_view fully clipped — nothing to scroll */ }
-                await waitFor(AccountScreen.setStatusOption).toBeVisible().withTimeout(timeouts.FIVE_SEC);
+                const scrollView = element(by.id('account.scroll_view'));
+                let found = false;
+                /* eslint-disable no-await-in-loop */
+                for (let i = 0; i < 5 && !found; i++) {
+                    for (const direction of ['down', 'up'] as const) {
+                        try {
+                            await scrollView.scroll(150, direction, 0.5, 0.5);
+                        } catch { /* scroll refusal */ }
+                        try {
+                            await waitFor(AccountScreen.setStatusOption).toBeVisible().withTimeout(timeouts.TWO_SEC);
+                            found = true;
+                            break;
+                        } catch { /* try opposite direction */ }
+                    }
+                }
+                /* eslint-enable no-await-in-loop */
+                if (!found) {
+                    await waitFor(AccountScreen.setStatusOption).toBeVisible().withTimeout(timeouts.FIVE_SEC);
+                }
             }
         }
         await AccountScreen.setStatusOption.tap();

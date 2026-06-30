@@ -272,7 +272,11 @@ describe('Messaging - File Preview Gallery', () => {
             await copyPublicLinkButton.tap();
 
             // fetchPublicLink is async; toast mounts after API returns (CopyPublicLink useDidMount).
-            await waitForElementToExist(element(by.id('toast.message')), timeouts.HALF_MIN);
+            // Android edge-to-edge: toast.message exists at y≈63 but fails the 15% visibility
+            // threshold in waitForElementToExist — poll by copy text instead (device.log).
+            await waitFor(element(by.text('Link copied to clipboard'))).
+                toExist().
+                withTimeout(timeouts.HALF_MIN);
         } finally {
             await safeEnableSynchronization();
         }

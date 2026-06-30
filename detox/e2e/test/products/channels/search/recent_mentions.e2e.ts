@@ -175,7 +175,7 @@ describe('Search - Recent Mentions', () => {
         await SavedMessagesScreen.open();
 
         // * Verify mention is no longer on saved messages screen.
-        await SavedMessagesScreen.verifyPostUnsaved(mentionPost.id, mentionPost.messageText);
+        await SavedMessagesScreen.verifyPostUnsaved(mentionPost.id);
 
         // # Go back to channel list screen
         await SavedMessagesScreen.close();

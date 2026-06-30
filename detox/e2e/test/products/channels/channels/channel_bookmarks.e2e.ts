@@ -579,35 +579,9 @@ describe('Channels - Channel Bookmarks', () => {
         await ChannelBookmarkScreen.waitForTitleValue('Emoji Icon Updated');
 
         // # Tap the icon button to open the emoji picker, then search and select an emoji.
-        // On Android, pending OG-fetch network requests and bottom-sheet animations keep the
-        // Detox AnimatedModuleIdlingResource busy throughout this entire flow. Disable sync
-        // for the icon tap AND the emoji search/select to avoid timeout failures.
-        if (isAndroid()) {
-            await device.disableSynchronization();
-        }
-        await element(
-            by.id('bookmark-generic-icon').
-                withAncestor(by.id('channel_bookmark.screen')),
-        ).tap();
-
-        // * Verify the emoji picker opens
-        await EmojiPickerScreen.toBeVisible();
-
-        // # Dismiss the skin-tone tooltip if it appears.
-        // Shows on first open on both Android and iOS. On iOS the tooltip renders
-        // ~3-5s after the picker mounts (post-animation), so a 2s wait races the
-        // tooltip and the test then times out on the search input which the
-        // tooltip overlay is still occluding (see CI run 26352177261 testFnFailure
-        // for MM-T5606_1).
-        try {
-            await waitFor(EmojiPickerScreen.toolTipCloseButton).
-                toBeVisible().
-                withTimeout(timeouts.TEN_SEC);
-            await EmojiPickerScreen.toolTipCloseButton.tap();
-            await wait(timeouts.ONE_SEC);
-        } catch {
-            // Tooltip did not appear — continue normally
-        }
+        // openEmojiPickerFromEditModal disables Android sync and retries the icon tap
+        // until emoji_picker.screen mounts (CI 28416284905 MM-T5606_1: search input null).
+        await ChannelBookmarkScreen.openEmojiPickerFromEditModal();
 
         // # Search and select a specific emoji.
         await waitFor(EmojiPickerScreen.searchInput).toBeVisible().withTimeout(timeouts.TEN_SEC);
@@ -714,8 +688,8 @@ describe('Channels - Channel Bookmarks', () => {
 
     it('MM-T5612_1 - should show scroll indicator when bookmarks exceed visible limit', async () => {
         const channelHeaderBookmarksList = by.id('channel_header.bookmarks.list');
-        const firstBookmarkMatcher = by.text('Scroll Bookmark 1');
-        const lastBookmarkMatcher = by.text('Scroll Bookmark 12');
+        const firstBookmarkMatcher = by.text('Scroll Bookmark 1').withAncestor(channelHeaderBookmarksList);
+        const lastBookmarkMatcher = by.text('Scroll Bookmark 12').withAncestor(channelHeaderBookmarksList);
 
         // # Navigate to the channel (12 bookmarks pre-created in beforeAll)
         await openChannel(channelT5612);
@@ -730,45 +704,61 @@ describe('Channels - Channel Bookmarks', () => {
         // iOS: swipe gesture (Detox's scroll() fails on iOS horizontal FlatList because
         //   EarlGrey requires the start point to be directly on a UIScrollView, but all
         //   coordinates are occupied by bookmark item child views).
-        // Android: use scroll() — a programmatic Espresso scroll that does not issue
-        //   touch events, so it cannot be misinterpreted as a long-press on a bookmark
-        //   item (which previously opened a bookmark action sheet mid-test, see CI run
-        //   26337780597 testFnFailure for MM-T5612_1). Poll-and-scroll via whileElement
-        //   so it stops as soon as the target bookmark is visible.
+        // Android: FlatList virtualization — bookmark 12 is not in the hierarchy until
+        //   scrolled into view. whileElement().scroll() mounts off-screen items; poll-and-
+        //   swipe is the fallback when scroll() is refused (CI 28416284905 MM-T5612_1:
+        //   12 scroll() attempts left Scroll Bookmark 12 null in hierarchy).
         if (isAndroid()) {
+            const lastBookmark = element(lastBookmarkMatcher);
             const bookmarksList = element(channelHeaderBookmarksList);
-            /* eslint-disable no-await-in-loop -- bounded scroll: whileElement can run until Jest 300s timeout */
-            for (let i = 0; i < 12; i++) {
-                try {
-                    await waitFor(element(lastBookmarkMatcher)).toExist().withTimeout(timeouts.TWO_SEC);
-                    break;
-                } catch {
-                    if (i === 11) {
-                        throw new Error('Scroll Bookmark 12 not visible after 12 scroll attempts');
-                    }
+            try {
+                await waitFor(lastBookmark).
+                    toExist().
+                    whileElement(channelHeaderBookmarksList).
+                    scroll(300, 'right');
+            } catch {
+                /* eslint-disable no-await-in-loop -- bounded scroll: stops as soon as target is found */
+                for (let i = 0; i < 12; i++) {
                     try {
-                        await bookmarksList.scroll(300, 'right');
+                        await waitFor(lastBookmark).toExist().withTimeout(timeouts.TWO_SEC);
+                        break;
                     } catch {
-                        await bookmarksList.swipe('left', 'fast', 0.8, 0.7, 0.3);
+                        if (i === 11) {
+                            throw new Error('Scroll Bookmark 12 not found after whileElement + 12 swipe attempts');
+                        }
+                        try {
+                            await bookmarksList.scroll(300, 'right');
+                        } catch {
+                            await element(firstBookmarkMatcher).swipe('left', 'fast', 0.8, 0.7, 0.3);
+                        }
                     }
                 }
+                /* eslint-enable no-await-in-loop */
             }
-            for (let i = 0; i < 12; i++) {
-                try {
-                    await waitFor(element(firstBookmarkMatcher)).toExist().withTimeout(timeouts.TWO_SEC);
-                    break;
-                } catch {
-                    if (i === 11) {
-                        throw new Error('Scroll Bookmark 1 not visible after scrolling back');
-                    }
+            try {
+                await waitFor(element(firstBookmarkMatcher)).
+                    toExist().
+                    whileElement(channelHeaderBookmarksList).
+                    scroll(300, 'left');
+            } catch {
+                /* eslint-disable no-await-in-loop -- bounded scroll: stops as soon as target is found */
+                for (let i = 0; i < 12; i++) {
                     try {
-                        await bookmarksList.scroll(300, 'left');
+                        await waitFor(element(firstBookmarkMatcher)).toExist().withTimeout(timeouts.TWO_SEC);
+                        break;
                     } catch {
-                        await bookmarksList.swipe('right', 'fast', 0.8, 0.3, 0.7);
+                        if (i === 11) {
+                            throw new Error('Scroll Bookmark 1 not found after scrolling back');
+                        }
+                        try {
+                            await bookmarksList.scroll(300, 'left');
+                        } catch {
+                            await lastBookmark.swipe('right', 'fast', 0.8, 0.3, 0.7);
+                        }
                     }
                 }
+                /* eslint-enable no-await-in-loop */
             }
-            /* eslint-enable no-await-in-loop */
         } else {
             // iOS: Detox scroll() fails on horizontal FlatLists (EarlGrey requires
             //   the start point on the UIScrollView, but bookmark children occupy

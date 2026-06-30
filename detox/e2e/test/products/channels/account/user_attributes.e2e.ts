@@ -25,7 +25,7 @@ import {
     seedUserAttributeValues,
     type UserAttributesFieldIds,
 } from '@support/user_attributes_test_helper';
-import {isAndroid, timeouts, wait} from '@support/utils';
+import {isAndroid, safeEnableSynchronization, timeouts, wait, waitForElementToExist} from '@support/utils';
 import {expect, waitFor} from 'detox';
 
 describe('Account - User Attributes', () => {
@@ -64,6 +64,12 @@ describe('Account - User Attributes', () => {
             return;
         }
 
+        // Prior describes in this shard log in before provision enables
+        // FeatureFlagCustomProfileAttributes — relaunch so login picks up the flag.
+        await device.launchApp({
+            newInstance: true,
+            ...(device.getPlatform() === 'ios' ? {permissions: {notifications: 'YES'}} : {}),
+        });
         await ServerScreen.connectToServer(serverOneUrl, serverOneDisplayName);
         await LoginScreen.login(testUser);
         await ChannelListScreen.waitForSidebarPublicChannelDisplayNameVisible(testChannel.name);
@@ -88,9 +94,13 @@ describe('Account - User Attributes', () => {
         await wait(timeouts.TWO_SEC);
         await EditProfileScreen.toBeVisible();
 
-        await waitFor(element(by.id(`edit_profile_form.customAttributes.${fieldId0}.input`))).
-            toExist().
-            withTimeout(timeouts.TWENTY_SEC);
+        const firstCustomAttrInput = element(by.id(`edit_profile_form.customAttributes.${fieldId0}.input`));
+        await device.disableSynchronization();
+        try {
+            await waitForElementToExist(firstCustomAttrInput, timeouts.TWENTY_SEC);
+        } finally {
+            await safeEnableSynchronization();
+        }
 
         if (isAndroid()) {
             const scrollView = element(by.id(EditProfileScreen.testID.scrollView));
@@ -159,22 +169,27 @@ describe('Account - User Attributes', () => {
         const scrollCustomAttributeIntoView = async (fieldId: string) => {
             const titleEl = element(by.id(`custom_attribute.${fieldId}.title`));
             const scrollView = element(by.id('user_profile.scroll_view'));
-            /* eslint-disable no-await-in-loop */
-            for (let attempt = 0; attempt < 15; attempt++) {
-                try {
-                    await waitFor(titleEl).toExist().withTimeout(timeouts.TWO_SEC);
-                    return titleEl;
-                } catch {
+            await device.disableSynchronization();
+            try {
+                /* eslint-disable no-await-in-loop */
+                for (let attempt = 0; attempt < 15; attempt++) {
                     try {
-                        await scrollView.scroll(200, 'down');
+                        await waitForElementToExist(titleEl, timeouts.TWO_SEC);
+                        return titleEl;
                     } catch {
-                        await UserProfileScreen.sendMessageProfileOption.swipe('up', 'slow', 0.5);
+                        try {
+                            await scrollView.scroll(200, 'down');
+                        } catch {
+                            await UserProfileScreen.sendMessageProfileOption.swipe('up', 'slow', 0.5);
+                        }
+                        await wait(timeouts.HALF_SEC);
                     }
-                    await wait(timeouts.HALF_SEC);
                 }
+                /* eslint-enable no-await-in-loop */
+                await waitForElementToExist(titleEl, timeouts.TEN_SEC);
+            } finally {
+                await safeEnableSynchronization();
             }
-            /* eslint-enable no-await-in-loop */
-            await waitFor(titleEl).toExist().withTimeout(timeouts.TEN_SEC);
             return titleEl;
         };
 

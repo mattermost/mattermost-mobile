@@ -2,7 +2,7 @@
 // See LICENSE.txt for license information.
 
 import {ChannelListScreen} from '@support/ui/screen';
-import {isAndroid, safeEnableSynchronization, timeouts} from '@support/utils';
+import {timeouts, wait, waitForElementToExist} from '@support/utils';
 import {expect, waitFor} from 'detox';
 
 class BrowseChannelsScreen {
@@ -64,20 +64,13 @@ class BrowseChannelsScreen {
 
         // # Open browse channels screen from the channel list header plus button.
         await ChannelListScreen.openPlusMenu();
+        await ChannelListScreen.browseChannelsItem.tap();
+        await wait(timeouts.ONE_SEC);
 
-        const disableSyncForOpen = isAndroid();
-        if (disableSyncForOpen) {
-            await device.disableSynchronization();
-        }
-        try {
-            await ChannelListScreen.browseChannelsItem.tap();
-        } finally {
-            if (disableSyncForOpen) {
-                await safeEnableSynchronization();
-            }
-        }
+        // openPlusMenu disables sync on Android; wait for the screen before returning.
+        await waitForElementToExist(this.browseChannelsScreen, timeouts.TWENTY_SEC);
 
-        return this.toBeVisible();
+        return this.browseChannelsScreen;
     };
 
     close = async () => {

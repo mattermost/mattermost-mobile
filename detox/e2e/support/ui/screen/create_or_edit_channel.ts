@@ -7,7 +7,7 @@ import {
     ChannelListScreen,
     ChannelSettingsScreen,
 } from '@support/ui/screen';
-import {isIos, tapNativeBackButton, timeouts, waitForElementToBeVisible, waitForElementToNotExist} from '@support/utils';
+import {isAndroid, isIos, tapNativeBackButton, timeouts, wait, waitForElementToBeVisible} from '@support/utils';
 import {expect, waitFor} from 'detox';
 
 class CreateOrEditChannelScreen {
@@ -97,8 +97,46 @@ class CreateOrEditChannelScreen {
     };
 
     save = async () => {
+        if (isAndroid()) {
+            try {
+                await device.pressBack();
+            } catch {
+                // Keyboard may already be hidden.
+            }
+            await wait(timeouts.HALF_SEC);
+        }
+
         await this.saveButton.tap();
-        await waitForElementToNotExist(this.createOrEditChannelScreen, timeouts.HALF_MIN);
+
+        // Save dismisses the form but can leave an empty create_or_edit_channel.screen
+        // shell (child-count=0) that blocks not.toExist for 30s — wait for destination.
+        const channelInfoScreen = element(by.id('channel_info.screen'));
+        const channelSettingsScreen = element(by.id('channel_settings.screen'));
+        const startTime = Date.now();
+        /* eslint-disable no-await-in-loop */
+        while (Date.now() - startTime < timeouts.HALF_MIN) {
+            try {
+                await expect(channelInfoScreen).toExist();
+                return;
+            } catch {
+                /* not on channel info yet */
+            }
+            try {
+                await expect(channelSettingsScreen).toExist();
+                return;
+            } catch {
+                /* not on channel settings yet */
+            }
+            try {
+                await expect(this.saveButton).not.toExist();
+                return;
+            } catch {
+                await wait(timeouts.HALF_SEC);
+            }
+        }
+        /* eslint-enable no-await-in-loop */
+
+        throw new Error('save: edit channel screen did not dismiss after save');
     };
 
     toggleMakePrivateOn = async () => {

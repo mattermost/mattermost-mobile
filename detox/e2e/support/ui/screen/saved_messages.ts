@@ -72,9 +72,36 @@ class SavedMessagesScreen {
         await wait(timeouts.TWO_SEC);
     };
 
+    // Poll for a saved post row, refreshing the tab when the fetch lags (CI
+    // 28416284905 MM-T4910_2: row missing after 10s despite a successful save).
+    waitForPostInList = async (postId: string, text: string) => {
+        const {postListPostItem} = this.getPostListPostItem(postId, text);
+        const MAX_REFETCHES = 3;
+
+        /* eslint-disable no-await-in-loop -- poll before each tab refresh */
+        for (let attempt = 1; attempt <= MAX_REFETCHES; attempt++) {
+            try {
+                await waitFor(postListPostItem).toExist().withTimeout(timeouts.TEN_SEC);
+                return;
+            } catch (e) {
+                if (attempt === MAX_REFETCHES) {
+                    throw e;
+                }
+
+                await HomeScreen.channelListTab.tap();
+                await wait(timeouts.ONE_SEC);
+                await HomeScreen.savedMessagesTab.tap();
+                await this.toBeVisible();
+            }
+        }
+        /* eslint-enable no-await-in-loop */
+    };
+
     ensurePostVisible = async (postId: string, text: string) => {
         const {postListPostItem} = this.getPostListPostItem(postId, text);
         const flatList = this.postList.getFlatList();
+
+        await this.waitForPostInList(postId, text);
 
         try {
             await flatList.scrollTo('top');
@@ -103,18 +130,20 @@ class SavedMessagesScreen {
         await wait(timeouts.ONE_SEC);
     };
 
-    verifyPostUnsaved = async (postId: string, text: string) => {
-        const postWithText = element(
-            by.id(`${this.postList.testID.postListPostItem}.${postId}`).withDescendant(by.text(text)),
-        );
-        const deadline = Date.now() + timeouts.HALF_MIN;
+    verifyPostUnsaved = async (postId: string) => {
+        const postListPostItem = element(by.id(`${this.postList.testID.postListPostItem}.${postId}`));
+        const MAX_REFETCHES = 3;
 
-        /* eslint-disable no-await-in-loop -- poll until unsave propagates or tab refresh exhausts retries */
-        while (Date.now() < deadline) {
+        /* eslint-disable no-await-in-loop -- poll for row removal before each tab refresh */
+        for (let attempt = 1; attempt <= MAX_REFETCHES; attempt++) {
             try {
-                await expect(postWithText).not.toExist();
+                await waitFor(postListPostItem).not.toExist().withTimeout(timeouts.TEN_SEC);
                 return;
-            } catch {
+            } catch (e) {
+                if (attempt === MAX_REFETCHES) {
+                    throw e;
+                }
+
                 await HomeScreen.channelListTab.tap();
                 await wait(timeouts.ONE_SEC);
                 await HomeScreen.savedMessagesTab.tap();
@@ -122,7 +151,6 @@ class SavedMessagesScreen {
             }
         }
         /* eslint-enable no-await-in-loop */
-        await expect(postWithText).not.toExist();
     };
 
     hasPostMessage = async (postId: string, postMessage: string) => {

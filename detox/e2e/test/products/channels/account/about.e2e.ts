@@ -20,8 +20,8 @@ import {
     ServerScreen,
     SettingsScreen,
 } from '@support/ui/screen';
-import {isAndroid, isIos, timeouts, wait} from '@support/utils';
-import {expect, waitFor} from 'detox';
+import {isAndroid, isIos, safeEnableSynchronization, timeouts, wait, waitForElementToExist} from '@support/utils';
+import {expect} from 'detox';
 
 /** Mirrors app/utils/subscription getSkuDisplayName for E2E learn-more expectations */
 const getSkuDisplayNameForTest = (skuShortName: string, isGovSku: boolean): string => {
@@ -150,59 +150,27 @@ describe('Account - Settings - About', () => {
             await expect(AboutScreen.licenseLoadMetricTitle).not.toBeVisible();
         }
 
-        // Scroll to footer elements with a bounded retry — unbounded whileElement scroll
-        // can hang until the 240s test timeout on Android when elements are off-screen.
-        const scrollToAboutElement = async (target: Detox.IndexableNativeElement) => {
-            const scrollView = element(by.id(AboutScreen.testID.scrollView));
+        const scrollView = element(by.id(AboutScreen.testID.scrollView));
+        await scrollView.scrollTo('bottom');
+        await wait(timeouts.ONE_SEC);
 
-            // iOS nested Text (learnMoreUrl) cannot be scrolled into view via incremental
-            // scroll — RCTEnhancedScrollView throws once the scroll view hits its end.
+        // Footer is on-screen but Detox waitFor never idles (AsyncStorageModule spam in CI).
+        // Poll with sync disabled — device.log shows about.learn_more.text is already visible.
+        await device.disableSynchronization();
+        try {
             if (isIos()) {
-                await scrollView.scrollTo('bottom');
+                // FormattedText splits learn-more copy; match the stable prefix instead of exact text.
+                await waitForElementToExist(
+                    element(by.text(new RegExp('Learn more about Mattermost', 'i'))),
+                    timeouts.TEN_SEC,
+                );
+            } else {
+                await waitForElementToExist(AboutScreen.learnMoreText, timeouts.TEN_SEC);
+            }
+        } finally {
+            await safeEnableSynchronization();
+        }
 
-                // Nested Text testIDs are not exposed on iOS — poll by visible prefix text instead.
-                await waitFor(element(by.text(expectedLearnMorePrefix.trim()))).
-                    toExist().
-                    withTimeout(timeouts.TEN_SEC);
-                return;
-            }
-
-            // On Android edge-to-edge, footer elements can be in the ScrollView hierarchy
-            // but render with <50% visible area (system bar insets). scrollTo('bottom') can
-            // loop until timeout when content already fits the viewport (MM-T5104).
-            try {
-                await waitFor(target).toExist().withTimeout(timeouts.THREE_SEC);
-                return;
-            } catch {
-                /* need incremental scroll */
-            }
-            try {
-                await scrollView.scroll(400, 'down');
-            } catch {
-                // Already at scroll end
-            }
-            await wait(timeouts.ONE_SEC);
-            const assertPresent = async () => waitFor(target).toExist().withTimeout(timeouts.TWO_SEC);
-            /* eslint-disable no-await-in-loop -- bounded scroll retry */
-            for (let attempt = 0; attempt < 12; attempt++) {
-                try {
-                    await assertPresent();
-                    return;
-                } catch {
-                    try {
-                        await scrollView.scroll(150, 'down');
-                    } catch {
-                        // Already at scroll end
-                    }
-                }
-            }
-            /* eslint-enable no-await-in-loop */
-            await waitFor(target).toExist().withTimeout(timeouts.TEN_SEC);
-        };
-
-        // Nested Text testIDs (learnMoreUrl) are not exposed to Espresso on Android;
-        // on iOS nested Text is also unreliable for scroll-into-view — use learnMoreText.
-        await scrollToAboutElement(AboutScreen.learnMoreText);
         if (isAndroid()) {
             await expect(AboutScreen.learnMoreText).toExist();
             await expect(element(by.text('https://mattermost.com'))).toExist();
@@ -216,23 +184,7 @@ describe('Account - Settings - About', () => {
         await expect(AboutScreen.privacyPolicy).toHaveText('Privacy Policy');
         await expect(AboutScreen.noticeText).toHaveText('Mattermost is made possible by the open source software used in our server and mobile apps.');
 
-        // Footer fields — avoid scrollTo('bottom') on Android when footer is already on screen.
-        const scrollView = element(by.id(AboutScreen.testID.scrollView));
-        if (isAndroid()) {
-            try {
-                await waitFor(AboutScreen.buildDateTitle).toExist().withTimeout(timeouts.THREE_SEC);
-            } catch {
-                try {
-                    await scrollView.scroll(400, 'down');
-                } catch {
-                    // Already at scroll end
-                }
-                await wait(timeouts.ONE_SEC);
-            }
-        } else {
-            await scrollView.scrollTo('bottom');
-            await wait(timeouts.ONE_SEC);
-        }
+        // buildDateTitle is already in view after scrollTo('bottom') above.
         await expect(AboutScreen.buildHashTitle).toHaveText('Build Hash:');
         await expect(AboutScreen.buildHashValue).toExist();
         await expect(AboutScreen.buildHashEnterpriseTitle).toHaveText('EE Build Hash:');

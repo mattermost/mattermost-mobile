@@ -191,7 +191,7 @@ describe('Account - Custom Status', () => {
         await openEmojiPickerForDefault();
         await EmojiPickerScreen.searchInput.replaceText(customEmojiName);
         await EmojiPickerScreen.searchInput.tapReturnKey();
-        await EmojiPickerScreen.tapSearchResultEmoji('🤡', 'clown_face');
+        await element(by.text('🤡')).tap();
         await wait(timeouts.ONE_SEC);
         await CustomStatusScreen.statusInput.replaceText(customStatusText);
         await CustomStatusScreen.doneButton.tap();
@@ -387,7 +387,7 @@ describe('Account - Custom Status', () => {
         await openEmojiPickerForDefault();
         await EmojiPickerScreen.searchInput.replaceText(customEmojiName);
         await EmojiPickerScreen.searchInput.tapReturnKey();
-        await EmojiPickerScreen.tapSearchResultEmoji('🤡', 'clown_face');
+        await element(by.text('🤡')).tap();
         await wait(timeouts.ONE_SEC);
         await CustomStatusScreen.statusInput.replaceText(customStatusText);
         await CustomStatusScreen.doneButton.tap();

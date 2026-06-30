@@ -170,7 +170,7 @@ describe('Search - Search Message Post Actions', () => {
         await SavedMessagesScreen.open();
 
         // * Verify searched message is not displayed anymore on saved messages screen.
-        await SavedMessagesScreen.verifyPostUnsaved(searchedPost.id, message);
+        await SavedMessagesScreen.verifyPostUnsaved(searchedPost.id);
 
         // # Go back to searched messages screen, clear search input, remove recent search item, and go back to channel list screen
         await SearchMessagesScreen.open();

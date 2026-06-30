@@ -1,7 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {safeEnableSynchronization, timeouts, waitForElementToExist, waitForElementToNotExist} from '@support/utils';
+import {isAndroid, safeEnableSynchronization, timeouts, wait, waitForElementToExist, waitForElementToNotExist} from '@support/utils';
 import {waitFor} from 'detox';
 
 class ChannelBookmarkScreen {
@@ -13,6 +13,10 @@ class ChannelBookmarkScreen {
         linkLoading: 'channel_bookmark_add.link.loading',
         linkInputDescription: 'channel_bookmark_add.link.input.description',
         titleInput: 'channel_bookmark.add.title.input',
+        bookmarkGenericIcon: 'bookmark-generic-icon',
+        emojiPickerScreen: 'emoji_picker.screen',
+        emojiPickerSearchInput: 'emoji_picker.search_bar.search.input',
+        emojiPickerToolTipCloseButton: 'skin_selector.tooltip.close.button',
     };
 
     channelBookmarkScreen = element(by.id(this.testID.channelBookmarkScreen));
@@ -116,6 +120,49 @@ class ChannelBookmarkScreen {
         await waitForElementToExist(this.channelBookmarkScreen, timeouts.TEN_SEC);
         await waitForElementToExist(this.linkInput, timeouts.TEN_SEC);
         return this.channelBookmarkScreen;
+    };
+
+    getEditModalIconButton = () => element(
+        by.id(this.testID.bookmarkGenericIcon).
+            withAncestor(by.id(this.testID.channelBookmarkScreen)),
+    );
+
+    // CI 28416284905 MM-T5606_1: icon tap + EmojiPickerScreen.toBeVisible() timed out
+    // with search input null — bottom-sheet animation / sync still busy on Android.
+    openEmojiPickerFromEditModal = async () => {
+        const iconButton = this.getEditModalIconButton();
+        const emojiPickerScreen = element(by.id(this.testID.emojiPickerScreen));
+        const searchInput = element(by.id(this.testID.emojiPickerSearchInput));
+        const toolTipCloseButton = element(by.id(this.testID.emojiPickerToolTipCloseButton));
+
+        if (isAndroid()) {
+            await device.disableSynchronization();
+        }
+
+        /* eslint-disable no-await-in-loop -- retry icon tap until picker mounts */
+        for (let attempt = 0; attempt < 3; attempt++) {
+            await iconButton.tap();
+            await wait(timeouts.TWO_SEC);
+            try {
+                await waitFor(emojiPickerScreen).toExist().withTimeout(timeouts.FIVE_SEC);
+                break;
+            } catch (error) {
+                if (attempt === 2) {
+                    throw error;
+                }
+            }
+        }
+        /* eslint-enable no-await-in-loop */
+
+        try {
+            await waitFor(toolTipCloseButton).toBeVisible().withTimeout(timeouts.TEN_SEC);
+            await toolTipCloseButton.tap();
+            await wait(timeouts.ONE_SEC);
+        } catch {
+            // Skin-tone tooltip may not appear.
+        }
+
+        await waitFor(searchInput).toExist().withTimeout(timeouts.TWENTY_SEC);
     };
 
     close = async () => {

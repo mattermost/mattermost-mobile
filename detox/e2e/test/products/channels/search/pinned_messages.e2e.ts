@@ -284,7 +284,7 @@ describe('Search - Pinned Messages', () => {
         await wait(timeouts.TWO_SEC);
 
         // * Verify pinned message is not displayed anymore on saved messages screen.
-        await SavedMessagesScreen.verifyPostUnsaved(pinnedPost.id, message);
+        await SavedMessagesScreen.verifyPostUnsaved(pinnedPost.id);
 
         // # Go back to channel list screen
         await ChannelListScreen.open();

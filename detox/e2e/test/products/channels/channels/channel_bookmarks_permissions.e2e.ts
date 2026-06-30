@@ -200,17 +200,13 @@ describe('Channels - Channel Bookmarks Permissions', () => {
         await ChannelSettingsScreen.toBeVisible();
         await ChannelSettingsScreen.archivePublicChannel({confirm: true});
 
+        // # Return to the channel screen — channel_info may still cover the channel view
+        // after settings auto-dismisses on archive, so post_draft.archived never mounts in
+        // the visible hierarchy (CI 28416284905 MM-T5725_1: toExist null for 20s). Same
+        // close-after-archive pattern as unarchive_channel.e2e.ts MM-T4944_1.
+        await ChannelInfoScreen.close();
+
         // * Verify channel is archived (draft area shows archived state).
-        // Poll for the archived banner's *existence* (not visibility): on Android the
-        // banner can be mounted in the hierarchy while not yet "effectively VISIBLE"
-        // during the archive WebSocket event propagation, which makes Espresso's
-        // onView (testID + effective visibility VISIBLE) return null and causes
-        // `waitForElementToExist` — which on Android delegates to `toBeVisible(15)`
-        // (see detox/e2e/support/utils/index.ts waitForElementToExist) — to time out.
-        // device.log 28392181656 MM-T5725_1 shows `Got: was null` repeated for the
-        // full 10s. `toExist()` only checks hierarchy presence, so it passes as soon
-        // as the banner mounts. TWENTY_SEC covers the archive WS round-trip on slow
-        // CI (matches the previous iOS branch, which already used 20s).
         await waitFor(ChannelScreen.postDraftArchived).toExist().withTimeout(timeouts.TWENTY_SEC);
 
         // * Verify the bookmark no longer exists anywhere in the channel view.
