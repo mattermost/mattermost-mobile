@@ -96,4 +96,22 @@ describe('ClientAgents', () => {
             );
         });
     });
+
+    describe('doLoopInAgent', () => {
+        it('should make correct API call with the bot username in the query', async () => {
+            await client.doLoopInAgent('post-123', 'ai-bot');
+            expect(mockDoFetch).toHaveBeenCalledWith(
+                '/plugins/mattermost-ai/post/post-123/loop_in_agent?botUsername=ai-bot',
+                {method: 'post'},
+            );
+        });
+
+        it('should percent-encode a bot username that needs encoding', async () => {
+            await client.doLoopInAgent('post-123', 'my bot');
+            expect(mockDoFetch).toHaveBeenCalledWith(
+                '/plugins/mattermost-ai/post/post-123/loop_in_agent?botUsername=my%20bot',
+                {method: 'post'},
+            );
+        });
+    });
 });

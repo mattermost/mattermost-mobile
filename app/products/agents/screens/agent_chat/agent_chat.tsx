@@ -10,9 +10,9 @@ import {SafeAreaView, useSafeAreaInsets, type Edge} from 'react-native-safe-area
 
 import {createDirectChannel} from '@actions/remote/channel';
 import {buildAbsoluteUrl} from '@actions/remote/file';
-import {fetchAndSwitchToThread} from '@actions/remote/thread';
 import {buildProfileImageUrl} from '@actions/remote/user';
 import {fetchAIBots} from '@agents/actions/remote/bots';
+import AgentChatPostList from '@agents/screens/agent_chat/agent_chat_post_list';
 import BotSelectorItem from '@agents/screens/agent_chat/bot_selector_item';
 import {goToAgentThreadsList} from '@agents/screens/navigation';
 import {KeyboardAwarePostDraftContainer} from '@components/keyboard_aware_post_draft_container';
@@ -69,6 +69,12 @@ const AgentChat = ({bots}: Props) => {
     const [error, setError] = useState<string | null>(null);
     const [channelId, setChannelId] = useState<string | null>(null);
     const [containerHeight, setContainerHeight] = useState(0);
+
+    // Root post id of the in-context conversation. Null until the user sends
+    // the first message, which becomes the conversation root; subsequent
+    // messages thread under it and render inline. Mirrors web's ephemeral
+    // selectedPostId on the RHS.
+    const [rootId, setRootId] = useState<string | null>(null);
 
     const tabBarHeight = isTablet ? BOTTOM_TAB_HEIGHT : 0;
     const marginTop = defaultHeight + (isTablet ? 0 : -insets.top);
@@ -168,6 +174,12 @@ const AgentChat = ({bots}: Props) => {
 
     const handleBotSelect = useCallback((bot: AiBotModel) => {
         setSelectedBot(bot);
+
+        // Switching bots starts a fresh conversation against the new bot's DM.
+        // Clear the channel immediately too, so a fast send can't post into the
+        // previous bot's DM before the new channel resolves.
+        setRootId(null);
+        setChannelId(null);
         dismissBottomSheet();
     }, []);
 
@@ -209,8 +221,11 @@ const AgentChat = ({bots}: Props) => {
     }, []);
 
     const handlePostCreated = useCallback((postId: string) => {
-        fetchAndSwitchToThread(serverUrl, postId);
-    }, [serverUrl]);
+        // The first message becomes the conversation root and the inline list
+        // begins rendering it; later messages are already replies (PostDraft
+        // gets rootId), so keep the existing root rather than navigating away.
+        setRootId((current) => current ?? postId);
+    }, []);
 
     return (
         <SafeAreaView
@@ -234,16 +249,19 @@ const AgentChat = ({bots}: Props) => {
                 <KeyboardAwarePostDraftContainer
                     textInputNativeID={AGENT_CHAT_INPUT_NATIVE_ID}
                     containerStyle={[styles.flex, {marginTop}]}
-                    renderList={() => (
+                    renderList={() => (rootId ? (
+                        <AgentChatPostList rootId={rootId}/>
+                    ) : (
                         <AgentChatContent
                             loading={loading && bots.length === 0}
                             error={error}
                         />
-                    )}
+                    ))}
                 >
                     {channelId ? (
                         <PostDraft
                             channelId={channelId}
+                            rootId={rootId ?? undefined}
                             testID={AGENT_CHAT_TESTID}
                             containerHeight={containerHeight}
                             isChannelScreen={false}

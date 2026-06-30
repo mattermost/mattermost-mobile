@@ -15,6 +15,15 @@ export function isAgentPost(post: PostModel | Post): boolean {
 }
 
 /**
+ * Check if a post is an agent @mention reminder post (an interactive "loop in
+ * the agent" hint). Distinct from isAgentPost so it routes to its own renderer,
+ * not the streaming AgentPost.
+ */
+export function isAgentMentionReminderPost(post: PostModel | Post): boolean {
+    return post.type === AGENT_POST_TYPES.AGENT_MENTION_REMINDER;
+}
+
+/**
  * Check if the current user is the requester of an agent post
  * @param post The agent post
  * @param currentUserId The current user ID
