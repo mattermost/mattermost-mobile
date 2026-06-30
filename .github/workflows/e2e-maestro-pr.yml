@@ -133,7 +133,7 @@ jobs:
         env:
           COMMIT_SHA: ${{ inputs.MOBILE_VERSION }}
           STATUS: ${{ (needs.run-maestro-ios.result == 'skipped' && 'failure') || needs.run-maestro-ios.outputs.STATUS || 'failure' }}
-          TARGET_URL: ${{ needs.run-maestro-ios.outputs.TARGET_URL }}
+          TARGET_URL: ${{ needs.run-maestro-ios.outputs.TARGET_URL || format('{0}/{1}/actions/runs/{2}', github.server_url, github.repository, github.run_id) }}
           DESCRIPTION: >-
             ${{ needs.run-maestro-ios.result == 'skipped' && 'Build failed — Maestro iOS tests did not run'
               || needs.run-maestro-ios.outputs.FAILURES == '-1' && 'All test machines failed before producing results'
@@ -167,7 +167,7 @@ jobs:
         env:
           COMMIT_SHA: ${{ inputs.MOBILE_VERSION }}
           STATUS: ${{ (needs.run-maestro-android.result == 'skipped' && 'failure') || needs.run-maestro-android.outputs.STATUS || 'failure' }}
-          TARGET_URL: ${{ needs.run-maestro-android.outputs.TARGET_URL }}
+          TARGET_URL: ${{ needs.run-maestro-android.outputs.TARGET_URL || format('{0}/{1}/actions/runs/{2}', github.server_url, github.repository, github.run_id) }}
           DESCRIPTION: >-
             ${{ needs.run-maestro-android.result == 'skipped' && 'Build failed — Maestro Android tests did not run'
               || needs.run-maestro-android.outputs.FAILURES == '-1' && 'All test machines failed before producing results'
