@@ -199,6 +199,35 @@ export const apiCreatePostWithImageAttachment = async (baseUrl: string, channelI
     return {post, fileId};
 };
 
+// ponytail: poll server flagged-posts index until post appears.
+// CI 28476574698/28485624548: saved messages list never shows post after save —
+// server-side flagged-posts index has a delay. Poll the API directly to wait
+// for the index to catch up before checking the UI.
+// Fixes E2E: MM-T4910_2/3/4/5, MM-T4909_4, MM-T4918_5, MM-T5294_11.
+export const apiGetFlaggedPosts = async (baseUrl: string, userId: string): Promise<{order: string[]; posts: Record<string, any>}> => {
+    try {
+        const response = await client.get(`${baseUrl}/api/v4/users/${userId}/posts/flagged`);
+        return {order: response.data?.order || [], posts: response.data?.posts || {}};
+    } catch {
+        return {order: [], posts: {}};
+    }
+};
+
+export const waitForPostFlagged = async (baseUrl: string, userId: string, postId: string, maxAttempts = 10): Promise<void> => {
+    /* eslint-disable no-await-in-loop -- poll until post appears in flagged index */
+    for (let i = 0; i < maxAttempts; i++) {
+        const {order} = await apiGetFlaggedPosts(baseUrl, userId);
+        if (order.includes(postId)) {
+            return;
+        }
+        if (i < maxAttempts - 1) {
+            await wait(2000);
+        }
+    }
+    /* eslint-enable no-await-in-loop */
+    throw new Error(`Post ${postId} not flagged after ${maxAttempts} attempts`);
+};
+
 export const Post = {
     apiCreatePost,
     apiCreatePostWithImageAttachment,
@@ -207,6 +236,8 @@ export const Post = {
     apiPinPost,
     apiPatchPost,
     apiUploadFileToChannel,
+    apiGetFlaggedPosts,
+    waitForPostFlagged,
 };
 
 export default Post;

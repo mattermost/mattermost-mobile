@@ -29,7 +29,7 @@ import {
     ServerScreen,
     ThreadScreen,
 } from '@support/ui/screen';
-import {getRandomId, timeouts, wait, waitForElementToBeVisible} from '@support/utils';
+import {getRandomId, timeouts, waitForElementToBeVisible} from '@support/utils';
 import {expect} from 'detox';
 
 describe('Search - Saved Messages', () => {
@@ -38,11 +38,13 @@ describe('Search - Saved Messages', () => {
     const savedText = 'Saved';
     let testChannel: any;
     let testTeam: any;
+    let testUser: any;
 
     beforeAll(async () => {
         const {channel, team, user} = await Setup.apiInit(siteOneUrl);
         testChannel = channel;
         testTeam = team;
+        testUser = user;
 
         // # Log in to server
         await ServerScreen.connectToServer(serverOneUrl, serverOneDisplayName);
@@ -83,11 +85,11 @@ describe('Search - Saved Messages', () => {
         await ChannelScreen.openPostOptionsFor(post.id, message);
         await PostOptionsScreen.savePostOption.tap();
 
-        // ponytail: increased wait 2s→5s. CI 28476574698: server flagged-posts
-        // index lags behind preference save. Extra time lets the index catch up
-        // before navigating to saved messages. Fixes E2E: MM-T4910_2.
-        // Revert if CI shows regression.
-        await wait(timeouts.FIVE_SEC);
+        // ponytail: poll server flagged-posts index until post appears.
+        // CI 28476574698/28485624548: fixed 5s wait insufficient — server
+        // index lag varies. Poll API directly (10 attempts × 2s = 20s max).
+        // Fixes E2E: MM-T4910_2.
+        await Post.waitForPostFlagged(siteOneUrl, testUser.id, post.id);
 
         // * Verify saved text is displayed on the post pre-header
         const {postListPostItemPreHeaderText} = ChannelScreen.getPostListPostItem(post.id, message);
@@ -129,9 +131,8 @@ describe('Search - Saved Messages', () => {
         await ChannelScreen.openPostOptionsFor(savedPost.id, message);
         await PostOptionsScreen.savePostOption.tap();
 
-        // ponytail: increased wait 2s→5s (same server index lag as MM-T4910_2).
-        // Revert if CI shows regression.
-        await wait(timeouts.FIVE_SEC);
+        // ponytail: poll server flagged-posts index (same as MM-T4910_2).
+        await Post.waitForPostFlagged(siteOneUrl, testUser.id, savedPost.id);
         await ChannelScreen.back();
         await SavedMessagesScreen.open();
 
