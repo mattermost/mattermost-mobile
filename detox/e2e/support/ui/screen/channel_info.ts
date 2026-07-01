@@ -255,54 +255,45 @@ class ChannelInfoScreen {
     tapAddBookmark = async () => {
         await this.scrollToBookmarks();
 
-        // CI 28495858512: button exists and is VISIBLE but getGlobalVisibleRect
-        // covers <15% — partially clipped by scroll view edge. Use toExist()
-        // instead of toBeVisible(15) so the tap succeeds even when the button
-        // is at the scroll boundary.
+        // CI 28495858512/28514502897: button exists and is VISIBLE but
+        // getGlobalVisibleRect covers <75% — partially clipped by scroll view
+        // edge. Use toExist() to find it, then scroll into 75% visibility for
+        // tap() which Detox requires on both platforms.
         const addBookmark = element(by.id('channel_info.add_bookmark.button'));
+        const scrollViewMatcher = by.id(this.testID.scrollView);
 
-        if (isAndroid()) {
-            try {
-                await waitFor(addBookmark).toExist().whileElement(by.id(this.testID.scrollView)).scroll(150, 'down');
-            } catch {
-                /* eslint-disable no-await-in-loop -- bounded scroll: stops when row exists */
-                for (let i = 0; i < 15; i++) {
-                    try {
-                        await waitFor(addBookmark).toExist().withTimeout(timeouts.ONE_SEC);
-                        break;
-                    } catch (e) {
-                        if (i === 14) {
-                            throw e;
-                        }
-                        try {
-                            await this.scrollView.scroll(100, 'down', 0.5, 0.5);
-                        } catch {
-                            // Scroll view at the bottom edge.
-                        }
-                    }
-                }
-                /* eslint-enable no-await-in-loop */
-            }
-        } else {
-            /* eslint-disable no-await-in-loop -- bounded scroll: stops when row is visible */
-            for (let i = 0; i < 10; i++) {
+        try {
+            await waitFor(addBookmark).toExist().whileElement(scrollViewMatcher).scroll(150, 'down');
+        } catch {
+            /* eslint-disable no-await-in-loop -- bounded scroll: stops when row exists */
+            for (let i = 0; i < 15; i++) {
                 try {
-                    await waitFor(addBookmark).toBeVisible().withTimeout(timeouts.TWO_SEC);
+                    await waitFor(addBookmark).toExist().withTimeout(timeouts.TWO_SEC);
                     break;
-                } catch {
-                    if (i === 9) {
-                        throw new Error('Add a bookmark not found after 10 scroll attempts');
+                } catch (e) {
+                    if (i === 14) {
+                        throw new Error('Add a bookmark button not found after 15 scroll attempts');
                     }
                     try {
                         await this.scrollView.scroll(150, 'down', 0.5, 0.5);
-                    } catch { /* content may not scroll */ }
+                    } catch {
+                        // Scroll view at the bottom edge.
+                    }
                 }
             }
             /* eslint-enable no-await-in-loop */
         }
+
+        // Scroll into 75% visibility for tap() — Detox requires it.
+        try {
+            await waitFor(addBookmark).toBeVisible(75).whileElement(scrollViewMatcher).scroll(100, 'down');
+        } catch {
+            try {
+                await waitFor(addBookmark).toBeVisible(75).whileElement(scrollViewMatcher).scroll(100, 'up');
+            } catch { /* at scroll edge — tap may still work */ }
+        }
         await addBookmark.tap({x: 1, y: 1});
     };
-
     waitForBookmarkInChannelInfo = async (
         bookmarkMatcher: Detox.NativeMatcher,
         {

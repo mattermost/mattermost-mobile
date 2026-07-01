@@ -48,7 +48,7 @@ export async function handleUserUpdatedEvent(serverUrl: string, msg: WebSocketMe
                 if (me.user) {
                     userToSave = me.user;
                 }
-            } else if (!user.props || !user.props.customStatus) {
+            } else if (!user.props || !('customStatus' in (user.props || {}))) {
                 // WS event may omit props.customStatus (sanitized) — preserve
                 // the existing customStatus so it isn't cleared by the update.
                 // CI 28495858512: custom status set via API never appeared on
