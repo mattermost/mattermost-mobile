@@ -139,6 +139,7 @@ export async function newConnection(
     } catch (err) {
         InCallManager.stop();
         audioDeviceChanged?.remove();
+
         // Rethrows the error, to be caught by the caller.
         throw err;
     }
