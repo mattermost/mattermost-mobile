@@ -103,7 +103,7 @@ export async function newConnection(
         }
     }
 
-    // audio device changed listener is added before InCallManager start to listens to the first audio device change event.
+    // audio device changed listener is added before InCallManager.start() to listen for the first audio device change event.
     let btInitialized = false;
     let speakerInitialized = false;
     if (Platform.OS === 'android') {
@@ -134,8 +134,14 @@ export async function newConnection(
     InCallManager.start();
     InCallManager.stopProximitySensor();
 
-    // Throws an error, to be caught by caller.
-    await ws.initialize();
+    try {
+        await ws.initialize();
+    } catch (err) {
+        InCallManager.stop();
+        audioDeviceChanged?.remove();
+        // Rethrows the error, to be caught by the caller.
+        throw err;
+    }
 
     if (hasMicPermission) {
         initializeVoiceTrack();
