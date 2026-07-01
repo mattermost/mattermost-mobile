@@ -74,7 +74,14 @@ describe('Channels - Edit Channel', () => {
     });
 
     afterAll(async () => {
-        await ChannelListScreen.open();
+        // ponytail: ChannelListScreen.open() fails when prior test leaves app
+        // in bad state (CI 28476574698: tab_bar.home.tab not found).
+        // Catch and proceed — logout handles navigation recovery.
+        try {
+            await ChannelListScreen.open();
+        } catch {
+            // App may be on a different screen; logout will navigate home.
+        }
         await HomeScreen.logout();
     });
 

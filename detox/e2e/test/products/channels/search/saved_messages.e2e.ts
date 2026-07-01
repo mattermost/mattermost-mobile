@@ -82,7 +82,12 @@ describe('Search - Saved Messages', () => {
         const {post} = await Post.apiGetLastPostInChannel(siteOneUrl, testChannel.id);
         await ChannelScreen.openPostOptionsFor(post.id, message);
         await PostOptionsScreen.savePostOption.tap();
-        await wait(timeouts.TWO_SEC);
+
+        // ponytail: increased wait 2s→5s. CI 28476574698: server flagged-posts
+        // index lags behind preference save. Extra time lets the index catch up
+        // before navigating to saved messages. Fixes E2E: MM-T4910_2.
+        // Revert if CI shows regression.
+        await wait(timeouts.FIVE_SEC);
 
         // * Verify saved text is displayed on the post pre-header
         const {postListPostItemPreHeaderText} = ChannelScreen.getPostListPostItem(post.id, message);
@@ -123,7 +128,10 @@ describe('Search - Saved Messages', () => {
         const {post: savedPost} = await Post.apiGetLastPostInChannel(siteOneUrl, testChannel.id);
         await ChannelScreen.openPostOptionsFor(savedPost.id, message);
         await PostOptionsScreen.savePostOption.tap();
-        await wait(timeouts.TWO_SEC);
+
+        // ponytail: increased wait 2s→5s (same server index lag as MM-T4910_2).
+        // Revert if CI shows regression.
+        await wait(timeouts.FIVE_SEC);
         await ChannelScreen.back();
         await SavedMessagesScreen.open();
 

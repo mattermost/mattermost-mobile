@@ -142,7 +142,7 @@ class RecentMentionsScreen {
     // fetchRecentMentions by leaving + re-entering the mentions tab when needed.
     verifyPostEdited = async (postId: string, updatedMessage?: string) => {
         const postContainer = by.id(`${this.testID.recentMentionPostList}.${postId}`);
-        const MAX_REFETCHES = 4;
+        const MAX_REFETCHES = 6;
 
         const waitForEditedState = async () => {
             if (updatedMessage) {

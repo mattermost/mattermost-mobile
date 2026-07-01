@@ -410,7 +410,7 @@ describe('Channels - Channel Bookmarks', () => {
             {bookmarkId: bookmarkT5610.id},
         );
 
-        const bookmarkEl = element(by.id(`channel_bookmark.${bookmarkT5610.id}`));
+        const bookmarkEl = element(by.id(`channel_bookmark.${bookmarkT5610.id}`).withAncestor(by.id('channel_info.bookmarks.list')));
 
         // # Long press on the bookmark to open options
         await bookmarkEl.longPress();
@@ -544,7 +544,7 @@ describe('Channels - Channel Bookmarks', () => {
             {bookmarkId: bookmarkT5606.id},
         );
 
-        const bookmarkEl = element(by.id(`channel_bookmark.${bookmarkT5606.id}`));
+        const bookmarkEl = element(by.id(`channel_bookmark.${bookmarkT5606.id}`).withAncestor(by.id('channel_info.bookmarks.list')));
         await bookmarkEl.longPress();
 
         // * Verify bookmark options appear
@@ -678,13 +678,6 @@ describe('Channels - Channel Bookmarks', () => {
         // # Navigate to the channel (12 bookmarks pre-created in beforeAll)
         await openChannel(channelT5612);
 
-        try {
-            await element(by.type('RCTModalHostView')).tap({x: 10, y: 10});
-        } catch {
-            // No modal present
-        }
-        await wait(timeouts.ONE_SEC);
-
         // * Verify that the first bookmark is visible
         await expect(element(firstBookmarkMatcher)).toBeVisible();
 
@@ -702,13 +695,13 @@ describe('Channels - Channel Bookmarks', () => {
                     scroll(500, 'right');
             } catch {
                 /* eslint-disable no-await-in-loop -- bounded scroll: stops as soon as target is found */
-                for (let i = 0; i < 15; i++) {
+                for (let i = 0; i < 12; i++) {
                     try {
                         await waitFor(lastBookmark).toExist().withTimeout(timeouts.TWO_SEC);
                         break;
                     } catch {
-                        if (i === 14) {
-                            throw new Error('Scroll Bookmark 12 not found after whileElement + 15 swipe attempts');
+                        if (i === 11) {
+                            throw new Error('Scroll Bookmark 12 not found after whileElement + 12 swipe attempts');
                         }
                         try {
                             await bookmarksList.scroll(500, 'right');
@@ -726,12 +719,12 @@ describe('Channels - Channel Bookmarks', () => {
                     scroll(500, 'left');
             } catch {
                 /* eslint-disable no-await-in-loop -- bounded scroll: stops as soon as target is found */
-                for (let i = 0; i < 15; i++) {
+                for (let i = 0; i < 12; i++) {
                     try {
                         await waitFor(element(firstBookmarkMatcher)).toExist().withTimeout(timeouts.TWO_SEC);
                         break;
                     } catch {
-                        if (i === 14) {
+                        if (i === 11) {
                             throw new Error('Scroll Bookmark 1 not found after scrolling back');
                         }
                         try {
@@ -746,13 +739,13 @@ describe('Channels - Channel Bookmarks', () => {
         } else {
             await waitFor(element(channelHeaderBookmarksList)).toExist().withTimeout(timeouts.TEN_SEC);
             /* eslint-disable no-await-in-loop -- bounded swipe: stops as soon as target is found */
-            for (let i = 0; i < 15; i++) {
+            for (let i = 0; i < 12; i++) {
                 try {
                     await waitFor(element(lastBookmarkMatcher)).toExist().withTimeout(timeouts.TWO_SEC);
                     break;
                 } catch {
-                    if (i === 14) {
-                        throw new Error('Scroll Bookmark 12 not found after 15 swipe attempts');
+                    if (i === 11) {
+                        throw new Error('Scroll Bookmark 12 not found after 12 swipe attempts');
                     }
                     try {
                         await element(channelHeaderBookmarksList).swipe('left', 'fast', 0.9, 0.5, 0.5);
@@ -763,7 +756,6 @@ describe('Channels - Channel Bookmarks', () => {
                             // Retry from the new scroll position.
                         }
                     }
-                    await wait(timeouts.HALF_SEC);
                 }
             }
             /* eslint-enable no-await-in-loop */
@@ -773,12 +765,12 @@ describe('Channels - Channel Bookmarks', () => {
         // # Scroll back to the beginning
         if (!isAndroid()) {
             /* eslint-disable no-await-in-loop -- bounded swipe: stops as soon as target is found */
-            for (let i = 0; i < 15; i++) {
+            for (let i = 0; i < 12; i++) {
                 try {
                     await waitFor(element(firstBookmarkMatcher)).toExist().withTimeout(timeouts.TWO_SEC);
                     break;
                 } catch {
-                    if (i === 14) {
+                    if (i === 11) {
                         throw new Error('Scroll Bookmark 1 not found after scrolling back');
                     }
                     try {
@@ -790,7 +782,6 @@ describe('Channels - Channel Bookmarks', () => {
                             // Retry from the new scroll position.
                         }
                     }
-                    await wait(timeouts.HALF_SEC);
                 }
             }
             /* eslint-enable no-await-in-loop */

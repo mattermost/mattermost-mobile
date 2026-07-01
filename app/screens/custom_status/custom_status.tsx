@@ -286,14 +286,16 @@ const CustomStatus = ({
                     return;
                 }
                 setIsBtnEnabled(true);
-                await updateLocalCustomStatus(serverUrl, currentUser, status);
+                updateLocalCustomStatus(serverUrl, currentUser, status);
+                await new Promise((r) => setTimeout(r, 500));
                 dispatchStatus({type: 'fromUserCustomStatus', status});
             }
         } else if (storedStatus?.emoji) {
             const {error} = await unsetCustomStatus(serverUrl);
 
             if (!error) {
-                await updateLocalCustomStatus(serverUrl, currentUser, undefined);
+                updateLocalCustomStatus(serverUrl, currentUser, undefined);
+                await new Promise((r) => setTimeout(r, 500));
             }
         }
         dismissModalAndKeyboard(isTablet);

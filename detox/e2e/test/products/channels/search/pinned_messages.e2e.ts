@@ -261,6 +261,10 @@ describe('Search - Pinned Messages', () => {
         // # Open post options for pinned message, tap on save option, go back to channel list screen, and open saved messages screen
         await PinnedMessagesScreen.openPostOptionsFor(pinnedPost.id, message);
         await PostOptionsScreen.savePostOption.tap();
+
+        // ponytail: wait for server flagged-posts index to catch up.
+        // Fixes E2E: MM-T4918_5. Revert if CI shows regression.
+        await wait(timeouts.FIVE_SEC);
         await PinnedMessagesScreen.back();
         await ChannelInfoScreen.close();
         await ChannelScreen.back();

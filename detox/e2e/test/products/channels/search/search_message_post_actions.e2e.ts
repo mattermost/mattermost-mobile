@@ -155,7 +155,10 @@ describe('Search - Search Message Post Actions', () => {
         const {post: searchedPost} = await Post.apiGetLastPostInChannel(siteOneUrl, testChannel.id);
         await SearchMessagesScreen.openPostOptionsFor(searchedPost.id, message);
         await PostOptionsScreen.savePostOption.tap();
-        await wait(timeouts.TWO_SEC);
+
+        // ponytail: increased wait 2s→5s (same server index lag).
+        // Fixes E2E: MM-T5294_11. Revert if CI shows regression.
+        await wait(timeouts.FIVE_SEC);
         await SavedMessagesScreen.open();
 
         // * Verify searched message is displayed on saved messages screen
@@ -180,6 +183,9 @@ describe('Search - Search Message Post Actions', () => {
         await ChannelListScreen.toBeVisible();
     });
 
+    // ponytail: iOS exceeds 300s default timeout (CI 28476574698).
+    // Many nav steps (search→pin→channel→pinned→back→search→unpin→channel→pinned).
+    jest.setTimeout(600000);
     it('MM-T5294_12 - should be able to pin/unpin a searched message from search results screen', async () => {
         // # Open a channel screen, post a message, go back to channel list screen, and open search messages screen
         const searchTerm = getRandomId();

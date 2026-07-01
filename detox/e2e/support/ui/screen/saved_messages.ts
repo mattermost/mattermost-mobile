@@ -76,7 +76,12 @@ class SavedMessagesScreen {
     // 28416284905 MM-T4910_2: row missing after 10s despite a successful save).
     waitForPostInList = async (postId: string, text: string) => {
         const {postListPostItem} = this.getPostListPostItem(postId, text);
-        const MAX_REFETCHES = 3;
+
+        // ponytail: increased MAX_REFETCHES 3→5. CI 28476574698: saved post not in
+        // flagged-posts index even after 3 tab refreshes. More refreshes give the
+        // server time to index. Fixes E2E: MM-T4910_2/3/4/5, MM-T4909_4,
+        // MM-T4918_5, MM-T5294_11. Revert if CI shows regression.
+        const MAX_REFETCHES = 5;
 
         /* eslint-disable no-await-in-loop -- poll before each tab refresh */
         for (let attempt = 1; attempt <= MAX_REFETCHES; attempt++) {

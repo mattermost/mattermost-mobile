@@ -20,7 +20,7 @@ import {
     ServerScreen,
     SettingsScreen,
 } from '@support/ui/screen';
-import {isAndroid, isIos, safeEnableSynchronization, timeouts, wait, waitForElementToExist} from '@support/utils';
+import {isAndroid, isIos, safeEnableSynchronization, timeouts, waitForElementToExist} from '@support/utils';
 import {expect} from 'detox';
 
 /** Mirrors app/utils/subscription getSkuDisplayName for E2E learn-more expectations */
@@ -150,9 +150,28 @@ describe('Account - Settings - About', () => {
             await expect(AboutScreen.licenseLoadMetricTitle).not.toBeVisible();
         }
 
-        const scrollView = element(by.id(AboutScreen.testID.scrollView));
-        await scrollView.scrollTo('bottom');
-        await wait(timeouts.ONE_SEC);
+        // ponytail: scrollTo('bottom') force-breaks on Android (CI 28476574698).
+        // Use bounded scroll loop until copyright (last element) is visible.
+        // Fixes E2E: MM-T5104_1. Revert if CI shows regression.
+        const scrollViewMatcher = by.id(AboutScreen.testID.scrollView);
+        const copyrightMatcher = by.id(AboutScreen.testID.copyright);
+        try {
+            await waitFor(element(copyrightMatcher)).toBeVisible().whileElement(scrollViewMatcher).scroll(300, 'down');
+        } catch {
+            /* eslint-disable no-await-in-loop -- bounded scroll: stops when copyright is visible */
+            for (let i = 0; i < 10; i++) {
+                try {
+                    await waitFor(element(copyrightMatcher)).toBeVisible().withTimeout(timeouts.TWO_SEC);
+                    break;
+                } catch {
+                    if (i === 9) {
+                        throw new Error('Copyright not found after 10 scroll attempts');
+                    }
+                    await element(scrollViewMatcher).scroll(300, 'down');
+                }
+            }
+            /* eslint-enable no-await-in-loop */
+        }
 
         // Footer is on-screen but Detox waitFor never idles (AsyncStorageModule spam in CI).
         // Poll with sync disabled — device.log shows about.learn_more.text is already visible.
@@ -160,9 +179,10 @@ describe('Account - Settings - About', () => {
         try {
             if (isIos()) {
                 // FormattedText splits learn-more copy; match the stable prefix instead of exact text.
+                // ponytail: increased timeout 10→20s, CI 28476574698 shows text not found after scroll.
                 await waitForElementToExist(
                     element(by.text(new RegExp('Learn more about Mattermost', 'i'))),
-                    timeouts.TEN_SEC,
+                    timeouts.TWENTY_SEC,
                 );
             } else {
                 await waitForElementToExist(AboutScreen.learnMoreText, timeouts.TEN_SEC);

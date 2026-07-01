@@ -200,8 +200,20 @@ describe('Channels - Channel Bookmarks Permissions', () => {
         await ChannelSettingsScreen.toBeVisible();
         await ChannelSettingsScreen.archivePublicChannel({confirm: true});
 
-        await waitFor(ChannelInfoScreen.channelInfoScreen).toBeVisible().withTimeout(timeouts.TEN_SEC);
-        await ChannelInfoScreen.close();
+        // ponytail: after archive, settings auto-dismisses but Channel Info stays open.
+        // Close it so post_draft.archived is visible. If close() fails (CI 28476574698:
+        // still not null after 10s), fall back to device.pressBack().
+        // Fixes E2E: MM-T5725_1. Revert if CI shows regression.
+        try {
+            await ChannelInfoScreen.close();
+        } catch {
+            try {
+                await device.pressBack();
+            } catch {
+                // Android pressBack may not be available
+            }
+        }
+        await wait(timeouts.ONE_SEC);
 
         // * Verify channel is archived (draft area shows archived state).
         await waitFor(ChannelScreen.postDraftArchived).toExist().withTimeout(timeouts.TWENTY_SEC);

@@ -234,11 +234,14 @@ class ChannelInfoScreen {
         } catch {
             // Bookmarks section may be below the fold — scroll channel info.
         }
+
+        // ponytail: increased scroll 200→300px, CI 28476574698 shows bookmarks
+        // list not reached. Fixes E2E: MM-T5602/5604/5608.
         try {
             await waitFor(bookmarksList).
                 toExist().
                 whileElement(by.id(this.testID.scrollView)).
-                scroll(200, 'down');
+                scroll(300, 'down');
         } catch {
             try {
                 await this.scrollView.scrollTo('bottom');
@@ -263,35 +266,45 @@ class ChannelInfoScreen {
             // 15% threshold; stop as soon as the row is visible. A 150px whileElement
             // step overshoots past the row (CI 28420130849 MM-T5602_1: row in hierarchy
             // but toBeVisible(25) never passes after the overshoot).
+            // ponytail: increased attempts 12→15, scroll 80→100px.
+            // CI 28476574698: "Add a bookmark" still not 15% visible after 12 attempts.
             /* eslint-disable no-await-in-loop -- bounded scroll: stops when row is visible */
-            for (let i = 0; i < 12; i++) {
+            for (let i = 0; i < 15; i++) {
                 try {
                     await waitFor(addBookmark).toBeVisible(15).withTimeout(timeouts.ONE_SEC);
                     break;
                 } catch (e) {
-                    if (i === 11) {
+                    if (i === 14) {
                         throw e;
                     }
                     try {
-                        await this.scrollView.scroll(80, 'down', 0.5, 0.5);
+                        await this.scrollView.scroll(100, 'down', 0.5, 0.5);
                     } catch {
                         // Scroll view at the bottom edge.
                     }
                 }
             }
             /* eslint-enable no-await-in-loop */
+
         } else {
             // iOS: partial-height channel_info sheet — whileElement().scroll() refuses
             // ("not scrollable at start point"). Probe + centre scroll (custom_status.ts).
-            // Use toBeVisible so the tap lands on a hittable row (CI 28392181656).
-            try {
-                await waitFor(addBookmark).toBeVisible().withTimeout(timeouts.TWO_SEC);
-            } catch {
+            // ponytail: added bounded scroll loop, CI 28476574698 shows 2 attempts insufficient.
+            /* eslint-disable no-await-in-loop -- bounded scroll: stops when row is visible */
+            for (let i = 0; i < 10; i++) {
                 try {
-                    await this.scrollView.scroll(150, 'down', 0.5, 0.5);
-                } catch { /* content may not scroll */ }
-                await waitFor(addBookmark).toBeVisible().withTimeout(timeouts.FIVE_SEC);
+                    await waitFor(addBookmark).toBeVisible().withTimeout(timeouts.TWO_SEC);
+                    break;
+                } catch {
+                    if (i === 9) {
+                        throw new Error('Add a bookmark not found after 10 scroll attempts');
+                    }
+                    try {
+                        await this.scrollView.scroll(150, 'down', 0.5, 0.5);
+                    } catch { /* content may not scroll */ }
+                }
             }
+            /* eslint-enable no-await-in-loop */
         }
         await addBookmark.tap({x: 1, y: 1});
     };

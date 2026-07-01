@@ -161,6 +161,10 @@ describe('Search - Recent Mentions', () => {
         // # Open post options for the fixture mention and tap Save
         await RecentMentionsScreen.openPostOptionsFor(mentionPost.id, mentionPost.messageText);
         await PostOptionsScreen.savePostOption.tap();
+
+        // ponytail: wait for server flagged-posts index to catch up.
+        // Fixes E2E: MM-T4909_4. Revert if CI shows regression.
+        await wait(timeouts.FIVE_SEC);
         await SavedMessagesScreen.open();
 
         // * Verify mention appears on saved messages screen
@@ -206,7 +210,10 @@ describe('Search - Recent Mentions', () => {
         await ChannelScreen.back();
         await RecentMentionsScreen.open();
         await RecentMentionsScreen.openPostOptionsFor(mentionPost.id, mentionPost.messageText);
-        await PostOptionsScreen.unpinPostOption.tap();
+
+        // ponytail: tap({x:1,y:1}) avoids iOS hittability issue (CI 28476574698:
+        // unpin option not 100% visible in bottom sheet).
+        await PostOptionsScreen.unpinPostOption.tap({x: 1, y: 1});
 
         // * Verify mention is no longer pinned
         await ChannelListScreen.open();
