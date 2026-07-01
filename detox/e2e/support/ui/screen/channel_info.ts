@@ -254,42 +254,36 @@ class ChannelInfoScreen {
 
     tapAddBookmark = async () => {
         await this.scrollToBookmarks();
-        const addBookmark = element(by.text('Add a bookmark'));
+
+        // ponytail: use testID instead of by.text('Add a bookmark').
+        // CI 28476574698/28485624548: text matcher never finds the element
+        // even after 15 scroll attempts. The AddBookmark component renders
+        // a Button with testID 'channel_info.add_bookmark.button'.
+        const addBookmark = element(by.id('channel_info.add_bookmark.button'));
 
         if (isAndroid()) {
-            // CI 28416284905 MM-T5602_1/5604_1/5608_1: "Add a bookmark" sits below
-            // the fold on Android edge-to-edge and fails the default 50% visibility
-            // threshold even after scrollView.scroll(150, 'down', 0.5, 0.5) at
-            // channel_info.ts:271. whileElement().scroll() brings the row into the
-            // Espresso-visible viewport; 25% threshold matches scrollElementIntoView.
-            // Scroll in small steps with an explicit visible-centre start and a
-            // 15% threshold; stop as soon as the row is visible. A 150px whileElement
-            // step overshoots past the row (CI 28420130849 MM-T5602_1: row in hierarchy
-            // but toBeVisible(25) never passes after the overshoot).
-            // ponytail: increased attempts 12→15, scroll 80→100px.
-            // CI 28476574698: "Add a bookmark" still not 15% visible after 12 attempts.
-            /* eslint-disable no-await-in-loop -- bounded scroll: stops when row is visible */
-            for (let i = 0; i < 15; i++) {
-                try {
-                    await waitFor(addBookmark).toBeVisible(15).withTimeout(timeouts.ONE_SEC);
-                    break;
-                } catch (e) {
-                    if (i === 14) {
-                        throw e;
-                    }
+            try {
+                await waitFor(addBookmark).toBeVisible(15).whileElement(by.id(this.testID.scrollView)).scroll(150, 'down');
+            } catch {
+                /* eslint-disable no-await-in-loop -- bounded scroll: stops when row is visible */
+                for (let i = 0; i < 15; i++) {
                     try {
-                        await this.scrollView.scroll(100, 'down', 0.5, 0.5);
-                    } catch {
-                        // Scroll view at the bottom edge.
+                        await waitFor(addBookmark).toBeVisible(15).withTimeout(timeouts.ONE_SEC);
+                        break;
+                    } catch (e) {
+                        if (i === 14) {
+                            throw e;
+                        }
+                        try {
+                            await this.scrollView.scroll(100, 'down', 0.5, 0.5);
+                        } catch {
+                            // Scroll view at the bottom edge.
+                        }
                     }
                 }
+                /* eslint-enable no-await-in-loop */
             }
-            /* eslint-enable no-await-in-loop */
-
         } else {
-            // iOS: partial-height channel_info sheet — whileElement().scroll() refuses
-            // ("not scrollable at start point"). Probe + centre scroll (custom_status.ts).
-            // ponytail: added bounded scroll loop, CI 28476574698 shows 2 attempts insufficient.
             /* eslint-disable no-await-in-loop -- bounded scroll: stops when row is visible */
             for (let i = 0; i < 10; i++) {
                 try {

@@ -286,16 +286,26 @@ const CustomStatus = ({
                     return;
                 }
                 setIsBtnEnabled(true);
-                updateLocalCustomStatus(serverUrl, currentUser, status);
-                await new Promise((r) => setTimeout(r, 500));
+
+                // ponytail: Promise.race avoids WatermelonDB deadlock (await hangs
+                // indefinitely) while still waiting for DB write to complete so the
+                // account screen observable picks up the new status. 3s timeout
+                // ensures dismissModalAndKeyboard always runs.
+                // Fixes E2E: MM-T4990_2/3/4, MM-T3890/1/2, MM-T4091.
+                await Promise.race([
+                    updateLocalCustomStatus(serverUrl, currentUser, status),
+                    new Promise((r) => setTimeout(r, 3000)),
+                ]);
                 dispatchStatus({type: 'fromUserCustomStatus', status});
             }
         } else if (storedStatus?.emoji) {
             const {error} = await unsetCustomStatus(serverUrl);
 
             if (!error) {
-                updateLocalCustomStatus(serverUrl, currentUser, undefined);
-                await new Promise((r) => setTimeout(r, 500));
+                await Promise.race([
+                    updateLocalCustomStatus(serverUrl, currentUser, undefined),
+                    new Promise((r) => setTimeout(r, 3000)),
+                ]);
             }
         }
         dismissModalAndKeyboard(isTablet);
