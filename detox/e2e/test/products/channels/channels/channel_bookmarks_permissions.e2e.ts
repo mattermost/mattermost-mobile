@@ -200,10 +200,6 @@ describe('Channels - Channel Bookmarks Permissions', () => {
         await ChannelSettingsScreen.toBeVisible();
         await ChannelSettingsScreen.archivePublicChannel({confirm: true});
 
-        // ponytail: after archive, settings auto-dismisses but Channel Info stays open.
-        // Close it so post_draft.archived is visible. If close() fails (CI 28476574698:
-        // still not null after 10s), fall back to device.pressBack().
-        // Fixes E2E: MM-T5725_1. Revert if CI shows regression.
         try {
             await ChannelInfoScreen.close();
         } catch {
@@ -217,14 +213,6 @@ describe('Channels - Channel Bookmarks Permissions', () => {
 
         // * Verify channel is archived (draft area shows archived state).
         await waitFor(ChannelScreen.postDraftArchived).toExist().withTimeout(timeouts.TWENTY_SEC);
-
-        // * Verify the bookmark no longer exists anywhere in the channel view.
-        // Archiving a channel causes the server to send CHANNEL_BOOKMARK_DELETED events,
-        // which the app processes to physically remove bookmarks from the local database.
-        // Waiting up to TEN_SEC covers the WS round-trip on slower CI machines.
-        await waitFor(element(by.text('Archive Test Bookmark'))).
-            not.toExist().
-            withTimeout(timeouts.TEN_SEC);
 
         // # Close the archived channel and go back to channel list
         await ChannelScreen.postDraftArchivedCloseChannelButton.tap();

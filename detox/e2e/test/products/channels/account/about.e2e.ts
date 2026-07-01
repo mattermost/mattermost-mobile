@@ -150,9 +150,6 @@ describe('Account - Settings - About', () => {
             await expect(AboutScreen.licenseLoadMetricTitle).not.toBeVisible();
         }
 
-        // ponytail: scrollTo('bottom') force-breaks on Android (CI 28476574698).
-        // Use bounded scroll loop until copyright (last element) is visible.
-        // Fixes E2E: MM-T5104_1. Revert if CI shows regression.
         const scrollViewMatcher = by.id(AboutScreen.testID.scrollView);
         const copyrightMatcher = by.id(AboutScreen.testID.copyright);
         try {
@@ -178,21 +175,24 @@ describe('Account - Settings - About', () => {
         await device.disableSynchronization();
         try {
             if (isIos()) {
-                // FormattedText splits learn-more copy; match the stable prefix instead of exact text.
-                // ponytail: increased timeout 10→20s, CI 28476574698 shows text not found after scroll.
                 await waitForElementToExist(
                     element(by.text(new RegExp('Learn more about Mattermost', 'i'))),
                     timeouts.TWENTY_SEC,
                 );
             } else {
-                await waitForElementToExist(AboutScreen.learnMoreText, timeouts.TEN_SEC);
+                // FormattedText testID does not propagate on Android when nested in Text;
+                // CI 28485624548 screenshot shows copy is visible but about.learn_more.text is null.
+                await waitForElementToExist(
+                    element(by.text(new RegExp('Learn more about Mattermost', 'i'))),
+                    timeouts.TWENTY_SEC,
+                );
             }
         } finally {
             await safeEnableSynchronization();
         }
 
         if (isAndroid()) {
-            await expect(AboutScreen.learnMoreText).toExist();
+            await expect(element(by.text(new RegExp('Learn more about Mattermost', 'i')))).toExist();
             await expect(element(by.text('https://mattermost.com'))).toExist();
         } else {
             await expect(AboutScreen.learnMoreText).toHaveText(expectedLearnMorePrefix);

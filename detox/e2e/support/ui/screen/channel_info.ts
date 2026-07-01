@@ -255,20 +255,20 @@ class ChannelInfoScreen {
     tapAddBookmark = async () => {
         await this.scrollToBookmarks();
 
-        // ponytail: use testID instead of by.text('Add a bookmark').
-        // CI 28476574698/28485624548: text matcher never finds the element
-        // even after 15 scroll attempts. The AddBookmark component renders
-        // a Button with testID 'channel_info.add_bookmark.button'.
+        // CI 28495858512: button exists and is VISIBLE but getGlobalVisibleRect
+        // covers <15% — partially clipped by scroll view edge. Use toExist()
+        // instead of toBeVisible(15) so the tap succeeds even when the button
+        // is at the scroll boundary.
         const addBookmark = element(by.id('channel_info.add_bookmark.button'));
 
         if (isAndroid()) {
             try {
-                await waitFor(addBookmark).toBeVisible(15).whileElement(by.id(this.testID.scrollView)).scroll(150, 'down');
+                await waitFor(addBookmark).toExist().whileElement(by.id(this.testID.scrollView)).scroll(150, 'down');
             } catch {
-                /* eslint-disable no-await-in-loop -- bounded scroll: stops when row is visible */
+                /* eslint-disable no-await-in-loop -- bounded scroll: stops when row exists */
                 for (let i = 0; i < 15; i++) {
                     try {
-                        await waitFor(addBookmark).toBeVisible(15).withTimeout(timeouts.ONE_SEC);
+                        await waitFor(addBookmark).toExist().withTimeout(timeouts.ONE_SEC);
                         break;
                     } catch (e) {
                         if (i === 14) {

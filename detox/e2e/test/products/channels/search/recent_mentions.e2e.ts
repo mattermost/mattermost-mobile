@@ -33,7 +33,7 @@ import {
     ServerScreen,
     ThreadScreen,
 } from '@support/ui/screen';
-import {getRandomId, timeouts, wait, waitForElementToBeVisible, waitForElementToNotExist} from '@support/utils';
+import {getRandomId, timeouts, waitForElementToBeVisible, waitForElementToNotExist} from '@support/utils';
 import {by, element, expect} from 'detox';
 
 describe('Search - Recent Mentions', () => {
@@ -162,9 +162,7 @@ describe('Search - Recent Mentions', () => {
         await RecentMentionsScreen.openPostOptionsFor(mentionPost.id, mentionPost.messageText);
         await PostOptionsScreen.savePostOption.tap();
 
-        // ponytail: wait for server flagged-posts index to catch up.
-        // Fixes E2E: MM-T4909_4. Revert if CI shows regression.
-        await wait(timeouts.FIVE_SEC);
+        await Post.waitForPostFlagged(siteOneUrl, testUser.id, mentionPost.id);
         await SavedMessagesScreen.open();
 
         // * Verify mention appears on saved messages screen
@@ -175,8 +173,8 @@ describe('Search - Recent Mentions', () => {
         await RecentMentionsScreen.open();
         await RecentMentionsScreen.openPostOptionsFor(mentionPost.id, mentionPost.messageText);
         await PostOptionsScreen.unsavePostOption.tap();
-        await wait(timeouts.TWO_SEC);
         await SavedMessagesScreen.open();
+        await Post.waitForPostUnflagged(siteOneUrl, testUser.id, mentionPost.id);
 
         // * Verify mention is no longer on saved messages screen.
         await SavedMessagesScreen.verifyPostUnsaved(mentionPost.id);

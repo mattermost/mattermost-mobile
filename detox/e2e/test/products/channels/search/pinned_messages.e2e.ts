@@ -36,10 +36,12 @@ describe('Search - Pinned Messages', () => {
     const channelsCategory = 'channels';
     const pinnedText = 'Pinned';
     let testChannel: any;
+    let testUser: any;
 
     beforeAll(async () => {
         const {channel, user} = await Setup.apiInit(siteOneUrl);
         testChannel = channel;
+        testUser = user;
 
         // # Log in to server
         await ServerScreen.connectToServer(serverOneUrl, serverOneDisplayName);
@@ -262,9 +264,7 @@ describe('Search - Pinned Messages', () => {
         await PinnedMessagesScreen.openPostOptionsFor(pinnedPost.id, message);
         await PostOptionsScreen.savePostOption.tap();
 
-        // ponytail: wait for server flagged-posts index to catch up.
-        // Fixes E2E: MM-T4918_5. Revert if CI shows regression.
-        await wait(timeouts.FIVE_SEC);
+        await Post.waitForPostFlagged(siteOneUrl, testUser.id, pinnedPost.id);
         await PinnedMessagesScreen.back();
         await ChannelInfoScreen.close();
         await ChannelScreen.back();
@@ -285,7 +285,7 @@ describe('Search - Pinned Messages', () => {
         await ChannelInfoScreen.close();
         await ChannelScreen.back();
         await SavedMessagesScreen.open();
-        await wait(timeouts.TWO_SEC);
+        await Post.waitForPostUnflagged(siteOneUrl, testUser.id, pinnedPost.id);
 
         // * Verify pinned message is not displayed anymore on saved messages screen.
         await SavedMessagesScreen.verifyPostUnsaved(pinnedPost.id);

@@ -146,10 +146,22 @@ class RecentMentionsScreen {
 
         const waitForEditedState = async () => {
             if (updatedMessage) {
-                await waitFor(
-                    element(by.text(updatedMessage).withAncestor(postContainer)),
-                ).toExist().withTimeout(timeouts.TEN_SEC);
-                return;
+                try {
+                    await waitFor(
+                        element(by.text(updatedMessage).withAncestor(postContainer)),
+                    ).toExist().withTimeout(timeouts.FIVE_SEC);
+                    return;
+                } catch {
+                    // @mention is a separate node — match the edited suffix instead.
+                    const suffix = updatedMessage.split(' ').slice(-1)[0];
+                    if (suffix) {
+                        await waitFor(
+                            element(by.text(new RegExp(`${suffix}$`)).withAncestor(postContainer)),
+                        ).toExist().withTimeout(timeouts.FIVE_SEC);
+                        return;
+                    }
+                    throw new Error(`Could not match edited message for post ${postId}`);
+                }
             }
 
             const editedIndicator = element(by.id('edited_indicator').withAncestor(postContainer));

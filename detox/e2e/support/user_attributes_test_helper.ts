@@ -132,6 +132,12 @@ export const probeUserAttributesProvision = async (siteOneUrl: string): Promise<
     if (!listError) {
         const existingIds = resolveUserAttributeFieldIds(existingFields as CustomProfileField[]);
         if (existingIds) {
+            // CI 28495858512: fields may exist from provisioning but the feature
+            // flag may not be enabled in client config. Always verify the flag.
+            const flagError = await ensureCustomProfileAttributesFeatureFlag(siteOneUrl);
+            if (flagError) {
+                return {ready: false, reason: flagError};
+            }
             return {ready: true, fieldIds: existingIds};
         }
     }
