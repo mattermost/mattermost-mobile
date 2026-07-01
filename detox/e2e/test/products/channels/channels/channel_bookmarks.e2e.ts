@@ -395,7 +395,7 @@ describe('Channels - Channel Bookmarks', () => {
         await ChannelScreen.back();
     });
 
-    it('MM-69455 - should open file preview on tap and options sheet on long press for channel bookmarks', async () => {
+    it('MM-T69455_1 - should open file preview on tap and options sheet on long press for channel bookmarks', async () => {
         const getHeaderBookmark = (bookmarkId: string) => element(
             by.
                 id(`channel_bookmark.${bookmarkId}`).

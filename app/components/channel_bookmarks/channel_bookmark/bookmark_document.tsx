@@ -52,6 +52,7 @@ const BookmarkDocument = ({bookmark, canDownloadFiles, enableSecureFilePreview, 
             ref={document}
         >
             <Pressable
+                accessibilityRole='button'
                 style={({pressed}) => [styles.pressable, pressed && {opacity: 0.72}]}
                 onPress={handlePress}
                 onLongPress={onLongPress}

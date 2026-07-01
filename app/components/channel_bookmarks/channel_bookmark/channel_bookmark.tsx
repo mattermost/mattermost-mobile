@@ -63,7 +63,7 @@ const ChannelBookmark = ({
             return;
         }
 
-        onPress?.(index || 0);
+        onPress?.(index ?? 0);
     }, [bookmark.linkUrl, index, intl, onPress, serverUrl, siteURL]);
 
     const handleLongPress = useCallback(() => {
@@ -87,7 +87,7 @@ const ChannelBookmark = ({
         bottomSheet(renderContent, snapPoints);
     }, [bookmark, canCopyPublicLink, canDeleteBookmarks, canDownloadFiles, canEditBookmarks, enableSecureFilePreview, file]);
 
-    const {onGestureEvent, ref} = useGalleryItem(galleryIdentifier, index || 0, handlePress);
+    const {onGestureEvent, ref} = useGalleryItem(galleryIdentifier, index ?? 0, handlePress);
 
     if (isDocumentFile) {
         return (
@@ -107,6 +107,7 @@ const ChannelBookmark = ({
             testID={`channel_bookmark.${bookmark.id}`}
         >
             <Pressable
+                accessibilityRole='button'
                 style={({pressed}) => [styles.pressable, pressed && {opacity: 0.72}]}
                 onPress={onGestureEvent}
                 onLongPress={handleLongPress}
