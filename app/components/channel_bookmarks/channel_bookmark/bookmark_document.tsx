@@ -1,9 +1,8 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {Button} from '@rneui/base';
 import React, {useCallback, useRef} from 'react';
-import {StyleSheet, View} from 'react-native';
+import {Pressable, StyleSheet, View} from 'react-native';
 
 import Document, {type DocumentRef} from '@components/document';
 import ProgressBar from '@components/progress_bar';
@@ -24,11 +23,10 @@ type Props = {
 }
 
 const styles = StyleSheet.create({
-    container: {
+    pressable: {
         flexDirection: 'row',
         paddingVertical: 6,
     },
-    button: {backgroundColor: 'transparent'},
     progress: {
         justifyContent: 'flex-end',
     },
@@ -53,11 +51,10 @@ const BookmarkDocument = ({bookmark, canDownloadFiles, enableSecureFilePreview, 
             downloadAndPreviewFile={toggleDownloadAndPreview}
             ref={document}
         >
-            <Button
-                buttonStyle={styles.button}
+            <Pressable
+                style={({pressed}) => [styles.pressable, pressed && {opacity: 0.72}]}
                 onPress={handlePress}
                 onLongPress={onLongPress}
-                containerStyle={styles.container}
             >
                 <BookmarkDetails
                     bookmark={bookmark}
@@ -72,7 +69,7 @@ const BookmarkDocument = ({bookmark, canDownloadFiles, enableSecureFilePreview, 
                         }
                     </View>
                 </BookmarkDetails>
-            </Button>
+            </Pressable>
         </Document>
     );
 };

@@ -2,10 +2,9 @@
 // See LICENSE.txt for license information.
 
 import {useManagedConfig} from '@mattermost/react-native-emm';
-import {Button} from '@rneui/base';
 import React, {useCallback, useMemo} from 'react';
 import {useIntl} from 'react-intl';
-import {StyleSheet} from 'react-native';
+import {Pressable, StyleSheet} from 'react-native';
 import Animated from 'react-native-reanimated';
 
 import {ITEM_HEIGHT} from '@components/option_item';
@@ -39,14 +38,11 @@ type Props = {
 }
 
 const styles = StyleSheet.create({
-    container: {
+    pressable: {
         alignItems: 'center',
         flexDirection: 'row',
         paddingVertical: 6,
         height: 48,
-    },
-    button: {
-        backgroundColor: 'transparent',
         paddingHorizontal: 0,
     },
 });
@@ -63,12 +59,12 @@ const ChannelBookmark = ({
 
     const handlePress = useCallback(() => {
         if (bookmark.linkUrl) {
-            openLink(bookmark.linkUrl, siteURL, serverUrl, intl);
+            openLink(bookmark.linkUrl, serverUrl, siteURL, intl);
             return;
         }
 
         onPress?.(index || 0);
-    }, [bookmark, index, intl, onPress, serverUrl, siteURL]);
+    }, [bookmark.linkUrl, index, intl, onPress, serverUrl, siteURL]);
 
     const handleLongPress = useCallback(() => {
         const canShare = !enableSecureFilePreview && (canDownloadFiles || bookmark.type === 'link');
@@ -110,9 +106,8 @@ const ChannelBookmark = ({
             ref={ref}
             testID={`channel_bookmark.${bookmark.id}`}
         >
-            <Button
-                containerStyle={styles.container}
-                buttonStyle={styles.button}
+            <Pressable
+                style={({pressed}) => [styles.pressable, pressed && {opacity: 0.72}]}
                 onPress={onGestureEvent}
                 onLongPress={handleLongPress}
             >
@@ -120,7 +115,7 @@ const ChannelBookmark = ({
                     bookmark={bookmark}
                     file={file}
                 />
-            </Button>
+            </Pressable>
         </Animated.View>
     );
 };

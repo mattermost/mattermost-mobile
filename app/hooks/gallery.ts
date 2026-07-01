@@ -7,7 +7,6 @@ import {
     useSharedValue,
     withTiming, type WithTimingConfig,
 } from 'react-native-reanimated';
-import {scheduleOnRN} from 'react-native-worklets';
 
 import {useGallery} from '@context/gallery';
 
@@ -113,13 +112,13 @@ export function useGalleryItem(
         gallery.registerItem(index, ref);
     });
 
-    const onGestureEvent = () => {
-        'worklet';
-
+    // Invoked from the JS thread as a Touchable/Button onPress, so it must be a
+    // plain callback. A 'worklet' here is not reliably executed as a press
+    // handler under the new architecture, which silently breaks gallery taps.
+    const onGestureEvent = useCallback(() => {
         activeIndex.value = index;
-
-        scheduleOnRN(onPress, identifier, index);
-    };
+        onPress(identifier, index);
+    }, [activeIndex, index, identifier, onPress]);
 
     return {
         ref,

@@ -87,7 +87,7 @@ describe('gallery hooks', () => {
         expect(mockWithTiming).not.toHaveBeenCalled();
     });
 
-    test('useGalleryItem', async () => {
+    test('useGalleryItem', () => {
         const identifier = 'test';
         const index = 0;
         const onPress = jest.fn();
@@ -111,11 +111,10 @@ describe('gallery hooks', () => {
         });
 
         expect(gallery.sharedValues.activeIndex.value).toBe(index);
-        await Promise.resolve();
         expect(onPress).toHaveBeenCalledWith(identifier, index);
     });
 
-    test('useGalleryItem updates activeIndex when onGestureEvent is triggered', async () => {
+    test('useGalleryItem updates activeIndex when onGestureEvent is triggered', () => {
         const identifier = 'test';
         const index = 0;
         const onPress = jest.fn();
@@ -138,7 +137,6 @@ describe('gallery hooks', () => {
         });
 
         expect(gallery.sharedValues.activeIndex.value).toBe(index);
-        await Promise.resolve();
         expect(onPress).toHaveBeenCalledWith(identifier, index);
     });
 });
