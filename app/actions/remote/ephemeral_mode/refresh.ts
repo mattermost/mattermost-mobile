@@ -44,7 +44,7 @@ export const applyPersistenceModeChange = async (serverUrl: string): Promise<{er
 
         const {error: refetchError} = await refetchCurrentUser(serverUrl, undefined);
         if (refetchError) {
-            throw new Error(`restartSession: failed to seed current user: ${refetchError}`);
+            throw new Error(`applyPersistenceModeChange: failed to seed current user: ${refetchError}`);
         }
 
         const {operator} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
@@ -55,7 +55,7 @@ export const applyPersistenceModeChange = async (serverUrl: string): Promise<{er
         });
 
         if (systemModels?.length) {
-            await operator.batchRecords(systemModels, 'restartSession');
+            await operator.batchRecords(systemModels, 'applyPersistenceModeChange');
         }
 
         if (credentials?.token) {

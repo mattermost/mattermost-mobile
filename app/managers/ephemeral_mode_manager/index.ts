@@ -197,9 +197,10 @@ class EphemeralModeManagerSingleton {
         if (appState === 'background') {
             for (const [url, entry] of this.trackedServers) {
                 if (entry.kind === 'zpm') {
-                    const success = deleteFileCache(url);
-                    if (!success) {
-                        logError('EphemeralModeManager.deleteFileCache failed');
+                    try {
+                        deleteFileCache(url);
+                    } catch (error) {
+                        logError('EphemeralModeManager.deleteFileCache failed', error);
                     }
                 }
             }
