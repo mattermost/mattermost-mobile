@@ -17,7 +17,7 @@ import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
 import {DEFAULT_LOCALE} from '@i18n';
 import {isUnrevealedBoRPost} from '@utils/bor';
-import {getPostTranslation, postUserDisplayName} from '@utils/post';
+import {getPostTranslation, hasAiGeneratedMetadata, postUserDisplayName} from '@utils/post';
 import {makeStyleSheetFromTheme} from '@utils/theme';
 import {ensureString} from '@utils/types';
 import {typography} from '@utils/typography';
@@ -28,6 +28,7 @@ import {
     isCustomStatusExpired,
 } from '@utils/user';
 
+import AiGeneratedIndicator from './ai_generated_indicator';
 import HeaderCommentedOn from './commented_on';
 import HeaderDisplayName from './display_name';
 import HeaderReply from './reply';
@@ -181,6 +182,9 @@ const Header = (props: HeaderProps) => {
                             expiryTime={borExpireAt as number}
                             onExpiry={onBoRPostExpiry}
                         />
+                    )}
+                    {hasAiGeneratedMetadata(post) && (
+                        <AiGeneratedIndicator post={post}/>
                     )}
                     {!isCRTEnabled && showReply && commentCount > 0 && (
                         <HeaderReply

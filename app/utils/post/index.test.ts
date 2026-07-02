@@ -14,6 +14,7 @@ import {toMilliseconds} from '@utils/datetime';
 
 import {
     areConsecutivePosts,
+    hasAiGeneratedMetadata,
     isFromWebhook,
     isEdited,
     isPostEphemeral,
@@ -48,6 +49,34 @@ jest.mock('@database/manager', () => ({
 }));
 
 describe('post utils', () => {
+    describe('hasAiGeneratedMetadata', () => {
+        it('should return true when both ai_generated_by and ai_generated_by_username are non-empty strings', () => {
+            const post = TestHelper.fakePostModel({
+                props: {
+                    ai_generated_by: 'bot-user-id',
+                    ai_generated_by_username: 'ai-bot',
+                },
+            });
+
+            expect(hasAiGeneratedMetadata(post)).toBe(true);
+        });
+
+        it('should return false when metadata is missing or invalid', () => {
+            expect(hasAiGeneratedMetadata(TestHelper.fakePostModel({
+                props: {ai_generated_by_username: 'ai-bot'},
+            }))).toBe(false);
+            expect(hasAiGeneratedMetadata(TestHelper.fakePostModel({
+                props: {ai_generated_by: 'bot-user-id'},
+            }))).toBe(false);
+            expect(hasAiGeneratedMetadata(TestHelper.fakePostModel({
+                props: {ai_generated_by: '', ai_generated_by_username: ''},
+            }))).toBe(false);
+            expect(hasAiGeneratedMetadata(TestHelper.fakePostModel({
+                props: {ai_generated_by: 123, ai_generated_by_username: true},
+            }))).toBe(false);
+        });
+    });
+
     describe('areConsecutivePosts', () => {
         it('should return true for consecutive posts from the same user within the collapse timeout', () => {
             const post = TestHelper.fakePostModel({
@@ -75,6 +104,64 @@ describe('post utils', () => {
                 userId: 'user2',
                 createAt: 500,
                 props: {},
+            });
+
+            const result = areConsecutivePosts(post, previousPost, 'en');
+            expect(result).toBe(false);
+        });
+
+        it('should return false for AI post after same-user post', () => {
+            const post = TestHelper.fakePostModel({
+                userId: 'user1',
+                createAt: 1000,
+                props: {
+                    ai_generated_by: 'user1',
+                    ai_generated_by_username: 'ai-bot',
+                },
+            });
+            const previousPost = TestHelper.fakePostModel({
+                userId: 'user1',
+                createAt: 500,
+                props: {},
+            });
+
+            const result = areConsecutivePosts(post, previousPost, 'en');
+            expect(result).toBe(false);
+        });
+
+        it('should return false for normal post after AI post from same user', () => {
+            const post = TestHelper.fakePostModel({
+                userId: 'user1',
+                createAt: 1000,
+                props: {},
+            });
+            const previousPost = TestHelper.fakePostModel({
+                userId: 'user1',
+                createAt: 500,
+                props: {
+                    ai_generated_by: 'user1',
+                    ai_generated_by_username: 'ai-bot',
+                },
+            });
+
+            const result = areConsecutivePosts(post, previousPost, 'en');
+            expect(result).toBe(false);
+        });
+
+        it('should return false for consecutive AI posts from same user', () => {
+            const aiProps = {
+                ai_generated_by: 'user1',
+                ai_generated_by_username: 'ai-bot',
+            };
+            const post = TestHelper.fakePostModel({
+                userId: 'user1',
+                createAt: 1000,
+                props: aiProps,
+            });
+            const previousPost = TestHelper.fakePostModel({
+                userId: 'user1',
+                createAt: 500,
+                props: aiProps,
             });
 
             const result = areConsecutivePosts(post, previousPost, 'en');

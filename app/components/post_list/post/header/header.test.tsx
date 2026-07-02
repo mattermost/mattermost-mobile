@@ -88,4 +88,79 @@ describe('Header', () => {
 
         expect(screen.queryByTestId('expiry-timer')).toBeVisible();
     });
+
+    it('should render AI-generated indicator when both props are present', () => {
+        const aiPost = TestHelper.fakePostModel({
+            userId: currentUser.id,
+            props: {
+                ai_generated_by: currentUser.id,
+                ai_generated_by_username: 'ai-bot',
+            },
+        });
+
+        renderWithIntlAndTheme(
+            <Header
+                {...defaultProps}
+                post={aiPost}
+            />,
+        );
+
+        expect(screen.queryByTestId('compass-icon-creation-outline')).toBeVisible();
+        expect(screen.queryByTestId('post_header.ai_generated_indicator')).toBeVisible();
+    });
+
+    it('should not render AI-generated indicator when props are missing', () => {
+        const post = TestHelper.fakePostModel({
+            userId: currentUser.id,
+            props: {},
+        });
+
+        renderWithIntlAndTheme(
+            <Header
+                {...defaultProps}
+                post={post}
+            />,
+        );
+
+        expect(screen.queryByTestId('compass-icon-creation-outline')).toBeNull();
+        expect(screen.queryByTestId('post_header.ai_generated_indicator')).toBeNull();
+    });
+
+    it('should use AI-generated accessibility label when author generated the post', () => {
+        const aiPost = TestHelper.fakePostModel({
+            userId: currentUser.id,
+            props: {
+                ai_generated_by: currentUser.id,
+                ai_generated_by_username: 'ai-bot',
+            },
+        });
+
+        renderWithIntlAndTheme(
+            <Header
+                {...defaultProps}
+                post={aiPost}
+            />,
+        );
+
+        expect(screen.getByTestId('post_header.ai_generated_indicator')).toHaveProp('accessibilityLabel', 'AI-generated');
+    });
+
+    it('should use bot username in accessibility label when different from author', () => {
+        const aiPost = TestHelper.fakePostModel({
+            userId: currentUser.id,
+            props: {
+                ai_generated_by: 'other-bot-id',
+                ai_generated_by_username: 'other-bot',
+            },
+        });
+
+        renderWithIntlAndTheme(
+            <Header
+                {...defaultProps}
+                post={aiPost}
+            />,
+        );
+
+        expect(screen.getByTestId('post_header.ai_generated_indicator')).toHaveProp('accessibilityLabel', 'Message posted by @other-bot');
+    });
 });
