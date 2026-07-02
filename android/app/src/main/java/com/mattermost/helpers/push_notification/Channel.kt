@@ -14,7 +14,7 @@ import java.util.Locale
 
 suspend fun PushNotificationDataRunnable.Companion.fetchMyChannel(db: WMDatabase, serverUrl: String, channelId: String, isCRTEnabled: Boolean): Triple<ReadableMap?, ReadableMap?, ReadableArray?> {
     val channel = fetch(serverUrl, "/api/v4/channels/$channelId")
-    var channelData = channel?.getMap("data")
+    var channelData = channel?.safeGetMap("data")
     val myChannelData = channelData?.let { fetchMyChannelData(serverUrl, channelId, isCRTEnabled, it) }
     val channelType = channelData?.getString("type")
     var profilesArray: ReadableArray? = null
@@ -62,7 +62,7 @@ suspend fun PushNotificationDataRunnable.Companion.fetchMyChannel(db: WMDatabase
 private suspend fun PushNotificationDataRunnable.Companion.fetchMyChannelData(serverUrl: String, channelId: String, isCRTEnabled: Boolean, channelData: ReadableMap): ReadableMap? {
     try {
         val myChannel = fetch(serverUrl, "/api/v4/channels/$channelId/members/me")
-        val myChannelData = myChannel?.getMap("data")
+        val myChannelData = myChannel?.safeGetMap("data")
         if (myChannelData != null) {
             val data = Arguments.createMap()
             data.merge(myChannelData)
@@ -114,7 +114,7 @@ private suspend fun PushNotificationDataRunnable.Companion.fetchProfileInChannel
     return try {
         val currentUserId = queryCurrentUserId(db)
         val profilesInChannel = fetch(serverUrl, "/api/v4/users?in_channel=${channelId}&page=0&per_page=8&sort=")
-        val profilesArray = profilesInChannel?.getArray("data")
+        val profilesArray = profilesInChannel?.safeGetArray("data")
         val result = Arguments.createArray()
         if (profilesArray != null) {
             for (i in 0 until profilesArray.size()) {
