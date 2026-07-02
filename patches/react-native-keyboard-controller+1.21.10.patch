@@ -1,0 +1,13 @@
+diff --git a/node_modules/react-native-keyboard-controller/android/src/main/java/com/reactnativekeyboardcontroller/modules/KeyboardControllerModuleImpl.kt b/node_modules/react-native-keyboard-controller/android/src/main/java/com/reactnativekeyboardcontroller/modules/KeyboardControllerModuleImpl.kt
+index 8bffcae..cdb9a3a 100644
+--- a/node_modules/react-native-keyboard-controller/android/src/main/java/com/reactnativekeyboardcontroller/modules/KeyboardControllerModuleImpl.kt
++++ b/node_modules/react-native-keyboard-controller/android/src/main/java/com/reactnativekeyboardcontroller/modules/KeyboardControllerModuleImpl.kt
+@@ -54,7 +54,7 @@ class KeyboardControllerModuleImpl(
+             view.clearFocus()
+           }
+         }
+-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R && !animated) {
++        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R && !animated && !controller.isInsetAnimationInProgress()) {
+           controller.startControlRequest(view) { insetsController ->
+             insetsController.finish(false)
+ 
