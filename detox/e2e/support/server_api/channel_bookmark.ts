@@ -4,6 +4,24 @@
 import client from './client';
 import {getResponseFromError} from './common';
 
+export const apiCreateChannelBookmarkFile = async (baseUrl: string, channelId: string, displayName: string, fileId: string): Promise<any> => {
+    try {
+        const response = await client.post(
+            `${baseUrl}/api/v4/channels/${channelId}/bookmarks`,
+            {
+                channel_id: channelId,
+                display_name: displayName,
+                file_id: fileId,
+                type: 'file',
+            },
+        );
+
+        return {bookmark: response.data};
+    } catch (err) {
+        return getResponseFromError(err);
+    }
+};
+
 export const apiCreateChannelBookmarkLink = async (baseUrl: string, channelId: string, displayName: string, linkUrl: string): Promise<any> => {
     try {
         const response = await client.post(
@@ -56,6 +74,7 @@ export const apiIsBookmarksAvailable = async (baseUrl: string, channelId: string
 };
 
 export const ChannelBookmark = {
+    apiCreateChannelBookmarkFile,
     apiCreateChannelBookmarkLink,
     apiGetChannelBookmarks,
     apiDeleteChannelBookmark,
