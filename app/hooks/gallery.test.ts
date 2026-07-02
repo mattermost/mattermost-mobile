@@ -6,7 +6,7 @@ import {useSharedValue} from 'react-native-reanimated';
 
 import {useGallery} from '@context/gallery';
 
-import {useGalleryControls, useGalleryItem, diff} from './gallery';
+import {useGalleryControls, useGalleryItem, diff, type DiffContext} from './gallery';
 
 import type {DefaultStyle} from 'react-native-reanimated/lib/typescript/hook/commonTypes';
 
@@ -33,19 +33,19 @@ jest.mock('react-native', () => ({
 
 describe('gallery hooks', () => {
     test('diff', () => {
-        const context = {} as {___diffs?: any};
+        const context = {} as DiffContext;
         const name = 'test';
         const value = 10;
 
         const result = diff(context, name, value);
 
         expect(result).toBe(0);
-        expect(context.___diffs[name].stash).toBe(0);
-        expect(context.___diffs[name].prev).toBe(value);
+        expect(context.___diffs![name].stash).toBe(0);
+        expect(context.___diffs![name].prev).toBe(value);
     });
 
     test('diff should return 0 for the same value', () => {
-        const context = {} as {___diffs?: any};
+        const context = {} as DiffContext;
         const name = 'test';
         const value = 10;
 
@@ -53,8 +53,8 @@ describe('gallery hooks', () => {
         const result = diff(context, name, value);
 
         expect(result).toBe(0);
-        expect(context.___diffs[name].stash).toBe(0);
-        expect(context.___diffs[name].prev).toBe(value);
+        expect(context.___diffs![name].stash).toBe(0);
+        expect(context.___diffs![name].prev).toBe(value);
     });
 
     test('useGalleryControls', () => {
@@ -87,7 +87,7 @@ describe('gallery hooks', () => {
         expect(mockWithTiming).not.toHaveBeenCalled();
     });
 
-    test('useGalleryItem', () => {
+    test('useGalleryItem', async () => {
         const identifier = 'test';
         const index = 0;
         const onPress = jest.fn();
@@ -111,10 +111,11 @@ describe('gallery hooks', () => {
         });
 
         expect(gallery.sharedValues.activeIndex.value).toBe(index);
+        await Promise.resolve();
         expect(onPress).toHaveBeenCalledWith(identifier, index);
     });
 
-    test('useGalleryItem updates activeIndex when onGestureEvent is triggered', () => {
+    test('useGalleryItem updates activeIndex when onGestureEvent is triggered', async () => {
         const identifier = 'test';
         const index = 0;
         const onPress = jest.fn();
@@ -137,6 +138,7 @@ describe('gallery hooks', () => {
         });
 
         expect(gallery.sharedValues.activeIndex.value).toBe(index);
+        await Promise.resolve();
         expect(onPress).toHaveBeenCalledWith(identifier, index);
     });
 });
