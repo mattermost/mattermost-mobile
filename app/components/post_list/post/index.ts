@@ -15,7 +15,7 @@ import {observeThreadById} from '@queries/servers/thread';
 import {observeUser} from '@queries/servers/user';
 import {isBoRPost} from '@utils/bor';
 import {fileModelsToFileInfo} from '@utils/file';
-import {areConsecutivePosts, isPostEphemeral} from '@utils/post';
+import {areConsecutivePosts, isFromWebhook, isPostEphemeral} from '@utils/post';
 
 import Post from './post';
 
@@ -35,12 +35,12 @@ type PropsInput = WithDatabaseArgs & {
 }
 
 function observeShouldHighlightReplyBar(database: Database, currentUser: UserModel, post: PostModel, postsInThread: PostsInThreadModel) {
-    const myPostsCount = queryPostsBetween(database, postsInThread.earliest, postsInThread.latest, null, currentUser.id, '', post.rootId || post.id).observeCount();
+    const myPosts = queryPostsBetween(database, postsInThread.earliest, postsInThread.latest, null, currentUser.id, '', post.rootId || post.id).observe();
     const root = observePost(database, post.rootId);
 
-    return combineLatest([myPostsCount, root]).pipe(
-        switchMap(([mpc, r]) => {
-            const threadRepliedToByCurrentUser = mpc > 0;
+    return combineLatest([myPosts, root]).pipe(
+        switchMap(([posts, r]) => {
+            const threadRepliedToByCurrentUser = posts.some((p) => !isFromWebhook(p));
             let threadCreatedByCurrentUser = false;
             if (r?.userId === currentUser.id) {
                 threadCreatedByCurrentUser = true;
