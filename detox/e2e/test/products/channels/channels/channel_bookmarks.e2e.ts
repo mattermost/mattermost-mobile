@@ -1,6 +1,8 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import path from 'path';
+
 // *******************************************************************
 // - [#] indicates a test step (e.g. # Go to a screen)
 // - [*] indicates an assertion (e.g. * Check the title)
@@ -10,6 +12,7 @@
 import {
     ChannelBookmark,
     Channel,
+    Post,
     Setup,
     System,
 } from '@support/server_api';
@@ -37,7 +40,10 @@ describe('Channels - Channel Bookmarks', () => {
     let channelT5607: any;
     let channelT5609: any;
     let channelT5610: any;
+    let channelT69455: any;
     let bookmarkT5610: any;
+    let bookmarkFileT69455: any;
+    let bookmarkLinkT69455: any;
 
     const createChannel = async () => {
         const {channel} = await Channel.apiCreateChannel(siteOneUrl, {
@@ -110,6 +116,7 @@ describe('Channels - Channel Bookmarks', () => {
         channelT5607 = await createChannel();
         channelT5609 = await createChannel();
         channelT5610 = await createChannel();
+        channelT69455 = await createChannel();
 
         // ── Pre-create bookmarks ──────────────────────────────────────────────
         const {bookmark: bT5610} = await ChannelBookmark.apiCreateChannelBookmarkLink(
@@ -129,6 +136,30 @@ describe('Channels - Channel Bookmarks', () => {
         await ChannelBookmark.apiCreateChannelBookmarkLink(
             siteOneUrl, channelT5609.id, 'Banner Test Bookmark', 'https://mattermost.com',
         );
+
+        const {bookmark: linkT69455} = await ChannelBookmark.apiCreateChannelBookmarkLink(
+            siteOneUrl, channelT69455.id, 'Tap Link Bookmark', 'https://mattermost.com',
+        );
+        if (!linkT69455?.id) {
+            throw new Error('[beforeAll] Failed to create bookmarkLinkT69455');
+        }
+        bookmarkLinkT69455 = linkT69455;
+
+        const {fileId, error: uploadError} = await Post.apiUploadFileToChannel(
+            siteOneUrl,
+            channelT69455.id,
+            path.resolve(__dirname, '../../../../support/fixtures/image.png'),
+        );
+        if (uploadError || !fileId) {
+            throw new Error(`[beforeAll] Failed to upload file bookmark attachment: ${JSON.stringify(uploadError)}`);
+        }
+        const {bookmark: fileT69455} = await ChannelBookmark.apiCreateChannelBookmarkFile(
+            siteOneUrl, channelT69455.id, 'Tap File Bookmark', fileId,
+        );
+        if (!fileT69455?.id) {
+            throw new Error('[beforeAll] Failed to create bookmarkFileT69455');
+        }
+        bookmarkFileT69455 = fileT69455;
 
         // ── Single login + reload to sync all API-created data ────────────────
         await ServerScreen.connectToServer(serverOneUrl, serverOneDisplayName);
@@ -359,6 +390,62 @@ describe('Channels - Channel Bookmarks', () => {
                     withAncestor(by.id('channel_header.bookmarks.list')),
             ),
         ).toBeVisible();
+
+        // # Go back to channel list
+        await ChannelScreen.back();
+    });
+
+    it('MM-T69455_1 - should open file preview on tap and options sheet on long press for channel bookmarks', async () => {
+        const getHeaderBookmark = (bookmarkId: string) => element(
+            by.
+                id(`channel_bookmark.${bookmarkId}`).
+                withAncestor(by.id('channel_header.bookmarks.list')),
+        );
+
+        const dismissGallery = async () => {
+            if (isAndroid()) {
+                await device.pressBack();
+            } else {
+                await element(by.id('gallery.header.close.button')).atIndex(0).tap();
+            }
+            await waitFor(element(by.id('gallery.header.close.button'))).not.toExist().withTimeout(timeouts.TEN_SEC);
+        };
+
+        // # Navigate to the channel with link and file bookmarks
+        await openChannel(channelT69455);
+
+        const fileBookmarkEl = getHeaderBookmark(bookmarkFileT69455.id);
+        const linkBookmarkEl = getHeaderBookmark(bookmarkLinkT69455.id);
+
+        await waitFor(fileBookmarkEl).toExist().withTimeout(timeouts.TEN_SEC);
+        await waitFor(linkBookmarkEl).toExist().withTimeout(timeouts.TEN_SEC);
+
+        // # Tap the file bookmark
+        await fileBookmarkEl.tap();
+
+        // * Verify file preview gallery opens (tap must reach the gallery press handler)
+        const galleryCloseButton = element(by.id('gallery.header.close.button'));
+        await waitFor(galleryCloseButton).toExist().withTimeout(timeouts.TEN_SEC);
+
+        // # Dismiss the gallery
+        await dismissGallery();
+
+        // # Tap the link bookmark
+        await linkBookmarkEl.tap();
+        await wait(timeouts.ONE_SEC);
+
+        // * Verify tap does not open the bookmark options bottom sheet
+        await expect(ChannelBookmarkScreen.editOption).not.toBeVisible();
+
+        // # Long press the link bookmark to open options
+        await linkBookmarkEl.longPress();
+
+        // * Verify long press opens the bookmark options bottom sheet
+        await expect(ChannelBookmarkScreen.editOption).toBeVisible();
+
+        if (isAndroid()) {
+            await device.pressBack();
+        }
 
         // # Go back to channel list
         await ChannelScreen.back();
