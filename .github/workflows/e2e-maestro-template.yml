@@ -360,10 +360,10 @@ jobs:
                 commitSha: process.env.GITHUB_SHA || '',
               });
             } else {
-              console.log('No Maestro report found — marking as failure');
-              ['FAILURES=1','PASSES=0','TOTAL=0','ERRORS=1','SKIPPED=0','PERCENTAGE=0','NO_REPORT=true'].forEach(l => fs.appendFileSync(process.env.GITHUB_OUTPUT, l + '\n'));
+              console.log('No Maestro report found — marking as infrastructure failure');
+              ['FAILURES=-1','PASSES=0','TOTAL=0','ERRORS=0','SKIPPED=0','PERCENTAGE=0','NO_REPORT=true'].forEach(l => fs.appendFileSync(process.env.GITHUB_OUTPUT, l + '\n'));
             }
-          "
+          " || grep -q '^FAILURES=' "$GITHUB_OUTPUT" 2>/dev/null || printf 'FAILURES=-1\nPASSES=0\nTOTAL=0\nERRORS=0\nSKIPPED=0\nPERCENTAGE=0\n' >> "$GITHUB_OUTPUT"
 
       - name: Upload Maestro Report to S3
         if: always()
@@ -385,7 +385,7 @@ jobs:
 
       - name: Set Target URL
         id: set-url
-        if: always()
+        if: always() && steps.summary.conclusion == 'success' && steps.summary.outputs.FAILURES != '-1'
         env:
           S3_BUCKET: ${{ env.DETOX_AWS_S3_BUCKET }}
         run: |
@@ -698,10 +698,10 @@ jobs:
                 commitSha: process.env.GITHUB_SHA || '',
               });
             } else {
-              console.log('No Maestro report found — marking as failure');
-              ['FAILURES=1','PASSES=0','TOTAL=0','ERRORS=1','SKIPPED=0','PERCENTAGE=0','NO_REPORT=true'].forEach(l => fs.appendFileSync(process.env.GITHUB_OUTPUT, l + '\n'));
+              console.log('No Maestro report found — marking as infrastructure failure');
+              ['FAILURES=-1','PASSES=0','TOTAL=0','ERRORS=0','SKIPPED=0','PERCENTAGE=0','NO_REPORT=true'].forEach(l => fs.appendFileSync(process.env.GITHUB_OUTPUT, l + '\n'));
             }
-          "
+          " || grep -q '^FAILURES=' "$GITHUB_OUTPUT" 2>/dev/null || printf 'FAILURES=-1\nPASSES=0\nTOTAL=0\nERRORS=0\nSKIPPED=0\nPERCENTAGE=0\n' >> "$GITHUB_OUTPUT"
 
       - name: Upload Maestro Report to S3
         if: always()
@@ -723,7 +723,7 @@ jobs:
 
       - name: Set Target URL
         id: set-url
-        if: always()
+        if: always() && steps.summary.conclusion == 'success' && steps.summary.outputs.FAILURES != '-1'
         env:
           S3_BUCKET: ${{ env.DETOX_AWS_S3_BUCKET }}
         run: |

@@ -1,5 +1,5 @@
 name: update-commit-status
-description: Set a GitHub commit status (Node 24 / github-script v9)
+description: Set a GitHub check run status (Node 24 / github-script v9)
 
 inputs:
   repository_full_name:
@@ -12,7 +12,7 @@ inputs:
   description:
     required: true
   status:
-    description: success | failure | pending | error
+    description: success | failure | pending | error | skipped
     required: true
   target_url:
     required: false
@@ -33,12 +33,53 @@ runs:
         script: |
           const [owner, repo] = process.env.REPOSITORY_FULL_NAME.split('/');
           const targetUrl = process.env.TARGET_URL?.trim();
-          await github.rest.repos.createCommitStatus({
+          const status = process.env.STATUS;
+          const description = (process.env.DESCRIPTION || '').substring(0, 140);
+
+          const validStatuses = new Set(['success', 'failure', 'pending', 'error', 'skipped']);
+          if (!validStatuses.has(status)) {
+            core.setFailed(`Unsupported status "${status}". Expected one of: ${[...validStatuses].join(', ')}`);
+            return;
+          }
+
+          const isCompleted = status !== 'pending';
+          const conclusionMap = { success: 'success', failure: 'failure', error: 'failure', skipped: 'skipped' };
+
+          // Use the workflow run ID as a stable external_id so the completion call
+          // targets exactly the check run this workflow created, not a concurrent one.
+          const externalId = String(context.runId);
+
+          const payload = {
+            status: isCompleted ? 'completed' : 'in_progress',
+            ...(isCompleted ? { conclusion: conclusionMap[status] } : {}),
+            output: { title: description, summary: description },
+            ...(targetUrl ? { details_url: targetUrl } : {}),
+          };
+
+          if (isCompleted) {
+            // Find the in-progress run that this workflow created (matched by external_id).
+            const { data: { check_runs } } = await github.rest.checks.listForRef({
+              owner,
+              repo,
+              ref: process.env.COMMIT_SHA,
+              check_name: process.env.CONTEXT,
+              filter: 'all',
+              per_page: 100,
+            });
+            const existing = check_runs.find(
+              r => r.external_id === externalId && r.status !== 'completed',
+            );
+            if (existing) {
+              await github.rest.checks.update({ owner, repo, check_run_id: existing.id, ...payload });
+              return;
+            }
+          }
+
+          await github.rest.checks.create({
             owner,
             repo,
-            sha: process.env.COMMIT_SHA,
-            state: process.env.STATUS,
-            context: process.env.CONTEXT,
-            description: (process.env.DESCRIPTION || '').substring(0, 140),
-            ...(targetUrl ? {target_url: targetUrl} : {}),
+            name: process.env.CONTEXT,
+            head_sha: process.env.COMMIT_SHA,
+            external_id: externalId,
+            ...payload,
           });

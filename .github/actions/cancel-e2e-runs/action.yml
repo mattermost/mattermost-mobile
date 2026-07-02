@@ -95,18 +95,30 @@ runs:
           };
 
           const markCommitStatusesCancelled = async (sha) => {
+            const skippedOutput = {
+              title: reason.substring(0, 140),
+              summary: reason.substring(0, 140),
+            };
             for (const statusContext of E2E_STATUS_CONTEXTS) {
               try {
-                await github.rest.repos.createCommitStatus({
-                  owner,
-                  repo,
-                  sha,
-                  state: 'error',
-                  context: statusContext,
-                  description: reason.substring(0, 140),
+                // Update the existing in-progress run if one exists; otherwise create.
+                const { data: { check_runs } } = await github.rest.checks.listForRef({
+                  owner, repo, ref: sha, check_name: statusContext, filter: 'latest', per_page: 1,
                 });
+                const existing = check_runs.find(r => r.status !== 'completed');
+                if (existing) {
+                  await github.rest.checks.update({
+                    owner, repo, check_run_id: existing.id,
+                    status: 'completed', conclusion: 'skipped', output: skippedOutput,
+                  });
+                } else {
+                  await github.rest.checks.create({
+                    owner, repo, name: statusContext, head_sha: sha,
+                    status: 'completed', conclusion: 'skipped', output: skippedOutput,
+                  });
+                }
               } catch (err) {
-                core.warning(`createCommitStatus ${statusContext} on ${sha}: ${err.message}`);
+                core.warning(`markCommitStatusesCancelled ${statusContext} on ${sha}: ${err.message}`);
               }
             }
           };

@@ -68,10 +68,10 @@ jobs:
     runs-on: ubuntu-22.04
     permissions:
       actions: write
+      checks: write
       contents: read
       pull-requests: read
       issues: read
-      statuses: write
     outputs:
       e2e_override: ${{ steps.policy.outputs.e2e_override }}
     steps:
@@ -146,7 +146,7 @@ jobs:
     runs-on: ubuntu-22.04
     permissions:
       contents: read
-      statuses: write
+      checks: write
     steps:
       - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
         with:
@@ -169,7 +169,7 @@ jobs:
     runs-on: ubuntu-22.04
     permissions:
       contents: read
-      statuses: write
+      checks: write
     steps:
       - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
         with:
@@ -192,7 +192,7 @@ jobs:
     runs-on: ubuntu-22.04
     permissions:
       contents: read
-      statuses: write
+      checks: write
     steps:
       - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
         with:
@@ -458,7 +458,7 @@ jobs:
       - provision-servers
     permissions:
       contents: read
-      statuses: write
+      checks: write
       actions: read
     if: |
       !cancelled() &&
@@ -485,7 +485,7 @@ jobs:
       - provision-servers
     permissions:
       contents: read
-      statuses: write
+      checks: write
       actions: read
     if: |
       !cancelled() &&
@@ -533,7 +533,7 @@ jobs:
       - validate-maestro-flow-headers
     permissions:
       contents: read
-      statuses: write
+      checks: write
       actions: read
     if: |
       !cancelled() &&
@@ -562,7 +562,7 @@ jobs:
       - validate-maestro-flow-headers
     permissions:
       contents: read
-      statuses: write
+      checks: write
       actions: read
     if: |
       !cancelled() &&
