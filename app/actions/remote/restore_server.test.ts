@@ -6,14 +6,13 @@ import {router} from 'expo-router';
 import {DeviceEventEmitter} from 'react-native';
 
 import {loginEntry} from '@actions/remote/entry';
+import {restoreServerAfterDatabaseWipe} from '@actions/remote/restore_server';
 import {Events, Launch} from '@constants';
 import DatabaseManager from '@database/manager';
 import {getServerCredentials} from '@init/credentials';
 import {determineRouteFromLaunchProps} from '@init/launch';
 import NetworkManager from '@managers/network_manager';
 import {setCurrentUserId} from '@queries/servers/system';
-
-import {reconnectErasedServer} from './reconnect';
 
 jest.mock('@react-native-community/netinfo', () => ({
     __esModule: true,
@@ -40,7 +39,7 @@ jest.mock('@queries/servers/system', () => ({
 }));
 jest.mock('@utils/log');
 
-describe('reconnectErasedServer', () => {
+describe('restoreServerAfterDatabaseWipe', () => {
     const serverUrl = 'https://server.test';
 
     let updatePersistenceFlagSpy: jest.SpyInstance;
@@ -80,7 +79,7 @@ describe('reconnectErasedServer', () => {
     it('on no device connectivity: returns no_connection without touching the database', async () => {
         jest.mocked(NetInfo.fetch).mockResolvedValue({isConnected: false} as NetInfoState);
 
-        const result = await reconnectErasedServer(serverUrl);
+        const result = await restoreServerAfterDatabaseWipe(serverUrl);
 
         expect(mockGetMe).not.toHaveBeenCalled();
         expect(updatePersistenceFlagSpy).not.toHaveBeenCalled();
@@ -88,8 +87,19 @@ describe('reconnectErasedServer', () => {
         expect(result).toEqual({error: 'no_connection'});
     });
 
+    it('on no credentials: returns no_credentials without touching the database', async () => {
+        jest.mocked(getServerCredentials).mockResolvedValue(null);
+
+        const result = await restoreServerAfterDatabaseWipe(serverUrl);
+
+        expect(mockGetMe).not.toHaveBeenCalled();
+        expect(updatePersistenceFlagSpy).not.toHaveBeenCalled();
+        expect(router.replace).not.toHaveBeenCalled();
+        expect(result).toEqual({error: 'no_credentials'});
+    });
+
     it('on success: persists current user, opens WebSocket via loginEntry, and navigates home', async () => {
-        const result = await reconnectErasedServer(serverUrl);
+        const result = await restoreServerAfterDatabaseWipe(serverUrl);
 
         expect(mockGetMe).toHaveBeenCalled();
         expect(mockHandleUsers).toHaveBeenCalledWith({users: [fakeUser], prepareRecordsOnly: false});
@@ -106,7 +116,7 @@ describe('reconnectErasedServer', () => {
     it('on 401 from getMe: emits SERVER_LOGOUT to delegate teardown to SessionManager', async () => {
         mockGetMe.mockRejectedValue({status_code: 401, message: 'Unauthorized'});
 
-        const result = await reconnectErasedServer(serverUrl);
+        const result = await restoreServerAfterDatabaseWipe(serverUrl);
 
         expect(emitSpy).toHaveBeenCalledWith(Events.SERVER_LOGOUT, {serverUrl, removeServer: false});
         expect(loginEntry).not.toHaveBeenCalled();
@@ -119,7 +129,7 @@ describe('reconnectErasedServer', () => {
         const networkError = new Error('Server unreachable');
         mockGetMe.mockRejectedValue(networkError);
 
-        const result = await reconnectErasedServer(serverUrl);
+        const result = await restoreServerAfterDatabaseWipe(serverUrl);
 
         expect(wipeServerDataSpy).toHaveBeenCalledWith(serverUrl);
         expect(loginEntry).not.toHaveBeenCalled();
@@ -133,7 +143,7 @@ describe('reconnectErasedServer', () => {
         const wsError = new Error('WebSocket failed');
         jest.mocked(loginEntry).mockResolvedValue({error: wsError});
 
-        const result = await reconnectErasedServer(serverUrl);
+        const result = await restoreServerAfterDatabaseWipe(serverUrl);
 
         expect(wipeServerDataSpy).toHaveBeenCalledWith(serverUrl);
         expect(updatePersistenceFlagSpy).not.toHaveBeenCalled();
