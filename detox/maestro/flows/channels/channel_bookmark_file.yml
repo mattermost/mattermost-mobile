@@ -49,6 +49,10 @@ appId: ${MAESTRO_APP_ID}
     timeout: 10000
 
 # --- Tap "Add a bookmark" to open the bookmark type picker ---
+- extendedWaitUntil:
+    visible:
+      id: "channel_info.add_bookmark.button"
+    timeout: 30000
 - tapOn:
     id: "channel_info.add_bookmark.button"
 # Wait for the bottom sheet to appear (animated in) and its accessibility tree to register.

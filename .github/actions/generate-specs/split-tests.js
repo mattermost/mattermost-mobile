@@ -17,16 +17,45 @@ class SpecGroup {
   }
 }
 
+function toRepoRelative(filePath) {
+  const repoRoot = process.cwd();
+  if (path.isAbsolute(filePath)) {
+    return path.relative(repoRoot, filePath);
+  }
+  return filePath;
+}
+
 class Specs {
-  constructor(searchPath, parallelism, deviceInfo) {
+  constructor(searchPath, parallelism, deviceInfo, specListFile) {
     this.searchPath = searchPath;
     this.parallelism = parallelism;
     this.rawFiles = [];
     this.groupedFiles = [];
     this.deviceInfo = deviceInfo;
+    this.specListFile = specListFile;
   }
 
   findFiles() {
+    if (this.specListFile) {
+      const manifestPath = path.isAbsolute(this.specListFile)
+        ? this.specListFile
+        : path.join(process.cwd(), this.specListFile);
+      const parsed = JSON.parse(fs.readFileSync(manifestPath, 'utf8'));
+      const listed = Array.isArray(parsed) ? parsed : parsed.specs;
+      if (!Array.isArray(listed) || listed.length === 0) {
+        throw new Error(`spec list manifest is empty: ${manifestPath}`);
+      }
+      this.rawFiles = listed.map((listedPath) => {
+        const repoRelative = toRepoRelative(listedPath);
+        const fullPath = path.join(process.cwd(), repoRelative);
+        if (!fs.existsSync(fullPath)) {
+          throw new Error(`spec from manifest not found: ${fullPath}`);
+        }
+        return repoRelative;
+      });
+      return;
+    }
+
     const dirPath = path.join(this.searchPath);
 
     const fileRegex = /\.e2e\.ts$/;
@@ -48,7 +77,7 @@ class Specs {
         } else if (fileRegex.test(filePath)) {
           const relativeFilePath = filePath.replace(dirPath + '/', '');
           const fullPath = path.join(this.searchPath, relativeFilePath);
-          this.rawFiles.push(fullPath);
+          this.rawFiles.push(toRepoRelative(fullPath));
         }
       });
     };
@@ -90,10 +119,16 @@ function main() {
   const parallelism = parseInt(process.env.PARALLELISM, 10);
   const deviceName = process.env.DEVICE_NAME;
   const deviceOsVersion = process.env.DEVICE_OS_VERSION;
+  const specListFile = process.env.SPEC_LIST_FILE || '';
   const deviceInfo = new DeviceInfo(deviceName, deviceOsVersion);
-  const specs = new Specs(searchPath, parallelism, deviceInfo);
+  const specs = new Specs(searchPath, parallelism, deviceInfo, specListFile || null);
 
   specs.findFiles();
+  if (specs.rawFiles.length < parallelism) {
+    console.error(
+      `Warning: ${specs.rawFiles.length} spec(s) < parallelism ${parallelism}; some shards will be empty`,
+    );
+  }
   specs.generateSplits();
   specs.dumpSplits();
 }

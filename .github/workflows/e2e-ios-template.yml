@@ -84,6 +84,11 @@ on:
         required: false
         type: string
         default: "20"
+      spec_list_file:
+        description: "Optional JSON manifest of spec paths — only those files are sharded (failing-spec CI mode)"
+        required: false
+        type: string
+        default: ""
       detox_config:
         description: "Detox configuration name to use (e.g. ios.sim.debug, ios.ipad.debug)"
         required: false
@@ -137,7 +142,7 @@ env:
   FAILURE_MESSAGE: "Something has failed"
   IOS: "true"
   RUNNING_E2E: "true"
-  ARTIFACT_RUN_ID: ${{ inputs.artifact_run_id || github.run_id }}
+  ARTIFACT_RUN_ID: ${{ inputs.artifact_run_id }}
 
 jobs:
   generate-specs:
@@ -173,6 +178,7 @@ jobs:
         with:
           parallelism: ${{ inputs.parallelism }}
           search_path: ${{ inputs.search_path }}
+          spec_list_file: ${{ inputs.spec_list_file }}
           device_name: ${{ env.DEVICE_NAME }}
           device_os_version: ${{ env.DEVICE_OS_VERSION }}
 
@@ -212,17 +218,33 @@ jobs:
 
       - name: Install Homebrew Dependencies
         run: |
-          brew trust wix/brew 2>/dev/null || true
-          brew tap wix/brew
-          brew install applesimutils || true
+          # Runner images ship aws/tap untrusted; Detox does not use it.
+          if brew tap 2>/dev/null | grep -qx 'aws/tap'; then
+            brew untap aws/tap
+          fi
+
+          brew trust wix/brew
+
+          # Clone wix/brew manually so we can patch deprecated cask syntax before
+          # Homebrew loads the tap (brew tap audits Casks/detox-instruments.rb).
+          TAP_DIR="$(brew --repository wix/brew)"
+          if [ ! -f "$TAP_DIR/Formula/applesimutils.rb" ]; then
+            mkdir -p "$(dirname "$TAP_DIR")"
+            git clone --depth 1 https://github.com/wix/homebrew-brew.git "$TAP_DIR"
+          fi
+          sed -i '' 's/depends_on macos: ">= :catalina"/depends_on macos: :catalina/' \
+            "$TAP_DIR/Casks/detox-instruments.rb"
+
+          brew install wix/brew/applesimutils || true
           # Cache restores Cellar without /opt/homebrew/bin symlinks — link the tap formula explicitly.
           brew link --overwrite --force wix/brew/applesimutils 2>/dev/null \
             || brew link --overwrite applesimutils
 
-      - name: Download iOS Simulator Build
+      - name: Download iOS Simulator Build from parent workflow
         uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
         with:
           name: ios-build-simulator-${{ env.ARTIFACT_RUN_ID }}
+          repository: ${{ github.repository }}
           run-id: ${{ env.ARTIFACT_RUN_ID }}
           github-token: ${{ github.token }}
           path: mobile-artifacts
@@ -230,8 +252,24 @@ jobs:
       - name: Unzip iOS Simulator Build
         run: |
           unzip -o mobile-artifacts/*.zip -d mobile-artifacts/
-          # delete zip file
           rm -f mobile-artifacts/*.zip
+
+      - name: Verify Detox iOS app from parent build
+        run: |
+          if [ -z "${ARTIFACT_RUN_ID}" ]; then
+            echo "❌ ARTIFACT_RUN_ID is empty — parent workflow must pass artifact_run_id from build-ios-simulator"
+            exit 1
+          fi
+          APP_PATH=$(find mobile-artifacts -name "*.app" -maxdepth 2 | head -1)
+          if [ -z "$APP_PATH" ]; then
+            echo "❌ No .app in mobile-artifacts/ from ios-build-simulator-${ARTIFACT_RUN_ID}"
+            ls -la mobile-artifacts/ || true
+            exit 1
+          fi
+          echo "✅ Detox will use iOS app from parent workflow run ${ARTIFACT_RUN_ID}: ${APP_PATH}"
+          ls -ld "$APP_PATH"
+        env:
+          ARTIFACT_RUN_ID: ${{ env.ARTIFACT_RUN_ID }}
 
       - name: Prepare Low Bandwidth Environment
         id: prepare-low-bandwidth
@@ -594,7 +632,7 @@ jobs:
             # Verify Metro is actually serving the bundle (not just the process is running).
             # This catches cases where Metro reports ready but hasn't finished compilation.
             echo "Verifying Metro can serve bundles..."
-            if curl -s http://localhost:8081/index.ios.bundle 2>/dev/null | grep -q "__d("; then
+            if curl -sf "http://localhost:8081/index.bundle?platform=ios&dev=true&minify=false" 2>/dev/null | head -c 200 | grep -q "__d"; then
               echo "✅ Metro is serving bundles successfully"
             else
               echo "⚠️ Warning: Could not verify Metro is serving bundles, proceeding anyway"

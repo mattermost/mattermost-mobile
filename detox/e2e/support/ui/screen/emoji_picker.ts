@@ -3,7 +3,7 @@
 
 import {SearchBar} from '@support/ui/component';
 import {PostOptionsScreen} from '@support/ui/screen';
-import {isAndroid, isIos, timeouts, wait} from '@support/utils';
+import {isAndroid, isIos, timeouts, wait, waitForElementToBeVisible, waitForElementToExist} from '@support/utils';
 
 class EmojiPickerScreen {
     testID = {
@@ -24,9 +24,19 @@ class EmojiPickerScreen {
     clearButton = SearchBar.getClearButton(this.testID.emojiPickerScreenPrefix);
 
     toBeVisible = async () => {
-        await waitFor(this.searchInput).toExist().withTimeout(timeouts.TEN_SEC);
-        if (!isAndroid()) {
-            await waitFor(this.searchInput).toBeVisible().withTimeout(timeouts.TEN_SEC);
+        try {
+            await waitFor(this.toolTipCloseButton).toBeVisible().withTimeout(timeouts.TWO_SEC);
+            await this.toolTipCloseButton.tap();
+        } catch {
+            // Skin-tone tooltip may not appear on every open.
+        }
+
+        const inputTimeout = isAndroid() ? timeouts.TWENTY_SEC : timeouts.TEN_SEC;
+        await waitForElementToExist(this.searchInput, inputTimeout);
+        if (isAndroid()) {
+            await waitForElementToBeVisible(this.searchInput, inputTimeout);
+        } else {
+            await waitFor(this.searchInput).toBeVisible().withTimeout(inputTimeout);
         }
 
         return this.searchInput;
@@ -66,6 +76,36 @@ class EmojiPickerScreen {
         await wait(timeouts.ONE_SEC);
         await waitFor(this.searchInput).not.toExist().withTimeout(timeouts.TEN_SEC);
         await wait(timeouts.ONE_SEC);
+    };
+
+    tapSearchResultEmoji = async (glyph: string, emojiShortName?: string) => {
+        const ancestorMatchers = [
+            by.id(this.testID.emojiPickerScreen),
+            by.id('emoji_picker'),
+            by.id('custom_emoji_picker'),
+        ];
+        const labels = emojiShortName ? [glyph, `:${emojiShortName}:`] : [glyph];
+
+        /* eslint-disable no-await-in-loop -- try each ancestor/label combination until one taps */
+        for (const ancestor of ancestorMatchers) {
+            for (const label of labels) {
+                try {
+                    const emoji = element(by.text(label).withAncestor(ancestor)).atIndex(0);
+                    if (isAndroid()) {
+                        await waitFor(emoji).toExist().withTimeout(timeouts.FIVE_SEC);
+                    } else {
+                        await waitFor(emoji).toBeVisible().withTimeout(timeouts.TEN_SEC);
+                    }
+                    await emoji.tap();
+                    return;
+                } catch {
+                    // Try the next ancestor/label combination.
+                }
+            }
+        }
+        /* eslint-enable no-await-in-loop */
+
+        throw new Error(`tapSearchResultEmoji: could not tap ${glyph}`);
     };
 }
 

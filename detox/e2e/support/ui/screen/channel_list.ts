@@ -8,7 +8,15 @@ import {
 } from '@support/ui/component';
 import {dismissKnownModals} from '@support/ui/modal_dismiss';
 import {HomeScreen} from '@support/ui/screen';
-import {tapNativeBackButton, timeouts, wait, waitForElementToExist} from '@support/utils';
+import {
+    isAndroid,
+    safeEnableSynchronization,
+    tapNativeBackButton,
+    timeouts,
+    wait,
+    waitForElementToExist,
+    waitForElementToNotExist,
+} from '@support/utils';
 import {waitFor} from 'detox';
 
 class ChannelListScreen {
@@ -118,7 +126,7 @@ class ChannelListScreen {
             {name: 'category_header.direct_messages.display_name', el: this.getCategoryHeaderDisplayName('direct_messages')},
         ];
         const probeResults: string[] = [];
-        /* eslint-disable no-await-in-loop, no-console */
+        /* eslint-disable no-await-in-loop */
         for (const probe of probes) {
             try {
                 await waitForElementToExist(probe.el, timeouts.HALF_SEC);
@@ -127,7 +135,7 @@ class ChannelListScreen {
                 probeResults.push(`${probe.name}=absent`);
             }
         }
-        /* eslint-enable no-await-in-loop, no-console */
+        /* eslint-enable no-await-in-loop */
         // eslint-disable-next-line no-console
         console.warn(
             `[waitForSidebarPublicChannelDisplayNameVisible] FAIL channelName=${channelName} ` +
@@ -189,14 +197,45 @@ class ChannelListScreen {
             } catch {
                 // Not on channel list yet.
             }
-            let popped = false;
+
+            // Browse Channels modal blocks the sidebar — close it before back navigation.
             try {
-                await waitFor(NavigationHeader.backButton).toExist().withTimeout(timeouts.TWO_SEC);
-                await NavigationHeader.backButton.tap();
+                const browseChannelsScreen = element(by.id('browse_channels.screen'));
+                await waitForElementToExist(browseChannelsScreen, timeouts.TWO_SEC);
+                await element(by.id('close.browse_channels.button')).tap();
+                await waitForElementToNotExist(browseChannelsScreen, timeouts.TEN_SEC);
+                await wait(timeouts.ONE_SEC);
+                continue;
+            } catch {
+                // Browse Channels is not open.
+            }
+            let popped = false;
+
+            // Search & permalink are bottom-tabs — no close button and no back
+            // button. The search.cancel.button in KNOWN_MODAL_CLOSE_BUTTON_IDS
+            // only clears the search text (and only renders while the search
+            // input is focused), so it cannot navigate off the search tab.
+            // Switch to the channel-list tab first; this is the same tap the
+            // tests' own ChannelListScreen.open() uses. Avoids the otherwise-
+            // inevitable nuclear newInstance relaunch with disableSynchronization,
+            // which poisons every downstream test on the shard.
+            try {
+                await waitFor(HomeScreen.channelListTab).toExist().withTimeout(timeouts.TWO_SEC);
+                await HomeScreen.channelListTab.tap();
                 await wait(timeouts.ONE_SEC);
                 popped = true;
             } catch {
-                // No custom NavigationHeader back — fall through to native back.
+                // Home tab not hittable — fall through to back-button probes.
+            }
+            if (!popped) {
+                try {
+                    await waitFor(NavigationHeader.backButton).toExist().withTimeout(timeouts.TWO_SEC);
+                    await NavigationHeader.backButton.tap();
+                    await wait(timeouts.ONE_SEC);
+                    popped = true;
+                } catch {
+                    // No custom NavigationHeader back — fall through to native back.
+                }
             }
             if (!popped) {
                 try {
@@ -267,9 +306,49 @@ class ChannelListScreen {
 
     open = async () => {
         // # Open channel list screen
+        await waitFor(HomeScreen.channelListTab).toExist().withTimeout(timeouts.TEN_SEC);
+
+        // iOS 26.x: corner-tap fails 100% visibility on tab_bar.home.tab (MM-T3393_2 trace).
         await HomeScreen.channelListTab.tap();
 
         return this.toBeVisible();
+    };
+
+    openPlusMenu = async () => {
+        await dismissKnownModals(2);
+        await this.toBeVisible();
+        await waitForElementToExist(this.headerPlusButton, timeouts.HALF_MIN);
+
+        const disableSyncForOpen = isAndroid();
+        if (disableSyncForOpen) {
+            await device.disableSynchronization();
+        }
+        try {
+            let plusTapError: unknown;
+            /* eslint-disable no-await-in-loop -- retry plus-button tap while transition overlay clears */
+            for (let i = 0; i < 3; i++) {
+                try {
+                    await this.headerPlusButton.tap();
+                    plusTapError = undefined;
+                    break;
+                } catch (err) {
+                    plusTapError = err;
+                    await wait(timeouts.ONE_SEC);
+                }
+            }
+            /* eslint-enable no-await-in-loop */
+            if (plusTapError) {
+                throw plusTapError;
+            }
+            await wait(timeouts.ONE_SEC);
+
+            // Android: menu items mount before they pass the 15% visibility threshold.
+            await waitForElementToExist(this.openDirectMessageItem, timeouts.TEN_SEC);
+        } finally {
+            if (disableSyncForOpen) {
+                await safeEnableSynchronization();
+            }
+        }
     };
 
     draftsButton = {

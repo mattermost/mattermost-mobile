@@ -131,7 +131,7 @@ async function serverSetup() {
     const nodeIndex = parseInt(process.env.CI_NODE_INDEX || '0', 10);
     if (nodeIndex > 0) {
         process.stdout.write(`[globalSetup] Shard ${nodeIndex}: staggering startup by ${nodeIndex * 1500}ms\n`);
-        await new Promise((r) => setTimeout(r, nodeIndex * 1500)); // eslint-disable-line no-promise-executor-return
+        await new Promise((r) => setTimeout(r, nodeIndex * 1500));
     }
 
     http.globalAgent.options.family = 4;
@@ -174,6 +174,16 @@ async function serverSetup() {
     }
     const headers = {Authorization: `Bearer ${token}`};
     process.stdout.write('[globalSetup] ✅ Admin login successful\n');
+
+    // ponytail: pre-warm the server connection with a post-login ping so the first
+    // app-level request isn't also the server's first cold request. (Note: this warms
+    // the SERVER, not the iOS sim's own TLS session — it won't prevent -1005 drops on
+    // the app's first POST, but it's a cheap best-effort.)
+    try {
+        await axios.get(`${SITE_URL}/api/v4/system/ping`);
+    } catch (err) {
+        process.stderr.write(`[globalSetup] ⚠️ post-login ping failed (${err.message}) — continuing\n`);
+    }
 
     try {
         await axios.put(`${SITE_URL}/api/v4/config/patch`, {

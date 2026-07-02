@@ -61,12 +61,17 @@ class ManageChannelMembersScreen {
     };
 
     open = async () => {
-        // # Tap on members option to navigate to manage members screen.
-        // Wait for the element to be visible first to ensure it is on-screen and
-        // tappable before interacting with it.
+        // Scroll down to bring the members option into view — on iOS 26.x the channel
+        // info screen is taller than the viewport and the members option can be clipped.
+        try {
+            await ChannelInfoScreen.scrollView.scroll(200, 'down');
+        } catch {
+            // scrollView may not need scrolling
+        }
         await waitFor(ChannelInfoScreen.membersOption).toBeVisible().withTimeout(timeouts.TEN_SEC);
         await ChannelInfoScreen.membersOption.tap();
-        await wait(timeouts.ONE_SEC);
+
+        return this.toBeVisible();
     };
 
     close = async () => {
@@ -132,13 +137,21 @@ class ManageChannelMembersScreen {
             } catch { /* keyboard may already be dismissed */ }
             await wait(timeouts.HALF_SEC);
         }
-        await userDisplayName.tap();
+
+        // Corner-tap: the member row's center is obscured by the manage-members
+        // modal's UITransitionView (same workaround as PostOptionsScreen.deletePost).
+        await userDisplayName.tap({x: 1, y: 1});
         await wait(timeouts.TWO_SEC);
 
-        await expect(this.removeButton).toBeVisible();
-        await this.removeButton.tap();
-        await wait(timeouts.TWO_SEC);
+        await waitFor(this.removeButton).toBeVisible().withTimeout(timeouts.TEN_SEC);
 
+        // Corner-tap: same modal UITransitionView interferes with this button's
+        // center tap as well — the corner-tap on userDisplayName above only
+        // covers the first interaction; this row is rendered under the same
+        // transition layer.
+        await this.removeButton.tap({x: 1, y: 1});
+
+        await waitFor(Alert.removeButton).toBeVisible().withTimeout(timeouts.TEN_SEC);
         await Alert.removeButton.tap();
         await wait(timeouts.TWO_SEC);
 

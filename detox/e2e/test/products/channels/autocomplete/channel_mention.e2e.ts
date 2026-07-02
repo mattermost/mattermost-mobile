@@ -199,6 +199,38 @@ describe('Autocomplete - Channel Mention', () => {
         await expect(channelMentionAutocomplete).not.toExist();
     });
 
+    it('MM-T4879_7 - should be able to select channel mention multiple times', async () => {
+        // # Type "~" in the post input to activate channel mention autocomplete
+        await expect(Autocomplete.sectionChannelMentionList).not.toExist();
+        await ChannelScreen.postInput.typeText('~');
+        await Autocomplete.toBeVisible();
+
+        // * Verify channel mention list is displayed
+        await expect(Autocomplete.sectionChannelMentionList).toExist();
+
+        // # Type in channel name and tap on channel mention autocomplete
+        await ChannelScreen.postInput.typeText(testChannel.name);
+        await channelMentionAutocomplete.tap();
+
+        // * Verify channel mention list disappears
+        // After selecting a channel mention, the autocomplete dismissal is driven
+        // by a React state update; on iOS 26 CI the assertion can race the update
+        // (see MM-T4879_5 which uses the same settle-then-assert pattern after
+        // typing a trailing space). Brief settle keeps this deterministic without
+        // a timeout bump.
+        await wait(timeouts.ONE_SEC);
+        await expect(Autocomplete.sectionChannelMentionList).not.toExist();
+
+        // # Clear the input (which now contains the inserted channel mention text),
+        // then re-activate channel mention list by typing "~".
+        await ChannelScreen.postInput.clearText();
+        await ChannelScreen.postInput.typeText('~');
+        await Autocomplete.toBeVisible();
+
+        // * Verify channel mention list is displayed
+        await expect(Autocomplete.sectionChannelMentionList).toExist();
+    });
+
     it('MM-T4879_8 - should be able to autocomplete archived channel', async () => {
         // # Archive another team channel and type "~" to activate autocomplete
         await Channel.apiDeleteChannel(siteOneUrl, testOtherChannel.id);

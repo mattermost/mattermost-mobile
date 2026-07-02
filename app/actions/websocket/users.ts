@@ -48,6 +48,19 @@ export async function handleUserUpdatedEvent(serverUrl: string, msg: WebSocketMe
                 if (me.user) {
                     userToSave = me.user;
                 }
+            } else if (!user.props || !('customStatus' in (user.props || {}))) {
+                // WS event may omit props.customStatus (sanitized) — preserve
+                // the existing customStatus so it isn't cleared by the update.
+                // CI 28495858512: custom status set via API never appeared on
+                // account screen because the user_updated WS event overwrote
+                // props without customStatus.
+                userToSave = {
+                    ...user,
+                    props: {
+                        ...(user.props || {}),
+                        customStatus: currentUser.props?.customStatus,
+                    },
+                };
             }
 
             // Update GMs display name if locale has changed

@@ -39,12 +39,13 @@ describe('Messaging - Channel Mention', () => {
         testTeam = team;
         testUser = user;
 
+        // # Fresh app instance — CI shard-11 trace shows LoginScreen.login retryWithReload
+        // burning the full 240s hook when reusing a polluted session from prior describes.
+        await device.launchApp({newInstance: true});
+
         // # Log in to server
         await ServerScreen.connectToServer(serverOneUrl, serverOneDisplayName);
         await LoginScreen.login(testUser);
-
-        // Ensure the channel has propagated to the sidebar before any test body runs.
-        await ChannelListScreen.waitForSidebarPublicChannelDisplayNameVisible(testChannel.name);
     });
 
     beforeEach(async () => {

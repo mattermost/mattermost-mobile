@@ -78,6 +78,11 @@ on:
         required: false
         type: string
         default: "20"
+      spec_list_file:
+        description: "Optional JSON manifest of spec paths — only those files are sharded (failing-spec CI mode)"
+        required: false
+        type: string
+        default: ""
       android_avd_name:
         description: "Android Emulator name"
         required: false
@@ -138,7 +143,7 @@ env:
   RUNNING_E2E: "true"
   AVD_NAME: ${{ inputs.android_avd_name }}
   SDK_VERSION: ${{ inputs.android_api_level }}
-  ARTIFACT_RUN_ID: ${{ inputs.artifact_run_id || github.run_id }}
+  ARTIFACT_RUN_ID: ${{ inputs.artifact_run_id }}
 
 jobs:
   generate-specs:
@@ -174,6 +179,7 @@ jobs:
         with:
           parallelism: ${{ inputs.parallelism }}
           search_path: ${{ inputs.search_path }}
+          spec_list_file: ${{ inputs.spec_list_file }}
           device_name: ${{ env.AVD_NAME }}
           device_os_version: ${{ env.SDK_VERSION }}
 
@@ -229,13 +235,37 @@ jobs:
           RUNNING_E2E=true
           EOF
   
-      - name: Download APK artifact
+      - name: Download Detox Android build from parent workflow
         uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
         with:
           name: android-build-files-${{ env.ARTIFACT_RUN_ID }}
+          repository: ${{ github.repository }}
           run-id: ${{ env.ARTIFACT_RUN_ID }}
           github-token: ${{ github.token }}
           path: android/app/build
+
+      - name: Verify Detox Android app from parent build
+        run: |
+          if [ -z "${ARTIFACT_RUN_ID}" ]; then
+            echo "❌ ARTIFACT_RUN_ID is empty — parent workflow must pass artifact_run_id from build-android-apk"
+            exit 1
+          fi
+          APP_APK="android/app/build/outputs/apk/debug/app-debug.apk"
+          TEST_APK="android/app/build/outputs/apk/androidTest/debug/app-debug-androidTest.apk"
+          if [ ! -f "$APP_APK" ]; then
+            echo "❌ Missing ${APP_APK} from android-build-files-${ARTIFACT_RUN_ID}"
+            find android/app/build -name '*.apk' 2>/dev/null || true
+            exit 1
+          fi
+          if [ ! -f "$TEST_APK" ]; then
+            echo "❌ Missing ${TEST_APK} from android-build-files-${ARTIFACT_RUN_ID}"
+            find android/app/build -name '*.apk' 2>/dev/null || true
+            exit 1
+          fi
+          echo "✅ Detox will use Android APKs from parent workflow run ${ARTIFACT_RUN_ID}:"
+          ls -lh "$APP_APK" "$TEST_APK"
+        env:
+          ARTIFACT_RUN_ID: ${{ env.ARTIFACT_RUN_ID }}
 
       - name: Set up Android SDK
         run: |

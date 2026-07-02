@@ -1,0 +1,28 @@
+{
+    "source_run": "28392181656",
+    "source_commit": "c2306aa53",
+    "generated_at": "2026-06-29",
+    "note": "Regenerate: node detox/scripts/generate-failing-specs-manifest.js <junit-dirs>",
+    "failed_mm_t_count": 44,
+    "specs": [
+        "detox/e2e/test/products/channels/account/about.e2e.ts",
+        "detox/e2e/test/products/channels/account/custom_status.e2e.ts",
+        "detox/e2e/test/products/channels/account/user_attributes.e2e.ts",
+        "detox/e2e/test/products/channels/channel_settings/channel_members.e2e.ts",
+        "detox/e2e/test/products/channels/channels/channel_bookmarks.e2e.ts",
+        "detox/e2e/test/products/channels/channels/channel_bookmarks_permissions.e2e.ts",
+        "detox/e2e/test/products/channels/channels/channel_list.e2e.ts",
+        "detox/e2e/test/products/channels/channels/create_direct_message.e2e.ts",
+        "detox/e2e/test/products/channels/channels/edit_channel.e2e.ts",
+        "detox/e2e/test/products/channels/channels/favorite_and_unfavorite_channel.e2e.ts",
+        "detox/e2e/test/products/channels/messaging/file_preview_gallery.e2e.ts",
+        "detox/e2e/test/products/channels/search/pinned_messages.e2e.ts",
+        "detox/e2e/test/products/channels/search/recent_mentions.e2e.ts",
+        "detox/e2e/test/products/channels/search/saved_messages.e2e.ts",
+        "detox/e2e/test/products/channels/search/search_cycle.e2e.ts",
+        "detox/e2e/test/products/channels/search/search_message_post_actions.e2e.ts",
+        "detox/e2e/test/products/channels/search/search_messages.e2e.ts",
+        "detox/e2e/test/products/channels/search/search_results.e2e.ts",
+        "detox/e2e/test/products/channels/smoke_test/channels.e2e.ts"
+    ]
+}

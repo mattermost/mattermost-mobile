@@ -50,6 +50,10 @@ appId: ${MAESTRO_APP_ID}
     timeout: 10000
 
 # --- Open the bookmark type picker bottom sheet ---
+- extendedWaitUntil:
+    visible:
+      id: "channel_info.add_bookmark.button"
+    timeout: 30000
 - tapOn:
     id: "channel_info.add_bookmark.button"
 - extendedWaitUntil:

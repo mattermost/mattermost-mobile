@@ -3,7 +3,7 @@
 
 import {PostOptionsScreen} from '@support/ui/screen';
 import {isAndroid, timeouts} from '@support/utils';
-import {expect} from 'detox';
+import {expect, waitFor} from 'detox';
 
 class EditPostScreen {
     testID = {
@@ -40,6 +40,29 @@ class EditPostScreen {
     close = async () => {
         await this.closeButton.tap();
         await expect(this.editPostScreen).not.toBeVisible();
+    };
+
+    save = async () => {
+        await this.saveButton.tap();
+        try {
+            await waitFor(this.editPostScreen).not.toExist().withTimeout(timeouts.TWENTY_SEC);
+        } catch (primaryError) {
+            // Only dismiss when the modal is still animating out — not when save failed.
+            try {
+                await waitFor(this.closeButton).toExist().withTimeout(timeouts.FOUR_SEC);
+                await this.closeButton.tap();
+                await waitFor(this.editPostScreen).not.toExist().withTimeout(timeouts.TEN_SEC);
+            } catch {
+                if (isAndroid()) {
+                    try {
+                        await device.pressBack();
+                        await waitFor(this.editPostScreen).not.toExist().withTimeout(timeouts.TEN_SEC);
+                        return;
+                    } catch { /* fall through */ }
+                }
+                throw primaryError;
+            }
+        }
     };
 }
 

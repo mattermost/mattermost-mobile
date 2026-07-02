@@ -5,11 +5,11 @@ import {logInfo, logWarn} from './log';
 
 import type {MattermostClient} from './types';
 
-const DEFAULT_FIELDS = ['Bio', 'Department', 'Team'];
+const USER_ATTRIBUTE_FIELD_NAMES = ['Bio', 'Department', 'Team'] as const;
 
 type CustomProfileAttributeField = {id: string; name: string};
 
-export async function ensureCustomProfileAttributeFields(client: MattermostClient, token: string): Promise<void> {
+export async function ensureCustomProfileAttributeFields(client: MattermostClient, token: string): Promise<boolean> {
     const listRes = await client.request<CustomProfileAttributeField[]>(
         'GET',
         '/api/v4/custom_profile_attributes/fields',
@@ -17,15 +17,15 @@ export async function ensureCustomProfileAttributeFields(client: MattermostClien
         token,
     );
     if (listRes.status >= 400) {
-        logWarn(`Could not list custom profile attribute fields (HTTP ${listRes.status}). User attribute tests may skip.`);
-        return;
+        logWarn(`Could not list custom profile attribute fields (HTTP ${listRes.status}).`);
+        return false;
     }
 
     const existing = Array.isArray(listRes.data) ? listRes.data : [];
     const existingNames = new Set(existing.map((field) => field.name));
 
-    /* eslint-disable no-await-in-loop -- create missing fields one at a time for clear logs */
-    for (const name of DEFAULT_FIELDS) {
+    /* eslint-disable no-await-in-loop */
+    for (const name of USER_ATTRIBUTE_FIELD_NAMES) {
         if (existingNames.has(name)) {
             continue;
         }
@@ -38,8 +38,28 @@ export async function ensureCustomProfileAttributeFields(client: MattermostClien
             token,
         );
         if (createRes.status >= 400) {
-            logWarn(`Failed to create custom profile attribute field "${name}" (HTTP ${createRes.status}).`);
+            logWarn(`Failed to create field "${name}" (HTTP ${createRes.status}).`);
         }
     }
     /* eslint-enable no-await-in-loop */
+
+    const verifyRes = await client.request<CustomProfileAttributeField[]>(
+        'GET',
+        '/api/v4/custom_profile_attributes/fields',
+        undefined,
+        token,
+    );
+    if (verifyRes.status >= 400) {
+        return false;
+    }
+
+    const verifiedNames = new Set((verifyRes.data ?? []).map((field) => field.name));
+    const missing = USER_ATTRIBUTE_FIELD_NAMES.filter((name) => !verifiedNames.has(name));
+    if (missing.length > 0) {
+        logWarn(`Missing custom profile fields after provision: ${missing.join(', ')}`);
+        return false;
+    }
+
+    logInfo('Custom profile attribute fields ready.');
+    return true;
 }

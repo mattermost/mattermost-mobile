@@ -218,6 +218,50 @@ start_server() {
         elapsed=$((elapsed + interval))
     done
     echo "Server is ready."
+
+    echo "Pre-warming Metro Android bundle before Detox launchApp..."
+    local bundle_url="http://127.0.0.1:8081/index.bundle?platform=android&dev=true&minify=false"
+    local metro_status_url="http://127.0.0.1:8081/status"
+    local status_timeout=120 status_elapsed=0 status_interval=2
+
+    # Wait for Metro HTTP — does not trigger a bundle build.
+    until curl -sf "$metro_status_url" 2>/dev/null | grep -q "packager-status:running"; do
+        if [[ $status_elapsed -ge $status_timeout ]]; then
+            echo "ERROR: Metro packager did not report running within ${status_timeout}s"
+            exit 1
+        fi
+        echo "Waiting for Metro packager status... (${status_elapsed}s)"
+        sleep $status_interval
+        status_elapsed=$((status_elapsed + status_interval))
+    done
+
+    # One bundle request only. Polling the bundle URL in a loop starts a fresh Metro
+    # build on every curl (CI log: 94% → 0% repeatedly) and never finishes.
+    echo "Compiling Android bundle (single request, up to 300s)..."
+    local bundle_timeout=300
+    local bundle_file
+    bundle_file=$(mktemp)
+    if ! curl -sf --max-time "$bundle_timeout" "$bundle_url" -o "$bundle_file"; then
+        echo "ERROR: failed to download Metro Android bundle within ${bundle_timeout}s"
+        rm -f "$bundle_file"
+        exit 1
+    fi
+
+    local bundle_bytes
+    bundle_bytes=$(wc -c < "$bundle_file" | tr -d ' ')
+    if [[ "$bundle_bytes" -lt 500000 ]]; then
+        echo "ERROR: Metro Android bundle too small (${bundle_bytes} bytes)"
+        head -c 500 "$bundle_file" || true
+        rm -f "$bundle_file"
+        exit 1
+    fi
+    if ! grep -q '__d' "$bundle_file"; then
+        echo "ERROR: Metro Android bundle missing __d module marker"
+        rm -f "$bundle_file"
+        exit 1
+    fi
+    rm -f "$bundle_file"
+    echo "Metro Android bundle is ready (${bundle_bytes} bytes)."
 }
 
 setup_adb_reverse() {

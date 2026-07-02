@@ -29,7 +29,7 @@ import {
     DraftScreen,
     ThreadScreen,
 } from '@support/ui/screen';
-import {isAndroid, timeouts, wait, waitForElementToBeVisible} from '@support/utils';
+import {isAndroid, isIos, timeouts, wait, waitForElementToBeVisible} from '@support/utils';
 import {expect} from 'detox';
 
 describe('Scheduled Draft,', () => {
@@ -194,6 +194,37 @@ describe('Scheduled Draft,', () => {
         await verifyScheduledScheduledMessageDoesNotExist();
     });
 
+    it('MM-T5720 should be able to Reschedule a scheduled Message', async () => {
+        const scheduledMessageText = 'Scheduled Message In a channel';
+        await ChannelScreen.open(channelsCategory, testChannel.name);
+        await ChannelScreen.enterMessageToSchedule(scheduledMessageText);
+        await ChannelScreen.longPressSendButton();
+        const scheduleOption = await chooseScheduleMessageDate();
+        await ChannelScreen.verifyScheduledDraftInfoInChannel();
+        await verifyScheduledCountOnChannelListScreen('1');
+
+        // # Open scheduled message screen and verify count
+        await ChannelListScreen.draftsButton.tap();
+        await ScheduleMessageScreen.clickScheduledTab();
+        await ScheduleMessageScreen.verifyCountOnScheduledTab('1');
+        await ScheduleMessageScreen.assertScheduledMessageExists(scheduledMessageText);
+
+        await ScheduleMessageScreen.assertScheduleTimeTextIsVisible(
+            await ScheduleMessageScreen.expectedLabelForScheduleOption(scheduleOption),
+        );
+        if (isIos()) {
+            // Andoid uses native date picker which is not supported by detox asit cannot interact with native UI
+            await DraftScreen.openDraftPostActions();
+            await ScheduleMessageScreen.clickRescheduleOption();
+            await ScheduleMessageScreen.selectDateTime();
+        }
+
+        // Clean up drafts
+        await DraftScreen.openDraftPostActions();
+        await ScheduleMessageScreen.deleteScheduledMessageFromDraftActions();
+        await DraftScreen.backButton.tap();
+    });
+
     async function cleanupDrafts() {
         // # Clean up drafts
         await DraftScreen.openDraftPostActions();
@@ -211,15 +242,10 @@ describe('Scheduled Draft,', () => {
         await expect(element(by.id(ChannelListScreen.testID.scheduledMessageCountListScreen))).not.toExist();
     }
 
-    async function chooseScheduleMessageDate() {
-        // # Pick whichever schedule option is available for today's day of week.
-        // The picker shows different options per day:
-        //   Sunday  (0): Tomorrow only
-        //   Monday  (1): Tomorrow + Next Monday
-        //   Tue–Thu (2–4): Tomorrow + Monday
-        //   Friday  (5): Monday only
-        //   Saturday(6): Monday only
-        await ChannelScreen.scheduleMessageForAvailableOption();
+    async function chooseScheduleMessageDate(): Promise<'tomorrow' | 'next_monday' | 'monday'> {
+        // # Pick whichever schedule option the picker shows for today's day of week.
+        const scheduleOption = await ChannelScreen.scheduleMessageForAvailableOption();
         await ChannelScreen.clickOnScheduledMessage();
+        return scheduleOption;
     }
 });

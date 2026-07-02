@@ -80,7 +80,8 @@ describe('Search - Search Messages', () => {
         await expect(SearchMessagesScreen.searchModifierPhrases).toBeVisible();
 
         // # Go back to channel list screen
-        await ChannelListScreen.open();
+        await SearchMessagesScreen.close();
+        await ChannelListScreen.toBeVisible();
     });
 
     it('MM-T5294_2 - should be able to search messages from a specific user', async () => {
@@ -109,8 +110,9 @@ describe('Search - Search Messages', () => {
 
         // # Clear search input, remove recent search item, and go back to channel list screen
         await SearchMessagesScreen.searchClearButton.tap();
-        await SearchMessagesScreen.getRecentSearchItemRemoveButton(`from: ${testUser.username}`).tap();
-        await ChannelListScreen.open();
+        await SearchMessagesScreen.removeRecentSearchItem(`from: ${testUser.username}`);
+        await SearchMessagesScreen.close();
+        await ChannelListScreen.toBeVisible();
     });
 
     it('MM-T5294_3 - should be able to search messages in a specific channel', async () => {
@@ -125,7 +127,9 @@ describe('Search - Search Messages', () => {
         await SearchMessagesScreen.toBeVisible();
 
         // # Tap on in-search-modifier, type in channel name, tap on channel mention autocomplete, and tap on search key
-        await SearchMessagesScreen.searchModifierIn.tap();
+        // Corner-tap: the search modifier row's center is obscured by the search
+        // modal's UITransitionView (same workaround as PostOptionsScreen.deletePost).
+        await SearchMessagesScreen.searchModifierIn.tap({x: 1, y: 1});
         await SearchMessagesScreen.searchInput.typeText(testChannel.name);
         const {channelMentionItem} = Autocomplete.getChannelMentionItem(testChannel.name);
         await waitForElementToBeVisible(channelMentionItem, timeouts.TWO_SEC);
@@ -139,8 +143,9 @@ describe('Search - Search Messages', () => {
 
         // # Clear search input, remove recent search item, and go back to channel list screen
         await SearchMessagesScreen.searchClearButton.tap();
-        await SearchMessagesScreen.getRecentSearchItemRemoveButton(`channel: ${testChannel.name}`).tap();
-        await ChannelListScreen.open();
+        await SearchMessagesScreen.removeRecentSearchItem(`channel: ${testChannel.name}`);
+        await SearchMessagesScreen.close();
+        await ChannelListScreen.toBeVisible();
     });
 
     it('MM-T5294_4 - should be able to search messages excluding search terms', async () => {
@@ -175,8 +180,9 @@ describe('Search - Search Messages', () => {
 
         // # Clear search input, remove recent search item, and go back to channel list screen
         await SearchMessagesScreen.searchClearButton.tap();
-        await SearchMessagesScreen.getRecentSearchItemRemoveButton(`${messagePrefix} -${excludedTerm}`).tap();
-        await ChannelListScreen.open();
+        await SearchMessagesScreen.removeRecentSearchItem(`${messagePrefix} -${excludedTerm}`);
+        await SearchMessagesScreen.close();
+        await ChannelListScreen.toBeVisible();
     });
 
     it('MM-T5294_5 - should be able to search messages with phrases', async () => {
@@ -199,13 +205,19 @@ describe('Search - Search Messages', () => {
         await SearchMessagesScreen.toBeVisible();
 
         // # Type in the message prefix plus included term inside double quotes and tap on search key
-        await SearchMessagesScreen.searchModifierPhrases.tap();
+        // Corner-tap: searchModifierPhrases is 1.3px clipped at this state too (same
+        // 100% threshold failure as at :214 below). Apply the same workaround.
+        await SearchMessagesScreen.searchModifierPhrases.tap({x: 1, y: 1});
         await SearchMessagesScreen.searchInput.tapBackspaceKey();
         await SearchMessagesScreen.searchInput.typeText(messageWithIncludedTerm);
 
         // # Collapse the keyboard
         await element(by.id('search.modifier.header')).tap();
-        await SearchMessagesScreen.searchModifierPhrases.tap();
+
+        // Corner-tap: searchModifierPhrases is 1.3px clipped (visible 47px vs
+        // bounds 48.33px) and fails Detox's 100% visibility threshold. Same
+        // workaround as searchModifierIn at :138 (MM-T5294_3).
+        await SearchMessagesScreen.searchModifierPhrases.tap({x: 1, y: 1});
         await SearchMessagesScreen.searchInput.tapBackspaceKey();
         await SearchMessagesScreen.searchInput.tapReturnKey();
 
@@ -216,8 +228,9 @@ describe('Search - Search Messages', () => {
 
         // # Clear search input, remove recent search item, and go back to channel list screen
         await SearchMessagesScreen.searchClearButton.tap();
-        await SearchMessagesScreen.getRecentSearchItemRemoveButton(`"${messageWithIncludedTerm} "`).tap();
-        await ChannelListScreen.open();
+        await SearchMessagesScreen.removeRecentSearchItem(`"${messageWithIncludedTerm} "`);
+        await SearchMessagesScreen.close();
+        await ChannelListScreen.toBeVisible();
     });
 
     it('MM-T5294_6 - should be able to search messages using combination of modifiers', async () => {
@@ -243,8 +256,9 @@ describe('Search - Search Messages', () => {
 
         // # Clear search input, remove recent search item, and go back to channel list screen
         await SearchMessagesScreen.searchClearButton.tap();
-        await SearchMessagesScreen.getRecentSearchItemRemoveButton(`from: ${testUser.username} channel: ${testChannel.name}`).tap();
-        await ChannelListScreen.open();
+        await SearchMessagesScreen.removeRecentSearchItem(`from: ${testUser.username} channel: ${testChannel.name}`);
+        await SearchMessagesScreen.close();
+        await ChannelListScreen.toBeVisible();
     });
 
     it('MM-T5294_7 - should be able to search messages using recent searches', async () => {
@@ -279,8 +293,9 @@ describe('Search - Search Messages', () => {
         // # Clear search input, remove recent search item, and go back to channel list screen
         await SearchMessagesScreen.searchInput.tap();
         await SearchMessagesScreen.searchClearButton.tap();
-        await SearchMessagesScreen.getRecentSearchItemRemoveButton(searchTerm).tap();
-        await ChannelListScreen.open();
+        await SearchMessagesScreen.removeRecentSearchItem(searchTerm);
+        await SearchMessagesScreen.close();
+        await ChannelListScreen.toBeVisible();
     });
 
     it('MM-T5294_8 - should be able to search messages on a another joined team', async () => {
@@ -333,8 +348,9 @@ describe('Search - Search Messages', () => {
 
         // # Clear search input, remove recent search item, and go back to channel list screen
         await SearchMessagesScreen.searchClearButton.tap();
-        await SearchMessagesScreen.getRecentSearchItemRemoveButton(searchTerm).tap();
-        await ChannelListScreen.open();
+        await SearchMessagesScreen.removeRecentSearchItem(searchTerm);
+        await SearchMessagesScreen.close();
+        await ChannelListScreen.toBeVisible();
     });
 
     it('MM-T5294_9 - should show empty search results screen when search result is empty', async () => {
@@ -360,8 +376,9 @@ describe('Search - Search Messages', () => {
 
         // # Clear search input, remove recent search item, and go back to channel list screen
         await SearchMessagesScreen.searchClearButton.tap();
-        await SearchMessagesScreen.getRecentSearchItemRemoveButton(searchTerm).tap();
-        await ChannelListScreen.open();
+        await SearchMessagesScreen.removeRecentSearchItem(searchTerm);
+        await SearchMessagesScreen.close();
+        await ChannelListScreen.toBeVisible();
     });
 
     // MM-T5294_10, _11, _12 (post actions on search results — edit/save/pin)
