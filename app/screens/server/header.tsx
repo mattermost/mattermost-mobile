@@ -19,19 +19,15 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
         marginBottom: 32,
         maxWidth: 600,
         width: '100%',
-        paddingHorizontal: 20,
-    },
-    welcome: {
-        marginTop: 12,
-        color: changeOpacity(theme.centerChannelColor, 0.64),
-        ...typography('Heading', 400, 'SemiBold'),
+        paddingHorizontal: 24,
     },
     connect: {
-        width: 300,
         letterSpacing: -1,
         color: theme.centerChannelColor,
-        marginVertical: 12,
+        marginTop: 12,
+        marginBottom: 12,
         ...typography('Heading', 1000, 'SemiBold'),
+        lineHeight: 48,
     },
     connectTablet: {
         width: undefined,
@@ -59,7 +55,7 @@ const ServerHeader = ({additionalServer, theme}: Props) => {
     } else {
         title = (
             <FormattedText
-                defaultMessage='Let’s Connect to a Server'
+                defaultMessage='Connect securely to your server'
                 id='mobile.components.select_server_view.msg_connect'
                 style={[styles.connect, isTablet ? styles.connectTablet : undefined]}
                 testID='server_header.title.connect_to_server'
@@ -69,17 +65,9 @@ const ServerHeader = ({additionalServer, theme}: Props) => {
 
     return (
         <View style={styles.textContainer}>
-            {!additionalServer &&
-            <FormattedText
-                defaultMessage='Welcome'
-                id='mobile.components.select_server_view.msg_welcome'
-                testID='server_header.welcome'
-                style={styles.welcome}
-            />
-            }
             {title}
             <FormattedText
-                defaultMessage="A server is your team's communication hub accessed using a unique URL"
+                defaultMessage='Enter your server details to get started.'
                 id='mobile.components.select_server_view.msg_description'
                 style={styles.description}
                 testID='server_header.description'
