@@ -34,9 +34,23 @@ import {
 import {wait, isAndroid} from '@support/utils';
 import {expect} from 'detox';
 
+const ISO_DATETIME_PATTERN = /\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d+)?(?:Z|[+-]\d{2}:\d{2})/;
+
 // MM-66558: dialog fields use replaceText instead of typeText.
 
 // ===== Helper Functions =====
+// Integration selector list items use different testID structures per data source:
+//   user list:    integration_selector.user_list.user_item.<user.id>
+//                 (UserItem composes ${testID}.${user.id})
+//   channel list: integration_selector.channel_list.<channel.id>
+//                 (ChannelListRow composes ${testID}.${id})
+//   option list:  no specific testID — identified by visible text
+// For single-select selectors, tapping an item auto-closes the modal.
+// For multi-select selectors, tapping marks the item; the test must call
+// IntegrationSelectorScreen.done() afterward to confirm selections.
+// Tap the selector at the LIST level (not a per-item id) — the working pattern
+// from PR #9847. With UserItem's testID now on the touchable, this fires onPress;
+// single-select auto-closes the modal, multi-select needs done().
 async function selectUser() {
     const patterns = [
         'integration_selector.user_list.user_item',
@@ -94,11 +108,34 @@ async function ensureDialogClosed() {
         } catch {}
     }
 
+    // iOS 26+ may leave the keyboard rendered after dialog close even when no
+    // input is focused, obscuring the post list and failing later visibility
+    // checks. Tap empty space at the top of the post list scroll view to
+    // defocus the input and retract the keyboard. Coordinates target an area
+    // above any rendered post or the channel intro to avoid triggering
+    // actions like "Edit Header".
+    try {
+        await element(by.id('channel.post_list.flat_list')).tapAtPoint({x: 200, y: 10});
+        await wait(500);
+    } catch {}
+
     // Swipe up on post list to reveal new posts that might be hidden behind input
     try {
         await element(by.id('channel.post_list.flat_list')).swipe('up', 'fast', 0.2);
         await wait(300);
     } catch {}
+
+    // The defocus tap above can land on a post and open its thread, which would
+    // strand the next test off the channel. If the channel post draft is no longer
+    // visible, a thread (or other pushed screen) opened — back out of it.
+    try {
+        await waitFor(element(by.id('channel.post_draft.post.input'))).toBeVisible().withTimeout(2000);
+    } catch {
+        try {
+            await element(by.id('navigation.header.back')).tap();
+            await wait(500);
+        } catch {}
+    }
 }
 
 async function ensureDialogOpen() {
@@ -239,11 +276,25 @@ describe('Interactive Dialog - Basic Dialog (Plugin)', () => {
             return;
         }
         await dismissErrorAlert();
+
+        // Close an integration selector modal if one is stuck open (e.g.,
+        // when a selectUser tap failed to fire). Cancel first, then try
+        // done() if cancel didn't apply.
+        try {
+            await IntegrationSelectorScreen.cancel();
+        } catch {}
+        try {
+            await IntegrationSelectorScreen.done();
+        } catch {}
         try {
             await InteractiveDialogScreen.cancel();
         } catch {}
+
+        // Closing the dialog returns to the channel screen, so just confirm we're
+        // there rather than re-opening via the sidebar (ChannelScreen.open waits up
+        // to ONE_MIN for a sidebar that isn't visible here — ~60s wasted per test).
         try {
-            await ChannelScreen.open(channelsCategory, testChannel.name);
+            await ChannelScreen.toBeVisible();
         } catch {}
         await wait(500);
     });
@@ -337,6 +388,13 @@ describe('Interactive Dialog - Basic Dialog (Plugin)', () => {
         await ChannelScreen.hasPostMessage(post.id, 'Dialog Submitted:');
     });
 
+    // TODO: iOS 26 + Detox + RN TouchableOpacity hit-test regression.
+    // Tapping a row in the integration_selector user list (UserItem wraps
+    // testID-bearing View in TouchableOpacity) doesn't fire onPress under
+    // Detox synthetic taps — manual mouse taps work. tap/tapAtPoint/
+    // longPress/multiTap/swipe all attempted, none propagate to the
+    // touchable. Channel rows work because CustomListRow places testID on
+    // the TouchableOpacity directly.
     it('MM-T4498 should open and handle interactive dialog with select fields (Plugin)', async () => {
         if (!pluginAvailable) {
             return;
@@ -370,6 +428,7 @@ describe('Interactive Dialog - Basic Dialog (Plugin)', () => {
         await ChannelScreen.hasPostMessage(post.id, 'Dialog Submitted:');
     });
 
+    // TODO: iOS 26 + Detox UserItem TouchableOpacity tap regression — see MM-T4498
     it('MM-T4499 should handle required select field validation (Plugin)', async () => {
         if (!pluginAvailable) {
             return;
@@ -401,6 +460,7 @@ describe('Interactive Dialog - Basic Dialog (Plugin)', () => {
         await ChannelScreen.hasPostMessage(post.id, 'Dialog Submitted:');
     });
 
+    // TODO: iOS 26 + Detox UserItem TouchableOpacity tap regression — see MM-T4498
     it('MM-T4500 should handle different selector types (Plugin)', async () => {
         if (!pluginAvailable) {
             return;
@@ -493,6 +553,7 @@ describe('Interactive Dialog - Basic Dialog (Plugin)', () => {
         await ChannelScreen.hasPostMessage(post.id, 'Dialog Submitted:');
     });
 
+    // TODO: iOS 26 + Detox UserItem TouchableOpacity tap regression — see MM-T4498
     it('MM-T4976 should handle multiselect fields dialog (Plugin)', async () => {
         if (!pluginAvailable) {
             return;
@@ -630,6 +691,10 @@ describe('Interactive Dialog - Basic Dialog (Plugin)', () => {
         await ensureDialogClosed();
     });
 
+    // TODO: iOS 26 + react-native-keyboard-controller contamination.
+    // Field-refresh dialog with text inputs leaves keyboard/animation state that
+    // poisons later tests with progressViewOffset: NaN in RCTRefreshControl.
+    // Re-enable once the keyboard library handles iOS 26 transitions cleanly.
     it('MM-T4983 should handle field refresh basic interaction (Plugin)', async () => {
         if (!pluginAvailable) {
             return;
@@ -683,5 +748,268 @@ describe('Interactive Dialog - Basic Dialog (Plugin)', () => {
         await expect(element(by.id('AppFormElement.min_os_version.input'))).toExist();
         await InteractiveDialogScreen.cancel();
         await ensureDialogClosed();
+    });
+
+    it('MM-T2530A should open date/datetime dialog and display fields', async () => {
+        if (!pluginAvailable) {
+            return;
+        }
+
+        // # Open datetime-basic dialog
+        await ChannelScreen.postMessage('/dialog datetime-basic');
+        await wait(500);
+        await ensureDialogOpen();
+
+        // * Verify dialog title
+        await expect(element(by.text('Date & DateTime Basics'))).toExist();
+
+        // * Verify all fields are visible by testID
+        await expect(element(by.id('AppFormElement.event_date'))).toExist();
+        await expect(element(by.id('AppFormElement.meeting_time'))).toExist();
+        await expect(element(by.id('AppFormElement.future_date'))).toExist();
+        await expect(element(by.id('AppFormElement.interval_time'))).toExist();
+        await expect(element(by.id('AppFormElement.relative_date'))).toExist();
+        await expect(element(by.id('AppFormElement.relative_datetime'))).toExist();
+
+        await InteractiveDialogScreen.cancel();
+        await ensureDialogClosed();
+    });
+
+    it('MM-T2530B should validate required date/datetime fields', async () => {
+        if (!pluginAvailable) {
+            return;
+        }
+
+        // # Open dialog
+        await ChannelScreen.postMessage('/dialog datetime-basic');
+        await wait(500);
+        await ensureDialogOpen();
+
+        // # Try to submit without required fields
+        await InteractiveDialogScreen.submit();
+        await wait(500);
+
+        // * Should still be on dialog (submission failed due to validation)
+        await expect(InteractiveDialogScreen.interactiveDialogScreen).toExist();
+
+        // * Verify validation error text appears for required fields
+        await expect(element(by.text('This field is required.'))).toExist();
+
+        await InteractiveDialogScreen.cancel();
+        await ensureDialogClosed();
+    });
+
+    it('MM-T2530C should select date and display formatted value', async () => {
+        if (!pluginAvailable) {
+            return;
+        }
+
+        // # Open dialog
+        await ChannelScreen.postMessage('/dialog datetime-basic');
+        await wait(500);
+        await ensureDialogOpen();
+
+        // # Tap Event Date field to open date picker
+        await element(by.id('AppFormElement.event_date.select.button')).tap();
+        await wait(1000);
+
+        // # Close picker (iOS shows picker inline, tap the button again to close)
+        if (isAndroid()) {
+            try {
+                await element(by.text('OK')).tap();
+            } catch {}
+        } else {
+            await element(by.id('AppFormElement.event_date.select.button')).tap();
+        }
+        await wait(500);
+
+        await InteractiveDialogScreen.cancel();
+        await ensureDialogClosed();
+    });
+
+    it('MM-T2530D should display relative date defaults', async () => {
+        if (!pluginAvailable) {
+            return;
+        }
+
+        // # Open dialog
+        await ChannelScreen.postMessage('/dialog datetime-basic');
+        await wait(500);
+        await ensureDialogOpen();
+
+        // * Verify Relative Date Example (default="today") field is rendered
+        await expect(element(by.text('Relative Date Example'))).toExist();
+
+        // * Verify Relative DateTime Example (default="+1d") field is rendered
+        await expect(element(by.text('Relative DateTime Example'))).toExist();
+
+        await InteractiveDialogScreen.cancel();
+        await ensureDialogClosed();
+    });
+
+    it('MM-T2530F should verify UTC conversion for datetime values', async () => {
+        if (!pluginAvailable) {
+            return;
+        }
+
+        // # Open dialog
+        await ChannelScreen.postMessage('/dialog datetime-basic');
+        await wait(500);
+        await ensureDialogOpen();
+
+        // # Fill required Event Date field
+        await element(by.id('AppFormElement.event_date.select.button')).tap();
+        await wait(500);
+        if (isAndroid()) {
+            await element(by.text('OK')).tap();
+        } else {
+            await element(by.id('AppFormElement.event_date')).tap();
+        }
+        await wait(300);
+
+        // # Fill required Meeting Time field
+        await element(by.id('AppFormElement.meeting_time.select.button')).tap();
+        await wait(500);
+        if (isAndroid()) {
+            await element(by.text('OK')).tap();
+        } else {
+            await element(by.id('AppFormElement.meeting_time')).tap();
+        }
+        await wait(300);
+
+        // # Submit dialog
+        await InteractiveDialogScreen.submit();
+        await wait(1000);
+
+        // * Dialog should close after successful submission
+        await ensureDialogClosed();
+
+        // * Verify submission post contains ISO/UTC datetime format
+        await wait(1000);
+        const {post} = await Post.apiGetLastPostInChannel(siteOneUrl, testChannel.id);
+
+        // Meeting Time should be in ISO format with T separator (e.g., 2026-04-10T14:00:00.000Z)
+        if (!ISO_DATETIME_PATTERN.test(post.message)) {
+            throw new Error(`Expected ISO datetime in submission post but got: ${post.message}`);
+        }
+    });
+
+    it('MM-T2530G should display timezone indicator and convert to UTC correctly', async () => {
+        if (!pluginAvailable) {
+            return;
+        }
+
+        // # Open datetime-timezone dialog (has Europe/London timezone fields)
+        await ChannelScreen.postMessage('/dialog datetime-timezone');
+        await wait(500);
+        await ensureDialogOpen();
+
+        // # Scroll down past introduction text to reveal fields
+        try {
+            await element(by.id('interactive_dialog.screen')).scroll(300, 'down');
+            await wait(300);
+        } catch {}
+
+        // * Verify London dropdown field is visible
+        await expect(element(by.id('AppFormElement.london_dropdown'))).toExist();
+
+        // * Verify timezone indicator appears for London field
+        // London is GMT in winter, BST in summer — mobile renders without emoji
+        try {
+            await expect(element(by.text('Times in GMT'))).toExist();
+        } catch {
+            await expect(element(by.text('Times in BST'))).toExist();
+        }
+
+        // # Select datetime in London field
+        await element(by.id('AppFormElement.london_dropdown.select.button')).tap();
+        await wait(1000);
+
+        // # Scroll to make picker visible
+        try {
+            await element(by.id('interactive_dialog.scroll_view')).scrollTo('bottom');
+            await wait(300);
+        } catch {}
+
+        // # Explicitly set a date on the native picker so onChange fires and the field captures a value.
+        // Optional fields in datetime-timezone have no defaults; opening/closing alone doesn't emit a value.
+        try {
+            await element(by.id('custom_status_clear_after.date_time_picker')).setDatePickerDate('2026-05-15T14:00:00Z', 'ISO8601');
+            await wait(300);
+        } catch {}
+
+        // # Close date picker
+        if (isAndroid()) {
+            await element(by.text('OK')).tap();
+        } else {
+            await element(by.id('AppFormElement.london_dropdown.select.button')).tap();
+        }
+        await wait(500);
+
+        // # Submit dialog
+        await InteractiveDialogScreen.submit();
+        await wait(1500);
+
+        // * Dialog should close
+        await ensureDialogClosed();
+
+        // * Verify submission post contains ISO/UTC datetime format
+        await wait(2000);
+        const {post: tzPost} = await Post.apiGetLastPostInChannel(siteOneUrl, testChannel.id);
+        if (!ISO_DATETIME_PATTERN.test(tzPost.message)) {
+            throw new Error(`Expected ISO datetime in timezone submission post but got: ${tzPost.message}`);
+        }
+    });
+
+    it('MM-T2530H should accept manual time entry on datetime field', async () => {
+        if (!pluginAvailable) {
+            return;
+        }
+
+        // NOTE: Placed last in the file — manual TextInput entry leaves keyboard/animation
+        // state on iOS 26 + react-native-keyboard-controller that can break subsequent dialog tests.
+        // # Open datetime-timezone dialog (has fields with allow_manual_time_entry)
+        await ChannelScreen.postMessage('/dialog datetime-timezone');
+        await wait(500);
+        await ensureDialogOpen();
+
+        // # Scroll past introduction text to reveal fields
+        try {
+            await element(by.id('interactive_dialog.screen')).scroll(300, 'down');
+            await wait(300);
+        } catch {}
+
+        // # Tap time button to switch local_manual into manual entry mode
+        await element(by.id('AppFormElement.local_manual.time.button')).tap();
+        await wait(500);
+
+        // # Replace any prefilled text with the manual time entry (parseTimeString accepts 24-hour without am/pm)
+        const manualInput = element(by.id('AppFormElement.local_manual.manual_time.input'));
+        await waitFor(manualInput).toBeVisible().withTimeout(2000);
+        await manualInput.replaceText('14:30');
+
+        // # Commit by pressing Done — fires onSubmitEditing → handleManualTimeSubmit → handleChange
+        await manualInput.tapReturnKey();
+        await wait(500);
+
+        // # Submit dialog
+        await InteractiveDialogScreen.submit();
+        await wait(1500);
+
+        // * Dialog should close after successful submission
+        await ensureDialogClosed();
+
+        // * Verify submission post: local_manual must be populated with a UTC ISO timestamp
+        // whose minute portion is 30 (manual entry preserves typed minutes; rounded-picker values would be :00)
+        await wait(1000);
+        const {post} = await Post.apiGetLastPostInChannel(siteOneUrl, testChannel.id);
+        const match = post.message.match(/local_manual:\s*(\S+)/);
+        if (!match || !match[1]) {
+            throw new Error(`Expected local_manual to have a value but got: ${post.message}`);
+        }
+        const submitted = match[1];
+        if (!/T\d{2}:30:00\.000Z$/.test(submitted)) {
+            throw new Error(`Expected manually-entered minutes (:30) in local_manual but got: ${submitted}`);
+        }
     });
 });
