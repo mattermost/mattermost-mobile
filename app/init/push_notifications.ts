@@ -310,7 +310,8 @@ class PushNotificationsSingleton {
 
             const token = `${prefix}-v2:${deviceToken}`;
             storeDeviceToken(token);
-            logDebug('Notification token registered', token);
+            const redactedDeviceId = deviceToken.substring(0, 16);
+            logDebug('Notification token registered', `${prefix}-v2:${redactedDeviceId}...`);
 
             // Store the device token in the default database
             this.requestNotificationReplyPermissions();
