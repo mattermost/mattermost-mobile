@@ -119,6 +119,14 @@ export function checkDialogElementForError(elem: DialogElement, value: any, intl
         if (!elem.optional && (typeof value === 'undefined' || value !== true)) {
             return fieldRequiredError;
         }
+    } else if (type === DialogElementTypes.FILE) {
+        // FILE value is a comma-joined list of uploaded file IDs; '' means no file.
+        if (!elem.optional) {
+            const ids = typeof value === 'string' ? value.split(',').map((id) => id.trim()).filter(Boolean) : [];
+            if (!ids.length) {
+                return fieldRequiredError;
+            }
+        }
     }
 
     return null;

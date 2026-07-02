@@ -155,6 +155,52 @@ class InteractiveDialogScreen {
         await wait(500);
     };
 
+    getFileFieldChooseButton = (fieldName: string) => element(by.id(`${fieldName}.choose.button`));
+
+    tapFileFieldChooseButton = async (fieldName: string) => {
+        const chooseButton = this.getFileFieldChooseButton(fieldName);
+        await waitFor(chooseButton).toExist().withTimeout(timeouts.TWO_SEC);
+        await chooseButton.tap();
+    };
+
+    expectFileFieldUploadDisabledWarning = async (fieldName: string, shouldExist = true) => {
+        const warning = element(by.id(`${fieldName}.upload.disabled.warning`));
+        if (shouldExist) {
+            await waitFor(warning).toExist().withTimeout(timeouts.TWO_SEC);
+            await expect(warning).toExist();
+        } else {
+            await expect(warning).not.toExist();
+        }
+    };
+
+    expectHydratedFilePreview = async (fieldName: string, fileId: string) => {
+        const fileRow = element(by.id(`${fieldName}.file.row.${fileId}`));
+        await waitFor(fileRow).toExist().withTimeout(timeouts.TEN_SEC);
+        await expect(fileRow).toExist();
+    };
+
+    expectFileFieldChooseButtonDisabled = async (fieldName: string) => {
+        const btn = this.getFileFieldChooseButton(fieldName);
+        await waitFor(btn).toExist().withTimeout(timeouts.TWO_SEC);
+        await btn.tap();
+        await waitFor(element(by.id('file_attachment.photo_library'))).not.toExist().withTimeout(timeouts.THREE_SEC);
+    };
+
+    expectFileFieldChooseButtonEnabled = async (fieldName: string) => {
+        const btn = this.getFileFieldChooseButton(fieldName);
+        await waitFor(btn).toExist().withTimeout(timeouts.TWO_SEC);
+        await btn.tap();
+        await waitFor(element(by.id('file_attachment.photo_library'))).toExist().withTimeout(timeouts.THREE_SEC);
+        await element(by.id('file_attachment.photo_library')).swipe('down', 'fast', 0.5);
+        await waitFor(element(by.id('file_attachment.photo_library'))).not.toExist().withTimeout(timeouts.THREE_SEC);
+    };
+
+    tapFileFieldRemoveButton = async (fieldName: string, fileId: string) => {
+        const removeBtn = element(by.id(`${fieldName}.file.remove.${fileId}`));
+        await waitFor(removeBtn).toExist().withTimeout(timeouts.TWO_SEC);
+        await removeBtn.tap();
+    };
+
     fillTextElementWithAppForm = async (elementName: string, value: string) => {
         const textInput = element(by.id(`AppFormElement.${elementName}.text.input`));
         await expect(textInput).toExist();

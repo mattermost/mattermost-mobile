@@ -16,6 +16,8 @@ import {isAppSelectOption} from '@utils/dialog_utils';
 import {selectKeyboardType} from '@utils/integrations';
 import {makeStyleSheetFromTheme} from '@utils/theme';
 
+import AppsFormFileField from './apps_form_file_field';
+
 const TEXT_DEFAULT_MAX_LENGTH = 150;
 const TEXTAREA_DEFAULT_MAX_LENGTH = 3000;
 
@@ -26,6 +28,9 @@ export type Props = {
     value: AppFormValue;
     onChange: (name: string, value: AppFormValue) => void;
     performLookup: (name: string, userInput: string) => Promise<AppSelectOption[]>;
+    setFieldUploading?: (fieldName: string, uploading: boolean) => void;
+    channelId?: string;
+    serverUrl?: string;
 }
 
 const dialogOptionToAppSelectOption = (option: DialogOption): AppSelectOption => ({
@@ -74,6 +79,9 @@ const AppsFormField = React.memo<Props>(({
     value,
     onChange,
     performLookup,
+    setFieldUploading,
+    channelId,
+    serverUrl,
 }) => {
     const theme = useTheme();
     const style = getStyleSheet(theme);
@@ -85,6 +93,10 @@ const AppsFormField = React.memo<Props>(({
     const handleChange = useCallback((newValue: string | boolean) => {
         onChange(name, newValue);
     }, [name, onChange]);
+
+    const handlePendingChange = useCallback((hasPending: boolean) => {
+        setFieldUploading?.(name, hasPending);
+    }, [setFieldUploading, name]);
 
     const handleSelect = useCallback((newValue: SelectedDialogOption) => {
         if (!newValue) {
@@ -244,6 +256,24 @@ const AppsFormField = React.memo<Props>(({
                         theme={theme}
                     />
                 </View>
+            );
+        }
+        case AppFieldTypes.FILE: {
+            return (
+                <AppsFormFileField
+                    name={name}
+                    displayName={displayName}
+                    helpText={field.description}
+                    errorText={errorText}
+                    value={typeof value === 'string' ? value : ''}
+                    onChange={onChange}
+                    onPendingChange={handlePendingChange}
+                    allowMultiple={field.allow_multiple}
+                    readonly={Boolean(field.readonly)}
+                    channelId={channelId || ''}
+                    serverUrl={serverUrl || ''}
+                    testID={testID}
+                />
             );
         }
     }

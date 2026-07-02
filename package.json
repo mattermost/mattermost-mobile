@@ -8,7 +8,7 @@
   "license": "Apache 2.0",
   "private": true,
   "engines": {
-    "node": "^22.11.0 || ^24.15.0",
+    "node": "^22.13.0 || ^24.15.0",
     "npm": "^10 || ^11"
   },
   "dependencies": {
@@ -201,9 +201,11 @@
     "lint": "eslint --ignore-pattern .gitignore --ignore-pattern node_modules --quiet .",
     "mmjstool": "mmjstool",
     "pod-install": "cd ios && RCT_NEW_ARCH_ENABLED=1 pod install",
+    "solidarity:android": "npx solidarity -f .solidarity.android",
+    "solidarity:full": "SOLIDARITY_FULL=1 ./scripts/solidarity-check.sh",
     "postinstall": "patch-package && ./scripts/postinstall.sh",
     "prepare": "husky",
-    "preinstall": "./scripts/preinstall.sh && npx solidarity",
+    "preinstall": "./scripts/preinstall.sh && ./scripts/solidarity-check.sh",
     "start": "react-native start --host 127.0.0.1",
     "test": "NODE_OPTIONS=--max_old_space_size=12000 jest --maxWorkers=4",
     "test:ci": "NODE_OPTIONS=--max_old_space_size=12000 jest --verbose=false --forceExit",

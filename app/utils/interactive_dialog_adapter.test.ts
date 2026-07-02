@@ -8,7 +8,11 @@ import {InteractiveDialogAdapter} from './interactive_dialog_adapter';
 
 // Mock dependencies
 jest.mock('@actions/remote/integrations');
-jest.mock('./dialog_conversion');
+jest.mock('./dialog_conversion', () => ({
+    ...jest.requireActual('./dialog_conversion'),
+    convertDialogToAppForm: jest.fn(),
+    convertAppFormValuesToDialogSubmission: jest.fn(),
+}));
 jest.mock('@utils/log');
 
 const mockSubmitInteractiveDialog = require('@actions/remote/integrations').submitInteractiveDialog;
@@ -223,6 +227,55 @@ describe('InteractiveDialogAdapter', () => {
 
             expect(result.url).toBe('');
             expect(result.callback_id).toBe('');
+        });
+
+        it('should collect file_ids from file-type elements', () => {
+            const fileConfig = {
+                ...mockConfig,
+                dialog: {
+                    ...mockConfig.dialog,
+                    elements: [
+                        ...mockConfig.dialog.elements,
+                        {
+                            name: 'attachment',
+                            type: 'file',
+                            display_name: 'Attachment',
+                            optional: true,
+                            allow_multiple: true,
+                            default: '',
+                            placeholder: '',
+                            help_text: '',
+                            min_length: 0,
+                            max_length: 0,
+                            data_source: '',
+                            options: [],
+                        },
+                    ],
+                },
+            } as InteractiveDialogConfig;
+
+            mockConvertAppFormValuesToDialogSubmission.mockReturnValue({
+                submission: {
+                    text_field: 'user input',
+                    attachment: 'file-1,file-2',
+                },
+                errors: [],
+            });
+
+            const result = InteractiveDialogAdapter.convertValuesToSubmission(mockAppFormValues, fileConfig);
+
+            expect(result.file_ids).toEqual(['file-1', 'file-2']);
+        });
+
+        it('should omit file_ids when no file element has a value', () => {
+            mockConvertAppFormValuesToDialogSubmission.mockReturnValue({
+                submission: {text_field: 'user input'},
+                errors: [],
+            });
+
+            const result = InteractiveDialogAdapter.convertValuesToSubmission(mockAppFormValues, mockConfig);
+
+            expect(result.file_ids).toBeUndefined();
         });
     });
 
