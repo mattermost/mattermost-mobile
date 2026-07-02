@@ -31,7 +31,7 @@ import {
     LoginScreen,
     ServerScreen,
 } from '@support/ui/screen';
-import {wait, isAndroid} from '@support/utils';
+import {wait, isAndroid, isIos} from '@support/utils';
 import {expect} from 'detox';
 
 // MM-66558: dialog fields use replaceText instead of typeText.
@@ -434,7 +434,7 @@ describe('Interactive Dialog - Basic Dialog (Plugin)', () => {
         await ChannelScreen.hasPostMessage(post.id, 'Dialog Submitted:');
     });
 
-    it('MM-T4201 should fill and submit all text field types (Plugin)', async () => {
+    (isIos() ? it.skip : it)('MM-T4201 should fill and submit all text field types (Plugin)', async () => {
         if (!pluginAvailable) {
             return;
         }

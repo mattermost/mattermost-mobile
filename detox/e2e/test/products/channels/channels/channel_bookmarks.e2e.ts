@@ -11,7 +11,6 @@ import {
     ChannelBookmark,
     Channel,
     Setup,
-    System,
 } from '@support/server_api';
 import {serverOneUrl, siteOneUrl} from '@support/test_config';
 import {
@@ -100,9 +99,6 @@ describe('Channels - Channel Bookmarks', () => {
         testTeam = team;
         testUser = user;
 
-        // ── Enable channel bookmarks feature flag ────────────────────────────
-        await System.apiUpdateConfig(siteOneUrl, {FeatureFlags: {ChannelBookmarks: true}});
-
         // ── Create all test channels ──────────────────────────────────────────
         channelT5600 = await createChannel();
         channelT5601 = await createChannel();
@@ -172,7 +168,6 @@ describe('Channels - Channel Bookmarks', () => {
     });
 
     afterAll(async () => {
-        await System.apiUpdateConfig(siteOneUrl, {FeatureFlags: {ChannelBookmarks: false}});
         await HomeScreen.logout();
     });
 

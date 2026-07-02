@@ -11,7 +11,6 @@ import {
     ChannelBookmark,
     Channel,
     Setup,
-    System,
 } from '@support/server_api';
 import {serverOneUrl, siteOneUrl} from '@support/test_config';
 import {
@@ -66,8 +65,8 @@ describe('Channels - Channel Bookmarks Search', () => {
         testTeam = team;
         testUser = user;
 
-        // ── Enable channel bookmarks feature flag ────────────────────────────
-        await System.apiUpdateConfig(siteOneUrl, {FeatureFlags: {ChannelBookmarks: true}});
+        // FeatureFlags.ChannelBookmarks enabled once per shard in setup.ts.
+        // See channel_bookmarks.e2e.ts beforeAll for the WebSocket-contention rationale.
 
         // Unique search titles — generated once so they stay unique per run.
         fileSearchTitle = `FileSearch-${Date.now()}`;
@@ -114,7 +113,8 @@ describe('Channels - Channel Bookmarks Search', () => {
     });
 
     afterAll(async () => {
-        await System.apiUpdateConfig(siteOneUrl, {FeatureFlags: {ChannelBookmarks: false}});
+        // Do NOT unset FeatureFlags.ChannelBookmarks — would clobber other shards.
+        // See channel_bookmarks.e2e.ts afterAll for rationale.
         await HomeScreen.logout();
     });
 

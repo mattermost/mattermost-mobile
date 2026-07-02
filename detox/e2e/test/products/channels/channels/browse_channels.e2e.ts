@@ -30,6 +30,9 @@ import {
 import {isAndroid, safeEnableSynchronization, timeouts, wait, waitForElementToExist} from '@support/utils';
 import {expect, waitFor} from 'detox';
 
+// MM-T4729_5 uses device.reloadReactNative() which can take 30-90s on iOS CI.
+jest.setTimeout(360000);
+
 describe('Channels - Browse Channels', () => {
     const serverOneDisplayName = 'Server 1';
     const channelsCategory = 'channels';
@@ -170,6 +173,10 @@ describe('Channels - Browse Channels', () => {
         // # Enable archived channel visibility on the server, then reload so the app
         // picks up the new config (the ChannelDropdown only renders when this is true)
         await System.apiUpdateConfig(siteOneUrl, {ServiceSettings: {ExperimentalViewArchivedChannels: true}});
+
+        // Reload so the app picks up the new config. The jest.setTimeout(360000) at
+        // the top of this file ensures the 30-90s reload on iOS CI does not exceed
+        // the test timeout.
         await device.reloadReactNative();
         await ChannelListScreen.toBeVisible();
 

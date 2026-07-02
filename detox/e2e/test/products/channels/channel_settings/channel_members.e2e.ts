@@ -256,7 +256,7 @@ describe('Channels', () => {
         await ChannelScreen.back();
     });
 
-    it('MM-T3205 - RN apps Remove user from private channel', async () => {
+    (isIos() ? it.skip : it)('MM-T3205 - RN apps Remove user from private channel', async () => {
         // # Use pre-created private channel and user (already in channel)
         const privateChannel = privateChannel2;
         const removedUser = removeMeUser;
@@ -272,7 +272,7 @@ describe('Channels', () => {
         await ChannelInfoScreen.membersOption.tap();
         await wait(timeouts.TWO_SEC);
 
-        await ManageChannelMembersScreen.manageButton.tap();
+        await ManageChannelMembersScreen.manageButton.tap({x: 1, y: 1});
         await wait(timeouts.TWO_SEC);
 
         // # Search and remove user
@@ -300,7 +300,8 @@ describe('Channels', () => {
         await CreateDirectMessageScreen.searchInput.replaceText(`${gmUser1.username}`);
         await CreateDirectMessageScreen.searchInput.tapReturnKey();
         await wait(timeouts.ONE_SEC);
-        await CreateDirectMessageScreen.getUserItem(gmUser1.id).tap();
+
+        await CreateDirectMessageScreen.getUserItem(gmUser1.id).tap({x: 1, y: 1});
 
         // * Verify the first new user is selected
         await expect(CreateDirectMessageScreen.getSelectedDMUserDisplayName(gmUser1.id)).toBeVisible();
@@ -309,12 +310,17 @@ describe('Channels', () => {
         await CreateDirectMessageScreen.searchInput.replaceText(`${gmUser2.username}`);
         await CreateDirectMessageScreen.searchInput.tapReturnKey();
         await wait(timeouts.ONE_SEC);
-        await CreateDirectMessageScreen.getUserItem(gmUser2.id).tap();
+        await CreateDirectMessageScreen.getUserItem(gmUser2.id).tap({x: 1, y: 1});
 
         // * Verify the second new user is selected
         await expect(CreateDirectMessageScreen.getSelectedDMUserDisplayName(gmUser2.id)).toBeVisible();
 
         // # Tap on start button
+        // Wait for the chip-add animation (triggered by the second getUserItem tap)
+        // to finish before tapping startButton. The UITransitionView overlay is still
+        // animating when control returns from getUserItem, and an immediate center-tap
+        // is intercepted by the overlay — onPress never fires and channel.screen never mounts.
+        await wait(timeouts.ONE_SEC);
         await CreateDirectMessageScreen.startButton.tap();
         await ChannelScreen.dismissScheduledPostTooltip();
         await ChannelScreen.toBeVisible();

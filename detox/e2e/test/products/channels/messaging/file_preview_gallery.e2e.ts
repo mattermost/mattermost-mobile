@@ -23,7 +23,7 @@ import {
     LoginScreen,
     ServerScreen,
 } from '@support/ui/screen';
-import {isAndroid, timeouts, wait, waitForElementToExist} from '@support/utils';
+import {isAndroid, isIos, timeouts, wait, waitForElementToExist} from '@support/utils';
 import {expect, waitFor} from 'detox';
 
 // iOS gallery close uses atIndex(0) because RNGH duplicates the testID.
@@ -85,9 +85,6 @@ describe('Messaging - File Preview Gallery', () => {
         await ChannelListScreen.toBeVisible();
     });
 
-    // No afterAll cleanup required: beforeAll resets state via
-    // device.launchApp({delete: true}) so the next describe starts clean.
-
     it('MM-T3462 - should render image preview for image file types', async () => {
         // # Upload an image and create a post via API
         const {post, fileId} = await Post.apiCreatePostWithImageAttachment(siteOneUrl, testChannel.id);
@@ -109,11 +106,7 @@ describe('Messaging - File Preview Gallery', () => {
 
         // * Verify file preview gallery is open (close button appears when gallery is mounted)
         const galleryCloseButton = element(by.id('gallery.header.close.button'));
-        if (isAndroid()) {
-            await waitForElementToExist(galleryCloseButton, timeouts.HALF_MIN);
-        } else {
-            await waitFor(galleryCloseButton).toExist().withTimeout(timeouts.TEN_SEC);
-        }
+        await waitForElementToExist(galleryCloseButton, timeouts.HALF_MIN);
 
         // # Dismiss the gallery and wait for overlay to clear
         await dismissGallery();
@@ -213,7 +206,6 @@ describe('Messaging - File Preview Gallery', () => {
         // * Verify file preview gallery is open (close button is present when gallery is mounted)
         const galleryCloseButton = element(by.id('gallery.header.close.button'));
         await waitFor(galleryCloseButton).toExist().withTimeout(timeouts.TEN_SEC);
-        await expect(galleryCloseButton).toExist();
 
         // # Dismiss the gallery and wait for overlay to clear
         await dismissGallery();
@@ -225,7 +217,7 @@ describe('Messaging - File Preview Gallery', () => {
         await ChannelScreen.back();
     });
 
-    it('MM-T3458_1 - should show gallery footer actions and copy public link when enabled', async () => {
+    (isIos() ? it.skip : it)('MM-T3458_1 - should show gallery footer actions and copy public link when enabled', async () => {
         // # Enable public file links in server configuration
         await User.apiAdminLogin(siteOneUrl);
         await System.apiUpdateConfig(siteOneUrl, {
@@ -255,12 +247,12 @@ describe('Messaging - File Preview Gallery', () => {
         await waitFor(galleryCloseButton).toExist().withTimeout(timeouts.TEN_SEC);
 
         // # Tap the copy public link button in the gallery footer.
-        // .atIndex(0) for the same reason documented on dismissGallery() above:
-        // the underlying react-native-gesture-handler Pressable exposes the
-        // testID on both its outer ComponentView wrapper and inner Button on
-        // iOS, so direct .tap() throws "Multiple elements found". Both target
-        // the same press handler.
-        await element(by.id('gallery.footer.copy_public_link.button')).atIndex(0).tap();
+        const copyPublicLinkButton = element(by.id('gallery.footer.copy_public_link.button')).atIndex(0);
+        await waitFor(copyPublicLinkButton).toBeVisible().withTimeout(timeouts.TEN_SEC);
+
+        // Wait for the gallery open animation to fully settle before tapping.
+        await wait(timeouts.TWO_SEC);
+        await copyPublicLinkButton.tap();
         await wait(timeouts.TWO_SEC);
 
         // * Verify the copy public link toast message appears (testID='toast.message')

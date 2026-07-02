@@ -28,7 +28,7 @@ import {
     ThreadScreen,
 } from '@support/ui/screen';
 import {getRandomId, timeouts, wait} from '@support/utils';
-import {expect} from 'detox';
+import {expect, waitFor} from 'detox';
 
 describe('Smoke Test - Messaging', () => {
     const serverOneDisplayName = 'Server 1';
@@ -142,7 +142,7 @@ describe('Smoke Test - Messaging', () => {
         const resolvedMessage = 'The quick brown fox 🦊 jumps over the lazy dog 🐶';
         const {post} = await Post.apiGetLastPostInChannel(siteOneUrl, testChannel.id);
         const {postListPostItem} = ChannelScreen.getPostListPostItem(post.id, resolvedMessage);
-        await expect(postListPostItem).toBeVisible();
+        await waitFor(postListPostItem).toBeVisible().withTimeout(timeouts.TEN_SEC);
 
         // # Open post options for message, open emoji picker screen, and add a reaction
         // Use openPostOptionsFor (longPressWithScrollRetry) instead of a raw longPress so that

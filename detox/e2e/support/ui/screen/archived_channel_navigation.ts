@@ -59,13 +59,25 @@ export async function postArchivedChannelSentinel(channelId: string): Promise<st
 
 // Navigate to an archived channel via Browse Channels → archived filter → tap.
 // Android-only: the search/permalink path regressed MM-T1671_1 + MM-T1722_1.
+//
+// searchInput.replaceText is attempted to narrow results, but silently skipped
+// when the element is not findable in the Android view hierarchy (observed on
+// some API-35 shard configs). The archived-filter pre-loads recently-archived
+// channels at the top of the list, so the channel item is still found either way.
 async function openArchivedChannelViaBrowseChannels(channelName: string) {
     await BrowseChannelsScreen.open();
     await BrowseChannelsScreen.dismissScheduledPostTooltip();
     await openArchivedChannelsFilter();
-    await BrowseChannelsScreen.searchInput.replaceText(channelName);
 
-    await waitFor(BrowseChannelsScreen.getChannelItem(channelName)).toExist().withTimeout(timeouts.TEN_SEC);
+    try {
+        await BrowseChannelsScreen.searchInput.replaceText(channelName);
+    } catch {
+        // searchInput not in view hierarchy on this config — fall through.
+    }
+
+    // HALF_MIN: when replaceText falls through (element not in hierarchy on some
+    // API-35 configs), the unfiltered archived list takes longer to populate.
+    await waitFor(BrowseChannelsScreen.getChannelItem(channelName)).toExist().withTimeout(timeouts.HALF_MIN);
     await BrowseChannelsScreen.getChannelItem(channelName).tap();
 
     await waitForElementToExist(ChannelScreen.channelScreen, timeouts.ONE_MIN);
@@ -88,7 +100,18 @@ async function openArchivedChannelViaSearchPermalink(searchableMessage: string) 
     await device.disableSynchronization();
     try {
         await SearchMessagesScreen.searchInput.tapReturnKey();
-        await waitForElementToBeVisible(searchResultText, timeouts.ONE_MIN);
+        try {
+            await waitForElementToBeVisible(searchResultText, timeouts.TWENTY_SEC);
+        } catch {
+            // Search-index lag: up to three total attempts (two re-submits after the initial try).
+            await SearchMessagesScreen.searchInput.tapReturnKey();
+            try {
+                await waitForElementToBeVisible(searchResultText, timeouts.ONE_MIN);
+            } catch {
+                await SearchMessagesScreen.searchInput.tapReturnKey();
+                await waitForElementToBeVisible(searchResultText, timeouts.ONE_MIN);
+            }
+        }
     } finally {
         await device.enableSynchronization();
     }

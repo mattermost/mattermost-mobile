@@ -31,6 +31,10 @@ import {
 import {tapNativeBackButton, timeouts, wait} from '@support/utils';
 import {expect, device, element, by, waitFor} from 'detox';
 
+// The beforeAll calls apiInit + config setup + login under CI load.
+// Extend timeout to 6 minutes to avoid "Exceeded timeout of 240000 ms for a hook".
+jest.setTimeout(360000);
+
 describe('Share with connected workspaces', () => {
     const serverOneDisplayName = 'Server 1';
     const channelsCategory = 'channels';

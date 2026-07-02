@@ -48,13 +48,23 @@ appId: ${MAESTRO_APP_ID}
     timeout: 3000
 
 # Path A: In-app Report a Problem screen (licensed server)
+# The enable_log_attachments toggle lives inside the report_problem ScrollView,
+# below detailsSection + MenuDivider + CopyMetadata + MenuDivider, so on CI
+# devices it can be below the fold. Maestro's bare `assertVisible` does NOT
+# auto-scroll, so it fails with "Unknown error" at ~77s. Use
+# `scrollUntilVisible` to bring the toggle into view first — matches the
+# auto-scroll behavior of `tapOn` already used by the sibling flow
+# attach_logs_toggle_on_surfaces_option.yml.
 - runFlow:
     when:
       visible:
         id: "report_problem.screen"
     commands:
-      - assertVisible:
-          id: "report_problem.enable_log_attachments"
+      - scrollUntilVisible:
+          element:
+            id: "report_problem.enable_log_attachments"
+          direction: DOWN
+          timeout: 10000
 
 # Path B: External browser / email composer (unlicensed server) — dismiss
 - runFlow:

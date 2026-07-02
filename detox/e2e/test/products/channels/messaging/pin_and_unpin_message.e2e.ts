@@ -8,7 +8,6 @@
 // *******************************************************************
 
 import {
-    Post,
     Setup,
 } from '@support/server_api';
 import {
@@ -25,7 +24,7 @@ import {
     ThreadScreen,
 } from '@support/ui/screen';
 import {getRandomId, isAndroid, timeouts, wait} from '@support/utils';
-import {expect, waitFor} from 'detox';
+import {waitFor} from 'detox';
 
 async function openChannelPostOptionsForPin(postId: string, message: string) {
     if (!isAndroid()) {
@@ -96,30 +95,34 @@ describe('Messaging - Pin and Unpin Message', () => {
         // # Open a channel screen and post a message
         const message = `Message ${getRandomId()}`;
         await ChannelScreen.open(channelsCategory, testChannel.name);
-        await ChannelScreen.postMessage(message);
 
-        // * Verify message is posted
-        const {post} = await Post.apiGetLastPostInChannel(siteOneUrl, testChannel.id);
+        // Send + verify it landed (retries once on sim -1005 POST drop).
+        const {post} = await ChannelScreen.postMessageAndVerify(message, testChannel.id, siteOneUrl);
         const {postListPostItem} = ChannelScreen.getPostListPostItem(post.id, message);
-        await expect(postListPostItem).toBeVisible();
+
+        // Wait for the post to exist in the list (not necessarily visible — the new
+        // message lands at the bottom and auto-scroll-to-bottom on send is flaky;
+        // openChannelPostOptionsForPin below scrolls to it before long-pressing).
+        await waitFor(postListPostItem).toExist().withTimeout(timeouts.TEN_SEC);
 
         // # Open post options for message and tap on pin to channel option
         await openChannelPostOptionsForPin(post.id, message);
-        await PostOptionsScreen.pinPostOption.tap();
+
+        // Wait for the pin row to be fully visible before tapping — the post-options
+        // sheet's presentation UITransitionView can still obscure the row on open.
+        await waitFor(PostOptionsScreen.pinPostOption).toBeVisible().withTimeout(timeouts.FIVE_SEC);
+        await PostOptionsScreen.pinPostOption.tap({x: 1, y: 1});
 
         // * Verify pinned text is displayed on the post pre-header
-        // Use polling to wait for the pre-header to appear after pin operation.
-        // On Android the bridge stays busy during bottom sheet dismissal + network
-        // request + DB update + re-render, so a fixed wait() is unreliable.
         const {postListPostItemPreHeaderText} = ChannelScreen.getPostListPostItem(post.id, message);
         await waitFor(postListPostItemPreHeaderText).toHaveText(pinnedText).withTimeout(timeouts.TEN_SEC);
 
         // # Open post options for message and tap on unpin from channel option
         await openChannelPostOptionsForPin(post.id, message);
-        await PostOptionsScreen.unpinPostOption.tap();
+        await waitFor(PostOptionsScreen.unpinPostOption).toBeVisible().withTimeout(timeouts.FIVE_SEC);
+        await PostOptionsScreen.unpinPostOption.tap({x: 1, y: 1});
 
         // * Verify pinned text is not displayed on the post pre-header
-        // Wait for the pre-header element to disappear after unpin operation.
         await waitFor(postListPostItemPreHeaderText).not.toExist().withTimeout(timeouts.TEN_SEC);
 
         // # Go back to channel list screen
@@ -130,29 +133,31 @@ describe('Messaging - Pin and Unpin Message', () => {
         // # Open a channel screen, post a message, tap on post to open thread, open post options for message, and tap on pin to channel option
         const message = `Message ${getRandomId()}`;
         await ChannelScreen.open(channelsCategory, testChannel.name);
-        await ChannelScreen.postMessage(message);
-
-        const {post} = await Post.apiGetLastPostInChannel(siteOneUrl, testChannel.id);
+        const {post} = await ChannelScreen.postMessageAndVerify(message, testChannel.id, siteOneUrl);
         const {postListPostItem} = ChannelScreen.getPostListPostItem(post.id, message);
-        await expect(postListPostItem).toBeVisible();
+        await waitFor(postListPostItem).toBeVisible().withTimeout(timeouts.TEN_SEC);
 
         await postListPostItem.tap();
         await wait(timeouts.TWO_SEC);
         await ThreadScreen.toBeVisible();
         await ThreadScreen.openPostOptionsFor(post.id, message);
-        await PostOptionsScreen.pinPostOption.tap();
+        await waitFor(PostOptionsScreen.pinPostOption).toBeVisible().withTimeout(timeouts.FIVE_SEC);
+        await PostOptionsScreen.pinPostOption.tap({x: 1, y: 1});
 
         // * Verify pinned text is displayed on the post pre-header
-        // Use polling to wait for the pre-header to appear after pin operation.
         const {postListPostItemPreHeaderText} = ThreadScreen.getPostListPostItem(post.id, message);
         await waitFor(postListPostItemPreHeaderText).toHaveText(pinnedText).withTimeout(timeouts.TEN_SEC);
 
         // # Open post options for message and tap on unpin from channel option
         await ThreadScreen.openPostOptionsFor(post.id, message);
-        await PostOptionsScreen.unpinPostOption.tap();
+
+        // Wait for the unpin row to be fully visible before tapping — the post-options
+        // sheet's presentation UITransitionView can still be obscuring the row when
+        // the sheet is first opened, making a bare .tap() fail Detox's 100% hittability check.
+        await waitFor(PostOptionsScreen.unpinPostOption).toBeVisible().withTimeout(timeouts.FIVE_SEC);
+        await PostOptionsScreen.unpinPostOption.tap({x: 1, y: 1});
 
         // * Verify pinned text is not displayed on the post pre-header
-        // Wait for the pre-header element to disappear after unpin operation.
         await waitFor(postListPostItemPreHeaderText).not.toExist().withTimeout(timeouts.TEN_SEC);
 
         // # Go back to channel list screen

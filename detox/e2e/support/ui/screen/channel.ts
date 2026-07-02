@@ -1,6 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import {Post} from '@support/server_api';
 import {
     Alert,
     CameraQuickAction,
@@ -316,10 +317,27 @@ class ChannelScreen {
         await wait(timeouts.TWO_SEC);
     };
 
+    postMessageAndVerify = async (message: string, channelId: string, siteUrl: string): Promise<{post?: any; error?: any}> => {
+        await this.postMessage(message);
+        let result = await Post.apiGetLastPostInChannel(siteUrl, channelId);
+        if (result.post?.message === message) {
+            return result;
+        }
+
+        // Send likely failed (e.g. iOS sim -1005). Retry once.
+        await this.postMessage(message);
+        result = await Post.apiGetLastPostInChannel(siteUrl, channelId);
+        if (result.post?.message === message) {
+            return result;
+        }
+        throw new Error(`message send failed twice, likely sim network -1005 (last post: ${JSON.stringify(result.post?.message ?? result.error ?? 'none')})`);
+    };
+
     postSlashCommand = async (command: string) => {
         await this.composePostDraft(command);
         await waitForElementToBeVisible(this.sendButton, timeouts.FOUR_SEC);
-        await this.sendButton.tap();
+
+        await this.sendButton.tap({x: 1, y: 1});
         await waitFor(InteractiveDialogScreen.interactiveDialogScreen).toExist().withTimeout(timeouts.FIVE_SEC);
     };
 
