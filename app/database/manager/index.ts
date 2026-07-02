@@ -145,8 +145,21 @@ class DatabaseManagerSingleton {
                 const modelClasses = this.serverModels;
                 const schema = serverSchema;
 
+                const server = await getServer(serverUrl);
+                const zpm = server?.persistenceFlag === 'zero-persistence';
+
+                if (zpm) {
+                    try {
+                        await this.deleteServerDatabaseFiles(serverUrl);
+                    } catch {
+                        logDebug('createServerDatabase: no stale SQLite file to delete', serverUrl);
+                    }
+                }
+
+                // WatermelonDB's own in-memory form; bare `:memory:` doesn't survive its reset/VACUUM path.
+                const memoryDbName = `file:zpm_${databaseName}?mode=memory&cache=shared`;
                 const adapter = new SQLiteAdapter({
-                    dbName: databaseFilePath,
+                    dbName: zpm ? memoryDbName : databaseFilePath,
                     migrationEvents: this.buildMigrationCallbacks(databaseName),
                     migrations,
                     jsi: true,
@@ -155,7 +168,7 @@ class DatabaseManagerSingleton {
 
                 // Registers the new server connection into the DEFAULT database
                 await this.addServerToAppDatabase({
-                    databaseFilePath,
+                    databaseFilePath: zpm ? '' : databaseFilePath,
                     displayName: displayName || dbName,
                     identifier,
                     serverUrl,
@@ -387,6 +400,7 @@ class DatabaseManagerSingleton {
             config: {
                 dbName: serverUrl,
                 displayName: server.displayName,
+                identifier: server.identifier,
                 serverUrl,
             },
         });

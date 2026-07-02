@@ -45,7 +45,19 @@ extension PushNotification {
             GekidouLogger.shared.log(.info, "Gekidou PushNotification: Signature verification: No server_url for server_id")
             return false
         }
-        
+
+        if Database.default.isZeroPersistenceServer(serverUrl) {
+            if signature == "NO_SIGNATURE" {
+                GekidouLogger.shared.log(.info, "Gekidou PushNotification: Signature verification: Cannot verify unsigned notification for zero-persistence server")
+                return false
+            }
+            guard let signingKey = Database.default.getZeroPersistenceSigningKey(serverUrl) else {
+                GekidouLogger.shared.log(.info, "Gekidou PushNotification: Signature verification: No signing key stored for zero-persistence server")
+                return false
+            }
+            return verifyJwt(signature: signature, signingKey: signingKey, userInfo: userInfo)
+        }
+
         if signature == "NO_SIGNATURE" {
             if requireSignature {
                 // Same reasoning as the missing-signature case above —
@@ -135,6 +147,10 @@ extension PushNotification {
             return false
         }
 
+        return verifyJwt(signature: signature, signingKey: signingKey, userInfo: userInfo)
+    }
+
+    private func verifyJwt(signature: String, signingKey: String, userInfo: [AnyHashable: Any]) -> Bool {
         let keyPEM = """
 -----BEGIN PUBLIC KEY-----
 \(signingKey)

@@ -68,6 +68,15 @@ export const storeFirstLaunch = async (prepareRecordsOnly = false) => {
     return storeGlobal(GLOBAL_IDENTIFIERS.FIRST_LAUNCH, Date.now(), prepareRecordsOnly);
 };
 
+export const storeLastViewedTeamIdAndServer = async (teamId: string) => {
+    const currentServerUrl = await getActiveServerUrl();
+
+    return storeGlobal(GLOBAL_IDENTIFIERS.LAST_VIEWED_TEAM, {
+        server_url: currentServerUrl,
+        team_id: teamId,
+    }, false);
+};
+
 export const storeLastViewedChannelIdAndServer = async (channelId: string) => {
     const currentServerUrl = await getActiveServerUrl();
 
@@ -86,6 +95,10 @@ export const storeLastViewedThreadIdAndServer = async (threadId: string) => {
     }, false);
 };
 
+export const removeLastViewedTeamIdAndServer = async () => {
+    return storeGlobal(GLOBAL_IDENTIFIERS.LAST_VIEWED_TEAM, null, false);
+};
+
 export const removeLastViewedChannelIdAndServer = async () => {
     return storeGlobal(GLOBAL_IDENTIFIERS.LAST_VIEWED_CHANNEL, null, false);
 };
@@ -100,4 +113,12 @@ export const storePushDisabledInServerAcknowledged = async (serverUrl: string) =
 
 export const removePushDisabledInServerAcknowledged = async (serverUrl: string) => {
     return storeGlobal(`${GLOBAL_IDENTIFIERS.PUSH_DISABLED_ACK}${serverUrl}`, null, false);
+};
+
+export const storePushSigningKey = async (serverUrl: string, key: string) => {
+    return storeGlobal(`${GLOBAL_IDENTIFIERS.PUSH_SIGNING_KEY}${serverUrl}`, key, false);
+};
+
+export const removePushSigningKey = async (serverUrl: string) => {
+    return storeGlobal(`${GLOBAL_IDENTIFIERS.PUSH_SIGNING_KEY}${serverUrl}`, null, false);
 };

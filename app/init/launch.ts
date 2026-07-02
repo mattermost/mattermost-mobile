@@ -15,7 +15,7 @@ import {getDefaultThemeByAppearance} from '@context/theme';
 import DatabaseManager from '@database/manager';
 import {getActiveServerUrl, getServerCredentials} from '@init/credentials';
 import PerformanceMetricsManager from '@managers/performance_metrics_manager';
-import {getLastViewedChannelIdAndServer, getLastViewedThreadIdAndServer, getOnboardingViewed} from '@queries/app/global';
+import {getLastViewedChannelIdAndServer, getLastViewedTeamIdAndServer, getLastViewedThreadIdAndServer, getOnboardingViewed} from '@queries/app/global';
 import {getActiveServer, getAllServers} from '@queries/app/servers';
 import {queryPostsByType} from '@queries/servers/post';
 import {getThemeForCurrentTeam} from '@queries/servers/preference';
@@ -260,6 +260,12 @@ async function determineAuthenticatedRoute(props: LaunchProps): Promise<ExpoRout
                 appEntry(props.serverUrl!);
             }
             break;
+    }
+
+    // when running in zero persistence mode show last team if available
+    const lastViewedTeam = await getLastViewedTeamIdAndServer();
+    if (lastViewedTeam?.server_url === props.serverUrl && lastViewedTeam.team_id) {
+        return {route: '/(authenticated)/(home)', params: props};
     }
 
     let nTeams = 0;

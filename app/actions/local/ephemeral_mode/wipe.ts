@@ -1,10 +1,15 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import {removePushSigningKey, storePushSigningKey} from '@actions/app/global';
 import DatabaseManager from '@database/manager';
+import {getServer} from '@queries/app/servers';
+import {resetHasEverStartedSync} from '@store/team_load_store';
 import {getFullErrorMessage} from '@utils/errors';
 import {deleteFileCache, deleteFileCacheByDir} from '@utils/file';
 import {logError, logInfo, logWarning} from '@utils/log';
+
+import type {PersistenceFlag} from '@typings/database/models/app/servers';
 
 const RETRY_TIME = 1000;
 const MAX_RETRIES = 5;
@@ -17,6 +22,7 @@ export const wipeServerDatabaseWithRetry = async (serverUrl: string): Promise<{s
             // eslint-disable-next-line no-await-in-loop
             await DatabaseManager.wipeServerData(serverUrl);
             logInfo('wipeServerDatabaseWithRetry: wipe complete', serverUrl, `attempts=${attempt + 1}`);
+            resetHasEverStartedSync(serverUrl);
             return {success: true};
         } catch (error) {
             logWarning('wipeServerDatabaseWithRetry: wipe attempt failed', serverUrl, `attempt=${attempt + 1}`, getFullErrorMessage(error));
@@ -51,3 +57,29 @@ export const wipeServerFiles = (serverUrl: string): {success: boolean} => {
     }
     return {success};
 };
+
+export const reconcilePersistenceFlag = async (serverUrl: string, config: ClientConfig | undefined): Promise<boolean> => {
+    const server = await getServer(serverUrl);
+    if (!server) {
+        return false;
+    }
+    const nextFlag: PersistenceFlag = config?.MobileEphemeralModeEnabled === 'true' && config.MobileEphemeralModeAutoCacheCleanupDays === '0' ? 'zero-persistence' : '';
+    if (server.persistenceFlag === nextFlag) {
+        return false;
+    }
+    const crossesZeroPersistence = server.persistenceFlag === 'zero-persistence' || nextFlag === 'zero-persistence';
+    try {
+        await DatabaseManager.updatePersistenceFlag(serverUrl, nextFlag);
+        if (nextFlag === 'zero-persistence' && config?.AsymmetricSigningPublicKey) {
+            await storePushSigningKey(serverUrl, config.AsymmetricSigningPublicKey);
+        } else if (server.persistenceFlag === 'zero-persistence') {
+            await removePushSigningKey(serverUrl);
+        }
+        return crossesZeroPersistence;
+    } catch (error) {
+        // database cannot be updated, log error & return false so it will be retried on next config fetch
+        logError('reconcilePersistenceFlag', getFullErrorMessage(error));
+        return false;
+    }
+};
+

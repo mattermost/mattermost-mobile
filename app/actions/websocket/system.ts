@@ -2,12 +2,16 @@
 // See LICENSE.txt for license information.
 
 import {updateDmGmDisplayName} from '@actions/local/channel';
+import {reconcilePersistenceFlag} from '@actions/local/ephemeral_mode/wipe';
 import {storeConfig} from '@actions/local/systems';
 import {fetchCategories} from '@actions/remote/category';
+import {applyPersistenceModeChange} from '@actions/remote/ephemeral_mode/refresh';
 import {SYSTEM_IDENTIFIERS} from '@constants/database';
 import DatabaseManager from '@database/manager';
 import {getConfig, getCurrentTeamId, getLicense} from '@queries/servers/system';
 import EphemeralStore from '@store/ephemeral_store';
+import {getFullErrorMessage} from '@utils/errors';
+import {logError} from '@utils/log';
 
 export async function handleLicenseChangedEvent(serverUrl: string, msg: WebSocketMessage): Promise<void> {
     try {
@@ -43,6 +47,16 @@ export async function handleConfigChangedEvent(serverUrl: string, msg: WebSocket
             const currentTeamId = await getCurrentTeamId(database);
             if (currentTeamId) {
                 await fetchCategories(serverUrl, currentTeamId, true);
+            }
+        }
+
+        // Run last: a flag transition can wipe and recreate the server DB, invalidating
+        // the `database` reference captured above.
+        const needsModeChange = await reconcilePersistenceFlag(serverUrl, config);
+        if (needsModeChange) {
+            const {error: modeChangeError} = await applyPersistenceModeChange(serverUrl);
+            if (modeChangeError) {
+                logError('handleConfigChangedEvent', getFullErrorMessage(modeChangeError));
             }
         }
     } catch {

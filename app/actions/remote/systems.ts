@@ -1,7 +1,9 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import {reconcilePersistenceFlag} from '@actions/local/ephemeral_mode/wipe';
 import {storeConfigAndLicense, storeDataRetentionPolicies} from '@actions/local/systems';
+import {applyPersistenceModeChange} from '@actions/remote/ephemeral_mode/refresh';
 import {forceLogoutIfNecessary} from '@actions/remote/session';
 import DatabaseManager from '@database/manager';
 import NetworkManager from '@managers/network_manager';
@@ -96,6 +98,13 @@ export const fetchConfigAndLicense = async (serverUrl: string, fetchOnly = false
 
         if (!fetchOnly) {
             await storeConfigAndLicense(serverUrl, config, license);
+            const needsModeChange = await reconcilePersistenceFlag(serverUrl, config);
+            if (needsModeChange) {
+                const {error: modeChangeError} = await applyPersistenceModeChange(serverUrl);
+                if (modeChangeError) {
+                    throw modeChangeError;
+                }
+            }
         }
 
         return {config, license};

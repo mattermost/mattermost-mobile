@@ -74,6 +74,7 @@ async function doReconnect(serverUrl: string, groupLabel?: BaseRequestGroupLabel
         if ('error' in entryData) {
             return entryData.error;
         }
+
         const {models, initialTeamId, initialChannelId, prefData, teamData, chData, meData, gmConverted} = entryData;
 
         await handleEntryAfterLoadNavigation(serverUrl, teamData.memberships || [], chData?.memberships || [], currentTeamId || '', currentChannelId || '', initialTeamId, initialChannelId, gmConverted);
@@ -84,7 +85,6 @@ async function doReconnect(serverUrl: string, groupLabel?: BaseRequestGroupLabel
         }
 
         logInfo('WEBSOCKET RECONNECT MODELS BATCHING TOOK', `${Date.now() - dt}ms`);
-
         await fetchPostDataIfNeeded(serverUrl, groupLabel);
 
         const {id: currentUserId, locale: currentUserLocale} = (await getCurrentUser(database))!;

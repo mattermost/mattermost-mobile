@@ -13,8 +13,8 @@ import {getDefaultThemeByAppearance} from '@context/theme';
 import DatabaseManager from '@database/manager';
 import {getAllServerCredentials} from '@init/credentials';
 import {determineRouteFromLaunchProps} from '@init/launch';
+import EphemeralModeManager from '@managers/ephemeral_mode_manager';
 import IntuneManager from '@managers/intune_manager';
-import OfflinePersistenceManager from '@managers/offline_persistence_manager';
 import SecurityManager from '@managers/security_manager';
 import {queryGlobalValue} from '@queries/app/global';
 import {getAllServers, getServerDisplayName} from '@queries/app/servers';
@@ -134,7 +134,7 @@ export class SessionManagerSingleton {
             await IntuneManager.unenrollServer(serverUrl, false);
             await terminateSession(serverUrl, removeServer);
             SecurityManager.removeServer(serverUrl);
-            OfflinePersistenceManager.removeServer(serverUrl);
+            EphemeralModeManager.removeServer(serverUrl);
 
             if (activeServerUrl === serverUrl) {
                 let displayName = '';
@@ -174,7 +174,7 @@ export class SessionManagerSingleton {
 
             await terminateSession(serverUrl, false);
             SecurityManager.removeServer(serverUrl);
-            OfflinePersistenceManager.removeServer(serverUrl);
+            EphemeralModeManager.removeServer(serverUrl);
             await IntuneManager.unenrollServer(serverUrl, true);
 
             const activeServerUrl = await DatabaseManager.getActiveServerUrl();

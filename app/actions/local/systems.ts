@@ -125,7 +125,9 @@ export async function storeConfigAndLicense(serverUrl: string, config: ClientCon
                 DeviceEventEmitter.emit(Events.LICENSE_CHANGED, {serverUrl, license});
             }
 
-            return await storeConfig(serverUrl, config);
+            const result = await storeConfig(serverUrl, config);
+
+            return result;
         }
     } catch (error) {
         logError('An error occurred while saving config & license', error);

@@ -93,16 +93,17 @@ export const refetchCurrentUser = async (serverUrl: string, currentUserId: strin
     logDebug('re-fetching self');
     const {user} = await fetchMe(serverUrl);
     if (!user || currentUserId) {
-        return;
+        return {error: 'No user fetched'};
     }
 
     logDebug('missing currentUserId');
     const operator = DatabaseManager.serverDatabases[serverUrl]?.operator;
     if (!operator) {
         logDebug('missing operator');
-        return;
+        return {error: 'Cannot get operator for server'};
     }
-    setCurrentUserId(operator, user.id);
+
+    return setCurrentUserId(operator, user.id);
 };
 
 export async function fetchProfilesInChannel(
