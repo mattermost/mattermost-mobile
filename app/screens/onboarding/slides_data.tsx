@@ -56,7 +56,7 @@ const useSlidesData = () => {
     const slidesData: OnboardingItem[] = [
         {
             title: intl.formatMessage({id: 'onboarding.welcome', defaultMessage: 'Welcome'}),
-            description: intl.formatMessage({id: 'onboaring.welcome_description', defaultMessage: 'Mattermost is a sovereign collaboration platform, purpose-built for operational environments. Secure by design.'}),
+            description: intl.formatMessage({id: 'onboaring.welcome_description', defaultMessage: 'Mattermost is a sovereign collaboration platform built for operational environments and uncompromising security'}),
             image: chatSvg,
         },
         {
@@ -71,7 +71,7 @@ const useSlidesData = () => {
         },
         {
             title: intl.formatMessage({id: 'onboarding.integrations', defaultMessage: 'Integrate with your systems'}),
-            description: intl.formatMessage({id: 'onboarding.integrations_description', defaultMessage: 'Integrate with the tools and systems powering your operations — ticketing, conferencing, alerting, or custom integrations.'}),
+            description: intl.formatMessage({id: 'onboarding.integrations_description', defaultMessage: 'Centralize data feeds, automate alerts, and integrate custom tooling directly into your operational hub.'}),
             image: integrationsSvg,
         },
     ];
