@@ -517,6 +517,48 @@ export const apiEnsurePluginInstalled = async (baseUrl: string, pluginId: string
     return finalStatus;
 };
 
+/**
+ * Submit the demo plugin file-upload interactive dialog (populates plugin KV for re-open hydration).
+ * @param {string} baseUrl - the base server URL
+ * @param {Object} params - dialog submit payload
+ * @return {Object} returns {status} on success or {error, status} on error
+ */
+export const apiSubmitDemoPluginFileUploadDialog = async (
+    baseUrl: string,
+    {
+        userId,
+        channelId,
+        teamId,
+        submission,
+        fileIds = [],
+    }: {
+        userId: string;
+        channelId: string;
+        teamId: string;
+        submission: Record<string, string>;
+        fileIds?: string[];
+    },
+): Promise<any> => {
+    try {
+        const response = await client.post(
+            `${baseUrl}/plugins/${DemoPlugin.id}/dialog/file-upload`,
+            {
+                user_id: userId,
+                channel_id: channelId,
+                team_id: teamId,
+                submission,
+                file_ids: fileIds,
+                cancelled: false,
+                state: 'somestate',
+            },
+        );
+
+        return {status: response.status};
+    } catch (err) {
+        return getResponseFromError(err);
+    }
+};
+
 export const Plugin = {
     apiDisableNonPrepackagedPlugins,
     apiDisablePluginById,
@@ -530,6 +572,7 @@ export const Plugin = {
     apiRemovePluginById,
     apiUploadPlugin,
     apiUploadAndEnablePlugin,
+    apiSubmitDemoPluginFileUploadDialog,
 };
 
 export default Plugin;

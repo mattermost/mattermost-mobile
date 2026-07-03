@@ -93,6 +93,7 @@ export type Props = {
     refreshOnSelect: (field: AppField, values: AppFormValues, value: AppFormValue) => Promise<DoAppCallResult<FormResponseData>>;
     submit: (values: AppFormValues) => Promise<DoAppCallResult<FormResponseData>>;
     performLookupCall: (field: AppField, values: AppFormValues, value: AppFormValue) => Promise<DoAppCallResult<AppLookupResponse>>;
+    channelId?: string;
 }
 
 type Errors = {[name: string]: string}
@@ -136,10 +137,12 @@ function AppsFormComponent({
     refreshOnSelect,
     submit,
     performLookupCall,
+    channelId = '',
 }: Props) {
     const scrollView = useRef<KeyboardAwareScrollViewRef>(null);
     const isMountedRef = useRef(true);
     const [submitting, setSubmitting] = useState(false);
+    const [uploadingFields, setUploadingFieldsState] = useState<Set<string>>(new Set());
     const navigation = useNavigation();
     const intl = useIntl();
     const serverUrl = useServerUrl();
@@ -148,6 +151,22 @@ function AppsFormComponent({
     const [values, dispatchValues] = useReducer(valuesReducer, form.fields, initValues);
     const theme = useTheme();
     const style = getStyleFromTheme(theme);
+
+    const setFieldUploading = useCallback((fieldName: string, uploading: boolean) => {
+        setUploadingFieldsState((prev) => {
+            const has = prev.has(fieldName);
+            if (uploading === has) {
+                return prev;
+            }
+            const next = new Set(prev);
+            if (uploading) {
+                next.add(fieldName);
+            } else {
+                next.delete(fieldName);
+            }
+            return next;
+        });
+    }, []);
 
     useDidUpdate(() => {
         dispatchValues({elements: form.fields});
@@ -258,7 +277,7 @@ function AppsFormComponent({
     );
 
     const handleSubmit = useCallback(async (button?: string) => {
-        if (submitting) {
+        if (submitting || uploadingFields.size > 0) {
             return;
         }
 
@@ -332,7 +351,7 @@ function AppsFormComponent({
                 }));
                 setSubmitting(false);
         }
-    }, [elements, form, values, submit, submitting, updateErrors, serverUrl, intl]);
+    }, [elements, form, values, submit, submitting, uploadingFields, updateErrors, serverUrl, intl]);
 
     const performLookup = useCallback(async (name: string, userInput: string): Promise<AppSelectOption[]> => {
         const field = form.fields?.find((f) => f.name === name);
@@ -405,13 +424,13 @@ function AppsFormComponent({
             headerRight: () => (
                 <NavigationButton
                     onPress={handleSubmit}
-                    disabled={submitting}
+                    disabled={submitting || uploadingFields.size > 0}
                     testID='interactive_dialog.submit.button'
                     text={form.submit_label || intl.formatMessage({id: 'interactive_dialog.submit', defaultMessage: 'Submit'})}
                 />
             ),
         });
-    }, [form.submit_label, handleSubmit, intl, navigation, submitButtons, submitting]);
+    }, [form.submit_label, handleSubmit, intl, navigation, submitButtons, submitting, uploadingFields]);
 
     // Cleanup on unmount to prevent memory leaks
     useEffect(() => {
@@ -462,6 +481,9 @@ function AppsFormComponent({
                             value={value || ''}
                             performLookup={performLookup}
                             onChange={onChange}
+                            setFieldUploading={setFieldUploading}
+                            channelId={channelId}
+                            serverUrl={serverUrl}
                         />
                     );
                 })}
@@ -478,6 +500,7 @@ function AppsFormComponent({
                                 theme={theme}
                                 size='lg'
                                 text={o.label || ''}
+                                disabled={submitting || uploadingFields.size > 0}
                             />
                         </View>
                     ))}
