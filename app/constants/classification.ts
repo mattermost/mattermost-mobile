@@ -11,10 +11,12 @@
 //   2. Channel field — drives PER-CHANNEL banners. Also linked to the
 //                      template and inherits its options/colors.
 //
-// Both fields are scoped server-side as system fields, so they share the
-// same field-level target attributes (`target_type='system'`, `target_id=''`).
-// Property *values* for the system field are stored on the dedicated system
-// endpoint and use the sentinel target_id 'system'.
+// Both fields share the same field name on the server and are distinguished
+// only by their object_type ('system' vs 'channel'). They are also scoped
+// server-side as system fields, so they share the same field-level target
+// attributes (`target_type='system'`, `target_id=''`). Property *values* for
+// the system field are stored on the dedicated system endpoint and use the
+// sentinel target_id 'system'.
 // ---------------------------------------------------------------------------
 
 // Property-field group identifying all classification-markings entities.
@@ -26,15 +28,16 @@ export const CLASSIFICATIONS_GROUP_NAME = 'access_control';
 export const CLASSIFICATIONS_FIELD_TARGET_TYPE = 'system';
 export const CLASSIFICATIONS_FIELD_TARGET_ID = '';
 
+// Shared field name for both the system and channel classification fields.
+export const CLASSIFICATIONS_FIELD_NAME = 'classification';
+
 // System field — drives the global banner. Property *values* live on the
 // dedicated system endpoint and use the sentinel target_id 'system'.
 export const CLASSIFICATIONS_SYSTEM_OBJECT_TYPE = 'system';
-export const CLASSIFICATIONS_SYSTEM_FIELD_NAME = 'system_classification';
 export const CLASSIFICATIONS_SYSTEM_VALUE_TARGET_ID = 'system';
 
 // Channel field — drives the per-channel banner.
 export const CLASSIFICATIONS_CHANNEL_OBJECT_TYPE = 'channel';
-export const CLASSIFICATIONS_CHANNEL_FIELD_NAME = 'channel_classification';
 
 // Actions stored on the linked fields' attrs.actions to control banner placement.
 export const DISPLAY_BANNER_TOP = 'display_banner_top';

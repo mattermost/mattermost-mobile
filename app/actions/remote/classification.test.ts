@@ -26,7 +26,7 @@ const serverUrl = 'classification.test.com';
 const systemField: PropertyField = {
     id: 'system-field-id',
     group_id: CLASSIFICATIONS_GROUP_NAME,
-    name: 'system_classification',
+    name: 'classification',
     type: 'select',
     object_type: 'system',
     target_type: 'system',
@@ -46,7 +46,7 @@ const systemField: PropertyField = {
 const channelField: PropertyField = {
     id: 'channel-field-id',
     group_id: CLASSIFICATIONS_GROUP_NAME,
-    name: 'channel_classification',
+    name: 'classification',
     type: 'select',
     object_type: 'channel',
     target_type: 'system',

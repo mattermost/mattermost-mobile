@@ -6,8 +6,7 @@ import {combineLatest} from 'rxjs';
 import {distinctUntilChanged, map} from 'rxjs/operators';
 
 import {
-    CLASSIFICATIONS_CHANNEL_FIELD_NAME,
-    CLASSIFICATIONS_SYSTEM_FIELD_NAME,
+    CLASSIFICATIONS_FIELD_NAME,
     CLASSIFICATIONS_SYSTEM_VALUE_TARGET_ID,
 } from '@constants/classification';
 import {MM_TABLES} from '@constants/database';
@@ -17,8 +16,6 @@ import type {PropertyFieldModel, PropertyValueModel} from '@database/models/serv
 
 const {SERVER: {PROPERTY_FIELD, PROPERTY_VALUE}} = MM_TABLES;
 
-const CLASSIFICATION_FIELD_NAMES = [CLASSIFICATIONS_SYSTEM_FIELD_NAME, CLASSIFICATIONS_CHANNEL_FIELD_NAME];
-
 export const getPropertyFieldsByNames = (database: Database, names: string[]) => {
     return database.get<PropertyFieldModel>(PROPERTY_FIELD).query(Q.where('name', Q.oneOf(names))).fetch();
 };
@@ -27,7 +24,7 @@ export const getPropertyFieldsByNames = (database: Database, names: string[]) =>
 
 export const observeClassificationFields = (database: Database) => {
     return database.get<PropertyFieldModel>(PROPERTY_FIELD).query(
-        Q.where('name', Q.oneOf(CLASSIFICATION_FIELD_NAMES)),
+        Q.where('name', CLASSIFICATIONS_FIELD_NAME),
         Q.where('delete_at', 0),
     ).observeWithColumns(['update_at', 'delete_at', 'attrs']);
 };

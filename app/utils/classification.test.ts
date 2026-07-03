@@ -13,7 +13,7 @@ type ClassificationValue = Pick<PropertyValueModel, 'fieldId' | 'value'>;
 
 const systemField: ClassificationField = {
     id: 'sys-1',
-    name: 'system_classification',
+    name: 'classification',
     objectType: 'system',
     attrs: {
         actions: ['display_banner_top'],
@@ -33,7 +33,7 @@ describe('deriveClassificationBannerState', () => {
     });
 
     it('should return hidden state when the system field is absent', () => {
-        const channelOnly: ClassificationField = {...systemField, name: 'channel_classification', objectType: 'channel'};
+        const channelOnly: ClassificationField = {...systemField, name: 'classification', objectType: 'channel'};
         const result = deriveClassificationBannerState([channelOnly], [systemValue]);
         expect(result).toEqual({visible: false, levelName: '', color: ''});
     });
@@ -67,7 +67,7 @@ describe('deriveClassificationBannerState', () => {
 
 const channelField: ClassificationField = {
     id: 'cf-1',
-    name: 'channel_classification',
+    name: 'classification',
     objectType: 'channel',
     attrs: {
         options: [

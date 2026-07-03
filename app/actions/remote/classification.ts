@@ -2,12 +2,11 @@
 // See LICENSE.txt for license information.
 
 import {
-    CLASSIFICATIONS_CHANNEL_FIELD_NAME,
     CLASSIFICATIONS_CHANNEL_OBJECT_TYPE,
     CLASSIFICATIONS_FIELD_TARGET_ID,
     CLASSIFICATIONS_FIELD_TARGET_TYPE,
+    CLASSIFICATIONS_FIELD_NAME,
     CLASSIFICATIONS_GROUP_NAME,
-    CLASSIFICATIONS_SYSTEM_FIELD_NAME,
     CLASSIFICATIONS_SYSTEM_OBJECT_TYPE,
     CLASSIFICATIONS_SYSTEM_VALUE_TARGET_ID,
 } from '@constants/classification';
@@ -18,8 +17,6 @@ import {getConfigValue} from '@queries/servers/system';
 import {logDebug, logError} from '@utils/log';
 
 import {forceLogoutIfNecessary} from './session';
-
-const CLASSIFICATION_FIELD_NAMES = [CLASSIFICATIONS_SYSTEM_FIELD_NAME, CLASSIFICATIONS_CHANNEL_FIELD_NAME];
 
 export async function fetchClassificationBanner(serverUrl: string): Promise<{error?: unknown}> {
     try {
@@ -59,7 +56,7 @@ export async function fetchClassificationBanner(serverUrl: string): Promise<{err
         // We look up the stored fields by name and re-submit them stamped with a non-zero delete_at.
         // handlePropertyFields treats a non-zero delete_at as a deletion, so the operator removes those
         // fields and cascades the removal to each field's property values in a single batch.
-        const stale = await getPropertyFieldsByNames(database, CLASSIFICATION_FIELD_NAMES);
+        const stale = await getPropertyFieldsByNames(database, [CLASSIFICATIONS_FIELD_NAME]);
         if (stale.length) {
             await operator.handlePropertyFields({
                 fields: stale.map((f) => ({id: f.id, delete_at: Date.now()} as PropertyField)),

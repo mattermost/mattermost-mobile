@@ -2,7 +2,7 @@
 // See LICENSE.txt for license information.
 
 import {
-    CLASSIFICATIONS_SYSTEM_FIELD_NAME,
+    CLASSIFICATIONS_FIELD_NAME,
     CLASSIFICATIONS_SYSTEM_OBJECT_TYPE,
     DISPLAY_BANNER_TOP,
 } from '@constants/classification';
@@ -40,7 +40,7 @@ export function deriveClassificationBannerState(
 ): ClassificationBannerState {
     const systemField = fields.find(
         (f) => f.objectType === CLASSIFICATIONS_SYSTEM_OBJECT_TYPE &&
-               f.name === CLASSIFICATIONS_SYSTEM_FIELD_NAME,
+               f.name === CLASSIFICATIONS_FIELD_NAME,
     );
 
     if (!systemField) {

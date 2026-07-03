@@ -22,7 +22,7 @@ let operator: ServerDataOperator;
 const makeField = (overrides?: Partial<PropertyField>): PropertyField => ({
     id: 'sys-1',
     group_id: groupId,
-    name: 'system_classification',
+    name: 'classification',
     type: 'select',
     object_type: 'system',
     target_type: 'system',
@@ -94,7 +94,7 @@ describe('observeChannelClassificationBanner', () => {
     const channelId = 'channel-123';
 
     it('should emit a channel banner from the channel value and field options', async () => {
-        await seedFields([makeField({id: 'cf-1', name: 'channel_classification', object_type: 'channel', attrs: {options: [{id: 'level-secret', name: 'Secret', color: '#FF0000'}]}})]);
+        await seedFields([makeField({id: 'cf-1', name: 'classification', object_type: 'channel', attrs: {options: [{id: 'level-secret', name: 'Secret', color: '#FF0000'}]}})]);
         await seedValues([makeValue({id: 'cv-1', target_id: channelId, target_type: 'channel', field_id: 'cf-1', value: 'level-secret'})]);
 
         const state = await firstValueFrom(observeChannelClassificationBanner(database, channelId));
@@ -107,7 +107,7 @@ describe('observeChannelClassificationBanner', () => {
     });
 
     it('should emit no classification when there is no channel value', async () => {
-        await seedFields([makeField({id: 'cf-1', name: 'channel_classification', object_type: 'channel'})]);
+        await seedFields([makeField({id: 'cf-1', name: 'classification', object_type: 'channel'})]);
 
         const state = await firstValueFrom(observeChannelClassificationBanner(database, channelId));
         expect(state.hasClassification).toBe(false);
