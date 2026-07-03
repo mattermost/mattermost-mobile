@@ -79,7 +79,7 @@ describe('Classification Banner - Offline / Cache Behaviour', () => {
         await expect(element(by.text('TOP SECRET'))).toBeVisible();
 
         // # Change classification value on the server to SECRET
-        await Properties.apiPatchSystemPropertyValues(siteOneUrl, 'classification_markings', [
+        await Properties.apiPatchSystemPropertyValues(siteOneUrl, 'access_control', [
             {field_id: linkedFieldId, value: 'lvl-secret'},
         ]);
 

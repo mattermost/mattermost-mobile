@@ -14,7 +14,7 @@ const {PROPERTY_FIELD, PROPERTY_VALUE} = MM_TABLES.SERVER;
 const makeField = (overrides?: Partial<PropertyField>): PropertyField => ({
     id: 'field1',
     group_id: 'group1',
-    name: 'system_classification',
+    name: 'classification',
     type: 'select',
     object_type: 'system',
     target_id: '',

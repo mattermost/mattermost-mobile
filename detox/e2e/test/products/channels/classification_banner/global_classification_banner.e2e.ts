@@ -182,7 +182,7 @@ describe('Classification Banner - Global Classification Banner', () => {
         await GlobalClassificationBanner.toBeVisible();
         await expect(element(by.text('TOP SECRET'))).toBeVisible();
 
-        await Properties.apiPatchSystemPropertyValues(siteOneUrl, 'classification_markings', [
+        await Properties.apiPatchSystemPropertyValues(siteOneUrl, 'access_control', [
             {field_id: linkedFieldId, value: 'lvl-secret'},
         ]);
 

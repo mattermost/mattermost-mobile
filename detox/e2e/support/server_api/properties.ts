@@ -4,11 +4,11 @@
 import client from './client';
 import {getResponseFromError} from './common';
 
-const GROUP_NAME = 'classification_markings';
+const GROUP_NAME = 'access_control';
 const OBJECT_TYPE = 'template';
 const TARGET_TYPE = 'system';
 const FIELD_NAME = 'classification';
-const LINKED_FIELD_NAME = 'system_classification';
+const LINKED_FIELD_NAME = 'classification';
 const LINKED_OBJECT_TYPE = 'system';
 const DISPLAY_BANNER_TOP = 'display_banner_top';
 
