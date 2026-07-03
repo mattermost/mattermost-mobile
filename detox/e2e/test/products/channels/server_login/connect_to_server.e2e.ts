@@ -41,7 +41,7 @@ describe('Server Login - Connect to Server', () => {
 
     it('MM-T4676_1 - should match elements on server screen', async () => {
         // * Verify basic elements on server screen
-        await expect(headerTitleConnectToServer).toHaveText('Connect securely to your server');
+        await expect(headerTitleConnectToServer).toHaveText('Connect to your server');
         await expect(headerDescription).toHaveText('Enter your server details to get started.');
         await expect(serverUrlInput).toBeVisible();
         await expect(serverDisplayNameInput).toBeVisible();

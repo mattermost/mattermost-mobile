@@ -55,7 +55,7 @@ const ServerHeader = ({additionalServer, theme}: Props) => {
     } else {
         title = (
             <FormattedText
-                defaultMessage='Connect securely to your server'
+                defaultMessage='Connect to your server'
                 id='mobile.components.select_server_view.msg_connect'
                 style={[styles.connect, isTablet ? styles.connectTablet : undefined]}
                 testID='server_header.title.connect_to_server'

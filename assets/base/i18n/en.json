@@ -790,7 +790,7 @@
   "mobile.components.select_server_view.displayHelp": "Choose a display name for your server",
   "mobile.components.select_server_view.displayName": "Display Name",
   "mobile.components.select_server_view.enterServerUrl": "Enter Server URL",
-  "mobile.components.select_server_view.msg_connect": "Connect securely to your server",
+  "mobile.components.select_server_view.msg_connect": "Connect to your server",
   "mobile.components.select_server_view.msg_description": "Enter your server details to get started.",
   "mobile.components.select_server_view.proceed": "Proceed",
   "mobile.components.select_server_view.sharedSecret": "Authentication secret",
