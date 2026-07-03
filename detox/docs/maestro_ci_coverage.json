@@ -1,0 +1,211 @@
+{
+  "lastUpdated": "2026-07-03",
+  "branch": "detox-e2e-stabilization",
+  "purpose": "Maps Maestro flows to CI tiers so Zephyr Scale labels match what PR CI actually runs.",
+  "zephyrLabelGuidance": {
+    "automated-e2e-pr-maestro": "Maestro flow runs in default PR CI (run_ci_batches.sh) on iOS and/or Android. Safe to mark automated if Detox also covers the same MM-T on PR.",
+    "automated-e2e-pr-maestro-android-only": "Runs in PR Maestro on Android only (iOS skips entire calls/ directory).",
+    "automated-e2e-pr-maestro-ios-only": "Runs in PR Maestro on iOS only.",
+    "automated-e2e-nightly-maestro": "Automated but excluded from default PR batch — needs extra seed script, dedicated workflow step, or RELEASE/CMT run.",
+    "automated-e2e-manual-maestro": "Requires two physical devices via run_two_device.sh or run_calls_two_device.sh — never runs in GitHub PR CI.",
+    "automated-e2e-detox": "Covered by Detox E2E only (not Maestro). Use for bookmark/search cases run in Detox shards."
+  },
+  "prCiSources": {
+    "defaultBatchScript": "detox/maestro/scripts/run_ci_batches.sh",
+    "defaultFlowDirs": [
+      "detox/maestro/flows/timezone",
+      "detox/maestro/flows/channels",
+      "detox/maestro/flows/account",
+      "detox/maestro/flows/calls"
+    ],
+    "excludeTagsFile": "detox/maestro/config/exclude_tags.json",
+    "dedicatedWorkflowSteps": [
+      {
+        "step": "Run MM-T67856_4 with AllowDownloadLogs=false",
+        "workflow": ".github/workflows/e2e-maestro-template.yml",
+        "flow": "detox/maestro/flows/account/attach_logs_disabled_when_download_logs_off.yml"
+      }
+    ]
+  },
+  "flows": [
+    {
+      "mmtKey": "MM-T1325",
+      "flow": "timezone/clock_display.yml",
+      "prCiIos": true,
+      "prCiAndroid": true,
+      "zephyrLabel": "automated-e2e-pr-maestro"
+    },
+    {
+      "mmtKey": "MM-T5603",
+      "flow": "channels/channel_bookmark_file.yml",
+      "prCiIos": true,
+      "prCiAndroid": true,
+      "note": "Sub-flows channel_bookmark_file_*_picker.yml are skipped in PR batch (invoked by parent).",
+      "zephyrLabel": "automated-e2e-pr-maestro"
+    },
+    {
+      "mmtKey": "MM-T5611",
+      "flow": "channels/channel_bookmark_link_external.yml",
+      "prCiIos": true,
+      "prCiAndroid": true,
+      "zephyrLabel": "automated-e2e-pr-maestro"
+    },
+    {
+      "mmtKey": "MM-T3260",
+      "flow": "account/help_url.yml",
+      "prCiIos": true,
+      "prCiAndroid": true,
+      "zephyrLabel": "automated-e2e-pr-maestro"
+    },
+    {
+      "mmtKey": "MM-T67856",
+      "flow": "account/attach_logs.yml",
+      "prCiIos": true,
+      "prCiAndroid": true,
+      "zephyrLabel": "automated-e2e-pr-maestro",
+      "zephyrEquivalent": "MM-T3261"
+    },
+    {
+      "mmtKey": "MM-T67856_1",
+      "flow": "account/attach_logs_toggle_visible.yml",
+      "prCiIos": true,
+      "prCiAndroid": true,
+      "zephyrLabel": "automated-e2e-pr-maestro"
+    },
+    {
+      "mmtKey": "MM-T67856_2",
+      "flow": "account/attach_logs_toggle_on_surfaces_option.yml",
+      "prCiIos": true,
+      "prCiAndroid": true,
+      "zephyrLabel": "automated-e2e-pr-maestro"
+    },
+    {
+      "mmtKey": "MM-T67856_4",
+      "flow": "account/attach_logs_disabled_when_download_logs_off.yml",
+      "prCiIos": false,
+      "prCiAndroid": false,
+      "prCiDedicatedStep": true,
+      "excludedFromDefaultBatch": true,
+      "reason": "Requires AllowDownloadLogs=false server patch; runs in dedicated e2e-maestro-template step.",
+      "zephyrLabel": "automated-e2e-nightly-maestro"
+    },
+    {
+      "mmtKey": "MM-T1411",
+      "flow": "calls/call_ui_permission.yml",
+      "prCiIos": false,
+      "prCiAndroid": true,
+      "reason": "iOS skips all flows under flows/calls/ (CallKit/WebRTC unreliable on simulator).",
+      "zephyrLabel": "automated-e2e-pr-maestro-android-only"
+    },
+    {
+      "mmtKey": "MM-T4832",
+      "flow": "calls/mute_unmute.yml",
+      "prCiIos": false,
+      "prCiAndroid": true,
+      "reason": "iOS skips all flows under flows/calls/.",
+      "zephyrLabel": "automated-e2e-pr-maestro-android-only"
+    },
+    {
+      "mmtKey": "MM-T4833",
+      "flow": "calls/leave_call.yml",
+      "prCiIos": false,
+      "prCiAndroid": true,
+      "reason": "iOS skips all flows under flows/calls/.",
+      "zephyrLabel": "automated-e2e-pr-maestro-android-only"
+    },
+    {
+      "mmtKey": "MM-T4829",
+      "flow": "calls/start_call.yml",
+      "prCiIos": false,
+      "prCiAndroid": false,
+      "excludedFromDefaultBatch": true,
+      "reason": "Excluded in should_skip_flow; requires calls_seed.ts — run manually or extend nightly workflow.",
+      "zephyrLabel": "automated-e2e-nightly-maestro"
+    },
+    {
+      "mmtKey": "MM-T3244",
+      "flow": "channels/file_type_preview.yml",
+      "prCiIos": false,
+      "prCiAndroid": false,
+      "excludedFromDefaultBatch": true,
+      "reason": "Requires seed_file_preview.ts — not in default PR batch.",
+      "zephyrLabel": "automated-e2e-nightly-maestro",
+      "detoxCoverage": "detox/e2e/test/products/channels/messaging/file_type_preview.e2e.ts"
+    },
+    {
+      "mmtKey": "MM-T3055",
+      "flow": "multi_device/user_a_sends_message.yml",
+      "prCiIos": false,
+      "prCiAndroid": false,
+      "reason": "multi_device/ skipped; run via detox/maestro/scripts/run_two_device.sh with two physical devices.",
+      "zephyrLabel": "automated-e2e-manual-maestro"
+    },
+    {
+      "mmtKey": "MM-T3056",
+      "flow": "multi_device/user_b_receives_message.yml",
+      "prCiIos": false,
+      "prCiAndroid": false,
+      "reason": "multi_device/ skipped; run via run_two_device.sh.",
+      "zephyrLabel": "automated-e2e-manual-maestro"
+    },
+    {
+      "mmtKey": "MM-T4830",
+      "flow": "multi_device/device_a_start_call.yml",
+      "prCiIos": false,
+      "prCiAndroid": false,
+      "reason": "multi_device/ skipped; run via detox/maestro/scripts/run_calls_two_device.sh.",
+      "zephyrLabel": "automated-e2e-manual-maestro"
+    },
+    {
+      "mmtKey": "MM-T4831",
+      "flow": "multi_device/device_b_join_call.yml",
+      "prCiIos": false,
+      "prCiAndroid": false,
+      "reason": "multi_device/ skipped; run via run_calls_two_device.sh.",
+      "zephyrLabel": "automated-e2e-manual-maestro"
+    }
+  ],
+  "detoxOnlyBookmarkCoverage": [
+    {
+      "mmtKey": "MM-T5602",
+      "file": "detox/e2e/test/products/channels/channels/channel_bookmarks.e2e.ts",
+      "zephyrLabel": "automated-e2e-detox"
+    },
+    {
+      "mmtKey": "MM-T5604",
+      "file": "detox/e2e/test/products/channels/channels/channel_bookmarks.e2e.ts",
+      "zephyrLabel": "automated-e2e-detox"
+    },
+    {
+      "mmtKey": "MM-T5606",
+      "file": "detox/e2e/test/products/channels/channels/channel_bookmarks.e2e.ts",
+      "zephyrLabel": "automated-e2e-detox"
+    },
+    {
+      "mmtKey": "MM-T5608",
+      "file": "detox/e2e/test/products/channels/channels/channel_bookmarks.e2e.ts",
+      "zephyrLabel": "automated-e2e-detox"
+    },
+    {
+      "mmtKey": "MM-T5612",
+      "file": "detox/e2e/test/products/channels/channels/channel_bookmarks.e2e.ts",
+      "zephyrLabel": "automated-e2e-detox"
+    },
+    {
+      "mmtKey": "MM-T5725",
+      "file": "detox/e2e/test/products/channels/channels/channel_bookmarks_permissions.e2e.ts",
+      "zephyrLabel": "automated-e2e-detox"
+    }
+  ],
+  "detoxClosedGaps": [
+    {
+      "mmtKey": "MM-T107",
+      "file": "detox/e2e/test/products/channels/messaging/message_char_limit.e2e.ts"
+    },
+    {
+      "mmtKey": "MM-T3251",
+      "file": "detox/e2e/test/products/account/set_status.e2e.ts",
+      "note": "Sets Away, DND, and Online from account menu user presence control."
+    }
+  ]
+}
