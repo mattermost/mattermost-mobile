@@ -3,10 +3,13 @@
 
 import Bot from './bot';
 import Channel from './channel';
+import ChannelBookmark from './channel_bookmark';
+import Command from './command';
+import CustomProfileAttributes from './custom_profile_attributes';
 import Ldap from './ldap';
 import Playbooks from './playbooks';
 import PlaybooksHelpers from './playbooks_helpers';
-import Plugin, {DemoPlugin} from './plugin';
+import Plugin, {AgentsPlugin, CallsPlugin, DemoPlugin} from './plugin';
 import Post from './post';
 import Preference from './preference';
 import Properties from './properties';
@@ -15,10 +18,16 @@ import Status from './status';
 import System from './system';
 import Team from './team';
 import User from './user';
+import Webhook from './webhook';
 
 export {
+    AgentsPlugin,
     Bot,
+    CallsPlugin,
     Channel,
+    ChannelBookmark,
+    Command,
+    CustomProfileAttributes,
     DemoPlugin,
     Ldap,
     Playbooks,
@@ -32,4 +41,5 @@ export {
     System,
     Team,
     User,
+    Webhook,
 };

@@ -13,6 +13,7 @@ import {switchMap, distinctUntilChanged} from 'rxjs/operators';
 import {Preferences, License} from '@constants';
 import {MM_TABLES, SYSTEM_IDENTIFIERS} from '@constants/database';
 import {PUSH_PROXY_STATUS_UNKNOWN} from '@constants/push_proxy';
+import {getFullErrorMessage} from '@utils/errors';
 import {isMinimumLicenseTier, isMinimumServerVersion, type LicenseTierSku} from '@utils/helpers';
 import {logError} from '@utils/log';
 
@@ -519,7 +520,7 @@ export async function setCurrentTeamId(operator: ServerDataOperator, teamId: str
 
         return {currentTeamId: teamId};
     } catch (error) {
-        logError(error);
+        logError('Failed setCurrentTeamId', getFullErrorMessage(error));
         return {error};
     }
 }

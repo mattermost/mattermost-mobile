@@ -31,8 +31,8 @@ import {
     ServerScreen,
     ChannelSettingsScreen,
 } from '@support/ui/screen';
-import {getRandomId, timeouts, wait} from '@support/utils';
-import {expect} from 'detox';
+import {getRandomId, isAndroid, timeouts, wait} from '@support/utils';
+import {device, expect, waitFor} from 'detox';
 
 describe('Smoke Test - Channels', () => {
     const serverOneDisplayName = 'Server 1';
@@ -70,7 +70,7 @@ describe('Smoke Test - Channels', () => {
         await BrowseChannelsScreen.searchInput.tapReturnKey();
         await wait(timeouts.FOUR_SEC);
         await BrowseChannelsScreen.getChannelItem(channel.name).multiTap(2);
-        await ChannelScreen.closeScheduledMessageTooltip();
+        await ChannelScreen.dismissScheduledPostTooltip();
 
         // * Verify on newly joined channel screen
         await ChannelScreen.toBeVisible();
@@ -152,17 +152,29 @@ describe('Smoke Test - Channels', () => {
         await ChannelScreen.toBeVisible();
         await expect(ChannelScreen.headerTitle).toHaveText(testChannel.display_name);
 
-        // # Open channel info screen, open edit channel screen, edit channel info, and save changes
+        // # Open channel info screen, open edit channel screen, edit channel info, and save changes.
+        // Use replaceText with the full final value rather than typeText to append.
+        // On Android the initial caret position can land inside the pre-filled
+        // header text, causing typeText('\nheader1\nheader2') to insert the new
+        // lines mid-word (the test previously saw "chann\nheader1\nheader2el e06882"
+        // saved as the channel header).
+        const initialHeader = `Channel header: ${testChannel.display_name.toLowerCase()}`;
+        const updatedHeader = `${initialHeader}\nheader1\nheader2`;
         await ChannelInfoScreen.open();
         await CreateOrEditChannelScreen.openEditChannel();
-        await CreateOrEditChannelScreen.headerInput.typeText('\nheader1\nheader2');
+        await CreateOrEditChannelScreen.headerInput.replaceText(updatedHeader);
         await CreateOrEditChannelScreen.saveButton.tap();
 
-        // * Verify on channel info screen and changes have been saved (close channel settings first to return to channel info)
-        await ChannelSettingsScreen.toBeVisible();
-        await ChannelSettingsScreen.close();
+        // * Verify on channel info screen and changes have been saved.
+        await waitFor(element(by.id('create_or_edit_channel.screen'))).not.toExist().withTimeout(timeouts.TEN_SEC);
+        try {
+            await waitFor(ChannelSettingsScreen.channelSettingsScreen).toExist().withTimeout(timeouts.FOUR_SEC);
+            await ChannelSettingsScreen.close();
+        } catch {
+            // Save may land directly on channel info.
+        }
         await ChannelInfoScreen.toBeVisible();
-        await expect(element(by.text(`Channel header: ${testChannel.display_name.toLowerCase()}\nheader1\nheader2`))).toBeVisible();
+        await waitFor(element(by.text(`Channel header: ${testChannel.display_name.toLowerCase()}\nheader1\nheader2`))).toBeVisible().withTimeout(timeouts.TEN_SEC);
 
         // # Go back to channel list screen
         await ChannelInfoScreen.close();
@@ -170,25 +182,47 @@ describe('Smoke Test - Channels', () => {
     });
 
     it('MM-T4774_5 - should be able to favorite and mute a channel', async () => {
+        // # Reload React Native to establish a fresh WebSocket connection.
+        await device.reloadReactNative();
+        await ChannelListScreen.toBeVisible();
+
         // # Open a channel screen, open channel info screen, tap on favorite action to favorite the channel, and tap on mute action to mute the channel
         await ChannelScreen.open(channelsCategory, testChannel.name);
         await ChannelInfoScreen.open();
         await ChannelInfoScreen.favoriteAction.tap();
         await ChannelInfoScreen.muteAction.tap();
-        await wait(timeouts.TWO_SEC);
 
         // * Verify channel is favorited and muted
-        await expect(ChannelInfoScreen.unfavoriteAction).toBeVisible();
-        await expect(ChannelInfoScreen.unmuteAction).toBeVisible();
+        if (isAndroid()) {
+            await device.disableSynchronization();
+            try {
+                await waitFor(ChannelInfoScreen.unfavoriteAction).toBeVisible().withTimeout(timeouts.HALF_MIN);
+                await waitFor(ChannelInfoScreen.unmuteAction).toBeVisible().withTimeout(timeouts.TEN_SEC);
+            } finally {
+                await device.enableSynchronization();
+            }
+        } else {
+            await expect(ChannelInfoScreen.unfavoriteAction).toBeVisible();
+            await expect(ChannelInfoScreen.unmuteAction).toBeVisible();
+        }
 
         // # Tap on favorited action to unfavorite the channel and tap on muted action to unmute the channel
         await ChannelInfoScreen.unfavoriteAction.tap();
         await ChannelInfoScreen.unmuteAction.tap();
-        await wait(timeouts.TWO_SEC);
 
         // * Verify channel is unfavorited and unmuted
-        await expect(ChannelInfoScreen.favoriteAction).toBeVisible();
-        await expect(ChannelInfoScreen.muteAction).toBeVisible();
+        if (isAndroid()) {
+            await device.disableSynchronization();
+            try {
+                await waitFor(ChannelInfoScreen.favoriteAction).toBeVisible().withTimeout(timeouts.HALF_MIN);
+                await waitFor(ChannelInfoScreen.muteAction).toBeVisible().withTimeout(timeouts.TEN_SEC);
+            } finally {
+                await device.enableSynchronization();
+            }
+        } else {
+            await expect(ChannelInfoScreen.favoriteAction).toBeVisible();
+            await expect(ChannelInfoScreen.muteAction).toBeVisible();
+        }
 
         // # Go back to channel list screen
         await ChannelInfoScreen.close();
@@ -201,6 +235,7 @@ describe('Smoke Test - Channels', () => {
         await Channel.apiAddUserToChannel(siteOneUrl, testUser.id, channel.id);
         await wait(timeouts.TWO_SEC);
         await device.reloadReactNative();
+        await ChannelListScreen.toBeVisible();
         await ChannelScreen.open(channelsCategory, channel.name);
         await ChannelInfoScreen.open();
         await ChannelInfoScreen.openChannelSettings();

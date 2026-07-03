@@ -3,15 +3,17 @@
 
 import {ChannelListScreen} from '@support/ui/screen';
 import {timeouts, wait} from '@support/utils';
-import {expect} from 'detox';
+import {waitFor} from 'detox';
 
 class InviteScreen {
     testID = {
         inviteScreen: 'invite.screen',
         screenSummary: 'invite.screen.summary',
         screenSelection: 'invite.screen.selection',
-        closeButton: 'invite.close.button',
+
+        closeButton: 'close.invite.button',
         sendButton: 'invite.send.button',
+        summaryDoneButton: 'invite.summary_button.DONE',
         teamIcon: 'invite.team_icon',
         teamDisplayName: 'invite.team_display_name',
         serverDisplayName: 'invite.server_display_name',
@@ -35,6 +37,7 @@ class InviteScreen {
     screenSelection = element(by.id(this.testID.screenSelection));
     closeButton = element(by.id(this.testID.closeButton));
     sendButton = element(by.id(this.testID.sendButton));
+    summaryDoneButton = element(by.id(this.testID.summaryDoneButton));
     teamIcon = element(by.id(this.testID.teamIcon));
     teamDisplayName = element(by.id(this.testID.teamDisplayName));
     serverDisplayName = element(by.id(this.testID.serverDisplayName));
@@ -122,8 +125,14 @@ class InviteScreen {
     };
 
     close = async () => {
-        await this.closeButton.tap();
-        await expect(this.inviteScreen).not.toBeVisible();
+        // Summary screen uses Done instead of the header close button.
+        try {
+            await waitFor(this.closeButton).toBeVisible().withTimeout(timeouts.TWO_SEC);
+            await this.closeButton.tap();
+        } catch {
+            await this.summaryDoneButton.tap();
+        }
+        await waitFor(this.inviteScreen).not.toBeVisible().withTimeout(timeouts.TEN_SEC);
     };
 }
 

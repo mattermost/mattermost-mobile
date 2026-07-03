@@ -390,19 +390,41 @@ describe('WebSocket Post Actions', () => {
             expect(batchRecordsSpy).not.toHaveBeenCalled();
         });
 
-        it('should not update create_at for ephemeral messages', async () => {
+        it('should preserve ephemeral identity fields when an edited ephemeral arrives with incomplete data', async () => {
             const batchRecordsSpy = jest.spyOn(operator, 'batchRecords').mockImplementation(jest.fn());
-            const ephemeralPost = TestHelper.fakePost({type: PostTypes.EPHEMERAL, create_at: 0});
+            const ephemeralPost = TestHelper.fakePost({
+                type: PostTypes.EPHEMERAL,
+                create_at: 0,
+                root_id: '',
+                user_id: '',
+                message: 'after',
+            });
             const ephemeralMsg = {
                 data: {post: JSON.stringify(ephemeralPost)},
             } as WebSocketMessage;
+            const storedEphemeralPost = TestHelper.fakePostModel({
+                type: PostTypes.EPHEMERAL,
+                createAt: 12345,
+                rootId: 'root1',
+                userId: 'creator1',
+            });
 
-            mockedGetPostById.mockResolvedValueOnce(postModels[0]);
+            mockedGetPostById.mockResolvedValueOnce(storedEphemeralPost);
             mockedSyncPermalinkPreviewsForEditedPost.mockResolvedValue([]);
 
             await handlePostEdited(serverUrl, ephemeralMsg);
 
-            expect(batchRecordsSpy).toHaveBeenCalledWith(expect.arrayContaining([expect.objectContaining({createAt: 12345})]), 'handlePostEdited');
+            expect(batchRecordsSpy).toHaveBeenCalledWith(
+                expect.arrayContaining([
+                    expect.objectContaining({
+                        createAt: 12345,
+                        rootId: 'root1',
+                        userId: 'creator1',
+                        message: 'after',
+                    }),
+                ]),
+                'handlePostEdited',
+            );
         });
 
         it('should not double batch permalink models in handlePostEdited', async () => {
