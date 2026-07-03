@@ -67,7 +67,7 @@ const ServerHeader = ({additionalServer, theme}: Props) => {
         <View style={styles.textContainer}>
             {title}
             <FormattedText
-                defaultMessage='Enter your server details to get started.'
+                defaultMessage="A server is your team's communication hub accessed using a unique URL"
                 id='mobile.components.select_server_view.msg_description'
                 style={styles.description}
                 testID='server_header.description'

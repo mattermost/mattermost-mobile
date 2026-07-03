@@ -791,7 +791,7 @@
   "mobile.components.select_server_view.displayName": "Display Name",
   "mobile.components.select_server_view.enterServerUrl": "Enter Server URL",
   "mobile.components.select_server_view.msg_connect": "Connect to your server",
-  "mobile.components.select_server_view.msg_description": "Enter your server details to get started.",
+  "mobile.components.select_server_view.msg_description": "A server is your team's communication hub accessed using a unique URL",
   "mobile.components.select_server_view.proceed": "Proceed",
   "mobile.components.select_server_view.sharedSecret": "Authentication secret",
   "mobile.components.select_server_view.sharedSecretHelp": "The authentication secret shared by the administrator",
