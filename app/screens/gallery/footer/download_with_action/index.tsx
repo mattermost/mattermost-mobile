@@ -82,6 +82,7 @@ const DownloadWithAction = ({action, enableSecureFilePreview, item, onShareCallb
     const [showToast, setShowToast] = useState<boolean|undefined>();
     const [error, setError] = useState('');
     const [saved, setSaved] = useState(false);
+    const [savedType, setSavedType] = useState<string>();
     const [progress, setProgress] = useState(0);
     const mounted = useRef(false);
     const downloadPromise = useRef<ProgressPromise<ClientResponse> | undefined>(undefined);
@@ -111,7 +112,7 @@ const DownloadWithAction = ({action, enableSecureFilePreview, item, onShareCallb
         iconName = 'check';
         toastStyle = styles.fileSaved;
 
-        switch (item.type) {
+        switch (savedType || item.type) {
             case 'image':
             case 'avatar':
                 message = intl.formatMessage({id: 'gallery.image_saved', defaultMessage: 'Image saved'});
@@ -216,6 +217,7 @@ const DownloadWithAction = ({action, enableSecureFilePreview, item, onShareCallb
                     album: applicationName || '',
                 });
                 setSaved(true);
+                setSavedType(resolvedType);
                 if (item.type !== 'avatar') {
                     updateLocalFilePath(serverUrl, item.id, path);
                 }
@@ -236,7 +238,12 @@ const DownloadWithAction = ({action, enableSecureFilePreview, item, onShareCallb
                 // servers may send generic mime types like application/octet-stream
                 // for videos, causing them to be misclassified as 'file'.
                 const fileInfo = galleryItemToFileInfo(item);
-                const actualType = isVideo(fileInfo) ? 'video' : (isImage(fileInfo) ? 'image' : item.type);
+                let actualType = item.type;
+                if (isVideo(fileInfo)) {
+                    actualType = 'video';
+                } else if (isImage(fileInfo)) {
+                    actualType = 'image';
+                }
 
                 switch (actualType) {
                     case 'file':
