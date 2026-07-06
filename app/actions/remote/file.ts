@@ -11,7 +11,7 @@ import {forceLogoutIfNecessary} from './session';
 import type {Client} from '@client/rest';
 import type {ClientResponse, ClientResponseError} from '@mattermost/react-native-network-client';
 
-export const downloadFile = async (serverUrl: string, fileId: string, desitnation: string) => {
+export const downloadFile = (serverUrl: string, fileId: string, desitnation: string) => {
     const client = NetworkManager.getClient(serverUrl);
     const headers = client.getRequestHeaders('GET');
     return client.apiClient.download(
@@ -21,7 +21,7 @@ export const downloadFile = async (serverUrl: string, fileId: string, desitnatio
     );
 };
 
-export const downloadProfileImage = async (serverUrl: string, userId: string, lastPictureUpdate: number, destination: string) => {
+export const downloadProfileImage = (serverUrl: string, userId: string, lastPictureUpdate: number, destination: string) => {
     const client = NetworkManager.getClient(serverUrl);
     const headers = client.getRequestHeaders('GET');
     return client.apiClient.download(
