@@ -337,7 +337,7 @@ describe('WebSocket Index Actions', () => {
                         thread_has_unreads: false,
                     },
                 ],
-                teams: [{team_id: currentTeamId, channels: [{id: 'ch1'}] as ChannelLoadItem[], channel_members: {members: []}}],
+                teams: [{team_id: currentTeamId, channels: [{id: 'ch1'}] as ExperienceChannel[], channel_members: {members: []}}],
                 direct_channel_members: {members: []},
             };
 
@@ -401,7 +401,7 @@ describe('WebSocket Index Actions', () => {
 
                 expect(buildTeamBadgeCounts).toHaveBeenCalledWith(
                     expect.arrayContaining([
-                        expect.objectContaining({id: currentTeamId}),
+                        expect.objectContaining({team_id: currentTeamId}),
                     ]),
                     undefined,
                     false,

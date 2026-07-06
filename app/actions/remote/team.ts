@@ -557,27 +557,7 @@ export async function handleTeamChange(serverUrl: string, teamId: string) {
     }
 
     let channelId = '';
-    const teamHasChannels = (await queryAllChannelsForTeam(database, teamId).fetch()).length > 0;
-    if (!teamHasChannels) {
-        DeviceEventEmitter.emit(Events.TEAM_SWITCH, true);
-    }
-
-    if (EphemeralStore.getExperienceAPIEnabled(serverUrl)) {
-        // Fetch channels + members + sidebar for this team before completing the switch
-        // so the channel list is populated when the screen appears.
-        const isCRTEnabled = await getIsCRTEnabled(database);
-        const hasChannels = (await queryMyChannelsByTeam(database, teamId).fetch()).length > 0;
-        if (hasChannels) {
-            fetchTeamLoad(serverUrl, teamId, isCRTEnabled);
-        } else {
-            const result = await fetchTeamLoad(serverUrl, teamId, isCRTEnabled);
-            if (result.error) {
-                // fetchTeamLoad already cleaned up local data and navigated away on 403.
-                DeviceEventEmitter.emit(Events.TEAM_SWITCH, false);
-                return {error: result.error};
-            }
-        }
-    }
+    DeviceEventEmitter.emit(Events.TEAM_SWITCH, true);
 
     if (isTablet()) {
         channelId = await getNthLastChannelFromTeam(database, teamId);
@@ -600,6 +580,25 @@ export async function handleTeamChange(serverUrl: string, teamId: string) {
 
     if (models.length) {
         await operator.batchRecords(models, 'handleTeamChange');
+    }
+
+    if (EphemeralStore.getExperienceAPIEnabled(serverUrl)) {
+        const teamHasChannels = (await queryAllChannelsForTeam(database, teamId).fetch()).length > 0;
+        if (teamHasChannels) {
+            DeviceEventEmitter.emit(Events.TEAM_SWITCH, false);
+        }
+
+        const isCRTEnabled = await getIsCRTEnabled(database);
+        const hasChannels = (await queryMyChannelsByTeam(database, teamId).fetch()).length > 0;
+        if (hasChannels) {
+            fetchTeamLoad(serverUrl, teamId, isCRTEnabled);
+        } else {
+            const result = await fetchTeamLoad(serverUrl, teamId, isCRTEnabled);
+            if (result.error) {
+                DeviceEventEmitter.emit(Events.TEAM_SWITCH, false);
+                return {error: result.error};
+            }
+        }
     }
 
     DeviceEventEmitter.emit(Events.TEAM_SWITCH, false);

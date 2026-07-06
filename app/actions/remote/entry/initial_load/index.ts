@@ -7,7 +7,6 @@ import {fetchGroupsForTeamIfConstrained} from '@actions/remote/groups';
 import {openAllUnreadChannels, type MyPreferencesRequest} from '@actions/remote/preference';
 import {fetchScheduledPosts} from '@actions/remote/scheduled_post';
 import {fetchConfigAndLicense, fetchDataRetentionPolicy} from '@actions/remote/systems';
-import {updateAllUsersSince, type MyUserRequest} from '@actions/remote/user';
 import {checkIsAgentsPluginEnabled} from '@agents/actions/remote/agents_status';
 import {setAgentsVersionFromManifests} from '@agents/actions/remote/version';
 import {loadConfigAndCallsIfEnabled} from '@calls/actions/calls';
@@ -20,7 +19,7 @@ import {setPlaybooksVersionFromManifests} from '@playbooks/actions/remote/versio
 import {getChannelById, prepareDeleteChannel, queryChannelsById} from '@queries/servers/channel';
 import {prepareEntryModels, truncateCrtRelatedTables} from '@queries/servers/entry';
 import {getHasCRTChanged} from '@queries/servers/preference';
-import {getCurrentUserId, getLastFullSync, getLastInitialLoad} from '@queries/servers/system';
+import {getCurrentUserId, getLastInitialLoad} from '@queries/servers/system';
 import {prepareDeleteTeam, queryTeamsById, removeTeamsFromTeamHistory} from '@queries/servers/team';
 import ChannelsSyncStore from '@store/channels_sync_store';
 import EphemeralStore from '@store/ephemeral_store';
@@ -31,6 +30,7 @@ import {processIsCRTEnabled} from '@utils/thread';
 import type {MyChannelsRequest} from '@actions/remote/channel';
 import type {EntryResponse} from '@actions/remote/entry/types';
 import type {MyTeamsRequest} from '@actions/remote/team';
+import type {MyUserRequest} from '@actions/remote/user';
 
 const idleCallbackHandles = new Map<string, number>();
 
@@ -61,13 +61,6 @@ async function setProductsPluginStatus(serverUrl: string, groupLabel?: RequestGr
 
 export async function runExperienceAPIEntryActions(serverUrl: string, initialTeamId: string, teamHasGroupConstraint: boolean, groupLabel?: RequestGroupLabel) {
     try {
-        const {database} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
-        const [lastInitialLoad, lastFullSync] = await Promise.all([
-            getLastInitialLoad(database),
-            getLastFullSync(database),
-        ]);
-        const since = Math.max(lastInitialLoad, lastFullSync);
-
         setProductsPluginStatus(serverUrl, groupLabel);
 
         if (teamHasGroupConstraint) {
@@ -85,7 +78,6 @@ export async function runExperienceAPIEntryActions(serverUrl: string, initialTea
         cancelExperienceAPIEntryActions(serverUrl);
         const handle = requestIdleCallback(() => {
             idleCallbackHandles.delete(serverUrl);
-            updateAllUsersSince(serverUrl, since, false, groupLabel);
             openAllUnreadChannels(serverUrl, groupLabel);
             AppsManager.refreshAppBindings(serverUrl, groupLabel);
         });
@@ -95,15 +87,18 @@ export async function runExperienceAPIEntryActions(serverUrl: string, initialTea
     }
 }
 
-export const buildTeamBadgeCounts = (teams: InitialLoadTeam[] | undefined, dc: InitialLoadDirectCounts | undefined, isCRTEnabled: boolean): TeamBadgeCounts => {
+export const buildTeamBadgeCounts = (teamUnreads: ExperienceUnreads[] | undefined, dc: ExperienceUnreads | undefined, isCRTEnabled: boolean): TeamBadgeCounts => {
     const pickMentionCount = (count: number = 0, countRoot: number = 0) => (isCRTEnabled ? countRoot : count);
     const teamBadgeTeams: Record<string, TeamBadge> = {};
-    for (const t of teams ?? []) {
-        teamBadgeTeams[t.id] = {
-            mentionCount: pickMentionCount(t.mention_count, t.mention_count_root),
-            hasUnreads: t.has_unreads,
-            threadMentionCount: t.thread_mention_count ?? 0,
-            threadHasUnreads: t.thread_has_unreads ?? false,
+    for (const u of teamUnreads ?? []) {
+        if (!u.team_id) {
+            continue;
+        }
+        teamBadgeTeams[u.team_id] = {
+            mentionCount: pickMentionCount(u.mention_count, u.mention_count_root),
+            hasUnreads: u.has_unreads,
+            threadMentionCount: u.thread_mention_count ?? 0,
+            threadHasUnreads: u.thread_has_unreads ?? false,
         };
     }
     return {
@@ -300,15 +295,17 @@ export const entryInitialLoad = async (serverUrl: string, teamId?: string, chann
             categories: activeTeam.sidebar_categories?.categories ?? [],
         } : undefined;
 
-        initialChannelId = await entryInitialChannelId(
-            database,
-            initialChannelId,
-            teamId,
-            initialTeamId,
-            meData?.user?.locale ?? initialLoad.me?.locale ?? '',
-            chData?.channels,
-            chData?.memberships,
-        );
+        if (activeTeam?.channel_members.removed_channel_ids?.includes(initialChannelId)) {
+            initialChannelId = await entryInitialChannelId(
+                database,
+                initialChannelId,
+                teamId,
+                initialTeamId,
+                meData?.user?.locale ?? initialLoad.me?.locale ?? '',
+                chData?.channels,
+                chData?.memberships,
+            );
+        }
 
         await handleAutotranslationChanges(serverUrl, meData, chData);
 
@@ -356,7 +353,11 @@ export const entryInitialLoad = async (serverUrl: string, teamId?: string, chann
 
         const directProfiles = initialLoad.direct_profiles;
         if (directProfiles?.length) {
-            modelPromises.push(operator.handleUsers({users: directProfiles, prepareRecordsOnly: true}));
+            modelPromises.push(operator.handleUsers({
+                users: directProfiles,
+                prepareRecordsOnly: true,
+                statuses: initialLoad.statuses,
+            }));
         }
 
         if (initialLoad.group_memberships) {
@@ -388,7 +389,7 @@ export const entryInitialLoad = async (serverUrl: string, teamId?: string, chann
 
         // Build team badge counts blob — seeds non-active team badges before
         // deferredAppEntryActions fetches those teams' channels.
-        const teamBadgeCounts = buildTeamBadgeCounts(initialLoad.teams, initialLoad.direct_channel_counts, isCRTEnabled);
+        const teamBadgeCounts = buildTeamBadgeCounts(initialLoad.team_unreads, initialLoad.direct_unreads, isCRTEnabled);
 
         // Batch timestamp, team badge counts, and current team id in a single handleSystem call.
         const systemRecords: Array<{id: string; value: unknown}> = [

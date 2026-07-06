@@ -296,7 +296,8 @@ export type HandlePreferencesArgs = PrepareOnly & {
 
 export type HandleUsersArgs = PrepareOnly & {
     users?: UserProfile[];
- };
+    statuses?: Record<string, UserStatus>;
+};
 
 export type HandleDraftArgs = PrepareOnly & {
   drafts?: Draft[];

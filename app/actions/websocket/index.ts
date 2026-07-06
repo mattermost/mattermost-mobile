@@ -119,7 +119,7 @@ async function doSyncReconnect(serverUrl: string, groupLabel?: BaseRequestGroupL
 
         // Determine scope when device is a tablet
         const history = await queryTeamLastChannelId(database, currentTeamId).fetch();
-        const lastChannelId = history?.[0].channelIds[0];
+        const lastChannelId = history?.[0]?.channelIds[0];
         if (isTabletDevice) {
             const possibleActiveScreen: string[] = [Screens.GLOBAL_DRAFTS, Screens.PARTICIPANT_PLAYBOOKS, Screens.AGENT_CHAT];
             if (mountedScreens.includes(Screens.CHANNEL_LIST)) {
@@ -357,19 +357,9 @@ async function batchSyncResponse(
         modelPromises.push(removeTeamsFromTeamHistory(operator, response.removed_team_ids, true));
     }
 
-    // Update TEAM_BADGE_COUNTS blob using all_teams_unreads which covers every team
-    // the user belongs to, not just the scoped ones in teams[].
-    const teamsForBadge = response.teams_unreads?.map((u) => ({
-        id: u.team_id,
-        mention_count: u.mention_count,
-        mention_count_root: u.mention_count_root ?? 0,
-        has_unreads: u.has_unreads,
-        thread_mention_count: u.thread_mention_count ?? 0,
-        thread_has_unreads: u.thread_has_unreads ?? false,
-    } as unknown as InitialLoadTeam));
     const teamBadgeCounts = buildTeamBadgeCounts(
-        teamsForBadge,
-        response.direct_channel_counts,
+        response.teams_unreads,
+        response.direct_unreads,
         isCRTEnabled,
     );
     modelPromises.push(operator.handleSystem({

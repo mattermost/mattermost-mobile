@@ -114,7 +114,7 @@ const UserHandler = <TBase extends Constructor<ServerDataOperatorBase>>(supercla
      * @param {boolean} usersArgs.prepareRecordsOnly
      * @returns {Promise<UserModel[]>}
      */
-    handleUsers = async ({users, prepareRecordsOnly = true}: HandleUsersArgs): Promise<UserModel[]> => {
+    handleUsers = async ({users, prepareRecordsOnly = true, statuses}: HandleUsersArgs): Promise<UserModel[]> => {
         if (!users?.length) {
             logWarning(
                 'An empty or undefined "users" array has been passed to the handleUsers method',
@@ -122,9 +122,10 @@ const UserHandler = <TBase extends Constructor<ServerDataOperatorBase>>(supercla
             return [];
         }
 
-        const createOrUpdateRawValues = getUniqueRawsBy({raws: users, key: 'id'});
+        const withStatuses: UserProfile[] = statuses ? users.map((u) => ({...u, status: statuses[u.id]?.status ?? u.status})) : users;
+        const createOrUpdateRawValues = getUniqueRawsBy({raws: withStatuses, key: 'id'});
 
-        const userModels = await this.handleRecords({
+        return this.handleRecords({
             fieldName: 'id',
             transformer: transformUserRecord,
             createOrUpdateRawValues,
@@ -132,8 +133,6 @@ const UserHandler = <TBase extends Constructor<ServerDataOperatorBase>>(supercla
             prepareRecordsOnly,
             shouldUpdate: shouldUpdateUserRecord,
         }, 'handleUsers');
-
-        return userModels;
     };
 };
 

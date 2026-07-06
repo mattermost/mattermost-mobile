@@ -622,7 +622,7 @@ describe('remote team actions', () => {
                     team_id: teamId,
                     total_msg_count: 0,
                     last_post_at: 0,
-                }] as ChannelLoadItem[],
+                }] as ExperienceChannel[],
                 channel_members: {
                     members: [{
                         channel_id: channelId,
@@ -631,12 +631,12 @@ describe('remote team actions', () => {
                         last_viewed_at: 0,
                         msg_count: 0,
                         mention_count: 0,
-                    }] as ChannelMemberLoadItem[],
+                    }] as ExperienceChannelMember[],
                     removed_channel_ids: [] as string[],
                 },
                 sidebar_categories: undefined,
                 sidebar_version: 0,
-                roles: [] as RoleLoadItem[],
+                roles: [] as ExperienceRole[],
                 timestamp: 1706000000002,
             } as TeamLoadResponse);
 
@@ -646,14 +646,14 @@ describe('remote team actions', () => {
 
         it('should filter removed channels before model prep', async () => {
             mockClient.getTeamLoad.mockReturnValueOnce({
-                channels: [{id: channelId, name: 'channel1', type: 'O', team_id: teamId, total_msg_count: 0, last_post_at: 0}] as ChannelLoadItem[],
+                channels: [{id: channelId, name: 'channel1', type: 'O', team_id: teamId, total_msg_count: 0, last_post_at: 0}] as ExperienceChannel[],
                 channel_members: {
-                    members: [] as ChannelMemberLoadItem[],
+                    members: [] as ExperienceChannelMember[],
                     removed_channel_ids: [channelId],
                 },
                 sidebar_categories: undefined,
                 sidebar_version: 0,
-                roles: [] as RoleLoadItem[],
+                roles: [] as ExperienceRole[],
                 timestamp: 1706000000003,
             } as TeamLoadResponse);
 
@@ -663,11 +663,11 @@ describe('remote team actions', () => {
 
         it('should handle roles in response', async () => {
             mockClient.getTeamLoad.mockReturnValueOnce({
-                channels: [] as ChannelLoadItem[],
-                channel_members: {members: [] as ChannelMemberLoadItem[], removed_channel_ids: [] as string[]},
+                channels: [] as ExperienceChannel[],
+                channel_members: {members: [] as ExperienceChannelMember[], removed_channel_ids: [] as string[]},
                 sidebar_categories: undefined,
                 sidebar_version: 0,
-                roles: [{id: 'role1', name: 'channel_user', permissions: [], create_at: 0, update_at: 0, delete_at: 0}] as RoleLoadItem[],
+                roles: [{id: 'role1', name: 'channel_user', permissions: [], create_at: 0, update_at: 0, delete_at: 0}] as ExperienceRole[],
                 timestamp: 1706000000004,
             } as TeamLoadResponse);
 
@@ -687,11 +687,11 @@ describe('remote team actions', () => {
                     total_msg_count: 0,
                     last_post_at: 0,
                     member_count: 3,
-                }] as ChannelLoadItem[],
-                channel_members: {members: [] as ChannelMemberLoadItem[], removed_channel_ids: [] as string[]},
+                }] as ExperienceChannel[],
+                channel_members: {members: [] as ExperienceChannelMember[], removed_channel_ids: [] as string[]},
                 sidebar_categories: undefined,
                 sidebar_version: 0,
-                roles: [] as RoleLoadItem[],
+                roles: [] as ExperienceRole[],
                 timestamp: 1706000000005,
             } as TeamLoadResponse);
 
@@ -709,14 +709,14 @@ describe('remote team actions', () => {
             });
 
             mockClient.getTeamLoad.mockReturnValueOnce({
-                channels: [] as ChannelLoadItem[],
+                channels: [] as ExperienceChannel[],
                 channel_members: {
-                    members: [] as ChannelMemberLoadItem[],
+                    members: [] as ExperienceChannelMember[],
                     removed_channel_ids: [removedId],
                 },
                 sidebar_categories: undefined,
                 sidebar_version: 0,
-                roles: [] as RoleLoadItem[],
+                roles: [] as ExperienceRole[],
                 timestamp: 1706000000006,
             } as TeamLoadResponse);
 
@@ -786,6 +786,42 @@ describe('remote team actions', () => {
 
             expect(result.error).toBeDefined();
             expect(emitSpy).toHaveBeenCalledWith(Events.TEAM_SWITCH, false);
+            emitSpy.mockRestore();
+        });
+
+        it('should emit TEAM_SWITCH false immediately when team already has cached channels', async () => {
+            const {DeviceEventEmitter} = require('react-native');
+            const emitSpy = jest.spyOn(DeviceEventEmitter, 'emit');
+
+            const EphemeralStore = require('@store/ephemeral_store').default;
+            EphemeralStore.setExperienceAPIEnabled(serverUrl, true);
+
+            // Seed a channel for the target team so teamHasChannels=true.
+            await operator.handleChannel({
+                channels: [{
+                    id: 'cached-ch',
+                    team_id: 'otherteam',
+                    name: 'cached',
+                    display_name: 'Cached',
+                    type: 'O',
+                    create_at: 0,
+                    update_at: 0,
+                    delete_at: 0,
+                    total_msg_count: 0,
+                } as Channel],
+                prepareRecordsOnly: false,
+            });
+
+            await handleTeamChange(serverUrl, 'otherteam');
+
+            EphemeralStore.setExperienceAPIEnabled(serverUrl, false);
+
+            // TEAM_SWITCH true fires first (unconditional), then false fires early because channels are cached.
+            expect(emitSpy).toHaveBeenCalledWith(Events.TEAM_SWITCH, true);
+            expect(emitSpy).toHaveBeenCalledWith(Events.TEAM_SWITCH, false);
+            const calls = emitSpy.mock.calls.filter((c) => c[0] === Events.TEAM_SWITCH);
+            expect(calls[0][1]).toBe(true);
+            expect(calls[1][1]).toBe(false);
             emitSpy.mockRestore();
         });
     });

@@ -8,6 +8,7 @@ import {fetchStatusInBatch} from '@actions/remote/user';
 import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
 import useDidMount from '@hooks/did_mount';
+import EphemeralStore from '@store/ephemeral_store';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 
 import Image from './image';
@@ -78,7 +79,7 @@ const ProfilePicture = ({
     const isBot = author && (('isBot' in author) ? author.isBot : author.is_bot);
 
     useDidMount(() => {
-        if (!isBot && author && !author.status && showStatus) {
+        if (!isBot && author && !author.status && showStatus && !EphemeralStore.getExperienceAPIEnabled(serverUrl)) {
             fetchStatusInBatch(serverUrl, author.id);
         }
     });

@@ -284,7 +284,7 @@ export const updateMe = async (serverUrl: string, user: Partial<UserProfile>, gr
 let ids: string[] = [];
 const debouncedFetchStatusesByIds = debounce((serverUrl: string) => {
     fetchStatusByIds(serverUrl, [...new Set(ids)]);
-}, 200, false, () => {
+}, 500, false, () => {
     ids = [];
 });
 

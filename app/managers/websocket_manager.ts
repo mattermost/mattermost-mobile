@@ -17,6 +17,7 @@ import {General} from '@constants';
 import DatabaseManager from '@database/manager';
 import {getCurrentUserId} from '@queries/servers/system';
 import {queryAllUsers} from '@queries/servers/user';
+import EphemeralStore from '@store/ephemeral_store';
 import {toMilliseconds} from '@utils/datetime';
 import {isMainActivity} from '@utils/helpers';
 import {logDebug, logError} from '@utils/log';
@@ -237,7 +238,9 @@ class WebsocketManagerSingleton {
 
         currentId = setInterval(getStatusForUsers, General.STATUS_INTERVAL);
         this.statusUpdatesIntervalIDs[serverUrl] = currentId;
-        getStatusForUsers();
+        if (!EphemeralStore.getExperienceAPIEnabled(serverUrl)) {
+            getStatusForUsers();
+        }
     }
 
     private stopPeriodicStatusUpdates(serverUrl: string) {

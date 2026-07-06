@@ -4,7 +4,8 @@
 import {DeviceEventEmitter} from 'react-native';
 import {firstValueFrom} from 'rxjs';
 
-import {fetchConfigAndLicense} from '@actions/remote/systems';
+import {fetchConfigAndLicense, fetchDataRetentionPolicy} from '@actions/remote/systems';
+import {handleKickFromTeam} from '@actions/remote/team';
 import {Events} from '@constants';
 import {SYSTEM_IDENTIFIERS} from '@constants/database';
 import DatabaseManager from '@database/manager';
@@ -15,7 +16,7 @@ import {getTeamById} from '@queries/servers/team';
 import ChannelsSyncStore from '@store/channels_sync_store';
 import EphemeralStore from '@store/ephemeral_store';
 
-import {cancelExperienceAPIEntryActions, entryInitialLoad} from './index';
+import {buildTeamBadgeCounts, cancelExperienceAPIEntryActions, entryInitialLoad} from './index';
 
 jest.mock('@actions/local/systems');
 jest.mock('@actions/remote/channel');
@@ -86,6 +87,7 @@ beforeEach(async () => {
     operator = DatabaseManager.serverDatabases[serverUrl]!.operator;
     mockClient.getInitialLoad.mockResolvedValue(mockInitialLoad);
     (fetchConfigAndLicense as jest.Mock).mockResolvedValue({config: mockConfig, license: mockLicense, error: undefined});
+    (fetchDataRetentionPolicy as jest.Mock).mockResolvedValue({});
     (prepareEntryModels as jest.Mock).mockResolvedValue([]);
 });
 
@@ -248,7 +250,7 @@ describe('entryInitialLoad', () => {
             expect(history).toContain('team1');
         });
 
-        it('should emit LEAVE_TEAM event when the stale team was the hinted active team', async () => {
+        it('should call handleKickFromTeam when the hinted team is in removed_team_ids', async () => {
             // Seed the stale team so it can be deleted from DB.
             await operator.handleTeam({
                 teams: [{
@@ -274,13 +276,11 @@ describe('entryInitialLoad', () => {
                 active_team: mockInitialLoad.active_team, // team1 is active
             });
 
-            const emitSpy = jest.spyOn(DeviceEventEmitter, 'emit');
-
             // Client sends 'stale-team' as the hint (was last active team).
             await entryInitialLoad(serverUrl, 'stale-team');
 
-            // The server resolved a different active team → LEAVE_TEAM must fire.
-            expect(emitSpy).toHaveBeenCalledWith(Events.LEAVE_TEAM, expect.anything());
+            // handleKickFromTeam is responsible for emitting LEAVE_TEAM.
+            expect(handleKickFromTeam).toHaveBeenCalledWith(serverUrl, 'stale-team');
         });
 
         it('should not emit LEAVE_TEAM when removed_team_ids team was not the hinted active team', async () => {
@@ -381,6 +381,53 @@ describe('entryInitialLoad', () => {
     });
 });
 
+describe('buildTeamBadgeCounts', () => {
+    it('should build team badge counts with CRT disabled', () => {
+        const teamUnreads: ExperienceUnreads[] = [
+            {team_id: 'team1', mention_count: 3, mention_count_root: 1, has_unreads: true, thread_mention_count: 2, thread_has_unreads: false},
+        ];
+        const dc: ExperienceUnreads = {team_id: '', mention_count: 1, mention_count_root: 0, has_unreads: false, thread_mention_count: 0, thread_has_unreads: false};
+
+        const result = buildTeamBadgeCounts(teamUnreads, dc, false);
+
+        expect(result.teams.team1).toEqual({mentionCount: 3, hasUnreads: true, threadMentionCount: 2, threadHasUnreads: false});
+        expect(result.direct).toEqual({mentionCount: 1, hasUnreads: false, threadMentionCount: 0, threadHasUnreads: false});
+    });
+
+    it('should use root counts for team mentions when CRT is enabled', () => {
+        const teamUnreads: ExperienceUnreads[] = [
+            {team_id: 'team1', mention_count: 3, mention_count_root: 1, has_unreads: true, thread_mention_count: 2, thread_has_unreads: false},
+        ];
+
+        const result = buildTeamBadgeCounts(teamUnreads, undefined, true);
+
+        expect(result.teams.team1.mentionCount).toBe(1);
+    });
+
+    it('should skip entries with no team_id', () => {
+        const teamUnreads: ExperienceUnreads[] = [
+            {team_id: '', mention_count: 5, mention_count_root: 5, has_unreads: true, thread_mention_count: 0, thread_has_unreads: false},
+        ];
+
+        const result = buildTeamBadgeCounts(teamUnreads, undefined, false);
+
+        expect(Object.keys(result.teams)).toHaveLength(0);
+    });
+
+    it('should return zeros for direct when dc is undefined', () => {
+        const result = buildTeamBadgeCounts([], undefined, false);
+
+        expect(result.direct).toEqual({mentionCount: 0, hasUnreads: false, threadMentionCount: 0, threadHasUnreads: false});
+    });
+
+    it('should handle undefined teamUnreads', () => {
+        const result = buildTeamBadgeCounts(undefined, undefined, false);
+
+        expect(result.teams).toEqual({});
+        expect(result.direct.mentionCount).toBe(0);
+    });
+});
+
 describe('cancelExperienceAPIEntryActions', () => {
     beforeEach(() => {
         jest.useFakeTimers({doNotFake: ['nextTick']});
@@ -391,57 +438,22 @@ describe('cancelExperienceAPIEntryActions', () => {
     });
 
     it('should cancel a pending idle callback before it fires', async () => {
-        await DatabaseManager.init([serverUrl]);
-        const idleCb = jest.fn();
-
-        // Simulate scheduling via entryInitialLoad by calling the exported cancel directly
-        // after we verify a handle was registered — use requestIdleCallback spy.
-        const originalRequest = global.requestIdleCallback;
-        const originalCancel = global.cancelIdleCallback;
-        let capturedHandle: number | undefined;
-        global.requestIdleCallback = jest.fn((cb) => {
-            capturedHandle = originalRequest(cb);
-            idleCb.mockImplementation(cb);
-            return capturedHandle!;
-        });
-        global.cancelIdleCallback = jest.fn((handle) => {
-            originalCancel(handle);
-        });
-
-        // Run entryInitialLoad to schedule the idle callback.
-        (require('@actions/remote/systems').fetchConfigAndLicense as jest.Mock).mockResolvedValue({
-            config: {Version: '9.0.0', CollapsedThreads: 'default_off', FeatureFlagCollapsedThreads: 'true', FeatureFlagEnableExperienceAPI: 'true'},
-            license: {},
-            error: undefined,
-        });
-        NetworkManager.getClient = jest.fn().mockReturnValue({
-            getInitialLoad: jest.fn().mockResolvedValue({
-                me: {id: 'user1', username: 'user1', roles: '', update_at: 1706000000000},
-                teams: [],
-                team_members: {members: [], removed_team_ids: []},
-                active_team: null,
-                direct_channel_counts: null,
-                direct_profiles: [],
-                roles: [],
-                preferences: [],
-                timestamp: 1706000001000,
-                can_join_other_teams: false,
-            }),
-            getPluginsManifests: jest.fn().mockResolvedValue([]),
-        });
-        (require('@queries/servers/entry').prepareEntryModels as jest.Mock).mockResolvedValue([]);
+        const cancelSpy = jest.spyOn(global, 'cancelIdleCallback');
 
         await entryInitialLoad(serverUrl);
 
-        // Cancel before idle fires.
+        // runExperienceAPIEntryActions is fire-and-forget; flush its internal microtasks
+        // (setProductsPluginStatus, fetchDataRetentionPolicy.then, etc.) before asserting
+        // that requestIdleCallback was reached.
+        await Promise.resolve();
+        await Promise.resolve();
+        await Promise.resolve();
+
+        // openAllUnreadChannels should not have fired yet (callback is idle-deferred).
         cancelExperienceAPIEntryActions(serverUrl);
+        expect(cancelSpy).toHaveBeenCalled();
 
-        expect(global.cancelIdleCallback).toHaveBeenCalled();
-
-        global.requestIdleCallback = originalRequest;
-        global.cancelIdleCallback = originalCancel;
-        NetworkManager.getClient = jest.fn().mockReturnValue(mockClient);
-        await DatabaseManager.destroyServerDatabase(serverUrl);
+        cancelSpy.mockRestore();
     });
 
     it('should be a no-op when no idle callback is pending', () => {
