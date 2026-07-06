@@ -1,14 +1,13 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React, {useCallback, useEffect, useMemo, useRef, useState} from 'react';
-import {DeviceEventEmitter, FlatList, useWindowDimensions, type LayoutChangeEvent} from 'react-native';
+import React, {useEffect, useMemo, useRef, useState} from 'react';
+import {DeviceEventEmitter, useWindowDimensions} from 'react-native';
 import Animated, {useAnimatedStyle, useSharedValue, withTiming} from 'react-native-reanimated';
 import {SafeAreaView, type Edge} from 'react-native-safe-area-context';
 
 import {handleTeamChange} from '@actions/remote/team';
 import AgentsButton from '@agents/components/agents_button';
-import {ROW_HEIGHT} from '@components/channel_item/channel_item';
 import DraftsButton from '@components/drafts_buttton';
 import Loading from '@components/loading';
 import ThreadsButton from '@components/threads_button';
@@ -47,9 +46,9 @@ type ChannelListProps = {
     iconPad?: boolean;
     isCRTEnabled?: boolean;
     moreThanOneTeam: boolean;
-    draftsCount: number;
-    scheduledPostCount: number;
-    scheduledPostHasError: boolean;
+    draftsCount?: number;
+    scheduledPostCount?: number;
+    scheduledPostHasError?: boolean;
     lastChannelId?: ScreenType;
     scheduledPostsEnabled?: boolean;
     agentsEnabled?: boolean;
@@ -67,9 +66,9 @@ const CategoriesList = ({
     iconPad,
     isCRTEnabled,
     moreThanOneTeam,
-    draftsCount,
-    scheduledPostCount,
-    scheduledPostHasError,
+    draftsCount = 0,
+    scheduledPostCount = 0,
+    scheduledPostHasError = false,
     lastChannelId,
     scheduledPostsEnabled,
     agentsEnabled,
@@ -83,7 +82,6 @@ const CategoriesList = ({
     const isTeamLoading = useTeamsLoading(serverUrl);
     const tabletWidth = useSharedValue(isTablet ? getTabletWidth(moreThanOneTeam) : 0);
     const [activeScreen, setActiveScreen] = useState<ScreenType>(isTablet && lastChannelId ? lastChannelId : Screens.CHANNEL);
-    const [listHeight, setListHeight] = useState(0);
 
     const healedRef = useRef(false);
     useEffect(() => {
@@ -150,6 +148,7 @@ const CategoriesList = ({
 
         return (
             <ThreadsButton
+                key='thread_button'
                 isOnHome={true}
                 shouldHighlightActive={activeScreen === Screens.GLOBAL_THREADS}
             />
@@ -160,6 +159,7 @@ const CategoriesList = ({
         if (draftsCount > 0 || (scheduledPostCount > 0 && scheduledPostsEnabled) || (isTablet && activeScreen === Screens.GLOBAL_DRAFTS)) {
             return (
                 <DraftsButton
+                    key='draft_button'
                     draftsCount={draftsCount}
                     shouldHighlightActive={activeScreen === Screens.GLOBAL_DRAFTS}
                     scheduledPostCount={scheduledPostCount}
@@ -178,6 +178,7 @@ const CategoriesList = ({
 
         return (
             <AgentsButton
+                key='agent_button'
                 shouldHighlightActive={activeScreen === Screens.AGENT_CHAT}
             />
         );
@@ -191,18 +192,18 @@ const CategoriesList = ({
         const shouldHighlightActive = activeScreen === Screens.PARTICIPANT_PLAYBOOKS && activeScreen === lastChannelId && isTablet;
         return (
             <PlaybooksButton
+                key='playbooks_button'
                 shouldHighlightActive={shouldHighlightActive}
             />
         );
     }, [activeScreen, isTablet, lastChannelId, showPlaybooksButton]);
 
-    const onListLayout = useCallback((event: LayoutChangeEvent) => {
-        const {height} = event.nativeEvent.layout;
-        const items = [threadButtonComponent, draftsButtonComponent, agentsButtonComponent, playbooksButtonComponent].reduce((result, item) => {
-            return result + (Boolean(item) ? 1 : 0);
-        }, 0);
-        setListHeight(height - (items * ROW_HEIGHT));
-    }, [threadButtonComponent, draftsButtonComponent, agentsButtonComponent, playbooksButtonComponent]);
+    const headerButtons = useMemo(() => [
+        threadButtonComponent,
+        draftsButtonComponent,
+        agentsButtonComponent,
+        playbooksButtonComponent,
+    ], [agentsButtonComponent, draftsButtonComponent, playbooksButtonComponent, threadButtonComponent]);
 
     const content = useMemo(() => {
         if (!hasChannels) {
@@ -217,30 +218,19 @@ const CategoriesList = ({
             return (<LoadChannelsError/>);
         }
 
-        const components = [threadButtonComponent, draftsButtonComponent, agentsButtonComponent, playbooksButtonComponent,
-            <Categories
-                key='categories'
-                isTablet={isTablet}
-                listHeight={listHeight}
-            />,
-        ];
-
         return (
             <SafeAreaView
                 edges={edges}
                 style={styles.flex}
             >
                 <SubHeader/>
-                <FlatList
-                    data={components}
-                    renderItem={({item}) => item}
-                    nestedScrollEnabled={true}
-                    style={styles.flex}
-                    onLayout={onListLayout}
+                <Categories
+                    isTablet={isTablet}
+                    headerButtons={headerButtons}
                 />
             </SafeAreaView>
         );
-    }, [agentsButtonComponent, draftsButtonComponent, hasChannels, isTablet, isTeamLoading, listHeight, onListLayout, playbooksButtonComponent, styles.flex, threadButtonComponent]);
+    }, [hasChannels, headerButtons, isTablet, isTeamLoading, styles.flex]);
 
     return (
         <Animated.View style={[styles.container, tabletStyle]}>

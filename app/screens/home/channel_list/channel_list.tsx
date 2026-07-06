@@ -21,6 +21,7 @@ import {useTheme} from '@context/theme';
 import {useIsTablet} from '@hooks/device';
 import PerformanceMetricsManager from '@managers/performance_metrics_manager';
 import {navigateToScreen} from '@screens/navigation';
+import EphemeralStore from '@store/ephemeral_store';
 import {NavigationStore, useCurrentScreen} from '@store/navigation_store';
 import {isMainActivity} from '@utils/helpers';
 import {tryRunAppReview} from '@utils/reviews';
@@ -59,12 +60,7 @@ const styles = StyleSheet.create({
 let backPressedCount = 0;
 let backPressTimeout: NodeJS.Timeout|undefined;
 
-// This is needed since the Database Provider is recreating this component
-// when the database is changed (couldn't find exactly why), re-triggering
-// the effect. This makes sure the rate logic is only handle on the first
-// run. Most of the normal users won't see this issue, but on edge times
-// (near the time you will see the rate dialog) will show when switching
-// servers.
+// DatabaseProvider recreates this component on db change, re-triggering the effect; flag prevents duplicate rate dialog.
 let hasRendered = false;
 
 const ChannelListScreen = (props: ChannelProps) => {
@@ -156,12 +152,11 @@ const ChannelListScreen = (props: ChannelProps) => {
     }, [props.showToS]);
 
     useEffect(() => {
-        if (!props.hasCurrentUser || !props.currentUserId) {
+        if (!EphemeralStore.getExperienceAPIEnabled(serverUrl) && (!props.hasCurrentUser || !props.currentUserId)) {
             refetchCurrentUser(serverUrl, props.currentUserId);
         }
 
-    // - serverUrl is stable from useServerUrl hook
-    // - We only need to re-run when the current user state changes
+    // serverUrl is stable from context; only re-run when user state changes
     // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [props.currentUserId, props.hasCurrentUser]);
 
@@ -179,7 +174,6 @@ const ChannelListScreen = (props: ChannelProps) => {
         PerformanceMetricsManager.finishLoad('HOME', serverUrl);
         PerformanceMetricsManager.measureTimeToInteraction();
 
-        // Only needed on mount
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 

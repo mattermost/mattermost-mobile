@@ -19,6 +19,7 @@ import type ServerDataOperator from '@database/operator/server_data_operator';
 import type Model from '@nozbe/watermelondb/Model';
 import type TeamThreadsSyncModel from '@typings/database/models/servers/team_threads_sync';
 import type ThreadModel from '@typings/database/models/servers/thread';
+import type ThreadInTeamModel from '@typings/database/models/servers/thread_in_team';
 import type UserModel from '@typings/database/models/servers/user';
 
 const {SERVER: {CHANNEL, POST, THREAD, THREADS_IN_TEAM, THREAD_PARTICIPANT, TEAM_THREADS_SYNC, USER}} = MM_TABLES;
@@ -231,9 +232,6 @@ export function observeThreadMentionCount(database: Database, {
     );
 }
 
-// observeDirectThreadUnreadsAndMentions returns thread unreads and mention counts for DM/GM
-// channels only (channel.team_id = ''). Unlike observeUnreadsAndMentions with includeDmGm=true,
-// this query is scoped exclusively to direct channels — no team threads are included.
 export function observeDirectThreadUnreadsAndMentions(database: Database): Observable<{unreads: boolean; mentions: number}> {
     const observeThreads = () => database.get<ThreadModel>(THREAD).query(
         Q.where('is_following', true),
@@ -256,6 +254,36 @@ export function observeDirectThreadUnreadsAndMentions(database: Database): Obser
     return observeIsCRTEnabled(database).pipe(
         switchMap((hasCRT) => (hasCRT ? observeThreads() : of$({unreads: false, mentions: 0}))),
         distinctUntilChanged((x, y) => x.mentions === y.mentions && x.unreads === y.unreads),
+    );
+}
+
+export function observeAllTeamUnreadThreads(database: Database): Observable<ThreadModel[]> {
+    const observeThreads = () => database.get<ThreadModel>(THREAD).query(
+        Q.where('is_following', true),
+        Q.where('reply_count', Q.gt(0)),
+        Q.where('unread_replies', Q.gt(0)),
+        Q.experimentalNestedJoin(POST, CHANNEL),
+        Q.on(POST, Q.on(CHANNEL, Q.and(Q.where('delete_at', 0), Q.where('team_id', Q.notEq(''))))),
+    ).observeWithColumns(['unread_replies', 'unread_mentions']);
+
+    return observeIsCRTEnabled(database).pipe(
+        switchMap((hasCRT) => (hasCRT ? observeThreads() : of$([] as ThreadModel[]))),
+    );
+}
+
+export function observeThreadInTeamMap(database: Database): Observable<Map<string, string>> {
+    const observeMap = () => database.get<ThreadInTeamModel>(THREADS_IN_TEAM).query().observe().pipe(
+        map((rows) => {
+            const m = new Map<string, string>();
+            for (const r of rows) {
+                m.set(r.threadId, r.teamId);
+            }
+            return m;
+        }),
+    );
+
+    return observeIsCRTEnabled(database).pipe(
+        switchMap((hasCRT) => (hasCRT ? observeMap() : of$(new Map<string, string>()))),
     );
 }
 

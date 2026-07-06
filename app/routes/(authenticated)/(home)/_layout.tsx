@@ -42,6 +42,7 @@ export default function TabLayout() {
                     tabBarButtonTestID: 'tab_bar.home.tab',
                     freezeOnBlur: false,
                     animation: 'none',
+                    lazy: false,
                 }}
             />
             <Tabs.Screen

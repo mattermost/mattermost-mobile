@@ -3,11 +3,12 @@
 
 /* eslint-disable max-nested-callbacks */
 
-import {withDatabase, withObservables} from '@nozbe/watermelondb/react';
+import {withDatabase} from '@nozbe/watermelondb/react';
 import {of as of$, combineLatest} from 'rxjs';
 import {switchMap, map} from 'rxjs/operators';
 
 import {Preferences} from '@constants';
+import {withNonBlockingObservables} from '@database/components/with_non_blocking_observables';
 import {queryPreferencesByCategoryAndName} from '@queries/servers/preference';
 import {queryJoinedTeams, queryMyTeams} from '@queries/servers/team';
 
@@ -15,7 +16,7 @@ import TeamList from './team_list';
 
 import type {WithDatabaseArgs} from '@typings/database/database';
 
-const withTeams = withObservables([], ({database}: WithDatabaseArgs) => {
+const withTeams = withNonBlockingObservables([], ({database}: WithDatabaseArgs) => {
     const myTeams = queryMyTeams(database).observe();
     const teamIds = queryJoinedTeams(database).observe().pipe(
         map((ts) => ts.map((t) => ({id: t.id, displayName: t.displayName}))),

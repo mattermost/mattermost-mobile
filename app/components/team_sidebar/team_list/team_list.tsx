@@ -9,11 +9,13 @@ import TeamItem from './team_item';
 import type MyTeamModel from '@typings/database/models/servers/my_team';
 
 type Props = {
-    myOrderedTeams: MyTeamModel[];
+    myOrderedTeams?: MyTeamModel[];
     testID?: string;
 }
 
 const keyExtractor = (item: MyTeamModel) => item.id;
+
+const empty: MyTeamModel[] = [];
 
 const renderTeam = ({item: t}: ListRenderItemInfo<MyTeamModel>) => {
     return (
@@ -29,11 +31,14 @@ export default function TeamList({myOrderedTeams, testID}: Props) {
             <FlatList
                 bounces={false}
                 contentContainerStyle={styles.contentContainer}
-                data={myOrderedTeams}
+                data={myOrderedTeams || empty}
                 fadingEdgeLength={15}
                 keyExtractor={keyExtractor}
                 renderItem={renderTeam}
                 showsVerticalScrollIndicator={false}
+                initialNumToRender={5}
+                maxToRenderPerBatch={5}
+                windowSize={10}
                 testID={`${testID}.flat_list`}
             />
         </View>

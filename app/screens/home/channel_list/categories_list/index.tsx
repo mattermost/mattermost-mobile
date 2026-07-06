@@ -18,19 +18,9 @@ import CategoriesList from './categories_list';
 
 import type {WithDatabaseArgs} from '@typings/database/database';
 
-const enchanced = withObservables([], ({database}: WithDatabaseArgs) => {
+const enhanced = withObservables([], ({database}: WithDatabaseArgs) => {
     const currentTeamId = observeCurrentTeamId(database);
-    const draftsCount = currentTeamId.pipe(switchMap((teamId) => observeDraftCount(database, teamId))); // Observe draft count
     const allScheduledPost = currentTeamId.pipe(switchMap((teamId) => observeScheduledPostsForTeam(database, teamId, true)));
-    const lastChannelId = currentTeamId.pipe(switchMap((teamId) => observeTeamLastChannelId(database, teamId)));
-    const scheduledPostCount = allScheduledPost.pipe(
-        switchMap((scheduledPosts) => of(scheduledPosts.length)),
-    );
-    const scheduledPostHasError = allScheduledPost.pipe(
-        switchMap((scheduledPosts) => of(hasScheduledPostError(scheduledPosts))),
-    );
-    const scheduledPostsEnabled = observeScheduledPostEnabled(database);
-    const agentsEnabled = observeIsAgentsEnabled(database);
     const showPlaybooksButton = currentTeamId.pipe(
         switchMap((teamId) => combineLatest([
             observeIsPlaybooksEnabled(database),
@@ -40,14 +30,14 @@ const enchanced = withObservables([], ({database}: WithDatabaseArgs) => {
     );
 
     return {
-        lastChannelId,
-        draftsCount,
-        scheduledPostCount,
-        scheduledPostHasError,
-        scheduledPostsEnabled,
-        agentsEnabled,
+        lastChannelId: currentTeamId.pipe(switchMap((teamId) => observeTeamLastChannelId(database, teamId))),
+        draftsCount: currentTeamId.pipe(switchMap((teamId) => observeDraftCount(database, teamId))),
+        scheduledPostCount: allScheduledPost.pipe(switchMap((scheduledPosts) => of(scheduledPosts.length))),
+        scheduledPostHasError: allScheduledPost.pipe(switchMap((scheduledPosts) => of(hasScheduledPostError(scheduledPosts)))),
+        scheduledPostsEnabled: observeScheduledPostEnabled(database),
+        agentsEnabled: observeIsAgentsEnabled(database),
         showPlaybooksButton,
     };
 });
 
-export default withDatabase(enchanced(CategoriesList));
+export default withDatabase(enhanced(CategoriesList));

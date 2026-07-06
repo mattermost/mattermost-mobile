@@ -2,7 +2,7 @@
 // See LICENSE.txt for license information.
 
 import {Database, Q} from '@nozbe/watermelondb';
-import {of as of$, switchMap} from 'rxjs';
+import {map, of as of$, switchMap} from 'rxjs';
 
 import {MM_TABLES} from '@constants/database';
 import DraftModel from '@typings/database/models/servers/draft';
@@ -51,7 +51,9 @@ export const observeDraftsForTeam = (database: Database, teamId: string) => {
 };
 
 export const observeDraftCount = (database: Database, teamId: string) => {
-    return queryDraftsForTeam(database, teamId).observeCount();
+    return queryDraftsForTeam(database, teamId).observe().pipe(
+        map((drafts) => drafts.length),
+    );
 };
 
 export const observeDraftById = (database: Database, draftId: string) => {

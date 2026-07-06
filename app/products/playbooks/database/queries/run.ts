@@ -104,7 +104,7 @@ export const observeHasRunningPlaybookRunsInTeam = (database: Database, teamId: 
             Q.where('team_id', teamId),
             Q.where('end_at', Q.eq(0)),
         ),
-    ).observeCount().pipe(
-        switchMap((count) => of$(count > 0)),
+    ).observe().pipe(
+        switchMap((runs) => of$(runs.length > 0)),
     );
 };

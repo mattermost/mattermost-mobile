@@ -556,7 +556,7 @@ export const queryMyChannelUnreads = (database: Database, currentTeamId: string)
         ),
         Q.or(
             Q.where('is_unread', Q.eq(true)),
-            Q.where('mentions_count', Q.gte(0)),
+            Q.where('mentions_count', Q.gt(0)),
         ),
         Q.sortBy('last_post_at', Q.desc),
     );
@@ -604,9 +604,6 @@ export function observeMyChannelUnreads(database: Database, teamId: string) {
     );
 }
 
-// observeChannelUnreadsAndMentions returns both mention count and unread status for a team
-// (or DM/GM channels when teamId is '') in a single query pass, avoiding the two separate
-// observeMyChannelMentionCount + observeMyChannelUnreads queries.
 export function observeChannelUnreadsAndMentions(database: Database, teamId: string): Observable<{mentions: number; unread: boolean}> {
     const myChannels = database.get<MyChannelModel>(MY_CHANNEL).query(
         Q.on(CHANNEL, Q.and(Q.where('delete_at', Q.eq(0)), Q.where('team_id', Q.eq(teamId)))),
@@ -628,6 +625,26 @@ export function observeChannelUnreadsAndMentions(database: Database, teamId: str
             return of$({mentions, unread});
         }),
         distinctUntilChanged((a, b) => a.mentions === b.mentions && a.unread === b.unread),
+    );
+}
+
+export function observeAllMyChannelsBadgeState(database: Database): Observable<MyChannelModel[]> {
+    return database.get<MyChannelModel>(MY_CHANNEL).query(
+        Q.on(CHANNEL, Q.where('delete_at', Q.eq(0))),
+    ).observeWithColumns(['mentions_count', 'is_unread']);
+}
+
+export function observeChannelTeamMap(database: Database): Observable<Map<string, string>> {
+    return database.get<ChannelModel>(CHANNEL).query(
+        Q.where('delete_at', Q.eq(0)),
+    ).observeWithColumns(['team_id']).pipe(
+        map$((channels) => {
+            const m = new Map<string, string>();
+            for (const ch of channels) {
+                m.set(ch.id, ch.teamId);
+            }
+            return m;
+        }),
     );
 }
 

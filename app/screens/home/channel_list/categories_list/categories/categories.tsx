@@ -1,50 +1,52 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {FlashList, type FlashListRef, type ListRenderItem, type ViewToken} from '@shopify/flash-list';
 import React, {useCallback, useEffect, useMemo, useRef, useState} from 'react';
-import {DeviceEventEmitter, View} from 'react-native';
+import {DeviceEventEmitter, FlatList, type ListRenderItem, type ViewToken, View, type LayoutChangeEvent, Platform} from 'react-native';
 
-import {fetchDirectChannelsInfo, switchToChannelById} from '@actions/remote/channel';
+import {switchToChannelById} from '@actions/remote/channel';
 import ChannelItem from '@components/channel_item';
+import {ROW_HEIGHT} from '@components/channel_item/channel_item';
 import FormattedText from '@components/formatted_text';
 import Loading from '@components/loading';
 import {Events, Screens} from '@constants';
+import {MANAGED_LOCAL_CATEGORY_PREFIX} from '@constants/categories';
 import {HOME_PADDING} from '@constants/view';
 import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
 import {useTeamSwitch} from '@hooks/team_switch';
 import PerformanceMetricsManager from '@managers/performance_metrics_manager';
-import {isDMorGM} from '@utils/channel';
 import {logDebug} from '@utils/log';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
 
+import CategoryRow from './category';
 import Empty from './empty_unreads';
 import LoadCategoriesError from './error';
 import CategoryHeader from './header';
-import {keyExtractor, getItemType, type FlattenedItem} from './helpers/flatten_categories';
+import {keyExtractor, type FlattenedItem} from './helpers/flatten_categories';
+import SharedDataProvider from './shared_data_context';
 
 import type ChannelModel from '@typings/database/models/servers/channel';
 
-type Props = {
+export type Props = {
     flattenedItems: FlattenedItem[];
     unreadChannelIds: Set<string>;
     onlyUnreads: boolean;
+    currentUserId: string;
+    locale: string;
     isTablet: boolean;
-    listHeight: number;
+    headerButtons: Array<React.JSX.Element | null>;
 };
 
-const ESTIMATED_ITEM_SIZE = 42;
 const VIEWABILITY_CONFIG = {
     itemVisiblePercentThreshold: 50,
     minimumViewTime: 300,
 };
 
+const EMPTY_SET = new Set<string>();
+
 const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
-    mainList: {
-        flex: 1,
-    },
     loadingView: {
         alignItems: 'center',
         justifyContent: 'center',
@@ -60,13 +62,23 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
     },
 }));
 
-const Categories = ({flattenedItems, unreadChannelIds, onlyUnreads, isTablet, listHeight}: Props) => {
+const Categories = ({
+    flattenedItems,
+    unreadChannelIds,
+    onlyUnreads,
+    currentUserId,
+    locale,
+    isTablet,
+    headerButtons,
+}: Props) => {
     const theme = useTheme();
     const styles = getStyleSheet(theme);
-    const listRef = useRef<FlashListRef<FlattenedItem> | null>(null);
+    const listRef = useRef<FlatList<FlattenedItem> | null>(null);
     const serverUrl = useServerUrl();
     const switchingTeam = useTeamSwitch();
-    const [initialLoad, setInitialLoad] = useState(flattenedItems.length === 0);
+
+    // Android is slower to process the initial list, so always show the spinner on first mount there.
+    const [initialLoad, setInitialLoad] = useState(() => Platform.select({default: flattenedItems.length === 0, android: true}));
     const [isChannelScreenActive, setChannelScreenActive] = useState(true);
     const [hasUnreadsAbove, setHasUnreadsAbove] = useState(false);
     const [hasUnreadsBelow, setHasUnreadsBelow] = useState(false);
@@ -75,26 +87,24 @@ const Categories = ({flattenedItems, unreadChannelIds, onlyUnreads, isTablet, li
         const listener = DeviceEventEmitter.addListener(Events.ACTIVE_SCREEN, (screen: string) => {
             setChannelScreenActive(screen !== Screens.GLOBAL_DRAFTS && screen !== Screens.THREAD && screen !== Screens.PARTICIPANT_PLAYBOOKS);
         });
-
-        return () => {
-            listener.remove();
-        };
+        return () => listener.remove();
     }, []);
 
-    const directChannels = useMemo(() => {
-        const channels = flattenedItems.filter((item) => item.type === 'channel' && isDMorGM(item.channel));
-        const channelModels = channels.map((item) => (item.type === 'channel' ? item.channel : null));
-        return channelModels.filter((c): c is ChannelModel => c !== null);
+    const unreadIds = unreadChannelIds ?? EMPTY_SET;
+
+    const managedChannelIds = useMemo(() => {
+        const managed = new Set<string>();
+        for (const item of flattenedItems) {
+            if (item.type === 'category' && item.category.id.startsWith(MANAGED_LOCAL_CATEGORY_PREFIX)) {
+                for (const id of item.membership.channelIds) {
+                    managed.add(id);
+                }
+            }
+        }
+        return managed;
     }, [flattenedItems]);
 
-    useEffect(() => {
-        const channelsWithoutDisplayName = directChannels.filter((c) => !c.displayName);
-        if (channelsWithoutDisplayName.length) {
-            fetchDirectChannelsInfo(serverUrl, channelsWithoutDisplayName);
-        }
-    }, [directChannels, serverUrl]);
-
-    const onChannelSwitch = useCallback(async (c: Channel | ChannelModel) => {
+    const onChannelSwitch = useCallback((c: Channel | ChannelModel) => {
         DeviceEventEmitter.emit(Events.ACTIVE_SCREEN, Screens.CHANNEL);
         PerformanceMetricsManager.startMetric('mobile_channel_switch');
         switchToChannelById(serverUrl, c.id);
@@ -115,28 +125,39 @@ const Categories = ({flattenedItems, unreadChannelIds, onlyUnreads, isTablet, li
             return <CategoryHeader category={item.category}/>;
         }
 
-        // item.type === 'channel'
-        const testIdSuffix = item.categoryType;
+        if (item.type === 'channel') {
+            return (
+                <ChannelItem
+                    channel={item.channel}
+                    onPress={onChannelSwitch}
+                    testID={`channel_list.category.${item.categoryType}.channel_item`}
+                    shouldHighlightActive={isChannelScreenActive}
+                    shouldHighlightState={true}
+                    isOnHome={true}
+                />
+            );
+        }
+
         return (
-            <ChannelItem
-                channel={item.channel}
-                onPress={onChannelSwitch}
-                testID={`channel_list.category.${testIdSuffix}.channel_item`}
-                shouldHighlightActive={isChannelScreenActive}
-                shouldHighlightState={true}
-                isOnHome={true}
+            <CategoryRow
+                category={item.category}
+                currentUserId={currentUserId}
+                locale={locale}
+                channelIds={item.membership.channelIds}
+                sortOrderMap={item.membership.sortOrderMap}
+                managedChannelIds={managedChannelIds}
+                isChannelScreenActive={isChannelScreenActive}
             />
         );
-    }, [styles, onChannelSwitch, isChannelScreenActive]);
+    }, [styles, onChannelSwitch, isChannelScreenActive, currentUserId, locale, managedChannelIds]);
 
     const onViewableItemsChanged = useCallback(({viewableItems}: {viewableItems: Array<ViewToken<FlattenedItem>>}) => {
-        if (!viewableItems.length || !unreadChannelIds.size) {
+        if (!viewableItems.length || !unreadIds.size) {
             setHasUnreadsAbove(false);
             setHasUnreadsBelow(false);
             return;
         }
 
-        // Get indices of viewable items
         const visibleIndices = viewableItems.
             filter((item) => item.isViewable && item.index !== null).
             map((item) => item.index as number);
@@ -148,21 +169,17 @@ const Categories = ({flattenedItems, unreadChannelIds, onlyUnreads, isTablet, li
         const firstVisible = Math.min(...visibleIndices);
         const lastVisible = Math.max(...visibleIndices);
 
-        // Single pass: check channels above and below viewport
         let hasUnreadsAboveViewport = false;
         let hasUnreadsBelowViewport = false;
 
         for (let i = 0; i < flattenedItems.length; i++) {
             const item = flattenedItems[i];
-
-            if (item.type === 'channel' && unreadChannelIds.has(item.channelId)) {
+            if (item.type === 'channel' && unreadIds.has(item.channelId)) {
                 if (i < firstVisible) {
                     hasUnreadsAboveViewport = true;
                 } else if (i > lastVisible) {
                     hasUnreadsBelowViewport = true;
                 }
-
-                // Early exit if we found both
                 if (hasUnreadsAboveViewport && hasUnreadsBelowViewport) {
                     break;
                 }
@@ -171,18 +188,14 @@ const Categories = ({flattenedItems, unreadChannelIds, onlyUnreads, isTablet, li
 
         setHasUnreadsAbove(hasUnreadsAboveViewport);
         setHasUnreadsBelow(hasUnreadsBelowViewport);
-    }, [flattenedItems, unreadChannelIds]);
+    }, [flattenedItems, unreadIds]);
 
     useEffect(() => {
-        // Once we add the components to show unreads above/below, this useEffect can be removed
         logDebug('Unreads above viewport:', hasUnreadsAbove, ', below viewport:', hasUnreadsBelow);
     }, [hasUnreadsAbove, hasUnreadsBelow]);
 
     useEffect(() => {
-        const t = setTimeout(() => {
-            setInitialLoad(false);
-        }, 0);
-
+        const t = setTimeout(() => setInitialLoad(false), 0);
         return () => clearTimeout(t);
     }, []);
 
@@ -190,49 +203,54 @@ const Categories = ({flattenedItems, unreadChannelIds, onlyUnreads, isTablet, li
         if (switchingTeam) {
             return;
         }
-
         PerformanceMetricsManager.endMetric('mobile_team_switch', serverUrl);
     }, [switchingTeam, serverUrl]);
 
-    useEffect(() => {
-        if (listRef.current) {
-            listRef.current.recomputeViewableItems();
-        }
-    }, []);
-
     const showEmptyState = onlyUnreads && flattenedItems.length === 0 && !isTablet;
 
+    const [listHeaderHeight, setListHeaderHeight] = useState(0);
     const ListEmptyComponent = useMemo(() => {
         if (showEmptyState) {
             return (
-                <View style={{height: listHeight}}>
+                <View style={{flex: 1, marginTop: listHeaderHeight + ROW_HEIGHT}}>
                     <Empty/>
                 </View>
             );
         }
         return undefined;
-    }, [showEmptyState, listHeight]);
+    }, [listHeaderHeight, showEmptyState]);
+
+    const onListHeaderLayout = useCallback((e: LayoutChangeEvent) => {
+        setListHeaderHeight(e.nativeEvent.layout.height);
+    }, []);
+
+    const listHeader = (
+        <View onLayout={onListHeaderLayout}>
+            {headerButtons}
+        </View>
+    );
 
     if (flattenedItems.length === 0 && !switchingTeam && !initialLoad && !onlyUnreads) {
         return <LoadCategoriesError/>;
     }
 
     return (
-        <>
+        <SharedDataProvider isTablet={isTablet}>
             {!switchingTeam && !initialLoad && (
-                <FlashList<FlattenedItem>
+                <FlatList
+                    key={onlyUnreads ? 'unreads' : 'all'}
                     ref={listRef}
                     testID='channel_list.flat_list'
                     data={flattenedItems}
                     renderItem={renderItem}
                     keyExtractor={keyExtractor}
-                    getItemType={getItemType}
-                    drawDistance={ESTIMATED_ITEM_SIZE * 20}
                     showsHorizontalScrollIndicator={false}
                     showsVerticalScrollIndicator={false}
                     ListEmptyComponent={ListEmptyComponent}
                     onViewableItemsChanged={onViewableItemsChanged}
                     viewabilityConfig={VIEWABILITY_CONFIG}
+                    ListHeaderComponent={listHeader}
+                    nestedScrollEnabled={true}
                 />
             )}
             {(switchingTeam || initialLoad) && (
@@ -244,7 +262,7 @@ const Categories = ({flattenedItems, unreadChannelIds, onlyUnreads, isTablet, li
                     />
                 </View>
             )}
-        </>
+        </SharedDataProvider>
     );
 };
 

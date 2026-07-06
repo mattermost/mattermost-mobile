@@ -68,6 +68,8 @@ import {prepareChannels,
     queryMyChannelsWithAutotranslation,
     observeChannelAutotranslation,
     observeIsChannelAutotranslated,
+    observeAllMyChannelsBadgeState,
+    observeChannelTeamMap,
 } from './channel';
 import {queryRoles} from './role';
 import {getCurrentChannelId, observeCurrentChannelId, observeCurrentUserId} from './system';
@@ -659,7 +661,7 @@ describe('Channel Queries', () => {
             ),
             Q.or(
                 Q.where('is_unread', Q.eq(true)),
-                Q.where('mentions_count', Q.gte(0)),
+                Q.where('mentions_count', Q.gt(0)),
             ),
             Q.sortBy('last_post_at', Q.desc),
         );
@@ -1911,5 +1913,97 @@ describe('queryMyChannelsByChannelIds and queryMyChannelsWithAutotranslation', (
 
             expect(subscriptionNext).toHaveBeenCalledWith(true);
         });
+    });
+});
+
+describe('observeAllMyChannelsBadgeState', () => {
+    let database: Database;
+    let operator: ServerDataOperator;
+    const serverUrl = 'http://www.someserverurl.com';
+
+    beforeEach(async () => {
+        await DatabaseManager.init([serverUrl]);
+        const server = DatabaseManager.serverDatabases[serverUrl]!;
+        database = server.database;
+        operator = server.operator;
+    });
+
+    afterEach(async () => {
+        await DatabaseManager.destroyServerDatabase(serverUrl);
+    });
+
+    it('should emit non-deleted channels with mention and unread columns', async () => {
+        const channel = TestHelper.fakeChannel({id: 'ch1', team_id: 'team1', delete_at: 0});
+        const myChannel = TestHelper.fakeChannelMember({channel_id: 'ch1', mention_count: 2});
+        await operator.handleChannel({channels: [channel], prepareRecordsOnly: false});
+        await operator.handleMyChannel({channels: [channel], myChannels: [myChannel], prepareRecordsOnly: false});
+
+        const emitted: unknown[] = [];
+        const sub = observeAllMyChannelsBadgeState(database).subscribe((v) => emitted.push(v));
+
+        expect(emitted).toHaveLength(1);
+        expect((emitted[0] as Array<{mentionsCount: number}>)[0]).toBeDefined();
+        sub.unsubscribe();
+    });
+
+    it('should exclude soft-deleted channels', async () => {
+        const active = TestHelper.fakeChannel({id: 'active', team_id: 'team1', delete_at: 0});
+        const deleted = TestHelper.fakeChannel({id: 'deleted', team_id: 'team1', delete_at: 1000});
+        const myActive = TestHelper.fakeChannelMember({channel_id: 'active', mention_count: 1});
+        const myDeleted = TestHelper.fakeChannelMember({channel_id: 'deleted', mention_count: 3});
+        await operator.handleChannel({channels: [active, deleted], prepareRecordsOnly: false});
+        await operator.handleMyChannel({channels: [active, deleted], myChannels: [myActive, myDeleted], prepareRecordsOnly: false});
+
+        const emitted: unknown[] = [];
+        const sub = observeAllMyChannelsBadgeState(database).subscribe((v) => emitted.push(v));
+
+        const result = emitted[0] as Array<{id: string}>;
+        expect(result.some((r) => r.id === 'deleted')).toBe(false);
+        expect(result.some((r) => r.id === 'active')).toBe(true);
+        sub.unsubscribe();
+    });
+});
+
+describe('observeChannelTeamMap', () => {
+    let database: Database;
+    let operator: ServerDataOperator;
+    const serverUrl = 'http://www.someserverurl.com';
+
+    beforeEach(async () => {
+        await DatabaseManager.init([serverUrl]);
+        const server = DatabaseManager.serverDatabases[serverUrl]!;
+        database = server.database;
+        operator = server.operator;
+    });
+
+    afterEach(async () => {
+        await DatabaseManager.destroyServerDatabase(serverUrl);
+    });
+
+    it('should emit a map from channel id to team id for non-deleted channels', async () => {
+        const ch1 = TestHelper.fakeChannel({id: 'ch1', team_id: 'team1', delete_at: 0});
+        const ch2 = TestHelper.fakeChannel({id: 'ch2', team_id: 'team2', delete_at: 0});
+        await operator.handleChannel({channels: [ch1, ch2], prepareRecordsOnly: false});
+
+        const emitted: Array<Map<string, string>> = [];
+        const sub = observeChannelTeamMap(database).subscribe((v) => emitted.push(v));
+
+        expect(emitted).toHaveLength(1);
+        expect(emitted[0].get('ch1')).toBe('team1');
+        expect(emitted[0].get('ch2')).toBe('team2');
+        sub.unsubscribe();
+    });
+
+    it('should exclude soft-deleted channels from the map', async () => {
+        const active = TestHelper.fakeChannel({id: 'active', team_id: 'team1', delete_at: 0});
+        const deleted = TestHelper.fakeChannel({id: 'deleted', team_id: 'team1', delete_at: 1000});
+        await operator.handleChannel({channels: [active, deleted], prepareRecordsOnly: false});
+
+        const emitted: Array<Map<string, string>> = [];
+        const sub = observeChannelTeamMap(database).subscribe((v) => emitted.push(v));
+
+        expect(emitted[0].has('deleted')).toBe(false);
+        expect(emitted[0].has('active')).toBe(true);
+        sub.unsubscribe();
     });
 });

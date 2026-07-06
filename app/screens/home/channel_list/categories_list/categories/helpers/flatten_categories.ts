@@ -6,10 +6,16 @@ import {UNREADS_CATEGORY} from '@constants/categories';
 import type CategoryModel from '@typings/database/models/servers/category';
 import type ChannelModel from '@typings/database/models/servers/channel';
 
+export type CategoryMembership = {
+    channelIds: string[];
+    sortOrderMap: Map<string, number>;
+};
+
 export type FlattenedItem =
     | {type: 'unreads_header'}
     | {type: 'header'; categoryId: string; category: CategoryModel}
-    | {type: 'channel'; categoryId: string; categoryType: string; channelId: string; channel: ChannelModel};
+    | {type: 'channel'; categoryId: string; categoryType: string; channelId: string; channel: ChannelModel}
+    | {type: 'category'; category: CategoryModel; membership: CategoryMembership};
 
 export type CategoryData = {
     category: CategoryModel;
@@ -22,10 +28,16 @@ export const keyExtractor = (item: FlattenedItem): string => {
     if (item.type === 'unreads_header') {
         return 'unreads_header';
     }
-    return item.type === 'header' ? `h:${item.categoryId}` : `c:${item.channelId}`;
+    if (item.type === 'header') {
+        return `h:${item.categoryId}`;
+    }
+    if (item.type === 'category') {
+        return `cat:${item.category.id}`;
+    }
+    return `c:${item.channelId}`;
 };
 
-export const getItemType = (item: FlattenedItem): 'unreads_header' | 'header' | 'channel' => {
+export const getItemType = (item: FlattenedItem): 'unreads_header' | 'header' | 'channel' | 'category' => {
     return item.type;
 };
 

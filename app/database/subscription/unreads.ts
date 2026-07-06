@@ -1,19 +1,19 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {type Database} from '@nozbe/watermelondb';
 import {combineLatest, type Observable, of as of$} from 'rxjs';
-import {combineLatestWith, distinctUntilChanged, map as map$, switchMap} from 'rxjs/operators';
+import {distinctUntilChanged, map as map$, switchMap, throttleTime} from 'rxjs/operators';
 
 import DatabaseManager from '@database/manager';
-import {observeChannelUnreadsAndMentions, queryMyChannelsByTeam} from '@queries/servers/channel';
+import {observeAllMyChannelsBadgeState, observeAllMyChannelNotifyProps, observeChannelTeamMap} from '@queries/servers/channel';
 import {observeCurrentTeamId, observeTeamBadgeCounts} from '@queries/servers/system';
 import {queryMyTeams} from '@queries/servers/team';
-import {observeDirectThreadUnreadsAndMentions, observeUnreadsAndMentions} from '@queries/servers/thread';
+import {observeAllTeamUnreadThreads, observeDirectThreadUnreadsAndMentions, observeThreadInTeamMap} from '@queries/servers/thread';
 import ChannelsSyncStore from '@store/channels_sync_store';
 import ThreadsSyncStore from '@store/threads_sync_store';
 
 import type MyChannelModel from '@typings/database/models/servers/my_channel';
+import type MyTeamModel from '@typings/database/models/servers/my_team';
 
 export type UnreadObserverArgs = {
     myChannels: MyChannelModel[];
@@ -23,113 +23,26 @@ export type UnreadObserverArgs = {
 }
 
 type BadgeState = {mentions: number; unread: boolean};
+type TeamSyncState = {channelsFetched: boolean; threadsFetched: boolean};
 
-function aggregateBadges(badges: BadgeState[]): BadgeState {
-    return {
-        mentions: badges.reduce((sum, b) => sum + b.mentions, 0),
-        unread: badges.some((b) => b.unread),
-    };
+// leading=true passes the first value immediately; trailing=true emits after burst settles.
+const THROTTLE_MS = 300;
+
+function observeTeamSyncMap(serverUrl: string, teams: MyTeamModel[], excludeThreadMentions: boolean): Observable<Map<string, TeamSyncState>> {
+    if (!teams.length) {
+        return of$(new Map());
+    }
+    return combineLatest(teams.map((t) => {
+        const channelsFetched = ChannelsSyncStore.observeChannelsFetched(serverUrl, t.id);
+        const threadsFetched = excludeThreadMentions ? of$(false) : ThreadsSyncStore.observeThreadsFetched(serverUrl, t.id);
+        return combineLatest([channelsFetched, threadsFetched]).pipe(
+            map$(([cf, tf]) => [t.id, {channelsFetched: cf, threadsFetched: tf}] as [string, TeamSyncState]),
+        );
+    })).pipe(
+        map$((entries) => new Map(entries)),
+    );
 }
 
-// observeTeamBadge implements the two-layer strategy for one team:
-//   - Channel part: DB (observeChannelUnreadsAndMentions) once ChannelsSyncStore marks fetched; blob seed until then.
-//   - Thread part: DB (observeUnreadsAndMentions, team-only) once ThreadsSyncStore marks fetched; blob seed until then.
-// blob$ is passed from the caller so the System row is queried once for all teams.
-// excludeThreadMentions: when true, thread mentions are excluded (used for current server on global threads screen).
-const observeTeamBadge = (
-    database: Database,
-    serverUrl: string,
-    teamId: string,
-    blob$: Observable<TeamBadgeCounts | undefined>,
-    excludeThreadMentions = false,
-): Observable<BadgeState> => {
-    // Channels-fetched gate is explicit (session-scoped flip from ChannelsSyncStore)
-    // rather than "any row exists". A WS event writing a single MyChannel row for a
-    // not-yet-loaded team would otherwise flip the gate to true with only that one
-    // row visible, causing the DB sum to under-count vs the blob seed.
-    const channelsFetched$ = ChannelsSyncStore.observeChannelsFetched(serverUrl, teamId);
-    const threadsFetched$ = ThreadsSyncStore.observeThreadsFetched(serverUrl, teamId);
-    const blobTeam$ = blob$.pipe(map$((b) => b?.teams[teamId]));
-
-    // One query for channel mentions + unread.
-    const dbChannel$ = observeChannelUnreadsAndMentions(database, teamId);
-
-    // One query for team thread mentions + unread (no DM threads via {teamId} only).
-    const dbThreads$ = observeUnreadsAndMentions(database, {teamId});
-
-    return channelsFetched$.pipe(
-        combineLatestWith(threadsFetched$, dbChannel$, dbThreads$, blobTeam$),
-        map$(([channelsFetched, threadsFetched, dbChan, dbThreads, blob]) => {
-            const channelMentions = channelsFetched ? dbChan.mentions : (blob?.mentionCount ?? 0);
-            const channelUnread = channelsFetched ? dbChan.unread : (blob?.hasUnreads ?? false);
-            let threadMentions = 0;
-            let threadUnread = false;
-            if (!excludeThreadMentions) {
-                threadMentions = threadsFetched ? dbThreads.mentions : (blob?.threadMentionCount ?? 0);
-                threadUnread = threadsFetched ? dbThreads.unreads : (blob?.threadHasUnreads ?? false);
-            }
-            return {
-                mentions: channelMentions + threadMentions,
-                unread: channelUnread || threadUnread,
-            };
-        }),
-        distinctUntilChanged((a, b) => a.mentions === b.mentions && a.unread === b.unread),
-    );
-};
-
-// observeDirectBadge implements the two-layer strategy for DM/GM channels (team_id = ''):
-//   - Channel part: DB once DM channels exist; blob.direct seed until then.
-//   - Thread part: DB (DM-only via observeDirectThreadUnreadsAndMentions) once DM threads are
-//     fetched (ThreadsSyncStore key '' signals completion); blob seed until then.
-// The channel and thread gates are independent: DM channels are populated by
-// deferredAppEntryActions.fetchMyChannelsForTeam, while DM threads are fetched separately.
-const observeDirectBadge = (
-    database: Database,
-    serverUrl: string,
-    blob$: Observable<TeamBadgeCounts | undefined>,
-    excludeThreadMentions = false,
-): Observable<BadgeState> => {
-    const currentTeamId = observeCurrentTeamId(database);
-    const hasDirectChannels$ = queryMyChannelsByTeam(database, '').observe().pipe(
-        map$((ch) => ch.length > 0),
-        distinctUntilChanged(),
-    );
-
-    // Independent gate for DM/GM thread DB values — mirrors the team thread gate.
-    const directThreadsFetched$ = currentTeamId.pipe(switchMap((teamId) => ThreadsSyncStore.observeThreadsFetched(serverUrl, teamId)));
-    const blobDirect$ = blob$.pipe(map$((b) => b?.direct));
-
-    // One query for DM/GM channel mentions + unread.
-    const dbChannel$ = observeChannelUnreadsAndMentions(database, '');
-
-    // One query for DM/GM-only thread mentions + unread (channel.team_id = '' exclusively).
-    const dbThreads$ = observeDirectThreadUnreadsAndMentions(database);
-
-    return hasDirectChannels$.pipe(
-        combineLatestWith(directThreadsFetched$, dbChannel$, dbThreads$, blobDirect$),
-        map$(([hasDirectChannels, hasFetchedDirectThreads, dbChan, dbThreads, blob]) => {
-            const channelMentions = hasDirectChannels ? dbChan.mentions : (blob?.mentionCount ?? 0);
-            const channelUnread = hasDirectChannels ? dbChan.unread : (blob?.hasUnreads ?? false);
-            let threadMentions = 0;
-            let threadUnread = false;
-            if (!excludeThreadMentions) {
-                threadMentions = hasFetchedDirectThreads ? dbThreads.mentions : (blob?.threadMentionCount ?? 0);
-                threadUnread = hasFetchedDirectThreads ? dbThreads.unreads : (blob?.threadHasUnreads ?? false);
-            }
-            return {
-                mentions: channelMentions + threadMentions,
-                unread: channelUnread || threadUnread,
-            };
-        }),
-        distinctUntilChanged((a, b) => a.mentions === b.mentions && a.unread === b.unread),
-    );
-};
-
-// observeUnreadsByServer returns a reactive {mentions, unread} aggregate for an entire server.
-// Each team and the DM/GM bucket use the two-layer strategy (blob seed → DB once loaded).
-// blob$ is created once and passed down so all teams share a single System row subscription.
-// excludeThreadMentions: when true, thread mentions are excluded from the aggregate (used when
-// the user is viewing the global threads screen of this server — threads are already visible there).
 export const observeUnreadsByServer = (serverUrl: string, excludeThreadMentions = false): Observable<BadgeState> => {
     const server = DatabaseManager.serverDatabases[serverUrl];
     if (!server?.database) {
@@ -137,21 +50,101 @@ export const observeUnreadsByServer = (serverUrl: string, excludeThreadMentions 
     }
     const {database} = server;
 
-    const blob$ = observeTeamBadgeCounts(database);
-    const direct$ = observeDirectBadge(database, serverUrl, blob$, excludeThreadMentions);
+    const myTeams = queryMyTeams(database).observe();
+    const allChannels = observeAllMyChannelsBadgeState(database);
+    const channelTeamMap = observeChannelTeamMap(database);
+    const notifyProps = observeAllMyChannelNotifyProps(database);
+    const teamThreads = observeAllTeamUnreadThreads(database);
+    const threadInTeamMap = observeThreadInTeamMap(database);
+    const directThreads = observeDirectThreadUnreadsAndMentions(database);
+    const blob = observeTeamBadgeCounts(database);
+    const currentTeamId = observeCurrentTeamId(database);
 
-    return queryMyTeams(database).observe().pipe(
-        switchMap((teams) => {
-            if (!teams.length) {
-                return direct$;
+    const teamSyncMap = myTeams.pipe(
+        switchMap((teams) => observeTeamSyncMap(serverUrl, teams, excludeThreadMentions)),
+    );
+
+    // Direct thread fetch state is keyed by the current team ID (same key DMs use).
+    const directThreadsFetched = excludeThreadMentions ? of$(false) : currentTeamId.pipe(
+        switchMap((tid) => ThreadsSyncStore.observeThreadsFetched(serverUrl, tid)),
+        distinctUntilChanged(),
+    );
+
+    return combineLatest([allChannels, channelTeamMap, notifyProps, teamThreads, threadInTeamMap, directThreads, blob, myTeams, teamSyncMap, directThreadsFetched]).pipe(
+        throttleTime(THROTTLE_MS, undefined, {leading: true, trailing: true}),
+        map$(([channels, teamMap, notify, threads, threadTeamMap, dmThreads, badgeBlob, teams, syncState, isDirectThreadsFetched]) => {
+            // Group channel badges by teamId in JS
+            const channelMentionsByTeam = new Map<string, number>();
+            const channelUnreadByTeam = new Map<string, boolean>();
+            for (const ch of channels) {
+                const isMuted = notify[ch.id]?.mark_unread === 'mention';
+                if (isMuted) {
+                    continue;
+                }
+                const tid = teamMap.get(ch.id) ?? '';
+                channelMentionsByTeam.set(tid, (channelMentionsByTeam.get(tid) ?? 0) + ch.mentionsCount);
+                if (ch.isUnread) {
+                    channelUnreadByTeam.set(tid, true);
+                }
             }
 
-            const allBadges$: Array<Observable<BadgeState>> = [
-                ...teams.map((t) => observeTeamBadge(database, serverUrl, t.id, blob$, excludeThreadMentions)),
-                direct$,
-            ];
+            // Group team thread badges by teamId in JS
+            const threadMentionsByTeam = new Map<string, number>();
+            const threadUnreadByTeam = new Map<string, boolean>();
+            if (!excludeThreadMentions) {
+                for (const t of threads) {
+                    const tid = threadTeamMap.get(t.id) ?? '';
+                    if (!tid) {
+                        continue;
+                    }
+                    threadMentionsByTeam.set(tid, (threadMentionsByTeam.get(tid) ?? 0) + t.unreadMentions);
+                    if (t.unreadReplies) {
+                        threadUnreadByTeam.set(tid, true);
+                    }
+                }
+            }
 
-            return combineLatest<BadgeState[]>(allBadges$).pipe(map$(aggregateBadges));
+            let totalMentions = 0;
+            let totalUnread = false;
+
+            for (const team of teams) {
+                const {id: tid} = team;
+                const sync = syncState.get(tid);
+                const channelsFetched = sync?.channelsFetched ?? false;
+                const threadsFetched = sync?.threadsFetched ?? false;
+                const blobTeam = badgeBlob?.teams[tid];
+
+                const channelMentions = channelsFetched ? (channelMentionsByTeam.get(tid) ?? 0) : (blobTeam?.mentionCount ?? 0);
+                const channelUnread = channelsFetched ? (channelUnreadByTeam.get(tid) ?? false) : (blobTeam?.hasUnreads ?? false);
+                let threadMentions = 0;
+                let threadUnread = false;
+                if (!excludeThreadMentions) {
+                    threadMentions = threadsFetched ? (threadMentionsByTeam.get(tid) ?? 0) : (blobTeam?.threadMentionCount ?? 0);
+                    threadUnread = threadsFetched ? (threadUnreadByTeam.get(tid) ?? false) : (blobTeam?.threadHasUnreads ?? false);
+                }
+
+                totalMentions += channelMentions + threadMentions;
+                totalUnread = totalUnread || channelUnread || threadUnread;
+            }
+
+            // Aggregate DM/GM channels (teamId = '')
+            const blobDirect = badgeBlob?.direct;
+            const directChannelMentions = channelMentionsByTeam.get('') ?? 0;
+            const directChannelUnread = channelUnreadByTeam.get('') ?? false;
+            const hasDirectChannels = directChannelMentions > 0 || directChannelUnread;
+
+            totalMentions += hasDirectChannels ? directChannelMentions : (blobDirect?.mentionCount ?? 0);
+            totalUnread = totalUnread || (hasDirectChannels ? directChannelUnread : (blobDirect?.hasUnreads ?? false));
+
+            // Aggregate DM/GM threads
+            if (!excludeThreadMentions) {
+                const directThreadMentions = isDirectThreadsFetched ? dmThreads.mentions : (blobDirect?.threadMentionCount ?? 0);
+                const directThreadUnread = isDirectThreadsFetched ? dmThreads.unreads : (blobDirect?.threadHasUnreads ?? false);
+                totalMentions += directThreadMentions;
+                totalUnread = totalUnread || directThreadUnread;
+            }
+
+            return {mentions: totalMentions, unread: totalUnread};
         }),
         distinctUntilChanged((a, b) => a.mentions === b.mentions && a.unread === b.unread),
     );

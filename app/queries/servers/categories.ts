@@ -38,6 +38,10 @@ export const queryCategoryChannelsByChannelId = (database: Database, channelId: 
     return database.get<CategoryChannelModel>(CATEGORY_CHANNEL).query(Q.where('channel_id', Q.eq(channelId)));
 };
 
+export const queryCategoryChannelsByCategoryIds = (database: Database, categoryIds: string[]) => {
+    return database.get<CategoryChannelModel>(CATEGORY_CHANNEL).query(Q.where('category_id', Q.oneOf(categoryIds)));
+};
+
 export async function prepareCategoriesAndCategoriesChannels(operator: ServerDataOperator, categories: CategoryWithChannels[], prune = false) {
     try {
         const {database} = operator;

@@ -71,10 +71,7 @@ const Home = ({isFocused, theme}: Props) => {
     const [total, setTotal] = useState<UnreadMessages>({mentions: 0, unread: false});
     const appState = useAppState();
 
-    // Each Home instance keeps its own subscriptions map. The TabBar can mount
-    // multiple Home instances simultaneously (e.g. when withServerDatabase remounts
-    // the authenticated subtree during a server switch), so sharing a module-level
-    // map would let one instance's serversObserver no-op for another instance.
+    // Each Home instance owns its map; TabBar can mount multiple instances during a server switch.
     const subscriptionsRef = React.useRef<Map<string, UnreadSubscription>>(new Map());
 
     useDidMount(() => {
@@ -120,8 +117,7 @@ const Home = ({isFocused, theme}: Props) => {
                 }
             }
 
-            // After any add/remove pass, recompute the total so the badge reflects
-            // the current set of subscriptions even when no per-server emission fires.
+            // Recompute after any add/remove so badge reflects current subscriptions.
             emitTotal();
         };
 
@@ -131,8 +127,7 @@ const Home = ({isFocused, theme}: Props) => {
 
             subscription?.unsubscribe();
 
-            // Snapshot current totals BEFORE clearing so the iOS badge reflects
-            // the real mention count from the DB, not zero.
+            // Snapshot before clearing so iOS badge shows real count, not zero.
             updateBadge(subs);
 
             subs.forEach((unreads) => {

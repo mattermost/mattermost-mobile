@@ -2,157 +2,38 @@
 // See LICENSE.txt for license information.
 
 import {of as of$, combineLatest, type Observable} from 'rxjs';
-import {switchMap, map, distinctUntilChanged} from 'rxjs/operators';
+import {switchMap, map} from 'rxjs/operators';
 
-import {Preferences} from '@constants';
-import {DMS_CATEGORY, MANAGED_LOCAL_CATEGORY_PREFIX, UNREADS_CATEGORY} from '@constants/categories';
-import {getSidebarPreferenceAsBool} from '@helpers/api/preference';
+import {UNREADS_CATEGORY} from '@constants/categories';
 import {filterAndSortMyChannels, makeChannelsMap} from '@helpers/database';
-import {queryCategoriesByTeamIds} from '@queries/servers/categories';
-import {getChannelById, observeChannelsByLastPostAt, observeNotifyPropsByChannels, queryMyChannelUnreads} from '@queries/servers/channel';
-import {queryPreferencesByCategoryAndName, querySidebarPreferences} from '@queries/servers/preference';
-import {observeCurrentChannelId, observeLastUnreadChannelId} from '@queries/servers/system';
-import {observeDeactivatedUsers} from '@queries/servers/user';
+import {queryCategoriesByTeamIds, queryCategoryChannelsByCategoryIds} from '@queries/servers/categories';
 import {
-    type ChannelWithMyChannel,
-    filterArchivedChannels,
-    filterAutoclosedDMs,
-    filterManuallyClosedDms,
-    getUnreadIds,
-    sortChannels,
-} from '@utils/categories';
+    getChannelById,
+    observeChannelsByLastPostAt,
+    observeNotifyPropsByChannels,
+    queryMyChannelUnreads,
+} from '@queries/servers/channel';
+import {observeLastUnreadChannelId} from '@queries/servers/system';
 
-import {flattenCategories, type CategoryData, type FlattenedItem} from './flatten_categories';
+import {type CategoryMembership, type FlattenedItem} from './flatten_categories';
 
 import type Database from '@nozbe/watermelondb/Database';
 import type CategoryModel from '@typings/database/models/servers/category';
+import type CategoryChannelModel from '@typings/database/models/servers/category_channel';
 import type ChannelModel from '@typings/database/models/servers/channel';
-import type MyChannelModel from '@typings/database/models/servers/my_channel';
-import type PreferenceModel from '@typings/database/models/servers/preference';
-
-const observeCategoryChannels = (category: CategoryModel, myChannels: Observable<MyChannelModel[]>) => {
-    // observe delete_at to react to channel archive/unarchive
-    const channels = category.channels.observeWithColumns(['create_at', 'display_name', 'delete_at']);
-    const manualSort = category.categoryChannelsBySortOrder.observeWithColumns(['sort_order']);
-    return myChannels.pipe(
-        switchMap((my) => combineLatest([of$(my), channels, manualSort])),
-        map(([my, cs, sorted]) => {
-            const channelMap = new Map<string, ChannelModel>(cs.map((c) => [c.id, c]));
-            const categoryChannelMap = new Map<string, number>(sorted.map((s) => [s.channelId, s.sortOrder]));
-            return my.reduce<ChannelWithMyChannel[]>((result, myChannel) => {
-                const channel = channelMap.get(myChannel.id);
-                if (channel) {
-                    const channelWithMyChannel: ChannelWithMyChannel = {
-                        channel,
-                        myChannel,
-                        sortOrder: categoryChannelMap.get(myChannel.id) || 0,
-                    };
-                    result.push(channelWithMyChannel);
-                }
-                return result;
-            }, []);
-        }),
-    );
-};
-
-const observeCategoryData = (
-    category: CategoryModel,
-    database: Database,
-    currentUserId: string,
-    locale: string,
-    isTablet: boolean,
-): Observable<CategoryData> => {
-    const categoryMyChannels = category.myChannels.observeWithColumns(['last_post_at', 'is_unread']);
-    const channelsWithMyChannel = observeCategoryChannels(category, categoryMyChannels);
-    const currentChannelId = isTablet ? observeCurrentChannelId(database) : of$('');
-    const lastUnreadId = isTablet ? observeLastUnreadChannelId(database) : of$(undefined);
-
-    let limit = of$(Preferences.CHANNEL_SIDEBAR_LIMIT_DMS_DEFAULT);
-    if (category.type === DMS_CATEGORY) {
-        limit = querySidebarPreferences(database, Preferences.CHANNEL_SIDEBAR_LIMIT_DMS).
-            observeWithColumns(['value']).pipe(
-                switchMap((val) => {
-                    return val[0] ? of$(parseInt(val[0].value, 10)) : of$(Preferences.CHANNEL_SIDEBAR_LIMIT_DMS_DEFAULT);
-                }),
-            );
-    }
-
-    const notifyPropsPerChannel = categoryMyChannels.pipe(
-        switchMap((mc) => observeNotifyPropsByChannels(database, mc)),
-    );
-
-    const hiddenDmPrefs = queryPreferencesByCategoryAndName(database, Preferences.CATEGORIES.DIRECT_CHANNEL_SHOW, undefined, 'false').
-        observeWithColumns(['value']);
-    const hiddenGmPrefs = queryPreferencesByCategoryAndName(database, Preferences.CATEGORIES.GROUP_CHANNEL_SHOW, undefined, 'false').
-        observeWithColumns(['value']);
-    const manuallyClosedPrefs = hiddenDmPrefs.pipe(
-        switchMap((dms) => combineLatest([of$(dms), hiddenGmPrefs])),
-        map(([dms, gms]) => dms.concat(gms)),
-    );
-
-    const approxViewTimePrefs = queryPreferencesByCategoryAndName(database, Preferences.CATEGORIES.CHANNEL_APPROXIMATE_VIEW_TIME, undefined).
-        observeWithColumns(['value']);
-    const openTimePrefs = queryPreferencesByCategoryAndName(database, Preferences.CATEGORIES.CHANNEL_OPEN_TIME, undefined).
-        observeWithColumns(['value']);
-    const autoclosePrefs = approxViewTimePrefs.pipe(
-        switchMap((viewTimes) => combineLatest([of$(viewTimes), openTimePrefs])),
-        map(([viewTimes, openTimes]) => viewTimes.concat(openTimes)),
-    );
-
-    // Observe category changes (especially collapsed state and sorting)
-    const categoryObservable = category.observe().pipe(
-        map((c) => ({sorting: c.sorting, collapsed: c.collapsed, type: c.type})),
-        distinctUntilChanged((a, b) => a.sorting === b.sorting && a.collapsed === b.collapsed && a.type === b.type),
-    );
-
-    const deactivated = (category.type === DMS_CATEGORY) ? observeDeactivatedUsers(database) : of$(undefined);
-
-    return combineLatest([
-        channelsWithMyChannel,
-        categoryObservable,
-        currentChannelId,
-        lastUnreadId,
-        notifyPropsPerChannel,
-        manuallyClosedPrefs,
-        autoclosePrefs,
-        deactivated,
-        limit,
-    ]).pipe(
-        map(([cwms, catData, channelId, unreadId, notifyProps, manuallyClosedDms, autoclose, deactivatedUsers, maxDms]) => {
-            let channelsW = cwms;
-            channelsW = filterArchivedChannels(channelsW, channelId);
-            channelsW = filterManuallyClosedDms(channelsW, notifyProps, manuallyClosedDms, currentUserId, unreadId);
-            channelsW = filterAutoclosedDMs(catData.type, maxDms, currentUserId, channelId, channelsW, autoclose, notifyProps, deactivatedUsers, unreadId);
-
-            const sortedChannels = sortChannels(catData.sorting, channelsW, notifyProps, locale);
-            const unreadIds = getUnreadIds(cwms, notifyProps, unreadId);
-            const allUnreadChannels = sortedChannels.filter((c) => unreadIds.has(c.id));
-
-            return {
-                category,
-                sortedChannels,
-                unreadIds,
-                allUnreadChannels,
-            };
-        }),
-    );
-};
 
 export type FlattenedCategoriesData = {
     items: FlattenedItem[];
     unreadChannelIds: Set<string>;
 };
 
-// Observable for onlyUnreads mode - flat list of unread channels sorted by lastPostAt
-const observeFlattenedUnreads = (
+export const observeFlattenedUnreads = (
     database: Database,
     currentTeamId: string,
     isTablet: boolean,
 ): Observable<FlattenedCategoriesData> => {
-    const getC = (lastUnreadChannelId: string) => getChannelById(database, lastUnreadChannelId);
-
     const lastUnread = isTablet ? observeLastUnreadChannelId(database).pipe(
-        switchMap(getC),
+        switchMap((id) => getChannelById(database, id)),
     ) : of$(undefined);
 
     const myUnreadChannels = queryMyChannelUnreads(database, currentTeamId).observeWithColumns(['last_post_at', 'is_unread']);
@@ -162,11 +43,11 @@ const observeFlattenedUnreads = (
 
     return combineLatest([myUnreadChannels, channelsMap, notifyProps, lastUnread]).pipe(
         map(([myChannels, chMap, nProps, lastUnreadChannel]) => {
-            const filtered = filterAndSortMyChannels([myChannels, chMap, nProps]);
+            const filteredChannels = filterAndSortMyChannels([myChannels, chMap, nProps]);
 
-            let sortedChannels = filtered;
+            let sortedChannels = filteredChannels;
             if (lastUnreadChannel && isTablet) {
-                sortedChannels = filtered.filter((c) => c && c.id !== lastUnreadChannel.id);
+                sortedChannels = filteredChannels.filter((c) => c && c.id !== lastUnreadChannel.id);
                 sortedChannels.unshift(lastUnreadChannel);
             }
 
@@ -192,143 +73,39 @@ const observeFlattenedUnreads = (
     );
 };
 
-const processCategoriesData = (categoriesData: CategoryData[], unreadsOnTopValue: boolean): FlattenedCategoriesData => {
-    const filtered = filterManagedDuplicates(categoriesData);
-
-    const unreadChannelIds = new Set<string>();
-    for (const catData of filtered) {
-        for (const ch of catData.allUnreadChannels) {
-            unreadChannelIds.add(ch.id);
-        }
-    }
-
-    let processed = filtered;
-    if (unreadsOnTopValue) {
-        processed = filtered.map((catData) => ({
-            ...catData,
-            sortedChannels: catData.sortedChannels.filter((ch) => !catData.unreadIds.has(ch.id)),
-        }));
-    }
-
-    const items = flattenCategories(processed, unreadsOnTopValue);
-    return {items, unreadChannelIds};
-};
-
-const filterManagedDuplicates = (categoriesData: CategoryData[]): CategoryData[] => {
-    const managedChannelIds = new Set<string>();
-    for (const catData of categoriesData) {
-        if (catData.category.id.startsWith(MANAGED_LOCAL_CATEGORY_PREFIX)) {
-            for (const ch of catData.sortedChannels) {
-                managedChannelIds.add(ch.id);
-            }
-        }
-    }
-
-    if (managedChannelIds.size === 0) {
-        return categoriesData;
-    }
-
-    return categoriesData.map((catData) => {
-        if (catData.category.id.startsWith(MANAGED_LOCAL_CATEGORY_PREFIX)) {
-            return catData;
-        }
-        const channels = catData.sortedChannels.filter((ch) => !managedChannelIds.has(ch.id));
-        if (channels.length === catData.sortedChannels.length) {
-            return catData;
-        }
-        return {...catData, sortedChannels: channels};
-    });
-};
-
-// Observable for normal mode - categories with headers and grouped channels
-const observeFlattenedCategoriesNormal = (
-    categories: CategoryModel[],
+export const observeCategoryItems = (
     database: Database,
-    currentUserId: string,
-    locale: string,
-    isTablet: boolean,
-): Observable<FlattenedCategoriesData> => {
-    if (categories.length === 0) {
-        return of$({items: [], unreadChannelIds: new Set<string>()});
-    }
-
-    const unreadsOnTop = querySidebarPreferences(database, Preferences.CHANNEL_SIDEBAR_GROUP_UNREADS).
-        observeWithColumns(['value']).
-        pipe(
-            switchMap((prefs: PreferenceModel[]) => of$(getSidebarPreferenceAsBool(prefs, Preferences.CHANNEL_SIDEBAR_GROUP_UNREADS))),
-        );
-
-    const categoryDataObservables = categories.map((category) =>
-        observeCategoryData(category, database, currentUserId, locale, isTablet),
-    );
-
-    return combineLatest([combineLatest(categoryDataObservables), unreadsOnTop]).pipe(
-        map(([categoriesData, unreadsOnTopValue]) => processCategoriesData(categoriesData, unreadsOnTopValue)),
-        distinctUntilChanged((prev, curr) => {
-            if (prev.items.length !== curr.items.length) {
-                return false;
-            }
-
-            for (let i = 0; i < prev.items.length; i++) {
-                const prevItem = prev.items[i];
-                const currItem = curr.items[i];
-
-                if (prevItem.type !== currItem.type) {
-                    return false;
-                }
-
-                if (prevItem.type === 'unreads_header') {
-                    continue;
-                }
-
-                if (prevItem.type === 'header' && currItem.type === 'header') {
-                    if (prevItem.categoryId !== currItem.categoryId) {
-                        return false;
-                    }
-                } else if (prevItem.type === 'channel' && currItem.type === 'channel') {
-                    if (prevItem.channelId !== currItem.channelId) {
-                        return false;
-                    }
-                }
-            }
-
-            // Check if unread IDs changed
-            if (prev.unreadChannelIds.size !== curr.unreadChannelIds.size) {
-                return false;
-            }
-
-            for (const id of prev.unreadChannelIds) {
-                if (!curr.unreadChannelIds.has(id)) {
-                    return false;
-                }
-            }
-
-            return true;
-        }),
-    );
-};
-
-const sortCategories = (categories: CategoryModel[]) => {
-    return categories.sort((a, b) => a.sortOrder - b.sortOrder);
-};
-
-// Routes to the appropriate observable based on onlyUnreads mode
-export const observeFlattenedCategories = (
-    database: Database,
-    currentUserId: string,
-    locale: string,
-    isTablet: boolean,
-    onlyUnreads: boolean,
     currentTeamId: string,
 ): Observable<FlattenedCategoriesData> => {
-    if (onlyUnreads) {
-        return observeFlattenedUnreads(database, currentTeamId, isTablet);
-    }
+    const categories = queryCategoriesByTeamIds(database, [currentTeamId]).
+        observeWithColumns(['sort_order']).
+        pipe(map((cats) => [...cats].sort((a, b) => a.sortOrder - b.sortOrder)));
 
-    // Observe categories for the current team
-    const categories = queryCategoriesByTeamIds(database, [currentTeamId]).observeWithColumns(['sort_order', 'collapsed']);
+    const buildResult = (cats: CategoryModel[], ccs: CategoryChannelModel[]): FlattenedCategoriesData => {
+        const memberships = new Map<string, CategoryMembership>();
+        for (const cat of cats) {
+            memberships.set(cat.id, {channelIds: [], sortOrderMap: new Map()});
+        }
+        for (const cc of ccs) {
+            const m = memberships.get(cc.categoryId);
+            if (m) {
+                m.channelIds.push(cc.channelId);
+                m.sortOrderMap.set(cc.channelId, cc.sortOrder);
+            }
+        }
+        const items: FlattenedItem[] = cats.map((cat) => ({
+            type: 'category',
+            category: cat,
+            membership: memberships.get(cat.id) ?? {channelIds: [], sortOrderMap: new Map()},
+        }));
+        return {items, unreadChannelIds: new Set<string>()};
+    };
 
     return categories.pipe(
-        switchMap((cats) => observeFlattenedCategoriesNormal(sortCategories(cats), database, currentUserId, locale, isTablet)),
+        switchMap((cats) => {
+            const ids = cats.map((c) => c.id);
+            const channelQuery = ids.length === 0 ? of$<CategoryChannelModel[]>([]) : queryCategoryChannelsByCategoryIds(database, ids).observeWithColumns(['sort_order']);
+            return channelQuery.pipe(map((ccs) => buildResult(cats, ccs)));
+        }),
     );
 };
