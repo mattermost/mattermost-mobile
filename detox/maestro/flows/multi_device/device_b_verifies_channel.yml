@@ -1,0 +1,35 @@
+# MM-T837: Device B sees the channel Device A created appear via sync (multi-device).
+#
+# PRE-CONDITIONS:
+#   - device_a_creates_channel.yml completed (channel named SYNC_TOKEN exists)
+#   - Same test user logged in on Device B as Device A (matches RF-CS117's
+#     mobile-app + browser same-account scenario)
+#
+# REQUIRED ENV VARS:
+#   - MAESTRO_APP_ID, SITE_1_URL, TEST_USER_EMAIL, TEST_USER_PASSWORD
+#   - SYNC_TOKEN, TEST_TEAM_ID, ADMIN_TOKEN (orchestration / API polling)
+#
+# ASSERTIONS:
+#   - Channel named SYNC_TOKEN is visible in Device B's channel list sidebar
+#
+# testIDs:
+#   - channel_list.category_header.channels.collapsed.true/false
+#   - channel_list.category.channels.channel_item.${SYNC_TOKEN}
+tags:
+  - MM-T837
+appId: ${MAESTRO_APP_ID}
+---
+- runFlow: ../../subflows/auth/login.yml
+
+# Poll the Mattermost API until the channel created by Device A appears.
+# This ensures Device B does not assert before the channel is synced.
+- runScript: ../../fixtures/poll_for_channel.ts
+
+- runFlow: ../../subflows/navigation/expand_channels_category.yml
+
+# Verify the channel from Device A is visible on Device B's sidebar
+- extendedWaitUntil:
+    visible:
+      id: "channel_list.category.channels.channel_item.${SYNC_TOKEN}"
+    timeout: 30000
+- takeScreenshot: device-b-channel-synced

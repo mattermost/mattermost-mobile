@@ -86,10 +86,10 @@ describe('Server Login - Connect to Server', () => {
     });
 
     it('MM-T4676_4 - should show connection error on invalid ssl or invalid host', async () => {
-        // # Connect with invalid ssl and non-empty server display name
+        // # Connect to a real host with an expired/invalid SSL certificate (no URL blacklist -
+        // # this exercises the device's actual TLS handshake and native cert-trust prompt,
+        // # matching RF-SA229 / MM-T2348's real-world scenario)
         const expiredServerUrl = 'expired.badssl.com';
-        const wrongHostServerUrl = 'wrong.host.badssl.com';
-        await device.setURLBlacklist([expiredServerUrl, wrongHostServerUrl]);
 
         await serverUrlInput.replaceText(expiredServerUrl);
         await serverDisplayNameInput.replaceText('Server 1');
@@ -97,8 +97,8 @@ describe('Server Login - Connect to Server', () => {
         await wait(timeouts.ONE_SEC);
 
         // * Verify invalid SSL cert error
-        await waitFor(serverUrlInputError).toExist().withTimeout(timeouts.TEN_SEC);
-        await expect(serverUrlInputError).toBeVisible();
+        await waitFor(Alert.invalidSslCertTitle).toExist().withTimeout(timeouts.TEN_SEC);
+        await expect(Alert.invalidSslCertTitle).toBeVisible();
     });
 
     it('MM-T4676_5 - should show login screen on successful connection to server', async () => {
