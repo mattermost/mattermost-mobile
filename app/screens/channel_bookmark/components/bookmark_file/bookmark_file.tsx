@@ -309,7 +309,10 @@ const BookmarkFile = ({channelId, close, disabled, initialFile, maxFileSize, set
                 <View style={styles.shadowContainer}>
                     <View style={styles.fileContainer}>
                         <FileIcon file={file}/>
-                        <View style={styles.fileInfoContainer}>
+                        <View
+                            style={styles.fileInfoContainer}
+                            testID={file?.id ? 'channel_bookmark.file.upload_complete' : undefined}
+                        >
                             <Text
                                 numberOfLines={1}
                                 ellipsizeMode='tail'

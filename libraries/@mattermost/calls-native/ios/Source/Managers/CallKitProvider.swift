@@ -1,0 +1,381 @@
+// Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
+// See LICENSE.txt for license information.
+
+import AVFoundation
+import CallKit
+import Foundation
+import Gekidou
+import UIKit
+import UserNotifications
+
+struct IncomingCallRequest {
+    let channelID: String
+    let serverID: String
+    let postID: String
+    let threadID: String
+    let callerID: String
+    let callerName: String
+    let channelName: String
+    /// Raw PushKit payload. Used to drive the ack-receipt round-trip in
+    /// `reportIncomingCall` so the CallKit UI can be updated with the
+    /// resolved name when the server returns enriched fields (IdLoaded
+    /// configs). Empty for synthetic requests (outbound, decode failures).
+    let rawUserInfo: [AnyHashable: Any]
+}
+
+private struct CallInfo {
+    let request: IncomingCallRequest
+    var isAnswered: Bool
+}
+
+@objc public final class CallKitProvider: NSObject, CXProviderDelegate {
+    private let provider: CXProvider
+    private let controller = CXCallController()
+    private weak var bridge: CallsBridge?
+
+    private var calls: [UUID: CallInfo] = [:]
+    private let callsLock = NSLock()
+
+    /// Per-call set of action UUIDs of `CXSetMutedCallAction`s we issued
+    /// ourselves on behalf of JS. The delegate consumes the matching action
+    /// UUID and skips the echo to JS, breaking the in-app toggleMute →
+    /// setMuted → delegate → CallMuted → muteMyself loop. Grouping by call
+    /// UUID lets `clearCallInfo` drop all pending markers when a call ends.
+    private var jsOriginatedMuteActions: [UUID: Set<UUID>] = [:]
+
+    init(bridge: CallsBridge) {
+        self.bridge = bridge
+
+        let configuration = CXProviderConfiguration()
+        // Calls today is audio + screen share — no front-camera video. Screen
+        // share doesn't surface through CallKit (it's handled in-app), so
+        // CallKit's video affordance stays off.
+        configuration.supportsVideo = false
+        configuration.maximumCallGroups = 2
+        configuration.maximumCallsPerCallGroup = 1
+        configuration.supportedHandleTypes = [.generic]
+        configuration.includesCallsInRecents = false
+
+        if let iconData = Self.callKitIconTemplateData() {
+            configuration.iconTemplateImageData = iconData
+        }
+
+        self.provider = CXProvider(configuration: configuration)
+        super.init()
+        self.provider.setDelegate(self, queue: .main)
+        GekidouLogger.shared.log(.info, "CallKitProvider: initialized")
+    }
+
+    // MARK: - Inbound (PushKit-triggered)
+
+    func reportIncomingCall(_ request: IncomingCallRequest,
+                            pushCompletion: @escaping () -> Void) {
+        // channelID + serverID are the minimum needed for the JS layer to
+        // resolve which server and which channel to join. Without them we
+        // satisfy iOS's "must report" rule and end immediately so the
+        // entitlement isn't revoked.
+        if request.channelID.isEmpty || request.serverID.isEmpty {
+            GekidouLogger.shared.log(.warning,
+                "CallKitProvider: incomplete VoIP payload, bailing (channelID=\(request.channelID) serverID=\(request.serverID))")
+            let uuid = UUID()
+            let update = CXCallUpdate()
+            update.remoteHandle = CXHandle(type: .generic, value: "unknown")
+            provider.reportNewIncomingCall(with: uuid, update: update) { _ in
+                pushCompletion()
+            }
+            provider.reportCall(with: uuid, endedAt: Date(), reason: .answeredElsewhere)
+            return
+        }
+
+        let uuid = UUID()
+        let info = CallInfo(request: request, isAnswered: false)
+        setCallInfo(info, for: uuid)
+
+        let update = CXCallUpdate()
+        update.remoteHandle = CXHandle(type: .generic,
+                                       value: request.callerID.isEmpty ? request.channelID : request.callerID)
+        // CallKit shows localizedCallerName as the primary display; if it's
+        // empty it falls back to the handle (a raw ID — terrible UX). Pick
+        // the best available initial name from the payload; for IdLoaded
+        // configs the ack-receipt round-trip refreshes it via
+        // updateCallerName(uuid:name:).
+        update.localizedCallerName = Self.bestInitialDisplayName(request)
+        update.hasVideo = false
+        update.supportsHolding = false
+        update.supportsGrouping = false
+        update.supportsUngrouping = false
+        update.supportsDTMF = false
+
+        GekidouLogger.shared.log(.info,
+            "CallKitProvider: reportNewIncomingCall uuid=\(uuid.uuidString)")
+
+        provider.reportNewIncomingCall(with: uuid, update: update) { [weak self] error in
+            guard let self = self else {
+                pushCompletion()
+                return
+            }
+            if let error = error {
+                GekidouLogger.shared.log(.error,
+                    "CallKitProvider: reportNewIncomingCall failed: \(error.localizedDescription)")
+                self.clearCallInfo(for: uuid)
+                pushCompletion()
+                return
+            }
+
+            self.bridge?.send(event: .IncomingCall, body: [
+                "uuid": uuid.uuidString,
+                "channelId": request.channelID,
+                "serverId": request.serverID,
+                "postId": request.postID,
+                "threadId": request.threadID,
+                "callerId": request.callerID,
+                "callerName": request.callerName,
+                "channelName": request.channelName,
+            ])
+            self.ackAndRefreshName(uuid: uuid, userInfo: request.rawUserInfo)
+            pushCompletion()
+        }
+    }
+
+    /// POST /notifications/ack to the originating server. For IdLoaded
+    /// configs the response carries the channel name and sender display
+    /// name; we splice those into the CallKit UI via reportCall(updated:).
+    /// Skipped for synthetic requests (empty rawUserInfo) — outbound calls
+    /// and signature-verification failures.
+    private func ackAndRefreshName(uuid: UUID, userInfo: [AnyHashable: Any]) {
+        guard !userInfo.isEmpty else { return }
+
+        let content = UNMutableNotificationContent()
+        content.userInfo = userInfo
+        Gekidou.PushNotification.default.postNotificationReceipt(content) { [weak self] enriched in
+            guard let self = self, let enriched = enriched else { return }
+            let info = enriched.userInfo
+            let resolved = (info["channel_name"] as? String).flatMap { $0.isEmpty ? nil : $0 }
+                ?? (info["sender_name"] as? String).flatMap { $0.isEmpty ? nil : $0 }
+            guard let name = resolved else { return }
+            DispatchQueue.main.async {
+                self.updateCallerName(uuid: uuid, name: name)
+            }
+        }
+    }
+
+    // MARK: - Outbound (JS-triggered)
+
+    @objc public func reportOutgoingCall(channelID: String,
+                                          calleeName: String,
+                                          completion: @escaping (UUID?, Error?) -> Void) {
+        let uuid = UUID()
+        let request = IncomingCallRequest(channelID: channelID,
+                                          serverID: "",
+                                          postID: "",
+                                          threadID: "",
+                                          callerID: "",
+                                          callerName: calleeName,
+                                          channelName: "",
+                                          rawUserInfo: [:])
+        let info = CallInfo(request: request, isAnswered: true)
+        setCallInfo(info, for: uuid)
+
+        let handle = CXHandle(type: .generic, value: calleeName.isEmpty ? channelID : calleeName)
+        let startAction = CXStartCallAction(call: uuid, handle: handle)
+        startAction.isVideo = false
+        startAction.contactIdentifier = calleeName
+
+        let transaction = CXTransaction(action: startAction)
+        controller.request(transaction) { [weak self] error in
+            guard let self = self else { return }
+            if let error = error {
+                GekidouLogger.shared.log(.error,
+                    "CallKitProvider: request startCallAction failed: \(error.localizedDescription)")
+                self.clearCallInfo(for: uuid)
+                completion(nil, error)
+                return
+            }
+            self.provider.reportOutgoingCall(with: uuid, startedConnectingAt: nil)
+            GekidouLogger.shared.log(.info,
+                "CallKitProvider: reported outgoing call uuid=\(uuid.uuidString)")
+            completion(uuid, nil)
+        }
+    }
+
+    @objc public func reportConnected(uuid: UUID) {
+        provider.reportOutgoingCall(with: uuid, connectedAt: nil)
+        updateCallInfo(for: uuid) { $0.isAnswered = true }
+        GekidouLogger.shared.log(.info, "CallKitProvider: reportConnected uuid=\(uuid.uuidString)")
+    }
+
+    /// Replace the display name on an in-progress call. Used after the
+    /// ack-receipt round-trip resolves the human name for an IdLoaded push
+    /// (the original `reportIncomingCall` had only the channel/sender id).
+    @objc public func updateCallerName(uuid: UUID, name: String) {
+        guard !name.isEmpty else { return }
+        let update = CXCallUpdate()
+        update.localizedCallerName = name
+        provider.reportCall(with: uuid, updated: update)
+        GekidouLogger.shared.log(.info,
+            "CallKitProvider: updateCallerName uuid=\(uuid.uuidString)")
+    }
+
+    @objc public func reportEnded(uuid: UUID, reason: CXCallEndedReason) {
+        provider.reportCall(with: uuid, endedAt: nil, reason: reason)
+        clearCallInfo(for: uuid)
+        GekidouLogger.shared.log(.info,
+            "CallKitProvider: reportEnded uuid=\(uuid.uuidString) reason=\(reason.rawValue)")
+    }
+
+    @objc public func setMuted(uuid: UUID, muted: Bool, completion: @escaping (Error?) -> Void) {
+        // Mark this specific action so the delegate skips its echo. Tracking
+        // by action.uuid (not call uuid) ensures concurrent lock-screen
+        // taps for the same call still produce delegate events JS can react
+        // to — only this exact request gets silently consumed.
+        let action = CXSetMutedCallAction(call: uuid, muted: muted)
+        callsLock.lock()
+        jsOriginatedMuteActions[uuid, default: []].insert(action.uuid)
+        callsLock.unlock()
+        let transaction = CXTransaction(action: action)
+        controller.request(transaction) { [weak self] error in
+            if error != nil {
+                self?.consumeJSOriginatedMuteAction(callUUID: uuid, actionUUID: action.uuid)
+            }
+            completion(error)
+        }
+    }
+
+    /// Removes an action UUID from the per-call marker set and drops the
+    /// outer entry once empty. Returns whether the marker was present.
+    @discardableResult
+    private func consumeJSOriginatedMuteAction(callUUID: UUID, actionUUID: UUID) -> Bool {
+        callsLock.lock()
+        defer { callsLock.unlock() }
+        let removed = jsOriginatedMuteActions[callUUID]?.remove(actionUUID) != nil
+        if jsOriginatedMuteActions[callUUID]?.isEmpty == true {
+            jsOriginatedMuteActions.removeValue(forKey: callUUID)
+        }
+        return removed
+    }
+
+    // MARK: - CXProviderDelegate
+
+    public func providerDidReset(_ provider: CXProvider) {
+        callsLock.lock()
+        calls.removeAll()
+        jsOriginatedMuteActions.removeAll()
+        callsLock.unlock()
+        GekidouLogger.shared.log(.info, "CallKitProvider: providerDidReset")
+    }
+
+    public func provider(_ provider: CXProvider, perform action: CXAnswerCallAction) {
+        guard var info = callInfo(for: action.callUUID) else {
+            action.fail()
+            return
+        }
+        info.isAnswered = true
+        setCallInfo(info, for: action.callUUID)
+
+        bridge?.audioSession.configureForCall()
+        bridge?.send(event: .CallAnswered, body: ["uuid": action.callUUID.uuidString])
+        action.fulfill()
+    }
+
+    public func provider(_ provider: CXProvider, perform action: CXEndCallAction) {
+        let info = callInfo(for: action.callUUID)
+        let event: CallsBridge.Event = (info?.isAnswered == true) ? .CallEnded : .CallDeclined
+
+        bridge?.send(event: event, body: ["uuid": action.callUUID.uuidString])
+        clearCallInfo(for: action.callUUID)
+        action.fulfill()
+    }
+
+    public func provider(_ provider: CXProvider, perform action: CXSetMutedCallAction) {
+        let jsOriginated = consumeJSOriginatedMuteAction(callUUID: action.callUUID, actionUUID: action.uuid)
+        if !jsOriginated {
+            bridge?.send(event: .CallMuted, body: [
+                "uuid": action.callUUID.uuidString,
+                "muted": action.isMuted,
+            ])
+        }
+        action.fulfill()
+    }
+
+    public func provider(_ provider: CXProvider, perform action: CXStartCallAction) {
+        // For Phase 1 we don't need to do anything here — outbound calls go
+        // through reportOutgoingCall above which already requested the
+        // transaction. iOS still calls this delegate; just fulfill.
+        action.fulfill()
+    }
+
+    public func provider(_ provider: CXProvider, didActivate audioSession: AVAudioSession) {
+        bridge?.audioSession.activated(audioSession)
+    }
+
+    public func provider(_ provider: CXProvider, didDeactivate audioSession: AVAudioSession) {
+        bridge?.audioSession.deactivated(audioSession)
+    }
+
+    // MARK: - Call info bookkeeping
+
+    private func callInfo(for uuid: UUID) -> CallInfo? {
+        callsLock.lock()
+        defer { callsLock.unlock() }
+        return calls[uuid]
+    }
+
+    private func setCallInfo(_ info: CallInfo, for uuid: UUID) {
+        callsLock.lock()
+        calls[uuid] = info
+        callsLock.unlock()
+    }
+
+    private func updateCallInfo(for uuid: UUID, _ mutation: (inout CallInfo) -> Void) {
+        callsLock.lock()
+        if var info = calls[uuid] {
+            mutation(&info)
+            calls[uuid] = info
+        }
+        callsLock.unlock()
+    }
+
+    private func clearCallInfo(for uuid: UUID) {
+        callsLock.lock()
+        calls.removeValue(forKey: uuid)
+        jsOriginatedMuteActions.removeValue(forKey: uuid)
+        callsLock.unlock()
+    }
+
+    // MARK: - Display-name selection
+
+    /// Pick the best name we can show on the initial CXCallUpdate, before
+    /// the ack-receipt has had a chance to enrich the payload. The order
+    /// favors the most-specific identifier we have: channel > sender > a
+    /// localized fallback. Returning empty would make CallKit display the
+    /// raw handle (a user id) — terrible UX.
+    private static func bestInitialDisplayName(_ request: IncomingCallRequest) -> String {
+        if !request.channelName.isEmpty { return request.channelName }
+        if !request.callerName.isEmpty { return request.callerName }
+        return localizedIncomingCallPlaceholder()
+    }
+
+    /// Reads `mobile.ios.calls.incoming_call_placeholder` from the main app
+    /// bundle's Localizable.strings
+    private static func localizedIncomingCallPlaceholder() -> String {
+        let key = "mobile.ios.calls.incoming_call_placeholder"
+        let appName = (Bundle.main.object(forInfoDictionaryKey: "CFBundleDisplayName") as? String)
+            ?? (Bundle.main.object(forInfoDictionaryKey: "CFBundleName") as? String)
+            ?? "Mattermost"
+        let template = NSLocalizedString(key, bundle: .main, value: "\(appName) call", comment: "")
+        return template.replacingOccurrences(of: "{applicationName}", with: appName)
+    }
+
+    // MARK: - Bundled icon
+
+    private static func callKitIconTemplateData() -> Data? {
+        let frameworkBundle = Bundle(for: CallKitProvider.self)
+        guard let resourceURL = frameworkBundle.url(forResource: "MMCallsNativeResources", withExtension: "bundle"),
+              let resourceBundle = Bundle(url: resourceURL),
+              let image = UIImage(named: "MMCallKitIcon", in: resourceBundle, compatibleWith: nil) else {
+            GekidouLogger.shared.log(.warning, "CallKitProvider: MMCallKitIcon not found in resource bundle")
+            return nil
+        }
+        return image.pngData()
+    }
+}

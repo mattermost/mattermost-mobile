@@ -2,13 +2,13 @@
 // See LICENSE.txt for license information.
 
 import {NotificationSettingsScreen} from '@support/ui/screen';
-import {timeouts} from '@support/utils';
+import {isIos, tapNativeBackButton, timeouts} from '@support/utils';
 import {expect} from 'detox';
 
 class MentionNotificationSettingsScreen {
     testID = {
         mentionNotificationSettingsScreen: 'mention_notification_settings.screen',
-        backButton: 'screen.back.button',
+        backButton: 'navigation.header.back',
         scrollView: 'mention_notification_settings.scroll_view',
         caseSensitiveFirstNameOptionToggledOff: 'mention_notification_settings.case_sensitive_first_name.option.toggled.false.button',
         caseSensitiveFirstNameOptionToggledOn: 'mention_notification_settings.case_sensitive_first_name.option.toggled.true.button',
@@ -27,7 +27,14 @@ class MentionNotificationSettingsScreen {
     };
 
     mentionNotificationSettingsScreen = element(by.id(this.testID.mentionNotificationSettingsScreen));
-    backButton = element(by.id(this.testID.backButton));
+
+    // Native-stack back chevron via accessibility label.
+    get backButton(): Detox.NativeElement {
+        return isIos()
+            ? element(by.label('Back')).atIndex(0)
+            : element(by.label('Navigate up')).atIndex(0);
+    }
+
     scrollView = element(by.id(this.testID.scrollView));
     caseSensitiveFirstNameOptionToggledOff = element(by.id(this.testID.caseSensitiveFirstNameOptionToggledOff));
     caseSensitiveFirstNameOptionToggledOn = element(by.id(this.testID.caseSensitiveFirstNameOptionToggledOn));
@@ -58,8 +65,9 @@ class MentionNotificationSettingsScreen {
     };
 
     back = async () => {
-        await this.backButton.tap();
-        await expect(this.mentionNotificationSettingsScreen).not.toBeVisible();
+        // Native-stack back chevron.
+        await tapNativeBackButton();
+        await waitFor(this.mentionNotificationSettingsScreen).not.toBeVisible().withTimeout(timeouts.TEN_SEC);
     };
 
     getKeywordTriggerElement = async (keyword: string) => {

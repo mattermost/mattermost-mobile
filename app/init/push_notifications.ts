@@ -83,6 +83,9 @@ class PushNotificationsSingleton {
             await requestNotifications(['alert', 'sound', 'badge']);
         }
         Notifications.registerRemoteNotifications();
+
+        // Never call Notifications.registerPushKit() — PushKit is owned by
+        // @mattermost/calls-native; a second PKPushRegistry would break it.
     }
 
     createReplyCategory = () => {
@@ -97,12 +100,8 @@ class PushNotificationsSingleton {
     getServerUrlFromNotification = async (notification: NotificationWithData) => {
         const {payload} = notification;
 
-        if (!payload?.channel_id && (!payload?.server_url || !payload.server_id)) {
-            return payload?.server_url;
-        }
-
-        let serverUrl = payload.server_url;
-        if (!serverUrl && payload.server_id) {
+        let serverUrl = payload?.server_url;
+        if (!serverUrl && payload?.server_id) {
             serverUrl = await DatabaseManager.getServerUrlFromIdentifier(payload.server_id);
         }
 
@@ -259,12 +258,6 @@ class PushNotificationsSingleton {
         }
         const notification = convertToNotificationData(incoming, false);
 
-        // TEMP (device verification, remove before merge — MM-69124): grep MMLogs
-        // for "onNotificationReceivedBackground". A "processing" line followed by a
-        // "processed" line (no truncation between) means the DB work finished before
-        // completion, i.e. the fix held.
-        logDebug('onNotificationReceivedBackground: processing', notification.payload?.ack_id);
-
         // Wait until the notification is fully processed (including its DB
         // read/write) before signaling completion. iOS keeps the app alive
         // until the fetch completion handler is called; calling it early lets
@@ -274,9 +267,6 @@ class PushNotificationsSingleton {
         // including failures, for the same reason.
         try {
             await this.processNotification(notification);
-
-            // TEMP (device verification, remove before merge — MM-69124)
-            logDebug('onNotificationReceivedBackground: processed → completion(NEW_DATA)');
             completion(NotificationBackgroundFetchResult.NEW_DATA);
         } catch (error) {
             logWarning('onNotificationReceivedBackground', error);
@@ -320,7 +310,8 @@ class PushNotificationsSingleton {
 
             const token = `${prefix}-v2:${deviceToken}`;
             storeDeviceToken(token);
-            logDebug('Notification token registered', token);
+            const redactedDeviceId = deviceToken.substring(0, 16);
+            logDebug('Notification token registered', `${prefix}-v2:${redactedDeviceId}...`);
 
             // Store the device token in the default database
             this.requestNotificationReplyPermissions();

@@ -697,7 +697,7 @@ export async function updateUsersNoLongerVisible(serverUrl: string, prepareRecor
             }
         }
         if (models.length && !prepareRecordsOnly) {
-            operator.batchRecords(models, 'updateUsersNoLongerVisible');
+            await operator.batchRecords(models, 'updateUsersNoLongerVisible');
         }
         return {models};
     } catch (error) {

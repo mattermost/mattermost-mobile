@@ -142,6 +142,7 @@ const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
         },
         container: {
             flexGrow: 1,
+            gap: 8,
         },
         loadingContainer: {
             flex: 1,
@@ -158,7 +159,6 @@ const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
             paddingLeft: 16,
             justifyContent: 'center',
             height: 24,
-            marginHorizontal: 12,
         },
         sectionWrapper: {
             backgroundColor: theme.centerChannelBg,
@@ -183,7 +183,6 @@ type Props = {
     testID?: string;
     term?: string;
     tutorialWatched: boolean;
-    includeUserMargin?: boolean;
     location: AvailableScreens;
     customSection?: (profiles: UserProfile[]) => Array<SectionListData<UserProfile>>;
 }
@@ -201,7 +200,6 @@ export default function UserList({
     term,
     testID,
     tutorialWatched,
-    includeUserMargin,
     location,
     customSection,
 }: Props) {
@@ -270,10 +268,9 @@ export default function UserList({
                 testID={`${testID}.user_item`}
                 tutorialWatched={tutorialWatched}
                 user={item}
-                includeMargin={includeUserMargin}
             />
         );
-    }, [selectedIds, manageMode, handleSelectProfile, openProfile, showManageMode, testID, tutorialWatched, includeUserMargin]);
+    }, [selectedIds, manageMode, handleSelectProfile, openProfile, showManageMode, testID, tutorialWatched]);
 
     const renderLoading = useCallback(() => {
         if (!loading) {

@@ -1,13 +1,14 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React, {useEffect, useMemo, useRef, useState} from 'react';
-import {DeviceEventEmitter, FlatList, useWindowDimensions} from 'react-native';
+import React, {useCallback, useEffect, useMemo, useRef, useState} from 'react';
+import {DeviceEventEmitter, FlatList, useWindowDimensions, type LayoutChangeEvent} from 'react-native';
 import Animated, {useAnimatedStyle, useSharedValue, withTiming} from 'react-native-reanimated';
 import {SafeAreaView, type Edge} from 'react-native-safe-area-context';
 
 import {handleTeamChange} from '@actions/remote/team';
 import AgentsButton from '@agents/components/agents_button';
+import {ROW_HEIGHT} from '@components/channel_item/channel_item';
 import DraftsButton from '@components/drafts_buttton';
 import Loading from '@components/loading';
 import ThreadsButton from '@components/threads_button';
@@ -82,6 +83,7 @@ const CategoriesList = ({
     const isTeamLoading = useTeamsLoading(serverUrl);
     const tabletWidth = useSharedValue(isTablet ? getTabletWidth(moreThanOneTeam) : 0);
     const [activeScreen, setActiveScreen] = useState<ScreenType>(isTablet && lastChannelId ? lastChannelId : Screens.CHANNEL);
+    const [listHeight, setListHeight] = useState(0);
 
     const healedRef = useRef(false);
     useEffect(() => {
@@ -194,6 +196,14 @@ const CategoriesList = ({
         );
     }, [activeScreen, isTablet, lastChannelId, showPlaybooksButton]);
 
+    const onListLayout = useCallback((event: LayoutChangeEvent) => {
+        const {height} = event.nativeEvent.layout;
+        const items = [threadButtonComponent, draftsButtonComponent, agentsButtonComponent, playbooksButtonComponent].reduce((result, item) => {
+            return result + (Boolean(item) ? 1 : 0);
+        }, 0);
+        setListHeight(height - (items * ROW_HEIGHT));
+    }, [threadButtonComponent, draftsButtonComponent, agentsButtonComponent, playbooksButtonComponent]);
+
     const content = useMemo(() => {
         if (!hasChannels) {
             if (isTeamLoading) {
@@ -211,6 +221,7 @@ const CategoriesList = ({
             <Categories
                 key='categories'
                 isTablet={isTablet}
+                listHeight={listHeight}
             />,
         ];
 
@@ -225,10 +236,11 @@ const CategoriesList = ({
                     renderItem={({item}) => item}
                     nestedScrollEnabled={true}
                     style={styles.flex}
+                    onLayout={onListLayout}
                 />
             </SafeAreaView>
         );
-    }, [agentsButtonComponent, draftsButtonComponent, hasChannels, isTablet, isTeamLoading, playbooksButtonComponent, styles.flex, threadButtonComponent]);
+    }, [agentsButtonComponent, draftsButtonComponent, hasChannels, isTablet, isTeamLoading, listHeight, onListLayout, playbooksButtonComponent, styles.flex, threadButtonComponent]);
 
     return (
         <Animated.View style={[styles.container, tabletStyle]}>

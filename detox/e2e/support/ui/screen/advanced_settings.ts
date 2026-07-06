@@ -2,19 +2,25 @@
 // See LICENSE.txt for license information.
 
 import {SettingsScreen} from '@support/ui/screen';
-import {timeouts} from '@support/utils';
-import {expect} from 'detox';
+import {isIos, tapNativeBackButton, timeouts} from '@support/utils';
 
 class AdvancedSettingsScreen {
     testID = {
         advancedSettingsScreen: 'advanced_settings.screen',
-        backButton: 'screen.back.button',
+        backButton: 'navigation.header.back',
         scrollView: 'advanced_settings.scroll_view',
         deleteDataOption: 'advanced_settings.delete_data.option',
     };
 
     advancedSettingsScreen = element(by.id(this.testID.advancedSettingsScreen));
-    backButton = element(by.id(this.testID.backButton));
+
+    // Native-stack back chevron via accessibility label.
+    get backButton(): Detox.NativeElement {
+        return isIos()
+            ? element(by.label('Back')).atIndex(0)
+            : element(by.label('Navigate up')).atIndex(0);
+    }
+
     scrollView = element(by.id(this.testID.scrollView));
     deleteDataOption = element(by.id(this.testID.deleteDataOption));
 
@@ -32,8 +38,8 @@ class AdvancedSettingsScreen {
     };
 
     back = async () => {
-        await this.backButton.tap();
-        await expect(this.advancedSettingsScreen).not.toBeVisible();
+        await tapNativeBackButton();
+        await waitFor(this.advancedSettingsScreen).not.toBeVisible().withTimeout(timeouts.TEN_SEC);
     };
 }
 

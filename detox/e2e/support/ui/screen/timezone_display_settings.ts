@@ -2,13 +2,13 @@
 // See LICENSE.txt for license information.
 
 import {DisplaySettingsScreen} from '@support/ui/screen';
-import {timeouts} from '@support/utils';
+import {isIos, tapNativeBackButton, timeouts} from '@support/utils';
 import {expect} from 'detox';
 
 class TimezoneDisplaySettingsScreen {
     testID = {
         timezoneDisplaySettingsScreen: 'timezone_display_settings.screen',
-        backButton: 'screen.back.button',
+        backButton: 'navigation.header.back',
         scrollView: 'timezone_display_settings.scroll_view',
         automaticOptionToggledOff: 'timezone_display_settings.automatic.option.toggled.false.button',
         automaticOptionToggledOn: 'timezone_display_settings.automatic.option.toggled.true.button',
@@ -17,7 +17,14 @@ class TimezoneDisplaySettingsScreen {
     };
 
     timezoneDisplaySettingsScreen = element(by.id(this.testID.timezoneDisplaySettingsScreen));
-    backButton = element(by.id(this.testID.backButton));
+
+    // Native-stack back chevron via accessibility label.
+    get backButton(): Detox.NativeElement {
+        return isIos()
+            ? element(by.label('Back')).atIndex(0)
+            : element(by.label('Navigate up')).atIndex(0);
+    }
+
     scrollView = element(by.id(this.testID.scrollView));
     automaticOptionToggledOff = element(by.id(this.testID.automaticOptionToggledOff));
     automaticOptionToggledOn = element(by.id(this.testID.automaticOptionToggledOn));
@@ -38,8 +45,9 @@ class TimezoneDisplaySettingsScreen {
     };
 
     back = async () => {
-        await this.backButton.tap();
-        await expect(this.timezoneDisplaySettingsScreen).not.toBeVisible();
+        // Native-stack back chevron.
+        await tapNativeBackButton();
+        await waitFor(this.timezoneDisplaySettingsScreen).not.toBeVisible().withTimeout(timeouts.TEN_SEC);
     };
 
     toggleAutomaticOptionOn = async () => {

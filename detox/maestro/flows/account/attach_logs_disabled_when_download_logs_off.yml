@@ -1,0 +1,59 @@
+# MM-T67856_4: With AllowDownloadLogs disabled, Report a Problem skips the in-app screen.
+#
+# PRE-CONDITIONS:
+#   - Server SupportSettings.AllowDownloadLogs=false (patched in CI before this flow runs)
+#   - Logged-in test user on a licensed server
+#   - CI restores AllowDownloadLogs=true after this flow (exclude-tag + dedicated step)
+#
+# REQUIRED ENV VARS:
+#   - MAESTRO_APP_ID, TEST_USER_EMAIL, TEST_USER_PASSWORD, SITE_1_URL, ADMIN_TOKEN
+#
+# ASSERTIONS:
+#   - Tapping Report a Problem does not open the in-app report screen
+#   - Attach-app-logs toggle is never shown (screen is bypassed)
+#   - Mail composer or share sheet may appear and is dismissed via Back
+#
+# testIDs:
+#   - tab_bar.account.tab
+#   - account.settings.option
+#   - settings.report_problem.option
+#   - report_problem.screen
+#   - report_problem.enable_log_attachments
+tags:
+  - MM-T67856_4
+appId: ${MAESTRO_APP_ID}
+---
+- runFlow: ../../subflows/auth/login.yml
+
+# Navigate Settings > Report a Problem.
+- tapOn:
+    id: "tab_bar.account.tab"
+- extendedWaitUntil:
+    visible:
+      id: "account.settings.option"
+    timeout: 10000
+- tapOn:
+    id: "account.settings.option"
+- extendedWaitUntil:
+    visible:
+      id: "settings.report_problem.option"
+    timeout: 10000
+- tapOn:
+    id: "settings.report_problem.option"
+
+# Give the email composer / share sheet time to appear, then assert the
+# in-app screen DID NOT render. waitForAnimationToEnd settles any modal that
+# the mail-client invocation may animate in.
+- waitForAnimationToEnd:
+    timeout: 5000
+
+# Assertion: the in-app Report a Problem screen is not present, which means
+# the toggle is unreachable (the test's "hidden" condition).
+- assertNotVisible:
+    id: "report_problem.screen"
+- assertNotVisible:
+    id: "report_problem.enable_log_attachments"
+
+# Defensive cleanup: dismiss any modal/share-sheet/mail composer that may
+# have appeared so the next test starts on a clean screen.
+- back

@@ -13,13 +13,14 @@ on:
         type: string
 
 env:
-  INTUNE_ENABLED: 'true'
+  INTUNE_ENABLED: 'false'
 
 jobs:
   update-initial-status-ios:
     runs-on: ubuntu-22.04
     steps:
-      - uses: mattermost/actions/delivery/update-commit-status@main
+      - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
+      - uses: ./.github/actions/update-commit-status
         env:
           GITHUB_TOKEN: ${{ github.token }}
         with:
@@ -32,7 +33,8 @@ jobs:
   update-initial-status-android:
     runs-on: ubuntu-22.04
     steps:
-      - uses: mattermost/actions/delivery/update-commit-status@main
+      - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
+      - uses: ./.github/actions/update-commit-status
         env:
           GITHUB_TOKEN: ${{ github.token }}
         with:
@@ -48,7 +50,7 @@ jobs:
       - update-initial-status-ios
     steps:
       - name: Checkout Repository
-        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
 
       - name: Prepare iOS Build
         uses: ./.github/actions/prepare-ios-build
@@ -64,7 +66,7 @@ jobs:
         working-directory: ./fastlane
 
       - name: Upload iOS Simulator Build
-        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
           name: ios-build-simulator-${{ github.run_id }}
           path: Mattermost-simulator-x86_64.app.zip
@@ -84,7 +86,7 @@ jobs:
           rm -rf ~/.npm/_cacache
 
       - name: Checkout Repository
-        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
         with:
           ref: ${{ inputs.MOBILE_VERSION }}
 
@@ -100,7 +102,7 @@ jobs:
         run: sudo apt-get clean && sudo apt-get update && sudo apt-get install -y default-jdk
 
       - name: Cache Gradle dependencies
-        uses: actions/cache@v4
+        uses: actions/cache@27d5ce7f107fe9357f9df03efb73ab90386fccae # v5.0.5
         with:
           path: ~/.gradle/caches/modules-2/
           key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
@@ -114,10 +116,49 @@ jobs:
           npm run e2e:android-build
 
       - name: Upload Android Build
-        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
           name: android-build-files-${{ github.run_id }}
           path: "android/app/build/**/*"
+
+  build-android-apk-maestro:
+    runs-on: ubuntu-latest-8-cores
+    needs:
+      - update-initial-status-android
+    env:
+      ORG_GRADLE_PROJECT_jvmargs: -Xmx8g
+    steps:
+      - name: Prune Docker to free up space
+        run: docker system prune -af
+
+      - name: Remove npm Temporary Files
+        run: |
+          rm -rf ~/.npm/_cacache
+
+      - name: Checkout Repository
+        uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
+        with:
+          ref: ${{ inputs.MOBILE_VERSION }}
+
+      - name: Prepare Android Build
+        uses: ./.github/actions/prepare-android-build
+        env:
+          STORE_FILE: "${{ secrets.MM_MOBILE_STORE_FILE }}"
+          STORE_ALIAS: "${{ secrets.MM_MOBILE_STORE_ALIAS }}"
+          STORE_PASSWORD: "${{ secrets.MM_MOBILE_STORE_PASSWORD }}"
+          MATTERMOST_BUILD_GH_TOKEN: "${{ secrets.MATTERMOST_BUILD_GH_TOKEN }}"
+
+      - name: Install Dependencies
+        run: sudo apt-get clean && sudo apt-get update && sudo apt-get install -y default-jdk
+
+      - name: Build Maestro Android APK
+        uses: ./.github/actions/build-android-maestro-apk
+
+      - name: Upload Maestro Android Build
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: android-maestro-build-files-${{ github.run_id }}
+          path: android/app/build/outputs/apk/release/
         
   run-ios-tests-on-release:
     name: iOS Mobile Tests on Release
@@ -142,12 +183,38 @@ jobs:
       MOBILE_VERSION: ${{ github.ref }}
     secrets: inherit
 
+  run-maestro-ios-on-release:
+    name: Maestro iOS on Release
+    needs:
+      - build-ios-simulator
+    uses: ./.github/workflows/e2e-maestro-template.yml
+    with:
+      platform: ios
+      run-type: "RELEASE"
+      MOBILE_VERSION: ${{ github.ref }}
+      MM_TEST_SERVER_URL: ${{ vars.MM_TEST_SERVER_URL }}
+    secrets: inherit
+
+  run-maestro-android-on-release:
+    name: Maestro Android on Release
+    needs:
+      - build-android-apk-maestro
+    uses: ./.github/workflows/e2e-maestro-template.yml
+    with:
+      platform: android
+      run-type: "RELEASE"
+      MOBILE_VERSION: ${{ github.ref }}
+      MM_TEST_SERVER_URL: ${{ vars.MM_TEST_SERVER_URL }}
+      artifact_run_id: ${{ github.run_id }}
+    secrets: inherit
+
   update-final-status-ios:
     runs-on: ubuntu-22.04
     needs:
       - run-ios-tests-on-release
     steps:
-      - uses: mattermost/actions/delivery/update-commit-status@main
+      - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
+      - uses: ./.github/actions/update-commit-status
         env:
           GITHUB_TOKEN: ${{ github.token }}
         with:
@@ -163,7 +230,8 @@ jobs:
     needs:
       - run-android-tests-on-release
     steps:
-      - uses: mattermost/actions/delivery/update-commit-status@main
+      - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
+      - uses: ./.github/actions/update-commit-status
         env:
           GITHUB_TOKEN: ${{ github.token }}
         with:

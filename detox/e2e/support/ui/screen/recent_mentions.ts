@@ -9,7 +9,7 @@ import {
     HomeScreen,
     PostOptionsScreen,
 } from '@support/ui/screen';
-import {timeouts, wait, waitForElementToBeVisible} from '@support/utils';
+import {isAndroid, longPressWithRetry, timeouts, wait, waitForElementToBeVisible, waitForElementToExist} from '@support/utils';
 import {expect} from 'detox';
 
 class RecentMentionsScreen {
@@ -45,13 +45,33 @@ class RecentMentionsScreen {
     };
 
     toBeVisible = async () => {
-        await waitFor(this.recentMentionsScreen).toExist().withTimeout(timeouts.TEN_SEC);
+        const timeout = isAndroid() ? timeouts.TWENTY_SEC : timeouts.TEN_SEC;
+        await waitForElementToExist(this.recentMentionsScreen, timeout);
 
         return this.recentMentionsScreen;
     };
 
     recentMentionPostListToBeVisible = async () => {
-        await waitFor(this.recentMentionPostList).toBeVisible().withTimeout(timeouts.TEN_SEC);
+        const MAX_REFETCHES = 3;
+        /* eslint-disable no-await-in-loop -- sequential by design: each retry must
+           complete the back→open dance before the next visibility poll. */
+        for (let attempt = 1; attempt <= MAX_REFETCHES; attempt++) {
+            try {
+                await waitForElementToBeVisible(this.recentMentionPostList, timeouts.TEN_SEC);
+                return;
+            } catch (e) {
+                if (attempt === MAX_REFETCHES) {
+                    throw e;
+                }
+
+                // Force a fresh fetchRecentMentions by leaving + re-entering the tab.
+                await HomeScreen.channelListTab.tap();
+                await wait(timeouts.TWO_SEC);
+                await HomeScreen.mentionsTab.tap();
+                await this.toBeVisible();
+            }
+        }
+        /* eslint-enable no-await-in-loop */
     };
 
     open = async () => {
@@ -67,14 +87,15 @@ class RecentMentionsScreen {
         // Poll for the post to become visible without waiting for idle bridge
         await waitForElementToBeVisible(postListPostItem, timeouts.TEN_SEC);
 
-        // Dismiss keyboard by tapping on the post list (needed after posting a message)
-        const flatList = this.postList.getFlatList();
-        await flatList.scroll(100, 'down');
+        // Long-press the post's TouchableHighlight directly (always rendered).
+        // post_header.date_time is only rendered on non-consecutive posts —
+        // see app/components/post_list/post/post.tsx:315.
+        const longPressTarget = element(by.id(`${this.testID.recentMentionPostList}.${postId}`));
+        await waitForElementToBeVisible(longPressTarget, timeouts.TEN_SEC);
         await wait(timeouts.ONE_SEC);
 
-        // # Open post options
-        await postListPostItem.longPress(timeouts.TWO_SEC);
-        await PostOptionsScreen.toBeVisible();
+        // # Open post options (with retry — longPress can fail on Android during animations)
+        await longPressWithRetry(longPressTarget, PostOptionsScreen.postOptionsScreen);
         await wait(timeouts.TWO_SEC);
     };
 

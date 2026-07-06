@@ -1,0 +1,149 @@
+// Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
+// See LICENSE.txt for license information.
+
+/* eslint-disable no-console */
+
+import {Channel} from '../../detox/e2e/support/server_api/channel';
+import client from '../../detox/e2e/support/server_api/client';
+import {Plugin, CallsPlugin} from '../../detox/e2e/support/server_api/plugin';
+import {Setup} from '../../detox/e2e/support/server_api/setup';
+import {Team} from '../../detox/e2e/support/server_api/team';
+import {User} from '../../detox/e2e/support/server_api/user';
+import {siteOneUrl} from '../../detox/e2e/support/test_config';
+import {writeMaestroEnvFile} from '../lib/env';
+
+const TWO_USERS = process.argv.includes('--two-users');
+
+async function ensureCallsDefaultEnabled(): Promise<void> {
+    try {
+        const {data} = await client.put(`${siteOneUrl}/api/v4/config/patch`, {
+            PluginSettings: {Plugins: {'com.mattermost.calls': {DefaultEnabled: true}}},
+        });
+        const defaultEnabled = data?.PluginSettings?.Plugins?.['com.mattermost.calls']?.DefaultEnabled;
+        if (defaultEnabled) {
+            console.log('[calls_seed] Calls DefaultEnabled set to true');
+        } else {
+            console.warn('[calls_seed] WARNING: Could not confirm DefaultEnabled=true');
+        }
+    } catch (err: any) {
+        console.warn(`[calls_seed] WARNING: Could not set DefaultEnabled: ${err.message}`);
+    }
+}
+
+async function ensureCallsPluginEnabled(): Promise<void> {
+    const {id} = CallsPlugin;
+
+    const status = await Plugin.apiGetPluginStatus(siteOneUrl, id);
+
+    if (status.isActive) {
+        console.log(`[calls_seed] Calls plugin already active (v${status.plugin?.version})`);
+        return;
+    }
+
+    if (status.isInstalled) {
+        console.log(`[calls_seed] Calls plugin installed but inactive (v${status.plugin?.version}), enabling...`);
+        await Plugin.apiEnablePluginById(siteOneUrl, id);
+    } else {
+        // Fetch latest release from GitHub so we don't chase a stale pinned URL
+        const latestVersion = await Plugin.apiGetLatestPluginVersion('mattermost/mattermost-plugin-calls');
+        const downloadUrl = `https://github.com/mattermost/mattermost-plugin-calls/releases/download/v${latestVersion}/com.mattermost.calls-${latestVersion}.tar.gz`;
+        console.log(`[calls_seed] Installing Calls plugin v${latestVersion} from ${downloadUrl}...`);
+
+        const installResult = await Plugin.apiInstallPluginFromUrl(siteOneUrl, downloadUrl, true);
+        if (installResult.error) {
+            console.warn(`[calls_seed] WARNING: Install failed (${JSON.stringify(installResult.error)}), trying to enable anyway...`);
+        } else {
+            console.log('[calls_seed] Calls plugin installed');
+        }
+
+        await Plugin.apiEnablePluginById(siteOneUrl, id);
+    }
+
+    // Brief settle time before verifying
+    await new Promise((resolve) => setTimeout(resolve, 2000));
+
+    const verify = await Plugin.apiGetPluginStatus(siteOneUrl, id);
+    if (verify.isActive) {
+        console.log(`[calls_seed] Calls plugin active (v${verify.plugin?.version})`);
+    } else {
+        console.warn('[calls_seed] WARNING: Calls plugin did not become active — flows requiring Calls will fail');
+    }
+}
+
+// Enable calls in a specific channel.
+// Required when the Calls plugin has DefaultEnabled=false (common on cloud servers).
+// Mirrors the mobile app's enableChannelCalls() which posts to /plugins/com.mattermost.calls/{channelId}.
+async function enableCallsInChannel(channelId: string): Promise<void> {
+    try {
+        await client.post(`${siteOneUrl}/plugins/${CallsPlugin.id}/${channelId}`, {enabled: true});
+        console.log('[calls_seed] Calls enabled in channel');
+    } catch (err: any) {
+        console.warn(`[calls_seed] WARNING: Could not enable calls in channel: ${err.message}`);
+    }
+}
+
+async function main(): Promise<void> {
+    console.log(`[calls_seed] Using server: ${siteOneUrl}`);
+
+    // Log in as admin so the shared axios cookie jar has an authenticated session.
+    // All Detox server API calls use this cookie-based client — without login they return 401.
+    const loginResult = await User.apiAdminLogin(siteOneUrl);
+    if (loginResult.error) {
+        throw new Error(`Admin login failed: ${JSON.stringify(loginResult.error)}`);
+    }
+    console.log('[calls_seed] Admin session obtained');
+
+    await ensureCallsPluginEnabled();
+    await ensureCallsDefaultEnabled();
+
+    // Create team, channel, and first user via Detox's apiInit
+    const {channel, team, user: userA} = await Setup.apiInit(siteOneUrl, {
+        teamOptions: {type: 'O', prefix: 'calls'},
+        channelOptions: {type: 'O', prefix: 'calls'},
+        userOptions: {prefix: 'calls'},
+    });
+
+    console.log(`[calls_seed] Created team: ${team.name}`);
+    console.log(`[calls_seed] Created channel: ${channel.name}`);
+    await enableCallsInChannel(channel.id);
+    console.log(`[calls_seed] Created user: ${userA.username} (id: ${userA.id})`);
+
+    const envVars: Record<string, string> = {
+        SITE_1_URL: siteOneUrl,
+        TEST_TEAM_NAME: team.name,
+        TEST_TEAM_ID: team.id,
+        TEST_CHANNEL_NAME: channel.name,
+        TEST_CHANNEL_ID: channel.id,
+    };
+
+    if (TWO_USERS) {
+        const userBResult = await User.apiCreateUser(siteOneUrl, {prefix: 'calls'});
+        if (userBResult.error) {
+            throw new Error(`Failed to create user B: ${JSON.stringify(userBResult.error)}`);
+        }
+        const userB = userBResult.user;
+        console.log(`[calls_seed] Created user B: ${userB.username} (id: ${userB.id})`);
+
+        await Team.apiAddUserToTeam(siteOneUrl, userB.id, team.id);
+        await Channel.apiAddUserToChannel(siteOneUrl, userB.id, channel.id);
+
+        envVars.USER_A_EMAIL = userA.email;
+        envVars.USER_A_PASSWORD = userA.newUser.password;
+        envVars.USER_A_ID = userA.id;
+        envVars.USER_B_EMAIL = userB.email;
+        envVars.USER_B_PASSWORD = userB.newUser.password;
+        envVars.USER_B_ID = userB.id;
+    } else {
+        envVars.TEST_USER_EMAIL = userA.email;
+        envVars.TEST_USER_PASSWORD = userA.newUser.password;
+        envVars.TEST_USER_ID = userA.id;
+    }
+
+    writeMaestroEnvFile(envVars, 'detox/maestro/fixtures/calls_seed.ts');
+    console.log('[calls_seed] Done.');
+}
+
+main().catch((err: Error) => {
+    console.error('[calls_seed] Fatal error:', err.message);
+    process.exit(1);
+});

@@ -9,11 +9,7 @@ import InCallManager from 'react-native-incall-manager';
 import {mediaDevices, MediaStream, MediaStreamTrack, registerGlobals, RTCSessionDescription} from 'react-native-webrtc';
 
 import {setPreferredAudioRoute, setSpeakerphoneOn} from '@calls/actions/calls';
-import {
-    foregroundServiceStart,
-    foregroundServiceStop,
-    foregroundServiceSetup,
-} from '@calls/connection/foreground_service';
+import {foregroundServiceStart, foregroundServiceStop} from '@calls/connection/foreground_service';
 import {processMeanOpinionScore, setAudioDeviceInfo} from '@calls/state';
 import {AudioDevice, type AudioDeviceInfo, type AudioDeviceInfoRaw, type CallsConnection} from '@calls/types/calls';
 import {getICEServersConfigs} from '@calls/utils';
@@ -26,16 +22,12 @@ import {logDebug, logError, logInfo, logWarning} from '@utils/log';
 import {WebSocketClient, wsReconnectionTimeoutErr} from './websocket_client';
 
 import type {EmojiData} from '@mattermost/calls/lib/types';
+import type {IntlShape} from 'react-intl';
 
 const peerConnectTimeout = 5000;
 const rtcMonitorInterval = 10000;
 
 const InCallManagerEmitter = new NativeEventEmitter(NativeModules.InCallManager);
-
-// Setup the foreground service channel
-if (Platform.OS === 'android') {
-    foregroundServiceSetup();
-}
 
 export async function newConnection(
     serverUrl: string,
@@ -43,6 +35,7 @@ export async function newConnection(
     closeCb: (err?: Error) => void,
     setScreenShareURL: (url: string) => void,
     hasMicPermission: boolean,
+    intl: IntlShape,
     title?: string,
     rootId?: string,
 ) {
@@ -54,6 +47,11 @@ export async function newConnection(
     let onCallEnd: EmitterSubscription | null = null;
     let audioDeviceChanged: EmitterSubscription | null = null;
     let wiredHeadsetEvent: EmitterSubscription | null = null;
+
+    // Resolver for waitForPeerConnection. Set before peer exists;
+    // called from inside ws.on('join') once peer emits 'connect'.
+    let onPeerConnected: ((sessionId: string) => void) | null = null;
+
     const streams: MediaStream[] = [];
     let rtcMonitor: RTCMonitor | null = null;
     const logger = {
@@ -105,10 +103,46 @@ export async function newConnection(
         }
     }
 
+    // audio device changed listener is added before InCallManager.start() to listen for the first audio device change event.
+    let btInitialized = false;
+    let speakerInitialized = false;
+    if (Platform.OS === 'android') {
+        audioDeviceChanged = DeviceEventEmitter.addListener('onAudioDeviceChanged', (data: AudioDeviceInfoRaw) => {
+            const info: AudioDeviceInfo = {
+                availableAudioDeviceList: JSON.parse(data.availableAudioDeviceList),
+                selectedAudioDevice: data.selectedAudioDevice,
+            };
+            setAudioDeviceInfo(info);
+            logDebug('calls: AudioDeviceChanged, info:', info);
+
+            // Auto switch to bluetooth the first time we connect to bluetooth, but not after.
+            if (!btInitialized) {
+                if (info.availableAudioDeviceList.includes(AudioDevice.Bluetooth)) {
+                    setPreferredAudioRoute(AudioDevice.Bluetooth);
+                    btInitialized = true;
+                } else if (!speakerInitialized) {
+                    // If we don't have bluetooth available, default to speakerphone on.
+                    setPreferredAudioRoute(AudioDevice.Speakerphone);
+                    speakerInitialized = true;
+                }
+            }
+        });
+    }
+
     const ws = new WebSocketClient(serverUrl, client.getWebSocketUrl(), credentials?.token);
 
-    // Throws an error, to be caught by caller.
-    await ws.initialize();
+    InCallManager.start();
+    InCallManager.stopProximitySensor();
+
+    try {
+        await ws.initialize();
+    } catch (err) {
+        InCallManager.stop();
+        audioDeviceChanged?.remove();
+
+        // Rethrows the error, to be caught by the caller.
+        throw err;
+    }
 
     if (hasMicPermission) {
         initializeVoiceTrack();
@@ -307,7 +341,6 @@ export async function newConnection(
             });
         } else {
             logDebug('calls: ws open, sending join msg');
-
             ws.send('join', {
                 channelID,
                 title,
@@ -330,36 +363,9 @@ export async function newConnection(
             }
         }
 
-        InCallManager.start();
-        InCallManager.stopProximitySensor();
-
-        let btInitialized = false;
-        let speakerInitialized = false;
-
         if (Platform.OS === 'android') {
-            audioDeviceChanged = DeviceEventEmitter.addListener('onAudioDeviceChanged', (data: AudioDeviceInfoRaw) => {
-                const info: AudioDeviceInfo = {
-                    availableAudioDeviceList: JSON.parse(data.availableAudioDeviceList),
-                    selectedAudioDevice: data.selectedAudioDevice,
-                };
-                setAudioDeviceInfo(info);
-                logDebug('calls: AudioDeviceChanged, info:', info);
-
-                // Auto switch to bluetooth the first time we connect to bluetooth, but not after.
-                if (!btInitialized) {
-                    if (info.availableAudioDeviceList.includes(AudioDevice.Bluetooth)) {
-                        setPreferredAudioRoute(AudioDevice.Bluetooth);
-                        btInitialized = true;
-                    } else if (!speakerInitialized) {
-                        // If we don't have bluetooth available, default to speakerphone on.
-                        setPreferredAudioRoute(AudioDevice.Speakerphone);
-                        speakerInitialized = true;
-                    }
-                }
-            });
-
             // To allow us to use microphone in the background
-            await foregroundServiceStart();
+            foregroundServiceStart(intl);
         }
 
         // We default to speakerphone, but not if the WiredHeadset is plugged in.
@@ -445,6 +451,14 @@ export async function newConnection(
                 disconnect();
             }
         });
+
+        peer.once('connect', () => {
+            if (onPeerConnected) {
+                rtcMonitor?.start();
+                onPeerConnected(ws.sessionID);
+                onPeerConnected = null;
+            }
+        });
     });
 
     ws.on('message', ({data}: { data: string }) => {
@@ -458,23 +472,15 @@ export async function newConnection(
     });
 
     const waitForPeerConnection = () => {
-        const waitForReadyImpl = (callback: (sessionId: string) => void, fail: (reason: string) => void, timeout: number) => {
-            if (timeout <= 0) {
-                fail('timed out waiting for peer connection');
-                return;
-            }
-            setTimeout(() => {
-                if (peer?.connected) {
-                    rtcMonitor?.start();
-                    callback(ws.sessionID);
-                } else {
-                    waitForReadyImpl(callback, fail, timeout - 200);
-                }
-            }, 200);
-        };
-
         return new Promise<string>((resolve, reject) => {
-            waitForReadyImpl(resolve, reject, peerConnectTimeout);
+            onPeerConnected = resolve;
+
+            setTimeout(() => {
+                if (onPeerConnected) {
+                    onPeerConnected = null;
+                    reject(new Error('timed out waiting for peer connection'));
+                }
+            }, peerConnectTimeout);
         });
     };
 

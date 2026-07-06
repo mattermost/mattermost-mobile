@@ -7,6 +7,7 @@ import InCallManager from 'react-native-incall-manager';
 
 import {updateThreadFollowing} from '@actions/remote/thread';
 import {needsRecordingAlert} from '@calls/alerts';
+import {endNativeCall} from '@calls/native_call';
 import {
     getCallsConfig,
     getCallsState,
@@ -49,6 +50,17 @@ import {logDebug, logError} from '@utils/log';
 import type {CallJobState, LiveCaptionData, UserReactionData} from '@mattermost/calls/lib/types';
 
 export const setCalls = async (serverUrl: string, myUserId: string, calls: Dictionary<Call>, enabled: Dictionary<boolean>) => {
+    // Reconcile native overlays: any previously-tracked call that's no longer
+    // in the authoritative server snapshot has ended (typically because we
+    // missed its call_end event while the WS was disconnected). End the
+    // CallKit overlay so the user isn't stuck on a phantom ringing screen.
+    const previousCalls = getCallsState(serverUrl).calls;
+    for (const channelId of Object.keys(previousCalls)) {
+        if (!calls[channelId]) {
+            endNativeCall(serverUrl, channelId, 'remoteEnded');
+        }
+    }
+
     const channelsWithCalls = Object.keys(calls).reduce(
         (accum, next) => {
             accum[next] = true;
@@ -152,7 +164,7 @@ export const processIncomingCalls = async (serverUrl: string, calls: Call[], kee
     setIncomingCalls({...getIncomingCalls(), incomingCalls: newIncoming});
 };
 
-const getChannelIdFromCallId = (serverUrl: string, callId: string) => {
+export const getChannelIdFromCallId = (serverUrl: string, callId: string) => {
     const callsState = getCallsState(serverUrl);
     for (const call of Object.values(callsState.calls)) {
         if (call.id === callId) {
@@ -395,6 +407,7 @@ export const userLeftCall = (serverUrl: string, channelId: string, sessionId: st
 
         const callId = callsState.calls[channelId].id;
         removeIncomingCall(serverUrl, callId, channelId);
+        endNativeCall(serverUrl, channelId, 'remoteEnded');
 
         const channelsWithCalls = getChannelsWithCalls(serverUrl);
         const nextChannelsWithCalls = {...channelsWithCalls};

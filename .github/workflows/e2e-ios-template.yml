@@ -2,6 +2,23 @@ name: Detox iOS E2E Tests Template
 
 on:
   workflow_call:
+    secrets:
+      MM_MOBILE_E2E_ADMIN_EMAIL:
+        required: false
+      MM_MOBILE_E2E_ADMIN_USERNAME:
+        required: false
+      MM_MOBILE_E2E_ADMIN_PASSWORD:
+        required: false
+      MM_MOBILE_E2E_ZEPHYR_API_KEY:
+        required: false
+      MM_MOBILE_E2E_TEST_CYCLE_LINK_PREFIX:
+        required: false
+      MM_MOBILE_E2E_WEBHOOK_URL:
+        required: false
+      MM_MOBILE_DETOX_AWS_ACCESS_KEY_ID:
+        required: false
+      MM_MOBILE_DETOX_AWS_SECRET_ACCESS_KEY:
+        required: false
     inputs:
       MM_TEST_SERVER_URL:
         description: "The test server URL (SITE_1)"
@@ -26,7 +43,7 @@ on:
       MOBILE_VERSION:
         description: "The mobile version to test"
         required: false
-        default: ${{ github.head_ref || github.ref }}
+        default: ""
         type: string
       run-type:
         type: string
@@ -40,8 +57,8 @@ on:
       record_tests_in_zephyr:
         description: "Record test results in Zephyr, typically for nightly and release runs"
         required: false
-        type: string
-        default: 'false'
+        type: boolean
+        default: false
       ios_device_name:
         description: "iPhone simulator name"
         required: false
@@ -57,6 +74,26 @@ on:
         required: false
         type: boolean
         default: false
+      search_path:
+        description: "Path to search for test specs (use for smoke test subset)"
+        required: false
+        type: string
+        default: "detox/e2e/test"
+      parallelism:
+        description: "Number of parallel test shards"
+        required: false
+        type: string
+        default: "20"
+      detox_config:
+        description: "Detox configuration name to use (e.g. ios.sim.debug, ios.ipad.debug)"
+        required: false
+        type: string
+        default: "ios.sim.debug"
+      artifact_run_id:
+        description: "Run ID of the workflow that uploaded ios-build-simulator-* (defaults to caller run)"
+        required: false
+        type: string
+        default: ""
     outputs:
       STATUS:
         value: ${{ jobs.generate-report.outputs.STATUS }}
@@ -64,12 +101,22 @@ on:
         value: ${{ jobs.generate-report.outputs.TARGET_URL }}
       FAILURES:
         value: ${{ jobs.generate-report.outputs.FAILURES }}
+      PASSES:
+        value: ${{ jobs.generate-report.outputs.PASSES }}
+      TOTAL:
+        value: ${{ jobs.generate-report.outputs.TOTAL }}
+      SKIPPED:
+        value: ${{ jobs.generate-report.outputs.SKIPPED }}
+      ERRORS:
+        value: ${{ jobs.generate-report.outputs.ERRORS }}
+      PERCENTAGE:
+        value: ${{ jobs.generate-report.outputs.PERCENTAGE }}
 
 env:
   AWS_REGION: "us-east-1"
   ADMIN_EMAIL: ${{ secrets.MM_MOBILE_E2E_ADMIN_EMAIL }}
-  ADMIN_USERNAME: ${{ secrets.MM_MOBILE_E2E_ADMIN_USERNAME }}
-  ADMIN_PASSWORD: ${{ secrets.MM_MOBILE_E2E_ADMIN_PASSWORD }}
+  ADMIN_USERNAME: ${{ inputs.MM_TEST_USER_NAME || secrets.MM_MOBILE_E2E_ADMIN_USERNAME }}
+  ADMIN_PASSWORD: ${{ inputs.MM_TEST_PASSWORD || secrets.MM_MOBILE_E2E_ADMIN_PASSWORD }}
   BRANCH: ${{ github.event_name == 'pull_request' && github.head_ref || github.ref_name }}
   COMMIT_HASH: ${{ github.sha }}
   DEVICE_NAME: ${{ inputs.ios_device_name }}
@@ -90,6 +137,7 @@ env:
   FAILURE_MESSAGE: "Something has failed"
   IOS: "true"
   RUNNING_E2E: "true"
+  ARTIFACT_RUN_ID: ${{ inputs.artifact_run_id || github.run_id }}
 
 jobs:
   generate-specs:
@@ -102,7 +150,7 @@ jobs:
       workflow_hash: ${{ steps.resolve-device.outputs.WORKFLOW_HASH }}
     steps:
       - name: Checkout Repository
-        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
         with:
           ref: ${{ inputs.MOBILE_VERSION }}
 
@@ -123,13 +171,17 @@ jobs:
         id: generate-specs
         uses: ./.github/actions/generate-specs
         with:
-          parallelism: 10
-          search_path: detox/e2e/test
+          parallelism: ${{ inputs.parallelism }}
+          search_path: ${{ inputs.search_path }}
           device_name: ${{ env.DEVICE_NAME }}
           device_os_version: ${{ env.DEVICE_OS_VERSION }}
 
   e2e-ios:
     name: machine-${{ matrix.runId }}-os-${{ matrix.deviceOsVersion }}
+    # Temporarily reverted to macos-15 due to Metro stabilization issues on macos-26.
+    # macos-26 ships the iOS 26.2 runtime pre-installed, avoiding a ~10min
+    # LaunchServicesMigrator + runtime install on every shard, but has timing issues.
+    # TODO: Investigate macos-26 Metro/Detox compatibility and re-enable if resolved.
     runs-on: macos-15
     continue-on-error: true
     timeout-minutes: ${{ inputs.low_bandwidth_mode && 240 || 180 }}
@@ -142,22 +194,37 @@ jobs:
       matrix: ${{ fromJSON(needs.generate-specs.outputs.specs) }}
     steps:
       - name: Checkout Repository
-        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
         with:
           ref: ${{ inputs.MOBILE_VERSION }}
 
       - name: ci/prepare-node-deps
         uses: ./.github/actions/prepare-node-deps
 
+      - name: Cache Homebrew packages
+        uses: actions/cache@27d5ce7f107fe9357f9df03efb73ab90386fccae # v5.0.5
+        with:
+          path: |
+            ~/Library/Caches/Homebrew
+            /opt/homebrew/Cellar/applesimutils
+          key: ${{ runner.os }}-${{ runner.arch }}-brew-applesimutils-v1
+          restore-keys: ${{ runner.os }}-${{ runner.arch }}-brew-applesimutils-
+
       - name: Install Homebrew Dependencies
         run: |
+          brew trust wix/brew 2>/dev/null || true
           brew tap wix/brew
-          brew install applesimutils
+          brew install applesimutils || true
+          # Cache restores Cellar without /opt/homebrew/bin symlinks — link the tap formula explicitly.
+          brew link --overwrite --force wix/brew/applesimutils 2>/dev/null \
+            || brew link --overwrite applesimutils
 
       - name: Download iOS Simulator Build
-        uses: actions/download-artifact@c850b930e6ba138125429b7e5c93fc707a7f8427 # v4.1.4
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
         with:
-          name: ios-build-simulator-${{ github.run_id }}
+          name: ios-build-simulator-${{ env.ARTIFACT_RUN_ID }}
+          run-id: ${{ env.ARTIFACT_RUN_ID }}
+          github-token: ${{ github.token }}
           path: mobile-artifacts
 
       - name: Unzip iOS Simulator Build
@@ -178,8 +245,30 @@ jobs:
           upload_speed: "3300"
           latency: "500"
 
+      - name: Cache detox node_modules
+        uses: actions/cache@27d5ce7f107fe9357f9df03efb73ab90386fccae # v5.0.5
+        with:
+          path: detox/node_modules
+          key: ${{ runner.os }}-detox-deps-${{ hashFiles('detox/package-lock.json') }}
+          restore-keys: ${{ runner.os }}-detox-deps-
+
       - name: Install Detox Dependencies
         run: cd detox && npm i
+
+      - name: Get Xcode Version
+        id: xcode-version
+        run: echo "version=$(xcodebuild -version | head -1 | sed 's/Xcode //')" >> "$GITHUB_OUTPUT"
+
+      - name: Cache Detox Framework
+        id: detox-framework-cache
+        uses: actions/cache@27d5ce7f107fe9357f9df03efb73ab90386fccae # v5.0.5
+        with:
+          path: ~/Library/Detox/ios
+          key: ${{ runner.os }}-${{ runner.arch }}-detox-framework-${{ hashFiles('detox/package-lock.json') }}-xcode-${{ steps.xcode-version.outputs.version }}
+
+      - name: Build Detox Framework Cache
+        if: steps.detox-framework-cache.outputs.cache-hit != 'true'
+        run: cd detox && npx detox build-framework-cache
 
       - name: Pre-boot iOS Simulator
         run: |
@@ -224,7 +313,11 @@ jobs:
           # Shut down to apply password autofill restrictions
           echo "Shutting down to apply password autofill restrictions..."
           xcrun simctl shutdown "$SIMULATOR_ID"
-          sleep 3
+          for i in 1 2 3 4 5 6; do
+            state=$(xcrun simctl list devices | grep "$SIMULATOR_ID" | sed -E 's/.*\(([^)]+)\)$/\1/')
+            if [ "$state" = "Shutdown" ]; then break; fi
+            sleep 0.5
+          done
 
           echo "Disabling password autofill (simulator is shut down)"
 
@@ -249,11 +342,147 @@ jobs:
           # Wait for boot to complete
           xcrun simctl bootstatus "$SIMULATOR_ID"
 
+          # Suppress the "Save Password?" credential-save prompt on iOS simulators.
+          #
+          # Architecture (iOS 26.x / iOS 18+):
+          #   The "Save Password?" modal is shown by SharedWebCredentialViewService,
+          #   a UIProcess launched on-demand by SpringBoard — NOT a persistent launchd
+          #   service. There is no pre-existing launchd service to kill before login.
+          #   (com.apple.PasswordsCredentialProvider was removed in iOS 18+.)
+          #
+          # Strategy — two layers:
+          # 1. Best-effort defaults writes: seed the Passwords.app and springboard
+          #    defaults domains so that if/when the app reads them it sees AutoFill=NO.
+          #    Keys are silently ignored if the domain or key name doesn't match the
+          #    running iOS version, so this is best-effort only.
+          # 2. Programmatic dismissal (primary): dismissSystemDialogIfVisible() in
+          #    the test login flow taps "Not Now" when the dialog appears, then does
+          #    a sendToHome+launchApp cycle to clear the _alertControllerDimming
+          #    overlay — this is the only reliable cross-version approach.
+          echo "Seeding Passwords.app defaults to suppress credential-save prompt..."
+          xcrun simctl spawn "${SIMULATOR_ID}" defaults write com.apple.Passwords AutoFill -bool NO 2>/dev/null || true
+          xcrun simctl spawn "${SIMULATOR_ID}" defaults write com.apple.Passwords AutoSave -bool NO 2>/dev/null || true
+          xcrun simctl spawn "${SIMULATOR_ID}" defaults write com.apple.Passwords credentialSaveNotificationsEnabled -bool NO 2>/dev/null || true
+          xcrun simctl spawn "${SIMULATOR_ID}" defaults write com.apple.springboard AutoFillPasswords -bool NO 2>/dev/null || true
+          echo "Passwords defaults seeded (keys are best-effort; dialog is also handled programmatically)"
+
+          # Diagnostic: list running password-related launchd services for CI log visibility.
+          # Note: com.apple.PasswordsCredentialProvider does NOT exist on iOS 26.x —
+          # the dialog is shown by the on-demand SharedWebCredentialViewService UIProcess.
+          echo "Password-related launchd services (diagnostic only):"
+          xcrun simctl spawn "${SIMULATOR_ID}" launchctl list 2>/dev/null | grep -i "password\|credential\|SharedWebCred" || echo "  (none found)"
+
+          # Install the app now while the simulator is fully booted.
+          # reinstallApp: false in .detoxrc.json means Detox never installs the app,
+          # and launchApp({newInstance: true}) only launches — it does not install.
+          # simctl install here is the only place the app binary enters the simulator.
+          APP_PATH=$(ls -d mobile-artifacts/*.app 2>/dev/null | head -1)
+          if [ -z "$APP_PATH" ]; then
+            echo "❌ Error: No .app bundle found in mobile-artifacts/"
+            ls -la mobile-artifacts/
+            exit 1
+          fi
+          echo "Installing $APP_PATH in simulator $SIMULATOR_ID..."
+          xcrun simctl install "$SIMULATOR_ID" "$APP_PATH"
+          echo "✅ App installed: $APP_PATH"
+
+          # Pre-grant app permissions so Detox never calls `simctl privacy` at runtime.
+          # device.launchApp({permissions}) runs one `simctl privacy` command per key
+          # synchronously before simctl launch. On 3-core macOS-15 runners with iOS 26.x,
+          # this takes 6–9s per permission × 4 keys = 24–36s of overhead on EVERY test
+          # file's beforeAll. Under VM neighbour CPU contention this can reach 40–50s,
+          # pushing the total launch budget past the 90s cap and causing ~9/20 shards to
+          # time out. Permissions granted here persist through clearIOSAppData() (which only
+          # clears the data container, not privacy settings), so they never need re-applying.
+          #
+          # NOTE: Only `grant notifications` is applied here. The `deny camera/medialibrary/
+          # photos` commands were removed because on iOS 26.x:
+          #   - `deny medialibrary` returns "Unknown action 'deny'" (unsupported action)
+          #   - `deny camera` throws NSPOSIXErrorDomain code=1 on freshly installed apps
+          # Both errors corrupt the simulator's TCC database, preventing Detox's WebSocket
+          # from ever completing its handshake — causing ALL tests to fail with
+          # "[launch attempt 2] timed out after 90s".
+          # The app's Info.plist does not request camera/photos/medialibrary access at
+          # startup, so no denial is needed to suppress permission dialogs.
+          echo "Pre-granting app permissions..."
+          xcrun simctl privacy "$SIMULATOR_ID" grant notifications com.mattermost.rnbeta || true
+          echo "✅ Permissions pre-granted"
+
+          # Pre-warm: launch the app once to create its data container and establish a
+          # clean SpringBoard registration. A fresh simctl install creates a
+          # "pending-install" record in launchd; without a launch→kill cycle, the first
+          # Detox launchApp call hangs waiting for that record to settle.
+          # The app will crash immediately without Metro — that is expected and fine;
+          # launchd creates the data container before the JS engine starts.
+          #
+          # Both simctl launch and simctl terminate can hang on iOS 26.x — the same bug
+          # we work around in setup.ts. Protect each command:
+          #   - simctl launch: backgrounded with a hard sleep+kill timeout.
+          #   - kill: use simctl spawn launchctl to kill inside the simulator's launchd
+          #     namespace instead of simctl terminate. launchd then sees the SIGCHLD,
+          #     cleans up the service record, and leaves no stale state.
+          echo "Pre-warming app to create data container..."
+
+          # Pre-warm function: launch app briefly to create its data container.
+          # iPad simulators on iOS 26.x can take 10-15s to fully register the app.
+          prewarm_app() {
+            local attempt=$1
+            local sleep_time=$2
+            echo "Pre-warm attempt $attempt (waiting ${sleep_time}s)..."
+            xcrun simctl launch "$SIMULATOR_ID" com.mattermost.rnbeta 2>/dev/null &
+            local LAUNCH_PID=$!
+            sleep "$sleep_time"
+            kill "$LAUNCH_PID" 2>/dev/null || true
+            wait "$LAUNCH_PID" 2>/dev/null || true
+
+            # Kill via launchd (reliable — simctl terminate can hang on iOS 26.x)
+            local APP_PID
+            APP_PID=$(xcrun simctl spawn "$SIMULATOR_ID" launchctl list 2>/dev/null | \
+              grep "com.mattermost.rnbeta" | awk '{print $1}' | grep -E '^[0-9]+$' || true)
+            if [ -n "$APP_PID" ]; then
+              xcrun simctl spawn "$SIMULATOR_ID" kill -9 "$APP_PID" 2>/dev/null || true
+              for i in 1 2 3 4; do
+                if ! xcrun simctl spawn "$SIMULATOR_ID" launchctl list 2>/dev/null | grep -q "com.mattermost.rnbeta"; then
+                  break
+                fi
+                sleep 0.25
+              done
+              echo "  Killed app via launchd (PID $APP_PID)"
+            fi
+
+            # Verify data container was created
+            if xcrun simctl get_app_container "$SIMULATOR_ID" com.mattermost.rnbeta data 2>/dev/null; then
+              echo "  ✅ Data container verified"
+              return 0
+            else
+              echo "  ⚠️ Data container not found"
+              return 1
+            fi
+          }
+
+          # First attempt with 15s wait
+          if ! prewarm_app 1 15; then
+            echo "Retrying pre-warm with longer timeout..."
+            # Second attempt with 25s wait
+            if ! prewarm_app 2 25; then
+              echo "⚠️ Pre-warm failed after 2 attempts — tests may fail at launch"
+            fi
+          fi
+          echo "✅ App pre-warmed"
+
           # Open Simulator.app in background to speed up UI rendering
           open -a Simulator --args -CurrentDeviceUDID "$SIMULATOR_ID"
 
-          # Give Simulator.app time to fully initialize UI (iOS 26.2 needs more time)
-          sleep 5
+          # Poll bootstatus instead of a blind 10s sleep. Cap at 10s so we never
+          # exceed the previous worst case. 5s was empirically too short (~9/20
+          # shards timed out at the Detox 90s launchApp cap), so the minimum wait
+          # is 8s before exiting the loop.
+          for i in 1 2 3 4 5 6 7 8 9 10; do
+            if xcrun simctl bootstatus "$SIMULATOR_ID" -b 2>/dev/null && [ "$i" -ge 8 ]; then
+              break
+            fi
+            sleep 1
+          done
 
           echo "SIMULATOR_ID=$SIMULATOR_ID" >> $GITHUB_ENV
 
@@ -281,11 +510,40 @@ jobs:
             sleep 3
             xcrun simctl boot "$SIMULATOR_ID"
             xcrun simctl bootstatus "$SIMULATOR_ID"
+
+            # Re-open Simulator.app after reboot
+            open -a Simulator --args -CurrentDeviceUDID "$SIMULATOR_ID"
+            sleep 5
           fi
+
+          # Verify the app is still installed (simctl install can silently fail)
+          if ! xcrun simctl get_app_container "$SIMULATOR_ID" com.mattermost.rnbeta 2>/dev/null; then
+            echo "⚠️ App not found in simulator — reinstalling..."
+            APP_PATH=$(ls -d mobile-artifacts/*.app 2>/dev/null | head -1)
+            if [ -n "$APP_PATH" ]; then
+              xcrun simctl install "$SIMULATOR_ID" "$APP_PATH"
+              echo "✅ App reinstalled"
+            else
+              echo "❌ No .app bundle found for reinstall"
+              exit 1
+            fi
+          fi
+
+          # Reduce CPU competition: disable Spotlight indexing and other macOS services
+          # that consume CPU on CI runners (3-core M1 with 7 GB RAM)
+          sudo mdutil -a -i off 2>/dev/null || true
 
           echo "✅ Simulator is healthy and ready"
 
       - name: Start Metro Bundler and Run Detox E2E Tests
+        # Bumped from 60 to 180 min: with ~6 specs per shard averaging 5-15 min each,
+        # the 60min step timeout was being hit silently — GitHub kills the step but
+        # `continue-on-error: true` masks it, and the tests that didn't run get
+        # dropped from the result count. iOS run 26368981355 had 524 tests vs
+        # Android's 537 (same codebase, same 124 spec files) — the 13-test gap was
+        # tail tests on shards that timed out at this step. 180 matches the job
+        # timeout above so the step uses the full available budget.
+        timeout-minutes: 180
         continue-on-error: true # We want to run all the tests
         run: |
           # Start Metro bundler in background
@@ -327,37 +585,68 @@ jobs:
             tail -30 metro.log
           else
             echo "Metro is serving on http://localhost:8081"
-            # Give Metro extra time to fully initialize for iOS 26.2 (React Native bridge needs more time)
-            echo "Allowing Metro to fully stabilize..."
-            sleep 8
+            # Give Metro time to fully initialize for iOS 26.2 (React Native bridge needs stabilization).
+            # 20s should be sufficient for macos-15 to ensure full Metro compilation.
+            # Without adequate wait, the app may fail with "No script URL provided" on launch.
+            echo "Allowing Metro to fully stabilize (20s on macos-15)..."
+            sleep 20
+
+            # Verify Metro is actually serving the bundle (not just the process is running).
+            # This catches cases where Metro reports ready but hasn't finished compilation.
+            echo "Verifying Metro can serve bundles..."
+            if curl -s http://localhost:8081/index.ios.bundle 2>/dev/null | grep -q "__d("; then
+              echo "✅ Metro is serving bundles successfully"
+            else
+              echo "⚠️ Warning: Could not verify Metro is serving bundles, proceeding anyway"
+              ps aux | grep -E "metro|node.*start" | grep -v grep || echo "Metro process not found"
+            fi
           fi
 
           cd detox
           npm run detox:config-gen
-          npm run e2e:ios-test -- ${{ matrix.specs }}
+          # Use read -ra to safely word-split space-separated spec paths without
+          # glob expansion or shell injection from the matrix value.
+          read -ra SPECS <<< "$MATRIX_SPECS"
+          if [ "$DETOX_CONFIG" = "ios.ipad.debug" ]; then
+            npm run e2e:ios-ipad-test -- "${SPECS[@]}"
+          else
+            npm run e2e:ios-test -- "${SPECS[@]}"
+          fi
         env:
+          DETOX_CONFIG: ${{ inputs.detox_config }}
+          MATRIX_SPECS: ${{ matrix.specs }}
           DETOX_DISABLE_HIERARCHY_DUMP: "YES"
           DETOX_DISABLE_SCREENSHOT_TRACKING: "YES"
-          DETOX_LOGLEVEL: "debug"
+          DETOX_LOGLEVEL: "info"
           DETOX_DEVICE_TYPE: ${{ env.DEVICE_NAME }}
           DETOX_OS_VERSION: ${{ env.DEVICE_OS_VERSION }}
           LOW_BANDWIDTH_MODE: ${{ inputs.low_bandwidth_mode }}
+          SITE_1_URL: ${{ env.SITE_1_URL }}
+          SITE_2_URL: ${{ env.SITE_2_URL }}
+          SITE_3_URL: ${{ env.SITE_3_URL }}
 
       - name: Cleanup Simulator State
         if: always()
+        timeout-minutes: 2
         run: |
           echo "Cleaning up simulator state after tests..."
 
-          # Stop Metro bundler if still running
-          if [ ! -z "$METRO_PID" ]; then
-            echo "Stopping Metro bundler (PID: $METRO_PID)..."
-            kill -9 "$METRO_PID" 2>/dev/null || true
+          # Kill the entire Metro process tree, not just the top-level PID.
+          # `kill -9 $PID` only kills the npm wrapper; the actual Metro Node.js
+          # workers and watchman stay alive. GitHub Actions waits ~10 min for
+          # orphaned processes to die, causing the cleanup step to hang.
+          if [ -n "$METRO_PID" ]; then
+            echo "Stopping Metro bundler (PID: $METRO_PID) and child processes..."
+            kill -9 -"$METRO_PID" 2>/dev/null || true
+            pkill -9 -f "react-native.*start" 2>/dev/null || true
+            pkill -9 -f "metro" 2>/dev/null || true
+            sleep 1
           fi
 
-          # Terminate app gracefully
-          if [ ! -z "$SIMULATOR_ID" ]; then
+          # Terminate app with a timeout — simctl terminate can hang on iOS 26.x
+          if [ -n "$SIMULATOR_ID" ]; then
             echo "Terminating app on simulator..."
-            xcrun simctl terminate "$SIMULATOR_ID" com.mattermost.rnbeta 2>/dev/null || true
+            timeout 10 xcrun simctl terminate "$SIMULATOR_ID" com.mattermost.rnbeta 2>/dev/null || true
             sleep 2
           fi
 
@@ -376,7 +665,7 @@ jobs:
 
       - name: Upload mitmdump Flow Output
         if: ${{ inputs.low_bandwidth_mode }}
-        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
           name: ios-mitmdump-flow-output-${{ needs.generate-specs.outputs.workflow_hash }}-${{ matrix.runId }}
           path: |
@@ -385,12 +674,13 @@ jobs:
 
       - name: Upload iOS Test Report
         if: always()
-        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
           name: ios-results-${{ needs.generate-specs.outputs.workflow_hash }}-${{ matrix.runId }}
           path: detox/artifacts/
 
   generate-report:
+    if: always()
     runs-on: ubuntu-22.04
     needs:
       - generate-specs
@@ -399,9 +689,14 @@ jobs:
       TARGET_URL: ${{ steps.set-url.outputs.TARGET_URL }}
       STATUS: ${{ steps.determine-status.outputs.STATUS }}
       FAILURES: ${{ steps.summary.outputs.FAILURES }}
+      PASSES: ${{ steps.summary.outputs.PASSES }}
+      TOTAL: ${{ steps.summary.outputs.TOTAL }}
+      SKIPPED: ${{ steps.summary.outputs.SKIPPED }}
+      ERRORS: ${{ steps.summary.outputs.ERRORS }}
+      PERCENTAGE: ${{ steps.summary.outputs.PERCENTAGE }}
     steps:
       - name: Checkout Repository
-        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
         with:
           ref: ${{ inputs.MOBILE_VERSION }}
 
@@ -409,7 +704,7 @@ jobs:
         uses: ./.github/actions/prepare-node-deps
 
       - name: Download iOS Artifacts
-        uses: actions/download-artifact@c850b930e6ba138125429b7e5c93fc707a7f8427 # v4.1.4
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
         with:
           path: detox/artifacts/
           pattern: ios-results-${{ needs.generate-specs.outputs.workflow_hash }}-*
@@ -438,12 +733,22 @@ jobs:
       - name: Calculate failures
         id: summary
         run: |
-          echo "FAILURES=$(cat detox/artifacts/summary.json | jq .stats.failures)" >> ${GITHUB_OUTPUT}
-          echo "PASSES=$(cat detox/artifacts/summary.json | jq .stats.passes)" >> ${GITHUB_OUTPUT}
-          echo "SKIPPED=$(cat detox/artifacts/summary.json | jq .stats.skipped)" >> ${GITHUB_OUTPUT}
-          echo "TOTAL=$(cat detox/artifacts/summary.json | jq .stats.tests)" >> ${GITHUB_OUTPUT}
-          echo "ERRORS=$(cat detox/artifacts/summary.json | jq .stats.errors)" >> ${GITHUB_OUTPUT}
-          echo "PERCENTAGE=$(cat detox/artifacts/summary.json | jq .stats.passPercent)" >> ${GITHUB_OUTPUT}
+          if [ -f detox/artifacts/summary.json ]; then
+            echo "FAILURES=$(cat detox/artifacts/summary.json | jq .stats.failures)" >> ${GITHUB_OUTPUT}
+            echo "PASSES=$(cat detox/artifacts/summary.json | jq .stats.passes)" >> ${GITHUB_OUTPUT}
+            echo "SKIPPED=$(cat detox/artifacts/summary.json | jq .stats.skipped)" >> ${GITHUB_OUTPUT}
+            echo "TOTAL=$(cat detox/artifacts/summary.json | jq .stats.tests)" >> ${GITHUB_OUTPUT}
+            echo "ERRORS=$(cat detox/artifacts/summary.json | jq .stats.errors)" >> ${GITHUB_OUTPUT}
+            echo "PERCENTAGE=$(cat detox/artifacts/summary.json | jq .stats.passPercent)" >> ${GITHUB_OUTPUT}
+          else
+            echo "⚠️ No summary.json found — all test machines likely failed before producing results"
+            echo "FAILURES=-1" >> ${GITHUB_OUTPUT}
+            echo "PASSES=0" >> ${GITHUB_OUTPUT}
+            echo "SKIPPED=0" >> ${GITHUB_OUTPUT}
+            echo "TOTAL=0" >> ${GITHUB_OUTPUT}
+            echo "ERRORS=0" >> ${GITHUB_OUTPUT}
+            echo "PERCENTAGE=0" >> ${GITHUB_OUTPUT}
+          fi
 
       - name: Set Target URL
         id: set-url
@@ -452,51 +757,31 @@ jobs:
 
       - name: Determine Status
         id: determine-status
+        env:
+          FAILURES: ${{ steps.summary.outputs.FAILURES }}
+          TESTCASE_FAILURE_FATAL: ${{ inputs.testcase_failure_fatal }}
         run: |
-          if [[ ${{ steps.summary.outputs.failures }} -gt 0 && "${{ inputs.testcase_failure_fatal }}" == "true" ]]; then
+          if [[ "$FAILURES" == "-1" ]]; then
+            echo "STATUS=failure" >> ${GITHUB_OUTPUT}
+          elif [[ "$FAILURES" -gt 0 && "$TESTCASE_FAILURE_FATAL" == "true" ]]; then
             echo "STATUS=failure" >> ${GITHUB_OUTPUT}
           else
             echo "STATUS=success" >> ${GITHUB_OUTPUT}
           fi
 
       - name: Generate Summary
+        env:
+          TOTAL: ${{ steps.summary.outputs.TOTAL }}
+          PASSES: ${{ steps.summary.outputs.PASSES }}
+          FAILURES: ${{ steps.summary.outputs.FAILURES }}
+          SKIPPED: ${{ steps.summary.outputs.SKIPPED }}
+          ERRORS: ${{ steps.summary.outputs.ERRORS }}
+          PERCENTAGE: ${{ steps.summary.outputs.PERCENTAGE }}
+          TARGET_URL: ${{ steps.set-url.outputs.TARGET_URL }}
         run: |
           echo "| Tests | Passed :white_check_mark: | Failed :x: | Skipped :fast_forward: | Errors :warning: | " >> ${GITHUB_STEP_SUMMARY}
           echo "|:---:|:---:|:---:|:---:|:---:|" >> ${GITHUB_STEP_SUMMARY}
-          echo "| ${{ steps.summary.outputs.TOTAL }} | ${{ steps.summary.outputs.PASSES }} | ${{ steps.summary.outputs.FAILURES }} | ${{ steps.summary.outputs.SKIPPED }} | ${{ steps.summary.outputs.ERRORS }} |" >> ${GITHUB_STEP_SUMMARY}
+          echo "| ${TOTAL} | ${PASSES} | ${FAILURES} | ${SKIPPED} | ${ERRORS} |" >> ${GITHUB_STEP_SUMMARY}
           echo "" >> ${GITHUB_STEP_SUMMARY}
-          echo "You can check the full report [here](${{ steps.set-url.outputs.TARGET_URL }})" >> ${GITHUB_STEP_SUMMARY}
-          echo "There was **${{ steps.summary.outputs.PERCENTAGE }}%** success rate." >> ${GITHUB_STEP_SUMMARY}
-
-      - name: Comment report on the PR
-        if: ${{ github.event_name == 'pull_request' }}
-        uses: actions/github-script@v7
-        with:
-          script: |
-            const prNumber = context.payload.pull_request.number;
-
-            const commentBody = `**iOS E2E Test Report**: ${process.env.MOBILE_SHA} | ${process.env.PERCENTAGE}% (${process.env.PASSES}/${process.env.TOTAL}) | [full report](${process.env.TARGET_URL})
-              | Tests | Passed ✅ | Failed ❌ | Skipped ⏭️ | Errors ⚠️ |
-              |:---:|:---:|:---:|:---:|:---:|
-              | ${process.env.TOTAL} | ${process.env.PASSES} | ${process.env.FAILURES} | ${process.env.SKIPPED} | ${process.env.ERRORS} |
-              `;
-
-            await github.rest.issues.createComment({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              issue_number: prNumber,
-              body: commentBody,
-            });
-        env:
-          STATUS: ${{ steps.determine-status.outputs.STATUS }}
-          FAILURES: ${{ steps.summary.outputs.FAILURES }}
-          PASSES: ${{ steps.summary.outputs.PASSES }}
-          SKIPPED: ${{ steps.summary.outputs.SKIPPED }}
-          TOTAL: ${{ steps.summary.outputs.TOTAL }}
-          ERRORS: ${{ steps.summary.outputs.ERRORS }}
-          PERCENTAGE: ${{ steps.summary.outputs.PERCENTAGE }}
-          BUILD_ID: ${{ needs.generate-specs.outputs.build_id }}
-          RUN_TYPE: ${{ inputs.run-type }}
-          MOBILE_REF: ${{ needs.generate-specs.outputs.mobile_ref }}
-          MOBILE_SHA: ${{ needs.generate-specs.outputs.mobile_sha }}
-          TARGET_URL: ${{ steps.set-url.outputs.TARGET_URL }}
+          echo "You can check the full report [here](${TARGET_URL})" >> ${GITHUB_STEP_SUMMARY}
+          echo "There was **${PERCENTAGE}%** success rate." >> ${GITHUB_STEP_SUMMARY}

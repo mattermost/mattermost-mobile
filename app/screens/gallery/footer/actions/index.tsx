@@ -41,6 +41,7 @@ const Actions = ({
                 disabled={disabled}
                 iconName='link-variant'
                 onPress={onCopyPublicLink}
+                testID='gallery.footer.copy_public_link.button'
             />}
             {canDownloadFiles &&
             <>
@@ -49,12 +50,14 @@ const Actions = ({
                     disabled={disabled}
                     iconName='download-outline'
                     onPress={onDownload}
+                    testID='gallery.footer.download.button'
                 />
                 }
                 <Action
                     disabled={disabled}
                     iconName='export-variant'
                     onPress={onShare}
+                    testID='gallery.footer.share.button'
                 />
             </>
             }

@@ -55,6 +55,17 @@ export default defineConfig([
     },
     rules: {
       "eol-last": ["error", "always"],
+      "no-restricted-syntax": [
+        "error",
+        {
+          "selector": "CallExpression[callee.name=/^(logError|logWarning|logInfo|logDebug)$/] MemberExpression[property.name=/^(email|username|nickname|displayName|display_name|firstName|first_name|lastName|last_name|fullName|full_name|phoneNumber|phone_number)$/]",
+          "message": "Do not log PII (names/emails/usernames). Logs are user-exportable and sent to Sentry. Log stable identifiers (IDs, channel type) instead. See CLAUDE.md > Error Handling & Logging."
+        },
+        {
+          "selector": "CallExpression[callee.name=/^(logError|logWarning|logInfo|logDebug)$/] Identifier[name=/([Tt]oken|[Pp]assword|[Ss]ecret)$/]",
+          "message": "Do not log credentials (tokens/passwords/secrets). Logs are user-exportable and sent to Sentry. See CLAUDE.md > Error Handling & Logging."
+        }
+      ],
       "global-require": "off",
       "no-undefined": "off",
       "no-shadow": "off",

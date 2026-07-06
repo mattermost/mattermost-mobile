@@ -22,7 +22,7 @@ import FileModel from '@typings/database/models/servers/file';
 import ScheduledPostModel from '@typings/database/models/servers/scheduled_post';
 import {isUnrevealedBoRPost} from '@utils/bor';
 import {safeParseJSON} from '@utils/helpers';
-import {logWarning} from '@utils/log';
+import {logDebug, logWarning} from '@utils/log';
 
 import {shouldUpdateScheduledPostRecord} from '../comparators/scheduled_post';
 
@@ -548,7 +548,17 @@ const PostHandler = <TBase extends Constructor<ServerDataOperatorBase>>(supercla
             return [];
         }
 
-        const {firstPost, lastPost} = getPostListEdges(posts);
+        // Deleted posts are dropped before persistence (see handlePosts), so they must not
+        // define the PostsInChannel interval. Otherwise a deleted post newer than the existing
+        // interval creates an empty, orphaned chunk that becomes postsInChannel[0] and hides the
+        // entire channel (MM-66467). Build the interval only from posts that will actually exist.
+        const validPosts = posts.filter((post) => post.delete_at === 0);
+        if (!validPosts.length) {
+            logDebug('handleReceivedPostsInChannel received only deleted posts; skipping interval creation');
+            return [];
+        }
+
+        const {firstPost, lastPost} = getPostListEdges(validPosts);
         const channelId = firstPost.channel_id;
         const earliest = firstPost.create_at;
         const latest = lastPost.create_at;
@@ -603,7 +613,7 @@ const PostHandler = <TBase extends Constructor<ServerDataOperatorBase>>(supercla
         models.push(...await this._mergePostInChannelChunks(targetChunk, chunks, prepareRecordsOnly));
 
         if (!prepareRecordsOnly) {
-            this.batchRecords(models, 'handleReceivedPostsInChannel');
+            await this.batchRecords(models, 'handleReceivedPostsInChannel');
         }
 
         return models;
@@ -644,7 +654,7 @@ const PostHandler = <TBase extends Constructor<ServerDataOperatorBase>>(supercla
         })];
 
         if (!prepareRecordsOnly) {
-            this.batchRecords(models, 'handleReceivedPostsInChannelSince');
+            await this.batchRecords(models, 'handleReceivedPostsInChannelSince');
         }
 
         return models;
@@ -689,7 +699,7 @@ const PostHandler = <TBase extends Constructor<ServerDataOperatorBase>>(supercla
         models.push(...(await this._mergePostInChannelChunks(targetChunk, chunks, prepareRecordsOnly)));
 
         if (!prepareRecordsOnly) {
-            this.batchRecords(models, 'handleReceivedPostsInChannelBefore');
+            await this.batchRecords(models, 'handleReceivedPostsInChannelBefore');
         }
 
         return models;
@@ -734,7 +744,7 @@ const PostHandler = <TBase extends Constructor<ServerDataOperatorBase>>(supercla
         });
 
         if (!prepareRecordsOnly) {
-            this.batchRecords([targetChunk], 'handleReceivedNewPostForChannel');
+            await this.batchRecords([targetChunk], 'handleReceivedNewPostForChannel');
         }
         return [targetChunk];
     };
