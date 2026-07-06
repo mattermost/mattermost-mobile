@@ -32,7 +32,7 @@ describe('actions/remote/file', () => {
         getAbsoluteUrl: jest.fn(),
         getFilePreviewUrl: jest.fn(),
         getFileThumbnailUrl: jest.fn(),
-        prepareRequestHeaders: jest.fn().mockResolvedValue({'X-MM-Session-Attributes': 'encoded'}),
+        getRequestHeaders: jest.fn().mockReturnValue({'X-MM-Session-Attributes': 'encoded'}),
     };
 
     beforeEach(() => {
@@ -53,7 +53,7 @@ describe('actions/remote/file', () => {
             await downloadFile(serverUrl, fileId, destination);
 
             expect(mockClient.getFileRoute).toHaveBeenCalledWith(fileId);
-            expect(mockClient.prepareRequestHeaders).toHaveBeenCalledWith('GET');
+            expect(mockClient.getRequestHeaders).toHaveBeenCalledWith('GET');
             expect(mockClient.apiClient.download).toHaveBeenCalledWith(
                 '/files/file123',
                 '/path/to/file',
@@ -125,13 +125,13 @@ describe('actions/remote/file', () => {
         };
         const channelId = 'channel123';
 
-        it('should upload file successfully', async () => {
+        it('should upload file successfully', () => {
             const onProgress = jest.fn();
             const onComplete = jest.fn();
             const onError = jest.fn();
-            mockClient.uploadAttachment.mockResolvedValue(() => {});
+            mockClient.uploadAttachment.mockReturnValue(() => {});
 
-            const result = await uploadFile(serverUrl, file, channelId, onProgress, onComplete, onError);
+            const result = uploadFile(serverUrl, file, channelId, onProgress, onComplete, onError);
 
             expect(mockClient.uploadAttachment).toHaveBeenCalledWith(
                 file,
@@ -145,10 +145,10 @@ describe('actions/remote/file', () => {
             expect(result).toHaveProperty('cancel');
         });
 
-        it('should use default callbacks when not provided', async () => {
-            mockClient.uploadAttachment.mockResolvedValue(() => {});
+        it('should use default callbacks when not provided', () => {
+            mockClient.uploadAttachment.mockReturnValue(() => {});
 
-            const result = await uploadFile(serverUrl, file, channelId);
+            const result = uploadFile(serverUrl, file, channelId);
 
             const uploadCall = mockClient.uploadAttachment.mock.calls[0];
 
@@ -165,13 +165,13 @@ describe('actions/remote/file', () => {
             expect(result).toHaveProperty('cancel');
         });
 
-        it('should handle upload error', async () => {
+        it('should handle upload error', () => {
             const error = new Error('Upload failed');
             (NetworkManager.getClient as jest.Mock).mockImplementation(() => {
                 throw error;
             });
 
-            const result = await uploadFile(serverUrl, {
+            const result = uploadFile(serverUrl, {
                 id: 'file123',
                 name: 'test.jpg',
                 mime_type: 'image/jpeg',

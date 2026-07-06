@@ -183,11 +183,11 @@ const BookmarkFile = ({channelId, close, disabled, initialFile, maxFileSize, set
         setUploadError();
     }, [setUploadError]);
 
-    const startUpload = useCallback(async (fileInfo: FileInfo | ExtractedFileInfo) => {
+    const startUpload = useCallback((fileInfo: FileInfo | ExtractedFileInfo) => {
         setUploading(true);
         setProgress(0);
 
-        const {cancel, error: uploadError} = await uploadFile(
+        const {cancel, error: uploadError} = uploadFile(
             serverUrl,
             fileInfo,
             channelId,

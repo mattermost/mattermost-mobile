@@ -19,7 +19,7 @@ export interface ClientFilesMix {
         onError: (response: ClientResponseError) => void,
         skipBytes?: number,
         isBookmark?: boolean,
-    ) => Promise<() => void>;
+    ) => () => void;
     searchFiles: (teamId: string, terms: string, isOrSearch: boolean) => Promise<FileSearchRequest>;
     searchFilesWithParams: (teamId: string, FileSearchParams: FileSearchParams) => Promise<FileSearchRequest>;
 }
@@ -59,7 +59,7 @@ const ClientFiles = <TBase extends Constructor<ClientBase>>(superclass: TBase) =
         );
     };
 
-    uploadAttachment = async (
+    uploadAttachment = (
         file: FileInfo | ExtractedFileInfo,
         channelId: string,
         onProgress: (fractionCompleted: number, bytesRead?: number | null | undefined) => void,
@@ -72,7 +72,7 @@ const ClientFiles = <TBase extends Constructor<ClientBase>>(superclass: TBase) =
         if (isBookmark) {
             url = `${url}?bookmark=true`;
         }
-        const headers = await this.prepareRequestHeaders('POST');
+        const headers = this.getRequestHeaders('POST');
         const options: UploadRequestOptions = {
             skipBytes,
             method: 'POST',

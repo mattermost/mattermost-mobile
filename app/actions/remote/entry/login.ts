@@ -7,7 +7,6 @@ import {getServerCredentials} from '@init/credentials';
 import IntuneManager from '@managers/intune_manager';
 import PerformanceMetricsManager from '@managers/performance_metrics_manager';
 import SecurityManager from '@managers/security_manager';
-import SessionAttributesManager from '@managers/session_attributes_manager';
 import WebsocketManager from '@managers/websocket_manager';
 
 type AfterLoginArgs = {
@@ -33,8 +32,6 @@ export async function loginEntry({serverUrl}: AfterLoginArgs): Promise<{error?: 
         if (clData.error) {
             return {error: clData.error};
         }
-
-        await SessionAttributesManager.refreshManifest(serverUrl);
 
         const credentials = await getServerCredentials(serverUrl);
         if (credentials?.token) {

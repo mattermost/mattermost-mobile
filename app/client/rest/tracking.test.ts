@@ -137,20 +137,20 @@ describe('ClientTracking', () => {
         expect(headers[ClientConstants.HEADER_X_CSRF_TOKEN]).toBe('csrfToken');
     });
 
-    it('should include session attributes header when the manager has an outbound header', async () => {
-        jest.mocked(SessionAttributesManager.getOutboundHeader).mockResolvedValue('encoded-payload');
+    it('should include session attributes header when the manager has an outbound header', () => {
+        jest.mocked(SessionAttributesManager.getOutboundHeader).mockReturnValue('encoded-payload');
         client.setClientCredentials('testToken');
 
-        const headers = await client.prepareRequestHeaders('GET');
+        const headers = client.getRequestHeaders('GET');
 
         expect(headers[ClientConstants.HEADER_X_MM_SESSION_ATTRIBUTES]).toBe('encoded-payload');
     });
 
-    it('should omit session attributes header when the manager has nothing to deliver', async () => {
-        jest.mocked(SessionAttributesManager.getOutboundHeader).mockResolvedValue(undefined);
+    it('should omit session attributes header when the manager has nothing to deliver', () => {
+        jest.mocked(SessionAttributesManager.getOutboundHeader).mockReturnValue(undefined);
         client.setClientCredentials('testToken');
 
-        const headers = await client.prepareRequestHeaders('GET');
+        const headers = client.getRequestHeaders('GET');
 
         expect(headers[ClientConstants.HEADER_X_MM_SESSION_ATTRIBUTES]).toBeUndefined();
     });

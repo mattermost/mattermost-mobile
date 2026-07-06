@@ -100,21 +100,15 @@ export default class ClientTracking {
             headers[ClientConstants.HEADER_X_CSRF_TOKEN] = this.csrfToken;
         }
 
-        return headers;
-    }
-
-    prepareRequestHeaders = async (requestMethod: string) => {
-        const headers = this.getRequestHeaders(requestMethod);
-
         if (headers[ClientConstants.HEADER_AUTH]) {
-            const sessionAttributesHeader = await SessionAttributesManager.getOutboundHeader(this.apiClient.baseUrl);
+            const sessionAttributesHeader = SessionAttributesManager.getOutboundHeader(this.apiClient.baseUrl);
             if (sessionAttributesHeader) {
                 headers[ClientConstants.HEADER_X_MM_SESSION_ATTRIBUTES] = sessionAttributesHeader;
             }
         }
 
         return headers;
-    };
+    }
 
     initTrackGroup(groupLabel: RequestGroupLabel) {
         if (!this.requestGroups.has(groupLabel)) {
@@ -351,10 +345,10 @@ export default class ClientTracking {
         });
     }
 
-    async buildRequestOptions(options: ClientOptions): Promise<RequestOptions> {
+    buildRequestOptions(options: ClientOptions): RequestOptions {
         const requestOptions: RequestOptions = {
             body: options.body,
-            headers: await this.prepareRequestHeaders(options.method!.toLowerCase()),
+            headers: this.getRequestHeaders(options.method!.toLowerCase()),
         };
         if (options.noRetry) {
             requestOptions.retryPolicyConfiguration = {retryLimit: 0};
@@ -401,7 +395,7 @@ export default class ClientTracking {
         const performanceRequestId = NetworkPerformanceManager.startRequestTracking(this.apiClient.baseUrl, url);
 
         let response: ClientResponse;
-        const requestOptions = await this.buildRequestOptions(options);
+        const requestOptions = this.buildRequestOptions(options);
         try {
             response = await request!(url, requestOptions);
         } catch (error) {

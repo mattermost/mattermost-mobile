@@ -13,7 +13,7 @@ import type {ClientResponse, ClientResponseError} from '@mattermost/react-native
 
 export const downloadFile = async (serverUrl: string, fileId: string, desitnation: string) => {
     const client = NetworkManager.getClient(serverUrl);
-    const headers = await client.prepareRequestHeaders('GET');
+    const headers = client.getRequestHeaders('GET');
     return client.apiClient.download(
         client.getFileRoute(fileId),
         desitnation.replace('file://', ''),
@@ -23,7 +23,7 @@ export const downloadFile = async (serverUrl: string, fileId: string, desitnatio
 
 export const downloadProfileImage = async (serverUrl: string, userId: string, lastPictureUpdate: number, destination: string) => {
     const client = NetworkManager.getClient(serverUrl);
-    const headers = await client.prepareRequestHeaders('GET');
+    const headers = client.getRequestHeaders('GET');
     return client.apiClient.download(
         client.getProfilePictureUrl(userId, lastPictureUpdate),
         destination.replace('file://', ''),
@@ -31,7 +31,7 @@ export const downloadProfileImage = async (serverUrl: string, userId: string, la
     );
 };
 
-export const uploadFile = async (
+export const uploadFile = (
     serverUrl: string,
     file: FileInfo | ExtractedFileInfo,
     channelId: string,
@@ -43,7 +43,7 @@ export const uploadFile = async (
 ) => {
     try {
         const client = NetworkManager.getClient(serverUrl);
-        return {cancel: await client.uploadAttachment(file, channelId, onProgress, onComplete, onError, skipBytes, isBookmark)};
+        return {cancel: client.uploadAttachment(file, channelId, onProgress, onComplete, onError, skipBytes, isBookmark)};
     } catch (error) {
         logDebug('error on uploadFile', getFullErrorMessage(error));
         return {error};
