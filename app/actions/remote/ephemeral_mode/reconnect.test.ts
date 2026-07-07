@@ -3,10 +3,11 @@
 
 import NetInfo, {type NetInfoState} from '@react-native-community/netinfo';
 import {router} from 'expo-router';
+import {DeviceEventEmitter} from 'react-native';
 
 import {loginEntry} from '@actions/remote/entry';
 import {fetchMe} from '@actions/remote/user';
-import {Launch} from '@constants';
+import {Events, Launch} from '@constants';
 import DatabaseManager from '@database/manager';
 import {getServerCredentials} from '@init/credentials';
 import {determineRouteFromLaunchProps} from '@init/launch';
@@ -109,6 +110,7 @@ describe('reconnectErasedServer', () => {
     it('on fetchMe failure: returns the error and skips loginEntry, wipe, and navigation', async () => {
         const fetchError = new Error('User fetch failed');
         jest.mocked(fetchMe).mockResolvedValue({error: fetchError} as never);
+        const emitSpy = jest.spyOn(DeviceEventEmitter, 'emit');
 
         const result = await reconnectErasedServer(serverUrl);
 
@@ -116,7 +118,23 @@ describe('reconnectErasedServer', () => {
         expect(wipeServerDataSpy).not.toHaveBeenCalled();
         expect(updatePersistenceFlagSpy).not.toHaveBeenCalled();
         expect(router.replace).not.toHaveBeenCalled();
+        expect(emitSpy).not.toHaveBeenCalledWith(Events.SERVER_LOGOUT, expect.anything());
         expect(result).toEqual({error: fetchError});
+    });
+
+    it('on fetchMe 401 failure: emits a server logout and skips loginEntry, wipe, and navigation', async () => {
+        const fetchError = {status_code: 401};
+        jest.mocked(fetchMe).mockResolvedValue({error: fetchError} as never);
+        const emitSpy = jest.spyOn(DeviceEventEmitter, 'emit');
+
+        const result = await reconnectErasedServer(serverUrl);
+
+        expect(loginEntry).not.toHaveBeenCalled();
+        expect(wipeServerDataSpy).not.toHaveBeenCalled();
+        expect(updatePersistenceFlagSpy).not.toHaveBeenCalled();
+        expect(router.replace).not.toHaveBeenCalled();
+        expect(emitSpy).toHaveBeenCalledWith(Events.SERVER_LOGOUT, {serverUrl, removeServer: false});
+        expect(result).toEqual({});
     });
 
     it('on error from loginEntry: re-wipes the partial DB and returns the error', async () => {

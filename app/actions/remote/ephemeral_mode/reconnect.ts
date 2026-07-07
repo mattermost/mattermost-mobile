@@ -3,17 +3,19 @@
 
 import NetInfo from '@react-native-community/netinfo';
 import {router} from 'expo-router';
+import {DeviceEventEmitter} from 'react-native';
 
 import {wipeServerDatabaseWithRetry} from '@actions/local/ephemeral_mode/wipe';
 import {loginEntry} from '@actions/remote/entry';
 import {fetchMe} from '@actions/remote/user';
-import {Launch} from '@constants';
+import {Events, Launch} from '@constants';
+import {HTTP_UNAUTHORIZED} from '@constants/network';
 import DatabaseManager from '@database/manager';
 import {getServerCredentials} from '@init/credentials';
 import {determineRouteFromLaunchProps} from '@init/launch';
 import {setCurrentUserId} from '@queries/servers/system';
-import {getFullErrorMessage} from '@utils/errors';
-import {logError} from '@utils/log';
+import {getFullErrorMessage, isErrorWithStatusCode} from '@utils/errors';
+import {logDebug, logError} from '@utils/log';
 
 type Result = {error?: unknown};
 
@@ -32,6 +34,12 @@ export const reconnectErasedServer = async (serverUrl: string): Promise<Result> 
         // Restore the current user before opening the WS so doReconnect can resolve them.
         const {user, error: fetchError} = await fetchMe(serverUrl);
         if (!user) {
+            // the server database was just wiped, so forceLogoutIfNecessary has no currentUserId to key off of
+            if (isErrorWithStatusCode(fetchError) && fetchError.status_code === HTTP_UNAUTHORIZED) {
+                logDebug('reconnectErasedServer: 401 on fetchMe', serverUrl, getFullErrorMessage(fetchError));
+                DeviceEventEmitter.emit(Events.SERVER_LOGOUT, {serverUrl, removeServer: false});
+                return {};
+            }
             return {error: fetchError};
         }
         const {operator} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
