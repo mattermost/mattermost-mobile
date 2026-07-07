@@ -246,6 +246,7 @@ jobs:
       MM_TEST_SERVER_URL: ${{ matrix.server.url }}
       MOBILE_VERSION: ${{ inputs.MOBILE_VERSION }}
       testcase_failure_fatal: true
+      record_tests_in_zephyr: true
 
   detox-android-e2e:
     name: mobile-cmt-android${{ matrix.server.latest && '-full' || '-smoke' }}-${{ matrix.server.version }}
@@ -291,6 +292,7 @@ jobs:
       MOBILE_VERSION: ${{ inputs.MOBILE_VERSION }}
       artifact_run_id: ${{ github.run_id }}
       testcase_failure_fatal: true
+      record_tests_in_zephyr: true
 
   update-final-status:
     runs-on: ubuntu-22.04

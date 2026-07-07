@@ -63,6 +63,7 @@
     "clean-detox": "detox clean",
     "lint": "eslint --ignore-pattern node_modules --quiet .",
     "e2e:save-report": "node save_report.js",
+    "e2e:save-maestro-zephyr": "node save_maestro_zephyr.js",
     "start:webhook": "node webhook_server.js",
     "provision": "tsx provision/index.ts",
     "tsc": "NODE_OPTIONS=--max_old_space_size=12000 tsc --noEmit",

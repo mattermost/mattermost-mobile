@@ -37,6 +37,24 @@ on:
         required: false
         type: boolean
         default: false
+      record_tests_in_zephyr:
+        description: "Record Maestro test results in Zephyr Scale (nightly/release runs)"
+        required: false
+        type: boolean
+        default: false
+    secrets:
+      MM_MOBILE_E2E_ADMIN_EMAIL:
+        required: true
+      MM_MOBILE_E2E_ADMIN_USERNAME:
+        required: true
+      MM_MOBILE_E2E_ADMIN_PASSWORD:
+        required: true
+      MM_MOBILE_E2E_ZEPHYR_API_KEY:
+        required: false
+      MM_MOBILE_DETOX_AWS_ACCESS_KEY_ID:
+        required: false
+      MM_MOBILE_DETOX_AWS_SECRET_ACCESS_KEY:
+        required: false
     outputs:
       STATUS:
         value: ${{ jobs.e2e-maestro-ios.outputs.STATUS || jobs.e2e-maestro-android.outputs.STATUS }}
@@ -79,6 +97,12 @@ env:
   E2E_ANDROID_AVD_NAME: detox_pixel_8
   E2E_ANDROID_API_LEVEL: "35"
   RUNNING_E2E: "true"
+  ZEPHYR_ENABLE: ${{ inputs.record_tests_in_zephyr }}
+  JIRA_PROJECT_KEY: "MM"
+  ZEPHYR_API_KEY: ${{ secrets.MM_MOBILE_E2E_ZEPHYR_API_KEY }}
+  ZEPHYR_FOLDER_ID: "3233873"
+  BRANCH: ${{ github.event_name == 'pull_request' && github.head_ref || github.ref_name }}
+  COMMIT_HASH: ${{ inputs.MOBILE_VERSION || github.sha }}
 
 jobs:
   e2e-maestro-ios:
@@ -401,6 +425,15 @@ jobs:
               ['FAILURES=1','PASSES=0','TOTAL=0','ERRORS=1','SKIPPED=0','PERCENTAGE=0','NO_REPORT=true'].forEach(l => fs.appendFileSync(process.env.GITHUB_OUTPUT, l + '\n'));
             }
           "
+
+      - name: Save Maestro results to Zephyr Scale
+        if: always() && inputs.record_tests_in_zephyr
+        run: npm run e2e:save-maestro-zephyr -- ../build/maestro-report.xml
+        working-directory: detox
+        env:
+          ZEPHYR_ENABLE: "true"
+          IOS: "true"
+          BUILD_ID: maestro-ios-${{ github.run_id }}
 
       - name: Upload Maestro Report to S3
         if: always()
@@ -789,6 +822,15 @@ jobs:
               ['FAILURES=1','PASSES=0','TOTAL=0','ERRORS=1','SKIPPED=0','PERCENTAGE=0','NO_REPORT=true'].forEach(l => fs.appendFileSync(process.env.GITHUB_OUTPUT, l + '\n'));
             }
           "
+
+      - name: Save Maestro results to Zephyr Scale
+        if: always() && inputs.record_tests_in_zephyr
+        run: npm run e2e:save-maestro-zephyr -- ../build/maestro-report.xml
+        working-directory: detox
+        env:
+          ZEPHYR_ENABLE: "true"
+          IOS: "false"
+          BUILD_ID: maestro-android-${{ github.run_id }}
 
       - name: Upload Maestro Report to S3
         if: always()

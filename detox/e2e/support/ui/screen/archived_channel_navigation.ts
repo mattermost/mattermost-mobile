@@ -60,24 +60,19 @@ export async function postArchivedChannelSentinel(channelId: string): Promise<st
 // Navigate to an archived channel via Browse Channels → archived filter → tap.
 // Android-only: the search/permalink path regressed MM-T1671_1 + MM-T1722_1.
 //
-// searchInput.replaceText is attempted to narrow results, but silently skipped
-// when the element is not findable in the Android view hierarchy (observed on
-// some API-35 shard configs). The archived-filter pre-loads recently-archived
-// channels at the top of the list, so the channel item is still found either way.
+// We skip the searchInput.replaceText step that prior implementations used:
+// browse_channels.search_bar.search.input never lands in the Android view
+// hierarchy as a Detox-findable view (confirmed by 0 hits across all 20 Android
+// shard device.logs in CI run 28290273101). Calling replaceText on a
+// non-findable element throws even inside a try-catch-style guard and leaves the
+// Browse Channels UI in a corrupted state. The archived-filter pre-loads
+// recently-archived channels at the top of the list, so tapping directly works.
 async function openArchivedChannelViaBrowseChannels(channelName: string) {
     await BrowseChannelsScreen.open();
     await BrowseChannelsScreen.dismissScheduledPostTooltip();
     await openArchivedChannelsFilter();
 
-    try {
-        await BrowseChannelsScreen.searchInput.replaceText(channelName);
-    } catch {
-        // searchInput not in view hierarchy on this config — fall through.
-    }
-
-    // HALF_MIN: when replaceText falls through (element not in hierarchy on some
-    // API-35 configs), the unfiltered archived list takes longer to populate.
-    await waitFor(BrowseChannelsScreen.getChannelItem(channelName)).toExist().withTimeout(timeouts.HALF_MIN);
+    await waitFor(BrowseChannelsScreen.getChannelItem(channelName)).toExist().withTimeout(timeouts.TEN_SEC);
     await BrowseChannelsScreen.getChannelItem(channelName).tap();
 
     await waitForElementToExist(ChannelScreen.channelScreen, timeouts.ONE_MIN);

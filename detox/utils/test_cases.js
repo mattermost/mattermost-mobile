@@ -76,7 +76,7 @@ function saveToEndpoint(url, data) {
     });
 }
 
-async function createTestCycle(startDate, endDate) {
+async function createTestCycle(startDate, endDate, options = {}) {
     const {
         BRANCH,
         BUILD_ID,
@@ -85,11 +85,12 @@ async function createTestCycle(startDate, endDate) {
         ZEPHYR_CYCLE_NAME,
         ZEPHYR_FOLDER_ID,
     } = process.env;
+    const framework = options.framework || 'Detox';
 
     const testCycle = {
         projectKey: JIRA_PROJECT_KEY,
         name: ZEPHYR_CYCLE_NAME ? `${ZEPHYR_CYCLE_NAME} (${BUILD_ID}-${COMMIT_HASH}-${BRANCH})` : `${BUILD_ID}-${COMMIT_HASH}-${BRANCH}`,
-        description: `Detox automated test with ${BRANCH}`,
+        description: `${framework} automated test with ${BRANCH}`,
         plannedStartDate: startDate,
         plannedEndDate: endDate,
         statusName: 'Done',
@@ -100,13 +101,14 @@ async function createTestCycle(startDate, endDate) {
     return response.data;
 }
 
-async function createTestExecutions(allTests, testCycle) {
+async function createTestExecutions(allTests, testCycle, options = {}) {
     const {
         IOS,
         JIRA_PROJECT_KEY,
         ZEPHYR_ENVIRONMENT_NAME,
     } = process.env;
     const platform = IOS === 'true' ? 'iOS' : 'Android';
+    const framework = options.framework || 'Detox';
 
     const testCases = getTM4JTestCases(allTests);
     const startDate = new Date(allTests.start);
@@ -121,7 +123,7 @@ async function createTestExecutions(allTests, testCycle) {
                     title: item.title,
                     statusName: status[item.state],
                     actualEndDate: new Date(startTime + item.incrementalDuration).toISOString(),
-                    actualResult: 'Detox automated test completed',
+                    actualResult: `${framework} automated test completed`,
                 };
             });
 
@@ -139,7 +141,7 @@ async function createTestExecutions(allTests, testCycle) {
                 acc += prev.duration; // eslint-disable-line no-param-reassign
                 return acc;
             }, 0),
-            comment: `Detox automated test - ${getStepStateSummary(steps)}`,
+            comment: `${framework} automated test - ${getStepStateSummary(steps)}`,
         };
 
         // Temporarily log to verify cases that were being saved.

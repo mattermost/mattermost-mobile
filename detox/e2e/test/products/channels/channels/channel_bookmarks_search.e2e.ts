@@ -118,7 +118,7 @@ describe('Channels - Channel Bookmarks Search', () => {
         await HomeScreen.logout();
     });
 
-    it('should be able to delete a bookmark via channel info', async () => {
+    it('MM-T5610_2 - should be able to delete a bookmark via channel info', async () => {
         // # Navigate to the channel
         await openChannel(channelDelete);
 
