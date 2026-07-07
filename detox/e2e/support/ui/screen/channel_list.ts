@@ -190,13 +190,24 @@ class ChannelListScreen {
                 // Not on channel list yet.
             }
             let popped = false;
+
             try {
-                await waitFor(NavigationHeader.backButton).toExist().withTimeout(timeouts.TWO_SEC);
-                await NavigationHeader.backButton.tap();
+                await waitFor(HomeScreen.channelListTab).toExist().withTimeout(timeouts.TWO_SEC);
+                await HomeScreen.channelListTab.tap();
                 await wait(timeouts.ONE_SEC);
                 popped = true;
             } catch {
-                // No custom NavigationHeader back — fall through to native back.
+                // Home tab not hittable — fall through to back-button probes.
+            }
+            if (!popped) {
+                try {
+                    await waitFor(NavigationHeader.backButton).toExist().withTimeout(timeouts.TWO_SEC);
+                    await NavigationHeader.backButton.tap();
+                    await wait(timeouts.ONE_SEC);
+                    popped = true;
+                } catch {
+                    // No custom NavigationHeader back — fall through to native back.
+                }
             }
             if (!popped) {
                 try {

@@ -3,7 +3,7 @@
 
 import {Alert} from '@support/ui/component';
 import {isAndroid, isIos, longPressWithRetry, timeouts, wait} from '@support/utils';
-import {expect} from 'detox';
+import {expect, waitFor} from 'detox';
 
 class PostOptionsScreen {
     testID = {
@@ -63,9 +63,7 @@ class PostOptionsScreen {
         } else {
             await device.pressBack();
         }
-        await wait(timeouts.ONE_SEC);
-        await expect(this.postOptionsScreen).not.toBeVisible();
-        await wait(timeouts.ONE_SEC);
+        await waitFor(this.postOptionsScreen).not.toExist().withTimeout(timeouts.FIVE_SEC);
     };
 
     deletePost = async ({confirm = true} = {}) => {
@@ -81,12 +79,11 @@ class PostOptionsScreen {
         await expect(deleteButton).toBeVisible();
         if (confirm) {
             await deleteButton.tap();
-            await wait(timeouts.TWO_SEC);
-            await expect(this.postOptionsScreen).not.toExist();
+            await waitFor(this.postOptionsScreen).not.toExist().withTimeout(timeouts.FIVE_SEC);
         } else {
             await cancelButton.tap();
             await wait(timeouts.TWO_SEC);
-            await expect(this.postOptionsScreen).toExist();
+            await waitFor(this.postOptionsScreen).toExist().withTimeout(timeouts.FIVE_SEC);
             await this.close();
         }
     };

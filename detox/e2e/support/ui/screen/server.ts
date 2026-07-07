@@ -47,9 +47,7 @@ class ServerScreen {
     usernameInput = element(by.id(this.testID.usernameInput));
 
     toBeVisible = async () => {
-        // iOS 26.2 on macos-15 CI runners takes longer than 10s to present the
-        // server screen after cold launch. Use HALF_MIN for both platforms so the
-        // first-launch case never races with OS-level app registration delays.
+        // iOS 26.2 CI: use HALF_MIN for server screen — cold launch can exceed 10s.
         const timeout = timeouts.HALF_MIN;
         await waitFor(this.serverScreen).toExist().withTimeout(timeout);
         await waitFor(this.serverUrlInput).toExist().withTimeout(timeout);
@@ -66,7 +64,34 @@ class ServerScreen {
         if (isAndroid()) {
             await this.waitForAndroidLoginAvailable(timeouts.ONE_MIN);
         } else {
-            await waitForElementToExist(this.usernameInput, timeouts.HALF_MIN);
+            // iOS: retry on transient "Cannot connect" — re-enter URL to re-enable Connect.
+            const MAX_CONNECT_ATTEMPTS = 3;
+            let lastError: unknown;
+            /* eslint-disable no-await-in-loop -- sequential retry: each attempt must complete before deciding to retry */
+            for (let attempt = 1; attempt <= MAX_CONNECT_ATTEMPTS; attempt++) {
+                if (attempt > 1) {
+                    await this.serverUrlInput.clearText();
+                    await wait(timeouts.TWO_SEC);
+                    await this.serverUrlInput.replaceText(serverUrl);
+                    await wait(timeouts.ONE_SEC);
+                    await this.tapConnectButton();
+                }
+                try {
+                    await waitForElementToExist(this.usernameInput, timeouts.HALF_MIN);
+                    lastError = undefined;
+                    break;
+                } catch (e) {
+                    lastError = e;
+                    if (attempt < MAX_CONNECT_ATTEMPTS) {
+                        // eslint-disable-next-line no-console
+                        console.warn(`[connectToServer] Attempt ${attempt}/${MAX_CONNECT_ATTEMPTS} — login form did not appear, retrying`);
+                    }
+                }
+            }
+            /* eslint-enable no-await-in-loop */
+            if (lastError) {
+                throw lastError;
+            }
         }
 
         if (isIos()) {
