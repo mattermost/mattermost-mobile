@@ -125,7 +125,7 @@ describe('Search - Search Messages', () => {
         await SearchMessagesScreen.toBeVisible();
 
         // # Tap on in-search-modifier, type in channel name, tap on channel mention autocomplete, and tap on search key
-        await SearchMessagesScreen.searchModifierIn.tap();
+        await SearchMessagesScreen.searchModifierIn.tap({x: 1, y: 1});
         await SearchMessagesScreen.searchInput.typeText(testChannel.name);
         const {channelMentionItem} = Autocomplete.getChannelMentionItem(testChannel.name);
         await waitForElementToBeVisible(channelMentionItem, timeouts.TWO_SEC);
@@ -199,13 +199,14 @@ describe('Search - Search Messages', () => {
         await SearchMessagesScreen.toBeVisible();
 
         // # Type in the message prefix plus included term inside double quotes and tap on search key
-        await SearchMessagesScreen.searchModifierPhrases.tap();
+        await SearchMessagesScreen.searchModifierPhrases.tap({x: 1, y: 1});
         await SearchMessagesScreen.searchInput.tapBackspaceKey();
         await SearchMessagesScreen.searchInput.typeText(messageWithIncludedTerm);
 
         // # Collapse the keyboard
         await element(by.id('search.modifier.header')).tap();
-        await SearchMessagesScreen.searchModifierPhrases.tap();
+
+        await SearchMessagesScreen.searchModifierPhrases.tap({x: 1, y: 1});
         await SearchMessagesScreen.searchInput.tapBackspaceKey();
         await SearchMessagesScreen.searchInput.tapReturnKey();
 

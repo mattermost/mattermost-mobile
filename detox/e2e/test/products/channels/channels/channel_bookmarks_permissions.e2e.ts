@@ -11,7 +11,6 @@ import {
     ChannelBookmark,
     Channel,
     Setup,
-    System,
     Team,
     User,
 } from '@support/server_api';
@@ -60,8 +59,6 @@ describe('Channels - Channel Bookmarks Permissions', () => {
         testTeam = team;
         testUser = user;
 
-        await System.apiUpdateConfig(siteOneUrl, {FeatureFlags: {ChannelBookmarks: true}});
-
         const {user: rUser} = await User.apiCreateUser(siteOneUrl);
         if (!rUser?.id) {
             throw new Error('[beforeAll] Failed to create regularUser');
@@ -87,7 +84,6 @@ describe('Channels - Channel Bookmarks Permissions', () => {
     });
 
     afterAll(async () => {
-        await System.apiUpdateConfig(siteOneUrl, {FeatureFlags: {ChannelBookmarks: false}});
         await HomeScreen.logout();
     });
 

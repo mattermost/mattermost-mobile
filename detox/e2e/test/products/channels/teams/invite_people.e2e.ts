@@ -212,7 +212,7 @@ describe('Teams - Invite', () => {
         await waitFor(Invite.getSearchListUserItem(testUser.id)).toExist().withTimeout(timeouts.TEN_SEC);
 
         // # Select user item.
-        await Invite.getSearchListUserItem(testUser.id).tap();
+        await Invite.getSearchListUserItem(testUser.id).tap({x: 1, y: 1});
 
         // # Send invitation
         await Invite.sendButton.tap();

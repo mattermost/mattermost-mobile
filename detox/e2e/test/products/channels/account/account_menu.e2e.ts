@@ -123,6 +123,32 @@ describe('Account - Account Menu', () => {
         await expect(AccountScreen.getUserPresenceLabel('online')).toHaveText('Online');
     });
 
+    it('MM-T3251 - should be able to set status from account screen', async () => {
+        const statusEmoji = 'calendar';
+        const statusText = 'In a meeting';
+        const statusDuration = 'one_hour';
+
+        // # Tap set status on account screen
+        await AccountScreen.setStatusOption.tap();
+        await CustomStatusScreen.toBeVisible();
+
+        // # Select a suggested status and save
+        const {customStatusSuggestion: inMeetingStatus} =
+            CustomStatusScreen.getSuggestedCustomStatus(statusEmoji, statusText, statusDuration);
+        await inMeetingStatus.tap();
+        await CustomStatusScreen.doneButton.tap();
+        await wait(timeouts.TWO_SEC);
+
+        // * Verify custom status appears on account screen
+        await AccountScreen.toBeVisible();
+        const {accountCustomStatusText} = AccountScreen.getCustomStatus(statusEmoji, statusDuration);
+        await expect(accountCustomStatusText).toHaveText(statusText);
+
+        // # Clear custom status
+        await AccountScreen.customStatusClearButton.tap();
+        await wait(timeouts.ONE_SEC);
+    });
+
     it('MM-T4988_3 - should be able to go to custom status screen', async () => {
         // # Tap on set status option
         await AccountScreen.setStatusOption.tap();

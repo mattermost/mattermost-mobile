@@ -40,21 +40,22 @@ appId: ${MAESTRO_APP_ID}
 - tapOn:
     id: "settings.report_problem.option"
 
-# In-app screen must render (NOT the external-browser/email shortcut path).
-# On unlicensed servers, tapping "Report a Problem" opens an external browser
-# or email composer instead — the in-app screen never appears. The conditional
-# blocks below handle both paths so the flow doesn't fail on unlicensed servers.
+# Unlicensed servers open external browser/email — conditional blocks handle both paths.
 - waitForAnimationToEnd:
     timeout: 3000
 
 # Path A: In-app Report a Problem screen (licensed server)
+# Toggle is below the fold — use scrollUntilVisible (assertVisible does not auto-scroll).
 - runFlow:
     when:
       visible:
         id: "report_problem.screen"
     commands:
-      - assertVisible:
-          id: "report_problem.enable_log_attachments"
+      - scrollUntilVisible:
+          element:
+            id: "report_problem.enable_log_attachments"
+          direction: DOWN
+          timeout: 10000
 
 # Path B: External browser / email composer (unlicensed server) — dismiss
 - runFlow:

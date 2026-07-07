@@ -96,8 +96,14 @@ describe('Search - Result Interactions', () => {
         await SearchMessagesScreen.searchInput.tapReturnKey();
         await wait(timeouts.TWO_SEC);
 
-        // * Verify at least one result is visible
+        // * Verify at least one result is visible.
         const flatList = SearchMessagesScreen.getFlatPostList();
+        try {
+            await flatList.scroll(50, 'down');
+        } catch {
+            // Results not yet rendered or keyboard already dismissed — non-fatal
+        }
+        await wait(timeouts.ONE_SEC);
         await expect(flatList).toBeVisible();
 
         // # Scroll the results list down to verify it is scrollable
@@ -172,6 +178,14 @@ describe('Search - Result Interactions', () => {
         await SearchMessagesScreen.searchInput.typeText(searchTerm);
         await SearchMessagesScreen.searchInput.tapReturnKey();
         await wait(timeouts.TWO_SEC);
+
+        // Dismiss keyboard so the post is not obscured by it when checking visibility.
+        try {
+            await SearchMessagesScreen.getFlatPostList().scroll(50, 'down');
+        } catch {
+            // Keyboard already gone or results not yet rendered — non-fatal
+        }
+        await wait(timeouts.ONE_SEC);
 
         // * Verify post result is visible
         const {postListPostItem} = SearchMessagesScreen.getPostListPostItem(postedMessage.id, message);
