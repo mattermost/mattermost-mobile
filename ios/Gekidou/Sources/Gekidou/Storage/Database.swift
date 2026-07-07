@@ -171,7 +171,7 @@ public class Database: NSObject {
     
     public func isZeroPersistenceServer(_ serverUrl: String) -> Bool {
         guard !DEFAULT_DB_PATH.isEmpty,
-              let db = try? openConnection(DEFAULT_DB_PATH) else { return true }
+              let db = try? openConnection(DEFAULT_DB_PATH) else { return false }
         let url = Expression<String>("url")
         let persistenceFlag = Expression<String>("persistence_flag")
         let query = serversTable.select(persistenceFlag).filter(url == serverUrl)
