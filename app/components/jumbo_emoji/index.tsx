@@ -49,7 +49,7 @@ const JumboEmoji = ({baseTextStyle, isEdited, value}: JumboEmojiProps) => {
 
     const renderParagraph = ({children}: {children: ReactElement}) => {
         return (
-            <View style={style.block}>{children}</View>
+            <View style={style.block}><Text>{children}</Text></View>
         );
     };
 
