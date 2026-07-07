@@ -12,7 +12,6 @@ type SAField = {
 type SAPropertyField = {
     name: string;
     type: string;
-    delete_at: number;
     attrs: {
         enabled: boolean;
         platforms: string[];

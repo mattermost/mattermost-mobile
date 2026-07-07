@@ -327,7 +327,6 @@ export async function handleWebSocketEvent(serverUrl: string, msg: WebSocketMess
 
         case WebsocketEvents.PROPERTY_FIELD_CREATED:
         case WebsocketEvents.PROPERTY_FIELD_UPDATED:
-        case WebsocketEvents.PROPERTY_FIELD_DELETED:
             handleSessionAttributesPropertyFieldEvent(serverUrl, msg);
             break;
 

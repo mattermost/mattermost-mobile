@@ -544,21 +544,19 @@ describe('WebSocket Users Actions', () => {
     });
 
     describe('handleSessionAttributesPropertyFieldEvent', () => {
-        const buildField = (attrs: Record<string, unknown>, overrides: Record<string, unknown> = {}) => JSON.stringify({
+        const buildField = (attrs: Record<string, unknown> = {}) => JSON.stringify({
             name: 'os_version',
             type: 'text',
-            delete_at: 0,
             attrs: {enabled: true, platforms: ['desktop', 'mobile'], ttl_seconds: 60, grace_period_seconds: 30, ...attrs},
-            ...overrides,
         });
 
-        const buildMessage = (property_field?: string, event = 'property_field_updated', objectType: string | undefined = 'session') => ({
-            event,
+        const buildMessage = (property_field?: string, objectType: string | undefined = 'session') => ({
+            event: 'property_field_updated',
             data: {object_type: objectType, property_field},
         }) as WebSocketMessage;
 
         it('should upsert an enabled mobile field from the websocket payload', () => {
-            handleSessionAttributesPropertyFieldEvent(serverUrl, buildMessage(buildField({})));
+            handleSessionAttributesPropertyFieldEvent(serverUrl, buildMessage(buildField()));
 
             expect(SessionAttributesManager.upsertManifestField).toHaveBeenCalledWith(serverUrl, {
                 name: 'os_version',
@@ -582,20 +580,8 @@ describe('WebSocket Users Actions', () => {
             expect(SessionAttributesManager.removeManifestField).toHaveBeenCalledWith(serverUrl, 'os_version');
         });
 
-        it('should remove a field on a delete event', () => {
-            handleSessionAttributesPropertyFieldEvent(serverUrl, buildMessage(buildField({}), 'property_field_deleted'));
-
-            expect(SessionAttributesManager.removeManifestField).toHaveBeenCalledWith(serverUrl, 'os_version');
-        });
-
-        it('should remove a field that has been soft-deleted', () => {
-            handleSessionAttributesPropertyFieldEvent(serverUrl, buildMessage(buildField({}, {delete_at: 123})));
-
-            expect(SessionAttributesManager.removeManifestField).toHaveBeenCalledWith(serverUrl, 'os_version');
-        });
-
         it('should ignore non-session object types', () => {
-            handleSessionAttributesPropertyFieldEvent(serverUrl, buildMessage(buildField({}), 'property_field_updated', 'channel'));
+            handleSessionAttributesPropertyFieldEvent(serverUrl, buildMessage(buildField(), 'channel'));
 
             expect(SessionAttributesManager.upsertManifestField).not.toHaveBeenCalled();
             expect(SessionAttributesManager.removeManifestField).not.toHaveBeenCalled();
