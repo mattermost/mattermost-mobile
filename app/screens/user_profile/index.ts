@@ -9,6 +9,7 @@ import {General, Permissions, Preferences} from '@constants';
 import {getDisplayNamePreferenceAsBool} from '@helpers/api/preference';
 import {observeChannel} from '@queries/servers/channel';
 import {observeCustomProfileAttributesByUserId, observeCustomProfileFields} from '@queries/servers/custom_profile';
+import {observeCustomProfileAttributesEnabled} from '@queries/servers/features';
 import {queryDisplayNamePreferences} from '@queries/servers/preference';
 import {observeCanManageChannelMembers, observePermissionForChannel} from '@queries/servers/role';
 import {observeConfigBooleanValue, observeCurrentTeamId, observeCurrentUserId} from '@queries/servers/system';
@@ -67,7 +68,7 @@ const enhanced = withObservables([], ({channelId, database, userId}: EnhancedPro
         observeWithColumns(['value']);
     const isMilitaryTime = preferences.pipe(map((prefs) => getDisplayNamePreferenceAsBool(prefs, Preferences.USE_MILITARY_TIME)));
     const isCustomStatusEnabled = observeConfigBooleanValue(database, 'EnableCustomUserStatuses');
-    const enableCustomAttributes = observeConfigBooleanValue(database, 'FeatureFlagCustomProfileAttributes');
+    const enableCustomAttributes = observeCustomProfileAttributesEnabled(database);
 
     // Custom profile attributes
     const rawCustomAttributes = observeCustomProfileAttributesByUserId(database, userId);
