@@ -55,7 +55,7 @@ extension PushNotification {
                 GekidouLogger.shared.log(.info, "Gekidou PushNotification: Signature verification: No signing key stored for zero-persistence server")
                 return false
             }
-            return verifyJwt(signature: signature, signingKey: signingKey, userInfo: userInfo)
+            return verifyJwt(signature: signature, signingKey: signingKey, userInfo: userInfo, storedDeviceToken: storedDeviceToken)
         }
 
         if signature == "NO_SIGNATURE" {
@@ -147,10 +147,10 @@ extension PushNotification {
             return false
         }
 
-        return verifyJwt(signature: signature, signingKey: signingKey, userInfo: userInfo)
+        return verifyJwt(signature: signature, signingKey: signingKey, userInfo: userInfo, storedDeviceToken: storedDeviceToken)
     }
 
-    private func verifyJwt(signature: String, signingKey: String, userInfo: [AnyHashable: Any]) -> Bool {
+    private func verifyJwt(signature: String, signingKey: String, userInfo: [AnyHashable: Any], storedDeviceToken: String?) -> Bool {
         let keyPEM = """
 -----BEGIN PUBLIC KEY-----
 \(signingKey)
