@@ -6,11 +6,14 @@ import base64 from 'base-64';
 import {nativeApplicationVersion, nativeBuildVersion} from 'expo-application';
 import {isRootedExperimentalAsync, osVersion} from 'expo-device';
 import {Platform} from 'react-native';
+import Permissions from 'react-native-permissions';
 
 import {fetchSessionAttributesManifest} from '@actions/remote/session_attributes';
 import {License} from '@constants';
 import {AttributeKey} from '@constants/session_attributes';
 import DatabaseManager from '@database/manager';
+import ManagedApp from '@init/managed_app';
+import IntuneManager from '@managers/intune_manager';
 import {getDeviceToken} from '@queries/app/global';
 import {getConfig, getLicense} from '@queries/servers/system';
 import {getFullErrorMessage} from '@utils/errors';
@@ -30,6 +33,7 @@ export class SessionAttributesManagerSingleton {
     private jailbroken = false;
     private deviceToken = '';
     private fqdnCache = new Map<string, string>();
+    private ssidRequested = false;
 
     refreshManifest = async (serverUrl: string): Promise<void> => {
         try {
@@ -56,6 +60,7 @@ export class SessionAttributesManagerSingleton {
             }
 
             this.initCollection();
+            this.fetchNetInfoState(manifest.some((field) => field.name === AttributeKey.ssid));
 
             this.servers.set(serverUrl, {
                 manifest,
@@ -113,10 +118,6 @@ export class SessionAttributesManagerSingleton {
             this.netInfoState = state;
         });
 
-        NetInfo.fetch().then((state) => {
-            this.netInfoState = state;
-        });
-
         // Root/jailbreak status can only change with a cold app restart.
         isRootedExperimentalAsync().then((rooted) => {
             this.jailbroken = rooted;
@@ -124,6 +125,29 @@ export class SessionAttributesManagerSingleton {
 
         getDeviceToken().then((token) => {
             this.deviceToken = token;
+        });
+    };
+
+    private fetchNetInfoState = async (ssidRequested: boolean) => {
+        if (this.netInfoState && (!ssidRequested || this.ssidRequested)) {
+            return;
+        }
+
+        if (ssidRequested) {
+            this.ssidRequested = true;
+            const permission = Platform.select({
+                ios: Permissions.PERMISSIONS.IOS.LOCATION_WHEN_IN_USE,
+                default: Permissions.PERMISSIONS.ANDROID.ACCESS_FINE_LOCATION,
+            });
+
+            const result = await Permissions.request(permission);
+            if (result === Permissions.RESULTS.GRANTED) {
+                NetInfo.configure({shouldFetchWiFiSSID: true});
+            }
+        }
+
+        NetInfo.fetch().then((state) => {
+            this.netInfoState = state;
         });
     };
 
@@ -136,12 +160,16 @@ export class SessionAttributesManagerSingleton {
                     return this.netInfoState ? this.mapNetInfoType(this.netInfoState) : '';
                 case AttributeKey.vpnActive:
                     return this.netInfoState?.type === NetInfoStateType.vpn ? 'true' : 'false';
-                case AttributeKey.ssid:
-                    // Native SSID collection pending rnutils bridge.
+                case AttributeKey.ssid: {
+                    const state = this.netInfoState;
+                    if (state?.type === NetInfoStateType.wifi) {
+                        return state.details.ssid ?? '';
+                    }
                     return '';
-                case AttributeKey.mdmEnrolled:
-                    // Native MDM enrollment check pending rnutils bridge.
-                    return '';
+                }
+                case AttributeKey.mdmEnrolled: {
+                    return (ManagedApp.enabled || IntuneManager.isManagedServer(serverUrl)) ? 'true' : 'false';
+                }
                 case AttributeKey.osPlatform:
                     return Platform.OS;
                 case AttributeKey.osVersion:

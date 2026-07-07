@@ -36,6 +36,7 @@ use_frameworks! :linkage => :static
 
 setup_permissions([
   "Camera",
+  "LocationWhenInUse",
   "Microphone",
   "Notifications",
   "PhotoLibrary",
