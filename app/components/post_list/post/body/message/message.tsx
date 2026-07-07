@@ -8,6 +8,7 @@ import Animated from 'react-native-reanimated';
 
 import Markdown from '@components/markdown';
 import {isChannelMentions} from '@components/markdown/channel_mention/channel_mention';
+import {isAndroidThreadRootPost} from '@components/post_list/android_thread_scroll';
 import {Screens} from '@constants';
 import {usePostConfig} from '@context/post_config';
 import {useShowMoreAnimatedStyle} from '@hooks/show_more';
@@ -122,6 +123,41 @@ const Message = ({
         message = getPostTranslatedMessage(post.message, translation);
     }
 
+    const isAndroidThreadRoot = isAndroidThreadRootPost({location, isReplyPost});
+
+    const markdown = (
+        <Markdown
+            allowInlineActions={allowInlineActions}
+            baseTextStyle={style.message}
+            channelId={post.channelId}
+            channelMentions={channelMentions}
+            imagesMetadata={imagesMetadata}
+            isEdited={isEdited}
+            isReplyPost={isReplyPost}
+            isSearchResult={location === Screens.SEARCH}
+            layoutWidth={layoutWidth}
+            location={location}
+            postId={post.id}
+            value={message}
+            mentionKeys={mentionKeys}
+            highlightKeys={highlightKeys}
+            searchPatterns={searchPatterns}
+            theme={theme}
+            isUnsafeLinksPost={Boolean(post.props?.unsafe_links && post.props.unsafe_links !== '')}
+        />
+    );
+
+    if (isAndroidThreadRoot) {
+        return (
+            <View
+                style={[style.messageContainer, isPendingOrFailed && style.pendingPost]}
+                collapsable={false}
+            >
+                {markdown}
+            </View>
+        );
+    }
+
     return (
         <>
             <Animated.View style={animatedStyle}>
@@ -135,25 +171,7 @@ const Message = ({
                         style={[style.messageContainer, (isReplyPost && style.reply), (isPendingOrFailed && style.pendingPost)]}
                         onLayout={onLayout}
                     >
-                        <Markdown
-                            allowInlineActions={allowInlineActions}
-                            baseTextStyle={style.message}
-                            channelId={post.channelId}
-                            channelMentions={channelMentions}
-                            imagesMetadata={imagesMetadata}
-                            isEdited={isEdited}
-                            isReplyPost={isReplyPost}
-                            isSearchResult={location === Screens.SEARCH}
-                            layoutWidth={layoutWidth}
-                            location={location}
-                            postId={post.id}
-                            value={message}
-                            mentionKeys={mentionKeys}
-                            highlightKeys={highlightKeys}
-                            searchPatterns={searchPatterns}
-                            theme={theme}
-                            isUnsafeLinksPost={Boolean(post.props?.unsafe_links && post.props.unsafe_links !== '')}
-                        />
+                        {markdown}
                     </View>
                 </ScrollView>
             </Animated.View>

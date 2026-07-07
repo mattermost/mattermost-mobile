@@ -423,4 +423,60 @@ describe('components/post_list/PostList', () => {
 
         expect(fetchPostsSpy).not.toHaveBeenCalled();
     });
+
+    it('includes thread root post in list data on Android thread screen', () => {
+        const originalOS = Platform.OS;
+        Object.defineProperty(Platform, 'OS', {value: 'android'});
+
+        const rootPost = mockPostModel({id: 'root-post-id', createAt: 2000});
+        const replies = Array.from({length: 12}, (_, index) => mockPostModel({
+            id: `reply-${index}`,
+            createAt: 1000 + index,
+            rootId: 'root-post-id',
+        }));
+        const props = {
+            ...baseProps,
+            location: Screens.THREAD,
+            rootId: rootPost.id,
+            posts: [...replies, rootPost],
+        };
+        const {getByTestId} = renderWithEverything(
+            <PostList {...props}/>,
+            {database, serverUrl},
+        );
+        const flatList = getByTestId('post_list.flat_list');
+
+        expect(flatList.props.data.some((item: {type: string; value: {currentPost: {id: string}}}) => {
+            return item.type === 'post' && item.value.currentPost.id === rootPost.id;
+        })).toBe(true);
+        expect(flatList.props.data.some((item: {type: string}) => item.type === 'thread-overview')).toBe(true);
+
+        Object.defineProperty(Platform, 'OS', {value: originalOS});
+    });
+
+    it('merges contentContainerStyle on Android thread', () => {
+        const originalOS = Platform.OS;
+        Object.defineProperty(Platform, 'OS', {value: 'android'});
+
+        const props = {
+            ...baseProps,
+            location: Screens.THREAD,
+            rootId: 'root-post-id',
+            contentContainerStyle: {marginTop: 10},
+        };
+        const {getByTestId} = renderWithEverything(
+            <PostList {...props}/>,
+            {database, serverUrl},
+        );
+        const flatList = getByTestId('post_list.flat_list');
+
+        expect(flatList.props.contentContainerStyle).toEqual(
+            expect.arrayContaining([
+                {marginTop: 10},
+                expect.objectContaining({marginTop: 0}),
+            ]),
+        );
+
+        Object.defineProperty(Platform, 'OS', {value: originalOS});
+    });
 });

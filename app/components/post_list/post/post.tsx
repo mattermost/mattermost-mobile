@@ -12,6 +12,7 @@ import AgentPost from '@agents/components/agent_post';
 import {isAgentPost} from '@agents/utils';
 import CallsCustomMessage from '@calls/components/calls_custom_message';
 import {isCallsCustomMessage} from '@calls/utils';
+import {isAndroidThreadRootPost} from '@components/post_list/android_thread_scroll';
 import UnrevealedBurnOnReadPost from '@components/post_list/post/burn_on_read/unrevealed';
 import SystemAvatar from '@components/system_avatar';
 import SystemHeader from '@components/system_header';
@@ -295,8 +296,6 @@ const Post = ({
     const highlightSaved = isSaved && !skipSavedHeader;
     const hightlightPinned = post.isPinned && !skipPinnedHeader;
     const itemTestID = `${testID}.${post.id}`;
-    const rightColumnStyle: StyleProp<ViewStyle> = [styles.rightColumn, (Boolean(post.rootId) && isLastReply && styles.rightColumnPadding)];
-    const pendingPostStyle: StyleProp<ViewStyle> | undefined = isPendingOrFailed ? styles.pendingPost : undefined;
 
     let highlightedStyle: StyleProp<ViewStyle>;
     if (highlight) {
@@ -304,6 +303,15 @@ const Post = ({
     } else if ((highlightSaved || hightlightPinned) && highlightPinnedOrSaved) {
         highlightedStyle = styles.highlightPinnedOrSaved;
     }
+
+    const isAndroidThreadRoot = isAndroidThreadRootPost({location, postId: post.id, rootId});
+    const postContainerStyle = [
+        isAndroidThreadRoot ? {overflow: 'hidden' as const} : styles.postStyle,
+        style,
+        highlightedStyle,
+    ];
+    const rightColumnStyle: StyleProp<ViewStyle> = [styles.rightColumn, (Boolean(post.rootId) && isLastReply && styles.rightColumnPadding)];
+    const pendingPostStyle: StyleProp<ViewStyle> | undefined = isPendingOrFailed ? styles.pendingPost : undefined;
 
     let header: ReactNode;
     let postAvatar: ReactNode;
@@ -446,8 +454,9 @@ const Post = ({
     return (
         <View
             testID={testID}
-            style={[styles.postStyle, style, highlightedStyle]}
+            style={postContainerStyle}
             onLayout={onLayout}
+            collapsable={isAndroidThreadRoot ? false : undefined}
         >
             <TouchableHighlight
                 testID={itemTestID}

@@ -2,7 +2,7 @@
 // See LICENSE.txt for license information.
 
 import React, {type ReactElement, useCallback, useEffect, useMemo, useRef, useState} from 'react';
-import {DeviceEventEmitter, type ListRenderItemInfo, Platform, type StyleProp, StyleSheet, type ViewStyle, type NativeSyntheticEvent, type NativeScrollEvent, type ViewToken} from 'react-native';
+import {DeviceEventEmitter, type ListRenderItemInfo, Platform, type StyleProp, StyleSheet, type ViewStyle, type NativeSyntheticEvent, type NativeScrollEvent, type ViewToken, useWindowDimensions} from 'react-native';
 import {Gesture, GestureDetector} from 'react-native-gesture-handler';
 import {KeyboardState, useAnimatedKeyboard, useKeyboardState as useControllerKeyboardState} from 'react-native-keyboard-controller';
 import Animated, {scrollTo, useAnimatedProps, useAnimatedReaction, useAnimatedStyle, type AnimatedStyle} from 'react-native-reanimated';
@@ -30,6 +30,7 @@ import PostListPerformance from '@utils/performance/post_list_performance';
 import {getDateForDateLine, preparePostList} from '@utils/post_list';
 import {getTimezone} from '@utils/user';
 
+import {isAndroidThreadScreen} from './android_thread_scroll';
 import {INITIAL_BATCH_TO_RENDER, SCROLL_POSITION_CONFIG, VIEWABILITY_CONFIG} from './config';
 import MoreMessages from './more_messages';
 import ScrollToEndView from './scroll_to_end_view';
@@ -93,6 +94,7 @@ const PostList = ({
     appsEnabled,
     mmBlocksEnabled,
     channelId,
+    contentContainerStyle,
     currentUser,
     customEmojiNames,
     disablePullToRefresh,
@@ -119,6 +121,7 @@ const PostList = ({
     const {panGesture: emojiPickerGesture} = useInputAccessoryViewGesture();
     const insets = useSafeAreaInsets();
     const defaultHeaderHeight = useDefaultHeaderHeight();
+    const {height: windowHeight} = useWindowDimensions();
 
     // Derive values from currentUser
     const currentUserId = currentUser.id;
@@ -200,7 +203,7 @@ const PostList = ({
 
     // Progressive loading: start with 10 items, then add the rest after initial render
     // The remaining posts are loaded in trackInitialRenderMetrics when viewable items are detected
-    const [showAllPosts, setShowAllPosts] = useState(false);
+    const [showAllPosts, setShowAllPosts] = useState(isAndroidThreadScreen(location));
 
     const {orderedPosts, initialIndex} = useMemo(() => {
         const result = preparePostList(posts, lastViewedAt, showNewMessageLine, currentUserId, currentUsername, shouldShowJoinLeaveMessages, currentTimezone, location === Screens.THREAD, savedPostIds);
@@ -208,7 +211,9 @@ const PostList = ({
 
         let postsToShow = result;
         if (!showAllPosts) {
-            postsToShow = result.slice(0, INITIAL_BATCH_TO_RENDER);
+            // Thread root post lives at the end of the ordered list (visual top when inverted).
+            // Keep the tail so the root post is measured in the initial batch on Android.
+            postsToShow = isAndroidThreadScreen(location)? result.slice(-INITIAL_BATCH_TO_RENDER): result.slice(0, INITIAL_BATCH_TO_RENDER);
         }
 
         return {
@@ -255,7 +260,7 @@ const PostList = ({
         initialRenderTracked.current = false;
 
         // Reset showAllPosts when channel/thread changes to enable progressive loading for new channel
-        setShowAllPosts(false);
+        setShowAllPosts(isAndroidThreadScreen(location));
 
         return () => {
             // Print summary when switching away from this channel/thread
@@ -523,9 +528,15 @@ const PostList = ({
         [isKeyboardVisible],
     );
 
-    const contentContainerStyleWithMargin = useMemo(() => ({
-        marginTop: location === Screens.PERMALINK || !isEdgeToEdge ? 0 : postInputContainerHeight + emojiPickerPadding,
-    }), [location, emojiPickerPadding, postInputContainerHeight]);
+    const isAndroidThread = isAndroidThreadScreen(location);
+
+    const contentContainerStyleWithMargin = useMemo(() => [
+        contentContainerStyle,
+        {
+            marginTop: location === Screens.PERMALINK || !isEdgeToEdge ? 0 : postInputContainerHeight + emojiPickerPadding,
+            ...(isAndroidThread && {paddingBottom: windowHeight}),
+        },
+    ], [contentContainerStyle, isAndroidThread, location, emojiPickerPadding, postInputContainerHeight, windowHeight]);
 
     const animatedProps = useAnimatedProps(
         () => {
@@ -583,8 +594,8 @@ const PostList = ({
                             inverted={true}
                             refreshing={refreshing}
                             onRefresh={onRefresh}
-                            maintainVisibleContentPosition={SCROLL_POSITION_CONFIG}
-                            removeClippedSubviews={true}
+                            maintainVisibleContentPosition={isAndroidThread ? undefined : SCROLL_POSITION_CONFIG}
+                            removeClippedSubviews={!isAndroidThread}
                             style={styles.flex}
                             windowSize={10}
                         />
