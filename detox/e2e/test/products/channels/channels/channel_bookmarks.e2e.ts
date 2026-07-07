@@ -50,10 +50,7 @@ describe('Channels - Channel Bookmarks', () => {
         return channel;
     };
 
-    // With many channels in the sidebar the list is taller than the viewport and some
-    // channels are scrolled off-screen. Wait for the FlashList to be rendered first
-    // (it appears slightly after channel_list.screen after a fresh login), then reset
-    // to the top so channels above the current viewport are reachable when scrolling down.
+    // Scroll channel list to top after FlashList mounts — off-screen channels need scroll-down from top.
     const openChannel = async (channel: any) => {
         const displayNameEl = ChannelListScreen.getChannelItemDisplayName(channelsCategory, channel.name);
         await waitFor(element(by.id('channel_list.flat_list'))).
@@ -141,10 +138,7 @@ describe('Channels - Channel Bookmarks', () => {
     });
 
     afterEach(async () => {
-        // # Safety net: return to channel list if a test left the app on a channel or modal screen.
-        // On Android the tab bar can be hidden behind modals (emoji picker, edit modal, channel info).
-        // Press Back up to 4 times — but only if the channel list is NOT already visible — to avoid
-        // accidentally navigating past the channel list (pressing Back there minimizes the app).
+        // Android safety net: Back up to 4x only if channel_list.screen not visible.
         if (isAndroid()) {
             for (let i = 0; i < 4; i++) {
                 try {
@@ -248,12 +242,7 @@ describe('Channels - Channel Bookmarks', () => {
             not.toExist().
             withTimeout(timeouts.TEN_SEC);
 
-        // * Verify the updated bookmark title is shown in channel info.
-        // Use by.text + withAncestor to both verify the title text updated AND
-        // avoid matching the same text in channel_header.bookmarks.list (the channel
-        // screen stays mounted behind channel_info in RNN). Use toExist() instead of
-        // toBeVisible() because iOS UITransitionView layers from modal animations can
-        // temporarily block the 75% visibility threshold even when the element is present.
+        // Scope to channel_info.bookmarks.list; use toExist() — RNN dual-list + iOS modal overlays.
         await waitFor(
             element(
                 by.text('Updated Bookmark').
@@ -273,10 +262,7 @@ describe('Channels - Channel Bookmarks', () => {
         // # Open channel info to see the bookmark
         await ChannelInfoScreen.open();
 
-        // * Verify the bookmark is visible in channel_info.
-        // Scope to channel_info.bookmarks.list — the same text also appears in
-        // channel_header.bookmarks.list (mounted behind the modal) and iOS picks
-        // that (not-visible) element first in the accessibility hierarchy.
+        // Scope to channel_info.bookmarks.list — same text also in channel_header behind modal.
         await expect(
             element(
                 by.text('No Favicon Bookmark').
@@ -284,8 +270,7 @@ describe('Channels - Channel Bookmarks', () => {
             ),
         ).toBeVisible();
 
-        // * Verify the generic fallback icon is shown (no image/emoji icon found).
-        // Same dual-list ambiguity — scope to channel_info.
+        // Scope generic icon to channel_info.bookmarks.list (dual-list ambiguity).
         await expect(
             element(
                 by.id('bookmark-generic-icon').
@@ -325,10 +310,7 @@ describe('Channels - Channel Bookmarks', () => {
         // * Verify edit modal opens
         await ChannelBookmarkScreen.toBeVisible();
 
-        // * Verify that the generic fallback icon is shown (no emoji set yet).
-        // Scope to channel_bookmark.screen — bookmark-generic-icon also exists in
-        // channel_header and channel_info behind the edit modal. Use toExist() since
-        // UITransitionView layers can interfere with the 75% visibility threshold.
+        // Scope to channel_bookmark.screen; use toExist() — dual-list + iOS modal overlays.
         await waitFor(
             element(
                 by.id('bookmark-generic-icon').
@@ -348,9 +330,7 @@ describe('Channels - Channel Bookmarks', () => {
         // # Navigate to the channel
         await openChannel(channelT5609);
 
-        // * Verify that the bookmark bar is visible below the channel header.
-        // Scope to channel_header.bookmarks.list — the same title also renders in
-        // channel_info when the modal is open on other tests.
+        // Scope to channel_header.bookmarks.list — same title also in channel_info when modal is open.
         await expect(
             element(
                 by.text('Banner Test Bookmark').

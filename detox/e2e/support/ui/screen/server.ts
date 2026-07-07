@@ -47,9 +47,7 @@ class ServerScreen {
     usernameInput = element(by.id(this.testID.usernameInput));
 
     toBeVisible = async () => {
-        // iOS 26.2 on macos-15 CI runners takes longer than 10s to present the
-        // server screen after cold launch. Use HALF_MIN for both platforms so the
-        // first-launch case never races with OS-level app registration delays.
+        // iOS 26.2 CI: use HALF_MIN for server screen — cold launch can exceed 10s.
         const timeout = timeouts.HALF_MIN;
         await waitFor(this.serverScreen).toExist().withTimeout(timeout);
         await waitFor(this.serverUrlInput).toExist().withTimeout(timeout);
@@ -66,8 +64,7 @@ class ServerScreen {
         if (isAndroid()) {
             await this.waitForAndroidLoginAvailable(timeouts.ONE_MIN);
         } else {
-            // iOS: retry if the server returns "Cannot connect" (transient infra issue).
-            // Re-entering the URL re-validates the form and re-enables the Connect button.
+            // iOS: retry on transient "Cannot connect" — re-enter URL to re-enable Connect.
             const MAX_CONNECT_ATTEMPTS = 3;
             let lastError: unknown;
             /* eslint-disable no-await-in-loop -- sequential retry: each attempt must complete before deciding to retry */

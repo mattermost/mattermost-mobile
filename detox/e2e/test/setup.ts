@@ -141,10 +141,7 @@ async function loginAdmin(): Promise<void> {
     }
 }
 
-// Feature flags that must be ON for E2E.
-// IMPORTANT: setupFilesAfterEnv re-evaluates this module for every test file, so a
-// module-level boolean flag resets to false each time and cannot prevent cross-file
-// re-execution.
+// E2E feature flags — idempotent per call; module-level flags reset each test file (setupFilesAfterEnv).
 async function ensureServerConfigForE2E(): Promise<void> {
     try {
         const {config, error} = await System.apiGetConfig(siteOneUrl);
@@ -156,8 +153,7 @@ async function ensureServerConfigForE2E(): Promise<void> {
         });
         console.info('✅ E2E server config initialized (FeatureFlags.ChannelBookmarks=true)');
     } catch (err) {
-        // Non-fatal: tests gated on the flag will surface as their own failures
-        // if this setup didn't take. Don't block login on a config-patch hiccup.
+        // Non-fatal: gated tests fail on their own if config patch did not apply.
         console.warn(`⚠️ ensureServerConfigForE2E failed: ${(err as Error).message}`);
     }
 }

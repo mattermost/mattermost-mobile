@@ -28,9 +28,7 @@ import {
 import {isAndroid, isIos, timeouts, wait} from '@support/utils';
 import {expect, waitFor} from 'detox';
 
-// MM-T4675_2 adds and logs into a second server. Some single-server environments (e.g.
-// Compatibility Matrix Testing, which provisions one server per run) don't provide a distinct
-// SITE_2_URL, so skip that test there. The single-server tests still run.
+// Skip MM-T4675_2 when SITE_2_URL is unset or equals SITE_1_URL (e.g. CMT single-server runs).
 const hasSecondServer = Boolean(process.env.SITE_2_URL) && process.env.SITE_2_URL !== process.env.SITE_1_URL;
 const itWithSecondServer = hasSecondServer ? it : it.skip;
 

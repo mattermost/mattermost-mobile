@@ -221,8 +221,7 @@ describe('Search - Pinned Messages', () => {
         // # Open post options for pinned message and tap on unpin from channel option
         await PinnedMessagesScreen.openPostOptionsFor(pinnedPost.id, message);
 
-        // The post-options sheet's presentation overlay can obscure the option row's
-        // center; tap a corner (same workaround as PostOptionsScreen.deletePost).
+        // Tap corner — post-options sheet overlay can obscure row center (same as deletePost).
         await waitFor(PostOptionsScreen.unpinPostOption).toBeVisible().withTimeout(timeouts.FIVE_SEC);
         await PostOptionsScreen.unpinPostOption.tap({x: 1, y: 1});
 

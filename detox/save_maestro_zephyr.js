@@ -3,14 +3,7 @@
 
 /* eslint-disable no-console, no-process-env */
 
-/*
- * Publish Maestro JUnit results to Zephyr Scale.
- *
- * Usage: [ENV] npm run e2e:save-maestro-zephyr -- [path/to/maestro-report.xml]
- *
- * Required when ZEPHYR_ENABLE=true:
- *   ZEPHYR_API_KEY, JIRA_PROJECT_KEY, ZEPHYR_FOLDER_ID, BUILD_ID, COMMIT_HASH, BRANCH
- */
+/* Publish Maestro JUnit to Zephyr Scale (npm run e2e:save-maestro-zephyr). Requires ZEPHYR_ENABLE=true and Zephyr env vars. */
 
 const path = require('path');
 

@@ -5,10 +5,7 @@ import Channel from './channel';
 import Team from './team';
 import User from './user';
 
-// Detect transient Postgres / server-load 500s that crop up under parallel-shard CI load:
-//   - "there is already a query being processed on this connection" (pgx conn-pool race)
-//   - "context deadline exceeded" (server timeout, e.g. LogJoinEvent)
-// These are NOT test logic bugs — retrying the same call with a small backoff succeeds.
+// Retry transient CI 500s (pgx conn-pool race, context deadline exceeded) — not test bugs.
 const isTransientServerError = (error: any): boolean => {
     if (!error) {
         return false;

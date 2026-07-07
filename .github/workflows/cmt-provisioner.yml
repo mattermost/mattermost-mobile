@@ -1,9 +1,6 @@
 name: CMT Provisioner
 
-# Lightweight signal workflow for Compatibility Matrix Testing (CMT).
-# When this runs, matterwick detects the workflow_run:requested event, provisions one
-# cloud server per version in its CMT set, and dispatches compatibility-matrix-testing.yml.
-# Triggers: build-release-NNN branch pushes (mobile's RC mechanism) and manual workflow_dispatch.
+# CMT signal workflow — matterwick provisions servers and dispatches compatibility-matrix-testing.yml on workflow_run:requested.
 
 on:
   push:

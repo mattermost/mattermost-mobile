@@ -284,8 +284,7 @@ jobs:
         if: always()
         run: |
           mkdir -p build
-          # Predicate filters to the Mattermost app processes — keeps the log
-          # focused on calls/WebRTC/connection messages, not the full sim noise.
+          # Filter sim log to Mattermost/WebRTC processes only.
           xcrun simctl spawn "$SIMULATOR_ID" log stream \
             --level=debug \
             --predicate 'process == "Mattermost" OR process == "MattermostRN" OR senderImagePath CONTAINS "WebRTC" OR senderImagePath CONTAINS "calls-native"' \
@@ -320,8 +319,7 @@ jobs:
             wait "$pid" 2>/dev/null || true
             echo "==> Device log capture stopped (pid $pid)"
           fi
-          # Print the tail so a quick failure scan doesn't require downloading
-          # the artifact for trivial cases.
+          # Print log tail for quick failure scans without downloading the artifact.
           if [ -f build/sim-device.log ]; then
             sz=$(wc -c < build/sim-device.log)
             echo "==> build/sim-device.log size=${sz}B"

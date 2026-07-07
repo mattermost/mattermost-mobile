@@ -61,9 +61,7 @@ EXPECTED_TIMEZONE_REGION="${EXPECTED_TIMEZONE_REGION:-$(timezone_region_from_ian
 
 EXCLUDE_TAGS_FILE="$REPO_ROOT/detox/maestro/config/exclude_tags.json"
 load_exclude_tags() {
-  # Reads detox/maestro/config/exclude_tags.json and emits a comma-joined list
-  # merging the "default" key with the platform-specific key (ios|android).
-  # Returns empty string if the file is missing.
+  # Emit comma-joined exclude tags from default + platform key in exclude_tags.json.
   [[ -f "$EXCLUDE_TAGS_FILE" ]] || { echo ""; return 0; }
   PLATFORM="$PLATFORM" node -e "
 const cfg = require('$EXCLUDE_TAGS_FILE');
@@ -313,10 +311,7 @@ ensure_android_timezone() {
   sleep 2
 }
 
-# Diagnostic snapshot: emit one line of CPU+RAM pressure before each batch so
-# we can tell post-hoc whether iOS Maestro is CPU-bound or RAM/swap-bound on
-# the current runner. Cheap (~50ms), removable once the runner-size question
-# is settled. Non-zero "Pageouts" / Swap counters mean RAM pressure.
+# Log CPU/RAM snapshot before each batch (temporary diagnostic for runner sizing).
 log_resource_snapshot() {
   local label=$1
   if [[ "$PLATFORM" == "ios" ]]; then

@@ -655,8 +655,7 @@ jobs:
             const {data: workflows} = await github.rest.actions.listRepoWorkflows({owner, repo});
             const e2eWorkflow = workflows.workflows.find((workflow) => workflow.name === 'E2E');
             if (e2eWorkflow) {
-              // Cache PR lookups per head_sha so a long active-runs list doesn't fan out
-              // into a quadratic number of API calls.
+              // Cache PR lookups per head_sha to avoid quadratic API calls.
               const prsForSha = new Map();
               const lookupPRsForSha = async (sha) => {
                 if (!sha) return [];
@@ -689,9 +688,7 @@ jobs:
                   if (run.id === context.runId) {
                     continue;
                   }
-                  // Prefer the run's own pull_requests array; when GitHub leaves it empty
-                  // (common for fork PRs and some webhook timings), fall back to a per-SHA
-                  // PR lookup so runs on a different commit of the same PR are still caught.
+                  // Fall back to per-SHA PR lookup when run.pull_requests is empty (fork PRs / webhook timing).
                   let belongsToPR;
                   if (run.pull_requests?.length) {
                     belongsToPR = run.pull_requests.some((pr) => pr.number === prNumber);

@@ -2,15 +2,7 @@
 // See LICENSE.txt for license information.
 
 // *******************************************************************
-// E2E tests for Share with connected workspaces
-// Navigation: Channel → Channel Info → Channel Settings → Configuration → Share with connected workspaces
-//
-// Requirements for "Share with connected workspaces" to be visible:
-// - Server license must include Shared Channels (license.SharedChannels === 'true').
-//   The server only sends ExperimentalSharedChannels to the client when license.HasSharedChannels().
-// - Config: ConnectedWorkspacesSettings.EnableSharedChannels = true (server struct; client sees ExperimentalSharedChannels).
-// - User must have MANAGE_SHARED_CHANNELS (e.g. system_admin role).
-// - Channel must be a public/private channel (not DM/GM).
+// Share with connected workspaces — needs Shared Channels license, EnableSharedChannels, MANAGE_SHARED_CHANNELS.
 // *******************************************************************
 
 import {Channel, Setup, System, User} from '@support/server_api';
@@ -31,8 +23,7 @@ import {
 import {tapNativeBackButton, timeouts, wait} from '@support/utils';
 import {expect, device, element, by, waitFor} from 'detox';
 
-// The beforeAll calls apiInit + config setup + login under CI load.
-// Extend timeout to 6 minutes to avoid "Exceeded timeout of 240000 ms for a hook".
+// beforeAll: apiInit + config + login under CI load — 6min hook timeout.
 jest.setTimeout(360000);
 
 describe('Share with connected workspaces', () => {
@@ -57,14 +48,7 @@ describe('Share with connected workspaces', () => {
         }
     };
 
-    // Tap the native back chevron N times to unwind nested expo-router screens
-    // (Configuration, Share, etc.). The Channel Info screen uses a close button
-    // (close.channel_info.button), not the native back. Pass channelInfoCloseButtonId
-    // so the LAST tap uses the close button instead of native back.
-    //
-    // `tapNativeBackButton` queries the back chevron platform-natively (Android
-    // `device.pressBack()`, iOS `by.label('Back')`) because the @react-navigation/
-    // native-stack header does not expose a testID on its back chevron.
+    // Tap native back N times; last tap uses channel_info close button (nav back has no testID).
     const tapBackButton = async (times: number, lastButtonId?: string) => {
         const backTaps = lastButtonId ? times - 1 : times;
         await Array.from({length: backTaps}).reduce(

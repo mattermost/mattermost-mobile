@@ -100,16 +100,13 @@ describe('Messaging - Pin and Unpin Message', () => {
         const {post} = await ChannelScreen.postMessageAndVerify(message, testChannel.id, siteOneUrl);
         const {postListPostItem} = ChannelScreen.getPostListPostItem(post.id, message);
 
-        // Wait for the post to exist in the list (not necessarily visible — the new
-        // message lands at the bottom and auto-scroll-to-bottom on send is flaky;
-        // openChannelPostOptionsForPin below scrolls to it before long-pressing).
+        // Wait for post to exist (may be off-screen); openChannelPostOptionsForPin scrolls before long-press.
         await waitFor(postListPostItem).toExist().withTimeout(timeouts.TEN_SEC);
 
         // # Open post options for message and tap on pin to channel option
         await openChannelPostOptionsForPin(post.id, message);
 
-        // Wait for the pin row to be fully visible before tapping — the post-options
-        // sheet's presentation UITransitionView can still obscure the row on open.
+        // Wait for pin row visibility — post-options sheet overlay can block center-tap on open.
         await waitFor(PostOptionsScreen.pinPostOption).toBeVisible().withTimeout(timeouts.FIVE_SEC);
         await PostOptionsScreen.pinPostOption.tap({x: 1, y: 1});
 
@@ -151,9 +148,7 @@ describe('Messaging - Pin and Unpin Message', () => {
         // # Open post options for message and tap on unpin from channel option
         await ThreadScreen.openPostOptionsFor(post.id, message);
 
-        // Wait for the unpin row to be fully visible before tapping — the post-options
-        // sheet's presentation UITransitionView can still be obscuring the row when
-        // the sheet is first opened, making a bare .tap() fail Detox's 100% hittability check.
+        // Wait for unpin row visibility — post-options sheet overlay can block center-tap on open.
         await waitFor(PostOptionsScreen.unpinPostOption).toBeVisible().withTimeout(timeouts.FIVE_SEC);
         await PostOptionsScreen.unpinPostOption.tap({x: 1, y: 1});
 

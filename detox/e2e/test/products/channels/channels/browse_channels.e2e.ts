@@ -174,9 +174,7 @@ describe('Channels - Browse Channels', () => {
         // picks up the new config (the ChannelDropdown only renders when this is true)
         await System.apiUpdateConfig(siteOneUrl, {ServiceSettings: {ExperimentalViewArchivedChannels: true}});
 
-        // Reload so the app picks up the new config. The jest.setTimeout(360000) at
-        // the top of this file ensures the 30-90s reload on iOS CI does not exceed
-        // the test timeout.
+        // Reload to pick up config; file-level jest.setTimeout(360000) covers slow iOS reload.
         await device.reloadReactNative();
         await ChannelListScreen.toBeVisible();
 

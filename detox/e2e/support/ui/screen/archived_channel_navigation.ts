@@ -57,16 +57,7 @@ export async function postArchivedChannelSentinel(channelId: string): Promise<st
     return sentinel;
 }
 
-// Navigate to an archived channel via Browse Channels → archived filter → tap.
-// Android-only: the search/permalink path regressed MM-T1671_1 + MM-T1722_1.
-//
-// We skip the searchInput.replaceText step that prior implementations used:
-// browse_channels.search_bar.search.input never lands in the Android view
-// hierarchy as a Detox-findable view (confirmed by 0 hits across all 20 Android
-// shard device.logs in CI run 28290273101). Calling replaceText on a
-// non-findable element throws even inside a try-catch-style guard and leaves the
-// Browse Channels UI in a corrupted state. The archived-filter pre-loads
-// recently-archived channels at the top of the list, so tapping directly works.
+// Android: open archived channel via Browse Channels filter — skip search replaceText (not Detox-findable; CI 28290273101).
 async function openArchivedChannelViaBrowseChannels(channelName: string) {
     await BrowseChannelsScreen.open();
     await BrowseChannelsScreen.dismissScheduledPostTooltip();

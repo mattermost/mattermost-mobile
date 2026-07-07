@@ -316,10 +316,7 @@ describe('Channels', () => {
         await expect(CreateDirectMessageScreen.getSelectedDMUserDisplayName(gmUser2.id)).toBeVisible();
 
         // # Tap on start button
-        // Wait for the chip-add animation (triggered by the second getUserItem tap)
-        // to finish before tapping startButton. The UITransitionView overlay is still
-        // animating when control returns from getUserItem, and an immediate center-tap
-        // is intercepted by the overlay — onPress never fires and channel.screen never mounts.
+        // Wait for chip-add animation — UITransitionView overlay intercepts startButton center-tap.
         await wait(timeouts.ONE_SEC);
         await CreateDirectMessageScreen.startButton.tap();
         await ChannelScreen.dismissScheduledPostTooltip();
