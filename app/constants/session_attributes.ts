@@ -2,6 +2,7 @@
 // See LICENSE.txt for license information.
 
 export const SESSION_ATTRIBUTES_OBJECT_TYPE = 'session';
+export const SESSION_ATTRIBUTES_PLATFORM_MOBILE = 'mobile';
 export const AttributeKey = {
     vpnActive: 'vpn_active',
     clientDeviceId: 'client_device_id',

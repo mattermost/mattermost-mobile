@@ -76,6 +76,35 @@ export class SessionAttributesManagerSingleton {
         this.servers.delete(serverUrl);
     };
 
+    // Applies a single manifest field change from a websocket event without refetching
+    // the whole manifest. No-op when the server has no active manifest.
+    upsertManifestField = (serverUrl: string, field: SAField) => {
+        const state = this.servers.get(serverUrl);
+        if (!state) {
+            return;
+        }
+
+        const index = state.manifest.findIndex((f) => f.name === field.name);
+        if (index === -1) {
+            state.manifest.push(field);
+        } else {
+            state.manifest[index] = field;
+        }
+
+        // Re-send the attribute with its new definition on the next request.
+        state.lastSentAt.delete(field.name);
+    };
+
+    removeManifestField = (serverUrl: string, name: string) => {
+        const state = this.servers.get(serverUrl);
+        if (!state) {
+            return;
+        }
+
+        state.manifest = state.manifest.filter((f) => f.name !== name);
+        state.lastSentAt.delete(name);
+    };
+
     getOutboundHeader = (serverUrl: string): string | undefined => {
         const state = this.servers.get(serverUrl);
         if (!state) {

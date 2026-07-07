@@ -116,7 +116,7 @@ describe('SessionAttributesManager', () => {
         jest.mocked(IntuneManager.isManagedServer).mockReturnValue(false);
         jest.mocked(Permissions.request).mockResolvedValue('granted' as never);
 
-        mockClient = {getSessionAttributesManifest: jest.fn().mockResolvedValue(manifest)};
+        mockClient = {getSessionAttributesManifest: jest.fn(() => Promise.resolve(manifest.map((field) => ({...field}))))};
         mockGetClient.mockReturnValue(mockClient);
 
         manager = new SessionAttributesManagerSingleton();
@@ -221,6 +221,48 @@ describe('SessionAttributesManager', () => {
         await manager.refreshManifest(serverUrl);
 
         manager.removeServer(serverUrl);
+
+        expect(manager.getOutboundHeader(serverUrl)).toBeUndefined();
+    });
+
+    it('should add a new manifest field with upsertManifestField', async () => {
+        await manager.refreshManifest(serverUrl);
+
+        manager.upsertManifestField(serverUrl, {name: 'client_version', type: 'string', ttl_seconds: 0, grace_period_seconds: 0});
+
+        expect(decode(manager.getOutboundHeader(serverUrl)!)).toEqual({
+            os_platform: 'ios',
+            os_version: '17.0',
+            client_version: '2.42.0+456',
+        });
+    });
+
+    it('should replace an existing manifest field and resend it with upsertManifestField', async () => {
+        await manager.refreshManifest(serverUrl);
+        manager.getOutboundHeader(serverUrl);
+
+        // os_version is fresh (ttl 15) so it would normally be omitted...
+        expect(decode(manager.getOutboundHeader(serverUrl)!)).toEqual({os_platform: 'ios'});
+
+        // ...but re-defining it clears its lastSentAt so it is resent.
+        manager.upsertManifestField(serverUrl, {name: 'os_version', type: 'string', ttl_seconds: 15, grace_period_seconds: 30});
+
+        expect(decode(manager.getOutboundHeader(serverUrl)!)).toEqual({
+            os_platform: 'ios',
+            os_version: '17.0',
+        });
+    });
+
+    it('should drop a manifest field with removeManifestField', async () => {
+        await manager.refreshManifest(serverUrl);
+
+        manager.removeManifestField(serverUrl, 'os_version');
+
+        expect(decode(manager.getOutboundHeader(serverUrl)!)).toEqual({os_platform: 'ios'});
+    });
+
+    it('should ignore manifest field updates for a server without an active manifest', () => {
+        manager.upsertManifestField(serverUrl, {name: 'os_platform', type: 'string', ttl_seconds: 0, grace_period_seconds: 0});
 
         expect(manager.getOutboundHeader(serverUrl)).toBeUndefined();
     });

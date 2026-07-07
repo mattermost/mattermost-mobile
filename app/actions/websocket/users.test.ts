@@ -41,6 +41,8 @@ jest.mock('@managers/session_attributes_manager', () => ({
     __esModule: true,
     default: {
         refreshManifest: jest.fn().mockResolvedValue(undefined),
+        upsertManifestField: jest.fn(),
+        removeManifestField: jest.fn(),
     },
 }));
 jest.mock('@queries/servers/channel');
@@ -542,28 +544,68 @@ describe('WebSocket Users Actions', () => {
     });
 
     describe('handleSessionAttributesPropertyFieldEvent', () => {
-        it('should invalidate manifest for session object type', async () => {
-            await handleSessionAttributesPropertyFieldEvent(serverUrl, {
-                data: {object_type: 'session'},
-            } as WebSocketMessage);
-
-            expect(SessionAttributesManager.refreshManifest).toHaveBeenCalledWith(serverUrl);
+        const buildField = (attrs: Record<string, unknown>, overrides: Record<string, unknown> = {}) => JSON.stringify({
+            name: 'os_version',
+            type: 'text',
+            delete_at: 0,
+            attrs: {enabled: true, platforms: ['desktop', 'mobile'], ttl_seconds: 60, grace_period_seconds: 30, ...attrs},
+            ...overrides,
         });
 
-        it('should not refresh manifest when object_type is omitted', async () => {
-            await handleSessionAttributesPropertyFieldEvent(serverUrl, {
-                data: {},
-            } as WebSocketMessage);
+        const buildMessage = (property_field?: string, event = 'property_field_updated', objectType: string | undefined = 'session') => ({
+            event,
+            data: {object_type: objectType, property_field},
+        }) as WebSocketMessage;
 
-            expect(SessionAttributesManager.refreshManifest).not.toHaveBeenCalled();
+        it('should upsert an enabled mobile field from the websocket payload', () => {
+            handleSessionAttributesPropertyFieldEvent(serverUrl, buildMessage(buildField({})));
+
+            expect(SessionAttributesManager.upsertManifestField).toHaveBeenCalledWith(serverUrl, {
+                name: 'os_version',
+                type: 'text',
+                ttl_seconds: 60,
+                grace_period_seconds: 30,
+            });
+            expect(SessionAttributesManager.removeManifestField).not.toHaveBeenCalled();
         });
 
-        it('should ignore non-session object types', async () => {
-            await handleSessionAttributesPropertyFieldEvent(serverUrl, {
-                data: {object_type: 'channel'},
-            } as WebSocketMessage);
+        it('should remove a disabled field', () => {
+            handleSessionAttributesPropertyFieldEvent(serverUrl, buildMessage(buildField({enabled: false})));
 
-            expect(SessionAttributesManager.refreshManifest).not.toHaveBeenCalled();
+            expect(SessionAttributesManager.removeManifestField).toHaveBeenCalledWith(serverUrl, 'os_version');
+            expect(SessionAttributesManager.upsertManifestField).not.toHaveBeenCalled();
+        });
+
+        it('should remove a field not targeted at mobile', () => {
+            handleSessionAttributesPropertyFieldEvent(serverUrl, buildMessage(buildField({platforms: ['desktop']})));
+
+            expect(SessionAttributesManager.removeManifestField).toHaveBeenCalledWith(serverUrl, 'os_version');
+        });
+
+        it('should remove a field on a delete event', () => {
+            handleSessionAttributesPropertyFieldEvent(serverUrl, buildMessage(buildField({}), 'property_field_deleted'));
+
+            expect(SessionAttributesManager.removeManifestField).toHaveBeenCalledWith(serverUrl, 'os_version');
+        });
+
+        it('should remove a field that has been soft-deleted', () => {
+            handleSessionAttributesPropertyFieldEvent(serverUrl, buildMessage(buildField({}, {delete_at: 123})));
+
+            expect(SessionAttributesManager.removeManifestField).toHaveBeenCalledWith(serverUrl, 'os_version');
+        });
+
+        it('should ignore non-session object types', () => {
+            handleSessionAttributesPropertyFieldEvent(serverUrl, buildMessage(buildField({}), 'property_field_updated', 'channel'));
+
+            expect(SessionAttributesManager.upsertManifestField).not.toHaveBeenCalled();
+            expect(SessionAttributesManager.removeManifestField).not.toHaveBeenCalled();
+        });
+
+        it('should ignore events without a property field payload', () => {
+            handleSessionAttributesPropertyFieldEvent(serverUrl, buildMessage(undefined));
+
+            expect(SessionAttributesManager.upsertManifestField).not.toHaveBeenCalled();
+            expect(SessionAttributesManager.removeManifestField).not.toHaveBeenCalled();
         });
     });
 });
