@@ -5,7 +5,7 @@ import {restoreServerAfterDatabaseWipe} from '@actions/remote/restore_server';
 import DatabaseManager from '@database/manager';
 import {isDatabaseCorruptionError} from '@utils/database_errors';
 import {getFullErrorMessage} from '@utils/errors';
-import {logError, logInfo, logWarning} from '@utils/log';
+import {logDebug, logError, logInfo, logWarning} from '@utils/log';
 
 const MAX_RECOVERY_ATTEMPTS = 1;
 const RECOVERY_WINDOW_MS = 5 * 60 * 1000;
@@ -75,6 +75,9 @@ export async function attemptServerDatabaseRecovery(
     }
 
     recoveryInProgress.add(serverUrl);
+
+    // All attemps should be recorded to avoid entering a loop if the database
+    // gets corrupted when getting recreated.
     recordRecoveryAttempt(serverUrl);
 
     const shouldResync = options.resync ?? true;
@@ -83,6 +86,12 @@ export async function attemptServerDatabaseRecovery(
         logError('attemptServerDatabaseRecovery: corruption detected', serverUrl, source, getFullErrorMessage(error));
         await DatabaseManager.wipeServerData(serverUrl);
         logInfo('attemptServerDatabaseRecovery: database wiped and recreated', serverUrl, source);
+
+        const database = DatabaseManager.serverDatabases[serverUrl];
+        if (!database) {
+            logDebug('attemptServerDatabaseRecovery: database not found after wipe', serverUrl, source);
+            return true;
+        }
 
         if (shouldResync && DatabaseManager.serverDatabases[serverUrl]) {
             const {error: resyncError} = await restoreServerAfterDatabaseWipe(serverUrl);
