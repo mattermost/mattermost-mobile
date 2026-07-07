@@ -133,6 +133,15 @@ describe('get users', () => {
         expect(result.user).toBeDefined();
     });
 
+    it('fetchMe - preserves the getMe rejection reason instead of a generic error', async () => {
+        const authError = {status_code: 401};
+        (mockClient.getMe as jest.Mock).mockRejectedValueOnce(authError);
+
+        const result = await fetchMe(serverUrl);
+
+        expect(result?.error).toBe(authError);
+    });
+
     it('fetchProfilesInChannel - handle not found database', async () => {
         const result = await fetchProfilesInChannel('foo', '');
         expect(result?.error).toBeDefined();
@@ -813,12 +822,21 @@ describe('updateCustomAttributes', () => {
 });
 
 describe('refetchCurrentUser', () => {
-    it('returns error when fetchMe returns no user', async () => {
-        (mockClient.getMe as jest.Mock).mockRejectedValueOnce(new Error('network failure'));
+    it('returns the underlying fetchMe error when no user is fetched', async () => {
+        const fetchError = new Error('network failure');
+        (mockClient.getMe as jest.Mock).mockRejectedValueOnce(fetchError);
 
         const result = await refetchCurrentUser(serverUrl, undefined);
 
-        expect(result).toEqual({error: 'No user fetched'});
+        expect(result).toEqual({error: fetchError});
+    });
+
+    it('returns the already-known currentUserId without seeding it again, regardless of the fetchMe outcome', async () => {
+        (mockClient.getMe as jest.Mock).mockRejectedValueOnce(new Error('network failure'));
+
+        const result = await refetchCurrentUser(serverUrl, 'userid1');
+
+        expect(result).toEqual({currentUserId: 'userid1'});
     });
 
     it('returns error when operator is not available after fetchMe succeeds', async () => {

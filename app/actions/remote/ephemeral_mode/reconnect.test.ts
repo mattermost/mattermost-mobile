@@ -5,6 +5,7 @@ import NetInfo, {type NetInfoState} from '@react-native-community/netinfo';
 import {router} from 'expo-router';
 import {DeviceEventEmitter} from 'react-native';
 
+import {wipeServerDatabaseWithRetry} from '@actions/local/ephemeral_mode/wipe';
 import {loginEntry} from '@actions/remote/entry';
 import {fetchMe} from '@actions/remote/user';
 import {Events, Launch} from '@constants';
@@ -22,6 +23,9 @@ jest.mock('@react-native-community/netinfo', () => ({
 }));
 jest.mock('expo-router', () => ({
     router: {replace: jest.fn()},
+}));
+jest.mock('@actions/local/ephemeral_mode/wipe', () => ({
+    wipeServerDatabaseWithRetry: jest.fn(),
 }));
 jest.mock('@actions/remote/entry', () => ({
     loginEntry: jest.fn(),
@@ -45,7 +49,6 @@ describe('reconnectErasedServer', () => {
 
     let updatePersistenceFlagSpy: jest.SpyInstance;
     let setActiveServerDatabaseSpy: jest.SpyInstance;
-    let wipeServerDataSpy: jest.SpyInstance;
 
     const fakeUser = {id: 'u1', email: 'u@example.com'};
     const mockOperator = {handleUsers: jest.fn().mockResolvedValue(undefined)};
@@ -54,12 +57,12 @@ describe('reconnectErasedServer', () => {
         jest.clearAllMocks();
         updatePersistenceFlagSpy = jest.spyOn(DatabaseManager, 'updatePersistenceFlag').mockResolvedValue(undefined);
         setActiveServerDatabaseSpy = jest.spyOn(DatabaseManager, 'setActiveServerDatabase').mockResolvedValue(undefined);
-        wipeServerDataSpy = jest.spyOn(DatabaseManager, 'wipeServerData').mockResolvedValue(undefined);
         jest.spyOn(DatabaseManager, 'getServerDatabaseAndOperator').mockReturnValue({
             operator: mockOperator as never,
             database: {} as never,
         });
         jest.mocked(fetchMe).mockResolvedValue({user: fakeUser} as never);
+        jest.mocked(wipeServerDatabaseWithRetry).mockResolvedValue({success: true});
         jest.mocked(NetInfo.fetch).mockResolvedValue({isConnected: true} as NetInfoState);
         jest.mocked(getServerCredentials).mockResolvedValue({serverUrl, userId: 'u1', token: 'tok-abc', preauthSecret: 'preauth'});
         jest.mocked(loginEntry).mockResolvedValue({});
@@ -103,7 +106,7 @@ describe('reconnectErasedServer', () => {
         expect(updatePersistenceFlagSpy).toHaveBeenCalledWith(serverUrl, '');
         expect(determineRouteFromLaunchProps).toHaveBeenCalledWith({launchType: Launch.Normal, serverUrl, coldStart: true});
         expect(router.replace).toHaveBeenCalledWith({pathname: '/(authenticated)/(home)', params: {launchType: Launch.Normal, serverUrl, coldStart: true}});
-        expect(wipeServerDataSpy).not.toHaveBeenCalled();
+        expect(wipeServerDatabaseWithRetry).not.toHaveBeenCalled();
         expect(result).toEqual({});
     });
 
@@ -115,7 +118,7 @@ describe('reconnectErasedServer', () => {
         const result = await reconnectErasedServer(serverUrl);
 
         expect(loginEntry).not.toHaveBeenCalled();
-        expect(wipeServerDataSpy).not.toHaveBeenCalled();
+        expect(wipeServerDatabaseWithRetry).not.toHaveBeenCalled();
         expect(updatePersistenceFlagSpy).not.toHaveBeenCalled();
         expect(router.replace).not.toHaveBeenCalled();
         expect(emitSpy).not.toHaveBeenCalledWith(Events.SERVER_LOGOUT, expect.anything());
@@ -130,7 +133,7 @@ describe('reconnectErasedServer', () => {
         const result = await reconnectErasedServer(serverUrl);
 
         expect(loginEntry).not.toHaveBeenCalled();
-        expect(wipeServerDataSpy).not.toHaveBeenCalled();
+        expect(wipeServerDatabaseWithRetry).not.toHaveBeenCalled();
         expect(updatePersistenceFlagSpy).not.toHaveBeenCalled();
         expect(router.replace).not.toHaveBeenCalled();
         expect(emitSpy).toHaveBeenCalledWith(Events.SERVER_LOGOUT, {serverUrl, removeServer: false});
@@ -143,7 +146,7 @@ describe('reconnectErasedServer', () => {
 
         const result = await reconnectErasedServer(serverUrl);
 
-        expect(wipeServerDataSpy).toHaveBeenCalledWith(serverUrl);
+        expect(wipeServerDatabaseWithRetry).toHaveBeenCalledWith(serverUrl);
         expect(updatePersistenceFlagSpy).not.toHaveBeenCalled();
         expect(router.replace).not.toHaveBeenCalled();
         expect(result).toEqual({error: wsError});
