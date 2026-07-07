@@ -81,7 +81,7 @@ class SearchMessagesScreen {
 
     open = async () => {
         // # Open search messages screen
-        await HomeScreen.searchTab.tap();
+        await HomeScreen.searchTab.tap({x: 1, y: 1});
 
         return this.toBeVisible();
     };

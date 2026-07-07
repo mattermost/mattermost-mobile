@@ -57,13 +57,11 @@ export async function postArchivedChannelSentinel(channelId: string): Promise<st
     return sentinel;
 }
 
-// Navigate to an archived channel via Browse Channels → archived filter → tap.
-// Android-only: the search/permalink path regressed MM-T1671_1 + MM-T1722_1.
+// Android: open archived channel via Browse Channels filter — skip search replaceText (not Detox-findable; CI 28290273101).
 async function openArchivedChannelViaBrowseChannels(channelName: string) {
     await BrowseChannelsScreen.open();
     await BrowseChannelsScreen.dismissScheduledPostTooltip();
     await openArchivedChannelsFilter();
-    await BrowseChannelsScreen.searchInput.replaceText(channelName);
 
     await waitFor(BrowseChannelsScreen.getChannelItem(channelName)).toExist().withTimeout(timeouts.TEN_SEC);
     await BrowseChannelsScreen.getChannelItem(channelName).tap();
@@ -88,7 +86,18 @@ async function openArchivedChannelViaSearchPermalink(searchableMessage: string) 
     await device.disableSynchronization();
     try {
         await SearchMessagesScreen.searchInput.tapReturnKey();
-        await waitForElementToBeVisible(searchResultText, timeouts.ONE_MIN);
+        try {
+            await waitForElementToBeVisible(searchResultText, timeouts.TWENTY_SEC);
+        } catch {
+            // Search-index lag: up to three total attempts (two re-submits after the initial try).
+            await SearchMessagesScreen.searchInput.tapReturnKey();
+            try {
+                await waitForElementToBeVisible(searchResultText, timeouts.ONE_MIN);
+            } catch {
+                await SearchMessagesScreen.searchInput.tapReturnKey();
+                await waitForElementToBeVisible(searchResultText, timeouts.ONE_MIN);
+            }
+        }
     } finally {
         await device.enableSynchronization();
     }

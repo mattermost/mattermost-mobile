@@ -37,6 +37,24 @@ on:
         required: false
         type: boolean
         default: false
+      record_tests_in_zephyr:
+        description: "Record Maestro test results in Zephyr Scale (nightly/release runs)"
+        required: false
+        type: boolean
+        default: false
+    secrets:
+      MM_MOBILE_E2E_ADMIN_EMAIL:
+        required: true
+      MM_MOBILE_E2E_ADMIN_USERNAME:
+        required: true
+      MM_MOBILE_E2E_ADMIN_PASSWORD:
+        required: true
+      MM_MOBILE_E2E_ZEPHYR_API_KEY:
+        required: false
+      MM_MOBILE_DETOX_AWS_ACCESS_KEY_ID:
+        required: false
+      MM_MOBILE_DETOX_AWS_SECRET_ACCESS_KEY:
+        required: false
     outputs:
       STATUS:
         value: ${{ jobs.e2e-maestro-ios.outputs.STATUS || jobs.e2e-maestro-android.outputs.STATUS }}
@@ -52,6 +70,8 @@ on:
         value: ${{ jobs.e2e-maestro-ios.outputs.SKIPPED || jobs.e2e-maestro-android.outputs.SKIPPED }}
       PERCENTAGE:
         value: ${{ jobs.e2e-maestro-ios.outputs.PERCENTAGE || jobs.e2e-maestro-android.outputs.PERCENTAGE }}
+      CANCELLED:
+        value: ${{ jobs.e2e-maestro-ios.outputs.CANCELLED || jobs.e2e-maestro-android.outputs.CANCELLED }}
 
 # Least-privilege token: maestro jobs only check out code and talk to the test
 # server / AWS via dedicated secrets — they never use GITHUB_TOKEN for writes.
@@ -77,13 +97,19 @@ env:
   E2E_ANDROID_AVD_NAME: detox_pixel_8
   E2E_ANDROID_API_LEVEL: "35"
   RUNNING_E2E: "true"
+  ZEPHYR_ENABLE: ${{ inputs.record_tests_in_zephyr }}
+  JIRA_PROJECT_KEY: "MM"
+  ZEPHYR_API_KEY: ${{ secrets.MM_MOBILE_E2E_ZEPHYR_API_KEY }}
+  ZEPHYR_FOLDER_ID: "3233873"
+  BRANCH: ${{ github.event_name == 'pull_request' && github.head_ref || github.ref_name }}
+  COMMIT_HASH: ${{ inputs.MOBILE_VERSION || github.sha }}
 
 jobs:
   e2e-maestro-ios:
     name: Maestro E2E Tests (iOS)
     if: ${{ inputs.platform == 'ios' || inputs.platform == '' }}
     runs-on: macos-26
-    timeout-minutes: 60
+    timeout-minutes: 90
     outputs:
       STATUS: ${{ steps.determine-status.outputs.STATUS }}
       TARGET_URL: ${{ steps.set-url.outputs.TARGET_URL }}
@@ -92,6 +118,8 @@ jobs:
       TOTAL: ${{ steps.summary.outputs.TOTAL }}
       SKIPPED: ${{ steps.summary.outputs.SKIPPED }}
       PERCENTAGE: ${{ steps.summary.outputs.PERCENTAGE }}
+      ERRORS: ${{ steps.summary.outputs.ERRORS }}
+      CANCELLED: ${{ steps.shard-cancelled.outputs.CANCELLED }}
     steps:
       - name: Checkout Repository
         uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
@@ -114,7 +142,7 @@ jobs:
         uses: actions/cache@27d5ce7f107fe9357f9df03efb73ab90386fccae # v5.0.5
         with:
           path: ~/.maestro
-          key: maestro-00f516729f57d48f36ded55244cfbe358ada6b00
+          key: maestro-00f516729f57d48f36ded55244cfbe358ada6b00-macos
 
       - name: Install Maestro CLI
         if: steps.maestro-cache.outputs.cache-hit != 'true'
@@ -217,7 +245,7 @@ jobs:
       - name: Seed test data
         run: |
           cd detox/maestro
-          npm install
+          npm ci --prefer-offline --no-audit --no-fund
           npx tsx fixtures/seed.ts
         env:
           SITE_1_URL: ${{ env.SITE_1_URL }}
@@ -252,6 +280,18 @@ jobs:
             echo "Warning: FileProvider.LocalStorage container not found; channel_bookmark_file.yml may fail"
           fi
 
+      - name: Start iOS Simulator device log capture
+        if: always()
+        run: |
+          mkdir -p build
+          # Filter sim log to Mattermost/WebRTC processes only.
+          xcrun simctl spawn "$SIMULATOR_ID" log stream \
+            --level=debug \
+            --predicate 'process == "Mattermost" OR process == "MattermostRN" OR senderImagePath CONTAINS "WebRTC" OR senderImagePath CONTAINS "calls-native"' \
+            > build/sim-device.log 2> build/sim-device.err &
+          echo $! > build/sim-device.pid
+          echo "==> Device log capture started (pid $(cat build/sim-device.pid))"
+
       - name: Run Maestro Flows (iOS)
         continue-on-error: true
         env:
@@ -269,6 +309,25 @@ jobs:
           set +a
           chmod +x detox/maestro/scripts/run_ci_batches.sh
           detox/maestro/scripts/run_ci_batches.sh --platform ios --device "$SIMULATOR_ID"
+
+      - name: Stop iOS Simulator device log capture
+        if: always()
+        run: |
+          if [ -f build/sim-device.pid ]; then
+            pid=$(cat build/sim-device.pid)
+            kill "$pid" 2>/dev/null || true
+            wait "$pid" 2>/dev/null || true
+            echo "==> Device log capture stopped (pid $pid)"
+          fi
+          # Print log tail for quick failure scans without downloading the artifact.
+          if [ -f build/sim-device.log ]; then
+            sz=$(wc -c < build/sim-device.log)
+            echo "==> build/sim-device.log size=${sz}B"
+            echo "==> Last 100 lines of sim-device.log:"
+            tail -100 build/sim-device.log || true
+            echo "==> Lines matching calls/webrtc/peer/timed-out:"
+            grep -iE 'calls:|RTCPeer|WebRTC|peer connect|unable to get media|wired ?headset|timed out waiting' build/sim-device.log | head -100 || true
+          fi
 
       - name: Run MM-T67856_4 with AllowDownloadLogs=false (iOS)
         # Isolated step: patch the server config to AllowDownloadLogs=false,
@@ -365,6 +424,15 @@ jobs:
             }
           "
 
+      - name: Save Maestro results to Zephyr Scale
+        if: always() && inputs.record_tests_in_zephyr
+        run: npm run e2e:save-maestro-zephyr -- ../build/maestro-report.xml
+        working-directory: detox
+        env:
+          ZEPHYR_ENABLE: "true"
+          IOS: "true"
+          BUILD_ID: maestro-ios-${{ github.run_id }}
+
       - name: Upload Maestro Report to S3
         if: always()
         run: |
@@ -394,17 +462,37 @@ jobs:
           # path segment under the S3 prefix.
           echo "TARGET_URL=https://${S3_BUCKET:-mattermost-detox-report}.s3.amazonaws.com/maestro-ios-${{ github.run_id }}/maestro-ios/maestro-report.html" >> "$GITHUB_OUTPUT"
 
+      - name: Record job cancellation
+        id: shard-cancelled
+        if: always()
+        run: |
+          if [[ "${{ job.status }}" == "cancelled" ]]; then
+            echo "CANCELLED=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "CANCELLED=false" >> "$GITHUB_OUTPUT"
+          fi
+
       - name: Determine Status
         id: determine-status
         if: always()
         env:
           FAILURES: ${{ steps.summary.outputs.FAILURES }}
+          ERRORS: ${{ steps.summary.outputs.ERRORS }}
+          TOTAL: ${{ steps.summary.outputs.TOTAL }}
+          NO_REPORT: ${{ steps.summary.outputs.NO_REPORT }}
           TESTCASE_FAILURE_FATAL: ${{ inputs.testcase_failure_fatal }}
+          SHARD_CANCELLED: ${{ steps.shard-cancelled.outputs.CANCELLED }}
         run: |
-          if [[ "${FAILURES:-0}" == "-1" ]]; then
+          if [[ "${SHARD_CANCELLED}" == "true" ]]; then
+            echo "STATUS=error" >> "$GITHUB_OUTPUT"
+          elif [[ "${FAILURES:-0}" == "-1" ]]; then
             echo "STATUS=failure" >> "$GITHUB_OUTPUT"
-          elif [[ "${FAILURES:-0}" -gt 0 && "${TESTCASE_FAILURE_FATAL}" == "true" ]]; then
-            echo "STATUS=failure" >> "$GITHUB_OUTPUT"
+          elif [[ "${TESTCASE_FAILURE_FATAL}" == "true" ]]; then
+            if [[ "${FAILURES:-0}" -gt 0 || "${ERRORS:-0}" -gt 0 || "${TOTAL:-0}" -eq 0 || "${NO_REPORT:-}" == "true" ]]; then
+              echo "STATUS=failure" >> "$GITHUB_OUTPUT"
+            else
+              echo "STATUS=success" >> "$GITHUB_OUTPUT"
+            fi
           else
             echo "STATUS=success" >> "$GITHUB_OUTPUT"
           fi
@@ -430,6 +518,7 @@ jobs:
       TOTAL: ${{ steps.summary.outputs.TOTAL }}
       SKIPPED: ${{ steps.summary.outputs.SKIPPED }}
       PERCENTAGE: ${{ steps.summary.outputs.PERCENTAGE }}
+      CANCELLED: ${{ steps.shard-cancelled.outputs.CANCELLED }}
     steps:
       - name: Checkout Repository
         uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
@@ -476,7 +565,7 @@ jobs:
       - name: Seed test data
         run: |
           cd detox/maestro
-          npm install
+          npm ci --prefer-offline --no-audit --no-fund
           npx tsx fixtures/seed.ts
         env:
           SITE_1_URL: ${{ env.SITE_1_URL }}
@@ -586,15 +675,44 @@ jobs:
             android-emulator-${{ runner.os }}-${{ runner.arch }}-${{ env.E2E_ANDROID_AVD_NAME }}-api-${{ env.E2E_ANDROID_API_LEVEL }}-
             android-emulator-${{ runner.os }}-${{ runner.arch }}-
 
+      # Retry only the boot (infra failures); test failures must not be auto-retried.
       - name: Bootstrap Android emulator
         env:
           BOOTSTRAP_ONLY: "true"
           MAESTRO_ANDROID: "true"
           JAVA_HOME: ${{ env.JAVA_HOME_17_X64 }}
+          API_LEVEL: ${{ env.E2E_ANDROID_API_LEVEL }}
+          AVD_NAME: ${{ env.E2E_ANDROID_AVD_NAME }}
+          MAX_ATTEMPTS: "2"
+          ATTEMPT_TIMEOUT_MIN: "15"
+        shell: bash
         run: |
-          cd detox
-          chmod +x ./create_android_emulator.sh
-          CI=true ./create_android_emulator.sh "${{ env.E2E_ANDROID_API_LEVEL }}" "${{ env.E2E_ANDROID_AVD_NAME }}"
+          set +e
+          attempt=1
+          while (( attempt <= MAX_ATTEMPTS )); do
+            echo "==> Boot attempt ${attempt}/${MAX_ATTEMPTS} (timeout ${ATTEMPT_TIMEOUT_MIN}m)"
+            timeout "${ATTEMPT_TIMEOUT_MIN}m" bash -c '
+              cd detox
+              chmod +x ./create_android_emulator.sh
+              CI=true ./create_android_emulator.sh "$API_LEVEL" "$AVD_NAME"
+            '
+            rc=$?
+            if (( rc == 0 )); then
+              echo "==> Boot succeeded on attempt ${attempt}"
+              exit 0
+            fi
+            echo "==> Boot attempt ${attempt} failed with exit ${rc}"
+            if (( attempt < MAX_ATTEMPTS )); then
+              echo "==> Cleaning up before retry"
+              adb -s emulator-5554 emu kill 2>/dev/null || true
+              pkill -9 -f qemu-system 2>/dev/null || true
+              pkill -9 -f emulator 2>/dev/null || true
+              sleep 5
+            fi
+            attempt=$(( attempt + 1 ))
+          done
+          echo "==> All ${MAX_ATTEMPTS} boot attempts failed"
+          exit 1
 
       - name: Run Maestro Flows (Android)
         continue-on-error: true
@@ -703,6 +821,15 @@ jobs:
             }
           "
 
+      - name: Save Maestro results to Zephyr Scale
+        if: always() && inputs.record_tests_in_zephyr
+        run: npm run e2e:save-maestro-zephyr -- ../build/maestro-report.xml
+        working-directory: detox
+        env:
+          ZEPHYR_ENABLE: "true"
+          IOS: "false"
+          BUILD_ID: maestro-android-${{ github.run_id }}
+
       - name: Upload Maestro Report to S3
         if: always()
         run: |
@@ -730,17 +857,37 @@ jobs:
           # Point at the HTML report generated above.
           echo "TARGET_URL=https://${S3_BUCKET:-mattermost-detox-report}.s3.amazonaws.com/maestro-android-${{ github.run_id }}/maestro-android/maestro-report.html" >> "$GITHUB_OUTPUT"
 
+      - name: Record shard cancellation
+        id: shard-cancelled
+        if: always()
+        run: |
+          if [[ "${{ job.status }}" == "cancelled" ]]; then
+            echo "CANCELLED=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "CANCELLED=false" >> "$GITHUB_OUTPUT"
+          fi
+
       - name: Determine Status
         id: determine-status
         if: always()
         env:
           FAILURES: ${{ steps.summary.outputs.FAILURES }}
+          ERRORS: ${{ steps.summary.outputs.ERRORS }}
+          TOTAL: ${{ steps.summary.outputs.TOTAL }}
+          NO_REPORT: ${{ steps.summary.outputs.NO_REPORT }}
           TESTCASE_FAILURE_FATAL: ${{ inputs.testcase_failure_fatal }}
+          SHARD_CANCELLED: ${{ steps.shard-cancelled.outputs.CANCELLED }}
         run: |
-          if [[ "${FAILURES:-0}" == "-1" ]]; then
+          if [[ "${SHARD_CANCELLED}" == "true" ]]; then
+            echo "STATUS=error" >> "$GITHUB_OUTPUT"
+          elif [[ "${FAILURES:-0}" == "-1" ]]; then
             echo "STATUS=failure" >> "$GITHUB_OUTPUT"
-          elif [[ "${FAILURES:-0}" -gt 0 && "${TESTCASE_FAILURE_FATAL}" == "true" ]]; then
-            echo "STATUS=failure" >> "$GITHUB_OUTPUT"
+          elif [[ "${TESTCASE_FAILURE_FATAL}" == "true" ]]; then
+            if [[ "${FAILURES:-0}" -gt 0 || "${ERRORS:-0}" -gt 0 || "${TOTAL:-0}" -eq 0 || "${NO_REPORT:-}" == "true" ]]; then
+              echo "STATUS=failure" >> "$GITHUB_OUTPUT"
+            else
+              echo "STATUS=success" >> "$GITHUB_OUTPUT"
+            fi
           else
             echo "STATUS=success" >> "$GITHUB_OUTPUT"
           fi

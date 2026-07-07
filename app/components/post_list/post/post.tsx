@@ -4,7 +4,6 @@
 import React, {type ReactNode, useCallback, useEffect, useMemo, useRef, useState} from 'react';
 import {useIntl} from 'react-intl';
 import {Platform, type StyleProp, View, type ViewStyle, TouchableHighlight, type LayoutChangeEvent} from 'react-native';
-import {KeyboardController} from 'react-native-keyboard-controller';
 
 import {removePost} from '@actions/local/post';
 import {showPermalink} from '@actions/remote/permalink';
@@ -28,6 +27,7 @@ import PerformanceMetricsManager from '@managers/performance_metrics_manager';
 import {navigateBack, navigateToScreen} from '@screens/navigation';
 import {isBoRPost, isUnrevealedBoRPost} from '@utils/bor';
 import {hasJumboEmojiOnly} from '@utils/emoji/helpers';
+import {dismissKeyboard} from '@utils/keyboard';
 import {fromAutoResponder, isFromWebhook, isPostFailed, isPostPendingOrFailed, isSystemMessage} from '@utils/post';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 
@@ -233,7 +233,7 @@ const Post = ({
 
         pressDetected.current = true;
 
-        KeyboardController.dismiss();
+        dismissKeyboard();
 
         if (post) {
             setTimeout(handlePostPress, 300);
