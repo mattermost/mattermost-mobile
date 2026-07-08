@@ -85,7 +85,10 @@ export async function pushNotificationEntry(serverUrl: string, notification: Not
                 return {};
             }
             if (isZeroPersistence) {
-                appEntry(serverUrl);
+                const {error: appEntryError} = await appEntry(serverUrl);
+                if (appEntryError) {
+                    emitNotificationError('Connection');
+                }
                 return {};
             }
             emitNotificationError('Connection');
@@ -102,7 +105,10 @@ export async function pushNotificationEntry(serverUrl: string, notification: Not
                 return {};
             }
             if (isZeroPersistence) {
-                appEntry(serverUrl);
+                const {error: appEntryError} = await appEntry(serverUrl);
+                if (appEntryError) {
+                    emitNotificationError('Connection');
+                }
                 return {};
             }
             emitNotificationError('Connection');

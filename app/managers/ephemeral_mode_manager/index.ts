@@ -72,6 +72,7 @@ class EphemeralModeManagerSingleton {
         this.wipeInProgress.clear();
     };
 
+    // stops tracking a particular server and cancels any pending operations
     public removeServer = (serverUrl: string) => {
         this.pauseSubscriptions(serverUrl);
         delete this.evalQueue[serverUrl];
@@ -146,7 +147,7 @@ class EphemeralModeManagerSingleton {
             return;
         }
         if (!nextEnabled && wasActive) {
-            this.untrack(serverUrl);
+            await this.untrack(serverUrl);
             return;
         }
         if (nextEnabled && wasActive) {
@@ -197,11 +198,7 @@ class EphemeralModeManagerSingleton {
         if (appState === 'background') {
             for (const [url, entry] of this.trackedServers) {
                 if (entry.kind === 'zpm') {
-                    try {
-                        deleteFileCache(url);
-                    } catch (error) {
-                        logError('EphemeralModeManager.deleteFileCache failed', error);
-                    }
+                    wipeServerFiles(url);
                 }
             }
             return;
@@ -260,6 +257,7 @@ class EphemeralModeManagerSingleton {
 
         const currentDisconnectedSince = await getDisconnectedSince(database);
 
+        // no current disconnection timeout set
         if (currentDisconnectedSince === undefined) {
             // Fresh timers only start on foreground transitions, not on init-resume or while backgrounded.
             if (isResume || AppState.currentState !== 'active') {

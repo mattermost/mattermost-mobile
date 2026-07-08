@@ -31,7 +31,7 @@ export const applyPersistenceModeChange = async (serverUrl: string): Promise<{er
         try {
             await cancelSessionNotification(serverUrl);
         } catch {
-            logWarning('restartSession: cancelSessionNotification failed (non-critical)');
+            logWarning('applyPersistenceModeChange: cancelSessionNotification failed (non-critical)');
         }
 
         await WebsocketManager.invalidateClient(serverUrl);
@@ -44,7 +44,7 @@ export const applyPersistenceModeChange = async (serverUrl: string): Promise<{er
 
         const {error: refetchError} = await refetchCurrentUser(serverUrl, undefined);
         if (refetchError) {
-            throw new Error(`applyPersistenceModeChange: failed to seed current user: ${refetchError}`);
+            throw new Error(`applyPersistenceModeChange: failed to seed current user: ${getFullErrorMessage(refetchError)}`);
         }
 
         const {operator} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);

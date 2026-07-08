@@ -13,7 +13,6 @@ import WebsocketManager from '@managers/websocket_manager';
 import {getServer, getServerDisplayName} from '@queries/app/servers';
 import {navigateToScreen} from '@screens/navigation';
 import {advanceTimers, disableFakeTimers, enableFakeTimers} from '@test/timer_helpers';
-import {deleteFileCache} from '@utils/file';
 
 import EphemeralModeManager from './index';
 
@@ -24,7 +23,7 @@ jest.mock('@actions/local/ephemeral_mode/wipe', () => ({
     wipeServerFiles: jest.fn().mockReturnValue({success: true}),
 }));
 jest.mock('@utils/file', () => ({
-    deleteFileCache: jest.fn().mockResolvedValue(true),
+    deleteFileCache: jest.fn().mockReturnValue(true),
 }));
 jest.mock('@init/push_notifications', () => ({
     __esModule: true,
@@ -728,31 +727,31 @@ describe('EphemeralModeManager', () => {
             expect(WebsocketManager.observeWebsocketState).toHaveBeenCalledWith(serverA);
         });
 
-        it('deletes file cache on background for ZPM servers', async () => {
+        it('wipes server files (including shared caches) on background for ZPM servers', async () => {
             await DatabaseManager.updatePersistenceFlag(serverA, 'zero-persistence');
 
             await EphemeralModeManager.init([credsA, credsB]);
             await advanceTimers(0);
-            jest.mocked(deleteFileCache).mockClear();
+            jest.mocked(wipeServerFiles).mockClear();
 
             setAppState('background');
             await advanceTimers(0);
 
-            expect(deleteFileCache).toHaveBeenCalledWith(serverA);
-            expect(deleteFileCache).toHaveBeenCalledTimes(1);
+            expect(wipeServerFiles).toHaveBeenCalledWith(serverA);
+            expect(wipeServerFiles).toHaveBeenCalledTimes(1);
         });
 
-        it('does not delete file cache on foreground transitions', async () => {
+        it('does not wipe server files on foreground transitions', async () => {
             await DatabaseManager.updatePersistenceFlag(serverA, 'zero-persistence');
 
             await EphemeralModeManager.init([credsA]);
             await advanceTimers(0);
-            jest.mocked(deleteFileCache).mockClear();
+            jest.mocked(wipeServerFiles).mockClear();
 
             setAppState('active');
             await advanceTimers(0);
 
-            expect(deleteFileCache).not.toHaveBeenCalled();
+            expect(wipeServerFiles).not.toHaveBeenCalled();
         });
 
         it('installs the AppState listener for a ZPM server even when no MEM-active server exists', async () => {

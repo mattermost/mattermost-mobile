@@ -242,6 +242,24 @@ describe('Performance metrics are set correctly', () => {
         expect(mockEmitNotificationError).not.toHaveBeenCalled();
     });
 
+    it('emits a connection error when the appEntry fallback also fails on a zero persistence server', async () => {
+        await DatabaseManager.updatePersistenceFlag(serverUrl, 'zero-persistence');
+        mockedAppEntry.mockResolvedValueOnce({error: 'appEntry failed'});
+
+        const result = await pushNotificationEntry(serverUrl, {
+            channel_id: TestHelper.basicChannel!.id,
+            team_id: 'zpm-missing-team',
+            isCRTEnabled: false, // isCRTEnabled is not checked at this level
+            post_id: '', // Post ID is not checked at this level
+            type: '', // Type is not checked at this level
+            version: '', // Version is not checked at this level
+        });
+
+        expect(result).toEqual({});
+        expect(mockedAppEntry).toHaveBeenCalledWith(serverUrl);
+        expect(mockEmitNotificationError).toHaveBeenCalledWith('Connection');
+    });
+
     it('falls back to appEntry instead of a connection error when the channel fetch fails on a zero persistence server', async () => {
         await DatabaseManager.updatePersistenceFlag(serverUrl, 'zero-persistence');
 
