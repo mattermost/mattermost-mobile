@@ -1,8 +1,6 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-/* eslint-disable max-lines */
-
 import type {DatabaseType} from '@constants/database';
 import type AppDataOperator from '@database/operator/app_data_operator';
 import type ServerDataOperator from '@database/operator/server_data_operator';
@@ -318,10 +316,12 @@ export type HandleCustomProfileAttributesArgs = PrepareOnly & {
 
 export type HandlePropertyFieldsArgs = PrepareOnly & {
   fields?: PropertyField[];
+  groupId?: string;
 };
 
 export type HandlePropertyValuesArgs = PrepareOnly & {
   values?: PropertyValue[];
+  targetId?: string;
 };
 
 export type LoginArgs = {
