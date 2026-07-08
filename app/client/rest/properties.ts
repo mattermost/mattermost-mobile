@@ -5,7 +5,8 @@ import type ClientBase from './base';
 
 export interface ClientPropertiesMix {
     getPropertyValues: <T>(groupName: string, objectType: string, targetId: string, groupLabel?: RequestGroupLabel) => Promise<Array<PropertyValue<T>>>;
-    getPropertyFields: (groupName: string, objectType: string, targetType: string, groupLabel?: RequestGroupLabel) => Promise<PropertyField[]>;
+    getPropertyFields: (groupName: string, objectType: string, targetType: string, targetId?: string, groupLabel?: RequestGroupLabel) => Promise<PropertyField[]>;
+    getSystemPropertyValues: <T>(groupName: string, groupLabel?: RequestGroupLabel) => Promise<Array<PropertyValue<T>>>;
 }
 
 const ClientProperties = <TBase extends Constructor<ClientBase>>(superclass: TBase) => class extends superclass {
@@ -17,12 +18,23 @@ const ClientProperties = <TBase extends Constructor<ClientBase>>(superclass: TBa
         ) as unknown as Promise<Array<PropertyValue<T>>>;
     };
 
-    getPropertyFields = async (groupName: string, objectType: string, targetType: string, groupLabel?: RequestGroupLabel) => {
-        const url = `${this.urlVersion}/properties/groups/${groupName}/${objectType}/fields?target_type=${targetType}`;
+    getPropertyFields = async (groupName: string, objectType: string, targetType: string, targetId?: string, groupLabel?: RequestGroupLabel) => {
+        let url = `${this.urlVersion}/properties/groups/${groupName}/${objectType}/fields?target_type=${targetType}`;
+        if (targetId !== undefined) {
+            url += `&target_id=${encodeURIComponent(targetId)}`;
+        }
         return this.doFetch(
             url,
             {method: 'get', groupLabel},
         ) as unknown as Promise<PropertyField[]>;
+    };
+
+    getSystemPropertyValues = async <T>(groupName: string, groupLabel?: RequestGroupLabel) => {
+        const url = `${this.urlVersion}/properties/groups/${groupName}/system/values`;
+        return this.doFetch(
+            url,
+            {method: 'get', groupLabel},
+        ) as unknown as Promise<Array<PropertyValue<T>>>;
     };
 };
 

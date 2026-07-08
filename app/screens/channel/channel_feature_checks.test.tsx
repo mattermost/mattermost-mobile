@@ -67,4 +67,12 @@ describe('shouldShowChannelBanner', () => {
     it('should return true for valid private channel with complete banner info and enterprise advanced license', () => {
         expect(shouldShowChannelBanner(General.PRIVATE_CHANNEL, validLicense, validBannerInfo)).toBe(true);
     });
+
+    it('should return true when classification markings are enabled even without native banner', () => {
+        expect(shouldShowChannelBanner(General.OPEN_CHANNEL, validLicense, undefined, true)).toBe(true);
+    });
+
+    it('should return false when classification is enabled but channel type is DM', () => {
+        expect(shouldShowChannelBanner(General.DM_CHANNEL, validLicense, undefined, true)).toBe(false);
+    });
 });
