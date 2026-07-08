@@ -231,6 +231,22 @@ describe('ClientTracking', () => {
         expect(result).toEqual({success: true});
     });
 
+    it('should reject ok responses with text/html content type', async () => {
+        apiClientMock.get.mockResolvedValue({
+            ok: true,
+            code: 200,
+            data: '<html><body>Not Found</body></html>',
+            headers: {'Content-Type': 'text/html; charset=utf-8'},
+        });
+
+        const options = {
+            method: 'GET',
+            groupLabel: 'Cold Start' as RequestGroupLabel,
+        };
+
+        await expect(client.doFetchWithTracking('https://example.com/api', options)).rejects.toThrow('Received invalid response from the server.');
+    });
+
     it('should handle fetch errors', async () => {
         apiClientMock.get.mockRejectedValue(new Error('Request failed'));
 
