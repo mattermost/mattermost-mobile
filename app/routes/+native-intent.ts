@@ -16,33 +16,38 @@ import {getIntlShape} from '@utils/general';
  * This prevents the "multiple linking configurations" error
  */
 
+const handleUrl = async (event: {url: string}) => {
+    // Ignore SSO redirect URLs
+    if (event.url?.startsWith(Sso.REDIRECT_URL_SCHEME) ||
+            event.url?.startsWith(Sso.REDIRECT_URL_SCHEME_DEV)) {
+        return true;
+    }
+
+    if (event.url) {
+        const {error} = await parseAndHandleDeepLink(
+            event.url,
+            undefined,
+            undefined,
+            true,
+        );
+
+        if (error) {
+            alertInvalidDeepLink(getIntlShape(DEFAULT_LOCALE));
+            return false;
+        }
+
+        return true;
+    }
+
+    return false;
+};
+
 /**
  * Set up custom deep link event listener
  * Expo-router calls this function to subscribe to URL events
  */
 export const addEventListener = () => {
     // Set up our custom deep link listener
-    const handleUrl = async (event: {url: string}) => {
-        // Ignore SSO redirect URLs
-        if (event.url?.startsWith(Sso.REDIRECT_URL_SCHEME) ||
-            event.url?.startsWith(Sso.REDIRECT_URL_SCHEME_DEV)) {
-            return;
-        }
-
-        if (event.url) {
-            const {error} = await parseAndHandleDeepLink(
-                event.url,
-                undefined,
-                undefined,
-                true,
-            );
-
-            if (error) {
-                alertInvalidDeepLink(getIntlShape(DEFAULT_LOCALE));
-            }
-        }
-    };
-
     // Subscribe to URL events
     const subscription = Linking.addEventListener('url', handleUrl);
 
@@ -60,10 +65,13 @@ export const addEventListener = () => {
  * SSO screen's own Linking listener. If they reach expo-router they resolve to
  * an unregistered route. Returning null keeps the app on its current path.
  */
-export function redirectSystemPath(options: {path: string; initial: boolean}) {
-    if (options.path?.startsWith(Sso.REDIRECT_URL_SCHEME) ||
-        options.path?.startsWith(Sso.REDIRECT_URL_SCHEME_DEV)) {
-        return null;
+export async function redirectSystemPath(options: {path: string; initial: boolean}) {
+    if (!options.initial) {
+        const handled = await handleUrl({url: options.path});
+        if (handled) {
+            return null;
+        }
     }
+
     return options.path;
 }
