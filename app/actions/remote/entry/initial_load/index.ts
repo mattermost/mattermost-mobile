@@ -2,6 +2,7 @@
 // See LICENSE.txt for license information.
 
 import {dataRetentionCleanup, expiredBoRPostCleanup} from '@actions/local/systems';
+import {fetchClassificationBanner} from '@actions/remote/classification';
 import {entryInitialChannelId, handleAutotranslationChanges, handleInitialLoadNavigation} from '@actions/remote/entry/effects';
 import {fetchGroupsForTeamIfConstrained} from '@actions/remote/groups';
 import {openAllUnreadChannels, type MyPreferencesRequest} from '@actions/remote/preference';
@@ -67,6 +68,7 @@ export async function runExperienceAPIEntryActions(serverUrl: string, initialTea
             fetchGroupsForTeamIfConstrained(serverUrl, initialTeamId);
         }
 
+        fetchClassificationBanner(serverUrl);
         fetchScheduledPosts(serverUrl, initialTeamId, true, groupLabel);
 
         fetchDataRetentionPolicy(serverUrl, false, groupLabel).then(() => {
