@@ -245,7 +245,7 @@ public class Database: NSObject {
             let lastActiveAt = Expression<Int64>("last_active_at")
             let identifier = Expression<String>("identifier")
             let persistenceFlag = Expression<String>("persistence_flag")
-            let query = serversTable.filter(lastActiveAt > 0 && identifier != "" && persistenceFlag != "zero-persistence").order(lastActiveAt.desc)
+            let query = serversTable.filter(lastActiveAt > 0 && identifier != "" && persistenceFlag !== "zero-persistence").order(lastActiveAt.desc)
             
             if let result = try db.pluck(query) {
                 let server: T = try result.decode()
