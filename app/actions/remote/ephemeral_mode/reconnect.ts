@@ -13,6 +13,7 @@ import {getServerCredentials} from '@init/credentials';
 import {determineRouteFromLaunchProps} from '@init/launch';
 import NetworkManager from '@managers/network_manager';
 import {setCurrentUserId} from '@queries/servers/system';
+import {propsToParams} from '@screens/navigation';
 import {isErrorWithStatusCode} from '@utils/errors';
 
 type Result = {error?: unknown};
@@ -52,7 +53,7 @@ export const reconnectErasedServer = async (serverUrl: string): Promise<Result> 
         await DatabaseManager.updatePersistenceFlag(serverUrl, '');
 
         const launchRoute = await determineRouteFromLaunchProps({launchType: Launch.Normal, serverUrl, coldStart: true});
-        router.replace({pathname: launchRoute.route, params: launchRoute.params});
+        router.replace({pathname: launchRoute.route, params: propsToParams(launchRoute.params)});
         return {};
     } catch (error) {
         return {error};
