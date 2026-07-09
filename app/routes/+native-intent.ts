@@ -2,6 +2,7 @@
 // See LICENSE.txt for license information.
 
 import {Linking} from 'react-native';
+import urlParse from 'url-parse';
 
 import {Sso} from '@constants';
 import {DEFAULT_LOCALE} from '@i18n';
@@ -17,6 +18,11 @@ import {getIntlShape} from '@utils/general';
  */
 
 const handleUrl = async (event: {url: string}) => {
+    const parsed = urlParse(event.url);
+    if (parsed.protocol && !parsed.host) {
+        return false;
+    }
+
     // Ignore SSO redirect URLs
     if (event.url?.startsWith(Sso.REDIRECT_URL_SCHEME) ||
             event.url?.startsWith(Sso.REDIRECT_URL_SCHEME_DEV)) {
@@ -66,11 +72,9 @@ export const addEventListener = () => {
  * an unregistered route. Returning null keeps the app on its current path.
  */
 export async function redirectSystemPath(options: {path: string; initial: boolean}) {
-    if (!options.initial) {
-        const handled = await handleUrl({url: options.path});
-        if (handled) {
-            return null;
-        }
+    const handled = await handleUrl({url: options.path});
+    if (handled) {
+        return null;
     }
 
     return options.path;
