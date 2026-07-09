@@ -173,11 +173,11 @@ public class Database: NSObject {
         guard !DEFAULT_DB_PATH.isEmpty,
               let db = try? openConnection(DEFAULT_DB_PATH) else { return false }
         let url = Expression<String>("url")
-        let persistenceFlag = Expression<String>("persistence_flag")
+        let persistenceFlag = Expression<String?>("persistence_flag")
         let query = serversTable.select(persistenceFlag).filter(url == serverUrl)
         do {
             if let result = try db.pluck(query) {
-                return try result.get(persistenceFlag) == "zero-persistence"
+                return (try result.get(persistenceFlag)) == "zero-persistence"
             }
         } catch {
             GekidouLogger.shared.log(.error, "Gekidou Database: failed to query zero persistence mode for server %{public}@ - %{public}@", serverUrl, String(describing: error))
