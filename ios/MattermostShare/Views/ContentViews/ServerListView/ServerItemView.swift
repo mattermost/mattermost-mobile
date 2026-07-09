@@ -57,6 +57,7 @@ struct ServerItemView: View {
       )
     }
     .opacity(server.isZeroPersistence ? 0.48 : 1.0)
+    .disabled(server.isZeroPersistence)
     .background(
       RoundedRectangle(cornerRadius: 8)
         .fill(Color.theme.centerChannelColor.opacity(0.04))
