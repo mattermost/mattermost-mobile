@@ -13,6 +13,7 @@ import {getExpandedLinks, getPushVerificationStatus} from '@queries/servers/syst
 import {getFullErrorMessage} from '@utils/errors';
 import {getResponseHeader} from '@utils/headers';
 import {logDebug} from '@utils/log';
+import {sanitizeUrl} from '@utils/url';
 
 import {forceLogoutIfNecessary} from './session';
 
@@ -92,7 +93,7 @@ export const doPing = async (serverUrl: string, verifyPushProxy: boolean, timeou
             if (response.code === 406 && !hasRetriedBaseUrl) {
                 const baseUrl = getBaseUrlFromResponseData(response.data);
                 if (baseUrl) {
-                    return doPing(baseUrl, verifyPushProxy, timeoutInterval, preauthSecret, undefined, true);
+                    return doPing(sanitizeUrl(baseUrl, false, true), verifyPushProxy, timeoutInterval, preauthSecret, undefined, true);
                 }
             }
 
@@ -112,7 +113,7 @@ export const doPing = async (serverUrl: string, verifyPushProxy: boolean, timeou
         if (errorObj.status_code === 406 && !hasRetriedBaseUrl) {
             const baseUrl = getBaseUrlFromResponseData(errorObj.details);
             if (baseUrl) {
-                return doPing(baseUrl, verifyPushProxy, timeoutInterval, preauthSecret, undefined, true);
+                return doPing(sanitizeUrl(baseUrl, false, true), verifyPushProxy, timeoutInterval, preauthSecret, undefined, true);
             }
         }
 

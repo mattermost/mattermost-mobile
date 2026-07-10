@@ -45,17 +45,19 @@ export function isParsableUrl(url: string): boolean {
     }
 }
 
-export function sanitizeUrl(url: string, useHttp = false) {
+export function sanitizeUrl(url: string, useHttp = false, keepProtocol = false) {
     let preUrl = urlParse(url, true);
-    let protocol = useHttp ? 'http:' : preUrl.protocol;
 
     if (!preUrl.host || preUrl.protocol === 'file:') {
         preUrl = urlParse('https://' + stripTrailingSlashes(url), true);
     }
 
-    if (preUrl.protocol === 'http:' && !useHttp) {
+    let protocol;
+    if (keepProtocol) {
+        protocol = preUrl.protocol;
+    } else if (preUrl.protocol === 'http:' && !useHttp) {
         protocol = 'https:';
-    } else if (!protocol) {
+    } else {
         protocol = useHttp ? 'http:' : 'https:';
     }
 

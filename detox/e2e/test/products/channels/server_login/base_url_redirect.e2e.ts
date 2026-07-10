@@ -33,7 +33,7 @@ describe('Server Login - Base URL Redirect', () => {
     });
 
     // Skipping until the server is updated to return the base URL in the 406 response
-    it.skip('MM-TBD_1 - should rewrite server URL from 406 base_url response and connect', async () => {
+    it.skip('MM-67557_1 - should rewrite server URL from 406 base_url response and connect', async () => {
         // # Connect using a channel page URL that returns HTML instead of the API
         await ServerScreen.serverUrlInput.replaceText(channelPageUrl);
         await ServerScreen.serverDisplayNameInput.replaceText(serverDisplayName);
