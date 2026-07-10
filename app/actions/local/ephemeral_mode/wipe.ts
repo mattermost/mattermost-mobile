@@ -1,10 +1,10 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {removePushSigningKey, storePushSigningKey} from '@actions/app/global';
 import DatabaseManager from '@database/manager';
 import {getServer} from '@queries/app/servers';
 import {resetHasEverStartedSync} from '@store/team_load_store';
+import {isZeroPersistenceConfig} from '@utils/config';
 import {getFullErrorMessage} from '@utils/errors';
 import {deleteFileCache, deleteFileCacheByDir} from '@utils/file';
 import {logError, logInfo, logWarning} from '@utils/log';
@@ -63,18 +63,13 @@ export const reconcilePersistenceFlag = async (serverUrl: string, config: Client
     if (!server) {
         return false;
     }
-    const nextFlag: PersistenceFlag = config?.MobileEphemeralModeEnabled === 'true' && config.MobileEphemeralModeAutoCacheCleanupDays === '0' ? 'zero-persistence' : '';
+    const nextFlag: PersistenceFlag = isZeroPersistenceConfig(config) ? 'zero-persistence' : '';
     if (server.persistenceFlag === nextFlag) {
         return false;
     }
     const crossesZeroPersistence = server.persistenceFlag === 'zero-persistence' || nextFlag === 'zero-persistence';
     try {
         await DatabaseManager.updatePersistenceFlag(serverUrl, nextFlag);
-        if (nextFlag === 'zero-persistence' && config?.AsymmetricSigningPublicKey) {
-            await storePushSigningKey(serverUrl, config.AsymmetricSigningPublicKey);
-        } else if (server.persistenceFlag === 'zero-persistence') {
-            await removePushSigningKey(serverUrl);
-        }
         return crossesZeroPersistence;
     } catch (error) {
         // database cannot be updated, log error & return false so it will be retried on next config fetch

@@ -5,6 +5,7 @@ import {Q} from '@nozbe/watermelondb';
 import deepEqual from 'deep-equal';
 import {DeviceEventEmitter} from 'react-native';
 
+import {removePushSigningKey, storePushSigningKey} from '@actions/app/global';
 import {Events} from '@constants';
 import {MM_TABLES, SYSTEM_IDENTIFIERS} from '@constants/database';
 import {PostTypes, BOR_POST_CLEANUP_MIN_RUN_INTERVAL} from '@constants/post';
@@ -24,6 +25,7 @@ import {
 import PostModel from '@typings/database/models/servers/post';
 import SystemModel from '@typings/database/models/servers/system';
 import {isExpiredBoRPost} from '@utils/bor';
+import {isZeroPersistenceConfig} from '@utils/config';
 import {logError} from '@utils/log';
 
 import {deletePostsForChannelsWithAutotranslation} from './channel';
@@ -165,6 +167,21 @@ export async function storeConfig(serverUrl: string, config: ClientConfig | unde
                     value: currentConfig[k],
                 });
             }
+        }
+
+        const isZeroPersistence = isZeroPersistenceConfig(config);
+        const signingKeyChanged = currentConfig?.AsymmetricSigningPublicKey !== config.AsymmetricSigningPublicKey;
+        const hasNoPriorConfig = Object.keys(currentConfig ?? {}).length === 0;
+
+        // signing key is stored in global storage to be used for push notifications, even when running in zero persistence mode.
+        if (isZeroPersistence && signingKeyChanged) {
+            if (config.AsymmetricSigningPublicKey) {
+                await storePushSigningKey(serverUrl, config.AsymmetricSigningPublicKey);
+            } else {
+                await removePushSigningKey(serverUrl);
+            }
+        } else if (!isZeroPersistence && (hasNoPriorConfig || isZeroPersistenceConfig(currentConfig))) {
+            await removePushSigningKey(serverUrl);
         }
 
         if (configsToDelete.length || configsToUpdate.length) {

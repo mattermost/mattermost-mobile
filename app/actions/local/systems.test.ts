@@ -3,6 +3,7 @@
 
 import Database from '@nozbe/watermelondb/Database';
 
+import {removePushSigningKey, storePushSigningKey} from '@actions/app/global';
 import {getPosts} from '@actions/local/post';
 import {ActionType} from '@constants';
 import {SYSTEM_IDENTIFIERS} from '@constants/database';
@@ -10,6 +11,11 @@ import {PostTypes} from '@constants/post';
 import DatabaseManager from '@database/manager';
 import TestHelper from '@test/test_helper';
 import {logError} from '@utils/log';
+
+jest.mock('@actions/app/global', () => ({
+    removePushSigningKey: jest.fn(),
+    storePushSigningKey: jest.fn(),
+}));
 
 import {
     storeConfig,
@@ -100,6 +106,117 @@ describe('storeConfigAndLicense', () => {
         const models = await storeConfigAndLicense(serverUrl, {AboutLink: 'link'} as ClientConfig, {Announcement: 'test'} as ClientLicense);
         expect(models).toBeDefined();
         expect(models.length).toBe(1); // config
+    });
+});
+
+describe('storeConfig', () => {
+    const zeroPersistenceConfig = {
+        MobileEphemeralModeEnabled: 'true',
+        MobileEphemeralModeAutoCacheCleanupDays: '0',
+        AsymmetricSigningPublicKey: 'key-1',
+    } as ClientConfig;
+
+    describe('storing the signing key', () => {
+        it('mirrors the signing key when the config is zero-persistence', async () => {
+            await storeConfig(serverUrl, zeroPersistenceConfig);
+
+            expect(storePushSigningKey).toHaveBeenCalledWith(serverUrl, 'key-1');
+            expect(removePushSigningKey).not.toHaveBeenCalled();
+        });
+
+        it('mirrors the signing key even when only preparing records', async () => {
+            await storeConfig(serverUrl, zeroPersistenceConfig, true);
+
+            expect(storePushSigningKey).toHaveBeenCalledWith(serverUrl, 'key-1');
+        });
+
+        it('does not store the signing key when the config is not zero-persistence', async () => {
+            await storeConfig(serverUrl, {AsymmetricSigningPublicKey: 'key-1'} as ClientConfig);
+
+            expect(storePushSigningKey).not.toHaveBeenCalled();
+        });
+
+        it('does not store the signing key when it is unchanged from the stored config', async () => {
+            await operator.handleConfigs({
+                configs: [
+                    {id: 'MobileEphemeralModeEnabled', value: 'true'},
+                    {id: 'MobileEphemeralModeAutoCacheCleanupDays', value: '0'},
+                    {id: 'AsymmetricSigningPublicKey', value: 'key-1'},
+                    {id: 'AboutLink', value: 'old-link'},
+                ],
+                configsToDelete: [],
+                prepareRecordsOnly: false,
+            });
+
+            await storeConfig(serverUrl, {...zeroPersistenceConfig, AboutLink: 'new-link'} as ClientConfig);
+
+            expect(storePushSigningKey).not.toHaveBeenCalled();
+        });
+    });
+
+    describe('removing the signing key', () => {
+        it('removes the mirrored signing key when the config transitions away from zero-persistence', async () => {
+            await operator.handleConfigs({
+                configs: [
+                    {id: 'MobileEphemeralModeEnabled', value: 'true'},
+                    {id: 'MobileEphemeralModeAutoCacheCleanupDays', value: '0'},
+                    {id: 'AsymmetricSigningPublicKey', value: 'key-1'},
+                ],
+                configsToDelete: [],
+                prepareRecordsOnly: false,
+            });
+
+            await storeConfig(serverUrl, {
+                MobileEphemeralModeEnabled: 'false',
+                MobileEphemeralModeAutoCacheCleanupDays: '0',
+                AsymmetricSigningPublicKey: 'key-1',
+            } as ClientConfig);
+
+            expect(removePushSigningKey).toHaveBeenCalledWith(serverUrl);
+            expect(storePushSigningKey).not.toHaveBeenCalled();
+        });
+
+        it('removes the signing key defensively when prior config is empty and the config is not zero-persistence', async () => {
+            await storeConfig(serverUrl, {AsymmetricSigningPublicKey: 'key-1'} as ClientConfig);
+
+            expect(removePushSigningKey).toHaveBeenCalledWith(serverUrl);
+            expect(storePushSigningKey).not.toHaveBeenCalled();
+        });
+
+        it('does not remove the signing key when a prior config already confirms the server was not zero-persistence', async () => {
+            await operator.handleConfigs({
+                configs: [
+                    {id: 'MobileEphemeralModeEnabled', value: 'false'},
+                    {id: 'AboutLink', value: 'old-link'},
+                ],
+                configsToDelete: [],
+                prepareRecordsOnly: false,
+            });
+
+            await storeConfig(serverUrl, {MobileEphemeralModeEnabled: 'false', AboutLink: 'new-link'} as ClientConfig);
+
+            expect(removePushSigningKey).not.toHaveBeenCalled();
+        });
+
+        it('removes the mirrored signing key when it is dropped from the config while the server remains zero-persistence', async () => {
+            await operator.handleConfigs({
+                configs: [
+                    {id: 'MobileEphemeralModeEnabled', value: 'true'},
+                    {id: 'MobileEphemeralModeAutoCacheCleanupDays', value: '0'},
+                    {id: 'AsymmetricSigningPublicKey', value: 'key-1'},
+                ],
+                configsToDelete: [],
+                prepareRecordsOnly: false,
+            });
+
+            await storeConfig(serverUrl, {
+                MobileEphemeralModeEnabled: 'true',
+                MobileEphemeralModeAutoCacheCleanupDays: '0',
+            } as ClientConfig);
+
+            expect(removePushSigningKey).toHaveBeenCalledWith(serverUrl);
+            expect(storePushSigningKey).not.toHaveBeenCalled();
+        });
     });
 });
 
