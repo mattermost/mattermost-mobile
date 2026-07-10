@@ -283,6 +283,7 @@ describe('ClientTracking', () => {
             expect((clientError as {message: string}).message).toBe('Custom error message');
             expect((clientError as {server_error_id: string}).server_error_id).toBe('error_id_123');
             expect((clientError as {status_code: number}).status_code).toBe(400);
+            expect((clientError as {details: {message: string}}).details).toEqual({message: 'Custom error message', id: 'error_id_123'});
         }
     });
 

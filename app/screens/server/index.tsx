@@ -328,6 +328,11 @@ const Server = ({
             return;
         }
 
+        const serverUrlToUse = result.serverUrl || headRequest.url;
+        if (result.serverUrl && result.serverUrl !== headRequest.url) {
+            setUrl(result.serverUrl);
+        }
+
         if (result.error) {
             if (result.isPreauthError) {
                 setPreauthSecretError(intl.formatMessage({
@@ -354,7 +359,7 @@ const Server = ({
         // has already completed.
         const pushProxyVerification = result.canReceiveNotifications as string;
 
-        const data = await fetchConfigAndLicense(headRequest.url, true);
+        const data = await fetchConfigAndLicense(serverUrlToUse, true);
         if (data.error) {
             setButtonDisabled(true);
             setUrlError(getErrorMessage(data.error, intl));
@@ -372,7 +377,7 @@ const Server = ({
         }
 
         if (data.config.MobileJailbreakProtection === 'true') {
-            const isJailbroken = await SecurityManager.isDeviceJailbroken(headRequest.url, data.config.SiteName);
+            const isJailbroken = await SecurityManager.isDeviceJailbroken(serverUrlToUse, data.config.SiteName);
             if (isJailbroken) {
                 setConnecting(false);
                 return;
@@ -380,7 +385,7 @@ const Server = ({
         }
 
         if (data.config.MobileEnableBiometrics === 'true') {
-            const biometricsResult = await SecurityManager.authenticateWithBiometrics(headRequest.url, data.config.SiteName);
+            const biometricsResult = await SecurityManager.authenticateWithBiometrics(serverUrlToUse, data.config.SiteName);
             if (!biometricsResult) {
                 setConnecting(false);
                 return;
@@ -388,7 +393,7 @@ const Server = ({
         }
 
         const server = await getServerByIdentifier(data.config.DiagnosticId);
-        const credentials = await getServerCredentials(headRequest.url);
+        const credentials = await getServerCredentials(serverUrlToUse);
         setConnecting(false);
 
         if (server && server.lastActiveAt > 0 && credentials?.token) {
@@ -400,7 +405,7 @@ const Server = ({
             return;
         }
 
-        displayLogin(headRequest.url, data.config!, data.license!);
+        displayLogin(serverUrlToUse, data.config!, data.license!);
 
         // Fire the push-proxy verification alert AFTER the RNN transition to
         // LoginScreen has FULLY settled. We use setTimeout (not
@@ -417,7 +422,7 @@ const Server = ({
         // unaffected — the alert still targets the same serverUrl, it just
         // renders on the login screen instead of the server screen.
         setTimeout(() => {
-            canReceiveNotifications(headRequest.url, pushProxyVerification, intl);
+            canReceiveNotifications(serverUrlToUse, pushProxyVerification, intl);
         }, 1000);
     };
 

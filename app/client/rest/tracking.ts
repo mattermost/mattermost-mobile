@@ -456,6 +456,7 @@ export default class ClientTracking {
             status_code: response.code,
             url,
             headers,
+            details: response.data,
         });
     };
 }
