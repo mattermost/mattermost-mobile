@@ -24,6 +24,11 @@ export const KNOWN_MODAL_CLOSE_BUTTON_IDS: readonly string[] = Object.freeze([
     'close.custom_status.button',
     'close.apps_form.button',
     'close.interactive_dialog.button',
+    'navigation.header.search_bar.search.cancel.button', // dismiss leftover search screen in beforeEach recovery
+    'close.login.button', // entry/auth screen leftovers
+    'close.server.button',
+    'close.sso.button',
+    'tutorial_highlight',
 ] as const);
 
 /**

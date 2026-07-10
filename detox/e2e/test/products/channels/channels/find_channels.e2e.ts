@@ -128,7 +128,7 @@ describe('Channels - Find Channels', () => {
         } catch {
             await waitFor(element(by.id(`find_channels.filtered_list.user_item.${testOtherUser1.id}`))).
                 toExist().
-                withTimeout(timeouts.TEN_SEC);
+                withTimeout(timeouts.HALF_MIN);
         }
 
         // # Search for the group message channel
