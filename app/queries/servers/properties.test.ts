@@ -112,4 +112,12 @@ describe('observeChannelClassificationBanner', () => {
         const state = await firstValueFrom(observeChannelClassificationBanner(database, channelId));
         expect(state.hasClassification).toBe(false);
     });
+
+    it('should emit no classification when the channel value references a missing option', async () => {
+        await seedFields([makeField({id: 'cf-1', name: 'classification', object_type: 'channel', attrs: {options: [{id: 'level-secret', name: 'Secret', color: '#FF0000'}]}})]);
+        await seedValues([makeValue({id: 'cv-1', target_id: channelId, target_type: 'channel', field_id: 'cf-1', value: 'missing-level'})]);
+
+        const state = await firstValueFrom(observeChannelClassificationBanner(database, channelId));
+        expect(state.hasClassification).toBe(false);
+    });
 });

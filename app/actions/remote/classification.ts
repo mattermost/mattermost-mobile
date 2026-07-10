@@ -14,11 +14,16 @@ import DatabaseManager from '@database/manager';
 import NetworkManager from '@managers/network_manager';
 import {getPropertyFieldsByNames} from '@queries/servers/properties';
 import {getConfigValue} from '@queries/servers/system';
+import EphemeralStore from '@store/ephemeral_store';
 import {logDebug, logError} from '@utils/log';
 
 import {forceLogoutIfNecessary} from './session';
 
-export async function fetchClassificationBanner(serverUrl: string): Promise<{error?: unknown}> {
+export async function fetchClassificationBanner(serverUrl: string, force = false): Promise<{error?: unknown}> {
+    if (!force && !EphemeralStore.shouldFetchClassificationBanner(serverUrl)) {
+        return {};
+    }
+
     try {
         const {database, operator} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
         const featureFlag = await getConfigValue(database, 'FeatureFlagClassificationMarkings');
@@ -46,6 +51,7 @@ export async function fetchClassificationBanner(serverUrl: string): Promise<{err
                 const valueModels = await operator.handlePropertyValues({targetId: CLASSIFICATIONS_SYSTEM_VALUE_TARGET_ID, values, prepareRecordsOnly: true});
                 await operator.batchRecords([...fieldModels, ...valueModels], 'fetchClassificationBanner');
 
+                EphemeralStore.setClassificationBannerFetched(serverUrl);
                 return {};
             }
 
@@ -64,6 +70,7 @@ export async function fetchClassificationBanner(serverUrl: string): Promise<{err
             });
         }
 
+        EphemeralStore.setClassificationBannerFetched(serverUrl);
         return {};
     } catch (error) {
         logError('fetchClassificationBanner', 'Failed to fetch classification banner data', error);
@@ -84,6 +91,20 @@ export async function fetchChannelClassificationValue(serverUrl: string, channel
         const values = await client.getPropertyValues<string>(CLASSIFICATIONS_GROUP_NAME, CLASSIFICATIONS_CHANNEL_OBJECT_TYPE, channelId);
 
         await operator.handlePropertyValues({targetId: channelId, values, prepareRecordsOnly: false});
+
+        // If the freshly-received value references a classification option that is not
+        // in local storage, the cached field definitions are stale. Force a one-time
+        // field refresh (guarded per option id) to resync so the banner can render.
+        const optionId = values[0]?.value;
+        if (optionId && !EphemeralStore.getClassificationFieldSyncAttempted(serverUrl, optionId)) {
+            const fields = await getPropertyFieldsByNames(database, [CLASSIFICATIONS_FIELD_NAME]);
+            const fieldWithOptions = fields.find((f) => (f.attrs?.options as PropertyFieldOption[] | undefined)?.length);
+            const options = (fieldWithOptions?.attrs?.options as PropertyFieldOption[] | undefined) ?? [];
+            if (!options.some((o) => o.id === optionId)) {
+                EphemeralStore.setClassificationFieldSyncAttempted(serverUrl, optionId);
+                await fetchClassificationBanner(serverUrl, true);
+            }
+        }
 
         return {};
     } catch (error) {

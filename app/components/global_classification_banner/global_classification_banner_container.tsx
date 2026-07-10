@@ -2,7 +2,7 @@
 // See LICENSE.txt for license information.
 
 import {Portal} from '@gorhom/portal';
-import React, {useEffect, useMemo} from 'react';
+import React, {useEffect, useMemo, useRef} from 'react';
 import {StyleSheet, View} from 'react-native';
 import {SafeAreaInsetsContext, useSafeAreaInsets} from 'react-native-safe-area-context';
 
@@ -40,10 +40,13 @@ export default function GlobalClassificationBannerContainer({visible, levelName,
         [realInsets, bannerHeight],
     );
 
-    // Re-fetch on mount and whenever the feature flag flips, so a runtime toggle
-    // (delivered via the config_changed websocket event) refreshes the banner data.
+    // Respect the in-memory cache on mount/server switch, but force a refresh when
+    // the feature flag actually flips (runtime toggle via config_changed websocket).
+    const prevEnabled = useRef(classificationEnabled);
     useEffect(() => {
-        fetchClassificationBanner(serverUrl);
+        const flagChanged = prevEnabled.current !== classificationEnabled;
+        prevEnabled.current = classificationEnabled;
+        fetchClassificationBanner(serverUrl, flagChanged);
     }, [serverUrl, classificationEnabled]);
 
     return (

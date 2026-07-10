@@ -8,6 +8,7 @@ import {MM_TABLES} from '@constants/database';
 import DatabaseManager from '@database/manager';
 import NetworkManager from '@managers/network_manager';
 import {getConfigValue} from '@queries/servers/system';
+import EphemeralStore from '@store/ephemeral_store';
 
 import {fetchClassificationBanner, fetchChannelClassificationValue} from './classification';
 
@@ -101,6 +102,7 @@ beforeAll(() => {
 beforeEach(async () => {
     await DatabaseManager.init([serverUrl]);
     jest.clearAllMocks();
+    EphemeralStore.clearClassificationCache(serverUrl);
 });
 
 afterEach(async () => {
@@ -279,6 +281,53 @@ describe('fetchClassificationBanner', () => {
         const otherGroup = await queryFieldsByGroup(database, 'other_group');
         expect(otherGroup.map((f) => f.id)).toEqual(['other-field']);
     });
+
+    it('should skip the request when cached and not forced', async () => {
+        EphemeralStore.setClassificationBannerFetched(serverUrl);
+
+        const result = await fetchClassificationBanner(serverUrl);
+
+        expect(result).toEqual({});
+        expect(mockedGetConfigValue).not.toHaveBeenCalled();
+        expect(mockClient.getPropertyFields).not.toHaveBeenCalled();
+    });
+
+    it('should bypass the cache when forced', async () => {
+        EphemeralStore.setClassificationBannerFetched(serverUrl);
+        mockedGetConfigValue.mockResolvedValueOnce('true');
+        mockClient.getPropertyFields.mockResolvedValueOnce([systemField]);
+        mockClient.getPropertyFields.mockResolvedValueOnce([channelField]);
+        mockClient.getSystemPropertyValues.mockResolvedValueOnce([systemValue]);
+
+        await fetchClassificationBanner(serverUrl, true);
+
+        expect(mockedGetConfigValue).toHaveBeenCalledTimes(1);
+        expect(mockClient.getPropertyFields).toHaveBeenCalled();
+    });
+
+    it('should cache on success so a subsequent unforced call is skipped', async () => {
+        mockedGetConfigValue.mockResolvedValueOnce('true');
+        mockClient.getPropertyFields.mockResolvedValueOnce([systemField]);
+        mockClient.getPropertyFields.mockResolvedValueOnce([channelField]);
+        mockClient.getSystemPropertyValues.mockResolvedValueOnce([systemValue]);
+
+        await fetchClassificationBanner(serverUrl);
+        await fetchClassificationBanner(serverUrl);
+
+        expect(mockedGetConfigValue).toHaveBeenCalledTimes(1);
+    });
+
+    it('should not cache on error so a subsequent unforced call retries', async () => {
+        mockedGetConfigValue.mockResolvedValueOnce('true');
+        mockClient.getPropertyFields.mockRejectedValueOnce(new Error('network failure'));
+
+        await fetchClassificationBanner(serverUrl);
+
+        mockedGetConfigValue.mockResolvedValueOnce('false');
+        await fetchClassificationBanner(serverUrl);
+
+        expect(mockedGetConfigValue).toHaveBeenCalledTimes(2);
+    });
 });
 
 describe('fetchChannelClassificationValue', () => {
@@ -346,10 +395,54 @@ describe('fetchChannelClassificationValue', () => {
 
         mockedGetConfigValue.mockResolvedValueOnce('true');
         mockClient.getPropertyValues.mockResolvedValueOnce([channelValue]);
+        await operator.handlePropertyFields({fields: [channelField], prepareRecordsOnly: false});
 
         await fetchChannelClassificationValue(serverUrl, channelId);
 
         expect(await getStoredValues(database, CLASSIFICATIONS_SYSTEM_VALUE_TARGET_ID)).toHaveLength(1);
         expect(await getStoredValues(database, channelId)).toHaveLength(1);
+    });
+
+    it('should force a field refresh when the value references an unknown option', async () => {
+        const {operator} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
+        await operator.handlePropertyFields({fields: [channelField], prepareRecordsOnly: false});
+
+        mockedGetConfigValue.mockResolvedValueOnce('true'); // channel value flag check
+        mockedGetConfigValue.mockResolvedValueOnce('true'); // forced banner fetch flag check
+        mockClient.getPropertyValues.mockResolvedValueOnce([{...channelValue, value: 'opt-unknown'}]);
+        mockClient.getPropertyFields.mockResolvedValueOnce([systemField]);
+        mockClient.getPropertyFields.mockResolvedValueOnce([channelField]);
+        mockClient.getSystemPropertyValues.mockResolvedValueOnce([systemValue]);
+
+        await fetchChannelClassificationValue(serverUrl, channelId);
+
+        expect(mockClient.getPropertyFields).toHaveBeenCalled();
+        expect(EphemeralStore.getClassificationFieldSyncAttempted(serverUrl, 'opt-unknown')).toBe(true);
+    });
+
+    it('should not force a field refresh when the value option is already known', async () => {
+        const {operator} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
+        await operator.handlePropertyFields({fields: [channelField], prepareRecordsOnly: false});
+
+        mockedGetConfigValue.mockResolvedValueOnce('true');
+        mockClient.getPropertyValues.mockResolvedValueOnce([channelValue]); // value opt-secret is a known option
+
+        await fetchChannelClassificationValue(serverUrl, channelId);
+
+        expect(mockClient.getPropertyFields).not.toHaveBeenCalled();
+        expect(EphemeralStore.getClassificationFieldSyncAttempted(serverUrl, 'opt-secret')).toBe(false);
+    });
+
+    it('should not force a field refresh again for an option already attempted this session', async () => {
+        const {operator} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
+        await operator.handlePropertyFields({fields: [channelField], prepareRecordsOnly: false});
+        EphemeralStore.setClassificationFieldSyncAttempted(serverUrl, 'opt-unknown');
+
+        mockedGetConfigValue.mockResolvedValueOnce('true');
+        mockClient.getPropertyValues.mockResolvedValueOnce([{...channelValue, value: 'opt-unknown'}]);
+
+        await fetchChannelClassificationValue(serverUrl, channelId);
+
+        expect(mockClient.getPropertyFields).not.toHaveBeenCalled();
     });
 });

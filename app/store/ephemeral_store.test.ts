@@ -1,6 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import {CLASSIFICATION_BANNER_CACHE_TTL} from '@constants/classification';
 import {toMilliseconds} from '@utils/datetime';
 
 import EphemeralStore from './ephemeral_store';
@@ -78,6 +79,54 @@ describe('EphemeralStore', () => {
         expect(EphemeralStore.getChannelPlaybooksSynced('server-url', 'channel-id')).toBe(false);
         expect(EphemeralStore.getChannelPlaybooksSynced('server-url', 'channel-id-2')).toBe(false);
         expect(EphemeralStore.getChannelPlaybooksSynced('server-url', 'channel-id-3')).toBe(false);
+    });
+
+    describe('classification banner cache', () => {
+        const serverUrl = 'classification-server';
+        const otherServerUrl = 'classification-server-2';
+
+        afterEach(() => {
+            EphemeralStore.clearClassificationCache(serverUrl);
+            EphemeralStore.clearClassificationCache(otherServerUrl);
+            jest.useRealTimers();
+        });
+
+        it('needs a fetch until marked, then respects the TTL', () => {
+            jest.useFakeTimers({doNotFake: ['nextTick']});
+
+            expect(EphemeralStore.shouldFetchClassificationBanner(serverUrl)).toBe(true);
+
+            EphemeralStore.setClassificationBannerFetched(serverUrl);
+            expect(EphemeralStore.shouldFetchClassificationBanner(serverUrl)).toBe(false);
+
+            jest.advanceTimersByTime(CLASSIFICATION_BANNER_CACHE_TTL);
+            expect(EphemeralStore.shouldFetchClassificationBanner(serverUrl)).toBe(true);
+        });
+
+        it('tracks freshness independently per server', () => {
+            EphemeralStore.setClassificationBannerFetched(serverUrl);
+            expect(EphemeralStore.shouldFetchClassificationBanner(serverUrl)).toBe(false);
+            expect(EphemeralStore.shouldFetchClassificationBanner(otherServerUrl)).toBe(true);
+        });
+
+        it('guards field sync attempts scoped per server and option', () => {
+            expect(EphemeralStore.getClassificationFieldSyncAttempted(serverUrl, 'opt-1')).toBe(false);
+
+            EphemeralStore.setClassificationFieldSyncAttempted(serverUrl, 'opt-1');
+            expect(EphemeralStore.getClassificationFieldSyncAttempted(serverUrl, 'opt-1')).toBe(true);
+            expect(EphemeralStore.getClassificationFieldSyncAttempted(serverUrl, 'opt-2')).toBe(false);
+            expect(EphemeralStore.getClassificationFieldSyncAttempted(otherServerUrl, 'opt-1')).toBe(false);
+        });
+
+        it('clearClassificationCache resets both freshness and the field sync guard', () => {
+            EphemeralStore.setClassificationBannerFetched(serverUrl);
+            EphemeralStore.setClassificationFieldSyncAttempted(serverUrl, 'opt-1');
+
+            EphemeralStore.clearClassificationCache(serverUrl);
+
+            expect(EphemeralStore.shouldFetchClassificationBanner(serverUrl)).toBe(true);
+            expect(EphemeralStore.getClassificationFieldSyncAttempted(serverUrl, 'opt-1')).toBe(false);
+        });
     });
 
     describe('recently unsaved saved posts', () => {
