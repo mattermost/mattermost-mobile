@@ -77,6 +77,7 @@ const systemValue: PropertyValue<string> = {
 
 const mockClient = {
     getPropertyFields: jest.fn(),
+    searchPropertyFields: jest.fn(),
     getSystemPropertyValues: jest.fn(),
     getPropertyValues: jest.fn(),
 };
@@ -301,7 +302,8 @@ describe('fetchClassificationBanner', () => {
 
         await fetchClassificationBanner(serverUrl, true);
 
-        expect(mockedGetConfigValue).toHaveBeenCalledTimes(1);
+        // Feature flag + server version are both read when the flag is on.
+        expect(mockedGetConfigValue).toHaveBeenCalledTimes(2);
         expect(mockClient.getPropertyFields).toHaveBeenCalled();
     });
 
@@ -314,7 +316,8 @@ describe('fetchClassificationBanner', () => {
         await fetchClassificationBanner(serverUrl);
         await fetchClassificationBanner(serverUrl);
 
-        expect(mockedGetConfigValue).toHaveBeenCalledTimes(1);
+        // First call reads flag + version (2); the second is skipped by the cache.
+        expect(mockedGetConfigValue).toHaveBeenCalledTimes(2);
     });
 
     it('should not cache on error so a subsequent unforced call retries', async () => {
@@ -326,7 +329,50 @@ describe('fetchClassificationBanner', () => {
         mockedGetConfigValue.mockResolvedValueOnce('false');
         await fetchClassificationBanner(serverUrl);
 
-        expect(mockedGetConfigValue).toHaveBeenCalledTimes(2);
+        // First call reads flag + version (2) before failing; the retry reads the flag (1).
+        expect(mockedGetConfigValue).toHaveBeenCalledTimes(3);
+    });
+
+    describe('when the server supports the fields search endpoint', () => {
+        it('should fetch all fields with a single search request', async () => {
+            mockedGetConfigValue.mockResolvedValueOnce('true');
+            mockedGetConfigValue.mockResolvedValueOnce('11.10.0');
+            mockClient.searchPropertyFields.mockResolvedValueOnce([systemField, channelField]);
+            mockClient.getSystemPropertyValues.mockResolvedValueOnce([systemValue]);
+
+            const result = await fetchClassificationBanner(serverUrl);
+
+            expect(result).toEqual({});
+            expect(mockClient.searchPropertyFields).toHaveBeenCalledTimes(1);
+            expect(mockClient.searchPropertyFields).toHaveBeenCalledWith(CLASSIFICATIONS_GROUP_NAME, {
+                object_types: ['system', 'channel'],
+                target_type: 'system',
+                target_id: '',
+            });
+            expect(mockClient.getPropertyFields).not.toHaveBeenCalled();
+
+            const {database} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
+            expect(await getStoredFields(database)).toEqual(['channel-field-id', 'system-field-id']);
+            const values = await getStoredValues(database, CLASSIFICATIONS_SYSTEM_VALUE_TARGET_ID);
+            expect(values).toHaveLength(1);
+            expect(values[0].value).toBe('opt-top-secret');
+        });
+
+        it('should clear stale data when the search returns no fields', async () => {
+            const {operator, database} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
+            await operator.handlePropertyFields({fields: [systemField], prepareRecordsOnly: false});
+            await operator.handlePropertyValues({values: [systemValue], prepareRecordsOnly: false});
+
+            mockedGetConfigValue.mockResolvedValueOnce('true');
+            mockedGetConfigValue.mockResolvedValueOnce('11.10.0');
+            mockClient.searchPropertyFields.mockResolvedValueOnce([]);
+
+            await fetchClassificationBanner(serverUrl);
+
+            expect(mockClient.getPropertyFields).not.toHaveBeenCalled();
+            expect(await getStoredFields(database)).toHaveLength(0);
+            expect(await getStoredValues(database, CLASSIFICATIONS_SYSTEM_VALUE_TARGET_ID)).toHaveLength(0);
+        });
     });
 });
 
