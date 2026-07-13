@@ -7,7 +7,7 @@ import {distinctUntilChanged, switchMap} from 'rxjs/operators';
 import {CHANNEL_BOOKMARKS_FLAG_REMOVED_VERSION, CUSTOM_PROFILE_ATTRIBUTES_FLAG_REMOVED_VERSION, GM_AS_DM_VERSION} from '@constants/versions';
 import {isMinimumServerVersion} from '@utils/helpers';
 
-import {getConfigValue, observeConfigValue} from './system';
+import {getConfigValue, getLicense, observeConfigValue, observeLicense} from './system';
 
 import type {Database} from '@nozbe/watermelondb';
 
@@ -47,12 +47,24 @@ const getFeatureFlagWithVersion = async (database: Database, flag: keyof ClientC
     return isFeatureFlagEnabled(version, value, removedVersion, defaultValue);
 };
 
+// Channel bookmarks additionally require a license, so both the observable and async variants include
+// the license gate and stay consistent across UI and fetch paths.
 export const observeChannelBookmarksEnabled = (database: Database) => {
-    return observeFeatureFlagWithVersion(database, 'FeatureFlagChannelBookmarks', CHANNEL_BOOKMARKS_FLAG_REMOVED_VERSION, true);
+    return combineLatest([
+        observeFeatureFlagWithVersion(database, 'FeatureFlagChannelBookmarks', CHANNEL_BOOKMARKS_FLAG_REMOVED_VERSION, true),
+        observeLicense(database),
+    ]).pipe(
+        switchMap(([enabled, license]) => of$(enabled && license?.IsLicensed === 'true')),
+        distinctUntilChanged(),
+    );
 };
 
-export const getChannelBookmarksEnabled = (database: Database) => {
-    return getFeatureFlagWithVersion(database, 'FeatureFlagChannelBookmarks', CHANNEL_BOOKMARKS_FLAG_REMOVED_VERSION, true);
+export const getChannelBookmarksEnabled = async (database: Database) => {
+    const [enabled, license] = await Promise.all([
+        getFeatureFlagWithVersion(database, 'FeatureFlagChannelBookmarks', CHANNEL_BOOKMARKS_FLAG_REMOVED_VERSION, true),
+        getLicense(database),
+    ]);
+    return enabled && license?.IsLicensed === 'true';
 };
 
 export const observeCustomProfileAttributesEnabled = (database: Database) => {

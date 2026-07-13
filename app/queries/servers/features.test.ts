@@ -3,6 +3,7 @@
 
 import {firstValueFrom} from 'rxjs';
 
+import {SYSTEM_IDENTIFIERS} from '@constants/database';
 import {MIN_REQUIRED_VERSION} from '@constants/supported_server';
 import {CHANNEL_BOOKMARKS_FLAG_REMOVED_VERSION, CUSTOM_PROFILE_ATTRIBUTES_FLAG_REMOVED_VERSION} from '@constants/versions';
 import DatabaseManager from '@database/manager';
@@ -23,11 +24,20 @@ const setConfigs = (configs: Array<{id: string; value: string}>) => operator.han
     prepareRecordsOnly: false,
 });
 
+const setLicensed = (isLicensed: boolean) => operator.handleSystem({
+    systems: [{id: SYSTEM_IDENTIFIERS.LICENSE, value: {IsLicensed: isLicensed ? 'true' : 'false'}}],
+    prepareRecordsOnly: false,
+});
+
 beforeEach(async () => {
     await DatabaseManager.init([serverUrl]);
     const serverDatabaseAndOperator = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
     database = serverDatabaseAndOperator.database;
     operator = serverDatabaseAndOperator.operator;
+
+    // Channel bookmarks also gate on license; hold it licensed so the shared matrix below isolates the
+    // version/flag behavior. The unlicensed case is covered separately.
+    await setLicensed(true);
 });
 
 afterEach(async () => {
@@ -65,8 +75,19 @@ describe.each([
     });
 });
 
+// Channel bookmarks additionally gate on license, unlike the other promoted flags. Both variants apply
+// the same gate so UI and fetch paths stay consistent.
+describe('ChannelBookmarks license gate', () => {
+    it('disables both variants on an unlicensed server even when the feature is otherwise enabled', async () => {
+        await setConfigs([{id: 'Version', value: CHANNEL_BOOKMARKS_FLAG_REMOVED_VERSION.join('.')}]);
+        await setLicensed(false);
+        expect(await firstValueFrom(observeChannelBookmarksEnabled(database))).toBe(false);
+        expect(await getChannelBookmarksEnabled(database)).toBe(false);
+    });
+});
+
 // getChannelBookmarksEnabled is the async variant used by the channel bookmark action; confirm it applies
-// the same gate as the observe helper.
+// the same version gate as the observe helper.
 describe('getChannelBookmarksEnabled (async variant)', () => {
     it('applies the version gate', async () => {
         await setConfigs([{id: 'Version', value: '10.0.0'}]);

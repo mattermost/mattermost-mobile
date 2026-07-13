@@ -6,7 +6,6 @@ import NetworkManager from '@managers/network_manager';
 import websocketManager from '@managers/websocket_manager';
 import {getBookmarksSince, getChannelBookmarkById} from '@queries/servers/channel_bookmark';
 import {getChannelBookmarksEnabled} from '@queries/servers/features';
-import {getLicense} from '@queries/servers/system';
 import {getFullErrorMessage} from '@utils/errors';
 import {logError} from '@utils/log';
 
@@ -18,9 +17,8 @@ export async function fetchChannelBookmarks(serverUrl: string, channelId: string
         const {database, operator} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
 
         const bookmarksEnabled = await getChannelBookmarksEnabled(database);
-        const isLicensed = (await getLicense(database))?.IsLicensed === 'true';
 
-        if (!bookmarksEnabled || !isLicensed) {
+        if (!bookmarksEnabled) {
             return {bookmarks: []};
         }
 
