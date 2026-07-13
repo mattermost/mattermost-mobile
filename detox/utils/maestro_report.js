@@ -608,10 +608,64 @@ function mergeMaestroBatchReportsFromDir(buildDir, outputPath) {
     return fse.existsSync(outputPath) ? outputPath : null;
 }
 
+/**
+ * Convert a parsed Maestro JUnit XML report into Jest's native --json shape
+ * ({testResults: [{testFilePath, perfStats, testResults: [...]}]}), which the
+ * TSIO detox parser (apps/server/internal/ingest/detox.go) consumes. Pure
+ * addition — the existing XML→HTML path is untouched.
+ *
+ * Flows are grouped by their JUnit classname (the suite name) so each suite
+ * becomes one Jest "file". Maestro 'error' maps to Jest 'failed' (Jest has no
+ * 'error' status); 'skipped' maps to 'skipped'. Durations are converted from
+ * seconds (JUnit) to milliseconds (Jest).
+ */
+function maestroToJestStatus(s) {
+    if (s === 'failed' || s === 'error') {
+        return 'failed';
+    }
+    if (s === 'skipped') {
+        return 'skipped';
+    }
+    return 'passed';
+}
+
+function maestroReportToJestJson(xmlPath) {
+    const summary = parseMaestroReport(xmlPath);
+    if (!summary || !summary.flows) {
+        return null;
+    }
+    const start = Date.now();
+    const bySuite = new Map();
+    for (const flow of summary.flows) {
+        const key = flow.classname || 'Maestro';
+        if (!bySuite.has(key)) {
+            bySuite.set(key, []);
+        }
+        bySuite.get(key).push(flow);
+    }
+    const testResults = [];
+    for (const [suiteName, flows] of bySuite) {
+        testResults.push({
+            testFilePath: `maestro/${suiteName}`,
+            perfStats: {start},
+            testResults: flows.map((f) => ({
+                ancestorTitles: [suiteName],
+                duration: Math.round((parseFloat(f.time) || 0) * 1000),
+                failureMessages: f.failureMessage ? [f.failureMessage] : [],
+                fullName: `${suiteName} ${f.name}`,
+                status: maestroToJestStatus(f.status),
+                title: f.name,
+            })),
+        });
+    }
+    return {testResults};
+}
+
 module.exports = {
     parseMaestroReport,
     generateMaestroHtmlReport,
     mergeMaestroJunitReports,
     mergeMaestroBatchReportsFromDir,
     buildScreenshotMapFromCommandLogs,
+    maestroReportToJestJson,
 };

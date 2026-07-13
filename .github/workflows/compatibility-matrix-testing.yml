@@ -31,6 +31,48 @@ jobs:
         id: repo
         run: echo "MOBILE_SHA=$(git rev-parse HEAD)" >> ${GITHUB_OUTPUT}
 
+  # Phase 5 — computes the TSIO composite identity for this CMT run and the
+  # per-group totals. Detox runs the FULL CMT_MATRIX (all server versions) across
+  # 3 platforms (ios/android/ipad) → total = 3 × (#servers). Maestro runs only
+  # the latest server version(s) across 2 platforms (ios/android) → total =
+  # 2 × (#latest servers). The orchestrator (update-final-status) and the
+  # per-platform uploads both consume these outputs.
+  cmt-identity:
+    name: Calculate CMT TSIO composite identity
+    runs-on: ubuntu-22.04
+    permissions:
+      contents: read
+    needs:
+      - calculate-commit-hash
+    outputs:
+      composite-identity-json: ${{ steps.id.outputs.composite-identity-json }}
+      tsio-config: ${{ steps.id.outputs.tsio-config }}
+      total-reports-expected: ${{ steps.id.outputs.total-reports-expected }}
+    steps:
+      - id: id
+        env:
+          CMT_MATRIX: ${{ inputs.CMT_MATRIX }}
+          GITHUB_REPOSITORY: ${{ github.repository }}
+          MM_SHA: ${{ needs.calculate-commit-hash.outputs.MOBILE_SHA }}
+          MOBILE_VERSION: ${{ inputs.MOBILE_VERSION }}
+        run: |
+          DETOX_SERVERS=$(echo "$CMT_MATRIX" | jq '.server | length')
+          MAESTRO_SERVERS=$(echo "$CMT_MATRIX" | jq '[.server[] | select(.latest == true)] | length')
+          if [ "$MAESTRO_SERVERS" -eq 0 ]; then MAESTRO_SERVERS=1; fi
+          DETOX_TOTAL=$(( 3 * DETOX_SERVERS ))
+          MAESTRO_TOTAL=$(( 2 * MAESTRO_SERVERS ))
+          TOTAL=$(( DETOX_TOTAL + MAESTRO_TOTAL ))
+          echo "total-reports-expected=$TOTAL" >> "$GITHUB_OUTPUT"
+          BRANCH=$(echo "$MOBILE_VERSION" | sed 's#^refs/heads/##; s#^refs/tags/##')
+          BASE=$(jq -nc \
+            --arg repo "$GITHUB_REPOSITORY" --arg sha "$MM_SHA" --arg run_id "$GITHUB_RUN_ID" \
+            --arg attempt "$GITHUB_RUN_ATTEMPT" --arg branch "$BRANCH" \
+            '{repository:$repo, commit_sha:$sha, gh_run_id:$run_id, gh_run_attempt:$attempt, branch:$branch, name:"cmt-mobile"}')
+          echo "composite-identity-json=$BASE" >> "$GITHUB_OUTPUT"
+          TSIO_CONFIG=$(jq -nc --argjson identity "$BASE" --arg total "$TOTAL" \
+            '{composite_identity: $identity, total_reports_expected: $total}')
+          echo "tsio-config=$TSIO_CONFIG" >> "$GITHUB_OUTPUT"
+
   update-initial-status:
     runs-on: ubuntu-22.04
     permissions:
@@ -179,9 +221,15 @@ jobs:
   # latest entry runs full suite, older entries run smoke only. Job-level if: can't conditionally skip matrix legs, so inputs vary instead.
   detox-e2e:
     name: mobile-cmt-ios${{ matrix.server.latest && '-full' || '-smoke' }}-${{ matrix.server.version }}
+    permissions:
+      contents: read
+      # nested template mints an OIDC token for the TSIO upload.
+      id-token: write
+      actions: read
     uses: ./.github/workflows/e2e-ios-template.yml
     needs:
       - build-ios-simulator
+      - cmt-identity
     strategy:
       fail-fast: false
       matrix: ${{ fromJson(inputs.CMT_MATRIX) }}
@@ -195,18 +243,26 @@ jobs:
       MM_MOBILE_DETOX_AWS_ACCESS_KEY_ID: ${{ secrets.MM_MOBILE_DETOX_AWS_ACCESS_KEY_ID }}
       MM_MOBILE_DETOX_AWS_SECRET_ACCESS_KEY: ${{ secrets.MM_MOBILE_DETOX_AWS_SECRET_ACCESS_KEY }}
     with:
+      tsio-config: ${{ needs.cmt-identity.outputs.tsio-config }}
+      tsio-shard-name: detox-ios-Server_${{ matrix.server.version }}
       run-type: "RELEASE"
       MM_TEST_SERVER_URL: ${{ matrix.server.url }}
       MOBILE_VERSION: ${{ inputs.MOBILE_VERSION }}
       search_path: ${{ matrix.server.latest && 'detox/e2e/test' || 'detox/e2e/test/products/channels/smoke_test' }}
       parallelism: ${{ matrix.server.latest && '10' || '1' }}
       testcase_failure_fatal: true
+      artifact_run_id: ${{ github.run_id }}
 
   detox-ipad-e2e:
     name: mobile-cmt-ipad-${{ matrix.server.version }}
+    permissions:
+      contents: read
+      id-token: write
+      actions: read
     uses: ./.github/workflows/e2e-ios-template.yml
     needs:
       - build-ios-simulator
+      - cmt-identity
     strategy:
       fail-fast: false
       matrix: ${{ fromJson(inputs.CMT_MATRIX) }}
@@ -220,6 +276,8 @@ jobs:
       MM_MOBILE_DETOX_AWS_ACCESS_KEY_ID: ${{ secrets.MM_MOBILE_DETOX_AWS_ACCESS_KEY_ID }}
       MM_MOBILE_DETOX_AWS_SECRET_ACCESS_KEY: ${{ secrets.MM_MOBILE_DETOX_AWS_SECRET_ACCESS_KEY }}
     with:
+      tsio-config: ${{ needs.cmt-identity.outputs.tsio-config }}
+      tsio-shard-name: detox-ipad-Server_${{ matrix.server.version }}
       run-type: "RELEASE"
       MM_TEST_SERVER_URL: ${{ matrix.server.url }}
       MOBILE_VERSION: ${{ inputs.MOBILE_VERSION }}
@@ -228,31 +286,51 @@ jobs:
       search_path: "detox/e2e/test/products/channels/ipad"
       parallelism: "1"
       detox_config: "ios.ipad.debug"
+      artifact_run_id: ${{ github.run_id }}
 
   # Maestro runs only against the latest server version (no smoke-on-older variant).
   maestro-ios-e2e:
     name: mobile-cmt-maestro-ios-${{ matrix.server.version }}
+    permissions:
+      contents: read
+      id-token: write
+      actions: read
     uses: ./.github/workflows/e2e-maestro-template.yml
     needs:
       - build-ios-simulator
       - prepare-maestro-matrix
+      - cmt-identity
     strategy:
       fail-fast: false
       matrix: ${{ fromJson(needs.prepare-maestro-matrix.outputs.matrix) }}
-    secrets: inherit
+    secrets:
+      MM_MOBILE_E2E_ADMIN_EMAIL: ${{ secrets.MM_MOBILE_E2E_ADMIN_EMAIL }}
+      MM_MOBILE_E2E_ADMIN_USERNAME: ${{ secrets.MM_MOBILE_E2E_ADMIN_USERNAME }}
+      MM_MOBILE_E2E_ADMIN_PASSWORD: ${{ secrets.MM_MOBILE_E2E_ADMIN_PASSWORD }}
+      MM_MOBILE_E2E_ZEPHYR_API_KEY: ${{ secrets.MM_MOBILE_E2E_ZEPHYR_API_KEY }}
+      MM_MOBILE_DETOX_AWS_ACCESS_KEY_ID: ${{ secrets.MM_MOBILE_DETOX_AWS_ACCESS_KEY_ID }}
+      MM_MOBILE_DETOX_AWS_SECRET_ACCESS_KEY: ${{ secrets.MM_MOBILE_DETOX_AWS_SECRET_ACCESS_KEY }}
     with:
+      tsio-config: ${{ needs.cmt-identity.outputs.tsio-config }}
+      tsio-shard-name: maestro-ios-Server_${{ matrix.server.version }}
       platform: ios
       run-type: "RELEASE"
       MM_TEST_SERVER_URL: ${{ matrix.server.url }}
       MOBILE_VERSION: ${{ inputs.MOBILE_VERSION }}
       testcase_failure_fatal: true
       record_tests_in_zephyr: true
+      artifact_run_id: ${{ github.run_id }}
 
   detox-android-e2e:
     name: mobile-cmt-android${{ matrix.server.latest && '-full' || '-smoke' }}-${{ matrix.server.version }}
+    permissions:
+      contents: read
+      id-token: write
+      actions: read
     uses: ./.github/workflows/e2e-android-template.yml
     needs:
       - build-android-apk
+      - cmt-identity
     strategy:
       fail-fast: false
       matrix: ${{ fromJson(inputs.CMT_MATRIX) }}
@@ -266,6 +344,8 @@ jobs:
       MM_MOBILE_DETOX_AWS_ACCESS_KEY_ID: ${{ secrets.MM_MOBILE_DETOX_AWS_ACCESS_KEY_ID }}
       MM_MOBILE_DETOX_AWS_SECRET_ACCESS_KEY: ${{ secrets.MM_MOBILE_DETOX_AWS_SECRET_ACCESS_KEY }}
     with:
+      tsio-config: ${{ needs.cmt-identity.outputs.tsio-config }}
+      tsio-shard-name: detox-android-Server_${{ matrix.server.version }}
       run-android-tests: true
       run-type: "RELEASE"
       MM_TEST_SERVER_URL: ${{ matrix.server.url }}
@@ -273,19 +353,33 @@ jobs:
       search_path: ${{ matrix.server.latest && 'detox/e2e/test' || 'detox/e2e/test/products/channels/smoke_test' }}
       parallelism: ${{ matrix.server.latest && '10' || '1' }}
       testcase_failure_fatal: true
+      artifact_run_id: ${{ github.run_id }}
 
   # Maestro runs only against the latest server version (no smoke-on-older variant).
   maestro-android-e2e:
     name: mobile-cmt-maestro-android-${{ matrix.server.version }}
+    permissions:
+      contents: read
+      id-token: write
+      actions: read
     uses: ./.github/workflows/e2e-maestro-template.yml
     needs:
       - build-android-apk-maestro
       - prepare-maestro-matrix
+      - cmt-identity
     strategy:
       fail-fast: false
       matrix: ${{ fromJson(needs.prepare-maestro-matrix.outputs.matrix) }}
-    secrets: inherit
+    secrets:
+      MM_MOBILE_E2E_ADMIN_EMAIL: ${{ secrets.MM_MOBILE_E2E_ADMIN_EMAIL }}
+      MM_MOBILE_E2E_ADMIN_USERNAME: ${{ secrets.MM_MOBILE_E2E_ADMIN_USERNAME }}
+      MM_MOBILE_E2E_ADMIN_PASSWORD: ${{ secrets.MM_MOBILE_E2E_ADMIN_PASSWORD }}
+      MM_MOBILE_E2E_ZEPHYR_API_KEY: ${{ secrets.MM_MOBILE_E2E_ZEPHYR_API_KEY }}
+      MM_MOBILE_DETOX_AWS_ACCESS_KEY_ID: ${{ secrets.MM_MOBILE_DETOX_AWS_ACCESS_KEY_ID }}
+      MM_MOBILE_DETOX_AWS_SECRET_ACCESS_KEY: ${{ secrets.MM_MOBILE_DETOX_AWS_SECRET_ACCESS_KEY }}
     with:
+      tsio-config: ${{ needs.cmt-identity.outputs.tsio-config }}
+      tsio-shard-name: maestro-android-Server_${{ matrix.server.version }}
       platform: android
       run-type: "RELEASE"
       MM_TEST_SERVER_URL: ${{ matrix.server.url }}
@@ -299,8 +393,13 @@ jobs:
     if: always()
     permissions:
       contents: read
+      # posts the combined commit status.
       statuses: write
+      # mints the OIDC token used to recover the TSIO report group ids.
+      id-token: write
+      actions: read
     needs:
+      - cmt-identity
       - calculate-commit-hash
       - detox-e2e
       - detox-android-e2e
@@ -308,34 +407,42 @@ jobs:
       - maestro-ios-e2e
       - maestro-android-e2e
     steps:
-      - name: Determine overall status
-        id: status
-        run: |
-          if [[ "${{ needs.detox-e2e.result }}" == "success" && \
-                "${{ needs.detox-android-e2e.result }}" == "success" && \
-                "${{ needs.detox-ipad-e2e.result }}" == "success" && \
-                "${{ needs.maestro-ios-e2e.result }}" == "success" && \
-                "${{ needs.maestro-android-e2e.result }}" == "success" ]]; then
-            echo "status=success" >> $GITHUB_OUTPUT
-          else
-            echo "status=failure" >> $GITHUB_OUTPUT
-          fi
-
-      - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
+      - name: Sparse checkout TSIO status utility
+        uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
         with:
           ref: ${{ inputs.MOBILE_VERSION }}
+          persist-credentials: false
+          sparse-checkout: |
+            detox/utils/tsio-report-status.js
 
-      - uses: ./.github/actions/update-commit-status
-        if: ${{ needs.calculate-commit-hash.outputs.MOBILE_SHA != '' }}
+      - name: Post TSIO commit status from unified CMT report group
         env:
           GITHUB_TOKEN: ${{ github.token }}
-        with:
-          repository_full_name: ${{ github.repository }}
-          commit_sha: ${{ needs.calculate-commit-hash.outputs.MOBILE_SHA }}
-          context: e2e/compatibility-matrix-testing
-          description: Compatibility Matrix Testing for ${{ inputs.MOBILE_VERSION }} version
-          status: ${{ steps.status.outputs.status }}
-          target_url: https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}
+          COMPOSITE_IDENTITY: ${{ needs.cmt-identity.outputs.composite-identity-json }}
+          TOTAL_REPORTS_EXPECTED: ${{ needs.cmt-identity.outputs.total-reports-expected }}
+        run: |
+          set +e
+          UPSTREAM="true"
+          for r in "${{ needs.detox-e2e.result }}" "${{ needs.detox-android-e2e.result }}" "${{ needs.detox-ipad-e2e.result }}" "${{ needs.maestro-ios-e2e.result }}" "${{ needs.maestro-android-e2e.result }}"; do
+            case "$r" in
+              success|skipped) ;;
+              *) UPSTREAM="false" ;;
+            esac
+          done
+          node detox/utils/tsio-report-status.js \
+            --composite-identity="$COMPOSITE_IDENTITY" \
+            --total-reports-expected="$TOTAL_REPORTS_EXPECTED" \
+            --github-token="$GITHUB_TOKEN" \
+            --context="e2e/compatibility-matrix-testing" \
+            --upstream-succeeded="$UPSTREAM" \
+            --poll-attempts=24
+          RC=$?
+          echo "tsio-report-status exit=$RC upstream_succeeded=$UPSTREAM"
+          if [ "$RC" -ne 0 ] && [ "$UPSTREAM" = "true" ]; then
+            echo "::error::TSIO reported test failures (exit $RC) with all upstream jobs succeeded."
+            exit 1
+          fi
+          exit 0
 
       # Instance cleanup is handled by matterwick on workflow_run completed.
 

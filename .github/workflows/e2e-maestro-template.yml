@@ -42,6 +42,18 @@ on:
         required: false
         type: boolean
         default: false
+      tsio-config:
+        description: >
+          TSIO reporting config: {"composite_identity":{...},"total_reports_expected":"N"}.
+          Empty disables TSIO upload for this platform.
+        required: false
+        type: string
+        default: ""
+      tsio-shard-name:
+        description: "Display name for this shard in TSIO (e.g. maestro-ios-Server_11.9.0-rc3)"
+        required: false
+        type: string
+        default: ""
     secrets:
       MM_MOBILE_E2E_ADMIN_EMAIL:
         required: true
@@ -79,6 +91,10 @@ on:
 permissions:
   contents: read
   actions: read
+  # test-system-io-report-upload authenticates via the workflow's OIDC token
+  # and resolves gh_job_id via the GitHub API; reusable workflows cannot
+  # escalate beyond the caller, so this must be granted at every level.
+  id-token: write
 env:
   ADMIN_EMAIL: ${{ secrets.MM_MOBILE_E2E_ADMIN_EMAIL }}
   ADMIN_USERNAME: ${{ secrets.MM_MOBILE_E2E_ADMIN_USERNAME }}
@@ -423,6 +439,48 @@ jobs:
               ['FAILURES=1','PASSES=0','TOTAL=0','ERRORS=1','SKIPPED=0','PERCENTAGE=0','NO_REPORT=true'].forEach(l => fs.appendFileSync(process.env.GITHUB_OUTPUT, l + '\n'));
             }
           "
+
+      - name: Emit Maestro Jest JSON for TSIO
+        if: always() && inputs.tsio-config != '' && vars.TSIO_UPLOAD_ENABLED != 'false'
+        run: |
+          cd detox
+          node -e "
+            const path = require('path');
+            const fs = require('fs');
+            const {maestroReportToJestJson} = require('./utils/maestro_report');
+            const xmlPath = path.resolve('..', 'build', 'maestro-report.xml');
+            const jest = maestroReportToJestJson(xmlPath);
+            if (!jest) { console.log('No Maestro report — skipping TSIO JSON emit'); process.exit(0); }
+            const out = path.resolve('..', 'build', 'maestro-results.json');
+            fs.writeFileSync(out, JSON.stringify(jest, null, 2));
+            console.log('Wrote', out, '—', jest.testResults.length, 'suite(s),', jest.testResults.reduce((n, f) => n + f.testResults.length, 0), 'test(s)');
+          "
+
+      - name: Write TSIO failure stub when Maestro report is missing
+        if: always() && inputs.tsio-config != '' && vars.TSIO_UPLOAD_ENABLED != 'false' && hashFiles('build/maestro-report.xml') == ''
+        env:
+          TSIO_SHARD_NAME: ${{ inputs.tsio-shard-name != '' && inputs.tsio-shard-name || 'Maestro E2E Tests (iOS)' }}
+        run: |
+          node detox/utils/write-tsio-failure-stub.mjs \
+            --format junit \
+            --output build/maestro-report.xml \
+            --job-name "$TSIO_SHARD_NAME" \
+            --reason "Maestro job failed or was cancelled before maestro-report.xml was written"
+
+      - name: Upload report to Test System IO
+        if: always() && inputs.tsio-config != '' && vars.TSIO_UPLOAD_ENABLED != 'false' && hashFiles('build/maestro-report.xml') != ''
+        uses: mattermost/mattermost-test-system-io/.github/actions/test-system-io-report-upload@a2ea7f005484c28fedf51e16645f6d3bd683fd63 # 0.10.0 / 2026-05-16
+        with:
+          composite-identity: ${{ toJSON(fromJSON(inputs.tsio-config).composite_identity) }}
+          total-reports-expected: ${{ fromJSON(inputs.tsio-config).total_reports_expected }}
+          framework: maestro
+          github-token: ${{ github.token }}
+          # Phase 0's TSIO maestro parser (apps/server/internal/ingest/maestro.go)
+          # is a JUnit XML parser, so upload the raw maestro-report.xml (not the
+          # Jest JSON emitted above) — that's the format the parser consumes.
+          gh-job-name: ${{ inputs.tsio-shard-name != '' && inputs.tsio-shard-name || 'Maestro E2E Tests (iOS)' }}
+          json-path: build/maestro-report.xml
+          screenshots-dir: build/maestro-artifacts
 
       - name: Save Maestro results to Zephyr Scale
         if: always() && inputs.record_tests_in_zephyr
@@ -820,6 +878,48 @@ jobs:
               ['FAILURES=1','PASSES=0','TOTAL=0','ERRORS=1','SKIPPED=0','PERCENTAGE=0','NO_REPORT=true'].forEach(l => fs.appendFileSync(process.env.GITHUB_OUTPUT, l + '\n'));
             }
           "
+
+      - name: Emit Maestro Jest JSON for TSIO
+        if: always() && inputs.tsio-config != '' && vars.TSIO_UPLOAD_ENABLED != 'false'
+        run: |
+          cd detox
+          node -e "
+            const path = require('path');
+            const fs = require('fs');
+            const {maestroReportToJestJson} = require('./utils/maestro_report');
+            const xmlPath = path.resolve('..', 'build', 'maestro-report.xml');
+            const jest = maestroReportToJestJson(xmlPath);
+            if (!jest) { console.log('No Maestro report — skipping TSIO JSON emit'); process.exit(0); }
+            const out = path.resolve('..', 'build', 'maestro-results.json');
+            fs.writeFileSync(out, JSON.stringify(jest, null, 2));
+            console.log('Wrote', out, '—', jest.testResults.length, 'suite(s),', jest.testResults.reduce((n, f) => n + f.testResults.length, 0), 'test(s)');
+          "
+
+      - name: Write TSIO failure stub when Maestro report is missing
+        if: always() && inputs.tsio-config != '' && vars.TSIO_UPLOAD_ENABLED != 'false' && hashFiles('build/maestro-report.xml') == ''
+        env:
+          TSIO_SHARD_NAME: ${{ inputs.tsio-shard-name != '' && inputs.tsio-shard-name || 'Maestro E2E Tests (Android)' }}
+        run: |
+          node detox/utils/write-tsio-failure-stub.mjs \
+            --format junit \
+            --output build/maestro-report.xml \
+            --job-name "$TSIO_SHARD_NAME" \
+            --reason "Maestro job failed or was cancelled before maestro-report.xml was written"
+
+      - name: Upload report to Test System IO
+        if: always() && inputs.tsio-config != '' && vars.TSIO_UPLOAD_ENABLED != 'false' && hashFiles('build/maestro-report.xml') != ''
+        uses: mattermost/mattermost-test-system-io/.github/actions/test-system-io-report-upload@a2ea7f005484c28fedf51e16645f6d3bd683fd63 # 0.10.0 / 2026-05-16
+        with:
+          composite-identity: ${{ toJSON(fromJSON(inputs.tsio-config).composite_identity) }}
+          total-reports-expected: ${{ fromJSON(inputs.tsio-config).total_reports_expected }}
+          framework: maestro
+          github-token: ${{ github.token }}
+          # Phase 0's TSIO maestro parser (apps/server/internal/ingest/maestro.go)
+          # is a JUnit XML parser, so upload the raw maestro-report.xml (not the
+          # Jest JSON emitted above) — that's the format the parser consumes.
+          gh-job-name: ${{ inputs.tsio-shard-name != '' && inputs.tsio-shard-name || 'Maestro E2E Tests (Android)' }}
+          json-path: build/maestro-report.xml
+          screenshots-dir: build/maestro-artifacts
 
       - name: Save Maestro results to Zephyr Scale
         if: always() && inputs.record_tests_in_zephyr

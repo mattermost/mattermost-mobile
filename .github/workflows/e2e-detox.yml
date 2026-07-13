@@ -31,9 +31,20 @@ on:
         description: "Run ID of the parent workflow that uploaded build artifacts"
         required: true
         type: string
+      pr_number:
+        description: "PR number (optional) — included in the TSIO composite identity"
+        required: false
+        type: string
+        default: ""
+      tsio-config:
+        description: "TSIO composite identity + total_reports_expected (from parent calculate-tsio-identity)"
+        required: true
+        type: string
 
 permissions:
   contents: read
+  id-token: write
+  actions: read
 
 env:
   ARTIFACT_RUN_ID: ${{ inputs.artifact_run_id }}
@@ -45,6 +56,8 @@ jobs:
     uses: ./.github/workflows/e2e-ios-template.yml
     with:
       run-type: ${{ inputs.run_type || 'PR' }}
+      tsio-config: ${{ inputs.tsio-config }}
+      tsio-shard-name: detox-ios
       record_tests_in_zephyr: ${{ inputs.run_type == 'RELEASE' || inputs.run_type == 'NIGHTLY' || inputs.run_type == 'MASTER' }}
       MOBILE_VERSION: ${{ inputs.MOBILE_VERSION }}
       MM_TEST_SERVER_URL: ${{ inputs.SITE_1_URL }}
@@ -68,6 +81,8 @@ jobs:
     with:
       run-android-tests: true
       run-type: ${{ inputs.run_type || 'PR' }}
+      tsio-config: ${{ inputs.tsio-config }}
+      tsio-shard-name: detox-android
       record_tests_in_zephyr: ${{ inputs.run_type == 'RELEASE' || inputs.run_type == 'NIGHTLY' || inputs.run_type == 'MASTER' }}
       MOBILE_VERSION: ${{ inputs.MOBILE_VERSION }}
       MM_TEST_SERVER_URL: ${{ inputs.SITE_1_URL }}
@@ -90,6 +105,8 @@ jobs:
     uses: ./.github/workflows/e2e-ios-template.yml
     with:
       run-type: ${{ inputs.run_type || 'PR' }}
+      tsio-config: ${{ inputs.tsio-config }}
+      tsio-shard-name: detox-ipad
       MOBILE_VERSION: ${{ inputs.MOBILE_VERSION }}
       MM_TEST_SERVER_URL: ${{ inputs.SITE_1_URL }}
       ios_device_name: "iPad Pro 13-inch (M5)"
@@ -107,87 +124,3 @@ jobs:
       MM_MOBILE_E2E_WEBHOOK_URL: ${{ secrets.MM_MOBILE_E2E_WEBHOOK_URL }}
       MM_MOBILE_DETOX_AWS_ACCESS_KEY_ID: ${{ secrets.MM_MOBILE_DETOX_AWS_ACCESS_KEY_ID }}
       MM_MOBILE_DETOX_AWS_SECRET_ACCESS_KEY: ${{ secrets.MM_MOBILE_DETOX_AWS_SECRET_ACCESS_KEY }}
-
-  update-final-status-ios:
-    runs-on: ubuntu-22.04
-    if: always() && (inputs.PLATFORM == 'ios' || inputs.PLATFORM == 'both')
-    permissions:
-      contents: read
-      statuses: write
-    needs:
-      - run-ios-tests
-    steps:
-      - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
-        with:
-          ref: ${{ inputs.MOBILE_VERSION }}
-      - uses: ./.github/actions/update-commit-status
-        env:
-          GITHUB_TOKEN: ${{ github.token }}
-        with:
-          repository_full_name: ${{ github.repository }}
-          commit_sha: ${{ inputs.MOBILE_VERSION }}
-          context: e2e/detox-ios-tests
-          description: >-
-            ${{ needs.run-ios-tests.result == 'skipped' && 'Build failed — iOS detox tests did not run'
-              || needs.run-ios-tests.outputs.FAILURES == '-1' && 'All test machines failed before producing results'
-              || (needs.run-ios-tests.outputs.FAILURES == '0' && needs.run-ios-tests.outputs.SKIPPED > '0') && format('{0} passed, {1} skipped', needs.run-ios-tests.outputs.PASSES, needs.run-ios-tests.outputs.SKIPPED)
-              || needs.run-ios-tests.outputs.FAILURES == '0' && format('All {0} tests passed', needs.run-ios-tests.outputs.TOTAL)
-              || format('{0} passed, {1} failed, {2} skipped', needs.run-ios-tests.outputs.PASSES || '?', needs.run-ios-tests.outputs.FAILURES || '?', needs.run-ios-tests.outputs.SKIPPED || '0') }}
-          status: ${{ (needs.run-ios-tests.result == 'skipped' && 'failure') || needs.run-ios-tests.outputs.STATUS || 'failure' }}
-          target_url: ${{ needs.run-ios-tests.outputs.TARGET_URL }}
-
-  update-final-status-android:
-    runs-on: ubuntu-22.04
-    if: always() && (inputs.PLATFORM == 'android' || inputs.PLATFORM == 'both')
-    permissions:
-      contents: read
-      statuses: write
-    needs:
-      - run-android-tests
-    steps:
-      - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
-        with:
-          ref: ${{ inputs.MOBILE_VERSION }}
-      - uses: ./.github/actions/update-commit-status
-        env:
-          GITHUB_TOKEN: ${{ github.token }}
-        with:
-          repository_full_name: ${{ github.repository }}
-          commit_sha: ${{ inputs.MOBILE_VERSION }}
-          context: e2e/detox-android-tests
-          description: >-
-            ${{ needs.run-android-tests.result == 'skipped' && 'Build failed — Android detox tests did not run'
-              || needs.run-android-tests.outputs.FAILURES == '-1' && 'All test machines failed before producing results'
-              || (needs.run-android-tests.outputs.FAILURES == '0' && needs.run-android-tests.outputs.SKIPPED > '0') && format('{0} passed, {1} skipped', needs.run-android-tests.outputs.PASSES, needs.run-android-tests.outputs.SKIPPED)
-              || needs.run-android-tests.outputs.FAILURES == '0' && format('All {0} tests passed', needs.run-android-tests.outputs.TOTAL)
-              || format('{0} passed, {1} failed, {2} skipped', needs.run-android-tests.outputs.PASSES || '?', needs.run-android-tests.outputs.FAILURES || '?', needs.run-android-tests.outputs.SKIPPED || '0') }}
-          status: ${{ (needs.run-android-tests.result == 'skipped' && 'failure') || needs.run-android-tests.outputs.STATUS || 'failure' }}
-          target_url: ${{ needs.run-android-tests.outputs.TARGET_URL }}
-
-  update-final-status-ipad:
-    runs-on: ubuntu-22.04
-    if: always() && (inputs.PLATFORM == 'ios' || inputs.PLATFORM == 'both')
-    permissions:
-      contents: read
-      statuses: write
-    needs:
-      - run-ios-ipad-tests
-    steps:
-      - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
-        with:
-          ref: ${{ inputs.MOBILE_VERSION }}
-      - uses: ./.github/actions/update-commit-status
-        env:
-          GITHUB_TOKEN: ${{ github.token }}
-        with:
-          repository_full_name: ${{ github.repository }}
-          commit_sha: ${{ inputs.MOBILE_VERSION }}
-          context: e2e/detox-ipad-tests
-          description: >-
-            ${{ needs.run-ios-ipad-tests.result == 'skipped' && 'Build failed — iPad detox tests did not run'
-              || needs.run-ios-ipad-tests.outputs.FAILURES == '-1' && 'All test machines failed before producing results'
-              || (needs.run-ios-ipad-tests.outputs.FAILURES == '0' && needs.run-ios-ipad-tests.outputs.SKIPPED > '0') && format('{0} passed, {1} skipped', needs.run-ios-ipad-tests.outputs.PASSES, needs.run-ios-ipad-tests.outputs.SKIPPED)
-              || needs.run-ios-ipad-tests.outputs.FAILURES == '0' && format('All {0} tests passed', needs.run-ios-ipad-tests.outputs.TOTAL)
-              || format('{0} passed, {1} failed, {2} skipped', needs.run-ios-ipad-tests.outputs.PASSES || '?', needs.run-ios-ipad-tests.outputs.FAILURES || '?', needs.run-ios-ipad-tests.outputs.SKIPPED || '0') }}
-          status: ${{ (needs.run-ios-ipad-tests.result == 'skipped' && 'failure') || needs.run-ios-ipad-tests.outputs.STATUS || 'failure' }}
-          target_url: ${{ needs.run-ios-ipad-tests.outputs.TARGET_URL }}

@@ -94,6 +94,18 @@ on:
         required: false
         type: string
         default: ""
+      tsio-config:
+        description: >
+          TSIO reporting config: {"composite_identity":{...},"total_reports_expected":"N"}.
+          Empty disables TSIO upload for this platform.
+        required: false
+        type: string
+        default: ""
+      tsio-shard-name:
+        description: "Display name for this shard in TSIO (e.g. detox-ios-Server_11.9.0-rc3)"
+        required: false
+        type: string
+        default: ""
     outputs:
       STATUS:
         value: ${{ jobs.generate-report.outputs.STATUS }}
@@ -605,17 +617,31 @@ jobs:
 
           cd detox
           npm run detox:config-gen
+          # Ensure the Jest --json output directory exists before the run.
+          mkdir -p artifacts
           # Use read -ra to safely word-split space-separated spec paths without
           # glob expansion or shell injection from the matrix value.
           read -ra SPECS <<< "$MATRIX_SPECS"
+          set +e
+          # `--` separates Detox args from Jest args; --json --outputFile emits
+          # Jest's native JSON report (consumed by the TSIO detox parser) into
+          # the existing detox/artifacts/ upload.
           if [ "$DETOX_CONFIG" = "ios.ipad.debug" ]; then
-            npm run e2e:ios-ipad-test -- "${SPECS[@]}"
+            npm run e2e:ios-ipad-test -- "${SPECS[@]}" -- --json --outputFile=artifacts/jest-results.json
           else
-            npm run e2e:ios-test -- "${SPECS[@]}"
+            npm run e2e:ios-test -- "${SPECS[@]}" -- --json --outputFile=artifacts/jest-results.json
           fi
+          DETOX_EXIT_CODE=$?
+          if [ "${DETOX_EXIT_CODE:-1}" = "0" ]; then exit 0; fi
+          if [ -n "${TSIO_CONFIG}" ]; then
+            echo "::warning::Detox exited with code ${DETOX_EXIT_CODE} — see TSIO report"
+            exit 0
+          fi
+          exit "${DETOX_EXIT_CODE}"
         env:
           DETOX_CONFIG: ${{ inputs.detox_config }}
           MATRIX_SPECS: ${{ matrix.specs }}
+          TSIO_CONFIG: ${{ inputs.tsio-config }}
           DETOX_DISABLE_HIERARCHY_DUMP: "YES"
           DETOX_DISABLE_SCREENSHOT_TRACKING: "YES"
           DETOX_LOGLEVEL: "info"
@@ -686,6 +712,12 @@ jobs:
     needs:
       - generate-specs
       - e2e-ios
+    permissions:
+      contents: read
+      # test-system-io-report-upload authenticates via the workflow's OIDC
+      # token and resolves gh_job_id via the GitHub API.
+      id-token: write
+      actions: read
     outputs:
       TARGET_URL: ${{ steps.set-url.outputs.TARGET_URL }}
       STATUS: ${{ steps.determine-status.outputs.STATUS }}
@@ -786,3 +818,51 @@ jobs:
           echo "" >> ${GITHUB_STEP_SUMMARY}
           echo "You can check the full report [here](${TARGET_URL})" >> ${GITHUB_STEP_SUMMARY}
           echo "There was **${PERCENTAGE}%** success rate." >> ${GITHUB_STEP_SUMMARY}
+
+      # ── TSIO report upload (one per platform) ──────────────────────────────
+      # Each matrix leg wrote Jest's native --json into its ios-results-*
+      # artifact; merge all legs' testResults into one JSON and upload it as a
+      # single shard. gh-job-name is the bare child job name — the action's
+      # resolveJobId disambiguates the parallel ios/ipad/android
+      # generate-report children by RUNNER_NAME.
+      - name: Merge per-shard Jest JSON for TSIO
+        if: always() && inputs.tsio-config != '' && vars.TSIO_UPLOAD_ENABLED != 'false'
+        id: tsio-merge
+        run: |
+          set +e
+          mapfile -t files < <(find detox/artifacts -name jest-results.json -print)
+          if [ ${#files[@]} -eq 0 ]; then
+            echo "skip=true" >> "$GITHUB_OUTPUT"
+            echo "No jest-results.json found across shards — skipping TSIO upload."
+            exit 0
+          fi
+          if ! jq -s '{testResults: [.[] | .testResults[]]}' "${files[@]}" > detox/artifacts/jest-results-merged.json 2>/dev/null; then
+            echo "skip=true" >> "$GITHUB_OUTPUT"
+            echo "jq merge failed — skipping TSIO upload."
+            exit 0
+          fi
+          echo "Merged ${#files[@]} shard JSON(s) -> $(jq '.testResults | length' detox/artifacts/jest-results-merged.json) file(s)"
+          echo "skip=false" >> "$GITHUB_OUTPUT"
+
+      - name: Write TSIO failure stub when Detox JSON is missing
+        if: always() && inputs.tsio-config != '' && vars.TSIO_UPLOAD_ENABLED != 'false' && steps.tsio-merge.outputs.skip == 'true'
+        env:
+          TSIO_SHARD_NAME: ${{ inputs.tsio-shard-name != '' && inputs.tsio-shard-name || 'generate-report' }}
+        run: |
+          node detox/utils/write-tsio-failure-stub.mjs \
+            --format jest \
+            --output detox/artifacts/jest-results-merged.json \
+            --job-name "$TSIO_SHARD_NAME" \
+            --reason "Detox job failed or was cancelled before jest-results.json was written"
+
+      - name: Upload report to Test System IO
+        if: always() && inputs.tsio-config != '' && vars.TSIO_UPLOAD_ENABLED != 'false' && hashFiles('detox/artifacts/jest-results-merged.json') != ''
+        uses: mattermost/mattermost-test-system-io/.github/actions/test-system-io-report-upload@a2ea7f005484c28fedf51e16645f6d3bd683fd63 # 0.10.0 / 2026-05-16
+        with:
+          composite-identity: ${{ toJSON(fromJSON(inputs.tsio-config).composite_identity) }}
+          total-reports-expected: ${{ fromJSON(inputs.tsio-config).total_reports_expected }}
+          framework: detox
+          github-token: ${{ github.token }}
+          gh-job-name: ${{ inputs.tsio-shard-name != '' && inputs.tsio-shard-name || 'generate-report' }}
+          json-path: detox/artifacts/jest-results-merged.json
+          screenshots-dir: detox/artifacts/

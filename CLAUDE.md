@@ -164,6 +164,13 @@ Located at `libraries/@mattermost/`:
 - **E2E tests** in separate `detox/` package (not in main package.json)
 - Add mocks to central `setup.ts` file, not individual test files
 
+### E2E Status Reporting (TSIO)
+E2E results are uploaded to Test System IO (TSIO) and surfaced as GitHub commit statuses. The **canonical** status contexts are:
+- **`e2e/mobile`** — unified Detox + Maestro status for PR and Master runs (`detox/utils/tsio-report-status.js`, orchestrated from `e2e-detox-pr.yml`).
+- **`e2e/compatibility-matrix-testing`** — unified Detox + Maestro status for CMT runs (`compatibility-matrix-testing.yml`).
+
+Legacy per-platform Detox contexts (`e2e/detox-ios-tests`, `e2e/detox-android-tests`, `e2e/detox-ipad-tests`) were removed in Phase 6 — their final-status jobs are gone from `e2e-detox.yml`. Maestro per-platform statuses (`e2e/maestro-ios-tests`, `e2e/maestro-android-tests`) were retired when `e2e/mobile` became the single required gate.
+
 ### Testing Patterns
 
 #### Database Testing
