@@ -1,19 +1,21 @@
 # Matterwick triggers E2E only on pull_request:labeled (see matterwick/server/pull_request.go).
 # synchronize alone does nothing — on push we must cancel stale runs, remove E2E/Run*,
-# and re-add E2E/Run in one job so Matterwick receives a fresh labeled webhook.
+# and re-add E2E/Run so Matterwick receives a fresh labeled webhook.
 #
-#   1. refresh-e2e-run-label (synchronize):
-#      Force-cancel in-flight E2E, then remove + re-add E2E/Run via PAT.
+#   1. detect-e2e-impact (opened|synchronize):
+#      Path-filter; skip E2E when the PR has no app-impacting files.
 #
-#   2. add-e2e-run-label (opened):
+#   2. cancel-stale-e2e-on-push (synchronize):
+#      Force-cancel in-flight E2E for the previous commit (even on docs-only pushes).
+#
+#   3. refresh-e2e-run-label (synchronize, app-impacting):
+#      Remove + re-add E2E/Run via PAT for Matterwick.
+#
+#   4. add-e2e-run-label (opened, app-impacting):
 #      Add E2E/Run unless already present. Skips when E2E/Override is set.
 #
-#   3. Honor E2E/Override (labeled E2E/Override):
+#   5. Honor E2E/Override (labeled E2E/Override):
 #      Removes all E2E/Run* labels and cancels in-progress E2E workflow runs.
-#
-#   4. Cancel in-progress E2E runs (E2E/Run* unlabeled by a human):
-#      Skips when mattermost-build (the PAT user) removed the label (refresh strip
-#      or post-run cleanup) so synchronize refresh does not race Matterwick dispatch.
 #
 # Fork PR guard (github.event.pull_request.head.repo.full_name == github.repository)
 # is applied per-step. Fork PR contexts only get a read-only GITHUB_TOKEN, so
@@ -39,9 +41,96 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  refresh-e2e-run-label:
+  # ── Pillar 1: Skip E2E when the PR doesn't affect the app ───────────────────
+  detect-e2e-impact:
     if: >-
-      github.event.action == 'synchronize'
+      (github.event.action == 'synchronize' || github.event.action == 'opened')
+      && github.event.pull_request.base.ref == 'main'
+      && github.event.pull_request.head.repo.full_name == github.repository
+    runs-on: ubuntu-22.04
+    permissions:
+      contents: read
+      pull-requests: read
+    outputs:
+      app_impacting: ${{ steps.filter.outputs.app_impacting }}
+    steps:
+      - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
+      - uses: dorny/paths-filter@de90cc6fb38fc0963ad72b210f1f284cd68cea36 # v3.0.2
+        id: filter
+        with:
+          # dorny on pull_request compares the FULL PR file list vs base (not
+          # only the latest push). So:
+          #   - brand-new docs-only PR → app_impacting=false → skip E2E
+          #   - app PR later pushed with docs-only commit → still app_impacting
+          #     → re-run E2E (correct: new SHA must be validated)
+          # No negated patterns — absence of app_impacting == skip.
+          filters: |
+            app_impacting:
+              - 'app/**'
+              - 'share_extension/**'
+              - 'libraries/**'
+              - 'android/**'
+              - 'ios/**'
+              - 'types/**'
+              - 'package.json'
+              - 'package-lock.json'
+              - 'patches/**'
+              - 'babel.config.js'
+              - 'metro.config.js'
+              - 'tsconfig.json'
+              - 'index.tsx'
+              - 'app.json'
+              - 'react-native.config.js'
+              - 'assets/fonts/**'
+              - 'assets/sounds/**'
+              - 'assets/base/images/**'
+              - 'assets/base/release/**'
+              - 'assets/base/config.json'
+              - '.detoxrc.json'
+              - 'detox/e2e/**'
+              - 'detox/maestro/**'
+              - 'detox/scripts/**'
+              - '.github/workflows/e2e-*.yml'
+              - '.github/actions/cancel-e2e-runs/**'
+              - '.github/actions/compute-e2e-build-fingerprint/**'
+              - '.github/actions/s3-build-cache/**'
+              - '.github/actions/prepare-ios-build/**'
+              - '.github/actions/prepare-android-build/**'
+              - '.github/actions/build-android-maestro-apk/**'
+
+  # Always cancel superseded runs on synchronize — including docs-only pushes —
+  # so a prior app-impacting run does not keep burning minutes after skip statuses.
+  cancel-stale-e2e-on-push:
+    needs: detect-e2e-impact
+    if: >-
+      always()
+      && needs.detect-e2e-impact.result == 'success'
+      && github.event.action == 'synchronize'
+      && github.event.pull_request.base.ref == 'main'
+      && github.event.pull_request.head.repo.full_name == github.repository
+    runs-on: ubuntu-22.04
+    permissions:
+      actions: write
+      contents: read
+    steps:
+      - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
+      - name: Force-cancel in-flight E2E runs for the previous commit
+        uses: ./.github/actions/cancel-e2e-runs
+        with:
+          head_branch: ${{ github.event.pull_request.head.ref }}
+          pr_number: ${{ github.event.pull_request.number }}
+          exclude_head_sha: ${{ github.event.pull_request.head.sha }}
+          reason: E2E superseded by new commit push
+
+  refresh-e2e-run-label:
+    needs:
+      - detect-e2e-impact
+      - cancel-stale-e2e-on-push
+    if: >-
+      always()
+      && needs.detect-e2e-impact.result == 'success'
+      && needs.detect-e2e-impact.outputs.app_impacting == 'true'
+      && github.event.action == 'synchronize'
       && github.event.pull_request.base.ref == 'main'
       && github.event.pull_request.head.repo.full_name == github.repository
     runs-on: ubuntu-22.04
@@ -52,13 +141,6 @@ jobs:
       pull-requests: write
     steps:
       - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
-      - name: Force-cancel in-flight E2E runs for the previous commit
-        uses: ./.github/actions/cancel-e2e-runs
-        with:
-          head_branch: ${{ github.event.pull_request.head.ref }}
-          pr_number: ${{ github.event.pull_request.number }}
-          exclude_head_sha: ${{ github.event.pull_request.head.sha }}
-          reason: E2E superseded by new commit push
 
       - name: Remove and re-add E2E/Run for Matterwick
         uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9.0.0
@@ -114,9 +196,53 @@ jobs:
               labels: ['E2E/Run'],
             });
 
-  add-e2e-run-label:
+  # ── Post commit statuses when E2E is skipped ────────────────────────────────
+  post-skip-status:
+    needs: detect-e2e-impact
     if: >-
-      github.event.action == 'opened'
+      always()
+      && needs.detect-e2e-impact.result == 'success'
+      && needs.detect-e2e-impact.outputs.app_impacting != 'true'
+      && (github.event.action == 'synchronize' || github.event.action == 'opened')
+      && github.event.pull_request.base.ref == 'main'
+      && github.event.pull_request.head.repo.full_name == github.repository
+    runs-on: ubuntu-22.04
+    permissions:
+      statuses: write
+    steps:
+      - name: Post skip status for all E2E contexts
+        uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9.0.0
+        with:
+          script: |
+            const owner = context.repo.owner;
+            const repo = context.repo.repo;
+            const sha = context.payload.pull_request.head.sha;
+            const contexts = [
+              'e2e/detox-ios-tests',
+              'e2e/detox-android-tests',
+              'e2e/detox-ipad-tests',
+              'e2e/maestro-ios-tests',
+              'e2e/maestro-android-tests'
+            ];
+            
+            for (const ctx of contexts) {
+              await github.rest.repos.createCommitStatus({
+                owner,
+                repo,
+                sha,
+                state: 'success',
+                context: ctx,
+                description: 'E2E skipped — no app-impacting changes (remove+re-add E2E/Run to force)'
+              });
+            }
+
+  add-e2e-run-label:
+    needs: detect-e2e-impact
+    if: >-
+      always()
+      && needs.detect-e2e-impact.result == 'success'
+      && needs.detect-e2e-impact.outputs.app_impacting == 'true'
+      && github.event.action == 'opened'
       && github.event.pull_request.base.ref == 'main'
       && github.event.pull_request.head.repo.full_name == github.repository
     runs-on: ubuntu-22.04
@@ -151,9 +277,10 @@ jobs:
                   });
                   core.info(`Removed stale ${label} from PR #${prNumber} (E2E/Override active).`);
                 } catch (err) {
-                  if (err.status !== 404) {
-                    throw err;
+                  if (err.status === 404) {
+                    continue;
                   }
+                  throw err;
                 }
               }
               return;

@@ -5,23 +5,13 @@ runs:
   using: composite
   steps:
     # The required ruby version is mentioned in '.ruby-version'
+    # bundler-cache restores/installs fastlane/Gemfile.lock gems before the job
+    # continues. The previous manual cache targeted repo-root vendor/bundle while
+    # bundle install ran in fastlane/, so the cache never hit or saved.
     - uses: ruby/setup-ruby@89f90524b88a01fe6e0b732220432cc6142926af # v1.313.0
-
-    - name: ci/setup-fastlane-dependencies
-      shell: bash
-      run: |
-        echo "::group::setup-fastlane-dependencies"
-        bundle install
-        echo "::endgroup::"
-      working-directory: ./fastlane
-
-    - name: Cache Ruby gems
-      uses: actions/cache@27d5ce7f107fe9357f9df03efb73ab90386fccae # v5.0.5
       with:
-        path: vendor/bundle
-        key: ${{ runner.os }}-gems-${{ hashFiles('**/Gemfile.lock') }}
-        restore-keys: |
-          ${{ runner.os }}-gems-
+        bundler-cache: true
+        working-directory: fastlane
 
     - name: ci/prepare-node-deps
       uses: ./.github/actions/prepare-node-deps

@@ -1,0 +1,63 @@
+name: Compute E2E build fingerprint
+description: Compute a content-based fingerprint for E2E builds to enable caching
+
+inputs:
+  platform:
+    description: 'Platform to compute fingerprint for (ios, android-detox, android-maestro)'
+    required: true
+
+outputs:
+  fingerprint:
+    description: 'Computed fingerprint'
+    value: ${{ steps.compute.outputs.fingerprint }}
+
+runs:
+  using: composite
+  steps:
+    - name: Compute fingerprint
+      id: compute
+      shell: bash
+      run: |
+        # Compute a fingerprint from git blob hashes of app-impacting paths.
+        # git ls-tree -r HEAD lists every tracked file with its blob hash,
+        # so any content change, addition, or deletion changes the fingerprint.
+        # Faster + more robust than find + md5sum over file contents.
+        # Must include every path that can change the compiled app binary.
+        # Keep in sync with build-impacting paths in e2e-label-manager.yml
+        # (excluding detox/** and .github/** — those re-run tests, not rebuild).
+        # Missing a path here causes false S3 cache HITs (tests run wrong binary).
+        case "${{ inputs.platform }}" in
+          ios)
+            paths=(app/ ios/ libraries/ share_extension/ patches/ \
+                    types/ assets/fonts/ assets/sounds/ \
+                    assets/base/images/ assets/base/release/ assets/base/config.json \
+                    package.json package-lock.json \
+                    tsconfig.json babel.config.js metro.config.js \
+                    index.tsx app.json react-native.config.js \
+                    ios/Podfile.lock)
+            ;;
+          android-detox|android-maestro)
+            paths=(app/ android/ libraries/ share_extension/ patches/ \
+                    types/ assets/fonts/ assets/sounds/ \
+                    assets/base/images/ assets/base/release/ assets/base/config.json \
+                    package.json package-lock.json \
+                    tsconfig.json babel.config.js metro.config.js \
+                    index.tsx app.json react-native.config.js)
+            ;;
+          *)
+            echo "::error::Invalid platform: ${{ inputs.platform }}"
+            exit 1
+            ;;
+        esac
+
+        # git ls-tree should never fail on a valid checkout, but if it does
+        # (e.g., shallow clone edge case), fall back to the commit SHA so the
+        # build still runs — just without a cache hit.
+        fingerprint=$(git ls-tree -r HEAD -- "${paths[@]}" 2>/dev/null | md5sum | cut -d' ' -f1)
+        # d41d8cd98f00b204e9800998ecf8427e is the md5 of empty input.
+        if [ -z "$fingerprint" ] || [ "$fingerprint" = "d41d8cd98f00b204e9800998ecf8427e" ]; then
+          fingerprint="nocache-$(git rev-parse --short HEAD 2>/dev/null || echo unknown)"
+          echo "::warning::git ls-tree produced no output — using fallback fingerprint. S3 cache will miss."
+        fi
+        echo "fingerprint=${fingerprint}" >> "$GITHUB_OUTPUT"
+        echo "Computed fingerprint for ${{ inputs.platform }}: ${fingerprint}"
