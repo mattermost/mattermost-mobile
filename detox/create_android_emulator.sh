@@ -238,10 +238,7 @@ run_detox_tests() {
 
     cd detox
     AVD_NAME="$AVD_NAME" npm run detox:config-gen
-    # Ensure the Jest --json output directory exists; `--` separates Detox
-    # args from Jest args so --json --outputFile emits Jest's native JSON
-    # report (consumed by the TSIO detox parser) into the uploaded
-    # detox/artifacts/ directory.
+    # TSIO (PR #9925): emit Jest JSON for detox report upload to Test System IO.
     mkdir -p artifacts
     npm run e2e:android-test -- "$@" -- --json --outputFile=artifacts/jest-results.json
 }

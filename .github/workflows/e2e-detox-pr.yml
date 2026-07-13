@@ -62,13 +62,13 @@ on:
         default: "e2e/mobile"
         type: string
       tsio_context_smoke_test:
-        description: "Skip builds and tests; upload pass stubs to exercise TSIO commit status contexts only"
+        description: "TEMP default true — skip builds/tests, upload Detox pass stubs only. REVERT default to false before merge."
         required: false
-        default: "false"
+        default: "true"
         type: choice
         options:
-          - "false"
           - "true"
+          - "false"
 
 # Default least-privilege token; jobs that upload artifacts, post statuses, or
 # manage PR labels declare the extra scopes they need.
@@ -213,13 +213,18 @@ jobs:
           PR_NUMBER: ${{ inputs.pr_number }}
           RUN_TYPE: ${{ inputs.run_type || 'PR' }}
           BRANCH: ${{ steps.branch.outputs.branch }}
+          SMOKE_TEST: ${{ inputs.tsio_context_smoke_test }}
         run: |
           case "$PLATFORM" in
             ios) DETOX_TOTAL=2; MAESTRO_TOTAL=1 ;;
             android) DETOX_TOTAL=1; MAESTRO_TOTAL=1 ;;
             *) DETOX_TOTAL=3; MAESTRO_TOTAL=2 ;;
           esac
-          TOTAL=$(( DETOX_TOTAL + MAESTRO_TOTAL ))
+          if [ "$SMOKE_TEST" = "true" ]; then
+            TOTAL=$DETOX_TOTAL
+          else
+            TOTAL=$(( DETOX_TOTAL + MAESTRO_TOTAL ))
+          fi
           echo "total-reports-expected=$TOTAL" >> "$GITHUB_OUTPUT"
           RUN_TYPE_LOWER=$(echo "${RUN_TYPE}" | tr '[:upper:]' '[:lower:]')
           RUN_NAME="mobile-${RUN_TYPE_LOWER}"
@@ -257,13 +262,13 @@ jobs:
         run: |
           case "$PLATFORM" in
             ios)
-              SHARDS='[{"shard":"detox-ios","framework":"detox","format":"jest"},{"shard":"detox-ipad","framework":"detox","format":"jest"},{"shard":"maestro-ios-e2e","framework":"maestro","format":"junit"}]'
+              SHARDS='[{"shard":"detox-ios","framework":"detox","format":"jest"},{"shard":"detox-ipad","framework":"detox","format":"jest"}]'
               ;;
             android)
-              SHARDS='[{"shard":"detox-android","framework":"detox","format":"jest"},{"shard":"maestro-android-e2e","framework":"maestro","format":"junit"}]'
+              SHARDS='[{"shard":"detox-android","framework":"detox","format":"jest"}]'
               ;;
             *)
-              SHARDS='[{"shard":"detox-ios","framework":"detox","format":"jest"},{"shard":"detox-android","framework":"detox","format":"jest"},{"shard":"detox-ipad","framework":"detox","format":"jest"},{"shard":"maestro-ios-e2e","framework":"maestro","format":"junit"},{"shard":"maestro-android-e2e","framework":"maestro","format":"junit"}]'
+              SHARDS='[{"shard":"detox-ios","framework":"detox","format":"jest"},{"shard":"detox-android","framework":"detox","format":"jest"},{"shard":"detox-ipad","framework":"detox","format":"jest"}]'
               ;;
           esac
           echo "matrix={\"include\":$SHARDS}" >> "$GITHUB_OUTPUT"
@@ -289,6 +294,7 @@ jobs:
       - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
         with:
           ref: ${{ inputs.MOBILE_VERSION }}
+          persist-credentials: false
           sparse-checkout: |
             detox/utils/write-tsio-pass-stub.mjs
 

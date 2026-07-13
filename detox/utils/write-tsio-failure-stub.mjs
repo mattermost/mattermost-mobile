@@ -73,12 +73,17 @@ function writeJestStub(outputPath, jobName, reason) {
     fs.writeFileSync(outputPath, JSON.stringify(payload, null, 2));
 }
 
+function escapeXml(value) {
+    return value.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+}
+
 function writeJunitStub(outputPath, jobName, reason) {
-    const escaped = reason.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+    const safeName = escapeXml(jobName);
+    const escaped = escapeXml(reason);
     const xml = `<?xml version="1.0" encoding="UTF-8"?>
-<testsuites name="${jobName}" tests="1" failures="1" errors="0" skipped="0" time="0">
-  <testsuite name="${jobName}" tests="1" failures="1" errors="0" skipped="0" time="0">
-    <testcase classname="${jobName}" name="CI infrastructure failure" time="0">
+<testsuites name="${safeName}" tests="1" failures="1" errors="0" skipped="0" time="0">
+  <testsuite name="${safeName}" tests="1" failures="1" errors="0" skipped="0" time="0">
+    <testcase classname="${safeName}" name="CI infrastructure failure" time="0">
       <failure message="job failed before report was written">${escaped}</failure>
     </testcase>
   </testsuite>

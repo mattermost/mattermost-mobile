@@ -72,11 +72,16 @@ function writeJestPassStub(outputPath, jobName) {
     fs.writeFileSync(outputPath, JSON.stringify(payload, null, 2));
 }
 
+function escapeXml(value) {
+    return value.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+}
+
 function writeJunitPassStub(outputPath, jobName) {
+    const safeName = escapeXml(jobName);
     const xml = `<?xml version="1.0" encoding="UTF-8"?>
-<testsuites name="${jobName}" tests="1" failures="0" errors="0" skipped="0" time="0.001">
-  <testsuite name="${jobName}" tests="1" failures="0" errors="0" skipped="0" time="0.001">
-    <testcase classname="${jobName}" name="TSIO context smoke stub" time="0.001"/>
+<testsuites name="${safeName}" tests="1" failures="0" errors="0" skipped="0" time="0.001">
+  <testsuite name="${safeName}" tests="1" failures="0" errors="0" skipped="0" time="0.001">
+    <testcase classname="${safeName}" name="TSIO context smoke stub" time="0.001"/>
   </testsuite>
 </testsuites>
 `;

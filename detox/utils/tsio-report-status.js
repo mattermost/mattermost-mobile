@@ -133,10 +133,15 @@ async function pollGroup(baseUrl, reportId, pollAttempts) {
         DEFAULT_POLL_ATTEMPTS;
     let detail = {status: 'unknown', test_stats: {}};
     for (let attempt = 0; attempt < attempts; attempt++) {
-        const res = await fetchWithTimeout(`${baseUrl}/api/v1/reports/${reportId}`);
-        if (!res.ok) throw new Error(`reports/${reportId} failed: ${res.status} ${await res.text()}`);
-        detail = await res.json();
-        if (TERMINAL_STATUSES.includes(detail.status)) return detail;
+        try {
+            const res = await fetchWithTimeout(`${baseUrl}/api/v1/reports/${reportId}`);
+            if (!res.ok) throw new Error(`reports/${reportId} failed: ${res.status} ${await res.text()}`);
+            detail = await res.json();
+            if (TERMINAL_STATUSES.includes(detail.status)) return detail;
+        } catch (err) {
+            console.error(`tsio-report-status (poll attempt ${attempt + 1}/${attempts}):`, err.message);
+            if (attempt >= attempts - 1) throw err;
+        }
         if (attempt < attempts - 1) await sleep(POLL_DELAY_MS);
     }
     return detail;

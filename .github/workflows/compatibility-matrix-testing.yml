@@ -11,13 +11,13 @@ on:
         description: "The mattermost mobile version to test"
         required: true
       tsio_context_smoke_test:
-        description: "Skip builds and tests; upload a pass stub to exercise the CMT commit status context only"
+        description: "TEMP default true — skip builds/tests for CMT context smoke test. REVERT default to false before merge."
         required: false
-        default: "false"
+        default: "true"
         type: choice
         options:
-          - "false"
           - "true"
+          - "false"
 
 # Cancel overlapping CMT runs for the same ref; matterwick cleans up cancelled servers via workflow_run completed.
 concurrency:
@@ -123,6 +123,7 @@ jobs:
       - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
         with:
           ref: ${{ inputs.MOBILE_VERSION }}
+          persist-credentials: false
           sparse-checkout: |
             detox/utils/write-tsio-pass-stub.mjs
 
