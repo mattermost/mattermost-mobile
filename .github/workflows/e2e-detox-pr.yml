@@ -274,7 +274,7 @@ jobs:
           echo "matrix={\"include\":$SHARDS}" >> "$GITHUB_OUTPUT"
 
   tsio-smoke-upload:
-    name: TSIO smoke upload (${{ matrix.shard }})
+    name: ${{ matrix.shard }}
     if: >-
       needs.resolve-e2e-policy.outputs.e2e_override != 'true'
       && inputs.tsio_context_smoke_test == 'true'

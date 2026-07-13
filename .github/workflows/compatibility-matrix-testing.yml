@@ -109,7 +109,7 @@ jobs:
           status: pending
 
   cmt-tsio-smoke-upload:
-    name: TSIO CMT smoke upload
+    name: cmt-smoke
     if: inputs.tsio_context_smoke_test == 'true'
     needs:
       - cmt-identity
