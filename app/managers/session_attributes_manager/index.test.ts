@@ -10,7 +10,7 @@ import {License} from '@constants';
 import ManagedApp from '@init/managed_app';
 import IntuneManager from '@managers/intune_manager';
 import {getDeviceToken} from '@queries/app/global';
-import {getConfig, getLicense} from '@queries/servers/system';
+import {getConfigBooleanValue, getLicense} from '@queries/servers/system';
 import {advanceTimers, enableFakeTimers} from '@test/timer_helpers';
 
 import {SessionAttributesManagerSingleton} from './index';
@@ -34,7 +34,7 @@ jest.mock('@database/manager', () => ({
 }));
 
 jest.mock('@queries/servers/system', () => ({
-    getConfig: jest.fn(),
+    getConfigBooleanValue: jest.fn(),
     getLicense: jest.fn(),
 }));
 
@@ -106,7 +106,7 @@ describe('SessionAttributesManager', () => {
     beforeEach(() => {
         jest.clearAllMocks();
         enableFakeTimers();
-        jest.mocked(getConfig).mockResolvedValue({FeatureFlagSessionAttributes: 'true'} as ClientConfig);
+        jest.mocked(getConfigBooleanValue).mockResolvedValue(true);
         jest.mocked(getLicense).mockResolvedValue({IsLicensed: 'true', SkuShortName: License.SKU_SHORT_NAME.EnterpriseAdvanced} as ClientLicense);
         jest.mocked(isRootedExperimentalAsync).mockResolvedValue(false);
         jest.mocked(getDeviceToken).mockResolvedValue('');
@@ -180,7 +180,7 @@ describe('SessionAttributesManager', () => {
     });
 
     it('should stay dormant and skip the request when the feature flag is disabled', async () => {
-        jest.mocked(getConfig).mockResolvedValue({FeatureFlagSessionAttributes: 'false'} as ClientConfig);
+        jest.mocked(getConfigBooleanValue).mockResolvedValue(false);
 
         await manager.refreshManifest(serverUrl);
 

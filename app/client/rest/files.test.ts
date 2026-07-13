@@ -69,7 +69,7 @@ test('getFilePublicLink', async () => {
     expect(client.doFetch).toHaveBeenCalledWith(expectedUrl, expectedOptions);
 });
 
-test('uploadAttachment', async () => {
+test('uploadAttachment', () => {
     const file = {localPath: '/path/to/file'} as FileInfo;
     const channelId = 'channel_id';
     const onProgress = jest.fn();
@@ -97,7 +97,7 @@ test('uploadAttachment', async () => {
         cancel: jest.fn(),
     });
 
-    await client.uploadAttachment(file, channelId, onProgress, onComplete, onError, skipBytes, isBookmark);
+    client.uploadAttachment(file, channelId, onProgress, onComplete, onError, skipBytes, isBookmark);
 
     expect(client.apiClient.upload).toHaveBeenCalledWith(expectedUrl, file.localPath, expectedOptions);
 
@@ -113,21 +113,23 @@ test('uploadAttachment', async () => {
         timeoutInterval: 180000,
         headers: {Accept: 'application/json'},
     };
-    await client.uploadAttachment(file, channelId, onProgress, onComplete, onError);
+    client.uploadAttachment(file, channelId, onProgress, onComplete, onError);
     expect(client.apiClient.upload).toHaveBeenCalledWith(client.getFilesRoute(), file.localPath, expectedDefaultOptions);
 });
 
-test('uploadAttachment throws when file has no localPath', () => {
+test('uploadAttachment throws error when file has no localPath', () => {
     const file = {} as FileInfo;
     const channelId = 'channel_id';
 
-    expect(() => client.uploadAttachment(
-        file,
-        channelId,
-        jest.fn(),
-        jest.fn(),
-        jest.fn(),
-    )).toThrow('file does not have local path defined');
+    expect(() => {
+        client.uploadAttachment(
+            file,
+            channelId,
+            jest.fn(),
+            jest.fn(),
+            jest.fn(),
+        );
+    }).toThrow('file does not have local path defined');
 });
 
 test('searchFilesWithParams', async () => {

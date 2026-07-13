@@ -15,7 +15,7 @@ import DatabaseManager from '@database/manager';
 import ManagedApp from '@init/managed_app';
 import IntuneManager from '@managers/intune_manager';
 import {getDeviceToken} from '@queries/app/global';
-import {getConfig, getLicense} from '@queries/servers/system';
+import {getConfigBooleanValue, getLicense} from '@queries/servers/system';
 import {getFullErrorMessage} from '@utils/errors';
 import {isMinimumLicenseTier} from '@utils/helpers';
 import {logDebug, logError, logWarning} from '@utils/log';
@@ -44,9 +44,9 @@ export class SessionAttributesManagerSingleton {
             }
 
             // Mirror the server: the feature requires the flag and an Enterprise Advanced license.
-            const config = await getConfig(database);
+            const sessionAttributesEnabled = await getConfigBooleanValue(database, 'FeatureFlagSessionAttributes');
             const license = await getLicense(database);
-            const enabled = config?.FeatureFlagSessionAttributes === 'true' &&
+            const enabled = sessionAttributesEnabled &&
                 isMinimumLicenseTier(license, License.SKU_SHORT_NAME.EnterpriseAdvanced);
             if (!enabled) {
                 this.servers.delete(serverUrl);
