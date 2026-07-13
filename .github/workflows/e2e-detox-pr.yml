@@ -61,14 +61,6 @@ on:
         required: false
         default: "e2e/mobile"
         type: string
-      tsio_context_smoke_test:
-        description: "TEMP default true — skip builds/tests, upload Detox pass stubs only. REVERT default to false before merge."
-        required: false
-        default: "true"
-        type: choice
-        options:
-          - "true"
-          - "false"
 
 # Default least-privilege token; jobs that upload artifacts, post statuses, or
 # manage PR labels declare the extra scopes they need.
@@ -213,18 +205,13 @@ jobs:
           PR_NUMBER: ${{ inputs.pr_number }}
           RUN_TYPE: ${{ inputs.run_type || 'PR' }}
           BRANCH: ${{ steps.branch.outputs.branch }}
-          SMOKE_TEST: ${{ inputs.tsio_context_smoke_test }}
         run: |
           case "$PLATFORM" in
             ios) DETOX_TOTAL=2; MAESTRO_TOTAL=1 ;;
             android) DETOX_TOTAL=1; MAESTRO_TOTAL=1 ;;
             *) DETOX_TOTAL=3; MAESTRO_TOTAL=2 ;;
           esac
-          if [ "$SMOKE_TEST" = "true" ]; then
-            TOTAL=$DETOX_TOTAL
-          else
-            TOTAL=$(( DETOX_TOTAL + MAESTRO_TOTAL ))
-          fi
+          TOTAL=$(( DETOX_TOTAL + MAESTRO_TOTAL ))
           echo "total-reports-expected=$TOTAL" >> "$GITHUB_OUTPUT"
           RUN_TYPE_LOWER=$(echo "${RUN_TYPE}" | tr '[:upper:]' '[:lower:]')
           RUN_NAME="mobile-${RUN_TYPE_LOWER}"
@@ -243,84 +230,6 @@ jobs:
           TSIO_CONFIG=$(jq -nc --argjson identity "$BASE" --arg total "$TOTAL" \
             '{composite_identity: $identity, total_reports_expected: $total}')
           echo "tsio-config=$TSIO_CONFIG" >> "$GITHUB_OUTPUT"
-
-  tsio-smoke-prepare-matrix:
-    name: Prepare TSIO smoke shard matrix
-    if: >-
-      needs.resolve-e2e-policy.outputs.e2e_override != 'true'
-      && inputs.tsio_context_smoke_test == 'true'
-    needs:
-      - resolve-e2e-policy
-      - calculate-tsio-identity
-    runs-on: ubuntu-22.04
-    outputs:
-      matrix: ${{ steps.out.outputs.matrix }}
-    steps:
-      - id: out
-        env:
-          PLATFORM: ${{ inputs.PLATFORM }}
-        run: |
-          case "$PLATFORM" in
-            ios)
-              SHARDS='[{"shard":"detox-ios","framework":"detox","format":"jest"},{"shard":"detox-ipad","framework":"detox","format":"jest"}]'
-              ;;
-            android)
-              SHARDS='[{"shard":"detox-android","framework":"detox","format":"jest"}]'
-              ;;
-            *)
-              SHARDS='[{"shard":"detox-ios","framework":"detox","format":"jest"},{"shard":"detox-android","framework":"detox","format":"jest"},{"shard":"detox-ipad","framework":"detox","format":"jest"}]'
-              ;;
-          esac
-          echo "matrix={\"include\":$SHARDS}" >> "$GITHUB_OUTPUT"
-
-  tsio-smoke-upload:
-    name: ${{ matrix.shard }}
-    if: >-
-      needs.resolve-e2e-policy.outputs.e2e_override != 'true'
-      && inputs.tsio_context_smoke_test == 'true'
-    needs:
-      - resolve-e2e-policy
-      - calculate-tsio-identity
-      - tsio-smoke-prepare-matrix
-    runs-on: ubuntu-22.04
-    strategy:
-      fail-fast: false
-      matrix: ${{ fromJson(needs.tsio-smoke-prepare-matrix.outputs.matrix) }}
-    permissions:
-      contents: read
-      id-token: write
-      actions: read
-    steps:
-      - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
-        with:
-          ref: ${{ inputs.MOBILE_VERSION }}
-          persist-credentials: false
-          sparse-checkout: |
-            detox/utils/write-tsio-pass-stub.mjs
-
-      - name: Write TSIO pass stub
-        run: |
-          if [ "${{ matrix.format }}" = "junit" ]; then
-            node detox/utils/write-tsio-pass-stub.mjs \
-              --format junit \
-              --output build/maestro-report.xml \
-              --job-name "${{ matrix.shard }}"
-          else
-            node detox/utils/write-tsio-pass-stub.mjs \
-              --format jest \
-              --output detox/artifacts/jest-results-merged.json \
-              --job-name "${{ matrix.shard }}"
-          fi
-
-      - name: Upload pass stub to Test System IO
-        uses: mattermost/mattermost-test-system-io/.github/actions/test-system-io-report-upload@a2ea7f005484c28fedf51e16645f6d3bd683fd63 # 0.10.0 / 2026-05-16
-        with:
-          composite-identity: ${{ toJSON(fromJSON(needs.calculate-tsio-identity.outputs.tsio-config).composite_identity) }}
-          total-reports-expected: ${{ fromJSON(needs.calculate-tsio-identity.outputs.tsio-config).total_reports_expected }}
-          framework: ${{ matrix.framework }}
-          github-token: ${{ github.token }}
-          gh-job-name: ${{ matrix.shard }}
-          json-path: ${{ matrix.format == 'junit' && 'build/maestro-report.xml' || 'detox/artifacts/jest-results-merged.json' }}
 
   update-initial-tsio-status:
     name: Set pending TSIO commit status
@@ -353,7 +262,6 @@ jobs:
     if: >-
       !cancelled()
       && needs.resolve-e2e-policy.outputs.e2e_override != 'true'
-      && inputs.tsio_context_smoke_test != 'true'
       && (inputs.PLATFORM == 'ios' || inputs.PLATFORM == 'both')
     runs-on: macos-26
     needs:
@@ -393,7 +301,6 @@ jobs:
     if: >-
       !cancelled()
       && needs.resolve-e2e-policy.outputs.e2e_override != 'true'
-      && inputs.tsio_context_smoke_test != 'true'
       && (inputs.PLATFORM == 'android' || inputs.PLATFORM == 'both')
     runs-on: ubuntu-latest-8-cores
     needs:
@@ -446,7 +353,6 @@ jobs:
     if: >-
       !cancelled()
       && needs.resolve-e2e-policy.outputs.e2e_override != 'true'
-      && inputs.tsio_context_smoke_test != 'true'
       && (inputs.PLATFORM == 'android' || inputs.PLATFORM == 'both')
     runs-on: ubuntu-latest-8-cores
     needs:
@@ -487,7 +393,6 @@ jobs:
     needs: resolve-e2e-policy
     if: >-
       needs.resolve-e2e-policy.outputs.e2e_override != 'true'
-      && inputs.tsio_context_smoke_test != 'true'
     runs-on: ubuntu-22.04
     steps:
       - name: Validate server URLs
@@ -608,7 +513,6 @@ jobs:
     if: |
       !cancelled() &&
       needs.resolve-e2e-policy.outputs.e2e_override != 'true' &&
-      inputs.tsio_context_smoke_test != 'true' &&
       (inputs.PLATFORM == 'ios' || inputs.PLATFORM == 'both') &&
       needs.provision-servers.result == 'success' &&
       (needs.build-ios-simulator.result == 'success' || needs.build-ios-simulator.result == 'skipped')
@@ -621,7 +525,6 @@ jobs:
       SITE_3_URL: ${{ inputs.SITE_3_URL }}
       run_type: ${{ inputs.run_type || 'PR' }}
       artifact_run_id: ${{ github.run_id }}
-      pr_number: ${{ inputs.pr_number }}
       tsio-config: ${{ needs.calculate-tsio-identity.outputs.tsio-config }}
     secrets: inherit
 
@@ -640,7 +543,6 @@ jobs:
     if: |
       !cancelled() &&
       needs.resolve-e2e-policy.outputs.e2e_override != 'true' &&
-      inputs.tsio_context_smoke_test != 'true' &&
       (inputs.PLATFORM == 'android' || inputs.PLATFORM == 'both') &&
       needs.provision-servers.result == 'success' &&
       (needs.build-android-apk.result == 'success' || needs.build-android-apk.result == 'skipped')
@@ -653,7 +555,6 @@ jobs:
       SITE_3_URL: ${{ inputs.SITE_3_URL }}
       run_type: ${{ inputs.run_type || 'PR' }}
       artifact_run_id: ${{ github.run_id }}
-      pr_number: ${{ inputs.pr_number }}
       tsio-config: ${{ needs.calculate-tsio-identity.outputs.tsio-config }}
     secrets: inherit
 
@@ -662,7 +563,6 @@ jobs:
     needs: resolve-e2e-policy
     if: >-
       needs.resolve-e2e-policy.outputs.e2e_override != 'true'
-      && inputs.tsio_context_smoke_test != 'true'
     runs-on: ubuntu-22.04
     steps:
       - name: Checkout Repository
@@ -695,7 +595,6 @@ jobs:
     if: |
       !cancelled() &&
       needs.resolve-e2e-policy.outputs.e2e_override != 'true' &&
-      inputs.tsio_context_smoke_test != 'true' &&
       (inputs.PLATFORM == 'ios' || inputs.PLATFORM == 'both') &&
       needs.provision-servers.result == 'success' &&
       needs.validate-maestro-flow-headers.result == 'success' &&
@@ -709,7 +608,6 @@ jobs:
       SITE_3_URL: ${{ inputs.SITE_3_URL }}
       run_type: ${{ inputs.run_type || 'PR' }}
       artifact_run_id: ${{ github.run_id }}
-      pr_number: ${{ inputs.pr_number }}
       record_tests_in_zephyr: ${{ inputs.run_type == 'RELEASE' || inputs.run_type == 'NIGHTLY' || inputs.run_type == 'MASTER' }}
       tsio-config: ${{ needs.calculate-tsio-identity.outputs.tsio-config }}
     secrets: inherit
@@ -730,7 +628,6 @@ jobs:
     if: |
       !cancelled() &&
       needs.resolve-e2e-policy.outputs.e2e_override != 'true' &&
-      inputs.tsio_context_smoke_test != 'true' &&
       (inputs.PLATFORM == 'android' || inputs.PLATFORM == 'both') &&
       needs.provision-servers.result == 'success' &&
       needs.validate-maestro-flow-headers.result == 'success' &&
@@ -744,7 +641,6 @@ jobs:
       SITE_3_URL: ${{ inputs.SITE_3_URL }}
       run_type: ${{ inputs.run_type || 'PR' }}
       artifact_run_id: ${{ github.run_id }}
-      pr_number: ${{ inputs.pr_number }}
       record_tests_in_zephyr: ${{ inputs.run_type == 'RELEASE' || inputs.run_type == 'NIGHTLY' || inputs.run_type == 'MASTER' }}
       tsio-config: ${{ needs.calculate-tsio-identity.outputs.tsio-config }}
     secrets: inherit
@@ -767,7 +663,6 @@ jobs:
     if: |
       !cancelled() &&
       needs.resolve-e2e-policy.outputs.e2e_override != 'true' &&
-      inputs.tsio_context_smoke_test != 'true' &&
       contains(fromJSON('["success","failure","skipped"]'), needs.run-detox-ios.result) &&
       contains(fromJSON('["success","failure","skipped"]'), needs.run-detox-android.result) &&
       contains(fromJSON('["success","failure","skipped"]'), needs.run-maestro-ios.result) &&
@@ -901,7 +796,6 @@ jobs:
       - run-detox-android
       - run-maestro-ios
       - run-maestro-android
-      - tsio-smoke-upload
     runs-on: ubuntu-22.04
     permissions:
       contents: read
@@ -926,19 +820,12 @@ jobs:
         run: |
           set +e
           UPSTREAM="true"
-          if [ "${{ inputs.tsio_context_smoke_test }}" = "true" ]; then
-            case "${{ needs.tsio-smoke-upload.result }}" in
-              success) ;;
+          for r in "${{ needs.run-detox-ios.result }}" "${{ needs.run-detox-android.result }}" "${{ needs.run-maestro-ios.result }}" "${{ needs.run-maestro-android.result }}"; do
+            case "$r" in
+              success|skipped) ;;
               *) UPSTREAM="false" ;;
             esac
-          else
-            for r in "${{ needs.run-detox-ios.result }}" "${{ needs.run-detox-android.result }}" "${{ needs.run-maestro-ios.result }}" "${{ needs.run-maestro-android.result }}"; do
-              case "$r" in
-                success|skipped) ;;
-                *) UPSTREAM="false" ;;
-              esac
-            done
-          fi
+          done
 
           node detox/utils/tsio-report-status.js \
             --composite-identity="$COMPOSITE_IDENTITY" \

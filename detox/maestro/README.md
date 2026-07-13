@@ -367,7 +367,7 @@ Maestro run time). It is baked into the JS bundle via `@env` and suppresses LogB
 |---|---|
 | `e2e-detox-pr.yml` | Matterwick entry point: builds, provision, Detox + Maestro |
 | `e2e-detox.yml` | Detox test runs (reusable; called from `e2e-detox-pr.yml`) |
-| `e2e-maestro-pr.yml` | Maestro orchestration + commit statuses (reusable) |
+| `e2e-maestro-pr.yml` | Maestro orchestration + TSIO shard uploads (reusable) |
 | `e2e-maestro-template.yml` | Reusable runner: device bootstrap, seed, `maestro test`, reports |
 
 Nightly, release, and CMT workflows call `e2e-maestro-template.yml` directly with

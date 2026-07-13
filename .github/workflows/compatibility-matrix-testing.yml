@@ -11,9 +11,9 @@ on:
         description: "The mattermost mobile version to test"
         required: true
       tsio_context_smoke_test:
-        description: "TEMP default true — skip builds/tests for CMT context smoke test. REVERT default to false before merge."
+        description: "TEMP — skip builds/tests and upload a TSIO pass stub when true. Default false runs full CMT."
         required: false
-        default: "true"
+        default: "false"
         type: choice
         options:
           - "true"

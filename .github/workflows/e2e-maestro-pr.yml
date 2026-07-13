@@ -36,11 +36,6 @@ on:
         required: false
         type: boolean
         default: false
-      pr_number:
-        description: "PR number (optional) — included in the TSIO composite identity"
-        required: false
-        type: string
-        default: ""
       tsio-config:
         description: "TSIO composite identity + total_reports_expected (from parent calculate-tsio-identity)"
         required: true

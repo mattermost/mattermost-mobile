@@ -440,22 +440,6 @@ jobs:
             }
           "
 
-      - name: Emit Maestro Jest JSON for TSIO
-        if: always() && inputs.tsio-config != '' && vars.TSIO_UPLOAD_ENABLED != 'false'
-        run: |
-          cd detox
-          node -e "
-            const path = require('path');
-            const fs = require('fs');
-            const {maestroReportToJestJson} = require('./utils/maestro_report');
-            const xmlPath = path.resolve('..', 'build', 'maestro-report.xml');
-            const jest = maestroReportToJestJson(xmlPath);
-            if (!jest) { console.log('No Maestro report — skipping TSIO JSON emit'); process.exit(0); }
-            const out = path.resolve('..', 'build', 'maestro-results.json');
-            fs.writeFileSync(out, JSON.stringify(jest, null, 2));
-            console.log('Wrote', out, '—', jest.testResults.length, 'suite(s),', jest.testResults.reduce((n, f) => n + f.testResults.length, 0), 'test(s)');
-          "
-
       - name: Write TSIO failure stub when Maestro report is missing
         if: always() && inputs.tsio-config != '' && vars.TSIO_UPLOAD_ENABLED != 'false' && hashFiles('build/maestro-report.xml') == ''
         env:
@@ -475,9 +459,7 @@ jobs:
           total-reports-expected: ${{ fromJSON(inputs.tsio-config).total_reports_expected }}
           framework: maestro
           github-token: ${{ github.token }}
-          # Phase 0's TSIO maestro parser (apps/server/internal/ingest/maestro.go)
-          # is a JUnit XML parser, so upload the raw maestro-report.xml (not the
-          # Jest JSON emitted above) — that's the format the parser consumes.
+          # TSIO maestro parser consumes JUnit XML (maestro-report.xml).
           gh-job-name: ${{ inputs.tsio-shard-name != '' && inputs.tsio-shard-name || 'Maestro E2E Tests (iOS)' }}
           json-path: build/maestro-report.xml
           screenshots-dir: build/maestro-artifacts
@@ -879,22 +861,6 @@ jobs:
             }
           "
 
-      - name: Emit Maestro Jest JSON for TSIO
-        if: always() && inputs.tsio-config != '' && vars.TSIO_UPLOAD_ENABLED != 'false'
-        run: |
-          cd detox
-          node -e "
-            const path = require('path');
-            const fs = require('fs');
-            const {maestroReportToJestJson} = require('./utils/maestro_report');
-            const xmlPath = path.resolve('..', 'build', 'maestro-report.xml');
-            const jest = maestroReportToJestJson(xmlPath);
-            if (!jest) { console.log('No Maestro report — skipping TSIO JSON emit'); process.exit(0); }
-            const out = path.resolve('..', 'build', 'maestro-results.json');
-            fs.writeFileSync(out, JSON.stringify(jest, null, 2));
-            console.log('Wrote', out, '—', jest.testResults.length, 'suite(s),', jest.testResults.reduce((n, f) => n + f.testResults.length, 0), 'test(s)');
-          "
-
       - name: Write TSIO failure stub when Maestro report is missing
         if: always() && inputs.tsio-config != '' && vars.TSIO_UPLOAD_ENABLED != 'false' && hashFiles('build/maestro-report.xml') == ''
         env:
@@ -914,9 +880,7 @@ jobs:
           total-reports-expected: ${{ fromJSON(inputs.tsio-config).total_reports_expected }}
           framework: maestro
           github-token: ${{ github.token }}
-          # Phase 0's TSIO maestro parser (apps/server/internal/ingest/maestro.go)
-          # is a JUnit XML parser, so upload the raw maestro-report.xml (not the
-          # Jest JSON emitted above) — that's the format the parser consumes.
+          # TSIO maestro parser consumes JUnit XML (maestro-report.xml).
           gh-job-name: ${{ inputs.tsio-shard-name != '' && inputs.tsio-shard-name || 'Maestro E2E Tests (Android)' }}
           json-path: build/maestro-report.xml
           screenshots-dir: build/maestro-artifacts
