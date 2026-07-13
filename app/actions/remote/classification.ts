@@ -23,6 +23,7 @@ import {forceLogoutIfNecessary} from './session';
 
 export async function fetchClassificationBanner(serverUrl: string, force = false): Promise<{error?: unknown}> {
     if (!force && !EphemeralStore.shouldFetchClassificationBanner(serverUrl)) {
+        logDebug('fetchClassificationBanner', 'skipped; cached data still fresh');
         return {};
     }
 
@@ -112,8 +113,11 @@ export async function fetchChannelClassificationValue(serverUrl: string, channel
             const fieldWithOptions = fields.find((f) => (f.attrs?.options as PropertyFieldOption[] | undefined)?.length);
             const options = (fieldWithOptions?.attrs?.options as PropertyFieldOption[] | undefined) ?? [];
             if (!options.some((o) => o.id === optionId)) {
-                EphemeralStore.setClassificationFieldSyncAttempted(serverUrl, optionId);
-                await fetchClassificationBanner(serverUrl, true);
+                const {error} = await fetchClassificationBanner(serverUrl, true);
+
+                if (!error) {
+                    EphemeralStore.setClassificationFieldSyncAttempted(serverUrl, optionId);
+                }
             }
         }
 

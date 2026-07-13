@@ -41,11 +41,14 @@ export default function GlobalClassificationBannerContainer({visible, levelName,
     );
 
     // Respect the in-memory cache on mount/server switch, but force a refresh when
-    // the feature flag actually flips (runtime toggle via config_changed websocket).
-    const prevEnabled = useRef(classificationEnabled);
+    // the feature flag actually flips for the same server (runtime toggle via
+    // config_changed websocket). A server switch is a cache-respecting mount, not
+    // a flag flip, so the previous value is scoped per server.
+    const prev = useRef({serverUrl, enabled: classificationEnabled});
     useEffect(() => {
-        const flagChanged = prevEnabled.current !== classificationEnabled;
-        prevEnabled.current = classificationEnabled;
+        const sameServer = prev.current.serverUrl === serverUrl;
+        const flagChanged = sameServer && prev.current.enabled !== classificationEnabled;
+        prev.current = {serverUrl, enabled: classificationEnabled};
         fetchClassificationBanner(serverUrl, flagChanged);
     }, [serverUrl, classificationEnabled]);
 

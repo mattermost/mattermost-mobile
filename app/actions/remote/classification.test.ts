@@ -491,4 +491,19 @@ describe('fetchChannelClassificationValue', () => {
 
         expect(mockClient.getPropertyFields).not.toHaveBeenCalled();
     });
+
+    it('should not mark the option attempted when the forced refresh fails', async () => {
+        const {operator} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
+        await operator.handlePropertyFields({fields: [channelField], prepareRecordsOnly: false});
+
+        mockedGetConfigValue.mockResolvedValueOnce('true'); // channel value flag check
+        mockedGetConfigValue.mockResolvedValueOnce('true'); // forced banner fetch flag check
+        mockClient.getPropertyValues.mockResolvedValueOnce([{...channelValue, value: 'opt-unknown'}]);
+        mockClient.getPropertyFields.mockRejectedValueOnce(new Error('network failure'));
+
+        await fetchChannelClassificationValue(serverUrl, channelId);
+
+        // A transient refresh failure must leave the guard unset so a later update retries.
+        expect(EphemeralStore.getClassificationFieldSyncAttempted(serverUrl, 'opt-unknown')).toBe(false);
+    });
 });

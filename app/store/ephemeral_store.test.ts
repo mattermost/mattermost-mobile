@@ -91,7 +91,7 @@ describe('EphemeralStore', () => {
             jest.useRealTimers();
         });
 
-        it('needs a fetch until marked, then respects the TTL', () => {
+        it('should need a fetch until marked, then respect the TTL', () => {
             jest.useFakeTimers({doNotFake: ['nextTick']});
 
             expect(EphemeralStore.shouldFetchClassificationBanner(serverUrl)).toBe(true);
@@ -103,13 +103,13 @@ describe('EphemeralStore', () => {
             expect(EphemeralStore.shouldFetchClassificationBanner(serverUrl)).toBe(true);
         });
 
-        it('tracks freshness independently per server', () => {
+        it('should track freshness independently per server', () => {
             EphemeralStore.setClassificationBannerFetched(serverUrl);
             expect(EphemeralStore.shouldFetchClassificationBanner(serverUrl)).toBe(false);
             expect(EphemeralStore.shouldFetchClassificationBanner(otherServerUrl)).toBe(true);
         });
 
-        it('guards field sync attempts scoped per server and option', () => {
+        it('should guard field sync attempts scoped per server and option', () => {
             expect(EphemeralStore.getClassificationFieldSyncAttempted(serverUrl, 'opt-1')).toBe(false);
 
             EphemeralStore.setClassificationFieldSyncAttempted(serverUrl, 'opt-1');
@@ -118,7 +118,7 @@ describe('EphemeralStore', () => {
             expect(EphemeralStore.getClassificationFieldSyncAttempted(otherServerUrl, 'opt-1')).toBe(false);
         });
 
-        it('clearClassificationCache resets both freshness and the field sync guard', () => {
+        it('should reset both freshness and the field sync guard on clearClassificationCache', () => {
             EphemeralStore.setClassificationBannerFetched(serverUrl);
             EphemeralStore.setClassificationFieldSyncAttempted(serverUrl, 'opt-1');
 
