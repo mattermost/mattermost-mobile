@@ -292,9 +292,17 @@ describe('navigation', () => {
     });
 
     describe('navigateToHomeTab', () => {
-        it('should emit NAVIGATE_TO_TAB for the channel list tab', () => {
-            const emitSpy = jest.spyOn(DeviceEventEmitter, 'emit');
+        let emitSpy: jest.SpyInstance;
 
+        beforeEach(() => {
+            emitSpy = jest.spyOn(DeviceEventEmitter, 'emit');
+        });
+
+        afterEach(() => {
+            emitSpy.mockRestore();
+        });
+
+        it('should emit NAVIGATE_TO_TAB for the channel list tab', () => {
             navigateToHomeTab();
 
             expect(emitSpy).toHaveBeenCalledWith(Navigation.NAVIGATE_TO_TAB, {
@@ -304,8 +312,6 @@ describe('navigation', () => {
         });
 
         it('should pass params to the tab navigation event', () => {
-            const emitSpy = jest.spyOn(DeviceEventEmitter, 'emit');
-
             navigateToHomeTab({direction: 'right'});
 
             expect(emitSpy).toHaveBeenCalledWith(Navigation.NAVIGATE_TO_TAB, {
