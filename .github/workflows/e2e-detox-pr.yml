@@ -48,12 +48,12 @@ on:
         required: false
         type: string
       run_type:
-        description: "Run type for test reporting (PR/RELEASE/NIGHTLY/MASTER). Defaults to PR."
+        description: "Run type for test reporting (PR/RELEASE/MASTER). Defaults to PR."
         required: false
         default: "PR"
         type: string
       version_name:
-        description: "Branch or version ref under test (e.g. feature-branch, master, release-2.40). Used as TSIO branch — not pr-{number}."
+        description: "Branch or version ref under test (e.g. feature-branch, main, release-2.40). Used as TSIO branch — not pr-{number}."
         required: false
         type: string
       tsio_status_context:
@@ -182,7 +182,7 @@ jobs:
             }
             const runType = (process.env.RUN_TYPE || 'PR').toUpperCase();
             if (runType === 'MASTER') {
-              core.setOutput('branch', 'master');
+              core.setOutput('branch', 'main');
               return;
             }
             const prInput = parseInt(process.env.PR_NUMBER, 10);
@@ -248,6 +248,7 @@ jobs:
       - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
         with:
           ref: ${{ inputs.MOBILE_VERSION }}
+          persist-credentials: false
       - uses: ./.github/actions/update-commit-status
         env:
           GITHUB_TOKEN: ${{ github.token }}
@@ -257,6 +258,7 @@ jobs:
           context: ${{ inputs.tsio_status_context || 'e2e/mobile' }}
           description: "Mobile E2E (Detox + Maestro) — waiting for TSIO report"
           status: pending
+          target_url: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
 
   build-ios-simulator:
     if: >-
@@ -608,7 +610,7 @@ jobs:
       SITE_3_URL: ${{ inputs.SITE_3_URL }}
       run_type: ${{ inputs.run_type || 'PR' }}
       artifact_run_id: ${{ github.run_id }}
-      record_tests_in_zephyr: ${{ inputs.run_type == 'RELEASE' || inputs.run_type == 'NIGHTLY' || inputs.run_type == 'MASTER' }}
+      record_tests_in_zephyr: ${{ inputs.run_type == 'RELEASE' || inputs.run_type == 'MASTER' }}
       tsio-config: ${{ needs.calculate-tsio-identity.outputs.tsio-config }}
     secrets: inherit
 
@@ -641,7 +643,7 @@ jobs:
       SITE_3_URL: ${{ inputs.SITE_3_URL }}
       run_type: ${{ inputs.run_type || 'PR' }}
       artifact_run_id: ${{ github.run_id }}
-      record_tests_in_zephyr: ${{ inputs.run_type == 'RELEASE' || inputs.run_type == 'NIGHTLY' || inputs.run_type == 'MASTER' }}
+      record_tests_in_zephyr: ${{ inputs.run_type == 'RELEASE' || inputs.run_type == 'MASTER' }}
       tsio-config: ${{ needs.calculate-tsio-identity.outputs.tsio-config }}
     secrets: inherit
 

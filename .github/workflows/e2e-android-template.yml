@@ -59,7 +59,7 @@ on:
         type: boolean
         default: false
       record_tests_in_zephyr:
-        description: "Record test results in Zephyr, typically for nightly and release runs"
+        description: "Record test results in Zephyr, typically for release and master runs"
         required: false
         type: boolean
         default: false
@@ -553,6 +553,7 @@ jobs:
           total-reports-expected: ${{ fromJSON(inputs.tsio-config).total_reports_expected }}
           framework: detox
           github-token: ${{ github.token }}
-          gh-job-name: ${{ inputs.tsio-shard-name != '' && inputs.tsio-shard-name || 'generate-report' }}
+          # Must match the generate-report job id — tsio-shard-name is display-only (failure stub).
+          gh-job-name: generate-report
           json-path: detox/artifacts/jest-results-merged.json
           screenshots-dir: detox/artifacts/

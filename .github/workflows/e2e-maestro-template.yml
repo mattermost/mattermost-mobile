@@ -38,7 +38,7 @@ on:
         type: boolean
         default: false
       record_tests_in_zephyr:
-        description: "Record Maestro test results in Zephyr Scale (nightly/release runs)"
+        description: "Record Maestro test results in Zephyr Scale (release/master runs)"
         required: false
         type: boolean
         default: false
@@ -459,8 +459,8 @@ jobs:
           total-reports-expected: ${{ fromJSON(inputs.tsio-config).total_reports_expected }}
           framework: maestro
           github-token: ${{ github.token }}
-          # TSIO maestro parser consumes JUnit XML (maestro-report.xml).
-          gh-job-name: ${{ inputs.tsio-shard-name != '' && inputs.tsio-shard-name || 'Maestro E2E Tests (iOS)' }}
+          # Must match this job's `name:` — tsio-shard-name is display-only (failure stub).
+          gh-job-name: Maestro E2E Tests (iOS)
           json-path: build/maestro-report.xml
           screenshots-dir: build/maestro-artifacts
 
@@ -880,8 +880,8 @@ jobs:
           total-reports-expected: ${{ fromJSON(inputs.tsio-config).total_reports_expected }}
           framework: maestro
           github-token: ${{ github.token }}
-          # TSIO maestro parser consumes JUnit XML (maestro-report.xml).
-          gh-job-name: ${{ inputs.tsio-shard-name != '' && inputs.tsio-shard-name || 'Maestro E2E Tests (Android)' }}
+          # Must match this job's `name:` — tsio-shard-name is display-only (failure stub).
+          gh-job-name: Maestro E2E Tests (Android)
           json-path: build/maestro-report.xml
           screenshots-dir: build/maestro-artifacts
 

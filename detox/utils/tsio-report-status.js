@@ -39,6 +39,21 @@ function buildDisplayReportUrl(baseUrl, identity) {
     return `${baseUrl}/reports/${encodeURIComponent(repoTrailing)}/${encodeURIComponent(branch)}/${shortSha}/${encodeURIComponent(name)}`;
 }
 
+function buildWorkflowRunUrl(identity) {
+    const server = process.env.GITHUB_SERVER_URL || 'https://github.com';
+    const repository = process.env.GITHUB_REPOSITORY || identity.repository;
+    const runId = process.env.GITHUB_RUN_ID || identity.gh_run_id || '';
+    return `${server}/${repository}/actions/runs/${runId}`;
+}
+
+// Pending and failure link to the GitHub Actions run; success links to the TSIO report.
+function decideTargetUrl(state, bothTerminal, displayReportUrl, reportId, runUrl) {
+    if (bothTerminal && state === 'success') {
+        return `${displayReportUrl}?gid=${reportId}`;
+    }
+    return runUrl;
+}
+
 function decideStatus(detail, upstreamSucceeded) {
     const stats = detail.test_stats || {};
     const bothTerminal = TERMINAL_STATUSES.includes(detail.status);
@@ -177,7 +192,7 @@ async function reportTsioStatus(options) {
     } = options;
 
     const baseUrl = baseUrlOverride || (useStaging ? STAGING_URL : PRODUCTION_URL);
-    const runUrl = `${process.env.GITHUB_SERVER_URL || 'https://github.com'}/${process.env.GITHUB_REPOSITORY || compositeIdentity.repository}/actions/runs/${process.env.GITHUB_RUN_ID || ''}`;
+    const runUrl = buildWorkflowRunUrl(compositeIdentity);
 
     const result = {
         context: commitStatusContext,
@@ -251,7 +266,7 @@ async function reportTsioStatus(options) {
     result.timed_out = timedOut;
     result.state = state;
 
-    const targetUrl = bothTerminal ? `${result.display_report_url}?gid=${reportId}` : runUrl;
+    const targetUrl = decideTargetUrl(state, bothTerminal, result.display_report_url, reportId, runUrl);
 
     await createCommitStatus(token, compositeIdentity.repository, compositeIdentity.commit_sha, {
         state,
@@ -310,10 +325,10 @@ function selfTest() {
     const urlMaster = buildDisplayReportUrl(PRODUCTION_URL, {
         repository: 'mattermost/mattermost-mobile',
         commit_sha: 'def5678',
-        branch: 'refs/heads/master',
+        branch: 'refs/heads/main',
         name: 'mobile-master',
     });
-    assert(urlMaster === 'https://test-io.test.mattermost.com/reports/mobile/master/def5678/mobile-master', `master URL: ${urlMaster}`);
+    assert(urlMaster === 'https://test-io.test.mattermost.com/reports/mobile/main/def5678/mobile-master', `master URL: ${urlMaster}`);
 
     const cmtUrl = buildDisplayReportUrl(PRODUCTION_URL, {
         repository: 'mattermost/mattermost-mobile',
@@ -331,6 +346,22 @@ function selfTest() {
 
     r = decideStatus({status: 'in_progress', test_stats: {passed: 3, failed: 0}}, true);
     assert(r.timed_out === true && r.state === 'success', 'timeout fail-open upstream ok');
+
+    assert(
+        decideTargetUrl('success', true, 'https://test-io.test.mattermost.com/reports/mobile/main/abc1234/mobile-pr', 'gid-1', 'https://github.com/o/r/actions/runs/99') ===
+        'https://test-io.test.mattermost.com/reports/mobile/main/abc1234/mobile-pr?gid=gid-1',
+        'success -> TSIO report URL',
+    );
+    assert(
+        decideTargetUrl('failure', true, 'https://test-io.test.mattermost.com/reports/mobile/main/abc1234/mobile-pr', 'gid-1', 'https://github.com/o/r/actions/runs/99') ===
+        'https://github.com/o/r/actions/runs/99',
+        'failure -> workflow run URL',
+    );
+    assert(
+        decideTargetUrl('success', false, 'https://test-io.test.mattermost.com/reports/mobile/main/abc1234/mobile-pr', 'gid-1', 'https://github.com/o/r/actions/runs/99') ===
+        'https://github.com/o/r/actions/runs/99',
+        'non-terminal -> workflow run URL',
+    );
 
     console.log('SELF-TEST OK');
 }
@@ -378,7 +409,7 @@ async function main() {
     }
 }
 
-module.exports = {buildDisplayReportUrl, decideStatus, reportTsioStatus, repoTail};
+module.exports = {buildDisplayReportUrl, buildWorkflowRunUrl, decideStatus, decideTargetUrl, reportTsioStatus, repoTail};
 
 if (require.main === module) {
     main().catch((err) => {

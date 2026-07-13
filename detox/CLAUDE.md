@@ -97,7 +97,6 @@ cd detox && npm run e2e:save-report
 | **Smoke** | Every PR push (default) | iOS + Android | 1 each | `detox/e2e/test/products/channels/smoke_test` | 30–45 min |
 | **Full iOS** | Label: `E2E iOS tests for PR` | iOS | 10 | `detox/e2e/test` | 60–180 min |
 | **Full Android** | Label: `E2E Android tests for PR` | Android | 10 | `detox/e2e/test` | 90–180 min |
-| **Scheduled** | Wednesday + Thursday midnight | iOS + Android | 10 each | `detox/e2e/test` | 90–180 min |
 
 ### Smoke Tests Location
 
@@ -111,7 +110,6 @@ These run automatically on every PR push without any label.
 | `.github/workflows/e2e-detox-pr.yml` | PR trigger, build + dispatch to templates |
 | `.github/workflows/e2e-ios-template.yml` | iOS shard runner (reusable workflow) |
 | `.github/workflows/e2e-android-template.yml` | Android shard runner (reusable workflow) |
-| `.github/workflows/e2e-detox-scheduled.yml` | Nightly scheduled runs |
 
 ### Detox Configuration (`.detoxrc.json`)
 

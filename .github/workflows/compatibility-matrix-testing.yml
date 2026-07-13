@@ -107,6 +107,7 @@ jobs:
           context: e2e/compatibility-matrix-testing
           description: "Compatibility Matrix Testing for ${{ inputs.MOBILE_VERSION }} version"
           status: pending
+          target_url: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
 
   cmt-tsio-smoke-upload:
     name: cmt-smoke
