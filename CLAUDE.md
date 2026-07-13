@@ -175,6 +175,8 @@ E2E results are uploaded to Test System IO (TSIO) and surfaced as GitHub commit 
 
 Legacy per-platform contexts (`e2e/detox-*`, `e2e/maestro-*`) are retired.
 
+**Smoke test:** dispatch `E2E` or `Compatibility Matrix Testing` with `tsio_context_smoke_test: true` to skip builds/tests and verify commit status contexts only.
+
 ### Testing Patterns
 
 #### Database Testing

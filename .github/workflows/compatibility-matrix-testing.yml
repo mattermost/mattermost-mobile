@@ -10,6 +10,14 @@ on:
       MOBILE_VERSION:
         description: "The mattermost mobile version to test"
         required: true
+      tsio_context_smoke_test:
+        description: "Skip builds and tests; upload a pass stub to exercise the CMT commit status context only"
+        required: false
+        default: "false"
+        type: choice
+        options:
+          - "false"
+          - "true"
 
 # Cancel overlapping CMT runs for the same ref; matterwick cleans up cancelled servers via workflow_run completed.
 concurrency:
@@ -55,13 +63,18 @@ jobs:
           GITHUB_REPOSITORY: ${{ github.repository }}
           MM_SHA: ${{ needs.calculate-commit-hash.outputs.MOBILE_SHA }}
           MOBILE_VERSION: ${{ inputs.MOBILE_VERSION }}
+          SMOKE_TEST: ${{ inputs.tsio_context_smoke_test }}
         run: |
-          DETOX_SERVERS=$(echo "$CMT_MATRIX" | jq '.server | length')
-          MAESTRO_SERVERS=$(echo "$CMT_MATRIX" | jq '[.server[] | select(.latest == true)] | length')
-          if [ "$MAESTRO_SERVERS" -eq 0 ]; then MAESTRO_SERVERS=1; fi
-          DETOX_TOTAL=$(( 3 * DETOX_SERVERS ))
-          MAESTRO_TOTAL=$(( 2 * MAESTRO_SERVERS ))
-          TOTAL=$(( DETOX_TOTAL + MAESTRO_TOTAL ))
+          if [ "$SMOKE_TEST" = "true" ]; then
+            TOTAL=1
+          else
+            DETOX_SERVERS=$(echo "$CMT_MATRIX" | jq '.server | length')
+            MAESTRO_SERVERS=$(echo "$CMT_MATRIX" | jq '[.server[] | select(.latest == true)] | length')
+            if [ "$MAESTRO_SERVERS" -eq 0 ]; then MAESTRO_SERVERS=1; fi
+            DETOX_TOTAL=$(( 3 * DETOX_SERVERS ))
+            MAESTRO_TOTAL=$(( 2 * MAESTRO_SERVERS ))
+            TOTAL=$(( DETOX_TOTAL + MAESTRO_TOTAL ))
+          fi
           echo "total-reports-expected=$TOTAL" >> "$GITHUB_OUTPUT"
           BRANCH=$(echo "$MOBILE_VERSION" | sed 's#^refs/heads/##; s#^refs/tags/##')
           BASE=$(jq -nc \
@@ -95,6 +108,41 @@ jobs:
           description: "Compatibility Matrix Testing for ${{ inputs.MOBILE_VERSION }} version"
           status: pending
 
+  cmt-tsio-smoke-upload:
+    name: TSIO CMT smoke upload
+    if: inputs.tsio_context_smoke_test == 'true'
+    needs:
+      - cmt-identity
+      - calculate-commit-hash
+    runs-on: ubuntu-22.04
+    permissions:
+      contents: read
+      id-token: write
+      actions: read
+    steps:
+      - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
+        with:
+          ref: ${{ inputs.MOBILE_VERSION }}
+          sparse-checkout: |
+            detox/utils/write-tsio-pass-stub.mjs
+
+      - name: Write TSIO pass stub
+        run: |
+          node detox/utils/write-tsio-pass-stub.mjs \
+            --format jest \
+            --output detox/artifacts/jest-results-merged.json \
+            --job-name cmt-smoke
+
+      - name: Upload pass stub to Test System IO
+        uses: mattermost/mattermost-test-system-io/.github/actions/test-system-io-report-upload@a2ea7f005484c28fedf51e16645f6d3bd683fd63 # 0.10.0 / 2026-05-16
+        with:
+          composite-identity: ${{ toJSON(fromJSON(needs.cmt-identity.outputs.tsio-config).composite_identity) }}
+          total-reports-expected: ${{ fromJSON(needs.cmt-identity.outputs.tsio-config).total_reports_expected }}
+          framework: detox
+          github-token: ${{ github.token }}
+          gh-job-name: cmt-smoke
+          json-path: detox/artifacts/jest-results-merged.json
+
   # Maestro only runs against the latest server version; matrix filtering happens here since job-level if: can't access matrix.
   prepare-maestro-matrix:
     runs-on: ubuntu-22.04
@@ -126,6 +174,7 @@ jobs:
   #   ]
   # }
   build-ios-simulator:
+    if: inputs.tsio_context_smoke_test != 'true'
     runs-on: macos-14
     needs:
       - update-initial-status
@@ -152,6 +201,7 @@ jobs:
           path: Mattermost-simulator-x86_64.app.zip
 
   build-android-apk:
+    if: inputs.tsio_context_smoke_test != 'true'
     runs-on: ubuntu-latest-8-cores
     needs:
       - update-initial-status
@@ -187,6 +237,7 @@ jobs:
           path: "android/app/build/outputs/apk/**/*.apk"
 
   build-android-apk-maestro:
+    if: inputs.tsio_context_smoke_test != 'true'
     runs-on: ubuntu-latest-8-cores
     needs:
       - update-initial-status
@@ -221,6 +272,7 @@ jobs:
   # latest entry runs full suite, older entries run smoke only. Job-level if: can't conditionally skip matrix legs, so inputs vary instead.
   detox-e2e:
     name: mobile-cmt-ios${{ matrix.server.latest && '-full' || '-smoke' }}-${{ matrix.server.version }}
+    if: inputs.tsio_context_smoke_test != 'true'
     permissions:
       contents: read
       # nested template mints an OIDC token for the TSIO upload.
@@ -255,6 +307,7 @@ jobs:
 
   detox-ipad-e2e:
     name: mobile-cmt-ipad-${{ matrix.server.version }}
+    if: inputs.tsio_context_smoke_test != 'true'
     permissions:
       contents: read
       id-token: write
@@ -291,6 +344,7 @@ jobs:
   # Maestro runs only against the latest server version (no smoke-on-older variant).
   maestro-ios-e2e:
     name: mobile-cmt-maestro-ios-${{ matrix.server.version }}
+    if: inputs.tsio_context_smoke_test != 'true'
     permissions:
       contents: read
       id-token: write
@@ -323,6 +377,7 @@ jobs:
 
   detox-android-e2e:
     name: mobile-cmt-android${{ matrix.server.latest && '-full' || '-smoke' }}-${{ matrix.server.version }}
+    if: inputs.tsio_context_smoke_test != 'true'
     permissions:
       contents: read
       id-token: write
@@ -358,6 +413,7 @@ jobs:
   # Maestro runs only against the latest server version (no smoke-on-older variant).
   maestro-android-e2e:
     name: mobile-cmt-maestro-android-${{ matrix.server.version }}
+    if: inputs.tsio_context_smoke_test != 'true'
     permissions:
       contents: read
       id-token: write
@@ -406,6 +462,7 @@ jobs:
       - detox-ipad-e2e
       - maestro-ios-e2e
       - maestro-android-e2e
+      - cmt-tsio-smoke-upload
     steps:
       - name: Sparse checkout TSIO status utility
         uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
@@ -423,12 +480,19 @@ jobs:
         run: |
           set +e
           UPSTREAM="true"
-          for r in "${{ needs.detox-e2e.result }}" "${{ needs.detox-android-e2e.result }}" "${{ needs.detox-ipad-e2e.result }}" "${{ needs.maestro-ios-e2e.result }}" "${{ needs.maestro-android-e2e.result }}"; do
-            case "$r" in
-              success|skipped) ;;
+          if [ "${{ inputs.tsio_context_smoke_test }}" = "true" ]; then
+            case "${{ needs.cmt-tsio-smoke-upload.result }}" in
+              success) ;;
               *) UPSTREAM="false" ;;
             esac
-          done
+          else
+            for r in "${{ needs.detox-e2e.result }}" "${{ needs.detox-android-e2e.result }}" "${{ needs.detox-ipad-e2e.result }}" "${{ needs.maestro-ios-e2e.result }}" "${{ needs.maestro-android-e2e.result }}"; do
+              case "$r" in
+                success|skipped) ;;
+                *) UPSTREAM="false" ;;
+              esac
+            done
+          fi
           node detox/utils/tsio-report-status.js \
             --composite-identity="$COMPOSITE_IDENTITY" \
             --total-reports-expected="$TOTAL_REPORTS_EXPECTED" \
