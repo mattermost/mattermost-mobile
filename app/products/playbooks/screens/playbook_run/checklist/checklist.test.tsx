@@ -9,6 +9,7 @@ import {useServerUrl} from '@context/server';
 import {addChecklistItem} from '@playbooks/actions/remote/checklist';
 import ProgressBar from '@playbooks/components/progress_bar';
 import {goToAddChecklistItem} from '@playbooks/screens/navigation';
+import {DEFAULT_TASK_FILTERS} from '@playbooks/utils/task_filters';
 import {renderWithIntl} from '@test/intl-test-helper';
 import TestHelper from '@test/test_helper';
 import {logError} from '@utils/log';
@@ -16,6 +17,8 @@ import {showPlaybookErrorSnackbar} from '@utils/snack_bar';
 
 import Checklist from './checklist';
 import ChecklistItem from './checklist_item';
+
+import type {ReactTestInstance} from 'react-test-renderer';
 
 const serverUrl = 'test-server-url';
 
@@ -92,6 +95,10 @@ describe('Checklist', () => {
             playbookRunName: 'Test Run',
             isFinished: false,
             isParticipant: true,
+            filters: DEFAULT_TASK_FILTERS,
+            currentUserId: 'current-user-id',
+            collapseAll: false,
+            collapseAllEpoch: 0,
             checklistProgress: {
                 skipped: false,
                 completed: 0,
@@ -427,6 +434,187 @@ describe('Checklist', () => {
             );
             expect(showPlaybookErrorSnackbar).not.toHaveBeenCalled();
             expect(logError).not.toHaveBeenCalled();
+        });
+    });
+
+    describe('hiding items', () => {
+        const renderedItems = (getByTestId: (id: string) => ReactTestInstance) =>
+            within(getByTestId('checklist-items-container')).queryAllByTestId('checklist-item');
+
+        it('should not render a hidden incomplete item, but keep the server index of the items after it', () => {
+            const props = getBaseProps();
+            props.items = [
+                TestHelper.fakePlaybookChecklistItemModel({id: 'item-1', title: 'Item 1'}),
+                TestHelper.fakePlaybookChecklistItemModel({id: 'item-2', title: 'Hidden', conditionAction: 'hidden', completedAt: 0}),
+                TestHelper.fakePlaybookChecklistItemModel({id: 'item-3', title: 'Item 3'}),
+            ];
+
+            const {getByTestId} = renderWithIntl(<Checklist {...props}/>);
+            const items = renderedItems(getByTestId);
+
+            expect(items).toHaveLength(2);
+            expect(items[0].props.item.id).toBe('item-1');
+            expect(items[1].props.item.id).toBe('item-3');
+
+            // item-3 is third in the checklist, so the server still knows it as index 2 even though
+            // it is rendered second. Passing its rendered position instead would mutate item-2.
+            expect(items[0].props.itemNumber).toBe(0);
+            expect(items[1].props.itemNumber).toBe(2);
+        });
+
+        it('should render a hidden item once it has been completed', () => {
+            const props = getBaseProps();
+            props.items = [
+                TestHelper.fakePlaybookChecklistItemModel({id: 'item-1', title: 'Item 1'}),
+                TestHelper.fakePlaybookChecklistItemModel({id: 'item-2', title: 'Hidden', conditionAction: 'hidden', state: 'closed', completedAt: 123}),
+            ];
+
+            const {getByTestId} = renderWithIntl(<Checklist {...props}/>);
+
+            expect(renderedItems(getByTestId)).toHaveLength(2);
+        });
+    });
+
+    describe('task filters', () => {
+        const renderedItemIds = (getByTestId: (id: string) => ReactTestInstance) =>
+            within(getByTestId('checklist-items-container')).
+                queryAllByTestId('checklist-item').
+                map((item) => item.props.item.id);
+
+        function getFilterProps(): ComponentProps<typeof Checklist> {
+            const props = getBaseProps();
+            props.currentUserId = 'me';
+            props.items = [
+                TestHelper.fakePlaybookChecklistItemModel({id: 'unchecked', state: ''}),
+                TestHelper.fakePlaybookChecklistItemModel({id: 'checked', state: 'closed'}),
+                TestHelper.fakePlaybookChecklistItemModel({id: 'skipped', state: 'skipped'}),
+                TestHelper.fakePlaybookChecklistItemModel({id: 'mine', assigneeId: 'me'}),
+                TestHelper.fakePlaybookChecklistItemModel({id: 'theirs', assigneeId: 'someone-else'}),
+            ];
+            return props;
+        }
+
+        it('should render every item with the default filters', () => {
+            const {getByTestId} = renderWithIntl(<Checklist {...getFilterProps()}/>);
+
+            expect(renderedItemIds(getByTestId)).toEqual(['unchecked', 'checked', 'skipped', 'mine', 'theirs']);
+        });
+
+        it('should hide checked items when showChecked is off', () => {
+            const props = getFilterProps();
+            props.filters = {...DEFAULT_TASK_FILTERS, showChecked: false};
+
+            const {getByTestId} = renderWithIntl(<Checklist {...props}/>);
+
+            expect(renderedItemIds(getByTestId)).not.toContain('checked');
+        });
+
+        it('should hide skipped items when showSkipped is off', () => {
+            const props = getFilterProps();
+            props.filters = {...DEFAULT_TASK_FILTERS, showSkipped: false};
+
+            const {getByTestId} = renderWithIntl(<Checklist {...props}/>);
+
+            expect(renderedItemIds(getByTestId)).not.toContain('skipped');
+        });
+
+        it('should hide items assigned to the current user when Me is off', () => {
+            const props = getFilterProps();
+            props.filters = {...DEFAULT_TASK_FILTERS, showAssignedToMe: false};
+
+            const {getByTestId} = renderWithIntl(<Checklist {...props}/>);
+
+            expect(renderedItemIds(getByTestId)).not.toContain('mine');
+        });
+
+        it('should hide items assigned to other users when Others is off', () => {
+            const props = getFilterProps();
+            props.filters = {...DEFAULT_TASK_FILTERS, showAssignedToOthers: false};
+
+            const {getByTestId} = renderWithIntl(<Checklist {...props}/>);
+
+            expect(renderedItemIds(getByTestId)).not.toContain('theirs');
+        });
+
+        it('should hide unassigned items when Unassigned is off', () => {
+            const props = getFilterProps();
+            props.filters = {...DEFAULT_TASK_FILTERS, showUnassigned: false};
+
+            const {getByTestId} = renderWithIntl(<Checklist {...props}/>);
+
+            // Only the two items that have an assignee remain.
+            expect(renderedItemIds(getByTestId)).toEqual(['mine', 'theirs']);
+        });
+
+        it('should keep the server index of items that survive a filter', () => {
+            const props = getFilterProps();
+            props.filters = {...DEFAULT_TASK_FILTERS, showChecked: false};
+
+            const {getByTestId} = renderWithIntl(<Checklist {...props}/>);
+            const items = within(getByTestId('checklist-items-container')).queryAllByTestId('checklist-item');
+
+            // 'checked' sits at index 1 and is filtered out; the items after it keep their own indices.
+            expect(items.map((i) => i.props.itemNumber)).toEqual([0, 2, 3, 4]);
+        });
+    });
+
+    describe('collapse all', () => {
+        it('should collapse when the run collapses all checklists', async () => {
+            const props = getBaseProps();
+            const {getByTestId, rerender} = renderWithIntl(<Checklist {...props}/>);
+
+            await waitFor(() => {
+                expect(getByTestId('checklist-items-container')).toHaveAnimatedStyle({paddingVertical: 16});
+            });
+
+            rerender(
+                <Checklist
+                    {...props}
+                    collapseAll={true}
+                    collapseAllEpoch={1}
+                />,
+            );
+
+            await waitFor(() => {
+                expect(getByTestId('checklist-items-container')).toHaveAnimatedStyle({paddingVertical: 0});
+            });
+        });
+
+        it('should re-collapse after being expanded individually', async () => {
+            const props = getBaseProps();
+            const {getByText, getByTestId, rerender} = renderWithIntl(<Checklist {...props}/>);
+
+            rerender(
+                <Checklist
+                    {...props}
+                    collapseAll={true}
+                    collapseAllEpoch={1}
+                />,
+            );
+            await waitFor(() => {
+                expect(getByTestId('checklist-items-container')).toHaveAnimatedStyle({paddingVertical: 0});
+            });
+
+            // Expand this one checklist on its own.
+            act(() => {
+                fireEvent.press(getByText('Test Checklist'));
+            });
+            await waitFor(() => {
+                expect(getByTestId('checklist-items-container')).toHaveAnimatedStyle({paddingVertical: 16});
+            });
+
+            // Collapsing all again must still collapse it, even though only the epoch changed.
+            rerender(
+                <Checklist
+                    {...props}
+                    collapseAll={true}
+                    collapseAllEpoch={2}
+                />,
+            );
+
+            await waitFor(() => {
+                expect(getByTestId('checklist-items-container')).toHaveAnimatedStyle({paddingVertical: 0});
+            });
         });
     });
 });
