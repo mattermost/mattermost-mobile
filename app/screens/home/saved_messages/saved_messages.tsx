@@ -19,6 +19,7 @@ import {SCREENS_AS_BOTTOM_SHEET} from '@constants/screens';
 import {PostConfigProvider} from '@context/post_config';
 import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
+import useAndroidHomeTabBackHandler from '@hooks/android_home_tab_back_handler';
 import {useCollapsibleHeader} from '@hooks/header';
 import {useCurrentScreen} from '@store/navigation_store';
 import {getDateForDateLine, selectOrderedPosts} from '@utils/post_list';
@@ -63,6 +64,8 @@ function SavedMessages({appsEnabled, posts, currentUser, customEmojiNames}: Prop
     const isBottomSheetOpen = currentScreen && SCREENS_AS_BOTTOM_SHEET.has(currentScreen);
     const isPemalinkScreen = currentScreen === Screens.PERMALINK;
     const isGalleryScreen = currentScreen === Screens.GALLERY;
+
+    useAndroidHomeTabBackHandler(Screens.SAVED_MESSAGES);
 
     const params = route.params as {direction: string};
     const toLeft = params.direction === 'left';

@@ -4,6 +4,7 @@ import android.content.res.Configuration
 import android.os.Build
 import android.os.Bundle
 import android.view.KeyEvent
+import androidx.activity.OnBackPressedCallback
 import androidx.core.view.WindowCompat
 import com.facebook.react.ReactActivity
 import com.facebook.react.ReactActivityDelegate
@@ -85,6 +86,24 @@ class MainActivity : ReactActivity() {
             }
         }
         return super.dispatchKeyEvent(event)
+    }
+
+    // Prebuilt react-android leaves ReactActivity's back callback disabled after
+    // invokeDefaultOnBackPressed(). Re-enable it so back handling works after resume.
+    // Remove when upgrading to React Native 0.84.0 or later.
+    override fun invokeDefaultOnBackPressed() {
+        super.invokeDefaultOnBackPressed()
+        reactBackPressedCallback?.isEnabled = true
+    }
+
+    private val reactBackPressedCallback: OnBackPressedCallback? by lazy {
+        try {
+            val field = ReactActivity::class.java.getDeclaredField("mBackPressedCallback")
+            field.isAccessible = true
+            field.get(this) as? OnBackPressedCallback
+        } catch (_: ReflectiveOperationException) {
+            null
+        }
     }
 
     private fun setHWKeyboardConnected() {
