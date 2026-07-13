@@ -4,7 +4,7 @@
 import {router} from 'expo-router';
 import {DeviceEventEmitter} from 'react-native';
 
-import {Events, Screens} from '@constants';
+import {Events, Navigation, Screens} from '@constants';
 import BottomSheetStore from '@store/bottom_sheet_store';
 import CallbackStore from '@store/callback_store';
 import {NavigationStore} from '@store/navigation_store';
@@ -17,6 +17,7 @@ import {
     dismissToStackRoot,
     navigateBack,
     navigateToChannelInfoScreen,
+    navigateToHomeTab,
     navigateToRoot,
     navigateToScreen,
     navigateToScreenWithBaseRoute,
@@ -287,6 +288,30 @@ describe('navigation', () => {
             await navigateBack();
             expect(router.canGoBack).toHaveBeenCalled();
             expect(router.back).not.toHaveBeenCalled();
+        });
+    });
+
+    describe('navigateToHomeTab', () => {
+        it('should emit NAVIGATE_TO_TAB for the channel list tab', () => {
+            const emitSpy = jest.spyOn(DeviceEventEmitter, 'emit');
+
+            navigateToHomeTab();
+
+            expect(emitSpy).toHaveBeenCalledWith(Navigation.NAVIGATE_TO_TAB, {
+                screen: Screens.CHANNEL_LIST,
+                params: undefined,
+            });
+        });
+
+        it('should pass params to the tab navigation event', () => {
+            const emitSpy = jest.spyOn(DeviceEventEmitter, 'emit');
+
+            navigateToHomeTab({direction: 'right'});
+
+            expect(emitSpy).toHaveBeenCalledWith(Navigation.NAVIGATE_TO_TAB, {
+                screen: Screens.CHANNEL_LIST,
+                params: {direction: 'right'},
+            });
         });
     });
 
