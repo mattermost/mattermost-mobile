@@ -110,7 +110,7 @@ async function beginGroup(baseUrl, idToken, identity, totalReportsExpected) {
         commit: identity.commit_sha,
         gh_run_id: identity.gh_run_id,
         gh_run_attempt: String(identity.gh_run_attempt),
-        framework: identity.framework || 'mobile',
+        framework: identity.framework || 'detox',
         name: identity.name,
         branch: identity.branch,
         total_reports_expected: totalReportsExpected,

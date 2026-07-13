@@ -80,7 +80,7 @@ jobs:
           BASE=$(jq -nc \
             --arg repo "$GITHUB_REPOSITORY" --arg sha "$MM_SHA" --arg run_id "$GITHUB_RUN_ID" \
             --arg attempt "$GITHUB_RUN_ATTEMPT" --arg branch "$BRANCH" \
-            '{repository:$repo, commit_sha:$sha, gh_run_id:$run_id, gh_run_attempt:$attempt, branch:$branch, name:"cmt-mobile"}')
+            '{repository:$repo, commit_sha:$sha, gh_run_id:$run_id, gh_run_attempt:$attempt, branch:$branch, name:"cmt-mobile", framework:"detox"}')
           echo "composite-identity-json=$BASE" >> "$GITHUB_OUTPUT"
           TSIO_CONFIG=$(jq -nc --argjson identity "$BASE" --arg total "$TOTAL" \
             '{composite_identity: $identity, total_reports_expected: $total}')
