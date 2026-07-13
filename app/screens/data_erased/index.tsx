@@ -6,7 +6,7 @@ import {useIntl} from 'react-intl';
 import {AppState, Text, View} from 'react-native';
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
 
-import {reconnectErasedServer} from '@actions/remote/ephemeral_mode/reconnect';
+import {restoreServerAfterDatabaseWipe} from '@actions/remote/restore_server';
 import Button from '@components/button';
 import FormattedText from '@components/formatted_text';
 import Alert from '@components/illustrations/alert';
@@ -101,7 +101,7 @@ const DataErased = ({serverUrl, displayName}: DataErasedProps) => {
         setIsReconnecting(true);
         setHasError(false);
 
-        const result = await reconnectErasedServer(serverUrl);
+        const result = await restoreServerAfterDatabaseWipe(serverUrl);
 
         // On success or 401 the screen is replaced via setRoot/relaunch, so we
         // only need to surface state here when the call resolves with a generic error.

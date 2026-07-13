@@ -15,6 +15,7 @@ import {
     serverOneUrl,
     siteOneUrl,
 } from '@support/test_config';
+import Alert from '@support/ui/component/alert';
 import {
     ChannelScreen,
     ChannelListScreen,
@@ -119,6 +120,23 @@ describe('Messaging - Message Draft', () => {
         } else {
             await expect(ChannelScreen.postInput).toHaveText(message);
         }
+
+        // # Clear post draft and go back to channel list screen
+        await ChannelScreen.postInput.clearText();
+        await ChannelScreen.back();
+    });
+
+    it('MM-T107 - should show alert when message exceeds character limit', async () => {
+        const overLimitMessage = 'a'.repeat(4001);
+
+        // # Open a channel and type a message over the character limit
+        await ChannelScreen.open(channelsCategory, testChannel.name);
+        await ChannelScreen.postInput.tap();
+        await ChannelScreen.postInput.replaceText(overLimitMessage);
+
+        // * Verify message length alert is shown
+        await expect(Alert.messageLengthTitle).toBeVisible();
+        await Alert.okButton.tap();
 
         // # Clear post draft and go back to channel list screen
         await ChannelScreen.postInput.clearText();

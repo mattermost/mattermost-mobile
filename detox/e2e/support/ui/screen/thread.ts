@@ -27,6 +27,7 @@ class ThreadScreen {
     };
 
     threadScreen = element(by.id(this.testID.threadScreen));
+    backButton = element(by.id(this.testID.backButton));
     followButton = element(by.id(this.testID.followButton));
     followingButton = element(by.id(this.testID.followingButton));
     scheduledPostTooltipCloseButton = element(by.id(this.testID.scheduledPostTooltipCloseButton));
@@ -114,9 +115,7 @@ class ThreadScreen {
     };
 
     back = async () => {
-        // Thread uses native-stack header; Android exposes the toolbar back button as "Navigate up"
-        const headerBackButton = element(by.label(isAndroid() ? 'Navigate up' : 'Back'));
-        await headerBackButton.tap();
+        await this.backButton.tap();
         await waitFor(this.threadScreen).not.toBeVisible().withTimeout(timeouts.TEN_SEC);
 
         // Wait for the previous screen to be fully loaded and rendered

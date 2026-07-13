@@ -37,6 +37,7 @@ export async function handleConfigChangedEvent(serverUrl: string, msg: WebSocket
         if (config?.LockTeammateNameDisplay && (prevConfig?.LockTeammateNameDisplay !== config.LockTeammateNameDisplay)) {
             updateDmGmDisplayName(serverUrl);
         }
+
         const prevManagedSetting = prevConfig?.EnableManagedChannelCategories;
         const newManagedSetting = config?.EnableManagedChannelCategories;
         if (newManagedSetting !== prevManagedSetting) {

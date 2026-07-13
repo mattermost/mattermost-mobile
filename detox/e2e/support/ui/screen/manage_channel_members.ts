@@ -132,11 +132,13 @@ class ManageChannelMembersScreen {
             } catch { /* keyboard may already be dismissed */ }
             await wait(timeouts.HALF_SEC);
         }
-        await userDisplayName.tap();
+
+        await userDisplayName.tap({x: 1, y: 1});
         await wait(timeouts.TWO_SEC);
 
         await expect(this.removeButton).toBeVisible();
-        await this.removeButton.tap();
+
+        await this.removeButton.tap({x: 1, y: 1});
         await wait(timeouts.TWO_SEC);
 
         await Alert.removeButton.tap();
