@@ -55,8 +55,6 @@ export function sanitizeUrl(url: string, useHttp = false, keepProtocol = false) 
     let protocol;
     if (keepProtocol) {
         protocol = preUrl.protocol;
-    } else if (preUrl.protocol === 'http:' && !useHttp) {
-        protocol = 'https:';
     } else {
         protocol = useHttp ? 'http:' : 'https:';
     }
