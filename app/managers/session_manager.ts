@@ -18,6 +18,7 @@ import OfflinePersistenceManager from '@managers/offline_persistence_manager';
 import SecurityManager from '@managers/security_manager';
 import {queryGlobalValue} from '@queries/app/global';
 import {getAllServers, getServerDisplayName} from '@queries/app/servers';
+import {propsToParams} from '@screens/navigation';
 import EphemeralStore from '@store/ephemeral_store';
 import {deleteFileCacheByDir} from '@utils/file';
 import {isMainActivity} from '@utils/helpers';
@@ -156,7 +157,7 @@ export class SessionManagerSingleton {
                 const launchRoute = await determineRouteFromLaunchProps({launchType, serverUrl, displayName});
 
                 requestAnimationFrame(() => {
-                    router.replace({pathname: launchRoute.route, params: launchRoute.params});
+                    router.replace({pathname: launchRoute.route, params: propsToParams(launchRoute.params)});
                 });
             }
         } finally {
@@ -181,7 +182,7 @@ export class SessionManagerSingleton {
             const serverDisplayName = await getServerDisplayName(serverUrl);
 
             const launchRoute = await determineRouteFromLaunchProps({launchType: Launch.Normal, serverUrl, displayName: serverDisplayName});
-            router.replace({pathname: launchRoute.route, params: launchRoute.params});
+            router.replace({pathname: launchRoute.route, params: propsToParams(launchRoute.params)});
             if (activeServerUrl) {
                 addNewServer(EphemeralStore.getTheme(), serverUrl, serverDisplayName);
             } else {
