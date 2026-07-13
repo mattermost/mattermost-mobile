@@ -334,10 +334,6 @@ export async function handleWebSocketEvent(serverUrl: string, msg: WebSocketMess
         case WebsocketEvents.PROPERTY_VALUES_UPDATED:
             handleManagedChannelCategoriesPropertyValuesUpdated(serverUrl, msg);
             handlePropertyValuesUpdated(serverUrl, msg);
-            break;
-
-        case WebsocketEvents.PROPERTY_FIELD_CREATED:
-        case WebsocketEvents.PROPERTY_FIELD_UPDATED:
             handleSessionAttributesPropertyFieldEvent(serverUrl, msg);
             break;
 
