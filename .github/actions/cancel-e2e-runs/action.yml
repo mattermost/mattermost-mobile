@@ -49,12 +49,7 @@ runs:
           const repo = context.repo.repo;
 
           const ACTIVE_RUN_STATUSES = ['in_progress', 'queued', 'waiting'];
-          const E2E_STATUS_CONTEXTS = [
-            'e2e/maestro-ios-tests',
-            'e2e/maestro-android-tests',
-            'e2e/mobile',
-            'e2e/compatibility-matrix-testing',
-          ];
+          const E2E_STATUS_CONTEXTS = ['e2e/mobile'];
 
           const runMatchesPr = (run) => {
             if (!hasPrNumber) {

@@ -442,7 +442,7 @@ Detox uses `SITE_1_URL` (and additional sites per shard config).
 
 - JUnit XML: `build/maestro-report.xml`
 - HTML report + screenshots uploaded to S3 and as GitHub Actions artifacts
-- Commit statuses: `e2e/maestro-ios-tests`, `e2e/maestro-android-tests`
+- Commit status: `e2e/mobile` (unified Detox + Maestro; posted by `tsio-report-status.js`)
 
 ---
 
