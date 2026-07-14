@@ -38,7 +38,7 @@ on:
         type: boolean
         default: false
       record_tests_in_zephyr:
-        description: "Record Maestro test results in Zephyr Scale (release/master runs)"
+        description: "Record Maestro test results in Zephyr Scale (release/main runs)"
         required: false
         type: boolean
         default: false

@@ -322,13 +322,13 @@ function selfTest() {
     });
     assert(urlSlashBranch === 'https://test-io.test.mattermost.com/reports/mobile/feat~tsio-mobile-reporting/abc1234/mobile-pr', `slash branch URL: ${urlSlashBranch}`);
 
-    const urlMaster = buildDisplayReportUrl(PRODUCTION_URL, {
+    const urlMain = buildDisplayReportUrl(PRODUCTION_URL, {
         repository: 'mattermost/mattermost-mobile',
         commit_sha: 'def5678',
         branch: 'refs/heads/main',
-        name: 'mobile-master',
+        name: 'mobile-main',
     });
-    assert(urlMaster === 'https://test-io.test.mattermost.com/reports/mobile/main/def5678/mobile-master', `master URL: ${urlMaster}`);
+    assert(urlMain === 'https://test-io.test.mattermost.com/reports/mobile/main/def5678/mobile-main', `main URL: ${urlMain}`);
 
     const cmtUrl = buildDisplayReportUrl(PRODUCTION_URL, {
         repository: 'mattermost/mattermost-mobile',

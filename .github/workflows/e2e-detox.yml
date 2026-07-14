@@ -53,7 +53,7 @@ jobs:
       run-type: ${{ inputs.run_type || 'PR' }}
       tsio-config: ${{ inputs.tsio-config }}
       tsio-shard-name: detox-ios
-      record_tests_in_zephyr: ${{ inputs.run_type == 'RELEASE' || inputs.run_type == 'MASTER' }}
+      record_tests_in_zephyr: ${{ inputs.run_type == 'RELEASE' || inputs.run_type == 'MAIN' || inputs.run_type == 'MASTER' }}
       MOBILE_VERSION: ${{ inputs.MOBILE_VERSION }}
       MM_TEST_SERVER_URL: ${{ inputs.SITE_1_URL }}
       MM_TEST_SERVER_URL_2: ${{ inputs.SITE_2_URL }}
@@ -78,7 +78,7 @@ jobs:
       run-type: ${{ inputs.run_type || 'PR' }}
       tsio-config: ${{ inputs.tsio-config }}
       tsio-shard-name: detox-android
-      record_tests_in_zephyr: ${{ inputs.run_type == 'RELEASE' || inputs.run_type == 'MASTER' }}
+      record_tests_in_zephyr: ${{ inputs.run_type == 'RELEASE' || inputs.run_type == 'MAIN' || inputs.run_type == 'MASTER' }}
       MOBILE_VERSION: ${{ inputs.MOBILE_VERSION }}
       MM_TEST_SERVER_URL: ${{ inputs.SITE_1_URL }}
       MM_TEST_SERVER_URL_2: ${{ inputs.SITE_2_URL }}

@@ -48,7 +48,7 @@ on:
         required: false
         type: string
       run_type:
-        description: "Run type for test reporting (PR/RELEASE/MASTER). Defaults to PR."
+        description: "Run type for test reporting (PR/RELEASE/MAIN). MASTER is accepted as an alias for MAIN (Matterwick main-push)."
         required: false
         default: "PR"
         type: string
@@ -181,7 +181,8 @@ jobs:
               return;
             }
             const runType = (process.env.RUN_TYPE || 'PR').toUpperCase();
-            if (runType === 'MASTER') {
+            // Matterwick still sends MASTER for main-branch pushes; treat as MAIN.
+            if (runType === 'MAIN' || runType === 'MASTER') {
               core.setOutput('branch', 'main');
               return;
             }
@@ -213,6 +214,10 @@ jobs:
           esac
           TOTAL=$(( DETOX_TOTAL + MAESTRO_TOTAL ))
           echo "total-reports-expected=$TOTAL" >> "$GITHUB_OUTPUT"
+          # Matterwick main-push still sends MASTER; canonicalize to MAIN → mobile-main.
+          if [ "${RUN_TYPE}" = "MASTER" ]; then
+            RUN_TYPE=MAIN
+          fi
           RUN_TYPE_LOWER=$(echo "${RUN_TYPE}" | tr '[:upper:]' '[:lower:]')
           RUN_NAME="mobile-${RUN_TYPE_LOWER}"
           if [ -n "${PR_NUMBER}" ]; then
@@ -240,7 +245,7 @@ jobs:
     if: >-
       needs.resolve-e2e-policy.outputs.e2e_override != 'true'
       && needs.calculate-tsio-identity.result == 'success'
-      && (inputs.run_type == 'PR' || inputs.run_type == 'MASTER')
+      && (inputs.run_type == 'PR' || inputs.run_type == 'MAIN' || inputs.run_type == 'MASTER')
     permissions:
       contents: read
       statuses: write
@@ -610,7 +615,7 @@ jobs:
       SITE_3_URL: ${{ inputs.SITE_3_URL }}
       run_type: ${{ inputs.run_type || 'PR' }}
       artifact_run_id: ${{ github.run_id }}
-      record_tests_in_zephyr: ${{ inputs.run_type == 'RELEASE' || inputs.run_type == 'MASTER' }}
+      record_tests_in_zephyr: ${{ inputs.run_type == 'RELEASE' || inputs.run_type == 'MAIN' || inputs.run_type == 'MASTER' }}
       tsio-config: ${{ needs.calculate-tsio-identity.outputs.tsio-config }}
     secrets: inherit
 
@@ -643,7 +648,7 @@ jobs:
       SITE_3_URL: ${{ inputs.SITE_3_URL }}
       run_type: ${{ inputs.run_type || 'PR' }}
       artifact_run_id: ${{ github.run_id }}
-      record_tests_in_zephyr: ${{ inputs.run_type == 'RELEASE' || inputs.run_type == 'MASTER' }}
+      record_tests_in_zephyr: ${{ inputs.run_type == 'RELEASE' || inputs.run_type == 'MAIN' || inputs.run_type == 'MASTER' }}
       tsio-config: ${{ needs.calculate-tsio-identity.outputs.tsio-config }}
     secrets: inherit
 
@@ -787,11 +792,11 @@ jobs:
           BRANCH: ${{ github.ref_name }}
           WORKFLOW_CONCLUSION: ${{ job.status }}
 
-  # One TSIO report group (mobile-pr / mobile-master) aggregates every Detox +
+  # One TSIO report group (mobile-pr / mobile-main) aggregates every Detox +
   # Maestro platform leg; `e2e/mobile` is the single required commit status.
   tsio-report-status:
     name: TSIO report status (Detox + Maestro)
-    if: always() && (inputs.run_type == 'PR' || inputs.run_type == 'MASTER') && needs.calculate-tsio-identity.result == 'success'
+    if: always() && (inputs.run_type == 'PR' || inputs.run_type == 'MAIN' || inputs.run_type == 'MASTER') && needs.calculate-tsio-identity.result == 'success'
     needs:
       - calculate-tsio-identity
       - run-detox-ios

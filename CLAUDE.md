@@ -170,7 +170,7 @@ E2E results are uploaded to Test System IO (TSIO) and surfaced as GitHub commit 
 | Flow | Context | TSIO group name |
 |------|---------|-----------------|
 | PR E2E | `e2e/mobile` | `mobile-pr` |
-| Master E2E | `e2e/mobile` | `mobile-master` |
+| Main E2E (`run_type=MAIN` or Matterwick `MASTER`) | `e2e/mobile` | `mobile-main` |
 | Compatibility matrix | `e2e/compatibility-matrix-testing` | `cmt-mobile` |
 
 Legacy per-platform contexts (`e2e/detox-*`, `e2e/maestro-*`) are retired.

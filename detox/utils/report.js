@@ -352,6 +352,7 @@ function generateTitle() {
             title = `${platform} E2E for Release Build${buildLink}${releaseDate}`;
             break;
         case 'MAIN':
+        case 'MASTER': // Matterwick still dispatches MASTER for main-branch pushes
             title = `${platform} E2E for Main Build (Prod tests)${buildLink}`;
             break;
         default:
