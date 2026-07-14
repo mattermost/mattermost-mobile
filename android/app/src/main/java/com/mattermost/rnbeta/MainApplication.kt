@@ -15,7 +15,9 @@ import com.facebook.react.common.ReleaseLevel
 import com.facebook.react.defaults.DefaultNewArchitectureEntryPoint
 import com.facebook.react.modules.network.OkHttpClientProvider
 import com.mattermost.networkclient.RCTOkHttpClientFactory
+import com.mattermost.rnshare.ShareWorker
 import com.mattermost.rnshare.helpers.RealPathUtil
+import com.mattermost.rnutils.session_attributes.SessionAttributesEngine
 import com.mattermost.turbolog.TurboLog
 import com.mattermost.turbolog.ConfigureOptions
 import io.sentry.react.RNSentrySDK
@@ -65,6 +67,8 @@ class MainApplication : Application(), ReactApplication, INotificationsApplicati
         // requests that originate from React Native's OKHttpClient
         OkHttpClientProvider.setOkHttpClientFactory(RCTOkHttpClientFactory())
         ExpoImageOkHttpClientGlideModule.okHttpClient = RCTOkHttpClientFactory().createNewNetworkModuleClient()
+
+        ShareWorker.getSessionAttributesHeader = SessionAttributesEngine::getSessionAttributesHeader
 
         loadReactNative(this)
         ApplicationLifecycleDispatcher.onApplicationCreate(this)

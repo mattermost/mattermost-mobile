@@ -6,6 +6,7 @@ import {storeConfig} from '@actions/local/systems';
 import {fetchCategories} from '@actions/remote/category';
 import {SYSTEM_IDENTIFIERS} from '@constants/database';
 import DatabaseManager from '@database/manager';
+import SessionAttributesManager from '@managers/session_attributes_manager';
 import {getConfig, getCurrentTeamId, getLicense} from '@queries/servers/system';
 import EphemeralStore from '@store/ephemeral_store';
 
@@ -44,6 +45,15 @@ export async function handleConfigChangedEvent(serverUrl: string, msg: WebSocket
             const currentTeamId = await getCurrentTeamId(database);
             if (currentTeamId) {
                 await fetchCategories(serverUrl, currentTeamId, true);
+            }
+        }
+        const prevSessionAttributes = prevConfig?.FeatureFlagSessionAttributes === 'true';
+        const newSessionAttributes = config?.FeatureFlagSessionAttributes === 'true';
+        if (newSessionAttributes !== prevSessionAttributes) {
+            if (newSessionAttributes) {
+                await SessionAttributesManager.refreshManifest(serverUrl);
+            } else {
+                SessionAttributesManager.removeServer(serverUrl);
             }
         }
     } catch {

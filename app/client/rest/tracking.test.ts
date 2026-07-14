@@ -2,6 +2,7 @@
 // See LICENSE.txt for license information.
 
 /* eslint-disable max-lines */
+import RNUtils from '@mattermost/rnutils';
 import {DeviceEventEmitter} from 'react-native';
 
 import LocalConfig from '@assets/config.json';
@@ -32,6 +33,7 @@ jest.mock('react-native', () => ({
 jest.mock('@mattermost/rnutils', () => ({
     getIOSAppGroupDetails: jest.fn().mockRejectedValue(''),
     isRunningInSplitView: jest.fn().mockReturnValue({isSplit: false, isTablet: false}),
+    getSessionAttributesHeader: jest.fn(),
 }));
 
 jest.mock('expo-crypto', () => ({
@@ -129,6 +131,24 @@ describe('ClientTracking', () => {
         expect(headers[ClientConstants.HEADER_X_CSRF_TOKEN]).toBe('csrfToken');
     });
 
+    it('should include session attributes header when native returns a header', () => {
+        jest.mocked(RNUtils.getSessionAttributesHeader).mockReturnValue('encoded-payload');
+        client.setClientCredentials('testToken');
+
+        const headers = client.getRequestHeaders('GET');
+
+        expect(headers[ClientConstants.HEADER_X_MM_SESSION_ATTRIBUTES]).toBe('encoded-payload');
+    });
+
+    it('should omit session attributes header when native returns nothing', () => {
+        jest.mocked(RNUtils.getSessionAttributesHeader).mockReturnValue(undefined);
+        client.setClientCredentials('testToken');
+
+        const headers = client.getRequestHeaders('GET');
+
+        expect(headers[ClientConstants.HEADER_X_MM_SESSION_ATTRIBUTES]).toBeUndefined();
+    });
+
     it('should initialize and track group data', () => {
         client.initTrackGroup('Cold Start');
         expect(client.requestGroups.has('Cold Start')).toBe(true);
@@ -200,7 +220,7 @@ describe('ClientTracking', () => {
         expect(require('@utils/log').logInfo).toHaveBeenCalled();
     });
 
-    it('should build request options', () => {
+    it('should build request options', async () => {
         const options = {
             body: {key: 'value'},
             method: 'POST',
@@ -209,7 +229,7 @@ describe('ClientTracking', () => {
             headers: {custom: 'header'},
         };
 
-        const result = client.buildRequestOptions(options);
+        const result = await client.buildRequestOptions(options);
         expect(result.headers?.custom).toBe('header');
         expect(result.retryPolicyConfiguration?.retryLimit).toBe(0);
         expect(result.timeoutInterval).toBe(5000);

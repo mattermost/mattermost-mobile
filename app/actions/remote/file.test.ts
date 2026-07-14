@@ -32,6 +32,7 @@ describe('actions/remote/file', () => {
         getAbsoluteUrl: jest.fn(),
         getFilePreviewUrl: jest.fn(),
         getFileThumbnailUrl: jest.fn(),
+        getRequestHeaders: jest.fn().mockReturnValue({'X-MM-Session-Attributes': 'encoded'}),
     };
 
     beforeEach(() => {
@@ -52,10 +53,11 @@ describe('actions/remote/file', () => {
             await downloadFile(serverUrl, fileId, destination);
 
             expect(mockClient.getFileRoute).toHaveBeenCalledWith(fileId);
+            expect(mockClient.getRequestHeaders).toHaveBeenCalledWith('GET');
             expect(mockClient.apiClient.download).toHaveBeenCalledWith(
                 '/files/file123',
                 '/path/to/file',
-                {timeoutInterval: DOWNLOAD_TIMEOUT},
+                {timeoutInterval: DOWNLOAD_TIMEOUT, headers: {'X-MM-Session-Attributes': 'encoded'}},
             );
         });
 
@@ -90,7 +92,7 @@ describe('actions/remote/file', () => {
             expect(mockClient.apiClient.download).toHaveBeenCalledWith(
                 '/users/user123/image',
                 '/path/to/image',
-                {timeoutInterval: DOWNLOAD_TIMEOUT},
+                {timeoutInterval: DOWNLOAD_TIMEOUT, headers: {'X-MM-Session-Attributes': 'encoded'}},
             );
         });
 

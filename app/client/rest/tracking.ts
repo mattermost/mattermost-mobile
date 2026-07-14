@@ -1,6 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import RNUtils from '@mattermost/rnutils';
 import {defineMessage} from 'react-intl';
 import {DeviceEventEmitter, Platform} from 'react-native';
 
@@ -97,6 +98,13 @@ export default class ClientTracking {
 
         if (this.csrfToken && requestMethod.toLowerCase() !== 'get') {
             headers[ClientConstants.HEADER_X_CSRF_TOKEN] = this.csrfToken;
+        }
+
+        if (headers[ClientConstants.HEADER_AUTH]) {
+            const sessionAttributesHeader = RNUtils.getSessionAttributesHeader(this.apiClient.baseUrl);
+            if (sessionAttributesHeader) {
+                headers[ClientConstants.HEADER_X_MM_SESSION_ATTRIBUTES] = sessionAttributesHeader;
+            }
         }
 
         return headers;
@@ -388,7 +396,8 @@ export default class ClientTracking {
 
         let response: ClientResponse;
         try {
-            response = await request!(url, this.buildRequestOptions(options));
+            const requestOptions = this.buildRequestOptions(options);
+            response = await request!(url, requestOptions);
         } catch (error) {
             NetworkPerformanceManager.cancelRequestTracking(this.apiClient.baseUrl, performanceRequestId);
             const response_error = error as ClientError;

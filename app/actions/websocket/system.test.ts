@@ -5,6 +5,7 @@ import {updateDmGmDisplayName} from '@actions/local/channel';
 import {storeConfig} from '@actions/local/systems';
 import {SYSTEM_IDENTIFIERS} from '@constants/database';
 import DatabaseManager from '@database/manager';
+import SessionAttributesManager from '@managers/session_attributes_manager';
 import {getConfig, getLicense} from '@queries/servers/system';
 
 import {handleLicenseChangedEvent, handleConfigChangedEvent} from './system';
@@ -14,6 +15,13 @@ import type ServerDataOperator from '@database/operator/server_data_operator';
 jest.mock('@actions/local/channel');
 jest.mock('@actions/local/systems');
 jest.mock('@database/manager');
+jest.mock('@managers/session_attributes_manager', () => ({
+    __esModule: true,
+    default: {
+        refreshManifest: jest.fn().mockResolvedValue(undefined),
+        removeServer: jest.fn(),
+    },
+}));
 jest.mock('@queries/servers/system');
 
 describe('WebSocket System Actions', () => {
@@ -152,6 +160,42 @@ describe('WebSocket System Actions', () => {
 
             expect(storeConfig).toHaveBeenCalledWith(serverUrl, mockConfig);
             expect(updateDmGmDisplayName).toHaveBeenCalledWith(serverUrl);
+        });
+
+        it('should re-init session attributes when feature flag is enabled', async () => {
+            jest.mocked(getConfig).mockResolvedValue({
+                FeatureFlagSessionAttributes: 'false',
+            } as ClientConfig);
+
+            const msg = {
+                data: {
+                    config: {
+                        FeatureFlagSessionAttributes: 'true',
+                    },
+                },
+            } as WebSocketMessage;
+
+            await handleConfigChangedEvent(serverUrl, msg);
+
+            expect(SessionAttributesManager.refreshManifest).toHaveBeenCalledWith(serverUrl);
+        });
+
+        it('should stop sending session attributes when feature flag is disabled', async () => {
+            jest.mocked(getConfig).mockResolvedValue({
+                FeatureFlagSessionAttributes: 'true',
+            } as ClientConfig);
+
+            const msg = {
+                data: {
+                    config: {
+                        FeatureFlagSessionAttributes: 'false',
+                    },
+                },
+            } as WebSocketMessage;
+
+            await handleConfigChangedEvent(serverUrl, msg);
+
+            expect(SessionAttributesManager.removeServer).toHaveBeenCalledWith(serverUrl);
         });
     });
 });

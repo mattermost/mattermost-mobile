@@ -85,6 +85,7 @@ class AppDelegate: ExpoAppDelegate, OrientationLockable {
 
         // Configure Gekidou to use TurboLog via wrapper
         GekidouWrapper.default.configureTurboLogForGekidou()
+        GekidouWrapper.default.registerSessionAttributesBridge()
 
         // Bootstrap @mattermost/calls-native: allocates the singleton
         // PKPushRegistry + CXProvider on the main queue, synchronously,

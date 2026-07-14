@@ -15,6 +15,7 @@ import IntuneManager from '@managers/intune_manager';
 import NetworkManager from '@managers/network_manager';
 import OfflinePersistenceManager from '@managers/offline_persistence_manager';
 import SecurityManager from '@managers/security_manager';
+import SessionAttributesManager from '@managers/session_attributes_manager';
 import WebsocketManager from '@managers/websocket_manager';
 import {queryGlobalValue} from '@queries/app/global';
 import {getAllServers, getServerDisplayName} from '@queries/app/servers';
@@ -69,6 +70,7 @@ jest.mock('@managers/intune_manager', () => ({
 jest.mock('@managers/network_manager');
 jest.mock('@managers/offline_persistence_manager');
 jest.mock('@managers/security_manager');
+jest.mock('@managers/session_attributes_manager');
 jest.mock('@managers/websocket_manager');
 jest.mock('@queries/app/global', () => ({
     queryGlobalValue: jest.fn(),
@@ -197,6 +199,7 @@ describe('SessionManager', () => {
             expect(WebsocketManager.invalidateClient).toHaveBeenCalledWith(mockServerUrl);
             expect(SecurityManager.removeServer).toHaveBeenCalledWith(mockServerUrl);
             expect(OfflinePersistenceManager.removeServer).toHaveBeenCalledWith(mockServerUrl);
+            expect(SessionAttributesManager.removeServer).toHaveBeenCalledWith(mockServerUrl);
             expect(IntuneManager.unenrollServer).toHaveBeenCalledWith(mockServerUrl, false);
         });
 
@@ -208,6 +211,7 @@ describe('SessionManager', () => {
             expect(logout).toHaveBeenCalledWith(mockServerUrl, undefined, {skipEvents: true, skipServerLogout: true});
             expect(SecurityManager.removeServer).toHaveBeenCalledWith(mockServerUrl);
             expect(OfflinePersistenceManager.removeServer).toHaveBeenCalledWith(mockServerUrl);
+            expect(SessionAttributesManager.removeServer).toHaveBeenCalledWith(mockServerUrl);
             expect(IntuneManager.unenrollServer).toHaveBeenCalledWith(mockServerUrl, true);
             expect(determineRouteFromLaunchProps).toHaveBeenCalled();
         });

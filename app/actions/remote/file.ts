@@ -11,14 +11,24 @@ import {forceLogoutIfNecessary} from './session';
 import type {Client} from '@client/rest';
 import type {ClientResponse, ClientResponseError} from '@mattermost/react-native-network-client';
 
-export const downloadFile = (serverUrl: string, fileId: string, desitnation: string) => { // Let it throw and handle it accordingly
+export const downloadFile = (serverUrl: string, fileId: string, desitnation: string) => {
     const client = NetworkManager.getClient(serverUrl);
-    return client.apiClient.download(client.getFileRoute(fileId), desitnation.replace('file://', ''), {timeoutInterval: DOWNLOAD_TIMEOUT});
+    const headers = client.getRequestHeaders('GET');
+    return client.apiClient.download(
+        client.getFileRoute(fileId),
+        desitnation.replace('file://', ''),
+        {timeoutInterval: DOWNLOAD_TIMEOUT, headers},
+    );
 };
 
-export const downloadProfileImage = (serverUrl: string, userId: string, lastPictureUpdate: number, destination: string) => { // Let it throw and handle it accordingly
+export const downloadProfileImage = (serverUrl: string, userId: string, lastPictureUpdate: number, destination: string) => {
     const client = NetworkManager.getClient(serverUrl);
-    return client.apiClient.download(client.getProfilePictureUrl(userId, lastPictureUpdate), destination.replace('file://', ''), {timeoutInterval: DOWNLOAD_TIMEOUT});
+    const headers = client.getRequestHeaders('GET');
+    return client.apiClient.download(
+        client.getProfilePictureUrl(userId, lastPictureUpdate),
+        destination.replace('file://', ''),
+        {timeoutInterval: DOWNLOAD_TIMEOUT, headers},
+    );
 };
 
 export const uploadFile = (

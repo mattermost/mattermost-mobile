@@ -18,6 +18,9 @@ import com.mattermost.rnutils.helpers.SaveDataTask
 import com.mattermost.rnutils.helpers.SplitView
 import androidx.core.graphics.toColorInt
 import com.facebook.react.bridge.LifecycleEventListener
+import com.mattermost.rnutils.session_attributes.SessionAttributesEngine
+import org.json.JSONArray
+import org.json.JSONObject
 
 class RNUtilsModuleImpl(private val reactContext: ReactApplicationContext): LifecycleEventListener {
 
@@ -271,5 +274,55 @@ class RNUtilsModuleImpl(private val reactContext: ReactApplicationContext): Life
                 android.util.Log.e("RNUtils", "Error setting navigation bar color: $colorHex", e)
             }
         }
+    }
+
+    fun setSessionAttributesEnabled(serverUrl: String, enabled: Boolean) {
+        SessionAttributesEngine.getInstance(reactContext).setEnabled(serverUrl, enabled)
+    }
+
+    fun removeSessionAttributesServer(serverUrl: String) {
+        SessionAttributesEngine.getInstance(reactContext).removeServer(serverUrl)
+    }
+
+    fun setSessionAttributesManifest(serverUrl: String, manifest: String) {
+        try {
+            val manifestArray = JSONArray(manifest)
+            SessionAttributesEngine.getInstance(reactContext).setManifest(serverUrl, manifestArray)
+        } catch (_: Exception) {
+            SessionAttributesEngine.getInstance(reactContext).removeServer(serverUrl)
+        }
+    }
+
+    fun upsertSessionAttributesField(serverUrl: String, field: String) {
+        try {
+            val fieldObject = JSONObject(field)
+            SessionAttributesEngine.getInstance(reactContext).upsertManifestField(serverUrl, fieldObject)
+        } catch (_: Exception) {
+            // Ignore malformed field payloads.
+        }
+    }
+
+    fun removeSessionAttributesField(serverUrl: String, name: String) {
+        SessionAttributesEngine.getInstance(reactContext).removeManifestField(serverUrl, name)
+    }
+
+    fun setSessionAttributesStableValues(values: String) {
+        try {
+            val valuesObject = JSONObject(values)
+            val stableValues = mutableMapOf<String, String>()
+            valuesObject.keys().forEach { key ->
+                val value = valuesObject.optString(key, "")
+                if (value.isNotEmpty()) {
+                    stableValues[key] = value
+                }
+            }
+            SessionAttributesEngine.getInstance(reactContext).setStableValues(stableValues)
+        } catch (_: Exception) {
+            // Ignore malformed stable value payloads.
+        }
+    }
+
+    fun getSessionAttributesHeader(serverUrl: String): String? {
+        return SessionAttributesEngine.getSessionAttributesHeader(reactContext, serverUrl)
     }
 }

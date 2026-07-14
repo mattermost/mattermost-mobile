@@ -381,6 +381,47 @@ import React
             ]
         }
     }
+
+    @objc public func setSessionAttributesEnabled(_ serverUrl: String, enabled: Bool) {
+        SessionAttributesBridge.handler?.setEnabled(serverUrl, enabled: enabled)
+    }
+
+    @objc public func removeSessionAttributesServer(_ serverUrl: String) {
+        SessionAttributesBridge.handler?.removeServer(serverUrl)
+    }
+
+    @objc public func setSessionAttributesManifest(_ serverUrl: String, manifestJson: String) {
+        guard let data = manifestJson.data(using: .utf8),
+              let manifest = try? JSONSerialization.jsonObject(with: data) as? [[String: Any]] else {
+            SessionAttributesBridge.handler?.removeServer(serverUrl)
+            return
+        }
+        SessionAttributesBridge.handler?.setManifest(serverUrl, manifest: manifest)
+    }
+
+    @objc public func upsertSessionAttributesField(_ serverUrl: String, fieldJson: String) {
+        guard let data = fieldJson.data(using: .utf8),
+              let field = try? JSONSerialization.jsonObject(with: data) as? [String: Any] else {
+            return
+        }
+        SessionAttributesBridge.handler?.upsertManifestField(serverUrl, field: field)
+    }
+
+    @objc public func removeSessionAttributesField(_ serverUrl: String, name: String) {
+        SessionAttributesBridge.handler?.removeManifestField(serverUrl, name: name)
+    }
+
+    @objc public func setSessionAttributesStableValues(_ valuesJson: String) {
+        guard let data = valuesJson.data(using: .utf8),
+              let values = try? JSONSerialization.jsonObject(with: data) as? [String: String] else {
+            return
+        }
+        SessionAttributesBridge.handler?.setStableValues(values)
+    }
+
+    @objc public func getSessionAttributesHeader(_ serverUrl: String) -> String? {
+        return SessionAttributesBridge.handler?.getOutboundHeader(serverUrl)
+    }
 }
 
 

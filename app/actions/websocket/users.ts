@@ -7,14 +7,17 @@ import {deletePostsForChannelsWithAutotranslation, updateChannelsDisplayName} fr
 import {setCurrentUserStatus} from '@actions/local/user';
 import {fetchMe, fetchUsersByIds} from '@actions/remote/user';
 import {General, Events, Preferences} from '@constants';
+import {SESSION_ATTRIBUTES_OBJECT_TYPE, SESSION_ATTRIBUTES_PLATFORM_MOBILE} from '@constants/session_attributes';
 import DatabaseManager from '@database/manager';
 import {getTeammateNameDisplaySetting} from '@helpers/api/preference';
+import SessionAttributesManager from '@managers/session_attributes_manager';
 import WebsocketManager from '@managers/websocket_manager';
 import {queryChannelsByTypes, queryUserChannelsByTypes} from '@queries/servers/channel';
 import {queryDisplayNamePreferences} from '@queries/servers/preference';
 import {getConfig, getLicense} from '@queries/servers/system';
 import {getCurrentUser} from '@queries/servers/user';
 import {customProfileAttributeId} from '@utils/custom_profile_attribute';
+import {safeParseJSON} from '@utils/helpers';
 import {logError} from '@utils/log';
 import {displayUsername} from '@utils/user';
 
@@ -203,5 +206,32 @@ export async function handleCustomProfileAttributesFieldDeletedEvent(serverUrl: 
         }
     } catch (error) {
         logError('Error getting the operator for the custom profile field deleted event', error);
+    }
+}
+
+export function handleSessionAttributesPropertyFieldEvent(serverUrl: string, msg: WebSocketMessage) {
+    try {
+        const {object_type, property_field} = msg.data;
+        if (object_type !== SESSION_ATTRIBUTES_OBJECT_TYPE) {
+            return;
+        }
+
+        const field = safeParseJSON(property_field) as SAPropertyField;
+        if (!field?.name || !field.attrs) {
+            return;
+        }
+        if (!Boolean(field.attrs.enabled) || !Boolean(field.attrs.platforms.includes(SESSION_ATTRIBUTES_PLATFORM_MOBILE))) {
+            SessionAttributesManager.removeManifestField(serverUrl, field.name);
+            return;
+        }
+
+        SessionAttributesManager.upsertManifestField(serverUrl, {
+            name: field.name,
+            type: field.type,
+            ttl_seconds: field.attrs.ttl_seconds,
+            grace_period_seconds: field.attrs.grace_period_seconds,
+        });
+    } catch (error) {
+        logError('Error handling session attributes property field event', error);
     }
 }
