@@ -2,12 +2,12 @@
 // See LICENSE.txt for license information.
 
 /* eslint-disable max-lines */
+import RNUtils from '@mattermost/rnutils';
 import {DeviceEventEmitter} from 'react-native';
 
 import LocalConfig from '@assets/config.json';
 import {Events} from '@constants';
 import NetworkPerformanceManager from '@managers/network_performance_manager';
-import RNUtils from '@mattermost/rnutils';
 import test_helper from '@test/test_helper';
 
 import * as ClientConstants from './constants';
