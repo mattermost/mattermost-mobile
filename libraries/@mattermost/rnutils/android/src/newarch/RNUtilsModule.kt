@@ -85,4 +85,32 @@ class RNUtilsModule(val reactContext: ReactApplicationContext) : NativeRNUtilsSp
     override fun setNavigationBarColor(color: String, lightIcons: Boolean) {
         implementation.setNavigationBarColor(color, lightIcons)
     }
+
+    override fun setSessionAttributesEnabled(serverUrl: String, enabled: Boolean) {
+        implementation.setSessionAttributesEnabled(serverUrl, enabled)
+    }
+
+    override fun removeSessionAttributesServer(serverUrl: String) {
+        implementation.removeSessionAttributesServer(serverUrl)
+    }
+
+    override fun setSessionAttributesManifest(serverUrl: String, manifest: String) {
+        implementation.setSessionAttributesManifest(serverUrl, manifest)
+    }
+
+    override fun upsertSessionAttributesField(serverUrl: String, field: String) {
+        implementation.upsertSessionAttributesField(serverUrl, field)
+    }
+
+    override fun removeSessionAttributesField(serverUrl: String, name: String) {
+        implementation.removeSessionAttributesField(serverUrl, name)
+    }
+
+    override fun setSessionAttributesStableValues(values: String) {
+        implementation.setSessionAttributesStableValues(values)
+    }
+
+    override fun getSessionAttributesHeader(serverUrl: String): String? {
+        return implementation.getSessionAttributesHeader(serverUrl)
+    }
 }

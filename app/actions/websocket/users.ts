@@ -217,7 +217,7 @@ export function handleSessionAttributesPropertyFieldEvent(serverUrl: string, msg
         }
 
         const field = safeParseJSON(property_field) as SAPropertyField;
-        if (!field?.name) {
+        if (!field?.name || !field.attrs) {
             return;
         }
         if (!Boolean(field.attrs.enabled) || !Boolean(field.attrs.platforms.includes(SESSION_ATTRIBUTES_PLATFORM_MOBILE))) {

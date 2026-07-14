@@ -7,7 +7,7 @@ import {DeviceEventEmitter} from 'react-native';
 import LocalConfig from '@assets/config.json';
 import {Events} from '@constants';
 import NetworkPerformanceManager from '@managers/network_performance_manager';
-import SessionAttributesManager from '@managers/session_attributes_manager';
+import RNUtils from '@mattermost/rnutils';
 import test_helper from '@test/test_helper';
 
 import * as ClientConstants from './constants';
@@ -33,6 +33,7 @@ jest.mock('react-native', () => ({
 jest.mock('@mattermost/rnutils', () => ({
     getIOSAppGroupDetails: jest.fn().mockRejectedValue(''),
     isRunningInSplitView: jest.fn().mockReturnValue({isSplit: false, isTablet: false}),
+    getSessionAttributesHeader: jest.fn(),
 }));
 
 jest.mock('expo-crypto', () => ({
@@ -70,13 +71,6 @@ jest.mock('@managers/network_performance_manager', () => ({
         startRequestTracking: jest.fn(() => 'mock-request-id-123'),
         completeRequestTracking: jest.fn(),
         cancelRequestTracking: jest.fn(),
-    },
-}));
-
-jest.mock('@managers/session_attributes_manager', () => ({
-    __esModule: true,
-    default: {
-        getOutboundHeader: jest.fn(),
     },
 }));
 
@@ -137,8 +131,8 @@ describe('ClientTracking', () => {
         expect(headers[ClientConstants.HEADER_X_CSRF_TOKEN]).toBe('csrfToken');
     });
 
-    it('should include session attributes header when the manager has an outbound header', () => {
-        jest.mocked(SessionAttributesManager.getOutboundHeader).mockReturnValue('encoded-payload');
+    it('should include session attributes header when native returns a header', () => {
+        jest.mocked(RNUtils.getSessionAttributesHeader).mockReturnValue('encoded-payload');
         client.setClientCredentials('testToken');
 
         const headers = client.getRequestHeaders('GET');
@@ -146,8 +140,8 @@ describe('ClientTracking', () => {
         expect(headers[ClientConstants.HEADER_X_MM_SESSION_ATTRIBUTES]).toBe('encoded-payload');
     });
 
-    it('should omit session attributes header when the manager has nothing to deliver', () => {
-        jest.mocked(SessionAttributesManager.getOutboundHeader).mockReturnValue(undefined);
+    it('should omit session attributes header when native returns nothing', () => {
+        jest.mocked(RNUtils.getSessionAttributesHeader).mockReturnValue(undefined);
         client.setClientCredentials('testToken');
 
         const headers = client.getRequestHeaders('GET');

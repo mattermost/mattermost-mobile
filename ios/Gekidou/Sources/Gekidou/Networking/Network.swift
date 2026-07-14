@@ -122,6 +122,9 @@ public class Network: NSObject {
         if let credentials = try? Keychain.default.getCredentials(for: serverUrl) {
             if let token = credentials.token {
                 request.addValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
+                if let sessionAttributesHeader = SessionAttributesEngine.shared.getOutboundHeader(serverUrl) {
+                    request.addValue(sessionAttributesHeader, forHTTPHeaderField: SessionAttributesConstants.headerName)
+                }
             }
             if let preauthSecret = credentials.preauthSecret {
                 request.addValue(preauthSecret, forHTTPHeaderField: GekidouConstants.HEADER_X_MATTERMOST_PREAUTH_SECRET)

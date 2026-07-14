@@ -76,6 +76,14 @@ export interface Spec extends TurboModule {
 
     createZipFile: (paths: string[]) => Promise<string>;
 
+    setSessionAttributesEnabled: (serverUrl: string, enabled: boolean) => void;
+    removeSessionAttributesServer: (serverUrl: string) => void;
+    setSessionAttributesManifest: (serverUrl: string, manifest: string) => void;
+    upsertSessionAttributesField: (serverUrl: string, field: string) => void;
+    removeSessionAttributesField: (serverUrl: string, name: string) => void;
+    setSessionAttributesStableValues: (values: string) => void;
+    getSessionAttributesHeader: (serverUrl: string) => string | undefined;
+
     // Android only
     setNavigationBarColor: (color: string, lightIcons: boolean) => void;
 }

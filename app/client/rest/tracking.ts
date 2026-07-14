@@ -1,6 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import RNUtils from '@mattermost/rnutils';
 import {defineMessage} from 'react-intl';
 import {DeviceEventEmitter, Platform} from 'react-native';
 
@@ -10,7 +11,6 @@ import {setServerCredentials} from '@init/credentials';
 import NetworkPerformanceManager from '@managers/network_performance_manager';
 import PerformanceMetricsManager from '@managers/performance_metrics_manager';
 import {NetworkRequestMetrics} from '@managers/performance_metrics_manager/constant';
-import SessionAttributesManager from '@managers/session_attributes_manager';
 import {isErrorWithStatusCode} from '@utils/errors';
 import {getFormattedFileSize} from '@utils/file';
 import {logDebug, logInfo} from '@utils/log';
@@ -101,7 +101,7 @@ export default class ClientTracking {
         }
 
         if (headers[ClientConstants.HEADER_AUTH]) {
-            const sessionAttributesHeader = SessionAttributesManager.getOutboundHeader(this.apiClient.baseUrl);
+            const sessionAttributesHeader = RNUtils.getSessionAttributesHeader(this.apiClient.baseUrl);
             if (sessionAttributesHeader) {
                 headers[ClientConstants.HEADER_X_MM_SESSION_ATTRIBUTES] = sessionAttributesHeader;
             }
@@ -395,8 +395,8 @@ export default class ClientTracking {
         const performanceRequestId = NetworkPerformanceManager.startRequestTracking(this.apiClient.baseUrl, url);
 
         let response: ClientResponse;
-        const requestOptions = this.buildRequestOptions(options);
         try {
+            const requestOptions = this.buildRequestOptions(options);
             response = await request!(url, requestOptions);
         } catch (error) {
             NetworkPerformanceManager.cancelRequestTracking(this.apiClient.baseUrl, performanceRequestId);

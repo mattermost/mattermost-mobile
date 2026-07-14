@@ -137,6 +137,36 @@ RCT_EXPORT_METHOD(createZipFile:(NSArray<NSString *> *)paths
     [self createZipFile:paths resolve:resolve reject:reject];
 }
 
+#ifndef RCT_NEW_ARCH_ENABLED
+RCT_REMAP_BLOCKING_SYNCHRONOUS_METHOD(getSessionAttributesHeader, NSString*, serverUrl:(NSString *)serverUrl) {
+    return [wrapper getSessionAttributesHeader:serverUrl];
+}
+
+RCT_REMAP_METHOD(setSessionAttributesEnabled, serverUrl:(NSString *)serverUrl enabled:(BOOL)enabled) {
+    [wrapper setSessionAttributesEnabled:serverUrl enabled:enabled];
+}
+
+RCT_REMAP_METHOD(removeSessionAttributesServer, serverUrl:(NSString *)serverUrl) {
+    [wrapper removeSessionAttributesServer:serverUrl];
+}
+
+RCT_REMAP_METHOD(setSessionAttributesManifest, serverUrl:(NSString *)serverUrl manifest:(NSString *)manifest) {
+    [wrapper setSessionAttributesManifest:serverUrl manifestJson:manifest];
+}
+
+RCT_REMAP_METHOD(upsertSessionAttributesField, serverUrl:(NSString *)serverUrl field:(NSString *)field) {
+    [wrapper upsertSessionAttributesField:serverUrl fieldJson:field];
+}
+
+RCT_REMAP_METHOD(removeSessionAttributesField, serverUrl:(NSString *)serverUrl name:(NSString *)name) {
+    [wrapper removeSessionAttributesField:serverUrl name:name];
+}
+
+RCT_REMAP_METHOD(setSessionAttributesStableValues, values:(NSString *)values) {
+    [wrapper setSessionAttributesStableValues:values];
+}
+#endif
+
 // Don't compile this code when we build for the old architecture.
 #ifdef RCT_NEW_ARCH_ENABLED
 - (std::shared_ptr<TurboModule>)getTurboModule:
@@ -246,6 +276,34 @@ RCT_EXPORT_METHOD(createZipFile:(NSArray<NSString *> *)paths
 
 -(void)setSoftKeyboardToAdjustNothing {
     // Do nothing as it does not apply to iOS
+}
+
+- (NSString *)getSessionAttributesHeader:(NSString *)serverUrl {
+    return [wrapper getSessionAttributesHeader:serverUrl];
+}
+
+- (void)setSessionAttributesEnabled:(NSString *)serverUrl enabled:(BOOL)enabled {
+    [wrapper setSessionAttributesEnabled:serverUrl enabled:enabled];
+}
+
+- (void)removeSessionAttributesServer:(NSString *)serverUrl {
+    [wrapper removeSessionAttributesServer:serverUrl];
+}
+
+- (void)setSessionAttributesManifest:(NSString *)serverUrl manifest:(NSString *)manifest {
+    [wrapper setSessionAttributesManifest:serverUrl manifestJson:manifest];
+}
+
+- (void)upsertSessionAttributesField:(NSString *)serverUrl field:(NSString *)field {
+    [wrapper upsertSessionAttributesField:serverUrl fieldJson:field];
+}
+
+- (void)removeSessionAttributesField:(NSString *)serverUrl name:(NSString *)name {
+    [wrapper removeSessionAttributesField:serverUrl name:name];
+}
+
+- (void)setSessionAttributesStableValues:(NSString *)values {
+    [wrapper setSessionAttributesStableValues:values];
 }
 
 #pragma helpers

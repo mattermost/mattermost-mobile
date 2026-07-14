@@ -11,6 +11,7 @@ import GlobalEventHandler from '@managers/global_event_handler';
 import NetworkManager from '@managers/network_manager';
 import OfflinePersistenceManager from '@managers/offline_persistence_manager';
 import SecurityManager from '@managers/security_manager';
+import SessionAttributesManager from '@managers/session_attributes_manager';
 import SessionManager from '@managers/session_manager';
 import WebsocketManager from '@managers/websocket_manager';
 import EphemeralStore from '@store/ephemeral_store';
@@ -55,6 +56,8 @@ export async function initialize() {
     EphemeralStore.setProcessingNotification('');
 
     await SecurityManager.init();
+
+    await SessionAttributesManager.syncStaticValues();
 
     GlobalEventHandler.init();
     ManagedApp.init();

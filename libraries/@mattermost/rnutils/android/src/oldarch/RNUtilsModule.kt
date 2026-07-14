@@ -121,4 +121,39 @@ class RNUtilsModule(context: ReactApplicationContext) :
     fun setNavigationBarColor(colorHex: String, lightIcons: Boolean) {
         implementation.setNavigationBarColor(colorHex, lightIcons)
     }
+
+    @ReactMethod(isBlockingSynchronousMethod = true)
+    fun getSessionAttributesHeader(serverUrl: String): String? {
+        return implementation.getSessionAttributesHeader(serverUrl)
+    }
+
+    @ReactMethod
+    fun setSessionAttributesEnabled(serverUrl: String, enabled: Boolean) {
+        implementation.setSessionAttributesEnabled(serverUrl, enabled)
+    }
+
+    @ReactMethod
+    fun removeSessionAttributesServer(serverUrl: String) {
+        implementation.removeSessionAttributesServer(serverUrl)
+    }
+
+    @ReactMethod
+    fun setSessionAttributesManifest(serverUrl: String, manifest: String) {
+        implementation.setSessionAttributesManifest(serverUrl, manifest)
+    }
+
+    @ReactMethod
+    fun upsertSessionAttributesField(serverUrl: String, field: String) {
+        implementation.upsertSessionAttributesField(serverUrl, field)
+    }
+
+    @ReactMethod
+    fun removeSessionAttributesField(serverUrl: String, name: String) {
+        implementation.removeSessionAttributesField(serverUrl, name)
+    }
+
+    @ReactMethod
+    fun setSessionAttributesStableValues(values: String) {
+        implementation.setSessionAttributesStableValues(values)
+    }
 }
