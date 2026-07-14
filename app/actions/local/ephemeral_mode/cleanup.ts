@@ -8,7 +8,7 @@ import {MM_TABLES, SYSTEM_IDENTIFIERS} from '@constants/database';
 import DateConstants from '@constants/datetime';
 import {AUTO_CACHE_CLEANUP_PROTECTION_BUFFER} from '@constants/post';
 import DatabaseManager from '@database/manager';
-import OfflinePersistenceManager from '@managers/offline_persistence_manager';
+import EphemeralModeManager from '@managers/ephemeral_mode_manager';
 import {queryPlaybookRunsBefore} from '@playbooks/database/queries/run';
 import {
     createAtOfNthPostOlderThan,
@@ -264,7 +264,7 @@ async function cleanupPlaybookRuns(
 }
 
 export async function autoCacheCleanup(serverUrl: string): Promise<void> {
-    const cleanupDays = OfflinePersistenceManager.getAutoCacheCleanupDays(serverUrl);
+    const cleanupDays = EphemeralModeManager.getAutoCacheCleanupDays(serverUrl);
     if (cleanupDays <= 0) {
         logDebug('autoCacheCleanup: cleanupDays <= 0 for', serverUrl);
         return;

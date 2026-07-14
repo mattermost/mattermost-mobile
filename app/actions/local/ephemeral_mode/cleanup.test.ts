@@ -7,7 +7,7 @@ import {Screens} from '@constants';
 import {MM_TABLES, SYSTEM_IDENTIFIERS} from '@constants/database';
 import {AUTO_CACHE_CLEANUP_PROTECTION_BUFFER} from '@constants/post';
 import DatabaseManager from '@database/manager';
-import OfflinePersistenceManager from '@managers/offline_persistence_manager';
+import EphemeralModeManager from '@managers/ephemeral_mode_manager';
 import {PLAYBOOK_TABLES} from '@playbooks/constants/database';
 import {getCurrentChannelId} from '@queries/servers/system';
 import EphemeralStore from '@store/ephemeral_store';
@@ -27,7 +27,7 @@ const {SERVER: {MY_CHANNEL, POST, POSTS_IN_CHANNEL, POSTS_IN_THREAD}} = MM_TABLE
 const {AI_THREAD} = AGENTS_TABLES;
 const {PLAYBOOK_RUN, PLAYBOOK_CHECKLIST, PLAYBOOK_CHECKLIST_ITEM} = PLAYBOOK_TABLES;
 
-jest.mock('@managers/offline_persistence_manager', () => ({
+jest.mock('@managers/ephemeral_mode_manager', () => ({
     __esModule: true,
     default: {getAutoCacheCleanupDays: jest.fn()},
 }));
@@ -162,7 +162,7 @@ describe('autoCacheCleanup', () => {
 
         // LokiJS adapter has no unsafeVacuum; mock it to avoid a hanging toPromise callback
         jest.spyOn(database, 'unsafeVacuum').mockResolvedValue();
-        jest.mocked(OfflinePersistenceManager.getAutoCacheCleanupDays).mockReturnValue(1);
+        jest.mocked(EphemeralModeManager.getAutoCacheCleanupDays).mockReturnValue(1);
         jest.mocked(NavigationStore.getScreensInStack).mockReturnValue([]);
         jest.mocked(EphemeralStore.getCurrentChannelOldestVisibleCreateAt).mockReturnValue(0);
         jest.mocked(EphemeralStore.getCurrentThreadId).mockReturnValue('');
@@ -181,10 +181,10 @@ describe('autoCacheCleanup', () => {
     it('exits early without DB access when cleanupDays is 0 or negative', async () => {
         const dbSpy = jest.spyOn(DatabaseManager, 'getServerDatabaseAndOperator');
 
-        jest.mocked(OfflinePersistenceManager.getAutoCacheCleanupDays).mockReturnValue(0);
+        jest.mocked(EphemeralModeManager.getAutoCacheCleanupDays).mockReturnValue(0);
         await autoCacheCleanup(SERVER_URL);
 
-        jest.mocked(OfflinePersistenceManager.getAutoCacheCleanupDays).mockReturnValue(-3);
+        jest.mocked(EphemeralModeManager.getAutoCacheCleanupDays).mockReturnValue(-3);
         await autoCacheCleanup(SERVER_URL);
 
         expect(dbSpy).not.toHaveBeenCalled();
