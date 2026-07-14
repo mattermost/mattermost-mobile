@@ -275,12 +275,6 @@ jobs:
         if: steps.detox-framework-cache.outputs.cache-hit != 'true'
         run: cd detox && npx detox build-framework-cache
 
-      # ── Use preboot_ios_simulator.sh (Pillar 3) ─────────────────────────────────
-      # Replaces ~150 lines of inline boot logic. The script already skips autofill
-      # re-config when the marker exists, does a single boot on warm sims, and
-      # optionally skips pre-warm (PREBOOT_SKIP_PREWARM=1 — Maestro pattern).
-      # Not caching full CoreSimulator/Devices dir — it's multi-GB, mutates on every
-      # boot, and would evict other caches within the 10GB GHA limit.
       - name: Pre-boot iOS Simulator
         run: |
           export DEVICE_NAME="${{ env.DEVICE_NAME }}"

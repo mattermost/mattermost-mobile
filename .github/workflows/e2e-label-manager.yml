@@ -58,12 +58,6 @@ jobs:
       - uses: dorny/paths-filter@de90cc6fb38fc0963ad72b210f1f284cd68cea36 # v3.0.2
         id: filter
         with:
-          # dorny on pull_request compares the FULL PR file list vs base (not
-          # only the latest push). So:
-          #   - brand-new docs-only PR → app_impacting=false → skip E2E
-          #   - app PR later pushed with docs-only commit → still app_impacting
-          #     → re-run E2E (correct: new SHA must be validated)
-          # No negated patterns — absence of app_impacting == skip.
           filters: |
             app_impacting:
               - 'app/**'
