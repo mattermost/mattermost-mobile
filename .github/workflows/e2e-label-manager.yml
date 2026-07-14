@@ -54,48 +54,76 @@ jobs:
     outputs:
       app_impacting: ${{ steps.filter.outputs.app_impacting }}
     steps:
-      - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
-      - uses: dorny/paths-filter@de90cc6fb38fc0963ad72b210f1f284cd68cea36 # v3.0.2
+      # Enterprise action allowlist blocks dorny/paths-filter; use github-script
+      # (allowlisted) + pulls.listFiles. Same semantics as dorny on pull_request:
+      # compare the FULL PR file list vs base, not only the latest push.
+      - name: Detect app-impacting paths
         id: filter
+        uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9.0.0
         with:
-          filters: |
-            app_impacting:
-              - 'app/**'
-              - 'share_extension/**'
-              - 'libraries/**'
-              - 'android/**'
-              - 'ios/**'
-              - 'types/**'
-              - 'package.json'
-              - 'package-lock.json'
-              - 'patches/**'
-              - 'babel.config.js'
-              - 'metro.config.js'
-              - 'tsconfig.json'
-              - 'index.tsx'
-              - 'app.json'
-              - 'react-native.config.js'
-              - 'assets/fonts/**'
-              - 'assets/sounds/**'
-              - 'assets/base/images/**'
-              - 'assets/base/release/**'
-              - 'assets/base/config.json'
-              - '.nvmrc'
-              - 'fastlane/**'
-              - 'detox/.detoxrc.json'
-              - 'detox/package.json'
-              - 'detox/package-lock.json'
-              - 'detox/e2e/**'
-              - 'detox/maestro/**'
-              - 'detox/scripts/**'
-              - '.github/workflows/e2e-*.yml'
-              - '.github/actions/cancel-e2e-runs/**'
-              - '.github/actions/compute-e2e-build-fingerprint/**'
-              - '.github/actions/s3-build-cache/**'
-              - '.github/actions/prepare-ios-build/**'
-              - '.github/actions/prepare-android-build/**'
-              - '.github/actions/prepare-mobile-build/**'
-              - '.github/actions/build-android-maestro-apk/**'
+          script: |
+            const patterns = [
+              'app/**',
+              'share_extension/**',
+              'libraries/**',
+              'android/**',
+              'ios/**',
+              'types/**',
+              'package.json',
+              'package-lock.json',
+              'patches/**',
+              'babel.config.js',
+              'metro.config.js',
+              'tsconfig.json',
+              'index.tsx',
+              'app.json',
+              'react-native.config.js',
+              'assets/fonts/**',
+              'assets/sounds/**',
+              'assets/base/images/**',
+              'assets/base/release/**',
+              'assets/base/config.json',
+              '.nvmrc',
+              'fastlane/**',
+              'detox/.detoxrc.json',
+              'detox/package.json',
+              'detox/package-lock.json',
+              'detox/e2e/**',
+              'detox/maestro/**',
+              'detox/scripts/**',
+              '.github/workflows/e2e-*.yml',
+              '.github/actions/cancel-e2e-runs/**',
+              '.github/actions/compute-e2e-build-fingerprint/**',
+              '.github/actions/s3-build-cache/**',
+              '.github/actions/prepare-ios-build/**',
+              '.github/actions/prepare-android-build/**',
+              '.github/actions/prepare-mobile-build/**',
+              '.github/actions/build-android-maestro-apk/**',
+            ];
+
+            const globToRegExp = (pattern) => {
+              const escaped = pattern
+                .replace(/[.+^${}()|[\]\\]/g, '\\$&')
+                .replace(/\*\*/g, '@@GLOBSTAR@@')
+                .replace(/\*/g, '[^/]*')
+                .replace(/@@GLOBSTAR@@/g, '.*');
+              return new RegExp(`^${escaped}$`);
+            };
+            const matchers = patterns.map(globToRegExp);
+
+            const matches = (filePath) => matchers.some((re) => re.test(filePath));
+
+            const files = await github.paginate(github.rest.pulls.listFiles, {
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              pull_number: context.payload.pull_request.number,
+              per_page: 100,
+            });
+
+            const hit = files.find((f) => matches(f.filename) || (f.previous_filename && matches(f.previous_filename)));
+            const appImpacting = Boolean(hit);
+            core.info(`PR #${context.payload.pull_request.number}: ${files.length} file(s), app_impacting=${appImpacting}${hit ? ` (hit: ${hit.filename})` : ''}`);
+            core.setOutput('app_impacting', appImpacting ? 'true' : 'false');
 
   # Always cancel superseded runs on synchronize — including docs-only pushes —
   # so a prior app-impacting run does not keep burning minutes after skip statuses.
