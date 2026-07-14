@@ -134,7 +134,6 @@ describe('Channels', () => {
         await expect(ChannelListScreen.getChannelItemDisplayName(channelsCategory, testChannel.name)).toBeVisible();
     });
 
-    // Archive observable in post_draft was fixed (observeChannelIsArchived); keep running in CI.
     it('MM-T3197 - RN apps Archive public or private channel', async () => {
         // # Navigate to the archive channel
         await ChannelScreen.open(channelsCategory, archiveChannel.name);
@@ -161,10 +160,6 @@ describe('Channels', () => {
         await ChannelListScreen.toBeVisible();
 
         // * Verify archived channel is not visible in the list
-        // On Android, waitFor().not.toBeVisible() blocks on bridge-idle before evaluating —
-        // after the back() navigation the bridge is still busy, causing the 10s budget to
-        // expire before the check runs. Use polling waitForElementToNotExist (bypasses
-        // bridge-idle) on Android; keep the standard waitFor for iOS.
         const archivedChannelItem = ChannelListScreen.getChannelItemDisplayName(channelsCategory, archiveChannel.name);
         if (isAndroid()) {
             await waitForElementToNotExist(archivedChannelItem, timeouts.HALF_MIN);

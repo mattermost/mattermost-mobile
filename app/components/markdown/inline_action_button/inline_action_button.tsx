@@ -6,7 +6,8 @@ import {useIntl} from 'react-intl';
 import {type StyleProp, Text, type TextStyle} from 'react-native';
 import urlParse from 'url-parse';
 
-import {postActionWithQuery} from '@actions/remote/integrations';
+import {handleGotoLocation} from '@actions/remote/command';
+import {postActionWithCookie} from '@actions/remote/integrations';
 import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
@@ -31,6 +32,8 @@ type Props = {
     postId: string;
     baseTextStyle: StyleProp<TextStyle>;
     children: ReactNode;
+    mmBlocksActionCookie?: string;
+    integrationFormat?: PostActionIntegrationFormat;
 };
 
 type ParsedHref = {actionId: string; query: Record<string, string>};
@@ -87,7 +90,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
     },
 }));
 
-const InlineActionButton = ({href, postId, baseTextStyle, children}: Props) => {
+const InlineActionButton = ({href, postId, baseTextStyle, children, mmBlocksActionCookie, integrationFormat = 'mm_block'}: Props) => {
     const theme = useTheme();
     const style = getStyleSheet(theme);
     const intl = useIntl();
@@ -129,9 +132,17 @@ const InlineActionButton = ({href, postId, baseTextStyle, children}: Props) => {
 
         try {
             const result = await Promise.race([
-                postActionWithQuery(serverUrl, postId, parsed.actionId, parsed.query),
+                postActionWithCookie(
+                    serverUrl,
+                    postId,
+                    parsed.actionId,
+                    mmBlocksActionCookie ?? '',
+                    '',
+                    parsed.query,
+                    integrationFormat ?? '',
+                ),
                 timeoutPromise,
-            ]) as {error?: {message?: string}};
+            ]) as {error?: {message?: string}; data?: {goto_location?: string}};
             if (mountedRef.current && result?.error) {
                 if (timedOut) {
                     setActionError(intl.formatMessage({
@@ -144,6 +155,8 @@ const InlineActionButton = ({href, postId, baseTextStyle, children}: Props) => {
                         defaultMessage: 'Action failed to execute.',
                     }));
                 }
+            } else if (mountedRef.current && result?.data?.goto_location) {
+                handleGotoLocation(serverUrl, intl, result.data.goto_location);
             }
         } finally {
             if (timeoutRef.current !== null) {
@@ -155,7 +168,7 @@ const InlineActionButton = ({href, postId, baseTextStyle, children}: Props) => {
                 setExecuting(false);
             }
         }
-    }, [intl, parsed, postId, serverUrl]);
+    }, [integrationFormat, intl, mmBlocksActionCookie, parsed, postId, serverUrl]);
 
     const handlePressIn = useCallback(() => setPressed(true), []);
     const handlePressOut = useCallback(() => setPressed(false), []);

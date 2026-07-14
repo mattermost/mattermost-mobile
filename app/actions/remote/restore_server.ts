@@ -17,7 +17,7 @@ import {isErrorWithStatusCode} from '@utils/errors';
 
 type Result = {error?: unknown};
 
-export const reconnectErasedServer = async (serverUrl: string): Promise<Result> => {
+export const restoreServerAfterDatabaseWipe = async (serverUrl: string): Promise<Result> => {
     try {
         const netInfo = await NetInfo.fetch();
         if (!netInfo.isConnected) {
@@ -37,14 +37,14 @@ export const reconnectErasedServer = async (serverUrl: string): Promise<Result> 
         try {
             user = await client.getMe();
         } catch (error) {
-            return handleReconnectError(serverUrl, error);
+            return handleRestoreError(serverUrl, error);
         }
         await operator.handleUsers({users: [user], prepareRecordsOnly: false});
         await setCurrentUserId(operator, user.id);
 
         const {error: loginError} = await loginEntry({serverUrl});
         if (loginError) {
-            return handleReconnectError(serverUrl, loginError);
+            return handleRestoreError(serverUrl, loginError);
         }
 
         // Update last_active_at so withServerDatabase picks up the new db instance after wipe.
@@ -59,7 +59,7 @@ export const reconnectErasedServer = async (serverUrl: string): Promise<Result> 
     }
 };
 
-const handleReconnectError = async (serverUrl: string, error: unknown): Promise<Result> => {
+const handleRestoreError = async (serverUrl: string, error: unknown): Promise<Result> => {
     if (isErrorWithStatusCode(error) && error.status_code === HTTP_UNAUTHORIZED) {
         DeviceEventEmitter.emit(Events.SERVER_LOGOUT, {serverUrl, removeServer: false});
         return {};

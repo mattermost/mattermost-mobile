@@ -31,6 +31,11 @@ on:
         description: "Run ID of the parent workflow that uploaded build artifacts"
         required: true
         type: string
+      record_tests_in_zephyr:
+        description: "Record Maestro test results in Zephyr Scale"
+        required: false
+        type: boolean
+        default: false
 
 # iOS and Android are invoked as separate workflow_call runs from e2e-detox-pr.yml;
 # include PLATFORM so parallel calls do not cancel each other (same github.run_id).
@@ -101,6 +106,7 @@ jobs:
       MOBILE_VERSION: ${{ inputs.MOBILE_VERSION }}
       MM_TEST_SERVER_URL: ${{ inputs.SITE_2_URL || inputs.SITE_1_URL }}
       artifact_run_id: ${{ inputs.artifact_run_id }}
+      record_tests_in_zephyr: ${{ inputs.record_tests_in_zephyr }}
     secrets: inherit
 
   run-maestro-android:
@@ -118,6 +124,7 @@ jobs:
       MOBILE_VERSION: ${{ inputs.MOBILE_VERSION }}
       MM_TEST_SERVER_URL: ${{ inputs.SITE_3_URL || inputs.SITE_1_URL }}
       artifact_run_id: ${{ inputs.artifact_run_id }}
+      record_tests_in_zephyr: ${{ inputs.record_tests_in_zephyr }}
     secrets: inherit
 
   update-final-status-maestro-ios:
@@ -132,10 +139,16 @@ jobs:
       - uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9.0.0
         env:
           COMMIT_SHA: ${{ inputs.MOBILE_VERSION }}
-          STATUS: ${{ (needs.run-maestro-ios.result == 'skipped' && 'failure') || needs.run-maestro-ios.outputs.STATUS || 'failure' }}
+          STATUS: >-
+            ${{ needs.run-maestro-ios.result == 'cancelled' && 'error'
+              || needs.run-maestro-ios.outputs.CANCELLED == 'true' && 'error'
+              || (needs.run-maestro-ios.result == 'skipped' && 'failure')
+              || needs.run-maestro-ios.outputs.STATUS || 'failure' }}
           TARGET_URL: ${{ needs.run-maestro-ios.outputs.TARGET_URL }}
           DESCRIPTION: >-
-            ${{ needs.run-maestro-ios.result == 'skipped' && 'Build failed — Maestro iOS tests did not run'
+            ${{ needs.run-maestro-ios.result == 'cancelled' && 'Maestro iOS tests were cancelled (workflow stopped)'
+              || needs.run-maestro-ios.outputs.CANCELLED == 'true' && 'Maestro iOS tests were cancelled (workflow stopped)'
+              || needs.run-maestro-ios.result == 'skipped' && 'Build failed — Maestro iOS tests did not run'
               || needs.run-maestro-ios.outputs.FAILURES == '-1' && 'All test machines failed before producing results'
               || (needs.run-maestro-ios.outputs.FAILURES == '0' && needs.run-maestro-ios.outputs.SKIPPED > '0') && format('{0} passed, {1} skipped', needs.run-maestro-ios.outputs.PASSES, needs.run-maestro-ios.outputs.SKIPPED)
               || needs.run-maestro-ios.outputs.FAILURES == '0' && format('All {0} tests passed', needs.run-maestro-ios.outputs.TOTAL)
@@ -166,10 +179,16 @@ jobs:
       - uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9.0.0
         env:
           COMMIT_SHA: ${{ inputs.MOBILE_VERSION }}
-          STATUS: ${{ (needs.run-maestro-android.result == 'skipped' && 'failure') || needs.run-maestro-android.outputs.STATUS || 'failure' }}
+          STATUS: >-
+            ${{ needs.run-maestro-android.result == 'cancelled' && 'error'
+              || needs.run-maestro-android.outputs.CANCELLED == 'true' && 'error'
+              || (needs.run-maestro-android.result == 'skipped' && 'failure')
+              || needs.run-maestro-android.outputs.STATUS || 'failure' }}
           TARGET_URL: ${{ needs.run-maestro-android.outputs.TARGET_URL }}
           DESCRIPTION: >-
-            ${{ needs.run-maestro-android.result == 'skipped' && 'Build failed — Maestro Android tests did not run'
+            ${{ needs.run-maestro-android.result == 'cancelled' && 'Maestro Android tests were cancelled (workflow stopped)'
+              || needs.run-maestro-android.outputs.CANCELLED == 'true' && 'Maestro Android tests were cancelled (workflow stopped)'
+              || needs.run-maestro-android.result == 'skipped' && 'Build failed — Maestro Android tests did not run'
               || needs.run-maestro-android.outputs.FAILURES == '-1' && 'All test machines failed before producing results'
               || (needs.run-maestro-android.outputs.FAILURES == '0' && needs.run-maestro-android.outputs.SKIPPED > '0') && format('{0} passed, {1} skipped', needs.run-maestro-android.outputs.PASSES, needs.run-maestro-android.outputs.SKIPPED)
               || needs.run-maestro-android.outputs.FAILURES == '0' && format('All {0} tests passed', needs.run-maestro-android.outputs.TOTAL)

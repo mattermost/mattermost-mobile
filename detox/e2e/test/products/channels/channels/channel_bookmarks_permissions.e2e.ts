@@ -100,7 +100,6 @@ describe('Channels - Channel Bookmarks Permissions', () => {
     });
 
     afterAll(async () => {
-        await System.apiUpdateConfig(siteOneUrl, {FeatureFlags: {ChannelBookmarks: false}});
         await HomeScreen.logout();
     });
 

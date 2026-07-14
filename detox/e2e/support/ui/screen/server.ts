@@ -47,9 +47,7 @@ class ServerScreen {
     usernameInput = element(by.id(this.testID.usernameInput));
 
     toBeVisible = async () => {
-        // iOS 26.2 on macos-15 CI runners takes longer than 10s to present the
-        // server screen after cold launch. Use HALF_MIN for both platforms so the
-        // first-launch case never races with OS-level app registration delays.
+        // iOS 26.2 CI: use HALF_MIN for server screen — cold launch can exceed 10s.
         const timeout = timeouts.HALF_MIN;
         await waitFor(this.serverScreen).toExist().withTimeout(timeout);
         await waitFor(this.serverUrlInput).toExist().withTimeout(timeout);

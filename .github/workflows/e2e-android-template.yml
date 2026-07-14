@@ -366,16 +366,44 @@ jobs:
             android-emulator-${{ runner.os }}-${{ runner.arch }}-${{ env.AVD_NAME }}-api-${{ inputs.android_api_level }}-
             android-emulator-${{ runner.os }}-${{ runner.arch }}-
 
+      # Retry on emulator crash (all-shards-fail signature); cleans up wedged AVD between attempts.
       - name: Create and run Android Emulator
-        run: |
-          cd detox
-          chmod +x ./create_android_emulator.sh
-          CI=true ./create_android_emulator.sh "$SDK_VERSION" "$AVD_NAME" $MATRIX_SPECS
         env:
           MATRIX_SPECS: ${{ matrix.specs }}
           SITE_1_URL: ${{ env.SITE_1_URL }}
           SITE_2_URL: ${{ env.SITE_2_URL }}
           SITE_3_URL: ${{ env.SITE_3_URL }}
+          MAX_ATTEMPTS: "2"
+          ATTEMPT_TIMEOUT_MIN: "60"
+        shell: bash
+        run: |
+          set +e
+          attempt=1
+          while (( attempt <= MAX_ATTEMPTS )); do
+            echo "==> Attempt ${attempt}/${MAX_ATTEMPTS} (timeout ${ATTEMPT_TIMEOUT_MIN}m)"
+            timeout "${ATTEMPT_TIMEOUT_MIN}m" bash -c '
+              cd detox
+              chmod +x ./create_android_emulator.sh
+              CI=true ./create_android_emulator.sh "$SDK_VERSION" "$AVD_NAME" $MATRIX_SPECS
+            '
+            rc=$?
+            if (( rc == 0 )); then
+              echo "==> Attempt ${attempt} succeeded"
+              exit 0
+            fi
+            echo "==> Attempt ${attempt} failed with exit ${rc}"
+            if (( attempt < MAX_ATTEMPTS )); then
+              echo "==> Cleaning up before retry"
+              adb -s emulator-5554 emu kill 2>/dev/null || true
+              pkill -9 -f qemu-system 2>/dev/null || true
+              pkill -9 -f emulator 2>/dev/null || true
+              rm -rf detox/artifacts/* 2>/dev/null || true
+              sleep 5
+            fi
+            attempt=$(( attempt + 1 ))
+          done
+          echo "==> All ${MAX_ATTEMPTS} attempts failed"
+          exit 1
         continue-on-error: true # We want to run all the tests
 
       - name: Upload Android Test Report

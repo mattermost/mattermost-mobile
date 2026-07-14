@@ -91,7 +91,10 @@ describe('Messaging - Markdown Code', () => {
         await waitFor(postListPostItemCodeBlock).toExist().withTimeout(10000);
 
         // Scroll the post list to dismiss the keyboard before the visibility check.
-        await ChannelScreen.getFlatPostList().scroll(100, 'up', 0.5, 0.5);
+        // Wrap in try-catch: scroll up fails when the post list is already at the top.
+        try {
+            await ChannelScreen.getFlatPostList().scroll(100, 'up', 0.5, 0.5);
+        } catch { /* already at top — non-fatal */ }
 
         // toExist() confirms the code block rendered correctly; toBeVisible(50) is fragile
         // when the message input bar clips a short block below the 50% threshold.

@@ -118,9 +118,18 @@ type PostActionIntegration = {
     context?: Record<string, any>;
 }
 
+/** `integration_format` on the do-post-action API body — identifies which format originally had the action. */
+type PostActionIntegrationFormat =
+    | 'attachment'
+    | 'apps_binding'
+    | 'block'
+    | 'card'
+    | 'mm_block';
+
 type PostActionResponse = {
     status: string;
     trigger_id: string;
+    goto_location?: string;
 };
 
 type InteractiveDialogElementType = 'text' | 'textarea' | 'select' | 'radio' | 'bool'

@@ -155,6 +155,23 @@ describe('Messaging - Message Draft', () => {
         await ChannelScreen.back();
     });
 
+    it('MM-T107 - should show alert when message exceeds character limit', async () => {
+        const overLimitMessage = 'a'.repeat(4001);
+
+        // # Open a channel and type a message over the character limit
+        await ChannelScreen.open(channelsCategory, testChannel.name);
+        await ChannelScreen.postInput.tap();
+        await ChannelScreen.postInput.replaceText(overLimitMessage);
+
+        // * Verify message length alert is shown
+        await expect(Alert.messageLengthTitle).toBeVisible();
+        await Alert.okButton.tap();
+
+        // # Clear post draft and go back to channel list screen
+        await ChannelScreen.postInput.clearText();
+        await ChannelScreen.back();
+    });
+
     it('MM-T4781_4 - should be able to create a message draft from reply thread', async () => {
         // # Open a channel screen, post a message, and tap on the post to open reply thread
         const message = `Message ${getRandomId()}`;

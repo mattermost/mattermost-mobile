@@ -2,7 +2,7 @@
 // See LICENSE.txt for license information.
 import {RTCMonitor, RTCPeer, parseRTCStats} from '@mattermost/calls/lib';
 import {zlibSync, strToU8} from 'fflate';
-import {Platform} from 'react-native';
+import {DeviceEventEmitter, Platform} from 'react-native';
 import InCallManager from 'react-native-incall-manager';
 
 import NetworkManager from '@managers/network_manager';
@@ -179,6 +179,34 @@ describe('newConnection', () => {
         expect(openHandler).toBeDefined();
         openHandler!('originalConnID', 'prevConnID', true);
         expect(wsSend).toHaveBeenCalledWith('reconnect', {channelID: 'channelID', originalConnID: 'originalConnID', prevConnID: 'prevConnID'});
+    });
+
+    it('registers the audio device changed listener before starting InCallManager', async () => {
+        // eslint-disable-next-line
+        // @ts-ignore
+        WebSocketClient.mockImplementation(() => ({
+            initialize: jest.fn(),
+            on: jest.fn(),
+            send: jest.fn(),
+        }));
+
+        await newConnection(
+            'http://localhost:8065',
+            'channelID',
+            () => {},
+            () => {},
+            false,
+            mockIntl,
+        );
+
+        const addListenerMock = DeviceEventEmitter.addListener as jest.Mock;
+        const audioListenerCallIndex = addListenerMock.mock.calls.findIndex(([eventType]) => eventType === 'onAudioDeviceChanged');
+        expect(audioListenerCallIndex).not.toBe(-1);
+
+        const audioListenerCallOrder = addListenerMock.mock.invocationCallOrder[audioListenerCallIndex];
+        const startCallOrder = (InCallManager.start as jest.Mock).mock.invocationCallOrder[0];
+
+        expect(audioListenerCallOrder).toBeLessThan(startCallOrder);
     });
 
     it('mute/unmute', async () => {

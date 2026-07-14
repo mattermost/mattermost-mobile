@@ -30,6 +30,9 @@ import {
 import {isAndroid, safeEnableSynchronization, timeouts, wait, waitForElementToExist} from '@support/utils';
 import {expect, waitFor} from 'detox';
 
+// MM-T4729_5 uses device.reloadReactNative() which can take 30-90s on iOS CI.
+jest.setTimeout(360000);
+
 describe('Channels - Browse Channels', () => {
     const serverOneDisplayName = 'Server 1';
     const channelsCategory = 'channels';

@@ -9,6 +9,8 @@ import CompassIcon, {type CompassIconName} from '@components/compass_icon';
 import Loading from '@components/loading';
 import {buttonBackgroundStyle, buttonTextStyle} from '@utils/buttonStyles';
 
+import ButtonMarkdownText from './button_markdown_text';
+
 type Props = Omit<ButtonProps, 'size'> & {
     theme: Theme;
     backgroundStyle?: StyleProp<ViewStyle>;
@@ -27,6 +29,7 @@ type Props = Omit<ButtonProps, 'size'> & {
     showLoader?: boolean;
     isInverted?: boolean;
     isDestructive?: boolean;
+    renderLabelAsMarkdown?: boolean;
 };
 
 const styles = StyleSheet.create({
@@ -62,6 +65,7 @@ const Button = ({
     showLoader = false,
     isInverted = false,
     isDestructive = false,
+    renderLabelAsMarkdown = false,
 }: Props) => {
     let buttonType: ButtonType = 'default';
     if (isDestructive) {
@@ -117,6 +121,25 @@ const Button = ({
         );
     }
 
+    const labelTestID = testID ? `${testID}-label` : undefined;
+
+    const label = renderLabelAsMarkdown ? (
+        <ButtonMarkdownText
+            value={text}
+            baseStyle={txtStyleToUse}
+            theme={theme}
+            testID={labelTestID}
+        />
+    ) : (
+        <Text
+            style={txtStyleToUse}
+            numberOfLines={1}
+            testID={labelTestID}
+        >
+            {text}
+        </Text>
+    );
+
     return (
         <ElementButton
             buttonStyle={bgStyle}
@@ -133,12 +156,7 @@ const Button = ({
             >
                 {showLoader && !isIconOnTheRight && loadingComponent}
                 {!isIconOnTheRight && icon}
-                <Text
-                    style={txtStyleToUse}
-                    numberOfLines={1}
-                >
-                    {text}
-                </Text>
+                {label}
                 {showLoader && isIconOnTheRight && loadingComponent}
                 {isIconOnTheRight && icon}
             </View>

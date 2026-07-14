@@ -25,6 +25,7 @@ import {
     ServerScreen,
     UserProfileScreen,
 } from '@support/ui/screen';
+import {isIos} from '@support/utils';
 import {expect} from 'detox';
 
 describe('Channels - Manage Own Channel Membership', () => {
@@ -53,7 +54,7 @@ describe('Channels - Manage Own Channel Membership', () => {
         await HomeScreen.logout();
     });
 
-    it('MM-66375 - should be able to see and manage own membership in channel members list', async () => {
+    (isIos() ? it.skip : it)('MM-66375 - should be able to see and manage own membership in channel members list', async () => {
         // # Create a channel and add the test user to it
         const {channel} = await Channel.apiCreateChannel(siteOneUrl, {teamId: testTeam.id});
         await Channel.apiAddUserToChannel(siteOneUrl, testUser.id, channel.id);

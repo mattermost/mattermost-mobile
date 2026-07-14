@@ -10,7 +10,7 @@ import {KeyboardAwareScrollView} from 'react-native-keyboard-controller';
 import {type Edge, SafeAreaView} from 'react-native-safe-area-context';
 
 import {updateLocalCustomStatus} from '@actions/local/user';
-import {removeRecentCustomStatus, updateCustomStatus, unsetCustomStatus} from '@actions/remote/user';
+import {fetchMe, removeRecentCustomStatus, updateCustomStatus, unsetCustomStatus} from '@actions/remote/user';
 import NavigationButton from '@components/navigation_button';
 import TabletTitle from '@components/tablet_title';
 import {Events, Screens} from '@constants';
@@ -287,6 +287,13 @@ const CustomStatus = ({
                 }
                 setIsBtnEnabled(true);
                 updateLocalCustomStatus(serverUrl, currentUser, status);
+
+                // CI 28541071744: fire-and-forget updateLocalCustomStatus doesn't
+                // reliably update the observed user model before the account screen
+                // reads it. fetchMe syncs props.customStatus from the server (the
+                // unsanitized /users/me response) and writes via handleUsers which
+                // uses transformUserRecord — guaranteeing the observable emits.
+                await fetchMe(serverUrl, false);
                 dispatchStatus({type: 'fromUserCustomStatus', status});
             }
         } else if (storedStatus?.emoji) {
@@ -294,6 +301,7 @@ const CustomStatus = ({
 
             if (!error) {
                 updateLocalCustomStatus(serverUrl, currentUser, undefined);
+                await fetchMe(serverUrl, false);
             }
         }
         dismissModalAndKeyboard(isTablet);

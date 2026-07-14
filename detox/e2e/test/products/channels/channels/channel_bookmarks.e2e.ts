@@ -1,6 +1,8 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import path from 'path';
+
 // *******************************************************************
 // - [#] indicates a test step (e.g. # Go to a screen)
 // - [*] indicates an assertion (e.g. * Check the title)
@@ -10,8 +12,8 @@
 import {
     ChannelBookmark,
     Channel,
+    Post,
     Setup,
-    System,
 } from '@support/server_api';
 import {serverOneUrl, siteOneUrl} from '@support/test_config';
 import {
@@ -79,10 +81,7 @@ describe('Channels - Channel Bookmarks', () => {
         return channel;
     };
 
-    // With many channels in the sidebar the list is taller than the viewport and some
-    // channels are scrolled off-screen. Wait for the FlashList to be rendered first
-    // (it appears slightly after channel_list.screen after a fresh login), then reset
-    // to the top so channels above the current viewport are reachable when scrolling down.
+    // Scroll channel list to top after FlashList mounts — off-screen channels need scroll-down from top.
     const openChannel = async (channel: any) => {
         await ChannelListScreen.toBeVisible();
         const displayNameEl = ChannelListScreen.getChannelItemDisplayName(channelsCategory, channel.name);
@@ -135,9 +134,6 @@ describe('Channels - Channel Bookmarks', () => {
         const {team, user} = await Setup.apiInit(siteOneUrl);
         testTeam = team;
         testUser = user;
-
-        // ── Enable channel bookmarks feature flag ────────────────────────────
-        await System.apiUpdateConfig(siteOneUrl, {FeatureFlags: {ChannelBookmarks: true}});
 
         // ── Create all test channels ──────────────────────────────────────────
         channelT5600 = await createChannel();
@@ -198,10 +194,7 @@ describe('Channels - Channel Bookmarks', () => {
     });
 
     afterEach(async () => {
-        // # Safety net: return to channel list if a test left the app on a channel or modal screen.
-        // On Android the tab bar can be hidden behind modals (emoji picker, edit modal, channel info).
-        // Press Back up to 4 times — but only if the channel list is NOT already visible — to avoid
-        // accidentally navigating past the channel list (pressing Back there minimizes the app).
+        // Android safety net: Back up to 4x only if channel_list.screen not visible.
         if (isAndroid()) {
             // Back-press loop: dismiss whatever modal/screen a failed test left on
             // top, but stop as soon as the channel list is reached. The detection
@@ -243,7 +236,6 @@ describe('Channels - Channel Bookmarks', () => {
     });
 
     afterAll(async () => {
-        await System.apiUpdateConfig(siteOneUrl, {FeatureFlags: {ChannelBookmarks: false}});
         await HomeScreen.logout();
     });
 
@@ -441,12 +433,7 @@ describe('Channels - Channel Bookmarks', () => {
             not.toExist().
             withTimeout(timeouts.TEN_SEC);
 
-        // * Verify the updated bookmark title is shown in channel info.
-        // Use by.text + withAncestor to both verify the title text updated AND
-        // avoid matching the same text in channel_header.bookmarks.list (the channel
-        // screen stays mounted behind channel_info in RNN). Use toExist() instead of
-        // toBeVisible() because iOS UITransitionView layers from modal animations can
-        // temporarily block the 75% visibility threshold even when the element is present.
+        // Scope to channel_info.bookmarks.list; use toExist() — RNN dual-list + iOS modal overlays.
         await waitFor(
             element(
                 by.text('Updated Bookmark').
@@ -633,10 +620,7 @@ describe('Channels - Channel Bookmarks', () => {
         // * Verify edit modal opens
         await ChannelBookmarkScreen.toBeVisible();
 
-        // * Verify that the generic fallback icon is shown (no emoji set yet).
-        // Scope to channel_bookmark.screen — bookmark-generic-icon also exists in
-        // channel_header and channel_info behind the edit modal. Use toExist() since
-        // UITransitionView layers can interfere with the 75% visibility threshold.
+        // Scope to channel_bookmark.screen; use toExist() — dual-list + iOS modal overlays.
         await waitFor(
             element(
                 by.id('bookmark-generic-icon').
@@ -656,9 +640,7 @@ describe('Channels - Channel Bookmarks', () => {
         // # Navigate to the channel
         await openChannel(channelT5609);
 
-        // * Verify that the bookmark bar is visible below the channel header.
-        // Scope to channel_header.bookmarks.list — the same title also renders in
-        // channel_info when the modal is open on other tests.
+        // Scope to channel_header.bookmarks.list — same title also in channel_info when modal is open.
         await expect(
             element(
                 by.text('Banner Test Bookmark').
@@ -786,6 +768,90 @@ describe('Channels - Channel Bookmarks', () => {
             await wait(timeouts.ONE_SEC);
         } catch {
             // Action sheet not present — continue normally.
+
+        }
+
+        // # Go back to channel list
+        await ChannelScreen.back();
+    });
+
+    it('MM-T69455_1 - should open file preview on tap and options sheet on long press for channel bookmarks', async () => {
+        const channelT69455 = await createChannel();
+
+        const {bookmark: linkT69455, error: linkError} = await ChannelBookmark.apiCreateChannelBookmarkLink(
+            siteOneUrl, channelT69455.id, 'Tap Link Bookmark', 'https://mattermost.com',
+        );
+        if (linkError || !linkT69455?.id) {
+            throw new Error(`[MM-T69455_1] Failed to create bookmarkLinkT69455: ${JSON.stringify(linkError)}`);
+        }
+
+        const {fileId, error: uploadError} = await Post.apiUploadFileToChannel(
+            siteOneUrl,
+            channelT69455.id,
+            path.resolve(__dirname, '../../../../support/fixtures/image.png'),
+        );
+        if (uploadError || !fileId) {
+            throw new Error(`[MM-T69455_1] Failed to upload file bookmark attachment: ${JSON.stringify(uploadError)}`);
+        }
+        const {bookmark: bookmarkFileT69455, error: fileBookmarkError} = await ChannelBookmark.apiCreateChannelBookmarkFile(
+            siteOneUrl, channelT69455.id, 'Tap File Bookmark', fileId,
+        );
+        if (fileBookmarkError || !bookmarkFileT69455?.id) {
+            throw new Error(`[MM-T69455_1] Failed to create bookmarkFileT69455: ${JSON.stringify(fileBookmarkError)}`);
+        }
+
+        await device.reloadReactNative();
+        await ChannelListScreen.toBeVisible();
+
+        const getHeaderBookmark = (bookmarkId: string) => element(
+            by.
+                id(`channel_bookmark.${bookmarkId}`).
+                withAncestor(by.id('channel_header.bookmarks.list')),
+        );
+
+        const dismissGallery = async () => {
+            if (isAndroid()) {
+                await device.pressBack();
+            } else {
+                await element(by.id('gallery.header.close.button')).atIndex(0).tap();
+            }
+            await waitFor(element(by.id('gallery.header.close.button'))).not.toExist().withTimeout(timeouts.TEN_SEC);
+        };
+
+        // # Navigate to the channel with link and file bookmarks
+        await openChannel(channelT69455);
+
+        const fileBookmarkEl = getHeaderBookmark(bookmarkFileT69455.id);
+        const linkBookmarkEl = getHeaderBookmark(linkT69455.id);
+
+        await waitFor(fileBookmarkEl).toExist().withTimeout(timeouts.TEN_SEC);
+        await waitFor(linkBookmarkEl).toExist().withTimeout(timeouts.TEN_SEC);
+
+        // # Tap the file bookmark
+        await fileBookmarkEl.tap();
+
+        // * Verify file preview gallery opens (tap must reach the gallery press handler)
+        const galleryCloseButton = element(by.id('gallery.header.close.button'));
+        await waitFor(galleryCloseButton).toExist().withTimeout(timeouts.TEN_SEC);
+
+        // # Dismiss the gallery
+        await dismissGallery();
+
+        // # Tap the link bookmark
+        await linkBookmarkEl.tap();
+        await wait(timeouts.ONE_SEC);
+
+        // * Verify tap does not open the bookmark options bottom sheet
+        await expect(ChannelBookmarkScreen.editOption).not.toBeVisible();
+
+        // # Long press the link bookmark to open options
+        await linkBookmarkEl.longPress();
+
+        // * Verify long press opens the bookmark options bottom sheet
+        await expect(ChannelBookmarkScreen.editOption).toBeVisible();
+
+        if (isAndroid()) {
+            await device.pressBack();
         }
 
         // # Go back to channel list

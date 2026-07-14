@@ -212,17 +212,10 @@ jobs:
       - name: Cancel in-progress E2E runs
         if: >-
           github.event.pull_request.head.repo.full_name == github.repository
-          && (
-            (github.event.action == 'labeled' && github.event.label.name == 'E2E/Override')
-            || (
-              github.event.action == 'unlabeled'
-              && (github.event.label.name == 'E2E/Run'
-                  || github.event.label.name == 'E2E/Run-iOS'
-                  || github.event.label.name == 'E2E/Run-Android')
-              && github.event.sender.login != 'mattermost-build'
-            )
-          )
+          && github.event.action == 'labeled'
+          && github.event.label.name == 'E2E/Override'
         uses: ./.github/actions/cancel-e2e-runs
         with:
           head_branch: ${{ github.event.pull_request.head.ref }}
           pr_number: ${{ github.event.pull_request.number }}
+          reason: E2E cancelled (E2E/Override label applied)

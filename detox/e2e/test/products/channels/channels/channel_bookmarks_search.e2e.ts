@@ -11,7 +11,6 @@ import {
     ChannelBookmark,
     Channel,
     Setup,
-    System,
 } from '@support/server_api';
 import {serverOneUrl, siteOneUrl} from '@support/test_config';
 import {
@@ -66,8 +65,7 @@ describe('Channels - Channel Bookmarks Search', () => {
         testTeam = team;
         testUser = user;
 
-        // ── Enable channel bookmarks feature flag ────────────────────────────
-        await System.apiUpdateConfig(siteOneUrl, {FeatureFlags: {ChannelBookmarks: true}});
+        // FeatureFlags.ChannelBookmarks set in setup.ts (see channel_bookmarks.e2e.ts for rationale).
 
         // Unique search titles — generated once so they stay unique per run.
         fileSearchTitle = `FileSearch-${Date.now()}`;
@@ -114,11 +112,11 @@ describe('Channels - Channel Bookmarks Search', () => {
     });
 
     afterAll(async () => {
-        await System.apiUpdateConfig(siteOneUrl, {FeatureFlags: {ChannelBookmarks: false}});
+        // Do not unset FeatureFlags.ChannelBookmarks — would clobber other shards.
         await HomeScreen.logout();
     });
 
-    it('should be able to delete a bookmark via channel info', async () => {
+    it('MM-T5610_2 - should be able to delete a bookmark via channel info', async () => {
         // # Navigate to the channel
         await openChannel(channelDelete);
 

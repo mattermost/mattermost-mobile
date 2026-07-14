@@ -108,6 +108,8 @@ export const savePreference = async (serverUrl: string, preferences: PreferenceT
             prepareRecordsOnly,
         });
 
+        logDebug('[savePreference] wrote preferences', preferences.map((p) => `${p.category}/${p.name}=${p.value}`).join(', '));
+
         return {preferences: preferenceModels};
     } catch (error) {
         logDebug('error on savePreference', getFullErrorMessage(error));

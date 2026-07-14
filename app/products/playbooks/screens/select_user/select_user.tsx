@@ -54,6 +54,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
             height: 38,
             paddingHorizontal: 12,
             flexDirection: 'row',
+            gap: 8,
         },
         searchbarComponentContainer: {
             flex: 1,

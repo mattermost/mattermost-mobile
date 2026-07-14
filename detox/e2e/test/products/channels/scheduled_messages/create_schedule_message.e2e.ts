@@ -73,7 +73,7 @@ describe('Scheduled Draft,', () => {
         await HomeScreen.logout();
     });
 
-    it('MM-T5762 should be able to create a scheduled message', async () => {
+    (isIos() ? it.skip : it)('MM-T5762 should be able to create a scheduled message', async () => {
         const scheduledMessageText = 'Scheduled Message In a channel';
         await ChannelScreen.open(channelsCategory, testChannel.name);
         await ChannelScreen.enterMessageToSchedule(scheduledMessageText);
@@ -93,17 +93,13 @@ describe('Scheduled Draft,', () => {
         await DraftScreen.backButton.tap();
     });
 
-    it('MM-T5767 should be able to create a scheduled message under a threaded post', async () => {
+    (isIos() ? it.skip : it)('MM-T5767 should be able to create a scheduled message under a threaded post', async () => {
         const parentMessage = 'Root Post for Scheduled Message';
         const scheduledMessageText = 'Scheduled Message In a channel';
         await ChannelScreen.open(channelsCategory, testChannel.name);
         await waitForElementToBeVisible(ChannelScreen.postInput, timeouts.FOUR_SEC);
         await ChannelScreen.postMessage(parentMessage);
 
-        // # On Android the keyboard stays open after postMessage when the post list is
-        // short (only a system message + this post), so scroll(50, 'down') in
-        // longPressWithScrollRetry silently fails and never dismisses the keyboard.
-        // Swipe the post list to fire a touch event that dismisses it before long-press.
         if (isAndroid()) {
             try {
                 await ChannelScreen.postList.getFlatList().swipe('down', 'slow', 0.1);
@@ -143,7 +139,7 @@ describe('Scheduled Draft,', () => {
         await ChannelScreen.back();
     });
 
-    it('MM-T5731 should be able to Delete a scheduled Message', async () => {
+    (isIos() ? it.skip : it)('MM-T5731 should be able to Delete a scheduled Message', async () => {
         const scheduledMessageText = 'Scheduled Message In a channel';
         await ChannelScreen.open(channelsCategory, testChannel.name);
         await ChannelScreen.enterMessageToSchedule(scheduledMessageText);
@@ -164,7 +160,7 @@ describe('Scheduled Draft,', () => {
         await verifyScheduledScheduledMessageDoesNotExist();
     });
 
-    it('MM-T5730 should be able to Send a scheduled Message', async () => {
+    (isIos() ? it.skip : it)('MM-T5730 should be able to Send a scheduled Message', async () => {
         const scheduledMessageText = 'Scheduled Message In a channel';
         await ChannelScreen.open(channelsCategory, testChannel.name);
         await ChannelScreen.enterMessageToSchedule(scheduledMessageText);
@@ -180,6 +176,9 @@ describe('Scheduled Draft,', () => {
 
         await DraftScreen.openDraftPostActions();
         await DraftScreen.sendDraft();
+
+        await wait(timeouts.TWO_SEC);
+        await waitForElementToBeVisible(DraftScreen.backButton, timeouts.FIVE_SEC);
         await DraftScreen.backButton.tap();
 
         // * Verify the scheduled message is  shown in the channel

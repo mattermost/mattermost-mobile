@@ -5,10 +5,7 @@ import Channel from './channel';
 import Team from './team';
 import User from './user';
 
-// Detect transient Postgres / server-load 500s that crop up under parallel-shard CI load:
-//   - "there is already a query being processed on this connection" (pgx conn-pool race)
-//   - "context deadline exceeded" (server timeout, e.g. LogJoinEvent)
-// These are NOT test logic bugs — retrying the same call with a small backoff succeeds.
+// Retry transient CI 500s (pgx conn-pool race, context deadline exceeded) — not test bugs.
 const isTransientServerError = (error: any): boolean => {
     if (!error) {
         return false;
@@ -37,7 +34,7 @@ const retryTransient = async <T extends {error?: any}>(
     const delayMs = 1000 * (2 ** (attempt - 1));
 
     // eslint-disable-next-line no-console
-    console.warn(`[apiInit] ${label} transient 500 attempt ${attempt}/${maxAttempts}, retry in ${delayMs}ms`);
+    console.warn(`[apiInit] ${label} transient 500 attempt ${attempt}/${maxAttempts}, retry in ${delayMs}ms: ${result.error.detailed_error}`);
     await new Promise((resolve) => setTimeout(resolve, delayMs));
     return retryTransient(fn, label, maxAttempts, attempt + 1);
 };

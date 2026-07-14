@@ -14,9 +14,11 @@ import {toMilliseconds} from '@utils/datetime';
 
 import {
     areConsecutivePosts,
+    hasAiGeneratedMetadata,
     isFromWebhook,
     isEdited,
     isPostEphemeral,
+    restoreEphemeralIdentityFieldsForEdit,
     isPostFailed,
     isPostPendingOrFailed,
     isSystemMessage,
@@ -29,6 +31,7 @@ import {
     hasSpecialMentions,
     persistentNotificationsConfirmation,
     scheduledPostFromPost,
+    hasInteractivePostContent,
 } from './index';
 
 jest.mock('@actions/local/post', () => ({
@@ -46,6 +49,34 @@ jest.mock('@database/manager', () => ({
 }));
 
 describe('post utils', () => {
+    describe('hasAiGeneratedMetadata', () => {
+        it('should return true when both ai_generated_by and ai_generated_by_username are non-empty strings', () => {
+            const post = TestHelper.fakePostModel({
+                props: {
+                    ai_generated_by: 'bot-user-id',
+                    ai_generated_by_username: 'ai-bot',
+                },
+            });
+
+            expect(hasAiGeneratedMetadata(post)).toBe(true);
+        });
+
+        it('should return false when metadata is missing or invalid', () => {
+            expect(hasAiGeneratedMetadata(TestHelper.fakePostModel({
+                props: {ai_generated_by_username: 'ai-bot'},
+            }))).toBe(false);
+            expect(hasAiGeneratedMetadata(TestHelper.fakePostModel({
+                props: {ai_generated_by: 'bot-user-id'},
+            }))).toBe(false);
+            expect(hasAiGeneratedMetadata(TestHelper.fakePostModel({
+                props: {ai_generated_by: '', ai_generated_by_username: ''},
+            }))).toBe(false);
+            expect(hasAiGeneratedMetadata(TestHelper.fakePostModel({
+                props: {ai_generated_by: 123, ai_generated_by_username: true},
+            }))).toBe(false);
+        });
+    });
+
     describe('areConsecutivePosts', () => {
         it('should return true for consecutive posts from the same user within the collapse timeout', () => {
             const post = TestHelper.fakePostModel({
@@ -73,6 +104,25 @@ describe('post utils', () => {
                 userId: 'user2',
                 createAt: 500,
                 props: {},
+            });
+
+            const result = areConsecutivePosts(post, previousPost, 'en');
+            expect(result).toBe(false);
+        });
+
+        it('should return false for normal post after AI post from same user', () => {
+            const post = TestHelper.fakePostModel({
+                userId: 'user1',
+                createAt: 1000,
+                props: {},
+            });
+            const previousPost = TestHelper.fakePostModel({
+                userId: 'user1',
+                createAt: 500,
+                props: {
+                    ai_generated_by: 'user1',
+                    ai_generated_by_username: 'ai-bot',
+                },
             });
 
             const result = areConsecutivePosts(post, previousPost, 'en');
@@ -141,6 +191,50 @@ describe('post utils', () => {
 
             const result = isPostEphemeral(post);
             expect(result).toBe(false);
+        });
+    });
+
+    describe('restoreEphemeralIdentityFieldsForEdit', () => {
+        it('should preserve create_at and root_id when an edited ephemeral arrives with zero create_at', () => {
+            const incoming = TestHelper.fakePost({
+                id: 'eph1',
+                type: Post.POST_TYPES.EPHEMERAL,
+                message: 'after',
+                create_at: 0,
+                update_at: 9000,
+                root_id: '',
+                user_id: 'user1',
+            });
+
+            const result = restoreEphemeralIdentityFieldsForEdit(incoming, {
+                create_at: 5000,
+                root_id: 'root1',
+                user_id: 'user1',
+            });
+
+            expect(result.create_at).toBe(5000);
+            expect(result.root_id).toBe('root1');
+            expect(result.message).toBe('after');
+            expect(result.update_at).toBe(9000);
+        });
+
+        it('should preserve user_id when an edited ephemeral arrives with empty user_id', () => {
+            const incoming = TestHelper.fakePost({
+                id: 'eph1',
+                type: Post.POST_TYPES.EPHEMERAL,
+                message: 'after',
+                create_at: 5000,
+                update_at: 9000,
+                user_id: '',
+            });
+
+            const result = restoreEphemeralIdentityFieldsForEdit(incoming, {
+                create_at: 5000,
+                user_id: 'creator1',
+            });
+
+            expect(result.user_id).toBe('creator1');
+            expect(result.message).toBe('after');
         });
     });
 
@@ -545,6 +639,100 @@ describe('post utils', () => {
             const time = Date.now() - toMilliseconds({minutes: 4});
             const result = moreThan5minAgo(time);
             expect(result).toBe(false);
+        });
+    });
+
+    describe('hasInteractivePostContent', () => {
+        it('should return false when mmBlocksEnabled is false', () => {
+            const post = TestHelper.fakePostModel({
+                props: {
+                    mm_blocks: [{type: 'text', text: {type: 'plain_text', text: 'Hello'}}],
+                },
+            });
+
+            expect(hasInteractivePostContent(post, false)).toBe(false);
+        });
+
+        it('should return false when mmBlocksEnabled is true but props are missing', () => {
+            const post = TestHelper.fakePostModel({props: undefined});
+
+            expect(hasInteractivePostContent(post, true)).toBe(false);
+        });
+
+        it('should return false when all interactive arrays are empty', () => {
+            const post = TestHelper.fakePostModel({
+                props: {
+                    mm_blocks: [],
+                    blocks: [],
+                    cards: [],
+                    attachments: [],
+                },
+            });
+
+            expect(hasInteractivePostContent(post, true)).toBe(false);
+        });
+
+        it('should return false when interactive props are not arrays', () => {
+            const post = TestHelper.fakePostModel({
+                props: {
+                    mm_blocks: 'invalid',
+                    blocks: {},
+                    cards: null,
+                    attachments: 'invalid',
+                },
+            });
+
+            expect(hasInteractivePostContent(post, true)).toBe(false);
+        });
+
+        it('should return true when mm_blocks are present', () => {
+            const post = TestHelper.fakePostModel({
+                props: {
+                    mm_blocks: [{type: 'text', text: {type: 'plain_text', text: 'Hello'}}],
+                },
+            });
+
+            expect(hasInteractivePostContent(post, true)).toBe(true);
+        });
+
+        it('should return true when blocks are present', () => {
+            const post = TestHelper.fakePostModel({
+                props: {
+                    blocks: [{type: 'section', text: {type: 'mrkdwn', text: 'Block content'}}],
+                },
+            });
+
+            expect(hasInteractivePostContent(post, true)).toBe(true);
+        });
+
+        it('should return true when cards are present', () => {
+            const post = TestHelper.fakePostModel({
+                props: {
+                    cards: [{header: {title: 'Card title'}, sections: []}],
+                },
+            });
+
+            expect(hasInteractivePostContent(post, true)).toBe(true);
+        });
+
+        it('should return true when attachments are present', () => {
+            const post = TestHelper.fakePostModel({
+                props: {
+                    attachments: [{text: 'Attachment body'}],
+                },
+            });
+
+            expect(hasInteractivePostContent(post, true)).toBe(true);
+        });
+
+        it('should work with Post objects', () => {
+            const post = TestHelper.fakePost({
+                props: {
+                    attachments: [{text: 'Attachment body'}],
+                },
+            });
+
+            expect(hasInteractivePostContent(post, true)).toBe(true);
         });
     });
 

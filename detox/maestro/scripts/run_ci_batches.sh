@@ -63,12 +63,13 @@ EXPECTED_TIMEZONE_REGION="${EXPECTED_TIMEZONE_REGION:-$(timezone_region_from_ian
 
 EXCLUDE_TAGS_FILE="$REPO_ROOT/detox/maestro/config/exclude_tags.json"
 load_exclude_tags() {
-  # Reads detox/maestro/config/exclude_tags.json and emits a comma-joined list
-  # from the "default" key. Returns empty string if the file or key is missing.
+  # Emit comma-joined exclude tags from default + platform key in exclude_tags.json.
   [[ -f "$EXCLUDE_TAGS_FILE" ]] || { echo ""; return 0; }
-  node -e "
+  PLATFORM="$PLATFORM" node -e "
 const cfg = require('$EXCLUDE_TAGS_FILE');
-process.stdout.write((cfg.default || []).join(','));
+const platform = process.env.PLATFORM || '';
+const tags = [...(cfg.default || []), ...(cfg[platform] || [])];
+process.stdout.write(tags.join(','));
 "
 }
 
@@ -106,6 +107,9 @@ flow_sort_key() {
   esac
 }
 
+EXCLUDE_TAGS_STR=""
+EXCLUDE_TAGS_STR=$(load_exclude_tags)
+
 should_skip_flow() {
   local flow=$1
   local base=${flow##*/}
@@ -121,6 +125,15 @@ should_skip_flow() {
   # and peer connection times out before CurrentCallBar appears."
   # libraries/@mattermost/calls-native/ios/Source/Managers/CallKitProvider.swift
   [[ "$PLATFORM" == "ios" && "$flow" == *"/calls/"* ]] && return 0
+  # Skip flows whose tags appear in the platform-specific exclude list.
+  if [[ -n "$EXCLUDE_TAGS_STR" && -f "$flow" ]]; then
+    local flow_tags
+    flow_tags=$(awk '/^tags:/{found=1; next} found{if (!/^  - /) exit; print $2}' "$flow" 2>/dev/null || true)
+    local tag
+    for tag in $flow_tags; do
+      [[ ",$EXCLUDE_TAGS_STR," == *",$tag,"* ]] && return 0
+    done
+  fi
   return 1
 }
 
@@ -306,6 +319,36 @@ ensure_android_timezone() {
   sleep 2
 }
 
+# Log CPU/RAM snapshot before each batch (temporary diagnostic for runner sizing).
+log_resource_snapshot() {
+  local label=$1
+  if [[ "$PLATFORM" == "ios" ]]; then
+    local load mem swap
+    load=$(uptime | sed -E 's/.*load averages?: //')
+    mem=$(vm_stat 2>/dev/null | awk '
+      /page size of/ {ps=$8}
+      /Pages free/   {free=$3+0}
+      /Pages active/ {active=$3+0}
+      /Pages inactive/ {inactive=$3+0}
+      /Pages wired down/ {wired=$4+0}
+      /Pageouts/     {pageouts=$2+0}
+      /Swapins/      {swapins=$2+0}
+      /Swapouts/     {swapouts=$2+0}
+      END {
+        gb=1024*1024*1024
+        printf "free=%.1fGB active=%.1fGB wired=%.1fGB pageouts=%d swapins=%d swapouts=%d",
+          free*ps/gb, active*ps/gb, wired*ps/gb, pageouts, swapins, swapouts
+      }')
+    swap=$(sysctl -n vm.swapusage 2>/dev/null | tr -s ' ')
+    echo "[RES ${label}] load=${load} ${mem} ${swap}"
+  elif [[ "$PLATFORM" == "android" ]]; then
+    local load mem
+    load=$(uptime | sed -E 's/.*load average: //')
+    mem=$(free -h 2>/dev/null | awk '/^Mem:/ {printf "total=%s used=%s free=%s avail=%s", $2, $3, $4, $7} /^Swap:/ {printf " swap_used=%s", $3}')
+    echo "[RES ${label}] load=${load} ${mem}"
+  fi
+}
+
 for batch_paths in "${BATCHES[@]}"; do
   batch_idx=$((batch_idx + 1))
   read -r -a path_arr <<< "$batch_paths"
@@ -314,6 +357,7 @@ for batch_paths in "${BATCHES[@]}"; do
 
   echo ""
   echo "==> Maestro batch $batch_idx/${#BATCHES[@]}: ${path_arr[*]}"
+  log_resource_snapshot "batch-${batch_idx}-pre"
   [[ "$batch_paths" == *"/timezone/"* ]] && ensure_android_timezone
   ensure_ios_simulator_healthy
   if [[ "$batch_paths" == *"/calls/"* ]]; then
@@ -325,8 +369,12 @@ for batch_paths in "${BATCHES[@]}"; do
   ensure_android_app_launchable
 
   set +e
+  batch_start_epoch=$(date +%s)
   run_maestro_batch "$batch_xml" "${path_arr[@]}"
   rc=$?
+  batch_end_epoch=$(date +%s)
+  echo "[BATCH-TIME] batch ${batch_idx} wall=$((batch_end_epoch - batch_start_epoch))s exit=${rc}"
+  log_resource_snapshot "batch-${batch_idx}-post"
 
   if [[ $rc -ne 0 ]]; then
     echo "==> Batch $batch_idx failed (exit $rc) — continuing with remaining batches"

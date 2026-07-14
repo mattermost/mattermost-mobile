@@ -195,7 +195,7 @@ describe('Channels - Channel List', () => {
         await FindChannelsScreen.close();
     });
 
-    it('MM-T4728_9 - should be able to switch between teams', async () => {
+    it('MM-T3249 - should be able to switch between teams', async () => {
         // # As admin, create a second team and add user to the second team; as user, terminate app and relaunch app
         const {team: testTeamTwo} = await Team.apiCreateTeam(siteOneUrl, {prefix: 'a'});
         await Team.apiAddUserToTeam(siteOneUrl, testUser.id, testTeamTwo.id);

@@ -28,6 +28,10 @@ import {
 import {isAndroid, isIos, timeouts, wait} from '@support/utils';
 import {expect, waitFor} from 'detox';
 
+// Skip MM-T4675_2 when SITE_2_URL is unset or equals SITE_1_URL (e.g. CMT single-server runs).
+const hasSecondServer = Boolean(process.env.SITE_2_URL) && process.env.SITE_2_URL !== process.env.SITE_1_URL;
+const itWithSecondServer = hasSecondServer ? it : it.skip;
+
 describe('Smoke Test - Server Login', () => {
     const serverOneDisplayName = 'Server 1';
     const serverTwoDisplayName = 'Server 2';
@@ -57,7 +61,7 @@ describe('Smoke Test - Server Login', () => {
         await expect(ChannelListScreen.headerServerDisplayName).toHaveText(serverOneDisplayName);
     });
 
-    it('MM-T4675_2 - should be able to add a new server and log-in-to/log-out-from the new server', async () => {
+    itWithSecondServer('MM-T4675_2 - should be able to add a new server and log-in-to/log-out-from the new server', async () => {
         // # Open server list screen
         await ServerListScreen.open();
         await ServerListScreen.closeTutorial();

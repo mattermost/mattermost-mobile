@@ -62,7 +62,7 @@ Maestro uses the **same simulators and emulators as Detox**. Targets are defined
 
 ### 1. Install Maestro CLI
 
-Version is pinned in [`maestro-version.json`](./maestro-version.json) (currently `2.3.0` at commit `f3dd692`).
+Version is pinned in [`maestro-version.json`](./maestro-version.json) (currently `2.6.1` at commit `00f516729f57d48f36ded55244cfbe358ada6b00`).
 
 ```bash
 export MAESTRO_VERSION=$(jq -r .version detox/maestro/maestro-version.json)
@@ -412,7 +412,7 @@ Wall time drops roughly proportionally; runner cost increases. Requires separate
 across matrix legs (already supported via `mergeMaestroJunitReports`).
 
 **Option B — smoke gate:** run `account/login.yml` + one channel flow on every PR; run the
-full suite only when labeled `run-maestro-full` or on nightly.
+full suite only when labeled or on nightly.
 
 **Option C — combine stable batches:** merge attach_logs batches (already split on Android
 for isolation). Risk: one wedged flow blocks the whole combined batch.

@@ -4,7 +4,6 @@
 import React, {type ReactNode, useCallback, useEffect, useMemo, useRef, useState} from 'react';
 import {useIntl} from 'react-intl';
 import {Platform, type StyleProp, View, type ViewStyle, TouchableHighlight, type LayoutChangeEvent} from 'react-native';
-import {KeyboardController} from 'react-native-keyboard-controller';
 
 import {removePost} from '@actions/local/post';
 import {showPermalink} from '@actions/remote/permalink';
@@ -28,6 +27,7 @@ import PerformanceMetricsManager from '@managers/performance_metrics_manager';
 import {navigateBack, navigateToScreen} from '@screens/navigation';
 import {isBoRPost, isUnrevealedBoRPost} from '@utils/bor';
 import {hasJumboEmojiOnly} from '@utils/emoji/helpers';
+import {dismissKeyboard} from '@utils/keyboard';
 import {fromAutoResponder, isFromWebhook, isPostFailed, isPostPendingOrFailed, isSystemMessage} from '@utils/post';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 
@@ -49,6 +49,7 @@ import type {AvailableScreens} from '@typings/screens/navigation';
 
 type PostProps = {
     appsEnabled: boolean;
+    mmBlocksEnabled: boolean;
     author?: UserModel;
     canDelete: boolean;
     commentCount: number;
@@ -59,6 +60,7 @@ type PostProps = {
     highlight?: boolean;
     highlightPinnedOrSaved?: boolean;
     highlightReplyBar: boolean;
+    isAiGenerated?: boolean;
     isConsecutivePost?: boolean;
     isCRTEnabled?: boolean;
     isEphemeral: boolean;
@@ -124,6 +126,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
 
 const Post = ({
     appsEnabled,
+    mmBlocksEnabled,
     author,
     canDelete,
     commentCount,
@@ -134,6 +137,7 @@ const Post = ({
     highlight,
     highlightPinnedOrSaved = true,
     highlightReplyBar,
+    isAiGenerated = false,
     isCRTEnabled,
     isConsecutivePost,
     isEphemeral,
@@ -177,6 +181,7 @@ const Post = ({
     const isAgentPostType = isAgentPost(post);
     const hasBeenDeleted = (post.deleteAt !== 0);
     const isWebHook = isFromWebhook(post);
+    const showEphemeralAuthor = isEphemeral && Boolean(post.userId);
     const [layoutWidth, setLayoutWidth] = useState(0);
     const shimmerAnimationProps = useShimmerAnimation(post, isChannelAutotranslated, intl.locale, layoutWidth, theme);
     const hasSameRoot = useMemo(() => {
@@ -230,7 +235,7 @@ const Post = ({
 
         pressDetected.current = true;
 
-        KeyboardController.dismiss();
+        dismissKeyboard();
 
         if (post) {
             setTimeout(handlePostPress, 300);
@@ -318,7 +323,7 @@ const Post = ({
     } else {
         postAvatar = (
             <View style={[styles.profilePictureContainer, pendingPostStyle]}>
-                {(isAutoResponder || isSystemPost) ? (
+                {(isAutoResponder || (isSystemPost && !showEphemeralAuthor)) ? (
                     <SystemAvatar theme={theme}/>
                 ) : (
                     <Avatar
@@ -330,7 +335,7 @@ const Post = ({
             </View>
         );
 
-        if (isSystemPost && !isAutoResponder) {
+        if (isSystemPost && !isAutoResponder && !showEphemeralAuthor) {
             header = (
                 <SystemHeader
                     createAt={post.createAt}
@@ -344,6 +349,7 @@ const Post = ({
                     author={author}
                     commentCount={commentCount}
                     currentUser={currentUser}
+                    isAiGenerated={isAiGenerated}
                     isAutoResponse={isAutoResponder}
                     isCRTEnabled={isCRTEnabled}
                     isEphemeral={isEphemeral}
@@ -398,6 +404,7 @@ const Post = ({
         body = (
             <Body
                 appsEnabled={appsEnabled}
+                mmBlocksEnabled={mmBlocksEnabled}
                 filesInfo={filesInfo}
                 hasReactions={hasReactions}
                 highlight={Boolean(highlightedStyle)}
