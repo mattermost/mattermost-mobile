@@ -205,7 +205,7 @@ jobs:
         run: |
           set -eu
           cutoff=$(date -u -d "${RETENTION_DAYS} days ago" +%Y-%m-%d)
-          # e2e-builds/ is shared by PR, nightly-seed, and CMT builds.
+          # e2e-builds/ is shared by PR builds and this nightly seed.
           echo "Pruning s3://${BUCKET}/e2e-builds/ objects last modified before ${cutoff}"
           deleted=0
           # `aws s3 ls --recursive` prints: <YYYY-MM-DD> <HH:MM:SS> <size> <key>

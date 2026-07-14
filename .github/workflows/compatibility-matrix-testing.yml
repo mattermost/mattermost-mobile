@@ -16,39 +16,12 @@ concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
 
-env:
-  DETOX_AWS_S3_BUCKET: "mattermost-detox-report"
-
+# CMT runs against a freshly-cut build-release-NNN branch, so the app content
+# never matches main's fingerprint — the S3 build cache would always miss.
+# CMT's optimization is structural instead: each app (iOS, Android Detox,
+# Android Maestro) is built ONCE below and reused across every server-version
+# leg of the matrix via github.run_id artifacts.
 jobs:
-  # CMT shares the e2e-builds/ S3 cache — same runners as PR path, so binaries are interchangeable.
-  # Release SHAs matching main's fingerprint get immediate cache hits from the nightly seed.
-  compute-build-fingerprints:
-    name: Compute build fingerprints
-    runs-on: ubuntu-24.04
-    outputs:
-      ios: ${{ steps.ios.outputs.fingerprint }}
-      android-detox: ${{ steps.android-detox.outputs.fingerprint }}
-      android-maestro: ${{ steps.android-maestro.outputs.fingerprint }}
-    steps:
-      - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
-        with:
-          ref: ${{ inputs.MOBILE_VERSION }}
-      - name: Compute iOS fingerprint
-        id: ios
-        uses: ./.github/actions/compute-e2e-build-fingerprint
-        with:
-          platform: ios
-      - name: Compute Android Detox fingerprint
-        id: android-detox
-        uses: ./.github/actions/compute-e2e-build-fingerprint
-        with:
-          platform: android-detox
-      - name: Compute Android Maestro fingerprint
-        id: android-maestro
-        uses: ./.github/actions/compute-e2e-build-fingerprint
-        with:
-          platform: android-maestro
-
   calculate-commit-hash:
     runs-on: ubuntu-24.04
     outputs:
@@ -116,39 +89,19 @@ jobs:
   #   ]
   # }
   build-ios-simulator:
-    runs-on: macos-26
+    runs-on: macos-14
     needs:
       - update-initial-status
-      - compute-build-fingerprints
     steps:
       - name: Checkout Repository
         uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
         with:
           ref: ${{ inputs.MOBILE_VERSION }}
 
-      - name: Check for cached iOS build
-        id: cache-check
-        uses: ./.github/actions/s3-build-cache
-        env:
-          DETOX_AWS_ACCESS_KEY_ID: ${{ secrets.MM_MOBILE_DETOX_AWS_ACCESS_KEY_ID }}
-          DETOX_AWS_SECRET_ACCESS_KEY: ${{ secrets.MM_MOBILE_DETOX_AWS_SECRET_ACCESS_KEY }}
-        with:
-          fingerprint: ${{ needs.compute-build-fingerprints.outputs.ios }}
-          platform: ios
-          bucket: ${{ env.DETOX_AWS_S3_BUCKET }}
-          cache-path: 'Mattermost-simulator-*.app.zip'
-          mode: restore
-
-      - name: Skip build if cache hit
-        if: steps.cache-check.outputs.cache-hit == 'true'
-        run: echo "SKIP_BUILD=true" >> $GITHUB_ENV
-
       - name: Prepare iOS Build
-        if: env.SKIP_BUILD != 'true'
         uses: ./.github/actions/prepare-ios-build
 
       - name: Build iOS Simulator
-        if: env.SKIP_BUILD != 'true'
         env:
           TAG: "${{ inputs.MOBILE_VERSION }}"
           GITHUB_TOKEN: "${{ secrets.MM_MOBILE_GITHUB_TOKEN }}"
@@ -156,30 +109,15 @@ jobs:
         working-directory: ./fastlane
 
       - name: Upload iOS Simulator Build
-        if: always() && hashFiles('Mattermost-simulator-*.app.zip') != ''
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
         with:
           name: ios-build-simulator-${{ github.run_id }}
-          path: Mattermost-simulator-*.app.zip
-
-      - name: Save iOS build to S3
-        if: env.SKIP_BUILD != 'true' && hashFiles('Mattermost-simulator-*.app.zip') != ''
-        uses: ./.github/actions/s3-build-cache
-        env:
-          DETOX_AWS_ACCESS_KEY_ID: ${{ secrets.MM_MOBILE_DETOX_AWS_ACCESS_KEY_ID }}
-          DETOX_AWS_SECRET_ACCESS_KEY: ${{ secrets.MM_MOBILE_DETOX_AWS_SECRET_ACCESS_KEY }}
-        with:
-          fingerprint: ${{ needs.compute-build-fingerprints.outputs.ios }}
-          platform: ios
-          bucket: ${{ env.DETOX_AWS_S3_BUCKET }}
-          cache-path: 'Mattermost-simulator-*.app.zip'
-          mode: save
+          path: Mattermost-simulator-x86_64.app.zip
 
   build-android-apk:
     runs-on: ubuntu-latest-8-cores
     needs:
       - update-initial-status
-      - compute-build-fingerprints
     env:
       ORG_GRADLE_PROJECT_jvmargs: -Xmx8g
     steps:
@@ -191,25 +129,7 @@ jobs:
         with:
           ref: ${{ inputs.MOBILE_VERSION }}
 
-      - name: Check for cached Android Detox build
-        id: cache-check
-        uses: ./.github/actions/s3-build-cache
-        env:
-          DETOX_AWS_ACCESS_KEY_ID: ${{ secrets.MM_MOBILE_DETOX_AWS_ACCESS_KEY_ID }}
-          DETOX_AWS_SECRET_ACCESS_KEY: ${{ secrets.MM_MOBILE_DETOX_AWS_SECRET_ACCESS_KEY }}
-        with:
-          fingerprint: ${{ needs.compute-build-fingerprints.outputs.android-detox }}
-          platform: android-detox
-          bucket: ${{ env.DETOX_AWS_S3_BUCKET }}
-          cache-path: 'android/app/build'
-          mode: restore
-
-      - name: Skip build if cache hit
-        if: steps.cache-check.outputs.cache-hit == 'true'
-        run: echo "SKIP_BUILD=true" >> $GITHUB_ENV
-
       - name: Prepare Android Build
-        if: env.SKIP_BUILD != 'true'
         uses: ./.github/actions/prepare-android-build
         env:
           STORE_FILE: ${{ secrets.MM_MOBILE_STORE_FILE }}
@@ -218,37 +138,21 @@ jobs:
           MATTERMOST_BUILD_GH_TOKEN: ${{ secrets.MATTERMOST_BUILD_GH_TOKEN }}
 
       - name: Detox build
-        if: env.SKIP_BUILD != 'true'
         run: |
           cd detox
           npm ci --prefer-offline --no-audit --no-fund
           npm run e2e:android-build
 
       - name: Upload Android Build
-        if: always() && hashFiles('android/app/build/outputs/apk/**/*.apk') != ''
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
         with:
           name: android-build-files-${{ github.run_id }}
           path: "android/app/build/outputs/apk/**/*.apk"
 
-      - name: Save Android Detox build to S3
-        if: env.SKIP_BUILD != 'true' && hashFiles('android/app/build/**/*') != ''
-        uses: ./.github/actions/s3-build-cache
-        env:
-          DETOX_AWS_ACCESS_KEY_ID: ${{ secrets.MM_MOBILE_DETOX_AWS_ACCESS_KEY_ID }}
-          DETOX_AWS_SECRET_ACCESS_KEY: ${{ secrets.MM_MOBILE_DETOX_AWS_SECRET_ACCESS_KEY }}
-        with:
-          fingerprint: ${{ needs.compute-build-fingerprints.outputs.android-detox }}
-          platform: android-detox
-          bucket: ${{ env.DETOX_AWS_S3_BUCKET }}
-          cache-path: 'android/app/build'
-          mode: save
-
   build-android-apk-maestro:
     runs-on: ubuntu-latest-8-cores
     needs:
       - update-initial-status
-      - compute-build-fingerprints
     env:
       ORG_GRADLE_PROJECT_jvmargs: -Xmx8g
     steps:
@@ -260,25 +164,7 @@ jobs:
         with:
           ref: ${{ inputs.MOBILE_VERSION }}
 
-      - name: Check for cached Android Maestro build
-        id: cache-check
-        uses: ./.github/actions/s3-build-cache
-        env:
-          DETOX_AWS_ACCESS_KEY_ID: ${{ secrets.MM_MOBILE_DETOX_AWS_ACCESS_KEY_ID }}
-          DETOX_AWS_SECRET_ACCESS_KEY: ${{ secrets.MM_MOBILE_DETOX_AWS_SECRET_ACCESS_KEY }}
-        with:
-          fingerprint: ${{ needs.compute-build-fingerprints.outputs.android-maestro }}
-          platform: android-maestro
-          bucket: ${{ env.DETOX_AWS_S3_BUCKET }}
-          cache-path: 'android/app/build/outputs/apk/release/'
-          mode: restore
-
-      - name: Skip build if cache hit
-        if: steps.cache-check.outputs.cache-hit == 'true'
-        run: echo "SKIP_BUILD=true" >> $GITHUB_ENV
-
       - name: Prepare Android Build
-        if: env.SKIP_BUILD != 'true'
         uses: ./.github/actions/prepare-android-build
         env:
           STORE_FILE: ${{ secrets.MM_MOBILE_STORE_FILE }}
@@ -287,28 +173,13 @@ jobs:
           MATTERMOST_BUILD_GH_TOKEN: ${{ secrets.MATTERMOST_BUILD_GH_TOKEN }}
 
       - name: Build Maestro Android APK
-        if: env.SKIP_BUILD != 'true'
         uses: ./.github/actions/build-android-maestro-apk
 
       - name: Upload Maestro Android Build
-        if: always() && hashFiles('android/app/build/outputs/apk/release/*.apk') != ''
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
         with:
           name: android-maestro-build-files-${{ github.run_id }}
           path: android/app/build/outputs/apk/release/
-
-      - name: Save Android Maestro build to S3
-        if: env.SKIP_BUILD != 'true' && hashFiles('android/app/build/outputs/apk/release/*.apk') != ''
-        uses: ./.github/actions/s3-build-cache
-        env:
-          DETOX_AWS_ACCESS_KEY_ID: ${{ secrets.MM_MOBILE_DETOX_AWS_ACCESS_KEY_ID }}
-          DETOX_AWS_SECRET_ACCESS_KEY: ${{ secrets.MM_MOBILE_DETOX_AWS_SECRET_ACCESS_KEY }}
-        with:
-          fingerprint: ${{ needs.compute-build-fingerprints.outputs.android-maestro }}
-          platform: android-maestro
-          bucket: ${{ env.DETOX_AWS_S3_BUCKET }}
-          cache-path: 'android/app/build/outputs/apk/release/'
-          mode: save
 
   # latest entry runs full suite, older entries run smoke only. Job-level if: can't conditionally skip matrix legs, so inputs vary instead.
   detox-e2e:
