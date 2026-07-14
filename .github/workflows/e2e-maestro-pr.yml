@@ -49,7 +49,7 @@ env:
 jobs:
   update-initial-status-maestro-ios:
     if: inputs.PLATFORM == 'ios' || inputs.PLATFORM == 'both'
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-24.04
     permissions:
       contents: read
       statuses: write
@@ -71,7 +71,7 @@ jobs:
 
   update-initial-status-maestro-android:
     if: inputs.PLATFORM == 'android' || inputs.PLATFORM == 'both'
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-24.04
     permissions:
       contents: read
       statuses: write
@@ -128,7 +128,7 @@ jobs:
     secrets: inherit
 
   update-final-status-maestro-ios:
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-24.04
     permissions:
       contents: read
       statuses: write
@@ -168,7 +168,7 @@ jobs:
             });
 
   update-final-status-maestro-android:
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-24.04
     permissions:
       contents: read
       statuses: write
