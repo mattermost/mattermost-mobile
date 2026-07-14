@@ -96,11 +96,17 @@ const saveReport = async () => {
     };
     writeJsonToFile(environmentDetails, 'environment.json', ARTIFACTS_DIR);
 
-    // Merge all XML reports into one single XML report
+    // Merge all XML reports into one single XML report.
+    // download-artifact v8 extracts a single matched artifact directly into
+    // ARTIFACTS_DIR (flat layout). Multiple shards land in ARTIFACTS_DIR/{platform}-results-*.
     const platform = process.env.IOS === 'true' ? 'ios' : 'android';
     const combinedFilePath = `${ARTIFACTS_DIR}/${platform}-combined.xml`;
+    const junitPatterns = [
+        `${ARTIFACTS_DIR}/${platform}-results*/${platform}-junit*.xml`,
+        `${ARTIFACTS_DIR}/${platform}-junit*.xml`,
+    ];
 
-    await mergeFiles(path.join(__dirname, combinedFilePath), [`${ARTIFACTS_DIR}/${platform}-results*/${platform}-junit*.xml`]);
+    await mergeFiles(path.join(__dirname, combinedFilePath), junitPatterns);
     console.log(`Merged, check ${combinedFilePath}`);
 
     // Read XML from a file
@@ -120,8 +126,11 @@ const saveReport = async () => {
         fs.mkdirSync(jestStareOutputDir, {recursive: true});
     }
 
-    // "ios-results-*" or "android-results-*" is the path in CI where the parallel detox jobs save the artifacts
-    await mergeJestStareJsonFiles(jestStareCombinedFilePath, [`${ARTIFACTS_DIR}/${platform}-results*/jest-stare/${platform}-data*.json`], platform);
+    const jestStarePatterns = [
+        `${ARTIFACTS_DIR}/${platform}-results*/jest-stare/${platform}-data*.json`,
+        `${ARTIFACTS_DIR}/jest-stare/${platform}-data*.json`,
+    ];
+    await mergeJestStareJsonFiles(jestStareCombinedFilePath, jestStarePatterns);
     await generateJestStareHtmlReport(jestStareOutputDir, `${platform}-report.html`, jestStareCombinedFilePath, platform);
 
     if (process.env.CI) {

@@ -835,7 +835,7 @@ export async function joinIfNeededAndSwitchToChannel(
                 }
             }
 
-            logInfo('joining channel', fetchRequest.channel.display_name, fetchRequest.channel.id);
+            logInfo('joining channel', fetchRequest.channel.id, 'type', fetchRequest.channel.type);
             const joinRequest = await joinChannel(serverUrl, teamId, channelId, channelName, false);
             if (!joinRequest.channel) {
                 onError(joinedTeam, teamId);
@@ -1055,7 +1055,7 @@ export async function createGroupChannel(serverUrl: string, userIds: string[]) {
                 }
 
                 models.push(...userModels);
-                operator.batchRecords(models, 'createGroupChannel');
+                await operator.batchRecords(models, 'createGroupChannel');
             }
         }
         EphemeralStore.creatingDMorGMTeammates = [];

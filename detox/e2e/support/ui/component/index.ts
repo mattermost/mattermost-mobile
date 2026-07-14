@@ -2,9 +2,11 @@
 // See LICENSE.txt for license information.
 
 import Alert from './alert';
+import AttachmentOptions from './attachment_options';
 import Autocomplete from './autocomplete';
 import CameraQuickAction from './camera_quick_action';
 import FileQuickAction from './file_quick_action';
+import GlobalClassificationBanner from './global_classification_banner';
 import ImageQuickAction from './image_quick_action';
 import InputQuickAction from './input_quick_action';
 import NavigationHeader from './navigation_header';
@@ -20,9 +22,11 @@ import TeamSidebar from './team_sidebar';
 
 export {
     Alert,
+    AttachmentOptions,
     Autocomplete,
     CameraQuickAction,
     FileQuickAction,
+    GlobalClassificationBanner,
     ImageQuickAction,
     InputQuickAction,
     NavigationHeader,

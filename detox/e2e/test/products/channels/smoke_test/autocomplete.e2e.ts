@@ -23,7 +23,8 @@ import {
     LoginScreen,
     ServerScreen,
 } from '@support/ui/screen';
-import {expect} from 'detox';
+import {timeouts} from '@support/utils';
+import {expect, waitFor} from 'detox';
 
 describe('Smoke Test - Autocomplete', () => {
     const serverOneDisplayName = 'Server 1';
@@ -95,7 +96,7 @@ describe('Smoke Test - Autocomplete', () => {
         await expect(channelMentionItem).toExist();
 
         // # Select and post channel mention suggestion
-        await channelMentionItem.tap();
+        await channelMentionItem.tap({x: 1, y: 1});
         await ChannelScreen.sendButton.tap();
 
         // * Verify channel mention suggestion is posted
@@ -116,11 +117,11 @@ describe('Smoke Test - Autocomplete', () => {
 
         // * Verify emoji suggestion autocomplete contains associated emoji suggestion
         const {emojiSuggestionItem} = Autocomplete.getEmojiSuggestionItem(emojiName);
-        await expect(emojiSuggestionItem).toExist();
+        await waitFor(emojiSuggestionItem).toExist().withTimeout(timeouts.TEN_SEC);
 
         // # Select and post emoji suggestion
-        await emojiSuggestionItem.tap();
-        await ChannelScreen.sendButton.tap();
+        await emojiSuggestionItem.tap({x: 1, y: 1});
+        await ChannelScreen.tapSendButton();
 
         // * Verify emoji suggestion is posted
         const {post} = await Post.apiGetLastPostInChannel(siteOneUrl, testChannel.id);

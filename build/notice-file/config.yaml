@@ -11,6 +11,7 @@ search:
 additionalDependencies: []
 includeDevDependencies: false
 ignoreDependencies:
+- "@mattermost/calls-native"
 - "@mattermost/hardware-keyboard"
 - "@mattermost/rnshare"
 - "@mattermost/rnutils"

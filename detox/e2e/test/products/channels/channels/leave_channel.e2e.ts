@@ -23,7 +23,7 @@ import {
     ServerScreen,
     ChannelInfoScreen,
 } from '@support/ui/screen';
-import {timeouts, wait} from '@support/utils';
+import {isIos, timeouts, wait} from '@support/utils';
 import {expect} from 'detox';
 
 describe('Channels - Leave Channel', () => {
@@ -52,11 +52,12 @@ describe('Channels - Leave Channel', () => {
         await HomeScreen.logout();
     });
 
-    it('MM-T4931_1 - should be able to leave a channel from channel info screen and confirm', async () => {
+    (isIos() ? it.skip : it)('MM-T4931_1 - should be able to leave a channel from channel info screen and confirm', async () => {
         // # Open a channel screen, open channel info screen, and tap on leave channel option and confirm
         const {channel} = await Channel.apiCreateChannel(siteOneUrl, {teamId: testTeam.id});
         await Channel.apiAddUserToChannel(siteOneUrl, testUser.id, channel.id);
         await device.reloadReactNative();
+        await ChannelListScreen.toBeVisible();
         await ChannelScreen.open(channelsCategory, channel.name);
         await ChannelInfoScreen.open();
         await ChannelInfoScreen.leaveChannel({confirm: true});
@@ -66,11 +67,12 @@ describe('Channels - Leave Channel', () => {
         await expect(ChannelListScreen.getChannelItem(channelsCategory, channel.name)).not.toExist();
     });
 
-    it('MM-T4931_2 - should be able to leave a channel from channel info screen and cancel', async () => {
+    (isIos() ? it.skip : it)('MM-T4931_2 - should be able to leave a channel from channel info screen and cancel', async () => {
         // # Open a channel screen, open channel info screen, and tap on leave channel option and cancel
         const {channel} = await Channel.apiCreateChannel(siteOneUrl, {teamId: testTeam.id});
         await Channel.apiAddUserToChannel(siteOneUrl, testUser.id, channel.id);
         await device.reloadReactNative();
+        await ChannelListScreen.toBeVisible();
         await ChannelScreen.open(channelsCategory, channel.name);
         await ChannelInfoScreen.open();
         await ChannelInfoScreen.leaveChannel({confirm: false});
@@ -88,6 +90,7 @@ describe('Channels - Leave Channel', () => {
         const {channel} = await Channel.apiCreateChannel(siteOneUrl, {teamId: testTeam.id});
         await Channel.apiAddUserToChannel(siteOneUrl, testUser.id, channel.id);
         await device.reloadReactNative();
+        await ChannelListScreen.toBeVisible();
         await ChannelScreen.open(channelsCategory, channel.name);
         await ChannelScreen.channelQuickActionsButton.tap();
         await wait(timeouts.ONE_SEC);

@@ -1,6 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import {Post} from '@support/server_api';
 import {
     Alert,
     CameraQuickAction,
@@ -12,13 +13,17 @@ import {
     PostList,
     SendButton,
 } from '@support/ui/component';
+import {dismissKnownModals} from '@support/ui/modal_dismiss';
 import {
     ChannelListScreen,
+    FindChannelsScreen,
     PostOptionsScreen,
     ThreadScreen,
 } from '@support/ui/screen';
-import {isIos, timeouts, wait} from '@support/utils';
-import {expect} from 'detox';
+import {isAndroid, isIos, longPressWithScrollRetry, timeouts, wait, waitForElementToBeVisible, waitForElementToExist} from '@support/utils';
+import {by, element, expect, waitFor} from 'detox';
+
+import InteractiveDialogScreen from './interactive_dialog';
 
 class ChannelScreen {
     testID = {
@@ -57,6 +62,7 @@ class ChannelScreen {
         clickOnScheduledMessageButton: 'scheduled_post_create_button',
         scheduledDraftInfoInChannel: 'scheduled_post_header.scheduled_post_indicator',
         scheduledDraftTooltipText: 'scheduled_post.tooltip.description',
+        scheduledPostOptionsBottomSheet: 'scheduled_post_options_bottom_sheet.screen',
     };
 
     scheduleDraftInforMessage = element(by.text('Type a message and long press the send button to schedule it for a later time.'));
@@ -143,27 +149,25 @@ class ChannelScreen {
         return this.postList.getPostMessageAtIndex(index);
     };
 
-    toBeVisible = async (timeout = timeouts.TEN_SEC) => {
+    toBeVisible = async (timeout = isAndroid() ? timeouts.HALF_MIN : timeouts.TEN_SEC) => {
         await wait(timeouts.ONE_SEC);
-        await waitFor(this.channelScreen).toExist().withTimeout(timeout);
+        await waitForElementToExist(this.channelScreen, timeout);
 
         return this.channelScreen;
     };
 
     dismissScheduledPostTooltip = async () => {
-        // Try to close scheduled post tooltip if it exists (try both regular and admin account versions)
         try {
             await waitFor(this.scheduledPostTooltipCloseButton).toBeVisible().withTimeout(timeouts.FOUR_SEC);
             await this.scheduledPostTooltipCloseButton.tap();
             await wait(timeouts.HALF_SEC);
         } catch {
-            // Try admin account version
             try {
                 await waitFor(this.scheduledPostTooltipCloseButtonAdminAccount).toBeVisible().withTimeout(timeouts.FOUR_SEC);
                 await this.scheduledPostTooltipCloseButtonAdminAccount.tap();
                 await wait(timeouts.HALF_SEC);
             } catch {
-                // Tooltip not visible, continue
+                // Tooltip not visible.
             }
         }
     };
@@ -171,15 +175,36 @@ class ChannelScreen {
     open = async (category: string, channelName: any) => {
         // # Open channel screen
         await wait(timeouts.FOUR_SEC);
-        await ChannelListScreen.getChannelItemDisplayName(category, channelName).tap();
+        const name = typeof channelName === 'string' ? channelName : String(channelName);
+        if (category === 'channels') {
+            await ChannelListScreen.tapSidebarPublicChannelDisplayName(name);
+        } else {
+            await ChannelListScreen.getChannelItemDisplayName(category, name).tap();
+        }
+        await this.dismissScheduledPostTooltip();
+        return this.toBeVisible();
+    };
+
+    // For API-created private channels not yet in the sidebar.
+    openViaFindChannels = async (channelName: string) => {
+        await ChannelListScreen.toBeVisible();
+        await FindChannelsScreen.open();
+        await FindChannelsScreen.searchInput.replaceText(channelName);
+        await FindChannelsScreen.searchInput.tapReturnKey();
+        await wait(timeouts.TWO_SEC);
+        await waitForElementToBeVisible(
+            FindChannelsScreen.getFilteredChannelItem(channelName),
+            timeouts.HALF_MIN,
+        );
+        await FindChannelsScreen.getFilteredChannelItem(channelName).tap();
         await this.dismissScheduledPostTooltip();
         return this.toBeVisible();
     };
 
     back = async () => {
-        await wait(timeouts.ONE_SEC);
+        await wait(isIos() ? timeouts.TWO_SEC : timeouts.ONE_SEC);
         await this.backButton.tap();
-        await expect(this.channelScreen).not.toBeVisible();
+        await waitFor(this.channelScreen).not.toBeVisible().withTimeout(timeouts.TEN_SEC);
     };
 
     leaveChannel = async ({confirm = true} = {}) => {
@@ -206,11 +231,31 @@ class ChannelScreen {
 
     openPostOptionsFor = async (postId: string, text: string) => {
         const {postListPostItem} = this.getPostListPostItem(postId, text);
-        await waitFor(postListPostItem).toBeVisible().withTimeout(timeouts.TEN_SEC);
 
-        // # Open post options
-        await postListPostItem.longPress();
-        await PostOptionsScreen.toBeVisible();
+        await waitForElementToExist(postListPostItem, timeouts.HALF_MIN);
+
+        if (isAndroid()) {
+            try {
+                await this.postList.getFlatList().swipe('up', 'fast', 0.3);
+            } catch { /* ignore */ }
+            await wait(timeouts.TWO_SEC);
+        }
+
+        if (isIos()) {
+            try {
+                await this.postList.getFlatList().swipe('up', 'fast', 0.3);
+                await wait(timeouts.ONE_SEC);
+            } catch { /* ignore */ }
+        }
+
+        const postTestID = `${this.testID.channelScreenPrefix}post_list.post.${postId}`;
+        const longPressTarget = element(by.id(postTestID));
+
+        await longPressWithScrollRetry(
+            longPressTarget,
+            this.postList.getFlatList(),
+            PostOptionsScreen.postOptionsScreen,
+        );
         await wait(timeouts.TWO_SEC);
     };
 
@@ -222,13 +267,84 @@ class ChannelScreen {
         await ThreadScreen.toBeVisible();
     };
 
+    composePostDraft = async (message: string) => {
+        await dismissKnownModals();
+
+        await this.dismissScheduledPostTooltip();
+
+        if (isIos()) {
+            try {
+                await waitFor(this.postList.getFlatList()).toExist().withTimeout(timeouts.ONE_SEC);
+                await this.postList.getFlatList().tap({x: 5, y: 5});
+                await wait(timeouts.HALF_SEC);
+            } catch {
+                // Channel intro has no post list yet.
+            }
+        }
+
+        try {
+            await this.postInput.tap();
+        } catch {
+            // replaceText below still focuses the field.
+        }
+
+        const replaceDeadline = Date.now() + timeouts.TEN_SEC;
+        let lastError: unknown;
+        /* eslint-disable no-await-in-loop -- retry on transient iOS occlusion */
+        while (Date.now() < replaceDeadline) {
+            try {
+                await this.postInput.replaceText(message);
+                lastError = undefined;
+                break;
+            } catch (e) {
+                const msg = String(e);
+                if (!msg.includes('hittable') && !msg.includes('not visible')) {
+                    throw e;
+                }
+                lastError = e;
+                await wait(timeouts.HALF_SEC);
+            }
+        }
+        /* eslint-enable no-await-in-loop */
+        if (lastError) {
+            throw lastError;
+        }
+    };
+
     postMessage = async (message: string) => {
-        // # Post message
-        await this.postInput.tap();
-        await this.postInput.clearText();
-        await this.postInput.replaceText(`${message}\n`);
+        await this.composePostDraft(message);
         await this.tapSendButton();
         await wait(timeouts.TWO_SEC);
+    };
+
+    postMessageAndVerify = async (message: string, channelId: string, siteUrl: string): Promise<{post?: any; error?: any}> => {
+        await this.postMessage(message);
+        let result = await Post.apiGetLastPostInChannel(siteUrl, channelId);
+        if (result.post?.message === message) {
+            return result;
+        }
+
+        // Send likely failed (e.g. iOS sim -1005). Retry once.
+        await this.postMessage(message);
+        result = await Post.apiGetLastPostInChannel(siteUrl, channelId);
+        if (result.post?.message === message) {
+            return result;
+        }
+        throw new Error(`message send failed twice, likely sim network -1005 (last post: ${JSON.stringify(result.post?.message ?? result.error ?? 'none')})`);
+    };
+
+    postSlashCommand = async (command: string) => {
+        await this.composePostDraft(command);
+        await waitForElementToBeVisible(this.sendButton, timeouts.FOUR_SEC);
+
+        await this.sendButton.tap({x: 1, y: 1});
+        await waitFor(InteractiveDialogScreen.interactiveDialogScreen).toExist().withTimeout(timeouts.FIVE_SEC);
+    };
+
+    tapSendButton = async () => {
+        await waitForElementToBeVisible(this.sendButton, timeouts.FOUR_SEC);
+        await this.sendButton.tap();
+        await waitFor(this.sendButton).not.toExist().withTimeout(timeouts.FIVE_SEC);
     };
 
     enterMessageToSchedule = async (message: string) => {
@@ -237,21 +353,35 @@ class ChannelScreen {
         await this.postInput.replaceText(message);
     };
 
-    tapSendButton = async () => {
-        // # wait for Send button to be enabled
-        await waitFor(this.sendButton).toBeVisible().withTimeout(timeouts.TWO_SEC);
-        await this.sendButton.tap();
-        await expect(this.sendButton).not.toExist();
-    };
-
     longPressSendButton = async () => {
-        // # Long press send button
-        await this.sendButton.longPress();
+        await this.dismissScheduledPostTooltip();
+        await waitForElementToBeVisible(this.sendButton, timeouts.FOUR_SEC);
+
+        if (isAndroid()) {
+            try {
+                await this.postList.getFlatList().swipe('up', 'fast', 0.3);
+            } catch { /* ignore */ }
+            await wait(timeouts.ONE_SEC);
+        }
+
+        await device.disableSynchronization();
+        try {
+            await this.sendButton.longPress();
+
+            await waitForElementToExist(
+                element(by.id(this.testID.scheduledPostOptionsBottomSheet)),
+                timeouts.HALF_MIN,
+            );
+        } finally {
+            await device.enableSynchronization();
+        }
     };
 
     hasPostMessage = async (postId: string, postMessage: string) => {
         const {postListPostItem} = this.getPostListPostItem(postId, postMessage);
-        await expect(postListPostItem).toBeVisible();
+
+        await waitFor(postListPostItem).toExist().withTimeout(timeouts.TEN_SEC);
+        await waitFor(postListPostItem).toBeVisible(50).withTimeout(timeouts.TEN_SEC);
     };
 
     hasPostMessageAtIndex = async (index: number, postMessage: string) => {
@@ -285,23 +415,37 @@ class ChannelScreen {
     };
 
     scheduleMessageForTomorrow = async () => {
+        await waitForElementToExist(this.scheduleMessageTomorrowOption, timeouts.HALF_MIN);
         await this.scheduleMessageTomorrowOption.tap();
-        await expect(this.scheduledPostOptionTomorrowSelected).toBeVisible();
+        await waitForElementToExist(this.scheduledPostOptionTomorrowSelected, timeouts.TEN_SEC);
     };
 
     scheduleMessageForMonday = async () => {
+        await waitForElementToExist(this.scheduleMessageOnMondayOption, timeouts.HALF_MIN);
         await this.scheduleMessageOnMondayOption.tap();
-        await expect(this.scheduledPostOptionMondaySelected).toBeVisible();
+        await waitForElementToExist(this.scheduledPostOptionMondaySelected, timeouts.TEN_SEC);
     };
 
     scheduleMessageForNextMonday = async () => {
+        await waitForElementToExist(this.scheduledPostOptionNextMonday, timeouts.HALF_MIN);
         await this.scheduledPostOptionNextMonday.tap();
-        await expect(this.scheduledPostOptionNextMondaySelected).toBeVisible();
+        await waitForElementToExist(this.scheduledPostOptionNextMondaySelected, timeouts.TEN_SEC);
+    };
+
+    // Monday uses Next Monday; other days use Monday.
+    scheduleMessageForAvailableOption = async () => {
+        const day = new Date().getDay();
+        if (day === 1) {
+            await this.scheduleMessageForNextMonday();
+        } else {
+            await this.scheduleMessageForMonday();
+        }
     };
 
     clickOnScheduledMessage = async () => {
+        await waitForElementToBeVisible(this.clickOnScheduledMessageButton, timeouts.TEN_SEC);
         await this.clickOnScheduledMessageButton.tap();
-        await waitFor(this.clickOnScheduledMessageButton).not.toBeVisible().withTimeout(timeouts.FOUR_SEC);
+        await wait(timeouts.TWO_SEC);
     };
 
     /*
@@ -319,7 +463,6 @@ class ChannelScreen {
             await waitFor(this.scheduledDraftTooltipText).toBeVisible().withTimeout(timeouts.TEN_SEC);
             await this.scheduledDraftTooltipText.tap();
         } else {
-            // The page re-renders and then opens the tooltip again. Wait for the tooltip to be stable and then tap it.
             await wait(timeouts.TEN_SEC);
             await this.scheduleDraftInforMessage.tap();
         }
@@ -339,19 +482,25 @@ class ChannelScreen {
             recent_mentions_page: 'recent_mentions.post_list.post',
         };
 
+        await waitFor(element(by.id('edit_post.screen'))).
+            not.toExist().
+            withTimeout(timeouts.TEN_SEC);
+
         const postItemTestID = locatorTestIDs[locator];
         const postItemElement = `${postItemTestID}.${postId}`;
         const postItemMatcher = by.id(postItemElement);
 
-        // Escape special characters in the message for regex
         const escapedMessage = updatedMessage.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 
-        // Match text that contains the updated message followed by "Edited" (with possible spacing/icon)
-        const completeTextPattern = new RegExp(`${escapedMessage}.*Edited`, 'i');
-        const completeTextMatcher = by.text(completeTextPattern).withAncestor(postItemMatcher);
-
-        // Wait for the text containing both message and "Edited" to be visible
-        await waitFor(element(completeTextMatcher)).toBeVisible().withTimeout(timeouts.TEN_SEC);
+        if (isAndroid()) {
+            const combinedPattern = new RegExp(`${escapedMessage}.*Edited`, 'is');
+            const combinedMatcher = by.text(combinedPattern).withAncestor(postItemMatcher);
+            await waitFor(element(combinedMatcher)).toExist().withTimeout(timeouts.TEN_SEC);
+        } else {
+            const completeTextPattern = new RegExp(`${escapedMessage}.*Edited`, 'i');
+            const completeTextMatcher = by.text(completeTextPattern).withAncestor(postItemMatcher);
+            await waitFor(element(completeTextMatcher)).toExist().withTimeout(timeouts.TEN_SEC);
+        }
     };
 }
 

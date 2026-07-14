@@ -102,11 +102,9 @@ const ShowMoreButton = ({highlight, onPress, showMore = true, theme}: ShowMoreBu
                 <TouchableOpacity
                     onPress={onPress}
                     style={style.buttonContainer}
+                    testID={`show_more.button.${iconName}`}
                 >
-                    <View
-                        style={style.button}
-                        testID={`show_more.button.${iconName}`}
-                    >
+                    <View style={style.button}>
                         <CompassIcon
                             name={iconName}
                             size={28}

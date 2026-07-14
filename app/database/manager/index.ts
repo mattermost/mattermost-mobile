@@ -23,6 +23,7 @@ import {CategoryModel, CategoryChannelModel, ChannelModel, ChannelBookmarkModel,
 } from '@database/models/server';
 import AppDataOperator from '@database/operator/app_data_operator';
 import ServerDataOperator from '@database/operator/server_data_operator';
+import {attemptServerDatabaseRecovery} from '@database/recovery';
 import {schema as appSchema} from '@database/schema/app';
 import {serverSchema} from '@database/schema/server';
 import {beforeUpgrade} from '@helpers/database/upgrade';
@@ -147,7 +148,7 @@ class DatabaseManagerSingleton {
 
                 const adapter = new SQLiteAdapter({
                     dbName: databaseFilePath,
-                    migrationEvents: this.buildMigrationCallbacks(databaseName),
+                    migrationEvents: this.buildMigrationCallbacks(databaseName, serverUrl),
                     migrations,
                     jsi: true,
                     schema,
@@ -170,6 +171,10 @@ class DatabaseManagerSingleton {
                 return serverDatabase;
             } catch (e) {
                 logError('Error initializing database', e);
+                const recovered = await attemptServerDatabaseRecovery(serverUrl, e, 'createServerDatabase', {resync: false});
+                if (recovered) {
+                    return this.serverDatabases[serverUrl];
+                }
             }
         }
 
@@ -348,6 +353,22 @@ class DatabaseManagerSingleton {
         return server;
     };
 
+    public getServerUrlForDatabase = (database: Database): string | undefined => {
+        const databaseName = (database.adapter as {dbName?: string} | undefined)?.dbName;
+
+        return Object.entries(this.serverDatabases).find(([, serverDatabase]) => {
+            if (!serverDatabase) {
+                return false;
+            }
+
+            if (serverDatabase.database === database) {
+                return true;
+            }
+
+            return (serverDatabase.database.adapter as {dbName?: string} | undefined)?.dbName === databaseName;
+        })?.[0];
+    };
+
     /**
     * setActiveServerDatabase: Set the new active server database.
     * This method should be called when switching to another server.
@@ -465,15 +486,17 @@ class DatabaseManagerSingleton {
             return;
         }
 
-        // On Android, we'll delete the *.db, the *.db-shm and *.db-wal files
+        // On Android, we'll delete the *.db, the *.db-shm, the *.db-wal and *.db-journal files
         const androidFilesDir = this.databaseDirectory;
         const databaseFile = `${androidFilesDir}${databaseName}.db`;
         const databaseShm = `${androidFilesDir}${databaseName}.db-shm`;
         const databaseWal = `${androidFilesDir}${databaseName}.db-wal`;
+        const databaseJournal = `${androidFilesDir}${databaseName}.db-journal`;
 
         deleteFile(databaseFile);
         deleteFile(databaseShm);
         deleteFile(databaseWal);
+        deleteFile(databaseJournal);
     };
 
     /**
@@ -547,7 +570,7 @@ class DatabaseManagerSingleton {
     * @param {string} dbName
     * @returns {MigrationEvents}
     */
-    private buildMigrationCallbacks = (dbName: string) => {
+    private buildMigrationCallbacks = (dbName: string, serverUrl?: string) => {
         const migrationEvents = {
             onSuccess: () => {
                 logDebug('DB Migration success', dbName);
@@ -563,6 +586,9 @@ class DatabaseManagerSingleton {
             },
             onError: (error: Error) => {
                 logDebug('DB Migration error', dbName);
+                if (serverUrl) {
+                    attemptServerDatabaseRecovery(serverUrl, error, `migration:${dbName}`, {resync: false});
+                }
                 return DeviceEventEmitter.emit(MIGRATION_EVENTS.MIGRATION_ERROR, {
                     dbName,
                     error,

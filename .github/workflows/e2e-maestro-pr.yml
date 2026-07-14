@@ -1,0 +1,208 @@
+# Maestro E2E orchestration — reusable workflow only.
+# Called from e2e-detox-pr.yml after shared builds and server provisioning complete.
+# Downloads ios-build-simulator-* and android-maestro-build-files-* from the parent run
+# via artifact_run_id; does not build apps or provision servers on its own.
+name: Maestro E2E
+
+on:
+  workflow_call:
+    inputs:
+      MOBILE_VERSION:
+        required: true
+        type: string
+      PLATFORM:
+        required: false
+        type: string
+        default: "both"
+      SITE_1_URL:
+        required: true
+        type: string
+      SITE_2_URL:
+        required: false
+        type: string
+      SITE_3_URL:
+        required: false
+        type: string
+      run_type:
+        required: false
+        type: string
+        default: "PR"
+      artifact_run_id:
+        description: "Run ID of the parent workflow that uploaded build artifacts"
+        required: true
+        type: string
+      record_tests_in_zephyr:
+        description: "Record Maestro test results in Zephyr Scale"
+        required: false
+        type: boolean
+        default: false
+
+# iOS and Android are invoked as separate workflow_call runs from e2e-detox-pr.yml;
+# include PLATFORM so parallel calls do not cancel each other (same github.run_id).
+concurrency:
+  group: "${{ github.workflow }}-${{ inputs.PLATFORM }}-${{ inputs.MOBILE_VERSION }}-${{ github.run_id }}"
+  cancel-in-progress: true
+
+env:
+  ARTIFACT_RUN_ID: ${{ inputs.artifact_run_id }}
+
+jobs:
+  update-initial-status-maestro-ios:
+    if: inputs.PLATFORM == 'ios' || inputs.PLATFORM == 'both'
+    runs-on: ubuntu-22.04
+    permissions:
+      contents: read
+      statuses: write
+    steps:
+      - uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9.0.0
+        env:
+          COMMIT_SHA: ${{ inputs.MOBILE_VERSION }}
+        with:
+          script: |
+            const { owner, repo } = context.repo;
+            await github.rest.repos.createCommitStatus({
+              owner,
+              repo,
+              sha: process.env.COMMIT_SHA,
+              state: 'pending',
+              context: 'e2e/maestro-ios-tests',
+              description: 'Maestro iOS tests for mattermost mobile app have started ...',
+            });
+
+  update-initial-status-maestro-android:
+    if: inputs.PLATFORM == 'android' || inputs.PLATFORM == 'both'
+    runs-on: ubuntu-22.04
+    permissions:
+      contents: read
+      statuses: write
+    steps:
+      - uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9.0.0
+        env:
+          COMMIT_SHA: ${{ inputs.MOBILE_VERSION }}
+        with:
+          script: |
+            const { owner, repo } = context.repo;
+            await github.rest.repos.createCommitStatus({
+              owner,
+              repo,
+              sha: process.env.COMMIT_SHA,
+              state: 'pending',
+              context: 'e2e/maestro-android-tests',
+              description: 'Maestro Android tests for mattermost mobile app have started ...',
+            });
+
+  run-maestro-ios:
+    name: Maestro iOS
+    needs:
+      - update-initial-status-maestro-ios
+    if: |
+      always() &&
+      (inputs.PLATFORM == 'ios' || inputs.PLATFORM == 'both') &&
+      needs.update-initial-status-maestro-ios.result == 'success'
+    uses: ./.github/workflows/e2e-maestro-template.yml
+    with:
+      platform: ios
+      run-type: ${{ inputs.run_type || 'PR' }}
+      MOBILE_VERSION: ${{ inputs.MOBILE_VERSION }}
+      MM_TEST_SERVER_URL: ${{ inputs.SITE_2_URL || inputs.SITE_1_URL }}
+      artifact_run_id: ${{ inputs.artifact_run_id }}
+      record_tests_in_zephyr: ${{ inputs.record_tests_in_zephyr }}
+    secrets: inherit
+
+  run-maestro-android:
+    name: Maestro Android
+    needs:
+      - update-initial-status-maestro-android
+    if: |
+      always() &&
+      (inputs.PLATFORM == 'android' || inputs.PLATFORM == 'both') &&
+      needs.update-initial-status-maestro-android.result == 'success'
+    uses: ./.github/workflows/e2e-maestro-template.yml
+    with:
+      platform: android
+      run-type: ${{ inputs.run_type || 'PR' }}
+      MOBILE_VERSION: ${{ inputs.MOBILE_VERSION }}
+      MM_TEST_SERVER_URL: ${{ inputs.SITE_3_URL || inputs.SITE_1_URL }}
+      artifact_run_id: ${{ inputs.artifact_run_id }}
+      record_tests_in_zephyr: ${{ inputs.record_tests_in_zephyr }}
+    secrets: inherit
+
+  update-final-status-maestro-ios:
+    runs-on: ubuntu-22.04
+    permissions:
+      contents: read
+      statuses: write
+    if: always() && (inputs.PLATFORM == 'ios' || inputs.PLATFORM == 'both')
+    needs:
+      - run-maestro-ios
+    steps:
+      - uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9.0.0
+        env:
+          COMMIT_SHA: ${{ inputs.MOBILE_VERSION }}
+          STATUS: >-
+            ${{ needs.run-maestro-ios.result == 'cancelled' && 'error'
+              || needs.run-maestro-ios.outputs.CANCELLED == 'true' && 'error'
+              || (needs.run-maestro-ios.result == 'skipped' && 'failure')
+              || needs.run-maestro-ios.outputs.STATUS || 'failure' }}
+          TARGET_URL: ${{ needs.run-maestro-ios.outputs.TARGET_URL }}
+          DESCRIPTION: >-
+            ${{ needs.run-maestro-ios.result == 'cancelled' && 'Maestro iOS tests were cancelled (workflow stopped)'
+              || needs.run-maestro-ios.outputs.CANCELLED == 'true' && 'Maestro iOS tests were cancelled (workflow stopped)'
+              || needs.run-maestro-ios.result == 'skipped' && 'Build failed — Maestro iOS tests did not run'
+              || needs.run-maestro-ios.outputs.FAILURES == '-1' && 'All test machines failed before producing results'
+              || (needs.run-maestro-ios.outputs.FAILURES == '0' && needs.run-maestro-ios.outputs.SKIPPED > '0') && format('{0} passed, {1} skipped', needs.run-maestro-ios.outputs.PASSES, needs.run-maestro-ios.outputs.SKIPPED)
+              || needs.run-maestro-ios.outputs.FAILURES == '0' && format('All {0} tests passed', needs.run-maestro-ios.outputs.TOTAL)
+              || format('{0} passed, {1} failed, {2} skipped', needs.run-maestro-ios.outputs.PASSES || '?', needs.run-maestro-ios.outputs.FAILURES || '?', needs.run-maestro-ios.outputs.SKIPPED || '0') }}
+        with:
+          script: |
+            const { owner, repo } = context.repo;
+            const targetUrl = process.env.TARGET_URL?.trim();
+            await github.rest.repos.createCommitStatus({
+              owner,
+              repo,
+              sha: process.env.COMMIT_SHA,
+              state: process.env.STATUS,
+              context: 'e2e/maestro-ios-tests',
+              description: (process.env.DESCRIPTION || '').substring(0, 140),
+              ...(targetUrl ? {target_url: targetUrl} : {}),
+            });
+
+  update-final-status-maestro-android:
+    runs-on: ubuntu-22.04
+    permissions:
+      contents: read
+      statuses: write
+    if: always() && (inputs.PLATFORM == 'android' || inputs.PLATFORM == 'both')
+    needs:
+      - run-maestro-android
+    steps:
+      - uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9.0.0
+        env:
+          COMMIT_SHA: ${{ inputs.MOBILE_VERSION }}
+          STATUS: >-
+            ${{ needs.run-maestro-android.result == 'cancelled' && 'error'
+              || needs.run-maestro-android.outputs.CANCELLED == 'true' && 'error'
+              || (needs.run-maestro-android.result == 'skipped' && 'failure')
+              || needs.run-maestro-android.outputs.STATUS || 'failure' }}
+          TARGET_URL: ${{ needs.run-maestro-android.outputs.TARGET_URL }}
+          DESCRIPTION: >-
+            ${{ needs.run-maestro-android.result == 'cancelled' && 'Maestro Android tests were cancelled (workflow stopped)'
+              || needs.run-maestro-android.outputs.CANCELLED == 'true' && 'Maestro Android tests were cancelled (workflow stopped)'
+              || needs.run-maestro-android.result == 'skipped' && 'Build failed — Maestro Android tests did not run'
+              || needs.run-maestro-android.outputs.FAILURES == '-1' && 'All test machines failed before producing results'
+              || (needs.run-maestro-android.outputs.FAILURES == '0' && needs.run-maestro-android.outputs.SKIPPED > '0') && format('{0} passed, {1} skipped', needs.run-maestro-android.outputs.PASSES, needs.run-maestro-android.outputs.SKIPPED)
+              || needs.run-maestro-android.outputs.FAILURES == '0' && format('All {0} tests passed', needs.run-maestro-android.outputs.TOTAL)
+              || format('{0} passed, {1} failed, {2} skipped', needs.run-maestro-android.outputs.PASSES || '?', needs.run-maestro-android.outputs.FAILURES || '?', needs.run-maestro-android.outputs.SKIPPED || '0') }}
+        with:
+          script: |
+            const { owner, repo } = context.repo;
+            const targetUrl = process.env.TARGET_URL?.trim();
+            await github.rest.repos.createCommitStatus({
+              owner,
+              repo,
+              sha: process.env.COMMIT_SHA,
+              state: process.env.STATUS,
+              context: 'e2e/maestro-android-tests',
+              description: (process.env.DESCRIPTION || '').substring(0, 140),
+              ...(targetUrl ? {target_url: targetUrl} : {}),
+            });

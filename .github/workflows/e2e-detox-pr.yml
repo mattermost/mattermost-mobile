@@ -1,7 +1,18 @@
-# E2E tests are triggered exclusively by Matterwick via workflow_dispatch.
-# Matterwick provisions dedicated cloud servers and passes their URLs here.
-# No static/permanent server fallback is used — if Matterwick doesn't dispatch
-# this workflow, no E2E tests run.
+# Matterwick E2E entry point (workflow_dispatch only).
+#
+# Matterwick dispatches this file via:
+#   POST /repos/{owner}/{repo}/actions/workflows/e2e-detox-pr.yml/dispatches
+# and watches workflow_run "completed" events where workflow name is "E2E".
+#
+# Newer dispatches cancel older in-flight runs on the same branch (resolve-e2e-policy
+# first step) so the latest SHA starts immediately instead of queueing behind a long run.
+#
+# Phase 1 — builds & setup (parallel):
+#   build-ios-simulator, build-android-apk-maestro, build-android-apk (Detox debug APK),
+#   provision-servers, validate-maestro-flow-headers
+# Phase 2 — tests (parallel, after phase 1):
+#   run-detox-ios / run-detox-android → e2e-detox.yml
+#   run-maestro-ios / run-maestro-android → e2e-maestro-pr.yml (downloads phase-1 artifacts via artifact_run_id)
 name: E2E
 
 on:
@@ -42,21 +53,105 @@ on:
         default: "PR"
         type: string
 
-concurrency:
-  # Key on pr_number (or run_id for non-PR runs like nightly/push) so
-  # simultaneous dispatches for different PRs don't cancel each other.
-  group: "${{ github.workflow }}-${{ inputs.pr_number || github.run_id }}"
-  cancel-in-progress: true
+# Default least-privilege token; jobs that upload artifacts, post statuses, or
+# manage PR labels declare the extra scopes they need.
+permissions:
+  contents: read
 
 env:
-  INTUNE_ENABLED: 'true'
+  INTUNE_ENABLED: 'false'
+  DETOX_AWS_S3_BUCKET: "mattermost-detox-report"
 
 jobs:
-  update-initial-status-ios:
-    if: inputs.PLATFORM == 'ios' || inputs.PLATFORM == 'both'
+  resolve-e2e-policy:
+    name: Resolve E2E policy (Override label)
     runs-on: ubuntu-22.04
+    permissions:
+      actions: write
+      contents: read
+      pull-requests: read
+      issues: read
+      statuses: write
+    outputs:
+      e2e_override: ${{ steps.policy.outputs.e2e_override }}
     steps:
-      - uses: mattermost/actions/delivery/update-commit-status@main
+      - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
+      - name: Cancel superseded E2E runs on this branch
+        uses: ./.github/actions/cancel-e2e-runs
+        with:
+          head_branch: ${{ github.ref_name }}
+          pr_number: ${{ inputs.pr_number }}
+          max_run_id_exclusive: ${{ github.run_id }}
+          reason: E2E superseded by newer dispatch
+
+      - name: Check PR labels for E2E/Override
+        id: policy
+        uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9.0.0
+        env:
+          PR_NUMBER: ${{ inputs.pr_number }}
+          MOBILE_VERSION: ${{ inputs.MOBILE_VERSION }}
+        with:
+          script: |
+            const prInput = parseInt(process.env.PR_NUMBER, 10);
+            let prNumber = Number.isFinite(prInput) ? prInput : null;
+
+            if (!prNumber && process.env.MOBILE_VERSION) {
+              try {
+                const {data: prs} = await github.rest.repos.listPullRequestsAssociatedWithCommit({
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  commit_sha: process.env.MOBILE_VERSION,
+                });
+                const openPr = prs.find((pr) => pr.state === 'open');
+                if (openPr) {
+                  prNumber = openPr.number;
+                  core.info(`Resolved PR #${prNumber} from commit ${process.env.MOBILE_VERSION}`);
+                }
+              } catch (err) {
+                core.warning(`Could not resolve PR from commit: ${err.message}`);
+              }
+            }
+
+            if (!prNumber) {
+              core.info('No PR number available — assuming E2E/Override is not set.');
+              core.setOutput('e2e_override', 'false');
+              return;
+            }
+
+            const {data: pr} = await github.rest.pulls.get({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              pull_number: prNumber,
+            });
+            if (pr.base.ref !== 'main') {
+              core.info(`PR #${prNumber} targets ${pr.base.ref}, not main — skipping E2E.`);
+              core.setOutput('e2e_override', 'true');
+              return;
+            }
+
+            const {data: labels} = await github.rest.issues.listLabelsOnIssue({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: prNumber,
+            });
+            const override = labels.some((label) => label.name === 'E2E/Override');
+            core.info(`PR #${prNumber} E2E/Override=${override}`);
+            core.setOutput('e2e_override', override ? 'true' : 'false');
+
+  update-initial-status-ios:
+    needs: resolve-e2e-policy
+    if: >-
+      needs.resolve-e2e-policy.outputs.e2e_override != 'true'
+      && (inputs.PLATFORM == 'ios' || inputs.PLATFORM == 'both')
+    runs-on: ubuntu-22.04
+    permissions:
+      contents: read
+      statuses: write
+    steps:
+      - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
+        with:
+          ref: ${{ inputs.MOBILE_VERSION }}
+      - uses: ./.github/actions/update-commit-status
         env:
           GITHUB_TOKEN: ${{ github.token }}
         with:
@@ -67,10 +162,19 @@ jobs:
           status: pending
 
   update-initial-status-android:
-    if: inputs.PLATFORM == 'android' || inputs.PLATFORM == 'both'
+    needs: resolve-e2e-policy
+    if: >-
+      needs.resolve-e2e-policy.outputs.e2e_override != 'true'
+      && (inputs.PLATFORM == 'android' || inputs.PLATFORM == 'both')
     runs-on: ubuntu-22.04
+    permissions:
+      contents: read
+      statuses: write
     steps:
-      - uses: mattermost/actions/delivery/update-commit-status@main
+      - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
+        with:
+          ref: ${{ inputs.MOBILE_VERSION }}
+      - uses: ./.github/actions/update-commit-status
         env:
           GITHUB_TOKEN: ${{ github.token }}
         with:
@@ -80,14 +184,45 @@ jobs:
           description: Detox Android tests for mattermost mobile app have started ...
           status: pending
 
+  update-initial-status-ipad:
+    needs: resolve-e2e-policy
+    if: >-
+      needs.resolve-e2e-policy.outputs.e2e_override != 'true'
+      && (inputs.PLATFORM == 'ios' || inputs.PLATFORM == 'both')
+    runs-on: ubuntu-22.04
+    permissions:
+      contents: read
+      statuses: write
+    steps:
+      - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
+        with:
+          ref: ${{ inputs.MOBILE_VERSION }}
+      - uses: ./.github/actions/update-commit-status
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        with:
+          repository_full_name: ${{ github.repository }}
+          commit_sha: ${{ inputs.MOBILE_VERSION }}
+          context: e2e/detox-ipad-tests
+          description: Detox iPad tests for mattermost mobile app have started ...
+          status: pending
+
   build-ios-simulator:
-    if: inputs.PLATFORM == 'ios' || inputs.PLATFORM == 'both'
+    if: >-
+      !cancelled()
+      && needs.resolve-e2e-policy.outputs.e2e_override != 'true'
+      && (inputs.PLATFORM == 'ios' || inputs.PLATFORM == 'both')
+      && (needs.update-initial-status-ios.result == 'success' || needs.update-initial-status-ios.result == 'skipped')
     runs-on: macos-26
     needs:
+      - resolve-e2e-policy
       - update-initial-status-ios
+    permissions:
+      contents: read
+      actions: write
     steps:
       - name: Checkout Repository
-        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
         with:
           ref: ${{ inputs.MOBILE_VERSION }}
 
@@ -108,16 +243,24 @@ jobs:
         working-directory: ./fastlane
 
       - name: Upload iOS Simulator Build
-        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
           name: ios-build-simulator-${{ github.run_id }}
           path: Mattermost-simulator-*.app.zip
 
   build-android-apk:
-    if: inputs.PLATFORM == 'android' || inputs.PLATFORM == 'both'
+    if: >-
+      !cancelled()
+      && needs.resolve-e2e-policy.outputs.e2e_override != 'true'
+      && (inputs.PLATFORM == 'android' || inputs.PLATFORM == 'both')
+      && (needs.update-initial-status-android.result == 'success' || needs.update-initial-status-android.result == 'skipped')
     runs-on: ubuntu-latest-8-cores
     needs:
+      - resolve-e2e-policy
       - update-initial-status-android
+    permissions:
+      contents: read
+      actions: write
     env:
       ORG_GRADLE_PROJECT_jvmargs: -Xmx8g
     steps:
@@ -125,7 +268,7 @@ jobs:
         run: docker system prune -af
 
       - name: Checkout Repository
-        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
         with:
           ref: ${{ inputs.MOBILE_VERSION }}
 
@@ -137,112 +280,448 @@ jobs:
           STORE_PASSWORD: ${{ secrets.MM_MOBILE_STORE_PASSWORD }}
           MATTERMOST_BUILD_GH_TOKEN: ${{ secrets.MATTERMOST_BUILD_GH_TOKEN }}
 
+      # Cache Gradle dependencies — same key as e2e-detox-release.yml so the
+      # PR + release workflows share cache. Saves 3-5 min on warm runs by
+      # skipping gradle plugin resolution + Maven dep downloads.
+      - name: Cache Gradle dependencies
+        uses: actions/cache@27d5ce7f107fe9357f9df03efb73ab90386fccae # v5.0.5
+        with:
+          path: /home/runner/.gradle/caches/modules-2/
+          key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
+          restore-keys: ${{ runner.os }}-gradle-
+
       - name: Detox build
         run: |
           cd detox
           npm ci --prefer-offline --no-audit --no-fund
-          npm install -g detox-cli
-          npm run e2e:android-inject-settings
           npm run e2e:android-build
 
       - name: Upload Android Build
-        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
           name: android-build-files-${{ github.run_id }}
           path: "android/app/build/**/*"
 
-  run-ios-tests:
-    if: inputs.PLATFORM == 'ios' || inputs.PLATFORM == 'both'
-    name: iOS
+  build-android-apk-maestro:
+    if: >-
+      !cancelled()
+      && needs.resolve-e2e-policy.outputs.e2e_override != 'true'
+      && (inputs.PLATFORM == 'android' || inputs.PLATFORM == 'both')
+      && (needs.update-initial-status-android.result == 'success' || needs.update-initial-status-android.result == 'skipped')
+    runs-on: ubuntu-latest-8-cores
     needs:
+      - resolve-e2e-policy
+      - update-initial-status-android
+    permissions:
+      contents: read
+      actions: write
+    env:
+      ORG_GRADLE_PROJECT_jvmargs: -Xmx8g
+    steps:
+      - name: Prune Docker to free up space
+        run: docker system prune -af
+
+      - name: Checkout Repository
+        uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
+        with:
+          ref: ${{ inputs.MOBILE_VERSION }}
+
+      - name: Prepare Android Build
+        uses: ./.github/actions/prepare-android-build
+        env:
+          STORE_FILE: ${{ secrets.MM_MOBILE_STORE_FILE }}
+          STORE_ALIAS: ${{ secrets.MM_MOBILE_STORE_ALIAS }}
+          STORE_PASSWORD: ${{ secrets.MM_MOBILE_STORE_PASSWORD }}
+          MATTERMOST_BUILD_GH_TOKEN: ${{ secrets.MATTERMOST_BUILD_GH_TOKEN }}
+
+      - name: Build Maestro Android APK
+        uses: ./.github/actions/build-android-maestro-apk
+
+      - name: Upload Maestro Android Build
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: android-maestro-build-files-${{ github.run_id }}
+          path: android/app/build/outputs/apk/release/
+
+  provision-servers:
+    name: Provision test servers
+    needs: resolve-e2e-policy
+    if: needs.resolve-e2e-policy.outputs.e2e_override != 'true'
+    runs-on: ubuntu-22.04
+    steps:
+      - name: Validate server URLs
+        run: |
+          validate_url() {
+            local url="$1" label="$2"
+            if [ -z "$url" ]; then return 0; fi
+
+            # Reject any whitespace (space, tab, newline). Without this, an input
+            # like "https://valid.cloud  https://evil.example.com" would pass the
+            # rest of the validators (urlparse only inspects up to the first
+            # space) but then get word-split into two URLs by an unquoted shell
+            # iteration downstream — letting the second, unvalidated URL reach
+            # the provisioning sink. Whitespace is never legal in a URL anyway.
+            if [[ "$url" =~ [[:space:]] ]]; then
+              echo "::error::$label contains whitespace: $url"
+              exit 1
+            fi
+
+            # Must be HTTPS
+            if [[ ! "$url" =~ ^https:// ]]; then
+              echo "::error::$label must use HTTPS: $url"
+              exit 1
+            fi
+
+            # Extract hostname safely using Python URL parser to prevent SSRF bypass via userinfo.
+            # CRITICAL: the URL is passed as argv[1], NOT interpolated into the Python source.
+            # The Python code is single-quoted so bash performs no expansion inside it; "$url"
+            # is a separate argv argument, treated as a literal string by Python. This prevents
+            # injection of Python syntax (e.g. https://a.com')+__import__('os').system(...)+(' )
+            # that would escape the urlparse() call if the URL were interpolated.
+            hostname=$(python3 -c 'import sys; from urllib.parse import urlparse; print(urlparse(sys.argv[1]).hostname or "")' "$url" | tr '[:upper:]' '[:lower:]')
+
+            # Block private/internal IPs
+            if echo "$hostname" | grep -qE '^(127\.|10\.|172\.(1[6-9]|2[0-9]|3[01])\.|192\.168\.|0\.|localhost|::1$|::ffff:|fe80:)'; then
+              echo "::error::$label points to a private/internal address: $hostname"
+              exit 1
+            fi
+
+            # Allowlist: only Mattermost-operated domains
+            if ! echo "$hostname" | grep -qE '\.(cloud\.mattermost\.com|test\.mattermost\.cloud|mattermost\.com|mattermost\.cloud)$'; then
+              echo "::error::$label domain not in allowlist: $hostname"
+              exit 1
+            fi
+
+            echo "✓ $label validated: $hostname"
+          }
+
+          validate_url "$SITE_1_URL" "SITE_1_URL"
+          validate_url "$SITE_2_URL" "SITE_2_URL"
+          validate_url "$SITE_3_URL" "SITE_3_URL"
+        env:
+          SITE_1_URL: ${{ inputs.SITE_1_URL }}
+          SITE_2_URL: ${{ inputs.SITE_2_URL }}
+          SITE_3_URL: ${{ inputs.SITE_3_URL }}
+
+      - name: Checkout Repository
+        uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
+        with:
+          ref: ${{ inputs.MOBILE_VERSION }}
+          persist-credentials: false
+
+      # Download the demo plugin once per workflow (or on cache miss) so
+      # provision can upload from a local fixture instead of install_from_url.
+      # Test runners rely on the server already being provisioned — they do not
+      # download this artifact.
+      - name: Cache demo plugin fixture
+        id: demo-plugin-cache
+        uses: actions/cache@27d5ce7f107fe9357f9df03efb73ab90386fccae # v5.0.5
+        with:
+          path: detox/e2e/support/fixtures/mattermost-plugin-demo-v0.11.1-linux-amd64.tar.gz
+          key: mattermost-plugin-demo-linux-amd64-v0.11.1
+
+      - name: Download demo plugin fixture
+        if: steps.demo-plugin-cache.outputs.cache-hit != 'true'
+        run: |
+          mkdir -p detox/e2e/support/fixtures
+          curl -fsSL -o detox/e2e/support/fixtures/mattermost-plugin-demo-v0.11.1-linux-amd64.tar.gz \
+            "https://github.com/mattermost/mattermost-plugin-demo/releases/download/v0.11.1/mattermost-plugin-demo-v0.11.1-linux-amd64.tar.gz"
+          ls -lh detox/e2e/support/fixtures/mattermost-plugin-demo-v0.11.1-linux-amd64.tar.gz
+
+      - name: Provision servers (license + plugins)
+        run: |
+          cd detox
+          npm ci --prefer-offline --no-audit --no-fund
+          # Quote every variable in the iteration. Without quotes, bash word-splits
+          # on whitespace and would treat e.g. "https://a https://b" as two URLs,
+          # bypassing the per-variable validation in the previous step (which
+          # validates the value as a single string). The validator above also
+          # rejects whitespace outright, so this is belt-and-suspenders.
+          for url in "$SITE_1_URL" "$SITE_2_URL" "$SITE_3_URL"; do
+            if [ -n "$url" ]; then
+              echo "--- Provisioning $url ---"
+              npm run provision -- "$url"
+            fi
+          done
+        env:
+          SITE_1_URL: ${{ inputs.SITE_1_URL }}
+          SITE_2_URL: ${{ inputs.SITE_2_URL }}
+          SITE_3_URL: ${{ inputs.SITE_3_URL }}
+          ADMIN_USERNAME: ${{ secrets.MM_MOBILE_E2E_ADMIN_USERNAME }}
+          ADMIN_PASSWORD: ${{ secrets.MM_MOBILE_E2E_ADMIN_PASSWORD }}
+
+  # iOS and Android Detox jobs are separate so each platform starts as soon as its
+  # own build finishes — Android does not wait for build-ios-simulator.
+  run-detox-ios:
+    name: Detox iOS E2E
+    needs:
+      - resolve-e2e-policy
       - build-ios-simulator
-    uses: ./.github/workflows/e2e-ios-template.yml
+      - provision-servers
+    permissions:
+      contents: read
+      statuses: write
+      actions: read
+    if: |
+      !cancelled() &&
+      needs.resolve-e2e-policy.outputs.e2e_override != 'true' &&
+      (inputs.PLATFORM == 'ios' || inputs.PLATFORM == 'both') &&
+      needs.provision-servers.result == 'success' &&
+      (needs.build-ios-simulator.result == 'success' || needs.build-ios-simulator.result == 'skipped')
+    uses: ./.github/workflows/e2e-detox.yml
     with:
-      run-type: ${{ inputs.run_type || 'PR' }}
-      record_tests_in_zephyr: ${{ (inputs.run_type == 'RELEASE' || inputs.run_type == 'NIGHTLY' || inputs.run_type == 'MASTER') && 'true' || 'false' }}
       MOBILE_VERSION: ${{ inputs.MOBILE_VERSION }}
-      MM_TEST_SERVER_URL: ${{ inputs.SITE_1_URL }}
-      MM_TEST_SERVER_URL_2: ${{ inputs.SITE_2_URL }}
-      MM_TEST_SERVER_URL_3: ${{ inputs.SITE_3_URL }}
+      PLATFORM: ios
+      SITE_1_URL: ${{ inputs.SITE_1_URL }}
+      SITE_2_URL: ${{ inputs.SITE_2_URL }}
+      SITE_3_URL: ${{ inputs.SITE_3_URL }}
+      run_type: ${{ inputs.run_type || 'PR' }}
+      artifact_run_id: ${{ github.run_id }}
     secrets: inherit
 
-  run-android-tests:
-    if: inputs.PLATFORM == 'android' || inputs.PLATFORM == 'both'
-    name: Android
+  run-detox-android:
+    name: Detox Android E2E
     needs:
+      - resolve-e2e-policy
       - build-android-apk
-    uses: ./.github/workflows/e2e-android-template.yml
+      - provision-servers
+    permissions:
+      contents: read
+      statuses: write
+      actions: read
+    if: |
+      !cancelled() &&
+      needs.resolve-e2e-policy.outputs.e2e_override != 'true' &&
+      (inputs.PLATFORM == 'android' || inputs.PLATFORM == 'both') &&
+      needs.provision-servers.result == 'success' &&
+      (needs.build-android-apk.result == 'success' || needs.build-android-apk.result == 'skipped')
+    uses: ./.github/workflows/e2e-detox.yml
     with:
-      run-android-tests: true
-      run-type: ${{ inputs.run_type || 'PR' }}
-      record_tests_in_zephyr: ${{ (inputs.run_type == 'RELEASE' || inputs.run_type == 'NIGHTLY' || inputs.run_type == 'MASTER') && 'true' || 'false' }}
       MOBILE_VERSION: ${{ inputs.MOBILE_VERSION }}
-      MM_TEST_SERVER_URL: ${{ inputs.SITE_1_URL }}
-      MM_TEST_SERVER_URL_2: ${{ inputs.SITE_2_URL }}
-      MM_TEST_SERVER_URL_3: ${{ inputs.SITE_3_URL }}
+      PLATFORM: android
+      SITE_1_URL: ${{ inputs.SITE_1_URL }}
+      SITE_2_URL: ${{ inputs.SITE_2_URL }}
+      SITE_3_URL: ${{ inputs.SITE_3_URL }}
+      run_type: ${{ inputs.run_type || 'PR' }}
+      artifact_run_id: ${{ github.run_id }}
     secrets: inherit
 
-  update-final-status-ios:
+  validate-maestro-flow-headers:
+    name: Validate Maestro flow headers
+    needs: resolve-e2e-policy
+    if: needs.resolve-e2e-policy.outputs.e2e_override != 'true'
     runs-on: ubuntu-22.04
-    if: always() && (inputs.PLATFORM == 'ios' || inputs.PLATFORM == 'both')
-    needs:
-      - run-ios-tests
     steps:
-      - uses: mattermost/actions/delivery/update-commit-status@main
-        env:
-          GITHUB_TOKEN: ${{ github.token }}
+      - name: Checkout Repository
+        uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
         with:
-          repository_full_name: ${{ github.repository }}
-          commit_sha: ${{ inputs.MOBILE_VERSION }}
-          context: e2e/detox-ios-tests
-          description: Completed with ${{ needs.run-ios-tests.outputs.FAILURES }} failures
-          status: ${{ needs.run-ios-tests.outputs.STATUS }}
-          target_url: ${{ needs.run-ios-tests.outputs.TARGET_URL }}
+          ref: ${{ inputs.MOBILE_VERSION }}
 
-  update-final-status-android:
-    runs-on: ubuntu-22.04
-    if: always() && (inputs.PLATFORM == 'android' || inputs.PLATFORM == 'both')
+      - name: Validate flow header contract
+        run: bash detox/maestro/scripts/validate-flow-headers.sh
+
+  # Maestro orchestration lives in e2e-maestro-pr.yml so Detox and Maestro CI
+  # can evolve independently. Maestro downloads ios-build-simulator-* and
+  # android-maestro-build-files-* (release APK with embedded bundle) from this
+  # workflow run via artifact_run_id.
+  # iOS and Android are separate jobs so each platform starts as soon as its
+  # own build finishes — Android does not wait for build-ios-simulator.
+  run-maestro-ios:
+    name: Maestro iOS E2E
     needs:
-      - run-android-tests
-    steps:
-      - uses: mattermost/actions/delivery/update-commit-status@main
-        env:
-          GITHUB_TOKEN: ${{ github.token }}
-        with:
-          repository_full_name: ${{ github.repository }}
-          commit_sha: ${{ inputs.MOBILE_VERSION }}
-          context: e2e/detox-android-tests
-          description: Completed with ${{ needs.run-android-tests.outputs.FAILURES }} failures
-          status: ${{ needs.run-android-tests.outputs.STATUS }}
-          target_url: ${{ needs.run-android-tests.outputs.TARGET_URL }}
+      - resolve-e2e-policy
+      - build-ios-simulator
+      - provision-servers
+      - validate-maestro-flow-headers
+    permissions:
+      contents: read
+      statuses: write
+      actions: read
+    if: |
+      !cancelled() &&
+      needs.resolve-e2e-policy.outputs.e2e_override != 'true' &&
+      (inputs.PLATFORM == 'ios' || inputs.PLATFORM == 'both') &&
+      needs.provision-servers.result == 'success' &&
+      needs.validate-maestro-flow-headers.result == 'success' &&
+      (needs.build-ios-simulator.result == 'success' || needs.build-ios-simulator.result == 'skipped')
+    uses: ./.github/workflows/e2e-maestro-pr.yml
+    with:
+      MOBILE_VERSION: ${{ inputs.MOBILE_VERSION }}
+      PLATFORM: ios
+      SITE_1_URL: ${{ inputs.SITE_1_URL }}
+      SITE_2_URL: ${{ inputs.SITE_2_URL }}
+      SITE_3_URL: ${{ inputs.SITE_3_URL }}
+      run_type: ${{ inputs.run_type || 'PR' }}
+      artifact_run_id: ${{ github.run_id }}
+      record_tests_in_zephyr: ${{ inputs.run_type == 'RELEASE' || inputs.run_type == 'NIGHTLY' || inputs.run_type == 'MASTER' }}
+    secrets: inherit
+
+  run-maestro-android:
+    name: Maestro Android E2E
+    needs:
+      - resolve-e2e-policy
+      - build-android-apk-maestro
+      - provision-servers
+      - validate-maestro-flow-headers
+    permissions:
+      contents: read
+      statuses: write
+      actions: read
+    if: |
+      !cancelled() &&
+      needs.resolve-e2e-policy.outputs.e2e_override != 'true' &&
+      (inputs.PLATFORM == 'android' || inputs.PLATFORM == 'both') &&
+      needs.provision-servers.result == 'success' &&
+      needs.validate-maestro-flow-headers.result == 'success' &&
+      (needs.build-android-apk-maestro.result == 'success' || needs.build-android-apk-maestro.result == 'skipped')
+    uses: ./.github/workflows/e2e-maestro-pr.yml
+    with:
+      MOBILE_VERSION: ${{ inputs.MOBILE_VERSION }}
+      PLATFORM: android
+      SITE_1_URL: ${{ inputs.SITE_1_URL }}
+      SITE_2_URL: ${{ inputs.SITE_2_URL }}
+      SITE_3_URL: ${{ inputs.SITE_3_URL }}
+      run_type: ${{ inputs.run_type || 'PR' }}
+      artifact_run_id: ${{ github.run_id }}
+      record_tests_in_zephyr: ${{ inputs.run_type == 'RELEASE' || inputs.run_type == 'NIGHTLY' || inputs.run_type == 'MASTER' }}
+    secrets: inherit
 
   e2e-remove-matterwick-label:
     name: Remove Matterwick E2E label from PR
     runs-on: ubuntu-22.04
+    permissions:
+      contents: read
+      issues: write
+      pull-requests: write
     needs:
-      - run-ios-tests
-      - run-android-tests
-    if: always() && inputs.pr_number != ''
+      - resolve-e2e-policy
+      - run-detox-ios
+      - run-detox-android
+      - run-maestro-ios
+      - run-maestro-android
+    # Strip E2E/Run* after tests finish unless Maestro was externally cancelled
+    # (leave the label so the suite can be re-triggered).
+    if: |
+      !cancelled() &&
+      needs.resolve-e2e-policy.outputs.e2e_override != 'true' &&
+      contains(fromJSON('["success","failure","skipped"]'), needs.run-detox-ios.result) &&
+      contains(fromJSON('["success","failure","skipped"]'), needs.run-detox-android.result) &&
+      contains(fromJSON('["success","failure","skipped"]'), needs.run-maestro-ios.result) &&
+      contains(fromJSON('["success","failure","skipped"]'), needs.run-maestro-android.result)
     steps:
       - name: e2e/remove-label-from-pr
-        uses: actions/github-script@e7aeb8c663f696059ebb5f9ab1425ed2ef511bdb # v7.0.1
-        continue-on-error: true # Label might have been removed manually
+        continue-on-error: true
+        uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9.0.0
         with:
+          github-token: ${{ secrets.MATTERMOST_BUILD_GH_TOKEN }}
           script: |
-            const prNumber = parseInt(process.env.PR_NUMBER);
-            if (!prNumber) return;
-            const labels = ['E2E/Run', 'E2E/Run-iOS', 'E2E/Run-Android'];
-            for (const label of labels) {
+            const owner = context.repo.owner;
+            const repo = context.repo.repo;
+            const runLabels = ['E2E/Run', 'E2E/Run-iOS', 'E2E/Run-Android'];
+
+            let prNumber = parseInt(process.env.PR_NUMBER, 10);
+            if (!Number.isFinite(prNumber) && process.env.MOBILE_VERSION) {
+              const {data: prs} = await github.rest.repos.listPullRequestsAssociatedWithCommit({
+                owner,
+                repo,
+                commit_sha: process.env.MOBILE_VERSION,
+              });
+              const openPr = prs.find((pr) => pr.state === 'open');
+              if (openPr) {
+                prNumber = openPr.number;
+                console.log(`Resolved PR #${prNumber} from commit ${process.env.MOBILE_VERSION}`);
+              }
+            }
+            if (!Number.isFinite(prNumber)) {
+              const branch = process.env.BRANCH;
+              if (branch) {
+                const {data: prs} = await github.rest.pulls.list({
+                  owner,
+                  repo,
+                  head: `${owner}:${branch}`,
+                  state: 'open',
+                  per_page: 1,
+                });
+                if (prs.length > 0) {
+                  prNumber = prs[0].number;
+                }
+              }
+            }
+            if (!Number.isFinite(prNumber)) {
+              core.warning('No PR found — skipping label removal');
+              return;
+            }
+
+            const {data: workflows} = await github.rest.actions.listRepoWorkflows({owner, repo});
+            const e2eWorkflow = workflows.workflows.find((workflow) => workflow.name === 'E2E');
+            if (e2eWorkflow) {
+              // Cache PR lookups per head_sha to avoid quadratic API calls.
+              const prsForSha = new Map();
+              const lookupPRsForSha = async (sha) => {
+                if (!sha) return [];
+                if (prsForSha.has(sha)) return prsForSha.get(sha);
+                try {
+                  const {data} = await github.rest.repos.listPullRequestsAssociatedWithCommit({
+                    owner,
+                    repo,
+                    commit_sha: sha,
+                  });
+                  const numbers = (data || []).map((p) => p.number);
+                  prsForSha.set(sha, numbers);
+                  return numbers;
+                } catch (err) {
+                  core.warning(`listPullRequestsAssociatedWithCommit failed for ${sha}: ${err.message}`);
+                  prsForSha.set(sha, []);
+                  return [];
+                }
+              };
+
+              for (const status of ['queued', 'in_progress', 'waiting']) {
+                const {data: activeRuns} = await github.rest.actions.listWorkflowRuns({
+                  owner,
+                  repo,
+                  workflow_id: e2eWorkflow.id,
+                  status,
+                  branch: process.env.BRANCH,
+                });
+                for (const run of activeRuns.workflow_runs) {
+                  if (run.id === context.runId) {
+                    continue;
+                  }
+                  // Fall back to per-SHA PR lookup when run.pull_requests is empty (fork PRs / webhook timing).
+                  let belongsToPR;
+                  if (run.pull_requests?.length) {
+                    belongsToPR = run.pull_requests.some((pr) => pr.number === prNumber);
+                  } else {
+                    const numbers = await lookupPRsForSha(run.head_sha);
+                    belongsToPR = numbers.includes(prNumber);
+                  }
+                  if (belongsToPR) {
+                    core.info(`PR #${prNumber} has another active E2E run — skipping label removal (run ${run.id}).`);
+                    return;
+                  }
+                }
+              }
+            }
+
+            console.log(`Removing E2E labels from PR #${prNumber} (workflow conclusion: ${process.env.WORKFLOW_CONCLUSION || 'unknown'})`);
+            for (const label of runLabels) {
               try {
                 await github.rest.issues.removeLabel({
                   issue_number: prNumber,
-                  owner: context.repo.owner,
-                  repo: context.repo.repo,
+                  owner,
+                  repo,
                   name: label,
                 });
-              } catch (_) {
-                // Label may not exist on this PR, ignore
+                console.log(`Removed ${label}`);
+              } catch (err) {
+                if (err.status !== 404) {
+                  throw err;
+                }
               }
             }
         env:
           PR_NUMBER: ${{ inputs.pr_number }}
+          MOBILE_VERSION: ${{ inputs.MOBILE_VERSION }}
+          BRANCH: ${{ github.ref_name }}
+          WORKFLOW_CONCLUSION: ${{ job.status }}

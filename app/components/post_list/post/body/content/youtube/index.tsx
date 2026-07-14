@@ -28,8 +28,6 @@ const styles = StyleSheet.create({
         alignItems: 'flex-start',
         justifyContent: 'flex-start',
         borderRadius: 4,
-        marginBottom: 6,
-        marginTop: 10,
     },
     image: {
         alignItems: 'center',

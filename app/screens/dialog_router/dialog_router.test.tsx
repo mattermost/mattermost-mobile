@@ -20,11 +20,6 @@ jest.mock('@screens/apps_form/apps_form_component', () => {
     return jest.fn(({testID}) => mockReact.createElement('View', {testID: testID || 'apps-form-component'}));
 });
 
-jest.mock('@screens/interactive_dialog', () => {
-    const mockReact = require('react');
-    return jest.fn(({testID}) => mockReact.createElement('View', {testID: testID || 'interactive-dialog'}));
-});
-
 jest.mock('@actions/remote/integrations', () => ({
     submitInteractiveDialog: jest.fn(),
 }));
@@ -34,7 +29,6 @@ jest.mock('@utils/interactive_dialog_adapter');
 const mockSubmitInteractiveDialog = require('@actions/remote/integrations').submitInteractiveDialog;
 const mockUseServerUrl = require('@context/server').useServerUrl;
 const mockAppsFormComponent = require('@screens/apps_form/apps_form_component');
-const mockInteractiveDialog = require('@screens/interactive_dialog');
 const mockInteractiveDialogAdapter = InteractiveDialogAdapter as jest.Mocked<typeof InteractiveDialogAdapter>;
 
 // Test helper to render with internationalization
@@ -122,138 +116,77 @@ describe('DialogRouter', () => {
         });
     });
 
-    describe('when feature flag is disabled', () => {
-        it('should render InteractiveDialog component', () => {
-            const {getByTestId, queryByTestId} = renderWithIntl(
-                <DialogRouter
-                    config={mockConfig}
-                    isAppsFormEnabled={false}
-                />,
-            );
+    it('should render AppsFormComponent when conversion succeeds', () => {
+        const {getByTestId} = renderWithIntl(
+            <DialogRouter config={mockConfig}/>,
+        );
 
-            expect(queryByTestId('apps-form-component')).toBeNull();
-            expect(getByTestId('interactive-dialog')).toBeTruthy();
-            expect(mockInteractiveDialog).toHaveBeenCalledWith({
-                config: mockConfig,
-            }, undefined);
-        });
-
-        it('should not call dialog conversion when feature flag is disabled', () => {
-            renderWithIntl(
-                <DialogRouter
-                    config={mockConfig}
-                    isAppsFormEnabled={false}
-                />,
-            );
-
-            expect(mockInteractiveDialogAdapter.convertToAppForm).not.toHaveBeenCalled();
-        });
+        expect(getByTestId('apps-form-component')).toBeTruthy();
+        expect(mockAppsFormComponent).toHaveBeenCalledWith({
+            form: mockAppForm,
+            submit: expect.any(Function),
+            performLookupCall: expect.any(Function),
+            refreshOnSelect: expect.any(Function),
+        }, undefined);
     });
 
-    describe('when feature flag is enabled', () => {
-        it('should render AppsFormComponent when conversion succeeds', () => {
-            const {getByTestId, queryByTestId} = renderWithIntl(
-                <DialogRouter
-                    config={mockConfig}
-                    isAppsFormEnabled={true}
-                />,
-            );
+    it('should call dialog conversion with correct config', () => {
+        renderWithIntl(<DialogRouter config={mockConfig}/>);
 
-            expect(queryByTestId('interactive-dialog')).toBeNull();
-            expect(getByTestId('apps-form-component')).toBeTruthy();
-            expect(mockAppsFormComponent).toHaveBeenCalledWith({
-                form: mockAppForm,
-                submit: expect.any(Function),
-                performLookupCall: expect.any(Function),
-                refreshOnSelect: expect.any(Function),
-            }, undefined);
+        expect(mockInteractiveDialogAdapter.convertToAppForm).toHaveBeenCalledWith(mockConfig);
+    });
+
+    it('should create submit handler with correct parameters', () => {
+        renderWithIntl(<DialogRouter config={mockConfig}/>);
+
+        // Submit handler is created when handleSubmit callback is used
+        const submitHandler = mockAppsFormComponent.mock.calls[0][0].submit;
+        expect(typeof submitHandler).toBe('function');
+    });
+
+    it('should render nothing when conversion fails', () => {
+        mockInteractiveDialogAdapter.convertToAppForm.mockImplementation(() => {
+            throw new Error('Conversion failed');
         });
 
-        it('should call dialog conversion with correct config', () => {
-            renderWithIntl(
-                <DialogRouter
-                    config={mockConfig}
-                    isAppsFormEnabled={true}
-                />,
-            );
+        const {queryByTestId} = renderWithIntl(
+            <DialogRouter config={mockConfig}/>,
+        );
 
-            expect(mockInteractiveDialogAdapter.convertToAppForm).toHaveBeenCalledWith(mockConfig);
+        expect(queryByTestId('apps-form-component')).toBeNull();
+    });
+
+    it('should render nothing when converted form has no fields', () => {
+        mockInteractiveDialogAdapter.convertToAppForm.mockReturnValue({
+            ...mockAppForm,
+            fields: undefined,
         });
 
-        it('should create submit handler with correct parameters', () => {
-            renderWithIntl(
-                <DialogRouter
-                    config={mockConfig}
-                    isAppsFormEnabled={true}
-                />,
-            );
+        const {queryByTestId} = renderWithIntl(
+            <DialogRouter config={mockConfig}/>,
+        );
 
-            // Submit handler is created when handleSubmit callback is used
-            const submitHandler = mockAppsFormComponent.mock.calls[0][0].submit;
-            expect(typeof submitHandler).toBe('function');
+        expect(queryByTestId('apps-form-component')).toBeNull();
+    });
+
+    it('should render AppsForm when converted form has empty fields array', () => {
+        mockInteractiveDialogAdapter.convertToAppForm.mockReturnValue({
+            ...mockAppForm,
+            fields: [],
         });
 
-        it('should fallback to InteractiveDialog when conversion fails', () => {
-            mockInteractiveDialogAdapter.convertToAppForm.mockImplementation(() => {
-                throw new Error('Conversion failed');
-            });
+        const {getByTestId} = renderWithIntl(
+            <DialogRouter config={mockConfig}/>,
+        );
 
-            const {getByTestId, queryByTestId} = renderWithIntl(
-                <DialogRouter
-                    config={mockConfig}
-                    isAppsFormEnabled={true}
-                />,
-            );
-
-            expect(queryByTestId('apps-form-component')).toBeNull();
-            expect(getByTestId('interactive-dialog')).toBeTruthy();
-        });
-
-        it('should fallback to InteractiveDialog when converted form has no fields', () => {
-            mockInteractiveDialogAdapter.convertToAppForm.mockReturnValue({
-                ...mockAppForm,
-                fields: undefined,
-            });
-
-            const {getByTestId, queryByTestId} = renderWithIntl(
-                <DialogRouter
-                    config={mockConfig}
-                    isAppsFormEnabled={true}
-                />,
-            );
-
-            expect(queryByTestId('apps-form-component')).toBeNull();
-            expect(getByTestId('interactive-dialog')).toBeTruthy();
-        });
-
-        it('should fallback to InteractiveDialog when converted form has empty fields array', () => {
-            mockInteractiveDialogAdapter.convertToAppForm.mockReturnValue({
-                ...mockAppForm,
-                fields: [],
-            });
-
-            const {getByTestId, queryByTestId} = renderWithIntl(
-                <DialogRouter
-                    config={mockConfig}
-                    isAppsFormEnabled={true}
-                />,
-            );
-
-            // Component should still render AppsForm even with empty fields
-            // The DialogRouter only checks for fields existence, not if it's empty
-            expect(getByTestId('apps-form-component')).toBeTruthy();
-            expect(queryByTestId('interactive-dialog')).toBeNull();
-        });
+        // Component should still render AppsForm even with empty fields
+        // The DialogRouter only checks for fields existence, not if it's empty
+        expect(getByTestId('apps-form-component')).toBeTruthy();
     });
 
     describe('stub action handlers', () => {
         it('should provide performLookupCall that returns empty items', async () => {
-            renderWithIntl(
-                <DialogRouter
-                    config={mockConfig}
-                    isAppsFormEnabled={true}
-                />,
-            );
+            renderWithIntl(<DialogRouter config={mockConfig}/>);
 
             const performLookupCall = mockAppsFormComponent.mock.calls[0][0].performLookupCall;
             const mockField = {name: 'test_field'} as AppField;
@@ -272,12 +205,7 @@ describe('DialogRouter', () => {
         });
 
         it('should provide refreshOnSelect that returns ok response', async () => {
-            renderWithIntl(
-                <DialogRouter
-                    config={mockConfig}
-                    isAppsFormEnabled={true}
-                />,
-            );
+            renderWithIntl(<DialogRouter config={mockConfig}/>);
 
             const refreshOnSelect = mockAppsFormComponent.mock.calls[0][0].refreshOnSelect;
             const mockField = {name: 'test_field'} as AppField;
@@ -295,10 +223,7 @@ describe('DialogRouter', () => {
     describe('React.memo optimization', () => {
         it('should not re-render when props are unchanged', () => {
             const {rerender} = renderWithIntl(
-                <DialogRouter
-                    config={mockConfig}
-                    isAppsFormEnabled={true}
-                />,
+                <DialogRouter config={mockConfig}/>,
             );
 
             const initialCallCount = mockAppsFormComponent.mock.calls.length;
@@ -309,10 +234,7 @@ describe('DialogRouter', () => {
                     locale='en'
                     messages={getTranslations('en')}
                 >
-                    <DialogRouter
-                        config={mockConfig}
-                        isAppsFormEnabled={true}
-                    />
+                    <DialogRouter config={mockConfig}/>
                 </IntlProvider>,
             );
 
@@ -322,10 +244,7 @@ describe('DialogRouter', () => {
 
         it('should re-render when config changes', () => {
             const {rerender} = renderWithIntl(
-                <DialogRouter
-                    config={mockConfig}
-                    isAppsFormEnabled={true}
-                />,
+                <DialogRouter config={mockConfig}/>,
             );
 
             const initialCallCount = mockAppsFormComponent.mock.calls.length;
@@ -343,80 +262,12 @@ describe('DialogRouter', () => {
                     locale='en'
                     messages={getTranslations('en')}
                 >
-                    <DialogRouter
-                        config={newConfig}
-                        isAppsFormEnabled={true}
-                    />
+                    <DialogRouter config={newConfig}/>
                 </IntlProvider>,
             );
 
             // Should have called AppsFormComponent again
             expect(mockAppsFormComponent.mock.calls.length).toBeGreaterThan(initialCallCount);
-        });
-
-        it('should re-render when feature flag changes', () => {
-            const {rerender} = renderWithIntl(
-                <DialogRouter
-                    config={mockConfig}
-                    isAppsFormEnabled={false}
-                />,
-            );
-
-            expect(mockInteractiveDialog).toHaveBeenCalled();
-            expect(mockAppsFormComponent).not.toHaveBeenCalled();
-
-            // Change feature flag
-            rerender(
-                <IntlProvider
-                    locale='en'
-                    messages={getTranslations('en')}
-                >
-                    <DialogRouter
-                        config={mockConfig}
-                        isAppsFormEnabled={true}
-                    />
-                </IntlProvider>,
-            );
-
-            // Should now render AppsFormComponent
-            expect(mockAppsFormComponent).toHaveBeenCalled();
-        });
-    });
-
-    describe('component lifecycle', () => {
-        it('should handle componentId changes correctly', () => {
-            const {rerender} = renderWithIntl(
-                <DialogRouter
-                    config={mockConfig}
-                    isAppsFormEnabled={true}
-                />,
-            );
-
-            expect(mockAppsFormComponent).toHaveBeenCalledWith(
-                expect.objectContaining({
-                    form: expect.any(Object),
-                }),
-                undefined,
-            );
-
-            rerender(
-                <IntlProvider
-                    locale='en'
-                    messages={getTranslations('en')}
-                >
-                    <DialogRouter
-                        config={mockConfig}
-                        isAppsFormEnabled={true}
-                    />
-                </IntlProvider>,
-            );
-
-            expect(mockAppsFormComponent).toHaveBeenLastCalledWith(
-                expect.objectContaining({
-                    form: expect.any(Object),
-                }),
-                undefined,
-            );
         });
     });
 
@@ -425,10 +276,7 @@ describe('DialogRouter', () => {
             // This test verifies the component doesn't crash with invalid props
             expect(() => {
                 renderWithIntl(
-                    <DialogRouter
-                        config={null as any}
-                        isAppsFormEnabled={true}
-                    />,
+                    <DialogRouter config={null as any}/>,
                 );
             }).not.toThrow();
         });
@@ -441,10 +289,7 @@ describe('DialogRouter', () => {
 
             expect(() => {
                 renderWithIntl(
-                    <DialogRouter
-                        config={invalidConfig}
-                        isAppsFormEnabled={true}
-                    />,
+                    <DialogRouter config={invalidConfig}/>,
                 );
             }).not.toThrow();
         });

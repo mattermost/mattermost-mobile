@@ -5,7 +5,7 @@ import {act, fireEvent, waitFor} from '@testing-library/react-native';
 import React from 'react';
 import {AppState, type AppStateStatus} from 'react-native';
 
-import {reconnectErasedServer} from '@actions/remote/ephemeral_mode/reconnect';
+import {restoreServerAfterDatabaseWipe} from '@actions/remote/restore_server';
 import ServerUrlProvider from '@context/server';
 import {subscribeAllServers} from '@database/subscription/servers';
 import {subscribeUnreadAndMentionsByServer} from '@database/subscription/unreads';
@@ -16,8 +16,8 @@ import DataErased from './index';
 
 import type ServersModel from '@typings/database/models/app/servers';
 
-jest.mock('@actions/remote/ephemeral_mode/reconnect', () => ({
-    reconnectErasedServer: jest.fn(),
+jest.mock('@actions/remote/restore_server', () => ({
+    restoreServerAfterDatabaseWipe: jest.fn(),
 }));
 jest.mock('@screens/navigation', () => ({
     bottomSheet: jest.fn(),
@@ -62,7 +62,7 @@ describe('DataErased', () => {
 
     it('reconnect button: invokes the handler and disables / shows loading while in flight', async () => {
         let resolveReconnect: (value: {error?: unknown}) => void = () => {};
-        jest.mocked(reconnectErasedServer).mockReturnValue(new Promise((r) => {
+        jest.mocked(restoreServerAfterDatabaseWipe).mockReturnValue(new Promise((r) => {
             resolveReconnect = r;
         }));
 
@@ -70,8 +70,8 @@ describe('DataErased', () => {
 
         fireEvent.press(getByTestId('data_erased.reconnect.button'));
 
-        expect(reconnectErasedServer).toHaveBeenCalledTimes(1);
-        expect(reconnectErasedServer).toHaveBeenCalledWith(serverUrl);
+        expect(restoreServerAfterDatabaseWipe).toHaveBeenCalledTimes(1);
+        expect(restoreServerAfterDatabaseWipe).toHaveBeenCalledWith(serverUrl);
 
         // Disabled / loading state surfaces while the promise is pending.
         await waitFor(() => {
@@ -84,7 +84,7 @@ describe('DataErased', () => {
     });
 
     it('clears the inline error when the app comes back from background', async () => {
-        jest.mocked(reconnectErasedServer).mockResolvedValue({error: new Error('Network unreachable')});
+        jest.mocked(restoreServerAfterDatabaseWipe).mockResolvedValue({error: new Error('Network unreachable')});
 
         const handlers: Array<(state: AppStateStatus) => void> = [];
         const removeSpy = jest.fn();
@@ -115,8 +115,8 @@ describe('DataErased', () => {
         (AppState.addEventListener as jest.Mock).mockReturnValue({remove: jest.fn()});
     });
 
-    it('shows inline error text when reconnectErasedServer returns {error}', async () => {
-        jest.mocked(reconnectErasedServer).mockResolvedValue({error: new Error('Network unreachable')});
+    it('shows inline error text when restoreServerAfterDatabaseWipe returns {error}', async () => {
+        jest.mocked(restoreServerAfterDatabaseWipe).mockResolvedValue({error: new Error('Network unreachable')});
 
         const {getByTestId, findByText} = renderScreen();
 

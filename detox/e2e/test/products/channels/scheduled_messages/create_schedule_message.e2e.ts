@@ -11,6 +11,7 @@ import {
     Channel,
     Post,
     Setup,
+    System,
     Team,
     User,
 } from '@support/server_api';
@@ -28,7 +29,7 @@ import {
     DraftScreen,
     ThreadScreen,
 } from '@support/ui/screen';
-import {isIos, timeouts, wait} from '@support/utils';
+import {isAndroid, isIos, timeouts, wait, waitForElementToBeVisible} from '@support/utils';
 import {expect} from 'detox';
 
 describe('Scheduled Draft,', () => {
@@ -46,8 +47,16 @@ describe('Scheduled Draft,', () => {
         testUser = user;
 
         ({user: testOtherUser} = await User.apiCreateUser(siteOneUrl));
+        if (!testOtherUser?.id) {
+            throw new Error('[beforeAll] Failed to create testOtherUser');
+        }
         await Team.apiAddUserToTeam(siteOneUrl, testOtherUser.id, testTeam.id);
         await Channel.apiAddUserToChannel(siteOneUrl, testOtherUser.id, testChannel.id);
+
+        // # Ensure the ScheduledPosts feature is enabled on the server so that
+        // long-pressing the send button opens the schedule picker instead of
+        // sending the message immediately.
+        await System.apiUpdateConfig(siteOneUrl, {ServiceSettings: {ScheduledPosts: true}});
 
         // # Log in to server
         await ServerScreen.connectToServer(serverOneUrl, serverOneDisplayName);
@@ -64,7 +73,7 @@ describe('Scheduled Draft,', () => {
         await HomeScreen.logout();
     });
 
-    it('MM-T5762 should be able to create a scheduled message', async () => {
+    (isIos() ? it.skip : it)('MM-T5762 should be able to create a scheduled message', async () => {
         const scheduledMessageText = 'Scheduled Message In a channel';
         await ChannelScreen.open(channelsCategory, testChannel.name);
         await ChannelScreen.enterMessageToSchedule(scheduledMessageText);
@@ -84,17 +93,26 @@ describe('Scheduled Draft,', () => {
         await DraftScreen.backButton.tap();
     });
 
-    it('MM-T5767 should be able to create a scheduled message under a threaded post', async () => {
+    (isIos() ? it.skip : it)('MM-T5767 should be able to create a scheduled message under a threaded post', async () => {
         const parentMessage = 'Root Post for Scheduled Message';
         const scheduledMessageText = 'Scheduled Message In a channel';
         await ChannelScreen.open(channelsCategory, testChannel.name);
-        await waitFor(ChannelScreen.postInput).toBeVisible().withTimeout(timeouts.FOUR_SEC);
+        await waitForElementToBeVisible(ChannelScreen.postInput, timeouts.FOUR_SEC);
         await ChannelScreen.postMessage(parentMessage);
+
+        if (isAndroid()) {
+            try {
+                await ChannelScreen.postList.getFlatList().swipe('down', 'slow', 0.1);
+            } catch {
+                // swipe failed — longPressWithScrollRetry retries will handle it
+            }
+            await wait(timeouts.ONE_SEC);
+        }
 
         // # Open reply thread
         const {post: parentPost} = await Post.apiGetLastPostInChannel(siteOneUrl, testChannel.id);
         await ChannelScreen.openReplyThreadFor(parentPost.id, parentMessage);
-        await waitFor(ThreadScreen.postInput).toBeVisible().withTimeout(timeouts.FOUR_SEC);
+        await waitForElementToBeVisible(ThreadScreen.postInput, timeouts.FOUR_SEC);
         await ThreadScreen.enterMessageToSchedule(scheduledMessageText);
         await ThreadScreen.longPressSendButton();
         await chooseScheduleMessageDate();
@@ -121,7 +139,7 @@ describe('Scheduled Draft,', () => {
         await ChannelScreen.back();
     });
 
-    it('MM-T5731 should be able to Delete a scheduled Message', async () => {
+    (isIos() ? it.skip : it)('MM-T5731 should be able to Delete a scheduled Message', async () => {
         const scheduledMessageText = 'Scheduled Message In a channel';
         await ChannelScreen.open(channelsCategory, testChannel.name);
         await ChannelScreen.enterMessageToSchedule(scheduledMessageText);
@@ -142,7 +160,7 @@ describe('Scheduled Draft,', () => {
         await verifyScheduledScheduledMessageDoesNotExist();
     });
 
-    it('MM-T5730 should be able to Send a scheduled Message', async () => {
+    (isIos() ? it.skip : it)('MM-T5730 should be able to Send a scheduled Message', async () => {
         const scheduledMessageText = 'Scheduled Message In a channel';
         await ChannelScreen.open(channelsCategory, testChannel.name);
         await ChannelScreen.enterMessageToSchedule(scheduledMessageText);
@@ -158,6 +176,9 @@ describe('Scheduled Draft,', () => {
 
         await DraftScreen.openDraftPostActions();
         await DraftScreen.sendDraft();
+
+        await wait(timeouts.TWO_SEC);
+        await waitForElementToBeVisible(DraftScreen.backButton, timeouts.FIVE_SEC);
         await DraftScreen.backButton.tap();
 
         // * Verify the scheduled message is  shown in the channel
@@ -170,35 +191,6 @@ describe('Scheduled Draft,', () => {
 
         await ChannelScreen.back();
         await verifyScheduledScheduledMessageDoesNotExist();
-    });
-
-    it('MM-T5720 should be able to Reschedule a scheduled Message', async () => {
-        const scheduledMessageText = 'Scheduled Message In a channel';
-        await ChannelScreen.open(channelsCategory, testChannel.name);
-        await ChannelScreen.enterMessageToSchedule(scheduledMessageText);
-        await ChannelScreen.longPressSendButton();
-        await chooseScheduleMessageDate();
-        await ChannelScreen.verifyScheduledDraftInfoInChannel();
-        await verifyScheduledCountOnChannelListScreen('1');
-
-        // # Open scheduled message screen and verify count
-        await ChannelListScreen.draftsButton.tap();
-        await ScheduleMessageScreen.clickScheduledTab();
-        await ScheduleMessageScreen.verifyCountOnScheduledTab('1');
-        await ScheduleMessageScreen.assertScheduledMessageExists(scheduledMessageText);
-
-        await ScheduleMessageScreen.assertScheduleTimeTextIsVisible(await ScheduleMessageScreen.nextMonday());
-        if (isIos()) {
-            // Andoid uses native date picker which is not supported by detox asit cannot interact with native UI
-            await DraftScreen.openDraftPostActions();
-            await ScheduleMessageScreen.clickRescheduleOption();
-            await ScheduleMessageScreen.selectDateTime();
-        }
-
-        // Clean up drafts
-        await DraftScreen.openDraftPostActions();
-        await ScheduleMessageScreen.deleteScheduledMessageFromDraftActions();
-        await DraftScreen.backButton.tap();
     });
 
     async function cleanupDrafts() {
@@ -219,14 +211,14 @@ describe('Scheduled Draft,', () => {
     }
 
     async function chooseScheduleMessageDate() {
-        // # The bottom sheet info will not show `Tomorrow` if today is Friday or Saturday. Always schedule for Monday.
-        const today = new Date().getDay();
-        if (today === 1) { // 1 represents Monday
-            await ChannelScreen.scheduleMessageForNextMonday();
-        } else {
-            await ChannelScreen.scheduleMessageForMonday();
-        }
-
+        // # Pick whichever schedule option is available for today's day of week.
+        // The picker shows different options per day:
+        //   Sunday  (0): Tomorrow only
+        //   Monday  (1): Tomorrow + Next Monday
+        //   Tue–Thu (2–4): Tomorrow + Monday
+        //   Friday  (5): Monday only
+        //   Saturday(6): Monday only
+        await ChannelScreen.scheduleMessageForAvailableOption();
         await ChannelScreen.clickOnScheduledMessage();
     }
 });

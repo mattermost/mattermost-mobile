@@ -1,0 +1,25 @@
+name: build-android-maestro-apk
+description: >-
+  Build a release APK with an embedded JS bundle for Maestro E2E.
+  Does not install Detox — see android/settings.gradle.
+
+runs:
+  using: composite
+  steps:
+    - name: Set .env with RUNNING_E2E=true
+      shell: bash
+      run: echo "RUNNING_E2E=true" > .env
+
+    - name: Cache Gradle dependencies
+      uses: actions/cache@27d5ce7f107fe9357f9df03efb73ab90386fccae # v5.0.5
+      with:
+        path: /home/runner/.gradle/caches/modules-2/
+        key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
+        restore-keys: ${{ runner.os }}-gradle-
+
+    - name: Build Android release APK for Maestro
+      shell: bash
+      run: |
+        cd android
+        # x86_64 only — Maestro CI runs on the same API-35 x86_64 emulator as Detox.
+        ./gradlew assembleRelease -PreactNativeArchitectures=x86_64

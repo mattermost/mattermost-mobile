@@ -2,15 +2,7 @@
 // See LICENSE.txt for license information.
 
 // *******************************************************************
-// E2E tests for Share with connected workspaces
-// Navigation: Channel → Channel Info → Channel Settings → Configuration → Share with connected workspaces
-//
-// Requirements for "Share with connected workspaces" to be visible:
-// - Server license must include Shared Channels (license.SharedChannels === 'true').
-//   The server only sends ExperimentalSharedChannels to the client when license.HasSharedChannels().
-// - Config: ConnectedWorkspacesSettings.EnableSharedChannels = true (server struct; client sees ExperimentalSharedChannels).
-// - User must have MANAGE_SHARED_CHANNELS (e.g. system_admin role).
-// - Channel must be a public/private channel (not DM/GM).
+// Share with connected workspaces — needs Shared Channels license, EnableSharedChannels, MANAGE_SHARED_CHANNELS.
 // *******************************************************************
 
 import {Channel, Setup, System, User} from '@support/server_api';
@@ -28,8 +20,11 @@ import {
     ServerScreen,
     HomeScreen,
 } from '@support/ui/screen';
-import {timeouts, wait} from '@support/utils';
+import {tapNativeBackButton, timeouts, wait} from '@support/utils';
 import {expect, device, element, by, waitFor} from 'detox';
+
+// beforeAll: apiInit + config + login under CI load — 6min hook timeout.
+jest.setTimeout(360000);
 
 describe('Share with connected workspaces', () => {
     const serverOneDisplayName = 'Server 1';
@@ -53,14 +48,11 @@ describe('Share with connected workspaces', () => {
         }
     };
 
-    // Tap the RNN back button N times to unwind from nested screens (Configuration, Share, etc.).
-    // The Channel Info screen uses a close button (close.channel_info.button), not screen.back.button.
-    // When unwinding all the way to the channel, pass channelInfoCloseButtonId so the last tap uses it.
+    // Tap native back N times; last tap uses channel_info close button (nav back has no testID).
     const tapBackButton = async (times: number, lastButtonId?: string) => {
-        const backButton = element(by.id('screen.back.button'));
         const backTaps = lastButtonId ? times - 1 : times;
         await Array.from({length: backTaps}).reduce(
-            (p: Promise<void>) => p.then(() => backButton.tap()).then(() => wait(timeouts.ONE_SEC)),
+            (p: Promise<void>) => p.then(() => tapNativeBackButton()).then(() => wait(timeouts.ONE_SEC)),
             Promise.resolve(),
         );
         if (lastButtonId) {
@@ -79,7 +71,23 @@ describe('Share with connected workspaces', () => {
 
         await User.apiAdminLogin(siteOneUrl);
         const {license} = await System.apiGetClientLicense(siteOneUrl);
-        sharedChannelsAvailable = license?.SharedChannels === 'true';
+        const hasSharedChannelsLicense = license?.SharedChannels === 'true';
+
+        if (hasSharedChannelsLicense) {
+            await System.apiPatchConfig(siteOneUrl, {
+                ConnectedWorkspacesSettings: {EnableRemoteClusterService: true},
+            });
+            const {error: rcError} = await System.apiGetRemoteClusters(siteOneUrl);
+            sharedChannelsAvailable = !rcError;
+
+            // Reset to clean state regardless of outcome.
+            await System.apiPatchConfig(siteOneUrl, {
+                ConnectedWorkspacesSettings: {
+                    EnableSharedChannels: false,
+                    EnableRemoteClusterService: false,
+                },
+            });
+        }
 
         // Enable autotranslation so the Configuration option is always visible in Channel Settings
         // (required when shared channels is disabled, e.g. TC-MOB-02).
@@ -126,7 +134,10 @@ describe('Share with connected workspaces', () => {
     const setSharedChannelsFeature = async (enabled: boolean) => {
         await User.apiAdminLogin(siteOneUrl);
         await System.apiPatchConfig(siteOneUrl, {
-            ConnectedWorkspacesSettings: {EnableSharedChannels: enabled},
+            ConnectedWorkspacesSettings: {
+                EnableSharedChannels: enabled,
+                EnableRemoteClusterService: enabled,
+            },
         });
     };
 

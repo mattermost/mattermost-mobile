@@ -2,7 +2,7 @@
 // See LICENSE.txt for license information.
 import {RTCMonitor, RTCPeer, parseRTCStats} from '@mattermost/calls/lib';
 import {zlibSync, strToU8} from 'fflate';
-import {Platform} from 'react-native';
+import {DeviceEventEmitter, Platform} from 'react-native';
 import InCallManager from 'react-native-incall-manager';
 
 import NetworkManager from '@managers/network_manager';
@@ -33,7 +33,6 @@ jest.mock('react-native-webrtc', () => ({
 jest.mock('@calls/connection/foreground_service', () => ({
     foregroundServiceStart: jest.fn(),
     foregroundServiceStop: jest.fn(),
-    foregroundServiceSetup: jest.fn(),
 }));
 
 describe('newConnection', () => {
@@ -79,6 +78,8 @@ describe('newConnection', () => {
         },
     };
 
+    const mockIntl = {formatMessage: jest.fn((m) => m.defaultMessage)} as unknown as import('react-intl').IntlShape;
+
     beforeAll(() => {
         // eslint-disable-next-line
         // @ts-ignore
@@ -94,6 +95,8 @@ describe('newConnection', () => {
             return {
                 getStats: jest.fn(),
                 on: jest.fn(),
+                once: jest.fn(),
+                off: jest.fn(),
             };
         });
 
@@ -139,6 +142,8 @@ describe('newConnection', () => {
         // @ts-ignore
         RTCPeer.mockImplementation(() => ({
             on: jest.fn(),
+            once: jest.fn(),
+            off: jest.fn(),
             getStats: jest.fn(),
         }));
 
@@ -164,6 +169,7 @@ describe('newConnection', () => {
             () => {},
             () => {},
             true,
+            mockIntl,
         );
         expect(connection).toBeDefined();
 
@@ -173,6 +179,34 @@ describe('newConnection', () => {
         expect(openHandler).toBeDefined();
         openHandler!('originalConnID', 'prevConnID', true);
         expect(wsSend).toHaveBeenCalledWith('reconnect', {channelID: 'channelID', originalConnID: 'originalConnID', prevConnID: 'prevConnID'});
+    });
+
+    it('registers the audio device changed listener before starting InCallManager', async () => {
+        // eslint-disable-next-line
+        // @ts-ignore
+        WebSocketClient.mockImplementation(() => ({
+            initialize: jest.fn(),
+            on: jest.fn(),
+            send: jest.fn(),
+        }));
+
+        await newConnection(
+            'http://localhost:8065',
+            'channelID',
+            () => {},
+            () => {},
+            false,
+            mockIntl,
+        );
+
+        const addListenerMock = DeviceEventEmitter.addListener as jest.Mock;
+        const audioListenerCallIndex = addListenerMock.mock.calls.findIndex(([eventType]) => eventType === 'onAudioDeviceChanged');
+        expect(audioListenerCallIndex).not.toBe(-1);
+
+        const audioListenerCallOrder = addListenerMock.mock.invocationCallOrder[audioListenerCallIndex];
+        const startCallOrder = (InCallManager.start as jest.Mock).mock.invocationCallOrder[0];
+
+        expect(audioListenerCallOrder).toBeLessThan(startCallOrder);
     });
 
     it('mute/unmute', async () => {
@@ -186,6 +220,8 @@ describe('newConnection', () => {
             replaceTrack: mockReplaceTrack,
             addStream: mockAddStream,
             on: jest.fn(),
+            once: jest.fn(),
+            off: jest.fn(),
             getStats: jest.fn(),
         }));
 
@@ -207,6 +243,7 @@ describe('newConnection', () => {
             () => {},
             () => {},
             true,
+            mockIntl,
         );
 
         // First unmute should use addStream
@@ -239,6 +276,7 @@ describe('newConnection', () => {
             () => {},
             () => {},
             false,
+            mockIntl,
         );
 
         connection.raiseHand();
@@ -265,6 +303,7 @@ describe('newConnection', () => {
             () => {},
             () => {},
             false,
+            mockIntl,
         );
 
         const emoji = {name: 'thumbsup', unified: '1F44D'};
@@ -297,6 +336,7 @@ describe('newConnection', () => {
             mockCloseCb,
             () => {},
             false,
+            mockIntl,
         );
 
         // eslint-disable-next-line
@@ -332,6 +372,7 @@ describe('newConnection', () => {
             mockCloseCb,
             () => {},
             false,
+            mockIntl,
         );
 
         // eslint-disable-next-line
@@ -349,6 +390,7 @@ describe('newConnection', () => {
             () => {},
             () => {},
             true,
+            mockIntl,
         );
 
         expect(getUserMedia).toHaveBeenCalledWith({
@@ -375,6 +417,8 @@ describe('newConnection', () => {
             on: (event: string, handler: any) => {
                 handlers[event] = handler;
             },
+            once: jest.fn(),
+            off: jest.fn(),
             getStats: jest.fn(),
             destroy: peerDestroy,
             signal: peerSignal,
@@ -406,6 +450,7 @@ describe('newConnection', () => {
             () => {},
             () => {},
             true,
+            mockIntl,
         );
         expect(connection).toBeDefined();
 
@@ -463,6 +508,8 @@ describe('newConnection', () => {
             on: (event: string, handler: any) => {
                 handlers[event] = handler;
             },
+            once: jest.fn(),
+            off: jest.fn(),
             getStats: jest.fn(),
             destroy: peerDestroy,
             signal: peerSignal,
@@ -491,6 +538,7 @@ describe('newConnection', () => {
             () => {},
             () => {},
             true,
+            mockIntl,
         );
         expect(connection).toBeDefined();
 
@@ -549,39 +597,51 @@ describe('newConnection', () => {
         // @ts-ignore
         parseRTCStats.mockImplementation(() => mockRTCStats);
 
-        const connection = await newConnection('http://localhost:8065', 'channelID', () => {}, () => {}, false);
+        const connection = await newConnection('http://localhost:8065', 'channelID', () => {}, () => {}, false, mockIntl);
         expect(connection).toBeDefined();
         expect(joinHandler).toHaveBeenCalled();
         await joinPromise;
     });
 
     it('waitForPeerConnection', async () => {
-        let connection = await newConnection(
+        // Default mock: ws.on('join') never fires → peer never created →
+        // onPeerConnected resolver never called → timeout fires.
+        const connection = await newConnection(
             'http://localhost:8065',
             'channelID',
             () => {},
             () => {},
             true,
+            mockIntl,
         );
         expect(connection).toBeDefined();
 
         await Promise.resolve();
 
-        let res = connection.waitForPeerConnection();
-
+        const res = connection.waitForPeerConnection();
         jest.runAllTimers();
+        await expect(res).rejects.toEqual(new Error('timed out waiting for peer connection'));
+    });
 
-        await expect(res).rejects.toEqual('timed out waiting for peer connection');
+    it('waitForPeerConnection resolves when peer connects', async () => {
+        // Capture the 'connect' callback registered by peer.once() inside
+        // ws.on('join'). We fire it after waitForPeerConnection has had a
+        // chance to set its onPeerConnected resolver.
+        let connectCb: (() => void) | null = null;
 
         // eslint-disable-next-line
         // @ts-ignore
-        RTCPeer.mockImplementation(() => {
-            return {
-                getStats: jest.fn(),
-                on: jest.fn(),
-                connected: true,
-            };
-        });
+        RTCPeer.mockImplementation(() => ({
+            getStats: jest.fn(),
+            on: jest.fn(),
+            once: jest.fn().mockImplementation((event: string, cb: () => void) => {
+                if (event === 'connect') {
+                    connectCb = cb;
+                }
+            }),
+            off: jest.fn(),
+            connected: false,
+        }));
 
         // eslint-disable-next-line
         // @ts-ignore
@@ -596,19 +656,24 @@ describe('newConnection', () => {
             sessionID: 'sessionID',
         }));
 
-        connection = await newConnection(
+        const connection = await newConnection(
             'http://localhost:8065',
             'channelID',
             () => {},
             () => {},
             true,
+            mockIntl,
         );
         expect(connection).toBeDefined();
+        expect(connectCb).not.toBeNull();
 
         await Promise.resolve();
 
-        res = connection.waitForPeerConnection();
-        jest.runAllTimers();
+        const res = connection.waitForPeerConnection();
+
+        // Now fire the connect event — onPeerConnected is set.
+        connectCb!();
+
         await expect(res).resolves.toBe('sessionID');
     });
 });

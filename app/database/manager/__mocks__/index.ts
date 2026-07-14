@@ -250,6 +250,22 @@ class DatabaseManagerSingleton {
         return server;
     };
 
+    public getServerUrlForDatabase = (database: Database): string | undefined => {
+        const databaseName = (database.adapter as {dbName?: string} | undefined)?.dbName;
+
+        return Object.entries(this.serverDatabases).find(([, serverDatabase]) => {
+            if (!serverDatabase) {
+                return false;
+            }
+
+            if (serverDatabase.database === database) {
+                return true;
+            }
+
+            return (serverDatabase.database.adapter as {dbName?: string} | undefined)?.dbName === databaseName;
+        })?.[0];
+    };
+
     public getActiveServerDatabase = async (): Promise<Database|undefined> => {
         const server = await this.getActiveServer();
         if (server?.url) {
@@ -335,10 +351,24 @@ class DatabaseManagerSingleton {
         // On Android, we'll delete both the *.db file and the *.db-journal file
         const androidFilesDir = `${this.databaseDirectory}databases/`;
         const databaseFile = `${androidFilesDir}${databaseName}.db`;
+        const databaseShm = `${androidFilesDir}${databaseName}.db-shm`;
+        const databaseWal = `${androidFilesDir}${databaseName}.db-wal`;
         const databaseJournal = `${androidFilesDir}${databaseName}.db-journal`;
 
         try {
             new File(databaseFile).delete();
+        } catch {
+            // do nothing
+        }
+
+        try {
+            new File(databaseShm).delete();
+        } catch {
+            // do nothing
+        }
+
+        try {
+            new File(databaseWal).delete();
         } catch {
             // do nothing
         }
