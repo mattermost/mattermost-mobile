@@ -194,7 +194,13 @@ public class Database: NSObject {
         let query = globalTable.select(valueCol).filter(idCol == "pushSigningKey\(serverUrl)")
         do {
             if let result = try db.pluck(query) {
-                return try result.get(valueCol)
+                let rawValue = try result.get(valueCol)
+                guard let data = rawValue.data(using: .utf8),
+                      let decoded = try? JSONDecoder().decode(String.self, from: data)
+                else {
+                    return rawValue
+                }
+                return decoded
             }
         } catch {
             GekidouLogger.shared.log(.error, "Gekidou Database: failed to get push signing key for server %{public}@ - %{public}@", serverUrl, String(describing: error))

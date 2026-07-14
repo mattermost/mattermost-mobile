@@ -51,7 +51,9 @@ extension PushNotification {
                 GekidouLogger.shared.log(.info, "Gekidou PushNotification: Signature verification: Cannot verify unsigned notification for zero-persistence server")
                 return false
             }
-            guard let signingKey = Database.default.getZeroPersistenceSigningKey(serverUrl) else {
+            guard let signingKey = Database.default.getZeroPersistenceSigningKey(serverUrl),
+                  !signingKey.isEmpty
+            else {
                 GekidouLogger.shared.log(.info, "Gekidou PushNotification: Signature verification: No signing key stored for zero-persistence server")
                 return false
             }

@@ -10,16 +10,12 @@ import {NavigationStore} from '@store/navigation_store';
 import {mockApiClient} from '@test/mock_api_client';
 import TestHelper from '@test/test_helper';
 
-import {appEntry} from './app';
 import {pushNotificationEntry} from './notification';
 
 import type ServerDataOperator from '@database/operator/server_data_operator';
 
 jest.mock('@managers/performance_metrics_manager');
 jest.mock('@store/navigation_store');
-jest.mock('./app', () => ({
-    appEntry: jest.fn(() => Promise.resolve({})),
-}));
 
 const mockDismissKeyboard = jest.fn();
 jest.mock('@utils/keyboard', () => ({
@@ -37,7 +33,6 @@ jest.mock('@utils/notification', () => {
 });
 
 const mockedNavigationStore = jest.mocked(NavigationStore);
-const mockedAppEntry = jest.mocked(appEntry);
 
 describe('Performance metrics are set correctly', () => {
     const serverUrl = 'http://www.someserverurl.com';
@@ -53,12 +48,6 @@ describe('Performance metrics are set correctly', () => {
             }
             if (url.match(/\/api\/v4\/posts\/[a-z1-90-]*\/thread/)) {
                 return {status: 200, ok: true, data: {order: [], posts: {}}};
-            }
-            if (url.match(/\/api\/v4\/teams\/zpm-missing-team(\/members\/me)?$/)) {
-                return {status: 500, ok: false};
-            }
-            if (url.match(/\/api\/v4\/channels\/zpm-missing-channel(\/members\/me)?$/)) {
-                return {status: 500, ok: false};
             }
             console.log(`GET ${url} not registered in the mock`);
             return {status: 404, ok: false};
@@ -102,7 +91,6 @@ describe('Performance metrics are set correctly', () => {
     afterEach(async () => {
         await TestHelper.tearDown();
         NetworkManager.invalidateClient(serverUrl);
-        mockedAppEntry.mockClear();
         mockEmitNotificationError.mockClear();
     });
 
@@ -225,55 +213,4 @@ describe('Performance metrics are set correctly', () => {
         expect(PerformanceMetricsManager.setLoadTarget).toHaveBeenCalledWith('CHANNEL');
     });
 
-    it('falls back to appEntry instead of a connection error when the team fetch fails on a zero persistence server', async () => {
-        await DatabaseManager.updatePersistenceFlag(serverUrl, 'zero-persistence');
-
-        const result = await pushNotificationEntry(serverUrl, {
-            channel_id: TestHelper.basicChannel!.id,
-            team_id: 'zpm-missing-team',
-            isCRTEnabled: false, // isCRTEnabled is not checked at this level
-            post_id: '', // Post ID is not checked at this level
-            type: '', // Type is not checked at this level
-            version: '', // Version is not checked at this level
-        });
-
-        expect(result).toEqual({});
-        expect(mockedAppEntry).toHaveBeenCalledWith(serverUrl);
-        expect(mockEmitNotificationError).not.toHaveBeenCalled();
-    });
-
-    it('emits a connection error when the appEntry fallback also fails on a zero persistence server', async () => {
-        await DatabaseManager.updatePersistenceFlag(serverUrl, 'zero-persistence');
-        mockedAppEntry.mockResolvedValueOnce({error: 'appEntry failed'});
-
-        const result = await pushNotificationEntry(serverUrl, {
-            channel_id: TestHelper.basicChannel!.id,
-            team_id: 'zpm-missing-team',
-            isCRTEnabled: false, // isCRTEnabled is not checked at this level
-            post_id: '', // Post ID is not checked at this level
-            type: '', // Type is not checked at this level
-            version: '', // Version is not checked at this level
-        });
-
-        expect(result).toEqual({});
-        expect(mockedAppEntry).toHaveBeenCalledWith(serverUrl);
-        expect(mockEmitNotificationError).toHaveBeenCalledWith('Connection');
-    });
-
-    it('falls back to appEntry instead of a connection error when the channel fetch fails on a zero persistence server', async () => {
-        await DatabaseManager.updatePersistenceFlag(serverUrl, 'zero-persistence');
-
-        const result = await pushNotificationEntry(serverUrl, {
-            channel_id: 'zpm-missing-channel',
-            team_id: TestHelper.basicTeam!.id,
-            isCRTEnabled: false, // isCRTEnabled is not checked at this level
-            post_id: '', // Post ID is not checked at this level
-            type: '', // Type is not checked at this level
-            version: '', // Version is not checked at this level
-        });
-
-        expect(result).toEqual({});
-        expect(mockedAppEntry).toHaveBeenCalledWith(serverUrl);
-        expect(mockEmitNotificationError).not.toHaveBeenCalled();
-    });
 });

@@ -5,6 +5,7 @@ import {fetchMyChannel, switchToChannelById} from '@actions/remote/channel';
 import {fetchPostById} from '@actions/remote/post';
 import {fetchMyTeam} from '@actions/remote/team';
 import {fetchAndSwitchToThread} from '@actions/remote/thread';
+import {refetchCurrentUser} from '@actions/remote/user';
 import {getDefaultThemeByAppearance} from '@context/theme';
 import DatabaseManager from '@database/manager';
 import PerformanceMetricsManager from '@managers/performance_metrics_manager';
@@ -13,7 +14,7 @@ import {getServer} from '@queries/app/servers';
 import {getMyChannel} from '@queries/servers/channel';
 import {getPostById} from '@queries/servers/post';
 import {queryThemePreferences} from '@queries/servers/preference';
-import {getCurrentTeamId} from '@queries/servers/system';
+import {getCurrentTeamId, getCurrentUserId} from '@queries/servers/system';
 import {getMyTeamById} from '@queries/servers/team';
 import {getIsCRTEnabled} from '@queries/servers/thread';
 import EphemeralStore from '@store/ephemeral_store';
@@ -21,8 +22,6 @@ import {isErrorWithStatusCode} from '@utils/errors';
 import {dismissKeyboard} from '@utils/keyboard';
 import {emitNotificationError} from '@utils/notification';
 import {setThemeDefaults, updateThemeIfNeeded} from '@utils/theme';
-
-import {appEntry} from './app';
 
 import type MyChannelModel from '@typings/database/models/servers/my_channel';
 import type MyTeamModel from '@typings/database/models/servers/my_team';
@@ -77,24 +76,25 @@ export async function pushNotificationEntry(serverUrl: string, notification: Not
     let myChannel: MyChannelModel | ChannelMembership | undefined = await getMyChannel(database, channelId);
     let myTeam: MyTeamModel | TeamMembership | undefined = await getMyTeamById(database, teamId);
 
+    if (isZeroPersistence && !myChannel && !myTeam) {
+        // no values in db and zero persistence mode means we probably need to refetch current user id
+        const existingUserId = await getCurrentUserId(database);
+        if (!existingUserId) {
+            await refetchCurrentUser(serverUrl, undefined);
+        }
+    }
+
     if (!myTeam) {
         const resp = await fetchMyTeam(serverUrl, teamId, false, groupLabel);
         if (resp.error) {
             if (isErrorWithStatusCode(resp.error) && resp.error.status_code === 403) {
                 emitNotificationError('Team');
-                return {};
+            } else {
+                emitNotificationError('Connection');
             }
-            if (isZeroPersistence) {
-                const {error: appEntryError} = await appEntry(serverUrl);
-                if (appEntryError) {
-                    emitNotificationError('Connection');
-                }
-                return {};
-            }
-            emitNotificationError('Connection');
-            return {};
+        } else {
+            myTeam = resp.memberships?.[0];
         }
-        myTeam = resp.memberships?.[0];
     }
 
     if (!myChannel) {
@@ -102,19 +102,12 @@ export async function pushNotificationEntry(serverUrl: string, notification: Not
         if (resp.error) {
             if (isErrorWithStatusCode(resp.error) && resp.error.status_code === 403) {
                 emitNotificationError('Channel');
-                return {};
+            } else {
+                emitNotificationError('Connection');
             }
-            if (isZeroPersistence) {
-                const {error: appEntryError} = await appEntry(serverUrl);
-                if (appEntryError) {
-                    emitNotificationError('Connection');
-                }
-                return {};
-            }
-            emitNotificationError('Connection');
-            return {};
+        } else {
+            myChannel = resp.memberships?.[0];
         }
-        myChannel = resp.memberships?.[0];
     }
 
     const isCRTEnabled = await getIsCRTEnabled(database);

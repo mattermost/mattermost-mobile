@@ -169,18 +169,20 @@ export async function storeConfig(serverUrl: string, config: ClientConfig | unde
             }
         }
 
+        const wasZeroPersistence = isZeroPersistenceConfig(currentConfig);
         const isZeroPersistence = isZeroPersistenceConfig(config);
         const signingKeyChanged = currentConfig?.AsymmetricSigningPublicKey !== config.AsymmetricSigningPublicKey;
+        const enteringZeroPersistence = isZeroPersistence && !wasZeroPersistence;
         const hasNoPriorConfig = Object.keys(currentConfig ?? {}).length === 0;
 
         // signing key is stored in global storage to be used for push notifications, even when running in zero persistence mode.
-        if (isZeroPersistence && signingKeyChanged) {
+        if (isZeroPersistence && (signingKeyChanged || enteringZeroPersistence)) {
             if (config.AsymmetricSigningPublicKey) {
                 await storePushSigningKey(serverUrl, config.AsymmetricSigningPublicKey);
             } else {
                 await removePushSigningKey(serverUrl);
             }
-        } else if (!isZeroPersistence && (hasNoPriorConfig || isZeroPersistenceConfig(currentConfig))) {
+        } else if (!isZeroPersistence && (hasNoPriorConfig || wasZeroPersistence)) {
             await removePushSigningKey(serverUrl);
         }
 

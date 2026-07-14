@@ -2,10 +2,14 @@
 // See LICENSE.txt for license information.
 
 import {Tutorial} from '@constants';
-import {GLOBAL_IDENTIFIERS} from '@constants/database';
+import {GLOBAL_IDENTIFIERS, MM_TABLES} from '@constants/database';
 import DatabaseManager from '@database/manager';
 import {getActiveServerUrl} from '@init/credentials';
 import {logError} from '@utils/log';
+
+import type GlobalModel from '@typings/database/models/app/global';
+
+const {APP: {GLOBAL}} = MM_TABLES;
 
 export const storeGlobal = async (id: string, value: unknown, prepareRecordsOnly = false) => {
     try {
@@ -120,5 +124,14 @@ export const storePushSigningKey = async (serverUrl: string, key: string) => {
 };
 
 export const removePushSigningKey = async (serverUrl: string) => {
-    return storeGlobal(`${GLOBAL_IDENTIFIERS.PUSH_SIGNING_KEY}${serverUrl}`, null, false);
+    try {
+        const {database} = DatabaseManager.getAppDatabaseAndOperator();
+        const record = await database.get<GlobalModel>(GLOBAL).find(`${GLOBAL_IDENTIFIERS.PUSH_SIGNING_KEY}${serverUrl}`);
+        await database.write(async () => {
+            await record.destroyPermanently();
+        });
+    } catch {
+        // no cached signing key to remove
+    }
+    return {};
 };

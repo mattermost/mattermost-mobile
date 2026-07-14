@@ -136,6 +136,22 @@ describe('storeConfig', () => {
             expect(storePushSigningKey).not.toHaveBeenCalled();
         });
 
+        it('mirrors the signing key when entering zero-persistence even if the key is unchanged from the stored config', async () => {
+            await operator.handleConfigs({
+                configs: [
+                    {id: 'MobileEphemeralModeEnabled', value: 'false'},
+                    {id: 'AsymmetricSigningPublicKey', value: 'key-1'},
+                ],
+                configsToDelete: [],
+                prepareRecordsOnly: false,
+            });
+
+            await storeConfig(serverUrl, zeroPersistenceConfig);
+
+            expect(storePushSigningKey).toHaveBeenCalledWith(serverUrl, 'key-1');
+            expect(removePushSigningKey).not.toHaveBeenCalled();
+        });
+
         it('does not store the signing key when it is unchanged from the stored config', async () => {
             await operator.handleConfigs({
                 configs: [
