@@ -1,9 +1,8 @@
 name: S3 Build Cache
 description: >-
-  Cache/restore compiled app binaries (iOS .app, Android APK/build) in S3 keyed
-  by content fingerprint. Uses S3 instead of actions/cache because large binaries
-  (200MB–1GB) blow the 10GB GHA cache limit and cause eviction thrashing.
-  Pattern follows Artsy/eigen's S3 build cache.
+  Cache/restore compiled app binaries in S3 keyed by content fingerprint.
+  Uses S3 instead of actions/cache because large binaries (200MB–1GB)
+  blow the 10GB GHA cache limit and cause eviction thrashing.
 
 inputs:
   fingerprint:
@@ -23,7 +22,9 @@ inputs:
     description: 'Local path to cache (glob for restore, directory for save)'
     required: true
   mode:
-    description: 'restore (check + download) or save (upload after build)'
+    description: >-
+      restore (check + download), save (upload after build), or
+      check (existence only — no download; for cache-warming jobs)
     required: true
 
 outputs:
@@ -55,26 +56,25 @@ runs:
         set -eu
         S3_KEY="${KEY_PREFIX}${PLATFORM}/${FINGERPRINT}.tar.gz"
 
-        if [ "$MODE" = "restore" ]; then
+        if [ "$MODE" = "restore" ] || [ "$MODE" = "check" ]; then
           echo "Checking s3://${BUCKET}/${S3_KEY} ..."
           if aws s3 ls "s3://${BUCKET}/${S3_KEY}" 2>/dev/null; then
-            echo "Cache HIT — downloading..."
-            aws s3 cp "s3://${BUCKET}/${S3_KEY}" /tmp/build-cache.tar.gz
-            # Extract preserving the original directory structure (relative to repo root).
-            tar xzf /tmp/build-cache.tar.gz
-            rm -f /tmp/build-cache.tar.gz
+            if [ "$MODE" = "check" ]; then
+              echo "Cache HIT — existence-only check, skipping download."
+            else
+              echo "Cache HIT — downloading..."
+              aws s3 cp "s3://${BUCKET}/${S3_KEY}" /tmp/build-cache.tar.gz
+              tar xzf /tmp/build-cache.tar.gz
+              rm -f /tmp/build-cache.tar.gz
+              echo "Restored build from S3 (fingerprint=${FINGERPRINT:0:12})"
+            fi
             echo "cache-hit=true" >> "$GITHUB_OUTPUT"
-            echo "Restored build from S3 (fingerprint=${FINGERPRINT:0:12})"
           else
             echo "Cache MISS — no cached build for fingerprint ${FINGERPRINT:0:12}"
             echo "cache-hit=false" >> "$GITHUB_OUTPUT"
           fi
         elif [ "$MODE" = "save" ]; then
-          # Expand the glob/path and verify files exist before archiving.
-          # CACHE_PATH may be a glob (Mattermost-simulator-*.app.zip) or a
-          # directory (android/app/build). Unquoted expansion lets globs match;
-          # nullglob ensures a non-matching glob produces nothing instead of a
-          # literal pattern that tar would fail on.
+          # nullglob: non-matching glob → empty array instead of literal pattern.
           shopt -s nullglob
           FILES=()
           for f in $CACHE_PATH; do
@@ -94,6 +94,6 @@ runs:
           rm -f /tmp/build-cache.tar.gz
           echo "Saved build to S3 (fingerprint=${FINGERPRINT:0:12})"
         else
-          echo "::error::Invalid mode: $MODE (expected restore or save)"
+          echo "::error::Invalid mode: $MODE (expected restore, save, or check)"
           exit 1
         fi

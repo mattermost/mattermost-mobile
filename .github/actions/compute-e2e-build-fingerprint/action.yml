@@ -18,14 +18,10 @@ runs:
       id: compute
       shell: bash
       run: |
-        # Compute a fingerprint from git blob hashes of app-impacting paths.
-        # git ls-tree -r HEAD lists every tracked file with its blob hash,
-        # so any content change, addition, or deletion changes the fingerprint.
-        # Faster + more robust than find + md5sum over file contents.
-        # Must include every path that can change the compiled app binary.
-        # Keep in sync with build-impacting paths in e2e-label-manager.yml
-        # (excluding detox/** and .github/** — those re-run tests, not rebuild).
-        # Missing a path here causes false S3 cache HITs (tests run wrong binary).
+        # Fingerprint = sha256 of git blob hashes for all binary-impacting paths.
+        # Missing a path causes false cache HITs (wrong binary tested).
+        # Test files (detox/e2e/**, detox/maestro/**) are excluded so test-only
+        # PRs still hit cache. Keep app-source subset in sync with label-manager filter.
         case "${{ inputs.platform }}" in
           ios)
             paths=(app/ ios/ libraries/ share_extension/ patches/ \
@@ -34,15 +30,26 @@ runs:
                     package.json package-lock.json \
                     tsconfig.json babel.config.js metro.config.js \
                     index.tsx app.json react-native.config.js \
-                    ios/Podfile.lock)
+                    .nvmrc fastlane/)
             ;;
-          android-detox|android-maestro)
+          android-detox)
             paths=(app/ android/ libraries/ share_extension/ patches/ \
                     types/ assets/fonts/ assets/sounds/ \
                     assets/base/images/ assets/base/release/ assets/base/config.json \
                     package.json package-lock.json \
                     tsconfig.json babel.config.js metro.config.js \
-                    index.tsx app.json react-native.config.js)
+                    index.tsx app.json react-native.config.js \
+                    .nvmrc detox/.detoxrc.json detox/package.json \
+                    detox/package-lock.json detox/scripts/)
+            ;;
+          android-maestro)
+            paths=(app/ android/ libraries/ share_extension/ patches/ \
+                    types/ assets/fonts/ assets/sounds/ \
+                    assets/base/images/ assets/base/release/ assets/base/config.json \
+                    package.json package-lock.json \
+                    tsconfig.json babel.config.js metro.config.js \
+                    index.tsx app.json react-native.config.js \
+                    .nvmrc)
             ;;
           *)
             echo "::error::Invalid platform: ${{ inputs.platform }}"
@@ -50,12 +57,9 @@ runs:
             ;;
         esac
 
-        # git ls-tree should never fail on a valid checkout, but if it does
-        # (e.g., shallow clone edge case), fall back to the commit SHA so the
-        # build still runs — just without a cache hit.
-        fingerprint=$(git ls-tree -r HEAD -- "${paths[@]}" 2>/dev/null | md5sum | cut -d' ' -f1)
-        # d41d8cd98f00b204e9800998ecf8427e is the md5 of empty input.
-        if [ -z "$fingerprint" ] || [ "$fingerprint" = "d41d8cd98f00b204e9800998ecf8427e" ]; then
+        # Fall back to commit SHA if ls-tree fails (e.g., shallow clone) so the build still runs.
+        fingerprint=$(git ls-tree -r HEAD -- "${paths[@]}" 2>/dev/null | sha256sum | cut -d' ' -f1)
+        if [ -z "$fingerprint" ] || [ "$fingerprint" = "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855" ]; then
           fingerprint="nocache-$(git rev-parse --short HEAD 2>/dev/null || echo unknown)"
           echo "::warning::git ls-tree produced no output — using fallback fingerprint. S3 cache will miss."
         fi

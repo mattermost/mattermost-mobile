@@ -1,10 +1,7 @@
 name: E2E Nightly Cache Seed
 
-# Warms S3 build caches from main so PR builds with test-only changes
-# (same app fingerprint as main) can skip the 15-25m build step.
-# Required because S3 caches are shared across all branches (unlike GHA
-# cache which is branch-scoped — sibling PRs can't share each other's caches,
-# only the default branch cache is available to all).
+# Warms S3 build caches from main so PRs with test-only changes skip the build step.
+# Required: S3 cache is shared across branches, but only the default-branch seed is visible to all PRs.
 
 on:
   schedule:
@@ -39,7 +36,7 @@ jobs:
           platform: ios
           bucket: ${{ env.DETOX_AWS_S3_BUCKET }}
           cache-path: 'Mattermost-simulator-*.app.zip'
-          mode: restore
+          mode: check
 
       - name: Prepare iOS Build
         if: steps.cache-check.outputs.cache-hit != 'true'
@@ -99,7 +96,7 @@ jobs:
           platform: android-detox
           bucket: ${{ env.DETOX_AWS_S3_BUCKET }}
           cache-path: 'android/app/build'
-          mode: restore
+          mode: check
 
       - name: Prepare Android Build
         if: steps.cache-check.outputs.cache-hit != 'true'
@@ -158,7 +155,7 @@ jobs:
           platform: android-maestro
           bucket: ${{ env.DETOX_AWS_S3_BUCKET }}
           cache-path: 'android/app/build/outputs/apk/release/'
-          mode: restore
+          mode: check
 
       - name: Prepare Android Build
         if: steps.cache-check.outputs.cache-hit != 'true'
@@ -185,3 +182,39 @@ jobs:
           bucket: ${{ env.DETOX_AWS_S3_BUCKET }}
           cache-path: 'android/app/build/outputs/apk/release/'
           mode: save
+
+  # Prune e2e-builds/ objects older than RETENTION_DAYS — no bucket lifecycle rule exists.
+  # Fresh fingerprints are re-seeded nightly above and by PR builds.
+  prune-stale-cache:
+    name: Prune stale S3 build cache
+    runs-on: ubuntu-24.04
+    env:
+      DETOX_AWS_S3_BUCKET: "mattermost-detox-report"
+      RETENTION_DAYS: "21"
+    steps:
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@61815dcd50bd041e203e49132bacad1fd04d2708 # v5.1.1
+        with:
+          aws-access-key-id: ${{ secrets.MM_MOBILE_DETOX_AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.MM_MOBILE_DETOX_AWS_SECRET_ACCESS_KEY }}
+          aws-region: us-east-1
+
+      - name: Delete e2e-builds/ objects older than retention window
+        env:
+          BUCKET: ${{ env.DETOX_AWS_S3_BUCKET }}
+        run: |
+          set -eu
+          cutoff=$(date -u -d "${RETENTION_DAYS} days ago" +%Y-%m-%d)
+          # e2e-builds/ is shared by PR, nightly-seed, and CMT builds.
+          echo "Pruning s3://${BUCKET}/e2e-builds/ objects last modified before ${cutoff}"
+          deleted=0
+          # `aws s3 ls --recursive` prints: <YYYY-MM-DD> <HH:MM:SS> <size> <key>
+          while read -r date_col _time_col _size_col key; do
+            [ -z "${key:-}" ] && continue
+            if [[ "$date_col" < "$cutoff" ]]; then
+              echo "Deleting $key (last modified $date_col)"
+              aws s3 rm "s3://${BUCKET}/${key}"
+              deleted=$((deleted + 1))
+            fi
+          done < <(aws s3 ls "s3://${BUCKET}/e2e-builds/" --recursive)
+          echo "Pruned ${deleted} stale object(s)."

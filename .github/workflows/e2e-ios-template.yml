@@ -156,7 +156,6 @@ jobs:
 
       - name: Set Build ID
         id: resolve-device
-
         run: |
           BUILD_ID="${{ github.run_id }}-${{ env.DEVICE_NAME }}-${{ env.DEVICE_OS_VERSION}}"
           WORKFLOW_HASH=$(tr -dc a-z0-9 </dev/urandom | head -c 10)
@@ -193,7 +192,6 @@ jobs:
     strategy:
       fail-fast: false
       matrix: ${{ fromJSON(needs.generate-specs.outputs.specs) }}
-
     steps:
       - name: Checkout Repository
         uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
@@ -203,7 +201,6 @@ jobs:
       - name: ci/prepare-node-deps
         uses: ./.github/actions/prepare-node-deps
 
-      # ── Pillar 3: Cache simulator setup ───────────────────────────────────────
       # Cache Homebrew packages including applesimutils
       - name: Cache Homebrew packages
         uses: actions/cache@27d5ce7f107fe9357f9df03efb73ab90386fccae # v5.0.5

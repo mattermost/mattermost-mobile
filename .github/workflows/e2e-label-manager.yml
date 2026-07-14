@@ -41,7 +41,7 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  # ── Pillar 1: Skip E2E when the PR doesn't affect the app ───────────────────
+  # Skip E2E when PR has no app-impacting files.
   detect-e2e-impact:
     if: >-
       (github.event.action == 'synchronize' || github.event.action == 'opened')
@@ -80,7 +80,11 @@ jobs:
               - 'assets/base/images/**'
               - 'assets/base/release/**'
               - 'assets/base/config.json'
-              - '.detoxrc.json'
+              - '.nvmrc'
+              - 'fastlane/**'
+              - 'detox/.detoxrc.json'
+              - 'detox/package.json'
+              - 'detox/package-lock.json'
               - 'detox/e2e/**'
               - 'detox/maestro/**'
               - 'detox/scripts/**'
@@ -190,7 +194,7 @@ jobs:
               labels: ['E2E/Run'],
             });
 
-  # ── Post commit statuses when E2E is skipped ────────────────────────────────
+  # Post success statuses when E2E is skipped so the PR is not blocked.
   post-skip-status:
     needs: detect-e2e-impact
     if: >-
@@ -301,7 +305,7 @@ jobs:
     steps:
       - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
 
-      # ── Honor E2E/Override: strip run labels + cancel in-flight E2E ─────────
+      # Honor E2E/Override: strip run labels + cancel in-flight E2E.
       - name: Honor E2E/Override
         if: >-
           github.event.action == 'labeled'

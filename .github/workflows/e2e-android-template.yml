@@ -376,7 +376,6 @@ jobs:
           exit 1
         continue-on-error: true # We want to run all the tests
 
-
       - name: Upload Android Test Report
         if: always() && hashFiles('detox/artifacts/**') != ''
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1

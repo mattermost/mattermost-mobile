@@ -63,7 +63,7 @@ env:
   DETOX_AWS_S3_BUCKET: "mattermost-detox-report"
 
 jobs:
-  # ── Pillar 2: Cache / reuse app builds ──────────────────────────────────────
+  # Compute content fingerprints for S3 build caching.
   compute-build-fingerprints:
     name: Compute build fingerprints
     runs-on: ubuntu-24.04
@@ -261,10 +261,7 @@ jobs:
         with:
           ref: ${{ inputs.MOBILE_VERSION }}
 
-      # ── S3 build cache (Pillar 2) ──────────────────────────────────────────────
-      # Uses S3 instead of actions/cache: the .app.zip (~200MB) would blow the
-      # 10GB GHA limit and evict Gradle/Pods/Detox caches. S3 has no size limit.
-      # Pattern follows Artsy/eigen's S3 build cache keyed by fingerprint.
+      # S3 build cache — skip rebuild when fingerprint matches (test-only PRs hit nightly-seeded cache).
       - name: Check for cached iOS build
         id: cache-check
         uses: ./.github/actions/s3-build-cache
@@ -301,8 +298,7 @@ jobs:
         run: bundle exec fastlane ios simulator --env ios.simulator
         working-directory: ./fastlane
 
-      # Always upload the artifact — from either cache restore or fresh build —
-      # so test jobs can download it via artifact_run_id.
+      # Always upload artifact (from cache or fresh build) so test jobs can download it.
       - name: Upload iOS Simulator Build
         if: always() && hashFiles('Mattermost-simulator-*.app.zip') != ''
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
@@ -310,7 +306,6 @@ jobs:
           name: ios-build-simulator-${{ github.run_id }}
           path: Mattermost-simulator-*.app.zip
 
-      # ── Save to S3 for future cache hits (only on fresh build) ──────────────────
       - name: Save iOS build to S3
         if: env.SKIP_BUILD != 'true' && hashFiles('Mattermost-simulator-*.app.zip') != ''
         uses: ./.github/actions/s3-build-cache
@@ -350,8 +345,7 @@ jobs:
         with:
           ref: ${{ inputs.MOBILE_VERSION }}
 
-      # ── S3 build cache (Pillar 2) ──────────────────────────────────────────────
-      # android/app/build (~800MB) would blow the 10GB GHA cache limit.
+      # S3 build cache — skip rebuild when fingerprint matches.
       - name: Check for cached Android Detox build
         id: cache-check
         uses: ./.github/actions/s3-build-cache
@@ -396,8 +390,7 @@ jobs:
           npm ci --prefer-offline --no-audit --no-fund
           npm run e2e:android-build
 
-      # Always upload the artifact — from either cache restore or fresh build —
-      # so test jobs can download it via artifact_run_id.
+      # Always upload artifact (from cache or fresh build) so test jobs can download it.
       - name: Upload Android Build
         if: always() && hashFiles('android/app/build/**/*') != ''
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
@@ -405,7 +398,6 @@ jobs:
           name: android-build-files-${{ github.run_id }}
           path: "android/app/build/**/*"
 
-      # ── Save to S3 for future cache hits (only on fresh build) ──────────────────
       - name: Save Android Detox build to S3
         if: env.SKIP_BUILD != 'true' && hashFiles('android/app/build/**/*') != ''
         uses: ./.github/actions/s3-build-cache
@@ -445,7 +437,7 @@ jobs:
         with:
           ref: ${{ inputs.MOBILE_VERSION }}
 
-      # ── S3 build cache (Pillar 2) ──────────────────────────────────────────────
+      # S3 build cache — skip rebuild when fingerprint matches.
       - name: Check for cached Android Maestro build
         id: cache-check
         uses: ./.github/actions/s3-build-cache
@@ -476,8 +468,7 @@ jobs:
         if: env.SKIP_BUILD != 'true'
         uses: ./.github/actions/build-android-maestro-apk
 
-      # Always upload the artifact — from either cache restore or fresh build —
-      # so test jobs can download it via artifact_run_id.
+      # Always upload artifact (from cache or fresh build) so test jobs can download it.
       - name: Upload Maestro Android Build
         if: always() && hashFiles('android/app/build/outputs/apk/release/*.apk') != ''
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
@@ -485,7 +476,6 @@ jobs:
           name: android-maestro-build-files-${{ github.run_id }}
           path: android/app/build/outputs/apk/release/
 
-      # ── Save to S3 for future cache hits (only on fresh build) ──────────────────
       - name: Save Android Maestro build to S3
         if: env.SKIP_BUILD != 'true' && hashFiles('android/app/build/outputs/apk/release/*.apk') != ''
         uses: ./.github/actions/s3-build-cache
