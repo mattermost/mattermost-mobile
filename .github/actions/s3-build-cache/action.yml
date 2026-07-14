@@ -61,14 +61,19 @@ runs:
           if aws s3 ls "s3://${BUCKET}/${S3_KEY}" 2>/dev/null; then
             if [ "$MODE" = "check" ]; then
               echo "Cache HIT — existence-only check, skipping download."
-            else
-              echo "Cache HIT — downloading..."
-              aws s3 cp "s3://${BUCKET}/${S3_KEY}" /tmp/build-cache.tar.gz
-              tar xzf /tmp/build-cache.tar.gz
+              echo "cache-hit=true" >> "$GITHUB_OUTPUT"
+            # Any download/extract failure must degrade to a cache miss so the
+            # build still runs instead of aborting the action under set -eu.
+            elif aws s3 cp "s3://${BUCKET}/${S3_KEY}" /tmp/build-cache.tar.gz \
+              && tar xzf /tmp/build-cache.tar.gz; then
               rm -f /tmp/build-cache.tar.gz
               echo "Restored build from S3 (fingerprint=${FINGERPRINT:0:12})"
+              echo "cache-hit=true" >> "$GITHUB_OUTPUT"
+            else
+              echo "::warning::Cache restore failed (download/extract error) — treating as cache miss."
+              rm -f /tmp/build-cache.tar.gz || true
+              echo "cache-hit=false" >> "$GITHUB_OUTPUT"
             fi
-            echo "cache-hit=true" >> "$GITHUB_OUTPUT"
           else
             echo "Cache MISS — no cached build for fingerprint ${FINGERPRINT:0:12}"
             echo "cache-hit=false" >> "$GITHUB_OUTPUT"

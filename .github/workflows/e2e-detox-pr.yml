@@ -75,7 +75,8 @@ jobs:
       - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
         with:
           ref: ${{ inputs.MOBILE_VERSION }}
-      
+          persist-credentials: false
+
       - name: Compute iOS fingerprint
         id: ios
         uses: ./.github/actions/compute-e2e-build-fingerprint

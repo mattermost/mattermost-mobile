@@ -94,6 +94,7 @@ jobs:
               - '.github/actions/s3-build-cache/**'
               - '.github/actions/prepare-ios-build/**'
               - '.github/actions/prepare-android-build/**'
+              - '.github/actions/prepare-mobile-build/**'
               - '.github/actions/build-android-maestro-apk/**'
 
   # Always cancel superseded runs on synchronize — including docs-only pushes —

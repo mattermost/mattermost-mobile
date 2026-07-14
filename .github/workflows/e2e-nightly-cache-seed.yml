@@ -8,16 +8,22 @@ on:
     - cron: '0 2 * * *'  # 2 AM UTC daily
   workflow_dispatch:
 
+# Read-only token: these jobs only build + push binaries to S3, never write to the repo.
+permissions:
+  contents: read
+
 jobs:
   build-ios:
     name: Seed iOS build cache
     runs-on: macos-26
+    timeout-minutes: 90
     env:
       DETOX_AWS_S3_BUCKET: "mattermost-detox-report"
     steps:
       - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
         with:
           ref: main
+          persist-credentials: false
 
       - name: Compute build fingerprint
         id: fingerprint
@@ -71,6 +77,7 @@ jobs:
   build-android-detox:
     name: Seed Android Detox build cache
     runs-on: ubuntu-latest-8-cores
+    timeout-minutes: 60
     env:
       DETOX_AWS_S3_BUCKET: "mattermost-detox-report"
       ORG_GRADLE_PROJECT_jvmargs: -Xmx8g
@@ -78,6 +85,7 @@ jobs:
       - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
         with:
           ref: main
+          persist-credentials: false
 
       - name: Compute build fingerprint
         id: fingerprint
@@ -130,6 +138,7 @@ jobs:
   build-android-maestro:
     name: Seed Android Maestro build cache
     runs-on: ubuntu-latest-8-cores
+    timeout-minutes: 60
     env:
       DETOX_AWS_S3_BUCKET: "mattermost-detox-report"
       ORG_GRADLE_PROJECT_jvmargs: -Xmx8g
@@ -137,6 +146,7 @@ jobs:
       - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
         with:
           ref: main
+          persist-credentials: false
 
       - name: Compute build fingerprint
         id: fingerprint
