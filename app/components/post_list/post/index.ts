@@ -124,7 +124,9 @@ const withPost = withObservables(
 
         // Don't combine consecutive Burn on Read posts as we want each BoR post
         // to display its header to allow displaying the remaining time.
-        const isConsecutivePost = (isBoRPost(post) || hasAiGeneratedMetadata(post)) ? of$(false) : author.pipe(
+        // Same for AI-generated posts so the sparkle indicator is always visible.
+        const isAiGenerated = hasAiGeneratedMetadata(post);
+        const isConsecutivePost = (isBoRPost(post) || isAiGenerated) ? of$(false) : author.pipe(
             switchMap((user) => of$(Boolean(post && previousPost && !user?.isBot && areConsecutivePosts(post, previousPost, currentUser.locale)))),
             distinctUntilChanged(),
         );
@@ -159,6 +161,7 @@ const withPost = withObservables(
             filesInfo,
             hasReplies,
             highlightReplyBar,
+            isAiGenerated: of$(isAiGenerated),
             isConsecutivePost,
             isEphemeral,
             isFirstReply: of$(isFirstReply(post, previousPost)),

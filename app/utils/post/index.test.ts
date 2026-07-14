@@ -108,25 +108,6 @@ describe('post utils', () => {
             expect(result).toBe(false);
         });
 
-        it('should return false for AI post after same-user post', () => {
-            const post = TestHelper.fakePostModel({
-                userId: 'user1',
-                createAt: 1000,
-                props: {
-                    ai_generated_by: 'user1',
-                    ai_generated_by_username: 'ai-bot',
-                },
-            });
-            const previousPost = TestHelper.fakePostModel({
-                userId: 'user1',
-                createAt: 500,
-                props: {},
-            });
-
-            const result = areConsecutivePosts(post, previousPost, 'en');
-            expect(result).toBe(false);
-        });
-
         it('should return false for normal post after AI post from same user', () => {
             const post = TestHelper.fakePostModel({
                 userId: 'user1',
@@ -140,26 +121,6 @@ describe('post utils', () => {
                     ai_generated_by: 'user1',
                     ai_generated_by_username: 'ai-bot',
                 },
-            });
-
-            const result = areConsecutivePosts(post, previousPost, 'en');
-            expect(result).toBe(false);
-        });
-
-        it('should return false for consecutive AI posts from same user', () => {
-            const aiProps = {
-                ai_generated_by: 'user1',
-                ai_generated_by_username: 'ai-bot',
-            };
-            const post = TestHelper.fakePostModel({
-                userId: 'user1',
-                createAt: 1000,
-                props: aiProps,
-            });
-            const previousPost = TestHelper.fakePostModel({
-                userId: 'user1',
-                createAt: 500,
-                props: aiProps,
             });
 
             const result = areConsecutivePosts(post, previousPost, 'en');

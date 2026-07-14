@@ -23,7 +23,8 @@ export function hasAiGeneratedMetadata(post: PostModel | Post): boolean {
 }
 
 export function areConsecutivePosts(post: PostModel, previousPost: PostModel, userLocale: string) {
-    if (hasAiGeneratedMetadata(post) || hasAiGeneratedMetadata(previousPost)) {
+    // Caller already excludes AI current posts; break after an AI previous post so the next header shows.
+    if (hasAiGeneratedMetadata(previousPost)) {
         return false;
     }
 

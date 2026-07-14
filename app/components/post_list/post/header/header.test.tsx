@@ -35,6 +35,7 @@ describe('Header', () => {
     const defaultProps = {
         commentCount: 0,
         enablePostUsernameOverride: false,
+        isAiGenerated: false,
         isAutoResponse: false,
         isCustomStatusEnabled: false,
         isEphemeral: false,
@@ -101,6 +102,7 @@ describe('Header', () => {
         renderWithIntlAndTheme(
             <Header
                 {...defaultProps}
+                isAiGenerated={true}
                 post={aiPost}
             />,
         );
@@ -138,6 +140,7 @@ describe('Header', () => {
         renderWithIntlAndTheme(
             <Header
                 {...defaultProps}
+                isAiGenerated={true}
                 post={aiPost}
             />,
         );
@@ -157,6 +160,7 @@ describe('Header', () => {
         renderWithIntlAndTheme(
             <Header
                 {...defaultProps}
+                isAiGenerated={true}
                 post={aiPost}
             />,
         );

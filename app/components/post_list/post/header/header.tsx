@@ -17,7 +17,7 @@ import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
 import {DEFAULT_LOCALE} from '@i18n';
 import {isUnrevealedBoRPost} from '@utils/bor';
-import {getPostTranslation, hasAiGeneratedMetadata, postUserDisplayName} from '@utils/post';
+import {getPostTranslation, postUserDisplayName} from '@utils/post';
 import {makeStyleSheetFromTheme} from '@utils/theme';
 import {ensureString} from '@utils/types';
 import {typography} from '@utils/typography';
@@ -43,6 +43,7 @@ type HeaderProps = {
     author?: UserModel;
     commentCount: number;
     currentUser?: UserModel;
+    isAiGenerated: boolean;
     isAutoResponse: boolean;
     isChannelAutotranslated: boolean;
     isCRTEnabled?: boolean;
@@ -87,7 +88,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
 
 const Header = (props: HeaderProps) => {
     const {
-        author, commentCount = 0, currentUser, isAutoResponse, isChannelAutotranslated, isCRTEnabled,
+        author, commentCount = 0, currentUser, isAiGenerated, isAutoResponse, isChannelAutotranslated, isCRTEnabled,
         isEphemeral, isPendingOrFailed, isSystemPost, isWebHook,
         location, post, rootPostAuthor, showPostPriority, shouldRenderReplyButton,
     } = props;
@@ -183,7 +184,7 @@ const Header = (props: HeaderProps) => {
                             onExpiry={onBoRPostExpiry}
                         />
                     )}
-                    {hasAiGeneratedMetadata(post) && (
+                    {isAiGenerated && (
                         <AiGeneratedIndicator post={post}/>
                     )}
                     {!isCRTEnabled && showReply && commentCount > 0 && (

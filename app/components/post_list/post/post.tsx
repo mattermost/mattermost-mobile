@@ -59,6 +59,7 @@ type PostProps = {
     highlight?: boolean;
     highlightPinnedOrSaved?: boolean;
     highlightReplyBar: boolean;
+    isAiGenerated?: boolean;
     isConsecutivePost?: boolean;
     isCRTEnabled?: boolean;
     isEphemeral: boolean;
@@ -134,6 +135,7 @@ const Post = ({
     highlight,
     highlightPinnedOrSaved = true,
     highlightReplyBar,
+    isAiGenerated = false,
     isCRTEnabled,
     isConsecutivePost,
     isEphemeral,
@@ -344,6 +346,7 @@ const Post = ({
                     author={author}
                     commentCount={commentCount}
                     currentUser={currentUser}
+                    isAiGenerated={isAiGenerated}
                     isAutoResponse={isAutoResponder}
                     isCRTEnabled={isCRTEnabled}
                     isEphemeral={isEphemeral}
