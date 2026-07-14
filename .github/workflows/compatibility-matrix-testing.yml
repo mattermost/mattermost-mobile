@@ -18,7 +18,7 @@ concurrency:
 
 jobs:
   calculate-commit-hash:
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-24.04
     outputs:
       MOBILE_SHA: ${{ steps.repo.outputs.MOBILE_SHA }}
     steps:
@@ -39,7 +39,7 @@ jobs:
   # per-platform uploads both consume these outputs.
   cmt-identity:
     name: Calculate CMT TSIO composite identity
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-24.04
     permissions:
       contents: read
     needs:
@@ -74,7 +74,7 @@ jobs:
           echo "tsio-config=$TSIO_CONFIG" >> "$GITHUB_OUTPUT"
 
   update-initial-status:
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-24.04
     permissions:
       contents: read
       statuses: write
@@ -98,7 +98,7 @@ jobs:
 
   # Maestro only runs against the latest server version; matrix filtering happens here since job-level if: can't access matrix.
   prepare-maestro-matrix:
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-24.04
     outputs:
       matrix: ${{ steps.filter.outputs.matrix }}
     steps:
@@ -390,7 +390,7 @@ jobs:
       record_tests_in_zephyr: true
 
   update-final-status:
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-24.04
     if: always()
     permissions:
       contents: read

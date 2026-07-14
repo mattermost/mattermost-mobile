@@ -80,7 +80,7 @@ env:
 jobs:
   resolve-e2e-policy:
     name: Resolve E2E policy (Override label)
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-24.04
     permissions:
       actions: write
       contents: read
@@ -155,7 +155,7 @@ jobs:
 
   calculate-tsio-identity:
     name: Calculate TSIO composite identity
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-24.04
     permissions:
       contents: read
       pull-requests: read
@@ -238,7 +238,7 @@ jobs:
 
   update-initial-tsio-status:
     name: Set pending TSIO commit status
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-24.04
     needs:
       - resolve-e2e-policy
       - calculate-tsio-identity
@@ -400,7 +400,7 @@ jobs:
     needs: resolve-e2e-policy
     if: >-
       needs.resolve-e2e-policy.outputs.e2e_override != 'true'
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-24.04
     steps:
       - name: Validate server URLs
         run: |
@@ -570,7 +570,7 @@ jobs:
     needs: resolve-e2e-policy
     if: >-
       needs.resolve-e2e-policy.outputs.e2e_override != 'true'
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-24.04
     steps:
       - name: Checkout Repository
         uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
@@ -654,7 +654,7 @@ jobs:
 
   e2e-remove-matterwick-label:
     name: Remove Matterwick E2E label from PR
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-24.04
     permissions:
       contents: read
       issues: write
@@ -803,7 +803,7 @@ jobs:
       - run-detox-android
       - run-maestro-ios
       - run-maestro-android
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-24.04
     permissions:
       contents: read
       statuses: write
