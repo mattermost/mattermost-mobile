@@ -57,6 +57,7 @@ describe('Teams - Invite', () => {
 
         // * Verify on channel list screen
         await ChannelListScreen.toBeVisible();
+        await wait(timeouts.TWO_SEC);
 
         // # Open invite screen
         await Invite.open();

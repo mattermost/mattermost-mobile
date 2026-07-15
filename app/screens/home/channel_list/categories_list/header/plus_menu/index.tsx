@@ -9,6 +9,8 @@ import {dismissBottomSheet, navigateToScreen} from '@screens/navigation';
 import PlusMenuItem from './item';
 import PlusMenuSeparator from './separator';
 
+import type {AvailableScreens} from '@typings/screens/navigation';
+
 type Props = {
     canCreateChannels: boolean;
     canJoinChannels: boolean;
@@ -16,27 +18,30 @@ type Props = {
 }
 
 const PlusMenuList = ({canCreateChannels, canJoinChannels, canInvitePeople}: Props) => {
-    const browseChannels = useCallback(async () => {
+    // Extra settle after dismissBottomSheet so Fabric finishes unmounting
+    // slide-up ReactTextViews before the next screen mounts (Android addViewAt
+    // races on Invite / Browse Channels — CI MM-T5360).
+    const navigateAfterSheetDismiss = useCallback(async (screen: AvailableScreens) => {
         await dismissBottomSheet();
-        navigateToScreen(Screens.BROWSE_CHANNELS);
+        await new Promise((resolve) => setTimeout(resolve, 150));
+        navigateToScreen(screen);
     }, []);
+
+    const browseChannels = useCallback(async () => {
+        await navigateAfterSheetDismiss(Screens.BROWSE_CHANNELS);
+    }, [navigateAfterSheetDismiss]);
 
     const createNewChannel = useCallback(async () => {
-        await dismissBottomSheet();
-        navigateToScreen(Screens.CREATE_OR_EDIT_CHANNEL);
-    }, []);
+        await navigateAfterSheetDismiss(Screens.CREATE_OR_EDIT_CHANNEL);
+    }, [navigateAfterSheetDismiss]);
 
     const openDirectMessage = useCallback(async () => {
-        await dismissBottomSheet();
-
-        navigateToScreen(Screens.CREATE_DIRECT_MESSAGE);
-    }, []);
+        await navigateAfterSheetDismiss(Screens.CREATE_DIRECT_MESSAGE);
+    }, [navigateAfterSheetDismiss]);
 
     const invitePeopleToTeam = useCallback(async () => {
-        await dismissBottomSheet();
-
-        navigateToScreen(Screens.INVITE);
-    }, []);
+        await navigateAfterSheetDismiss(Screens.INVITE);
+    }, [navigateAfterSheetDismiss]);
 
     return (
         <>
