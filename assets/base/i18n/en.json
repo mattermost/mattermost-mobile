@@ -1345,6 +1345,8 @@
   "post_header.translation_processing": "Translating...",
   "post_header.visible_message": "(Only visible to you)",
   "post_info.agent": "Agent",
+  "post_info.ai_generated.by_user": "Message posted by @{username}",
+  "post_info.ai_generated.self": "AI-generated",
   "post_info.auto_responder": "Automatic Reply",
   "post_info.bot": "Bot",
   "post_info.del": "Delete",
