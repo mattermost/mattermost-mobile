@@ -1,6 +1,8 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import {getRandomId} from '@support/utils';
+
 import client from './client';
 import {getResponseFromError} from './common';
 
@@ -12,12 +14,27 @@ const LINKED_FIELD_NAME = 'classification';
 const LINKED_OBJECT_TYPE = 'system';
 const DISPLAY_BANNER_TOP = 'display_banner_top';
 
+// Server IsValidId requires exactly 26 alphanumeric characters (model.IsValidId).
+const VALID_ID_LENGTH = 26;
+
 type PropertyFieldOption = {
     id: string;
     name: string;
     color: string;
     rank?: number;
 };
+
+const DEFAULT_LEVEL_NAMES = {
+    topSecret: 'TOP SECRET',
+    secret: 'SECRET',
+    unclassified: 'UNCLASSIFIED',
+} as const;
+
+const defaultClassificationLevels = (): PropertyFieldOption[] => [
+    {id: getRandomId(VALID_ID_LENGTH), name: DEFAULT_LEVEL_NAMES.topSecret, color: '#FCE83A', rank: 1},
+    {id: getRandomId(VALID_ID_LENGTH), name: DEFAULT_LEVEL_NAMES.secret, color: '#FF0000', rank: 2},
+    {id: getRandomId(VALID_ID_LENGTH), name: DEFAULT_LEVEL_NAMES.unclassified, color: '#00FF00', rank: 3},
+];
 
 /**
  * Get all property fields for a group/objectType.
@@ -126,25 +143,21 @@ export const apiPatchSystemPropertyValues = async (baseUrl: string, groupName: s
  * 2. Create a linked system classification field with banner actions
  * 3. Set a system property value for the classification level
  *
- * Levels are identified by their `id` field. The `levelId` option selects which
- * level the global banner should display, matching the approach used in the
- * webapp E2E tests (keyed by option ID, not name).
+ * Option `id` values must be valid Mattermost IDs (26 alphanumeric chars).
+ * Callers select the banner level by `levelName` (e.g. 'TOP SECRET'). Use the
+ * returned `optionIdsByName` map when patching the selected value later.
  *
- * @returns Object containing the created field IDs and option IDs
+ * @returns Object containing the created field IDs and option IDs keyed by name
  */
 export const apiSetupClassificationWithBanner = async (
     baseUrl: string,
     options?: {
         levels?: PropertyFieldOption[];
-        levelId?: string;
+        levelName?: string;
     },
 ) => {
-    const levels = options?.levels ?? [
-        {id: 'lvl-top-secret', name: 'TOP SECRET', color: '#FCE83A', rank: 1},
-        {id: 'lvl-secret', name: 'SECRET', color: '#FF0000', rank: 2},
-        {id: 'lvl-unclassified', name: 'UNCLASSIFIED', color: '#00FF00', rank: 3},
-    ];
-    const levelId = options?.levelId ?? 'lvl-top-secret';
+    const levels = options?.levels ?? defaultClassificationLevels();
+    const levelName = options?.levelName ?? DEFAULT_LEVEL_NAMES.topSecret;
 
     await apiCleanupClassification(baseUrl);
 
@@ -162,18 +175,20 @@ export const apiSetupClassificationWithBanner = async (
         permission_options: 'sysadmin',
     });
 
-    const templateResult_ = templateResult as {field: any};
+    const templateResult_ = templateResult as {field?: any; error?: unknown};
     if (!templateResult_.field) {
-        throw new Error('Failed to create template classification field');
+        throw new Error(`Failed to create template classification field: ${JSON.stringify(templateResult_.error ?? templateResult)}`);
     }
 
     const templateField = templateResult_.field;
-    const templateOptions = templateField.attrs?.options ?? [];
-    const selectedOption = templateOptions.find((o: PropertyFieldOption) => o.id === levelId);
+    const templateOptions: PropertyFieldOption[] = templateField.attrs?.options ?? [];
+    const selectedOption = templateOptions.find((o) => o.name === levelName);
     if (!selectedOption) {
-        const available = templateOptions.map((o: PropertyFieldOption) => `${o.name} (${o.id})`).join(', ');
-        throw new Error(`Classification level ID "${levelId}" not found in created options. Available: [${available}]`);
+        const available = templateOptions.map((o) => `${o.name} (${o.id})`).join(', ');
+        throw new Error(`Classification level name "${levelName}" not found in created options. Available: [${available}]`);
     }
+
+    const optionIdsByName = Object.fromEntries(templateOptions.map((o) => [o.name, o.id]));
 
     const linkedResult = await apiCreatePropertyField(baseUrl, GROUP_NAME, LINKED_OBJECT_TYPE, {
         name: LINKED_FIELD_NAME,
@@ -186,9 +201,9 @@ export const apiSetupClassificationWithBanner = async (
         },
     });
 
-    const linkedResult_ = linkedResult as {field: any};
+    const linkedResult_ = linkedResult as {field?: any; error?: unknown};
     if (!linkedResult_.field) {
-        throw new Error('Failed to create linked system classification field');
+        throw new Error(`Failed to create linked system classification field: ${JSON.stringify(linkedResult_.error ?? linkedResult)}`);
     }
 
     const linkedField = linkedResult_.field;
@@ -204,6 +219,7 @@ export const apiSetupClassificationWithBanner = async (
         templateFieldId: templateField.id,
         linkedFieldId: linkedField.id,
         selectedOptionId: selectedOption.id,
+        optionIdsByName,
     };
 };
 

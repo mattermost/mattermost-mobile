@@ -52,7 +52,7 @@ describe('Classification Banner - Offline / Cache Behaviour', () => {
 
     it('MM-T_CB_OFFLINE_1 - should display the banner from DB cache when API is unreachable on reload', async () => {
         // # Configure classification and verify it works online first
-        await Properties.apiSetupClassificationWithBanner(siteOneUrl, {levelId: 'lvl-top-secret'});
+        await Properties.apiSetupClassificationWithBanner(siteOneUrl, {levelName: 'TOP SECRET'});
         await device.reloadReactNative();
         await ChannelListScreen.toBeVisible();
         await GlobalClassificationBanner.toBeVisible();
@@ -72,7 +72,11 @@ describe('Classification Banner - Offline / Cache Behaviour', () => {
 
     it('MM-T_CB_OFFLINE_2 - should show stale cached value when API is blocked after a server change', async () => {
         // # Set up classification at TOP SECRET
-        const {linkedFieldId} = await Properties.apiSetupClassificationWithBanner(siteOneUrl, {levelId: 'lvl-top-secret'});
+        const {linkedFieldId, optionIdsByName} = await Properties.apiSetupClassificationWithBanner(siteOneUrl, {levelName: 'TOP SECRET'});
+        const secretOptionId = optionIdsByName.SECRET;
+        if (!secretOptionId) {
+            throw new Error(`SECRET option id missing from setup. Available: ${Object.keys(optionIdsByName).join(', ')}`);
+        }
         await device.reloadReactNative();
         await ChannelListScreen.toBeVisible();
         await GlobalClassificationBanner.toBeVisible();
@@ -80,7 +84,7 @@ describe('Classification Banner - Offline / Cache Behaviour', () => {
 
         // # Change classification value on the server to SECRET
         await Properties.apiPatchSystemPropertyValues(siteOneUrl, 'access_control', [
-            {field_id: linkedFieldId, value: 'lvl-secret'},
+            {field_id: linkedFieldId, value: secretOptionId},
         ]);
 
         // # Block API calls and reload — app should load old cache (TOP SECRET, not SECRET)

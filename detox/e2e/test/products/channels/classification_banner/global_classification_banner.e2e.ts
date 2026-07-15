@@ -69,7 +69,7 @@ describe('Classification Banner - Global Classification Banner', () => {
             },
         });
         await Properties.apiSetupClassificationWithBanner(siteOneUrl, {
-            levelId: 'lvl-top-secret',
+            levelName: 'TOP SECRET',
         });
         await device.reloadReactNative();
 
@@ -87,7 +87,7 @@ describe('Classification Banner - Global Classification Banner', () => {
             },
         });
         await Properties.apiSetupClassificationWithBanner(siteOneUrl, {
-            levelId: 'lvl-top-secret',
+            levelName: 'TOP SECRET',
         });
         await device.reloadReactNative();
 
@@ -110,7 +110,7 @@ describe('Classification Banner - Global Classification Banner', () => {
             },
         });
         await Properties.apiSetupClassificationWithBanner(siteOneUrl, {
-            levelId: 'lvl-top-secret',
+            levelName: 'TOP SECRET',
         });
         await device.reloadReactNative();
 
@@ -144,7 +144,7 @@ describe('Classification Banner - Global Classification Banner', () => {
             },
         });
         await Properties.apiSetupClassificationWithBanner(siteOneUrl, {
-            levelId: 'lvl-top-secret',
+            levelName: 'TOP SECRET',
         });
         await device.reloadReactNative();
 
@@ -172,9 +172,13 @@ describe('Classification Banner - Global Classification Banner', () => {
                 ClassificationMarkings: true,
             },
         });
-        const {linkedFieldId} = await Properties.apiSetupClassificationWithBanner(siteOneUrl, {
-            levelId: 'lvl-top-secret',
+        const {linkedFieldId, optionIdsByName} = await Properties.apiSetupClassificationWithBanner(siteOneUrl, {
+            levelName: 'TOP SECRET',
         });
+        const secretOptionId = optionIdsByName.SECRET;
+        if (!secretOptionId) {
+            throw new Error(`SECRET option id missing from setup. Available: ${Object.keys(optionIdsByName).join(', ')}`);
+        }
         await device.reloadReactNative();
 
         await ChannelListScreen.toBeVisible();
@@ -183,7 +187,7 @@ describe('Classification Banner - Global Classification Banner', () => {
         await expect(element(by.text('TOP SECRET'))).toBeVisible();
 
         await Properties.apiPatchSystemPropertyValues(siteOneUrl, 'access_control', [
-            {field_id: linkedFieldId, value: 'lvl-secret'},
+            {field_id: linkedFieldId, value: secretOptionId},
         ]);
 
         await device.reloadReactNative();
@@ -201,7 +205,7 @@ describe('Classification Banner - Global Classification Banner', () => {
             },
         });
         await Properties.apiSetupClassificationWithBanner(siteOneUrl, {
-            levelId: 'lvl-top-secret',
+            levelName: 'TOP SECRET',
         });
         await device.reloadReactNative();
 
@@ -225,7 +229,7 @@ describe('Classification Banner - Global Classification Banner', () => {
             },
         });
         await Properties.apiSetupClassificationWithBanner(siteOneUrl, {
-            levelId: 'lvl-top-secret',
+            levelName: 'TOP SECRET',
         });
         await device.reloadReactNative();
 
@@ -254,7 +258,7 @@ describe('Classification Banner - Global Classification Banner', () => {
             },
         });
         await Properties.apiSetupClassificationWithBanner(siteOneUrl, {
-            levelId: 'lvl-top-secret',
+            levelName: 'TOP SECRET',
         });
         await device.reloadReactNative();
 
