@@ -10,6 +10,7 @@
 import {
     Post,
     Setup,
+    System,
 } from '@support/server_api';
 import {
     serverOneUrl,
@@ -156,7 +157,12 @@ describe('Messaging - Message Draft', () => {
     });
 
     it('MM-T107 - should show alert when message exceeds character limit', async () => {
-        const overLimitMessage = 'a'.repeat(4001);
+        // MaxPostSize comes from server config (app falls back to 4000 only when unset).
+        // A hard-coded 4001 chars does not exceed the common server value 16383 — CI
+        // run 29362218938 screenshot shows a long draft with send still enabled and no alert.
+        const {config} = await System.apiGetConfig(siteOneUrl);
+        const maxPostSize = Number(config?.ServiceSettings?.MaxPostSize) || 16383;
+        const overLimitMessage = 'a'.repeat(maxPostSize + 1);
 
         // # Open a channel and type a message over the character limit
         await ChannelScreen.open(channelsCategory, testChannel.name);
