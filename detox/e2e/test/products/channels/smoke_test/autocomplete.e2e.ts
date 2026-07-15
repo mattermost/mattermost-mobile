@@ -96,7 +96,8 @@ describe('Smoke Test - Autocomplete', () => {
         await expect(channelMentionItem).toExist();
 
         // # Select and post channel mention suggestion
-        await channelMentionItem.tap({x: 1, y: 1});
+        // Default center tap — {x:1,y:1} fails Detox hit-testing on iOS (CI MM-T4886_2).
+        await channelMentionItem.tap();
         await ChannelScreen.sendButton.tap();
 
         // * Verify channel mention suggestion is posted
