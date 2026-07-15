@@ -2,7 +2,7 @@
     "source_run": "28392181656",
     "source_commit": "c2306aa53",
     "generated_at": "2026-06-29",
-    "note": "Regenerate: node detox/scripts/generate-failing-specs-manifest.js <junit-dirs>",
+    "note": "Hand-maintained failing-spec subset for failing_only CI; update from junit failures as needed.",
     "failed_mm_t_count": 44,
     "specs": [
         "detox/e2e/test/products/channels/account/about.e2e.ts",

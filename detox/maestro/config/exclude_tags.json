@@ -1,5 +1,5 @@
 {
-  "_comment": "Tags excluded from default PR Maestro batches. See detox/docs/maestro_ci_coverage.json for Zephyr label mapping.",
+  "_comment": "Tags excluded from default PR Maestro batches. Zephyr tier labels: detox/maestro/README.md.",
   "default": ["MM-T67856_4"],
   "ios": ["MM-T4832", "MM-T1411", "MM-T4833"],
   "android": []

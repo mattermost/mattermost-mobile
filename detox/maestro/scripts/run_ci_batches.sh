@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # Run Maestro flows in isolated batches for CI.
 #
-# PR CI coverage map (Zephyr labels): detox/docs/maestro_ci_coverage.json
+# PR exclusions: detox/maestro/config/exclude_tags.json (Zephyr tiers: README.md)
 #
 # One batch failure (e.g. iOS SFSafariViewController wedging the driver) must not
 # prevent unrelated flows from running. Each batch is a separate `maestro test`

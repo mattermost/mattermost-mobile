@@ -432,7 +432,7 @@ Detox uses `SITE_1_URL` (and additional sites per shard config).
 
 ### Default flow sets and exclusions
 
-See **`detox/docs/maestro_ci_coverage.json`** for the authoritative map of which MM-T keys run on PR CI vs nightly vs manual-only. Use it when applying Zephyr Scale labels so `automated-e2e` reflects what PR CI actually executes.
+PR vs nightly vs manual coverage is summarized below (and in `config/exclude_tags.json` for batch exclusions). Use it when applying Zephyr Scale labels so `automated-e2e` reflects what PR CI actually executes.
 
 | Tier | Zephyr label (recommended) | Meaning |
 |------|---------------------------|---------|

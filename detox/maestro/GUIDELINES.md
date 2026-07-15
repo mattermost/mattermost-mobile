@@ -18,14 +18,14 @@ Do **not** justify a Maestro flow by referencing Detox limitations in flow comme
 
 ### Zephyr Scale labels vs PR CI
 
-Not every tagged flow runs on every PR. Before marking a case `automated-e2e` in Zephyr, check **`detox/docs/maestro_ci_coverage.json`**:
+Not every tagged flow runs on every PR. Before marking a case `automated-e2e` in Zephyr, see the tier table in [README.md](./README.md) and `config/exclude_tags.json`:
 
 - **PR batch** — `run_ci_batches.sh` default paths (platform-specific; iOS skips `flows/calls/`)
 - **Dedicated step** — e.g. MM-T67856_4 (server config variant)
 - **Manual / two-device** — `flows/multi_device/*` via `run_two_device.sh`
 - **Nightly / seed** — `start_call.yml`, `file_type_preview.yml`
 
-Detox-only coverage (bookmarks MM-T5602–5612, MM-T5725, MM-T107, MM-T3251) is listed under `detoxOnlyBookmarkCoverage` and `detoxClosedGaps` in the same doc tree (`detox/docs/zephyr_coverage.json`).
+Detox-only coverage includes bookmarks MM-T5602–5612, MM-T5725, MM-T107, MM-T3251.
 
 ---
 

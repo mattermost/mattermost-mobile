@@ -145,3 +145,4 @@ detox/maestro/.maestro-test-env*.bak
 # Local CI artifact dumps (do not commit)
 .ci-artifacts/
 claude_artifacts/
+.e2e-debug/

@@ -197,6 +197,7 @@ class ChannelListScreen {
             } catch {
                 // Not on channel list yet.
             }
+
             // Browse Channels modal blocks the sidebar — close it before back navigation.
             try {
                 const browseChannelsScreen = element(by.id('browse_channels.screen'));

@@ -18,8 +18,7 @@
 #
 # Failing-spec CI mode (workflow_dispatch failing_only=true):
 #   Shards only detox/e2e/failing-specs.manifest.json across failing_parallelism runners (default 6).
-#   Skips Maestro. Regenerate manifest after a full run:
-#     node detox/scripts/generate-failing-specs-manifest.js <ios-junit-dir> <android-junit-dir>
+#   Skips Maestro. Update the manifest by hand from CI junit failures when the subset changes.
 #   Revert failing_only default / remove manifest when the suite is green.
 name: E2E
 

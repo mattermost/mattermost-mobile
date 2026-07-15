@@ -18,6 +18,7 @@ class ThreadScreen {
     testID = {
         threadScreenPrefix: 'thread.',
         threadScreen: 'thread.screen',
+
         // Shared NavigationHeader back control (app/components/navigation_header/header.tsx)
         backButton: 'navigation.header.back',
         followButton: 'thread.follow_thread.button',
