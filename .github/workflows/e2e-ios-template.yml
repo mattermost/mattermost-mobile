@@ -227,10 +227,17 @@ jobs:
           brew tap wix/brew
           # Homebrew 5.2+/6.0 requires explicit trust before loading third-party formulae.
           brew trust wix/brew
-          brew install applesimutils
-          # Cache restores Cellar without /opt/homebrew/bin symlinks — link the tap formula explicitly.
-          brew link --overwrite --force wix/brew/applesimutils 2>/dev/null \
-            || brew link --overwrite applesimutils
+          # Cache restores Cellar without /opt/homebrew/bin symlinks. Prefer link-only when
+          # already installed to avoid the noisy "installed, just not linked" brew message.
+          if brew list --formula wix/brew/applesimutils &>/dev/null || brew list --formula applesimutils &>/dev/null; then
+            brew link --overwrite --force wix/brew/applesimutils 2>/dev/null \
+              || brew link --overwrite --force applesimutils
+          else
+            brew install applesimutils
+            brew link --overwrite --force wix/brew/applesimutils 2>/dev/null \
+              || brew link --overwrite --force applesimutils
+          fi
+          command -v applesimutils
 
       - name: Download iOS Simulator Build
         uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
@@ -707,6 +714,8 @@ jobs:
           path: detox/artifacts/
 
   generate-report:
+    # TSIO displays gh-job-name as the shard label — keep it aligned with tsio-shard-name.
+    name: ${{ inputs.tsio-shard-name != '' && inputs.tsio-shard-name || 'generate-report' }}
     if: always()
     runs-on: ubuntu-24.04
     needs:
@@ -822,9 +831,8 @@ jobs:
       # ── TSIO report upload (one per platform) ──────────────────────────────
       # Each matrix leg wrote Jest's native --json into its ios-results-*
       # artifact; merge all legs' testResults into one JSON and upload it as a
-      # single shard. gh-job-name is the bare child job name — the action's
-      # resolveJobId disambiguates the parallel ios/ipad/android
-      # generate-report children by RUNNER_NAME.
+      # single shard. gh-job-name must match this job's rendered `name:` (the
+      # tsio-shard-name), which is what TSIO shows as the shard label.
       - name: Merge per-shard Jest JSON for TSIO
         if: always() && inputs.tsio-config != '' && vars.TSIO_UPLOAD_ENABLED != 'false'
         id: tsio-merge
@@ -863,7 +871,6 @@ jobs:
           total-reports-expected: ${{ fromJSON(inputs.tsio-config).total_reports_expected }}
           framework: detox
           github-token: ${{ github.token }}
-          # Must match the generate-report job id — tsio-shard-name is display-only (failure stub).
-          gh-job-name: generate-report
+          gh-job-name: ${{ inputs.tsio-shard-name != '' && inputs.tsio-shard-name || 'generate-report' }}
           json-path: detox/artifacts/jest-results-merged.json
           screenshots-dir: detox/artifacts/

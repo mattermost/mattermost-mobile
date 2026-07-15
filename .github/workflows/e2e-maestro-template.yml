@@ -122,7 +122,8 @@ env:
 
 jobs:
   e2e-maestro-ios:
-    name: Maestro E2E Tests (iOS)
+    # TSIO shard label = job name; prefer tsio-shard-name (e.g. maestro-ios-e2e).
+    name: ${{ inputs.tsio-shard-name != '' && inputs.tsio-shard-name || 'Maestro E2E Tests (iOS)' }}
     if: ${{ inputs.platform == 'ios' || inputs.platform == '' }}
     runs-on: macos-26
     timeout-minutes: 90
@@ -451,17 +452,27 @@ jobs:
             --job-name "$TSIO_SHARD_NAME" \
             --reason "Maestro job failed or was cancelled before maestro-report.xml was written"
 
-      - name: Upload report to Test System IO
+      # TSIO only accepts playwright|cypress|detox — convert Maestro JUnit to Jest JSON.
+      - name: Convert Maestro JUnit to Jest JSON for TSIO
         if: always() && inputs.tsio-config != '' && vars.TSIO_UPLOAD_ENABLED != 'false' && hashFiles('build/maestro-report.xml') != ''
+        run: |
+          node -e "
+            const {writeMaestroJestJsonForTsio} = require('./detox/utils/maestro_report');
+            if (!writeMaestroJestJsonForTsio('build/maestro-report.xml', 'build/maestro-report.jest.json')) {
+              process.exit(1);
+            }
+          "
+
+      - name: Upload report to Test System IO
+        if: always() && inputs.tsio-config != '' && vars.TSIO_UPLOAD_ENABLED != 'false' && hashFiles('build/maestro-report.jest.json') != ''
         uses: mattermost/mattermost-test-system-io/.github/actions/test-system-io-report-upload@a2ea7f005484c28fedf51e16645f6d3bd683fd63 # 0.10.0 / 2026-05-16
         with:
           composite-identity: ${{ toJSON(fromJSON(inputs.tsio-config).composite_identity) }}
           total-reports-expected: ${{ fromJSON(inputs.tsio-config).total_reports_expected }}
-          framework: maestro
+          framework: detox
           github-token: ${{ github.token }}
-          # Must match this job's `name:` — tsio-shard-name is display-only (failure stub).
-          gh-job-name: Maestro E2E Tests (iOS)
-          json-path: build/maestro-report.xml
+          gh-job-name: ${{ inputs.tsio-shard-name != '' && inputs.tsio-shard-name || 'Maestro E2E Tests (iOS)' }}
+          json-path: build/maestro-report.jest.json
           screenshots-dir: build/maestro-artifacts
 
       - name: Save Maestro results to Zephyr Scale
@@ -546,7 +557,8 @@ jobs:
           echo "| ${{ steps.summary.outputs.TOTAL }} | ${{ steps.summary.outputs.PASSES }} | ${{ steps.summary.outputs.FAILURES }} | ${{ steps.summary.outputs.SKIPPED }} |" >> "$GITHUB_STEP_SUMMARY"
 
   e2e-maestro-android:
-    name: Maestro E2E Tests (Android)
+    # TSIO shard label = job name; prefer tsio-shard-name (e.g. maestro-android-e2e).
+    name: ${{ inputs.tsio-shard-name != '' && inputs.tsio-shard-name || 'Maestro E2E Tests (Android)' }}
     if: ${{ inputs.platform == 'android' }}
     runs-on: ubuntu-latest-8-cores
     timeout-minutes: 60
@@ -872,17 +884,27 @@ jobs:
             --job-name "$TSIO_SHARD_NAME" \
             --reason "Maestro job failed or was cancelled before maestro-report.xml was written"
 
-      - name: Upload report to Test System IO
+      # TSIO only accepts playwright|cypress|detox — convert Maestro JUnit to Jest JSON.
+      - name: Convert Maestro JUnit to Jest JSON for TSIO
         if: always() && inputs.tsio-config != '' && vars.TSIO_UPLOAD_ENABLED != 'false' && hashFiles('build/maestro-report.xml') != ''
+        run: |
+          node -e "
+            const {writeMaestroJestJsonForTsio} = require('./detox/utils/maestro_report');
+            if (!writeMaestroJestJsonForTsio('build/maestro-report.xml', 'build/maestro-report.jest.json')) {
+              process.exit(1);
+            }
+          "
+
+      - name: Upload report to Test System IO
+        if: always() && inputs.tsio-config != '' && vars.TSIO_UPLOAD_ENABLED != 'false' && hashFiles('build/maestro-report.jest.json') != ''
         uses: mattermost/mattermost-test-system-io/.github/actions/test-system-io-report-upload@a2ea7f005484c28fedf51e16645f6d3bd683fd63 # 0.10.0 / 2026-05-16
         with:
           composite-identity: ${{ toJSON(fromJSON(inputs.tsio-config).composite_identity) }}
           total-reports-expected: ${{ fromJSON(inputs.tsio-config).total_reports_expected }}
-          framework: maestro
+          framework: detox
           github-token: ${{ github.token }}
-          # Must match this job's `name:` — tsio-shard-name is display-only (failure stub).
-          gh-job-name: Maestro E2E Tests (Android)
-          json-path: build/maestro-report.xml
+          gh-job-name: ${{ inputs.tsio-shard-name != '' && inputs.tsio-shard-name || 'Maestro E2E Tests (Android)' }}
+          json-path: build/maestro-report.jest.json
           screenshots-dir: build/maestro-artifacts
 
       - name: Save Maestro results to Zephyr Scale

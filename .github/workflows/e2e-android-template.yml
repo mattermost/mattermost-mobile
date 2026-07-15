@@ -396,6 +396,8 @@ jobs:
           path: detox/artifacts/
 
   generate-report:
+    # TSIO displays gh-job-name as the shard label — keep it aligned with tsio-shard-name.
+    name: ${{ inputs.tsio-shard-name != '' && inputs.tsio-shard-name || 'generate-report' }}
     if: always()
     runs-on: ubuntu-24.04
     needs:
@@ -512,9 +514,8 @@ jobs:
       # ── TSIO report upload (one per platform) ──────────────────────────────
       # Each matrix leg wrote Jest's native --json into its android-results-*
       # artifact; merge all legs' testResults into one JSON and upload it as a
-      # single shard. gh-job-name is the bare child job name — the action's
-      # resolveJobId disambiguates the parallel ios/ipad/android
-      # generate-report children by RUNNER_NAME.
+      # single shard. gh-job-name must match this job's rendered `name:` (the
+      # tsio-shard-name), which is what TSIO shows as the shard label.
       - name: Merge per-shard Jest JSON for TSIO
         if: always() && inputs.tsio-config != '' && vars.TSIO_UPLOAD_ENABLED != 'false'
         id: tsio-merge
@@ -553,7 +554,6 @@ jobs:
           total-reports-expected: ${{ fromJSON(inputs.tsio-config).total_reports_expected }}
           framework: detox
           github-token: ${{ github.token }}
-          # Must match the generate-report job id — tsio-shard-name is display-only (failure stub).
-          gh-job-name: generate-report
+          gh-job-name: ${{ inputs.tsio-shard-name != '' && inputs.tsio-shard-name || 'generate-report' }}
           json-path: detox/artifacts/jest-results-merged.json
           screenshots-dir: detox/artifacts/
