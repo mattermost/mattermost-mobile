@@ -32,6 +32,7 @@ function buildDisplayReportUrl(baseUrl, identity) {
     const rawBranch = identity.branch || 'main';
     const branch = rawBranch.replace(/^refs\/heads\//, '').replace(/^refs\/tags\//, '').replace(/\//g, '~');
     const shortSha = (identity.commit_sha || '').slice(0, 7);
+
     // Prefer producer-declared run_group (TSIO consolidates by this), else name.
     const name = identity.run_group || identity.name || 'mobile-pr';
     return `${baseUrl}/reports/${encodeURIComponent(repoTrailing)}/${encodeURIComponent(branch)}/${shortSha}/${encodeURIComponent(name)}`;
