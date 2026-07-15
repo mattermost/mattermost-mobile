@@ -56,12 +56,32 @@ export interface Annotation {
 }
 
 /**
+ * Reasoning summary extracted from an assistant turn's thinking blocks.
+ */
+export interface Reasoning {
+    summary: string;
+    signature: string;
+}
+
+/**
+ * One assistant turn in a response. A multi-step answer renders these as a
+ * vertical sequence: text -> tools -> text -> tools -> final text.
+ */
+export interface Round {
+    id: string;
+    text: string;
+    toolCalls: ToolCall[];
+    reasoning: Reasoning;
+    annotations: Annotation[];
+}
+
+/**
  * WebSocket message data for agent post updates
  */
 export interface PostUpdateWebsocketMessage {
     post_id: string;
     next?: string; // Full accumulated message text
-    control?: string; // Control signals: 'start', 'end', 'cancel', 'reasoning_summary', 'tool_call', 'annotations'
+    control?: string; // Control signals: 'start', 'end', 'cancel', 'continue', 'reasoning_summary', 'reasoning_summary_done', 'tool_call', 'annotations'
     tool_call?: string; // JSON-encoded tool calls
     reasoning?: string; // Reasoning summary text
     annotations?: string; // JSON-encoded citations
@@ -78,8 +98,11 @@ export interface StreamingState {
     reasoning: string; // Accumulated reasoning text
     isReasoningLoading: boolean; // True while reasoning is being generated
     showReasoning: boolean; // True if reasoning should be displayed
-    toolCalls: ToolCall[]; // Tool calls pending approval or processed
-    annotations: Annotation[]; // Citations/annotations for the post
+    toolCalls: ToolCall[]; // Tool calls pending approval or processed (current round)
+    annotations: Annotation[]; // Citations/annotations for the post (current round)
+    rounds: Round[]; // Completed rounds snapshotted as each tool round resolves
+    stopped: boolean; // True after the user taps Stop; suppresses late `next` events
+    continueSeq: number; // Bumped on a tool-approval `continue` resume to trigger a refetch
 }
 
 // Normalised mobile shape: `id` is always the root post id (see fetchAIThreads).

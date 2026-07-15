@@ -8,8 +8,9 @@ import {Platform, type StyleProp, View, type ViewStyle, TouchableHighlight, type
 import {removePost} from '@actions/local/post';
 import {showPermalink} from '@actions/remote/permalink';
 import {fetchAndSwitchToThread} from '@actions/remote/thread';
+import AgentMentionReminderPost from '@agents/components/agent_mention_reminder_post';
 import AgentPost from '@agents/components/agent_post';
-import {isAgentPost} from '@agents/utils';
+import {isAgentMentionReminderPost, isAgentPost} from '@agents/utils';
 import CallsCustomMessage from '@calls/components/calls_custom_message';
 import {isCallsCustomMessage} from '@calls/utils';
 import UnrevealedBurnOnReadPost from '@components/post_list/post/burn_on_read/unrevealed';
@@ -179,6 +180,7 @@ const Post = ({
     const isUnrevealedPost = isUnrevealedBoRPost(post);
     const isOwnPost = Boolean(currentUser && post.userId === currentUser.id);
     const isAgentPostType = isAgentPost(post);
+    const isAgentMentionReminderPostType = isAgentMentionReminderPost(post);
     const hasBeenDeleted = (post.deleteAt !== 0);
     const isWebHook = isFromWebhook(post);
     const showEphemeralAuthor = isEphemeral && Boolean(post.userId);
@@ -391,6 +393,10 @@ const Post = ({
     } else if (isUnrevealedPost && !isOwnPost) {
         body = (
             <UnrevealedBurnOnReadPost post={post}/>
+        );
+    } else if (isAgentMentionReminderPostType && !hasBeenDeleted) {
+        body = (
+            <AgentMentionReminderPost post={post}/>
         );
     } else if (isAgentPostType && !hasBeenDeleted) {
         body = (
