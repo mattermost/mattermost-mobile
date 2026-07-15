@@ -91,7 +91,6 @@ async function waitForArchivedChannelItem(channelName: string) {
     return channelItem;
 }
 
-
 async function openArchivedChannelViaBrowseChannels(channelName: string) {
     await BrowseChannelsScreen.open();
     await BrowseChannelsScreen.dismissScheduledPostTooltip();

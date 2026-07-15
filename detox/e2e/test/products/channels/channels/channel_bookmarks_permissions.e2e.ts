@@ -11,7 +11,6 @@ import {
     ChannelBookmark,
     Channel,
     Setup,
-    System,
     Team,
     User,
 } from '@support/server_api';
@@ -64,10 +63,7 @@ describe('Channels - Channel Bookmarks Permissions', () => {
         testTeam = team;
         testUser = user;
 
-        // ── Enable channel bookmarks feature flag ────────────────────────────
-        await System.apiUpdateConfig(siteOneUrl, {FeatureFlags: {ChannelBookmarks: true}});
-
-        // Create the regular user needed for the permission test (MM-T5615_1).
+        // ChannelBookmarks enabled in setup.ts. Create regular user for MM-T5615_1.
         const {user: rUser} = await User.apiCreateUser(siteOneUrl);
         if (!rUser?.id) {
             throw new Error('[beforeAll] Failed to create regularUser');

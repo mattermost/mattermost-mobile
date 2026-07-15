@@ -79,10 +79,7 @@ describe('Channel Settings - Copy Tests', () => {
         await ChannelListScreen.toBeVisible();
     });
 
-    // Skipped: tapping copy_purpose / copy_header_text triggers addViewAt Fabric races
-    // during the bottom-sheet dismiss animation (device.log CI 28290273101 / 28341945446,
-    // claude_artifacts shard-5 MM-T868/T869). Espresso then wedges on
-    // loopMainThreadUntilIdle → 240s timeout and poisons the next test's beforeEach.
+    // Skipped: Fabric idling-resource deadlock on Android copy bottom-sheet tap (CI 28290273101) — needs Detox/Fabric fix.
     it.skip('MM-T868_1 - should show Copy option when long-pressing channel purpose text', async () => {
         const purposeText = `Purpose text for copying ${getRandomId()}`;
         const {channel: channelWithPurpose} = await Channel.apiCreateChannel(siteOneUrl, {

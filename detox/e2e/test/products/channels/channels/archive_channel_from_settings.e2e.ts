@@ -29,6 +29,9 @@ import {expect, waitFor} from 'detox';
 // beforeAll: 4 channels + login under CI load — 6min hook timeout.
 jest.setTimeout(360000);
 
+// beforeAll: 4 channels + login under CI load — 6min hook timeout.
+jest.setTimeout(360000);
+
 describe('Channels - Archive Channel from Settings', () => {
     const serverOneDisplayName = 'Server 1';
     const channelsCategory = 'channels';

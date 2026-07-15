@@ -192,6 +192,12 @@ async function serverSetup() {
     }
 
     try {
+        await axios.get(`${SITE_URL}/api/v4/system/ping`);
+    } catch (err) {
+        process.stderr.write(`[globalSetup] ⚠️ post-login ping failed (${err.message}) — continuing\n`);
+    }
+
+    try {
         await axios.put(`${SITE_URL}/api/v4/config/patch`, {
             ServiceSettings: {
                 SessionLengthWebInHours: 4320,
