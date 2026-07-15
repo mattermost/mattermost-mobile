@@ -246,8 +246,12 @@ describe('Channels - Channel Bookmarks', () => {
         // # Open channel info
         await ChannelInfoScreen.open();
 
-        // * Verify that the "Add a bookmark" option is visible in channel info (Bookmarks Bar)
-        await expect(element(by.text('Add a bookmark'))).toBeVisible();
+        // * Verify that the "Add a bookmark" option is visible in channel info (Bookmarks Bar).
+        // waitFor — FeatureFlagChannelBookmarks / canAddBookmarks may still be settling
+        // after beforeAll reload (CI 29362218938: bare expect raced Config changed).
+        await waitFor(element(by.id('channel_info.add_bookmark.button'))).
+            toBeVisible().
+            withTimeout(timeouts.TWENTY_SEC);
 
         // # Go back to channel list
         await ChannelInfoScreen.close();
@@ -262,7 +266,9 @@ describe('Channels - Channel Bookmarks', () => {
         await ChannelInfoScreen.open();
 
         // * Verify "Add a bookmark" option is displayed even with no existing bookmarks
-        await expect(element(by.text('Add a bookmark'))).toBeVisible();
+        await waitFor(element(by.id('channel_info.add_bookmark.button'))).
+            toBeVisible().
+            withTimeout(timeouts.TWENTY_SEC);
 
         // # Go back to channel list
         await ChannelInfoScreen.close();
