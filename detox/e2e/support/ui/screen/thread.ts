@@ -18,7 +18,8 @@ class ThreadScreen {
     testID = {
         threadScreenPrefix: 'thread.',
         threadScreen: 'thread.screen',
-        backButton: 'thread.navigation.back.button',
+        // Shared NavigationHeader back control (app/components/navigation_header/header.tsx)
+        backButton: 'navigation.header.back',
         followButton: 'thread.follow_thread.button',
         followingButton: 'thread.following_thread.button',
         scheduledPostTooltipCloseButton: 'scheduled_post.tooltip.close.button',
@@ -116,6 +117,7 @@ class ThreadScreen {
     };
 
     back = async () => {
+        await waitForElementToExist(this.backButton, timeouts.TEN_SEC);
         await this.backButton.tap();
         await waitFor(this.threadScreen).not.toBeVisible().withTimeout(timeouts.TEN_SEC);
 
