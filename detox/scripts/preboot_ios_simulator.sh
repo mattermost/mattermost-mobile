@@ -1,7 +1,7 @@
 #!/bin/bash
-# Pre-boot an iOS simulator for Detox CI.
+# Pre-boot an iOS simulator for Detox/Maestro CI.
 #
-# Optimized vs the inline workflow script:
+# Optimized vs the former inline Detox workflow script:
 #   - One blocking bootstatus for sims that already have CoreSimulator dirs (typical CI).
 #   - Autofill plists written while shutdown — no "init boot just to mkdir" on warm sims.
 #   - Skips autofill re-configuration when already applied (marker + plist check).
@@ -9,7 +9,11 @@
 #   - Brand-new simulators (simctl create) still use boot → shutdown → configure → boot.
 #
 # Requires: DEVICE_NAME, DEVICE_OS_VERSION. Writes SIMULATOR_ID to GITHUB_ENV when set.
-# Optional: PREBOOT_SKIP_PREWARM=1, PREBOOT_PREWARM_SECS (default 15).
+# Optional:
+#   PREBOOT_SKIP_PREWARM=1     — Maestro only (uses listapps readiness). Detox must pre-warm.
+#   PREBOOT_PREWARM_SECS       — first pre-warm wait (default 15; iPad often needs 10–15s).
+#   PREBOOT_GRANT_CALLS_PERMISSIONS=1 — also grant mic/camera. Detox stays notifications-only;
+#     extra privacy grants on iOS 26.x have corrupted TCC after failed simctl privacy calls.
 
 set -euo pipefail
 
@@ -82,8 +86,12 @@ install_app() {
 }
 
 grant_notifications() {
+    # Match proven Detox CI: notifications only. Deny camera/photos corrupts TCC on iOS 26.x;
+    # keep grants minimal so a failed privacy call does not cascade into broken UI hit-testing.
     log "Pre-granting notification permission..."
-    xcrun simctl privacy "$SIMULATOR_ID" grant notifications "$BUNDLE_ID" || true
+    if ! xcrun simctl privacy "$SIMULATOR_ID" grant notifications "$BUNDLE_ID"; then
+        log "Warning: notification grant failed (continuing; Detox may re-request at launch)"
+    fi
 }
 
 grant_calls_permissions() {
@@ -96,10 +104,17 @@ kill_app_via_launchd() {
     local app_pid
     app_pid=$(xcrun simctl spawn "$SIMULATOR_ID" launchctl list 2>/dev/null | \
         grep "$BUNDLE_ID" | awk '{print $1}' | grep -E '^[0-9]+$' || true)
-    if [ -n "$app_pid" ]; then
-        xcrun simctl spawn "$SIMULATOR_ID" kill -9 "$app_pid" 2>/dev/null || true
-        log "Killed app via launchd (PID $app_pid)"
+    if [ -z "$app_pid" ]; then
+        return 0
     fi
+    xcrun simctl spawn "$SIMULATOR_ID" kill -9 "$app_pid" 2>/dev/null || true
+    for _ in 1 2 3 4; do
+        if ! xcrun simctl spawn "$SIMULATOR_ID" launchctl list 2>/dev/null | grep -q "$BUNDLE_ID"; then
+            break
+        fi
+        sleep 0.25
+    done
+    log "Killed app via launchd (PID $app_pid)"
 }
 
 prewarm_app() {
@@ -210,7 +225,9 @@ fi
 seed_password_defaults
 install_app
 grant_notifications
-grant_calls_permissions
+if [ "${PREBOOT_GRANT_CALLS_PERMISSIONS:-}" = "1" ]; then
+    grant_calls_permissions
+fi
 
 if [ "${PREBOOT_SKIP_PREWARM:-}" != "1" ]; then
     if ! prewarm_app "$PREWARM_SECS"; then

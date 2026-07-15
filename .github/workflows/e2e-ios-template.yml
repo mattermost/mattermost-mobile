@@ -273,10 +273,12 @@ jobs:
         run: cd detox && npx detox build-framework-cache
 
       - name: Pre-boot iOS Simulator
+        # Detox must pre-warm: a fresh simctl install leaves a pending-install launchd
+        # record; without launch→kill, the first launchApp hangs and shards cascade-fail.
+        # Maestro may set PREBOOT_SKIP_PREWARM=1 (it uses listapps readiness instead).
         run: |
           export DEVICE_NAME="${{ env.DEVICE_NAME }}"
           export DEVICE_OS_VERSION="${{ env.DEVICE_OS_VERSION }}"
-          export PREBOOT_SKIP_PREWARM=1
           bash detox/scripts/preboot_ios_simulator.sh
 
       - name: Start Proxy
