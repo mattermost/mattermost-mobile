@@ -24,10 +24,7 @@ async function fetchWithTimeout(url, options = {}, timeoutMs = FETCH_TIMEOUT_MS)
 }
 
 function repoTail(repository) {
-    const tail = (repository || '').split('/').pop() || repository;
-    if (tail === 'mattermost-mobile') return 'mobile';
-    if (tail === 'mattermost-desktop') return 'desktop';
-    return tail;
+    return (repository || '').split('/').pop() || repository;
 }
 
 function buildDisplayReportUrl(baseUrl, identity) {
@@ -35,7 +32,8 @@ function buildDisplayReportUrl(baseUrl, identity) {
     const rawBranch = identity.branch || 'main';
     const branch = rawBranch.replace(/^refs\/heads\//, '').replace(/^refs\/tags\//, '').replace(/\//g, '~');
     const shortSha = (identity.commit_sha || '').slice(0, 7);
-    const name = identity.name || 'mobile-pr';
+    // Prefer producer-declared run_group (TSIO consolidates by this), else name.
+    const name = identity.run_group || identity.name || 'mobile-pr';
     return `${baseUrl}/reports/${encodeURIComponent(repoTrailing)}/${encodeURIComponent(branch)}/${shortSha}/${encodeURIComponent(name)}`;
 }
 
@@ -129,6 +127,7 @@ async function beginGroup(baseUrl, idToken, identity, totalReportsExpected) {
         name: identity.name,
         branch: identity.branch,
         total_reports_expected: totalReportsExpected,
+        ...(identity.run_group ? {run_group: identity.run_group} : {}),
         ...(identity.gh_pr_number != null ? {gh_pr_number: parseInt(identity.gh_pr_number, 10)} : {}),
     };
     const res = await fetchWithTimeout(`${baseUrl}/api/v1/reports/begin`, {
@@ -311,32 +310,36 @@ function selfTest() {
         commit_sha: 'abc1234deadbeef',
         branch: 'feature-branch',
         name: 'mobile-pr',
+        run_group: 'mobile-pr',
     });
-    assert(url === 'https://test-io.test.mattermost.com/reports/mobile/feature-branch/abc1234/mobile-pr', `display URL: ${url}`);
+    assert(url === 'https://test-io.test.mattermost.com/reports/mattermost-mobile/feature-branch/abc1234/mobile-pr', `display URL: ${url}`);
 
     const urlSlashBranch = buildDisplayReportUrl(PRODUCTION_URL, {
         repository: 'mattermost/mattermost-mobile',
         commit_sha: 'abc1234deadbeef',
         branch: 'feat/tsio-mobile-reporting',
         name: 'mobile-pr',
+        run_group: 'mobile-pr',
     });
-    assert(urlSlashBranch === 'https://test-io.test.mattermost.com/reports/mobile/feat~tsio-mobile-reporting/abc1234/mobile-pr', `slash branch URL: ${urlSlashBranch}`);
+    assert(urlSlashBranch === 'https://test-io.test.mattermost.com/reports/mattermost-mobile/feat~tsio-mobile-reporting/abc1234/mobile-pr', `slash branch URL: ${urlSlashBranch}`);
 
     const urlMain = buildDisplayReportUrl(PRODUCTION_URL, {
         repository: 'mattermost/mattermost-mobile',
         commit_sha: 'def5678',
         branch: 'refs/heads/main',
         name: 'mobile-main',
+        run_group: 'mobile-main',
     });
-    assert(urlMain === 'https://test-io.test.mattermost.com/reports/mobile/main/def5678/mobile-main', `main URL: ${urlMain}`);
+    assert(urlMain === 'https://test-io.test.mattermost.com/reports/mattermost-mobile/main/def5678/mobile-main', `main URL: ${urlMain}`);
 
     const cmtUrl = buildDisplayReportUrl(PRODUCTION_URL, {
         repository: 'mattermost/mattermost-mobile',
         commit_sha: '111aaaa',
         branch: 'release-2.40',
         name: 'cmt-mobile',
+        run_group: 'cmt-mobile',
     });
-    assert(cmtUrl === 'https://test-io.test.mattermost.com/reports/mobile/release-2.40/111aaaa/cmt-mobile', `cmt URL: ${cmtUrl}`);
+    assert(cmtUrl === 'https://test-io.test.mattermost.com/reports/mattermost-mobile/release-2.40/111aaaa/cmt-mobile', `cmt URL: ${cmtUrl}`);
 
     let r = decideStatus({status: 'completed', test_stats: {passed: 10, failed: 0, skipped: 1}}, true);
     assert(r.state === 'success', 'clean run -> success');
@@ -348,17 +351,17 @@ function selfTest() {
     assert(r.timed_out === true && r.state === 'success', 'timeout fail-open upstream ok');
 
     assert(
-        decideTargetUrl('success', true, 'https://test-io.test.mattermost.com/reports/mobile/main/abc1234/mobile-pr', 'gid-1', 'https://github.com/o/r/actions/runs/99') ===
-        'https://test-io.test.mattermost.com/reports/mobile/main/abc1234/mobile-pr?gid=gid-1',
+        decideTargetUrl('success', true, 'https://test-io.test.mattermost.com/reports/mattermost-mobile/main/abc1234/mobile-pr', 'gid-1', 'https://github.com/o/r/actions/runs/99') ===
+        'https://test-io.test.mattermost.com/reports/mattermost-mobile/main/abc1234/mobile-pr?gid=gid-1',
         'success -> TSIO report URL',
     );
     assert(
-        decideTargetUrl('failure', true, 'https://test-io.test.mattermost.com/reports/mobile/main/abc1234/mobile-pr', 'gid-1', 'https://github.com/o/r/actions/runs/99') ===
+        decideTargetUrl('failure', true, 'https://test-io.test.mattermost.com/reports/mattermost-mobile/main/abc1234/mobile-pr', 'gid-1', 'https://github.com/o/r/actions/runs/99') ===
         'https://github.com/o/r/actions/runs/99',
         'failure -> workflow run URL',
     );
     assert(
-        decideTargetUrl('success', false, 'https://test-io.test.mattermost.com/reports/mobile/main/abc1234/mobile-pr', 'gid-1', 'https://github.com/o/r/actions/runs/99') ===
+        decideTargetUrl('success', false, 'https://test-io.test.mattermost.com/reports/mattermost-mobile/main/abc1234/mobile-pr', 'gid-1', 'https://github.com/o/r/actions/runs/99') ===
         'https://github.com/o/r/actions/runs/99',
         'non-terminal -> workflow run URL',
     );
