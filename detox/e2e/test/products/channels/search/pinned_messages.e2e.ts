@@ -49,6 +49,26 @@ describe('Search - Pinned Messages', () => {
     });
 
     beforeEach(async () => {
+        // Recover from prior test leaving Thread / Channel stacked above the list
+        // (Android channel_list.screen can still toExist() behind channel.screen —
+        // CI MM-T4918_4 after failed ThreadScreen.back on MM-T4918_3).
+        if (isAndroid()) {
+            for (let i = 0; i < 4; i++) {
+                try {
+                    // eslint-disable-next-line no-await-in-loop
+                    await waitFor(element(by.id('channel_list.screen'))).
+                        toBeVisible().
+                        withTimeout(timeouts.TWO_SEC);
+                    break;
+                } catch {
+                    // eslint-disable-next-line no-await-in-loop
+                    await device.pressBack();
+                    // eslint-disable-next-line no-await-in-loop
+                    await wait(timeouts.ONE_SEC);
+                }
+            }
+        }
+
         // * Verify on channel list screen
         await ChannelListScreen.toBeVisible();
     });
