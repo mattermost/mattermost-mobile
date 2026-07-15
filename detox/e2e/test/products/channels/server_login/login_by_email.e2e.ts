@@ -18,7 +18,7 @@ import {
     ServerScreen,
 } from '@support/ui/screen';
 import {timeouts, wait} from '@support/utils';
-import {expect} from 'detox';
+import {expect, waitFor} from 'detox';
 
 describe('Server Login - Login by Email', () => {
     const {
@@ -78,15 +78,38 @@ describe('Server Login - Login by Email', () => {
     });
 
     it('MM-T4677_3 - should show incorrect combination error on incorrect credentials', async () => {
-        // # Log in with incorrect credentials
-        await usernameInput.replaceText('username');
-        await passwordInput.replaceText('password');
-        await wait(timeouts.TWO_SEC);
-        await LoginScreen.loginFormInfoText.tap();
-        await signinButton.tap();
+        const expected = 'The email and password combination is incorrect';
+        let lastText = '';
 
-        // * Verify incorrect combination error
-        await expect(passwordInputError).toHaveText('The email and password combination is incorrect');
+        // iOS sim URLSession intermittently drops the first login POST (-1005).
+        // Retry until we get the invalid-credentials string (not a transport error).
+        /* eslint-disable no-await-in-loop */
+        for (let attempt = 0; attempt < 3; attempt++) {
+            await usernameInput.replaceText('username');
+            await passwordInput.replaceText('password');
+            await wait(timeouts.TWO_SEC);
+            await LoginScreen.loginFormInfoText.tap();
+            await signinButton.tap();
+
+            try {
+                await waitFor(passwordInputError).toHaveText(expected).withTimeout(timeouts.TEN_SEC);
+                return;
+            } catch {
+                try {
+                    const attrs = await passwordInputError.getAttributes();
+                    lastText = 'text' in attrs && typeof attrs.text === 'string' ? attrs.text : String(attrs);
+                } catch {
+                    lastText = '';
+                }
+                if (!/network connection was lost|\[object Object\]/i.test(lastText) || attempt === 2) {
+                    break;
+                }
+                await wait(timeouts.TWO_SEC);
+            }
+        }
+        /* eslint-enable no-await-in-loop */
+
+        await expect(passwordInputError).toHaveText(expected);
     });
 
     it('MM-T4677_4 - should show channel list screen on successful login', async () => {
