@@ -223,6 +223,14 @@ describe('Interactive Dialog - Basic Dialog (Plugin)', () => {
         await LoginScreen.login(testUser);
         await ChannelListScreen.toBeVisible();
         await ChannelScreen.open(channelsCategory, testChannel.name);
+
+        // Warm slash-command / IntegrationsManager state — first /dialog after login
+        // can return "Error Executing Command" before commands are ready (CI MM-T4101/4102).
+        try {
+            await ChannelScreen.postInput.typeText('/');
+            await wait(timeouts.TWO_SEC);
+            await ChannelScreen.postInput.clearText();
+        } catch { /* best-effort */ }
     });
 
     afterAll(async () => {

@@ -26,6 +26,15 @@ import {by, element, expect, waitFor} from 'detox';
 
 import InteractiveDialogScreen from './interactive_dialog';
 
+async function dismissErrorAlertIfPresent() {
+    try {
+        const ok = isAndroid() ? element(by.text('OK')) : element(by.label('OK')).atIndex(0);
+        await waitFor(ok).toBeVisible().withTimeout(timeouts.ONE_SEC);
+        await ok.tap();
+        await wait(timeouts.HALF_SEC);
+    } catch { /* no alert */ }
+}
+
 class ChannelScreen {
     testID = {
         channelScreenPrefix: 'channel.',
@@ -354,6 +363,8 @@ class ChannelScreen {
     };
 
     postSlashCommand = async (command: string) => {
+        await dismissErrorAlertIfPresent();
+
         await this.composePostDraft(command);
         await waitForElementToBeVisible(this.sendButton, timeouts.FOUR_SEC);
 
@@ -364,10 +375,20 @@ class ChannelScreen {
         }
         await this.sendButton.tap();
 
-        // Use polling waitForElementToExist — waitFor(...).withTimeout() stalls on Android
-        // when the dialog bottom sheet animation keeps the JS bridge busy (times out at 5s
-        // even when the dialog is visible). The polling variant bypasses bridge-idle sync.
-        await waitForElementToExist(InteractiveDialogScreen.interactiveDialogScreen, timeouts.HALF_MIN);
+        // First slash-command after plugin install can race command registration
+        // (CI 29362218938: MM-T4101/4102 failed; later /dialog tests passed). Retry once.
+        try {
+            await waitForElementToExist(InteractiveDialogScreen.interactiveDialogScreen, timeouts.HALF_MIN);
+        } catch {
+            await dismissErrorAlertIfPresent();
+            await this.composePostDraft(command);
+            await waitForElementToBeVisible(this.sendButton, timeouts.FOUR_SEC);
+            if (isAndroid()) {
+                await wait(timeouts.ONE_SEC);
+            }
+            await this.sendButton.tap();
+            await waitForElementToExist(InteractiveDialogScreen.interactiveDialogScreen, timeouts.HALF_MIN);
+        }
     };
 
     tapSendButton = async () => {
