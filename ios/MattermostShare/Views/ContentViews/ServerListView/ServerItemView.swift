@@ -16,6 +16,7 @@ struct ServerItemView: View {
   
   var body: some View {
     Button(action: {
+      guard !server.isZeroPersistence else { return }
       shareViewModel.selectServer(server)
       self.presentationMode.wrappedValue.dismiss()
     }) {
@@ -34,6 +35,16 @@ struct ServerItemView: View {
             .foregroundColor(Color.theme.centerChannelColor.opacity(0.72))
             .lineLimit(1)
             .font(Font.custom("OpenSans", size: 12))
+          if server.isZeroPersistence {
+            Text(NSLocalizedString(
+              "share_extension.server_item.zero_persistence_unavailable",
+              value: "Sharing unavailable for this server",
+              comment: ""
+            ))
+            .foregroundColor(Color.theme.centerChannelColor.opacity(0.56))
+            .lineLimit(1)
+            .font(Font.custom("OpenSans", size: 12))
+          }
         }
       }
       .padding(.horizontal)
@@ -45,6 +56,8 @@ struct ServerItemView: View {
         alignment: .leading
       )
     }
+    .opacity(server.isZeroPersistence ? 0.48 : 1.0)
+    .disabled(server.isZeroPersistence)
     .background(
       RoundedRectangle(cornerRadius: 8)
         .fill(Color.theme.centerChannelColor.opacity(0.04))

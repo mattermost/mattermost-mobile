@@ -13,12 +13,14 @@ import {subscribeActiveServers} from '@database/subscription/servers';
 import {secureGetFromRecord} from '@utils/types';
 
 import type {Database} from '@nozbe/watermelondb';
+import type {PersistenceFlag} from '@typings/database/models/app/servers';
 import type ServersModel from '@typings/database/models/app/servers';
 
 type State = {
     database: Database;
     serverUrl: string;
     serverDisplayName: string;
+    persistenceFlag: PersistenceFlag;
 };
 
 export function withServerDatabase<T extends React.JSX.IntrinsicAttributes>(Component: ComponentType<T>): ComponentType<T> {
@@ -39,6 +41,7 @@ export function withServerDatabase<T extends React.JSX.IntrinsicAttributes>(Comp
                         database,
                         serverUrl: server.url,
                         serverDisplayName: server.displayName,
+                        persistenceFlag: server.persistenceFlag,
                     });
                 }
             } else {
@@ -58,10 +61,15 @@ export function withServerDatabase<T extends React.JSX.IntrinsicAttributes>(Comp
             return null;
         }
 
+        // Flip the key when the adapter changes (on-disk ↔ in-memory) so React unmounts and
+        // remounts the subtree; withObservables uses empty triggerProps and only binds to the
+        // database at mount, so without a remount it would stay subscribed to the dropped instance.
+        const dbKey = state.persistenceFlag === 'zero-persistence' ? `${state.serverUrl}.mem` : state.serverUrl;
+
         return (
             <DatabaseProvider
                 database={state.database}
-                key={state.serverUrl}
+                key={dbKey}
             >
                 <DeviceInfoProvider>
                     <UserLocaleProvider database={state.database}>

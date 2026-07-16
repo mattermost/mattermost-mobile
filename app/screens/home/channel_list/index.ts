@@ -52,6 +52,7 @@ const enhanced = withObservables([], ({database}: WithDatabaseArgs) => {
             distinctUntilChanged(),
         ),
         showIncomingCalls,
+        currentTeamId: observeCurrentTeamId(database).pipe(distinctUntilChanged()),
     };
 });
 
