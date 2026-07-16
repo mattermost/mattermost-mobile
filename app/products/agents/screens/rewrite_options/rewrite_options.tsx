@@ -1,7 +1,6 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {withDatabase, withObservables} from '@nozbe/watermelondb/react';
 import React, {useCallback, useEffect, useMemo, useRef, useState} from 'react';
 import {defineMessages, useIntl} from 'react-intl';
 import {Alert, Keyboard, TextInput, View} from 'react-native';
@@ -9,7 +8,6 @@ import {useSafeAreaInsets} from 'react-native-safe-area-context';
 
 import {saveSelectedAgent} from '@agents/actions/remote/preference';
 import {useAgents, useRewrite} from '@agents/hooks';
-import {observeSelectedAgentId} from '@agents/queries/agents';
 import {resolveSelectedAgent} from '@agents/utils';
 import CompassIcon, {type CompassIconName} from '@components/compass_icon';
 import OptionItem, {ITEM_HEIGHT} from '@components/option_item';
@@ -29,7 +27,6 @@ import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
 
 import type {Agent, RewriteAction} from '@agents/types';
-import type {WithDatabaseArgs} from '@typings/database/database';
 
 const messages = defineMessages({
     errorTitle: {
@@ -159,7 +156,11 @@ const RewriteOptions = ({
 
     const [customPrompt, setCustomPrompt] = useState('');
     const agents = useAgents(serverUrl);
-    const [selectedAgent, setSelectedAgent] = useState<Agent | null>(null);
+
+    // Warm-init from cache when available; effect below covers the cold path.
+    const [selectedAgent, setSelectedAgent] = useState<Agent | null>(
+        () => resolveSelectedAgent(agents, selectedAgentId),
+    );
     const textInputRef = useRef<TextInput>(null);
 
     // Auto-resolve the selected agent (saved pref -> default -> first) without persisting.
@@ -259,13 +260,12 @@ const RewriteOptions = ({
     }, [customPrompt, handleRewrite]);
 
     const handleOpenAgentSelector = useCallback(() => {
-        const onSelectAgent = (agent: Agent) => {
+        const onSelectAgent = async (agent: Agent) => {
             setSelectedAgent(agent);
-            saveSelectedAgent(serverUrl, agent.id).then(({error}) => {
-                if (error) {
-                    logError('Failed to persist agent selection', error);
-                }
-            });
+            const {error} = await saveSelectedAgent(serverUrl, agent.id);
+            if (error) {
+                logError('Failed to persist agent selection', error);
+            }
         };
         CallbackStore.setCallback(onSelectAgent);
         navigateToScreen(Screens.AGENTS_SELECTOR, {agents, selectedAgentId: selectedAgent?.id || ''});
@@ -353,8 +353,4 @@ const RewriteOptions = ({
     );
 };
 
-const enhanced = withObservables([], ({database}: WithDatabaseArgs) => ({
-    selectedAgentId: observeSelectedAgentId(database),
-}));
-
-export default withDatabase(enhanced(RewriteOptions));
+export default RewriteOptions;

@@ -170,14 +170,13 @@ const AgentChat = ({bots, selectedAgentId}: Props) => {
         goToAgentThreadsList();
     }, []);
 
-    const handleBotSelect = useCallback((bot: AiBotModel) => {
+    const handleBotSelect = useCallback(async (bot: AiBotModel) => {
         setSelectedBot(bot);
-        saveSelectedAgent(serverUrl, bot.id).then(({error: saveError}) => {
-            if (saveError) {
-                logError('Failed to persist agent selection', saveError);
-            }
-        });
         dismissBottomSheet();
+        const {error: saveError} = await saveSelectedAgent(serverUrl, bot.id);
+        if (saveError) {
+            logError('Failed to persist agent selection', saveError);
+        }
     }, [serverUrl]);
 
     const handleBotSelectorPress = usePreventDoubleTap(useCallback(() => {

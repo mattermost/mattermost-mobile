@@ -227,6 +227,25 @@ describe('AgentChat', () => {
         await act(async () => {});
     });
 
+    it('should honor a non-empty selectedAgentId on first mount', async () => {
+        const {getByTestId} = renderWithEverything(
+            <AgentChat
+                bots={[mockBot, mockBot2]}
+                selectedAgentId={mockBot2.id}
+            />,
+            {database},
+        );
+
+        await waitFor(() => {
+            expect(getByTestId('agent_chat.post_draft')).toBeTruthy();
+        });
+
+        expect(createDirectChannel).toHaveBeenCalledWith(SERVER_URL, mockBot2.id);
+        expect(saveSelectedAgent).not.toHaveBeenCalled();
+
+        await act(async () => {});
+    });
+
     it('should persist the preference when a bot is explicitly selected', async () => {
         const {getByTestId} = renderWithEverything(
             <AgentChat
