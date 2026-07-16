@@ -31,6 +31,7 @@ import {useDefaultHeaderHeight} from '@hooks/header';
 import {usePreventDoubleTap} from '@hooks/utils';
 import {TITLE_HEIGHT} from '@screens/bottom_sheet/content';
 import {bottomSheet, dismissBottomSheet, navigateBack} from '@screens/navigation';
+import {getFullErrorMessage} from '@utils/errors';
 import {bottomSheetSnapPoint} from '@utils/helpers';
 import {logError} from '@utils/log';
 
@@ -175,7 +176,7 @@ const AgentChat = ({bots, selectedAgentId}: Props) => {
         dismissBottomSheet();
         const {error: saveError} = await saveSelectedAgent(serverUrl, bot.id);
         if (saveError) {
-            logError('Failed to persist agent selection', saveError);
+            logError('Failed to persist agent selection', getFullErrorMessage(saveError));
         }
     }, [serverUrl]);
 

@@ -21,6 +21,7 @@ import useDidMount from '@hooks/did_mount';
 import BottomSheet from '@screens/bottom_sheet';
 import {dismissBottomSheet, navigateToScreen} from '@screens/navigation';
 import CallbackStore from '@store/callback_store';
+import {getFullErrorMessage} from '@utils/errors';
 import {bottomSheetSnapPoint} from '@utils/helpers';
 import {logError, logWarning} from '@utils/log';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
@@ -264,7 +265,7 @@ const RewriteOptions = ({
             setSelectedAgent(agent);
             const {error} = await saveSelectedAgent(serverUrl, agent.id);
             if (error) {
-                logError('Failed to persist agent selection', error);
+                logError('Failed to persist agent selection', getFullErrorMessage(error));
             }
         };
         CallbackStore.setCallback(onSelectAgent);
