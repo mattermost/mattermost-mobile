@@ -4,7 +4,7 @@
 import NetInfo, {type NetInfoState} from '@react-native-community/netinfo';
 import {Platform} from 'react-native';
 
-import {removePushDisabledInServerAcknowledged} from '@actions/app/global';
+import {removePushDisabledInServerAcknowledged, removePushSigningKey} from '@actions/app/global';
 import DatabaseManager from '@database/manager';
 import {resetMomentLocale} from '@i18n';
 import {getAllServerCredentials, removeServerCredentials} from '@init/credentials';
@@ -280,6 +280,7 @@ describe('session actions', () => {
             expect(NetworkManager.invalidateClient).toHaveBeenCalledWith(mockServerUrl);
             expect(WebsocketManager.invalidateClient).toHaveBeenCalledWith(mockServerUrl);
             expect(removePushDisabledInServerAcknowledged).toHaveBeenCalledWith(encodedServerUrl);
+            expect(removePushSigningKey).toHaveBeenCalledWith(mockServerUrl);
             expect(DatabaseManager.destroyServerDatabase).toHaveBeenCalledWith(mockServerUrl);
             expect(resetMomentLocale).toHaveBeenCalled();
             expect(clearCookiesForServer).toHaveBeenCalledWith(mockServerUrl);
@@ -294,6 +295,7 @@ describe('session actions', () => {
             expect(DatabaseManager.deleteServerDatabase).toHaveBeenCalledWith(mockServerUrl);
             expect(DatabaseManager.destroyServerDatabase).not.toHaveBeenCalled();
             expect(removePushDisabledInServerAcknowledged).not.toHaveBeenCalled();
+            expect(removePushSigningKey).not.toHaveBeenCalled();
         });
 
         it('should clear cookies for server', async () => {

@@ -2,10 +2,14 @@
 // See LICENSE.txt for license information.
 
 import {Tutorial} from '@constants';
-import {GLOBAL_IDENTIFIERS} from '@constants/database';
+import {GLOBAL_IDENTIFIERS, MM_TABLES} from '@constants/database';
 import DatabaseManager from '@database/manager';
 import {getActiveServerUrl} from '@init/credentials';
 import {logError} from '@utils/log';
+
+import type GlobalModel from '@typings/database/models/app/global';
+
+const {APP: {GLOBAL}} = MM_TABLES;
 
 export const storeGlobal = async (id: string, value: unknown, prepareRecordsOnly = false) => {
     try {
@@ -68,6 +72,15 @@ export const storeFirstLaunch = async (prepareRecordsOnly = false) => {
     return storeGlobal(GLOBAL_IDENTIFIERS.FIRST_LAUNCH, Date.now(), prepareRecordsOnly);
 };
 
+export const storeLastViewedTeamIdAndServer = async (teamId: string) => {
+    const currentServerUrl = await getActiveServerUrl();
+
+    return storeGlobal(GLOBAL_IDENTIFIERS.LAST_VIEWED_TEAM, {
+        server_url: currentServerUrl,
+        team_id: teamId,
+    }, false);
+};
+
 export const storeLastViewedChannelIdAndServer = async (channelId: string) => {
     const currentServerUrl = await getActiveServerUrl();
 
@@ -86,6 +99,10 @@ export const storeLastViewedThreadIdAndServer = async (threadId: string) => {
     }, false);
 };
 
+export const removeLastViewedTeamIdAndServer = async () => {
+    return storeGlobal(GLOBAL_IDENTIFIERS.LAST_VIEWED_TEAM, null, false);
+};
+
 export const removeLastViewedChannelIdAndServer = async () => {
     return storeGlobal(GLOBAL_IDENTIFIERS.LAST_VIEWED_CHANNEL, null, false);
 };
@@ -100,4 +117,21 @@ export const storePushDisabledInServerAcknowledged = async (serverUrl: string) =
 
 export const removePushDisabledInServerAcknowledged = async (serverUrl: string) => {
     return storeGlobal(`${GLOBAL_IDENTIFIERS.PUSH_DISABLED_ACK}${serverUrl}`, null, false);
+};
+
+export const storePushSigningKey = async (serverUrl: string, key: string) => {
+    return storeGlobal(`${GLOBAL_IDENTIFIERS.PUSH_SIGNING_KEY}${serverUrl}`, key, false);
+};
+
+export const removePushSigningKey = async (serverUrl: string) => {
+    try {
+        const {database} = DatabaseManager.getAppDatabaseAndOperator();
+        const record = await database.get<GlobalModel>(GLOBAL).find(`${GLOBAL_IDENTIFIERS.PUSH_SIGNING_KEY}${serverUrl}`);
+        await database.write(async () => {
+            await record.destroyPermanently();
+        });
+    } catch {
+        // no cached signing key to remove
+    }
+    return {};
 };
