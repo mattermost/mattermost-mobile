@@ -101,7 +101,7 @@ class EphemeralModeManagerSingleton {
     };
 
     public addServer = async (serverUrl: string, {cleanFileCache = true}: {cleanFileCache?: boolean} = {}) => {
-        if (this.configSubscriptions[serverUrl]) {
+        if (this.configSubscriptions[serverUrl] || this.trackedServers.has(serverUrl)) {
             return;
         }
 

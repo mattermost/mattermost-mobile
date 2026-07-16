@@ -13,6 +13,7 @@ import WebsocketManager from '@managers/websocket_manager';
 import {getServer, getServerDisplayName} from '@queries/app/servers';
 import {navigateToScreen} from '@screens/navigation';
 import {advanceTimers, disableFakeTimers, enableFakeTimers} from '@test/timer_helpers';
+import {deleteFileCache} from '@utils/file';
 
 import EphemeralModeManager from './index';
 
@@ -725,6 +726,19 @@ describe('EphemeralModeManager', () => {
             await advanceTimers(0);
 
             expect(WebsocketManager.observeWebsocketState).toHaveBeenCalledWith(serverA);
+        });
+
+        it('addServer skips re-initializing a server that is already tracked', async () => {
+            await DatabaseManager.updatePersistenceFlag(serverA, 'zero-persistence');
+
+            await EphemeralModeManager.addServer(serverA);
+            await advanceTimers(0);
+            expect(deleteFileCache).toHaveBeenCalledTimes(1);
+
+            await EphemeralModeManager.addServer(serverA);
+            await advanceTimers(0);
+
+            expect(deleteFileCache).toHaveBeenCalledTimes(1);
         });
 
         it('wipes server files (including shared caches) on background for ZPM servers', async () => {
