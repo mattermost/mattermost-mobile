@@ -5,7 +5,7 @@ import {updateDmGmDisplayName} from '@actions/local/channel';
 import {reconcilePersistenceFlag} from '@actions/local/ephemeral_mode/wipe';
 import {storeConfig} from '@actions/local/systems';
 import {fetchCategories} from '@actions/remote/category';
-import {applyPersistenceModeChange} from '@actions/remote/ephemeral_mode/refresh';
+import {applyPersistenceModeChange} from '@actions/remote/refresh';
 import {SYSTEM_IDENTIFIERS} from '@constants/database';
 import DatabaseManager from '@database/manager';
 import {getConfig, getCurrentTeamId, getLicense} from '@queries/servers/system';
@@ -40,6 +40,7 @@ export async function handleConfigChangedEvent(serverUrl: string, msg: WebSocket
         if (config?.LockTeammateNameDisplay && (prevConfig?.LockTeammateNameDisplay !== config.LockTeammateNameDisplay)) {
             updateDmGmDisplayName(serverUrl);
         }
+
         const prevManagedSetting = prevConfig?.EnableManagedChannelCategories;
         const newManagedSetting = config?.EnableManagedChannelCategories;
         if (newManagedSetting !== prevManagedSetting) {

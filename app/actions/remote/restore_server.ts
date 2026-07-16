@@ -19,7 +19,7 @@ import {logDebug, logError} from '@utils/log';
 
 type Result = {error?: unknown};
 
-export const reconnectErasedServer = async (serverUrl: string): Promise<Result> => {
+export const restoreServerAfterDatabaseWipe = async (serverUrl: string): Promise<Result> => {
     try {
         const netInfo = await NetInfo.fetch();
         if (!netInfo.isConnected) {
@@ -36,7 +36,7 @@ export const reconnectErasedServer = async (serverUrl: string): Promise<Result> 
         if (!user) {
             // the server database was just wiped, so forceLogoutIfNecessary has no currentUserId to key off of
             if (isErrorWithStatusCode(fetchError) && fetchError.status_code === HTTP_UNAUTHORIZED) {
-                logDebug('reconnectErasedServer: 401 on fetchMe', serverUrl, getFullErrorMessage(fetchError));
+                logDebug('restoreServerAfterDatabaseWipe: 401 on fetchMe', serverUrl, getFullErrorMessage(fetchError));
                 DeviceEventEmitter.emit(Events.SERVER_LOGOUT, {serverUrl, removeServer: false});
                 return {};
             }
@@ -63,7 +63,7 @@ export const reconnectErasedServer = async (serverUrl: string): Promise<Result> 
         router.replace({pathname: launchRoute.route, params: launchRoute.params});
         return {};
     } catch (error) {
-        logError('reconnectErasedServer', serverUrl, getFullErrorMessage(error));
+        logError('restoreServerAfterDatabaseWipe', serverUrl, getFullErrorMessage(error));
         return {error};
     }
 };

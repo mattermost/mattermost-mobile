@@ -23,6 +23,7 @@ import {CategoryModel, CategoryChannelModel, ChannelModel, ChannelBookmarkModel,
 } from '@database/models/server';
 import AppDataOperator from '@database/operator/app_data_operator';
 import ServerDataOperator from '@database/operator/server_data_operator';
+import {attemptServerDatabaseRecovery} from '@database/recovery';
 import {schema as appSchema} from '@database/schema/app';
 import {serverSchema} from '@database/schema/server';
 import {beforeUpgrade} from '@helpers/database/upgrade';
@@ -160,7 +161,7 @@ class DatabaseManagerSingleton {
                 const memoryDbName = `file:zpm_${databaseName}?mode=memory&cache=shared`;
                 const adapter = new SQLiteAdapter({
                     dbName: zpm ? memoryDbName : databaseFilePath,
-                    migrationEvents: this.buildMigrationCallbacks(databaseName),
+                    migrationEvents: this.buildMigrationCallbacks(databaseName, serverUrl),
                     migrations,
                     jsi: true,
                     schema,
@@ -183,6 +184,10 @@ class DatabaseManagerSingleton {
                 return serverDatabase;
             } catch (e) {
                 logError('Error initializing database', e);
+                const recovered = await attemptServerDatabaseRecovery(serverUrl, e, 'createServerDatabase', {resync: false});
+                if (recovered) {
+                    return this.serverDatabases[serverUrl];
+                }
             }
         }
 
@@ -359,6 +364,22 @@ class DatabaseManagerSingleton {
         }
 
         return server;
+    };
+
+    public getServerUrlForDatabase = (database: Database): string | undefined => {
+        const databaseName = (database.adapter as {dbName?: string} | undefined)?.dbName;
+
+        return Object.entries(this.serverDatabases).find(([, serverDatabase]) => {
+            if (!serverDatabase) {
+                return false;
+            }
+
+            if (serverDatabase.database === database) {
+                return true;
+            }
+
+            return (serverDatabase.database.adapter as {dbName?: string} | undefined)?.dbName === databaseName;
+        })?.[0];
     };
 
     /**
@@ -563,7 +584,7 @@ class DatabaseManagerSingleton {
     * @param {string} dbName
     * @returns {MigrationEvents}
     */
-    private buildMigrationCallbacks = (dbName: string) => {
+    private buildMigrationCallbacks = (dbName: string, serverUrl?: string) => {
         const migrationEvents = {
             onSuccess: () => {
                 logDebug('DB Migration success', dbName);
@@ -579,6 +600,9 @@ class DatabaseManagerSingleton {
             },
             onError: (error: Error) => {
                 logDebug('DB Migration error', dbName);
+                if (serverUrl) {
+                    attemptServerDatabaseRecovery(serverUrl, error, `migration:${dbName}`, {resync: false});
+                }
                 return DeviceEventEmitter.emit(MIGRATION_EVENTS.MIGRATION_ERROR, {
                     dbName,
                     error,

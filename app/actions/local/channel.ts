@@ -100,7 +100,7 @@ export async function switchToChannel(serverUrl: string, channelId: string, team
                     await dismissAllRoutesAndPopToScreen(Screens.CHANNEL);
                 }
 
-                logInfo('channel switch to', channel?.displayName, channelId, (Date.now() - dt), 'ms');
+                logInfo('channel switch to', channelId, 'type', channel?.type, (Date.now() - dt), 'ms');
             }
         } else {
             logDebug('failed to navigate to channel because there was no membership, channel id: ', channelId);

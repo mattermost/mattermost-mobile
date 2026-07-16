@@ -1,9 +1,12 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import {PortalHost} from '@gorhom/portal';
 import {Stack, Redirect} from 'expo-router';
 import {useMemo} from 'react';
+import {View} from 'react-native';
 
+import GlobalClassificationBannerContainer, {GLOBAL_BANNER_PORTAL_HOST} from '@components/global_classification_banner';
 import {useTheme} from '@context/theme';
 import {withServerDatabase} from '@database/components';
 import {useHasCredentials} from '@hooks/use_has_credentials';
@@ -49,9 +52,14 @@ function AuthenticatedLayout() {
     }
 
     return (
-        <Stack screenOptions={stackScreenOptions}>
-            <Stack.Screen name='(home)'/>
-        </Stack>
+        <View style={styles.safeAreaView}>
+            <GlobalClassificationBannerContainer>
+                <Stack screenOptions={stackScreenOptions}>
+                    <Stack.Screen name='(home)'/>
+                </Stack>
+            </GlobalClassificationBannerContainer>
+            <PortalHost name={GLOBAL_BANNER_PORTAL_HOST}/>
+        </View>
     );
 }
 

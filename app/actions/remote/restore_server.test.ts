@@ -7,14 +7,13 @@ import {DeviceEventEmitter} from 'react-native';
 
 import {wipeServerDatabaseWithRetry} from '@actions/local/ephemeral_mode/wipe';
 import {loginEntry} from '@actions/remote/entry';
+import {restoreServerAfterDatabaseWipe} from '@actions/remote/restore_server';
 import {fetchMe} from '@actions/remote/user';
 import {Events, Launch} from '@constants';
 import DatabaseManager from '@database/manager';
 import {getServerCredentials} from '@init/credentials';
 import {determineRouteFromLaunchProps} from '@init/launch';
 import {setCurrentUserId} from '@queries/servers/system';
-
-import {reconnectErasedServer} from './reconnect';
 
 jest.mock('@react-native-community/netinfo', () => ({
     ...jest.requireActual('@react-native-community/netinfo'),
@@ -44,7 +43,7 @@ jest.mock('@queries/servers/system', () => ({
 }));
 jest.mock('@utils/log');
 
-describe('reconnectErasedServer', () => {
+describe('restoreServerAfterDatabaseWipe', () => {
     const serverUrl = 'https://server.test';
 
     let updatePersistenceFlagSpy: jest.SpyInstance;
@@ -79,7 +78,7 @@ describe('reconnectErasedServer', () => {
     it('on no device connectivity: returns no_connection without touching the database', async () => {
         jest.mocked(NetInfo.fetch).mockResolvedValue({isConnected: false} as NetInfoState);
 
-        const result = await reconnectErasedServer(serverUrl);
+        const result = await restoreServerAfterDatabaseWipe(serverUrl);
 
         expect(fetchMe).not.toHaveBeenCalled();
         expect(updatePersistenceFlagSpy).not.toHaveBeenCalled();
@@ -90,14 +89,14 @@ describe('reconnectErasedServer', () => {
     it('on missing credentials: returns no_credentials without fetching the user', async () => {
         jest.mocked(getServerCredentials).mockResolvedValue(null);
 
-        const result = await reconnectErasedServer(serverUrl);
+        const result = await restoreServerAfterDatabaseWipe(serverUrl);
 
         expect(fetchMe).not.toHaveBeenCalled();
         expect(result).toEqual({error: 'no_credentials'});
     });
 
     it('on success: opens WebSocket via loginEntry and navigates home', async () => {
-        const result = await reconnectErasedServer(serverUrl);
+        const result = await restoreServerAfterDatabaseWipe(serverUrl);
 
         expect(fetchMe).toHaveBeenCalledWith(serverUrl);
         expect(setCurrentUserId).toHaveBeenCalledWith(mockOperator, 'u1');
@@ -115,7 +114,7 @@ describe('reconnectErasedServer', () => {
         jest.mocked(fetchMe).mockResolvedValue({error: fetchError} as never);
         const emitSpy = jest.spyOn(DeviceEventEmitter, 'emit');
 
-        const result = await reconnectErasedServer(serverUrl);
+        const result = await restoreServerAfterDatabaseWipe(serverUrl);
 
         expect(loginEntry).not.toHaveBeenCalled();
         expect(wipeServerDatabaseWithRetry).not.toHaveBeenCalled();
@@ -125,26 +124,11 @@ describe('reconnectErasedServer', () => {
         expect(result).toEqual({error: fetchError});
     });
 
-    it('on fetchMe 401 failure: emits a server logout and skips loginEntry, wipe, and navigation', async () => {
-        const fetchError = {status_code: 401};
-        jest.mocked(fetchMe).mockResolvedValue({error: fetchError} as never);
-        const emitSpy = jest.spyOn(DeviceEventEmitter, 'emit');
-
-        const result = await reconnectErasedServer(serverUrl);
-
-        expect(loginEntry).not.toHaveBeenCalled();
-        expect(wipeServerDatabaseWithRetry).not.toHaveBeenCalled();
-        expect(updatePersistenceFlagSpy).not.toHaveBeenCalled();
-        expect(router.replace).not.toHaveBeenCalled();
-        expect(emitSpy).toHaveBeenCalledWith(Events.SERVER_LOGOUT, {serverUrl, removeServer: false});
-        expect(result).toEqual({});
-    });
-
     it('on error from loginEntry: re-wipes the partial DB and returns the error', async () => {
         const wsError = new Error('WebSocket failed');
         jest.mocked(loginEntry).mockResolvedValue({error: wsError});
 
-        const result = await reconnectErasedServer(serverUrl);
+        const result = await restoreServerAfterDatabaseWipe(serverUrl);
 
         expect(wipeServerDatabaseWithRetry).toHaveBeenCalledWith(serverUrl);
         expect(updatePersistenceFlagSpy).not.toHaveBeenCalled();

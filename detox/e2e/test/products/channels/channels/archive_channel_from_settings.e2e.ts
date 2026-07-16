@@ -23,16 +23,16 @@ import {
 import {timeouts, wait} from '@support/utils';
 import {waitFor} from 'detox';
 
+// beforeAll: 4 channels + login under CI load — 6min hook timeout.
+jest.setTimeout(360000);
+
 describe('Channels - Archive Channel from Settings', () => {
     const serverOneDisplayName = 'Server 1';
     const channelsCategory = 'channels';
     let testTeam: any;
     let testUser: any;
 
-    // Pre-created channels for tests that need to navigate to a live channel
-    // via the sidebar before archiving. Created BEFORE login so they appear via
-    // the initial HTTP channel sync instead of a WebSocket event — on Android
-    // API 35 emulators, WS delivery can be delayed by several minutes after login.
+    // Pre-create channels before login — sidebar sync via HTTP, not delayed WS on Android API 35.
     let channelForT4932_1: any;
     let channelForT4932_2: any;
     let channelForT4932_3: any;

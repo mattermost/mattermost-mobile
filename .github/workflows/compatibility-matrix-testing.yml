@@ -10,27 +10,13 @@ on:
       MOBILE_VERSION:
         description: "The mattermost mobile version to test"
         required: true
-      cmt_run_id:
-        description: "CMT provisioner run ID used for instance cleanup"
-        required: false
-        default: "0"
-        type: string
+
+# Cancel overlapping CMT runs for the same ref; matterwick cleans up cancelled servers via workflow_run completed.
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
 
 jobs:
-  ## This is picked up after the finish for cleanup
-  upload-cmt-server-detals:
-    runs-on: ubuntu-22.04
-    steps:
-      - name: cmt/generate-instance-details-file
-        run: echo '${{ inputs.CMT_MATRIX }}' > instance-details.json
-
-      - name: cmt/upload-instance-details
-        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
-        with:
-          name: instance-details.json
-          path: instance-details.json
-          retention-days: 1
-
   calculate-commit-hash:
     runs-on: ubuntu-22.04
     outputs:
@@ -47,6 +33,9 @@ jobs:
 
   update-initial-status:
     runs-on: ubuntu-22.04
+    permissions:
+      contents: read
+      statuses: write
     needs:
       - calculate-commit-hash
     steps:
@@ -54,6 +43,7 @@ jobs:
         with:
           ref: ${{ inputs.MOBILE_VERSION }}
       - uses: ./.github/actions/update-commit-status
+        if: ${{ needs.calculate-commit-hash.outputs.MOBILE_SHA != '' }}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
@@ -62,6 +52,23 @@ jobs:
           context: e2e/compatibility-matrix-testing
           description: "Compatibility Matrix Testing for ${{ inputs.MOBILE_VERSION }} version"
           status: pending
+
+  # Maestro only runs against the latest server version; matrix filtering happens here since job-level if: can't access matrix.
+  prepare-maestro-matrix:
+    runs-on: ubuntu-22.04
+    outputs:
+      matrix: ${{ steps.filter.outputs.matrix }}
+    steps:
+      - name: Filter CMT matrix to latest server only
+        id: filter
+        env:
+          CMT_MATRIX: ${{ inputs.CMT_MATRIX }}
+        run: |
+          matrix=$(echo "$CMT_MATRIX" | jq -c '{server: [.server[] | select(.latest == true)]}')
+          if [ "$(echo "$matrix" | jq '.server | length')" -eq 0 ]; then
+            matrix=$(echo "$CMT_MATRIX" | jq -c '{server: [.server[-1]]}')
+          fi
+          echo "matrix=$matrix" >> "$GITHUB_OUTPUT"
 
   # Input follows the below schema
   # {
@@ -169,8 +176,9 @@ jobs:
           name: android-maestro-build-files-${{ github.run_id }}
           path: android/app/build/outputs/apk/release/
 
+  # latest entry runs full suite, older entries run smoke only. Job-level if: can't conditionally skip matrix legs, so inputs vary instead.
   detox-e2e:
-    name: mobile-cmt-${{ matrix.server.version }}
+    name: mobile-cmt-ios${{ matrix.server.latest && '-full' || '-smoke' }}-${{ matrix.server.version }}
     uses: ./.github/workflows/e2e-ios-template.yml
     needs:
       - build-ios-simulator
@@ -190,6 +198,9 @@ jobs:
       run-type: "RELEASE"
       MM_TEST_SERVER_URL: ${{ matrix.server.url }}
       MOBILE_VERSION: ${{ inputs.MOBILE_VERSION }}
+      search_path: ${{ matrix.server.latest && 'detox/e2e/test' || 'detox/e2e/test/products/channels/smoke_test' }}
+      parallelism: ${{ matrix.server.latest && '10' || '1' }}
+      testcase_failure_fatal: true
 
   detox-ipad-e2e:
     name: mobile-cmt-ipad-${{ matrix.server.version }}
@@ -218,14 +229,16 @@ jobs:
       parallelism: "1"
       detox_config: "ios.ipad.debug"
 
+  # Maestro runs only against the latest server version (no smoke-on-older variant).
   maestro-ios-e2e:
     name: mobile-cmt-maestro-ios-${{ matrix.server.version }}
     uses: ./.github/workflows/e2e-maestro-template.yml
     needs:
       - build-ios-simulator
+      - prepare-maestro-matrix
     strategy:
       fail-fast: false
-      matrix: ${{ fromJson(inputs.CMT_MATRIX) }}
+      matrix: ${{ fromJson(needs.prepare-maestro-matrix.outputs.matrix) }}
     secrets: inherit
     with:
       platform: ios
@@ -233,9 +246,10 @@ jobs:
       MM_TEST_SERVER_URL: ${{ matrix.server.url }}
       MOBILE_VERSION: ${{ inputs.MOBILE_VERSION }}
       testcase_failure_fatal: true
+      record_tests_in_zephyr: true
 
   detox-android-e2e:
-    name: mobile-cmt-android-${{ matrix.server.version }}
+    name: mobile-cmt-android${{ matrix.server.latest && '-full' || '-smoke' }}-${{ matrix.server.version }}
     uses: ./.github/workflows/e2e-android-template.yml
     needs:
       - build-android-apk
@@ -256,15 +270,20 @@ jobs:
       run-type: "RELEASE"
       MM_TEST_SERVER_URL: ${{ matrix.server.url }}
       MOBILE_VERSION: ${{ inputs.MOBILE_VERSION }}
+      search_path: ${{ matrix.server.latest && 'detox/e2e/test' || 'detox/e2e/test/products/channels/smoke_test' }}
+      parallelism: ${{ matrix.server.latest && '10' || '1' }}
+      testcase_failure_fatal: true
 
+  # Maestro runs only against the latest server version (no smoke-on-older variant).
   maestro-android-e2e:
     name: mobile-cmt-maestro-android-${{ matrix.server.version }}
     uses: ./.github/workflows/e2e-maestro-template.yml
     needs:
       - build-android-apk-maestro
+      - prepare-maestro-matrix
     strategy:
       fail-fast: false
-      matrix: ${{ fromJson(inputs.CMT_MATRIX) }}
+      matrix: ${{ fromJson(needs.prepare-maestro-matrix.outputs.matrix) }}
     secrets: inherit
     with:
       platform: android
@@ -273,6 +292,7 @@ jobs:
       MOBILE_VERSION: ${{ inputs.MOBILE_VERSION }}
       artifact_run_id: ${{ github.run_id }}
       testcase_failure_fatal: true
+      record_tests_in_zephyr: true
 
   update-final-status:
     runs-on: ubuntu-22.04
@@ -306,6 +326,7 @@ jobs:
           ref: ${{ inputs.MOBILE_VERSION }}
 
       - uses: ./.github/actions/update-commit-status
+        if: ${{ needs.calculate-commit-hash.outputs.MOBILE_SHA != '' }}
         env:
           GITHUB_TOKEN: ${{ github.token }}
         with:
@@ -314,16 +335,7 @@ jobs:
           context: e2e/compatibility-matrix-testing
           description: Compatibility Matrix Testing for ${{ inputs.MOBILE_VERSION }} version
           status: ${{ steps.status.outputs.status }}
-          target_url: ${{ needs.detox-e2e.outputs.TARGET_URL || needs.maestro-ios-e2e.outputs.TARGET_URL || needs.maestro-android-e2e.outputs.TARGET_URL }}
+          target_url: https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}
 
-      - name: cmt/cleanup-instances
-        if: ${{ inputs.cmt_run_id != '0' && inputs.cmt_run_id != '' }}
-        env:
-          MATTERWICK_URL: ${{ vars.MATTERWICK_URL }}
-          CMT_RUN_ID: ${{ inputs.cmt_run_id }}
-        run: |
-          curl -s -X POST "${MATTERWICK_URL}/cleanup_e2e" \
-            -H "Content-Type: application/json" \
-            -d "{\"repo\": \"mattermost-mobile\", \"run_id\": \"${CMT_RUN_ID}\"}" \
-            --fail-with-body || echo "Cleanup request failed (non-fatal)"
+      # Instance cleanup is handled by matterwick on workflow_run completed.
 

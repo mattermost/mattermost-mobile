@@ -103,13 +103,46 @@ export async function newConnection(
         }
     }
 
+    // audio device changed listener is added before InCallManager.start() to listen for the first audio device change event.
+    let btInitialized = false;
+    let speakerInitialized = false;
+    if (Platform.OS === 'android') {
+        audioDeviceChanged = DeviceEventEmitter.addListener('onAudioDeviceChanged', (data: AudioDeviceInfoRaw) => {
+            const info: AudioDeviceInfo = {
+                availableAudioDeviceList: JSON.parse(data.availableAudioDeviceList),
+                selectedAudioDevice: data.selectedAudioDevice,
+            };
+            setAudioDeviceInfo(info);
+            logDebug('calls: AudioDeviceChanged, info:', info);
+
+            // Auto switch to bluetooth the first time we connect to bluetooth, but not after.
+            if (!btInitialized) {
+                if (info.availableAudioDeviceList.includes(AudioDevice.Bluetooth)) {
+                    setPreferredAudioRoute(AudioDevice.Bluetooth);
+                    btInitialized = true;
+                } else if (!speakerInitialized) {
+                    // If we don't have bluetooth available, default to speakerphone on.
+                    setPreferredAudioRoute(AudioDevice.Speakerphone);
+                    speakerInitialized = true;
+                }
+            }
+        });
+    }
+
     const ws = new WebSocketClient(serverUrl, client.getWebSocketUrl(), credentials?.token);
 
     InCallManager.start();
     InCallManager.stopProximitySensor();
 
-    // Throws an error, to be caught by caller.
-    await ws.initialize();
+    try {
+        await ws.initialize();
+    } catch (err) {
+        InCallManager.stop();
+        audioDeviceChanged?.remove();
+
+        // Rethrows the error, to be caught by the caller.
+        throw err;
+    }
 
     if (hasMicPermission) {
         initializeVoiceTrack();
@@ -330,31 +363,7 @@ export async function newConnection(
             }
         }
 
-        let btInitialized = false;
-        let speakerInitialized = false;
-
         if (Platform.OS === 'android') {
-            audioDeviceChanged = DeviceEventEmitter.addListener('onAudioDeviceChanged', (data: AudioDeviceInfoRaw) => {
-                const info: AudioDeviceInfo = {
-                    availableAudioDeviceList: JSON.parse(data.availableAudioDeviceList),
-                    selectedAudioDevice: data.selectedAudioDevice,
-                };
-                setAudioDeviceInfo(info);
-                logDebug('calls: AudioDeviceChanged, info:', info);
-
-                // Auto switch to bluetooth the first time we connect to bluetooth, but not after.
-                if (!btInitialized) {
-                    if (info.availableAudioDeviceList.includes(AudioDevice.Bluetooth)) {
-                        setPreferredAudioRoute(AudioDevice.Bluetooth);
-                        btInitialized = true;
-                    } else if (!speakerInitialized) {
-                        // If we don't have bluetooth available, default to speakerphone on.
-                        setPreferredAudioRoute(AudioDevice.Speakerphone);
-                        speakerInitialized = true;
-                    }
-                }
-            });
-
             // To allow us to use microphone in the background
             foregroundServiceStart(intl);
         }

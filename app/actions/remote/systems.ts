@@ -3,7 +3,7 @@
 
 import {reconcilePersistenceFlag} from '@actions/local/ephemeral_mode/wipe';
 import {storeConfigAndLicense, storeDataRetentionPolicies} from '@actions/local/systems';
-import {applyPersistenceModeChange} from '@actions/remote/ephemeral_mode/refresh';
+import {applyPersistenceModeChange} from '@actions/remote/refresh';
 import {forceLogoutIfNecessary} from '@actions/remote/session';
 import DatabaseManager from '@database/manager';
 import NetworkManager from '@managers/network_manager';

@@ -835,7 +835,7 @@ export async function joinIfNeededAndSwitchToChannel(
                 }
             }
 
-            logInfo('joining channel', fetchRequest.channel.display_name, fetchRequest.channel.id);
+            logInfo('joining channel', fetchRequest.channel.id, 'type', fetchRequest.channel.type);
             const joinRequest = await joinChannel(serverUrl, teamId, channelId, channelName, false);
             if (!joinRequest.channel) {
                 onError(joinedTeam, teamId);

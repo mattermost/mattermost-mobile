@@ -11,7 +11,7 @@ import {getCurrentChannelId, getCurrentTeamId, getPushVerificationStatus, prepar
 import {getFullErrorMessage} from '@utils/errors';
 import {logError, logWarning} from '@utils/log';
 
-import {refetchCurrentUser} from '../user';
+import {refetchCurrentUser} from './user';
 
 export const applyPersistenceModeChange = async (serverUrl: string): Promise<{error?: unknown}> => {
     let resumeServerTracking = true;
@@ -75,7 +75,7 @@ export const applyPersistenceModeChange = async (serverUrl: string): Promise<{er
         logError('applyPersistenceModeChange', serverUrl, getFullErrorMessage(error));
         const {error: logoutError} = await terminateSession(serverUrl, false);
         if (logoutError) {
-            logError('applyPersistenceModeChange: terminateSession failed', serverUrl, logoutError);
+            logError('applyPersistenceModeChange: terminateSession failed', serverUrl, getFullErrorMessage(logoutError));
         } else {
             // do not resume server tracking in case of session termination
             resumeServerTracking = false;

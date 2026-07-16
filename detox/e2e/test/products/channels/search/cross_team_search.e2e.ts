@@ -72,9 +72,6 @@ describe('Search - Cross Team Search', () => {
         townSquareChannel = townSquareChannelResult;
 
         // # Enable cross-team search so the "All teams" option appears in the team picker.
-        // The setting lives under ServiceSettings (not SearchSettings) — see
-        // github.com/mattermost/mattermost PR #30518 which moved this from a feature
-        // flag to ServiceSettings.EnableCrossTeamSearch in v10.7.
         await System.apiUpdateConfig(siteOneUrl, {ServiceSettings: {EnableCrossTeamSearch: true}});
 
         // # Log in to server
@@ -270,5 +267,7 @@ describe('Search - Cross Team Search', () => {
 
         // # Go back to channel list screen
         await ChannelScreen.back();
-    });
+
+    // 360s timeout: cross-team flow ~236s on iOS 26.2 sim (CI 28290273101) — budget, not app bug.
+    }, 360000);
 });
