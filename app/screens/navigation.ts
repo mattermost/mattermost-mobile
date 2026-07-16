@@ -15,7 +15,7 @@ import type {AvailableScreens} from '@typings/screens/navigation';
 
 export function propsToParams(props: any): Record<string, string> {
     return Object.keys(props || {}).reduce((params, key) => {
-        params[key] = typeof props[key] === 'string' ? props[key] : JSON.stringify(props[key]);
+        params[key] = JSON.stringify(props[key]);
         return params;
     }, {} as Record<string, string>);
 }
