@@ -6,7 +6,9 @@ import {defineMessages, useIntl} from 'react-intl';
 import {Alert, Keyboard, TextInput, View} from 'react-native';
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
 
+import {saveSelectedAgent} from '@agents/actions/remote/preference';
 import {useAgents, useRewrite} from '@agents/hooks';
+import {resolveSelectedAgent} from '@agents/utils';
 import CompassIcon, {type CompassIconName} from '@components/compass_icon';
 import OptionItem, {ITEM_HEIGHT} from '@components/option_item';
 import {Screens} from '@constants';
@@ -19,8 +21,9 @@ import useDidMount from '@hooks/did_mount';
 import BottomSheet from '@screens/bottom_sheet';
 import {dismissBottomSheet, navigateToScreen} from '@screens/navigation';
 import CallbackStore from '@store/callback_store';
+import {getFullErrorMessage} from '@utils/errors';
 import {bottomSheetSnapPoint} from '@utils/helpers';
-import {logWarning} from '@utils/log';
+import {logError, logWarning} from '@utils/log';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
 
@@ -86,6 +89,7 @@ export type updateValueFn = (value: string | ((prevValue: string) => string)) =>
 type Props = {
     originalMessage: string;
     updateValue?: updateValueFn;
+    selectedAgentId: string;
 };
 
 const CUSTOM_PROMPT_INPUT_HEIGHT = 64;
@@ -142,6 +146,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
 const RewriteOptions = ({
     originalMessage,
     updateValue,
+    selectedAgentId,
 }: Props) => {
     const intl = useIntl();
     const theme = useTheme();
@@ -152,15 +157,19 @@ const RewriteOptions = ({
 
     const [customPrompt, setCustomPrompt] = useState('');
     const agents = useAgents(serverUrl);
-    const [selectedAgent, setSelectedAgent] = useState<Agent | null>(null);
+
+    // Warm-init from cache when available; effect below covers the cold path.
+    const [selectedAgent, setSelectedAgent] = useState<Agent | null>(
+        () => resolveSelectedAgent(agents, selectedAgentId),
+    );
     const textInputRef = useRef<TextInput>(null);
 
-    // Set default agent when agents list changes
+    // Auto-resolve the selected agent (saved pref -> default -> first) without persisting.
     useEffect(() => {
         if (agents.length > 0) {
-            setSelectedAgent((current) => current || agents[0]);
+            setSelectedAgent((current) => current ?? resolveSelectedAgent(agents, selectedAgentId));
         }
-    }, [agents]);
+    }, [agents, selectedAgentId]);
 
     useDidMount(() => {
         return () => {
@@ -252,12 +261,16 @@ const RewriteOptions = ({
     }, [customPrompt, handleRewrite]);
 
     const handleOpenAgentSelector = useCallback(() => {
-        const onSelectAgent = (agent: Agent) => {
+        const onSelectAgent = async (agent: Agent) => {
             setSelectedAgent(agent);
+            const {error} = await saveSelectedAgent(serverUrl, agent.id);
+            if (error) {
+                logError('Failed to persist agent selection', getFullErrorMessage(error));
+            }
         };
         CallbackStore.setCallback(onSelectAgent);
         navigateToScreen(Screens.AGENTS_SELECTOR, {agents, selectedAgentId: selectedAgent?.id || ''});
-    }, [agents, selectedAgent]);
+    }, [agents, selectedAgent, serverUrl]);
 
     const snapPoints = useMemo(() => {
         const paddingBottom = 10;
