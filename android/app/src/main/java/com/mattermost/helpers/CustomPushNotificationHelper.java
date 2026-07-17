@@ -22,6 +22,7 @@ import android.text.TextUtils;
 import android.util.Base64;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.core.app.NotificationCompat;
 import androidx.core.app.NotificationManagerCompat;
 import androidx.core.app.Person;
@@ -84,7 +85,7 @@ public class CustomPushNotificationHelper {
         if (type != null && type.equals(PUSH_TYPE_SESSION)) {
             NotificationConversationStore.ConversationMessage current =
                     buildConversationMessage(conversationTitle, bundle);
-            addStoredMessageToStyle(context, messagingStyle, current, bundle);
+            addStoredMessageToStyle(messagingStyle, current, null);
             return;
         }
 
@@ -100,12 +101,19 @@ public class CustomPushNotificationHelper {
             // Fallback if persistence failed for any reason.
             NotificationConversationStore.ConversationMessage current =
                     buildConversationMessage(conversationTitle, bundle);
-            addStoredMessageToStyle(context, messagingStyle, current, bundle);
+            Bitmap avatar = resolveLatestMessageAvatar(context, bundle, current);
+            addStoredMessageToStyle(messagingStyle, current, avatar);
             return;
         }
 
-        for (NotificationConversationStore.ConversationMessage stored : history) {
-            addStoredMessageToStyle(context, messagingStyle, stored, bundle);
+        Bitmap latestAvatar = null;
+        if (!history.isEmpty()) {
+            latestAvatar = resolveLatestMessageAvatar(context, bundle, history.get(history.size() - 1));
+        }
+
+        for (int i = 0; i < history.size(); i++) {
+            boolean isLatest = i == history.size() - 1;
+            addStoredMessageToStyle(messagingStyle, history.get(i), isLatest ? latestAvatar : null);
         }
     }
 
@@ -137,32 +145,38 @@ public class CustomPushNotificationHelper {
         );
     }
 
-    private static void addStoredMessageToStyle(
+    @Nullable
+    private static Bitmap resolveLatestMessageAvatar(
             Context context,
-            NotificationCompat.MessagingStyle messagingStyle,
-            NotificationConversationStore.ConversationMessage stored,
-            Bundle bundle
+            Bundle bundle,
+            NotificationConversationStore.ConversationMessage latest
     ) {
         String serverUrl = bundle.getString("server_url");
         String type = bundle.getString("type");
         String urlOverride = bundle.getString("override_icon_url");
-        String currentSenderId = bundle.getString("sender_id");
+        if (serverUrl == null || type == null || type.equals(PUSH_TYPE_SESSION) || "me".equals(latest.getSenderId())) {
+            return null;
+        }
 
+        try {
+            return userAvatar(context, serverUrl, latest.getSenderId(), urlOverride);
+        } catch (IOException e) {
+            e.printStackTrace();
+            return null;
+        }
+    }
+
+    private static void addStoredMessageToStyle(
+            NotificationCompat.MessagingStyle messagingStyle,
+            NotificationConversationStore.ConversationMessage stored,
+            @Nullable Bitmap avatar
+    ) {
         Person.Builder sender = new Person.Builder()
                 .setKey(stored.getSenderId())
                 .setName(stored.getSenderName());
 
-        // Only decorate the latest sender avatar to avoid N network fetches per rebuild.
-        boolean isCurrentSender = currentSenderId != null && currentSenderId.equals(stored.getSenderId());
-        if (isCurrentSender && serverUrl != null && type != null && !type.equals(PUSH_TYPE_SESSION)) {
-            try {
-                Bitmap avatar = userAvatar(context, serverUrl, stored.getSenderId(), urlOverride);
-                if (avatar != null) {
-                    sender.setIcon(IconCompat.createWithBitmap(avatar));
-                }
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
+        if (avatar != null) {
+            sender.setIcon(IconCompat.createWithBitmap(avatar));
         }
 
         messagingStyle.addMessage(stored.getText(), stored.getTimestamp(), sender.build());

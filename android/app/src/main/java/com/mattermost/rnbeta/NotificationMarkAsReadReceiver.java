@@ -25,26 +25,28 @@ import com.mattermost.turbolog.TurboLog;
 public class NotificationMarkAsReadReceiver extends BroadcastReceiver {
     @Override
     public void onReceive(Context context, Intent intent) {
+        final PendingResult pendingResult = goAsync();
         try {
             Bundle bundle = intent.getBundleExtra(CustomPushNotificationHelper.NOTIFICATION);
             if (bundle == null) {
                 TurboLog.Companion.i("NotificationMarkAsReadReceiver", "Missing notification bundle");
+                pendingResult.finish();
                 return;
             }
-
-            Network.init(context);
-            clearLocalConversation(context, bundle);
 
             String serverUrl = bundle.getString("server_url");
             String channelId = bundle.getString("channel_id");
             if (serverUrl == null || channelId == null) {
                 TurboLog.Companion.i("NotificationMarkAsReadReceiver", "Missing server_url or channel_id");
+                pendingResult.finish();
                 return;
             }
 
-            markChannelAsRead(serverUrl, channelId);
+            Network.init(context);
+            markChannelAsRead(context, bundle, serverUrl, channelId, pendingResult);
         } catch (Exception e) {
             e.printStackTrace();
+            pendingResult.finish();
         }
     }
 
@@ -54,7 +56,13 @@ public class NotificationMarkAsReadReceiver extends BroadcastReceiver {
         ConversationShortcutHelper.INSTANCE.removeShortcut(context, bundle);
     }
 
-    private void markChannelAsRead(String serverUrl, String channelId) {
+    private void markChannelAsRead(
+            Context context,
+            Bundle bundle,
+            String serverUrl,
+            String channelId,
+            PendingResult pendingResult
+    ) {
         WritableMap headers = Arguments.createMap();
         headers.putString("Content-Type", "application/json");
 
@@ -71,30 +79,41 @@ public class NotificationMarkAsReadReceiver extends BroadcastReceiver {
                 return statusCode >= 200 && statusCode < 300;
             }
 
+            private void finishReceiver() {
+                pendingResult.finish();
+            }
+
             @Override
             public void resolve(@Nullable Object value) {
-                if (value instanceof ReadableMap) {
-                    ReadableMap response = (ReadableMap) value;
-                    ReadableMap data = response.getMap("data");
-                    if (data != null && data.hasKey("status_code") && !isSuccessful(data.getInt("status_code"))) {
-                        TurboLog.Companion.i("NotificationMarkAsReadReceiver",
-                                String.format("Mark as read FAILED %s", data.getString("message")));
-                        return;
+                try {
+                    if (value instanceof ReadableMap) {
+                        ReadableMap response = (ReadableMap) value;
+                        ReadableMap data = response.getMap("data");
+                        if (data != null && data.hasKey("status_code") && !isSuccessful(data.getInt("status_code"))) {
+                            TurboLog.Companion.i("NotificationMarkAsReadReceiver",
+                                    String.format("Mark as read FAILED %s", data.getString("message")));
+                            return;
+                        }
                     }
+                    clearLocalConversation(context, bundle);
+                    TurboLog.Companion.i("NotificationMarkAsReadReceiver", "Mark as read SUCCESS");
+                } finally {
+                    finishReceiver();
                 }
-                TurboLog.Companion.i("NotificationMarkAsReadReceiver", "Mark as read SUCCESS");
             }
 
             @Override
             public void reject(@NonNull Throwable reason) {
                 TurboLog.Companion.i("NotificationMarkAsReadReceiver",
                         String.format("Mark as read FAILED %s", reason.getMessage()));
+                finishReceiver();
             }
 
             @Override
             public void reject(@NonNull String code, String message) {
                 TurboLog.Companion.i("NotificationMarkAsReadReceiver",
                         String.format("Mark as read FAILED status %s BODY %s", code, message));
+                finishReceiver();
             }
         });
     }

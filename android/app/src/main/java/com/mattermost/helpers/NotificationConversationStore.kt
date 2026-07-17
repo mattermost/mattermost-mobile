@@ -4,16 +4,22 @@ import android.content.Context
 import android.os.Bundle
 import android.text.TextUtils
 import androidx.core.content.edit
+import com.mattermost.helpers.database_extension.isZeroPersistenceServer
 import org.json.JSONArray
 import org.json.JSONObject
+import java.util.concurrent.ConcurrentHashMap
 
 /**
  * Persists recent messaging-style notification messages per conversation so
  * Android Auto can read back conversation history, not only the latest push.
+ * Zero-persistence servers keep history in memory only.
  */
 object NotificationConversationStore {
     private const val PREFS_NAME = "NOTIFICATION_CONVERSATION_HISTORY"
     private const val MAX_MESSAGES_PER_CONVERSATION = 10
+
+    private val lock = Any()
+    private val ephemeralMessages = ConcurrentHashMap<String, MutableList<ConversationMessage>>()
 
     data class ConversationMessage(
         val postId: String?,
@@ -38,26 +44,33 @@ object NotificationConversationStore {
 
     fun appendMessage(context: Context, bundle: Bundle, message: ConversationMessage) {
         val key = conversationKey(bundle) ?: return
-        val messages = getMessages(context, key).toMutableList()
-        if (!message.postId.isNullOrEmpty() && messages.any { it.postId == message.postId }) {
-            return
+        val serverUrl = bundle.getString("server_url")
+        synchronized(lock) {
+            val messages = loadMessagesLocked(context, key, serverUrl).toMutableList()
+            if (!message.postId.isNullOrEmpty() && messages.any { it.postId == message.postId }) {
+                return
+            }
+            messages.add(message)
+            while (messages.size > MAX_MESSAGES_PER_CONVERSATION) {
+                messages.removeAt(0)
+            }
+            saveMessagesLocked(context, key, serverUrl, messages)
         }
-        messages.add(message)
-        while (messages.size > MAX_MESSAGES_PER_CONVERSATION) {
-            messages.removeAt(0)
-        }
-        saveMessages(context, key, messages)
     }
 
     fun getMessages(context: Context, bundle: Bundle): List<ConversationMessage> {
         val key = conversationKey(bundle) ?: return emptyList()
-        return getMessages(context, key)
+        val serverUrl = bundle.getString("server_url")
+        synchronized(lock) {
+            return loadMessagesLocked(context, key, serverUrl)
+        }
     }
 
     fun clearConversation(context: Context, bundle: Bundle) {
         val key = conversationKey(bundle) ?: return
-        context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE).edit {
-            remove(key)
+        val serverUrl = bundle.getString("server_url")
+        synchronized(lock) {
+            clearKeyLocked(context, key, serverUrl)
         }
     }
 
@@ -67,12 +80,49 @@ object NotificationConversationStore {
         }
         val groupId = if (isCrtEnabled && !rootId.isNullOrEmpty()) rootId else channelId
         val key = "$serverUrl|$groupId"
-        context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE).edit {
-            remove(key)
+        synchronized(lock) {
+            clearKeyLocked(context, key, serverUrl)
         }
     }
 
-    private fun getMessages(context: Context, key: String): List<ConversationMessage> {
+    private fun isZeroPersistence(serverUrl: String?): Boolean {
+        if (serverUrl.isNullOrEmpty()) {
+            return false
+        }
+        val dbHelper = DatabaseHelper.instance ?: return false
+        return dbHelper.isZeroPersistenceServer(serverUrl)
+    }
+
+    private fun loadMessagesLocked(context: Context, key: String, serverUrl: String?): List<ConversationMessage> {
+        if (isZeroPersistence(serverUrl)) {
+            return ephemeralMessages[key]?.toList() ?: emptyList()
+        }
+        return getPersistedMessages(context, key)
+    }
+
+    private fun saveMessagesLocked(
+        context: Context,
+        key: String,
+        serverUrl: String?,
+        messages: List<ConversationMessage>,
+    ) {
+        if (isZeroPersistence(serverUrl)) {
+            ephemeralMessages[key] = messages.toMutableList()
+            return
+        }
+        savePersistedMessages(context, key, messages)
+    }
+
+    private fun clearKeyLocked(context: Context, key: String, serverUrl: String?) {
+        ephemeralMessages.remove(key)
+        if (!isZeroPersistence(serverUrl)) {
+            context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE).edit {
+                remove(key)
+            }
+        }
+    }
+
+    private fun getPersistedMessages(context: Context, key: String): List<ConversationMessage> {
         val prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
         val raw = prefs.getString(key, null) ?: return emptyList()
         return try {
@@ -101,7 +151,7 @@ object NotificationConversationStore {
         }
     }
 
-    private fun saveMessages(context: Context, key: String, messages: List<ConversationMessage>) {
+    private fun savePersistedMessages(context: Context, key: String, messages: List<ConversationMessage>) {
         val array = JSONArray()
         for (message in messages) {
             array.put(

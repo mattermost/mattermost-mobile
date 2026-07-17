@@ -56,12 +56,13 @@ object ConversationShortcutHelper {
             builder.setIcon(IconCompat.createWithBitmap(icon))
         }
 
-        try {
-            ShortcutManagerCompat.pushDynamicShortcut(context, builder.build())
+        return try {
+            val published = ShortcutManagerCompat.pushDynamicShortcut(context, builder.build())
+            if (published) id else null
         } catch (e: Exception) {
             e.printStackTrace()
+            null
         }
-        return id
     }
 
     fun removeShortcut(context: Context, bundle: Bundle) {
