@@ -9,7 +9,7 @@ import {View, TouchableOpacity} from 'react-native';
 import CompassIcon from '@components/compass_icon';
 import CustomStatusExpiry from '@components/custom_status/custom_status_expiry';
 import CustomStatusText from '@components/custom_status/custom_status_text';
-import DateTimePicker from '@components/data_time_selector';
+import DateTimePicker from '@components/date_time_selector';
 import {CST, CUSTOM_STATUS_TIME_PICKER_INTERVALS_IN_MINUTES, CustomStatusDurationEnum} from '@constants/custom_status';
 import {useTheme} from '@context/theme';
 import {usePreventDoubleTap} from '@hooks/utils';

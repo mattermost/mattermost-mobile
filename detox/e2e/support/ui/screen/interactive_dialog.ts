@@ -20,7 +20,10 @@ class InteractiveDialogScreen {
     cancelButton = element(by.id(this.testID.cancelButton));
 
     platformCancelButton = isAndroid() ? element(by.text('CANCEL')) : element(by.label('Cancel')).atIndex(0);
-    appsFormCloseButton = element(by.id('close.apps_form.button'));
+
+    // Close button (X in header) - interactive dialogs render via the dialog_router route,
+    // whose testID is set in app/routes/(modals)/dialog_router.tsx
+    appsFormCloseButton = element(by.id('close.interactive_dialog.button'));
 
     // replaceText avoids the iOS paste-permission dialog (MM-66558).
     setDialogInputText = async (input: Detox.NativeElement, value: string) => {
