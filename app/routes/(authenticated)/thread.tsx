@@ -1,7 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {useLocalSearchParams, useNavigation} from 'expo-router';
+import {useNavigation} from 'expo-router';
 import {useCallback, useEffect} from 'react';
 import {defineMessages, useIntl} from 'react-intl';
 import {Platform} from 'react-native';
@@ -10,6 +10,7 @@ import NavigationButton from '@components/navigation_button';
 import NavigationHeaderTitle from '@components/navigation_header_title';
 import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
+import {usePropsFromParams} from '@hooks/props_from_params';
 import ThreadScreen from '@screens/thread';
 
 const threadMessages = defineMessages({
@@ -28,7 +29,7 @@ export default function ThreadRoute() {
     const theme = useTheme();
     const intl = useIntl();
     const serverUrl = useServerUrl();
-    const {channelName, rootId, title: routeTitle} = useLocalSearchParams<{channelName: string; rootId: string; title?: string}>();
+    const {channelName, rootId, title: routeTitle} = usePropsFromParams<{channelName: string; rootId: string; title?: string}>();
 
     const title = routeTitle || intl.formatMessage(threadMessages.thread);
     const subtitle = channelName ? intl.formatMessage(threadMessages.threadIn, {channelName}) : undefined;
