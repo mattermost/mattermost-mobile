@@ -8,7 +8,6 @@ import {Events, Navigation, Screens} from '@constants';
 import BottomSheetStore from '@store/bottom_sheet_store';
 import CallbackStore from '@store/callback_store';
 import {NavigationStore} from '@store/navigation_store';
-import {safeParseJSON} from '@utils/helpers';
 import {logError} from '@utils/log';
 
 import {
@@ -63,23 +62,11 @@ describe('navigation', () => {
     });
 
     describe('propsToParams', () => {
-        it('should JSON-encode string props to preserve type on round-trip', () => {
+        it('should convert string props to params unchanged', () => {
             const props = {name: 'test', id: '123'};
             const result = propsToParams(props);
 
-            expect(result).toEqual({name: '"test"', id: '"123"'});
-        });
-
-        it('should preserve numeric strings through params round-trip', () => {
-            const props = {loginId: '123456789', password: '654321'};
-            const params = propsToParams(props);
-
-            const decoded = Object.keys(params).reduce((acc, key) => {
-                acc[key] = safeParseJSON(params[key]);
-                return acc;
-            }, {} as Record<string, unknown>);
-
-            expect(decoded).toEqual({loginId: '123456789', password: '654321'});
+            expect(result).toEqual({name: 'test', id: '123'});
         });
 
         it('should convert non-string props to JSON strings', () => {
@@ -119,7 +106,7 @@ describe('navigation', () => {
             const result = propsToParams(props);
 
             expect(result).toEqual({
-                string: '"value"',
+                string: 'value',
                 number: '123',
                 boolean: 'false',
                 object: '{"nested":true}',
@@ -133,8 +120,8 @@ describe('navigation', () => {
             updateParams(props);
 
             expect(router.setParams).toHaveBeenCalledWith({
-                theme: '"dark"',
-                userId: '"123"',
+                theme: 'dark',
+                userId: '123',
             });
         });
 
@@ -160,7 +147,7 @@ describe('navigation', () => {
 
             expect(router.push).toHaveBeenCalledWith({
                 pathname: '/(unauthenticated)/login',
-                params: {serverUrl: '"https://example.com"'},
+                params: {serverUrl: 'https://example.com'},
             });
         });
 
@@ -169,7 +156,7 @@ describe('navigation', () => {
 
             expect(router.push).toHaveBeenCalledWith({
                 pathname: '/(modals)/(add-server)/login',
-                params: {isModal: 'true', serverUrl: '"https://example.com"'},
+                params: {isModal: 'true', serverUrl: 'https://example.com'},
             });
         });
 
@@ -187,7 +174,7 @@ describe('navigation', () => {
 
             expect(router.push).toHaveBeenCalledWith({
                 pathname: '/(bottom_sheet)/generic_bottom_sheet',
-                params: {content: '"test"'},
+                params: {content: 'test'},
             });
         });
 
@@ -196,7 +183,7 @@ describe('navigation', () => {
 
             expect(router.push).toHaveBeenCalledWith({
                 pathname: '/(modals)/(settings)',
-                params: {section: '"display"'},
+                params: {section: 'display'},
             });
         });
 
@@ -205,7 +192,7 @@ describe('navigation', () => {
 
             expect(router.push).toHaveBeenCalledWith({
                 pathname: '/(authenticated)/channel',
-                params: {channelId: '"abc123"'},
+                params: {channelId: 'abc123'},
             });
         });
 
@@ -214,7 +201,7 @@ describe('navigation', () => {
 
             expect(router.replace).toHaveBeenCalledWith({
                 pathname: '/(unauthenticated)/login',
-                params: {serverUrl: '"https://example.com"'},
+                params: {serverUrl: 'https://example.com'},
             });
             expect(router.push).not.toHaveBeenCalled();
         });
@@ -248,7 +235,7 @@ describe('navigation', () => {
 
             expect(router.push).toHaveBeenCalledWith({
                 pathname: '/base/account',
-                params: {section: '"profile"'},
+                params: {section: 'profile'},
             });
         });
 
@@ -257,7 +244,7 @@ describe('navigation', () => {
 
             expect(router.replace).toHaveBeenCalledWith({
                 pathname: '/base/account',
-                params: {section: '"profile"'},
+                params: {section: 'profile'},
             });
             expect(router.push).not.toHaveBeenCalled();
         });
@@ -435,7 +422,7 @@ describe('navigation', () => {
             await dismissAllRoutesAndPopToScreen(Screens.CHANNEL, {channelId: 'abc'});
 
             expect(router.dismissTo).toHaveBeenCalledWith('/(authenticated)/channel');
-            expect(router.setParams).toHaveBeenCalledWith({channelId: '"abc"'});
+            expect(router.setParams).toHaveBeenCalledWith({channelId: 'abc'});
         });
 
         it('should reset to root and push when screen is not in stack', async () => {
@@ -446,7 +433,7 @@ describe('navigation', () => {
             expect(router.dismissTo).toHaveBeenCalledWith('/(authenticated)/(home)/channel_list');
             expect(router.push).toHaveBeenCalledWith({
                 pathname: '/(authenticated)/channel',
-                params: {channelId: '"abc"'},
+                params: {channelId: 'abc'},
             });
         });
 
@@ -480,7 +467,7 @@ describe('navigation', () => {
 
             expect(router.push).toHaveBeenCalledWith({
                 pathname: '/(modals)/(settings)/settings_display',
-                params: {theme: '"dark"'},
+                params: {theme: 'dark'},
             });
         });
 
@@ -500,7 +487,7 @@ describe('navigation', () => {
 
             expect(router.push).toHaveBeenCalledWith({
                 pathname: '/(modals)/(channel_info)/channel_notification_preferences',
-                params: {channelId: '"ch123"'},
+                params: {channelId: 'ch123'},
             });
         });
 

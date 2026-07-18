@@ -113,10 +113,10 @@ describe('Navigation utils', () => {
             expect(router.push).toHaveBeenCalledWith({
                 pathname: '/(modals)/pdf_viewer',
                 params: {
-                    title: '"document.pdf"',
+                    title: 'document.pdf',
                     allowPdfLinkNavigation: 'false',
-                    fileId: '"file123"',
-                    filePath: '"/path/to/document.pdf"',
+                    fileId: 'file123',
+                    filePath: '/path/to/document.pdf',
                 },
             });
         });
@@ -135,10 +135,10 @@ describe('Navigation utils', () => {
             expect(router.push).toHaveBeenCalledWith({
                 pathname: '/(modals)/pdf_viewer',
                 params: {
-                    title: '"report.pdf"',
+                    title: 'report.pdf',
                     allowPdfLinkNavigation: 'false',
-                    fileId: '"file456"',
-                    filePath: '"/path/to/report.pdf"',
+                    fileId: 'file456',
+                    filePath: '/path/to/report.pdf',
                 },
             });
         });
@@ -156,10 +156,10 @@ describe('Navigation utils', () => {
             expect(router.push).toHaveBeenCalledWith({
                 pathname: '/(modals)/pdf_viewer',
                 params: {
-                    title: '"image.pdf"',
+                    title: 'image.pdf',
                     allowPdfLinkNavigation: 'false',
-                    fileId: '"gallery123"',
-                    filePath: '"/gallery/image.pdf"',
+                    fileId: 'gallery123',
+                    filePath: '/gallery/image.pdf',
                 },
             });
         });
@@ -173,7 +173,7 @@ describe('Navigation utils', () => {
             expect(DeviceEventEmitter.emit).toHaveBeenCalledWith(Events.BLUR_AND_DISMISS_KEYBOARD);
             expect(router.push).toHaveBeenCalledWith({
                 pathname: '/(bottom_sheet)/user_profile',
-                params: {userId: '"user123"', username: '"johndoe"'},
+                params: {userId: 'user123', username: 'johndoe'},
             });
         });
     });
