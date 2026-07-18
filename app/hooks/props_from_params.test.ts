@@ -173,6 +173,36 @@ describe('usePropsFromParams', () => {
         });
     });
 
+    it.each(['42', 'true', '{"key":"value"}', '[1,2,3]', '"hello"'])(
+        'should preserve the raw string param %s when the route requires a string',
+        (code) => {
+            mockUseLocalSearchParams.mockReturnValue({code});
+
+            const {result} = renderHook(() => usePropsFromParams<{code: string}>({
+                preserveStringParams: ['code'],
+            }));
+
+            expect(result.current).toEqual({code});
+        },
+    );
+
+    it.each(['hello', '"hello"'])(
+        'should decode the internally serialized string param %s exactly once',
+        (code) => {
+            mockUseLocalSearchParams.mockReturnValue({
+                code: JSON.stringify(code),
+                codeIsSerialized: 'true',
+            });
+
+            const {result} = renderHook(() => usePropsFromParams<{code: string}>({
+                encodedStringParamsMarker: 'codeIsSerialized',
+                preserveStringParams: ['code'],
+            }));
+
+            expect(result.current).toEqual({code});
+        },
+    );
+
     it('should handle complex nested objects', () => {
         mockUseLocalSearchParams.mockReturnValue({
             config: '{"user":{"id":"123","profile":{"name":"John","age":30}},"settings":{"theme":"dark"}}',

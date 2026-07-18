@@ -61,6 +61,7 @@ describe('CodeRoute (MM-69330)', () => {
         ['a JSON object', '{"hello": "world"}'],
         ['a JSON array', '[1, 2, 3]'],
         ['a boolean literal', 'true'],
+        ['a JSON string literal', '"hello"'],
     ])('renders without crashing when the code block content is %s', (_label, code) => {
         mockUseLocalSearchParams.mockReturnValue({
             code,
@@ -82,6 +83,21 @@ describe('CodeRoute (MM-69330)', () => {
             language: 'javascript',
             textStyle: '{}',
             title: 'Code',
+        });
+
+        const {getByText} = renderWithIntlAndTheme(<CodeRoute/>);
+
+        expect(getByText(code)).toBeTruthy();
+    });
+
+    it('removes the serializer layer without changing JSON-looking code', () => {
+        const code = '{"hello":"world"}';
+        mockUseLocalSearchParams.mockReturnValue({
+            code: JSON.stringify(code),
+            codeIsSerialized: 'true',
+            language: JSON.stringify('json'),
+            textStyle: JSON.stringify({}),
+            title: JSON.stringify('Code'),
         });
 
         const {getByText} = renderWithIntlAndTheme(<CodeRoute/>);

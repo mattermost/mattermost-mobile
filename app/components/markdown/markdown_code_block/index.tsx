@@ -100,6 +100,7 @@ const MarkdownCodeBlock = ({language = '', content, textStyle, theme}: MarkdownC
 
         const passProps = {
             code: content,
+            codeIsSerialized: true,
             language: getHighlightLanguageFromNameOrAlias(language),
             textStyle,
             title,
@@ -226,4 +227,3 @@ const MarkdownCodeBlock = ({language = '', content, textStyle, theme}: MarkdownC
 };
 
 export default MarkdownCodeBlock;
-
