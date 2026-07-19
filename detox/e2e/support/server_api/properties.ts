@@ -241,11 +241,11 @@ export const apiSetupClassificationWithBanner = async (
             `Response: ${JSON.stringify(verify)}`,
         );
     }
-    const options = (visibleLinked[0].attrs?.options as PropertyFieldOption[] | undefined) ?? [];
-    if (!options.some((o) => o.id === selectedOption.id)) {
+    const linkedOptions = (visibleLinked[0].attrs?.options as PropertyFieldOption[] | undefined) ?? [];
+    if (!linkedOptions.some((o) => o.id === selectedOption.id)) {
         throw new Error(
             `apiSetupClassificationWithBanner: linked field missing selected option ${selectedOption.id}. ` +
-            `options=${JSON.stringify(options)}`,
+            `options=${JSON.stringify(linkedOptions)}`,
         );
     }
 
@@ -267,7 +267,9 @@ export const apiCleanupClassification = async (baseUrl: string) => {
     }
 
     // Channel linked fields first (channel classification tests), then system, then template.
+    // Sequential: dependents must be deleted before the template (enforced below).
     for (const objectType of ['channel', LINKED_OBJECT_TYPE, 'user'] as const) {
+        // eslint-disable-next-line no-await-in-loop -- order matters across object types
         const fieldsResult = await apiGetPropertyFields(baseUrl, GROUP_NAME, objectType, TARGET_TYPE) as {fields?: any[]};
         if (!fieldsResult.fields) {
             continue;
