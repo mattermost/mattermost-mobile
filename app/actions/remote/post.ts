@@ -1026,8 +1026,6 @@ export async function fetchSavedPosts(serverUrl: string, teamId?: string, channe
         const order = data.order || [];
         const postsArray = order.map((id) => posts[id]);
 
-        logDebug('[fetchSavedPosts] order length', order.length, 'postsArray length', postsArray.length);
-
         if (!postsArray.length) {
             return {
                 order,

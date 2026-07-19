@@ -94,13 +94,11 @@ export const observePostAuthor = (database: Database, post: PostModel) => {
 };
 
 export const observePostSaved = (database: Database, postId: string, serverUrl?: string) => {
-    const savedPreference$ = querySavedPostsPreferences(database, postId).
-        observeWithColumns(['value']).pipe(
-            switchMap(
-                (pref) => of$(Boolean(pref[0]?.value === 'true')),
-            ),
-            distinctUntilChanged(),
-        );
+    // Full observe() (not observeWithColumns) so preference create/delete emits.
+    const savedPreference$ = querySavedPostsPreferences(database, postId).observe().pipe(
+        map((preferences) => preferences.some((preference) => preference.value === 'true')),
+        distinctUntilChanged(),
+    );
 
     const resolvedServerUrl = serverUrl || DatabaseManager.getServerUrlForDatabase(database);
     if (!resolvedServerUrl) {
@@ -253,11 +251,31 @@ export const observePinnedPostsInChannel = (database: Database, channelId: strin
     return queryPinnedPostsInChannel(database, channelId).observe();
 };
 
+/** All currently-saved post IDs (preference value=true), minus recently-unsaved ephemeral set. */
+export const observeSavedPostIds = (database: Database, serverUrl?: string) => {
+    const preferenceIds$ = querySavedPostsPreferences(database, undefined, 'true').observe().pipe(
+        map((preferences) => preferences.map((preference) => preference.name)),
+        distinctUntilChanged((left, right) => left.length === right.length && left.every((id, index) => id === right[index])),
+    );
+
+    const resolvedServerUrl = serverUrl || DatabaseManager.getServerUrlForDatabase(database);
+    if (!resolvedServerUrl) {
+        return preferenceIds$;
+    }
+
+    return combineLatest([preferenceIds$, EphemeralStore.observeRecentlyUnsavedSavedPosts(resolvedServerUrl)]).pipe(
+        map(([postIds, recentlyUnsavedPostIds]) => postIds.filter((postId) => !recentlyUnsavedPostIds.has(postId))),
+        distinctUntilChanged((left, right) => left.length === right.length && left.every((id, index) => id === right[index])),
+    );
+};
+
 export const observeSavedPostsByIds = (database: Database, postIds: string[], serverUrl?: string) => {
+    // Full observe() so preference destroy removes IDs from the set (observeWithColumns
+    // on 'name' alone missed deletes — Saved Messages stayed empty after save in CI).
     const savedPostIds = querySavedPostsPreferences(database).extend(
         Q.where('name', Q.oneOf(postIds)),
-    ).observeWithColumns(['name']).pipe(
-        switchMap((prefs) => of$(new Set(prefs.map((p) => p.name)))),
+    ).observe().pipe(
+        map((prefs) => new Set(prefs.filter((pref) => pref.value === 'true').map((pref) => pref.name))),
     );
 
     const resolvedServerUrl = serverUrl || DatabaseManager.getServerUrlForDatabase(database);

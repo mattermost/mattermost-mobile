@@ -118,13 +118,11 @@ async function handleSavePostAdded(serverUrl: string, preferences: PreferenceTyp
 
         for await (const saved of savedPosts) {
             const post = await getPostById(database, saved.name);
-            logDebug('[handleSavePostAdded] post in DB?', saved.name, Boolean(post));
             if (!post) {
                 await fetchPostById(serverUrl, saved.name, false);
-                logDebug('[handleSavePostAdded] fetched post', saved.name);
             }
         }
-    } catch (error) {
-        logDebug('[handleSavePostAdded] error', error);
+    } catch {
+        // Do nothing
     }
 }

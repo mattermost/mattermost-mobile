@@ -6,6 +6,7 @@ import {firstValueFrom} from 'rxjs';
 
 import {ActionType, License} from '@constants';
 import {SYSTEM_IDENTIFIERS} from '@constants/database';
+import Preferences from '@constants/preferences';
 import DatabaseManager from '@database/manager';
 import ServerDataOperator from '@database/operator/server_data_operator';
 import TestHelper from '@test/test_helper';
@@ -28,7 +29,9 @@ import {
     observeBoRConfig,
     countUsersFromMentions,
     findPostsWithPermalinkReferences,
+    observeSavedPostIds,
 } from './post';
+import {querySavedPostsPreferences} from './preference';
 
 describe('Post Queries', () => {
     const serverUrl = 'post.test.com';
@@ -44,6 +47,42 @@ describe('Post Queries', () => {
 
     afterEach(async () => {
         await DatabaseManager.destroyServerDatabase(serverUrl);
+    });
+
+    describe('observeSavedPostIds', () => {
+        it('should remove post ids when saved preference rows are destroyed', async () => {
+            const postId = 'saved-post-list-id';
+
+            await operator.handlePreferences({
+                preferences: [{
+                    user_id: 'user-id',
+                    category: Preferences.CATEGORIES.SAVED_POST,
+                    name: postId,
+                    value: 'true',
+                }],
+                prepareRecordsOnly: false,
+            });
+
+            expect(await firstValueFrom(observeSavedPostIds(database, serverUrl))).toEqual([postId]);
+
+            const [preference] = await querySavedPostsPreferences(database, postId).fetch();
+            await operator.batchRecords([preference.prepareDestroyPermanently()], 'test');
+
+            await new Promise<void>((resolve, reject) => {
+                const timeout = setTimeout(() => {
+                    subscription.unsubscribe();
+                    reject(new Error('observeSavedPostIds did not emit after preference destroy'));
+                }, 5000);
+
+                const subscription = observeSavedPostIds(database, serverUrl).subscribe((ids) => {
+                    if (!ids.includes(postId)) {
+                        clearTimeout(timeout);
+                        subscription.unsubscribe();
+                        resolve();
+                    }
+                });
+            });
+        });
     });
 
     describe('queryPostsWithPermalinkReferences', () => {
