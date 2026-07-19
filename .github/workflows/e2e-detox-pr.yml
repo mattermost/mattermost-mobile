@@ -64,10 +64,10 @@ on:
         required: false
         type: string
       failing_only:
-        description: "Run only specs listed in spec_list_file (fewer shards, lower CI cost). TEMP: default true until suite is green — revert with manifest."
+        description: "Run only specs listed in spec_list_file (fewer shards, lower CI cost)."
         required: false
         type: boolean
-        default: true
+        default: false
       failing_parallelism:
         description: "Shard count when failing_only is true (default 6)"
         required: false
@@ -336,7 +336,6 @@ jobs:
 
   update-initial-status-ipad:
     needs: resolve-e2e-policy
-    # TEMP(revert-when-detox-green): iPad Detox passes — post success instead of pending (also revert e2e-detox.yml run-ios-ipad-tests).
     if: >-
       needs.resolve-e2e-policy.outputs.e2e_override != 'true'
       && (inputs.PLATFORM == 'ios' || inputs.PLATFORM == 'both')
@@ -355,8 +354,8 @@ jobs:
           repository_full_name: ${{ github.repository }}
           commit_sha: ${{ inputs.MOBILE_VERSION }}
           context: e2e/detox-ipad-tests
-          description: Temporarily disabled — iPad Detox passes (revert TEMP blocks in e2e-detox.yml + e2e-detox-pr.yml)
-          status: success
+          description: Detox iPad tests for mattermost mobile app have started ...
+          status: pending
 
   build-ios-simulator:
     if: >-
@@ -458,10 +457,8 @@ jobs:
           path: "android/app/build/**/*"
 
   build-android-apk-maestro:
-    # TEMP(revert-when-detox-green): Maestro Android passes — skip APK build to save runner minutes.
     if: >-
-      false
-      && !cancelled()
+      !cancelled()
       && needs.resolve-e2e-policy.outputs.e2e_override != 'true'
       && (inputs.PLATFORM == 'android' || inputs.PLATFORM == 'both')
       && (needs.update-initial-status-android.result == 'success' || needs.update-initial-status-android.result == 'skipped')
@@ -725,30 +722,6 @@ jobs:
       record_tests_in_zephyr: ${{ inputs.run_type == 'RELEASE' || inputs.run_type == 'NIGHTLY' || inputs.run_type == 'MASTER' }}
     secrets: inherit
 
-  update-status-maestro-android-temp-disabled:
-    # TEMP(revert-when-detox-green): Maestro Android passes — post success and remove this job when re-enabling run-maestro-android.
-    needs: resolve-e2e-policy
-    if: >-
-      needs.resolve-e2e-policy.outputs.e2e_override != 'true'
-      && (inputs.PLATFORM == 'android' || inputs.PLATFORM == 'both')
-    runs-on: ubuntu-22.04
-    permissions:
-      contents: read
-      statuses: write
-    steps:
-      - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
-        with:
-          ref: ${{ inputs.MOBILE_VERSION }}
-      - uses: ./.github/actions/update-commit-status
-        env:
-          GITHUB_TOKEN: ${{ github.token }}
-        with:
-          repository_full_name: ${{ github.repository }}
-          commit_sha: ${{ inputs.MOBILE_VERSION }}
-          context: e2e/maestro-android-tests
-          description: Temporarily disabled — Maestro Android passes (revert TEMP blocks in e2e-detox-pr.yml)
-          status: success
-
   run-maestro-android:
     name: Maestro Android E2E
     needs:
@@ -760,9 +733,7 @@ jobs:
       contents: read
       statuses: write
       actions: read
-    # TEMP(revert-when-detox-green): Maestro Android passes — skip tests (re-enable with build-android-apk-maestro).
     if: |
-      false &&
       !cancelled() &&
       needs.resolve-e2e-policy.outputs.e2e_override != 'true' &&
       (inputs.PLATFORM == 'android' || inputs.PLATFORM == 'both') &&
