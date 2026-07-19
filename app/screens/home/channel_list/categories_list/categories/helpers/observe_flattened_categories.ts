@@ -15,7 +15,7 @@ import {
 } from '@queries/servers/channel';
 import {observeLastUnreadChannelId} from '@queries/servers/system';
 
-import {type CategoryMembership, type FlattenedItem} from './flatten_categories';
+import {type CategoryMembership, type FlattenedItem} from './flattened_item';
 
 import type Database from '@nozbe/watermelondb/Database';
 import type CategoryModel from '@typings/database/models/servers/category';

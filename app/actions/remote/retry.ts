@@ -2,6 +2,7 @@
 // See LICENSE.txt for license information.
 
 import {storeConfig} from '@actions/local/systems';
+import {entryInitialLoad} from '@actions/remote/entry/initial_load';
 import {Preferences} from '@constants';
 import DatabaseManager from '@database/manager';
 import {getPreferenceValue, getTeammateNameDisplaySetting} from '@helpers/api/preference';
@@ -11,16 +12,19 @@ import {prepareCategoriesAndCategoriesChannels} from '@queries/servers/categorie
 import {prepareMyChannelsForTeam} from '@queries/servers/channel';
 import {prepareMyPreferences, queryDisplayNamePreferences} from '@queries/servers/preference';
 import {prepareCommonSystemValues, getConfig, getLicense} from '@queries/servers/system';
-import {prepareMyTeams} from '@queries/servers/team';
+import {getNthLastChannelFromTeam, prepareMyTeams} from '@queries/servers/team';
+import {getIsCRTEnabled} from '@queries/servers/thread';
 import {getCurrentUser} from '@queries/servers/user';
+import EphemeralStore from '@store/ephemeral_store';
 import {isDMorGM, selectDefaultChannelForTeam} from '@utils/channel';
+import {isTablet} from '@utils/helpers';
 
 import {fetchMissingDirectChannelsInfo, fetchMyChannelsForTeam, type MyChannelsRequest} from './channel';
 import {fetchPostsForChannel} from './post';
 import {fetchMyPreferences, type MyPreferencesRequest} from './preference';
 import {fetchRolesIfNeeded} from './role';
 import {type ConfigAndLicenseRequest, fetchConfigAndLicense} from './systems';
-import {fetchMyTeams, type MyTeamsRequest} from './team';
+import {fetchTeamLoad, fetchMyTeams, type MyTeamsRequest} from './team';
 
 import type {Model} from '@nozbe/watermelondb';
 import type TeamModel from '@typings/database/models/servers/team';
@@ -36,6 +40,11 @@ export async function retryInitialTeamAndChannel(serverUrl: string) {
         NetworkManager.getClient(serverUrl);
     } catch (error) {
         return {error};
+    }
+
+    if (EphemeralStore.getExperienceAPIEnabled(serverUrl)) {
+        const result = await entryInitialLoad(serverUrl);
+        return {error: 'error' in result ? result.error : undefined};
     }
 
     try {
@@ -144,6 +153,30 @@ export async function retryInitialChannel(serverUrl: string, teamId: string) {
         NetworkManager.getClient(serverUrl);
     } catch (error) {
         return {error};
+    }
+
+    if (EphemeralStore.getExperienceAPIEnabled(serverUrl)) {
+        try {
+            const isCRTEnabled = await getIsCRTEnabled(database);
+            const {error} = await fetchTeamLoad(serverUrl, teamId, isCRTEnabled);
+            if (error) {
+                return {error};
+            }
+
+            const initialChannelId = isTablet() ? await getNthLastChannelFromTeam(database, teamId) : '';
+            const models = await prepareCommonSystemValues(operator, {currentChannelId: initialChannelId});
+            if (models?.length) {
+                await operator.batchRecords(models, 'retryInitialChannel');
+            }
+
+            if (initialChannelId) {
+                fetchPostsForChannel(serverUrl, initialChannelId);
+            }
+
+            return {error: false};
+        } catch (error) {
+            return {error: true};
+        }
     }
 
     try {

@@ -214,7 +214,7 @@ type SyncThreadsDelta = {
 type SyncResponse = {
     config?: Record<string, string>;
     license?: Record<string, string>;
-    me?: UserProfile;
+    me?: ExperienceUser;
     removed_team_ids?: string[];
     teams_unreads?: ExperienceUnreads[];
     teams?: SyncTeamDelta[];

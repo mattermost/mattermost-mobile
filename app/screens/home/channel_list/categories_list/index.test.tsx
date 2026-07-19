@@ -45,6 +45,7 @@ describe('components/categories_list', () => {
                 draftsCount={0}
                 scheduledPostHasError={false}
                 scheduledPostCount={0}
+                unreadsOnTop={false}
             />,
             {database},
         );
@@ -62,6 +63,7 @@ describe('components/categories_list', () => {
                 draftsCount={0}
                 scheduledPostCount={0}
                 scheduledPostHasError={false}
+                unreadsOnTop={false}
             />,
             {database},
         );
@@ -80,6 +82,7 @@ describe('components/categories_list', () => {
                 draftsCount={1}
                 scheduledPostCount={0}
                 scheduledPostHasError={false}
+                unreadsOnTop={false}
             />,
             {database},
         );
@@ -104,6 +107,7 @@ describe('components/categories_list', () => {
                 draftsCount={0}
                 scheduledPostCount={0}
                 scheduledPostHasError={false}
+                unreadsOnTop={false}
             />,
             {database},
         );
@@ -134,6 +138,7 @@ describe('components/categories_list', () => {
                 draftsCount={0}
                 scheduledPostCount={0}
                 scheduledPostHasError={false}
+                unreadsOnTop={false}
             />,
             {database},
         );
@@ -156,6 +161,7 @@ describe('components/categories_list', () => {
                 scheduledPostCount={1}
                 scheduledPostHasError={false}
                 scheduledPostsEnabled={true}
+                unreadsOnTop={false}
             />,
             {database},
         );
@@ -172,6 +178,7 @@ describe('components/categories_list', () => {
                 scheduledPostCount={1}
                 scheduledPostHasError={false}
                 scheduledPostsEnabled={false}
+                unreadsOnTop={false}
             />,
             {database},
         );
@@ -187,6 +194,7 @@ describe('components/categories_list', () => {
                 scheduledPostCount={0}
                 scheduledPostHasError={false}
                 showPlaybooksButton={false}
+                unreadsOnTop={false}
             />,
             {database},
         );
@@ -202,6 +210,7 @@ describe('components/categories_list', () => {
                 scheduledPostCount={0}
                 scheduledPostHasError={false}
                 showPlaybooksButton={true}
+                unreadsOnTop={false}
             />,
             {database},
         );

@@ -14,7 +14,7 @@ import {handleAutotranslationChanges, handleEntryAfterLoadNavigation, handleInit
 import {buildTeamBadgeCounts, entryInitialLoad, runExperienceAPIEntryActions} from '@actions/remote/entry/initial_load';
 import {fetchPostsForChannel, fetchPostThread} from '@actions/remote/post';
 import {openAllUnreadChannels} from '@actions/remote/preference';
-import {autoUpdateTimezone} from '@actions/remote/user';
+import {autoUpdateTimezone, type MyUserRequest} from '@actions/remote/user';
 import {checkIsAgentsPluginEnabled} from '@agents/actions/remote/agents_status';
 import {handleAgentsReconnect} from '@agents/actions/websocket/reconnect';
 import {loadConfigAndCalls} from '@calls/actions/calls';
@@ -22,31 +22,40 @@ import {isSupportedServerCalls} from '@calls/utils';
 import {ActionType, Screens} from '@constants';
 import {SYSTEM_IDENTIFIERS} from '@constants/database';
 import DatabaseManager from '@database/manager';
+import {toApiChannel, toApiTeam, toApiTeamMembership, toApiUserProfile} from '@helpers/api/experience';
 import AppsManager from '@managers/apps_manager';
 import NetworkManager from '@managers/network_manager';
 import {handlePlaybookReconnect} from '@playbooks/actions/websocket/reconnect';
 import {getActiveServerUrl} from '@queries/app/servers';
+import {prepareDeleteChannel, queryChannelsById, queryChannelsInfoById} from '@queries/servers/channel';
 import {prepareEntryModels} from '@queries/servers/entry';
 import {getLastPostInThread} from '@queries/servers/post';
 import {
+    adjustThreadInBlob,
+    clearTeamThreadsInBlob,
+    decrementTeamBlob,
     getConfig,
     getCurrentChannelId,
     getCurrentTeamId,
     getLicense,
     getLastFullSync,
     getLastInitialLoad,
+    incrementTeamBlob,
+    migrateChannelFromDirectToTeamBlob,
     setLastFullSync,
     setLastInitialLoad,
     getConfigBooleanValue,
 } from '@queries/servers/system';
-import {queryMyTeams, queryTeamLastChannelId} from '@queries/servers/team';
+import {prepareDeleteTeam, queryMyTeams, queryTeamLastChannelId, queryTeamsById, removeTeamsFromTeamHistory} from '@queries/servers/team';
 import {getIsCRTEnabled} from '@queries/servers/thread';
-import {getCurrentUser} from '@queries/servers/user';
+import {getCurrentUser, queryUsersById} from '@queries/servers/user';
 import ChannelsSyncStore from '@store/channels_sync_store';
 import EphemeralStore from '@store/ephemeral_store';
 import {NavigationStore} from '@store/navigation_store';
+import SyncBlobQueue, {type QueuedBlobOp} from '@store/sync_blob_queue';
 import {setTeamLoading} from '@store/team_load_store';
 import ThreadsSyncStore from '@store/threads_sync_store';
+import {getFullErrorMessage} from '@utils/errors';
 import {isTablet} from '@utils/helpers';
 import {logDebug, logError, logInfo, logWarning} from '@utils/log';
 
@@ -149,6 +158,7 @@ async function doSyncReconnect(serverUrl: string, groupLabel?: BaseRequestGroupL
 
         const client = NetworkManager.getClient(serverUrl);
         let response: SyncResponse;
+        SyncBlobQueue.beginSync(serverUrl);
         try {
             response = await client.reconnectSync({since, scope}, groupLabel);
 
@@ -175,15 +185,22 @@ async function doSyncReconnect(serverUrl: string, groupLabel?: BaseRequestGroupL
             const teamHasGroupConstraint = Boolean(activeTeam?.team?.group_constrained);
             runExperienceAPIEntryActions(serverUrl, currentTeamId ?? '', teamHasGroupConstraint, groupLabel);
         } catch (e) {
+            // The sync never landed, so there's no snapshot to filter queued ops
+            // against — replay them all, in order, as if no sync had started.
+            await replayQueuedBlobOps(operator, SyncBlobQueue.endSync(serverUrl), 0);
+
             const clientError = e as ClientError;
 
-            // 404 = old server (endpoint doesn't exist), 501 = ExperienceAPI disabled
+            // 404 = old server, the endpoint doesn't exist there. Any other error means the
+            // endpoint exists but the request failed, so falling back would only mask it.
             if (clientError?.status_code === 404) {
                 logInfo('doSyncReconnect', 'falling back to legacy doReconnect', clientError?.status_code);
                 EphemeralStore.setExperienceAPIEnabled(serverUrl, false);
                 setTeamLoading(serverUrl, false);
                 return doReconnect(serverUrl, groupLabel);
             }
+
+            logError('doSyncReconnect', getFullErrorMessage(e));
         }
     } catch (e) {
         logError('doSyncReconnect', e);
@@ -205,65 +222,29 @@ async function batchSyncResponse(
     const modelPromises: Array<Promise<Model[]>> = [];
     const isCRTEnabled = await getIsCRTEnabled(database);
 
-    // Build teamData: merge InitialLoadTeam fields onto existing DB records to preserve
-    // fields not carried by the compact sync response (description, email, etc.)
-    const changedTeamIds = response.teams?.filter((t) => t.team != null).map((t) => t.team!.id) ?? [];
-    let changedTeams: Team[] = [];
-    if (changedTeamIds.length) {
-        const {queryTeamsById} = await import('@queries/servers/team');
-        const existingTeams = await queryTeamsById(database, changedTeamIds).fetch();
-        const existingTeamMap = new Map(existingTeams.map((t) => [t.id, t]));
+    const changedTeams = response.teams?.filter((t) => t.team != null).map((t) => t.team!) ?? [];
+    const teamIds = changedTeams.map((t) => t.id);
+    const existingTeams = teamIds.length ? await queryTeamsById(database, teamIds).fetch() : [];
+    const existingTeamsById = new Map(existingTeams.map((t) => [t.id, t]));
 
-        changedTeams = response.teams!.filter((t) => t.team != null).map((t) => {
-            const ex = existingTeamMap.get(t.team!.id);
-            return {
-                id: t.team!.id,
-                create_at: t.team!.create_at ?? 0,
-                update_at: t.team!.update_at ?? 0,
-                delete_at: t.team!.delete_at ?? 0,
-                display_name: t.team!.display_name,
-                name: t.team!.name,
-                type: t.team!.type,
-                invite_id: t.team!.invite_id ?? ex?.inviteId ?? '',
-                group_constrained: t.team!.group_constrained ?? false,
-                last_team_icon_update: t.team!.last_team_icon_update ?? ex?.lastTeamIconUpdatedAt ?? 0,
-
-                // Preserve fields not in InitialLoadTeam from existing DB record
-                description: ex?.description ?? '',
-                allowed_domains: ex?.allowedDomains ?? '',
-                allow_open_invite: ex?.isAllowOpenInvite ?? false,
-
-                // Fields not stored in mobile DB — always empty
-                email: '',
-                company_name: '',
-                scheme_id: '',
-                policy_id: null,
-            };
-        }) as unknown as Team[];
-    }
-
-    const allMemberships = response.teams?.flatMap((t) => t.memberships ?? []).map((m) => ({
-        team_id: m.team_id,
-        user_id: m.user_id,
-        roles: m.roles,
-        delete_at: m.delete_at,
-        scheme_guest: m.scheme_guest,
-        scheme_user: m.scheme_user,
-        scheme_admin: m.scheme_admin,
-        mention_count: 0,
-        msg_count: 0,
-    })) ?? [];
+    const allMemberships = response.teams?.flatMap((t) => t.memberships ?? []).map(toApiTeamMembership) ?? [];
 
     const teamData = (changedTeams.length || allMemberships.length) ? {
-        teams: changedTeams,
-        memberships: allMemberships as unknown as TeamMembership[],
+        teams: changedTeams.map((t) => toApiTeam(t, existingTeamsById.get(t.id))),
+        memberships: allMemberships,
     } : undefined;
 
     // Build chData: all team channels + DM/GM channels in one pass
     const allChannels = [
         ...(response.teams?.flatMap((t) => t.channels ?? []) ?? []),
         ...(response.direct_channels ?? []),
-    ] as unknown as Channel[];
+    ];
+
+    const channelIds = allChannels.map((c) => c.id);
+    const existingChannels = channelIds.length ? await queryChannelsById(database, channelIds).fetch() : [];
+    const existingChannelsById = new Map(existingChannels.map((c) => [c.id, c]));
+    const existingChannelsInfo = channelIds.length ? await queryChannelsInfoById(database, channelIds).fetch() : [];
+    const existingChannelsInfoById = new Map(existingChannelsInfo.map((c) => [c.id, c]));
 
     const allChannelMemberships = [
         ...(response.teams?.flatMap((t) => t.channel_members?.members ?? []) ?? []),
@@ -273,7 +254,7 @@ async function batchSyncResponse(
     const removedChannelIds = response.teams?.flatMap((t) => t.channel_members?.removed_channel_ids ?? []) ?? [];
 
     const chData = (allChannels.length || allChannelMemberships.length) ? {
-        channels: allChannels,
+        channels: allChannels.map((c) => toApiChannel(c, existingChannelsById.get(c.id), existingChannelsInfoById.get(c.id))),
         memberships: allChannelMemberships,
         categories: [],
     } : undefined;
@@ -282,7 +263,12 @@ async function batchSyncResponse(
         preferences: response.preferences ?? [],
         tombstones: response.preference_tombstones,
     };
-    const meData = response.me ? {user: response.me} : undefined;
+
+    let meData: MyUserRequest | undefined;
+    if (response.me) {
+        const [existingUser] = await queryUsersById(database, [response.me.id]).fetch();
+        meData = {user: toApiUserProfile(response.me, existingUser)};
+    }
 
     await handleAutotranslationChanges(serverUrl, meData, chData);
 
@@ -349,12 +335,19 @@ async function batchSyncResponse(
 
     // Removed team tombstones
     if (response.removed_team_ids?.length) {
-        const {queryTeamsById, prepareDeleteTeam, removeTeamsFromTeamHistory} = await import('@queries/servers/team');
         const teamsToDelete = await queryTeamsById(database, response.removed_team_ids).fetch();
         for (const team of teamsToDelete) {
             modelPromises.push(prepareDeleteTeam(serverUrl, team));
         }
         modelPromises.push(removeTeamsFromTeamHistory(operator, response.removed_team_ids, true));
+    }
+
+    // Removed channel tombstones
+    if (removedChannelIds.length) {
+        const channelsToDelete = await queryChannelsById(database, removedChannelIds).fetch();
+        for (const channel of channelsToDelete) {
+            modelPromises.push(prepareDeleteChannel(serverUrl, channel));
+        }
     }
 
     const teamBadgeCounts = buildTeamBadgeCounts(
@@ -375,6 +368,8 @@ async function batchSyncResponse(
         await operator.batchRecords(models, 'doSyncReconnect');
     }
 
+    await replayQueuedBlobOps(operator, SyncBlobQueue.endSync(serverUrl), response.timestamp);
+
     // Navigation corrections after batch — handles removed teams/channels
     const initialTeamId = response.teams?.find((t) => t.team_id === currentTeamId)?.team_id ?? currentTeamId;
     await handleInitialLoadNavigation(serverUrl, {
@@ -386,6 +381,38 @@ async function batchSyncResponse(
         removedChannelIds,
         gmConverted: false,
     });
+}
+
+function replayBlobOp(operator: ReturnType<typeof DatabaseManager.getServerDatabaseAndOperator>['operator'], q: QueuedBlobOp) {
+    switch (q.op) {
+        case 'increment':
+            return incrementTeamBlob(operator, q.teamId, q.mentionDelta, q.threadMentionDelta);
+        case 'decrement':
+            return decrementTeamBlob(operator, q.teamId, q.clearedMentions, q.clearedThreadMentions);
+        case 'adjustThread':
+            return adjustThreadInBlob(operator, q.teamId, q.mentionDelta, q.hasUnreadsAfter);
+        case 'clearThreads':
+            return clearTeamThreadsInBlob(operator, q.teamId);
+        case 'migrateDirectToTeam':
+            return migrateChannelFromDirectToTeamBlob(operator, q.teamId, q.mentionCount, q.hasUnreads);
+        default:
+            return Promise.resolve();
+    }
+}
+
+// Sequential chain — each blob op reads then writes the same System row, so
+// they must not run concurrently
+async function replayQueuedBlobOps(
+    operator: ReturnType<typeof DatabaseManager.getServerDatabaseAndOperator>['operator'],
+    queued: QueuedBlobOp[],
+    snapshotTimestamp: number,
+) {
+    await queued.reduce(async (chain, q) => {
+        await chain;
+        if (q.eventTimestamp > snapshotTimestamp) {
+            await replayBlobOp(operator, q);
+        }
+    }, Promise.resolve());
 }
 
 async function doReconnect(serverUrl: string, groupLabel?: BaseRequestGroupLabel) {

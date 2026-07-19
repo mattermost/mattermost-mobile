@@ -28,6 +28,7 @@ type PostedData = {
     mentions?: string; // JSON-encoded string[] of user IDs; per-recipient via broadcast hook
     followers?: string; // JSON-encoded string[] of user IDs; per-recipient via broadcast hook
     mute_for_recipient?: boolean; // per-recipient; true when this user has the channel muted
+    timestamp?: number; // present only when the experience API is enabled
     otherFile?: string;
     image?: string;
     should_ack?: boolean;
@@ -48,6 +49,7 @@ type ChannelMemberUnreadsAndMentions = {
     mention_count: number;
     mention_count_root: number;
     is_unread: boolean;
+    timestamp?: number; // present only when the experience API is enabled
 };
 
 type ChannelDeletedData = {

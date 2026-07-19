@@ -10,7 +10,6 @@ import {of as of$, combineLatest} from 'rxjs';
 import {switchMap, map} from 'rxjs/operators';
 
 import {Preferences} from '@constants';
-import {getSidebarPreferenceAsBool} from '@helpers/api/preference';
 import {observeAllMyChannelNotifyProps} from '@queries/servers/channel';
 import {queryPreferencesByCategoryAndName, querySidebarPreferences} from '@queries/servers/preference';
 import {observeCurrentChannelId, observeLastUnreadChannelId} from '@queries/servers/system';
@@ -18,7 +17,6 @@ import {observeDeactivatedUsers} from '@queries/servers/user';
 
 import type {SharedData} from './category/category';
 import type {WithDatabaseArgs} from '@typings/database/database';
-import type PreferenceModel from '@typings/database/models/servers/preference';
 
 const SharedDataContext = createContext<SharedData | undefined>(undefined);
 
@@ -26,10 +24,11 @@ export const useSharedData = (): SharedData | undefined => useContext(SharedData
 
 type Props = WithDatabaseArgs & {
     isTablet: boolean;
+    unreadsOnTop: boolean;
     children: React.ReactNode;
 };
 
-const SharedDataProvider = ({database, isTablet, children}: Props) => {
+const SharedDataProvider = ({database, isTablet, unreadsOnTop, children}: Props) => {
     const [sharedData, setSharedData] = useState<SharedData | undefined>(undefined);
 
     useEffect(() => {
@@ -54,17 +53,12 @@ const SharedDataProvider = ({database, isTablet, children}: Props) => {
                 switchMap((val) => of$(val[0] ? parseInt(val[0].value, 10) : Preferences.CHANNEL_SIDEBAR_LIMIT_DMS_DEFAULT)),
             );
 
-        const unreadsOnTop = querySidebarPreferences(database, Preferences.CHANNEL_SIDEBAR_GROUP_UNREADS).
-            observeWithColumns(['value']).pipe(
-                switchMap((prefs: PreferenceModel[]) => of$(getSidebarPreferenceAsBool(prefs, Preferences.CHANNEL_SIDEBAR_GROUP_UNREADS))),
-            );
-
         const deactivatedUsers = observeDeactivatedUsers(database);
         const currentChannelId = isTablet ? observeCurrentChannelId(database) : of$('');
         const lastUnreadId = isTablet ? observeLastUnreadChannelId(database) : of$(undefined as string | undefined);
 
-        const sub = combineLatest([notifyProps, manuallyClosedPrefs, autoclosePrefs, deactivatedUsers, dmsLimit, currentChannelId, lastUnreadId, unreadsOnTop]).pipe(
-            map(([nProps, manuallyClosedP, autocloseP, deactivated, limit, currChannelId, lastUnread, unreads]) => ({
+        const sub = combineLatest([notifyProps, manuallyClosedPrefs, autoclosePrefs, deactivatedUsers, dmsLimit, currentChannelId, lastUnreadId]).pipe(
+            map(([nProps, manuallyClosedP, autocloseP, deactivated, limit, currChannelId, lastUnread]) => ({
                 notifyProps: nProps,
                 manuallyClosedPrefs: manuallyClosedP,
                 autoclosePrefs: autocloseP,
@@ -72,12 +66,12 @@ const SharedDataProvider = ({database, isTablet, children}: Props) => {
                 dmsLimit: limit,
                 currentChannelId: currChannelId,
                 lastUnreadId: lastUnread,
-                unreadsOnTop: unreads,
+                unreadsOnTop,
             })),
         ).subscribe(setSharedData);
 
         return () => sub.unsubscribe();
-    }, [database, isTablet]);
+    }, [database, isTablet, unreadsOnTop]);
 
     return (
         <SharedDataContext.Provider value={sharedData}>

@@ -2,6 +2,7 @@
 // See LICENSE.txt for license information.
 
 import {storeConfig} from '@actions/local/systems';
+import {entryInitialLoad} from '@actions/remote/entry/initial_load';
 import {Preferences} from '@constants';
 import DatabaseManager from '@database/manager';
 import {selectDefaultTeam} from '@helpers/api/team';
@@ -10,9 +11,12 @@ import {prepareCategoriesAndCategoriesChannels} from '@queries/servers/categorie
 import {prepareMyChannelsForTeam} from '@queries/servers/channel';
 import {prepareMyPreferences, queryDisplayNamePreferences} from '@queries/servers/preference';
 import {getConfig, getLicense, prepareCommonSystemValues} from '@queries/servers/system';
-import {prepareMyTeams} from '@queries/servers/team';
+import {getNthLastChannelFromTeam, prepareMyTeams} from '@queries/servers/team';
+import {getIsCRTEnabled} from '@queries/servers/thread';
 import {getCurrentUser} from '@queries/servers/user';
+import EphemeralStore from '@store/ephemeral_store';
 import {isDMorGM, selectDefaultChannelForTeam} from '@utils/channel';
+import {isTablet} from '@utils/helpers';
 
 import {fetchMyChannelsForTeam, fetchMissingDirectChannelsInfo} from './channel';
 import {fetchPostsForChannel} from './post';
@@ -20,7 +24,7 @@ import {fetchMyPreferences} from './preference';
 import {retryInitialTeamAndChannel, retryInitialChannel} from './retry';
 import {fetchRolesIfNeeded} from './role';
 import {fetchConfigAndLicense} from './systems';
-import {fetchMyTeams} from './team';
+import {fetchTeamLoad, fetchMyTeams} from './team';
 
 jest.mock('@database/manager');
 jest.mock('@managers/network_manager');
@@ -31,14 +35,20 @@ jest.mock('./role');
 jest.mock('./systems');
 jest.mock('./team');
 jest.mock('@actions/local/systems');
+jest.mock('@actions/remote/entry/initial_load');
 jest.mock('@queries/servers/user');
 jest.mock('@queries/servers/team');
+jest.mock('@queries/servers/thread');
 jest.mock('@queries/servers/channel');
 jest.mock('@queries/servers/categories');
 jest.mock('@queries/servers/system');
 jest.mock('@queries/servers/preference');
 jest.mock('@helpers/api/team');
 jest.mock('@utils/channel');
+jest.mock('@utils/helpers', () => ({
+    ...jest.requireActual('@utils/helpers'),
+    isTablet: jest.fn(),
+}));
 
 const serverUrl = 'http://example.com';
 const mockDatabase = {};
@@ -148,6 +158,32 @@ describe('retryInitialTeamAndChannel', () => {
             mockUser.id,
         );
     });
+
+    describe('Experience API enabled', () => {
+        afterEach(() => {
+            EphemeralStore.setExperienceAPIEnabled(serverUrl, false);
+        });
+
+        it('should delegate to entryInitialLoad and return success', async () => {
+            EphemeralStore.setExperienceAPIEnabled(serverUrl, true);
+            (entryInitialLoad as jest.Mock).mockResolvedValue({models: [], initialTeamId: 'team_id', initialChannelId: 'channel_id'});
+
+            const result = await retryInitialTeamAndChannel(serverUrl);
+
+            expect(entryInitialLoad).toHaveBeenCalledWith(serverUrl);
+            expect(fetchConfigAndLicense).not.toHaveBeenCalled();
+            expect(result).toEqual({error: undefined});
+        });
+
+        it('should propagate the error from entryInitialLoad', async () => {
+            EphemeralStore.setExperienceAPIEnabled(serverUrl, true);
+            (entryInitialLoad as jest.Mock).mockResolvedValue({error: 'boom'});
+
+            const result = await retryInitialTeamAndChannel(serverUrl);
+
+            expect(result).toEqual({error: 'boom'});
+        });
+    });
 });
 
 describe('retryInitialChannel', () => {
@@ -249,5 +285,50 @@ describe('retryInitialChannel', () => {
     it('should return success if no errors occur', async () => {
         const result = await retryInitialChannel(serverUrl, teamId);
         expect(result).toEqual({error: false});
+    });
+
+    describe('Experience API enabled', () => {
+        beforeEach(() => {
+            EphemeralStore.setExperienceAPIEnabled(serverUrl, true);
+            (getIsCRTEnabled as jest.Mock).mockResolvedValue(false);
+            (fetchTeamLoad as jest.Mock).mockResolvedValue({});
+            (getNthLastChannelFromTeam as jest.Mock).mockResolvedValue('channel_id');
+        });
+
+        afterEach(() => {
+            EphemeralStore.setExperienceAPIEnabled(serverUrl, false);
+        });
+
+        it('should call fetchTeamLoad and select a channel on tablet', async () => {
+            (isTablet as jest.Mock).mockReturnValue(true);
+
+            const result = await retryInitialChannel(serverUrl, teamId);
+
+            expect(fetchTeamLoad).toHaveBeenCalledWith(serverUrl, teamId, false);
+            expect(getNthLastChannelFromTeam).toHaveBeenCalledWith(mockDatabase, teamId);
+            expect(prepareCommonSystemValues).toHaveBeenCalledWith(mockOperator, {currentChannelId: 'channel_id'});
+            expect(fetchPostsForChannel).toHaveBeenCalledWith(serverUrl, 'channel_id');
+            expect(result).toEqual({error: false});
+        });
+
+        it('should not select a channel on phone', async () => {
+            (isTablet as jest.Mock).mockReturnValue(false);
+
+            const result = await retryInitialChannel(serverUrl, teamId);
+
+            expect(getNthLastChannelFromTeam).not.toHaveBeenCalled();
+            expect(prepareCommonSystemValues).toHaveBeenCalledWith(mockOperator, {currentChannelId: ''});
+            expect(fetchPostsForChannel).not.toHaveBeenCalled();
+            expect(result).toEqual({error: false});
+        });
+
+        it('should propagate an error from fetchTeamLoad', async () => {
+            (fetchTeamLoad as jest.Mock).mockResolvedValue({error: 'boom'});
+
+            const result = await retryInitialChannel(serverUrl, teamId);
+
+            expect(getNthLastChannelFromTeam).not.toHaveBeenCalled();
+            expect(result).toEqual({error: 'boom'});
+        });
     });
 });

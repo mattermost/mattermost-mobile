@@ -5,6 +5,7 @@ import {markTeamThreadsAsRead, processReceivedThreads, updateThread} from '@acti
 import DatabaseManager from '@database/manager';
 import {adjustThreadInBlob, clearTeamThreadsInBlob, getCurrentTeamId} from '@queries/servers/system';
 import EphemeralStore from '@store/ephemeral_store';
+import SyncBlobQueue from '@store/sync_blob_queue';
 import ThreadsSyncStore from '@store/threads_sync_store';
 
 export async function handleThreadUpdatedEvent(serverUrl: string, msg: WebSocketMessage): Promise<void> {
@@ -31,6 +32,10 @@ export async function handleThreadUpdatedEvent(serverUrl: string, msg: WebSocket
         ) {
             const mentionDelta = previousUnreadMentions - thread.unread_mentions;
             const hasUnreadsAfter = thread.unread_replies > 0 || thread.unread_mentions > 0;
+            if (SyncBlobQueue.isSyncing(serverUrl)) {
+                SyncBlobQueue.queueBlobOp(serverUrl, {op: 'adjustThread', teamId, mentionDelta, hasUnreadsAfter, eventTimestamp: thread.last_reply_at});
+                return;
+            }
             await adjustThreadInBlob(operator, teamId, mentionDelta, hasUnreadsAfter);
         }
     } catch (error) {
@@ -63,6 +68,10 @@ export async function handleThreadReadChangedEvent(serverUrl: string, msg: WebSo
                 const {operator} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
                 const mentionDelta = previous_unread_mentions - unread_mentions;
                 const hasUnreadsAfter = unread_replies > 0 || unread_mentions > 0;
+                if (SyncBlobQueue.isSyncing(serverUrl)) {
+                    SyncBlobQueue.queueBlobOp(serverUrl, {op: 'adjustThread', teamId: thread_team_id, mentionDelta, hasUnreadsAfter, eventTimestamp: timestamp});
+                    return;
+                }
                 await adjustThreadInBlob(operator, thread_team_id, mentionDelta, hasUnreadsAfter);
             }
         } else {
@@ -73,6 +82,10 @@ export async function handleThreadReadChangedEvent(serverUrl: string, msg: WebSo
             if (EphemeralStore.getExperienceAPIEnabled(serverUrl) &&
                 !ThreadsSyncStore.hasThreadsBeenFetched(serverUrl, teamId)) {
                 const {operator} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
+                if (SyncBlobQueue.isSyncing(serverUrl)) {
+                    SyncBlobQueue.queueBlobOp(serverUrl, {op: 'clearThreads', teamId, eventTimestamp: timestamp});
+                    return;
+                }
                 await clearTeamThreadsInBlob(operator, teamId);
             }
         }

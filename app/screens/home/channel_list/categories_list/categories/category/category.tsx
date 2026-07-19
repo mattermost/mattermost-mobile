@@ -6,22 +6,15 @@ import {DeviceEventEmitter, FlatList, View} from 'react-native';
 
 import {fetchDirectChannelsInfo, switchToChannelById} from '@actions/remote/channel';
 import ChannelItem from '@components/channel_item';
-import {Events, Preferences, Screens} from '@constants';
-import {DMS_CATEGORY} from '@constants/categories';
+import {Events, Screens} from '@constants';
 import {useServerUrl} from '@context/server';
 import PerformanceMetricsManager from '@managers/performance_metrics_manager';
-import {
-    filterArchivedChannels,
-    filterAutoclosedDMs,
-    filterManuallyClosedDms,
-    getUnreadIds,
-    sortChannels,
-    type ChannelWithMyChannel,
-} from '@utils/categories';
 import {isDMorGM} from '@utils/channel';
 
 import CategoryHeader from '../header';
 import {useSharedData} from '../shared_data_context';
+
+import {computeSortedCategoryChannels} from './helpers/compute_sorted_category_channels';
 
 import type CategoryModel from '@typings/database/models/servers/category';
 import type ChannelModel from '@typings/database/models/servers/channel';
@@ -76,29 +69,7 @@ const Category = ({
         }
 
         const sorting = categoryState?.sorting ?? category.sorting;
-        const maxDms = category.type === DMS_CATEGORY ? s.dmsLimit : Preferences.CHANNEL_SIDEBAR_LIMIT_DMS_DEFAULT;
-        const channelMap = new Map<string, ChannelModel>(channels.map((c) => [c.id, c]));
-
-        let cwms: ChannelWithMyChannel[] = myChannels.reduce<ChannelWithMyChannel[]>((acc, mc) => {
-            const channel = channelMap.get(mc.id);
-            if (channel) {
-                acc.push({channel, myChannel: mc, sortOrder: sortOrderMap.get(mc.id) ?? 0});
-            }
-            return acc;
-        }, []);
-
-        cwms = filterArchivedChannels(cwms, s.currentChannelId);
-        cwms = filterManuallyClosedDms(cwms, s.notifyProps, s.manuallyClosedPrefs, currentUserId, s.lastUnreadId);
-        cwms = filterAutoclosedDMs(
-            category.type as CategoryType, maxDms, currentUserId, s.currentChannelId,
-            cwms, s.autoclosePrefs, s.notifyProps, s.deactivatedUsers, s.lastUnreadId,
-        );
-
-        const sorted = sortChannels(sorting as CategorySorting, cwms, s.notifyProps, locale).
-            filter((c) => !managedChannelIds.has(c.id));
-        const unreads = getUnreadIds(cwms, s.notifyProps, s.lastUnreadId);
-
-        return {sortedChannels: sorted, unreadIds: unreads};
+        return computeSortedCategoryChannels(category, currentUserId, locale, sorting, sortOrderMap, managedChannelIds, myChannels, channels, s);
     }, [myChannels, channels, s, category, categoryState, currentUserId, locale, sortOrderMap, managedChannelIds]);
 
     const onChannelSwitch = useCallback((c: Channel | ChannelModel) => {

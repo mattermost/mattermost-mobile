@@ -14,14 +14,16 @@ import {loadConfigAndCallsIfEnabled} from '@calls/actions/calls';
 import {General} from '@constants';
 import {SYSTEM_IDENTIFIERS} from '@constants/database';
 import DatabaseManager from '@database/manager';
+import {toApiChannel, toApiTeam, toApiTeamMembership, toApiUserProfile} from '@helpers/api/experience';
 import AppsManager from '@managers/apps_manager';
 import NetworkManager from '@managers/network_manager';
 import {setPlaybooksVersionFromManifests} from '@playbooks/actions/remote/version';
-import {getChannelById, prepareDeleteChannel, queryChannelsById} from '@queries/servers/channel';
+import {getChannelById, prepareDeleteChannel, queryChannelsById, queryChannelsInfoById} from '@queries/servers/channel';
 import {prepareEntryModels, truncateCrtRelatedTables} from '@queries/servers/entry';
 import {getHasCRTChanged} from '@queries/servers/preference';
 import {getCurrentUserId, getLastInitialLoad} from '@queries/servers/system';
 import {prepareDeleteTeam, queryTeamsById, removeTeamsFromTeamHistory} from '@queries/servers/team';
+import {queryUsersById} from '@queries/servers/user';
 import ChannelsSyncStore from '@store/channels_sync_store';
 import EphemeralStore from '@store/ephemeral_store';
 import {isExperienceAPIEnabled} from '@utils/config';
@@ -174,63 +176,24 @@ export const entryInitialLoad = async (serverUrl: string, teamId?: string, chann
         }
 
         // meData: undefined when me is null — delta mode, nothing changed, skip user write.
-        const meData: MyUserRequest | undefined = initialLoad.me ? {
-            user: {
-                id: initialLoad.me.id,
-                create_at: initialLoad.me.create_at ?? 0,
-                update_at: initialLoad.me.update_at ?? 0,
-                delete_at: initialLoad.me.delete_at,
-                username: initialLoad.me.username,
-                auth_service: initialLoad.me.auth_service,
-                email: initialLoad.me.email,
-                nickname: initialLoad.me.nickname,
-                first_name: initialLoad.me.first_name,
-                last_name: initialLoad.me.last_name,
-                position: initialLoad.me.position,
-                roles: initialLoad.me.roles,
-                props: initialLoad.me.props ?? {},
-                notify_props: initialLoad.me.notify_props ?? {} as UserNotifyProps,
-                last_picture_update: initialLoad.me.last_picture_update ?? 0,
-                locale: initialLoad.me.locale,
-                timezone: initialLoad.me.timezone,
-                terms_of_service_id: initialLoad.me.terms_of_service_id,
-                terms_of_service_create_at: initialLoad.me.terms_of_service_create_at,
-            } as UserProfile,
-        } : undefined;
+        let meData: MyUserRequest | undefined;
+        if (initialLoad.me) {
+            const [existingUser] = await queryUsersById(database, [initialLoad.me.id]).fetch();
+            meData = {user: toApiUserProfile(initialLoad.me, existingUser)};
+        }
 
         // teamData: map only if there are teams in the response (may be empty in delta).
-        const teamData: MyTeamsRequest | undefined = initialLoad.teams?.length || initialLoad.team_members?.members?.length ? {
-            teams: (initialLoad.teams ?? []).map((t) => ({
-                id: t.id,
-                create_at: t.create_at ?? 0,
-                update_at: t.update_at ?? 0,
-                delete_at: t.delete_at ?? 0,
-                display_name: t.display_name,
-                name: t.name,
-                type: t.type,
-                invite_id: t.invite_id ?? '',
-                group_constrained: t.group_constrained ?? false,
-                last_team_icon_update: t.last_team_icon_update ?? 0,
-                description: '',
-                email: '',
-                company_name: '',
-                allowed_domains: '',
-                allow_open_invite: false,
-                scheme_id: '',
-                policy_id: null,
-            } as unknown as Team)),
-            memberships: (initialLoad.team_members?.members ?? []).map((m) => ({
-                team_id: m.team_id,
-                user_id: m.user_id,
-                roles: m.roles,
-                delete_at: m.delete_at,
-                scheme_guest: m.scheme_guest,
-                scheme_user: m.scheme_user,
-                scheme_admin: m.scheme_admin,
-                mention_count: 0,
-                msg_count: 0,
-            } as TeamMembership)),
-        } : undefined;
+        let teamData: MyTeamsRequest | undefined;
+        if (initialLoad.teams?.length || initialLoad.team_members?.members?.length) {
+            const teamIds = (initialLoad.teams ?? []).map((t) => t.id);
+            const existingTeams = teamIds.length ? await queryTeamsById(database, teamIds).fetch() : [];
+            const existingTeamsById = new Map(existingTeams.map((t) => [t.id, t]));
+
+            teamData = {
+                teams: (initialLoad.teams ?? []).map((t) => toApiTeam(t, existingTeamsById.get(t.id))),
+                memberships: (initialLoad.team_members?.members ?? []).map(toApiTeamMembership),
+            };
+        }
 
         // The server resolves the active team — no client-side fallback needed.
         const activeTeam = initialLoad.active_team;
@@ -253,49 +216,20 @@ export const entryInitialLoad = async (serverUrl: string, teamId?: string, chann
         }
 
         // chData: map active_team channels/members/categories. Undefined if no active team.
-        const chData: MyChannelsRequest | undefined = activeTeam ? {
-            channels: (activeTeam.channels ?? []).map((c) => ({
-                id: c.id,
-                create_at: c.create_at ?? 0,
-                update_at: c.update_at ?? 0,
-                delete_at: c.delete_at ?? 0,
-                team_id: c.team_id,
-                type: c.type,
-                display_name: c.display_name,
-                name: c.name,
-                last_post_at: c.last_post_at,
-                total_msg_count: c.total_msg_count,
-                creator_id: c.creator_id ?? '',
-                group_constrained: c.group_constrained ?? false,
-                shared: c.shared ?? false,
-                total_msg_count_root: c.total_msg_count_root ?? 0,
-                last_root_post_at: c.last_root_post_at ?? 0,
-                policy_enforced: c.policy_enforced ?? false,
-                header: '',
-                purpose: '',
-                extra_update_at: 0,
-                scheme_id: '',
-                props: null,
-            } as unknown as Channel)),
-            memberships: (activeTeam.channel_members?.members ?? []).map((m) => ({
-                channel_id: m.channel_id,
-                user_id: m.user_id,
-                roles: m.roles,
-                last_viewed_at: m.last_viewed_at,
-                msg_count: m.msg_count,
-                mention_count: m.mention_count,
-                mention_count_root: m.mention_count_root,
-                urgent_mention_count: m.urgent_mention_count,
-                msg_count_root: m.msg_count_root,
-                last_update_at: m.last_update_at,
-                scheme_guest: m.scheme_guest,
-                scheme_user: m.scheme_user,
-                scheme_admin: m.scheme_admin,
-                autotranslation_disabled: m.autotranslation_disabled,
-                notify_props: m.notify_props,
-            } as ChannelMembership)),
-            categories: activeTeam.sidebar_categories?.categories ?? [],
-        } : undefined;
+        let chData: MyChannelsRequest | undefined;
+        if (activeTeam) {
+            const channelIds = (activeTeam.channels ?? []).map((c) => c.id);
+            const existingChannels = channelIds.length ? await queryChannelsById(database, channelIds).fetch() : [];
+            const existingChannelsById = new Map(existingChannels.map((c) => [c.id, c]));
+            const existingChannelsInfo = channelIds.length ? await queryChannelsInfoById(database, channelIds).fetch() : [];
+            const existingChannelsInfoById = new Map(existingChannelsInfo.map((c) => [c.id, c]));
+
+            chData = {
+                channels: (activeTeam.channels ?? []).map((c) => toApiChannel(c, existingChannelsById.get(c.id), existingChannelsInfoById.get(c.id))),
+                memberships: (activeTeam.channel_members?.members ?? []) as unknown as ChannelMembership[],
+                categories: activeTeam.sidebar_categories?.categories ?? [],
+            };
+        }
 
         if (activeTeam?.channel_members.removed_channel_ids?.includes(initialChannelId)) {
             initialChannelId = await entryInitialChannelId(

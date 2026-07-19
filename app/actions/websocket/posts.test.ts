@@ -21,6 +21,7 @@ import {getIsCRTEnabled} from '@queries/servers/thread';
 import ChannelsSyncStore from '@store/channels_sync_store';
 import EphemeralStore from '@store/ephemeral_store';
 import {NavigationStore} from '@store/navigation_store';
+import SyncBlobQueue from '@store/sync_blob_queue';
 import TestHelper from '@test/test_helper';
 import {isTablet} from '@utils/helpers';
 import {shouldIgnorePost} from '@utils/post';
@@ -35,6 +36,7 @@ jest.mock('@queries/servers/system');
 jest.mock('@queries/servers/thread');
 jest.mock('@store/channels_sync_store');
 jest.mock('@store/ephemeral_store');
+jest.mock('@store/sync_blob_queue');
 jest.mock('@actions/local/channel');
 jest.mock('@actions/local/post');
 jest.mock('@actions/local/thread');
@@ -307,6 +309,7 @@ describe('WebSocket Post Actions', () => {
                 mockedMarkChannelAsUnread.mockResolvedValue({member: myChannelModel});
                 jest.mocked(ChannelsSyncStore.hasChannelsBeenFetched).mockReturnValue(false);
                 jest.mocked(EphemeralStore.getExperienceAPIEnabled).mockReturnValue(true);
+                jest.mocked(SyncBlobQueue.isSyncing).mockReturnValue(false);
             });
 
             it('increments blob with mention=1 when recipient is mentioned and not muted', async () => {
@@ -391,6 +394,21 @@ describe('WebSocket Post Actions', () => {
                 } as WebSocketMessage);
 
                 expect(incrementTeamBlob).toHaveBeenCalledWith(operator, teamId, 1);
+            });
+
+            it('queues the blob op instead of writing when a sync is in flight', async () => {
+                jest.mocked(SyncBlobQueue.isSyncing).mockReturnValue(true);
+
+                await handleNewPostEvent(serverUrl, baseMsg({timestamp: 5000}));
+
+                expect(incrementTeamBlob).not.toHaveBeenCalled();
+                expect(SyncBlobQueue.queueBlobOp).toHaveBeenCalledWith(serverUrl, {
+                    op: 'increment',
+                    teamId,
+                    mentionDelta: 1,
+                    threadMentionDelta: 0,
+                    eventTimestamp: 5000,
+                });
             });
         });
     });
@@ -693,6 +711,59 @@ describe('WebSocket Post Actions', () => {
 
             expect(mockedGetMyChannel).not.toHaveBeenCalled();
             expect(batchRecordsSpy).not.toHaveBeenCalled();
+        });
+
+        describe('TEAM_BADGE_COUNTS blob mirror', () => {
+            const blobMsg = {
+                broadcast: {channel_id: 'channel1', team_id: 'team1'},
+                data: {
+                    mention_count: 1,
+                    mention_count_root: 1,
+                    msg_count: 1,
+                    msg_count_root: 1,
+                    last_viewed_at: 12345,
+                    timestamp: 5000,
+                },
+            } as WebSocketMessage;
+
+            beforeEach(() => {
+                mockedGetMyChannel.mockResolvedValue(myChannelModel);
+                mockedGetIsCRTEnabled.mockResolvedValue(false);
+                mockedFetchMyChannel.mockResolvedValue({teamId: 'team1', memberships: [TestHelper.fakeChannelMember({user_id: 'user1', channel_id: 'channel1'})]});
+                mockedMarkChannelAsUnread.mockResolvedValue({member: myChannelModel});
+                jest.mocked(ChannelsSyncStore.hasChannelsBeenFetched).mockReturnValue(false);
+                jest.mocked(EphemeralStore.getExperienceAPIEnabled).mockReturnValue(true);
+                jest.mocked(SyncBlobQueue.isSyncing).mockReturnValue(false);
+            });
+
+            it('increments the blob when the team is not fetched', async () => {
+                await handlePostUnread(serverUrl, blobMsg);
+
+                expect(incrementTeamBlob).toHaveBeenCalledWith(operator, 'team1', 1);
+            });
+
+            it('skips the blob update when the team is already fetched', async () => {
+                jest.mocked(ChannelsSyncStore.hasChannelsBeenFetched).mockReturnValue(true);
+
+                await handlePostUnread(serverUrl, blobMsg);
+
+                expect(incrementTeamBlob).not.toHaveBeenCalled();
+            });
+
+            it('queues the blob op instead of writing when a sync is in flight', async () => {
+                jest.mocked(SyncBlobQueue.isSyncing).mockReturnValue(true);
+
+                await handlePostUnread(serverUrl, blobMsg);
+
+                expect(incrementTeamBlob).not.toHaveBeenCalled();
+                expect(SyncBlobQueue.queueBlobOp).toHaveBeenCalledWith(serverUrl, {
+                    op: 'increment',
+                    teamId: 'team1',
+                    mentionDelta: 1,
+                    threadMentionDelta: 0,
+                    eventTimestamp: 5000,
+                });
+            });
         });
     });
 

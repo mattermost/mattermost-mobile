@@ -1576,6 +1576,15 @@ describe('Channel Observations', () => {
         });
     });
 
+    it('should observe an empty array without querying when there are no channels', () => {
+        const result = observeChannelsByLastPostAt(database, []);
+
+        expect(database.get).not.toHaveBeenCalled();
+        result.subscribe((value) => {
+            expect(value).toEqual([]);
+        });
+    });
+
     it('should observe channel members', () => {
         const channelId = 'channel_id';
         const mockMembers = [

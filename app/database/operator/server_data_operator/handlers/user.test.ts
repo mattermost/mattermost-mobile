@@ -1,7 +1,10 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import {Q} from '@nozbe/watermelondb';
+
 import {Ringtone} from '@constants/calls';
+import {MM_TABLES} from '@constants/database';
 import DatabaseManager from '@database/manager';
 import {buildPreferenceKey} from '@database/operator/server_data_operator/comparators';
 import {shouldUpdateUserRecord} from '@database/operator/server_data_operator/comparators/user';
@@ -11,6 +14,9 @@ import {
 } from '@database/operator/server_data_operator/transformers/user';
 
 import type ServerDataOperator from '@database/operator/server_data_operator';
+import type PreferenceModel from '@typings/database/models/servers/preference';
+
+const {PREFERENCE} = MM_TABLES.SERVER;
 
 describe('*** Operator: User Handlers tests ***', () => {
     let operator: ServerDataOperator;
@@ -155,7 +161,6 @@ describe('*** Operator: User Handlers tests ***', () => {
         expect(spyOnHandleRecords).toHaveBeenCalledWith({
             fieldName: 'user_id',
             createOrUpdateRawValues: preferences.filter((p) => p.category !== 'tutorial_step'),
-            deleteRawValues: [],
             tableName: 'Preference',
             prepareRecordsOnly: true,
             buildKeyRecordBy: buildPreferenceKey,
@@ -163,13 +168,21 @@ describe('*** Operator: User Handlers tests ***', () => {
         }, 'handlePreferences(NEVER)');
     });
 
-    it('should pass tombstones as deleteRawValues to handleRecords', async () => {
-        expect.assertions(1);
+    it('should delete only the tombstoned preference, not every preference for the user', async () => {
+        expect.assertions(2);
 
-        const spyOnHandleRecords = jest.spyOn(operator, 'handleRecords');
+        const userId = 'tombstonetestuser0000000001';
+        await operator.handlePreferences({
+            preferences: [
+                {user_id: userId, category: 'notifications', name: 'pref_a', value: 'true'},
+                {user_id: userId, category: 'notifications', name: 'pref_b', value: 'true'},
+            ],
+            prepareRecordsOnly: false,
+            sync: false,
+        });
 
         const tombstones: PreferenceTombstone[] = [
-            {user_id: '9ciscaqbrpd6d8s68k76xb9bte', category: 'theme', name: '', delete_at: 1706000001000},
+            {user_id: userId, category: 'notifications', name: 'pref_a', delete_at: 1706000001000},
         ];
 
         await operator.handlePreferences({
@@ -177,8 +190,10 @@ describe('*** Operator: User Handlers tests ***', () => {
             prepareRecordsOnly: false,
         });
 
-        expect(spyOnHandleRecords).toHaveBeenCalledWith(expect.objectContaining({
-            deleteRawValues: tombstones,
-        }), 'handlePreferences(NEVER)');
+        const remaining = await operator.database.get<PreferenceModel>(PREFERENCE).
+            query(Q.where('user_id', userId)).fetch();
+
+        expect(remaining).toHaveLength(1);
+        expect(remaining[0].name).toBe('pref_b');
     });
 });

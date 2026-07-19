@@ -24,8 +24,7 @@ import CategoryRow from './category';
 import Empty from './empty_unreads';
 import LoadCategoriesError from './error';
 import CategoryHeader from './header';
-import {keyExtractor, type FlattenedItem} from './helpers/flatten_categories';
-import SharedDataProvider from './shared_data_context';
+import {keyExtractor, type FlattenedItem} from './helpers/flattened_item';
 
 import type ChannelModel from '@typings/database/models/servers/channel';
 
@@ -235,7 +234,7 @@ const Categories = ({
     }
 
     return (
-        <SharedDataProvider isTablet={isTablet}>
+        <>
             {!switchingTeam && !initialLoad && (
                 <FlatList
                     key={onlyUnreads ? 'unreads' : 'all'}
@@ -262,7 +261,7 @@ const Categories = ({
                     />
                 </View>
             )}
-        </SharedDataProvider>
+        </>
     );
 };
 

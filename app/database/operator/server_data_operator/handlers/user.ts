@@ -64,6 +64,17 @@ const UserHandler = <TBase extends Constructor<ServerDataOperatorBase>>(supercla
             }
         }
 
+        // Tombstones name the exact (category, name) to delete. Look each one up
+        // individually rather than routing through deleteRawValues, which filters
+        // only by user_id and would destroy every stored preference for the user.
+        for (const tombstone of tombstones ?? []) {
+            const existing = storedPreferencesMap.get(`${tombstone.category}-${tombstone.name}`);
+            if (existing) {
+                existing.prepareDestroyPermanently();
+                deleteValues.push(existing);
+            }
+        }
+
         const createOrUpdateRawValues = filtered.reduce((res: PreferenceType[], p) => {
             const id = `${p.category}-${p.name}`;
             const exist = storedPreferencesMap.get(id);
@@ -79,18 +90,17 @@ const UserHandler = <TBase extends Constructor<ServerDataOperatorBase>>(supercla
             return res;
         }, []);
 
-        if (!createOrUpdateRawValues.length && !deleteValues.length && !tombstones?.length) {
+        if (!createOrUpdateRawValues.length && !deleteValues.length) {
             return records;
         }
 
-        if (createOrUpdateRawValues.length || tombstones?.length) {
+        if (createOrUpdateRawValues.length) {
             const createOrUpdate: PreferenceModel[] = await this.handleRecords({
                 fieldName: 'user_id',
                 buildKeyRecordBy: buildPreferenceKey,
                 transformer: transformPreferenceRecord,
                 prepareRecordsOnly: true,
                 createOrUpdateRawValues,
-                deleteRawValues: (tombstones ?? []) as unknown as PreferenceType[],
                 tableName: PREFERENCE,
             }, 'handlePreferences(NEVER)');
             records.push(...createOrUpdate);

@@ -23,6 +23,7 @@ import {getIsCRTEnabled} from '@queries/servers/thread';
 import {getCurrentUser, getTeammateNameDisplay, getUserById} from '@queries/servers/user';
 import ChannelsSyncStore from '@store/channels_sync_store';
 import EphemeralStore from '@store/ephemeral_store';
+import SyncBlobQueue from '@store/sync_blob_queue';
 import MyChannelModel from '@typings/database/models/servers/my_channel';
 import {logDebug} from '@utils/log';
 
@@ -52,6 +53,16 @@ const applyMemberUnreadsToBlob = async (
     // CRT: mention_count_root = channel-level, remainder = thread-level.
     const threadMention = isCRTEnabled ? memberUnreadsMentions.mention_count - memberUnreadsMentions.mention_count_root : 0;
     if (mention > 0 || threadMention > 0) {
+        if (SyncBlobQueue.isSyncing(serverUrl)) {
+            const eventTimestamp = memberUnreadsMentions.timestamp ?? 0;
+            if (action === 'decrement') {
+                SyncBlobQueue.queueBlobOp(serverUrl, {op: 'decrement', teamId, clearedMentions: mention, clearedThreadMentions: threadMention, eventTimestamp});
+            } else {
+                SyncBlobQueue.queueBlobOp(serverUrl, {op: 'increment', teamId, mentionDelta: mention, threadMentionDelta: threadMention, eventTimestamp});
+            }
+            return;
+        }
+
         if (action === 'decrement') {
             await decrementTeamBlob(operator, teamId, mention, threadMention);
         } else {
@@ -133,6 +144,11 @@ export async function handleChannelConvertedEvent(serverUrl: string, msg: any) {
             const {database, operator} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
             const isCRTEnabled = await getIsCRTEnabled(database);
             const mention = isCRTEnabled ? memberUnreadsMentions.mention_count_root : memberUnreadsMentions.mention_count;
+
+            if (SyncBlobQueue.isSyncing(serverUrl)) {
+                SyncBlobQueue.queueBlobOp(serverUrl, {op: 'migrateDirectToTeam', teamId, mentionCount: mention, hasUnreads: memberUnreadsMentions.is_unread, eventTimestamp: memberUnreadsMentions.timestamp ?? 0});
+                return;
+            }
 
             await migrateChannelFromDirectToTeamBlob(
                 operator,
@@ -224,6 +240,7 @@ export async function handleMultipleChannelsViewedEvent(serverUrl: string, msg: 
         }
 
         if (EphemeralStore.getExperienceAPIEnabled(serverUrl) && clearedMentions && teamIDs) {
+            const eventTimestamp: number = msg.data.timestamp ?? 0;
             for (const id of viewedChannelIds) {
                 const teamId = teamIDs[id];
                 const cleared = clearedMentions[id];
@@ -233,6 +250,11 @@ export async function handleMultipleChannelsViewedEvent(serverUrl: string, msg: 
 
                 // Team slots skip when already fetched.
                 if (teamId !== '' && ChannelsSyncStore.hasChannelsBeenFetched(serverUrl, teamId)) {
+                    continue;
+                }
+
+                if (SyncBlobQueue.isSyncing(serverUrl)) {
+                    SyncBlobQueue.queueBlobOp(serverUrl, {op: 'decrement', teamId, clearedMentions: cleared, clearedThreadMentions: 0, eventTimestamp});
                     continue;
                 }
 

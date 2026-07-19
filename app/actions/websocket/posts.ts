@@ -24,6 +24,7 @@ import {getIsCRTEnabled} from '@queries/servers/thread';
 import ChannelsSyncStore from '@store/channels_sync_store';
 import EphemeralStore from '@store/ephemeral_store';
 import {NavigationStore} from '@store/navigation_store';
+import SyncBlobQueue from '@store/sync_blob_queue';
 import {hasArrayChanged, isTablet} from '@utils/helpers';
 import {logWarning} from '@utils/log';
 import {isFromWebhook, isPostEphemeral, isSystemMessage, restoreEphemeralIdentityFieldsForEdit, shouldIgnorePost} from '@utils/post';
@@ -216,6 +217,10 @@ export async function handleNewPostEvent(serverUrl: string, msg: WebSocketMessag
         !ChannelsSyncStore.hasChannelsBeenFetched(serverUrl, postTeamId)
     ) {
         const mentionDelta = msg.data.mentions?.includes(currentUserId) ? 1 : 0;
+        if (SyncBlobQueue.isSyncing(serverUrl)) {
+            SyncBlobQueue.queueBlobOp(serverUrl, {op: 'increment', teamId: postTeamId, mentionDelta, threadMentionDelta: 0, eventTimestamp: msg.data.timestamp});
+            return;
+        }
         await incrementTeamBlob(operator, postTeamId, mentionDelta);
     }
 }
@@ -396,6 +401,10 @@ export async function handlePostUnread(serverUrl: string, msg: WebSocketMessage)
         teamId &&
         !ChannelsSyncStore.hasChannelsBeenFetched(serverUrl, teamId)
     ) {
+        if (SyncBlobQueue.isSyncing(serverUrl)) {
+            SyncBlobQueue.queueBlobOp(serverUrl, {op: 'increment', teamId, mentionDelta: mentions, threadMentionDelta: 0, eventTimestamp: msg.data.timestamp});
+            return;
+        }
         await incrementTeamBlob(operator, teamId, mentions);
     }
 }

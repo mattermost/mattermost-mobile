@@ -6,9 +6,12 @@ import {combineLatest, of} from 'rxjs';
 import {switchMap} from 'rxjs/operators';
 
 import {observeIsAgentsEnabled} from '@agents/database/queries/version';
+import {Preferences} from '@constants';
+import {getSidebarPreferenceAsBool} from '@helpers/api/preference';
 import {observeHasRunningPlaybookRunsInTeam} from '@playbooks/database/queries/run';
 import {observeIsPlaybooksEnabled} from '@playbooks/database/queries/version';
 import {observeDraftCount} from '@queries/servers/drafts';
+import {querySidebarPreferences} from '@queries/servers/preference';
 import {observeScheduledPostEnabled, observeScheduledPostsForTeam} from '@queries/servers/scheduled_post';
 import {observeCurrentTeamId} from '@queries/servers/system';
 import {observeTeamLastChannelId} from '@queries/servers/team';
@@ -17,6 +20,7 @@ import {hasScheduledPostError} from '@utils/scheduled_post';
 import CategoriesList from './categories_list';
 
 import type {WithDatabaseArgs} from '@typings/database/database';
+import type PreferenceModel from '@typings/database/models/servers/preference';
 
 const enhanced = withObservables([], ({database}: WithDatabaseArgs) => {
     const currentTeamId = observeCurrentTeamId(database);
@@ -28,6 +32,11 @@ const enhanced = withObservables([], ({database}: WithDatabaseArgs) => {
         ])),
         switchMap(([enabled, hasRunningRuns]) => of(enabled && hasRunningRuns)),
     );
+    const unreadsOnTop = querySidebarPreferences(database, Preferences.CHANNEL_SIDEBAR_GROUP_UNREADS).
+        observeWithColumns(['value']).
+        pipe(
+            switchMap((prefs: PreferenceModel[]) => of(getSidebarPreferenceAsBool(prefs, Preferences.CHANNEL_SIDEBAR_GROUP_UNREADS))),
+        );
 
     return {
         lastChannelId: currentTeamId.pipe(switchMap((teamId) => observeTeamLastChannelId(database, teamId))),
@@ -37,6 +46,7 @@ const enhanced = withObservables([], ({database}: WithDatabaseArgs) => {
         scheduledPostsEnabled: observeScheduledPostEnabled(database),
         agentsEnabled: observeIsAgentsEnabled(database),
         showPlaybooksButton,
+        unreadsOnTop,
     };
 });
 

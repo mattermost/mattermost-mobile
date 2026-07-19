@@ -20,6 +20,7 @@ import AppsManager from '@managers/apps_manager';
 import NetworkManager from '@managers/network_manager';
 import {handlePlaybookReconnect} from '@playbooks/actions/websocket/reconnect';
 import {getActiveServerUrl} from '@queries/app/servers';
+import {prepareDeleteChannel, queryChannelsById, queryChannelsInfoById} from '@queries/servers/channel';
 import {prepareEntryModels} from '@queries/servers/entry';
 import {getLastPostInThread} from '@queries/servers/post';
 import {
@@ -29,6 +30,7 @@ import {
     getConfigBooleanValue,
     getLastFullSync,
     getLastInitialLoad,
+    incrementTeamBlob,
     setLastFullSync,
     setLastInitialLoad,
 } from '@queries/servers/system';
@@ -38,10 +40,14 @@ import {getCurrentUser} from '@queries/servers/user';
 import ChannelsSyncStore from '@store/channels_sync_store';
 import EphemeralStore from '@store/ephemeral_store';
 import {NavigationStore} from '@store/navigation_store';
+import SyncBlobQueue from '@store/sync_blob_queue';
 import ThreadsSyncStore from '@store/threads_sync_store';
 import TestHelper from '@test/test_helper';
+import {logError} from '@utils/log';
 
 import {handleFirstConnect, handleReconnect} from './index';
+
+import type Model from '@nozbe/watermelondb/Model';
 
 jest.mock('@actions/local/channel');
 jest.mock('@actions/local/systems');
@@ -61,6 +67,7 @@ jest.mock('@database/manager');
 jest.mock('@managers/apps_manager');
 jest.mock('@managers/network_manager');
 jest.mock('@queries/app/servers');
+jest.mock('@queries/servers/channel');
 jest.mock('@queries/servers/entry');
 jest.mock('@queries/servers/post');
 jest.mock('@queries/servers/system');
@@ -74,6 +81,7 @@ jest.mock('@store/channels_sync_store', () => ({
 jest.mock('@store/ephemeral_store');
 jest.mock('@store/navigation_store');
 jest.mock('@store/team_load_store');
+jest.mock('@store/sync_blob_queue');
 jest.mock('@store/threads_sync_store', () => ({
     clearServer: jest.fn(),
     markThreadsFetched: jest.fn(),
@@ -352,6 +360,8 @@ describe('WebSocket Index Actions', () => {
                 jest.mocked(getLastFullSync).mockResolvedValue(0);
                 jest.mocked(queryMyTeams).mockReturnValue({fetchIds: jest.fn().mockResolvedValue([currentTeamId])} as unknown as ReturnType<typeof queryMyTeams>);
                 jest.mocked(queryTeamLastChannelId).mockReturnValue({fetch: jest.fn().mockResolvedValue([{channelIds: [currentChannelId]}])} as unknown as ReturnType<typeof queryTeamLastChannelId>);
+                jest.mocked(queryChannelsById).mockReturnValue({fetch: jest.fn().mockResolvedValue([])} as unknown as ReturnType<typeof queryChannelsById>);
+                jest.mocked(queryChannelsInfoById).mockReturnValue({fetch: jest.fn().mockResolvedValue([])} as unknown as ReturnType<typeof queryChannelsInfoById>);
                 jest.mocked(prepareEntryModels).mockResolvedValue([]);
                 jest.mocked(buildTeamBadgeCounts).mockReturnValue({teams: {}, direct: {mentionCount: 0, hasUnreads: false, threadMentionCount: 0, threadHasUnreads: false}});
                 jest.mocked(getIsCRTEnabled).mockResolvedValue(false);
@@ -359,6 +369,7 @@ describe('WebSocket Index Actions', () => {
                 jest.mocked(handleAutotranslationChanges).mockResolvedValue(undefined);
                 jest.mocked(handleInitialLoadNavigation).mockResolvedValue(undefined);
                 jest.mocked(runExperienceAPIEntryActions).mockResolvedValue(undefined);
+                jest.mocked(SyncBlobQueue.endSync).mockReturnValue([]);
             });
 
             it('should route to doSyncReconnect when ExperienceAPI is enabled', async () => {
@@ -456,6 +467,27 @@ describe('WebSocket Index Actions', () => {
                 expect(entry).toHaveBeenCalled();
             });
 
+            it('should log and not fall back to doReconnect on a non-404 error from reconnectSync', async () => {
+                const error500 = Object.assign(new Error('server error'), {status_code: 500});
+                mockClient.reconnectSync.mockRejectedValueOnce(error500);
+
+                await handleReconnect(serverUrl);
+
+                expect(logError).toHaveBeenCalledWith('doSyncReconnect', expect.any(String));
+                expect(EphemeralStore.setExperienceAPIEnabled).not.toHaveBeenCalled();
+                expect(entry).not.toHaveBeenCalled();
+            });
+
+            it('should log and not fall back to doReconnect when batchSyncResponse throws', async () => {
+                jest.mocked(prepareEntryModels).mockRejectedValueOnce(new Error('batch failure'));
+
+                await handleReconnect(serverUrl);
+
+                expect(logError).toHaveBeenCalledWith('doSyncReconnect', expect.any(String));
+                expect(EphemeralStore.setExperienceAPIEnabled).not.toHaveBeenCalled();
+                expect(entry).not.toHaveBeenCalled();
+            });
+
             it('should set active_channel_id in scope when CHANNEL screen is mounted', async () => {
                 jest.mocked(NavigationStore.getScreensInStack).mockReturnValue([Screens.CHANNEL]);
 
@@ -482,6 +514,133 @@ describe('WebSocket Index Actions', () => {
                     }),
                     expect.any(String),
                 );
+            });
+
+            it('should purge removed channels and their related records', async () => {
+                const removedChannelId = 'removed-channel-id';
+                mockClient.reconnectSync.mockResolvedValueOnce({
+                    ...mockSyncResponse,
+                    teams: [{
+                        team_id: currentTeamId,
+                        channels: [],
+                        channel_members: {members: [], removed_channel_ids: [removedChannelId]},
+                    }],
+                });
+
+                const channelToDelete = TestHelper.fakeChannelModel({id: removedChannelId});
+                jest.mocked(queryChannelsById).mockReturnValue({fetch: jest.fn().mockResolvedValue([channelToDelete])} as unknown as ReturnType<typeof queryChannelsById>);
+                const deletedModels = [{id: 'deleted-model'}] as unknown as Model[];
+                jest.mocked(prepareDeleteChannel).mockResolvedValue(deletedModels);
+
+                await handleReconnect(serverUrl);
+
+                expect(queryChannelsById).toHaveBeenCalledWith(expect.anything(), [removedChannelId]);
+                expect(prepareDeleteChannel).toHaveBeenCalledWith(serverUrl, channelToDelete);
+
+                const {operator} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
+                expect(operator.batchRecords).toHaveBeenCalledWith(
+                    expect.arrayContaining(deletedModels),
+                    'doSyncReconnect',
+                );
+            });
+
+            it('should redirect navigation away from a removed channel that was active', async () => {
+                const removedChannelId = currentChannelId;
+                mockClient.reconnectSync.mockResolvedValueOnce({
+                    ...mockSyncResponse,
+                    teams: [{
+                        team_id: currentTeamId,
+                        channels: [],
+                        channel_members: {members: [], removed_channel_ids: [removedChannelId]},
+                    }],
+                });
+                jest.mocked(queryChannelsById).mockReturnValue({fetch: jest.fn().mockResolvedValue([])} as unknown as ReturnType<typeof queryChannelsById>);
+
+                await handleReconnect(serverUrl);
+
+                expect(handleInitialLoadNavigation).toHaveBeenCalledWith(
+                    serverUrl,
+                    expect.objectContaining({removedChannelIds: [removedChannelId]}),
+                );
+            });
+
+            it('should purge a channel removed while backgrounded once the reconnect sync runs', async () => {
+                jest.mocked(getLastInitialLoad).mockResolvedValue(500);
+                const removedChannelId = 'backgrounded-removed-channel';
+                mockClient.reconnectSync.mockResolvedValueOnce({
+                    ...mockSyncResponse,
+                    teams: [{
+                        team_id: currentTeamId,
+                        channels: [],
+                        channel_members: {members: [], removed_channel_ids: [removedChannelId]},
+                    }],
+                });
+
+                const channelToDelete = TestHelper.fakeChannelModel({id: removedChannelId});
+                jest.mocked(queryChannelsById).mockReturnValue({fetch: jest.fn().mockResolvedValue([channelToDelete])} as unknown as ReturnType<typeof queryChannelsById>);
+                const deletedModels = [{id: 'deleted-model'}] as unknown as Model[];
+                jest.mocked(prepareDeleteChannel).mockResolvedValue(deletedModels);
+
+                await handleReconnect(serverUrl);
+
+                expect(mockClient.reconnectSync).toHaveBeenCalledWith(
+                    expect.objectContaining({since: 500}),
+                    expect.any(String),
+                );
+                expect(prepareDeleteChannel).toHaveBeenCalledWith(serverUrl, channelToDelete);
+                const {operator} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
+                expect(operator.batchRecords).toHaveBeenCalledWith(
+                    expect.arrayContaining(deletedModels),
+                    'doSyncReconnect',
+                );
+            });
+
+            describe('queued blob op replay', () => {
+                it('begins the sync-blob queue before the network call and drains it after the batch write', async () => {
+                    await handleReconnect(serverUrl);
+
+                    expect(SyncBlobQueue.beginSync).toHaveBeenCalledWith(serverUrl);
+                    expect(SyncBlobQueue.endSync).toHaveBeenCalledWith(serverUrl);
+
+                    const beginOrder = jest.mocked(SyncBlobQueue.beginSync).mock.invocationCallOrder[0];
+                    const reconnectOrder = mockClient.reconnectSync.mock.invocationCallOrder[0];
+                    const endOrder = jest.mocked(SyncBlobQueue.endSync).mock.invocationCallOrder[0];
+                    expect(beginOrder).toBeLessThan(reconnectOrder);
+                    expect(reconnectOrder).toBeLessThan(endOrder);
+                });
+
+                it('replays a queued op newer than the sync snapshot', async () => {
+                    mockClient.reconnectSync.mockResolvedValueOnce({...mockSyncResponse, timestamp: 1000});
+                    jest.mocked(SyncBlobQueue.endSync).mockReturnValueOnce([
+                        {op: 'increment', teamId: currentTeamId, mentionDelta: 1, threadMentionDelta: 0, eventTimestamp: 1001},
+                    ]);
+
+                    await handleReconnect(serverUrl);
+
+                    expect(incrementTeamBlob).toHaveBeenCalledWith(expect.anything(), currentTeamId, 1, 0);
+                });
+
+                it('drops a queued op at or before the sync snapshot timestamp', async () => {
+                    mockClient.reconnectSync.mockResolvedValueOnce({...mockSyncResponse, timestamp: 1000});
+                    jest.mocked(SyncBlobQueue.endSync).mockReturnValueOnce([
+                        {op: 'increment', teamId: currentTeamId, mentionDelta: 1, threadMentionDelta: 0, eventTimestamp: 1000},
+                    ]);
+
+                    await handleReconnect(serverUrl);
+
+                    expect(incrementTeamBlob).not.toHaveBeenCalled();
+                });
+
+                it('replays every queued op unfiltered when the sync request fails', async () => {
+                    mockClient.reconnectSync.mockRejectedValueOnce(new Error('network down'));
+                    jest.mocked(SyncBlobQueue.endSync).mockReturnValueOnce([
+                        {op: 'increment', teamId: currentTeamId, mentionDelta: 1, threadMentionDelta: 0, eventTimestamp: 1},
+                    ]);
+
+                    await handleReconnect(serverUrl);
+
+                    expect(incrementTeamBlob).toHaveBeenCalledWith(expect.anything(), currentTeamId, 1, 0);
+                });
             });
         });
     });

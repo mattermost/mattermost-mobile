@@ -5,6 +5,7 @@ import {markTeamThreadsAsRead, processReceivedThreads, updateThread} from '@acti
 import DatabaseManager from '@database/manager';
 import {adjustThreadInBlob, clearTeamThreadsInBlob, getCurrentTeamId} from '@queries/servers/system';
 import EphemeralStore from '@store/ephemeral_store';
+import SyncBlobQueue from '@store/sync_blob_queue';
 import ThreadsSyncStore from '@store/threads_sync_store';
 
 import {handleThreadUpdatedEvent, handleThreadReadChangedEvent, handleThreadFollowChangedEvent} from './threads';
@@ -13,6 +14,7 @@ jest.mock('@actions/local/thread');
 jest.mock('@database/manager');
 jest.mock('@queries/servers/system');
 jest.mock('@store/ephemeral_store');
+jest.mock('@store/sync_blob_queue');
 jest.mock('@store/threads_sync_store');
 
 describe('WebSocket Threads Actions', () => {
@@ -178,6 +180,24 @@ describe('WebSocket Threads Actions', () => {
                 }));
 
                 expect(adjustThreadInBlob).not.toHaveBeenCalled();
+            });
+
+            it('queues the blob op instead of writing when a sync is in flight', async () => {
+                jest.mocked(SyncBlobQueue.isSyncing).mockReturnValue(true);
+
+                await handleThreadUpdatedEvent(serverUrl, baseMsg({
+                    thread: JSON.stringify({id: threadId, unread_mentions: 1, unread_replies: 2, last_reply_at: 5000}),
+                }));
+
+                expect(adjustThreadInBlob).not.toHaveBeenCalled();
+                expect(SyncBlobQueue.queueBlobOp).toHaveBeenCalledWith(serverUrl, {
+                    op: 'adjustThread',
+                    teamId,
+                    mentionDelta: 1,
+                    hasUnreadsAfter: true,
+                    eventTimestamp: 5000,
+                });
+                jest.mocked(SyncBlobQueue.isSyncing).mockReturnValue(false);
             });
         });
     });
@@ -457,6 +477,64 @@ describe('WebSocket Threads Actions', () => {
 
             expect(markTeamThreadsAsRead).toHaveBeenCalledWith(serverUrl, teamId);
             expect(clearTeamThreadsInBlob).not.toHaveBeenCalled();
+        });
+
+        it('queues an adjustThread op instead of writing when a sync is in flight', async () => {
+            jest.mocked(ThreadsSyncStore.hasThreadsBeenFetched).mockReturnValue(false);
+            jest.mocked(EphemeralStore.getExperienceAPIEnabled).mockReturnValue(true);
+            jest.mocked(SyncBlobQueue.isSyncing).mockReturnValue(true);
+
+            const msg = {
+                data: {
+                    thread_id: threadId,
+                    timestamp: 5000,
+                    unread_mentions: 0,
+                    unread_replies: 0,
+                    previous_unread_mentions: 2,
+                    previous_unread_replies: 3,
+                    thread_team_id: teamId,
+                },
+                broadcast: {
+                    team_id: teamId,
+                },
+            } as WebSocketMessage<ThreadReadChangedData>;
+
+            await handleThreadReadChangedEvent(serverUrl, msg);
+
+            expect(adjustThreadInBlob).not.toHaveBeenCalled();
+            expect(SyncBlobQueue.queueBlobOp).toHaveBeenCalledWith(serverUrl, {
+                op: 'adjustThread',
+                teamId,
+                mentionDelta: 2,
+                hasUnreadsAfter: false,
+                eventTimestamp: 5000,
+            });
+            jest.mocked(SyncBlobQueue.isSyncing).mockReturnValue(false);
+        });
+
+        it('queues a clearThreads op instead of writing when a sync is in flight (team-wide read)', async () => {
+            jest.mocked(ThreadsSyncStore.hasThreadsBeenFetched).mockReturnValue(false);
+            jest.mocked(EphemeralStore.getExperienceAPIEnabled).mockReturnValue(true);
+            jest.mocked(SyncBlobQueue.isSyncing).mockReturnValue(true);
+
+            const msg = {
+                data: {
+                    timestamp: 5000,
+                },
+                broadcast: {
+                    team_id: teamId,
+                },
+            } as WebSocketMessage<ThreadReadChangedData>;
+
+            await handleThreadReadChangedEvent(serverUrl, msg);
+
+            expect(clearTeamThreadsInBlob).not.toHaveBeenCalled();
+            expect(SyncBlobQueue.queueBlobOp).toHaveBeenCalledWith(serverUrl, {
+                op: 'clearThreads',
+                teamId,
+                eventTimestamp: 5000,
+            });
+            jest.mocked(SyncBlobQueue.isSyncing).mockReturnValue(false);
         });
     });
 

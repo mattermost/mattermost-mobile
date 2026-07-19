@@ -24,6 +24,7 @@ import {logDebug} from '@utils/log';
 import {makeStyleSheetFromTheme} from '@utils/theme';
 
 import Categories from './categories';
+import SharedDataProvider from './categories/shared_data_context';
 import ChannelListHeader from './header';
 import LoadChannelsError from './load_channels_error';
 import SubHeader from './subheader';
@@ -53,6 +54,7 @@ type ChannelListProps = {
     scheduledPostsEnabled?: boolean;
     agentsEnabled?: boolean;
     showPlaybooksButton?: boolean;
+    unreadsOnTop: boolean;
 };
 
 const getTabletWidth = (moreThanOneTeam: boolean) => {
@@ -73,6 +75,7 @@ const CategoriesList = ({
     scheduledPostsEnabled,
     agentsEnabled,
     showPlaybooksButton,
+    unreadsOnTop,
 }: ChannelListProps) => {
     const theme = useTheme();
     const styles = getStyleSheet(theme);
@@ -223,14 +226,22 @@ const CategoriesList = ({
                 edges={edges}
                 style={styles.flex}
             >
-                <SubHeader/>
-                <Categories
-                    isTablet={isTablet}
-                    headerButtons={headerButtons}
+                <SubHeader
+                    unreadsOnTop={unreadsOnTop}
                 />
+                <SharedDataProvider
+                    isTablet={isTablet}
+                    unreadsOnTop={unreadsOnTop}
+                >
+                    <Categories
+                        isTablet={isTablet}
+                        headerButtons={headerButtons}
+                        unreadsOnTop={unreadsOnTop}
+                    />
+                </SharedDataProvider>
             </SafeAreaView>
         );
-    }, [hasChannels, headerButtons, isTablet, isTeamLoading, styles.flex]);
+    }, [hasChannels, headerButtons, isTablet, isTeamLoading, styles.flex, unreadsOnTop]);
 
     return (
         <Animated.View style={[styles.container, tabletStyle]}>

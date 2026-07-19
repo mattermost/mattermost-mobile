@@ -237,6 +237,10 @@ export const queryAllChannelsInfo = (database: Database) => {
     return database.get<ChannelInfoModel>(CHANNEL_INFO).query();
 };
 
+export const queryChannelsInfoById = (database: Database, channelIds: string[]) => {
+    return database.get<ChannelInfoModel>(CHANNEL_INFO).query(Q.where('id', Q.oneOf(channelIds)));
+};
+
 export const queryAllChannelsInfoForTeam = (database: Database, teamId: string) => {
     return database.get<ChannelInfoModel>(CHANNEL_INFO).query(
         Q.on(CHANNEL, Q.where('team_id', teamId)),
@@ -774,6 +778,9 @@ export const observeIsMutedSetting = (database: Database, channelId: string) => 
 
 export const observeChannelsByLastPostAt = (database: Database, myChannels: MyChannelModel[]) => {
     const ids = myChannels.map((c) => c.id);
+    if (!ids.length) {
+        return of$([]);
+    }
     const idsStr = `'${ids.join("','")}'`;
 
     return database.get<ChannelModel>(CHANNEL).query(

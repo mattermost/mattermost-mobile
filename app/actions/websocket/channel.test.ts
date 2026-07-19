@@ -18,6 +18,7 @@ import {getIsCRTEnabled} from '@queries/servers/thread';
 import {getCurrentUser, getTeammateNameDisplay, getUserById} from '@queries/servers/user';
 import ChannelsSyncStore from '@store/channels_sync_store';
 import EphemeralStore from '@store/ephemeral_store';
+import SyncBlobQueue from '@store/sync_blob_queue';
 
 import {handleChannelCreatedEvent, handleChannelUnarchiveEvent, handleChannelConvertedEvent, handleChannelUpdatedEvent, handleMultipleChannelsViewedEvent, handleChannelMemberUpdatedEvent, handleChannelDeletedEvent, handleDirectAddedEvent, handleUserAddedToChannelEvent, handleUserRemovedFromChannelEvent} from './channel';
 
@@ -27,6 +28,7 @@ import type ChannelModel from '@typings/database/models/servers/channel';
 jest.mock('@database/manager');
 jest.mock('@store/channels_sync_store');
 jest.mock('@store/ephemeral_store');
+jest.mock('@store/sync_blob_queue');
 jest.mock('@actions/local/category');
 jest.mock('@actions/remote/category');
 jest.mock('@actions/remote/channel');
@@ -202,6 +204,7 @@ describe('WebSocket Channel Actions', () => {
                 jest.mocked(EphemeralStore.getExperienceAPIEnabled).mockReturnValue(true);
                 jest.mocked(ChannelsSyncStore.hasChannelsBeenFetched).mockReturnValue(false);
                 jest.mocked(getIsCRTEnabled).mockResolvedValue(false);
+                jest.mocked(SyncBlobQueue.isSyncing).mockReturnValue(false);
             });
 
             it('increments with mention_count when CRT is off', async () => {
@@ -260,6 +263,24 @@ describe('WebSocket Channel Actions', () => {
 
                 expect(incrementTeamBlob).not.toHaveBeenCalled();
             });
+
+            it('queues the blob op instead of writing when a sync is in flight', async () => {
+                jest.mocked(SyncBlobQueue.isSyncing).mockReturnValue(true);
+
+                await handleChannelUnarchiveEvent(serverUrl, baseMsg({
+                    member_unreads_mentions: {mention_count: 2, mention_count_root: 1, is_unread: true, timestamp: 5000},
+                }));
+
+                expect(incrementTeamBlob).not.toHaveBeenCalled();
+                expect(SyncBlobQueue.queueBlobOp).toHaveBeenCalledWith(serverUrl, {
+                    op: 'increment',
+                    teamId,
+                    mentionDelta: 2,
+                    threadMentionDelta: 0,
+                    eventTimestamp: 5000,
+                });
+                jest.mocked(SyncBlobQueue.isSyncing).mockReturnValue(false);
+            });
         });
     });
 
@@ -291,6 +312,7 @@ describe('WebSocket Channel Actions', () => {
                 jest.mocked(EphemeralStore.getExperienceAPIEnabled).mockReturnValue(true);
                 jest.mocked(ChannelsSyncStore.hasChannelsBeenFetched).mockReturnValue(false);
                 jest.mocked(getIsCRTEnabled).mockResolvedValue(false);
+                jest.mocked(SyncBlobQueue.isSyncing).mockReturnValue(false);
             });
 
             it('migrates with mention_count when CRT is off', async () => {
@@ -339,6 +361,24 @@ describe('WebSocket Channel Actions', () => {
                 await handleChannelConvertedEvent(serverUrl, baseMsg({member_unreads_mentions: undefined}));
 
                 expect(migrateChannelFromDirectToTeamBlob).not.toHaveBeenCalled();
+            });
+
+            it('queues the blob op instead of writing when a sync is in flight', async () => {
+                jest.mocked(SyncBlobQueue.isSyncing).mockReturnValue(true);
+
+                await handleChannelConvertedEvent(serverUrl, baseMsg({
+                    member_unreads_mentions: {mention_count: 2, mention_count_root: 1, is_unread: true, timestamp: 5000},
+                }));
+
+                expect(migrateChannelFromDirectToTeamBlob).not.toHaveBeenCalled();
+                expect(SyncBlobQueue.queueBlobOp).toHaveBeenCalledWith(serverUrl, {
+                    op: 'migrateDirectToTeam',
+                    teamId,
+                    mentionCount: 2,
+                    hasUnreads: true,
+                    eventTimestamp: 5000,
+                });
+                jest.mocked(SyncBlobQueue.isSyncing).mockReturnValue(false);
             });
         });
     });
@@ -520,6 +560,33 @@ describe('WebSocket Channel Actions', () => {
             expect(decrementTeamBlob).not.toHaveBeenCalled();
             jest.mocked(EphemeralStore.getExperienceAPIEnabled).mockReturnValue(false);
         });
+
+        it('queues the blob op instead of writing when a sync is in flight', async () => {
+            jest.mocked(EphemeralStore.getExperienceAPIEnabled).mockReturnValue(true);
+            jest.mocked(SyncBlobQueue.isSyncing).mockReturnValue(true);
+            msg.data.channel_times = {channel_id_1: 123};
+            msg.data.cleared_mentions = {channel_id_1: 3};
+            msg.data.team_ids = {channel_id_1: 'team_a'};
+            msg.data.timestamp = 5000;
+            (DatabaseManager.getActiveServerUrl as jest.Mock).mockResolvedValue(serverUrl);
+            (getCurrentChannelId as jest.Mock).mockResolvedValue('different_channel_id');
+            (EphemeralStore.isSwitchingToChannel as jest.Mock).mockReturnValue(false);
+            (markChannelAsViewed as jest.Mock).mockResolvedValue({member: {}});
+            (ChannelsSyncStore.hasChannelsBeenFetched as jest.Mock).mockReturnValue(false);
+
+            await handleMultipleChannelsViewedEvent(serverUrl, msg);
+
+            expect(decrementTeamBlob).not.toHaveBeenCalled();
+            expect(SyncBlobQueue.queueBlobOp).toHaveBeenCalledWith(serverUrl, {
+                op: 'decrement',
+                teamId: 'team_a',
+                clearedMentions: 3,
+                clearedThreadMentions: 0,
+                eventTimestamp: 5000,
+            });
+            jest.mocked(EphemeralStore.getExperienceAPIEnabled).mockReturnValue(false);
+            jest.mocked(SyncBlobQueue.isSyncing).mockReturnValue(false);
+        });
     });
 
     describe('handleChannelMemberUpdatedEvent', () => {
@@ -561,6 +628,7 @@ describe('WebSocket Channel Actions', () => {
                 jest.mocked(EphemeralStore.getExperienceAPIEnabled).mockReturnValue(true);
                 jest.mocked(ChannelsSyncStore.hasChannelsBeenFetched).mockReturnValue(false);
                 jest.mocked(getIsCRTEnabled).mockResolvedValue(false);
+                jest.mocked(SyncBlobQueue.isSyncing).mockReturnValue(false);
             });
 
             it('decrements blob with mention_count on mute-on (CRT off)', async () => {
@@ -656,6 +724,24 @@ describe('WebSocket Channel Actions', () => {
 
                 expect(decrementTeamBlob).not.toHaveBeenCalled();
                 expect(incrementTeamBlob).not.toHaveBeenCalled();
+            });
+
+            it('queues the blob op instead of writing when a sync is in flight', async () => {
+                jest.mocked(SyncBlobQueue.isSyncing).mockReturnValue(true);
+
+                await handleChannelMemberUpdatedEvent(serverUrl, baseMsg({
+                    member_unreads_mentions: {mention_count: 2, mention_count_root: 1, is_unread: true, timestamp: 5000},
+                }));
+
+                expect(decrementTeamBlob).not.toHaveBeenCalled();
+                expect(SyncBlobQueue.queueBlobOp).toHaveBeenCalledWith(serverUrl, {
+                    op: 'decrement',
+                    teamId,
+                    clearedMentions: 2,
+                    clearedThreadMentions: 0,
+                    eventTimestamp: 5000,
+                });
+                jest.mocked(SyncBlobQueue.isSyncing).mockReturnValue(false);
             });
         });
     });
@@ -890,6 +976,7 @@ describe('WebSocket Channel Actions', () => {
                 jest.mocked(EphemeralStore.getExperienceAPIEnabled).mockReturnValue(true);
                 jest.mocked(ChannelsSyncStore.hasChannelsBeenFetched).mockReturnValue(false);
                 jest.mocked(getIsCRTEnabled).mockResolvedValue(false);
+                jest.mocked(SyncBlobQueue.isSyncing).mockReturnValue(false);
             });
 
             it('decrements with mention_count when CRT is off', async () => {
@@ -954,6 +1041,24 @@ describe('WebSocket Channel Actions', () => {
                 await handleUserRemovedFromChannelEvent(serverUrl, baseMsg());
 
                 expect(decrementTeamBlob).not.toHaveBeenCalled();
+            });
+
+            it('queues the blob op instead of writing when a sync is in flight', async () => {
+                jest.mocked(SyncBlobQueue.isSyncing).mockReturnValue(true);
+
+                await handleUserRemovedFromChannelEvent(serverUrl, baseMsg({
+                    member_unreads_mentions: {mention_count: 2, mention_count_root: 1, is_unread: true, timestamp: 5000},
+                }));
+
+                expect(decrementTeamBlob).not.toHaveBeenCalled();
+                expect(SyncBlobQueue.queueBlobOp).toHaveBeenCalledWith(serverUrl, {
+                    op: 'decrement',
+                    teamId,
+                    clearedMentions: 2,
+                    clearedThreadMentions: 0,
+                    eventTimestamp: 5000,
+                });
+                jest.mocked(SyncBlobQueue.isSyncing).mockReturnValue(false);
             });
         });
     });
@@ -1034,6 +1139,7 @@ describe('WebSocket Channel Actions', () => {
                 jest.mocked(EphemeralStore.getExperienceAPIEnabled).mockReturnValue(true);
                 jest.mocked(ChannelsSyncStore.hasChannelsBeenFetched).mockReturnValue(false);
                 jest.mocked(getIsCRTEnabled).mockResolvedValue(false);
+                jest.mocked(SyncBlobQueue.isSyncing).mockReturnValue(false);
             });
 
             it('decrements with mention_count when CRT is off', async () => {
@@ -1091,6 +1197,24 @@ describe('WebSocket Channel Actions', () => {
                 }));
 
                 expect(decrementTeamBlob).not.toHaveBeenCalled();
+            });
+
+            it('queues the blob op instead of writing when a sync is in flight', async () => {
+                jest.mocked(SyncBlobQueue.isSyncing).mockReturnValue(true);
+
+                await handleChannelDeletedEvent(serverUrl, baseMsg({
+                    member_unreads_mentions: {mention_count: 2, mention_count_root: 1, is_unread: true, timestamp: 5000},
+                }));
+
+                expect(decrementTeamBlob).not.toHaveBeenCalled();
+                expect(SyncBlobQueue.queueBlobOp).toHaveBeenCalledWith(serverUrl, {
+                    op: 'decrement',
+                    teamId,
+                    clearedMentions: 2,
+                    clearedThreadMentions: 0,
+                    eventTimestamp: 5000,
+                });
+                jest.mocked(SyncBlobQueue.isSyncing).mockReturnValue(false);
             });
         });
     });
