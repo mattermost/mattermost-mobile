@@ -31,6 +31,8 @@ import {
     removeLastViewedThreadIdAndServer,
     storePushDisabledInServerAcknowledged,
     removePushDisabledInServerAcknowledged,
+    storePushSigningKey,
+    removePushSigningKey,
     storeScheduledPostTutorial,
     storeScheduledPostsListTutorial,
 } from './global';
@@ -173,6 +175,20 @@ describe('/app/actions/app/global', () => {
         await removePushDisabledInServerAcknowledged(serverUrl);
         storedValue = await getPushDisabledInServerAcknowledged(serverUrl);
         expect(storedValue).toBe(false);
+    });
+
+    test('removePushSigningKey deletes the record instead of leaving an empty value behind', async () => {
+        await storePushSigningKey(serverUrl, 'signing-key-1');
+        let records = await queryGlobalValue(`pushSigningKey${serverUrl}`)?.fetch();
+        expect(records?.[0]?.value).toBe('signing-key-1');
+
+        await removePushSigningKey(serverUrl);
+        records = await queryGlobalValue(`pushSigningKey${serverUrl}`)?.fetch();
+        expect(records?.length).toBe(0);
+    });
+
+    test('removePushSigningKey does not throw when there is no cached key', async () => {
+        await expect(removePushSigningKey(serverUrl)).resolves.toMatchObject({});
     });
 
     test('storeGlobal catch error', async () => {

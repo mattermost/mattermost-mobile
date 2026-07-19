@@ -5,7 +5,7 @@ This document describes how to add and structure unit tests in the Mattermost Mo
 ## Where tests live
 
 - Tests are **co-located** with source files: `*.test.ts` or `*.test.tsx` next to the file under test (e.g. `channel.test.ts` beside `channel.ts`).
-- Screen entry points often have an `index.test.tsx` that tests the wrapper and passes through to the main screen component.
+- When a component is split into `index.tsx` (the `withDatabase`/`withObservables` wiring) and `{name}.tsx` (the component), test the **bare component**: name the test `{name}.test.tsx`, import `./{name}`, and pass the enhancer-injected props (e.g. `isMilitaryTime`) directly. Don't render-test the `index.tsx` wiring. Example: [date_time_selector.test.tsx](../app/components/date_time_selector/date_time_selector.test.tsx).
 - Reference: [app/products/playbooks](../app/products/playbooks) for the full pattern.
 
 ## What to test by layer

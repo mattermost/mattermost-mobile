@@ -13,14 +13,18 @@ import WebsocketManager from '@managers/websocket_manager';
 import {getServer, getServerDisplayName} from '@queries/app/servers';
 import {navigateToScreen} from '@screens/navigation';
 import {advanceTimers, disableFakeTimers, enableFakeTimers} from '@test/timer_helpers';
+import {deleteFileCache} from '@utils/file';
 
-import OfflinePersistenceManager from './index';
+import EphemeralModeManager from './index';
 
 import type ServersModel from '@typings/database/models/app/servers';
 
 jest.mock('@actions/local/ephemeral_mode/wipe', () => ({
     wipeServerDatabaseWithRetry: jest.fn().mockResolvedValue({success: true}),
     wipeServerFiles: jest.fn().mockReturnValue({success: true}),
+}));
+jest.mock('@utils/file', () => ({
+    deleteFileCache: jest.fn().mockReturnValue(true),
 }));
 jest.mock('@init/push_notifications', () => ({
     __esModule: true,
@@ -48,7 +52,7 @@ jest.mock('@screens/navigation', () => ({
 jest.mock('react-native/Libraries/AppState/AppState');
 jest.mock('@utils/log');
 
-describe('OfflinePersistenceManager', () => {
+describe('EphemeralModeManager', () => {
     const serverA = 'https://server-a.test';
     const serverB = 'https://server-b.test';
     const credsA = {serverUrl: serverA, token: 'token-a'} as ServerCredential;
@@ -172,22 +176,28 @@ describe('OfflinePersistenceManager', () => {
     });
 
     afterEach(async () => {
-        await OfflinePersistenceManager.init([]);
+        await EphemeralModeManager.init([]);
         await DatabaseManager.destroyServerDatabase(serverA).catch(() => undefined);
         await DatabaseManager.destroyServerDatabase(serverB).catch(() => undefined);
         disableFakeTimers();
         jest.clearAllMocks();
+
+        // Some tests override getServer with mockResolvedValue; restore the actual implementation
+        // so later tests that depend on the real DB query are not affected.
+        jest.mocked(getServer).mockImplementation(
+            jest.requireActual<typeof import('@queries/app/servers')>('@queries/app/servers').getServer,
+        );
     });
 
     it('initializing with ephemeral mode disabled skips subscriptions and clears any stale disconnected_since', async () => {
         await seedConfigAndRow(serverA, {enabled: false, timeoutSec: 10, disconnectedSince: Date.now() - 100});
 
-        await OfflinePersistenceManager.init([credsA]);
+        await EphemeralModeManager.init([credsA]);
         await advanceTimers(0);
 
         expect(WebsocketManager.observeWebsocketState).not.toHaveBeenCalled();
         expect(AppState.addEventListener).not.toHaveBeenCalled();
-        expect(OfflinePersistenceManager.isOffline(serverA)).toBe(false);
+        expect(EphemeralModeManager.isOffline(serverA)).toBe(false);
         expect(await getPersistedSince(serverA)).toBeUndefined();
     });
 
@@ -195,20 +205,20 @@ describe('OfflinePersistenceManager', () => {
         await seedConfigAndRow(serverA, {enabled: true, timeoutSec: 0});
         wsStates[serverA] = new BehaviorSubject<WebsocketConnectedState>('connected');
 
-        await OfflinePersistenceManager.init([credsA]);
+        await EphemeralModeManager.init([credsA]);
         await advanceTimers(0);
 
         setWs(serverA, 'not_connected');
         await advanceTimers(0);
 
-        expect(OfflinePersistenceManager.isOffline(serverA)).toBe(true);
+        expect(EphemeralModeManager.isOffline(serverA)).toBe(true);
     });
 
     it('disconnecting again after a brief reconnect restarts the timer from the new disconnect time', async () => {
         await seedConfigAndRow(serverA, {enabled: true, timeoutSec: 10});
         wsStates[serverA] = new BehaviorSubject<WebsocketConnectedState>('connected');
 
-        await OfflinePersistenceManager.init([credsA]);
+        await EphemeralModeManager.init([credsA]);
         await advanceTimers(0);
 
         setWs(serverA, 'not_connected');
@@ -220,7 +230,7 @@ describe('OfflinePersistenceManager', () => {
         setWs(serverA, 'connected');
         await advanceTimers(0);
         expect(await getPersistedSince(serverA)).toBeUndefined();
-        expect(OfflinePersistenceManager.isOffline(serverA)).toBe(false);
+        expect(EphemeralModeManager.isOffline(serverA)).toBe(false);
 
         setWs(serverA, 'not_connected');
         await advanceTimers(0);
@@ -228,16 +238,16 @@ describe('OfflinePersistenceManager', () => {
         expect(secondSince).toBeGreaterThan(firstSince!);
 
         await advanceTimers(9000);
-        expect(OfflinePersistenceManager.isOffline(serverA)).toBe(false);
+        expect(EphemeralModeManager.isOffline(serverA)).toBe(false);
         await advanceTimers(1000);
-        expect(OfflinePersistenceManager.isOffline(serverA)).toBe(true);
+        expect(EphemeralModeManager.isOffline(serverA)).toBe(true);
     });
 
     it('closing the websocket while backgrounded does not start a timer, and returning to foreground while still disconnected does', async () => {
         await seedConfigAndRow(serverA, {enabled: true, timeoutSec: 10});
         wsStates[serverA] = new BehaviorSubject<WebsocketConnectedState>('connected');
 
-        await OfflinePersistenceManager.init([credsA]);
+        await EphemeralModeManager.init([credsA]);
         await advanceTimers(0);
 
         setAppState('background');
@@ -246,7 +256,7 @@ describe('OfflinePersistenceManager', () => {
         setWs(serverA, 'not_connected');
         await advanceTimers(60_000);
         expect(await getPersistedSince(serverA)).toBeUndefined();
-        expect(OfflinePersistenceManager.isOffline(serverA)).toBe(false);
+        expect(EphemeralModeManager.isOffline(serverA)).toBe(false);
 
         setAppState('active');
         await advanceTimers(0);
@@ -257,33 +267,33 @@ describe('OfflinePersistenceManager', () => {
         const now = Date.now();
         await seedConfigAndRow(serverA, {enabled: true, timeoutSec: 10, disconnectedSince: now - 20_000});
 
-        await OfflinePersistenceManager.init([credsA]);
+        await EphemeralModeManager.init([credsA]);
         await advanceTimers(0);
 
-        expect(OfflinePersistenceManager.isOffline(serverA)).toBe(true);
+        expect(EphemeralModeManager.isOffline(serverA)).toBe(true);
     });
 
     it('resuming after app kill with elapsed time below threshold schedules the remaining time', async () => {
         const now = Date.now();
         await seedConfigAndRow(serverA, {enabled: true, timeoutSec: 10, disconnectedSince: now - 5000});
 
-        await OfflinePersistenceManager.init([credsA]);
+        await EphemeralModeManager.init([credsA]);
         await advanceTimers(0);
 
-        expect(OfflinePersistenceManager.isOffline(serverA)).toBe(false);
+        expect(EphemeralModeManager.isOffline(serverA)).toBe(false);
         await advanceTimers(5000);
-        expect(OfflinePersistenceManager.isOffline(serverA)).toBe(true);
+        expect(EphemeralModeManager.isOffline(serverA)).toBe(true);
     });
 
     it('initializing while already disconnected waits for a real transition before starting a timer', async () => {
         await seedConfigAndRow(serverA, {enabled: true, timeoutSec: 10});
         wsStates[serverA] = new BehaviorSubject<WebsocketConnectedState>('not_connected');
 
-        await OfflinePersistenceManager.init([credsA]);
+        await EphemeralModeManager.init([credsA]);
         await advanceTimers(0);
 
         expect(await getPersistedSince(serverA)).toBeUndefined();
-        expect(OfflinePersistenceManager.isOffline(serverA)).toBe(false);
+        expect(EphemeralModeManager.isOffline(serverA)).toBe(false);
 
         setWs(serverA, 'connected');
         await advanceTimers(0);
@@ -296,7 +306,7 @@ describe('OfflinePersistenceManager', () => {
         await seedConfigAndRow(serverA, {enabled: false, timeoutSec: 10});
         wsStates[serverA] = new BehaviorSubject<WebsocketConnectedState>('connected');
 
-        await OfflinePersistenceManager.init([credsA]);
+        await EphemeralModeManager.init([credsA]);
         await advanceTimers(0);
         expect(WebsocketManager.observeWebsocketState).not.toHaveBeenCalled();
 
@@ -312,17 +322,17 @@ describe('OfflinePersistenceManager', () => {
         await advanceTimers(0);
 
         expect(await getPersistedSince(serverA)).toBeUndefined();
-        expect(OfflinePersistenceManager.isOffline(serverA)).toBe(false);
+        expect(EphemeralModeManager.isOffline(serverA)).toBe(false);
 
         await advanceTimers(60_000);
-        expect(OfflinePersistenceManager.isOffline(serverA)).toBe(false);
+        expect(EphemeralModeManager.isOffline(serverA)).toBe(false);
     });
 
     it('changing the threshold while disconnected reschedules the timer against the persisted disconnect time', async () => {
         await seedConfigAndRow(serverA, {enabled: true, timeoutSec: 60});
         wsStates[serverA] = new BehaviorSubject<WebsocketConnectedState>('connected');
 
-        await OfflinePersistenceManager.init([credsA]);
+        await EphemeralModeManager.init([credsA]);
         await advanceTimers(0);
 
         setWs(serverA, 'not_connected');
@@ -334,11 +344,11 @@ describe('OfflinePersistenceManager', () => {
 
         // With old threshold would have fired at +30s; new total threshold is 120s
         await advanceTimers(30_000);
-        expect(OfflinePersistenceManager.isOffline(serverA)).toBe(false);
+        expect(EphemeralModeManager.isOffline(serverA)).toBe(false);
 
         // At a total of 120s elapsed, fires
         await advanceTimers(60_000);
-        expect(OfflinePersistenceManager.isOffline(serverA)).toBe(true);
+        expect(EphemeralModeManager.isOffline(serverA)).toBe(true);
     });
 
     it('disconnecting multiple servers only runs timers for those with ephemeral mode enabled', async () => {
@@ -347,7 +357,7 @@ describe('OfflinePersistenceManager', () => {
         wsStates[serverA] = new BehaviorSubject<WebsocketConnectedState>('connected');
         wsStates[serverB] = new BehaviorSubject<WebsocketConnectedState>('connected');
 
-        await OfflinePersistenceManager.init([credsA, credsB]);
+        await EphemeralModeManager.init([credsA, credsB]);
         await advanceTimers(0);
 
         setWs(serverA, 'not_connected');
@@ -358,8 +368,8 @@ describe('OfflinePersistenceManager', () => {
         expect(await getPersistedSince(serverB)).toBeUndefined();
 
         await advanceTimers(10_000);
-        expect(OfflinePersistenceManager.isOffline(serverA)).toBe(true);
-        expect(OfflinePersistenceManager.isOffline(serverB)).toBe(false);
+        expect(EphemeralModeManager.isOffline(serverA)).toBe(true);
+        expect(EphemeralModeManager.isOffline(serverB)).toBe(false);
     });
 
     it('installs the AppState listener once when the first server activates and removes it when the last one deactivates', async () => {
@@ -368,7 +378,7 @@ describe('OfflinePersistenceManager', () => {
         wsStates[serverA] = new BehaviorSubject<WebsocketConnectedState>('connected');
         wsStates[serverB] = new BehaviorSubject<WebsocketConnectedState>('connected');
 
-        await OfflinePersistenceManager.init([credsA, credsB]);
+        await EphemeralModeManager.init([credsA, credsB]);
         await advanceTimers(0);
         expect(AppState.addEventListener).not.toHaveBeenCalled();
 
@@ -393,20 +403,20 @@ describe('OfflinePersistenceManager', () => {
         await seedConfigAndRow(serverA, {enabled: true, timeoutSec: 10});
         wsStates[serverA] = new BehaviorSubject<WebsocketConnectedState>('connected');
 
-        await OfflinePersistenceManager.init([credsA]);
+        await EphemeralModeManager.init([credsA]);
         await advanceTimers(0);
 
         setWs(serverA, 'not_connected');
         await advanceTimers(0);
 
-        OfflinePersistenceManager.removeServer(serverA);
+        EphemeralModeManager.removeServer(serverA);
         await advanceTimers(0);
 
         setWs(serverA, 'connected');
         setWs(serverA, 'not_connected');
         await advanceTimers(20_000);
 
-        expect(OfflinePersistenceManager.isOffline(serverA)).toBe(false);
+        expect(EphemeralModeManager.isOffline(serverA)).toBe(false);
     });
 
     describe('purge timer', () => {
@@ -416,16 +426,16 @@ describe('OfflinePersistenceManager', () => {
             await seedConfigAndRow(serverA, {enabled: true, timeoutSec: 10, purgeHours: 1});
             wsStates[serverA] = new BehaviorSubject<WebsocketConnectedState>('connected');
 
-            await OfflinePersistenceManager.init([credsA]);
+            await EphemeralModeManager.init([credsA]);
             await advanceTimers(0);
 
             setWs(serverA, 'not_connected');
             await advanceTimers(0);
-            expect(OfflinePersistenceManager.isOffline(serverA)).toBe(false);
+            expect(EphemeralModeManager.isOffline(serverA)).toBe(false);
 
             await advanceTimers(10_000);
 
-            expect(OfflinePersistenceManager.isOffline(serverA)).toBe(true);
+            expect(EphemeralModeManager.isOffline(serverA)).toBe(true);
             expect(await getPersistedOfflineSince(serverA)).toBeDefined();
             expect(wipeServerDatabaseWithRetry).not.toHaveBeenCalled();
         });
@@ -434,7 +444,7 @@ describe('OfflinePersistenceManager', () => {
             await seedConfigAndRow(serverA, {enabled: true, timeoutSec: 10, purgeHours: 1});
             wsStates[serverA] = new BehaviorSubject<WebsocketConnectedState>('connected');
 
-            await OfflinePersistenceManager.init([credsA]);
+            await EphemeralModeManager.init([credsA]);
             await advanceTimers(0);
 
             setWs(serverA, 'not_connected');
@@ -453,7 +463,7 @@ describe('OfflinePersistenceManager', () => {
             await seedConfigAndRow(serverA, {enabled: true, timeoutSec: 10, purgeHours: 0});
             wsStates[serverA] = new BehaviorSubject<WebsocketConnectedState>('connected');
 
-            await OfflinePersistenceManager.init([credsA]);
+            await EphemeralModeManager.init([credsA]);
             await advanceTimers(0);
 
             setWs(serverA, 'not_connected');
@@ -467,7 +477,7 @@ describe('OfflinePersistenceManager', () => {
             await seedConfigAndRow(serverA, {enabled: true, timeoutSec: 10, purgeHours: 1});
             wsStates[serverA] = new BehaviorSubject<WebsocketConnectedState>('connected');
 
-            await OfflinePersistenceManager.init([credsA]);
+            await EphemeralModeManager.init([credsA]);
             await advanceTimers(0);
 
             setWs(serverA, 'not_connected');
@@ -498,7 +508,7 @@ describe('OfflinePersistenceManager', () => {
             });
             wsStates[serverA] = new BehaviorSubject<WebsocketConnectedState>('not_connected');
 
-            await OfflinePersistenceManager.init([credsA]);
+            await EphemeralModeManager.init([credsA]);
             await advanceTimers(0);
 
             const offlineSinceBefore = await getPersistedOfflineSince(serverA);
@@ -518,7 +528,7 @@ describe('OfflinePersistenceManager', () => {
             await seedConfigAndRow(serverA, {enabled: true, timeoutSec: 10, purgeHours: 24});
             wsStates[serverA] = new BehaviorSubject<WebsocketConnectedState>('connected');
 
-            await OfflinePersistenceManager.init([credsA]);
+            await EphemeralModeManager.init([credsA]);
             await advanceTimers(0);
 
             setWs(serverA, 'not_connected');
@@ -540,7 +550,7 @@ describe('OfflinePersistenceManager', () => {
             await seedConfigAndRow(serverA, {enabled: true, timeoutSec: 10, purgeHours: 1});
             wsStates[serverA] = new BehaviorSubject<WebsocketConnectedState>('connected');
 
-            await OfflinePersistenceManager.init([credsA]);
+            await EphemeralModeManager.init([credsA]);
             await advanceTimers(0);
 
             setWs(serverA, 'not_connected');
@@ -569,7 +579,7 @@ describe('OfflinePersistenceManager', () => {
             await seedConfigAndRow(serverA, {enabled: true, timeoutSec: 10, purgeHours: 1});
             wsStates[serverA] = new BehaviorSubject<WebsocketConnectedState>('connected');
 
-            await OfflinePersistenceManager.init([credsA]);
+            await EphemeralModeManager.init([credsA]);
             await advanceTimers(0);
 
             setWs(serverA, 'not_connected');
@@ -673,7 +683,7 @@ describe('OfflinePersistenceManager', () => {
                 return {url, persistenceFlag: ''} as ServersModel;
             });
 
-            await OfflinePersistenceManager.init([credsA, credsB]);
+            await EphemeralModeManager.init([credsA, credsB]);
 
             expect(wipeServerDatabaseWithRetry).toHaveBeenCalledWith(serverA);
             expect(wipeServerDatabaseWithRetry).toHaveBeenCalledTimes(1);
@@ -684,10 +694,99 @@ describe('OfflinePersistenceManager', () => {
         it('does not re-wipe servers whose row has an empty persistenceFlag', async () => {
             jest.mocked(getServer).mockResolvedValue({url: serverA, persistenceFlag: ''} as ServersModel);
 
-            await OfflinePersistenceManager.init([credsA]);
+            await EphemeralModeManager.init([credsA]);
 
             expect(wipeServerDatabaseWithRetry).not.toHaveBeenCalled();
             expect(wipeServerFiles).not.toHaveBeenCalled();
+        });
+    });
+
+    describe('zero persistence mode guard', () => {
+        it('addServer skips OPM subscription for a ZPM server even when ephemeral mode config is enabled', async () => {
+            await DatabaseManager.updatePersistenceFlag(serverA, 'zero-persistence');
+            await seedConfigAndRow(serverA, {enabled: false, timeoutSec: 10});
+
+            await EphemeralModeManager.init([credsA]);
+            await advanceTimers(0);
+
+            // Enabling MEM would normally activate OPM, but ZPM guard must prevent it
+            await updateConfig(serverA, {enabled: true});
+            await advanceTimers(0);
+
+            expect(WebsocketManager.observeWebsocketState).not.toHaveBeenCalledWith(serverA);
+        });
+
+        it('addServer still activates OPM for non-ZPM servers when ephemeral mode config is enabled', async () => {
+            await seedConfigAndRow(serverA, {enabled: false, timeoutSec: 10});
+
+            await EphemeralModeManager.init([credsA]);
+            await advanceTimers(0);
+
+            await updateConfig(serverA, {enabled: true});
+            await advanceTimers(0);
+
+            expect(WebsocketManager.observeWebsocketState).toHaveBeenCalledWith(serverA);
+        });
+
+        it('addServer skips re-initializing a server that is already tracked', async () => {
+            await DatabaseManager.updatePersistenceFlag(serverA, 'zero-persistence');
+
+            await EphemeralModeManager.addServer(serverA);
+            await advanceTimers(0);
+            expect(deleteFileCache).toHaveBeenCalledTimes(1);
+
+            await EphemeralModeManager.addServer(serverA);
+            await advanceTimers(0);
+
+            expect(deleteFileCache).toHaveBeenCalledTimes(1);
+        });
+
+        it('wipes server files (including shared caches) on background for ZPM servers', async () => {
+            await DatabaseManager.updatePersistenceFlag(serverA, 'zero-persistence');
+
+            await EphemeralModeManager.init([credsA, credsB]);
+            await advanceTimers(0);
+            jest.mocked(wipeServerFiles).mockClear();
+
+            setAppState('background');
+            await advanceTimers(0);
+
+            expect(wipeServerFiles).toHaveBeenCalledWith(serverA);
+            expect(wipeServerFiles).toHaveBeenCalledTimes(1);
+        });
+
+        it('does not wipe server files on foreground transitions', async () => {
+            await DatabaseManager.updatePersistenceFlag(serverA, 'zero-persistence');
+
+            await EphemeralModeManager.init([credsA]);
+            await advanceTimers(0);
+            jest.mocked(wipeServerFiles).mockClear();
+
+            setAppState('active');
+            await advanceTimers(0);
+
+            expect(wipeServerFiles).not.toHaveBeenCalled();
+        });
+
+        it('installs the AppState listener for a ZPM server even when no MEM-active server exists', async () => {
+            await DatabaseManager.updatePersistenceFlag(serverA, 'zero-persistence');
+
+            await EphemeralModeManager.init([credsA]);
+            await advanceTimers(0);
+
+            expect(AppState.addEventListener).toHaveBeenCalledTimes(1);
+        });
+
+        it('removes the AppState listener once the last ZPM server is removed', async () => {
+            await DatabaseManager.updatePersistenceFlag(serverA, 'zero-persistence');
+
+            await EphemeralModeManager.init([credsA]);
+            await advanceTimers(0);
+            expect(AppState.addEventListener).toHaveBeenCalledTimes(1);
+
+            EphemeralModeManager.removeServer(serverA);
+
+            expect(appStateRemoveSpies[0]).toHaveBeenCalled();
         });
     });
 });

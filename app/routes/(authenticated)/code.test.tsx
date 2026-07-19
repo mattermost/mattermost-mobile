@@ -33,7 +33,8 @@ jest.mock('react-syntax-highlighter/create-element', () => ({
 }));
 
 // Mock expo-router with just the exports the route + screen use, so each test
-// can feed the route its params via useLocalSearchParams.
+// can feed the route its params via useLocalSearchParams. Values match what
+// propsToParams produces in production: JSON-encoded strings.
 const mockUseLocalSearchParams = jest.fn();
 jest.mock('expo-router', () => ({
     useLocalSearchParams: () => mockUseLocalSearchParams(),
@@ -52,10 +53,10 @@ describe('CodeRoute (MM-69330)', () => {
     });
 
     // Regression: tapping a code block whose text happens to be valid JSON
-    // (e.g. "42", "{...}", "true") crashed the app. `usePropsFromParams` ran
-    // `safeParseJSON` over every param, so `code` was parsed from a string into
-    // a number/object/boolean. `Highlighter` then called `code.split('\n')` on a
-    // non-string value, throwing "code.split is not a function".
+    // (e.g. "42", "{...}", "true") used to crash the Highlighter because
+    // `safeParseJSON` coerced the string into a number/object/boolean.
+    // Now that propsToParams always JSON-encodes on the send side, decoding
+    // '"42"' with safeParseJSON produces the string '42', preserving type.
     it.each([
         ['a bare number', '42'],
         ['a JSON object', '{"hello": "world"}'],
@@ -63,10 +64,10 @@ describe('CodeRoute (MM-69330)', () => {
         ['a boolean literal', 'true'],
     ])('renders without crashing when the code block content is %s', (_label, code) => {
         mockUseLocalSearchParams.mockReturnValue({
-            code,
-            language: 'json',
-            textStyle: '{}',
-            title: 'Code',
+            code: JSON.stringify(code),
+            language: JSON.stringify('json'),
+            textStyle: JSON.stringify({}),
+            title: JSON.stringify('Code'),
         });
 
         const {getByText} = renderWithIntlAndTheme(<CodeRoute/>);
@@ -78,10 +79,10 @@ describe('CodeRoute (MM-69330)', () => {
     it('renders plain (non-JSON) code without crashing', () => {
         const code = 'const greeting = "hello";';
         mockUseLocalSearchParams.mockReturnValue({
-            code,
-            language: 'javascript',
-            textStyle: '{}',
-            title: 'Code',
+            code: JSON.stringify(code),
+            language: JSON.stringify('javascript'),
+            textStyle: JSON.stringify({}),
+            title: JSON.stringify('Code'),
         });
 
         const {getByText} = renderWithIntlAndTheme(<CodeRoute/>);
