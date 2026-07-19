@@ -22,7 +22,6 @@ export default defineConfig([
     "ios/",
     ".github/",
     "detox/artifacts/",
-    "artifacts/",
   ]),
   eslintMattermost,
   jestConfig,
