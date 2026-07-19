@@ -84,7 +84,6 @@ export default function ChannelDropdown({
     return (
         <View testID='browse_channels.channel_dropdown'>
             <Text
-                key={typeOfChannels}
                 accessibilityRole={'button'}
                 style={style.channelDropdown}
                 onPress={handleDropdownClick}

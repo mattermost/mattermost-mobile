@@ -132,7 +132,6 @@ export default function ChannelList({
             contentContainerStyle={style.listContainer}
             ItemSeparatorComponent={renderSeparator}
             keyExtractor={channelKeyExtractor}
-            removeClippedSubviews={false}
         />
     );
 }

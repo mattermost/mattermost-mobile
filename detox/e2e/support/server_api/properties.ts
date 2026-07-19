@@ -5,6 +5,7 @@ import {getRandomId} from '@support/utils';
 
 import client from './client';
 import {getResponseFromError} from './common';
+import User from './user';
 
 const GROUP_NAME = 'access_control';
 const OBJECT_TYPE = 'template';
@@ -13,6 +14,10 @@ const FIELD_NAME = 'classification';
 const LINKED_FIELD_NAME = 'classification';
 const LINKED_OBJECT_TYPE = 'system';
 const DISPLAY_BANNER_TOP = 'display_banner_top';
+
+// Match webapp classification_markings utils + Playwright helpers:
+// permission level "admin" (not "sysadmin"), no CPA "managed" attr.
+const ADMIN_PERMISSION = 'admin';
 
 // Server IsValidId requires exactly 26 alphanumeric characters (model.IsValidId).
 const VALID_ID_LENGTH = 26;
@@ -159,20 +164,27 @@ export const apiSetupClassificationWithBanner = async (
     const levels = options?.levels ?? defaultClassificationLevels();
     const levelName = options?.levelName ?? DEFAULT_LEVEL_NAMES.topSecret;
 
+    // Shared axios cookie jar can be left on a non-admin session by earlier tests.
+    const {error: adminLoginError} = await User.apiAdminLogin(baseUrl);
+    if (adminLoginError) {
+        throw new Error(`apiSetupClassificationWithBanner: admin login failed: ${JSON.stringify(adminLoginError)}`);
+    }
+
     await apiCleanupClassification(baseUrl);
 
+    // type/options/permissions match webapp saveCreateField (rank + admin).
+    // Server copies type+options onto the linked system field at create time.
     const templateResult = await apiCreatePropertyField(baseUrl, GROUP_NAME, OBJECT_TYPE, {
         name: FIELD_NAME,
-        type: 'select',
+        type: 'rank',
         target_type: TARGET_TYPE,
         target_id: '',
         attrs: {
             options: levels.map((l) => ({id: l.id, name: l.name, color: l.color, rank: l.rank})),
-            managed: 'admin',
         },
-        permission_field: 'sysadmin',
-        permission_values: 'sysadmin',
-        permission_options: 'sysadmin',
+        permission_field: ADMIN_PERMISSION,
+        permission_values: ADMIN_PERMISSION,
+        permission_options: ADMIN_PERMISSION,
     });
 
     const templateResult_ = templateResult as {field?: any; error?: unknown};
@@ -190,9 +202,10 @@ export const apiSetupClassificationWithBanner = async (
 
     const optionIdsByName = Object.fromEntries(templateOptions.map((o) => [o.name, o.id]));
 
+    // type/options/permissions are inherited from the template by the server.
     const linkedResult = await apiCreatePropertyField(baseUrl, GROUP_NAME, LINKED_OBJECT_TYPE, {
         name: LINKED_FIELD_NAME,
-        type: 'select',
+        type: 'rank',
         target_type: TARGET_TYPE,
         target_id: '',
         linked_field_id: templateField.id,
@@ -215,6 +228,27 @@ export const apiSetupClassificationWithBanner = async (
         throw new Error(`Failed to set system property value for field_id=${linkedField.id}, value=${selectedOption.id}: ${JSON.stringify(patchResult.error)}`);
     }
 
+    // Fail loud if the same list endpoint the mobile app uses cannot see the field.
+    // Device logs for MM-T_CB_* show: fetchClassificationBanner → "No classification fields returned".
+    const verify = await apiGetPropertyFields(baseUrl, GROUP_NAME, LINKED_OBJECT_TYPE, TARGET_TYPE, '') as {fields?: any[]; error?: unknown};
+    const visibleLinked = (verify.fields ?? []).filter(
+        (f) => f.name === LINKED_FIELD_NAME && f.delete_at === 0 && f.linked_field_id && f.id === linkedField.id,
+    );
+    if (visibleLinked.length === 0) {
+        throw new Error(
+            `apiSetupClassificationWithBanner: linked system field ${linkedField.id} not returned by GET ` +
+            `/properties/groups/${GROUP_NAME}/${LINKED_OBJECT_TYPE}/fields?target_type=${TARGET_TYPE}. ` +
+            `Response: ${JSON.stringify(verify)}`,
+        );
+    }
+    const options = (visibleLinked[0].attrs?.options as PropertyFieldOption[] | undefined) ?? [];
+    if (!options.some((o) => o.id === selectedOption.id)) {
+        throw new Error(
+            `apiSetupClassificationWithBanner: linked field missing selected option ${selectedOption.id}. ` +
+            `options=${JSON.stringify(options)}`,
+        );
+    }
+
     return {
         templateFieldId: templateField.id,
         linkedFieldId: linkedField.id,
@@ -227,12 +261,21 @@ export const apiSetupClassificationWithBanner = async (
  * Clean up classification property fields and values.
  */
 export const apiCleanupClassification = async (baseUrl: string) => {
-    const linkedFieldsResult = await apiGetPropertyFields(baseUrl, GROUP_NAME, LINKED_OBJECT_TYPE, TARGET_TYPE) as {fields?: any[]};
-    if (linkedFieldsResult.fields) {
-        for (const field of linkedFieldsResult.fields) {
+    const {error: adminLoginError} = await User.apiAdminLogin(baseUrl);
+    if (adminLoginError) {
+        throw new Error(`apiCleanupClassification: admin login failed: ${JSON.stringify(adminLoginError)}`);
+    }
+
+    // Channel linked fields first (channel classification tests), then system, then template.
+    for (const objectType of ['channel', LINKED_OBJECT_TYPE, 'user'] as const) {
+        const fieldsResult = await apiGetPropertyFields(baseUrl, GROUP_NAME, objectType, TARGET_TYPE) as {fields?: any[]};
+        if (!fieldsResult.fields) {
+            continue;
+        }
+        for (const field of fieldsResult.fields) {
             if (field.name === LINKED_FIELD_NAME && field.delete_at === 0) {
                 // eslint-disable-next-line no-await-in-loop
-                await apiDeletePropertyField(baseUrl, GROUP_NAME, LINKED_OBJECT_TYPE, field.id);
+                await apiDeletePropertyField(baseUrl, GROUP_NAME, objectType, field.id);
             }
         }
     }

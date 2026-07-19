@@ -38,7 +38,7 @@ export async function handlePreferenceChangedEvent(serverUrl: string, msg: WebSo
             return;
         }
 
-        await handleSavePostAdded(serverUrl, preferences);
+        handleSavePostAdded(serverUrl, preferences);
 
         const hasDiffNameFormatPref = await differsFromLocalNameFormat(database, preferences);
         const crtToggled = await getHasCRTChanged(database, preferences);
@@ -78,7 +78,7 @@ export async function handlePreferencesChangedEvent(serverUrl: string, msg: WebS
             return;
         }
 
-        await handleSavePostAdded(serverUrl, preferences);
+        handleSavePostAdded(serverUrl, preferences);
 
         const hasDiffNameFormatPref = await differsFromLocalNameFormat(database, preferences);
         const crtToggled = await getHasCRTChanged(database, preferences);
