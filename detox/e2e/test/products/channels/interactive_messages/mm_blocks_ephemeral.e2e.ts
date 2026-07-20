@@ -33,7 +33,7 @@ describe('Interactive mm_blocks (ephemeral post)', () => {
         await HomeScreen.logout();
     });
 
-    it('MM-TBD should render mm_blocks in an ephemeral post created via API', async () => {
+    it('MM-T6230 should render mm_blocks in an ephemeral post created via API', async () => {
         const marker = MmBlocksTestHelper.randomMarker('E2E mm_blocks ephemeral');
         const secondLine = 'Second line after divider.';
 
@@ -55,7 +55,7 @@ describe('Interactive mm_blocks (ephemeral post)', () => {
         await expect(element(by.text(secondLine))).toExist();
     });
 
-    it('MM-TBD should show integration ephemeral after mm_blocks button in thread', async () => {
+    it('MM-T6231 should show integration ephemeral after mm_blocks button in thread', async () => {
         const webhookReachable = await MmBlocksTestHelper.isWebhookSidecarReachable();
         if (!webhookReachable) {
             // eslint-disable-next-line no-console
@@ -107,7 +107,7 @@ describe('Interactive mm_blocks (ephemeral post)', () => {
         await ThreadScreen.back();
     });
 
-    it('MM-TBD should apply integration update to ephemeral mm_blocks post in thread', async () => {
+    it('MM-T6232 should apply integration update to ephemeral mm_blocks post in thread', async () => {
         const webhookReachable = await MmBlocksTestHelper.isWebhookSidecarReachable();
         if (!webhookReachable) {
             // eslint-disable-next-line no-console
@@ -158,7 +158,7 @@ describe('Interactive mm_blocks (ephemeral post)', () => {
         await ThreadScreen.back();
     });
 
-    it('MM-TBD should keep username override after integration update in thread', async () => {
+    it('MM-T6233 should keep username override after integration update in thread', async () => {
         const webhookReachable = await MmBlocksTestHelper.isWebhookSidecarReachable();
         if (!webhookReachable) {
             // eslint-disable-next-line no-console
@@ -218,7 +218,7 @@ describe('Interactive mm_blocks (ephemeral post)', () => {
         await ThreadScreen.back();
     });
 
-    it('MM-TBD should merge mm_blocks_actions query with block query on integration URL', async () => {
+    it('MM-T6234 should merge mm_blocks_actions query with block query on integration URL', async () => {
         const webhookReachable = await MmBlocksTestHelper.isWebhookSidecarReachable();
         if (!webhookReachable) {
             // eslint-disable-next-line no-console
@@ -272,7 +272,7 @@ describe('Interactive mm_blocks (ephemeral post)', () => {
         await ThreadScreen.back();
     });
 
-    it('MM-TBD should let block query override duplicate mm_blocks_actions query keys', async () => {
+    it('MM-T6235 should let block query override duplicate mm_blocks_actions query keys', async () => {
         const webhookReachable = await MmBlocksTestHelper.isWebhookSidecarReachable();
         if (!webhookReachable) {
             // eslint-disable-next-line no-console
@@ -325,7 +325,7 @@ describe('Interactive mm_blocks (ephemeral post)', () => {
         await ThreadScreen.back();
     });
 
-    it('MM-TBD should merge static_select action and element query on integration URL', async () => {
+    it('MM-T6236 should merge static_select action and element query on integration URL', async () => {
         const webhookReachable = await MmBlocksTestHelper.isWebhookSidecarReachable();
         if (!webhookReachable) {
             // eslint-disable-next-line no-console
@@ -383,7 +383,7 @@ describe('Interactive mm_blocks (ephemeral post)', () => {
         await ThreadScreen.back();
     });
 
-    it('MM-TBD should send selected user id from static_select data_source users', async () => {
+    it('MM-T6237 should send selected user id from static_select data_source users', async () => {
         const webhookReachable = await MmBlocksTestHelper.isWebhookSidecarReachable();
         if (!webhookReachable) {
             // eslint-disable-next-line no-console
@@ -436,7 +436,7 @@ describe('Interactive mm_blocks (ephemeral post)', () => {
         await ThreadScreen.back();
     });
 
-    it('MM-TBD should send selected channel id from static_select data_source channels', async () => {
+    it('MM-T6238 should send selected channel id from static_select data_source channels', async () => {
         const webhookReachable = await MmBlocksTestHelper.isWebhookSidecarReachable();
         if (!webhookReachable) {
             // eslint-disable-next-line no-console
@@ -489,7 +489,7 @@ describe('Interactive mm_blocks (ephemeral post)', () => {
         await ThreadScreen.back();
     });
 
-    it('MM-TBD should send mm_blocks_actions context to integration', async () => {
+    it('MM-T6239 should send mm_blocks_actions context to integration', async () => {
         const webhookReachable = await MmBlocksTestHelper.isWebhookSidecarReachable();
         if (!webhookReachable) {
             // eslint-disable-next-line no-console
@@ -542,7 +542,7 @@ describe('Interactive mm_blocks (ephemeral post)', () => {
         await ThreadScreen.back();
     });
 
-    it('MM-TBD should navigate via openURL action from ephemeral mm_blocks button', async () => {
+    it('MM-T6240 should navigate via openURL action from ephemeral mm_blocks button', async () => {
         const anchorMarker = MmBlocksTestHelper.randomMarker('E2E mm_blocks eph openurl anchor');
         const ephemeralMarker = MmBlocksTestHelper.randomMarker('E2E mm_blocks eph openurl');
 

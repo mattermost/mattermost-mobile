@@ -35,7 +35,7 @@ function getStepStateSummary(steps = []) {
 
 function getTM4JTestCases(allTests) {
     return allTests.tests.
-        filter((item) => /(MM-T)\w+/g.test(item.name)). // eslint-disable-line wrap-regex
+        filter((item) => /MM-T\d+/.test(item.name)).
         map((item) => {
             return {
                 title: item.name,

@@ -35,7 +35,7 @@ describe('Interactive mm_blocks (incoming webhook)', () => {
         await HomeScreen.logout();
     });
 
-    it('MM-TBD should render native mm_blocks payload from an incoming webhook', async () => {
+    it('MM-T6214 should render native mm_blocks payload from an incoming webhook', async () => {
         const secondLine = 'Second line after divider.';
 
         await MmBlocksTestHelper.postIncomingWebhookBlocks(testChannel.id, 'Detox mm_blocks render', {
@@ -52,7 +52,7 @@ describe('Interactive mm_blocks (incoming webhook)', () => {
         await MmBlocksTestHelper.waitForPostText(secondLine);
     });
 
-    it('MM-TBD should show disabled mm_blocks button without firing integration', async () => {
+    it('MM-T6215 should show disabled mm_blocks button without firing integration', async () => {
         const marker = MmBlocksTestHelper.randomMarker('E2E mm_blocks disabled');
 
         await MmBlocksTestHelper.postIncomingWebhookBlocks(testChannel.id, 'Detox mm_blocks disabled', {
@@ -75,7 +75,7 @@ describe('Interactive mm_blocks (incoming webhook)', () => {
         await expect(element(by.id('mm_blocks.button.detox_mm_blocks_disabled_inert'))).toExist();
     });
 
-    it('MM-TBD should omit malformed mm_blocks and render valid entries', async () => {
+    it('MM-T6216 should omit malformed mm_blocks and render valid entries', async () => {
         const id = getRandomId();
         const marker = `E2E mm_blocks malformed ${id}`;
         const goodA = `MM_OK_A_${id}`;
@@ -125,7 +125,7 @@ describe('Interactive mm_blocks (incoming webhook)', () => {
         await expect(element(by.text('missing action_id'))).not.toExist();
     });
 
-    it('MM-TBD should reach webhook sidecar and show integration ephemeral in thread', async () => {
+    it('MM-T6217 should reach webhook sidecar and show integration ephemeral in thread', async () => {
         if (!(await MmBlocksTestHelper.isWebhookSidecarReachableOrSkip())) {
             return;
         }
@@ -161,7 +161,7 @@ describe('Interactive mm_blocks (incoming webhook)', () => {
         await ThreadScreen.back();
     });
 
-    it('MM-TBD should apply integration update on webhook post', async () => {
+    it('MM-T6218 should apply integration update on webhook post', async () => {
         if (!(await MmBlocksTestHelper.isWebhookSidecarReachableOrSkip())) {
             return;
         }
@@ -194,7 +194,7 @@ describe('Interactive mm_blocks (incoming webhook)', () => {
         await MmBlocksTestHelper.waitForTextInChannelPost(updatePost.id, 'DETOX_MM_BLOCKS_UPDATED');
     });
 
-    it('MM-TBD should keep webhook username override after integration update', async () => {
+    it('MM-T6219 should keep webhook username override after integration update', async () => {
         if (!(await MmBlocksTestHelper.isWebhookSidecarReachableOrSkip())) {
             return;
         }
@@ -238,7 +238,7 @@ describe('Interactive mm_blocks (incoming webhook)', () => {
         await MmBlocksTestHelper.expectChannelPostAuthorName(overrideAuthorName, overridePost.id);
     });
 
-    it('MM-TBD should send selected_option from static_select to integration', async () => {
+    it('MM-T6220 should send selected_option from static_select to integration', async () => {
         if (!(await MmBlocksTestHelper.isWebhookSidecarReachableOrSkip())) {
             return;
         }
@@ -278,7 +278,7 @@ describe('Interactive mm_blocks (incoming webhook)', () => {
         await ThreadScreen.back();
     });
 
-    it('MM-TBD should send selected user id from static_select data_source users', async () => {
+    it('MM-T6221 should send selected user id from static_select data_source users', async () => {
         if (!(await MmBlocksTestHelper.isWebhookSidecarReachableOrSkip())) {
             return;
         }
@@ -315,7 +315,7 @@ describe('Interactive mm_blocks (incoming webhook)', () => {
         await ThreadScreen.back();
     });
 
-    it('MM-TBD should send selected channel id from static_select data_source channels', async () => {
+    it('MM-T6222 should send selected channel id from static_select data_source channels', async () => {
         if (!(await MmBlocksTestHelper.isWebhookSidecarReachableOrSkip())) {
             return;
         }
@@ -352,7 +352,7 @@ describe('Interactive mm_blocks (incoming webhook)', () => {
         await ThreadScreen.back();
     });
 
-    it('MM-TBD should send mm_blocks_actions context to integration', async () => {
+    it('MM-T6223 should send mm_blocks_actions context to integration', async () => {
         if (!(await MmBlocksTestHelper.isWebhookSidecarReachableOrSkip())) {
             return;
         }
@@ -393,7 +393,7 @@ describe('Interactive mm_blocks (incoming webhook)', () => {
         await ThreadScreen.back();
     });
 
-    it('MM-TBD should navigate via openURL action from mm_blocks button', async () => {
+    it('MM-T6224 should navigate via openURL action from mm_blocks button', async () => {
         const marker = MmBlocksTestHelper.randomMarker('E2E mm_blocks openURL');
         const {channel: targetChannel} = await Channel.apiCreateChannel(siteOneUrl, {teamId: testTeam.id});
         await Channel.apiAddUserToChannel(siteOneUrl, testUser.id, targetChannel.id);
@@ -427,7 +427,7 @@ describe('Interactive mm_blocks (incoming webhook)', () => {
         await ChannelScreen.open(MmBlocksTestHelper.CHANNELS_CATEGORY, testChannel.name);
     });
 
-    it('MM-TBD should merge mm_blocks_actions query with block query on integration URL', async () => {
+    it('MM-T6225 should merge mm_blocks_actions query with block query on integration URL', async () => {
         if (!(await MmBlocksTestHelper.isWebhookSidecarReachableOrSkip())) {
             return;
         }
@@ -469,7 +469,7 @@ describe('Interactive mm_blocks (incoming webhook)', () => {
         await ThreadScreen.back();
     });
 
-    it('MM-TBD should let block query override duplicate mm_blocks_actions query keys', async () => {
+    it('MM-T6226 should let block query override duplicate mm_blocks_actions query keys', async () => {
         if (!(await MmBlocksTestHelper.isWebhookSidecarReachableOrSkip())) {
             return;
         }
@@ -506,7 +506,7 @@ describe('Interactive mm_blocks (incoming webhook)', () => {
         await ThreadScreen.back();
     });
 
-    it('MM-TBD should merge static_select action and element query on integration URL', async () => {
+    it('MM-T6227 should merge static_select action and element query on integration URL', async () => {
         if (!(await MmBlocksTestHelper.isWebhookSidecarReachableOrSkip())) {
             return;
         }
@@ -548,7 +548,7 @@ describe('Interactive mm_blocks (incoming webhook)', () => {
         await ThreadScreen.back();
     });
 
-    it('MM-TBD should toggle collapsible mm_blocks open and closed', async () => {
+    it('MM-T6228 should toggle collapsible mm_blocks open and closed', async () => {
         const marker = MmBlocksTestHelper.randomMarker('E2E mm_blocks collapsible default');
         const headerLabel = `Detox collapsible header ${getRandomId()}`;
         const bodyLabel = `Detox collapsible body ${getRandomId()}`;
@@ -573,7 +573,7 @@ describe('Interactive mm_blocks (incoming webhook)', () => {
         await MmBlocksTestHelper.expectCollapsibleBodyVisibility(bodyLabel, false);
     });
 
-    it('MM-TBD should start expanded when collapsible collapsed is false', async () => {
+    it('MM-T6229 should start expanded when collapsible collapsed is false', async () => {
         const marker = MmBlocksTestHelper.randomMarker('E2E mm_blocks collapsible expanded');
         const headerLabel = `Detox collapsible open header ${getRandomId()}`;
         const bodyLabel = `Detox collapsible open body ${getRandomId()}`;
