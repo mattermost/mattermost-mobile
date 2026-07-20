@@ -1,12 +1,15 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import {Q, type Database} from '@nozbe/watermelondb';
 import {useIsFocused, useRoute} from '@react-navigation/native';
 import React, {useCallback, useEffect, useMemo, useState} from 'react';
 import {useIntl} from 'react-intl';
 import {DeviceEventEmitter, type ListRenderItemInfo, StyleSheet, View} from 'react-native';
 import Animated, {useAnimatedStyle, useSharedValue, withTiming} from 'react-native-reanimated';
 import {type Edge, SafeAreaView} from 'react-native-safe-area-context';
+import {of as of$} from 'rxjs';
+import {switchMap} from 'rxjs/operators';
 
 import {fetchSavedPosts} from '@actions/remote/post';
 import Loading from '@components/loading';
@@ -21,7 +24,10 @@ import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
 import useAndroidHomeTabBackHandler from '@hooks/android_home_tab_back_handler';
 import {useCollapsibleHeader} from '@hooks/header';
+import {observeSavedPostIds, queryPostsById} from '@queries/servers/post';
 import {useCurrentScreen} from '@store/navigation_store';
+import {getFullErrorMessage} from '@utils/errors';
+import {logError} from '@utils/log';
 import {getDateForDateLine, selectOrderedPosts} from '@utils/post_list';
 import {getTimezone} from '@utils/user';
 
@@ -35,7 +41,7 @@ type Props = {
     appsEnabled?: boolean;
     currentUser: UserModel;
     customEmojiNames: string[];
-    posts: PostModel[];
+    database: Database;
 }
 
 const edges: Edge[] = ['left', 'right'];
@@ -51,9 +57,10 @@ const styles = StyleSheet.create({
     },
 });
 
-function SavedMessages({appsEnabled, posts, currentUser, customEmojiNames}: Props) {
+function SavedMessages({appsEnabled, currentUser, customEmojiNames, database}: Props) {
     const intl = useIntl();
-    const [loading, setLoading] = useState(!posts.length);
+    const [posts, setPosts] = useState<PostModel[]>([]);
+    const [loading, setLoading] = useState(true);
     const [refreshing, setRefreshing] = useState(false);
     const theme = useTheme();
     const serverUrl = useServerUrl();
@@ -84,6 +91,28 @@ function SavedMessages({appsEnabled, posts, currentUser, customEmojiNames}: Prop
         opacity.value = isFocused ? 1 : 0;
         translateX.value = isFocused ? 0 : translateSide;
     }, [isFocused, opacity, translateSide, translateX]);
+
+    // Re-derive saved posts on every focus by (re)subscribing fresh. This screen is
+    // a freezeOnBlur bottom-tab that mounts once and stays mounted, so a subscription
+    // created at mount time predates any later save. On the SQLite/JSI (device)
+    // adapter a pre-existing PREFERENCE-table Query.observe() is not reliably notified
+    // of a preference CREATE (a fresh .fetch() sees the row; the live subscription does
+    // not), which left the screen empty after a save. A fresh subscription always reads
+    // current DB state on subscribe, so tearing down on blur and re-subscribing on focus
+    // sidesteps the missed notify. Unsave still works via the EphemeralStore combine
+    // inside observeSavedPostIds while focused.
+    useEffect(() => {
+        if (!isFocused) {
+            return undefined;
+        }
+        const subscription = observeSavedPostIds(database).pipe(
+            switchMap((ids) => (ids.length ? queryPostsById(database, ids, Q.asc).observe() : of$([]))),
+        ).subscribe({
+            next: setPosts,
+            error: (error) => logError('error on SavedMessages posts subscription', getFullErrorMessage(error)),
+        });
+        return () => subscription.unsubscribe();
+    }, [database, isFocused]);
 
     useEffect(() => {
         if (isFocused) {
