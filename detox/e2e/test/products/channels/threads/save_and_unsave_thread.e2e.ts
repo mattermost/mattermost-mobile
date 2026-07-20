@@ -83,7 +83,7 @@ describe('Threads - Save and Unsave Thread', () => {
 
         // # Open thread options for thread, tap on save option, and tap on thread
         await GlobalThreadsScreen.openThreadOptionsFor(parentPost.id);
-        await ThreadOptionsScreen.saveThreadOption.tap();
+        await ThreadOptionsScreen.tapSaveThread();
         await GlobalThreadsScreen.getThreadItem(parentPost.id).tap();
 
         // * Verify the thread is saved via ThreadOverview unsave button (.atIndex(0) for stale off-screen mounts).
@@ -92,7 +92,7 @@ describe('Threads - Save and Unsave Thread', () => {
         // # Go back to global threads screen, open thread options for thread, tap on save option, and tap on thread
         await ThreadScreen.back();
         await GlobalThreadsScreen.openThreadOptionsFor(parentPost.id);
-        await ThreadOptionsScreen.unsaveThreadOption.tap();
+        await ThreadOptionsScreen.tapUnsaveThread();
         await GlobalThreadsScreen.getThreadItem(parentPost.id).tap();
 
         // * Verify the thread is unsaved.
