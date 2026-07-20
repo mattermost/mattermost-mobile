@@ -84,7 +84,10 @@ jobs:
   #   ]
   # }
   build-ios-simulator:
-    runs-on: macos-14
+    # macos-14 predates Xcode 26 and has none pre-installed, so prepare-ios-build's
+    # Xcode 26 requirement always fails here. e2e-detox-pr.yml and
+    # e2e-maestro-template.yml already build on macos-26 successfully — match that.
+    runs-on: macos-26
     needs:
       - update-initial-status
     steps:
@@ -142,7 +145,11 @@ jobs:
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
         with:
           name: android-build-files-${{ github.run_id }}
-          path: "android/app/build/outputs/apk/**/*.apk"
+          # Match e2e-detox-pr.yml's glob shape exactly: the wildcard must start
+          # right after "build/" so upload-artifact only strips "android/app/build/"
+          # and preserves the outputs/apk/... subtree. e2e-android-template.yml's
+          # Download APK artifact step (shared by PR + CMT) expects that shape.
+          path: "android/app/build/**/*"
 
   build-android-apk-maestro:
     runs-on: ubuntu-latest-8-cores

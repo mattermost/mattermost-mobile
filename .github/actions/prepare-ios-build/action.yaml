@@ -25,8 +25,10 @@ runs:
           exit 0
         fi
 
-        # Find the highest pre-installed Xcode 26+ app.
-        XCODE_26=$(ls -d /Applications/Xcode_2[6-9]*.app 2>/dev/null | sort -V | tail -1)
+        # Find the highest pre-installed Xcode 26+ app. `|| true` keeps a
+        # no-match `ls` from silently killing the script under `set -e`
+        # before the check below can report the real error.
+        XCODE_26=$(ls -d /Applications/Xcode_2[6-9]*.app 2>/dev/null | sort -V | tail -1 || true)
         if [ -z "$XCODE_26" ]; then
           echo "::error::No Xcode 26+ found pre-installed on this runner and default is $CURRENT_SDK."
           exit 1
