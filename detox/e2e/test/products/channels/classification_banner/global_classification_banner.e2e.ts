@@ -49,7 +49,7 @@ describe('Classification Banner - Global Classification Banner', () => {
         await Properties.apiCleanupClassification(siteOneUrl);
     });
 
-    it('MM-T6196 - should not render the banner when the feature flag is off', async () => {
+    it('MM-T6196_1 - should not render the banner when the feature flag is off', async () => {
         await System.apiPatchConfig(siteOneUrl, {
             FeatureFlags: {
                 ClassificationMarkings: false,
@@ -62,7 +62,7 @@ describe('Classification Banner - Global Classification Banner', () => {
         await GlobalClassificationBanner.toNotBeVisible();
     });
 
-    it('MM-T6197 - should render the banner on the channel list screen when classification is configured', async () => {
+    it('MM-T6197_1 - should render the banner on the channel list screen when classification is configured', async () => {
         await System.apiPatchConfig(siteOneUrl, {
             FeatureFlags: {
                 ClassificationMarkings: true,
@@ -80,7 +80,7 @@ describe('Classification Banner - Global Classification Banner', () => {
         await expect(element(by.text('TOP SECRET'))).toBeVisible();
     });
 
-    it('MM-T6198 - should render the banner on the channel screen when classification is configured', async () => {
+    it('MM-T6198_1 - should render the banner on the channel screen when classification is configured', async () => {
         await System.apiPatchConfig(siteOneUrl, {
             FeatureFlags: {
                 ClassificationMarkings: true,
@@ -103,7 +103,7 @@ describe('Classification Banner - Global Classification Banner', () => {
         await ChannelScreen.back();
     });
 
-    it('MM-T6199 - should render the banner on the global threads screen when classification is configured', async () => {
+    it('MM-T6199_1 - should render the banner on the global threads screen when classification is configured', async () => {
         await System.apiPatchConfig(siteOneUrl, {
             FeatureFlags: {
                 ClassificationMarkings: true,
@@ -124,7 +124,7 @@ describe('Classification Banner - Global Classification Banner', () => {
         await GlobalThreadsScreen.back();
     });
 
-    it('MM-T6200 - should not render the banner when no classification value is set', async () => {
+    it('MM-T6200_1 - should not render the banner when no classification value is set', async () => {
         await System.apiPatchConfig(siteOneUrl, {
             FeatureFlags: {
                 ClassificationMarkings: true,
@@ -137,7 +137,7 @@ describe('Classification Banner - Global Classification Banner', () => {
         await GlobalClassificationBanner.toNotBeVisible();
     });
 
-    it('MM-T6201 - should persist the banner across channel navigation', async () => {
+    it('MM-T6201_1 - should persist the banner across channel navigation', async () => {
         await System.apiPatchConfig(siteOneUrl, {
             FeatureFlags: {
                 ClassificationMarkings: true,
@@ -166,7 +166,7 @@ describe('Classification Banner - Global Classification Banner', () => {
         await expect(element(by.text('TOP SECRET'))).toBeVisible();
     });
 
-    it('MM-T6202 - should update the banner when classification level changes', async () => {
+    it('MM-T6202_1 - should update the banner when classification level changes', async () => {
         await System.apiPatchConfig(siteOneUrl, {
             FeatureFlags: {
                 ClassificationMarkings: true,
@@ -194,7 +194,7 @@ describe('Classification Banner - Global Classification Banner', () => {
         await waitFor(element(by.text('TOP SECRET'))).not.toBeVisible().withTimeout(timeouts.FOUR_SEC);
     });
 
-    it('MM-T6203 - should remove the banner when classification configuration is deleted', async () => {
+    it('MM-T6203_1 - should remove the banner when classification configuration is deleted', async () => {
         await System.apiPatchConfig(siteOneUrl, {
             FeatureFlags: {
                 ClassificationMarkings: true,
@@ -218,7 +218,7 @@ describe('Classification Banner - Global Classification Banner', () => {
         await GlobalClassificationBanner.toNotBeVisible();
     });
 
-    it('MM-T6204 - should remove the banner when the feature flag is toggled off', async () => {
+    it('MM-T6204_1 - should remove the banner when the feature flag is toggled off', async () => {
         await System.apiPatchConfig(siteOneUrl, {
             FeatureFlags: {
                 ClassificationMarkings: true,
@@ -247,7 +247,7 @@ describe('Classification Banner - Global Classification Banner', () => {
         await waitFor(element(by.id('global_classification_banner'))).not.toBeVisible().withTimeout(timeouts.TEN_SEC);
     });
 
-    it('MM-T6205 - should not render the banner on the channel screen when classification is removed while on channel list', async () => {
+    it('MM-T6205_1 - should not render the banner on the channel screen when classification is removed while on channel list', async () => {
         await System.apiPatchConfig(siteOneUrl, {
             FeatureFlags: {
                 ClassificationMarkings: true,
