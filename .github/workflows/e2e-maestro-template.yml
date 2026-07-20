@@ -465,7 +465,8 @@ jobs:
 
       - name: Upload report to Test System IO
         if: always() && inputs.tsio-config != '' && vars.TSIO_UPLOAD_ENABLED != 'false' && hashFiles('build/maestro-report.jest.json') != ''
-        uses: mattermost/mattermost-test-system-io/.github/actions/test-system-io-report-upload@a2ea7f005484c28fedf51e16645f6d3bd683fd63 # 0.10.0 / 2026-05-16
+        # Pin matches TSIO staging deploy (mattermost-test-system-io#76 / 81017b2).
+        uses: mattermost/mattermost-test-system-io/.github/actions/test-system-io-report-upload@81017b2d568d1fc1f1fdaa7299b177fae53c63e1 # staging validation / #76
         with:
           composite-identity: ${{ toJSON(fromJSON(inputs.tsio-config).composite_identity) }}
           total-reports-expected: ${{ fromJSON(inputs.tsio-config).total_reports_expected }}
@@ -474,6 +475,9 @@ jobs:
           gh-job-name: ${{ inputs.tsio-shard-name != '' && inputs.tsio-shard-name || 'Maestro E2E Tests (iOS)' }}
           json-path: build/maestro-report.jest.json
           screenshots-dir: build/maestro-artifacts
+          # TEMP_TSIO_STAGING: point uploads at staging while validating TSIO #76.
+          # REVERT before merge / after staging sign-off — remove this line (default = prod).
+          use-staging: "true"
 
       - name: Save Maestro results to Zephyr Scale
         if: always() && inputs.record_tests_in_zephyr
@@ -897,7 +901,8 @@ jobs:
 
       - name: Upload report to Test System IO
         if: always() && inputs.tsio-config != '' && vars.TSIO_UPLOAD_ENABLED != 'false' && hashFiles('build/maestro-report.jest.json') != ''
-        uses: mattermost/mattermost-test-system-io/.github/actions/test-system-io-report-upload@a2ea7f005484c28fedf51e16645f6d3bd683fd63 # 0.10.0 / 2026-05-16
+        # Pin matches TSIO staging deploy (mattermost-test-system-io#76 / 81017b2).
+        uses: mattermost/mattermost-test-system-io/.github/actions/test-system-io-report-upload@81017b2d568d1fc1f1fdaa7299b177fae53c63e1 # staging validation / #76
         with:
           composite-identity: ${{ toJSON(fromJSON(inputs.tsio-config).composite_identity) }}
           total-reports-expected: ${{ fromJSON(inputs.tsio-config).total_reports_expected }}
@@ -906,6 +911,9 @@ jobs:
           gh-job-name: ${{ inputs.tsio-shard-name != '' && inputs.tsio-shard-name || 'Maestro E2E Tests (Android)' }}
           json-path: build/maestro-report.jest.json
           screenshots-dir: build/maestro-artifacts
+          # TEMP_TSIO_STAGING: point uploads at staging while validating TSIO #76.
+          # REVERT before merge / after staging sign-off — remove this line (default = prod).
+          use-staging: "true"
 
       - name: Save Maestro results to Zephyr Scale
         if: always() && inputs.record_tests_in_zephyr

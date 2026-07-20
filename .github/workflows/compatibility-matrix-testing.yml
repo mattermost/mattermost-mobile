@@ -430,13 +430,16 @@ jobs:
               *) UPSTREAM="false" ;;
             esac
           done
+          # TEMP_TSIO_STAGING: poll staging while validating TSIO #76.
+          # REVERT before merge / after staging sign-off — drop --use-staging (default = prod).
           node detox/utils/tsio-report-status.js \
             --composite-identity="$COMPOSITE_IDENTITY" \
             --total-reports-expected="$TOTAL_REPORTS_EXPECTED" \
             --github-token="$GITHUB_TOKEN" \
             --context="e2e/compatibility-matrix-testing" \
             --upstream-succeeded="$UPSTREAM" \
-            --poll-attempts=24
+            --poll-attempts=24 \
+            --use-staging=true
           RC=$?
           echo "tsio-report-status exit=$RC upstream_succeeded=$UPSTREAM"
           if [ "$RC" -ne 0 ] && [ "$UPSTREAM" = "true" ]; then
