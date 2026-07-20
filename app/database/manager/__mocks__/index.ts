@@ -339,7 +339,7 @@ class DatabaseManagerSingleton {
         }
     };
 
-    private deleteServerDatabaseFiles = async (serverUrl: string): Promise<void> => {
+    public deleteServerDatabaseFiles = async (serverUrl: string): Promise<void> => {
         const databaseName = urlSafeBase64Encode(serverUrl);
 
         if (Platform.OS === 'ios') {

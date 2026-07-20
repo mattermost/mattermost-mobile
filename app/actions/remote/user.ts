@@ -49,22 +49,13 @@ export const fetchMe = async (serverUrl: string, fetchOnly = false, groupLabel?:
         const client = NetworkManager.getClient(serverUrl);
         const {database, operator} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
 
-        const resultSettled = await Promise.allSettled([client.getMe(groupLabel), client.getStatus('me', groupLabel)]);
-        let user: UserProfile|undefined;
-        let userStatus: UserStatus|undefined;
-        for (const result of resultSettled) {
-            if (result.status === 'fulfilled') {
-                const {value} = result;
-                if ('email' in value) {
-                    user = value;
-                } else {
-                    userStatus = value;
-                }
-            }
-        }
+        const [meResult, statusResult] = await Promise.allSettled([client.getMe(groupLabel), client.getStatus('me', groupLabel)]);
+        const user = meResult.status === 'fulfilled' && 'email' in meResult.value ? meResult.value : undefined;
+        const userStatus = statusResult.status === 'fulfilled' ? statusResult.value : undefined;
 
         if (!user) {
-            throw new Error('User not found');
+            // surface the actual rejection (e.g. a 401) instead of masking it so forceLogoutIfNecessary can act on it
+            throw meResult.status === 'rejected' ? meResult.reason : new Error('User not found');
         }
 
         user.status = userStatus?.status;
@@ -91,18 +82,22 @@ export const fetchMe = async (serverUrl: string, fetchOnly = false, groupLabel?:
 
 export const refetchCurrentUser = async (serverUrl: string, currentUserId: string | undefined) => {
     logDebug('re-fetching self');
-    const {user} = await fetchMe(serverUrl);
-    if (!user || currentUserId) {
-        return;
+    const {user, error} = await fetchMe(serverUrl);
+    if (currentUserId) {
+        return {currentUserId};
+    }
+    if (!user) {
+        return {error};
     }
 
     logDebug('missing currentUserId');
     const operator = DatabaseManager.serverDatabases[serverUrl]?.operator;
     if (!operator) {
         logDebug('missing operator');
-        return;
+        return {error: 'Cannot get operator for server'};
     }
-    setCurrentUserId(operator, user.id);
+
+    return setCurrentUserId(operator, user.id);
 };
 
 export async function fetchProfilesInChannel(

@@ -93,10 +93,12 @@ export const GLOBAL_IDENTIFIERS = {
     FIRST_LAUNCH: 'firstLaunch',
     LAST_ASK_FOR_REVIEW: 'lastAskForReview',
     ONBOARDING: 'onboarding',
+    LAST_VIEWED_TEAM: 'lastViewedTeam',
     LAST_VIEWED_CHANNEL: 'lastViewedChannel',
     LAST_VIEWED_THREAD: 'lastViewedThread',
     PUSH_DISABLED_ACK: 'pushDisabledAck',
     CACHE_MIGRATION: 'cacheMigration',
+    PUSH_SIGNING_KEY: 'pushSigningKey',
 };
 
 export enum OperationType {
