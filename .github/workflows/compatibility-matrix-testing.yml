@@ -90,6 +90,9 @@ jobs:
     runs-on: macos-26
     needs:
       - update-initial-status
+    permissions:
+      contents: read
+      actions: read
     steps:
       - name: Checkout Repository
         uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
@@ -116,6 +119,8 @@ jobs:
     runs-on: ubuntu-latest-8-cores
     needs:
       - update-initial-status
+    permissions:
+      contents: read
     env:
       ORG_GRADLE_PROJECT_jvmargs: -Xmx8g
     steps:
@@ -155,6 +160,8 @@ jobs:
     runs-on: ubuntu-latest-8-cores
     needs:
       - update-initial-status
+    permissions:
+      contents: read
     env:
       ORG_GRADLE_PROJECT_jvmargs: -Xmx8g
     steps:
