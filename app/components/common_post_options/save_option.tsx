@@ -35,6 +35,7 @@ const SaveOption = ({isSaved, postId}: CopyTextProps) => {
     }, [isSaved, postId, serverUrl]);
 
     const message = isSaved ? messages.unsave : messages.save;
+
     // formatjs ast:true turns defaultMessage into an AST array; don't interpolate it into testIDs.
     const testID = isSaved ? 'post_options.Unsave_post.option' : 'post_options.Save_post.option';
 
