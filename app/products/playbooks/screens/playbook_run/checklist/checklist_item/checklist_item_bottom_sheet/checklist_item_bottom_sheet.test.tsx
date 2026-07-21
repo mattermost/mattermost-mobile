@@ -131,6 +131,16 @@ describe('ChecklistItemBottomSheet', () => {
         expect(queryByText('This is a test description')).toBeNull();
     });
 
+    it('renders the latest task activity details when available', () => {
+        const props = getBaseProps();
+        props.activity = {action: 'check', actorUserId: mockAssignee.id, timestamp: Date.now()};
+        props.activityActor = mockAssignee;
+
+        const {getByTestId} = renderWithIntl(<ChecklistItemBottomSheet {...props}/>);
+
+        expect(getByTestId('playbook_run.checklist_item.task_activity.detail')).toBeVisible();
+    });
+
     it('renders correctly without assignee', () => {
         const props = getBaseProps();
         props.assignee = undefined;

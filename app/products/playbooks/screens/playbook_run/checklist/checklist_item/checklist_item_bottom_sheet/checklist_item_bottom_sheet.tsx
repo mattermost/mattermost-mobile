@@ -23,7 +23,9 @@ import {typography} from '@utils/typography';
 import {getTimezone} from '@utils/user';
 
 import Checkbox from '../checkbox';
+import TaskActivityIndicator from '../task_activity_indicator';
 
+import type {TaskActivity} from '../task_activity';
 import type PlaybookChecklistItemModel from '@playbooks/types/database/models/playbook_checklist_item';
 import type UserModel from '@typings/database/models/servers/user';
 
@@ -105,11 +107,13 @@ const SCROLL_CONTENT_GAP = 12;
 const TITLE_LINE_HEIGHT = 24; // From typography 300
 const BODY_LINE_HEIGHT = 24; // From typography 200
 const BODY_LINES_COUNT = 3;
+const ACTIVITY_SECTION_HEIGHT = 72; // Three text lines, internal gaps, and the surrounding content gap.
 
 export const BOTTOM_SHEET_HEIGHT = {
     base: (N_OPTIONS * ITEM_HEIGHT) + (OPTIONS_GAP * (N_OPTIONS - 1)) + (SCROLL_CONTENT_GAP * 2) + TITLE_LINE_HEIGHT + (BODY_LINE_HEIGHT * BODY_LINES_COUNT),
     actionButtons: ACTION_BUTTON_HEIGHT + SCROLL_CONTENT_GAP,
     conditionSection: (BODY_LINE_HEIGHT * 2) + SCROLL_CONTENT_GAP + (OPTIONS_GAP * (Platform.OS === 'android' ? 2 : 1)),
+    activitySection: ACTIVITY_SECTION_HEIGHT,
 };
 
 const getStyleSheet = makeStyleSheetFromTheme((theme) => ({
@@ -201,6 +205,8 @@ type Props = {
     channelId: string;
     item: PlaybookChecklistItemModel | PlaybookChecklistItem;
     assignee?: UserModel;
+    activity?: TaskActivity;
+    activityActor?: UserModel;
     onCheck: () => void;
     onSkip: () => void;
     onRunCommand: () => void;
@@ -221,6 +227,8 @@ const ChecklistItemBottomSheet = ({
     channelId,
     item,
     assignee,
+    activity,
+    activityActor,
     onCheck,
     onSkip,
     onRunCommand,
@@ -483,6 +491,17 @@ const ChecklistItemBottomSheet = ({
                 </View>
             </View>
             <MenuDivider/>
+            {activity && (
+                <TaskActivityIndicator
+                    activity={activity}
+                    actor={activityActor}
+                    teammateNameDisplay={teammateNameDisplay}
+                    timezone={timezone}
+                    variant='detail'
+                    onActorPress={onUserChipPress}
+                />
+            )}
+            {activity && <MenuDivider/>}
             {!isDisabled && renderActionButtons()}
             {renderTaskDetails()}
             {showConditionIcon && renderConditionSection()}

@@ -24,6 +24,57 @@ describe('PlaybookRunModel', () => {
         await DatabaseManager.destroyServerDatabase(SERVER_URL);
     });
 
+    describe('timelineEvents', () => {
+        it.each([
+            ['malformed JSON', '{invalid'],
+            ['empty JSON', ''],
+        ])('returns an empty array for %s', async (_name, storedValue) => {
+            const run = TestHelper.createPlaybookRuns(1, 0, 0, true)[0];
+            await operator.handlePlaybookRun({runs: [run], prepareRecordsOnly: false, processChildren: true});
+            const runModel = await operator.database.get<PlaybookRunModel>(PLAYBOOK_RUN).find(run.id);
+
+            await operator.database.write(async () => {
+                await runModel.update((record) => {
+                    (record._raw as unknown as Record<string, string>).timeline_events = storedValue;
+                });
+            });
+
+            expect(runModel.timelineEvents).toEqual([]);
+        });
+
+        it('keeps well-formed events and drops malformed entries', async () => {
+            const run = TestHelper.createPlaybookRuns(1, 0, 0, true)[0];
+            await operator.handlePlaybookRun({runs: [run], prepareRecordsOnly: false, processChildren: true});
+            const runModel = await operator.database.get<PlaybookRunModel>(PLAYBOOK_RUN).find(run.id);
+
+            const validEvent = {
+                id: 'event-1',
+                playbook_run_id: run.id,
+                create_at: 1,
+                event_at: 1000,
+                event_type: 'task_state_modified',
+                summary: '',
+                details: '{"action":"check"}',
+                post_id: '',
+                subject_user_id: 'user-1',
+                creator_user_id: 'user-1',
+            };
+
+            await operator.database.write(async () => {
+                await runModel.update((record) => {
+                    (record._raw as unknown as Record<string, string>).timeline_events = JSON.stringify([
+                        validEvent,
+                        {event_type: 'task_state_modified'}, // missing event_at/details/subject_user_id
+                        'not-an-object',
+                        null,
+                    ]);
+                });
+            });
+
+            expect(runModel.timelineEvents).toEqual([validEvent]);
+        });
+    });
+
     describe('prepareDestroyWithRelations', () => {
         it('should prepare run and all its checklists and items for destruction when run has checklists with items', async () => {
             // Create playbook runs with checklists and items

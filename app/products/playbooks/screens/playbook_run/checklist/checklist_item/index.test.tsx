@@ -47,6 +47,7 @@ describe('ChecklistItem', () => {
         it('should set the correct teammate name display', async () => {
             const props = {
                 item: TestHelper.fakePlaybookChecklistItem(checklistId, {id: itemId}),
+                timelineEvents: [],
                 channelId: 'channel-id',
                 checklistNumber: 0,
                 itemNumber: 0,
@@ -76,9 +77,44 @@ describe('ChecklistItem', () => {
             });
         });
 
+        it('should resolve the current user timezone', async () => {
+            const props = {
+                item: TestHelper.fakePlaybookChecklistItem(checklistId, {id: itemId}),
+                timelineEvents: [],
+                channelId: 'channel-id',
+                checklistNumber: 0,
+                itemNumber: 0,
+                playbookRunId: 'run-id',
+                isDisabled: false,
+            };
+
+            const {getByTestId} = renderWithEverything(<ChecklistItem {...props}/>, {database});
+
+            const checklistItem = getByTestId('checklist-item');
+
+            // Default value is empty string when no user/timezone is set
+            expect(checklistItem.props.timezone).toBe('');
+
+            await act(async () => {
+                await operator.handleUsers({
+                    prepareRecordsOnly: false,
+                    users: [TestHelper.fakeUser({id: 'user-id', timezone: {useAutomaticTimezone: false, automaticTimezone: '', manualTimezone: 'Asia/Kolkata'}})],
+                });
+                await operator.handleSystem({
+                    prepareRecordsOnly: false,
+                    systems: [{id: SYSTEM_IDENTIFIERS.CURRENT_USER_ID, value: 'user-id'}],
+                });
+            });
+
+            await waitFor(() => {
+                expect(checklistItem.props.timezone).toBe('Asia/Kolkata');
+            });
+        });
+
         it('should set the correct channel type', async () => {
             const props = {
                 item: TestHelper.fakePlaybookChecklistItem(checklistId, {id: itemId}),
+                timelineEvents: [],
                 channelId: 'channel-id',
                 checklistNumber: 0,
                 itemNumber: 0,
@@ -138,6 +174,7 @@ describe('ChecklistItem', () => {
         function getBaseProps(): ComponentProps<typeof ChecklistItem> {
             return {
                 item: TestHelper.fakePlaybookChecklistItem(checklistId, {id: itemId}),
+                timelineEvents: [],
                 channelId: 'channel-id',
                 checklistNumber: 0,
                 itemNumber: 0,
@@ -186,6 +223,45 @@ describe('ChecklistItem', () => {
             expect(checklistItem).toBeTruthy();
             expect(checklistItem.props.assignee).toBeUndefined();
         });
+
+        it('resolves and refreshes the task activity actor from timeline events', async () => {
+            const actorId = 'activity-actor-id';
+            await operator.handleUsers({
+                prepareRecordsOnly: false,
+                users: [TestHelper.fakeUser({id: actorId, username: 'activity-actor'})],
+            });
+            const props = getBaseProps();
+            props.item = TestHelper.fakePlaybookChecklistItem(checklistId, {
+                id: itemId,
+                state: 'closed',
+                state_modified: 1000,
+                title: 'Task title',
+            });
+
+            const {getByTestId, rerender} = renderWithEverything(<ChecklistItem {...props}/>, {database});
+            const checklistItem = getByTestId('checklist-item');
+            expect(checklistItem.props.activity).toEqual({action: 'check', timestamp: 1000, actorUserId: undefined});
+            expect(checklistItem.props.activityActor).toBeUndefined();
+
+            props.timelineEvents = [{
+                id: 'event-id',
+                playbook_run_id: 'run-id',
+                create_at: 1000,
+                event_at: 1000,
+                event_type: 'task_state_modified',
+                summary: '',
+                details: JSON.stringify({action: 'check', task: 'Task title'}),
+                post_id: '',
+                subject_user_id: actorId,
+                creator_user_id: actorId,
+            }];
+            rerender(<ChecklistItem {...props}/>);
+
+            await waitFor(() => {
+                expect(checklistItem.props.activity.actorUserId).toBe(actorId);
+                expect(checklistItem.props.activityActor.id).toBe(actorId);
+            });
+        });
     });
 
     describe('local run', () => {
@@ -196,6 +272,7 @@ describe('ChecklistItem', () => {
             });
             return {
                 item: model[0],
+                timelineEvents: [],
                 channelId: 'channel-id',
                 checklistNumber: 0,
                 itemNumber: 0,
