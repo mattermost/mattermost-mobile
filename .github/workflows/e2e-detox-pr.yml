@@ -818,6 +818,7 @@ jobs:
           sparse-checkout: |
             detox/utils/tsio-report-status.js
             detox/utils/cmt-channel-notify.js
+            detox/utils/cli-args.js
 
       - name: Post TSIO commit status from unified report group
         env:

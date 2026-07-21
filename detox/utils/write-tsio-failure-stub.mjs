@@ -7,28 +7,9 @@
 
 import fs from 'fs';
 import path from 'path';
+import {createRequire} from 'module';
 
-function parseArgs(argv) {
-    const out = {};
-    for (let i = 2; i < argv.length; i++) {
-        const arg = argv[i];
-        if (!arg.startsWith('--')) continue;
-        const key = arg.slice(2);
-        if (key.includes('=')) {
-            const idx = key.indexOf('=');
-            out[key.slice(0, idx)] = key.slice(idx + 1);
-        } else {
-            const next = argv[i + 1];
-            if (next === undefined || next.startsWith('--')) {
-                out[key] = 'true';
-            } else {
-                out[key] = next;
-                i++;
-            }
-        }
-    }
-    return out;
-}
+const {parseArgs} = createRequire(import.meta.url)('./cli-args.js');
 
 function writeJestStub(outputPath, jobName, reason) {
     const payload = {

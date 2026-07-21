@@ -80,27 +80,7 @@ function decideStatus(detail, upstreamSucceeded) {
     };
 }
 
-function parseArgs(argv) {
-    const out = {};
-    for (let i = 2; i < argv.length; i++) {
-        let key = argv[i];
-        if (!key.startsWith('--')) continue;
-        key = key.slice(2);
-        if (key.includes('=')) {
-            const idx = key.indexOf('=');
-            out[key.slice(0, idx)] = key.slice(idx + 1);
-        } else {
-            const next = argv[i + 1];
-            if (next === undefined || next.startsWith('--')) {
-                out[key] = 'true';
-            } else {
-                out[key] = next;
-                i++;
-            }
-        }
-    }
-    return out;
-}
+const {parseArgs} = require('./cli-args');
 
 async function mintOidcToken(audience) {
     const url = process.env.ACTIONS_ID_TOKEN_REQUEST_URL;

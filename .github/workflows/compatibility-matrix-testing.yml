@@ -85,6 +85,7 @@ jobs:
       - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
         with:
           ref: ${{ inputs.MOBILE_VERSION }}
+          persist-credentials: false
 
       # Pending status should open TSIO (report page links back to the Actions run).
       - name: Build TSIO report URL
@@ -436,6 +437,7 @@ jobs:
           sparse-checkout: |
             detox/utils/tsio-report-status.js
             detox/utils/cmt-channel-notify.js
+            detox/utils/cli-args.js
 
       - name: Post TSIO commit status from unified CMT report group
         env:
