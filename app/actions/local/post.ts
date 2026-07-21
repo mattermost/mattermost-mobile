@@ -420,6 +420,10 @@ export async function deletePostsInChannelsByCutoff(
     cutoff: number,
     excludedPostIds: Set<string> = new Set(),
 ): Promise<{error: unknown}> {
+    if (channelIds.length === 0) {
+        return {error: undefined};
+    }
+
     try {
         const {database} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
 
