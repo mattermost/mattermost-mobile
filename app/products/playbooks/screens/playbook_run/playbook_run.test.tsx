@@ -307,6 +307,7 @@ describe('PlaybookRun', () => {
 
         const checklistList = getByTestId('checklist-list');
         expect(checklistList.props.checklists).toBe(props.checklists);
+        expect(checklistList.props.timelineEvents).toBe((props.playbookRun as PlaybookRunModel).timelineEvents);
         expect(checklistList.props.channelId).toBe((props.playbookRun as PlaybookRunModel).channelId);
         expect(checklistList.props.playbookRunId).toBe(props.playbookRun!.id);
         expect(checklistList.props.isFinished).toBe(false);

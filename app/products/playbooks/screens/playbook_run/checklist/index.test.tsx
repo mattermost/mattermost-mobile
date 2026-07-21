@@ -61,6 +61,7 @@ describe('Checklist', () => {
                         TestHelper.createPlaybookItem(checklistId, 1),
                     ],
                 }),
+                timelineEvents: [],
                 checklistNumber: 0,
                 channelId: 'channel-id',
                 playbookRunId: 'run-id',
@@ -180,6 +181,7 @@ describe('Checklist', () => {
                 // handlePlaybookChecklist can return other models,
                 // but the first one is for sure a PlaybookChecklistModel
                 checklist: model[0] as PlaybookChecklistModel,
+                timelineEvents: [],
                 checklistNumber: 0,
                 channelId: 'channel-id',
                 playbookRunId: 'run-id',

@@ -29,6 +29,7 @@ describe('ChecklistList', () => {
     function getBaseProps() {
         return {
             checklists: mockChecklists,
+            timelineEvents: [],
             channelId: 'channel-id-1',
             playbookRunId: 'run-id-1',
             playbookRunName: 'Test Run',
@@ -44,6 +45,7 @@ describe('ChecklistList', () => {
         const checklistComponents = getAllByTestId('checklist-component');
         expect(checklistComponents).toHaveLength(mockChecklists.length);
         expect(checklistComponents[0].props.checklist).toEqual(mockChecklists[0]);
+        expect(checklistComponents[0].props.timelineEvents).toBe(props.timelineEvents);
         expect(checklistComponents[0].props.channelId).toEqual(props.channelId);
         expect(checklistComponents[0].props.playbookRunId).toEqual(props.playbookRunId);
         expect(checklistComponents[0].props.checklistNumber).toEqual(0);

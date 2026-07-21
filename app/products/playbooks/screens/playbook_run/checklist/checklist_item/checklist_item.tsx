@@ -26,7 +26,9 @@ import {typography} from '@utils/typography';
 
 import Checkbox from './checkbox';
 import ChecklistItemBottomSheet, {BOTTOM_SHEET_HEIGHT} from './checklist_item_bottom_sheet';
+import TaskActivityIndicator from './task_activity_indicator';
 
+import type {TaskActivity} from './task_activity';
 import type PlaybookChecklistItemModel from '@playbooks/types/database/models/playbook_checklist_item';
 import type UserModel from '@typings/database/models/servers/user';
 
@@ -86,8 +88,12 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => ({
 
 type Props = {
     item: PlaybookChecklistItemModel | PlaybookChecklistItem;
+    timelineEvents: TimelineEvent[];
+    activity?: TaskActivity;
+    activityActor?: UserModel;
     assignee?: UserModel;
     teammateNameDisplay: string;
+    timezone: string;
     channelId: string;
     checklistNumber: number;
     itemNumber: number;
@@ -99,8 +105,11 @@ type Props = {
 
 const ChecklistItem = ({
     item,
+    activity,
+    activityActor,
     assignee,
     teammateNameDisplay,
+    timezone,
     channelId,
     checklistNumber,
     itemNumber,
@@ -239,6 +248,8 @@ const ChecklistItem = ({
             conditionReason={conditionReason}
             showConditionIcon={showConditionIcon}
             conditionIconColor={iconColor}
+            activity={activity}
+            activityActor={activityActor}
         />
     ), [
         playbookRunId,
@@ -254,12 +265,14 @@ const ChecklistItem = ({
         conditionReason,
         showConditionIcon,
         iconColor,
+        activity,
+        activityActor,
     ]);
 
     const onPress = useCallback(() => {
-        const initialHeight = BOTTOM_SHEET_HEIGHT.base + (isDisabled ? 0 : BOTTOM_SHEET_HEIGHT.actionButtons) + (showConditionIcon ? BOTTOM_SHEET_HEIGHT.conditionSection : 0);
+        const initialHeight = BOTTOM_SHEET_HEIGHT.base + (isDisabled ? 0 : BOTTOM_SHEET_HEIGHT.actionButtons) + (showConditionIcon ? BOTTOM_SHEET_HEIGHT.conditionSection : 0) + (activity ? BOTTOM_SHEET_HEIGHT.activitySection : 0);
         bottomSheet(renderBottomSheet, [1, initialHeight, '80%']);
-    }, [isDisabled, renderBottomSheet, showConditionIcon]);
+    }, [activity, isDisabled, renderBottomSheet, showConditionIcon]);
 
     return (
         <View style={styles.checklistItem}>
@@ -289,8 +302,18 @@ const ChecklistItem = ({
                     </View>
                 </PressableOpacity>
 
-                {(assignee || dueDate || (item.command)) && (
+                {(activity || assignee || dueDate || (item.command)) && (
                     <View style={styles.chipsRow}>
+                        {activity && (
+                            <TaskActivityIndicator
+                                activity={activity}
+                                actor={activityActor}
+                                teammateNameDisplay={teammateNameDisplay}
+                                timezone={timezone}
+                                variant='chip'
+                                onActorPress={onUserChipPress}
+                            />
+                        )}
                         {assignee && (
                             <UserChip
                                 user={assignee}

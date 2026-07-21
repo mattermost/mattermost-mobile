@@ -10,6 +10,7 @@ import type PlaybookChecklistModel from '@playbooks/types/database/models/playbo
 
 type Props = {
     checklists: Array<PlaybookChecklistModel | PlaybookChecklist>;
+    timelineEvents: TimelineEvent[];
     channelId: string;
     playbookRunId: string;
     playbookRunName: string;
@@ -25,6 +26,7 @@ const styles = StyleSheet.create({
 
 const ChecklistList = ({
     checklists,
+    timelineEvents,
     channelId,
     playbookRunId,
     playbookRunName,
@@ -37,6 +39,7 @@ const ChecklistList = ({
                 <Checklist
                     key={checklist.id}
                     checklist={checklist}
+                    timelineEvents={timelineEvents}
                     channelId={channelId}
                     playbookRunId={playbookRunId}
                     playbookRunName={playbookRunName}
