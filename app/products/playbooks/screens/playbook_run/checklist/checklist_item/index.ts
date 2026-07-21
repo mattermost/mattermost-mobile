@@ -5,8 +5,10 @@ import {withDatabase, withObservables} from '@nozbe/watermelondb/react';
 import {of as of$, switchMap} from 'rxjs';
 import {map} from 'rxjs/operators';
 
-import {General} from '@constants';
+import {General, Preferences} from '@constants';
+import {getDisplayNamePreferenceAsBool} from '@helpers/api/preference';
 import {observeChannel} from '@queries/servers/channel';
+import {queryDisplayNamePreferences} from '@queries/servers/preference';
 import {observeCurrentUserId} from '@queries/servers/system';
 import {observeCurrentUser, observeTeammateNameDisplay, observeUser} from '@queries/servers/user';
 import {getTimezone} from '@utils/user';
@@ -27,6 +29,9 @@ const enhanced = withObservables(['item', 'channelId', 'timelineEvents'], ({item
     const teammateNameDisplay = observeTeammateNameDisplay(database);
     const currentUserId = observeCurrentUserId(database);
     const timezone = observeCurrentUser(database).pipe(map((u) => getTimezone(u?.timezone)));
+    const isMilitaryTime = queryDisplayNamePreferences(database).observeWithColumns(['value']).pipe(
+        switchMap((preferences) => of$(getDisplayNamePreferenceAsBool(preferences, Preferences.USE_MILITARY_TIME))),
+    );
     const channelType = observeChannel(database, channelId).pipe(switchMap((c) => of$(c?.type || General.OPEN_CHANNEL)));
 
     if ('observe' in item) {
@@ -54,6 +59,7 @@ const enhanced = withObservables(['item', 'channelId', 'timelineEvents'], ({item
             activityActor,
             teammateNameDisplay,
             timezone,
+            isMilitaryTime,
             currentUserId,
             channelType,
         };
@@ -69,6 +75,7 @@ const enhanced = withObservables(['item', 'channelId', 'timelineEvents'], ({item
         activityActor: activity?.actorUserId ? observeUser(database, activity.actorUserId) : of$(undefined),
         teammateNameDisplay,
         timezone,
+        isMilitaryTime,
         currentUserId,
         channelType,
     };

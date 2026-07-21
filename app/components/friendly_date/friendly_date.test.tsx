@@ -4,8 +4,9 @@
 import React from 'react';
 
 import {renderWithIntl} from '@test/intl-test-helper';
+import {getIntlShape} from '@utils/general';
 
-import FriendlyDate from './index';
+import FriendlyDate, {getFriendlyDate} from './index';
 
 describe('Friendly Date', () => {
     it('should render correctly', () => {
@@ -161,5 +162,38 @@ describe('Friendly Date', () => {
         expect(inYearsText.getByText('in 2 years')).toBeTruthy();
 
         jest.useRealTimers();
+    });
+
+    describe('getFriendlyDate with narrow style', () => {
+        const intl = getIntlShape();
+
+        beforeEach(() => {
+            jest.useFakeTimers();
+            jest.setSystemTime(new Date('2020-05-15T12:00:00.000Z'));
+        });
+
+        afterEach(() => {
+            jest.useRealTimers();
+        });
+
+        it('should render abbreviated relative time', () => {
+            const minutesAgo = new Date();
+            minutesAgo.setMinutes(minutesAgo.getMinutes() - 38);
+            expect(getFriendlyDate(intl, minutesAgo.getTime(), 'narrow')).toBe('38m ago');
+
+            const hoursAgo = new Date();
+            hoursAgo.setHours(hoursAgo.getHours() - 4);
+            expect(getFriendlyDate(intl, hoursAgo.getTime(), 'narrow')).toBe('4h ago');
+
+            const daysAgo = new Date();
+            daysAgo.setDate(daysAgo.getDate() - 3);
+            expect(getFriendlyDate(intl, daysAgo.getTime(), 'narrow')).toBe('3d ago');
+        });
+
+        it('should still render "Now" for the sub-minute branch', () => {
+            const justNow = new Date();
+            justNow.setSeconds(justNow.getSeconds() - 10);
+            expect(getFriendlyDate(intl, justNow.getTime(), 'narrow')).toBe('Now');
+        });
     });
 });

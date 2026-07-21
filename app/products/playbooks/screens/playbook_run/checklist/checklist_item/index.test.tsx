@@ -77,6 +77,39 @@ describe('ChecklistItem', () => {
             });
         });
 
+        it('should resolve the military time display preference', async () => {
+            const props = {
+                item: TestHelper.fakePlaybookChecklistItem(checklistId, {id: itemId}),
+                timelineEvents: [],
+                channelId: 'channel-id',
+                checklistNumber: 0,
+                itemNumber: 0,
+                playbookRunId: 'run-id',
+                isDisabled: false,
+            };
+
+            const {getByTestId} = renderWithEverything(<ChecklistItem {...props}/>, {database});
+
+            const checklistItem = getByTestId('checklist-item');
+            expect(checklistItem.props.isMilitaryTime).toBe(false);
+
+            await act(async () => {
+                await operator.handlePreferences({
+                    preferences: [{
+                        category: Preferences.CATEGORIES.DISPLAY_SETTINGS,
+                        name: Preferences.USE_MILITARY_TIME,
+                        value: 'true',
+                        user_id: 'user-id',
+                    }],
+                    prepareRecordsOnly: false,
+                });
+            });
+
+            await waitFor(() => {
+                expect(checklistItem.props.isMilitaryTime).toBe(true);
+            });
+        });
+
         it('should resolve the current user timezone', async () => {
             const props = {
                 item: TestHelper.fakePlaybookChecklistItem(checklistId, {id: itemId}),

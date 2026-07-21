@@ -54,11 +54,11 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => ({
     },
 }));
 
-export const getTaskActivityAbsoluteTime = (intl: IntlShape, timestamp: number, timeZone?: string) => {
+export const getTaskActivityAbsoluteTime = (intl: IntlShape, timestamp: number, timeZone?: string, isMilitaryTime?: boolean) => {
     // Without an explicit timeZone, formatDate/formatTime fall back to the engine default (UTC on
     // React Native), showing the wrong local time/date. Callers pass the user's resolved timezone.
     const date = intl.formatDate(timestamp, {year: 'numeric', month: 'short', day: 'numeric', timeZone: timeZone || undefined});
-    const time = intl.formatTime(timestamp, {hour: 'numeric', minute: '2-digit', timeZone: timeZone || undefined});
+    const time = intl.formatTime(timestamp, {hour: 'numeric', minute: '2-digit', hour12: !isMilitaryTime, timeZone: timeZone || undefined});
     return intl.formatMessage({
         id: 'playbooks.checklist_item.activity.absolute_time',
         defaultMessage: '{date} at {time}',
@@ -70,16 +70,18 @@ type Props = {
     actor?: UserModel;
     teammateNameDisplay: string;
     timezone: string;
+    isMilitaryTime: boolean;
     variant: 'chip' | 'detail';
     onActorPress?: (userId: string) => void;
 };
 
-const TaskActivityIndicator = ({activity, actor, teammateNameDisplay, timezone, variant, onActorPress}: Props) => {
+const TaskActivityIndicator = ({activity, actor, teammateNameDisplay, timezone, isMilitaryTime, variant, onActorPress}: Props) => {
     const intl = useIntl();
     const theme = useTheme();
     const styles = getStyleSheet(theme);
     const relativeTime = getFriendlyDate(intl, activity.timestamp);
-    const absoluteTime = getTaskActivityAbsoluteTime(intl, activity.timestamp, timezone);
+    const compactTime = getFriendlyDate(intl, activity.timestamp, 'narrow');
+    const absoluteTime = getTaskActivityAbsoluteTime(intl, activity.timestamp, timezone, isMilitaryTime);
     const actionLabel = intl.formatMessage(activity.action === 'check' ? {
         id: 'playbooks.checklist_item.activity.checked',
         defaultMessage: 'Checked',
@@ -118,7 +120,7 @@ const TaskActivityIndicator = ({activity, actor, teammateNameDisplay, timezone, 
         const prefix = (
             <View style={styles.chipPrefix}>
                 <CompassIcon
-                    name={activity.action === 'check' ? 'check-circle-outline' : 'checkbox-blank-outline'}
+                    name={activity.action === 'check' ? 'check' : 'checkbox-blank-outline'}
                     size={14}
                     style={styles.chipIcon}
                     testID={`${TEST_ID}.icon`}
@@ -135,7 +137,7 @@ const TaskActivityIndicator = ({activity, actor, teammateNameDisplay, timezone, 
             >
                 <BaseChip
                     testID={`${TEST_ID}.chip`}
-                    label={conciseLabel}
+                    label={compactTime}
                     prefix={prefix}
                     onPress={actor && onActorPress ? handlePress : undefined}
                 />
@@ -151,7 +153,7 @@ const TaskActivityIndicator = ({activity, actor, teammateNameDisplay, timezone, 
             testID={`${TEST_ID}.detail`}
         >
             <CompassIcon
-                name={activity.action === 'check' ? 'check-circle-outline' : 'checkbox-blank-outline'}
+                name={activity.action === 'check' ? 'check' : 'checkbox-blank-outline'}
                 size={24}
                 color={changeOpacity(theme.centerChannelColor, 0.56)}
                 testID={`${TEST_ID}.detail_icon`}
