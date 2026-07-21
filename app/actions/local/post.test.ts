@@ -25,7 +25,7 @@ import {
 
 import type ServerDataOperator from '@database/operator/server_data_operator';
 
-const {SERVER: {DRAFT, FILE, MY_CHANNEL, POST, POSTS_IN_CHANNEL, POSTS_IN_THREAD, REACTION, THREAD, THREAD_PARTICIPANT, THREADS_IN_TEAM}} = MM_TABLES;
+const {SERVER: {FILE, MY_CHANNEL, POST, POSTS_IN_CHANNEL, POSTS_IN_THREAD, REACTION, THREAD, THREAD_PARTICIPANT, THREADS_IN_TEAM}} = MM_TABLES;
 
 const serverUrl = 'baseHandler.test.com';
 let operator: ServerDataOperator;
@@ -426,7 +426,6 @@ describe('deletePostsInChannelsByCutoff', () => {
             sqls: [
                 [`DELETE FROM ${REACTION} WHERE post_id IN (${postSubquery})`, []],
                 [`DELETE FROM ${FILE} WHERE post_id IN (${postSubquery})`, []],
-                [`DELETE FROM ${DRAFT} WHERE root_id IN (${postSubquery})`, []],
                 [`DELETE FROM ${POSTS_IN_THREAD} WHERE latest < ${CUTOFF} AND ${rootInChannelsExists}`, []],
                 [`UPDATE ${POSTS_IN_THREAD} SET earliest = ${CUTOFF} WHERE earliest < ${CUTOFF} AND ${rootInChannelsExists}`, []],
                 [`DELETE FROM ${THREAD} WHERE id IN (${postSubquery})`, []],

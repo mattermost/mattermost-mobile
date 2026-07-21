@@ -443,7 +443,6 @@ export async function deletePostsInChannelsByCutoff(
                 sqls: [
                     [`DELETE FROM ${REACTION} WHERE post_id IN (${postSubquery})`, []],
                     [`DELETE FROM ${FILE} WHERE post_id IN (${postSubquery})`, []],
-                    [`DELETE FROM ${DRAFT} WHERE root_id IN (${postSubquery})`, []],
 
                     // PostsInThread bookkeeping, delete or update values depending on replies left in the thread after the cutoff
                     [`DELETE FROM ${POSTS_IN_THREAD} WHERE latest < ${cutoff} AND ${rootInChannelsExists}`, []],
