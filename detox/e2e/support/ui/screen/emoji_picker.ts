@@ -79,6 +79,27 @@ class EmojiPickerScreen {
     };
 
     tapSearchResultEmoji = async (glyph: string, emojiShortName?: string) => {
+        // Prefer the deterministic per-result testID (emoji_item.tsx renders
+        // `emoji_picker.search_result.<name>`). The by.text/withAncestor fallback
+        // below is fragile: the filtered results render in the bottom sheet (not
+        // reliably under the emoji_picker ancestor) and the emoji glyph is not a
+        // stable text match on iOS, which left the clown_face row un-tappable and
+        // cascaded into the whole Custom Status suite.
+        if (emojiShortName) {
+            try {
+                const byId = element(by.id(`emoji_picker.search_result.${emojiShortName}`)).atIndex(0);
+                if (isAndroid()) {
+                    await waitFor(byId).toExist().withTimeout(timeouts.TEN_SEC);
+                } else {
+                    await waitFor(byId).toBeVisible().withTimeout(timeouts.TEN_SEC);
+                }
+                await byId.tap();
+                return;
+            } catch {
+                // Fall back to text/ancestor matching below.
+            }
+        }
+
         const ancestorMatchers = [
             by.id(this.testID.emojiPickerScreen),
             by.id('emoji_picker'),
