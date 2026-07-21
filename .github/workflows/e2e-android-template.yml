@@ -486,6 +486,8 @@ jobs:
 
       - name: Save report Detox Dependencies
         id: report-link
+        if: always()
+        continue-on-error: true
         run: |
           cd detox
           npm ci
@@ -501,6 +503,7 @@ jobs:
 
       - name: Calculate failures
         id: summary
+        if: always()
         run: |
           if [ -f detox/artifacts/summary.json ]; then
             echo "FAILURES=$(cat detox/artifacts/summary.json | jq .stats.failures)" >> ${GITHUB_OUTPUT}
@@ -521,15 +524,20 @@ jobs:
 
       - name: Set Target URL
         id: set-url
+        if: always()
         run: |
             echo "TARGET_URL=https://${{ env.DETOX_AWS_S3_BUCKET }}.s3.amazonaws.com/${{ steps.s3.outputs.path }}/jest-stare/android-report.html" >> ${GITHUB_OUTPUT}
 
       - name: Determine Status
         id: determine-status
+        if: always()
         env:
           FAILURES: ${{ steps.summary.outputs.FAILURES }}
+          ERRORS: ${{ steps.summary.outputs.ERRORS }}
+          TOTAL: ${{ steps.summary.outputs.TOTAL }}
         run: |
-          if [[ "$FAILURES" == "-1" || "$FAILURES" -gt 0 ]]; then
+          # Fail on missing/empty reports (infra died before tests) and on real failures.
+          if [[ "$FAILURES" == "-1" || "$FAILURES" -gt 0 || "${ERRORS:-0}" -gt 0 || "${TOTAL:-0}" -eq 0 ]]; then
             echo "STATUS=failure" >> ${GITHUB_OUTPUT}
           else
             echo "STATUS=success" >> ${GITHUB_OUTPUT}
@@ -554,7 +562,7 @@ jobs:
           echo "There was **${PERCENTAGE}%** success rate." >> ${GITHUB_STEP_SUMMARY}
 
       - name: Fail job on test failures
-        if: steps.determine-status.outputs.STATUS == 'failure'
+        if: always() && steps.determine-status.outputs.STATUS == 'failure'
         run: |
-          echo "::error::Detox reported test failures (FAILURES=${{ steps.summary.outputs.FAILURES }})"
+          echo "::error::Detox reported test failures (FAILURES=${{ steps.summary.outputs.FAILURES }}, TOTAL=${{ steps.summary.outputs.TOTAL }}, ERRORS=${{ steps.summary.outputs.ERRORS }})"
           exit 1
