@@ -579,8 +579,9 @@ h2 { font-size:16px; font-weight:600; margin:24px 0 12px; color:var(--muted); te
 }
 
 /**
- * Convert a Maestro JUnit XML report into Jest --json shape so TSIO can ingest
- * it under framework=detox (server currently accepts playwright|cypress|detox only).
+ * Convert a Maestro JUnit XML report into Jest --json shape.
+ * Prefer uploading JUnit with framework=maestro (TSIO #76+). Kept for local/
+ * tooling that still wants a Jest-shaped artifact.
  *
  * @param {string} xmlPath
  * @param {string} outputPath

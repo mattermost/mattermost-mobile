@@ -452,28 +452,19 @@ jobs:
             --job-name "$TSIO_SHARD_NAME" \
             --reason "Maestro job failed or was cancelled before maestro-report.xml was written"
 
-      # TSIO only accepts playwright|cypress|detox — convert Maestro JUnit to Jest JSON.
-      - name: Convert Maestro JUnit to Jest JSON for TSIO
-        if: always() && inputs.tsio-config != '' && vars.TSIO_UPLOAD_ENABLED != 'false' && hashFiles('build/maestro-report.xml') != ''
-        run: |
-          node -e "
-            const {writeMaestroJestJsonForTsio} = require('./detox/utils/maestro_report');
-            if (!writeMaestroJestJsonForTsio('build/maestro-report.xml', 'build/maestro-report.jest.json')) {
-              process.exit(1);
-            }
-          "
-
+      # TSIO accepts framework=maestro (JUnit XML) since mattermost-test-system-io#76.
       - name: Upload report to Test System IO
-        if: always() && inputs.tsio-config != '' && vars.TSIO_UPLOAD_ENABLED != 'false' && hashFiles('build/maestro-report.jest.json') != ''
+        if: always() && inputs.tsio-config != '' && vars.TSIO_UPLOAD_ENABLED != 'false' && hashFiles('build/maestro-report.xml') != ''
         # Pin matches TSIO staging deploy (mattermost-test-system-io#76 / 81017b2).
         uses: mattermost/mattermost-test-system-io/.github/actions/test-system-io-report-upload@81017b2d568d1fc1f1fdaa7299b177fae53c63e1 # staging validation / #76
         with:
           composite-identity: ${{ toJSON(fromJSON(inputs.tsio-config).composite_identity) }}
           total-reports-expected: ${{ fromJSON(inputs.tsio-config).total_reports_expected }}
-          framework: detox
+          framework: maestro
           github-token: ${{ github.token }}
           gh-job-name: ${{ inputs.tsio-shard-name != '' && inputs.tsio-shard-name || 'Maestro E2E Tests (iOS)' }}
-          json-path: build/maestro-report.jest.json
+          # Action input is named json-path; Maestro uploads JUnit XML bytes.
+          json-path: build/maestro-report.xml
           screenshots-dir: build/maestro-artifacts
           # TEMP_TSIO_STAGING: point uploads at staging while validating TSIO #76.
           # REVERT before merge / after staging sign-off — remove this line (default = prod).
@@ -888,28 +879,19 @@ jobs:
             --job-name "$TSIO_SHARD_NAME" \
             --reason "Maestro job failed or was cancelled before maestro-report.xml was written"
 
-      # TSIO only accepts playwright|cypress|detox — convert Maestro JUnit to Jest JSON.
-      - name: Convert Maestro JUnit to Jest JSON for TSIO
-        if: always() && inputs.tsio-config != '' && vars.TSIO_UPLOAD_ENABLED != 'false' && hashFiles('build/maestro-report.xml') != ''
-        run: |
-          node -e "
-            const {writeMaestroJestJsonForTsio} = require('./detox/utils/maestro_report');
-            if (!writeMaestroJestJsonForTsio('build/maestro-report.xml', 'build/maestro-report.jest.json')) {
-              process.exit(1);
-            }
-          "
-
+      # TSIO accepts framework=maestro (JUnit XML) since mattermost-test-system-io#76.
       - name: Upload report to Test System IO
-        if: always() && inputs.tsio-config != '' && vars.TSIO_UPLOAD_ENABLED != 'false' && hashFiles('build/maestro-report.jest.json') != ''
+        if: always() && inputs.tsio-config != '' && vars.TSIO_UPLOAD_ENABLED != 'false' && hashFiles('build/maestro-report.xml') != ''
         # Pin matches TSIO staging deploy (mattermost-test-system-io#76 / 81017b2).
         uses: mattermost/mattermost-test-system-io/.github/actions/test-system-io-report-upload@81017b2d568d1fc1f1fdaa7299b177fae53c63e1 # staging validation / #76
         with:
           composite-identity: ${{ toJSON(fromJSON(inputs.tsio-config).composite_identity) }}
           total-reports-expected: ${{ fromJSON(inputs.tsio-config).total_reports_expected }}
-          framework: detox
+          framework: maestro
           github-token: ${{ github.token }}
           gh-job-name: ${{ inputs.tsio-shard-name != '' && inputs.tsio-shard-name || 'Maestro E2E Tests (Android)' }}
-          json-path: build/maestro-report.jest.json
+          # Action input is named json-path; Maestro uploads JUnit XML bytes.
+          json-path: build/maestro-report.xml
           screenshots-dir: build/maestro-artifacts
           # TEMP_TSIO_STAGING: point uploads at staging while validating TSIO #76.
           # REVERT before merge / after staging sign-off — remove this line (default = prod).

@@ -440,6 +440,59 @@ jobs:
           path="${{ needs.generate-specs.outputs.build_id }}-${{ needs.generate-specs.outputs.mobile_sha }}-${{ needs.generate-specs.outputs.mobile_ref }}"
           echo "path=$(echo "${path}" | sed 's/\./-/g')" >> ${GITHUB_OUTPUT}
 
+      # ── TSIO report upload (before e2e:save-report) ────────────────────────
+      # save-report deletes android-results-* dirs (where Detox PNGs live). Upload
+      # while those artifact trees are still on disk.
+      # Each matrix leg wrote Jest's native --json into its android-results-*
+      # artifact; merge all legs' testResults into one JSON and upload it as a
+      # single shard. gh-job-name must match this job's rendered `name:` (the
+      # tsio-shard-name), which is what TSIO shows as the shard label.
+      - name: Merge per-shard Jest JSON for TSIO
+        if: always() && inputs.tsio-config != '' && vars.TSIO_UPLOAD_ENABLED != 'false'
+        id: tsio-merge
+        run: |
+          set +e
+          mapfile -t files < <(find detox/artifacts -name jest-results.json -print)
+          if [ ${#files[@]} -eq 0 ]; then
+            echo "skip=true" >> "$GITHUB_OUTPUT"
+            echo "No jest-results.json found across shards — skipping TSIO upload."
+            exit 0
+          fi
+          if ! jq -s '{testResults: [.[] | .testResults[]]}' "${files[@]}" > detox/artifacts/jest-results-merged.json 2>/dev/null; then
+            echo "skip=true" >> "$GITHUB_OUTPUT"
+            echo "jq merge failed — skipping TSIO upload."
+            exit 0
+          fi
+          echo "Merged ${#files[@]} shard JSON(s) -> $(jq '.testResults | length' detox/artifacts/jest-results-merged.json) file(s)"
+          echo "skip=false" >> "$GITHUB_OUTPUT"
+
+      - name: Write TSIO failure stub when Detox JSON is missing
+        if: always() && inputs.tsio-config != '' && vars.TSIO_UPLOAD_ENABLED != 'false' && steps.tsio-merge.outputs.skip == 'true'
+        env:
+          TSIO_SHARD_NAME: ${{ inputs.tsio-shard-name != '' && inputs.tsio-shard-name || 'generate-report' }}
+        run: |
+          node detox/utils/write-tsio-failure-stub.mjs \
+            --format jest \
+            --output detox/artifacts/jest-results-merged.json \
+            --job-name "$TSIO_SHARD_NAME" \
+            --reason "Detox job failed or was cancelled before jest-results.json was written"
+
+      - name: Upload report to Test System IO
+        if: always() && inputs.tsio-config != '' && vars.TSIO_UPLOAD_ENABLED != 'false' && hashFiles('detox/artifacts/jest-results-merged.json') != ''
+        # Pin matches TSIO staging deploy (mattermost-test-system-io#76 / 81017b2).
+        uses: mattermost/mattermost-test-system-io/.github/actions/test-system-io-report-upload@81017b2d568d1fc1f1fdaa7299b177fae53c63e1 # staging validation / #76
+        with:
+          composite-identity: ${{ toJSON(fromJSON(inputs.tsio-config).composite_identity) }}
+          total-reports-expected: ${{ fromJSON(inputs.tsio-config).total_reports_expected }}
+          framework: detox
+          github-token: ${{ github.token }}
+          gh-job-name: ${{ inputs.tsio-shard-name != '' && inputs.tsio-shard-name || 'generate-report' }}
+          json-path: detox/artifacts/jest-results-merged.json
+          screenshots-dir: detox/artifacts/
+          # TEMP_TSIO_STAGING: point uploads at staging while validating TSIO #76.
+          # REVERT before merge / after staging sign-off — remove this line (default = prod).
+          use-staging: "true"
+
       - name: Save report Detox Dependencies
         id: report-link
         run: |
@@ -510,54 +563,3 @@ jobs:
           echo "" >> ${GITHUB_STEP_SUMMARY}
           echo "You can check the full report [here](${TARGET_URL})" >> ${GITHUB_STEP_SUMMARY}
           echo "There was **${PERCENTAGE}%** success rate." >> ${GITHUB_STEP_SUMMARY}
-
-      # ── TSIO report upload (one per platform) ──────────────────────────────
-      # Each matrix leg wrote Jest's native --json into its android-results-*
-      # artifact; merge all legs' testResults into one JSON and upload it as a
-      # single shard. gh-job-name must match this job's rendered `name:` (the
-      # tsio-shard-name), which is what TSIO shows as the shard label.
-      - name: Merge per-shard Jest JSON for TSIO
-        if: always() && inputs.tsio-config != '' && vars.TSIO_UPLOAD_ENABLED != 'false'
-        id: tsio-merge
-        run: |
-          set +e
-          mapfile -t files < <(find detox/artifacts -name jest-results.json -print)
-          if [ ${#files[@]} -eq 0 ]; then
-            echo "skip=true" >> "$GITHUB_OUTPUT"
-            echo "No jest-results.json found across shards — skipping TSIO upload."
-            exit 0
-          fi
-          if ! jq -s '{testResults: [.[] | .testResults[]]}' "${files[@]}" > detox/artifacts/jest-results-merged.json 2>/dev/null; then
-            echo "skip=true" >> "$GITHUB_OUTPUT"
-            echo "jq merge failed — skipping TSIO upload."
-            exit 0
-          fi
-          echo "Merged ${#files[@]} shard JSON(s) -> $(jq '.testResults | length' detox/artifacts/jest-results-merged.json) file(s)"
-          echo "skip=false" >> "$GITHUB_OUTPUT"
-
-      - name: Write TSIO failure stub when Detox JSON is missing
-        if: always() && inputs.tsio-config != '' && vars.TSIO_UPLOAD_ENABLED != 'false' && steps.tsio-merge.outputs.skip == 'true'
-        env:
-          TSIO_SHARD_NAME: ${{ inputs.tsio-shard-name != '' && inputs.tsio-shard-name || 'generate-report' }}
-        run: |
-          node detox/utils/write-tsio-failure-stub.mjs \
-            --format jest \
-            --output detox/artifacts/jest-results-merged.json \
-            --job-name "$TSIO_SHARD_NAME" \
-            --reason "Detox job failed or was cancelled before jest-results.json was written"
-
-      - name: Upload report to Test System IO
-        if: always() && inputs.tsio-config != '' && vars.TSIO_UPLOAD_ENABLED != 'false' && hashFiles('detox/artifacts/jest-results-merged.json') != ''
-        # Pin matches TSIO staging deploy (mattermost-test-system-io#76 / 81017b2).
-        uses: mattermost/mattermost-test-system-io/.github/actions/test-system-io-report-upload@81017b2d568d1fc1f1fdaa7299b177fae53c63e1 # staging validation / #76
-        with:
-          composite-identity: ${{ toJSON(fromJSON(inputs.tsio-config).composite_identity) }}
-          total-reports-expected: ${{ fromJSON(inputs.tsio-config).total_reports_expected }}
-          framework: detox
-          github-token: ${{ github.token }}
-          gh-job-name: ${{ inputs.tsio-shard-name != '' && inputs.tsio-shard-name || 'generate-report' }}
-          json-path: detox/artifacts/jest-results-merged.json
-          screenshots-dir: detox/artifacts/
-          # TEMP_TSIO_STAGING: point uploads at staging while validating TSIO #76.
-          # REVERT before merge / after staging sign-off — remove this line (default = prod).
-          use-staging: "true"
