@@ -435,12 +435,15 @@ jobs:
           persist-credentials: false
           sparse-checkout: |
             detox/utils/tsio-report-status.js
+            detox/utils/cmt-channel-notify.js
 
       - name: Post TSIO commit status from unified CMT report group
         env:
           GITHUB_TOKEN: ${{ github.token }}
           COMPOSITE_IDENTITY: ${{ needs.cmt-identity.outputs.composite-identity-json }}
           TOTAL_REPORTS_EXPECTED: ${{ needs.cmt-identity.outputs.total-reports-expected }}
+          # RC / CMT channel (same destination as main E2E via resolveWebhookUrl).
+          MATTERMOST_CMT_WEBHOOK_URL: ${{ secrets.MM_E2E_RELEASE_WEBHOOK_URL }}
         run: |
           set +e
           UPSTREAM="true"

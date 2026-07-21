@@ -817,6 +817,7 @@ jobs:
           persist-credentials: false
           sparse-checkout: |
             detox/utils/tsio-report-status.js
+            detox/utils/cmt-channel-notify.js
 
       - name: Post TSIO commit status from unified report group
         env:
@@ -824,6 +825,10 @@ jobs:
           COMPOSITE_IDENTITY: ${{ needs.calculate-tsio-identity.outputs.composite-identity-json }}
           TOTAL_REPORTS_EXPECTED: ${{ needs.calculate-tsio-identity.outputs.total-reports-expected }}
           TSIO_STATUS_CONTEXT: ${{ inputs.tsio_status_context || 'e2e/mobile' }}
+          # Master/main shares the CMT/RC channel; PR posts to the Mobile E2E QA channel.
+          # Routing is by compositeIdentity.name in cmt-channel-notify.js.
+          MATTERMOST_CMT_WEBHOOK_URL: ${{ secrets.MM_E2E_RELEASE_WEBHOOK_URL }}
+          MATTERMOST_E2E_WEBHOOK_URL: ${{ secrets.MM_MOBILE_E2E_WEBHOOK_URL }}
         run: |
           set +e
           UPSTREAM="true"

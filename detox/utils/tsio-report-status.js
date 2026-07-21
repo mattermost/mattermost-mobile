@@ -292,6 +292,43 @@ async function reportTsioStatus(options) {
         } catch {}
     }
 
+    // Channel notify (best-effort). Routing (see resolveWebhookUrl):
+    //   cmt-mobile / mobile-main → MM_E2E_RELEASE_WEBHOOK_URL
+    //   mobile-pr                → MM_MOBILE_E2E_WEBHOOK_URL
+    // Failures here must not undo a successfully written commit status.
+    try {
+        const notifyNames = new Set(['cmt-mobile', 'mobile-pr', 'mobile-main']);
+        const reportName = compositeIdentity.run_group || compositeIdentity.name;
+        if (notifyNames.has(reportName) || notifyNames.has(compositeIdentity.name)) {
+            const {notifyCmtChannel, resolveWebhookUrl} = require('./cmt-channel-notify.js');
+            const webhookUrl = resolveWebhookUrl(compositeIdentity.name);
+            if (webhookUrl) {
+                const failedShards = (detail.reports || []).
+                    filter((r) => r.status && r.status !== 'complete' && r.status !== 'completed').
+                    map((r) => r.gh_job_name || r.display_name || r.id).
+                    filter(Boolean);
+                const hasFailures = (result.test_stats.failed || 0) > 0 || failedShards.length > 0;
+                const channelReportUrl = result.display_report_url || result.group_url || targetUrl;
+                const core = {
+                    info: (msg) => console.log(msg),
+                    warning: (msg) => console.warn(msg),
+                };
+                await notifyCmtChannel({
+                    core,
+                    baseUrl,
+                    compositeIdentity,
+                    detail,
+                    reportUrl: channelReportUrl,
+                    upstreamJobsSucceeded,
+                    hasFailures,
+                    webhookUrl,
+                });
+            }
+        }
+    } catch (error) {
+        console.warn(`E2E Mattermost notify setup failed: ${error.message}`);
+    }
+
     if (failOnTestFailures && bothTerminal && (result.test_stats.failed || 0) > 0) {
         const err = new Error('TSIO reported test failures');
         err.exitCode = 1;
