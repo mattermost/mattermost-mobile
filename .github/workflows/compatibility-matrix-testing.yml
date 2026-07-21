@@ -148,9 +148,15 @@ jobs:
   #   ]
   # }
   build-ios-simulator:
-    runs-on: macos-14
+    # macos-14 predates Xcode 26 and has none pre-installed, so prepare-ios-build's
+    # Xcode 26 requirement always fails here. e2e-detox-pr.yml and
+    # e2e-maestro-template.yml already build on macos-26 successfully — match that.
+    runs-on: macos-26
     needs:
       - update-initial-status
+    permissions:
+      contents: read
+      actions: write
     steps:
       - name: Checkout Repository
         uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
@@ -168,15 +174,18 @@ jobs:
         working-directory: ./fastlane
 
       - name: Upload iOS Simulator Build
-        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
           name: ios-build-simulator-${{ github.run_id }}
-          path: Mattermost-simulator-x86_64.app.zip
+          path: Mattermost-simulator-*.app.zip
 
   build-android-apk:
     runs-on: ubuntu-latest-8-cores
     needs:
       - update-initial-status
+    permissions:
+      contents: read
+      actions: write
     env:
       ORG_GRADLE_PROJECT_jvmargs: -Xmx8g
     steps:
@@ -203,15 +212,22 @@ jobs:
           npm run e2e:android-build
 
       - name: Upload Android Build
-        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
           name: android-build-files-${{ github.run_id }}
-          path: "android/app/build/outputs/apk/**/*.apk"
+          # Match e2e-detox-pr.yml's glob shape exactly: the wildcard must start
+          # right after "build/" so upload-artifact only strips "android/app/build/"
+          # and preserves the outputs/apk/... subtree. e2e-android-template.yml's
+          # Download APK artifact step (shared by PR + CMT) expects that shape.
+          path: "android/app/build/**/*"
 
   build-android-apk-maestro:
     runs-on: ubuntu-latest-8-cores
     needs:
       - update-initial-status
+    permissions:
+      contents: read
+      actions: write
     env:
       ORG_GRADLE_PROJECT_jvmargs: -Xmx8g
     steps:
@@ -235,7 +251,7 @@ jobs:
         uses: ./.github/actions/build-android-maestro-apk
 
       - name: Upload Maestro Android Build
-        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
           name: android-maestro-build-files-${{ github.run_id }}
           path: android/app/build/outputs/apk/release/

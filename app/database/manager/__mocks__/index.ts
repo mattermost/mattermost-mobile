@@ -250,6 +250,22 @@ class DatabaseManagerSingleton {
         return server;
     };
 
+    public getServerUrlForDatabase = (database: Database): string | undefined => {
+        const databaseName = (database.adapter as {dbName?: string} | undefined)?.dbName;
+
+        return Object.entries(this.serverDatabases).find(([, serverDatabase]) => {
+            if (!serverDatabase) {
+                return false;
+            }
+
+            if (serverDatabase.database === database) {
+                return true;
+            }
+
+            return (serverDatabase.database.adapter as {dbName?: string} | undefined)?.dbName === databaseName;
+        })?.[0];
+    };
+
     public getActiveServerDatabase = async (): Promise<Database|undefined> => {
         const server = await this.getActiveServer();
         if (server?.url) {
@@ -323,7 +339,7 @@ class DatabaseManagerSingleton {
         }
     };
 
-    private deleteServerDatabaseFiles = async (serverUrl: string): Promise<void> => {
+    public deleteServerDatabaseFiles = async (serverUrl: string): Promise<void> => {
         const databaseName = urlSafeBase64Encode(serverUrl);
 
         if (Platform.OS === 'ios') {

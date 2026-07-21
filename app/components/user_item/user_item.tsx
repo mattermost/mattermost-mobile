@@ -3,7 +3,7 @@
 
 import React, {useCallback, useMemo, type ReactNode} from 'react';
 import {useIntl} from 'react-intl';
-import {StyleSheet, Text, TouchableOpacity, View} from 'react-native';
+import {StyleSheet, Text, TouchableOpacity, View, type StyleProp, type ViewStyle} from 'react-native';
 
 import CompassIcon from '@components/compass_icon';
 import CustomStatusEmoji from '@components/custom_status/custom_status_emoji';
@@ -20,6 +20,7 @@ import type UserModel from '@typings/database/models/servers/user';
 export type UserItemProps = {
     FooterComponent?: ReactNode;
     user?: UserProfile | UserModel;
+    containerStyle?: StyleProp<ViewStyle>;
     currentUserId: string;
     isAgent?: boolean;
     size?: number;
@@ -86,6 +87,7 @@ const nonThemedStyles = StyleSheet.create({
 const UserItem = ({
     FooterComponent,
     user,
+    containerStyle,
     currentUserId,
     isAgent = false,
     size = 24,
@@ -150,10 +152,11 @@ const UserItem = ({
             onLongPress={onLongPress}
             disabled={!(onUserPress || onUserLongPress)}
             onLayout={onLayout}
+            testID={userItemTestId}
         >
             <View
                 ref={viewRef}
-                style={containerViewStyle}
+                style={[...containerViewStyle, containerStyle]}
                 testID={userItemTestId}
             >
                 <ProfilePicture

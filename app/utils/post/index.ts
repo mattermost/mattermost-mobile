@@ -18,7 +18,16 @@ import type PostModel from '@typings/database/models/servers/post';
 import type UserModel from '@typings/database/models/servers/user';
 import type {IntlShape} from 'react-intl';
 
+export function hasAiGeneratedMetadata(post: PostModel | Post): boolean {
+    return Boolean(ensureString(post.props?.ai_generated_by) && ensureString(post.props?.ai_generated_by_username));
+}
+
 export function areConsecutivePosts(post: PostModel, previousPost: PostModel, userLocale: string) {
+    // Caller already excludes AI current posts; break after an AI previous post so the next header shows.
+    if (hasAiGeneratedMetadata(previousPost)) {
+        return false;
+    }
+
     let consecutive = false;
 
     if (post && previousPost) {

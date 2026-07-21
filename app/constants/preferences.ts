@@ -3,6 +3,7 @@
 
 export const CATEGORIES_TO_KEEP = {
     ADVANCED_SETTINGS: 'advanced_settings',
+    AGENTS: 'agents',
     CHANNEL_APPROXIMATE_VIEW_TIME: 'channel_approximate_view_time',
     CHANNEL_OPEN_TIME: 'channel_open_time',
     DIRECT_CHANNEL_SHOW: 'direct_channel_show',
@@ -50,6 +51,7 @@ const Preferences = {
     DISPLAY_PREFER_FULL_NAME: 'full_name',
     DISPLAY_PREFER_USERNAME: 'username',
     EMOJI_SKINTONE: 'emoji_skintone',
+    SELECTED_AGENT: 'selected_agent',
     LINK_PREVIEW_DISPLAY: 'link_previews',
     MENTION_KEYS: 'mention_keys',
     USE_MILITARY_TIME: 'use_military_time',
