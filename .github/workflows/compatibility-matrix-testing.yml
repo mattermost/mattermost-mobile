@@ -457,8 +457,8 @@ jobs:
           COMPOSITE_IDENTITY: ${{ needs.cmt-identity.outputs.composite-identity-json }}
           TOTAL_REPORTS_EXPECTED: ${{ needs.cmt-identity.outputs.total-reports-expected }}
           # Incoming webhook for the Mobile CMT/RC results channel (separate from
-          # PR/main MM_MOBILE_E2E_WEBHOOK_URL). Optional — when unset, TSIO
-          # status still flips and channel notify is skipped.
+          # PR MM_MOBILE_E2E_WEBHOOK_URL and main MM_E2E_MASTER_HEALTH_WEBHOOK_URL).
+          # Optional — when unset, TSIO status still flips and channel notify is skipped.
           MATTERMOST_CMT_WEBHOOK_URL: ${{ secrets.MM_E2E_RELEASE_WEBHOOK_URL }}
         run: |
           set +e

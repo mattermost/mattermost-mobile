@@ -826,10 +826,11 @@ jobs:
           COMPOSITE_IDENTITY: ${{ needs.calculate-tsio-identity.outputs.composite-identity-json }}
           TOTAL_REPORTS_EXPECTED: ${{ needs.calculate-tsio-identity.outputs.total-reports-expected }}
           TSIO_STATUS_CONTEXT: ${{ inputs.tsio_status_context || 'e2e/mobile' }}
-          # Main + PR → mobile E2E channel; CMT/RC uses MM_E2E_RELEASE_WEBHOOK_URL
-          # (wired only in compatibility-matrix-testing.yml). Routing is by
-          # compositeIdentity.name in cmt-channel-notify.js.
+          # PR → MM_MOBILE_E2E_WEBHOOK_URL; main → MM_E2E_MASTER_HEALTH_WEBHOOK_URL;
+          # CMT/RC uses MM_E2E_RELEASE_WEBHOOK_URL (compatibility-matrix-testing.yml).
+          # Routing is by compositeIdentity.name in cmt-channel-notify.js.
           MATTERMOST_E2E_WEBHOOK_URL: ${{ secrets.MM_MOBILE_E2E_WEBHOOK_URL }}
+          MATTERMOST_MASTER_HEALTH_WEBHOOK_URL: ${{ secrets.MM_E2E_MASTER_HEALTH_WEBHOOK_URL }}
         run: |
           set +e
           UPSTREAM="true"

@@ -273,8 +273,9 @@ async function reportTsioStatus(options) {
     }
 
     // Channel notify (best-effort). Routing (see resolveWebhookUrl):
-    //   cmt-mobile                    → MM_E2E_RELEASE_WEBHOOK_URL
-    //   mobile-main / mobile-pr       → MM_MOBILE_E2E_WEBHOOK_URL
+    //   cmt-mobile     → MM_E2E_RELEASE_WEBHOOK_URL
+    //   mobile-main    → MM_E2E_MASTER_HEALTH_WEBHOOK_URL
+    //   mobile-pr      → MM_MOBILE_E2E_WEBHOOK_URL
     // Failures here must not undo a successfully written commit status.
     try {
         const notifyNames = new Set(['cmt-mobile', 'mobile-pr', 'mobile-main']);
