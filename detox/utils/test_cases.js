@@ -33,9 +33,13 @@ function getStepStateSummary(steps = []) {
     return Object.entries(result).map(([key, value]) => `${value} ${key}`).join(',');
 }
 
+// Bounded MM-T id: word boundary, digits, optional _N sub-test suffix.
+const MM_T_ID_PATTERN = /(?:^|\s)MM-T\d+(?:_\d+)?(?=\s|$)/;
+const MM_T_ID_EXTRACT = /(?:^|\s)(MM-T\d+)(?:_\d+)?(?=\s|$)/;
+
 function getTM4JTestCases(allTests) {
     return allTests.tests.
-        filter((item) => /(MM-T)\w+/g.test(item.name)). // eslint-disable-line wrap-regex
+        filter((item) => MM_T_ID_PATTERN.test(item.name)).
         map((item) => {
             return {
                 title: item.name,
@@ -48,8 +52,8 @@ function getTM4JTestCases(allTests) {
             };
         }).
         reduce((acc, item) => {
-            // Extract the key to exactly match with "MM-T[0-9]+"
-            const key = item.title.match(/(MM-T\d+)/)[0];
+            // Zephyr case key is MM-T[digits]; optional _N is a sub-test index only.
+            const key = item.title.match(MM_T_ID_EXTRACT)[1];
 
             if (acc[key]) {
                 acc[key].push(item);

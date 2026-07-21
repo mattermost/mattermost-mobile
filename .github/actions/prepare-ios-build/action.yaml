@@ -16,19 +16,31 @@ runs:
     - name: ci/select-xcode-26
       shell: bash
       run: |
+        # Intune (and this action's Xcode switch) require Xcode 26.1+.
+        MIN_VERSION=26.1
+        version_ge() {
+          # True when $1 >= $2 (version-sort).
+          [ "$(printf '%s\n%s\n' "$2" "$1" | sort -V | head -1)" = "$2" ]
+        }
+
         CURRENT_SDK=$(xcrun --sdk iphonesimulator --show-sdk-version 2>/dev/null || echo "0")
-        CURRENT_MAJOR="${CURRENT_SDK%%.*}"
         echo "Default Xcode SDK version: ${CURRENT_SDK}"
 
-        if [ "$CURRENT_MAJOR" -ge 26 ]; then
-          echo "Default Xcode ($CURRENT_SDK) meets 26.x requirement; nothing to do."
+        if version_ge "$CURRENT_SDK" "$MIN_VERSION"; then
+          echo "Default Xcode ($CURRENT_SDK) meets ${MIN_VERSION}+ requirement; nothing to do."
           exit 0
         fi
 
-        # Find the highest pre-installed Xcode 26+ app.
-        XCODE_26=$(ls -d /Applications/Xcode_2[6-9]*.app 2>/dev/null | sort -V | tail -1)
+        # Find the highest pre-installed Xcode with version >= 26.1.
+        # Scan all Xcode_*.app directories, extract the version from the name,
+        # filter >= 26.1, and select the highest. Future-proofs for Xcode 30+.
+        XCODE_26=$(for app in /Applications/Xcode_*.app; do
+          [ -d "$app" ] || continue
+          ver=$(basename "$app" .app | sed 's/^Xcode_//')
+          version_ge "$ver" "$MIN_VERSION" && echo "$app"
+        done | sort -V | tail -1 || echo "")
         if [ -z "$XCODE_26" ]; then
-          echo "::error::No Xcode 26+ found pre-installed on this runner and default is $CURRENT_SDK."
+          echo "::error::No Xcode ${MIN_VERSION}+ found pre-installed on this runner and default is $CURRENT_SDK."
           exit 1
         fi
 

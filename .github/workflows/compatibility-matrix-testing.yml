@@ -84,9 +84,15 @@ jobs:
   #   ]
   # }
   build-ios-simulator:
-    runs-on: macos-14
+    # macos-14 predates Xcode 26 and has none pre-installed, so prepare-ios-build's
+    # Xcode 26 requirement always fails here. e2e-detox-pr.yml and
+    # e2e-maestro-template.yml already build on macos-26 successfully — match that.
+    runs-on: macos-26
     needs:
       - update-initial-status
+    permissions:
+      contents: read
+      actions: write
     steps:
       - name: Checkout Repository
         uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
@@ -104,15 +110,18 @@ jobs:
         working-directory: ./fastlane
 
       - name: Upload iOS Simulator Build
-        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
           name: ios-build-simulator-${{ github.run_id }}
-          path: Mattermost-simulator-x86_64.app.zip
+          path: Mattermost-simulator-*.app.zip
 
   build-android-apk:
     runs-on: ubuntu-latest-8-cores
     needs:
       - update-initial-status
+    permissions:
+      contents: read
+      actions: write
     env:
       ORG_GRADLE_PROJECT_jvmargs: -Xmx8g
     steps:
@@ -139,15 +148,22 @@ jobs:
           npm run e2e:android-build
 
       - name: Upload Android Build
-        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
           name: android-build-files-${{ github.run_id }}
-          path: "android/app/build/outputs/apk/**/*.apk"
+          # Match e2e-detox-pr.yml's glob shape exactly: the wildcard must start
+          # right after "build/" so upload-artifact only strips "android/app/build/"
+          # and preserves the outputs/apk/... subtree. e2e-android-template.yml's
+          # Download APK artifact step (shared by PR + CMT) expects that shape.
+          path: "android/app/build/**/*"
 
   build-android-apk-maestro:
     runs-on: ubuntu-latest-8-cores
     needs:
       - update-initial-status
+    permissions:
+      contents: read
+      actions: write
     env:
       ORG_GRADLE_PROJECT_jvmargs: -Xmx8g
     steps:
@@ -171,7 +187,7 @@ jobs:
         uses: ./.github/actions/build-android-maestro-apk
 
       - name: Upload Maestro Android Build
-        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
           name: android-maestro-build-files-${{ github.run_id }}
           path: android/app/build/outputs/apk/release/
@@ -200,6 +216,7 @@ jobs:
       MOBILE_VERSION: ${{ inputs.MOBILE_VERSION }}
       search_path: ${{ matrix.server.latest && 'detox/e2e/test' || 'detox/e2e/test/products/channels/smoke_test' }}
       parallelism: ${{ matrix.server.latest && '10' || '1' }}
+      artifact_run_id: ${{ github.run_id }}
       testcase_failure_fatal: true
 
   detox-ipad-e2e:
@@ -228,6 +245,7 @@ jobs:
       search_path: "detox/e2e/test/products/channels/ipad"
       parallelism: "1"
       detox_config: "ios.ipad.debug"
+      artifact_run_id: ${{ github.run_id }}
 
   # Maestro runs only against the latest server version (no smoke-on-older variant).
   maestro-ios-e2e:
@@ -245,6 +263,7 @@ jobs:
       run-type: "RELEASE"
       MM_TEST_SERVER_URL: ${{ matrix.server.url }}
       MOBILE_VERSION: ${{ inputs.MOBILE_VERSION }}
+      artifact_run_id: ${{ github.run_id }}
       testcase_failure_fatal: true
       record_tests_in_zephyr: true
 
@@ -272,6 +291,7 @@ jobs:
       MOBILE_VERSION: ${{ inputs.MOBILE_VERSION }}
       search_path: ${{ matrix.server.latest && 'detox/e2e/test' || 'detox/e2e/test/products/channels/smoke_test' }}
       parallelism: ${{ matrix.server.latest && '10' || '1' }}
+      artifact_run_id: ${{ github.run_id }}
       testcase_failure_fatal: true
 
   # Maestro runs only against the latest server version (no smoke-on-older variant).
