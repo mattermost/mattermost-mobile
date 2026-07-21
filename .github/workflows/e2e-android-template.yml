@@ -90,7 +90,7 @@ on:
         default: ""
       tsio-config:
         description: >
-          TSIO reporting config: {"composite_identity":{...},"total_reports_expected":"N"}.
+          TSIO reporting config: {"composite_identity":{...},"total_reports_expected":N}.
           Empty disables TSIO upload for this platform.
         required: false
         type: string
@@ -442,27 +442,24 @@ jobs:
       # ── TSIO report upload (before e2e:save-report) ────────────────────────
       # save-report deletes android-results-* dirs (where Detox PNGs live). Upload
       # while those artifact trees are still on disk.
-      # Each matrix leg wrote Jest's native --json into its android-results-*
-      # artifact; merge all legs' testResults into one JSON and upload it as a
-      # single shard. gh-job-name must match this job's rendered `name:` (the
-      # tsio-shard-name), which is what TSIO shows as the shard label.
+      # Each matrix leg wrote Jest CLI --json (name + assertionResults). TSIO's
+      # extractDetox expects testFilePath + nested testResults — convert while
+      # merging. gh-job-name must match this job's rendered `name:` (tsio-shard-name).
       - name: Merge per-shard Jest JSON for TSIO
         if: always() && inputs.tsio-config != '' && vars.TSIO_UPLOAD_ENABLED != 'false'
         id: tsio-merge
         run: |
           set +e
-          mapfile -t files < <(find detox/artifacts -name jest-results.json -print)
-          if [ ${#files[@]} -eq 0 ]; then
+          # TSIO extractDetox expects testFilePath + nested testResults (not Jest CLI
+          # name + assertionResults). Convert while merging shard JSON files.
+          if ! node detox/utils/merge-jest-results-for-tsio.js \
+            --dir detox/artifacts \
+            --repo-root "${GITHUB_WORKSPACE}" \
+            --output detox/artifacts/jest-results-merged.json; then
             echo "skip=true" >> "$GITHUB_OUTPUT"
-            echo "No jest-results.json found across shards — skipping TSIO upload."
+            echo "No jest-results.json found or merge failed — skipping TSIO upload."
             exit 0
           fi
-          if ! jq -s '{testResults: [.[] | .testResults[]]}' "${files[@]}" > detox/artifacts/jest-results-merged.json 2>/dev/null; then
-            echo "skip=true" >> "$GITHUB_OUTPUT"
-            echo "jq merge failed — skipping TSIO upload."
-            exit 0
-          fi
-          echo "Merged ${#files[@]} shard JSON(s) -> $(jq '.testResults | length' detox/artifacts/jest-results-merged.json) file(s)"
           echo "skip=false" >> "$GITHUB_OUTPUT"
 
       - name: Write TSIO failure stub when Detox JSON is missing

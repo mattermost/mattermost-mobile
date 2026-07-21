@@ -41,39 +41,49 @@ function readTagsFromFlowYaml(content) {
     return tags;
 }
 
+function resolveMaestroFlowsRoots(repoRoot) {
+    const candidates = [
+        path.join(repoRoot, 'e2e/maestro/flows'),
+        path.join(repoRoot, 'detox/maestro/flows'),
+        path.join(repoRoot, 'maestro/flows'),
+    ];
+    return candidates.filter((dir) => fs.existsSync(dir));
+}
+
 function buildFlowTagsMap(repoRoot) {
-    const flowsRoot = path.join(repoRoot, 'detox/maestro/flows');
     const map = {};
 
-    if (!fs.existsSync(flowsRoot)) {
-        return map;
+    for (const flowsRoot of resolveMaestroFlowsRoots(repoRoot)) {
+        const walk = (dir) => {
+            for (const entry of fs.readdirSync(dir, {withFileTypes: true})) {
+                const fullPath = path.join(dir, entry.name);
+                if (entry.isDirectory()) {
+                    walk(fullPath);
+                    continue;
+                }
+
+                if (!entry.name.endsWith('.yml')) {
+                    continue;
+                }
+
+                const tags = readTagsFromFlowYaml(fs.readFileSync(fullPath, 'utf-8'));
+                if (!tags.length) {
+                    continue;
+                }
+
+                const relativePath = normalizeFlowPath(path.relative(repoRoot, fullPath));
+                const underFlows = normalizeFlowPath(path.relative(flowsRoot, fullPath));
+                map[relativePath] = tags;
+                // Alias keys so JUnit `file=` values from either layout still resolve.
+                map[underFlows] = tags;
+                map[`flows/${underFlows}`] = tags;
+                map[entry.name] = tags;
+            }
+        };
+
+        walk(flowsRoot);
     }
 
-    const walk = (dir) => {
-        for (const entry of fs.readdirSync(dir, {withFileTypes: true})) {
-            const fullPath = path.join(dir, entry.name);
-            if (entry.isDirectory()) {
-                walk(fullPath);
-                continue;
-            }
-
-            if (!entry.name.endsWith('.yml')) {
-                continue;
-            }
-
-            const tags = readTagsFromFlowYaml(fs.readFileSync(fullPath, 'utf-8'));
-            if (!tags.length) {
-                continue;
-            }
-
-            const relativePath = normalizeFlowPath(path.relative(repoRoot, fullPath));
-            map[relativePath] = tags;
-            map[`detox/maestro/flows/${normalizeFlowPath(path.relative(flowsRoot, fullPath))}`] = tags;
-            map[entry.name] = tags;
-        }
-    };
-
-    walk(flowsRoot);
     return map;
 }
 
@@ -91,7 +101,8 @@ function maestroSummaryToAllTests(summary, repoRoot) {
         const normalizedFile = normalizeFlowPath(flow.file);
         const basename = path.basename(normalizedFile);
         const tags = tagsByFlow[normalizedFile] ||
-            tagsByFlow[`detox/maestro/flows/${normalizedFile.split('flows/').pop()}`] ||
+            tagsByFlow[normalizedFile.split('flows/').pop()] ||
+            tagsByFlow[`flows/${normalizedFile.split('flows/').pop()}`] ||
             tagsByFlow[basename] ||
             [];
 

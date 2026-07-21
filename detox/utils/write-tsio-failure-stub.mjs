@@ -12,43 +12,22 @@ import {createRequire} from 'module';
 const {parseArgs} = createRequire(import.meta.url)('./cli-args.js');
 
 function writeJestStub(outputPath, jobName, reason) {
+    // Shape must match TSIO extractDetox (testFilePath + nested testResults),
+    // not Jest CLI (name + assertionResults).
+    const now = Date.now();
     const payload = {
-        numFailedTestSuites: 1,
-        numFailedTests: 1,
-        numPassedTestSuites: 0,
-        numPassedTests: 0,
-        numPendingTestSuites: 0,
-        numPendingTests: 0,
-        numRuntimeErrorTestSuites: 1,
-        numTodoTests: 0,
-        numTotalTestSuites: 1,
-        numTotalTests: 1,
-        openHandles: [],
-        snapshot: {added: 0, didUpdate: false, failure: false, filesAdded: 0, filesRemoved: 0, filesRemovedList: [], filesUnmatched: 0, filesUpdated: 0, matched: 0, total: 0, unchecked: 0, uncheckedKeysByFile: [], unmatched: 0, updated: 0},
-        startTime: Date.now(),
-        success: false,
         testResults: [{
-            assertionResults: [{
-                ancestorTitles: [],
+            testFilePath: `ci/${jobName}.stub`,
+            perfStats: {start: now},
+            testResults: [{
+                ancestorTitles: [jobName],
                 duration: 0,
-                failureDetails: [{error: reason}],
                 failureMessages: [reason],
                 fullName: `${jobName} — job failed before test JSON was written`,
-                invocations: 1,
-                location: null,
-                numPassingAsserts: 0,
-                retryReasons: [],
                 status: 'failed',
                 title: 'CI infrastructure failure',
             }],
-            endTime: Date.now(),
-            message: reason,
-            name: jobName,
-            startTime: Date.now(),
-            status: 'failed',
-            summary: '',
         }],
-        wasInterrupted: true,
     };
     fs.mkdirSync(path.dirname(outputPath), {recursive: true});
     fs.writeFileSync(outputPath, JSON.stringify(payload, null, 2));
@@ -61,10 +40,12 @@ function escapeXml(value) {
 function writeJunitStub(outputPath, jobName, reason) {
     const safeName = escapeXml(jobName);
     const escaped = escapeXml(reason);
+    const filePath = escapeXml(`ci/${jobName}.stub`);
+    // `file` is read by TSIO extractMaestro into suite FilePath (avoids "Missing file path").
     const xml = `<?xml version="1.0" encoding="UTF-8"?>
 <testsuites name="${safeName}" tests="1" failures="1" errors="0" skipped="0" time="0">
   <testsuite name="${safeName}" tests="1" failures="1" errors="0" skipped="0" time="0">
-    <testcase classname="${safeName}" name="CI infrastructure failure" time="0">
+    <testcase classname="${safeName}" name="CI infrastructure failure" file="${filePath}" time="0">
       <failure message="job failed before report was written">${escaped}</failure>
     </testcase>
   </testsuite>

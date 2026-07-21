@@ -69,7 +69,7 @@ jobs:
             --arg attempt "$GITHUB_RUN_ATTEMPT" --arg branch "$BRANCH" \
             '{repository:$repo, commit_sha:$sha, gh_run_id:$run_id, gh_run_attempt:$attempt, branch:$branch, name:"cmt-mobile", run_group:"cmt-mobile", framework:"detox"}')
           echo "composite-identity-json=$BASE" >> "$GITHUB_OUTPUT"
-          TSIO_CONFIG=$(jq -nc --argjson identity "$BASE" --arg total "$TOTAL" \
+          TSIO_CONFIG=$(jq -nc --argjson identity "$BASE" --argjson total "$TOTAL" \
             '{composite_identity: $identity, total_reports_expected: $total}')
           echo "tsio-config=$TSIO_CONFIG" >> "$GITHUB_OUTPUT"
 
@@ -456,7 +456,9 @@ jobs:
           GITHUB_TOKEN: ${{ github.token }}
           COMPOSITE_IDENTITY: ${{ needs.cmt-identity.outputs.composite-identity-json }}
           TOTAL_REPORTS_EXPECTED: ${{ needs.cmt-identity.outputs.total-reports-expected }}
-          # RC / CMT channel (same destination as main E2E via resolveWebhookUrl).
+          # Incoming webhook for the Mobile CMT/RC results channel (separate from
+          # PR/main MM_MOBILE_E2E_WEBHOOK_URL). Optional — when unset, TSIO
+          # status still flips and channel notify is skipped.
           MATTERMOST_CMT_WEBHOOK_URL: ${{ secrets.MM_E2E_RELEASE_WEBHOOK_URL }}
         run: |
           set +e

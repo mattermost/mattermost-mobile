@@ -279,9 +279,9 @@ function mergeMaestroJunitReports(xmlPaths, outputPath) {
     const skipped = mergedFlows.filter((f) => f.status === 'skipped').length;
     const timeSec = (totalTime / 1000).toFixed(1);
 
-    const testcaseXml = mergedFlows.map((f) => {
+    const renderTestcase = (f, classname, filePath) => {
         const statusAttr = f.status === 'passed' ? 'SUCCESS' : f.status.toUpperCase();
-        const fileAttr = f.file ? ` file="${escapeXmlAttr(f.file)}"` : '';
+        const fileAttr = filePath ? ` file="${escapeXmlAttr(filePath)}"` : '';
         let innerBlock = '';
         if (f.status === 'skipped') {
             innerBlock = '\n      <skipped/>';
@@ -291,10 +291,37 @@ function mergeMaestroJunitReports(xmlPaths, outputPath) {
         } else if (f.failureMessage) {
             innerBlock = `\n      <failure>${escapeXmlText(f.failureMessage)}</failure>`;
         }
-        return `    <testcase id="${escapeXmlAttr(f.name)}" name="${escapeXmlAttr(f.name)}" classname="${escapeXmlAttr(f.classname || f.name)}"${fileAttr} time="${f.time.toFixed(1)}" status="${statusAttr}">${innerBlock}\n    </testcase>`;
-    }).join('\n');
+        return `    <testcase id="${escapeXmlAttr(f.name)}" name="${escapeXmlAttr(f.name)}" classname="${escapeXmlAttr(classname)}"${fileAttr} time="${f.time.toFixed(1)}" status="${statusAttr}">${innerBlock}\n    </testcase>`;
+    };
 
-    const xml = `<?xml version='1.0' encoding='UTF-8'?>\n<testsuites>\n  <testsuite name="Test Suite" device="${escapeXmlAttr(device)}" tests="${tests}" failures="${failures}" errors="${errors}" skipped="${skipped}" time="${timeSec}">\n${testcaseXml}\n  </testsuite>\n</testsuites>\n`;
+    // One testsuite per flow file when every flow has a path — TSIO reads `file`
+    // into suite FilePath; suite name doubles as a readable title.
+    const allHaveFiles = mergedFlows.length > 0 && mergedFlows.every((f) => f.file);
+    let suitesXml;
+    if (allHaveFiles) {
+        const byFile = new Map();
+        for (const f of mergedFlows) {
+            if (!byFile.has(f.file)) {
+                byFile.set(f.file, []);
+            }
+            byFile.get(f.file).push(f);
+        }
+        suitesXml = [...byFile.entries()].map(([filePath, flows]) => {
+            const suiteFailures = flows.filter((f) => f.status === 'failed').length;
+            const suiteErrors = flows.filter((f) => f.status === 'error').length;
+            const suiteSkipped = flows.filter((f) => f.status === 'skipped').length;
+            const time = flows.reduce((n, f) => n + f.time, 0).toFixed(1);
+            const cases = flows.map((f) => renderTestcase(f, filePath, filePath)).join('\n');
+            return `  <testsuite name="${escapeXmlAttr(filePath)}" device="${escapeXmlAttr(device)}" tests="${flows.length}" failures="${suiteFailures}" errors="${suiteErrors}" skipped="${suiteSkipped}" time="${time}">\n${cases}\n  </testsuite>`;
+        }).join('\n');
+    } else {
+        const cases = mergedFlows.map((f) =>
+            renderTestcase(f, f.file || f.classname || f.name, f.file || ''),
+        ).join('\n');
+        suitesXml = `  <testsuite name="Test Suite" device="${escapeXmlAttr(device)}" tests="${tests}" failures="${failures}" errors="${errors}" skipped="${skipped}" time="${timeSec}">\n${cases}\n  </testsuite>`;
+    }
+
+    const xml = `<?xml version='1.0' encoding='UTF-8'?>\n<testsuites>\n${suitesXml}\n</testsuites>\n`;
     fse.outputFileSync(outputPath, xml, 'utf-8');
     console.log(`Merged ${existing.length} Maestro JUnit files -> ${outputPath} (${tests} tests, ${failures} failures, ${errors} errors, ${skipped} skipped)`);
     return true;
@@ -643,8 +670,7 @@ function writeMaestroJestJsonForTsio(xmlPath, outputPath) {
             assertionResults,
             endTime: now,
             message: fileFailed ? 'failed' : '',
-            name: fileKey.includes('/e2e/') || fileKey.includes('/maestro/') ?
-                fileKey : `maestro/e2e/${fileKey}`,
+            name: fileKey.includes('/') ? fileKey : `maestro/flows/${fileKey}`,
             startTime: now,
             status: fileFailed ? 'failed' : 'passed',
             summary: '',

@@ -232,7 +232,7 @@ jobs:
               '{repository:$repo, commit_sha:$sha, gh_run_id:$run_id, gh_run_attempt:$attempt, branch:$branch, name:$name, run_group:$name, framework:"detox"}')
           fi
           echo "composite-identity-json=$BASE" >> "$GITHUB_OUTPUT"
-          TSIO_CONFIG=$(jq -nc --argjson identity "$BASE" --arg total "$TOTAL" \
+          TSIO_CONFIG=$(jq -nc --argjson identity "$BASE" --argjson total "$TOTAL" \
             '{composite_identity: $identity, total_reports_expected: $total}')
           echo "tsio-config=$TSIO_CONFIG" >> "$GITHUB_OUTPUT"
 
@@ -826,9 +826,9 @@ jobs:
           COMPOSITE_IDENTITY: ${{ needs.calculate-tsio-identity.outputs.composite-identity-json }}
           TOTAL_REPORTS_EXPECTED: ${{ needs.calculate-tsio-identity.outputs.total-reports-expected }}
           TSIO_STATUS_CONTEXT: ${{ inputs.tsio_status_context || 'e2e/mobile' }}
-          # Master/main shares the CMT/RC channel; PR posts to the Mobile E2E QA channel.
-          # Routing is by compositeIdentity.name in cmt-channel-notify.js.
-          MATTERMOST_CMT_WEBHOOK_URL: ${{ secrets.MM_E2E_RELEASE_WEBHOOK_URL }}
+          # Main + PR → mobile E2E channel; CMT/RC uses MM_E2E_RELEASE_WEBHOOK_URL
+          # (wired only in compatibility-matrix-testing.yml). Routing is by
+          # compositeIdentity.name in cmt-channel-notify.js.
           MATTERMOST_E2E_WEBHOOK_URL: ${{ secrets.MM_MOBILE_E2E_WEBHOOK_URL }}
         run: |
           set +e

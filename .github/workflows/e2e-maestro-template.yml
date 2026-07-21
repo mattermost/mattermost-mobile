@@ -39,7 +39,7 @@ on:
         default: false
       tsio-config:
         description: >
-          TSIO reporting config: {"composite_identity":{...},"total_reports_expected":"N"}.
+          TSIO reporting config: {"composite_identity":{...},"total_reports_expected":N}.
           Empty disables TSIO upload for this platform.
         required: false
         type: string

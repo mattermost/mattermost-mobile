@@ -73,18 +73,20 @@ function parseMobileJobName(jobName) {
 
 /**
  * Webhook routing (mirrors desktop):
- *   cmt-mobile + mobile-main → MM_E2E_RELEASE_WEBHOOK_URL (RC / main channel)
- *   mobile-pr                → MM_MOBILE_E2E_WEBHOOK_URL (PR channel)
+ *   cmt-mobile                 → MM_E2E_RELEASE_WEBHOOK_URL (RC / CMT channel)
+ *   mobile-main + mobile-pr    → MM_MOBILE_E2E_WEBHOOK_URL (PR / main channel)
+ *
+ * MATTERMOST_WEBHOOK_URL remains a fallback for workflows that set only one URL.
  *
  * @param {string} reportName - compositeIdentity.name
  * @param {NodeJS.ProcessEnv} [env]
  * @returns {string}
  */
 function resolveWebhookUrl(reportName, env = process.env) {
-    if (reportName === 'cmt-mobile' || reportName === 'mobile-main') {
+    if (reportName === 'cmt-mobile') {
         return env.MATTERMOST_CMT_WEBHOOK_URL || env.MATTERMOST_WEBHOOK_URL || '';
     }
-    if (reportName === 'mobile-pr') {
+    if (reportName === 'mobile-main' || reportName === 'mobile-pr') {
         return env.MATTERMOST_E2E_WEBHOOK_URL || env.MATTERMOST_WEBHOOK_URL || '';
     }
     return env.MATTERMOST_WEBHOOK_URL || '';
