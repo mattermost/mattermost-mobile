@@ -49,11 +49,6 @@ on:
         type: string
         required: false
         default: "PR"
-      testcase_failure_fatal:
-        description: "Should failures be considered fatal"
-        required: false
-        type: boolean
-        default: false
       record_tests_in_zephyr:
         description: "Record test results in Zephyr, typically for release and main runs"
         required: false
@@ -639,16 +634,10 @@ jobs:
             npm run e2e:ios-test -- "${SPECS[@]}" -- --json --outputFile=artifacts/jest-results.json
           fi
           DETOX_EXIT_CODE=$?
-          if [ "${DETOX_EXIT_CODE:-1}" = "0" ]; then exit 0; fi
-          if [ -n "${TSIO_CONFIG}" ]; then
-            echo "::warning::Detox exited with code ${DETOX_EXIT_CODE} — see TSIO report"
-            exit 0
-          fi
-          exit "${DETOX_EXIT_CODE}"
+          exit "${DETOX_EXIT_CODE:-1}"
         env:
           DETOX_CONFIG: ${{ inputs.detox_config }}
           MATRIX_SPECS: ${{ matrix.specs }}
-          TSIO_CONFIG: ${{ inputs.tsio-config }}
           DETOX_DISABLE_HIERARCHY_DUMP: "YES"
           DETOX_DISABLE_SCREENSHOT_TRACKING: "YES"
           DETOX_LOGLEVEL: "info"
@@ -850,17 +839,15 @@ jobs:
         id: determine-status
         env:
           FAILURES: ${{ steps.summary.outputs.FAILURES }}
-          TESTCASE_FAILURE_FATAL: ${{ inputs.testcase_failure_fatal }}
         run: |
-          if [[ "$FAILURES" == "-1" ]]; then
-            echo "STATUS=failure" >> ${GITHUB_OUTPUT}
-          elif [[ "$FAILURES" -gt 0 && "$TESTCASE_FAILURE_FATAL" == "true" ]]; then
+          if [[ "$FAILURES" == "-1" || "$FAILURES" -gt 0 ]]; then
             echo "STATUS=failure" >> ${GITHUB_OUTPUT}
           else
             echo "STATUS=success" >> ${GITHUB_OUTPUT}
           fi
 
       - name: Generate Summary
+        if: always()
         env:
           TOTAL: ${{ steps.summary.outputs.TOTAL }}
           PASSES: ${{ steps.summary.outputs.PASSES }}
@@ -876,3 +863,9 @@ jobs:
           echo "" >> ${GITHUB_STEP_SUMMARY}
           echo "You can check the full report [here](${TARGET_URL})" >> ${GITHUB_STEP_SUMMARY}
           echo "There was **${PERCENTAGE}%** success rate." >> ${GITHUB_STEP_SUMMARY}
+
+      - name: Fail job on test failures
+        if: steps.determine-status.outputs.STATUS == 'failure'
+        run: |
+          echo "::error::Detox reported test failures (FAILURES=${{ steps.summary.outputs.FAILURES }})"
+          exit 1

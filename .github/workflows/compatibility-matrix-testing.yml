@@ -272,7 +272,6 @@ jobs:
       MOBILE_VERSION: ${{ inputs.MOBILE_VERSION }}
       search_path: ${{ matrix.server.latest && 'detox/e2e/test' || 'detox/e2e/test/products/channels/smoke_test' }}
       parallelism: ${{ matrix.server.latest && '10' || '1' }}
-      testcase_failure_fatal: true
       artifact_run_id: ${{ github.run_id }}
 
   detox-ipad-e2e:
@@ -339,7 +338,6 @@ jobs:
       run-type: "RELEASE"
       MM_TEST_SERVER_URL: ${{ matrix.server.url }}
       MOBILE_VERSION: ${{ inputs.MOBILE_VERSION }}
-      testcase_failure_fatal: true
       record_tests_in_zephyr: true
       artifact_run_id: ${{ github.run_id }}
 
@@ -374,7 +372,6 @@ jobs:
       MOBILE_VERSION: ${{ inputs.MOBILE_VERSION }}
       search_path: ${{ matrix.server.latest && 'detox/e2e/test' || 'detox/e2e/test/products/channels/smoke_test' }}
       parallelism: ${{ matrix.server.latest && '10' || '1' }}
-      testcase_failure_fatal: true
       artifact_run_id: ${{ github.run_id }}
 
   # Maestro runs only against the latest server version (no smoke-on-older variant).
@@ -407,7 +404,6 @@ jobs:
       MM_TEST_SERVER_URL: ${{ matrix.server.url }}
       MOBILE_VERSION: ${{ inputs.MOBILE_VERSION }}
       artifact_run_id: ${{ github.run_id }}
-      testcase_failure_fatal: true
       record_tests_in_zephyr: true
 
   update-final-status:

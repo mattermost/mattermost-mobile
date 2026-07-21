@@ -32,11 +32,6 @@ on:
         required: false
         type: string
         default: ""
-      testcase_failure_fatal:
-        description: "Should test failures fail the commit status check"
-        required: false
-        type: boolean
-        default: false
       record_tests_in_zephyr:
         description: "Record Maestro test results in Zephyr Scale (release/main runs)"
         required: false
@@ -522,19 +517,12 @@ jobs:
           ERRORS: ${{ steps.summary.outputs.ERRORS }}
           TOTAL: ${{ steps.summary.outputs.TOTAL }}
           NO_REPORT: ${{ steps.summary.outputs.NO_REPORT }}
-          TESTCASE_FAILURE_FATAL: ${{ inputs.testcase_failure_fatal }}
           SHARD_CANCELLED: ${{ steps.shard-cancelled.outputs.CANCELLED }}
         run: |
           if [[ "${SHARD_CANCELLED}" == "true" ]]; then
             echo "STATUS=error" >> "$GITHUB_OUTPUT"
-          elif [[ "${FAILURES:-0}" == "-1" ]]; then
+          elif [[ "${FAILURES:-0}" == "-1" || "${FAILURES:-0}" -gt 0 || "${ERRORS:-0}" -gt 0 || "${TOTAL:-0}" -eq 0 || "${NO_REPORT:-}" == "true" ]]; then
             echo "STATUS=failure" >> "$GITHUB_OUTPUT"
-          elif [[ "${TESTCASE_FAILURE_FATAL}" == "true" ]]; then
-            if [[ "${FAILURES:-0}" -gt 0 || "${ERRORS:-0}" -gt 0 || "${TOTAL:-0}" -eq 0 || "${NO_REPORT:-}" == "true" ]]; then
-              echo "STATUS=failure" >> "$GITHUB_OUTPUT"
-            else
-              echo "STATUS=success" >> "$GITHUB_OUTPUT"
-            fi
           else
             echo "STATUS=success" >> "$GITHUB_OUTPUT"
           fi
@@ -546,6 +534,12 @@ jobs:
           echo "| Tests | Passed :white_check_mark: | Failed :x: | Skipped :fast_forward: |" >> "$GITHUB_STEP_SUMMARY"
           echo "|:---:|:---:|:---:|:---:|" >> "$GITHUB_STEP_SUMMARY"
           echo "| ${{ steps.summary.outputs.TOTAL }} | ${{ steps.summary.outputs.PASSES }} | ${{ steps.summary.outputs.FAILURES }} | ${{ steps.summary.outputs.SKIPPED }} |" >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Fail job on test failures
+        if: always() && (steps.determine-status.outputs.STATUS == 'failure' || steps.determine-status.outputs.STATUS == 'error')
+        run: |
+          echo "::error::Maestro reported test failures (STATUS=${{ steps.determine-status.outputs.STATUS }}, FAILURES=${{ steps.summary.outputs.FAILURES }})"
+          exit 1
 
   e2e-maestro-android:
     # TSIO shard label = job name; prefer tsio-shard-name (e.g. maestro-android-e2e).
@@ -943,19 +937,12 @@ jobs:
           ERRORS: ${{ steps.summary.outputs.ERRORS }}
           TOTAL: ${{ steps.summary.outputs.TOTAL }}
           NO_REPORT: ${{ steps.summary.outputs.NO_REPORT }}
-          TESTCASE_FAILURE_FATAL: ${{ inputs.testcase_failure_fatal }}
           SHARD_CANCELLED: ${{ steps.shard-cancelled.outputs.CANCELLED }}
         run: |
           if [[ "${SHARD_CANCELLED}" == "true" ]]; then
             echo "STATUS=error" >> "$GITHUB_OUTPUT"
-          elif [[ "${FAILURES:-0}" == "-1" ]]; then
+          elif [[ "${FAILURES:-0}" == "-1" || "${FAILURES:-0}" -gt 0 || "${ERRORS:-0}" -gt 0 || "${TOTAL:-0}" -eq 0 || "${NO_REPORT:-}" == "true" ]]; then
             echo "STATUS=failure" >> "$GITHUB_OUTPUT"
-          elif [[ "${TESTCASE_FAILURE_FATAL}" == "true" ]]; then
-            if [[ "${FAILURES:-0}" -gt 0 || "${ERRORS:-0}" -gt 0 || "${TOTAL:-0}" -eq 0 || "${NO_REPORT:-}" == "true" ]]; then
-              echo "STATUS=failure" >> "$GITHUB_OUTPUT"
-            else
-              echo "STATUS=success" >> "$GITHUB_OUTPUT"
-            fi
           else
             echo "STATUS=success" >> "$GITHUB_OUTPUT"
           fi
@@ -967,3 +954,9 @@ jobs:
           echo "| Tests | Passed :white_check_mark: | Failed :x: | Skipped :fast_forward: |" >> "$GITHUB_STEP_SUMMARY"
           echo "|:---:|:---:|:---:|:---:|" >> "$GITHUB_STEP_SUMMARY"
           echo "| ${{ steps.summary.outputs.TOTAL }} | ${{ steps.summary.outputs.PASSES }} | ${{ steps.summary.outputs.FAILURES }} | ${{ steps.summary.outputs.SKIPPED }} |" >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Fail job on test failures
+        if: always() && (steps.determine-status.outputs.STATUS == 'failure' || steps.determine-status.outputs.STATUS == 'error')
+        run: |
+          echo "::error::Maestro reported test failures (STATUS=${{ steps.determine-status.outputs.STATUS }}, FAILURES=${{ steps.summary.outputs.FAILURES }})"
+          exit 1
