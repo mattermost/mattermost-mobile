@@ -18,6 +18,7 @@ import {
 import {getCurrentChannelId} from '@queries/servers/system';
 import EphemeralStore from '@store/ephemeral_store';
 import {NavigationStore} from '@store/navigation_store';
+import {getFullErrorMessage} from '@utils/errors';
 import {logDebug, logError} from '@utils/log';
 
 import type {Database, Model} from '@nozbe/watermelondb';
@@ -54,7 +55,7 @@ async function setLastAutoCacheCleanupRun(serverUrl: string): Promise<void> {
             prepareRecordsOnly: false,
         });
     } catch (error) {
-        logError('autoCacheCleanup setLastAutoCacheCleanupRun', error);
+        logError('autoCacheCleanup setLastAutoCacheCleanupRun', getFullErrorMessage(error));
     }
 }
 
@@ -238,7 +239,7 @@ export async function autoCacheCleanup(serverUrl: string): Promise<void> {
     try {
         ({database, operator} = DatabaseManager.getServerDatabaseAndOperator(serverUrl));
     } catch (error) {
-        logError('autoCacheCleanup getServerDatabaseAndOperator', error);
+        logError('autoCacheCleanup getServerDatabaseAndOperator', getFullErrorMessage(error));
         return;
     }
 
@@ -284,7 +285,7 @@ export async function autoCacheCleanup(serverUrl: string): Promise<void> {
         await setLastAutoCacheCleanupRun(serverUrl);
         logDebug('autoCacheCleanup: completed successfully for', serverUrl);
     } catch (error) {
-        logError('autoCacheCleanup', error);
+        logError('autoCacheCleanup', getFullErrorMessage(error));
     }
     logDebug('autoCacheCleanup: done for', serverUrl);
 }

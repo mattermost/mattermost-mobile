@@ -186,7 +186,7 @@ describe('autoCacheCleanup', () => {
 
         await autoCacheCleanup(SERVER_URL);
 
-        expect(logError).toHaveBeenCalledWith('autoCacheCleanup getServerDatabaseAndOperator', expect.any(Error));
+        expect(logError).toHaveBeenCalledWith('autoCacheCleanup getServerDatabaseAndOperator', 'db unavailable');
     });
 
     it('does not call getCurrentChannelId when the channel screen is not in the navigation stack', async () => {
@@ -410,7 +410,7 @@ describe('autoCacheCleanup', () => {
         await autoCacheCleanup(SERVER_URL);
 
         expect(vacuumSpy).not.toHaveBeenCalled();
-        expect(logError).toHaveBeenCalledWith('autoCacheCleanup', expect.any(Error));
+        expect(logError).toHaveBeenCalledWith('autoCacheCleanup', 'cleanup failed');
     });
 
     it('does not call unsafeVacuum and logs the error when the viewed-channel delete call returns an error', async () => {
@@ -427,7 +427,7 @@ describe('autoCacheCleanup', () => {
         await autoCacheCleanup(SERVER_URL);
 
         expect(vacuumSpy).not.toHaveBeenCalled();
-        expect(logError).toHaveBeenCalledWith('autoCacheCleanup', expect.any(Error));
+        expect(logError).toHaveBeenCalledWith('autoCacheCleanup', 'viewed channel delete failed');
     });
 
     it('does not call unsafeVacuum and logs the error when the thread-parent-channel delete call returns an error', async () => {
@@ -445,7 +445,7 @@ describe('autoCacheCleanup', () => {
         await autoCacheCleanup(SERVER_URL);
 
         expect(vacuumSpy).not.toHaveBeenCalled();
-        expect(logError).toHaveBeenCalledWith('autoCacheCleanup', expect.any(Error));
+        expect(logError).toHaveBeenCalledWith('autoCacheCleanup', 'thread parent channel delete failed');
     });
 
     it('deletes AI threads older than the cutoff and keeps newer ones', async () => {

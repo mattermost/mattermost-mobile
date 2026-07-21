@@ -139,6 +139,7 @@ const PdfViewer = ({allowPdfLinkNavigation, fileId, filePath, siteURL}: Props) =
 
     useDidMount(() => {
         let active = true;
+        const previousFileViewerPostId = EphemeralStore.getCurrentFileViewerPostId();
         (async () => {
             try {
                 const {database} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
@@ -152,7 +153,7 @@ const PdfViewer = ({allowPdfLinkNavigation, fileId, filePath, siteURL}: Props) =
         })();
         return () => {
             active = false;
-            EphemeralStore.clearCurrentFileViewerPostId();
+            EphemeralStore.setCurrentFileViewerPostId(previousFileViewerPostId);
         };
     });
 
