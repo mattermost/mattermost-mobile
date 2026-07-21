@@ -173,10 +173,14 @@ describe('Search - Saved Messages', () => {
         // # Go back to saved messages screen
         await ThreadScreen.back();
 
-        // * Verify reply count and following button
+        // * Verify reply count and thread follow control on the saved message
         const {postListPostItem} = SavedMessagesScreen.getPostListPostItem(savedPost.id, updatedMessage);
         await waitForElementToBeVisible(element(by.text('1 reply')), timeouts.TWO_SEC);
-        await waitForElementToBeVisible(element(by.text('Following')), timeouts.TWO_SEC);
+
+        // This suite does not enable ThreadAutoFollow (unlike follow_and_unfollow_thread.e2e.ts),
+        // so posting a reply does NOT auto-follow the thread — the footer shows the "Follow" action,
+        // not "Following". Assert the actual state.
+        await waitForElementToBeVisible(element(by.text('Follow')), timeouts.TWO_SEC);
 
         // # Open post options for updated saved message and delete post
         await element(by.id(`saved_messages.post_list.post.${savedPost.id}`)).longPress();

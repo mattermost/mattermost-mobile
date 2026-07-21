@@ -102,6 +102,7 @@ const PostOptions = ({
         return (
             <BottomSheetScrollView
                 bounces={false}
+                testID='post_options.scroll_view'
             >
                 {shouldShowBORReadReceipts &&
                     <BORReadReceipts

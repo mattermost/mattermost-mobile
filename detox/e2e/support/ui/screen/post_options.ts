@@ -72,7 +72,11 @@ class PostOptionsScreen {
     };
 
     deletePost = async ({confirm = true} = {}) => {
-        await waitFor(this.deletePostOption).toExist().withTimeout(timeouts.TWO_SEC);
+        // On Android gorhom sheets, delete option may be below the fold.
+        // Scroll the BottomSheetScrollView into view before tapping to ensure it's hittable.
+        await waitFor(this.deletePostOption).toBeVisible().
+            whileElement(by.id('post_options.scroll_view')).
+            scroll(200, 'down');
         await this.deletePostOption.tap({x: 1, y: 1});
         const {
             deletePostTitle,
