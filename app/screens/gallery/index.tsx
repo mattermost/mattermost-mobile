@@ -32,11 +32,14 @@ const GalleryScreen = ({galleryIdentifier, hideActions, initialIndex, items}: Ga
     const [localIndex, setLocalIndex] = useState(initialIndex);
 
     useDidMount(() => {
+        const previousPostId = EphemeralStore.getCurrentFileViewerPostId();
         const postId = items[initialIndex]?.postId;
         if (postId) {
             EphemeralStore.setCurrentFileViewerPostId(postId);
+        } else {
+            EphemeralStore.clearCurrentFileViewerPostId();
         }
-        return () => EphemeralStore.clearCurrentFileViewerPostId();
+        return () => EphemeralStore.setCurrentFileViewerPostId(previousPostId);
     });
 
     const {headerAndFooterHidden, hideHeaderAndFooter, headerStyles, footerStyles} = useGalleryControls(bottomInset);
