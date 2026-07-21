@@ -21,12 +21,10 @@ import {NavigationStore} from '@store/navigation_store';
 import {logDebug, logError} from '@utils/log';
 
 import type {Database, Model} from '@nozbe/watermelondb';
-import type MyChannelModel from '@typings/database/models/servers/my_channel';
 import type PostInChannelModel from '@typings/database/models/servers/posts_in_channel';
-import type PostsInThreadModel from '@typings/database/models/servers/posts_in_thread';
 import type SystemModel from '@typings/database/models/servers/system';
 
-const {SERVER: {MY_CHANNEL, POSTS_IN_CHANNEL, POSTS_IN_THREAD, SYSTEM}} = MM_TABLES;
+const {SERVER: {POSTS_IN_CHANNEL, SYSTEM}} = MM_TABLES;
 
 interface CleanupProtections {
     viewedChannelId: string | undefined;
@@ -103,10 +101,15 @@ async function computeCleanupProtections(
         const rootPost = await getPostById(database, viewedThreadId);
         if (rootPost) {
             threadParentChannelId = rootPost.channelId;
-            threadParentLimit =
+
+            // Floored at the root's own create_at so the open thread's replies (always >= root.createAt)
+            // are never deleted, even when there aren't enough preceding posts to compute a wider buffer.
+            threadParentLimit = Math.min(
+                rootPost.createAt,
                 (await createAtOfNthPostOlderThan(
                     database, threadParentChannelId, rootPost.createAt, AUTO_CACHE_CLEANUP_PROTECTION_BUFFER,
-                )) ?? Infinity;
+                )) ?? Infinity,
+            );
         }
     }
 
@@ -126,101 +129,61 @@ async function computeCleanupProtections(
 }
 
 function channelProtectionLimit(channelId: string, protections: CleanupProtections): number {
+    let limit = Infinity;
     if (channelId === protections.viewedChannelId) {
-        return protections.viewedChannelLimit;
+        limit = Math.min(limit, protections.viewedChannelLimit);
     }
     if (channelId === protections.threadParentChannelId) {
-        return protections.threadParentLimit;
+        limit = Math.min(limit, protections.threadParentLimit);
     }
-    return Infinity;
+    return limit;
 }
 
 async function cleanupPosts(
     serverUrl: string,
     database: Database,
-    operator: {batchRecords: (models: Model[], description: string) => Promise<void>},
     cutoff: number,
     protections: CleanupProtections,
 ): Promise<void> {
     const postsInChannelItems = await database.get<PostInChannelModel>(POSTS_IN_CHANNEL).query().fetch();
-    const myChannels = await database.get<MyChannelModel>(MY_CHANNEL).query().fetch();
-    const myChannelIds = new Map(myChannels.map((mc) => [mc.id, mc]));
+    const channelsWithPostRanges = new Set(postsInChannelItems.map((row) => row.channelId));
 
-    const unprotectedChannels = new Set(postsInChannelItems.filter((row) => row.channelId !== protections.viewedChannelId && row.channelId !== protections.threadParentChannelId).map((row) => row.channelId));
-    const channelsWithPostRanges = postsInChannelItems.reduce((map, row) => {
-        map.set(row.channelId, (map.get(row.channelId) ?? 0) + 1);
-        return map;
-    }, new Map<string, number>());
-    const prepared: Model[] = [];
-
-    // iterate over channels with posts in the database
-    for (const postInChannel of postsInChannelItems) {
-        const computedChannelCutoff = Math.min(cutoff, channelProtectionLimit(postInChannel.channelId, protections));
-
-        if (postInChannel.latest < computedChannelCutoff) {
-            prepared.push(postInChannel.prepareDestroyPermanently());
-            channelsWithPostRanges.set(postInChannel.channelId, (channelsWithPostRanges.get(postInChannel.channelId) ?? 0) - 1);
-        } else if (postInChannel.earliest < computedChannelCutoff) {
-            prepared.push(postInChannel.prepareUpdate((r: PostInChannelModel) => {
-                r.earliest = computedChannelCutoff;
-            }));
-        }
-    }
+    const unprotectedChannels = new Set(
+        postsInChannelItems.
+            map((row) => row.channelId).
+            filter((channelId) => channelId !== protections.viewedChannelId && channelId !== protections.threadParentChannelId),
+    );
 
     const excludedPostIds: Set<string> = new Set([
         ...protections.activeThreadRootIds,
         ...(protections.fileViewerPostId ? [protections.fileViewerPostId] : []),
     ]);
 
-    // delete posts in channels not currently being viewed using a single query
+    // delete posts in channels not currently being viewed using a single query.
+    // PostsInChannel/MyChannel bookkeeping is applied atomically inside this call.
     if (unprotectedChannels.size > 0) {
-        await deletePostsInChannelsByCutoff(serverUrl, Array.from(unprotectedChannels), cutoff, excludedPostIds);
+        const {error: deleteError} = await deletePostsInChannelsByCutoff(serverUrl, Array.from(unprotectedChannels), cutoff, excludedPostIds);
+        if (deleteError) {
+            throw deleteError;
+        }
     }
 
     // delete posts in viewed channel if any
     if (protections.viewedChannelId && channelsWithPostRanges.has(protections.viewedChannelId)) {
         const computedChannelCutoff = Math.min(cutoff, channelProtectionLimit(protections.viewedChannelId, protections));
-        await deletePostsInChannelsByCutoff(serverUrl, [protections.viewedChannelId], computedChannelCutoff, excludedPostIds);
+        const {error: deleteError} = await deletePostsInChannelsByCutoff(serverUrl, [protections.viewedChannelId], computedChannelCutoff, excludedPostIds);
+        if (deleteError) {
+            throw deleteError;
+        }
     }
 
     // delete posts in thread parent channel if any
     if (protections.threadParentChannelId && protections.threadParentChannelId !== protections.viewedChannelId && channelsWithPostRanges.has(protections.threadParentChannelId)) {
         const computedChannelCutoff = Math.min(cutoff, channelProtectionLimit(protections.threadParentChannelId, protections));
-        await deletePostsInChannelsByCutoff(serverUrl, [protections.threadParentChannelId], computedChannelCutoff, excludedPostIds);
-    }
-
-    // Fetch PostInThread rows after deletions — deletePostsInChannelsByCutoff already removed rows
-    // for deleted root posts, so this avoids calling prepareDestroyPermanently on gone records.
-    const allPostInThreadRows = await database.get<PostsInThreadModel>(POSTS_IN_THREAD).query().fetch();
-
-    // Update MyChannel lastFetchedAt to 0 for channels that have no posts left.
-    channelsWithPostRanges.forEach((count, channelId) => {
-        if (count <= 0) {
-            const mc = myChannelIds.get(channelId);
-            if (mc && mc.lastFetchedAt > 0) {
-                prepared.push(mc.prepareUpdate((r: MyChannelModel) => {
-                    r.lastFetchedAt = 0;
-                }));
-            }
+        const {error: deleteError} = await deletePostsInChannelsByCutoff(serverUrl, [protections.threadParentChannelId], computedChannelCutoff, excludedPostIds);
+        if (deleteError) {
+            throw deleteError;
         }
-    });
-
-    // PostsInThread bookkeeping.
-    for (const postInThread of allPostInThreadRows) {
-        if (postInThread.rootId === protections.viewedThreadId) {
-            continue; // open thread is fully protected
-        }
-        if (postInThread.latest < cutoff) {
-            prepared.push(postInThread.prepareDestroyPermanently());
-        } else if (postInThread.earliest < cutoff) {
-            prepared.push(postInThread.prepareUpdate((r: PostsInThreadModel) => {
-                r.earliest = cutoff;
-            }));
-        }
-    }
-
-    if (prepared.length > 0) {
-        await operator.batchRecords(prepared, 'autoCacheCleanupRanges');
     }
 }
 
@@ -313,7 +276,7 @@ export async function autoCacheCleanup(serverUrl: string): Promise<void> {
             '— currentPlaybookRunId:', limits.viewedPlaybookRunId,
         );
 
-        await cleanupPosts(serverUrl, database, operator, cutoff, limits);
+        await cleanupPosts(serverUrl, database, cutoff, limits);
         await cleanupAiThreads(database, operator, cutoff, limits.viewedThreadId);
         await cleanupPlaybookRuns(database, operator, cutoff, limits.viewedPlaybookRunId);
 

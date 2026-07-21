@@ -155,7 +155,7 @@ class EphemeralModeManagerSingleton {
         this.cleanupDays[serverUrl] = nextCleanupDays;
 
         if (nextCleanupDays > 0) {
-            logDebug('OfflinePersistenceManager: auto cache cleanup config received, days:', nextCleanupDays, 'for', serverUrl);
+            logDebug('EphemeralModeManager: auto cache cleanup config received, days:', nextCleanupDays, 'for', serverUrl);
         }
 
         if (nextEnabled && !wasActive) {

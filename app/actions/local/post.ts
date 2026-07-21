@@ -21,7 +21,7 @@ import type MyChannelModel from '@typings/database/models/servers/my_channel';
 import type PostModel from '@typings/database/models/servers/post';
 import type UserModel from '@typings/database/models/servers/user';
 
-const {SERVER: {DRAFT, FILE, POST, POSTS_IN_THREAD, REACTION, THREAD, THREAD_PARTICIPANT, THREADS_IN_TEAM}} = MM_TABLES;
+const {SERVER: {DRAFT, FILE, MY_CHANNEL, POST, POSTS_IN_CHANNEL, POSTS_IN_THREAD, REACTION, THREAD, THREAD_PARTICIPANT, THREADS_IN_TEAM}} = MM_TABLES;
 
 export const sendAddToChannelEphemeralPost = async (serverUrl: string, user: UserModel, addedUsernames: string[], messages: string[], channeId: string, postRootId = '') => {
     try {
@@ -431,17 +431,31 @@ export async function deletePostsInChannelsByCutoff(
         const postCondition = `channel_id IN (${channels}) AND create_at < ${cutoff}${exclusionClause}`;
         const postSubquery = `SELECT id FROM ${POST} WHERE ${postCondition}`;
 
+        // Scopes PostsInThread trimming to roots in these channels.
+        const rootInChannelsExists = `EXISTS (SELECT 1 FROM ${POST} WHERE ${POST}.id = ${POSTS_IN_THREAD}.root_id AND ${POST}.channel_id IN (${channels}))`;
+
         await database.write(() => {
             return database.adapter.unsafeExecute({
                 sqls: [
                     [`DELETE FROM ${REACTION} WHERE post_id IN (${postSubquery})`, []],
                     [`DELETE FROM ${FILE} WHERE post_id IN (${postSubquery})`, []],
                     [`DELETE FROM ${DRAFT} WHERE root_id IN (${postSubquery})`, []],
-                    [`DELETE FROM ${POSTS_IN_THREAD} WHERE root_id IN (${postSubquery})`, []],
+
+                    // PostsInThread bookkeeping, delete or update values depending on replies left in the thread after the cutoff
+                    [`DELETE FROM ${POSTS_IN_THREAD} WHERE latest < ${cutoff} AND ${rootInChannelsExists}`, []],
+                    [`UPDATE ${POSTS_IN_THREAD} SET earliest = ${cutoff} WHERE earliest < ${cutoff} AND ${rootInChannelsExists}`, []],
+
                     [`DELETE FROM ${THREAD} WHERE id IN (${postSubquery})`, []],
                     [`DELETE FROM ${THREAD_PARTICIPANT} WHERE thread_id IN (${postSubquery})`, []],
                     [`DELETE FROM ${THREADS_IN_TEAM} WHERE thread_id IN (${postSubquery})`, []],
                     [`DELETE FROM ${POST} WHERE ${postCondition}`, []],
+
+                    // PostsInChannel bookkeeping, delete or update values depending on posts left in the channel after the cutoff
+                    [`DELETE FROM ${POSTS_IN_CHANNEL} WHERE channel_id IN (${channels}) AND latest < ${cutoff}`, []],
+                    [`UPDATE ${POSTS_IN_CHANNEL} SET earliest = ${cutoff} WHERE channel_id IN (${channels}) AND earliest < ${cutoff}`, []],
+
+                    // MyChannel bookkeeping, reset last_fetched_at for channels that have no posts left after the cutoff
+                    [`UPDATE ${MY_CHANNEL} SET last_fetched_at = 0 WHERE id IN (${channels}) AND last_fetched_at > 0 AND NOT EXISTS (SELECT 1 FROM ${POSTS_IN_CHANNEL} WHERE channel_id = ${MY_CHANNEL}.id)`, []],
                 ],
             });
         });
