@@ -431,9 +431,13 @@ jobs:
 
       - name: Generate Report Path
         id: s3
+        env:
+          BUILD_ID: ${{ needs.generate-specs.outputs.build_id }}
+          MOBILE_SHA: ${{ needs.generate-specs.outputs.mobile_sha }}
+          MOBILE_REF: ${{ needs.generate-specs.outputs.mobile_ref }}
         run: |
-          path="${{ needs.generate-specs.outputs.build_id }}-${{ needs.generate-specs.outputs.mobile_sha }}-${{ needs.generate-specs.outputs.mobile_ref }}"
-          echo "path=$(echo "${path}" | sed 's/\./-/g')" >> ${GITHUB_OUTPUT}
+          path="${BUILD_ID}-${MOBILE_SHA}-${MOBILE_REF}"
+          echo "path=$(echo "${path}" | sed 's/\./-/g')" >> "$GITHUB_OUTPUT"
 
       # ── TSIO report upload (before e2e:save-report) ────────────────────────
       # save-report deletes android-results-* dirs (where Detox PNGs live). Upload
@@ -525,8 +529,11 @@ jobs:
       - name: Set Target URL
         id: set-url
         if: always()
+        env:
+          S3_BUCKET: ${{ env.DETOX_AWS_S3_BUCKET }}
+          REPORT_PATH: ${{ steps.s3.outputs.path }}
         run: |
-            echo "TARGET_URL=https://${{ env.DETOX_AWS_S3_BUCKET }}.s3.amazonaws.com/${{ steps.s3.outputs.path }}/jest-stare/android-report.html" >> ${GITHUB_OUTPUT}
+          echo "TARGET_URL=https://${S3_BUCKET}.s3.amazonaws.com/${REPORT_PATH}/jest-stare/android-report.html" >> "$GITHUB_OUTPUT"
 
       - name: Determine Status
         id: determine-status
