@@ -1,4 +1,4 @@
-# Server Database - Schema Version 20
+# Server Database - Schema Version 21
 # Please bump the version by 1, any time the schema changes.
 # Also, include the migration plan under app/database/migration/server,
 # update all models, relationships and types.
@@ -203,6 +203,7 @@ is_active boolean
 active_stage number
 active_stage_title string
 participant_ids string # stringified array of user IDs
+timeline_events string NULL # stringified array of timeline events
 summary string
 current_status string # (valid values InProgres, Finished)
 owner_user_id string INDEX FK >- User.id
