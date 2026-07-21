@@ -108,10 +108,12 @@ const ChannelPostList = ({
         }
     }, [appState === 'active']);
 
+    useEffect(() => {
+        EphemeralStore.setCurrentChannelOldestVisibleCreateAt(undefined);
+    }, [channelId]);
+
     useDidMount(() => {
         return () => {
-            // Clear the viewport anchor when leaving the channel so a stale value
-            // cannot influence a cleanup run that fires before the next channel is opened.
             EphemeralStore.setCurrentChannelOldestVisibleCreateAt(undefined);
             unsetActiveChannelOnServer(serverUrl);
         };
