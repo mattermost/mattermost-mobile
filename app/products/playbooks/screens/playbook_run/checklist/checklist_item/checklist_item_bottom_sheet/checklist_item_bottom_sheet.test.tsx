@@ -96,6 +96,7 @@ describe('ChecklistItemBottomSheet', () => {
             teammateNameDisplay: mockTeammateNameDisplay,
             isDisabled: false,
             currentUserTimezone: {useAutomaticTimezone: false, automaticTimezone: '', manualTimezone: 'America/New_York'},
+            isMilitaryTime: false,
             participantIds: ['user-1', 'user-2'],
             conditionReason: '',
             showConditionIcon: false,

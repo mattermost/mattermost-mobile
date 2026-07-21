@@ -4,7 +4,10 @@
 import {withDatabase, withObservables} from '@nozbe/watermelondb/react';
 import {of as of$, switchMap} from 'rxjs';
 
+import {Preferences} from '@constants';
+import {getDisplayNamePreferenceAsBool} from '@helpers/api/preference';
 import {observeParticipantsIdsFromPlaybookModel, observePlaybookRunById} from '@playbooks/database/queries/run';
+import {queryDisplayNamePreferences} from '@queries/servers/preference';
 import {observeCurrentUser, observeUser} from '@queries/servers/user';
 
 import ChecklistItemBottomSheet, {BOTTOM_SHEET_HEIGHT} from './checklist_item_bottom_sheet';
@@ -19,6 +22,9 @@ type OwnProps = {
 
 const enhanced = withObservables(['item', 'runId'], ({item, runId, database}: OwnProps) => {
     const currentUserTimezone = observeCurrentUser(database).pipe(switchMap((u) => of$(u?.timezone)));
+    const isMilitaryTime = queryDisplayNamePreferences(database).observeWithColumns(['value']).pipe(
+        switchMap((preferences) => of$(getDisplayNamePreferenceAsBool(preferences, Preferences.USE_MILITARY_TIME))),
+    );
     if ('observe' in item) {
         const observedItem = item.observe();
 
@@ -37,6 +43,7 @@ const enhanced = withObservables(['item', 'runId'], ({item, runId, database}: Ow
             item: observedItem,
             assignee,
             currentUserTimezone,
+            isMilitaryTime,
             participantIds: observePlaybookRunById(database, runId).pipe(
                 switchMap((run) => observeParticipantsIdsFromPlaybookModel(run, true)),
             ),
@@ -52,6 +59,7 @@ const enhanced = withObservables(['item', 'runId'], ({item, runId, database}: Ow
         item: of$(item),
         assignee,
         currentUserTimezone,
+        isMilitaryTime,
         participantIds: of$([]),
         runName: of$(''),
     };

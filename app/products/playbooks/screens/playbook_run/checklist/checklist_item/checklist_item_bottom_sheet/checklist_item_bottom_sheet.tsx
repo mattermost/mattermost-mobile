@@ -213,6 +213,7 @@ type Props = {
     teammateNameDisplay: string;
     isDisabled: boolean;
     currentUserTimezone: UserTimezone | null | undefined;
+    isMilitaryTime: boolean;
     participantIds: string[];
     conditionReason: string;
     showConditionIcon: boolean;
@@ -235,6 +236,7 @@ const ChecklistItemBottomSheet = ({
     teammateNameDisplay,
     isDisabled,
     currentUserTimezone,
+    isMilitaryTime,
     participantIds,
     conditionReason,
     showConditionIcon,
@@ -497,6 +499,7 @@ const ChecklistItemBottomSheet = ({
                     actor={activityActor}
                     teammateNameDisplay={teammateNameDisplay}
                     timezone={timezone}
+                    isMilitaryTime={isMilitaryTime}
                     variant='detail'
                     onActorPress={onUserChipPress}
                 />

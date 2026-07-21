@@ -62,6 +62,7 @@ describe('ChecklistItem', () => {
             assignee: mockAssignee,
             teammateNameDisplay: 'username',
             timezone: '',
+            isMilitaryTime: false,
             channelId: 'channel-id-1',
             checklistNumber: 0,
             itemNumber: 0,

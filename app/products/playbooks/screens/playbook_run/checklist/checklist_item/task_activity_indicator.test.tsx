@@ -16,6 +16,8 @@ jest.mocked(BaseChip).mockImplementation((props) => React.createElement('BaseChi
 jest.mock('@components/profile_picture');
 jest.mocked(ProfilePicture).mockImplementation((props) => React.createElement('ProfilePicture', props));
 
+const CHECK_GLYPH = String.fromCodePoint(0xf012c);
+
 describe('TaskActivityIndicator', () => {
     const timestamp = new Date(2026, 6, 21, 10, 30).getTime();
     const actor = TestHelper.fakeUserModel({id: 'user-1', username: 'alex'});
@@ -29,7 +31,7 @@ describe('TaskActivityIndicator', () => {
         jest.useRealTimers();
     });
 
-    it('renders a checked row chip with relative time and the actor avatar', () => {
+    it('renders a compact checked row chip with a bare check icon and the actor avatar', () => {
         const onActorPress = jest.fn();
         const {getByTestId} = renderWithIntl(
             <TaskActivityIndicator
@@ -37,6 +39,7 @@ describe('TaskActivityIndicator', () => {
                 actor={actor}
                 teammateNameDisplay='username'
                 timezone=''
+                isMilitaryTime={false}
                 variant='chip'
                 onActorPress={onActorPress}
             />,
@@ -44,9 +47,15 @@ describe('TaskActivityIndicator', () => {
 
         const activity = getByTestId('playbook_run.checklist_item.task_activity');
         const chip = getByTestId('playbook_run.checklist_item.task_activity.chip');
+        const icon = getByTestId('playbook_run.checklist_item.task_activity.icon');
+
+        // The accessibility label keeps the full verb, actor, and absolute time even though the
+        // visible chip only shows the compact relative time.
         expect(activity.props.accessibilityLabel).toContain('Checked by alex');
         expect(activity.props.accessibilityLabel).toContain('Jul 21, 2026');
-        expect(chip.props.label).toBe('Checked 2 hours ago');
+        expect(chip.props.label).toBe('2h ago');
+        expect(chip.props.label).not.toContain('Checked');
+        expect(icon.props.children).toContain(CHECK_GLYPH);
         expect(getByTestId('playbook_run.checklist_item.task_activity.avatar')).toBeVisible();
 
         chip.props.onPress();
@@ -59,12 +68,14 @@ describe('TaskActivityIndicator', () => {
                 activity={{action: 'uncheck', timestamp}}
                 teammateNameDisplay='username'
                 timezone=''
+                isMilitaryTime={false}
                 variant='chip'
             />,
         );
 
         const chip = getByTestId('playbook_run.checklist_item.task_activity.chip');
-        expect(chip.props.label).toBe('Unchecked 2 hours ago');
+        expect(chip.props.label).toBe('2h ago');
+        expect(chip.props.label).not.toContain('Unchecked');
         expect(chip.props.onPress).toBeUndefined();
         expect(queryByTestId('playbook_run.checklist_item.task_activity.avatar')).toBeNull();
     });
@@ -76,6 +87,7 @@ describe('TaskActivityIndicator', () => {
                 actor={actor}
                 teammateNameDisplay='username'
                 timezone=''
+                isMilitaryTime={false}
                 variant='detail'
             />,
         );
@@ -95,10 +107,43 @@ describe('TaskActivityIndicator', () => {
                 actor={actor}
                 teammateNameDisplay='username'
                 timezone='Asia/Kolkata'
+                isMilitaryTime={false}
                 variant='detail'
             />,
         );
 
         expect(getByText('Jul 21, 2026 at 12:57 PM')).toBeVisible();
+    });
+
+    it('renders a 24-hour absolute time when the user prefers military time', () => {
+        const utcTimestamp = Date.UTC(2026, 6, 21, 13, 24);
+        const {getByText} = renderWithIntl(
+            <TaskActivityIndicator
+                activity={{action: 'check', actorUserId: actor.id, timestamp: utcTimestamp}}
+                actor={actor}
+                teammateNameDisplay='username'
+                timezone='UTC'
+                isMilitaryTime={true}
+                variant='detail'
+            />,
+        );
+
+        expect(getByText('Jul 21, 2026 at 13:24')).toBeVisible();
+    });
+
+    it('renders a 12-hour absolute time when the user does not prefer military time', () => {
+        const utcTimestamp = Date.UTC(2026, 6, 21, 13, 24);
+        const {getByText} = renderWithIntl(
+            <TaskActivityIndicator
+                activity={{action: 'check', actorUserId: actor.id, timestamp: utcTimestamp}}
+                actor={actor}
+                teammateNameDisplay='username'
+                timezone='UTC'
+                isMilitaryTime={false}
+                variant='detail'
+            />,
+        );
+
+        expect(getByText('Jul 21, 2026 at 1:24 PM')).toBeVisible();
     });
 });

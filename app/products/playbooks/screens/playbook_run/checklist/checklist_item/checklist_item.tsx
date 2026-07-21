@@ -94,6 +94,7 @@ type Props = {
     assignee?: UserModel;
     teammateNameDisplay: string;
     timezone: string;
+    isMilitaryTime: boolean;
     channelId: string;
     checklistNumber: number;
     itemNumber: number;
@@ -110,6 +111,7 @@ const ChecklistItem = ({
     assignee,
     teammateNameDisplay,
     timezone,
+    isMilitaryTime,
     channelId,
     checklistNumber,
     itemNumber,
@@ -310,6 +312,7 @@ const ChecklistItem = ({
                                 actor={activityActor}
                                 teammateNameDisplay={teammateNameDisplay}
                                 timezone={timezone}
+                                isMilitaryTime={isMilitaryTime}
                                 variant='chip'
                                 onActorPress={onUserChipPress}
                             />
