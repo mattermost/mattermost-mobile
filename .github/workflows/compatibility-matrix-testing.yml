@@ -475,6 +475,7 @@ jobs:
             --github-token="$GITHUB_TOKEN" \
             --context="e2e/compatibility-matrix-testing" \
             --upstream-succeeded="$UPSTREAM" \
+            --use-staging=true \
             --poll-attempts=24
           RC=$?
           echo "tsio-report-status exit=$RC upstream_succeeded=$UPSTREAM"

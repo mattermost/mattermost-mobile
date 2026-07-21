@@ -450,8 +450,9 @@ jobs:
       # TSIO accepts framework=maestro (JUnit XML) since mattermost-test-system-io#76.
       - name: Upload report to Test System IO
         if: always() && inputs.tsio-config != '' && vars.TSIO_UPLOAD_ENABLED != 'false' && hashFiles('build/maestro-report.xml') != ''
-        uses: mattermost/mattermost-test-system-io/.github/actions/test-system-io-report-upload@19aef73a2a9b62ad94ed695e71c142f35ee4c6f1 # retry 504s + chunk screenshots (#79)
+        uses: mattermost/mattermost-test-system-io/.github/actions/test-system-io-report-upload@b5580f407a2776c064c626cc3c42295f2111fdc7 # staging validation — main@b5580f4 (#81 Maestro FilePath + Detox paths)
         with:
+          use-staging: true
           composite-identity: ${{ toJSON(fromJSON(inputs.tsio-config).composite_identity) }}
           total-reports-expected: ${{ fromJSON(inputs.tsio-config).total_reports_expected }}
           framework: maestro
@@ -872,8 +873,9 @@ jobs:
       # TSIO accepts framework=maestro (JUnit XML) since mattermost-test-system-io#76.
       - name: Upload report to Test System IO
         if: always() && inputs.tsio-config != '' && vars.TSIO_UPLOAD_ENABLED != 'false' && hashFiles('build/maestro-report.xml') != ''
-        uses: mattermost/mattermost-test-system-io/.github/actions/test-system-io-report-upload@19aef73a2a9b62ad94ed695e71c142f35ee4c6f1 # retry 504s + chunk screenshots (#79)
+        uses: mattermost/mattermost-test-system-io/.github/actions/test-system-io-report-upload@b5580f407a2776c064c626cc3c42295f2111fdc7 # staging validation — main@b5580f4 (#81 Maestro FilePath + Detox paths)
         with:
+          use-staging: true
           composite-identity: ${{ toJSON(fromJSON(inputs.tsio-config).composite_identity) }}
           total-reports-expected: ${{ fromJSON(inputs.tsio-config).total_reports_expected }}
           framework: maestro

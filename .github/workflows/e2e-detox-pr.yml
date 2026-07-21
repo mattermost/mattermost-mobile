@@ -847,6 +847,7 @@ jobs:
             --github-token="$GITHUB_TOKEN" \
             --context="$TSIO_STATUS_CONTEXT" \
             --upstream-succeeded="$UPSTREAM" \
+            --use-staging=true \
             --poll-attempts=36
           RC=$?
           echo "tsio-report-status exit=$RC upstream_succeeded=$UPSTREAM"
