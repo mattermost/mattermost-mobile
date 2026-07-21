@@ -10,7 +10,7 @@
 // NOTE: These tests rely on `device.setURLBlacklist` to simulate offline behaviour.
 // If network-blocking proves unreliable in CI (e.g., some requests still slip through),
 // the assertion can be relaxed to a `toNotBeVisible` only if a cached value is NOT expected.
-// MM-T_CB_OFFLINE_2 is the most sensitive because it expects the OLD cached value after the
+// MM-T6207 is the most sensitive because it expects the OLD cached value after the
 // server changes while the app is offline.
 
 import {Properties, Setup, System} from '@support/server_api';
@@ -50,7 +50,7 @@ describe('Classification Banner - Offline / Cache Behaviour', () => {
         await device.setURLBlacklist([]);
     });
 
-    it('MM-T_CB_OFFLINE_1 - should display the banner from DB cache when API is unreachable on reload', async () => {
+    it('MM-T6206_1 - should display the banner from DB cache when API is unreachable on reload', async () => {
         // # Configure classification and verify it works online first
         await Properties.apiSetupClassificationWithBanner(siteOneUrl, {levelId: 'lvl-top-secret'});
         await device.reloadReactNative();
@@ -70,7 +70,7 @@ describe('Classification Banner - Offline / Cache Behaviour', () => {
         await waitFor(element(by.text('TOP SECRET'))).toBeVisible().withTimeout(timeouts.TEN_SEC);
     });
 
-    it('MM-T_CB_OFFLINE_2 - should show stale cached value when API is blocked after a server change', async () => {
+    it('MM-T6207_1 - should show stale cached value when API is blocked after a server change', async () => {
         // # Set up classification at TOP SECRET
         const {linkedFieldId} = await Properties.apiSetupClassificationWithBanner(siteOneUrl, {levelId: 'lvl-top-secret'});
         await device.reloadReactNative();
@@ -94,7 +94,7 @@ describe('Classification Banner - Offline / Cache Behaviour', () => {
         await waitFor(element(by.text('SECRET'))).not.toBeVisible().withTimeout(timeouts.FOUR_SEC);
     });
 
-    it('MM-T_CB_OFFLINE_3 - should not display the banner when there is no cached data and the API is blocked', async () => {
+    it('MM-T6208_1 - should not display the banner when there is no cached data and the API is blocked', async () => {
         // # Reload while online so the app fetches the (now-empty) classification
         // data and persists it, clearing any stale cache from prior tests.
         await device.reloadReactNative();
