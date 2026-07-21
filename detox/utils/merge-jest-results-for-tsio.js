@@ -1,6 +1,6 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
-/* eslint-disable no-console -- CI utility script */
+/* eslint-disable no-console, no-process-env -- CI utility script */
 
 /**
  * Merge per-shard Jest `--json` reports into the shape TSIO's Detox ingest

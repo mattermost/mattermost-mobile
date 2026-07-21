@@ -74,6 +74,7 @@ function buildFlowTagsMap(repoRoot) {
                 const relativePath = normalizeFlowPath(path.relative(repoRoot, fullPath));
                 const underFlows = normalizeFlowPath(path.relative(flowsRoot, fullPath));
                 map[relativePath] = tags;
+
                 // Alias keys so JUnit `file=` values from either layout still resolve.
                 map[underFlows] = tags;
                 map[`flows/${underFlows}`] = tags;
