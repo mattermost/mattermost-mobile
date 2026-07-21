@@ -6,6 +6,7 @@ import {Alert, DeviceEventEmitter} from 'react-native';
 import {switchToChannelById} from '@actions/remote/channel';
 import {batchTeamThreadSync} from '@actions/remote/thread';
 import {Events, Device} from '@constants';
+import {FULL_VERSION} from '@constants/supported_server';
 import DatabaseManager from '@database/manager';
 import {getServerCredentials} from '@init/credentials';
 import {getActiveServerUrl} from '@queries/app/servers';
@@ -40,7 +41,8 @@ describe('GlobalEventHandler', () => {
 
     describe('onServerVersionChanged', () => {
         it('should not show alert when version meets minimum requirement', async () => {
-            await GlobalEventHandler.onServerVersionChanged({serverUrl: 'http://server.com', serverVersion: '10.0.0'});
+            // Use the current supported full version so this test survives future minimum-version bumps
+            await GlobalEventHandler.onServerVersionChanged({serverUrl: 'http://server.com', serverVersion: FULL_VERSION});
             expect(Alert.alert).not.toHaveBeenCalled();
         });
 
