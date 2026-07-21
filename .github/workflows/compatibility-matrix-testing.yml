@@ -92,7 +92,7 @@ jobs:
       - update-initial-status
     permissions:
       contents: read
-      actions: read
+      actions: write
     steps:
       - name: Checkout Repository
         uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
@@ -121,6 +121,7 @@ jobs:
       - update-initial-status
     permissions:
       contents: read
+      actions: write
     env:
       ORG_GRADLE_PROJECT_jvmargs: -Xmx8g
     steps:
@@ -162,6 +163,7 @@ jobs:
       - update-initial-status
     permissions:
       contents: read
+      actions: write
     env:
       ORG_GRADLE_PROJECT_jvmargs: -Xmx8g
     steps:
