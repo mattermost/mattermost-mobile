@@ -13,7 +13,7 @@ class PinnedMessagesScreen {
     testID = {
         pinnedMessagesScreenPrefix: 'pinned_messages.',
         pinnedMessagesScreen: 'pinned_messages.screen',
-        backButton: 'navigation.header.back',
+        backButton: 'channel_info.pinned_messages.back',
         emptyTitle: 'pinned_messages.empty.title',
         emptyParagraph: 'pinned_messages.empty.paragraph',
     };
@@ -53,7 +53,11 @@ class PinnedMessagesScreen {
 
     back = async () => {
         if (isAndroid()) {
-            await device.pressBack();
+            // Detox's device.pressBack() uses UiAutomator, which on API 35 can fail with
+            // "UiAutomationService ... already registered!" after earlier navigation in the
+            // same test. Tapping the app's own back button avoids the UiAutomator path.
+            await waitFor(this.backButton).toExist().withTimeout(timeouts.TEN_SEC);
+            await this.backButton.tap();
         } else {
             await this.pinnedMessagesScreen.swipe('right', 'fast', 0.8, 0.05, 0.5);
         }
