@@ -281,8 +281,14 @@ export async function autoCacheCleanup(serverUrl: string): Promise<void> {
         await cleanupAiThreads(database, operator, cutoff, limits.viewedThreadId);
         await cleanupPlaybookRuns(database, operator, cutoff, limits.viewedPlaybookRunId);
 
-        await database.unsafeVacuum();
         await setLastAutoCacheCleanupRun(serverUrl);
+
+        try {
+            await database.unsafeVacuum();
+        } catch (vacuumError) {
+            logError('autoCacheCleanup unsafeVacuum', getFullErrorMessage(vacuumError));
+        }
+
         logDebug('autoCacheCleanup: completed successfully for', serverUrl);
     } catch (error) {
         logError('autoCacheCleanup', getFullErrorMessage(error));

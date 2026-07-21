@@ -400,6 +400,22 @@ describe('autoCacheCleanup', () => {
         );
     });
 
+    it('stamps LAST_AUTO_CACHE_CLEANUP_RUN and logs the error when unsafeVacuum rejects', async () => {
+        jest.spyOn(database, 'unsafeVacuum').mockRejectedValue(new Error('vacuum failed'));
+        const handleSystemSpy = jest.spyOn(operator, 'handleSystem');
+
+        await autoCacheCleanup(SERVER_URL);
+
+        expect(handleSystemSpy).toHaveBeenCalledWith(
+            expect.objectContaining({
+                systems: expect.arrayContaining([
+                    expect.objectContaining({id: SYSTEM_IDENTIFIERS.LAST_AUTO_CACHE_CLEANUP_RUN}),
+                ]),
+            }),
+        );
+        expect(logError).toHaveBeenCalledWith('autoCacheCleanup unsafeVacuum', 'vacuum failed');
+    });
+
     it('does not call unsafeVacuum and logs the error when the unprotected-channels delete call returns an error', async () => {
         jest.mocked(LocalPost.deletePostsInChannelsByCutoff).mockResolvedValueOnce({error: new Error('cleanup failed')});
 

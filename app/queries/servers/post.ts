@@ -428,20 +428,6 @@ export const syncPermalinkPreviewsForEditedPost = async (
     }
 };
 
-export const fetchPostIdsByBucket = async (
-    database: Database,
-    channelIds: string[],
-    cutoff: number,
-    exclusions: Set<string>,
-): Promise<string[]> => {
-    const ids = await database.get<PostModel>(POST).query(
-        Q.where('channel_id', Q.oneOf(channelIds)),
-        Q.where('create_at', Q.lt(cutoff)),
-        Q.where('delete_at', Q.eq(0)),
-    ).fetchIds();
-    return ids.filter((id) => !exclusions.has(id));
-};
-
 // Returns the create_at of the nth post in channelId that is strictly older
 // than anchor (sorted descending). Returns undefined when fewer than n such
 // posts exist
