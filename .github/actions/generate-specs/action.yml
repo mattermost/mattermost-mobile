@@ -17,10 +17,6 @@ inputs:
     description: The os of the device used for the tests
     required: false
     default: "iOS 17.1"
-  spec_list_file:
-    description: Optional JSON manifest of spec file paths (repo-relative). When set, only those specs are sharded.
-    required: false
-    default: ""
 
 outputs:
   specs:
@@ -34,7 +30,6 @@ runs:
       env:
         PARALLELISM: ${{ inputs.parallelism }}
         SEARCH_PATH: ${{ inputs.search_path }}
-        SPEC_LIST_FILE: ${{ inputs.spec_list_file }}
         DEVICE_NAME: ${{ inputs.device_name }}
         DEVICE_OS_VERSION: ${{ inputs.device_os_version }}
       run: |

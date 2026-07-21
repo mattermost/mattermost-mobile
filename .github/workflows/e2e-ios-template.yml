@@ -84,11 +84,6 @@ on:
         required: false
         type: string
         default: "20"
-      spec_list_file:
-        description: "Optional JSON manifest of spec paths — only those files are sharded (failing-spec CI mode)"
-        required: false
-        type: string
-        default: ""
       detox_config:
         description: "Detox configuration name to use (e.g. ios.sim.debug, ios.ipad.debug)"
         required: false
@@ -178,7 +173,6 @@ jobs:
         with:
           parallelism: ${{ inputs.parallelism }}
           search_path: ${{ inputs.search_path }}
-          spec_list_file: ${{ inputs.spec_list_file }}
           device_name: ${{ env.DEVICE_NAME }}
           device_os_version: ${{ env.DEVICE_OS_VERSION }}
 

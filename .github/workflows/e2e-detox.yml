@@ -31,21 +31,6 @@ on:
         description: "Run ID of the parent workflow that uploaded build artifacts"
         required: true
         type: string
-      failing_only:
-        description: "Run only specs listed in spec_list_file (fewer shards, lower CI cost)"
-        required: false
-        type: boolean
-        default: false
-      failing_parallelism:
-        description: "Shard count when failing_only is true"
-        required: false
-        type: string
-        default: "6"
-      spec_list_file:
-        description: "JSON manifest of failing spec paths (used when failing_only is true)"
-        required: false
-        type: string
-        default: "detox/e2e/failing-specs.manifest.json"
 
 permissions:
   contents: read
@@ -67,8 +52,7 @@ jobs:
       MM_TEST_SERVER_URL_2: ${{ inputs.SITE_2_URL }}
       MM_TEST_SERVER_URL_3: ${{ inputs.SITE_3_URL }}
       artifact_run_id: ${{ inputs.artifact_run_id }}
-      parallelism: ${{ inputs.failing_only && inputs.failing_parallelism || '20' }}
-      spec_list_file: ${{ inputs.failing_only && inputs.spec_list_file || '' }}
+      parallelism: '20'
     secrets:
       MM_MOBILE_E2E_ADMIN_EMAIL: ${{ secrets.MM_MOBILE_E2E_ADMIN_EMAIL }}
       MM_MOBILE_E2E_ADMIN_USERNAME: ${{ secrets.MM_MOBILE_E2E_ADMIN_USERNAME }}
@@ -92,8 +76,7 @@ jobs:
       MM_TEST_SERVER_URL_2: ${{ inputs.SITE_2_URL }}
       MM_TEST_SERVER_URL_3: ${{ inputs.SITE_3_URL }}
       artifact_run_id: ${{ inputs.artifact_run_id }}
-      parallelism: ${{ inputs.failing_only && inputs.failing_parallelism || '20' }}
-      spec_list_file: ${{ inputs.failing_only && inputs.spec_list_file || '' }}
+      parallelism: '20'
     secrets:
       MM_MOBILE_E2E_ADMIN_EMAIL: ${{ secrets.MM_MOBILE_E2E_ADMIN_EMAIL }}
       MM_MOBILE_E2E_ADMIN_USERNAME: ${{ secrets.MM_MOBILE_E2E_ADMIN_USERNAME }}
