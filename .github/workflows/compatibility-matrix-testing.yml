@@ -80,10 +80,30 @@ jobs:
       statuses: write
     needs:
       - calculate-commit-hash
+      - cmt-identity
     steps:
       - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
         with:
           ref: ${{ inputs.MOBILE_VERSION }}
+
+      # Pending status should open TSIO (report page links back to the Actions run).
+      - name: Build TSIO report URL
+        id: tsio-url
+        env:
+          IDENTITY: ${{ needs.cmt-identity.outputs.composite-identity-json }}
+        run: |
+          URL=$(jq -nr --argjson id "$IDENTITY" --arg base "https://test-io.test.mattermost.com" '
+            ($id.repository | split("/") | .[-1]) as $repo
+            | ($id.branch // "main"
+                | sub("^refs/heads/"; "")
+                | sub("^refs/tags/"; "")
+                | gsub("/"; "~")) as $branch
+            | ($id.commit_sha[0:7]) as $sha
+            | ($id.run_group // $id.name // "cmt-mobile") as $name
+            | "\($base)/reports/\($repo|@uri)/\($branch|@uri)/\($sha)/\($name|@uri)?gh_run_id=\($id.gh_run_id)"
+          ')
+          echo "target_url=$URL" >> "$GITHUB_OUTPUT"
+
       - uses: ./.github/actions/update-commit-status
         if: ${{ needs.calculate-commit-hash.outputs.MOBILE_SHA != '' }}
         env:
@@ -94,7 +114,7 @@ jobs:
           context: e2e/compatibility-matrix-testing
           description: "Compatibility Matrix Testing for ${{ inputs.MOBILE_VERSION }} version"
           status: pending
-          target_url: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+          target_url: ${{ steps.tsio-url.outputs.target_url }}
 
   # Maestro only runs against the latest server version; matrix filtering happens here since job-level if: can't access matrix.
   prepare-maestro-matrix:
@@ -430,16 +450,13 @@ jobs:
               *) UPSTREAM="false" ;;
             esac
           done
-          # TEMP_TSIO_STAGING: poll staging while validating TSIO #76.
-          # REVERT before merge / after staging sign-off — drop --use-staging (default = prod).
           node detox/utils/tsio-report-status.js \
             --composite-identity="$COMPOSITE_IDENTITY" \
             --total-reports-expected="$TOTAL_REPORTS_EXPECTED" \
             --github-token="$GITHUB_TOKEN" \
             --context="e2e/compatibility-matrix-testing" \
             --upstream-succeeded="$UPSTREAM" \
-            --poll-attempts=24 \
-            --use-staging=true
+            --poll-attempts=24
           RC=$?
           echo "tsio-report-status exit=$RC upstream_succeeded=$UPSTREAM"
           if [ "$RC" -ne 0 ] && [ "$UPSTREAM" = "true" ]; then

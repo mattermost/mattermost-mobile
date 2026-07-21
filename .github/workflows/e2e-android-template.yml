@@ -479,8 +479,7 @@ jobs:
 
       - name: Upload report to Test System IO
         if: always() && inputs.tsio-config != '' && vars.TSIO_UPLOAD_ENABLED != 'false' && hashFiles('detox/artifacts/jest-results-merged.json') != ''
-        # Pin matches TSIO staging deploy (mattermost-test-system-io#76 / 81017b2).
-        uses: mattermost/mattermost-test-system-io/.github/actions/test-system-io-report-upload@81017b2d568d1fc1f1fdaa7299b177fae53c63e1 # staging validation / #76
+        uses: mattermost/mattermost-test-system-io/.github/actions/test-system-io-report-upload@19aef73a2a9b62ad94ed695e71c142f35ee4c6f1 # retry 504s + chunk screenshots (#79)
         with:
           composite-identity: ${{ toJSON(fromJSON(inputs.tsio-config).composite_identity) }}
           total-reports-expected: ${{ fromJSON(inputs.tsio-config).total_reports_expected }}
@@ -489,9 +488,6 @@ jobs:
           gh-job-name: ${{ inputs.tsio-shard-name != '' && inputs.tsio-shard-name || 'generate-report' }}
           json-path: detox/artifacts/jest-results-merged.json
           screenshots-dir: detox/artifacts/
-          # TEMP_TSIO_STAGING: point uploads at staging while validating TSIO #76.
-          # REVERT before merge / after staging sign-off — remove this line (default = prod).
-          use-staging: "true"
 
       - name: Save report Detox Dependencies
         id: report-link
