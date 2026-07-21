@@ -129,9 +129,7 @@ const ChannelPostList = ({
                 }
             }
         }
-        if (oldest < Infinity) {
-            EphemeralStore.setCurrentChannelOldestVisibleCreateAt(oldest);
-        }
+        EphemeralStore.setCurrentChannelOldestVisibleCreateAt(oldest < Infinity ? oldest : undefined);
     }, []);
 
     const intro = useMemo(() => (<Intro channelId={channelId}/>), [channelId]);
