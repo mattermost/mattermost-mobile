@@ -1,0 +1,230 @@
+name: E2E Nightly Cache Seed
+
+# Warms S3 build caches from main so PRs with test-only changes skip the build step.
+# Required: S3 cache is shared across branches, but only the default-branch seed is visible to all PRs.
+
+on:
+  schedule:
+    - cron: '0 2 * * *'  # 2 AM UTC daily
+  workflow_dispatch:
+
+# Read-only token: these jobs only build + push binaries to S3, never write to the repo.
+permissions:
+  contents: read
+
+jobs:
+  build-ios:
+    name: Seed iOS build cache
+    runs-on: macos-26
+    timeout-minutes: 90
+    env:
+      DETOX_AWS_S3_BUCKET: "mattermost-detox-report"
+    steps:
+      - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
+        with:
+          ref: main
+          persist-credentials: false
+
+      - name: Compute build fingerprint
+        id: fingerprint
+        uses: ./.github/actions/compute-e2e-build-fingerprint
+        with:
+          platform: ios
+
+      - name: Check for existing S3 cache
+        id: cache-check
+        uses: ./.github/actions/s3-build-cache
+        env:
+          DETOX_AWS_ACCESS_KEY_ID: ${{ secrets.MM_MOBILE_DETOX_AWS_ACCESS_KEY_ID }}
+          DETOX_AWS_SECRET_ACCESS_KEY: ${{ secrets.MM_MOBILE_DETOX_AWS_SECRET_ACCESS_KEY }}
+        with:
+          fingerprint: ${{ steps.fingerprint.outputs.fingerprint }}
+          platform: ios
+          bucket: ${{ env.DETOX_AWS_S3_BUCKET }}
+          cache-path: 'Mattermost-simulator-*.app.zip'
+          mode: check
+
+      - name: Prepare iOS Build
+        if: steps.cache-check.outputs.cache-hit != 'true'
+        uses: ./.github/actions/prepare-ios-build
+        with:
+          intune-enabled: 'false'
+
+      - name: Set .env with RUNNING_E2E=true
+        if: steps.cache-check.outputs.cache-hit != 'true'
+        run: echo "RUNNING_E2E=true" > .env
+
+      - name: Build iOS Simulator
+        if: steps.cache-check.outputs.cache-hit != 'true'
+        env:
+          GITHUB_TOKEN: ${{ secrets.MM_MOBILE_GITHUB_TOKEN }}
+        run: bundle exec fastlane ios simulator --env ios.simulator
+        working-directory: ./fastlane
+
+      - name: Save iOS build to S3
+        if: steps.cache-check.outputs.cache-hit != 'true'
+        uses: ./.github/actions/s3-build-cache
+        env:
+          DETOX_AWS_ACCESS_KEY_ID: ${{ secrets.MM_MOBILE_DETOX_AWS_ACCESS_KEY_ID }}
+          DETOX_AWS_SECRET_ACCESS_KEY: ${{ secrets.MM_MOBILE_DETOX_AWS_SECRET_ACCESS_KEY }}
+        with:
+          fingerprint: ${{ steps.fingerprint.outputs.fingerprint }}
+          platform: ios
+          bucket: ${{ env.DETOX_AWS_S3_BUCKET }}
+          cache-path: 'Mattermost-simulator-*.app.zip'
+          mode: save
+
+  build-android-detox:
+    name: Seed Android Detox build cache
+    runs-on: ubuntu-latest-8-cores
+    timeout-minutes: 60
+    env:
+      DETOX_AWS_S3_BUCKET: "mattermost-detox-report"
+      ORG_GRADLE_PROJECT_jvmargs: -Xmx8g
+    steps:
+      - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
+        with:
+          ref: main
+          persist-credentials: false
+
+      - name: Compute build fingerprint
+        id: fingerprint
+        uses: ./.github/actions/compute-e2e-build-fingerprint
+        with:
+          platform: android-detox
+
+      - name: Check for existing S3 cache
+        id: cache-check
+        uses: ./.github/actions/s3-build-cache
+        env:
+          DETOX_AWS_ACCESS_KEY_ID: ${{ secrets.MM_MOBILE_DETOX_AWS_ACCESS_KEY_ID }}
+          DETOX_AWS_SECRET_ACCESS_KEY: ${{ secrets.MM_MOBILE_DETOX_AWS_SECRET_ACCESS_KEY }}
+        with:
+          fingerprint: ${{ steps.fingerprint.outputs.fingerprint }}
+          platform: android-detox
+          bucket: ${{ env.DETOX_AWS_S3_BUCKET }}
+          cache-path: 'android/app/build'
+          mode: check
+
+      - name: Prepare Android Build
+        if: steps.cache-check.outputs.cache-hit != 'true'
+        uses: ./.github/actions/prepare-android-build
+        env:
+          STORE_FILE: ${{ secrets.MM_MOBILE_STORE_FILE }}
+          STORE_ALIAS: ${{ secrets.MM_MOBILE_STORE_ALIAS }}
+          STORE_PASSWORD: ${{ secrets.MM_MOBILE_STORE_PASSWORD }}
+          MATTERMOST_BUILD_GH_TOKEN: ${{ secrets.MATTERMOST_BUILD_GH_TOKEN }}
+
+      - name: Detox build
+        if: steps.cache-check.outputs.cache-hit != 'true'
+        run: |
+          cd detox
+          npm ci --prefer-offline --no-audit --no-fund
+          npm run e2e:android-build
+
+      - name: Save Android Detox build to S3
+        if: steps.cache-check.outputs.cache-hit != 'true'
+        uses: ./.github/actions/s3-build-cache
+        env:
+          DETOX_AWS_ACCESS_KEY_ID: ${{ secrets.MM_MOBILE_DETOX_AWS_ACCESS_KEY_ID }}
+          DETOX_AWS_SECRET_ACCESS_KEY: ${{ secrets.MM_MOBILE_DETOX_AWS_SECRET_ACCESS_KEY }}
+        with:
+          fingerprint: ${{ steps.fingerprint.outputs.fingerprint }}
+          platform: android-detox
+          bucket: ${{ env.DETOX_AWS_S3_BUCKET }}
+          cache-path: 'android/app/build'
+          mode: save
+
+  build-android-maestro:
+    name: Seed Android Maestro build cache
+    runs-on: ubuntu-latest-8-cores
+    timeout-minutes: 60
+    env:
+      DETOX_AWS_S3_BUCKET: "mattermost-detox-report"
+      ORG_GRADLE_PROJECT_jvmargs: -Xmx8g
+    steps:
+      - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
+        with:
+          ref: main
+          persist-credentials: false
+
+      - name: Compute build fingerprint
+        id: fingerprint
+        uses: ./.github/actions/compute-e2e-build-fingerprint
+        with:
+          platform: android-maestro
+
+      - name: Check for existing S3 cache
+        id: cache-check
+        uses: ./.github/actions/s3-build-cache
+        env:
+          DETOX_AWS_ACCESS_KEY_ID: ${{ secrets.MM_MOBILE_DETOX_AWS_ACCESS_KEY_ID }}
+          DETOX_AWS_SECRET_ACCESS_KEY: ${{ secrets.MM_MOBILE_DETOX_AWS_SECRET_ACCESS_KEY }}
+        with:
+          fingerprint: ${{ steps.fingerprint.outputs.fingerprint }}
+          platform: android-maestro
+          bucket: ${{ env.DETOX_AWS_S3_BUCKET }}
+          cache-path: 'android/app/build/outputs/apk/release/'
+          mode: check
+
+      - name: Prepare Android Build
+        if: steps.cache-check.outputs.cache-hit != 'true'
+        uses: ./.github/actions/prepare-android-build
+        env:
+          STORE_FILE: ${{ secrets.MM_MOBILE_STORE_FILE }}
+          STORE_ALIAS: ${{ secrets.MM_MOBILE_STORE_ALIAS }}
+          STORE_PASSWORD: ${{ secrets.MM_MOBILE_STORE_PASSWORD }}
+          MATTERMOST_BUILD_GH_TOKEN: ${{ secrets.MATTERMOST_BUILD_GH_TOKEN }}
+
+      - name: Build Maestro Android APK
+        if: steps.cache-check.outputs.cache-hit != 'true'
+        uses: ./.github/actions/build-android-maestro-apk
+
+      - name: Save Android Maestro build to S3
+        if: steps.cache-check.outputs.cache-hit != 'true'
+        uses: ./.github/actions/s3-build-cache
+        env:
+          DETOX_AWS_ACCESS_KEY_ID: ${{ secrets.MM_MOBILE_DETOX_AWS_ACCESS_KEY_ID }}
+          DETOX_AWS_SECRET_ACCESS_KEY: ${{ secrets.MM_MOBILE_DETOX_AWS_SECRET_ACCESS_KEY }}
+        with:
+          fingerprint: ${{ steps.fingerprint.outputs.fingerprint }}
+          platform: android-maestro
+          bucket: ${{ env.DETOX_AWS_S3_BUCKET }}
+          cache-path: 'android/app/build/outputs/apk/release/'
+          mode: save
+
+  # Prune e2e-builds/ objects older than RETENTION_DAYS — no bucket lifecycle rule exists.
+  # Fresh fingerprints are re-seeded nightly above and by PR builds.
+  prune-stale-cache:
+    name: Prune stale S3 build cache
+    runs-on: ubuntu-24.04
+    env:
+      DETOX_AWS_S3_BUCKET: "mattermost-detox-report"
+      RETENTION_DAYS: "21"
+    steps:
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@61815dcd50bd041e203e49132bacad1fd04d2708 # v5.1.1
+        with:
+          aws-access-key-id: ${{ secrets.MM_MOBILE_DETOX_AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.MM_MOBILE_DETOX_AWS_SECRET_ACCESS_KEY }}
+          aws-region: us-east-1
+
+      - name: Delete e2e-builds/ objects older than retention window
+        env:
+          BUCKET: ${{ env.DETOX_AWS_S3_BUCKET }}
+        run: |
+          set -eu
+          cutoff=$(date -u -d "${RETENTION_DAYS} days ago" +%Y-%m-%d)
+          # e2e-builds/ is shared by PR builds and this nightly seed.
+          echo "Pruning s3://${BUCKET}/e2e-builds/ objects last modified before ${cutoff}"
+          deleted=0
+          # `aws s3 ls --recursive` prints: <YYYY-MM-DD> <HH:MM:SS> <size> <key>
+          while read -r date_col _time_col _size_col key; do
+            [ -z "${key:-}" ] && continue
+            if [[ "$date_col" < "$cutoff" ]]; then
+              echo "Deleting $key (last modified $date_col)"
+              aws s3 rm "s3://${BUCKET}/${key}"
+              deleted=$((deleted + 1))
+            fi
+          done < <(aws s3 ls "s3://${BUCKET}/e2e-builds/" --recursive)
+          echo "Pruned ${deleted} stale object(s)."

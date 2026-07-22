@@ -1,0 +1,67 @@
+name: Compute E2E build fingerprint
+description: Compute a content-based fingerprint for E2E builds to enable caching
+
+inputs:
+  platform:
+    description: 'Platform to compute fingerprint for (ios, android-detox, android-maestro)'
+    required: true
+
+outputs:
+  fingerprint:
+    description: 'Computed fingerprint'
+    value: ${{ steps.compute.outputs.fingerprint }}
+
+runs:
+  using: composite
+  steps:
+    - name: Compute fingerprint
+      id: compute
+      shell: bash
+      run: |
+        # Fingerprint = sha256 of git blob hashes for all binary-impacting paths.
+        # Missing a path causes false cache HITs (wrong binary tested).
+        # Test files (detox/e2e/**, detox/maestro/**) are excluded so test-only
+        # PRs still hit cache. Keep app-source subset in sync with label-manager filter.
+        case "${{ inputs.platform }}" in
+          ios)
+            paths=(app/ ios/ libraries/ share_extension/ patches/ \
+                    types/ assets/fonts/ assets/sounds/ \
+                    assets/base/images/ assets/base/release/ assets/base/config.json \
+                    package.json package-lock.json \
+                    tsconfig.json babel.config.js metro.config.js \
+                    index.tsx app.json react-native.config.js \
+                    .nvmrc fastlane/)
+            ;;
+          android-detox)
+            paths=(app/ android/ libraries/ share_extension/ patches/ \
+                    types/ assets/fonts/ assets/sounds/ \
+                    assets/base/images/ assets/base/release/ assets/base/config.json \
+                    package.json package-lock.json \
+                    tsconfig.json babel.config.js metro.config.js \
+                    index.tsx app.json react-native.config.js \
+                    .nvmrc detox/.detoxrc.json detox/package.json \
+                    detox/package-lock.json detox/scripts/)
+            ;;
+          android-maestro)
+            paths=(app/ android/ libraries/ share_extension/ patches/ \
+                    types/ assets/fonts/ assets/sounds/ \
+                    assets/base/images/ assets/base/release/ assets/base/config.json \
+                    package.json package-lock.json \
+                    tsconfig.json babel.config.js metro.config.js \
+                    index.tsx app.json react-native.config.js \
+                    .nvmrc)
+            ;;
+          *)
+            echo "::error::Invalid platform: ${{ inputs.platform }}"
+            exit 1
+            ;;
+        esac
+
+        # Fall back to commit SHA if ls-tree fails (e.g., shallow clone) so the build still runs.
+        fingerprint=$(git ls-tree -r HEAD -- "${paths[@]}" 2>/dev/null | sha256sum | cut -d' ' -f1)
+        if [ -z "$fingerprint" ] || [ "$fingerprint" = "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855" ]; then
+          fingerprint="nocache-$(git rev-parse --short HEAD 2>/dev/null || echo unknown)"
+          echo "::warning::git ls-tree produced no output — using fallback fingerprint. S3 cache will miss."
+        fi
+        echo "fingerprint=${fingerprint}" >> "$GITHUB_OUTPUT"
+        echo "Computed fingerprint for ${{ inputs.platform }}: ${fingerprint}"

@@ -1,0 +1,104 @@
+name: S3 Build Cache
+description: >-
+  Cache/restore compiled app binaries in S3 keyed by content fingerprint.
+  Uses S3 instead of actions/cache because large binaries (200MB–1GB)
+  blow the 10GB GHA cache limit and cause eviction thrashing.
+
+inputs:
+  fingerprint:
+    description: 'Content fingerprint (from compute-e2e-build-fingerprint)'
+    required: true
+  platform:
+    description: 'Platform key: ios, android-detox, android-maestro'
+    required: true
+  bucket:
+    description: 'S3 bucket name'
+    required: true
+  s3-key-prefix:
+    description: 'Key prefix in the bucket (e.g. e2e-builds/)'
+    required: false
+    default: 'e2e-builds/'
+  cache-path:
+    description: 'Local path to cache (glob for restore, directory for save)'
+    required: true
+  mode:
+    description: >-
+      restore (check + download), save (upload after build), or
+      check (existence only — no download; for cache-warming jobs)
+    required: true
+
+outputs:
+  cache-hit:
+    description: 'true if a cached build was found and restored'
+    value: ${{ steps.s3-cache.outputs.cache-hit }}
+
+runs:
+  using: composite
+  steps:
+    - name: Configure AWS credentials
+      uses: aws-actions/configure-aws-credentials@61815dcd50bd041e203e49132bacad1fd04d2708 # v5.1.1
+      with:
+        aws-access-key-id: ${{ env.DETOX_AWS_ACCESS_KEY_ID }}
+        aws-secret-access-key: ${{ env.DETOX_AWS_SECRET_ACCESS_KEY }}
+        aws-region: us-east-1
+
+    - name: S3 cache ${{ inputs.mode }}
+      id: s3-cache
+      shell: bash
+      env:
+        FINGERPRINT: ${{ inputs.fingerprint }}
+        PLATFORM: ${{ inputs.platform }}
+        BUCKET: ${{ inputs.bucket }}
+        KEY_PREFIX: ${{ inputs.s3-key-prefix }}
+        CACHE_PATH: ${{ inputs.cache-path }}
+        MODE: ${{ inputs.mode }}
+      run: |
+        set -eu
+        S3_KEY="${KEY_PREFIX}${PLATFORM}/${FINGERPRINT}.tar.gz"
+
+        if [ "$MODE" = "restore" ] || [ "$MODE" = "check" ]; then
+          echo "Checking s3://${BUCKET}/${S3_KEY} ..."
+          if aws s3 ls "s3://${BUCKET}/${S3_KEY}" 2>/dev/null; then
+            if [ "$MODE" = "check" ]; then
+              echo "Cache HIT — existence-only check, skipping download."
+              echo "cache-hit=true" >> "$GITHUB_OUTPUT"
+            # Any download/extract failure must degrade to a cache miss so the
+            # build still runs instead of aborting the action under set -eu.
+            elif aws s3 cp "s3://${BUCKET}/${S3_KEY}" /tmp/build-cache.tar.gz \
+              && tar xzf /tmp/build-cache.tar.gz; then
+              rm -f /tmp/build-cache.tar.gz
+              echo "Restored build from S3 (fingerprint=${FINGERPRINT:0:12})"
+              echo "cache-hit=true" >> "$GITHUB_OUTPUT"
+            else
+              echo "::warning::Cache restore failed (download/extract error) — treating as cache miss."
+              rm -f /tmp/build-cache.tar.gz || true
+              echo "cache-hit=false" >> "$GITHUB_OUTPUT"
+            fi
+          else
+            echo "Cache MISS — no cached build for fingerprint ${FINGERPRINT:0:12}"
+            echo "cache-hit=false" >> "$GITHUB_OUTPUT"
+          fi
+        elif [ "$MODE" = "save" ]; then
+          # nullglob: non-matching glob → empty array instead of literal pattern.
+          shopt -s nullglob
+          FILES=()
+          for f in $CACHE_PATH; do
+            [ -e "$f" ] && FILES+=("$f")
+          done
+          shopt -u nullglob
+
+          if [ ${#FILES[@]} -eq 0 ]; then
+            echo "::warning::No files found at '$CACHE_PATH' — skipping S3 cache save."
+            echo "cache-hit=false" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+
+          echo "Uploading ${#FILES[@]} path(s) to s3://${BUCKET}/${S3_KEY} ..."
+          tar czf /tmp/build-cache.tar.gz "${FILES[@]}"
+          aws s3 cp /tmp/build-cache.tar.gz "s3://${BUCKET}/${S3_KEY}"
+          rm -f /tmp/build-cache.tar.gz
+          echo "Saved build to S3 (fingerprint=${FINGERPRINT:0:12})"
+        else
+          echo "::error::Invalid mode: $MODE (expected restore, save, or check)"
+          exit 1
+        fi

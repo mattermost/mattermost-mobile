@@ -109,7 +109,7 @@ jobs:
       MM_MOBILE_DETOX_AWS_SECRET_ACCESS_KEY: ${{ secrets.MM_MOBILE_DETOX_AWS_SECRET_ACCESS_KEY }}
 
   update-final-status-ios:
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-24.04
     if: always() && (inputs.PLATFORM == 'ios' || inputs.PLATFORM == 'both')
     permissions:
       contents: read
@@ -137,7 +137,7 @@ jobs:
           target_url: ${{ needs.run-ios-tests.outputs.TARGET_URL }}
 
   update-final-status-android:
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-24.04
     if: always() && (inputs.PLATFORM == 'android' || inputs.PLATFORM == 'both')
     permissions:
       contents: read
@@ -165,7 +165,7 @@ jobs:
           target_url: ${{ needs.run-android-tests.outputs.TARGET_URL }}
 
   update-final-status-ipad:
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-24.04
     if: always() && (inputs.PLATFORM == 'ios' || inputs.PLATFORM == 'both')
     permissions:
       contents: read

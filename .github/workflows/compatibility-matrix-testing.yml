@@ -16,9 +16,14 @@ concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
 
+# CMT runs against a freshly-cut build-release-NNN branch, so the app content
+# never matches main's fingerprint — the S3 build cache would always miss.
+# CMT's optimization is structural instead: each app (iOS, Android Detox,
+# Android Maestro) is built ONCE below and reused across every server-version
+# leg of the matrix via github.run_id artifacts.
 jobs:
   calculate-commit-hash:
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-24.04
     outputs:
       MOBILE_SHA: ${{ steps.repo.outputs.MOBILE_SHA }}
     steps:
@@ -32,7 +37,7 @@ jobs:
         run: echo "MOBILE_SHA=$(git rev-parse HEAD)" >> ${GITHUB_OUTPUT}
 
   update-initial-status:
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-24.04
     permissions:
       contents: read
       statuses: write
@@ -55,7 +60,7 @@ jobs:
 
   # Maestro only runs against the latest server version; matrix filtering happens here since job-level if: can't access matrix.
   prepare-maestro-matrix:
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-24.04
     outputs:
       matrix: ${{ steps.filter.outputs.matrix }}
     steps:
@@ -315,7 +320,7 @@ jobs:
       record_tests_in_zephyr: true
 
   update-final-status:
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-24.04
     if: always()
     permissions:
       contents: read

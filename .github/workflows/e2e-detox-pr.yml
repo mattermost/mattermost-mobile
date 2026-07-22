@@ -63,9 +63,41 @@ env:
   DETOX_AWS_S3_BUCKET: "mattermost-detox-report"
 
 jobs:
+  # Compute content fingerprints for S3 build caching.
+  compute-build-fingerprints:
+    name: Compute build fingerprints
+    runs-on: ubuntu-24.04
+    outputs:
+      ios: ${{ steps.ios.outputs.fingerprint }}
+      android-detox: ${{ steps.android-detox.outputs.fingerprint }}
+      android-maestro: ${{ steps.android-maestro.outputs.fingerprint }}
+    steps:
+      - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
+        with:
+          ref: ${{ inputs.MOBILE_VERSION }}
+          persist-credentials: false
+
+      - name: Compute iOS fingerprint
+        id: ios
+        uses: ./.github/actions/compute-e2e-build-fingerprint
+        with:
+          platform: ios
+          
+      - name: Compute Android Detox fingerprint
+        id: android-detox
+        uses: ./.github/actions/compute-e2e-build-fingerprint
+        with:
+          platform: android-detox
+          
+      - name: Compute Android Maestro fingerprint
+        id: android-maestro
+        uses: ./.github/actions/compute-e2e-build-fingerprint
+        with:
+          platform: android-maestro
+
   resolve-e2e-policy:
     name: Resolve E2E policy (Override label)
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-24.04
     permissions:
       actions: write
       contents: read
@@ -143,7 +175,7 @@ jobs:
     if: >-
       needs.resolve-e2e-policy.outputs.e2e_override != 'true'
       && (inputs.PLATFORM == 'ios' || inputs.PLATFORM == 'both')
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-24.04
     permissions:
       contents: read
       statuses: write
@@ -151,6 +183,7 @@ jobs:
       - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
         with:
           ref: ${{ inputs.MOBILE_VERSION }}
+          persist-credentials: false
       - uses: ./.github/actions/update-commit-status
         env:
           GITHUB_TOKEN: ${{ github.token }}
@@ -166,7 +199,7 @@ jobs:
     if: >-
       needs.resolve-e2e-policy.outputs.e2e_override != 'true'
       && (inputs.PLATFORM == 'android' || inputs.PLATFORM == 'both')
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-24.04
     permissions:
       contents: read
       statuses: write
@@ -174,6 +207,7 @@ jobs:
       - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
         with:
           ref: ${{ inputs.MOBILE_VERSION }}
+          persist-credentials: false
       - uses: ./.github/actions/update-commit-status
         env:
           GITHUB_TOKEN: ${{ github.token }}
@@ -189,7 +223,7 @@ jobs:
     if: >-
       needs.resolve-e2e-policy.outputs.e2e_override != 'true'
       && (inputs.PLATFORM == 'ios' || inputs.PLATFORM == 'both')
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-24.04
     permissions:
       contents: read
       statuses: write
@@ -197,6 +231,7 @@ jobs:
       - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
         with:
           ref: ${{ inputs.MOBILE_VERSION }}
+          persist-credentials: false
       - uses: ./.github/actions/update-commit-status
         env:
           GITHUB_TOKEN: ${{ github.token }}
@@ -217,6 +252,7 @@ jobs:
     needs:
       - resolve-e2e-policy
       - update-initial-status-ios
+      - compute-build-fingerprints
     permissions:
       contents: read
       actions: write
@@ -226,27 +262,64 @@ jobs:
         with:
           ref: ${{ inputs.MOBILE_VERSION }}
 
+      # S3 build cache — skip rebuild when fingerprint matches (test-only PRs hit nightly-seeded cache).
+      - name: Check for cached iOS build
+        id: cache-check
+        uses: ./.github/actions/s3-build-cache
+        env:
+          DETOX_AWS_ACCESS_KEY_ID: ${{ secrets.MM_MOBILE_DETOX_AWS_ACCESS_KEY_ID }}
+          DETOX_AWS_SECRET_ACCESS_KEY: ${{ secrets.MM_MOBILE_DETOX_AWS_SECRET_ACCESS_KEY }}
+        with:
+          fingerprint: ${{ needs.compute-build-fingerprints.outputs.ios }}
+          platform: ios
+          bucket: ${{ env.DETOX_AWS_S3_BUCKET }}
+          cache-path: 'Mattermost-simulator-*.app.zip'
+          mode: restore
+
+      - name: Skip build if cache hit
+        if: steps.cache-check.outputs.cache-hit == 'true'
+        run: echo "SKIP_BUILD=true" >> $GITHUB_ENV
+
       - name: Prepare iOS Build
+        if: env.SKIP_BUILD != 'true'
         uses: ./.github/actions/prepare-ios-build
         with:
           intune-enabled: ${{ env.INTUNE_ENABLED }}
           intune-ssh-private-key: ${{ secrets.MM_MOBILE_INTUNE_DEPLOY_KEY }}
 
       - name: Set .env with RUNNING_E2E=true
+        if: env.SKIP_BUILD != 'true'
         run: echo "RUNNING_E2E=true" > .env
 
       - name: Build iOS Simulator
+        if: env.SKIP_BUILD != 'true'
         env:
           TAG: ${{ inputs.MOBILE_VERSION }}
           GITHUB_TOKEN: ${{ secrets.MM_MOBILE_GITHUB_TOKEN }}
         run: bundle exec fastlane ios simulator --env ios.simulator
         working-directory: ./fastlane
 
+      # Always upload artifact (from cache or fresh build) so test jobs can download it.
       - name: Upload iOS Simulator Build
+        if: always() && hashFiles('Mattermost-simulator-*.app.zip') != ''
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
           name: ios-build-simulator-${{ github.run_id }}
           path: Mattermost-simulator-*.app.zip
+
+      - name: Save iOS build to S3
+        if: env.SKIP_BUILD != 'true' && hashFiles('Mattermost-simulator-*.app.zip') != ''
+        uses: ./.github/actions/s3-build-cache
+        env:
+          DETOX_AWS_ACCESS_KEY_ID: ${{ secrets.MM_MOBILE_DETOX_AWS_ACCESS_KEY_ID }}
+          DETOX_AWS_SECRET_ACCESS_KEY: ${{ secrets.MM_MOBILE_DETOX_AWS_SECRET_ACCESS_KEY }}
+        with:
+          fingerprint: ${{ needs.compute-build-fingerprints.outputs.ios }}
+          platform: ios
+          bucket: ${{ env.DETOX_AWS_S3_BUCKET }}
+          cache-path: 'Mattermost-simulator-*.app.zip'
+          mode: save
+
 
   build-android-apk:
     if: >-
@@ -258,6 +331,7 @@ jobs:
     needs:
       - resolve-e2e-policy
       - update-initial-status-android
+      - compute-build-fingerprints
     permissions:
       contents: read
       actions: write
@@ -272,7 +346,26 @@ jobs:
         with:
           ref: ${{ inputs.MOBILE_VERSION }}
 
+      # S3 build cache — skip rebuild when fingerprint matches.
+      - name: Check for cached Android Detox build
+        id: cache-check
+        uses: ./.github/actions/s3-build-cache
+        env:
+          DETOX_AWS_ACCESS_KEY_ID: ${{ secrets.MM_MOBILE_DETOX_AWS_ACCESS_KEY_ID }}
+          DETOX_AWS_SECRET_ACCESS_KEY: ${{ secrets.MM_MOBILE_DETOX_AWS_SECRET_ACCESS_KEY }}
+        with:
+          fingerprint: ${{ needs.compute-build-fingerprints.outputs.android-detox }}
+          platform: android-detox
+          bucket: ${{ env.DETOX_AWS_S3_BUCKET }}
+          cache-path: 'android/app/build'
+          mode: restore
+
+      - name: Skip build if cache hit
+        if: steps.cache-check.outputs.cache-hit == 'true'
+        run: echo "SKIP_BUILD=true" >> $GITHUB_ENV
+
       - name: Prepare Android Build
+        if: env.SKIP_BUILD != 'true'
         uses: ./.github/actions/prepare-android-build
         env:
           STORE_FILE: ${{ secrets.MM_MOBILE_STORE_FILE }}
@@ -284,6 +377,7 @@ jobs:
       # PR + release workflows share cache. Saves 3-5 min on warm runs by
       # skipping gradle plugin resolution + Maven dep downloads.
       - name: Cache Gradle dependencies
+        if: env.SKIP_BUILD != 'true'
         uses: actions/cache@27d5ce7f107fe9357f9df03efb73ab90386fccae # v5.0.5
         with:
           path: /home/runner/.gradle/caches/modules-2/
@@ -291,16 +385,33 @@ jobs:
           restore-keys: ${{ runner.os }}-gradle-
 
       - name: Detox build
+        if: env.SKIP_BUILD != 'true'
         run: |
           cd detox
           npm ci --prefer-offline --no-audit --no-fund
           npm run e2e:android-build
 
+      # Always upload artifact (from cache or fresh build) so test jobs can download it.
       - name: Upload Android Build
+        if: always() && hashFiles('android/app/build/**/*') != ''
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
           name: android-build-files-${{ github.run_id }}
           path: "android/app/build/**/*"
+
+      - name: Save Android Detox build to S3
+        if: env.SKIP_BUILD != 'true' && hashFiles('android/app/build/**/*') != ''
+        uses: ./.github/actions/s3-build-cache
+        env:
+          DETOX_AWS_ACCESS_KEY_ID: ${{ secrets.MM_MOBILE_DETOX_AWS_ACCESS_KEY_ID }}
+          DETOX_AWS_SECRET_ACCESS_KEY: ${{ secrets.MM_MOBILE_DETOX_AWS_SECRET_ACCESS_KEY }}
+        with:
+          fingerprint: ${{ needs.compute-build-fingerprints.outputs.android-detox }}
+          platform: android-detox
+          bucket: ${{ env.DETOX_AWS_S3_BUCKET }}
+          cache-path: 'android/app/build'
+          mode: save
+
 
   build-android-apk-maestro:
     if: >-
@@ -312,6 +423,7 @@ jobs:
     needs:
       - resolve-e2e-policy
       - update-initial-status-android
+      - compute-build-fingerprints
     permissions:
       contents: read
       actions: write
@@ -326,7 +438,26 @@ jobs:
         with:
           ref: ${{ inputs.MOBILE_VERSION }}
 
+      # S3 build cache — skip rebuild when fingerprint matches.
+      - name: Check for cached Android Maestro build
+        id: cache-check
+        uses: ./.github/actions/s3-build-cache
+        env:
+          DETOX_AWS_ACCESS_KEY_ID: ${{ secrets.MM_MOBILE_DETOX_AWS_ACCESS_KEY_ID }}
+          DETOX_AWS_SECRET_ACCESS_KEY: ${{ secrets.MM_MOBILE_DETOX_AWS_SECRET_ACCESS_KEY }}
+        with:
+          fingerprint: ${{ needs.compute-build-fingerprints.outputs.android-maestro }}
+          platform: android-maestro
+          bucket: ${{ env.DETOX_AWS_S3_BUCKET }}
+          cache-path: 'android/app/build/outputs/apk/release/'
+          mode: restore
+
+      - name: Skip build if cache hit
+        if: steps.cache-check.outputs.cache-hit == 'true'
+        run: echo "SKIP_BUILD=true" >> $GITHUB_ENV
+
       - name: Prepare Android Build
+        if: env.SKIP_BUILD != 'true'
         uses: ./.github/actions/prepare-android-build
         env:
           STORE_FILE: ${{ secrets.MM_MOBILE_STORE_FILE }}
@@ -335,19 +466,36 @@ jobs:
           MATTERMOST_BUILD_GH_TOKEN: ${{ secrets.MATTERMOST_BUILD_GH_TOKEN }}
 
       - name: Build Maestro Android APK
+        if: env.SKIP_BUILD != 'true'
         uses: ./.github/actions/build-android-maestro-apk
 
+      # Always upload artifact (from cache or fresh build) so test jobs can download it.
       - name: Upload Maestro Android Build
+        if: always() && hashFiles('android/app/build/outputs/apk/release/*.apk') != ''
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
           name: android-maestro-build-files-${{ github.run_id }}
           path: android/app/build/outputs/apk/release/
 
+      - name: Save Android Maestro build to S3
+        if: env.SKIP_BUILD != 'true' && hashFiles('android/app/build/outputs/apk/release/*.apk') != ''
+        uses: ./.github/actions/s3-build-cache
+        env:
+          DETOX_AWS_ACCESS_KEY_ID: ${{ secrets.MM_MOBILE_DETOX_AWS_ACCESS_KEY_ID }}
+          DETOX_AWS_SECRET_ACCESS_KEY: ${{ secrets.MM_MOBILE_DETOX_AWS_SECRET_ACCESS_KEY }}
+        with:
+          fingerprint: ${{ needs.compute-build-fingerprints.outputs.android-maestro }}
+          platform: android-maestro
+          bucket: ${{ env.DETOX_AWS_S3_BUCKET }}
+          cache-path: 'android/app/build/outputs/apk/release/'
+          mode: save
+
+
   provision-servers:
     name: Provision test servers
     needs: resolve-e2e-policy
     if: needs.resolve-e2e-policy.outputs.e2e_override != 'true'
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-24.04
     steps:
       - name: Validate server URLs
         run: |
@@ -510,7 +658,7 @@ jobs:
     name: Validate Maestro flow headers
     needs: resolve-e2e-policy
     if: needs.resolve-e2e-policy.outputs.e2e_override != 'true'
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-24.04
     steps:
       - name: Checkout Repository
         uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
@@ -588,7 +736,7 @@ jobs:
 
   e2e-remove-matterwick-label:
     name: Remove Matterwick E2E label from PR
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-24.04
     permissions:
       contents: read
       issues: write

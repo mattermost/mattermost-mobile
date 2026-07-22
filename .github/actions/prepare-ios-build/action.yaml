@@ -146,6 +146,14 @@ runs:
         restore-keys: |
           ${{ runner.os }}-pods-v4-intune-${{ inputs.intune-enabled }}-${{ steps.intune-hash.outputs.hash }}-
 
+    - name: Cache CocoaPods Ruby gems
+      uses: actions/cache@27d5ce7f107fe9357f9df03efb73ab90386fccae # v5.0.5
+      with:
+        path: vendor/bundle
+        key: ${{ runner.os }}-cocoapods-gems-${{ hashFiles('Gemfile.lock') }}
+        restore-keys: |
+          ${{ runner.os }}-cocoapods-gems-
+
     - name: ci/install-pods-dependencies
       shell: bash
       env:
@@ -153,6 +161,7 @@ runs:
       run: |
         echo "::group::install-pods-dependencies"
         echo "INTUNE_ENABLED=$INTUNE_ENABLED"
-        npm run ios-gems
+        bundle config set --local path vendor/bundle
+        bundle install
         npm run pod-install
         echo "::endgroup::"
