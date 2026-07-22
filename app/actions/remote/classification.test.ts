@@ -135,15 +135,14 @@ describe('fetchClassificationBanner', () => {
         await operator.handlePropertyValues({values: [systemValue], prepareRecordsOnly: false});
 
         mockedGetConfigValue.mockResolvedValueOnce('true');
-
-        // Empty for every retry attempt: the flag is on, so fetch retries before concluding empty.
-        mockClient.getPropertyFields.mockResolvedValue([]);
+        mockClient.getPropertyFields.mockResolvedValueOnce([]);
+        mockClient.getPropertyFields.mockResolvedValueOnce([]);
 
         await fetchClassificationBanner(serverUrl);
 
         expect(await getStoredFields(database)).toHaveLength(0);
         expect(await getStoredValues(database, CLASSIFICATIONS_SYSTEM_VALUE_TARGET_ID)).toHaveLength(0);
-    }, 15000);
+    });
 
     it('should persist fields and values to DB on happy path', async () => {
         mockedGetConfigValue.mockResolvedValueOnce('true');
@@ -175,30 +174,10 @@ describe('fetchClassificationBanner', () => {
         expect(await getStoredFields(database)).toEqual(['system-field-id']);
     });
 
-    it('should retry and persist once fields appear on a later attempt (propagation lag)', async () => {
-        mockedGetConfigValue.mockResolvedValueOnce('true');
-
-        // First attempt: fields not yet visible to this session.
-        mockClient.getPropertyFields.mockResolvedValueOnce([]);
-        mockClient.getPropertyFields.mockResolvedValueOnce([]);
-
-        // Second attempt: fields have now propagated.
-        mockClient.getPropertyFields.mockResolvedValueOnce([systemField]);
-        mockClient.getPropertyFields.mockResolvedValueOnce([]);
-        mockClient.getSystemPropertyValues.mockResolvedValueOnce([systemValue]);
-
-        const result = await fetchClassificationBanner(serverUrl);
-        expect(result).toEqual({});
-
-        const {database} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
-        expect(await getStoredFields(database)).toEqual(['system-field-id']);
-    }, 15000);
-
     it('should return early when no fields are returned by the API', async () => {
         mockedGetConfigValue.mockResolvedValueOnce('true');
-
-        // Empty for every retry attempt: the flag is on, so fetch retries before concluding empty.
-        mockClient.getPropertyFields.mockResolvedValue([]);
+        mockClient.getPropertyFields.mockResolvedValueOnce([]);
+        mockClient.getPropertyFields.mockResolvedValueOnce([]);
 
         const result = await fetchClassificationBanner(serverUrl);
 
@@ -206,7 +185,7 @@ describe('fetchClassificationBanner', () => {
 
         const {database} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
         expect(await getStoredFields(database)).toHaveLength(0);
-    }, 15000);
+    });
 
     it('should exclude soft-deleted fields from the stored set', async () => {
         mockedGetConfigValue.mockResolvedValueOnce('true');

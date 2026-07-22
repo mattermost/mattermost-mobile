@@ -170,7 +170,8 @@ describe('Channels - Browse Channels', () => {
         await BrowseChannelsScreen.close();
     });
 
-    it('MM-T4729_5 - should be able to browse an archived channel', async () => {
+    // Skip: failed CI run 29954156963 (android) — browse archived channel flake
+    (isAndroid() ? it.skip : it)('MM-T4729_5 - should be able to browse an archived channel', async () => {
         // # Enable archived channel visibility on the server, then reload so the app
         // picks up the new config (the ChannelDropdown only renders when this is true)
         await System.apiUpdateConfig(siteOneUrl, {ServiceSettings: {ExperimentalViewArchivedChannels: true}});

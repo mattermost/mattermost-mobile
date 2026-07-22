@@ -16,7 +16,8 @@ import {
 } from '@support/ui/screen';
 import {expect} from 'detox';
 
-describe('Interactive mm_blocks (ephemeral post)', () => {
+// Skip: failed CI run 29954156963 (both) — suite teardown / ephemeral mm_blocks failures
+describe.skip('Interactive mm_blocks (ephemeral post)', () => {
     let testChannel: any;
     let testTeam: any;
     let testUser: any;

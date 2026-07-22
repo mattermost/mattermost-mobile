@@ -120,10 +120,13 @@ class ThreadScreen {
     back = async () => {
         await waitForElementToExist(this.backButton, timeouts.TEN_SEC);
 
-        // When thread is stacked over a channel screen, both have 'navigation.header.back'.
-        // The channel's back button (atIndex(0)) is occluded behind the thread.
-        // Tap the topmost back button (CI 29935363789 MM-T851: Multiple elements found).
-        await this.backButton.atIndex(1).tap();
+        // Prefer the topmost back when thread is stacked over channel (two headers).
+        // Fall back to index 0 when only one back button exists (most thread flows).
+        try {
+            await this.backButton.atIndex(1).tap();
+        } catch {
+            await this.backButton.atIndex(0).tap();
+        }
         await waitFor(this.threadScreen).not.toBeVisible().withTimeout(timeouts.TEN_SEC);
 
         // Wait for the previous screen to be fully loaded and rendered

@@ -18,12 +18,6 @@ import {logDebug, logError} from '@utils/log';
 
 import {forceLogoutIfNecessary} from './session';
 
-// A freshly reconnected/reloaded client can briefly receive an empty classification field list
-// before the fields propagate to its session. When the feature flag is on, retry a bounded number
-// of times before treating the list as empty (and removing local data).
-const CLASSIFICATION_FETCH_MAX_ATTEMPTS = 5;
-const CLASSIFICATION_FETCH_RETRY_DELAY_MS = 1000;
-
 export async function fetchClassificationBanner(serverUrl: string): Promise<{error?: unknown}> {
     try {
         const {database, operator} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
@@ -32,28 +26,12 @@ export async function fetchClassificationBanner(serverUrl: string): Promise<{err
         if (featureFlag === 'true') {
             const client = NetworkManager.getClient(serverUrl);
 
-            // Classification is enabled, so property fields are expected to exist. A freshly
-            // reconnected/reloaded client can momentarily receive an empty list before the fields
-            // become visible to its session; treating that first empty result as "removed" would
-            // leave the banner absent until the next reconnect. Retry a few times before concluding
-            // the fields are gone. This only runs when the flag is on, so servers without
-            // classification markings take the single-pass path below and are unaffected.
-            let allFields: PropertyField[] = [];
-            for (let attempt = 0; attempt < CLASSIFICATION_FETCH_MAX_ATTEMPTS; attempt++) {
-                // eslint-disable-next-line no-await-in-loop -- sequential retry until fields propagate
-                const [systemFields, channelFields] = await Promise.all([
-                    client.getPropertyFields(CLASSIFICATIONS_GROUP_NAME, CLASSIFICATIONS_SYSTEM_OBJECT_TYPE, CLASSIFICATIONS_FIELD_TARGET_TYPE, CLASSIFICATIONS_FIELD_TARGET_ID),
-                    client.getPropertyFields(CLASSIFICATIONS_GROUP_NAME, CLASSIFICATIONS_CHANNEL_OBJECT_TYPE, CLASSIFICATIONS_FIELD_TARGET_TYPE, CLASSIFICATIONS_FIELD_TARGET_ID),
-                ]);
-                allFields = [...systemFields, ...channelFields];
-                if (allFields.length > 0) {
-                    break;
-                }
-                if (attempt < CLASSIFICATION_FETCH_MAX_ATTEMPTS - 1) {
-                    // eslint-disable-next-line no-await-in-loop -- back off between propagation retries
-                    await new Promise((resolve) => setTimeout(resolve, CLASSIFICATION_FETCH_RETRY_DELAY_MS));
-                }
-            }
+            const [systemFields, channelFields] = await Promise.all([
+                client.getPropertyFields(CLASSIFICATIONS_GROUP_NAME, CLASSIFICATIONS_SYSTEM_OBJECT_TYPE, CLASSIFICATIONS_FIELD_TARGET_TYPE, CLASSIFICATIONS_FIELD_TARGET_ID),
+                client.getPropertyFields(CLASSIFICATIONS_GROUP_NAME, CLASSIFICATIONS_CHANNEL_OBJECT_TYPE, CLASSIFICATIONS_FIELD_TARGET_TYPE, CLASSIFICATIONS_FIELD_TARGET_ID),
+            ]);
+
+            const allFields = [...systemFields, ...channelFields];
 
             if (allFields.length > 0) {
                 const groupId = allFields[0].group_id;

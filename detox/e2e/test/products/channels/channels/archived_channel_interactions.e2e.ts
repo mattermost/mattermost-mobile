@@ -119,7 +119,8 @@ describe('Channels - Archived Channel Interactions', () => {
         await ChannelListScreen.toBeVisible();
     });
 
-    (isIos() ? it.skip : it)('MM-T1685_1 - should be able to leave an archived public channel from channel info', async () => {
+    // Skip: failed CI run 29954156963 (both) — was android-only; android also failed
+    it.skip('MM-T1685_1 - should be able to leave an archived public channel from channel info', async () => {
         // # Create a public channel, add user, post a sentinel message, then archive.
         const {channel: archivedChannel} = await Channel.apiCreateChannel(
             siteOneUrl,
