@@ -39,7 +39,7 @@ describe('Messaging - Message Draft', () => {
         testChannel = channel;
 
         const {config} = await System.apiGetConfig(siteOneUrl);
-        maxPostSize = config?.ServiceSettings?.MaxPostSize ?? 4000;
+        maxPostSize = Number(config?.ServiceSettings?.MaxPostSize) || 16383;
 
         // # Log in to server
         await ServerScreen.connectToServer(serverOneUrl, serverOneDisplayName);
@@ -133,14 +133,15 @@ describe('Messaging - Message Draft', () => {
 
     it('MM-T107 - should show alert when message exceeds character limit', async () => {
         // Use server MaxPostSize (+1). Hardcoded 4001 never alerts when CI MaxPostSize is
-        // the Mattermost default (16383) — failed both platforms on runs 29823515768,
-        // 29903268040, 29915955190.
-        const overLimitMessage = 'a'.repeat(maxPostSize + 1);
+        // the Mattermost default (16383). replaceText alone may not fire onChangeText on
+        // all platforms — type one extra char after filling to max to trigger the alert.
+        const atLimitMessage = 'a'.repeat(maxPostSize);
 
         // # Open a channel and type a message over the character limit
         await ChannelScreen.open(channelsCategory, testChannel.name);
         await ChannelScreen.postInput.tap();
-        await ChannelScreen.postInput.replaceText(overLimitMessage);
+        await ChannelScreen.postInput.replaceText(atLimitMessage);
+        await ChannelScreen.postInput.typeText('a');
 
         // * Verify message length alert is shown
         await expect(Alert.messageLengthTitle).toBeVisible();

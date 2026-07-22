@@ -1,6 +1,8 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import {timeouts, wait} from '@support/utils';
+
 import client from './client';
 import {getResponseFromError} from './common';
 
@@ -213,6 +215,49 @@ export const apiSetupClassificationWithBanner = async (
     if ('error' in patchResult) {
         throw new Error(`Failed to set system property value for field_id=${linkedField.id}, value=${selectedOption.id}: ${JSON.stringify(patchResult.error)}`);
     }
+
+    // Poll the same list endpoint the mobile app uses until the linked field (and its selected
+    // option) are readable. On cloud servers the config/property write propagates slowly, so a
+    // single GET right after create races propagation and the app's post-reload fetch then logs
+    // "No classification fields returned". Polling here guarantees the server has fully
+    // propagated before the test reloads the app.
+    // NOTE: pass '' for target_id to mirror the app client exactly — app/client/rest/properties.ts
+    // uses `if (targetId !== undefined)` and CLASSIFICATIONS_FIELD_TARGET_ID = '', so the app sends
+    // `&target_id=`. The verify GET must send the identical URL or it proves nothing.
+    const checkLinkedVisible = async (): Promise<string | undefined> => {
+        const verify = await apiGetPropertyFields(baseUrl, GROUP_NAME, LINKED_OBJECT_TYPE, TARGET_TYPE, '') as {fields?: any[]; error?: unknown};
+        const visibleLinked = (verify.fields ?? []).filter(
+            (f) => f.name === LINKED_FIELD_NAME && f.delete_at === 0 && f.linked_field_id && f.id === linkedField.id,
+        );
+        if (visibleLinked.length === 0) {
+            return `linked system field ${linkedField.id} not returned by GET ` +
+                `/properties/groups/${GROUP_NAME}/${LINKED_OBJECT_TYPE}/fields?target_type=${TARGET_TYPE}&target_id=. ` +
+                `Response: ${JSON.stringify(verify)}`;
+        }
+        const linkedOptions = (visibleLinked[0].attrs?.options as PropertyFieldOption[] | undefined) ?? [];
+        if (!linkedOptions.some((o) => o.id === selectedOption.id)) {
+            return `linked field missing selected option ${selectedOption.id}. options=${JSON.stringify(linkedOptions)}`;
+        }
+        return undefined;
+    };
+
+    const pollLinkedVisible = async (sessionLabel: string, maxAttempts = 20) => {
+        let lastError: string | undefined;
+        for (let attempt = 0; attempt < maxAttempts; attempt++) {
+            // eslint-disable-next-line no-await-in-loop -- sequential poll until propagated
+            lastError = await checkLinkedVisible();
+            if (!lastError) {
+                return;
+            }
+            if (attempt < maxAttempts - 1) {
+                // eslint-disable-next-line no-await-in-loop
+                await wait(timeouts.TWO_SEC);
+            }
+        }
+        throw new Error(`apiSetupClassificationWithBanner (${sessionLabel}): ${lastError}`);
+    };
+
+    await pollLinkedVisible('admin');
 
     return {
         templateFieldId: templateField.id,
