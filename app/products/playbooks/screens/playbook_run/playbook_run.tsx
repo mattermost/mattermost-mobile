@@ -203,8 +203,9 @@ export default function PlaybookRun({
     useAndroidHardwareBackHandler(Screens.PLAYBOOK_RUN, navigateBack);
 
     useDidMount(() => {
+        const previousPlaybookRunId = EphemeralStore.getCurrentPlaybookRunId();
         EphemeralStore.setCurrentPlaybookRunId(playbookRunId);
-        return () => EphemeralStore.clearCurrentPlaybookRunId();
+        return () => EphemeralStore.setCurrentPlaybookRunId(previousPlaybookRunId);
     });
 
     const isParticipant = participants.some((p) => p.id === currentUserId) || owner?.id === currentUserId;
