@@ -2,7 +2,7 @@
 // See LICENSE.txt for license information.
 
 import {type ImageLoadEventData} from 'expo-image';
-import React, {useCallback, useContext, useMemo, useRef, useState} from 'react';
+import React, {useCallback, useContext, useMemo, useState} from 'react';
 import {Pressable, View} from 'react-native';
 import Animated from 'react-native-reanimated';
 import {SvgUri} from 'react-native-svg';
