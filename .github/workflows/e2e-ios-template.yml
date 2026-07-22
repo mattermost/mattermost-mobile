@@ -879,6 +879,10 @@ jobs:
 
       - name: Fail job on test failures
         if: always() && steps.determine-status.outputs.STATUS == 'failure'
+        env:
+          FAILURES: ${{ steps.summary.outputs.FAILURES }}
+          TOTAL: ${{ steps.summary.outputs.TOTAL }}
+          ERRORS: ${{ steps.summary.outputs.ERRORS }}
         run: |
-          echo "::error::Detox reported test failures (FAILURES=${{ steps.summary.outputs.FAILURES }}, TOTAL=${{ steps.summary.outputs.TOTAL }}, ERRORS=${{ steps.summary.outputs.ERRORS }})"
+          echo "::error::Detox reported test failures (FAILURES=${FAILURES}, TOTAL=${TOTAL}, ERRORS=${ERRORS})"
           exit 1

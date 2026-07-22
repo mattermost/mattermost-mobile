@@ -537,8 +537,11 @@ jobs:
 
       - name: Fail job on test failures
         if: always() && (steps.determine-status.outputs.STATUS == 'failure' || steps.determine-status.outputs.STATUS == 'error')
+        env:
+          STATUS: ${{ steps.determine-status.outputs.STATUS }}
+          FAILURES: ${{ steps.summary.outputs.FAILURES }}
         run: |
-          echo "::error::Maestro reported test failures (STATUS=${{ steps.determine-status.outputs.STATUS }}, FAILURES=${{ steps.summary.outputs.FAILURES }})"
+          echo "::error::Maestro reported test failures (STATUS=${STATUS}, FAILURES=${FAILURES})"
           exit 1
 
   e2e-maestro-android:
@@ -957,6 +960,9 @@ jobs:
 
       - name: Fail job on test failures
         if: always() && (steps.determine-status.outputs.STATUS == 'failure' || steps.determine-status.outputs.STATUS == 'error')
+        env:
+          STATUS: ${{ steps.determine-status.outputs.STATUS }}
+          FAILURES: ${{ steps.summary.outputs.FAILURES }}
         run: |
-          echo "::error::Maestro reported test failures (STATUS=${{ steps.determine-status.outputs.STATUS }}, FAILURES=${{ steps.summary.outputs.FAILURES }})"
+          echo "::error::Maestro reported test failures (STATUS=${STATUS}, FAILURES=${FAILURES})"
           exit 1
