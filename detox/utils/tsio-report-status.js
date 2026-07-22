@@ -45,12 +45,33 @@ function buildWorkflowRunUrl(identity) {
     return `${server}/${repository}/actions/runs/${runId}`;
 }
 
-// Pending and failure link to the GitHub Actions run; success links to the TSIO report.
-function decideTargetUrl(state, bothTerminal, displayReportUrl, reportId, runUrl) {
-    if (bothTerminal && state === 'success') {
-        return `${displayReportUrl}?gid=${reportId}`;
+// Commit-status target_url policy:
+//   - Terminal TSIO group with a usable report → TSIO (success, test failures, or incomplete).
+//   - Clean completed report but CI failed outside tests (upstreamSucceeded=false) → workflow run.
+//   - Non-terminal / missing report (OIDC/begin/poll callers use runUrl separately) → workflow run.
+function decideTargetUrl(state, bothTerminal, displayReportUrl, reportId, runUrl, opts = {}) {
+    const {
+        failed = 0,
+        reportStatus,
+        upstreamSucceeded = true,
+    } = opts;
+
+    if (!bothTerminal || !reportId || !displayReportUrl) {
+        return runUrl;
     }
-    return runUrl;
+
+    const hasTestFailures = (failed || 0) > 0;
+    const unrelatedCiFailure =
+        state === 'failure' &&
+        !hasTestFailures &&
+        reportStatus === 'completed' &&
+        upstreamSucceeded === false;
+
+    if (unrelatedCiFailure) {
+        return runUrl;
+    }
+
+    return `${displayReportUrl}?gid=${reportId}`;
 }
 
 function decideStatus(detail, upstreamSucceeded) {
@@ -246,7 +267,11 @@ async function reportTsioStatus(options) {
     result.timed_out = timedOut;
     result.state = state;
 
-    const targetUrl = decideTargetUrl(state, bothTerminal, result.display_report_url, reportId, runUrl);
+    const targetUrl = decideTargetUrl(state, bothTerminal, result.display_report_url, reportId, runUrl, {
+        failed: result.test_stats.failed || 0,
+        reportStatus: detail.status,
+        upstreamSucceeded: upstreamJobsSucceeded,
+    });
 
     await createCommitStatus(token, compositeIdentity.repository, compositeIdentity.commit_sha, {
         state,
@@ -369,19 +394,33 @@ function selfTest() {
     r = decideStatus({status: 'in_progress', test_stats: {passed: 3, failed: 0}}, true);
     assert(r.timed_out === true && r.state === 'success', 'timeout fail-open upstream ok');
 
+    const display = 'https://test-io.test.mattermost.com/reports/mattermost-mobile/main/abc1234/mobile-pr';
+    const actions = 'https://github.com/o/r/actions/runs/99';
     assert(
-        decideTargetUrl('success', true, 'https://test-io.test.mattermost.com/reports/mattermost-mobile/main/abc1234/mobile-pr', 'gid-1', 'https://github.com/o/r/actions/runs/99') ===
-        'https://test-io.test.mattermost.com/reports/mattermost-mobile/main/abc1234/mobile-pr?gid=gid-1',
+        decideTargetUrl('success', true, display, 'gid-1', actions, {failed: 0, reportStatus: 'completed'}) ===
+        `${display}?gid=gid-1`,
         'success -> TSIO report URL',
     );
     assert(
-        decideTargetUrl('failure', true, 'https://test-io.test.mattermost.com/reports/mattermost-mobile/main/abc1234/mobile-pr', 'gid-1', 'https://github.com/o/r/actions/runs/99') ===
-        'https://github.com/o/r/actions/runs/99',
-        'failure -> workflow run URL',
+        decideTargetUrl('failure', true, display, 'gid-1', actions, {failed: 2, reportStatus: 'completed'}) ===
+        `${display}?gid=gid-1`,
+        'test failures -> TSIO report URL',
     );
     assert(
-        decideTargetUrl('success', false, 'https://test-io.test.mattermost.com/reports/mattermost-mobile/main/abc1234/mobile-pr', 'gid-1', 'https://github.com/o/r/actions/runs/99') ===
-        'https://github.com/o/r/actions/runs/99',
+        decideTargetUrl('failure', true, display, 'gid-1', actions, {
+            failed: 0,
+            reportStatus: 'completed',
+            upstreamSucceeded: false,
+        }) === actions,
+        'unrelated CI failure with clean report -> workflow run URL',
+    );
+    assert(
+        decideTargetUrl('failure', true, display, 'gid-1', actions, {failed: 0, reportStatus: 'incomplete'}) ===
+        `${display}?gid=gid-1`,
+        'incomplete report -> TSIO report URL',
+    );
+    assert(
+        decideTargetUrl('success', false, display, 'gid-1', actions) === actions,
         'non-terminal -> workflow run URL',
     );
 

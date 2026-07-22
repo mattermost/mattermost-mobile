@@ -101,14 +101,43 @@ describe('tsio-report-status', () => {
 
         it('returns TSIO URL with gid when both terminal and success', () => {
             assert.equal(
-                decideTargetUrl('success', true, display, 'gid-1', runUrl),
+                decideTargetUrl('success', true, display, 'gid-1', runUrl, {
+                    failed: 0,
+                    reportStatus: 'completed',
+                }),
                 `${display}?gid=gid-1`,
             );
         });
 
-        it('returns run URL when not success', () => {
+        it('returns TSIO URL when tests failed but report uploaded', () => {
             assert.equal(
-                decideTargetUrl('failure', true, display, 'gid-1', runUrl),
+                decideTargetUrl('failure', true, display, 'gid-1', runUrl, {
+                    failed: 187,
+                    reportStatus: 'completed',
+                    upstreamSucceeded: false,
+                }),
+                `${display}?gid=gid-1`,
+            );
+        });
+
+        it('returns TSIO URL for incomplete terminal report', () => {
+            assert.equal(
+                decideTargetUrl('failure', true, display, 'gid-1', runUrl, {
+                    failed: 0,
+                    reportStatus: 'incomplete',
+                    upstreamSucceeded: true,
+                }),
+                `${display}?gid=gid-1`,
+            );
+        });
+
+        it('returns run URL when CI failed outside tests with a clean completed report', () => {
+            assert.equal(
+                decideTargetUrl('failure', true, display, 'gid-1', runUrl, {
+                    failed: 0,
+                    reportStatus: 'completed',
+                    upstreamSucceeded: false,
+                }),
                 runUrl,
             );
         });
@@ -116,6 +145,16 @@ describe('tsio-report-status', () => {
         it('returns run URL when not both terminal', () => {
             assert.equal(
                 decideTargetUrl('success', false, display, 'gid-1', runUrl),
+                runUrl,
+            );
+        });
+
+        it('returns run URL when report id is missing', () => {
+            assert.equal(
+                decideTargetUrl('failure', true, display, null, runUrl, {
+                    failed: 2,
+                    reportStatus: 'completed',
+                }),
                 runUrl,
             );
         });
