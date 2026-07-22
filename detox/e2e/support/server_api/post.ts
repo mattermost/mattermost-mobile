@@ -199,17 +199,34 @@ export const apiPinPost = async (baseUrl: string, postId: string): Promise<any> 
  * @param {string} baseUrl - the base server URL
  * @param {string} channelId - The channel ID to upload the file to
  * @param {string} absFilePath - The absolute path to the file to upload
+ * @param {Object} [options]
+ * @param {boolean} [options.forBookmark] - Upload with bookmark=true so CreatorId is
+ *   "bookmark" (required before creating a type=file channel bookmark).
  * @return {Object} returns {fileId} on success or {error, status} on error
  */
-export const apiUploadFileToChannel = async (baseUrl: string, channelId: string, absFilePath: string): Promise<any> => {
+export const apiUploadFileToChannel = async (
+    baseUrl: string,
+    channelId: string,
+    absFilePath: string,
+    options?: {forBookmark?: boolean},
+): Promise<any> => {
+    const query = new URLSearchParams({channel_id: channelId});
+    if (options?.forBookmark) {
+        // Server sets FileInfo.CreatorId to "bookmark" when bookmark=true
+        // (required by ChannelBookmark store for type=file bookmarks).
+        query.set('bookmark', 'true');
+    }
     const result = await apiUploadFile('files', absFilePath, {
-        url: `${baseUrl}/api/v4/files?channel_id=${channelId}`,
+        url: `${baseUrl}/api/v4/files?${query.toString()}`,
         method: 'POST',
     });
     if (result.error) {
         return result;
     }
     const fileId = result.data?.file_infos?.[0]?.id;
+    if (!fileId) {
+        return {error: {message: 'Upload response missing file_infos[0].id'}};
+    }
     return {fileId};
 };
 

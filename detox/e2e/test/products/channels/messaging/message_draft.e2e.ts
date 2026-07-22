@@ -10,6 +10,7 @@
 import {
     Post,
     Setup,
+    System,
 } from '@support/server_api';
 import {
     serverOneUrl,
@@ -31,10 +32,14 @@ describe('Messaging - Message Draft', () => {
     const offTopicChannelName = 'off-topic';
     const channelsCategory = 'channels';
     let testChannel: any;
+    let maxPostSize = 4000;
 
     beforeAll(async () => {
         const {channel, user} = await Setup.apiInit(siteOneUrl);
         testChannel = channel;
+
+        const {config} = await System.apiGetConfig(siteOneUrl);
+        maxPostSize = config?.ServiceSettings?.MaxPostSize ?? 4000;
 
         // # Log in to server
         await ServerScreen.connectToServer(serverOneUrl, serverOneDisplayName);
@@ -127,7 +132,10 @@ describe('Messaging - Message Draft', () => {
     });
 
     it('MM-T107 - should show alert when message exceeds character limit', async () => {
-        const overLimitMessage = 'a'.repeat(4001);
+        // Use server MaxPostSize (+1). Hardcoded 4001 never alerts when CI MaxPostSize is
+        // the Mattermost default (16383) — failed both platforms on runs 29823515768,
+        // 29903268040, 29915955190.
+        const overLimitMessage = 'a'.repeat(maxPostSize + 1);
 
         // # Open a channel and type a message over the character limit
         await ChannelScreen.open(channelsCategory, testChannel.name);

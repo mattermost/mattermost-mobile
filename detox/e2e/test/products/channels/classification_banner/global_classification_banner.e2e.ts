@@ -69,7 +69,7 @@ describe('Classification Banner - Global Classification Banner', () => {
             },
         });
         await Properties.apiSetupClassificationWithBanner(siteOneUrl, {
-            levelId: 'lvl-top-secret',
+            levelId: 'lvltopsecret00000000000000',
         });
         await device.reloadReactNative();
 
@@ -87,7 +87,7 @@ describe('Classification Banner - Global Classification Banner', () => {
             },
         });
         await Properties.apiSetupClassificationWithBanner(siteOneUrl, {
-            levelId: 'lvl-top-secret',
+            levelId: 'lvltopsecret00000000000000',
         });
         await device.reloadReactNative();
 
@@ -110,7 +110,7 @@ describe('Classification Banner - Global Classification Banner', () => {
             },
         });
         await Properties.apiSetupClassificationWithBanner(siteOneUrl, {
-            levelId: 'lvl-top-secret',
+            levelId: 'lvltopsecret00000000000000',
         });
         await device.reloadReactNative();
 
@@ -144,7 +144,7 @@ describe('Classification Banner - Global Classification Banner', () => {
             },
         });
         await Properties.apiSetupClassificationWithBanner(siteOneUrl, {
-            levelId: 'lvl-top-secret',
+            levelId: 'lvltopsecret00000000000000',
         });
         await device.reloadReactNative();
 
@@ -173,7 +173,7 @@ describe('Classification Banner - Global Classification Banner', () => {
             },
         });
         const {linkedFieldId} = await Properties.apiSetupClassificationWithBanner(siteOneUrl, {
-            levelId: 'lvl-top-secret',
+            levelId: 'lvltopsecret00000000000000',
         });
         await device.reloadReactNative();
 
@@ -183,7 +183,7 @@ describe('Classification Banner - Global Classification Banner', () => {
         await expect(element(by.text('TOP SECRET'))).toBeVisible();
 
         await Properties.apiPatchSystemPropertyValues(siteOneUrl, 'access_control', [
-            {field_id: linkedFieldId, value: 'lvl-secret'},
+            {field_id: linkedFieldId, value: 'lvlsecret00000000000000000'},
         ]);
 
         await device.reloadReactNative();
@@ -201,7 +201,7 @@ describe('Classification Banner - Global Classification Banner', () => {
             },
         });
         await Properties.apiSetupClassificationWithBanner(siteOneUrl, {
-            levelId: 'lvl-top-secret',
+            levelId: 'lvltopsecret00000000000000',
         });
         await device.reloadReactNative();
 
@@ -225,7 +225,7 @@ describe('Classification Banner - Global Classification Banner', () => {
             },
         });
         await Properties.apiSetupClassificationWithBanner(siteOneUrl, {
-            levelId: 'lvl-top-secret',
+            levelId: 'lvltopsecret00000000000000',
         });
         await device.reloadReactNative();
 
@@ -254,7 +254,7 @@ describe('Classification Banner - Global Classification Banner', () => {
             },
         });
         await Properties.apiSetupClassificationWithBanner(siteOneUrl, {
-            levelId: 'lvl-top-secret',
+            levelId: 'lvltopsecret00000000000000',
         });
         await device.reloadReactNative();
 

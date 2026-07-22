@@ -356,6 +356,7 @@ describe('Channels - Channel Bookmarks', () => {
             siteOneUrl,
             channelT69455.id,
             path.resolve(__dirname, '../../../../support/fixtures/image.png'),
+            {forBookmark: true},
         );
         if (uploadError || !fileId) {
             throw new Error(`[MM-T69455_1] Failed to upload file bookmark attachment: ${JSON.stringify(uploadError)}`);

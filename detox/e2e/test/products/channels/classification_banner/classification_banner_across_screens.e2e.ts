@@ -41,7 +41,7 @@ describe('Classification Banner - Visibility Across Screens', () => {
             },
         });
         await Properties.apiSetupClassificationWithBanner(siteOneUrl, {
-            levelId: 'lvl-top-secret',
+            levelId: 'lvltopsecret00000000000000',
         });
 
         await ServerScreen.connectToServer(serverOneUrl, serverOneDisplayName);

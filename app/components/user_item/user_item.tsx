@@ -157,7 +157,6 @@ const UserItem = ({
             <View
                 ref={viewRef}
                 style={[...containerViewStyle, containerStyle]}
-                testID={userItemTestId}
             >
                 <ProfilePicture
                     author={user}
