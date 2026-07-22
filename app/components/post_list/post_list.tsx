@@ -372,12 +372,6 @@ const PostList = ({
             }, 250); // 250ms debounce
         }
 
-        onViewableItemsChangedProp?.(viewableItems);
-
-        if (onViewableItemsChangedListener.current) {
-            onViewableItemsChangedListener.current(viewableItems);
-        }
-
         if (!viewableItems.length) {
             return;
         }
@@ -392,6 +386,12 @@ const PostList = ({
         requestAnimationFrame(() => {
             DeviceEventEmitter.emit(Events.ITEM_IN_VIEWPORT, viewableItemsMap);
         });
+
+        onViewableItemsChangedProp?.(viewableItems);
+
+        if (onViewableItemsChangedListener.current) {
+            onViewableItemsChangedListener.current(viewableItems);
+        }
     }, [location, onViewableItemsChangedProp, trackInitialRenderMetrics]);
 
     const registerScrollEndIndexListener = useCallback((listener: onScrollEndIndexListenerEvent) => {
