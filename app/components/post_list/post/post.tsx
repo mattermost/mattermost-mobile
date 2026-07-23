@@ -3,7 +3,7 @@
 
 import React, {type ReactNode, useCallback, useEffect, useMemo, useRef, useState} from 'react';
 import {useIntl} from 'react-intl';
-import {Platform, type StyleProp, View, type ViewStyle, TouchableHighlight, type LayoutChangeEvent} from 'react-native';
+import {type StyleProp, View, type ViewStyle, TouchableHighlight, type LayoutChangeEvent} from 'react-native';
 
 import {removePost} from '@actions/local/post';
 import {showPermalink} from '@actions/remote/permalink';
@@ -17,6 +17,7 @@ import SystemAvatar from '@components/system_avatar';
 import SystemHeader from '@components/system_header';
 import {Screens} from '@constants';
 import {POST_TIME_TO_FAIL} from '@constants/post';
+import {PROFILE_PICTURE_SIZE} from '@constants/view';
 import {useKeyboardState} from '@context/keyboard_state';
 import {usePostConfig} from '@context/post_config';
 import {useServerUrl} from '@context/server';
@@ -93,7 +94,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
         consecutivePostContainer: {
             marginBottom: 10,
             marginRight: 10,
-            marginLeft: Platform.select({ios: 34, android: 33}),
+            marginLeft: PROFILE_PICTURE_SIZE,
             marginTop: 10,
         },
         container: {flexDirection: 'row'},
