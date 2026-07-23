@@ -750,6 +750,111 @@ function mergeMaestroBatchReportsFromDir(buildDir, outputPath) {
     return fse.existsSync(outputPath) ? outputPath : null;
 }
 
+/**
+ * Build screenshot → flow mapping by reading `takeScreenshot:` names from each
+ * flow YAML referenced in the JUnit report. Used when Maestro command logs are
+ * absent (common after --flatten-debug-output / partial artifact uploads).
+ *
+ * @param {Array<{name: string, file?: string}>} flows
+ * @param {string} [repoRoot]
+ * @returns {Map<string, string>}
+ */
+function buildScreenshotMapFromFlowYamls(flows, repoRoot = process.cwd()) {
+    const map = new Map();
+    const roots = [
+        repoRoot,
+        path.resolve(repoRoot, '..'),
+        process.env.GITHUB_WORKSPACE,
+    ].filter(Boolean);
+
+    for (const flow of flows) {
+        if (!flow.file || !flow.name) {
+            continue;
+        }
+        let yamlText = null;
+        for (const root of roots) {
+            const candidate = path.resolve(root, flow.file);
+            if (fse.existsSync(candidate)) {
+                try {
+                    yamlText = fse.readFileSync(candidate, 'utf8');
+                } catch {
+                    yamlText = null;
+                }
+                break;
+            }
+        }
+        if (!yamlText) {
+            continue;
+        }
+        for (const match of yamlText.matchAll(/takeScreenshot:\s*['"]?([^\s#'"]+)/g)) {
+            const shot = match[1];
+            if (!shot) {
+                continue;
+            }
+            const png = shot.endsWith('.png') ? shot : `${shot}.png`;
+            const rel = png.includes('/') ? png.replace(/\\/g, '/') : path.join('screenshots', png).replace(/\\/g, '/');
+            map.set(rel, flow.name);
+            map.set(path.basename(rel), flow.name);
+        }
+    }
+    return map;
+}
+
+/**
+ * Stage Maestro screenshots into per-flow folders for TSIO linking.
+ *
+ * Maestro writes takeScreenshot PNGs as flat `screenshots/<name>.png`, which
+ * cannot match JUnit full_title (`<flow.yml> > <flowName>`). TSIO's linker
+ * matches folder-derived test_name against full_title, so we copy images to
+ * `<outputDir>/<flowName>/<basename>.png` using the same attribution as the
+ * HTML report (command logs + YAML takeScreenshot map + scoreFlowMatch).
+ *
+ * @param {{xmlPath: string, artifactsDir: string, outputDir: string, repoRoot?: string}} opts
+ * @returns {{copied: number, flows: number}}
+ */
+function prepareMaestroScreenshotsForTsio({xmlPath, artifactsDir, outputDir, repoRoot}) {
+    const summary = parseMaestroReport(xmlPath);
+    if (!summary || !summary.flows.length) {
+        console.log(`prepareMaestroScreenshotsForTsio: no flows in ${xmlPath}`);
+        return {copied: 0, flows: 0};
+    }
+
+    const allFiles = walkFiles(artifactsDir).filter(isImage);
+    const commandLogMap = buildScreenshotMapFromCommandLogs(artifactsDir);
+    const yamlMap = buildScreenshotMapFromFlowYamls(summary.flows, repoRoot || process.cwd());
+    // Command logs win when present; YAML map fills the gaps.
+    const combinedMap = new Map([...yamlMap, ...commandLogMap]);
+    const buckets = bucketArtifactsByFlow(summary.flows, allFiles, combinedMap);
+
+    fse.emptyDirSync(outputDir);
+    let copied = 0;
+    for (const [flowName, files] of Object.entries(buckets)) {
+        if (flowName === '__unattributed' || !files.length) {
+            continue;
+        }
+        for (const rel of files) {
+            const src = path.join(artifactsDir, rel);
+            const dest = path.join(outputDir, flowName, path.basename(rel));
+            fse.ensureDirSync(path.dirname(dest));
+            fse.copySync(src, dest, {overwrite: true});
+            copied += 1;
+        }
+    }
+
+    // Keep unattributed images discoverable (won't link to a case).
+    const orphaned = buckets.__unattributed || [];
+    for (const rel of orphaned) {
+        const src = path.join(artifactsDir, rel);
+        const dest = path.join(outputDir, '__unattributed', path.basename(rel));
+        fse.ensureDirSync(path.dirname(dest));
+        fse.copySync(src, dest, {overwrite: true});
+        copied += 1;
+    }
+
+    console.log(`prepareMaestroScreenshotsForTsio: copied ${copied} image(s) for ${summary.flows.length} flow(s) -> ${outputDir}`);
+    return {copied, flows: summary.flows.length};
+}
+
 module.exports = {
     parseMaestroReport,
     generateMaestroHtmlReport,
@@ -757,4 +862,6 @@ module.exports = {
     mergeMaestroBatchReportsFromDir,
     writeMaestroJestJsonForTsio,
     buildScreenshotMapFromCommandLogs,
+    buildScreenshotMapFromFlowYamls,
+    prepareMaestroScreenshotsForTsio,
 };

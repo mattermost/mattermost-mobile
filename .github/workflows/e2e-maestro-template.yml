@@ -402,7 +402,7 @@ jobs:
           npm ci --prefer-offline --no-audit --no-fund
           node -e "
             const path = require('path');
-            const {parseMaestroReport, generateMaestroHtmlReport, mergeMaestroBatchReportsFromDir} = require('./utils/maestro_report');
+            const {parseMaestroReport, generateMaestroHtmlReport, mergeMaestroBatchReportsFromDir, prepareMaestroScreenshotsForTsio} = require('./utils/maestro_report');
             const buildDir = path.resolve('..', 'build');
             const xmlPath = path.join(buildDir, 'maestro-report.xml');
             mergeMaestroBatchReportsFromDir(buildDir, xmlPath);
@@ -429,6 +429,13 @@ jobs:
                 outputPath: path.join(buildDir, 'maestro-report.html'),
                 platform: 'iOS',
                 commitSha: process.env.GITHUB_SHA || '',
+              });
+              // Per-flow folders so TSIO LinkScreenshots can match full_title.
+              prepareMaestroScreenshotsForTsio({
+                xmlPath: xmlPath,
+                artifactsDir: path.join(buildDir, 'maestro-artifacts'),
+                outputDir: path.join(buildDir, 'maestro-artifacts-tsio'),
+                repoRoot: path.resolve('..'),
               });
             } else {
               console.log('No Maestro report found — marking as failure');
@@ -459,7 +466,7 @@ jobs:
           gh-job-name: ${{ inputs.tsio-shard-name != '' && inputs.tsio-shard-name || 'Maestro E2E Tests (iOS)' }}
           # Action input is named json-path; Maestro uploads JUnit XML bytes.
           json-path: build/maestro-report.xml
-          screenshots-dir: build/maestro-artifacts
+          screenshots-dir: build/maestro-artifacts-tsio
 
       - name: Save Maestro results to Zephyr Scale
         if: always() && inputs.record_tests_in_zephyr
@@ -828,7 +835,7 @@ jobs:
           npm ci --prefer-offline --no-audit --no-fund
           node -e "
             const path = require('path');
-            const {parseMaestroReport, generateMaestroHtmlReport, mergeMaestroBatchReportsFromDir} = require('./utils/maestro_report');
+            const {parseMaestroReport, generateMaestroHtmlReport, mergeMaestroBatchReportsFromDir, prepareMaestroScreenshotsForTsio} = require('./utils/maestro_report');
             const buildDir = path.resolve('..', 'build');
             const xmlPath = path.join(buildDir, 'maestro-report.xml');
             mergeMaestroBatchReportsFromDir(buildDir, xmlPath);
@@ -854,6 +861,13 @@ jobs:
                 outputPath: path.join(buildDir, 'maestro-report.html'),
                 platform: 'Android',
                 commitSha: process.env.GITHUB_SHA || '',
+              });
+              // Per-flow folders so TSIO LinkScreenshots can match full_title.
+              prepareMaestroScreenshotsForTsio({
+                xmlPath: xmlPath,
+                artifactsDir: path.join(buildDir, 'maestro-artifacts'),
+                outputDir: path.join(buildDir, 'maestro-artifacts-tsio'),
+                repoRoot: path.resolve('..'),
               });
             } else {
               console.log('No Maestro report found — marking as failure');
@@ -884,7 +898,7 @@ jobs:
           gh-job-name: ${{ inputs.tsio-shard-name != '' && inputs.tsio-shard-name || 'Maestro E2E Tests (Android)' }}
           # Action input is named json-path; Maestro uploads JUnit XML bytes.
           json-path: build/maestro-report.xml
-          screenshots-dir: build/maestro-artifacts
+          screenshots-dir: build/maestro-artifacts-tsio
 
       - name: Save Maestro results to Zephyr Scale
         if: always() && inputs.record_tests_in_zephyr
