@@ -46,6 +46,36 @@ export class MmBlocksTestHelper {
         await Webhook.requireWebhookServer(this.WEBHOOK_BASE_URL);
     }
 
+    /**
+     * Non-throwing reachability check for the webhook sidecar. Wraps
+     * requireWebhookServer (which throws when the sidecar is unreachable) so
+     * callers can gracefully skip a test when the sidecar isn't running rather
+     * than failing the suite.
+     * @return {Promise<boolean>} true if the sidecar is reachable.
+     */
+    static async isWebhookSidecarReachable(): Promise<boolean> {
+        try {
+            await Webhook.requireWebhookServer(this.WEBHOOK_BASE_URL);
+            return true;
+        } catch {
+            return false;
+        }
+    }
+
+    /**
+     * Same reachability check, but logs a skip notice when the sidecar is down.
+     * Intended for `if (!(await isWebhookSidecarReachableOrSkip())) return;`.
+     * @return {Promise<boolean>} true if the sidecar is reachable.
+     */
+    static async isWebhookSidecarReachableOrSkip(): Promise<boolean> {
+        const reachable = await this.isWebhookSidecarReachable();
+        if (!reachable) {
+            // eslint-disable-next-line no-console
+            console.warn(`Skipping: webhook sidecar not reachable at ${this.WEBHOOK_BASE_URL}`);
+        }
+        return reachable;
+    }
+
     static async postIncomingWebhookBlocks(
         channelId: string,
         displayName: string,

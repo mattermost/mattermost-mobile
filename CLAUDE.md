@@ -164,6 +164,17 @@ Located at `libraries/@mattermost/`:
 - **E2E tests** in separate `detox/` package (not in main package.json)
 - Add mocks to central `setup.ts` file, not individual test files
 
+### E2E Status Reporting (TSIO)
+E2E results are uploaded to Test System IO (TSIO) and surfaced as GitHub commit statuses. Canonical contexts:
+
+| Flow | Context | TSIO group name |
+|------|---------|-----------------|
+| PR E2E | `e2e/mobile` | `mobile-pr` |
+| Main E2E (`run_type=MAIN` or Matterwick `MASTER`) | `e2e/mobile` | `mobile-main` |
+| Compatibility matrix | `e2e/compatibility-matrix-testing` | `mobile-release` |
+
+Legacy per-platform contexts (`e2e/detox-*`, `e2e/maestro-*`) are retired.
+
 ### Testing Patterns
 
 #### Database Testing

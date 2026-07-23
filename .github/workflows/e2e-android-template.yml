@@ -53,13 +53,8 @@ on:
         type: string
         required: false
         default: "PR"
-      testcase_failure_fatal:
-        description: "Should failures be considered fatal"
-        required: false
-        type: boolean
-        default: false
       record_tests_in_zephyr:
-        description: "Record test results in Zephyr, typically for nightly and release runs"
+        description: "Record test results in Zephyr, typically for release and main runs"
         required: false
         type: boolean
         default: false
@@ -90,6 +85,18 @@ on:
         default: "35"
       artifact_run_id:
         description: "Run ID of the workflow that uploaded android-build-files-* (defaults to caller run)"
+        required: false
+        type: string
+        default: ""
+      tsio-config:
+        description: >
+          TSIO reporting config: {"composite_identity":{...},"total_reports_expected":N}.
+          Empty disables TSIO upload for this platform.
+        required: false
+        type: string
+        default: ""
+      tsio-shard-name:
+        description: "Display name for this shard in TSIO (e.g. detox-android-Server_11.9.0-rc3)"
         required: false
         type: string
         default: ""
@@ -142,7 +149,7 @@ env:
 
 jobs:
   generate-specs:
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-24.04
     outputs:
       specs: ${{ steps.generate-specs.outputs.specs }}
       build_id: ${{ steps.resolve-device.outputs.BUILD_ID }}
@@ -384,11 +391,19 @@ jobs:
           path: detox/artifacts/
 
   generate-report:
+    # TSIO displays gh-job-name as the shard label — keep it aligned with tsio-shard-name.
+    name: ${{ inputs.tsio-shard-name != '' && inputs.tsio-shard-name || 'generate-report' }}
     if: always()
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-24.04
     needs:
       - generate-specs
       - e2e-android
+    permissions:
+      contents: read
+      # test-system-io-report-upload authenticates via the workflow's OIDC
+      # token and resolves gh_job_id via the GitHub API.
+      id-token: write
+      actions: read
     outputs:
       TARGET_URL: ${{ steps.set-url.outputs.TARGET_URL }}
       STATUS: ${{ steps.determine-status.outputs.STATUS }}
@@ -416,12 +431,64 @@ jobs:
 
       - name: Generate Report Path
         id: s3
+        env:
+          BUILD_ID: ${{ needs.generate-specs.outputs.build_id }}
+          MOBILE_SHA: ${{ needs.generate-specs.outputs.mobile_sha }}
+          MOBILE_REF: ${{ needs.generate-specs.outputs.mobile_ref }}
         run: |
-          path="${{ needs.generate-specs.outputs.build_id }}-${{ needs.generate-specs.outputs.mobile_sha }}-${{ needs.generate-specs.outputs.mobile_ref }}"
-          echo "path=$(echo "${path}" | sed 's/\./-/g')" >> ${GITHUB_OUTPUT}
+          path="${BUILD_ID}-${MOBILE_SHA}-${MOBILE_REF}"
+          echo "path=$(echo "${path}" | sed 's/\./-/g')" >> "$GITHUB_OUTPUT"
+
+      # ── TSIO report upload (before e2e:save-report) ────────────────────────
+      # save-report deletes android-results-* dirs (where Detox PNGs live). Upload
+      # while those artifact trees are still on disk.
+      # Each matrix leg wrote Jest CLI --json (name + assertionResults). TSIO's
+      # extractDetox expects testFilePath + nested testResults — convert while
+      # merging. gh-job-name must match this job's rendered `name:` (tsio-shard-name).
+      - name: Merge per-shard Jest JSON for TSIO
+        if: always() && inputs.tsio-config != '' && vars.TSIO_UPLOAD_ENABLED != 'false'
+        id: tsio-merge
+        run: |
+          set +e
+          # TSIO extractDetox expects testFilePath + nested testResults (not Jest CLI
+          # name + assertionResults). Convert while merging shard JSON files.
+          if ! node detox/utils/merge-jest-results-for-tsio.js \
+            --dir detox/artifacts \
+            --repo-root "${GITHUB_WORKSPACE}" \
+            --output detox/artifacts/jest-results-merged.json; then
+            echo "skip=true" >> "$GITHUB_OUTPUT"
+            echo "No jest-results.json found or merge failed — skipping TSIO upload."
+            exit 0
+          fi
+          echo "skip=false" >> "$GITHUB_OUTPUT"
+
+      - name: Write TSIO failure stub when Detox JSON is missing
+        if: always() && inputs.tsio-config != '' && vars.TSIO_UPLOAD_ENABLED != 'false' && steps.tsio-merge.outputs.skip == 'true'
+        env:
+          TSIO_SHARD_NAME: ${{ inputs.tsio-shard-name != '' && inputs.tsio-shard-name || 'generate-report' }}
+        run: |
+          node detox/utils/write-tsio-failure-stub.mjs \
+            --format jest \
+            --output detox/artifacts/jest-results-merged.json \
+            --job-name "$TSIO_SHARD_NAME" \
+            --reason "Detox job failed or was cancelled before jest-results.json was written"
+
+      - name: Upload report to Test System IO
+        if: always() && inputs.tsio-config != '' && vars.TSIO_UPLOAD_ENABLED != 'false' && hashFiles('detox/artifacts/jest-results-merged.json') != ''
+        uses: mattermost/mattermost-test-system-io/.github/actions/test-system-io-report-upload@45fb048848edc392f398144f45e2f3e30f43aeaa # release-0.12.0 / main@45fb048 (#81 Maestro FilePath + Detox paths, #82 background finalize)
+        with:
+          composite-identity: ${{ toJSON(fromJSON(inputs.tsio-config).composite_identity) }}
+          total-reports-expected: ${{ fromJSON(inputs.tsio-config).total_reports_expected }}
+          framework: detox
+          github-token: ${{ github.token }}
+          gh-job-name: ${{ inputs.tsio-shard-name != '' && inputs.tsio-shard-name || 'generate-report' }}
+          json-path: detox/artifacts/jest-results-merged.json
+          screenshots-dir: detox/artifacts/
 
       - name: Save report Detox Dependencies
         id: report-link
+        if: always()
+        continue-on-error: true
         run: |
           cd detox
           npm ci
@@ -437,6 +504,7 @@ jobs:
 
       - name: Calculate failures
         id: summary
+        if: always()
         run: |
           if [ -f detox/artifacts/summary.json ]; then
             echo "FAILURES=$(cat detox/artifacts/summary.json | jq .stats.failures)" >> ${GITHUB_OUTPUT}
@@ -457,24 +525,30 @@ jobs:
 
       - name: Set Target URL
         id: set-url
+        if: always()
+        env:
+          S3_BUCKET: ${{ env.DETOX_AWS_S3_BUCKET }}
+          REPORT_PATH: ${{ steps.s3.outputs.path }}
         run: |
-            echo "TARGET_URL=https://${{ env.DETOX_AWS_S3_BUCKET }}.s3.amazonaws.com/${{ steps.s3.outputs.path }}/jest-stare/android-report.html" >> ${GITHUB_OUTPUT}
+          echo "TARGET_URL=https://${S3_BUCKET}.s3.amazonaws.com/${REPORT_PATH}/jest-stare/android-report.html" >> "$GITHUB_OUTPUT"
 
       - name: Determine Status
         id: determine-status
+        if: always()
         env:
           FAILURES: ${{ steps.summary.outputs.FAILURES }}
-          TESTCASE_FAILURE_FATAL: ${{ inputs.testcase_failure_fatal }}
+          ERRORS: ${{ steps.summary.outputs.ERRORS }}
+          TOTAL: ${{ steps.summary.outputs.TOTAL }}
         run: |
-          if [[ "$FAILURES" == "-1" ]]; then
-            echo "STATUS=failure" >> ${GITHUB_OUTPUT}
-          elif [[ "$FAILURES" -gt 0 && "$TESTCASE_FAILURE_FATAL" == "true" ]]; then
+          # Fail on missing/empty reports (infra died before tests) and on real failures.
+          if [[ "$FAILURES" == "-1" || "$FAILURES" -gt 0 || "${ERRORS:-0}" -gt 0 || "${TOTAL:-0}" -eq 0 ]]; then
             echo "STATUS=failure" >> ${GITHUB_OUTPUT}
           else
             echo "STATUS=success" >> ${GITHUB_OUTPUT}
           fi
 
       - name: Generate Summary
+        if: always()
         env:
           TOTAL: ${{ steps.summary.outputs.TOTAL }}
           PASSES: ${{ steps.summary.outputs.PASSES }}
@@ -490,3 +564,13 @@ jobs:
           echo "" >> ${GITHUB_STEP_SUMMARY}
           echo "You can check the full report [here](${TARGET_URL})" >> ${GITHUB_STEP_SUMMARY}
           echo "There was **${PERCENTAGE}%** success rate." >> ${GITHUB_STEP_SUMMARY}
+
+      - name: Fail job on test failures
+        if: always() && steps.determine-status.outputs.STATUS == 'failure'
+        env:
+          FAILURES: ${{ steps.summary.outputs.FAILURES }}
+          TOTAL: ${{ steps.summary.outputs.TOTAL }}
+          ERRORS: ${{ steps.summary.outputs.ERRORS }}
+        run: |
+          echo "::error::Detox reported test failures (FAILURES=${FAILURES}, TOTAL=${TOTAL}, ERRORS=${ERRORS})"
+          exit 1

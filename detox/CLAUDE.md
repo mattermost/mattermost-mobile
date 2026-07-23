@@ -94,24 +94,27 @@ cd detox && npm run e2e:save-report
 
 | Tier | Trigger | Platform | Shards | Search Path | Approx Time |
 |------|---------|----------|--------|-------------|-------------|
-| **Smoke** | Every PR push (default) | iOS + Android | 1 each | `detox/e2e/test/products/channels/smoke_test` | 30–45 min |
-| **Full iOS** | Label: `E2E iOS tests for PR` | iOS | 10 | `detox/e2e/test` | 60–180 min |
-| **Full Android** | Label: `E2E Android tests for PR` | Android | 10 | `detox/e2e/test` | 90–180 min |
-| **Scheduled** | Wednesday + Thursday midnight | iOS + Android | 10 each | `detox/e2e/test` | 90–180 min |
+| **PR full** | Matterwick + `E2E/Run` label | Detox iOS/Android/iPad + Maestro | 20 Detox (iOS/Android), 1 iPad, 1 Maestro each | `detox/e2e/test` (full) | ~30–45+ min wall-clock |
+| **Main** | Matterwick main push (`run_type=MASTER` today; `MAIN` also accepted → TSIO `mobile-main`) | Same as PR | Same as PR | `detox/e2e/test` | Same as PR |
+| **CMT / Release** | Matterwick on `build-release-*` → CMT | Detox + Maestro across server versions | Full suite on latest server; smoke subset on older | latest: `detox/e2e/test`; older: `…/smoke_test` | Varies by matrix |
+
+Status context: `e2e/mobile` (PR/Main) or `e2e/compatibility-matrix-testing` (CMT). TSIO groups: `mobile-pr` / `mobile-main` / `mobile-release`.
 
 ### Smoke Tests Location
 
-`detox/e2e/test/products/channels/smoke_test/` — 7 files, quick regression coverage.
-These run automatically on every PR push without any label.
+`detox/e2e/test/products/channels/smoke_test/` — quick regression suite used as the **CMT older-server subset**, not as an automatic every-PR-push tier.
+PR E2E runs the full `detox/e2e/test` tree when labeled.
 
 ### Workflow Files
 
 | File | Purpose |
 |------|---------|
-| `.github/workflows/e2e-detox-pr.yml` | PR trigger, build + dispatch to templates |
-| `.github/workflows/e2e-ios-template.yml` | iOS shard runner (reusable workflow) |
-| `.github/workflows/e2e-android-template.yml` | Android shard runner (reusable workflow) |
-| `.github/workflows/e2e-detox-scheduled.yml` | Nightly scheduled runs |
+| `.github/workflows/e2e-detox-pr.yml` | Matterwick entry: builds, Detox + Maestro dispatch, TSIO status |
+| `.github/workflows/e2e-detox.yml` / `e2e-maestro-pr.yml` | Platform orchestration (reusable) |
+| `.github/workflows/e2e-ios-template.yml` | Detox iOS shard runner |
+| `.github/workflows/e2e-android-template.yml` | Detox Android shard runner |
+| `.github/workflows/e2e-maestro-template.yml` | Maestro iOS/Android runner |
+| `.github/workflows/compatibility-matrix-testing.yml` | CMT / release multi-server matrix |
 
 ### Detox Configuration (`.detoxrc.json`)
 
@@ -182,7 +185,7 @@ detox/
 │           │   ├── channels/      # 16 files
 │           │   ├── account/       # 15 files
 │           │   ├── threads/       # 6 files
-│           │   └── smoke_test/    # 7 files (smoke tier, run on every PR)
+│           │   └── smoke_test/    # quick suite (CMT older-server subset)
 │           ├── agents/            # AI agent product tests
 │           └── playbooks/         # Playbooks product tests
 ```
@@ -423,9 +426,9 @@ await waitForElementToBeVisible(element(by.id('...')), timeouts.TEN_SEC);
 
 ## TEST COVERAGE MAP
 
-### Smoke (`e2e/test/products/channels/smoke_test/`) — runs on every PR
+### Smoke (`e2e/test/products/channels/smoke_test/`) — CMT older-server subset
 
-7 files covering quick regression of core flows.
+Quick regression of core flows. Used when CMT runs against non-latest server versions; PR E2E uses the full suite.
 
 ### Search (`e2e/test/products/channels/search/`)
 

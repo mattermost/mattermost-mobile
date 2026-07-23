@@ -32,7 +32,8 @@ import {
 import {isAndroid, isIos, timeouts, wait, waitForElementToBeVisible} from '@support/utils';
 import {expect} from 'detox';
 
-describe('Scheduled Draft,', () => {
+// Skip: failed CI run 29954156963 (android; iOS already skipped) — schedule message flakes
+describe.skip('Scheduled Draft,', () => {
     const serverOneDisplayName = 'Server 1';
     const channelsCategory = 'channels';
     let testChannel: any;

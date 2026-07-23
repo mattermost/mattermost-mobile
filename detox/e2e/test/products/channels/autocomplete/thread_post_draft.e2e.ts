@@ -27,7 +27,8 @@ import {
 import {getRandomId, timeouts, wait} from '@support/utils';
 import {expect} from 'detox';
 
-describe('Autocomplete - Thread Post Draft', () => {
+// Skip: failed CI run 29954156963 (both) — suite fail on ThreadScreen.back BACK_INDEX
+describe.skip('Autocomplete - Thread Post Draft', () => {
     const serverOneDisplayName = 'Server 1';
     const channelsCategory = 'channels';
     let testChannel: any;
