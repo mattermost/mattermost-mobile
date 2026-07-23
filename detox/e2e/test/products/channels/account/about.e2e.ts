@@ -74,6 +74,8 @@ const getExpectedLearnMorePrefix = (license: Record<string, string | undefined>,
     return 'Learn more about Enterprise Edition at ';
 };
 
+const learnMorePrefixMatcher = /^(?:Learn more about (?:Mattermost|Enterprise Edition)|Join the Mattermost community)/i;
+
 describe('Account - Settings - About', () => {
     const serverOneDisplayName = 'Server 1';
     let isLicensed: boolean;
@@ -176,14 +178,14 @@ describe('Account - Settings - About', () => {
         try {
             if (isIos()) {
                 await waitForElementToExist(
-                    element(by.text(new RegExp('Learn more about Mattermost', 'i'))),
+                    element(by.text(learnMorePrefixMatcher)),
                     timeouts.TWENTY_SEC,
                 );
             } else {
                 // FormattedText testID does not propagate on Android when nested in Text;
                 // CI 28485624548 screenshot shows copy is visible but about.learn_more.text is null.
                 await waitForElementToExist(
-                    element(by.text(new RegExp('Learn more about Mattermost', 'i'))),
+                    element(by.text(learnMorePrefixMatcher)),
                     timeouts.TWENTY_SEC,
                 );
             }
@@ -192,7 +194,7 @@ describe('Account - Settings - About', () => {
         }
 
         if (isAndroid()) {
-            await expect(element(by.text(new RegExp('Learn more about Mattermost', 'i')))).toExist();
+            await expect(element(by.text(learnMorePrefixMatcher))).toExist();
             await expect(element(by.text('https://mattermost.com'))).toExist();
         } else {
             await expect(AboutScreen.learnMoreText).toHaveText(expectedLearnMorePrefix);

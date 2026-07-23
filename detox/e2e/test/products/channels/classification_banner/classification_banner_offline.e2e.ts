@@ -13,6 +13,8 @@
 // MM-T6207 is the most sensitive because it expects the OLD cached value after the
 // server changes while the app is offline.
 
+import {acquireClassificationLock, createClassificationLockOwner, releaseClassificationLock} from '@support/classification_lock';
+import {enableClassificationMarkings} from '@support/classification_test_helper';
 import {Properties, Setup, System} from '@support/server_api';
 import {serverOneUrl, siteOneUrl} from '@support/test_config';
 import {GlobalClassificationBanner} from '@support/ui/component';
@@ -22,12 +24,14 @@ import {by, device, element, expect, waitFor} from 'detox';
 
 describe('Classification Banner - Offline / Cache Behaviour', () => {
     const serverOneDisplayName = 'Server 1';
+    let lockOwner = '';
     let testUser: any;
 
     beforeAll(async () => {
-        await System.apiPatchConfig(siteOneUrl, {
-            FeatureFlags: {ClassificationMarkings: true},
-        });
+        lockOwner = createClassificationLockOwner();
+        await acquireClassificationLock(siteOneUrl, lockOwner);
+
+        await enableClassificationMarkings(siteOneUrl);
         const {user} = await Setup.apiInit(siteOneUrl);
         testUser = user;
 
@@ -38,11 +42,15 @@ describe('Classification Banner - Offline / Cache Behaviour', () => {
     });
 
     afterAll(async () => {
-        await Properties.apiCleanupClassification(siteOneUrl);
-        await System.apiPatchConfig(siteOneUrl, {
-            FeatureFlags: {ClassificationMarkings: false},
-        });
-        await HomeScreen.logout();
+        try {
+            await Properties.apiCleanupClassification(siteOneUrl);
+            await System.apiPatchConfig(siteOneUrl, {
+                FeatureFlags: {ClassificationMarkings: false},
+            });
+            await HomeScreen.logout();
+        } finally {
+            await releaseClassificationLock(siteOneUrl, lockOwner);
+        }
     });
 
     afterEach(async () => {

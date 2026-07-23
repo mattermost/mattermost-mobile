@@ -293,7 +293,7 @@ const CustomStatus = ({
             const {error} = await unsetCustomStatus(serverUrl);
 
             if (!error) {
-                updateLocalCustomStatus(serverUrl, currentUser, undefined);
+                await updateLocalCustomStatus(serverUrl, currentUser, undefined);
             }
         }
         dismissModalAndKeyboard(isTablet);

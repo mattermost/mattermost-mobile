@@ -3,6 +3,7 @@
 
 import path from 'path';
 
+import {timeouts, wait} from '@support/utils';
 import jestExpect from 'expect';
 
 import client from './client';
@@ -87,6 +88,39 @@ export const apiGetClientConfigOld = async (baseUrl: string): Promise<any> => {
     } catch (err) {
         return getResponseFromError(err);
     }
+};
+
+/**
+ * Wait for a client configuration flag to reach the expected value.
+ * @param {string} baseUrl - the base server URL
+ * @param {string} flagKey - client configuration key
+ * @param {string} expectedValue - expected client configuration value
+ * @param {Object} options - polling attempts and interval
+ * @return {boolean} true when the expected value is observed
+ */
+export const waitForClientConfigFlag = async (
+    baseUrl: string,
+    flagKey: string,
+    expectedValue: string,
+    options: {maxAttempts?: number; pollMs?: number} = {},
+): Promise<boolean> => {
+    const maxAttempts = options.maxAttempts ?? 60;
+    const pollMs = options.pollMs ?? timeouts.ONE_SEC;
+
+    for (let attempt = 0; attempt < maxAttempts; attempt++) {
+        // eslint-disable-next-line no-await-in-loop -- client config propagation is asynchronous
+        const {config} = await apiGetClientConfigOld(baseUrl);
+        if (config?.[flagKey] === expectedValue) {
+            return true;
+        }
+
+        if (attempt < maxAttempts - 1) {
+            // eslint-disable-next-line no-await-in-loop
+            await wait(pollMs);
+        }
+    }
+
+    return false;
 };
 
 /**
@@ -445,6 +479,7 @@ export const System = {
     apiGetRemoteClusters,
     apiPatchConfig,
     apiPingServerStatus,
+    waitForClientConfigFlag,
 
     // apiRequestTrialLicense, // DISABLED: Do not request trial license in tests
     apiRequireLicense,

@@ -7,6 +7,8 @@
 // - Use element testID when selecting an element. Create one if none.
 // *******************************************************************
 
+import {acquireClassificationLock, createClassificationLockOwner, releaseClassificationLock} from '@support/classification_lock';
+import {enableClassificationMarkings} from '@support/classification_test_helper';
 import {Post, Properties, Setup, System} from '@support/server_api';
 import {serverOneUrl, siteOneUrl} from '@support/test_config';
 import {GlobalClassificationBanner} from '@support/ui/component';
@@ -27,19 +29,19 @@ import {by, device, element, waitFor} from 'detox';
 
 describe('Classification Banner - Visibility Across Screens', () => {
     const serverOneDisplayName = 'Server 1';
+    let lockOwner = '';
     let testChannel: any;
     let testUser: any;
 
     beforeAll(async () => {
+        lockOwner = createClassificationLockOwner();
+        await acquireClassificationLock(siteOneUrl, lockOwner);
+
         const {channel, user} = await Setup.apiInit(siteOneUrl);
         testChannel = channel;
         testUser = user;
 
-        await System.apiPatchConfig(siteOneUrl, {
-            FeatureFlags: {
-                ClassificationMarkings: true,
-            },
-        });
+        await enableClassificationMarkings(siteOneUrl);
         await Properties.apiSetupClassificationWithBanner(siteOneUrl, {
             levelId: 'lvltopsecret00000000000000'});
 
@@ -53,14 +55,18 @@ describe('Classification Banner - Visibility Across Screens', () => {
     });
 
     afterAll(async () => {
-        await Properties.apiCleanupClassification(siteOneUrl);
-        await System.apiPatchConfig(siteOneUrl, {
-            FeatureFlags: {
-                ClassificationMarkings: false,
-            },
-        });
+        try {
+            await Properties.apiCleanupClassification(siteOneUrl);
+            await System.apiPatchConfig(siteOneUrl, {
+                FeatureFlags: {
+                    ClassificationMarkings: false,
+                },
+            });
 
-        await HomeScreen.logout();
+            await HomeScreen.logout();
+        } finally {
+            await releaseClassificationLock(siteOneUrl, lockOwner);
+        }
     });
 
     it('MM-T6209_1 - should display the classification banner on the Recent Mentions screen', async () => {

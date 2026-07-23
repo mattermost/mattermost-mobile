@@ -122,11 +122,12 @@ class ThreadScreen {
         await waitForElementToExist(this.backButton, timeouts.TEN_SEC);
 
         // Prefer the topmost back when thread is stacked over channel (two headers).
-        // Fall back to index 0 when only one back button exists (most thread flows).
+        // Always create a fresh matcher per attempt — chaining atIndex() on a shared
+        // element mutates it (e.g. atIndex(0) after atIndex(1) becomes "index 0 of index 1").
         try {
-            await this.backButton.atIndex(1).tap();
+            await element(by.id(this.testID.backButton)).atIndex(1).tap();
         } catch {
-            await this.backButton.atIndex(0).tap();
+            await element(by.id(this.testID.backButton)).atIndex(0).tap();
         }
         await waitFor(this.threadScreen).not.toBeVisible().withTimeout(timeouts.TEN_SEC);
 

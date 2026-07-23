@@ -1,12 +1,12 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {AGENTS_PLUGIN_ID, REQUIRED_PLUGINS} from './constants';
+import {AGENTS_PLUGIN_ID, DEMO_PLUGIN_ID, REQUIRED_PLUGINS} from './constants';
 import {ensureCustomProfileAttributeFields} from './custom-profile-attributes';
 import {createMattermostClient, login} from './http-client';
 import {ensureTrialLicense} from './license';
 import {logInfo, logWarn} from './log';
-import {ensureAgentsPlugin, installRequiredPlugin} from './plugins';
+import {ensureAgentsPlugin, ensureDemoPluginReady, installRequiredPlugin} from './plugins';
 import {configureTestServer, ensureChannelBookmarksEnabled, ensureCustomProfileAttributesEnabled, getServerMmVersion} from './server-config';
 
 import type {MattermostClient, ProvisionCredentials} from './types';
@@ -40,6 +40,9 @@ export async function provisionServer(serverUrl: string, credentials: ProvisionC
             continue;
         }
         await installRequiredPlugin(client, token, plugin);
+        if (plugin.id === DEMO_PLUGIN_ID) {
+            await ensureDemoPluginReady(client, token);
+        }
     }
     /* eslint-enable no-await-in-loop */
 

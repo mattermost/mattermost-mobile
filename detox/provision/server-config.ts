@@ -3,6 +3,7 @@
 
 import {DEFAULT_MAX_FILE_SIZE_BYTES} from '@support/constants/file_settings';
 
+import {DEMO_PLUGIN_ID} from './constants';
 import {sleep} from './http-client';
 import {logInfo, logWarn} from './log';
 
@@ -184,12 +185,24 @@ export async function configureTestServer(client: MattermostClient, token: strin
     const featureFlags = config.FeatureFlags as Record<string, unknown>;
     featureFlags.CustomProfileAttributes = true;
     featureFlags.ChannelBookmarks = true;
+    featureFlags.InteractiveDialogAppsForm = true;
 
     pluginSettings.Plugins = pluginSettings.Plugins || {};
     const plugins = pluginSettings.Plugins as Record<string, Record<string, unknown>>;
     plugins['com.mattermost.calls'] = {
         ...(plugins['com.mattermost.calls'] || {}),
         DefaultEnabled: true,
+    };
+    plugins[DEMO_PLUGIN_ID] = {
+        ...(plugins[DEMO_PLUGIN_ID] || {}),
+        DialogOnlyMode: true,
+    };
+
+    pluginSettings.PluginStates = pluginSettings.PluginStates || {};
+    const pluginStates = pluginSettings.PluginStates as Record<string, Record<string, unknown>>;
+    pluginStates[DEMO_PLUGIN_ID] = {
+        ...(pluginStates[DEMO_PLUGIN_ID] || {}),
+        Enable: true,
     };
 
     logInfo('Updating plugin uploads, Marketplace, disabling rate limiting, and removing user caps...');

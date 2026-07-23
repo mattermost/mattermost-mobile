@@ -11,6 +11,7 @@ import {
     AGENTS_PLUGIN_ASSET_NAME,
     AGENTS_PLUGIN_FALLBACK_VERSION,
     AGENTS_PLUGIN_REPO,
+    DEMO_PLUGIN_ID,
     PLUGIN_STATE_FAILED,
     PLUGIN_STATE_RUNNING,
 } from './constants';
@@ -29,6 +30,11 @@ import type {
 
 type ApiErrorBody = {message?: string};
 type GitHubLatestRelease = {tag_name?: string};
+type SlashCommand = {trigger?: string};
+type Team = {id: string};
+
+const DEMO_PLUGIN_READY_TIMEOUT_MS = 60_000;
+const DEMO_PLUGIN_POLL_INTERVAL_MS = 1_000;
 
 function fetchLatestPluginVersion(repo: string): Promise<string> {
     return new Promise((resolve, reject) => {
@@ -105,6 +111,108 @@ async function getPluginStatus(client: MattermostClient, token: string, pluginId
     }
 
     return res.data.find((plugin) => plugin.plugin_id === pluginId) || null;
+}
+
+function failDemoPluginReadiness(message: string): never {
+    logWarn(message);
+    throw new Error(message);
+}
+
+async function waitForDemoPluginRunning(client: MattermostClient, token: string): Promise<void> {
+    const deadline = Date.now() + DEMO_PLUGIN_READY_TIMEOUT_MS;
+    let lastStatus: PluginStatus | null = null;
+
+    const poll = async (): Promise<void> => {
+        lastStatus = await getPluginStatus(client, token, DEMO_PLUGIN_ID);
+        if (lastStatus?.state === PLUGIN_STATE_RUNNING) {
+            return;
+        }
+
+        if (Date.now() >= deadline) {
+            let detail = 'status unavailable';
+            if (lastStatus) {
+                detail = `state=${lastStatus.state}${lastStatus.error ? `, error=${lastStatus.error}` : ''}`;
+            }
+            failDemoPluginReadiness(`Demo plugin did not reach running state (${PLUGIN_STATE_RUNNING}) within ${DEMO_PLUGIN_READY_TIMEOUT_MS}ms: ${detail}`);
+        }
+
+        await sleep(DEMO_PLUGIN_POLL_INTERVAL_MS);
+        await poll();
+    };
+
+    await poll();
+    logInfo(`Plugin ${DEMO_PLUGIN_ID} is running.`);
+}
+
+async function getCommandVerificationTeamId(client: MattermostClient, token: string): Promise<string> {
+    const teamsRes = await client.request<Team[]>('GET', '/api/v4/teams?page=0&per_page=1', undefined, token);
+    if (teamsRes.status < 400 && Array.isArray(teamsRes.data) && teamsRes.data[0]?.id) {
+        return teamsRes.data[0].id;
+    }
+
+    const suffix = Date.now().toString(36);
+    const createRes = await client.request<Team | ApiErrorBody>('POST', '/api/v4/teams', {
+        name: `e2e-provision-${suffix}`,
+        display_name: `E2E Provision ${suffix}`,
+        type: 'O',
+    }, token);
+    const createdTeam = createRes.data as Team;
+    if (createRes.status >= 400 || !createdTeam.id) {
+        const error = createRes.data as ApiErrorBody;
+        failDemoPluginReadiness(`Could not get or create a team for /dialog verification (HTTP ${createRes.status}): ${error.message || JSON.stringify(createRes.data)}`);
+    }
+
+    return createdTeam.id;
+}
+
+async function waitForDialogCommand(client: MattermostClient, token: string, teamId: string): Promise<void> {
+    const deadline = Date.now() + DEMO_PLUGIN_READY_TIMEOUT_MS;
+    let lastError = '';
+
+    const poll = async (): Promise<void> => {
+        const commandsRes = await client.request<SlashCommand[]>('GET', `/api/v4/commands?team_id=${encodeURIComponent(teamId)}`, undefined, token);
+        let commandCount = 0;
+        if (commandsRes.status < 400 && Array.isArray(commandsRes.data)) {
+            if (commandsRes.data.some((command) => command.trigger === 'dialog')) {
+                return;
+            }
+            commandCount += commandsRes.data.length;
+        } else {
+            lastError = `HTTP ${commandsRes.status}: ${(commandsRes.data as ApiErrorBody).message || JSON.stringify(commandsRes.data)}`;
+        }
+
+        const autocompleteRes = await client.request<SlashCommand[]>(
+            'GET',
+            `/api/v4/teams/${encodeURIComponent(teamId)}/commands/autocomplete?page=0&per_page=200`,
+            undefined,
+            token,
+        );
+        if (autocompleteRes.status < 400 && Array.isArray(autocompleteRes.data)) {
+            if (autocompleteRes.data.some((command) => command.trigger === 'dialog')) {
+                return;
+            }
+            commandCount += autocompleteRes.data.length;
+            lastError = `${commandCount} commands returned across command APIs`;
+        } else {
+            lastError = `Autocomplete HTTP ${autocompleteRes.status}: ${(autocompleteRes.data as ApiErrorBody).message || JSON.stringify(autocompleteRes.data)}`;
+        }
+
+        if (Date.now() >= deadline) {
+            failDemoPluginReadiness(`/dialog was not registered within ${DEMO_PLUGIN_READY_TIMEOUT_MS}ms after ${DEMO_PLUGIN_ID} started (${lastError}).`);
+        }
+
+        await sleep(DEMO_PLUGIN_POLL_INTERVAL_MS);
+        await poll();
+    };
+
+    await poll();
+    logInfo('/dialog command is registered.');
+}
+
+export async function ensureDemoPluginReady(client: MattermostClient, token: string): Promise<void> {
+    await waitForDemoPluginRunning(client, token);
+    const teamId = await getCommandVerificationTeamId(client, token);
+    await waitForDialogCommand(client, token, teamId);
 }
 
 async function installPluginFromUrl(
@@ -303,6 +411,7 @@ export async function installRequiredPlugin(
     }
 
     if (fixtureFilename) {
+        // CI downloads the fixture; local runs fall back to the pinned URL when it is absent.
         const fixturePath = path.resolve(__dirname, `../e2e/support/fixtures/${fixtureFilename}`);
         logInfo(`Installing ${pluginId} from fixture: ${fixturePath}`);
         const installResult = await installPluginFromFile(client, token, pluginId, fixturePath, {force: true});

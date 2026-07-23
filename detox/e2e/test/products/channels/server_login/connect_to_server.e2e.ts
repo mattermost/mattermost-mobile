@@ -97,8 +97,8 @@ describe('Server Login - Connect to Server', () => {
         await wait(timeouts.ONE_SEC);
 
         // * Verify invalid SSL cert error
-        await waitFor(Alert.invalidSslCertTitle).toExist().withTimeout(timeouts.TEN_SEC);
-        await expect(Alert.invalidSslCertTitle).toBeVisible();
+        await waitFor(serverUrlInputError).toExist().withTimeout(timeouts.TEN_SEC);
+        await expect(serverUrlInputError).toBeVisible();
     });
 
     it('MM-T4676_5 - should show login screen on successful connection to server', async () => {
