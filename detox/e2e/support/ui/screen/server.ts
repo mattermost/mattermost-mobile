@@ -110,7 +110,7 @@ class ServerScreen {
     waitForAndroidLoginAvailable = async (timeout: number) => {
         const deadline = Date.now() + timeout;
         const POLL = 1000;
-        const okayButton = element(by.text('OKAY'));
+        const okayButton = element(by.text('Okay'));
         /* eslint-disable no-await-in-loop -- sequential probes by design */
         while (Date.now() < deadline) {
             // First: dismiss the alert if it's up (alert window steals Espresso
@@ -248,7 +248,7 @@ class ServerScreen {
             // Dismiss "Notifications cannot be received from this server" dialog if it appears.
             try {
                 await waitFor(Alert.notificationsCannotBeReceivedTitle).toExist().withTimeout(timeouts.TEN_SEC);
-                await element(by.text('OKAY')).tap();
+                await element(by.text('Okay')).tap();
             } catch {
                 // Dialog did not appear — proceed normally
             }
