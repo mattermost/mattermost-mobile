@@ -194,9 +194,9 @@ describe('tsio-report-status', () => {
                     repository: 'mattermost/mattermost-mobile',
                     branch: 'main',
                     commit_sha: 'deadbeef',
-                    name: 'cmt-mobile',
+                    name: 'mobile-release',
                 }),
-                `${base}/reports/mattermost-mobile/main/deadbee/cmt-mobile`,
+                `${base}/reports/mattermost-mobile/main/deadbee/mobile-release`,
             );
         });
     });

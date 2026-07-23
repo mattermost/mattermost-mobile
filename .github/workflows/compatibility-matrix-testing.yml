@@ -68,7 +68,7 @@ jobs:
           BASE=$(jq -nc \
             --arg repo "$GITHUB_REPOSITORY" --arg sha "$MM_SHA" --arg run_id "$GITHUB_RUN_ID" \
             --arg attempt "$GITHUB_RUN_ATTEMPT" --arg branch "$BRANCH" \
-            '{repository:$repo, commit_sha:$sha, gh_run_id:$run_id, gh_run_attempt:$attempt, branch:$branch, name:"cmt-mobile", run_group:"cmt-mobile", framework:"detox"}')
+            '{repository:$repo, commit_sha:$sha, gh_run_id:$run_id, gh_run_attempt:$attempt, branch:$branch, name:"mobile-release", run_group:"mobile-release", framework:"detox"}')
           echo "composite-identity-json=$BASE" >> "$GITHUB_OUTPUT"
           TSIO_CONFIG=$(jq -nc --argjson identity "$BASE" --argjson total "$TOTAL" \
             '{composite_identity: $identity, total_reports_expected: $total}')
@@ -101,7 +101,7 @@ jobs:
                 | sub("^refs/tags/"; "")
                 | gsub("/"; "~")) as $branch
             | ($id.commit_sha[0:7]) as $sha
-            | ($id.run_group // $id.name // "cmt-mobile") as $name
+            | ($id.run_group // $id.name // "mobile-release") as $name
             | "\($base)/reports/\($repo|@uri)/\($branch|@uri)/\($sha)/\($name|@uri)?gh_run_id=\($id.gh_run_id)"
           ')
           echo "target_url=$URL" >> "$GITHUB_OUTPUT"

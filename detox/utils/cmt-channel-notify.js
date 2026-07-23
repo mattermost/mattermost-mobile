@@ -73,7 +73,7 @@ function parseMobileJobName(jobName) {
 
 /**
  * Webhook routing (fail closed for named report groups; mirrors desktop):
- *   cmt-mobile    → MATTERMOST_CMT_WEBHOOK_URL only (MM_E2E_RELEASE_WEBHOOK_URL)
+ *   mobile-release    → MATTERMOST_CMT_WEBHOOK_URL only (MM_E2E_RELEASE_WEBHOOK_URL)
  *   mobile-main   → MATTERMOST_MASTER_HEALTH_WEBHOOK_URL only (MM_E2E_MASTER_HEALTH_WEBHOOK_URL)
  *   mobile-pr     → MATTERMOST_E2E_WEBHOOK_URL only (MM_MOBILE_E2E_WEBHOOK_URL)
  *
@@ -86,7 +86,7 @@ function parseMobileJobName(jobName) {
  * @returns {string}
  */
 function resolveWebhookUrl(reportName, env = process.env) {
-    if (reportName === 'cmt-mobile') {
+    if (reportName === 'mobile-release') {
         return env.MATTERMOST_CMT_WEBHOOK_URL || '';
     }
     if (reportName === 'mobile-main') {
@@ -219,7 +219,7 @@ function formatLegResultText(leg) {
 
 function reportTitleForIdentity(compositeIdentity) {
     switch (compositeIdentity?.name) {
-        case 'cmt-mobile':
+        case 'mobile-release':
             return 'Mobile CMT';
         case 'mobile-pr':
             return 'Mobile PR E2E';

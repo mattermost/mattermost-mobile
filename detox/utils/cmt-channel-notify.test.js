@@ -83,7 +83,7 @@ describe('cmt-channel-notify', () => {
         };
 
         it('sends CMT to the release webhook', () => {
-            assert.equal(resolveWebhookUrl('cmt-mobile', env), env.MATTERMOST_CMT_WEBHOOK_URL);
+            assert.equal(resolveWebhookUrl('mobile-release', env), env.MATTERMOST_CMT_WEBHOOK_URL);
         });
 
         it('sends main runs to the master-health webhook', () => {
@@ -96,14 +96,14 @@ describe('cmt-channel-notify', () => {
 
         it('does not fall back CMT to the E2E webhook when release secret is missing', () => {
             assert.equal(
-                resolveWebhookUrl('cmt-mobile', {MATTERMOST_E2E_WEBHOOK_URL: env.MATTERMOST_E2E_WEBHOOK_URL}),
+                resolveWebhookUrl('mobile-release', {MATTERMOST_E2E_WEBHOOK_URL: env.MATTERMOST_E2E_WEBHOOK_URL}),
                 '',
             );
         });
 
         it('does not use the shared webhook when a dedicated CMT secret is missing', () => {
             assert.equal(
-                resolveWebhookUrl('cmt-mobile', {MATTERMOST_WEBHOOK_URL: env.MATTERMOST_WEBHOOK_URL}),
+                resolveWebhookUrl('mobile-release', {MATTERMOST_WEBHOOK_URL: env.MATTERMOST_WEBHOOK_URL}),
                 '',
             );
         });
@@ -136,7 +136,7 @@ describe('cmt-channel-notify', () => {
                 compositeIdentity: {
                     branch: 'release-2.40',
                     commit_sha: '55afc0b839545804ee156fe95b4c1ac05c9d0cdc',
-                    name: 'cmt-mobile',
+                    name: 'mobile-release',
                 },
                 detail: {
                     status: 'completed',
@@ -146,7 +146,7 @@ describe('cmt-channel-notify', () => {
                         {id: 'rid-android', gh_job_name: 'detox-android-Server_11.9.0', status: 'complete'},
                     ],
                 },
-                reportUrl: 'https://test-io.test.mattermost.com/reports/mattermost-mobile/release-2.40/55afc0b/cmt-mobile',
+                reportUrl: 'https://test-io.test.mattermost.com/reports/mattermost-mobile/release-2.40/55afc0b/mobile-release',
                 baseUrl: 'https://test-io.test.mattermost.com',
                 perJobCounts: {
                     'detox-ios-Server_11.9.0': {passed: 231, failed: 0, skipped: 20, flaky: 0},
@@ -163,7 +163,7 @@ describe('cmt-channel-notify', () => {
             assert.match(text, /\| \*\*Overall\*\* \| \*\*460\*\* \| \*\*1\*\* \| \*\*40\*\* \| ❌ Failed \|/);
             assert.match(text, /\| 📱 detox-ios \(11\.9\.0\) \| 231 \| 0 \| 20 \| ✅ 231\/231 \|/);
             assert.match(text, /\| 🤖 detox-android \(11\.9\.0\) \| 230 \| 1 \| 20 \| ❌ 230\/231 \|/);
-            assert.match(text, /➡️ \*\*Consolidated report:\*\* https:\/\/test-io\.test\.mattermost\.com\/reports\/mattermost-mobile\/release-2\.40\/55afc0b\/cmt-mobile/);
+            assert.match(text, /➡️ \*\*Consolidated report:\*\* https:\/\/test-io\.test\.mattermost\.com\/reports\/mattermost-mobile\/release-2\.40\/55afc0b\/mobile-release/);
         });
 
         it('renders a passed PR report with PR link and no failure banner', () => {

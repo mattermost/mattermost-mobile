@@ -98,7 +98,7 @@ cd detox && npm run e2e:save-report
 | **Main** | Matterwick main push (`run_type=MASTER` today; `MAIN` also accepted → TSIO `mobile-main`) | Same as PR | Same as PR | `detox/e2e/test` | Same as PR |
 | **CMT / Release** | Matterwick on `build-release-*` → CMT | Detox + Maestro across server versions | Full suite on latest server; smoke subset on older | latest: `detox/e2e/test`; older: `…/smoke_test` | Varies by matrix |
 
-Status context: `e2e/mobile` (PR/Main) or `e2e/compatibility-matrix-testing` (CMT). TSIO groups: `mobile-pr` / `mobile-main` / `cmt-mobile`.
+Status context: `e2e/mobile` (PR/Main) or `e2e/compatibility-matrix-testing` (CMT). TSIO groups: `mobile-pr` / `mobile-main` / `mobile-release`.
 
 ### Smoke Tests Location
 

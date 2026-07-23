@@ -298,12 +298,12 @@ async function reportTsioStatus(options) {
     }
 
     // Channel notify (best-effort). Routing (see resolveWebhookUrl):
-    //   cmt-mobile     → MM_E2E_RELEASE_WEBHOOK_URL
+    //   mobile-release     → MM_E2E_RELEASE_WEBHOOK_URL
     //   mobile-main    → MM_E2E_MASTER_HEALTH_WEBHOOK_URL
     //   mobile-pr      → MM_MOBILE_E2E_WEBHOOK_URL
     // Failures here must not undo a successfully written commit status.
     try {
-        const notifyNames = new Set(['cmt-mobile', 'mobile-pr', 'mobile-main']);
+        const notifyNames = new Set(['mobile-release', 'mobile-pr', 'mobile-main']);
         const reportName = compositeIdentity.run_group || compositeIdentity.name;
         if (notifyNames.has(reportName) || notifyNames.has(compositeIdentity.name)) {
             const {notifyCmtChannel, resolveWebhookUrl} = require('./cmt-channel-notify.js');
@@ -380,10 +380,10 @@ function selfTest() {
         repository: 'mattermost/mattermost-mobile',
         commit_sha: '111aaaa',
         branch: 'release-2.40',
-        name: 'cmt-mobile',
-        run_group: 'cmt-mobile',
+        name: 'mobile-release',
+        run_group: 'mobile-release',
     });
-    assert(cmtUrl === 'https://test-io.test.mattermost.com/reports/mattermost-mobile/release-2.40/111aaaa/cmt-mobile', `cmt URL: ${cmtUrl}`);
+    assert(cmtUrl === 'https://test-io.test.mattermost.com/reports/mattermost-mobile/release-2.40/111aaaa/mobile-release', `cmt URL: ${cmtUrl}`);
 
     let r = decideStatus({status: 'completed', test_stats: {passed: 10, failed: 0, skipped: 1}}, true);
     assert(r.state === 'success', 'clean run -> success');
