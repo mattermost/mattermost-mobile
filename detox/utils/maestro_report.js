@@ -764,7 +764,6 @@ function buildScreenshotMapFromFlowYamls(flows, repoRoot = process.cwd()) {
     const roots = [
         repoRoot,
         path.resolve(repoRoot, '..'),
-        process.env.GITHUB_WORKSPACE,
     ].filter(Boolean);
 
     for (const flow of flows) {
@@ -822,6 +821,7 @@ function prepareMaestroScreenshotsForTsio({xmlPath, artifactsDir, outputDir, rep
     const allFiles = walkFiles(artifactsDir).filter(isImage);
     const commandLogMap = buildScreenshotMapFromCommandLogs(artifactsDir);
     const yamlMap = buildScreenshotMapFromFlowYamls(summary.flows, repoRoot || process.cwd());
+
     // Command logs win when present; YAML map fills the gaps.
     const combinedMap = new Map([...yamlMap, ...commandLogMap]);
     const buckets = bucketArtifactsByFlow(summary.flows, allFiles, combinedMap);
