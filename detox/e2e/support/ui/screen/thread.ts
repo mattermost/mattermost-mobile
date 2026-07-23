@@ -6,6 +6,7 @@ import {
     FileQuickAction,
     ImageQuickAction,
     InputQuickAction,
+    NavigationHeader,
     PostDraft,
     PostList,
     SendButton,
@@ -18,7 +19,9 @@ class ThreadScreen {
     testID = {
         threadScreenPrefix: 'thread.',
         threadScreen: 'thread.screen',
-        backButton: 'thread.navigation.back.button',
+
+        // App uses shared NavigationHeader (`navigation.header.back`), not a thread-prefixed id.
+        backButton: NavigationHeader.testID.backButton,
         followButton: 'thread.follow_thread.button',
         followingButton: 'thread.following_thread.button',
         scheduledPostTooltipCloseButton: 'scheduled_post.tooltip.close.button',
@@ -27,7 +30,7 @@ class ThreadScreen {
     };
 
     threadScreen = element(by.id(this.testID.threadScreen));
-    backButton = element(by.id(this.testID.backButton));
+    backButton = NavigationHeader.backButton;
     followButton = element(by.id(this.testID.followButton));
     followingButton = element(by.id(this.testID.followingButton));
     scheduledPostTooltipCloseButton = element(by.id(this.testID.scheduledPostTooltipCloseButton));
@@ -115,7 +118,15 @@ class ThreadScreen {
     };
 
     back = async () => {
-        await this.backButton.tap();
+        await waitForElementToExist(this.backButton, timeouts.TEN_SEC);
+
+        // Prefer the topmost back when thread is stacked over channel (two headers).
+        // Fall back to index 0 when only one back button exists (most thread flows).
+        try {
+            await this.backButton.atIndex(1).tap();
+        } catch {
+            await this.backButton.atIndex(0).tap();
+        }
         await waitFor(this.threadScreen).not.toBeVisible().withTimeout(timeouts.TEN_SEC);
 
         // Wait for the previous screen to be fully loaded and rendered

@@ -48,15 +48,30 @@ on:
         required: false
         type: string
       run_type:
-        description: "Run type for test reporting (PR/RELEASE/NIGHTLY/MASTER). Defaults to PR."
+        description: "Run type for test reporting (PR/RELEASE/MAIN). MASTER is accepted as an alias for MAIN (Matterwick main-push)."
         required: false
         default: "PR"
+        type: string
+      version_name:
+        description: "Branch or version ref under test (e.g. feature-branch, main, release-2.40). Used as TSIO branch — not pr-{number}."
+        required: false
+        type: string
+      tsio_status_context:
+        description: "GitHub commit-status context for the combined Detox+Maestro TSIO status (burn-in: non-required)"
+        required: false
+        default: "e2e/mobile"
         type: string
 
 # Default least-privilege token; jobs that upload artifacts, post statuses, or
 # manage PR labels declare the extra scopes they need.
 permissions:
   contents: read
+  # test-system-io-report-upload (in the nested detox templates) authenticates
+  # via the workflow's OIDC token and resolves gh_job_id via the GitHub API.
+  # Reusable workflows cannot escalate beyond the caller, so the root caller
+  # must grant these.
+  id-token: write
+  actions: read
 
 env:
   INTUNE_ENABLED: 'false'
@@ -65,7 +80,7 @@ env:
 jobs:
   resolve-e2e-policy:
     name: Resolve E2E policy (Override label)
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-24.04
     permissions:
       actions: write
       contents: read
@@ -76,6 +91,8 @@ jobs:
       e2e_override: ${{ steps.policy.outputs.e2e_override }}
     steps:
       - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
+        with:
+          persist-credentials: false
       - name: Cancel superseded E2E runs on this branch
         uses: ./.github/actions/cancel-e2e-runs
         with:
@@ -138,58 +155,99 @@ jobs:
             core.info(`PR #${prNumber} E2E/Override=${override}`);
             core.setOutput('e2e_override', override ? 'true' : 'false');
 
-  update-initial-status-ios:
-    needs: resolve-e2e-policy
-    if: >-
-      needs.resolve-e2e-policy.outputs.e2e_override != 'true'
-      && (inputs.PLATFORM == 'ios' || inputs.PLATFORM == 'both')
-    runs-on: ubuntu-22.04
+  calculate-tsio-identity:
+    name: Calculate TSIO composite identity
+    runs-on: ubuntu-24.04
     permissions:
       contents: read
-      statuses: write
+      pull-requests: read
+    needs: resolve-e2e-policy
+    if: needs.resolve-e2e-policy.outputs.e2e_override != 'true'
+    outputs:
+      composite-identity-json: ${{ steps.id.outputs.composite-identity-json }}
+      tsio-config: ${{ steps.id.outputs.tsio-config }}
+      total-reports-expected: ${{ steps.id.outputs.total-reports-expected }}
     steps:
-      - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
-        with:
-          ref: ${{ inputs.MOBILE_VERSION }}
-      - uses: ./.github/actions/update-commit-status
+      - name: Resolve branch ref for TSIO display URL
+        id: branch
+        uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9.0.0
         env:
-          GITHUB_TOKEN: ${{ github.token }}
+          VERSION_NAME: ${{ inputs.version_name }}
+          PR_NUMBER: ${{ inputs.pr_number }}
+          RUN_TYPE: ${{ inputs.run_type || 'PR' }}
         with:
-          repository_full_name: ${{ github.repository }}
-          commit_sha: ${{ inputs.MOBILE_VERSION }}
-          context: e2e/detox-ios-tests
-          description: Detox iOS tests for mattermost mobile app have started ...
-          status: pending
+          script: |
+            const versionName = (process.env.VERSION_NAME || '').trim();
+            if (versionName) {
+              core.setOutput('branch', versionName.replace(/^refs\/heads\//, '').replace(/^refs\/tags\//, ''));
+              return;
+            }
+            const runType = (process.env.RUN_TYPE || 'PR').toUpperCase();
+            // Matterwick still sends MASTER for main-branch pushes; treat as MAIN.
+            if (runType === 'MAIN' || runType === 'MASTER') {
+              core.setOutput('branch', 'main');
+              return;
+            }
+            const prInput = parseInt(process.env.PR_NUMBER, 10);
+            if (Number.isFinite(prInput)) {
+              const {data: pr} = await github.rest.pulls.get({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                pull_number: prInput,
+              });
+              core.setOutput('branch', pr.head.ref);
+              return;
+            }
+            core.setOutput('branch', context.ref_name || 'main');
 
-  update-initial-status-android:
-    needs: resolve-e2e-policy
-    if: >-
-      needs.resolve-e2e-policy.outputs.e2e_override != 'true'
-      && (inputs.PLATFORM == 'android' || inputs.PLATFORM == 'both')
-    runs-on: ubuntu-22.04
-    permissions:
-      contents: read
-      statuses: write
-    steps:
-      - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
-        with:
-          ref: ${{ inputs.MOBILE_VERSION }}
-      - uses: ./.github/actions/update-commit-status
+      - id: id
         env:
-          GITHUB_TOKEN: ${{ github.token }}
-        with:
-          repository_full_name: ${{ github.repository }}
-          commit_sha: ${{ inputs.MOBILE_VERSION }}
-          context: e2e/detox-android-tests
-          description: Detox Android tests for mattermost mobile app have started ...
-          status: pending
+          PLATFORM: ${{ inputs.PLATFORM }}
+          GITHUB_REPOSITORY: ${{ github.repository }}
+          MM_SHA: ${{ inputs.MOBILE_VERSION }}
+          PR_NUMBER: ${{ inputs.pr_number }}
+          RUN_TYPE: ${{ inputs.run_type || 'PR' }}
+          BRANCH: ${{ steps.branch.outputs.branch }}
+        run: |
+          case "$PLATFORM" in
+            ios) DETOX_TOTAL=2; MAESTRO_TOTAL=1 ;;
+            android) DETOX_TOTAL=1; MAESTRO_TOTAL=1 ;;
+            *) DETOX_TOTAL=3; MAESTRO_TOTAL=2 ;;
+          esac
+          TOTAL=$(( DETOX_TOTAL + MAESTRO_TOTAL ))
+          echo "total-reports-expected=$TOTAL" >> "$GITHUB_OUTPUT"
+          # Matterwick main-push still sends MASTER; canonicalize to MAIN → mobile-main.
+          if [ "${RUN_TYPE}" = "MASTER" ]; then
+            RUN_TYPE=MAIN
+          fi
+          RUN_TYPE_LOWER=$(echo "${RUN_TYPE}" | tr '[:upper:]' '[:lower:]')
+          RUN_NAME="mobile-${RUN_TYPE_LOWER}"
+          if [ -n "${PR_NUMBER}" ]; then
+            BASE=$(jq -nc \
+              --arg repo "$GITHUB_REPOSITORY" --arg sha "$MM_SHA" --arg run_id "$GITHUB_RUN_ID" \
+              --arg attempt "$GITHUB_RUN_ATTEMPT" --arg branch "$BRANCH" --arg pr "$PR_NUMBER" --arg name "$RUN_NAME" \
+              '{repository:$repo, commit_sha:$sha, gh_run_id:$run_id, gh_run_attempt:$attempt, branch:$branch, name:$name, run_group:$name, gh_pr_number:$pr, framework:"detox"}')
+          else
+            BASE=$(jq -nc \
+              --arg repo "$GITHUB_REPOSITORY" --arg sha "$MM_SHA" --arg run_id "$GITHUB_RUN_ID" \
+              --arg attempt "$GITHUB_RUN_ATTEMPT" --arg branch "$BRANCH" --arg name "$RUN_NAME" \
+              '{repository:$repo, commit_sha:$sha, gh_run_id:$run_id, gh_run_attempt:$attempt, branch:$branch, name:$name, run_group:$name, framework:"detox"}')
+          fi
+          echo "composite-identity-json=$BASE" >> "$GITHUB_OUTPUT"
+          TSIO_CONFIG=$(jq -nc --argjson identity "$BASE" --argjson total "$TOTAL" \
+            '{composite_identity: $identity, total_reports_expected: $total}')
+          echo "tsio-config=$TSIO_CONFIG" >> "$GITHUB_OUTPUT"
 
-  update-initial-status-ipad:
-    needs: resolve-e2e-policy
+  update-initial-tsio-status:
+    name: Set pending TSIO commit status
+    runs-on: ubuntu-24.04
+    needs:
+      - resolve-e2e-policy
+      - calculate-tsio-identity
     if: >-
       needs.resolve-e2e-policy.outputs.e2e_override != 'true'
-      && (inputs.PLATFORM == 'ios' || inputs.PLATFORM == 'both')
-    runs-on: ubuntu-22.04
+      && needs.calculate-tsio-identity.result == 'success'
+      && (inputs.run_type == 'PR' || inputs.run_type == 'MAIN' || inputs.run_type == 'MASTER')
     permissions:
       contents: read
       statuses: write
@@ -197,26 +255,26 @@ jobs:
       - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
         with:
           ref: ${{ inputs.MOBILE_VERSION }}
+          persist-credentials: false
       - uses: ./.github/actions/update-commit-status
         env:
           GITHUB_TOKEN: ${{ github.token }}
         with:
           repository_full_name: ${{ github.repository }}
           commit_sha: ${{ inputs.MOBILE_VERSION }}
-          context: e2e/detox-ipad-tests
-          description: Detox iPad tests for mattermost mobile app have started ...
+          context: ${{ inputs.tsio_status_context || 'e2e/mobile' }}
+          description: "Mobile E2E (Detox + Maestro) — waiting for TSIO report"
           status: pending
+          target_url: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
 
   build-ios-simulator:
     if: >-
       !cancelled()
       && needs.resolve-e2e-policy.outputs.e2e_override != 'true'
       && (inputs.PLATFORM == 'ios' || inputs.PLATFORM == 'both')
-      && (needs.update-initial-status-ios.result == 'success' || needs.update-initial-status-ios.result == 'skipped')
     runs-on: macos-26
     needs:
       - resolve-e2e-policy
-      - update-initial-status-ios
     permissions:
       contents: read
       actions: write
@@ -224,6 +282,7 @@ jobs:
       - name: Checkout Repository
         uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
         with:
+          persist-credentials: false
           ref: ${{ inputs.MOBILE_VERSION }}
 
       - name: Prepare iOS Build
@@ -253,11 +312,9 @@ jobs:
       !cancelled()
       && needs.resolve-e2e-policy.outputs.e2e_override != 'true'
       && (inputs.PLATFORM == 'android' || inputs.PLATFORM == 'both')
-      && (needs.update-initial-status-android.result == 'success' || needs.update-initial-status-android.result == 'skipped')
     runs-on: ubuntu-latest-8-cores
     needs:
       - resolve-e2e-policy
-      - update-initial-status-android
     permissions:
       contents: read
       actions: write
@@ -270,6 +327,7 @@ jobs:
       - name: Checkout Repository
         uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
         with:
+          persist-credentials: false
           ref: ${{ inputs.MOBILE_VERSION }}
 
       - name: Prepare Android Build
@@ -307,11 +365,9 @@ jobs:
       !cancelled()
       && needs.resolve-e2e-policy.outputs.e2e_override != 'true'
       && (inputs.PLATFORM == 'android' || inputs.PLATFORM == 'both')
-      && (needs.update-initial-status-android.result == 'success' || needs.update-initial-status-android.result == 'skipped')
     runs-on: ubuntu-latest-8-cores
     needs:
       - resolve-e2e-policy
-      - update-initial-status-android
     permissions:
       contents: read
       actions: write
@@ -324,6 +380,7 @@ jobs:
       - name: Checkout Repository
         uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
         with:
+          persist-credentials: false
           ref: ${{ inputs.MOBILE_VERSION }}
 
       - name: Prepare Android Build
@@ -346,8 +403,9 @@ jobs:
   provision-servers:
     name: Provision test servers
     needs: resolve-e2e-policy
-    if: needs.resolve-e2e-policy.outputs.e2e_override != 'true'
-    runs-on: ubuntu-22.04
+    if: >-
+      needs.resolve-e2e-policy.outputs.e2e_override != 'true'
+    runs-on: ubuntu-24.04
     steps:
       - name: Validate server URLs
         run: |
@@ -456,12 +514,14 @@ jobs:
     name: Detox iOS E2E
     needs:
       - resolve-e2e-policy
+      - calculate-tsio-identity
       - build-ios-simulator
       - provision-servers
     permissions:
       contents: read
       statuses: write
       actions: read
+      id-token: write
     if: |
       !cancelled() &&
       needs.resolve-e2e-policy.outputs.e2e_override != 'true' &&
@@ -477,18 +537,21 @@ jobs:
       SITE_3_URL: ${{ inputs.SITE_3_URL }}
       run_type: ${{ inputs.run_type || 'PR' }}
       artifact_run_id: ${{ github.run_id }}
+      tsio-config: ${{ needs.calculate-tsio-identity.outputs.tsio-config }}
     secrets: inherit
 
   run-detox-android:
     name: Detox Android E2E
     needs:
       - resolve-e2e-policy
+      - calculate-tsio-identity
       - build-android-apk
       - provision-servers
     permissions:
       contents: read
       statuses: write
       actions: read
+      id-token: write
     if: |
       !cancelled() &&
       needs.resolve-e2e-policy.outputs.e2e_override != 'true' &&
@@ -504,17 +567,20 @@ jobs:
       SITE_3_URL: ${{ inputs.SITE_3_URL }}
       run_type: ${{ inputs.run_type || 'PR' }}
       artifact_run_id: ${{ github.run_id }}
+      tsio-config: ${{ needs.calculate-tsio-identity.outputs.tsio-config }}
     secrets: inherit
 
   validate-maestro-flow-headers:
     name: Validate Maestro flow headers
     needs: resolve-e2e-policy
-    if: needs.resolve-e2e-policy.outputs.e2e_override != 'true'
-    runs-on: ubuntu-22.04
+    if: >-
+      needs.resolve-e2e-policy.outputs.e2e_override != 'true'
+    runs-on: ubuntu-24.04
     steps:
       - name: Checkout Repository
         uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
         with:
+          persist-credentials: false
           ref: ${{ inputs.MOBILE_VERSION }}
 
       - name: Validate flow header contract
@@ -530,6 +596,7 @@ jobs:
     name: Maestro iOS E2E
     needs:
       - resolve-e2e-policy
+      - calculate-tsio-identity
       - build-ios-simulator
       - provision-servers
       - validate-maestro-flow-headers
@@ -537,6 +604,7 @@ jobs:
       contents: read
       statuses: write
       actions: read
+      id-token: write
     if: |
       !cancelled() &&
       needs.resolve-e2e-policy.outputs.e2e_override != 'true' &&
@@ -553,13 +621,15 @@ jobs:
       SITE_3_URL: ${{ inputs.SITE_3_URL }}
       run_type: ${{ inputs.run_type || 'PR' }}
       artifact_run_id: ${{ github.run_id }}
-      record_tests_in_zephyr: ${{ inputs.run_type == 'RELEASE' || inputs.run_type == 'NIGHTLY' || inputs.run_type == 'MASTER' }}
+      record_tests_in_zephyr: ${{ inputs.run_type == 'RELEASE' || inputs.run_type == 'MAIN' || inputs.run_type == 'MASTER' }}
+      tsio-config: ${{ needs.calculate-tsio-identity.outputs.tsio-config }}
     secrets: inherit
 
   run-maestro-android:
     name: Maestro Android E2E
     needs:
       - resolve-e2e-policy
+      - calculate-tsio-identity
       - build-android-apk-maestro
       - provision-servers
       - validate-maestro-flow-headers
@@ -567,6 +637,7 @@ jobs:
       contents: read
       statuses: write
       actions: read
+      id-token: write
     if: |
       !cancelled() &&
       needs.resolve-e2e-policy.outputs.e2e_override != 'true' &&
@@ -583,12 +654,13 @@ jobs:
       SITE_3_URL: ${{ inputs.SITE_3_URL }}
       run_type: ${{ inputs.run_type || 'PR' }}
       artifact_run_id: ${{ github.run_id }}
-      record_tests_in_zephyr: ${{ inputs.run_type == 'RELEASE' || inputs.run_type == 'NIGHTLY' || inputs.run_type == 'MASTER' }}
+      record_tests_in_zephyr: ${{ inputs.run_type == 'RELEASE' || inputs.run_type == 'MAIN' || inputs.run_type == 'MASTER' }}
+      tsio-config: ${{ needs.calculate-tsio-identity.outputs.tsio-config }}
     secrets: inherit
 
   e2e-remove-matterwick-label:
     name: Remove Matterwick E2E label from PR
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-24.04
     permissions:
       contents: read
       issues: write
@@ -725,3 +797,67 @@ jobs:
           MOBILE_VERSION: ${{ inputs.MOBILE_VERSION }}
           BRANCH: ${{ github.ref_name }}
           WORKFLOW_CONCLUSION: ${{ job.status }}
+
+  # One TSIO report group (mobile-pr / mobile-main) aggregates every Detox +
+  # Maestro platform leg; `e2e/mobile` is the single required commit status.
+  tsio-report-status:
+    name: TSIO report status (Detox + Maestro)
+    if: always() && (inputs.run_type == 'PR' || inputs.run_type == 'MAIN' || inputs.run_type == 'MASTER') && needs.calculate-tsio-identity.result == 'success'
+    needs:
+      - calculate-tsio-identity
+      - run-detox-ios
+      - run-detox-android
+      - run-maestro-ios
+      - run-maestro-android
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: read
+      statuses: write
+      id-token: write
+      actions: read
+    steps:
+      - name: Sparse checkout TSIO status utility
+        uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
+        with:
+          ref: ${{ inputs.MOBILE_VERSION }}
+          persist-credentials: false
+          sparse-checkout: |
+            detox/utils/tsio-report-status.js
+            detox/utils/cmt-channel-notify.js
+            detox/utils/cli-args.js
+
+      - name: Post TSIO commit status from unified report group
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+          COMPOSITE_IDENTITY: ${{ needs.calculate-tsio-identity.outputs.composite-identity-json }}
+          TOTAL_REPORTS_EXPECTED: ${{ needs.calculate-tsio-identity.outputs.total-reports-expected }}
+          TSIO_STATUS_CONTEXT: ${{ inputs.tsio_status_context || 'e2e/mobile' }}
+          # PR → MM_MOBILE_E2E_WEBHOOK_URL; main → MM_E2E_MASTER_HEALTH_WEBHOOK_URL;
+          # CMT/RC uses MM_E2E_RELEASE_WEBHOOK_URL (compatibility-matrix-testing.yml).
+          # Routing is by compositeIdentity.name in cmt-channel-notify.js.
+          MATTERMOST_E2E_WEBHOOK_URL: ${{ secrets.MM_MOBILE_E2E_WEBHOOK_URL }}
+          MATTERMOST_MASTER_HEALTH_WEBHOOK_URL: ${{ secrets.MM_E2E_MASTER_HEALTH_WEBHOOK_URL }}
+        run: |
+          set +e
+          UPSTREAM="true"
+          for r in "${{ needs.run-detox-ios.result }}" "${{ needs.run-detox-android.result }}" "${{ needs.run-maestro-ios.result }}" "${{ needs.run-maestro-android.result }}"; do
+            case "$r" in
+              success|skipped) ;;
+              *) UPSTREAM="false" ;;
+            esac
+          done
+
+          node detox/utils/tsio-report-status.js \
+            --composite-identity="$COMPOSITE_IDENTITY" \
+            --total-reports-expected="$TOTAL_REPORTS_EXPECTED" \
+            --github-token="$GITHUB_TOKEN" \
+            --context="$TSIO_STATUS_CONTEXT" \
+            --upstream-succeeded="$UPSTREAM" \
+            --poll-attempts=36
+          RC=$?
+          echo "tsio-report-status exit=$RC upstream_succeeded=$UPSTREAM"
+          if [ "$RC" -ne 0 ] && [ "$UPSTREAM" = "true" ]; then
+            echo "::error::TSIO reported test failures (exit $RC) with all upstream jobs succeeded."
+            exit 1
+          fi
+          exit 0

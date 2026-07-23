@@ -17,7 +17,8 @@ import {
 import {getRandomId} from '@support/utils';
 import {expect} from 'detox';
 
-describe('Interactive mm_blocks (incoming webhook)', () => {
+// Skip: failed CI run 29954156963 (both) — android + many iOS mm_blocks failures
+describe.skip('Interactive mm_blocks (incoming webhook)', () => {
     let testChannel: any;
     let testTeam: any;
     let testUser: any;

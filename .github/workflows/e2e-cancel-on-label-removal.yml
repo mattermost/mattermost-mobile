@@ -15,7 +15,7 @@ jobs:
         || github.event.label.name == 'E2E/Run-iOS'
         || github.event.label.name == 'E2E/Run-Android')
       && github.event.sender.login != 'mattermost-build'
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-24.04
     permissions:
       actions: write
       statuses: write
