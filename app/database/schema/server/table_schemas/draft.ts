@@ -17,5 +17,8 @@ export default tableSchema({
         {name: 'metadata', type: 'string', isOptional: true},
         {name: 'update_at', type: 'number'},
         {name: 'type', type: 'string', isOptional: true},
+        {name: 'server_update_at', type: 'number', isOptional: true},
+        {name: 'props', type: 'string', isOptional: true},
+        {name: 'file_ids', type: 'string', isOptional: true},
     ],
 });

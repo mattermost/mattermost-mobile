@@ -25,6 +25,9 @@ type Draft = {
     metadata?: PostMetadata;
     update_at: number;
     type?: PostType;
+    server_update_at?: number | null;
+    props?: DraftProps;
+    file_ids?: string[];
 };
 
 type MyTeam = {
