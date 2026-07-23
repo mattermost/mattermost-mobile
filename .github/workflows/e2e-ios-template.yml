@@ -49,13 +49,8 @@ on:
         type: string
         required: false
         default: "PR"
-      testcase_failure_fatal:
-        description: "Should failures be considered fatal"
-        required: false
-        type: boolean
-        default: false
       record_tests_in_zephyr:
-        description: "Record test results in Zephyr, typically for nightly and release runs"
+        description: "Record test results in Zephyr, typically for release and main runs"
         required: false
         type: boolean
         default: false
@@ -91,6 +86,18 @@ on:
         default: "ios.sim.debug"
       artifact_run_id:
         description: "Run ID of the workflow that uploaded ios-build-simulator-* (defaults to caller run)"
+        required: false
+        type: string
+        default: ""
+      tsio-config:
+        description: >
+          TSIO reporting config: {"composite_identity":{...},"total_reports_expected":N}.
+          Empty disables TSIO upload for this platform.
+        required: false
+        type: string
+        default: ""
+      tsio-shard-name:
+        description: "Display name for this shard in TSIO (e.g. detox-ios-Server_11.9.0-rc3)"
         required: false
         type: string
         default: ""
@@ -137,11 +144,11 @@ env:
   FAILURE_MESSAGE: "Something has failed"
   IOS: "true"
   RUNNING_E2E: "true"
-  ARTIFACT_RUN_ID: ${{ inputs.artifact_run_id }}
+  ARTIFACT_RUN_ID: ${{ inputs.artifact_run_id || github.run_id }}
 
 jobs:
   generate-specs:
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-24.04
     outputs:
       specs: ${{ steps.generate-specs.outputs.specs }}
       build_id: ${{ steps.resolve-device.outputs.BUILD_ID }}
@@ -212,33 +219,25 @@ jobs:
 
       - name: Install Homebrew Dependencies
         run: |
-          # Runner images ship aws/tap untrusted; Detox does not use it.
-          if brew tap 2>/dev/null | grep -qx 'aws/tap'; then
-            brew untap aws/tap
-          fi
-
+          brew tap wix/brew
+          # Homebrew 5.2+/6.0 requires explicit trust before loading third-party formulae.
           brew trust wix/brew
-
-          # Clone wix/brew manually so we can patch deprecated cask syntax before
-          # Homebrew loads the tap (brew tap audits Casks/detox-instruments.rb).
-          TAP_DIR="$(brew --repository wix/brew)"
-          if [ ! -f "$TAP_DIR/Formula/applesimutils.rb" ]; then
-            mkdir -p "$(dirname "$TAP_DIR")"
-            git clone --depth 1 https://github.com/wix/homebrew-brew.git "$TAP_DIR"
+          # Cache restores Cellar without /opt/homebrew/bin symlinks. Prefer link-only when
+          # already installed to avoid the noisy "installed, just not linked" brew message.
+          if brew list --formula wix/brew/applesimutils &>/dev/null || brew list --formula applesimutils &>/dev/null; then
+            brew link --overwrite --force wix/brew/applesimutils 2>/dev/null \
+              || brew link --overwrite --force applesimutils
+          else
+            brew install applesimutils
+            brew link --overwrite --force wix/brew/applesimutils 2>/dev/null \
+              || brew link --overwrite --force applesimutils
           fi
-          sed -i '' 's/depends_on macos: ">= :catalina"/depends_on macos: :catalina/' \
-            "$TAP_DIR/Casks/detox-instruments.rb"
+          command -v applesimutils
 
-          brew install wix/brew/applesimutils || true
-          # Cache restores Cellar without /opt/homebrew/bin symlinks — link the tap formula explicitly.
-          brew link --overwrite --force wix/brew/applesimutils 2>/dev/null \
-            || brew link --overwrite applesimutils
-
-      - name: Download iOS Simulator Build from parent workflow
+      - name: Download iOS Simulator Build
         uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
         with:
           name: ios-build-simulator-${{ env.ARTIFACT_RUN_ID }}
-          repository: ${{ github.repository }}
           run-id: ${{ env.ARTIFACT_RUN_ID }}
           github-token: ${{ github.token }}
           path: mobile-artifacts
@@ -246,24 +245,8 @@ jobs:
       - name: Unzip iOS Simulator Build
         run: |
           unzip -o mobile-artifacts/*.zip -d mobile-artifacts/
+          # delete zip file
           rm -f mobile-artifacts/*.zip
-
-      - name: Verify Detox iOS app from parent build
-        run: |
-          if [ -z "${ARTIFACT_RUN_ID}" ]; then
-            echo "❌ ARTIFACT_RUN_ID is empty — parent workflow must pass artifact_run_id from build-ios-simulator"
-            exit 1
-          fi
-          APP_PATH=$(find mobile-artifacts -name "*.app" -maxdepth 2 | head -1)
-          if [ -z "$APP_PATH" ]; then
-            echo "❌ No .app in mobile-artifacts/ from ios-build-simulator-${ARTIFACT_RUN_ID}"
-            ls -la mobile-artifacts/ || true
-            exit 1
-          fi
-          echo "✅ Detox will use iOS app from parent workflow run ${ARTIFACT_RUN_ID}: ${APP_PATH}"
-          ls -ld "$APP_PATH"
-        env:
-          ARTIFACT_RUN_ID: ${{ env.ARTIFACT_RUN_ID }}
 
       - name: Prepare Low Bandwidth Environment
         id: prepare-low-bandwidth
@@ -626,7 +609,7 @@ jobs:
             # Verify Metro is actually serving the bundle (not just the process is running).
             # This catches cases where Metro reports ready but hasn't finished compilation.
             echo "Verifying Metro can serve bundles..."
-            if curl -sf "http://localhost:8081/index.bundle?platform=ios&dev=true&minify=false" 2>/dev/null | head -c 200 | grep -q "__d"; then
+            if curl -s http://localhost:8081/index.ios.bundle 2>/dev/null | grep -q "__d("; then
               echo "✅ Metro is serving bundles successfully"
             else
               echo "⚠️ Warning: Could not verify Metro is serving bundles, proceeding anyway"
@@ -636,14 +619,22 @@ jobs:
 
           cd detox
           npm run detox:config-gen
+          # Ensure the Jest --json output directory exists before the run.
+          mkdir -p artifacts
           # Use read -ra to safely word-split space-separated spec paths without
           # glob expansion or shell injection from the matrix value.
           read -ra SPECS <<< "$MATRIX_SPECS"
+          set +e
+          # `--` separates Detox args from Jest args; --json --outputFile emits
+          # Jest's native JSON report (consumed by the TSIO detox parser) into
+          # the existing detox/artifacts/ upload.
           if [ "$DETOX_CONFIG" = "ios.ipad.debug" ]; then
-            npm run e2e:ios-ipad-test -- "${SPECS[@]}"
+            npm run e2e:ios-ipad-test -- "${SPECS[@]}" -- --json --outputFile=artifacts/jest-results.json
           else
-            npm run e2e:ios-test -- "${SPECS[@]}"
+            npm run e2e:ios-test -- "${SPECS[@]}" -- --json --outputFile=artifacts/jest-results.json
           fi
+          DETOX_EXIT_CODE=$?
+          exit "${DETOX_EXIT_CODE:-1}"
         env:
           DETOX_CONFIG: ${{ inputs.detox_config }}
           MATRIX_SPECS: ${{ matrix.specs }}
@@ -712,11 +703,19 @@ jobs:
           path: detox/artifacts/
 
   generate-report:
+    # TSIO displays gh-job-name as the shard label — keep it aligned with tsio-shard-name.
+    name: ${{ inputs.tsio-shard-name != '' && inputs.tsio-shard-name || 'generate-report' }}
     if: always()
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-24.04
     needs:
       - generate-specs
       - e2e-ios
+    permissions:
+      contents: read
+      # test-system-io-report-upload authenticates via the workflow's OIDC
+      # token and resolves gh_job_id via the GitHub API.
+      id-token: write
+      actions: read
     outputs:
       TARGET_URL: ${{ steps.set-url.outputs.TARGET_URL }}
       STATUS: ${{ steps.determine-status.outputs.STATUS }}
@@ -740,15 +739,68 @@ jobs:
         with:
           path: detox/artifacts/
           pattern: ios-results-${{ needs.generate-specs.outputs.workflow_hash }}-*
+        continue-on-error: true
 
       - name: Generate Report Path
         id: s3
+        env:
+          BUILD_ID: ${{ needs.generate-specs.outputs.build_id }}
+          MOBILE_SHA: ${{ needs.generate-specs.outputs.mobile_sha }}
+          MOBILE_REF: ${{ needs.generate-specs.outputs.mobile_ref }}
         run: |
-          path="${{ needs.generate-specs.outputs.build_id }}-${{ needs.generate-specs.outputs.mobile_sha }}-${{ needs.generate-specs.outputs.mobile_ref }}"
-          echo "path=$(echo "${path}" | sed 's/\./-/g')" >> ${GITHUB_OUTPUT}
+          path="${BUILD_ID}-${MOBILE_SHA}-${MOBILE_REF}"
+          echo "path=$(echo "${path}" | sed 's/\./-/g')" >> "$GITHUB_OUTPUT"
+
+      # ── TSIO report upload (before e2e:save-report) ────────────────────────
+      # save-report deletes ios-results-* dirs (where Detox PNGs live). Upload
+      # while those artifact trees are still on disk.
+      # Each matrix leg wrote Jest CLI --json (name + assertionResults). TSIO's
+      # extractDetox expects testFilePath + nested testResults — convert while
+      # merging. gh-job-name must match this job's rendered `name:` (tsio-shard-name).
+      - name: Merge per-shard Jest JSON for TSIO
+        if: always() && inputs.tsio-config != '' && vars.TSIO_UPLOAD_ENABLED != 'false'
+        id: tsio-merge
+        run: |
+          set +e
+          # TSIO extractDetox expects testFilePath + nested testResults (not Jest CLI
+          # name + assertionResults). Convert while merging shard JSON files.
+          if ! node detox/utils/merge-jest-results-for-tsio.js \
+            --dir detox/artifacts \
+            --repo-root "${GITHUB_WORKSPACE}" \
+            --output detox/artifacts/jest-results-merged.json; then
+            echo "skip=true" >> "$GITHUB_OUTPUT"
+            echo "No jest-results.json found or merge failed — skipping TSIO upload."
+            exit 0
+          fi
+          echo "skip=false" >> "$GITHUB_OUTPUT"
+
+      - name: Write TSIO failure stub when Detox JSON is missing
+        if: always() && inputs.tsio-config != '' && vars.TSIO_UPLOAD_ENABLED != 'false' && steps.tsio-merge.outputs.skip == 'true'
+        env:
+          TSIO_SHARD_NAME: ${{ inputs.tsio-shard-name != '' && inputs.tsio-shard-name || 'generate-report' }}
+        run: |
+          node detox/utils/write-tsio-failure-stub.mjs \
+            --format jest \
+            --output detox/artifacts/jest-results-merged.json \
+            --job-name "$TSIO_SHARD_NAME" \
+            --reason "Detox job failed or was cancelled before jest-results.json was written"
+
+      - name: Upload report to Test System IO
+        if: always() && inputs.tsio-config != '' && vars.TSIO_UPLOAD_ENABLED != 'false' && hashFiles('detox/artifacts/jest-results-merged.json') != ''
+        uses: mattermost/mattermost-test-system-io/.github/actions/test-system-io-report-upload@45fb048848edc392f398144f45e2f3e30f43aeaa # release-0.12.0 / main@45fb048 (#81 Maestro FilePath + Detox paths, #82 background finalize)
+        with:
+          composite-identity: ${{ toJSON(fromJSON(inputs.tsio-config).composite_identity) }}
+          total-reports-expected: ${{ fromJSON(inputs.tsio-config).total_reports_expected }}
+          framework: detox
+          github-token: ${{ github.token }}
+          gh-job-name: ${{ inputs.tsio-shard-name != '' && inputs.tsio-shard-name || 'generate-report' }}
+          json-path: detox/artifacts/jest-results-merged.json
+          screenshots-dir: detox/artifacts/
 
       - name: Save report Detox Dependencies
         id: report-link
+        if: always()
+        continue-on-error: true
         run: |
           cd detox
           npm ci
@@ -764,6 +816,7 @@ jobs:
 
       - name: Calculate failures
         id: summary
+        if: always()
         run: |
           if [ -f detox/artifacts/summary.json ]; then
             echo "FAILURES=$(cat detox/artifacts/summary.json | jq .stats.failures)" >> ${GITHUB_OUTPUT}
@@ -784,24 +837,30 @@ jobs:
 
       - name: Set Target URL
         id: set-url
+        if: always()
+        env:
+          S3_BUCKET: ${{ env.DETOX_AWS_S3_BUCKET }}
+          REPORT_PATH: ${{ steps.s3.outputs.path }}
         run: |
-            echo "TARGET_URL=https://${{ env.DETOX_AWS_S3_BUCKET }}.s3.amazonaws.com/${{ steps.s3.outputs.path }}/jest-stare/ios-report.html" >> ${GITHUB_OUTPUT}
+          echo "TARGET_URL=https://${S3_BUCKET}.s3.amazonaws.com/${REPORT_PATH}/jest-stare/ios-report.html" >> "$GITHUB_OUTPUT"
 
       - name: Determine Status
         id: determine-status
+        if: always()
         env:
           FAILURES: ${{ steps.summary.outputs.FAILURES }}
-          TESTCASE_FAILURE_FATAL: ${{ inputs.testcase_failure_fatal }}
+          ERRORS: ${{ steps.summary.outputs.ERRORS }}
+          TOTAL: ${{ steps.summary.outputs.TOTAL }}
         run: |
-          if [[ "$FAILURES" == "-1" ]]; then
-            echo "STATUS=failure" >> ${GITHUB_OUTPUT}
-          elif [[ "$FAILURES" -gt 0 && "$TESTCASE_FAILURE_FATAL" == "true" ]]; then
+          # Fail on missing/empty reports (infra died before tests) and on real failures.
+          if [[ "$FAILURES" == "-1" || "$FAILURES" -gt 0 || "${ERRORS:-0}" -gt 0 || "${TOTAL:-0}" -eq 0 ]]; then
             echo "STATUS=failure" >> ${GITHUB_OUTPUT}
           else
             echo "STATUS=success" >> ${GITHUB_OUTPUT}
           fi
 
       - name: Generate Summary
+        if: always()
         env:
           TOTAL: ${{ steps.summary.outputs.TOTAL }}
           PASSES: ${{ steps.summary.outputs.PASSES }}
@@ -817,3 +876,13 @@ jobs:
           echo "" >> ${GITHUB_STEP_SUMMARY}
           echo "You can check the full report [here](${TARGET_URL})" >> ${GITHUB_STEP_SUMMARY}
           echo "There was **${PERCENTAGE}%** success rate." >> ${GITHUB_STEP_SUMMARY}
+
+      - name: Fail job on test failures
+        if: always() && steps.determine-status.outputs.STATUS == 'failure'
+        env:
+          FAILURES: ${{ steps.summary.outputs.FAILURES }}
+          TOTAL: ${{ steps.summary.outputs.TOTAL }}
+          ERRORS: ${{ steps.summary.outputs.ERRORS }}
+        run: |
+          echo "::error::Detox reported test failures (FAILURES=${FAILURES}, TOTAL=${TOTAL}, ERRORS=${ERRORS})"
+          exit 1

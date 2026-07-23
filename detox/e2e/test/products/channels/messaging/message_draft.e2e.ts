@@ -168,6 +168,7 @@ describe('Messaging - Message Draft', () => {
         await ChannelScreen.open(channelsCategory, testChannel.name);
         await ChannelScreen.postInput.tap();
         await ChannelScreen.postInput.replaceText(overLimitMessage);
+        await ChannelScreen.postInput.typeText('a');
 
         // * Verify message length alert is shown
         await expect(Alert.messageLengthTitle).toBeVisible();

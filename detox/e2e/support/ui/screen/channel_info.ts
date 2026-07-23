@@ -294,6 +294,10 @@ class ChannelInfoScreen {
         }
         await addBookmark.tap({x: 1, y: 1});
     };
+
+    // Close/reopen channel info to re-trigger bookmark fetch when API-created
+    // bookmarks are not yet in the client after beforeAll reload (CI 29935363789:
+    // Add bookmark visible but pre-created titles missing from bookmarks.list).
     waitForBookmarkInChannelInfo = async (
         bookmarkMatcher: Detox.NativeMatcher,
         {

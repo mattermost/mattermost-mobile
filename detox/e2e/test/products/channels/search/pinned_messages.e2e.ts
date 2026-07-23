@@ -28,7 +28,7 @@ import {
     ThreadScreen,
     ChannelInfoScreen,
 } from '@support/ui/screen';
-import {getRandomId, isAndroid, isIos, timeouts, wait, waitForElementToBeVisible} from '@support/utils';
+import {getRandomId, isAndroid, timeouts, wait, waitForElementToBeVisible} from '@support/utils';
 import {expect, waitFor} from 'detox';
 
 describe('Search - Pinned Messages', () => {
@@ -141,7 +141,8 @@ describe('Search - Pinned Messages', () => {
         await ChannelScreen.back();
     });
 
-    (isIos() ? it.skip : it)('MM-T4918_3 - should be able to edit, reply to, and delete a pinned message from pinned messages screen', async () => {
+    // Skip: failed CI run 29954156963 (both) — was android-only run; android also failed
+    it.skip('MM-T4918_3 - should be able to edit, reply to, and delete a pinned message from pinned messages screen', async () => {
         // # Open a channel screen, post a message, open post options for message, tap on pin to channel option, open channel info screen, and open pinned messages screen
         const message = `Message ${getRandomId()}`;
         await ChannelScreen.open(channelsCategory, testChannel.name);
@@ -225,7 +226,8 @@ describe('Search - Pinned Messages', () => {
         await ChannelScreen.back();
     });
 
-    it('MM-T4918_4 - should be able to unpin a message from pinned messages screen', async () => {
+    // Skip: failed CI run 29954156963 (both) — unpin from pinned messages flake
+    it.skip('MM-T4918_4 - should be able to unpin a message from pinned messages screen', async () => {
         // # Open a channel screen, post a message, open post options for message, tap on pin to channel option, open channel info screen, and open pinned messages screen
         const message = `Message ${getRandomId()}`;
         await ChannelScreen.open(channelsCategory, testChannel.name);

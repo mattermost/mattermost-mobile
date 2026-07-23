@@ -41,9 +41,7 @@ describe('Classification Banner - Visibility Across Screens', () => {
             },
         });
         await Properties.apiSetupClassificationWithBanner(siteOneUrl, {
-            levelName: 'TOP SECRET',
-            user: testUser,
-        });
+            levelId: 'lvltopsecret00000000000000'});
 
         await ServerScreen.connectToServer(serverOneUrl, serverOneDisplayName);
         await LoginScreen.login(testUser);
@@ -65,7 +63,7 @@ describe('Classification Banner - Visibility Across Screens', () => {
         await HomeScreen.logout();
     });
 
-    it('MM-T_CB_SCREEN_1 - should display the classification banner on the Recent Mentions screen', async () => {
+    it('MM-T6209_1 - should display the classification banner on the Recent Mentions screen', async () => {
         await waitFor(element(by.id('tab_bar.mentions.tab'))).toExist().withTimeout(timeouts.TEN_SEC);
         await element(by.id('tab_bar.mentions.tab')).tap();
         await RecentMentionsScreen.toBeVisible();
@@ -76,7 +74,7 @@ describe('Classification Banner - Visibility Across Screens', () => {
         await ChannelListScreen.toBeVisible();
     });
 
-    it('MM-T_CB_SCREEN_2 - should display the classification banner on the Saved Messages screen', async () => {
+    it('MM-T6210_1 - should display the classification banner on the Saved Messages screen', async () => {
         await waitFor(element(by.id('tab_bar.saved_messages.tab'))).toExist().withTimeout(timeouts.TEN_SEC);
         await element(by.id('tab_bar.saved_messages.tab')).tap();
         await SavedMessagesScreen.toBeVisible();
@@ -87,7 +85,7 @@ describe('Classification Banner - Visibility Across Screens', () => {
         await ChannelListScreen.toBeVisible();
     });
 
-    it('MM-T_CB_SCREEN_3 - should display the classification banner on the Search screen', async () => {
+    it('MM-T6211_1 - should display the classification banner on the Search screen', async () => {
         await waitFor(element(by.id('tab_bar.search.tab'))).toExist().withTimeout(timeouts.TEN_SEC);
         await element(by.id('tab_bar.search.tab')).tap();
         await SearchMessagesScreen.toBeVisible();
@@ -98,7 +96,7 @@ describe('Classification Banner - Visibility Across Screens', () => {
         await ChannelListScreen.toBeVisible();
     });
 
-    it('MM-T_CB_SCREEN_4 - should display the classification banner on the Account screen', async () => {
+    it('MM-T6212_1 - should display the classification banner on the Account screen', async () => {
         await waitFor(element(by.id('tab_bar.account.tab'))).toExist().withTimeout(timeouts.TEN_SEC);
         await element(by.id('tab_bar.account.tab')).tap();
         await AccountScreen.toBeVisible();
@@ -109,7 +107,7 @@ describe('Classification Banner - Visibility Across Screens', () => {
         await ChannelListScreen.toBeVisible();
     });
 
-    it('MM-T_CB_SCREEN_5 - should display the classification banner on the Thread screen', async () => {
+    it('MM-T6213_1 - should display the classification banner on the Thread screen', async () => {
         const {post: rootPost} = await Post.apiCreatePost(siteOneUrl, {
             channelId: testChannel.id,
             message: `Thread root ${Date.now()}`,

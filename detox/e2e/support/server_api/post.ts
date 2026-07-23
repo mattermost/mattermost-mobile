@@ -231,7 +231,7 @@ export const apiUploadFileToChannel = async (
     const query = new URLSearchParams({channel_id: channelId});
     if (options?.forBookmark) {
         // Server sets FileInfo.CreatorId to "bookmark" when bookmark=true
-        // (required by ChannelBookmark store ErrorIfBookmarkFileInfoAlreadyAttached).
+        // (required by ChannelBookmark store for type=file bookmarks).
         query.set('bookmark', 'true');
     }
     const result = await apiUploadFile('files', absFilePath, {

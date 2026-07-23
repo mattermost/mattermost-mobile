@@ -367,10 +367,10 @@ Maestro run time). It is baked into the JS bundle via `@env` and suppresses LogB
 |---|---|
 | `e2e-detox-pr.yml` | Matterwick entry point: builds, provision, Detox + Maestro |
 | `e2e-detox.yml` | Detox test runs (reusable; called from `e2e-detox-pr.yml`) |
-| `e2e-maestro-pr.yml` | Maestro orchestration + commit statuses (reusable) |
+| `e2e-maestro-pr.yml` | Maestro orchestration + TSIO shard uploads (reusable) |
 | `e2e-maestro-template.yml` | Reusable runner: device bootstrap, seed, `maestro test`, reports |
 
-Nightly, release, and CMT workflows call `e2e-maestro-template.yml` directly with
+Release, master, and CMT workflows call `e2e-maestro-template.yml` directly with
 `artifact_run_id: ${{ github.run_id }}` so they download artifacts from the same workflow run.
 
 ### Phase 1 — builds (parallel)
@@ -412,7 +412,7 @@ Wall time drops roughly proportionally; runner cost increases. Requires separate
 across matrix legs (already supported via `mergeMaestroJunitReports`).
 
 **Option B — smoke gate:** run `account/login.yml` + one channel flow on every PR; run the
-full suite only when labeled or on nightly.
+full suite only when labeled or on master/CMT runs.
 
 **Option C — combine stable batches:** merge attach_logs batches (already split on Android
 for isolation). Risk: one wedged flow blocks the whole combined batch.
@@ -460,7 +460,7 @@ PR vs nightly vs manual coverage is summarized below (and in `config/exclude_tag
 
 - JUnit XML: `build/maestro-report.xml`
 - HTML report + screenshots uploaded to S3 and as GitHub Actions artifacts
-- Commit statuses: `e2e/maestro-ios-tests`, `e2e/maestro-android-tests`
+- Commit status: `e2e/mobile` (unified Detox + Maestro; posted by `tsio-report-status.js`)
 
 ---
 

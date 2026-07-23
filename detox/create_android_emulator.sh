@@ -282,7 +282,8 @@ run_detox_tests() {
 
     cd detox
     AVD_NAME="$AVD_NAME" npm run detox:config-gen
-    npm run e2e:android-test -- "$@"
+    mkdir -p artifacts
+    npm run e2e:android-test -- "$@" -- --json --outputFile=artifacts/jest-results.json
 }
 
 main() {

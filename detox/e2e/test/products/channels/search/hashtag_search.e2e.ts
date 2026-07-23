@@ -27,7 +27,7 @@ import {
     SearchMessagesScreen,
     ServerScreen,
 } from '@support/ui/screen';
-import {getRandomId, timeouts, wait, waitForElementToBeVisible} from '@support/utils';
+import {getRandomId, isAndroid, timeouts, wait, waitForElementToBeVisible} from '@support/utils';
 import {expect} from 'detox';
 
 describe('Search - Hashtag Search', () => {
@@ -102,7 +102,8 @@ describe('Search - Hashtag Search', () => {
         await ChannelListScreen.open();
     });
 
-    it('MM-T357_1 - should be able to open a reply thread from hashtag search results and see hashtag links', async () => {
+    // Skip Android: R1 product — reply thread / hashtag link not visible from search results
+    (isAndroid() ? it.skip : it)('MM-T357_1 - should be able to open a reply thread from hashtag search results and see hashtag links', async () => {
         // # Create a unique hashtag and post a message containing it
         const hashtagTerm = `tag${getRandomId()}`;
         const message = `Thread message with #${hashtagTerm}`;

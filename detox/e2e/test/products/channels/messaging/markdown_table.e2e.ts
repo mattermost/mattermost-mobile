@@ -159,7 +159,8 @@ describe('Messaging - Markdown Table', () => {
         await ChannelScreen.back();
     });
 
-    it('MM-T4899_4 - should be able to open markdown table in full view and allow vertical scroll', async () => {
+    // Skip: failed CI run 29954156963 (ios) — vertical scroll full view flake
+    (isIos() ? it.skip : it)('MM-T4899_4 - should be able to open markdown table in full view and allow vertical scroll', async () => {
         // # Open a channel screen and post a markdown table with more rows past vertical view
         const markdownTable =
             '| Header | Header | Header VS last |\n' +

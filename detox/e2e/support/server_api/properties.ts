@@ -1,8 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {getRandomId, wait, timeouts} from '@support/utils';
-import axios from 'axios';
+import {timeouts, wait} from '@support/utils';
 
 import client from './client';
 import {getResponseFromError} from './common';
@@ -16,12 +15,16 @@ const LINKED_FIELD_NAME = 'classification';
 const LINKED_OBJECT_TYPE = 'system';
 const DISPLAY_BANNER_TOP = 'display_banner_top';
 
-// Match webapp classification_markings utils + Playwright helpers:
-// permission level "admin" (not "sysadmin"), no CPA "managed" attr.
+// Match Playwright classification_markings helpers: permission "admin" (not "sysadmin").
 const ADMIN_PERMISSION = 'admin';
 
-// Server IsValidId requires exactly 26 alphanumeric characters (model.IsValidId).
-const VALID_ID_LENGTH = 26;
+// Server model.IsValidId requires exactly 26 alphanumeric characters.
+// Playwright uses padded IDs like lvlsecret00000000000000000 — same constraint.
+export const CLASSIFICATION_LEVEL_IDS = {
+    topSecret: 'lvltopsecret00000000000000',
+    secret: 'lvlsecret00000000000000000',
+    unclassified: 'lvlunclassified00000000000',
+} as const;
 
 type PropertyFieldOption = {
     id: string;
@@ -30,16 +33,10 @@ type PropertyFieldOption = {
     rank?: number;
 };
 
-const DEFAULT_LEVEL_NAMES = {
-    topSecret: 'TOP SECRET',
-    secret: 'SECRET',
-    unclassified: 'UNCLASSIFIED',
-} as const;
-
-const defaultClassificationLevels = (): PropertyFieldOption[] => [
-    {id: getRandomId(VALID_ID_LENGTH), name: DEFAULT_LEVEL_NAMES.topSecret, color: '#FCE83A', rank: 1},
-    {id: getRandomId(VALID_ID_LENGTH), name: DEFAULT_LEVEL_NAMES.secret, color: '#FF0000', rank: 2},
-    {id: getRandomId(VALID_ID_LENGTH), name: DEFAULT_LEVEL_NAMES.unclassified, color: '#00FF00', rank: 3},
+const DEFAULT_CLASSIFICATION_LEVELS: PropertyFieldOption[] = [
+    {id: CLASSIFICATION_LEVEL_IDS.topSecret, name: 'TOP SECRET', color: '#FCE83A', rank: 1},
+    {id: CLASSIFICATION_LEVEL_IDS.secret, name: 'SECRET', color: '#FF0000', rank: 2},
+    {id: CLASSIFICATION_LEVEL_IDS.unclassified, name: 'UNCLASSIFIED', color: '#00FF00', rank: 3},
 ];
 
 /**
@@ -149,9 +146,10 @@ export const apiPatchSystemPropertyValues = async (baseUrl: string, groupName: s
  * 2. Create a linked system classification field with banner actions
  * 3. Set a system property value for the classification level
  *
- * Option `id` values must be valid Mattermost IDs (26 alphanumeric chars).
- * Callers select the banner level by `levelName` (e.g. 'TOP SECRET'). Use the
- * returned `optionIdsByName` map when patching the selected value later.
+ * Levels are identified by their `id` field. The `levelId` option selects which
+ * level the global banner should display, matching Playwright webapp E2E
+ * (keyed by option ID, not name). Option IDs must be valid Mattermost IDs
+ * (exactly 26 alphanumeric characters).
  *
  * @returns Object containing the created field IDs and option IDs keyed by name
  */
@@ -159,27 +157,15 @@ export const apiSetupClassificationWithBanner = async (
     baseUrl: string,
     options?: {
         levels?: PropertyFieldOption[];
-        levelName?: string;
-
-        // The user whose session the app will use after reload. When provided, setup also polls the
-        // property-fields endpoint AS this user (Bearer token) so it only returns once that session
-        // can read the classification field — not just the admin session (see the app-user poll below).
-        user?: {username?: string; password?: string; newUser?: {email?: string; username?: string; password?: string}};
+        levelId?: string;
     },
 ) => {
-    const levels = options?.levels ?? defaultClassificationLevels();
-    const levelName = options?.levelName ?? DEFAULT_LEVEL_NAMES.topSecret;
-
-    // Shared axios cookie jar can be left on a non-admin session by earlier tests.
-    const {error: adminLoginError} = await User.apiAdminLogin(baseUrl);
-    if (adminLoginError) {
-        throw new Error(`apiSetupClassificationWithBanner: admin login failed: ${JSON.stringify(adminLoginError)}`);
-    }
+    const levels = options?.levels ?? DEFAULT_CLASSIFICATION_LEVELS;
+    const levelId = options?.levelId ?? CLASSIFICATION_LEVEL_IDS.topSecret;
 
     await apiCleanupClassification(baseUrl);
 
-    // type/options/permissions match webapp saveCreateField (rank + admin).
-    // Server copies type+options onto the linked system field at create time.
+    // Match Playwright: type select, no CPA "managed" attr, permission "admin".
     const templateResult = await apiCreatePropertyField(baseUrl, GROUP_NAME, OBJECT_TYPE, {
         name: FIELD_NAME,
         type: 'rank',
@@ -200,10 +186,10 @@ export const apiSetupClassificationWithBanner = async (
 
     const templateField = templateResult_.field;
     const templateOptions: PropertyFieldOption[] = templateField.attrs?.options ?? [];
-    const selectedOption = templateOptions.find((o) => o.name === levelName);
+    const selectedOption = templateOptions.find((o) => o.id === levelId);
     if (!selectedOption) {
         const available = templateOptions.map((o) => `${o.name} (${o.id})`).join(', ');
-        throw new Error(`Classification level name "${levelName}" not found in created options. Available: [${available}]`);
+        throw new Error(`Classification level ID "${levelId}" not found in created options. Available: [${available}]`);
     }
 
     const optionIdsByName = Object.fromEntries(templateOptions.map((o) => [o.name, o.id]));
@@ -235,21 +221,22 @@ export const apiSetupClassificationWithBanner = async (
     }
 
     // Poll the same list endpoint the mobile app uses until the linked field (and its selected
-    // option) are readable. On cloud servers the config/property write propagates slowly (a config
-    // PATCH alone can take ~30s), so a single GET right after create races propagation and the app's
-    // post-reload fetch then logs "No classification fields returned". Polling here guarantees the
-    // server has fully propagated before the test reloads the app.
+    // option) are readable. On cloud servers the config/property write propagates slowly, so a
+    // single GET right after create races propagation and the app's post-reload fetch then logs
+    // "No classification fields returned". Polling here guarantees the server has fully
+    // propagated before the test reloads the app.
     // NOTE: pass '' for target_id to mirror the app client exactly — app/client/rest/properties.ts
     // uses `if (targetId !== undefined)` and CLASSIFICATIONS_FIELD_TARGET_ID = '', so the app sends
     // `&target_id=`. The verify GET must send the identical URL or it proves nothing.
-    const evaluateLinked = (fields: any[]): string | undefined => {
-        const visibleLinked = fields.filter(
+    const checkLinkedVisible = async (): Promise<string | undefined> => {
+        const verify = await apiGetPropertyFields(baseUrl, GROUP_NAME, LINKED_OBJECT_TYPE, TARGET_TYPE, '') as {fields?: any[]; error?: unknown};
+        const visibleLinked = (verify.fields ?? []).filter(
             (f) => f.name === LINKED_FIELD_NAME && f.delete_at === 0 && f.linked_field_id && f.id === linkedField.id,
         );
         if (visibleLinked.length === 0) {
             return `linked system field ${linkedField.id} not returned by GET ` +
                 `/properties/groups/${GROUP_NAME}/${LINKED_OBJECT_TYPE}/fields?target_type=${TARGET_TYPE}&target_id=. ` +
-                `Fields: ${JSON.stringify(fields)}`;
+                `Response: ${JSON.stringify(verify)}`;
         }
         const linkedOptions = (visibleLinked[0].attrs?.options as PropertyFieldOption[] | undefined) ?? [];
         if (!linkedOptions.some((o) => o.id === selectedOption.id)) {
@@ -258,29 +245,11 @@ export const apiSetupClassificationWithBanner = async (
         return undefined;
     };
 
-    // Admin read via the shared cookie client.
-    const fetchLinkedAsAdmin = async (): Promise<any[]> => {
-        const verify = await apiGetPropertyFields(baseUrl, GROUP_NAME, LINKED_OBJECT_TYPE, TARGET_TYPE, '') as {fields?: any[]};
-        return verify.fields ?? [];
-    };
-
-    // App-user read via a standalone Bearer-token request. Mirrors the mobile client exactly and
-    // does not disturb the shared admin cookie jar (which the shared client re-logs-in as admin on 401).
-    const fetchLinkedAsUser = (token: string) => async (): Promise<any[]> => {
-        const url = `${baseUrl}/api/v4/properties/groups/${GROUP_NAME}/${LINKED_OBJECT_TYPE}/fields?target_type=${TARGET_TYPE}&target_id=`;
-        const res = await axios.get(url, {headers: {Authorization: `Bearer ${token}`, 'X-Requested-With': 'XMLHttpRequest'}});
-        return (res.data ?? []) as any[];
-    };
-
-    const pollLinkedVisible = async (label: string, fetchFields: () => Promise<any[]>, maxAttempts = 20) => {
+    const pollLinkedVisible = async (sessionLabel: string, maxAttempts = 20) => {
         let lastError: string | undefined;
         for (let attempt = 0; attempt < maxAttempts; attempt++) {
-            try {
-                // eslint-disable-next-line no-await-in-loop -- sequential poll until propagated
-                lastError = evaluateLinked(await fetchFields());
-            } catch (err) {
-                lastError = `fetch failed: ${JSON.stringify(getResponseFromError(err))}`;
-            }
+            // eslint-disable-next-line no-await-in-loop -- sequential poll until propagated
+            lastError = await checkLinkedVisible();
             if (!lastError) {
                 return;
             }
@@ -289,34 +258,10 @@ export const apiSetupClassificationWithBanner = async (
                 await wait(timeouts.TWO_SEC);
             }
         }
-        throw new Error(`apiSetupClassificationWithBanner (${label}): ${lastError}`);
+        throw new Error(`apiSetupClassificationWithBanner (${sessionLabel}): ${lastError}`);
     };
 
-    // First confirm the write is readable at all (admin session).
-    await pollLinkedVisible('admin', fetchLinkedAsAdmin);
-
-    // Then confirm it is readable by the SAME user session the app will use. System-scoped fields
-    // are permitted to every authenticated user, but on a multi-node cloud server the write can be
-    // visible to the admin session before the app user's session/read-replica has caught up — which
-    // is exactly when the app's post-reload fetch returns an empty list and the banner never appears
-    // (app logs "No classification fields returned"). Polling as the app user closes that gap before
-    // the test reloads the app.
-    if (options?.user) {
-        const loginId = options.user.newUser?.email ?? options.user.newUser?.username ?? options.user.username;
-        const password = options.user.newUser?.password ?? options.user.password;
-        if (loginId && password) {
-            const loginRes = await axios.post(
-                `${baseUrl}/api/v4/users/login`,
-                {login_id: loginId, password},
-                {headers: {'X-Requested-With': 'XMLHttpRequest'}},
-            );
-            const token = (loginRes.headers.token ?? loginRes.headers.Token) as string | undefined;
-            if (!token) {
-                throw new Error('apiSetupClassificationWithBanner: login returned no Token header for app-user propagation poll');
-            }
-            await pollLinkedVisible('app-user', fetchLinkedAsUser(token));
-        }
-    }
+    await pollLinkedVisible('admin');
 
     return {
         templateFieldId: templateField.id,
@@ -363,6 +308,7 @@ export const apiCleanupClassification = async (baseUrl: string) => {
 };
 
 export const Properties = {
+    CLASSIFICATION_LEVEL_IDS,
     apiGetPropertyFields,
     apiCreatePropertyField,
     apiDeletePropertyField,
