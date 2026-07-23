@@ -40,6 +40,13 @@ const Reactor = ({channelId, location, reaction, user}: Props) => {
         }
     });
 
+    // Gate rendering until the user has loaded. observeUser emits undefined on first mount (before
+    // the fetch above resolves), which would render a UserItem with testID `reactions.reactor_item.undefined`
+    // and a "someone" placeholder; the row re-mounts with the real user once the observable emits it.
+    if (!user) {
+        return null;
+    }
+
     return (
         <UserItem
             user={user}

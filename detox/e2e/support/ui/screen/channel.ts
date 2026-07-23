@@ -429,6 +429,25 @@ class ChannelScreen {
         }
     };
 
+    dismissKeyboard = async () => {
+        if (isAndroid()) {
+            // Android (adjustResize + threshold 25%) already tapped fine before this fix;
+            // keep the original no-op-safe scroll so the passing Android path is unchanged.
+            try {
+                await this.postList.getFlatList().scroll(100, 'up', 0.5, 0.5);
+            } catch { /* list at boundary — nothing to scroll */ }
+            return;
+        }
+        try {
+            await this.introDisplayName.tap();
+        } catch {
+            try {
+                await this.postList.getFlatList().tap({x: 5, y: 5});
+            } catch { /* nothing to dismiss */ }
+        }
+        await wait(timeouts.ONE_SEC);
+    };
+
     dismissKeyboardForSchedulePicker = async () => {
         if (!isIos()) {
             return;

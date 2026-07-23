@@ -27,7 +27,7 @@ import {
     ServerScreen,
 } from '@support/ui/screen';
 import {isAndroid, isIos, timeouts, wait, waitForElementToExist, waitForElementToNotExist} from '@support/utils';
-import {expect} from 'detox';
+import {expect, waitFor} from 'detox';
 
 describe('Channels - Channel Bookmarks', () => {
     const serverOneDisplayName = 'Server 1';
@@ -281,6 +281,14 @@ describe('Channels - Channel Bookmarks', () => {
 
         // # Open channel info and tap "Add a bookmark"
         await ChannelInfoScreen.open();
+
+        // CI failures showed that on iOS the Add Bookmark button was not found in view hierarchy.
+        // This can happen when the feature flag or canAddBookmarks observable is still settling.
+        // Use waitFor with a long timeout (like MM-T5600_1) to ensure the button is available.
+        await waitFor(element(by.id('channel_info.add_bookmark.button'))).
+            toBeVisible().
+            withTimeout(timeouts.TWENTY_SEC);
+
         await ChannelInfoScreen.tapAddBookmark();
 
         // * Verify bottom sheet / add bookmark options appears
@@ -410,6 +418,17 @@ describe('Channels - Channel Bookmarks', () => {
 
         const bookmarkEl = element(by.id(`channel_bookmark.${bookmarkT5610.id}`).withAncestor(by.id('channel_info.bookmarks.list')));
 
+        // Scroll bookmark into sufficient visibility (50%+) before longPress
+        // CI failures showed bookmark was detected but not 50% visible for interaction
+        try {
+            await waitFor(bookmarkEl).
+                toBeVisible().
+                whileElement(by.id('channel_info.bookmarks.list')).
+                scroll(50, 'right', 0.5, 0.5);
+        } catch {
+            // Element may already be visible; proceed with longPress
+        }
+
         // # Long press on the bookmark to open options
         await bookmarkEl.longPress();
 
@@ -537,7 +556,17 @@ describe('Channels - Channel Bookmarks', () => {
             {bookmarkId: bookmarkT5606.id},
         );
 
+        // Scroll the bookmark into sufficient visibility (50%+) before longPress
+        // CI failures showed bookmark was detected but not 50% visible for interaction
         const bookmarkEl = element(by.id(`channel_bookmark.${bookmarkT5606.id}`).withAncestor(by.id('channel_info.bookmarks.list')));
+        try {
+            await waitFor(bookmarkEl).
+                toBeVisible().
+                whileElement(by.id('channel_info.bookmarks.list')).
+                scroll(50, 'right', 0.5, 0.5);
+        } catch {
+            // Element may already be visible; proceed with longPress
+        }
         await bookmarkEl.longPress();
 
         // * Verify bookmark options appear
@@ -614,6 +643,17 @@ describe('Channels - Channel Bookmarks', () => {
         );
         await expect(revertBookmarkEl).toBeVisible();
 
+        // Scroll bookmark into sufficient visibility (50%+) before longPress
+        // CI failures showed bookmark was visible for assertion but not 50% visible for interaction
+        try {
+            await waitFor(revertBookmarkEl).
+                toBeVisible().
+                whileElement(by.id('channel_info.bookmarks.list')).
+                scroll(50, 'right', 0.5, 0.5);
+        } catch {
+            // Element may already be visible; proceed with longPress
+        }
+
         // # Long press to open options
         await revertBookmarkEl.longPress();
 
@@ -645,6 +685,13 @@ describe('Channels - Channel Bookmarks', () => {
     it('MM-T5609_1 - should display bookmark bar below channel header', async () => {
         // # Navigate to the channel
         await openChannel(channelT5609);
+
+        // CI failures showed on iOS the bookmarks list was not found in view hierarchy.
+        // This can happen when the feature flag or canAddBookmarks observable is still settling.
+        // Wait for the bookmarks list container to exist with a longer timeout before asserting.
+        await waitFor(element(by.id('channel_header.bookmarks.list'))).
+            toExist().
+            withTimeout(timeouts.TWENTY_SEC);
 
         // Scope to channel_header.bookmarks.list — same title also in channel_info when modal is open.
         await expect(

@@ -27,7 +27,7 @@ import {
     SearchMessagesScreen,
     ServerScreen,
 } from '@support/ui/screen';
-import {getRandomId, timeouts, wait} from '@support/utils';
+import {getRandomId, timeouts, wait, waitForElementToBeVisible} from '@support/utils';
 import {expect} from 'detox';
 
 describe('Search - Hashtag Search', () => {
@@ -144,9 +144,9 @@ describe('Search - Hashtag Search', () => {
         // (channel context view) rather than navigating to the thread directly.
         await PermalinkScreen.toBeVisible();
 
-        // * Verify the root post containing the hashtag is visible in the permalink
+        // * Verify the root post containing the hashtag is visible in the permalink.
         const {postListPostItem: permalinkPostItem} = PermalinkScreen.getPostListPostItem(rootPost.id, message);
-        await expect(permalinkPostItem).toBeVisible();
+        await waitForElementToBeVisible(permalinkPostItem, timeouts.TEN_SEC);
 
         // # Jump to recent messages to dismiss the permalink and open the channel
         await PermalinkScreen.jumpToRecentMessages();

@@ -222,15 +222,8 @@ describe('Search - Result Interactions', () => {
 
         // # Open search, search for term, and save the result
         await SearchMessagesScreen.open();
+        await SearchMessagesScreen.searchInput.tap();
 
-        // Wrap the return-key + openPostOptions sequence with disableSynchronization.
-        // See search_modifiers.e2e.ts MM-T585_1 for the same iOS 26 / new-arch
-        // JS-Runloop "Perform Block" issue: recent-search autocomplete and WS
-        // polling keep JS busy in Detox's eyes, blocking idle-driven tap() for
-        // the full 240s Jest test timeout (observed: this test alone burned
-        // 8 min in CI run 26352177261 shard 17 before starving downstream
-        // specs). Use polling visibility (waitForElementToBeVisible) inside
-        // the no-sync block.
         await device.disableSynchronization();
         let searchedPostId: string;
         try {
@@ -247,7 +240,7 @@ describe('Search - Result Interactions', () => {
         } finally {
             await device.enableSynchronization();
         }
-        await PostOptionsScreen.savePostOption.tap();
+        await PostOptionsScreen.tapSavePost();
         await wait(timeouts.TWO_SEC);
 
         // # Navigate to Saved Messages
@@ -262,7 +255,7 @@ describe('Search - Result Interactions', () => {
 
         // # Unsave the post to clean up, then go back to channel list
         await SavedMessagesScreen.openPostOptionsFor(searchedPostId, message);
-        await PostOptionsScreen.unsavePostOption.tap();
+        await PostOptionsScreen.tapUnsavePost();
         await wait(timeouts.TWO_SEC);
 
         // # Go back to search screen to clean up recent searches

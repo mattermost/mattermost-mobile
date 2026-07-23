@@ -52,7 +52,7 @@ describe('Classification Banner - Offline / Cache Behaviour', () => {
 
     it('MM-T_CB_OFFLINE_1 - should display the banner from DB cache when API is unreachable on reload', async () => {
         // # Configure classification and verify it works online first
-        await Properties.apiSetupClassificationWithBanner(siteOneUrl, {levelName: 'TOP SECRET'});
+        await Properties.apiSetupClassificationWithBanner(siteOneUrl, {levelName: 'TOP SECRET', user: testUser});
         await device.reloadReactNative();
         await ChannelListScreen.toBeVisible();
         await GlobalClassificationBanner.toBeVisible();
@@ -72,7 +72,7 @@ describe('Classification Banner - Offline / Cache Behaviour', () => {
 
     it('MM-T_CB_OFFLINE_2 - should show stale cached value when API is blocked after a server change', async () => {
         // # Set up classification at TOP SECRET
-        const {linkedFieldId, optionIdsByName} = await Properties.apiSetupClassificationWithBanner(siteOneUrl, {levelName: 'TOP SECRET'});
+        const {linkedFieldId, optionIdsByName} = await Properties.apiSetupClassificationWithBanner(siteOneUrl, {levelName: 'TOP SECRET', user: testUser});
         const secretOptionId = optionIdsByName.SECRET;
         if (!secretOptionId) {
             throw new Error(`SECRET option id missing from setup. Available: ${Object.keys(optionIdsByName).join(', ')}`);

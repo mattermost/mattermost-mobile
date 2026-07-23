@@ -27,7 +27,7 @@ import {
     ThreadScreen,
 } from '@support/ui/screen';
 import {getRandomId, timeouts, wait, waitForElementToBeVisible} from '@support/utils';
-import {expect} from 'detox';
+import {by, expect, waitFor} from 'detox';
 
 describe('Search - Search Message Post Actions', () => {
     const serverOneDisplayName = 'Server 1';
@@ -89,7 +89,7 @@ describe('Search - Search Message Post Actions', () => {
         // # Edit post message and tap save button
         const updatedMessage = `${message} edit`;
         await EditPostScreen.messageInput.replaceText(updatedMessage);
-        await EditPostScreen.saveButton.tap();
+        await EditPostScreen.save();
 
         // * Verify post message is updated and displays edited indicator '(edited)'
         await ChannelScreen.assertPostMessageEdited(searchedPost.id, updatedMessage, 'search_page');
@@ -201,6 +201,15 @@ describe('Search - Search Message Post Actions', () => {
 
         const {post: searchedPost} = await Post.apiGetLastPostInChannel(siteOneUrl, testChannel.id);
         await SearchMessagesScreen.openPostOptionsFor(searchedPost.id, message);
+
+        // Ensure pin option is visible (may be below fold in bottom sheet)
+        try {
+            await waitFor(PostOptionsScreen.pinPostOption).toBeVisible().
+                whileElement(by.id('post_options.scroll_view')).
+                scroll(100, 'down');
+        } catch {
+            // Option already visible or not scrollable
+        }
         await PostOptionsScreen.pinPostOption.tap();
         await ChannelListScreen.open();
         await ChannelScreen.open(channelsCategory, testChannel.name);

@@ -70,6 +70,7 @@ describe('Classification Banner - Global Classification Banner', () => {
         });
         await Properties.apiSetupClassificationWithBanner(siteOneUrl, {
             levelName: 'TOP SECRET',
+            user: testUser,
         });
         await device.reloadReactNative();
 
@@ -88,6 +89,7 @@ describe('Classification Banner - Global Classification Banner', () => {
         });
         await Properties.apiSetupClassificationWithBanner(siteOneUrl, {
             levelName: 'TOP SECRET',
+            user: testUser,
         });
         await device.reloadReactNative();
 
@@ -111,6 +113,7 @@ describe('Classification Banner - Global Classification Banner', () => {
         });
         await Properties.apiSetupClassificationWithBanner(siteOneUrl, {
             levelName: 'TOP SECRET',
+            user: testUser,
         });
         await device.reloadReactNative();
 
@@ -145,6 +148,7 @@ describe('Classification Banner - Global Classification Banner', () => {
         });
         await Properties.apiSetupClassificationWithBanner(siteOneUrl, {
             levelName: 'TOP SECRET',
+            user: testUser,
         });
         await device.reloadReactNative();
 
@@ -174,6 +178,7 @@ describe('Classification Banner - Global Classification Banner', () => {
         });
         const {linkedFieldId, optionIdsByName} = await Properties.apiSetupClassificationWithBanner(siteOneUrl, {
             levelName: 'TOP SECRET',
+            user: testUser,
         });
         const secretOptionId = optionIdsByName.SECRET;
         if (!secretOptionId) {
@@ -206,6 +211,7 @@ describe('Classification Banner - Global Classification Banner', () => {
         });
         await Properties.apiSetupClassificationWithBanner(siteOneUrl, {
             levelName: 'TOP SECRET',
+            user: testUser,
         });
         await device.reloadReactNative();
 
@@ -230,6 +236,7 @@ describe('Classification Banner - Global Classification Banner', () => {
         });
         await Properties.apiSetupClassificationWithBanner(siteOneUrl, {
             levelName: 'TOP SECRET',
+            user: testUser,
         });
         await device.reloadReactNative();
 
@@ -259,6 +266,7 @@ describe('Classification Banner - Global Classification Banner', () => {
         });
         await Properties.apiSetupClassificationWithBanner(siteOneUrl, {
             levelName: 'TOP SECRET',
+            user: testUser,
         });
         await device.reloadReactNative();
 

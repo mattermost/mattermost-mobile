@@ -63,10 +63,9 @@ describe('Messaging - Message Edit', () => {
         const {postListPostItem: originalPostListPostItem} = ChannelScreen.getPostListPostItem(post.id, message);
         await waitFor(originalPostListPostItem).toBeVisible().withTimeout(timeouts.FOUR_SEC);
 
-        // # Scroll the post list (not the post item) to dismiss the keyboard and ensure post is tappable
-        try {
-            await ChannelScreen.getFlatPostList().scroll(100, 'up', 0.5, 0.5);
-        } catch { /* list at boundary — nothing to scroll */ }
+        // # Dismiss the keyboard so the just-posted message is not occluded (interactive
+        // dismiss needs a downward drag, not a programmatic scroll).
+        await ChannelScreen.dismissKeyboard();
 
         // # Open post options for the message that was just posted and tap edit option
         await ChannelScreen.openPostOptionsFor(post.id, message);
@@ -111,10 +110,9 @@ describe('Messaging - Message Edit', () => {
         const {postListPostItem} = ChannelScreen.getPostListPostItem(post.id, message);
         await waitFor(postListPostItem).toBeVisible().withTimeout(timeouts.FOUR_SEC);
 
-        // # Scroll the post list (not the post item) to dismiss the keyboard and ensure post is tappable
-        try {
-            await ChannelScreen.getFlatPostList().scroll(100, 'up', 0.5, 0.5);
-        } catch { /* list at boundary — nothing to scroll */ }
+        // # Dismiss the keyboard so the just-posted message is not occluded (interactive
+        // dismiss needs a downward drag, not a programmatic scroll).
+        await ChannelScreen.dismissKeyboard();
 
         // # Open post options for the message that was just posted and tap edit option
         await ChannelScreen.openPostOptionsFor(post.id, message);

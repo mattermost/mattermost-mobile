@@ -169,6 +169,9 @@ describe('Messaging - Emojis and Reactions', () => {
         await EmojiPickerScreen.open();
         await device.disableSynchronization();
 
+        // Wait for emoji search input to be fully rendered and hittable
+        await waitFor(EmojiPickerScreen.searchInput).toBeVisible().withTimeout(timeouts.TEN_SEC);
+
         // * Verify emojis exist in recently used section
         await waitFor(element(by.text('RECENTLY USED')).atIndex(0)).toBeVisible().withTimeout(timeouts.TEN_SEC);
         await expect(element(by.text('🦊')).atIndex(0)).toExist();
@@ -190,6 +193,9 @@ describe('Messaging - Emojis and Reactions', () => {
         await ChannelScreen.openPostOptionsFor(post.id, message);
         await EmojiPickerScreen.open();
         await device.disableSynchronization();
+
+        // Wait for emoji search input to be fully rendered and hittable
+        await waitFor(EmojiPickerScreen.searchInput).toBeVisible().withTimeout(timeouts.TEN_SEC);
         await EmojiPickerScreen.searchInput.replaceText(searchTerm);
         await EmojiPickerScreen.searchInput.tapReturnKey();
 

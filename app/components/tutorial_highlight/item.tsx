@@ -2,7 +2,7 @@
 // See LICENSE.txt for license information.
 
 import React, {useMemo} from 'react';
-import {StyleSheet} from 'react-native';
+import {Pressable, StyleSheet} from 'react-native';
 import Svg, {ClipPath, Defs, G, Path, Rect} from 'react-native-svg';
 import tinyColor from 'tinycolor2';
 
@@ -28,31 +28,37 @@ const HighlightItem = ({height, itemBounds, onDismiss, onLayout, borderRadius = 
     }, [borderRadius, itemBounds, width, height]);
 
     return (
-        <Svg
+        <Pressable
             style={StyleSheet.absoluteFill}
             onPress={onDismiss}
-            onLayout={onLayout}
+            testID='tutorial_highlight.dismiss'
         >
-            <G>
-                <Defs>
-                    <ClipPath id='elementBounds'>
-                        <Path
-                            d={pathD}
-                            clipRule='evenodd'
-                        />
-                    </ClipPath>
-                </Defs>
-                <Rect
-                    x={0}
-                    y={0}
-                    width={width}
-                    height={height}
-                    clipPath='#elementBounds'
-                    fill={isDark ? 'white' : 'black'}
-                    fillOpacity={0.3}
-                />
-            </G>
-        </Svg>
+            <Svg
+                style={StyleSheet.absoluteFill}
+                onLayout={onLayout}
+                pointerEvents='none'
+            >
+                <G>
+                    <Defs>
+                        <ClipPath id='elementBounds'>
+                            <Path
+                                d={pathD}
+                                clipRule='evenodd'
+                            />
+                        </ClipPath>
+                    </Defs>
+                    <Rect
+                        x={0}
+                        y={0}
+                        width={width}
+                        height={height}
+                        clipPath='#elementBounds'
+                        fill={isDark ? 'white' : 'black'}
+                        fillOpacity={0.3}
+                    />
+                </G>
+            </Svg>
+        </Pressable>
     );
 };
 

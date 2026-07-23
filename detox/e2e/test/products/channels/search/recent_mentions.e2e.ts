@@ -241,7 +241,7 @@ describe('Search - Recent Mentions', () => {
         // # Edit the message and save
         const updatedMessage = `${ownMentionPost.messageText} edit`;
         await EditPostScreen.messageInput.replaceText(updatedMessage);
-        await EditPostScreen.saveButton.tap();
+        await EditPostScreen.save();
 
         // * Verify post displays the edited indicator (single testID — combined-text
         // regex doesn't work because @mention is a separate React node).

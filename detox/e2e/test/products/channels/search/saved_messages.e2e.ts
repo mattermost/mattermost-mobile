@@ -30,7 +30,7 @@ import {
     ThreadScreen,
 } from '@support/ui/screen';
 import {getRandomId, timeouts, waitForElementToBeVisible} from '@support/utils';
-import {expect} from 'detox';
+import {by, expect, waitFor} from 'detox';
 
 describe('Search - Saved Messages', () => {
     const serverOneDisplayName = 'Server 1';
@@ -245,6 +245,15 @@ describe('Search - Saved Messages', () => {
 
         // # Open post options for saved message, tap on pin to channel option, go back to channel list screen, open the channel screen where saved message is posted, open channel info screen, and open pinned messages screen
         await SavedMessagesScreen.openPostOptionsFor(savedPost.id, message);
+
+        // Ensure pin option is visible (may be below fold in bottom sheet)
+        try {
+            await waitFor(PostOptionsScreen.pinPostOption).toBeVisible().
+                whileElement(by.id('post_options.scroll_view')).
+                scroll(100, 'down');
+        } catch {
+            // Option already visible or not scrollable
+        }
         await PostOptionsScreen.pinPostOption.tap();
         await SavedMessagesScreen.close();
         await ChannelScreen.open(channelsCategory, testChannel.name);

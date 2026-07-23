@@ -20,6 +20,7 @@ class ManageChannelMembersScreen {
         notice: 'manage_members.notice',
         tutorialHighlight: 'tutorial_highlight',
         tutorialSwipeLeft: 'tutorial_swipe_left',
+        tutorialDismiss: 'tutorial_highlight.dismiss',
         gmMemberSectionList: 'manage_members.user_list.section_list',
     };
 
@@ -35,6 +36,7 @@ class ManageChannelMembersScreen {
     notice = element(by.id(this.testID.notice));
     tutorialHighlight = element(by.id(this.testID.tutorialHighlight));
     tutorialSwipeLeft = element(by.id(this.testID.tutorialSwipeLeft));
+    tutorialDismiss = element(by.id(this.testID.tutorialDismiss));
     backButton = element(by.id(this.testID.backButton));
 
     getUserItem = (userId: string) => {
@@ -108,15 +110,11 @@ class ManageChannelMembersScreen {
                 await this.tutorialSwipeLeft.tap();
                 await waitFor(this.tutorialHighlight).not.toExist().withTimeout(timeouts.TEN_SEC);
             } else {
-                // On Android, TutorialHighlight uses a React Native Modal (separate Dialog window).
-                // Espresso searches the focused Dialog window, not the Activity. The 'tutorial_highlight'
-                // testID is on the Modal element itself and is never found. The 'tutorial_swipe_left'
-                // View inside the Modal IS accessible from the Dialog window.
-                await waitForElementToExist(this.tutorialSwipeLeft, timeouts.HALF_MIN);
-                await device.pressBack();
+                await waitForElementToExist(this.tutorialDismiss, timeouts.HALF_MIN);
+                await this.tutorialDismiss.tap({x: 1, y: 1});
 
                 // Poll until the tutorial disappears; waitFor().not.toExist() blocks on bridge-idle
-                // after the pressBack dismiss animation and can spuriously time out.
+                // after the dismiss animation and can spuriously time out.
                 await waitForElementToNotExist(this.tutorialSwipeLeft, timeouts.TEN_SEC);
             }
         } catch {

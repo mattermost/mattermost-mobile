@@ -79,54 +79,58 @@ class EmojiPickerScreen {
     };
 
     tapSearchResultEmoji = async (glyph: string, emojiShortName?: string) => {
-        // Prefer the deterministic per-result testID (emoji_item.tsx renders
-        // `emoji_picker.search_result.<name>`). The by.text/withAncestor fallback
-        // below is fragile: the filtered results render in the bottom sheet (not
-        // reliably under the emoji_picker ancestor) and the emoji glyph is not a
-        // stable text match on iOS, which left the clown_face row un-tappable and
-        // cascaded into the whole Custom Status suite.
-        if (emojiShortName) {
-            try {
-                const byId = element(by.id(`emoji_picker.search_result.${emojiShortName}`)).atIndex(0);
-                if (isAndroid()) {
-                    await waitFor(byId).toExist().withTimeout(timeouts.TEN_SEC);
-                } else {
-                    await waitFor(byId).toBeVisible().withTimeout(timeouts.TEN_SEC);
-                }
-                await byId.tap();
-                return;
-            } catch {
-                // Fall back to text/ancestor matching below.
+        // The filtered emoji picker debounces a custom-emoji network search on each keystroke and
+        // animates the bottom sheet, so the app never reports idle. Detox's default synchronized
+        // waitFor/tap then times out even though the result row is rendered and visible (MM-T4990_3
+        // artifact: the :clown_face: row is on screen, yet the matcher timed out while device.log
+        // logged repeated "DYNAMIC_TASKS_HAVE_IDLED"). Disable synchronization for the whole
+        // interaction so matching and tapping evaluate against the current view hierarchy instead of
+        // waiting for an idle that never arrives.
+        //
+        // Matching: on Android the per-row testID on the FlashList item does not surface as a
+        // Detox-matchable tag (the testID assertion returns "was null"), but the row's ":name:" text
+        // does match, so text is the reliable Android path. The testID is tried first on iOS, where
+        // it resolves as an accessibilityIdentifier.
+        await device.disableSynchronization();
+        try {
+            const candidates: Detox.NativeMatcher[] = [];
+            if (emojiShortName && isIos()) {
+                candidates.push(by.id(`emoji_picker.search_result.${emojiShortName}`));
             }
-        }
 
-        const ancestorMatchers = [
-            by.id(this.testID.emojiPickerScreen),
-            by.id('emoji_picker'),
-            by.id('custom_emoji_picker'),
-        ];
-        const labels = emojiShortName ? [glyph, `:${emojiShortName}:`] : [glyph];
-
-        /* eslint-disable no-await-in-loop -- try each ancestor/label combination until one taps */
-        for (const ancestor of ancestorMatchers) {
+            // Prefer the stable ":name:" text (what the row renders) over the raw glyph.
+            const labels = emojiShortName ? [`:${emojiShortName}:`, glyph] : [glyph];
+            const ancestors = [
+                by.id('emoji_picker'),
+                by.id(this.testID.emojiPickerScreen),
+                by.id('custom_emoji_picker'),
+            ];
             for (const label of labels) {
+                for (const ancestor of ancestors) {
+                    candidates.push(by.text(label).withAncestor(ancestor));
+                }
+
+                // Last resort: the ":name:" text is unique on the filtered results screen.
+                candidates.push(by.text(label));
+            }
+
+            /* eslint-disable no-await-in-loop -- try each matcher until one is visible and taps */
+            for (const matcher of candidates) {
                 try {
-                    const emoji = element(by.text(label).withAncestor(ancestor)).atIndex(0);
-                    if (isAndroid()) {
-                        await waitFor(emoji).toExist().withTimeout(timeouts.FIVE_SEC);
-                    } else {
-                        await waitFor(emoji).toBeVisible().withTimeout(timeouts.TEN_SEC);
-                    }
-                    await emoji.tap();
+                    const el = element(matcher).atIndex(0);
+                    await waitForElementToBeVisible(el, timeouts.FIVE_SEC);
+                    await el.tap();
                     return;
                 } catch {
-                    // Try the next ancestor/label combination.
+                    // Try the next matcher.
                 }
             }
-        }
-        /* eslint-enable no-await-in-loop */
+            /* eslint-enable no-await-in-loop */
 
-        throw new Error(`tapSearchResultEmoji: could not tap ${glyph}`);
+            throw new Error(`tapSearchResultEmoji: could not tap ${glyph}`);
+        } finally {
+            await device.enableSynchronization();
+        }
     };
 }
 

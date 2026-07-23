@@ -251,9 +251,11 @@ describe('Server Login - Server List', () => {
             // On iOS, the Logout button (higher z-order than Remove) partially overlaps Remove
             // during the reveal animation.  Use waitFor with 100% threshold so we only tap once
             // the Logout Animated.View has fully translated to its own position (progress == 1).
+            // TEN_SEC matches the sibling reveal-waits in MM-T4691_6/7: the failure artifact shows
+            // Remove does reach 100% visibility, but the reveal can take >5s on CI (TIMEOUT(5s)).
             await waitFor(ServerListScreen.getServerItemRemoveOption(serverOneDisplayName)).
                 toBeVisible(100).
-                withTimeout(timeouts.FIVE_SEC);
+                withTimeout(timeouts.TEN_SEC);
         } else {
             await wait(timeouts.ONE_SEC);
         }
@@ -304,7 +306,14 @@ describe('Server Login - Server List', () => {
         await ServerListScreen.getServerItemInactive(serverThreeDisplayName).atIndex(0).swipe('left', 'slow');
 
         // TWO_SEC lets the reveal animation fully settle before tapping the action button.
-        await wait(timeouts.TWO_SEC);
+        // On iOS, also wait for the logout option to be fully visible before tapping.
+        if (isIos()) {
+            await waitFor(ServerListScreen.getServerItemLogoutOption(serverThreeDisplayName)).
+                toBeVisible(100).
+                withTimeout(timeouts.TEN_SEC);
+        } else {
+            await wait(timeouts.TWO_SEC);
+        }
         await ServerListScreen.getServerItemLogoutOption(serverThreeDisplayName).atIndex(0).tap();
 
         // * Verify logout server alert is displayed
@@ -390,7 +399,14 @@ describe('Server Login - Server List', () => {
         await ServerListScreen.getServerItemInactive(serverTwoDisplayName).atIndex(0).swipe('left', 'slow');
 
         // TWO_SEC lets the reveal animation fully settle before tapping the action button.
-        await wait(timeouts.TWO_SEC);
+        // On iOS, also wait for the logout option to be fully visible before tapping.
+        if (isIos()) {
+            await waitFor(ServerListScreen.getServerItemLogoutOption(serverTwoDisplayName)).
+                toBeVisible(100).
+                withTimeout(timeouts.TEN_SEC);
+        } else {
+            await wait(timeouts.TWO_SEC);
+        }
         await ServerListScreen.getServerItemLogoutOption(serverTwoDisplayName).atIndex(0).tap();
         await wait(timeouts.FOUR_SEC);
         await waitForElementToBeVisible(Alert.logoutButton, timeouts.HALF_MIN);

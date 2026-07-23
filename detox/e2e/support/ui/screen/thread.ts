@@ -19,8 +19,9 @@ class ThreadScreen {
         threadScreenPrefix: 'thread.',
         threadScreen: 'thread.screen',
 
-        // Shared NavigationHeader back control (app/components/navigation_header/header.tsx)
+        // Shared NavigationHeader back control (app/components/navigation_header/header.tsx).
         backButton: 'navigation.header.back',
+        androidBackButton: 'thread.navigation.back.button',
         followButton: 'thread.follow_thread.button',
         followingButton: 'thread.following_thread.button',
         scheduledPostTooltipCloseButton: 'scheduled_post.tooltip.close.button',
@@ -30,6 +31,7 @@ class ThreadScreen {
 
     threadScreen = element(by.id(this.testID.threadScreen));
     backButton = element(by.id(this.testID.backButton));
+    androidBackButton = element(by.id(this.testID.androidBackButton));
     followButton = element(by.id(this.testID.followButton));
     followingButton = element(by.id(this.testID.followingButton));
     scheduledPostTooltipCloseButton = element(by.id(this.testID.scheduledPostTooltipCloseButton));
@@ -118,8 +120,11 @@ class ThreadScreen {
     };
 
     back = async () => {
-        await waitForElementToExist(this.backButton, timeouts.TEN_SEC);
-        await this.backButton.tap();
+        const backButton = isAndroid() ? this.androidBackButton : this.backButton;
+        await waitForElementToExist(backButton, timeouts.TEN_SEC);
+
+        // Use .atIndex(0) to tap the first back button when multiple are present (e.g., from stacked navigators)
+        await backButton.atIndex(0).tap();
         await waitFor(this.threadScreen).not.toBeVisible().withTimeout(timeouts.TEN_SEC);
 
         // Wait for the previous screen to be fully loaded and rendered

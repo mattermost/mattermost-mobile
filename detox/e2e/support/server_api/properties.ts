@@ -2,6 +2,7 @@
 // See LICENSE.txt for license information.
 
 import {getRandomId, wait, timeouts} from '@support/utils';
+import axios from 'axios';
 
 import client from './client';
 import {getResponseFromError} from './common';
@@ -159,6 +160,11 @@ export const apiSetupClassificationWithBanner = async (
     options?: {
         levels?: PropertyFieldOption[];
         levelName?: string;
+
+        // The user whose session the app will use after reload. When provided, setup also polls the
+        // property-fields endpoint AS this user (Bearer token) so it only returns once that session
+        // can read the classification field — not just the admin session (see the app-user poll below).
+        user?: {username?: string; password?: string; newUser?: {email?: string; username?: string; password?: string}};
     },
 ) => {
     const levels = options?.levels ?? defaultClassificationLevels();
@@ -236,15 +242,14 @@ export const apiSetupClassificationWithBanner = async (
     // NOTE: pass '' for target_id to mirror the app client exactly — app/client/rest/properties.ts
     // uses `if (targetId !== undefined)` and CLASSIFICATIONS_FIELD_TARGET_ID = '', so the app sends
     // `&target_id=`. The verify GET must send the identical URL or it proves nothing.
-    const checkLinkedVisible = async (): Promise<string | undefined> => {
-        const verify = await apiGetPropertyFields(baseUrl, GROUP_NAME, LINKED_OBJECT_TYPE, TARGET_TYPE, '') as {fields?: any[]; error?: unknown};
-        const visibleLinked = (verify.fields ?? []).filter(
+    const evaluateLinked = (fields: any[]): string | undefined => {
+        const visibleLinked = fields.filter(
             (f) => f.name === LINKED_FIELD_NAME && f.delete_at === 0 && f.linked_field_id && f.id === linkedField.id,
         );
         if (visibleLinked.length === 0) {
             return `linked system field ${linkedField.id} not returned by GET ` +
                 `/properties/groups/${GROUP_NAME}/${LINKED_OBJECT_TYPE}/fields?target_type=${TARGET_TYPE}&target_id=. ` +
-                `Response: ${JSON.stringify(verify)}`;
+                `Fields: ${JSON.stringify(fields)}`;
         }
         const linkedOptions = (visibleLinked[0].attrs?.options as PropertyFieldOption[] | undefined) ?? [];
         if (!linkedOptions.some((o) => o.id === selectedOption.id)) {
@@ -253,11 +258,29 @@ export const apiSetupClassificationWithBanner = async (
         return undefined;
     };
 
-    const pollLinkedVisible = async (sessionLabel: string, maxAttempts = 20) => {
+    // Admin read via the shared cookie client.
+    const fetchLinkedAsAdmin = async (): Promise<any[]> => {
+        const verify = await apiGetPropertyFields(baseUrl, GROUP_NAME, LINKED_OBJECT_TYPE, TARGET_TYPE, '') as {fields?: any[]};
+        return verify.fields ?? [];
+    };
+
+    // App-user read via a standalone Bearer-token request. Mirrors the mobile client exactly and
+    // does not disturb the shared admin cookie jar (which the shared client re-logs-in as admin on 401).
+    const fetchLinkedAsUser = (token: string) => async (): Promise<any[]> => {
+        const url = `${baseUrl}/api/v4/properties/groups/${GROUP_NAME}/${LINKED_OBJECT_TYPE}/fields?target_type=${TARGET_TYPE}&target_id=`;
+        const res = await axios.get(url, {headers: {Authorization: `Bearer ${token}`, 'X-Requested-With': 'XMLHttpRequest'}});
+        return (res.data ?? []) as any[];
+    };
+
+    const pollLinkedVisible = async (label: string, fetchFields: () => Promise<any[]>, maxAttempts = 20) => {
         let lastError: string | undefined;
         for (let attempt = 0; attempt < maxAttempts; attempt++) {
-            // eslint-disable-next-line no-await-in-loop -- sequential poll until propagated
-            lastError = await checkLinkedVisible();
+            try {
+                // eslint-disable-next-line no-await-in-loop -- sequential poll until propagated
+                lastError = evaluateLinked(await fetchFields());
+            } catch (err) {
+                lastError = `fetch failed: ${JSON.stringify(getResponseFromError(err))}`;
+            }
             if (!lastError) {
                 return;
             }
@@ -266,14 +289,34 @@ export const apiSetupClassificationWithBanner = async (
                 await wait(timeouts.TWO_SEC);
             }
         }
-        throw new Error(`apiSetupClassificationWithBanner (${sessionLabel}): ${lastError}`);
+        throw new Error(`apiSetupClassificationWithBanner (${label}): ${lastError}`);
     };
 
-    // System-scoped property fields are readable by every authenticated user (server:
-    // api4/properties.go resolves target_type=system to any-authenticated-user), so once the admin
-    // session can read the linked field it has propagated for the app user too. The admin poll is
-    // therefore sufficient to guarantee the field is readable before the test reloads the app.
-    await pollLinkedVisible('admin');
+    // First confirm the write is readable at all (admin session).
+    await pollLinkedVisible('admin', fetchLinkedAsAdmin);
+
+    // Then confirm it is readable by the SAME user session the app will use. System-scoped fields
+    // are permitted to every authenticated user, but on a multi-node cloud server the write can be
+    // visible to the admin session before the app user's session/read-replica has caught up — which
+    // is exactly when the app's post-reload fetch returns an empty list and the banner never appears
+    // (app logs "No classification fields returned"). Polling as the app user closes that gap before
+    // the test reloads the app.
+    if (options?.user) {
+        const loginId = options.user.newUser?.email ?? options.user.newUser?.username ?? options.user.username;
+        const password = options.user.newUser?.password ?? options.user.password;
+        if (loginId && password) {
+            const loginRes = await axios.post(
+                `${baseUrl}/api/v4/users/login`,
+                {login_id: loginId, password},
+                {headers: {'X-Requested-With': 'XMLHttpRequest'}},
+            );
+            const token = (loginRes.headers.token ?? loginRes.headers.Token) as string | undefined;
+            if (!token) {
+                throw new Error('apiSetupClassificationWithBanner: login returned no Token header for app-user propagation poll');
+            }
+            await pollLinkedVisible('app-user', fetchLinkedAsUser(token));
+        }
+    }
 
     return {
         templateFieldId: templateField.id,

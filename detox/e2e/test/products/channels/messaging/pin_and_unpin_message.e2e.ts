@@ -220,10 +220,17 @@ describe('Messaging - Pin and Unpin Message', () => {
         // After pinning, a system post ("X pinned a message") is added, pushing
         // newerPost2 down where the message input bar clips it below the 75%
         // visibility threshold on iOS 26.x (safe area insets reduce visible area).
+        // A single fixed scroll + immediate assert races the clip on iOS 26.x. Scroll the
+        // post into the >=75% visible area, retrying until it appears (or the list can't scroll).
         try {
-            await ChannelScreen.getFlatPostList().scroll(100, 'up', 0.5, 0.5);
-        } catch { /* list may be too short */ }
-        await expect(newerPost2Item).toBeVisible();
+            await waitFor(newerPost2Item).
+                toBeVisible(75).
+                whileElement(by.id('channel.post_list.flat_list')).
+                scroll(100, 'up', 0.5, 0.5);
+        } catch {
+            // List may be too short to scroll — assert directly.
+            await expect(newerPost2Item).toBeVisible();
+        }
 
         // # Open channel info and navigate to pinned messages screen
         await ChannelInfoScreen.open();
