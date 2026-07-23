@@ -22,7 +22,7 @@ import {
     ServerScreen,
     SettingsScreen,
 } from '@support/ui/screen';
-import {getRandomId, timeouts, wait} from '@support/utils';
+import {getRandomId, safeEnableSynchronization, timeouts, wait} from '@support/utils';
 import {expect, waitFor} from 'detox';
 
 describe('Account - Account Menu', () => {
@@ -78,49 +78,58 @@ describe('Account - Account Menu', () => {
     });
 
     it('MM-T4988_2 - should be able to set user presence', async () => {
-        // # Tap on user presence option and tap on offline user status option
-        await AccountScreen.userPresenceOption.tap();
-        await wait(timeouts.ONE_SEC);
-        await AccountScreen.offlineUserStatusOption.tap();
+        // The status update fires an async network request and then dismisses the
+        // bottom sheet. On slow CI networks Detox's bridge-idle synchronization can
+        // wait for the request well past the Jest timeout, so run the whole status
+        // cycle with synchronization disabled and verify UI state explicitly.
+        await device.disableSynchronization();
+        try {
+            // # Tap on user presence option and tap on offline user status option
+            await AccountScreen.userPresenceOption.tap();
+            await wait(timeouts.ONE_SEC);
+            await AccountScreen.offlineUserStatusOption.tap();
 
-        // * Verify on account screen and verify user presence icon and label are for offline user status
-        await AccountScreen.toBeVisible();
-        await wait(timeouts.TWO_SEC);
-        await waitFor(AccountScreen.getUserPresenceIndicator('offline')).toExist().withTimeout(timeouts.TEN_SEC);
-        await expect(AccountScreen.getUserPresenceLabel('offline')).toHaveText('Offline');
+            // * Verify on account screen and verify user presence icon and label are for offline user status
+            await waitFor(AccountScreen.accountScreen).toBeVisible().withTimeout(timeouts.TEN_SEC);
+            await wait(timeouts.TWO_SEC);
+            await waitFor(AccountScreen.getUserPresenceIndicator('offline')).toExist().withTimeout(timeouts.TEN_SEC);
+            await expect(AccountScreen.getUserPresenceLabel('offline')).toHaveText('Offline');
 
-        // # Tap on user presence option and tap on do not disturb user status option
-        await AccountScreen.userPresenceOption.tap();
-        await wait(timeouts.ONE_SEC);
-        await AccountScreen.dndUserStatusOption.tap();
+            // # Tap on user presence option and tap on do not disturb user status option
+            await AccountScreen.userPresenceOption.tap();
+            await wait(timeouts.ONE_SEC);
+            await AccountScreen.dndUserStatusOption.tap();
 
-        // * Verify on account screen and verify user presence icon and label are for do no disturb user status
-        await AccountScreen.toBeVisible();
-        await wait(timeouts.TWO_SEC);
-        await waitFor(AccountScreen.getUserPresenceIndicator('dnd')).toExist().withTimeout(timeouts.TEN_SEC);
-        await expect(AccountScreen.getUserPresenceLabel('dnd')).toHaveText('Do Not Disturb');
+            // * Verify on account screen and verify user presence icon and label are for do no disturb user status
+            await waitFor(AccountScreen.accountScreen).toBeVisible().withTimeout(timeouts.TEN_SEC);
+            await wait(timeouts.TWO_SEC);
+            await waitFor(AccountScreen.getUserPresenceIndicator('dnd')).toExist().withTimeout(timeouts.TEN_SEC);
+            await expect(AccountScreen.getUserPresenceLabel('dnd')).toHaveText('Do Not Disturb');
 
-        // # Tap on user presence option and tap on away user status option
-        await AccountScreen.userPresenceOption.tap();
-        await wait(timeouts.ONE_SEC);
-        await AccountScreen.awayUserStatusOption.tap();
+            // # Tap on user presence option and tap on away user status option
+            await AccountScreen.userPresenceOption.tap();
+            await wait(timeouts.ONE_SEC);
+            await AccountScreen.awayUserStatusOption.tap();
 
-        // * Verify on account screen and verify user presence icon and label are for away user status
-        await AccountScreen.toBeVisible();
-        await wait(timeouts.TWO_SEC);
-        await waitFor(AccountScreen.getUserPresenceIndicator('away')).toExist().withTimeout(timeouts.TEN_SEC);
-        await expect(AccountScreen.getUserPresenceLabel('away')).toHaveText('Away');
+            // * Verify on account screen and verify user presence icon and label are for away user status
+            await waitFor(AccountScreen.accountScreen).toBeVisible().withTimeout(timeouts.TEN_SEC);
+            await wait(timeouts.TWO_SEC);
+            await waitFor(AccountScreen.getUserPresenceIndicator('away')).toExist().withTimeout(timeouts.TEN_SEC);
+            await expect(AccountScreen.getUserPresenceLabel('away')).toHaveText('Away');
 
-        // # Tap on user presence option and tap on online user status option
-        await AccountScreen.userPresenceOption.tap();
-        await wait(timeouts.ONE_SEC);
-        await AccountScreen.onlineUserStatusOption.tap();
+            // # Tap on user presence option and tap on online user status option
+            await AccountScreen.userPresenceOption.tap();
+            await wait(timeouts.ONE_SEC);
+            await AccountScreen.onlineUserStatusOption.tap();
 
-        // * Verify on account screen and verify user presence icon and label are for online user status
-        await AccountScreen.toBeVisible();
-        await wait(timeouts.TWO_SEC);
-        await waitFor(AccountScreen.getUserPresenceIndicator('online')).toExist().withTimeout(timeouts.TEN_SEC);
-        await expect(AccountScreen.getUserPresenceLabel('online')).toHaveText('Online');
+            // * Verify on account screen and verify user presence icon and label are for online user status
+            await waitFor(AccountScreen.accountScreen).toBeVisible().withTimeout(timeouts.TEN_SEC);
+            await wait(timeouts.TWO_SEC);
+            await waitFor(AccountScreen.getUserPresenceIndicator('online')).toExist().withTimeout(timeouts.TEN_SEC);
+            await expect(AccountScreen.getUserPresenceLabel('online')).toHaveText('Online');
+        } finally {
+            await safeEnableSynchronization();
+        }
     });
 
     it('MM-T3251 - should be able to set status from account screen', async () => {
