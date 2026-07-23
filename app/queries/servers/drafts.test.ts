@@ -120,9 +120,16 @@ describe('DraftOutbox serialized writer and repair', () => {
         expect(outboxes.length).toBe(0);
     });
 
-    it('repairs duplicate drafts, keeping the greatest update_at then the lexicographically greatest id', async () => {
+    it('repairs duplicate drafts, keeping the greatest update_at then the greatest id by code-unit order', async () => {
         const updateAtChannel = 'dupupdatechannelid0000000000';
         const tieChannel = 'duptiechannelid00000000000000';
+
+        // For the tie group, use mixed-case ids where UTF-16 code-unit order and locale
+        // collation disagree: code-unit puts 'a' (0x61) AFTER 'Z' (0x5A), so 'aaaa...' is the
+        // greatest and must be kept. localeCompare would treat case as a minor tiebreak and
+        // could instead keep the 'Z...' id, so this guards the ordering.
+        const tieCodeUnitGreatest = 'aaaaaaaaaaaaaaaaaaaaaaaaaa';
+        const tieCodeUnitLeast = 'ZZZZZZZZZZZZZZZZZZZZZZZZZZ';
 
         await database.write(async (writer) => {
             const collection = database.get<DraftModel>(DRAFT);
@@ -142,17 +149,17 @@ describe('DraftOutbox serialized writer and repair', () => {
                     d.updateAt = 5;
                 }),
                 collection.prepareCreate((d) => {
-                    d._raw.id = 'drafttieaaaaaaaaaaaaaaaaaaa';
+                    d._raw.id = tieCodeUnitLeast;
                     d.channelId = tieChannel;
                     d.rootId = '';
-                    d.message = 'tie-a';
+                    d.message = 'tie-upper';
                     d.updateAt = 3;
                 }),
                 collection.prepareCreate((d) => {
-                    d._raw.id = 'drafttiebbbbbbbbbbbbbbbbbbb';
+                    d._raw.id = tieCodeUnitGreatest;
                     d.channelId = tieChannel;
                     d.rootId = '';
-                    d.message = 'tie-b';
+                    d.message = 'tie-lower';
                     d.updateAt = 3;
                 }),
             ];
@@ -168,7 +175,7 @@ describe('DraftOutbox serialized writer and repair', () => {
 
         const tieRemaining = await database.get<DraftModel>(DRAFT).query(Q.where('channel_id', tieChannel)).fetch();
         expect(tieRemaining.length).toBe(1);
-        expect(tieRemaining[0].id).toBe('drafttiebbbbbbbbbbbbbbbbbbb');
+        expect(tieRemaining[0].id).toBe(tieCodeUnitGreatest);
     });
 
     it('round-trips a nullable server timestamp, parsed props, and unhydrated file ids (migration compatibility)', async () => {
@@ -207,9 +214,78 @@ describe('DraftOutbox serialized writer and repair', () => {
         expect(outbox).toBeUndefined();
     });
 
-    it('defines a migration to schema version 21', () => {
+    it('migrates to schema version 21 by adding the Draft columns and creating the DraftOutbox table (non-destructive)', () => {
         const migration = ServerDatabaseMigrations.sortedMigrations.find((m) => m.toVersion === 21);
         expect(migration).toBeDefined();
-        expect(ServerDatabaseMigrations.sortedMigrations[ServerDatabaseMigrations.sortedMigrations.length - 1].toVersion).toBe(21);
+
+        const steps = migration!.steps;
+
+        // The migration must only ADD columns and CREATE a table; any other step type
+        // (which could drop/rewrite data) would be a data-loss risk on upgrade.
+        expect(steps.map((s) => s.type).sort()).toEqual(['add_columns', 'create_table']);
+
+        const addColumnsStep = steps.find((s) => s.type === 'add_columns') as {table: string; columns: Array<{name: string; type: string; isOptional?: boolean}>};
+        expect(addColumnsStep.table).toBe(DRAFT);
+        expect(addColumnsStep.columns).toEqual([
+            {name: 'server_update_at', type: 'number', isOptional: true},
+            {name: 'props', type: 'string', isOptional: true},
+            {name: 'file_ids', type: 'string', isOptional: true},
+        ]);
+
+        const createTableStep = steps.find((s) => s.type === 'create_table') as {schema: {name: string; columns: Record<string, {name: string; type: string; isOptional?: boolean}>}};
+        expect(createTableStep.schema.name).toBe(DRAFT_OUTBOX);
+        expect(Object.keys(createTableStep.schema.columns).sort()).toEqual([
+            'attempt_count',
+            'channel_id',
+            'deleted_fingerprint',
+            'generation',
+            'keep_local',
+            'last_error_code',
+            'next_attempt_at',
+            'operation',
+            'root_id',
+            'status',
+            'team_id',
+        ]);
+    });
+
+    it('repair run concurrently with a mutation on the same key never loses data or throws', async () => {
+        const channelId = 'concurrentrepairchannelid0000';
+
+        // Seed two duplicate drafts for the same key.
+        await database.write(async (writer) => {
+            const collection = database.get<DraftModel>(DRAFT);
+            await writer.batch(
+                collection.prepareCreate((d) => {
+                    d._raw.id = 'concurloseraaaaaaaaaaaaaaaa';
+                    d.channelId = channelId;
+                    d.rootId = '';
+                    d.message = 'loser';
+                    d.updateAt = 1;
+                }),
+                collection.prepareCreate((d) => {
+                    d._raw.id = 'concurwinnerbbbbbbbbbbbbbbb';
+                    d.channelId = channelId;
+                    d.rootId = '';
+                    d.message = 'winner';
+                    d.updateAt = 5;
+                }),
+            );
+        }, 'seed-concurrent');
+
+        // Run repair concurrently with a mutation that touches the same key. Both go through
+        // database.write, so they serialize; neither should throw and exactly one draft must
+        // remain for the key with a coherent (committed) state.
+        await Promise.all([
+            repairDuplicateDrafts(database),
+            mutateDraftAndOutbox(database, channelId, '', upsertPrepare('edited')),
+        ]);
+
+        const remaining = await database.get<DraftModel>(DRAFT).query(Q.where('channel_id', channelId)).fetch();
+        expect(remaining.length).toBe(1);
+
+        // The mutation created its outbox row regardless of ordering.
+        const outbox = await getDraftOutbox(database, channelId, '');
+        expect(outbox).toBeDefined();
     });
 });
