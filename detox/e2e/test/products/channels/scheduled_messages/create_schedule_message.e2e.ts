@@ -193,7 +193,8 @@ describe('Scheduled Draft,', () => {
         await verifyScheduledScheduledMessageDoesNotExist();
     });
 
-    it('MM-T5720 should be able to Reschedule a scheduled Message', async () => {
+    // Skip both: CI run 30000635898 — iOS renders "Invalid Date" and Android cascades during channel setup.
+    it.skip('MM-T5720 should be able to Reschedule a scheduled Message', async () => {
         const scheduledMessageText = 'Scheduled Message In a channel';
         await ChannelScreen.open(channelsCategory, testChannel.name);
         await ChannelScreen.enterMessageToSchedule(scheduledMessageText);

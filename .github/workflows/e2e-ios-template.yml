@@ -550,6 +550,12 @@ jobs:
 
           echo "✅ Simulator is healthy and ready"
 
+      - name: Start mm_blocks webhook sidecar
+        if: contains(matrix.specs, 'mm_blocks_')
+        env:
+          SITE_1_URL: ${{ env.SITE_1_URL }}
+        run: bash detox/scripts/start_webhook_sidecar.sh
+
       - name: Start Metro Bundler and Run Detox E2E Tests
         # Bumped from 60 to 180 min: with ~6 specs per shard averaging 5-15 min each,
         # the 60min step timeout was being hit silently — GitHub kills the step but

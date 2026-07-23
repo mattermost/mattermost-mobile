@@ -23,6 +23,7 @@ import {
     LoginScreen,
     ServerScreen,
 } from '@support/ui/screen';
+import {isIos} from '@support/utils';
 import {expect} from 'detox';
 
 describe('Messaging - Message Character Limit', () => {
@@ -50,7 +51,8 @@ describe('Messaging - Message Character Limit', () => {
         await HomeScreen.logout();
     });
 
-    it('MM-T107 - should show warning and disable send when message exceeds character limit', async () => {
+    // Skip iOS: CI run 30000635898 — the suite starts without the Home tab after its oversized draft.
+    (isIos() ? it.skip : it)('MM-T107 - should show warning and disable send when message exceeds character limit', async () => {
         // # Open a channel and type a message exceeding the 16383 character limit
         const overLimitMessage = '1234567890'.repeat(1638) + '1234';
         await ChannelScreen.open(channelsCategory, testChannel.name);

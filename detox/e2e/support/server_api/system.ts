@@ -157,6 +157,21 @@ export const apiUpdateConfig = async (baseUrl: string, newConfig: any): Promise<
 };
 
 /**
+ * Replace server configuration with a complete config object.
+ * @param {string} baseUrl - the base server URL
+ * @param {Object} config - complete server configuration
+ * @return {Object} returns {config} on success or {error, status} on error
+ */
+export const apiReplaceConfig = async (baseUrl: string, config: any): Promise<any> => {
+    try {
+        const response = await client.put(`${baseUrl}/api/v4/config`, config);
+        return {config: response.data};
+    } catch (err) {
+        return getResponseFromError(err);
+    }
+};
+
+/**
  * Patch server configuration (partial update; server merges with current config).
  * See https://api.mattermost.com/#operation/PatchConfig
  * @param {string} baseUrl - the base server URL
@@ -479,6 +494,7 @@ export const System = {
     apiGetRemoteClusters,
     apiPatchConfig,
     apiPingServerStatus,
+    apiReplaceConfig,
     waitForClientConfigFlag,
 
     // apiRequestTrialLicense, // DISABLED: Do not request trial license in tests

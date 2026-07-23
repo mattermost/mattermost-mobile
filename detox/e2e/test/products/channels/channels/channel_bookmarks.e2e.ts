@@ -194,6 +194,13 @@ describe('Channels - Channel Bookmarks', () => {
     afterEach(async () => {
         // Android safety net: Back up to 4x only if channel_list.screen not visible.
         if (isAndroid()) {
+            try {
+                await waitFor(ChannelBookmarkScreen.addErrorTitle).toBeVisible().withTimeout(timeouts.TWO_SEC);
+                await ChannelBookmarkScreen.errorOkButton.tap();
+            } catch {
+                // No bookmark error alert is present.
+            }
+
             // Back-press loop: dismiss whatever modal/screen a failed test left on
             // top, but stop as soon as the channel list is reached. The detection
             // timeout is TWO_SEC (not ONE_SEC): CI run 28392181656 showed that with a
@@ -316,26 +323,9 @@ describe('Channels - Channel Bookmarks', () => {
         });
         await wait(timeouts.TWO_SEC);
 
-        // * Verify the bookmark modal closed and the bookmark is visible in channel info
-        try {
-            await waitForElementToNotExist(ChannelBookmarkScreen.channelBookmarkScreen, timeouts.TWENTY_SEC);
-        } catch {
-            // Modal didn't auto-dismiss: either the save succeeded but the dismiss
-            // animation stalled, or a save error left the modal up. The close button
-            // dismisses the form on BOTH platforms — safe because a successful create
-            // already persisted the bookmark server-side, and on a save error there is
-            // no bookmark to lose. `device.pressBack()` is a no-op on iOS, so it must
-            // not be the primary fallback (CI 28392181656 MM-T5602_1 iOS stuck here for
-            // 20s). Keep pressBack as an Android-only secondary fallback.
-            try {
-                await ChannelBookmarkScreen.closeButton.tap();
-            } catch {
-                if (isAndroid()) {
-                    await device.pressBack();
-                }
-            }
-            await waitForElementToNotExist(ChannelBookmarkScreen.channelBookmarkScreen, timeouts.TEN_SEC);
-        }
+        // * Verify save succeeded rather than dismissing a failed form.
+        await expect(ChannelBookmarkScreen.addErrorTitle).not.toBeVisible();
+        await waitForElementToNotExist(ChannelBookmarkScreen.channelBookmarkScreen, timeouts.TWENTY_SEC);
         await ChannelInfoScreen.scrollToBookmarks();
 
         // * Verify the bookmark is visible in channel info. The app renders the
@@ -395,18 +385,6 @@ describe('Channels - Channel Bookmarks', () => {
         // # Close the bookmark modal
         await ChannelBookmarkScreen.closeAddButton.tap();
         await expect(ChannelBookmarkScreen.channelBookmarkScreen).not.toBeVisible();
-
-        // # Go back to channel list
-        await ChannelInfoScreen.close();
-        await ChannelScreen.back();
-
-        // Scope to channel_info.bookmarks.list; use toExist() — RNN dual-list + iOS modal overlays.
-        await waitFor(
-            element(
-                by.text('Updated Bookmark').
-                    withAncestor(by.id('channel_info.bookmarks.list')),
-            ),
-        ).toExist().withTimeout(timeouts.TEN_SEC);
 
         // # Go back to channel list
         await ChannelInfoScreen.close();
@@ -680,6 +658,18 @@ describe('Channels - Channel Bookmarks', () => {
         // # Navigate to the channel (12 bookmarks pre-created in beforeAll)
         await openChannel(channelT5612);
 
+        try {
+            await waitFor(element(channelHeaderBookmarksList)).toExist().withTimeout(timeouts.TEN_SEC);
+        } catch {
+            await ChannelInfoScreen.open();
+            await ChannelInfoScreen.waitForBookmarkInChannelInfo(
+                by.text('Scroll Bookmark 1').withAncestor(by.id('channel_info.bookmarks.list')),
+                {textFallback: 'Scroll Bookmark 1'},
+            );
+            await ChannelInfoScreen.close();
+            await waitFor(element(channelHeaderBookmarksList)).toExist().withTimeout(timeouts.TEN_SEC);
+        }
+
         // * Verify that the first bookmark is visible
         await expect(element(firstBookmarkMatcher)).toBeVisible();
 
@@ -873,6 +863,11 @@ describe('Channels - Channel Bookmarks', () => {
         // # Tap the link bookmark
         await linkBookmarkEl.tap();
         await wait(timeouts.ONE_SEC);
+
+        if (isAndroid()) {
+            await device.launchApp({newInstance: false});
+            await ChannelScreen.toBeVisible();
+        }
 
         // * Verify tap does not open the bookmark options bottom sheet
         await expect(ChannelBookmarkScreen.editOption).not.toBeVisible();

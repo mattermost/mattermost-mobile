@@ -368,6 +368,12 @@ jobs:
             android-emulator-${{ runner.os }}-${{ runner.arch }}-
 
       # Retry on emulator crash (all-shards-fail signature); cleans up wedged AVD between attempts.
+      - name: Start mm_blocks webhook sidecar
+        if: contains(matrix.specs, 'mm_blocks_')
+        env:
+          SITE_1_URL: ${{ env.SITE_1_URL }}
+        run: bash detox/scripts/start_webhook_sidecar.sh
+
       - name: Create and run Android Emulator
         env:
           MATRIX_SPECS: ${{ matrix.specs }}

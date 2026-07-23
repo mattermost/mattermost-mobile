@@ -90,7 +90,7 @@ describe('Account - Account Menu', () => {
             await AccountScreen.offlineUserStatusOption.tap();
 
             // * Verify on account screen and verify user presence icon and label are for offline user status
-            await waitFor(AccountScreen.accountScreen).toBeVisible().withTimeout(timeouts.TEN_SEC);
+            await AccountScreen.toBeVisible();
             await wait(timeouts.TWO_SEC);
             await waitFor(AccountScreen.getUserPresenceIndicator('offline')).toExist().withTimeout(timeouts.TEN_SEC);
             await expect(AccountScreen.getUserPresenceLabel('offline')).toHaveText('Offline');
@@ -101,7 +101,7 @@ describe('Account - Account Menu', () => {
             await AccountScreen.dndUserStatusOption.tap();
 
             // * Verify on account screen and verify user presence icon and label are for do no disturb user status
-            await waitFor(AccountScreen.accountScreen).toBeVisible().withTimeout(timeouts.TEN_SEC);
+            await AccountScreen.toBeVisible();
             await wait(timeouts.TWO_SEC);
             await waitFor(AccountScreen.getUserPresenceIndicator('dnd')).toExist().withTimeout(timeouts.TEN_SEC);
             await expect(AccountScreen.getUserPresenceLabel('dnd')).toHaveText('Do Not Disturb');
@@ -112,7 +112,7 @@ describe('Account - Account Menu', () => {
             await AccountScreen.awayUserStatusOption.tap();
 
             // * Verify on account screen and verify user presence icon and label are for away user status
-            await waitFor(AccountScreen.accountScreen).toBeVisible().withTimeout(timeouts.TEN_SEC);
+            await AccountScreen.toBeVisible();
             await wait(timeouts.TWO_SEC);
             await waitFor(AccountScreen.getUserPresenceIndicator('away')).toExist().withTimeout(timeouts.TEN_SEC);
             await expect(AccountScreen.getUserPresenceLabel('away')).toHaveText('Away');
@@ -123,7 +123,7 @@ describe('Account - Account Menu', () => {
             await AccountScreen.onlineUserStatusOption.tap();
 
             // * Verify on account screen and verify user presence icon and label are for online user status
-            await waitFor(AccountScreen.accountScreen).toBeVisible().withTimeout(timeouts.TEN_SEC);
+            await AccountScreen.toBeVisible();
             await wait(timeouts.TWO_SEC);
             await waitFor(AccountScreen.getUserPresenceIndicator('online')).toExist().withTimeout(timeouts.TEN_SEC);
             await expect(AccountScreen.getUserPresenceLabel('online')).toHaveText('Online');

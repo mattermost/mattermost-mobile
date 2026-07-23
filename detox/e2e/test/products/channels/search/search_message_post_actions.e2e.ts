@@ -27,7 +27,7 @@ import {
     ThreadScreen,
 } from '@support/ui/screen';
 import {getRandomId, timeouts, wait, waitForElementToBeVisible} from '@support/utils';
-import {by, expect, waitFor} from 'detox';
+import {by, expect} from 'detox';
 
 describe('Search - Search Message Post Actions', () => {
     const serverOneDisplayName = 'Server 1';
@@ -203,15 +203,7 @@ describe('Search - Search Message Post Actions', () => {
         const {post: searchedPost} = await Post.apiGetLastPostInChannel(siteOneUrl, testChannel.id);
         await SearchMessagesScreen.openPostOptionsFor(searchedPost.id, message);
 
-        // Ensure pin option is visible (may be below fold in bottom sheet)
-        try {
-            await waitFor(PostOptionsScreen.pinPostOption).toBeVisible().
-                whileElement(by.id('post_options.scroll_view')).
-                scroll(100, 'down');
-        } catch {
-            // Option already visible or not scrollable
-        }
-        await PostOptionsScreen.pinPostOption.tap();
+        await PostOptionsScreen.tapPinPost();
         await ChannelListScreen.open();
         await ChannelScreen.open(channelsCategory, testChannel.name);
         await ChannelInfoScreen.open();
@@ -227,7 +219,7 @@ describe('Search - Search Message Post Actions', () => {
         await ChannelScreen.back();
         await SearchMessagesScreen.open();
         await SearchMessagesScreen.openPostOptionsFor(searchedPost.id, message);
-        await PostOptionsScreen.unpinPostOption.tap();
+        await PostOptionsScreen.tapUnpinPost();
         await ChannelListScreen.open();
         await ChannelScreen.open(channelsCategory, testChannel.name);
         await ChannelInfoScreen.open();

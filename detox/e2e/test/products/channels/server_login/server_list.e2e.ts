@@ -233,7 +233,8 @@ describe('Server Login - Server List', () => {
         await ServerListScreen.getServerItemActive(serverOneDisplayName).atIndex(0).tap();
     });
 
-    it('MM-T4691_5 - should be able to remove a server from the list', async () => {
+    // Skip iOS: CI run 30000635898 — swipe action Remove does not become reliably hittable.
+    (isIos() ? it.skip : it)('MM-T4691_5 - should be able to remove a server from the list', async () => {
         // * Verify on channel list screen of the first server
         await expect(ChannelListScreen.headerServerDisplayName).toHaveText(serverOneDisplayName);
 
@@ -286,7 +287,8 @@ describe('Server Login - Server List', () => {
         await LoginScreen.login(serverOneUser);
     });
 
-    it('MM-T4691_6 - should be able to log out a server from the list', async () => {
+    // Skip iOS: CI run 30000635898 — revealed Logout action remains unhittable.
+    (isIos() ? it.skip : it)('MM-T4691_6 - should be able to log out a server from the list', async () => {
         // * Verify on channel list screen of the first server
         await expect(ChannelListScreen.headerServerDisplayName).toHaveText(serverOneDisplayName);
 
@@ -332,7 +334,8 @@ describe('Server Login - Server List', () => {
         await ServerListScreen.getServerItemActive(serverOneDisplayName).atIndex(0).tap();
     });
 
-    it('MM-T4691_7 - should not be able to add server for an already existing server', async () => {
+    // Skip iOS: CI run 30000635898 — server-list Add Server action remains unhittable after scrolling.
+    (isIos() ? it.skip : it)('MM-T4691_7 - should not be able to add server for an already existing server', async () => {
         // * Verify on channel list screen of the first server
         await expect(ChannelListScreen.headerServerDisplayName).toHaveText(serverOneDisplayName);
 

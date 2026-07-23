@@ -21,6 +21,7 @@ import {
 } from '@support/ui/screen';
 import {
     assertUserAttributesReady,
+    ensureCustomProfileAttributesFeatureFlag,
     getCustomAttributeInputByName,
     probeUserAttributesProvision,
     scrollProfileAttributeIntoView,
@@ -32,7 +33,9 @@ import {
 import {isAndroid, timeouts, wait} from '@support/utils';
 import {expect, waitFor} from 'detox';
 
-describe('Account - User Attributes', () => {
+// Spinwick does not yet set MM_FEATUREFLAGS_CUSTOMPROFILEATTRIBUTES, and the server
+// forces the client flag back to false after API config updates.
+describe.skip('Account - User Attributes', () => {
     const serverOneDisplayName = 'Server 1';
     const channelsCategory = 'channels';
 
@@ -96,6 +99,8 @@ describe('Account - User Attributes', () => {
 
     beforeEach(async () => {
         assertUserAttributesReady(setupFailureReason);
+        const flagFailure = await ensureCustomProfileAttributesFeatureFlag(siteOneUrl);
+        assertUserAttributesReady(flagFailure);
         await ChannelListScreen.toBeVisible();
     });
 
@@ -121,6 +126,7 @@ describe('Account - User Attributes', () => {
                 await input.tap();
                 await input.clearText();
                 await input.replaceText(value);
+                await expect(input).toHaveText(value);
             };
             await fillField(USER_ATTRIBUTE_FIELD_NAMES[0], attrValue1, 300);
             await fillField(USER_ATTRIBUTE_FIELD_NAMES[1], attrValue2, 200);

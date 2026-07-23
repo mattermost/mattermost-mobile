@@ -58,8 +58,8 @@ describe('Threads - Global Threads', () => {
     });
 
     beforeEach(async () => {
-        // * Verify on channel list screen
-        await ChannelListScreen.toBeVisible();
+        // # Reset to the channel list even if the previous thread back navigation returned to its channel.
+        await ChannelListScreen.open();
     });
 
     afterAll(async () => {

@@ -9,6 +9,7 @@ class PostOptionsScreen {
     testID = {
         reactionEmojiPrefix: 'post_options.reaction_bar.reaction.',
         postOptionsScreen: 'post_options.screen',
+        scrollView: 'post_options.scroll_view',
         pickReactionButton: 'post_options.reaction_bar.pick_reaction.button',
         replyPostOption: 'post_options.reply_post.option',
         followThreadOption: 'post_options.follow_thread.option',
@@ -166,6 +167,27 @@ class PostOptionsScreen {
 
     tapUnsavePost = async () => {
         await this.tapPostOption(this.unsavePostOption, this.unsavePostOptionLabel, 'Unsave');
+    };
+
+    private tapPinOption = async (option: Detox.NativeElement) => {
+        try {
+            await waitFor(option).
+                toBeVisible().
+                whileElement(by.id(this.testID.scrollView)).
+                scroll(100, 'down');
+        } catch {
+            // The option may already be visible or the sheet may not be scrollable.
+        }
+        await waitFor(option).toExist().withTimeout(timeouts.TEN_SEC);
+        await option.tap({x: 1, y: 1});
+    };
+
+    tapPinPost = async () => {
+        await this.tapPinOption(this.pinPostOption);
+    };
+
+    tapUnpinPost = async () => {
+        await this.tapPinOption(this.unpinPostOption);
     };
 }
 

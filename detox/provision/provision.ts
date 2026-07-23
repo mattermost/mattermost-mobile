@@ -53,7 +53,7 @@ export async function provisionServer(serverUrl: string, credentials: ProvisionC
 
     // Plugin installs can reload config and reset feature flags — re-apply after all setup.
     if (!await ensureCustomProfileAttributesEnabled(client, token)) {
-        logWarn('Custom profile attributes feature flag not enabled after provisioning.');
+        logWarn('Custom profile attributes feature flag not enabled after provisioning; CPA tests remain skipped on Spinwick.');
     }
     if (!await ensureChannelBookmarksEnabled(client, token)) {
         logWarn('Channel bookmarks feature flag not enabled after provisioning.');

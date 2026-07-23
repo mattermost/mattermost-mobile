@@ -98,6 +98,7 @@ const BookmarkDetail = ({disabled, emoji, file, imageUrl, setBookmarkDisplayName
                     buttonStyle={styles.iconButton}
                     containerStyle={styles.iconContainer}
                     onPress={openEmojiPicker}
+                    testID='channel_bookmark.edit.icon_button'
                 >
                     <View style={styles.imageContainer}>
                         <BookmarkIcon

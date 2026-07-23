@@ -9,6 +9,7 @@ class ChannelBookmarkScreen {
         channelBookmarkScreen: 'channel_bookmark.screen',
         closeButton: 'close.channel_bookmark.button',
         saveButton: 'channel_bookmark.edit.save_button',
+        editIconButton: 'channel_bookmark.edit.icon_button',
         linkInput: 'channel_bookmark_add.link.input',
         linkLoading: 'channel_bookmark_add.link.loading',
         linkInputDescription: 'channel_bookmark_add.link.input.description',
@@ -56,7 +57,8 @@ class ChannelBookmarkScreen {
     deleteConfirmYesButton = element(by.text('Yes'));
     deleteConfirmCancelButton = element(by.text('Cancel'));
 
-    // Error alert button
+    // Error alert
+    addErrorTitle = element(by.text('Error adding bookmark'));
     errorOkButton = element(by.text('OK'));
 
     getLinkInput = () => this.linkInput;
@@ -133,7 +135,7 @@ class ChannelBookmarkScreen {
     // CI 28416284905 MM-T5606_1: icon tap + EmojiPickerScreen.toBeVisible() timed out
     // with search input null — bottom-sheet animation / sync still busy on Android.
     openEmojiPickerFromEditModal = async () => {
-        const iconButton = element(by.id('channel_bookmark.edit.icon_button').withAncestor(by.id(this.testID.channelBookmarkScreen)));
+        const iconButton = element(by.id(this.testID.editIconButton).withAncestor(by.id(this.testID.channelBookmarkScreen)));
         const emojiPickerScreen = element(by.id(this.testID.emojiPickerScreen));
         const searchInput = element(by.id(this.testID.emojiPickerSearchInput));
         const toolTipCloseButton = element(by.id(this.testID.emojiPickerToolTipCloseButton));

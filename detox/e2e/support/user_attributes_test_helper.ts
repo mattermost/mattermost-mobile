@@ -36,7 +36,7 @@ const waitForCustomProfileAttributesClientFlag = async (
     return false;
 };
 
-const ensureCustomProfileAttributesFeatureFlag = async (siteOneUrl: string): Promise<string | undefined> => {
+export const ensureCustomProfileAttributesFeatureFlag = async (siteOneUrl: string): Promise<string | undefined> => {
     const {config, error: configError} = await System.apiGetClientConfigOld(siteOneUrl);
     if (configError) {
         return `Could not read client config: ${JSON.stringify(configError)}`;
@@ -66,7 +66,7 @@ const ensureCustomProfileAttributesFeatureFlag = async (siteOneUrl: string): Pro
 
     serverConfig.FeatureFlags = serverConfig.FeatureFlags || {};
     (serverConfig.FeatureFlags as Record<string, unknown>).CustomProfileAttributes = true;
-    const {error: fullUpdateError} = await System.apiUpdateConfig(siteOneUrl, serverConfig);
+    const {error: fullUpdateError} = await System.apiReplaceConfig(siteOneUrl, serverConfig);
     if (fullUpdateError) {
         return `Full config update for CustomProfileAttributes failed: ${JSON.stringify(fullUpdateError)}`;
     }
@@ -77,7 +77,10 @@ const ensureCustomProfileAttributesFeatureFlag = async (siteOneUrl: string): Pro
     }
 
     const {config: latestConfig} = await System.apiGetClientConfigOld(siteOneUrl);
-    return `FeatureFlagCustomProfileAttributes is "${latestConfig?.FeatureFlagCustomProfileAttributes ?? 'missing'}" after patch — server may block this flag`;
+    return (
+        `FeatureFlagCustomProfileAttributes is "${latestConfig?.FeatureFlagCustomProfileAttributes ?? 'missing'}" after API updates. ` +
+        'Cloud Spinwick installations must set MM_FEATUREFLAGS_CUSTOMPROFILEATTRIBUTES=true in Matterwick PriorityEnv'
+    );
 };
 
 const ensureUserAttributeFields = async (siteOneUrl: string): Promise<string | undefined> => {

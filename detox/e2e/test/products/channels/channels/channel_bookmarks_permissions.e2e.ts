@@ -162,35 +162,8 @@ describe('Channels - Channel Bookmarks Permissions', () => {
         await openChannel(channelT5725);
         await wait(timeouts.TWO_SEC);
 
-        // # Open channel info and verify the bookmark is manageable BEFORE archiving.
-        // Checking before archive avoids a race with the CHANNEL_BOOKMARK_DELETED WebSocket
-        // event the server emits on archive, which physically removes the record from local DB.
+        // # Open channel info, then archive the channel via channel settings.
         await ChannelInfoScreen.open();
-
-        // * Verify the bookmark is visible in channel info before archiving.
-        // Scope to channel_info.bookmarks.list to avoid matching the header list behind the modal.
-        const archiveBookmarkEl = element(
-            by.text('Archive Test Bookmark').
-                withAncestor(by.id('channel_info.bookmarks.list')),
-        );
-        await waitFor(archiveBookmarkEl).toBeVisible().withTimeout(timeouts.TEN_SEC);
-
-        // # Long-press the bookmark to verify Edit and Delete ARE available before archiving.
-        // channel_user role has edit_bookmark and delete_bookmark permissions in active channels.
-        await archiveBookmarkEl.longPress();
-        await wait(timeouts.ONE_SEC);
-
-        // * Verify Edit and Delete options are visible (normal active channel)
-        await expect(ChannelBookmarkScreen.editOption).toBeVisible();
-        await expect(ChannelBookmarkScreen.deleteOption).toBeVisible();
-
-        // # Dismiss the bottom sheet by tapping Edit then closing the edit form
-        await ChannelBookmarkScreen.editOption.tap();
-        await ChannelBookmarkScreen.toBeVisible();
-        await ChannelBookmarkScreen.closeEditButton.tap();
-        await wait(timeouts.ONE_SEC);
-
-        // # Archive the channel via channel settings (accessed from channel info)
         await ChannelInfoScreen.openChannelSettings();
         await ChannelSettingsScreen.toBeVisible();
         await ChannelSettingsScreen.archivePublicChannel({confirm: true});
@@ -208,6 +181,18 @@ describe('Channels - Channel Bookmarks Permissions', () => {
 
         // * Verify channel is archived (draft area shows archived state).
         await waitFor(ChannelScreen.postDraftArchived).toExist().withTimeout(timeouts.TWENTY_SEC);
+
+        // # Open channel info for the archived channel.
+        await ChannelInfoScreen.open();
+
+        // * Verify no bookmark actions are available. Archiving deletes the channel's
+        // bookmarks server-side, so there is no bookmark to edit/delete and creation is hidden.
+        await expect(element(by.text('Add a bookmark'))).not.toExist();
+        await waitFor(element(by.text('Archive Test Bookmark'))).
+            not.toExist().
+            withTimeout(timeouts.TEN_SEC);
+
+        await ChannelInfoScreen.close();
 
         // # Close the archived channel and go back to channel list
         await ChannelScreen.postDraftArchivedCloseChannelButton.tap();

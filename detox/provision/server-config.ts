@@ -64,7 +64,10 @@ async function waitForCustomProfileAttributesClientFlag(
     }
     /* eslint-enable no-await-in-loop */
 
-    logWarn('FeatureFlagCustomProfileAttributes not true after config update — user_attributes E2E may fail.');
+    logWarn(
+        'FeatureFlagCustomProfileAttributes not true after config update. ' +
+        'Cloud Spinwick installations require MM_FEATUREFLAGS_CUSTOMPROFILEATTRIBUTES=true in Matterwick PriorityEnv.',
+    );
     return false;
 }
 
