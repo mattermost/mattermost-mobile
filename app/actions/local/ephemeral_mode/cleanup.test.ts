@@ -20,9 +20,8 @@ import type AiThreadModel from '@agents/types/database/models/ai_thread';
 import type ServerDataOperator from '@database/operator/server_data_operator';
 import type {Database} from '@nozbe/watermelondb';
 import type PostsInChannelModel from '@typings/database/models/servers/posts_in_channel';
-import type PostsInThreadModel from '@typings/database/models/servers/posts_in_thread';
 
-const {SERVER: {POST, POSTS_IN_CHANNEL, POSTS_IN_THREAD}} = MM_TABLES;
+const {SERVER: {POST, POSTS_IN_CHANNEL}} = MM_TABLES;
 const {AI_THREAD} = AGENTS_TABLES;
 const {PLAYBOOK_RUN, PLAYBOOK_CHECKLIST, PLAYBOOK_CHECKLIST_ITEM} = PLAYBOOK_TABLES;
 
@@ -72,18 +71,6 @@ async function writePiC(channelId: string, earliest: number, latest: number): Pr
     await database.write(async () => {
         record = await database.get<PostsInChannelModel>(POSTS_IN_CHANNEL).create((r) => {
             r.channelId = channelId;
-            r.earliest = earliest;
-            r.latest = latest;
-        });
-    });
-    return record;
-}
-
-async function writePiT(rootId: string, earliest: number, latest: number): Promise<PostsInThreadModel> {
-    let record!: PostsInThreadModel;
-    await database.write(async () => {
-        record = await database.get<PostsInThreadModel>(POSTS_IN_THREAD).create((r) => {
-            r.rootId = rootId;
             r.earliest = earliest;
             r.latest = latest;
         });
@@ -357,19 +344,6 @@ describe('autoCacheCleanup', () => {
         expect(LocalPost.deletePostsInChannelsByCutoff).toHaveBeenCalledWith(
             SERVER_URL, [sharedChannelId], rootCreateAt, expect.any(Set),
         );
-    });
-
-    it('excludes active thread root IDs from post deletion even when the thread is not currently open', async () => {
-        const rootId = 'live-root';
-
-        // live thread: latest >= CUTOFF → rootId goes into activeThreadRootIds
-        await writePiT(rootId, OLD, RECENT);
-        await writePiC('ch-unprotected', OLD, RECENT);
-
-        await autoCacheCleanup(SERVER_URL);
-
-        const [[, , , excludedPostIds]] = jest.mocked(LocalPost.deletePostsInChannelsByCutoff).mock.calls;
-        expect((excludedPostIds as Set<string>).has(rootId)).toBe(true);
     });
 
     it('includes the file-viewer post ID in excludedPostIds passed to deletePostsInChannelsByCutoff', async () => {

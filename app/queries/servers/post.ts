@@ -449,16 +449,3 @@ export const createAtOfNthPostOlderThan = async (
     }
     return posts[posts.length - 1].createAt;
 };
-
-// Returns the root IDs of all PostsInThread rows whose latest >= cutoff.
-// These are live threads — their root post must not be evicted even if its
-// create_at is below the cutoff.
-export const queryActiveThreadRootIds = async (
-    database: Database,
-    cutoff: number,
-): Promise<Set<string>> => {
-    const rows = await database.get<PostsInThreadModel>(POSTS_IN_THREAD).query(
-        Q.where('latest', Q.gte(cutoff)),
-    ).fetch();
-    return new Set(rows.map((r) => r.rootId));
-};

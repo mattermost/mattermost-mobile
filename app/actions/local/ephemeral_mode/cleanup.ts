@@ -13,7 +13,6 @@ import {queryPlaybookRunsBefore} from '@playbooks/database/queries/run';
 import {
     createAtOfNthPostOlderThan,
     getPostById,
-    queryActiveThreadRootIds,
 } from '@queries/servers/post';
 import {getCurrentChannelId} from '@queries/servers/system';
 import EphemeralStore from '@store/ephemeral_store';
@@ -33,7 +32,6 @@ interface CleanupProtections {
     threadParentChannelId: string | undefined;
     threadParentLimit: number;
     viewedThreadId: string | undefined;
-    activeThreadRootIds: Set<string>;
     fileViewerPostId: string | undefined;
     viewedPlaybookRunId: string | undefined;
 }
@@ -61,13 +59,8 @@ async function setLastAutoCacheCleanupRun(serverUrl: string): Promise<void> {
 
 async function computeCleanupProtections(
     database: Database,
-    cutoff: number,
     isActive: boolean,
 ): Promise<CleanupProtections> {
-    // DB-consistency guard: always computed regardless of active server.
-    // A thread with replies newer than cutoff is alive even if its root is old.
-    const activeThreadRootIds = await queryActiveThreadRootIds(database, cutoff);
-
     if (!isActive) {
         return {
             viewedChannelId: undefined,
@@ -75,7 +68,6 @@ async function computeCleanupProtections(
             viewedThreadId: undefined,
             threadParentChannelId: undefined,
             threadParentLimit: Infinity,
-            activeThreadRootIds,
             fileViewerPostId: undefined,
             viewedPlaybookRunId: undefined,
         };
@@ -98,7 +90,6 @@ async function computeCleanupProtections(
     let threadParentLimit = Infinity;
 
     if (viewedThreadId) {
-        activeThreadRootIds.add(viewedThreadId);
         const rootPost = await getPostById(database, viewedThreadId);
         if (rootPost) {
             threadParentChannelId = rootPost.channelId;
@@ -123,7 +114,6 @@ async function computeCleanupProtections(
         viewedThreadId,
         threadParentChannelId,
         threadParentLimit,
-        activeThreadRootIds,
         fileViewerPostId,
         viewedPlaybookRunId,
     };
@@ -156,7 +146,7 @@ async function cleanupPosts(
     );
 
     const excludedPostIds: Set<string> = new Set([
-        ...protections.activeThreadRootIds,
+        ...(protections.viewedThreadId ? [protections.viewedThreadId] : []),
         ...(protections.fileViewerPostId ? [protections.fileViewerPostId] : []),
     ]);
 
@@ -256,7 +246,7 @@ export async function autoCacheCleanup(serverUrl: string): Promise<void> {
         const activeUrl = await DatabaseManager.getActiveServerUrl();
         const isActive = serverUrl === activeUrl;
 
-        const limits = await computeCleanupProtections(database, cutoff, isActive);
+        const limits = await computeCleanupProtections(database, isActive);
         const toDateOrInf = (ms: number) => {
             if (!Number.isFinite(ms)) {
                 return ms > 0 ? 'Infinity' : '-Infinity';
@@ -272,7 +262,6 @@ export async function autoCacheCleanup(serverUrl: string): Promise<void> {
             '— threadParentChannelId:', limits.threadParentChannelId,
             '— threadParentLimit:', toDateOrInf(limits.threadParentLimit),
             '— currentThreadId:', limits.viewedThreadId,
-            '— activeThreadRootIds count:', limits.activeThreadRootIds.size,
             '— fileViewerPostId:', limits.fileViewerPostId,
             '— currentPlaybookRunId:', limits.viewedPlaybookRunId,
         );

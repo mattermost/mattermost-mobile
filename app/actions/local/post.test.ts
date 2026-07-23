@@ -419,7 +419,8 @@ describe('deletePostsInChannelsByCutoff', () => {
         const {error} = await deletePostsInChannelsByCutoff(serverUrl, [channelId], CUTOFF);
 
         expect(error).toBeUndefined();
-        const postCondition = `channel_id IN ('${channelId}') AND create_at < ${CUTOFF}`;
+        const hasActiveReply = `EXISTS (SELECT 1 FROM ${POSTS_IN_THREAD} WHERE ${POSTS_IN_THREAD}.root_id = ${POST}.id AND ${POSTS_IN_THREAD}.latest >= ${CUTOFF})`;
+        const postCondition = `channel_id IN ('${channelId}') AND create_at < ${CUTOFF} AND NOT ${hasActiveReply}`;
         const postSubquery = `SELECT id FROM ${POST} WHERE ${postCondition}`;
         const rootInChannelsExists = `EXISTS (SELECT 1 FROM ${POST} WHERE ${POST}.id = ${POSTS_IN_THREAD}.root_id AND ${POST}.channel_id IN ('${channelId}'))`;
         expect(database.adapter.unsafeExecute).toHaveBeenCalledWith({
@@ -455,7 +456,8 @@ describe('deletePostsInChannelsByCutoff', () => {
         const {error} = await deletePostsInChannelsByCutoff(serverUrl, [channelId], CUTOFF, new Set(['excluded-1', 'excluded-2']));
 
         expect(error).toBeUndefined();
-        const postCondition = `channel_id IN ('${channelId}') AND create_at < ${CUTOFF} AND id NOT IN ('excluded-1','excluded-2')`;
+        const hasActiveReply = `EXISTS (SELECT 1 FROM ${POSTS_IN_THREAD} WHERE ${POSTS_IN_THREAD}.root_id = ${POST}.id AND ${POSTS_IN_THREAD}.latest >= ${CUTOFF})`;
+        const postCondition = `channel_id IN ('${channelId}') AND create_at < ${CUTOFF} AND NOT ${hasActiveReply} AND id NOT IN ('excluded-1','excluded-2')`;
         const postSubquery = `SELECT id FROM ${POST} WHERE ${postCondition}`;
         expect(database.adapter.unsafeExecute).toHaveBeenCalledWith(
             expect.objectContaining({

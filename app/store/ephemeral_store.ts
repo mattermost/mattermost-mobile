@@ -360,9 +360,6 @@ class EphemeralStoreSingleton {
     setCurrentPlaybookRunId = (id: string) => {
         this.currentPlaybookRunId = id;
     };
-    clearCurrentPlaybookRunId = () => {
-        this.currentPlaybookRunId = '';
-    };
 
     // Ephemeral control when (un)archiving a channel locally
     addSwitchingToChannel = (channelId: string) => {
