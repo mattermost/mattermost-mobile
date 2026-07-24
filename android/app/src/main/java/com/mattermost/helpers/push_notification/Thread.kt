@@ -11,7 +11,7 @@ internal suspend fun PushNotificationDataRunnable.Companion.fetchThread(db: WMDa
 
     return try {
         val thread = fetch(serverUrl, "/api/v4/users/$currentUserId/teams/${threadTeamId}/threads/$threadId")
-        thread?.getMap("data")
+        thread?.safeGetMap("data")
     } catch (e: Exception) {
         e.printStackTrace()
         null
