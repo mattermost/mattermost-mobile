@@ -10,11 +10,10 @@ import {Preferences} from '@constants';
 import {withServerUrl} from '@context/server';
 import {observeCurrentChannel} from '@queries/servers/channel';
 import {queryBookmarks} from '@queries/servers/channel_bookmark';
-import {observeHasGMasDMFeature} from '@queries/servers/features';
+import {observeHasGMasDMFeature, observeIsChannelBookmarksEnabled} from '@queries/servers/features';
 import {queryPreferencesByCategoryAndName} from '@queries/servers/preference';
 import {observeScheduledPostCountForChannel} from '@queries/servers/scheduled_post';
 import {
-    observeConfigBooleanValue,
     observeCurrentChannelId,
     observeCurrentUserId,
 } from '@queries/servers/system';
@@ -35,7 +34,7 @@ const enhanced = withObservables([], ({database, serverUrl}: EnhanceProps) => {
     const channelType = observeCurrentChannel(database).pipe(switchMap((c) => of$(c?.type)));
     const currentUserId = observeCurrentUserId(database);
     const hasGMasDMFeature = observeHasGMasDMFeature(database);
-    const isBookmarksEnabled = observeConfigBooleanValue(database, 'FeatureFlagChannelBookmarks');
+    const isBookmarksEnabled = observeIsChannelBookmarksEnabled(database);
     const hasBookmarks = (count: number) => of$(count > 0);
     const includeBookmarkBar = channelId.pipe(
         combineLatestWith(isBookmarksEnabled),

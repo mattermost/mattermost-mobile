@@ -1,12 +1,14 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import {CHANNEL_BOOKMARKS_VERSION} from '@constants/versions';
 import DatabaseManager from '@database/manager';
 import NetworkManager from '@managers/network_manager';
 import websocketManager from '@managers/websocket_manager';
 import {getBookmarksSince, getChannelBookmarkById} from '@queries/servers/channel_bookmark';
 import {getConfigValue, getLicense} from '@queries/servers/system';
 import {getFullErrorMessage} from '@utils/errors';
+import {isMinimumServerVersion} from '@utils/helpers';
 import {logError} from '@utils/log';
 
 import {forceLogoutIfNecessary} from './session';
@@ -16,10 +18,10 @@ export async function fetchChannelBookmarks(serverUrl: string, channelId: string
         const client = NetworkManager.getClient(serverUrl);
         const {database, operator} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
 
-        const bookmarksEnabled = (await getConfigValue(database, 'FeatureFlagChannelBookmarks')) === 'true';
+        const serverVersion = await getConfigValue(database, 'Version');
         const isLicensed = (await getLicense(database))?.IsLicensed === 'true';
 
-        if (!bookmarksEnabled || !isLicensed) {
+        if (!isMinimumServerVersion(serverVersion, ...CHANNEL_BOOKMARKS_VERSION) || !isLicensed) {
             return {bookmarks: []};
         }
 

@@ -49,9 +49,7 @@ describe('channel bookmarks', () => {
         await DatabaseManager.init([serverUrl]);
         operator = DatabaseManager.serverDatabases[serverUrl]!.operator;
         await operator.handleConfigs({
-            configs: [
-                {id: 'FeatureFlagChannelBookmarks', value: 'true'},
-            ],
+            configs: [{id: 'Version', value: '10.1.0'}],
             configsToDelete: [],
             prepareRecordsOnly: false,
         });
@@ -87,11 +85,9 @@ describe('channel bookmarks', () => {
         expect(bookmarkSpy).not.toHaveBeenCalled();
     });
 
-    it('fetchChannelBookmarks - feature flag disabled', async () => {
+    it('fetchChannelBookmarks - old server version', async () => {
         await operator.handleConfigs({
-            configs: [
-                {id: 'FeatureFlagChannelBookmarks', value: 'false'},
-            ],
+            configs: [{id: 'Version', value: '10.0.0'}],
             configsToDelete: [],
             prepareRecordsOnly: false,
         });
@@ -99,6 +95,7 @@ describe('channel bookmarks', () => {
         expect(result).toBeDefined();
         expect(result.bookmarks).toBeDefined();
         expect(result.bookmarks?.length).toBe(0);
+        expect(mockClient.getChannelBookmarksForChannel).not.toHaveBeenCalled();
     });
 
     it('createChannelBookmark - handle not found database', async () => {
