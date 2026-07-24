@@ -3,6 +3,7 @@
 
 import React, {type ComponentProps} from 'react';
 
+import {DEFAULT_TASK_FILTERS} from '@playbooks/utils/task_filters';
 import {renderWithIntl} from '@test/intl-test-helper';
 import TestHelper from '@test/test_helper';
 
@@ -26,7 +27,7 @@ describe('ChecklistList', () => {
         }),
     ];
 
-    function getBaseProps() {
+    function getBaseProps(): ComponentProps<typeof ChecklistList> {
         return {
             checklists: mockChecklists,
             channelId: 'channel-id-1',
@@ -34,6 +35,10 @@ describe('ChecklistList', () => {
             playbookRunName: 'Test Run',
             isFinished: false,
             isParticipant: true,
+            filters: DEFAULT_TASK_FILTERS,
+            currentUserId: 'current-user-id',
+            collapseAll: false,
+            collapseAllEpoch: 0,
         };
     }
 

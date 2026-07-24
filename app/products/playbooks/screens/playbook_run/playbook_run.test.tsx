@@ -13,7 +13,8 @@ import DatabaseManager from '@database/manager';
 import useAndroidHardwareBackHandler from '@hooks/android_back_handler';
 import {finishRun, setOwner} from '@playbooks/actions/remote/runs';
 import {PLAYBOOK_RUN_TYPES} from '@playbooks/constants/playbook_run';
-import {navigateBack} from '@screens/navigation';
+import {DEFAULT_TASK_FILTERS} from '@playbooks/utils/task_filters';
+import {bottomSheet, navigateBack} from '@screens/navigation';
 import {fireEvent, renderWithEverything, waitFor} from '@test/intl-test-helper';
 import TestHelper from '@test/test_helper';
 import {openUserProfile} from '@utils/navigation';
@@ -26,6 +27,7 @@ import ErrorState from './error_state';
 import OutOfDateHeader from './out_of_date_header/index';
 import PlaybookRun from './playbook_run';
 import StatusUpdateIndicator from './status_update_indicator';
+import TaskFilter from './task_filter';
 
 import type {Database} from '@nozbe/watermelondb';
 import type {PlaybookRunModel} from '@playbooks/database/models';
@@ -656,5 +658,74 @@ describe('PlaybookRun', () => {
             props.playbookRun!.id,
             {canEditSummary: true},
         );
+    });
+
+    describe('tasks header controls', () => {
+        it('should start expanded with no filters applied', () => {
+            const props = getBaseProps();
+            const {getByTestId} = renderWithEverything(<PlaybookRun {...props}/>, {database});
+
+            const checklistList = getByTestId('checklist-list');
+            expect(checklistList.props.collapseAll).toBe(false);
+            expect(checklistList.props.filters).toEqual(DEFAULT_TASK_FILTERS);
+            expect(checklistList.props.currentUserId).toBe(props.currentUserId);
+        });
+
+        it('should collapse and expand every checklist from the header control', () => {
+            const props = getBaseProps();
+            const {getByTestId} = renderWithEverything(<PlaybookRun {...props}/>, {database});
+
+            const button = getByTestId('playbook-run.collapse-all-button');
+            const initialEpoch = getByTestId('checklist-list').props.collapseAllEpoch;
+
+            act(() => {
+                fireEvent.press(button);
+            });
+
+            let checklistList = getByTestId('checklist-list');
+            expect(checklistList.props.collapseAll).toBe(true);
+
+            // The epoch must advance so checklists re-sync even if they were toggled individually.
+            expect(checklistList.props.collapseAllEpoch).toBe(initialEpoch + 1);
+
+            act(() => {
+                fireEvent.press(button);
+            });
+
+            checklistList = getByTestId('checklist-list');
+            expect(checklistList.props.collapseAll).toBe(false);
+            expect(checklistList.props.collapseAllEpoch).toBe(initialEpoch + 2);
+        });
+
+        it('should open the task filter bottom sheet', () => {
+            const props = getBaseProps();
+            const {getByTestId} = renderWithEverything(<PlaybookRun {...props}/>, {database});
+
+            act(() => {
+                fireEvent.press(getByTestId('playbook-run.filter-tasks-button'));
+            });
+
+            expect(bottomSheet).toHaveBeenCalled();
+        });
+
+        it('should apply the filters chosen in the bottom sheet to the checklists', () => {
+            const props = getBaseProps();
+            const {getByTestId} = renderWithEverything(<PlaybookRun {...props}/>, {database});
+
+            act(() => {
+                fireEvent.press(getByTestId('playbook-run.filter-tasks-button'));
+            });
+
+            // Drive the callback the sheet is handed, as the sheet itself renders in its own screen.
+            const renderContent = jest.mocked(bottomSheet).mock.calls[0][0];
+            const sheet = renderContent() as React.ReactElement<ComponentProps<typeof TaskFilter>>;
+            const newFilters = {...DEFAULT_TASK_FILTERS, showChecked: false};
+
+            act(() => {
+                sheet.props.onFiltersChanged(newFilters);
+            });
+
+            expect(getByTestId('checklist-list').props.filters).toEqual(newFilters);
+        });
     });
 });

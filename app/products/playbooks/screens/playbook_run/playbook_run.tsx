@@ -1,9 +1,9 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React, {useCallback, useMemo} from 'react';
+import React, {useCallback, useMemo, useState} from 'react';
 import {defineMessages, useIntl} from 'react-intl';
-import {View, Text, ScrollView, Alert, TouchableOpacity} from 'react-native';
+import {View, Text, ScrollView, Alert, TouchableOpacity, Pressable, type PressableStateCallbackType} from 'react-native';
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
 
 import Button from '@components/button';
@@ -16,10 +16,12 @@ import {Screens} from '@constants';
 import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
 import useAndroidHardwareBackHandler from '@hooks/android_back_handler';
+import {usePreventDoubleTap} from '@hooks/utils';
 import {finishRun, setOwner} from '@playbooks/actions/remote/runs';
 import {PLAYBOOK_RUN_TYPES} from '@playbooks/constants/playbook_run';
 import {getRunScheduledTimestamp, isRunFinished} from '@playbooks/utils/run';
-import {navigateBack} from '@screens/navigation';
+import {areDefaultTaskFilters, DEFAULT_TASK_FILTERS, type TaskFilters} from '@playbooks/utils/task_filters';
+import {bottomSheet, navigateBack} from '@screens/navigation';
 import {openUserProfile} from '@utils/navigation';
 import {showPlaybookErrorSnackbar} from '@utils/snack_bar';
 import {makeStyleSheetFromTheme, changeOpacity} from '@utils/theme';
@@ -32,6 +34,7 @@ import {PropertyFieldsList} from './components';
 import ErrorState from './error_state';
 import OutOfDateHeader from './out_of_date_header';
 import StatusUpdateIndicator from './status_update_indicator';
+import TaskFilter, {TASK_FILTER_SNAP_POINT} from './task_filter';
 
 import type PlaybookChecklistModel from '@playbooks/types/database/models/playbook_checklist';
 import type PlaybookRunModel from '@playbooks/types/database/models/playbook_run';
@@ -49,6 +52,18 @@ const messages = defineMessages({
     tasks: {
         id: 'playbooks.playbook_run.tasks',
         defaultMessage: 'Tasks',
+    },
+    collapseAll: {
+        id: 'playbooks.playbook_run.collapse_all',
+        defaultMessage: 'Collapse all checklists',
+    },
+    expandAll: {
+        id: 'playbooks.playbook_run.expand_all',
+        defaultMessage: 'Expand all checklists',
+    },
+    filterTasks: {
+        id: 'playbooks.playbook_run.filter_tasks',
+        defaultMessage: 'Filter tasks',
     },
     statusUpdateDue: {
         id: 'playbooks.playbook_run.status_update_due',
@@ -95,6 +110,8 @@ const messages = defineMessages({
         defaultMessage: 'Finish',
     },
 });
+
+const HIT_SLOP = {top: 8, bottom: 8, left: 8, right: 8};
 
 const getStyleSheet = makeStyleSheetFromTheme((theme) => ({
     container: {
@@ -154,6 +171,29 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => ({
         ...typography('Heading', 200, 'SemiBold'),
         color: theme.centerChannelColor,
     },
+    tasksHeaderActions: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        gap: 4,
+        marginLeft: 'auto',
+    },
+    tasksHeaderButton: {
+        padding: 6,
+        borderRadius: 4,
+    },
+    tasksHeaderButtonActive: {
+        backgroundColor: changeOpacity(theme.buttonBg, 0.08),
+    },
+    tasksHeaderIcon: {
+        fontSize: 18,
+        color: changeOpacity(theme.centerChannelColor, 0.56),
+    },
+    tasksHeaderIconActive: {
+        color: theme.buttonBg,
+    },
+    pressed: {
+        opacity: 0.72,
+    },
     scrollView: {
         paddingHorizontal: 20,
         paddingVertical: 32,
@@ -193,6 +233,49 @@ export default function PlaybookRun({
     const intl = useIntl();
     const insets = useSafeAreaInsets();
     const lastSyncAt = playbookRun && 'lastSyncAt' in playbookRun ? playbookRun.lastSyncAt : 0;
+
+    const [filters, setFilters] = useState<TaskFilters>(DEFAULT_TASK_FILTERS);
+    const [collapseAll, setCollapseAll] = useState(false);
+
+    // Each checklist keeps its own expanded state so it can still be toggled individually. The epoch
+    // makes every press of the collapse control a distinct change, so the checklists re-sync with it
+    // even after they have been toggled individually since the last press.
+    const [collapseAllEpoch, setCollapseAllEpoch] = useState(0);
+
+    const filtersActive = !areDefaultTaskFilters(filters);
+
+    const toggleCollapseAll = useCallback(() => {
+        setCollapseAll((prev) => !prev);
+        setCollapseAllEpoch((prev) => prev + 1);
+    }, []);
+
+    const openTaskFilter = usePreventDoubleTap(useCallback(() => {
+        bottomSheet(
+            () => (
+                <TaskFilter
+                    filters={filters}
+                    onFiltersChanged={setFilters}
+                />
+            ),
+            [1, TASK_FILTER_SNAP_POINT],
+        );
+    }, [filters]));
+
+    const collapseAllButtonStyle = useCallback(({pressed}: PressableStateCallbackType) => [
+        styles.tasksHeaderButton,
+        pressed && styles.pressed,
+    ], [styles.tasksHeaderButton, styles.pressed]);
+
+    const filterButtonStyle = useCallback(({pressed}: PressableStateCallbackType) => [
+        styles.tasksHeaderButton,
+        filtersActive && styles.tasksHeaderButtonActive,
+        pressed && styles.pressed,
+    ], [styles.tasksHeaderButton, styles.tasksHeaderButtonActive, styles.pressed, filtersActive]);
+
+    const filterIconStyle = useMemo(() => [
+        styles.tasksHeaderIcon,
+        filtersActive && styles.tasksHeaderIconActive,
+    ], [styles.tasksHeaderIcon, styles.tasksHeaderIconActive, filtersActive]);
 
     const channelId = playbookRun && 'channelId' in playbookRun ? playbookRun.channelId : (playbookRun?.channel_id || '');
 
@@ -408,6 +491,34 @@ export default function PlaybookRun({
                                     type='danger'
                                 />
                             )}
+                            <View style={styles.tasksHeaderActions}>
+                                <Pressable
+                                    onPress={toggleCollapseAll}
+                                    style={collapseAllButtonStyle}
+                                    hitSlop={HIT_SLOP}
+                                    accessibilityRole='button'
+                                    accessibilityLabel={intl.formatMessage(collapseAll ? messages.expandAll : messages.collapseAll)}
+                                    testID='playbook-run.collapse-all-button'
+                                >
+                                    <CompassIcon
+                                        name={collapseAll ? 'arrow-expand' : 'arrow-collapse'}
+                                        style={styles.tasksHeaderIcon}
+                                    />
+                                </Pressable>
+                                <Pressable
+                                    onPress={openTaskFilter}
+                                    style={filterButtonStyle}
+                                    hitSlop={HIT_SLOP}
+                                    accessibilityRole='button'
+                                    accessibilityLabel={intl.formatMessage(messages.filterTasks)}
+                                    testID='playbook-run.filter-tasks-button'
+                                >
+                                    <CompassIcon
+                                        name='filter-variant'
+                                        style={filterIconStyle}
+                                    />
+                                </Pressable>
+                            </View>
                         </View>
                         <ChecklistList
                             checklists={checklists}
@@ -416,6 +527,10 @@ export default function PlaybookRun({
                             playbookRunName={playbookRun.name}
                             isFinished={isRunFinished(playbookRun)}
                             isParticipant={isParticipant}
+                            filters={filters}
+                            currentUserId={currentUserId}
+                            collapseAll={collapseAll}
+                            collapseAllEpoch={collapseAllEpoch}
                         />
                     </View>
                     {!readOnly && (
