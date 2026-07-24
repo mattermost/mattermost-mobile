@@ -747,7 +747,14 @@ export const unsetCustomStatus = async (serverUrl: string) => {
     try {
         const client = NetworkManager.getClient(serverUrl);
         await client.unsetCustomStatus();
-        return {};
+
+        // Sync the local user with the server's post-clear state (including its new update_at) so a
+        // subsequent `user_updated` WebSocket event — which carries the server's newer update_at —
+        // does not win the `update_at >` comparison in handleUserUpdatedEvent and re-populate the
+        // just-cleared custom status. Best-effort: the clear already succeeded above, so a failed
+        // sync must not surface as an unset error.
+        const {user} = await fetchMe(serverUrl);
+        return {user};
     } catch (error) {
         logDebug('error on unsetCustomStatus', getFullErrorMessage(error));
         return {error};

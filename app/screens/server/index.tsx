@@ -8,6 +8,7 @@ import {defineMessage, useIntl} from 'react-intl';
 import {Alert, BackHandler, View} from 'react-native';
 import {KeyboardAwareScrollView} from 'react-native-keyboard-controller';
 import Animated from 'react-native-reanimated';
+import urlParse from 'url-parse';
 
 import {doPing} from '@actions/remote/general';
 import {fetchConfigAndLicense} from '@actions/remote/systems';
@@ -307,7 +308,17 @@ const Server = ({
         const headRequest = await getServerUrlAfterRedirect(pingUrl, !retryWithHttp, preauthSecret.trim() || undefined);
         if (!headRequest.url) {
             cancelPing();
-            if (retryWithHttp) {
+
+            const sslError = headRequest.error as {errorCode?: number; code?: number} | undefined;
+            if (sslError?.errorCode === -299 || sslError?.code === -299) {
+                const parsed = urlParse(pingUrl);
+                Alert.alert(
+                    intl.formatMessage({id: 'server.invalid.certificate.title', defaultMessage: 'Invalid SSL certificate'}),
+                    intl.formatMessage({id: 'server.invalid.certificate.description', defaultMessage: 'The certificate for this server is invalid.\nYou might be connecting to a server that is pretending to be “{hostname}” which could put your confidential information at risk.'}, {hostname: parsed.hostname}),
+                );
+                setButtonDisabled(true);
+                setConnecting(false);
+            } else if (retryWithHttp) {
                 const nurl = pingUrl.replace('https:', 'http:');
                 pingServer(nurl, false);
             } else {

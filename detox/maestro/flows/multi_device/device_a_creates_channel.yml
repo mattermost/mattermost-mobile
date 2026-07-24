@@ -1,0 +1,53 @@
+# MM-T837: Device A creates a public channel so Device B can see it sync (multi-device).
+#
+# PRE-CONDITIONS:
+#   - Two devices/sessions orchestrated via scripts/run_channel_sync_two_device.sh
+#   - Same test user logged in on both Device A and Device B (matches RF-CS117's
+#     mobile-app + browser same-account scenario)
+#
+# REQUIRED ENV VARS:
+#   - MAESTRO_APP_ID, SITE_1_URL, TEST_USER_EMAIL, TEST_USER_PASSWORD
+#   - SYNC_TOKEN (lowercase alphanumeric - used as both channel display name and
+#     URL name so Device B can query for it without slug-transformation guesswork)
+#
+# ASSERTIONS:
+#   - Public channel named SYNC_TOKEN is created from the channel list plus-menu
+#   - Device A lands on the new channel's post draft screen
+#
+# testIDs:
+#   - channel_list_header.plus.button
+#   - plus_menu_item.create_new_channel
+#   - channel_info_form.display_name.input
+#   - create_or_edit_channel.create.button
+#   - channel.post_draft.post.input
+tags:
+  - MM-T837
+appId: ${MAESTRO_APP_ID}
+---
+- runFlow: ../../subflows/auth/login.yml
+
+- tapOn:
+    id: "channel_list_header.plus.button"
+- extendedWaitUntil:
+    visible:
+      id: "plus_menu_item.create_new_channel"
+    timeout: 10000
+- tapOn:
+    id: "plus_menu_item.create_new_channel"
+
+- extendedWaitUntil:
+    visible:
+      id: "channel_info_form.display_name.input"
+    timeout: 10000
+- tapOn:
+    id: "channel_info_form.display_name.input"
+- inputText: "${SYNC_TOKEN}"
+- tapOn:
+    id: "create_or_edit_channel.create.button"
+
+# Verify Device A landed on the new channel
+- extendedWaitUntil:
+    visible:
+      id: "channel.post_draft.post.input"
+    timeout: 15000
+- takeScreenshot: device-a-channel-created

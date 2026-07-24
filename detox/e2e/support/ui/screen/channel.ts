@@ -17,13 +17,23 @@ import {dismissKnownModals} from '@support/ui/modal_dismiss';
 import {
     ChannelListScreen,
     FindChannelsScreen,
+    HomeScreen,
     PostOptionsScreen,
     ThreadScreen,
 } from '@support/ui/screen';
-import {isAndroid, isIos, longPressWithScrollRetry, timeouts, wait, waitForElementToBeVisible, waitForElementToExist} from '@support/utils';
+import {isAndroid, isIos, longPressWithScrollRetry, safeEnableSynchronization, timeouts, wait, waitForElementToBeVisible, waitForElementToExist} from '@support/utils';
 import {by, element, expect, waitFor} from 'detox';
 
 import InteractiveDialogScreen from './interactive_dialog';
+
+async function dismissErrorAlertIfPresent() {
+    try {
+        const ok = isAndroid() ? element(by.text('OK')) : element(by.label('OK')).atIndex(0);
+        await waitFor(ok).toBeVisible().withTimeout(timeouts.ONE_SEC);
+        await ok.tap();
+        await wait(timeouts.HALF_SEC);
+    } catch { /* no alert */ }
+}
 
 class ChannelScreen {
     testID = {
@@ -203,7 +213,21 @@ class ChannelScreen {
 
     back = async () => {
         await wait(isIos() ? timeouts.TWO_SEC : timeouts.ONE_SEC);
-        await this.backButton.tap();
+        let navigated = false;
+        try {
+            await waitForElementToExist(this.backButton, timeouts.THREE_SEC);
+            await this.backButton.tap();
+            navigated = true;
+        } catch {
+            // Back button not in hierarchy — fall through to tab/native back.
+        }
+        if (!navigated) {
+            if (isAndroid()) {
+                await device.pressBack();
+            } else {
+                await HomeScreen.channelListTab.tap();
+            }
+        }
         await waitFor(this.channelScreen).not.toBeVisible().withTimeout(timeouts.TEN_SEC);
     };
 
@@ -253,7 +277,7 @@ class ChannelScreen {
 
         await longPressWithScrollRetry(
             longPressTarget,
-            this.postList.getFlatList(),
+            by.id(this.postList.testID.flatList),
             PostOptionsScreen.postOptionsScreen,
         );
         await wait(timeouts.TWO_SEC);
@@ -317,6 +341,11 @@ class ChannelScreen {
         await wait(timeouts.TWO_SEC);
     };
 
+    // ponytail: the iOS sim's URLSession intermittently drops the first POST to a
+    // freshly-provisioned server (-1005 "network connection lost") and the app does
+    // not auto-retry, so the message never reaches the server. Verify the send landed
+    // by cross-checking the API; retry once if the last post isn't ours. Returns the
+    // same {post} shape as Post.apiGetLastPostInChannel so callers can swap 1:1.
     postMessageAndVerify = async (message: string, channelId: string, siteUrl: string): Promise<{post?: any; error?: any}> => {
         await this.postMessage(message);
         let result = await Post.apiGetLastPostInChannel(siteUrl, channelId);
@@ -334,11 +363,32 @@ class ChannelScreen {
     };
 
     postSlashCommand = async (command: string) => {
+        await dismissErrorAlertIfPresent();
+
         await this.composePostDraft(command);
         await waitForElementToBeVisible(this.sendButton, timeouts.FOUR_SEC);
 
-        await this.sendButton.tap({x: 1, y: 1});
-        await waitFor(InteractiveDialogScreen.interactiveDialogScreen).toExist().withTimeout(timeouts.FIVE_SEC);
+        // On Android the autocomplete suggestion row can still be intercepting input when send
+        // fires, causing the text to post as plain text rather than execute as a slash command.
+        if (isAndroid()) {
+            await wait(timeouts.ONE_SEC);
+        }
+        await this.sendButton.tap();
+
+        // First slash-command after plugin install can race command registration
+        // (CI 29362218938: MM-T4101/4102 failed; later /dialog tests passed). Retry once.
+        try {
+            await waitForElementToExist(InteractiveDialogScreen.interactiveDialogScreen, timeouts.HALF_MIN);
+        } catch {
+            await dismissErrorAlertIfPresent();
+            await this.composePostDraft(command);
+            await waitForElementToBeVisible(this.sendButton, timeouts.FOUR_SEC);
+            if (isAndroid()) {
+                await wait(timeouts.ONE_SEC);
+            }
+            await this.sendButton.tap();
+            await waitForElementToExist(InteractiveDialogScreen.interactiveDialogScreen, timeouts.HALF_MIN);
+        }
     };
 
     tapSendButton = async () => {
@@ -362,6 +412,8 @@ class ChannelScreen {
                 await this.postList.getFlatList().swipe('up', 'fast', 0.3);
             } catch { /* ignore */ }
             await wait(timeouts.ONE_SEC);
+        } else {
+            await this.dismissKeyboardForSchedulePicker();
         }
 
         await device.disableSynchronization();
@@ -373,7 +425,61 @@ class ChannelScreen {
                 timeouts.HALF_MIN,
             );
         } finally {
-            await device.enableSynchronization();
+            await safeEnableSynchronization();
+        }
+    };
+
+    dismissKeyboard = async () => {
+        if (isAndroid()) {
+            // Android (adjustResize + threshold 25%) already tapped fine before this fix;
+            // keep the original no-op-safe scroll so the passing Android path is unchanged.
+            try {
+                await this.postList.getFlatList().scroll(100, 'up', 0.5, 0.5);
+            } catch { /* list at boundary — nothing to scroll */ }
+            return;
+        }
+        try {
+            await this.introDisplayName.tap();
+        } catch {
+            try {
+                await this.postList.getFlatList().tap({x: 5, y: 5});
+            } catch { /* nothing to dismiss */ }
+        }
+        await wait(timeouts.ONE_SEC);
+    };
+
+    dismissKeyboardForSchedulePicker = async () => {
+        if (!isIos()) {
+            return;
+        }
+        try {
+            await this.postList.getFlatList().swipe('down', 'slow', 0.1);
+        } catch {
+            try {
+                await this.headerTitle.tap({x: 1, y: 1});
+            } catch { /* ignore */ }
+        }
+        await wait(timeouts.ONE_SEC);
+    };
+
+    tapScheduleOption = async (option: Detox.NativeElement) => {
+        await this.dismissKeyboardForSchedulePicker();
+
+        const bottomSheetMatcher = by.id(this.testID.scheduledPostOptionsBottomSheet);
+        await waitForElementToExist(option, timeouts.HALF_MIN);
+
+        if (isIos()) {
+            try {
+                await waitFor(option).toBeVisible(50).whileElement(bottomSheetMatcher).scroll(100, 'down');
+            } catch {
+                try {
+                    await waitFor(option).toBeVisible(50).whileElement(bottomSheetMatcher).scroll(100, 'up');
+                } catch { /* option may already be in view */ }
+            }
+            await waitForElementToExist(option, timeouts.TEN_SEC);
+            await option.tap({x: 1, y: 1});
+        } else {
+            await option.tap();
         }
     };
 
@@ -415,31 +521,46 @@ class ChannelScreen {
     };
 
     scheduleMessageForTomorrow = async () => {
-        await waitForElementToExist(this.scheduleMessageTomorrowOption, timeouts.HALF_MIN);
-        await this.scheduleMessageTomorrowOption.tap();
+        await this.tapScheduleOption(this.scheduleMessageTomorrowOption);
         await waitForElementToExist(this.scheduledPostOptionTomorrowSelected, timeouts.TEN_SEC);
     };
 
     scheduleMessageForMonday = async () => {
-        await waitForElementToExist(this.scheduleMessageOnMondayOption, timeouts.HALF_MIN);
-        await this.scheduleMessageOnMondayOption.tap();
+        await this.tapScheduleOption(this.scheduleMessageOnMondayOption);
         await waitForElementToExist(this.scheduledPostOptionMondaySelected, timeouts.TEN_SEC);
     };
 
     scheduleMessageForNextMonday = async () => {
-        await waitForElementToExist(this.scheduledPostOptionNextMonday, timeouts.HALF_MIN);
-        await this.scheduledPostOptionNextMonday.tap();
+        await this.tapScheduleOption(this.scheduledPostOptionNextMonday);
         await waitForElementToExist(this.scheduledPostOptionNextMondaySelected, timeouts.TEN_SEC);
     };
 
-    // Monday uses Next Monday; other days use Monday.
-    scheduleMessageForAvailableOption = async () => {
-        const day = new Date().getDay();
-        if (day === 1) {
-            await this.scheduleMessageForNextMonday();
-        } else {
-            await this.scheduleMessageForMonday();
+    // Probe whichever schedule option the picker shows (UTC vs America/New_York weekday mismatch on CI).
+    scheduleMessageForAvailableOption = async (): Promise<'tomorrow' | 'next_monday' | 'monday'> => {
+        const tryOption = async (
+            select: () => Promise<void>,
+            option: Detox.NativeElement,
+        ): Promise<boolean> => {
+            try {
+                await waitFor(option).toExist().withTimeout(timeouts.TWO_SEC);
+                await select();
+                return true;
+            } catch {
+                return false;
+            }
+        };
+
+        if (await tryOption(() => this.scheduleMessageForTomorrow(), this.scheduleMessageTomorrowOption)) {
+            return 'tomorrow';
         }
+        if (await tryOption(() => this.scheduleMessageForNextMonday(), this.scheduledPostOptionNextMonday)) {
+            return 'next_monday';
+        }
+        if (await tryOption(() => this.scheduleMessageForMonday(), this.scheduleMessageOnMondayOption)) {
+            return 'monday';
+        }
+
+        throw new Error('scheduleMessageForAvailableOption: no schedule option visible in picker');
     };
 
     clickOnScheduledMessage = async () => {

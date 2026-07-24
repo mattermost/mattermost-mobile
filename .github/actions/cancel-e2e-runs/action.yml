@@ -3,7 +3,7 @@ name: Cancel E2E workflow runs
 description: >-
   Cancel all active E2E (e2e-detox-pr.yml) runs for a PR branch, force-stop
   every queued/in-progress job (including macOS build runners), and mark E2E
-  commit statuses as cancelled.
+  commit statuses as skipped (success + description Skipped).
 
 inputs:
   head_branch:
@@ -21,9 +21,9 @@ inputs:
     required: false
     default: ''
   reason:
-    description: Commit status description when cancelling
+    description: Commit status description after stopping E2E runs
     required: false
-    default: E2E cancelled (E2E/Run label removed)
+    default: Skipped
 
 runs:
   using: composite
@@ -44,7 +44,7 @@ runs:
           const maxRunIdExclusive = process.env.MAX_RUN_ID_EXCLUSIVE
             ? parseInt(process.env.MAX_RUN_ID_EXCLUSIVE, 10)
             : null;
-          const reason = process.env.REASON || 'E2E cancelled';
+          const reason = process.env.REASON || 'Skipped';
           const owner = context.repo.owner;
           const repo = context.repo.repo;
 
@@ -88,14 +88,16 @@ runs:
             }
           };
 
-          const markCommitStatusesCancelled = async (sha) => {
+          const markCommitStatusesSkipped = async (sha) => {
             for (const statusContext of E2E_STATUS_CONTEXTS) {
               try {
                 await github.rest.repos.createCommitStatus({
                   owner,
                   repo,
                   sha,
-                  state: 'pending',
+                  // Commit statuses have no "skipped" state; success + Skipped avoids
+                  // a red failure while clearly indicating E2E did not run to completion.
+                  state: 'success',
                   context: statusContext,
                   description: reason.substring(0, 140),
                 });
@@ -160,7 +162,7 @@ runs:
           }
 
           for (const sha of shasToUpdate) {
-            await markCommitStatusesCancelled(sha);
+            await markCommitStatusesSkipped(sha);
           }
 
           core.info(`Force-cancelled ${runsCancelled} E2E run(s) for PR #${prNumber}`);

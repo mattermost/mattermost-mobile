@@ -17,6 +17,14 @@ class SpecGroup {
   }
 }
 
+function toRepoRelative(filePath) {
+  const repoRoot = process.cwd();
+  if (path.isAbsolute(filePath)) {
+    return path.relative(repoRoot, filePath);
+  }
+  return filePath;
+}
+
 class Specs {
   constructor(searchPath, parallelism, deviceInfo) {
     this.searchPath = searchPath;
@@ -48,7 +56,7 @@ class Specs {
         } else if (fileRegex.test(filePath)) {
           const relativeFilePath = filePath.replace(dirPath + '/', '');
           const fullPath = path.join(this.searchPath, relativeFilePath);
-          this.rawFiles.push(fullPath);
+          this.rawFiles.push(toRepoRelative(fullPath));
         }
       });
     };
@@ -94,6 +102,11 @@ function main() {
   const specs = new Specs(searchPath, parallelism, deviceInfo);
 
   specs.findFiles();
+  if (specs.rawFiles.length < parallelism) {
+    console.error(
+      `Warning: ${specs.rawFiles.length} spec(s) < parallelism ${parallelism}; some shards will be empty`,
+    );
+  }
   specs.generateSplits();
   specs.dumpSplits();
 }

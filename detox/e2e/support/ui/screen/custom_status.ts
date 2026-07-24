@@ -5,7 +5,7 @@ import {
     AccountScreen,
     EmojiPickerScreen,
 } from '@support/ui/screen';
-import {timeouts, wait} from '@support/utils';
+import {isAndroid, timeouts, waitForElementToExist} from '@support/utils';
 import {expect, waitFor} from 'detox';
 
 class CustomStatusScreen {
@@ -113,22 +113,58 @@ class CustomStatusScreen {
         // ScrollView until the setStatusOption is fully visible, then tap.
         // This handles both fresh drawer state (top of ScrollView) and
         // scrolled state from prior tests (MM-T3892).
-        await waitFor(AccountScreen.setStatusOption).toBeVisible().whileElement(by.id('account.scroll_view')).scroll(150, 'down');
+        if (isAndroid()) {
+            try {
+                await waitFor(AccountScreen.setStatusOption).toExist().whileElement(by.id('account.scroll_view')).scroll(150, 'down');
+            } catch {
+                // Row may already be in view without scrolling.
+            }
+            await waitForElementToExist(AccountScreen.setStatusOption, timeouts.TEN_SEC);
+        } else {
+            // iOS: the account drawer is a partial-height bottom sheet whose
+            // ScrollView is routinely <100% visible (clipped by the sheet's
+            // top edge / bottom safe area), so Detox's `whileElement().scroll()`
+            // refuses with "View is not scrollable at the given start point" —
+            // it picks a start point off-screen. This hard-crashes 5 tests in
+            // ios-junit 28392181656 (MM-T3890/3891/3892/4990_4/4091) at this
+            // exact call. The "Set a custom status" row is also frequently
+            // above the fold because a prior test left the drawer scrolled.
+            // Probe visibility first; on failure, scroll with an explicit
+            // start at the visible centre (always hittable — same convention
+            // as `support/utils/index.ts` longPressWithScrollRetry), then
+            // re-check. Tolerate a scroll refusal: 'down' is the right
+            // direction for both top-clipped and scrolled-past-below cases.
+            try {
+                await waitFor(AccountScreen.setStatusOption).toBeVisible().withTimeout(timeouts.TWO_SEC);
+            } catch {
+                const scrollView = element(by.id('account.scroll_view'));
+                let found = false;
+                /* eslint-disable no-await-in-loop */
+                for (let i = 0; i < 5 && !found; i++) {
+                    for (const direction of ['down', 'up'] as const) {
+                        try {
+                            await scrollView.scroll(150, direction, 0.5, 0.5);
+                        } catch { /* scroll refusal */ }
+                        try {
+                            await waitFor(AccountScreen.setStatusOption).toBeVisible().withTimeout(timeouts.TWO_SEC);
+                            found = true;
+                            break;
+                        } catch { /* try opposite direction */ }
+                    }
+                }
+                /* eslint-enable no-await-in-loop */
+                if (!found) {
+                    await waitFor(AccountScreen.setStatusOption).toBeVisible().withTimeout(timeouts.FIVE_SEC);
+                }
+            }
+        }
         await AccountScreen.setStatusOption.tap();
 
         return this.toBeVisible();
     };
 
-    openEmojiPicker = async (emojiName: string, closeToolTip = false) => {
+    openEmojiPicker = async (emojiName: string) => {
         await this.getCustomStatusEmoji(emojiName).tap();
-        if (closeToolTip) {
-            await wait(timeouts.TWO_SEC);
-            try {
-                await EmojiPickerScreen.toolTipCloseButton.tap();
-            } catch (error) {
-                // Tool tip not shown
-            }
-        }
         await EmojiPickerScreen.toBeVisible();
     };
 

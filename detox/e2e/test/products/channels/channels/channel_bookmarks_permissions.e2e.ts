@@ -20,6 +20,7 @@ import {
     ChannelInfoScreen,
     ChannelListScreen,
     ChannelScreen,
+    ChannelSettingsScreen,
     HomeScreen,
     LoginScreen,
     ServerScreen,
@@ -34,6 +35,7 @@ describe('Channels - Channel Bookmarks Permissions', () => {
     let testUser: any;
     let regularUser: any;
     let channelT5615: any;
+    let channelT5725: any;
 
     const createChannel = async () => {
         const {channel} = await Channel.apiCreateChannel(siteOneUrl, {
@@ -44,6 +46,8 @@ describe('Channels - Channel Bookmarks Permissions', () => {
         return channel;
     };
 
+    // This file creates only 2 channels, so they always fit on screen without scrolling.
+    // Wait for the channel item to be visible, then tap — no scroll container needed.
     const openChannel = async (channel: any) => {
         const displayNameEl = ChannelListScreen.getChannelItemDisplayName(channelsCategory, channel.name);
         await waitFor(displayNameEl).
@@ -59,6 +63,7 @@ describe('Channels - Channel Bookmarks Permissions', () => {
         testTeam = team;
         testUser = user;
 
+        // ChannelBookmarks enabled in setup.ts. Create regular user for MM-T5615_1.
         const {user: rUser} = await User.apiCreateUser(siteOneUrl);
         if (!rUser?.id) {
             throw new Error('[beforeAll] Failed to create regularUser');
@@ -66,13 +71,20 @@ describe('Channels - Channel Bookmarks Permissions', () => {
         regularUser = rUser;
         await Team.apiAddUserToTeam(siteOneUrl, regularUser.id, testTeam.id);
 
+        // ── Create all test channels ──────────────────────────────────────────
         channelT5615 = await createChannel();
+        channelT5725 = await createChannel();
 
+        // ── Pre-create bookmarks ──────────────────────────────────────────────
         await Channel.apiAddUserToChannel(siteOneUrl, regularUser.id, channelT5615.id);
         await ChannelBookmark.apiCreateChannelBookmarkLink(
             siteOneUrl, channelT5615.id, 'Permission Test Bookmark', 'https://mattermost.com',
         );
+        await ChannelBookmark.apiCreateChannelBookmarkLink(
+            siteOneUrl, channelT5725.id, 'Archive Test Bookmark', 'https://mattermost.com',
+        );
 
+        // ── Single login + reload to sync all API-created data ────────────────
         await ServerScreen.connectToServer(serverOneUrl, serverOneDisplayName);
         await LoginScreen.login(testUser);
         await device.reloadReactNative();
@@ -87,43 +99,102 @@ describe('Channels - Channel Bookmarks Permissions', () => {
         await HomeScreen.logout();
     });
 
-    // Skip both: iOS R1 + Android R3 — permission-test bookmark not found in channel_info list
-    it.skip('MM-T5615_1 - users without manage permissions should not see add bookmark option but can edit and delete existing bookmarks', async () => {
+    it('MM-T5615_1 - users without manage permissions should not see add bookmark option but can edit and delete existing bookmarks', async () => {
+        // # Log out the admin user and log in as the regular channel member
         await HomeScreen.logout();
         await ServerScreen.connectToServer(serverOneUrl, serverOneDisplayName);
         await LoginScreen.login(regularUser);
 
+        // # Navigate to the channel
         await ChannelListScreen.toBeVisible();
         await openChannel(channelT5615);
 
+        // # Open channel info
         await ChannelInfoScreen.open();
 
-        const permissionBookmarkMatcher = by.text('Permission Test Bookmark').
-            withAncestor(by.id('channel_info.bookmarks.list'));
-        await ChannelInfoScreen.waitForBookmarkInChannelInfo(permissionBookmarkMatcher);
-        const permissionBookmarkEl = element(permissionBookmarkMatcher);
+        // * Verify the bookmark is visible in channel_info — scope to avoid matching
+        // channel_header.bookmarks.list (mounted behind the modal on iOS).
+        const permissionBookmarkEl = element(
+            by.text('Permission Test Bookmark').
+                withAncestor(by.id('channel_info.bookmarks.list')),
+        );
         await expect(permissionBookmarkEl).toBeVisible();
 
+        // * Verify "Add a bookmark" option is NOT visible for non-admin user
         await expect(element(by.text('Add a bookmark'))).not.toBeVisible();
 
+        // # Long press on the bookmark to check available options
         await permissionBookmarkEl.longPress();
         await wait(timeouts.ONE_SEC);
 
+        // * Verify Edit and Delete options ARE visible.
         await expect(ChannelBookmarkScreen.editOption).toBeVisible();
         await expect(ChannelBookmarkScreen.deleteOption).toBeVisible();
 
+        // # Dismiss the bottom sheet by tapping Edit to close the sheet, then
+        // immediately closing the edit form — this is more reliable than tapping
+        // outside (the sheet partially overlaps the bookmark chip on iOS).
         await ChannelBookmarkScreen.editOption.tap();
-        await ChannelBookmarkScreen.toBeVisible();
+        await ChannelBookmarkScreen.toBeVisible(); // wait for edit modal to appear before closing
         await ChannelBookmarkScreen.closeEditButton.tap();
         await wait(timeouts.ONE_SEC);
 
+        // # Close channel info and go back to channel list
         await ChannelInfoScreen.close();
         await ChannelScreen.back();
 
+        // # Log out the regular user and log back in as the original test user.
+        // Reload React Native after re-login to ensure the local database is fully
+        // synced (logout destroys the server DB; without a reload, bookmarks are not
+        // re-fetched before T5725_1 opens channel info).
         await HomeScreen.logout();
         await ServerScreen.connectToServer(serverOneUrl, serverOneDisplayName);
         await LoginScreen.login(testUser);
         await device.reloadReactNative();
         await ChannelListScreen.toBeVisible();
+    });
+
+    it('MM-T5725_1 - should not be able to add, edit, or delete bookmarks in an archived channel', async () => {
+        // # Navigate to the channel.
+        // Extra wait after openChannel: on Android, device.reloadReactNative() in T5615_1 can
+        // leave the app mid-settle, causing ChannelInfoScreen.open()'s header-visibility check
+        // to fail (header exists but covers <75% of its area). TWO_SEC is enough to let it land.
+        await openChannel(channelT5725);
+        await wait(timeouts.TWO_SEC);
+
+        // # Open channel info, then archive the channel via channel settings.
+        await ChannelInfoScreen.open();
+        await ChannelInfoScreen.openChannelSettings();
+        await ChannelSettingsScreen.toBeVisible();
+        await ChannelSettingsScreen.archivePublicChannel({confirm: true});
+
+        try {
+            await ChannelInfoScreen.close();
+        } catch {
+            try {
+                await device.pressBack();
+            } catch {
+                // Android pressBack may not be available
+            }
+        }
+        await wait(timeouts.ONE_SEC);
+
+        // * Verify channel is archived (draft area shows archived state).
+        await waitFor(ChannelScreen.postDraftArchived).toExist().withTimeout(timeouts.TWENTY_SEC);
+
+        // # Open channel info for the archived channel.
+        await ChannelInfoScreen.open();
+
+        // * Verify no bookmark actions are available. Archiving deletes the channel's
+        // bookmarks server-side, so there is no bookmark to edit/delete and creation is hidden.
+        await expect(element(by.text('Add a bookmark'))).not.toExist();
+        await waitFor(element(by.text('Archive Test Bookmark'))).
+            not.toExist().
+            withTimeout(timeouts.TEN_SEC);
+
+        await ChannelInfoScreen.close();
+
+        // # Close the archived channel and go back to channel list
+        await ChannelScreen.postDraftArchivedCloseChannelButton.tap();
     });
 });

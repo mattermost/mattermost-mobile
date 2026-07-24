@@ -6,14 +6,14 @@ import {
     ChannelInfoScreen,
     PostOptionsScreen,
 } from '@support/ui/screen';
-import {isAndroid, longPressWithRetry, timeouts, wait, waitForElementToBeVisible, waitForElementToNotExist} from '@support/utils';
+import {isAndroid, longPressWithRetry, timeouts, wait, waitForElementToBeVisible, waitForElementToExist, waitForElementToNotExist} from '@support/utils';
 import {expect, waitFor} from 'detox';
 
 class PinnedMessagesScreen {
     testID = {
         pinnedMessagesScreenPrefix: 'pinned_messages.',
         pinnedMessagesScreen: 'pinned_messages.screen',
-        backButton: 'navigation.header.back',
+        backButton: 'channel_info.pinned_messages.back',
         emptyTitle: 'pinned_messages.empty.title',
         emptyParagraph: 'pinned_messages.empty.paragraph',
     };
@@ -53,7 +53,11 @@ class PinnedMessagesScreen {
 
     back = async () => {
         if (isAndroid()) {
-            await device.pressBack();
+            // Detox's device.pressBack() uses UiAutomator, which on API 35 can fail with
+            // "UiAutomationService ... already registered!" after earlier navigation in the
+            // same test. Tapping the app's own back button avoids the UiAutomator path.
+            await waitFor(this.backButton).toExist().withTimeout(timeouts.TEN_SEC);
+            await this.backButton.tap();
         } else {
             await this.pinnedMessagesScreen.swipe('right', 'fast', 0.8, 0.05, 0.5);
         }
@@ -63,10 +67,6 @@ class PinnedMessagesScreen {
     openPostOptionsFor = async (postId: string, text: string) => {
         const {postListPostItem} = this.getPostListPostItem(postId, text);
 
-        // Poll for the post to become visible without waiting for idle bridge
-        await waitForElementToBeVisible(postListPostItem, timeouts.TEN_SEC);
-
-        // Dismiss keyboard by tapping on the post list (needed after posting a message)
         const flatList = this.postList.getFlatList();
         try {
             await flatList.scroll(100, 'down');
@@ -74,6 +74,8 @@ class PinnedMessagesScreen {
             // Ignore scroll failures when the list is already at the boundary.
         }
         await wait(timeouts.ONE_SEC);
+
+        await waitForElementToExist(postListPostItem, timeouts.TEN_SEC);
 
         // # Open post options (with retry — longPress can fail on Android during animations)
         await longPressWithRetry(postListPostItem, PostOptionsScreen.postOptionsScreen);

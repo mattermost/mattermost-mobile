@@ -10,6 +10,8 @@
 import {
     Post,
     Setup,
+    Status,
+    User,
 } from '@support/server_api';
 import {
     serverOneUrl,
@@ -95,6 +97,8 @@ describe('Account - Custom Status', () => {
         };
 
         if (await probe()) {
+            await User.apiLogin(siteOneUrl, testUser);
+            await Status.apiUnsetCustomStatus(siteOneUrl, testUser.id);
             return;
         }
 
@@ -111,6 +115,8 @@ describe('Account - Custom Status', () => {
                 await wait(timeouts.ONE_SEC);
             } catch { /* nothing to dismiss */ }
             if (await probe()) {
+                await User.apiLogin(siteOneUrl, testUser);
+                await Status.apiUnsetCustomStatus(siteOneUrl, testUser.id);
                 return;
             }
         }
@@ -146,8 +152,9 @@ describe('Account - Custom Status', () => {
 
         await openCustomStatusScreen();
         await selectSuggestedStatus(status);
+        await verifyStatusInInput(status);
         await CustomStatusScreen.doneButton.tap();
-        await wait(timeouts.ONE_SEC);
+        await AccountScreen.waitForCustomStatus(status);
 
         // * Verify status is set on account screen
         await verifyStatusSetOnAccountScreen(status);
@@ -184,11 +191,11 @@ describe('Account - Custom Status', () => {
         await openEmojiPickerForDefault();
         await EmojiPickerScreen.searchInput.replaceText(customEmojiName);
         await EmojiPickerScreen.searchInput.tapReturnKey();
-        await element(by.text('🤡')).tap();
+        await EmojiPickerScreen.tapSearchResultEmoji('🤡', 'clown_face');
         await wait(timeouts.ONE_SEC);
         await CustomStatusScreen.statusInput.replaceText(customStatusText);
         await CustomStatusScreen.doneButton.tap();
-        await waitForCustomStatusOnAccount({emoji: customEmojiName, duration: customStatusDuration});
+        await AccountScreen.waitForCustomStatus({emoji: customEmojiName, text: customStatusText, duration: customStatusDuration});
 
         // * Verify custom status is set
         await verifyStatusSetOnAccountScreen({emoji: customEmojiName, text: customStatusText, duration: customStatusDuration});
@@ -213,7 +220,7 @@ describe('Account - Custom Status', () => {
         await openCustomStatusScreen();
         await selectSuggestedStatus(status);
         await CustomStatusScreen.doneButton.tap();
-        await waitForCustomStatusOnAccount(status);
+        await AccountScreen.waitForCustomStatus(status);
 
         // * Verify status is set
         await verifyStatusSetOnAccountScreen(status);
@@ -250,13 +257,11 @@ describe('Account - Custom Status', () => {
         await CustomStatusScreen.open();
 
         // # Select "In a meeting" status
-        const {customStatusSuggestion: inMeetingStatus} =
-            CustomStatusScreen.getSuggestedCustomStatus(status.emoji, status.text, status.duration);
-        await inMeetingStatus.tap();
+        await selectSuggestedStatus(status);
         await verifyStatusInInput(status);
 
         // # Select same status again
-        await inMeetingStatus.tap();
+        await selectSuggestedStatus(status);
         await verifyStatusInInput(status);
 
         // # Save status
@@ -265,7 +270,7 @@ describe('Account - Custom Status', () => {
         await expect(CustomStatusScreen.customStatusScreen).not.toBeVisible();
 
         // * Verify status is set and visible in account screen
-        await AccountScreen.toBeVisible();
+        await AccountScreen.waitForCustomStatus(status);
         const {accountCustomStatusEmoji, accountCustomStatusText} =
             AccountScreen.getCustomStatus(status.emoji, status.duration);
 
@@ -310,7 +315,7 @@ describe('Account - Custom Status', () => {
         await expect(CustomStatusScreen.getCustomStatusEmoji('speech_balloon')).toExist();
 
         // # Open emoji picker and select fire emoji
-        await CustomStatusScreen.openEmojiPicker('speech_balloon', true);
+        await CustomStatusScreen.openEmojiPicker('speech_balloon');
         await EmojiPickerScreen.toBeVisible();
         await EmojiPickerScreen.searchInput.typeText(customEmojiName);
         await element(by.text('🔥')).tap();
@@ -322,7 +327,7 @@ describe('Account - Custom Status', () => {
 
         // # Save status
         await CustomStatusScreen.doneButton.tap();
-        await waitForCustomStatusOnAccount({emoji: customEmojiName, duration: customStatusDuration});
+        await AccountScreen.waitForCustomStatus({emoji: customEmojiName, text: customStatusText, duration: customStatusDuration});
 
         // * Verify status is set in account screen
         await verifyStatusSetOnAccountScreen({emoji: customEmojiName, text: customStatusText, duration: customStatusDuration});
@@ -382,11 +387,11 @@ describe('Account - Custom Status', () => {
         await openEmojiPickerForDefault();
         await EmojiPickerScreen.searchInput.replaceText(customEmojiName);
         await EmojiPickerScreen.searchInput.tapReturnKey();
-        await element(by.text('🤡')).tap();
+        await EmojiPickerScreen.tapSearchResultEmoji('🤡', 'clown_face');
         await wait(timeouts.ONE_SEC);
         await CustomStatusScreen.statusInput.replaceText(customStatusText);
         await CustomStatusScreen.doneButton.tap();
-        await waitForCustomStatusOnAccount({emoji: customEmojiName, duration: customStatusDuration});
+        await AccountScreen.waitForCustomStatus({emoji: customEmojiName, text: customStatusText, duration: customStatusDuration});
 
         // * Verify status is set
         await verifyStatusSetOnAccountScreen({emoji: customEmojiName, text: customStatusText, duration: customStatusDuration});
@@ -409,7 +414,7 @@ describe('Account - Custom Status', () => {
         const suggestedStatus = STATUSES.IN_MEETING;
         await selectSuggestedStatus(suggestedStatus);
         await CustomStatusScreen.doneButton.tap();
-        await waitForCustomStatusOnAccount(suggestedStatus);
+        await AccountScreen.waitForCustomStatus(suggestedStatus);
         await verifyStatusSetOnAccountScreen(suggestedStatus);
 
         // # Clear and verify in recent section
@@ -440,13 +445,14 @@ describe('Account - Custom Status', () => {
         // # Select status with 30 minutes expiry
         await selectSuggestedStatus(status);
         await expect(CustomStatusScreen.getCustomStatusExpiry(status.duration)).toBeVisible();
+        await verifyStatusInInput(status);
         await CustomStatusScreen.doneButton.tap();
         await wait(timeouts.ONE_SEC);
 
         // * Verify status is set with expiry time
         // iOS-26 wrapper-View visibility quirk for the emoji (see MM-T3890 above);
         // text and expiry are plain <Text> nodes and use toBeVisible normally.
-        await AccountScreen.toBeVisible();
+        await AccountScreen.waitForCustomStatus(status);
         const {accountCustomStatusEmoji, accountCustomStatusText, accountCustomStatusExpiry} =
             AccountScreen.getCustomStatus(status.emoji, status.duration);
         await expect(accountCustomStatusEmoji).toExist();
@@ -506,20 +512,26 @@ const openCustomStatusScreen = async () => {
 
 const selectSuggestedStatus = async (status: {emoji: string; text: string; duration: string}) => {
     const suggested = CustomStatusScreen.getSuggestedCustomStatus(status.emoji, status.text, status.duration);
+    const scrollIntoView = async (target: Detox.NativeElement) => {
+        if (isIos()) {
+            try {
+                await waitFor(target).toBeVisible(50).whileElement(by.id(CustomStatusScreen.testID.scrollView)).scroll(100, 'down');
+            } catch {
+                try {
+                    await waitFor(target).toBeVisible(50).whileElement(by.id(CustomStatusScreen.testID.scrollView)).scroll(100, 'up');
+                } catch { /* already in view */ }
+            }
+        }
+        await waitFor(target).toExist().withTimeout(timeouts.FIVE_SEC);
+        await target.tap();
+    };
     try {
-        await waitFor(suggested.customStatusSuggestion).toBeVisible().withTimeout(timeouts.TWO_SEC);
-        await suggested.customStatusSuggestion.tap();
+        await waitFor(suggested.customStatusSuggestion).toExist().withTimeout(timeouts.TWO_SEC);
+        await scrollIntoView(suggested.customStatusSuggestion);
         return;
     } catch { /* try recents */ }
     const recent = CustomStatusScreen.getRecentCustomStatus(status.emoji, status.text, status.duration);
-    await waitFor(recent.customStatusSuggestion).toBeVisible().withTimeout(timeouts.FIVE_SEC);
-    await recent.customStatusSuggestion.tap();
-};
-
-const waitForCustomStatusOnAccount = async (status: {emoji: string; duration: string}) => {
-    const {accountCustomStatusEmoji} = AccountScreen.getCustomStatus(status.emoji, status.duration);
-    await waitFor(accountCustomStatusEmoji).toExist().withTimeout(timeouts.TEN_SEC);
-    await waitFor(AccountScreen.customStatusClearButton).toBeVisible().withTimeout(timeouts.TEN_SEC);
+    await scrollIntoView(recent.customStatusSuggestion);
 };
 
 const openEmojiPickerForDefault = async () => {
@@ -535,7 +547,7 @@ const openEmojiPickerForDefault = async () => {
             // No clear button to use — fall through to the picker open below.
         }
     }
-    await CustomStatusScreen.openEmojiPicker('default', true);
+    await CustomStatusScreen.openEmojiPicker('default');
 };
 
 const verifyStatusInInput = async (status: {emoji: string; text: string; duration: string}) => {
@@ -551,17 +563,6 @@ const clearStatusInput = async () => {
     await CustomStatusScreen.statusInputClearButton.tap();
 };
 
-const verifySuggestedCustomStatus = async (emojiName: string, text: string, duration: string) => {
-    const {customStatusSuggestionEmoji, customStatusSuggestionText, customStatusSuggestionDuration} =
-        CustomStatusScreen.getSuggestedCustomStatus(emojiName, text, duration);
-
-    // iOS-26 wrapper-View visibility quirk on the <View> wrapping <Emoji>.
-    // The text and duration are plain <Text> nodes and unaffected.
-    await expect(customStatusSuggestionEmoji).toExist();
-    await expect(customStatusSuggestionText).toBeVisible();
-    await expect(customStatusSuggestionDuration).toBeVisible();
-};
-
 const verifyAllSuggestedStatuses = async () => {
     await expect(CustomStatusScreen.suggestions).toExist();
 
@@ -569,10 +570,10 @@ const verifyAllSuggestedStatuses = async () => {
     // On fresh runs, suggestions land in the suggestions block; when state leaks
     // from a prior run, some may already be in recents — the item is still visible.
     await verifySuggestedOrRecentCustomStatus('calendar', 'In a meeting', 'one_hour');
-    await verifySuggestedCustomStatus('hamburger', 'Out for lunch', 'thirty_minutes');
-    await verifySuggestedCustomStatus('sneezing_face', 'Out sick', 'today');
-    await verifySuggestedCustomStatus('house', 'Working from home', 'today');
-    await verifySuggestedCustomStatus('palm_tree', 'On a vacation', 'this_week');
+    await verifySuggestedOrRecentCustomStatus('hamburger', 'Out for lunch', 'thirty_minutes');
+    await verifySuggestedOrRecentCustomStatus('sneezing_face', 'Out sick', 'today');
+    await verifySuggestedOrRecentCustomStatus('house', 'Working from home', 'today');
+    await verifySuggestedOrRecentCustomStatus('palm_tree', 'On a vacation', 'this_week');
 };
 
 const verifySuggestedOrRecentCustomStatus = async (emojiName: string, text: string, duration: string) => {
@@ -595,6 +596,7 @@ const verifySuggestedOrRecentCustomStatus = async (emojiName: string, text: stri
 };
 
 const verifyStatusSetOnAccountScreen = async (status: {emoji: string; text: string; duration: string}) => {
+    await AccountScreen.waitForCustomStatus(status);
     await AccountScreen.toBeVisible();
     const {accountCustomStatusEmoji, accountCustomStatusText, accountCustomStatusExpiry} =
         AccountScreen.getCustomStatus(status.emoji, status.duration);

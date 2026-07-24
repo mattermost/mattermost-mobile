@@ -27,10 +27,11 @@ import {
     LoginScreen,
     PermalinkScreen,
     PostOptionsScreen,
+    SavedMessagesScreen,
     SearchMessagesScreen,
     ServerScreen,
 } from '@support/ui/screen';
-import {getRandomId, timeouts, wait} from '@support/utils';
+import {getRandomId, timeouts, wait, waitForElementToBeVisible} from '@support/utils';
 import {expect, waitFor} from 'detox';
 
 describe('Search - Result Interactions', () => {
@@ -207,6 +208,64 @@ describe('Search - Result Interactions', () => {
 
         // # Go back to channel list screen
         await ChannelScreen.back();
+        await ChannelListScreen.open();
+    });
+
+    it('MM-T372_1 - highlighting does not persist in Saved Messages', async () => {
+        // # Post a message and search for it to establish search highlighting context
+        const searchTerm = `highlight${getRandomId()}`;
+        const message = `Message ${searchTerm}`;
+
+        await ChannelScreen.open(channelsCategory, testChannel.name);
+        await ChannelScreen.postMessage(message);
+        await ChannelScreen.back();
+
+        // # Open search, search for term, and save the result
+        await SearchMessagesScreen.open();
+        await SearchMessagesScreen.searchInput.tap();
+
+        await device.disableSynchronization();
+        let searchedPostId: string;
+        try {
+            await SearchMessagesScreen.searchInput.replaceText(searchTerm);
+            await SearchMessagesScreen.searchInput.tapReturnKey();
+
+            const {post: searchedPost} = await Post.apiGetLastPostInChannel(siteOneUrl, testChannel.id);
+            searchedPostId = searchedPost.id;
+
+            const {postListPostItem} = SearchMessagesScreen.getPostListPostItem(searchedPostId, message);
+            await waitForElementToBeVisible(postListPostItem, timeouts.HALF_MIN);
+
+            await SearchMessagesScreen.openPostOptionsFor(searchedPostId, message);
+        } finally {
+            await device.enableSynchronization();
+        }
+        await PostOptionsScreen.tapSavePost();
+        await wait(timeouts.TWO_SEC);
+
+        // # Navigate to Saved Messages
+        await SavedMessagesScreen.open();
+
+        // * Verify on Saved Messages screen
+        await SavedMessagesScreen.toBeVisible();
+
+        // * Verify the message appears in Saved Messages (without search highlighting context)
+        const {postListPostItem: savedPostItem} = SavedMessagesScreen.getPostListPostItem(searchedPostId, message);
+        await waitForElementToBeVisible(savedPostItem, timeouts.HALF_MIN);
+
+        // # Unsave the post to clean up, then go back to channel list
+        await SavedMessagesScreen.openPostOptionsFor(searchedPostId, message);
+        await PostOptionsScreen.tapUnsavePost();
+        await wait(timeouts.TWO_SEC);
+
+        // # Go back to search screen to clean up recent searches
+        await SearchMessagesScreen.open();
+        await SearchMessagesScreen.searchClearButton.tap();
+        try {
+            await SearchMessagesScreen.getRecentSearchItemRemoveButton(searchTerm).tap();
+        } catch {
+            // Cleanup best-effort
+        }
         await ChannelListScreen.open();
     });
 });

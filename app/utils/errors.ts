@@ -73,12 +73,25 @@ export const getFullErrorMessage = (error: unknown, intl?: IntlShape, depth = 0)
     return message;
 };
 
+const asErrorString = (value: unknown): string => {
+    if (typeof value === 'string') {
+        return value;
+    }
+    if (value instanceof Error && typeof value.message === 'string' && value.message) {
+        return value.message;
+    }
+    return 'Unknown error';
+};
+
 export const getErrorMessage = (error: unknown, intl?: IntlShape) => {
     if (typeof error === 'string') {
         return error;
     }
     if (isErrorWithIntl(error)) {
-        return intl ? intl.formatMessage(error.intl, error.intl.values) : error.intl.defaultMessage!;
+        if (intl) {
+            return asErrorString(intl.formatMessage(error.intl, error.intl.values));
+        }
+        return asErrorString(error.intl.defaultMessage);
     }
 
     if (isErrorWithMessage(error)) {

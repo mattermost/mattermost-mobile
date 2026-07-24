@@ -7,7 +7,7 @@ import {
     ChannelListScreen,
     ChannelSettingsScreen,
 } from '@support/ui/screen';
-import {isIos, tapNativeBackButton, timeouts, wait} from '@support/utils';
+import {isIos, tapNativeBackButton, timeouts, wait, waitForElementToBeVisible} from '@support/utils';
 import {expect, waitFor} from 'detox';
 
 class CreateOrEditChannelScreen {
@@ -59,25 +59,8 @@ class CreateOrEditChannelScreen {
             }
         }
 
-        await waitFor(ChannelListScreen.headerPlusButton).toBeVisible().withTimeout(timeouts.HALF_MIN);
-        let tapError: unknown;
-        /* eslint-disable no-await-in-loop -- sequential retry: each tap must complete before retrying */
-        for (let i = 0; i < 3; i++) {
-            try {
-                await ChannelListScreen.headerPlusButton.tap();
-                tapError = undefined;
-                break;
-            } catch (err) {
-                tapError = err;
-                await wait(timeouts.ONE_SEC);
-            }
-        }
-        /* eslint-enable no-await-in-loop */
-        if (tapError) {
-            throw tapError;
-        }
-        await wait(timeouts.ONE_SEC);
-        await waitFor(ChannelListScreen.createNewChannelItem).toBeVisible().withTimeout(timeouts.TEN_SEC);
+        await ChannelListScreen.openPlusMenu();
+        await waitForElementToBeVisible(ChannelListScreen.createNewChannelItem, timeouts.TEN_SEC);
         await ChannelListScreen.createNewChannelItem.tap();
 
         return this.toBeVisible();
@@ -111,6 +94,45 @@ class CreateOrEditChannelScreen {
     close = async () => {
         await this.closeButton.tap();
         await expect(this.createOrEditChannelScreen).not.toBeVisible();
+    };
+
+    save = async () => {
+        // The save button sits in the modal header, above the soft keyboard, so it
+        // is tappable without dismissing the keyboard first. A blind pressBack here
+        // is destructive: after replaceText the IME auto-hides, so pressBack
+        // dismisses create_or_edit_channel.screen itself and saveButton.tap() then
+        // fails to find the button (CI 28420130849 MM-T4774_4).
+        await this.saveButton.tap();
+
+        // Save dismisses the form but can leave an empty create_or_edit_channel.screen
+        // shell (child-count=0) that blocks not.toExist for 30s — wait for destination.
+        const channelInfoScreen = element(by.id('channel_info.screen'));
+        const channelSettingsScreen = element(by.id('channel_settings.screen'));
+        const startTime = Date.now();
+        /* eslint-disable no-await-in-loop */
+        while (Date.now() - startTime < timeouts.HALF_MIN) {
+            try {
+                await expect(channelInfoScreen).toExist();
+                return;
+            } catch {
+                /* not on channel info yet */
+            }
+            try {
+                await expect(channelSettingsScreen).toExist();
+                return;
+            } catch {
+                /* not on channel settings yet */
+            }
+            try {
+                await expect(this.saveButton).not.toExist();
+                return;
+            } catch {
+                await wait(timeouts.HALF_SEC);
+            }
+        }
+        /* eslint-enable no-await-in-loop */
+
+        throw new Error('save: edit channel screen did not dismiss after save');
     };
 
     toggleMakePrivateOn = async () => {

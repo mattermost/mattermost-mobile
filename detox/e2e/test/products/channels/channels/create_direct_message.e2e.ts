@@ -25,7 +25,7 @@ import {
     LoginScreen,
     ServerScreen,
 } from '@support/ui/screen';
-import {isAndroid, timeouts, wait} from '@support/utils';
+import {isAndroid, timeouts, wait, expectVisible} from '@support/utils';
 import {expect, waitFor} from 'detox';
 
 describe('Channels - Create Direct Message', () => {
@@ -60,9 +60,9 @@ describe('Channels - Create Direct Message', () => {
         await CreateDirectMessageScreen.closeTutorial();
 
         // * Verify basic elements on create direct message screen
-        await expect(CreateDirectMessageScreen.closeButton).toBeVisible();
-        await expect(CreateDirectMessageScreen.searchInput).toBeVisible();
-        await expect(CreateDirectMessageScreen.sectionUserList).toBeVisible();
+        await expectVisible(CreateDirectMessageScreen.closeButton);
+        await expectVisible(CreateDirectMessageScreen.searchInput);
+        await expectVisible(CreateDirectMessageScreen.sectionUserList);
 
         // # Go back to channel list screen
         await CreateDirectMessageScreen.close();

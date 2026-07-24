@@ -52,6 +52,7 @@ const EmojiTouchable = ({name, onEmojiPress}: TouchableEmojiProps) => {
         <TouchableOpacity
             onPress={onPress}
             style={style.container}
+            testID={`emoji_picker.search_result.${name}`}
         >
             <View style={style.emojiContainer}>
                 <Emoji

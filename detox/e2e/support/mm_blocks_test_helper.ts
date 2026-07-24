@@ -35,45 +35,51 @@ export class MmBlocksTestHelper {
 
     static async enableMmBlocks(baseUrl: string): Promise<void> {
         await User.apiAdminLogin(baseUrl);
-        await System.apiUpdateConfig(baseUrl, {
+        const {error} = await System.apiUpdateConfig(baseUrl, {
             FeatureFlags: {
                 MmBlocksEnabled: true,
             },
         });
+        if (error) {
+            throw new Error(`[mm_blocks] Failed to enable MmBlocksEnabled: ${JSON.stringify(error)}`);
+        }
+
+        let enabled = await System.waitForClientConfigFlag(
+            baseUrl,
+            'FeatureFlagMmBlocksEnabled',
+            'true',
+        );
+        if (!enabled) {
+            const {config, error: configError} = await System.apiGetConfig(baseUrl);
+            if (configError || !config) {
+                throw new Error(`[mm_blocks] Could not read server config: ${JSON.stringify(configError)}`);
+            }
+
+            config.FeatureFlags = config.FeatureFlags || {};
+            config.FeatureFlags.MmBlocksEnabled = true;
+            const {error: updateError} = await System.apiReplaceConfig(baseUrl, config);
+            if (updateError) {
+                throw new Error(`[mm_blocks] Full config update failed: ${JSON.stringify(updateError)}`);
+            }
+
+            enabled = await System.waitForClientConfigFlag(
+                baseUrl,
+                'FeatureFlagMmBlocksEnabled',
+                'true',
+            );
+        }
+
+        if (!enabled) {
+            const {config} = await System.apiGetClientConfigOld(baseUrl);
+            throw new Error(
+                `[mm_blocks] FeatureFlagMmBlocksEnabled is "${config?.FeatureFlagMmBlocksEnabled ?? 'missing'}" after config updates. ` +
+                'Cloud Spinwick installations must set MM_FEATUREFLAGS_MMBLOCKSENABLED=true in Matterwick PriorityEnv',
+            );
+        }
     }
 
     static async requireWebhookSidecar(): Promise<void> {
         await Webhook.requireWebhookServer(this.WEBHOOK_BASE_URL);
-    }
-
-    /**
-     * Non-throwing reachability check for the webhook sidecar. Wraps
-     * requireWebhookServer (which throws when the sidecar is unreachable) so
-     * callers can gracefully skip a test when the sidecar isn't running rather
-     * than failing the suite.
-     * @return {Promise<boolean>} true if the sidecar is reachable.
-     */
-    static async isWebhookSidecarReachable(): Promise<boolean> {
-        try {
-            await Webhook.requireWebhookServer(this.WEBHOOK_BASE_URL);
-            return true;
-        } catch {
-            return false;
-        }
-    }
-
-    /**
-     * Same reachability check, but logs a skip notice when the sidecar is down.
-     * Intended for `if (!(await isWebhookSidecarReachableOrSkip())) return;`.
-     * @return {Promise<boolean>} true if the sidecar is reachable.
-     */
-    static async isWebhookSidecarReachableOrSkip(): Promise<boolean> {
-        const reachable = await this.isWebhookSidecarReachable();
-        if (!reachable) {
-            // eslint-disable-next-line no-console
-            console.warn(`Skipping: webhook sidecar not reachable at ${this.WEBHOOK_BASE_URL}`);
-        }
-        return reachable;
     }
 
     static async postIncomingWebhookBlocks(

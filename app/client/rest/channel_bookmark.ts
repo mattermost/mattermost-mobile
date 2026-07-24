@@ -1,6 +1,8 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import urlParse from 'url-parse';
+
 import {buildQueryString} from '@utils/helpers';
 
 import type ClientBase from './base';
@@ -15,11 +17,23 @@ export interface ClientChannelBookmarksMix {
 
 const ClientChannelBookmarks = <TBase extends Constructor<ClientBase>>(superclass: TBase) => class extends superclass {
     createChannelBookmark = async (channelId: string, bookmark: ChannelBookmark, connectionId = '') => {
+        const parsedImageUrl = urlParse(bookmark.image_url || '');
+        const hasValidImageUrl = (parsedImageUrl.protocol === 'http:' || parsedImageUrl.protocol === 'https:') && Boolean(parsedImageUrl.host);
+        const body = {
+            channel_id: channelId,
+            display_name: bookmark.display_name,
+            type: bookmark.type,
+            ...(bookmark.file_id ? {file_id: bookmark.file_id} : {}),
+            ...(bookmark.link_url ? {link_url: bookmark.link_url} : {}),
+            ...(hasValidImageUrl ? {image_url: bookmark.image_url} : {}),
+            ...(bookmark.emoji ? {emoji: bookmark.emoji} : {}),
+        };
+
         return this.doFetch(
             this.getChannelBookmarksRoute(channelId),
             {
                 method: 'post',
-                body: bookmark,
+                body,
                 headers: {'Connection-Id': connectionId},
             },
         );

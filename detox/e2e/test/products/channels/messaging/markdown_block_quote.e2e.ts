@@ -22,6 +22,7 @@ import {
     LoginScreen,
     ServerScreen,
 } from '@support/ui/screen';
+import {isAndroid, timeouts, waitForElementToBeVisible} from '@support/utils';
 import {expect} from 'detox';
 
 describe('Messaging - Markdown Block Quote', () => {
@@ -55,10 +56,15 @@ describe('Messaging - Markdown Block Quote', () => {
         await ChannelScreen.open(channelsCategory, testChannel.name);
         await ChannelScreen.postMessage(markdownBlockQuote);
 
-        // * Verify markdown block quote is displayed
+        // * Verify markdown block quote is displayed.
+        // The original `expect(...).toBeVisible(50)` asserts immediately and requires the Detox
+        // bridge to be idle; on Android the markdown render/animation keeps the bridge busy, so it
+        // hit the ~52s synchronization timeout. waitForElementToBeVisible polls WITHOUT requiring
+        // bridge idle (longer Android timeout), which is the reliable pattern for this.
         const {post} = await Post.apiGetLastPostInChannel(siteOneUrl, testChannel.id);
         const {postListPostItemBlockQuote} = ChannelScreen.getPostListPostItem(post.id, message);
-        await expect(postListPostItemBlockQuote).toBeVisible(50);
+
+        await waitForElementToBeVisible(postListPostItemBlockQuote, isAndroid() ? timeouts.HALF_MIN : timeouts.TEN_SEC);
         await expect(element(by.text(message))).toBeVisible(50);
 
         // # Go back to channel list screen

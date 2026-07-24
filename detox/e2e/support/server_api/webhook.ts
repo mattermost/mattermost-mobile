@@ -18,15 +18,15 @@ import axios from 'axios';
  */
 export const requireWebhookServer = async (baseUrl: string): Promise<void> => {
     try {
-        await axios.get(baseUrl, {timeout: 5000});
-    } catch (err: any) {
-        // A 4xx/5xx response still means the server is up
-        if (err.response) {
-            return;
+        const response = await axios.get<{message?: string}>(baseUrl, {timeout: 10000});
+        if (response.data?.message !== 'I\'m alive!') {
+            throw new Error(`Unexpected health response from ${baseUrl}`);
         }
+    } catch (err: unknown) {
+        const detail = axios.isAxiosError(err) ? err.message : String(err);
         throw new Error(
-            `Webhook server is not reachable at ${baseUrl}. ` +
-            'Start the webhook server before running interactive dialog tests.',
+            `Webhook sidecar is not healthy at ${baseUrl}: ${detail}. ` +
+            'CI must run detox/scripts/start_webhook_sidecar.sh and export its WEBHOOK_BASE_URL.',
         );
     }
 };

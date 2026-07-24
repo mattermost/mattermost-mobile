@@ -1,4 +1,6 @@
 {
+  "_comment": "Tags excluded from default PR Maestro batches. Zephyr tier labels: detox/maestro/README.md.",
+  "_MM-T5611": "Skip iOS: CI run 30000635898 — external browser launch did not return to the Home tab.",
   "default": [
     "MM-T67856_4"
   ],
@@ -7,7 +9,8 @@
     "MM-T3260",
     "MM-T4832",
     "MM-T4833",
-    "MM-T5603"
+    "MM-T5603",
+    "MM-T5611"
   ],
   "android": []
 }

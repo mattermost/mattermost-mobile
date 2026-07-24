@@ -80,7 +80,8 @@ describe('Search - Search Messages', () => {
         await expect(SearchMessagesScreen.searchModifierPhrases).toBeVisible();
 
         // # Go back to channel list screen
-        await ChannelListScreen.open();
+        await SearchMessagesScreen.close();
+        await ChannelListScreen.toBeVisible();
     });
 
     it('MM-T5294_2 - should be able to search messages from a specific user', async () => {
@@ -109,8 +110,9 @@ describe('Search - Search Messages', () => {
 
         // # Clear search input, remove recent search item, and go back to channel list screen
         await SearchMessagesScreen.searchClearButton.tap();
-        await SearchMessagesScreen.getRecentSearchItemRemoveButton(`from: ${testUser.username}`).tap();
-        await ChannelListScreen.open();
+        await SearchMessagesScreen.removeRecentSearchItem(`from: ${testUser.username}`);
+        await SearchMessagesScreen.close();
+        await ChannelListScreen.toBeVisible();
     });
 
     // Skip iOS: failed CI 29964359308 — search modifier not hittable / cascade (tab_bar.search / screen missing)
@@ -126,6 +128,8 @@ describe('Search - Search Messages', () => {
         await SearchMessagesScreen.toBeVisible();
 
         // # Tap on in-search-modifier, type in channel name, tap on channel mention autocomplete, and tap on search key
+        // Corner-tap: the search modifier row's center is obscured by the search
+        // modal's UITransitionView (same workaround as PostOptionsScreen.deletePost).
         await SearchMessagesScreen.searchModifierIn.tap({x: 1, y: 1});
         await SearchMessagesScreen.searchInput.typeText(testChannel.name);
         const {channelMentionItem} = Autocomplete.getChannelMentionItem(testChannel.name);
@@ -140,8 +144,9 @@ describe('Search - Search Messages', () => {
 
         // # Clear search input, remove recent search item, and go back to channel list screen
         await SearchMessagesScreen.searchClearButton.tap();
-        await SearchMessagesScreen.getRecentSearchItemRemoveButton(`channel: ${testChannel.name}`).tap();
-        await ChannelListScreen.open();
+        await SearchMessagesScreen.removeRecentSearchItem(`channel: ${testChannel.name}`);
+        await SearchMessagesScreen.close();
+        await ChannelListScreen.toBeVisible();
     });
 
     // Skip iOS: failed CI 29964359308 — cascade after T5294_3 (tab_bar.search.tab missing)
@@ -177,8 +182,9 @@ describe('Search - Search Messages', () => {
 
         // # Clear search input, remove recent search item, and go back to channel list screen
         await SearchMessagesScreen.searchClearButton.tap();
-        await SearchMessagesScreen.getRecentSearchItemRemoveButton(`${messagePrefix} -${excludedTerm}`).tap();
-        await ChannelListScreen.open();
+        await SearchMessagesScreen.removeRecentSearchItem(`${messagePrefix} -${excludedTerm}`);
+        await SearchMessagesScreen.close();
+        await ChannelListScreen.toBeVisible();
     });
 
     // Skip iOS: failed CI 29964359308 — cascade (search_messages.screen timeout)
@@ -202,6 +208,8 @@ describe('Search - Search Messages', () => {
         await SearchMessagesScreen.toBeVisible();
 
         // # Type in the message prefix plus included term inside double quotes and tap on search key
+        // Corner-tap: searchModifierPhrases is 1.3px clipped at this state too (same
+        // 100% threshold failure as at :214 below). Apply the same workaround.
         await SearchMessagesScreen.searchModifierPhrases.tap({x: 1, y: 1});
         await SearchMessagesScreen.searchInput.tapBackspaceKey();
         await SearchMessagesScreen.searchInput.typeText(messageWithIncludedTerm);
@@ -209,6 +217,9 @@ describe('Search - Search Messages', () => {
         // # Collapse the keyboard
         await element(by.id('search.modifier.header')).tap();
 
+        // Corner-tap: searchModifierPhrases is 1.3px clipped (visible 47px vs
+        // bounds 48.33px) and fails Detox's 100% visibility threshold. Same
+        // workaround as searchModifierIn at :138 (MM-T5294_3).
         await SearchMessagesScreen.searchModifierPhrases.tap({x: 1, y: 1});
         await SearchMessagesScreen.searchInput.tapBackspaceKey();
         await SearchMessagesScreen.searchInput.tapReturnKey();
@@ -220,8 +231,9 @@ describe('Search - Search Messages', () => {
 
         // # Clear search input, remove recent search item, and go back to channel list screen
         await SearchMessagesScreen.searchClearButton.tap();
-        await SearchMessagesScreen.getRecentSearchItemRemoveButton(`"${messageWithIncludedTerm} "`).tap();
-        await ChannelListScreen.open();
+        await SearchMessagesScreen.removeRecentSearchItem(`"${messageWithIncludedTerm} "`);
+        await SearchMessagesScreen.close();
+        await ChannelListScreen.toBeVisible();
     });
 
     // Skip iOS: failed CI 29964359308 — cascade (search_messages.screen timeout)
@@ -248,8 +260,9 @@ describe('Search - Search Messages', () => {
 
         // # Clear search input, remove recent search item, and go back to channel list screen
         await SearchMessagesScreen.searchClearButton.tap();
-        await SearchMessagesScreen.getRecentSearchItemRemoveButton(`from: ${testUser.username} channel: ${testChannel.name}`).tap();
-        await ChannelListScreen.open();
+        await SearchMessagesScreen.removeRecentSearchItem(`from: ${testUser.username} channel: ${testChannel.name}`);
+        await SearchMessagesScreen.close();
+        await ChannelListScreen.toBeVisible();
     });
 
     // Skip iOS: failed CI 29964359308 — cascade (search_messages.screen timeout)
@@ -285,8 +298,9 @@ describe('Search - Search Messages', () => {
         // # Clear search input, remove recent search item, and go back to channel list screen
         await SearchMessagesScreen.searchInput.tap();
         await SearchMessagesScreen.searchClearButton.tap();
-        await SearchMessagesScreen.getRecentSearchItemRemoveButton(searchTerm).tap();
-        await ChannelListScreen.open();
+        await SearchMessagesScreen.removeRecentSearchItem(searchTerm);
+        await SearchMessagesScreen.close();
+        await ChannelListScreen.toBeVisible();
     });
 
     // Skip iOS: failed CI 29964359308 — team sidebar item / search open flake
@@ -340,8 +354,9 @@ describe('Search - Search Messages', () => {
 
         // # Clear search input, remove recent search item, and go back to channel list screen
         await SearchMessagesScreen.searchClearButton.tap();
-        await SearchMessagesScreen.getRecentSearchItemRemoveButton(searchTerm).tap();
-        await ChannelListScreen.open();
+        await SearchMessagesScreen.removeRecentSearchItem(searchTerm);
+        await SearchMessagesScreen.close();
+        await ChannelListScreen.toBeVisible();
     });
 
     // Skip iOS: failed CI 29964359308 — cascade (search_messages.screen timeout)
@@ -368,8 +383,9 @@ describe('Search - Search Messages', () => {
 
         // # Clear search input, remove recent search item, and go back to channel list screen
         await SearchMessagesScreen.searchClearButton.tap();
-        await SearchMessagesScreen.getRecentSearchItemRemoveButton(searchTerm).tap();
-        await ChannelListScreen.open();
+        await SearchMessagesScreen.removeRecentSearchItem(searchTerm);
+        await SearchMessagesScreen.close();
+        await ChannelListScreen.toBeVisible();
     });
 
     // MM-T5294_10, _11, _12 (post actions on search results — edit/save/pin)

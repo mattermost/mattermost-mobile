@@ -78,11 +78,22 @@ describe('Threads - DM From Reply Author Profile', () => {
         await ChannelScreen.open(channelsCategory, testChannel.name);
         await wait(timeouts.TWO_SEC);
 
-        // * Verify root post is visible before attempting long-press
-        const {postListPostItem: rootPostItem} = ChannelScreen.getPostListPostItem(rootPost.id, rootMessage);
+        // * Verify root post is visible before opening the thread
+        const {
+            postListPostItem: rootPostItem,
+            postListPostItemFooterReplyCount,
+        } = ChannelScreen.getPostListPostItem(rootPost.id, rootMessage);
         await waitFor(rootPostItem).toBeVisible().withTimeout(timeouts.TEN_SEC);
 
-        await ChannelScreen.openReplyThreadFor(rootPost.id, rootMessage);
+        // Prefer reply-count tap over long-press → Reply. Long-press scroll retries can
+        // open the thread mid-gesture then keep looking for channel.post_list.post.*
+        // (CI MM-T3211_1).
+        try {
+            await waitFor(postListPostItemFooterReplyCount).toBeVisible().withTimeout(timeouts.TEN_SEC);
+            await postListPostItemFooterReplyCount.tap();
+        } catch {
+            await ChannelScreen.openReplyThreadFor(rootPost.id, rootMessage);
+        }
         await ThreadScreen.toBeVisible();
         await wait(timeouts.ONE_SEC);
 

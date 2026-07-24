@@ -8,6 +8,7 @@ import {existsSync} from 'fs';
 import {ClaudePromptHandler} from '@support/pilot/ClaudePromptHandler';
 import {System, User} from '@support/server_api';
 import {siteOneUrl} from '@support/test_config';
+import {safeEnableSynchronization} from '@support/utils';
 
 const BUNDLE_ID = 'com.mattermost.rnbeta';
 
@@ -141,7 +142,15 @@ async function loginAdmin(): Promise<void> {
     }
 }
 
-// E2E feature flags — idempotent per call; module-level flags reset each test file (setupFilesAfterEnv).
+// Feature flags that must be ON for E2E.
+// IMPORTANT: setupFilesAfterEnv re-evaluates this module for every test file, so a
+// module-level boolean flag resets to false each time and cannot prevent cross-file
+// re-execution. Gate on the server's actual config state instead: if the flag is
+// already true (set by an earlier test file's setup), skip the PATCH entirely.
+// Mattermost server triggers a full config reload + CONFIG_CHANGED WebSocket broadcast
+// on every config/patch request (~10s of elevated server load), even when the value
+// is unchanged. Skipping the redundant patch eliminates the load that previously
+// caused connectToServer to fail immediately after setup.
 async function ensureServerConfigForE2E(): Promise<void> {
     try {
         const {config, error} = await System.apiGetConfig(siteOneUrl);
@@ -153,7 +162,8 @@ async function ensureServerConfigForE2E(): Promise<void> {
         });
         console.info('✅ E2E server config initialized (FeatureFlags.ChannelBookmarks=true)');
     } catch (err) {
-        // Non-fatal: gated tests fail on their own if config patch did not apply.
+        // Non-fatal: tests gated on the flag will surface as their own failures
+        // if this setup didn't take. Don't block login on a config-patch hiccup.
         console.warn(`⚠️ ensureServerConfigForE2E failed: ${(err as Error).message}`);
     }
 }
@@ -291,7 +301,7 @@ beforeAll(async () => {
         } finally {
             // Always re-enable synchronization so subsequent test operations
             // (tap, typeText, expect) re-enter the normal synchronized path.
-            await device.enableSynchronization();
+            await safeEnableSynchronization();
         }
     }
 

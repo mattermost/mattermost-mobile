@@ -1,7 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-/* eslint-disable no-await-in-loop, no-empty, no-console */
+/* eslint-disable no-await-in-loop, no-empty */
 
 // *******************************************************************
 // - [#] indicates a test step (e.g. # Go to a screen)
@@ -10,6 +10,7 @@
 // *******************************************************************
 
 import {
+    Command,
     DemoPlugin,
     Plugin,
     Setup,
@@ -17,7 +18,6 @@ import {
     User,
     Post,
 } from '@support/server_api';
-import {apiDisablePluginById} from '@support/server_api/plugin';
 import {
     serverOneUrl,
     siteOneUrl,
@@ -31,7 +31,7 @@ import {
     LoginScreen,
     ServerScreen,
 } from '@support/ui/screen';
-import {wait, isAndroid, isIos} from '@support/utils';
+import {wait, isAndroid, isIos, safeEnableSynchronization, timeouts, waitForElementToBeVisible, waitForElementToExist} from '@support/utils';
 import {expect} from 'detox';
 
 const ISO_DATETIME_PATTERN = /\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d+)?(?:Z|[+-]\d{2}:\d{2})/;
@@ -39,6 +39,11 @@ const ISO_DATETIME_PATTERN = /\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d+)?(?:Z|
 // MM-66558: dialog fields use replaceText instead of typeText.
 
 // ===== Helper Functions =====
+async function waitForDialogSelectorButton(testId: string) {
+    await wait(timeouts.HALF_SEC);
+    await waitForElementToExist(element(by.id(testId)), timeouts.TEN_SEC);
+}
+
 // Integration selector list items use different testID structures per data source:
 //   user list:    integration_selector.user_list.user_item.<user.id>
 //                 (UserItem composes ${testID}.${user.id})
@@ -139,9 +144,13 @@ async function ensureDialogClosed() {
 }
 
 async function ensureDialogOpen() {
-    await waitFor(InteractiveDialogScreen.interactiveDialogScreen).toExist().withTimeout(3000);
-    await InteractiveDialogScreen.toBeVisible();
-    await expect(InteractiveDialogScreen.interactiveDialogScreen).toExist();
+    // Disable sync so the bottom sheet animation does not block the poll.
+    await device.disableSynchronization();
+    try {
+        await waitForElementToBeVisible(InteractiveDialogScreen.interactiveDialogScreen, timeouts.HALF_MIN);
+    } finally {
+        await safeEnableSynchronization();
+    }
 }
 
 async function dismissErrorAlert() {
@@ -151,130 +160,64 @@ async function dismissErrorAlert() {
     } catch {}
 }
 
-async function pluginInstallAndEnable(siteUrl: string, latestVersion: string) {
-    const pluginResult = await Plugin.apiUploadAndEnablePlugin({
-        baseUrl: siteUrl,
-        version: latestVersion,
-        force: true,
-        filename: 'mattermost-plugin-demo-v0.11.1-linux-amd64.tar.gz',
-    });
-    await wait(3000);
-    if (pluginResult.error) {
-        if (pluginResult.status === 524) {
-            throw new Error(
-                'Plugin installation failed due to Cloudflare timeout (Error 524). ' +
-                'This is a known CI infrastructure limitation when the test server downloads plugins from GitHub. ' +
-                'To fix: Either (1) pre-download plugin in CI workflow to detox/e2e/support/fixtures/ and use filename instead of url, ' +
-                'or (2) use a test server without Cloudflare proxy.',
-            );
-        }
-        throw new Error(`Failed to install demo plugin: ${pluginResult.error} (status: ${pluginResult.status})`);
-    }
-    await wait(2000);
-    const statusCheck = await Plugin.apiGetPluginStatus(siteUrl, DemoPlugin.id, latestVersion);
-    if (!statusCheck.isActive) {
-        await Plugin.apiEnablePluginById(siteUrl, 'com.mattermost.demo-plugin');
-        await wait(2000);
-    }
-    if (!statusCheck.isVersionMatch) {
-        console.warn(`⚠️  WARNING: Demo plugin version mismatch. Expected: ${latestVersion}, Got: ${statusCheck.plugin?.version}`);
-        console.warn('Continuing with tests to see if plugin commands work despite version mismatch...');
-    }
-}
-
 describe('Interactive Dialog - Basic Dialog (Plugin)', () => {
     const serverOneDisplayName = 'Server 1';
     const channelsCategory = 'channels';
     let testChannel: any;
     let testUser: any;
-    let pluginAvailable = false;
-    let pluginSetupTouchedServer = false;
 
     beforeAll(async () => {
-        // Log environment info for debugging CI vs local differences
         const {channel, user} = await Setup.apiInit(siteOneUrl);
         testChannel = channel;
         testUser = user;
 
         await User.apiAdminLogin(siteOneUrl);
-
-        // Check if demo plugin can be set up; any failure or excessive wait
-        // skips the entire suite gracefully. The plugin download from GitHub can
-        // hang behind Cloudflare in CI, so cap the setup phase to avoid the
-        // default 240 s Jest hook timeout.
-        const PLUGIN_SETUP_TIMEOUT = 60000;
-        try {
-            await Promise.race([
-                (async () => {
-                    await System.shouldHavePluginUploadEnabled(siteOneUrl);
-
-                    pluginSetupTouchedServer = true;
-                    await System.apiUpdateConfig(siteOneUrl, {
-                        ServiceSettings: {EnableGifPicker: true},
-                        FileSettings: {EnablePublicLink: true},
-                        FeatureFlags: {InteractiveDialogAppsForm: true},
-                        PluginSettings: {
-                            Enable: true,
-                            AllowInsecureDownloadUrl: true,
-                            EnableUploads: true,
-                            PluginStates: {
-                                'com.mattermost.demo-plugin': {'Enable': true},
-                            },
-                            Plugins: {
-                                'com.mattermost.demo-plugin': {
-                                    'DialogOnlyMode': true,
-                                },
-                            }},
-                    });
-
-                    const latestVersion = await Plugin.apiGetLatestPluginVersion(DemoPlugin.repo);
-                    await pluginInstallAndEnable(siteOneUrl, latestVersion);
-
-                    // Verify the plugin is actually active before continuing
-                    const statusCheck = await Plugin.apiGetPluginStatus(siteOneUrl, DemoPlugin.id);
-                    if (!statusCheck.isActive) {
-                        throw new Error(`Demo plugin (${DemoPlugin.id}) is not active after installation`);
-                    }
-                })(),
-                new Promise((_resolve, reject) =>
-                    setTimeout(() => reject(new Error(`plugin setup did not complete within ${PLUGIN_SETUP_TIMEOUT}ms`)), PLUGIN_SETUP_TIMEOUT),
-                ),
-            ]);
-        } catch (err: any) {
-            console.warn(`Demo plugin setup failed — skipping interactive dialog suite: ${err.message || err}`);
-            return;
+        const configResult = await System.apiUpdateConfig(siteOneUrl, {
+            FeatureFlags: {InteractiveDialogAppsForm: true},
+            PluginSettings: {
+                PluginStates: {
+                    [DemoPlugin.id]: {Enable: true},
+                },
+                Plugins: {
+                    [DemoPlugin.id]: {
+                        DialogOnlyMode: true,
+                    },
+                },
+            },
+        });
+        if (configResult.error) {
+            throw new Error(`Failed to configure demo plugin for dialog tests: ${configResult.error.message || JSON.stringify(configResult.error)}`);
         }
 
-        pluginAvailable = true;
+        const statusCheck = await Plugin.apiGetPluginStatus(siteOneUrl, DemoPlugin.id);
+        if (!statusCheck.isActive) {
+            throw new Error(`Demo plugin (${DemoPlugin.id}) is not active. Run Detox server provisioning before this suite.`);
+        }
+        await Command.waitForSlashCommandTrigger(siteOneUrl, testChannel.team_id, 'dialog', {timeoutMs: 60000});
 
         await ServerScreen.connectToServer(serverOneUrl, serverOneDisplayName);
         await LoginScreen.login(testUser);
         await ChannelListScreen.toBeVisible();
         await ChannelScreen.open(channelsCategory, testChannel.name);
+
+        // Warm slash-command / IntegrationsManager state — first /dialog after login
+        // can return "Error Executing Command" before commands are ready (CI MM-T4101/4102).
+        try {
+            await ChannelScreen.postInput.typeText('/');
+            await wait(timeouts.TWO_SEC);
+            await ChannelScreen.postInput.clearText();
+        } catch { /* best-effort */ }
     });
 
     afterAll(async () => {
         try {
-            if (pluginAvailable) {
-                await HomeScreen.logout();
-            }
+            await HomeScreen.logout();
         } catch {
             // best-effort logout so later specs on this shard start clean
-        }
-
-        if (pluginSetupTouchedServer) {
-            try {
-                await apiDisablePluginById(siteOneUrl, DemoPlugin.id);
-            } catch {
-                // best-effort plugin cleanup even when setup only partially succeeded
-            }
         }
     });
 
     afterEach(async () => {
-        if (!pluginAvailable) {
-            return;
-        }
         await dismissErrorAlert();
 
         // Close an integration selector modal if one is stuck open (e.g.,
@@ -300,9 +243,6 @@ describe('Interactive Dialog - Basic Dialog (Plugin)', () => {
     });
 
     it('MM-T4101 should open simple interactive dialog (Plugin)', async () => {
-        if (!pluginAvailable) {
-            return;
-        }
         await ChannelScreen.postSlashCommand('/dialog basic');
         await ensureDialogOpen();
         await InteractiveDialogScreen.cancel();
@@ -310,9 +250,6 @@ describe('Interactive Dialog - Basic Dialog (Plugin)', () => {
     });
 
     it('MM-T4102 should submit simple interactive dialog (Plugin)', async () => {
-        if (!pluginAvailable) {
-            return;
-        }
         await ChannelScreen.postSlashCommand('/dialog basic');
         await ensureDialogOpen();
         await InteractiveDialogScreen.submit();
@@ -322,9 +259,6 @@ describe('Interactive Dialog - Basic Dialog (Plugin)', () => {
     });
 
     it('MM-T4103 should fill text field and submit dialog (Plugin)', async () => {
-        if (!pluginAvailable) {
-            return;
-        }
         await ensureDialogClosed();
         await ChannelScreen.postSlashCommand('/dialog basic');
         await ensureDialogOpen();
@@ -336,9 +270,6 @@ describe('Interactive Dialog - Basic Dialog (Plugin)', () => {
     });
 
     it('MM-T4104 should handle server error on dialog submission (Plugin)', async () => {
-        if (!pluginAvailable) {
-            return;
-        }
         await ensureDialogClosed();
         await ChannelScreen.postSlashCommand('/dialog error');
         await ensureDialogOpen();
@@ -352,9 +283,6 @@ describe('Interactive Dialog - Basic Dialog (Plugin)', () => {
     });
 
     it('MM-T4401 should toggle boolean fields and submit (Plugin)', async () => {
-        if (!pluginAvailable) {
-            return;
-        }
         await ensureDialogClosed();
         await ChannelScreen.postSlashCommand('/dialog boolean');
         await ensureDialogOpen();
@@ -371,9 +299,6 @@ describe('Interactive Dialog - Basic Dialog (Plugin)', () => {
     });
 
     it('MM-T4402 should handle boolean field validation (Plugin)', async () => {
-        if (!pluginAvailable) {
-            return;
-        }
         await ensureDialogClosed();
         await ChannelScreen.postSlashCommand('/dialog boolean');
         await ensureDialogOpen();
@@ -396,9 +321,6 @@ describe('Interactive Dialog - Basic Dialog (Plugin)', () => {
     // touchable. Channel rows work because CustomListRow places testID on
     // the TouchableOpacity directly.
     it('MM-T4498 should open and handle interactive dialog with select fields (Plugin)', async () => {
-        if (!pluginAvailable) {
-            return;
-        }
         await ensureDialogClosed();
         await ChannelScreen.postSlashCommand('/dialog selectfields');
         await ensureDialogOpen();
@@ -411,13 +333,15 @@ describe('Interactive Dialog - Basic Dialog (Plugin)', () => {
         await IntegrationSelectorScreen.toBeVisible();
         await expect(element(by.text('Option2'))).toExist();
         await element(by.text('Option2')).tap();
+        await waitForDialogSelectorButton('AppFormElement.someuserselector.select.button');
         const userSelectorButton = element(by.id('AppFormElement.someuserselector.select.button'));
-        await expect(userSelectorButton).toExist();
         await userSelectorButton.tap();
         await IntegrationSelectorScreen.toBeVisible();
         await selectUser();
         const channelSelectorButton = element(by.id('AppFormElement.somechannelselector.select.button'));
-        await waitFor(channelSelectorButton).toExist().withTimeout(1000);
+
+        // 1s bridge-idle waitFor fails on Android after IntegrationSelector dismissal animation.
+        await waitForDialogSelectorButton('AppFormElement.somechannelselector.select.button');
         await channelSelectorButton.tap();
         await IntegrationSelectorScreen.toBeVisible();
         await selectChannel();
@@ -430,9 +354,6 @@ describe('Interactive Dialog - Basic Dialog (Plugin)', () => {
 
     // TODO: iOS 26 + Detox UserItem TouchableOpacity tap regression — see MM-T4498
     it('MM-T4499 should handle required select field validation (Plugin)', async () => {
-        if (!pluginAvailable) {
-            return;
-        }
         await ensureDialogClosed();
         await ChannelScreen.postSlashCommand('/dialog selectfields');
         await ensureDialogOpen();
@@ -448,8 +369,8 @@ describe('Interactive Dialog - Basic Dialog (Plugin)', () => {
         await IntegrationSelectorScreen.toBeVisible();
         await expect(element(by.text('Option1'))).toExist();
         await element(by.text('Option1')).tap();
+        await waitForDialogSelectorButton('AppFormElement.someuserselector.select.button');
         const userSelectorButton = element(by.id('AppFormElement.someuserselector.select.button'));
-        await expect(userSelectorButton).toExist();
         await userSelectorButton.tap();
         await IntegrationSelectorScreen.toBeVisible();
         await selectUser();
@@ -462,9 +383,6 @@ describe('Interactive Dialog - Basic Dialog (Plugin)', () => {
 
     // TODO: iOS 26 + Detox UserItem TouchableOpacity tap regression — see MM-T4498
     it('MM-T4500 should handle different selector types (Plugin)', async () => {
-        if (!pluginAvailable) {
-            return;
-        }
         await ensureDialogClosed();
         await ChannelScreen.postSlashCommand('/dialog selectfields');
         await ensureDialogOpen();
@@ -477,13 +395,15 @@ describe('Interactive Dialog - Basic Dialog (Plugin)', () => {
         await IntegrationSelectorScreen.toBeVisible();
         await expect(element(by.text('Option2'))).toExist();
         await element(by.text('Option2')).tap();
+        await waitForDialogSelectorButton('AppFormElement.someuserselector.select.button');
         const userSelectorButton = element(by.id('AppFormElement.someuserselector.select.button'));
-        await expect(userSelectorButton).toExist();
         await userSelectorButton.tap();
         await IntegrationSelectorScreen.toBeVisible();
         await selectUser();
         const channelSelectorButton = element(by.id('AppFormElement.somechannelselector.select.button'));
-        await waitFor(channelSelectorButton).toExist().withTimeout(1000);
+
+        // 1s bridge-idle waitFor fails on Android after IntegrationSelector dismissal animation.
+        await waitForDialogSelectorButton('AppFormElement.somechannelselector.select.button');
         await channelSelectorButton.tap();
         await IntegrationSelectorScreen.toBeVisible();
         await selectChannel();
@@ -495,9 +415,6 @@ describe('Interactive Dialog - Basic Dialog (Plugin)', () => {
     });
 
     (isIos() ? it.skip : it)('MM-T4201 should fill and submit all text field types (Plugin)', async () => {
-        if (!pluginAvailable) {
-            return;
-        }
         await ensureDialogClosed();
         await ChannelScreen.postSlashCommand('/dialog textfields');
         await ensureDialogOpen();
@@ -514,9 +431,6 @@ describe('Interactive Dialog - Basic Dialog (Plugin)', () => {
     });
 
     it('MM-T4202 should validate required text field (Plugin)', async () => {
-        if (!pluginAvailable) {
-            return;
-        }
         await ensureDialogClosed();
         await ChannelScreen.postSlashCommand('/dialog textfields');
         await ensureDialogOpen();
@@ -538,9 +452,6 @@ describe('Interactive Dialog - Basic Dialog (Plugin)', () => {
     });
 
     it('MM-T4203 should handle different text input subtypes (Plugin)', async () => {
-        if (!pluginAvailable) {
-            return;
-        }
         await ensureDialogClosed();
         await ChannelScreen.postSlashCommand('/dialog textfields');
         await ensureDialogOpen();
@@ -555,9 +466,6 @@ describe('Interactive Dialog - Basic Dialog (Plugin)', () => {
 
     // TODO: iOS 26 + Detox UserItem TouchableOpacity tap regression — see MM-T4498
     it('MM-T4976 should handle multiselect fields dialog (Plugin)', async () => {
-        if (!pluginAvailable) {
-            return;
-        }
         await ensureDialogClosed();
         await ChannelScreen.postSlashCommand('/dialog multi-select');
         await ensureDialogOpen();
@@ -597,9 +505,6 @@ describe('Interactive Dialog - Basic Dialog (Plugin)', () => {
     });
 
     it('MM-T4977 should handle dynamic select fields dialog (Plugin)', async () => {
-        if (!pluginAvailable) {
-            return;
-        }
         await ensureDialogClosed();
         await ChannelScreen.postSlashCommand('/dialog dynamic-select');
         await ensureDialogOpen();
@@ -625,9 +530,6 @@ describe('Interactive Dialog - Basic Dialog (Plugin)', () => {
     });
 
     it('MM-T4980 should complete multistep dialog progression (Plugin)', async () => {
-        if (!pluginAvailable) {
-            return;
-        }
         await ensureDialogClosed();
         await ChannelScreen.postSlashCommand('/dialog multistep');
         await ensureDialogOpen();
@@ -667,9 +569,6 @@ describe('Interactive Dialog - Basic Dialog (Plugin)', () => {
     });
 
     it('MM-T4981 should handle multistep dialog cancellation (Plugin)', async () => {
-        if (!pluginAvailable) {
-            return;
-        }
         await ensureDialogClosed();
         await ChannelScreen.postSlashCommand('/dialog multistep');
         await ensureDialogOpen();
@@ -696,9 +595,6 @@ describe('Interactive Dialog - Basic Dialog (Plugin)', () => {
     // poisons later tests with progressViewOffset: NaN in RCTRefreshControl.
     // Re-enable once the keyboard library handles iOS 26 transitions cleanly.
     it('MM-T4983 should handle field refresh basic interaction (Plugin)', async () => {
-        if (!pluginAvailable) {
-            return;
-        }
         await ensureDialogClosed();
         await ChannelScreen.postSlashCommand('/dialog field-refresh');
         await ensureDialogOpen();
@@ -727,9 +623,6 @@ describe('Interactive Dialog - Basic Dialog (Plugin)', () => {
     });
 
     it('MM-T4986 should handle field refresh changes and cancellation (Plugin)', async () => {
-        if (!pluginAvailable) {
-            return;
-        }
         await ensureDialogClosed();
         await ChannelScreen.postSlashCommand('/dialog field-refresh');
         await ensureDialogOpen();
@@ -751,10 +644,6 @@ describe('Interactive Dialog - Basic Dialog (Plugin)', () => {
     });
 
     it('MM-T2530A should open date/datetime dialog and display fields', async () => {
-        if (!pluginAvailable) {
-            return;
-        }
-
         // # Open datetime-basic dialog
         await ChannelScreen.postMessage('/dialog datetime-basic');
         await wait(500);
@@ -776,10 +665,6 @@ describe('Interactive Dialog - Basic Dialog (Plugin)', () => {
     });
 
     it('MM-T2530B should validate required date/datetime fields', async () => {
-        if (!pluginAvailable) {
-            return;
-        }
-
         // # Open dialog
         await ChannelScreen.postMessage('/dialog datetime-basic');
         await wait(500);
@@ -800,10 +685,6 @@ describe('Interactive Dialog - Basic Dialog (Plugin)', () => {
     });
 
     it('MM-T2530C should select date and display formatted value', async () => {
-        if (!pluginAvailable) {
-            return;
-        }
-
         // # Open dialog
         await ChannelScreen.postMessage('/dialog datetime-basic');
         await wait(500);
@@ -828,10 +709,6 @@ describe('Interactive Dialog - Basic Dialog (Plugin)', () => {
     });
 
     it('MM-T2530D should display relative date defaults', async () => {
-        if (!pluginAvailable) {
-            return;
-        }
-
         // # Open dialog
         await ChannelScreen.postMessage('/dialog datetime-basic');
         await wait(500);
@@ -848,10 +725,6 @@ describe('Interactive Dialog - Basic Dialog (Plugin)', () => {
     });
 
     it('MM-T2530F should verify UTC conversion for datetime values', async () => {
-        if (!pluginAvailable) {
-            return;
-        }
-
         // # Open dialog
         await ChannelScreen.postMessage('/dialog datetime-basic');
         await wait(500);
@@ -895,10 +768,6 @@ describe('Interactive Dialog - Basic Dialog (Plugin)', () => {
     });
 
     it('MM-T2530G should display timezone indicator and convert to UTC correctly', async () => {
-        if (!pluginAvailable) {
-            return;
-        }
-
         // # Open datetime-timezone dialog (has Europe/London timezone fields)
         await ChannelScreen.postMessage('/dialog datetime-timezone');
         await wait(500);
@@ -962,10 +831,6 @@ describe('Interactive Dialog - Basic Dialog (Plugin)', () => {
     });
 
     it('MM-T2530H should accept manual time entry on datetime field', async () => {
-        if (!pluginAvailable) {
-            return;
-        }
-
         // NOTE: Placed last in the file — manual TextInput entry leaves keyboard/animation
         // state on iOS 26 + react-native-keyboard-controller that can break subsequent dialog tests.
         // # Open datetime-timezone dialog (has fields with allow_manual_time_entry)

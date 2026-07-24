@@ -13,6 +13,8 @@
 // MM-T6207 is the most sensitive because it expects the OLD cached value after the
 // server changes while the app is offline.
 
+import {acquireClassificationLock, createClassificationLockOwner, releaseClassificationLock} from '@support/classification_lock';
+import {enableClassificationMarkings} from '@support/classification_test_helper';
 import {Properties, Setup, System} from '@support/server_api';
 import {serverOneUrl, siteOneUrl} from '@support/test_config';
 import {GlobalClassificationBanner} from '@support/ui/component';
@@ -20,15 +22,16 @@ import {ChannelListScreen, HomeScreen, LoginScreen, ServerScreen} from '@support
 import {timeouts, wait} from '@support/utils';
 import {by, device, element, expect, waitFor} from 'detox';
 
-// Skip: failed CI run 29954156963 (both) — classification banner still red after fetch retry; skip suite
-describe.skip('Classification Banner - Offline / Cache Behaviour', () => {
+describe('Classification Banner - Offline / Cache Behaviour', () => {
     const serverOneDisplayName = 'Server 1';
+    let lockOwner = '';
     let testUser: any;
 
     beforeAll(async () => {
-        await System.apiPatchConfig(siteOneUrl, {
-            FeatureFlags: {ClassificationMarkings: true},
-        });
+        lockOwner = createClassificationLockOwner();
+        await acquireClassificationLock(siteOneUrl, lockOwner);
+
+        await enableClassificationMarkings(siteOneUrl);
         const {user} = await Setup.apiInit(siteOneUrl);
         testUser = user;
 
@@ -39,11 +42,15 @@ describe.skip('Classification Banner - Offline / Cache Behaviour', () => {
     });
 
     afterAll(async () => {
-        await Properties.apiCleanupClassification(siteOneUrl);
-        await System.apiPatchConfig(siteOneUrl, {
-            FeatureFlags: {ClassificationMarkings: false},
-        });
-        await HomeScreen.logout();
+        try {
+            await Properties.apiCleanupClassification(siteOneUrl);
+            await System.apiPatchConfig(siteOneUrl, {
+                FeatureFlags: {ClassificationMarkings: false},
+            });
+            await HomeScreen.logout();
+        } finally {
+            await releaseClassificationLock(siteOneUrl, lockOwner);
+        }
     });
 
     afterEach(async () => {
@@ -73,7 +80,11 @@ describe.skip('Classification Banner - Offline / Cache Behaviour', () => {
 
     it('MM-T6207_1 - should show stale cached value when API is blocked after a server change', async () => {
         // # Set up classification at TOP SECRET
-        const {linkedFieldId} = await Properties.apiSetupClassificationWithBanner(siteOneUrl, {levelId: 'lvltopsecret00000000000000'});
+        const {linkedFieldId, optionIdsByName} = await Properties.apiSetupClassificationWithBanner(siteOneUrl, {levelId: 'lvltopsecret00000000000000'});
+        const secretOptionId = optionIdsByName.SECRET;
+        if (!secretOptionId) {
+            throw new Error(`SECRET option id missing from setup. Available: ${Object.keys(optionIdsByName).join(', ')}`);
+        }
         await device.reloadReactNative();
         await ChannelListScreen.toBeVisible();
         await GlobalClassificationBanner.toBeVisible();
@@ -81,7 +92,7 @@ describe.skip('Classification Banner - Offline / Cache Behaviour', () => {
 
         // # Change classification value on the server to SECRET
         await Properties.apiPatchSystemPropertyValues(siteOneUrl, 'access_control', [
-            {field_id: linkedFieldId, value: 'lvlsecret00000000000000000'},
+            {field_id: linkedFieldId, value: secretOptionId},
         ]);
 
         // # Block API calls and reload — app should load old cache (TOP SECRET, not SECRET)

@@ -74,7 +74,13 @@ appId: ${MAESTRO_APP_ID}
           timeout: 8000
       - runFlow:
           file: ../../subflows/browser/dismiss_chrome_interstitial.yml
-      - takeScreenshot: help-browser-opened
+      # No screenshot here on Android: the help URL opens in a Chrome Custom Tab
+      # (a separate app task), and `screencap` of that surface returns empty on the
+      # API 35 emulator — the takeScreenshot command produces a 0-byte PNG and aborts
+      # the flow with "Unknown error". Leaving Settings (asserted above) already proves
+      # the browser opened; help-browser-dismissed (on the app's own Settings screen)
+      # captures the recovery. iOS keeps its screenshot — SFSafariViewController is
+      # in-app and captures fine.
       - pressKey: Back
       - runFlow:
           file: ../../subflows/browser/dismiss_chrome_interstitial.yml

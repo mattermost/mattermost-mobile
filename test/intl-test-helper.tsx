@@ -2,7 +2,7 @@
 // See LICENSE.txt for license information.
 
 import {DatabaseProvider} from '@nozbe/watermelondb/react';
-import {render, type RenderOptions} from '@testing-library/react-native';
+import {render, type RenderOptions, type RenderResult} from '@testing-library/react-native';
 import React, {type ReactElement} from 'react';
 import {IntlProvider} from 'react-intl';
 import {SafeAreaProvider} from 'react-native-safe-area-context';
@@ -13,7 +13,7 @@ import {getTranslations} from '@i18n';
 
 import type Database from '@nozbe/watermelondb/Database';
 
-export function renderWithIntl(ui: ReactElement, {locale = 'en', ...renderOptions} = {}) {
+export function renderWithIntl(ui: ReactElement, {locale = 'en', ...renderOptions} = {}): RenderResult {
     function Wrapper({children}: {children: ReactElement}) {
         return (
             <IntlProvider
@@ -30,7 +30,7 @@ export function renderWithIntl(ui: ReactElement, {locale = 'en', ...renderOption
     return render(ui, {wrapper: Wrapper, ...renderOptions});
 }
 
-export function renderWithIntlAndTheme(ui: ReactElement, {locale = 'en', ...renderOptions} = {}) {
+export function renderWithIntlAndTheme(ui: ReactElement, {locale = 'en', ...renderOptions} = {}): RenderResult {
     function Wrapper({children}: {children: ReactElement}) {
         return (
             <IntlProvider
@@ -49,7 +49,7 @@ export function renderWithIntlAndTheme(ui: ReactElement, {locale = 'en', ...rend
     return render(ui, {wrapper: Wrapper, ...renderOptions});
 }
 
-export function renderWithEverything(ui: ReactElement, {locale = 'en', database, serverUrl, ...renderOptions}: {locale?: string; database?: Database; serverUrl?: string; renderOptions?: RenderOptions} = {}) {
+export function renderWithEverything(ui: ReactElement, {locale = 'en', database, serverUrl, ...renderOptions}: {locale?: string; database?: Database; serverUrl?: string; renderOptions?: RenderOptions} = {}): RenderResult {
     function Wrapper({children}: {children: ReactElement}) {
         if (!database) {
             return null;

@@ -2,13 +2,14 @@
 // See LICENSE.txt for license information.
 
 import {Alert} from '@support/ui/component';
-import {isAndroid, isIos, longPressWithRetry, timeouts, wait} from '@support/utils';
+import {isAndroid, isIos, longPressWithRetry, safeEnableSynchronization, timeouts, wait, waitForElementToNotExist} from '@support/utils';
 import {expect, waitFor} from 'detox';
 
 class PostOptionsScreen {
     testID = {
         reactionEmojiPrefix: 'post_options.reaction_bar.reaction.',
         postOptionsScreen: 'post_options.screen',
+        scrollView: 'post_options.scroll_view',
         pickReactionButton: 'post_options.reaction_bar.pick_reaction.button',
         replyPostOption: 'post_options.reply_post.option',
         followThreadOption: 'post_options.follow_thread.option',
@@ -62,12 +63,21 @@ class PostOptionsScreen {
             await this.postOptionsScreen.swipe('down');
         } else {
             await device.pressBack();
+            try {
+                await waitFor(this.postOptionsScreen).not.toExist().withTimeout(timeouts.TWO_SEC);
+            } catch {
+                await device.pressBack();
+            }
         }
         await waitFor(this.postOptionsScreen).not.toExist().withTimeout(timeouts.FIVE_SEC);
     };
 
     deletePost = async ({confirm = true} = {}) => {
-        await waitFor(this.deletePostOption).toExist().withTimeout(timeouts.TWO_SEC);
+        // On Android gorhom sheets, delete option may be below the fold.
+        // Scroll the BottomSheetScrollView into view before tapping to ensure it's hittable.
+        await waitFor(this.deletePostOption).toBeVisible().
+            whileElement(by.id('post_options.scroll_view')).
+            scroll(200, 'down');
         await this.deletePostOption.tap({x: 1, y: 1});
         const {
             deletePostTitle,
@@ -79,11 +89,26 @@ class PostOptionsScreen {
         await expect(deleteButton).toBeVisible();
         if (confirm) {
             await deleteButton.tap();
-            await waitFor(this.postOptionsScreen).not.toExist().withTimeout(timeouts.FIVE_SEC);
+            try {
+                await waitForElementToNotExist(this.postOptionsScreen, timeouts.TEN_SEC);
+            } catch {
+                await this.close();
+                await waitForElementToNotExist(this.postOptionsScreen, timeouts.FIVE_SEC);
+            }
         } else {
             await cancelButton.tap();
             await wait(timeouts.TWO_SEC);
             await waitFor(this.postOptionsScreen).toExist().withTimeout(timeouts.FIVE_SEC);
+            await this.close();
+        }
+    };
+
+    replyToPost = async () => {
+        await waitFor(this.replyPostOption).toExist().withTimeout(timeouts.TWO_SEC);
+        await this.replyPostOption.tap();
+        try {
+            await waitForElementToNotExist(this.postOptionsScreen, timeouts.TEN_SEC);
+        } catch {
             await this.close();
         }
     };
@@ -96,6 +121,73 @@ class PostOptionsScreen {
     openPostOptionsForSearchedPosts = async (postId: string) => {
         await waitFor(this.searchedPostListItem(postId)).toExist().withTimeout(timeouts.TEN_SEC);
         await longPressWithRetry(this.searchedPostListItem(postId), this.postOptionsScreen);
+    };
+
+    private tapPostOption = async (
+        option: Detox.NativeElement,
+        optionLabel: Detox.NativeElement,
+        labelText: string,
+    ) => {
+        await this.toBeVisible();
+
+        if (isIos()) {
+            await option.tap();
+            return;
+        }
+
+        // Android gorhom sheets + edge-to-edge: testID visibility can fail while the
+        // label text is hittable (CI MM-T4864 testFnFailure — Save visible, matcher not).
+        await device.disableSynchronization();
+        try {
+            const candidates = [
+                optionLabel,
+                option,
+                element(by.text(labelText).withAncestor(by.id(this.testID.postOptionsScreen))),
+            ];
+            /* eslint-disable no-await-in-loop */
+            for (const candidate of candidates) {
+                try {
+                    await waitFor(candidate).toExist().withTimeout(timeouts.TWO_SEC);
+                    await candidate.tap();
+                    return;
+                } catch {
+                    // try next matcher
+                }
+            }
+            /* eslint-enable no-await-in-loop */
+            await optionLabel.tap();
+        } finally {
+            await safeEnableSynchronization();
+        }
+    };
+
+    tapSavePost = async () => {
+        await this.tapPostOption(this.savePostOption, this.savePostOptionLabel, 'Save');
+    };
+
+    tapUnsavePost = async () => {
+        await this.tapPostOption(this.unsavePostOption, this.unsavePostOptionLabel, 'Unsave');
+    };
+
+    private tapPinOption = async (option: Detox.NativeElement) => {
+        try {
+            await waitFor(option).
+                toBeVisible().
+                whileElement(by.id(this.testID.scrollView)).
+                scroll(100, 'down');
+        } catch {
+            // The option may already be visible or the sheet may not be scrollable.
+        }
+        await waitFor(option).toExist().withTimeout(timeouts.TEN_SEC);
+        await option.tap({x: 1, y: 1});
+    };
+
+    tapPinPost = async () => {
+        await this.tapPinOption(this.pinPostOption);
+    };
+
+    tapUnpinPost = async () => {
+        await this.tapPinOption(this.unpinPostOption);
     };
 }
 

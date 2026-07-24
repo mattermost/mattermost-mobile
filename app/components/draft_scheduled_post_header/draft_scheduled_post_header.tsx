@@ -127,6 +127,14 @@ const DraftAndScheduledPostHeader: React.FC<Props> = ({
             return null;
         }
 
+        // During a reschedule the observed post briefly emits an undefined/NaN scheduledAt; rendering
+        // then would show "Send on " with no time (previously the literal "Invalid Date"). Skip the
+        // label while the timestamp is invalid; it re-renders with the correct value once the DB
+        // update settles.
+        if (!Number.isFinite(postScheduledAt)) {
+            return null;
+        }
+
         const isSent = scheduledPostErrorCode === 'post_send_success_delete_failed';
         const scheduledTime = getReadableTimestamp(
             postScheduledAt!,

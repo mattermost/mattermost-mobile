@@ -27,17 +27,19 @@ import {
 } from '@support/test_config';
 import {
     ChannelListScreen,
+    ChannelScreen,
     HomeScreen,
     LoginScreen,
     RecentMentionsScreen,
     SearchMessagesScreen,
     ServerScreen,
 } from '@support/ui/screen';
-import {getRandomId, timeouts, wait, waitForElementToBeVisible} from '@support/utils';
-import {expect} from 'detox';
+import {getRandomId, timeouts, wait, waitForElementToBeVisible, waitForElementToExist} from '@support/utils';
+import {expect, waitFor} from 'detox';
 
 describe('Search - Modifiers', () => {
     const serverOneDisplayName = 'Server 1';
+    const channelsCategory = 'channels';
     let testChannel: any;
     let testUser: any;
 
@@ -135,6 +137,62 @@ describe('Search - Modifiers', () => {
 
         // # Go back to channel list screen
         await ChannelListScreen.open();
+    });
+
+    it('MM-T585_1 - unfiltered search is not affected by previous modifier searches', async () => {
+        // # Post a message for plain text search
+        const plainTerm = `plain${getRandomId()}`;
+        const message = `Message ${plainTerm}`;
+
+        await ChannelScreen.open(channelsCategory, testChannel.name);
+        await ChannelScreen.postMessage(message);
+        const {post: plainPost} = await Post.apiGetLastPostInChannel(siteOneUrl, testChannel.id);
+        await ChannelScreen.back();
+
+        // # Open search messages screen
+        await SearchMessagesScreen.open();
+
+        // * Verify on search messages screen
+        await SearchMessagesScreen.toBeVisible();
+
+        // # Clear any stale search state from previous test failures that left search in results mode
+        try {
+            await SearchMessagesScreen.searchClearButton.tap();
+            await wait(timeouts.ONE_SEC);
+        } catch {
+            // Already in empty/modifier state — no stale results to clear
+        }
+
+        // # First search using the from: modifier
+        // Wait for modifier to be visible — only shown when search input is empty
+        await waitFor(SearchMessagesScreen.searchModifierFrom).toExist().withTimeout(timeouts.TEN_SEC);
+        await SearchMessagesScreen.searchModifierFrom.tap();
+        await SearchMessagesScreen.searchInput.typeText(testUser.username);
+
+        await device.disableSynchronization();
+        try {
+            await SearchMessagesScreen.searchInput.tapReturnKey();
+
+            await SearchMessagesScreen.searchInput.replaceText(plainTerm);
+            await SearchMessagesScreen.searchInput.tapReturnKey();
+
+            // * Verify that plain text search returns the expected result
+            // (not affected by previous from: filter)
+            const {postListPostItem} = SearchMessagesScreen.getPostListPostItem(plainPost.id, message);
+            await waitForElementToExist(postListPostItem, timeouts.HALF_MIN);
+
+            // # Clear search, remove recent search items, and go back to channel list screen
+            await SearchMessagesScreen.searchClearButton.tap();
+            await SearchMessagesScreen.getRecentSearchItemRemoveButton(plainTerm).tap();
+            try {
+                await SearchMessagesScreen.getRecentSearchItemRemoveButton(`from: ${testUser.username}`).tap();
+            } catch {
+                // Cleanup best-effort
+            }
+            await ChannelListScreen.open();
+        } finally {
+            await device.enableSynchronization();
+        }
     });
 
     it('MM-T348_1 - full username with -, _, or . highlighted in search results', async () => {

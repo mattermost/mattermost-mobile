@@ -23,7 +23,7 @@
     "babel-plugin-module-resolver": "5.0.2",
     "client-oauth2": "4.3.3",
     "deepmerge": "4.3.1",
-    "detox": "20.51.1",
+    "detox": "20.51.3",
     "dotenv": "17.2.1",
     "express": "^5.2.1",
     "form-data": "4.0.1",

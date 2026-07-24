@@ -64,7 +64,8 @@ class ServerScreen {
         if (isAndroid()) {
             await this.waitForAndroidLoginAvailable(timeouts.ONE_MIN);
         } else {
-            // iOS: retry on transient "Cannot connect" — re-enter URL to re-enable Connect.
+            // iOS: retry if the server returns "Cannot connect" (transient infra issue).
+            // Re-entering the URL re-validates the form and re-enables the Connect button.
             const MAX_CONNECT_ATTEMPTS = 3;
             let lastError: unknown;
             /* eslint-disable no-await-in-loop -- sequential retry: each attempt must complete before deciding to retry */
@@ -109,7 +110,7 @@ class ServerScreen {
     waitForAndroidLoginAvailable = async (timeout: number) => {
         const deadline = Date.now() + timeout;
         const POLL = 1000;
-        const okayButton = element(by.text('OKAY'));
+        const okayButton = element(by.text('Okay'));
         /* eslint-disable no-await-in-loop -- sequential probes by design */
         while (Date.now() < deadline) {
             // First: dismiss the alert if it's up (alert window steals Espresso
@@ -224,9 +225,7 @@ class ServerScreen {
         // views under the same testID (the ReactEditText wrapper + the inner EditText).
         // Use atIndex(0) to unambiguously target the first match and avoid the
         // "AmbiguousMatcher" failure. On iOS there is always exactly one match.
-        const input = isAndroid()
-            ? element(by.id(this.testID.preauthSecretInput)).atIndex(0)
-            : this.preauthSecretInput;
+        const input = isAndroid() ? element(by.id(this.testID.preauthSecretInput)).atIndex(0) : this.preauthSecretInput;
         await waitFor(input).toExist().withTimeout(timeouts.TEN_SEC);
         await input.replaceText(secret);
     };
@@ -249,7 +248,7 @@ class ServerScreen {
             // Dismiss "Notifications cannot be received from this server" dialog if it appears.
             try {
                 await waitFor(Alert.notificationsCannotBeReceivedTitle).toExist().withTimeout(timeouts.TEN_SEC);
-                await element(by.text('OKAY')).tap();
+                await element(by.text('Okay')).tap();
             } catch {
                 // Dialog did not appear — proceed normally
             }

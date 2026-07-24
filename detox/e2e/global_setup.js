@@ -175,6 +175,22 @@ async function serverSetup() {
     const headers = {Authorization: `Bearer ${token}`};
     process.stdout.write('[globalSetup] ✅ Admin login successful\n');
 
+    // ponytail: pre-warm the server connection with a post-login ping so the first
+    // app-level request isn't also the server's first cold request. (Note: this warms
+    // the SERVER, not the iOS sim's own TLS session — it won't prevent -1005 drops on
+    // the app's first POST, but it's a cheap best-effort.)
+    try {
+        await axios.get(`${SITE_URL}/api/v4/system/ping`);
+    } catch (err) {
+        process.stderr.write(`[globalSetup] ⚠️ post-login ping failed (${err.message}) — continuing\n`);
+    }
+
+    try {
+        await axios.get(`${SITE_URL}/api/v4/system/ping`);
+    } catch (err) {
+        process.stderr.write(`[globalSetup] ⚠️ post-login ping failed (${err.message}) — continuing\n`);
+    }
+
     try {
         await axios.get(`${SITE_URL}/api/v4/system/ping`);
     } catch (err) {
