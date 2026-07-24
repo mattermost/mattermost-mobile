@@ -431,7 +431,7 @@ export async function deletePostsInChannelsByCutoff(
         const {database, operator} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
 
         const channels = `'${channelIds.join("','")}'`;
-        const exclusionClause = excludedPostIds.size > 0? ` AND id NOT IN ('${[...excludedPostIds].join("','")}')`: '';
+        const exclusionClause = excludedPostIds.size > 0 ? ` AND id NOT IN ('${[...excludedPostIds].join("','")}')` : '';
 
         // A thread with a reply on or after the cutoff is alive even if its root is older;
         // keep the root so the surviving reply's root_id never dangles.
