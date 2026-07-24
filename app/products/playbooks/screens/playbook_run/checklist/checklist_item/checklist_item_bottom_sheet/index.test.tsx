@@ -3,7 +3,7 @@
 
 import React, {type ComponentProps} from 'react';
 
-import {General} from '@constants';
+import {General, Preferences} from '@constants';
 import {SYSTEM_IDENTIFIERS} from '@constants/database';
 import DatabaseManager from '@database/manager';
 import {getPlaybookChecklistItemById} from '@playbooks/database/queries/item';
@@ -107,6 +107,37 @@ describe('ChecklistItemBottomSheet Enhanced Component', () => {
             expect(bottomSheet).toHaveProp('currentUserTimezone', expect.objectContaining({useAutomaticTimezone: false, manualTimezone: 'America/New_York', automaticTimezone: 'America/New_York'}));
             expect(bottomSheet).toHaveProp('participantIds', ['user-1', 'user-2']);
             expect(bottomSheet).toHaveProp('runName', 'Run 1');
+        });
+
+        it('should resolve the military time display preference', async () => {
+            const rawItem = TestHelper.fakePlaybookChecklistItem('checklist-id', {id: 'item-1'});
+            await addItemToDatabase(rawItem);
+
+            const item = await getPlaybookChecklistItemById(database, rawItem.id);
+
+            const props = getBaseProps();
+            props.item = item!;
+
+            const {getByTestId} = renderWithEverything(<ChecklistItemBottomSheet {...props}/>, {database});
+
+            const bottomSheet = getByTestId('checklist_item_bottom_sheet');
+            expect(bottomSheet).toHaveProp('isMilitaryTime', false);
+
+            await act(async () => {
+                await operator.handlePreferences({
+                    preferences: [{
+                        category: Preferences.CATEGORIES.DISPLAY_SETTINGS,
+                        name: Preferences.USE_MILITARY_TIME,
+                        value: 'true',
+                        user_id: 'currentUser',
+                    }],
+                    prepareRecordsOnly: false,
+                });
+            });
+
+            await waitFor(() => {
+                expect(bottomSheet).toHaveProp('isMilitaryTime', true);
+            });
         });
 
         it('should handle missing run correctly', async () => {

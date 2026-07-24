@@ -58,8 +58,11 @@ describe('ChecklistItem', () => {
     function getBaseProps(): ComponentProps<typeof ChecklistItem> {
         return {
             item: mockItem,
+            timelineEvents: [],
             assignee: mockAssignee,
             teammateNameDisplay: 'username',
+            timezone: '',
+            isMilitaryTime: false,
             channelId: 'channel-id-1',
             checklistNumber: 0,
             itemNumber: 0,
@@ -429,6 +432,25 @@ describe('ChecklistItem', () => {
         await waitFor(() => {
             expect(runChecklistItem).toHaveBeenCalledWith(serverUrl, props.playbookRunId, props.checklistNumber, props.itemNumber);
         });
+    });
+
+    it('renders task activity and includes its detail row in the bottom-sheet height', () => {
+        const props = getBaseProps();
+        props.activity = {action: 'check', actorUserId: mockAssignee.id, timestamp: Date.now()};
+        props.activityActor = mockAssignee;
+
+        const {getByTestId, getByText} = renderWithIntl(<ChecklistItem {...props}/>);
+        expect(getByTestId('playbook_run.checklist_item.task_activity')).toBeVisible();
+
+        fireEvent.press(getByText('Test Item'));
+        const args = jest.mocked(bottomSheet).mock.calls[0] as Parameters<typeof bottomSheet>;
+        expect(args[1]).toEqual([1, 426, '80%']);
+
+        const BottomSheetComponent = args[0];
+        const {getByTestId: getByTestIdInSheet} = renderWithIntl(<BottomSheetComponent/>);
+        const bottomSheetComponent = getByTestIdInSheet('checklist-item-bottom-sheet-component');
+        expect(bottomSheetComponent.props.activity).toBe(props.activity);
+        expect(bottomSheetComponent.props.activityActor).toBe(mockAssignee);
     });
 
     describe('condition icon', () => {

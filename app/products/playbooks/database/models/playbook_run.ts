@@ -27,6 +27,30 @@ const {
 
 const {PLAYBOOK_RUN, PLAYBOOK_CHECKLIST} = PLAYBOOK_TABLES;
 
+// Timeline events are JSON objects. The shared string-array sanitizer is used by
+// the run's ID arrays, but would intentionally discard these object values. Validate
+// the fields the task-activity resolver relies on so malformed entries are dropped
+// rather than surfacing as a false TimelineEvent to consumers.
+const isTimelineEvent = (value: unknown): value is TimelineEvent => {
+    if (!value || typeof value !== 'object' || Array.isArray(value)) {
+        return false;
+    }
+
+    const event = value as Partial<TimelineEvent>;
+    return typeof event.event_type === 'string' &&
+        typeof event.event_at === 'number' &&
+        typeof event.details === 'string' &&
+        typeof event.subject_user_id === 'string';
+};
+
+const safeParseTimelineEvents = (value: unknown): TimelineEvent[] => {
+    if (!Array.isArray(value)) {
+        return [];
+    }
+
+    return value.filter(isTimelineEvent);
+};
+
 /**
  * The PlaybookRun model represents a playbook run in the Mattermost app.
  */
@@ -93,6 +117,9 @@ export default class PlaybookRunModel extends Model implements PlaybookRunModelI
 
     /** participant_ids : An array of user IDs that participate in the run */
     @json('participant_ids', safeParseJSONStringArray) participantIds!: string[];
+
+    /** timeline_events : The latest run timeline events */
+    @json('timeline_events', safeParseTimelineEvents) timelineEvents!: TimelineEvent[];
 
     /** summary : Summary of the playbook run */
     @field('summary') summary!: string;

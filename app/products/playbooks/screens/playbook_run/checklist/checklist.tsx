@@ -108,6 +108,7 @@ type Props = {
     checklist: PlaybookChecklistModel | PlaybookChecklist;
     checklistNumber: number;
     items: Array<PlaybookChecklistItemModel | PlaybookChecklistItem>;
+    timelineEvents: TimelineEvent[];
     channelId: string;
     playbookRunId: string;
     playbookRunName: string;
@@ -120,6 +121,7 @@ const Checklist = ({
     checklist,
     checklistNumber,
     items,
+    timelineEvents,
     channelId,
     playbookRunId,
     playbookRunName,
@@ -238,6 +240,7 @@ const Checklist = ({
                     <ChecklistItem
                         key={item.id}
                         item={item}
+                        timelineEvents={timelineEvents}
                         channelId={channelId}
                         checklistNumber={checklistNumber}
                         itemNumber={index}
@@ -266,6 +269,7 @@ const Checklist = ({
                     <ChecklistItem
                         key={`calc-${item.id}`}
                         item={item}
+                        timelineEvents={timelineEvents}
                         channelId={channelId}
                         checklistNumber={checklistNumber}
                         itemNumber={index}

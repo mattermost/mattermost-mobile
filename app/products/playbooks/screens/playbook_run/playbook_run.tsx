@@ -411,6 +411,7 @@ export default function PlaybookRun({
                         </View>
                         <ChecklistList
                             checklists={checklists}
+                            timelineEvents={'timelineEvents' in playbookRun ? playbookRun.timelineEvents : playbookRun.timeline_events}
                             channelId={channelId}
                             playbookRunId={playbookRun.id}
                             playbookRunName={playbookRun.name}
