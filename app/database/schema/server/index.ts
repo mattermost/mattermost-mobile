@@ -19,6 +19,7 @@ import {
     CustomProfileFieldSchema,
     CustomProfileAttributeSchema,
     DraftSchema,
+    DraftOutboxSchema,
     FileSchema,
     GroupSchema,
     GroupChannelSchema,
@@ -49,7 +50,7 @@ import {
 } from './table_schemas';
 
 export const serverSchema: AppSchema = appSchema({
-    version: 20,
+    version: 21,
     tables: [
         AiBotSchema,
         AiThreadSchema,
@@ -64,6 +65,7 @@ export const serverSchema: AppSchema = appSchema({
         CustomProfileFieldSchema,
         CustomProfileAttributeSchema,
         DraftSchema,
+        DraftOutboxSchema,
         FileSchema,
         GroupSchema,
         GroupChannelSchema,

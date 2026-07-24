@@ -263,7 +263,10 @@ const PostHandler = <TBase extends Constructor<ServerDataOperatorBase>>(supercla
             return [];
         }
 
-        const createOrUpdateRawValues = getUniqueRawsBy({raws: drafts, key: 'channel_id'});
+        // Deduplicate by the composite draft key (channel_id, root_id). Deduplicating by
+        // channel_id alone drops records when one batch contains a channel draft plus one
+        // or more thread reply drafts for the same channel, since they share channel_id.
+        const createOrUpdateRawValues = [...new Map(drafts.map((draft) => [buildDraftKey(draft), draft])).values()];
 
         return this.handleRecords({
             fieldName: 'channel_id',
