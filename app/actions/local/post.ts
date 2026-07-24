@@ -1,6 +1,8 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import {Q, type Database, type Model} from '@nozbe/watermelondb';
+
 import {fetchPostAuthors} from '@actions/remote/post';
 import {ActionType, Post} from '@constants';
 import {MM_TABLES} from '@constants/database';
@@ -16,9 +18,9 @@ import {getPostIdsForCombinedUserActivityPost} from '@utils/post_list';
 
 import {updateLastPostAt, updateMyChannelLastFetchedAt} from './channel';
 
-import type {Database, Model, Q} from '@nozbe/watermelondb';
 import type MyChannelModel from '@typings/database/models/servers/my_channel';
 import type PostModel from '@typings/database/models/servers/post';
+import type PostsInChannelModel from '@typings/database/models/servers/posts_in_channel';
 import type UserModel from '@typings/database/models/servers/user';
 
 const {SERVER: {DRAFT, FILE, MY_CHANNEL, POST, POSTS_IN_CHANNEL, POSTS_IN_THREAD, REACTION, THREAD, THREAD_PARTICIPANT, THREADS_IN_TEAM}} = MM_TABLES;
@@ -419,18 +421,17 @@ export async function deletePostsInChannelsByCutoff(
     channelIds: string[],
     cutoff: number,
     excludedPostIds: Set<string> = new Set(),
+    reconcileObservers = false,
 ): Promise<{error: unknown}> {
     if (channelIds.length === 0) {
         return {error: undefined};
     }
 
     try {
-        const {database} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
+        const {database, operator} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
 
         const channels = `'${channelIds.join("','")}'`;
-        const exclusionClause = excludedPostIds.size > 0
-            ? ` AND id NOT IN ('${[...excludedPostIds].join("','")}')`
-            : '';
+        const exclusionClause = excludedPostIds.size > 0? ` AND id NOT IN ('${[...excludedPostIds].join("','")}')`: '';
 
         // A thread with a reply on or after the cutoff is alive even if its root is older;
         // keep the root so the surviving reply's root_id never dangles.
@@ -466,6 +467,21 @@ export async function deletePostsInChannelsByCutoff(
                 ],
             });
         });
+
+        // Re-apply the raw-SQL Posts In Channel 'earliest' bump through the model layer so mounted post lists re-observe
+        // Opt-in since only mounted channels have live observers.
+        if (reconcileObservers) {
+            const rows = await database.get<PostsInChannelModel>(POSTS_IN_CHANNEL).query(Q.where('channel_id', Q.oneOf(channelIds))).fetch();
+            const prepared = rows.
+                filter((row) => row.earliest < cutoff).
+                map((row) => row.prepareUpdate((r) => {
+                    r.earliest = cutoff;
+                }));
+            if (prepared.length > 0) {
+                await operator.batchRecords(prepared, 'deletePostsInChannelsByCutoff.reconcile');
+            }
+        }
+
         return {error: undefined};
     } catch (error) {
         return {error};

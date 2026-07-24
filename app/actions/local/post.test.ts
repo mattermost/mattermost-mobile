@@ -406,10 +406,36 @@ describe('updatePostTranslation', () => {
 
 describe('deletePostsInChannelsByCutoff', () => {
     const CUTOFF = 50_000_000;
+    const OLD = 10_000_000;
+    const RECENT = 90_000_000;
+
+    const postsInChannel = [
+        TestHelper.fakePost({channel_id: 'cId', create_at: OLD}),
+        TestHelper.fakePost({channel_id: 'cId', create_at: RECENT}),
+    ];
 
     it('handle not found database', async () => {
         const {error} = await deletePostsInChannelsByCutoff('foo', [channelId], CUTOFF);
         expect(error).toBeTruthy();
+    });
+
+    // A cached model whose earliest advances has to go through the model layer (fires observers)
+    it('advances the cached PostsInChannel earliest through the model layer when reconcileObservers is set', async () => {
+        jest.spyOn(operator.database.adapter, 'unsafeExecute').mockResolvedValue();
+        const [pic] = await operator.handleReceivedPostsInChannel(postsInChannel);
+
+        await deletePostsInChannelsByCutoff(serverUrl, ['cId'], CUTOFF, new Set(), true);
+
+        expect(pic.earliest).toBe(CUTOFF);
+    });
+
+    it('leaves the cached PostsInChannel untouched when reconcileObservers is not set', async () => {
+        jest.spyOn(operator.database.adapter, 'unsafeExecute').mockResolvedValue();
+        const [pic] = await operator.handleReceivedPostsInChannel(postsInChannel);
+
+        await deletePostsInChannelsByCutoff(serverUrl, ['cId'], CUTOFF, new Set());
+
+        expect(pic.earliest).toBe(OLD);
     });
 
     it('includes the PostsInChannel destroy/update and MyChannel reset, in that order, in the same unsafeExecute call as the post delete', async () => {

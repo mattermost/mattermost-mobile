@@ -159,19 +159,19 @@ async function cleanupPosts(
         }
     }
 
-    // delete posts in viewed channel if any
+    // delete posts in viewed channel if any; reconcile so its mounted post list re-queries
     if (protections.viewedChannelId && channelsWithPostRanges.has(protections.viewedChannelId)) {
         const computedChannelCutoff = Math.min(cutoff, channelProtectionLimit(protections.viewedChannelId, protections));
-        const {error: deleteError} = await deletePostsInChannelsByCutoff(serverUrl, [protections.viewedChannelId], computedChannelCutoff, excludedPostIds);
+        const {error: deleteError} = await deletePostsInChannelsByCutoff(serverUrl, [protections.viewedChannelId], computedChannelCutoff, excludedPostIds, true);
         if (deleteError) {
             throw deleteError;
         }
     }
 
-    // delete posts in thread parent channel if any
+    // delete posts in thread parent channel if any; reconcile so its mounted post list re-queries
     if (protections.threadParentChannelId && protections.threadParentChannelId !== protections.viewedChannelId && channelsWithPostRanges.has(protections.threadParentChannelId)) {
         const computedChannelCutoff = Math.min(cutoff, channelProtectionLimit(protections.threadParentChannelId, protections));
-        const {error: deleteError} = await deletePostsInChannelsByCutoff(serverUrl, [protections.threadParentChannelId], computedChannelCutoff, excludedPostIds);
+        const {error: deleteError} = await deletePostsInChannelsByCutoff(serverUrl, [protections.threadParentChannelId], computedChannelCutoff, excludedPostIds, true);
         if (deleteError) {
             throw deleteError;
         }
