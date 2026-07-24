@@ -37,6 +37,7 @@ const TEST_SERVER_CONFIG_PATCH = {
         Enable: false,
     },
     FileSettings: {
+        EnablePublicLink: true,
         MaxFileSize: DEFAULT_MAX_FILE_SIZE_BYTES,
     },
     ServiceSettings: {
