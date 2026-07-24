@@ -214,6 +214,15 @@ class ServerScreen {
         await wait(timeouts.ONE_SEC);
     };
 
+    waitForServerUrl = async (expectedUrl: string, timeout = timeouts.TEN_SEC) => {
+        if (isAndroid()) {
+            await waitFor(this.serverUrlInput).toHaveValue(expectedUrl).withTimeout(timeout);
+            return;
+        }
+
+        await waitFor(this.serverUrlInput).toHaveText(expectedUrl).withTimeout(timeout);
+    };
+
     toggleAdvancedOptions = async () => {
         await this.advancedOptionsToggle.tap();
         await wait(timeouts.ONE_SEC);

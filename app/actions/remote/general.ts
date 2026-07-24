@@ -13,6 +13,7 @@ import {getExpandedLinks, getPushVerificationStatus} from '@queries/servers/syst
 import {getFullErrorMessage} from '@utils/errors';
 import {getResponseHeader} from '@utils/headers';
 import {logDebug} from '@utils/log';
+import {sanitizeUrl} from '@utils/url';
 
 import {forceLogoutIfNecessary} from './session';
 
@@ -36,8 +37,19 @@ async function getDeviceIdForPing(serverUrl: string, checkDeviceId: boolean) {
     return getDeviceToken();
 }
 
+function getBaseUrlFromResponseData(data: unknown): string | undefined {
+    if (data && typeof data === 'object' && 'base_url' in data) {
+        const baseUrl = data.base_url;
+        if (typeof baseUrl === 'string' && baseUrl.length > 0) {
+            return baseUrl;
+        }
+    }
+
+    return undefined;
+}
+
 // Default timeout interval for ping is 5 seconds
-export const doPing = async (serverUrl: string, verifyPushProxy: boolean, timeoutInterval = 5000, preauthSecret?: string, client?: Client) => {
+export const doPing = async (serverUrl: string, verifyPushProxy: boolean, timeoutInterval = 5000, preauthSecret?: string, client?: Client, hasRetriedBaseUrl = false): Promise<{error?: unknown; canReceiveNotifications?: string; serverUrl?: string; isPreauthError?: boolean}> => {
     let pingClient: Client;
 
     if (client) {
@@ -77,38 +89,56 @@ export const doPing = async (serverUrl: string, verifyPushProxy: boolean, timeou
             if (!client) {
                 NetworkManager.invalidateClient(serverUrl);
             }
+
+            if (response.code === 406 && !hasRetriedBaseUrl) {
+                const baseUrl = getBaseUrlFromResponseData(response.data);
+                if (baseUrl) {
+                    return doPing(sanitizeUrl(baseUrl, false, true), verifyPushProxy, timeoutInterval, preauthSecret, undefined, true);
+                }
+            }
+
             if (response.code === 403 && getResponseHeader(response.headers, ClientConstants.HEADER_X_REJECT_REASON) === 'pre-auth') {
                 return {error: {intl: pingError}, isPreauthError: true};
             }
             return {error: {intl: pingError}};
         }
     } catch (error) {
-        // Check if this is a 403 with pre-auth header
+        if (!client) {
+            NetworkManager.invalidateClient(serverUrl);
+        }
+
         const errorObj = error as ClientError;
+
+        // Check if this is a 406 with base_url in the response data
+        if (errorObj.status_code === 406 && !hasRetriedBaseUrl) {
+            const baseUrl = getBaseUrlFromResponseData(errorObj.details);
+            if (baseUrl) {
+                return doPing(sanitizeUrl(baseUrl, false, true), verifyPushProxy, timeoutInterval, preauthSecret, undefined, true);
+            }
+        }
+
+        // Check if this is a 403 with pre-auth header
         if (errorObj.status_code === 403) {
             if (getResponseHeader(errorObj.headers, ClientConstants.HEADER_X_REJECT_REASON) === 'pre-auth') {
                 return {error: {intl: pingError}, isPreauthError: true};
             }
         }
 
-        if (!client) {
-            NetworkManager.invalidateClient(serverUrl);
-        }
         return {error: {intl: pingError}};
     }
 
     if (verifyPushProxy) {
-        let canReceiveNotifications = response?.data?.CanReceiveNotifications;
+        let canReceiveNotifications = response?.data?.CanReceiveNotifications as string | undefined;
 
         // Already verified or old server
         if (deviceId === undefined || canReceiveNotifications === null) {
             canReceiveNotifications = PUSH_PROXY_RESPONSE_VERIFIED;
         }
 
-        return {canReceiveNotifications};
+        return {canReceiveNotifications, serverUrl};
     }
 
-    return {};
+    return {serverUrl};
 };
 
 export const getRedirectLocation = async (serverUrl: string, link: string) => {

@@ -12,6 +12,7 @@ import PerformanceMetricsManager from '@managers/performance_metrics_manager';
 import {NetworkRequestMetrics} from '@managers/performance_metrics_manager/constant';
 import {isErrorWithStatusCode} from '@utils/errors';
 import {getFormattedFileSize} from '@utils/file';
+import {getResponseHeader} from '@utils/headers';
 import {logDebug, logInfo} from '@utils/log';
 import {semverFromServerVersion} from '@utils/server';
 
@@ -432,6 +433,20 @@ export default class ClientTracking {
         }
 
         if (response.ok) {
+            const contentType = getResponseHeader(headers, 'Content-Type');
+            if (contentType?.toLowerCase().includes('text/html')) {
+                throw new ClientError(this.apiClient.baseUrl, {
+                    message: 'Received invalid response from the server.',
+                    intl: defineMessage({
+                        id: 'mobile.request.invalid_response',
+                        defaultMessage: 'Received invalid response from the server.',
+                    }),
+                    url,
+                    status_code: response.code,
+                    headers,
+                });
+            }
+
             return returnDataOnly ? (response.data || {}) : response;
         }
 
@@ -441,6 +456,7 @@ export default class ClientTracking {
             status_code: response.code,
             url,
             headers,
+            details: response.data,
         });
     };
 }
