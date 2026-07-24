@@ -26,6 +26,9 @@ import type SystemModel from '@typings/database/models/servers/system';
 
 const {SERVER: {POSTS_IN_CHANNEL, SYSTEM}} = MM_TABLES;
 
+// Guards against overlapping runs when rapid reconnects call this un-awaited.
+const inFlight = new Set<string>();
+
 interface CleanupProtections {
     viewedChannelId: string | undefined;
     viewedChannelLimit: number;
@@ -224,63 +227,73 @@ export async function autoCacheCleanup(serverUrl: string): Promise<void> {
         return;
     }
 
-    let database: Database;
-    let operator: {batchRecords: (models: Model[], description: string) => Promise<void>};
-    try {
-        ({database, operator} = DatabaseManager.getServerDatabaseAndOperator(serverUrl));
-    } catch (error) {
-        logError('autoCacheCleanup getServerDatabaseAndOperator', getFullErrorMessage(error));
+    if (inFlight.has(serverUrl)) {
+        logDebug('autoCacheCleanup: already running for', serverUrl);
         return;
     }
-
-    const toDate = (ms: number) => (ms ? new Date(ms).toString() : undefined);
-    const lastRunAt = await getLastAutoCacheCleanupRun(database);
-    const shouldRun = !lastRunAt || new Date(lastRunAt).toDateString() !== new Date().toDateString();
-    logDebug('autoCacheCleanup: rolling cleanup check for', serverUrl, '— lastRunAt:', toDate(lastRunAt), '— shouldRun:', shouldRun);
-    if (!shouldRun) {
-        return;
-    }
+    inFlight.add(serverUrl);
 
     try {
-        const cutoff = Date.now() - (cleanupDays * DateConstants.SECONDS.DAY * 1000);
-        const activeUrl = await DatabaseManager.getActiveServerUrl();
-        const isActive = serverUrl === activeUrl;
-
-        const limits = await computeCleanupProtections(database, isActive);
-        const toDateOrInf = (ms: number) => {
-            if (!Number.isFinite(ms)) {
-                return ms > 0 ? 'Infinity' : '-Infinity';
-            }
-            return new Date(ms).toString();
-        };
-        logDebug(
-            'autoCacheCleanup: running for', serverUrl,
-            '— cutoff:', toDate(cutoff),
-            '— isActive:', isActive,
-            '— currentChannelId:', limits.viewedChannelId,
-            '— viewedChannelLimit:', toDateOrInf(limits.viewedChannelLimit),
-            '— threadParentChannelId:', limits.threadParentChannelId,
-            '— threadParentLimit:', toDateOrInf(limits.threadParentLimit),
-            '— currentThreadId:', limits.viewedThreadId,
-            '— fileViewerPostId:', limits.fileViewerPostId,
-            '— currentPlaybookRunId:', limits.viewedPlaybookRunId,
-        );
-
-        await cleanupPosts(serverUrl, database, cutoff, limits);
-        await cleanupAiThreads(database, operator, cutoff, limits.viewedThreadId);
-        await cleanupPlaybookRuns(database, operator, cutoff, limits.viewedPlaybookRunId);
-
-        await setLastAutoCacheCleanupRun(serverUrl);
-
+        let database: Database;
+        let operator: {batchRecords: (models: Model[], description: string) => Promise<void>};
         try {
-            await database.unsafeVacuum();
-        } catch (vacuumError) {
-            logError('autoCacheCleanup unsafeVacuum', getFullErrorMessage(vacuumError));
+            ({database, operator} = DatabaseManager.getServerDatabaseAndOperator(serverUrl));
+        } catch (error) {
+            logError('autoCacheCleanup getServerDatabaseAndOperator', getFullErrorMessage(error));
+            return;
         }
 
-        logDebug('autoCacheCleanup: completed successfully for', serverUrl);
-    } catch (error) {
-        logError('autoCacheCleanup', getFullErrorMessage(error));
+        const toDate = (ms: number) => (ms ? new Date(ms).toString() : undefined);
+        const lastRunAt = await getLastAutoCacheCleanupRun(database);
+        const shouldRun = !lastRunAt || new Date(lastRunAt).toDateString() !== new Date().toDateString();
+        logDebug('autoCacheCleanup: rolling cleanup check for', serverUrl, '— lastRunAt:', toDate(lastRunAt), '— shouldRun:', shouldRun);
+        if (!shouldRun) {
+            return;
+        }
+
+        try {
+            const cutoff = Date.now() - (cleanupDays * DateConstants.SECONDS.DAY * 1000);
+            const activeUrl = await DatabaseManager.getActiveServerUrl();
+            const isActive = serverUrl === activeUrl;
+
+            const limits = await computeCleanupProtections(database, isActive);
+            const toDateOrInf = (ms: number) => {
+                if (!Number.isFinite(ms)) {
+                    return ms > 0 ? 'Infinity' : '-Infinity';
+                }
+                return new Date(ms).toString();
+            };
+            logDebug(
+                'autoCacheCleanup: running for', serverUrl,
+                '— cutoff:', toDate(cutoff),
+                '— isActive:', isActive,
+                '— currentChannelId:', limits.viewedChannelId,
+                '— viewedChannelLimit:', toDateOrInf(limits.viewedChannelLimit),
+                '— threadParentChannelId:', limits.threadParentChannelId,
+                '— threadParentLimit:', toDateOrInf(limits.threadParentLimit),
+                '— currentThreadId:', limits.viewedThreadId,
+                '— fileViewerPostId:', limits.fileViewerPostId,
+                '— currentPlaybookRunId:', limits.viewedPlaybookRunId,
+            );
+
+            await cleanupPosts(serverUrl, database, cutoff, limits);
+            await cleanupAiThreads(database, operator, cutoff, limits.viewedThreadId);
+            await cleanupPlaybookRuns(database, operator, cutoff, limits.viewedPlaybookRunId);
+
+            await setLastAutoCacheCleanupRun(serverUrl);
+
+            try {
+                await database.unsafeVacuum();
+            } catch (vacuumError) {
+                logError('autoCacheCleanup unsafeVacuum', getFullErrorMessage(vacuumError));
+            }
+
+            logDebug('autoCacheCleanup: completed successfully for', serverUrl);
+        } catch (error) {
+            logError('autoCacheCleanup', getFullErrorMessage(error));
+        }
+        logDebug('autoCacheCleanup: done for', serverUrl);
+    } finally {
+        inFlight.delete(serverUrl);
     }
-    logDebug('autoCacheCleanup: done for', serverUrl);
 }

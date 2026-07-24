@@ -176,6 +176,14 @@ describe('autoCacheCleanup', () => {
         expect(logError).toHaveBeenCalledWith('autoCacheCleanup getServerDatabaseAndOperator', 'db unavailable');
     });
 
+    it('skips a concurrent invocation for the same server while a run is in flight', async () => {
+        await writePiC('ch-concurrent', OLD, RECENT);
+
+        await Promise.all([autoCacheCleanup(SERVER_URL), autoCacheCleanup(SERVER_URL)]);
+
+        expect(LocalPost.deletePostsInChannelsByCutoff).toHaveBeenCalledTimes(1);
+    });
+
     it('does not call getCurrentChannelId when the channel screen is not in the navigation stack', async () => {
         jest.spyOn(DatabaseManager, 'getActiveServerUrl').mockResolvedValue(SERVER_URL);
         jest.mocked(NavigationStore.getScreensInStack).mockReturnValue([]);
