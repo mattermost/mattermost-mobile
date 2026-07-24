@@ -2,10 +2,14 @@
 // See LICENSE.txt for license information.
 
 import {Database, Q} from '@nozbe/watermelondb';
-import {of as of$, switchMap} from 'rxjs';
+import {combineLatest, distinctUntilChanged, of as of$, switchMap} from 'rxjs';
 
+import {Preferences} from '@constants';
 import {MM_TABLES} from '@constants/database';
 import DraftModel from '@typings/database/models/servers/draft';
+
+import {queryPreferencesByCategoryAndName} from './preference';
+import {getConfigBooleanValue, observeConfigBooleanValue} from './system';
 
 import type Model from '@nozbe/watermelondb/Model';
 import type DraftOutboxModel from '@typings/database/models/servers/draft_outbox';
@@ -21,6 +25,55 @@ const {SERVER: {DRAFT, DRAFT_OUTBOX, CHANNEL}} = MM_TABLES;
  */
 export const buildDraftOutboxId = (channelId: string, rootId = '') => {
     return `${channelId}-${rootId || 'root'}`;
+};
+
+/**
+ * isDraftSyncPreferenceEnabled: the advanced setting gate. Synchronization stays enabled
+ * when the `advanced_settings/sync_drafts` preference is absent (opt-out defaults to on)
+ * and is only disabled when the preference is explicitly set to 'false'.
+ */
+const isDraftSyncPreferenceEnabled = (value: string | undefined) => {
+    return value !== 'false';
+};
+
+/**
+ * getIsDraftSyncEnabled: draft synchronization is enabled ONLY when BOTH the server config
+ * `AllowSyncedDrafts` is 'true' AND the user's `advanced_settings/sync_drafts` preference is
+ * not explicitly 'false'. There is deliberately no server-version gate: drafts predate the
+ * minimum supported server.
+ */
+export const getIsDraftSyncEnabled = async (database: Database) => {
+    const allowed = await getConfigBooleanValue(database, 'AllowSyncedDrafts');
+    if (!allowed) {
+        return false;
+    }
+
+    const prefs = await queryPreferencesByCategoryAndName(
+        database,
+        Preferences.CATEGORIES.ADVANCED_SETTINGS,
+        Preferences.ADVANCED_SYNC_DRAFTS,
+    ).fetch();
+
+    return isDraftSyncPreferenceEnabled(prefs[0]?.value);
+};
+
+/**
+ * observeIsDraftSyncEnabled: reactive form of getIsDraftSyncEnabled. Emits true only when
+ * the `AllowSyncedDrafts` config is 'true' AND the `advanced_settings/sync_drafts` preference
+ * is not explicitly 'false'.
+ */
+export const observeIsDraftSyncEnabled = (database: Database) => {
+    const allowed = observeConfigBooleanValue(database, 'AllowSyncedDrafts');
+    const preference = queryPreferencesByCategoryAndName(
+        database,
+        Preferences.CATEGORIES.ADVANCED_SETTINGS,
+        Preferences.ADVANCED_SYNC_DRAFTS,
+    ).observeWithColumns(['value']);
+
+    return combineLatest([allowed, preference]).pipe(
+        switchMap(([isAllowed, prefs]) => of$(isAllowed && isDraftSyncPreferenceEnabled(prefs[0]?.value))),
+        distinctUntilChanged(),
+    );
 };
 
 export const getDraft = async (database: Database, channelId: string, rootId = '') => {
