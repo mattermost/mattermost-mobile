@@ -42,3 +42,7 @@ export const CLASSIFICATIONS_CHANNEL_OBJECT_TYPE = 'channel';
 // Actions stored on the linked fields' attrs.actions to control banner placement.
 export const DISPLAY_BANNER_TOP = 'display_banner_top';
 export const DISPLAY_BANNER_BOTTOM = 'display_banner_bottom';
+
+// How long a successful classification-field fetch stays fresh in the in-memory
+// cache before the global banner mount effect will request it again (1 hour).
+export const CLASSIFICATION_BANNER_CACHE_TTL = 60 * 60 * 1000;

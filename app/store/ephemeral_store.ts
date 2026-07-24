@@ -5,6 +5,7 @@ import {DeviceEventEmitter} from 'react-native';
 import {BehaviorSubject} from 'rxjs';
 
 import {Events} from '@constants';
+import {CLASSIFICATION_BANNER_CACHE_TTL} from '@constants/classification';
 import {getDefaultThemeByAppearance} from '@context/theme';
 import {toMilliseconds} from '@utils/datetime';
 
@@ -56,6 +57,15 @@ class EphemeralStoreSingleton {
     private channelPlaybooksSynced: {[serverUrl: string]: Set<string>} = {};
 
     private managedCategoryPropertyIds: {[serverUrl: string]: {groupId: string; fieldId: string} | undefined} = {};
+
+    // Track when the classification banner fields were last fetched per server, so
+    // the global banner can skip redundant fetches within the TTL. In-memory only
+    // (cleared on app restart) and cleared per server on logout.
+    private classificationBannerFetchedAt: {[serverUrl: string]: number | undefined} = {};
+
+    // Track classification option ids we've already forced a field refresh for, so an
+    // option that is genuinely gone server-side does not trigger an infinite re-fetch loop.
+    private classificationFieldSyncAttempted: {[serverUrl: string]: Set<string>} = {};
 
     // Track how many translations are being executed at the same time on the channel.
     // We limit this to avoid overwhelming the device.
@@ -448,6 +458,35 @@ class EphemeralStoreSingleton {
 
     clearManagedCategoryPropertyIds = (serverUrl: string) => {
         delete this.managedCategoryPropertyIds[serverUrl];
+    };
+
+    // Ephemeral cache for the classification banner fields fetch
+    shouldFetchClassificationBanner = (serverUrl: string) => {
+        const ts = this.classificationBannerFetchedAt[serverUrl];
+        if (ts === undefined) {
+            return true;
+        }
+        return Date.now() - ts >= CLASSIFICATION_BANNER_CACHE_TTL;
+    };
+
+    setClassificationBannerFetched = (serverUrl: string) => {
+        this.classificationBannerFetchedAt[serverUrl] = Date.now();
+    };
+
+    getClassificationFieldSyncAttempted = (serverUrl: string, optionId: string) => {
+        return this.classificationFieldSyncAttempted[serverUrl]?.has(optionId) ?? false;
+    };
+
+    setClassificationFieldSyncAttempted = (serverUrl: string, optionId: string) => {
+        if (!this.classificationFieldSyncAttempted[serverUrl]) {
+            this.classificationFieldSyncAttempted[serverUrl] = new Set();
+        }
+        this.classificationFieldSyncAttempted[serverUrl]?.add(optionId);
+    };
+
+    clearClassificationCache = (serverUrl: string) => {
+        delete this.classificationBannerFetchedAt[serverUrl];
+        delete this.classificationFieldSyncAttempted[serverUrl];
     };
 
     // Ephemeral control for rejected files

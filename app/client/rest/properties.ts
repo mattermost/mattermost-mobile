@@ -6,6 +6,7 @@ import type ClientBase from './base';
 export interface ClientPropertiesMix {
     getPropertyValues: <T>(groupName: string, objectType: string, targetId: string, groupLabel?: RequestGroupLabel) => Promise<Array<PropertyValue<T>>>;
     getPropertyFields: (groupName: string, objectType: string, targetType: string, targetId?: string, groupLabel?: RequestGroupLabel) => Promise<PropertyField[]>;
+    searchPropertyFields: (groupName: string, options: PropertyFieldSearchOpts, groupLabel?: RequestGroupLabel) => Promise<PropertyField[]>;
     getSystemPropertyValues: <T>(groupName: string, groupLabel?: RequestGroupLabel) => Promise<Array<PropertyValue<T>>>;
 }
 
@@ -26,6 +27,14 @@ const ClientProperties = <TBase extends Constructor<ClientBase>>(superclass: TBa
         return this.doFetch(
             url,
             {method: 'get', groupLabel},
+        ) as unknown as Promise<PropertyField[]>;
+    };
+
+    searchPropertyFields = async (groupName: string, options: PropertyFieldSearchOpts, groupLabel?: RequestGroupLabel) => {
+        const url = `${this.urlVersion}/properties/groups/${groupName}/fields/search`;
+        return this.doFetch(
+            url,
+            {method: 'post', body: options, groupLabel},
         ) as unknown as Promise<PropertyField[]>;
     };
 

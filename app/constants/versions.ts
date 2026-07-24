@@ -3,6 +3,8 @@
 
 export const GM_AS_DM_VERSION = [9, 1, 0];
 
+export const PROPERTY_FIELDS_SEARCH_VERSION = [11, 10, 0];
+
 export const OS_VERSION = {
     ANDROID: 'android',
     IOS: 'ios',
