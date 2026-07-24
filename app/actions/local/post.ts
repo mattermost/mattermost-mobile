@@ -1,6 +1,8 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import {Q, type Database, type Model} from '@nozbe/watermelondb';
+
 import {fetchPostAuthors} from '@actions/remote/post';
 import {ActionType, Post} from '@constants';
 import {MM_TABLES} from '@constants/database';
@@ -16,12 +18,12 @@ import {getPostIdsForCombinedUserActivityPost} from '@utils/post_list';
 
 import {updateLastPostAt, updateMyChannelLastFetchedAt} from './channel';
 
-import type {Database, Model, Q} from '@nozbe/watermelondb';
 import type MyChannelModel from '@typings/database/models/servers/my_channel';
 import type PostModel from '@typings/database/models/servers/post';
+import type PostsInChannelModel from '@typings/database/models/servers/posts_in_channel';
 import type UserModel from '@typings/database/models/servers/user';
 
-const {SERVER: {DRAFT, FILE, POST, POSTS_IN_THREAD, REACTION, THREAD, THREAD_PARTICIPANT, THREADS_IN_TEAM}} = MM_TABLES;
+const {SERVER: {DRAFT, FILE, MY_CHANNEL, POST, POSTS_IN_CHANNEL, POSTS_IN_THREAD, REACTION, THREAD, THREAD_PARTICIPANT, THREADS_IN_TEAM}} = MM_TABLES;
 
 export const sendAddToChannelEphemeralPost = async (serverUrl: string, user: UserModel, addedUsernames: string[], messages: string[], channeId: string, postRootId = '') => {
     try {
@@ -409,6 +411,78 @@ export async function deletePosts(serverUrl: string, postIds: string[]) {
             });
         });
         return {error: false};
+    } catch (error) {
+        return {error};
+    }
+}
+
+export async function deletePostsInChannelsByCutoff(
+    serverUrl: string,
+    channelIds: string[],
+    cutoff: number,
+    excludedPostIds: Set<string> = new Set(),
+    reconcileObservers = false,
+): Promise<{error: unknown}> {
+    if (channelIds.length === 0) {
+        return {error: undefined};
+    }
+
+    try {
+        const {database, operator} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
+
+        const channels = `'${channelIds.join("','")}'`;
+        const exclusionClause = excludedPostIds.size > 0 ? ` AND id NOT IN ('${[...excludedPostIds].join("','")}')` : '';
+
+        // A thread with a reply on or after the cutoff is alive even if its root is older;
+        // keep the root so the surviving reply's root_id never dangles.
+        const hasActiveReply = `EXISTS (SELECT 1 FROM ${POSTS_IN_THREAD} WHERE ${POSTS_IN_THREAD}.root_id = ${POST}.id AND ${POSTS_IN_THREAD}.latest >= ${cutoff})`;
+
+        const postCondition = `channel_id IN (${channels}) AND create_at < ${cutoff} AND NOT ${hasActiveReply}${exclusionClause}`;
+        const postSubquery = `SELECT id FROM ${POST} WHERE ${postCondition}`;
+
+        // Scopes PostsInThread trimming to roots in these channels.
+        const rootInChannelsExists = `EXISTS (SELECT 1 FROM ${POST} WHERE ${POST}.id = ${POSTS_IN_THREAD}.root_id AND ${POST}.channel_id IN (${channels}))`;
+
+        await database.write(() => {
+            return database.adapter.unsafeExecute({
+                sqls: [
+                    [`DELETE FROM ${REACTION} WHERE post_id IN (${postSubquery})`, []],
+                    [`DELETE FROM ${FILE} WHERE post_id IN (${postSubquery})`, []],
+
+                    // PostsInThread bookkeeping, delete or update values depending on replies left in the thread after the cutoff
+                    [`DELETE FROM ${POSTS_IN_THREAD} WHERE latest < ${cutoff} AND ${rootInChannelsExists}`, []],
+                    [`UPDATE ${POSTS_IN_THREAD} SET earliest = ${cutoff} WHERE earliest < ${cutoff} AND ${rootInChannelsExists}`, []],
+
+                    [`DELETE FROM ${THREAD} WHERE id IN (${postSubquery})`, []],
+                    [`DELETE FROM ${THREAD_PARTICIPANT} WHERE thread_id IN (${postSubquery})`, []],
+                    [`DELETE FROM ${THREADS_IN_TEAM} WHERE thread_id IN (${postSubquery})`, []],
+                    [`DELETE FROM ${POST} WHERE ${postCondition}`, []],
+
+                    // PostsInChannel bookkeeping, delete or update values depending on posts left in the channel after the cutoff
+                    [`DELETE FROM ${POSTS_IN_CHANNEL} WHERE channel_id IN (${channels}) AND latest < ${cutoff}`, []],
+                    [`UPDATE ${POSTS_IN_CHANNEL} SET earliest = ${cutoff} WHERE channel_id IN (${channels}) AND earliest < ${cutoff}`, []],
+
+                    // MyChannel bookkeeping, reset last_fetched_at for channels that have no posts left after the cutoff
+                    [`UPDATE ${MY_CHANNEL} SET last_fetched_at = 0 WHERE id IN (${channels}) AND last_fetched_at > 0 AND NOT EXISTS (SELECT 1 FROM ${POSTS_IN_CHANNEL} WHERE channel_id = ${MY_CHANNEL}.id)`, []],
+                ],
+            });
+        });
+
+        // Re-apply the raw-SQL Posts In Channel 'earliest' bump through the model layer so mounted post lists re-observe
+        // Opt-in since only mounted channels have live observers.
+        if (reconcileObservers) {
+            const rows = await database.get<PostsInChannelModel>(POSTS_IN_CHANNEL).query(Q.where('channel_id', Q.oneOf(channelIds))).fetch();
+            const prepared = rows.
+                filter((row) => row.earliest < cutoff).
+                map((row) => row.prepareUpdate((r) => {
+                    r.earliest = cutoff;
+                }));
+            if (prepared.length > 0) {
+                await operator.batchRecords(prepared, 'deletePostsInChannelsByCutoff.reconcile');
+            }
+        }
+
+        return {error: undefined};
     } catch (error) {
         return {error};
     }

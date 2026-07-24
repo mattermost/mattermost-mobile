@@ -2,7 +2,7 @@
 // See LICENSE.txt for license information.
 
 import {ActionType, Post} from '@constants';
-import {SYSTEM_IDENTIFIERS} from '@constants/database';
+import {MM_TABLES, SYSTEM_IDENTIFIERS} from '@constants/database';
 import DatabaseManager from '@database/manager';
 import {getPostById} from '@queries/servers/post';
 import TestHelper from '@test/test_helper';
@@ -18,11 +18,14 @@ import {
     addPostAcknowledgement,
     removePostAcknowledgement,
     deletePosts,
+    deletePostsInChannelsByCutoff,
     getUsersCountFromMentions,
     updatePostTranslation,
 } from './post';
 
 import type ServerDataOperator from '@database/operator/server_data_operator';
+
+const {SERVER: {FILE, MY_CHANNEL, POST, POSTS_IN_CHANNEL, POSTS_IN_THREAD, REACTION, THREAD, THREAD_PARTICIPANT, THREADS_IN_TEAM}} = MM_TABLES;
 
 const serverUrl = 'baseHandler.test.com';
 let operator: ServerDataOperator;
@@ -398,5 +401,97 @@ describe('updatePostTranslation', () => {
         operator.database.write = originalWrite;
 
         expect(result.error).toBeTruthy();
+    });
+});
+
+describe('deletePostsInChannelsByCutoff', () => {
+    const CUTOFF = 50_000_000;
+    const OLD = 10_000_000;
+    const RECENT = 90_000_000;
+
+    const postsInChannel = [
+        TestHelper.fakePost({channel_id: 'cId', create_at: OLD}),
+        TestHelper.fakePost({channel_id: 'cId', create_at: RECENT}),
+    ];
+
+    it('handle not found database', async () => {
+        const {error} = await deletePostsInChannelsByCutoff('foo', [channelId], CUTOFF);
+        expect(error).toBeTruthy();
+    });
+
+    // A cached model whose earliest advances has to go through the model layer (fires observers)
+    it('advances the cached PostsInChannel earliest through the model layer when reconcileObservers is set', async () => {
+        jest.spyOn(operator.database.adapter, 'unsafeExecute').mockResolvedValue();
+        const [pic] = await operator.handleReceivedPostsInChannel(postsInChannel);
+
+        await deletePostsInChannelsByCutoff(serverUrl, ['cId'], CUTOFF, new Set(), true);
+
+        expect(pic.earliest).toBe(CUTOFF);
+    });
+
+    it('leaves the cached PostsInChannel untouched when reconcileObservers is not set', async () => {
+        jest.spyOn(operator.database.adapter, 'unsafeExecute').mockResolvedValue();
+        const [pic] = await operator.handleReceivedPostsInChannel(postsInChannel);
+
+        await deletePostsInChannelsByCutoff(serverUrl, ['cId'], CUTOFF, new Set());
+
+        expect(pic.earliest).toBe(OLD);
+    });
+
+    it('includes the PostsInChannel destroy/update and MyChannel reset, in that order, in the same unsafeExecute call as the post delete', async () => {
+        const database = operator.database;
+        jest.spyOn(database.adapter, 'unsafeExecute').mockImplementation(() => Promise.resolve());
+
+        const {error} = await deletePostsInChannelsByCutoff(serverUrl, [channelId], CUTOFF);
+
+        expect(error).toBeUndefined();
+        const hasActiveReply = `EXISTS (SELECT 1 FROM ${POSTS_IN_THREAD} WHERE ${POSTS_IN_THREAD}.root_id = ${POST}.id AND ${POSTS_IN_THREAD}.latest >= ${CUTOFF})`;
+        const postCondition = `channel_id IN ('${channelId}') AND create_at < ${CUTOFF} AND NOT ${hasActiveReply}`;
+        const postSubquery = `SELECT id FROM ${POST} WHERE ${postCondition}`;
+        const rootInChannelsExists = `EXISTS (SELECT 1 FROM ${POST} WHERE ${POST}.id = ${POSTS_IN_THREAD}.root_id AND ${POST}.channel_id IN ('${channelId}'))`;
+        expect(database.adapter.unsafeExecute).toHaveBeenCalledWith({
+            sqls: [
+                [`DELETE FROM ${REACTION} WHERE post_id IN (${postSubquery})`, []],
+                [`DELETE FROM ${FILE} WHERE post_id IN (${postSubquery})`, []],
+                [`DELETE FROM ${POSTS_IN_THREAD} WHERE latest < ${CUTOFF} AND ${rootInChannelsExists}`, []],
+                [`UPDATE ${POSTS_IN_THREAD} SET earliest = ${CUTOFF} WHERE earliest < ${CUTOFF} AND ${rootInChannelsExists}`, []],
+                [`DELETE FROM ${THREAD} WHERE id IN (${postSubquery})`, []],
+                [`DELETE FROM ${THREAD_PARTICIPANT} WHERE thread_id IN (${postSubquery})`, []],
+                [`DELETE FROM ${THREADS_IN_TEAM} WHERE thread_id IN (${postSubquery})`, []],
+                [`DELETE FROM ${POST} WHERE ${postCondition}`, []],
+                [`DELETE FROM ${POSTS_IN_CHANNEL} WHERE channel_id IN ('${channelId}') AND latest < ${CUTOFF}`, []],
+                [`UPDATE ${POSTS_IN_CHANNEL} SET earliest = ${CUTOFF} WHERE channel_id IN ('${channelId}') AND earliest < ${CUTOFF}`, []],
+                [`UPDATE ${MY_CHANNEL} SET last_fetched_at = 0 WHERE id IN ('${channelId}') AND last_fetched_at > 0 AND NOT EXISTS (SELECT 1 FROM ${POSTS_IN_CHANNEL} WHERE channel_id = ${MY_CHANNEL}.id)`, []],
+            ],
+        });
+    });
+
+    it('returns an error when the underlying transaction fails', async () => {
+        const database = operator.database;
+        jest.spyOn(database.adapter, 'unsafeExecute').mockImplementation(() => Promise.reject(new Error('fail')));
+
+        const {error} = await deletePostsInChannelsByCutoff(serverUrl, [channelId], CUTOFF);
+
+        expect(error).toBeTruthy();
+    });
+
+    it('scopes the post delete and its dependent subqueries to exclude the given post IDs', async () => {
+        const database = operator.database;
+        jest.spyOn(database.adapter, 'unsafeExecute').mockImplementation(() => Promise.resolve());
+
+        const {error} = await deletePostsInChannelsByCutoff(serverUrl, [channelId], CUTOFF, new Set(['excluded-1', 'excluded-2']));
+
+        expect(error).toBeUndefined();
+        const hasActiveReply = `EXISTS (SELECT 1 FROM ${POSTS_IN_THREAD} WHERE ${POSTS_IN_THREAD}.root_id = ${POST}.id AND ${POSTS_IN_THREAD}.latest >= ${CUTOFF})`;
+        const postCondition = `channel_id IN ('${channelId}') AND create_at < ${CUTOFF} AND NOT ${hasActiveReply} AND id NOT IN ('excluded-1','excluded-2')`;
+        const postSubquery = `SELECT id FROM ${POST} WHERE ${postCondition}`;
+        expect(database.adapter.unsafeExecute).toHaveBeenCalledWith(
+            expect.objectContaining({
+                sqls: expect.arrayContaining([
+                    [`DELETE FROM ${REACTION} WHERE post_id IN (${postSubquery})`, []],
+                    [`DELETE FROM ${POST} WHERE ${postCondition}`, []],
+                ]),
+            }),
+        );
     });
 });
