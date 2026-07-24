@@ -21,7 +21,7 @@ const styles = StyleSheet.create({
     },
     lastSlideImage: {
         height: 250,
-        left: 8,
+        alignSelf: 'center',
     },
 });
 
@@ -56,22 +56,22 @@ const useSlidesData = () => {
     const slidesData: OnboardingItem[] = [
         {
             title: intl.formatMessage({id: 'onboarding.welcome', defaultMessage: 'Welcome'}),
-            description: intl.formatMessage({id: 'onboaring.welcome_description', defaultMessage: 'Mattermost is an open source platform for developer collaboration. Secure, flexible, and integrated with your tools.'}),
+            description: intl.formatMessage({id: 'onboaring.welcome_description', defaultMessage: 'Mattermost is a sovereign collaboration platform built for operational environments and uncompromising security'}),
             image: chatSvg,
         },
         {
             title: intl.formatMessage({id: 'onboarding.realtime_collaboration', defaultMessage: 'Collaborate in real‑time'}),
-            description: intl.formatMessage({id: 'onboarding.realtime_collaboration_description', defaultMessage: 'Persistent channels, direct messaging, and file sharing works seamlessly so you can stay connected, wherever you are.'}),
+            description: intl.formatMessage({id: 'onboarding.realtime_collaboration_description', defaultMessage: 'Coordinate across teams with persistent mission channels, secure file sharing, and automated workflows.'}),
             image: teamCommunicationSvg,
         },
         {
-            title: intl.formatMessage({id: 'onboarding.calls', defaultMessage: 'Start secure audio calls instantly'}),
-            description: intl.formatMessage({id: 'onboarding.calls_description', defaultMessage: 'When typing isn’t fast enough, switch from channel-based chat to secure audio calls with a single tap.'}),
+            title: intl.formatMessage({id: 'onboarding.calls', defaultMessage: 'Start secure calls instantly'}),
+            description: intl.formatMessage({id: 'onboarding.calls_description', defaultMessage: 'Seamlessly move from chat to audio calls and screen sharing without switching tools or losing context.'}),
             image: callsSvg,
         },
         {
-            title: intl.formatMessage({id: 'onboarding.integrations', defaultMessage: 'Integrate with tools you love'}),
-            description: intl.formatMessage({id: 'onboarding.integrations_description', defaultMessage: 'Go beyond chat with tightly-integrated product solutions matched to common development processes.'}),
+            title: intl.formatMessage({id: 'onboarding.integrations', defaultMessage: 'Integrate with your systems'}),
+            description: intl.formatMessage({id: 'onboarding.integrations_description', defaultMessage: 'Centralize data feeds, automate alerts, and integrate custom tooling directly into your operational hub.'}),
             image: integrationsSvg,
         },
     ];
