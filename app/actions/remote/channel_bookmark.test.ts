@@ -99,6 +99,7 @@ describe('channel bookmarks', () => {
         expect(result).toBeDefined();
         expect(result.bookmarks).toBeDefined();
         expect(result.bookmarks?.length).toBe(0);
+        expect(mockClient.getChannelBookmarksForChannel).not.toHaveBeenCalled();
     });
 
     it('createChannelBookmark - handle not found database', async () => {
