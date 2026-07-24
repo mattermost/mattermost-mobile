@@ -8,6 +8,7 @@ interface ClientConfig {
     AllowEditPost: string;
     AllowedThemes: string;
     AllowDownloadLogs: string;
+    AllowSyncedDrafts: string;
     AndroidAppDownloadLink: string;
     AndroidLatestVersion: string;
     AndroidMinVersion: string;

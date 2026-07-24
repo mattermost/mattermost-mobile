@@ -223,6 +223,22 @@ export default class ClientBase extends ClientTracking {
         return `${this.getPostsRoute()}/schedule`;
     }
 
+    getDraftsRoute() {
+        return `${this.urlVersion}/drafts`;
+    }
+
+    getUserTeamDraftsRoute(userId: string, teamId: string) {
+        return `${this.getUserRoute(userId)}/teams/${teamId}/drafts`;
+    }
+
+    getUserChannelDraftsRoute(userId: string, channelId: string) {
+        return `${this.getUserRoute(userId)}/channels/${channelId}/drafts`;
+    }
+
+    getUserThreadDraftRoute(userId: string, channelId: string, rootId: string) {
+        return `${this.getUserChannelDraftsRoute(userId, channelId)}/${rootId}`;
+    }
+
     getUserCustomProfileAttributesRoute(userId: string) {
         return `${this.getUsersRoute()}/${userId}/custom_profile_attributes`;
     }

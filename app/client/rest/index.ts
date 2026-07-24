@@ -14,6 +14,7 @@ import ClientChannelBookmarks, {type ClientChannelBookmarksMix} from './channel_
 import ClientChannels, {type ClientChannelsMix} from './channels';
 import {DEFAULT_LIMIT_AFTER, DEFAULT_LIMIT_BEFORE, HEADER_X_VERSION_ID} from './constants';
 import ClientCustomAttributes, {type ClientCustomAttributesMix} from './custom_profile_attributes';
+import ClientDrafts, {type ClientDraftsMix} from './drafts';
 import ClientEmojis, {type ClientEmojisMix} from './emojis';
 import ClientFiles, {type ClientFilesMix} from './files';
 import ClientGeneral, {type ClientGeneralMix} from './general';
@@ -54,6 +55,7 @@ interface Client extends ClientBase,
     ClientPluginsMix,
     ClientNPSMix,
     ClientCustomAttributesMix,
+    ClientDraftsMix,
     ClientPlaybooksMix
 {
     setClientCredentials: (token: string, preauthSecret?: string) => void;
@@ -83,7 +85,7 @@ class Client extends mix(ClientBase).with(
     ClientPlugins,
     ClientNPS,
     ClientCustomAttributes,
-    ClientScheduledPost,
+    ClientDrafts,
     ClientPlaybooks,
 ) {
     // eslint-disable-next-line no-useless-constructor
