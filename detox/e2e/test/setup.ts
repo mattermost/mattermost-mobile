@@ -131,7 +131,6 @@ async function loginAdmin(): Promise<void> {
         const {error: meError} = await User.apiGetMe(siteOneUrl);
         if (!meError) {
             console.info(`✅ Admin session verified on attempt ${attempt}`);
-            await ensureServerConfigForE2E();
             return;
         }
         if (attempt === MAX_ATTEMPTS) {
@@ -139,32 +138,6 @@ async function loginAdmin(): Promise<void> {
         }
         console.warn(`⚠️ Session check failed on attempt ${attempt}, retrying...`);
         await new Promise((resolve) => setTimeout(resolve, 2000 * attempt));
-    }
-}
-
-// Feature flags that must be ON for E2E.
-// IMPORTANT: setupFilesAfterEnv re-evaluates this module for every test file, so a
-// module-level boolean flag resets to false each time and cannot prevent cross-file
-// re-execution. Gate on the server's actual config state instead: if the flag is
-// already true (set by an earlier test file's setup), skip the PATCH entirely.
-// Mattermost server triggers a full config reload + CONFIG_CHANGED WebSocket broadcast
-// on every config/patch request (~10s of elevated server load), even when the value
-// is unchanged. Skipping the redundant patch eliminates the load that previously
-// caused connectToServer to fail immediately after setup.
-async function ensureServerConfigForE2E(): Promise<void> {
-    try {
-        const {config, error} = await System.apiGetConfig(siteOneUrl);
-        if (!error && config?.FeatureFlags?.ChannelBookmarks === true) {
-            return; // Already set — skip the patch and the resulting server load.
-        }
-        await System.apiUpdateConfig(siteOneUrl, {
-            FeatureFlags: {ChannelBookmarks: true},
-        });
-        console.info('✅ E2E server config initialized (FeatureFlags.ChannelBookmarks=true)');
-    } catch (err) {
-        // Non-fatal: tests gated on the flag will surface as their own failures
-        // if this setup didn't take. Don't block login on a config-patch hiccup.
-        console.warn(`⚠️ ensureServerConfigForE2E failed: ${(err as Error).message}`);
     }
 }
 

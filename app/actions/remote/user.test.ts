@@ -502,9 +502,13 @@ describe('user status', () => {
     });
 
     it('unsetCustomStatus - base case', async () => {
+        mockClient.getMe.mockClear();
         const result = await unsetCustomStatus(serverUrl);
+
         expect(result).toBeDefined();
         expect(result.error).toBeUndefined();
+        expect(result.user?.id).toBe('userid1');
+        expect(mockClient.getMe).toHaveBeenCalledTimes(1);
     });
 });
 

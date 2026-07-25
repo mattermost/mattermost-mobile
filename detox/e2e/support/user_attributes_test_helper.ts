@@ -37,48 +37,14 @@ const waitForCustomProfileAttributesClientFlag = async (
 };
 
 export const ensureCustomProfileAttributesFeatureFlag = async (siteOneUrl: string): Promise<string | undefined> => {
-    const {config, error: configError} = await System.apiGetClientConfigOld(siteOneUrl);
-    if (configError) {
-        return `Could not read client config: ${JSON.stringify(configError)}`;
-    }
-
-    if (config?.FeatureFlagCustomProfileAttributes === 'true') {
-        return undefined;
-    }
-
-    const {error: patchError} = await System.apiUpdateConfig(siteOneUrl, {
-        FeatureFlags: {CustomProfileAttributes: true},
-    });
-    if (patchError) {
-        return `Failed to enable CustomProfileAttributes: ${JSON.stringify(patchError)}`;
-    }
-
-    let ready = await waitForCustomProfileAttributesClientFlag(siteOneUrl);
-    if (ready) {
-        return undefined;
-    }
-
-    // Plugin reloads can reset flags — re-apply via full config PUT (same as detox/provision).
-    const {config: serverConfig, error: getConfigError} = await System.apiGetConfig(siteOneUrl);
-    if (getConfigError || !serverConfig) {
-        return `Could not read server config for CustomProfileAttributes retry: ${JSON.stringify(getConfigError)}`;
-    }
-
-    serverConfig.FeatureFlags = serverConfig.FeatureFlags || {};
-    (serverConfig.FeatureFlags as Record<string, unknown>).CustomProfileAttributes = true;
-    const {error: fullUpdateError} = await System.apiReplaceConfig(siteOneUrl, serverConfig);
-    if (fullUpdateError) {
-        return `Full config update for CustomProfileAttributes failed: ${JSON.stringify(fullUpdateError)}`;
-    }
-
-    ready = await waitForCustomProfileAttributesClientFlag(siteOneUrl, {maxAttempts: 60});
+    const ready = await waitForCustomProfileAttributesClientFlag(siteOneUrl);
     if (ready) {
         return undefined;
     }
 
     const {config: latestConfig} = await System.apiGetClientConfigOld(siteOneUrl);
     return (
-        `FeatureFlagCustomProfileAttributes is "${latestConfig?.FeatureFlagCustomProfileAttributes ?? 'missing'}" after API updates. ` +
+        `FeatureFlagCustomProfileAttributes is "${latestConfig?.FeatureFlagCustomProfileAttributes ?? 'missing'}". ` +
         'Cloud Spinwick installations must set MM_FEATUREFLAGS_CUSTOMPROFILEATTRIBUTES=true in Matterwick PriorityEnv'
     );
 };

@@ -33,46 +33,16 @@ export class MmBlocksTestHelper {
     static readonly QUERY_OK_MESSAGE = /.*Detox mm_blocks query OK.*/;
     static readonly STATIC_SELECT_OK_MESSAGE = /.*Detox mm_blocks static_select OK \(selected_option: .+\).*/;
 
-    static async enableMmBlocks(baseUrl: string): Promise<void> {
-        await User.apiAdminLogin(baseUrl);
-        const {error} = await System.apiUpdateConfig(baseUrl, {
-            FeatureFlags: {
-                MmBlocksEnabled: true,
-            },
-        });
-        if (error) {
-            throw new Error(`[mm_blocks] Failed to enable MmBlocksEnabled: ${JSON.stringify(error)}`);
-        }
-
-        let enabled = await System.waitForClientConfigFlag(
+    static async assertMmBlocksEnabled(baseUrl: string): Promise<void> {
+        const enabled = await System.waitForClientConfigFlag(
             baseUrl,
             'FeatureFlagMmBlocksEnabled',
             'true',
         );
         if (!enabled) {
-            const {config, error: configError} = await System.apiGetConfig(baseUrl);
-            if (configError || !config) {
-                throw new Error(`[mm_blocks] Could not read server config: ${JSON.stringify(configError)}`);
-            }
-
-            config.FeatureFlags = config.FeatureFlags || {};
-            config.FeatureFlags.MmBlocksEnabled = true;
-            const {error: updateError} = await System.apiReplaceConfig(baseUrl, config);
-            if (updateError) {
-                throw new Error(`[mm_blocks] Full config update failed: ${JSON.stringify(updateError)}`);
-            }
-
-            enabled = await System.waitForClientConfigFlag(
-                baseUrl,
-                'FeatureFlagMmBlocksEnabled',
-                'true',
-            );
-        }
-
-        if (!enabled) {
             const {config} = await System.apiGetClientConfigOld(baseUrl);
             throw new Error(
-                `[mm_blocks] FeatureFlagMmBlocksEnabled is "${config?.FeatureFlagMmBlocksEnabled ?? 'missing'}" after config updates. ` +
+                `[mm_blocks] FeatureFlagMmBlocksEnabled is "${config?.FeatureFlagMmBlocksEnabled ?? 'missing'}". ` +
                 'Cloud Spinwick installations must set MM_FEATUREFLAGS_MMBLOCKSENABLED=true in Matterwick PriorityEnv',
             );
         }
@@ -101,11 +71,16 @@ export class MmBlocksTestHelper {
     }
 
     static async setupChannelTest(): Promise<{channel: any; team: any; user: any}> {
-        await this.enableMmBlocks(siteOneUrl);
+        await this.assertMmBlocksEnabled(siteOneUrl);
         const {channel, team, user} = await Setup.apiInit(siteOneUrl);
 
         await ServerScreen.connectToServer(serverOneUrl, this.SERVER_DISPLAY_NAME);
         await LoginScreen.login(user);
+        await ChannelListScreen.toBeVisible();
+
+        // Reload after login so the client picks up FeatureFlagMmBlocksEnabled;
+        // reload always lands on the channel list, then re-open.
+        await device.reloadReactNative();
         await ChannelListScreen.toBeVisible();
         await ChannelScreen.open(this.CHANNELS_CATEGORY, channel.name);
 

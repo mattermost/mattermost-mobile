@@ -290,9 +290,8 @@ const CustomStatus = ({
                 dispatchStatus({type: 'fromUserCustomStatus', status});
             }
         } else if (storedStatus?.emoji) {
-            const {error} = await unsetCustomStatus(serverUrl);
-
-            if (!error) {
+            const {error, user} = await unsetCustomStatus(serverUrl);
+            if (!error && !user) {
                 await updateLocalCustomStatus(serverUrl, currentUser, undefined);
             }
         }

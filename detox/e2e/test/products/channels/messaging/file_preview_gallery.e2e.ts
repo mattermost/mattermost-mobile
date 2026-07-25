@@ -10,8 +10,6 @@
 import {
     Post,
     Setup,
-    System,
-    User,
 } from '@support/server_api';
 import {
     serverOneUrl,
@@ -209,12 +207,6 @@ describe('Messaging - File Preview Gallery', () => {
     });
 
     (isIos() ? it.skip : it)('MM-T3458_1 - should show gallery footer actions and copy public link when enabled', async () => {
-        // # Enable public file links in server configuration
-        await User.apiAdminLogin(siteOneUrl);
-        await System.apiUpdateConfig(siteOneUrl, {
-            FileSettings: {EnablePublicLink: true},
-        });
-
         // # Upload an image and create a post via API
         const {post, fileId} = await Post.apiCreatePostWithImageAttachment(siteOneUrl, testChannel.id);
 

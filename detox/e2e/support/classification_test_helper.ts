@@ -14,12 +14,33 @@ export const enableClassificationMarkings = async (baseUrl: string): Promise<voi
         throw new Error(`enableClassificationMarkings: failed to patch server config: ${JSON.stringify(patchResult.error)}`);
     }
 
-    const enabled = await System.waitForClientConfigFlag(
+    let enabled = await System.waitForClientConfigFlag(
         baseUrl,
         'FeatureFlagClassificationMarkings',
         'true',
         {maxAttempts: 60, pollMs: timeouts.ONE_SEC},
     );
+    if (!enabled) {
+        const {config, error} = await System.apiGetConfig(baseUrl);
+        if (error || !config) {
+            throw new Error(`enableClassificationMarkings: failed to read server config: ${JSON.stringify(error)}`);
+        }
+
+        config.FeatureFlags = config.FeatureFlags || {};
+        config.FeatureFlags.ClassificationMarkings = true;
+        const replaceResult = await System.apiReplaceConfig(baseUrl, config);
+        if (replaceResult.error) {
+            throw new Error(`enableClassificationMarkings: failed to replace server config: ${JSON.stringify(replaceResult.error)}`);
+        }
+
+        enabled = await System.waitForClientConfigFlag(
+            baseUrl,
+            'FeatureFlagClassificationMarkings',
+            'true',
+            {maxAttempts: 60, pollMs: timeouts.ONE_SEC},
+        );
+    }
+
     if (!enabled) {
         throw new Error(
             'enableClassificationMarkings: FeatureFlagClassificationMarkings did not become true; ' +

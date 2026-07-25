@@ -45,6 +45,7 @@ describe('Channels - Channel Bookmarks', () => {
     let channelT5609: any;
     let channelT5610: any;
     let bookmarkT5606: any;
+    let bookmarkT5607: any;
     let channelT5612: any;
 
     const getVisibleTextElement = async (text: string, maxIndex = 3) => {
@@ -147,6 +148,12 @@ describe('Channels - Channel Bookmarks', () => {
         channelT5610 = await createChannel();
         channelT5612 = await createChannel();
 
+        // Connect before creating bookmarks so the client receives the bookmark
+        // WebSocket events. These tests exercise bookmark UI behavior, not the
+        // eventually-consistent channel-open fetch path.
+        await ServerScreen.connectToServer(serverOneUrl, serverOneDisplayName);
+        await LoginScreen.login(testUser);
+
         // ── Pre-create bookmarks ──────────────────────────────────────────────
         const {bookmark: bT5610} = await ChannelBookmark.apiCreateChannelBookmarkLink(
             siteOneUrl, channelT5610.id, 'Original Bookmark', 'https://mattermost.com',
@@ -165,9 +172,13 @@ describe('Channels - Channel Bookmarks', () => {
             throw new Error('[beforeAll] Failed to create bookmarkT5606');
         }
         bookmarkT5606 = bT5606;
-        await ChannelBookmark.apiCreateChannelBookmarkLink(
+        const {bookmark: bT5607} = await ChannelBookmark.apiCreateChannelBookmarkLink(
             siteOneUrl, channelT5607.id, 'Revert Emoji Test', 'https://example.com',
         );
+        if (!bT5607?.id) {
+            throw new Error('[beforeAll] Failed to create bookmarkT5607');
+        }
+        bookmarkT5607 = bT5607;
         await ChannelBookmark.apiCreateChannelBookmarkLink(
             siteOneUrl, channelT5609.id, 'Banner Test Bookmark', 'https://mattermost.com',
         );
@@ -180,9 +191,8 @@ describe('Channels - Channel Bookmarks', () => {
         }
         /* eslint-enable no-await-in-loop */
 
-        // ── Single login + reload to sync all API-created data ────────────────
-        await ServerScreen.connectToServer(serverOneUrl, serverOneDisplayName);
-        await LoginScreen.login(testUser);
+        // Reload after the WebSocket-backed setup has settled.
+        await wait(timeouts.TWO_SEC);
         await device.reloadReactNative();
         await ChannelListScreen.toBeVisible();
     });
@@ -548,7 +558,6 @@ describe('Channels - Channel Bookmarks', () => {
         await ChannelScreen.back();
     });
 
-    // Skip both: iOS R1+R3 + Android R1 — bookmark text not found in channel_info list
     it('MM-T5607_1 - should be able to revert bookmark icon from emoji to default', async () => {
         // # Navigate to the channel
         await openChannel(channelT5607);
@@ -558,9 +567,9 @@ describe('Channels - Channel Bookmarks', () => {
 
         // * Verify bookmark visible in channel_info — scope to avoid matching
         // channel_header.bookmarks.list behind the modal.
-        const revertMatcher = by.text('Revert Emoji Test').
+        const revertMatcher = by.id(`channel_bookmark.${bookmarkT5607.id}`).
             withAncestor(by.id('channel_info.bookmarks.list'));
-        await ChannelInfoScreen.waitForBookmarkInChannelInfo(revertMatcher);
+        await ChannelInfoScreen.waitForBookmarkInChannelInfo(revertMatcher, {bookmarkId: bookmarkT5607.id});
         const revertBookmarkEl = element(revertMatcher);
         await expect(revertBookmarkEl).toBeVisible();
 
@@ -603,17 +612,29 @@ describe('Channels - Channel Bookmarks', () => {
         await ChannelScreen.back();
     });
 
-    // Skip both: iOS R1+R3 + Android R3 — header bookmark bar not synced after API create
     it('MM-T5609_1 - should display bookmark bar below channel header', async () => {
         // # Navigate to the channel
         await openChannel(channelT5609);
 
-        // CI failures showed on iOS the bookmarks list was not found in view hierarchy.
-        // This can happen when the feature flag or canAddBookmarks observable is still settling.
-        // Wait for the bookmarks list container to exist with a longer timeout before asserting.
-        await waitFor(element(by.id('channel_header.bookmarks.list'))).
-            toExist().
-            withTimeout(timeouts.TWENTY_SEC);
+        const channelHeaderBookmarksList = by.id('channel_header.bookmarks.list');
+        try {
+            await waitFor(element(channelHeaderBookmarksList)).
+                toExist().
+                withTimeout(timeouts.TEN_SEC);
+        } catch {
+            // API-created bookmarks can miss the initial channel-open fetch. Channel
+            // Info observes the same DB records; opening it gives the in-flight fetch
+            // time to persist before the header assertion.
+            await ChannelInfoScreen.open();
+            await waitForBookmarkInChannelInfo(
+                by.text('Banner Test Bookmark').withAncestor(by.id('channel_info.bookmarks.list')),
+                {textFallback: 'Banner Test Bookmark'},
+            );
+            await ChannelInfoScreen.close();
+            await waitFor(element(channelHeaderBookmarksList)).
+                toExist().
+                withTimeout(timeouts.TEN_SEC);
+        }
 
         // Scope to channel_header.bookmarks.list — same title also in channel_info when modal is open.
         // Header bar may lag API-created bookmarks; open/close channel info once to force fetch.
@@ -621,7 +642,7 @@ describe('Channels - Channel Bookmarks', () => {
             await waitFor(
                 element(
                     by.text('Banner Test Bookmark').
-                        withAncestor(by.id('channel_header.bookmarks.list')),
+                        withAncestor(channelHeaderBookmarksList),
                 ),
             ).toExist().withTimeout(timeouts.TEN_SEC);
         } catch {
@@ -634,7 +655,7 @@ describe('Channels - Channel Bookmarks', () => {
             await waitFor(
                 element(
                     by.text('Banner Test Bookmark').
-                        withAncestor(by.id('channel_header.bookmarks.list')),
+                        withAncestor(channelHeaderBookmarksList),
                 ),
             ).toExist().withTimeout(timeouts.TEN_SEC);
         }
@@ -642,7 +663,7 @@ describe('Channels - Channel Bookmarks', () => {
         await expect(
             element(
                 by.text('Banner Test Bookmark').
-                    withAncestor(by.id('channel_header.bookmarks.list')),
+                    withAncestor(channelHeaderBookmarksList),
             ),
         ).toBeVisible();
 
@@ -864,10 +885,12 @@ describe('Channels - Channel Bookmarks', () => {
         await linkBookmarkEl.tap();
         await wait(timeouts.ONE_SEC);
 
-        if (isAndroid()) {
-            await device.launchApp({newInstance: false});
-            await ChannelScreen.toBeVisible();
-        }
+        // Link open leaves the app (Android Chrome / iOS Safari). CI 30084842314 iOS
+        // MM-T69455_1 screenshot is Safari on mattermost.com with cookie + system
+        // Safari tutorial overlays; without relaunch the long-press assertion never
+        // reaches channel_header.bookmarks.list again.
+        await device.launchApp({newInstance: false});
+        await ChannelScreen.toBeVisible();
 
         // * Verify tap does not open the bookmark options bottom sheet
         await expect(ChannelBookmarkScreen.editOption).not.toBeVisible();
@@ -880,6 +903,12 @@ describe('Channels - Channel Bookmarks', () => {
 
         if (isAndroid()) {
             await device.pressBack();
+        } else {
+            try {
+                await element(by.text('Cancel')).tap();
+            } catch {
+                // Options sheet may already be dismissed.
+            }
         }
 
         // # Go back to channel list

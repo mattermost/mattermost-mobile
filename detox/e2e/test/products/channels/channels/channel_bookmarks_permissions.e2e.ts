@@ -35,7 +35,6 @@ describe('Channels - Channel Bookmarks Permissions', () => {
     let testUser: any;
     let regularUser: any;
     let channelT5615: any;
-    let channelT5725: any;
 
     const createChannel = async () => {
         const {channel} = await Channel.apiCreateChannel(siteOneUrl, {
@@ -73,21 +72,11 @@ describe('Channels - Channel Bookmarks Permissions', () => {
 
         // ── Create all test channels ──────────────────────────────────────────
         channelT5615 = await createChannel();
-        channelT5725 = await createChannel();
 
-        // ── Pre-create bookmarks ──────────────────────────────────────────────
         await Channel.apiAddUserToChannel(siteOneUrl, regularUser.id, channelT5615.id);
-        await ChannelBookmark.apiCreateChannelBookmarkLink(
-            siteOneUrl, channelT5615.id, 'Permission Test Bookmark', 'https://mattermost.com',
-        );
-        await ChannelBookmark.apiCreateChannelBookmarkLink(
-            siteOneUrl, channelT5725.id, 'Archive Test Bookmark', 'https://mattermost.com',
-        );
 
-        // ── Single login + reload to sync all API-created data ────────────────
         await ServerScreen.connectToServer(serverOneUrl, serverOneDisplayName);
         await LoginScreen.login(testUser);
-        await device.reloadReactNative();
         await ChannelListScreen.toBeVisible();
     });
 
@@ -104,6 +93,16 @@ describe('Channels - Channel Bookmarks Permissions', () => {
         await HomeScreen.logout();
         await ServerScreen.connectToServer(serverOneUrl, serverOneDisplayName);
         await LoginScreen.login(regularUser);
+
+        // Create while the regular user's WebSocket is connected. Creating this in
+        // beforeAll lost the event when logout destroyed the first user's database.
+        const {bookmark, error} = await ChannelBookmark.apiCreateChannelBookmarkLink(
+            siteOneUrl, channelT5615.id, 'Permission Test Bookmark', 'https://mattermost.com',
+        );
+        if (error || !bookmark?.id) {
+            throw new Error(`[MM-T5615_1] Failed to create permission bookmark: ${JSON.stringify(error)}`);
+        }
+        await wait(timeouts.TWO_SEC);
 
         // # Navigate to the channel
         await ChannelListScreen.toBeVisible();
@@ -155,6 +154,18 @@ describe('Channels - Channel Bookmarks Permissions', () => {
     });
 
     it('MM-T5725_1 - should not be able to add, edit, or delete bookmarks in an archived channel', async () => {
+        const channelT5725 = await createChannel();
+
+        // Create while the admin user's WebSocket is connected so channel info has
+        // both the new channel and bookmark before archiving removes the bookmark.
+        const {bookmark, error} = await ChannelBookmark.apiCreateChannelBookmarkLink(
+            siteOneUrl, channelT5725.id, 'Archive Test Bookmark', 'https://mattermost.com',
+        );
+        if (error || !bookmark?.id) {
+            throw new Error(`[MM-T5725_1] Failed to create archive bookmark: ${JSON.stringify(error)}`);
+        }
+        await wait(timeouts.TWO_SEC);
+
         // # Navigate to the channel.
         // Extra wait after openChannel: on Android, device.reloadReactNative() in T5615_1 can
         // leave the app mid-settle, causing ChannelInfoScreen.open()'s header-visibility check

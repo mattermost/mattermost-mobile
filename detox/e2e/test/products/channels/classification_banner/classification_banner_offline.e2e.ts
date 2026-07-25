@@ -22,6 +22,9 @@ import {ChannelListScreen, HomeScreen, LoginScreen, ServerScreen} from '@support
 import {timeouts, wait} from '@support/utils';
 import {by, device, element, expect, waitFor} from 'detox';
 
+// Lock wait is up to 20m; leave headroom for enable/setup after acquire.
+jest.setTimeout(timeouts.ONE_MIN * 30);
+
 describe('Classification Banner - Offline / Cache Behaviour', () => {
     const serverOneDisplayName = 'Server 1';
     let lockOwner = '';
@@ -60,7 +63,10 @@ describe('Classification Banner - Offline / Cache Behaviour', () => {
 
     it('MM-T6206_1 - should display the banner from DB cache when API is unreachable on reload', async () => {
         // # Configure classification and verify it works online first
-        await Properties.apiSetupClassificationWithBanner(siteOneUrl, {levelId: 'lvltopsecret00000000000000'});
+        await Properties.apiSetupClassificationWithBanner(siteOneUrl, {
+            levelId: 'lvltopsecret00000000000000',
+            user: testUser,
+        });
         await device.reloadReactNative();
         await ChannelListScreen.toBeVisible();
         await GlobalClassificationBanner.toBeVisible();
@@ -80,7 +86,10 @@ describe('Classification Banner - Offline / Cache Behaviour', () => {
 
     it('MM-T6207_1 - should show stale cached value when API is blocked after a server change', async () => {
         // # Set up classification at TOP SECRET
-        const {linkedFieldId, optionIdsByName} = await Properties.apiSetupClassificationWithBanner(siteOneUrl, {levelId: 'lvltopsecret00000000000000'});
+        const {linkedFieldId, optionIdsByName} = await Properties.apiSetupClassificationWithBanner(siteOneUrl, {
+            levelId: 'lvltopsecret00000000000000',
+            user: testUser,
+        });
         const secretOptionId = optionIdsByName.SECRET;
         if (!secretOptionId) {
             throw new Error(`SECRET option id missing from setup. Available: ${Object.keys(optionIdsByName).join(', ')}`);

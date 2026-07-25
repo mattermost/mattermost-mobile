@@ -13,7 +13,6 @@ import {
     Channel,
     Plugin,
     Setup,
-    System,
     Team,
 } from '@support/server_api';
 import client from '@support/server_api/client';
@@ -126,9 +125,6 @@ describe('Autocomplete - Agent Mention', () => {
         // # Check if agents plugin is active
         const pluginStatus = await Plugin.apiGetPluginStatus(siteOneUrl, AgentsPlugin.id);
         pluginActive = pluginStatus.isActive;
-
-        // # Enable bot account creation (disabled by default on fresh servers)
-        await System.apiUpdateConfig(siteOneUrl, {ServiceSettings: {EnableBotAccountCreation: true}});
 
         // # Create a regular bot (not an agent) for comparison testing
         const botResult = await Bot.apiCreateBot(siteOneUrl, {prefix: 'regularbot'});

@@ -6,7 +6,7 @@ import {
     ProfilePicture,
 } from '@support/ui/component';
 import {ChannelScreen} from '@support/ui/screen';
-import {isAndroid, safeEnableSynchronization, timeouts, wait, waitForElementToExist} from '@support/utils';
+import {isAndroid, safeEnableSynchronization, timeouts, wait} from '@support/utils';
 import {expect, waitFor} from 'detox';
 
 class ChannelInfoScreen {
@@ -228,8 +228,18 @@ class ChannelInfoScreen {
 
     scrollToBookmarks = async () => {
         const bookmarksList = element(by.id('channel_info.bookmarks.list'));
+
+        // Channel Info can preserve its outer scroll offset when the modal is
+        // reopened. Bookmarks are near the top, so an existing list may still
+        // be fully clipped behind the navigation header.
         try {
-            await waitForElementToExist(bookmarksList, timeouts.THREE_SEC);
+            await this.scrollView.scrollTo('top');
+        } catch {
+            // Content may not require scrolling.
+        }
+
+        try {
+            await waitFor(bookmarksList).toBeVisible().withTimeout(timeouts.THREE_SEC);
             return;
         } catch {
             // Bookmarks section may be below the fold — scroll channel info.

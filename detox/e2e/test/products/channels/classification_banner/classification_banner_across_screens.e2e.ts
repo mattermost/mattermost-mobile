@@ -27,6 +27,9 @@ import {
 import {timeouts, wait} from '@support/utils';
 import {by, device, element, waitFor} from 'detox';
 
+// Lock wait is up to 20m; leave headroom for enable/setup after acquire.
+jest.setTimeout(timeouts.ONE_MIN * 30);
+
 describe('Classification Banner - Visibility Across Screens', () => {
     const serverOneDisplayName = 'Server 1';
     let lockOwner = '';
@@ -43,7 +46,9 @@ describe('Classification Banner - Visibility Across Screens', () => {
 
         await enableClassificationMarkings(siteOneUrl);
         await Properties.apiSetupClassificationWithBanner(siteOneUrl, {
-            levelId: 'lvltopsecret00000000000000'});
+            levelId: 'lvltopsecret00000000000000',
+            user: testUser,
+        });
 
         await ServerScreen.connectToServer(serverOneUrl, serverOneDisplayName);
         await LoginScreen.login(testUser);

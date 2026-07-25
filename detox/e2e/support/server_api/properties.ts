@@ -158,6 +158,12 @@ export const apiSetupClassificationWithBanner = async (
     options?: {
         levels?: PropertyFieldOption[];
         levelId?: string;
+        user?: {
+            newUser: {
+                username: string;
+                password: string;
+            };
+        };
     },
 ) => {
     const levels = options?.levels ?? DEFAULT_CLASSIFICATION_LEVELS;
@@ -262,6 +268,22 @@ export const apiSetupClassificationWithBanner = async (
     };
 
     await pollLinkedVisible('admin');
+
+    if (options?.user) {
+        const loginResult = await User.apiLogin(baseUrl, options.user.newUser) as {error?: unknown};
+        if (loginResult.error) {
+            throw new Error(`apiSetupClassificationWithBanner: test user login failed: ${JSON.stringify(loginResult.error)}`);
+        }
+
+        try {
+            await pollLinkedVisible('test user');
+        } finally {
+            const adminLoginResult = await User.apiAdminLogin(baseUrl) as {error?: unknown};
+            if (adminLoginResult.error) {
+                throw new Error(`apiSetupClassificationWithBanner: failed to restore admin session: ${JSON.stringify(adminLoginResult.error)}`);
+            }
+        }
+    }
 
     return {
         templateFieldId: templateField.id,

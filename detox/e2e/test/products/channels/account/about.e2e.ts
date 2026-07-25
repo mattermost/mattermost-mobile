@@ -74,12 +74,11 @@ const getExpectedLearnMorePrefix = (license: Record<string, string | undefined>,
     return 'Learn more about Enterprise Edition at ';
 };
 
-const learnMorePrefixMatcher = /^(?:Learn more about (?:Mattermost|Enterprise Edition)|Join the Mattermost community)/i;
-
 describe('Account - Settings - About', () => {
     const serverOneDisplayName = 'Server 1';
     let isLicensed: boolean;
     let expectedLearnMorePrefix: string;
+    let learnMorePrefixMatcher: RegExp;
     let expectedProductTitle: string;
     let testUser: any;
 
@@ -92,6 +91,7 @@ describe('Account - Settings - About', () => {
         const {config} = configResponse;
         isLicensed = license.IsLicensed === 'true';
         expectedLearnMorePrefix = getExpectedLearnMorePrefix(license, config.BuildEnterpriseReady);
+        learnMorePrefixMatcher = new RegExp(`^${expectedLearnMorePrefix.trim().replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}`, 'i');
         expectedProductTitle = getExpectedProductTitle(license, config.BuildEnterpriseReady);
         const {user} = await Setup.apiInit(siteOneUrl);
         testUser = user;

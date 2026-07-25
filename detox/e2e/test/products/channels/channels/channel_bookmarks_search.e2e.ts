@@ -76,6 +76,11 @@ describe('Channels - Channel Bookmarks Search', () => {
         channelT5613 = await createChannel();
         channelT5614 = await createChannel();
 
+        // Connect before creating bookmarks so the client receives the bookmark
+        // WebSocket events instead of relying on channel-open backfill.
+        await ServerScreen.connectToServer(serverOneUrl, serverOneDisplayName);
+        await LoginScreen.login(testUser);
+
         // ── Pre-create bookmarks ──────────────────────────────────────────────
         const deleteResult = await ChannelBookmark.apiCreateChannelBookmarkLink(
             siteOneUrl, channelDelete.id, 'Delete Bookmark Test', 'https://mattermost.com/delete-bookmark',
@@ -100,9 +105,7 @@ describe('Channels - Channel Bookmarks Search', () => {
         }
         bookmarkT5614 = deleteSearchResult.bookmark;
 
-        // ── Single login + reload to sync all API-created data ────────────────
-        await ServerScreen.connectToServer(serverOneUrl, serverOneDisplayName);
-        await LoginScreen.login(testUser);
+        await wait(timeouts.TWO_SEC);
         await device.reloadReactNative();
         await ChannelListScreen.toBeVisible();
     });

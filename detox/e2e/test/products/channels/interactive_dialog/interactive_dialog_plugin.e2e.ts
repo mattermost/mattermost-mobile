@@ -173,7 +173,6 @@ describe('Interactive Dialog - Basic Dialog (Plugin)', () => {
 
         await User.apiAdminLogin(siteOneUrl);
         const configResult = await System.apiUpdateConfig(siteOneUrl, {
-            FeatureFlags: {InteractiveDialogAppsForm: true},
             PluginSettings: {
                 PluginStates: {
                     [DemoPlugin.id]: {Enable: true},
@@ -230,15 +229,19 @@ describe('Interactive Dialog - Basic Dialog (Plugin)', () => {
             await IntegrationSelectorScreen.done();
         } catch {}
         try {
+            await waitFor(InteractiveDialogScreen.interactiveDialogScreen).toExist().withTimeout(timeouts.HALF_SEC);
             await InteractiveDialogScreen.cancel();
         } catch {}
 
-        // Closing the dialog returns to the channel screen, so just confirm we're
-        // there rather than re-opening via the sidebar (ChannelScreen.open waits up
-        // to ONE_MIN for a sidebar that isn't visible here — ~60s wasted per test).
+        // Android Back from cancel() after the dialog is already closed leaves channel list;
+        // require composer, and re-enter the channel if cleanup drifted.
         try {
-            await ChannelScreen.toBeVisible();
-        } catch {}
+            await waitFor(ChannelScreen.postInput).toBeVisible().withTimeout(timeouts.TEN_SEC);
+        } catch {
+            await ChannelListScreen.toBeVisible();
+            await ChannelScreen.open(channelsCategory, testChannel.name);
+            await waitFor(ChannelScreen.postInput).toBeVisible().withTimeout(timeouts.TEN_SEC);
+        }
         await wait(500);
     });
 
@@ -645,8 +648,7 @@ describe('Interactive Dialog - Basic Dialog (Plugin)', () => {
 
     it('MM-T2530A should open date/datetime dialog and display fields', async () => {
         // # Open datetime-basic dialog
-        await ChannelScreen.postMessage('/dialog datetime-basic');
-        await wait(500);
+        await ChannelScreen.postSlashCommand('/dialog datetime-basic');
         await ensureDialogOpen();
 
         // * Verify dialog title
@@ -666,8 +668,7 @@ describe('Interactive Dialog - Basic Dialog (Plugin)', () => {
 
     it('MM-T2530B should validate required date/datetime fields', async () => {
         // # Open dialog
-        await ChannelScreen.postMessage('/dialog datetime-basic');
-        await wait(500);
+        await ChannelScreen.postSlashCommand('/dialog datetime-basic');
         await ensureDialogOpen();
 
         // # Try to submit without required fields
@@ -686,8 +687,7 @@ describe('Interactive Dialog - Basic Dialog (Plugin)', () => {
 
     it('MM-T2530C should select date and display formatted value', async () => {
         // # Open dialog
-        await ChannelScreen.postMessage('/dialog datetime-basic');
-        await wait(500);
+        await ChannelScreen.postSlashCommand('/dialog datetime-basic');
         await ensureDialogOpen();
 
         // # Tap Event Date field to open date picker
@@ -710,8 +710,7 @@ describe('Interactive Dialog - Basic Dialog (Plugin)', () => {
 
     it('MM-T2530D should display relative date defaults', async () => {
         // # Open dialog
-        await ChannelScreen.postMessage('/dialog datetime-basic');
-        await wait(500);
+        await ChannelScreen.postSlashCommand('/dialog datetime-basic');
         await ensureDialogOpen();
 
         // * Verify Relative Date Example (default="today") field is rendered
@@ -726,8 +725,7 @@ describe('Interactive Dialog - Basic Dialog (Plugin)', () => {
 
     it('MM-T2530F should verify UTC conversion for datetime values', async () => {
         // # Open dialog
-        await ChannelScreen.postMessage('/dialog datetime-basic');
-        await wait(500);
+        await ChannelScreen.postSlashCommand('/dialog datetime-basic');
         await ensureDialogOpen();
 
         // # Fill required Event Date field
@@ -769,8 +767,7 @@ describe('Interactive Dialog - Basic Dialog (Plugin)', () => {
 
     it('MM-T2530G should display timezone indicator and convert to UTC correctly', async () => {
         // # Open datetime-timezone dialog (has Europe/London timezone fields)
-        await ChannelScreen.postMessage('/dialog datetime-timezone');
-        await wait(500);
+        await ChannelScreen.postSlashCommand('/dialog datetime-timezone');
         await ensureDialogOpen();
 
         // # Scroll down past introduction text to reveal fields
@@ -834,8 +831,7 @@ describe('Interactive Dialog - Basic Dialog (Plugin)', () => {
         // NOTE: Placed last in the file — manual TextInput entry leaves keyboard/animation
         // state on iOS 26 + react-native-keyboard-controller that can break subsequent dialog tests.
         // # Open datetime-timezone dialog (has fields with allow_manual_time_entry)
-        await ChannelScreen.postMessage('/dialog datetime-timezone');
-        await wait(500);
+        await ChannelScreen.postSlashCommand('/dialog datetime-timezone');
         await ensureDialogOpen();
 
         // # Scroll past introduction text to reveal fields
