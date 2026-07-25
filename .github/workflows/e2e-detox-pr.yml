@@ -31,17 +31,25 @@ on:
           - ios
           - android
           - both
-      SITE_1_URL:
-        description: "URL of the first Mattermost test server (provisioned by Matterwick)"
+      ANDROID_SITE_1_URL:
+        description: "URL of Android test server A (provisioned by Matterwick)"
         required: true
         type: string
-      SITE_2_URL:
-        description: "URL of the second Mattermost test server (provisioned by Matterwick)"
-        required: false
+      ANDROID_SITE_2_URL:
+        description: "URL of Android test server B (provisioned by Matterwick)"
+        required: true
+        type: string
+      IOS_SITE_1_URL:
+        description: "URL of iOS test server A (provisioned by Matterwick)"
+        required: true
+        type: string
+      IOS_SITE_2_URL:
+        description: "URL of iOS test server B (provisioned by Matterwick)"
+        required: true
         type: string
       SITE_3_URL:
-        description: "URL of the third Mattermost test server (provisioned by Matterwick)"
-        required: false
+        description: "URL of the shared fifth Mattermost test server"
+        required: true
         type: string
       pr_number:
         description: "PR number to remove E2E label from after tests complete"
@@ -267,6 +275,42 @@ jobs:
           status: pending
           target_url: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
 
+  resolve-server-topology:
+    name: Resolve test server topology
+    runs-on: ubuntu-24.04
+    needs: resolve-e2e-policy
+    if: needs.resolve-e2e-policy.outputs.e2e_override != 'true'
+    outputs:
+      android-site-1-url: ${{ steps.topology.outputs.android-site-1-url }}
+      android-site-2-url: ${{ steps.topology.outputs.android-site-2-url }}
+      ios-site-1-url: ${{ steps.topology.outputs.ios-site-1-url }}
+      ios-site-2-url: ${{ steps.topology.outputs.ios-site-2-url }}
+      site-3-url: ${{ steps.topology.outputs.site-3-url }}
+    steps:
+      - name: Resolve five-server inputs
+        id: topology
+        env:
+          ANDROID_SITE_1_URL: ${{ inputs.ANDROID_SITE_1_URL }}
+          ANDROID_SITE_2_URL: ${{ inputs.ANDROID_SITE_2_URL }}
+          IOS_SITE_1_URL: ${{ inputs.IOS_SITE_1_URL }}
+          IOS_SITE_2_URL: ${{ inputs.IOS_SITE_2_URL }}
+          SITE_3_URL: ${{ inputs.SITE_3_URL }}
+        run: |
+          for name in ANDROID_SITE_1_URL ANDROID_SITE_2_URL IOS_SITE_1_URL IOS_SITE_2_URL SITE_3_URL; do
+            if [ -z "${!name}" ]; then
+              echo "::error::$name is required for the five-server topology"
+              exit 1
+            fi
+          done
+
+          {
+            echo "android-site-1-url=$ANDROID_SITE_1_URL"
+            echo "android-site-2-url=$ANDROID_SITE_2_URL"
+            echo "ios-site-1-url=$IOS_SITE_1_URL"
+            echo "ios-site-2-url=$IOS_SITE_2_URL"
+            echo "site-3-url=$SITE_3_URL"
+          } >> "$GITHUB_OUTPUT"
+
   build-ios-simulator:
     if: >-
       !cancelled()
@@ -402,7 +446,9 @@ jobs:
 
   provision-servers:
     name: Provision test servers
-    needs: resolve-e2e-policy
+    needs:
+      - resolve-e2e-policy
+      - resolve-server-topology
     if: >-
       needs.resolve-e2e-policy.outputs.e2e_override != 'true'
     runs-on: ubuntu-24.04
@@ -453,13 +499,17 @@ jobs:
             echo "✓ $label validated: $hostname"
           }
 
-          validate_url "$SITE_1_URL" "SITE_1_URL"
-          validate_url "$SITE_2_URL" "SITE_2_URL"
+          validate_url "$ANDROID_SITE_1_URL" "ANDROID_SITE_1_URL"
+          validate_url "$ANDROID_SITE_2_URL" "ANDROID_SITE_2_URL"
+          validate_url "$IOS_SITE_1_URL" "IOS_SITE_1_URL"
+          validate_url "$IOS_SITE_2_URL" "IOS_SITE_2_URL"
           validate_url "$SITE_3_URL" "SITE_3_URL"
         env:
-          SITE_1_URL: ${{ inputs.SITE_1_URL }}
-          SITE_2_URL: ${{ inputs.SITE_2_URL }}
-          SITE_3_URL: ${{ inputs.SITE_3_URL }}
+          ANDROID_SITE_1_URL: ${{ needs.resolve-server-topology.outputs.android-site-1-url }}
+          ANDROID_SITE_2_URL: ${{ needs.resolve-server-topology.outputs.android-site-2-url }}
+          IOS_SITE_1_URL: ${{ needs.resolve-server-topology.outputs.ios-site-1-url }}
+          IOS_SITE_2_URL: ${{ needs.resolve-server-topology.outputs.ios-site-2-url }}
+          SITE_3_URL: ${{ needs.resolve-server-topology.outputs.site-3-url }}
 
       - name: Checkout Repository
         uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
@@ -495,16 +545,20 @@ jobs:
           # bypassing the per-variable validation in the previous step (which
           # validates the value as a single string). The validator above also
           # rejects whitespace outright, so this is belt-and-suspenders.
-          for url in "$SITE_1_URL" "$SITE_2_URL" "$SITE_3_URL"; do
-            if [ -n "$url" ]; then
+          declare -A provisioned=()
+          for url in "$ANDROID_SITE_1_URL" "$ANDROID_SITE_2_URL" "$IOS_SITE_1_URL" "$IOS_SITE_2_URL" "$SITE_3_URL"; do
+            if [ -n "$url" ] && [ -z "${provisioned[$url]+x}" ]; then
               echo "--- Provisioning $url ---"
               npm run provision -- "$url"
+              provisioned["$url"]=1
             fi
           done
         env:
-          SITE_1_URL: ${{ inputs.SITE_1_URL }}
-          SITE_2_URL: ${{ inputs.SITE_2_URL }}
-          SITE_3_URL: ${{ inputs.SITE_3_URL }}
+          ANDROID_SITE_1_URL: ${{ needs.resolve-server-topology.outputs.android-site-1-url }}
+          ANDROID_SITE_2_URL: ${{ needs.resolve-server-topology.outputs.android-site-2-url }}
+          IOS_SITE_1_URL: ${{ needs.resolve-server-topology.outputs.ios-site-1-url }}
+          IOS_SITE_2_URL: ${{ needs.resolve-server-topology.outputs.ios-site-2-url }}
+          SITE_3_URL: ${{ needs.resolve-server-topology.outputs.site-3-url }}
           ADMIN_USERNAME: ${{ secrets.MM_MOBILE_E2E_ADMIN_USERNAME }}
           ADMIN_PASSWORD: ${{ secrets.MM_MOBILE_E2E_ADMIN_PASSWORD }}
 
@@ -517,6 +571,7 @@ jobs:
       - calculate-tsio-identity
       - build-ios-simulator
       - provision-servers
+      - resolve-server-topology
     permissions:
       contents: read
       statuses: write
@@ -532,9 +587,11 @@ jobs:
     with:
       MOBILE_VERSION: ${{ inputs.MOBILE_VERSION }}
       PLATFORM: ios
-      SITE_1_URL: ${{ inputs.SITE_1_URL }}
-      SITE_2_URL: ${{ inputs.SITE_2_URL }}
-      SITE_3_URL: ${{ inputs.SITE_3_URL }}
+      ANDROID_SITE_1_URL: ${{ needs.resolve-server-topology.outputs.android-site-1-url }}
+      ANDROID_SITE_2_URL: ${{ needs.resolve-server-topology.outputs.android-site-2-url }}
+      IOS_SITE_1_URL: ${{ needs.resolve-server-topology.outputs.ios-site-1-url }}
+      IOS_SITE_2_URL: ${{ needs.resolve-server-topology.outputs.ios-site-2-url }}
+      SITE_3_URL: ${{ needs.resolve-server-topology.outputs.site-3-url }}
       run_type: ${{ inputs.run_type || 'PR' }}
       artifact_run_id: ${{ github.run_id }}
       tsio-config: ${{ needs.calculate-tsio-identity.outputs.tsio-config }}
@@ -547,6 +604,7 @@ jobs:
       - calculate-tsio-identity
       - build-android-apk
       - provision-servers
+      - resolve-server-topology
     permissions:
       contents: read
       statuses: write
@@ -562,9 +620,11 @@ jobs:
     with:
       MOBILE_VERSION: ${{ inputs.MOBILE_VERSION }}
       PLATFORM: android
-      SITE_1_URL: ${{ inputs.SITE_1_URL }}
-      SITE_2_URL: ${{ inputs.SITE_2_URL }}
-      SITE_3_URL: ${{ inputs.SITE_3_URL }}
+      ANDROID_SITE_1_URL: ${{ needs.resolve-server-topology.outputs.android-site-1-url }}
+      ANDROID_SITE_2_URL: ${{ needs.resolve-server-topology.outputs.android-site-2-url }}
+      IOS_SITE_1_URL: ${{ needs.resolve-server-topology.outputs.ios-site-1-url }}
+      IOS_SITE_2_URL: ${{ needs.resolve-server-topology.outputs.ios-site-2-url }}
+      SITE_3_URL: ${{ needs.resolve-server-topology.outputs.site-3-url }}
       run_type: ${{ inputs.run_type || 'PR' }}
       artifact_run_id: ${{ github.run_id }}
       tsio-config: ${{ needs.calculate-tsio-identity.outputs.tsio-config }}
@@ -600,6 +660,7 @@ jobs:
       - build-ios-simulator
       - provision-servers
       - validate-maestro-flow-headers
+      - resolve-server-topology
     permissions:
       contents: read
       statuses: write
@@ -616,9 +677,11 @@ jobs:
     with:
       MOBILE_VERSION: ${{ inputs.MOBILE_VERSION }}
       PLATFORM: ios
-      SITE_1_URL: ${{ inputs.SITE_1_URL }}
-      SITE_2_URL: ${{ inputs.SITE_2_URL }}
-      SITE_3_URL: ${{ inputs.SITE_3_URL }}
+      ANDROID_SITE_1_URL: ${{ needs.resolve-server-topology.outputs.android-site-1-url }}
+      ANDROID_SITE_2_URL: ${{ needs.resolve-server-topology.outputs.android-site-2-url }}
+      IOS_SITE_1_URL: ${{ needs.resolve-server-topology.outputs.ios-site-1-url }}
+      IOS_SITE_2_URL: ${{ needs.resolve-server-topology.outputs.ios-site-2-url }}
+      SITE_3_URL: ${{ needs.resolve-server-topology.outputs.site-3-url }}
       run_type: ${{ inputs.run_type || 'PR' }}
       artifact_run_id: ${{ github.run_id }}
       record_tests_in_zephyr: ${{ inputs.run_type == 'RELEASE' || inputs.run_type == 'MAIN' || inputs.run_type == 'MASTER' }}
@@ -633,6 +696,7 @@ jobs:
       - build-android-apk-maestro
       - provision-servers
       - validate-maestro-flow-headers
+      - resolve-server-topology
     permissions:
       contents: read
       statuses: write
@@ -649,9 +713,11 @@ jobs:
     with:
       MOBILE_VERSION: ${{ inputs.MOBILE_VERSION }}
       PLATFORM: android
-      SITE_1_URL: ${{ inputs.SITE_1_URL }}
-      SITE_2_URL: ${{ inputs.SITE_2_URL }}
-      SITE_3_URL: ${{ inputs.SITE_3_URL }}
+      ANDROID_SITE_1_URL: ${{ needs.resolve-server-topology.outputs.android-site-1-url }}
+      ANDROID_SITE_2_URL: ${{ needs.resolve-server-topology.outputs.android-site-2-url }}
+      IOS_SITE_1_URL: ${{ needs.resolve-server-topology.outputs.ios-site-1-url }}
+      IOS_SITE_2_URL: ${{ needs.resolve-server-topology.outputs.ios-site-2-url }}
+      SITE_3_URL: ${{ needs.resolve-server-topology.outputs.site-3-url }}
       run_type: ${{ inputs.run_type || 'PR' }}
       artifact_run_id: ${{ github.run_id }}
       record_tests_in_zephyr: ${{ inputs.run_type == 'RELEASE' || inputs.run_type == 'MAIN' || inputs.run_type == 'MASTER' }}

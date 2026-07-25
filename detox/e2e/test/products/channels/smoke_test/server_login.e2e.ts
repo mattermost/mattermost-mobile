@@ -16,6 +16,7 @@ import {
     siteOneUrl,
     serverTwoUrl,
     siteTwoUrl,
+    hasSecondServer,
 } from '@support/test_config';
 import {Alert} from '@support/ui/component';
 import {
@@ -28,8 +29,6 @@ import {
 import {isAndroid, isIos, timeouts, wait} from '@support/utils';
 import {expect, waitFor} from 'detox';
 
-// Skip MM-T4675_2 when SITE_2_URL is unset or equals SITE_1_URL (e.g. CMT single-server runs).
-const hasSecondServer = Boolean(process.env.SITE_2_URL) && process.env.SITE_2_URL !== process.env.SITE_1_URL;
 const itWithSecondServer = hasSecondServer ? it : it.skip;
 
 describe('Smoke Test - Server Login', () => {

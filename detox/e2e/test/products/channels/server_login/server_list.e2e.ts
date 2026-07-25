@@ -18,6 +18,7 @@ import {
     siteOneUrl,
     siteTwoUrl,
     siteThreeUrl,
+    hasThreeDistinctServers,
 } from '@support/test_config';
 import {
     Alert,
@@ -32,6 +33,8 @@ import {
 } from '@support/ui/screen';
 import {isAndroid, isIos, timeouts, wait, waitForElementToBeVisible, waitForElementToExist} from '@support/utils';
 import {expect} from 'detox';
+
+const itWithThreeServers = hasThreeDistinctServers ? it : it.skip;
 
 describe('Server Login - Server List', () => {
     const serverOneDisplayName = 'Server 1';
@@ -73,7 +76,7 @@ describe('Server Login - Server List', () => {
         await ServerListScreen.getServerItemActive(serverOneDisplayName).atIndex(0).tap();
     });
 
-    it('MM-T4691_2 - should be able to add and log in to new servers', async () => {
+    itWithThreeServers('MM-T4691_2 - should be able to add and log in to new servers', async () => {
         // * Verify on channel list screen of the first server
         await expect(ChannelListScreen.headerServerDisplayName).toHaveText(serverOneDisplayName);
 
@@ -150,7 +153,7 @@ describe('Server Login - Server List', () => {
         await ServerListScreen.getServerItemInactive(serverOneDisplayName).atIndex(0).tap();
     });
 
-    it('MM-T4691_3 - should be able to switch to another existing server', async () => {
+    itWithThreeServers('MM-T4691_3 - should be able to switch to another existing server', async () => {
         // * Verify on channel list screen of the first server
         await expect(ChannelListScreen.headerServerDisplayName).toHaveText(serverOneDisplayName);
 
@@ -181,7 +184,7 @@ describe('Server Login - Server List', () => {
         await ServerListScreen.getServerItemInactive(serverOneDisplayName).atIndex(0).tap();
     });
 
-    it('MM-T4691_4 - should be able to edit server display name of active and inactive servers', async () => {
+    itWithThreeServers('MM-T4691_4 - should be able to edit server display name of active and inactive servers', async () => {
         // * Verify on channel list screen of the first server
         await expect(ChannelListScreen.headerServerDisplayName).toHaveText(serverOneDisplayName);
 
@@ -234,7 +237,7 @@ describe('Server Login - Server List', () => {
     });
 
     // Skip iOS: CI run 30000635898 — swipe action Remove does not become reliably hittable.
-    (isIos() ? it.skip : it)('MM-T4691_5 - should be able to remove a server from the list', async () => {
+    (isIos() ? it.skip : itWithThreeServers)('MM-T4691_5 - should be able to remove a server from the list', async () => {
         // * Verify on channel list screen of the first server
         await expect(ChannelListScreen.headerServerDisplayName).toHaveText(serverOneDisplayName);
 
@@ -288,7 +291,7 @@ describe('Server Login - Server List', () => {
     });
 
     // Skip iOS: CI run 30000635898 — revealed Logout action remains unhittable.
-    (isIos() ? it.skip : it)('MM-T4691_6 - should be able to log out a server from the list', async () => {
+    (isIos() ? it.skip : itWithThreeServers)('MM-T4691_6 - should be able to log out a server from the list', async () => {
         // * Verify on channel list screen of the first server
         await expect(ChannelListScreen.headerServerDisplayName).toHaveText(serverOneDisplayName);
 
@@ -335,7 +338,7 @@ describe('Server Login - Server List', () => {
     });
 
     // Skip iOS: CI run 30000635898 — server-list Add Server action remains unhittable after scrolling.
-    (isIos() ? it.skip : it)('MM-T4691_7 - should not be able to add server for an already existing server', async () => {
+    (isIos() ? it.skip : itWithThreeServers)('MM-T4691_7 - should not be able to add server for an already existing server', async () => {
         // * Verify on channel list screen of the first server
         await expect(ChannelListScreen.headerServerDisplayName).toHaveText(serverOneDisplayName);
 

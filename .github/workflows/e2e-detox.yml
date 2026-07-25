@@ -14,14 +14,20 @@ on:
         required: false
         type: string
         default: "both"
-      SITE_1_URL:
+      ANDROID_SITE_1_URL:
         required: true
         type: string
-      SITE_2_URL:
-        required: false
+      ANDROID_SITE_2_URL:
+        required: true
+        type: string
+      IOS_SITE_1_URL:
+        required: true
+        type: string
+      IOS_SITE_2_URL:
+        required: true
         type: string
       SITE_3_URL:
-        required: false
+        required: true
         type: string
       run_type:
         required: false
@@ -55,8 +61,8 @@ jobs:
       tsio-shard-name: detox-ios
       record_tests_in_zephyr: ${{ inputs.run_type == 'RELEASE' || inputs.run_type == 'MAIN' || inputs.run_type == 'MASTER' }}
       MOBILE_VERSION: ${{ inputs.MOBILE_VERSION }}
-      MM_TEST_SERVER_URL: ${{ inputs.SITE_1_URL }}
-      MM_TEST_SERVER_URL_2: ${{ inputs.SITE_2_URL }}
+      MM_TEST_SERVER_URL: ${{ inputs.IOS_SITE_1_URL }}
+      MM_TEST_SERVER_URL_2: ${{ inputs.IOS_SITE_2_URL }}
       MM_TEST_SERVER_URL_3: ${{ inputs.SITE_3_URL }}
       artifact_run_id: ${{ inputs.artifact_run_id }}
     secrets:
@@ -80,8 +86,8 @@ jobs:
       tsio-shard-name: detox-android
       record_tests_in_zephyr: ${{ inputs.run_type == 'RELEASE' || inputs.run_type == 'MAIN' || inputs.run_type == 'MASTER' }}
       MOBILE_VERSION: ${{ inputs.MOBILE_VERSION }}
-      MM_TEST_SERVER_URL: ${{ inputs.SITE_1_URL }}
-      MM_TEST_SERVER_URL_2: ${{ inputs.SITE_2_URL }}
+      MM_TEST_SERVER_URL: ${{ inputs.ANDROID_SITE_1_URL }}
+      MM_TEST_SERVER_URL_2: ${{ inputs.ANDROID_SITE_2_URL }}
       MM_TEST_SERVER_URL_3: ${{ inputs.SITE_3_URL }}
       artifact_run_id: ${{ inputs.artifact_run_id }}
     secrets:
@@ -103,7 +109,9 @@ jobs:
       tsio-config: ${{ inputs.tsio-config }}
       tsio-shard-name: detox-ipad
       MOBILE_VERSION: ${{ inputs.MOBILE_VERSION }}
-      MM_TEST_SERVER_URL: ${{ inputs.SITE_1_URL }}
+      MM_TEST_SERVER_URL: ${{ inputs.IOS_SITE_1_URL }}
+      MM_TEST_SERVER_URL_2: ${{ inputs.IOS_SITE_2_URL }}
+      MM_TEST_SERVER_URL_3: ${{ inputs.SITE_3_URL }}
       ios_device_name: "iPad Pro 13-inch (M5)"
       ios_device_os_name: "iOS 26.2"
       search_path: "detox/e2e/test/products/channels/ipad"

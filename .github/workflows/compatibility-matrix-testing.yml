@@ -30,10 +30,11 @@ jobs:
 
       - name: cmt/calculate-mattermost-sha
         id: repo
-        run: echo "MOBILE_SHA=$(git rev-parse HEAD)" >> ${GITHUB_OUTPUT}
+        run: echo "MOBILE_SHA=$(git rev-parse HEAD)" >> "${GITHUB_OUTPUT}"
 
   # Phase 5 — computes the TSIO composite identity for this CMT run and the
-  # per-group totals. Detox runs the FULL CMT_MATRIX (all server versions) across
+  # per-group totals. Each CMT matrix entry contains a five-server topology for
+  # one Mattermost version. Detox runs the FULL CMT_MATRIX across
   # 3 platforms (ios/android/ipad) → total = 3 × (#servers). Maestro runs only
   # the latest server version(s) across 2 platforms (ios/android) → total =
   # 2 × (#latest servers). The orchestrator (update-final-status) and the
@@ -140,11 +141,19 @@ jobs:
   #   "server": [
   #     {
   #       "version": "9.6.1",
-  #       "url": "https://delivery-cmt-8467830017-9-6-1.test.mattermost.cloud/"
+  #       "android_site_1_url": "https://android-1.example.test",
+  #       "android_site_2_url": "https://android-2.example.test",
+  #       "ios_site_1_url": "https://ios-1.example.test",
+  #       "ios_site_2_url": "https://ios-2.example.test",
+  #       "site_3_url": "https://shared-3.example.test"
   #     },
   #     {
   #       "version": "9.5.2",
-  #       "url": "https://delivery-cmt-8467830017-9-5-2.test.mattermost.cloud/"
+  #       "android_site_1_url": "https://android-1-older.example.test",
+  #       "android_site_2_url": "https://android-2-older.example.test",
+  #       "ios_site_1_url": "https://ios-1-older.example.test",
+  #       "ios_site_2_url": "https://ios-2-older.example.test",
+  #       "site_3_url": "https://shared-3-older.example.test"
   #     }
   #   ]
   # }
@@ -288,7 +297,9 @@ jobs:
       tsio-config: ${{ needs.cmt-identity.outputs.tsio-config }}
       tsio-shard-name: detox-ios-Server_${{ matrix.server.version }}
       run-type: "RELEASE"
-      MM_TEST_SERVER_URL: ${{ matrix.server.url }}
+      MM_TEST_SERVER_URL: ${{ matrix.server.ios_site_1_url }}
+      MM_TEST_SERVER_URL_2: ${{ matrix.server.ios_site_2_url }}
+      MM_TEST_SERVER_URL_3: ${{ matrix.server.site_3_url }}
       MOBILE_VERSION: ${{ inputs.MOBILE_VERSION }}
       search_path: ${{ matrix.server.latest && 'detox/e2e/test' || 'detox/e2e/test/products/channels/smoke_test' }}
       parallelism: ${{ matrix.server.latest && '10' || '1' }}
@@ -320,7 +331,9 @@ jobs:
       tsio-config: ${{ needs.cmt-identity.outputs.tsio-config }}
       tsio-shard-name: detox-ipad-Server_${{ matrix.server.version }}
       run-type: "RELEASE"
-      MM_TEST_SERVER_URL: ${{ matrix.server.url }}
+      MM_TEST_SERVER_URL: ${{ matrix.server.ios_site_1_url }}
+      MM_TEST_SERVER_URL_2: ${{ matrix.server.ios_site_2_url }}
+      MM_TEST_SERVER_URL_3: ${{ matrix.server.site_3_url }}
       MOBILE_VERSION: ${{ inputs.MOBILE_VERSION }}
       ios_device_name: "iPad Pro 13-inch (M5)"
       ios_device_os_name: "iOS 26.2"
@@ -356,7 +369,7 @@ jobs:
       tsio-shard-name: maestro-ios-Server_${{ matrix.server.version }}
       platform: ios
       run-type: "RELEASE"
-      MM_TEST_SERVER_URL: ${{ matrix.server.url }}
+      MM_TEST_SERVER_URL: ${{ matrix.server.ios_site_1_url }}
       MOBILE_VERSION: ${{ inputs.MOBILE_VERSION }}
       record_tests_in_zephyr: true
       artifact_run_id: ${{ github.run_id }}
@@ -388,7 +401,9 @@ jobs:
       tsio-shard-name: detox-android-Server_${{ matrix.server.version }}
       run-android-tests: true
       run-type: "RELEASE"
-      MM_TEST_SERVER_URL: ${{ matrix.server.url }}
+      MM_TEST_SERVER_URL: ${{ matrix.server.android_site_1_url }}
+      MM_TEST_SERVER_URL_2: ${{ matrix.server.android_site_2_url }}
+      MM_TEST_SERVER_URL_3: ${{ matrix.server.site_3_url }}
       MOBILE_VERSION: ${{ inputs.MOBILE_VERSION }}
       search_path: ${{ matrix.server.latest && 'detox/e2e/test' || 'detox/e2e/test/products/channels/smoke_test' }}
       parallelism: ${{ matrix.server.latest && '10' || '1' }}
@@ -421,7 +436,7 @@ jobs:
       tsio-shard-name: maestro-android-Server_${{ matrix.server.version }}
       platform: android
       run-type: "RELEASE"
-      MM_TEST_SERVER_URL: ${{ matrix.server.url }}
+      MM_TEST_SERVER_URL: ${{ matrix.server.android_site_1_url }}
       MOBILE_VERSION: ${{ inputs.MOBILE_VERSION }}
       artifact_run_id: ${{ github.run_id }}
       record_tests_in_zephyr: true
@@ -489,4 +504,3 @@ jobs:
           exit 0
 
       # Instance cleanup is handled by matterwick on workflow_run completed.
-

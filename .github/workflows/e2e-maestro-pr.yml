@@ -14,14 +14,20 @@ on:
         required: false
         type: string
         default: "both"
-      SITE_1_URL:
+      ANDROID_SITE_1_URL:
         required: true
         type: string
-      SITE_2_URL:
-        required: false
+      ANDROID_SITE_2_URL:
+        required: true
+        type: string
+      IOS_SITE_1_URL:
+        required: true
+        type: string
+      IOS_SITE_2_URL:
+        required: true
         type: string
       SITE_3_URL:
-        required: false
+        required: true
         type: string
       run_type:
         required: false
@@ -68,7 +74,7 @@ jobs:
       platform: ios
       run-type: ${{ inputs.run_type || 'PR' }}
       MOBILE_VERSION: ${{ inputs.MOBILE_VERSION }}
-      MM_TEST_SERVER_URL: ${{ inputs.SITE_2_URL || inputs.SITE_1_URL }}
+      MM_TEST_SERVER_URL: ${{ inputs.IOS_SITE_1_URL }}
       artifact_run_id: ${{ inputs.artifact_run_id }}
       record_tests_in_zephyr: ${{ inputs.record_tests_in_zephyr }}
       tsio-config: ${{ inputs.tsio-config }}
@@ -83,7 +89,7 @@ jobs:
       platform: android
       run-type: ${{ inputs.run_type || 'PR' }}
       MOBILE_VERSION: ${{ inputs.MOBILE_VERSION }}
-      MM_TEST_SERVER_URL: ${{ inputs.SITE_3_URL || inputs.SITE_1_URL }}
+      MM_TEST_SERVER_URL: ${{ inputs.ANDROID_SITE_1_URL }}
       artifact_run_id: ${{ inputs.artifact_run_id }}
       record_tests_in_zephyr: ${{ inputs.record_tests_in_zephyr }}
       tsio-config: ${{ inputs.tsio-config }}

@@ -13,25 +13,36 @@ npm install
 navigate to the `detox` folder and run `npm install`
 
 ## Configure your server details
-in `detox/e2e/support/test_config.ts` will provide some default values for your server, if they differ you can:
-- use environment variables
+`detox/e2e/support/test_config.ts` defaults to one local server on port `8065`.
+For iOS, both the test runner and simulator use `http://localhost:8065`. For
+Android, the test runner uses `http://localhost:8065` while the emulator uses
+`http://10.0.2.2:8065`.
+
+If you use a remote server, set the logical site variable to a URL reachable
+from both the host test runner and the device:
 ```sh
-  export SITE_1_URL="http://your-server:8065"
+  export SITE_1_URL="https://your-server.example.com"
   export ADMIN_USERNAME="your-username"
   export ADMIN_PASSWORD="your-password"
   export ADMIN_EMAIL="your-email"
 ```
 
-- create a .env file in the `detox` folder providing the values:
+You can instead create a `detox/.env` file:
 ```sh
   # detox/.env
-  SITE_1_URL=http://localhost:8065
+  SITE_1_URL=https://your-server.example.com
   ADMIN_USERNAME=your-username
   ADMIN_PASSWORD=your-password
   ADMIN_EMAIL=your-email@example.com
 ```
 
 **Note**: no need to provide all variables, only the ones that differ.
+
+`SITE_2_URL` and `SITE_3_URL` are only needed for tests that add distinct
+Mattermost servers, such as `server_login/server_list.e2e.ts`. If they are
+unset, their URL helpers alias site 1 and tests that require distinct servers
+are skipped. The five-server `ANDROID_SITE_*` and `IOS_SITE_*` topology is
+assigned by CI and is not required for ordinary local runs.
 
 ## Android
 

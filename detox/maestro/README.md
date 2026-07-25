@@ -131,8 +131,8 @@ xcrun simctl spawn booted defaults write -g UIKeyboardPrediction -bool false
 ### 6. Seed test data
 
 ```bash
-# From the repo root (after SITE_1_URL / admin creds are set):
-npx tsx detox/maestro/fixtures/seed.ts
+# From the repo root after SITE_1_URL / ADMIN_USERNAME / ADMIN_PASSWORD are set:
+npx tsx detox/maestro/fixtures/seed.ts     # writes .maestro-test-env.sh
 source detox/maestro/.maestro-test-env.sh   # exports TEST_USER_EMAIL, TEST_USER_PASSWORD, etc.
 ```
 
@@ -341,7 +341,7 @@ appId: ${MAESTRO_APP_ID}
 
 | Variable | Default | Description |
 |---|---|---|
-| `SITE_1_URL` | — | Mattermost server URL (required) |
+| `SITE_1_URL` | — | Mattermost server URL (required for manual seed; `setup_local.sh` accepts `SITE_URL` and writes this) |
 | `ADMIN_USERNAME` | — | Admin account username (not email) for seeding |
 | `ADMIN_PASSWORD` | — | Admin account password for seeding |
 | `TEST_USER_EMAIL` | — | Test user email for login |
@@ -353,6 +353,9 @@ appId: ${MAESTRO_APP_ID}
 | `DEVICE_B_UDID` | — | UDID of second device (multi-device only) |
 | `ADMIN_TOKEN` | — | Mattermost personal access token for API polling |
 | `TEST_CHANNEL_ID` | — | Channel ID used in `poll_for_message.ts` |
+
+The all-in-one `scripts/setup_local.sh` helper instead accepts `SITE_URL` and
+writes `SITE_1_URL` to `.maestro-test-env.sh`.
 
 `RUNNING_E2E=true` must be set in repo-root `.env` **before building** the app (not at
 Maestro run time). It is baked into the JS bundle via `@env` and suppresses LogBox during E2E.
@@ -422,13 +425,14 @@ one host are not supported; each matrix leg needs its own runner + simulator UDI
 
 ### Test servers (PR runs)
 
-Matterwick provisions `SITE_1_URL`, `SITE_2_URL`, and `SITE_3_URL`. Maestro maps them in
-`e2e-maestro-pr.yml`:
+Matterwick provisions five servers and dispatches them with explicit topology inputs:
 
-- **Maestro iOS** → `SITE_2_URL` (fallback `SITE_1_URL`)
-- **Maestro Android** → `SITE_3_URL` (fallback `SITE_1_URL`)
+- `ANDROID_SITE_1_URL` and `ANDROID_SITE_2_URL`
+- `IOS_SITE_1_URL` and `IOS_SITE_2_URL`
+- `SITE_3_URL` (shared)
 
-Detox uses `SITE_1_URL` (and additional sites per shard config).
+Maestro uses the first server for its platform. Detox rotates each platform's first and
+second servers across odd/even shards and uses the shared server as its third logical site.
 
 ### Default flow sets and exclusions
 
