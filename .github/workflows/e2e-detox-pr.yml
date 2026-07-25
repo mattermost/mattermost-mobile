@@ -1,5 +1,9 @@
 # Matterwick E2E entry point (workflow_dispatch only).
 #
+# TEMP (PR #9893): TSIO upload + commit-status poll use staging
+#   https://staging-test-io.test.mattermost.com (mattermost-test-system-io#83).
+#   Revert use-staging / --use-staging before merging to main.
+#
 # Matterwick dispatches this file via:
 #   POST /repos/{owner}/{repo}/actions/workflows/e2e-detox-pr.yml/dispatches
 # and watches workflow_run "completed" events where workflow name is "E2E".
@@ -919,7 +923,8 @@ jobs:
             --github-token="$GITHUB_TOKEN" \
             --context="$TSIO_STATUS_CONTEXT" \
             --upstream-succeeded="$UPSTREAM" \
-            --poll-attempts=36
+            --poll-attempts=36 \
+            --use-staging=true
           RC=$?
           echo "tsio-report-status exit=$RC upstream_succeeded=$UPSTREAM"
           if [ "$RC" -ne 0 ] && [ "$UPSTREAM" = "true" ]; then

@@ -527,6 +527,8 @@ jobs:
         if: always() && inputs.tsio-config != '' && vars.TSIO_UPLOAD_ENABLED != 'false' && hashFiles('detox/artifacts/jest-results-merged.json') != ''
         uses: mattermost/mattermost-test-system-io/.github/actions/test-system-io-report-upload@45fb048848edc392f398144f45e2f3e30f43aeaa # release-0.12.0 / main@45fb048 (#81 Maestro FilePath + Detox paths, #82 background finalize)
         with:
+          # TEMP (PR #9893): validate Detox screenshots against staging TSIO (mattermost-test-system-io#83). Revert before merge.
+          use-staging: 'true'
           composite-identity: ${{ toJSON(fromJSON(inputs.tsio-config).composite_identity) }}
           total-reports-expected: ${{ fromJSON(inputs.tsio-config).total_reports_expected }}
           framework: detox
