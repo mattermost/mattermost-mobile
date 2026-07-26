@@ -134,6 +134,8 @@ class ChannelBookmarkScreen {
 
     // CI 28416284905 MM-T5606_1: icon tap + EmojiPickerScreen.toBeVisible() timed out
     // with search input null — bottom-sheet animation / sync still busy on Android.
+    // CI 30216081940: title replaceText leaves keyboard covering the icon; skin-tone
+    // tooltip can mount with the picker so retries must not re-tap the buried icon.
     openEmojiPickerFromEditModal = async () => {
         const iconButton = element(by.id(this.testID.editIconButton).withAncestor(by.id(this.testID.channelBookmarkScreen)));
         const emojiPickerScreen = element(by.id(this.testID.emojiPickerScreen));
@@ -142,16 +144,48 @@ class ChannelBookmarkScreen {
 
         if (isAndroid()) {
             await device.disableSynchronization();
+            try {
+                await device.pressBack();
+                await wait(timeouts.HALF_SEC);
+            } catch {
+                // Keyboard may already be dismissed.
+            }
         }
+
+        const pickerAlreadyOpen = async () => {
+            try {
+                await waitFor(searchInput).toExist().withTimeout(timeouts.HALF_SEC);
+                return true;
+            } catch {
+                try {
+                    await waitFor(toolTipCloseButton).toExist().withTimeout(timeouts.HALF_SEC);
+                    return true;
+                } catch {
+                    try {
+                        await waitFor(emojiPickerScreen).toExist().withTimeout(timeouts.HALF_SEC);
+                        return true;
+                    } catch {
+                        return false;
+                    }
+                }
+            }
+        };
 
         /* eslint-disable no-await-in-loop -- retry icon tap until picker mounts */
         for (let attempt = 0; attempt < 3; attempt++) {
+            if (await pickerAlreadyOpen()) {
+                break;
+            }
+            await waitFor(iconButton).toExist().withTimeout(timeouts.TEN_SEC);
             await iconButton.tap();
             await wait(timeouts.TWO_SEC);
             try {
                 await waitFor(emojiPickerScreen).toExist().withTimeout(timeouts.FIVE_SEC);
                 break;
             } catch (error) {
+                if (await pickerAlreadyOpen()) {
+                    break;
+                }
                 if (attempt === 2) {
                     throw error;
                 }

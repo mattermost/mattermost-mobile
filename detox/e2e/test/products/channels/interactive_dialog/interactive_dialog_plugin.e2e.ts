@@ -57,17 +57,34 @@ async function waitForDialogSelectorButton(testId: string) {
 // from PR #9847. With UserItem's testID now on the touchable, this fires onPress;
 // single-select auto-closes the modal, multi-select needs done().
 async function selectUser() {
-    const patterns = [
-        'integration_selector.user_list.user_item',
-        'integration_selector.user_list',
-        'integration_selector.user_list.section_list',
-    ];
-    for (const testID of patterns) {
-        try {
-            const el = element(by.id(testID));
+    // Prefer a concrete user row. Prefix-only ids never match UserItem's
+    // `${testID}.${user.id}` composition (CI 30216081940: selector stayed open).
+    const strategies: Array<() => Promise<void>> = [
+        async () => {
+            await IntegrationSelectorScreen.searchFor('admin');
+            await element(by.text('admin')).atIndex(0).tap();
+        },
+        async () => {
+            const el = element(by.id(/^integration_selector\.user_list\.user_item\./));
             await expect(el).toExist();
-            await el.tap();
-            return true;
+            await el.atIndex(0).tap();
+        },
+        async () => {
+            await element(by.id('integration_selector.user_list')).tap();
+        },
+    ];
+    for (const strategy of strategies) {
+        try {
+            await strategy();
+            await wait(timeouts.ONE_SEC);
+            try {
+                await waitFor(element(by.id('integration_selector.screen'))).
+                    not.toExist().
+                    withTimeout(timeouts.FIVE_SEC);
+                return true;
+            } catch {
+                // Multi-select or tap missed — try next strategy / done().
+            }
         } catch {}
     }
     try {
@@ -780,11 +797,12 @@ describe('Interactive Dialog - Basic Dialog (Plugin)', () => {
         await expect(element(by.id('AppFormElement.london_dropdown'))).toExist();
 
         // * Verify timezone indicator appears for London field
-        // London is GMT in winter, BST in summer — mobile renders without emoji
+        // London is GMT in winter, BST in summer — mobile renders without emoji.
+        // Datetime-timezone dialog can show the indicator twice (CI 30216081940).
         try {
-            await expect(element(by.text('Times in GMT'))).toExist();
+            await expect(element(by.text('Times in GMT')).atIndex(0)).toExist();
         } catch {
-            await expect(element(by.text('Times in BST'))).toExist();
+            await expect(element(by.text('Times in BST')).atIndex(0)).toExist();
         }
 
         // # Select datetime in London field

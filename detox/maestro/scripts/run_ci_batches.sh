@@ -203,6 +203,8 @@ ensure_android_app_launchable() {
   echo "==> Preparing Android app $MAESTRO_APP_ID for Maestro launch"
   adb shell am force-stop "$MAESTRO_APP_ID" 2>/dev/null || true
   adb reverse tcp:8081 tcp:8081 2>/dev/null || true
+  # Re-assert after adb root (timezone prep) — Google Autofill overlays hide form testIDs.
+  adb shell settings put secure autofill_service null 2>/dev/null || true
 }
 
 grant_ios_calls_permissions() {

@@ -45,6 +45,9 @@ const getSkuDisplayNameForTest = (skuShortName: string, isGovSku: boolean): stri
         case 'entry':
             skuName = 'Entry';
             break;
+        case 'advanced':
+            skuName = 'Enterprise Advanced';
+            break;
         default:
             skuName = 'Enterprise Advanced';
             break;
@@ -91,7 +94,10 @@ describe('Account - Settings - About', () => {
         const {config} = configResponse;
         isLicensed = license.IsLicensed === 'true';
         expectedLearnMorePrefix = getExpectedLearnMorePrefix(license, config.BuildEnterpriseReady);
-        learnMorePrefixMatcher = new RegExp(`^${expectedLearnMorePrefix.trim().replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}`, 'i');
+
+        // Android nests the URL in the same TextView; Espresso regex uses full-string
+        // matches(), so allow trailing content (CI 30216081940 MM-T5104_1).
+        learnMorePrefixMatcher = new RegExp(`^${expectedLearnMorePrefix.trim().replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}.*`, 'i');
         expectedProductTitle = getExpectedProductTitle(license, config.BuildEnterpriseReady);
         const {user} = await Setup.apiInit(siteOneUrl);
         testUser = user;

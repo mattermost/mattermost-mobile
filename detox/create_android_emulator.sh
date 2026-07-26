@@ -169,6 +169,9 @@ grant_android_runtime_permissions() {
     adb shell settings put secure show_ime_with_hard_keyboard 0 2>/dev/null || true
     adb shell settings put secure spell_checker_enabled 0 2>/dev/null || true
     adb shell settings put secure auto_text_enabled 0 2>/dev/null || true
+    # google_apis images ship Google Autofill; overlays on the server form hide
+    # FloatingTextInput testIDs from Maestro (same class of issue as iOS autofill).
+    adb shell settings put secure autofill_service null 2>/dev/null || true
 }
 
 configure_emulator_for_tests() {
