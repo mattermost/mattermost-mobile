@@ -14,6 +14,8 @@
  *   MATTERMOST_*_WEBHOOK_URL — routed via resolveWebhookUrl / webhookBucketForReportName
  */
 
+const {webhookBucketForReportName} = require('./build-tsio-job-config');
+const {notifyCmtChannel, resolveWebhookUrl} = require('./cmt-channel-notify');
 const {
     mintOidcToken,
     beginGroup,
@@ -23,8 +25,6 @@ const {
     PRODUCTION_URL,
     STAGING_URL,
 } = require('./tsio-report-status');
-const {webhookBucketForReportName} = require('./build-tsio-job-config');
-const {notifyCmtChannel, resolveWebhookUrl} = require('./cmt-channel-notify');
 
 function parseArgs(argv) {
     const out = {};
@@ -79,8 +79,13 @@ function mergeDetails(details) {
         flaky += s.flaky || 0;
     }
 
+    let status = 'pending';
+    if (allCompleted) {
+        status = failed > 0 ? 'incomplete' : 'completed';
+    }
+
     return {
-        status: allCompleted ? (failed > 0 ? 'incomplete' : 'completed') : 'pending',
+        status,
         test_stats: {passed, failed, skipped, flaky, total: passed + failed + skipped + flaky},
         reports,
     };

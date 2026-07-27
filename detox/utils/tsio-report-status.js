@@ -190,6 +190,7 @@ async function reportTsioStatus(options) {
         useStaging = false,
         audience = 'mattermost-test-system-io',
         baseUrl: baseUrlOverride,
+
         // Per-job finalize leaves this false so N platform legs do not spam the channel.
         channelNotify = false,
     } = options;
