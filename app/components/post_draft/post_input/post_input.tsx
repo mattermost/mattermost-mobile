@@ -13,7 +13,6 @@ import {
 import {useAnimatedKeyboard} from 'react-native-keyboard-controller';
 import Animated, {cancelAnimation, Easing, useAnimatedStyle, useSharedValue, withRepeat, withTiming} from 'react-native-reanimated';
 
-import {updateDraftMessage} from '@actions/local/draft';
 import {userTyping} from '@actions/websocket/users';
 import {useRewrite} from '@agents/hooks';
 import {Events, Screens} from '@constants';
@@ -26,6 +25,17 @@ import {useCurrentScreen} from '@store/navigation_store';
 import {handleDraftUpdate} from '@utils/draft';
 import {extractFileInfo} from '@utils/file';
 import {changeOpacity, makeStyleSheetFromTheme, getKeyboardAppearanceFromTheme} from '@utils/theme';
+
+import {
+    buildEditorKey,
+    captureEditorGeneration,
+    clearEditor,
+    isEditorGenerationStale,
+    markEditorEdited,
+    markEditorSaved,
+    resetEditorBaseline,
+    shouldSaveEditor,
+} from '../editor_guard';
 
 import type {AvailableScreens} from '@typings/screens/navigation';
 
@@ -196,15 +206,33 @@ export default function PostInput({
         };
     }, [isProcessing, pulseOpacity]);
 
-    const onBlur = useCallback(() => {
+    const editorKey = useMemo(() => buildEditorKey(serverUrl, channelId, rootId), [serverUrl, channelId, rootId]);
+
+    // Guarded lifecycle save: only persists when the editor holds a genuine
+    // unsaved edit, and discards the write (via isStillValid) if a Send/Delete
+    // invalidated the editor generation while the save was in flight. Prevents
+    // a stale blur/background/unmount save from resurrecting a cleared draft.
+    // The editor_guard functions are module-level (stable) and intentionally
+    // omitted from the deps.
+    const guardedSave = useCallback((val: string) => {
+        if (!shouldSaveEditor(editorKey)) {
+            return;
+        }
+        const gen = captureEditorGeneration(editorKey);
         handleDraftUpdate({
             serverUrl,
             channelId,
             rootId,
-            value,
+            value: val,
+            isStillValid: () => !isEditorGenerationStale(editorKey, gen),
         });
+        markEditorSaved(editorKey, val);
+    }, [editorKey, serverUrl, channelId, rootId]);
+
+    const onBlur = useCallback(() => {
+        guardedSave(value);
         setIsFocused(false);
-    }, [serverUrl, channelId, rootId, value, setIsFocused]);
+    }, [guardedSave, value, setIsFocused]);
 
     const onFocus = useCallback(() => {
         // On edge-to-edge Android, ignore focus events when emoji search is focused.
@@ -273,6 +301,7 @@ export default function PostInput({
     const handleTextChange = useCallback((newValue: string) => {
         updateValue(newValue);
         lastNativeValue.current = newValue;
+        markEditorEdited(editorKey);
 
         checkMessageLength(newValue);
 
@@ -287,6 +316,7 @@ export default function PostInput({
         }
     }, [
         updateValue,
+        editorKey,
         checkMessageLength,
         timeBetweenUserTypingUpdatesMilliseconds,
         membersInChannel,
@@ -338,11 +368,11 @@ export default function PostInput({
 
     const onAppStateChange = useCallback((appState: AppStateStatus) => {
         if (appState !== 'active' && previousAppState.current === 'active') {
-            updateDraftMessage(serverUrl, channelId, rootId, value);
+            guardedSave(value);
         }
 
         previousAppState.current = appState;
-    }, [serverUrl, channelId, rootId, value]);
+    }, [guardedSave, value]);
 
     useEffect(() => {
         const listener = AppState.addEventListener('change', onAppStateChange);
@@ -364,12 +394,14 @@ export default function PostInput({
         });
         return () => {
             listener.remove();
-            updateDraftMessage(serverUrl, channelId, rootId, lastNativeValue.current); // safe draft on unmount
+            guardedSave(lastNativeValue.current); // guarded draft save on unmount (no-op when clean or invalidated)
+            clearEditor(editorKey);
         };
 
     // - updateValue and updateCursorPosition are stable setState/hook functions
     // - inputRef is a ref (stable reference, doesn't need to be in deps)
     // - serverUrl, value, lastNativeValue are either stable or we want their latest values when event fires
+    // - guardedSave and editorKey are stable per composer; the guard functions are module-level
     // - We need to recreate the listener when channelId/rootId changes to check the correct source screen
     // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [updateValue, channelId, rootId, inputRef]);
@@ -377,8 +409,13 @@ export default function PostInput({
     useEffect(() => {
         if (value !== lastNativeValue.current) {
             lastNativeValue.current = value;
+
+            // An EXTERNAL value change (channel switch, clearDraft, or a remote
+            // update) updates the guard baseline and marks the editor clean, so a
+            // later untouched blur/unmount does NOT resave stale text.
+            resetEditorBaseline(editorKey, value);
         }
-    }, [value]);
+    }, [value, editorKey]);
 
     const events = useMemo(() => ({
         onEnterPressed: handleHardwareEnterPress,

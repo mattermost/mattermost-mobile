@@ -2,7 +2,7 @@
 // See LICENSE.txt for license information.
 
 import {useCallback, useEffect, useMemo, useState} from 'react';
-import {useIntl} from 'react-intl';
+import {defineMessages, useIntl} from 'react-intl';
 import {DeviceEventEmitter} from 'react-native';
 
 import {getChannelTimezones} from '@actions/remote/channel';
@@ -26,6 +26,13 @@ import {showSnackBar} from '@utils/snack_bar';
 import {confirmOutOfOfficeDisabled} from '@utils/user';
 
 import type CustomEmojiModel from '@typings/database/models/servers/custom_emoji';
+
+const messages = defineMessages({
+    burnOnReadSendFailed: {
+        id: 'mobile.burn_on_read.send_failed',
+        defaultMessage: 'This burn-on-read message can\'t be sent right now. Your draft has been saved.',
+    },
+});
 
 export type CreateResponse = {
     data?: boolean;
@@ -133,6 +140,19 @@ export const useHandleSendMessage = ({
             post.type = 'burn_on_read';
         }
 
+        // Fail-closed: a burn-on-read send whose config can't be reconstructed
+        // must NOT fall through to a plain (non-burning) post. Abort without
+        // creating the post and without clearing the draft (which stays saved).
+        if (postBoRConfig?.enabled && (!postBoRConfig || postBoRConfig.borDurationSeconds <= 0 || postBoRConfig.borMaximumTimeToLiveSeconds <= 0)) {
+            showSnackBar({
+                barType: SNACK_BAR_TYPE.CREATE_POST_ERROR,
+                customMessage: intl.formatMessage(messages.burnOnReadSendFailed),
+                type: MESSAGE_TYPE.ERROR,
+            });
+            setSendingMessage(false);
+            return;
+        }
+
         let response: CreateResponse;
         if (schedulingInfo) {
             response = await createScheduledPost(serverUrl, scheduledPostFromPost(post, schedulingInfo, postPriority, postFiles));
@@ -185,7 +205,7 @@ export const useHandleSendMessage = ({
 
         setSendingMessage(false);
         DeviceEventEmitter.emit(Events.POST_LIST_SCROLL_TO_BOTTOM, rootId ? Screens.THREAD : Screens.CHANNEL);
-    }, [files, currentUserId, channelId, rootId, value, postPriority, postBoRConfig?.enabled, isFromDraftView, serverUrl, intl, canPost, channelIsArchived, channelIsReadOnly, deactivatedChannel, clearDraft, onPostCreated]);
+    }, [files, currentUserId, channelId, rootId, value, postPriority, postBoRConfig, isFromDraftView, serverUrl, intl, canPost, channelIsArchived, channelIsReadOnly, deactivatedChannel, clearDraft, onPostCreated]);
 
     const showSendToAllOrChannelOrHereAlert = useCallback((calculatedMembersCount: number, atHere: boolean, schedulingInfo?: SchedulingInfo) => {
         const notifyAllMessage = DraftUtils.buildChannelWideMentionMessage(intl, calculatedMembersCount, channelTimezoneCount, atHere);

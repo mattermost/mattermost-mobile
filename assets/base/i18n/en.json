@@ -669,6 +669,7 @@
   "mobile.burn_on_read.placeholder": "View message",
   "mobile.burn_on_read.read_receipt.text": "Read by {readReceipts} of {totalReceipts} recipients",
   "mobile.burn_on_read.read_receipt.title": "Burn-on-read message",
+  "mobile.burn_on_read.send_failed": "This burn-on-read message can't be sent right now. Your draft has been saved.",
   "mobile.calls_bluetooth": "Bluetooth",
   "mobile.calls_call_ended": "Call ended",
   "mobile.calls_call_screen": "Call",

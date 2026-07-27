@@ -6,6 +6,7 @@ import {Alert, type AlertButton} from 'react-native';
 import {type SwipeableMethods} from 'react-native-gesture-handler/ReanimatedSwipeable';
 
 import {parseMarkdownImages, removeDraft, updateDraftMarkdownImageMetadata, updateDraftMessage} from '@actions/local/draft';
+import {buildEditorKey, invalidateEditor} from '@components/post_draft/editor_guard';
 import {General} from '@constants';
 import {CODE_REGEX} from '@constants/autocomplete';
 
@@ -185,15 +186,23 @@ export const handleDraftUpdate = async ({
     channelId,
     rootId,
     value,
+    isStillValid,
 }: {
     serverUrl: string;
     channelId: string;
     rootId: string;
     value: string;
+    isStillValid?: () => boolean;
 }) => {
     await updateDraftMessage(serverUrl, channelId, rootId, value);
     const imageMetadata: Dictionary<PostImage | undefined> = {};
     await parseMarkdownImages(serverUrl, value, imageMetadata);
+
+    // Discard stale markdown metadata if the editor generation changed (e.g. a
+    // Send/Delete invalidated this composer) while parsing was in flight.
+    if (isStillValid?.() === false) {
+        return;
+    }
 
     if (Object.keys(imageMetadata).length !== 0) {
         updateDraftMarkdownImageMetadata({serverUrl, channelId, rootId, imageMetadata});
@@ -209,6 +218,10 @@ export function deleteDraftConfirmation({intl, serverUrl, channelId, rootId, swi
 }) {
     const deleteDraft = async () => {
         removeDraft(serverUrl, channelId, rootId);
+
+        // Resurrection guard: invalidate the editor generation so deleting an
+        // active composer's draft can't be resurrected by a later lifecycle save.
+        invalidateEditor(buildEditorKey(serverUrl, channelId, rootId));
     };
 
     const onDismiss = () => {

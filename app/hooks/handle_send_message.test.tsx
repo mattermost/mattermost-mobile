@@ -13,11 +13,13 @@ import {createPost} from '@actions/remote/post';
 import {createScheduledPost} from '@actions/remote/scheduled_post';
 import {handleCallsSlashCommand} from '@calls/actions';
 import {Events, Screens} from '@constants';
+import {MESSAGE_TYPE} from '@constants/snack_bar';
 import {useServerUrl} from '@context/server';
 import DatabaseManager from '@database/manager';
 import DraftUploadManager from '@managers/draft_upload_manager';
 import {getPostById} from '@queries/servers/post';
 import * as DraftUtils from '@utils/draft';
+import {showSnackBar} from '@utils/snack_bar';
 
 import {useHandleSendMessage} from './handle_send_message';
 
@@ -690,5 +692,54 @@ describe('useHandleSendMessage', () => {
         );
         expect(defaultProps.clearDraft).toHaveBeenCalled();
         expect(DeviceEventEmitter.emit).toHaveBeenCalledWith(Events.POST_LIST_SCROLL_TO_BOTTOM, Screens.CHANNEL);
+    });
+
+    it('should fail closed for a BoR send with invalid durations without creating a post or clearing the draft', async () => {
+        const props = {
+            ...defaultProps,
+            postBoRConfig: {
+                enabled: true,
+                borDurationSeconds: 0,
+                borMaximumTimeToLiveSeconds: 3600,
+            } as PostBoRConfig,
+        };
+        const {result} = renderHook(() => useHandleSendMessage(props), {wrapper});
+
+        await act(async () => {
+            await result.current.handleSendMessage();
+        });
+
+        expect(createPost).not.toHaveBeenCalled();
+        expect(createScheduledPost).not.toHaveBeenCalled();
+        expect(props.clearDraft).not.toHaveBeenCalled();
+        expect(showSnackBar).toHaveBeenCalledTimes(1);
+        expect(jest.mocked(showSnackBar).mock.calls[0][0]).toEqual(
+            expect.objectContaining({type: MESSAGE_TYPE.ERROR}),
+        );
+    });
+
+    it('should fail closed for a scheduled BoR send with invalid durations without creating a scheduled post', async () => {
+        const schedulingInfo = {
+            scheduled_at: 1234567890,
+            timezone: 'UTC',
+        };
+        const props = {
+            ...defaultProps,
+            postBoRConfig: {
+                enabled: true,
+                borDurationSeconds: 60,
+                borMaximumTimeToLiveSeconds: 0,
+            } as PostBoRConfig,
+        };
+        const {result} = renderHook(() => useHandleSendMessage(props), {wrapper});
+
+        await act(async () => {
+            await result.current.handleSendMessage(schedulingInfo);
+        });
+
+        expect(createScheduledPost).not.toHaveBeenCalled();
+        expect(createPost).not.toHaveBeenCalled();
+        expect(props.clearDraft).not.toHaveBeenCalled();
+        expect(showSnackBar).toHaveBeenCalledTimes(1);
     });
 });

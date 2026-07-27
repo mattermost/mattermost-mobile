@@ -10,6 +10,7 @@ import useFileUploadError from '@hooks/file_upload_error';
 import DraftEditPostUploadManager from '@managers/draft_upload_manager';
 import {fileMaxWarning, fileSizeWarning, getUploadErrorMessage, uploadDisabledWarning} from '@utils/file';
 
+import {buildEditorKey, invalidateEditor} from '../editor_guard';
 import SendHandler from '../send_handler';
 
 import type {ErrorHandlers} from '@typings/components/upload_error_handlers';
@@ -68,6 +69,10 @@ export default function DraftHandler(props: Props) {
 
     const clearDraft = useCallback(() => {
         removeDraft(serverUrl, channelId, rootId);
+
+        // Send/Delete resurrection guard: invalidate the editor generation so a
+        // still-pending lifecycle save cannot recreate the just-cleared draft.
+        invalidateEditor(buildEditorKey(serverUrl, channelId, rootId));
         updateValue('');
     }, [serverUrl, channelId, rootId, updateValue]);
 
