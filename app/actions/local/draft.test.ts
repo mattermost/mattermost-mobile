@@ -1,13 +1,15 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import {Q, type Database} from '@nozbe/watermelondb';
 import {DeviceEventEmitter} from 'react-native';
 
 import {Navigation, Screens} from '@constants';
-import {SYSTEM_IDENTIFIERS} from '@constants/database';
+import {MM_TABLES, SYSTEM_IDENTIFIERS} from '@constants/database';
 import {DRAFT_SCREEN_TAB_DRAFTS, DRAFT_SCREEN_TAB_SCHEDULED_POSTS} from '@constants/draft';
 import {PostTypes} from '@constants/post';
 import DatabaseManager from '@database/manager';
+import {getDraft, getDraftOutbox} from '@queries/servers/drafts';
 import {dismissAllRoutesAndPopToScreen} from '@screens/navigation';
 import {NavigationStore} from '@store/navigation_store';
 import {isTablet} from '@utils/helpers';
@@ -28,6 +30,7 @@ import type ServerDataOperator from '@database/operator/server_data_operator';
 import type DraftModel from '@typings/database/models/servers/draft';
 
 let operator: ServerDataOperator | undefined;
+let database: Database;
 const serverUrl = 'baseHandler.test.com';
 const channelId = 'id1';
 const teamId = 'tId1';
@@ -72,6 +75,7 @@ describe('draft actions', () => {
     beforeEach(async () => {
         await DatabaseManager.init([serverUrl]);
         operator = DatabaseManager.serverDatabases[serverUrl]?.operator;
+        database = DatabaseManager.serverDatabases[serverUrl]!.database;
     });
 
     afterEach(async () => {
@@ -80,12 +84,12 @@ describe('draft actions', () => {
 
     describe('updateDraftFile', () => {
         it('handle not found database', async () => {
-            const {error} = await updateDraftFile('foo', channelId, '', fileInfo, false);
+            const {error} = await updateDraftFile('foo', channelId, '', fileInfo);
             expect(error).toBeTruthy();
         });
 
         it('handle no draft', async () => {
-            const {error} = await updateDraftFile(serverUrl, channelId, '', fileInfo, false);
+            const {error} = await updateDraftFile(serverUrl, channelId, '', fileInfo);
             expect(error).toBeTruthy();
             expect(error).toBe('no draft');
         });
@@ -93,7 +97,7 @@ describe('draft actions', () => {
         it('handle no file', async () => {
             await operator?.handleDraft({drafts: [draft], prepareRecordsOnly: false});
 
-            const {error} = await updateDraftFile(serverUrl, channelId, '', fileInfo, false);
+            const {error} = await updateDraftFile(serverUrl, channelId, '', fileInfo);
             expect(error).toBeTruthy();
             expect(error).toBe('file not found');
         });
@@ -111,12 +115,12 @@ describe('draft actions', () => {
 
     describe('removeDraftFile', () => {
         it('handle not found database', async () => {
-            const {error} = await removeDraftFile('foo', channelId, '', '', false);
+            const {error} = await removeDraftFile('foo', channelId, '', '');
             expect(error).toBeTruthy();
         });
 
         it('handle no draft', async () => {
-            const {error} = await removeDraftFile(serverUrl, channelId, '', 'clientid', false);
+            const {error} = await removeDraftFile(serverUrl, channelId, '', 'clientid');
             expect(error).toBeTruthy();
             expect(error).toBe('no draft');
         });
@@ -124,7 +128,7 @@ describe('draft actions', () => {
         it('handle no file', async () => {
             await operator?.handleDraft({drafts: [draft], prepareRecordsOnly: false});
 
-            const {error} = await removeDraftFile(serverUrl, channelId, '', 'clientid', false);
+            const {error} = await removeDraftFile(serverUrl, channelId, '', 'clientid');
             expect(error).toBeTruthy();
             expect(error).toBe('file not found');
         });
@@ -140,7 +144,7 @@ describe('draft actions', () => {
         it('remove draft file, no message', async () => {
             await operator?.handleDraft({drafts: [{channel_id: channel.id, files: [fileInfo], root_id: '', update_at: Date.now()}], prepareRecordsOnly: false});
 
-            const {draft: draftModel, error} = await removeDraftFile(serverUrl, channelId, '', 'clientid', false);
+            const {draft: draftModel, error} = await removeDraftFile(serverUrl, channelId, '', 'clientid');
             expect(error).toBeUndefined();
             expect(draftModel).toBeDefined();
         });
@@ -148,21 +152,27 @@ describe('draft actions', () => {
 
     describe('updateDraftMessage', () => {
         it('handle not found database', async () => {
-            const result = await updateDraftMessage('foo', channelId, '', 'newmessage', false) as {draft: unknown; error: unknown};
+            const result = await updateDraftMessage('foo', channelId, '', 'newmessage') as {draft: unknown; error: unknown};
             expect(result.error).toBeDefined();
             expect(result.draft).toBeUndefined();
         });
 
         it('update draft message, blank message, no draft', async () => {
-            const result = await updateDraftMessage(serverUrl, channelId, '', '', false) as {draft: unknown; error: unknown};
+            const result = await updateDraftMessage(serverUrl, channelId, '', '') as {draft: unknown; error: unknown};
             expect(result.error).toBeUndefined();
             expect(result.draft).toBeUndefined();
         });
 
         it('update draft message, no draft', async () => {
-            const models = await updateDraftMessage(serverUrl, channelId, '', 'newmessage', false) as DraftModel[];
-            expect(models).toBeDefined();
-            expect(models?.length).toBe(1);
+            const result = await updateDraftMessage(serverUrl, channelId, '', 'newmessage') as {draft: DraftModel; error: unknown};
+            expect(result.error).toBeUndefined();
+            expect(result.draft).toBeDefined();
+            expect(result.draft.message).toBe('newmessage');
+
+            const outbox = await getDraftOutbox(database, channelId, '');
+            expect(outbox?.operation).toBe('upsert');
+            expect(outbox?.generation).toBe(1);
+            expect(outbox?.status).toBe('pending');
         });
 
         it('update draft message', async () => {
@@ -177,7 +187,7 @@ describe('draft actions', () => {
         it('update draft message, same message', async () => {
             await operator?.handleDraft({drafts: [{...draft, files: [fileInfo]}], prepareRecordsOnly: false});
 
-            const result = await updateDraftMessage(serverUrl, channelId, '', 'test', false) as {draft: DraftModel; error: unknown};
+            const result = await updateDraftMessage(serverUrl, channelId, '', 'test') as {draft: DraftModel; error: unknown};
             expect(result.error).toBeUndefined();
             expect(result.draft).toBeDefined();
             expect(result.draft.message).toBe('test');
@@ -186,7 +196,7 @@ describe('draft actions', () => {
         it('update draft message, no file', async () => {
             await operator?.handleDraft({drafts: [{channel_id: channel.id, files: [], root_id: '', update_at: Date.now()}], prepareRecordsOnly: false});
 
-            const result = await updateDraftMessage(serverUrl, channelId, '', 'newmessage', false) as {draft: DraftModel; error: unknown};
+            const result = await updateDraftMessage(serverUrl, channelId, '', 'newmessage') as {draft: DraftModel; error: unknown};
             expect(result.error).toBeUndefined();
             expect(result.draft).toBeDefined();
             expect(result.draft.message).toBe('newmessage');
@@ -195,15 +205,16 @@ describe('draft actions', () => {
 
     describe('addFilesToDraft', () => {
         it('handle not found database', async () => {
-            const result = await addFilesToDraft('foo', channelId, '', [], false) as {draft: unknown; error: unknown};
+            const result = await addFilesToDraft('foo', channelId, '', []) as {draft: unknown; error: unknown};
             expect(result.error).toBeDefined();
             expect(result.draft).toBeUndefined();
         });
 
         it('add draft files, no draft', async () => {
-            const models = await addFilesToDraft(serverUrl, channelId, '', [fileInfo], false) as DraftModel[];
-            expect(models).toBeDefined();
-            expect(models?.length).toBe(1);
+            const result = await addFilesToDraft(serverUrl, channelId, '', [fileInfo]) as {draft: DraftModel; error: unknown};
+            expect(result.error).toBeUndefined();
+            expect(result.draft).toBeDefined();
+            expect(result.draft.files.length).toBe(1);
         });
 
         it('add draft files', async () => {
@@ -258,10 +269,16 @@ describe('draft actions', () => {
         });
 
         it('handle no draft', async () => {
-            const models = await updateDraftPriority(serverUrl, channelId, '', postPriority) as DraftModel[];
-            expect(models).toBeDefined();
-            expect(models.length).toBe(1);
-            expect(models[0].metadata?.priority?.priority).toBe(postPriority.priority);
+            const result = await updateDraftPriority(serverUrl, channelId, '', postPriority) as {draft: DraftModel; error: unknown};
+            expect(result.error).toBeUndefined();
+            expect(result.draft).toBeDefined();
+            expect(result.draft.metadata?.priority?.priority).toBe(postPriority.priority);
+
+            // Priority-only draft with an empty message is unsyncable: it is parked, never pending.
+            const outbox = await getDraftOutbox(database, channelId, '');
+            expect(outbox?.operation).toBe('upsert');
+            expect(outbox?.status).toBe('blocked');
+            expect(outbox?.lastErrorCode).toBe('unsyncable_empty');
         });
 
         it('update draft priority', async () => {
@@ -271,6 +288,150 @@ describe('draft actions', () => {
             expect(result.error).toBeUndefined();
             expect(result.draft).toBeDefined();
             expect(result.draft.metadata?.priority?.priority).toBe(postPriority.priority);
+        });
+    });
+
+    describe('draft outbox synchronization intents', () => {
+        const {DRAFT, DRAFT_OUTBOX} = MM_TABLES.SERVER;
+        const uploadingFile = {clientId: 'up1', localPath: 'path1'} as FileInfo;
+        const completedFile = {id: 'srvid1', clientId: 'up1', localPath: 'path1'} as FileInfo;
+
+        const countOutbox = async () => {
+            const rows = await database.get(DRAFT_OUTBOX).query(Q.where('channel_id', channelId)).fetch();
+            return rows.length;
+        };
+
+        it('creates one Draft and one pending upsert outbox on the first non-empty edit', async () => {
+            await updateDraftMessage(serverUrl, channelId, '', 'hello');
+
+            const drafts = await database.get(DRAFT).query(Q.where('channel_id', channelId)).fetch();
+            expect(drafts.length).toBe(1);
+            expect(await countOutbox()).toBe(1);
+
+            const outbox = await getDraftOutbox(database, channelId, '');
+            expect(outbox?.operation).toBe('upsert');
+            expect(outbox?.generation).toBe(1);
+            expect(outbox?.status).toBe('pending');
+            expect(outbox?.attemptCount).toBe(0);
+        });
+
+        it('coalesces repeated edits into a single outbox with an incrementing generation', async () => {
+            await updateDraftMessage(serverUrl, channelId, '', 'a');
+            await updateDraftMessage(serverUrl, channelId, '', 'b');
+            await updateDraftMessage(serverUrl, channelId, '', 'c');
+
+            expect(await countOutbox()).toBe(1);
+            const outbox = await getDraftOutbox(database, channelId, '');
+            expect(outbox?.operation).toBe('upsert');
+            expect(outbox?.generation).toBe(3);
+            expect(outbox?.status).toBe('pending');
+        });
+
+        it('removeDraft destroys the draft and queues a non-keepLocal delete with a fingerprint', async () => {
+            await operator?.handleDraft({drafts: [draft], prepareRecordsOnly: false});
+
+            await removeDraft(serverUrl, channelId);
+
+            expect(await getDraft(database, channelId, '')).toBeUndefined();
+            const outbox = await getDraftOutbox(database, channelId, '');
+            expect(outbox?.operation).toBe('delete');
+            expect(outbox?.keepLocal).toBe(false);
+            expect(typeof outbox?.deletedFingerprint).toBe('string');
+            expect(outbox?.deletedFingerprint?.length).toBeGreaterThan(0);
+        });
+
+        it('clears a synchronized draft to a keepLocal delete while retaining the visible attachment', async () => {
+            await database.write(async () => {
+                await database.get<DraftModel>(DRAFT).create((d) => {
+                    d.channelId = channelId;
+                    d.rootId = '';
+                    d.message = 'server text';
+                    d.updateAt = 1;
+                    d.serverUpdateAt = 500;
+                    d.files = [fileInfo];
+                    d.fileIds = ['fileid'];
+                });
+            });
+
+            await updateDraftMessage(serverUrl, channelId, '', '');
+
+            const retained = await getDraft(database, channelId, '');
+            expect(retained).toBeDefined();
+            expect(retained?.message).toBe('');
+            expect(retained?.files.length).toBe(1);
+
+            const outbox = await getDraftOutbox(database, channelId, '');
+            expect(outbox?.operation).toBe('delete');
+            expect(outbox?.keepLocal).toBe(true);
+            expect(outbox?.deletedFingerprint?.length).toBeGreaterThan(0);
+        });
+
+        it('parks an attachment-only draft that was never server-backed instead of enqueuing a delete', async () => {
+            // fileInfo carries a server id, so the attachment is completed but the message is empty.
+            await addFilesToDraft(serverUrl, channelId, '', [fileInfo]);
+
+            const retained = await getDraft(database, channelId, '');
+            expect(retained).toBeDefined();
+            expect(retained?.files.length).toBe(1);
+
+            const outbox = await getDraftOutbox(database, channelId, '');
+            expect(outbox?.operation).toBe('upsert');
+            expect(outbox?.status).toBe('blocked');
+            expect(outbox?.lastErrorCode).toBe('unsyncable_empty');
+        });
+
+        it('protects an in-progress upload with waiting_for_upload, then parks it on completion when empty', async () => {
+            await addFilesToDraft(serverUrl, channelId, '', [uploadingFile]);
+
+            let outbox = await getDraftOutbox(database, channelId, '');
+            expect(outbox?.status).toBe('waiting_for_upload');
+            expect(outbox?.operation).toBe('upsert');
+
+            await updateDraftFile(serverUrl, channelId, '', completedFile);
+
+            const retained = await getDraft(database, channelId, '');
+            expect(retained?.fileIds).toEqual(['srvid1']);
+
+            // Upload finished but the message is still empty, so it cannot POST -> parked.
+            outbox = await getDraftOutbox(database, channelId, '');
+            expect(outbox?.status).toBe('blocked');
+            expect(outbox?.lastErrorCode).toBe('unsyncable_empty');
+            expect(await countOutbox()).toBe(1);
+        });
+
+        it('flips a pending delete back to a reset pending upsert on a genuine edit', async () => {
+            await updateDraftMessage(serverUrl, channelId, '', 'hello');
+            await removeDraft(serverUrl, channelId);
+
+            const deleteOutbox = await getDraftOutbox(database, channelId, '');
+            expect(deleteOutbox?.operation).toBe('delete');
+
+            await updateDraftMessage(serverUrl, channelId, '', 'world');
+
+            const draftAfter = await getDraft(database, channelId, '');
+            expect(draftAfter?.message).toBe('world');
+
+            const outbox = await getDraftOutbox(database, channelId, '');
+            expect(outbox?.operation).toBe('upsert');
+            expect(outbox?.status).toBe('pending');
+            expect(outbox?.generation).toBe(3);
+            expect(outbox?.deletedFingerprint).toBeNull();
+            expect(outbox?.keepLocal).toBe(false);
+            expect(outbox?.attemptCount).toBe(0);
+            expect(await countOutbox()).toBe(1);
+        });
+
+        it('does not create an outbox row for device-local markdown image metadata', async () => {
+            await operator?.handleDraft({drafts: [draft], prepareRecordsOnly: false});
+
+            await updateDraftMarkdownImageMetadata({
+                serverUrl,
+                channelId,
+                rootId: '',
+                imageMetadata: {image1: {height: 1, width: 1, format: 'png', frame_count: 1}},
+            });
+
+            expect(await countOutbox()).toBe(0);
         });
     });
 
@@ -435,6 +596,7 @@ describe('updateDraftBoRConfig', () => {
     beforeEach(async () => {
         await DatabaseManager.init([serverUrl]);
         operator = DatabaseManager.serverDatabases[serverUrl]?.operator;
+        database = DatabaseManager.serverDatabases[serverUrl]!.database;
     });
 
     afterEach(async () => {
@@ -447,12 +609,17 @@ describe('updateDraftBoRConfig', () => {
     });
 
     it('handle no draft', async () => {
-        const models = await updateDraftBoRConfig(serverUrl, channelId, '', postBoRConfig) as DraftModel[];
-        expect(models).toBeDefined();
-        expect(models.length).toBe(1);
-        expect(models[0].metadata?.borConfig?.enabled).toBe(postBoRConfig.enabled);
-        expect(models[0].metadata?.borConfig?.borDurationSeconds).toBe(postBoRConfig.borDurationSeconds);
-        expect(models[0].type).toBe(PostTypes.BURN_ON_READ);
+        const result = await updateDraftBoRConfig(serverUrl, channelId, '', postBoRConfig) as {draft: DraftModel; error: unknown};
+        expect(result.error).toBeUndefined();
+        expect(result.draft).toBeDefined();
+        expect(result.draft.metadata?.borConfig?.enabled).toBe(postBoRConfig.enabled);
+        expect(result.draft.metadata?.borConfig?.borDurationSeconds).toBe(postBoRConfig.borDurationSeconds);
+        expect(result.draft.type).toBe(PostTypes.BURN_ON_READ);
+
+        // Burn-on-read-only draft with an empty message is unsyncable: parked, never pending.
+        const outbox = await getDraftOutbox(database, channelId, '');
+        expect(outbox?.status).toBe('blocked');
+        expect(outbox?.lastErrorCode).toBe('unsyncable_empty');
     });
 
     it('update draft BoR config with enabled true', async () => {

@@ -5,13 +5,17 @@ import {Image} from 'expo-image';
 import {DeviceEventEmitter} from 'react-native';
 
 import {Navigation, Screens} from '@constants';
+import {MM_TABLES} from '@constants/database';
+import {DraftOutboxOperation, DraftOutboxStatus, type DraftScreenTab} from '@constants/draft';
 import {PostTypes} from '@constants/post';
 import DatabaseManager from '@database/manager';
-import {getDraft} from '@queries/servers/drafts';
+import {getChannelById} from '@queries/servers/channel';
+import {mutateDraftAndOutbox, prepareDraftOutbox, type OutboxIntent} from '@queries/servers/drafts';
 import {getCurrentTeamId, setCurrentTeamAndChannelId} from '@queries/servers/system';
 import {addChannelToTeamHistory} from '@queries/servers/team';
 import {dismissAllRoutesAndPopToScreen} from '@screens/navigation';
 import {NavigationStore} from '@store/navigation_store';
+import {draftContentFingerprint} from '@utils/draft/sync';
 import {getExtensionFromMime} from '@utils/file';
 import {isTablet} from '@utils/helpers';
 import {logError} from '@utils/log';
@@ -19,8 +23,91 @@ import {removeImageProxyForKey} from '@utils/markdown';
 import {urlSafeBase64Encode} from '@utils/security';
 import {isParsableUrl} from '@utils/url';
 
-import type {DraftScreenTab} from '@constants/draft';
-import type {Model} from '@nozbe/watermelondb';
+import type {Database, Model} from '@nozbe/watermelondb';
+import type DraftModel from '@typings/database/models/servers/draft';
+import type DraftOutboxModel from '@typings/database/models/servers/draft_outbox';
+
+const {SERVER: {DRAFT}} = MM_TABLES;
+
+/**
+ * resolveTeamScope: the team scope stamped onto a new/updated DraftOutbox row for a channel.
+ * DM/GM channels already carry an empty teamId, and a missing channel falls back to '' too.
+ */
+const resolveTeamScope = async (database: Database, channelId: string): Promise<string> => {
+    const channel = await getChannelById(database, channelId);
+    return channel?.teamId ?? '';
+};
+
+/**
+ * fingerprintDraft: fingerprint the current server-visible content of a Draft so a queued DELETE
+ * can later distinguish a stale replica echo from genuinely new content.
+ */
+const fingerprintDraft = (draft: DraftModel): string => {
+    return draftContentFingerprint({
+        message: draft.message,
+        type: draft.type,
+        props: draft.props,
+        fileIds: draft.fileIds ?? [],
+        priority: draft.metadata?.priority,
+    });
+};
+
+/**
+ * prepareEmptyTransition: shared handling for a Draft whose visible content just became empty
+ * (message '' and, for the caller to decide, possibly no files). Produces the Draft + DraftOutbox
+ * records for the three empty branches:
+ *  - potentiallyDispatched: the draft may exist on the server, so enqueue a DELETE (keepLocal when
+ *    local-only content such as attachments remains) and either retain the visible draft (message
+ *    cleared) or destroy it.
+ *  - not dispatched but local content remains: park a blocked/unsyncable_empty outbox and retain
+ *    the visible draft; never enqueue a delete for something the server never saw.
+ *  - not dispatched and nothing local worth keeping: destroy the draft and drop any outbox row.
+ */
+const prepareEmptyTransition = async (
+    database: Database,
+    channelId: string,
+    rootId: string,
+    draft: DraftModel,
+    outbox: DraftOutboxModel | undefined,
+    hasLocalContent: boolean,
+): Promise<Model[]> => {
+    const teamId = await resolveTeamScope(database, channelId);
+    const potentiallyDispatched = (outbox != null && outbox.operation === DraftOutboxOperation.Upsert) || ((draft.serverUpdateAt ?? 0) > 0);
+
+    if (potentiallyDispatched) {
+        const deletedFingerprint = fingerprintDraft(draft);
+        const models: Model[] = [];
+        if (hasLocalContent) {
+            models.push(draft.prepareUpdate((d) => {
+                d.message = '';
+                d.updateAt = Date.now();
+            }));
+        } else {
+            models.push(draft.prepareDestroyPermanently());
+        }
+        models.push(...prepareDraftOutbox(database, channelId, rootId, teamId, outbox, {
+            type: 'delete',
+            keepLocal: hasLocalContent,
+            deletedFingerprint,
+        }));
+        return models;
+    }
+
+    if (hasLocalContent) {
+        return [
+            draft.prepareUpdate((d) => {
+                d.message = '';
+                d.updateAt = Date.now();
+            }),
+            ...prepareDraftOutbox(database, channelId, rootId, teamId, outbox, {type: 'park'}),
+        ];
+    }
+
+    return [
+        draft.prepareDestroyPermanently(),
+        ...prepareDraftOutbox(database, channelId, rootId, teamId, outbox, {type: 'remove'}),
+    ];
+};
 
 type goToScreenParams = {
     initialTab?: DraftScreenTab;
@@ -73,140 +160,250 @@ export const switchToGlobalDrafts = async (serverUrl: string, teamId?: string, i
     }
 };
 
-export async function updateDraftFile(serverUrl: string, channelId: string, rootId: string, file: FileInfo, prepareRecordsOnly = false) {
+export async function updateDraftFile(serverUrl: string, channelId: string, rootId: string, file: FileInfo) {
     try {
-        const {database, operator} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
-        const draft = await getDraft(database, channelId, rootId);
-        if (!draft) {
-            return {error: 'no draft'};
-        }
+        const {database} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
+        let result: DraftModel | undefined;
+        let earlyError: string | undefined;
 
-        const i = draft.files.findIndex((v) => v.clientId === file.clientId);
-        if (i === -1) {
-            return {error: 'file not found'};
-        }
+        await mutateDraftAndOutbox(database, channelId, rootId, async ({draft, outbox}) => {
+            if (!draft) {
+                earlyError = 'no draft';
+                return [];
+            }
 
-        // We create a new list to make sure we re-render the draft input.
-        const newFiles = [...draft.files];
-        newFiles[i] = file;
-        draft.prepareUpdate((d) => {
-            d.files = newFiles;
-            d.updateAt = Date.now();
+            const i = draft.files.findIndex((v) => v.clientId === file.clientId);
+            if (i === -1) {
+                earlyError = 'file not found';
+                return [];
+            }
+
+            result = draft;
+
+            // We create a new list to make sure we re-render the draft input.
+            const newFiles = [...draft.files];
+            newFiles[i] = file;
+
+            const existingFileIds = draft.fileIds ?? [];
+            const completedId = file.id;
+
+            if (completedId && !existingFileIds.includes(completedId)) {
+                // Upload finished: the attachment now has a portable server id. Persist it, then
+                // coalesce a pending upsert when the draft can POST (message present) or park it as
+                // unsyncable_empty when the message is still empty (attachments alone never POST).
+                const newFileIds = [...existingFileIds, completedId];
+                const teamId = await resolveTeamScope(database, channelId);
+                const intent: OutboxIntent = draft.message.length > 0 ? {type: 'upsert'} : {type: 'park'};
+                return [
+                    draft.prepareUpdate((d) => {
+                        d.files = newFiles;
+                        d.fileIds = newFileIds;
+                        d.updateAt = Date.now();
+                    }),
+                    ...prepareDraftOutbox(database, channelId, rootId, teamId, outbox, intent),
+                ];
+            }
+
+            // Progress-only, device-local change: update the visible files but do not bump the
+            // portable generation or disturb an existing waiting_for_upload outbox.
+            return [draft.prepareUpdate((d) => {
+                d.files = newFiles;
+                d.updateAt = Date.now();
+            })];
         });
 
-        if (!prepareRecordsOnly) {
-            await operator.batchRecords([draft], 'updateDraftFile');
+        if (earlyError) {
+            return {error: earlyError};
         }
 
-        return {draft};
+        return {draft: result};
     } catch (error) {
         logError('Failed updateDraftFile', error);
         return {error};
     }
 }
 
-export async function removeDraftFile(serverUrl: string, channelId: string, rootId: string, clientId: string, prepareRecordsOnly = false) {
+export async function removeDraftFile(serverUrl: string, channelId: string, rootId: string, clientId: string) {
     try {
-        const {database, operator} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
-        const draft = await getDraft(database, channelId, rootId);
-        if (!draft) {
-            return {error: 'no draft'};
-        }
+        const {database} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
+        let result: DraftModel | undefined;
+        let earlyError: string | undefined;
 
-        const i = draft.files.findIndex((v) => v.clientId === clientId);
-        if (i === -1) {
-            return {error: 'file not found'};
-        }
+        await mutateDraftAndOutbox(database, channelId, rootId, async ({draft, outbox}) => {
+            if (!draft) {
+                earlyError = 'no draft';
+                return [];
+            }
 
-        if (draft.files.length === 1 && !draft.message) {
-            draft.prepareDestroyPermanently();
-        } else {
-            draft.prepareUpdate((d) => {
-                d.files = draft.files.filter((v, index) => index !== i);
+            const i = draft.files.findIndex((v) => v.clientId === clientId);
+            if (i === -1) {
+                earlyError = 'file not found';
+                return [];
+            }
+
+            result = draft;
+
+            const removed = draft.files[i];
+            const newFiles = draft.files.filter((v, index) => index !== i);
+            const existingFileIds = draft.fileIds ?? [];
+            const newFileIds = removed.id ? existingFileIds.filter((id) => id !== removed.id) : existingFileIds;
+            const portableChanged = newFileIds.length !== existingFileIds.length;
+
+            // Removing the last file with no message empties the draft: run the shared transition.
+            if (newFiles.length === 0 && !draft.message) {
+                return prepareEmptyTransition(database, channelId, rootId, draft, outbox, false);
+            }
+
+            const models: Model[] = [draft.prepareUpdate((d) => {
+                d.files = newFiles;
+                if (removed.id) {
+                    d.fileIds = newFileIds;
+                }
                 d.updateAt = Date.now();
-            });
+            })];
+
+            if (portableChanged) {
+                // A completed (portable) attachment was removed -> portable content changed. It can
+                // sync when the message can POST, otherwise it stays parked as unsyncable_empty.
+                const teamId = await resolveTeamScope(database, channelId);
+                const intent: OutboxIntent = draft.message.length > 0 ? {type: 'upsert'} : {type: 'park'};
+                models.push(...prepareDraftOutbox(database, channelId, rootId, teamId, outbox, intent));
+            } else if (
+                outbox &&
+                draft.message.length === 0 &&
+                newFileIds.length === 0 &&
+                (outbox.status === DraftOutboxStatus.WaitingForUpload || outbox.status === DraftOutboxStatus.BlockedUpload)
+            ) {
+                // Removed a still-uploading/failed attachment and nothing portable remains: there is
+                // nothing to POST, so drop the outbox row rather than leaving a stale upload intent.
+                const teamId = await resolveTeamScope(database, channelId);
+                models.push(...prepareDraftOutbox(database, channelId, rootId, teamId, outbox, {type: 'remove'}));
+            }
+
+            return models;
+        });
+
+        if (earlyError) {
+            return {error: earlyError};
         }
 
-        if (!prepareRecordsOnly) {
-            await operator.batchRecords([draft], 'removeDraftFile');
-        }
-
-        return {draft};
+        return {draft: result};
     } catch (error) {
         logError('Failed removeDraftFile', error);
         return {error};
     }
 }
 
-export async function updateDraftMessage(serverUrl: string, channelId: string, rootId: string, message: string, prepareRecordsOnly = false) {
+export async function updateDraftMessage(serverUrl: string, channelId: string, rootId: string, message: string) {
     try {
-        const {database, operator} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
-        const draft = await getDraft(database, channelId, rootId);
-        if (!draft) {
-            if (!message) {
-                return {};
+        const {database} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
+        let result: DraftModel | undefined;
+
+        await mutateDraftAndOutbox(database, channelId, rootId, async ({draft, outbox}) => {
+            if (!draft) {
+                if (!message) {
+                    return [];
+                }
+
+                // First content edit for this key: create the visible draft and a pending upsert.
+                const teamId = await resolveTeamScope(database, channelId);
+                const created = database.collections.get<DraftModel>(DRAFT).prepareCreate((d) => {
+                    d.channelId = channelId;
+                    d.rootId = rootId;
+                    d.message = message;
+                    d.updateAt = Date.now();
+                    d.files = [];
+                    d.fileIds = [];
+                });
+                result = created;
+                return [created, ...prepareDraftOutbox(database, channelId, rootId, teamId, outbox, {type: 'upsert'})];
             }
 
-            const newDraft: Draft = {
-                channel_id: channelId,
-                root_id: rootId,
-                message,
-                update_at: Date.now(),
-            };
+            result = draft;
 
-            return operator.handleDraft({drafts: [newDraft], prepareRecordsOnly});
-        }
+            if (draft.message === message) {
+                // No content change (covers the empty-stays-empty stale-cleanup no-op too).
+                return [];
+            }
 
-        if (draft.message === message) {
-            return {draft};
-        }
+            if (message) {
+                // A genuine content edit; coalesce a pending upsert (flips a delete/blocked back to pending).
+                const teamId = await resolveTeamScope(database, channelId);
+                return [
+                    draft.prepareUpdate((d) => {
+                        d.message = message;
+                        d.updateAt = Date.now();
+                    }),
+                    ...prepareDraftOutbox(database, channelId, rootId, teamId, outbox, {type: 'upsert'}),
+                ];
+            }
 
-        if (draft.files.length === 0 && !message) {
-            draft.prepareDestroyPermanently();
-        } else {
-            draft.prepareUpdate((d) => {
-                d.message = message;
-                d.updateAt = Date.now();
-            });
-        }
+            // Message cleared to empty: attachment-only content stays visible, everything else empties.
+            const hasLocalContent = draft.files.length > 0;
+            return prepareEmptyTransition(database, channelId, rootId, draft, outbox, hasLocalContent);
+        });
 
-        if (!prepareRecordsOnly) {
-            await operator.batchRecords([draft], 'updateDraftMessage');
-        }
-
-        return {draft};
+        return {draft: result};
     } catch (error) {
         logError('Failed updateDraftMessage', error);
         return {error};
     }
 }
 
-export async function addFilesToDraft(serverUrl: string, channelId: string, rootId: string, files: FileInfo[], prepareRecordsOnly = false) {
+export async function addFilesToDraft(serverUrl: string, channelId: string, rootId: string, files: FileInfo[]) {
     try {
-        const {database, operator} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
-        const draft = await getDraft(database, channelId, rootId);
-        if (!draft) {
-            const newDraft: Draft = {
-                channel_id: channelId,
-                root_id: rootId,
-                files,
-                message: '',
-                update_at: Date.now(),
-            };
+        const {database} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
+        let result: DraftModel | undefined;
 
-            return operator.handleDraft({drafts: [newDraft], prepareRecordsOnly});
-        }
+        await mutateDraftAndOutbox(database, channelId, rootId, async ({draft, outbox}) => {
+            const teamId = await resolveTeamScope(database, channelId);
 
-        draft.prepareUpdate((d) => {
-            d.files = [...draft.files, ...files];
-            d.updateAt = Date.now();
+            // Newly-added attachments usually have no server id yet; capture any that already do.
+            const addedCompletedIds = files.filter((f): f is FileInfo & {id: string} => Boolean(f.id)).map((f) => f.id);
+
+            const message = draft?.message ?? '';
+            const existingFileIds = draft?.fileIds ?? [];
+            const newFileIds = Array.from(new Set([...existingFileIds, ...addedCompletedIds]));
+
+            const models: Model[] = [];
+            if (draft) {
+                result = draft;
+                models.push(draft.prepareUpdate((d) => {
+                    d.files = [...draft.files, ...files];
+                    d.fileIds = newFileIds;
+                    d.updateAt = Date.now();
+                }));
+            } else {
+                const created = database.collections.get<DraftModel>(DRAFT).prepareCreate((d) => {
+                    d.channelId = channelId;
+                    d.rootId = rootId;
+                    d.message = '';
+                    d.updateAt = Date.now();
+                    d.files = files;
+                    d.fileIds = newFileIds;
+                });
+                result = created;
+                models.push(created);
+            }
+
+            // An empty message can never POST, so attachments alone are never a pending upsert:
+            //  - message present -> pending upsert (portable).
+            //  - empty message but a completed (server-backed) attachment -> parked unsyncable_empty.
+            //  - empty message with only in-progress uploads -> waiting_for_upload to protect them.
+            let intent: OutboxIntent;
+            if (message.length > 0) {
+                intent = {type: 'upsert'};
+            } else if (newFileIds.length > 0) {
+                intent = {type: 'park'};
+            } else {
+                intent = {type: 'waitingForUpload'};
+            }
+            models.push(...prepareDraftOutbox(database, channelId, rootId, teamId, outbox, intent));
+
+            return models;
         });
 
-        if (!prepareRecordsOnly) {
-            await operator.batchRecords([draft], 'addFilesToDraft');
-        }
-
-        return {draft};
+        return {draft: result};
     } catch (error) {
         logError('Failed addFilesToDraft', error);
         return {error};
@@ -216,97 +413,131 @@ export async function addFilesToDraft(serverUrl: string, channelId: string, root
 export const removeDraft = async (serverUrl: string, channelId: string, rootId = '') => {
     try {
         const {database} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
-        const draft = await getDraft(database, channelId, rootId);
-        if (draft) {
-            await database.write(async () => {
-                await draft.destroyPermanently();
-            });
-        }
+        let result: DraftModel | undefined;
 
-        return {draft};
+        await mutateDraftAndOutbox(database, channelId, rootId, async ({draft, outbox}) => {
+            if (!draft) {
+                return [];
+            }
+
+            result = draft;
+
+            // Explicit user delete: fingerprint the current content, remove the visible draft, and
+            // queue a non-keepLocal DELETE so the server representation is removed too.
+            const deletedFingerprint = fingerprintDraft(draft);
+            const teamId = await resolveTeamScope(database, channelId);
+            return [
+                draft.prepareDestroyPermanently(),
+                ...prepareDraftOutbox(database, channelId, rootId, teamId, outbox, {
+                    type: 'delete',
+                    keepLocal: false,
+                    deletedFingerprint,
+                }),
+            ];
+        });
+
+        return {draft: result};
     } catch (error) {
         logError('Failed removeDraft', error);
         return {error};
     }
 };
 
-export async function updateDraftPriority(serverUrl: string, channelId: string, rootId: string, postPriority: PostPriority, prepareRecordsOnly = false) {
+export async function updateDraftPriority(serverUrl: string, channelId: string, rootId: string, postPriority: PostPriority) {
     try {
-        const {database, operator} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
-        const draft = await getDraft(database, channelId, rootId);
-        if (!draft) {
-            const newDraft: Draft = {
-                channel_id: channelId,
-                root_id: rootId,
-                metadata: {
-                    priority: postPriority,
-                },
-                update_at: Date.now(),
-            };
+        const {database} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
+        let result: DraftModel | undefined;
 
-            return operator.handleDraft({drafts: [newDraft], prepareRecordsOnly});
-        }
+        await mutateDraftAndOutbox(database, channelId, rootId, async ({draft, outbox}) => {
+            const teamId = await resolveTeamScope(database, channelId);
 
-        draft.prepareUpdate((d) => {
-            d.metadata = {
-                ...d.metadata,
-                priority: postPriority,
-            };
-            d.updateAt = Date.now();
+            let message: string;
+            const models: Model[] = [];
+            if (draft) {
+                result = draft;
+                message = draft.message;
+                models.push(draft.prepareUpdate((d) => {
+                    d.metadata = {
+                        ...d.metadata,
+                        priority: postPriority,
+                    };
+                    d.updateAt = Date.now();
+                }));
+            } else {
+                const created = database.collections.get<DraftModel>(DRAFT).prepareCreate((d) => {
+                    d.channelId = channelId;
+                    d.rootId = rootId;
+                    d.message = '';
+                    d.updateAt = Date.now();
+                    d.files = [];
+                    d.fileIds = [];
+                    d.metadata = {priority: postPriority};
+                });
+                result = created;
+                models.push(created);
+                message = '';
+            }
+
+            // Priority is portable metadata, but an empty message can never POST: keep it parked
+            // as unsyncable until a genuine message edit flips it to a pending upsert.
+            const intent = message.length > 0 ? {type: 'upsert'} as const : {type: 'park'} as const;
+            models.push(...prepareDraftOutbox(database, channelId, rootId, teamId, outbox, intent));
+            return models;
         });
 
-        if (!prepareRecordsOnly) {
-            await operator.batchRecords([draft], 'updateDraftPriority');
-        }
-
-        return {draft};
+        return {draft: result};
     } catch (error) {
         logError('Failed updateDraftPriority', error);
         return {error};
     }
 }
 
-export async function updateDraftBoRConfig(serverUrl: string, channelId: string, rootId: string, postBoRConfig: PostBoRConfig, prepareRecordsOnly = false) {
+export async function updateDraftBoRConfig(serverUrl: string, channelId: string, rootId: string, postBoRConfig: PostBoRConfig) {
     try {
-        const {database, operator} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
-        const draft = await getDraft(database, channelId, rootId);
-        if (!draft) {
-            const newDraft: Draft = {
-                channel_id: channelId,
-                root_id: rootId,
-                update_at: Date.now(),
-                metadata: {
-                    borConfig: postBoRConfig,
-                },
-            };
+        const {database} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
+        let result: DraftModel | undefined;
+        const draftType = postBoRConfig.enabled ? PostTypes.BURN_ON_READ : '';
 
-            if (postBoRConfig.enabled) {
-                newDraft.type = PostTypes.BURN_ON_READ;
+        await mutateDraftAndOutbox(database, channelId, rootId, async ({draft, outbox}) => {
+            const teamId = await resolveTeamScope(database, channelId);
+
+            let message: string;
+            const models: Model[] = [];
+            if (draft) {
+                result = draft;
+                message = draft.message;
+                models.push(draft.prepareUpdate((d) => {
+                    d.metadata = {
+                        ...d.metadata,
+                        borConfig: postBoRConfig,
+                    };
+                    d.type = draftType;
+                    d.updateAt = Date.now();
+                }));
             } else {
-                newDraft.type = '';
+                const created = database.collections.get<DraftModel>(DRAFT).prepareCreate((d) => {
+                    d.channelId = channelId;
+                    d.rootId = rootId;
+                    d.message = '';
+                    d.updateAt = Date.now();
+                    d.files = [];
+                    d.fileIds = [];
+                    d.metadata = {borConfig: postBoRConfig};
+                    d.type = draftType;
+                });
+                result = created;
+                models.push(created);
+                message = '';
             }
 
-            return operator.handleDraft({drafts: [newDraft], prepareRecordsOnly});
-        }
-
-        draft?.prepareUpdate((d) => {
-            d.metadata = {
-                ...d.metadata,
-                borConfig: postBoRConfig,
-            };
-
-            if (postBoRConfig.enabled) {
-                d.type = PostTypes.BURN_ON_READ;
-            } else {
-                d.type = '';
-            }
+            // Burn-on-read is portable metadata, but an empty message can never POST: park it as
+            // unsyncable until a genuine message edit flips it to a pending upsert.
+            const intent = message.length > 0 ? {type: 'upsert'} as const : {type: 'park'} as const;
+            models.push(...prepareDraftOutbox(database, channelId, rootId, teamId, outbox, intent));
+            return models;
         });
 
-        if (!prepareRecordsOnly) {
-            await operator.batchRecords([draft], 'updateDraftBoRConfig');
-        }
-
-        return {draft};
+        return {draft: result};
     } catch (error) {
         logError('Failed updateDraftBoRConfig', error);
         return {error};
@@ -318,30 +549,34 @@ export async function updateDraftMarkdownImageMetadata({
     channelId,
     rootId,
     imageMetadata,
-    prepareRecordsOnly = false,
 }: {
     serverUrl: string;
     channelId: string;
     rootId: string;
     imageMetadata: Dictionary<PostImage | undefined>;
-    prepareRecordsOnly?: boolean;
 }) {
     try {
-        const {database, operator} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
-        const draft = await getDraft(database, channelId, rootId);
-        if (draft) {
-            draft.prepareUpdate((d) => {
+        const {database} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
+        let result: DraftModel | undefined;
+
+        // Markdown image dimensions are device-local render hints, not portable content: update
+        // the visible draft only, never touching the DraftOutbox row or the portable generation.
+        await mutateDraftAndOutbox(database, channelId, rootId, ({draft}) => {
+            if (!draft) {
+                return [];
+            }
+
+            result = draft;
+            return [draft.prepareUpdate((d) => {
                 d.metadata = {
                     ...d.metadata,
                     images: imageMetadata,
                 };
                 d.updateAt = Date.now();
-            });
-            if (!prepareRecordsOnly) {
-                await operator.batchRecords([draft], 'updateDraftImageMetadata');
-            }
-        }
-        return {draft};
+            })];
+        });
+
+        return {draft: result};
     } catch (error) {
         logError('Failed updateDraftMarkdownImageMetadata', error);
         return {error};
