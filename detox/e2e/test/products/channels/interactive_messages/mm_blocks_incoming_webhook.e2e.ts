@@ -8,7 +8,7 @@ import {
     System,
     User,
 } from '@support/server_api';
-import {siteOneUrl, hasWebhookSidecar, hasStableWebhookIngress} from '@support/test_config';
+import {siteOneUrl, hasStableWebhookIngress} from '@support/test_config';
 import {
     ChannelScreen,
     HomeScreen,
@@ -17,9 +17,9 @@ import {
 import {getRandomId} from '@support/utils';
 import {expect} from 'detox';
 
-// Render/collapsible need sidecar post URL; integration callbacks need stable ingress
-// (trycloudflare health ≠ Mattermost reachability — CI 59ec6ae).
-const describeMmBlocks = hasWebhookSidecar ? describe : describe.skip;
+// Entire suite needs stable ingress: trycloudflare post/render flakes the same as
+// callbacks (CI a4c0e33 — T6215/T6216/T6228/T6229 waitForPostText failures).
+const describeMmBlocks = hasStableWebhookIngress ? describe : describe.skip;
 const itNeedsStableIngress = hasStableWebhookIngress ? it : it.skip;
 
 describeMmBlocks('Interactive mm_blocks (incoming webhook)', () => {

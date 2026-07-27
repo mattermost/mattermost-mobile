@@ -2,7 +2,7 @@
 // See LICENSE.txt for license information.
 
 import React, {useMemo} from 'react';
-import {Pressable, StyleSheet} from 'react-native';
+import {StyleSheet} from 'react-native';
 import Svg, {ClipPath, Defs, G, Path, Rect} from 'react-native-svg';
 import tinyColor from 'tinycolor2';
 
@@ -28,37 +28,31 @@ const HighlightItem = ({height, itemBounds, onDismiss, onLayout, borderRadius = 
     }, [borderRadius, itemBounds, width, height]);
 
     return (
-        <Pressable
+        <Svg
             style={StyleSheet.absoluteFill}
             onPress={onDismiss}
-            testID='tutorial_highlight.dismiss'
+            onLayout={onLayout}
         >
-            <Svg
-                style={StyleSheet.absoluteFill}
-                onLayout={onLayout}
-                pointerEvents='none'
-            >
-                <G>
-                    <Defs>
-                        <ClipPath id='elementBounds'>
-                            <Path
-                                d={pathD}
-                                clipRule='evenodd'
-                            />
-                        </ClipPath>
-                    </Defs>
-                    <Rect
-                        x={0}
-                        y={0}
-                        width={width}
-                        height={height}
-                        clipPath='#elementBounds'
-                        fill={isDark ? 'white' : 'black'}
-                        fillOpacity={0.3}
-                    />
-                </G>
-            </Svg>
-        </Pressable>
+            <G>
+                <Defs>
+                    <ClipPath id='elementBounds'>
+                        <Path
+                            d={pathD}
+                            clipRule='evenodd'
+                        />
+                    </ClipPath>
+                </Defs>
+                <Rect
+                    x={0}
+                    y={0}
+                    width={width}
+                    height={height}
+                    clipPath='#elementBounds'
+                    fill={isDark ? 'white' : 'black'}
+                    fillOpacity={0.3}
+                />
+            </G>
+        </Svg>
     );
 };
 

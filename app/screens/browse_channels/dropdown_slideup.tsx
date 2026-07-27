@@ -42,21 +42,18 @@ export default function DropdownSlideup({
     const style = getStyleFromTheme(theme);
     const isTablet = useIsTablet();
 
-    // Await sheet dismiss before updating dropdown state. Firing onPress while the
-    // slide-up still unmounts causes Fabric addViewAt races (ReactTextView already
-    // has a parent) on Android — CI MM-T1671/T1718/T4729_5.
-    const handlePublicPress = useCallback(async () => {
-        await dismissBottomSheet();
+    const handlePublicPress = useCallback(() => {
+        dismissBottomSheet();
         onPress(PUBLIC);
     }, [onPress]);
 
-    const handleArchivedPress = useCallback(async () => {
-        await dismissBottomSheet();
+    const handleArchivedPress = useCallback(() => {
+        dismissBottomSheet();
         onPress(ARCHIVED);
     }, [onPress]);
 
-    const handleSharedPress = useCallback(async () => {
-        await dismissBottomSheet();
+    const handleSharedPress = useCallback(() => {
+        dismissBottomSheet();
         onPress(SHARED);
     }, [onPress]);
 
