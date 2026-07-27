@@ -27,7 +27,7 @@ import {
     ThreadScreen,
 } from '@support/ui/screen';
 import {getRandomId, timeouts, wait, waitForElementToBeVisible} from '@support/utils';
-import {by, expect} from 'detox';
+import {by, expect, waitFor} from 'detox';
 
 describe('Search - Search Message Post Actions', () => {
     const serverOneDisplayName = 'Server 1';
@@ -204,14 +204,20 @@ describe('Search - Search Message Post Actions', () => {
         await SearchMessagesScreen.openPostOptionsFor(searchedPost.id, message);
 
         await PostOptionsScreen.tapPinPost();
+
+        // Wait for pin to land on the server before navigating — iOS CI 30250131265 hung
+        // ~10m on an empty pinned list (channel info still showed Pinned Messages: 0).
+        await Post.waitForPostPinned(siteOneUrl, testChannel.id, searchedPost.id);
+
         await ChannelListScreen.open();
         await ChannelScreen.open(channelsCategory, testChannel.name);
         await ChannelInfoScreen.open();
+        await waitFor(ChannelInfoScreen.pinnedMessagesOption).toExist().withTimeout(timeouts.TEN_SEC);
         await PinnedMessagesScreen.open();
 
         // * Verify searched message is displayed on pinned messages screen
         const {postListPostItem} = PinnedMessagesScreen.getPostListPostItem(searchedPost.id, message);
-        await expect(postListPostItem).toBeVisible();
+        await waitFor(postListPostItem).toBeVisible().withTimeout(timeouts.HALF_MIN);
 
         // # Go back to searched messages screen, open post options for searched message, tap on unpin from channel option, go back to channel list screen, open the channel screen where searched message is posted, open channel info screen, and open pinned messages screen
         await PinnedMessagesScreen.back();
@@ -220,13 +226,14 @@ describe('Search - Search Message Post Actions', () => {
         await SearchMessagesScreen.open();
         await SearchMessagesScreen.openPostOptionsFor(searchedPost.id, message);
         await PostOptionsScreen.tapUnpinPost();
+        await Post.waitForPostUnpinned(siteOneUrl, testChannel.id, searchedPost.id);
         await ChannelListScreen.open();
         await ChannelScreen.open(channelsCategory, testChannel.name);
         await ChannelInfoScreen.open();
         await PinnedMessagesScreen.open();
 
         // * Verify searched message is not displayed anymore on pinned messages screen
-        await expect(postListPostItem).not.toExist();
+        await waitFor(postListPostItem).not.toExist().withTimeout(timeouts.TEN_SEC);
 
         // # Go back to searched messages screen, clear search input, remove recent search item, and go back to channel list screen
         await PinnedMessagesScreen.back();

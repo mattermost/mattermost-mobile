@@ -136,41 +136,46 @@ class RecentMentionsScreen {
     };
 
     // Wait for an edited post to appear in recent mentions after an edit.
-    // The list does not always re-render the row on POST_EDITED before FlashList
-    // recycles it (CI 28392181656 MM-T4909_3: edited_indicator never appeared).
-    // Poll for the updated message text or the "Edited" label, and force a fresh
-    // fetchRecentMentions by leaving + re-entering the mentions tab when needed.
+    // Mentions are search-backed — callers should await Post.waitForPostMessageInSearch
+    // before this so the index has caught up. Then poll the UI / force a tab refetch.
     verifyPostEdited = async (postId: string, updatedMessage?: string) => {
         const postContainer = by.id(`${this.testID.recentMentionPostList}.${postId}`);
         const MAX_REFETCHES = 6;
 
         const waitForEditedState = async () => {
-            if (updatedMessage) {
-                try {
-                    await waitFor(
-                        element(by.text(updatedMessage).withAncestor(postContainer)),
-                    ).toExist().withTimeout(timeouts.FIVE_SEC);
-                    return;
-                } catch {
-                    // @mention is a separate node — match the edited suffix instead.
-                    const suffix = updatedMessage.split(' ').slice(-1)[0];
-                    if (suffix) {
-                        await waitFor(
-                            element(by.text(new RegExp(`${suffix}$`)).withAncestor(postContainer)),
-                        ).toExist().withTimeout(timeouts.FIVE_SEC);
-                        return;
-                    }
-                    throw new Error(`Could not match edited message for post ${postId}`);
-                }
-            }
-
             const editedIndicator = element(by.id('edited_indicator').withAncestor(postContainer));
             try {
                 await waitFor(editedIndicator).toExist().withTimeout(timeouts.FIVE_SEC);
-
+                return;
             } catch {
+                // Fall through to message / "Edited" text.
+            }
+
+            try {
                 await waitFor(
                     element(by.text('Edited').withAncestor(postContainer)),
+                ).toExist().withTimeout(timeouts.THREE_SEC);
+                return;
+            } catch {
+                // Fall through to updated message text.
+            }
+
+            if (!updatedMessage) {
+                throw new Error(`Could not match edited indicator for post ${postId}`);
+            }
+
+            try {
+                await waitFor(
+                    element(by.text(updatedMessage).withAncestor(postContainer)),
+                ).toExist().withTimeout(timeouts.FIVE_SEC);
+            } catch {
+                // @mention is a separate node — match the edited suffix instead.
+                const suffix = updatedMessage.split(' ').slice(-1)[0];
+                if (!suffix) {
+                    throw new Error(`Could not match edited message for post ${postId}`);
+                }
+                await waitFor(
+                    element(by.text(new RegExp(`${suffix}$`)).withAncestor(postContainer)),
                 ).toExist().withTimeout(timeouts.FIVE_SEC);
             }
         };

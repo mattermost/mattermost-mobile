@@ -17,12 +17,21 @@ import axios from 'axios';
  * @return {Promise<void>}
  */
 export const requireWebhookServer = async (baseUrl: string): Promise<void> => {
+    if (!baseUrl?.trim()) {
+        throw new Error(
+            'WEBHOOK_BASE_URL is empty — Cloudflare quick tunnel did not come up on this shard. ' +
+            'Non-mm_blocks specs should still run; re-run the mm_blocks shard or check start_webhook_sidecar.sh logs.',
+        );
+    }
     try {
         const response = await axios.get<{message?: string}>(baseUrl, {timeout: 10000});
         if (response.data?.message !== 'I\'m alive!') {
             throw new Error(`Unexpected health response from ${baseUrl}`);
         }
     } catch (err: unknown) {
+        if (err instanceof Error && err.message.startsWith('WEBHOOK_BASE_URL is empty')) {
+            throw err;
+        }
         const detail = axios.isAxiosError(err) ? err.message : String(err);
         throw new Error(
             `Webhook sidecar is not healthy at ${baseUrl}: ${detail}. ` +

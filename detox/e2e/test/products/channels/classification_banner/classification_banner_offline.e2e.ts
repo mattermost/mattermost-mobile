@@ -20,7 +20,7 @@ import {serverOneUrl, siteOneUrl} from '@support/test_config';
 import {GlobalClassificationBanner} from '@support/ui/component';
 import {ChannelListScreen, HomeScreen, LoginScreen, ServerScreen} from '@support/ui/screen';
 import {timeouts, wait} from '@support/utils';
-import {by, device, element, expect, waitFor} from 'detox';
+import {by, device, element, waitFor} from 'detox';
 
 // Lock wait is up to 20m; leave headroom for enable/setup after acquire.
 jest.setTimeout(timeouts.ONE_MIN * 30);
@@ -28,7 +28,21 @@ jest.setTimeout(timeouts.ONE_MIN * 30);
 const escapeRegex = (value: string) => value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 
 const getBlockedServerPatterns = () => {
-    return Array.from(new Set([siteOneUrl, serverOneUrl])).map((url) => `.*${escapeRegex(url)}.*`);
+    const patterns = new Set<string>();
+    for (const url of Array.from(new Set([siteOneUrl, serverOneUrl]))) {
+        patterns.add(`.*${escapeRegex(url)}.*`);
+        try {
+            const parsed = new URL(url);
+            patterns.add(`.*${escapeRegex(parsed.hostname)}.*`);
+            patterns.add(`.*${escapeRegex(parsed.host)}.*`);
+
+            // Cover scheme/port variants Detox may see from the native client.
+            patterns.add(`.*${escapeRegex(parsed.hostname)}:${parsed.port || (parsed.protocol === 'https:' ? '443' : '80')}.*`);
+        } catch {
+            // Ignore unparsable SITE_/SERVER_ URLs — the raw URL pattern still applies.
+        }
+    }
+    return Array.from(patterns);
 };
 
 describe('Classification Banner - Offline / Cache Behaviour', () => {
@@ -73,10 +87,14 @@ describe('Classification Banner - Offline / Cache Behaviour', () => {
             levelId: 'lvltopsecret00000000000000',
             user: testUser,
         });
-        await device.reloadReactNative();
+
+        // Cold start picks up FeatureFlagClassificationMarkings + property fields
+        // more reliably than reloadReactNative alone (CI 30250131265 iOS T6206
+        // failed the online banner precondition before any blacklist).
+        await device.launchApp({newInstance: true});
         await ChannelListScreen.toBeVisible();
         await GlobalClassificationBanner.toBeVisible();
-        await expect(element(by.text('TOP SECRET'))).toBeVisible();
+        await waitFor(element(by.text('TOP SECRET'))).toBeVisible().withTimeout(timeouts.HALF_MIN);
 
         // # Block all API calls to simulate offline
         await device.setURLBlacklist(getBlockedServerPatterns());
@@ -100,18 +118,23 @@ describe('Classification Banner - Offline / Cache Behaviour', () => {
         if (!secretOptionId) {
             throw new Error(`SECRET option id missing from setup. Available: ${Object.keys(optionIdsByName).join(', ')}`);
         }
-        await device.reloadReactNative();
+        await device.launchApp({newInstance: true});
         await ChannelListScreen.toBeVisible();
         await GlobalClassificationBanner.toBeVisible();
-        await expect(element(by.text('TOP SECRET'))).toBeVisible();
+        await waitFor(element(by.text('TOP SECRET'))).toBeVisible().withTimeout(timeouts.HALF_MIN);
 
-        // # Change classification value on the server to SECRET
+        // # Block API calls BEFORE changing the server value. Patching while online
+        // lets WebSocket write SECRET into the local DB (CI 30250131265 Android
+        // MM-T6207_1 screenshot showed SECRET — fresh cache, not a stale miss).
+        await device.setURLBlacklist(getBlockedServerPatterns());
+
+        // # Change classification value on the server to SECRET (test host → API;
+        // the app must not observe this while blacklisted).
         await Properties.apiPatchSystemPropertyValues(siteOneUrl, 'access_control', [
             {field_id: linkedFieldId, value: secretOptionId},
         ]);
 
-        // # Block API calls and reload — app should load old cache (TOP SECRET, not SECRET)
-        await device.setURLBlacklist(getBlockedServerPatterns());
+        // # Reload — app should load old cache (TOP SECRET, not SECRET)
         await device.reloadReactNative();
         await ChannelListScreen.toBeVisible();
 

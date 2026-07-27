@@ -22,8 +22,13 @@ class TableScreen {
     };
 
     back = async () => {
-        // Native expo-router stack header — no testID on the back chevron.
-        await tapNativeBackButton();
+        // Prefer shared NavigationHeader testID; fall back to native label.
+        try {
+            await waitFor(this.backButton).toExist().withTimeout(timeouts.THREE_SEC);
+            await this.backButton.tap();
+        } catch {
+            await tapNativeBackButton();
+        }
         await expect(this.tableScreen).not.toBeVisible();
     };
 }

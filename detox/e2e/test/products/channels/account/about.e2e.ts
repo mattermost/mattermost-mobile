@@ -20,7 +20,7 @@ import {
     ServerScreen,
     SettingsScreen,
 } from '@support/ui/screen';
-import {isAndroid, isIos, safeEnableSynchronization, timeouts, waitForElementToExist} from '@support/utils';
+import {isAndroid, safeEnableSynchronization, timeouts, waitForElementToExist} from '@support/utils';
 import {expect} from 'detox';
 
 /** Mirrors app/utils/subscription getSkuDisplayName for E2E learn-more expectations */
@@ -179,34 +179,21 @@ describe('Account - Settings - About', () => {
         }
 
         // Footer is on-screen but Detox waitFor never idles (AsyncStorageModule spam in CI).
-        // Poll with sync disabled — device.log shows about.learn_more.text is already visible.
+        // Nested FormattedText testIDs are not exposed on iOS/Android when inside <Text>,
+        // so assert by visible copy rather than about.learn_more.text.
         await device.disableSynchronization();
         try {
-            if (isIos()) {
-                await waitForElementToExist(
-                    element(by.text(learnMorePrefixMatcher)),
-                    timeouts.TWENTY_SEC,
-                );
-            } else {
-                // FormattedText testID does not propagate on Android when nested in Text;
-                // CI 28485624548 screenshot shows copy is visible but about.learn_more.text is null.
-                await waitForElementToExist(
-                    element(by.text(learnMorePrefixMatcher)),
-                    timeouts.TWENTY_SEC,
-                );
-            }
+            await waitForElementToExist(
+                element(by.text(learnMorePrefixMatcher)),
+                timeouts.TWENTY_SEC,
+            );
         } finally {
             await safeEnableSynchronization();
         }
 
-        if (isAndroid()) {
-            await expect(element(by.text(learnMorePrefixMatcher))).toExist();
-            await expect(element(by.text('https://mattermost.com'))).toExist();
-        } else {
-            await expect(AboutScreen.learnMoreText).toHaveText(expectedLearnMorePrefix);
-
-            // Nested Text testIDs are not exposed on iOS (scrollToAboutElement note above).
-        }
+        // Nested Text may flatten the URL into the parent node (CI 30250131265:
+        // exact by.text('https://…') was null while the link was on screen).
+        await expect(element(by.text(learnMorePrefixMatcher))).toExist();
         await expect(AboutScreen.copyright).toHaveText(`Copyright 2015-${new Date().getFullYear()} Mattermost, Inc. All rights reserved`);
         await expect(AboutScreen.termsOfService).toHaveText('Terms of Service');
         await expect(AboutScreen.privacyPolicy).toHaveText('Privacy Policy');

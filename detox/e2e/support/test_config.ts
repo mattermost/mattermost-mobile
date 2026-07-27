@@ -31,4 +31,15 @@ export const adminUsername = process.env.ADMIN_USERNAME || 'sysadmin';
 export const adminPassword = process.env.ADMIN_PASSWORD || 'Sys@dmin-sample1';
 export const ldapServer = process.env.LDAP_SERVER || '127.0.0.1';
 export const ldapPort = process.env.LDAP_PORT || 389;
-export const webhookBaseUrl = process.env.WEBHOOK_BASE_URL || 'http://localhost:3000';
+export const webhookBaseUrl = (() => {
+    // Soft-failed sidecar writes WEBHOOK_BASE_URL= (empty) + READY=false. Do not
+    // fall back to localhost — that looks "healthy" locally while Mattermost
+    // cloud cannot reach the tunnel for dialog callbacks.
+    if (process.env.WEBHOOK_SIDECAR_READY === 'false') {
+        return '';
+    }
+    if (Object.prototype.hasOwnProperty.call(process.env, 'WEBHOOK_BASE_URL')) {
+        return process.env.WEBHOOK_BASE_URL || '';
+    }
+    return 'http://localhost:3000';
+})();

@@ -5,7 +5,6 @@ import moment from 'moment-timezone';
 import React from 'react';
 import {View} from 'react-native';
 
-import ClearButton from '@components/custom_status/clear_button';
 import CustomStatusExpiry from '@components/custom_status/custom_status_expiry';
 import FormattedText from '@components/formatted_text';
 import {useTheme} from '@context/theme';
@@ -18,17 +17,11 @@ type CustomLabelProps = {
     customStatus: UserCustomStatus;
     isCustomStatusExpirySupported: boolean;
     isStatusSet: boolean;
-    onClearCustomStatus: () => void;
     showRetryMessage: boolean;
 };
 
 const getStyleSheet = makeStyleSheetFromTheme((theme) => {
     return {
-        clearButton: {
-            position: 'absolute',
-            top: 4,
-            right: 14,
-        },
         customStatusTextContainer: {
             width: '70%',
             marginLeft: 16,
@@ -48,7 +41,12 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
     };
 });
 
-const CustomLabel = ({customStatus, isCustomStatusExpirySupported, isStatusSet, onClearCustomStatus, showRetryMessage}: CustomLabelProps) => {
+const CustomLabel = ({
+    customStatus,
+    isCustomStatusExpirySupported,
+    isStatusSet,
+    showRetryMessage,
+}: CustomLabelProps) => {
     const theme = useTheme();
     const styles = getStyleSheet(theme);
 
@@ -78,15 +76,6 @@ const CustomLabel = ({customStatus, isCustomStatusExpirySupported, isStatusSet, 
                     style={styles.retryMessage}
                     testID='account.custom_status.failure_message'
                 />
-            )}
-            {isStatusSet && (
-                <View style={styles.clearButton}>
-                    <ClearButton
-                        handlePress={onClearCustomStatus}
-                        theme={theme}
-                        testID='account.custom_status.clear.button'
-                    />
-                </View>
             )}
         </>
     );

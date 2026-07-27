@@ -226,8 +226,9 @@ describe('Account - Custom Status', () => {
         await verifyStatusSetOnAccountScreen(status);
 
         // # Clear status from account screen
+        await waitFor(AccountScreen.customStatusClearButton).toBeVisible().withTimeout(timeouts.TEN_SEC);
         await AccountScreen.customStatusClearButton.tap();
-        await wait(timeouts.ONE_SEC);
+        await wait(timeouts.TWO_SEC);
 
         // * Verify status is cleared
         await verifyStatusCleared();
@@ -607,6 +608,9 @@ const verifyStatusSetOnAccountScreen = async (status: {emoji: string; text: stri
 };
 
 const verifyStatusCleared = async () => {
-    await waitFor(AccountScreen.customStatusClearButton).not.toBeVisible().withTimeout(timeouts.TEN_SEC);
+    // Prefer not.toExist — on iOS the clear control can remain in the tree as
+    // "not visible" flakily after a successful clear, and CI 30250131265
+    // timed out on not.toBeVisible while the status was still set (tap miss).
+    await waitFor(AccountScreen.customStatusClearButton).not.toExist().withTimeout(timeouts.TEN_SEC);
     await expect(AccountScreen.setStatusOption).toExist();
 };

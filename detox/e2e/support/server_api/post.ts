@@ -347,6 +347,52 @@ export const waitForPostUnflagged = async (baseUrl: string, userId: string, post
     throw new Error(`Post ${postId} still flagged after ${maxAttempts} attempts`);
 };
 
+export const waitForPostPinned = async (
+    baseUrl: string,
+    channelId: string,
+    postId: string,
+    maxAttempts = 10,
+): Promise<void> => {
+    /* eslint-disable no-await-in-loop -- poll until server reports is_pinned */
+    for (let i = 0; i < maxAttempts; i++) {
+        const {posts, error} = await apiGetPostsInChannel(baseUrl, channelId);
+        if (!error) {
+            const post = posts?.find((candidate: any) => candidate.id === postId);
+            if (post?.is_pinned) {
+                return;
+            }
+        }
+        if (i < maxAttempts - 1) {
+            await wait(timeouts.TWO_SEC);
+        }
+    }
+    /* eslint-enable no-await-in-loop */
+    throw new Error(`Post ${postId} not pinned after ${maxAttempts} attempts`);
+};
+
+export const waitForPostUnpinned = async (
+    baseUrl: string,
+    channelId: string,
+    postId: string,
+    maxAttempts = 10,
+): Promise<void> => {
+    /* eslint-disable no-await-in-loop -- poll until server clears is_pinned */
+    for (let i = 0; i < maxAttempts; i++) {
+        const {posts, error} = await apiGetPostsInChannel(baseUrl, channelId);
+        if (!error) {
+            const post = posts?.find((candidate: any) => candidate.id === postId);
+            if (post && !post.is_pinned) {
+                return;
+            }
+        }
+        if (i < maxAttempts - 1) {
+            await wait(timeouts.TWO_SEC);
+        }
+    }
+    /* eslint-enable no-await-in-loop */
+    throw new Error(`Post ${postId} still pinned after ${maxAttempts} attempts`);
+};
+
 export const waitForPostMessage = async (
     baseUrl: string,
     channelId: string,
@@ -373,6 +419,59 @@ export const waitForPostMessage = async (
     throw new Error(`Post ${postId} did not update to "${expectedMessage}" after ${maxAttempts} attempts`);
 };
 
+/**
+ * Search posts (same endpoint recent mentions uses).
+ * See https://api.mattermost.com/#operation/SearchPosts
+ */
+export const apiSearchPosts = async (
+    baseUrl: string,
+    terms: string,
+    {isOrSearch = true, teamId = ''}: {isOrSearch?: boolean; teamId?: string} = {},
+): Promise<{order?: string[]; posts?: Record<string, any>; error?: unknown}> => {
+    try {
+        const response = await client.post(`${baseUrl}/api/v4/posts/search`, {
+            terms,
+            is_or_search: isOrSearch,
+            ...(teamId ? {team_id: teamId} : {}),
+        });
+        return {
+            order: response.data?.order,
+            posts: response.data?.posts,
+        };
+    } catch (err) {
+        return getResponseFromError(err);
+    }
+};
+
+/**
+ * Poll search until it returns the expected post message. Recent Mentions is
+ * search-backed; channel GET can succeed while search still serves the old text.
+ */
+export const waitForPostMessageInSearch = async (
+    baseUrl: string,
+    terms: string,
+    postId: string,
+    expectedMessage: string,
+    maxAttempts = 15,
+): Promise<void> => {
+    /* eslint-disable no-await-in-loop -- poll search index until it catches up */
+    for (let i = 0; i < maxAttempts; i++) {
+        const {posts, error} = await apiSearchPosts(baseUrl, terms);
+        if (!error && posts?.[postId]?.message === expectedMessage) {
+            return;
+        }
+
+        if (i < maxAttempts - 1) {
+            await wait(timeouts.TWO_SEC);
+        }
+    }
+    /* eslint-enable no-await-in-loop */
+
+    throw new Error(
+        `Search did not return post ${postId} with message "${expectedMessage}" after ${maxAttempts} attempts`,
+    );
+};
+
 export const Post = {
     apiCreatePost,
     apiCreatePostEphemeral,
@@ -384,11 +483,15 @@ export const Post = {
     apiPinPost,
     apiPatchPost,
     apiPostIncomingWebhook,
+    apiSearchPosts,
     apiUploadFileToChannel,
     apiGetFlaggedPosts,
     waitForPostFlagged,
     waitForPostMessage,
+    waitForPostMessageInSearch,
+    waitForPostPinned,
     waitForPostUnflagged,
+    waitForPostUnpinned,
 };
 
 export default Post;

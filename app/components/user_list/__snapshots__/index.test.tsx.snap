@@ -715,7 +715,9 @@ exports[`components/channel_list_row should show results and tutorial 1`] = `
         accessible={true}
         collapsable={false}
         focusable={true}
+        onBlur={[Function]}
         onClick={[Function]}
+        onFocus={[Function]}
         onLayout={[Function]}
         onResponderGrant={[Function]}
         onResponderMove={[Function]}
@@ -724,9 +726,9 @@ exports[`components/channel_list_row should show results and tutorial 1`] = `
         onResponderTerminationRequest={[Function]}
         onStartShouldSetResponder={[Function]}
         style={
-          {
-            "opacity": 1,
-          }
+          [
+            false,
+          ]
         }
         testID="create_direct_message.user_list.user_item.1.1"
       >
@@ -1074,7 +1076,9 @@ exports[`components/channel_list_row should show results no tutorial 1`] = `
         accessible={true}
         collapsable={false}
         focusable={true}
+        onBlur={[Function]}
         onClick={[Function]}
+        onFocus={[Function]}
         onLayout={[Function]}
         onResponderGrant={[Function]}
         onResponderMove={[Function]}
@@ -1083,9 +1087,9 @@ exports[`components/channel_list_row should show results no tutorial 1`] = `
         onResponderTerminationRequest={[Function]}
         onStartShouldSetResponder={[Function]}
         style={
-          {
-            "opacity": 1,
-          }
+          [
+            false,
+          ]
         }
         testID="create_direct_message.user_list.user_item.1.1"
       >
@@ -1471,7 +1475,9 @@ exports[`components/channel_list_row should show results no tutorial 2 users 1`]
         accessible={true}
         collapsable={false}
         focusable={true}
+        onBlur={[Function]}
         onClick={[Function]}
+        onFocus={[Function]}
         onLayout={[Function]}
         onResponderGrant={[Function]}
         onResponderMove={[Function]}
@@ -1480,9 +1486,9 @@ exports[`components/channel_list_row should show results no tutorial 2 users 1`]
         onResponderTerminationRequest={[Function]}
         onStartShouldSetResponder={[Function]}
         style={
-          {
-            "opacity": 1,
-          }
+          [
+            false,
+          ]
         }
         testID="create_direct_message.user_list.user_item.1.1"
       >
@@ -1728,7 +1734,9 @@ exports[`components/channel_list_row should show results no tutorial 2 users 1`]
         accessible={true}
         collapsable={false}
         focusable={true}
+        onBlur={[Function]}
         onClick={[Function]}
+        onFocus={[Function]}
         onLayout={[Function]}
         onResponderGrant={[Function]}
         onResponderMove={[Function]}
@@ -1737,9 +1745,9 @@ exports[`components/channel_list_row should show results no tutorial 2 users 1`]
         onResponderTerminationRequest={[Function]}
         onStartShouldSetResponder={[Function]}
         style={
-          {
-            "opacity": 1,
-          }
+          [
+            false,
+          ]
         }
         testID="create_direct_message.user_list.user_item.2.2"
       >

@@ -26,7 +26,7 @@ import {
     ServerScreen,
 } from '@support/ui/screen';
 import {timeouts, wait} from '@support/utils';
-import {expect, waitFor} from 'detox';
+import {device, expect, waitFor} from 'detox';
 
 describe('Channels - Channel Bookmarks Permissions', () => {
     const serverOneDisplayName = 'Server 1';
@@ -196,12 +196,24 @@ describe('Channels - Channel Bookmarks Permissions', () => {
         // # Open channel info for the archived channel.
         await ChannelInfoScreen.open();
 
-        // * Verify no bookmark actions are available. Archiving deletes the channel's
-        // bookmarks server-side, so there is no bookmark to edit/delete and creation is hidden.
+        // * Verify no bookmark mutations are available on an archived channel.
+        // Bookmarks are retained after archive (CI 30250131265 Android MM-T5725_1
+        // screenshot still shows "Archive Test Bookmark"); canAdd/Edit/Delete are
+        // gated on channel.deleteAt === 0 (observeHasPermissionToBookmarks).
         await expect(element(by.text('Add a bookmark'))).not.toExist();
-        await waitFor(element(by.text('Archive Test Bookmark'))).
-            not.toExist().
-            withTimeout(timeouts.TEN_SEC);
+
+        const archiveBookmarkEl = element(
+            by.text('Archive Test Bookmark').
+                withAncestor(by.id('channel_info.bookmarks.list')),
+        );
+        await waitFor(archiveBookmarkEl).toExist().withTimeout(timeouts.TEN_SEC);
+        await archiveBookmarkEl.longPress();
+        await wait(timeouts.ONE_SEC);
+
+        // Still on channel info — do not pressBack (that leaves the screen if no sheet opened).
+        await expect(element(by.id('channel_info.screen'))).toExist();
+        await expect(ChannelBookmarkScreen.editOption).not.toExist();
+        await expect(ChannelBookmarkScreen.deleteOption).not.toExist();
 
         await ChannelInfoScreen.close();
 

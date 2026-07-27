@@ -45,77 +45,138 @@ async function waitForDialogSelectorButton(testId: string) {
 }
 
 // Integration selector list items use different testID structures per data source:
-//   user list:    integration_selector.user_list.user_item.<user.id>
-//                 (UserItem composes ${testID}.${user.id})
-//   channel list: integration_selector.channel_list.<channel.id>
-//                 (ChannelListRow composes ${testID}.${id})
-//   option list:  no specific testID — identified by visible text
-// For single-select selectors, tapping an item auto-closes the modal.
-// For multi-select selectors, tapping marks the item; the test must call
-// IntegrationSelectorScreen.done() afterward to confirm selections.
-// Tap the selector at the LIST level (not a per-item id) — the working pattern
-// from PR #9847. With UserItem's testID now on the touchable, this fires onPress;
-// single-select auto-closes the modal, multi-select needs done().
-async function selectUser() {
-    // Prefer a concrete user row. Prefix-only ids never match UserItem's
-    // `${testID}.${user.id}` composition (CI 30216081940: selector stayed open).
-    // Do not tap the list container — that never selects a row.
-    const strategies: Array<() => Promise<void>> = [
-        async () => {
-            await IntegrationSelectorScreen.searchFor('admin');
-            await element(by.text('admin')).atIndex(0).tap();
-        },
-        async () => {
-            const el = element(by.id(/^integration_selector\.user_list\.user_item\./));
-            await expect(el).toExist();
-            await el.atIndex(0).tap();
-        },
-    ];
-    for (const strategy of strategies) {
-        try {
-            await strategy();
-            await wait(timeouts.ONE_SEC);
-            try {
-                await waitFor(element(by.id('integration_selector.screen'))).
-                    not.toExist().
-                    withTimeout(timeouts.FIVE_SEC);
-                return true;
-            } catch {
-                // Multi-select or tap missed — try next strategy / done().
-            }
-        } catch {}
-    }
+//   user list:    integration_selector.user_list.user_item.<id>.<id>
+//                 (UserListRow appends id, then UserItem appends id again)
+//   channel list: Pressable testID is shared (`integration_selector.channel_list`);
+//                 unique row content is `integration_selector.channel_list.<channel.id>`
+//   option list:  identified by visible text
+// Single-select auto-closes; multi-select needs IntegrationSelectorScreen.done().
+//
+// CI 30250131265: searching "admin" then by.text('admin').atIndex(0) tapped the
+// search field TextView (radio stayed empty). Regex by.id also failed to match.
+// Tap the known user_item / display_name id with tap({x,y}) like Create DM / Add Members.
+async function selectUser(user: {id: string; username: string}, {multiselect = false} = {}) {
+    const userItemId = `integration_selector.user_list.user_item.${user.id}.${user.id}`;
+    const displayNameId = `${userItemId}.display_name`;
+
+    await IntegrationSelectorScreen.searchFor(user.username);
     try {
-        await IntegrationSelectorScreen.done();
-    } catch {}
-    return false;
+        await IntegrationSelectorScreen.searchInput.tapReturnKey();
+    } catch {
+        // Keyboard may already be dismissed.
+    }
+    await wait(timeouts.HALF_SEC);
+
+    const displayName = element(by.id(displayNameId));
+    const userItem = element(by.id(userItemId));
+    await waitFor(displayName).toExist().withTimeout(timeouts.TEN_SEC);
+
+    try {
+        await displayName.tap({x: 1, y: 1});
+    } catch {
+        await userItem.tap({x: 10, y: 20});
+    }
+    await wait(timeouts.ONE_SEC);
+
+    if (multiselect) {
+        // Selected chip + Done stay on the selector; field is optional so submit alone is not proof.
+        await waitFor(element(by.id('integration_selector.multiselect.submit.button'))).
+            toExist().
+            withTimeout(timeouts.FIVE_SEC);
+        await expect(element(by.id('integration_selector.screen'))).toExist();
+        await expect(userItem).toExist();
+        return;
+    }
+
+    await waitFor(element(by.id('integration_selector.screen'))).
+        not.toExist().
+        withTimeout(timeouts.TEN_SEC);
 }
 
-async function selectChannel() {
-    const patterns = [
-        'integration_selector.channel_list',
-        'integration_selector.channel_list.channel_item',
-    ];
-    for (const testID of patterns) {
+async function selectChannel(channel?: {id: string; display_name: string}, {multiselect = false} = {}) {
+    const waitForSelectorClosed = async () => {
+        await waitFor(element(by.id('integration_selector.screen'))).
+            not.toExist().
+            withTimeout(timeouts.TEN_SEC);
+    };
+
+    if (channel) {
+        const rowContent = element(by.id(`integration_selector.channel_list.${channel.id}`));
         try {
-            const el = element(by.id(testID));
-            await expect(el).toExist();
-            await el.tap();
-            return true;
-        } catch {}
+            await waitFor(rowContent).toExist().withTimeout(timeouts.FIVE_SEC);
+            await rowContent.tap();
+            await wait(timeouts.ONE_SEC);
+            if (multiselect) {
+                await waitFor(element(by.id('integration_selector.multiselect.submit.button'))).
+                    toExist().
+                    withTimeout(timeouts.FIVE_SEC);
+                await expect(element(by.id('integration_selector.screen'))).toExist();
+            } else {
+                await waitForSelectorClosed();
+            }
+            return;
+        } catch {
+            // Fall through only when the row itself was not tappable.
+        }
+
+        try {
+            // Only use text fallback while the selector is still open.
+            await expect(element(by.id('integration_selector.screen'))).toExist();
+            await element(by.text(channel.display_name)).tap();
+            await wait(timeouts.ONE_SEC);
+            if (multiselect) {
+                await waitFor(element(by.id('integration_selector.multiselect.submit.button'))).
+                    toExist().
+                    withTimeout(timeouts.FIVE_SEC);
+                await expect(element(by.id('integration_selector.screen'))).toExist();
+            } else {
+                await waitForSelectorClosed();
+            }
+            return;
+        } catch {
+            // Fall through.
+        }
     }
+
+    try {
+        await expect(element(by.id('integration_selector.screen'))).toExist();
+        const sharedRow = element(by.id('integration_selector.channel_list')).atIndex(0);
+        await expect(sharedRow).toExist();
+        await sharedRow.tap();
+        await wait(timeouts.ONE_SEC);
+        if (multiselect) {
+            await waitFor(element(by.id('integration_selector.multiselect.submit.button'))).
+                toExist().
+                withTimeout(timeouts.FIVE_SEC);
+            await expect(element(by.id('integration_selector.screen'))).toExist();
+        } else {
+            await waitForSelectorClosed();
+        }
+        return;
+    } catch {
+        // Fall through to well-known channel names.
+    }
+
     for (const name of ['Town Square', 'Off-Topic', 'General']) {
         try {
-            const el = element(by.text(name));
-            await expect(el).toExist();
-            await el.tap();
-            return true;
-        } catch {}
+            await expect(element(by.id('integration_selector.screen'))).toExist();
+            await element(by.text(name)).tap();
+            await wait(timeouts.ONE_SEC);
+            if (multiselect) {
+                await waitFor(element(by.id('integration_selector.multiselect.submit.button'))).
+                    toExist().
+                    withTimeout(timeouts.FIVE_SEC);
+                await expect(element(by.id('integration_selector.screen'))).toExist();
+            } else {
+                await waitForSelectorClosed();
+            }
+            return;
+        } catch {
+            // Try next name.
+        }
     }
-    try {
-        await IntegrationSelectorScreen.done();
-    } catch {}
-    return false;
+
+    throw new Error('selectChannel: could not select a channel row');
 }
 
 async function ensureDialogClosed() {
@@ -331,13 +392,7 @@ describe('Interactive Dialog - Basic Dialog (Plugin)', () => {
         await ChannelScreen.hasPostMessage(post.id, 'Dialog Submitted:');
     });
 
-    // TODO: iOS 26 + Detox + RN TouchableOpacity hit-test regression.
-    // Tapping a row in the integration_selector user list (UserItem wraps
-    // testID-bearing View in TouchableOpacity) doesn't fire onPress under
-    // Detox synthetic taps — manual mouse taps work. tap/tapAtPoint/
-    // longPress/multiTap/swipe all attempted, none propagate to the
-    // touchable. Channel rows work because CustomListRow places testID on
-    // the TouchableOpacity directly.
+    // TODO: previously failed when selectUser tapped search-field text (CI 30250131265).
     it('MM-T4498 should open and handle interactive dialog with select fields (Plugin)', async () => {
         await ensureDialogClosed();
         await ChannelScreen.postSlashCommand('/dialog selectfields');
@@ -355,14 +410,14 @@ describe('Interactive Dialog - Basic Dialog (Plugin)', () => {
         const userSelectorButton = element(by.id('AppFormElement.someuserselector.select.button'));
         await userSelectorButton.tap();
         await IntegrationSelectorScreen.toBeVisible();
-        await selectUser();
+        await selectUser(testUser);
         const channelSelectorButton = element(by.id('AppFormElement.somechannelselector.select.button'));
 
         // 1s bridge-idle waitFor fails on Android after IntegrationSelector dismissal animation.
         await waitForDialogSelectorButton('AppFormElement.somechannelselector.select.button');
         await channelSelectorButton.tap();
         await IntegrationSelectorScreen.toBeVisible();
-        await selectChannel();
+        await selectChannel(testChannel);
         await wait(300);
         await InteractiveDialogScreen.submit();
         await ensureDialogClosed();
@@ -370,7 +425,6 @@ describe('Interactive Dialog - Basic Dialog (Plugin)', () => {
         await ChannelScreen.hasPostMessage(post.id, 'Dialog Submitted:');
     });
 
-    // TODO: iOS 26 + Detox UserItem TouchableOpacity tap regression — see MM-T4498
     it('MM-T4499 should handle required select field validation (Plugin)', async () => {
         await ensureDialogClosed();
         await ChannelScreen.postSlashCommand('/dialog selectfields');
@@ -391,7 +445,7 @@ describe('Interactive Dialog - Basic Dialog (Plugin)', () => {
         const userSelectorButton = element(by.id('AppFormElement.someuserselector.select.button'));
         await userSelectorButton.tap();
         await IntegrationSelectorScreen.toBeVisible();
-        await selectUser();
+        await selectUser(testUser);
         await wait(300);
         await InteractiveDialogScreen.submit();
         await ensureDialogClosed();
@@ -399,7 +453,6 @@ describe('Interactive Dialog - Basic Dialog (Plugin)', () => {
         await ChannelScreen.hasPostMessage(post.id, 'Dialog Submitted:');
     });
 
-    // TODO: iOS 26 + Detox UserItem TouchableOpacity tap regression — see MM-T4498
     it('MM-T4500 should handle different selector types (Plugin)', async () => {
         await ensureDialogClosed();
         await ChannelScreen.postSlashCommand('/dialog selectfields');
@@ -417,14 +470,14 @@ describe('Interactive Dialog - Basic Dialog (Plugin)', () => {
         const userSelectorButton = element(by.id('AppFormElement.someuserselector.select.button'));
         await userSelectorButton.tap();
         await IntegrationSelectorScreen.toBeVisible();
-        await selectUser();
+        await selectUser(testUser);
         const channelSelectorButton = element(by.id('AppFormElement.somechannelselector.select.button'));
 
         // 1s bridge-idle waitFor fails on Android after IntegrationSelector dismissal animation.
         await waitForDialogSelectorButton('AppFormElement.somechannelselector.select.button');
         await channelSelectorButton.tap();
         await IntegrationSelectorScreen.toBeVisible();
-        await selectChannel();
+        await selectChannel(testChannel);
         await wait(300);
         await InteractiveDialogScreen.submit();
         await ensureDialogClosed();
@@ -482,7 +535,6 @@ describe('Interactive Dialog - Basic Dialog (Plugin)', () => {
         await ChannelScreen.hasPostMessage(post.id, 'Dialog Submitted:');
     });
 
-    // TODO: iOS 26 + Detox UserItem TouchableOpacity tap regression — see MM-T4498
     it('MM-T4976 should handle multiselect fields dialog (Plugin)', async () => {
         await ensureDialogClosed();
         await ChannelScreen.postSlashCommand('/dialog multi-select');
@@ -491,7 +543,7 @@ describe('Interactive Dialog - Basic Dialog (Plugin)', () => {
         await expect(multiselectUsersButton).toExist();
         await multiselectUsersButton.tap();
         await IntegrationSelectorScreen.toBeVisible();
-        await selectUser();
+        await selectUser(testUser, {multiselect: true});
         await wait(500);
         await IntegrationSelectorScreen.done();
         await wait(300);
@@ -499,7 +551,7 @@ describe('Interactive Dialog - Basic Dialog (Plugin)', () => {
         await expect(multiselectChannelsButton).toExist();
         await multiselectChannelsButton.tap();
         await IntegrationSelectorScreen.toBeVisible();
-        await selectChannel();
+        await selectChannel(testChannel, {multiselect: true});
         await wait(500);
         await IntegrationSelectorScreen.done();
         await wait(300);

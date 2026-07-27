@@ -18,11 +18,12 @@ import {
     ChannelScreen,
     IntegrationSelectorScreen,
     LoginScreen,
+    PostOptionsScreen,
     ServerScreen,
     ThreadScreen,
 } from '@support/ui/screen';
-import {getRandomId, timeouts, wait} from '@support/utils';
-import {expect} from 'detox';
+import {getRandomId, longPressWithScrollRetry, timeouts, wait} from '@support/utils';
+import {expect, waitFor} from 'detox';
 
 export class MmBlocksTestHelper {
     static readonly SERVER_DISPLAY_NAME = 'Server 1';
@@ -242,6 +243,24 @@ export class MmBlocksTestHelper {
     }
 
     static async openThreadForPost(postId: string, postMessage: string): Promise<void> {
+        // mm_blocks button rows steal long-press on the post container (CI 30250131265
+        // MM-T6226: 8 longPress attempts, options never opened). Prefer the header.
+        const postTestID = `channel.post_list.post.${postId}`;
+        const header = element(by.id('post_header.display_name').withAncestor(by.id(postTestID)));
+        try {
+            await waitFor(header).toExist().withTimeout(timeouts.TEN_SEC);
+            await longPressWithScrollRetry(
+                header,
+                by.id(ChannelScreen.postList.testID.flatList),
+                PostOptionsScreen.postOptionsScreen,
+            );
+            await wait(timeouts.TWO_SEC);
+            await PostOptionsScreen.replyPostOption.tap();
+            await ThreadScreen.toBeVisible();
+            return;
+        } catch {
+            // Fall back to the standard channel helper.
+        }
         await ChannelScreen.openReplyThreadFor(postId, postMessage);
         await ThreadScreen.toBeVisible();
     }

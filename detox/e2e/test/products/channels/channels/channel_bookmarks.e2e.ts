@@ -806,7 +806,8 @@ describe('Channels - Channel Bookmarks', () => {
         await ChannelScreen.back();
     });
 
-    it('MM-T69455_1 - should open file preview on tap and options sheet on long press for channel bookmarks', async () => {
+    // External link open is Android-only (iOS Safari overlays hang CI); file preview + long-press run on both.
+    it('MM-T69455_1 - should open file preview on tap and options on long press (Android also opens link externally)', async () => {
         const channelT69455 = await createChannel();
 
         const {bookmark: linkT69455, error: linkError} = await ChannelBookmark.apiCreateChannelBookmarkLink(
@@ -855,23 +856,54 @@ describe('Channels - Channel Bookmarks', () => {
 
         const fileBookmarkEl = getHeaderBookmark(bookmarkFileT69455.id);
         const linkBookmarkEl = getHeaderBookmark(linkT69455.id);
+        const channelHeaderBookmarksList = by.id('channel_header.bookmarks.list');
 
-        // Header list can lag; nudge sync via channel info if needed.
-        try {
-            await waitFor(fileBookmarkEl).toExist().withTimeout(timeouts.TEN_SEC);
-        } catch {
-            await ChannelInfoScreen.open();
-            await ChannelInfoScreen.waitForBookmarkInChannelInfo(
-                by.id(`channel_bookmark.${bookmarkFileT69455.id}`).
-                    withAncestor(by.id('channel_info.bookmarks.list')),
-                {bookmarkId: bookmarkFileT69455.id},
-            );
-            await ChannelInfoScreen.close();
-            await waitFor(fileBookmarkEl).toExist().withTimeout(timeouts.TEN_SEC);
-        }
-        await waitFor(linkBookmarkEl).toExist().withTimeout(timeouts.TEN_SEC);
+        // Authoritative sync: both bookmarks must exist in channel info before
+        // trusting the virtualized header FlatList (CI 30250131265: only file chip).
+        await ChannelInfoScreen.open();
+        await ChannelInfoScreen.waitForBookmarkInChannelInfo(
+            by.id(`channel_bookmark.${bookmarkFileT69455.id}`).
+                withAncestor(by.id('channel_info.bookmarks.list')),
+            {bookmarkId: bookmarkFileT69455.id, textFallback: 'Tap File Bookmark'},
+        );
+        await ChannelInfoScreen.waitForBookmarkInChannelInfo(
+            by.id(`channel_bookmark.${linkT69455.id}`).
+                withAncestor(by.id('channel_info.bookmarks.list')),
+            {bookmarkId: linkT69455.id, textFallback: 'Tap Link Bookmark'},
+        );
+        await ChannelInfoScreen.close();
 
-        // # Tap the file bookmark
+        const ensureHeaderBookmarkVisible = async (bookmarkEl: ReturnType<typeof element>, label: string) => {
+            try {
+                await waitFor(bookmarkEl).toBeVisible().withTimeout(timeouts.FOUR_SEC);
+                return;
+            } catch {
+                // Swipe the horizontal header list both directions.
+            }
+
+            /* eslint-disable no-await-in-loop -- bounded swipe until chip is on-screen */
+            for (let i = 0; i < 8; i++) {
+                try {
+                    await waitFor(bookmarkEl).toBeVisible().withTimeout(timeouts.TWO_SEC);
+                    return;
+                } catch {
+                    if (i === 7) {
+                        throw new Error(`${label} not visible in channel header after sync + swipe`);
+                    }
+                    const direction = i % 2 === 0 ? 'left' : 'right';
+                    try {
+                        await element(channelHeaderBookmarksList).swipe(direction, 'fast', 0.9, 0.5, 0.5);
+                    } catch {
+                        // List may not be scrollable further in this direction.
+                    }
+                }
+            }
+            /* eslint-enable no-await-in-loop */
+        };
+
+        await ensureHeaderBookmarkVisible(fileBookmarkEl, 'Tap File Bookmark');
+
+        // # Tap the file bookmark while it is still on-screen
         await fileBookmarkEl.tap();
 
         // * Verify file preview gallery opens (tap must reach the gallery press handler)
@@ -881,19 +913,19 @@ describe('Channels - Channel Bookmarks', () => {
         // # Dismiss the gallery
         await dismissGallery();
 
-        // # Tap the link bookmark
-        await linkBookmarkEl.tap();
-        await wait(timeouts.ONE_SEC);
+        await ensureHeaderBookmarkVisible(linkBookmarkEl, 'Tap Link Bookmark');
 
-        // Link open leaves the app (Android Chrome / iOS Safari). CI 30084842314 iOS
-        // MM-T69455_1 screenshot is Safari on mattermost.com with cookie + system
-        // Safari tutorial overlays; without relaunch the long-press assertion never
-        // reaches channel_header.bookmarks.list again.
-        await device.launchApp({newInstance: false});
-        await ChannelScreen.toBeVisible();
-
-        // * Verify tap does not open the bookmark options bottom sheet
-        await expect(ChannelBookmarkScreen.editOption).not.toBeVisible();
+        // Link open leaves the app (Android Chrome / iOS Safari). iOS CI hangs in
+        // Safari cookie/tutorial overlays (CI 30084842314 / 30250131265) — only
+        // exercise the external open on Android; both platforms cover long-press options.
+        if (isAndroid()) {
+            await linkBookmarkEl.tap();
+            await wait(timeouts.ONE_SEC);
+            await device.launchApp({newInstance: false});
+            await ChannelScreen.toBeVisible();
+            await ensureHeaderBookmarkVisible(linkBookmarkEl, 'Tap Link Bookmark');
+            await expect(ChannelBookmarkScreen.editOption).not.toBeVisible();
+        }
 
         // # Long press the link bookmark to open options
         await linkBookmarkEl.longPress();

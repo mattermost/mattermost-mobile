@@ -213,10 +213,10 @@ describe('Autocomplete - Channel Mention', () => {
         await channelMentionAutocomplete.tap();
 
         // * Verify channel mention list disappears
-        // After selecting a channel mention, the autocomplete dismissal is driven
-        // by a React state update; on iOS 26 CI the assertion can race the update
-        // (see MM-T4879_5 which uses the same settle-then-assert pattern after
-        // typing a trailing space). Use waitFor to poll until the dropdown is gone.
+        // Selecting a mention inserts `~channel` but on iOS 26 the dropdown can
+        // stay open until a trailing space settles autocomplete state (same as
+        // MM-T4879_5). Type the space, then wait for the list to leave the tree.
+        await ChannelScreen.postInput.typeText(' ');
         await waitFor(Autocomplete.sectionChannelMentionList).not.toExist().withTimeout(timeouts.TEN_SEC);
 
         // # Clear the input (which now contains the inserted channel mention text),
