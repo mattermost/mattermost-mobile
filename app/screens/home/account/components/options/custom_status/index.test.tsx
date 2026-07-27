@@ -39,7 +39,6 @@ jest.mock('@screens/navigation', () => ({
 }));
 
 jest.mock('@utils/theme', () => ({
-    changeOpacity: (color: string) => color,
     makeStyleSheetFromTheme: (factory: (theme: {centerChannelColor: string}) => object) => {
         return () => factory({centerChannelColor: '#000'});
     },
@@ -81,7 +80,7 @@ describe('CustomStatus', () => {
             />,
         );
 
-        fireEvent.press(getByTestId('account.custom_status.clear.button'));
+        fireEvent.press(getByTestId('clear-custom-status'));
 
         await waitFor(() => expect(mockUnsetCustomStatus).toHaveBeenCalledWith('https://example.com'));
         expect(mockUpdateLocalCustomStatus).not.toHaveBeenCalled();
@@ -96,7 +95,7 @@ describe('CustomStatus', () => {
             />,
         );
 
-        fireEvent.press(getByTestId('account.custom_status.clear.button'));
+        fireEvent.press(getByTestId('clear-custom-status'));
 
         await waitFor(() => expect(mockUpdateLocalCustomStatus).toHaveBeenCalledWith(
             'https://example.com',
