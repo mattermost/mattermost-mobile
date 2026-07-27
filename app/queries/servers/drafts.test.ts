@@ -13,12 +13,14 @@ import {
     getDraft,
     getDraftOutbox,
     mutateDraftAndOutbox,
+    prepareDeleteCleanReplyDrafts,
     prepareDraftOutbox,
     repairDuplicateDrafts,
     type OutboxIntent,
     type PrepareDraftAndOutbox,
 } from './drafts';
 
+import type Model from '@nozbe/watermelondb/Model';
 import type DraftModel from '@typings/database/models/servers/draft';
 import type DraftOutboxModel from '@typings/database/models/servers/draft_outbox';
 
@@ -379,6 +381,96 @@ describe('prepareDraftOutbox coalescing', () => {
         await applyIntent({type: 'waitingForUpload'});
         const outbox = await applyIntent({type: 'remove'});
         expect(outbox).toBeUndefined();
+    });
+});
+
+describe('prepareDeleteCleanReplyDrafts', () => {
+    let database: Database;
+
+    const seedDraft = async (channelId: string, rootId: string) => {
+        await database.write(async () => {
+            await database.get<DraftModel>(DRAFT).create((d) => {
+                d.channelId = channelId;
+                d.rootId = rootId;
+                d.message = 'a reply draft';
+                d.updateAt = 1;
+            });
+        }, 'seed-draft');
+    };
+
+    const seedOutbox = async (channelId: string, rootId: string) => {
+        await database.write(async () => {
+            await database.get<DraftOutboxModel>(DRAFT_OUTBOX).create((o) => {
+                o._raw.id = buildDraftOutboxId(channelId, rootId);
+                o.channelId = channelId;
+                o.rootId = rootId;
+                o.teamId = 'team1';
+                o.operation = 'upsert';
+                o.generation = 1;
+                o.keepLocal = false;
+                o.attemptCount = 0;
+                o.nextAttemptAt = 0;
+                o.status = 'pending';
+            });
+        }, 'seed-outbox');
+    };
+
+    const commit = async (models: Model[]) => {
+        if (models.length) {
+            await database.write(async (writer) => {
+                await writer.batch(...models);
+            }, 'commit-clean-drafts');
+        }
+    };
+
+    beforeEach(async () => {
+        await DatabaseManager.init([SERVER_URL]);
+        database = DatabaseManager.serverDatabases[SERVER_URL]!.database;
+    });
+
+    afterEach(async () => {
+        await DatabaseManager.destroyServerDatabase(SERVER_URL);
+    });
+
+    it('destroys a clean reply draft (no outbox) and enqueues no delete outbox row', async () => {
+        const channelId = 'cleanreplychannelid000000000';
+        const rootId = 'cleanreplyrootid000000000000';
+        await seedDraft(channelId, rootId);
+
+        const models = await prepareDeleteCleanReplyDrafts(database, [rootId]);
+        expect(models.length).toBe(1);
+        await commit(models);
+
+        expect(await getDraft(database, channelId, rootId)).toBeUndefined();
+
+        // Server cleanup owns the deletion: no DraftOutbox row must be created.
+        expect(await getDraftOutbox(database, channelId, rootId)).toBeUndefined();
+    });
+
+    it('preserves a dirty reply draft and its outbox (local-wins)', async () => {
+        const channelId = 'dirtyreplychannelid000000000';
+        const rootId = 'dirtyreplyrootid000000000000';
+        await seedDraft(channelId, rootId);
+        await seedOutbox(channelId, rootId);
+
+        const models = await prepareDeleteCleanReplyDrafts(database, [rootId]);
+        expect(models.length).toBe(0);
+        await commit(models);
+
+        expect(await getDraft(database, channelId, rootId)).toBeDefined();
+        expect(await getDraftOutbox(database, channelId, rootId)).toBeDefined();
+    });
+
+    it('ignores channel drafts (root_id === "") even when a root id matches the channel id', async () => {
+        // Channel draft: root_id === '' and channelId equal to a passed root id.
+        const channelId = 'channelrootcollisionid000000';
+        await seedDraft(channelId, '');
+
+        const models = await prepareDeleteCleanReplyDrafts(database, [channelId]);
+        expect(models.length).toBe(0);
+        await commit(models);
+
+        expect(await getDraft(database, channelId, '')).toBeDefined();
     });
 });
 

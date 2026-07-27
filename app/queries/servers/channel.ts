@@ -173,9 +173,12 @@ export const prepareDeleteChannel = async (serverUrl: string, channel: ChannelMo
         }
     }));
 
+    // Deliberately omit channel.drafts: a channel delete/leave/purge must PRESERVE both the
+    // Draft and its durable DraftOutbox sync intent. Cascade-destroying drafts here would
+    // silently discard sync intent. Only user delete/send/empty (actions/local/draft.ts) or a
+    // confirmed server post deletion may remove a Draft.
     const associatedChildren: Array<Query<Model> | undefined> = [
         channel.members,
-        channel.drafts,
         channel.postsInChannel,
     ];
     await Promise.all(associatedChildren.map(async (children) => {

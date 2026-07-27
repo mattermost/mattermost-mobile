@@ -146,6 +146,48 @@ export const getDraftOutbox = async (database: Database, channelId: string, root
 };
 
 /**
+ * prepareDeleteCleanReplyDrafts: deletion-origin helper for the CONFIRMED server post deletion
+ * path only. When a root post is confirmed deleted on the server, any reply draft under that root
+ * whose message will never be posted should be removed — but ONLY if it is CLEAN (has no pending
+ * local DraftOutbox intent). Server cleanup already owns the deletion, so we NEVER enqueue a DELETE
+ * outbox row here.
+ *
+ * Rules:
+ *  - Considers Draft rows whose root_id is one of `rootIds` AND root_id !== '' (reply drafts only;
+ *    channel drafts, root_id === '', are never touched even if their channel matches).
+ *  - A draft with NO DraftOutbox row is CLEAN -> prepareDestroyPermanently().
+ *  - A draft WITH a DraftOutbox row carries pending local intent -> local-wins: PRESERVE both the
+ *    Draft and its outbox (add nothing for it).
+ *
+ * Returns prepared destroy records (uncommitted). Never creates or modifies a DraftOutbox row.
+ */
+export const prepareDeleteCleanReplyDrafts = async (database: Database, rootIds: string[]): Promise<Model[]> => {
+    if (!rootIds.length) {
+        return [];
+    }
+
+    const drafts = await database.collections.get<DraftModel>(DRAFT).query(
+        Q.where('root_id', Q.oneOf(rootIds)),
+        Q.where('root_id', Q.notEq('')),
+    ).fetch();
+
+    if (!drafts.length) {
+        return [];
+    }
+
+    const models: Model[] = [];
+    for (const draft of drafts) {
+        // eslint-disable-next-line no-await-in-loop
+        const outbox = await getDraftOutbox(database, draft.channelId, draft.rootId);
+        if (!outbox) {
+            models.push(draft.prepareDestroyPermanently());
+        }
+    }
+
+    return models;
+};
+
+/**
  * Prepare function passed to mutateDraftAndOutbox. It receives the current Draft and
  * DraftOutbox rows for the composite key (already fetched inside the writer) and must
  * return the prepared records (via prepareCreate/prepareUpdate/prepareDestroyPermanently)
