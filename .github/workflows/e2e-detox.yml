@@ -37,8 +37,8 @@ on:
         description: "Run ID of the parent workflow that uploaded build artifacts"
         required: true
         type: string
-      tsio-config:
-        description: "TSIO composite identity + total_reports_expected (from parent calculate-tsio-identity)"
+      tsio-job-configs:
+        description: "JSON map of per-platform TSIO configs from parent calculate-tsio-identity"
         required: true
         type: string
 
@@ -46,6 +46,7 @@ permissions:
   contents: read
   id-token: write
   actions: read
+  statuses: write
 
 env:
   ARTIFACT_RUN_ID: ${{ inputs.artifact_run_id }}
@@ -57,7 +58,7 @@ jobs:
     uses: ./.github/workflows/e2e-ios-template.yml
     with:
       run-type: ${{ inputs.run_type || 'PR' }}
-      tsio-config: ${{ inputs.tsio-config }}
+      tsio-config: ${{ toJSON(fromJSON(inputs.tsio-job-configs)['detox-ios']) }}
       tsio-shard-name: detox-ios
       record_tests_in_zephyr: ${{ inputs.run_type == 'RELEASE' || inputs.run_type == 'MAIN' || inputs.run_type == 'MASTER' }}
       MOBILE_VERSION: ${{ inputs.MOBILE_VERSION }}
@@ -82,7 +83,7 @@ jobs:
     with:
       run-android-tests: true
       run-type: ${{ inputs.run_type || 'PR' }}
-      tsio-config: ${{ inputs.tsio-config }}
+      tsio-config: ${{ toJSON(fromJSON(inputs.tsio-job-configs)['detox-android']) }}
       tsio-shard-name: detox-android
       record_tests_in_zephyr: ${{ inputs.run_type == 'RELEASE' || inputs.run_type == 'MAIN' || inputs.run_type == 'MASTER' }}
       MOBILE_VERSION: ${{ inputs.MOBILE_VERSION }}
@@ -106,7 +107,7 @@ jobs:
     uses: ./.github/workflows/e2e-ios-template.yml
     with:
       run-type: ${{ inputs.run_type || 'PR' }}
-      tsio-config: ${{ inputs.tsio-config }}
+      tsio-config: ${{ toJSON(fromJSON(inputs.tsio-job-configs)['detox-ipad']) }}
       tsio-shard-name: detox-ipad
       MOBILE_VERSION: ${{ inputs.MOBILE_VERSION }}
       MM_TEST_SERVER_URL: ${{ inputs.IOS_SITE_1_URL }}

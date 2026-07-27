@@ -42,8 +42,8 @@ on:
         required: false
         type: boolean
         default: false
-      tsio-config:
-        description: "TSIO composite identity + total_reports_expected (from parent calculate-tsio-identity)"
+      tsio-job-configs:
+        description: "JSON map of per-platform TSIO configs from parent calculate-tsio-identity"
         required: true
         type: string
 
@@ -55,6 +55,7 @@ permissions:
   contents: read
   id-token: write
   actions: read
+  statuses: write
 
 # iOS and Android are invoked as separate workflow_call runs from e2e-detox-pr.yml;
 # include PLATFORM so parallel calls do not cancel each other (same github.run_id).
@@ -77,7 +78,7 @@ jobs:
       MM_TEST_SERVER_URL: ${{ inputs.IOS_SITE_1_URL }}
       artifact_run_id: ${{ inputs.artifact_run_id }}
       record_tests_in_zephyr: ${{ inputs.record_tests_in_zephyr }}
-      tsio-config: ${{ inputs.tsio-config }}
+      tsio-config: ${{ toJSON(fromJSON(inputs.tsio-job-configs)['maestro-ios-e2e']) }}
       tsio-shard-name: maestro-ios-e2e
     secrets: inherit
 
@@ -92,6 +93,6 @@ jobs:
       MM_TEST_SERVER_URL: ${{ inputs.ANDROID_SITE_1_URL }}
       artifact_run_id: ${{ inputs.artifact_run_id }}
       record_tests_in_zephyr: ${{ inputs.record_tests_in_zephyr }}
-      tsio-config: ${{ inputs.tsio-config }}
+      tsio-config: ${{ toJSON(fromJSON(inputs.tsio-job-configs)['maestro-android-e2e']) }}
       tsio-shard-name: maestro-android-e2e
     secrets: inherit

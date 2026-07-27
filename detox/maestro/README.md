@@ -464,7 +464,7 @@ PR vs nightly vs manual coverage is summarized below (and in `config/exclude_tag
 
 - JUnit XML: `build/maestro-report.xml`
 - HTML report + screenshots uploaded to S3 and as GitHub Actions artifacts
-- Commit status: `e2e/mobile` (unified Detox + Maestro; posted by `tsio-report-status.js`)
+- Commit status: `e2e/maestro-ios` / `e2e/maestro-android` (per-job; posted by `tsio-report-status.js` after upload)
 
 ---
 

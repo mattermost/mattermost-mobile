@@ -32,48 +32,33 @@ jobs:
         id: repo
         run: echo "MOBILE_SHA=$(git rev-parse HEAD)" >> "${GITHUB_OUTPUT}"
 
-  # Phase 5 — computes the TSIO composite identity for this CMT run and the
-  # per-group totals. Each CMT matrix entry contains a five-server topology for
-  # one Mattermost version. Detox runs the FULL CMT_MATRIX across
-  # 3 platforms (ios/android/ipad) → total = 3 × (#servers). Maestro runs only
-  # the latest server version(s) across 2 platforms (ios/android) → total =
-  # 2 × (#latest servers). The orchestrator (update-final-status) and the
-  # per-platform uploads both consume these outputs.
+  # Phase 5 — base TSIO identity for this CMT run. Each matrix leg builds its
+  # own per-job report group (total_reports_expected=1) from this base + tsio-shard-name.
   cmt-identity:
-    name: Calculate CMT TSIO composite identity
+    name: Calculate CMT TSIO base identity
     runs-on: ubuntu-24.04
     permissions:
       contents: read
     needs:
       - calculate-commit-hash
     outputs:
-      composite-identity-json: ${{ steps.id.outputs.composite-identity-json }}
-      tsio-config: ${{ steps.id.outputs.tsio-config }}
-      total-reports-expected: ${{ steps.id.outputs.total-reports-expected }}
+      tsio-base-config: ${{ steps.id.outputs.tsio-base-config }}
     steps:
       - id: id
         env:
-          CMT_MATRIX: ${{ inputs.CMT_MATRIX }}
           GITHUB_REPOSITORY: ${{ github.repository }}
           MM_SHA: ${{ needs.calculate-commit-hash.outputs.MOBILE_SHA }}
           MOBILE_VERSION: ${{ inputs.MOBILE_VERSION }}
         run: |
-          DETOX_SERVERS=$(echo "$CMT_MATRIX" | jq '.server | length')
-          MAESTRO_SERVERS=$(echo "$CMT_MATRIX" | jq '[.server[] | select(.latest == true)] | length')
-          if [ "$MAESTRO_SERVERS" -eq 0 ]; then MAESTRO_SERVERS=1; fi
-          DETOX_TOTAL=$(( 3 * DETOX_SERVERS ))
-          MAESTRO_TOTAL=$(( 2 * MAESTRO_SERVERS ))
-          TOTAL=$(( DETOX_TOTAL + MAESTRO_TOTAL ))
-          echo "total-reports-expected=$TOTAL" >> "$GITHUB_OUTPUT"
           BRANCH=$(echo "$MOBILE_VERSION" | sed 's#^refs/heads/##; s#^refs/tags/##')
           BASE=$(jq -nc \
             --arg repo "$GITHUB_REPOSITORY" --arg sha "$MM_SHA" --arg run_id "$GITHUB_RUN_ID" \
             --arg attempt "$GITHUB_RUN_ATTEMPT" --arg branch "$BRANCH" \
             '{repository:$repo, commit_sha:$sha, gh_run_id:$run_id, gh_run_attempt:$attempt, branch:$branch, name:"mobile-release", run_group:"mobile-release", framework:"detox"}')
-          echo "composite-identity-json=$BASE" >> "$GITHUB_OUTPUT"
-          TSIO_CONFIG=$(jq -nc --argjson identity "$BASE" --argjson total "$TOTAL" \
-            '{composite_identity: $identity, total_reports_expected: $total}')
-          echo "tsio-config=$TSIO_CONFIG" >> "$GITHUB_OUTPUT"
+          # No status_context — templates expand per tsio-shard-name via buildTsioJobConfig.
+          TSIO_BASE=$(jq -nc --argjson identity "$BASE" \
+            '{composite_identity: $identity, total_reports_expected: 1}')
+          echo "tsio-base-config=$TSIO_BASE" >> "$GITHUB_OUTPUT"
 
   update-initial-status:
     runs-on: ubuntu-24.04
@@ -89,21 +74,23 @@ jobs:
           ref: ${{ inputs.MOBILE_VERSION }}
           persist-credentials: false
 
-      # Pending status uses the TSIO display URL (report fills in as shards upload).
-      - name: Build TSIO report URL
+      # Pending statuses are posted per matrix leg when each job starts; keep a
+      # single umbrella pending only when MOBILE_SHA is known so the PR/commit
+      # UI shows CMT is running before the first shard uploads.
+      - name: Build TSIO report URL (release group prefix)
         id: tsio-url
         env:
-          IDENTITY: ${{ needs.cmt-identity.outputs.composite-identity-json }}
+          TSIO_BASE: ${{ needs.cmt-identity.outputs.tsio-base-config }}
         run: |
-          URL=$(jq -nr --argjson id "$IDENTITY" --arg base "https://staging-test-io.test.mattermost.com" '
-            ($id.repository | split("/") | .[-1]) as $repo
+          URL=$(jq -nr --argjson cfg "$TSIO_BASE" --arg base "https://staging-test-io.test.mattermost.com" '
+            ($cfg.composite_identity) as $id
+            | ($id.repository | split("/") | .[-1]) as $repo
             | ($id.branch // "main"
                 | sub("^refs/heads/"; "")
                 | sub("^refs/tags/"; "")
                 | gsub("/"; "~")) as $branch
             | ($id.commit_sha[0:7]) as $sha
-            | ($id.run_group // $id.name // "mobile-release") as $name
-            | "\($base)/reports/\($repo|@uri)/\($branch|@uri)/\($sha)/\($name|@uri)?gh_run_id=\($id.gh_run_id)"
+            | "\($base)/reports/\($repo|@uri)/\($branch|@uri)/\($sha)/mobile-release?gh_run_id=\($id.gh_run_id)"
           ')
           echo "target_url=$URL" >> "$GITHUB_OUTPUT"
 
@@ -115,7 +102,7 @@ jobs:
           repository_full_name: ${{ github.repository }}
           commit_sha: ${{ needs.calculate-commit-hash.outputs.MOBILE_SHA }}
           context: e2e/compatibility-matrix-testing
-          description: "Compatibility Matrix Testing for ${{ inputs.MOBILE_VERSION }} version"
+          description: "Compatibility Matrix Testing for ${{ inputs.MOBILE_VERSION }} version — per-job checks also posted"
           status: pending
           target_url: ${{ steps.tsio-url.outputs.target_url }}
 
@@ -277,6 +264,7 @@ jobs:
       # nested template mints an OIDC token for the TSIO upload.
       id-token: write
       actions: read
+      statuses: write
     uses: ./.github/workflows/e2e-ios-template.yml
     needs:
       - build-ios-simulator
@@ -294,7 +282,7 @@ jobs:
       MM_MOBILE_DETOX_AWS_ACCESS_KEY_ID: ${{ secrets.MM_MOBILE_DETOX_AWS_ACCESS_KEY_ID }}
       MM_MOBILE_DETOX_AWS_SECRET_ACCESS_KEY: ${{ secrets.MM_MOBILE_DETOX_AWS_SECRET_ACCESS_KEY }}
     with:
-      tsio-config: ${{ needs.cmt-identity.outputs.tsio-config }}
+      tsio-config: ${{ needs.cmt-identity.outputs.tsio-base-config }}
       tsio-shard-name: detox-ios-Server_${{ matrix.server.version }}
       run-type: "RELEASE"
       MM_TEST_SERVER_URL: ${{ matrix.server.ios_site_1_url }}
@@ -311,6 +299,7 @@ jobs:
       contents: read
       id-token: write
       actions: read
+      statuses: write
     uses: ./.github/workflows/e2e-ios-template.yml
     needs:
       - build-ios-simulator
@@ -328,7 +317,7 @@ jobs:
       MM_MOBILE_DETOX_AWS_ACCESS_KEY_ID: ${{ secrets.MM_MOBILE_DETOX_AWS_ACCESS_KEY_ID }}
       MM_MOBILE_DETOX_AWS_SECRET_ACCESS_KEY: ${{ secrets.MM_MOBILE_DETOX_AWS_SECRET_ACCESS_KEY }}
     with:
-      tsio-config: ${{ needs.cmt-identity.outputs.tsio-config }}
+      tsio-config: ${{ needs.cmt-identity.outputs.tsio-base-config }}
       tsio-shard-name: detox-ipad-Server_${{ matrix.server.version }}
       run-type: "RELEASE"
       MM_TEST_SERVER_URL: ${{ matrix.server.ios_site_1_url }}
@@ -349,6 +338,7 @@ jobs:
       contents: read
       id-token: write
       actions: read
+      statuses: write
     uses: ./.github/workflows/e2e-maestro-template.yml
     needs:
       - build-ios-simulator
@@ -365,7 +355,7 @@ jobs:
       MM_MOBILE_DETOX_AWS_ACCESS_KEY_ID: ${{ secrets.MM_MOBILE_DETOX_AWS_ACCESS_KEY_ID }}
       MM_MOBILE_DETOX_AWS_SECRET_ACCESS_KEY: ${{ secrets.MM_MOBILE_DETOX_AWS_SECRET_ACCESS_KEY }}
     with:
-      tsio-config: ${{ needs.cmt-identity.outputs.tsio-config }}
+      tsio-config: ${{ needs.cmt-identity.outputs.tsio-base-config }}
       tsio-shard-name: maestro-ios-Server_${{ matrix.server.version }}
       platform: ios
       run-type: "RELEASE"
@@ -380,6 +370,7 @@ jobs:
       contents: read
       id-token: write
       actions: read
+      statuses: write
     uses: ./.github/workflows/e2e-android-template.yml
     needs:
       - build-android-apk
@@ -397,7 +388,7 @@ jobs:
       MM_MOBILE_DETOX_AWS_ACCESS_KEY_ID: ${{ secrets.MM_MOBILE_DETOX_AWS_ACCESS_KEY_ID }}
       MM_MOBILE_DETOX_AWS_SECRET_ACCESS_KEY: ${{ secrets.MM_MOBILE_DETOX_AWS_SECRET_ACCESS_KEY }}
     with:
-      tsio-config: ${{ needs.cmt-identity.outputs.tsio-config }}
+      tsio-config: ${{ needs.cmt-identity.outputs.tsio-base-config }}
       tsio-shard-name: detox-android-Server_${{ matrix.server.version }}
       run-android-tests: true
       run-type: "RELEASE"
@@ -416,6 +407,7 @@ jobs:
       contents: read
       id-token: write
       actions: read
+      statuses: write
     uses: ./.github/workflows/e2e-maestro-template.yml
     needs:
       - build-android-apk-maestro
@@ -432,7 +424,7 @@ jobs:
       MM_MOBILE_DETOX_AWS_ACCESS_KEY_ID: ${{ secrets.MM_MOBILE_DETOX_AWS_ACCESS_KEY_ID }}
       MM_MOBILE_DETOX_AWS_SECRET_ACCESS_KEY: ${{ secrets.MM_MOBILE_DETOX_AWS_SECRET_ACCESS_KEY }}
     with:
-      tsio-config: ${{ needs.cmt-identity.outputs.tsio-config }}
+      tsio-config: ${{ needs.cmt-identity.outputs.tsio-base-config }}
       tsio-shard-name: maestro-android-Server_${{ matrix.server.version }}
       platform: android
       run-type: "RELEASE"
@@ -446,11 +438,7 @@ jobs:
     if: always()
     permissions:
       contents: read
-      # posts the combined commit status.
       statuses: write
-      # mints the OIDC token used to recover the TSIO report group ids.
-      id-token: write
-      actions: read
     needs:
       - cmt-identity
       - calculate-commit-hash
@@ -460,27 +448,19 @@ jobs:
       - maestro-ios-e2e
       - maestro-android-e2e
     steps:
-      - name: Sparse checkout TSIO status utility
-        uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
+      - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
         with:
           ref: ${{ inputs.MOBILE_VERSION }}
           persist-credentials: false
-          sparse-checkout: |
-            detox/utils/tsio-report-status.js
-            detox/utils/cmt-channel-notify.js
-            detox/utils/cli-args.js
 
-      - name: Post TSIO commit status from unified CMT report group
+      # Umbrella context only — each matrix leg already posted e2e/<shard> from TSIO.
+      - name: Finalize umbrella CMT commit status from CI job results
         env:
           GITHUB_TOKEN: ${{ github.token }}
-          COMPOSITE_IDENTITY: ${{ needs.cmt-identity.outputs.composite-identity-json }}
-          TOTAL_REPORTS_EXPECTED: ${{ needs.cmt-identity.outputs.total-reports-expected }}
-          # Incoming webhook for the Mobile CMT/RC results channel (separate from
-          # PR MM_MOBILE_E2E_WEBHOOK_URL and main MM_E2E_MASTER_HEALTH_WEBHOOK_URL).
-          # Optional — when unset, TSIO status still flips and channel notify is skipped.
-          MATTERMOST_CMT_WEBHOOK_URL: ${{ secrets.MM_E2E_RELEASE_WEBHOOK_URL }}
+          COMMIT_SHA: ${{ needs.calculate-commit-hash.outputs.MOBILE_SHA }}
+          REPO: ${{ github.repository }}
+          TARGET_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
         run: |
-          set +e
           UPSTREAM="true"
           for r in "${{ needs.detox-e2e.result }}" "${{ needs.detox-android-e2e.result }}" "${{ needs.detox-ipad-e2e.result }}" "${{ needs.maestro-ios-e2e.result }}" "${{ needs.maestro-android-e2e.result }}"; do
             case "$r" in
@@ -488,20 +468,61 @@ jobs:
               *) UPSTREAM="false" ;;
             esac
           done
-          node detox/utils/tsio-report-status.js \
-            --composite-identity="$COMPOSITE_IDENTITY" \
-            --total-reports-expected="$TOTAL_REPORTS_EXPECTED" \
-            --github-token="$GITHUB_TOKEN" \
-            --context="e2e/compatibility-matrix-testing" \
-            --upstream-succeeded="$UPSTREAM" \
-            --poll-attempts=24 \
-            --use-staging=true
-          RC=$?
-          echo "tsio-report-status exit=$RC upstream_succeeded=$UPSTREAM"
-          if [ "$RC" -ne 0 ] && [ "$UPSTREAM" = "true" ]; then
-            echo "::error::TSIO reported test failures (exit $RC) with all upstream jobs succeeded."
-            exit 1
+          if [ "$UPSTREAM" = "true" ]; then
+            STATE=success
+            DESC="Compatibility Matrix Testing completed — see per-job e2e/* checks"
+          else
+            STATE=failure
+            DESC="Compatibility Matrix Testing failed — see per-job e2e/* checks"
           fi
-          exit 0
+          gh api --method POST "repos/${REPO}/statuses/${COMMIT_SHA}" \
+            -f state="$STATE" \
+            -f context="e2e/compatibility-matrix-testing" \
+            -f description="$DESC" \
+            -f target_url="$TARGET_URL"
+
+      - name: Post Mattermost CMT channel rollup
+        if: always()
+        env:
+          TSIO_BASE: ${{ needs.cmt-identity.outputs.tsio-base-config }}
+          MATTERMOST_CMT_WEBHOOK_URL: ${{ secrets.MM_E2E_RELEASE_WEBHOOK_URL }}
+        run: |
+          UPSTREAM="true"
+          for r in "${{ needs.detox-e2e.result }}" "${{ needs.detox-android-e2e.result }}" "${{ needs.detox-ipad-e2e.result }}" "${{ needs.maestro-ios-e2e.result }}" "${{ needs.maestro-android-e2e.result }}"; do
+            case "$r" in
+              success|skipped) ;;
+              *) UPSTREAM="false" ;;
+            esac
+          done
+          export UPSTREAM_SUCCEEDED="$UPSTREAM"
+          # Per-shard TSIO groups are finalized in each matrix leg. This umbrella
+          # posts one channel message from CI outcomes (no second commit status).
+          node <<'NODE'
+          const {notifyCmtChannel, resolveWebhookUrl} = require('./detox/utils/cmt-channel-notify');
+          const base = JSON.parse(process.env.TSIO_BASE);
+          const identity = base.composite_identity;
+          const upstream = process.env.UPSTREAM_SUCCEEDED !== 'false';
+          const webhookUrl = resolveWebhookUrl(identity.name);
+          if (!webhookUrl) {
+            console.log('No CMT webhook configured — skipping');
+            process.exit(0);
+          }
+          const runUrl = `${process.env.GITHUB_SERVER_URL}/${process.env.GITHUB_REPOSITORY}/actions/runs/${process.env.GITHUB_RUN_ID}`;
+          const detail = {
+            status: upstream ? 'completed' : 'incomplete',
+            test_stats: {passed: 0, failed: upstream ? 0 : 1, skipped: 0},
+            reports: [],
+          };
+          notifyCmtChannel({
+            core: {info: console.log, warning: console.warn},
+            baseUrl: 'https://staging-test-io.test.mattermost.com',
+            compositeIdentity: identity,
+            detail,
+            reportUrl: runUrl,
+            upstreamJobsSucceeded: upstream,
+            hasFailures: !upstream,
+            webhookUrl,
+          }).then(() => process.exit(0)).catch((e) => { console.warn(e.message); process.exit(0); });
+          NODE
 
       # Instance cleanup is handled by matterwick on workflow_run completed.

@@ -49,7 +49,15 @@ runs:
           const repo = context.repo.repo;
 
           const ACTIVE_RUN_STATUSES = ['in_progress', 'queued', 'waiting'];
-          const E2E_STATUS_CONTEXTS = ['e2e/mobile'];
+          // Per-job contexts (plus legacy e2e/mobile so superseded runs clear old checks).
+          const E2E_STATUS_CONTEXTS = [
+            'e2e/detox-ios',
+            'e2e/detox-android',
+            'e2e/detox-ipad',
+            'e2e/maestro-ios',
+            'e2e/maestro-android',
+            'e2e/mobile',
+          ];
 
           const runMatchesPr = (run) => {
             if (!hasPrNumber) {
