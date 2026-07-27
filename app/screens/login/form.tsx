@@ -168,7 +168,7 @@ const LoginForm = ({
             }
         }
 
-        return getFullErrorMessage(loginError, intl);
+        return getFullErrorMessage(loginError);
     }, [intl]);
 
     const checkLoginResponse = useCallback((data: LoginActionResponse) => {

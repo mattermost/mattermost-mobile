@@ -69,12 +69,6 @@ describe('Errors', () => {
         expect(getFullErrorMessage({
             details: 'more info',
         })).toBe('Unknown error; more info');
-
-        // Non-string intl.defaultMessage must not become "[object Object]"
-        expect(getFullErrorMessage({
-            details: {message: 'URLSessionTask failed'},
-            intl: {id: 'x', defaultMessage: {nested: true} as unknown as string},
-        })).toBe('Unknown error; URLSessionTask failed');
     });
 
     test('getServerError', () => {

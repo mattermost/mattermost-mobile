@@ -246,7 +246,7 @@ const ChannelMention = ({
             completedDraft = mentionPart.replace(CHANNEL_MENTION_REGEX, `~${mention} `);
         }
 
-        const newCursorPosition = completedDraft.length;
+        const newCursorPosition = completedDraft.length - 1;
 
         if (value.length > localCursorPosition) {
             completedDraft += value.substring(localCursorPosition);
