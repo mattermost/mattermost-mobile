@@ -32,3 +32,25 @@ export const DraftOutboxStatus = {
 
 // eslint-disable-next-line @typescript-eslint/no-redeclare
 export type DraftOutboxStatus = typeof DraftOutboxStatus[keyof typeof DraftOutboxStatus];
+
+// Draft sync retry-timer timing (used by DraftSyncManager).
+// DRAFT_SYNC_RETRY_BASE_MS: base delay for the first backoff step.
+export const DRAFT_SYNC_RETRY_BASE_MS = 1_000;
+
+// DRAFT_SYNC_RETRY_MAX_MS: ceiling for the exponential backoff delay.
+export const DRAFT_SYNC_RETRY_MAX_MS = 300_000;
+
+// DRAFT_SYNC_RETRY_JITTER: fractional (+/-) jitter applied to each backoff delay.
+export const DRAFT_SYNC_RETRY_JITTER = 0.2;
+
+// DRAFT_ABSENCE_CONFIRMATION_DELAY_MS: grace period before confirming a draft is absent on the server.
+export const DRAFT_ABSENCE_CONFIRMATION_DELAY_MS = 5_000;
+
+// DRAFT_SYNC_RECONCILIATION_DEADLINE_MS: deadline for a baseline reconciliation pass to complete.
+export const DRAFT_SYNC_RECONCILIATION_DEADLINE_MS = 30_000;
+
+// DRAFT_SYNC_SNAPSHOT_STALE_MS: age after which a cached reconciliation snapshot is considered stale.
+export const DRAFT_SYNC_SNAPSHOT_STALE_MS = 300_000;
+
+// MAX_DRAFT_SYNC_EVENT_BUFFER: hard cap on buffered inbound WebSocket events per server.
+export const MAX_DRAFT_SYNC_EVENT_BUFFER = 1_000;
