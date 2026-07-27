@@ -59,6 +59,7 @@ async function waitForDialogSelectorButton(testId: string) {
 async function selectUser() {
     // Prefer a concrete user row. Prefix-only ids never match UserItem's
     // `${testID}.${user.id}` composition (CI 30216081940: selector stayed open).
+    // Do not tap the list container — that never selects a row.
     const strategies: Array<() => Promise<void>> = [
         async () => {
             await IntegrationSelectorScreen.searchFor('admin');
@@ -68,9 +69,6 @@ async function selectUser() {
             const el = element(by.id(/^integration_selector\.user_list\.user_item\./));
             await expect(el).toExist();
             await el.atIndex(0).tap();
-        },
-        async () => {
-            await element(by.id('integration_selector.user_list')).tap();
         },
     ];
     for (const strategy of strategies) {

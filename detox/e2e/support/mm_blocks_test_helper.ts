@@ -234,7 +234,10 @@ export class MmBlocksTestHelper {
 
     static async openThreadForLastChannelPost(channelId: string, postMessage: string): Promise<void> {
         await this.waitForPostText(postMessage);
-        const {post: rootPost} = await Post.apiGetLastPostInChannel(siteOneUrl, channelId);
+        const {post: rootPost, error} = await Post.apiFindPostInChannelByMessage(siteOneUrl, channelId, postMessage);
+        if (error || !rootPost?.id) {
+            throw new Error(`[mm_blocks] Failed to find root post for marker "${postMessage}"`);
+        }
         await this.openThreadForPost(rootPost.id, postMessage);
     }
 

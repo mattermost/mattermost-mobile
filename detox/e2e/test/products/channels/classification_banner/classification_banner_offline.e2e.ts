@@ -25,6 +25,12 @@ import {by, device, element, expect, waitFor} from 'detox';
 // Lock wait is up to 20m; leave headroom for enable/setup after acquire.
 jest.setTimeout(timeouts.ONE_MIN * 30);
 
+const escapeRegex = (value: string) => value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+
+const getBlockedServerPatterns = () => {
+    return Array.from(new Set([siteOneUrl, serverOneUrl])).map((url) => `.*${escapeRegex(url)}.*`);
+};
+
 describe('Classification Banner - Offline / Cache Behaviour', () => {
     const serverOneDisplayName = 'Server 1';
     let lockOwner = '';
@@ -73,7 +79,7 @@ describe('Classification Banner - Offline / Cache Behaviour', () => {
         await expect(element(by.text('TOP SECRET'))).toBeVisible();
 
         // # Block all API calls to simulate offline
-        await device.setURLBlacklist([`.*${siteOneUrl}.*`]);
+        await device.setURLBlacklist(getBlockedServerPatterns());
 
         // # Reload the app (it should hydrate from DB cache, not from the API)
         await device.reloadReactNative();
@@ -105,7 +111,7 @@ describe('Classification Banner - Offline / Cache Behaviour', () => {
         ]);
 
         // # Block API calls and reload — app should load old cache (TOP SECRET, not SECRET)
-        await device.setURLBlacklist([`.*${siteOneUrl}.*`]);
+        await device.setURLBlacklist(getBlockedServerPatterns());
         await device.reloadReactNative();
         await ChannelListScreen.toBeVisible();
 
@@ -122,7 +128,7 @@ describe('Classification Banner - Offline / Cache Behaviour', () => {
         await ChannelListScreen.toBeVisible();
 
         // # Block API calls before reloading again
-        await device.setURLBlacklist([`.*${siteOneUrl}.*`]);
+        await device.setURLBlacklist(getBlockedServerPatterns());
 
         // # Reload the app with no cached data and no API access
         await device.reloadReactNative();

@@ -243,6 +243,10 @@ describe('Search - Recent Mentions', () => {
         await EditPostScreen.messageInput.replaceText(updatedMessage);
         await EditPostScreen.save();
 
+        // * Wait for the edited post to be returned by the server before checking
+        // recent mentions, which is search-backed and can lag behind the edit save.
+        await Post.waitForPostMessage(siteOneUrl, testChannel.id, ownMentionPost.id, updatedMessage);
+
         // * Verify the edited state in the recent-mentions UI.
         await RecentMentionsScreen.verifyPostEdited(ownMentionPost.id, updatedMessage);
 

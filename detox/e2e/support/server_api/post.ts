@@ -110,6 +110,38 @@ export const apiGetLastPostInChannel = async (
     return {error: {message: `No posts found in channel ${channelId} after ${maxAttempts} attempts`}};
 };
 
+export const apiFindPostInChannelByMessage = async (
+    baseUrl: string,
+    channelId: string,
+    message: string,
+    {maxAttempts = 6, intervalMs = timeouts.TWO_SEC} = {},
+): Promise<any> => {
+    /* eslint-disable no-await-in-loop -- poll until the target post is indexed */
+    for (let attempt = 0; attempt < maxAttempts; attempt++) {
+        if (attempt > 0) {
+            await wait(intervalMs);
+        } else {
+            await wait(timeouts.TWO_SEC);
+        }
+
+        const response = await apiGetPostsInChannel(baseUrl, channelId);
+        if (response.error) {
+            if (attempt === maxAttempts - 1) {
+                return response;
+            }
+            continue;
+        }
+
+        const post = response.posts?.find((candidate: any) => candidate.message.includes(message));
+        if (post) {
+            return {post};
+        }
+    }
+    /* eslint-enable no-await-in-loop */
+
+    return {error: {message: `No post containing "${message}" found in channel ${channelId} after ${maxAttempts} attempts`}};
+};
+
 /**
  * Patch a post.
  * See https://api.mattermost.com/#operation/PatchPost
@@ -315,11 +347,38 @@ export const waitForPostUnflagged = async (baseUrl: string, userId: string, post
     throw new Error(`Post ${postId} still flagged after ${maxAttempts} attempts`);
 };
 
+export const waitForPostMessage = async (
+    baseUrl: string,
+    channelId: string,
+    postId: string,
+    expectedMessage: string,
+    maxAttempts = 10,
+): Promise<void> => {
+    /* eslint-disable no-await-in-loop -- poll until the edited post is returned by the server */
+    for (let i = 0; i < maxAttempts; i++) {
+        const {posts, error} = await apiGetPostsInChannel(baseUrl, channelId);
+        if (!error) {
+            const post = posts?.find((candidate: any) => candidate.id === postId);
+            if (post?.message === expectedMessage) {
+                return;
+            }
+        }
+
+        if (i < maxAttempts - 1) {
+            await wait(timeouts.TWO_SEC);
+        }
+    }
+    /* eslint-enable no-await-in-loop */
+
+    throw new Error(`Post ${postId} did not update to "${expectedMessage}" after ${maxAttempts} attempts`);
+};
+
 export const Post = {
     apiCreatePost,
     apiCreatePostEphemeral,
     apiCreateIncomingWebhook,
     apiCreatePostWithImageAttachment,
+    apiFindPostInChannelByMessage,
     apiGetLastPostInChannel,
     apiGetPostsInChannel,
     apiPinPost,
@@ -328,6 +387,7 @@ export const Post = {
     apiUploadFileToChannel,
     apiGetFlaggedPosts,
     waitForPostFlagged,
+    waitForPostMessage,
     waitForPostUnflagged,
 };
 
