@@ -252,6 +252,11 @@ describe('Search - Recent Mentions', () => {
             updatedMessage,
         );
 
+        // Force a mentions refetch so the list shows the edited body (CI 59ec6ae
+        // matched /edit$/ against a stale row that never updated).
+        await RecentMentionsScreen.open();
+        await RecentMentionsScreen.toBeVisible();
+
         // * Verify the edited state in the recent-mentions UI.
         await RecentMentionsScreen.verifyPostEdited(ownMentionPost.id, updatedMessage);
 

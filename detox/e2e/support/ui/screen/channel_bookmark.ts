@@ -52,10 +52,55 @@ class ChannelBookmarkScreen {
     editOption = element(by.text('Edit'));
     deleteOption = element(by.text('Delete'));
     copyLinkOption = element(by.text('Copy Link'));
+    shareOption = element(by.text('Share'));
 
     // Delete confirmation alert
     deleteConfirmYesButton = element(by.text('Yes'));
     deleteConfirmCancelButton = element(by.text('Cancel'));
+
+    /**
+     * Bookmark options is a bottom sheet with no Cancel row (CI 59ec6ae screenshots).
+     * Dismiss by swiping a visible row; Android can use back when a sheet row exists.
+     */
+    dismissOptionsSheet = async () => {
+        const swipeTargets = [this.deleteOption, this.editOption, this.copyLinkOption, this.shareOption];
+        let sheetVisible = false;
+        /* eslint-disable no-await-in-loop -- probe which option rows are on this sheet */
+        for (const target of swipeTargets) {
+            try {
+                await waitFor(target).toBeVisible().withTimeout(timeouts.TWO_SEC);
+                sheetVisible = true;
+                break;
+            } catch {
+                // Row not present on this sheet variant.
+            }
+        }
+        /* eslint-enable no-await-in-loop */
+
+        if (!sheetVisible) {
+            return;
+        }
+
+        if (isAndroid()) {
+            await device.pressBack();
+        } else {
+            /* eslint-disable no-await-in-loop -- swipe the first visible sheet row */
+            for (const target of swipeTargets) {
+                try {
+                    await waitFor(target).toBeVisible().withTimeout(timeouts.TWO_SEC);
+                    await target.swipe('down', 'fast', 0.9, 0.5, 0.1);
+                    await wait(timeouts.ONE_SEC);
+                    break;
+                } catch {
+                    // Try next row.
+                }
+            }
+            /* eslint-enable no-await-in-loop */
+        }
+
+        await waitFor(this.editOption).not.toExist().withTimeout(timeouts.FIVE_SEC);
+        await waitFor(this.copyLinkOption).not.toExist().withTimeout(timeouts.FIVE_SEC);
+    };
 
     // Error alert
     addErrorTitle = element(by.text('Error adding bookmark'));

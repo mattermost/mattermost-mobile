@@ -210,12 +210,17 @@ describe('Autocomplete - Channel Mention', () => {
 
         // # Type in channel name and tap on channel mention autocomplete
         await ChannelScreen.postInput.typeText(testChannel.name);
+
+        // iOS CI 59ec6ae: row exists but fails default 100% visibility; wait for
+        // partial visibility (keyboard + list animation) before tap — screenshot
+        // showed the suggestion on-screen when the tap was rejected.
+        await waitFor(channelMentionAutocomplete).toBeVisible(40).withTimeout(timeouts.TEN_SEC);
         await channelMentionAutocomplete.tap();
 
         // * Verify channel mention list disappears
         // Selecting a mention inserts `~channel` but on iOS 26 the dropdown can
         // stay open until a trailing space settles autocomplete state (same as
-        // MM-T4879_5). Type the space, then wait for the list to leave the tree.
+        // MM-T4879_5).
         await ChannelScreen.postInput.typeText(' ');
         await waitFor(Autocomplete.sectionChannelMentionList).not.toExist().withTimeout(timeouts.TEN_SEC);
 

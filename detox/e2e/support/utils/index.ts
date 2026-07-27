@@ -80,6 +80,22 @@ export async function retryWithReload(
                 await new Promise((res) => setTimeout(res, 10000));
 
                 if (serverUrl && serverDisplayName) {
+                    // Prior suite may have left the session authenticated (CI 59ec6ae:
+                    // T5108 died on server.screen inside this recovery path). Log out
+                    // first so connectToServer can show the server form again.
+                    // Lazy require avoids utils ↔ screen circular imports.
+                    // eslint-disable-next-line global-require, @typescript-eslint/no-var-requires
+                    const {ChannelListScreen, HomeScreen} = require('@support/ui/screen');
+                    try {
+                        // eslint-disable-next-line no-await-in-loop
+                        await waitFor(ChannelListScreen.channelListScreen).toExist().withTimeout(timeouts.THREE_SEC);
+                        // eslint-disable-next-line no-await-in-loop
+                        await HomeScreen.logout();
+                        // eslint-disable-next-line no-await-in-loop
+                        await wait(timeouts.TWO_SEC);
+                    } catch {
+                        // Not on channel list — proceed to connect.
+                    }
                     // eslint-disable-next-line no-await-in-loop
                     await ServerScreen.connectToServer(serverUrl, serverDisplayName);
                 }
@@ -138,9 +154,13 @@ export async function longPressWithScrollRetry(
     scrollContainer: Detox.NativeMatcher,
     checkElement: Detox.NativeElement,
     maxAttempts = 8,
+    deadlineMs?: number,
 ): Promise<void> {
     /* eslint-disable no-await-in-loop */
     for (let attempt = 1; attempt <= maxAttempts; attempt++) {
+        if (deadlineMs !== undefined && Date.now() > deadlineMs) {
+            throw new Error(`longPressWithScrollRetry exceeded deadline after ${attempt - 1} attempts`);
+        }
         await scrollElementIntoView(target, scrollContainer);
 
         if (isAndroid()) {

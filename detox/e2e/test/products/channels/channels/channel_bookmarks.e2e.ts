@@ -806,8 +806,9 @@ describe('Channels - Channel Bookmarks', () => {
         await ChannelScreen.back();
     });
 
-    // External link open is Android-only (iOS Safari overlays hang CI); file preview + long-press run on both.
-    it('MM-T69455_1 - should open file preview on tap and options on long press (Android also opens link externally)', async () => {
+    // File preview + long-press options on both platforms. External link open dropped
+    // for Android too — Chrome Custom Tab + launchApp recovery hung CI 59ec6ae (300s).
+    it('MM-T69455_1 - should open file preview on tap and options on long press', async () => {
         const channelT69455 = await createChannel();
 
         const {bookmark: linkT69455, error: linkError} = await ChannelBookmark.apiCreateChannelBookmarkLink(
@@ -915,35 +916,18 @@ describe('Channels - Channel Bookmarks', () => {
 
         await ensureHeaderBookmarkVisible(linkBookmarkEl, 'Tap Link Bookmark');
 
-        // Link open leaves the app (Android Chrome / iOS Safari). iOS CI hangs in
-        // Safari cookie/tutorial overlays (CI 30084842314 / 30250131265) — only
-        // exercise the external open on Android; both platforms cover long-press options.
-        if (isAndroid()) {
-            await linkBookmarkEl.tap();
-            await wait(timeouts.ONE_SEC);
-            await device.launchApp({newInstance: false});
-            await ChannelScreen.toBeVisible();
-            await ensureHeaderBookmarkVisible(linkBookmarkEl, 'Tap Link Bookmark');
-            await expect(ChannelBookmarkScreen.editOption).not.toBeVisible();
-        }
-
         // # Long press the link bookmark to open options
         await linkBookmarkEl.longPress();
 
         // * Verify long press opens the bookmark options bottom sheet
         await expect(ChannelBookmarkScreen.editOption).toBeVisible();
 
-        if (isAndroid()) {
-            await device.pressBack();
-        } else {
-            try {
-                await element(by.text('Cancel')).tap();
-            } catch {
-                // Options sheet may already be dismissed.
-            }
-        }
+        // Sheet has Edit/Copy/Share/Delete — no Cancel (CI 59ec6ae screenshot).
+        await ChannelBookmarkScreen.dismissOptionsSheet();
+        await ChannelScreen.toBeVisible();
 
         // # Go back to channel list
         await ChannelScreen.back();
+        await ChannelListScreen.toBeVisible();
     });
 });

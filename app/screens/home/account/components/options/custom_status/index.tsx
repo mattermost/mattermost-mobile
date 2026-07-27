@@ -2,11 +2,10 @@
 // See LICENSE.txt for license information.
 
 import React, {useCallback, useEffect, useState} from 'react';
-import {DeviceEventEmitter, Pressable, View} from 'react-native';
+import {DeviceEventEmitter, TouchableOpacity, View} from 'react-native';
 
 import {updateLocalCustomStatus} from '@actions/local/user';
 import {unsetCustomStatus} from '@actions/remote/user';
-import ClearButton from '@components/custom_status/clear_button';
 import {Events, Screens} from '@constants';
 import {SET_CUSTOM_STATUS_FAILURE} from '@constants/custom_status';
 import {useServerUrl} from '@context/server';
@@ -24,23 +23,15 @@ import type UserModel from '@typings/database/models/servers/user';
 
 const getStyleSheet = makeStyleSheetFromTheme((theme) => {
     return {
-        row: {
-            flexDirection: 'row',
-            alignItems: 'center',
-        },
-        pressableBody: {
-            flex: 1,
-            flexDirection: 'row',
-            marginVertical: 18,
-        },
         label: {
             color: theme.centerChannelColor,
             ...typography('Body', 200),
             textAlignVertical: 'center',
             includeFontPadding: false,
         },
-        clearButton: {
-            marginRight: 14,
+        body: {
+            flexDirection: 'row',
+            marginVertical: 18,
         },
     };
 });
@@ -56,7 +47,7 @@ const CustomStatus = ({isTablet, currentUser}: CustomStatusProps) => {
     const [showRetryMessage, setShowRetryMessage] = useState<boolean>(false);
     const customStatus = getUserCustomStatus(currentUser);
     const isCustomStatusExpired = checkCustomStatusIsExpired(currentUser);
-    const isStatusSet = Boolean(!isCustomStatusExpired && (customStatus?.text || customStatus?.emoji));
+    const isStatusSet = !isCustomStatusExpired && (customStatus?.text || customStatus?.emoji);
     const styles = getStyleSheet(theme);
 
     useEffect(() => {
@@ -78,10 +69,7 @@ const CustomStatus = ({isTablet, currentUser}: CustomStatusProps) => {
             return;
         }
 
-        const {error: localError} = await updateLocalCustomStatus(serverUrl, currentUser, undefined);
-        if (localError) {
-            setShowRetryMessage(true);
-        }
+        updateLocalCustomStatus(serverUrl, currentUser, undefined);
     }, [currentUser, serverUrl]));
 
     const goToCustomStatusScreen = usePreventDoubleTap(useCallback(() => {
@@ -93,15 +81,12 @@ const CustomStatus = ({isTablet, currentUser}: CustomStatusProps) => {
         setShowRetryMessage(false);
     }, [isTablet]));
 
-    // Clear is a sibling of the row press target — nested touchables on Android
-    // steal/miss the clear tap (CI 30250131265 MM-T4990_4 / MM-T3891).
     return (
-        <View style={styles.row}>
-            <Pressable
-                onPress={goToCustomStatusScreen}
-                testID='account.custom_status.option'
-                style={({pressed}) => [styles.pressableBody, pressed && {opacity: 0.72}]}
-            >
+        <TouchableOpacity
+            onPress={goToCustomStatusScreen}
+            testID='account.custom_status.option'
+        >
+            <View style={styles.body}>
                 <CustomStatusEmoji
                     emoji={customStatus?.emoji}
                     isStatusSet={Boolean(isStatusSet)}
@@ -109,19 +94,11 @@ const CustomStatus = ({isTablet, currentUser}: CustomStatusProps) => {
                 <CustomLabel
                     customStatus={customStatus!}
                     isStatusSet={Boolean(isStatusSet)}
+                    onClearCustomStatus={clearCustomStatus}
                     showRetryMessage={showRetryMessage}
                 />
-            </Pressable>
-            {Boolean(isStatusSet) && (
-                <View style={styles.clearButton}>
-                    <ClearButton
-                        handlePress={clearCustomStatus}
-                        theme={theme}
-                        testID='account.custom_status.clear.button'
-                    />
-                </View>
-            )}
-        </View>
+            </View>
+        </TouchableOpacity>
     );
 };
 

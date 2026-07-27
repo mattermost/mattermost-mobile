@@ -3,7 +3,7 @@
 
 import React, {useCallback, useMemo, type ReactNode} from 'react';
 import {useIntl} from 'react-intl';
-import {Pressable, StyleSheet, Text, View, type StyleProp, type ViewStyle} from 'react-native';
+import {StyleSheet, Text, TouchableOpacity, View, type StyleProp, type ViewStyle} from 'react-native';
 
 import CompassIcon from '@components/compass_icon';
 import CustomStatusEmoji from '@components/custom_status/custom_status_emoji';
@@ -59,8 +59,6 @@ const getThemedStyles = makeStyleSheetFromTheme((theme: Theme) => {
         },
     };
 });
-
-const pressedOpacityStyle = {opacity: 0.72};
 
 const nonThemedStyles = StyleSheet.create({
     row: {
@@ -149,13 +147,12 @@ const UserItem = ({
     }, [user, onUserLongPress]);
 
     return (
-        <Pressable
+        <TouchableOpacity
             onPress={onPress}
             onLongPress={onLongPress}
             disabled={!(onUserPress || onUserLongPress)}
             onLayout={onLayout}
             testID={userItemTestId}
-            style={({pressed}) => [pressed && pressedOpacityStyle]}
         >
             <View
                 ref={viewRef}
@@ -218,7 +215,7 @@ const UserItem = ({
                     {FooterComponent}
                 </View>
             </View>
-        </Pressable>
+        </TouchableOpacity>
     );
 };
 

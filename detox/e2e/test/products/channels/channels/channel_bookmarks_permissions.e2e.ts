@@ -210,11 +210,14 @@ describe('Channels - Channel Bookmarks Permissions', () => {
         await archiveBookmarkEl.longPress();
         await wait(timeouts.ONE_SEC);
 
-        // Still on channel info — do not pressBack (that leaves the screen if no sheet opened).
+        // Assert while any options sheet is up, then dismiss so close is hittable.
+        // Archived sheet is Copy Link / Share only — no Cancel (CI 59ec6ae screenshot).
         await expect(element(by.id('channel_info.screen'))).toExist();
         await expect(ChannelBookmarkScreen.editOption).not.toExist();
         await expect(ChannelBookmarkScreen.deleteOption).not.toExist();
 
+        await ChannelBookmarkScreen.dismissOptionsSheet();
+        await waitFor(ChannelInfoScreen.closeButton).toBeVisible().withTimeout(timeouts.TEN_SEC);
         await ChannelInfoScreen.close();
 
         // # Close the archived channel and go back to channel list

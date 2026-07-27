@@ -164,20 +164,20 @@ class RecentMentionsScreen {
                 throw new Error(`Could not match edited indicator for post ${postId}`);
             }
 
-            try {
+            // Full message is split across Text nodes (@mention highlight). Match the
+            // trailing "edit" token and/or Edited badge — never by.text(RegExp) on iOS
+            // (CI 59ec6ae matched the literal characters "/edit$/").
+            const editSuffix = updatedMessage.trim().split(/\s+/).pop();
+            if (editSuffix) {
                 await waitFor(
-                    element(by.text(updatedMessage).withAncestor(postContainer)),
+                    element(by.text(editSuffix).withAncestor(postContainer)),
                 ).toExist().withTimeout(timeouts.FIVE_SEC);
-            } catch {
-                // @mention is a separate node — match the edited suffix instead.
-                const suffix = updatedMessage.split(' ').slice(-1)[0];
-                if (!suffix) {
-                    throw new Error(`Could not match edited message for post ${postId}`);
-                }
-                await waitFor(
-                    element(by.text(new RegExp(`${suffix}$`)).withAncestor(postContainer)),
-                ).toExist().withTimeout(timeouts.FIVE_SEC);
+                return;
             }
+
+            throw new Error(
+                `Could not match edited message for post ${postId} (expected text "${updatedMessage}")`,
+            );
         };
 
         /* eslint-disable no-await-in-loop -- poll before each tab refresh */

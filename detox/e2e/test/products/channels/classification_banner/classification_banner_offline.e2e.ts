@@ -108,7 +108,10 @@ describe('Classification Banner - Offline / Cache Behaviour', () => {
         await waitFor(element(by.text('TOP SECRET'))).toBeVisible().withTimeout(timeouts.TEN_SEC);
     });
 
-    it('MM-T6207_1 - should show stale cached value when API is blocked after a server change', async () => {
+    // CI 59ec6ae (iOS+Android): Detox setURLBlacklist does not reliably block WS;
+    // SECRET can land in cache so TOP SECRET stale assert is not trustworthy.
+    // Re-enable when offline simulation covers WebSocket or server API supports it.
+    it.skip('MM-T6207_1 - should show stale cached value when API is blocked after a server change', async () => {
         // # Set up classification at TOP SECRET
         const {linkedFieldId, optionIdsByName} = await Properties.apiSetupClassificationWithBanner(siteOneUrl, {
             levelId: 'lvltopsecret00000000000000',

@@ -20,16 +20,25 @@ export const requireWebhookServer = async (baseUrl: string): Promise<void> => {
     if (!baseUrl?.trim()) {
         throw new Error(
             'WEBHOOK_BASE_URL is empty — Cloudflare quick tunnel did not come up on this shard. ' +
-            'Non-mm_blocks specs should still run; re-run the mm_blocks shard or check start_webhook_sidecar.sh logs.',
+            'Configure MM_MOBILE_E2E_WEBHOOK_PUBLIC_BASE_URL (+ optional CLOUDFLARED_TUNNEL_TOKEN) ' +
+            'for stable ingress. Non-mm_blocks specs on other shards are unaffected.',
         );
     }
     try {
-        const response = await axios.get<{message?: string}>(baseUrl, {timeout: 10000});
+        const response = await axios.get<{message?: string}>(baseUrl, {
+            timeout: 10000,
+
+            // trycloudflare often fails TLS/DNS from the runner after a brief healthy window.
+            validateStatus: () => true,
+        });
+        if (response.status >= 500) {
+            throw new Error(`HTTP ${response.status} from ${baseUrl}`);
+        }
         if (response.data?.message !== 'I\'m alive!') {
-            throw new Error(`Unexpected health response from ${baseUrl}`);
+            throw new Error(`Unexpected health response from ${baseUrl}: ${JSON.stringify(response.data)}`);
         }
     } catch (err: unknown) {
-        if (err instanceof Error && err.message.startsWith('WEBHOOK_BASE_URL is empty')) {
+        if (err instanceof Error && err.message.includes('WEBHOOK_BASE_URL is empty')) {
             throw err;
         }
         const detail = axios.isAxiosError(err) ? err.message : String(err);

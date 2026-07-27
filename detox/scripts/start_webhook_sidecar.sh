@@ -44,14 +44,19 @@ curl_quick() {
 
 mark_ready() {
     local url="$1"
+    # stable=true only for WEBHOOK_PUBLIC_BASE_URL / named tunnel. trycloudflare
+    # passes curl health but Mattermost→tunnel callbacks hang (CI 59ec6ae).
+    local callbacks_reachable="${2:-true}"
     if [[ -n "${GITHUB_ENV:-}" ]]; then
         {
             echo "WEBHOOK_BASE_URL=$url"
             echo "WEBHOOK_SIDECAR_READY=true"
+            echo "WEBHOOK_CALLBACKS_REACHABLE=$callbacks_reachable"
         } >>"$GITHUB_ENV"
     fi
     export WEBHOOK_BASE_URL="$url"
-    echo "Webhook sidecar is reachable at $url"
+    export WEBHOOK_CALLBACKS_REACHABLE="$callbacks_reachable"
+    echo "Webhook sidecar is reachable at $url (callbacks_reachable=$callbacks_reachable)"
 }
 
 mark_unavailable() {
@@ -61,6 +66,7 @@ mark_unavailable() {
         {
             echo "WEBHOOK_BASE_URL="
             echo "WEBHOOK_SIDECAR_READY=false"
+            echo "WEBHOOK_CALLBACKS_REACHABLE=false"
         } >>"$GITHUB_ENV"
     fi
     if [[ -f "$tunnel_log" ]]; then
@@ -176,7 +182,7 @@ if [[ -n "${WEBHOOK_PUBLIC_BASE_URL:-}" ]]; then
     fi
 
     if curl_quick "${WEBHOOK_PUBLIC_BASE_URL}/" >/dev/null 2>&1; then
-        mark_ready "${WEBHOOK_PUBLIC_BASE_URL%/}"
+        mark_ready "${WEBHOOK_PUBLIC_BASE_URL%/}" true
         exit 0
     fi
 
@@ -219,7 +225,8 @@ while (( attempt <= TUNNEL_ATTEMPTS && SECONDS < deadline )); do
                     exit 0
                 fi
                 if curl_quick "$webhook_base_url/" >/dev/null 2>&1; then
-                    mark_ready "$webhook_base_url"
+                    # Outbound posts OK; do NOT claim Cloud→sidecar callbacks work.
+                    mark_ready "$webhook_base_url" false
                     exit 0
                 fi
                 mark_unavailable "trycloudflare URL became unreachable after restarting webhook_server.js with WEBHOOK_BASE_URL=$webhook_base_url"
