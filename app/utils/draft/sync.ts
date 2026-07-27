@@ -64,6 +64,71 @@ export const reconstructDraftBoRConfig = (
 };
 
 /**
+ * stableStringify: deterministic JSON serialization with object keys sorted at every level.
+ * Two structurally-equal objects always produce the same string regardless of key insertion
+ * order, which is what makes the fingerprint below order-independent.
+ */
+const stableStringify = (value: unknown): string => {
+    if (value === null || typeof value !== 'object') {
+        return JSON.stringify(value) ?? 'null';
+    }
+
+    if (Array.isArray(value)) {
+        return `[${value.map(stableStringify).join(',')}]`;
+    }
+
+    const obj = value as Record<string, unknown>;
+    const keys = Object.keys(obj).sort();
+    return `{${keys.map((k) => `${JSON.stringify(k)}:${stableStringify(obj[k])}`).join(',')}}`;
+};
+
+/**
+ * cyrb53: a small, fast, deterministic non-cryptographic 53-bit string hash. It is NOT
+ * reversible and NOT collision-proof, but collisions between two different draft contents are
+ * astronomically unlikely for our purposes. Returned as a hex string.
+ */
+const cyrb53 = (str: string, seed = 0): string => {
+    let h1 = 0xdeadbeef ^ seed;
+    let h2 = 0x41c6ce57 ^ seed;
+    for (let i = 0; i < str.length; i++) {
+        const ch = str.charCodeAt(i);
+        h1 = Math.imul(h1 ^ ch, 2654435761);
+        h2 = Math.imul(h2 ^ ch, 1597334677);
+    }
+    h1 = Math.imul(h1 ^ (h1 >>> 16), 2246822507);
+    h1 ^= Math.imul(h2 ^ (h2 >>> 13), 3266489909);
+    h2 = Math.imul(h2 ^ (h2 >>> 16), 2246822507);
+    h2 ^= Math.imul(h1 ^ (h1 >>> 13), 3266489909);
+    const hash = (4294967296 * (2097151 & h2)) + (h1 >>> 0);
+    return hash.toString(16);
+};
+
+/**
+ * draftContentFingerprint: produce a stable, deterministic, non-reversible hash of a draft's
+ * canonical server-visible content (message, type, props, sorted fileIds, priority). Same content
+ * always yields the same hash; different content practically always yields a different hash. The
+ * raw content is NEVER returned, only the hash — this lets the outbox distinguish a stale replica
+ * echo of deleted content from genuinely new content without persisting the content itself.
+ */
+export const draftContentFingerprint = (input: {
+    message: string;
+    type: string | null;
+    props: DraftProps | null;
+    fileIds: string[];
+    priority?: PostPriority;
+}): string => {
+    const canonical = {
+        message: input.message,
+        type: input.type ?? '',
+        props: input.props ?? {},
+        fileIds: [...input.fileIds].sort(),
+        priority: input.priority ?? null,
+    };
+
+    return cyrb53(stableStringify(canonical));
+};
+
+/**
  * isSyncableDraft: a draft is only syncable when it has message content. Empty-message
  * drafts (attachment-only, priority-only, burn-on-read-only, type/props-only) are never
  * synced because the server treats an empty-message upsert as a delete.

@@ -28,7 +28,12 @@ const DEFAULT_BURN_ON_READ_MAXIMUM_TTL_SECONDS = '604800';
 
 export const prepareDeletePost = async (post: PostModel): Promise<Model[]> => {
     const preparedModels: Model[] = [post.prepareDestroyPermanently()];
-    const relations: Array<Query<Model>> = [post.drafts, post.files, post.reactions];
+
+    // Deliberately omit post.drafts: a generic post deletion must NOT cascade-destroy reply
+    // drafts, because that would silently discard the durable DraftOutbox sync intent. Only a
+    // confirmed server post deletion may remove a CLEAN reply draft, handled explicitly via
+    // prepareDeleteCleanReplyDrafts in the confirmed-deletion path (actions/local/post.ts).
+    const relations: Array<Query<Model>> = [post.files, post.reactions];
     for await (const models of relations) {
         try {
             models.forEach((m) => {

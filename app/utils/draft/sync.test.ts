@@ -3,7 +3,7 @@
 
 import TestHelper from '@test/test_helper';
 
-import {buildDraftUpsertRequest, isSyncableDraft, normalizeServerDraft, reconstructDraftBoRConfig} from './sync';
+import {buildDraftUpsertRequest, draftContentFingerprint, isSyncableDraft, normalizeServerDraft, reconstructDraftBoRConfig} from './sync';
 
 const baseServerDraft: DraftApi = {
     create_at: 100,
@@ -174,6 +174,58 @@ describe('buildDraftUpsertRequest (mobile -> server)', () => {
         };
 
         expect(buildDraftUpsertRequest(draft)).toBeNull();
+    });
+});
+
+describe('draftContentFingerprint', () => {
+    const base = {
+        message: 'hello',
+        type: '' as PostTypesUserCreatable,
+        props: {from_webhook: 'true'} as DraftProps,
+        fileIds: ['file1', 'file2'],
+        priority: {priority: 'urgent'} as PostPriority,
+    };
+
+    it('should produce the same hash for identical content', () => {
+        expect(draftContentFingerprint(base)).toBe(draftContentFingerprint({...base}));
+    });
+
+    it('should never return the raw content', () => {
+        const fingerprint = draftContentFingerprint(base);
+        expect(fingerprint).not.toContain('hello');
+        expect(fingerprint).not.toContain('file1');
+        expect(fingerprint).not.toContain('urgent');
+        expect(fingerprint.length).toBeGreaterThan(0);
+    });
+
+    it('should change when the message changes', () => {
+        expect(draftContentFingerprint({...base, message: 'world'})).not.toBe(draftContentFingerprint(base));
+    });
+
+    it('should change when the fileIds change', () => {
+        expect(draftContentFingerprint({...base, fileIds: ['file1']})).not.toBe(draftContentFingerprint(base));
+    });
+
+    it('should change when the props change', () => {
+        expect(draftContentFingerprint({...base, props: {from_webhook: 'false'}})).not.toBe(draftContentFingerprint(base));
+    });
+
+    it('should change when the priority changes', () => {
+        expect(draftContentFingerprint({...base, priority: {priority: 'important'} as PostPriority})).not.toBe(draftContentFingerprint(base));
+    });
+
+    it('should be independent of prop key order and fileId order', () => {
+        const a = draftContentFingerprint({
+            ...base,
+            props: {a: '1', b: '2'} as unknown as DraftProps,
+            fileIds: ['file1', 'file2'],
+        });
+        const b = draftContentFingerprint({
+            ...base,
+            props: {b: '2', a: '1'} as unknown as DraftProps,
+            fileIds: ['file2', 'file1'],
+        });
+        expect(a).toBe(b);
     });
 });
 

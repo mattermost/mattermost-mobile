@@ -355,7 +355,6 @@ describe('prepareDeleteChannel', () => {
         const infoModel = TestHelper.fakeChannelInfoModel({prepareDestroyPermanently: jest.fn().mockReturnValue({id: 'info'})});
         const categoryChannelModel = TestHelper.fakeCategoryChannelModel({prepareDestroyPermanently: jest.fn().mockReturnValue({id: 'category'})});
         const memberModels = [TestHelper.fakeChannelMembershipModel({prepareDestroyPermanently: jest.fn().mockReturnValue({id: 'member'})})];
-        const draftModels = [TestHelper.fakeDraftModel({prepareDestroyPermanently: jest.fn().mockReturnValue({id: 'draft'})})];
         const postsInChannelModels = [
             TestHelper.fakePostsInChannelModel({prepareDestroyPermanently: jest.fn().mockReturnValue({id: 'postsInChannel'})}),
         ];
@@ -380,7 +379,6 @@ describe('prepareDeleteChannel', () => {
         jest.mocked(channel.info.fetch).mockResolvedValue(infoModel);
         jest.mocked(channel.categoryChannel.fetch).mockResolvedValue(categoryChannelModel);
         jest.mocked(channel.members.fetch).mockResolvedValue(memberModels);
-        jest.mocked(channel.drafts.fetch).mockResolvedValue(draftModels);
         jest.mocked(channel.postsInChannel.fetch).mockResolvedValue(postsInChannelModels);
         jest.mocked(channel.posts.fetch).mockResolvedValue(postModels);
         jest.mocked(channel.bookmarks.fetch).mockResolvedValue(bookmarkModels);
@@ -394,7 +392,6 @@ describe('prepareDeleteChannel', () => {
             {id: 'info'},
             {id: 'category'},
             {id: 'member'},
-            {id: 'draft'},
             {id: 'postsInChannel'},
             {id: 'post'},
             {id: 'bookmark'},
@@ -405,7 +402,10 @@ describe('prepareDeleteChannel', () => {
         expect(channel.info.fetch).toHaveBeenCalled();
         expect(channel.categoryChannel.fetch).toHaveBeenCalled();
         expect(channel.members.fetch).toHaveBeenCalled();
-        expect(channel.drafts.fetch).toHaveBeenCalled();
+
+        // Channel deletion must PRESERVE drafts (and their DraftOutbox sync intent): the
+        // drafts relation must never be fetched or destroyed by prepareDeleteChannel.
+        expect(channel.drafts.fetch).not.toHaveBeenCalled();
         expect(channel.postsInChannel.fetch).toHaveBeenCalled();
         expect(channel.posts.fetch).toHaveBeenCalled();
         expect(channel.bookmarks.fetch).toHaveBeenCalled();

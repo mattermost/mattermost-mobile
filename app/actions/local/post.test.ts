@@ -2,8 +2,9 @@
 // See LICENSE.txt for license information.
 
 import {ActionType, Post} from '@constants';
-import {SYSTEM_IDENTIFIERS} from '@constants/database';
+import {MM_TABLES, SYSTEM_IDENTIFIERS} from '@constants/database';
 import DatabaseManager from '@database/manager';
+import {buildDraftOutboxId, getDraft, getDraftOutbox} from '@queries/servers/drafts';
 import {getPostById} from '@queries/servers/post';
 import TestHelper from '@test/test_helper';
 import {COMBINED_USER_ACTIVITY} from '@utils/post_list';
@@ -23,6 +24,10 @@ import {
 } from './post';
 
 import type ServerDataOperator from '@database/operator/server_data_operator';
+import type DraftModel from '@typings/database/models/servers/draft';
+import type DraftOutboxModel from '@typings/database/models/servers/draft_outbox';
+
+const {DRAFT, DRAFT_OUTBOX} = MM_TABLES.SERVER;
 
 const serverUrl = 'baseHandler.test.com';
 let operator: ServerDataOperator;
@@ -338,6 +343,102 @@ describe('deletePosts', () => {
 
         const {error} = await deletePosts(serverUrl, [post.id, 'id2']);
         expect(error).toBeDefined();
+    });
+});
+
+describe('draft deletion-origin routing', () => {
+    const seedReplyDraft = async (rootId: string) => {
+        await operator.database.write(async () => {
+            await operator.database.get<DraftModel>(DRAFT).create((d) => {
+                d.channelId = channelId;
+                d.rootId = rootId;
+                d.message = 'a reply draft';
+                d.updateAt = 1;
+            });
+        }, 'seed-reply-draft');
+    };
+
+    const seedOutbox = async (rootId: string) => {
+        await operator.database.write(async () => {
+            await operator.database.get<DraftOutboxModel>(DRAFT_OUTBOX).create((o) => {
+                o._raw.id = buildDraftOutboxId(channelId, rootId);
+                o.channelId = channelId;
+                o.rootId = rootId;
+                o.teamId = 'team1';
+                o.operation = 'upsert';
+                o.generation = 1;
+                o.keepLocal = false;
+                o.attemptCount = 0;
+                o.nextAttemptAt = 0;
+                o.status = 'pending';
+            });
+        }, 'seed-outbox');
+    };
+
+    it('confirmed post deletion removes a CLEAN reply draft and enqueues no delete outbox row', async () => {
+        const rootPost = TestHelper.fakePost({id: 'cleanrootpostid', channel_id: channelId});
+        await operator.handlePosts({
+            actionType: ActionType.POSTS.RECEIVED_IN_CHANNEL,
+            order: [rootPost.id],
+            posts: [rootPost],
+            prepareRecordsOnly: false,
+        });
+        await seedReplyDraft(rootPost.id);
+
+        const {error} = await removePost(serverUrl, rootPost);
+        expect(error).toBeUndefined();
+
+        // The post is gone and the clean reply draft under it was removed...
+        expect(await getPostById(operator.database, rootPost.id)).toBeUndefined();
+        expect(await getDraft(operator.database, channelId, rootPost.id)).toBeUndefined();
+
+        // ...but server cleanup owns the deletion, so no DraftOutbox row was created.
+        expect(await getDraftOutbox(operator.database, channelId, rootPost.id)).toBeUndefined();
+    });
+
+    it('confirmed post deletion preserves a DIRTY reply draft and its outbox (local-wins)', async () => {
+        const rootPost = TestHelper.fakePost({id: 'dirtyrootpostid', channel_id: channelId});
+        await operator.handlePosts({
+            actionType: ActionType.POSTS.RECEIVED_IN_CHANNEL,
+            order: [rootPost.id],
+            posts: [rootPost],
+            prepareRecordsOnly: false,
+        });
+        await seedReplyDraft(rootPost.id);
+        await seedOutbox(rootPost.id);
+
+        const {error} = await removePost(serverUrl, rootPost);
+        expect(error).toBeUndefined();
+
+        expect(await getDraft(operator.database, channelId, rootPost.id)).toBeDefined();
+        expect(await getDraftOutbox(operator.database, channelId, rootPost.id)).toBeDefined();
+    });
+
+    it('cache eviction via deletePosts emits no Draft deletion and preserves drafts + outbox', async () => {
+        const rootId = 'cacheevictionrootid';
+        await seedReplyDraft(rootId);
+        await seedOutbox(rootId);
+
+        // The LokiJS test adapter's unsafeExecute only accepts { loki }, not { sqls }, so we
+        // intercept it to both bypass the invariant and capture the emitted SQL statements.
+        let capturedSqls: Array<[string, unknown[]]> = [];
+        const spy = jest.spyOn(operator.database.adapter, 'unsafeExecute').
+            mockImplementation((operations) => {
+                capturedSqls = (operations as {sqls: Array<[string, unknown[]]>}).sqls;
+                return Promise.resolve();
+            });
+
+        const {error} = await deletePosts(serverUrl, [rootId]);
+        expect(error).toBe(false);
+
+        // No emitted statement targets the Draft table (DraftOutbox is a different table name).
+        expect(capturedSqls.some(([sql]) => (/from\s+Draft\b/i).test(sql))).toBe(false);
+
+        spy.mockRestore();
+
+        // The draft and its outbox intent survive cache eviction.
+        expect(await getDraft(operator.database, channelId, rootId)).toBeDefined();
+        expect(await getDraftOutbox(operator.database, channelId, rootId)).toBeDefined();
     });
 });
 

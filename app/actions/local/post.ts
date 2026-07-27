@@ -5,6 +5,7 @@ import {fetchPostAuthors} from '@actions/remote/post';
 import {ActionType, Post} from '@constants';
 import {MM_TABLES} from '@constants/database';
 import DatabaseManager from '@database/manager';
+import {prepareDeleteCleanReplyDrafts} from '@queries/servers/drafts';
 import {countUsersFromMentions, getPostById, prepareDeletePost, queryPostsById} from '@queries/servers/post';
 import {getCurrentUserId} from '@queries/servers/system';
 import {getIsCRTEnabled, prepareThreadsFromReceivedPosts} from '@queries/servers/thread';
@@ -21,7 +22,7 @@ import type MyChannelModel from '@typings/database/models/servers/my_channel';
 import type PostModel from '@typings/database/models/servers/post';
 import type UserModel from '@typings/database/models/servers/user';
 
-const {SERVER: {DRAFT, FILE, POST, POSTS_IN_THREAD, REACTION, THREAD, THREAD_PARTICIPANT, THREADS_IN_TEAM}} = MM_TABLES;
+const {SERVER: {FILE, POST, POSTS_IN_THREAD, REACTION, THREAD, THREAD_PARTICIPANT, THREADS_IN_TEAM}} = MM_TABLES;
 
 export const sendAddToChannelEphemeralPost = async (serverUrl: string, user: UserModel, addedUsernames: string[], messages: string[], channeId: string, postRootId = '') => {
     try {
@@ -120,6 +121,11 @@ export const sendEphemeralPost = async (serverUrl: string, message: string, chan
 async function preparePostDeletion(database: Database, post: PostModel | Post) {
     const removeModels: Model[] = [];
 
+    // Root ids whose confirmed deletion may also remove a CLEAN reply draft. This is the
+    // confirmed server post deletion origin: server cleanup owns the deletion, so we remove
+    // clean reply drafts WITHOUT enqueuing a DELETE outbox row (see prepareDeleteCleanReplyDrafts).
+    const deletedRootIds: string[] = [];
+
     if (post.type === Post.POST_TYPES.COMBINED_USER_ACTIVITY) {
         const systemPostIds = getPostIdsForCombinedUserActivityPost(post.id);
         for await (const id of systemPostIds) {
@@ -129,13 +135,18 @@ async function preparePostDeletion(database: Database, post: PostModel | Post) {
                 removeModels.push(...preparedPost);
             }
         }
+        deletedRootIds.push(...systemPostIds);
     } else {
         const postModel = await getPostById(database, post.id);
         if (postModel) {
             const preparedPost = await prepareDeletePost(postModel);
             removeModels.push(...preparedPost);
         }
+        deletedRootIds.push(post.id);
     }
+
+    const cleanDraftModels = await prepareDeleteCleanReplyDrafts(database, deletedRootIds);
+    removeModels.push(...cleanDraftModels);
 
     return removeModels;
 }
@@ -398,8 +409,12 @@ export async function deletePosts(serverUrl: string, postIds: string[]) {
                     [`DELETE FROM ${POST} where id IN (${postsFormatted})`, []],
                     [`DELETE FROM ${REACTION} where post_id IN (${postsFormatted})`, []],
                     [`DELETE FROM ${FILE} where post_id IN (${postsFormatted})`, []],
-                    [`DELETE FROM ${DRAFT} where root_id IN (${postsFormatted})`, []],
 
+                    // Deliberately do NOT delete drafts here. deletePosts is a cache-eviction /
+                    // data-retention origin (it removes posts to reclaim space, not because they
+                    // were deleted on the server), so it must PRESERVE both the Draft and its
+                    // durable DraftOutbox sync intent. Confirmed server post deletions remove
+                    // clean reply drafts explicitly via preparePostDeletion instead.
                     [`DELETE FROM ${POSTS_IN_THREAD} where root_id IN (${postsFormatted})`, []],
 
                     [`DELETE FROM ${THREAD} where id IN (${postsFormatted})`, []],

@@ -8,14 +8,19 @@ import DatabaseManager from '@database/manager';
 import ServerDatabaseMigrations from '@database/migration/server';
 
 import {
+    adoptLegacyDrafts,
     buildDraftOutboxId,
     getDraft,
     getDraftOutbox,
     mutateDraftAndOutbox,
+    prepareDeleteCleanReplyDrafts,
+    prepareDraftOutbox,
     repairDuplicateDrafts,
+    type OutboxIntent,
     type PrepareDraftAndOutbox,
 } from './drafts';
 
+import type Model from '@nozbe/watermelondb/Model';
 import type DraftModel from '@typings/database/models/servers/draft';
 import type DraftOutboxModel from '@typings/database/models/servers/draft_outbox';
 
@@ -287,5 +292,281 @@ describe('DraftOutbox serialized writer and repair', () => {
         // The mutation created its outbox row regardless of ordering.
         const outbox = await getDraftOutbox(database, channelId, '');
         expect(outbox).toBeDefined();
+    });
+});
+
+describe('prepareDraftOutbox coalescing', () => {
+    let database: Database;
+    const channelId = 'coalescechannelid00000000000';
+
+    beforeEach(async () => {
+        await DatabaseManager.init([SERVER_URL]);
+        database = DatabaseManager.serverDatabases[SERVER_URL]!.database;
+    });
+
+    afterEach(async () => {
+        await DatabaseManager.destroyServerDatabase(SERVER_URL);
+    });
+
+    const applyIntent = async (intent: OutboxIntent) => {
+        await database.write(async (writer) => {
+            const existing = await getDraftOutbox(database, channelId, '');
+            const models = prepareDraftOutbox(database, channelId, '', 'team1', existing, intent);
+            if (models.length) {
+                await writer.batch(...models);
+            }
+        }, 'apply-intent');
+        return getDraftOutbox(database, channelId, '');
+    };
+
+    it('creates a pending upsert from nothing with the given team scope', async () => {
+        const outbox = await applyIntent({type: 'upsert'});
+        expect(outbox?.operation).toBe('upsert');
+        expect(outbox?.status).toBe('pending');
+        expect(outbox?.generation).toBe(1);
+        expect(outbox?.teamId).toBe('team1');
+        expect(outbox?.deletedFingerprint).toBeNull();
+    });
+
+    it('keeps a pending upsert and increments the generation on a second upsert', async () => {
+        await applyIntent({type: 'upsert'});
+        const outbox = await applyIntent({type: 'upsert'});
+        expect(outbox?.operation).toBe('upsert');
+        expect(outbox?.generation).toBe(2);
+        expect(outbox?.status).toBe('pending');
+    });
+
+    it('flips a pending delete to a reset pending upsert on a genuine edit', async () => {
+        await applyIntent({type: 'upsert'});
+        await applyIntent({type: 'delete', keepLocal: true, deletedFingerprint: 'abc123'});
+        const outbox = await applyIntent({type: 'upsert'});
+        expect(outbox?.operation).toBe('upsert');
+        expect(outbox?.status).toBe('pending');
+        expect(outbox?.generation).toBe(3);
+        expect(outbox?.keepLocal).toBe(false);
+        expect(outbox?.deletedFingerprint).toBeNull();
+        expect(outbox?.attemptCount).toBe(0);
+    });
+
+    it('ignores a staleCleanup while a delete is already pending', async () => {
+        await applyIntent({type: 'delete', keepLocal: false, deletedFingerprint: 'fp'});
+        const outbox = await applyIntent({type: 'staleCleanup'});
+        expect(outbox?.operation).toBe('delete');
+        expect(outbox?.deletedFingerprint).toBe('fp');
+        expect(outbox?.generation).toBe(1);
+    });
+
+    it('does not create any row for a staleCleanup when nothing is queued', async () => {
+        const outbox = await applyIntent({type: 'staleCleanup'});
+        expect(outbox).toBeUndefined();
+    });
+
+    it('parks an empty draft as blocked/unsyncable_empty', async () => {
+        const outbox = await applyIntent({type: 'park'});
+        expect(outbox?.operation).toBe('upsert');
+        expect(outbox?.status).toBe('blocked');
+        expect(outbox?.lastErrorCode).toBe('unsyncable_empty');
+    });
+
+    it('flips a parked blocked row to a reset pending upsert on a genuine edit', async () => {
+        await applyIntent({type: 'park'});
+        const outbox = await applyIntent({type: 'upsert'});
+        expect(outbox?.status).toBe('pending');
+        expect(outbox?.lastErrorCode).toBeNull();
+        expect(outbox?.generation).toBe(2);
+        expect(outbox?.attemptCount).toBe(0);
+    });
+
+    it('removes an existing row on a remove intent', async () => {
+        await applyIntent({type: 'waitingForUpload'});
+        const outbox = await applyIntent({type: 'remove'});
+        expect(outbox).toBeUndefined();
+    });
+});
+
+describe('prepareDeleteCleanReplyDrafts', () => {
+    let database: Database;
+
+    const seedDraft = async (channelId: string, rootId: string) => {
+        await database.write(async () => {
+            await database.get<DraftModel>(DRAFT).create((d) => {
+                d.channelId = channelId;
+                d.rootId = rootId;
+                d.message = 'a reply draft';
+                d.updateAt = 1;
+            });
+        }, 'seed-draft');
+    };
+
+    const seedOutbox = async (channelId: string, rootId: string) => {
+        await database.write(async () => {
+            await database.get<DraftOutboxModel>(DRAFT_OUTBOX).create((o) => {
+                o._raw.id = buildDraftOutboxId(channelId, rootId);
+                o.channelId = channelId;
+                o.rootId = rootId;
+                o.teamId = 'team1';
+                o.operation = 'upsert';
+                o.generation = 1;
+                o.keepLocal = false;
+                o.attemptCount = 0;
+                o.nextAttemptAt = 0;
+                o.status = 'pending';
+            });
+        }, 'seed-outbox');
+    };
+
+    const commit = async (models: Model[]) => {
+        if (models.length) {
+            await database.write(async (writer) => {
+                await writer.batch(...models);
+            }, 'commit-clean-drafts');
+        }
+    };
+
+    beforeEach(async () => {
+        await DatabaseManager.init([SERVER_URL]);
+        database = DatabaseManager.serverDatabases[SERVER_URL]!.database;
+    });
+
+    afterEach(async () => {
+        await DatabaseManager.destroyServerDatabase(SERVER_URL);
+    });
+
+    it('destroys a clean reply draft (no outbox) and enqueues no delete outbox row', async () => {
+        const channelId = 'cleanreplychannelid000000000';
+        const rootId = 'cleanreplyrootid000000000000';
+        await seedDraft(channelId, rootId);
+
+        const models = await prepareDeleteCleanReplyDrafts(database, [rootId]);
+        expect(models.length).toBe(1);
+        await commit(models);
+
+        expect(await getDraft(database, channelId, rootId)).toBeUndefined();
+
+        // Server cleanup owns the deletion: no DraftOutbox row must be created.
+        expect(await getDraftOutbox(database, channelId, rootId)).toBeUndefined();
+    });
+
+    it('preserves a dirty reply draft and its outbox (local-wins)', async () => {
+        const channelId = 'dirtyreplychannelid000000000';
+        const rootId = 'dirtyreplyrootid000000000000';
+        await seedDraft(channelId, rootId);
+        await seedOutbox(channelId, rootId);
+
+        const models = await prepareDeleteCleanReplyDrafts(database, [rootId]);
+        expect(models.length).toBe(0);
+        await commit(models);
+
+        expect(await getDraft(database, channelId, rootId)).toBeDefined();
+        expect(await getDraftOutbox(database, channelId, rootId)).toBeDefined();
+    });
+
+    it('ignores channel drafts (root_id === "") even when a root id matches the channel id', async () => {
+        // Channel draft: root_id === '' and channelId equal to a passed root id.
+        const channelId = 'channelrootcollisionid000000';
+        await seedDraft(channelId, '');
+
+        const models = await prepareDeleteCleanReplyDrafts(database, [channelId]);
+        expect(models.length).toBe(0);
+        await commit(models);
+
+        expect(await getDraft(database, channelId, '')).toBeDefined();
+    });
+});
+
+describe('adoptLegacyDrafts', () => {
+    let database: Database;
+
+    const seedDraft = async (channelId: string, message: string, extra?: (d: DraftModel) => void) => {
+        await database.write(async () => {
+            await database.get<DraftModel>(DRAFT).create((d) => {
+                d.channelId = channelId;
+                d.rootId = '';
+                d.message = message;
+                d.updateAt = 1;
+                extra?.(d);
+            });
+        }, 'seed-legacy');
+    };
+
+    beforeEach(async () => {
+        await DatabaseManager.init([SERVER_URL]);
+        database = DatabaseManager.serverDatabases[SERVER_URL]!.database;
+    });
+
+    afterEach(async () => {
+        await DatabaseManager.destroyServerDatabase(SERVER_URL);
+    });
+
+    it('adopts a non-empty legacy draft as a generation-1 pending upsert', async () => {
+        const channelId = 'legacynonemptychannelid00000';
+        await seedDraft(channelId, 'hello');
+
+        const count = await adoptLegacyDrafts(database);
+        expect(count).toBe(1);
+
+        const outbox = await getDraftOutbox(database, channelId, '');
+        expect(outbox?.operation).toBe('upsert');
+        expect(outbox?.status).toBe('pending');
+        expect(outbox?.generation).toBe(1);
+        expect(outbox?.nextAttemptAt).toBe(0);
+    });
+
+    it('parks an empty legacy draft as unsyncable_empty', async () => {
+        const channelId = 'legacyemptychannelid00000000';
+        await seedDraft(channelId, '');
+
+        const count = await adoptLegacyDrafts(database);
+        expect(count).toBe(1);
+
+        const outbox = await getDraftOutbox(database, channelId, '');
+        expect(outbox?.status).toBe('blocked');
+        expect(outbox?.lastErrorCode).toBe('unsyncable_empty');
+    });
+
+    it('backfills fileIds from completed files when adopting', async () => {
+        const channelId = 'legacyfileschannelid00000000';
+        await seedDraft(channelId, 'with files', (d) => {
+            d.files = [{id: 'srv1', clientId: 'c1'} as FileInfo, {clientId: 'c2'} as FileInfo];
+        });
+
+        await adoptLegacyDrafts(database);
+
+        const draftAfter = await getDraft(database, channelId, '');
+        expect(draftAfter?.fileIds).toEqual(['srv1']);
+    });
+
+    it('skips a draft that already has an outbox and is idempotent', async () => {
+        const channelId = 'legacyidempotentchannelid000';
+        await seedDraft(channelId, 'hello');
+
+        const first = await adoptLegacyDrafts(database);
+        expect(first).toBe(1);
+
+        // Bump the generation so we can detect if a second run overwrites the existing row.
+        await database.write(async () => {
+            const outbox = await getDraftOutbox(database, channelId, '');
+            await outbox!.update((o) => {
+                o.generation = 7;
+            });
+        }, 'bump');
+
+        const second = await adoptLegacyDrafts(database);
+        expect(second).toBe(0);
+
+        const rows = await database.get<DraftOutboxModel>(DRAFT_OUTBOX).query(Q.where('channel_id', channelId)).fetch();
+        expect(rows.length).toBe(1);
+        expect(rows[0].generation).toBe(7);
+    });
+
+    it('does not adopt a draft that already has server ancestry', async () => {
+        const channelId = 'legacyserverbackedchannelid0';
+        await seedDraft(channelId, 'synced', (d) => {
+            d.serverUpdateAt = 999;
+        });
+
+        const count = await adoptLegacyDrafts(database);
+        expect(count).toBe(0);
+        expect(await getDraftOutbox(database, channelId, '')).toBeUndefined();
     });
 });
