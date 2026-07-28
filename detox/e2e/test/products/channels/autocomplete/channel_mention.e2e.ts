@@ -25,7 +25,7 @@ import {
     ServerScreen,
 } from '@support/ui/screen';
 import {getRandomId, timeouts, wait} from '@support/utils';
-import {expect} from 'detox';
+import {expect, waitFor} from 'detox';
 
 describe('Autocomplete - Channel Mention', () => {
     const serverOneDisplayName = 'Server 1';
@@ -197,6 +197,41 @@ describe('Autocomplete - Channel Mention', () => {
 
         // * Verify channel mention autocomplete does not contain associated channel suggestion
         await expect(channelMentionAutocomplete).not.toExist();
+    });
+
+    it('MM-T4879_7 - should be able to select channel mention multiple times', async () => {
+        // # Type "~" in the post input to activate channel mention autocomplete
+        await expect(Autocomplete.sectionChannelMentionList).not.toExist();
+        await ChannelScreen.postInput.typeText('~');
+        await Autocomplete.toBeVisible();
+
+        // * Verify channel mention list is displayed
+        await expect(Autocomplete.sectionChannelMentionList).toExist();
+
+        // # Type in channel name and tap on channel mention autocomplete
+        await ChannelScreen.postInput.typeText(testChannel.name);
+
+        // iOS CI 59ec6ae: row exists but fails default 100% visibility; wait for
+        // partial visibility (keyboard + list animation) before tap — screenshot
+        // showed the suggestion on-screen when the tap was rejected.
+        await waitFor(channelMentionAutocomplete).toBeVisible(40).withTimeout(timeouts.TEN_SEC);
+        await channelMentionAutocomplete.tap();
+
+        // * Verify channel mention list disappears
+        // Selecting a mention inserts `~channel` but on iOS 26 the dropdown can
+        // stay open until a trailing space settles autocomplete state (same as
+        // MM-T4879_5).
+        await ChannelScreen.postInput.typeText(' ');
+        await waitFor(Autocomplete.sectionChannelMentionList).not.toExist().withTimeout(timeouts.TEN_SEC);
+
+        // # Clear the input (which now contains the inserted channel mention text),
+        // then re-activate channel mention list by typing "~".
+        await ChannelScreen.postInput.clearText();
+        await ChannelScreen.postInput.typeText('~');
+        await Autocomplete.toBeVisible();
+
+        // * Verify channel mention list is displayed
+        await expect(Autocomplete.sectionChannelMentionList).toExist();
     });
 
     it('MM-T4879_8 - should be able to autocomplete archived channel', async () => {

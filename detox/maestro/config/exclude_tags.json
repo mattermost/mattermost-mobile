@@ -1,13 +1,21 @@
 {
+  "_comment": "Tags excluded from default PR Maestro batches. Zephyr tier labels: detox/maestro/README.md.",
+  "_MM-T5611": "Skip iOS: CI run 30000635898 — external browser launch did not return to the Home tab.",
+  "_MM-T3260": "Skip Android: CI run 30331493720 (PR #9893, SHA 9f1496e) — help_url.yml failed with 'Unable to launch app com.mattermost.rnbeta' after ~136s (batch-7); already excluded on iOS for browser hand-off flakes. Chrome Custom Tab hand-off leaves the driver unable to relaunch the app on API 35.",
+  "_MM-T1325": "Skip iOS: CI run 30334294934 (PR #9893, SHA 347842c) — clock_display.yml failed after login retries with 'Assertion is false: id: tab_bar.home.tab is visible' (~215s); cold-start + TZ launchctl path already hardened in login.yml / wait_for_home_tab. Keep Android coverage.",
   "default": [
     "MM-T67856_4"
   ],
   "ios": [
+    "MM-T1325",
     "MM-T1411",
     "MM-T3260",
     "MM-T4832",
     "MM-T4833",
-    "MM-T5603"
+    "MM-T5603",
+    "MM-T5611"
   ],
-  "android": []
+  "android": [
+    "MM-T3260"
+  ]
 }

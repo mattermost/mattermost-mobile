@@ -3,7 +3,7 @@
 
 import {PostOptionsScreen} from '@support/ui/screen';
 import {isAndroid, timeouts} from '@support/utils';
-import {expect} from 'detox';
+import {expect, waitFor} from 'detox';
 
 class EditPostScreen {
     testID = {
@@ -40,6 +40,49 @@ class EditPostScreen {
     close = async () => {
         await this.closeButton.tap();
         await expect(this.editPostScreen).not.toBeVisible();
+    };
+
+    hasValidationError = async () => {
+        for (const errorElement of [this.messageInputError, this.messageInputErrorExtra]) {
+            try {
+                // eslint-disable-next-line no-await-in-loop -- probe each error slot in turn
+                await waitFor(errorElement).toExist().withTimeout(timeouts.ONE_SEC);
+                return true;
+            } catch {
+                // Error slot not rendered.
+            }
+        }
+
+        return false;
+    };
+
+    save = async () => {
+        await this.saveButton.tap();
+        try {
+            await waitFor(this.editPostScreen).not.toExist().withTimeout(timeouts.TWENTY_SEC);
+        } catch (primaryError) {
+            // A validation error means the save genuinely failed; dismissing the modal
+            // here would let the caller treat it as a success.
+            if (await this.hasValidationError()) {
+                throw primaryError;
+            }
+
+            // Otherwise the modal may still be animating out.
+            try {
+                await waitFor(this.closeButton).toExist().withTimeout(timeouts.FOUR_SEC);
+                await this.closeButton.tap();
+                await waitFor(this.editPostScreen).not.toExist().withTimeout(timeouts.TEN_SEC);
+            } catch {
+                if (isAndroid()) {
+                    try {
+                        await device.pressBack();
+                        await waitFor(this.editPostScreen).not.toExist().withTimeout(timeouts.TEN_SEC);
+                        return;
+                    } catch { /* fall through */ }
+                }
+                throw primaryError;
+            }
+        }
     };
 }
 

@@ -5,8 +5,9 @@ import {
     Alert,
     ProfilePicture,
 } from '@support/ui/component';
+import {dismissKnownModals} from '@support/ui/modal_dismiss';
 import {HomeScreen} from '@support/ui/screen';
-import {isAndroid, timeouts, wait} from '@support/utils';
+import {isAndroid, timeouts, wait, waitForElementToNotExist} from '@support/utils';
 import {expect, waitFor} from 'detox';
 
 class AccountScreen {
@@ -95,6 +96,14 @@ class AccountScreen {
     };
 
     open = async () => {
+        await dismissKnownModals(2);
+
+        try {
+            await waitFor(HomeScreen.channelListTab).toExist().withTimeout(timeouts.FIVE_SEC);
+            await HomeScreen.channelListTab.tap();
+            await wait(timeouts.ONE_SEC);
+        } catch { /* tab bar may already show channels */ }
+
         // Dismiss any lingering "Logout not complete" dialog left over from a
         // previous test's logout. This can happen on both platforms when the
         // server was unreachable and the handler in logout() didn't dismiss it.
@@ -169,6 +178,36 @@ class AccountScreen {
                 throw error;
             }
         }
+    };
+
+    // Emoji wrapper Views fail Detox visibility on Android (15% rect via
+    // waitForElementToExist) and may be missing briefly on iOS after save.
+    // Sync on plain <Text> when known; require emoji/clear button toExist only.
+    waitForCustomStatus = async (status: {emoji: string; duration: string; text?: string}) => {
+        const customStatusScreen = element(by.id('custom_status.screen'));
+        await waitForElementToNotExist(customStatusScreen, timeouts.TEN_SEC);
+        await this.toBeVisible();
+
+        const {accountCustomStatusEmoji, accountCustomStatusText} = this.getCustomStatus(status.emoji, status.duration);
+        const timeout = isAndroid() ? timeouts.TWENTY_SEC : timeouts.TEN_SEC;
+
+        if (status.text === undefined) {
+            await waitFor(accountCustomStatusEmoji).toExist().withTimeout(timeout);
+            await waitFor(this.customStatusClearButton).toExist().withTimeout(timeout);
+            return;
+        }
+
+        // Android: toHaveText requires VISIBLE; the status text node may exist in
+        // the hierarchy before passing the 15% visibility threshold. Match id+text
+        // with toExist instead (android-junit 28416284905).
+        if (isAndroid()) {
+            const statusTextMatcher = by.id(`${this.testID.customStatusPrefix}custom_status_text`).and(by.text(status.text));
+            await waitFor(element(statusTextMatcher)).toExist().withTimeout(timeout);
+        } else {
+            await waitFor(accountCustomStatusText).toHaveText(status.text).withTimeout(timeout);
+        }
+        await waitFor(accountCustomStatusEmoji).toExist().withTimeout(timeout);
+        await waitFor(this.customStatusClearButton).toExist().withTimeout(timeout);
     };
 
     logout = async (serverDisplayName: string | null = null) => {

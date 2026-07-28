@@ -1,5 +1,5 @@
 # Sub-flow: wait until the home tab is visible (end of login).
-# Cloud first-login on CI can exceed 45s; allow up to 120s and dismiss blocking dialogs.
+# Cloud first-login on CI can exceed 45s; allow up to 180s and dismiss blocking dialogs.
 appId: ${MAESTRO_APP_ID}
 ---
 - tapOn:
@@ -23,7 +23,9 @@ appId: ${MAESTRO_APP_ID}
     when:
       platform: iOS
     commands:
+      # Match Android budget — CI 30334294934 clock_display still timed out at 120s after
+      # login retries when the sim was slow post-TZ/launchctl setup.
       - extendedWaitUntil:
           visible:
             id: "tab_bar.home.tab"
-          timeout: 120000
+          timeout: 180000

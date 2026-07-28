@@ -175,6 +175,9 @@ async function serverSetup() {
     const headers = {Authorization: `Bearer ${token}`};
     process.stdout.write('[globalSetup] ✅ Admin login successful\n');
 
+    // Pre-warm the server so the first app-level request isn't also the server's first
+    // cold request. This warms the server only, not the simulator's TLS session, so it
+    // does not prevent -1005 drops on the app's first POST.
     try {
         await axios.get(`${SITE_URL}/api/v4/system/ping`);
     } catch (err) {
@@ -183,16 +186,9 @@ async function serverSetup() {
 
     try {
         await axios.put(`${SITE_URL}/api/v4/config/patch`, {
-            ServiceSettings: {
-                SessionLengthWebInHours: 4320,
-                MaximumActiveUsers: 999999,
-            },
-            RateLimitSettings: {PerSec: 10000, MaxBurst: 999999},
-            TeamSettings: {ExperimentalEnableAutomaticReplies: true},
-            ExperimentalSettings: {EnableWatermark: false},
             ConnectedWorkspacesSettings: {EnableRemoteClusterService: true},
         }, {headers});
-        process.stdout.write('[globalSetup] ✅ Server configured for E2E tests\n');
+        process.stdout.write('[globalSetup] ✅ Mutable server config initialized for E2E tests\n');
     } catch (err) {
         process.stderr.write(`[globalSetup] ⚠️ Could not patch server config: ${err.message}\n`);
     }

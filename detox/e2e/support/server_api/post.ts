@@ -79,17 +79,67 @@ export const apiGetPostsInChannel = async (baseUrl: string, channelId: string): 
  * @param {string} channelId - The channel ID to get the last post
  * @return {Object} returns {post} on success or {error, status} on error
  */
-export const apiGetLastPostInChannel = async (baseUrl: string, channelId: string): Promise<any> => {
-    await wait(timeouts.TWO_SEC);
-    const response = await apiGetPostsInChannel(baseUrl, channelId);
-    if (response.error) {
-        return response;
+export const apiGetLastPostInChannel = async (
+    baseUrl: string,
+    channelId: string,
+    {maxAttempts = 6, intervalMs = timeouts.TWO_SEC} = {},
+): Promise<any> => {
+    /* eslint-disable no-await-in-loop -- poll until the post is indexed */
+    for (let attempt = 0; attempt < maxAttempts; attempt++) {
+        if (attempt > 0) {
+            await wait(intervalMs);
+        } else {
+            await wait(timeouts.TWO_SEC);
+        }
+
+        const response = await apiGetPostsInChannel(baseUrl, channelId);
+        if (response.error) {
+            if (attempt === maxAttempts - 1) {
+                return response;
+            }
+            continue;
+        }
+
+        const {posts} = response;
+        if (posts?.length) {
+            return {post: posts[0]};
+        }
     }
-    const {posts} = response;
-    if (!posts?.length) {
-        return {error: {message: `No posts found in channel ${channelId}`}};
+    /* eslint-enable no-await-in-loop */
+
+    return {error: {message: `No posts found in channel ${channelId} after ${maxAttempts} attempts`}};
+};
+
+export const apiFindPostInChannelByMessage = async (
+    baseUrl: string,
+    channelId: string,
+    message: string,
+    {maxAttempts = 6, intervalMs = timeouts.TWO_SEC} = {},
+): Promise<any> => {
+    /* eslint-disable no-await-in-loop -- poll until the target post is indexed */
+    for (let attempt = 0; attempt < maxAttempts; attempt++) {
+        if (attempt > 0) {
+            await wait(intervalMs);
+        } else {
+            await wait(timeouts.TWO_SEC);
+        }
+
+        const response = await apiGetPostsInChannel(baseUrl, channelId);
+        if (response.error) {
+            if (attempt === maxAttempts - 1) {
+                return response;
+            }
+            continue;
+        }
+
+        const post = response.posts?.find((candidate: any) => candidate.message.includes(message));
+        if (post) {
+            return {post};
+        }
     }
-    return {post: posts[0]};
+    /* eslint-enable no-await-in-loop */
+
+    return {error: {message: `No post containing "${message}" found in channel ${channelId} after ${maxAttempts} attempts`}};
 };
 
 /**
@@ -258,17 +308,191 @@ export const apiCreatePostWithImageAttachment = async (baseUrl: string, channelI
     return {post, fileId};
 };
 
+export const apiGetFlaggedPosts = async (baseUrl: string, userId: string): Promise<{order: string[]; posts: Record<string, any>; error?: any}> => {
+    try {
+        const response = await client.get(`${baseUrl}/api/v4/users/${userId}/posts/flagged`);
+        return {order: response.data?.order ?? [], posts: response.data?.posts ?? {}};
+    } catch (err) {
+        // Callers must not read the empty order as "no flagged posts" — see waitForPostUnflagged.
+        return {order: [], posts: {}, ...getResponseFromError(err)};
+    }
+};
+
+export const waitForPostFlagged = async (baseUrl: string, userId: string, postId: string, maxAttempts = 10): Promise<void> => {
+    /* eslint-disable no-await-in-loop -- poll until post appears in flagged index */
+    for (let i = 0; i < maxAttempts; i++) {
+        const {order} = await apiGetFlaggedPosts(baseUrl, userId);
+        if (order.includes(postId)) {
+            return;
+        }
+        if (i < maxAttempts - 1) {
+            await wait(2000);
+        }
+    }
+    /* eslint-enable no-await-in-loop */
+    throw new Error(`Post ${postId} not flagged after ${maxAttempts} attempts`);
+};
+
+export const waitForPostUnflagged = async (baseUrl: string, userId: string, postId: string, maxAttempts = 10): Promise<void> => {
+    /* eslint-disable no-await-in-loop -- poll until post disappears from flagged index */
+    for (let i = 0; i < maxAttempts; i++) {
+        const {order, error} = await apiGetFlaggedPosts(baseUrl, userId);
+        if (!error && !order.includes(postId)) {
+            return;
+        }
+        if (i < maxAttempts - 1) {
+            await wait(2000);
+        }
+    }
+    /* eslint-enable no-await-in-loop */
+    throw new Error(`Post ${postId} still flagged after ${maxAttempts} attempts`);
+};
+
+export const waitForPostPinned = async (
+    baseUrl: string,
+    channelId: string,
+    postId: string,
+    maxAttempts = 10,
+): Promise<void> => {
+    /* eslint-disable no-await-in-loop -- poll until server reports is_pinned */
+    for (let i = 0; i < maxAttempts; i++) {
+        const {posts, error} = await apiGetPostsInChannel(baseUrl, channelId);
+        if (!error) {
+            const post = posts?.find((candidate: any) => candidate.id === postId);
+            if (post?.is_pinned) {
+                return;
+            }
+        }
+        if (i < maxAttempts - 1) {
+            await wait(timeouts.TWO_SEC);
+        }
+    }
+    /* eslint-enable no-await-in-loop */
+    throw new Error(`Post ${postId} not pinned after ${maxAttempts} attempts`);
+};
+
+export const waitForPostUnpinned = async (
+    baseUrl: string,
+    channelId: string,
+    postId: string,
+    maxAttempts = 10,
+): Promise<void> => {
+    /* eslint-disable no-await-in-loop -- poll until server clears is_pinned */
+    for (let i = 0; i < maxAttempts; i++) {
+        const {posts, error} = await apiGetPostsInChannel(baseUrl, channelId);
+        if (!error) {
+            const post = posts?.find((candidate: any) => candidate.id === postId);
+            if (post && !post.is_pinned) {
+                return;
+            }
+        }
+        if (i < maxAttempts - 1) {
+            await wait(timeouts.TWO_SEC);
+        }
+    }
+    /* eslint-enable no-await-in-loop */
+    throw new Error(`Post ${postId} still pinned after ${maxAttempts} attempts`);
+};
+
+export const waitForPostMessage = async (
+    baseUrl: string,
+    channelId: string,
+    postId: string,
+    expectedMessage: string,
+    maxAttempts = 10,
+): Promise<void> => {
+    /* eslint-disable no-await-in-loop -- poll until the edited post is returned by the server */
+    for (let i = 0; i < maxAttempts; i++) {
+        const {posts, error} = await apiGetPostsInChannel(baseUrl, channelId);
+        if (!error) {
+            const post = posts?.find((candidate: any) => candidate.id === postId);
+            if (post?.message === expectedMessage) {
+                return;
+            }
+        }
+
+        if (i < maxAttempts - 1) {
+            await wait(timeouts.TWO_SEC);
+        }
+    }
+    /* eslint-enable no-await-in-loop */
+
+    throw new Error(`Post ${postId} did not update to "${expectedMessage}" after ${maxAttempts} attempts`);
+};
+
+/**
+ * Search posts (same endpoint recent mentions uses).
+ * See https://api.mattermost.com/#operation/SearchPosts
+ */
+export const apiSearchPosts = async (
+    baseUrl: string,
+    terms: string,
+    {isOrSearch = true, teamId = ''}: {isOrSearch?: boolean; teamId?: string} = {},
+): Promise<{order?: string[]; posts?: Record<string, any>; error?: unknown}> => {
+    try {
+        const response = await client.post(`${baseUrl}/api/v4/posts/search`, {
+            terms,
+            is_or_search: isOrSearch,
+            ...(teamId ? {team_id: teamId} : {}),
+        });
+        return {
+            order: response.data?.order,
+            posts: response.data?.posts,
+        };
+    } catch (err) {
+        return getResponseFromError(err);
+    }
+};
+
+/**
+ * Poll search until it returns the expected post message. Recent Mentions is
+ * search-backed; channel GET can succeed while search still serves the old text.
+ */
+export const waitForPostMessageInSearch = async (
+    baseUrl: string,
+    terms: string,
+    postId: string,
+    expectedMessage: string,
+    maxAttempts = 15,
+): Promise<void> => {
+    /* eslint-disable no-await-in-loop -- poll search index until it catches up */
+    for (let i = 0; i < maxAttempts; i++) {
+        const {posts, error} = await apiSearchPosts(baseUrl, terms);
+        if (!error && posts?.[postId]?.message === expectedMessage) {
+            return;
+        }
+
+        if (i < maxAttempts - 1) {
+            await wait(timeouts.TWO_SEC);
+        }
+    }
+    /* eslint-enable no-await-in-loop */
+
+    throw new Error(
+        `Search did not return post ${postId} with message "${expectedMessage}" after ${maxAttempts} attempts`,
+    );
+};
+
 export const Post = {
     apiCreatePost,
     apiCreatePostEphemeral,
     apiCreateIncomingWebhook,
     apiCreatePostWithImageAttachment,
+    apiFindPostInChannelByMessage,
     apiGetLastPostInChannel,
     apiGetPostsInChannel,
     apiPinPost,
     apiPatchPost,
     apiPostIncomingWebhook,
+    apiSearchPosts,
     apiUploadFileToChannel,
+    apiGetFlaggedPosts,
+    waitForPostFlagged,
+    waitForPostMessage,
+    waitForPostMessageInSearch,
+    waitForPostPinned,
+    waitForPostUnflagged,
+    waitForPostUnpinned,
 };
 
 export default Post;

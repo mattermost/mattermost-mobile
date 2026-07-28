@@ -70,17 +70,35 @@ baseClient.interceptors.response.use(
     },
 );
 
-// Retry transient 5xx responses with linear backoff.
+/** Cloudflare edge failures. 524 (origin response timeout) needs longer waits than a gateway 5xx. */
+const CLOUDFLARE_EDGE_STATUSES: ReadonlySet<number> = new Set([520, 521, 522, 523, 524]);
+
+const TRANSIENT_HTTP_STATUSES: ReadonlySet<number> = new Set([502, 503, 504, ...CLOUDFLARE_EDGE_STATUSES]);
+
+export const isCloudflareEdgeStatus = (status?: number): boolean =>
+    status !== undefined && CLOUDFLARE_EDGE_STATUSES.has(status);
+
+/** Gateway 5xx plus Cloudflare edge — shared with the apiInit retry layer in setup.ts. */
+export const isTransientHttpStatus = (status?: number): boolean =>
+    status !== undefined && TRANSIENT_HTTP_STATUSES.has(status);
+
+// Retry transient gateway / Cloudflare edge 5xx with backoff.
+// CI detox-ipad 30334294934 failed apiInit create-user on a single 524 with retry_after=120.
 baseClient.interceptors.response.use(
     (response) => response,
     async (error) => {
-        const config = error.config;
+        const config = error.config as typeof error.config & {_5xxRetries?: number};
         const status = error.response?.status;
-        const isTransient = status === 502 || status === 503 || status === 504;
+        const isCloudflareEdge = isCloudflareEdgeStatus(status);
+        const isTransient = isTransientHttpStatus(status);
 
         if (isTransient && (config._5xxRetries ?? 0) < 3) {
             config._5xxRetries = (config._5xxRetries ?? 0) + 1;
-            const delay = config._5xxRetries * 1000;
+            const retryAfterSec = Number(error.response?.data?.retry_after);
+            const cloudflareDelayMs = Number.isFinite(retryAfterSec) && retryAfterSec > 0 ?
+                Math.min(retryAfterSec, 90) * 1000 :
+                config._5xxRetries * 30000;
+            const delay = isCloudflareEdge ? cloudflareDelayMs : config._5xxRetries * 1000;
             console.warn(`[client] ${status} from server — retry ${config._5xxRetries}/3 in ${delay}ms`); // eslint-disable-line no-console
             await new Promise((r) => setTimeout(r, delay)); // eslint-disable-line no-promise-executor-return
             return baseClient(config);

@@ -8,7 +8,7 @@ import {
     System,
     User,
 } from '@support/server_api';
-import {siteOneUrl} from '@support/test_config';
+import {siteOneUrl, hasStableWebhookIngress} from '@support/test_config';
 import {
     ChannelScreen,
     HomeScreen,
@@ -17,22 +17,43 @@ import {
 import {getRandomId} from '@support/utils';
 import {expect} from 'detox';
 
-// Skip: failed CI run 29954156963 (both) — android + many iOS mm_blocks failures
-describe.skip('Interactive mm_blocks (incoming webhook)', () => {
+// Entire suite needs stable ingress: trycloudflare post/render flakes the same as
+// callbacks (CI a4c0e33 — T6215/T6216/T6228/T6229 waitForPostText failures).
+const describeMmBlocks = hasStableWebhookIngress ? describe : describe.skip;
+const itNeedsStableIngress = hasStableWebhookIngress ? it : it.skip;
+
+describeMmBlocks('Interactive mm_blocks (incoming webhook)', () => {
     let testChannel: any;
     let testTeam: any;
     let testUser: any;
 
     beforeAll(async () => {
+        await MmBlocksTestHelper.requireWebhookSidecar();
         const setup = await MmBlocksTestHelper.setupChannelTest();
         testChannel = setup.channel;
         testTeam = setup.team;
         testUser = setup.user;
     });
 
+    beforeEach(() => {
+        MmBlocksTestHelper.assertSuiteRunnable();
+    });
+
+    afterEach(async () => {
+        try {
+            await MmBlocksTestHelper.ensureOnChannelScreen();
+        } catch {
+            // Next test will re-assert / abort if the suite is blocked.
+        }
+    });
+
     afterAll(async () => {
-        await MmBlocksTestHelper.ensureOnChannelScreen();
-        await ChannelScreen.back();
+        try {
+            await MmBlocksTestHelper.ensureOnChannelScreen();
+            await ChannelScreen.back();
+        } catch {
+            // Relaunch recovery may already be on the channel list (CI 30340678924).
+        }
         await HomeScreen.logout();
     });
 
@@ -126,11 +147,7 @@ describe.skip('Interactive mm_blocks (incoming webhook)', () => {
         await expect(element(by.text('missing action_id'))).not.toExist();
     });
 
-    it('MM-T6217_1 - should reach webhook sidecar and show integration ephemeral in thread', async () => {
-        if (!(await MmBlocksTestHelper.isWebhookSidecarReachableOrSkip())) {
-            return;
-        }
-
+    itNeedsStableIngress('MM-T6217_1 - should reach webhook sidecar and show integration ephemeral in thread', async () => {
         const marker = 'E2E mm_blocks external integration';
 
         await MmBlocksTestHelper.postIncomingWebhookBlocks(testChannel.id, 'Detox mm_blocks integration', {
@@ -162,11 +179,7 @@ describe.skip('Interactive mm_blocks (incoming webhook)', () => {
         await ThreadScreen.back();
     });
 
-    it('MM-T6218_1 - should apply integration update on webhook post', async () => {
-        if (!(await MmBlocksTestHelper.isWebhookSidecarReachableOrSkip())) {
-            return;
-        }
-
+    itNeedsStableIngress('MM-T6218_1 - should apply integration update on webhook post', async () => {
         await MmBlocksTestHelper.postIncomingWebhookBlocks(testChannel.id, 'Detox mm_blocks update', {
             text: 'E2E mm_blocks before apply update',
             props: {
@@ -195,11 +208,7 @@ describe.skip('Interactive mm_blocks (incoming webhook)', () => {
         await MmBlocksTestHelper.waitForTextInChannelPost(updatePost.id, 'DETOX_MM_BLOCKS_UPDATED');
     });
 
-    it('MM-T6219_1 - should keep webhook username override after integration update', async () => {
-        if (!(await MmBlocksTestHelper.isWebhookSidecarReachableOrSkip())) {
-            return;
-        }
-
+    itNeedsStableIngress('MM-T6219_1 - should keep webhook username override after integration update', async () => {
         await User.apiAdminLogin(siteOneUrl);
         await System.apiPatchConfig(siteOneUrl, {
             ServiceSettings: {EnablePostUsernameOverride: true},
@@ -239,11 +248,7 @@ describe.skip('Interactive mm_blocks (incoming webhook)', () => {
         await MmBlocksTestHelper.expectChannelPostAuthorName(overrideAuthorName, overridePost.id);
     });
 
-    it('MM-T6220_1 - should send selected_option from static_select to integration', async () => {
-        if (!(await MmBlocksTestHelper.isWebhookSidecarReachableOrSkip())) {
-            return;
-        }
-
+    itNeedsStableIngress('MM-T6220_1 - should send selected_option from static_select to integration', async () => {
         const marker = MmBlocksTestHelper.randomMarker('E2E mm_blocks static_select');
 
         await MmBlocksTestHelper.postIncomingWebhookBlocks(testChannel.id, 'Detox mm_blocks static_select', {
@@ -279,11 +284,7 @@ describe.skip('Interactive mm_blocks (incoming webhook)', () => {
         await ThreadScreen.back();
     });
 
-    it('MM-T6221_1 - should send selected user id from static_select data_source users', async () => {
-        if (!(await MmBlocksTestHelper.isWebhookSidecarReachableOrSkip())) {
-            return;
-        }
-
+    itNeedsStableIngress('MM-T6221_1 - should send selected user id from static_select data_source users', async () => {
         const marker = MmBlocksTestHelper.randomMarker('E2E mm_blocks static_select users');
 
         await MmBlocksTestHelper.postIncomingWebhookBlocks(testChannel.id, 'Detox mm_blocks static_select users', {
@@ -316,11 +317,7 @@ describe.skip('Interactive mm_blocks (incoming webhook)', () => {
         await ThreadScreen.back();
     });
 
-    it('MM-T6222_1 - should send selected channel id from static_select data_source channels', async () => {
-        if (!(await MmBlocksTestHelper.isWebhookSidecarReachableOrSkip())) {
-            return;
-        }
-
+    itNeedsStableIngress('MM-T6222_1 - should send selected channel id from static_select data_source channels', async () => {
         const marker = MmBlocksTestHelper.randomMarker('E2E mm_blocks static_select channels');
 
         await MmBlocksTestHelper.postIncomingWebhookBlocks(testChannel.id, 'Detox mm_blocks static_select channels', {
@@ -353,11 +350,7 @@ describe.skip('Interactive mm_blocks (incoming webhook)', () => {
         await ThreadScreen.back();
     });
 
-    it('MM-T6223_1 - should send mm_blocks_actions context to integration', async () => {
-        if (!(await MmBlocksTestHelper.isWebhookSidecarReachableOrSkip())) {
-            return;
-        }
-
+    itNeedsStableIngress('MM-T6223_1 - should send mm_blocks_actions context to integration', async () => {
         const marker = MmBlocksTestHelper.randomMarker('E2E mm_blocks action_context');
         const contextMarker = MmBlocksTestHelper.randomMarker('ctx');
 
@@ -394,7 +387,7 @@ describe.skip('Interactive mm_blocks (incoming webhook)', () => {
         await ThreadScreen.back();
     });
 
-    it('MM-T6224_1 - should navigate via openURL action from mm_blocks button', async () => {
+    itNeedsStableIngress('MM-T6224_1 - should navigate via openURL action from mm_blocks button', async () => {
         const marker = MmBlocksTestHelper.randomMarker('E2E mm_blocks openURL');
         const {channel: targetChannel} = await Channel.apiCreateChannel(siteOneUrl, {teamId: testTeam.id});
         await Channel.apiAddUserToChannel(siteOneUrl, testUser.id, targetChannel.id);
@@ -428,11 +421,7 @@ describe.skip('Interactive mm_blocks (incoming webhook)', () => {
         await ChannelScreen.open(MmBlocksTestHelper.CHANNELS_CATEGORY, testChannel.name);
     });
 
-    it('MM-T6225_1 - should merge mm_blocks_actions query with block query on integration URL', async () => {
-        if (!(await MmBlocksTestHelper.isWebhookSidecarReachableOrSkip())) {
-            return;
-        }
-
+    itNeedsStableIngress('MM-T6225_1 - should merge mm_blocks_actions query with block query on integration URL', async () => {
         const marker = MmBlocksTestHelper.randomMarker('E2E mm_blocks button query');
 
         await MmBlocksTestHelper.postIncomingWebhookBlocks(testChannel.id, 'Detox mm_blocks button query', {
@@ -470,11 +459,7 @@ describe.skip('Interactive mm_blocks (incoming webhook)', () => {
         await ThreadScreen.back();
     });
 
-    it('MM-T6226_1 - should let block query override duplicate mm_blocks_actions query keys', async () => {
-        if (!(await MmBlocksTestHelper.isWebhookSidecarReachableOrSkip())) {
-            return;
-        }
-
+    itNeedsStableIngress('MM-T6226_1 - should let block query override duplicate mm_blocks_actions query keys', async () => {
         const marker = MmBlocksTestHelper.randomMarker('E2E mm_blocks query override');
 
         await MmBlocksTestHelper.postIncomingWebhookBlocks(testChannel.id, 'Detox mm_blocks query override', {
@@ -507,11 +492,7 @@ describe.skip('Interactive mm_blocks (incoming webhook)', () => {
         await ThreadScreen.back();
     });
 
-    it('MM-T6227_1 - should merge static_select action and element query on integration URL', async () => {
-        if (!(await MmBlocksTestHelper.isWebhookSidecarReachableOrSkip())) {
-            return;
-        }
-
+    itNeedsStableIngress('MM-T6227_1 - should merge static_select action and element query on integration URL', async () => {
         const marker = MmBlocksTestHelper.randomMarker('E2E mm_blocks static_select query');
 
         await MmBlocksTestHelper.postIncomingWebhookBlocks(testChannel.id, 'Detox mm_blocks select query', {

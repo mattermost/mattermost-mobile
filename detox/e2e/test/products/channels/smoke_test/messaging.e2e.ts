@@ -27,12 +27,14 @@ import {
     ServerScreen,
     ThreadScreen,
 } from '@support/ui/screen';
-import {getRandomId, timeouts, wait} from '@support/utils';
+import {getRandomId, isAndroid, timeouts, wait, waitForElementToExist} from '@support/utils';
 import {expect, waitFor} from 'detox';
 
 describe('Smoke Test - Messaging', () => {
     const serverOneDisplayName = 'Server 1';
     const channelsCategory = 'channels';
+    const savedText = 'Saved';
+    const pinnedText = 'Pinned';
     let testChannel: any;
     let testTeam: any;
     let testUser: any;
@@ -100,8 +102,7 @@ describe('Smoke Test - Messaging', () => {
         await ChannelScreen.back();
     });
 
-    // Skip: failed CI run 29954156963 (both) — BACK_INDEX / thread cascade
-    it.skip('MM-T4786_2 - should be able to reply to a message', async () => {
+    it('MM-T4786_2 - should be able to reply to a message', async () => {
         // # Open a channel screen, post a message, and tap on the post
         const message = `Message ${getRandomId()}`;
         await ChannelScreen.open(channelsCategory, testChannel.name);
@@ -133,18 +134,21 @@ describe('Smoke Test - Messaging', () => {
         await ChannelScreen.back();
     });
 
-    // Skip: failed CI run 29954156963 (both) — BACK_INDEX / thread cascade
-    it.skip('MM-T4786_3 - should be able to include emojis in a message and add reaction to a message', async () => {
+    it('MM-T4786_3 - should be able to include emojis in a message and add reaction to a message', async () => {
         // # Open a channel screen and post a message that includes emojis
         const message = 'The quick brown fox :fox_face: jumps over the lazy dog :dog:';
         await ChannelScreen.open(channelsCategory, testChannel.name);
         await ChannelScreen.postMessage(message);
 
-        // * Verify message is posted with emojis
+        // * Verify message is posted with emojis (wait for post row by id — emoji text nodes can lag)
         const resolvedMessage = 'The quick brown fox 🦊 jumps over the lazy dog 🐶';
         const {post} = await Post.apiGetLastPostInChannel(siteOneUrl, testChannel.id);
+        if (!post?.id) {
+            throw new Error('MM-T4786_3: expected post after emoji message');
+        }
         const {postListPostItem} = ChannelScreen.getPostListPostItem(post.id, resolvedMessage);
-        await waitFor(postListPostItem).toBeVisible().withTimeout(timeouts.TEN_SEC);
+        await waitForElementToExist(postListPostItem, timeouts.TWENTY_SEC);
+        await expect(postListPostItem).toBeVisible();
 
         // # Open post options for message, open emoji picker screen, and add a reaction
         // Use openPostOptionsFor (longPressWithScrollRetry) instead of a raw longPress so that
@@ -166,8 +170,87 @@ describe('Smoke Test - Messaging', () => {
         await ChannelScreen.back();
     });
 
-    // Skip: failed CI run 29954156963 (both) — BACK_INDEX / thread cascade
-    it.skip('MM-T4786_5 - should be able to post a message with at-mention and channel mention', async () => {
+    // Skip both: CI run 30000635898 — iOS post-option actions are unhittable and Android cascades at channel setup.
+    it.skip('MM-T4786_4 - should be able to follow/unfollow a message, save/unsave a message, and pin/unpin a message', async () => {
+        // # Open a channel screen, post a message, open post options for message, and tap on follow message option
+        const message = `Message ${getRandomId()}`;
+        await ChannelScreen.open(channelsCategory, testChannel.name);
+        await ChannelScreen.postMessage(message);
+        const {post} = await Post.apiGetLastPostInChannel(siteOneUrl, testChannel.id);
+        await ChannelScreen.openPostOptionsFor(post.id, message);
+        await PostOptionsScreen.followThreadOption.tap();
+
+        // * Verify post options closed and message is followed by user via post footer
+        await waitFor(PostOptionsScreen.postOptionsScreen).not.toBeVisible().withTimeout(timeouts.FOUR_SEC);
+        const {postListPostItem, postListPostItemFooterFollowingButton} = ChannelScreen.getPostListPostItem(post.id, message);
+        await waitFor(postListPostItemFooterFollowingButton).toExist().withTimeout(timeouts.TEN_SEC);
+
+        // # Tap on following button via post footer to unfollow
+        await postListPostItemFooterFollowingButton.tap();
+
+        // * Verify message is not followed by user via post footer
+        await waitFor(postListPostItemFooterFollowingButton).not.toExist().withTimeout(timeouts.FOUR_SEC);
+
+        // # Open post options for message and tap on save option
+        await ChannelScreen.openPostOptionsFor(post.id, message);
+
+        if (isAndroid()) {
+            await PostOptionsScreen.savePostOptionLabel.tap();
+        } else {
+            await PostOptionsScreen.savePostOption.tap();
+        }
+
+        // * Verify post options closed and saved text is displayed on the post pre-header
+        await waitFor(PostOptionsScreen.postOptionsScreen).not.toBeVisible().withTimeout(timeouts.FOUR_SEC);
+        const {postListPostItemPreHeaderText: channelPostListPostItemPreHeaderText} = ChannelScreen.getPostListPostItem(post.id, message);
+        await waitFor(channelPostListPostItemPreHeaderText).toHaveText(savedText).withTimeout(timeouts.FOUR_SEC);
+
+        // # Tap on post to open thread and open post options for message
+        await postListPostItem.tap();
+        await ThreadScreen.toBeVisible();
+        await wait(timeouts.ONE_SEC);
+        await ThreadScreen.openPostOptionsFor(post.id, message);
+        if (isAndroid()) {
+            await PostOptionsScreen.unsavePostOptionLabel.tap();
+        } else {
+            await PostOptionsScreen.unsavePostOption.tap();
+        }
+
+        // * Verify post options closed and saved text is not displayed on the post pre-header
+        await waitFor(PostOptionsScreen.postOptionsScreen).not.toBeVisible().withTimeout(timeouts.TWO_SEC);
+        await waitFor(channelPostListPostItemPreHeaderText).not.toBeVisible().withTimeout(timeouts.FOUR_SEC);
+
+        // # Open post options for message and tap on pin to channel option
+        await ThreadScreen.openPostOptionsFor(post.id, message);
+        if (isAndroid()) {
+            await PostOptionsScreen.pinPostOptionLabel.tap();
+        } else {
+            await PostOptionsScreen.pinPostOption.tap();
+        }
+
+        // * Verify post options closed and pinned text is displayed on the post pre-header
+        await waitFor(PostOptionsScreen.postOptionsScreen).not.toBeVisible().withTimeout(timeouts.TWO_SEC);
+        const {postListPostItemPreHeaderText: threadPostListPostItemPreHeaderText} = ThreadScreen.getPostListPostItem(post.id, message);
+        await waitFor(threadPostListPostItemPreHeaderText).toHaveText(pinnedText).withTimeout(timeouts.FOUR_SEC);
+
+        // # Go back to channel, open post options for message, and tap on unpin from channel option
+        await ThreadScreen.back();
+        await ChannelScreen.openPostOptionsFor(post.id, message);
+        if (isAndroid()) {
+            await PostOptionsScreen.unpinPostOptionLabel.tap();
+        } else {
+            await PostOptionsScreen.unpinPostOption.tap();
+        }
+
+        // * Verify post options closed and pinned text is not displayed on the post pre-header
+        await waitFor(PostOptionsScreen.postOptionsScreen).not.toBeVisible().withTimeout(timeouts.TWO_SEC);
+        await waitFor(channelPostListPostItemPreHeaderText).not.toBeVisible().withTimeout(timeouts.FOUR_SEC);
+
+        // # Go back to channel list screen
+        await ChannelScreen.back();
+    });
+
+    it('MM-T4786_5 - should be able to post a message with at-mention and channel mention', async () => {
         // # Open a channel screen and post a message with at-mention and channel mention
         const {channel: targetChannel} = await Channel.apiCreateChannel(siteOneUrl, {teamId: testTeam.id});
         await Channel.apiAddUserToChannel(siteOneUrl, testUser.id, targetChannel.id);
@@ -183,8 +266,7 @@ describe('Smoke Test - Messaging', () => {
         await ChannelScreen.back();
     });
 
-    // Skip: failed CI run 29954156963 (both) — BACK_INDEX / thread cascade
-    it.skip('MM-T4786_6 - should be able to post labeled permalink and labeled channel link', async () => {
+    it('MM-T4786_6 - should be able to post labeled permalink and labeled channel link', async () => {
         // # Post a target message in a target channel
         const permalinkTargetMessage = `Message ${getRandomId()}`;
         const {channel: targetChannel} = await Channel.apiCreateChannel(siteOneUrl, {teamId: testTeam.id});
@@ -211,8 +293,7 @@ describe('Smoke Test - Messaging', () => {
         await ChannelScreen.back();
     });
 
-    // Skip: failed CI run 29954156963 (both) — BACK_INDEX / thread cascade
-    it.skip('MM-T4786_7 - should be able to post a message with markdown', async () => {
+    it('MM-T4786_7 - should be able to post a message with markdown', async () => {
         // # Open a channel screen and post a message with markdown
         const message = `Message ${getRandomId()}`;
         const markdown = `#### ${message}`;

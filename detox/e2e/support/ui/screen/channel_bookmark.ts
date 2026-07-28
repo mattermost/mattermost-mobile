@@ -1,18 +1,26 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {timeouts} from '@support/utils';
-import {expect, waitFor} from 'detox';
+import {isAndroid, safeEnableSynchronization, timeouts, wait, waitForElementToExist, waitForElementToNotExist} from '@support/utils';
+import {waitFor} from 'detox';
 
 class ChannelBookmarkScreen {
     testID = {
         channelBookmarkScreen: 'channel_bookmark.screen',
         closeButton: 'close.channel_bookmark.button',
         saveButton: 'channel_bookmark.edit.save_button',
+        editIconButton: 'channel_bookmark.edit.icon_button',
         linkInput: 'channel_bookmark_add.link.input',
         linkLoading: 'channel_bookmark_add.link.loading',
         linkInputDescription: 'channel_bookmark_add.link.input.description',
         titleInput: 'channel_bookmark.add.title.input',
+        bookmarkGenericIcon: 'bookmark-generic-icon',
+        bookmarkImage: 'bookmark-image',
+        bookmarkEmoji: 'bookmark-emoji',
+        bookmarkFileIcon: 'bookmark-file-icon',
+        emojiPickerScreen: 'emoji_picker.screen',
+        emojiPickerSearchInput: 'emoji_picker.search_bar.search.input',
+        emojiPickerToolTipCloseButton: 'skin_selector.tooltip.close.button',
     };
 
     channelBookmarkScreen = element(by.id(this.testID.channelBookmarkScreen));
@@ -35,16 +43,67 @@ class ChannelBookmarkScreen {
     addALinkOption = element(by.text('Add a link'));
     attachAFileOption = element(by.text('Attach a file'));
 
+    tapAddALinkOption = async () => {
+        await waitForElementToExist(this.addALinkOption, timeouts.TEN_SEC);
+        await this.addALinkOption.tap();
+    };
+
     // Edit options (long press on bookmark)
     editOption = element(by.text('Edit'));
     deleteOption = element(by.text('Delete'));
     copyLinkOption = element(by.text('Copy Link'));
+    shareOption = element(by.text('Share'));
 
     // Delete confirmation alert
     deleteConfirmYesButton = element(by.text('Yes'));
     deleteConfirmCancelButton = element(by.text('Cancel'));
 
-    // Error alert button
+    /**
+     * Bookmark options is a bottom sheet with no Cancel row (CI 59ec6ae screenshots).
+     * Dismiss by swiping a visible row; Android can use back when a sheet row exists.
+     */
+    dismissOptionsSheet = async () => {
+        const swipeTargets = [this.deleteOption, this.editOption, this.copyLinkOption, this.shareOption];
+        let sheetVisible = false;
+        /* eslint-disable no-await-in-loop -- probe which option rows are on this sheet */
+        for (const target of swipeTargets) {
+            try {
+                await waitFor(target).toBeVisible().withTimeout(timeouts.TWO_SEC);
+                sheetVisible = true;
+                break;
+            } catch {
+                // Row not present on this sheet variant.
+            }
+        }
+        /* eslint-enable no-await-in-loop */
+
+        if (!sheetVisible) {
+            return;
+        }
+
+        if (isAndroid()) {
+            await device.pressBack();
+        } else {
+            /* eslint-disable no-await-in-loop -- swipe the first visible sheet row */
+            for (const target of swipeTargets) {
+                try {
+                    await waitFor(target).toBeVisible().withTimeout(timeouts.TWO_SEC);
+                    await target.swipe('down', 'fast', 0.9, 0.5, 0.1);
+                    await wait(timeouts.ONE_SEC);
+                    break;
+                } catch {
+                    // Try next row.
+                }
+            }
+            /* eslint-enable no-await-in-loop */
+        }
+
+        await waitFor(this.editOption).not.toExist().withTimeout(timeouts.FIVE_SEC);
+        await waitFor(this.copyLinkOption).not.toExist().withTimeout(timeouts.FIVE_SEC);
+    };
+
+    // Error alert
+    addErrorTitle = element(by.text('Error adding bookmark'));
     errorOkButton = element(by.text('OK'));
 
     getLinkInput = () => this.linkInput;
@@ -103,19 +162,111 @@ class ChannelBookmarkScreen {
         try {
             return await action();
         } finally {
-            await device.enableSynchronization();
+            await safeEnableSynchronization();
         }
     };
 
     toBeVisible = async () => {
-        await waitFor(this.channelBookmarkScreen).toExist().withTimeout(timeouts.TEN_SEC);
+        await waitForElementToExist(this.channelBookmarkScreen, timeouts.TEN_SEC);
+        await waitForElementToExist(this.linkInput, timeouts.TEN_SEC);
         return this.channelBookmarkScreen;
     };
 
+    getEditModalIconButton = () => {
+        const ancestor = by.id(this.testID.channelBookmarkScreen);
+        return element(by.id(this.testID.bookmarkGenericIcon).withAncestor(ancestor));
+    };
+
+    // CI 28416284905 MM-T5606_1: icon tap + EmojiPickerScreen.toBeVisible() timed out
+    // with search input null — bottom-sheet animation / sync still busy on Android.
+    // CI 30216081940: title replaceText leaves keyboard covering the icon; skin-tone
+    // tooltip can mount with the picker so retries must not re-tap the buried icon.
+    openEmojiPickerFromEditModal = async () => {
+        const iconButton = element(by.id(this.testID.editIconButton).withAncestor(by.id(this.testID.channelBookmarkScreen)));
+        const emojiPickerScreen = element(by.id(this.testID.emojiPickerScreen));
+        const searchInput = element(by.id(this.testID.emojiPickerSearchInput));
+        const toolTipCloseButton = element(by.id(this.testID.emojiPickerToolTipCloseButton));
+
+        if (isAndroid()) {
+            // Sync stays off only for the back press — the keyboard teardown never
+            // settles the bridge. Restore it before the taps below so the rest of the
+            // suite is not left running unsynchronized.
+            await device.disableSynchronization();
+            try {
+                await device.pressBack();
+                await wait(timeouts.HALF_SEC);
+            } catch {
+                // Keyboard may already be dismissed.
+            } finally {
+                await safeEnableSynchronization();
+            }
+        }
+
+        const pickerAlreadyOpen = async () => {
+            try {
+                await waitFor(searchInput).toExist().withTimeout(timeouts.HALF_SEC);
+                return true;
+            } catch {
+                try {
+                    await waitFor(toolTipCloseButton).toExist().withTimeout(timeouts.HALF_SEC);
+                    return true;
+                } catch {
+                    try {
+                        await waitFor(emojiPickerScreen).toExist().withTimeout(timeouts.HALF_SEC);
+                        return true;
+                    } catch {
+                        return false;
+                    }
+                }
+            }
+        };
+
+        /* eslint-disable no-await-in-loop -- retry icon tap until picker mounts */
+        for (let attempt = 0; attempt < 3; attempt++) {
+            if (await pickerAlreadyOpen()) {
+                break;
+            }
+            await waitFor(iconButton).toExist().withTimeout(timeouts.TEN_SEC);
+            await iconButton.tap();
+            await wait(timeouts.TWO_SEC);
+            try {
+                await waitFor(emojiPickerScreen).toExist().withTimeout(timeouts.FIVE_SEC);
+                break;
+            } catch (error) {
+                if (await pickerAlreadyOpen()) {
+                    break;
+                }
+                if (attempt === 2) {
+                    throw error;
+                }
+            }
+        }
+        /* eslint-enable no-await-in-loop */
+
+        try {
+            await waitFor(toolTipCloseButton).toBeVisible().withTimeout(timeouts.TEN_SEC);
+            await toolTipCloseButton.tap();
+            await wait(timeouts.ONE_SEC);
+        } catch {
+            // Skin-tone tooltip may not appear.
+        }
+
+        await waitFor(searchInput).toExist().withTimeout(timeouts.TWENTY_SEC);
+    };
+
     close = async () => {
-        await waitFor(this.closeButton).toBeVisible().withTimeout(timeouts.TEN_SEC);
-        await this.closeButton.tap();
-        await expect(this.channelBookmarkScreen).not.toBeVisible();
+        try {
+            await waitFor(this.closeButton).toBeVisible().withTimeout(timeouts.TEN_SEC);
+            await this.closeButton.tap();
+        } catch {
+            // device.pressBack() is Android-only; iOS falls back to retrying the tap.
+            if (isAndroid()) {
+                await device.pressBack();
+            } else {
+                await this.closeButton.tap();
+            }
+        }
+        await waitForElementToNotExist(this.channelBookmarkScreen, timeouts.TWENTY_SEC);
     };
 }
 
