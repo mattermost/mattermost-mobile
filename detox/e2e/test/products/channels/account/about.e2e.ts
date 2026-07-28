@@ -21,7 +21,7 @@ import {
     SettingsScreen,
 } from '@support/ui/screen';
 import {isAndroid, safeEnableSynchronization, timeouts, waitForElementToExist} from '@support/utils';
-import {expect} from 'detox';
+import {expect, waitFor} from 'detox';
 
 /** Mirrors app/utils/subscription getSkuDisplayName for E2E learn-more expectations */
 const getSkuDisplayNameForTest = (skuShortName: string, isGovSku: boolean): string => {
@@ -149,9 +149,8 @@ describe('Account - Settings - About', () => {
             try {
                 await expect(AboutScreen.licenseLoadMetricTitle).toHaveText('Load Metric:');
                 await expect(AboutScreen.licenseLoadMetricValue).toBeVisible();
-            } catch (error) {
-                // Load metric may not be available depending on server version
-                // This is fine as the feature depends on server version and configuration
+            } catch {
+                // Load metric availability depends on server version and license.
             }
         } else {
             await expect(AboutScreen.licensee).not.toBeVisible();
@@ -199,7 +198,7 @@ describe('Account - Settings - About', () => {
         await expect(AboutScreen.privacyPolicy).toHaveText('Privacy Policy');
         await expect(AboutScreen.noticeText).toHaveText('Mattermost is made possible by the open source software used in our server and mobile apps.');
 
-        // buildDateTitle is already in view after scrollTo('bottom') above.
+        // Build info is already in view after the scroll to copyright above.
         await expect(AboutScreen.buildHashTitle).toHaveText('Build Hash:');
         await expect(AboutScreen.buildHashValue).toExist();
         await expect(AboutScreen.buildHashEnterpriseTitle).toHaveText('EE Build Hash:');

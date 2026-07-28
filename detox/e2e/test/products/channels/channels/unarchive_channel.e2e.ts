@@ -24,7 +24,7 @@ import {getRandomId, isAndroid, timeouts, wait, waitForElementToBeVisible} from 
 import {expect, waitFor} from 'detox';
 
 describe('Channels - Unarchive Channel', () => {
-    const serverOneDisplayName = 'Server 1';
+    const serverTwoDisplayName = 'Server 2';
 
     beforeAll(async () => {
         // ExperimentalViewArchivedChannels is set by detox/provision at
@@ -34,7 +34,7 @@ describe('Channels - Unarchive Channel', () => {
         // Unarchive requires MANAGE_TEAM; channel creators can archive but not unarchive.
         await Team.apiUpdateTeamMemberSchemeRoles(siteTwoUrl, team.id, user.id, true);
 
-        await ServerScreen.connectToServer(serverTwoUrl, serverOneDisplayName);
+        await ServerScreen.connectToServer(serverTwoUrl, serverTwoDisplayName);
         await LoginScreen.login(user);
         await ChannelListScreen.toBeVisible();
     });
