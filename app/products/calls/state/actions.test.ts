@@ -49,7 +49,6 @@ import {
     setPluginEnabled,
     setRaisedHand,
     setScreenShareURL,
-    setSpeakerPhone,
     setUserMuted,
     setUserVoiceOn,
     userJoinedCall,
@@ -58,7 +57,7 @@ import {
     playIncomingCallsRinging,
 } from '@calls/state/actions';
 import {
-    AudioDevice,
+    AudioDeviceValue,
     type Call,
     type CallsState,
     type CurrentCall,
@@ -861,52 +860,6 @@ describe('useCallsState', () => {
         assert.deepEqual(result.current[1], null);
     });
 
-    it('setSpeakerPhoneOn', () => {
-        const initialCallsState = {
-            ...DefaultCallsState,
-            myUserId: 'myUserId',
-            calls: {'channel-1': call1, 'channel-2': call2},
-        };
-        const newCall1 = {
-            ...call1,
-            sessions: {
-                ...call1.sessions,
-                mySessionId: {sessionId: 'mySessionId', userId: 'myUserId', muted: true, raisedHand: 0},
-            },
-        };
-        const expectedCallsState = {
-            ...initialCallsState,
-            calls: {
-                ...initialCallsState.calls,
-                'channel-1': newCall1,
-            },
-        };
-
-        // setup
-        const {result} = renderHook(() => {
-            return [useCallsState('server1'), useCurrentCall()] as const;
-        });
-        act(() => setCallsState('server1', initialCallsState));
-        assert.deepEqual(result.current[0], initialCallsState);
-        assert.deepEqual(result.current[1], null);
-
-        // test
-        act(() => newCurrentCall('server1', 'channel-1', 'myUserId'));
-        act(() => userJoinedCall('server1', 'channel-1', 'myUserId', 'mySessionId'));
-        assert.deepEqual((result.current[1])?.speakerphoneOn, false);
-        act(() => setSpeakerPhone(true));
-        assert.deepEqual((result.current[1])?.speakerphoneOn, true);
-        act(() => setSpeakerPhone(false));
-        assert.deepEqual((result.current[1])?.speakerphoneOn, false);
-        assert.deepEqual(result.current[0], expectedCallsState);
-        act(() => {
-            myselfLeftCall();
-            setSpeakerPhone(true);
-        });
-        assert.deepEqual(result.current[0], expectedCallsState);
-        assert.deepEqual(result.current[1], null);
-    });
-
     it('setAudioDeviceInfo', () => {
         const initialCallsState = {
             ...DefaultCallsState,
@@ -930,11 +883,11 @@ describe('useCallsState', () => {
 
         const defaultAudioDeviceInfo = {
             availableAudioDeviceList: [],
-            selectedAudioDevice: AudioDevice.None,
+            selectedAudioDevice: AudioDeviceValue.None,
         };
         const newAudioDeviceInfo = {
-            availableAudioDeviceList: [AudioDevice.Speakerphone, AudioDevice.Earpiece],
-            selectedAudioDevice: AudioDevice.Speakerphone,
+            availableAudioDeviceList: [AudioDeviceValue.Speakerphone, AudioDeviceValue.Earpiece],
+            selectedAudioDevice: AudioDeviceValue.Speakerphone,
         };
 
         // setup
@@ -951,7 +904,6 @@ describe('useCallsState', () => {
         assert.deepEqual((result.current[1])?.audioDeviceInfo, defaultAudioDeviceInfo);
         act(() => setAudioDeviceInfo(newAudioDeviceInfo));
         assert.deepEqual((result.current[1])?.audioDeviceInfo, newAudioDeviceInfo);
-        assert.deepEqual((result.current[1])?.speakerphoneOn, false);
         assert.deepEqual(result.current[0], expectedCallsState);
         act(() => {
             myselfLeftCall();

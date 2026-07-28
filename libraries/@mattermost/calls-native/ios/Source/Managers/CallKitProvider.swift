@@ -298,9 +298,7 @@ private struct CallInfo {
     }
 
     public func provider(_ provider: CXProvider, perform action: CXStartCallAction) {
-        // For Phase 1 we don't need to do anything here — outbound calls go
-        // through reportOutgoingCall above which already requested the
-        // transaction. iOS still calls this delegate; just fulfill.
+        bridge?.audioSession.configureForCall()
         action.fulfill()
     }
 

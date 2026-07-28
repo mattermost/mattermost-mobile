@@ -2,8 +2,8 @@
 // See LICENSE.txt for license information.
 
 import {mosThreshold} from '@mattermost/calls/lib/rtc_monitor';
+import CallsNative from '@mattermost/calls-native';
 import {AppState, type AppStateStatus} from 'react-native';
-import InCallManager from 'react-native-incall-manager';
 
 import {updateThreadFollowing} from '@actions/remote/thread';
 import {needsRecordingAlert} from '@calls/alerts';
@@ -23,7 +23,7 @@ import {
     setIncomingCalls,
 } from '@calls/state';
 import {
-    type AudioDeviceInfo,
+    type AudioRoute,
     type Call,
     type CallsConfigState,
     type ChannelsWithCalls,
@@ -214,7 +214,7 @@ export const callsOnAppStateChange = async (appState: AppStateStatus) => {
     switch (appState) {
         case 'inactive':
         case 'background':
-            InCallManager.stopRingtone();
+            CallsNative.stopRingtone();
             setIncomingCalls({...getIncomingCalls(), currentRingingCallId: undefined});
             break;
     }
@@ -278,12 +278,12 @@ export const playIncomingCallsRinging = async (serverUrl: string, callId: string
         currentRingingCallId: callId,
         callIdHasRung: {...incomingCalls.callIdHasRung, [callId]: true},
     });
-    InCallManager.startRingtone(ringTone, Calls.RINGTONE_VIBRATE_PATTERN);
+    CallsNative.startRingtone(ringTone, Calls.RING_LENGTH / 1000);
 
     setTimeout(() => {
         const incoming = getIncomingCalls();
         if (incoming.currentRingingCallId === callId) {
-            InCallManager.stopRingtone();
+            CallsNative.stopRingtone();
             setIncomingCalls({...getIncomingCalls(), currentRingingCallId: undefined});
         }
     }, Calls.RING_LENGTH);
@@ -295,7 +295,7 @@ const stopIncomingCallsRinging = () => {
         return;
     }
 
-    InCallManager.stopRingtone();
+    CallsNative.stopRingtone();
     setIncomingCalls({...incomingCalls, currentRingingCallId: undefined});
 };
 
@@ -689,13 +689,6 @@ export const setScreenShareURL = (url: string) => {
     }
 };
 
-export const setSpeakerPhone = (speakerphoneOn: boolean) => {
-    const call = getCurrentCall();
-    if (call) {
-        setCurrentCall({...call, speakerphoneOn});
-    }
-};
-
 export const setJoiningChannelId = (joiningChannelId: string | null) => {
     const globalCallsState = getGlobalCallsState();
     setGlobalCallsState({
@@ -704,7 +697,7 @@ export const setJoiningChannelId = (joiningChannelId: string | null) => {
     });
 };
 
-export const setAudioDeviceInfo = (info: AudioDeviceInfo) => {
+export const setAudioDeviceInfo = (info: AudioRoute) => {
     const call = getCurrentCall();
     if (call) {
         setCurrentCall({...call, audioDeviceInfo: info});

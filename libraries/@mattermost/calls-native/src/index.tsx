@@ -4,7 +4,10 @@
 import {NativeEventEmitter, NativeModules, Platform, type EmitterSubscription} from 'react-native';
 
 import {
+    AudioDeviceValue,
     CallsNativeEvents,
+    type AudioDevice,
+    type AudioRoute,
     type CallActionPayload,
     type CallMutePayload,
     type ForegroundNotificationConfig,
@@ -42,11 +45,15 @@ type CallsNativeSpec = Spec & {
     onCallDeclined: (listener: (event: CallActionPayload) => void) => EmitterSubscription;
     onCallEnded: (listener: (event: CallActionPayload) => void) => EmitterSubscription;
     onMuteChanged: (listener: (event: CallMutePayload) => void) => EmitterSubscription;
+    onAudioRouteChanged: (listener: (event: AudioRoute) => void) => EmitterSubscription;
 };
 
 const emitter = new NativeEventEmitter(CallsNative as Spec);
 
+export {AudioDeviceValue};
 export type {
+    AudioDevice,
+    AudioRoute,
     CallsNativeSpec,
     CallActionPayload,
     CallMutePayload,
@@ -70,6 +77,8 @@ const CallsNativeWithEvents: CallsNativeSpec = Object.assign(CallsNative as Spec
         emitter.addListener(CallsNativeEvents.CallEnded, listener),
     onMuteChanged: (listener: (event: CallMutePayload) => void) =>
         emitter.addListener(CallsNativeEvents.CallMuted, listener),
+    onAudioRouteChanged: (listener: (event: AudioRoute) => void) =>
+        emitter.addListener(CallsNativeEvents.AudioRouteChanged, listener),
 });
 
 export default CallsNativeWithEvents;

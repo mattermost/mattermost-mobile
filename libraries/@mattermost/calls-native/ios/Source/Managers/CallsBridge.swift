@@ -43,7 +43,7 @@ import Gekidou
     private var didBootstrap = false
     private(set) lazy var pushKitController = PushKitController(bridge: self)
     @objc public private(set) lazy var callKitProvider = CallKitProvider(bridge: self)
-    private(set) lazy var audioSession = AudioSessionManager()
+    @objc public private(set) lazy var audioSession = AudioSessionManager(bridge: self)
 
     private override init() {
         super.init()

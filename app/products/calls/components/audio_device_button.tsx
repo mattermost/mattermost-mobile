@@ -6,7 +6,7 @@ import {useIntl} from 'react-intl';
 import {Pressable, type StyleProp, Text, type TextStyle, View, type ViewStyle} from 'react-native';
 
 import {setPreferredAudioRoute} from '@calls/actions/calls';
-import {AudioDevice, type CurrentCall} from '@calls/types/calls';
+import {AudioDeviceValue, type AudioDevice, type CurrentCall} from '@calls/types/calls';
 import CompassIcon, {type CompassIconName} from '@components/compass_icon';
 import SlideUpPanelItem, {ITEM_HEIGHT} from '@components/slide_up_panel_item';
 import {Device} from '@constants';
@@ -45,60 +45,60 @@ export const AudioDeviceButton = ({pressableStyle, iconStyle, buttonTextStyle, c
     const deviceSelector = useCallback(() => {
         const currentDevice = audioDeviceInfo.selectedAudioDevice;
         let available = audioDeviceInfo.availableAudioDeviceList;
-        if (available.includes(AudioDevice.WiredHeadset)) {
-            available = available.filter((d) => d !== AudioDevice.Earpiece);
+        if (available.includes(AudioDeviceValue.WiredHeadset)) {
+            available = available.filter((d) => d !== AudioDeviceValue.Earpiece);
         }
         const selectDevice = (device: AudioDevice) => {
-            setPreferredAudioRoute(device);
+            setPreferredAudioRoute(device, true);
             dismissBottomSheet();
         };
 
         const renderContent = () => {
             return (
                 <View>
-                    {available.includes(AudioDevice.Earpiece) && isTablet &&
+                    {available.includes(AudioDeviceValue.Earpiece) && isTablet &&
                         <SlideUpPanelItem
                             leftIcon={'tablet'}
-                            onPress={() => selectDevice(AudioDevice.Earpiece)}
+                            onPress={() => selectDevice(AudioDeviceValue.Earpiece)}
                             text={tabletLabel}
-                            rightIcon={currentDevice === AudioDevice.Earpiece ? 'check' : undefined}
-                            rightIconStyles={currentDevice === AudioDevice.Earpiece ? style.checkIcon : {}}
+                            rightIcon={currentDevice === AudioDeviceValue.Earpiece ? 'check' : undefined}
+                            rightIconStyles={currentDevice === AudioDeviceValue.Earpiece ? style.checkIcon : {}}
                         />
                     }
-                    {available.includes(AudioDevice.Earpiece) && !isTablet &&
+                    {available.includes(AudioDeviceValue.Earpiece) && !isTablet &&
                         <SlideUpPanelItem
                             leftIcon={'cellphone'}
-                            onPress={() => selectDevice(AudioDevice.Earpiece)}
+                            onPress={() => selectDevice(AudioDeviceValue.Earpiece)}
                             text={phoneLabel}
-                            rightIcon={currentDevice === AudioDevice.Earpiece ? 'check' : undefined}
-                            rightIconStyles={currentDevice === AudioDevice.Earpiece ? style.checkIcon : {}}
+                            rightIcon={currentDevice === AudioDeviceValue.Earpiece ? 'check' : undefined}
+                            rightIconStyles={currentDevice === AudioDeviceValue.Earpiece ? style.checkIcon : {}}
                         />
                     }
-                    {available.includes(AudioDevice.Speakerphone) &&
+                    {available.includes(AudioDeviceValue.Speakerphone) &&
                         <SlideUpPanelItem
                             leftIcon={'volume-high'}
-                            onPress={() => selectDevice(AudioDevice.Speakerphone)}
+                            onPress={() => selectDevice(AudioDeviceValue.Speakerphone)}
                             text={speakerLabel}
-                            rightIcon={currentDevice === AudioDevice.Speakerphone ? 'check' : undefined}
-                            rightIconStyles={currentDevice === AudioDevice.Speakerphone ? style.checkIcon : {}}
+                            rightIcon={currentDevice === AudioDeviceValue.Speakerphone ? 'check' : undefined}
+                            rightIconStyles={currentDevice === AudioDeviceValue.Speakerphone ? style.checkIcon : {}}
                         />
                     }
-                    {available.includes(AudioDevice.Bluetooth) &&
+                    {available.includes(AudioDeviceValue.Bluetooth) &&
                         <SlideUpPanelItem
                             leftIcon={'bluetooth'}
-                            onPress={() => selectDevice(AudioDevice.Bluetooth)}
+                            onPress={() => selectDevice(AudioDeviceValue.Bluetooth)}
                             text={bluetoothLabel}
-                            rightIcon={currentDevice === AudioDevice.Bluetooth ? 'check' : undefined}
-                            rightIconStyles={currentDevice === AudioDevice.Bluetooth ? style.checkIcon : {}}
+                            rightIcon={currentDevice === AudioDeviceValue.Bluetooth ? 'check' : undefined}
+                            rightIconStyles={currentDevice === AudioDeviceValue.Bluetooth ? style.checkIcon : {}}
                         />
                     }
-                    {available.includes(AudioDevice.WiredHeadset) &&
+                    {available.includes(AudioDeviceValue.WiredHeadset) &&
                         <SlideUpPanelItem
                             leftIcon={'headphones'}
-                            onPress={() => selectDevice(AudioDevice.WiredHeadset)}
+                            onPress={() => selectDevice(AudioDeviceValue.WiredHeadset)}
                             text={headsetLabel}
-                            rightIcon={currentDevice === AudioDevice.WiredHeadset ? 'check' : undefined}
-                            rightIconStyles={currentDevice === AudioDevice.WiredHeadset ? style.checkIcon : {}}
+                            rightIcon={currentDevice === AudioDeviceValue.WiredHeadset ? 'check' : undefined}
+                            rightIconStyles={currentDevice === AudioDeviceValue.WiredHeadset ? style.checkIcon : {}}
                         />
                     }
                 </View>
@@ -111,15 +111,15 @@ export const AudioDeviceButton = ({pressableStyle, iconStyle, buttonTextStyle, c
     let icon: CompassIconName = 'volume-high';
     let label = speakerLabel;
     switch (audioDeviceInfo.selectedAudioDevice) {
-        case AudioDevice.Earpiece:
+        case AudioDeviceValue.Earpiece:
             icon = isTablet ? 'tablet' : 'cellphone';
             label = isTablet ? tabletLabel : phoneLabel;
             break;
-        case AudioDevice.Bluetooth:
+        case AudioDeviceValue.Bluetooth:
             icon = 'bluetooth';
             label = bluetoothLabel;
             break;
-        case AudioDevice.WiredHeadset:
+        case AudioDeviceValue.WiredHeadset:
             icon = 'headphones';
             label = headsetLabel;
             break;

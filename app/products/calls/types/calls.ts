@@ -9,6 +9,7 @@ import {
     type UserReactionData,
     type CallsVersionInfo,
 } from '@mattermost/calls/lib/types';
+import {AudioDeviceValue, type AudioDevice, type AudioRoute} from '@mattermost/calls-native';
 
 import type UserModel from '@typings/database/models/servers/user';
 
@@ -87,22 +88,13 @@ export const DefaultCall: Call = {
     dismissed: {},
 };
 
-export enum AudioDevice {
-    Earpiece = 'EARPIECE',
-    Speakerphone = 'SPEAKER_PHONE',
-    Bluetooth = 'BLUETOOTH',
-    WiredHeadset = 'WIRED_HEADSET',
-    None = 'NONE',
-}
-
 export type CurrentCall = Call & {
     connected: boolean;
     serverUrl: string;
     myUserId: string;
     mySessionId: string;
     screenShareURL: string;
-    speakerphoneOn: boolean;
-    audioDeviceInfo: AudioDeviceInfo;
+    audioDeviceInfo: AudioRoute;
     voiceOn: Dictionary<boolean>;
     micPermissionsErrorDismissed: boolean;
     reactionStream: ReactionStreamEmoji[];
@@ -118,8 +110,7 @@ export const DefaultCurrentCall: CurrentCall = {
     myUserId: '',
     mySessionId: '',
     screenShareURL: '',
-    speakerphoneOn: false,
-    audioDeviceInfo: {availableAudioDeviceList: [], selectedAudioDevice: AudioDevice.None},
+    audioDeviceInfo: {availableAudioDeviceList: [], selectedAudioDevice: AudioDeviceValue.None},
     voiceOn: {},
     micPermissionsErrorDismissed: false,
     reactionStream: [],
@@ -139,6 +130,9 @@ export type CallSession = {
 
 export type ChannelsWithCalls = Dictionary<boolean>;
 
+export {AudioDeviceValue};
+export type {AudioDevice, AudioRoute};
+
 export type CallsConnection = {
     disconnect: (err?: Error) => void;
     mute: () => void;
@@ -148,6 +142,7 @@ export type CallsConnection = {
     unraiseHand: () => void;
     initializeVoiceTrack: () => void;
     sendReaction: (emoji: EmojiData) => void;
+    setUserSelectedAudioRoute: (route: AudioDevice) => void;
 }
 
 export type CallsConfigState = CallsConfig & {
@@ -200,16 +195,6 @@ export type CallsTheme = Theme & {
     callsBg: string;
     callsBgRgb: string;
     callsBadgeBg: string;
-};
-
-export type AudioDeviceInfoRaw = {
-    availableAudioDeviceList: string;
-    selectedAudioDevice: AudioDevice;
-};
-
-export type AudioDeviceInfo = {
-    availableAudioDeviceList: AudioDevice[];
-    selectedAudioDevice: AudioDevice;
 };
 
 export type LiveCaptionMobile = {

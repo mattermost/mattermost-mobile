@@ -3,8 +3,8 @@
 
 /* eslint-disable max-lines */
 
+import CallsNative from '@mattermost/calls-native';
 import {Alert} from 'react-native';
-import InCallManager from 'react-native-incall-manager';
 
 import {forceLogoutIfNecessary} from '@actions/remote/session';
 import {updateThreadFollowing} from '@actions/remote/thread';
@@ -36,7 +36,6 @@ import {
     setConfig,
     setPluginEnabled,
     setScreenShareURL,
-    setSpeakerPhone,
 } from '@calls/state';
 import {type AudioDevice, type Call, type CallSession, type CallsConnection, EndCallReturn} from '@calls/types/calls';
 import {areGroupCallsAllowed} from '@calls/utils';
@@ -242,7 +241,6 @@ export const joinCall = async (
         connection.disconnect();
         connection = null;
     }
-    setSpeakerphoneOn(false);
     newCurrentCall(serverUrl, channelId, userId);
 
     // Register with the system call UI so the user gets lock-screen /
@@ -366,13 +364,11 @@ export const sendReaction = (emoji: EmojiData) => {
     }
 };
 
-export const setSpeakerphoneOn = (speakerphoneOn: boolean) => {
-    InCallManager.setForceSpeakerphoneOn(speakerphoneOn);
-    setSpeakerPhone(speakerphoneOn);
-};
-
-export const setPreferredAudioRoute = async (audio: AudioDevice) => {
-    return InCallManager.chooseAudioRoute(audio);
+export const setPreferredAudioRoute = async (audio: AudioDevice, fromUser = false) => {
+    if (fromUser) {
+        connection?.setUserSelectedAudioRoute(audio);
+    }
+    return CallsNative.setAudioRoute(audio);
 };
 
 export const canEndCall = async (serverUrl: string, channelId: string) => {
