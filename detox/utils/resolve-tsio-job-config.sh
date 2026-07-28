@@ -14,7 +14,7 @@ export SCRIPT_DIR
 
 node <<'NODE'
 const path = require('path');
-const {buildTsioJobConfig} = require(path.join(process.env.SCRIPT_DIR, 'build-tsio-job-config.js'));
+const {buildTsioJobConfig, webhookBucketForReportName} = require(path.join(process.env.SCRIPT_DIR, 'build-tsio-job-config.js'));
 
 const raw = process.env.TSIO_CONFIG;
 const shard = process.env.TSIO_SHARD_NAME || '';
@@ -39,13 +39,7 @@ if (!shard) {
 const base = {...(cfg.composite_identity || {})};
 // Ensure prefix is the bucket name (mobile-release / mobile-pr / mobile-main).
 const name = base.name || base.run_group || 'mobile-release';
-const prefix = name.startsWith('mobile-release')
-  ? 'mobile-release'
-  : name.startsWith('mobile-main')
-    ? 'mobile-main'
-    : name.startsWith('mobile-pr')
-      ? 'mobile-pr'
-      : name;
+const prefix = webhookBucketForReportName(name) || name;
 base.name = prefix;
 base.run_group = prefix;
 

@@ -15,6 +15,12 @@ on:
         required: false
       MM_MOBILE_E2E_WEBHOOK_URL:
         required: false
+      # Channel-notify routing for the per-job TSIO finalize step. Callers that use
+      # an explicit `secrets:` block must forward these or notify silently no-ops.
+      MM_E2E_MASTER_HEALTH_WEBHOOK_URL:
+        required: false
+      MM_E2E_RELEASE_WEBHOOK_URL:
+        required: false
       MM_MOBILE_DETOX_AWS_ACCESS_KEY_ID:
         required: false
       MM_MOBILE_DETOX_AWS_SECRET_ACCESS_KEY:

@@ -8,6 +8,7 @@ const {
     buildTsioJobConfig,
     buildTsioJobConfigMap,
     jobKeysForPlatform,
+    cmtJobKeys,
     webhookBucketForReportName,
 } = require('./build-tsio-job-config');
 
@@ -74,6 +75,50 @@ describe('buildTsioJobConfigMap / jobKeysForPlatform', () => {
         const map = buildTsioJobConfigMap(base, jobKeysForPlatform('android'));
         assert.deepEqual(Object.keys(map).sort(), ['detox-android', 'maestro-android-e2e']);
         assert.equal(map['detox-android'].status_context, 'detox-android');
+    });
+});
+
+describe('cmtJobKeys', () => {
+    const cmtMatrix = {
+        server: [
+            {version: '11.9.0', latest: true},
+            {version: '10.5.14', latest: false},
+        ],
+    };
+
+    // Maestro has no smoke-on-older variant, so its shards must not be expanded
+    // across every server version — otherwise the rollup polls groups that never exist.
+    it('should expand detox shards per server version and maestro only for the latest', () => {
+        const maestroMatrix = {server: [{version: '11.9.0', latest: true}]};
+        assert.deepEqual(cmtJobKeys(cmtMatrix, maestroMatrix), [
+            'detox-ios-Server_11.9.0',
+            'detox-ipad-Server_11.9.0',
+            'detox-android-Server_11.9.0',
+            'detox-ios-Server_10.5.14',
+            'detox-ipad-Server_10.5.14',
+            'detox-android-Server_10.5.14',
+            'maestro-ios-Server_11.9.0',
+            'maestro-android-Server_11.9.0',
+        ]);
+    });
+
+    it('should produce keys that resolve to the mobile-release webhook bucket', () => {
+        const base = {name: 'mobile-release', run_group: 'mobile-release', commit_sha: 'abc1234'};
+        const map = buildTsioJobConfigMap(base, cmtJobKeys(cmtMatrix, {server: [{version: '11.9.0'}]}));
+        assert.equal(Object.keys(map).length, 8);
+        assert.equal(map['maestro-ios-Server_11.9.0'].composite_identity.framework, 'maestro');
+        assert.equal(
+            webhookBucketForReportName(map['detox-ios-Server_11.9.0'].composite_identity.name),
+            'mobile-release',
+        );
+    });
+
+    it('should omit maestro shards when no maestro matrix is provided', () => {
+        assert.deepEqual(cmtJobKeys({server: [{version: '11.9.0'}]}), [
+            'detox-ios-Server_11.9.0',
+            'detox-ipad-Server_11.9.0',
+            'detox-android-Server_11.9.0',
+        ]);
     });
 });
 

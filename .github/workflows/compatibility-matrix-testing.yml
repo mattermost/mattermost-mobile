@@ -41,14 +41,26 @@ jobs:
       contents: read
     needs:
       - calculate-commit-hash
+      - prepare-maestro-matrix
     outputs:
       tsio-base-config: ${{ steps.id.outputs.tsio-base-config }}
+      tsio-job-configs: ${{ steps.id.outputs.tsio-job-configs }}
     steps:
+      - name: Sparse checkout TSIO job-config helper
+        uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
+        with:
+          ref: ${{ inputs.MOBILE_VERSION }}
+          persist-credentials: false
+          sparse-checkout: |
+            detox/utils/build-tsio-job-config.js
+
       - id: id
         env:
           GITHUB_REPOSITORY: ${{ github.repository }}
           MM_SHA: ${{ needs.calculate-commit-hash.outputs.MOBILE_SHA }}
           MOBILE_VERSION: ${{ inputs.MOBILE_VERSION }}
+          CMT_MATRIX: ${{ inputs.CMT_MATRIX }}
+          MAESTRO_MATRIX: ${{ needs.prepare-maestro-matrix.outputs.matrix }}
         run: |
           BRANCH=$(echo "$MOBILE_VERSION" | sed 's#^refs/heads/##; s#^refs/tags/##')
           BASE=$(jq -nc \
@@ -59,6 +71,16 @@ jobs:
           TSIO_BASE=$(jq -nc --argjson identity "$BASE" \
             '{composite_identity: $identity, total_reports_expected: 1}')
           echo "tsio-base-config=$TSIO_BASE" >> "$GITHUB_OUTPUT"
+
+          # Per-shard configs so the final rollup can poll every leg's TSIO group.
+          export BASE CMT_MATRIX MAESTRO_MATRIX
+          JOB_CONFIGS=$(node -e '
+            const {buildTsioJobConfigMap, cmtJobKeys} = require("./detox/utils/build-tsio-job-config.js");
+            const base = JSON.parse(process.env.BASE);
+            const keys = cmtJobKeys(JSON.parse(process.env.CMT_MATRIX), JSON.parse(process.env.MAESTRO_MATRIX));
+            process.stdout.write(JSON.stringify(buildTsioJobConfigMap(base, keys)));
+          ')
+          echo "tsio-job-configs=$JOB_CONFIGS" >> "$GITHUB_OUTPUT"
 
   update-initial-status:
     runs-on: ubuntu-24.04
@@ -279,6 +301,8 @@ jobs:
       MM_MOBILE_E2E_ZEPHYR_API_KEY: ${{ secrets.MM_MOBILE_E2E_ZEPHYR_API_KEY }}
       MM_MOBILE_E2E_TEST_CYCLE_LINK_PREFIX: ${{ secrets.MM_MOBILE_E2E_TEST_CYCLE_LINK_PREFIX }}
       MM_MOBILE_E2E_WEBHOOK_URL: ${{ secrets.MM_MOBILE_E2E_WEBHOOK_URL }}
+      MM_E2E_MASTER_HEALTH_WEBHOOK_URL: ${{ secrets.MM_E2E_MASTER_HEALTH_WEBHOOK_URL }}
+      MM_E2E_RELEASE_WEBHOOK_URL: ${{ secrets.MM_E2E_RELEASE_WEBHOOK_URL }}
       MM_MOBILE_DETOX_AWS_ACCESS_KEY_ID: ${{ secrets.MM_MOBILE_DETOX_AWS_ACCESS_KEY_ID }}
       MM_MOBILE_DETOX_AWS_SECRET_ACCESS_KEY: ${{ secrets.MM_MOBILE_DETOX_AWS_SECRET_ACCESS_KEY }}
       MM_MOBILE_E2E_WEBHOOK_PUBLIC_BASE_URL: ${{ secrets.MM_MOBILE_E2E_WEBHOOK_PUBLIC_BASE_URL }}
@@ -316,6 +340,8 @@ jobs:
       MM_MOBILE_E2E_ZEPHYR_API_KEY: ${{ secrets.MM_MOBILE_E2E_ZEPHYR_API_KEY }}
       MM_MOBILE_E2E_TEST_CYCLE_LINK_PREFIX: ${{ secrets.MM_MOBILE_E2E_TEST_CYCLE_LINK_PREFIX }}
       MM_MOBILE_E2E_WEBHOOK_URL: ${{ secrets.MM_MOBILE_E2E_WEBHOOK_URL }}
+      MM_E2E_MASTER_HEALTH_WEBHOOK_URL: ${{ secrets.MM_E2E_MASTER_HEALTH_WEBHOOK_URL }}
+      MM_E2E_RELEASE_WEBHOOK_URL: ${{ secrets.MM_E2E_RELEASE_WEBHOOK_URL }}
       MM_MOBILE_DETOX_AWS_ACCESS_KEY_ID: ${{ secrets.MM_MOBILE_DETOX_AWS_ACCESS_KEY_ID }}
       MM_MOBILE_DETOX_AWS_SECRET_ACCESS_KEY: ${{ secrets.MM_MOBILE_DETOX_AWS_SECRET_ACCESS_KEY }}
       MM_MOBILE_E2E_WEBHOOK_PUBLIC_BASE_URL: ${{ secrets.MM_MOBILE_E2E_WEBHOOK_PUBLIC_BASE_URL }}
@@ -358,6 +384,9 @@ jobs:
       MM_MOBILE_E2E_ZEPHYR_API_KEY: ${{ secrets.MM_MOBILE_E2E_ZEPHYR_API_KEY }}
       MM_MOBILE_DETOX_AWS_ACCESS_KEY_ID: ${{ secrets.MM_MOBILE_DETOX_AWS_ACCESS_KEY_ID }}
       MM_MOBILE_DETOX_AWS_SECRET_ACCESS_KEY: ${{ secrets.MM_MOBILE_DETOX_AWS_SECRET_ACCESS_KEY }}
+      MM_MOBILE_E2E_WEBHOOK_URL: ${{ secrets.MM_MOBILE_E2E_WEBHOOK_URL }}
+      MM_E2E_MASTER_HEALTH_WEBHOOK_URL: ${{ secrets.MM_E2E_MASTER_HEALTH_WEBHOOK_URL }}
+      MM_E2E_RELEASE_WEBHOOK_URL: ${{ secrets.MM_E2E_RELEASE_WEBHOOK_URL }}
     with:
       tsio-config: ${{ needs.cmt-identity.outputs.tsio-base-config }}
       tsio-shard-name: maestro-ios-Server_${{ matrix.server.version }}
@@ -389,6 +418,8 @@ jobs:
       MM_MOBILE_E2E_ZEPHYR_API_KEY: ${{ secrets.MM_MOBILE_E2E_ZEPHYR_API_KEY }}
       MM_MOBILE_E2E_TEST_CYCLE_LINK_PREFIX: ${{ secrets.MM_MOBILE_E2E_TEST_CYCLE_LINK_PREFIX }}
       MM_MOBILE_E2E_WEBHOOK_URL: ${{ secrets.MM_MOBILE_E2E_WEBHOOK_URL }}
+      MM_E2E_MASTER_HEALTH_WEBHOOK_URL: ${{ secrets.MM_E2E_MASTER_HEALTH_WEBHOOK_URL }}
+      MM_E2E_RELEASE_WEBHOOK_URL: ${{ secrets.MM_E2E_RELEASE_WEBHOOK_URL }}
       MM_MOBILE_DETOX_AWS_ACCESS_KEY_ID: ${{ secrets.MM_MOBILE_DETOX_AWS_ACCESS_KEY_ID }}
       MM_MOBILE_DETOX_AWS_SECRET_ACCESS_KEY: ${{ secrets.MM_MOBILE_DETOX_AWS_SECRET_ACCESS_KEY }}
       MM_MOBILE_E2E_WEBHOOK_PUBLIC_BASE_URL: ${{ secrets.MM_MOBILE_E2E_WEBHOOK_PUBLIC_BASE_URL }}
@@ -429,6 +460,9 @@ jobs:
       MM_MOBILE_E2E_ZEPHYR_API_KEY: ${{ secrets.MM_MOBILE_E2E_ZEPHYR_API_KEY }}
       MM_MOBILE_DETOX_AWS_ACCESS_KEY_ID: ${{ secrets.MM_MOBILE_DETOX_AWS_ACCESS_KEY_ID }}
       MM_MOBILE_DETOX_AWS_SECRET_ACCESS_KEY: ${{ secrets.MM_MOBILE_DETOX_AWS_SECRET_ACCESS_KEY }}
+      MM_MOBILE_E2E_WEBHOOK_URL: ${{ secrets.MM_MOBILE_E2E_WEBHOOK_URL }}
+      MM_E2E_MASTER_HEALTH_WEBHOOK_URL: ${{ secrets.MM_E2E_MASTER_HEALTH_WEBHOOK_URL }}
+      MM_E2E_RELEASE_WEBHOOK_URL: ${{ secrets.MM_E2E_RELEASE_WEBHOOK_URL }}
     with:
       tsio-config: ${{ needs.cmt-identity.outputs.tsio-base-config }}
       tsio-shard-name: maestro-android-Server_${{ matrix.server.version }}
@@ -445,6 +479,8 @@ jobs:
     permissions:
       contents: read
       statuses: write
+      # the channel rollup mints an OIDC token to read each shard's TSIO group.
+      id-token: write
     needs:
       - cmt-identity
       - calculate-commit-hash
@@ -493,43 +529,19 @@ jobs:
             -f description="$DESC" \
             -f target_url="$TARGET_URL"
 
+      # Per-shard TSIO groups are finalized in each matrix leg, which leaves channel
+      # notify off so N legs do not spam. This umbrella polls every shard group and
+      # posts one aggregated summary (no second commit status) — same path as PR/main.
       - name: Post Mattermost CMT channel rollup
         if: always()
         env:
-          TSIO_BASE: ${{ needs.cmt-identity.outputs.tsio-base-config }}
+          JOB_CONFIGS: ${{ needs.cmt-identity.outputs.tsio-job-configs }}
           MATTERMOST_CMT_WEBHOOK_URL: ${{ secrets.MM_E2E_RELEASE_WEBHOOK_URL }}
           UPSTREAM_SUCCEEDED: ${{ steps.upstream.outputs.succeeded }}
         run: |
-          # Per-shard TSIO groups are finalized in each matrix leg. This umbrella
-          # posts one channel message from CI outcomes (no second commit status).
-          # notifyCmtChannel pulls real per-leg counts from TSIO; the totals below
-          # only drive the pass/fail headline.
-          node <<'NODE'
-          const {notifyCmtChannel, resolveWebhookUrl} = require('./detox/utils/cmt-channel-notify');
-          const base = JSON.parse(process.env.TSIO_BASE);
-          const identity = base.composite_identity;
-          const upstream = process.env.UPSTREAM_SUCCEEDED !== 'false';
-          const webhookUrl = resolveWebhookUrl(identity.name);
-          if (!webhookUrl) {
-            console.log('No CMT webhook configured — skipping');
-            process.exit(0);
-          }
-          const runUrl = `${process.env.GITHUB_SERVER_URL}/${process.env.GITHUB_REPOSITORY}/actions/runs/${process.env.GITHUB_RUN_ID}`;
-          const detail = {
-            status: upstream ? 'completed' : 'incomplete',
-            test_stats: {passed: 0, failed: upstream ? 0 : 1, skipped: 0},
-            reports: [],
-          };
-          notifyCmtChannel({
-            core: {info: console.log, warning: console.warn},
-            baseUrl: 'https://test-io.test.mattermost.com',
-            compositeIdentity: identity,
-            detail,
-            reportUrl: runUrl,
-            upstreamJobsSucceeded: upstream,
-            hasFailures: !upstream,
-            webhookUrl,
-          }).then(() => process.exit(0)).catch((e) => { console.warn(e.message); process.exit(0); });
-          NODE
+          node detox/utils/tsio-channel-notify-rollup.js \
+            --job-configs="$JOB_CONFIGS" \
+            --upstream-succeeded="$UPSTREAM_SUCCEEDED" \
+            --poll-attempts=6 || true
 
       # Instance cleanup is handled by matterwick on workflow_run completed.

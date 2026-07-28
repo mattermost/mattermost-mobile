@@ -74,8 +74,16 @@ class Specs {
    * (CI 30250131265 iOS machine-11: only shard with mm_blocks; hung ~8m then skipped tests).
    */
   generateSplits() {
-    const mmBlocksFiles = this.rawFiles.filter(isMmBlocksSpec);
-    const otherFiles = this.rawFiles.filter((f) => !isMmBlocksSpec(f));
+    let mmBlocksFiles = this.rawFiles.filter(isMmBlocksSpec);
+    let otherFiles = this.rawFiles.filter((f) => !isMmBlocksSpec(f));
+
+    // Isolating mm_blocks costs a whole shard, so it needs parallelism >= 2 once there
+    // are other specs to separate it from. At parallelism=1 merge instead, otherwise we
+    // emit two matrix jobs for a one-job configuration.
+    if (mmBlocksFiles.length > 0 && otherFiles.length > 0 && this.parallelism < 2) {
+      otherFiles = [...mmBlocksFiles, ...otherFiles];
+      mmBlocksFiles = [];
+    }
 
     let runNo = 1;
     if (mmBlocksFiles.length > 0) {

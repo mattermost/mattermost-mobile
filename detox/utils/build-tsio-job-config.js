@@ -97,6 +97,38 @@ function jobKeysForPlatform(platform) {
     return Object.keys(PR_MAIN_JOBS);
 }
 
+// CMT shard names are `<framework>-<platform>-Server_<version>` (see
+// compatibility-matrix-testing.yml tsio-shard-name inputs).
+const CMT_DETOX_SHARD_PREFIXES = ['detox-ios', 'detox-ipad', 'detox-android'];
+const CMT_MAESTRO_SHARD_PREFIXES = ['maestro-ios', 'maestro-android'];
+
+/**
+ * CMT shard keys for the channel rollup. Detox runs against every server version in
+ * the matrix; Maestro only against the latest-filtered `prepare-maestro-matrix` output.
+ *
+ * @param {{server?: Array<{version?: string}>}} cmtMatrix - inputs.CMT_MATRIX
+ * @param {{server?: Array<{version?: string}>}} [maestroMatrix] - prepare-maestro-matrix output
+ * @returns {string[]}
+ */
+function cmtJobKeys(cmtMatrix, maestroMatrix) {
+    const versionsOf = (matrix) => (matrix && Array.isArray(matrix.server) ? matrix.server : []).
+        map((entry) => entry && entry.version).
+        filter(Boolean);
+
+    const keys = [];
+    for (const version of versionsOf(cmtMatrix)) {
+        for (const prefix of CMT_DETOX_SHARD_PREFIXES) {
+            keys.push(`${prefix}-Server_${version}`);
+        }
+    }
+    for (const version of versionsOf(maestroMatrix)) {
+        for (const prefix of CMT_MAESTRO_SHARD_PREFIXES) {
+            keys.push(`${prefix}-Server_${version}`);
+        }
+    }
+    return keys;
+}
+
 /**
  * Map report group name to webhook routing bucket (mobile-pr / mobile-main / mobile-release).
  * @param {string} reportName
@@ -124,5 +156,6 @@ module.exports = {
     buildTsioJobConfig,
     buildTsioJobConfigMap,
     jobKeysForPlatform,
+    cmtJobKeys,
     webhookBucketForReportName,
 };
