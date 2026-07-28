@@ -188,18 +188,34 @@ class ChannelBookmarkScreen {
         const toolTipCloseButton = element(by.id(this.testID.emojiPickerToolTipCloseButton));
 
         if (isAndroid()) {
-            // Sync stays off only for the back press — the keyboard teardown never
-            // settles the bridge. Restore it before the taps below so the rest of the
-            // suite is not left running unsynchronized.
-            await device.disableSynchronization();
+            // Only press back when the icon is not reachable — an unconditional
+            // pressBack with no keyboard up pops the edit modal instead.
+            let iconReachable = false;
             try {
-                await device.pressBack();
-                await wait(timeouts.HALF_SEC);
+                await waitFor(iconButton).toBeVisible().withTimeout(timeouts.ONE_SEC);
+                iconReachable = true;
             } catch {
-                // Keyboard may already be dismissed.
-            } finally {
-                await safeEnableSynchronization();
+                // Keyboard may be covering the icon.
             }
+
+            if (!iconReachable) {
+                // Sync stays off only for the back press — the keyboard teardown never
+                // settles the bridge. Restore it before the taps below so the rest of the
+                // suite is not left running unsynchronized.
+                await device.disableSynchronization();
+                try {
+                    await device.pressBack();
+                    await wait(timeouts.HALF_SEC);
+                } catch {
+                    // Keyboard may already be dismissed.
+                } finally {
+                    await safeEnableSynchronization();
+                }
+            }
+
+            // Back may have popped the modal instead of the keyboard.
+            await waitForElementToExist(this.channelBookmarkScreen, timeouts.FIVE_SEC);
+            await waitForElementToExist(iconButton, timeouts.FIVE_SEC);
         }
 
         const pickerAlreadyOpen = async () => {

@@ -319,18 +319,15 @@ export async function waitForElementToNotExist(
 }
 
 // Poll for existence without Detox bridge-idle synchronization.
-// Android edge-to-edge: elements can exist in hierarchy with <50% visible area;
-// use toBeVisible so post-menu and dialog waits match Espresso visibility rules.
+// Keep this as a hierarchy existence check on all platforms so callers that probe
+// off-screen items before scrolling (e.g. waitForSidebarPublicChannelDisplayNameVisible)
+// do not time out. For Android edge-to-edge visibility (post menus / dialogs), use
+// waitForElementToBeVisible instead.
 export async function waitForElementToExist(
     detoxElement: Detox.NativeElement,
     timeout: number = timeouts.HALF_MIN,
     pollInterval: number = timeouts.HALF_SEC,
 ): Promise<void> {
-    if (isAndroid()) {
-        await waitForElementToBeVisible(detoxElement, timeout, pollInterval);
-        return;
-    }
-
     const {expect: detoxExpect} = require('detox');
     const startTime = Date.now();
     /* eslint-disable no-await-in-loop */

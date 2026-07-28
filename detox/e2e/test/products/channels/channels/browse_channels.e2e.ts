@@ -21,6 +21,7 @@ import {
 import {Alert} from '@support/ui/component';
 import {
     BrowseChannelsScreen,
+    ChannelDropdownMenuScreen,
     ChannelScreen,
     ChannelListScreen,
     HomeScreen,
@@ -197,8 +198,8 @@ describe('Channels - Browse Channels', () => {
         // Keep Detox sync enabled for archived filter tap — disableSynchronization
         // amplifies Fabric addViewAt races when the slide-up unmounts (CI 29362218938).
         await BrowseChannelsScreen.channelDropdownTextPublic.tap();
-        await waitFor(element(by.id('browse_channels.dropdown_slideup_item.archived_channels'))).toBeVisible().withTimeout(timeouts.TEN_SEC);
-        await element(by.id('browse_channels.dropdown_slideup_item.archived_channels')).tap();
+        await waitFor(ChannelDropdownMenuScreen.archivedChannelsItem).toBeVisible().withTimeout(timeouts.TEN_SEC);
+        await ChannelDropdownMenuScreen.archivedChannelsItem.tap();
         await wait(timeouts.TWO_SEC);
 
         // Prefer waiting for the row itself — searchInput is unavailable if a RedBox

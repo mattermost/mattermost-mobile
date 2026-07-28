@@ -74,10 +74,15 @@ class PostOptionsScreen {
 
     deletePost = async ({confirm = true} = {}) => {
         // On Android gorhom sheets, delete option may be below the fold.
-        // Scroll the BottomSheetScrollView into view before tapping to ensure it's hittable.
-        await waitFor(this.deletePostOption).toBeVisible().
-            whileElement(by.id(this.testID.scrollView)).
-            scroll(200, 'down');
+        // Guard scroll like tapPinOption — already-visible / non-scrollable sheets must not abort.
+        try {
+            await waitFor(this.deletePostOption).toBeVisible().
+                whileElement(by.id(this.testID.scrollView)).
+                scroll(200, 'down');
+        } catch {
+            // The option may already be visible or the sheet may not be scrollable.
+        }
+        await waitFor(this.deletePostOption).toExist().withTimeout(timeouts.TEN_SEC);
         await this.deletePostOption.tap({x: 1, y: 1});
         const {
             deletePostTitle,

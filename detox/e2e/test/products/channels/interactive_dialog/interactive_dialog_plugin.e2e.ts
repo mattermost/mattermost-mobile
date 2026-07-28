@@ -102,9 +102,11 @@ async function selectChannel(channel?: {id: string; display_name: string}, {mult
 
     if (channel) {
         const rowContent = element(by.id(`integration_selector.channel_list.${channel.id}`));
+        let rowTapped = false;
         try {
             await waitFor(rowContent).toExist().withTimeout(timeouts.FIVE_SEC);
             await rowContent.tap();
+            rowTapped = true;
             await wait(timeouts.ONE_SEC);
             if (multiselect) {
                 await waitFor(element(by.id('integration_selector.multiselect.submit.button'))).
@@ -116,6 +118,10 @@ async function selectChannel(channel?: {id: string; display_name: string}, {mult
             }
             return;
         } catch {
+            if (rowTapped) {
+                throw new Error('selectChannel: row tapped but selector state did not settle');
+            }
+
             // Fall through only when the row itself was not tappable.
         }
 

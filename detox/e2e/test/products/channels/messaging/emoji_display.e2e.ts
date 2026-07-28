@@ -209,6 +209,13 @@ describe('Messaging - Emoji Display', () => {
     });
 
     it('MM-T151_1 - should show limited post options when long pressing a system message', async () => {
+        // # Seed a regular post so the upcoming system join message is not combined
+        // with older user-activity posts (keeps testID as user-activity-{postId}).
+        await Post.apiCreatePost(siteOneUrl, {
+            channelId: testChannel.id,
+            message: 'seed post so system message stays uncombined',
+        });
+
         // # Create a second user to generate a system message when added to the channel
         const {user: secondUser} = await User.apiCreateUser(siteOneUrl);
         await Team.apiAddUserToTeam(siteOneUrl, secondUser.id, testTeam.id);
@@ -221,8 +228,8 @@ describe('Messaging - Emoji Display', () => {
         await wait(timeouts.TWO_SEC);
 
         // # Get the last post — the system add-to-channel message.
-        // Since there are regular posts in the channel from prior tests, the new system post
-        // is NOT combined with older user-activity posts, so its ID is 'user-activity-{postId}'.
+        // The seed post above ensures this system post is NOT combined with older
+        // user-activity posts, so its ID is 'user-activity-{postId}'.
         const {post: systemPost} = await Post.apiGetLastPostInChannel(siteOneUrl, testChannel.id);
 
         // * Verify the system message is visible.

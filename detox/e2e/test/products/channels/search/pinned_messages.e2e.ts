@@ -56,7 +56,7 @@ describe('Search - Pinned Messages', () => {
             for (let i = 0; i < 4; i++) {
                 try {
                     // eslint-disable-next-line no-await-in-loop
-                    await waitFor(element(by.id('channel_list.screen'))).
+                    await waitFor(ChannelListScreen.channelListScreen).
                         toBeVisible().
                         withTimeout(timeouts.TWO_SEC);
                     break;

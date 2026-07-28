@@ -67,7 +67,8 @@ class EditPostScreen {
                 throw primaryError;
             }
 
-            // Otherwise the modal may still be animating out.
+            // Otherwise the modal may still be animating out. Dismiss for cleanup, but
+            // always rethrow — reaching the fallback means save did not complete.
             try {
                 await waitFor(this.closeButton).toExist().withTimeout(timeouts.FOUR_SEC);
                 await this.closeButton.tap();
@@ -77,11 +78,10 @@ class EditPostScreen {
                     try {
                         await device.pressBack();
                         await waitFor(this.editPostScreen).not.toExist().withTimeout(timeouts.TEN_SEC);
-                        return;
                     } catch { /* fall through */ }
                 }
-                throw primaryError;
             }
+            throw primaryError;
         }
     };
 }

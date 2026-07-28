@@ -26,13 +26,16 @@ import {by, element, expect, waitFor} from 'detox';
 
 import InteractiveDialogScreen from './interactive_dialog';
 
-async function dismissErrorAlertIfPresent() {
+async function dismissErrorAlertIfPresent(): Promise<boolean> {
     try {
         const ok = isAndroid() ? element(by.text('OK')) : element(by.label('OK')).atIndex(0);
         await waitFor(ok).toBeVisible().withTimeout(timeouts.ONE_SEC);
         await ok.tap();
         await wait(timeouts.HALF_SEC);
-    } catch { /* no alert */ }
+        return true;
+    } catch {
+        return false;
+    }
 }
 
 class ChannelScreen {
@@ -376,18 +379,39 @@ class ChannelScreen {
         await this.sendButton.tap();
 
         // First slash-command after plugin install can race command registration
-        // (CI 29362218938: MM-T4101/4102 failed; later /dialog tests passed). Retry once.
+        // (CI 29362218938: MM-T4101/4102 failed; later /dialog tests passed). Retry only when
+        // the command clearly did not execute — a bare timeout may mean the first tap already
+        // reached the backend, and resending would duplicate side effects.
         try {
-            await waitForElementToExist(InteractiveDialogScreen.interactiveDialogScreen, timeouts.HALF_MIN);
-        } catch {
-            await dismissErrorAlertIfPresent();
+            await waitForElementToBeVisible(InteractiveDialogScreen.interactiveDialogScreen, timeouts.HALF_MIN);
+        } catch (primaryError) {
+            try {
+                await waitForElementToBeVisible(InteractiveDialogScreen.interactiveDialogScreen, timeouts.TEN_SEC);
+                return;
+            } catch {
+                // Still no dialog — check for a rejection signal before resending.
+            }
+
+            const errorWasShown = await dismissErrorAlertIfPresent();
+            let postedAsPlainText = false;
+            try {
+                await waitFor(element(by.text(command))).toExist().withTimeout(timeouts.TWO_SEC);
+                postedAsPlainText = true;
+            } catch {
+                // Command text not visible as a post.
+            }
+
+            if (!errorWasShown && !postedAsPlainText) {
+                throw primaryError;
+            }
+
             await this.composePostDraft(command);
             await waitForElementToBeVisible(this.sendButton, timeouts.FOUR_SEC);
             if (isAndroid()) {
                 await wait(timeouts.ONE_SEC);
             }
             await this.sendButton.tap();
-            await waitForElementToExist(InteractiveDialogScreen.interactiveDialogScreen, timeouts.HALF_MIN);
+            await waitForElementToBeVisible(InteractiveDialogScreen.interactiveDialogScreen, timeouts.HALF_MIN);
         }
     };
 

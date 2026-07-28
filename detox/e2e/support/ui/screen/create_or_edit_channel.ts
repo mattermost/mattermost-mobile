@@ -106,11 +106,20 @@ class CreateOrEditChannelScreen {
 
         // Save dismisses the form but can leave an empty create_or_edit_channel.screen
         // shell (child-count=0) that blocks not.toExist for 30s — wait for destination.
+        // Parent screens can still exist underneath this modal, so require saveButton to
+        // disappear first before accepting channel info/settings as the destination.
         const {channelInfoScreen} = ChannelInfoScreen;
         const {channelSettingsScreen} = ChannelSettingsScreen;
         const startTime = Date.now();
         /* eslint-disable no-await-in-loop */
         while (Date.now() - startTime < timeouts.HALF_MIN) {
+            try {
+                await expect(this.saveButton).not.toExist();
+            } catch {
+                await wait(timeouts.HALF_SEC);
+                continue;
+            }
+
             try {
                 await expect(channelInfoScreen).toExist();
                 return;
@@ -123,12 +132,9 @@ class CreateOrEditChannelScreen {
             } catch {
                 /* not on channel settings yet */
             }
-            try {
-                await expect(this.saveButton).not.toExist();
-                return;
-            } catch {
-                await wait(timeouts.HALF_SEC);
-            }
+
+            // Modal dismissed even if destination matcher is still settling.
+            return;
         }
         /* eslint-enable no-await-in-loop */
 

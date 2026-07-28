@@ -99,6 +99,9 @@ describe('Messaging - Channel Link', () => {
         await wait(timeouts.TWO_SEC);
 
         if (isAndroid()) {
+            // Dismiss the soft keyboard so the reply text is not occluded.
+            // If the keyboard is already closed, pressBack would pop the thread —
+            // assert we are still in the thread before tapping the link.
             await device.disableSynchronization();
             try {
                 await device.pressBack();
@@ -106,6 +109,7 @@ describe('Messaging - Channel Link', () => {
             } finally {
                 await device.enableSynchronization();
             }
+            await ThreadScreen.toBeVisible();
         }
 
         // # Tap on channel link from within the reply thread

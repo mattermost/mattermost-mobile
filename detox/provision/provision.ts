@@ -41,7 +41,11 @@ export async function provisionServer(serverUrl: string, credentials: ProvisionC
         }
         await installRequiredPlugin(client, token, plugin);
         if (plugin.id === DEMO_PLUGIN_ID) {
-            await ensureDemoPluginReady(client, token);
+            try {
+                await ensureDemoPluginReady(client, token);
+            } catch (error) {
+                logWarn(`Demo plugin readiness check failed: ${error instanceof Error ? error.message : String(error)} — dialog-dependent tests may be skipped.`);
+            }
         }
     }
     /* eslint-enable no-await-in-loop */

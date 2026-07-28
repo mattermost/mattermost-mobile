@@ -151,8 +151,10 @@ describe('Messaging - At-Mention', () => {
         const message = `@${testUser.username}`;
         await ChannelScreen.open(channelsCategory, testChannel.name);
         await ChannelScreen.postMessage(message);
-        await waitFor(element(by.text(message))).toExist().withTimeout(timeouts.TEN_SEC);
-        await element(by.text(message)).tap({x: 5, y: 10});
+        const {post} = await Post.apiGetLastPostInChannel(siteOneUrl, testChannel.id);
+        const mention = element(by.text(message).withAncestor(by.id(`channel.post_list.post.${post.id}`)));
+        await waitFor(mention).toExist().withTimeout(timeouts.TEN_SEC);
+        await mention.tap({x: 5, y: 10});
         await wait(timeouts.ONE_SEC);
 
         // * Verify on user profile screen

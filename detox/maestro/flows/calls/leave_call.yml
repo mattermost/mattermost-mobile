@@ -81,9 +81,22 @@ appId: ${MAESTRO_APP_ID}
       notVisible:
         id: "channel_list.category_header.channels.display_name"
     commands:
-      - launchApp:
-          stopApp: true
-          clearState: false
+      # iOS: stopApp:true is safe. Android: stopApp:false — stopApp:true sets the
+      # force-stopped flag and Maestro's subsequent launch intent can fail.
+      - runFlow:
+          when:
+            platform: iOS
+          commands:
+            - launchApp:
+                stopApp: true
+                clearState: false
+      - runFlow:
+          when:
+            platform: Android
+          commands:
+            - launchApp:
+                stopApp: false
+                clearState: false
       - waitForAnimationToEnd:
           timeout: 30000
       # A cold relaunch lands on loading/login, so re-anchor on Home before navigating.
@@ -119,9 +132,20 @@ appId: ${MAESTRO_APP_ID}
       visible:
         id: "mute-unmute"
     commands:
-      - launchApp:
-          stopApp: true
-          clearState: false
+      - runFlow:
+          when:
+            platform: iOS
+          commands:
+            - launchApp:
+                stopApp: true
+                clearState: false
+      - runFlow:
+          when:
+            platform: Android
+          commands:
+            - launchApp:
+                stopApp: false
+                clearState: false
       - waitForAnimationToEnd:
           timeout: 30000
       - runFlow:
