@@ -20,6 +20,12 @@ fail() { printf '  \033[31m✗\033[0m %s\n' "$1"; FAILED=1; }
 skip() { printf '  \033[33m–\033[0m %s\n' "$1"; }
 section() { printf '\n\033[1m%s\033[0m\n' "$1"; }
 
+# Fixed /tmp names can be pre-created as symlinks, so this script would truncate
+# whatever they point at.
+TESTS_LOG="$(mktemp "${TMPDIR:-/tmp}/preflight-tests.XXXXXX")" || exit 1
+CHECK_LOG="$(mktemp "${TMPDIR:-/tmp}/preflight-check.XXXXXX")" || exit 1
+trap 'rm -f "$TESTS_LOG" "$CHECK_LOG"' EXIT
+
 # 1. Undeclared secrets / bad expressions in reusable workflows.
 # A `secrets.FOO` that is not declared in the callee's on.workflow_call.secrets
 # resolves to an empty string at runtime: the step "succeeds" and the notify or
@@ -78,10 +84,10 @@ fi
 
 # 4. Unit tests for the CI utilities.
 section "CI utility unit tests"
-if (cd detox && node --test utils/*.test.js >/tmp/preflight-tests.log 2>&1); then
-    pass "$(rg -o 'pass [0-9]+' /tmp/preflight-tests.log | tail -1) in detox/utils"
+if (cd detox && node --test utils/*.test.js >"$TESTS_LOG" 2>&1); then
+    pass "$(rg -o 'pass [0-9]+' "$TESTS_LOG" | tail -1) in detox/utils"
 else
-    tail -30 /tmp/preflight-tests.log
+    tail -30 "$TESTS_LOG"
     fail "detox/utils unit tests failed"
 fi
 
@@ -89,10 +95,10 @@ fi
 section "Detox lint + types"
 if [ "$FAST" = "1" ]; then
     skip "skipped (--fast)"
-elif (cd detox && npm run check >/tmp/preflight-check.log 2>&1); then
+elif (cd detox && npm run check >"$CHECK_LOG" 2>&1); then
     pass "npm run check"
 else
-    tail -40 /tmp/preflight-check.log
+    tail -40 "$CHECK_LOG"
     fail "detox npm run check failed"
 fi
 
