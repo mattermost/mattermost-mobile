@@ -82,7 +82,7 @@ jobs:
         env:
           TSIO_BASE: ${{ needs.cmt-identity.outputs.tsio-base-config }}
         run: |
-          URL=$(jq -nr --argjson cfg "$TSIO_BASE" --arg base "https://staging-test-io.test.mattermost.com" '
+          URL=$(jq -nr --argjson cfg "$TSIO_BASE" --arg base "https://test-io.test.mattermost.com" '
             ($cfg.composite_identity) as $id
             | ($id.repository | split("/") | .[-1]) as $repo
             | ($id.branch // "main"
@@ -515,7 +515,7 @@ jobs:
           };
           notifyCmtChannel({
             core: {info: console.log, warning: console.warn},
-            baseUrl: 'https://staging-test-io.test.mattermost.com',
+            baseUrl: 'https://test-io.test.mattermost.com',
             compositeIdentity: identity,
             detail,
             reportUrl: runUrl,
