@@ -10,7 +10,7 @@ import {useSafeAreaInsets} from 'react-native-safe-area-context';
 import {scheduleOnRN, scheduleOnUI} from 'react-native-worklets';
 
 import {removePost} from '@actions/local/post';
-import {fetchPosts, fetchPostThread} from '@actions/remote/post';
+import {fetchPostThread, refreshPostsForChannel} from '@actions/remote/post';
 import CombinedUserActivity from '@components/post_list/combined_user_activity';
 import DateSeparator from '@components/post_list/date_separator';
 import NewMessagesLine from '@components/post_list/new_message_line';
@@ -273,7 +273,9 @@ const PostList = ({
         }
         setRefreshing(true);
         if (location === Screens.CHANNEL && channelId) {
-            await fetchPosts(serverUrl, channelId);
+            // Tell the refresh whether the list is showing nothing, so it can repair a channel that
+            // is hiding posts it already has instead of just fetching another page it cannot show.
+            await refreshPostsForChannel(serverUrl, channelId, !orderedPosts.length);
         } else if (location === Screens.THREAD && rootId) {
             const options: FetchPaginatedThreadOptions = {};
             const lastPost = posts[0];
@@ -289,7 +291,7 @@ const PostList = ({
             map((post) => removePost(serverUrl, post));
         await Promise.all(removalPromises);
         setRefreshing(false);
-    }, [disablePullToRefresh, location, channelId, rootId, posts, serverUrl]);
+    }, [disablePullToRefresh, location, channelId, orderedPosts.length, rootId, posts, serverUrl]);
 
     const scrollToIndex = useCallback((index: number, animated = true, applyOffset = true) => {
         if (index < 0 || !listRef?.current) {

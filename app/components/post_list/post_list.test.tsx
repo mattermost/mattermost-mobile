@@ -19,8 +19,8 @@ jest.mock('@components/post_list/combined_user_activity', () => 'CombinedUserAct
 jest.mock('@components/post_list/scroll_to_end_view', () => 'ScrollToEndView');
 jest.mock('@actions/remote/post', () => {
     return {
-        fetchPosts: jest.fn(),
         fetchPostThread: jest.fn(),
+        refreshPostsForChannel: jest.fn(),
     };
 });
 jest.mock('@actions/local/post', () => ({
@@ -33,8 +33,8 @@ import type Database from '@nozbe/watermelondb/Database';
 describe('components/post_list/PostList', () => {
     let database: Database;
     const serverUrl = 'https://server.com';
-    const fetchPostsSpy = jest.spyOn(postFunctions, 'fetchPosts');
     const fetchPostThreadSpy = jest.spyOn(postFunctions, 'fetchPostThread');
+    const refreshPostsForChannelSpy = jest.spyOn(postFunctions, 'refreshPostsForChannel');
     const removePostSpy = jest.spyOn(localPostFunctions, 'removePost');
     const unrelatedNativeEventsAttributes = {
         contentSize: {height: 1000, width: 100},
@@ -128,7 +128,19 @@ describe('components/post_list/PostList', () => {
             flatList.props.onRefresh();
         });
 
-        expect(fetchPostsSpy).toHaveBeenCalledWith('https://server.com', 'channel-id');
+        expect(refreshPostsForChannelSpy).toHaveBeenCalledWith('https://server.com', 'channel-id', false);
+    });
+
+    it('flags the refresh as blank when the channel renders no posts', async () => {
+        const props = {...baseProps, posts: []};
+        const {getByTestId} = renderWithEverything(<PostList {...props}/>, {database, serverUrl});
+        const flatList = getByTestId('post_list.flat_list');
+
+        await act(async () => {
+            flatList.props.onRefresh();
+        });
+
+        expect(refreshPostsForChannelSpy).toHaveBeenCalledWith('https://server.com', 'channel-id', true);
     });
 
     it('handles refresh in thread', async () => {
@@ -421,6 +433,6 @@ describe('components/post_list/PostList', () => {
             flatList.props.onRefresh();
         });
 
-        expect(fetchPostsSpy).not.toHaveBeenCalled();
+        expect(refreshPostsForChannelSpy).not.toHaveBeenCalled();
     });
 });

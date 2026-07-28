@@ -10,7 +10,7 @@ import DatabaseManager from '@database/manager';
 import PostModel from '@database/models/server/post';
 import NetworkManager from '@managers/network_manager';
 import {getMyChannel} from '@queries/servers/channel';
-import {getRecentPostsInChannel, queryPostsInChannel} from '@queries/servers/post';
+import {getPostById, getRecentPostsInChannel, queryPostsInChannel} from '@queries/servers/post';
 import TestHelper from '@test/test_helper';
 import {getFullErrorMessage} from '@utils/errors';
 
@@ -26,6 +26,7 @@ import {
     revealBoRPost,
     fetchPostsForChannel,
     fetchPostsForUnreadChannels,
+    refreshPostsForChannel,
     fetchPosts,
     fetchPostsBefore,
     fetchPostsSince,
@@ -42,6 +43,7 @@ import {
 import * as PostAuxilaryFunctions from './post.auxiliary';
 
 import type ServerDataOperator from '@database/operator/server_data_operator';
+import type {Database} from '@nozbe/watermelondb';
 
 const serverUrl = 'baseHandler.test.com';
 let operator: ServerDataOperator;
@@ -899,6 +901,59 @@ describe('get posts', () => {
         expect(mockClient.getPosts).toHaveBeenCalled();
         expect(result.actionType).toBe(ActionType.POSTS.RECEIVED_IN_CHANNEL);
         expect((await getRecentPostsInChannel(database, channelId)).length).toBe(2);
+    });
+
+    describe('refreshPostsForChannel', () => {
+        let database: Database;
+        const seedChannel = async () => {
+            await operator.handleChannel({channels: [channel1], prepareRecordsOnly: false});
+            await operator.handleMyChannel({channels: [channel1], myChannels: [channelMember1], prepareRecordsOnly: false});
+        };
+
+        beforeEach(() => {
+            database = DatabaseManager.serverDatabases[serverUrl]!.database;
+            mockClient.getPosts.mockClear();
+        });
+
+        it('should just fetch a page when the list is showing posts', async () => {
+            await seedChannel();
+            const post = TestHelper.fakePost({channel_id: channelId, id: 'shownpostid', create_at: 1000, update_at: 1000});
+            await storePostsForChannel(serverUrl, channelId, [post], [post.id], '', ActionType.POSTS.RECEIVED_IN_CHANNEL, []);
+
+            await refreshPostsForChannel(serverUrl, channelId, false);
+
+            expect(mockClient.getPosts).toHaveBeenCalledWith(channelId, 0, expect.any(Number), true, true, undefined);
+            expect(await getPostById(database, post.id)).toBeDefined();
+        });
+
+        it('should reset the cached posts when the list is blank but the channel has posts', async () => {
+            await seedChannel();
+
+            // A blank channel: its only interval covers a range where no post is left, so the post
+            // list renders nothing while the older post is still stored.
+            const hiddenPost = TestHelper.fakePost({channel_id: channelId, id: 'hiddenpostid', create_at: 1000, update_at: 1000});
+            await storePostsForChannel(serverUrl, channelId, [hiddenPost], [hiddenPost.id], '', ActionType.POSTS.RECEIVED_IN_CHANNEL, []);
+            await operator.handleReceivedPostsInChannel([TestHelper.fakePost({channel_id: channelId, create_at: 9000})]);
+
+            await refreshPostsForChannel(serverUrl, channelId, true);
+
+            // The stale interval and the hidden post are gone, replaced by a clean fetch.
+            expect(await getPostById(database, hiddenPost.id)).toBeUndefined();
+            const intervals = await queryPostsInChannel(database, channelId).fetch();
+            expect(intervals.length).toBe(1);
+            expect((await getRecentPostsInChannel(database, channelId)).length).toBe(2);
+            expect((await getMyChannel(database, channelId))!.lastFetchedAt).toBeGreaterThan(0);
+        });
+
+        it('should not reset anything when the channel is genuinely empty', async () => {
+            await seedChannel();
+
+            await refreshPostsForChannel(serverUrl, channelId, true);
+
+            // Nothing to repair, so it behaves like a regular refresh.
+            expect(mockClient.getPosts).toHaveBeenCalled();
+            expect((await getRecentPostsInChannel(database, channelId)).length).toBe(2);
+        });
     });
 
     it('fetchPostsForChannel - request error', async () => {
