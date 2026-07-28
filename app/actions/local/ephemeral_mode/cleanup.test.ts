@@ -6,6 +6,7 @@ import {AGENTS_TABLES} from '@agents/constants/database';
 import {Screens} from '@constants';
 import {MM_TABLES, SYSTEM_IDENTIFIERS} from '@constants/database';
 import {AUTO_CACHE_CLEANUP_PROTECTION_BUFFER} from '@constants/post';
+import {SNACK_BAR_TYPE} from '@constants/snack_bar';
 import DatabaseManager from '@database/manager';
 import EphemeralModeManager from '@managers/ephemeral_mode_manager';
 import {PLAYBOOK_TABLES} from '@playbooks/constants/database';
@@ -13,6 +14,7 @@ import {getCurrentChannelId} from '@queries/servers/system';
 import EphemeralStore from '@store/ephemeral_store';
 import {NavigationStore} from '@store/navigation_store';
 import {logError} from '@utils/log';
+import {showSnackBar} from '@utils/snack_bar';
 
 import {autoCacheCleanup} from './cleanup';
 
@@ -52,6 +54,10 @@ jest.mock('@queries/servers/system', () => ({
 
 jest.mock('@actions/local/post', () => ({
     deletePostsInChannelsByCutoff: jest.fn(),
+}));
+
+jest.mock('@utils/snack_bar', () => ({
+    showSnackBar: jest.fn(),
 }));
 
 const SERVER_URL = 'cleanup.test.com';
@@ -146,7 +152,7 @@ describe('autoCacheCleanup', () => {
         jest.mocked(EphemeralStore.getCurrentFileViewerPostId).mockReturnValue('');
         jest.mocked(EphemeralStore.getCurrentPlaybookRunId).mockReturnValue('');
         jest.mocked(getCurrentChannelId).mockResolvedValue('');
-        jest.mocked(LocalPost.deletePostsInChannelsByCutoff).mockResolvedValue({error: undefined});
+        jest.mocked(LocalPost.deletePostsInChannelsByCutoff).mockResolvedValue({error: undefined, deletedCount: 0});
     });
 
     afterEach(async () => {
@@ -403,7 +409,7 @@ describe('autoCacheCleanup', () => {
     });
 
     it('does not call unsafeVacuum and logs the error when the unprotected-channels delete call returns an error', async () => {
-        jest.mocked(LocalPost.deletePostsInChannelsByCutoff).mockResolvedValueOnce({error: new Error('cleanup failed')});
+        jest.mocked(LocalPost.deletePostsInChannelsByCutoff).mockResolvedValueOnce({error: new Error('cleanup failed'), deletedCount: 0});
 
         await writePiC('ch-err', OLD, RECENT);
 
@@ -422,7 +428,7 @@ describe('autoCacheCleanup', () => {
         jest.mocked(getCurrentChannelId).mockResolvedValue(viewedChannelId);
 
         await writePiC(viewedChannelId, OLD, RECENT);
-        jest.mocked(LocalPost.deletePostsInChannelsByCutoff).mockResolvedValueOnce({error: new Error('viewed channel delete failed')});
+        jest.mocked(LocalPost.deletePostsInChannelsByCutoff).mockResolvedValueOnce({error: new Error('viewed channel delete failed'), deletedCount: 0});
 
         const vacuumSpy = jest.spyOn(database, 'unsafeVacuum').mockResolvedValue();
 
@@ -440,7 +446,7 @@ describe('autoCacheCleanup', () => {
         await writePost(rootId, threadParentChannelId, OLD + 500);
 
         await writePiC(threadParentChannelId, OLD, RECENT);
-        jest.mocked(LocalPost.deletePostsInChannelsByCutoff).mockResolvedValueOnce({error: new Error('thread parent channel delete failed')});
+        jest.mocked(LocalPost.deletePostsInChannelsByCutoff).mockResolvedValueOnce({error: new Error('thread parent channel delete failed'), deletedCount: 0});
 
         const vacuumSpy = jest.spyOn(database, 'unsafeVacuum').mockResolvedValue();
 
@@ -523,5 +529,23 @@ describe('autoCacheCleanup', () => {
         const items = await database.get(PLAYBOOK_CHECKLIST_ITEM).query().fetch();
         expect(checklists.length).toBe(0);
         expect(items.length).toBe(0);
+    });
+
+    it('shows the cache-cleanup snackbar with the total deleted post count and cleanup days after a successful run', async () => {
+        await writePiC('ch-notify', OLD, RECENT);
+        jest.mocked(LocalPost.deletePostsInChannelsByCutoff).mockResolvedValueOnce({error: undefined, deletedCount: 5});
+
+        await autoCacheCleanup(SERVER_URL);
+
+        expect(showSnackBar).toHaveBeenCalledWith({
+            barType: SNACK_BAR_TYPE.EPHEMERAL_MODE_CACHE_CLEANUP,
+            messageValues: {count: 5, days: 1},
+        });
+    });
+
+    it('does not show the cache-cleanup snackbar when no posts were deleted', async () => {
+        await autoCacheCleanup(SERVER_URL);
+
+        expect(showSnackBar).not.toHaveBeenCalled();
     });
 });

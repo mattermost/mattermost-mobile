@@ -15,6 +15,7 @@ export type ShowSnackBarArgs = {
     customMessage?: string;
     type?: SnackBarConfig['type'];
     actionText?: string;
+    isPersistent?: SnackBarConfig['isPersistent'];
 };
 
 export const showSnackBar = (passProps: ShowSnackBarArgs) => {

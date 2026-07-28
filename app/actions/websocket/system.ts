@@ -2,7 +2,7 @@
 // See LICENSE.txt for license information.
 
 import {updateDmGmDisplayName} from '@actions/local/channel';
-import {reconcilePersistenceFlag} from '@actions/local/ephemeral_mode/wipe';
+import {notifyEphemeralModeToggle, reconcilePersistenceFlag} from '@actions/local/ephemeral_mode/wipe';
 import {storeConfig} from '@actions/local/systems';
 import {fetchCategories} from '@actions/remote/category';
 import {applyPersistenceModeChange} from '@actions/remote/refresh';
@@ -60,6 +60,7 @@ export async function handleConfigChangedEvent(serverUrl: string, msg: WebSocket
                 logError('handleConfigChangedEvent', getFullErrorMessage(modeChangeError));
             }
         }
+        notifyEphemeralModeToggle(prevConfig, config);
     } catch {
         // do nothing
     }

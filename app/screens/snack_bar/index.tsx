@@ -8,11 +8,21 @@ import {DeviceEventEmitter} from 'react-native';
 import {FullWindowOverlay} from 'react-native-screens';
 
 import {Navigation} from '@constants';
+import {SNACK_BAR_CONFIG} from '@constants/snack_bar';
 import {withServerDatabase} from '@database/components';
 import useDidMount from '@hooks/did_mount';
 import SnackBarStore from '@store/snackbar_store';
 
 import SnackBar from './snack_bar';
+
+import type {ShowSnackBarArgs} from '@utils/snack_bar';
+
+function isPersistentSnackBar(config: ShowSnackBarArgs | null): boolean {
+    if (!config) {
+        return false;
+    }
+    return config.isPersistent ?? SNACK_BAR_CONFIG[config.barType]?.isPersistent ?? false;
+}
 
 function SnackBarContainer() {
     const [state, setState] = useState(SnackBarStore.getState());
@@ -20,13 +30,24 @@ function SnackBarContainer() {
 
     // Subscribe to store changes
     useDidMount(() => {
-        const sub = SnackBarStore.observe().subscribe(setState);
-        return () => sub.unsubscribe();
+        const sub = SnackBarStore.observe().subscribe((next) => {
+            setState(next);
+        });
+        return () => {
+            sub.unsubscribe();
+
+            // Read the store directly to avoid wiping a persistent snack bar with stale unmount state.
+            const current = SnackBarStore.getState();
+            const persistent = isPersistentSnackBar(current.config);
+            if (!persistent) {
+                SnackBarStore.dismiss();
+            }
+        };
     });
 
     // Auto-dismiss on navigation changes
     useEffect(() => {
-        if (state.visible) {
+        if (state.visible && !isPersistentSnackBar(state.config)) {
             SnackBarStore.dismiss();
         }
 

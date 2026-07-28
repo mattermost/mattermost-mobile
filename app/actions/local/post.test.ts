@@ -419,6 +419,27 @@ describe('deletePostsInChannelsByCutoff', () => {
         expect(error).toBeTruthy();
     });
 
+    it('returns the number of posts matched by the cutoff', async () => {
+        jest.spyOn(operator.database.adapter, 'unsafeExecute').mockResolvedValue();
+        const oldPosts = [
+            TestHelper.fakePost({channel_id: channelId, create_at: OLD}),
+            TestHelper.fakePost({channel_id: channelId, create_at: OLD}),
+        ];
+        const recentPost = TestHelper.fakePost({channel_id: channelId, create_at: RECENT});
+
+        await operator.handlePosts({
+            actionType: ActionType.POSTS.RECEIVED_IN_CHANNEL,
+            order: [oldPosts[0].id, oldPosts[1].id, recentPost.id],
+            posts: [...oldPosts, recentPost],
+            prepareRecordsOnly: false,
+        });
+
+        const {error, deletedCount} = await deletePostsInChannelsByCutoff(serverUrl, [channelId], CUTOFF);
+
+        expect(error).toBeUndefined();
+        expect(deletedCount).toBe(2);
+    });
+
     // A cached model whose earliest advances has to go through the model layer (fires observers)
     it('advances the cached PostsInChannel earliest through the model layer when reconcileObservers is set', async () => {
         jest.spyOn(operator.database.adapter, 'unsafeExecute').mockResolvedValue();

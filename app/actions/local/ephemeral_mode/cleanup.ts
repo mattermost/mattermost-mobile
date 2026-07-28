@@ -7,6 +7,7 @@ import {Screens} from '@constants';
 import {MM_TABLES, SYSTEM_IDENTIFIERS} from '@constants/database';
 import DateConstants from '@constants/datetime';
 import {AUTO_CACHE_CLEANUP_PROTECTION_BUFFER} from '@constants/post';
+import {SNACK_BAR_TYPE} from '@constants/snack_bar';
 import DatabaseManager from '@database/manager';
 import EphemeralModeManager from '@managers/ephemeral_mode_manager';
 import {queryPlaybookRunsBefore} from '@playbooks/database/queries/run';
@@ -19,6 +20,7 @@ import EphemeralStore from '@store/ephemeral_store';
 import {NavigationStore} from '@store/navigation_store';
 import {getFullErrorMessage} from '@utils/errors';
 import {logDebug, logError} from '@utils/log';
+import {showSnackBar} from '@utils/snack_bar';
 
 import type {Database, Model} from '@nozbe/watermelondb';
 import type PostInChannelModel from '@typings/database/models/servers/posts_in_channel';
@@ -138,7 +140,7 @@ async function cleanupPosts(
     database: Database,
     cutoff: number,
     protections: CleanupProtections,
-): Promise<void> {
+): Promise<number> {
     const postsInChannelItems = await database.get<PostInChannelModel>(POSTS_IN_CHANNEL).query().fetch();
     const channelsWithPostRanges = new Set(postsInChannelItems.map((row) => row.channelId));
 
@@ -153,32 +155,39 @@ async function cleanupPosts(
         ...(protections.fileViewerPostId ? [protections.fileViewerPostId] : []),
     ]);
 
+    let deletedCount = 0;
+
     // delete posts in channels not currently being viewed using a single query.
     // PostsInChannel/MyChannel bookkeeping is applied atomically inside this call.
     if (unprotectedChannels.size > 0) {
-        const {error: deleteError} = await deletePostsInChannelsByCutoff(serverUrl, Array.from(unprotectedChannels), cutoff, excludedPostIds);
+        const {error: deleteError, deletedCount: count} = await deletePostsInChannelsByCutoff(serverUrl, Array.from(unprotectedChannels), cutoff, excludedPostIds);
         if (deleteError) {
             throw deleteError;
         }
+        deletedCount += count;
     }
 
     // delete posts in viewed channel if any; reconcile so its mounted post list re-queries
     if (protections.viewedChannelId && channelsWithPostRanges.has(protections.viewedChannelId)) {
         const computedChannelCutoff = Math.min(cutoff, channelProtectionLimit(protections.viewedChannelId, protections));
-        const {error: deleteError} = await deletePostsInChannelsByCutoff(serverUrl, [protections.viewedChannelId], computedChannelCutoff, excludedPostIds, true);
+        const {error: deleteError, deletedCount: count} = await deletePostsInChannelsByCutoff(serverUrl, [protections.viewedChannelId], computedChannelCutoff, excludedPostIds, true);
         if (deleteError) {
             throw deleteError;
         }
+        deletedCount += count;
     }
 
     // delete posts in thread parent channel if any; reconcile so its mounted post list re-queries
     if (protections.threadParentChannelId && protections.threadParentChannelId !== protections.viewedChannelId && channelsWithPostRanges.has(protections.threadParentChannelId)) {
         const computedChannelCutoff = Math.min(cutoff, channelProtectionLimit(protections.threadParentChannelId, protections));
-        const {error: deleteError} = await deletePostsInChannelsByCutoff(serverUrl, [protections.threadParentChannelId], computedChannelCutoff, excludedPostIds, true);
+        const {error: deleteError, deletedCount: count} = await deletePostsInChannelsByCutoff(serverUrl, [protections.threadParentChannelId], computedChannelCutoff, excludedPostIds, true);
         if (deleteError) {
             throw deleteError;
         }
+        deletedCount += count;
     }
+
+    return deletedCount;
 }
 
 // AI threads self-heal on next open (re-fetched from the server), so the only
@@ -276,7 +285,7 @@ export async function autoCacheCleanup(serverUrl: string): Promise<void> {
                 '— currentPlaybookRunId:', limits.viewedPlaybookRunId,
             );
 
-            await cleanupPosts(serverUrl, database, cutoff, limits);
+            const deletedCount = await cleanupPosts(serverUrl, database, cutoff, limits);
             await cleanupAiThreads(database, operator, cutoff, limits.viewedThreadId);
             await cleanupPlaybookRuns(database, operator, cutoff, limits.viewedPlaybookRunId);
 
@@ -286,6 +295,10 @@ export async function autoCacheCleanup(serverUrl: string): Promise<void> {
                 await database.unsafeVacuum();
             } catch (vacuumError) {
                 logError('autoCacheCleanup unsafeVacuum', getFullErrorMessage(vacuumError));
+            }
+
+            if (deletedCount > 0) {
+                showSnackBar({barType: SNACK_BAR_TYPE.EPHEMERAL_MODE_CACHE_CLEANUP, messageValues: {count: deletedCount, days: cleanupDays}});
             }
 
             logDebug('autoCacheCleanup: completed successfully for', serverUrl);

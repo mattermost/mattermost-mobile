@@ -8,23 +8,30 @@ import {distinctUntilChanged, skip} from 'rxjs/operators';
 import {wipeServerDatabaseWithRetry, wipeServerFiles} from '@actions/local/ephemeral_mode/wipe';
 import {clearEphemeralModeState, setDisconnectedSince, setLastSeenTime, setOfflineSince} from '@actions/local/systems';
 import {Screens} from '@constants';
+import {SNACK_BAR_TYPE} from '@constants/snack_bar';
 import DatabaseManager from '@database/manager';
 import PushNotifications from '@init/push_notifications';
 import WebsocketManager from '@managers/websocket_manager';
 import {getServer, getServerDisplayName} from '@queries/app/servers';
-import {getDisconnectedSince, getLastSeenTime, getOfflineSince, observeConfigValue} from '@queries/servers/system';
+import {getConfigBooleanValue, getConfigValue, getDisconnectedSince, getLastSeenTime, getOfflineSince, observeConfigValue} from '@queries/servers/system';
 import {navigateToScreen} from '@screens/navigation';
 import {deleteFileCache} from '@utils/file';
 import {logDebug, logError} from '@utils/log';
+import {showSnackBar} from '@utils/snack_bar';
 
 type ServerEntry =
     | {kind: 'zpm'}
     | {kind: 'mem'; thresholdMs: number; purgeThresholdMs: number};
 
+// Conservative checkpoints since the offline-persistence timer is configured in whole
+// hours — a sub-minute heads-up isn't meaningful lead time at that scale.
+const WIPE_WARNING_THRESHOLDS_MS = [30 * 60_000, 10 * 60_000, 60_000];
+
 class EphemeralModeManagerSingleton {
     private offlineSubjects: {[serverUrl: string]: BehaviorSubject<boolean>} = {};
     private disconnectionTimers: Record<string, NodeJS.Timeout> = {};
     private purgeTimers: Record<string, NodeJS.Timeout> = {};
+    private warnTimers: Record<string, NodeJS.Timeout[]> = {};
     private wsSubscriptions: Record<string, Subscription> = {};
     private configSubscriptions: Record<string, Subscription> = {};
     private appStateSubscription?: NativeEventSubscription;
@@ -59,11 +66,39 @@ class EphemeralModeManagerSingleton {
                     // the DB + file artifacts were both deleted.
                     await this.wipeServerArtifacts(serverUrl);
                 }
+                await this.notifyIfEphemeralModeActiveOnStart(serverUrl, server);
                 await this.addServer(serverUrl);
             } catch (error) {
                 logError('EphemeralModeManager.init', error);
             }
         }));
+    };
+
+    // Runs once per cold start (not on foreground) so users are reminded of the
+    // device's persistence mode every time the app launches, not just when it changes.
+    private notifyIfEphemeralModeActiveOnStart = async (serverUrl: string, server: Awaited<ReturnType<typeof getServer>>) => {
+        const activeUrl = await DatabaseManager.getActiveServerUrl();
+        if (serverUrl !== activeUrl) {
+            return;
+        }
+
+        if (server?.persistenceFlag === 'zero-persistence') {
+            showSnackBar({barType: SNACK_BAR_TYPE.EPHEMERAL_MODE_ZERO_PERSISTENCE_ACTIVE});
+            return;
+        }
+
+        const {database} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
+        const enabled = await getConfigBooleanValue(database, 'MobileEphemeralModeEnabled');
+        if (!enabled) {
+            return;
+        }
+
+        const purgeHours = Math.max(0, Number((await getConfigValue(database, 'MobileEphemeralModeOfflinePersistenceTimerHours')) ?? '0'));
+        if (purgeHours === 0) {
+            showSnackBar({barType: SNACK_BAR_TYPE.EPHEMERAL_MODE_OFFLINE_DISABLED});
+        } else {
+            showSnackBar({barType: SNACK_BAR_TYPE.EPHEMERAL_MODE_ENABLED});
+        }
     };
 
     public cleanup = () => {
@@ -147,12 +182,28 @@ class EphemeralModeManagerSingleton {
         purgeHoursStr: string | undefined,
         cleanupDaysStr: string | undefined,
     ) => {
+        const currentTrackedServer = this.trackedServers.get(serverUrl);
+
         const nextEnabled = enabledStr === 'true';
         const nextThresholdMs = Math.max(0, Number(timeoutStr ?? '0')) * 1000;
-        const nextPurgeThresholdMs = Math.max(0, Number(purgeHoursStr ?? '0')) * 3600 * 1000;
+        const nextPurgeHours = Math.max(0, Number(purgeHoursStr ?? '0'));
+        const nextPurgeThresholdMs = nextPurgeHours * 3600 * 1000;
         const nextCleanupDays = Math.max(0, Number(cleanupDaysStr ?? '0'));
-        const wasActive = this.trackedServers.get(serverUrl)?.kind === 'mem';
+
+        const wasActive = currentTrackedServer?.kind === 'mem';
+        const currentPurgeThresholdMs = currentTrackedServer?.kind === 'mem' ? currentTrackedServer.purgeThresholdMs : undefined;
+
         this.cleanupDays[serverUrl] = nextCleanupDays;
+
+        if (currentPurgeThresholdMs !== undefined && currentPurgeThresholdMs !== nextPurgeThresholdMs) {
+            if (nextEnabled) {
+                if (nextPurgeHours === 0) {
+                    showSnackBar({barType: SNACK_BAR_TYPE.EPHEMERAL_MODE_OFFLINE_DISABLED});
+                } else {
+                    showSnackBar({barType: SNACK_BAR_TYPE.EPHEMERAL_MODE_OFFLINE_ALLOWED, messageValues: {hours: nextPurgeHours}});
+                }
+            }
+        }
 
         if (nextCleanupDays > 0) {
             logDebug('EphemeralModeManager: auto cache cleanup config received, days:', nextCleanupDays, 'for', serverUrl);
@@ -202,6 +253,7 @@ class EphemeralModeManagerSingleton {
         delete this.wsSubscriptions[serverUrl];
         this.clearDisconnectionTimer(serverUrl);
         this.clearPurgeTimer(serverUrl);
+        this.clearWarnTimer(serverUrl);
         if (!silent) {
             // Server is still alive (feature disabled at runtime); flush offline state.
             await this.flagOffline(serverUrl, false);
@@ -324,6 +376,14 @@ class EphemeralModeManagerSingleton {
         }
     };
 
+    private clearWarnTimer = (serverUrl: string) => {
+        const handles = this.warnTimers[serverUrl];
+        if (handles) {
+            handles.forEach(clearTimeout);
+            delete this.warnTimers[serverUrl];
+        }
+    };
+
     private flagOffline = async (serverUrl: string, value: boolean) => {
         const subject = this.getOfflineSubject(serverUrl);
         const prev = subject.getValue();
@@ -343,6 +403,8 @@ class EphemeralModeManagerSingleton {
         if (entry?.kind !== 'mem') {
             return;
         }
+
+        showSnackBar({barType: SNACK_BAR_TYPE.EPHEMERAL_MODE_DISCONNECTED});
 
         let database;
         try {
@@ -366,6 +428,7 @@ class EphemeralModeManagerSingleton {
 
     private onTransitionToOnline = async (serverUrl: string) => {
         this.clearPurgeTimer(serverUrl);
+        this.clearWarnTimer(serverUrl);
         await clearEphemeralModeState(serverUrl);
     };
 
@@ -382,6 +445,7 @@ class EphemeralModeManagerSingleton {
         const server = await getServer(serverUrl);
         if (server && server.persistenceFlag === 'wiped') {
             this.clearPurgeTimer(serverUrl);
+            this.clearWarnTimer(serverUrl);
             return;
         }
 
@@ -413,14 +477,35 @@ class EphemeralModeManagerSingleton {
         const remainingMs = (offlineSince + entry.purgeThresholdMs) - now;
 
         this.clearPurgeTimer(serverUrl);
+        this.clearWarnTimer(serverUrl);
         if (remainingMs <= 0) {
             await this.runWipe(serverUrl);
             return;
         }
+        this.scheduleWipeWarnings(serverUrl, remainingMs);
         this.purgeTimers[serverUrl] = setTimeout(() => {
             delete this.purgeTimers[serverUrl];
             this.enqueueEval(serverUrl, () => this.runWipe(serverUrl));
         }, remainingMs);
+    };
+
+    private scheduleWipeWarnings = (serverUrl: string, remainingMs: number) => {
+        const timers: NodeJS.Timeout[] = [];
+        let firedImmediateWarning = false;
+        for (const threshold of WIPE_WARNING_THRESHOLDS_MS) {
+            if (threshold < remainingMs) {
+                timers.push(setTimeout(() => {
+                    showSnackBar({barType: SNACK_BAR_TYPE.EPHEMERAL_MODE_WIPE_WARNING, messageValues: {minutes: threshold / 60_000}});
+                }, remainingMs - threshold));
+            } else if (!firedImmediateWarning) {
+                firedImmediateWarning = true;
+                showSnackBar({
+                    barType: SNACK_BAR_TYPE.EPHEMERAL_MODE_WIPE_WARNING,
+                    messageValues: {minutes: Math.max(1, Math.ceil(remainingMs / 60_000))},
+                });
+            }
+        }
+        this.warnTimers[serverUrl] = timers;
     };
 
     private wipeServerArtifacts = (serverUrl: string) => {
