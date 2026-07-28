@@ -171,20 +171,33 @@ appId: ${MAESTRO_APP_ID}
     when:
       platform: iOS
     commands:
-      - tapOn:
-          text: "Email, Username or AD/LDAP Username"
-      - inputText: ${TEST_USER_EMAIL}
-      # Tap the keyboard's "Next" key (returnKeyType=next) to advance focus to
-      # the password field. pressKey Enter does not reliably trigger iOS
-      # onSubmitEditing, so the password would land in the email field.
-      # The password field's own testID/label are not in the iOS accessibility
-      # tree (FloatingTextInput + secureTextEntry), so it cannot be tapped
-      # directly — focus advancement via the Next key is the reliable path.
-      # NB: do NOT insert a waitForAnimationToEnd here — it dismisses the
-      # keyboard so the Next key is no longer the matched target.
-      - tapOn:
-          text: "Next"
-      - inputText: ${TEST_USER_PASSWORD}
+      # Cold-start first Maestro batch: Next+inputText can miss the password
+      # field (FloatingTextInput + secureTextEntry). Empty password keeps
+      # testID login_form.signin.button.disabled — Maestro then fails waiting
+      # for login_form.signin.button.
+      # Evidence: CI 30340678924 MM-T67856_2 (first batch after MM-T1325 skip);
+      # same flow passed as batch-2 on 30334294934 once the sim was warm.
+      # Tap email label each attempt; erase before retype. Do not insert
+      # waitForAnimationToEnd between Next and password — it dismisses the
+      # keyboard so Next is no longer hittable.
+      - retry:
+          maxRetries: 4
+          commands:
+            - tapOn:
+                text: "Email, Username or AD/LDAP Username"
+            - eraseText: 80
+            - inputText: ${TEST_USER_EMAIL}
+            - tapOn:
+                text: "Next"
+            - inputText: ${TEST_USER_PASSWORD}
+            # Dismiss keyboard so Log In is on-screen (Detox taps this description).
+            - tapOn:
+                id: "login_options.description.enter_credentials"
+                optional: true
+            - extendedWaitUntil:
+                visible:
+                  id: "login_form.signin.button"
+                timeout: 20000
 - runFlow:
     when:
       platform: Android
@@ -195,10 +208,10 @@ appId: ${MAESTRO_APP_ID}
       - tapOn:
           id: "login_form.password.input"
       - inputText: ${TEST_USER_PASSWORD}
-- extendedWaitUntil:
-    visible:
-      id: "login_form.signin.button"
-    timeout: 10000
+      - extendedWaitUntil:
+          visible:
+            id: "login_form.signin.button"
+          timeout: 10000
 # iOS: URLSession can drop the first login POST right after server connect on cold sims.
 # Brief settle + retries if home tab never appears (still on login form).
 # CI 30334294934: clock_display still missed home tab after 2 retries on a cold sim.
