@@ -118,6 +118,34 @@ PR E2E runs the full `detox/e2e/test` tree when labeled.
 | `.github/workflows/e2e-maestro-template.yml` | Maestro iOS/Android runner |
 | `.github/workflows/compatibility-matrix-testing.yml` | CMT / release multi-server matrix |
 
+### Preflight for CI PRs
+
+Before opening a PR that touches `.github/workflows/`, `.github/actions/`, or `detox/utils/`:
+
+```bash
+cd detox && npm run preflight:ci        # add :ci-fast to skip lint + tsc
+```
+
+These failures are invisible in a green CI run, which is why the script exists:
+
+| Check | Bug it catches |
+|-------|----------------|
+| `actionlint -shellcheck=` | A `secrets.FOO` not declared in the callee's `on.workflow_call.secrets`. GitHub resolves it to an empty string, so the step passes and the notify/upload it feeds silently never happens. |
+| Trailing-backslash scan | `node foo.js \` followed by `RC=$?` makes `RC=$?` an *argument*, so the exit code is never captured and the failure gate below always passes. |
+| `check_tsio_oidc_permissions.py` | A job running `tsio-report-status.js` / `tsio-channel-notify-rollup.js` without `permissions.id-token: write`. `mintOidcToken()` then warns and exits 0, skipping the commit status or channel rollup. |
+| `node --test utils/*.test.js` | Regressions in the TSIO identity / channel-notify helpers. |
+
+Reusable-workflow secrets must be **declared in the callee and forwarded by every
+caller** that uses an explicit `secrets:` block. Callers using `secrets: inherit`
+pass everything automatically — which is why a gap can work on one path (Maestro PR)
+and silently no-op on another (Detox PR, CMT).
+
+Optional AI review of local changes before pushing, if the CLI is installed and logged in:
+
+```bash
+coderabbit --plain --type uncommitted
+```
+
 ### Detox Configuration (`.detoxrc.json`)
 
 | Setting | Value | Notes |
