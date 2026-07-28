@@ -72,10 +72,14 @@ appId: ${MAESTRO_APP_ID}
     id: "tab_bar.home.tab"
 - waitForAnimationToEnd:
     timeout: 3000
+# Anchor on the category header, not the channel item: the item is also absent when
+# the CHANNELS category is merely collapsed, and navigate_to_channel already expands
+# it. Keying off the item would relaunch the app for a healthy sidebar and re-enter
+# the cold-start login path this suite is trying to avoid.
 - runFlow:
     when:
       notVisible:
-        id: "channel_list.category.channels.channel_item.${TEST_CHANNEL_NAME}"
+        id: "channel_list.category_header.channels.display_name"
     commands:
       - launchApp:
           stopApp: true
