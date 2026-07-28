@@ -43,6 +43,7 @@ export class MmBlocksTestHelper {
     // Once set, remaining specs in this process abort immediately (CI 59ec6ae burned
     // ~23×300s after sidecar health passed but thread-open / callbacks stalled).
     private static suiteBlockedReason: string | undefined;
+
     // Last channel opened by setupChannelTest — used when launchApp recovery lands on the list.
     private static lastChannelName: string | undefined;
 
@@ -256,7 +257,6 @@ export class MmBlocksTestHelper {
             await device.launchApp({newInstance: false});
             try {
                 await waitFor(ChannelScreen.channelScreen).toExist().withTimeout(timeouts.TEN_SEC);
-                return;
             } catch {
                 // Relaunch often restores the channel list, not channel.screen
                 // (CI 30340678924 mm_blocks_ephemeral afterAllFailure.png iOS+Android).
