@@ -98,7 +98,7 @@ cd detox && npm run e2e:save-report
 | **Main** | Matterwick main push (`run_type=MASTER` today; `MAIN` also accepted → TSIO `mobile-main`) | Same as PR | Same as PR | `detox/e2e/test` | Same as PR |
 | **CMT / Release** | Matterwick on `build-release-*` → CMT | Detox + Maestro across server versions | Full suite on latest server; smoke subset on older | latest: `detox/e2e/test`; older: `…/smoke_test` | Varies by matrix |
 
-Status contexts (PR/Main): `e2e/detox-ios`, `e2e/detox-android`, `e2e/detox-ipad`, `e2e/maestro-ios`, `e2e/maestro-android`. CMT: per-shard `e2e/<tsio-shard-name>` plus umbrella `e2e/compatibility-matrix-testing`. TSIO groups: `mobile-pr-<job>` / `mobile-main-<job>` / `mobile-release-<shard>`.
+Status contexts (PR/Main): `detox-ios`, `detox-android`, `detox-ipad`, `maestro-ios`, `maestro-android`. CMT: per-shard `<tsio-shard-name>` plus umbrella `compatibility-matrix-testing`. TSIO groups: `mobile-pr-<job>` / `mobile-main-<job>` / `mobile-release-<shard>`.
 
 Matterwick provisions five servers for every mobile server-version entry: two Android-only, two iOS-only, and one shared third site. CMT therefore uses `5 × server version count` installations (up to 25 at the five-version cap). The full latest-version suite needs this isolation for its parallel shards; older-version smoke jobs intentionally retain the same topology for consistent URL semantics, even though their single shard uses less of its capacity. iPad shares the iOS pair, and Maestro uses the first server for its platform.
 

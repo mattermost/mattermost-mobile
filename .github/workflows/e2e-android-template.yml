@@ -458,7 +458,7 @@ jobs:
       # token and resolves gh_job_id via the GitHub API.
       id-token: write
       actions: read
-      # Per-job TSIO finalize posts e2e/detox-android (or CMT e2e/<shard>).
+      # Per-job TSIO finalize posts detox-android (or CMT <shard>).
       statuses: write
     outputs:
       TARGET_URL: ${{ steps.set-url.outputs.TARGET_URL }}
@@ -571,7 +571,7 @@ jobs:
           UPSTREAM="true"
           if [ "${{ job.status }}" = "cancelled" ]; then UPSTREAM="false"; fi
           IDENTITY=$(echo "$TSIO_CONFIG" | jq -c '.composite_identity')
-          CONTEXT=$(echo "$TSIO_CONFIG" | jq -r '.status_context // "e2e/detox-android"')
+          CONTEXT=$(echo "$TSIO_CONFIG" | jq -r '.status_context // "detox-android"')
           TOTAL=$(echo "$TSIO_CONFIG" | jq -r '.total_reports_expected // 1')
           node detox/utils/tsio-report-status.js \
             --composite-identity="$IDENTITY" \

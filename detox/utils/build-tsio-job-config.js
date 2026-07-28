@@ -10,11 +10,11 @@
  */
 
 const PR_MAIN_JOBS = {
-    'detox-ios': {statusContext: 'e2e/detox-ios', framework: 'detox'},
-    'detox-android': {statusContext: 'e2e/detox-android', framework: 'detox'},
-    'detox-ipad': {statusContext: 'e2e/detox-ipad', framework: 'detox'},
-    'maestro-ios-e2e': {statusContext: 'e2e/maestro-ios', framework: 'maestro'},
-    'maestro-android-e2e': {statusContext: 'e2e/maestro-android', framework: 'maestro'},
+    'detox-ios': {statusContext: 'detox-ios', framework: 'detox'},
+    'detox-android': {statusContext: 'detox-android', framework: 'detox'},
+    'detox-ipad': {statusContext: 'detox-ipad', framework: 'detox'},
+    'maestro-ios-e2e': {statusContext: 'maestro-ios', framework: 'maestro'},
+    'maestro-android-e2e': {statusContext: 'maestro-android', framework: 'maestro'},
 };
 
 /**
@@ -35,7 +35,7 @@ function buildTsioJobConfig(baseIdentity, jobKey, overrides = {}) {
     const prefix = baseIdentity.name || baseIdentity.run_group || 'mobile-pr';
     const reportName = `${prefix}-${jobKey}`;
     const framework = overrides.framework || known?.framework || baseIdentity.framework || 'detox';
-    const statusContext = overrides.statusContext || known?.statusContext || `e2e/${jobKey}`;
+    const statusContext = overrides.statusContext || known?.statusContext || jobKey;
 
     return {
         composite_identity: {

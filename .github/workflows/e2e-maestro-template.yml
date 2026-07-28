@@ -90,7 +90,7 @@ permissions:
   # and resolves gh_job_id via the GitHub API; reusable workflows cannot
   # escalate beyond the caller, so this must be granted at every level.
   id-token: write
-  # Per-job TSIO finalize posts e2e/<platform> commit statuses.
+  # Per-job TSIO finalize posts <platform> commit statuses (detox-/maestro-*).
   statuses: write
 env:
   ADMIN_EMAIL: ${{ secrets.MM_MOBILE_E2E_ADMIN_EMAIL }}
@@ -500,7 +500,7 @@ jobs:
           UPSTREAM="true"
           if [ "${{ job.status }}" = "cancelled" ]; then UPSTREAM="false"; fi
           IDENTITY=$(echo "$TSIO_CONFIG" | jq -c '.composite_identity')
-          CONTEXT=$(echo "$TSIO_CONFIG" | jq -r '.status_context // "e2e/maestro-ios"')
+          CONTEXT=$(echo "$TSIO_CONFIG" | jq -r '.status_context // "maestro-ios"')
           TOTAL=$(echo "$TSIO_CONFIG" | jq -r '.total_reports_expected // 1')
           node detox/utils/tsio-report-status.js \
             --composite-identity="$IDENTITY" \
@@ -980,7 +980,7 @@ jobs:
           UPSTREAM="true"
           if [ "${{ job.status }}" = "cancelled" ]; then UPSTREAM="false"; fi
           IDENTITY=$(echo "$TSIO_CONFIG" | jq -c '.composite_identity')
-          CONTEXT=$(echo "$TSIO_CONFIG" | jq -r '.status_context // "e2e/maestro-android"')
+          CONTEXT=$(echo "$TSIO_CONFIG" | jq -r '.status_context // "maestro-android"')
           TOTAL=$(echo "$TSIO_CONFIG" | jq -r '.total_reports_expected // 1')
           node detox/utils/tsio-report-status.js \
             --composite-identity="$IDENTITY" \
