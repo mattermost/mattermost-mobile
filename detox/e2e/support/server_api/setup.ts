@@ -47,6 +47,7 @@ const retryTransient = async <T extends {error?: any; status?: number}>(
     if (!err || !transient || attempt >= maxAttempts) {
         return result;
     }
+
     // Cap CF retry_after — long sleeps (e.g. 90s) blow Detox beforeAll budgets.
     const retryAfterSec = Number(err.retry_after);
     const delayMs = Number.isFinite(retryAfterSec) && retryAfterSec > 0 ?
