@@ -55,6 +55,7 @@ describe('Messaging - Message Character Limit', () => {
     (isIos() ? it.skip : it)('MM-T107 - should show warning and disable send when message exceeds character limit', async () => {
         // # Open a channel and type a message exceeding the 16383 character limit
         const overLimitMessage = '1234567890'.repeat(1638) + '1234';
+        const {post: lastPostBefore} = await Post.apiGetLastPostInChannel(siteOneUrl, testChannel.id);
         await ChannelScreen.open(channelsCategory, testChannel.name);
         await ChannelScreen.postInput.tap();
         await ChannelScreen.postInput.clearText();
@@ -70,10 +71,13 @@ describe('Messaging - Message Character Limit', () => {
         // * Verify send button is disabled
         await expect(ChannelScreen.sendButtonDisabled).toBeVisible();
 
-        // * Verify the over-limit message was not posted
-        const {post} = await Post.apiGetLastPostInChannel(siteOneUrl, testChannel.id);
-        const {postListPostItem} = ChannelScreen.getPostListPostItem(post.id, overLimitMessage);
-        await expect(postListPostItem).not.toExist();
+        // * Verify the over-limit message was not posted (last channel post unchanged)
+        const {post: lastPostAfter} = await Post.apiGetLastPostInChannel(siteOneUrl, testChannel.id);
+        if (lastPostAfter.id !== lastPostBefore.id) {
+            throw new Error(
+                `Over-limit message appears posted: last post changed from ${lastPostBefore.id} to ${lastPostAfter.id}`,
+            );
+        }
 
         // # Clear post draft and go back to channel list screen
         await ChannelScreen.postInput.clearText();

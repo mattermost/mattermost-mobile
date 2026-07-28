@@ -20,7 +20,7 @@ import {
     ServerScreen,
     SettingsScreen,
 } from '@support/ui/screen';
-import {isAndroid, safeEnableSynchronization, timeouts, waitForElementToExist} from '@support/utils';
+import {safeEnableSynchronization, timeouts, waitForElementToExist} from '@support/utils';
 import {expect, waitFor} from 'detox';
 
 /** Mirrors app/utils/subscription getSkuDisplayName for E2E learn-more expectations */
@@ -204,10 +204,6 @@ describe('Account - Settings - About', () => {
         await expect(AboutScreen.buildHashEnterpriseTitle).toHaveText('EE Build Hash:');
         await expect(AboutScreen.buildHashEnterpriseValue).toExist();
         await expect(AboutScreen.buildDateTitle).toHaveText('Build Date:');
-        if (isAndroid()) {
-            await expect(AboutScreen.buildDateTitle).toExist();
-        } else {
-            await expect(AboutScreen.buildDateValue).toExist();
-        }
+        await expect(AboutScreen.buildDateValue).toExist();
     });
 });

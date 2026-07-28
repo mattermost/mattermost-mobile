@@ -49,18 +49,23 @@ export const ensureCustomProfileAttributesFeatureFlag = async (siteOneUrl: strin
     );
 };
 
+const buildFieldIdByName = (fields: CustomProfileField[] | undefined): Map<string, string> => {
+    const byName = new Map<string, string>();
+    for (const field of fields ?? []) {
+        if (field?.name && field?.id) {
+            byName.set(field.name, field.id);
+        }
+    }
+    return byName;
+};
+
 const ensureUserAttributeFields = async (siteOneUrl: string): Promise<string | undefined> => {
     const {fields, error: listError} = await CustomProfileAttributes.apiListCustomProfileAttributeFields(siteOneUrl);
     if (listError) {
         return `Could not list custom profile fields: ${JSON.stringify(listError)}`;
     }
 
-    const byName = new Map<string, string>();
-    for (const field of (fields as CustomProfileField[]) ?? []) {
-        if (field?.name && field?.id) {
-            byName.set(field.name, field.id);
-        }
-    }
+    const byName = buildFieldIdByName(fields as CustomProfileField[]);
 
     /* eslint-disable no-await-in-loop -- create missing fields sequentially */
     for (const name of USER_ATTRIBUTE_FIELD_NAMES) {
@@ -79,19 +84,13 @@ const ensureUserAttributeFields = async (siteOneUrl: string): Promise<string | u
 };
 
 const resolveUserAttributeFieldIds = (fields: CustomProfileField[]): UserAttributesFieldIds | undefined => {
-    const byName = new Map<string, string>();
-    for (const field of fields ?? []) {
-        if (field?.name && field?.id) {
-            byName.set(field.name, field.id);
-        }
-    }
-
+    const byName = buildFieldIdByName(fields);
     const missing = USER_ATTRIBUTE_FIELD_NAMES.filter((name) => !byName.has(name));
     if (missing.length > 0) {
         return undefined;
     }
 
-    return USER_ATTRIBUTE_FIELD_NAMES.map((name) => byName.get(name)!) as UserAttributesFieldIds;
+    return USER_ATTRIBUTE_FIELD_NAMES.map((name) => byName.get(name) ?? '') as UserAttributesFieldIds;
 };
 
 export const probeUserAttributesProvision = async (siteOneUrl: string): Promise<UserAttributesSetupResult> => {
@@ -113,14 +112,6 @@ export const probeUserAttributesProvision = async (siteOneUrl: string): Promise<
 
     const flagError = await ensureCustomProfileAttributesFeatureFlag(siteOneUrl);
     if (flagError) {
-        const {fields: retryFields, error: retryListError} = await CustomProfileAttributes.apiListCustomProfileAttributeFields(siteOneUrl);
-        if (!retryListError) {
-            const retryIds = resolveUserAttributeFieldIds(retryFields as CustomProfileField[]);
-            if (retryIds) {
-                return {ready: true, fieldIds: retryIds};
-            }
-        }
-
         return {ready: false, reason: flagError};
     }
 
@@ -136,7 +127,7 @@ export const probeUserAttributesProvision = async (siteOneUrl: string): Promise<
 
     const fieldIds = resolveUserAttributeFieldIds(fields as CustomProfileField[]);
     if (!fieldIds) {
-        const byName = new Map((fields as CustomProfileField[] ?? []).map((field) => [field.name, field.id]));
+        const byName = buildFieldIdByName(fields as CustomProfileField[]);
         const missing = USER_ATTRIBUTE_FIELD_NAMES.filter((name) => !byName.has(name));
         return {ready: false, reason: `Missing provisioned fields: ${missing.join(', ')}`};
     }
@@ -223,7 +214,11 @@ export const scrollProfileAttributeIntoView = async (
                 try {
                     await scrollView.scroll(200, 'down');
                 } catch {
-                    await element(by.id('user_profile.screen')).swipe('up', 'slow', 0.5);
+                    try {
+                        await element(by.id('user_profile.screen')).swipe('up', 'slow', 0.5);
+                    } catch {
+                        // Already at scroll end
+                    }
                 }
                 await wait(timeouts.HALF_SEC);
             }

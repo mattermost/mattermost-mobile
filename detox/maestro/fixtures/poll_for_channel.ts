@@ -12,6 +12,7 @@ const TEST_TEAM_ID = process.env.TEST_TEAM_ID as string;
 const ADMIN_TOKEN = process.env.ADMIN_TOKEN as string;
 const MAX_POLLS = 30;
 const POLL_INTERVAL_MS = 2000;
+const REQUEST_TIMEOUT_MS = 10000;
 
 if (!SITE_1_URL || !SYNC_TOKEN || !TEST_TEAM_ID || !ADMIN_TOKEN) {
     console.error('[poll_for_channel] Error: SITE_1_URL, SYNC_TOKEN, TEST_TEAM_ID, and ADMIN_TOKEN are required');
@@ -29,19 +30,26 @@ function get(url: string, token: string): Promise<{status: number; body: any}> {
             method: 'GET',
             headers: {Authorization: `Bearer ${token}`},
         };
-        lib.get(options, (res) => {
+        const req = lib.get(options, (res) => {
             let data = '';
             res.on('data', (chunk: string) => {
                 data += chunk;
             });
             res.on('end', () => {
                 try {
-                    resolve({status: res.statusCode || 0, body: data ? JSON.parse(data) : null});
-                } catch (e) {
-                    reject(new Error(`[poll_for_channel] Failed to parse response: ${data}`));
+                    resolve({status: res.statusCode ?? 0, body: data ? JSON.parse(data) : null});
+                } catch {
+                    reject(new Error(
+                        `[poll_for_channel] Failed to parse response (status=${res.statusCode ?? 0}, bytes=${data.length})`,
+                    ));
                 }
             });
-        }).on('error', reject);
+        });
+        req.on('error', reject);
+        req.setTimeout(REQUEST_TIMEOUT_MS, () => {
+            req.destroy();
+            reject(new Error(`[poll_for_channel] Request timed out after ${REQUEST_TIMEOUT_MS}ms`));
+        });
     });
 }
 
@@ -51,11 +59,16 @@ async function pollForChannel(): Promise<void> {
     // no slug-transformation guesswork.
     const url = `${SITE_1_URL}/api/v4/teams/${TEST_TEAM_ID}/channels/name/${SYNC_TOKEN}`;
     for (let i = 0; i < MAX_POLLS; i++) {
-        // eslint-disable-next-line no-await-in-loop
-        const {status} = await get(url, ADMIN_TOKEN);
-        if (status === 200) {
-            console.log(`[poll_for_channel] Found channel "${SYNC_TOKEN}" after ${i + 1} polls`);
-            process.exit(0);
+        try {
+            // eslint-disable-next-line no-await-in-loop
+            const {status} = await get(url, ADMIN_TOKEN);
+            if (status === 200) {
+                console.log(`[poll_for_channel] Found channel "${SYNC_TOKEN}" after ${i + 1} polls`);
+                process.exit(0);
+            }
+        } catch (err) {
+            // Transient network/parse failures should not abort the poll loop.
+            console.error(`[poll_for_channel] Poll ${i + 1} failed:`, (err as Error).message);
         }
         // eslint-disable-next-line no-await-in-loop
         await new Promise((r) => setTimeout(r, POLL_INTERVAL_MS));

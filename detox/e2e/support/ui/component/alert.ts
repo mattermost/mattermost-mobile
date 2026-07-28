@@ -86,9 +86,11 @@ class Alert {
     dismissMessageLengthAlert = async () => {
         try {
             await waitFor(this.messageLengthTitle).toBeVisible().withTimeout(timeouts.FOUR_SEC);
-            await this.okButton.tap();
-            await waitForElementToNotExist(this.messageLengthTitle, timeouts.TEN_SEC);
-        } catch { /* alert not shown */ }
+        } catch {
+            return; // alert not shown, nothing to dismiss
+        }
+        await this.okButton.tap();
+        await waitForElementToNotExist(this.messageLengthTitle, timeouts.TEN_SEC);
     };
 }
 

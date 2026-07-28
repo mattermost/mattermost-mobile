@@ -165,7 +165,7 @@ describe.skip('Account - User Attributes', () => {
         await UserProfileScreen.sendMessageProfileOption.swipe('up', 'fast', 0.8);
         await wait(timeouts.TWO_SEC);
 
-        const profileList = by.id('user_profile.custom_attributes.list');
+        const profileList = by.id(UserProfileScreen.testID.customAttributesList);
         await scrollProfileAttributeIntoView(USER_ATTRIBUTE_FIELD_NAMES[0]);
         await expect(element(by.text(USER_ATTRIBUTE_FIELD_NAMES[0]).withAncestor(profileList))).toExist();
         await expect(element(by.text(attrValue1).withAncestor(profileList))).toExist();
@@ -180,5 +180,6 @@ describe.skip('Account - User Attributes', () => {
 
         await UserProfileScreen.close();
         await ChannelScreen.back();
+        await ChannelListScreen.toBeVisible();
     });
 });

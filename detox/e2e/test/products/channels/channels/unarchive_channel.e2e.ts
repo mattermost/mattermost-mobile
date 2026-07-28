@@ -98,6 +98,8 @@ describe('Channels - Unarchive Channel', () => {
         await CreateOrEditChannelScreen.createButton.tap();
         await wait(timeouts.FOUR_SEC);
 
+        await ChannelScreen.dismissScheduledPostTooltip();
+
         await ChannelInfoScreen.open();
         await ChannelInfoScreen.openChannelSettings();
         await ChannelSettingsScreen.toBeVisible();
