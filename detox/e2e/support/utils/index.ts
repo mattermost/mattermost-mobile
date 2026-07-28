@@ -379,11 +379,14 @@ export async function pressBack(): Promise<void> {
 }
 
 // Poll visibility then assert — avoids Android 60s expect() flakes on off-screen elements.
+// Final assertion must use the same platform threshold as waitForElementToBeVisible
+// (Android edge-to-edge often needs ~15%; default Detox 75% flakes after a successful poll).
 export async function expectVisible(
     detoxElement: Detox.NativeElement,
     timeout: number = isAndroid() ? timeouts.TWENTY_SEC : timeouts.TEN_SEC,
+    visibilityThreshold = isAndroid() ? 15 : 75,
 ): Promise<void> {
-    await waitForElementToBeVisible(detoxElement, timeout);
+    await waitForElementToBeVisible(detoxElement, timeout, timeouts.HALF_SEC, visibilityThreshold);
     const {expect: detoxExpect} = require('detox');
-    await detoxExpect(detoxElement).toBeVisible();
+    await detoxExpect(detoxElement).toBeVisible(visibilityThreshold);
 }
