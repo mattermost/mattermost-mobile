@@ -5,7 +5,7 @@
 /* eslint-disable max-lines */
 
 import {markChannelAsUnread, updateLastPostAt} from '@actions/local/channel';
-import {addPostAcknowledgement, removePost, removePostAcknowledgement, storePostsForChannel} from '@actions/local/post';
+import {addPostAcknowledgement, pruneEmptyPostsInChannelIntervals, removePost, removePostAcknowledgement, storePostsForChannel} from '@actions/local/post';
 import {addRecentReaction} from '@actions/local/reactions';
 import {createThreadFromNewPost} from '@actions/local/thread';
 import {fetchChannelStats} from '@actions/remote/channel';
@@ -296,8 +296,19 @@ export async function fetchPostsForChannel(serverUrl: string, channelId: string,
         let postAction: Promise<PostsRequest>|undefined;
         let actionType: string|undefined;
         const myChannel = await getMyChannel(database, channelId);
-        const postsInChannel = await getRecentPostsInChannel(database, channelId);
-        const since = myChannel?.lastFetchedAt || postsInChannel?.[0]?.createAt || 0;
+        let postsInChannel = await getRecentPostsInChannel(database, channelId);
+        if (!postsInChannel.length) {
+            // The newest PostsInChannel interval renders no posts, so the channel looks blank. That
+            // happens when every post of that interval was deleted on the server, and neither a
+            // since-fetch nor a full page fetch can repair it while the empty interval stays the
+            // newest one (MM-66467). Drop the post-less intervals so a lower interval can render.
+            await pruneEmptyPostsInChannelIntervals(serverUrl, channelId);
+            postsInChannel = await getRecentPostsInChannel(database, channelId);
+        }
+
+        // Only trust lastFetchedAt while we still have posts to show: a since-fetch returns nothing
+        // when there is nothing newer, which would leave a channel with no local posts blank.
+        const since = postsInChannel.length ? (myChannel?.lastFetchedAt || postsInChannel[0].createAt) : 0;
         if (since) {
             postAction = fetchPostsSince(serverUrl, channelId, since, true, groupLabel);
             actionType = ActionType.POSTS.RECEIVED_SINCE;

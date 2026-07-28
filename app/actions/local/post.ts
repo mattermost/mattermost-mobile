@@ -5,12 +5,12 @@ import {fetchPostAuthors} from '@actions/remote/post';
 import {ActionType, Post} from '@constants';
 import {MM_TABLES} from '@constants/database';
 import DatabaseManager from '@database/manager';
-import {countUsersFromMentions, getPostById, prepareDeletePost, queryPostsById} from '@queries/servers/post';
+import {countUsersFromMentions, getPostById, prepareDeletePost, queryPostsById, queryPostsChunk, queryPostsInChannel} from '@queries/servers/post';
 import {getCurrentUserId} from '@queries/servers/system';
 import {getIsCRTEnabled, prepareThreadsFromReceivedPosts} from '@queries/servers/thread';
 import {generateId} from '@utils/general';
 import {safeParseJSON} from '@utils/helpers';
-import {logError} from '@utils/log';
+import {logDebug, logError} from '@utils/log';
 import {getLastFetchedAtFromPosts} from '@utils/post';
 import {getPostIdsForCombinedUserActivityPost} from '@utils/post_list';
 
@@ -307,6 +307,50 @@ export async function storePostsForChannel(
         return {models};
     } catch (error) {
         logError('storePostsForChannel', error);
+        return {error};
+    }
+}
+
+/**
+ * pruneEmptyPostsInChannelIntervals: removes the PostsInChannel intervals of a channel that no
+ * longer contain any post.
+ *
+ * The channel post list renders the newest interval only (`postsInChannel[0]`, the one with the
+ * greatest `latest`). An interval whose posts are all gone -- every post in it was deleted on the
+ * server, so `handlePosts` destroyed them locally -- renders zero rows and hides the whole channel,
+ * and nothing repairs it: a since-fetch has no posts to widen it with, and a full page fetch lands
+ * on a lower interval that never becomes `postsInChannel[0]` (MM-66467). Since an interval with no
+ * posts carries no information -- re-fetching an empty range is harmless -- dropping it lets the
+ * next interval (or a fresh page fetch) render again.
+ *
+ * @param {string} serverUrl
+ * @param {string} channelId
+ * @returns {Promise<{models?: PostsInChannelModel[]; error?: unknown}>}
+ */
+export async function pruneEmptyPostsInChannelIntervals(serverUrl: string, channelId: string) {
+    try {
+        const {database, operator} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
+        const intervals = await queryPostsInChannel(database, channelId).fetch();
+        if (!intervals.length) {
+            logDebug('pruneEmptyPostsInChannelIntervals no intervals for channel', channelId);
+            return {models: []};
+        }
+
+        const counts = await Promise.all(intervals.map(
+            (interval) => queryPostsChunk(database, channelId, interval.earliest, interval.latest).fetchCount(),
+        ));
+        const models = intervals.
+            filter((_, index) => counts[index] === 0).
+            map((interval) => interval.prepareDestroyPermanently());
+
+        if (models.length) {
+            logDebug('pruneEmptyPostsInChannelIntervals removing empty intervals', channelId, models.length);
+            await operator.batchRecords(models, 'pruneEmptyPostsInChannelIntervals');
+        }
+
+        return {models};
+    } catch (error) {
+        logError('Failed pruneEmptyPostsInChannelIntervals', error);
         return {error};
     }
 }
