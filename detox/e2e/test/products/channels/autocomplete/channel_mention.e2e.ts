@@ -215,7 +215,11 @@ describe('Autocomplete - Channel Mention', () => {
         // partial visibility (keyboard + list animation) before tap — screenshot
         // showed the suggestion on-screen when the tap was rejected.
         await waitFor(channelMentionAutocomplete).toBeVisible(40).withTimeout(timeouts.TEN_SEC);
-        await channelMentionAutocomplete.tap();
+
+        // iOS CI 0c09f81 (run 30374537052): row passes toBeVisible(40) but tap() rejects its
+        // center point — sticky "MY CHANNELS" header shadow overlays the row's top half.
+        // Tap the lower half explicitly (same pattern as add_members.ts getUserItem tap).
+        await channelMentionAutocomplete.tap({x: 10, y: 30});
 
         // * Verify channel mention list disappears
         // Selecting a mention inserts `~channel` but on iOS 26 the dropdown can
