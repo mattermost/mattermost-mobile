@@ -190,6 +190,9 @@ async function reportTsioStatus(options) {
         useStaging = false,
         audience = 'mattermost-test-system-io',
         baseUrl: baseUrlOverride,
+
+        // Per-job finalize leaves this false so N platform legs do not spam the channel.
+        channelNotify = false,
     } = options;
 
     const baseUrl = baseUrlOverride || (useStaging ? STAGING_URL : PRODUCTION_URL);
@@ -298,14 +301,18 @@ async function reportTsioStatus(options) {
     }
 
     // Channel notify (best-effort). Routing (see resolveWebhookUrl):
-    //   mobile-release     → MM_E2E_RELEASE_WEBHOOK_URL
-    //   mobile-main    → MM_E2E_MASTER_HEALTH_WEBHOOK_URL
-    //   mobile-pr      → MM_MOBILE_E2E_WEBHOOK_URL
+    //   mobile-release[-*] → MATTERMOST_CMT_WEBHOOK_URL
+    //   mobile-main[-*]    → MATTERMOST_MASTER_HEALTH_WEBHOOK_URL
+    //   mobile-pr[-*]      → MATTERMOST_E2E_WEBHOOK_URL
     // Failures here must not undo a successfully written commit status.
+    // Opt in with channelNotify / CHANNEL_NOTIFY=true (summary job or explicit).
     try {
-        const notifyNames = new Set(['mobile-release', 'mobile-pr', 'mobile-main']);
+        const shouldNotify = channelNotify === true || process.env.CHANNEL_NOTIFY === 'true';
+        const {webhookBucketForReportName} = require('./build-tsio-job-config');
         const reportName = compositeIdentity.run_group || compositeIdentity.name;
-        if (notifyNames.has(reportName) || notifyNames.has(compositeIdentity.name)) {
+        const bucket = webhookBucketForReportName(reportName) ||
+            webhookBucketForReportName(compositeIdentity.name);
+        if (shouldNotify && (bucket === 'mobile-release' || bucket === 'mobile-pr' || bucket === 'mobile-main')) {
             const {notifyCmtChannel, resolveWebhookUrl} = require('./cmt-channel-notify.js');
             const webhookUrl = resolveWebhookUrl(compositeIdentity.name);
             if (webhookUrl) {
@@ -440,7 +447,11 @@ async function main() {
     }
 
     const totalReportsExpected = parseInt(args['total-reports-expected'] || '1', 10);
-    const context = args.context || 'e2e/mobile';
+    const context = args.context;
+    if (!context) {
+        console.error('tsio-report-status: --context is required (e.g. detox-ios)');
+        process.exit(1);
+    }
     const upstreamSucceeded = args['upstream-succeeded'] !== 'false';
     const failOnTestFailures = args['fail-on-test-failures'] !== 'false';
     const pollAttempts = parseInt(args['poll-attempts'] || String(DEFAULT_POLL_ATTEMPTS), 10);
@@ -457,6 +468,7 @@ async function main() {
             useStaging: args['use-staging'] === 'true',
             audience: args.audience || 'mattermost-test-system-io',
             baseUrl: args['base-url'],
+            channelNotify: args['channel-notify'] === 'true',
         });
         console.log(JSON.stringify(result, null, 2));
         process.exit(0);
@@ -470,7 +482,19 @@ async function main() {
     }
 }
 
-module.exports = {buildDisplayReportUrl, buildWorkflowRunUrl, decideStatus, decideTargetUrl, reportTsioStatus, repoTail};
+module.exports = {
+    buildDisplayReportUrl,
+    buildWorkflowRunUrl,
+    decideStatus,
+    decideTargetUrl,
+    reportTsioStatus,
+    repoTail,
+    mintOidcToken,
+    beginGroup,
+    pollGroup,
+    PRODUCTION_URL,
+    STAGING_URL,
+};
 
 if (require.main === module) {
     main().catch((err) => {

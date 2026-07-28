@@ -98,7 +98,9 @@ cd detox && npm run e2e:save-report
 | **Main** | Matterwick main push (`run_type=MASTER` today; `MAIN` also accepted → TSIO `mobile-main`) | Same as PR | Same as PR | `detox/e2e/test` | Same as PR |
 | **CMT / Release** | Matterwick on `build-release-*` → CMT | Detox + Maestro across server versions | Full suite on latest server; smoke subset on older | latest: `detox/e2e/test`; older: `…/smoke_test` | Varies by matrix |
 
-Status context: `e2e/mobile` (PR/Main) or `e2e/compatibility-matrix-testing` (CMT). TSIO groups: `mobile-pr` / `mobile-main` / `mobile-release`.
+Status contexts (PR/Main): `detox-ios`, `detox-android`, `detox-ipad`, `maestro-ios`, `maestro-android`. CMT: per-shard `<tsio-shard-name>` plus umbrella `compatibility-matrix-testing`. TSIO groups: `mobile-pr-<job>` / `mobile-main-<job>` / `mobile-release-<shard>`.
+
+Matterwick provisions five servers for every mobile server-version entry: two Android-only, two iOS-only, and one shared third site. CMT therefore uses `5 × server version count` installations (up to 25 at the five-version cap). The full latest-version suite needs this isolation for its parallel shards; older-version smoke jobs intentionally retain the same topology for consistent URL semantics, even though their single shard uses less of its capacity. iPad shares the iOS pair, and Maestro uses the first server for its platform.
 
 ### Smoke Tests Location
 
@@ -557,7 +559,7 @@ Artifacts saved to `detox/artifacts/` after each run:
 |---------|-------------|-----|
 | `element not found` timeout | testID mismatch or screen not loaded | Check actual testID in app source; add `toBeVisible()` wait before interaction |
 | Test passes locally, fails on CI | Race condition or emulator timing | Add `wait(timeouts.ONE_SEC)` before flaky assertion; verify emulator fully booted |
-| All tests fail with login error | Server not reachable | Check `SITE_1_URL` env var; verify server is up |
+| All tests fail with login error | Server not reachable | Check the platform-specific server URL; verify server is up |
 | `element is not visible` on tap | Element exists but off-screen | Scroll to element first: `await scrollView.scroll(100, 'down')` |
 | Android emulator hangs | AVD not fully booted | `create_android_emulator.sh` waits for `boot_completed`; check its output in CI logs |
 
