@@ -60,6 +60,28 @@ appId: ${MAESTRO_APP_ID}
 
 # ── Path 2: Leave from the minimized CurrentCallBar ─────────────────────────
 
+# CI bc6df62 Android (maestro-android): Path 1 leave succeeded and landed on the
+# channel list (calls-leave-full-screen-after-leave), then navigate_to_channel
+# timed out on channel.post_draft.post.input (30s). Re-anchor on Home before
+# re-entering the channel so draft is present for Path 2 join.
+- extendedWaitUntil:
+    visible:
+      id: "tab_bar.home.tab"
+    timeout: 20000
+- tapOn:
+    id: "tab_bar.home.tab"
+- waitForAnimationToEnd:
+    timeout: 3000
+- runFlow:
+    when:
+      notVisible:
+        id: "channel_list.category.channels.channel_item.${TEST_CHANNEL_NAME}"
+    commands:
+      - launchApp:
+          stopApp: true
+          clearState: false
+      - waitForAnimationToEnd:
+          timeout: 30000
 - runFlow: ../../subflows/navigation/navigate_to_channel.yml
 
 - runFlow: ../../subflows/calls/join_channel_call.yml

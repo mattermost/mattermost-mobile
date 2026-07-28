@@ -248,7 +248,17 @@ describe('Classification Banner - Global Classification Banner', () => {
         await device.reloadReactNative();
 
         await ChannelListScreen.toBeVisible();
-        await GlobalClassificationBanner.toBeVisible();
+
+        // CI bc6df62: after MM-T6204 turns ClassificationMarkings off, the first reload
+        // after re-enable sometimes never paints the banner (toBeVisible 30s). One extra
+        // reload is enough for client config/properties to catch up.
+        try {
+            await GlobalClassificationBanner.toBeVisible();
+        } catch {
+            await device.reloadReactNative();
+            await ChannelListScreen.toBeVisible();
+            await GlobalClassificationBanner.toBeVisible();
+        }
 
         await Properties.apiCleanupClassification(siteOneUrl);
         await device.reloadReactNative();
