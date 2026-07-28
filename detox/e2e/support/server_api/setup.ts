@@ -5,12 +5,20 @@ import Channel from './channel';
 import Team from './team';
 import User from './user';
 
-// Retry transient CI 500s (pgx conn-pool race, context deadline exceeded) — not test bugs.
+// Retry transient CI / edge errors — not test bugs.
 const isTransientServerError = (error: any): boolean => {
     if (!error) {
         return false;
     }
-    const statusCode = error.status_code ?? error.statusCode;
+
+    // Cloudflare JSON body uses `status`; Mattermost API errors use `status_code`.
+    const statusCode = error.status_code ?? error.statusCode ?? error.status;
+    if (error.cloudflare_error === true || error.error_code === 524) {
+        return true;
+    }
+    if (statusCode === 502 || statusCode === 503 || statusCode === 504 || statusCode === 524) {
+        return true;
+    }
     if (statusCode !== 500) {
         return false;
     }
@@ -21,20 +29,31 @@ const isTransientServerError = (error: any): boolean => {
     );
 };
 
-const retryTransient = async <T extends {error?: any}>(
+const retryTransient = async <T extends {error?: any; status?: number}>(
     fn: () => Promise<T>,
     label: string,
     maxAttempts = 3,
     attempt = 1,
 ): Promise<T> => {
     const result = await fn();
-    if (!result.error || !isTransientServerError(result.error) || attempt >= maxAttempts) {
+    const err = result.error;
+    const transient = Boolean(err) && (
+        isTransientServerError(err) ||
+        result.status === 502 ||
+        result.status === 503 ||
+        result.status === 504 ||
+        result.status === 524
+    );
+    if (!err || !transient || attempt >= maxAttempts) {
         return result;
     }
-    const delayMs = 1000 * (2 ** (attempt - 1));
+    const retryAfterSec = Number(err.retry_after);
+    const delayMs = Number.isFinite(retryAfterSec) && retryAfterSec > 0 ?
+        Math.min(retryAfterSec, 90) * 1000 :
+        1000 * (2 ** (attempt - 1));
 
     // eslint-disable-next-line no-console
-    console.warn(`[apiInit] ${label} transient 500 attempt ${attempt}/${maxAttempts}, retry in ${delayMs}ms: ${result.error.detailed_error}`);
+    console.warn(`[apiInit] ${label} transient error attempt ${attempt}/${maxAttempts}, retry in ${delayMs}ms: ${JSON.stringify(err).slice(0, 200)}`);
     await new Promise((resolve) => setTimeout(resolve, delayMs));
     return retryTransient(fn, label, maxAttempts, attempt + 1);
 };

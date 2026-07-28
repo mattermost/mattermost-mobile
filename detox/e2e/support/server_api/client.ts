@@ -70,17 +70,25 @@ baseClient.interceptors.response.use(
     },
 );
 
-// Retry transient 5xx responses with linear backoff.
+// Retry transient gateway / Cloudflare edge 5xx with backoff.
+// 524 (origin response timeout) is retryable per CF but needs longer waits than 502/503/504 —
+// CI detox-ipad 30334294934 failed apiInit create-user on a single 524 with retry_after=120.
 baseClient.interceptors.response.use(
     (response) => response,
     async (error) => {
-        const config = error.config;
+        const config = error.config as typeof error.config & {_5xxRetries?: number};
         const status = error.response?.status;
-        const isTransient = status === 502 || status === 503 || status === 504;
+        const isCloudflareEdge =
+            status === 520 || status === 521 || status === 522 || status === 523 || status === 524;
+        const isTransient = status === 502 || status === 503 || status === 504 || isCloudflareEdge;
 
         if (isTransient && (config._5xxRetries ?? 0) < 3) {
             config._5xxRetries = (config._5xxRetries ?? 0) + 1;
-            const delay = config._5xxRetries * 1000;
+            const retryAfterSec = Number(error.response?.data?.retry_after);
+            const cloudflareDelayMs = Number.isFinite(retryAfterSec) && retryAfterSec > 0 ?
+                Math.min(retryAfterSec, 90) * 1000 :
+                config._5xxRetries * 30000;
+            const delay = isCloudflareEdge ? cloudflareDelayMs : config._5xxRetries * 1000;
             console.warn(`[client] ${status} from server — retry ${config._5xxRetries}/3 in ${delay}ms`); // eslint-disable-line no-console
             await new Promise((r) => setTimeout(r, delay)); // eslint-disable-line no-promise-executor-return
             return baseClient(config);

@@ -201,8 +201,9 @@ appId: ${MAESTRO_APP_ID}
     timeout: 10000
 # iOS: URLSession can drop the first login POST right after server connect on cold sims.
 # Brief settle + retries if home tab never appears (still on login form).
+# CI 30334294934: clock_display still missed home tab after 2 retries on a cold sim.
 - retry:
-    maxRetries: 2
+    maxRetries: 3
     commands:
       - runFlow:
           when:
