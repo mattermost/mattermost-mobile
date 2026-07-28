@@ -48,8 +48,12 @@ describe('Interactive mm_blocks (ephemeral post)', () => {
     });
 
     afterAll(async () => {
-        await MmBlocksTestHelper.ensureOnChannelScreen();
-        await ChannelScreen.back();
+        try {
+            await MmBlocksTestHelper.ensureOnChannelScreen();
+            await ChannelScreen.back();
+        } catch {
+            // Relaunch recovery may already be on the channel list (CI 30340678924).
+        }
         await HomeScreen.logout();
     });
 

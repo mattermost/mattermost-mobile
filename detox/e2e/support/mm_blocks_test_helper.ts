@@ -43,6 +43,8 @@ export class MmBlocksTestHelper {
     // Once set, remaining specs in this process abort immediately (CI 59ec6ae burned
     // ~23×300s after sidecar health passed but thread-open / callbacks stalled).
     private static suiteBlockedReason: string | undefined;
+    // Last channel opened by setupChannelTest — used when launchApp recovery lands on the list.
+    private static lastChannelName: string | undefined;
 
     static async assertMmBlocksEnabled(baseUrl: string): Promise<void> {
         const enabled = await System.waitForClientConfigFlag(
@@ -107,6 +109,7 @@ export class MmBlocksTestHelper {
         // reload always lands on the channel list, then re-open.
         await device.reloadReactNative();
         await ChannelListScreen.toBeVisible();
+        this.lastChannelName = channel.name;
         await ChannelScreen.open(this.CHANNELS_CATEGORY, channel.name);
 
         return {channel, team, user};
@@ -251,7 +254,18 @@ export class MmBlocksTestHelper {
         } catch {
             // Recover from a stuck Detox sync / wrong screen (CI 59ec6ae).
             await device.launchApp({newInstance: false});
-            await waitFor(ChannelScreen.channelScreen).toExist().withTimeout(timeouts.TWENTY_SEC);
+            try {
+                await waitFor(ChannelScreen.channelScreen).toExist().withTimeout(timeouts.TEN_SEC);
+                return;
+            } catch {
+                // Relaunch often restores the channel list, not channel.screen
+                // (CI 30340678924 mm_blocks_ephemeral afterAllFailure.png iOS+Android).
+                await ChannelListScreen.toBeVisible();
+                if (!this.lastChannelName) {
+                    throw new Error('ensureOnChannelScreen: on channel list but lastChannelName unset');
+                }
+                await ChannelScreen.open(this.CHANNELS_CATEGORY, this.lastChannelName);
+            }
         }
     }
 
