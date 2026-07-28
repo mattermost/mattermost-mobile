@@ -1,7 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {getDistanceBW2Points, getNearestPoint, fetchOpenGraph, testExports} from './opengraph';
+import {getDistanceBW2Points, getNearestPoint, fetchOpenGraph, normalizeOpenGraphImageUrl, testExports} from './opengraph';
 
 const {fetchRaw, getFavIcon} = testExports;
 
@@ -139,10 +139,28 @@ describe('getFavIcon', () => {
         expect(result).toBe('https://cdn.example.com/favicon.png');
     });
 
+    it('should resolve protocol-relative and path-relative icon URLs', () => {
+        expect(getFavIcon('https://example.com/page', '<link rel="icon" href="//cdn.example.com/favicon.png">')).
+            toBe('https://cdn.example.com/favicon.png');
+        expect(getFavIcon('https://example.com/path/page', '<link rel="icon" href="favicon.png">')).
+            toBe('https://example.com/path/favicon.png');
+    });
+
     it('should handle icons without sizes attribute', () => {
         const mockHtml = '<html><head><link rel="icon" href="/favicon.png"><link rel="icon" href="/favicon-32x32.png" sizes="32x32"></head></html>';
         const result = getFavIcon('http://example.com', mockHtml);
         expect(result).toBe('http://example.com/favicon-32x32.png');
+    });
+});
+
+describe('normalizeOpenGraphImageUrl', () => {
+    it('should only return absolute HTTP URLs', () => {
+        expect(normalizeOpenGraphImageUrl('//cdn.example.com/image.png', 'https://example.com/page')).
+            toBe('https://cdn.example.com/image.png');
+        expect(normalizeOpenGraphImageUrl('data:image/png;base64,image', 'https://example.com/page')).
+            toBeUndefined();
+        expect(normalizeOpenGraphImageUrl('', 'https://example.com/page')).
+            toBeUndefined();
     });
 });
 
@@ -186,7 +204,7 @@ describe('fetchOpenGraph', () => {
         const result = await fetchOpenGraph('http://example.com');
         expect(result).toEqual({
             link: 'http://example.com',
-            imageURL: null,
+            imageURL: undefined,
             favIcon: undefined,
             title: 'Example',
         });

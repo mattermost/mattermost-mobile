@@ -70,9 +70,9 @@ baseClient.interceptors.response.use(
     },
 );
 
-// Retry transient gateway / Cloudflare edge 5xx with backoff.
-// 524 (origin response timeout) is retryable per CF but needs longer waits than 502/503/504 —
-// CI detox-ipad 30334294934 failed apiInit create-user on a single 524 with retry_after=120.
+// Retry transient gateway / Cloudflare edge 5xx with short backoff.
+// Keep 520–524 retryable, but never honor CF retry_after of tens of seconds —
+// that blew Detox beforeAll (300s) on CI (Search shards slept 90s×3 and timed out).
 baseClient.interceptors.response.use(
     (response) => response,
     async (error) => {
@@ -85,10 +85,10 @@ baseClient.interceptors.response.use(
         if (isTransient && (config._5xxRetries ?? 0) < 3) {
             config._5xxRetries = (config._5xxRetries ?? 0) + 1;
             const retryAfterSec = Number(error.response?.data?.retry_after);
-            const cloudflareDelayMs = Number.isFinite(retryAfterSec) && retryAfterSec > 0 ?
-                Math.min(retryAfterSec, 90) * 1000 :
-                config._5xxRetries * 30000;
-            const delay = isCloudflareEdge ? cloudflareDelayMs : config._5xxRetries * 1000;
+            const cappedRetryAfterMs = Number.isFinite(retryAfterSec) && retryAfterSec > 0 ?
+                Math.min(retryAfterSec, 3) * 1000 :
+                0;
+            const delay = cappedRetryAfterMs || (config._5xxRetries * 1000);
             console.warn(`[client] ${status} from server — retry ${config._5xxRetries}/3 in ${delay}ms`); // eslint-disable-line no-console
             await new Promise((r) => setTimeout(r, delay)); // eslint-disable-line no-promise-executor-return
             return baseClient(config);
