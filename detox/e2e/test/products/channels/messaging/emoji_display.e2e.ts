@@ -110,9 +110,7 @@ describe('Messaging - Emoji Display', () => {
         await ThreadScreen.toBeVisible();
 
         // * Verify the emoji reply is visible in the thread
-        // TODO: The JumboEmoji component does not currently expose a dedicated 'jumbo_emoji'
-        // container testID. A testID such as 'jumbo_emoji.container' would need to be added
-        // to app/components/jumbo_emoji/index.tsx to assert jumbo vs normal rendering.
+        // TODO: JumboEmoji exposes no container testID, so jumbo vs normal rendering cannot be asserted.
         const replyPostMatcher = by.id(`thread.post_list.post.${replyPost.id}`);
         const emojiInThread = element(by.id('markdown_emoji').withAncestor(replyPostMatcher));
         await waitFor(emojiInThread).toExist().withTimeout(timeouts.TEN_SEC);
@@ -227,21 +225,17 @@ describe('Messaging - Emoji Display', () => {
         await ChannelScreen.open(channelsCategory, testChannel.name);
         await wait(timeouts.TWO_SEC);
 
-        // # Get the last post — the system add-to-channel message.
-        // The seed post above ensures this system post is NOT combined with older
-        // user-activity posts, so its ID is 'user-activity-{postId}'.
+        // # Get the last post — the system add-to-channel message. The seed post above keeps it
+        // from being combined with older user-activity posts.
         const {post: systemPost} = await Post.apiGetLastPostInChannel(siteOneUrl, testChannel.id);
 
-        // * Verify the system message is visible.
-        // System add-to-channel posts render via CombinedUserActivity. The inner TouchableHighlight
-        // has testID 'channel.post_list.combined_user_activity.user-activity-{postId}'.
-        // Use toBeVisible() — the post is the newest so it is in the visible viewport.
+        // * Verify the system message is visible. System add-to-channel posts render via
+        // CombinedUserActivity with testID 'channel.post_list.combined_user_activity.user-activity-{postId}'.
         const systemPostItem = element(by.id(`channel.post_list.combined_user_activity.user-activity-${systemPost.id}`));
         await waitFor(systemPostItem).toBeVisible().withTimeout(timeouts.HALF_MIN);
 
-        // # Long press the system message.
-        // CombinedUserActivity.onLongPress() returns early when canDelete is false (regular user),
-        // so the post options modal should NOT open.
+        // # Long press the system message. CombinedUserActivity.onLongPress() returns early when
+        // canDelete is false, so the post options modal should not open.
         await systemPostItem.longPress(timeouts.TWO_SEC);
         await wait(timeouts.TWO_SEC);
 

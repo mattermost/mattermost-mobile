@@ -252,11 +252,8 @@ describe('Server Login - Server List', () => {
         await waitForElementToExist(ServerListScreen.getServerItemActive(serverOneDisplayName), timeouts.TEN_SEC);
         await ServerListScreen.getServerItemActive(serverOneDisplayName).atIndex(0).swipe('left', 'slow');
         if (isIos()) {
-            // On iOS, the Logout button (higher z-order than Remove) partially overlaps Remove
-            // during the reveal animation.  Use waitFor with 100% threshold so we only tap once
-            // the Logout Animated.View has fully translated to its own position (progress == 1).
-            // TEN_SEC matches the sibling reveal-waits in MM-T4691_6/7: the failure artifact shows
-            // Remove does reach 100% visibility, but the reveal can take >5s on CI (TIMEOUT(5s)).
+            // iOS: the Logout button overlaps Remove during the reveal animation, so wait for 100%
+            // visibility. TEN_SEC matches MM-T4691_6/7 — the reveal can take over 5s on CI.
             await waitFor(ServerListScreen.getServerItemRemoveOption(serverOneDisplayName)).
                 toBeVisible(100).
                 withTimeout(timeouts.TEN_SEC);
@@ -298,9 +295,8 @@ describe('Server Login - Server List', () => {
         // # Open server list screen, swipe left on third server and tap on logout option
         await ServerListScreen.open();
 
-        // Use a partial swipe on iOS to bring Server 3 into view without over-scrolling.
-        // A full swipe can push the target item too close to an edge, causing the
-        // swipe-left reveal panel buttons to fail the 100% hittability threshold.
+        // Partial swipe on iOS: a full swipe pushes the target too close to an edge and the
+        // reveal panel buttons then fail the 100% hittability threshold.
         if (isIos()) {
             await ServerListScreen.serverListTitle.swipe('up', 'fast', 0.3, 0.5, 0.5);
         } else if (isAndroid()) {
@@ -392,9 +388,8 @@ describe('Server Login - Server List', () => {
         await ServerScreen.close();
         await ServerListScreen.open();
 
-        // Use a partial swipe on iOS to bring Server 2 into view without over-scrolling.
-        // A full swipe can push the target item too close to an edge, causing the
-        // swipe-left reveal panel buttons to fail the 100% hittability threshold.
+        // Partial swipe on iOS: a full swipe pushes the target too close to an edge and the
+        // reveal panel buttons then fail the 100% hittability threshold.
         if (isIos()) {
             await ServerListScreen.serverListTitle.swipe('up', 'fast', 0.3, 0.5, 0.5);
         } else if (isAndroid()) {

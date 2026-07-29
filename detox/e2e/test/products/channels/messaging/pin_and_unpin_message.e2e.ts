@@ -212,18 +212,13 @@ describe('Messaging - Pin and Unpin Message', () => {
         const {postListPostItemPreHeaderText} = ChannelScreen.getPostListPostItem(olderPost.id, olderMessage);
         await waitFor(postListPostItemPreHeaderText).toHaveText(pinnedText).withTimeout(timeouts.TEN_SEC);
 
-        // * Verify the newer messages are still in the channel below the older pinned message.
-        //   (i.e. the older message was not moved to the bottom of the channel)
-        //   Re-open the channel to reset scroll to newest messages, ensuring newerPost2 is visible.
+        // * Verify the newer messages are still below the older pinned message. Re-open the
+        //   channel to reset scroll to the newest messages so newerPost2 is visible.
         await ChannelScreen.back();
         await ChannelScreen.open(channelsCategory, testChannel.name);
 
-        // Scroll up slightly to bring newerPost2 into the fully visible area.
-        // After pinning, a system post ("X pinned a message") is added, pushing
-        // newerPost2 down where the message input bar clips it below the 75%
-        // visibility threshold on iOS 26.x (safe area insets reduce visible area).
-        // A single fixed scroll + immediate assert races the clip on iOS 26.x. Scroll the
-        // post into the >=75% visible area, retrying until it appears (or the list can't scroll).
+        // The "X pinned a message" system post pushes newerPost2 under the input bar on iOS 26.x.
+        // Scroll it back into the >=75% visible area, retrying until it appears.
         try {
             await waitFor(newerPost2Item).
                 toBeVisible(75).

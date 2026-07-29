@@ -145,10 +145,7 @@ class ManageChannelMembersScreen {
 
         await waitFor(this.removeButton).toBeVisible().withTimeout(timeouts.TEN_SEC);
 
-        // Corner-tap: same modal UITransitionView interferes with this button's
-        // center tap as well — the corner-tap on userDisplayName above only
-        // covers the first interaction; this row is rendered under the same
-        // transition layer.
+        // Corner-tap: the modal's UITransitionView also intercepts this button's centre tap.
         await this.removeButton.tap({x: 1, y: 1});
 
         await waitFor(Alert.removeButton).toBeVisible().withTimeout(timeouts.TEN_SEC);

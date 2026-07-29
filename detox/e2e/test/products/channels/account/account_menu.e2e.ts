@@ -78,10 +78,8 @@ describe('Account - Account Menu', () => {
     });
 
     it('MM-T4988_2 - should be able to set user presence', async () => {
-        // The status update fires an async network request and then dismisses the
-        // bottom sheet. On slow CI networks Detox's bridge-idle synchronization can
-        // wait for the request well past the Jest timeout, so run the whole status
-        // cycle with synchronization disabled and verify UI state explicitly.
+        // The status update fires an async request before dismissing the sheet, which can hold
+        // Detox's bridge past the Jest timeout — run unsynchronized and verify UI state instead.
         await device.disableSynchronization();
         try {
             // # Tap on user presence option and tap on offline user status option

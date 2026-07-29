@@ -85,9 +85,8 @@ describe('Search - Saved Messages', () => {
         await ChannelScreen.openPostOptionsFor(post.id, message);
         await PostOptionsScreen.savePostOption.tap();
 
-        // Flagged-posts index lag varies, so poll the API instead of waiting a fixed
-        // interval before asserting on the saved state.
-        // Evidence: CI runs 28476574698, 28485624548 (MM-T4910_2).
+        // Flagged-posts index lag varies, so poll the API instead of waiting a fixed interval
+        // before asserting the saved state.
         await Post.waitForPostFlagged(siteOneUrl, testUser.id, post.id);
 
         // * Verify saved text is displayed on the post pre-header
@@ -176,9 +175,8 @@ describe('Search - Saved Messages', () => {
         const {postListPostItem} = SavedMessagesScreen.getPostListPostItem(savedPost.id, updatedMessage);
         await waitForElementToBeVisible(element(by.text('1 reply')), timeouts.TWO_SEC);
 
-        // This suite does not enable ThreadAutoFollow (unlike follow_and_unfollow_thread.e2e.ts),
-        // so posting a reply does NOT auto-follow the thread — the footer shows the "Follow" action,
-        // not "Following". Assert the actual state.
+        // This suite does not enable ThreadAutoFollow, so replying does not auto-follow the
+        // thread and the footer shows "Follow" rather than "Following".
         await waitForElementToBeVisible(element(by.text('Follow')), timeouts.TWO_SEC);
 
         // # Open post options for updated saved message and delete post

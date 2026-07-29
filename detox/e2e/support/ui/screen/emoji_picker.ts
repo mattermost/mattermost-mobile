@@ -79,18 +79,8 @@ class EmojiPickerScreen {
     };
 
     tapSearchResultEmoji = async (glyph: string, emojiShortName?: string) => {
-        // The filtered emoji picker debounces a custom-emoji network search on each keystroke and
-        // animates the bottom sheet, so the app never reports idle. Detox's default synchronized
-        // waitFor/tap then times out even though the result row is rendered and visible (MM-T4990_3
-        // artifact: the :clown_face: row is on screen, yet the matcher timed out while device.log
-        // logged repeated "DYNAMIC_TASKS_HAVE_IDLED"). Disable synchronization for the whole
-        // interaction so matching and tapping evaluate against the current view hierarchy instead of
-        // waiting for an idle that never arrives.
-        //
-        // Matching: on Android the per-row testID on the FlashList item does not surface as a
-        // Detox-matchable tag (the testID assertion returns "was null"), but the row's ":name:" text
-        // does match, so text is the reliable Android path. The testID is tried first on iOS, where
-        // it resolves as an accessibilityIdentifier.
+        // The filtered picker debounces a network search on each keystroke, so the app never reports
+        // idle and synchronized waitFor/tap times out. Android matches the row text, not the testID.
         await device.disableSynchronization();
         try {
             const candidates: Detox.NativeMatcher[] = [];

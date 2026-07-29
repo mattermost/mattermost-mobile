@@ -85,9 +85,8 @@ describe('Threads - DM From Reply Author Profile', () => {
         } = ChannelScreen.getPostListPostItem(rootPost.id, rootMessage);
         await waitFor(rootPostItem).toBeVisible().withTimeout(timeouts.TEN_SEC);
 
-        // Prefer reply-count tap over long-press → Reply. Long-press scroll retries can
-        // open the thread mid-gesture then keep looking for channel.post_list.post.*
-        // (CI MM-T3211_1).
+        // Prefer the reply-count tap over long-press -> Reply: long-press scroll retries can open
+        // the thread mid-gesture and then keep looking for channel.post_list.post.*.
         try {
             await waitFor(postListPostItemFooterReplyCount).toBeVisible().withTimeout(timeouts.TEN_SEC);
             await postListPostItemFooterReplyCount.tap();

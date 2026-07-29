@@ -180,9 +180,8 @@ class AccountScreen {
         }
     };
 
-    // Emoji wrapper Views fail Detox visibility on Android (15% rect via
-    // waitForElementToExist) and may be missing briefly on iOS after save.
-    // Sync on plain <Text> when known; require emoji/clear button toExist only.
+    // Emoji wrapper Views fail Detox visibility on Android and can be briefly missing on iOS,
+    // so sync on the plain <Text> and only require the emoji/clear button to exist.
     waitForCustomStatus = async (status: {emoji: string; duration: string; text?: string}) => {
         const customStatusScreen = element(by.id('custom_status.screen'));
         await waitForElementToNotExist(customStatusScreen, timeouts.TEN_SEC);
@@ -197,9 +196,8 @@ class AccountScreen {
             return;
         }
 
-        // Android: toHaveText requires VISIBLE; the status text node may exist in
-        // the hierarchy before passing the 15% visibility threshold. Match id+text
-        // with toExist instead (android-junit 28416284905).
+        // Android: toHaveText requires visibility, but the status text can exist before it passes
+        // the visibility threshold — match id and text with toExist instead.
         if (isAndroid()) {
             const statusTextMatcher = by.id(`${this.testID.customStatusPrefix}custom_status_text`).and(by.text(status.text));
             await waitFor(element(statusTextMatcher)).toExist().withTimeout(timeout);

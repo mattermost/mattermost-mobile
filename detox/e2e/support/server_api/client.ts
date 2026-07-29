@@ -75,14 +75,18 @@ const CLOUDFLARE_EDGE_STATUSES: ReadonlySet<number> = new Set([520, 521, 522, 52
 
 const TRANSIENT_HTTP_STATUSES: ReadonlySet<number> = new Set([502, 503, 504, ...CLOUDFLARE_EDGE_STATUSES]);
 
+/** Cloudflare could not reach the origin, so the request provably had no side effect. */
+const PRE_ORIGIN_STATUSES: ReadonlySet<number> = new Set([521, 522, 523]);
+
+const IDEMPOTENT_METHODS: ReadonlySet<string> = new Set(['get', 'head', 'options']);
+
 /** Gateway 5xx plus Cloudflare edge — shared with the apiInit retry layer in setup.ts. */
-export const isTransientHttpStatus = (status?: number): boolean =>
+export const isTransientHttpStatus = (status?: number): status is number =>
     status !== undefined && TRANSIENT_HTTP_STATUSES.has(status);
 
 /**
- * Upper bound for an honored CF `retry_after`. Sleeping the advertised tens of seconds
- * blew Detox's 300s beforeAll budget on CI (Search shards slept 90s×3 and timed out).
- * Shared with the apiInit retry layer in setup.ts.
+ * Upper bound for an honored Cloudflare `retry_after`; the advertised tens of seconds blow
+ * Detox's 300s beforeAll budget. Shared with the apiInit retry layer in setup.ts.
  */
 export const MAX_RETRY_AFTER_SEC = 3;
 
@@ -93,7 +97,12 @@ baseClient.interceptors.response.use(
         const config = error.config as typeof error.config & {_5xxRetries?: number};
         const status = error.response?.status;
 
-        if (isTransientHttpStatus(status) && (config._5xxRetries ?? 0) < 3) {
+        // A write may already have reached the origin behind 502/503/504 and CF 520/524, so only
+        // idempotent methods are retried on those; CF 521-523 never reach the origin at all.
+        const isSafeToRetry = isTransientHttpStatus(status) &&
+            (IDEMPOTENT_METHODS.has((config.method ?? 'get').toLowerCase()) || PRE_ORIGIN_STATUSES.has(status));
+
+        if (isSafeToRetry && (config._5xxRetries ?? 0) < 3) {
             config._5xxRetries = (config._5xxRetries ?? 0) + 1;
             const retryAfterSec = Number(error.response?.data?.retry_after);
             const cappedRetryAfterMs = Number.isFinite(retryAfterSec) && retryAfterSec > 0 ?

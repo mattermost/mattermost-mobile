@@ -86,9 +86,8 @@ describe('Server Login - Connect to Server', () => {
     });
 
     it('MM-T4676_4 - should show connection error on invalid ssl or invalid host', async () => {
-        // # Connect to a real host with an expired/invalid SSL certificate (no URL blacklist -
-        // # this exercises the device's actual TLS handshake and native cert-trust prompt,
-        // # matching RF-SA229 / MM-T2348's real-world scenario)
+        // # Connect to a real host with an expired SSL certificate — no URL blacklist, so this
+        // # exercises the device's actual TLS handshake and native cert-trust prompt
         const expiredServerUrl = 'expired.badssl.com';
 
         await serverUrlInput.replaceText(expiredServerUrl);

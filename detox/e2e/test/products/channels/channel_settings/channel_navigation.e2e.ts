@@ -106,9 +106,8 @@ describe('Channels', () => {
 
         await wait(timeouts.ONE_SEC);
 
-        // On Android, the unfavoriteAction can be partially clipped by nav bars (<50%
-        // visible area), causing toBeVisible() to fail. toExist() verifies the element
-        // is present in the hierarchy regardless of viewport coverage.
+        // Android: unfavoriteAction can be clipped by the nav bars below 50% visibility, so assert
+        // presence with toExist().
         await waitFor(ChannelInfoScreen.unfavoriteAction).toExist().withTimeout(timeouts.TEN_SEC);
 
         await ChannelInfoScreen.close();

@@ -74,9 +74,8 @@ describe('Channels - Edit Channel', () => {
     });
 
     afterAll(async () => {
-        // A failed test can leave the app on a screen without the home tab, so opening
-        // the channel list may fail here; logout handles navigation recovery.
-        // Evidence: CI run 28476574698 (tab_bar.home.tab not found in this teardown).
+        // A failed test can leave the app on a screen without the home tab, so opening the channel
+        // list may fail here; logout handles navigation recovery.
         try {
             await ChannelListScreen.open();
         } catch {
@@ -133,9 +132,8 @@ describe('Channels - Edit Channel', () => {
         await CreateOrEditChannelScreen.saveButton.tap();
 
         // * Verify on channel info screen and changes have been saved
-        // On iOS, saveButton pops back to ChannelSettingsScreen (the navigation parent).
-        // On Android, the same save navigates directly to ChannelInfoScreen, skipping
-        // ChannelSettingsScreen — wrap in try-catch to handle both platforms.
+        // iOS pops back to ChannelSettingsScreen after save while Android goes straight to
+        // ChannelInfoScreen, so try-catch handles both.
         try {
             await ChannelSettingsScreen.toBeVisible();
             await ChannelSettingsScreen.close();

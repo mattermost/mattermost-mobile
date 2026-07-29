@@ -227,9 +227,8 @@ describe('Search - Hashtag Search', () => {
         const {postListPostItem} = SavedMessagesScreen.getPostListPostItem(savedPost.id, message);
         await waitFor(postListPostItem).toBeVisible().withTimeout(timeouts.TEN_SEC);
 
-        // Inline hashtag links in post list items are rendered as text spans within a single
-        // paragraph Text node. On both iOS and Android, they are not accessible as separate
-        // elements via by.text(). Verify hashtag search functionality via the search screen.
+        // Inline hashtag links render as text spans inside a single paragraph Text node on both
+        // platforms, so verify hashtag search through the search screen instead.
         await ChannelListScreen.open();
         await SearchMessagesScreen.open();
         await SearchMessagesScreen.searchInput.typeText(`#${hashtagTerm}`);

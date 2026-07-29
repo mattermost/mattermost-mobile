@@ -80,10 +80,8 @@ export async function retryWithReload(
                 await new Promise((res) => setTimeout(res, 10000));
 
                 if (serverUrl && serverDisplayName) {
-                    // Prior suite may have left the session authenticated (CI 59ec6ae:
-                    // T5108 died on server.screen inside this recovery path). Log out
-                    // first so connectToServer can show the server form again.
-                    // Lazy require avoids utils ↔ screen circular imports.
+                    // A prior suite may have left the session authenticated, so log out before connectToServer
+                    // can show the server form again. Lazy require avoids a utils <-> screen circular import.
                     // eslint-disable-next-line global-require, @typescript-eslint/no-var-requires
                     const {ChannelListScreen, HomeScreen} = require('@support/ui/screen');
                     try {
@@ -319,10 +317,8 @@ export async function waitForElementToNotExist(
 }
 
 // Poll for existence without Detox bridge-idle synchronization.
-// Keep this as a hierarchy existence check on all platforms so callers that probe
-// off-screen items before scrolling (e.g. waitForSidebarPublicChannelDisplayNameVisible)
-// do not time out. For Android edge-to-edge visibility (post menus / dialogs), use
-// waitForElementToBeVisible instead.
+// Hierarchy existence check on all platforms so callers probing off-screen items before
+// scrolling do not time out. For visibility, use waitForElementToBeVisible instead.
 export async function waitForElementToExist(
     detoxElement: Detox.NativeElement,
     timeout: number = timeouts.HALF_MIN,
@@ -378,9 +374,8 @@ export async function pressBack(): Promise<void> {
     }
 }
 
-// Poll visibility then assert — avoids Android 60s expect() flakes on off-screen elements.
-// Final assertion must use the same platform threshold as waitForElementToBeVisible
-// (Android edge-to-edge often needs ~15%; default Detox 75% flakes after a successful poll).
+// Poll visibility then assert with the same platform threshold as waitForElementToBeVisible;
+// Detox's default 75% flakes on Android edge-to-edge even after a successful poll.
 export async function expectVisible(
     detoxElement: Detox.NativeElement,
     timeout: number = isAndroid() ? timeouts.TWENTY_SEC : timeouts.TEN_SEC,

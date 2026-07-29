@@ -175,9 +175,8 @@ async function serverSetup() {
     const headers = {Authorization: `Bearer ${token}`};
     process.stdout.write('[globalSetup] ✅ Admin login successful\n');
 
-    // Pre-warm the server so the first app-level request isn't also the server's first
-    // cold request. This warms the server only, not the simulator's TLS session, so it
-    // does not prevent -1005 drops on the app's first POST.
+    // Pre-warm the server so the first app request isn't also the server's cold start. This
+    // does not warm the simulator's TLS session, so -1005 drops are still possible.
     try {
         await axios.get(`${SITE_URL}/api/v4/system/ping`);
     } catch (err) {

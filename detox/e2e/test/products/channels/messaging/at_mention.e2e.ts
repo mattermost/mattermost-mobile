@@ -160,9 +160,8 @@ describe('Messaging - At-Mention', () => {
         // * Verify on user profile screen
         await UserProfileScreen.toBeVisible();
 
-        // The user profile bottom sheet may still be animating into place when
-        // toBeVisible() resolves on its screen container — its avatar can briefly
-        // fail a 75% visibility threshold while the sheet finishes snapping.
+        // The user profile bottom sheet can still be animating when its container reports visible,
+        // so the avatar briefly fails a 75% visibility threshold.
         await waitFor(UserProfileScreen.getUserProfilePicture(testUser.id)).toExist().withTimeout(timeouts.TEN_SEC);
         await expect(UserProfileScreen.userDisplayName).toHaveText(`@${testUser.username}`);
 

@@ -240,9 +240,8 @@ class ChannelInfoScreen {
     scrollToBookmarks = async () => {
         const bookmarksList = element(by.id(this.testID.bookmarksList));
 
-        // Channel Info can preserve its outer scroll offset when the modal is
-        // reopened. Bookmarks are near the top, so an existing list may still
-        // be fully clipped behind the navigation header.
+        // Channel Info preserves its scroll offset across reopens, which can leave the bookmarks
+        // list fully clipped behind the navigation header.
         try {
             await this.scrollView.scrollTo('top');
         } catch {
@@ -276,10 +275,8 @@ class ChannelInfoScreen {
     tapAddBookmark = async () => {
         await this.scrollToBookmarks();
 
-        // CI 28495858512/28514502897: button exists and is VISIBLE but
-        // getGlobalVisibleRect covers <75% — partially clipped by scroll view
-        // edge. Use toExist() to find it, then scroll into 75% visibility for
-        // tap() which Detox requires on both platforms.
+        // The button exists but covers <75% of its area when clipped by the scroll view edge, so
+        // find it with toExist() then scroll it into the visibility tap() requires.
         const addBookmark = element(by.id(this.testID.addBookmarkButton));
         const scrollViewMatcher = by.id(this.testID.scrollView);
 

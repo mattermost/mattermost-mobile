@@ -44,17 +44,8 @@ async function waitForDialogSelectorButton(testId: string) {
     await waitForElementToExist(element(by.id(testId)), timeouts.TEN_SEC);
 }
 
-// Integration selector list items use different testID structures per data source:
-//   user list:    integration_selector.user_list.user_item.<id>.<id>
-//                 (UserListRow appends id, then UserItem appends id again)
-//   channel list: Pressable testID is shared (`integration_selector.channel_list`);
-//                 unique row content is `integration_selector.channel_list.<channel.id>`
-//   option list:  identified by visible text
-// Single-select auto-closes; multi-select needs IntegrationSelectorScreen.done().
-//
-// CI 30250131265: searching "admin" then by.text('admin').atIndex(0) tapped the
-// search field TextView (radio stayed empty). Regex by.id also failed to match.
-// Tap the known user_item / display_name id with tap({x,y}) like Create DM / Add Members.
+// Selector rows differ per data source: user_list.user_item.<id>.<id>, channel_list.<id>,
+// options by text. Tap the display_name id — by.text hits the search field instead.
 async function selectUser(user: {id: string; username: string}, {multiselect = false} = {}) {
     const userItemId = `integration_selector.user_list.user_item.${user.id}.${user.id}`;
     const displayNameId = `${userItemId}.display_name`;

@@ -11,9 +11,8 @@ import axios from 'axios';
 // ****************************************************************
 
 /**
- * Assert that the webhook sidecar at the given base URL is healthy.
- * Throws when the base URL is empty, the transport fails, the status is 5xx, or the
- * body is not the sidecar's health payload — a 4xx alone still proves it is listening.
+ * Assert that the webhook sidecar at the given base URL is healthy. A 4xx still proves it
+ * is listening; an empty URL, transport failure, 5xx, or foreign body payload all throw.
  * @param {string} baseUrl - base URL of the webhook server (e.g. http://localhost:3000)
  * @return {Promise<void>}
  */

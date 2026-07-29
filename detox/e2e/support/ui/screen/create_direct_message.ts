@@ -68,14 +68,8 @@ class CreateDirectMessageScreen {
     longPressProfileTutorialText = element(by.text("Long-press on an item to view a user's profile"));
 
     dismissLongPressProfileTutorial = async () => {
-        // The long-press profile tutorial is a RN Modal (a separate Dialog window
-        // on Android) whose content is pointerEvents='none' — tapping the
-        // "Long-press…" text or tutorial_swipe_left does NOT dismiss it (CI
-        // 28420130849 MM-T4730_1: text still present after tap at 00:30:47.898).
-        // The Modal's onRequestClose fires on hardware Back, which is the only
-        // dismissal. Press Back EXACTLY ONCE and only when the tutorial is
-        // actually present (detected via the findable "Long-press…" text) — a
-        // second pressBack dismisses create_direct_message.screen beneath.
+        // The long-press profile tutorial is a RN Modal with pointerEvents='none'; only hardware
+        // Back dismisses it. Press Back exactly once, and only while the tutorial is present.
         try {
             await waitFor(this.longPressProfileTutorialText).toBeVisible().withTimeout(timeouts.THREE_SEC);
             await device.pressBack();
@@ -159,10 +153,8 @@ class CreateDirectMessageScreen {
         }
 
         if (isAndroid()) {
-            // CI 28416284905 MM-T4730_1 testFnFailure.png: navigation succeeds but a
-            // long-press tutorial Modal holds the Dialog window focus, so Espresso
-            // cannot see create_direct_message.screen in the Activity for 60s. Dismiss
-            // the tutorial first, then probe the activity window.
+            // A long-press tutorial Modal holds the Dialog window focus, so Espresso cannot see
+            // create_direct_message.screen until the tutorial is dismissed.
             await wait(timeouts.ONE_SEC);
             await this.dismissLongPressProfileTutorial();
             await waitFor(this.createDirectMessageScreen).toExist().withTimeout(timeouts.TWENTY_SEC);
@@ -191,13 +183,8 @@ class CreateDirectMessageScreen {
                 await this.tutorialSwipeLeft.tap();
                 await waitFor(this.tutorialHighlight).not.toExist().withTimeout(timeouts.TEN_SEC);
             } else {
-                // Android: the TutorialHighlight is a RN Modal (separate Dialog
-                // window). Its content is pointerEvents='none' (tapping does
-                // nothing) and tutorial_swipe_left is never found via Espresso.
-                // dismissLongPressProfileTutorial() handles the single pressBack
-                // dismissal guarded by the tutorial's presence -- do NOT blind
-                // pressBack here (CI 28420130849: 3x blind pressBack dismissed
-                // create_direct_message.screen after the 1st dismissed the Dialog).
+                // dismissLongPressProfileTutorial() handles the single guarded pressBack — a blind
+                // pressBack here dismisses create_direct_message.screen underneath the tutorial.
                 await this.dismissLongPressProfileTutorial();
             }
         } catch {

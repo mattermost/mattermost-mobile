@@ -97,17 +97,12 @@ class CreateOrEditChannelScreen {
     };
 
     save = async () => {
-        // The save button sits in the modal header, above the soft keyboard, so it
-        // is tappable without dismissing the keyboard first. A blind pressBack here
-        // is destructive: after replaceText the IME auto-hides, so pressBack
-        // dismisses create_or_edit_channel.screen itself and saveButton.tap() then
-        // fails to find the button (CI 28420130849 MM-T4774_4).
+        // The save button sits in the modal header, above the keyboard. A blind pressBack here
+        // dismisses create_or_edit_channel.screen itself and the save button with it.
         await this.saveButton.tap();
 
-        // Save dismisses the form but can leave an empty create_or_edit_channel.screen
-        // shell (child-count=0) that blocks not.toExist for 30s — wait for destination.
-        // Parent screens can still exist underneath this modal, so require saveButton to
-        // disappear first before accepting channel info/settings as the destination.
+        // Save can leave an empty create_or_edit_channel.screen shell that blocks not.toExist, so
+        // require the save button to disappear before accepting the destination screen.
         const {channelInfoScreen} = ChannelInfoScreen;
         const {channelSettingsScreen} = ChannelSettingsScreen;
         const startTime = Date.now();

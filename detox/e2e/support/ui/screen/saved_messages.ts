@@ -77,9 +77,8 @@ class SavedMessagesScreen {
     waitForPostInList = async (postId: string, text: string) => {
         const {postListPostItem} = this.getPostListPostItem(postId, text);
 
-        // A saved post can still be missing from the flagged-posts index after three
-        // tab refreshes, so allow extra refreshes to give the server time to index.
-        // Evidence: CI run 28476574698 (MM-T4910_2/3/4/5, MM-T4909_4, MM-T4918_5, MM-T5294_11).
+        // A saved post can still be missing from the flagged-posts index after three tab refreshes,
+        // so allow extra refreshes to give the server time to index it.
         const MAX_REFETCHES = 5;
 
         /* eslint-disable no-await-in-loop -- poll before each tab refresh */

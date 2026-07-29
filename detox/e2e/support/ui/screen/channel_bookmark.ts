@@ -59,8 +59,7 @@ class ChannelBookmarkScreen {
     deleteConfirmCancelButton = element(by.text('Cancel'));
 
     /**
-     * Bookmark options is a bottom sheet with no Cancel row (CI 59ec6ae screenshots).
-     * Dismiss by swiping a visible row; Android can use back when a sheet row exists.
+     * Bookmark options is a bottom sheet with no Cancel row, so dismiss it by swiping a row.
      */
     dismissOptionsSheet = async () => {
         const swipeTargets = [this.deleteOption, this.editOption, this.copyLinkOption, this.shareOption];
@@ -177,10 +176,8 @@ class ChannelBookmarkScreen {
         return element(by.id(this.testID.bookmarkGenericIcon).withAncestor(ancestor));
     };
 
-    // CI 28416284905 MM-T5606_1: icon tap + EmojiPickerScreen.toBeVisible() timed out
-    // with search input null — bottom-sheet animation / sync still busy on Android.
-    // CI 30216081940: title replaceText leaves keyboard covering the icon; skin-tone
-    // tooltip can mount with the picker so retries must not re-tap the buried icon.
+    // The bottom-sheet animation can leave the picker search input null, and the keyboard from
+    // title replaceText covers the icon — retries must not re-tap the buried icon.
     openEmojiPickerFromEditModal = async () => {
         const iconButton = element(by.id(this.testID.editIconButton).withAncestor(by.id(this.testID.channelBookmarkScreen)));
         const emojiPickerScreen = element(by.id(this.testID.emojiPickerScreen));
@@ -199,9 +196,7 @@ class ChannelBookmarkScreen {
             }
 
             if (!iconReachable) {
-                // Sync stays off only for the back press — the keyboard teardown never
-                // settles the bridge. Restore it before the taps below so the rest of the
-                // suite is not left running unsynchronized.
+                // Sync stays off only for the back press — keyboard teardown never settles the bridge.
                 await device.disableSynchronization();
                 try {
                     await device.pressBack();

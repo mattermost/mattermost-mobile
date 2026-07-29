@@ -49,9 +49,8 @@ describe('Search - Pinned Messages', () => {
     });
 
     beforeEach(async () => {
-        // Recover from prior test leaving Thread / Channel stacked above the list
-        // (Android channel_list.screen can still toExist() behind channel.screen —
-        // CI MM-T4918_4 after failed ThreadScreen.back on MM-T4918_3).
+        // Recover from a prior test leaving Thread or Channel stacked above the list — Android
+        // channel_list.screen can still exist behind channel.screen.
         if (isAndroid()) {
             for (let i = 0; i < 4; i++) {
                 try {

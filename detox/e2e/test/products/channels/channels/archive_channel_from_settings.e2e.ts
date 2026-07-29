@@ -256,10 +256,8 @@ describe('Channels - Archive Channel from Settings', () => {
         const archivedChannel = channelForT1703;
         await ChannelListScreen.waitForSidebarPublicChannelDisplayNameVisible(archivedChannel.name, timeouts.ONE_MIN);
 
-        // # Post a sentinel message via API so the iOS search/permalink fallback path
-        // (used by openArchivedChannel below) can find this channel after archival.
-        // Must be posted BEFORE the UI archival step — the server rejects posts to
-        // archived channels.
+        // # Post a sentinel message via API for the search/permalink fallback in openArchivedChannel.
+        // Must run before archival — the server rejects posts to archived channels.
         const sentinel = `archived-from-settings-${Date.now()}`;
         const {post} = await Post.apiCreatePost(siteOneUrl, {
             channelId: archivedChannel.id,
@@ -276,9 +274,8 @@ describe('Channels - Archive Channel from Settings', () => {
         // # Dismiss channel info so the archived post draft is reachable (same as MM-T4932_*).
         await ChannelInfoScreen.close();
 
-        // * Verify the archived post draft view is shown (channel is read-only).
-        // On Android edge-to-edge the bottom archived-draft area can render with <50%
-        // visible area due to system bar insets; toExist() confirms the archived state rendered.
+        // * Verify the archived post draft view is shown (channel is read-only). Android
+        // edge-to-edge can render it below 50% visibility, so toExist() is the reliable check.
         if (isAndroid()) {
             await waitFor(ChannelScreen.postDraftArchivedCloseChannelButton).toExist().withTimeout(timeouts.TEN_SEC);
         } else {

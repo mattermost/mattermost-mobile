@@ -130,9 +130,8 @@ describe('Channels - Channel Bookmarks Permissions', () => {
         await expect(ChannelBookmarkScreen.editOption).toBeVisible();
         await expect(ChannelBookmarkScreen.deleteOption).toBeVisible();
 
-        // # Dismiss the bottom sheet by tapping Edit to close the sheet, then
-        // immediately closing the edit form — this is more reliable than tapping
-        // outside (the sheet partially overlaps the bookmark chip on iOS).
+        // # Dismiss the bottom sheet by tapping Edit and closing the edit form — more reliable
+        // than tapping outside, since the sheet overlaps the bookmark chip on iOS.
         await ChannelBookmarkScreen.editOption.tap();
         await ChannelBookmarkScreen.toBeVisible(); // wait for edit modal to appear before closing
         await ChannelBookmarkScreen.closeEditButton.tap();
@@ -142,10 +141,8 @@ describe('Channels - Channel Bookmarks Permissions', () => {
         await ChannelInfoScreen.close();
         await ChannelScreen.back();
 
-        // # Log out the regular user and log back in as the original test user.
-        // Reload React Native after re-login to ensure the local database is fully
-        // synced (logout destroys the server DB; without a reload, bookmarks are not
-        // re-fetched before T5725_1 opens channel info).
+        // # Log out the regular user and log back in as the original test user. Reload after
+        // re-login: logout destroys the server DB and bookmarks are not re-fetched otherwise.
         await HomeScreen.logout();
         await ServerScreen.connectToServer(serverOneUrl, serverOneDisplayName);
         await LoginScreen.login(testUser);
@@ -168,10 +165,8 @@ describe('Channels - Channel Bookmarks Permissions', () => {
         }
         await wait(timeouts.TWO_SEC);
 
-        // # Navigate to the channel.
-        // Extra wait after openChannel: on Android, device.reloadReactNative() in T5615_1 can
-        // leave the app mid-settle, causing ChannelInfoScreen.open()'s header-visibility check
-        // to fail (header exists but covers <75% of its area). TWO_SEC is enough to let it land.
+        // # Navigate to the channel. On Android the reload in T5615_1 can leave the app mid-settle,
+        // so give the channel info header time to land before ChannelInfoScreen.open() probes it.
         await openChannel(channelT5725);
         await wait(timeouts.TWO_SEC);
 
@@ -198,10 +193,8 @@ describe('Channels - Channel Bookmarks Permissions', () => {
         // # Open channel info for the archived channel.
         await ChannelInfoScreen.open();
 
-        // * Verify no bookmark mutations are available on an archived channel.
-        // Bookmarks are retained after archive (CI 30250131265 Android MM-T5725_1
-        // screenshot still shows "Archive Test Bookmark"); canAdd/Edit/Delete are
-        // gated on channel.deleteAt === 0 (observeHasPermissionToBookmarks).
+        // * Verify no bookmark mutations are available on an archived channel. Bookmarks are
+        // retained after archive; add/edit/delete are gated on channel.deleteAt === 0.
         await expect(element(by.text('Add a bookmark'))).not.toExist();
 
         const archiveBookmarkEl = element(

@@ -26,7 +26,7 @@ import {
     LoginScreen,
     ServerScreen,
 } from '@support/ui/screen';
-import {isAndroid, isIos, timeouts, wait, waitForElementToExist, waitForElementToNotExist} from '@support/utils';
+import {isAndroid, isIos, safeEnableSynchronization, timeouts, wait, waitForElementToExist, waitForElementToNotExist} from '@support/utils';
 import {expect, waitFor} from 'detox';
 
 describe('Channels - Channel Bookmarks', () => {
@@ -93,33 +93,31 @@ describe('Channels - Channel Bookmarks', () => {
             await device.disableSynchronization();
         }
 
-        await element(by.id('channel_list.flat_list')).scrollTo('top');
+        try {
+            await element(by.id('channel_list.flat_list')).scrollTo('top');
 
-        if (isIos()) {
             try {
-                await waitFor(displayNameEl).
-                    toBeVisible().
-                    whileElement(by.id('channel_list.flat_list')).
-                    scroll(100, 'down', 0.5, 0.3);
+                if (isIos()) {
+                    await waitFor(displayNameEl).
+                        toBeVisible().
+                        whileElement(by.id('channel_list.flat_list')).
+                        scroll(100, 'down', 0.5, 0.3);
+                } else {
+                    await waitFor(displayNameEl).
+                        toExist().
+                        whileElement(by.id('channel_list.flat_list')).
+                        scroll(100, 'down');
+                }
             } catch {
-                // Fall through to tap() — element may be at the bottom edge with < 75%
-                // visibility but a hittable center point.
+                // Fall through to tap(): the row can sit at the bottom edge below the
+                // visibility threshold while still having a hittable centre point.
             }
-        } else {
-            try {
-                await waitFor(displayNameEl).
-                    toExist().
-                    whileElement(by.id('channel_list.flat_list')).
-                    scroll(100, 'down');
-            } catch {
-                // Fall through to tap()
+
+            await displayNameEl.tap();
+        } finally {
+            if (isIos()) {
+                await safeEnableSynchronization();
             }
-        }
-
-        await displayNameEl.tap();
-
-        if (isIos()) {
-            await device.enableSynchronization();
         }
 
         await ChannelScreen.dismissScheduledPostTooltip();
@@ -148,9 +146,8 @@ describe('Channels - Channel Bookmarks', () => {
         channelT5610 = await createChannel();
         channelT5612 = await createChannel();
 
-        // Connect before creating bookmarks so the client receives the bookmark
-        // WebSocket events. These tests exercise bookmark UI behavior, not the
-        // eventually-consistent channel-open fetch path.
+        // Connect before creating bookmarks so the client receives the WebSocket events; these
+        // tests exercise bookmark UI, not the eventually-consistent channel-open fetch.
         await ServerScreen.connectToServer(serverOneUrl, serverOneDisplayName);
         await LoginScreen.login(testUser);
 
@@ -211,15 +208,8 @@ describe('Channels - Channel Bookmarks', () => {
                 // No bookmark error alert is present.
             }
 
-            // Back-press loop: dismiss whatever modal/screen a failed test left on
-            // top, but stop as soon as the channel list is reached. The detection
-            // timeout is TWO_SEC (not ONE_SEC): CI run 28392181656 showed that with a
-            // 1s probe the loop missed the just-rendered channel_list.screen after a
-            // back-press, kept pressing Back, and minimized the app — leaving the
-            // NEXT test (MM-T5608_1) to time out on `channel_list.flat_list` in
-            // `openChannel`. If back-press still can't reach the channel list (a
-            // stuck modal/blank screen), reload to a clean channel list rather than
-            // poisoning the rest of the shard.
+            // Back-press until the channel list is reached, then reload if it never is. TWO_SEC
+            // detection: a 1s probe missed the fresh channel_list.screen and minimized the app.
             for (let i = 0; i < 4; i++) {
                 try {
                     // eslint-disable-next-line no-await-in-loop
@@ -297,9 +287,8 @@ describe('Channels - Channel Bookmarks', () => {
         // # Open channel info and tap "Add a bookmark"
         await ChannelInfoScreen.open();
 
-        // CI failures showed that on iOS the Add Bookmark button was not found in view hierarchy.
-        // This can happen when the feature flag or canAddBookmarks observable is still settling.
-        // Use waitFor with a long timeout (like MM-T5600_1) to ensure the button is available.
+        // The Add Bookmark button can be missing on iOS while the feature flag and
+        // canAddBookmarks observable settle, so wait for it with a long timeout.
         await waitFor(element(by.id('channel_info.add_bookmark.button'))).
             toBeVisible().
             withTimeout(timeouts.TWENTY_SEC);
@@ -338,13 +327,8 @@ describe('Channels - Channel Bookmarks', () => {
         await waitForElementToNotExist(ChannelBookmarkScreen.channelBookmarkScreen, timeouts.TWENTY_SEC);
         await ChannelInfoScreen.scrollToBookmarks();
 
-        // * Verify the bookmark is visible in channel info. The app renders the
-        // bookmark in `channel_info.bookmarks.list` (when channel info is open) but
-        // the same title also mounts in `channel_header.bookmarks.list` (the bar,
-        // kept mounted behind the channel_info modal in RNN) — see MM-T5605 comments.
-        // Poll channel_info first; if it never appears there, accept the header bar
-        // as proof the save persisted (CI 28392181656 MM-T5602_1: the bookmark never
-        // surfaced in channel_info.bookmarks.list within 10s).
+        // * Verify the bookmark is visible in channel info. The title also mounts in the header
+        // bar behind the modal, so accept that as proof if channel_info never shows it.
         const infoBookmark = element(
             by.text(bookmarkTitle).withAncestor(by.id('channel_info.bookmarks.list')),
         );
@@ -415,9 +399,8 @@ describe('Channels - Channel Bookmarks', () => {
         // * Verify the Add a bookmark modal opens
         await ChannelBookmarkScreen.toBeVisible();
 
-        // # Enter a valid URL and submit
-        // Use a public URL with known OG tags rather than siteOneUrl (http://localhost:8065):
-        // the local server's OG title fetch can fail on Android due to network routing differences.
+        // # Enter a valid URL and submit. Use a public URL with known OG tags — the local
+        // server's OG fetch can fail on Android because of network routing differences.
         const linkInput = ChannelBookmarkScreen.getLinkInput();
         await ChannelBookmarkScreen.runUnsynchronized(async () => {
             await linkInput.tap();
@@ -477,10 +460,8 @@ describe('Channels - Channel Bookmarks', () => {
         // # Open channel info to see the bookmark
         await ChannelInfoScreen.open();
 
-        // * Verify the bookmark is visible. Use the bookmark's stable testID scoped to
-        // channel_info.bookmarks.list to avoid the channel_header ambiguity (same bookmark
-        // also renders in the bookmark bar mounted behind the channel_info modal) and to
-        // avoid flakiness when text rendering is delayed by OG-fetch network requests.
+        // * Verify the bookmark is visible. Scope the testID to channel_info.bookmarks.list — the
+        // same bookmark also renders in the header bar mounted behind the modal.
         await waitForBookmarkInChannelInfo(
             by.id(`channel_bookmark.${bookmarkT5606.id}`).withAncestor(by.id('channel_info.bookmarks.list')),
             {bookmarkId: bookmarkT5606.id},
@@ -515,8 +496,7 @@ describe('Channels - Channel Bookmarks', () => {
         await ChannelBookmarkScreen.waitForTitleValue('Emoji Icon Updated');
 
         // # Tap the icon button to open the emoji picker, then search and select an emoji.
-        // openEmojiPickerFromEditModal disables Android sync and retries the icon tap
-        // until emoji_picker.screen mounts (CI 28416284905 MM-T5606_1: search input null).
+        // openEmojiPickerFromEditModal disables Android sync and retries until the picker mounts.
         await ChannelBookmarkScreen.openEmojiPickerFromEditModal();
 
         // # Search and select a specific emoji.
@@ -539,10 +519,8 @@ describe('Channels - Channel Bookmarks', () => {
         await ChannelBookmarkScreen.saveButton.tap();
         await wait(timeouts.TWO_SEC);
 
-        // * Verify the updated bookmark title and emoji are visible in channel info.
-        // getVisibleTextElement iterates indices to find the visible match (avoids
-        // the channel_header ambiguity). bookmark-emoji uses toExist() to avoid the
-        // UITransitionView occlusion that occurs while the edit modal finishes closing.
+        // * Verify the updated bookmark title and emoji are visible in channel info. bookmark-emoji
+        // uses toExist(): the closing edit modal's UITransitionView still occludes it.
         const updatedBookmarkTitle =
             await getVisibleTextElement('Emoji Icon Updated');
         await expect(updatedBookmarkTitle).toBeVisible();
@@ -622,9 +600,8 @@ describe('Channels - Channel Bookmarks', () => {
                 toExist().
                 withTimeout(timeouts.TEN_SEC);
         } catch {
-            // API-created bookmarks can miss the initial channel-open fetch. Channel
-            // Info observes the same DB records; opening it gives the in-flight fetch
-            // time to persist before the header assertion.
+            // API-created bookmarks can miss the initial channel-open fetch; opening Channel Info
+            // gives the in-flight fetch time to persist before the header assertion.
             await ChannelInfoScreen.open();
             await waitForBookmarkInChannelInfo(
                 by.text('Banner Test Bookmark').withAncestor(by.id('channel_info.bookmarks.list')),
@@ -786,12 +763,8 @@ describe('Channels - Channel Bookmarks', () => {
             /* eslint-enable no-await-in-loop */
         }
 
-        // On iOS the fast horizontal swipe can be misinterpreted as a long-press on a
-        // bookmark item, opening the bookmark actions bottom sheet (Edit / Copy Link /
-        // Share / Delete). That sheet then occludes the navigation header and the
-        // subsequent ChannelScreen.back() taps a non-hittable back button. Detect the
-        // sheet by its Delete row and swipe it down before navigating back.
-        // See CI run 26352177261 testFnFailure for MM-T5612_1.
+        // iOS: the fast swipe can register as a long-press and open the bookmark actions sheet,
+        // which occludes the header. Detect it by the Delete row and swipe it away first.
         try {
             const bookmarkActionsDelete = element(by.text('Delete'));
             await waitFor(bookmarkActionsDelete).toBeVisible().withTimeout(timeouts.TWO_SEC);
@@ -806,9 +779,8 @@ describe('Channels - Channel Bookmarks', () => {
         await ChannelScreen.back();
     });
 
-    // CI 29cdff/59ec6ae/ce729d/bc6df62 iOS: after long-press options, dismissOptionsSheet
-    // swipe still leaves Edit in the tree (NOT TOEXIST Edit, 5s) despite harden attempts
-    // (header sync, swipe-to-dismiss, no Cancel row). Skip until sheet dismiss is stable.
+    // Skip: after long-press options the dismiss swipe still leaves Edit in the tree on iOS
+    // (CI 29cdff/59ec6ae/ce729d/bc6df62). Re-enable once sheet dismissal is stable.
     it.skip('MM-T69455_1 - should open file preview on tap and options on long press', async () => {
         const channelT69455 = await createChannel();
 

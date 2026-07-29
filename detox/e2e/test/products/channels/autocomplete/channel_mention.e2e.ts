@@ -215,23 +215,16 @@ describe('Autocomplete - Channel Mention', () => {
         // # Type in channel name and tap on channel mention autocomplete
         await ChannelScreen.postInput.typeText(testChannel.name);
 
-        // iOS CI 59ec6ae: row exists but fails default 100% visibility; wait for
-        // partial visibility (keyboard + list animation) before tap — screenshot
-        // showed the suggestion on-screen when the tap was rejected.
+        // iOS: the row is on screen but fails the default 100% visibility check, so wait for
+        // partial visibility while the keyboard and list animate.
         await waitFor(channelMentionAutocomplete).toBeVisible(40).withTimeout(timeouts.TEN_SEC);
 
-        // iOS CI 05f941d (run 30393809253): no coordinate tap works on the row itself.
-        // ChannelItem's container View has no backgroundColor, so Detox's DETOX_VISIBILITY
-        // render shows only the icon/label glyphs — the largest solid area in the 352x40 row
-        // is 3pt, too small for the "visible around point" check (center and {10,30} both
-        // rejected). Tap the display-name Text instead, the same way ChannelListScreen.open
-        // taps channel rows across the passing iOS suite.
+        // iOS: ChannelItem's container View has no backgroundColor, so Detox rejects every
+        // coordinate tap on the row. Tap the display-name Text, as ChannelListScreen.open does.
         await channelMentionAutocompleteDisplayName.tap();
 
         // * Verify channel mention list disappears
-        // Selecting a mention inserts `~channel` but on iOS 26 the dropdown can
-        // stay open until a trailing space settles autocomplete state (same as
-        // MM-T4879_5).
+        // On iOS 26 the dropdown can stay open until a trailing space settles autocomplete state.
         await ChannelScreen.postInput.typeText(' ');
         await waitFor(Autocomplete.sectionChannelMentionList).not.toExist().withTimeout(timeouts.TEN_SEC);
 

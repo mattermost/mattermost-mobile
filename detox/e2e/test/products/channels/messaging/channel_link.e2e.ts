@@ -99,9 +99,8 @@ describe('Messaging - Channel Link', () => {
         await wait(timeouts.TWO_SEC);
 
         if (isAndroid()) {
-            // Dismiss the soft keyboard so the reply text is not occluded.
-            // If the keyboard is already closed, pressBack would pop the thread —
-            // assert we are still in the thread before tapping the link.
+            // Dismiss the soft keyboard so the reply text is not occluded. Assert we are still in the
+            // thread first — pressBack pops the thread when the keyboard is already closed.
             await device.disableSynchronization();
             try {
                 await device.pressBack();

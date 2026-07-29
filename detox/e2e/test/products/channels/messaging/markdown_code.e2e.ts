@@ -65,15 +65,12 @@ describe('Messaging - Markdown Code', () => {
         const {postListPostItemCodeBlock} = ChannelScreen.getPostListPostItem(post.id);
         await waitFor(postListPostItemCodeBlock).toExist().withTimeout(10000);
 
-        // Scroll the post list to dismiss the keyboard and bring the code block fully
-        // into view. 300px is enough to clear the soft keyboard + message input bar so
-        // the block passes the 50% visibility threshold.
+        // Scroll to dismiss the keyboard and clear the message input bar so the code block passes
+        // the 50% visibility threshold.
         await ChannelScreen.getFlatPostList().scroll(300, 'up', 0.5, 0.5);
 
-        // Use toBeVisible(50): multi-line code blocks can be 50–74% visible when the
-        // bottom is clipped by the message input bar.
-        // toExist() confirms the code block rendered correctly; toBeVisible(50) is fragile
-        // when the message input bar clips a short block below the 50% threshold.
+        // toExist() confirms the code block rendered: the message input bar can clip a short block
+        // below even the 50% visibility threshold.
         await expect(postListPostItemCodeBlock).toExist();
 
         // # Go back to channel list screen

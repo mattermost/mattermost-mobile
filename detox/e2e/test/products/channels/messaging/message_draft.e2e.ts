@@ -159,9 +159,8 @@ describe('Messaging - Message Draft', () => {
 
     // Skip both: CI run 30000635898 — oversized draft leaves navigation/input state unusable.
     it.skip('MM-T107 - should show alert when message exceeds character limit', async () => {
-        // MaxPostSize comes from server config (app falls back to 4000 only when unset).
-        // A hard-coded 4001 chars does not exceed the common server value 16383 — CI
-        // run 29362218938 screenshot shows a long draft with send still enabled and no alert.
+        // MaxPostSize comes from server config, so a hard-coded 4001 chars does not exceed the
+        // common 16383 value and the send button stays enabled.
         const {config} = await System.apiGetConfig(siteOneUrl);
         const maxPostSize = Number(config?.ServiceSettings?.MaxPostSize) || 16383;
         const overLimitMessage = 'a'.repeat(maxPostSize + 1);

@@ -344,11 +344,8 @@ class ChannelScreen {
         await wait(timeouts.TWO_SEC);
     };
 
-    // The iOS simulator's URLSession intermittently drops the first POST to a
-    // freshly-provisioned server (-1005 "network connection lost") and the app does
-    // not auto-retry, so the message never reaches the server. Cross-check the API to
-    // confirm the send landed and retry once if the last post isn't ours. Returns the
-    // same {post} shape as Post.apiGetLastPostInChannel so callers can swap 1:1.
+    // The iOS simulator intermittently drops the first POST to a freshly-provisioned server
+    // (-1005) without retrying, so cross-check via the API and resend once.
     postMessageAndVerify = async (message: string, channelId: string, siteUrl: string): Promise<{post?: any; error?: any}> => {
         await this.postMessage(message);
         let result = await Post.apiGetLastPostInChannel(siteUrl, channelId);
@@ -378,10 +375,8 @@ class ChannelScreen {
         }
         await this.sendButton.tap();
 
-        // First slash-command after plugin install can race command registration
-        // (CI 29362218938: MM-T4101/4102 failed; later /dialog tests passed). Retry only when
-        // the command clearly did not execute — a bare timeout may mean the first tap already
-        // reached the backend, and resending would duplicate side effects.
+        // The first slash command after plugin install can race command registration. Retry only
+        // when the command clearly did not execute, so a slow first tap is not duplicated.
         try {
             await waitForElementToBeVisible(InteractiveDialogScreen.interactiveDialogScreen, timeouts.HALF_MIN);
         } catch (primaryError) {

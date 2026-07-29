@@ -9,9 +9,8 @@ const isIos = process.env.IOS === 'true';
 const platformSiteOneUrl = isIos ? process.env.IOS_SITE_1_URL : process.env.ANDROID_SITE_1_URL;
 const platformSiteTwoUrl = isIos ? process.env.IOS_SITE_2_URL : process.env.ANDROID_SITE_2_URL;
 
-// CI exports logical site names after selecting and rotating the platform-specific servers.
-// `||` is deliberate: CI can export these as empty strings, which must fall back to the
-// platform-specific URL rather than being treated as a configured value.
+// CI can export these logical site names as empty strings, so `||` is deliberate: an empty
+// value must fall back to the platform-specific URL rather than count as configured.
 const configuredSiteOneUrl = process.env.SITE_1_URL || platformSiteOneUrl;
 const configuredSiteTwoUrl = process.env.SITE_2_URL || platformSiteTwoUrl;
 const configuredSiteThreeUrl = process.env.SITE_3_URL;
@@ -34,9 +33,8 @@ export const adminPassword = process.env.ADMIN_PASSWORD || 'Sys@dmin-sample1';
 export const ldapServer = process.env.LDAP_SERVER || '127.0.0.1';
 export const ldapPort = process.env.LDAP_PORT || 389;
 export const webhookBaseUrl = (() => {
-    // Soft-failed sidecar writes WEBHOOK_BASE_URL= (empty) + READY=false. Do not
-    // fall back to localhost — that looks "healthy" locally while Mattermost
-    // cloud cannot reach the tunnel for dialog callbacks.
+    // A soft-failed sidecar writes an empty WEBHOOK_BASE_URL. Do not fall back to localhost —
+    // it looks healthy locally while Mattermost cloud cannot reach the tunnel.
     if (process.env.WEBHOOK_SIDECAR_READY === 'false') {
         return '';
     }
@@ -46,9 +44,8 @@ export const webhookBaseUrl = (() => {
     return 'http://localhost:3000';
 })();
 
-// trycloudflare quick tunnels pass runner health checks but Mattermost cloud callbacks
-// stall (CI 59ec6ae: 23 mm_blocks fails / platform). Loopback passes local sidecar
-// health but Cloud/Spinwick cannot reach the runner — exclude it in CI.
+// trycloudflare tunnels pass runner health checks but Cloud callbacks stall, and loopback
+// is unreachable from Cloud/Spinwick — exclude both in CI.
 const isLoopbackWebhook = /^https?:\/\/(localhost|127\.0\.0\.1|\[::1\])(:|\/|$)/.test(webhookBaseUrl);
 const isTrycloudflareWebhook = webhookBaseUrl.includes('trycloudflare.com');
 
@@ -56,8 +53,7 @@ const isTrycloudflareWebhook = webhookBaseUrl.includes('trycloudflare.com');
 export const hasWebhookSidecar = Boolean(webhookBaseUrl);
 
 /**
- * Mattermost Cloud can call back into the sidecar. trycloudflare + loopback CI are not.
- * Sidecar sets WEBHOOK_CALLBACKS_REACHABLE=false for trycloudflare (CI 59ec6ae).
+ * Mattermost Cloud can call back into the sidecar; trycloudflare and loopback CI cannot.
  */
 export const hasStableWebhookIngress = Boolean(
     webhookBaseUrl &&

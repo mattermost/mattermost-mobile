@@ -96,9 +96,8 @@ describe('Classification Banner - Offline / Cache Behaviour', () => {
             user: testUser,
         });
 
-        // Cold start picks up FeatureFlagClassificationMarkings + property fields
-        // more reliably than reloadReactNative alone (CI 30250131265 iOS T6206
-        // failed the online banner precondition before any blacklist).
+        // Cold start picks up FeatureFlagClassificationMarkings and the property fields more
+        // reliably than reloadReactNative alone (CI 30250131265).
         await device.launchApp({newInstance: true});
         await ChannelListScreen.toBeVisible();
         await GlobalClassificationBanner.toBeVisible();
@@ -116,9 +115,8 @@ describe('Classification Banner - Offline / Cache Behaviour', () => {
         await waitFor(element(by.text('TOP SECRET'))).toBeVisible().withTimeout(timeouts.TEN_SEC);
     });
 
-    // CI 59ec6ae (iOS+Android): Detox setURLBlacklist does not reliably block WS;
-    // SECRET can land in cache so TOP SECRET stale assert is not trustworthy.
-    // Re-enable when offline simulation covers WebSocket or server API supports it.
+    // Skip: setURLBlacklist does not reliably block WebSocket, so the new value can land in
+    // cache and the stale-value assert is untrustworthy (CI 59ec6ae).
     it.skip('MM-T6207_1 - should show stale cached value when API is blocked after a server change', async () => {
         // # Set up classification at TOP SECRET
         const {linkedFieldId, optionIdsByName} = await Properties.apiSetupClassificationWithBanner(siteOneUrl, {
@@ -134,9 +132,8 @@ describe('Classification Banner - Offline / Cache Behaviour', () => {
         await GlobalClassificationBanner.toBeVisible();
         await waitFor(element(by.text('TOP SECRET'))).toBeVisible().withTimeout(timeouts.HALF_MIN);
 
-        // # Block API calls BEFORE changing the server value. Patching while online
-        // lets WebSocket write SECRET into the local DB (CI 30250131265 Android
-        // MM-T6207_1 screenshot showed SECRET — fresh cache, not a stale miss).
+        // # Block API calls BEFORE changing the server value — patching while online lets
+        // WebSocket write the new value into the local DB (CI 30250131265).
         await device.setURLBlacklist(getBlockedServerPatterns());
 
         // # Change classification value on the server to SECRET (test host → API;

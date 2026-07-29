@@ -33,19 +33,13 @@ export async function openArchivedChannelsFilter() {
     await ChannelDropdownMenuScreen.open();
     await wait(timeouts.ONE_SEC);
 
-    // Keep Detox sync enabled for this tap. device.log from CI run 28341945446
-    // (shard-7, MM-T1685/T1718) shows addViewAt Fabric races when sync is disabled
-    // immediately before tapping browse_channels.dropdown_slideup_item.archived_channels.
+    // Keep Detox sync enabled for this tap; disabling it races Fabric view insertion.
     await ChannelDropdownMenuScreen.archivedChannelsItem.tap();
     await wait(timeouts.TWO_SEC);
 }
 
-// Ensure the archived channel has a searchable sentinel post so the
-// search/permalink fallback path can find it. Posts must be created BEFORE
-// the channel is archived (server rejects posts on archived channels).
-//
-// Returns the unique sentinel message that was posted, which the caller
-// can hand to openArchivedChannelViaSearchPermalink().
+// Post a searchable sentinel so openArchivedChannelViaSearchPermalink() can find the channel.
+// Must run before the channel is archived — the server rejects posts on archived channels.
 export async function postArchivedChannelSentinel(channelId: string): Promise<{sentinel: string; postId: string}> {
     const sentinel = `archived-channel-sentinel-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
     const {post, error} = await Post.apiCreatePost(siteOneUrl, {channelId, message: sentinel});
@@ -55,16 +49,8 @@ export async function postArchivedChannelSentinel(channelId: string): Promise<{s
     return {sentinel, postId: post.id};
 }
 
-// Navigate to an archived channel via Browse Channels → archived filter → tap.
-// Android-only: the search/permalink path regressed MM-T1671_1 + MM-T1722_1.
-//
-// We skip the searchInput.replaceText step that prior implementations used:
-// browse_channels.search_bar.search.input never lands in the Android view
-// hierarchy as a Detox-findable view (confirmed by 0 hits across all 20 Android
-// shard device.logs in CI run 28290273101). Waiting on a never-present testID
-// times out regardless of whether you use toBeVisible or toExist. The archived-
-// filter pre-loads recently-archived channels at the top of the list, so tapping
-// directly works as long as we wait for the channel item itself to exist.
+// Scroll the archived list until the channel row exists. The Browse Channels search input
+// never lands in the Android view hierarchy, so filtering by name is not an option here.
 async function waitForArchivedChannelItem(channelName: string) {
     const channelItem = BrowseChannelsScreen.getChannelItem(channelName);
     await wait(timeouts.TWO_SEC);
@@ -107,21 +93,13 @@ async function openArchivedChannelViaBrowseChannels(channelName: string) {
     }
 }
 
-// Navigate to an archived channel via the search results permalink flow.
-// iOS-only: Browse Channels tap does not reliably navigate on iOS in CI.
-//
-// Uses postId (not text) to locate the search result: Mattermost's search renderer
-// splits the post message text across multiple native Text nodes for highlighting,
-// so by.text(fullSentinel) finds no single element. by.id('...post.{postId}') is
-// stable regardless of how the text is split.
+// iOS-only: the Browse Channels tap does not reliably navigate on iOS, so go via a permalink.
+// Locate the result by postId — the search renderer splits the message across several Text nodes.
 async function openArchivedChannelViaSearchPermalink(searchableMessage: string, postId: string) {
     await SearchMessagesScreen.open();
     await SearchMessagesScreen.searchInput.replaceText(searchableMessage);
 
-    // Pass '' (not searchableMessage) so getPostItemMatcher returns a pure by.id() matcher.
-    // Mattermost's search renderer splits the post message text across multiple native Text
-    // nodes for highlighting — by.text(fullSentinel) finds nothing. by.id('...post.{postId}')
-    // targets the TouchableHighlight container directly and is not affected by text splitting.
+    // Pass '' so getPostItemMatcher returns a pure by.id() matcher on the post container.
     const searchResultElement = SearchMessagesScreen.postList.getPost(postId, '').postListPostItem;
 
     const maxAttempts = 5;

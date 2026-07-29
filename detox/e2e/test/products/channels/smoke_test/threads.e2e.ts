@@ -182,10 +182,8 @@ describe('Smoke Test - Threads', () => {
 
         await GlobalThreadsScreen.getThreadItem(parentPost.id).tap();
 
-        // * Verify the thread is saved — assert on the thread_overview bookmark button,
-        // not on the post pre-header.
-        //
-        // Saved state shows on thread_overview; use atIndex(0) for stale off-screen ThreadScreen mounts.
+        // * Verify the thread is saved — assert on the thread_overview bookmark button, not the
+        // post pre-header. atIndex(0) skips stale off-screen ThreadScreen mounts.
         const threadOverviewUnsaveButton = element(by.id('thread.post_list.thread_overview.unsave.button')).atIndex(0);
         const threadOverviewSaveButton = element(by.id('thread.post_list.thread_overview.save.button')).atIndex(0);
         await waitFor(threadOverviewUnsaveButton).toBeVisible().withTimeout(timeouts.TEN_SEC);

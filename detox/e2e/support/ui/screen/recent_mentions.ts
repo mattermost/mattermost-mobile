@@ -135,9 +135,8 @@ class RecentMentionsScreen {
         ).toHaveText(postMessage);
     };
 
-    // Wait for an edited post to appear in recent mentions after an edit.
-    // Mentions are search-backed — callers should await Post.waitForPostMessageInSearch
-    // before this so the index has caught up. Then poll the UI / force a tab refetch.
+    // Wait for an edited post to appear in recent mentions. Mentions are search-backed, so
+    // callers should await Post.waitForPostMessageInSearch before calling this.
     verifyPostEdited = async (postId: string, updatedMessage?: string) => {
         const postContainer = by.id(`${this.testID.recentMentionPostList}.${postId}`);
         const MAX_REFETCHES = 6;
@@ -164,9 +163,8 @@ class RecentMentionsScreen {
                 throw new Error(`Could not match edited indicator for post ${postId}`);
             }
 
-            // Full message is split across Text nodes (@mention highlight). Match the
-            // trailing "edit" token and/or Edited badge — never by.text(RegExp) on iOS
-            // (CI 59ec6ae matched the literal characters "/edit$/").
+            // The message is split across Text nodes by the @mention highlight, so match the trailing
+            // token — never by.text(RegExp), which iOS matches literally.
             const editSuffix = updatedMessage.trim().split(/\s+/).pop();
             if (editSuffix) {
                 await waitFor(

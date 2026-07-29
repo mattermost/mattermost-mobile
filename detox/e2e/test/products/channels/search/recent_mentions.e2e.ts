@@ -67,11 +67,8 @@ describe('Search - Recent Mentions', () => {
             password: mentioner.newUser.password,
         });
 
-        // Unique suffix on mentionText so the matcher can't collide with
-        // ownMentionPost (which also embeds @testUser.username). Without the
-        // suffix, both posts share descendant text "@<username>", so a
-        // `not.toExist()` assertion for mentionPost would still match the
-        // sibling post's text node and fail.
+        // Unique suffix so the matcher cannot collide with ownMentionPost, which embeds the same
+        // "@<username>" text node and would still satisfy a not.toExist() assertion.
         const mentionText = `Other mention ${getRandomId()} @${testUser.username}`;
         const {post: postByOther} = await Post.apiCreatePost(siteOneUrl, {
             channelId: testChannel.id,
@@ -82,10 +79,8 @@ describe('Search - Recent Mentions', () => {
         }
         mentionPost = {...postByOther, messageText: mentionText};
 
-        // # Fixture 2: testUser self-posts a message containing @testUser — used
-        // by MM-T4909_3 (edit/reply/delete) which requires testUser to OWN the
-        // post. Self-mention text is still picked up by the recent-mentions
-        // search-based feed (it matches the user's @username key).
+        // # Fixture 2: testUser self-posts a mention of itself — MM-T4909_3 needs testUser to own
+        // the post, and self-mentions still surface in the search-backed mentions feed.
         await User.apiLogin(siteOneUrl, {
             username: testUser.username,
             password: testUser.newUser.password,
@@ -212,9 +207,8 @@ describe('Search - Recent Mentions', () => {
         await RecentMentionsScreen.open();
         await RecentMentionsScreen.openPostOptionsFor(mentionPost.id, mentionPost.messageText);
 
-        // Tap an explicit point: the unpin option is not always 100% visible in the
-        // bottom sheet, which fails iOS hittability checks.
-        // Evidence: CI run 28476574698.
+        // Tap an explicit point: the unpin option is not always 100% visible in the bottom sheet,
+        // which fails iOS hittability checks.
         await PostOptionsScreen.unpinPostOption.tap({x: 1, y: 1});
 
         // * Verify mention is no longer pinned
@@ -231,9 +225,8 @@ describe('Search - Recent Mentions', () => {
         await ChannelListScreen.open();
     });
 
-    // Must run last — mutates the shared mention fixture.
-    // Skip: edited mention UI never updates on Android CI after RegExp/suffix fixes
-    // (repeated fails 29cdff, 59ec6ae, a4c0e33).
+    // Must run last — mutates the shared mention fixture. Skip: the edited mention UI never
+    // updates on Android CI (29cdff, 59ec6ae, a4c0e33).
     it.skip('MM-T4909_3 - should be able to edit, reply to, and delete a recent mention from recent mentions screen', async () => {
         // # Open recent mentions screen
         await RecentMentionsScreen.open();

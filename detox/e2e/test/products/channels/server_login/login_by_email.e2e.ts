@@ -81,8 +81,8 @@ describe('Server Login - Login by Email', () => {
         const expected = 'The email and password combination is incorrect';
         let lastText = '';
 
-        // iOS sim URLSession intermittently drops the first login POST (-1005).
-        // Retry until we get the invalid-credentials string (not a transport error).
+        // iOS sim URLSession intermittently drops the first login POST (-1005); retry until we
+        // get the invalid-credentials string rather than a transport error.
         /* eslint-disable no-await-in-loop */
         for (let attempt = 0; attempt < 3; attempt++) {
             await usernameInput.replaceText('username');

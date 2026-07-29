@@ -249,9 +249,8 @@ describe('Classification Banner - Global Classification Banner', () => {
 
         await ChannelListScreen.toBeVisible();
 
-        // CI bc6df62: after MM-T6204 turns ClassificationMarkings off, the first reload
-        // after re-enable sometimes never paints the banner (toBeVisible 30s). One extra
-        // reload is enough for client config/properties to catch up.
+        // After MM-T6204 turns ClassificationMarkings off, the first reload after re-enable can
+        // miss the banner; one extra reload lets the client config catch up (CI bc6df62).
         try {
             await GlobalClassificationBanner.toBeVisible();
         } catch {
