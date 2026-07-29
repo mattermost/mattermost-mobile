@@ -32,18 +32,7 @@ appId: ${MAESTRO_APP_ID}
 - waitForAnimationToEnd:
     timeout: 3000
 
-- runFlow:
-    when:
-      visible:
-        id: "calls.current_call_bar"
-    commands:
-      - tapOn:
-          id: "calls.current_call_bar"
-
-- extendedWaitUntil:
-    visible:
-      id: "mute-unmute"
-    timeout: 30000
+- runFlow: ../../subflows/calls/open_call_screen.yml
 - takeScreenshot: calls-leave-full-screen-before-leave
 
 - tapOn:
@@ -89,17 +78,7 @@ appId: ${MAESTRO_APP_ID}
 - waitForAnimationToEnd:
     timeout: 3000
 
-- runFlow:
-    when:
-      visible:
-        id: "calls.current_call_bar"
-    commands:
-      - tapOn:
-          id: "calls.current_call_bar"
-- extendedWaitUntil:
-    visible:
-      id: "mute-unmute"
-    timeout: 30000
+- runFlow: ../../subflows/calls/open_call_screen.yml
 
 # Minimize the full call screen back to CurrentCallBar.
 # iOS 26+: Maestro `back` triggers leave-call confirmation — do not use it here.
