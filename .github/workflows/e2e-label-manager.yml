@@ -61,7 +61,7 @@ jobs:
             const prNumber = context.payload.pull_request.number;
             const runLabels = ['E2E/Run', 'E2E/Run-iOS', 'E2E/Run-Android'];
 
-            const {data: labels} = await github.rest.issues.listLabelsOnIssue({
+            const labels = await github.paginate(github.rest.issues.listLabelsOnIssue, {
               owner, repo, issue_number: prNumber,
             });
             const labelNames = labels.map((label) => label.name);
@@ -125,7 +125,7 @@ jobs:
             const prNumber = context.payload.pull_request.number;
             const runLabels = ['E2E/Run', 'E2E/Run-iOS', 'E2E/Run-Android'];
 
-            const {data: labels} = await github.rest.issues.listLabelsOnIssue({
+            const labels = await github.paginate(github.rest.issues.listLabelsOnIssue, {
               owner, repo, issue_number: prNumber,
             });
             const labelNames = labels.map((label) => label.name);

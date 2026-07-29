@@ -36,7 +36,7 @@ runs:
           }
 
           try {
-            const {data: labels} = await github.rest.issues.listLabelsOnIssue({
+            const labels = await github.paginate(github.rest.issues.listLabelsOnIssue, {
               owner: context.repo.owner,
               repo: context.repo.repo,
               issue_number: prNumber,
