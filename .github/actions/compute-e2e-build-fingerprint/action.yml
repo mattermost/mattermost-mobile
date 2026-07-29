@@ -22,34 +22,39 @@ runs:
         # Missing a path causes false cache HITs (wrong binary tested).
         # Test files (detox/e2e/**, detox/maestro/**) are excluded so test-only
         # PRs still hit cache. Keep app-source subset in sync with label-manager filter.
+        #
+        # The build *recipe* is fingerprinted too (composite actions + toolchain
+        # pins), otherwise a change to how the app is compiled would be served a
+        # binary built by the previous recipe.
+        # Deliberately NOT fingerprinted: e2e-detox-pr.yml itself. It mixes the
+        # build steps with unrelated orchestration (TSIO, statuses, provisioning),
+        # so including it would invalidate every cache entry on unrelated edits.
+        # Changes to what the build actually does land in the actions/fastlane
+        # paths below.
+        shared=(app/ libraries/ share_extension/ patches/ \
+                types/ assets/fonts/ assets/sounds/ \
+                assets/base/images/ assets/base/release/ assets/base/config.json \
+                package.json package-lock.json \
+                tsconfig.json babel.config.js metro.config.js \
+                index.tsx app.json react-native.config.js \
+                .nvmrc .ruby-version \
+                .github/actions/prepare-mobile-build/ \
+                .github/actions/prepare-node-deps/)
         case "${{ inputs.platform }}" in
           ios)
-            paths=(app/ ios/ libraries/ share_extension/ patches/ \
-                    types/ assets/fonts/ assets/sounds/ \
-                    assets/base/images/ assets/base/release/ assets/base/config.json \
-                    package.json package-lock.json \
-                    tsconfig.json babel.config.js metro.config.js \
-                    index.tsx app.json react-native.config.js \
-                    .nvmrc fastlane/)
+            paths=("${shared[@]}" ios/ fastlane/ Gemfile Gemfile.lock \
+                    .github/actions/prepare-ios-build/)
             ;;
           android-detox)
-            paths=(app/ android/ libraries/ share_extension/ patches/ \
-                    types/ assets/fonts/ assets/sounds/ \
-                    assets/base/images/ assets/base/release/ assets/base/config.json \
-                    package.json package-lock.json \
-                    tsconfig.json babel.config.js metro.config.js \
-                    index.tsx app.json react-native.config.js \
-                    .nvmrc detox/.detoxrc.json detox/package.json \
-                    detox/package-lock.json detox/scripts/)
+            paths=("${shared[@]}" android/ \
+                    detox/.detoxrc.json detox/package.json \
+                    detox/package-lock.json detox/scripts/ \
+                    .github/actions/prepare-android-build/)
             ;;
           android-maestro)
-            paths=(app/ android/ libraries/ share_extension/ patches/ \
-                    types/ assets/fonts/ assets/sounds/ \
-                    assets/base/images/ assets/base/release/ assets/base/config.json \
-                    package.json package-lock.json \
-                    tsconfig.json babel.config.js metro.config.js \
-                    index.tsx app.json react-native.config.js \
-                    .nvmrc)
+            paths=("${shared[@]}" android/ \
+                    .github/actions/prepare-android-build/ \
+                    .github/actions/build-android-maestro-apk/)
             ;;
           *)
             echo "::error::Invalid platform: ${{ inputs.platform }}"

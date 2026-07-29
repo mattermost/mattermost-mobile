@@ -84,6 +84,9 @@ jobs:
               'assets/base/release/**',
               'assets/base/config.json',
               '.nvmrc',
+              '.ruby-version',
+              'Gemfile',
+              'Gemfile.lock',
               'fastlane/**',
               'detox/.detoxrc.json',
               'detox/package.json',
@@ -98,6 +101,7 @@ jobs:
               '.github/actions/prepare-ios-build/**',
               '.github/actions/prepare-android-build/**',
               '.github/actions/prepare-mobile-build/**',
+              '.github/actions/prepare-node-deps/**',
               '.github/actions/build-android-maestro-apk/**',
             ];
 
