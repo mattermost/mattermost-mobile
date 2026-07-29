@@ -9,13 +9,25 @@
  * and one commit-status context, so jobs cannot clobber each other's finalize.
  */
 
+// Commit-status namespace, aligned with the mattermost monorepo (`e2e-test/*`).
+// Keep in sync with E2E_STATUS_CONTEXTS in .github/actions/cancel-e2e-runs.
+const STATUS_CONTEXT_PREFIX = 'e2e-test';
+
 const PR_MAIN_JOBS = {
-    'detox-ios': {statusContext: 'detox-ios', framework: 'detox'},
-    'detox-android': {statusContext: 'detox-android', framework: 'detox'},
-    'detox-ipad': {statusContext: 'detox-ipad', framework: 'detox'},
-    'maestro-ios-e2e': {statusContext: 'maestro-ios', framework: 'maestro'},
-    'maestro-android-e2e': {statusContext: 'maestro-android', framework: 'maestro'},
+    'detox-ios': {statusName: 'detox-ios', framework: 'detox'},
+    'detox-android': {statusName: 'detox-android', framework: 'detox'},
+    'detox-ipad': {statusName: 'detox-ipad', framework: 'detox'},
+    'maestro-ios-e2e': {statusName: 'maestro-ios', framework: 'maestro'},
+    'maestro-android-e2e': {statusName: 'maestro-android', framework: 'maestro'},
 };
+
+/**
+ * @param {string} name - unprefixed check name (e.g. detox-ios, detox-ios-Server_11.9.0)
+ * @returns {string} namespaced commit-status context (e.g. e2e-test/detox-ios)
+ */
+function statusContextFor(name) {
+    return `${STATUS_CONTEXT_PREFIX}/${name}`;
+}
 
 /**
  * CMT shard keys (detox-ios-Server_11.9.0, maestro-android-Server_11.9.0) are not in
@@ -38,7 +50,7 @@ function frameworkFromJobKey(jobKey) {
 /**
  * @param {object} baseIdentity - shared fields (repository, commit_sha, branch, name prefix, …)
  * @param {string} jobKey - tsio-shard-name / platform key (e.g. detox-ios, detox-ios-Server_11.9.0)
- * @param {{statusContext?: string, framework?: string}} [overrides]
+ * @param {{statusName?: string, framework?: string}} [overrides]
  * @returns {{composite_identity: object, total_reports_expected: number, status_context: string}}
  */
 function buildTsioJobConfig(baseIdentity, jobKey, overrides = {}) {
@@ -54,7 +66,7 @@ function buildTsioJobConfig(baseIdentity, jobKey, overrides = {}) {
     const reportName = `${prefix}-${jobKey}`;
     const framework = overrides.framework || known?.framework ||
         frameworkFromJobKey(jobKey) || baseIdentity.framework || 'detox';
-    const statusContext = overrides.statusContext || known?.statusContext || jobKey;
+    const statusName = overrides.statusName || known?.statusName || jobKey;
 
     return {
         composite_identity: {
@@ -64,7 +76,7 @@ function buildTsioJobConfig(baseIdentity, jobKey, overrides = {}) {
             framework,
         },
         total_reports_expected: 1,
-        status_context: statusContext,
+        status_context: statusContextFor(statusName),
     };
 }
 

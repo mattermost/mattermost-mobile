@@ -449,7 +449,7 @@ async function main() {
     const totalReportsExpected = parseInt(args['total-reports-expected'] || '1', 10);
     const context = args.context;
     if (!context) {
-        console.error('tsio-report-status: --context is required (e.g. detox-ios)');
+        console.error('tsio-report-status: --context is required (e.g. e2e-test/detox-ios)');
         process.exit(1);
     }
     const upstreamSucceeded = args['upstream-succeeded'] !== 'false';

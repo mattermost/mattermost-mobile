@@ -98,7 +98,7 @@ cd detox && npm run e2e:save-report
 | **Main** | Matterwick main push (`run_type=MASTER` today; `MAIN` also accepted → TSIO `mobile-main`) | Same as PR | Same as PR | `detox/e2e/test` | Same as PR |
 | **CMT / Release** | Matterwick on `build-release-*` → CMT | Detox + Maestro across server versions | Full suite on latest server; smoke subset on older | latest: `detox/e2e/test`; older: `…/smoke_test` | Varies by matrix |
 
-Status contexts (PR/Main): `detox-ios`, `detox-android`, `detox-ipad`, `maestro-ios`, `maestro-android`. CMT: per-shard `<tsio-shard-name>` plus umbrella `compatibility-matrix-testing`. TSIO groups: `mobile-pr-<job>` / `mobile-main-<job>` / `mobile-release-<shard>`.
+Status contexts live under the `e2e-test/` namespace, matching the mattermost monorepo. PR/Main: `e2e-test/detox-ios`, `e2e-test/detox-android`, `e2e-test/detox-ipad`, `e2e-test/maestro-ios`, `e2e-test/maestro-android`. CMT: per-shard `e2e-test/<tsio-shard-name>` plus umbrella `e2e-test/compatibility-matrix-testing`. TSIO groups: `mobile-pr-<job>` / `mobile-main-<job>` / `mobile-release-<shard>`.
 
 Matterwick provisions five servers for every mobile server-version entry: two Android-only, two iOS-only, and one shared third site. CMT therefore uses `5 × server version count` installations (up to 25 at the five-version cap). The full latest-version suite needs this isolation for its parallel shards; older-version smoke jobs intentionally retain the same topology for consistent URL semantics, even though their single shard uses less of its capacity. iPad shares the iOS pair, and Maestro uses the first server for its platform.
 
@@ -118,22 +118,23 @@ PR E2E runs the full `detox/e2e/test` tree when labeled.
 | `.github/workflows/e2e-maestro-template.yml` | Maestro iOS/Android runner |
 | `.github/workflows/compatibility-matrix-testing.yml` | CMT / release multi-server matrix |
 
-### Preflight for CI PRs
+### Checks for CI PRs
 
 Before opening a PR that touches `.github/workflows/`, `.github/actions/`, or `detox/utils/`:
 
 ```bash
-cd detox && npm run preflight:ci        # add :ci-fast to skip lint + tsc
+actionlint -shellcheck= .github/workflows/*.yml
+cd detox && node --test utils/*.test.js && npm run check
 ```
 
-These failures are invisible in a green CI run, which is why the script exists:
+These failure modes stay invisible in an otherwise-green run, so they are worth
+checking by hand:
 
-| Check | Bug it catches |
-|-------|----------------|
-| `actionlint -shellcheck=` | A `secrets.FOO` not declared in the callee's `on.workflow_call.secrets`. GitHub resolves it to an empty string, so the step passes and the notify/upload it feeds silently never happens. |
-| Trailing-backslash scan | `node foo.js \` followed by `RC=$?` makes `RC=$?` an *argument*, so the exit code is never captured and the failure gate below always passes. |
-| `check_tsio_oidc_permissions.py` | A job running `tsio-report-status.js` / `tsio-channel-notify-rollup.js` without `permissions.id-token: write`. `mintOidcToken()` then warns and exits 0, skipping the commit status or channel rollup. |
-| `node --test utils/*.test.js` | Regressions in the TSIO identity / channel-notify helpers. |
+| Failure mode | Why it hides |
+|--------------|--------------|
+| A `secrets.FOO` not declared in the callee's `on.workflow_call.secrets` | GitHub resolves it to an empty string, so the step passes and the notify/upload it feeds silently never happens. `actionlint` catches it. |
+| `node foo.js \` followed by `RC=$?` | The trailing backslash makes `RC=$?` an *argument*, so the exit code is never captured and the failure gate below always passes. |
+| A job running `tsio-report-status.js` / `tsio-channel-notify-rollup.js` without `permissions.id-token: write` | `mintOidcToken()` warns and exits 0, skipping the commit status or channel rollup. |
 
 Reusable-workflow secrets must be **declared in the callee and forwarded by every
 caller** that uses an explicit `secrets:` block. Callers using `secrets: inherit`

@@ -214,6 +214,13 @@ jobs:
         with:
           ref: ${{ inputs.MOBILE_VERSION }}
 
+      # Each platform gets two provisioned test servers. SITE_1_URL is where a spec
+      # does most of its setup, so pinning every shard to the same server would put
+      # all parallel shards on one instance while the second sits mostly idle —
+      # concurrent setup on one server is what drives API rate limiting and
+      # cross-shard interference. Alternating SITE_1/SITE_2 on shard parity spreads
+      # that load evenly while still giving each shard two distinct sites for the
+      # multi-server specs.
       - name: Rotate logical test sites by shard
         env:
           SERVER_A: ${{ inputs.MM_TEST_SERVER_URL }}
@@ -568,7 +575,7 @@ jobs:
 
       - name: Upload report to Test System IO
         if: always() && inputs.tsio-config != '' && vars.TSIO_UPLOAD_ENABLED != 'false' && hashFiles('detox/artifacts/jest-results-merged.json') != '' && steps.tsio-cfg.outputs.config != ''
-        uses: mattermost/mattermost-test-system-io/.github/actions/test-system-io-report-upload@cf5b53518d217591bd631d4b594e4d40b90cedef # release-0.13.0 / main@cf5b535 (#83 Detox/Maestro screenshot parent-folder linking)
+        uses: mattermost/mattermost-test-system-io/.github/actions/test-system-io-report-upload@0661accd8cc9ab9dde6ec93f6f5ad40d06deb0d3 # release-0.14.0 / main@0661acc (#93 unique release tags per run)
         with:
           composite-identity: ${{ toJSON(fromJSON(steps.tsio-cfg.outputs.config).composite_identity) }}
           total-reports-expected: ${{ fromJSON(steps.tsio-cfg.outputs.config).total_reports_expected }}
@@ -591,7 +598,7 @@ jobs:
           UPSTREAM="true"
           if [ "${{ job.status }}" = "cancelled" ]; then UPSTREAM="false"; fi
           IDENTITY=$(echo "$TSIO_CONFIG" | jq -c '.composite_identity')
-          CONTEXT=$(echo "$TSIO_CONFIG" | jq -r '.status_context // "detox-android"')
+          CONTEXT=$(echo "$TSIO_CONFIG" | jq -r '.status_context // "e2e-test/detox-android"')
           TOTAL=$(echo "$TSIO_CONFIG" | jq -r '.total_reports_expected // 1')
           node detox/utils/tsio-report-status.js \
             --composite-identity="$IDENTITY" \

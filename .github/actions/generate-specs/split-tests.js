@@ -69,9 +69,11 @@ class Specs {
   }
 
   /**
-   * mm_blocks_* need a public Cloudflare tunnel. Keep them on a dedicated shard so a
-   * trycloudflare DNS flake cannot skip Metro for unrelated specs on the same runner
-   * (CI 30250131265 iOS machine-11: only shard with mm_blocks; hung ~8m then skipped tests).
+   * Split the discovered specs into one group per shard.
+   *
+   * mm_blocks_* specs get their own shard: they need a public Cloudflare tunnel, and a
+   * tunnel setup failure stalls the whole shard, so isolating them keeps unrelated specs
+   * from being skipped alongside them.
    */
   generateSplits() {
     let mmBlocksFiles = this.rawFiles.filter(isMmBlocksSpec);

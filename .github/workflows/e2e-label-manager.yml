@@ -219,3 +219,6 @@ jobs:
           head_branch: ${{ github.event.pull_request.head.ref }}
           pr_number: ${{ github.event.pull_request.number }}
           reason: E2E cancelled (E2E/Override label applied)
+          # Only case where success is correct: a maintainer applied E2E/Override to
+          # merge without E2E, so any pending status from the cancelled run must clear.
+          status_state: success

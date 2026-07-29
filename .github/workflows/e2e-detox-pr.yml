@@ -4,6 +4,11 @@
 #   POST /repos/{owner}/{repo}/actions/workflows/e2e-detox-pr.yml/dispatches
 # and watches workflow_run "completed" events where workflow name is "E2E".
 #
+# Despite the `-pr` filename this is the entry point for *every* Matterwick E2E
+# dispatch, not just PRs: run_type selects the flavour (PR, MAIN/MASTER for
+# main-branch pushes, RELEASE). Renaming the file would break the dispatch URL
+# above, so it needs a coordinated Matterwick change.
+#
 # Newer dispatches cancel older in-flight runs on the same branch (resolve-e2e-policy
 # first step) so the latest SHA starts immediately instead of queueing behind a long run.
 #

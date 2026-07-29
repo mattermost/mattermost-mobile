@@ -482,7 +482,7 @@ jobs:
       # TSIO accepts framework=maestro (JUnit XML) since mattermost-test-system-io#76.
       - name: Upload report to Test System IO
         if: always() && inputs.tsio-config != '' && vars.TSIO_UPLOAD_ENABLED != 'false' && hashFiles('build/maestro-report.xml') != '' && steps.tsio-cfg.outputs.config != ''
-        uses: mattermost/mattermost-test-system-io/.github/actions/test-system-io-report-upload@cf5b53518d217591bd631d4b594e4d40b90cedef # release-0.13.0 / main@cf5b535 (#83 Detox/Maestro screenshot parent-folder linking)
+        uses: mattermost/mattermost-test-system-io/.github/actions/test-system-io-report-upload@0661accd8cc9ab9dde6ec93f6f5ad40d06deb0d3 # release-0.14.0 / main@0661acc (#93 unique release tags per run)
         with:
           composite-identity: ${{ toJSON(fromJSON(steps.tsio-cfg.outputs.config).composite_identity) }}
           total-reports-expected: ${{ fromJSON(steps.tsio-cfg.outputs.config).total_reports_expected }}
@@ -506,7 +506,7 @@ jobs:
           UPSTREAM="true"
           if [ "${{ job.status }}" = "cancelled" ]; then UPSTREAM="false"; fi
           IDENTITY=$(echo "$TSIO_CONFIG" | jq -c '.composite_identity')
-          CONTEXT=$(echo "$TSIO_CONFIG" | jq -r '.status_context // "maestro-ios"')
+          CONTEXT=$(echo "$TSIO_CONFIG" | jq -r '.status_context // "e2e-test/maestro-ios"')
           TOTAL=$(echo "$TSIO_CONFIG" | jq -r '.total_reports_expected // 1')
           node detox/utils/tsio-report-status.js \
             --composite-identity="$IDENTITY" \
@@ -959,7 +959,7 @@ jobs:
       # TSIO accepts framework=maestro (JUnit XML) since mattermost-test-system-io#76.
       - name: Upload report to Test System IO
         if: always() && inputs.tsio-config != '' && vars.TSIO_UPLOAD_ENABLED != 'false' && hashFiles('build/maestro-report.xml') != '' && steps.tsio-cfg.outputs.config != ''
-        uses: mattermost/mattermost-test-system-io/.github/actions/test-system-io-report-upload@cf5b53518d217591bd631d4b594e4d40b90cedef # release-0.13.0 / main@cf5b535 (#83 Detox/Maestro screenshot parent-folder linking)
+        uses: mattermost/mattermost-test-system-io/.github/actions/test-system-io-report-upload@0661accd8cc9ab9dde6ec93f6f5ad40d06deb0d3 # release-0.14.0 / main@0661acc (#93 unique release tags per run)
         with:
           composite-identity: ${{ toJSON(fromJSON(steps.tsio-cfg.outputs.config).composite_identity) }}
           total-reports-expected: ${{ fromJSON(steps.tsio-cfg.outputs.config).total_reports_expected }}
@@ -983,7 +983,7 @@ jobs:
           UPSTREAM="true"
           if [ "${{ job.status }}" = "cancelled" ]; then UPSTREAM="false"; fi
           IDENTITY=$(echo "$TSIO_CONFIG" | jq -c '.composite_identity')
-          CONTEXT=$(echo "$TSIO_CONFIG" | jq -r '.status_context // "maestro-android"')
+          CONTEXT=$(echo "$TSIO_CONFIG" | jq -r '.status_context // "e2e-test/maestro-android"')
           TOTAL=$(echo "$TSIO_CONFIG" | jq -r '.total_reports_expected // 1')
           node detox/utils/tsio-report-status.js \
             --composite-identity="$IDENTITY" \

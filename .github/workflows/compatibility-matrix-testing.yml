@@ -123,7 +123,7 @@ jobs:
         with:
           repository_full_name: ${{ github.repository }}
           commit_sha: ${{ needs.calculate-commit-hash.outputs.MOBILE_SHA }}
-          context: compatibility-matrix-testing
+          context: e2e-test/compatibility-matrix-testing
           description: "Compatibility Matrix Testing for ${{ inputs.MOBILE_VERSION }} version — per-job checks also posted"
           status: pending
           target_url: ${{ steps.tsio-url.outputs.target_url }}
@@ -518,14 +518,14 @@ jobs:
         run: |
           if [ "$UPSTREAM" = "true" ]; then
             STATE=success
-            DESC="Compatibility Matrix Testing completed — see per-job detox-*/maestro-* checks"
+            DESC="Compatibility Matrix Testing completed — see per-job e2e-test/* checks"
           else
             STATE=failure
-            DESC="Compatibility Matrix Testing failed — see per-job detox-*/maestro-* checks"
+            DESC="Compatibility Matrix Testing failed — see per-job e2e-test/* checks"
           fi
           gh api --method POST "repos/${REPO}/statuses/${COMMIT_SHA}" \
             -f state="$STATE" \
-            -f context="compatibility-matrix-testing" \
+            -f context="e2e-test/compatibility-matrix-testing" \
             -f description="$DESC" \
             -f target_url="$TARGET_URL"
 

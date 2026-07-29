@@ -2,9 +2,9 @@
 # Start the Detox mm_blocks webhook sidecar with a *public* base URL.
 #
 # Mattermost cloud must call back into the runner. trycloudflare.com quick tunnels
-# are the historical default and are DNS-flaky (CI 30250131265 iOS machine-11:
-# cloudflared binary downloaded fine, then ~8m of unbounded curl DNS → exit 6,
-# Metro never started). Prefer a stable ingress when CI provides one.
+# are the historical default and are DNS-flaky — unbounded DNS retries there have
+# stalled a shard long enough to skip its tests — so prefer a stable ingress when
+# one is configured.
 #
 # Priority:
 #   1) WEBHOOK_PUBLIC_BASE_URL — already-routable HTTPS origin (named tunnel / proxy)
@@ -15,6 +15,8 @@
 # on Cloudflare. mm_blocks specs fail fast via requireWebhookServer when the URL
 # is unset. Pair with dedicated mm_blocks sharding so unrelated specs never share
 # this step's fate.
+#
+# Local usage is documented in detox/README.md ("Webhook sidecar").
 
 set -uo pipefail
 
@@ -29,7 +31,8 @@ CURL_CONNECT_TIMEOUT="${WEBHOOK_CURL_CONNECT_TIMEOUT:-5}"
 CURL_MAX_TIME="${WEBHOOK_CURL_MAX_TIME:-10}"
 TUNNEL_ATTEMPTS="${WEBHOOK_TUNNEL_ATTEMPTS:-2}"
 TUNNEL_WAIT_SECS="${WEBHOOK_TUNNEL_WAIT_SECS:-20}"
-# Hard wall-clock budget for the whole trycloudflare path (CI 30250131265 hung ~8m).
+# Hard wall-clock budget for the whole trycloudflare path; without it a DNS stall
+# can eat most of the shard.
 TUNNEL_TOTAL_BUDGET_SECS="${WEBHOOK_TUNNEL_TOTAL_BUDGET_SECS:-120}"
 
 curl_quick() {
@@ -45,7 +48,7 @@ curl_quick() {
 mark_ready() {
     local url="$1"
     # stable=true only for WEBHOOK_PUBLIC_BASE_URL / named tunnel. trycloudflare
-    # passes curl health but Mattermost→tunnel callbacks hang (CI 59ec6ae).
+    # passes curl health but Mattermost→tunnel callbacks hang.
     local callbacks_reachable="${2:-true}"
     if [[ -n "${GITHUB_ENV:-}" ]]; then
         {
@@ -91,6 +94,9 @@ cleanup_tunnel() {
     fi
 }
 
+# Pinned so a bad upstream release cannot break mm_blocks shards; bump deliberately.
+CLOUDFLARED_VERSION="${CLOUDFLARED_VERSION:-2026.7.3}"
+
 ensure_cloudflared() {
     case "$(uname -s)-$(uname -m)" in
         Linux-x86_64) cloudflared_asset="cloudflared-linux-amd64" ;;
@@ -105,7 +111,7 @@ ensure_cloudflared() {
         return 0
     fi
 
-    local download_url="https://github.com/cloudflare/cloudflared/releases/latest/download/${cloudflared_asset}"
+    local download_url="https://github.com/cloudflare/cloudflared/releases/download/${CLOUDFLARED_VERSION}/${cloudflared_asset}"
     if [[ "$cloudflared_asset" == *.tgz ]]; then
         local archive="${cloudflared}.tgz"
         curl_quick --location "$download_url" --output "$archive" || return 1

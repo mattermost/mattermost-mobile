@@ -28,7 +28,7 @@ describe('buildTsioJobConfig', () => {
     it('should give each job its own report group and status context', () => {
         const cfg = buildTsioJobConfig(base, 'detox-ios');
         assert.equal(cfg.total_reports_expected, 1);
-        assert.equal(cfg.status_context, 'detox-ios');
+        assert.equal(cfg.status_context, 'e2e-test/detox-ios');
         assert.equal(cfg.composite_identity.name, 'mobile-pr-detox-ios');
         assert.equal(cfg.composite_identity.run_group, 'mobile-pr-detox-ios');
         assert.equal(cfg.composite_identity.framework, 'detox');
@@ -37,7 +37,7 @@ describe('buildTsioJobConfig', () => {
 
     it('should label maestro jobs with maestro framework and context', () => {
         const cfg = buildTsioJobConfig(base, 'maestro-android-e2e');
-        assert.equal(cfg.status_context, 'maestro-android');
+        assert.equal(cfg.status_context, 'e2e-test/maestro-android');
         assert.equal(cfg.composite_identity.framework, 'maestro');
         assert.equal(cfg.composite_identity.name, 'mobile-pr-maestro-android-e2e');
     });
@@ -47,7 +47,7 @@ describe('buildTsioJobConfig', () => {
         const cfg = buildTsioJobConfig(cmtBase, 'detox-ios-Server_11.9.0');
         assert.equal(cfg.total_reports_expected, 1);
         assert.equal(cfg.composite_identity.name, 'mobile-release-detox-ios-Server_11.9.0');
-        assert.equal(cfg.status_context, 'detox-ios-Server_11.9.0');
+        assert.equal(cfg.status_context, 'e2e-test/detox-ios-Server_11.9.0');
     });
 
     // The CMT base identity hardcodes framework=detox, but the upload action posts
@@ -56,7 +56,7 @@ describe('buildTsioJobConfig', () => {
         const cmtBase = {...base, name: 'mobile-release', run_group: 'mobile-release'};
         const cfg = buildTsioJobConfig(cmtBase, 'maestro-android-Server_11.9.0');
         assert.equal(cfg.composite_identity.framework, 'maestro');
-        assert.equal(cfg.status_context, 'maestro-android-Server_11.9.0');
+        assert.equal(cfg.status_context, 'e2e-test/maestro-android-Server_11.9.0');
     });
 
     it('should let an explicit override win over the inferred framework', () => {
@@ -74,7 +74,7 @@ describe('buildTsioJobConfigMap / jobKeysForPlatform', () => {
         const base = {name: 'mobile-main', repository: 'mattermost/mattermost-mobile', commit_sha: 'deadbee'};
         const map = buildTsioJobConfigMap(base, jobKeysForPlatform('android'));
         assert.deepEqual(Object.keys(map).sort(), ['detox-android', 'maestro-android-e2e']);
-        assert.equal(map['detox-android'].status_context, 'detox-android');
+        assert.equal(map['detox-android'].status_context, 'e2e-test/detox-android');
     });
 });
 

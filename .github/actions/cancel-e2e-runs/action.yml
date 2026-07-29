@@ -2,8 +2,8 @@
 name: Cancel E2E workflow runs
 description: >-
   Cancel all active E2E (e2e-detox-pr.yml) runs for a PR branch, force-stop
-  every queued/in-progress job (including macOS build runners), and mark E2E
-  commit statuses as skipped (success + description Skipped).
+  every queued/in-progress job (including macOS build runners), and reset the
+  E2E commit statuses so a stopped run leaves no stale check behind.
 
 inputs:
   head_branch:
@@ -24,6 +24,15 @@ inputs:
     description: Commit status description after stopping E2E runs
     required: false
     default: Skipped
+  status_state:
+    description: >-
+      Commit status state to post after cancelling (pending | error | success).
+      Defaults to pending: a cancelled run produced no result, so the check must
+      not report a conclusion the run never reached. Use success only when a
+      maintainer deliberately bypasses E2E (E2E/Override), which is the one case
+      where the PR is meant to become mergeable without E2E results.
+    required: false
+    default: pending
 
 runs:
   using: composite
@@ -35,6 +44,7 @@ runs:
         EXCLUDE_HEAD_SHA: ${{ inputs.exclude_head_sha }}
         MAX_RUN_ID_EXCLUSIVE: ${{ inputs.max_run_id_exclusive }}
         REASON: ${{ inputs.reason }}
+        STATUS_STATE: ${{ inputs.status_state }}
       with:
         script: |
           const headBranch = process.env.HEAD_BRANCH;
@@ -45,23 +55,17 @@ runs:
             ? parseInt(process.env.MAX_RUN_ID_EXCLUSIVE, 10)
             : null;
           const reason = process.env.REASON || 'Skipped';
+          const statusState = process.env.STATUS_STATE || 'pending';
           const owner = context.repo.owner;
           const repo = context.repo.repo;
 
           const ACTIVE_RUN_STATUSES = ['in_progress', 'queued', 'waiting'];
-          // Current + legacy e2e/* contexts so superseded runs clear both old and new checks.
           const E2E_STATUS_CONTEXTS = [
-            'detox-ios',
-            'detox-android',
-            'detox-ipad',
-            'maestro-ios',
-            'maestro-android',
-            'e2e/detox-ios',
-            'e2e/detox-android',
-            'e2e/detox-ipad',
-            'e2e/maestro-ios',
-            'e2e/maestro-android',
-            'e2e/mobile',
+            'e2e-test/detox-ios',
+            'e2e-test/detox-android',
+            'e2e-test/detox-ipad',
+            'e2e-test/maestro-ios',
+            'e2e-test/maestro-android',
           ];
 
           const runMatchesPr = (run) => {
@@ -101,16 +105,14 @@ runs:
             }
           };
 
-          const markCommitStatusesSkipped = async (sha) => {
+          const markCommitStatusesStopped = async (sha) => {
             for (const statusContext of E2E_STATUS_CONTEXTS) {
               try {
                 await github.rest.repos.createCommitStatus({
                   owner,
                   repo,
                   sha,
-                  // Commit statuses have no "skipped" state; success + Skipped avoids
-                  // a red failure while clearly indicating E2E did not run to completion.
-                  state: 'success',
+                  state: statusState,
                   context: statusContext,
                   description: reason.substring(0, 140),
                 });
@@ -175,7 +177,7 @@ runs:
           }
 
           for (const sha of shasToUpdate) {
-            await markCommitStatusesSkipped(sha);
+            await markCommitStatusesStopped(sha);
           }
 
           core.info(`Force-cancelled ${runsCancelled} E2E run(s) for PR #${prNumber}`);

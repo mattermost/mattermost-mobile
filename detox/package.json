@@ -60,8 +60,6 @@
     "e2e:ios-disable-autofill": "cd utils && node disable_ios_autofill.js",
     "detox:config-gen": "cd utils && node generate_detox_config_ci.js",
     "check": "npm run lint && npm run tsc",
-    "preflight:ci": "./scripts/preflight-ci-pr.sh",
-    "preflight:ci-fast": "./scripts/preflight-ci-pr.sh --fast",
     "clean-detox": "detox clean",
     "lint": "eslint --ignore-pattern node_modules --quiet .",
     "e2e:save-report": "node save_report.js",
