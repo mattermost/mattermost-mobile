@@ -17,6 +17,15 @@ runs:
     - name: Compute fingerprint
       id: compute
       shell: bash
+      env:
+        # Manual escape hatch for build inputs that are NOT in the git tree and so
+        # cannot be fingerprinted from it. BUMP THIS when any of these change:
+        #   - the build runner image / label (macos-26, ubuntu-latest-8-cores) or Xcode
+        #   - INTUNE_ENABLED in e2e-detox-pr.yml (switches the whole iOS build path)
+        #   - the build commands inside e2e-detox-pr.yml itself
+        # Bumping invalidates every cached binary, so the next run of each platform
+        # rebuilds. Cheaper than shipping tests against a stale app.
+        CACHE_VERSION: '1'
       run: |
         # Fingerprint = sha256 of git blob hashes for all binary-impacting paths.
         # Missing a path causes false cache HITs (wrong binary tested).
@@ -37,10 +46,13 @@ runs:
         # assets/base/i18n/ (64 translation files that are require()d by app/i18n),
         # so a translations change did not move the fingerprint and the cache served a
         # binary with the old strings.
+        # scripts/ is included whole: postinstall.sh runs pod-install (or intune:init)
+        # and copies compass-icons into assets/fonts/, and preinstall/generate-assets
+        # shape the bundle — all binary-affecting.
         shared=(app/ libraries/ share_extension/ patches/ \
                 types/ assets/fonts/ assets/sounds/ \
                 assets/base/ assets/override/ \
-                scripts/generate-assets.js \
+                scripts/ \
                 package.json package-lock.json \
                 tsconfig.json babel.config.js metro.config.js \
                 index.tsx app.json react-native.config.js \
@@ -69,11 +81,14 @@ runs:
             ;;
         esac
 
+        tree=$(git ls-tree -r HEAD -- "${paths[@]}" 2>/dev/null)
+
         # Fall back to commit SHA if ls-tree fails (e.g., shallow clone) so the build still runs.
-        fingerprint=$(git ls-tree -r HEAD -- "${paths[@]}" 2>/dev/null | sha256sum | cut -d' ' -f1)
-        if [ -z "$fingerprint" ] || [ "$fingerprint" = "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855" ]; then
+        if [ -z "$tree" ]; then
           fingerprint="nocache-$(git rev-parse --short HEAD 2>/dev/null || echo unknown)"
           echo "::warning::git ls-tree produced no output — using fallback fingerprint. S3 cache will miss."
+        else
+          fingerprint=$(printf 'cache-version=%s\n%s\n' "$CACHE_VERSION" "$tree" | sha256sum | cut -d' ' -f1)
         fi
         echo "fingerprint=${fingerprint}" >> "$GITHUB_OUTPUT"
         echo "Computed fingerprint for ${{ inputs.platform }}: ${fingerprint}"

@@ -165,7 +165,13 @@ jobs:
       - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
         with:
           persist-credentials: false
+      # PR-only. On a main push there is no pr_number, so runMatchesPr() matches
+      # every run on the branch and a later merge would force-cancel the E2E run of
+      # an earlier one — leaving main commits with no E2E result, and leaving the
+      # `main` cache scope unwritten (cancelled runs never reach the save step),
+      # which is what PRs read from. Every commit landing on main gets its own run.
       - name: Cancel superseded E2E runs on this branch
+        if: inputs.run_type != 'MAIN' && inputs.run_type != 'MASTER'
         uses: ./.github/actions/cancel-e2e-runs
         with:
           head_branch: ${{ github.ref_name }}
