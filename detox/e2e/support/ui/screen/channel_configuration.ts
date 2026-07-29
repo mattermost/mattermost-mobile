@@ -2,7 +2,7 @@
 // See LICENSE.txt for license information.
 
 import {timeouts, wait} from '@support/utils';
-import {waitFor} from 'detox';
+import {by, element, waitFor} from 'detox';
 
 class ChannelConfigurationScreen {
     testID = {

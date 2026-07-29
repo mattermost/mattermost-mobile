@@ -1,0 +1,82 @@
+# Sub-flow (iOS): enter SITE_1_URL + display name and submit the server form ONCE.
+# Underscore prefix: not a test case, so no Zephyr header (see validate-flow-headers.sh).
+#
+# Callers must invoke this only when the form has not been submitted or has definitively
+# failed (server_form.server_url.input.error visible). Never call it while a connect is
+# still in flight: setConnecting(true) in app/screens/server/index.tsx does NOT set
+# buttonDisabled, so server_form.connect.button keeps its enabled testID during the
+# request and a second tap would submit a duplicate connect.
+#
+# The URL is re-entered every attempt because Maestro's inputText can drop characters
+# against the controlled RN TextInput (CI 30447839548 batch-2 produced host
+# "h-1-tjrchzrq.test.mattermost.cloud"), and re-tapping Connect alone can never recover
+# from a corrupted URL. eraseText exceeds the 64-char URL because on a retry the field is
+# not empty. Typing also clears urlError, which re-enables the Connect button — the app
+# sets buttonDisabled(true) on failure, flipping the testID to
+# server_form.connect.button.disabled, so the fields must be filled before waiting for it.
+appId: ${MAESTRO_APP_ID}
+---
+# A previous attempt scrolled the form down to reach Connect.
+- scrollUntilVisible:
+    element:
+      text: "Enter Server URL"
+    direction: UP
+    timeout: 10000
+    optional: true
+# iOS FloatingTextInput exposes label text to accessibility, not testID.
+- tapOn:
+    text: "Enter Server URL"
+- eraseText: 120
+- inputText: ${SITE_1_URL}
+- tapOn:
+    text: "Display Name"
+- eraseText: 120
+- inputText: "Server 1"
+- scrollUntilVisible:
+    element:
+      id: "server_form.connect.button"
+    direction: DOWN
+    timeout: 10000
+    optional: true
+- extendedWaitUntil:
+    visible:
+      id: "server_form.connect.button"
+    timeout: 5000
+- tapOn:
+    id: "server_form.connect.button"
+# Let the connection settle before the optional taps, otherwise they fire on stale UI
+# before server validation has surfaced anything.
+- waitForAnimationToEnd:
+    timeout: 5000
+# iOS system permission / network-access dialogs. These are SpringBoard alerts with no
+# app testID, so text is the only available locator.
+- tapOn:
+    text: "Allow"
+    optional: true
+# App-level "Notifications cannot be received" alert (non-blocking info).
+- tapOn:
+    text: "Okay"
+    optional: true
+- tapOn:
+    text: "OKAY"
+    optional: true
+# A definitive failure surfaces the inline URL error within seconds of the request
+# finishing (setUrlError in app/screens/server/index.tsx). Check for it first so a failed
+# attempt returns quickly instead of burning the full connect budget.
+- extendedWaitUntil:
+    visible:
+      id: "server_form.server_url.input.error"
+    timeout: 20000
+    optional: true
+- runFlow:
+    when:
+      notVisible:
+        id: "server_form.server_url.input.error"
+    commands:
+      # No error yet: the connect is in flight or already done. Give it the full budget
+      # so a slow-but-working connect is never cut short and retried.
+      - extendedWaitUntil:
+          notVisible:
+            id: "server_form.display_help"
+          timeout: 120000
+          optional: true

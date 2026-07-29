@@ -1,0 +1,32 @@
+# Sub-flow (iOS only): connect to the Mattermost server from the server form.
+# Called by login.yml when the server form is visible on iOS. Android keeps
+# connect_server.yml unchanged — it connects cleanly (9/9 flows, CI 30466684108) and is
+# deliberately left untouched.
+# Requires: SITE_1_URL env var
+#
+# Submit once, then re-submit ONLY on a definitive failure. A plain retry loop with a
+# per-attempt timeout is unusable here: setConnecting(true) in app/screens/server/index.tsx
+# does not set buttonDisabled, so server_form.connect.button keeps its enabled testID while
+# the request is in flight and a slow-but-working connect would be submitted twice.
+# Gating each retry on the inline URL error guarantees the previous request has finished
+# and failed. Both observed iOS connect failures set that error via setUrlError:
+#   - TLS trust evaluation cancelled against a valid chain (CI 30466684108)
+#   - inputText dropping characters, yielding a host that does not resolve (CI 30447839548)
+appId: ${MAESTRO_APP_ID}
+---
+- runFlow: _enter_url_and_connect.yml
+- runFlow:
+    when:
+      visible:
+        id: "server_form.server_url.input.error"
+    commands:
+      - runFlow: _enter_url_and_connect.yml
+- runFlow:
+    when:
+      visible:
+        id: "server_form.server_url.input.error"
+    commands:
+      - runFlow: _enter_url_and_connect.yml
+# Fatal arbiter: if every attempt left us on the server form, this fails naming the server
+# form instead of the home tab.
+- runFlow: ../waits/wait_for_server_connect_complete.yml
