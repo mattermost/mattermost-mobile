@@ -1,7 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 import {RTCMonitor, RTCPeer, parseRTCStats} from '@mattermost/calls/lib';
-import CallsNative from '@mattermost/calls-native';
+import CallsNative, {type AudioRoute} from '@mattermost/calls-native';
 import {zlibSync, strToU8} from 'fflate';
 import {Platform} from 'react-native';
 
@@ -640,5 +640,103 @@ describe('newConnection', () => {
         connectCb!();
 
         await expect(res).resolves.toBe('sessionID');
+    });
+
+    // Helper: connect (triggering the join handler) and return the connection +
+    // registered onAudioRouteChanged listener.
+    const connectAndGetRouteListener = async (initialRoute?: Partial<AudioRoute>) => {
+        (CallsNative.getAudioRoute as jest.Mock).mockResolvedValueOnce({
+            selectedAudioDevice: 'EARPIECE',
+            availableAudioDeviceList: ['EARPIECE', 'SPEAKER_PHONE'],
+            ...initialRoute,
+        });
+
+        // @ts-ignore
+        WebSocketClient.mockImplementation(() => ({
+            initialize: jest.fn(),
+            on: (event: string, handler: () => void) => {
+                if (event === 'join') {
+                    handler();
+                }
+            },
+            send: jest.fn(),
+        }));
+
+        const conn = await newConnection(
+            'http://localhost:8065',
+            'channelID',
+            () => {},
+            () => {},
+            false,
+            mockIntl,
+        );
+
+        const calls = (CallsNative.onAudioRouteChanged as jest.Mock).mock.calls;
+        const listener = calls[calls.length - 1]?.[0] as (route: AudioRoute) => void;
+        return {conn, listener};
+    };
+
+    describe('audio routing', () => {
+        it('should select Bluetooth when available (highest priority)', async () => {
+            const {listener} = await connectAndGetRouteListener();
+            jest.clearAllMocks();
+
+            listener({
+                selectedAudioDevice: 'EARPIECE',
+                availableAudioDeviceList: ['BLUETOOTH', 'EARPIECE', 'SPEAKER_PHONE'],
+            });
+
+            expect(CallsNative.setAudioRoute).toHaveBeenCalledWith('BLUETOOTH');
+        });
+
+        it('should select WiredHeadset when Bluetooth is not available', async () => {
+            const {listener} = await connectAndGetRouteListener();
+            jest.clearAllMocks();
+
+            listener({
+                selectedAudioDevice: 'EARPIECE',
+                availableAudioDeviceList: ['WIRED_HEADSET', 'EARPIECE', 'SPEAKER_PHONE'],
+            });
+
+            expect(CallsNative.setAudioRoute).toHaveBeenCalledWith('WIRED_HEADSET');
+        });
+
+        it('should use the initial route from getAudioRoute on join', async () => {
+            await connectAndGetRouteListener({
+                selectedAudioDevice: 'BLUETOOTH',
+                availableAudioDeviceList: ['BLUETOOTH', 'EARPIECE', 'SPEAKER_PHONE'],
+            });
+
+            expect(CallsNative.getAudioRoute).toHaveBeenCalled();
+            expect(CallsNative.setAudioRoute).toHaveBeenCalledWith('BLUETOOTH');
+        });
+
+        it('should not re-route when user-pinned device is still available', async () => {
+            const {conn, listener} = await connectAndGetRouteListener();
+
+            conn.setUserSelectedAudioRoute('SPEAKER_PHONE');
+            jest.clearAllMocks();
+
+            listener({
+                selectedAudioDevice: 'SPEAKER_PHONE',
+                availableAudioDeviceList: ['EARPIECE', 'SPEAKER_PHONE'],
+            });
+
+            expect(CallsNative.setAudioRoute).not.toHaveBeenCalled();
+        });
+
+        it('should clear user pin and auto-route when pinned device disconnects', async () => {
+            const {conn, listener} = await connectAndGetRouteListener();
+
+            conn.setUserSelectedAudioRoute('BLUETOOTH');
+            jest.clearAllMocks();
+
+            listener({
+                selectedAudioDevice: 'EARPIECE',
+                availableAudioDeviceList: ['EARPIECE', 'SPEAKER_PHONE'],
+            });
+
+            expect(CallsNative.setAudioRoute).toHaveBeenCalledWith('EARPIECE');
+        });
     });
 });
