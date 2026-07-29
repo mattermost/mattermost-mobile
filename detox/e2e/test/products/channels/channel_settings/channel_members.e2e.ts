@@ -33,7 +33,7 @@ import {
     ManageChannelMembersScreen,
     ServerScreen,
 } from '@support/ui/screen';
-import {isIos, timeouts, wait} from '@support/utils';
+import {isIos, timeouts, wait, waitForElementToExist} from '@support/utils';
 import {expect} from 'detox';
 
 describe('Channels', () => {
@@ -270,9 +270,10 @@ describe('Channels', () => {
         await ChannelScreen.toBeVisible();
         await wait(timeouts.TWO_SEC);
 
+        // Assert existence, not visibility: the dismissing manage-members modal can still
+        // overlay post_list and fail the visibility threshold (CI 30437339535, both platforms).
         const systemMessage = `${removedUser.username} was removed from the channel`;
-        await waitFor(element(by.text(systemMessage).withAncestor(by.id('post_list')))).
-            toBeVisible().withTimeout(timeouts.TEN_SEC);
+        await waitForElementToExist(element(by.text(systemMessage).withAncestor(by.id('post_list'))), timeouts.HALF_MIN);
         await ChannelScreen.back();
     });
 

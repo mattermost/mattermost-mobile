@@ -202,8 +202,10 @@ describe('Smoke Test - Channels', () => {
                 await device.enableSynchronization();
             }
         } else {
-            await expect(ChannelInfoScreen.unfavoriteAction).toBeVisible();
-            await expect(ChannelInfoScreen.unmuteAction).toBeVisible();
+            // Favorite/mute land via a preference update, so poll like Android instead of
+            // asserting instantly (CI 30437339535 iOS: unfavorite.action not found).
+            await waitFor(ChannelInfoScreen.unfavoriteAction).toBeVisible().withTimeout(timeouts.HALF_MIN);
+            await waitFor(ChannelInfoScreen.unmuteAction).toBeVisible().withTimeout(timeouts.TEN_SEC);
         }
 
         // # Tap on favorited action to unfavorite the channel and tap on muted action to unmute the channel
@@ -220,8 +222,8 @@ describe('Smoke Test - Channels', () => {
                 await device.enableSynchronization();
             }
         } else {
-            await expect(ChannelInfoScreen.favoriteAction).toBeVisible();
-            await expect(ChannelInfoScreen.muteAction).toBeVisible();
+            await waitFor(ChannelInfoScreen.favoriteAction).toBeVisible().withTimeout(timeouts.HALF_MIN);
+            await waitFor(ChannelInfoScreen.muteAction).toBeVisible().withTimeout(timeouts.TEN_SEC);
         }
 
         // # Go back to channel list screen
