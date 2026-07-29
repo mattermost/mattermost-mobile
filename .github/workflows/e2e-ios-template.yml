@@ -312,6 +312,11 @@ jobs:
           unzip -o mobile-artifacts/*.zip -d mobile-artifacts/
           # delete zip file
           rm -f mobile-artifacts/*.zip
+          # Detox release configs expect the .app at the original build path;
+          # the preboot script installs from mobile-artifacts, but Detox init
+          # still validates the configured binaryPath.
+          mkdir -p ios/Build/Products/Release-iphonesimulator
+          cp -R mobile-artifacts/Mattermost.app ios/Build/Products/Release-iphonesimulator/Mattermost.app
 
       - name: Prepare Low Bandwidth Environment
         id: prepare-low-bandwidth

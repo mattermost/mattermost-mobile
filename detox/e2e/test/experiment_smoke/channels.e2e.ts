@@ -166,13 +166,13 @@ describe('Smoke Test - Channels', () => {
         await CreateOrEditChannelScreen.saveButton.tap();
 
         // * Verify on channel info screen and changes have been saved.
-        await waitFor(element(by.id('create_or_edit_channel.screen'))).not.toExist().withTimeout(timeouts.TEN_SEC);
+        await waitFor(CreateOrEditChannelScreen.createOrEditChannelScreen).not.toExist().withTimeout(timeouts.TEN_SEC);
         try {
             await waitFor(ChannelSettingsScreen.channelSettingsScreen).toExist().withTimeout(timeouts.FOUR_SEC);
-            await ChannelSettingsScreen.close();
         } catch {
-            // Save may land directly on channel info.
+            // Save may land directly on channel info; a missing settings screen is fine.
         }
+        await ChannelSettingsScreen.close();
         await ChannelInfoScreen.toBeVisible();
         await waitFor(element(by.text(`Channel header: ${testChannel.display_name.toLowerCase()}\nheader1\nheader2`))).toBeVisible().withTimeout(timeouts.TEN_SEC);
 
