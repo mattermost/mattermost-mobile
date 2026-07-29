@@ -314,6 +314,32 @@ jobs:
           echo $! > build/sim-device.pid
           echo "==> Device log capture started (pid $(cat build/sim-device.pid))"
 
+      # Gate the suite on connectivity so an infra failure is reported as infra rather
+      # than as a test failure in whichever flow happens to run first. CI 30466684108:
+      # the simulator's TLS handshake to SITE_1_URL was cancelled during trust evaluation
+      # against a valid chain, the app issued zero /api/v4 requests, and the failure
+      # surfaced as a home-tab assertion inside attach_logs. Also warms the device's
+      # trust evaluation before the reported flows run.
+      - name: Pre-flight — simulator can reach test server
+        env:
+          MAESTRO_DRIVER_STARTUP_TIMEOUT: "180000"
+        run: |
+          set -a
+          source detox/maestro/.maestro-test-env.sh
+          set +a
+          for attempt in 1 2 3; do
+            if "$HOME/.maestro/bin/maestro" --device "$SIMULATOR_ID" test \
+                --env "SITE_1_URL=$SITE_1_URL" \
+                --env "MAESTRO_APP_ID=${MAESTRO_APP_ID:-com.mattermost.rnbeta}" \
+                detox/maestro/preflight/_connect_check.yml; then
+              echo "==> Pre-flight connect OK (attempt $attempt)"
+              exit 0
+            fi
+            echo "==> Pre-flight connect failed (attempt $attempt/3)"
+          done
+          echo "::error::Simulator could not connect to $SITE_1_URL after 3 attempts. This is an environment failure (TLS/DNS/server), not a test failure — check build/sim-device.log for NSURLErrorDomain -1200 or 'Cancelled during verify block' before touching any flow."
+          exit 1
+
       - name: Run Maestro Flows (iOS)
         continue-on-error: true
         env:

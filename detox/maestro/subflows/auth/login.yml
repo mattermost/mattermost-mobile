@@ -150,8 +150,18 @@ appId: ${MAESTRO_APP_ID}
 # After a fresh DB wipe or first run, no server is registered and the form
 # shows empty. After logout the server stays in the DB and the login form
 # appears directly, bypassing this block entirely.
+# iOS uses connect_server_ios.yml: the URL must be re-entered on a retry (inputText can
+# drop characters) and a retry must be gated on the inline URL error so a slow-but-working
+# connect is never submitted twice. Android keeps connect_server.yml unchanged.
 - runFlow:
     when:
+      platform: iOS
+      visible:
+        id: "server_form.display_help"
+    file: ../server/connect_server_ios.yml
+- runFlow:
+    when:
+      platform: Android
       visible:
         id: "server_form.display_help"
     file: ../server/connect_server.yml
