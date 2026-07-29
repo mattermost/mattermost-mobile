@@ -8,8 +8,9 @@ description: >-
   build cache. A missing manifest is not an error; sharding falls back to the
   even alphabetical split.
 
-  Retention is handled by the bucket lifecycle rule; the manifest is a few KB and
-  is rewritten on every main-push run.
+  No lifecycle rule is needed for the `e2e-durations/` prefix, unlike
+  `e2e-builds/`: each suite writes to a fixed key (e2e-durations/<key>.json), so
+  a run overwrites rather than accumulates — at most one few-KB object per suite.
 
 inputs:
   key:
