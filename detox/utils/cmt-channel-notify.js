@@ -86,13 +86,16 @@ function parseMobileJobName(jobName) {
  * @returns {string}
  */
 function resolveWebhookUrl(reportName, env = process.env) {
-    if (reportName === 'mobile-release') {
+    // Per-job groups are named mobile-pr-<shard>, mobile-main-<shard>, etc.
+    const {webhookBucketForReportName} = require('./build-tsio-job-config');
+    const bucket = webhookBucketForReportName(reportName);
+    if (bucket === 'mobile-release') {
         return env.MATTERMOST_CMT_WEBHOOK_URL || '';
     }
-    if (reportName === 'mobile-main') {
+    if (bucket === 'mobile-main') {
         return env.MATTERMOST_MASTER_HEALTH_WEBHOOK_URL || '';
     }
-    if (reportName === 'mobile-pr') {
+    if (bucket === 'mobile-pr') {
         return env.MATTERMOST_E2E_WEBHOOK_URL || '';
     }
     return env.MATTERMOST_WEBHOOK_URL || '';
@@ -218,7 +221,11 @@ function formatLegResultText(leg) {
 }
 
 function reportTitleForIdentity(compositeIdentity) {
-    switch (compositeIdentity?.name) {
+    const {webhookBucketForReportName} = require('./build-tsio-job-config');
+    const bucket = webhookBucketForReportName(
+        compositeIdentity?.run_group || compositeIdentity?.name || '',
+    );
+    switch (bucket) {
         case 'mobile-release':
             return 'Mobile CMT';
         case 'mobile-pr':

@@ -3,13 +3,13 @@
 
 /* eslint-disable no-console */
 
-import {Channel} from '../../detox/e2e/support/server_api/channel';
-import client from '../../detox/e2e/support/server_api/client';
-import {Plugin, CallsPlugin} from '../../detox/e2e/support/server_api/plugin';
-import {Setup} from '../../detox/e2e/support/server_api/setup';
-import {Team} from '../../detox/e2e/support/server_api/team';
-import {User} from '../../detox/e2e/support/server_api/user';
-import {siteOneUrl} from '../../detox/e2e/support/test_config';
+import {Channel} from '../../e2e/support/server_api/channel';
+import client from '../../e2e/support/server_api/client';
+import {Plugin, CallsPlugin} from '../../e2e/support/server_api/plugin';
+import {Setup} from '../../e2e/support/server_api/setup';
+import {Team} from '../../e2e/support/server_api/team';
+import {User} from '../../e2e/support/server_api/user';
+import {siteOneUrl} from '../../e2e/support/test_config';
 import {writeMaestroEnvFile} from '../lib/env';
 
 const TWO_USERS = process.argv.includes('--two-users');
