@@ -5,12 +5,28 @@ const assert = require('node:assert/strict');
 const {describe, it} = require('node:test');
 
 const {
+    E2E_STATUS_CONTEXTS,
     buildTsioJobConfig,
     buildTsioJobConfigMap,
     jobKeysForPlatform,
     cmtJobKeys,
     webhookBucketForReportName,
 } = require('./build-tsio-job-config');
+
+// The override/cancel actions waive and reset exactly these contexts; if this
+// list drifts from the required checks, a PR either cannot merge or merges
+// while a context still blocks it.
+describe('E2E_STATUS_CONTEXTS', () => {
+    it('should cover every required PR context exactly once', () => {
+        assert.deepEqual(E2E_STATUS_CONTEXTS, [
+            'e2e-test/detox-ios',
+            'e2e-test/detox-android',
+            'e2e-test/detox-ipad',
+            'e2e-test/maestro-ios',
+            'e2e-test/maestro-android',
+        ]);
+    });
+});
 
 describe('buildTsioJobConfig', () => {
     const base = {

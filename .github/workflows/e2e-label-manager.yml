@@ -184,6 +184,8 @@ jobs:
       statuses: write
     steps:
       - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
+        with:
+          persist-credentials: false
 
       # ── Honor E2E/Override: strip run labels, never cancel in-flight E2E ────
       - name: Honor E2E/Override

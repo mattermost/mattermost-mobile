@@ -51,16 +51,9 @@ runs:
             throw new Error('e2e-override-status: commit_sha is required');
           }
 
-          // Keep in sync with STATUS_CONTEXT_PREFIX/PR_MAIN_JOBS in
-          // detox/utils/build-tsio-job-config.js and with
-          // .github/actions/cancel-e2e-runs.
-          const E2E_STATUS_CONTEXTS = [
-            'e2e-test/detox-ios',
-            'e2e-test/detox-android',
-            'e2e-test/detox-ipad',
-            'e2e-test/maestro-ios',
-            'e2e-test/maestro-android',
-          ];
+          // Relative requires resolve against the workspace, so the repo must be
+          // checked out before this action runs.
+          const {E2E_STATUS_CONTEXTS} = require('./detox/utils/build-tsio-job-config.js');
 
           // Attempt every context before reporting, so one bad write does not
           // leave the remaining required checks blocking the merge.

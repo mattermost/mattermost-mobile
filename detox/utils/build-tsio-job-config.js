@@ -10,7 +10,6 @@
  */
 
 // Commit-status namespace, aligned with the mattermost monorepo (`e2e-test/*`).
-// Keep in sync with E2E_STATUS_CONTEXTS in .github/actions/cancel-e2e-runs.
 const STATUS_CONTEXT_PREFIX = 'e2e-test';
 
 const PR_MAIN_JOBS = {
@@ -28,6 +27,12 @@ const PR_MAIN_JOBS = {
 function statusContextFor(name) {
     return `${STATUS_CONTEXT_PREFIX}/${name}`;
 }
+
+// The required contexts a PR must satisfy to merge. Single source of truth for
+// .github/actions/e2e-override-status (waives them) and
+// .github/actions/cancel-e2e-runs (resets them to pending), which require this
+// file from the workspace checkout.
+const E2E_STATUS_CONTEXTS = Object.values(PR_MAIN_JOBS).map((job) => statusContextFor(job.statusName));
 
 /**
  * CMT shard keys (detox-ios-Server_11.9.0, maestro-android-Server_11.9.0) are not in
@@ -164,6 +169,7 @@ function webhookBucketForReportName(reportName) {
 
 module.exports = {
     PR_MAIN_JOBS,
+    E2E_STATUS_CONTEXTS,
     frameworkFromJobKey,
     buildTsioJobConfig,
     buildTsioJobConfigMap,
