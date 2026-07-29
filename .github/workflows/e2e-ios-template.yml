@@ -354,10 +354,10 @@ jobs:
         # Detox must pre-warm: a fresh simctl install leaves a pending-install launchd
         # record; without launch→kill, the first launchApp hangs and shards cascade-fail.
         # Maestro may set PREBOOT_SKIP_PREWARM=1 (it uses listapps readiness instead).
-        run: |
-          export DEVICE_NAME="${{ env.DEVICE_NAME }}"
-          export DEVICE_OS_VERSION="${{ env.DEVICE_OS_VERSION }}"
-          bash detox/scripts/preboot_ios_simulator.sh
+        env:
+          DEVICE_NAME: ${{ env.DEVICE_NAME }}
+          DEVICE_OS_VERSION: ${{ env.DEVICE_OS_VERSION }}
+        run: bash detox/scripts/preboot_ios_simulator.sh
 
       - name: Start Proxy
         if: ${{ inputs.low_bandwidth_mode }}
@@ -439,11 +439,25 @@ jobs:
           # Jest's native JSON report (consumed by the TSIO detox parser) into
           # the existing detox/artifacts/ upload.
           # Release configs use the embedded bundle; no Metro required.
-          if [ "$DETOX_CONFIG" = "ios.ipad.release" ]; then
-            npm run e2e:ios-ipad-test-release -- "${SPECS[@]}" -- --json --outputFile=artifacts/jest-results.json
-          else
-            npm run e2e:ios-test-release -- "${SPECS[@]}" -- --json --outputFile=artifacts/jest-results.json
-          fi
+          # Handle both debug and release configs so callers can still override.
+          case "$DETOX_CONFIG" in
+            ios.ipad.debug)
+              npm run e2e:ios-ipad-test -- "${SPECS[@]}" -- --json --outputFile=artifacts/jest-results.json
+              ;;
+            ios.ipad.release)
+              npm run e2e:ios-ipad-test-release -- "${SPECS[@]}" -- --json --outputFile=artifacts/jest-results.json
+              ;;
+            ios.sim.debug)
+              npm run e2e:ios-test -- "${SPECS[@]}" -- --json --outputFile=artifacts/jest-results.json
+              ;;
+            ios.sim.release)
+              npm run e2e:ios-test-release -- "${SPECS[@]}" -- --json --outputFile=artifacts/jest-results.json
+              ;;
+            *)
+              echo "::error::Unsupported DETOX_CONFIG: $DETOX_CONFIG"
+              exit 1
+              ;;
+          esac
           DETOX_EXIT_CODE=$?
           exit "${DETOX_EXIT_CODE:-1}"
         env:

@@ -717,7 +717,11 @@ jobs:
         uses: actions/cache@27d5ce7f107fe9357f9df03efb73ab90386fccae # v5.0.5
         with:
           path: .android-sdk-cache
-          key: android-sdk-${{ env.E2E_ANDROID_API_LEVEL }}-google-apis-x86_64-v2
+          # Experiment: pin emulator version in key so version bumps invalidate the cache.
+          key: android-sdk-${{ env.E2E_ANDROID_API_LEVEL }}-emulator-36.4.9-google-apis-x86_64-v2
+          restore-keys: |
+            android-sdk-${{ env.E2E_ANDROID_API_LEVEL }}-emulator-36.4.9-google-apis-x86_64-
+            android-sdk-${{ env.E2E_ANDROID_API_LEVEL }}-google-apis-x86_64-
 
       - name: Apply cached Android SDK components
         if: steps.android-sdk-cache.outputs.cache-hit == 'true'
@@ -771,7 +775,9 @@ jobs:
           path: |
             detox/.android
             detox/${{ env.E2E_ANDROID_AVD_NAME }}_api_${{ env.E2E_ANDROID_API_LEVEL }}
-          key: android-emulator-${{ runner.os }}-${{ runner.arch }}-${{ env.E2E_ANDROID_AVD_NAME }}-api-${{ env.E2E_ANDROID_API_LEVEL }}-v3
+          # Experiment: bump key to v4 so existing cached AVDs are regenerated with the new
+          # 4096 MB RAM setting. create_android_emulator.sh also rewrites hw.ramSize on cache hit.
+          key: android-emulator-${{ runner.os }}-${{ runner.arch }}-${{ env.E2E_ANDROID_AVD_NAME }}-api-${{ env.E2E_ANDROID_API_LEVEL }}-v4
           restore-keys: |
             android-emulator-${{ runner.os }}-${{ runner.arch }}-${{ env.E2E_ANDROID_AVD_NAME }}-api-${{ env.E2E_ANDROID_API_LEVEL }}-
             android-emulator-${{ runner.os }}-${{ runner.arch }}-

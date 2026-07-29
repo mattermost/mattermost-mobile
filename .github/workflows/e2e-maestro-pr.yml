@@ -50,7 +50,7 @@ on:
         description: "Space-separated Maestro flow dirs/files to run"
         required: false
         type: string
-        default: ""
+        default: "detox/maestro/flows/timezone detox/maestro/flows/account/attach_logs.yml"
 
 # Least-privilege defaults; the TSIO upload (in the nested maestro template)
 # needs id-token: write to mint an OIDC token and actions: read to resolve
@@ -85,8 +85,8 @@ jobs:
       record_tests_in_zephyr: ${{ inputs.record_tests_in_zephyr }}
       tsio-config: ${{ toJSON(fromJSON(inputs.tsio-job-configs)['maestro-ios-e2e']) }}
       tsio-shard-name: maestro-ios-e2e
-      # Experiment: single shard, limited smoke flows.
-      flow-path: ${{ inputs.flow-path != '' && inputs.flow-path || 'detox/maestro/flows/timezone detox/maestro/flows/account/attach_logs.yml' }}
+      # Experiment: single shard, limited smoke flows (default in flow-path input).
+      flow-path: ${{ inputs.flow-path }}
     secrets: inherit
 
   run-maestro-android:
@@ -102,6 +102,6 @@ jobs:
       record_tests_in_zephyr: ${{ inputs.record_tests_in_zephyr }}
       tsio-config: ${{ toJSON(fromJSON(inputs.tsio-job-configs)['maestro-android-e2e']) }}
       tsio-shard-name: maestro-android-e2e
-      # Experiment: single shard, limited smoke flows.
-      flow-path: ${{ inputs.flow-path != '' && inputs.flow-path || 'detox/maestro/flows/timezone detox/maestro/flows/account/attach_logs.yml' }}
+      # Experiment: single shard, limited smoke flows (default in flow-path input).
+      flow-path: ${{ inputs.flow-path }}
     secrets: inherit
