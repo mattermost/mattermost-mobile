@@ -302,7 +302,6 @@ setup_adb_reverse() {
 run_detox_tests() {
     echo "Running Detox tests... $@"
 
-    cd detox
     AVD_NAME="$AVD_NAME" npm run detox:config-gen
     mkdir -p artifacts
     if is_release_build; then

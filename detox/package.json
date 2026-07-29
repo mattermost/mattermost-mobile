@@ -55,6 +55,7 @@
     "e2e:ios-build": "IOS=true ./scripts/run_detox.sh build -c ios.sim.debug",
     "e2e:ios-test": "IOS=true ./scripts/run_detox.sh test -c ios.sim.debug --record-logs failing --take-screenshots failing",
     "e2e:ios-ipad-test": "IOS=true ./scripts/run_detox.sh test -c ios.ipad.debug --record-logs failing --take-screenshots failing",
+    "e2e:ios-ipad-test-release": "IOS=true ./scripts/run_detox.sh test -c ios.ipad.release --record-logs failing --take-screenshots failing",
     "e2e:ios-build-release": "IOS=true ./scripts/run_detox.sh build -c ios.sim.release",
     "e2e:ios-test-release": "IOS=true ./scripts/run_detox.sh test -c ios.sim.release --record-logs failing --take-screenshots failing",
     "e2e:ios-disable-autofill": "cd utils && node disable_ios_autofill.js",

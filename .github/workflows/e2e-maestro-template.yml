@@ -717,9 +717,10 @@ jobs:
         uses: actions/cache@27d5ce7f107fe9357f9df03efb73ab90386fccae # v5.0.5
         with:
           path: .android-sdk-cache
-          # Experiment: track emulator package in cache key so version bumps invalidate it.
           # We do not pin sdkmanager to a revision because Google's manifest no longer
           # exposes "emulator;MAJOR.MINOR.MICRO" style paths reliably on CI runners.
+          # Bump the vN suffix below whenever the upstream emulator package changes
+          # or runner image drift makes the cached emulator incompatible.
           key: android-sdk-${{ env.E2E_ANDROID_API_LEVEL }}-emulator-google-apis-x86_64-v2
           restore-keys: |
             android-sdk-${{ env.E2E_ANDROID_API_LEVEL }}-emulator-google-apis-x86_64-

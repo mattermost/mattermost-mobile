@@ -78,12 +78,12 @@ on:
         description: "Path to search for test specs (use for smoke test subset)"
         required: false
         type: string
-        default: "detox/e2e/test/experiment_smoke"
+        default: "detox/e2e/test"
       parallelism:
         description: "Number of parallel test shards"
         required: false
         type: string
-        default: "1"
+        default: "20"
       android_avd_name:
         description: "Android Emulator name"
         required: false

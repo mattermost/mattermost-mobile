@@ -84,17 +84,17 @@ on:
         description: "Path to search for test specs (use for smoke test subset)"
         required: false
         type: string
-        default: "detox/e2e/test/experiment_smoke"
+        default: "detox/e2e/test"
       parallelism:
         description: "Number of parallel test shards"
         required: false
         type: string
-        default: "1"
+        default: "20"
       detox_config:
-        description: "Detox configuration name to use (e.g. ios.sim.release, ios.ipad.release)"
+        description: "Detox configuration name to use (e.g. ios.sim.debug, ios.ipad.debug)"
         required: false
         type: string
-        default: "ios.sim.release"
+        default: "ios.sim.debug"
       artifact_run_id:
         description: "Run ID of the workflow that uploaded ios-build-simulator-* (defaults to caller run)"
         required: false
