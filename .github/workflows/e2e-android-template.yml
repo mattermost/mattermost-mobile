@@ -590,13 +590,22 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ github.token }}
           TSIO_CONFIG: ${{ steps.tsio-cfg.outputs.config }}
+          SPECS_RESULT: ${{ needs.generate-specs.result }}
+          E2E_RESULT: ${{ needs.e2e-android.result }}
+          JOB_STATUS: ${{ job.status }}
           MATTERMOST_E2E_WEBHOOK_URL: ${{ secrets.MM_MOBILE_E2E_WEBHOOK_URL }}
           MATTERMOST_MASTER_HEALTH_WEBHOOK_URL: ${{ secrets.MM_E2E_MASTER_HEALTH_WEBHOOK_URL }}
           MATTERMOST_CMT_WEBHOOK_URL: ${{ secrets.MM_E2E_RELEASE_WEBHOOK_URL }}
         run: |
           set +e
           UPSTREAM="true"
-          if [ "${{ job.status }}" = "cancelled" ]; then UPSTREAM="false"; fi
+          # This job runs with always(), so job.status stays success when an upstream
+          # job is cancelled — read the needs results to detect that.
+          if [ "$SPECS_RESULT" = "cancelled" ] ||
+             [ "$E2E_RESULT" = "cancelled" ] ||
+             [ "$JOB_STATUS" = "cancelled" ]; then
+            UPSTREAM="false"
+          fi
           IDENTITY=$(echo "$TSIO_CONFIG" | jq -c '.composite_identity')
           CONTEXT=$(echo "$TSIO_CONFIG" | jq -r '.status_context // "e2e-test/detox-android"')
           TOTAL=$(echo "$TSIO_CONFIG" | jq -r '.total_reports_expected // 1')

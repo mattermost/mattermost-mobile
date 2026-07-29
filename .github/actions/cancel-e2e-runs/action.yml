@@ -105,7 +105,11 @@ runs:
             }
           };
 
+          // Attempts every context before reporting, so one bad status does not
+          // leave the remaining checks stale. Returns the failures for the caller
+          // to aggregate.
           const markCommitStatusesStopped = async (sha) => {
+            const failures = [];
             for (const statusContext of E2E_STATUS_CONTEXTS) {
               try {
                 await github.rest.repos.createCommitStatus({
@@ -118,8 +122,10 @@ runs:
                 });
               } catch (err) {
                 core.warning(`createCommitStatus ${statusContext} on ${sha}: ${err.message}`);
+                failures.push(`${statusContext} on ${sha}: ${err.message}`);
               }
             }
+            return failures;
           };
 
           core.info(`Cancelling active E2E runs for PR #${prNumber} on branch ${headBranch}`);
@@ -169,15 +175,22 @@ runs:
 
           for (const run of runsToCancel.values()) {
             core.info(`Cancelling E2E run ${run.id} (${run.status}, sha ${run.head_sha})`);
-            shasToUpdate.add(run.head_sha);
 
+            // Only reset statuses for runs we actually stopped; a run still going
+            // will keep publishing its own results.
             if (await cancelRun(run.id)) {
               runsCancelled++;
+              shasToUpdate.add(run.head_sha);
             }
           }
 
+          const statusFailures = [];
           for (const sha of shasToUpdate) {
-            await markCommitStatusesStopped(sha);
+            statusFailures.push(...(await markCommitStatusesStopped(sha)));
           }
 
           core.info(`Force-cancelled ${runsCancelled} E2E run(s) for PR #${prNumber}`);
+
+          if (statusFailures.length > 0) {
+            throw new Error(`Failed to reset ${statusFailures.length} E2E commit status(es): ${statusFailures.join('; ')}`);
+          }
