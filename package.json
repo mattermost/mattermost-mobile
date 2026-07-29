@@ -206,7 +206,7 @@
     "preinstall": "./scripts/preinstall.sh && npx solidarity",
     "start": "react-native start --host 127.0.0.1",
     "test": "NODE_OPTIONS=--max_old_space_size=12000 jest --maxWorkers=4",
-    "test:ci": "NODE_OPTIONS=--max_old_space_size=12000 jest --verbose=false --forceExit",
+    "test:ci": "NODE_OPTIONS=--max_old_space_size=12000 jest --verbose=false --forceExit --workerIdleMemoryLimit=1GB",
     "test:ci:coverage": "npm run test:ci -- --coverage",
     "test:coverage": "npm test -- --coverage",
     "test:watch": "npm test -- --watch",
