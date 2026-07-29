@@ -82,6 +82,9 @@ permissions:
   actions: read
 
 env:
+  # Changing this switches the iOS build path. Bump CACHE_VERSION in
+  # .github/actions/compute-e2e-build-fingerprint/action.yml or cached
+  # binaries built under the previous INTUNE setting will be served.
   INTUNE_ENABLED: 'false'
   DETOX_AWS_S3_BUCKET: "mattermost-detox-report"
 
@@ -398,6 +401,9 @@ jobs:
       !cancelled()
       && needs.resolve-e2e-policy.outputs.e2e_override != 'true'
       && (inputs.PLATFORM == 'ios' || inputs.PLATFORM == 'both')
+    # Runner / Xcode image is not in the git tree. Changing this label (or the
+    # Xcode on it) without bumping CACHE_VERSION in
+    # compute-e2e-build-fingerprint/action.yml serves stale cached binaries.
     runs-on: macos-26
     needs:
       - resolve-e2e-policy
@@ -479,6 +485,8 @@ jobs:
       !cancelled()
       && needs.resolve-e2e-policy.outputs.e2e_override != 'true'
       && (inputs.PLATFORM == 'android' || inputs.PLATFORM == 'both')
+    # Runner image is not in the git tree — bump CACHE_VERSION in
+    # compute-e2e-build-fingerprint/action.yml when changing this label.
     runs-on: ubuntu-latest-8-cores
     needs:
       - resolve-e2e-policy
@@ -573,6 +581,8 @@ jobs:
       !cancelled()
       && needs.resolve-e2e-policy.outputs.e2e_override != 'true'
       && (inputs.PLATFORM == 'android' || inputs.PLATFORM == 'both')
+    # Runner image is not in the git tree — bump CACHE_VERSION in
+    # compute-e2e-build-fingerprint/action.yml when changing this label.
     runs-on: ubuntu-latest-8-cores
     needs:
       - resolve-e2e-policy

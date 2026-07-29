@@ -1,0 +1,60 @@
+{
+  "_comment": "Single source of truth for E2E build fingerprints and the label-manager impact filter. Fingerprint consumers hash these git paths; the label manager converts them to globs (dir/ → dir/**) and unions triggerExtra. Edit here only — do not duplicate lists elsewhere.",
+  "fingerprintShared": [
+    "app/",
+    "libraries/",
+    "share_extension/",
+    "patches/",
+    "types/",
+    "assets/fonts/",
+    "assets/sounds/",
+    "assets/base/",
+    "assets/override/",
+    "scripts/",
+    "package.json",
+    "package-lock.json",
+    "tsconfig.json",
+    "babel.config.js",
+    "metro.config.js",
+    "index.tsx",
+    "app.json",
+    "react-native.config.js",
+    ".nvmrc",
+    ".ruby-version",
+    ".github/actions/prepare-mobile-build/",
+    ".github/actions/prepare-node-deps/"
+  ],
+  "fingerprintByPlatform": {
+    "ios": [
+      "ios/",
+      "fastlane/",
+      "Gemfile",
+      "Gemfile.lock",
+      ".github/actions/prepare-ios-build/"
+    ],
+    "android-detox": [
+      "android/",
+      "detox/.detoxrc.json",
+      "detox/package.json",
+      "detox/package-lock.json",
+      "detox/scripts/",
+      ".github/actions/prepare-android-build/"
+    ],
+    "android-maestro": [
+      "android/",
+      ".github/actions/prepare-android-build/",
+      ".github/actions/build-android-maestro-apk/"
+    ]
+  },
+  "triggerExtra": [
+    "detox/e2e/**",
+    "detox/maestro/**",
+    "detox/utils/**",
+    ".github/workflows/e2e-*.yml",
+    ".github/actions/cancel-e2e-runs/**",
+    ".github/actions/compute-e2e-build-fingerprint/**",
+    ".github/actions/s3-build-cache/**",
+    ".github/actions/s3-spec-durations/**",
+    ".github/actions/generate-specs/**"
+  ]
+}

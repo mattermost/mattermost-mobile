@@ -580,6 +580,11 @@ jobs:
             --key "$DURATIONS_KEY" \
             --repo-root "$GITHUB_WORKSPACE"
 
+      # spec-durations.js merges the restored manifest into the new one, so the
+      # freshly built manifest is always a superset of what was published before
+      # — there is nothing to fall back to. An empty/zero manifest is rejected by
+      # the action's `validate` guard rather than published (publishing one would
+      # poison duration packing for every branch until main rewrote it).
       - name: Publish spec-duration manifest
         if: always() && inputs.durations_key != '' && (inputs.run-type == 'MAIN' || inputs.run-type == 'MASTER') && hashFiles('detox/artifacts/spec-durations.next.json') != ''
         continue-on-error: true

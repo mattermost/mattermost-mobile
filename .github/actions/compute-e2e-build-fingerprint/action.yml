@@ -23,63 +23,48 @@ runs:
         #   - the build runner image / label (macos-26, ubuntu-latest-8-cores) or Xcode
         #   - INTUNE_ENABLED in e2e-detox-pr.yml (switches the whole iOS build path)
         #   - the build commands inside e2e-detox-pr.yml itself
+        # Mirror comments live next to those knobs in e2e-detox-pr.yml.
         # Bumping invalidates every cached binary, so the next run of each platform
         # rebuilds. Cheaper than shipping tests against a stale app.
         CACHE_VERSION: '1'
+        PLATFORM: ${{ inputs.platform }}
       run: |
-        # Fingerprint = sha256 of git blob hashes for all binary-impacting paths.
+        # Fingerprint = sha256 of git blob hashes for all binary-impacting paths
+        # listed in paths.json (shared with the label-manager impact filter).
         # Missing a path causes false cache HITs (wrong binary tested).
-        # Test files (detox/e2e/**, detox/maestro/**) are excluded so test-only
-        # PRs still hit cache. Keep app-source subset in sync with label-manager filter.
+        # Test files live in paths.json triggerExtra, not fingerprint*, so
+        # test-only PRs still hit cache while still running E2E.
         #
-        # The build *recipe* is fingerprinted too (composite actions + toolchain
-        # pins), otherwise a change to how the app is compiled would be served a
-        # binary built by the previous recipe.
         # Deliberately NOT fingerprinted: e2e-detox-pr.yml itself. It mixes the
         # build steps with unrelated orchestration (TSIO, statuses, provisioning),
         # so including it would invalidate every cache entry on unrelated edits.
         # Changes to what the build actually does land in the actions/fastlane
-        # paths below.
-        # assets/base/ and assets/override/ are taken wholesale, not per-subdirectory:
-        # generate-assets.js merges both into dist/assets/, which the `@assets` alias
-        # bundles into the JS bundle. Listing only images/release/config.json missed
-        # assets/base/i18n/ (64 translation files that are require()d by app/i18n),
-        # so a translations change did not move the fingerprint and the cache served a
-        # binary with the old strings.
-        # scripts/ is included whole: postinstall.sh runs pod-install (or intune:init)
-        # and copies compass-icons into assets/fonts/, and preinstall/generate-assets
-        # shape the bundle — all binary-affecting.
-        shared=(app/ libraries/ share_extension/ patches/ \
-                types/ assets/fonts/ assets/sounds/ \
-                assets/base/ assets/override/ \
-                scripts/ \
-                package.json package-lock.json \
-                tsconfig.json babel.config.js metro.config.js \
-                index.tsx app.json react-native.config.js \
-                .nvmrc .ruby-version \
-                .github/actions/prepare-mobile-build/ \
-                .github/actions/prepare-node-deps/)
-        case "${{ inputs.platform }}" in
-          ios)
-            paths=("${shared[@]}" ios/ fastlane/ Gemfile Gemfile.lock \
-                    .github/actions/prepare-ios-build/)
-            ;;
-          android-detox)
-            paths=("${shared[@]}" android/ \
-                    detox/.detoxrc.json detox/package.json \
-                    detox/package-lock.json detox/scripts/ \
-                    .github/actions/prepare-android-build/)
-            ;;
-          android-maestro)
-            paths=("${shared[@]}" android/ \
-                    .github/actions/prepare-android-build/ \
-                    .github/actions/build-android-maestro-apk/)
-            ;;
-          *)
-            echo "::error::Invalid platform: ${{ inputs.platform }}"
-            exit 1
-            ;;
-        esac
+        # paths in paths.json — bump CACHE_VERSION when the workflow's build
+        # commands or runner/INTUNE knobs change.
+        set -eu
+        PATHS_JSON="${GITHUB_ACTION_PATH}/paths.json"
+        PATHS_JS="${GITHUB_ACTION_PATH}/paths.js"
+
+        # Command substitution, not `mapfile < <(node ...)`: process substitution
+        # hides node's exit status even under `set -e`, so a broken paths.js would
+        # surface as "no paths" instead of the actual failure.
+        if ! paths_output=$(node -e "
+          const {loadPaths, fingerprintPathsForPlatform} = require(process.argv[1]);
+          const paths = loadPaths(process.argv[2]);
+          for (const p of fingerprintPathsForPlatform(paths, process.env.PLATFORM)) {
+            console.log(p);
+          }
+        " "$PATHS_JS" "$PATHS_JSON"); then
+          echo "::error::Failed to resolve fingerprint paths for platform '${PLATFORM}' from paths.json"
+          exit 1
+        fi
+        mapfile -t paths <<< "$paths_output"
+
+        # `<<<` on empty output still yields one empty element, hence paths[0].
+        if [ ${#paths[@]} -eq 0 ] || [ -z "${paths[0]}" ]; then
+          echo "::error::paths.json produced no fingerprint paths for platform '${PLATFORM}'"
+          exit 1
+        fi
 
         tree=$(git ls-tree -r HEAD -- "${paths[@]}" 2>/dev/null)
 
@@ -91,4 +76,4 @@ runs:
           fingerprint=$(printf 'cache-version=%s\n%s\n' "$CACHE_VERSION" "$tree" | sha256sum | cut -d' ' -f1)
         fi
         echo "fingerprint=${fingerprint}" >> "$GITHUB_OUTPUT"
-        echo "Computed fingerprint for ${{ inputs.platform }}: ${fingerprint}"
+        echo "Computed fingerprint for ${PLATFORM}: ${fingerprint}"
