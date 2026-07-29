@@ -1,8 +1,10 @@
 package com.mattermost.callsnative
 
+import android.bluetooth.BluetoothAdapter
 import android.bluetooth.BluetoothHeadset
 import android.bluetooth.BluetoothManager
 import android.bluetooth.BluetoothProfile
+import android.content.pm.PackageManager
 import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
@@ -89,6 +91,13 @@ class MMCallsNativeModuleImpl(private val context: ReactApplicationContext) {
     // -------------------------------------------------------------------------
 
     fun startAudioSession(promise: Promise?) {
+        if (audioManager != null) {
+            // Already started — don't re-snapshot the already-modified audio
+            // state or we'll restore MODE_IN_COMMUNICATION on stopAudioSession.
+            emitAudioRouteChanged()
+            promise?.resolve(null)
+            return
+        }
         val audio = context.getSystemService(Context.AUDIO_SERVICE) as AudioManager
         audioManager = audio
         origAudioMode = audio.mode
@@ -189,24 +198,21 @@ class MMCallsNativeModuleImpl(private val context: ReactApplicationContext) {
         }
 
         try {
-            val player = MediaPlayer.create(context, resId) ?: run {
+            val attrs = AudioAttributes.Builder()
+                .setUsage(AudioAttributes.USAGE_NOTIFICATION_RINGTONE)
+                .setContentType(AudioAttributes.CONTENT_TYPE_MUSIC)
+                .build()
+            // Pass AudioAttributes to the create() overload so they are applied
+            // before prepare(), which is called internally by MediaPlayer.create().
+            val player = MediaPlayer.create(context, resId, attrs, AudioManager.AUDIO_SESSION_ID_GENERATE) ?: run {
                 promise?.reject("ringtone_error", "Failed to create MediaPlayer for: $name")
                 return
             }
             player.isLooping = seconds <= 0
-            player.setAudioAttributes(
-                AudioAttributes.Builder()
-                    .setUsage(AudioAttributes.USAGE_NOTIFICATION_RINGTONE)
-                    .setContentType(AudioAttributes.CONTENT_TYPE_MUSIC)
-                    .build()
-            )
             if (seconds > 0) {
-                player.isLooping = false
                 val stopRunnable = Runnable { stopRingtoneInternal() }
                 ringtoneStopRunnable = stopRunnable
                 mainHandler.postDelayed(stopRunnable, seconds * 1000L)
-            } else {
-                player.isLooping = true
             }
             player.start()
             ringtonePlayer = player
@@ -307,11 +313,18 @@ class MMCallsNativeModuleImpl(private val context: ReactApplicationContext) {
     }
 
     private fun hasBondedBluetoothAudioDevice(): Boolean {
+        // BLUETOOTH_CONNECT is required on API 31+ to query connection state.
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S &&
+            context.checkSelfPermission(android.Manifest.permission.BLUETOOTH_CONNECT) != PackageManager.PERMISSION_GRANTED
+        ) {
+            return false
+        }
         return try {
-            val btManager = context.getSystemService(Context.BLUETOOTH_SERVICE) as? BluetoothManager
-                ?: return false
-            // getConnectedDevices returns only devices actively connected on that profile right now.
-            btManager.getConnectedDevices(BluetoothProfile.HEADSET).isNotEmpty()
+            val adapter = (context.getSystemService(Context.BLUETOOTH_SERVICE) as? BluetoothManager)
+                ?.adapter ?: return false
+            // getProfileConnectionState works for all profiles (unlike
+            // BluetoothManager.getConnectedDevices which only accepts GATT).
+            adapter.getProfileConnectionState(BluetoothProfile.HEADSET) == BluetoothAdapter.STATE_CONNECTED
         } catch (_: SecurityException) {
             false
         } catch (_: Exception) {

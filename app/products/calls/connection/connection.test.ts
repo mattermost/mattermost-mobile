@@ -171,7 +171,7 @@ describe('newConnection', () => {
         expect(wsSend).toHaveBeenCalledWith('reconnect', {channelID: 'channelID', originalConnID: 'originalConnID', prevConnID: 'prevConnID'});
     });
 
-    it('calls startAudioSession when connecting', async () => {
+    it('should call startAudioSession when connecting', async () => {
 
         // @ts-ignore
         WebSocketClient.mockImplementation(() => ({

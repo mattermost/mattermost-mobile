@@ -362,17 +362,19 @@ export async function newConnection(
 
             // If the user's pinned device disappeared (e.g. BT headset ran out
             // of battery), clear their intent so auto-routing resumes.
-            if (userSelectedRoute && !available.includes(userSelectedRoute)) {
+            const selectedRouteDisconnected = Boolean(userSelectedRoute && !available.includes(userSelectedRoute));
+            if (selectedRouteDisconnected) {
                 userSelectedRoute = null;
             }
 
-            // Only re-route when a new device has appeared — prevents thrashing
-            // on events that are just confirming existing state.
+            // Re-route when a new device appears OR when the pinned device just
+            // disconnected — in both cases the current route may no longer follow
+            // the intended priority policy.
             const isNewDevice = (d: AudioDevice) => !previousAvailableDevices.includes(d);
             const newDeviceAppeared = available.some(isNewDevice);
             previousAvailableDevices = available;
 
-            if (!userSelectedRoute && newDeviceAppeared) {
+            if (!userSelectedRoute && (selectedRouteDisconnected || newDeviceAppeared)) {
                 setPreferredAudioRoute(getAutoRoute(available));
             }
         });

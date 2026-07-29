@@ -1187,7 +1187,7 @@ describe('Actions.Calls', () => {
         expect(forceLogout).toHaveBeenCalledWith('server1', forceLogoutError);
     });
 
-    it('setPreferredAudioRoute without fromUser does not pin the route', async () => {
+    it('should not pin the route when setPreferredAudioRoute is called without fromUser', async () => {
         addFakeCall('server1', 'channel-id');
         await act(async () => {
             await CallsActions.joinCall('server1', 'channel-id', 'myUserId', true, createIntl({locale: 'en', messages: {}}));
@@ -1204,7 +1204,7 @@ describe('Actions.Calls', () => {
         });
     });
 
-    it('setPreferredAudioRoute with fromUser pins the route', async () => {
+    it('should pin the route when setPreferredAudioRoute is called with fromUser', async () => {
         addFakeCall('server1', 'channel-id');
         await act(async () => {
             await CallsActions.joinCall('server1', 'channel-id', 'myUserId', true, createIntl({locale: 'en', messages: {}}));

@@ -186,9 +186,14 @@ import WebRTC
             || inputs.contains(where: { $0.portType == .headsetMic })
         if hasWired { available.insert("WIRED_HEADSET") }
 
+        // Use a fixed order so the list is deterministic across emissions with
+        // identical membership — prevents spurious JS diffs on the available list.
+        let ordered: [String] = ["BLUETOOTH", "WIRED_HEADSET", "EARPIECE", "SPEAKER_PHONE"]
+            .filter { available.contains($0) }
+
         return [
             "selectedAudioDevice": selected,
-            "availableAudioDeviceList": Array(available),
+            "availableAudioDeviceList": ordered,
         ]
     }
 
@@ -219,10 +224,8 @@ import WebRTC
 
     // MARK: - Ringtone
 
-    /// Play a ringtone from the app bundle. Uses `.soloAmbient` category so
-    /// it doesn't interfere with an active call session. The file is resolved
-    /// by name from the main bundle (e.g. `<name>.mp3`). Bundle-fallback to
-    /// `default_ringtone.mp3` mirrors the patched incall-manager behavior.
+    /// Play a ringtone from the app bundle. File is resolved by name (e.g. `<name>.mp3`)
+    /// with a fallback to `default_ringtone.mp3`.
     @objc public func startRingtone(_ name: String) throws {
         stopRingtone()
 
@@ -239,8 +242,14 @@ import WebRTC
             )
         }
 
-        try avSession.setCategory(.soloAmbient)
-        try avSession.setActive(true)
+        // Don't overwrite the call session category if configureForCall() has
+        // already run — WebRTC's audio unit must keep its playAndRecord session.
+        let callSessionActive = avSession.category == .playAndRecord
+        if !callSessionActive {
+            try avSession.setCategory(.soloAmbient)
+            try avSession.setActive(true)
+        }
+
         ringtonePlayer = try AVAudioPlayer(contentsOf: url)
         ringtonePlayer?.numberOfLoops = -1
         ringtonePlayer?.play()
@@ -251,7 +260,9 @@ import WebRTC
         guard ringtonePlayer != nil else { return }
         ringtonePlayer?.stop()
         ringtonePlayer = nil
-        try? avSession.setActive(false, options: .notifyOthersOnDeactivation)
+        if avSession.category != .playAndRecord {
+            try? avSession.setActive(false, options: .notifyOthersOnDeactivation)
+        }
         GekidouLogger.shared.log(.info, "AudioSessionManager: stopRingtone")
     }
 }

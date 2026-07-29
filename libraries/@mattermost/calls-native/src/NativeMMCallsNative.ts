@@ -119,7 +119,7 @@ export interface Spec extends TurboModule {
     // Query the current output route and available devices.
     getAudioRoute: () => Promise<AudioRoute>;
 
-    // Ringtone playback. seconds=0 means loop indefinitely (Android only; iOS always loops).
+    // Ringtone playback. seconds=0 loops indefinitely; seconds>0 auto-stops after that duration (Android only — iOS always loops and relies on stopRingtone()).
     startRingtone: (name: string, seconds: number) => Promise<void>;
     stopRingtone: () => Promise<void>;
 }
