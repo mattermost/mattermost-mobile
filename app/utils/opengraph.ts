@@ -91,20 +91,6 @@ const fetchRaw = async (url: string) => {
     }
 };
 
-export const normalizeOpenGraphImageUrl = (imageUrl: string | undefined, pageUrl: string) => {
-    const trimmedImageUrl = imageUrl?.trim();
-    if (!trimmedImageUrl) {
-        return undefined;
-    }
-
-    const parsed = urlParse(trimmedImageUrl, pageUrl);
-    if ((parsed.protocol !== 'http:' && parsed.protocol !== 'https:') || !parsed.host) {
-        return undefined;
-    }
-
-    return parsed.toString();
-};
-
 const getFavIcon = (url: string, html: string) => {
     const getSize = (el: LinkRelIcon) => {
         return (el.sizes && el.sizes[0] && parseInt(el.sizes[0], 10)) || 0;
@@ -123,10 +109,16 @@ const getFavIcon = (url: string, html: string) => {
     });
 
     if (icons.length) {
-        return normalizeOpenGraphImageUrl(icons[0].href, url);
+        const icon = icons[0].href;
+        let parsed = urlParse(icon);
+        if (!parsed.host) {
+            parsed = urlParse(url);
+            return `${parsed.protocol}//${parsed.host}${icon}`;
+        }
+        return icon;
     }
-
-    return normalizeOpenGraphImageUrl('/favicon.ico', url);
+    const parsed = urlParse(url);
+    return `${parsed.protocol}//${parsed.host}/favicon.ico`;
 };
 
 export const fetchOpenGraph = async (url: string, includeFavIcon = false): Promise<OpenGraph> => {
@@ -182,7 +174,7 @@ export const fetchOpenGraph = async (url: string, includeFavIcon = false): Promi
         );
 
         // Image
-        result.imageURL = normalizeOpenGraphImageUrl(data[ogImage], url);
+        result.imageURL = data[ogImage] ? data[ogImage] : null;
         result.favIcon = includeFavIcon ? getFavIcon(url, html) : undefined;
 
         // Title

@@ -629,6 +629,13 @@ jobs:
         with:
           ref: ${{ inputs.MOBILE_VERSION }}
 
+      # Moved before node/Maestro/seed: zero deps on checkout beyond the action,
+      # and apt-get update can be slow (~38m on run 30447839548).
+      - name: Install system dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends libpulse0 scrot ffmpeg xvfb
+
       - name: ci/prepare-node-deps
         uses: ./.github/actions/prepare-node-deps
 
@@ -676,11 +683,6 @@ jobs:
           ADMIN_EMAIL: ${{ env.ADMIN_EMAIL }}
           ADMIN_USERNAME: ${{ env.ADMIN_USERNAME }}
           ADMIN_PASSWORD: ${{ env.ADMIN_PASSWORD }}
-
-      - name: Install system dependencies
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y libpulse0 scrot ffmpeg xvfb
 
       - name: Enable KVM
         run: |

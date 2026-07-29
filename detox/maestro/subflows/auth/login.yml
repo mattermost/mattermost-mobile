@@ -216,9 +216,15 @@ appId: ${MAESTRO_APP_ID}
             id: "login_form.signin.button"
           timeout: 10000
 # iOS: URLSession can drop the first login POST right after server connect on cold sims.
-# Short per-attempt home wait so maxRetries actually fires within ~3–4 min.
-# Nested wait_for_home_tab (180s) inside retry starved retries — CI 30447839548
-# MM-T67856_1/_2 timed out once at ~232–282s with no effective re-login.
+# iOS per-attempt home wait is sized to hedge two competing failure modes:
+#   - dropped POST  → the wait must expire soon enough for a retry to re-tap Log In
+#   - slow cold sim → the wait must be long enough that a working login is not cut short
+# 180s nested wait_for_home_tab starved retries (CI 30447839548 MM-T67856_1/_2 timed out
+# at ~232–282s with no effective re-login); 60s risks killing a login that merely needs
+# ~90s (#9893 run 30424009936 passed these flows with batch 1 at 5m39s). 100s gives two
+# full attempts in ~3.5 min and clears the observed slow-but-working case.
+# Android keeps the original 180s budget from wait_for_home_tab.yml — Android login was
+# never the failing path (all flows pass in ~57s), so shortening it would only add risk.
 - retry:
     maxRetries: 3
     commands:
@@ -243,7 +249,19 @@ appId: ${MAESTRO_APP_ID}
       - tapOn:
           text: "Skip"
           optional: true
-      - extendedWaitUntil:
-          visible:
-            id: "tab_bar.home.tab"
-          timeout: 60000
+      - runFlow:
+          when:
+            platform: iOS
+          commands:
+            - extendedWaitUntil:
+                visible:
+                  id: "tab_bar.home.tab"
+                timeout: 100000
+      - runFlow:
+          when:
+            platform: Android
+          commands:
+            - extendedWaitUntil:
+                visible:
+                  id: "tab_bar.home.tab"
+                timeout: 180000
