@@ -1,0 +1,231 @@
+// Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
+// See LICENSE.txt for license information.
+
+// *******************************************************************
+// - [#] indicates a test step (e.g. # Go to a screen)
+// - [*] indicates an assertion (e.g. * Check the title)
+// - Use element testID when selecting an element. Create one if none.
+// *******************************************************************
+
+import {
+    Channel,
+    Post,
+    Setup,
+} from '@support/server_api';
+import {
+    serverOneUrl,
+    siteOneUrl,
+} from '@support/test_config';
+import {
+    ChannelScreen,
+    ChannelListScreen,
+    EditPostScreen,
+    EmojiPickerScreen,
+    HomeScreen,
+    LoginScreen,
+    PostOptionsScreen,
+    ServerScreen,
+    ThreadScreen,
+} from '@support/ui/screen';
+import {getRandomId, timeouts, wait} from '@support/utils';
+import {expect, waitFor} from 'detox';
+
+describe('Smoke Test - Messaging', () => {
+    const serverOneDisplayName = 'Server 1';
+    const channelsCategory = 'channels';
+    let testChannel: any;
+    let testTeam: any;
+    let testUser: any;
+
+    beforeAll(async () => {
+        const {channel, team, user} = await Setup.apiInit(siteOneUrl);
+        testChannel = channel;
+        testTeam = team;
+        testUser = user;
+
+        // # Log in to server
+        await ServerScreen.connectToServer(serverOneUrl, serverOneDisplayName);
+        await LoginScreen.login(testUser);
+    });
+
+    beforeEach(async () => {
+        // * Verify on channel list screen
+        await ChannelListScreen.toBeVisible();
+    });
+
+    afterAll(async () => {
+        // # Log out
+        await HomeScreen.logout();
+    });
+
+    it('MM-T4786_1 - should be able to post, edit, and delete a message', async () => {
+        // # Open a channel screen and post a message
+        const message = `Message ${getRandomId()}`;
+        await ChannelScreen.open(channelsCategory, testChannel.name);
+        await ChannelScreen.dismissScheduledPostTooltip();
+        await ChannelScreen.postMessage(message);
+
+        // * Verify message is added to post list
+        const {post} = await Post.apiGetLastPostInChannel(siteOneUrl, testChannel.id);
+        const {postListPostItem: originalPostListPostItem} = ChannelScreen.getPostListPostItem(post.id, message);
+        await expect(originalPostListPostItem).toBeVisible();
+
+        // # Open post options for the message that was just posted and tap edit option
+        await ChannelScreen.openPostOptionsFor(post.id, message);
+        await PostOptionsScreen.editPostOption.tap();
+
+        // * Verify on edit post screen
+        await EditPostScreen.toBeVisible();
+
+        // # Edit post message and tap save button
+        const updatedMessage = `${message} edit`;
+        await EditPostScreen.messageInput.replaceText(updatedMessage);
+        await wait(timeouts.ONE_SEC);
+        await EditPostScreen.saveButton.tap();
+
+        await waitFor(EditPostScreen.editPostScreen).not.toExist().withTimeout(timeouts.TWENTY_SEC);
+
+        // * Verify post message is updated and displays edited indicator '(edited)'
+        const {postListPostItem: updatedPostListPostItem} = ChannelScreen.getPostListPostItem(post.id, updatedMessage);
+        await ChannelScreen.assertPostMessageEdited(post.id, updatedMessage);
+
+        // # Open post options for the updated message, tap delete option and confirm
+        await element(by.id(`channel.post_list.post.${post.id}`)).longPress();
+        await PostOptionsScreen.deletePost({confirm: true});
+
+        // * Verify post message is deleted
+        await expect(updatedPostListPostItem).not.toExist();
+
+        // # Go back to channel list screen
+        await ChannelScreen.back();
+    });
+
+    // Skip: failed CI run 29954156963 (both) — BACK_INDEX / thread cascade
+    it.skip('MM-T4786_2 - should be able to reply to a message', async () => {
+        // # Open a channel screen, post a message, and tap on the post
+        const message = `Message ${getRandomId()}`;
+        await ChannelScreen.open(channelsCategory, testChannel.name);
+        await ChannelScreen.postMessage(message);
+        const {post} = await Post.apiGetLastPostInChannel(siteOneUrl, testChannel.id);
+        const {postListPostItem} = ChannelScreen.getPostListPostItem(post.id, message);
+        await postListPostItem.tap();
+
+        // * Verify on reply thread screen
+        await ThreadScreen.toBeVisible();
+
+        // * Verify no thread overview while there are no replies
+        await expect(ThreadScreen.getThreadOverview()).not.toBeVisible();
+
+        // # Reply to parent post
+        const replyMessage = `${message} reply`;
+        await ThreadScreen.postMessage(replyMessage);
+
+        // * Verify reply message is posted
+        const {post: replyPost} = await Post.apiGetLastPostInChannel(siteOneUrl, testChannel.id);
+        const {postListPostItem: replyPostListPostItem} = ThreadScreen.getPostListPostItem(replyPost.id, replyMessage);
+        await expect(replyPostListPostItem).toBeVisible();
+
+        // * Verify thread overview when there are replies
+        await expect(ThreadScreen.getThreadOverview()).toBeVisible();
+
+        // # Go back to channel list screen
+        await ThreadScreen.back();
+        await ChannelScreen.back();
+    });
+
+    // Skip: failed CI run 29954156963 (both) — BACK_INDEX / thread cascade
+    it.skip('MM-T4786_3 - should be able to include emojis in a message and add reaction to a message', async () => {
+        // # Open a channel screen and post a message that includes emojis
+        const message = 'The quick brown fox :fox_face: jumps over the lazy dog :dog:';
+        await ChannelScreen.open(channelsCategory, testChannel.name);
+        await ChannelScreen.postMessage(message);
+
+        // * Verify message is posted with emojis
+        const resolvedMessage = 'The quick brown fox 🦊 jumps over the lazy dog 🐶';
+        const {post} = await Post.apiGetLastPostInChannel(siteOneUrl, testChannel.id);
+        const {postListPostItem} = ChannelScreen.getPostListPostItem(post.id, resolvedMessage);
+        await waitFor(postListPostItem).toBeVisible().withTimeout(timeouts.TEN_SEC);
+
+        // # Open post options for message, open emoji picker screen, and add a reaction
+        // Use openPostOptionsFor (longPressWithScrollRetry) instead of a raw longPress so that
+        // the gesture is retried on Android if PostOptionsScreen doesn't appear on the first attempt.
+        await ChannelScreen.openPostOptionsFor(post.id, resolvedMessage);
+        await EmojiPickerScreen.open();
+
+        await device.disableSynchronization();
+        await EmojiPickerScreen.searchInput.replaceText('clown_face');
+        await EmojiPickerScreen.searchInput.tapReturnKey();
+        await waitFor(element(by.text('🤡'))).toBeVisible().withTimeout(timeouts.TEN_SEC);
+        await element(by.text('🤡')).tap();
+        await device.enableSynchronization();
+
+        // * Verify reaction is added to the message
+        await waitFor(element(by.text('🤡').withAncestor(by.id(`channel.post_list.post.${post.id}`)))).toExist().withTimeout(timeouts.TEN_SEC);
+
+        // # Go back to channel list screen
+        await ChannelScreen.back();
+    });
+
+    // Skip: failed CI run 29954156963 (both) — BACK_INDEX / thread cascade
+    it.skip('MM-T4786_5 - should be able to post a message with at-mention and channel mention', async () => {
+        // # Open a channel screen and post a message with at-mention and channel mention
+        const {channel: targetChannel} = await Channel.apiCreateChannel(siteOneUrl, {teamId: testTeam.id});
+        await Channel.apiAddUserToChannel(siteOneUrl, testUser.id, targetChannel.id);
+        const message = `Message @${testUser.username} ~${targetChannel.name}`;
+        await ChannelScreen.open(channelsCategory, testChannel.name);
+        await ChannelScreen.postMessage(message);
+
+        // * Verify at-mention is posted as lowercase and channel mention is posted as display name
+        const {post} = await Post.apiGetLastPostInChannel(siteOneUrl, testChannel.id);
+        await ChannelScreen.hasPostMessage(post.id, `Message @${testUser.username.toLowerCase()} ~${targetChannel.display_name}`);
+
+        // # Go back to channel list screen
+        await ChannelScreen.back();
+    });
+
+    // Skip: failed CI run 29954156963 (both) — BACK_INDEX / thread cascade
+    it.skip('MM-T4786_6 - should be able to post labeled permalink and labeled channel link', async () => {
+        // # Post a target message in a target channel
+        const permalinkTargetMessage = `Message ${getRandomId()}`;
+        const {channel: targetChannel} = await Channel.apiCreateChannel(siteOneUrl, {teamId: testTeam.id});
+        await Channel.apiAddUserToChannel(siteOneUrl, testUser.id, targetChannel.id);
+        const permalinkTargetPost = await Post.apiCreatePost(siteOneUrl, {
+            channelId: targetChannel.id,
+            message: permalinkTargetMessage,
+        });
+
+        // # Open a channel screen and post a message with labeled permalink to the target message and labeled channel link to the target channel
+        await ChannelScreen.open(channelsCategory, testChannel.name);
+        const permalinkLabel = `permalink-${getRandomId()}`;
+        const permalinkMessage = `[${permalinkLabel}](/${testTeam.name}/pl/${permalinkTargetPost.id})`;
+        const channelLinkLabel = `channel-link-${getRandomId()}`;
+        const channelLinkMessage = `[${channelLinkLabel}](${serverOneUrl}/${testTeam.name}/channels/${targetChannel.name})`;
+        const message = `Message ${permalinkMessage} ${channelLinkMessage}`;
+        await ChannelScreen.postMessage(message);
+
+        // * Verify permalink and channel link are posted as labeled links
+        const {post} = await Post.apiGetLastPostInChannel(siteOneUrl, testChannel.id);
+        await ChannelScreen.hasPostMessage(post.id, `Message ${permalinkLabel} ${channelLinkLabel}`);
+
+        // # Go back to channel list screen
+        await ChannelScreen.back();
+    });
+
+    // Skip: failed CI run 29954156963 (both) — BACK_INDEX / thread cascade
+    it.skip('MM-T4786_7 - should be able to post a message with markdown', async () => {
+        // # Open a channel screen and post a message with markdown
+        const message = `Message ${getRandomId()}`;
+        const markdown = `#### ${message}`;
+        await ChannelScreen.open(channelsCategory, testChannel.name);
+        await ChannelScreen.postMessage(markdown);
+
+        // * Verify message with markdown is posted
+        const {post} = await Post.apiGetLastPostInChannel(siteOneUrl, testChannel.id);
+        const {postListPostItemHeading} = ChannelScreen.getPostListPostItem(post.id, message);
+        await expect(postListPostItemHeading).toBeVisible();
+        await expect(element(by.text(message))).toBeVisible();
+
+        // # Go back to channel list screen
+        await ChannelScreen.back();
+    });
+});

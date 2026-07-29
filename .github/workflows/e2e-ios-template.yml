@@ -84,7 +84,7 @@ on:
         description: "Path to search for test specs (use for smoke test subset)"
         required: false
         type: string
-        default: "detox/e2e/test/products/channels/smoke_test"
+        default: "detox/e2e/test/experiment_smoke"
       parallelism:
         description: "Number of parallel test shards"
         required: false
