@@ -222,7 +222,7 @@ export const ContainerBlock = ({block, ...switchProps}: ContainerBlockProps) => 
             if (block.border || block.accent_color) {
                 padding = style.containerBorder.padding;
             }
-            setMeasuredLayoutWidth(width - (padding * 2));
+            setMeasuredLayoutWidth(Math.max(0, width - (padding * 2)));
         }
     }, [block.accent_color, block.border, style.containerBorder.padding]);
 
