@@ -81,7 +81,10 @@ function packByDuration(files, parallelism, durations) {
     .map((file) => ({file, cost: durations[file] > 0 ? durations[file] : medianCost}))
     .sort((a, b) => (b.cost - a.cost) || a.file.localeCompare(b.file));
 
-  const bins = Array.from({length: Math.max(1, parallelism)}, () => ({total: 0, files: []}));
+  // A non-finite parallelism (unset/garbage PARALLELISM) must not produce zero
+  // bins — that would throw here instead of silently emitting an empty matrix.
+  const binCount = Number.isFinite(parallelism) && parallelism >= 1 ? Math.floor(parallelism) : 1;
+  const bins = Array.from({length: binCount}, () => ({total: 0, files: []}));
   for (const item of items) {
     // Least-loaded bin; ties resolve to the lowest index.
     let target = bins[0];

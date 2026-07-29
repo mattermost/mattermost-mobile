@@ -55,6 +55,16 @@ describe('packByDuration', () => {
         expect(bins[0].files).toEqual(['a.e2e.ts']);
     });
 
+    it('should fall back to a single shard rather than throwing on a non-finite parallelism', () => {
+        const durations = {'a.e2e.ts': 100, 'b.e2e.ts': 200, 'c.e2e.ts': 300, 'd.e2e.ts': 400};
+
+        for (const bad of [Number.NaN, 0, -3, undefined]) {
+            const bins = packByDuration(specs, bad, durations);
+            expect(bins).toHaveLength(1);
+            expect(bins[0].files.sort()).toEqual(specs);
+        }
+    });
+
     it('should place every spec exactly once', () => {
         const durations = {'a.e2e.ts': 30, 'b.e2e.ts': 700, 'c.e2e.ts': 120, 'd.e2e.ts': 450};
         const bins = packByDuration(specs, 3, durations);

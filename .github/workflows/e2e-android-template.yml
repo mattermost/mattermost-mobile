@@ -183,8 +183,12 @@ jobs:
           echo "MOBILE_REF=$(git rev-parse --abbrev-ref HEAD)" >> ${GITHUB_OUTPUT}
 
       # Duration history from the last main-push run; absent → even split.
+      # continue-on-error: this job gates the entire test matrix, and shard packing
+      # is an optimization — a missing manifest or an AWS hiccup must not stop the
+      # run, it must fall back to the even split.
       - name: Restore spec-duration manifest
         if: inputs.durations_key != ''
+        continue-on-error: true
         uses: ./.github/actions/s3-spec-durations
         env:
           DETOX_AWS_ACCESS_KEY_ID: ${{ secrets.MM_MOBILE_DETOX_AWS_ACCESS_KEY_ID }}
@@ -481,13 +485,15 @@ jobs:
       - name: Build spec-duration manifest
         if: always() && inputs.durations_key != ''
         continue-on-error: true
+        env:
+          DURATIONS_KEY: ${{ inputs.durations_key }}
         run: |
           node detox/utils/spec-durations.js \
             --dir detox/artifacts \
             --previous detox/artifacts/spec-durations.json \
             --output detox/artifacts/spec-durations.next.json \
-            --key "${{ inputs.durations_key }}" \
-            --repo-root "${GITHUB_WORKSPACE}"
+            --key "$DURATIONS_KEY" \
+            --repo-root "$GITHUB_WORKSPACE"
 
       - name: Publish spec-duration manifest
         if: always() && inputs.durations_key != '' && (inputs.run-type == 'MAIN' || inputs.run-type == 'MASTER') && hashFiles('detox/artifacts/spec-durations.next.json') != ''

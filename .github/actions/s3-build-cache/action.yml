@@ -70,19 +70,32 @@ runs:
       run: |
         set -eu
 
-        if [ -z "$SCOPE" ]; then
-          echo "::error::scope is empty — refusing to fall back to an unscoped shared key."
-          exit 1
+        # A cache is an optimization: never fail the build over one. An unusable
+        # key (upstream fingerprint job failed, or ls-tree fell back to the
+        # `nocache-<sha>` sentinel) degrades to "miss on restore, skip on save"
+        # rather than erroring — the build jobs run with `if: !cancelled()` and do
+        # not gate on the fingerprint job, so a hard error here would mean no
+        # build at all.
+        KEY_USABLE=true
+        if [ -z "$FINGERPRINT" ]; then
+          echo "::warning::fingerprint is empty (upstream job likely failed) — cache disabled for this step."
+          KEY_USABLE=false
+        elif [ "${FINGERPRINT#nocache-}" != "$FINGERPRINT" ]; then
+          echo "::warning::fingerprint is the '${FINGERPRINT}' sentinel — cache disabled (an object keyed on it could never be hit)."
+          KEY_USABLE=false
         fi
 
-        # Own scope is the only writable location; main is read-only for everyone else.
-        WRITE_KEY="${KEY_PREFIX}${SCOPE}/${PLATFORM}/${FINGERPRINT}.tar.gz"
-
         if [ "$MODE" = "restore" ]; then
+          if [ "$KEY_USABLE" = "false" ]; then
+            echo "cache-hit=false" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+
           # Trusted scope first: if main and this PR both built this fingerprint,
-          # prefer main's binary.
+          # prefer main's binary. An empty scope reads main only — never a
+          # double-slash key, which would be an unscoped shared location.
           READ_SCOPES="main"
-          if [ "$SCOPE" != "main" ]; then
+          if [ -n "$SCOPE" ] && [ "$SCOPE" != "main" ]; then
             READ_SCOPES="main ${SCOPE}"
           fi
 
@@ -111,7 +124,21 @@ runs:
           fi
           echo "cache-hit=${HIT}" >> "$GITHUB_OUTPUT"
         elif [ "$MODE" = "save" ]; then
-          S3_KEY="$WRITE_KEY"
+          if [ "$KEY_USABLE" = "false" ]; then
+            echo "Skipping cache save — no usable key."
+            echo "cache-hit=false" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+          if [ -z "$SCOPE" ]; then
+            # Writing `e2e-builds//<platform>/...` would be an unscoped location
+            # readable by every branch — the exact thing scoping prevents.
+            echo "::warning::scope is empty — refusing to write an unscoped cache object."
+            echo "cache-hit=false" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+
+          # Own scope is the only writable location; main is read-only for everyone else.
+          S3_KEY="${KEY_PREFIX}${SCOPE}/${PLATFORM}/${FINGERPRINT}.tar.gz"
           # nullglob: non-matching glob → empty array instead of literal pattern.
           shopt -s nullglob
           FILES=()
