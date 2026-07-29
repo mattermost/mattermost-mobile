@@ -41,7 +41,14 @@ runs:
         DEVICE_OS_VERSION: ${{ inputs.device_os_version }}
         DURATIONS_FILE: ${{ inputs.durations_file }}
       run: |
-        set -e
-        node ${{ github.action_path }}/split-tests.js | tee output.json
-        echo "specs=$(cat output.json)" >> $GITHUB_OUTPUT
+        # pipefail: without it, `node ... | tee` reports tee's exit status, so a
+        # crash in split-tests.js would leave output.json empty and be treated as
+        # a successful split.
+        set -eo pipefail
+        node "${{ github.action_path }}/split-tests.js" | tee output.json
+        if [ ! -s output.json ]; then
+          echo "::error::split-tests.js produced no matrix output."
+          exit 1
+        fi
+        echo "specs=$(cat output.json)" >> "$GITHUB_OUTPUT"
       shell: bash

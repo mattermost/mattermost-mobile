@@ -173,6 +173,11 @@ jobs:
     steps:
       - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
 
+      # main cancelled superseded runs inline here; this branch hoisted that into
+      # the cancel-stale-e2e-on-push job above (a `needs` of this one) so docs-only
+      # pushes cancel too. Repeating it here would double-cancel and post the
+      # commit status twice.
+
       - name: Remove and re-add E2E/Run for Matterwick
         uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9.0.0
         with:
@@ -377,3 +382,6 @@ jobs:
           head_branch: ${{ github.event.pull_request.head.ref }}
           pr_number: ${{ github.event.pull_request.number }}
           reason: E2E cancelled (E2E/Override label applied)
+          # Only case where success is correct: a maintainer applied E2E/Override to
+          # merge without E2E, so any pending status from the cancelled run must clear.
+          status_state: success
