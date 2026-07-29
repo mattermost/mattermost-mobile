@@ -130,6 +130,22 @@ runs:
 
           core.info(`Cancelling active E2E runs for PR #${prNumber} on branch ${headBranch}`);
 
+          // Fail closed on the default branch. Without a pr_number, runMatchesPr()
+          // matches every run on the branch — fine for a PR or release branch, where
+          // only the newest dispatch matters, but on the default branch that would
+          // cancel the E2E of an earlier merge. Every commit landing there must keep
+          // its own result, and a cancelled run also never writes its build cache
+          // entry (the scope PRs read from). Callers gate this too; this is the
+          // backstop for a future non-PR caller that forgets.
+          const {data: repoInfo} = await github.rest.repos.get({owner, repo});
+          if (!hasPrNumber && headBranch === repoInfo.default_branch) {
+            core.info(
+              `Refusing to cancel: no pr_number and branch '${headBranch}' is the default branch. ` +
+              'Cancelling here would drop E2E results for commits already merged.',
+            );
+            return;
+          }
+
           const {data: workflows} = await github.rest.actions.listRepoWorkflows({owner, repo});
           const e2eWorkflow = workflows.workflows.find((workflow) => workflow.name === 'E2E');
           if (!e2eWorkflow) {
