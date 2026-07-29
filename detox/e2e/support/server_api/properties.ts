@@ -5,6 +5,7 @@ import {timeouts, wait} from '@support/utils';
 
 import client from './client';
 import {getResponseFromError} from './common';
+import User from './user';
 
 const GROUP_NAME = 'access_control';
 const OBJECT_TYPE = 'template';
@@ -150,13 +151,19 @@ export const apiPatchSystemPropertyValues = async (baseUrl: string, groupName: s
  * (keyed by option ID, not name). Option IDs must be valid Mattermost IDs
  * (exactly 26 alphanumeric characters).
  *
- * @returns Object containing the created field IDs and option IDs
+ * @returns Object containing the created field IDs and option IDs keyed by name
  */
 export const apiSetupClassificationWithBanner = async (
     baseUrl: string,
     options?: {
         levels?: PropertyFieldOption[];
         levelId?: string;
+        user?: {
+            newUser: {
+                username: string;
+                password: string;
+            };
+        };
     },
 ) => {
     const levels = options?.levels ?? DEFAULT_CLASSIFICATION_LEVELS;
@@ -164,10 +171,10 @@ export const apiSetupClassificationWithBanner = async (
 
     await apiCleanupClassification(baseUrl);
 
-    // Match Playwright: type select, no CPA "managed" attr, permission "admin".
+    // Match Playwright: type rank, no CPA "managed" attr, permission "admin".
     const templateResult = await apiCreatePropertyField(baseUrl, GROUP_NAME, OBJECT_TYPE, {
         name: FIELD_NAME,
-        type: 'select',
+        type: 'rank',
         target_type: TARGET_TYPE,
         target_id: '',
         attrs: {
@@ -184,16 +191,19 @@ export const apiSetupClassificationWithBanner = async (
     }
 
     const templateField = templateResult_.field;
-    const templateOptions = templateField.attrs?.options ?? [];
-    const selectedOption = templateOptions.find((o: PropertyFieldOption) => o.id === levelId);
+    const templateOptions: PropertyFieldOption[] = templateField.attrs?.options ?? [];
+    const selectedOption = templateOptions.find((o) => o.id === levelId);
     if (!selectedOption) {
-        const available = templateOptions.map((o: PropertyFieldOption) => `${o.name} (${o.id})`).join(', ');
+        const available = templateOptions.map((o) => `${o.name} (${o.id})`).join(', ');
         throw new Error(`Classification level ID "${levelId}" not found in created options. Available: [${available}]`);
     }
 
+    const optionIdsByName = Object.fromEntries(templateOptions.map((o) => [o.name, o.id]));
+
+    // type/options/permissions are inherited from the template by the server.
     const linkedResult = await apiCreatePropertyField(baseUrl, GROUP_NAME, LINKED_OBJECT_TYPE, {
         name: LINKED_FIELD_NAME,
-        type: 'select',
+        type: 'rank',
         target_type: TARGET_TYPE,
         target_id: '',
         linked_field_id: templateField.id,
@@ -259,10 +269,35 @@ export const apiSetupClassificationWithBanner = async (
 
     await pollLinkedVisible('admin');
 
+    if (options?.user) {
+        const loginResult = await User.apiLogin(baseUrl, options.user.newUser) as {error?: unknown};
+        if (loginResult.error) {
+            throw new Error(`apiSetupClassificationWithBanner: test user login failed: ${JSON.stringify(loginResult.error)}`);
+        }
+
+        // Always restore the admin session, but never let a restore failure mask the
+        // polling error that caused it.
+        let pollError: unknown;
+        try {
+            await pollLinkedVisible('test user');
+        } catch (error) {
+            pollError = error;
+        }
+
+        const adminLoginResult = await User.apiAdminLogin(baseUrl) as {error?: unknown};
+        if (pollError) {
+            throw pollError;
+        }
+        if (adminLoginResult.error) {
+            throw new Error(`apiSetupClassificationWithBanner: failed to restore admin session: ${JSON.stringify(adminLoginResult.error)}`);
+        }
+    }
+
     return {
         templateFieldId: templateField.id,
         linkedFieldId: linkedField.id,
         selectedOptionId: selectedOption.id,
+        optionIdsByName,
     };
 };
 
@@ -270,12 +305,23 @@ export const apiSetupClassificationWithBanner = async (
  * Clean up classification property fields and values.
  */
 export const apiCleanupClassification = async (baseUrl: string) => {
-    const linkedFieldsResult = await apiGetPropertyFields(baseUrl, GROUP_NAME, LINKED_OBJECT_TYPE, TARGET_TYPE) as {fields?: any[]};
-    if (linkedFieldsResult.fields) {
-        for (const field of linkedFieldsResult.fields) {
+    const {error: adminLoginError} = await User.apiAdminLogin(baseUrl);
+    if (adminLoginError) {
+        throw new Error(`apiCleanupClassification: admin login failed: ${JSON.stringify(adminLoginError)}`);
+    }
+
+    // Channel linked fields first (channel classification tests), then system, then template.
+    // Sequential: dependents must be deleted before the template (enforced below).
+    for (const objectType of ['channel', LINKED_OBJECT_TYPE, 'user'] as const) {
+        // eslint-disable-next-line no-await-in-loop -- order matters across object types
+        const fieldsResult = await apiGetPropertyFields(baseUrl, GROUP_NAME, objectType, TARGET_TYPE) as {fields?: any[]};
+        if (!fieldsResult.fields) {
+            continue;
+        }
+        for (const field of fieldsResult.fields) {
             if (field.name === LINKED_FIELD_NAME && field.delete_at === 0) {
                 // eslint-disable-next-line no-await-in-loop
-                await apiDeletePropertyField(baseUrl, GROUP_NAME, LINKED_OBJECT_TYPE, field.id);
+                await apiDeletePropertyField(baseUrl, GROUP_NAME, objectType, field.id);
             }
         }
     }

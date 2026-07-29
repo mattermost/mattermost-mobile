@@ -2,7 +2,7 @@
 // See LICENSE.txt for license information.
 
 import {timeouts, wait} from '@support/utils';
-import {expect} from 'detox';
+import {expect, waitFor} from 'detox';
 
 class IntegrationSelectorScreen {
     testID = {
@@ -37,7 +37,7 @@ class IntegrationSelectorScreen {
 
     // Complete selection (for multiselect dialogs)
     done = async () => {
-        await expect(this.doneButton).toExist();
+        await waitFor(this.doneButton).toExist().withTimeout(timeouts.TEN_SEC);
         await this.doneButton.tap();
         await wait(timeouts.ONE_SEC);
     };

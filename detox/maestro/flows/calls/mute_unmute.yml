@@ -29,19 +29,8 @@ appId: ${MAESTRO_APP_ID}
 - waitForAnimationToEnd:
     timeout: 3000
 
-- runFlow:
-    when:
-      visible:
-        id: "calls.current_call_bar"
-    commands:
-      - tapOn:
-          id: "calls.current_call_bar"
-
-# Wait for the full call screen
-- extendedWaitUntil:
-    visible:
-      id: "mute-unmute"
-    timeout: 30000
+# Expand the call bar into the full call screen (retries the tap; see subflow header).
+- runFlow: ../../subflows/calls/open_call_screen.yml
 
 # The user may join the call already muted (emulator: no physical mic).
 # Establish a known unmuted state before the test: if the button shows
