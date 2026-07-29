@@ -58,7 +58,7 @@ jobs:
           head_branch: ${{ github.event.pull_request.head.ref }}
           pr_number: ${{ github.event.pull_request.number }}
           exclude_head_sha: ${{ github.event.pull_request.head.sha }}
-          reason: E2E superseded by new commit push
+          reason: Skipped
 
       - name: Remove and re-add E2E/Run for Matterwick
         uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9.0.0
@@ -219,3 +219,6 @@ jobs:
           head_branch: ${{ github.event.pull_request.head.ref }}
           pr_number: ${{ github.event.pull_request.number }}
           reason: E2E cancelled (E2E/Override label applied)
+          # Only case where success is correct: a maintainer applied E2E/Override to
+          # merge without E2E, so any pending status from the cancelled run must clear.
+          status_state: success

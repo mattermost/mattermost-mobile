@@ -26,4 +26,3 @@ jobs:
         with:
           head_branch: ${{ github.event.pull_request.head.ref }}
           pr_number: ${{ github.event.pull_request.number }}
-          reason: E2E cancelled (E2E/Run label removed)
