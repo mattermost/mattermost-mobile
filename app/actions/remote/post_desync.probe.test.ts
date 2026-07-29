@@ -9,17 +9,24 @@
 // messages) and which turn out to be harmless.
 //
 // The two invariants under test:
-//   I1  MyChannel.lastFetchedAt (the `since` watermark) must not exceed the newest post the
-//       PostsInChannel intervals actually cover -- getPostsSince can never return anything older.
+//   I1  SYNC COMPLETENESS. MyChannel.lastFetchedAt may only advance to T once every change with
+//       update_at <= T has been processed, because getPostsSince(T) filters on update_at and can
+//       never return a post created before T that was not edited after it. Note what I1 is NOT:
+//       lastFetchedAt > interval.latest is legitimate on its own, since the watermark is
+//       max(create_at, update_at, delete_at) while intervals track create_at, so any edit of an old
+//       post diverges them harmlessly. Divergence is not loss; loss needs an unfetched post whose
+//       update_at sits below the watermark (PROBE 1) and out of reach of paging (PROBE 1b).
 //   I2  The interval the channel list renders (postsInChannel[0]) must contain at least one post
 //       the list can render. Under CRT the list renders root posts only.
 //
 // Scope, per probe, so none of this reads as more than it is:
 //   - CRT is real here: it comes from persisted config + preference through getIsCRTEnabled, and
 //     "toggling thread display mode" is modelled by writing the preference the user would change.
-//   - Probes 1, 2 and 3 enter at storePostsForChannel, the storage step shared by the push path and
-//     the deferred channel fetch. Probe 4 enters one step earlier, at convertToNotificationData ->
-//     backgroundNotification, so the payload flag conversion is real code.
+//   - The server side is modelled (see fakeServer) with the semantics that decide these probes, so
+//     "still missing" can be asserted after actually running every mechanism that refetches.
+//   - Probes 1, 4 and 7 enter at convertToNotificationData -> backgroundNotification, so the payload
+//     flag conversion is real code; probes 2 and 3 enter at storePostsForChannel, the storage step
+//     shared by the push path and the deferred channel fetch.
 //   - Out of reach from Jest, and therefore NOT covered: the native iOS/Android notification fetch
 //     and the native SQLite writers (ios/Gekidou, android/app/src/main/java/com/mattermost/helpers),
 //     which maintain the same two tables with their own implementations.
@@ -38,7 +45,7 @@ import TestHelper from '@test/test_helper';
 import {convertToNotificationData} from '@utils/notification';
 
 import {backgroundNotification} from './notifications';
-import {fetchPosts, fetchPostsAround, fetchPostsForChannel, refreshPostsForChannel} from './post';
+import {fetchPosts, fetchPostsAround, fetchPostsBefore, fetchPostsForChannel, refreshPostsForChannel} from './post';
 
 import type ServerDataOperator from '@database/operator/server_data_operator';
 
@@ -65,33 +72,65 @@ const post = (id: string, createAt: number, over: Partial<Post> = {}) => TestHel
     ...over,
 });
 
-const emptyPage = () => ({posts: {}, order: []});
-const pageOf = (posts: Post[]) => ({
-    posts: Object.fromEntries(posts.map((p) => [p.id, p])),
-    order: [...posts].sort((a, b) => b.create_at - a.create_at).map((p) => p.id),
-});
+// A stand-in for the server's post endpoints with the semantics that decide these probes:
+//   - getPostsSince filters on update_at, so a post created inside a gap and never edited after the
+//     watermark is invisible to it no matter how many times the app syncs;
+//   - getPosts pages by create_at, newest first, and returns root posts only under CRT, so it only
+//     reaches back POST_CHUNK_SIZE posts;
+//   - getPostsBefore pages backwards from a given post, so it can only fill below the oldest post
+//     the list already holds, never a gap in the middle.
+// Every probe seeds this instead of queueing one-off responses, which also removes the
+// mockImplementationOnce leak class entirely.
+const fakeServer: {posts: Post[]} = {posts: []};
 
-const mockClient = {
-    getPosts: jest.fn(),
-    getPostsSince: jest.fn(),
-    getPostsBefore: jest.fn(),
-    getPostsAfter: jest.fn(),
-    getPostThread: jest.fn(),
-    getProfilesByIds: jest.fn(),
-    getProfilesByUsernames: jest.fn(),
+const seedServer = (posts: Post[]) => {
+    fakeServer.posts = [...posts];
 };
 
-// mockClear() keeps queued mockImplementationOnce values alive, which leaks a one-time response
-// from one probe into the next one that fetches. Reset and reinstall the defaults instead.
+const newestFirst = (posts: Post[]) => [...posts].sort((a, b) => b.create_at - a.create_at);
+
+const respond = (selected: Post[]) => {
+    const ordered = newestFirst(selected);
+    const oldest = ordered[ordered.length - 1];
+    const older = oldest ? newestFirst(fakeServer.posts.filter((p) => p.create_at < oldest.create_at)) : [];
+    return {
+        posts: Object.fromEntries(ordered.map((p) => [p.id, p])),
+        order: ordered.map((p) => p.id),
+        prev_post_id: older[0]?.id ?? '',
+    };
+};
+
+const mockClient = {
+    getPosts: jest.fn((_channelId: string, page = 0, perPage = 60, collapsedThreads = false) => {
+        const pool = collapsedThreads ? fakeServer.posts.filter((p) => !p.root_id) : fakeServer.posts;
+        return respond(newestFirst(pool).slice(page * perPage, (page + 1) * perPage));
+    }),
+    getPostsSince: jest.fn((_channelId: string, since: number) => {
+        return respond(fakeServer.posts.filter((p) => p.update_at > since));
+    }),
+    getPostsBefore: jest.fn((_channelId: string, postId: string, page = 0, perPage = 60, collapsedThreads = false) => {
+        const from = fakeServer.posts.find((p) => p.id === postId);
+        const pool = (collapsedThreads ? fakeServer.posts.filter((p) => !p.root_id) : fakeServer.posts).
+            filter((p) => from && p.create_at < from.create_at);
+        return respond(newestFirst(pool).slice(page * perPage, (page + 1) * perPage));
+    }),
+    getPostsAfter: jest.fn((_channelId: string, postId: string, page = 0, perPage = 60) => {
+        const from = fakeServer.posts.find((p) => p.id === postId);
+        const pool = fakeServer.posts.filter((p) => from && p.create_at > from.create_at);
+        return respond(newestFirst(pool).slice(page * perPage, (page + 1) * perPage));
+    }),
+    getPostThread: jest.fn((postId: string) => {
+        const root = fakeServer.posts.find((p) => p.id === postId);
+        const replies = fakeServer.posts.filter((p) => p.root_id === postId);
+        return respond([...(root ? [root] : []), ...replies]);
+    }),
+    getProfilesByIds: jest.fn(() => []),
+    getProfilesByUsernames: jest.fn(() => []),
+};
+
 const resetClientMocks = () => {
-    Object.values(mockClient).forEach((m) => m.mockReset());
-    mockClient.getPosts.mockImplementation(emptyPage);
-    mockClient.getPostsSince.mockImplementation(emptyPage);
-    mockClient.getPostsBefore.mockImplementation(emptyPage);
-    mockClient.getPostsAfter.mockImplementation(emptyPage);
-    mockClient.getPostThread.mockImplementation(emptyPage);
-    mockClient.getProfilesByIds.mockImplementation(() => []);
-    mockClient.getProfilesByUsernames.mockImplementation(() => []);
+    Object.values(mockClient).forEach((m) => m.mockClear());
+    fakeServer.posts = [];
 };
 
 // CRT as the app really computes it: server config plus the display preference the user toggles.
@@ -114,9 +153,9 @@ beforeAll(() => {
 
 beforeEach(async () => {
     await DatabaseManager.init([serverUrl]);
-    const server = DatabaseManager.serverDatabases[serverUrl]!;
-    database = server.database;
-    operator = server.operator;
+    const serverDb = DatabaseManager.serverDatabases[serverUrl]!;
+    database = serverDb.database;
+    operator = serverDb.operator;
     resetClientMocks();
 
     await operator.handleConfigs({
@@ -168,61 +207,118 @@ const seedRepliesOnlyInterval = async () => {
     await storePostsForChannel(serverUrl, channelId, replies, replies.map((p) => p.id), '', ActionType.POSTS.RECEIVED_IN_CHANNEL, []);
 };
 
-describe('PROBE 1: the watermark outruns the interval, and the next since-fetch cements the gap', () => {
-    // Enters at the storage step. Probe 4a drives the same thing from the notification entry point.
-    it('reproduces the hole and shows nothing will ever fetch it', async () => {
-        await seedHistory([100, 105, 110]);
+const pushThreadReply = (reply: Post) => backgroundNotification(serverUrl, convertToNotificationData({
+    payload: {
+        channel_id: channelId,
+        team_id: teamId,
+        post_id: reply.id,
+        root_id: reply.root_id,
+        type: 'message',
+        version: 'v2',
+        is_crt_enabled: 'true',
+        data: {posts: {posts: {[reply.id]: reply}, order: [reply.id]}},
+    },
+} as never, false));
+
+const heldCreateAts = async () => (await queryPostsBetween(database, 0, Number.MAX_SAFE_INTEGER, Q.desc, '', channelId).fetch()).
+    map((p) => p.createAt).sort((a, b) => a - b);
+
+describe('PROBE 1: does the watermark hole actually lose messages?', () => {
+    // The hole itself is easy to produce, but "permanently missing" has to survive every mechanism
+    // that refetches: the since-fetch, the page-zero fallback channel_post_list runs whenever the
+    // rendered list is shorter than POST_CHUNK_SIZE, and the scroll-back fetch. So the server is
+    // modelled here (getPostsSince filters on update_at) and each mechanism is actually run.
+    const history = [post('seed-100', 100), post('seed-105', 105), post('seed-110', 110)];
+    const missed = [post('missed-150', 150), post('missed-160', 160)];
+    const reply = post('reply-170', 170, {root_id: 'seed-100'});
+
+    it('1a: with fewer than a page of posts above the gap, the page-zero fallback heals it', async () => {
+        seedServer([...history, ...missed, reply]);
+        await storePostsForChannel(serverUrl, channelId, history, history.map((p) => p.id), '', ActionType.POSTS.RECEIVED_IN_CHANNEL, []);
         expect(await watermark()).toBe(110);
-        expect(await intervals()).toHaveLength(1);
 
-        // A CRT thread reply, far newer than the interval (kondo97's repro).
-        const root = post('root', 90);
-        const reply = post('reply', 200, {root_id: 'root'});
-        await storePostsForChannel(
-            serverUrl, channelId, [root, reply], [reply.id, root.id], '',
-            ActionType.POSTS.RECEIVED_IN_THREAD, [],
-        );
+        // The push moves the watermark past the interval without extending it.
+        await pushThreadReply(reply);
+        expect(await watermark()).toBe(170);
+        expect((await intervals())[0].latest).toBe(110);
 
-        const afterPush = await intervals();
-        expect(await watermark()).toBe(200); // watermark advanced
-        expect(afterPush).toHaveLength(1);
-        expect(afterPush[0].latest).toBe(110); // interval did not
-
-        // Posts 111..199 exist on the server but were never fetched. The next channel open asks
-        // for posts since the watermark, so they are already out of reach.
+        // Opening the channel asks for changes since 170, which cannot return posts created at 150
+        // and 160 and never edited: the hole is real at this point.
         await fetchPostsForChannel(serverUrl, channelId);
-        expect(mockClient.getPostsSince).toHaveBeenCalledWith(channelId, 200, true, true, undefined);
+        expect(mockClient.getPostsSince).toHaveBeenCalledWith(channelId, 170, true, true, undefined);
+        expect(await heldCreateAts()).toEqual([100, 105, 110, 170]);
 
-        // And when a later since-fetch does bring something back, the interval is stretched over
-        // the gap, so the app now claims to hold 111..199 contiguously.
-        const newer = post('newer', 300);
-        await storePostsForChannel(serverUrl, channelId, [newer], [newer.id], '', ActionType.POSTS.RECEIVED_SINCE, []);
+        // But the list is far shorter than POST_CHUNK_SIZE, so channel_post_list fetches page zero,
+        // which pages by create_at and does reach back over the gap.
+        await fetchPosts(serverUrl, channelId);
+        expect(await heldCreateAts()).toEqual([100, 105, 110, 150, 160, 170]);
+    });
 
-        const afterSince = await intervals();
-        expect(afterSince).toHaveLength(1);
-        expect(afterSince[0].earliest).toBe(100);
-        expect(afterSince[0].latest).toBe(300);
+    it('1b: with a full page of posts above the gap, nothing can reach it any more', async () => {
+        // 60 posts newer than the gap, so page zero never pages back far enough.
+        const newer = Array.from({length: 60}, (_, i) => post(`newer-${200 + i}`, 200 + i));
+        seedServer([...history, ...missed, reply, ...newer]);
+        await storePostsForChannel(serverUrl, channelId, history, history.map((p) => p.id), '', ActionType.POSTS.RECEIVED_IN_CHANNEL, []);
 
-        // Interval claims [100,300]; the posts it actually holds skip everything between 110 and 200.
-        // (The thread root at 90 is not even in the interval, so it never renders in the channel.)
-        const held = (await queryPostsBetween(database, 100, 300, Q.desc, '', channelId).fetch()).map((p) => p.createAt).sort((a, b) => a - b);
-        expect(held).toEqual([100, 105, 110, 200, 300]);
+        await pushThreadReply(reply);
+        expect(await watermark()).toBe(170);
+
+        // Reconnect sync: everything with update_at > 170 arrives and extends the interval over the
+        // gap, so the app now claims to hold 150 and 160 contiguously.
+        await fetchPostsForChannel(serverUrl, channelId);
+        const claimed = await intervals();
+        expect(claimed).toHaveLength(1);
+        expect(claimed[0].earliest).toBe(100);
+        expect(claimed[0].latest).toBe(259);
+        expect(await watermark()).toBe(259);
+        expect(await heldCreateAts()).not.toContain(150);
+
+        // Now run every mechanism that could refetch, and show none of them can.
+        await fetchPostsForChannel(serverUrl, channelId); // since-fetch: filters on update_at
+        await fetchPosts(serverUrl, channelId); // page zero: newest 60 by create_at, i.e. 200..259
+        const rendered = await renderedPosts();
+        const oldestRendered = rendered[rendered.length - 1];
+        expect(oldestRendered.createAt).toBe(100);
+        await fetchPostsBefore(serverUrl, channelId, oldestRendered.id); // scroll-back: below 100 only
+
+        const held = await heldCreateAts();
+        expect(held).not.toContain(150);
+        expect(held).not.toContain(160);
+
+        // The two posts are inside the interval the app believes is complete, so no later sync will
+        // ask for them: they are permanently missing from this install.
+        expect(claimed[0].earliest).toBeLessThan(150);
+        expect(claimed[0].latest).toBeGreaterThan(160);
     });
 });
 
-describe('PROBE 2: an edited old post in a partial payload pushes the watermark past the interval', () => {
-    it('advances lastFetchedAt to update_at while the interval only tracks create_at', async () => {
-        await seedHistory([100, 105, 110]);
+describe('PROBE 2: what the watermark/interval divergence does and does not mean', () => {
+    // The watermark is max(create_at, update_at, delete_at) while intervals track create_at, so an
+    // edit of an old post diverges them by design. That alone is not loss -- getPostsSince filters
+    // on update_at, so whether a post inside the gap is still reachable depends on its update_at.
+    it('a post edited after the watermark stays reachable; one created before it does not', async () => {
+        const history = [post('seed-100', 100), post('seed-110', 110)];
+        const neverEdited = post('gap-a', 150);
+        const editedLater = post('gap-b', 160, {update_at: 6000});
+        seedServer([...history, neverEdited, editedLater]);
 
-        // A payload carrying a single old post that was edited recently. No thread involved.
+        await storePostsForChannel(serverUrl, channelId, history, history.map((p) => p.id), '', ActionType.POSTS.RECEIVED_IN_CHANNEL, []);
+
+        // A payload carrying one old post that was edited recently: legitimate divergence.
         const edited = post('seed-105', 105, {update_at: 5000});
         await storePostsForChannel(serverUrl, channelId, [edited], [edited.id], '', ActionType.POSTS.RECEIVED_IN_CHANNEL, []);
-
-        expect((await intervals())[0].latest).toBe(110);
         expect(await watermark()).toBe(5000);
+        expect((await intervals())[0].latest).toBe(110);
 
         await fetchPostsForChannel(serverUrl, channelId);
         expect(mockClient.getPostsSince).toHaveBeenCalledWith(channelId, 5000, true, true, undefined);
+
+        // gap-b was edited after the watermark so the since-fetch still returns it; gap-a was not,
+        // so it is only reachable by paging. The divergence is not the defect -- the unprocessed
+        // create inside the skipped window is.
+        const held = await heldCreateAts();
+        expect(held).toContain(160);
+        expect(held).not.toContain(150);
     });
 });
 
@@ -260,7 +356,7 @@ describe('PROBE 3: an interval that holds only thread replies renders a blank ch
 
         // What channel_post_list does when the rendered list is short: fetchPosts page 0, which
         // under CRT returns root posts only -- all of them older than the replies-only interval.
-        mockClient.getPosts.mockImplementationOnce(() => pageOf([post('seed-1000', 1000), post('seed-2000', 2000), post('newroot', 2500)]) as never);
+        seedServer([post('seed-1000', 1000), post('seed-2000', 2000), post('newroot', 2500)]);
         await fetchPosts(serverUrl, channelId);
 
         expect(mockClient.getPosts).toHaveBeenCalledTimes(1);
@@ -287,13 +383,13 @@ describe('PROBE 3: an interval that holds only thread replies renders a blank ch
 
         // refreshPostsForChannel sees a blank list plus stored posts, so it clears the channel
         // cache and refetches from scratch instead of paging.
-        mockClient.getPosts.mockImplementationOnce(() => pageOf([post('newroot', 2500)]) as never);
+        seedServer([post('seed-1000', 1000), post('seed-2000', 2000), post('newroot', 2500)]);
         await refreshPostsForChannel(serverUrl, channelId, true);
 
         const chunks = await intervals();
         expect(chunks).toHaveLength(1);
         expect(chunks[0].latest).toBe(2500);
-        expect(await renderedPosts()).toHaveLength(1);
+        expect(await renderedPosts()).toHaveLength(3);
     });
 });
 
@@ -355,10 +451,11 @@ describe('PROBE 4: backgroundNotification classifies a thread reply from the pay
 
 describe('PROBE 7: a thread-reply push on a channel with no local history', () => {
     it('leaves a watermark with no interval at all, so the channel has nothing to render', async () => {
-        // Nothing seeded: a channel in the sidebar the user has never opened.
-        expect(await intervals()).toHaveLength(0);
-
+        // Nothing stored locally: a channel in the sidebar the user has never opened. The server
+        // does hold its history, so we can tell recovery from silence.
         const reply = post('reply', 200, {root_id: 'root'});
+        seedServer([post('seed-100', 100), post('seed-105', 105), post('seed-110', 110), reply]);
+        expect(await intervals()).toHaveLength(0);
         await backgroundNotification(serverUrl, convertToNotificationData({
             payload: {
                 channel_id: channelId,
@@ -379,20 +476,19 @@ describe('PROBE 7: a thread-reply push on a channel with no local history', () =
         expect(await renderedPosts()).toHaveLength(0);
 
         // On this branch #9970 refuses to trust the watermark when nothing renders, so the channel
-        // recovers with a page fetch. Verified against the pre-#9970 line, which asks
-        // getPostsSince(200) here and leaves the channel empty.
+        // recovers with a page fetch that actually renders the history. Verified against the
+        // pre-#9970 line, which asks getPostsSince(200) here and renders nothing.
         await fetchPostsForChannel(serverUrl, channelId);
         expect(mockClient.getPosts).toHaveBeenCalled();
         expect(mockClient.getPostsSince).not.toHaveBeenCalled();
+        expect(await intervals()).toHaveLength(1);
+        expect((await renderedPosts()).map((p) => p.createAt).sort((a, b) => a - b)).toEqual([100, 105, 110]);
     });
 });
 
 describe('PROBE 5: RECEIVED_AROUND stores posts with no interval bookkeeping', () => {
     it('leaves the fetched posts outside every interval', async () => {
-        const around = [post('a1', 500), post('a2', 600), post('a3', 700)];
-        mockClient.getPostsBefore.mockImplementationOnce(() => ({posts: {a1: around[0]}, order: ['a1']}) as never);
-        mockClient.getPostsAfter.mockImplementationOnce(() => ({posts: {a3: around[2]}, order: ['a3']}) as never);
-        mockClient.getPostThread.mockImplementationOnce(() => ({posts: {a2: around[1]}, order: ['a2']}) as never);
+        seedServer([post('a1', 500), post('a2', 600), post('a3', 700)]);
 
         await fetchPostsAround(serverUrl, channelId, 'a2', 5, true);
 
