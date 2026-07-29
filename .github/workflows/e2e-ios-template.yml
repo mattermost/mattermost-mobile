@@ -604,10 +604,35 @@ jobs:
             --key "$DURATIONS_KEY" \
             --repo-root "$GITHUB_WORKSPACE"
 
+      - name: Select manifest to publish
+        if: always() && inputs.durations_key != '' && (inputs.run-type == 'MAIN' || inputs.run-type == 'MASTER' || inputs.run-type == 'RELEASE')
+        id: select-manifest
+        continue-on-error: true
+        run: |
+          NEXT=detox/artifacts/spec-durations.next.json
+          PREV=detox/artifacts/spec-durations.json
+          PUBLISH=
+          if [ -s "$NEXT" ] && node -e "
+            const fs=require('fs');
+            const data=JSON.parse(fs.readFileSync(process.argv[1],'utf8'));
+            const d=data.durations||{};
+            process.exit(Object.values(d).some(v=>Number.isFinite(v)&&v>0)?0:1);
+          " "$NEXT" 2>/dev/null; then
+            PUBLISH=$NEXT
+          elif [ -s "$PREV" ] && node -e "
+            const fs=require('fs');
+            const data=JSON.parse(fs.readFileSync(process.argv[1],'utf8'));
+            const d=data.durations||{};
+            process.exit(Object.values(d).some(v=>Number.isFinite(v)&&v>0)?0:1);
+          " "$PREV" 2>/dev/null; then
+            PUBLISH=$PREV
+          fi
+          echo "manifest-path=$PUBLISH" >> "$GITHUB_OUTPUT"
+
       # Experiment: also publish durations on RELEASE runs so release-spec
       # timings are available to PR sharding, not only main-push runs.
       - name: Publish spec-duration manifest
-        if: always() && inputs.durations_key != '' && (inputs.run-type == 'MAIN' || inputs.run-type == 'MASTER' || inputs.run-type == 'RELEASE') && hashFiles('detox/artifacts/spec-durations.next.json') != ''
+        if: always() && inputs.durations_key != '' && (inputs.run-type == 'MAIN' || inputs.run-type == 'MASTER' || inputs.run-type == 'RELEASE') && steps.select-manifest.outputs.manifest-path != ''
         continue-on-error: true
         uses: ./.github/actions/s3-spec-durations
         env:
@@ -616,7 +641,7 @@ jobs:
         with:
           key: ${{ inputs.durations_key }}
           bucket: ${{ env.DETOX_AWS_S3_BUCKET }}
-          manifest-path: detox/artifacts/spec-durations.next.json
+          manifest-path: ${{ steps.select-manifest.outputs.manifest-path }}
           mode: save
 
       # ── TSIO report upload (before e2e:save-report) ────────────────────────
