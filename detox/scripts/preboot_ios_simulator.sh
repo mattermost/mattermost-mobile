@@ -108,13 +108,17 @@ kill_app_via_launchd() {
         return 0
     fi
     xcrun simctl spawn "$SIMULATOR_ID" kill -9 "$app_pid" 2>/dev/null || true
-    for _ in 1 2 3 4; do
+    # launchd teardown is asynchronous — poll until the bundle leaves the job list
+    # so a timeout is not reported as a successful kill.
+    for _ in $(seq 12); do
         if ! xcrun simctl spawn "$SIMULATOR_ID" launchctl list 2>/dev/null | grep -q "$BUNDLE_ID"; then
-            break
+            log "Killed app via launchd (PID $app_pid)"
+            return 0
         fi
         sleep 0.25
     done
-    log "Killed app via launchd (PID $app_pid)"
+    log "Warning: app still listed in launchd 3s after kill -9 (PID $app_pid)"
+    return 1
 }
 
 prewarm_app() {
@@ -125,7 +129,10 @@ prewarm_app() {
     sleep "$sleep_time"
     kill "$launch_pid" 2>/dev/null || true
     wait "$launch_pid" 2>/dev/null || true
-    kill_app_via_launchd
+    if ! kill_app_via_launchd; then
+        log "Pre-warm cleanup did not complete — treating pre-warm as failed"
+        return 1
+    fi
     if xcrun simctl get_app_container "$SIMULATOR_ID" "$BUNDLE_ID" data 2>/dev/null; then
         log "Data container verified"
         return 0

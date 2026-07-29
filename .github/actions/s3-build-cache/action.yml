@@ -3,6 +3,8 @@ description: >-
   Cache/restore compiled app binaries in S3 keyed by content fingerprint.
   Uses S3 instead of actions/cache because large binaries (200MB–1GB)
   blow the 10GB GHA cache limit and cause eviction thrashing.
+  Object retention is handled natively by an S3 lifecycle expiration rule on the
+  `e2e-builds/` prefix (bucket-side config), not by a pruning job in this repo.
 
 inputs:
   fingerprint:
@@ -22,9 +24,7 @@ inputs:
     description: 'Local path to cache (glob for restore, directory for save)'
     required: true
   mode:
-    description: >-
-      restore (check + download), save (upload after build), or
-      check (existence only — no download; for cache-warming jobs)
+    description: 'restore (check + download) or save (upload after build)'
     required: true
 
 outputs:
@@ -56,15 +56,12 @@ runs:
         set -eu
         S3_KEY="${KEY_PREFIX}${PLATFORM}/${FINGERPRINT}.tar.gz"
 
-        if [ "$MODE" = "restore" ] || [ "$MODE" = "check" ]; then
+        if [ "$MODE" = "restore" ]; then
           echo "Checking s3://${BUCKET}/${S3_KEY} ..."
           if aws s3 ls "s3://${BUCKET}/${S3_KEY}" 2>/dev/null; then
-            if [ "$MODE" = "check" ]; then
-              echo "Cache HIT — existence-only check, skipping download."
-              echo "cache-hit=true" >> "$GITHUB_OUTPUT"
             # Any download/extract failure must degrade to a cache miss so the
             # build still runs instead of aborting the action under set -eu.
-            elif aws s3 cp "s3://${BUCKET}/${S3_KEY}" /tmp/build-cache.tar.gz \
+            if aws s3 cp "s3://${BUCKET}/${S3_KEY}" /tmp/build-cache.tar.gz \
               && tar xzf /tmp/build-cache.tar.gz; then
               rm -f /tmp/build-cache.tar.gz
               echo "Restored build from S3 (fingerprint=${FINGERPRINT:0:12})"
@@ -99,6 +96,6 @@ runs:
           rm -f /tmp/build-cache.tar.gz
           echo "Saved build to S3 (fingerprint=${FINGERPRINT:0:12})"
         else
-          echo "::error::Invalid mode: $MODE (expected restore, save, or check)"
+          echo "::error::Invalid mode: $MODE (expected restore or save)"
           exit 1
         fi

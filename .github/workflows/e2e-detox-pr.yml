@@ -334,7 +334,7 @@ jobs:
 
       - name: Skip build if cache hit
         if: steps.cache-check.outputs.cache-hit == 'true'
-        run: echo "SKIP_BUILD=true" >> $GITHUB_ENV
+        run: echo "SKIP_BUILD=true" >> "$GITHUB_ENV"
 
       - name: Prepare iOS Build
         if: env.SKIP_BUILD != 'true'
@@ -416,7 +416,7 @@ jobs:
 
       - name: Skip build if cache hit
         if: steps.cache-check.outputs.cache-hit == 'true'
-        run: echo "SKIP_BUILD=true" >> $GITHUB_ENV
+        run: echo "SKIP_BUILD=true" >> "$GITHUB_ENV"
 
       - name: Prepare Android Build
         if: env.SKIP_BUILD != 'true'
@@ -506,7 +506,7 @@ jobs:
 
       - name: Skip build if cache hit
         if: steps.cache-check.outputs.cache-hit == 'true'
-        run: echo "SKIP_BUILD=true" >> $GITHUB_ENV
+        run: echo "SKIP_BUILD=true" >> "$GITHUB_ENV"
 
       - name: Prepare Android Build
         if: env.SKIP_BUILD != 'true'
