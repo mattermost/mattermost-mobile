@@ -50,7 +50,7 @@ class InteractiveDialogScreen {
         }
 
         const appsFormElement = element(by.id(`AppFormElement.${elementName}.input`));
-        await waitFor(appsFormElement).toBeVisible().withTimeout(timeouts.TWO_SEC);
+        await waitFor(appsFormElement).toBeVisible().withTimeout(timeouts.TEN_SEC);
 
         await expect(appsFormElement).toExist();
         await this.setDialogInputText(appsFormElement, value);

@@ -2,13 +2,14 @@
 // See LICENSE.txt for license information.
 
 import {Alert} from '@support/ui/component';
-import {isAndroid, isIos, longPressWithRetry, safeEnableSynchronization, timeouts, wait} from '@support/utils';
+import {isAndroid, isIos, longPressWithRetry, safeEnableSynchronization, timeouts, wait, waitForElementToNotExist} from '@support/utils';
 import {expect, waitFor} from 'detox';
 
 class PostOptionsScreen {
     testID = {
         reactionEmojiPrefix: 'post_options.reaction_bar.reaction.',
         postOptionsScreen: 'post_options.screen',
+        scrollView: 'post_options.scroll_view',
         pickReactionButton: 'post_options.reaction_bar.pick_reaction.button',
         replyPostOption: 'post_options.reply_post.option',
         followThreadOption: 'post_options.follow_thread.option',
@@ -62,12 +63,26 @@ class PostOptionsScreen {
             await this.postOptionsScreen.swipe('down');
         } else {
             await device.pressBack();
+            try {
+                await waitFor(this.postOptionsScreen).not.toExist().withTimeout(timeouts.TWO_SEC);
+            } catch {
+                await device.pressBack();
+            }
         }
         await waitFor(this.postOptionsScreen).not.toExist().withTimeout(timeouts.FIVE_SEC);
     };
 
     deletePost = async ({confirm = true} = {}) => {
-        await waitFor(this.deletePostOption).toExist().withTimeout(timeouts.TWO_SEC);
+        // On Android gorhom sheets, delete option may be below the fold.
+        // Guard scroll like tapPinOption — already-visible / non-scrollable sheets must not abort.
+        try {
+            await waitFor(this.deletePostOption).toBeVisible().
+                whileElement(by.id(this.testID.scrollView)).
+                scroll(200, 'down');
+        } catch {
+            // The option may already be visible or the sheet may not be scrollable.
+        }
+        await waitFor(this.deletePostOption).toExist().withTimeout(timeouts.TEN_SEC);
         await this.deletePostOption.tap({x: 1, y: 1});
         const {
             deletePostTitle,
@@ -79,11 +94,26 @@ class PostOptionsScreen {
         await expect(deleteButton).toBeVisible();
         if (confirm) {
             await deleteButton.tap();
-            await waitFor(this.postOptionsScreen).not.toExist().withTimeout(timeouts.FIVE_SEC);
+            try {
+                await waitForElementToNotExist(this.postOptionsScreen, timeouts.TEN_SEC);
+            } catch {
+                await this.close();
+                await waitForElementToNotExist(this.postOptionsScreen, timeouts.FIVE_SEC);
+            }
         } else {
             await cancelButton.tap();
             await wait(timeouts.TWO_SEC);
             await waitFor(this.postOptionsScreen).toExist().withTimeout(timeouts.FIVE_SEC);
+            await this.close();
+        }
+    };
+
+    replyToPost = async () => {
+        await waitFor(this.replyPostOption).toExist().withTimeout(timeouts.TWO_SEC);
+        await this.replyPostOption.tap();
+        try {
+            await waitForElementToNotExist(this.postOptionsScreen, timeouts.TEN_SEC);
+        } catch {
             await this.close();
         }
     };
@@ -142,6 +172,27 @@ class PostOptionsScreen {
 
     tapUnsavePost = async () => {
         await this.tapPostOption(this.unsavePostOption, this.unsavePostOptionLabel, 'Unsave');
+    };
+
+    private tapPinOption = async (option: Detox.NativeElement) => {
+        try {
+            await waitFor(option).
+                toBeVisible().
+                whileElement(by.id(this.testID.scrollView)).
+                scroll(100, 'down');
+        } catch {
+            // The option may already be visible or the sheet may not be scrollable.
+        }
+        await waitFor(option).toExist().withTimeout(timeouts.TEN_SEC);
+        await option.tap({x: 1, y: 1});
+    };
+
+    tapPinPost = async () => {
+        await this.tapPinOption(this.pinPostOption);
+    };
+
+    tapUnpinPost = async () => {
+        await this.tapPinOption(this.unpinPostOption);
     };
 }
 

@@ -7,6 +7,8 @@
 // - Use element testID when selecting an element. Create one if none.
 // *******************************************************************
 
+import {acquireClassificationLock, createClassificationLockOwner, releaseClassificationLock} from '@support/classification_lock';
+import {enableClassificationMarkings} from '@support/classification_test_helper';
 import {Post, Properties, Setup, System} from '@support/server_api';
 import {serverOneUrl, siteOneUrl} from '@support/test_config';
 import {GlobalClassificationBanner} from '@support/ui/component';
@@ -22,27 +24,31 @@ import {
     ServerScreen,
     ThreadScreen,
 } from '@support/ui/screen';
-import {timeouts, wait} from '@support/utils';
+import {isAndroid, timeouts, wait} from '@support/utils';
 import {by, device, element, waitFor} from 'detox';
 
-// Skip: failed CI run 29954156963 (both) — classification banner still red after fetch retry; skip suite
-describe.skip('Classification Banner - Visibility Across Screens', () => {
+// Lock wait is up to 20m; leave headroom for enable/setup after acquire.
+jest.setTimeout(timeouts.ONE_MIN * 30);
+
+// Skip Android: CI run 30447839548 — suite flaking on Detox Android (MM-T6209_1 … MM-T6213_1).
+(isAndroid() ? describe.skip : describe)('Classification Banner - Visibility Across Screens', () => {
     const serverOneDisplayName = 'Server 1';
+    let lockOwner = '';
     let testChannel: any;
     let testUser: any;
 
     beforeAll(async () => {
+        lockOwner = createClassificationLockOwner();
+        await acquireClassificationLock(siteOneUrl, lockOwner);
+
         const {channel, user} = await Setup.apiInit(siteOneUrl);
         testChannel = channel;
         testUser = user;
 
-        await System.apiPatchConfig(siteOneUrl, {
-            FeatureFlags: {
-                ClassificationMarkings: true,
-            },
-        });
+        await enableClassificationMarkings(siteOneUrl);
         await Properties.apiSetupClassificationWithBanner(siteOneUrl, {
             levelId: 'lvltopsecret00000000000000',
+            user: testUser,
         });
 
         await ServerScreen.connectToServer(serverOneUrl, serverOneDisplayName);
@@ -55,14 +61,25 @@ describe.skip('Classification Banner - Visibility Across Screens', () => {
     });
 
     afterAll(async () => {
-        await Properties.apiCleanupClassification(siteOneUrl);
-        await System.apiPatchConfig(siteOneUrl, {
-            FeatureFlags: {
-                ClassificationMarkings: false,
-            },
-        });
-
-        await HomeScreen.logout();
+        try {
+            // Each step runs even if an earlier one fails, so a cleanup error cannot leave
+            // the feature flag enabled or the session logged in for later suites.
+            try {
+                await Properties.apiCleanupClassification(siteOneUrl);
+            } finally {
+                try {
+                    await System.apiPatchConfig(siteOneUrl, {
+                        FeatureFlags: {
+                            ClassificationMarkings: false,
+                        },
+                    });
+                } finally {
+                    await HomeScreen.logout();
+                }
+            }
+        } finally {
+            await releaseClassificationLock(siteOneUrl, lockOwner);
+        }
     });
 
     it('MM-T6209_1 - should display the classification banner on the Recent Mentions screen', async () => {

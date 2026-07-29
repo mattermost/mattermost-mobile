@@ -87,8 +87,11 @@ class Alert {
         try {
             await waitFor(this.messageLengthTitle).toBeVisible().withTimeout(timeouts.FOUR_SEC);
         } catch {
-            return; // alert not shown, nothing to dismiss
+            return; // Alert not shown — nothing to dismiss.
         }
+
+        // Once the alert is up, a failure to dismiss it must surface: a lingering
+        // alert blocks every later interaction in the spec.
         await this.okButton.tap();
         await waitForElementToNotExist(this.messageLengthTitle, timeouts.TEN_SEC);
     };

@@ -11,22 +11,38 @@ import axios from 'axios';
 // ****************************************************************
 
 /**
- * Assert that the webhook server at the given base URL is reachable.
- * Throws only if the server is unreachable; HTTP error responses still prove it is listening.
+ * Assert that the webhook sidecar at the given base URL is healthy. A 4xx still proves it
+ * is listening; an empty URL, transport failure, 5xx, or foreign body payload all throw.
  * @param {string} baseUrl - base URL of the webhook server (e.g. http://localhost:3000)
  * @return {Promise<void>}
  */
 export const requireWebhookServer = async (baseUrl: string): Promise<void> => {
-    try {
-        await axios.get(baseUrl, {timeout: 5000});
-    } catch (err: any) {
-        // A 4xx/5xx response still means the server is up
-        if (err.response) {
-            return;
-        }
+    if (!baseUrl?.trim()) {
         throw new Error(
-            `Webhook server is not reachable at ${baseUrl}. ` +
-            'Start the webhook server before running interactive dialog tests.',
+            'WEBHOOK_BASE_URL is empty — Cloudflare quick tunnel did not come up on this shard. ' +
+            'Configure MM_MOBILE_E2E_WEBHOOK_PUBLIC_BASE_URL (+ optional CLOUDFLARED_TUNNEL_TOKEN) ' +
+            'for stable ingress. Non-mm_blocks specs on other shards are unaffected.',
+        );
+    }
+    try {
+        const response = await axios.get<{message?: string}>(baseUrl, {
+            timeout: 10000,
+
+            // trycloudflare often fails TLS/DNS from the runner after a brief healthy window.
+            validateStatus: () => true,
+        });
+        if (response.status >= 500) {
+            throw new Error(`HTTP ${response.status} from ${baseUrl}`);
+        }
+        if (response.data?.message !== 'I\'m alive!') {
+            // Body is not echoed — a wrong host answers with a full HTML error page.
+            throw new Error(`Unexpected health response from ${baseUrl} (HTTP ${response.status})`);
+        }
+    } catch (err: unknown) {
+        const detail = axios.isAxiosError(err) ? err.message : String(err);
+        throw new Error(
+            `Webhook sidecar is not healthy at ${baseUrl}: ${detail}. ` +
+            'CI must run detox/scripts/start_webhook_sidecar.sh and export its WEBHOOK_BASE_URL.',
         );
     }
 };

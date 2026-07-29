@@ -12,6 +12,7 @@ const {
     buildLegSummaries,
     formatLegResultText,
     formatCmtChannelMessage,
+    notifyCmtChannel,
 } = require('./cmt-channel-notify');
 
 describe('cmt-channel-notify', () => {
@@ -92,6 +93,11 @@ describe('cmt-channel-notify', () => {
 
         it('sends PR runs to the E2E webhook', () => {
             assert.equal(resolveWebhookUrl('mobile-pr', env), env.MATTERMOST_E2E_WEBHOOK_URL);
+            assert.equal(resolveWebhookUrl('mobile-pr-detox-ios', env), env.MATTERMOST_E2E_WEBHOOK_URL);
+            assert.equal(
+                resolveWebhookUrl('mobile-release-detox-ios-Server_11.9.0', env),
+                env.MATTERMOST_CMT_WEBHOOK_URL,
+            );
         });
 
         it('does not fall back CMT to the E2E webhook when release secret is missing', () => {
@@ -161,8 +167,14 @@ describe('cmt-channel-notify', () => {
             assert.doesNotMatch(text, /#### Detailed results/);
             assert.doesNotMatch(text, /<details>/);
             assert.match(text, /\| \*\*Overall\*\* \| \*\*460\*\* \| \*\*1\*\* \| \*\*40\*\* \| ❌ Failed \|/);
-            assert.match(text, /\| 📱 detox-ios \(11\.9\.0\) \| 231 \| 0 \| 20 \| ✅ 231\/231 \|/);
-            assert.match(text, /\| 🤖 detox-android \(11\.9\.0\) \| 230 \| 1 \| 20 \| ❌ 230\/231 \|/);
+            assert.match(
+                text,
+                /\| \[📱 detox-ios \(11\.9\.0\)\]\(https:\/\/test-io\.test\.mattermost\.com\/reports\/r\/rid-ios\) \| 231 \| 0 \| 20 \| ✅ 231\/231 \|/,
+            );
+            assert.match(
+                text,
+                /\| \[🤖 detox-android \(11\.9\.0\)\]\(https:\/\/test-io\.test\.mattermost\.com\/reports\/r\/rid-android\) \| 230 \| 1 \| 20 \| ❌ 230\/231 \|/,
+            );
             assert.match(text, /➡️ \*\*Consolidated report:\*\* https:\/\/test-io\.test\.mattermost\.com\/reports\/mattermost-mobile\/release-2\.40\/55afc0b\/mobile-release/);
         });
 
@@ -212,6 +224,115 @@ describe('cmt-channel-notify', () => {
             assert.match(text, /^## ❌ Mobile Main E2E\n/);
             assert.match(text, /\| \*\*Overall\*\* \| \*\*100\*\* \| \*\*0\*\* \| \*\*0\*\* \| ❌ Failed \|/);
             assert.match(text, /TSIO reported failed shard\(s\) not reflected in the test totals/);
+        });
+
+        it('does not blame CI when the failing jobs are explained by failing tests', () => {
+            const text = formatCmtChannelMessage({
+                compositeIdentity: {branch: 'main', commit_sha: 'a1b2c3d', name: 'mobile-main'},
+                detail: {
+                    status: 'incomplete',
+                    test_stats: {passed: 100, failed: 3, skipped: 0, total: 103},
+                    reports: [],
+                },
+                perJobCounts: {},
+                upstreamJobsSucceeded: false,
+                hasFailures: true,
+            });
+            assert.match(text, /^## ❌ Mobile Main E2E\n/);
+            assert.doesNotMatch(text, /outside tracked tests/);
+        });
+
+        it('still flags CI failures outside tracked tests when no test failed', () => {
+            const text = formatCmtChannelMessage({
+                compositeIdentity: {branch: 'main', commit_sha: 'a1b2c3d', name: 'mobile-main'},
+                detail: {
+                    status: 'completed',
+                    test_stats: {passed: 100, failed: 0, skipped: 0, total: 100},
+                    reports: [],
+                },
+                perJobCounts: {},
+                upstreamJobsSucceeded: false,
+            });
+            assert.match(text, /outside tracked tests \(install\/build\/teardown\)/);
+        });
+
+        it('links the CI run separately from the TSIO report', () => {
+            const text = formatCmtChannelMessage({
+                compositeIdentity: {branch: 'main', commit_sha: 'a1b2c3d', name: 'mobile-main'},
+                detail: {status: 'completed', test_stats: {passed: 1}, reports: []},
+                runUrl: 'https://github.com/mattermost/mattermost-mobile/actions/runs/30424009936',
+                perJobCounts: {},
+            });
+            assert.doesNotMatch(text, /Consolidated report/);
+            assert.match(
+                text,
+                /🔗 \*\*CI run:\*\* https:\/\/github\.com\/mattermost\/mattermost-mobile\/actions\/runs\/30424009936/,
+            );
+        });
+    });
+
+    describe('notifyCmtChannel', () => {
+        const identity = {
+            repository: 'mattermost/mattermost-mobile',
+            branch: 'refs/heads/main',
+            commit_sha: 'a1b2c3d4e5f6',
+            gh_run_id: '30424009936',
+            name: 'mobile-main',
+            run_group: 'mobile-main',
+        };
+        const detail = {
+            status: 'completed',
+            test_stats: {passed: 460, failed: 0, skipped: 40, total: 500},
+            reports: [{id: 'rid-ios', gh_job_name: 'detox-ios', status: 'complete'}],
+        };
+        const core = {info: () => {}, warning: () => {}};
+
+        const withStubbedFetch = async (run) => {
+            const calls = [];
+            const original = global.fetch;
+            global.fetch = (url, options) => {
+                calls.push({url: String(url), options});
+                return Promise.resolve({ok: true, text: () => Promise.resolve(''), json: () => Promise.resolve({specs: []})});
+            };
+            try {
+                await run(calls);
+            } finally {
+                global.fetch = original;
+            }
+        };
+
+        it('uses supplied per-job counts instead of a bucket-scoped consolidated fetch', async () => {
+            await withStubbedFetch(async (calls) => {
+                await notifyCmtChannel({
+                    core,
+                    baseUrl: 'https://test-io.test.mattermost.com',
+                    compositeIdentity: identity,
+                    detail,
+                    perJobCounts: {'detox-ios': {passed: 460, failed: 0, skipped: 40, flaky: 0}},
+                    webhookUrl: 'https://mm.example/hooks/master-health',
+                });
+
+                assert.equal(calls.length, 1);
+                assert.equal(calls[0].url, 'https://mm.example/hooks/master-health');
+                const posted = JSON.parse(calls[0].options.body).text;
+                assert.match(posted, /\| \[📱 detox-ios\]\(https:\/\/test-io\.test\.mattermost\.com\/reports\/r\/rid-ios\) \| 460 \| 0 \| 40 \| ✅ 460\/460 \|/);
+                assert.doesNotMatch(posted, /no-results/);
+            });
+        });
+
+        it('falls back to the consolidated fetch when no counts are supplied', async () => {
+            await withStubbedFetch(async (calls) => {
+                await notifyCmtChannel({
+                    core,
+                    baseUrl: 'https://test-io.test.mattermost.com',
+                    compositeIdentity: identity,
+                    detail,
+                    webhookUrl: 'https://mm.example/hooks/master-health',
+                });
+
+                assert.equal(calls.length, 2);
+                assert.match(calls[0].url, /\/api\/v1\/reports\/consolidated\?/);
+            });
         });
     });
 
