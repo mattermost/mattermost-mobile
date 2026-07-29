@@ -15,9 +15,20 @@ on:
         required: false
       MM_MOBILE_E2E_WEBHOOK_URL:
         required: false
+      # Channel-notify routing for the per-job TSIO finalize step. Callers that use
+      # an explicit `secrets:` block must forward these or notify silently no-ops.
+      MM_E2E_MASTER_HEALTH_WEBHOOK_URL:
+        required: false
+      MM_E2E_RELEASE_WEBHOOK_URL:
+        required: false
       MM_MOBILE_DETOX_AWS_ACCESS_KEY_ID:
         required: false
       MM_MOBILE_DETOX_AWS_SECRET_ACCESS_KEY:
+        required: false
+      # Webhook sidecar. Unset means mm_blocks specs fall back to trycloudflare.
+      MM_MOBILE_E2E_WEBHOOK_PUBLIC_BASE_URL:
+        required: false
+      MM_MOBILE_E2E_CLOUDFLARED_TUNNEL_TOKEN:
         required: false
     inputs:
       MM_TEST_SERVER_URL:
@@ -204,6 +215,37 @@ jobs:
         uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
         with:
           ref: ${{ inputs.MOBILE_VERSION }}
+
+      # Each platform gets two provisioned test servers. SITE_1_URL is where a spec
+      # does most of its setup, so pinning every shard to the same server would put
+      # all parallel shards on one instance while the second sits mostly idle —
+      # concurrent setup on one server is what drives API rate limiting and
+      # cross-shard interference. Alternating SITE_1/SITE_2 on shard parity spreads
+      # that load evenly while still giving each shard two distinct sites for the
+      # multi-server specs.
+      - name: Rotate logical test sites by shard
+        env:
+          SERVER_A: ${{ inputs.MM_TEST_SERVER_URL }}
+          SERVER_B: ${{ inputs.MM_TEST_SERVER_URL_2 }}
+          SERVER_SHARED: ${{ inputs.MM_TEST_SERVER_URL_3 }}
+          SHARD_ID: ${{ matrix.runId }}
+        run: |
+          # Single-server topologies leave SERVER_B unset; without this the even
+          # shards would export an empty SITE_1_URL and test_config would silently
+          # fall back to localhost instead of the provisioned server.
+          SERVER_B="${SERVER_B:-$SERVER_A}"
+          if (( 10#$SHARD_ID % 2 == 1 )); then
+            SITE_1_URL="$SERVER_A"
+            SITE_2_URL="$SERVER_B"
+          else
+            SITE_1_URL="$SERVER_B"
+            SITE_2_URL="$SERVER_A"
+          fi
+          {
+            echo "SITE_1_URL=$SITE_1_URL"
+            echo "SITE_2_URL=$SITE_2_URL"
+            echo "SITE_3_URL=$SERVER_SHARED"
+          } >> "$GITHUB_ENV"
 
       - name: ci/prepare-node-deps
         uses: ./.github/actions/prepare-node-deps
@@ -550,6 +592,18 @@ jobs:
 
           echo "✅ Simulator is healthy and ready"
 
+      - name: Start mm_blocks webhook sidecar
+        if: contains(matrix.specs, 'mm_blocks_')
+        continue-on-error: true
+        env:
+          SITE_1_URL: ${{ env.SITE_1_URL }}
+          # Prefer a stable public origin over trycloudflare (optional repo secrets).
+          WEBHOOK_PUBLIC_BASE_URL: ${{ secrets.MM_MOBILE_E2E_WEBHOOK_PUBLIC_BASE_URL }}
+          CLOUDFLARED_TUNNEL_TOKEN: ${{ secrets.MM_MOBILE_E2E_CLOUDFLARED_TUNNEL_TOKEN }}
+        # mm_blocks specs are sharded alone (split-tests.js). This step must not hang:
+        # the script bounds all curls and exits 0 on tunnel failure so Jest still runs.
+        run: bash detox/scripts/start_webhook_sidecar.sh
+
       - name: Start Metro Bundler and Run Detox E2E Tests
         # Bumped from 60 to 180 min: with ~6 specs per shard averaging 5-15 min each,
         # the 60min step timeout was being hit silently — GitHub kills the step but
@@ -716,6 +770,8 @@ jobs:
       # token and resolves gh_job_id via the GitHub API.
       id-token: write
       actions: read
+      # Per-job TSIO finalize posts detox-ios|ipad (or CMT <shard>).
+      statuses: write
     outputs:
       TARGET_URL: ${{ steps.set-url.outputs.TARGET_URL }}
       STATUS: ${{ steps.determine-status.outputs.STATUS }}
@@ -785,17 +841,71 @@ jobs:
             --job-name "$TSIO_SHARD_NAME" \
             --reason "Detox job failed or was cancelled before jest-results.json was written"
 
+      - name: Resolve per-job TSIO config
+        if: always() && inputs.tsio-config != '' && vars.TSIO_UPLOAD_ENABLED != 'false'
+        id: tsio-cfg
+        env:
+          TSIO_CONFIG: ${{ inputs.tsio-config }}
+          TSIO_SHARD_NAME: ${{ inputs.tsio-shard-name }}
+        run: |
+          CFG=$(bash detox/utils/resolve-tsio-job-config.sh)
+          {
+            echo "config<<EOF"
+            echo "$CFG"
+            echo "EOF"
+          } >> "$GITHUB_OUTPUT"
+          echo "Resolved TSIO job: $(echo "$CFG" | jq -r '.composite_identity.name') context=$(echo "$CFG" | jq -r '.status_context')"
+
       - name: Upload report to Test System IO
-        if: always() && inputs.tsio-config != '' && vars.TSIO_UPLOAD_ENABLED != 'false' && hashFiles('detox/artifacts/jest-results-merged.json') != ''
-        uses: mattermost/mattermost-test-system-io/.github/actions/test-system-io-report-upload@45fb048848edc392f398144f45e2f3e30f43aeaa # release-0.12.0 / main@45fb048 (#81 Maestro FilePath + Detox paths, #82 background finalize)
+        if: always() && inputs.tsio-config != '' && vars.TSIO_UPLOAD_ENABLED != 'false' && hashFiles('detox/artifacts/jest-results-merged.json') != '' && steps.tsio-cfg.outputs.config != ''
+        uses: mattermost/mattermost-test-system-io/.github/actions/test-system-io-report-upload@0661accd8cc9ab9dde6ec93f6f5ad40d06deb0d3 # release-0.14.0 / main@0661acc (#93 unique release tags per run)
         with:
-          composite-identity: ${{ toJSON(fromJSON(inputs.tsio-config).composite_identity) }}
-          total-reports-expected: ${{ fromJSON(inputs.tsio-config).total_reports_expected }}
+          composite-identity: ${{ toJSON(fromJSON(steps.tsio-cfg.outputs.config).composite_identity) }}
+          total-reports-expected: ${{ fromJSON(steps.tsio-cfg.outputs.config).total_reports_expected }}
           framework: detox
           github-token: ${{ github.token }}
           gh-job-name: ${{ inputs.tsio-shard-name != '' && inputs.tsio-shard-name || 'generate-report' }}
           json-path: detox/artifacts/jest-results-merged.json
           screenshots-dir: detox/artifacts/
+
+      - name: Post per-job TSIO commit status
+        if: always() && inputs.tsio-config != '' && vars.TSIO_UPLOAD_ENABLED != 'false' && steps.tsio-cfg.outputs.config != ''
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+          TSIO_CONFIG: ${{ steps.tsio-cfg.outputs.config }}
+          SPECS_RESULT: ${{ needs.generate-specs.result }}
+          E2E_RESULT: ${{ needs.e2e-ios.result }}
+          JOB_STATUS: ${{ job.status }}
+          MATTERMOST_E2E_WEBHOOK_URL: ${{ secrets.MM_MOBILE_E2E_WEBHOOK_URL }}
+          MATTERMOST_MASTER_HEALTH_WEBHOOK_URL: ${{ secrets.MM_E2E_MASTER_HEALTH_WEBHOOK_URL }}
+          MATTERMOST_CMT_WEBHOOK_URL: ${{ secrets.MM_E2E_RELEASE_WEBHOOK_URL }}
+        run: |
+          set +e
+          UPSTREAM="true"
+          # This job runs with always(), so job.status stays success when an upstream
+          # job is cancelled — read the needs results to detect that.
+          if [ "$SPECS_RESULT" = "cancelled" ] ||
+             [ "$E2E_RESULT" = "cancelled" ] ||
+             [ "$JOB_STATUS" = "cancelled" ]; then
+            UPSTREAM="false"
+          fi
+          IDENTITY=$(echo "$TSIO_CONFIG" | jq -c '.composite_identity')
+          CONTEXT=$(echo "$TSIO_CONFIG" | jq -r '.status_context // "e2e-test/detox-ios"')
+          TOTAL=$(echo "$TSIO_CONFIG" | jq -r '.total_reports_expected // 1')
+          node detox/utils/tsio-report-status.js \
+            --composite-identity="$IDENTITY" \
+            --total-reports-expected="$TOTAL" \
+            --github-token="$GITHUB_TOKEN" \
+            --context="$CONTEXT" \
+            --upstream-succeeded="$UPSTREAM" \
+            --poll-attempts=24
+          RC=$?
+          echo "tsio-report-status exit=$RC upstream_succeeded=$UPSTREAM context=$CONTEXT"
+          if [ "$RC" -ne 0 ] && [ "$UPSTREAM" = "true" ]; then
+            echo "::error::TSIO reported test failures for $CONTEXT"
+            exit 1
+          fi
+          exit 0
 
       - name: Save report Detox Dependencies
         id: report-link

@@ -92,6 +92,11 @@ describe('cmt-channel-notify', () => {
 
         it('sends PR runs to the E2E webhook', () => {
             assert.equal(resolveWebhookUrl('mobile-pr', env), env.MATTERMOST_E2E_WEBHOOK_URL);
+            assert.equal(resolveWebhookUrl('mobile-pr-detox-ios', env), env.MATTERMOST_E2E_WEBHOOK_URL);
+            assert.equal(
+                resolveWebhookUrl('mobile-release-detox-ios-Server_11.9.0', env),
+                env.MATTERMOST_CMT_WEBHOOK_URL,
+            );
         });
 
         it('does not fall back CMT to the E2E webhook when release secret is missing', () => {
