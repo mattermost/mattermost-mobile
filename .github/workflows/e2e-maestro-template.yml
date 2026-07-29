@@ -611,7 +611,9 @@ jobs:
     name: ${{ inputs.tsio-shard-name != '' && inputs.tsio-shard-name || 'Maestro E2E Tests (Android)' }}
     if: ${{ inputs.platform == 'android' }}
     runs-on: ubuntu-latest-8-cores
-    timeout-minutes: 60
+    # Match iOS (90). CI 30447839548: apt-get update ~38m then suite cancelled mid leave_call
+    # at 60m with 7 passed / 0 failures (SHARD_CANCELLED → STATUS=error).
+    timeout-minutes: 90
     outputs:
       STATUS: ${{ steps.determine-status.outputs.STATUS }}
       TARGET_URL: ${{ steps.set-url.outputs.TARGET_URL }}

@@ -24,13 +24,14 @@ import {
     ServerScreen,
     ThreadScreen,
 } from '@support/ui/screen';
-import {timeouts, wait} from '@support/utils';
+import {isAndroid, timeouts, wait} from '@support/utils';
 import {by, device, element, waitFor} from 'detox';
 
 // Lock wait is up to 20m; leave headroom for enable/setup after acquire.
 jest.setTimeout(timeouts.ONE_MIN * 30);
 
-describe('Classification Banner - Visibility Across Screens', () => {
+// Skip Android: CI run 30447839548 — suite flaking on Detox Android (MM-T6209_1 … MM-T6213_1).
+(isAndroid() ? describe.skip : describe)('Classification Banner - Visibility Across Screens', () => {
     const serverOneDisplayName = 'Server 1';
     let lockOwner = '';
     let testChannel: any;

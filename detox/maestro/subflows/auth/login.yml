@@ -216,8 +216,9 @@ appId: ${MAESTRO_APP_ID}
             id: "login_form.signin.button"
           timeout: 10000
 # iOS: URLSession can drop the first login POST right after server connect on cold sims.
-# Brief settle + retries if home tab never appears (still on login form).
-# CI 30334294934: clock_display still missed home tab after 2 retries on a cold sim.
+# Short per-attempt home wait so maxRetries actually fires within ~3–4 min.
+# Nested wait_for_home_tab (180s) inside retry starved retries — CI 30447839548
+# MM-T67856_1/_2 timed out once at ~232–282s with no effective re-login.
 - retry:
     maxRetries: 3
     commands:
@@ -229,13 +230,20 @@ appId: ${MAESTRO_APP_ID}
                 timeout: 8000
       - tapOn:
           id: "login_form.signin.button"
-      # iOS 26: dismiss "Save Password?" before it blocks the home tab assertion.
+      # Dismiss password/save prompts each attempt so they do not block home tab.
       - tapOn:
           text: "Not Now"
           optional: true
       - tapOn:
           text: "Save"
           optional: true
-      - runFlow:
-          file: ../waits/wait_for_home_tab.yml
-          label: Wait for channel list home tab after login
+      - tapOn:
+          text: "Later"
+          optional: true
+      - tapOn:
+          text: "Skip"
+          optional: true
+      - extendedWaitUntil:
+          visible:
+            id: "tab_bar.home.tab"
+          timeout: 60000
