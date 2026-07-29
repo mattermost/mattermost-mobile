@@ -75,8 +75,11 @@ const CLOUDFLARE_EDGE_STATUSES: ReadonlySet<number> = new Set([520, 521, 522, 52
 
 const TRANSIENT_HTTP_STATUSES: ReadonlySet<number> = new Set([502, 503, 504, ...CLOUDFLARE_EDGE_STATUSES]);
 
-/** Cloudflare could not reach the origin, so the request provably had no side effect. */
-const PRE_ORIGIN_STATUSES: ReadonlySet<number> = new Set([521, 522, 523]);
+/**
+ * Cloudflare could not reach the origin, so the request provably had no side effect.
+ * 522 is excluded: the connection can also time out after the origin accepted the request.
+ */
+const PRE_ORIGIN_STATUSES: ReadonlySet<number> = new Set([521, 523]);
 
 const IDEMPOTENT_METHODS: ReadonlySet<string> = new Set(['get', 'head', 'options']);
 
@@ -97,8 +100,8 @@ baseClient.interceptors.response.use(
         const config = error.config as typeof error.config & {_5xxRetries?: number};
         const status = error.response?.status;
 
-        // A write may already have reached the origin behind 502/503/504 and CF 520/524, so only
-        // idempotent methods are retried on those; CF 521-523 never reach the origin at all.
+        // A write may already have reached the origin behind 502/503/504 and CF 520/522/524, so
+        // only idempotent methods are retried on those; CF 521/523 never reach the origin at all.
         const isSafeToRetry = isTransientHttpStatus(status) &&
             (IDEMPOTENT_METHODS.has((config.method ?? 'get').toLowerCase()) || PRE_ORIGIN_STATUSES.has(status));
 

@@ -562,11 +562,14 @@ class ChannelScreen {
         ): Promise<boolean> => {
             try {
                 await waitFor(option).toExist().withTimeout(timeouts.TWO_SEC);
-                await select();
-                return true;
             } catch {
                 return false;
             }
+
+            // Selection failures must fail the test — falling through would pick another
+            // option and return a key that does not match what the picker applied.
+            await select();
+            return true;
         };
 
         if (await tryOption(() => this.scheduleMessageForTomorrow(), this.scheduleMessageTomorrowOption)) {

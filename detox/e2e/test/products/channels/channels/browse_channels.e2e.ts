@@ -179,7 +179,10 @@ describe('Channels - Browse Channels', () => {
 
         // Poll the client config the app reads instead of reloading React Native, which took
         // 30-90s on iOS CI and pushed MM-T4729_5 past the global test timeout.
-        await System.waitForClientConfigFlag(siteOneUrl, 'ExperimentalViewArchivedChannels', 'true', {maxAttempts: 10});
+        const archivedChannelsConfigReady = await System.waitForClientConfigFlag(siteOneUrl, 'ExperimentalViewArchivedChannels', 'true', {maxAttempts: 10});
+        if (!archivedChannelsConfigReady) {
+            throw new Error('ExperimentalViewArchivedChannels did not propagate to the client config');
+        }
 
         // # Create a channel, add the test user, then archive it
         const {channel: archivedChannel} = await Channel.apiCreateChannel(siteOneUrl, {teamId: testTeam.id});
