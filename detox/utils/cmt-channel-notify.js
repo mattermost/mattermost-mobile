@@ -267,6 +267,7 @@ function formatCmtChannelMessage({
     compositeIdentity,
     detail,
     reportUrl,
+    runUrl,
     baseUrl,
     perJobCounts,
     upstreamJobsSucceeded = true,
@@ -307,8 +308,10 @@ function formatCmtChannelMessage({
 
     if (legs.length > 0) {
         for (const leg of legs) {
+            const name = formatLegName(leg);
+            const nameCell = leg.reportUrl ? `[${name}](${leg.reportUrl})` : name;
             lines.push(
-                `| ${formatLegName(leg)} | ${leg.passed} | ${leg.failed} | ${leg.skipped} | ${formatLegResultText(leg)} |`,
+                `| ${nameCell} | ${leg.passed} | ${leg.failed} | ${leg.skipped} | ${formatLegResultText(leg)} |`,
             );
         }
     }
@@ -318,7 +321,10 @@ function formatCmtChannelMessage({
         lines.push('_No per-leg results available yet._', '');
     }
 
-    if (!upstreamJobsSucceeded) {
+    // A tracked test failure already fails the E2E job (the aggregator exits 1 by
+    // design), so upstreamJobsSucceeded=false only means something broke *outside*
+    // the tests when there are no failing tests to explain it.
+    if (!upstreamJobsSucceeded && failed === 0) {
         lines.push('_One or more CI jobs failed outside tracked tests (install/build/teardown)._', '');
     } else if (hasFailures && failed === 0) {
         lines.push('_TSIO reported failed shard(s) not reflected in the test totals; check the full report._', '');
@@ -329,6 +335,9 @@ function formatCmtChannelMessage({
 
     if (reportUrl) {
         lines.push(`➡️ **Consolidated report:** ${reportUrl}`);
+    }
+    if (runUrl && runUrl !== reportUrl) {
+        lines.push(`🔗 **CI run:** ${runUrl}`);
     }
 
     return lines.join('\n').trimEnd() + '\n';
@@ -442,6 +451,10 @@ async function postMattermostWebhook({core, webhookUrl, text, username = 'Mobile
 /**
  * Build + post the channel message. Never throws to the caller — notify is best-effort.
  *
+ * `perJobCounts` lets a caller supply already-merged counts. Rollup callers must do
+ * this: their `compositeIdentity` is a routing bucket (`mobile-main`) with no TSIO
+ * group of its own, so a bucket-scoped consolidated fetch returns nothing.
+ *
  * @param {Object} params
  */
 async function notifyCmtChannel({
@@ -450,25 +463,31 @@ async function notifyCmtChannel({
     compositeIdentity,
     detail,
     reportUrl,
+    runUrl,
+    perJobCounts,
     upstreamJobsSucceeded = true,
     hasFailures = false,
     webhookUrl,
 }) {
     try {
         const resolvedWebhook = webhookUrl || resolveWebhookUrl(compositeIdentity?.name);
-        let perJobCounts = {};
-        try {
-            perJobCounts = await fetchPerJobCountsFromConsolidated(baseUrl, compositeIdentity, detail);
-        } catch (error) {
-            core.warning(`Could not load per-leg TSIO counts: ${error.message}`);
+        let counts = perJobCounts;
+        if (!counts) {
+            counts = {};
+            try {
+                counts = await fetchPerJobCountsFromConsolidated(baseUrl, compositeIdentity, detail);
+            } catch (error) {
+                core.warning(`Could not load per-leg TSIO counts: ${error.message}`);
+            }
         }
 
         const text = formatCmtChannelMessage({
             compositeIdentity,
             detail,
             reportUrl,
+            runUrl,
             baseUrl,
-            perJobCounts,
+            perJobCounts: counts,
             upstreamJobsSucceeded,
             hasFailures,
         });
