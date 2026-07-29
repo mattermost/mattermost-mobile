@@ -253,14 +253,19 @@ jobs:
             const owner = context.repo.owner;
             const repo = context.repo.repo;
             const sha = context.payload.pull_request.head.sha;
+            // Must match E2E_STATUS_CONTEXTS in .github/actions/cancel-e2e-runs and
+            // the contexts built by detox/utils/build-tsio-job-config.js. The legacy
+            // `e2e/*-tests` names were retired with the per-job TSIO statuses — posting
+            // them here would leave the required checks unset and block the PR.
             const contexts = [
-              'e2e/detox-ios-tests',
-              'e2e/detox-android-tests',
-              'e2e/detox-ipad-tests',
-              'e2e/maestro-ios-tests',
-              'e2e/maestro-android-tests'
+              'e2e-test/detox-ios',
+              'e2e-test/detox-android',
+              'e2e-test/detox-ipad',
+              'e2e-test/maestro-ios',
+              'e2e-test/maestro-android',
             ];
-            
+
+
             for (const ctx of contexts) {
               await github.rest.repos.createCommitStatus({
                 owner,
