@@ -26,6 +26,7 @@ import {
     HomeScreen,
     LoginScreen,
     PostOptionsScreen,
+    ReactionsScreen,
     ServerScreen,
 } from '@support/ui/screen';
 import {getRandomId, timeouts} from '@support/utils';

@@ -2,7 +2,7 @@
 // See LICENSE.txt for license information.
 
 import React, {useMemo} from 'react';
-import {View, TextInput, Platform, type KeyboardTypeOptions} from 'react-native';
+import {View, TextInput, Platform, type KeyboardTypeOptions, type TextInputProps} from 'react-native';
 
 import {useTheme} from '@context/theme';
 import {
@@ -61,6 +61,7 @@ type Props = {
     multiline: boolean;
     keyboardType: KeyboardTypeOptions;
     secureTextEntry: boolean;
+    textContentType?: TextInputProps['textContentType'];
     testID: string;
     location: AvailableScreens;
 }
@@ -78,6 +79,7 @@ function TextSetting({
     multiline,
     keyboardType,
     secureTextEntry,
+    textContentType,
     testID,
     location,
 }: Props) {
@@ -116,6 +118,7 @@ function TextSetting({
                         multiline={multiline}
                         keyboardType={actualKeyboardType}
                         secureTextEntry={secureTextEntry}
+                        textContentType={textContentType}
                         keyboardAppearance={getKeyboardAppearanceFromTheme(theme)}
                         testID={`${testID}.input`}
                     />

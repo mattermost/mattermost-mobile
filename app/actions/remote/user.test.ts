@@ -9,6 +9,7 @@ import NetworkManager from '@managers/network_manager';
 
 import {
     fetchMe,
+    refetchCurrentUser,
     fetchProfilesInChannel,
     fetchProfilesInGroupChannels,
     type ProfilesInChannelRequest,
@@ -130,6 +131,15 @@ describe('get users', () => {
         expect(result).toBeDefined();
         expect(result.error).toBeUndefined();
         expect(result.user).toBeDefined();
+    });
+
+    it('fetchMe - preserves the getMe rejection reason instead of a generic error', async () => {
+        const authError = {status_code: 401};
+        (mockClient.getMe as jest.Mock).mockRejectedValueOnce(authError);
+
+        const result = await fetchMe(serverUrl);
+
+        expect(result?.error).toBe(authError);
     });
 
     it('fetchProfilesInChannel - handle not found database', async () => {
@@ -808,5 +818,45 @@ describe('updateCustomAttributes', () => {
         expect(result.error).toBeUndefined();
         expect(result.success).toBe(true);
         expect(mockClient.updateCustomProfileAttributeValues).toHaveBeenCalledWith({});
+    });
+});
+
+describe('refetchCurrentUser', () => {
+    it('returns the underlying fetchMe error when no user is fetched', async () => {
+        const fetchError = new Error('network failure');
+        (mockClient.getMe as jest.Mock).mockRejectedValueOnce(fetchError);
+
+        const result = await refetchCurrentUser(serverUrl, undefined);
+
+        expect(result).toEqual({error: fetchError});
+    });
+
+    it('returns the already-known currentUserId without seeding it again, regardless of the fetchMe outcome', async () => {
+        (mockClient.getMe as jest.Mock).mockRejectedValueOnce(new Error('network failure'));
+
+        const result = await refetchCurrentUser(serverUrl, 'userid1');
+
+        expect(result).toEqual({currentUserId: 'userid1'});
+    });
+
+    it('returns error when operator is not available after fetchMe succeeds', async () => {
+        const current = DatabaseManager.serverDatabases[serverUrl];
+        jest.spyOn(DatabaseManager, 'getServerDatabaseAndOperator').mockReturnValueOnce(current as never);
+        delete (DatabaseManager.serverDatabases as Record<string, typeof current>)[serverUrl];
+
+        let result;
+        try {
+            result = await refetchCurrentUser(serverUrl, undefined);
+        } finally {
+            DatabaseManager.serverDatabases[serverUrl] = current!;
+        }
+
+        expect(result).toEqual({error: 'Cannot get operator for server'});
+    });
+
+    it('returns the seeded userId on success', async () => {
+        const result = await refetchCurrentUser(serverUrl, undefined);
+
+        expect(result).toEqual({currentUserId: 'userid1'});
     });
 });

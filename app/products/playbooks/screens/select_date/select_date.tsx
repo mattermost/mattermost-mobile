@@ -8,7 +8,7 @@ import {useIntl} from 'react-intl';
 import {Keyboard, Text, View} from 'react-native';
 
 import Button from '@components/button';
-import DateTimeSelector from '@components/data_time_selector';
+import DateTimeSelector from '@components/date_time_selector';
 import NavigationButton from '@components/navigation_button';
 import {Screens} from '@constants';
 import {useTheme} from '@context/theme';

@@ -6,7 +6,7 @@ import {
     ProfilePicture,
 } from '@support/ui/component';
 import {ChannelScreen} from '@support/ui/screen';
-import {isAndroid, timeouts, wait} from '@support/utils';
+import {isAndroid, timeouts, wait, waitForElementToExist} from '@support/utils';
 import {expect, waitFor} from 'detox';
 
 class ChannelInfoScreen {
@@ -205,6 +205,83 @@ class ChannelInfoScreen {
 
         // Cancel
         await element(by.id('channel_info.title.public_private.bottom_sheet.cancel')).tap();
+    };
+
+    scrollToBookmarks = async () => {
+        const bookmarksList = element(by.id('channel_info.bookmarks.list'));
+        try {
+            await waitForElementToExist(bookmarksList, timeouts.THREE_SEC);
+            return;
+        } catch {
+            // Bookmarks section may be below the fold — scroll channel info.
+        }
+
+        try {
+            await waitFor(bookmarksList).
+                toExist().
+                whileElement(by.id(this.testID.scrollView)).
+                scroll(300, 'down');
+        } catch {
+            try {
+                await this.scrollView.scrollTo('bottom');
+            } catch {
+                // Content may not require scrolling
+            }
+        }
+        await wait(timeouts.ONE_SEC);
+    };
+
+    // Close/reopen channel info to re-trigger bookmark fetch when API-created
+    // bookmarks are not yet in the client after beforeAll reload (CI 29935363789:
+    // Add bookmark visible but pre-created titles missing from bookmarks.list).
+    waitForBookmarkInChannelInfo = async (
+        bookmarkMatcher: Detox.NativeMatcher,
+        {
+            timeout = timeouts.TWENTY_SEC,
+            textFallback,
+            bookmarkId,
+        }: {timeout?: number; textFallback?: string; bookmarkId?: string} = {},
+    ) => {
+        const MAX_RETRIES = 3;
+        const perAttemptTimeout = Math.ceil(timeout / MAX_RETRIES);
+
+        /* eslint-disable no-await-in-loop -- close/reopen channel info to trigger bookmark sync */
+        for (let attempt = 1; attempt <= MAX_RETRIES; attempt++) {
+            await this.scrollToBookmarks();
+            try {
+                await waitFor(element(bookmarkMatcher)).toExist().withTimeout(perAttemptTimeout);
+                return;
+            } catch (error) {
+                if (attempt === MAX_RETRIES) {
+                    if (textFallback) {
+                        const headerMatcher = by.text(textFallback).
+                            withAncestor(by.id('channel_header.bookmarks.list'));
+                        try {
+                            await waitFor(element(headerMatcher)).toExist().withTimeout(timeouts.FIVE_SEC);
+                            return;
+                        } catch {
+                            // Fall through to bookmarkId / original error.
+                        }
+                    }
+                    if (bookmarkId) {
+                        const headerMatcher = by.id(`channel_bookmark.${bookmarkId}`).
+                            withAncestor(by.id('channel_header.bookmarks.list'));
+                        try {
+                            await waitFor(element(headerMatcher)).toExist().withTimeout(timeouts.FIVE_SEC);
+                            return;
+                        } catch {
+                            // Fall through to original error.
+                        }
+                    }
+                    throw error;
+                }
+
+                await this.close();
+                await wait(timeouts.ONE_SEC);
+                await this.open();
+            }
+        }
+        /* eslint-enable no-await-in-loop */
     };
 }
 

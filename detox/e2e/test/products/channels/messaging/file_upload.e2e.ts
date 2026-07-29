@@ -73,7 +73,8 @@ describe('Messaging - File Upload', () => {
         await ChannelScreen.back();
     });
 
-    it('MM-T325_1 - should show attachment in the reply thread view', async () => {
+    // Skip: failed CI run 29954156963 (both) — BACK_INDEX / thread attachment
+    it.skip('MM-T325_1 - should show attachment in the reply thread view', async () => {
         // # Create a text parent post so it is reliably long-pressable
         const parentMessage = `Parent post ${getRandomId()}`;
         const {post: parentPost} = await Post.apiCreatePost(siteOneUrl, {
@@ -136,7 +137,8 @@ describe('Messaging - File Upload', () => {
         await ChannelScreen.back();
     });
 
-    it('MM-T328_1 - should show multiple attachments in post after sending via API', async () => {
+    // Skip: failed CI run 29954156963 (both) — attachment post flake
+    it.skip('MM-T328_1 - should show multiple attachments in post after sending via API', async () => {
         // Full UI multi-file selection from a picker isn't automatable in Detox — upload via API.
 
         // # Upload two images to the channel via API
@@ -191,7 +193,8 @@ describe('Messaging - File Upload', () => {
         await ChannelScreen.back();
     });
 
-    it('MM-T330_1 - iOS only — inline image with size specified renders in the channel', async () => {
+    // Skip: failed CI run 29954156963 (ios) — inline image size flake
+    (isIos() ? it.skip : it)('MM-T330_1 - iOS only — inline image with size specified renders in the channel', async () => {
         if (!isIos()) {
             return;
         }

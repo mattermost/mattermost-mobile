@@ -8,8 +8,10 @@ import {Alert, Pressable, Text, View} from 'react-native';
 
 import {fetchAgents} from '@agents/actions/remote/agents';
 import {requestChannelSummary} from '@agents/actions/remote/channel_summary';
+import {saveSelectedAgent} from '@agents/actions/remote/preference';
 import {type Agent} from '@agents/client/rest';
 import {AGENT_ANALYSIS_SUMMARY} from '@agents/constants';
+import {resolveSelectedAgent} from '@agents/utils';
 import CompassIcon from '@components/compass_icon';
 import FloatingTextInput from '@components/floating_input/floating_text_input_label';
 import FormattedText from '@components/formatted_text';
@@ -19,7 +21,8 @@ import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
 import {usePreventDoubleTap} from '@hooks/utils';
 import {dismissBottomSheet} from '@screens/navigation';
-import {getErrorMessage} from '@utils/errors';
+import {getErrorMessage, getFullErrorMessage} from '@utils/errors';
+import {logError} from '@utils/log';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
 
@@ -51,6 +54,7 @@ const SUMMARY_OPTIONS: SummaryOption[] = [
 
 type Props = {
     channelId: string;
+    selectedAgentId: string;
 };
 
 const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
@@ -105,7 +109,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
     },
 }));
 
-const ChannelSummarySheet = ({channelId}: Props) => {
+const ChannelSummarySheet = ({channelId, selectedAgentId}: Props) => {
     const intl = useIntl();
     const theme = useTheme();
     const serverUrl = useServerUrl();
@@ -119,19 +123,25 @@ const ChannelSummarySheet = ({channelId}: Props) => {
     const [selectedAgent, setSelectedAgent] = useState<Agent | null>(null);
     const [loadingAgents, setLoadingAgents] = useState(true);
 
-    // Fetch agents on mount and set default to first agent
+    // Fetch agents on mount.
     useEffect(() => {
         const loadAgents = async () => {
             setLoadingAgents(true);
             const result = await fetchAgents(serverUrl);
             if (result.data && result.data.length > 0) {
                 setAgents(result.data);
-                setSelectedAgent(result.data[0]);
             }
             setLoadingAgents(false);
         };
         loadAgents();
     }, [serverUrl]);
+
+    // Auto-resolve the selected agent (saved pref -> default -> first) without persisting.
+    useEffect(() => {
+        if (agents.length > 0) {
+            setSelectedAgent((current) => current ?? resolveSelectedAgent(agents, selectedAgentId));
+        }
+    }, [agents, selectedAgentId]);
 
     const handleOptionPress = useCallback(async (optionId: string | boolean) => {
         if (submitting) {
@@ -196,10 +206,14 @@ const ChannelSummarySheet = ({channelId}: Props) => {
         setShowAgentSelector(false);
     }, []);
 
-    const handleAgentSelect = useCallback((agent: Agent) => {
+    const handleAgentSelect = useCallback(async (agent: Agent) => {
         setSelectedAgent(agent);
         setShowAgentSelector(false);
-    }, []);
+        const {error} = await saveSelectedAgent(serverUrl, agent.id);
+        if (error) {
+            logError('Failed to persist agent selection', getFullErrorMessage(error));
+        }
+    }, [serverUrl]);
 
     const handleCustomPromptSubmit = useCallback(async () => {
         if (!customPrompt.trim() || !selectedAgent) {

@@ -131,6 +131,14 @@ export function convertDialogElementToAppField(element: DialogElement): AppField
         appField.hint = element.placeholder;
     }
 
+    // Preserve datetime configuration
+    if (element.type === DialogElementTypes.DATE || element.type === DialogElementTypes.DATETIME) {
+        appField.min_date = element.min_date;
+        appField.max_date = element.max_date;
+        appField.time_interval = element.time_interval;
+        appField.datetime_config = element.datetime_config;
+    }
+
     // Field refresh should be controlled by the server-side dialog configuration
     // The server should specify which fields trigger form refresh
     appField.refresh = element.refresh;

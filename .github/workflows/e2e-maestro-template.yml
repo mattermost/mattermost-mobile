@@ -32,16 +32,23 @@ on:
         required: false
         type: string
         default: ""
-      testcase_failure_fatal:
-        description: "Should test failures fail the commit status check"
-        required: false
-        type: boolean
-        default: false
       record_tests_in_zephyr:
-        description: "Record Maestro test results in Zephyr Scale (nightly/release runs)"
+        description: "Record Maestro test results in Zephyr Scale (release/main runs)"
         required: false
         type: boolean
         default: false
+      tsio-config:
+        description: >
+          TSIO reporting config: {"composite_identity":{...},"total_reports_expected":N}.
+          Empty disables TSIO upload for this platform.
+        required: false
+        type: string
+        default: ""
+      tsio-shard-name:
+        description: "Display name for this shard in TSIO (e.g. maestro-ios-Server_11.9.0-rc3)"
+        required: false
+        type: string
+        default: ""
     secrets:
       MM_MOBILE_E2E_ADMIN_EMAIL:
         required: true
@@ -79,6 +86,10 @@ on:
 permissions:
   contents: read
   actions: read
+  # test-system-io-report-upload authenticates via the workflow's OIDC token
+  # and resolves gh_job_id via the GitHub API; reusable workflows cannot
+  # escalate beyond the caller, so this must be granted at every level.
+  id-token: write
 env:
   ADMIN_EMAIL: ${{ secrets.MM_MOBILE_E2E_ADMIN_EMAIL }}
   ADMIN_USERNAME: ${{ secrets.MM_MOBILE_E2E_ADMIN_USERNAME }}
@@ -106,7 +117,8 @@ env:
 
 jobs:
   e2e-maestro-ios:
-    name: Maestro E2E Tests (iOS)
+    # TSIO shard label = job name; prefer tsio-shard-name (e.g. maestro-ios-e2e).
+    name: ${{ inputs.tsio-shard-name != '' && inputs.tsio-shard-name || 'Maestro E2E Tests (iOS)' }}
     if: ${{ inputs.platform == 'ios' || inputs.platform == '' }}
     runs-on: macos-26
     timeout-minutes: 90
@@ -390,7 +402,7 @@ jobs:
           npm ci --prefer-offline --no-audit --no-fund
           node -e "
             const path = require('path');
-            const {parseMaestroReport, generateMaestroHtmlReport, mergeMaestroBatchReportsFromDir} = require('./utils/maestro_report');
+            const {parseMaestroReport, generateMaestroHtmlReport, mergeMaestroBatchReportsFromDir, prepareMaestroScreenshotsForTsio} = require('./utils/maestro_report');
             const buildDir = path.resolve('..', 'build');
             const xmlPath = path.join(buildDir, 'maestro-report.xml');
             mergeMaestroBatchReportsFromDir(buildDir, xmlPath);
@@ -418,11 +430,43 @@ jobs:
                 platform: 'iOS',
                 commitSha: process.env.GITHUB_SHA || '',
               });
+              // Per-flow folders so TSIO LinkScreenshots can match full_title.
+              prepareMaestroScreenshotsForTsio({
+                xmlPath: xmlPath,
+                artifactsDir: path.join(buildDir, 'maestro-artifacts'),
+                outputDir: path.join(buildDir, 'maestro-artifacts-tsio'),
+                repoRoot: path.resolve('..'),
+              });
             } else {
               console.log('No Maestro report found — marking as failure');
               ['FAILURES=1','PASSES=0','TOTAL=0','ERRORS=1','SKIPPED=0','PERCENTAGE=0','NO_REPORT=true'].forEach(l => fs.appendFileSync(process.env.GITHUB_OUTPUT, l + '\n'));
             }
           "
+
+      - name: Write TSIO failure stub when Maestro report is missing
+        if: always() && inputs.tsio-config != '' && vars.TSIO_UPLOAD_ENABLED != 'false' && hashFiles('build/maestro-report.xml') == ''
+        env:
+          TSIO_SHARD_NAME: ${{ inputs.tsio-shard-name != '' && inputs.tsio-shard-name || 'Maestro E2E Tests (iOS)' }}
+        run: |
+          node detox/utils/write-tsio-failure-stub.mjs \
+            --format junit \
+            --output build/maestro-report.xml \
+            --job-name "$TSIO_SHARD_NAME" \
+            --reason "Maestro job failed or was cancelled before maestro-report.xml was written"
+
+      # TSIO accepts framework=maestro (JUnit XML) since mattermost-test-system-io#76.
+      - name: Upload report to Test System IO
+        if: always() && inputs.tsio-config != '' && vars.TSIO_UPLOAD_ENABLED != 'false' && hashFiles('build/maestro-report.xml') != ''
+        uses: mattermost/mattermost-test-system-io/.github/actions/test-system-io-report-upload@45fb048848edc392f398144f45e2f3e30f43aeaa # release-0.12.0 / main@45fb048 (#81 Maestro FilePath + Detox paths, #82 background finalize)
+        with:
+          composite-identity: ${{ toJSON(fromJSON(inputs.tsio-config).composite_identity) }}
+          total-reports-expected: ${{ fromJSON(inputs.tsio-config).total_reports_expected }}
+          framework: maestro
+          github-token: ${{ github.token }}
+          gh-job-name: ${{ inputs.tsio-shard-name != '' && inputs.tsio-shard-name || 'Maestro E2E Tests (iOS)' }}
+          # Action input is named json-path; Maestro uploads JUnit XML bytes.
+          json-path: build/maestro-report.xml
+          screenshots-dir: build/maestro-artifacts-tsio
 
       - name: Save Maestro results to Zephyr Scale
         if: always() && inputs.record_tests_in_zephyr
@@ -480,19 +524,12 @@ jobs:
           ERRORS: ${{ steps.summary.outputs.ERRORS }}
           TOTAL: ${{ steps.summary.outputs.TOTAL }}
           NO_REPORT: ${{ steps.summary.outputs.NO_REPORT }}
-          TESTCASE_FAILURE_FATAL: ${{ inputs.testcase_failure_fatal }}
           SHARD_CANCELLED: ${{ steps.shard-cancelled.outputs.CANCELLED }}
         run: |
           if [[ "${SHARD_CANCELLED}" == "true" ]]; then
             echo "STATUS=error" >> "$GITHUB_OUTPUT"
-          elif [[ "${FAILURES:-0}" == "-1" ]]; then
+          elif [[ "${FAILURES:-0}" == "-1" || "${FAILURES:-0}" -gt 0 || "${ERRORS:-0}" -gt 0 || "${TOTAL:-0}" -eq 0 || "${NO_REPORT:-}" == "true" ]]; then
             echo "STATUS=failure" >> "$GITHUB_OUTPUT"
-          elif [[ "${TESTCASE_FAILURE_FATAL}" == "true" ]]; then
-            if [[ "${FAILURES:-0}" -gt 0 || "${ERRORS:-0}" -gt 0 || "${TOTAL:-0}" -eq 0 || "${NO_REPORT:-}" == "true" ]]; then
-              echo "STATUS=failure" >> "$GITHUB_OUTPUT"
-            else
-              echo "STATUS=success" >> "$GITHUB_OUTPUT"
-            fi
           else
             echo "STATUS=success" >> "$GITHUB_OUTPUT"
           fi
@@ -505,8 +542,18 @@ jobs:
           echo "|:---:|:---:|:---:|:---:|" >> "$GITHUB_STEP_SUMMARY"
           echo "| ${{ steps.summary.outputs.TOTAL }} | ${{ steps.summary.outputs.PASSES }} | ${{ steps.summary.outputs.FAILURES }} | ${{ steps.summary.outputs.SKIPPED }} |" >> "$GITHUB_STEP_SUMMARY"
 
+      - name: Fail job on test failures
+        if: always() && (steps.determine-status.outputs.STATUS == 'failure' || steps.determine-status.outputs.STATUS == 'error')
+        env:
+          STATUS: ${{ steps.determine-status.outputs.STATUS }}
+          FAILURES: ${{ steps.summary.outputs.FAILURES }}
+        run: |
+          echo "::error::Maestro reported test failures (STATUS=${STATUS}, FAILURES=${FAILURES})"
+          exit 1
+
   e2e-maestro-android:
-    name: Maestro E2E Tests (Android)
+    # TSIO shard label = job name; prefer tsio-shard-name (e.g. maestro-android-e2e).
+    name: ${{ inputs.tsio-shard-name != '' && inputs.tsio-shard-name || 'Maestro E2E Tests (Android)' }}
     if: ${{ inputs.platform == 'android' }}
     runs-on: ubuntu-latest-8-cores
     timeout-minutes: 60
@@ -788,7 +835,7 @@ jobs:
           npm ci --prefer-offline --no-audit --no-fund
           node -e "
             const path = require('path');
-            const {parseMaestroReport, generateMaestroHtmlReport, mergeMaestroBatchReportsFromDir} = require('./utils/maestro_report');
+            const {parseMaestroReport, generateMaestroHtmlReport, mergeMaestroBatchReportsFromDir, prepareMaestroScreenshotsForTsio} = require('./utils/maestro_report');
             const buildDir = path.resolve('..', 'build');
             const xmlPath = path.join(buildDir, 'maestro-report.xml');
             mergeMaestroBatchReportsFromDir(buildDir, xmlPath);
@@ -815,11 +862,43 @@ jobs:
                 platform: 'Android',
                 commitSha: process.env.GITHUB_SHA || '',
               });
+              // Per-flow folders so TSIO LinkScreenshots can match full_title.
+              prepareMaestroScreenshotsForTsio({
+                xmlPath: xmlPath,
+                artifactsDir: path.join(buildDir, 'maestro-artifacts'),
+                outputDir: path.join(buildDir, 'maestro-artifacts-tsio'),
+                repoRoot: path.resolve('..'),
+              });
             } else {
               console.log('No Maestro report found — marking as failure');
               ['FAILURES=1','PASSES=0','TOTAL=0','ERRORS=1','SKIPPED=0','PERCENTAGE=0','NO_REPORT=true'].forEach(l => fs.appendFileSync(process.env.GITHUB_OUTPUT, l + '\n'));
             }
           "
+
+      - name: Write TSIO failure stub when Maestro report is missing
+        if: always() && inputs.tsio-config != '' && vars.TSIO_UPLOAD_ENABLED != 'false' && hashFiles('build/maestro-report.xml') == ''
+        env:
+          TSIO_SHARD_NAME: ${{ inputs.tsio-shard-name != '' && inputs.tsio-shard-name || 'Maestro E2E Tests (Android)' }}
+        run: |
+          node detox/utils/write-tsio-failure-stub.mjs \
+            --format junit \
+            --output build/maestro-report.xml \
+            --job-name "$TSIO_SHARD_NAME" \
+            --reason "Maestro job failed or was cancelled before maestro-report.xml was written"
+
+      # TSIO accepts framework=maestro (JUnit XML) since mattermost-test-system-io#76.
+      - name: Upload report to Test System IO
+        if: always() && inputs.tsio-config != '' && vars.TSIO_UPLOAD_ENABLED != 'false' && hashFiles('build/maestro-report.xml') != ''
+        uses: mattermost/mattermost-test-system-io/.github/actions/test-system-io-report-upload@45fb048848edc392f398144f45e2f3e30f43aeaa # release-0.12.0 / main@45fb048 (#81 Maestro FilePath + Detox paths, #82 background finalize)
+        with:
+          composite-identity: ${{ toJSON(fromJSON(inputs.tsio-config).composite_identity) }}
+          total-reports-expected: ${{ fromJSON(inputs.tsio-config).total_reports_expected }}
+          framework: maestro
+          github-token: ${{ github.token }}
+          gh-job-name: ${{ inputs.tsio-shard-name != '' && inputs.tsio-shard-name || 'Maestro E2E Tests (Android)' }}
+          # Action input is named json-path; Maestro uploads JUnit XML bytes.
+          json-path: build/maestro-report.xml
+          screenshots-dir: build/maestro-artifacts-tsio
 
       - name: Save Maestro results to Zephyr Scale
         if: always() && inputs.record_tests_in_zephyr
@@ -875,19 +954,12 @@ jobs:
           ERRORS: ${{ steps.summary.outputs.ERRORS }}
           TOTAL: ${{ steps.summary.outputs.TOTAL }}
           NO_REPORT: ${{ steps.summary.outputs.NO_REPORT }}
-          TESTCASE_FAILURE_FATAL: ${{ inputs.testcase_failure_fatal }}
           SHARD_CANCELLED: ${{ steps.shard-cancelled.outputs.CANCELLED }}
         run: |
           if [[ "${SHARD_CANCELLED}" == "true" ]]; then
             echo "STATUS=error" >> "$GITHUB_OUTPUT"
-          elif [[ "${FAILURES:-0}" == "-1" ]]; then
+          elif [[ "${FAILURES:-0}" == "-1" || "${FAILURES:-0}" -gt 0 || "${ERRORS:-0}" -gt 0 || "${TOTAL:-0}" -eq 0 || "${NO_REPORT:-}" == "true" ]]; then
             echo "STATUS=failure" >> "$GITHUB_OUTPUT"
-          elif [[ "${TESTCASE_FAILURE_FATAL}" == "true" ]]; then
-            if [[ "${FAILURES:-0}" -gt 0 || "${ERRORS:-0}" -gt 0 || "${TOTAL:-0}" -eq 0 || "${NO_REPORT:-}" == "true" ]]; then
-              echo "STATUS=failure" >> "$GITHUB_OUTPUT"
-            else
-              echo "STATUS=success" >> "$GITHUB_OUTPUT"
-            fi
           else
             echo "STATUS=success" >> "$GITHUB_OUTPUT"
           fi
@@ -899,3 +971,12 @@ jobs:
           echo "| Tests | Passed :white_check_mark: | Failed :x: | Skipped :fast_forward: |" >> "$GITHUB_STEP_SUMMARY"
           echo "|:---:|:---:|:---:|:---:|" >> "$GITHUB_STEP_SUMMARY"
           echo "| ${{ steps.summary.outputs.TOTAL }} | ${{ steps.summary.outputs.PASSES }} | ${{ steps.summary.outputs.FAILURES }} | ${{ steps.summary.outputs.SKIPPED }} |" >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Fail job on test failures
+        if: always() && (steps.determine-status.outputs.STATUS == 'failure' || steps.determine-status.outputs.STATUS == 'error')
+        env:
+          STATUS: ${{ steps.determine-status.outputs.STATUS }}
+          FAILURES: ${{ steps.summary.outputs.FAILURES }}
+        run: |
+          echo "::error::Maestro reported test failures (STATUS=${STATUS}, FAILURES=${FAILURES})"
+          exit 1

@@ -102,6 +102,7 @@ mattermost-license.txt
 *.mattermost-license
 detox/artifacts
 detox/detox_pixel_*
+detox/e2e/support/fixtures/*.tar.gz
 
 # Bundle artifact
 *.jsbundle
