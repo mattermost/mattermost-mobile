@@ -53,6 +53,7 @@ jobs:
       run-type: ${{ inputs.run_type || 'PR' }}
       tsio-config: ${{ inputs.tsio-config }}
       tsio-shard-name: detox-ios
+      durations_key: detox-ios
       record_tests_in_zephyr: ${{ inputs.run_type == 'RELEASE' || inputs.run_type == 'MAIN' || inputs.run_type == 'MASTER' }}
       MOBILE_VERSION: ${{ inputs.MOBILE_VERSION }}
       MM_TEST_SERVER_URL: ${{ inputs.SITE_1_URL }}
@@ -78,6 +79,7 @@ jobs:
       run-type: ${{ inputs.run_type || 'PR' }}
       tsio-config: ${{ inputs.tsio-config }}
       tsio-shard-name: detox-android
+      durations_key: detox-android
       record_tests_in_zephyr: ${{ inputs.run_type == 'RELEASE' || inputs.run_type == 'MAIN' || inputs.run_type == 'MASTER' }}
       MOBILE_VERSION: ${{ inputs.MOBILE_VERSION }}
       MM_TEST_SERVER_URL: ${{ inputs.SITE_1_URL }}
@@ -102,6 +104,7 @@ jobs:
       run-type: ${{ inputs.run_type || 'PR' }}
       tsio-config: ${{ inputs.tsio-config }}
       tsio-shard-name: detox-ipad
+      durations_key: detox-ipad
       MOBILE_VERSION: ${{ inputs.MOBILE_VERSION }}
       MM_TEST_SERVER_URL: ${{ inputs.SITE_1_URL }}
       ios_device_name: "iPad Pro 13-inch (M5)"

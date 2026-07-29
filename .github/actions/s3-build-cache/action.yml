@@ -3,8 +3,17 @@ description: >-
   Cache/restore compiled app binaries in S3 keyed by content fingerprint.
   Uses S3 instead of actions/cache because large binaries (200MB–1GB)
   blow the 10GB GHA cache limit and cause eviction thrashing.
+
+  Trust model — a flat shared prefix would let any branch's build be served to
+  every other branch (S3 has none of actions/cache's branch isolation), so keys
+  are scoped: `<prefix><scope>/<platform>/<fingerprint>.tar.gz`. A run only ever
+  WRITES its own scope, and READS `main` first and then its own scope. So a PR
+  can poison neither `main` nor another PR, while still getting cache hits both
+  from main (the test-only-change case) and from its own earlier pushes.
+
   Object retention is handled natively by an S3 lifecycle expiration rule on the
   `e2e-builds/` prefix (bucket-side config), not by a pruning job in this repo.
+  That rule must cover the `pr-*` scopes too.
 
 inputs:
   fingerprint:
@@ -15,6 +24,11 @@ inputs:
     required: true
   bucket:
     description: 'S3 bucket name'
+    required: true
+  scope:
+    description: >-
+      Trust scope this run owns (e.g. main, pr-1234, branch-release-2.40).
+      Writes go only here; restores try `main` first, then this scope.
     required: true
   s3-key-prefix:
     description: 'Key prefix in the bucket (e.g. e2e-builds/)'
@@ -52,30 +66,52 @@ runs:
         KEY_PREFIX: ${{ inputs.s3-key-prefix }}
         CACHE_PATH: ${{ inputs.cache-path }}
         MODE: ${{ inputs.mode }}
+        SCOPE: ${{ inputs.scope }}
       run: |
         set -eu
-        S3_KEY="${KEY_PREFIX}${PLATFORM}/${FINGERPRINT}.tar.gz"
+
+        if [ -z "$SCOPE" ]; then
+          echo "::error::scope is empty — refusing to fall back to an unscoped shared key."
+          exit 1
+        fi
+
+        # Own scope is the only writable location; main is read-only for everyone else.
+        WRITE_KEY="${KEY_PREFIX}${SCOPE}/${PLATFORM}/${FINGERPRINT}.tar.gz"
 
         if [ "$MODE" = "restore" ]; then
-          echo "Checking s3://${BUCKET}/${S3_KEY} ..."
-          if aws s3 ls "s3://${BUCKET}/${S3_KEY}" 2>/dev/null; then
+          # Trusted scope first: if main and this PR both built this fingerprint,
+          # prefer main's binary.
+          READ_SCOPES="main"
+          if [ "$SCOPE" != "main" ]; then
+            READ_SCOPES="main ${SCOPE}"
+          fi
+
+          HIT=false
+          for read_scope in $READ_SCOPES; do
+            S3_KEY="${KEY_PREFIX}${read_scope}/${PLATFORM}/${FINGERPRINT}.tar.gz"
+            echo "Checking s3://${BUCKET}/${S3_KEY} ..."
+            if ! aws s3 ls "s3://${BUCKET}/${S3_KEY}" 2>/dev/null; then
+              continue
+            fi
             # Any download/extract failure must degrade to a cache miss so the
             # build still runs instead of aborting the action under set -eu.
             if aws s3 cp "s3://${BUCKET}/${S3_KEY}" /tmp/build-cache.tar.gz \
               && tar xzf /tmp/build-cache.tar.gz; then
               rm -f /tmp/build-cache.tar.gz
-              echo "Restored build from S3 (fingerprint=${FINGERPRINT:0:12})"
-              echo "cache-hit=true" >> "$GITHUB_OUTPUT"
-            else
-              echo "::warning::Cache restore failed (download/extract error) — treating as cache miss."
-              rm -f /tmp/build-cache.tar.gz || true
-              echo "cache-hit=false" >> "$GITHUB_OUTPUT"
+              echo "Restored build from scope '${read_scope}' (fingerprint=${FINGERPRINT:0:12})"
+              HIT=true
+              break
             fi
-          else
-            echo "Cache MISS — no cached build for fingerprint ${FINGERPRINT:0:12}"
-            echo "cache-hit=false" >> "$GITHUB_OUTPUT"
+            echo "::warning::Cache restore from scope '${read_scope}' failed (download/extract error) — trying next scope."
+            rm -f /tmp/build-cache.tar.gz || true
+          done
+
+          if [ "$HIT" = "false" ]; then
+            echo "Cache MISS — no cached build for fingerprint ${FINGERPRINT:0:12} in: ${READ_SCOPES}"
           fi
+          echo "cache-hit=${HIT}" >> "$GITHUB_OUTPUT"
         elif [ "$MODE" = "save" ]; then
+          S3_KEY="$WRITE_KEY"
           # nullglob: non-matching glob → empty array instead of literal pattern.
           shopt -s nullglob
           FILES=()

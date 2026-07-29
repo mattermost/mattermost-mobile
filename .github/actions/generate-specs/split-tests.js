@@ -1,6 +1,10 @@
 const fs = require('fs');
 const path = require('path');
 
+// Diagnostics go to stderr: the action captures stdout as the matrix JSON
+// (`node split-tests.js | tee output.json`).
+const logDiag = (msg) => console.error(msg);
+
 class DeviceInfo {
   constructor(deviceName, deviceOsVersion) {
     this.deviceName = deviceName;
@@ -17,13 +21,91 @@ class SpecGroup {
   }
 }
 
+/**
+ * Load a {specPath: ms} manifest produced by detox/utils/spec-durations.js.
+ *
+ * Returns {} for a missing, unreadable or malformed file. Sharding must never
+ * break because the manifest is absent — that is the normal state on the first
+ * run, on an S3 miss, and for any suite that has no history yet.
+ */
+function loadDurations(filePath) {
+  if (!filePath || !fs.existsSync(filePath)) {
+    return {};
+  }
+  try {
+    const raw = JSON.parse(fs.readFileSync(filePath, 'utf8'));
+    const durations = (raw && typeof raw === 'object') ? (raw.durations || raw) : null;
+    if (!durations || typeof durations !== 'object') {
+      return {};
+    }
+    const out = {};
+    for (const [spec, ms] of Object.entries(durations)) {
+      const n = Number(ms);
+      if (Number.isFinite(n) && n > 0) {
+        out[spec] = n;
+      }
+    }
+    return out;
+  } catch (err) {
+    logDiag(`split-tests: ignoring duration manifest ${filePath}: ${err.message}`);
+    return {};
+  }
+}
+
+/**
+ * Pack specs into shards by recorded duration, longest first (LPT).
+ *
+ * Equal-*count* splitting makes total wall-clock hostage to whichever shard
+ * happens to collect the slow specs — with specs ranging 5-15 min, the unluckiest
+ * shard sets the bill for every runner. LPT greedy is a 4/3-approximation of the
+ * optimal makespan and needs nothing but the previous run's timings.
+ *
+ * Specs with no recorded duration are costed at the median of the known ones, so
+ * new specs are neither ignored nor allowed to dominate.
+ *
+ * @returns {{total: number, files: string[]}[]|null} null when there is no
+ *   duration data at all, which tells the caller to use the even split.
+ */
+function packByDuration(files, parallelism, durations) {
+  const known = files.map((f) => durations[f]).filter((d) => typeof d === 'number' && d > 0);
+  if (known.length === 0) {
+    return null;
+  }
+
+  const sorted = [...known].sort((a, b) => a - b);
+  const medianCost = sorted[Math.floor(sorted.length / 2)];
+
+  // Deterministic: cost desc, then path asc, so the same inputs always produce
+  // the same matrix (re-runs stay comparable).
+  const items = files
+    .map((file) => ({file, cost: durations[file] > 0 ? durations[file] : medianCost}))
+    .sort((a, b) => (b.cost - a.cost) || a.file.localeCompare(b.file));
+
+  const bins = Array.from({length: Math.max(1, parallelism)}, () => ({total: 0, files: []}));
+  for (const item of items) {
+    // Least-loaded bin; ties resolve to the lowest index.
+    let target = bins[0];
+    for (const bin of bins) {
+      if (bin.total < target.total) {
+        target = bin;
+      }
+    }
+    target.files.push(item.file);
+    target.total += item.cost;
+  }
+
+  // Drop empty bins rather than booting a runner with nothing to run.
+  return bins.filter((bin) => bin.files.length > 0);
+}
+
 class Specs {
-  constructor(searchPath, parallelism, deviceInfo) {
+  constructor(searchPath, parallelism, deviceInfo, durations = {}) {
     this.searchPath = searchPath;
     this.parallelism = parallelism;
     this.rawFiles = [];
     this.groupedFiles = [];
     this.deviceInfo = deviceInfo;
+    this.durations = durations;
   }
 
   findFiles() {
@@ -57,6 +139,26 @@ class Specs {
   }
 
   generateSplits() {
+    const packed = packByDuration(this.rawFiles, this.parallelism, this.durations);
+    if (packed) {
+      const unknown = this.rawFiles.filter((f) => !(this.durations[f] > 0)).length;
+      logDiag(`split-tests: duration-aware split of ${this.rawFiles.length} spec(s) across ${packed.length} shard(s) (${unknown} without history)`);
+      packed.forEach((bin, i) => {
+        logDiag(`  shard ${i + 1}: ${bin.files.length} spec(s), est ${Math.round(bin.total / 1000)}s`);
+        // Alphabetical within a shard keeps the run log readable; order does not
+        // affect makespan.
+        const fileGroup = [...bin.files].sort().join(' ');
+        this.groupedFiles.push(new SpecGroup(String(i + 1), fileGroup, this.deviceInfo));
+      });
+      return;
+    }
+
+    logDiag(`split-tests: no duration history — even split of ${this.rawFiles.length} spec(s) across ${this.parallelism} shard(s)`);
+    this.generateEvenSplits();
+  }
+
+  /** Original alphabetical equal-count split; the fallback when no timings exist. */
+  generateEvenSplits() {
     const chunkSize = Math.floor(this.rawFiles.length / this.parallelism);
     let remainder = this.rawFiles.length % this.parallelism;
     let runNo = 1;
@@ -91,11 +193,16 @@ function main() {
   const deviceName = process.env.DEVICE_NAME;
   const deviceOsVersion = process.env.DEVICE_OS_VERSION;
   const deviceInfo = new DeviceInfo(deviceName, deviceOsVersion);
-  const specs = new Specs(searchPath, parallelism, deviceInfo);
+  const durations = loadDurations(process.env.DURATIONS_FILE);
+  const specs = new Specs(searchPath, parallelism, deviceInfo, durations);
 
   specs.findFiles();
   specs.generateSplits();
   specs.dumpSplits();
 }
 
-main();
+if (require.main === module) {
+  main();
+}
+
+module.exports = {Specs, DeviceInfo, SpecGroup, loadDurations, packByDuration};

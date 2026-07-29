@@ -86,11 +86,43 @@ jobs:
       ios: ${{ steps.ios.outputs.fingerprint }}
       android-detox: ${{ steps.android-detox.outputs.fingerprint }}
       android-maestro: ${{ steps.android-maestro.outputs.fingerprint }}
+      cache-scope: ${{ steps.scope.outputs.scope }}
     steps:
       - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
         with:
           ref: ${{ inputs.MOBILE_VERSION }}
           persist-credentials: false
+
+      # Cache trust scope. Only main-push runs write the `main` scope that every
+      # other run reads; a PR writes (and additionally reads) only `pr-<n>`, so
+      # one PR's build can never be served to main or to another PR.
+      - name: Resolve cache trust scope
+        id: scope
+        env:
+          RUN_TYPE: ${{ inputs.run_type || 'PR' }}
+          PR_NUMBER: ${{ inputs.pr_number }}
+          VERSION_NAME: ${{ inputs.version_name }}
+          REF_NAME: ${{ github.ref_name }}
+        run: |
+          set -eu
+          # Matterwick still sends MASTER for main-branch pushes; treat as MAIN.
+          if [ "$RUN_TYPE" = "MAIN" ] || [ "$RUN_TYPE" = "MASTER" ]; then
+            scope=main
+          elif [ -n "$PR_NUMBER" ]; then
+            # Digits only — a crafted pr_number must not be able to escape the prefix.
+            pr=$(printf '%s' "$PR_NUMBER" | tr -cd '0-9')
+            if [ -z "$pr" ]; then
+              echo "::error::pr_number '$PR_NUMBER' contains no digits — cannot build a safe cache scope."
+              exit 1
+            fi
+            scope="pr-${pr}"
+          else
+            raw="${VERSION_NAME:-$REF_NAME}"
+            slug=$(printf '%s' "$raw" | tr -c 'a-zA-Z0-9._-' '-' | cut -c1-60)
+            scope="branch-${slug}"
+          fi
+          echo "scope=$scope" >> "$GITHUB_OUTPUT"
+          echo "Cache trust scope: $scope"
 
       - name: Compute iOS fingerprint
         id: ios
@@ -327,6 +359,7 @@ jobs:
           DETOX_AWS_SECRET_ACCESS_KEY: ${{ secrets.MM_MOBILE_DETOX_AWS_SECRET_ACCESS_KEY }}
         with:
           fingerprint: ${{ needs.compute-build-fingerprints.outputs.ios }}
+          scope: ${{ needs.compute-build-fingerprints.outputs.cache-scope }}
           platform: ios
           bucket: ${{ env.DETOX_AWS_S3_BUCKET }}
           cache-path: 'Mattermost-simulator-*.app.zip'
@@ -371,6 +404,7 @@ jobs:
           DETOX_AWS_SECRET_ACCESS_KEY: ${{ secrets.MM_MOBILE_DETOX_AWS_SECRET_ACCESS_KEY }}
         with:
           fingerprint: ${{ needs.compute-build-fingerprints.outputs.ios }}
+          scope: ${{ needs.compute-build-fingerprints.outputs.cache-scope }}
           platform: ios
           bucket: ${{ env.DETOX_AWS_S3_BUCKET }}
           cache-path: 'Mattermost-simulator-*.app.zip'
@@ -409,6 +443,7 @@ jobs:
           DETOX_AWS_SECRET_ACCESS_KEY: ${{ secrets.MM_MOBILE_DETOX_AWS_SECRET_ACCESS_KEY }}
         with:
           fingerprint: ${{ needs.compute-build-fingerprints.outputs.android-detox }}
+          scope: ${{ needs.compute-build-fingerprints.outputs.cache-scope }}
           platform: android-detox
           bucket: ${{ env.DETOX_AWS_S3_BUCKET }}
           cache-path: 'android/app/build'
@@ -461,6 +496,7 @@ jobs:
           DETOX_AWS_SECRET_ACCESS_KEY: ${{ secrets.MM_MOBILE_DETOX_AWS_SECRET_ACCESS_KEY }}
         with:
           fingerprint: ${{ needs.compute-build-fingerprints.outputs.android-detox }}
+          scope: ${{ needs.compute-build-fingerprints.outputs.cache-scope }}
           platform: android-detox
           bucket: ${{ env.DETOX_AWS_S3_BUCKET }}
           cache-path: 'android/app/build'
@@ -499,6 +535,7 @@ jobs:
           DETOX_AWS_SECRET_ACCESS_KEY: ${{ secrets.MM_MOBILE_DETOX_AWS_SECRET_ACCESS_KEY }}
         with:
           fingerprint: ${{ needs.compute-build-fingerprints.outputs.android-maestro }}
+          scope: ${{ needs.compute-build-fingerprints.outputs.cache-scope }}
           platform: android-maestro
           bucket: ${{ env.DETOX_AWS_S3_BUCKET }}
           cache-path: 'android/app/build/outputs/apk/release/'
@@ -537,6 +574,7 @@ jobs:
           DETOX_AWS_SECRET_ACCESS_KEY: ${{ secrets.MM_MOBILE_DETOX_AWS_SECRET_ACCESS_KEY }}
         with:
           fingerprint: ${{ needs.compute-build-fingerprints.outputs.android-maestro }}
+          scope: ${{ needs.compute-build-fingerprints.outputs.cache-scope }}
           platform: android-maestro
           bucket: ${{ env.DETOX_AWS_S3_BUCKET }}
           cache-path: 'android/app/build/outputs/apk/release/'

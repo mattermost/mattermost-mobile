@@ -1,0 +1,89 @@
+name: S3 Spec Durations
+description: >-
+  Restore/save the per-spec duration manifest that drives duration-aware shard
+  packing (see .github/actions/generate-specs/split-tests.js).
+
+  Only main-push runs should save: the manifest decides how every branch shards
+  its tests, so PR runs read it and never write it — same trust model as the
+  build cache. A missing manifest is not an error; sharding falls back to the
+  even alphabetical split.
+
+  Retention is handled by the bucket lifecycle rule; the manifest is a few KB and
+  is rewritten on every main-push run.
+
+inputs:
+  key:
+    description: 'Manifest key, one per test suite (e.g. detox-ios, detox-android, detox-ipad)'
+    required: true
+  bucket:
+    description: 'S3 bucket name'
+    required: true
+  s3-key-prefix:
+    description: 'Key prefix in the bucket'
+    required: false
+    default: 'e2e-durations/'
+  manifest-path:
+    description: 'Local manifest path'
+    required: false
+    default: 'detox/artifacts/spec-durations.json'
+  mode:
+    description: 'restore (download, best-effort) or save (upload)'
+    required: true
+
+outputs:
+  restored:
+    description: 'true if a manifest was downloaded'
+    value: ${{ steps.durations.outputs.restored }}
+
+runs:
+  using: composite
+  steps:
+    - name: Configure AWS credentials
+      uses: aws-actions/configure-aws-credentials@61815dcd50bd041e203e49132bacad1fd04d2708 # v5.1.1
+      with:
+        aws-access-key-id: ${{ env.DETOX_AWS_ACCESS_KEY_ID }}
+        aws-secret-access-key: ${{ env.DETOX_AWS_SECRET_ACCESS_KEY }}
+        aws-region: us-east-1
+
+    - name: Spec durations ${{ inputs.mode }}
+      id: durations
+      shell: bash
+      env:
+        KEY: ${{ inputs.key }}
+        BUCKET: ${{ inputs.bucket }}
+        KEY_PREFIX: ${{ inputs.s3-key-prefix }}
+        MANIFEST_PATH: ${{ inputs.manifest-path }}
+        MODE: ${{ inputs.mode }}
+      run: |
+        set -eu
+
+        if [ -z "$KEY" ]; then
+          echo "::error::key is required"
+          exit 1
+        fi
+        S3_KEY="${KEY_PREFIX}${KEY}.json"
+
+        if [ "$MODE" = "restore" ]; then
+          mkdir -p "$(dirname "$MANIFEST_PATH")"
+          # Best-effort by design: no manifest simply means the even split is used.
+          if aws s3 cp "s3://${BUCKET}/${S3_KEY}" "$MANIFEST_PATH" 2>/dev/null; then
+            echo "Restored spec-duration manifest for '${KEY}'"
+            echo "restored=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "No spec-duration manifest at s3://${BUCKET}/${S3_KEY} — sharding falls back to the even split."
+            rm -f "$MANIFEST_PATH"
+            echo "restored=false" >> "$GITHUB_OUTPUT"
+          fi
+        elif [ "$MODE" = "save" ]; then
+          if [ ! -s "$MANIFEST_PATH" ]; then
+            echo "::warning::No manifest at '${MANIFEST_PATH}' — nothing to publish."
+            echo "restored=false" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+          aws s3 cp "$MANIFEST_PATH" "s3://${BUCKET}/${S3_KEY}"
+          echo "Published spec-duration manifest for '${KEY}'"
+          echo "restored=false" >> "$GITHUB_OUTPUT"
+        else
+          echo "::error::Invalid mode: $MODE (expected restore or save)"
+          exit 1
+        fi
