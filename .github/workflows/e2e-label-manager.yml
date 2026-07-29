@@ -72,46 +72,64 @@ jobs:
         uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9.0.0
         with:
           script: |
-            const path = require('path');
-            const {loadPaths, impactGlobs} = require(
-              path.join(
-                process.cwd(),
-                '.github/actions/compute-e2e-build-fingerprint/paths.js',
-              ),
-            );
-            // Hardcoded, NOT read from paths.json: the pattern list itself comes
-            // from the PR head, so a PR that trimmed its own paths.json could
-            // otherwise make that edit look non-impacting and skip E2E.
-            const ALWAYS_IMPACTING = ['.github/actions/compute-e2e-build-fingerprint/**'];
-            const patterns = [...new Set([...ALWAYS_IMPACTING, ...impactGlobs(loadPaths())])];
+            const detect = async () => {
+              const path = require('path');
+              const {loadPaths, impactGlobs} = require(
+                path.join(
+                  process.cwd(),
+                  '.github/actions/compute-e2e-build-fingerprint/paths.js',
+                ),
+              );
+              // Hardcoded, NOT read from paths.json: the pattern list itself comes
+              // from the PR head, so a PR that trimmed its own paths.json could
+              // otherwise make that edit look non-impacting and skip E2E.
+              const ALWAYS_IMPACTING = ['.github/actions/compute-e2e-build-fingerprint/**'];
+              const patterns = [...new Set([...ALWAYS_IMPACTING, ...impactGlobs(loadPaths())])];
 
-            // Supports the subset used in paths.json: `**` spans path separators,
-            // a single `*` does not, everything else is literal. Not a general
-            // glob engine — brace expansion, `?` and negation are not implemented
-            // and would match literally, so keep paths.json to that subset.
-            const globToRegExp = (pattern) => {
-              const escaped = pattern
-                .replace(/[.+^${}()|[\]\\]/g, '\\$&')
-                .replace(/\*\*/g, '@@GLOBSTAR@@')
-                .replace(/\*/g, '[^/]*')
-                .replace(/@@GLOBSTAR@@/g, '.*');
-              return new RegExp(`^${escaped}$`);
+              // Supports the subset used in paths.json: `**` spans path separators,
+              // a single `*` does not, everything else is literal. Not a general
+              // glob engine — brace expansion, `?` and negation are not implemented
+              // and would match literally, so keep paths.json to that subset.
+              const globToRegExp = (pattern) => {
+                const escaped = pattern
+                  .replace(/[.+^${}()|[\]\\]/g, '\\$&')
+                  .replace(/\*\*/g, '@@GLOBSTAR@@')
+                  .replace(/\*/g, '[^/]*')
+                  .replace(/@@GLOBSTAR@@/g, '.*');
+                return new RegExp(`^${escaped}$`);
+              };
+              const matchers = patterns.map(globToRegExp);
+
+              const matches = (filePath) => matchers.some((re) => re.test(filePath));
+
+              const files = await github.paginate(github.rest.pulls.listFiles, {
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                pull_number: context.payload.pull_request.number,
+                per_page: 100,
+              });
+
+              const hit = files.find((f) => matches(f.filename) || (f.previous_filename && matches(f.previous_filename)));
+              return {appImpacting: Boolean(hit), hit, count: files.length};
             };
-            const matchers = patterns.map(globToRegExp);
 
-            const matches = (filePath) => matchers.some((re) => re.test(filePath));
-
-            const files = await github.paginate(github.rest.pulls.listFiles, {
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              pull_number: context.payload.pull_request.number,
-              per_page: 100,
-            });
-
-            const hit = files.find((f) => matches(f.filename) || (f.previous_filename && matches(f.previous_filename)));
-            const appImpacting = Boolean(hit);
-            core.info(`PR #${context.payload.pull_request.number}: ${files.length} file(s), app_impacting=${appImpacting}${hit ? ` (hit: ${hit.filename})` : ''}`);
-            core.setOutput('app_impacting', appImpacting ? 'true' : 'false');
+            const prNumber = context.payload.pull_request.number;
+            let result;
+            try {
+              result = await detect();
+              core.info(`PR #${prNumber}: ${result.count} file(s), app_impacting=${result.appImpacting}${result.hit ? ` (hit: ${result.hit.filename})` : ''}`);
+            } catch (err) {
+              // Fail closed by running E2E, and do NOT rethrow. Throwing fails this
+              // job, which gates both the run-E2E path and the skip-status path — the
+              // PR would then sit with the required e2e-test/* contexts unreported and
+              // no self-service fix. Treating an unreadable file list as impacting
+              // costs one E2E run; the alternative silently ships untested code or
+              // wedges the PR. Realistic trigger is a pulls.listFiles hiccup, since a
+              // malformed paths.json is caught by paths.test.js before merge.
+              core.warning(`Impact filter failed, running E2E to be safe: ${err.message}`);
+              result = {appImpacting: true};
+            }
+            core.setOutput('app_impacting', result.appImpacting ? 'true' : 'false');
 
   # Always cancel superseded runs on synchronize — including docs-only pushes —
   # so a prior app-impacting run does not keep burning minutes after skip statuses.
