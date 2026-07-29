@@ -9,8 +9,9 @@
 # main-branch pushes, RELEASE). Renaming the file would break the dispatch URL
 # above, so it needs a coordinated Matterwick change.
 #
-# Newer dispatches cancel older in-flight runs on the same branch (resolve-e2e-policy
-# first step) so the latest SHA starts immediately instead of queueing behind a long run.
+# Newer dispatches cancel older in-flight runs on the same branch via the workflow
+# `concurrency` group below, so the latest SHA starts immediately instead of
+# queueing behind a long run.
 #
 # Phase 1 — builds & setup (parallel):
 #   build-ios-simulator, build-android-apk-maestro, build-android-apk (Detox debug APK),
@@ -81,6 +82,13 @@ permissions:
   id-token: write
   actions: read
 
+# One E2E run per branch: a newer Matterwick dispatch supersedes the one already
+# in flight. GitHub cancels the older run as soon as this one is created, which
+# is earlier (and simpler) than cancelling from a step inside the new run.
+concurrency:
+  group: e2e-${{ github.ref }}
+  cancel-in-progress: true
+
 env:
   INTUNE_ENABLED: 'false'
   DETOX_AWS_S3_BUCKET: "mattermost-detox-report"
@@ -90,26 +98,13 @@ jobs:
     name: Resolve E2E policy (Override label)
     runs-on: ubuntu-24.04
     permissions:
-      actions: write
       contents: read
       pull-requests: read
       issues: read
-      statuses: write
     outputs:
       e2e_override: ${{ steps.policy.outputs.e2e_override }}
       skip_reason: ${{ steps.policy.outputs.skip_reason }}
     steps:
-      - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
-        with:
-          persist-credentials: false
-      - name: Cancel superseded E2E runs on this branch
-        uses: ./.github/actions/cancel-e2e-runs
-        with:
-          head_branch: ${{ github.ref_name }}
-          pr_number: ${{ inputs.pr_number }}
-          max_run_id_exclusive: ${{ github.run_id }}
-          reason: E2E superseded by newer dispatch
-
       - name: Check PR labels for E2E/Override
         id: policy
         uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9.0.0

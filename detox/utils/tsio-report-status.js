@@ -167,6 +167,8 @@ async function pollGroup(baseUrl, reportId, pollAttempts) {
 // A maintainer applying E2E/Override means the PR is meant to merge without E2E
 // results. E2E runs are not cancelled when the label lands, so a run that started
 // before the override must not re-red the required check when it finishes.
+// Whether the label is set is resolved by .github/actions/e2e-override-label and
+// passed in, so this stays a pure decision on its inputs.
 function overrideCommitStatus(state, description) {
     if (state !== 'failure') {
         return {state, description};
@@ -175,29 +177,6 @@ function overrideCommitStatus(state, description) {
         state: 'success',
         description: `${OVERRIDE_LABEL} — ${description}`.slice(0, 140),
     };
-}
-
-async function hasOverrideLabel(token, repository, prNumber) {
-    if (!prNumber) {
-        return false;
-    }
-    const [owner, repo] = repository.split('/');
-    try {
-        const res = await fetchWithTimeout(`https://api.github.com/repos/${owner}/${repo}/issues/${prNumber}/labels`, {
-            headers: {
-                Authorization: `Bearer ${token}`,
-                Accept: 'application/vnd.github+json',
-                'X-GitHub-Api-Version': '2022-11-28',
-            },
-        });
-        if (!res.ok) throw new Error(`${res.status} ${await res.text()}`);
-        const labels = await res.json();
-        return labels.some((label) => label.name === OVERRIDE_LABEL);
-    } catch (err) {
-        // Fail closed: an unreadable label list must not turn a real failure green.
-        console.error(`tsio-report-status (override label lookup for PR #${prNumber}):`, err.message);
-        return false;
-    }
 }
 
 async function createCommitStatus(token, repository, sha, payload) {
@@ -222,6 +201,7 @@ async function reportTsioStatus(options) {
         commitStatusContext,
         upstreamJobsSucceeded = true,
         githubToken,
+        e2eOverride = false,
         failOnTestFailures = true,
         pollAttempts = DEFAULT_POLL_ATTEMPTS,
         useStaging = false,
@@ -252,19 +232,12 @@ async function reportTsioStatus(options) {
     const token = githubToken || process.env.GITHUB_TOKEN;
     if (!token) throw new Error('githubToken (or GITHUB_TOKEN env) is required');
 
-    // Checked lazily and only once: the label only matters when we are about to
-    // post a failure, and the lookup costs an API call.
-    let overrideLookup;
     const postStatus = async ({state, description, targetUrl}) => {
         let final = {state, description};
-        if (state === 'failure') {
-            overrideLookup = overrideLookup ??
-                hasOverrideLabel(token, compositeIdentity.repository, compositeIdentity.gh_pr_number);
-            if (await overrideLookup) {
-                final = overrideCommitStatus(state, description);
-                result.override_applied = true;
-                console.log(`${OVERRIDE_LABEL} set on PR #${compositeIdentity.gh_pr_number} — posting success for ${commitStatusContext}`);
-            }
+        if (e2eOverride && state === 'failure') {
+            final = overrideCommitStatus(state, description);
+            result.override_applied = true;
+            console.log(`${OVERRIDE_LABEL} set on PR #${compositeIdentity.gh_pr_number} — posting success for ${commitStatusContext}`);
         }
         result.state = final.state;
         await createCommitStatus(token, compositeIdentity.repository, compositeIdentity.commit_sha, {
@@ -528,6 +501,7 @@ async function main() {
             commitStatusContext: context,
             upstreamJobsSucceeded: upstreamSucceeded,
             githubToken: args['github-token'] || process.env.GITHUB_TOKEN,
+            e2eOverride: args['e2e-override'] === 'true',
             failOnTestFailures,
             pollAttempts,
             useStaging: args['use-staging'] === 'true',
@@ -553,7 +527,6 @@ module.exports = {
     decideStatus,
     decideTargetUrl,
     overrideCommitStatus,
-    hasOverrideLabel,
     reportTsioStatus,
     repoTail,
     mintOidcToken,

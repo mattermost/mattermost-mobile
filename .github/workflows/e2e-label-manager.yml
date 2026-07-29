@@ -1,9 +1,11 @@
 # Matterwick triggers E2E only on pull_request:labeled (see matterwick/server/pull_request.go).
-# synchronize alone does nothing — on push we must cancel stale runs, remove E2E/Run*,
-# and re-add E2E/Run in one job so Matterwick receives a fresh labeled webhook.
+# synchronize alone does nothing — on push we must remove and re-add E2E/Run so
+# Matterwick receives a fresh labeled webhook.
 #
 #   1. refresh-e2e-run-label (synchronize):
-#      Force-cancel in-flight E2E, then remove + re-add E2E/Run via PAT.
+#      Remove + re-add E2E/Run via PAT. The in-flight run for the previous commit
+#      is superseded by the `concurrency` group in e2e-detox-pr.yml when the new
+#      dispatch lands, so nothing needs cancelling here.
 #
 #   2. add-e2e-run-label (opened):
 #      Add E2E/Run unless already present. Skips when E2E/Override is set.
@@ -12,17 +14,13 @@
 #      Removes all E2E/Run* labels so no new run is dispatched, then posts success
 #      on every required e2e-test/* context. In-flight runs are NEVER cancelled —
 #      they finish and their finalize step re-checks the label before posting
-#      (see detox/utils/tsio-report-status.js), so a late result cannot re-red
+#      (see .github/actions/e2e-override-label), so a late result cannot re-red
 #      a check the maintainer deliberately bypassed.
-#
-#   4. Cancel in-progress E2E runs (E2E/Run* unlabeled by a human):
-#      Skips when mattermost-build (the PAT user) removed the label (refresh strip
-#      or post-run cleanup) so synchronize refresh does not race Matterwick dispatch.
 #
 # Fork PR guard (github.event.pull_request.head.repo.full_name == github.repository)
 # is applied per-step. Fork PR contexts only get a read-only GITHUB_TOKEN, so
-# addLabels / removeLabel / gh-run-cancel would all 403. Mandatory E2E for fork
-# PRs is enforced separately.
+# addLabels / removeLabel would all 403. Mandatory E2E for fork PRs is enforced
+# separately.
 #
 # Base-branch guard: auto E2E/Run refresh only runs for PRs targeting main.
 # Stacked PRs (base != main) are skipped so Matterwick is not triggered on every
@@ -50,20 +48,9 @@ jobs:
       && github.event.pull_request.head.repo.full_name == github.repository
     runs-on: ubuntu-24.04
     permissions:
-      actions: write
-      statuses: write
       issues: write
       pull-requests: write
     steps:
-      - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
-      - name: Force-cancel in-flight E2E runs for the previous commit
-        uses: ./.github/actions/cancel-e2e-runs
-        with:
-          head_branch: ${{ github.event.pull_request.head.ref }}
-          pr_number: ${{ github.event.pull_request.number }}
-          exclude_head_sha: ${{ github.event.pull_request.head.sha }}
-          reason: Skipped
-
       - name: Remove and re-add E2E/Run for Matterwick
         uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9.0.0
         with:

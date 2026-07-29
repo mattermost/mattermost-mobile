@@ -7,7 +7,7 @@ description: >-
   Covers all three override paths: E2E never dispatched, E2E already failed
   (statuses are keyed by SHA, so this overwrites the failures), and E2E still
   running. In-flight runs are never cancelled — their finalize step re-checks
-  the label (detox/utils/tsio-report-status.js) so a late result cannot re-red
+  the label (.github/actions/e2e-override-label) so a late result cannot re-red
   a check the maintainer deliberately bypassed.
 
 inputs:

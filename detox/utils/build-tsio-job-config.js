@@ -29,9 +29,8 @@ function statusContextFor(name) {
 }
 
 // The required contexts a PR must satisfy to merge. Single source of truth for
-// .github/actions/e2e-override-status (waives them) and
-// .github/actions/cancel-e2e-runs (resets them to pending), which require this
-// file from the workspace checkout.
+// .github/actions/e2e-override-status, which waives them and requires this file
+// from the workspace checkout.
 const E2E_STATUS_CONTEXTS = Object.values(PR_MAIN_JOBS).map((job) => statusContextFor(job.statusName));
 
 /**
