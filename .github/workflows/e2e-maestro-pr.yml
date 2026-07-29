@@ -56,6 +56,8 @@ permissions:
   id-token: write
   actions: read
   statuses: write
+  # Nested template finalize reads PR labels to honour E2E/Override.
+  issues: read
 
 # iOS and Android are invoked as separate workflow_call runs from e2e-detox-pr.yml;
 # include PLATFORM so parallel calls do not cancel each other (same github.run_id).

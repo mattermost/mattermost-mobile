@@ -4,15 +4,78 @@
 // CI util unit tests: run with `node --test detox/utils/tsio-report-status.test.js`.
 
 const assert = require('node:assert/strict');
-const {describe, it} = require('node:test');
+const {afterEach, describe, it} = require('node:test');
 
 const {
     buildDisplayReportUrl,
     decideStatus,
     decideTargetUrl,
+    hasOverrideLabel,
+    overrideCommitStatus,
 } = require('./tsio-report-status');
 
 describe('tsio-report-status', () => {
+    describe('overrideCommitStatus', () => {
+        it('reports a failure as success so E2E/Override does not block the merge', () => {
+            assert.deepEqual(
+                overrideCommitStatus('failure', '8 passed, 2 failed, 0 skipped'),
+                {
+                    state: 'success',
+                    description: 'E2E/Override — 8 passed, 2 failed, 0 skipped',
+                },
+            );
+        });
+
+        it('leaves non-failure states untouched', () => {
+            assert.deepEqual(
+                overrideCommitStatus('success', '10 passed, 0 skipped'),
+                {state: 'success', description: '10 passed, 0 skipped'},
+            );
+        });
+
+        it('truncates the labelled description to the commit status limit', () => {
+            const {description} = overrideCommitStatus('failure', 'x'.repeat(200));
+            assert.equal(description.length, 140);
+        });
+    });
+
+    describe('hasOverrideLabel', () => {
+        const realFetch = global.fetch;
+        const stubFetch = (impl) => {
+            global.fetch = impl;
+        };
+
+        afterEach(() => {
+            global.fetch = realFetch;
+        });
+
+        it('detects the label on the pull request', async () => {
+            stubFetch(async () => ({
+                ok: true,
+                json: async () => [{name: 'kind/bug'}, {name: 'E2E/Override'}],
+            }));
+            assert.equal(await hasOverrideLabel('token', 'mattermost/mattermost-mobile', 9969), true);
+        });
+
+        it('returns false when the label is absent', async () => {
+            stubFetch(async () => ({ok: true, json: async () => [{name: 'E2E/Run'}]}));
+            assert.equal(await hasOverrideLabel('token', 'mattermost/mattermost-mobile', 9969), false);
+        });
+
+        // Fail closed: an unreadable label list must never turn a real failure green.
+        it('returns false when the labels API errors', async () => {
+            stubFetch(async () => ({ok: false, status: 500, text: async () => 'boom'}));
+            assert.equal(await hasOverrideLabel('token', 'mattermost/mattermost-mobile', 9969), false);
+        });
+
+        it('skips the lookup for runs with no PR number (main, CMT)', async () => {
+            stubFetch(async () => {
+                throw new Error('fetch should not be called without a PR number');
+            });
+            assert.equal(await hasOverrideLabel('token', 'mattermost/mattermost-mobile', undefined), false);
+        });
+    });
+
     describe('decideStatus', () => {
         it('returns success for completed report with no failures when upstream succeeded', () => {
             assert.deepEqual(

@@ -100,6 +100,9 @@ permissions:
   id-token: write
   # Per-job TSIO finalize posts <platform> commit statuses (detox-/maestro-*).
   statuses: write
+  # Finalize re-reads the PR labels so a result landing after E2E/Override was
+  # applied reports success instead of re-blocking the merge.
+  issues: read
 env:
   ADMIN_EMAIL: ${{ secrets.MM_MOBILE_E2E_ADMIN_EMAIL }}
   ADMIN_USERNAME: ${{ secrets.MM_MOBILE_E2E_ADMIN_USERNAME }}

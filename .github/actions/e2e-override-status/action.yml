@@ -1,0 +1,88 @@
+# yaml-language-server: $schema=https://json.schemastore.org/github-action.json
+name: Publish E2E/Override commit statuses
+description: >-
+  Post success on every required e2e-test/* commit status for a SHA so a PR
+  carrying E2E/Override can merge under required checks.
+
+  Covers all three override paths: E2E never dispatched, E2E already failed
+  (statuses are keyed by SHA, so this overwrites the failures), and E2E still
+  running. In-flight runs are never cancelled — their finalize step re-checks
+  the label (detox/utils/tsio-report-status.js) so a late result cannot re-red
+  a check the maintainer deliberately bypassed.
+
+inputs:
+  commit_sha:
+    description: Commit SHA to post statuses on (the PR head SHA)
+    required: true
+  state:
+    description: >-
+      Commit status state (success | pending). Use pending to re-block the PR
+      when E2E/Override is removed, so the waiver does not linger on the SHA.
+    required: false
+    default: success
+  description:
+    description: Commit status description
+    required: false
+    default: E2E bypassed — E2E/Override applied
+  target_url:
+    description: Link shown on the check
+    required: false
+    default: ''
+
+runs:
+  using: composite
+  steps:
+    - uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9.0.0
+      env:
+        COMMIT_SHA: ${{ inputs.commit_sha }}
+        STATE: ${{ inputs.state }}
+        DESCRIPTION: ${{ inputs.description }}
+        TARGET_URL: ${{ inputs.target_url }}
+      with:
+        script: |
+          const owner = context.repo.owner;
+          const repo = context.repo.repo;
+          const sha = process.env.COMMIT_SHA;
+          const state = process.env.STATE || 'success';
+          const description = (process.env.DESCRIPTION || '').substring(0, 140);
+          const targetUrl = process.env.TARGET_URL?.trim();
+
+          if (!sha) {
+            throw new Error('e2e-override-status: commit_sha is required');
+          }
+
+          // Keep in sync with STATUS_CONTEXT_PREFIX/PR_MAIN_JOBS in
+          // detox/utils/build-tsio-job-config.js and with
+          // .github/actions/cancel-e2e-runs.
+          const E2E_STATUS_CONTEXTS = [
+            'e2e-test/detox-ios',
+            'e2e-test/detox-android',
+            'e2e-test/detox-ipad',
+            'e2e-test/maestro-ios',
+            'e2e-test/maestro-android',
+          ];
+
+          // Attempt every context before reporting, so one bad write does not
+          // leave the remaining required checks blocking the merge.
+          const failures = [];
+          for (const statusContext of E2E_STATUS_CONTEXTS) {
+            try {
+              await github.rest.repos.createCommitStatus({
+                owner,
+                repo,
+                sha,
+                state,
+                context: statusContext,
+                description,
+                ...(targetUrl ? {target_url: targetUrl} : {}),
+              });
+              core.info(`Published ${state} for ${statusContext} on ${sha}`);
+            } catch (err) {
+              core.warning(`createCommitStatus ${statusContext} on ${sha}: ${err.message}`);
+              failures.push(`${statusContext}: ${err.message}`);
+            }
+          }
+
+          if (failures.length > 0) {
+            throw new Error(`Failed to publish ${failures.length} E2E/Override ${state} status(es): ${failures.join('; ')}`);
+          }

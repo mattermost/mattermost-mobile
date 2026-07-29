@@ -3,7 +3,11 @@ name: Cancel E2E workflow runs
 description: >-
   Cancel all active E2E (e2e-detox-pr.yml) runs for a PR branch, force-stop
   every queued/in-progress job (including macOS build runners), and reset the
-  E2E commit statuses so a stopped run leaves no stale check behind.
+  E2E commit statuses to pending so a stopped run leaves no stale check behind.
+
+  A cancelled run produced no result, so this action never posts a conclusion
+  the run never reached. Waiving E2E is a separate concern — see
+  .github/actions/e2e-override-status.
 
 inputs:
   head_branch:
@@ -24,15 +28,6 @@ inputs:
     description: Commit status description after stopping E2E runs
     required: false
     default: Skipped
-  status_state:
-    description: >-
-      Commit status state to post after cancelling (pending | error | success).
-      Defaults to pending: a cancelled run produced no result, so the check must
-      not report a conclusion the run never reached. Use success only when a
-      maintainer deliberately bypasses E2E (E2E/Override), which is the one case
-      where the PR is meant to become mergeable without E2E results.
-    required: false
-    default: pending
 
 runs:
   using: composite
@@ -44,7 +39,6 @@ runs:
         EXCLUDE_HEAD_SHA: ${{ inputs.exclude_head_sha }}
         MAX_RUN_ID_EXCLUSIVE: ${{ inputs.max_run_id_exclusive }}
         REASON: ${{ inputs.reason }}
-        STATUS_STATE: ${{ inputs.status_state }}
       with:
         script: |
           const headBranch = process.env.HEAD_BRANCH;
@@ -55,11 +49,13 @@ runs:
             ? parseInt(process.env.MAX_RUN_ID_EXCLUSIVE, 10)
             : null;
           const reason = process.env.REASON || 'Skipped';
-          const statusState = process.env.STATUS_STATE || 'pending';
           const owner = context.repo.owner;
           const repo = context.repo.repo;
 
           const ACTIVE_RUN_STATUSES = ['in_progress', 'queued', 'waiting'];
+          // Keep in sync with STATUS_CONTEXT_PREFIX/PR_MAIN_JOBS in
+          // detox/utils/build-tsio-job-config.js and with
+          // .github/actions/e2e-override-status.
           const E2E_STATUS_CONTEXTS = [
             'e2e-test/detox-ios',
             'e2e-test/detox-android',
@@ -116,7 +112,7 @@ runs:
                   owner,
                   repo,
                   sha,
-                  state: statusState,
+                  state: 'pending',
                   context: statusContext,
                   description: reason.substring(0, 140),
                 });

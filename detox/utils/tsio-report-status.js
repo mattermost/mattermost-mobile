@@ -6,6 +6,7 @@
 
 const PRODUCTION_URL = 'https://test-io.test.mattermost.com';
 const STAGING_URL = 'https://staging-test-io.test.mattermost.com';
+const OVERRIDE_LABEL = 'E2E/Override';
 const TERMINAL_STATUSES = ['completed', 'incomplete'];
 const DEFAULT_POLL_ATTEMPTS = 12;
 const POLL_DELAY_MS = 5000;
@@ -163,6 +164,42 @@ async function pollGroup(baseUrl, reportId, pollAttempts) {
     return detail;
 }
 
+// A maintainer applying E2E/Override means the PR is meant to merge without E2E
+// results. E2E runs are not cancelled when the label lands, so a run that started
+// before the override must not re-red the required check when it finishes.
+function overrideCommitStatus(state, description) {
+    if (state !== 'failure') {
+        return {state, description};
+    }
+    return {
+        state: 'success',
+        description: `${OVERRIDE_LABEL} — ${description}`.slice(0, 140),
+    };
+}
+
+async function hasOverrideLabel(token, repository, prNumber) {
+    if (!prNumber) {
+        return false;
+    }
+    const [owner, repo] = repository.split('/');
+    try {
+        const res = await fetchWithTimeout(`https://api.github.com/repos/${owner}/${repo}/issues/${prNumber}/labels`, {
+            headers: {
+                Authorization: `Bearer ${token}`,
+                Accept: 'application/vnd.github+json',
+                'X-GitHub-Api-Version': '2022-11-28',
+            },
+        });
+        if (!res.ok) throw new Error(`${res.status} ${await res.text()}`);
+        const labels = await res.json();
+        return labels.some((label) => label.name === OVERRIDE_LABEL);
+    } catch (err) {
+        // Fail closed: an unreadable label list must not turn a real failure green.
+        console.error(`tsio-report-status (override label lookup for PR #${prNumber}):`, err.message);
+        return false;
+    }
+}
+
 async function createCommitStatus(token, repository, sha, payload) {
     const [owner, repo] = repository.split('/');
     const res = await fetchWithTimeout(`https://api.github.com/repos/${owner}/${repo}/statuses/${sha}`, {
@@ -209,21 +246,45 @@ async function reportTsioStatus(options) {
         test_stats: {},
         state: 'failure',
         timed_out: false,
+        override_applied: false,
     };
 
     const token = githubToken || process.env.GITHUB_TOKEN;
     if (!token) throw new Error('githubToken (or GITHUB_TOKEN env) is required');
+
+    // Checked lazily and only once: the label only matters when we are about to
+    // post a failure, and the lookup costs an API call.
+    let overrideLookup;
+    const postStatus = async ({state, description, targetUrl}) => {
+        let final = {state, description};
+        if (state === 'failure') {
+            overrideLookup = overrideLookup ??
+                hasOverrideLabel(token, compositeIdentity.repository, compositeIdentity.gh_pr_number);
+            if (await overrideLookup) {
+                final = overrideCommitStatus(state, description);
+                result.override_applied = true;
+                console.log(`${OVERRIDE_LABEL} set on PR #${compositeIdentity.gh_pr_number} — posting success for ${commitStatusContext}`);
+            }
+        }
+        result.state = final.state;
+        await createCommitStatus(token, compositeIdentity.repository, compositeIdentity.commit_sha, {
+            state: final.state,
+            context: commitStatusContext,
+            description: final.description,
+            target_url: targetUrl,
+        });
+        return final.state;
+    };
 
     let idToken;
     try {
         idToken = await mintOidcToken(audience);
     } catch (err) {
         console.error('tsio-report-status (OIDC):', err.message);
-        await createCommitStatus(token, compositeIdentity.repository, compositeIdentity.commit_sha, {
+        await postStatus({
             state: 'failure',
-            context: commitStatusContext,
             description: `TSIO error: ${err.message}`.slice(0, 140),
-            target_url: runUrl,
+            targetUrl: runUrl,
         });
         result.error = err.message;
         return result;
@@ -234,11 +295,10 @@ async function reportTsioStatus(options) {
         reportId = await beginGroup(baseUrl, idToken, compositeIdentity, totalReportsExpected);
     } catch (err) {
         console.error('tsio-report-status (begin):', err.message);
-        await createCommitStatus(token, compositeIdentity.repository, compositeIdentity.commit_sha, {
+        await postStatus({
             state: 'failure',
-            context: commitStatusContext,
             description: `TSIO begin failed: ${err.message}`.slice(0, 140),
-            target_url: runUrl,
+            targetUrl: runUrl,
         });
         result.error = err.message;
         return result;
@@ -252,11 +312,10 @@ async function reportTsioStatus(options) {
         detail = await pollGroup(baseUrl, reportId, pollAttempts);
     } catch (err) {
         console.error('tsio-report-status (poll):', err.message);
-        await createCommitStatus(token, compositeIdentity.repository, compositeIdentity.commit_sha, {
+        await postStatus({
             state: 'failure',
-            context: commitStatusContext,
             description: `TSIO poll failed: ${err.message}`.slice(0, 140),
-            target_url: runUrl,
+            targetUrl: runUrl,
         });
         result.error = err.message;
         return result;
@@ -276,23 +335,19 @@ async function reportTsioStatus(options) {
         upstreamSucceeded: upstreamJobsSucceeded,
     });
 
-    await createCommitStatus(token, compositeIdentity.repository, compositeIdentity.commit_sha, {
-        state,
-        context: commitStatusContext,
-        description,
-        target_url: targetUrl,
-    });
+    await postStatus({state, description, targetUrl});
 
     if (process.env.GITHUB_STEP_SUMMARY) {
         const stats = result.test_stats;
         const lines = [
             `### TSIO status — ${commitStatusContext}`,
             '',
-            `**State:** ${state}`,
+            `**State:** ${result.state}`,
             `**Display report:** [${compositeIdentity.name}](${result.display_report_url})`,
             `**Group:** [${reportId}](${result.group_url}) — ${result.status}`,
             `**Stats:** ${stats.passed || 0} passed, ${stats.failed || 0} failed, ${stats.skipped || 0} skipped (of ${stats.total || 0})`,
             ...(timedOut ? ['', ':warning: TSIO group did not reach terminal status in time — failing open to CI job status.'] : []),
+            ...(result.override_applied ? ['', `:warning: ${OVERRIDE_LABEL} is set on this PR — reporting ${state} as success so the required check does not block the merge.`] : []),
         ];
         try {
             const fs = require('fs');
@@ -342,7 +397,9 @@ async function reportTsioStatus(options) {
         console.warn(`E2E Mattermost notify setup failed: ${error.message}`);
     }
 
-    if (failOnTestFailures && bothTerminal && (result.test_stats.failed || 0) > 0) {
+    // Under override the commit status is green; failing the step too would only
+    // turn the run red again for a result the maintainer chose to waive.
+    if (failOnTestFailures && !result.override_applied && bothTerminal && (result.test_stats.failed || 0) > 0) {
         const err = new Error('TSIO reported test failures');
         err.exitCode = 1;
         throw err;
@@ -431,6 +488,14 @@ function selfTest() {
         'non-terminal -> workflow run URL',
     );
 
+    const overridden = overrideCommitStatus('failure', '8 passed, 2 failed, 0 skipped');
+    assert(overridden.state === 'success', 'override downgrades failure -> success');
+    assert(overridden.description.startsWith(OVERRIDE_LABEL), 'override description is labelled');
+    assert(
+        overrideCommitStatus('success', '10 passed').description === '10 passed',
+        'override leaves success untouched',
+    );
+
     console.log('SELF-TEST OK');
 }
 
@@ -487,11 +552,14 @@ module.exports = {
     buildWorkflowRunUrl,
     decideStatus,
     decideTargetUrl,
+    overrideCommitStatus,
+    hasOverrideLabel,
     reportTsioStatus,
     repoTail,
     mintOidcToken,
     beginGroup,
     pollGroup,
+    OVERRIDE_LABEL,
     PRODUCTION_URL,
     STAGING_URL,
 };

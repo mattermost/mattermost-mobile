@@ -97,6 +97,7 @@ jobs:
       statuses: write
     outputs:
       e2e_override: ${{ steps.policy.outputs.e2e_override }}
+      skip_reason: ${{ steps.policy.outputs.skip_reason }}
     steps:
       - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
         with:
@@ -140,6 +141,7 @@ jobs:
             if (!prNumber) {
               core.info('No PR number available — assuming E2E/Override is not set.');
               core.setOutput('e2e_override', 'false');
+              core.setOutput('skip_reason', '');
               return;
             }
 
@@ -151,6 +153,7 @@ jobs:
             if (pr.base.ref !== 'main') {
               core.info(`PR #${prNumber} targets ${pr.base.ref}, not main — skipping E2E.`);
               core.setOutput('e2e_override', 'true');
+              core.setOutput('skip_reason', 'non-main-base');
               return;
             }
 
@@ -162,6 +165,35 @@ jobs:
             const override = labels.some((label) => label.name === 'E2E/Override');
             core.info(`PR #${prNumber} E2E/Override=${override}`);
             core.setOutput('e2e_override', override ? 'true' : 'false');
+            core.setOutput('skip_reason', override ? 'override-label' : '');
+
+  # Every other job is skipped when the policy says "no E2E", and a skipped job
+  # posts nothing — the required e2e-test/* contexts would stay absent and block
+  # the merge forever. Post success here so the override actually lets it merge.
+  # Also covers the dispatch race where the label lands after Matterwick dispatched.
+  # Idempotent with the label manager, which posts the same statuses on `labeled`.
+  post-e2e-override-status:
+    name: Publish success on required E2E contexts (override)
+    runs-on: ubuntu-24.04
+    needs: resolve-e2e-policy
+    if: >-
+      needs.resolve-e2e-policy.outputs.e2e_override == 'true'
+      && (inputs.run_type == 'PR' || inputs.run_type == 'MAIN' || inputs.run_type == 'MASTER')
+    permissions:
+      contents: read
+      statuses: write
+    steps:
+      - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
+        with:
+          persist-credentials: false
+      - uses: ./.github/actions/e2e-override-status
+        with:
+          commit_sha: ${{ inputs.MOBILE_VERSION }}
+          description: >-
+            ${{ needs.resolve-e2e-policy.outputs.skip_reason == 'non-main-base'
+              && 'E2E skipped — PR does not target main'
+              || 'E2E waived by E2E/Override — not run' }}
+          target_url: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
 
   calculate-tsio-identity:
     name: Calculate TSIO per-job identities
@@ -589,6 +621,9 @@ jobs:
       statuses: write
       actions: read
       id-token: write
+      # Finalize re-reads the PR labels for E2E/Override; a reusable workflow
+      # cannot escalate past the caller, so grant it here too.
+      issues: read
     if: |
       !cancelled() &&
       needs.resolve-e2e-policy.outputs.e2e_override != 'true' &&
@@ -622,6 +657,9 @@ jobs:
       statuses: write
       actions: read
       id-token: write
+      # Finalize re-reads the PR labels for E2E/Override; a reusable workflow
+      # cannot escalate past the caller, so grant it here too.
+      issues: read
     if: |
       !cancelled() &&
       needs.resolve-e2e-policy.outputs.e2e_override != 'true' &&
@@ -678,6 +716,9 @@ jobs:
       statuses: write
       actions: read
       id-token: write
+      # Finalize re-reads the PR labels for E2E/Override; a reusable workflow
+      # cannot escalate past the caller, so grant it here too.
+      issues: read
     if: |
       !cancelled() &&
       needs.resolve-e2e-policy.outputs.e2e_override != 'true' &&
@@ -714,6 +755,9 @@ jobs:
       statuses: write
       actions: read
       id-token: write
+      # Finalize re-reads the PR labels for E2E/Override; a reusable workflow
+      # cannot escalate past the caller, so grant it here too.
+      issues: read
     if: |
       !cancelled() &&
       needs.resolve-e2e-policy.outputs.e2e_override != 'true' &&

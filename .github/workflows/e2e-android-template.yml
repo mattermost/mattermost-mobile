@@ -489,6 +489,9 @@ jobs:
       actions: read
       # Per-job TSIO finalize posts detox-android (or CMT <shard>).
       statuses: write
+      # Finalize re-reads the PR labels so a result landing after E2E/Override was
+      # applied reports success instead of re-blocking the merge.
+      issues: read
     outputs:
       TARGET_URL: ${{ steps.set-url.outputs.TARGET_URL }}
       STATUS: ${{ steps.determine-status.outputs.STATUS }}

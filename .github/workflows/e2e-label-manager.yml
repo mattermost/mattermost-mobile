@@ -9,7 +9,11 @@
 #      Add E2E/Run unless already present. Skips when E2E/Override is set.
 #
 #   3. Honor E2E/Override (labeled E2E/Override):
-#      Removes all E2E/Run* labels and cancels in-progress E2E workflow runs.
+#      Removes all E2E/Run* labels so no new run is dispatched, then posts success
+#      on every required e2e-test/* context. In-flight runs are NEVER cancelled —
+#      they finish and their finalize step re-checks the label before posting
+#      (see detox/utils/tsio-report-status.js), so a late result cannot re-red
+#      a check the maintainer deliberately bypassed.
 #
 #   4. Cancel in-progress E2E runs (E2E/Run* unlabeled by a human):
 #      Skips when mattermost-build (the PAT user) removed the label (refresh strip
@@ -175,12 +179,13 @@ jobs:
     permissions:
       issues: write
       pull-requests: write
-      actions: write
+      # Read-only: this job no longer cancels runs, it only lists them to comment.
+      actions: read
       statuses: write
     steps:
       - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
 
-      # ── Honor E2E/Override: strip run labels + cancel in-flight E2E ─────────
+      # ── Honor E2E/Override: strip run labels, never cancel in-flight E2E ────
       - name: Honor E2E/Override
         if: >-
           github.event.action == 'labeled'
@@ -209,16 +214,83 @@ jobs:
               }
             }
 
-      - name: Cancel in-progress E2E runs
+      # Override means "merge without E2E results", so every required context has to
+      # go green on the PR head SHA — whether E2E never ran, already failed, or is
+      # still running. Statuses are keyed by SHA, so this also clears earlier failures.
+      - name: Publish success on required E2E contexts
         if: >-
           github.event.pull_request.head.repo.full_name == github.repository
           && github.event.action == 'labeled'
           && github.event.label.name == 'E2E/Override'
-        uses: ./.github/actions/cancel-e2e-runs
+        uses: ./.github/actions/e2e-override-status
         with:
-          head_branch: ${{ github.event.pull_request.head.ref }}
-          pr_number: ${{ github.event.pull_request.number }}
-          reason: E2E cancelled (E2E/Override label applied)
-          # Only case where success is correct: a maintainer applied E2E/Override to
-          # merge without E2E, so any pending status from the cancelled run must clear.
-          status_state: success
+          commit_sha: ${{ github.event.pull_request.head.sha }}
+          target_url: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+
+      - name: Note in-flight E2E runs left running
+        if: >-
+          github.event.pull_request.head.repo.full_name == github.repository
+          && github.event.action == 'labeled'
+          && github.event.label.name == 'E2E/Override'
+        continue-on-error: true
+        uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9.0.0
+        env:
+          HEAD_BRANCH: ${{ github.event.pull_request.head.ref }}
+        with:
+          script: |
+            const owner = context.repo.owner;
+            const repo = context.repo.repo;
+            const prNumber = context.payload.pull_request.number;
+
+            const {data: workflows} = await github.rest.actions.listRepoWorkflows({owner, repo});
+            const e2eWorkflow = workflows.workflows.find((workflow) => workflow.name === 'E2E');
+            if (!e2eWorkflow) {
+              return;
+            }
+
+            const activeRuns = [];
+            for (const status of ['in_progress', 'queued', 'waiting']) {
+              const {data} = await github.rest.actions.listWorkflowRuns({
+                owner, repo,
+                workflow_id: e2eWorkflow.id,
+                status,
+                branch: process.env.HEAD_BRANCH,
+              });
+              for (const run of data.workflow_runs) {
+                const matches = !run.pull_requests?.length ||
+                  run.pull_requests.some((pr) => pr.number === prNumber);
+                if (matches) {
+                  activeRuns.push(run);
+                }
+              }
+            }
+
+            if (activeRuns.length === 0) {
+              core.info(`No in-flight E2E runs for PR #${prNumber}.`);
+              return;
+            }
+
+            const links = activeRuns.map((run) => `- [run ${run.id}](${run.html_url}) (${run.status})`).join('\n');
+            await github.rest.issues.createComment({
+              owner, repo, issue_number: prNumber,
+              body: [
+                '**E2E/Override applied** — required `e2e-test/*` checks were set to success.',
+                '',
+                'The following E2E run(s) were left running rather than cancelled; their results will be reported to TSIO but will not re-block this PR while the label is set:',
+                links,
+              ].join('\n'),
+            });
+
+      # Taking the escape hatch away must re-block the PR: without this the
+      # success posted above would linger on the head SHA forever.
+      - name: Reset required E2E contexts when E2E/Override is removed
+        if: >-
+          github.event.pull_request.head.repo.full_name == github.repository
+          && github.event.action == 'unlabeled'
+          && github.event.label.name == 'E2E/Override'
+        uses: ./.github/actions/e2e-override-status
+        with:
+          commit_sha: ${{ github.event.pull_request.head.sha }}
+          state: pending
+          description: E2E/Override removed — re-run E2E for a real result
+          target_url: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
