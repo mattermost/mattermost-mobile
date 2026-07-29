@@ -218,9 +218,8 @@ jobs:
           echo "UIFileSharingEnabled patched in $APP_PATH/Info.plist"
 
       # Same simulator boot / autofill / install sequence as Detox iOS CI.
-      # Skip pre-warm: Maestro login.yml uses clearState:true every flow, so a
-      # pre-warm launch is discarded immediately and can leave launchd in a
-      # bad state on iOS 26 before the first Maestro launchApp.
+      # Experiment: macos-26 is already used by Maestro iOS builds; keep it
+      # aligned with the Detox iOS experiment. Skip pre-warm for Maestro.
       - name: Pre-boot iOS Simulator (Detox-compatible)
         env:
           DEVICE_NAME: ${{ env.E2E_IOS_DEVICE_NAME }}
@@ -749,7 +748,7 @@ jobs:
           API_LEVEL='${{ env.E2E_ANDROID_API_LEVEL }}'
           for attempt in 1 2 3; do
             echo "SDK install attempt $attempt..."
-            if yes | sdkmanager --install "platform-tools" "emulator" "platforms;android-${API_LEVEL}" "system-images;android-${API_LEVEL};google_apis;x86_64"; then
+            if yes | sdkmanager --install "platform-tools" "emulator;36.4.9" "platforms;android-${API_LEVEL}" "system-images;android-${API_LEVEL};google_apis;x86_64"; then
               echo "SDK install succeeded on attempt $attempt"
               break
             fi
@@ -782,6 +781,8 @@ jobs:
         env:
           BOOTSTRAP_ONLY: "true"
           MAESTRO_ANDROID: "true"
+          # Experiment: match the Detox Android RAM bump for stability.
+          MM_ANDROID_EMULATOR_RAM_MB: "4096"
           JAVA_HOME: ${{ env.JAVA_HOME_17_X64 }}
           API_LEVEL: ${{ env.E2E_ANDROID_API_LEVEL }}
           AVD_NAME: ${{ env.E2E_ANDROID_AVD_NAME }}
@@ -821,6 +822,8 @@ jobs:
         env:
           FLOW_PATH: ${{ inputs.flow-path }}
           MAESTRO_DRIVER_STARTUP_TIMEOUT: "180000"
+          # Experiment: match the Detox Android RAM bump for stability.
+          MM_ANDROID_EMULATOR_RAM_MB: "4096"
         run: |
           if [ -n "${FLOW_PATH:-}" ] && ! printf '%s' "$FLOW_PATH" | grep -Eq '^[A-Za-z0-9_./ -]+$'; then
             echo "Invalid flow-path input: $FLOW_PATH"

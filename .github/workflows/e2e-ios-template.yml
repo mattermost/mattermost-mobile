@@ -84,17 +84,17 @@ on:
         description: "Path to search for test specs (use for smoke test subset)"
         required: false
         type: string
-        default: "detox/e2e/test"
+        default: "detox/e2e/test/products/channels/smoke_test"
       parallelism:
         description: "Number of parallel test shards"
         required: false
         type: string
-        default: "20"
+        default: "1"
       detox_config:
-        description: "Detox configuration name to use (e.g. ios.sim.debug, ios.ipad.debug)"
+        description: "Detox configuration name to use (e.g. ios.sim.release, ios.ipad.release)"
         required: false
         type: string
-        default: "ios.sim.debug"
+        default: "ios.sim.release"
       artifact_run_id:
         description: "Run ID of the workflow that uploaded ios-build-simulator-* (defaults to caller run)"
         required: false
@@ -220,11 +220,9 @@ jobs:
 
   e2e-ios:
     name: machine-${{ matrix.runId }}-os-${{ matrix.deviceOsVersion }}
-    # Temporarily reverted to macos-15 due to Metro stabilization issues on macos-26.
-    # macos-26 ships the iOS 26.2 runtime pre-installed, avoiding a ~10min
-    # LaunchServicesMigrator + runtime install on every shard, but has timing issues.
-    # TODO: Investigate macos-26 Metro/Detox compatibility and re-enable if resolved.
-    runs-on: macos-15
+    # Experiment: move iOS Detox tests to macos-26 and use a release build so no
+    # Metro server is required per shard. The release .app embeds a Hermes bundle.
+    runs-on: macos-26
     continue-on-error: true
     timeout-minutes: ${{ inputs.low_bandwidth_mode && 240 || 180 }}
     env:
@@ -422,73 +420,13 @@ jobs:
         # the script bounds all curls and exits 0 on tunnel failure so Jest still runs.
         run: bash detox/scripts/start_webhook_sidecar.sh
 
-      - name: Start Metro Bundler and Run Detox E2E Tests
-        # Bumped from 60 to 180 min: with ~6 specs per shard averaging 5-15 min each,
-        # the 60min step timeout was being hit silently — GitHub kills the step but
-        # `continue-on-error: true` masks it, and the tests that didn't run get
-        # dropped from the result count. iOS run 26368981355 had 524 tests vs
-        # Android's 537 (same codebase, same 124 spec files) — the 13-test gap was
-        # tail tests on shards that timed out at this step. 180 matches the job
-        # timeout above so the step uses the full available budget.
+      - name: Run Detox E2E Tests
+        # Experiment: release build embeds the Hermes bundle, so Metro is not
+        # started per shard. This removes a common flake source and speeds up
+        # each shard. Keep the 180min ceiling to match the job timeout.
         timeout-minutes: 180
         continue-on-error: true # We want to run all the tests
         run: |
-          # Start Metro bundler in background
-          npm run start > metro.log 2>&1 &
-          METRO_PID=$!
-          echo "Metro PID: $METRO_PID"
-          echo "METRO_PID=$METRO_PID" >> $GITHUB_ENV
-
-          # Wait for Metro to be ready with health check endpoint polling
-          timeout=120
-          elapsed=0
-          echo "Waiting for Metro bundler to be ready..."
-          while [ $elapsed -lt $timeout ]; do
-            # Try health check endpoint first (more reliable)
-            if curl -s http://localhost:8081/status 2>/dev/null | grep -q "packager-status:running"; then
-              echo "✅ Metro bundler is ready after ${elapsed}s (verified via health check)"
-              break
-            # Fallback to log checking
-            elif grep -q "Fast - Scalable - Integrated" metro.log 2>/dev/null; then
-              echo "✅ Metro bundler is ready after ${elapsed}s (verified via logs)"
-              break
-            fi
-
-            # Show progress every 10 seconds
-            if [ $((elapsed % 10)) -eq 0 ] && [ $elapsed -gt 0 ]; then
-              echo "Still waiting for Metro... (${elapsed}s elapsed)"
-            fi
-
-            sleep 2
-            elapsed=$((elapsed + 2))
-          done
-
-          if [ $elapsed -ge $timeout ]; then
-            echo "⚠️ Warning: Metro bundler may not be fully ready after ${timeout}s, proceeding anyway"
-            echo "Metro process status:"
-            ps aux | grep -E "metro|node.*start" | grep -v grep || echo "Metro process not found"
-            echo ""
-            echo "Last 30 lines of metro.log:"
-            tail -30 metro.log
-          else
-            echo "Metro is serving on http://localhost:8081"
-            # Give Metro time to fully initialize for iOS 26.2 (React Native bridge needs stabilization).
-            # 20s should be sufficient for macos-15 to ensure full Metro compilation.
-            # Without adequate wait, the app may fail with "No script URL provided" on launch.
-            echo "Allowing Metro to fully stabilize (20s on macos-15)..."
-            sleep 20
-
-            # Verify Metro is actually serving the bundle (not just the process is running).
-            # This catches cases where Metro reports ready but hasn't finished compilation.
-            echo "Verifying Metro can serve bundles..."
-            if curl -s http://localhost:8081/index.ios.bundle 2>/dev/null | grep -q "__d("; then
-              echo "✅ Metro is serving bundles successfully"
-            else
-              echo "⚠️ Warning: Could not verify Metro is serving bundles, proceeding anyway"
-              ps aux | grep -E "metro|node.*start" | grep -v grep || echo "Metro process not found"
-            fi
-          fi
-
           cd detox
           npm run detox:config-gen
           # Ensure the Jest --json output directory exists before the run.
@@ -500,10 +438,11 @@ jobs:
           # `--` separates Detox args from Jest args; --json --outputFile emits
           # Jest's native JSON report (consumed by the TSIO detox parser) into
           # the existing detox/artifacts/ upload.
-          if [ "$DETOX_CONFIG" = "ios.ipad.debug" ]; then
-            npm run e2e:ios-ipad-test -- "${SPECS[@]}" -- --json --outputFile=artifacts/jest-results.json
+          # Release configs use the embedded bundle; no Metro required.
+          if [ "$DETOX_CONFIG" = "ios.ipad.release" ]; then
+            npm run e2e:ios-ipad-test-release -- "${SPECS[@]}" -- --json --outputFile=artifacts/jest-results.json
           else
-            npm run e2e:ios-test -- "${SPECS[@]}" -- --json --outputFile=artifacts/jest-results.json
+            npm run e2e:ios-test-release -- "${SPECS[@]}" -- --json --outputFile=artifacts/jest-results.json
           fi
           DETOX_EXIT_CODE=$?
           exit "${DETOX_EXIT_CODE:-1}"
@@ -525,18 +464,6 @@ jobs:
         timeout-minutes: 2
         run: |
           echo "Cleaning up simulator state after tests..."
-
-          # Kill the entire Metro process tree, not just the top-level PID.
-          # `kill -9 $PID` only kills the npm wrapper; the actual Metro Node.js
-          # workers and watchman stay alive. GitHub Actions waits ~10 min for
-          # orphaned processes to die, causing the cleanup step to hang.
-          if [ -n "$METRO_PID" ]; then
-            echo "Stopping Metro bundler (PID: $METRO_PID) and child processes..."
-            kill -9 -"$METRO_PID" 2>/dev/null || true
-            pkill -9 -f "react-native.*start" 2>/dev/null || true
-            pkill -9 -f "metro" 2>/dev/null || true
-            sleep 1
-          fi
 
           # Terminate app with a timeout — simctl terminate can hang on iOS 26.x
           if [ -n "$SIMULATOR_ID" ]; then
@@ -658,8 +585,10 @@ jobs:
             --key "$DURATIONS_KEY" \
             --repo-root "$GITHUB_WORKSPACE"
 
+      # Experiment: also publish durations on RELEASE runs so release-spec
+      # timings are available to PR sharding, not only main-push runs.
       - name: Publish spec-duration manifest
-        if: always() && inputs.durations_key != '' && (inputs.run-type == 'MAIN' || inputs.run-type == 'MASTER') && hashFiles('detox/artifacts/spec-durations.next.json') != ''
+        if: always() && inputs.durations_key != '' && (inputs.run-type == 'MAIN' || inputs.run-type == 'MASTER' || inputs.run-type == 'RELEASE') && hashFiles('detox/artifacts/spec-durations.next.json') != ''
         continue-on-error: true
         uses: ./.github/actions/s3-spec-durations
         env:

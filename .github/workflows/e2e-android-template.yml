@@ -78,12 +78,12 @@ on:
         description: "Path to search for test specs (use for smoke test subset)"
         required: false
         type: string
-        default: "detox/e2e/test"
+        default: "detox/e2e/test/products/channels/smoke_test"
       parallelism:
         description: "Number of parallel test shards"
         required: false
         type: string
-        default: "20"
+        default: "1"
       android_avd_name:
         description: "Android Emulator name"
         required: false
@@ -301,6 +301,9 @@ jobs:
           cat > .env <<EOF
           RUNNING_E2E=true
           EOF
+
+      # Experiment: Detox Android release build. The APK embeds the Hermes bundle,
+      # so no Metro server is needed in the test shard.
   
       # Must precede the download: download-artifact consumes ARTIFACT_RUN_ID and
       # fails with an opaque API error when it is empty.
@@ -322,10 +325,12 @@ jobs:
           github-token: ${{ github.token }}
           path: android/app/build
 
+      # Experiment: Detox Android release build.
+
       - name: Verify Detox Android app from parent build
         run: |
-          APP_APK="android/app/build/outputs/apk/debug/app-debug.apk"
-          TEST_APK="android/app/build/outputs/apk/androidTest/debug/app-debug-androidTest.apk"
+          APP_APK="android/app/build/outputs/apk/release/app-release.apk"
+          TEST_APK="android/app/build/outputs/apk/androidTest/release/app-release-androidTest.apk"
           if [ ! -f "$APP_APK" ]; then
             echo "❌ Missing ${APP_APK} from android-build-files-${ARTIFACT_RUN_ID}"
             find android/app/build -name '*.apk' 2>/dev/null || true
@@ -336,10 +341,11 @@ jobs:
             find android/app/build -name '*.apk' 2>/dev/null || true
             exit 1
           fi
-          echo "✅ Detox will use Android APKs from parent workflow run ${ARTIFACT_RUN_ID}:"
+          echo "✅ Detox will use Android release APKs from parent workflow run ${ARTIFACT_RUN_ID}:"
           ls -lh "$APP_APK" "$TEST_APK"
         env:
           ARTIFACT_RUN_ID: ${{ env.ARTIFACT_RUN_ID }}
+          DETOX_BUILD_TYPE: release
 
       - name: Set up Android SDK
         run: |
@@ -411,7 +417,7 @@ jobs:
           fi
           for attempt in 1 2 3; do
             echo "SDK install attempt $attempt..."
-            if yes | sdkmanager --install "platform-tools" "emulator" "platforms;android-${API_LEVEL}" "system-images;android-${API_LEVEL};google_apis;x86_64"; then
+            if yes | sdkmanager --install "platform-tools" "emulator;36.4.9" "platforms;android-${API_LEVEL}" "system-images;android-${API_LEVEL};google_apis;x86_64"; then
               echo "SDK install succeeded on attempt $attempt"
               break
             fi
@@ -459,6 +465,10 @@ jobs:
           SITE_3_URL: ${{ env.SITE_3_URL }}
           MAX_ATTEMPTS: "2"
           ATTEMPT_TIMEOUT_MIN: "60"
+          # Experiment: bump emulator RAM to 4096 MB for API 35 stability.
+          MM_ANDROID_EMULATOR_RAM_MB: "4096"
+          # Experiment: use release APK with embedded bundle, no Metro per shard.
+          DETOX_BUILD_TYPE: "release"
         shell: bash
         run: |
           set +e
@@ -468,7 +478,9 @@ jobs:
             timeout "${ATTEMPT_TIMEOUT_MIN}m" bash -c '
               cd detox
               chmod +x ./create_android_emulator.sh
-              CI=true ./create_android_emulator.sh "$SDK_VERSION" "$AVD_NAME" $MATRIX_SPECS
+              # Use release Detox config; embedded bundle means no Metro.
+              CI=true DETOX_BUILD_TYPE=release AVD_NAME="$AVD_NAME" SDK_VERSION="$SDK_VERSION" \
+                ./create_android_emulator.sh "$SDK_VERSION" "$AVD_NAME" $MATRIX_SPECS
             '
             rc=$?
             if (( rc == 0 )); then
@@ -580,8 +592,10 @@ jobs:
             --key "$DURATIONS_KEY" \
             --repo-root "$GITHUB_WORKSPACE"
 
+      # Experiment: also publish durations on RELEASE runs so release-spec
+      # timings are available to PR sharding, not only main-push runs.
       - name: Publish spec-duration manifest
-        if: always() && inputs.durations_key != '' && (inputs.run-type == 'MAIN' || inputs.run-type == 'MASTER') && hashFiles('detox/artifacts/spec-durations.next.json') != ''
+        if: always() && inputs.durations_key != '' && (inputs.run-type == 'MAIN' || inputs.run-type == 'MASTER' || inputs.run-type == 'RELEASE') && hashFiles('detox/artifacts/spec-durations.next.json') != ''
         continue-on-error: true
         uses: ./.github/actions/s3-spec-durations
         env:

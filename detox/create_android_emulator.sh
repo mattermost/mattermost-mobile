@@ -129,34 +129,53 @@ wait_for_emulator() {
     # API 35 emulators take longer to stabilize the instrumentation layer after
     # sys.boot_completed — 15s was insufficient, causing the first Detox app
     # launch to fail with "No activities in stage RESUMED".
-    sleep 30
+    # Experiment: increase to 45s for release builds on API 35.
+    if is_release_build; then
+        sleep 45
+    else
+        sleep 30
+    fi
     adb shell pm list packages > /dev/null 2>&1
     echo "Emulator is fully ready."
 }
 
+is_release_build() {
+    [[ "${DETOX_BUILD_TYPE:-}" == "release" || "${MAESTRO_ANDROID:-}" == "true" ]]
+}
+
 resolve_app_apk() {
-    if [[ "${MAESTRO_ANDROID:-}" == "true" ]]; then
+    if is_release_build; then
         local release_apk="../android/app/build/outputs/apk/release/app-release.apk"
         if [[ -f "$release_apk" ]]; then
             echo "$release_apk"
             return 0
         fi
-        echo "Maestro release APK not found at $release_apk" >&2
+        echo "Release APK not found at $release_apk" >&2
         ls -la ../android/app/build/outputs/apk/release/ 2>/dev/null || true
         exit 1
     fi
     echo "../android/app/build/outputs/apk/debug/app-debug.apk"
 }
 
+resolve_test_apk() {
+    if is_release_build; then
+        echo "../android/app/build/outputs/apk/androidTest/release/app-release-androidTest.apk"
+    else
+        echo "../android/app/build/outputs/apk/androidTest/debug/app-debug-androidTest.apk"
+    fi
+}
+
 install_app() {
-    local app_apk
+    local app_apk test_apk
     app_apk=$(resolve_app_apk)
+    test_apk=$(resolve_test_apk)
     echo "Installing the app from $app_apk..."
     adb install -r "$app_apk"
-    if [[ "${MAESTRO_ANDROID:-}" != "true" && "${BOOTSTRAP_ONLY:-}" != "true" ]]; then
+    if [[ "${BOOTSTRAP_ONLY:-}" != "true" ]]; then
         # Install the test/instrumentation APK — required by Detox (reinstallApp: false assumes
         # both the main APK and the test APK are already present on the device).
-        adb install -r ../android/app/build/outputs/apk/androidTest/debug/app-debug-androidTest.apk
+        echo "Installing the test APK from $test_apk..."
+        adb install -r "$test_apk"
     fi
     adb shell pm list packages | grep "com.mattermost.rnbeta" && echo "App is installed." || echo "App is not installed."
 }
@@ -286,7 +305,11 @@ run_detox_tests() {
     cd detox
     AVD_NAME="$AVD_NAME" npm run detox:config-gen
     mkdir -p artifacts
-    npm run e2e:android-test -- "$@" -- --json --outputFile=artifacts/jest-results.json
+    if is_release_build; then
+        npm run e2e:android-test-release -- "$@" -- --json --outputFile=artifacts/jest-results.json
+    else
+        npm run e2e:android-test -- "$@" -- --json --outputFile=artifacts/jest-results.json
+    fi
 }
 
 main() {
@@ -306,13 +329,13 @@ main() {
 
     if [[ "$CI" == "true" ]]; then
         install_app
-        # Maestro uses a release APK with an embedded bundle (mirrors iOS simulator builds).
-        if [[ "${MAESTRO_ANDROID:-}" != "true" ]]; then
+        # Release and Maestro builds embed the bundle, so Metro is not needed.
+        if ! is_release_build; then
             start_server
         fi
         grant_android_runtime_permissions
         configure_emulator_for_tests
-        if [[ "${MAESTRO_ANDROID:-}" != "true" ]]; then
+        if ! is_release_build; then
             setup_adb_reverse
         fi
         push_e2e_fixtures

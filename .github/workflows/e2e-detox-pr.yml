@@ -13,11 +13,13 @@
 # first step) so the latest SHA starts immediately instead of queueing behind a long run.
 #
 # Phase 1 — builds & setup (parallel):
-#   build-ios-simulator, build-android-apk-maestro, build-android-apk (Detox debug APK),
+#   build-ios-simulator, build-android-apk-maestro, build-android-apk (Detox release APK),
 #   provision-servers, validate-maestro-flow-headers
 # Phase 2 — tests (parallel, after phase 1):
 #   run-detox-ios / run-detox-android → e2e-detox.yml
 #   run-maestro-ios / run-maestro-android → e2e-maestro-pr.yml (downloads phase-1 artifacts via artifact_run_id)
+# Experiment: all Detox/Maestro test jobs run with parallelism=1 and a two-test
+# smoke subset to validate the new release-build + macos-26 + emulator-RAM setup.
 name: E2E
 
 on:
@@ -538,12 +540,15 @@ jobs:
           key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
           restore-keys: ${{ runner.os }}-gradle-
 
+      # Experiment: build Android Detox with the release variant so the APK
+      # embeds the Hermes bundle. This removes the need to run Metro in every
+      # test shard and is closer to what end users install.
       - name: Detox build
         if: env.SKIP_BUILD != 'true'
         run: |
           cd detox
           npm ci --prefer-offline --no-audit --no-fund
-          npm run e2e:android-build
+          npm run e2e:android-build-release
 
       # Always upload artifact (from cache or fresh build) so test jobs can download it.
       - name: Upload Android Build
@@ -890,6 +895,8 @@ jobs:
       artifact_run_id: ${{ github.run_id }}
       record_tests_in_zephyr: ${{ inputs.run_type == 'RELEASE' || inputs.run_type == 'MAIN' || inputs.run_type == 'MASTER' }}
       tsio-job-configs: ${{ needs.calculate-tsio-identity.outputs.job-configs }}
+      # Experiment: run Maestro iOS with a single shard / limited smoke flows.
+      flow-path: "detox/maestro/flows/timezone detox/maestro/flows/account/attach_logs.yml"
     secrets: inherit
 
   run-maestro-android:
@@ -926,6 +933,8 @@ jobs:
       artifact_run_id: ${{ github.run_id }}
       record_tests_in_zephyr: ${{ inputs.run_type == 'RELEASE' || inputs.run_type == 'MAIN' || inputs.run_type == 'MASTER' }}
       tsio-job-configs: ${{ needs.calculate-tsio-identity.outputs.job-configs }}
+      # Experiment: run Maestro Android with a single shard / limited smoke flows.
+      flow-path: "detox/maestro/flows/timezone detox/maestro/flows/account/attach_logs.yml"
     secrets: inherit
 
   e2e-remove-matterwick-label:
