@@ -105,6 +105,9 @@ describe('Channels', () => {
         await ChannelInfoScreen.favoriteAction.tap();
 
         await wait(timeouts.ONE_SEC);
+
+        // Android: unfavoriteAction can be clipped by the nav bars below 50% visibility, so assert
+        // presence with toExist().
         await waitFor(ChannelInfoScreen.unfavoriteAction).toExist().withTimeout(timeouts.TEN_SEC);
 
         await ChannelInfoScreen.close();

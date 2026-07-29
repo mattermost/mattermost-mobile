@@ -6,7 +6,7 @@ import {
     ProfilePicture,
 } from '@support/ui/component';
 import {ChannelScreen} from '@support/ui/screen';
-import {isAndroid, timeouts, wait, waitForElementToExist} from '@support/utils';
+import {isAndroid, safeEnableSynchronization, timeouts, wait} from '@support/utils';
 import {expect, waitFor} from 'detox';
 
 class ChannelInfoScreen {
@@ -37,6 +37,13 @@ class ChannelInfoScreen {
         copyChannelLinkOption: 'channel_info.options.copy_channel_link.option',
         channelSettingsOption: 'channel_info.options.channel_settings.option',
         leaveChannelOption: 'channel_info.options.leave_channel.option',
+        copyHeaderTextAction: 'channel_info.extra.header.bottom_sheet.copy_header_text',
+        copyHeaderCancelAction: 'channel_info.extra.header.bottom_sheet.cancel',
+        copyPurposeAction: 'channel_info.title.public_private.bottom_sheet.copy_purpose',
+        copyPurposeCancelAction: 'channel_info.title.public_private.bottom_sheet.cancel',
+        bookmarksList: 'channel_info.bookmarks.list',
+        addBookmarkButton: 'channel_info.add_bookmark.button',
+        channelHeaderBookmarksList: 'channel_header.bookmarks.list',
     };
 
     channelInfoScreen = element(by.id(this.testID.channelInfoScreen));
@@ -122,8 +129,10 @@ class ChannelInfoScreen {
             // Content may not require scrolling; proceed
         }
         await waitFor(this.leaveChannelOption).toExist().withTimeout(timeouts.TWO_SEC);
-        if (isAndroid()) {
+        try {
             await this.scrollView.scrollTo('bottom');
+        } catch {
+            // Content may not require scrolling; proceed
         }
         await this.leaveChannelOption.tap({x: 1, y: 1});
         const {
@@ -160,12 +169,23 @@ class ChannelInfoScreen {
         await element(by.text(headerText)).longPress();
 
         // Wait for bottom sheet
-        await waitFor(element(by.id('channel_info.extra.header.bottom_sheet.copy_header_text'))).
+        const copyAction = element(by.id(this.testID.copyHeaderTextAction));
+        await waitFor(copyAction).
             toBeVisible().
             withTimeout(timeouts.TWO_SEC);
 
-        // Tap copy option (actual copy action)
-        await element(by.id('channel_info.extra.header.bottom_sheet.copy_header_text')).tap();
+        // Tap copy — disable sync on Android to avoid Fabric idling-resource deadlock (MM-T868/T869).
+        if (isAndroid()) {
+            await device.disableSynchronization();
+        }
+        try {
+            await copyAction.tap();
+            await wait(timeouts.ONE_SEC);
+        } finally {
+            if (isAndroid()) {
+                await safeEnableSynchronization();
+            }
+        }
     };
 
     cancelCopyChannelHeader = async (headerText: string) => {
@@ -173,12 +193,12 @@ class ChannelInfoScreen {
         await element(by.text(headerText)).longPress();
 
         // Wait for bottom sheet
-        await waitFor(element(by.id('channel_info.extra.header.bottom_sheet.copy_header_text'))).
+        await waitFor(element(by.id(this.testID.copyHeaderTextAction))).
             toBeVisible().
             withTimeout(timeouts.TWO_SEC);
 
         // Cancel
-        await element(by.id('channel_info.extra.header.bottom_sheet.cancel')).tap();
+        await element(by.id(this.testID.copyHeaderCancelAction)).tap();
     };
 
     copyChannelPurpose = async (purposeText: string) => {
@@ -186,12 +206,22 @@ class ChannelInfoScreen {
         await element(by.text(purposeText)).longPress();
 
         // Wait for bottom sheet
-        await waitFor(element(by.id('channel_info.title.public_private.bottom_sheet.copy_purpose'))).
+        const copyAction = element(by.id(this.testID.copyPurposeAction));
+        await waitFor(copyAction).
             toBeVisible().
             withTimeout(timeouts.TWO_SEC);
 
-        // Tap copy option
-        await element(by.id('channel_info.title.public_private.bottom_sheet.copy_purpose')).tap();
+        if (isAndroid()) {
+            await device.disableSynchronization();
+        }
+        try {
+            await copyAction.tap();
+            await wait(timeouts.ONE_SEC);
+        } finally {
+            if (isAndroid()) {
+                await safeEnableSynchronization();
+            }
+        }
     };
 
     cancelCopyChannelPurpose = async (purposeText: string) => {
@@ -199,23 +229,34 @@ class ChannelInfoScreen {
         await element(by.text(purposeText)).longPress();
 
         // Wait for bottom sheet
-        await waitFor(element(by.id('channel_info.title.public_private.bottom_sheet.copy_purpose'))).
+        await waitFor(element(by.id(this.testID.copyPurposeAction))).
             toBeVisible().
             withTimeout(timeouts.TWO_SEC);
 
         // Cancel
-        await element(by.id('channel_info.title.public_private.bottom_sheet.cancel')).tap();
+        await element(by.id(this.testID.copyPurposeCancelAction)).tap();
     };
 
     scrollToBookmarks = async () => {
-        const bookmarksList = element(by.id('channel_info.bookmarks.list'));
+        const bookmarksList = element(by.id(this.testID.bookmarksList));
+
+        // Channel Info preserves its scroll offset across reopens, which can leave the bookmarks
+        // list fully clipped behind the navigation header.
         try {
-            await waitForElementToExist(bookmarksList, timeouts.THREE_SEC);
+            await this.scrollView.scrollTo('top');
+        } catch {
+            // Content may not require scrolling.
+        }
+
+        try {
+            await waitFor(bookmarksList).toBeVisible().withTimeout(timeouts.THREE_SEC);
             return;
         } catch {
             // Bookmarks section may be below the fold — scroll channel info.
         }
 
+        // A 200px scroll step does not always reach the bookmarks list on CI.
+        // Evidence: CI run 28476574698 (MM-T5602, MM-T5604, MM-T5608).
         try {
             await waitFor(bookmarksList).
                 toExist().
@@ -229,6 +270,47 @@ class ChannelInfoScreen {
             }
         }
         await wait(timeouts.ONE_SEC);
+    };
+
+    tapAddBookmark = async () => {
+        await this.scrollToBookmarks();
+
+        // The button exists but covers <75% of its area when clipped by the scroll view edge, so
+        // find it with toExist() then scroll it into the visibility tap() requires.
+        const addBookmark = element(by.id(this.testID.addBookmarkButton));
+        const scrollViewMatcher = by.id(this.testID.scrollView);
+
+        try {
+            await waitFor(addBookmark).toExist().whileElement(scrollViewMatcher).scroll(150, 'down');
+        } catch {
+            /* eslint-disable no-await-in-loop -- bounded scroll: stops when row exists */
+            for (let i = 0; i < 15; i++) {
+                try {
+                    await waitFor(addBookmark).toExist().withTimeout(timeouts.TWO_SEC);
+                    break;
+                } catch (e) {
+                    if (i === 14) {
+                        throw new Error('Add a bookmark button not found after 15 scroll attempts');
+                    }
+                    try {
+                        await this.scrollView.scroll(150, 'down', 0.5, 0.5);
+                    } catch {
+                        // Scroll view at the bottom edge.
+                    }
+                }
+            }
+            /* eslint-enable no-await-in-loop */
+        }
+
+        // Scroll into 75% visibility for tap() — Detox requires it.
+        try {
+            await waitFor(addBookmark).toBeVisible(75).whileElement(scrollViewMatcher).scroll(100, 'down');
+        } catch {
+            try {
+                await waitFor(addBookmark).toBeVisible(75).whileElement(scrollViewMatcher).scroll(100, 'up');
+            } catch { /* at scroll edge — tap may still work */ }
+        }
+        await addBookmark.tap({x: 1, y: 1});
     };
 
     // Close/reopen channel info to re-trigger bookmark fetch when API-created
@@ -255,7 +337,7 @@ class ChannelInfoScreen {
                 if (attempt === MAX_RETRIES) {
                     if (textFallback) {
                         const headerMatcher = by.text(textFallback).
-                            withAncestor(by.id('channel_header.bookmarks.list'));
+                            withAncestor(by.id(this.testID.channelHeaderBookmarksList));
                         try {
                             await waitFor(element(headerMatcher)).toExist().withTimeout(timeouts.FIVE_SEC);
                             return;
@@ -265,7 +347,7 @@ class ChannelInfoScreen {
                     }
                     if (bookmarkId) {
                         const headerMatcher = by.id(`channel_bookmark.${bookmarkId}`).
-                            withAncestor(by.id('channel_header.bookmarks.list'));
+                            withAncestor(by.id(this.testID.channelHeaderBookmarksList));
                         try {
                             await waitFor(element(headerMatcher)).toExist().withTimeout(timeouts.FIVE_SEC);
                             return;

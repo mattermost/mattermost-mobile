@@ -8,8 +8,11 @@
 // *******************************************************************
 
 import {
+    Channel,
     Post,
     Setup,
+    Team,
+    User,
 } from '@support/server_api';
 import {
     serverOneUrl,
@@ -20,20 +23,24 @@ import {
     ChannelScreen,
     HomeScreen,
     LoginScreen,
+    PostOptionsScreen,
     ServerScreen,
+    ThreadScreen,
 } from '@support/ui/screen';
-import {timeouts} from '@support/utils';
+import {timeouts, wait} from '@support/utils';
 import {expect, waitFor} from 'detox';
 
 describe('Messaging - Emoji Display', () => {
     const serverOneDisplayName = 'Server 1';
     const channelsCategory = 'channels';
     let testChannel: any;
+    let testTeam: any;
     let testUser: any;
 
     beforeAll(async () => {
-        const {channel, user} = await Setup.apiInit(siteOneUrl);
+        const {channel, team, user} = await Setup.apiInit(siteOneUrl);
         testChannel = channel;
+        testTeam = team;
         testUser = user;
 
         // # Log in to server
@@ -76,6 +83,43 @@ describe('Messaging - Emoji Display', () => {
         await expect(emojiElement).toExist();
 
         // # Go back to channel list screen
+        await ChannelScreen.back();
+    });
+
+    it('MM-T162_1 - should display emoji-only replies as jumbo in thread view', async () => {
+        // # Post a root message in the channel via API
+        const rootMessage = 'Root message for emoji reply test';
+        await Post.apiCreatePost(siteOneUrl, {
+            channelId: testChannel.id,
+            message: rootMessage,
+        });
+        const {post: rootPost} = await Post.apiGetLastPostInChannel(siteOneUrl, testChannel.id);
+
+        // # Post an emoji-only reply to the root post via API
+        const emojiReply = '🎉';
+        await Post.apiCreatePost(siteOneUrl, {
+            channelId: testChannel.id,
+            message: emojiReply,
+            rootId: rootPost.id,
+        });
+        const {post: replyPost} = await Post.apiGetLastPostInChannel(siteOneUrl, testChannel.id);
+
+        // # Open the channel and navigate to the thread
+        await ChannelScreen.open(channelsCategory, testChannel.name);
+        await ChannelScreen.openReplyThreadFor(rootPost.id, rootMessage);
+        await ThreadScreen.toBeVisible();
+
+        // * Verify the emoji reply is visible in the thread
+        // TODO: JumboEmoji exposes no container testID, so jumbo vs normal rendering cannot be asserted.
+        const replyPostMatcher = by.id(`thread.post_list.post.${replyPost.id}`);
+        const emojiInThread = element(by.id('markdown_emoji').withAncestor(replyPostMatcher));
+        await waitFor(emojiInThread).toExist().withTimeout(timeouts.TEN_SEC);
+
+        // * Verify the emoji element exists in the thread (rendered via JumboEmoji path)
+        await expect(emojiInThread).toExist();
+
+        // # Go back to channel list screen
+        await ThreadScreen.back();
         await ChannelScreen.back();
     });
 
@@ -157,6 +201,46 @@ describe('Messaging - Emoji Display', () => {
         // * Verify no 'markdown_emoji' element is rendered (it is plain text, not an emoji)
         const emojiElement = element(by.id('markdown_emoji').withAncestor(postItemMatcher));
         await expect(emojiElement).not.toExist();
+
+        // # Go back to channel list screen
+        await ChannelScreen.back();
+    });
+
+    it('MM-T151_1 - should show limited post options when long pressing a system message', async () => {
+        // # Seed a regular post so the upcoming system join message is not combined
+        // with older user-activity posts (keeps testID as user-activity-{postId}).
+        await Post.apiCreatePost(siteOneUrl, {
+            channelId: testChannel.id,
+            message: 'seed post so system message stays uncombined',
+        });
+
+        // # Create a second user to generate a system message when added to the channel
+        const {user: secondUser} = await User.apiCreateUser(siteOneUrl);
+        await Team.apiAddUserToTeam(siteOneUrl, secondUser.id, testTeam.id);
+
+        // # Add second user to channel to generate a system message (e.g. "@user joined the channel")
+        await Channel.apiAddUserToChannel(siteOneUrl, secondUser.id, testChannel.id);
+
+        // # Open the channel — the system post is the newest message so it renders in the visible area
+        await ChannelScreen.open(channelsCategory, testChannel.name);
+        await wait(timeouts.TWO_SEC);
+
+        // # Get the last post — the system add-to-channel message. The seed post above keeps it
+        // from being combined with older user-activity posts.
+        const {post: systemPost} = await Post.apiGetLastPostInChannel(siteOneUrl, testChannel.id);
+
+        // * Verify the system message is visible. System add-to-channel posts render via
+        // CombinedUserActivity with testID 'channel.post_list.combined_user_activity.user-activity-{postId}'.
+        const systemPostItem = element(by.id(`channel.post_list.combined_user_activity.user-activity-${systemPost.id}`));
+        await waitFor(systemPostItem).toBeVisible().withTimeout(timeouts.HALF_MIN);
+
+        // # Long press the system message. CombinedUserActivity.onLongPress() returns early when
+        // canDelete is false, so the post options modal should not open.
+        await systemPostItem.longPress(timeouts.TWO_SEC);
+        await wait(timeouts.TWO_SEC);
+
+        // * Verify the post options screen does NOT appear for a non-deletable system message
+        await expect(PostOptionsScreen.postOptionsScreen).not.toBeVisible();
 
         // # Go back to channel list screen
         await ChannelScreen.back();

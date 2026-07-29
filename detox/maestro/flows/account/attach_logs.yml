@@ -40,7 +40,12 @@ appId: ${MAESTRO_APP_ID}
 
 - tapOn:
     id: "account.settings.option"
-# Report a Problem can take up to 30s to appear while server config syncs on first login.
+# Report a Problem can sit below the fold; also wait for config sync on first login.
+- scrollUntilVisible:
+    element:
+      id: "settings.report_problem.option"
+    direction: DOWN
+    timeout: 30000
 - extendedWaitUntil:
     visible:
       id: "settings.report_problem.option"
