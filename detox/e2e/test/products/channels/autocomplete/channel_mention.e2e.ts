@@ -34,13 +34,17 @@ describe('Autocomplete - Channel Mention', () => {
     let testOtherChannel: any;
     let testTeam: any;
     let channelMentionAutocomplete: any;
+    let channelMentionAutocompleteDisplayName: any;
     let otherChannelMentionAutocomplete: any;
 
     beforeAll(async () => {
         const {channel, team, user} = await Setup.apiInit(siteOneUrl);
         testChannel = channel;
         testTeam = team;
-        ({channelMentionItem: channelMentionAutocomplete} = Autocomplete.getChannelMentionItem(testChannel.name));
+        ({
+            channelMentionItem: channelMentionAutocomplete,
+            channelMentionItemChannelDisplayName: channelMentionAutocompleteDisplayName,
+        } = Autocomplete.getChannelMentionItem(testChannel.name));
 
         ({channel: testOtherChannel} = await Channel.apiCreateChannel(siteOneUrl, {teamId: testTeam.id}));
         if (!testOtherChannel?.id) {
@@ -215,7 +219,14 @@ describe('Autocomplete - Channel Mention', () => {
         // partial visibility (keyboard + list animation) before tap — screenshot
         // showed the suggestion on-screen when the tap was rejected.
         await waitFor(channelMentionAutocomplete).toBeVisible(40).withTimeout(timeouts.TEN_SEC);
-        await channelMentionAutocomplete.tap();
+
+        // iOS CI 05f941d (run 30393809253): no coordinate tap works on the row itself.
+        // ChannelItem's container View has no backgroundColor, so Detox's DETOX_VISIBILITY
+        // render shows only the icon/label glyphs — the largest solid area in the 352x40 row
+        // is 3pt, too small for the "visible around point" check (center and {10,30} both
+        // rejected). Tap the display-name Text instead, the same way ChannelListScreen.open
+        // taps channel rows across the passing iOS suite.
+        await channelMentionAutocompleteDisplayName.tap();
 
         // * Verify channel mention list disappears
         // Selecting a mention inserts `~channel` but on iOS 26 the dropdown can

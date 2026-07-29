@@ -2,7 +2,7 @@
 // See LICENSE.txt for license information.
 
 import Channel from './channel';
-import {isTransientHttpStatus} from './client';
+import {isTransientHttpStatus, MAX_RETRY_AFTER_SEC} from './client';
 import Team from './team';
 import User from './user';
 
@@ -45,9 +45,10 @@ const retryTransient = async <T extends {error?: any; status?: number}>(
     if (!err || !transient || attempt >= maxAttempts) {
         return result;
     }
+
     const retryAfterSec = Number(err.retry_after);
     const delayMs = Number.isFinite(retryAfterSec) && retryAfterSec > 0 ?
-        Math.min(retryAfterSec, 90) * 1000 :
+        Math.min(retryAfterSec, MAX_RETRY_AFTER_SEC) * 1000 :
         1000 * (2 ** (attempt - 1));
 
     // eslint-disable-next-line no-console

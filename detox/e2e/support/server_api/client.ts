@@ -70,35 +70,36 @@ baseClient.interceptors.response.use(
     },
 );
 
-/** Cloudflare edge failures. 524 (origin response timeout) needs longer waits than a gateway 5xx. */
+/** Cloudflare edge failures — 520–524 stay retryable alongside the gateway 5xx below. */
 const CLOUDFLARE_EDGE_STATUSES: ReadonlySet<number> = new Set([520, 521, 522, 523, 524]);
 
 const TRANSIENT_HTTP_STATUSES: ReadonlySet<number> = new Set([502, 503, 504, ...CLOUDFLARE_EDGE_STATUSES]);
-
-export const isCloudflareEdgeStatus = (status?: number): boolean =>
-    status !== undefined && CLOUDFLARE_EDGE_STATUSES.has(status);
 
 /** Gateway 5xx plus Cloudflare edge — shared with the apiInit retry layer in setup.ts. */
 export const isTransientHttpStatus = (status?: number): boolean =>
     status !== undefined && TRANSIENT_HTTP_STATUSES.has(status);
 
-// Retry transient gateway / Cloudflare edge 5xx with backoff.
-// CI detox-ipad 30334294934 failed apiInit create-user on a single 524 with retry_after=120.
+/**
+ * Upper bound for an honored CF `retry_after`. Sleeping the advertised tens of seconds
+ * blew Detox's 300s beforeAll budget on CI (Search shards slept 90s×3 and timed out).
+ * Shared with the apiInit retry layer in setup.ts.
+ */
+export const MAX_RETRY_AFTER_SEC = 3;
+
+// Retry transient gateway / Cloudflare edge 5xx with short backoff.
 baseClient.interceptors.response.use(
     (response) => response,
     async (error) => {
         const config = error.config as typeof error.config & {_5xxRetries?: number};
         const status = error.response?.status;
-        const isCloudflareEdge = isCloudflareEdgeStatus(status);
-        const isTransient = isTransientHttpStatus(status);
 
-        if (isTransient && (config._5xxRetries ?? 0) < 3) {
+        if (isTransientHttpStatus(status) && (config._5xxRetries ?? 0) < 3) {
             config._5xxRetries = (config._5xxRetries ?? 0) + 1;
             const retryAfterSec = Number(error.response?.data?.retry_after);
-            const cloudflareDelayMs = Number.isFinite(retryAfterSec) && retryAfterSec > 0 ?
-                Math.min(retryAfterSec, 90) * 1000 :
-                config._5xxRetries * 30000;
-            const delay = isCloudflareEdge ? cloudflareDelayMs : config._5xxRetries * 1000;
+            const cappedRetryAfterMs = Number.isFinite(retryAfterSec) && retryAfterSec > 0 ?
+                Math.min(retryAfterSec, MAX_RETRY_AFTER_SEC) * 1000 :
+                0;
+            const delay = cappedRetryAfterMs || (config._5xxRetries * 1000);
             console.warn(`[client] ${status} from server — retry ${config._5xxRetries}/3 in ${delay}ms`); // eslint-disable-line no-console
             await new Promise((r) => setTimeout(r, delay)); // eslint-disable-line no-promise-executor-return
             return baseClient(config);
