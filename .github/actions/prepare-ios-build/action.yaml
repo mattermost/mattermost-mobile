@@ -163,5 +163,5 @@ runs:
         echo "INTUNE_ENABLED=$INTUNE_ENABLED"
         bundle config set --local path vendor/bundle
         bundle install
-        npm run pod-install
+        bundle exec npm run pod-install
         echo "::endgroup::"

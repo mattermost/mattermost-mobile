@@ -13,13 +13,14 @@
 # first step) so the latest SHA starts immediately instead of queueing behind a long run.
 #
 # Phase 1 — builds & setup (parallel):
-#   build-ios-simulator, build-android-apk-maestro, build-android-apk (Detox release APK),
+#   build-ios-simulator (Debug simulator .app for Metro),
+#   build-android-apk-maestro, build-android-apk (Detox release APK),
 #   provision-servers, validate-maestro-flow-headers
 # Phase 2 — tests (parallel, after phase 1):
 #   run-detox-ios / run-detox-android → e2e-detox.yml
 #   run-maestro-ios / run-maestro-android → e2e-maestro-pr.yml (downloads phase-1 artifacts via artifact_run_id)
 # Experiment: all Detox/Maestro test jobs run with parallelism=1 and a two-test
-# smoke subset to validate the new release-build + macos-26 + emulator-RAM setup.
+# smoke subset to validate macos-26 + iOS Debug-with-Metro + Android release + emulator-RAM setup.
 name: E2E
 
 on:
@@ -450,7 +451,9 @@ jobs:
         env:
           TAG: ${{ inputs.MOBILE_VERSION }}
           GITHUB_TOKEN: ${{ secrets.MM_MOBILE_GITHUB_TOKEN }}
-        run: bundle exec fastlane ios simulator --env ios.simulator
+        # Experiment: build a Debug simulator .app so iOS Detox loads the bundle
+        # from a running Metro packager instead of relying on an embedded release bundle.
+        run: bundle exec fastlane ios simulator debug:true --env ios.simulator
         working-directory: ./fastlane
 
       # Always upload artifact (from cache or fresh build) so test jobs can download it.
