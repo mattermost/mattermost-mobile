@@ -114,7 +114,7 @@ env:
   ARTIFACT_RUN_ID: ${{ inputs.artifact_run_id || github.run_id }}
   # Keep Maestro device targets identical to detox/.detoxrc.json and e2e-*-template.yml.
   E2E_IOS_DEVICE_NAME: iPhone 17 Pro
-  E2E_IOS_DEVICE_OS_VERSION: iOS 26.2
+  E2E_IOS_DEVICE_OS_VERSION: iOS 26.4
   E2E_ANDROID_AVD_NAME: detox_pixel_8
   E2E_ANDROID_API_LEVEL: "35"
   RUNNING_E2E: "true"
