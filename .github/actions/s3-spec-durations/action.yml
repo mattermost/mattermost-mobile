@@ -38,7 +38,10 @@ outputs:
 runs:
   using: composite
   steps:
+    # See the note in s3-build-cache: skipped rather than failed when a caller has
+    # no AWS secrets, so this step cannot be the one path that fails a run.
     - name: Configure AWS credentials
+      if: env.DETOX_AWS_ACCESS_KEY_ID != '' && env.DETOX_AWS_SECRET_ACCESS_KEY != ''
       uses: aws-actions/configure-aws-credentials@61815dcd50bd041e203e49132bacad1fd04d2708 # v5.1.1
       with:
         aws-access-key-id: ${{ env.DETOX_AWS_ACCESS_KEY_ID }}
@@ -60,6 +63,11 @@ runs:
         if [ -z "$KEY" ]; then
           echo "::error::key is required"
           exit 1
+        fi
+        if [ -z "${DETOX_AWS_ACCESS_KEY_ID:-}" ] || [ -z "${DETOX_AWS_SECRET_ACCESS_KEY:-}" ]; then
+          echo "DETOX_AWS_* credentials not provided — skipping ${MODE}; sharding falls back to the even split."
+          echo "restored=false" >> "$GITHUB_OUTPUT"
+          exit 0
         fi
         S3_KEY="${KEY_PREFIX}${KEY}.json"
 

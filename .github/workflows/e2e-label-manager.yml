@@ -80,9 +80,13 @@ jobs:
               'react-native.config.js',
               'assets/fonts/**',
               'assets/sounds/**',
-              'assets/base/images/**',
-              'assets/base/release/**',
-              'assets/base/config.json',
+              // All of assets/base + assets/override are merged into the bundle by
+              // scripts/generate-assets.js — including base/i18n, whose translation
+              // JSONs app/i18n require()s. Keep in sync with
+              // .github/actions/compute-e2e-build-fingerprint.
+              'assets/base/**',
+              'assets/override/**',
+              'scripts/generate-assets.js',
               '.nvmrc',
               '.ruby-version',
               'Gemfile',
@@ -105,6 +109,10 @@ jobs:
               '.github/actions/build-android-maestro-apk/**',
             ];
 
+            // Supports the subset used above: `**` spans path separators, a single
+            // `*` does not, everything else is literal. Not a general glob engine —
+            // brace expansion, `?` and negation are not implemented and would match
+            // literally, so keep the patterns in this list to that subset.
             const globToRegExp = (pattern) => {
               const escaped = pattern
                 .replace(/[.+^${}()|[\]\\]/g, '\\$&')

@@ -31,9 +31,16 @@ runs:
         # so including it would invalidate every cache entry on unrelated edits.
         # Changes to what the build actually does land in the actions/fastlane
         # paths below.
+        # assets/base/ and assets/override/ are taken wholesale, not per-subdirectory:
+        # generate-assets.js merges both into dist/assets/, which the `@assets` alias
+        # bundles into the JS bundle. Listing only images/release/config.json missed
+        # assets/base/i18n/ (64 translation files that are require()d by app/i18n),
+        # so a translations change did not move the fingerprint and the cache served a
+        # binary with the old strings.
         shared=(app/ libraries/ share_extension/ patches/ \
                 types/ assets/fonts/ assets/sounds/ \
-                assets/base/images/ assets/base/release/ assets/base/config.json \
+                assets/base/ assets/override/ \
+                scripts/generate-assets.js \
                 package.json package-lock.json \
                 tsconfig.json babel.config.js metro.config.js \
                 index.tsx app.json react-native.config.js \
