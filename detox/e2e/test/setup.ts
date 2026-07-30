@@ -8,6 +8,7 @@ import {existsSync} from 'fs';
 import {ClaudePromptHandler} from '@support/pilot/ClaudePromptHandler';
 import {System, User} from '@support/server_api';
 import {siteOneUrl} from '@support/test_config';
+import {safeEnableSynchronization} from '@support/utils';
 
 const BUNDLE_ID = 'com.mattermost.rnbeta';
 
@@ -130,7 +131,6 @@ async function loginAdmin(): Promise<void> {
         const {error: meError} = await User.apiGetMe(siteOneUrl);
         if (!meError) {
             console.info(`✅ Admin session verified on attempt ${attempt}`);
-            await ensureServerConfigForE2E();
             return;
         }
         if (attempt === MAX_ATTEMPTS) {
@@ -138,23 +138,6 @@ async function loginAdmin(): Promise<void> {
         }
         console.warn(`⚠️ Session check failed on attempt ${attempt}, retrying...`);
         await new Promise((resolve) => setTimeout(resolve, 2000 * attempt));
-    }
-}
-
-// E2E feature flags — idempotent per call; module-level flags reset each test file (setupFilesAfterEnv).
-async function ensureServerConfigForE2E(): Promise<void> {
-    try {
-        const {config, error} = await System.apiGetConfig(siteOneUrl);
-        if (!error && config?.FeatureFlags?.ChannelBookmarks === true) {
-            return; // Already set — skip the patch and the resulting server load.
-        }
-        await System.apiUpdateConfig(siteOneUrl, {
-            FeatureFlags: {ChannelBookmarks: true},
-        });
-        console.info('✅ E2E server config initialized (FeatureFlags.ChannelBookmarks=true)');
-    } catch (err) {
-        // Non-fatal: gated tests fail on their own if config patch did not apply.
-        console.warn(`⚠️ ensureServerConfigForE2E failed: ${(err as Error).message}`);
     }
 }
 
@@ -291,7 +274,7 @@ beforeAll(async () => {
         } finally {
             // Always re-enable synchronization so subsequent test operations
             // (tap, typeText, expect) re-enter the normal synchronized path.
-            await device.enableSynchronization();
+            await safeEnableSynchronization();
         }
     }
 

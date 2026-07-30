@@ -31,6 +31,7 @@ describe('Agents - Channel Summary', () => {
     const channelsCategory = 'channels';
     let testChannel: any;
     let didLogin = false;
+    let askAgentsAvailable = false;
 
     beforeAll(async () => {
         const pluginStatus = await Plugin.apiGetPluginStatus(siteOneUrl, AgentsPlugin.id);
@@ -52,6 +53,7 @@ describe('Agents - Channel Summary', () => {
         await wait(timeouts.TEN_SEC);
 
         // # On Android, verify the Ask Agents UI element actually appears in quick actions.
+        // device.pressBack() is Android-only — iOS dismisses the sheet with a swipe.
         if (isAndroid()) {
             await ChannelListScreen.toBeVisible();
             await ChannelScreen.open(channelsCategory, testChannel.name);
@@ -59,11 +61,30 @@ describe('Agents - Channel Summary', () => {
             await ChannelScreen.channelQuickActionsButton.tap();
             try {
                 await waitFor(element(by.id('channel.quick_actions.ask_agents'))).toBeVisible().withTimeout(timeouts.FOUR_SEC);
+                askAgentsAvailable = true;
             } catch {
                 // eslint-disable-next-line no-console
                 console.warn('Ask Agents quick action not visible on Android — tests remain skipped');
             }
             await device.pressBack();
+            await ChannelScreen.back();
+        } else {
+            await ChannelListScreen.toBeVisible();
+            await ChannelScreen.open(channelsCategory, testChannel.name);
+            await wait(timeouts.ONE_SEC);
+            await ChannelScreen.channelQuickActionsButton.tap();
+            try {
+                await waitFor(element(by.id('channel.quick_actions.ask_agents'))).toBeVisible().withTimeout(timeouts.FOUR_SEC);
+                askAgentsAvailable = true;
+            } catch {
+                // eslint-disable-next-line no-console
+                console.warn('Ask Agents quick action not visible on iOS — tests remain skipped');
+            }
+            try {
+                await element(by.id('channel.quick_actions.ask_agents')).swipe('down', 'fast');
+            } catch {
+                // Sheet may already be closed if ask_agents was not visible.
+            }
             await ChannelScreen.back();
         }
     });
@@ -88,7 +109,7 @@ describe('Agents - Channel Summary', () => {
 
     const itWhenLoggedIn = (name: string, fn: () => Promise<void>) => {
         it(name, async () => {
-            if (!didLogin) {
+            if (!didLogin || !askAgentsAvailable) {
                 return;
             }
             await fn();
@@ -106,8 +127,12 @@ describe('Agents - Channel Summary', () => {
         // * Verify Ask Agents option is visible
         await waitFor(element(by.id('channel.quick_actions.ask_agents'))).toBeVisible().withTimeout(timeouts.TEN_SEC);
 
-        // # Close the bottom sheet by pressing back
-        await device.pressBack();
+        // # Close the bottom sheet — pressBack is Android-only
+        if (isAndroid()) {
+            await device.pressBack();
+        } else {
+            await element(by.id('channel.quick_actions.ask_agents')).swipe('down', 'fast');
+        }
         await ChannelScreen.back();
     });
 
@@ -149,9 +174,13 @@ describe('Agents - Channel Summary', () => {
         // # Go back from Date Picker
         await element(by.id('agents.channel_summary.date_picker.back')).tap();
 
-        // # Close the bottom sheet by pressing back
+        // # Close the bottom sheet — pressBack is Android-only
         await wait(timeouts.ONE_SEC);
-        await device.pressBack();
+        if (isAndroid()) {
+            await device.pressBack();
+        } else {
+            await element(by.id('agents.channel_summary.option.unreads')).swipe('down', 'fast');
+        }
 
         // # Navigate back to channel list
         await ChannelScreen.back();

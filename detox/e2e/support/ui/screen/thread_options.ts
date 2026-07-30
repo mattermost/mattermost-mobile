@@ -2,7 +2,7 @@
 // See LICENSE.txt for license information.
 
 import {isIos, timeouts, wait, waitForElementToExist} from '@support/utils';
-import {expect} from 'detox';
+import {expect, waitFor} from 'detox';
 
 class ThreadOptionsScreen {
     testID = {
@@ -44,6 +44,18 @@ class ThreadOptionsScreen {
         await wait(timeouts.ONE_SEC);
         await expect(this.threadOptionsScreen).not.toBeVisible();
         await wait(timeouts.ONE_SEC);
+    };
+
+    tapSaveThread = async () => {
+        await this.toBeVisible();
+        await waitFor(this.saveThreadOption).toExist().withTimeout(timeouts.FIVE_SEC);
+        await this.saveThreadOption.tap();
+    };
+
+    tapUnsaveThread = async () => {
+        await this.toBeVisible();
+        await waitFor(this.unsaveThreadOption).toExist().withTimeout(timeouts.FIVE_SEC);
+        await this.unsaveThreadOption.tap();
     };
 }
 

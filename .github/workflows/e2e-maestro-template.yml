@@ -314,6 +314,32 @@ jobs:
           echo $! > build/sim-device.pid
           echo "==> Device log capture started (pid $(cat build/sim-device.pid))"
 
+      # Gate the suite on connectivity so an infra failure is reported as infra rather
+      # than as a test failure in whichever flow happens to run first. CI 30466684108:
+      # the simulator's TLS handshake to SITE_1_URL was cancelled during trust evaluation
+      # against a valid chain, the app issued zero /api/v4 requests, and the failure
+      # surfaced as a home-tab assertion inside attach_logs. Also warms the device's
+      # trust evaluation before the reported flows run.
+      - name: Pre-flight — simulator can reach test server
+        env:
+          MAESTRO_DRIVER_STARTUP_TIMEOUT: "180000"
+        run: |
+          set -a
+          source detox/maestro/.maestro-test-env.sh
+          set +a
+          for attempt in 1 2 3; do
+            if "$HOME/.maestro/bin/maestro" --device "$SIMULATOR_ID" test \
+                --env "SITE_1_URL=$SITE_1_URL" \
+                --env "MAESTRO_APP_ID=${MAESTRO_APP_ID:-com.mattermost.rnbeta}" \
+                detox/maestro/preflight/_connect_check.yml; then
+              echo "==> Pre-flight connect OK (attempt $attempt)"
+              exit 0
+            fi
+            echo "==> Pre-flight connect failed (attempt $attempt/3)"
+          done
+          echo "::error::Simulator could not connect to $SITE_1_URL after 3 attempts. This is an environment failure (TLS/DNS/server), not a test failure — check build/sim-device.log for NSURLErrorDomain -1200 or 'Cancelled during verify block' before touching any flow."
+          exit 1
+
       - name: Run Maestro Flows (iOS)
         continue-on-error: true
         env:
@@ -611,7 +637,9 @@ jobs:
     name: ${{ inputs.tsio-shard-name != '' && inputs.tsio-shard-name || 'Maestro E2E Tests (Android)' }}
     if: ${{ inputs.platform == 'android' }}
     runs-on: ubuntu-latest-8-cores
-    timeout-minutes: 60
+    # Match iOS (90). CI 30447839548: apt-get update ~38m then suite cancelled mid leave_call
+    # at 60m with 7 passed / 0 failures (SHARD_CANCELLED → STATUS=error).
+    timeout-minutes: 90
     outputs:
       STATUS: ${{ steps.determine-status.outputs.STATUS }}
       TARGET_URL: ${{ steps.set-url.outputs.TARGET_URL }}
@@ -626,6 +654,13 @@ jobs:
         uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
         with:
           ref: ${{ inputs.MOBILE_VERSION }}
+
+      # Moved before node/Maestro/seed: zero deps on checkout beyond the action,
+      # and apt-get update can be slow (~38m on run 30447839548).
+      - name: Install system dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends libpulse0 scrot ffmpeg xvfb
 
       - name: ci/prepare-node-deps
         uses: ./.github/actions/prepare-node-deps
@@ -674,11 +709,6 @@ jobs:
           ADMIN_EMAIL: ${{ env.ADMIN_EMAIL }}
           ADMIN_USERNAME: ${{ env.ADMIN_USERNAME }}
           ADMIN_PASSWORD: ${{ env.ADMIN_PASSWORD }}
-
-      - name: Install system dependencies
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y libpulse0 scrot ffmpeg xvfb
 
       - name: Enable KVM
         run: |
