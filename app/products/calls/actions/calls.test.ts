@@ -9,7 +9,7 @@ import {Alert} from 'react-native';
 import InCallManager from 'react-native-incall-manager';
 
 import * as CallsActions from '@calls/actions';
-import {getConnectionForTesting} from '@calls/actions/calls';
+import {getConnectionForTesting, leaveCallConfirmation} from '@calls/actions/calls';
 import * as Permissions from '@calls/actions/permissions';
 import {needsRecordingWillBePostedAlert, needsRecordingErrorAlert} from '@calls/alerts';
 import {userLeftChannelErr, userRemovedFromChannelErr} from '@calls/errors';
@@ -337,6 +337,40 @@ describe('Actions.Calls', () => {
         expect(disconnectMock).toHaveBeenCalled();
         expect(getConnectionForTesting()).toBe(null);
         assert.equal((result.current[1] as CurrentCall | null), null);
+    });
+
+    it('leaveCallConfirmation leaves immediately for non-hosts without showing an alert', async () => {
+        // setup
+        addFakeCall('server1', 'channel-id');
+        await act(async () => {
+            await CallsActions.joinCall('server1', 'channel-id', 'myUserId', true, createIntl({
+                locale: 'en',
+                messages: {},
+            }));
+            newCurrentCall('server1', 'channel-id', 'myUserId');
+            userJoinedCall('server1', 'channel-id', 'myUserId', 'mySessionId');
+        });
+
+        const disconnectMock = getConnectionForTesting()!.disconnect;
+        const mockAlert = jest.spyOn(Alert, 'alert');
+        const leaveCb = jest.fn();
+
+        await act(async () => {
+            await leaveCallConfirmation(
+                createIntl({locale: 'en', messages: {}}),
+                true,
+                false,
+                false,
+                'server1',
+                'channel-id',
+                leaveCb,
+            );
+            myselfLeftCall();
+        });
+
+        expect(mockAlert).not.toHaveBeenCalled();
+        expect(disconnectMock).toHaveBeenCalled();
+        expect(leaveCb).toHaveBeenCalled();
     });
 
     it('muteMyself', async () => {
