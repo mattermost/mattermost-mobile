@@ -24,9 +24,15 @@
 //     "toggling thread display mode" is modelled by writing the preference the user would change.
 //   - The server side is modelled (see fakeServer) with the semantics that decide these probes, so
 //     "still missing" can be asserted after actually running every mechanism that refetches.
-//   - Probes 1, 4 and 7 enter at convertToNotificationData -> backgroundNotification, so the payload
-//     flag conversion is real code; probes 2 and 3 enter at storePostsForChannel, the storage step
-//     shared by the push path and the deferred channel fetch.
+//   - Notifications: probes 1, 4, 7 and 9 enter at convertToNotificationData ->
+//     backgroundNotification, the JS path that runs while the app is alive in the background, so the
+//     payload flag conversion is real code. NOT covered: fetchNotificationData/openNotification
+//     (tap-through), and the native handlers that run when the app is killed.
+//   - WebSocket: probes 8 and 9 drive handleNewPostEvent, the path that writes intervals for live
+//     posts. NOT covered: handleReconnect/doReconnect (it runs the whole entry sync, which needs far
+//     more of the app stubbed), handlePostDeleted, and the channel-membership events that also store
+//     posts. Probes 2 and 3 enter at storePostsForChannel, the storage step shared by the push path
+//     and the deferred channel fetch.
 //   - Out of reach from Jest, and therefore NOT covered: the native iOS/Android notification fetch
 //     and the native SQLite writers (ios/Gekidou, android/app/src/main/java/com/mattermost/helpers),
 //     which maintain the same two tables with their own implementations.
@@ -35,6 +41,7 @@
 import {Q, type Database} from '@nozbe/watermelondb';
 
 import {storePostsForChannel} from '@actions/local/post';
+import {handleNewPostEvent} from '@actions/websocket/posts';
 import {ActionType, Preferences} from '@constants';
 import DatabaseManager from '@database/manager';
 import NetworkManager from '@managers/network_manager';
@@ -219,6 +226,13 @@ const pushThreadReply = (reply: Post) => backgroundNotification(serverUrl, conve
         data: {posts: {posts: {[reply.id]: reply}, order: [reply.id]}},
     },
 } as never, false));
+
+const wsNewPost = (p: Post) => handleNewPostEvent(serverUrl, {
+    event: 'posted',
+    data: {post: JSON.stringify(p)},
+    broadcast: {channel_id: channelId, omit_users: null, user_id: '', team_id: teamId},
+    seq: 1,
+} as never);
 
 const heldCreateAts = async () => (await queryPostsBetween(database, 0, Number.MAX_SAFE_INTEGER, Q.desc, '', channelId).fetch()).
     map((p) => p.createAt).sort((a, b) => a - b);
@@ -495,6 +509,76 @@ describe('PROBE 5: RECEIVED_AROUND stores posts with no interval bookkeeping', (
         expect(await queryPostsBetween(database, 0, 1000, Q.desc, '', channelId).fetch()).toHaveLength(3);
         expect(await intervals()).toHaveLength(0);
         expect(await renderedPosts()).toHaveLength(0);
+    });
+});
+
+describe('PROBE 8: a websocket post extends the interval across a gap the socket missed', () => {
+    it('lies about contiguity but leaves the watermark behind, so the next since-fetch heals it', async () => {
+        const history = [post('seed-100', 100), post('seed-105', 105), post('seed-110', 110)];
+        const missed = [post('missed-150', 150), post('missed-160', 160)];
+        const live = post('live-200', 200);
+        seedServer([...history, ...missed, live]);
+        await storePostsForChannel(serverUrl, channelId, history, history.map((p) => p.id), '', ActionType.POSTS.RECEIVED_IN_CHANNEL, []);
+        expect(await watermark()).toBe(110);
+
+        // The socket dropped while 150 and 160 were created, then delivers 200 on reconnect.
+        await wsNewPost(live);
+
+        // handleReceivedNewPostForChannel extends chunks[0].latest with no contiguity check, so the
+        // interval now claims two posts the app never fetched. No push notification involved.
+        const claimed = await intervals();
+        expect(claimed).toHaveLength(1);
+        expect(claimed[0].latest).toBe(200);
+        expect(await heldCreateAts()).toEqual([100, 105, 110, 200]);
+
+        // The saving grace: the websocket path does not touch lastFetchedAt, so the watermark stays
+        // behind the gap and the next since-fetch fills it. The interval lie is self-correcting.
+        expect(await watermark()).toBe(110);
+        await fetchPostsForChannel(serverUrl, channelId);
+        expect(await heldCreateAts()).toEqual([100, 105, 110, 150, 160, 200]);
+    });
+});
+
+describe('PROBE 9: push then websocket backlog, the field sequence', () => {
+    it('loses the missed posts for good, through the real notification and websocket paths', async () => {
+        const history = [post('seed-100', 100), post('seed-105', 105), post('seed-110', 110)];
+        const missed = [post('missed-150', 150), post('missed-160', 160)];
+        const reply = post('reply-170', 170, {root_id: 'seed-100'});
+        const live = Array.from({length: 60}, (_, i) => post(`live-${200 + i}`, 200 + i));
+        seedServer([...history, ...missed, reply, ...live]);
+        await storePostsForChannel(serverUrl, channelId, history, history.map((p) => p.id), '', ActionType.POSTS.RECEIVED_IN_CHANNEL, []);
+
+        // 1. App suspended with the socket down: 150 and 160 are missed, then a push for a thread
+        //    reply is processed by JS, which advances the watermark past them.
+        await pushThreadReply(reply);
+        expect(await watermark()).toBe(170);
+        expect((await intervals())[0].latest).toBe(110);
+
+        // 2. The socket comes back and the backlog streams in as posted events, each extending the
+        //    interval, so it ends up spanning the gap.
+        for (const p of live) {
+            /* eslint-disable-next-line no-await-in-loop */
+            await wsNewPost(p);
+        }
+        const claimed = await intervals();
+        expect(claimed).toHaveLength(1);
+        expect(claimed[0].earliest).toBe(100);
+        expect(claimed[0].latest).toBe(259);
+        expect(await heldCreateAts()).not.toContain(150);
+
+        // 3. Everything that could still refetch: the since-fetch cannot see update_at 150/160 from
+        //    a watermark of 170, page zero only reaches the newest 60 by create_at, and scroll-back
+        //    pages below the oldest post held rather than through the middle.
+        await fetchPostsForChannel(serverUrl, channelId);
+        await fetchPosts(serverUrl, channelId);
+        const rendered = await renderedPosts();
+        const oldestRendered = rendered[rendered.length - 1];
+        expect(oldestRendered.createAt).toBe(100);
+        await fetchPostsBefore(serverUrl, channelId, oldestRendered.id);
+
+        const held = await heldCreateAts();
+        expect(held).not.toContain(150);
+        expect(held).not.toContain(160);
     });
 });
 
