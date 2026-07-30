@@ -1,0 +1,84 @@
+{
+  "push notification": {
+    "target": "notifica push",
+    "note": "Existing consistent: 'Notifiche push'."
+  },
+  "notification sound": {
+    "target": "suono di notifica",
+    "note": "Untranslated in current it.json; standard Italian rendering."
+  },
+  "share extension": {
+    "target": "estensione di condivisione",
+    "note": "Untranslated in current it.json; matches Apple's Italian terminology for share extensions."
+  },
+  "bottom sheet": {
+    "target": "pannello inferiore",
+    "note": "Mostly developer-facing; often kept as 'bottom sheet' in Italian technical writing."
+  },
+  "swipe": {
+    "target": "scorrere",
+    "note": "Existing: 'Scorri a sinistra su un server'. Imperative 'Scorri'."
+  },
+  "long-press": {
+    "target": "premere a lungo",
+    "note": "Existing: 'Premere a lungo su un elemento'. Prefer informal imperative 'Premi a lungo' in instructions, matching the app's 'tu' register."
+  },
+  "tap": {
+    "target": "toccare",
+    "note": "Imperative 'Tocca'; standard Italian mobile-UI convention (Apple/Google)."
+  },
+  "toast": {
+    "target": "avviso a comparsa",
+    "note": "No existing signal; often kept as 'toast' in developer contexts. Use 'avviso a comparsa' only if user-facing."
+  },
+  "clipboard": {
+    "target": "appunti",
+    "note": "Existing consistent: 'copiato negli appunti'. Masculine plural: 'gli appunti'."
+  },
+  "biometrics": {
+    "target": "biometria",
+    "note": "Adjective: 'biometrico' ('autenticazione biometrica'). Existing strings paraphrase ('protetto da un codice') rather than translate directly."
+  },
+  "passcode": {
+    "target": "codice",
+    "note": "Apple's Italian term for passcode is 'codice'; existing string: 'protetto da un codice'. Use 'codice di sblocco' when ambiguity with other codes is possible."
+  },
+  "screen lock": {
+    "target": "blocco schermo",
+    "note": "Existing: 'protetto da un blocco schermo'."
+  },
+  "jailbroken": {
+    "target": "jailbroken",
+    "note": "Existing keeps English ('dispositivi jailbroken'); invariable adjective. Android equivalent 'rooted' is also kept. Paraphrase 'sottoposto a jailbreak' if a fuller Italian form is needed."
+  },
+  "app logs": {
+    "target": "log dell'app",
+    "note": "'log' kept in English, masculine invariable ('i log'), matching existing 'i log del server'. Header form: 'LOG DELL'APP'."
+  },
+  "EMM": {
+    "target": "EMM"
+  },
+  "Face ID": {
+    "target": "Face ID"
+  },
+  "tablet": {
+    "target": "tablet",
+    "note": "Kept in English; masculine, invariable."
+  },
+  "deep link": {
+    "target": "deep link",
+    "note": "Commonly kept in English in Italian software; masculine: 'il deep link', plural 'i deep link'."
+  },
+  "skin tone": {
+    "target": "tonalità della pelle",
+    "note": "Majority in existing settings strings ('Tonalità della pelle predefinita'); emoji-name strings inconsistently use 'tono della pelle' and 'carnagione' — prefer 'tonalità della pelle'."
+  },
+  "playback speed": {
+    "target": "velocità di riproduzione",
+    "note": "Untranslated in current it.json; standard Italian media term."
+  },
+  "server connection": {
+    "target": "connessione al server",
+    "note": "'server' stays in English. Existing UI: 'Aggiungi un server' (Add a server); Switch server = 'Cambia server'."
+  }
+}

@@ -1,0 +1,83 @@
+{
+  "push notification": {
+    "target": "push-уведомление",
+    "note": "Existing rendering keeps the Latin 'push' with a hyphen ('Push-уведомления'); do not use 'пуш-уведомление'."
+  },
+  "notification sound": {
+    "target": "звук уведомления",
+    "note": "One existing string paraphrases as 'звуковое уведомление'; prefer 'звук уведомления' (standard Android/iOS settings term)."
+  },
+  "share extension": {
+    "target": "расширение «Поделиться»",
+    "note": "No existing translation; 'Поделиться' is the established OS share action in Russian."
+  },
+  "bottom sheet": {
+    "target": "нижняя панель",
+    "note": "No existing translation; standard Material Design rendering. Usually avoidable in user-facing copy."
+  },
+  "swipe": {
+    "target": "провести пальцем",
+    "note": "Existing rendering ('Проведите пальцем влево'). Directional: 'провести влево/вправо'. Avoid the anglicism 'свайпнуть'."
+  },
+  "long-press": {
+    "target": "долгое нажатие",
+    "note": "Existing usage is inconsistent ('длительное нажатие', 'долгим тапом', 'долго нажимай'). Prefer noun 'долгое нажатие', verb 'нажмите и удерживайте'."
+  },
+  "tap": {
+    "target": "нажать",
+    "note": "Imperative 'нажмите'; noun 'касание' (e.g. 'одним касанием'). Avoid 'тапнуть'."
+  },
+  "toast": {
+    "target": "всплывающее уведомление",
+    "note": "No existing translation; developer jargon 'тост' is not user-facing."
+  },
+  "clipboard": {
+    "target": "буфер обмена",
+    "note": "Consistent in existing translations ('скопировано в буфер обмена')."
+  },
+  "biometrics": {
+    "target": "биометрия",
+    "note": "Adjective: 'биометрическая аутентификация' (existing)."
+  },
+  "passcode": {
+    "target": "код-пароль",
+    "note": "Official iOS Russian term. Existing strings are inconsistent ('пасскод', 'пароль', 'код'); prefer 'код-пароль'."
+  },
+  "screen lock": {
+    "target": "блокировка экрана",
+    "note": "Consistent in existing translations."
+  },
+  "jailbroken": {
+    "target": "с джейлбрейком",
+    "note": "Existing string uses colloquial 'джейлбрейкнутые или рутованные устройства'; prefer 'устройства с джейлбрейком или root-доступом'."
+  },
+  "app logs": {
+    "target": "журналы приложения",
+    "note": "Existing rendering ('Скачать журналы приложения'). All-caps header: 'ЖУРНАЛЫ ПРИЛОЖЕНИЯ'."
+  },
+  "EMM": {
+    "target": "EMM"
+  },
+  "Face ID": {
+    "target": "Face ID"
+  },
+  "tablet": {
+    "target": "планшет"
+  },
+  "deep link": {
+    "target": "глубокая ссылка",
+    "note": "No existing translation; standard Google/Android docs rendering. In casual UI copy plain 'ссылка' often suffices."
+  },
+  "skin tone": {
+    "target": "оттенок кожи",
+    "note": "Existing majority ('оттенок кожи по умолчанию'); one string mistranslates as 'оттенок темы' — ignore it."
+  },
+  "playback speed": {
+    "target": "скорость воспроизведения",
+    "note": "Existing rendering."
+  },
+  "server connection": {
+    "target": "подключение к серверу",
+    "note": "UI actions per existing strings: 'Добавить сервер', 'Сменить сервер'."
+  }
+}

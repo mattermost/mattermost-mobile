@@ -1,0 +1,84 @@
+{
+  "push notification": {
+    "target": "powiadomienie push",
+    "note": "'push' stays uninflected: 'powiadomienia push', 'usługa powiadomień push'."
+  },
+  "notification sound": {
+    "target": "dźwięk powiadomienia",
+    "note": "Plural context: 'dźwięki powiadomień'."
+  },
+  "share extension": {
+    "target": "rozszerzenie udostępniania",
+    "note": "No existing translation in repo; follows iOS Polish convention (Udostępnianie = Share)."
+  },
+  "bottom sheet": {
+    "target": "dolny panel",
+    "note": "No established repo rendering; 'dolny panel' is the clearest user-facing Polish. 'dolny arkusz' (Material Design) is an acceptable alternative."
+  },
+  "swipe": {
+    "target": "przesunąć palcem",
+    "note": "Imperative 'przesuń palcem' (existing: 'Przesuń palcem w lewo…'). Plain 'przesuń' acceptable when direction/context is clear."
+  },
+  "long-press": {
+    "target": "nacisnąć i przytrzymać",
+    "note": "Imperative 'naciśnij i przytrzymaj'. Existing strings also use 'naciśnij długo' — prefer 'naciśnij i przytrzymaj' (standard Android/iOS Polish)."
+  },
+  "tap": {
+    "target": "stuknąć",
+    "note": "Imperative 'stuknij'. Existing strings inconsistently use 'dotknij', 'kliknij', and 'stuknięcie'; prefer 'stuknij' (standard mobile Polish), 'dotknij' acceptable."
+  },
+  "toast": {
+    "target": "komunikat",
+    "note": "No established repo rendering; translate contextually as 'komunikat' (a brief on-screen confirmation). Do not render literally."
+  },
+  "clipboard": {
+    "target": "schowek",
+    "note": "'copied to clipboard' → 'skopiowano do schowka'."
+  },
+  "biometrics": {
+    "target": "dane biometryczne",
+    "note": "'biometric authentication' → 'uwierzytelnianie biometryczne' (established); 'secured with biometrics' → 'zabezpieczone danymi biometrycznymi'."
+  },
+  "passcode": {
+    "target": "kod dostępu",
+    "note": "Established: 'zabezpieczone kodem dostępu'. Matches iOS Polish for 'passcode'."
+  },
+  "screen lock": {
+    "target": "blokada ekranu",
+    "note": "Established: 'zabezpieczone blokadą ekranu'."
+  },
+  "jailbroken": {
+    "target": "po jailbreaku",
+    "note": "Established: 'urządzenia po jailbreaku lub zrootowane' (jailbroken or rooted). 'rooted' → 'zrootowany'."
+  },
+  "app logs": {
+    "target": "logi aplikacji",
+    "note": "'Download app logs' → 'Pobierz logi aplikacji'; uppercase label 'APP LOGS' → 'LOGI APLIKACJI'."
+  },
+  "EMM": {
+    "target": "EMM"
+  },
+  "Face ID": {
+    "target": "Face ID"
+  },
+  "tablet": {
+    "target": "tablet",
+    "note": "Masculine; locative 'na tablecie'."
+  },
+  "deep link": {
+    "target": "deep link",
+    "note": "No repo rendering; commonly left untranslated in Polish technical UI (declinable: 'deep linku'). Google's 'link precyzyjny' is an acceptable alternative if a translated form is required."
+  },
+  "skin tone": {
+    "target": "odcień skóry",
+    "note": "Existing renderings are inconsistent and awkward ('odcień skórki' in webapp, 'odcień wyglądu' in mobile). Use the standard emoji term 'odcień skóry'; 'default skin tone' → 'domyślny odcień skóry'."
+  },
+  "playback speed": {
+    "target": "prędkość odtwarzania",
+    "note": "Established rendering in mobile."
+  },
+  "server connection": {
+    "target": "połączenie z serwerem",
+    "note": "'Add a server' → 'Dodaj serwer' (established); 'Switch server' → 'Przełącz serwer'."
+  }
+}

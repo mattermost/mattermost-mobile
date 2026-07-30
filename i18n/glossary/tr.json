@@ -1,0 +1,80 @@
+{
+  "push notification": {
+    "target": "anında bildirim",
+    "note": "Repo convention is 'anında bildirim' (not 'push bildirimi')."
+  },
+  "notification sound": {
+    "target": "bildirim sesi"
+  },
+  "share extension": {
+    "target": "paylaşım eklentisi",
+    "note": "No existing tr string found; 'paylaşım eklentisi' follows iOS Turkish convention for share extensions. Note the core apps translate 'plugin' as 'uygulama eki' — that term is reserved for Mattermost plugins, not OS extensions."
+  },
+  "bottom sheet": {
+    "target": "alt sayfa",
+    "note": "No existing tr string; 'alt sayfa' per Android/Material Turkish convention. Rarely user-visible."
+  },
+  "swipe": {
+    "target": "kaydır",
+    "note": "Verb 'kaydırmak'; 'swipe left' = 'sola kaydırın'."
+  },
+  "long-press": {
+    "target": "uzun bas",
+    "note": "Majority 'uzun basın'; one string uses 'uzun dokunun' — prefer 'uzun basın'."
+  },
+  "tap": {
+    "target": "dokun",
+    "note": "'Tap to edit' = 'Düzenlemek için dokunun'. Do not use 'tıkla' for touch."
+  },
+  "toast": {
+    "target": "kısa bildirim",
+    "note": "No existing tr string; almost never user-visible. If it appears in UI text, 'kısa bildirim' is understandable; avoid the loanword 'toast'."
+  },
+  "clipboard": {
+    "target": "pano",
+    "note": "'copied to clipboard' = 'panoya kopyalandı'."
+  },
+  "biometrics": {
+    "target": "biyometri",
+    "note": "Adjective form: 'biyometrik' ('biyometrik kimlik doğrulama' = biometric authentication)."
+  },
+  "passcode": {
+    "target": "şifre",
+    "note": "iOS Turkish renders device passcode as 'şifre' (password = 'parola'). The single existing mobile string conflates it with 'parola'; prefer 'şifre' for the device code to match OS wording."
+  },
+  "screen lock": {
+    "target": "ekran kilidi"
+  },
+  "jailbroken": {
+    "target": "jailbreak uygulanmış",
+    "note": "Repo keeps the OS terms: 'Jailbreak ya da root uygulanmış aygıtlar' = jailbroken or rooted devices. Note 'device' = 'aygıt' (not 'cihaz') per repo vocabulary."
+  },
+  "app logs": {
+    "target": "uygulama günlükleri",
+    "note": "All-caps header: 'UYGULAMA GÜNLÜKLERİ'."
+  },
+  "EMM": {
+    "target": "EMM"
+  },
+  "Face ID": {
+    "target": "Face ID"
+  },
+  "tablet": {
+    "target": "tablet"
+  },
+  "deep link": {
+    "target": "derin bağlantı",
+    "note": "No existing tr string; 'derin bağlantı' is the standard Android/iOS Turkish term."
+  },
+  "skin tone": {
+    "target": "deri rengi",
+    "note": "Webapp consistently uses 'deri rengi'; one mobile string uses 'cilt tonu' — prefer 'deri rengi'. 'default skin tone' = 'varsayılan deri rengi'."
+  },
+  "playback speed": {
+    "target": "oynatma hızı"
+  },
+  "server connection": {
+    "target": "sunucu bağlantısı",
+    "note": "'Add a server' = 'Bir sunucu ekle'; 'Switch server' = 'Sunucu değiştir'."
+  }
+}

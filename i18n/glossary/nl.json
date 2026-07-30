@@ -1,0 +1,82 @@
+{
+  "push notification": {
+    "target": "pushmelding",
+    "note": "dutch-rules.md prescribes 'push-melding(en)'; existing strings are inconsistent (pushmelding, push melding, push notificatie). Standardize on the closed compound 'pushmelding', plural 'pushmeldingen'; avoid 'push notificatie'."
+  },
+  "notification sound": {
+    "target": "meldingsgeluid"
+  },
+  "share extension": {
+    "target": "deelextensie",
+    "note": "No existing Dutch rendering in the repo; 'deelextensie' matches iOS/Android Dutch platform terminology for share extensions."
+  },
+  "bottom sheet": {
+    "target": "bottom sheet",
+    "note": "No repo signal; the Material Design term is normally kept in English in Dutch UI writing. If a translation is required, 'onderpaneel' is an option."
+  },
+  "swipe": {
+    "target": "vegen",
+    "note": "Imperative 'Veeg naar links/rechts' as in existing strings."
+  },
+  "long-press": {
+    "target": "lang indrukken",
+    "note": "Existing strings use 'Druk lang op een item…' for instructions."
+  },
+  "tap": {
+    "target": "tikken",
+    "note": "Imperative 'Tik op…' / 'Tik om…' as in existing strings."
+  },
+  "toast": {
+    "target": "toast",
+    "note": "Developer/UI jargon, normally kept in English in Dutch; in end-user text prefer describing it as a 'melding'."
+  },
+  "clipboard": {
+    "target": "klembord",
+    "note": "'Copied to clipboard' = 'Gekopieerd naar klembord' (existing)."
+  },
+  "biometrics": {
+    "target": "biometrie",
+    "note": "Adjective 'biometrisch(e)': 'biometrische verificatie' as in existing strings."
+  },
+  "passcode": {
+    "target": "toegangscode",
+    "note": "Apple's Dutch platform term; one legacy string renders it loosely as 'wachtwoordverificatie' — prefer 'toegangscode'."
+  },
+  "screen lock": {
+    "target": "schermvergrendeling",
+    "note": "Existing rendering."
+  },
+  "jailbroken": {
+    "target": "jailbroken",
+    "note": "Existing strings keep it English: 'Jailbroken of gerootte apparaten'; 'rooted' = 'geroot(te)'."
+  },
+  "app logs": {
+    "target": "app-logs",
+    "note": "Existing strings mostly keep 'app logs' (also 'logboeken van apps'); use the hyphenated Dutch compound 'app-logs' for consistency."
+  },
+  "EMM": {
+    "target": "EMM"
+  },
+  "Face ID": {
+    "target": "Face ID"
+  },
+  "tablet": {
+    "target": "tablet"
+  },
+  "deep link": {
+    "target": "deeplink",
+    "note": "No repo signal; 'deeplink' is the established Dutch tech term (closed compound), plural 'deeplinks'."
+  },
+  "skin tone": {
+    "target": "huidskleur",
+    "note": "'Default skin tone' = 'standaard huidskleur' (existing)."
+  },
+  "playback speed": {
+    "target": "afspeelsnelheid",
+    "note": "Existing rendering."
+  },
+  "server connection": {
+    "target": "serververbinding",
+    "note": "'Add a server' = 'Een server toevoegen'; 'Switch server' = 'Wisselen van server'."
+  }
+}

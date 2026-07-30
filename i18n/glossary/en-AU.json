@@ -1,0 +1,65 @@
+{
+  "push notification": {
+    "target": "push notification"
+  },
+  "notification sound": {
+    "target": "notification sound"
+  },
+  "share extension": {
+    "target": "share extension"
+  },
+  "bottom sheet": {
+    "target": "bottom sheet"
+  },
+  "swipe": {
+    "target": "swipe"
+  },
+  "long-press": {
+    "target": "long-press"
+  },
+  "tap": {
+    "target": "tap"
+  },
+  "toast": {
+    "target": "toast"
+  },
+  "clipboard": {
+    "target": "clipboard"
+  },
+  "biometrics": {
+    "target": "biometrics"
+  },
+  "passcode": {
+    "target": "passcode"
+  },
+  "screen lock": {
+    "target": "screen lock"
+  },
+  "jailbroken": {
+    "target": "jailbroken"
+  },
+  "app logs": {
+    "target": "app logs"
+  },
+  "EMM": {
+    "target": "EMM"
+  },
+  "Face ID": {
+    "target": "Face ID"
+  },
+  "tablet": {
+    "target": "tablet"
+  },
+  "deep link": {
+    "target": "deep link"
+  },
+  "skin tone": {
+    "target": "skin tone"
+  },
+  "playback speed": {
+    "target": "playback speed"
+  },
+  "server connection": {
+    "target": "server connection"
+  }
+}

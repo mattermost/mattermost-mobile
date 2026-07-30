@@ -1,0 +1,84 @@
+{
+  "push notification": {
+    "target": "notificare push",
+    "note": "Plural: 'notificări push'. Legacy webapp calque 'Notificare Împinge' is an error — never reuse."
+  },
+  "notification sound": {
+    "target": "sunet de notificare",
+    "note": "Plural: 'sunete de notificare'."
+  },
+  "share extension": {
+    "target": "extensie de partajare",
+    "note": "OS-level share feature; matches iOS/Android Romanian terminology."
+  },
+  "bottom sheet": {
+    "target": "panou inferior",
+    "note": "No repo signal; descriptive rendering of the Material 'bottom sheet'."
+  },
+  "swipe": {
+    "target": "a glisa",
+    "note": "Standard Android/iOS Romanian gesture verb ('glisați')."
+  },
+  "long-press": {
+    "target": "apăsare lungă",
+    "note": "Verb form: 'a apăsa lung' ('apăsați lung pe mesaj')."
+  },
+  "tap": {
+    "target": "a atinge",
+    "note": "'Atingeți' in instructions; standard mobile-OS Romanian."
+  },
+  "toast": {
+    "target": "mesaj temporar",
+    "note": "Brief on-screen confirmation; avoid the untranslated developer term 'toast' in user-facing text."
+  },
+  "clipboard": {
+    "target": "clipboard",
+    "note": "Kept untranslated per Windows/Android Romanian convention ('copiat în clipboard')."
+  },
+  "biometrics": {
+    "target": "date biometrice",
+    "note": "Adjectival use: 'autentificare biometrică'. Mobile ro.json currently paraphrases it away ('cod de acces') — use the explicit term."
+  },
+  "passcode": {
+    "target": "cod de acces",
+    "note": "Established in mobile ro.json ('securizat cu un cod de acces')."
+  },
+  "screen lock": {
+    "target": "blocarea ecranului",
+    "note": "Setting name: 'Blocare ecran'."
+  },
+  "jailbroken": {
+    "target": "jailbroken",
+    "note": "Kept untranslated in mobile ro.json ('Dispozitivele jailbroken'); pair with 'rooted' for Android the same way."
+  },
+  "app logs": {
+    "target": "jurnalele aplicației",
+    "note": "Label form: 'JURNALELE APLICAȚIEI'."
+  },
+  "EMM": {
+    "target": "EMM"
+  },
+  "Face ID": {
+    "target": "Face ID",
+    "note": "Apple brand; mobile ro.json once renders 'ID-ul feței' — keep 'Face ID' untranslated."
+  },
+  "tablet": {
+    "target": "tabletă",
+    "note": "Plural: 'tablete'."
+  },
+  "deep link": {
+    "target": "link direct",
+    "note": "No repo signal; 'link direct' reads naturally for links that open a specific screen. The English 'deep link' may be kept in technical/admin contexts."
+  },
+  "skin tone": {
+    "target": "nuanță de piele",
+    "note": "'Default skin tone' = 'nuanța de piele implicită'."
+  },
+  "playback speed": {
+    "target": "viteză de redare"
+  },
+  "server connection": {
+    "target": "conexiune la server",
+    "note": "'Add a server' = 'Adăugați un server'; 'Switch server' = 'Schimbați serverul'."
+  }
+}

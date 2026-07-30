@@ -1,0 +1,83 @@
+{
+  "push notification": {
+    "target": "push-сповіщення",
+    "note": "Majority rendering; some strings use 'push-повідомлення' or 'спливаюче повідомлення' — standardize on 'push-сповіщення' (lowercase 'push', hyphenated)."
+  },
+  "notification sound": {
+    "target": "звук сповіщення",
+    "note": "Grounded: 'Звук сповіщення про вхідні дзвінки'."
+  },
+  "share extension": {
+    "target": "розширення «Поділитися»",
+    "note": "No existing rendering in repos; follows the standard iOS Ukrainian label 'Поділитися' for the share sheet."
+  },
+  "bottom sheet": {
+    "target": "нижня панель",
+    "note": "No existing rendering in repos; 'нижня панель' is the common Ukrainian rendering of the Material 'bottom sheet'."
+  },
+  "swipe": {
+    "target": "провести пальцем",
+    "note": "Existing string uses colloquial 'свайпнути' ('Свайпніть пальцем вліво'); prefer neutral 'проведіть пальцем' in new strings."
+  },
+  "long-press": {
+    "target": "натиснути та утримувати",
+    "note": "Existing strings vary ('Натисніть та утримуйте', 'Натисніть і потримайте', 'Затисніть'); standardize on 'натисніть та утримуйте'."
+  },
+  "tap": {
+    "target": "торкнутися",
+    "note": "Grounded: 'Торкніться для редагування'. Imperative 'торкніться'."
+  },
+  "toast": {
+    "target": "спливаюче повідомлення",
+    "note": "No existing rendering in repos; standard Ukrainian UI term for a transient toast."
+  },
+  "clipboard": {
+    "target": "буфер обміну",
+    "note": "Consistent: 'скопійовано в буфер обміну'."
+  },
+  "biometrics": {
+    "target": "біометрія",
+    "note": "Adjective 'біометричний': 'біометрична автентифікація' (grounded)."
+  },
+  "passcode": {
+    "target": "код-пароль",
+    "note": "Standard iOS Ukrainian term. One existing string loosely renders it as 'пароль'; prefer 'код-пароль' to distinguish from account password."
+  },
+  "screen lock": {
+    "target": "блокування екрана",
+    "note": "Grounded: 'захищено блокуванням екрана'."
+  },
+  "jailbroken": {
+    "target": "зламаний",
+    "note": "Grounded: 'зламаними або рутованими пристроями'; 'rooted' = 'рутований'."
+  },
+  "app logs": {
+    "target": "журнали програми",
+    "note": "Majority rendering; 'журнали додатку' appears once — prefer 'журнали програми'."
+  },
+  "EMM": {
+    "target": "EMM"
+  },
+  "Face ID": {
+    "target": "Face ID"
+  },
+  "tablet": {
+    "target": "планшет"
+  },
+  "deep link": {
+    "target": "глибоке посилання",
+    "note": "No existing rendering in repos; 'глибоке посилання' is the common Ukrainian developer/UX term."
+  },
+  "skin tone": {
+    "target": "відтінок шкіри",
+    "note": "Majority rendering; 'тон шкіри' also appears — prefer 'відтінок шкіри'."
+  },
+  "playback speed": {
+    "target": "швидкість відтворення",
+    "note": "Grounded."
+  },
+  "server connection": {
+    "target": "підключення до сервера",
+    "note": "'Add a server' = 'Додати сервер', 'Switch server' = 'Змінити сервер'."
+  }
+}

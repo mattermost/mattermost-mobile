@@ -1,0 +1,81 @@
+{
+  "push notification": {
+    "target": "اعلان پوش",
+    "note": "Existing rendering اعلان‌های پوش; پوش is the accepted transliteration for push in Persian mobile UI."
+  },
+  "notification sound": {
+    "target": "صدای اعلان"
+  },
+  "share extension": {
+    "target": "افزونه اشتراک‌گذاری",
+    "note": "No existing fa; follows plugin/extension = افزونه and share = اشتراک‌گذاری."
+  },
+  "bottom sheet": {
+    "target": "برگه پایینی",
+    "note": "No established Persian term; mostly appears in accessibility strings."
+  },
+  "swipe": {
+    "target": "کشیدن",
+    "note": "Google's Persian Android convention is تند کشیدن; plain کشیدن (e.g. کشیدن به چپ) reads naturally in instructions."
+  },
+  "long-press": {
+    "target": "فشار طولانی",
+    "note": "Verb phrase: به‌مدت طولانی فشار دهید (Google Android fa convention)."
+  },
+  "tap": {
+    "target": "ضربه زدن",
+    "note": "Imperative: ضربه بزنید (Google Android fa convention)."
+  },
+  "toast": {
+    "target": "پیام گذرا",
+    "note": "No established Persian term; describes the brief confirmation overlay."
+  },
+  "clipboard": {
+    "target": "حافظه موقت",
+    "note": "Existing rendering (رونوشت در حافظه موقت for 'copied to clipboard')."
+  },
+  "biometrics": {
+    "target": "بیومتریک",
+    "note": "In sentences: احراز هویت بیومتریک."
+  },
+  "passcode": {
+    "target": "کد عبور",
+    "note": "Device numeric lock code; keep distinct from password = رمز عبور."
+  },
+  "screen lock": {
+    "target": "قفل صفحه",
+    "note": "Existing rendering."
+  },
+  "jailbroken": {
+    "target": "جیلبریک‌شده",
+    "note": "Existing fa uses جیلبریک; rooted (Android) = روت‌شده."
+  },
+  "app logs": {
+    "target": "گزارش‌های برنامه",
+    "note": "No existing mobile fa; گزارش for log. Note the desktop fa file renders logs as ردپا — do not carry that into mobile."
+  },
+  "EMM": {
+    "target": "EMM"
+  },
+  "Face ID": {
+    "target": "Face ID"
+  },
+  "tablet": {
+    "target": "تبلت"
+  },
+  "deep link": {
+    "target": "پیوند عمقی",
+    "note": "Google Android fa convention; دیپ‌لینک also common colloquially."
+  },
+  "skin tone": {
+    "target": "رنگ پوست",
+    "note": "Existing rendering for emoji skin tones; avoid the mistranslation رنگ پوسته (theme skin) seen in one string."
+  },
+  "playback speed": {
+    "target": "سرعت پخش"
+  },
+  "server connection": {
+    "target": "اتصال به سرور",
+    "note": "Add a server: افزودن سرور (existing: افزودن یک سرور); Switch server: تغییر سرور."
+  }
+}

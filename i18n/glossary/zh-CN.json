@@ -1,0 +1,78 @@
+{
+  "push notification": {
+    "target": "推送通知"
+  },
+  "notification sound": {
+    "target": "通知声音",
+    "note": "For incoming-call ring specifically, existing UI uses 来电铃声."
+  },
+  "share extension": {
+    "target": "分享扩展",
+    "note": "No existing zh-CN rendering; app UI uses 分享 for Share, so 分享扩展 keeps it consistent."
+  },
+  "bottom sheet": {
+    "target": "底部面板",
+    "note": "No existing zh-CN rendering; rarely user-visible."
+  },
+  "swipe": {
+    "target": "滑动",
+    "note": "swipe left = 向左滑动."
+  },
+  "long-press": {
+    "target": "长按"
+  },
+  "tap": {
+    "target": "点击",
+    "note": "Majority rendering; 轻点 appears in a few marketing-style strings and is the Apple zh-CN convention."
+  },
+  "toast": {
+    "target": "弹出提示",
+    "note": "No existing zh-CN rendering; rarely user-visible."
+  },
+  "clipboard": {
+    "target": "剪贴板",
+    "note": "copied to clipboard = 已复制到剪贴板."
+  },
+  "biometrics": {
+    "target": "生物识别"
+  },
+  "passcode": {
+    "target": "密码",
+    "note": "Device passcode; existing strings use 密码 (and 密码锁 for 'secured with passcode'), matching Apple's zh-CN term. Distinct from account password only by context."
+  },
+  "screen lock": {
+    "target": "屏幕锁"
+  },
+  "jailbroken": {
+    "target": "越狱",
+    "note": "Rendered as 越狱的设备 / 越狱或已 root 的设备; rooted = 已 root."
+  },
+  "app logs": {
+    "target": "应用日志"
+  },
+  "EMM": {
+    "target": "EMM"
+  },
+  "Face ID": {
+    "target": "面容 ID",
+    "note": "Apple's official zh-CN localization is 面容 ID and existing mobile strings already use it (设置 > 面容 ID 与密码)."
+  },
+  "tablet": {
+    "target": "平板"
+  },
+  "deep link": {
+    "target": "深层链接",
+    "note": "No existing zh-CN rendering; 深层链接 is the Android/Google official term."
+  },
+  "skin tone": {
+    "target": "肤色",
+    "note": "default skin tone = 默认肤色."
+  },
+  "playback speed": {
+    "target": "播放速度"
+  },
+  "server connection": {
+    "target": "服务器连接",
+    "note": "UI strings: Add a server = 添加服务器, Switch server = 切换服务器."
+  }
+}

@@ -1,0 +1,76 @@
+{
+  "push notification": {
+    "target": "푸시 알림"
+  },
+  "notification sound": {
+    "target": "알림 소리"
+  },
+  "share extension": {
+    "target": "공유 확장",
+    "note": "No existing translation; matches the iOS Korean term for share extensions (공유 확장 프로그램 in full)."
+  },
+  "bottom sheet": {
+    "target": "바텀 시트",
+    "note": "No existing translation; mostly accessibility text. 하단 시트 is an acceptable descriptive alternative."
+  },
+  "swipe": {
+    "target": "스와이프",
+    "note": "Verb: 스와이프하다 / 밀어서."
+  },
+  "long-press": {
+    "target": "길게 누르기",
+    "note": "Verb: 길게 누르다 (existing: 길게 눌러)."
+  },
+  "tap": {
+    "target": "탭",
+    "note": "Verb: 탭하다; imperative UI copy often uses ~을 탭하세요."
+  },
+  "toast": {
+    "target": "토스트",
+    "note": "No existing translation; if a descriptive form is needed in prose, 알림 메시지 works."
+  },
+  "clipboard": {
+    "target": "클립보드"
+  },
+  "biometrics": {
+    "target": "생체 인식",
+    "note": "Adjective use: 생체 인식 인증."
+  },
+  "passcode": {
+    "target": "암호",
+    "note": "Matches Apple's Korean convention (Face ID 및 암호) and existing strings; keep distinct from password = 비밀번호."
+  },
+  "screen lock": {
+    "target": "화면 잠금"
+  },
+  "jailbroken": {
+    "target": "탈옥된",
+    "note": "rooted (Android) = 루팅된; existing string: 탈옥되거나 루팅된 기기."
+  },
+  "app logs": {
+    "target": "앱 로그"
+  },
+  "EMM": {
+    "target": "EMM"
+  },
+  "Face ID": {
+    "target": "Face ID"
+  },
+  "tablet": {
+    "target": "태블릿"
+  },
+  "deep link": {
+    "target": "딥 링크"
+  },
+  "skin tone": {
+    "target": "피부색",
+    "note": "Majority rendering; 피부 톤 appears in a couple of strings — prefer 피부색."
+  },
+  "playback speed": {
+    "target": "재생 속도"
+  },
+  "server connection": {
+    "target": "서버 연결",
+    "note": "UI actions per existing strings: Add a server = 서버 추가, Switch server = 서버 변경."
+  }
+}

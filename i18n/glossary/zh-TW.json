@@ -1,0 +1,77 @@
+{
+  "push notification": {
+    "target": "推播通知"
+  },
+  "notification sound": {
+    "target": "通知鈴聲",
+    "note": "Existing string: 來電通知鈴聲 for incoming-call sound; 通知音效 acceptable for non-call sounds but keep 鈴聲 for calls."
+  },
+  "share extension": {
+    "target": "分享延伸功能",
+    "note": "Follows Apple zh-TW terminology (app extension → 延伸功能)."
+  },
+  "bottom sheet": {
+    "target": "底部面板",
+    "note": "No existing translation; avoid transliteration."
+  },
+  "swipe": {
+    "target": "滑動",
+    "note": "Directional forms per existing strings: 向左滑 (swipe left)."
+  },
+  "long-press": {
+    "target": "長按"
+  },
+  "tap": {
+    "target": "點按",
+    "note": "Existing strings vary (按一下, 按下); Apple zh-TW uses 點一下. 點按 is the neutral convention — converge on it."
+  },
+  "toast": {
+    "target": "快顯訊息",
+    "note": "No established zh-TW term; 快顯訊息 is widely understood for transient confirmations."
+  },
+  "clipboard": {
+    "target": "剪貼簿"
+  },
+  "biometrics": {
+    "target": "生物辨識"
+  },
+  "passcode": {
+    "target": "密碼",
+    "note": "Apple zh-TW renders passcode as 密碼 (e.g. Face ID 與密碼), matching the existing string; context distinguishes it from account password."
+  },
+  "screen lock": {
+    "target": "螢幕鎖定"
+  },
+  "jailbroken": {
+    "target": "越獄",
+    "note": "Existing: 越獄後的裝置; for Android 'rooted' use 已 Root/Root 過的裝置."
+  },
+  "app logs": {
+    "target": "應用程式紀錄檔",
+    "note": "Not yet translated; 紀錄檔 matches desktop/webapp log terminology (紀錄檔層級)."
+  },
+  "EMM": {
+    "target": "EMM"
+  },
+  "Face ID": {
+    "target": "Face ID"
+  },
+  "tablet": {
+    "target": "平板電腦"
+  },
+  "deep link": {
+    "target": "深層連結",
+    "note": "Standard Taiwan rendering (Apple/Google developer docs)."
+  },
+  "skin tone": {
+    "target": "膚色色調",
+    "note": "Per existing emoji skin strings (預設膚色色調)."
+  },
+  "playback speed": {
+    "target": "播放速度"
+  },
+  "server connection": {
+    "target": "伺服器連線",
+    "note": "Add a server → 新增伺服器 (existing); Switch server → 切換伺服器."
+  }
+}

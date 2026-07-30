@@ -1,0 +1,81 @@
+{
+  "push notification": {
+    "target": "thông báo đẩy",
+    "note": "Established in mobile and webapp vi.json."
+  },
+  "notification sound": {
+    "target": "âm thanh thông báo"
+  },
+  "share extension": {
+    "target": "tiện ích chia sẻ",
+    "note": "No existing vi rendering; follows Apple's Vietnamese localization of iOS share extensions."
+  },
+  "bottom sheet": {
+    "target": "bảng trượt dưới",
+    "note": "No existing vi rendering; describes the panel sliding up from the bottom. Rarely user-facing."
+  },
+  "swipe": {
+    "target": "vuốt",
+    "note": "Established in mobile vi.json ('Vuốt sang trái')."
+  },
+  "long-press": {
+    "target": "nhấn giữ",
+    "note": "Standard Android/iOS Vietnamese term."
+  },
+  "tap": {
+    "target": "nhấn",
+    "note": "'Chạm' (Apple convention) is also common; mobile vi.json favors 'nhấn' for actionable instructions — keep one consistently."
+  },
+  "toast": {
+    "target": "thông báo nhanh",
+    "note": "No existing vi rendering; a brief transient confirmation message."
+  },
+  "clipboard": {
+    "target": "khay nhớ tạm",
+    "note": "Majority in mobile vi.json (one string uses 'bảng nhớ tạm'); prefer 'khay nhớ tạm'."
+  },
+  "biometrics": {
+    "target": "sinh trắc học",
+    "note": "Adjective: 'xác thực sinh trắc học'."
+  },
+  "passcode": {
+    "target": "mật mã",
+    "note": "Follows Apple's Vietnamese localization; distinct from password = 'mật khẩu'."
+  },
+  "screen lock": {
+    "target": "khóa màn hình",
+    "note": "Established in mobile vi.json."
+  },
+  "jailbroken": {
+    "target": "đã bẻ khóa",
+    "note": "mobile vi.json uses 'thiết bị bẻ khóa' covering both jailbroken and rooted."
+  },
+  "app logs": {
+    "target": "nhật ký ứng dụng"
+  },
+  "EMM": {
+    "target": "EMM"
+  },
+  "Face ID": {
+    "target": "Face ID"
+  },
+  "tablet": {
+    "target": "máy tính bảng",
+    "note": "Established in mobile vi.json."
+  },
+  "deep link": {
+    "target": "liên kết sâu",
+    "note": "No existing vi rendering; standard Vietnamese tech term."
+  },
+  "skin tone": {
+    "target": "tông màu da",
+    "note": "mobile vi.json mixes 'màu da' and 'tông màu da'; prefer 'tông màu da' (majority)."
+  },
+  "playback speed": {
+    "target": "tốc độ phát"
+  },
+  "server connection": {
+    "target": "kết nối máy chủ",
+    "note": "Add a server = 'Thêm máy chủ' (established); switch server = 'chuyển máy chủ'."
+  }
+}

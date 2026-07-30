@@ -1,0 +1,84 @@
+{
+  "push notification": {
+    "target": "Push-Benachrichtigung",
+    "note": "Keep 'Push' English; consistent with mobile settings strings."
+  },
+  "notification sound": {
+    "target": "Benachrichtigungston",
+    "note": "Masculine: der Benachrichtigungston, Plural Benachrichtigungstöne."
+  },
+  "share extension": {
+    "target": "Share Extension",
+    "note": "No existing German rendering in the app; keep the platform term (community rules allow common English terms). If a translation is required, 'Teilen-Erweiterung' is the closest iOS convention."
+  },
+  "bottom sheet": {
+    "target": "Bottom Sheet",
+    "note": "UI pattern name, rarely user-facing; keep English (standard in German Android/iOS developer and UI texts)."
+  },
+  "swipe": {
+    "target": "wischen",
+    "note": "Formal register: 'Wischen Sie nach links'. Existing mobile strings use informal 'Wische…'; community rules mandate Sie."
+  },
+  "long-press": {
+    "target": "lange drücken",
+    "note": "Formal: 'Drücken Sie lange auf eine Nachricht'."
+  },
+  "tap": {
+    "target": "tippen",
+    "note": "'Tap X' = 'Tippen Sie auf X'; 'tap to edit' = 'zum Bearbeiten antippen'."
+  },
+  "toast": {
+    "target": "Hinweis",
+    "note": "No established rendering in the app; 'Toast' is developer jargon — use 'Hinweis' or 'kurze Einblendung' in user-facing text."
+  },
+  "clipboard": {
+    "target": "Zwischenablage",
+    "note": "'Copied to clipboard' = 'in die Zwischenablage kopiert' (consistent existing rendering)."
+  },
+  "biometrics": {
+    "target": "Biometrie",
+    "note": "Existing strings use adjectival forms: 'biometrische Authentifizierung', 'biometrische Daten'. Prefer those constructions over the bare noun."
+  },
+  "passcode": {
+    "target": "Passcode",
+    "note": "Kept English in existing strings (matches iOS German UI); masculine: der Passcode."
+  },
+  "screen lock": {
+    "target": "Bildschirmsperre",
+    "note": "Consistent existing rendering."
+  },
+  "jailbroken": {
+    "target": "mit Jailbreak",
+    "note": "Existing rendering: 'Geräte mit Jailbreak' (avoids the awkward participle 'gejailbreakt'). 'rooted' can be added as 'oder Root-Zugriff' when both are meant."
+  },
+  "app logs": {
+    "target": "App-Protokolle",
+    "note": "Consistent existing rendering ('App-Protokolle herunterladen')."
+  },
+  "EMM": {
+    "target": "EMM"
+  },
+  "Face ID": {
+    "target": "Face ID"
+  },
+  "tablet": {
+    "target": "Tablet",
+    "note": "Neuter: das Tablet. One existing mobile string has the incorrect 'Tablett' (a serving tray) — do not copy that spelling."
+  },
+  "deep link": {
+    "target": "Deeplink",
+    "note": "No existing rendering in the app; 'Deeplink' (one word, masculine) is the established German tech term."
+  },
+  "skin tone": {
+    "target": "Hautton",
+    "note": "Default skin tone = 'Standard-Hautton' (existing rendering)."
+  },
+  "playback speed": {
+    "target": "Wiedergabegeschwindigkeit",
+    "note": "Consistent existing rendering."
+  },
+  "server connection": {
+    "target": "Serververbindung",
+    "note": "UI actions render freely: 'Add a server' = 'Server hinzufügen', 'Switch server' = 'Server wechseln'."
+  }
+}

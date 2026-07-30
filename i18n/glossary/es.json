@@ -1,0 +1,80 @@
+{
+  "push notification": {
+    "target": "notificación push",
+    "note": "'Push' kept in English per es mobile convention (Android/iOS settings)."
+  },
+  "notification sound": {
+    "target": "sonido de notificación"
+  },
+  "share extension": {
+    "target": "extensión para compartir",
+    "note": "Share action itself: 'Compartir con {app}' per existing strings."
+  },
+  "bottom sheet": {
+    "target": "panel inferior",
+    "note": "No repo signal; 'hoja inferior' (Material Design) is the literal alternative, but 'panel inferior' reads more naturally in user-facing text."
+  },
+  "swipe": {
+    "target": "deslizar",
+    "note": "Existing: 'Desliza a la izquierda…'."
+  },
+  "long-press": {
+    "target": "mantener pulsado",
+    "note": "es-419 UIs often use 'mantener presionado'; existing es file leans peninsular ('pulsar')."
+  },
+  "tap": {
+    "target": "tocar",
+    "note": "Buttons/instructions: 'toca' (informal imperative); repo also uses 'pulsa' in places."
+  },
+  "toast": {
+    "target": "aviso emergente",
+    "note": "No repo signal; short transient confirmation message."
+  },
+  "clipboard": {
+    "target": "portapapeles",
+    "note": "Consistent repo rendering: 'copiado al portapapeles'."
+  },
+  "biometrics": {
+    "target": "biometría",
+    "note": "Adjective: 'biométrico' (e.g. 'autenticación biométrica')."
+  },
+  "passcode": {
+    "target": "código de acceso"
+  },
+  "screen lock": {
+    "target": "bloqueo de pantalla"
+  },
+  "jailbroken": {
+    "target": "con jailbreak",
+    "note": "Existing string uses 'dispositivos con jailbrak' (typo for jailbreak). Rooted (Android): 'rooteado'."
+  },
+  "app logs": {
+    "target": "registros de la aplicación",
+    "note": "Existing mobile strings sometimes keep 'logs' ('Ver logs del servidor'); prefer 'registros' to match the desktop app."
+  },
+  "EMM": {
+    "target": "EMM"
+  },
+  "Face ID": {
+    "target": "Face ID"
+  },
+  "tablet": {
+    "target": "tableta",
+    "note": "Existing rendering."
+  },
+  "deep link": {
+    "target": "enlace directo",
+    "note": "No repo signal; matches Google's es rendering for deep links. 'Enlace profundo' is the literal alternative."
+  },
+  "skin tone": {
+    "target": "tono de piel",
+    "note": "Existing: 'tono de piel por defecto'."
+  },
+  "playback speed": {
+    "target": "velocidad de reproducción"
+  },
+  "server connection": {
+    "target": "conexión al servidor",
+    "note": "Add a server: 'Agregar un servidor'; switch server: 'Cambiar de servidor'."
+  }
+}

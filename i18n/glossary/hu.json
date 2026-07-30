@@ -1,0 +1,82 @@
+{
+  "push notification": {
+    "target": "push értesítés",
+    "note": "Established ('Push értesítés szerver'); 'push' stays in English."
+  },
+  "notification sound": {
+    "target": "értesítési hang"
+  },
+  "share extension": {
+    "target": "megosztási kiterjesztés",
+    "note": "Use 'kiterjesztés' (OS extension), not 'bővítmény', to avoid clashing with plugin = 'bővítmény'."
+  },
+  "bottom sheet": {
+    "target": "alsó panel",
+    "note": "No repo signal; 'alsó panel' is the common Hungarian rendering for a bottom sheet."
+  },
+  "swipe": {
+    "target": "húzás",
+    "note": "Repo uses 'húzzon balra' (swipe left); verb 'húz'. 'Csúsztatás' is an acceptable alternative but repo uses 'húz'."
+  },
+  "long-press": {
+    "target": "hosszú megnyomás",
+    "note": "Repo phrases it verbally: 'nyomjon hosszan' / 'koppintson hosszan'."
+  },
+  "tap": {
+    "target": "koppintás",
+    "note": "Established; verb 'koppint', imperative 'Koppintson'."
+  },
+  "toast": {
+    "target": "felugró üzenet",
+    "note": "No repo signal (one heading loosely rendered as 'Értesítés'); 'felugró üzenet' reads naturally for a transient confirmation."
+  },
+  "clipboard": {
+    "target": "vágólap",
+    "note": "Established ('Vágólapra másolva')."
+  },
+  "biometrics": {
+    "target": "biometrikus azonosítás",
+    "note": "Adjective: 'biometrikus'."
+  },
+  "passcode": {
+    "target": "jelkód",
+    "note": "Apple's Hungarian term for device passcode; 'PIN-kód' on Android contexts."
+  },
+  "screen lock": {
+    "target": "képernyőzár",
+    "note": "Established ('képernyőzárral kell beállítani')."
+  },
+  "jailbroken": {
+    "target": "feltört",
+    "note": "Repo uses 'rootolt' for rooted; cover both: 'feltört (jailbreakelt) vagy rootolt eszköz'."
+  },
+  "app logs": {
+    "target": "naplófájlok",
+    "note": "Repo majority ('Naplófájlok letöltése'); 'alkalmazásnaplók' also acceptable but follow the majority."
+  },
+  "EMM": {
+    "target": "EMM"
+  },
+  "Face ID": {
+    "target": "Face ID"
+  },
+  "tablet": {
+    "target": "táblagép"
+  },
+  "deep link": {
+    "target": "mélyhivatkozás",
+    "note": "No repo signal; 'mélyhivatkozás' is the standard Hungarian tech term."
+  },
+  "skin tone": {
+    "target": "bőrszín",
+    "note": "Mobile emoji strings use 'bőrszín' (correct). Webapp mistranslated it as 'téma tónusa' (theme tone) — do not follow."
+  },
+  "playback speed": {
+    "target": "lejátszási sebesség",
+    "note": "Established in mobile."
+  },
+  "server connection": {
+    "target": "kiszolgáló",
+    "note": "Mobile consistently calls a configured server 'kiszolgáló' ('Kiszolgáló hozzáadása' = Add a server); the connection sense needs no separate word. Switch server = 'kiszolgálóváltás'."
+  }
+}

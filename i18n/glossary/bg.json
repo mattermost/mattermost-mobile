@@ -1,0 +1,78 @@
+{
+  "push notification": {
+    "target": "изскачащо известие",
+    "note": "Existing server/webapp bg.json consistently uses 'изскачащи известия' for push notifications. Modern alternative 'push известие' exists, but keep the established rendering."
+  },
+  "notification sound": {
+    "target": "звук за известия"
+  },
+  "share extension": {
+    "target": "разширение за споделяне"
+  },
+  "bottom sheet": {
+    "target": "долен панел",
+    "note": "No established bg term; 'долен панел' describes the sliding bottom panel naturally."
+  },
+  "swipe": {
+    "target": "плъзгане",
+    "note": "Verb prose: 'плъзнете' (formal plural, matching repo register)."
+  },
+  "long-press": {
+    "target": "продължително натискане",
+    "note": "Instructional prose: 'натиснете и задръжте' (standard Android Bulgarian)."
+  },
+  "tap": {
+    "target": "докосване",
+    "note": "Verb prose: 'докоснете' (standard Android Bulgarian)."
+  },
+  "toast": {
+    "target": "кратко съобщение",
+    "note": "Avoid 'изскачащо съобщение' — 'изскачащи известия' is already the established rendering for push notifications."
+  },
+  "clipboard": {
+    "target": "клипборд",
+    "note": "Standard Bulgarian Windows/Android term. 'копирано в клипборда'."
+  },
+  "biometrics": {
+    "target": "биометрични данни",
+    "note": "Adjective contexts: 'биометрично удостоверяване'."
+  },
+  "passcode": {
+    "target": "код за достъп"
+  },
+  "screen lock": {
+    "target": "заключване на екрана"
+  },
+  "jailbroken": {
+    "target": "с джейлбрейк",
+    "note": "Adjective phrase: 'устройство с джейлбрейк'; rooted (Android) = 'с root достъп'."
+  },
+  "app logs": {
+    "target": "дневници на приложението",
+    "note": "Logs = 'Дневници' established in webapp bg.json (Системна конзола > Дневници)."
+  },
+  "EMM": {
+    "target": "EMM"
+  },
+  "Face ID": {
+    "target": "Face ID"
+  },
+  "tablet": {
+    "target": "таблет"
+  },
+  "deep link": {
+    "target": "дълбока връзка",
+    "note": "Link = 'връзка' established. 'дълбока връзка' is the common Bulgarian rendering in Android developer material."
+  },
+  "skin tone": {
+    "target": "цвят на кожата",
+    "note": "Established in webapp emoji picker."
+  },
+  "playback speed": {
+    "target": "скорост на възпроизвеждане"
+  },
+  "server connection": {
+    "target": "връзка със сървър",
+    "note": "Add a server = 'Добавяне на сървър'; switch server = 'Смяна на сървъра'."
+  }
+}

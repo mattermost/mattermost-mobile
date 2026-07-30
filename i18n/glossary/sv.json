@@ -1,0 +1,81 @@
+{
+  "push notification": {
+    "target": "push-notifiering",
+    "note": "Mobile settings use 'Push-notifieringar' (majority in mobile); 'push-notiser' appears once and webapp admin uses 'pushavisering'. Keep 'push-notifiering' in the mobile app, aligned with notification = 'notifiering'."
+  },
+  "notification sound": {
+    "target": "notifieringsljud"
+  },
+  "share extension": {
+    "target": "delningstillägg",
+    "note": "No existing sv translation; standard iOS Swedish term for a share extension."
+  },
+  "bottom sheet": {
+    "target": "bottenpanel",
+    "note": "No existing sv translation; rarely user-visible. In running text, 'panelen längst ned' also works."
+  },
+  "swipe": {
+    "target": "svepa",
+    "note": "Imperative: 'Svep' (svep åt vänster/höger)."
+  },
+  "long-press": {
+    "target": "trycka länge",
+    "note": "Existing: 'tryck länge på ett meddelande'. Imperative: 'Tryck länge på …'."
+  },
+  "tap": {
+    "target": "trycka",
+    "note": "Swedish mobile convention: 'tryck på' (not 'knacka' or 'klicka'). Imperative: 'Tryck på …'."
+  },
+  "toast": {
+    "target": "toast",
+    "note": "Developer term with no established Swedish equivalent; rarely user-visible. If it must appear in UI text, paraphrase as 'tillfälligt meddelande'."
+  },
+  "clipboard": {
+    "target": "urklipp",
+    "note": "'kopierat till urklipp'."
+  },
+  "biometrics": {
+    "target": "biometri",
+    "note": "Adjective: 'biometrisk' (biometrisk autentisering)."
+  },
+  "passcode": {
+    "target": "lösenkod",
+    "note": "Apple's official Swedish term. Existing strings are inconsistent (keep 'Passcode' or use 'lösenord') — prefer 'lösenkod'; do not use 'lösenord' (= password)."
+  },
+  "screen lock": {
+    "target": "skärmlås"
+  },
+  "jailbroken": {
+    "target": "jailbreakad",
+    "note": "Existing uses the nonstandard spelling 'jailbrejkad'; prefer 'jailbreakad'. Android equivalent: 'rootad'. Pair as 'jailbreakade eller rootade enheter'."
+  },
+  "app logs": {
+    "target": "app-loggar",
+    "note": "Existing consistently uses 'app-loggar' (heading 'APP LOGGAR'). Solid compound 'apploggar' is also correct, but keep the existing hyphenated form."
+  },
+  "EMM": {
+    "target": "EMM"
+  },
+  "Face ID": {
+    "target": "Face ID"
+  },
+  "tablet": {
+    "target": "surfplatta",
+    "note": "en surfplatta, surfplattor."
+  },
+  "deep link": {
+    "target": "djuplänk",
+    "note": "No existing sv translation; standard Swedish tech term."
+  },
+  "skin tone": {
+    "target": "hudfärg",
+    "note": "Majority rendering (13 vs 4 for 'hudton'); matches Apple/Google emoji settings."
+  },
+  "playback speed": {
+    "target": "uppspelningshastighet"
+  },
+  "server connection": {
+    "target": "serveranslutning",
+    "note": "Add a server = 'Lägg till en server'; switch server = 'byt server'."
+  }
+}

@@ -1,0 +1,84 @@
+{
+  "push notification": {
+    "target": "notification push",
+    "note": "Established rendering per community rules and Weblate glossary; never 'notification poussée'. Plural: 'notifications push'."
+  },
+  "notification sound": {
+    "target": "son de notification",
+    "note": "No existing translation yet for the incoming-call setting."
+  },
+  "share extension": {
+    "target": "extension de partage",
+    "note": "Matches Apple's French terminology for share extensions."
+  },
+  "bottom sheet": {
+    "target": "panneau inférieur",
+    "note": "No existing translation; mostly a translator-facing term. 'bottom sheet' may be kept in developer contexts."
+  },
+  "swipe": {
+    "target": "balayer",
+    "note": "Existing: 'Balayez vers la gauche…'."
+  },
+  "long-press": {
+    "target": "appuyer longtemps",
+    "note": "Existing tutorial string uses 'Appuyez longtemps sur…'; noun form: 'appui long'."
+  },
+  "tap": {
+    "target": "appuyer",
+    "note": "Standard French mobile convention ('Appuyez sur…'); existing strings inconsistently use 'cliquez' or 'pression' — prefer 'appuyer' on touch UIs."
+  },
+  "toast": {
+    "target": "toast",
+    "note": "Kept in English (masculine), as in French Android documentation; rarely user-facing."
+  },
+  "clipboard": {
+    "target": "presse-papiers",
+    "note": "With final 's' (invariable); existing strings mix 'presse-papier' and 'presse-papiers' — prefer 'presse-papiers'."
+  },
+  "biometrics": {
+    "target": "biométrie",
+    "note": "Adjective: 'authentification biométrique'."
+  },
+  "passcode": {
+    "target": "code d'accès",
+    "note": "Matches Apple's French term for the device passcode."
+  },
+  "screen lock": {
+    "target": "verrouillage d'écran",
+    "note": "Existing: 'sécurisé avec un verrouillage d'écran'."
+  },
+  "jailbroken": {
+    "target": "jailbreaké",
+    "note": "Existing: 'dispositifs jailbreakés'. Cover 'rooted' with 'jailbreakés ou rootés' when both appear."
+  },
+  "app logs": {
+    "target": "journaux de l'application",
+    "note": "No existing translation yet; 'journal' is the standard rendering of 'log' ('niveau de journalisation' on desktop)."
+  },
+  "EMM": {
+    "target": "EMM"
+  },
+  "Face ID": {
+    "target": "Face ID"
+  },
+  "tablet": {
+    "target": "tablette",
+    "note": "Feminine."
+  },
+  "deep link": {
+    "target": "lien profond",
+    "note": "Microsoft French terminology; 'deep link' is sometimes kept in developer contexts."
+  },
+  "skin tone": {
+    "target": "couleur de peau",
+    "note": "Majority in existing emoji strings; 'teinte de peau' also appears once — prefer 'couleur de peau'."
+  },
+  "playback speed": {
+    "target": "vitesse de lecture",
+    "note": "Feminine; no existing translation yet."
+  },
+  "server connection": {
+    "target": "connexion au serveur",
+    "note": "Add a server: 'Ajouter un serveur' (existing); Switch server: 'Changer de serveur'."
+  }
+}

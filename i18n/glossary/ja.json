@@ -1,0 +1,75 @@
+{
+  "push notification": {
+    "target": "プッシュ通知"
+  },
+  "notification sound": {
+    "target": "通知音",
+    "note": "Existing: 着信の通知音 for 'Notification sound for incoming calls'."
+  },
+  "share extension": {
+    "target": "共有機能拡張",
+    "note": "No existing translation in the repo. 共有機能拡張 follows Apple's Japanese terminology for Share Extension; the user-facing share sheet action itself is simply 共有."
+  },
+  "bottom sheet": {
+    "target": "ボトムシート",
+    "note": "No existing translation; standard katakana loanword. Rarely user-visible."
+  },
+  "swipe": {
+    "target": "スワイプする",
+    "note": "Existing: 左にスワイプする."
+  },
+  "long-press": {
+    "target": "長押しする"
+  },
+  "tap": {
+    "target": "タップする"
+  },
+  "toast": {
+    "target": "トースト",
+    "note": "No existing translation; mostly internal terminology. Prefer describing the message itself (通知, メッセージ) in user-facing text."
+  },
+  "clipboard": {
+    "target": "クリップボード"
+  },
+  "biometrics": {
+    "target": "生体認証"
+  },
+  "passcode": {
+    "target": "パスコード"
+  },
+  "screen lock": {
+    "target": "スクリーンロック",
+    "note": "Existing repo strings use スクリーンロック; OS settings themselves say 画面ロック — keep スクリーンロック for consistency with existing translations."
+  },
+  "jailbroken": {
+    "target": "Jailbreakされた",
+    "note": "Existing: 'JailbreakまたはRoot化されたデバイス' — Jailbreak kept in Latin script, rooted = Root化された."
+  },
+  "app logs": {
+    "target": "アプリログ"
+  },
+  "EMM": {
+    "target": "EMM"
+  },
+  "Face ID": {
+    "target": "Face ID"
+  },
+  "tablet": {
+    "target": "タブレット"
+  },
+  "deep link": {
+    "target": "ディープリンク",
+    "note": "No existing translation; standard katakana loanword."
+  },
+  "skin tone": {
+    "target": "肌色",
+    "note": "Existing: デフォルトの肌色 for 'Default Skin Tone'; individual emoji tone names are left in English."
+  },
+  "playback speed": {
+    "target": "再生速度"
+  },
+  "server connection": {
+    "target": "サーバー",
+    "note": "Existing UI: サーバーを追加 (Add a server), サーバー切替 (Switch server), サーバーを編集する (Edit server)."
+  }
+}

@@ -1,0 +1,81 @@
+{
+  "push notification": {
+    "target": "notificação push",
+    "note": "Established: 'Servidor de Notificação Push', 'notificações push'. 'Push' stays in English."
+  },
+  "notification sound": {
+    "target": "som de notificação"
+  },
+  "share extension": {
+    "target": "extensão de compartilhamento"
+  },
+  "bottom sheet": {
+    "target": "painel inferior",
+    "note": "No existing translation; 'painel inferior' is the common pt-BR rendering for the Material Design bottom sheet. Rarely user-facing."
+  },
+  "swipe": {
+    "target": "deslizar",
+    "note": "'Deslize para a esquerda' for 'swipe left'."
+  },
+  "long-press": {
+    "target": "pressionar e segurar",
+    "note": "Android pt-BR docs use 'tocar e segurar' and iOS uses 'manter pressionado'; 'pressionar e segurar' reads naturally in both contexts."
+  },
+  "tap": {
+    "target": "tocar",
+    "note": "One existing string uses 'Clique', which is a desktop term — use 'tocar'/'toque' on mobile."
+  },
+  "toast": {
+    "target": "toast",
+    "note": "Developer-facing term, commonly untranslated in pt-BR. If a user-facing rendering is needed, use 'aviso temporário'."
+  },
+  "clipboard": {
+    "target": "área de transferência",
+    "note": "'copiado para a área de transferência' for 'copied to clipboard'."
+  },
+  "biometrics": {
+    "target": "biometria",
+    "note": "Adjective: 'autenticação biométrica' (established in webapp admin strings)."
+  },
+  "passcode": {
+    "target": "código de acesso",
+    "note": "Matches existing 'PIN/código de acesso' in the mobile-security admin strings."
+  },
+  "screen lock": {
+    "target": "bloqueio de tela",
+    "note": "Matches existing 'protegido com um bloqueio de tela'."
+  },
+  "jailbroken": {
+    "target": "com jailbreak",
+    "note": "'dispositivos com jailbreak ou root' ('rooted' = 'com root'). Existing strings vary ('com Jailbroken', 'desbloqueados'); prefer 'com jailbreak'."
+  },
+  "app logs": {
+    "target": "logs do aplicativo",
+    "note": "'Log' stays in English (masculine) per existing desktop/webapp usage; all-caps label: 'LOGS DO APLICATIVO'."
+  },
+  "EMM": {
+    "target": "EMM"
+  },
+  "Face ID": {
+    "target": "Face ID"
+  },
+  "tablet": {
+    "target": "tablet",
+    "note": "Standard pt-BR loanword (masculine: 'o tablet')."
+  },
+  "deep link": {
+    "target": "deep link",
+    "note": "Commonly untranslated in pt-BR tech writing; Google's Android docs use 'link direto' if a translation is required."
+  },
+  "skin tone": {
+    "target": "tom de pele",
+    "note": "Established in emoji picker strings; 'tom de pele padrão' for default skin tone."
+  },
+  "playback speed": {
+    "target": "velocidade de reprodução"
+  },
+  "server connection": {
+    "target": "conexão com o servidor",
+    "note": "UI actions follow existing patterns: 'Adicionar um servidor' (Add a server), 'Trocar de servidor' (Switch server)."
+  }
+}
