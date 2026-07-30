@@ -74,7 +74,7 @@ on:
         description: "iPhone simulator OS version"
         required: false
         type: string
-        default: "iOS 26.2"
+        default: "iOS 26.5"
       low_bandwidth_mode:
         description: "Enable low bandwidth mode"
         required: false
@@ -220,11 +220,13 @@ jobs:
 
   e2e-ios:
     name: machine-${{ matrix.runId }}-os-${{ matrix.deviceOsVersion }}
-    # Temporarily reverted to macos-15 due to Metro stabilization issues on macos-26.
-    # macos-26 ships the iOS 26.2 runtime pre-installed, avoiding a ~10min
-    # LaunchServicesMigrator + runtime install on every shard, but has timing issues.
-    # TODO: Investigate macos-26 Metro/Detox compatibility and re-enable if resolved.
-    runs-on: macos-15
+    # Run iOS Detox on the same macos-26 / Xcode 26.5 image the app is built on
+    # (build-ios-simulator in e2e-detox-pr.yml). A split (build on macos-26,
+    # test on macos-15/Xcode 16.4) produced systematic "View is not hittable at its
+    # visible point" failures: an app built against the iOS 26.5 SDK with the New
+    # Architecture ran on a simulator managed by an older Xcode. macos-26 ships the
+    # iOS 26.5 runtime pre-installed, so no per-shard runtime download is needed.
+    runs-on: macos-26
     continue-on-error: true
     timeout-minutes: ${{ inputs.low_bandwidth_mode && 240 || 180 }}
     env:
@@ -472,10 +474,9 @@ jobs:
             tail -30 metro.log
           else
             echo "Metro is serving on http://localhost:8081"
-            # Give Metro time to fully initialize for iOS 26.2 (React Native bridge needs stabilization).
-            # 20s should be sufficient for macos-15 to ensure full Metro compilation.
+            # Give Metro time to fully initialize (React Native bridge needs stabilization).
             # Without adequate wait, the app may fail with "No script URL provided" on launch.
-            echo "Allowing Metro to fully stabilize (20s on macos-15)..."
+            echo "Allowing Metro to fully stabilize (20s)..."
             sleep 20
 
             # Verify Metro is actually serving the bundle (not just the process is running).
