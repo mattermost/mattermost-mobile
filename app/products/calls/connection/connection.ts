@@ -358,6 +358,7 @@ export async function newConnection(
         }
 
         // Listen for audio route changes on both platforms via calls-native.
+        audioRouteEvent?.remove();
         audioRouteEvent = CallsNative.onAudioRouteChanged((route) => {
             setAudioDeviceInfo(route);
             logDebug('calls: AudioRouteChanged, info:', route);

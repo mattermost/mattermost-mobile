@@ -359,11 +359,6 @@ private struct CallInfo {
     /// - Parameter name: bundle filename without extension, e.g. "calls_calm".
     ///   Pass nil to use the system default CallKit ringtone.
     private func applyRingtone(_ name: String?) {
-        guard let name else {
-            // nil → system default; leave provider.configuration untouched
-            // so CallKit's audio routing is not disrupted unnecessarily.
-            return
-        }
         let config = CXProviderConfiguration()
         config.supportsVideo = provider.configuration.supportsVideo
         config.maximumCallGroups = provider.configuration.maximumCallGroups
@@ -371,7 +366,9 @@ private struct CallInfo {
         config.supportedHandleTypes = provider.configuration.supportedHandleTypes
         config.includesCallsInRecents = provider.configuration.includesCallsInRecents
         config.iconTemplateImageData = provider.configuration.iconTemplateImageData
-        config.ringtoneSound = name + ".mp3"
+        if let name {
+            config.ringtoneSound = name + ".mp3"
+        }
         provider.configuration = config
     }
 

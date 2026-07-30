@@ -58,6 +58,7 @@ import WebRTC
     public func startAudioSession() throws {
         guard avSession.category != .playAndRecord else { return }
         try configureForCallThrowing()
+        rtcSession.isAudioEnabled = true
     }
 
     private func configureForCallThrowing() throws {
@@ -92,6 +93,7 @@ import WebRTC
     /// teardown path.
     @objc public func resetSession() {
         do {
+            rtcSession.isAudioEnabled = false
             try rtcSession.setActive(false)
             GekidouLogger.shared.log(.info, "AudioSessionManager: resetSession — session deactivated")
         } catch {
