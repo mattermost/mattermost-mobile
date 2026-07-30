@@ -235,15 +235,12 @@ function parseAttachmentFields(fields: unknown): ParsedAttachmentField[] {
             continue;
         }
         const field = f as Record<string, unknown>;
-        if (typeof field.title !== 'string' || !field.title) {
-            continue;
-        }
         const valueStr = formatAttachmentFieldValue(field.value);
         if (!valueStr) {
             continue;
         }
         result.push({
-            title: field.title,
+            title: typeof field.title === 'string' && field.title.trim() ? field.title : '',
             value: valueStr,
             short: field.short === true,
         });
@@ -253,7 +250,9 @@ function parseAttachmentFields(fields: unknown): ParsedAttachmentField[] {
 
 function attachmentFieldBlocks(f: ParsedAttachmentField): MmBlock[] {
     const blocks: MmBlock[] = [];
-    blocks.push({type: 'text', text: `**${f.title}:**`});
+    if (f.title) {
+        blocks.push({type: 'text', text: `**${f.title}:**`});
+    }
     blocks.push({type: 'text', text: f.value});
     return blocks;
 }
