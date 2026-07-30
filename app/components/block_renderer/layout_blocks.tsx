@@ -218,9 +218,13 @@ export const ContainerBlock = ({block, ...switchProps}: ContainerBlockProps) => 
     const handleLayout = useCallback((event: LayoutChangeEvent) => {
         const width = Math.round(event.nativeEvent.layout.width);
         if (width > 0) {
-            setMeasuredLayoutWidth(width);
+            let padding = 0;
+            if (block.border || block.accent_color) {
+                padding = style.containerBorder.padding;
+            }
+            setMeasuredLayoutWidth(Math.max(0, width - (padding * 2)));
         }
-    }, []);
+    }, [block.accent_color, block.border, style.containerBorder.padding]);
 
     const handleExpandBoundedContent = useCallback(() => {
         if (!block.content?.length || !renderContext) {
