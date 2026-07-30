@@ -790,6 +790,17 @@ exports[`translatePostProps complex payloads should translate rich attachments (
                     "gap": "none",
                     "type": "container",
                   },
+                  {
+                    "content": [
+                      {
+                        "text": "value with whitespace-only title",
+                        "type": "text",
+                      },
+                    ],
+                    "flow": "vertical",
+                    "gap": "none",
+                    "type": "container",
+                  },
                 ],
                 "flow": "vertical",
                 "gap": "medium",
