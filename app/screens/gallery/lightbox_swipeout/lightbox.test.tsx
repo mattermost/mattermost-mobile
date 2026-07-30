@@ -9,12 +9,18 @@ import Lightbox from './lightbox';
 
 import type {GalleryItemType, GalleryManagerSharedValues} from '@typings/screens/gallery';
 
+type MockExpoImageAnimatedProps = React.ComponentProps<(typeof import('@components/expo_image'))['ExpoImageAnimated']>;
+type MockViewProps = React.ComponentProps<(typeof import('react-native'))['View']>;
+
 jest.mock('@components/expo_image', () => {
-    const ReactModule = require('react');
-    const {View: MockView} = require('react-native');
+    const ReactModule: typeof import('react') = require('react');
+    const {View: MockView}: typeof import('react-native') = require('react-native');
 
     return {
-        ExpoImageAnimated: jest.fn((props) => ReactModule.createElement(MockView, {...props, testID: 'lightbox-transition-image'})),
+        ExpoImageAnimated: jest.fn((props: MockExpoImageAnimatedProps) => ReactModule.createElement(MockView, {
+            ...props,
+            testID: 'lightbox.transition.image',
+        } as MockViewProps)),
     };
 });
 
@@ -68,7 +74,7 @@ describe('Lightbox', () => {
             </Lightbox>,
         );
 
-        const transitionImage = getByTestId('lightbox-transition-image');
+        const transitionImage = getByTestId('lightbox.transition.image');
         expect(transitionImage).toHaveProp('source', {uri: 'https://example.com/image.png'});
         expect(transitionImage).not.toHaveProp('placeholder');
     });

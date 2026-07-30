@@ -7,6 +7,7 @@ import React from 'react';
 import {Screens} from '@constants';
 import useAndroidHardwareBackHandler from '@hooks/android_back_handler';
 import {navigateBack} from '@screens/navigation';
+import {advanceTimers, disableFakeTimers, enableFakeTimers} from '@test/timer_helpers';
 
 import GalleryScreen from './index';
 
@@ -66,17 +67,14 @@ jest.mock('./header', () => ({
 describe('GalleryScreen', () => {
     beforeEach(() => {
         jest.clearAllMocks();
-        jest.spyOn(global, 'requestAnimationFrame').mockImplementation((callback) => {
-            callback(0);
-            return 0;
-        });
+        enableFakeTimers();
     });
 
     afterEach(() => {
-        jest.restoreAllMocks();
+        disableFakeTimers();
     });
 
-    it('should animate the gallery closed before navigating back on Android hardware back', () => {
+    it('should animate the gallery closed before navigating back on Android hardware back', async () => {
         render(
             <GalleryScreen
                 galleryIdentifier='post-1'
@@ -89,8 +87,9 @@ describe('GalleryScreen', () => {
         expect(useAndroidHardwareBackHandler).toHaveBeenCalledWith(Screens.GALLERY, expect.any(Function));
 
         const backHandler = jest.mocked(useAndroidHardwareBackHandler).mock.calls[0][1];
-        act(() => {
+        await act(async () => {
             backHandler();
+            await advanceTimers(16);
         });
 
         expect(mockHideHeaderAndFooter).toHaveBeenCalledTimes(1);
