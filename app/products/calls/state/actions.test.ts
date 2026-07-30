@@ -194,6 +194,10 @@ describe('useCallsState', () => {
         });
     });
 
+    afterEach(async () => {
+        await DatabaseManager.destroyServerDatabase('server1');
+    });
+
     it('default state', () => {
         const {result} = renderHook(() => {
             return [useCallsState('server1'), useChannelsWithCalls('server1')];
