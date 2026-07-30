@@ -9,7 +9,7 @@ import {
     type UserReactionData,
     type CallsVersionInfo,
 } from '@mattermost/calls/lib/types';
-import {AudioDeviceValue, type AudioDevice, type AudioRoute} from '@mattermost/calls-native';
+import {AudioDevice, type AudioDeviceType, type AudioRoute} from '@mattermost/calls-native';
 
 import type UserModel from '@typings/database/models/servers/user';
 
@@ -110,7 +110,7 @@ export const DefaultCurrentCall: CurrentCall = {
     myUserId: '',
     mySessionId: '',
     screenShareURL: '',
-    audioDeviceInfo: {availableAudioDeviceList: [], selectedAudioDevice: AudioDeviceValue.None},
+    audioDeviceInfo: {availableAudioDeviceList: [], selectedAudioDevice: AudioDevice.None},
     voiceOn: {},
     micPermissionsErrorDismissed: false,
     reactionStream: [],
@@ -130,8 +130,8 @@ export type CallSession = {
 
 export type ChannelsWithCalls = Dictionary<boolean>;
 
-export {AudioDeviceValue};
-export type {AudioDevice, AudioRoute};
+export {AudioDevice};
+export type {AudioDeviceType, AudioRoute};
 
 export type CallsConnection = {
     disconnect: (err?: Error) => void;
@@ -142,7 +142,7 @@ export type CallsConnection = {
     unraiseHand: () => void;
     initializeVoiceTrack: () => void;
     sendReaction: (emoji: EmojiData) => void;
-    setUserSelectedAudioRoute: (route: AudioDevice) => void;
+    setUserSelectedAudioRoute: (route: AudioDeviceType) => void;
 }
 
 export type CallsConfigState = CallsConfig & {

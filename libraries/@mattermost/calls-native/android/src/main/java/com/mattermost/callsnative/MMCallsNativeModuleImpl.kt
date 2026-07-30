@@ -10,6 +10,7 @@ import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
 import android.media.AudioAttributes
+import android.media.AudioDeviceInfo
 import android.media.AudioFocusRequest
 import android.media.AudioManager
 import android.media.MediaPlayer
@@ -31,7 +32,8 @@ class MMCallsNativeModuleImpl(private val context: ReactApplicationContext) {
 
     private var audioManager: AudioManager? = null
     private var origAudioMode = AudioManager.MODE_NORMAL
-    private var origSpeakerOn = false
+    @Suppress("DEPRECATION") private var origSpeakerOn = false   // used on API < 31 only
+    private var origCommDeviceType: Int? = null                   // used on API 31+ only
     private var audioFocusRequest: AudioFocusRequest? = null
     private var ringtonePlayer: MediaPlayer? = null
     private val mainHandler = Handler(Looper.getMainLooper())
@@ -39,8 +41,8 @@ class MMCallsNativeModuleImpl(private val context: ReactApplicationContext) {
     private var headsetReceiver: BroadcastReceiver? = null
     private var btReceiver: BroadcastReceiver? = null
 
-    // Track whether BT SCO is requested so getAudioRoute can reflect it.
-    private var btScoRequested = false
+    // Track whether the user selected Bluetooth so getAudioRoute can reflect it.
+    private var btActive = false
 
     // -------------------------------------------------------------------------
     // Call UI stubs — iOS-only (Telecom/ConnectionService not yet implemented)
@@ -101,8 +103,13 @@ class MMCallsNativeModuleImpl(private val context: ReactApplicationContext) {
         val audio = context.getSystemService(Context.AUDIO_SERVICE) as AudioManager
         audioManager = audio
         origAudioMode = audio.mode
-        origSpeakerOn = audio.isSpeakerphoneOn
-        btScoRequested = false
+        btActive = false
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+            origCommDeviceType = audio.communicationDevice?.type
+        } else {
+            @Suppress("DEPRECATION")
+            origSpeakerOn = audio.isSpeakerphoneOn
+        }
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             val req = AudioFocusRequest.Builder(AudioManager.AUDIOFOCUS_GAIN_TRANSIENT)
@@ -113,15 +120,25 @@ class MMCallsNativeModuleImpl(private val context: ReactApplicationContext) {
                         .build()
                 )
                 .build()
-            audio.requestAudioFocus(req)
+            val result = audio.requestAudioFocus(req)
+            if (result != AudioManager.AUDIOFOCUS_REQUEST_GRANTED) {
+                audioManager = null
+                promise?.reject("start_audio_session_failed", "requestAudioFocus denied (result=$result)")
+                return
+            }
             audioFocusRequest = req
         } else {
             @Suppress("DEPRECATION")
-            audio.requestAudioFocus(null, AudioManager.STREAM_VOICE_CALL, AudioManager.AUDIOFOCUS_GAIN_TRANSIENT)
+            val result = audio.requestAudioFocus(null, AudioManager.STREAM_VOICE_CALL, AudioManager.AUDIOFOCUS_GAIN_TRANSIENT)
+            if (result != AudioManager.AUDIOFOCUS_REQUEST_GRANTED) {
+                audioManager = null
+                promise?.reject("start_audio_session_failed", "requestAudioFocus denied (result=$result)")
+                return
+            }
         }
 
         audio.mode = AudioManager.MODE_IN_COMMUNICATION
-        audio.isSpeakerphoneOn = false
+        routeToEarpiece(audio)
 
         registerAudioReceivers()
         emitAudioRouteChanged()
@@ -130,10 +147,9 @@ class MMCallsNativeModuleImpl(private val context: ReactApplicationContext) {
 
     fun stopAudioSession(promise: Promise?) {
         val audio = audioManager ?: (context.getSystemService(Context.AUDIO_SERVICE) as AudioManager)
-        audio.stopBluetoothSco()
-        audio.isSpeakerphoneOn = origSpeakerOn
+        restoreOriginalRoute(audio)
         audio.mode = origAudioMode
-        btScoRequested = false
+        btActive = false
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             audioFocusRequest?.let { audio.abandonAudioFocusRequest(it) }
@@ -156,24 +172,24 @@ class MMCallsNativeModuleImpl(private val context: ReactApplicationContext) {
         val audio = audioManager ?: run { promise?.resolve(null); return }
         when (route) {
             "SPEAKER_PHONE" -> {
-                audio.stopBluetoothSco()
-                btScoRequested = false
-                audio.isSpeakerphoneOn = true
+                stopBluetoothAudio(audio)
+                btActive = false
+                routeToSpeaker(audio)
             }
             "EARPIECE" -> {
-                audio.stopBluetoothSco()
-                btScoRequested = false
-                audio.isSpeakerphoneOn = false
+                stopBluetoothAudio(audio)
+                btActive = false
+                routeToEarpiece(audio)
             }
             "WIRED_HEADSET" -> {
-                audio.stopBluetoothSco()
-                btScoRequested = false
-                audio.isSpeakerphoneOn = false
+                stopBluetoothAudio(audio)
+                btActive = false
+                routeToEarpiece(audio)
             }
             "BLUETOOTH" -> {
-                audio.isSpeakerphoneOn = false
-                audio.startBluetoothSco()
-                btScoRequested = true
+                routeToEarpiece(audio)
+                startBluetoothAudio(audio)
+                btActive = true
             }
         }
         emitAudioRouteChanged()
@@ -208,7 +224,7 @@ class MMCallsNativeModuleImpl(private val context: ReactApplicationContext) {
                 promise?.reject("ringtone_error", "Failed to create MediaPlayer for: $name")
                 return
             }
-            player.isLooping = seconds <= 0
+            player.isLooping = true
             if (seconds > 0) {
                 val stopRunnable = Runnable { stopRingtoneInternal() }
                 ringtoneStopRunnable = stopRunnable
@@ -296,9 +312,15 @@ class MMCallsNativeModuleImpl(private val context: ReactApplicationContext) {
         if (hasBluetooth) available.add("BLUETOOTH")
 
         // Selected device: priority order matches typical Android call behavior.
+        val speakerActive = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+            audio.communicationDevice?.type == AudioDeviceInfo.TYPE_BUILTIN_SPEAKER
+        } else {
+            @Suppress("DEPRECATION")
+            audio.isSpeakerphoneOn
+        }
         val selected = when {
-            btScoRequested && audio.isBluetoothScoOn -> "BLUETOOTH"
-            audio.isSpeakerphoneOn -> "SPEAKER_PHONE"
+            btActive -> "BLUETOOTH"
+            speakerActive -> "SPEAKER_PHONE"
             wiredConnected -> "WIRED_HEADSET"
             else -> "EARPIECE"
         }
@@ -329,6 +351,67 @@ class MMCallsNativeModuleImpl(private val context: ReactApplicationContext) {
             false
         } catch (_: Exception) {
             false
+        }
+    }
+
+    private fun routeToSpeaker(audio: AudioManager) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+            val dev = audio.availableCommunicationDevices
+                .firstOrNull { it.type == AudioDeviceInfo.TYPE_BUILTIN_SPEAKER }
+            if (dev != null) audio.setCommunicationDevice(dev)
+        } else {
+            @Suppress("DEPRECATION")
+            audio.isSpeakerphoneOn = true
+        }
+    }
+
+    private fun routeToEarpiece(audio: AudioManager) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+            val dev = audio.availableCommunicationDevices
+                .firstOrNull { it.type == AudioDeviceInfo.TYPE_BUILTIN_EARPIECE }
+            if (dev != null) audio.setCommunicationDevice(dev) else audio.clearCommunicationDevice()
+        } else {
+            @Suppress("DEPRECATION")
+            audio.isSpeakerphoneOn = false
+        }
+    }
+
+    private fun restoreOriginalRoute(audio: AudioManager) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+            val targetType = origCommDeviceType
+            if (targetType != null) {
+                val dev = audio.availableCommunicationDevices.firstOrNull { it.type == targetType }
+                if (dev != null) audio.setCommunicationDevice(dev) else audio.clearCommunicationDevice()
+            } else {
+                audio.clearCommunicationDevice()
+            }
+            origCommDeviceType = null
+        } else {
+            stopBluetoothAudio(audio)
+            @Suppress("DEPRECATION")
+            audio.isSpeakerphoneOn = origSpeakerOn
+        }
+    }
+
+    private fun startBluetoothAudio(audio: AudioManager) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+            val btDevice = audio.availableCommunicationDevices
+                .firstOrNull { it.type == AudioDeviceInfo.TYPE_BLUETOOTH_SCO }
+            if (btDevice != null) {
+                audio.setCommunicationDevice(btDevice)
+            }
+        } else {
+            @Suppress("DEPRECATION")
+            audio.startBluetoothSco()
+        }
+    }
+
+    private fun stopBluetoothAudio(audio: AudioManager) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+            audio.clearCommunicationDevice()
+        } else {
+            @Suppress("DEPRECATION")
+            audio.stopBluetoothSco()
         }
     }
 

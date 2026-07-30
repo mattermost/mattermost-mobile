@@ -103,12 +103,12 @@ RCT_EXPORT_BLOCKING_SYNCHRONOUS_METHOD(foregroundServiceStop) {
     return nil;
 }
 
-// iOS no-op: CallKit activates the audio session via CXAnswerCallAction /
-// CXStartCallAction delegate callbacks. startAudioSession is meaningful only
-// on Android where there is no CallKit.
+// iOS: normally CallKit configures the audio session via CXAnswerCallAction /
+// CXStartCallAction. Call configureForCall() here as a fallback for the case
+// where CallKit registration failed but the JS connection still proceeds.
 RCT_EXPORT_METHOD(startAudioSession:(RCTPromiseResolveBlock)resolve
                   rejecter:(RCTPromiseRejectBlock)reject) {
-    resolve(nil);
+    [self startAudioSessionImpl:resolve reject:reject];
 }
 
 RCT_EXPORT_METHOD(stopAudioSession:(RCTPromiseResolveBlock)resolve
@@ -185,8 +185,7 @@ RCT_EXPORT_METHOD(stopRingtone:(RCTPromiseResolveBlock)resolve
 
 - (void)startAudioSession:(RCTPromiseResolveBlock)resolve
                    reject:(RCTPromiseRejectBlock)reject {
-    // no-op: CallKit manages audio session activation on iOS
-    resolve(nil);
+    [self startAudioSessionImpl:resolve reject:reject];
 }
 
 - (void)stopAudioSession:(RCTPromiseResolveBlock)resolve
@@ -295,6 +294,17 @@ RCT_EXPORT_METHOD(stopRingtone:(RCTPromiseResolveBlock)resolve
         }
         resolve(nil);
     }];
+}
+
+- (void)startAudioSessionImpl:(RCTPromiseResolveBlock)resolve
+                        reject:(RCTPromiseRejectBlock)reject {
+    NSError *error = nil;
+    BOOL ok = [[CallsBridge shared].audioSession startAudioSessionWithError:&error];
+    if (!ok || error) {
+        reject(@"start_audio_session_failed", error.localizedDescription ?: @"unknown error", error);
+        return;
+    }
+    resolve(nil);
 }
 
 - (void)stopAudioSessionImpl:(RCTPromiseResolveBlock)resolve

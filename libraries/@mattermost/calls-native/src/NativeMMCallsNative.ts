@@ -52,18 +52,19 @@ export type EndCallReason =
   | 'declinedElsewhere';
 
 // Audio route info emitted by onAudioRouteChanged and returned by getAudioRoute.
-export const AudioDeviceValue = {
-    Speakerphone: 'SPEAKER_PHONE',
-    Earpiece: 'EARPIECE',
-    Bluetooth: 'BLUETOOTH',
-    WiredHeadset: 'WIRED_HEADSET',
-    None: 'NONE',
-} as const;
-export type AudioDevice = typeof AudioDeviceValue[keyof typeof AudioDeviceValue];
+export type AudioDeviceType = 'SPEAKER_PHONE' | 'EARPIECE' | 'BLUETOOTH' | 'WIRED_HEADSET' | 'NONE';
+
+export const AudioDevice = {
+    Speakerphone: 'SPEAKER_PHONE' as AudioDeviceType,
+    Earpiece: 'EARPIECE' as AudioDeviceType,
+    Bluetooth: 'BLUETOOTH' as AudioDeviceType,
+    WiredHeadset: 'WIRED_HEADSET' as AudioDeviceType,
+    None: 'NONE' as AudioDeviceType,
+};
 
 export type AudioRoute = Readonly<{
-  selectedAudioDevice: AudioDevice;
-  availableAudioDeviceList: AudioDevice[];
+  selectedAudioDevice: AudioDeviceType;
+  availableAudioDeviceList: AudioDeviceType[];
 }>
 
 // Event names — values must match the native Event enum
@@ -114,7 +115,7 @@ export interface Spec extends TurboModule {
     stopAudioSession: () => Promise<void>;
 
     // Select the output audio route.
-    setAudioRoute: (route: AudioDevice) => Promise<void>;
+    setAudioRoute: (route: AudioDeviceType) => Promise<void>;
 
     // Query the current output route and available devices.
     getAudioRoute: () => Promise<AudioRoute>;

@@ -47,6 +47,20 @@ import WebRTC
     /// uses the same options we set — specifically .allowBluetoothHFP — rather
     /// than its own defaults which don't include Bluetooth options.
     @objc public func configureForCall() {
+        try? configureForCallThrowing()
+    }
+
+    /// Called from JS `startAudioSession()`. On the normal path CallKit already
+    /// called `configureForCall()` via `CXStartCallAction` / `CXAnswerCallAction`,
+    /// so this is a no-op. When CallKit registration failed the session is still
+    /// unconfigured, so we configure it here as a fallback and surface any error.
+    @objc(startAudioSessionWithError:)
+    public func startAudioSession() throws {
+        guard avSession.category != .playAndRecord else { return }
+        try configureForCallThrowing()
+    }
+
+    private func configureForCallThrowing() throws {
         let webRTCConfig = RTCAudioSessionConfiguration()
         webRTCConfig.category = AVAudioSession.Category.playAndRecord.rawValue
         webRTCConfig.categoryOptions = [.allowBluetoothHFP, .allowBluetoothA2DP, .duckOthers]
@@ -66,12 +80,16 @@ import WebRTC
         } catch {
             GekidouLogger.shared.log(.error,
                 "AudioSessionManager: setCategory failed: \(error.localizedDescription)")
+            throw error
         }
     }
 
-    /// Explicitly deactivate the audio session when JS disconnects but
-    /// CallKit's `didDeactivate` has not fired (e.g. in-app end without
-    /// CallKit teardown).
+    /// Called from JS `stopAudioSession` when the RTC connection closes.
+    /// For CallKit-backed calls this runs before `provider(_:didDeactivate:)` arrives —
+    /// the early `setActive(false)` is redundant but harmless: RTCAudioSession
+    /// tolerates a deactivation call on an already-inactive session. When CallKit
+    /// registration failed and `didDeactivate` will never fire, this is the only
+    /// teardown path.
     @objc public func resetSession() {
         do {
             try rtcSession.setActive(false)

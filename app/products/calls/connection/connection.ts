@@ -11,7 +11,7 @@ import {mediaDevices, MediaStream, MediaStreamTrack, registerGlobals, RTCSession
 import {setPreferredAudioRoute} from '@calls/actions/calls';
 import {foregroundServiceStart, foregroundServiceStop} from '@calls/connection/foreground_service';
 import {processMeanOpinionScore, setAudioDeviceInfo} from '@calls/state';
-import {AudioDeviceValue, type AudioDevice, type CallsConnection} from '@calls/types/calls';
+import {AudioDevice, type AudioDeviceType, type CallsConnection} from '@calls/types/calls';
 import {getICEServersConfigs} from '@calls/utils';
 import {WebsocketEvents} from '@constants';
 import {getServerCredentials} from '@init/credentials';
@@ -100,26 +100,30 @@ export async function newConnection(
         }
     }
 
-    let previousAvailableDevices: AudioDevice[] = [];
-    let userSelectedRoute: AudioDevice | null = null;
+    let previousAvailableDevices: AudioDeviceType[] = [];
+    let userSelectedRoute: AudioDeviceType | null = null;
 
-    const getAutoRoute = (available: AudioDevice[]): AudioDevice => {
-        if (available.includes(AudioDeviceValue.Bluetooth)) {
-            return AudioDeviceValue.Bluetooth;
+    const getAutoRoute = (available: AudioDeviceType[]): AudioDeviceType => {
+        if (available.includes(AudioDevice.Bluetooth)) {
+            return AudioDevice.Bluetooth;
         }
-        if (available.includes(AudioDeviceValue.WiredHeadset)) {
-            return AudioDeviceValue.WiredHeadset;
+        if (available.includes(AudioDevice.WiredHeadset)) {
+            return AudioDevice.WiredHeadset;
         }
-        return AudioDeviceValue.Earpiece;
+        return AudioDevice.Earpiece;
     };
 
-    const setUserSelectedAudioRoute = (route: AudioDevice) => {
+    const setUserSelectedAudioRoute = (route: AudioDeviceType) => {
         userSelectedRoute = route;
     };
 
     const ws = new WebSocketClient(serverUrl, client.getWebSocketUrl(), credentials?.token);
 
-    await CallsNative.startAudioSession();
+    try {
+        await CallsNative.startAudioSession();
+    } catch (err) {
+        throw new Error(`calls: failed to start audio session: ${getErrorMessage(err)}`);
+    }
 
     try {
         await ws.initialize();
@@ -370,7 +374,7 @@ export async function newConnection(
             // Re-route when a new device appears OR when the pinned device just
             // disconnected — in both cases the current route may no longer follow
             // the intended priority policy.
-            const isNewDevice = (d: AudioDevice) => !previousAvailableDevices.includes(d);
+            const isNewDevice = (d: AudioDeviceType) => !previousAvailableDevices.includes(d);
             const newDeviceAppeared = available.some(isNewDevice);
             previousAvailableDevices = available;
 

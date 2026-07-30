@@ -4,9 +4,9 @@
 import {NativeEventEmitter, NativeModules, Platform, type EmitterSubscription} from 'react-native';
 
 import {
-    AudioDeviceValue,
+    AudioDevice,
     CallsNativeEvents,
-    type AudioDevice,
+    type AudioDeviceType,
     type AudioRoute,
     type CallActionPayload,
     type CallMutePayload,
@@ -50,10 +50,10 @@ type CallsNativeSpec = Spec & {
 
 const emitter = new NativeEventEmitter(CallsNative as Spec);
 
-export {AudioDeviceValue};
+export {AudioDevice};
 export type {
-    AudioDevice,
     AudioRoute,
+    AudioDeviceType,
     CallsNativeSpec,
     CallActionPayload,
     CallMutePayload,

@@ -57,7 +57,7 @@ import {
     playIncomingCallsRinging,
 } from '@calls/state/actions';
 import {
-    AudioDeviceValue,
+    AudioDevice,
     type Call,
     type CallsState,
     type CurrentCall,
@@ -883,11 +883,11 @@ describe('useCallsState', () => {
 
         const defaultAudioDeviceInfo = {
             availableAudioDeviceList: [],
-            selectedAudioDevice: AudioDeviceValue.None,
+            selectedAudioDevice: AudioDevice.None,
         };
         const newAudioDeviceInfo = {
-            availableAudioDeviceList: [AudioDeviceValue.Speakerphone, AudioDeviceValue.Earpiece],
-            selectedAudioDevice: AudioDeviceValue.Speakerphone,
+            availableAudioDeviceList: [AudioDevice.Speakerphone, AudioDevice.Earpiece],
+            selectedAudioDevice: AudioDevice.Speakerphone,
         };
 
         // setup

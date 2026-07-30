@@ -37,7 +37,7 @@ import {
     setPluginEnabled,
     setScreenShareURL,
 } from '@calls/state';
-import {type AudioDevice, type Call, type CallSession, type CallsConnection, EndCallReturn} from '@calls/types/calls';
+import {type AudioDeviceType, type Call, type CallSession, type CallsConnection, EndCallReturn} from '@calls/types/calls';
 import {areGroupCallsAllowed} from '@calls/utils';
 import {General, Screens} from '@constants';
 import Calls from '@constants/calls';
@@ -364,7 +364,7 @@ export const sendReaction = (emoji: EmojiData) => {
     }
 };
 
-export const setPreferredAudioRoute = async (audio: AudioDevice, fromUser = false) => {
+export const setPreferredAudioRoute = async (audio: AudioDeviceType, fromUser = false) => {
     if (fromUser) {
         connection?.setUserSelectedAudioRoute(audio);
     }

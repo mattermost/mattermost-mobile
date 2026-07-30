@@ -163,7 +163,7 @@ jest.mock('@mattermost/calls-native', () => ({
         onMuteChanged: jest.fn(() => ({remove: jest.fn()})),
         onAudioRouteChanged: jest.fn(() => ({remove: jest.fn()})),
     },
-    AudioDeviceValue: {
+    AudioDevice: {
         Speakerphone: 'SPEAKER_PHONE',
         Earpiece: 'EARPIECE',
         Bluetooth: 'BLUETOOTH',

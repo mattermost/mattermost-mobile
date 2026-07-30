@@ -34,7 +34,7 @@ import {
     type CallsState,
     type ChannelsWithCalls,
     type CurrentCall,
-    AudioDeviceValue,
+    AudioDevice,
     DefaultCallsConfig,
     DefaultCallsState,
 } from '@calls/types/calls';
@@ -1194,7 +1194,7 @@ describe('Actions.Calls', () => {
             newCurrentCall('server1', 'channel-id', 'myUserId');
         });
 
-        await CallsActions.setPreferredAudioRoute(AudioDeviceValue.Bluetooth);
+        await CallsActions.setPreferredAudioRoute(AudioDevice.Bluetooth);
 
         expect(CallsNative.setAudioRoute).toHaveBeenCalledWith('BLUETOOTH');
         expect(getConnectionForTesting()?.setUserSelectedAudioRoute).not.toHaveBeenCalled();
@@ -1211,10 +1211,10 @@ describe('Actions.Calls', () => {
             newCurrentCall('server1', 'channel-id', 'myUserId');
         });
 
-        await CallsActions.setPreferredAudioRoute(AudioDeviceValue.Bluetooth, true);
+        await CallsActions.setPreferredAudioRoute(AudioDevice.Bluetooth, true);
 
         expect(CallsNative.setAudioRoute).toHaveBeenCalledWith('BLUETOOTH');
-        expect(getConnectionForTesting()?.setUserSelectedAudioRoute).toHaveBeenCalledWith(AudioDeviceValue.Bluetooth);
+        expect(getConnectionForTesting()?.setUserSelectedAudioRoute).toHaveBeenCalledWith(AudioDevice.Bluetooth);
 
         await act(async () => {
             CallsActions.leaveCall();

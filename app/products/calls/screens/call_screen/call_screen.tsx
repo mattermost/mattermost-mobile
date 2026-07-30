@@ -45,7 +45,7 @@ import {
     useCallsConfig,
     useIncomingCalls,
 } from '@calls/state';
-import {AudioDeviceValue, type CallSession, type CallsTheme, type CurrentCall} from '@calls/types/calls';
+import {AudioDevice, type CallSession, type CallsTheme, type CurrentCall} from '@calls/types/calls';
 import {getHandsRaised, makeCallsTheme, sortSessions} from '@calls/utils';
 import CompassIcon from '@components/compass_icon';
 import FormattedText from '@components/formatted_text';
@@ -742,7 +742,7 @@ const CallScreen = ({
                                 iconStyle={[
                                     style.buttonIcon,
                                     isLandscape && style.buttonIconLandscape,
-                                    currentCall.audioDeviceInfo.selectedAudioDevice === AudioDeviceValue.Speakerphone && style.buttonOn,
+                                    currentCall.audioDeviceInfo.selectedAudioDevice === AudioDevice.Speakerphone && style.buttonOn,
                                 ]}
                                 buttonTextStyle={style.buttonText}
                                 currentCall={currentCall}

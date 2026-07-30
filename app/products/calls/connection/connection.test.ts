@@ -677,25 +677,25 @@ describe('newConnection', () => {
     };
 
     describe('audio routing', () => {
-        it('should select Bluetooth when available (highest priority)', async () => {
+        it('should select Bluetooth over WiredHeadset and Earpiece (highest priority)', async () => {
             const {listener} = await connectAndGetRouteListener();
             jest.clearAllMocks();
 
             listener({
                 selectedAudioDevice: 'EARPIECE',
-                availableAudioDeviceList: ['BLUETOOTH', 'EARPIECE', 'SPEAKER_PHONE'],
+                availableAudioDeviceList: ['SPEAKER_PHONE', 'EARPIECE', 'WIRED_HEADSET', 'BLUETOOTH'],
             });
 
             expect(CallsNative.setAudioRoute).toHaveBeenCalledWith('BLUETOOTH');
         });
 
-        it('should select WiredHeadset when Bluetooth is not available', async () => {
+        it('should select WiredHeadset over Earpiece when Bluetooth is not available', async () => {
             const {listener} = await connectAndGetRouteListener();
             jest.clearAllMocks();
 
             listener({
                 selectedAudioDevice: 'EARPIECE',
-                availableAudioDeviceList: ['WIRED_HEADSET', 'EARPIECE', 'SPEAKER_PHONE'],
+                availableAudioDeviceList: ['SPEAKER_PHONE', 'EARPIECE', 'WIRED_HEADSET'],
             });
 
             expect(CallsNative.setAudioRoute).toHaveBeenCalledWith('WIRED_HEADSET');
