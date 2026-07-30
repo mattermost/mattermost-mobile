@@ -220,8 +220,8 @@ jobs:
 
   e2e-ios:
     name: machine-${{ matrix.runId }}-os-${{ matrix.deviceOsVersion }}
-    # Experiment: run iOS Detox on macos-26 with a Debug simulator build that
-    # loads the JS bundle from a per-shard Metro packager.
+    # Experiment: move iOS Detox tests to macos-26 and use a release build so no
+    # Metro server is required per shard. The release .app embeds a Hermes bundle.
     runs-on: macos-26
     continue-on-error: true
     timeout-minutes: ${{ inputs.low_bandwidth_mode && 240 || 180 }}
@@ -312,9 +312,11 @@ jobs:
           unzip -o mobile-artifacts/*.zip -d mobile-artifacts/
           # delete zip file
           rm -f mobile-artifacts/*.zip
-          # Debug configs point straight at mobile-artifacts/Mattermost.app (see
-          # detox/.detoxrc.json). The preboot script also installs from here.
-          ls -la mobile-artifacts/Mattermost.app
+          # Detox release configs expect the .app at the original build path;
+          # the preboot script installs from mobile-artifacts, but Detox init
+          # still validates the configured binaryPath.
+          mkdir -p ios/Build/Products/Release-iphonesimulator
+          cp -R mobile-artifacts/Mattermost.app ios/Build/Products/Release-iphonesimulator/Mattermost.app
 
       - name: Prepare Low Bandwidth Environment
         id: prepare-low-bandwidth
@@ -352,53 +354,6 @@ jobs:
       - name: Build Detox Framework Cache
         if: steps.detox-framework-cache.outputs.cache-hit != 'true'
         run: cd detox && npx detox build-framework-cache
-
-      - name: Start Metro Bundler
-        # Debug simulator builds do not embed the JS bundle; start the packager
-        # before the app is launched (prewarm or tests) so the app can load it.
-        run: |
-          npm run start > metro.log 2>&1 &
-          METRO_PID=$!
-          echo "Metro PID: $METRO_PID"
-          echo "METRO_PID=$METRO_PID" >> $GITHUB_ENV
-
-          timeout=120
-          elapsed=0
-          echo "Waiting for Metro bundler to be ready..."
-          while [ $elapsed -lt $timeout ]; do
-            if curl -s http://localhost:8081/status 2>/dev/null | grep -q "packager-status:running"; then
-              echo "✅ Metro bundler is ready after ${elapsed}s (verified via health check)"
-              break
-            elif grep -q "Fast - Scalable - Integrated" metro.log 2>/dev/null; then
-              echo "✅ Metro bundler is ready after ${elapsed}s (verified via logs)"
-              break
-            fi
-            if [ $((elapsed % 10)) -eq 0 ] && [ $elapsed -gt 0 ]; then
-              echo "Still waiting for Metro... (${elapsed}s elapsed)"
-            fi
-            sleep 2
-            elapsed=$((elapsed + 2))
-          done
-
-          if [ $elapsed -ge $timeout ]; then
-            echo "⚠️ Warning: Metro bundler may not be fully ready after ${timeout}s, proceeding anyway"
-            echo "Metro process status:"
-            ps aux | grep -E "metro|node.*start" | grep -v grep || echo "Metro process not found"
-            echo ""
-            echo "Last 30 lines of metro.log:"
-            tail -30 metro.log
-          else
-            echo "Metro is serving on http://localhost:8081"
-            echo "Allowing Metro to fully stabilize (20s)..."
-            sleep 20
-            echo "Verifying Metro can serve bundles..."
-            if curl -s http://localhost:8081/index.ios.bundle 2>/dev/null | grep -q "__d("; then
-              echo "✅ Metro is serving bundles successfully"
-            else
-              echo "⚠️ Warning: Could not verify Metro is serving bundles, proceeding anyway"
-              ps aux | grep -E "metro|node.*start" | grep -v grep || echo "Metro process not found"
-            fi
-          fi
 
       - name: Pre-boot iOS Simulator
         # Detox must pre-warm: a fresh simctl install leaves a pending-install launchd
@@ -471,7 +426,9 @@ jobs:
         run: bash detox/scripts/start_webhook_sidecar.sh
 
       - name: Run Detox E2E Tests
-        # Debug simulator builds rely on the per-shard Metro packager started above.
+        # Experiment: release build embeds the Hermes bundle, so Metro is not
+        # started per shard. This removes a common flake source and speeds up
+        # each shard. Keep the 180min ceiling to match the job timeout.
         timeout-minutes: 180
         continue-on-error: true # We want to run all the tests
         run: |
@@ -486,6 +443,8 @@ jobs:
           # `--` separates Detox args from Jest args; --json --outputFile emits
           # Jest's native JSON report (consumed by the TSIO detox parser) into
           # the existing detox/artifacts/ upload.
+          # Release configs use the embedded bundle; no Metro required.
+          # Handle both debug and release configs so callers can still override.
           case "$DETOX_CONFIG" in
             ios.ipad.debug)
               npm run e2e:ios-ipad-test -- "${SPECS[@]}" -- --json --outputFile=artifacts/jest-results.json
@@ -524,16 +483,6 @@ jobs:
         timeout-minutes: 2
         run: |
           echo "Cleaning up simulator state after tests..."
-
-          # Kill the entire Metro process tree so the job doesn't hang waiting
-          # for orphaned packager processes.
-          if [ -n "$METRO_PID" ]; then
-            echo "Stopping Metro bundler (PID: $METRO_PID) and child processes..."
-            kill -9 -"$METRO_PID" 2>/dev/null || true
-            pkill -9 -f "react-native.*start" 2>/dev/null || true
-            pkill -9 -f "metro" 2>/dev/null || true
-            sleep 1
-          fi
 
           # Terminate app with a timeout — simctl terminate can hang on iOS 26.x
           if [ -n "$SIMULATOR_ID" ]; then

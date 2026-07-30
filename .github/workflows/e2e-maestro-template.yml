@@ -185,41 +185,6 @@ jobs:
       - name: Verify Maestro installation
         run: ~/.maestro/bin/maestro --version
 
-      - name: Start Metro Bundler
-        # The shared iOS simulator build is now a Debug build that loads its JS
-        # bundle from the running packager. Start Metro before the app launches.
-        run: |
-          npm run start > metro.log 2>&1 &
-          METRO_PID=$!
-          echo "Metro PID: $METRO_PID"
-          echo "METRO_PID=$METRO_PID" >> $GITHUB_ENV
-
-          timeout=120
-          elapsed=0
-          echo "Waiting for Metro bundler to be ready..."
-          while [ $elapsed -lt $timeout ]; do
-            if curl -s http://localhost:8081/status 2>/dev/null | grep -q "packager-status:running"; then
-              echo "✅ Metro bundler is ready after ${elapsed}s"
-              break
-            elif grep -q "Fast - Scalable - Integrated" metro.log 2>/dev/null; then
-              echo "✅ Metro bundler is ready after ${elapsed}s (via logs)"
-              break
-            fi
-            if [ $((elapsed % 10)) -eq 0 ] && [ $elapsed -gt 0 ]; then
-              echo "Still waiting for Metro... (${elapsed}s elapsed)"
-            fi
-            sleep 2
-            elapsed=$((elapsed + 2))
-          done
-
-          if [ $elapsed -ge $timeout ]; then
-            echo "⚠️ Metro may not be fully ready after ${timeout}s, proceeding anyway"
-            tail -30 metro.log
-          else
-            echo "Metro is serving on http://localhost:8081"
-            sleep 20
-          fi
-
       - name: Download iOS Simulator Build
         uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
         with:
@@ -430,18 +395,6 @@ jobs:
             --env ADMIN_TOKEN="${ADMIN_TOKEN}" \
             --env MAESTRO_APP_ID="com.mattermost.rnbeta" \
             detox/maestro/flows/account/attach_logs_disabled_when_download_logs_off.yml
-
-      - name: Stop Metro Bundler
-        if: always()
-        run: |
-          # Stop the Metro packager started for the debug simulator build.
-          if [ -n "${METRO_PID:-}" ]; then
-            echo "Stopping Metro bundler (PID: $METRO_PID) and child processes..."
-            kill -9 -"$METRO_PID" 2>/dev/null || true
-            pkill -9 -f "react-native.*start" 2>/dev/null || true
-            pkill -9 -f "metro" 2>/dev/null || true
-            sleep 1
-          fi
 
       - name: Upload Maestro Artifacts
         if: always()

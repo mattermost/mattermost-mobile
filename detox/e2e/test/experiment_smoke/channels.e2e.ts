@@ -50,6 +50,12 @@ describe('Smoke Test - Channels', () => {
         // # Log in to server
         await ServerScreen.connectToServer(serverOneUrl, serverOneDisplayName);
         await LoginScreen.login(testUser);
+
+        // Ensure the channel has propagated into the sidebar before any test body
+        // runs. Without this, the first tap on the header plus button races the
+        // connect->home UITransitionView on iOS (hit-test intercepted) and the
+        // sidebar item isn't present yet on Android. Mirrors the iPad smoke spec.
+        await ChannelListScreen.waitForSidebarPublicChannelDisplayNameVisible(testChannel.name);
     });
 
     beforeEach(async () => {

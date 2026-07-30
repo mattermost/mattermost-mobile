@@ -468,17 +468,11 @@ platform :ios do
 
     UI.message("Building for #{build_arch} architecture on #{host_arch} host")
 
-    # Allow CI callers to request a Debug simulator build for Metro-based E2E runs.
-    # Debug simulator skips JS bundling; the app loads from the running packager.
-    debug_build = options[:debug] == true
-    rel_build_dir = debug_build ? "Debug-iphonesimulator" : "Release-iphonesimulator"
-
     build_ios_unsigned_or_simulator(
       more_xc_args: "-sdk iphonesimulator -destination 'generic/platform=iOS Simulator'",
-      rel_build_dir: rel_build_dir,
+      rel_build_dir: "Release-iphonesimulator",
       output_file: output_file,
       ci_optimized: true,
-      build_for_release: !debug_build,
     )
   end
 
@@ -797,14 +791,13 @@ platform :ios do
     )
   end
 
-  def build_ios_unsigned_or_simulator(more_xc_args:, rel_build_dir:, output_file:, ci_optimized: false, build_for_release: true)
+  def build_ios_unsigned_or_simulator(more_xc_args:, rel_build_dir:, output_file:, ci_optimized: false)
     root_dir = Dir[File.expand_path('..')].first
     ios_build_dir = "#{root_dir}/ios/Build/Products"
-    config_mode = build_for_release ? "Release" : "Debug"
 
     ENV['APP_NAME'] = 'Mattermost'
     ENV['REPLACE_ASSETS'] = 'true'
-    ENV['BUILD_FOR_RELEASE'] = build_for_release ? 'true' : 'false'
+    ENV['BUILD_FOR_RELEASE'] = 'true'
     ENV['APP_SCHEME'] = 'mattermost'
 
     update_settings
@@ -815,7 +808,7 @@ platform :ios do
     end
 
     ci_flags = ci_optimized ? " COMPILER_INDEX_STORE_ENABLE=NO DEBUG_INFORMATION_FORMAT=dwarf" : ""
-    sh "cd #{root_dir}/ios && xcodebuild -workspace Mattermost.xcworkspace -scheme Mattermost -configuration #{config_mode} -parallelizeTargets CODE_SIGN_IDENTITY='' CODE_SIGNING_REQUIRED=NO SYMROOT='#{ios_build_dir}' #{more_xc_args}#{ci_flags}"
+    sh "cd #{root_dir}/ios && xcodebuild -workspace Mattermost.xcworkspace -scheme Mattermost -configuration Release -parallelizeTargets CODE_SIGN_IDENTITY='' CODE_SIGNING_REQUIRED=NO SYMROOT='#{ios_build_dir}' #{more_xc_args}#{ci_flags}"
     sh "cd #{ios_build_dir}/#{rel_build_dir} && zip -r #{output_file} Mattermost.app"
     sh "mv #{ios_build_dir}/#{rel_build_dir}/#{output_file} #{root_dir}"
   end

@@ -46,6 +46,12 @@ describe('Smoke Test - Messaging', () => {
         // # Log in to server
         await ServerScreen.connectToServer(serverOneUrl, serverOneDisplayName);
         await LoginScreen.login(testUser);
+
+        // Ensure the channel has propagated into the sidebar before any test body
+        // runs. Without this, the first ChannelScreen.open() races the initial
+        // sync/render (sidebar item absent — the RCTView fails Detox's visibility
+        // threshold). Mirrors the iPad smoke spec's defensive wait.
+        await ChannelListScreen.waitForSidebarPublicChannelDisplayNameVisible(testChannel.name);
     });
 
     beforeEach(async () => {
