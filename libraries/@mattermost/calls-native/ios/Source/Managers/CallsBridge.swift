@@ -3,6 +3,7 @@
 
 import Foundation
 import Gekidou
+import WebRTC
 
 /// `CallsBridge` is the singleton that:
 ///  - owns the PushKit + CallKit + AVAudioSession managers,
@@ -58,6 +59,13 @@ import Gekidou
             return
         }
         didBootstrap = true
+
+        // Prevent WebRTC from autonomously activating the AVAudioSession
+        // (which would duck the CallKit ringtone via .duckOthers). Instead
+        // we enable the audio unit explicitly in AudioSessionManager.activated
+        // after CallKit hands the session over via didActivate.
+        RTCAudioSession.sharedInstance().useManualAudio = true
+        RTCAudioSession.sharedInstance().isAudioEnabled = false
 
         // Force evaluation of the lazy properties so the underlying registry
         // and provider are allocated now, not when JS first calls in.

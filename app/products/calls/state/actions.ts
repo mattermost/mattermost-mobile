@@ -3,7 +3,7 @@
 
 import {mosThreshold} from '@mattermost/calls/lib/rtc_monitor';
 import CallsNative from '@mattermost/calls-native';
-import {AppState, type AppStateStatus} from 'react-native';
+import {AppState, type AppStateStatus, Platform} from 'react-native';
 
 import {updateThreadFollowing} from '@actions/remote/thread';
 import {needsRecordingAlert} from '@calls/alerts';
@@ -265,6 +265,13 @@ const shouldRing = (callId: string, userStatus: string) => {
 
 export const playIncomingCallsRinging = async (serverUrl: string, callId: string, userStatus: string) => {
     if (!shouldRing(callId, userStatus)) {
+        return;
+    }
+
+    // On iOS, CallKit always handles the ringtone for incoming calls (including
+    // when the app is foregrounded). Playing a second ringtone via startRingtone
+    // would overlap with the CallKit ring at a different volume.
+    if (Platform.OS === 'ios') {
         return;
     }
 

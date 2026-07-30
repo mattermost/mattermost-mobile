@@ -231,11 +231,17 @@ import WebRTC
     ///    RTCAudioSession.sharedInstance.audioSessionDidActivate accordingly."
     @objc func activated(_ audioSession: AVAudioSession) {
         rtcSession.audioSessionDidActivate(audioSession)
+        // Allow WebRTC to initialize its audio unit now that CallKit has
+        // handed over the session. Must come after audioSessionDidActivate
+        // so WebRTC's internal state is consistent before the unit starts.
+        rtcSession.isAudioEnabled = true
         GekidouLogger.shared.log(.info, "AudioSessionManager: forwarded didActivate to RTCAudioSession")
     }
 
     /// Symmetric for deactivation.
     @objc func deactivated(_ audioSession: AVAudioSession) {
+        // Stop WebRTC's audio unit before handing the session back to CallKit.
+        rtcSession.isAudioEnabled = false
         rtcSession.audioSessionDidDeactivate(audioSession)
         GekidouLogger.shared.log(.info, "AudioSessionManager: forwarded didDeactivate to RTCAudioSession")
     }
