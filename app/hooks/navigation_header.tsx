@@ -2,13 +2,17 @@
 // See LICENSE.txt for license information.
 
 import {useNavigation, useRouter} from 'expo-router';
-import React, {useEffect} from 'react';
+import React, {useEffect, useLayoutEffect} from 'react';
 import {Platform, View} from 'react-native';
 
 import NavigationButton from '@components/navigation_button';
+import Header from '@components/navigation_header/header';
+import {useTheme} from '@context/theme';
+import {useDefaultHeaderHeight} from '@hooks/header';
+import {navigateBack} from '@screens/navigation';
 import {typography} from '@utils/typography';
 
-import type {NativeStackNavigationOptions} from '@react-navigation/native-stack';
+import type {NativeStackHeaderProps, NativeStackNavigationOptions} from '@react-navigation/native-stack';
 import type {ScreenProps} from 'react-native-screens';
 
 /**
@@ -43,6 +47,36 @@ export function useNavigationHeader(options: {
             ...(options.animation && {animation}),
         });
     }, [navigation, router, options, showWhenPushed, showWhenRoot, headerOptions, presentation, gestureEnabled, animation]);
+}
+
+/**
+ * Configures the screen to render the app header instead of the platform one.
+ * The app header sizes itself from the safe area insets.
+ * Any `headerRight` the screen registers is forwarded to it.
+ */
+export function useAppNavigationHeader(title: string, hasSearch = false, heightOffset = 0, isLargeTitle = false) {
+    const navigation = useNavigation();
+    const theme = useTheme();
+    const defaultHeight = useDefaultHeaderHeight();
+
+    useLayoutEffect(() => {
+        navigation.setOptions({
+            headerShown: true,
+            presentation: 'card',
+            header: ({options}: NativeStackHeaderProps) => (
+                <Header
+                    defaultHeight={defaultHeight}
+                    hasSearch={hasSearch}
+                    heightOffset={heightOffset}
+                    isLargeTitle={isLargeTitle}
+                    onBackPress={navigateBack}
+                    rightComponent={options.headerRight?.({canGoBack: true})}
+                    theme={theme}
+                    title={title}
+                />
+            ),
+        });
+    }, [navigation, defaultHeight, hasSearch, heightOffset, isLargeTitle, theme, title]);
 }
 
 /**
