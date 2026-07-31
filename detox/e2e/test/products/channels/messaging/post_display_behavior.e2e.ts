@@ -92,19 +92,14 @@ describe('Messaging - Post Display Behavior', () => {
         await waitFor(lastFillerItem).toBeVisible().withTimeout(timeouts.TEN_SEC);
 
         // # Scroll up from mid-screen (bottom edge is occluded by the post-draft input on iOS).
-        // In increments rather than one 5000px drag: a single long synthetic drag dwells on the
-        // post under the start point long enough for its long-press handler to fire, which opens
-        // the post-options sheet over the draft input and makes the send below fail the 100%
-        // visibility check. Every other post-list scroll in this suite uses 50–300px.
-        for (let i = 0; i < 6; i++) {
-            try {
-                // eslint-disable-next-line no-await-in-loop
-                await ChannelScreen.getFlatPostList().scroll(500, 'up', 0.5, 0.5);
-            } catch {
-                // Detox throws when a scroll begins at the content edge — we are at the top.
-                break;
-            }
-        }
+        // Two short scrolls rather than one 5000px drag: a single long synthetic drag dwells on
+        // the post under the start point long enough for its long-press handler to fire, which
+        // opens the post-options sheet over the draft input and makes the send below fail the
+        // 100% visibility check. Every other post-list scroll in this suite uses 50–300px.
+        // 1000px total leaves the bottom while staying well inside the content of a 20-post
+        // channel, so no scroll starts at the edge and no edge-error handling is needed.
+        await ChannelScreen.getFlatPostList().scroll(500, 'up', 0.5, 0.5);
+        await ChannelScreen.getFlatPostList().scroll(500, 'up', 0.5, 0.5);
         await wait(timeouts.ONE_SEC);
 
         // # Close the post-options sheet if a scroll gesture still tripped a long press —
@@ -112,11 +107,16 @@ describe('Messaging - Post Display Behavior', () => {
         // would otherwise occlude the draft input and fail the send with an opaque
         // "view is not visible" error. Probe-and-recover, matching dismissKnownModals().
         // Runs before the assertion below so an open sheet cannot make it pass by occlusion.
+        let postOptionsOpen = true;
         try {
             await waitFor(PostOptionsScreen.postOptionsScreen).toExist().withTimeout(timeouts.HALF_SEC);
-            await PostOptionsScreen.close();
         } catch {
             // Expected path: no sheet was opened by the scroll.
+            postOptionsOpen = false;
+        }
+        if (postOptionsOpen) {
+            // Outside the catch: a failure to close is a real problem, not an absent sheet.
+            await PostOptionsScreen.close();
         }
 
         // * Verify the list actually left the bottom, so the scroll-to-bottom check below is

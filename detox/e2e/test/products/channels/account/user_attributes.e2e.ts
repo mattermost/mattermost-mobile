@@ -48,6 +48,14 @@ describe.skip('Account - User Attributes', () => {
     let fieldIds: UserAttributesFieldIds | undefined;
     let setupFailureReason: string | undefined;
 
+    // Deliberate deviation from the "no shared mutable state between it() blocks" rule:
+    // custom profile attributes are gated on a server feature flag and a set of
+    // instance-wide field definitions, so provisioning them is a slow, instance-scoped
+    // one-time cost that cannot be redone per test without re-polling the flag. The user,
+    // channel and field IDs are therefore created once here. MM-T5781_2 reads the same
+    // values MM-T5781_1 writes through the UI, which is safe because both assert the
+    // API-seeded values — but any new test added to this suite must not depend on
+    // ordering, and anything needing a clean profile needs its own Setup.apiInit().
     beforeAll(async () => {
         const provision = await probeUserAttributesProvision(siteOneUrl);
         if (!provision.ready) {
