@@ -134,8 +134,9 @@ describe('Messaging - Message Delete', () => {
         await ChannelScreen.back();
     });
 
-    // Skip: failed CI run 29954156963 (both) — BACK_INDEX / delete from thread
-    it.skip('MM-T4784_3 - should be able to delete a post message from reply thread', async () => {
+    // Unskipped (SEC-11015): BACK_INDEX flake resolved by the shared
+    // NavigationHeader.tapBackButton helper landed in SEC-10993.
+    it('MM-T4784_3 - should be able to delete a post message from reply thread', async () => {
         // # Open a channel screen, post a message, and tap on the post to open reply thread
         const message = `Message ${getRandomId()}`;
         await ChannelScreen.open(channelsCategory, testChannel.name);

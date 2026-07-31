@@ -62,8 +62,11 @@ describe('Search - Search Message Post Actions', () => {
         await HomeScreen.logout();
     });
 
-    // Skip: failed CI run 29954156963 (both) — BACK_INDEX / edit-reply-delete from search
-    it.skip('MM-T5294_10 - should be able to edit, reply to, and delete a searched message from search results screen', async () => {
+    // Unskipped (SEC-11015): BACK_INDEX flake resolved by the shared
+    // NavigationHeader.tapBackButton helper landed in SEC-10993.
+    // (Also tracked under SEC-10996 for cascade isolation — separate mechanism;
+    // if this regresses on cascade, re-skip and leave to SEC-10996.)
+    it('MM-T5294_10 - should be able to edit, reply to, and delete a searched message from search results screen', async () => {
         // # Open a channel screen, post a message, go back to channel list screen, and open search messages screen
         const searchTerm = getRandomId();
         const message = `Message ${searchTerm}`;

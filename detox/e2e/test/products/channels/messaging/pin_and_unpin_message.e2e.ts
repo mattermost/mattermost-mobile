@@ -150,8 +150,9 @@ describe('Messaging - Pin and Unpin Message', () => {
         await ChannelScreen.back();
     });
 
-    // Skip: failed CI run 29954156963 (both) — BACK_INDEX / pin on thread
-    it.skip('MM-T4865_2 - should be able to pin/unpin a message via post options on thread screen', async () => {
+    // Unskipped (SEC-11015): BACK_INDEX flake resolved by the shared
+    // NavigationHeader.tapBackButton helper landed in SEC-10993.
+    it('MM-T4865_2 - should be able to pin/unpin a message via post options on thread screen', async () => {
         // # Open a channel screen, post a message, tap on post to open thread, open post options for message, and tap on pin to channel option
         const message = `Message ${getRandomId()}`;
         await ChannelScreen.open(channelsCategory, testChannel.name);
