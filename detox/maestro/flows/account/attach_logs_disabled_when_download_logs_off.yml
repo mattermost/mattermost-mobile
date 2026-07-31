@@ -34,6 +34,12 @@ appId: ${MAESTRO_APP_ID}
     timeout: 10000
 - tapOn:
     id: "account.settings.option"
+# Report a Problem can sit below the fold on small Android viewports (CI 59ec6ae).
+- scrollUntilVisible:
+    element:
+      id: "settings.report_problem.option"
+    direction: DOWN
+    timeout: 15000
 - extendedWaitUntil:
     visible:
       id: "settings.report_problem.option"

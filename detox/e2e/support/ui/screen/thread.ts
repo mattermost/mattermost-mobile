@@ -12,7 +12,7 @@ import {
     SendButton,
 } from '@support/ui/component';
 import {PostOptionsScreen} from '@support/ui/screen';
-import {isAndroid, longPressWithScrollRetry, timeouts, wait, waitForElementToBeVisible, waitForElementToExist} from '@support/utils';
+import {isAndroid, longPressWithScrollRetry, safeEnableSynchronization, timeouts, wait, waitForElementToBeVisible, waitForElementToExist} from '@support/utils';
 import {by, element, expect, waitFor} from 'detox';
 
 class ThreadScreen {
@@ -113,6 +113,7 @@ class ThreadScreen {
     toBeVisible = async () => {
         const timeout = isAndroid() ? timeouts.HALF_MIN : timeouts.TEN_SEC;
         await waitForElementToExist(this.threadScreen, timeout);
+        await waitForElementToExist(this.postInput, timeouts.TEN_SEC);
 
         return this.threadScreen;
     };
@@ -121,11 +122,12 @@ class ThreadScreen {
         await waitForElementToExist(this.backButton, timeouts.TEN_SEC);
 
         // Prefer the topmost back when thread is stacked over channel (two headers).
-        // Fall back to index 0 when only one back button exists (most thread flows).
+        // Always create a fresh matcher per attempt — chaining atIndex() on a shared
+        // element mutates it (e.g. atIndex(0) after atIndex(1) becomes "index 0 of index 1").
         try {
-            await this.backButton.atIndex(1).tap();
+            await element(by.id(this.testID.backButton)).atIndex(1).tap();
         } catch {
-            await this.backButton.atIndex(0).tap();
+            await element(by.id(this.testID.backButton)).atIndex(0).tap();
         }
         await waitFor(this.threadScreen).not.toBeVisible().withTimeout(timeouts.TEN_SEC);
 
@@ -153,13 +155,11 @@ class ThreadScreen {
 
         // On Android, long-press on the inner text element — more reliable than the
         // compound-matched post container, which can silently swallow the gesture.
-        const longPressTarget = isAndroid()
-            ? element(by.text(text).withAncestor(by.id(`${this.testID.threadScreenPrefix}post_list.post.${postId}`)))
-            : postListPostItem;
+        const longPressTarget = isAndroid()? element(by.text(text).withAncestor(by.id(`${this.testID.threadScreenPrefix}post_list.post.${postId}`))): postListPostItem;
 
         await longPressWithScrollRetry(
             longPressTarget,
-            this.postList.getFlatList(),
+            by.id(this.postList.testID.flatList),
             PostOptionsScreen.postOptionsScreen,
         );
         await wait(timeouts.TWO_SEC);
@@ -190,6 +190,15 @@ class ThreadScreen {
                 await this.postList.getFlatList().swipe('up', 'fast', 0.3);
             } catch { /* ignore — post list may be too short to scroll */ }
             await wait(timeouts.ONE_SEC);
+        } else {
+            try {
+                await this.postList.getFlatList().swipe('down', 'slow', 0.1);
+            } catch {
+                try {
+                    await element(by.id('navigation.header.title')).tap({x: 1, y: 1});
+                } catch { /* ignore */ }
+            }
+            await wait(timeouts.ONE_SEC);
         }
 
         await device.disableSynchronization();
@@ -202,7 +211,7 @@ class ThreadScreen {
                 timeouts.HALF_MIN,
             );
         } finally {
-            await device.enableSynchronization();
+            await safeEnableSynchronization();
         }
     };
 

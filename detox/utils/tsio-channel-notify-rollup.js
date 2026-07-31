@@ -16,7 +16,11 @@
 
 const {webhookBucketForReportName} = require('./build-tsio-job-config');
 const {parseArgs} = require('./cli-args');
-const {notifyCmtChannel, resolveWebhookUrl} = require('./cmt-channel-notify');
+const {
+    fetchPerJobCountsFromConsolidated,
+    notifyCmtChannel,
+    resolveWebhookUrl,
+} = require('./cmt-channel-notify');
 const {
     mintOidcToken,
     beginGroup,
@@ -75,6 +79,55 @@ function mergeDetails(details) {
     };
 }
 
+const COUNT_KEYS = ['passed', 'failed', 'skipped', 'flaky'];
+
+/**
+ * Merge per-leg spec counts across jobs.
+ *
+ * Each job owns its own TSIO group (`mobile-main-detox-ios`, …), and the consolidated
+ * endpoint is scoped to one group name, so counts must be fetched once per job with
+ * that job's identity. Querying the rollup bucket (`mobile-main`) instead returns no
+ * specs, which renders every leg as ⚠️ no-results.
+ *
+ * @param {Object} params
+ * @param {string} params.baseUrl
+ * @param {Array<{identity: object, detail: object|null}>} params.results
+ * @param {Function} [params.fetchCounts] - injectable for tests
+ * @param {Function} [params.warn]
+ * @returns {Promise<Record<string, {passed: number, failed: number, skipped: number, flaky: number}>>}
+ */
+async function collectPerJobCounts({
+    baseUrl,
+    results,
+    fetchCounts = fetchPerJobCountsFromConsolidated,
+    warn = console.warn,
+}) {
+    const merged = {};
+    for (const {identity, detail} of results) {
+        if (!detail) {
+            continue;
+        }
+
+        let counts;
+        try {
+            counts = await fetchCounts(baseUrl, identity, detail);
+        } catch (err) {
+            warn(`tsio-channel-notify-rollup: no per-leg counts for ${identity.name}: ${err.message}`);
+            continue;
+        }
+
+        for (const [job, jobCounts] of Object.entries(counts || {})) {
+            if (!merged[job]) {
+                merged[job] = {passed: 0, failed: 0, skipped: 0, flaky: 0};
+            }
+            for (const key of COUNT_KEYS) {
+                merged[job][key] += jobCounts[key] || 0;
+            }
+        }
+    }
+    return merged;
+}
+
 async function main() {
     const args = parseArgs(process.argv);
     const raw = args['job-configs'] || process.env.JOB_CONFIGS || '';
@@ -114,25 +167,27 @@ async function main() {
         return;
     }
 
-    const details = [];
+    const results = [];
     for (const cfg of entries) {
         const identity = cfg.composite_identity;
         const total = cfg.total_reports_expected || 1;
         try {
             const reportId = await beginGroup(baseUrl, idToken, identity, total);
             const detail = await pollGroup(baseUrl, reportId, pollAttempts);
-            details.push(detail);
+            results.push({identity, detail});
         } catch (err) {
             console.warn(`tsio-channel-notify-rollup: skip ${identity.name}: ${err.message}`);
-            details.push(null);
+            results.push({identity, detail: null});
         }
     }
 
-    const detail = mergeDetails(details);
+    const detail = mergeDetails(results.map((r) => r.detail));
+    const perJobCounts = await collectPerJobCounts({baseUrl, results});
 
     // The bucket name has no single TSIO group of its own (each job owns
-    // mobile-<flow>-<job>), so the rollup links to the workflow run.
-    const reportUrl = buildWorkflowRunUrl(rollupIdentity);
+    // mobile-<flow>-<job>), so the rollup links to the workflow run and each leg
+    // row deep-links to its own TSIO report.
+    const runUrl = buildWorkflowRunUrl(rollupIdentity);
     const hasFailures = (detail.test_stats.failed || 0) > 0 ||
         (detail.reports || []).some((r) => r.status && r.status !== 'complete' && r.status !== 'completed');
 
@@ -146,7 +201,8 @@ async function main() {
         baseUrl,
         compositeIdentity: rollupIdentity,
         detail,
-        reportUrl,
+        runUrl,
+        perJobCounts,
         upstreamJobsSucceeded: upstreamSucceeded,
         hasFailures,
         webhookUrl,
@@ -160,4 +216,4 @@ if (require.main === module) {
     });
 }
 
-module.exports = {bucketIdentity, mergeDetails};
+module.exports = {bucketIdentity, mergeDetails, collectPerJobCounts};

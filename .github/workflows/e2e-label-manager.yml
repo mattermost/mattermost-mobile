@@ -7,9 +7,11 @@
 #      is superseded by the `concurrency` group in e2e-detox-pr.yml when the new
 #      dispatch lands, so nothing needs cancelling here.
 #      When E2E/Override is set it instead only strips the run labels (no dispatch)
-#      and re-posts the bypass on the new head SHA — commit statuses are keyed by
-#      SHA, so without that re-post the pushed commit has no e2e-test/* statuses
-#      and required checks would block the PR.
+#      and hands off to repost-override-status, which re-posts the bypass on the
+#      new head SHA — commit statuses are keyed by SHA, so without that re-post the
+#      pushed commit has no e2e-test/* statuses and required checks would block the
+#      PR. The re-post is a separate job so PR-authored action code never shares a
+#      runner with the PAT.
 #
 #   2. add-e2e-run-label (opened):
 #      Add E2E/Run unless already present. Skips when E2E/Override is set.
@@ -54,8 +56,8 @@ jobs:
     permissions:
       issues: write
       pull-requests: write
-      contents: read
-      statuses: write
+    outputs:
+      e2e_override: ${{ steps.refresh.outputs.e2e_override }}
     steps:
       - name: Remove and re-add E2E/Run for Matterwick
         id: refresh
@@ -115,18 +117,28 @@ jobs:
               labels: ['E2E/Run'],
             });
 
-      # Override is SHA-scoped: a commit pushed after the label was applied has no
-      # e2e-test/* statuses, so a required check would block it. Matterwick is not
-      # dispatched here (run labels were stripped), so re-post the bypass on the new
-      # head SHA. Idempotent with the label-manager's `labeled` post.
-      - name: Checkout for override-status
-        if: steps.refresh.outputs.e2e_override == 'true'
-        uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
+  # Override is SHA-scoped: a commit pushed after the label was applied has no
+  # e2e-test/* statuses, so a required check would block it. Matterwick is not
+  # dispatched (run labels were stripped), so re-post the bypass on the new head
+  # SHA. Idempotent with the label-manager's `labeled` post.
+  #
+  # Separate job on purpose. Checking out the PR and running a local action means
+  # running PR-authored code, so it must not share a runner with the step that
+  # receives MATTERMOST_BUILD_GH_TOKEN. This job holds no secret and only the two
+  # permissions the status post needs.
+  repost-override-status:
+    needs: refresh-e2e-run-label
+    if: needs.refresh-e2e-run-label.outputs.e2e_override == 'true'
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: read
+      statuses: write
+    steps:
+      - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
         with:
           persist-credentials: false
 
       - name: Re-post E2E/Override success on new commit
-        if: steps.refresh.outputs.e2e_override == 'true'
         uses: ./.github/actions/e2e-override-status
         with:
           commit_sha: ${{ github.event.pull_request.head.sha }}

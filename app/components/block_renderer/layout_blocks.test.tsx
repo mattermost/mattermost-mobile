@@ -563,6 +563,25 @@ describe('layout_blocks', () => {
 
             expect(result.getByTestId('block-switch.image-block')).toHaveTextContent(/unset$/);
         });
+
+        it('should clamp measured layout width at zero when padding exceeds width', () => {
+            const result = renderWithContext(
+                <ContainerBlock
+                    {...getContainerProps({
+                        type: 'container',
+                        border: true,
+                        content: [{type: 'image', url: 'https://example.com/a.png'}],
+                    })}
+                />,
+            );
+
+            const padding = containerStyles.containerBorder.padding;
+            fireEvent(getOuterContainerView(result)!, 'layout', {
+                nativeEvent: {layout: {width: padding, height: 100, x: 0, y: 0}},
+            });
+
+            expect(result.getByTestId('block-switch.image-block')).toHaveTextContent('https://example.com/a.png|0');
+        });
     });
 
     describe('ColumnSetBlock', () => {
