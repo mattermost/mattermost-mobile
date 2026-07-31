@@ -311,7 +311,12 @@ const stopIncomingCallsRinging = () => {
 // device can only be in one call at a time (mirrors the incoming-ring state above).
 //
 // seconds=0 loops the 'ringback' asset indefinitely (CallsNative behaviour on both platforms).
+//
+// The channel currently playing the ringback tone, or null if none is playing.
 let ringbackChannelId: string | null = null;
+
+// The channel of a call that's already been answered (another session joined),
+// so ringback must never (re)start for it — even if that session later leaves.
 let ringbackHandledChannelId: string | null = null;
 let ringbackTimeout: ReturnType<typeof setTimeout> | null = null;
 
