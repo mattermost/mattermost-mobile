@@ -63,18 +63,23 @@ export function useAppNavigationHeader(title: string, hasSearch = false, heightO
         navigation.setOptions({
             headerShown: true,
             presentation: 'card',
-            header: ({options}: NativeStackHeaderProps) => (
-                <Header
-                    defaultHeight={defaultHeight}
-                    hasSearch={hasSearch}
-                    heightOffset={heightOffset}
-                    isLargeTitle={isLargeTitle}
-                    onBackPress={navigateBack}
-                    rightComponent={options.headerRight?.({canGoBack: true})}
-                    theme={theme}
-                    title={title}
-                />
-            ),
+            header: ({back, options}: NativeStackHeaderProps) => {
+                const canGoBack = Boolean(back);
+
+                return (
+                    <Header
+                        defaultHeight={defaultHeight}
+                        hasSearch={hasSearch}
+                        heightOffset={heightOffset}
+                        isLargeTitle={isLargeTitle}
+                        onBackPress={navigateBack}
+                        rightComponent={options.headerRight?.({canGoBack})}
+                        showBackButton={canGoBack}
+                        theme={theme}
+                        title={title}
+                    />
+                );
+            },
         });
     }, [navigation, defaultHeight, hasSearch, heightOffset, isLargeTitle, theme, title]);
 }

@@ -270,15 +270,23 @@ describe('navigation_header', () => {
             return header as NonNullable<NativeStackNavigationOptions['header']>;
         };
 
-        const headerProps = (headerRight?: NativeStackNavigationOptions['headerRight']) => {
-            const element = lastHeader()({options: {headerRight}} as NativeStackHeaderProps);
-            return (element as ReactElement<ComponentProps<typeof Header>>).props;
+        // React Navigation only supplies `back` when there is a screen to return to
+        const inBackStack = {title: 'Channel', href: undefined};
+
+        type HeaderArgs = {
+            back?: NativeStackHeaderProps['back'];
+            headerRight?: NativeStackNavigationOptions['headerRight'];
         };
 
-        const renderHeader = (headerRight?: NativeStackNavigationOptions['headerRight']) => {
-            const element = lastHeader()({options: {headerRight}} as NativeStackHeaderProps);
-            return renderWithIntlAndTheme(<>{element}</>);
+        const headerElement = ({back, headerRight}: HeaderArgs = {}) => {
+            return lastHeader()({back, options: {headerRight}} as NativeStackHeaderProps);
         };
+
+        const headerProps = (args?: HeaderArgs) => {
+            return (headerElement(args) as ReactElement<ComponentProps<typeof Header>>).props;
+        };
+
+        const renderHeader = (args?: HeaderArgs) => renderWithIntlAndTheme(<>{headerElement(args)}</>);
 
         it('should replace the platform header with a custom one', () => {
             renderHook(() => useAppNavigationHeader('Table'));
@@ -302,16 +310,36 @@ describe('navigation_header', () => {
         it('should forward the headerRight registered by the screen', () => {
             renderHook(() => useAppNavigationHeader('Code'));
 
-            const {getByTestId} = renderHeader(() => <Text testID='screen.header.right'>{'Copy'}</Text>);
+            const {getByTestId} = renderHeader({headerRight: () => <Text testID='screen.header.right'>{'Copy'}</Text>});
 
             expect(getByTestId('screen.header.right')).toBeTruthy();
+        });
+
+        it('should hide the back button when there is nothing to go back to', () => {
+            renderHook(() => useAppNavigationHeader('Table'));
+
+            const {queryByTestId} = renderHeader();
+
+            expect(queryByTestId('navigation.header.back')).toBeNull();
+        });
+
+        it.each([
+            ['in a back stack', inBackStack, true],
+            ['at the root of the stack', undefined, false],
+        ])('should tell headerRight it can go back when %s', (_label, back, expected) => {
+            const headerRight = jest.fn(() => null);
+            renderHook(() => useAppNavigationHeader('Table'));
+
+            headerElement({back, headerRight});
+
+            expect(headerRight).toHaveBeenCalledWith({canGoBack: expected});
         });
 
         it('should navigate back when the back button is pressed', () => {
             mockCanGoBack.mockReturnValue(true);
             renderHook(() => useAppNavigationHeader('Table'));
 
-            const {getByTestId} = renderHeader();
+            const {getByTestId} = renderHeader({back: inBackStack});
             fireEvent.press(getByTestId('navigation.header.back'));
 
             expect(mockBack).toHaveBeenCalledTimes(1);
