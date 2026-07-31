@@ -8,6 +8,7 @@ import InCallManager from 'react-native-incall-manager';
 import {updateThreadFollowing} from '@actions/remote/thread';
 import {needsRecordingAlert} from '@calls/alerts';
 import {endNativeCall} from '@calls/native_call';
+import {CallTone, playCallTone} from '@calls/sounds';
 import {
     getCallsConfig,
     getCallsState,
@@ -343,6 +344,8 @@ export const userJoinedCall = (serverUrl: string, channelId: string, userId: str
         return;
     }
 
+    const previousParticipantCount = Object.keys(callsState.calls[channelId].sessions).length;
+
     const nextCall = {
         ...callsState.calls[channelId],
         sessions: {...callsState.calls[channelId].sessions},
@@ -373,6 +376,9 @@ export const userJoinedCall = (serverUrl: string, channelId: string, userId: str
         if (userId === nextCurrentCall.myUserId && !nextCurrentCall.connected) {
             nextCurrentCall.connected = true;
             nextCurrentCall.mySessionId = sessionId;
+            playCallTone(CallTone.JoinSelf);
+        } else if (userId !== nextCurrentCall.myUserId && currentCall.connected && previousParticipantCount < Calls.JOIN_SOUND_PARTICIPANTS_THRESHOLD) {
+            playCallTone(CallTone.JoinUser);
         }
 
         setCurrentCall(nextCurrentCall);
@@ -477,10 +483,21 @@ export const setCurrentCallConnected = (channelId: string, sessionId: string) =>
         mySessionId: sessionId,
     };
     setCurrentCall(nextCurrentCall);
+
+    // Only play here if the RTC connection confirmed before the user_joined ws
+    // event did (see userJoinedCall) - whichever is first wins, never both.
+    if (!currentCall.connected) {
+        playCallTone(CallTone.JoinSelf);
+    }
 };
 
 export const myselfLeftCall = async () => {
+    const wasConnected = getCurrentCall()?.connected ?? false;
     setCurrentCall(null);
+
+    if (wasConnected) {
+        playCallTone(CallTone.LeaveSelf);
+    }
 
     if (NavigationStore.isScreenInStack(Screens.CALL)) {
         await dismissBottomSheet();

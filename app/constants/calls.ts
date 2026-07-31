@@ -27,6 +27,9 @@ const CALL_QUALITY_RESET_MS = toMilliseconds({minutes: 1});
 const CAPTION_TIMEOUT = 5000;
 const RING_LENGTH = 30000;
 
+// Below this many existing participants, joiners hear a join_user chime (matches webapp parity).
+const JOIN_SOUND_PARTICIPANTS_THRESHOLD = 8;
+
 export enum Ringtone {
     Calm = 'Calm',
     Dynamic = 'Dynamic',
@@ -65,4 +68,5 @@ export default {
     RING_LENGTH,
     RINGTONE_DEFAULT,
     RINGTONE_VIBRATE_PATTERN,
+    JOIN_SOUND_PARTICIPANTS_THRESHOLD,
 };

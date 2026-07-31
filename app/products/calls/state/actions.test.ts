@@ -82,11 +82,22 @@ jest.mock('@calls/alerts');
 jest.mock('@calls/native_call', () => ({
     endNativeCall: jest.fn(),
 }));
-
-jest.mock('@constants/calls', () => ({
-    ...jest.requireActual('@constants/calls'),
-    CALL_QUALITY_RESET_MS: 100,
+jest.mock('@calls/sounds', () => ({
+    ...jest.requireActual('@calls/sounds'),
+    playCallTone: jest.fn(),
 }));
+
+jest.mock('@constants/calls', () => {
+    const actual = jest.requireActual('@constants/calls');
+    return {
+        __esModule: true,
+        ...actual,
+        default: {
+            ...actual.default,
+            CALL_QUALITY_RESET_MS: 100,
+        },
+    };
+});
 
 jest.mock('@actions/remote/thread', () => ({
     updateThreadFollowing: jest.fn(() => Promise.resolve({})),
@@ -1799,5 +1810,106 @@ describe('useCallsState', () => {
         currentCall = result.current[1];
         assert.equal(currentCall?.captions.session1.text, 'caption 3');
         assert.equal(currentCall?.captions.session2.text, 'caption 2 user 2');
+    });
+
+    describe('call tones', () => {
+        const {playCallTone} = require('@calls/sounds');
+
+        beforeEach(() => {
+            jest.clearAllMocks();
+        });
+
+        it('plays join_self when the user_joined ws event confirms our own session first', () => {
+            act(() => {
+                setCallsState('server1', {...DefaultCallsState, calls: {'channel-1': call1}});
+                newCurrentCall('server1', 'channel-1', 'myUserId');
+            });
+
+            act(() => userJoinedCall('server1', 'channel-1', 'myUserId', 'mySessionId'));
+            expect(playCallTone).toHaveBeenCalledWith('join_self');
+            expect(playCallTone).toHaveBeenCalledTimes(1);
+
+            // Another of our own sessions joining the same call shouldn't replay it.
+            act(() => userJoinedCall('server1', 'channel-1', 'myUserId', 'otherDeviceSessionId'));
+            expect(playCallTone).toHaveBeenCalledTimes(1);
+        });
+
+        it('plays join_self via setCurrentCallConnected when the RTC connection confirms first', () => {
+            act(() => {
+                setCallsState('server1', {...DefaultCallsState, calls: {'channel-1': call1}});
+                newCurrentCall('server1', 'channel-1', 'myUserId');
+            });
+
+            act(() => setCurrentCallConnected('channel-1', 'mySessionId'));
+            expect(playCallTone).toHaveBeenCalledWith('join_self');
+            expect(playCallTone).toHaveBeenCalledTimes(1);
+
+            // A later user_joined ws event for our own already-connected session shouldn't replay it.
+            act(() => userJoinedCall('server1', 'channel-1', 'myUserId', 'mySessionId'));
+            expect(playCallTone).toHaveBeenCalledTimes(1);
+        });
+
+        it('plays join_user when someone else joins a call we are already connected to, below the threshold', () => {
+            act(() => {
+                setCallsState('server1', {...DefaultCallsState, calls: {'channel-1': call1}});
+                setCurrentCall({...DefaultCurrentCall, connected: true, serverUrl: 'server1', myUserId: 'myUserId', mySessionId: 'mySessionId', ...call1});
+            });
+
+            act(() => userJoinedCall('server1', 'channel-1', 'user-3', 'session3'));
+            expect(playCallTone).toHaveBeenCalledWith('join_user');
+            expect(playCallTone).toHaveBeenCalledTimes(1);
+        });
+
+        it('does not play join_user once the call is at or above the participants threshold', () => {
+            const bigCall: Call = {
+                ...call1,
+                sessions: Object.fromEntries(Array.from({length: 8}, (_, i) => [`session-${i}`, {sessionId: `session-${i}`, userId: `user-${i}`, muted: false, raisedHand: 0}])),
+            };
+            act(() => {
+                setCallsState('server1', {...DefaultCallsState, calls: {'channel-1': bigCall}});
+                setCurrentCall({...DefaultCurrentCall, connected: true, serverUrl: 'server1', myUserId: 'myUserId', mySessionId: 'mySessionId', ...bigCall});
+            });
+
+            act(() => userJoinedCall('server1', 'channel-1', 'user-9', 'session-9'));
+            expect(playCallTone).not.toHaveBeenCalled();
+        });
+
+        it('does not play join_user for a call we are not connected to', () => {
+            act(() => {
+                setCallsState('server1', {...DefaultCallsState, calls: {'channel-1': call1}});
+            });
+
+            act(() => userJoinedCall('server1', 'channel-1', 'user-3', 'session3'));
+            expect(playCallTone).not.toHaveBeenCalled();
+        });
+
+        it('plays leave_self when a connected call disconnects', () => {
+            act(() => {
+                setCurrentCall({...DefaultCurrentCall, connected: true, serverUrl: 'server1', myUserId: 'myUserId', mySessionId: 'mySessionId', ...call1});
+            });
+
+            act(() => {
+                myselfLeftCall();
+            });
+            expect(playCallTone).toHaveBeenCalledWith('leave_self');
+            expect(playCallTone).toHaveBeenCalledTimes(1);
+        });
+
+        it('does not play leave_self for a call that never connected, or an already-left call', () => {
+            act(() => {
+                setCurrentCall({...DefaultCurrentCall, connected: false, serverUrl: 'server1', myUserId: 'myUserId', ...call1});
+            });
+            act(() => {
+                myselfLeftCall();
+            });
+            expect(playCallTone).not.toHaveBeenCalled();
+
+            // Redundant teardown (e.g. userLeftCall's own session-left path firing after
+            // the local disconnect already cleared currentCall) shouldn't replay it either.
+            act(() => {
+                myselfLeftCall();
+            });
+            expect(playCallTone).not.toHaveBeenCalled();
+        });
     });
 });

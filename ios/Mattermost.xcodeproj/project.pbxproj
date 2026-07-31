@@ -168,6 +168,9 @@
 		83ABFD132C1C90D90029685B /* calls_cheerful.mp3 in Resources */ = {isa = PBXBuildFile; fileRef = 83ABFD0F2C1C90D90029685B /* calls_cheerful.mp3 */; };
 		83ABFD142C1C90D90029685B /* calls_calm.mp3 in Resources */ = {isa = PBXBuildFile; fileRef = 83ABFD102C1C90D90029685B /* calls_calm.mp3 */; };
 		83ABFD152C1C90D90029685B /* calls_urgent.mp3 in Resources */ = {isa = PBXBuildFile; fileRef = 83ABFD112C1C90D90029685B /* calls_urgent.mp3 */; };
+		5F7FECE067F83F9A68D00739 /* join_self.mp3 in Resources */ = {isa = PBXBuildFile; fileRef = 89E488A4C843C4E641085AD2 /* join_self.mp3 */; };
+		A09FA6904449E833632157C7 /* join_user.mp3 in Resources */ = {isa = PBXBuildFile; fileRef = 22227D1FDDC50E6239C5493D /* join_user.mp3 */; };
+		DBD3747A02CE61A894D80FFA /* leave_self.mp3 in Resources */ = {isa = PBXBuildFile; fileRef = 58953D53E829BEB3BB6CEEFB /* leave_self.mp3 */; };
 		A8404C71A72745D3D79CF299 /* Pods_MattermostShare.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 46F51987161143CBA45CB13A /* Pods_MattermostShare.framework */; };
 		A94508A396424B2DB778AFE9 /* OpenSans-SemiBold.ttf in Resources */ = {isa = PBXBuildFile; fileRef = E5C16B14E1CE4868886A1A00 /* OpenSans-SemiBold.ttf */; };
 		C9A107102BBD7C8700753CDC /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = C9A1070F2BBD7C8700753CDC /* PrivacyInfo.xcprivacy */; };
@@ -375,6 +378,9 @@
 		83ABFD0F2C1C90D90029685B /* calls_cheerful.mp3 */ = {isa = PBXFileReference; lastKnownFileType = audio.mp3; name = calls_cheerful.mp3; path = ../assets/sounds/calls_cheerful.mp3; sourceTree = "<group>"; };
 		83ABFD102C1C90D90029685B /* calls_calm.mp3 */ = {isa = PBXFileReference; lastKnownFileType = audio.mp3; name = calls_calm.mp3; path = ../assets/sounds/calls_calm.mp3; sourceTree = "<group>"; };
 		83ABFD112C1C90D90029685B /* calls_urgent.mp3 */ = {isa = PBXFileReference; lastKnownFileType = audio.mp3; name = calls_urgent.mp3; path = ../assets/sounds/calls_urgent.mp3; sourceTree = "<group>"; };
+		89E488A4C843C4E641085AD2 /* join_self.mp3 */ = {isa = PBXFileReference; lastKnownFileType = audio.mp3; name = join_self.mp3; path = ../assets/sounds/join_self.mp3; sourceTree = "<group>"; };
+		22227D1FDDC50E6239C5493D /* join_user.mp3 */ = {isa = PBXFileReference; lastKnownFileType = audio.mp3; name = join_user.mp3; path = ../assets/sounds/join_user.mp3; sourceTree = "<group>"; };
+		58953D53E829BEB3BB6CEEFB /* leave_self.mp3 */ = {isa = PBXFileReference; lastKnownFileType = audio.mp3; name = leave_self.mp3; path = ../assets/sounds/leave_self.mp3; sourceTree = "<group>"; };
 		9D9253EA23925A9CCA9D3BA7 /* Pods-MattermostShare.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-MattermostShare.debug.xcconfig"; path = "Target Support Files/Pods-MattermostShare/Pods-MattermostShare.debug.xcconfig"; sourceTree = "<group>"; };
 		A2E822D11329CB23A14952CC /* Pods-Mattermost.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-Mattermost.debug.xcconfig"; path = "Target Support Files/Pods-Mattermost/Pods-Mattermost.debug.xcconfig"; sourceTree = "<group>"; };
 		BC977883E2624E05975CA65B /* OpenSans-Regular.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = "OpenSans-Regular.ttf"; path = "../assets/fonts/OpenSans-Regular.ttf"; sourceTree = "<group>"; };
@@ -473,6 +479,9 @@
 				83ABFD0F2C1C90D90029685B /* calls_cheerful.mp3 */,
 				83ABFD0E2C1C90D90029685B /* calls_dynamic.mp3 */,
 				83ABFD112C1C90D90029685B /* calls_urgent.mp3 */,
+				89E488A4C843C4E641085AD2 /* join_self.mp3 */,
+				22227D1FDDC50E6239C5493D /* join_user.mp3 */,
+				58953D53E829BEB3BB6CEEFB /* leave_self.mp3 */,
 				BE17F630DB5D41FD93F32D22 /* OpenSans-LightItalic.ttf */,
 				BC977883E2624E05975CA65B /* OpenSans-Regular.ttf */,
 				E5C16B14E1CE4868886A1A00 /* OpenSans-SemiBold.ttf */,
@@ -1221,6 +1230,9 @@
 				83ABFD122C1C90D90029685B /* calls_dynamic.mp3 in Resources */,
 				83ABFD152C1C90D90029685B /* calls_urgent.mp3 in Resources */,
 				83ABFD142C1C90D90029685B /* calls_calm.mp3 in Resources */,
+				5F7FECE067F83F9A68D00739 /* join_self.mp3 in Resources */,
+				A09FA6904449E833632157C7 /* join_user.mp3 in Resources */,
+				DBD3747A02CE61A894D80FFA /* leave_self.mp3 in Resources */,
 				7FB31F8B2710996D0032E2E5 /* OpenSans-Regular.ttf in Resources */,
 				7FB31F8E2710996D0032E2E5 /* compass-icons.ttf in Resources */,
 				58495E36BF1A4EAB93609E57 /* Metropolis-SemiBold.ttf in Resources */,
