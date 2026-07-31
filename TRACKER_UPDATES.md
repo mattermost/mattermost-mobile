@@ -18,3 +18,18 @@ Append-only notes for a human to copy into the
   No reusable hit-test helper landed — the mechanism is specific to this
   close-swipe start point; Tasks 2.2/2.3 check their own symptoms (per runbook).
   Android deferred to CI.
+
+- **SEC-11017** (server list swipe actions unhittable on iOS, MM-T4691_5/6/7) —
+  Owner: QA, verification pending CI 3-server shards. Status: investigated but NOT
+  fixed or unskipped. The tests are double-gated — `(isIos() ? it.skip : itWithThreeServers)`
+  — and the runbook says leave the 3-server env gate alone (tracked under SEC-11004).
+  The test already has iOS handling (waitFor Remove/Logout toBeVisible(100) after the
+  swipe-reveal, with a comment that Logout overlaps Remove during the reveal animation),
+  yet CI 30000635898 still reports the revealed action unhittable. Local verification is
+  blocked: itWithThreeServers needs 3 distinct servers (hasThreeDistinctServers), and
+  this env has one — so the test cannot run locally regardless of the iOS skip. Per rule 6
+  + the evidence-first rule, the iOS skip was NOT removed and no swipe-reveal fix was
+  guessed without an artifact. Skip comments updated to point the next investigator
+  (who can run 3-server shards) at the SEC-11010 conclusion (Detox-only tap/swipe start
+  point in a clipped or overlapped region) to check the CI artifact against. No code
+  change beyond the comments.
