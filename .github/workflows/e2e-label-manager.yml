@@ -23,6 +23,17 @@
 #      (see .github/actions/e2e-override-label), so a late result cannot re-red
 #      a check the maintainer deliberately bypassed.
 #
+#   4. Honor E2E/Verified (labeled/unlabeled E2E/Verified):
+#      A maintainer applies this after reading a real E2E failure and judging it
+#      known flake, not a regression. Marks only the currently-failing e2e-test/*
+#      contexts success, keeping the real pass/fail description and tagging who
+#      verified it — passing platforms are left untouched. Removing the label
+#      resets exactly the contexts this action touched (matched by a marker in
+#      the description) back to pending, so the waiver never outlives the label
+#      and never clobbers a platform it didn't verify. Does not carry across a
+#      push: a new commit gets a fresh run and a fresh human judgment, unlike
+#      E2E/Override.
+#
 # Fork PR guard (github.event.pull_request.head.repo.full_name == github.repository)
 # is applied per-step. Fork PR contexts only get a read-only GITHUB_TOKEN, so
 # addLabels / removeLabel would all 403. Mandatory E2E for fork PRs is enforced
@@ -265,4 +276,35 @@ jobs:
           commit_sha: ${{ github.event.pull_request.head.sha }}
           state: pending
           description: E2E/Override removed — re-run E2E for a real result
+          target_url: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+
+      # E2E/Verified is a narrower waiver than E2E/Override: a maintainer has read
+      # a real failure and judged it flaky, so only the currently-failing
+      # e2e-test/* contexts are marked success — a platform that is actually
+      # green is left alone.
+      - name: Publish success on flaky-verified E2E contexts
+        if: >-
+          github.event.pull_request.head.repo.full_name == github.repository
+          && github.event.action == 'labeled'
+          && github.event.label.name == 'E2E/Verified'
+        uses: ./.github/actions/e2e-verified-status
+        with:
+          commit_sha: ${{ github.event.pull_request.head.sha }}
+          mode: apply
+          actor: ${{ github.event.sender.login }}
+          target_url: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+
+      # Reset exactly what apply touched (matched by the marker in its own
+      # description), not every required context — a platform that was never
+      # verified must not be blanked back to pending just because the label
+      # was removed.
+      - name: Reset E2E contexts verified flaky when E2E/Verified is removed
+        if: >-
+          github.event.pull_request.head.repo.full_name == github.repository
+          && github.event.action == 'unlabeled'
+          && github.event.label.name == 'E2E/Verified'
+        uses: ./.github/actions/e2e-verified-status
+        with:
+          commit_sha: ${{ github.event.pull_request.head.sha }}
+          mode: reset
           target_url: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
