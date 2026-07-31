@@ -52,7 +52,7 @@ import TestHelper from '@test/test_helper';
 import {convertToNotificationData} from '@utils/notification';
 
 import {backgroundNotification} from './notifications';
-import {fetchPosts, fetchPostsAround, fetchPostsBefore, fetchPostsForChannel, refreshPostsForChannel} from './post';
+import {fetchPosts, fetchPostsAround, fetchPostsBefore, fetchPostsForChannel, fetchPostsSince, refreshPostsForChannel} from './post';
 
 import type ServerDataOperator from '@database/operator/server_data_operator';
 
@@ -490,11 +490,35 @@ describe('PROBE 7: a thread-reply push on a channel with no local history', () =
         expect(await renderedPosts()).toHaveLength(0);
 
         // On this branch #9970 refuses to trust the watermark when nothing renders, so the channel
-        // recovers with a page fetch that actually renders the history. Verified against the
-        // pre-#9970 line, which asks getPostsSince(200) here and renders nothing.
+        // recovers with a page fetch that actually renders the history. Upstream this line asks
+        // getPostsSince(200) and renders nothing -- but see PROBE 7b: the page-zero fallback heals
+        // that within the same screen visit, so upstream the blank is transient, not permanent.
         await fetchPostsForChannel(serverUrl, channelId);
         expect(mockClient.getPosts).toHaveBeenCalled();
         expect(mockClient.getPostsSince).not.toHaveBeenCalled();
+        expect(await intervals()).toHaveLength(1);
+        expect((await renderedPosts()).map((p) => p.createAt).sort((a, b) => a - b)).toEqual([100, 105, 110]);
+    });
+});
+
+describe('PROBE 7b: does that blank channel survive, upstream?', () => {
+    it('no: the page-zero fallback heals it within the same screen visit', async () => {
+        const history = [post('seed-100', 100), post('seed-105', 105), post('seed-110', 110)];
+        const reply = post('reply', 200, {root_id: 'seed-100'});
+        seedServer([...history, reply]);
+
+        await pushThreadReply(reply);
+        expect(await watermark()).toBe(200);
+        expect(await intervals()).toHaveLength(0);
+
+        // Model the pre-#9970 fetchPostsForChannel, which trusts the watermark and asks for changes
+        // since 200: nothing comes back, so the channel still renders nothing.
+        await fetchPostsSince(serverUrl, channelId, 200);
+        expect(await renderedPosts()).toHaveLength(0);
+
+        // But the rendered list is empty, so channel_post_list fetches page zero, which does not use
+        // the watermark at all. The blank is transient, not permanent.
+        await fetchPosts(serverUrl, channelId);
         expect(await intervals()).toHaveLength(1);
         expect((await renderedPosts()).map((p) => p.createAt).sort((a, b) => a - b)).toEqual([100, 105, 110]);
     });
