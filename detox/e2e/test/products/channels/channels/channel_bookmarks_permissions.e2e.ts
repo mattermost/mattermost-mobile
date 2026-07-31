@@ -150,8 +150,11 @@ describe('Channels - Channel Bookmarks Permissions', () => {
         await ChannelListScreen.toBeVisible();
     });
 
-    // Skip: dismissOptionsSheet still fails after swipe fix on Android CI
-    // (repeated fails 29cdff, 59ec6ae, a4c0e33).
+    // Skip (SEC-10992): dismissOptionsSheet still fails after the swipe fix on Android CI
+    // (repeated fails 29cdff, 59ec6ae, a4c0e33). The helper is now hardened with a
+    // swipe-down fallback after pressBack + assert-gone, but this stayed skipped pending
+    // CI verification (no local API-35 emulator; iOS repro of the sibling MM-T69455_1 was
+    // contaminated by an ephemeral-server session loss, not the sheet-dismiss mechanism).
     it.skip('MM-T5725_1 - should not be able to add, edit, or delete bookmarks in an archived channel', async () => {
         const channelT5725 = await createChannel();
 

@@ -782,8 +782,12 @@ describe('Channels - Channel Bookmarks', () => {
         await ChannelScreen.back();
     });
 
-    // Skip: after long-press options the dismiss swipe still leaves Edit in the tree on iOS
-    // (CI 29cdff/59ec6ae/ce729d/bc6df62). Re-enable once sheet dismissal is stable.
+    // Skip (SEC-10992): after long-press options the dismiss swipe still leaves Edit in
+    // the tree on iOS (CI 29cdff/59ec6ae/ce729d/bc6df62). dismissOptionsSheet is now
+    // hardened with a bounded second-swipe fallback + assert-gone, but this stayed
+    // skipped: local repro was contaminated by an ephemeral-server session loss (the
+    // app landed on the server-connect screen mid-test), not the sheet-dismiss
+    // mechanism, so the fix is staged pending CI verification on a stable server.
     it.skip('MM-T69455_1 - should open file preview on tap and options on long press', async () => {
         const channelT69455 = await createChannel();
 

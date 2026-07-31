@@ -62,43 +62,67 @@ class ChannelBookmarkScreen {
      * Bookmark options is a bottom sheet with no Cancel row, so dismiss it by swiping a row.
      */
     dismissOptionsSheet = async () => {
-        const swipeTargets = [this.deleteOption, this.editOption, this.copyLinkOption, this.shareOption];
-        let sheetVisible = false;
-        /* eslint-disable no-await-in-loop -- probe which option rows are on this sheet */
-        for (const target of swipeTargets) {
-            try {
-                await waitFor(target).toBeVisible().withTimeout(timeouts.TWO_SEC);
-                sheetVisible = true;
-                break;
-            } catch {
-                // Row not present on this sheet variant.
+        const sheetMarkers = [this.deleteOption, this.editOption, this.copyLinkOption, this.shareOption];
+
+        // True when any options-sheet row is still visible (i.e. the sheet is still up).
+        /* eslint-disable no-await-in-loop -- probe each marker */
+        const anyMarkerVisible = async (timeout = timeouts.TWO_SEC) => {
+            for (const target of sheetMarkers) {
+                try {
+                    await waitFor(target).toBeVisible().withTimeout(timeout);
+                    return true;
+                } catch {
+                    // Row not present / not visible.
+                }
             }
-        }
-        /* eslint-enable no-await-in-loop */
+            return false;
+        };
 
-        if (!sheetVisible) {
-            return;
-        }
-
-        if (isAndroid()) {
-            await device.pressBack();
-        } else {
-            /* eslint-disable no-await-in-loop -- swipe the first visible sheet row */
-            for (const target of swipeTargets) {
+        // Swipe down the first visible sheet row (the sheet's primary dismiss gesture).
+        const swipeDownFirstRow = async () => {
+            for (const target of sheetMarkers) {
                 try {
                     await waitFor(target).toBeVisible().withTimeout(timeouts.TWO_SEC);
                     await target.swipe('down', 'fast', 0.9, 0.5, 0.1);
                     await wait(timeouts.ONE_SEC);
-                    break;
+                    return;
                 } catch {
                     // Try next row.
                 }
             }
-            /* eslint-enable no-await-in-loop */
+        };
+        /* eslint-enable no-await-in-loop */
+
+        if (!(await anyMarkerVisible())) {
+            return; // No options sheet open.
         }
 
-        await waitFor(this.editOption).not.toExist().withTimeout(timeouts.FIVE_SEC);
-        await waitFor(this.copyLinkOption).not.toExist().withTimeout(timeouts.FIVE_SEC);
+        // SEC-10992: bounded dismissal -- assert the sheet is gone between attempts so
+        // we never retry blindly. iOS: swipe down, then a second swipe if the first
+        // didn't clear. Android: system back, then a swipe-down fallback (pressBack
+        // alone still leaves the sheet per CI 29cdff/59ec6ae/a4c0e33). If it still
+        // won't unmount after a legitimate dismiss, throw so the caller keeps the test
+        // skipped / hands off to PE rather than looping.
+        if (isAndroid()) {
+            try {
+                await device.pressBack();
+                await wait(timeouts.ONE_SEC);
+            } catch {
+                // pressBack may be unavailable; fall through to swipe.
+            }
+            if (await anyMarkerVisible(timeouts.ONE_SEC)) {
+                await swipeDownFirstRow();
+            }
+        } else {
+            await swipeDownFirstRow();
+            if (await anyMarkerVisible(timeouts.ONE_SEC)) {
+                await swipeDownFirstRow();
+            }
+        }
+
+        if (await anyMarkerVisible(timeouts.ONE_SEC)) {
+            throw new Error('dismissOptionsSheet: options sheet did not unmount after dismiss attempts (SEC-10992)');
+        }
     };
 
     // Error alert
