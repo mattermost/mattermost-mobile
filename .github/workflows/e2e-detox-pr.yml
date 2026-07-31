@@ -11,7 +11,8 @@
 #
 # Newer dispatches cancel older in-flight runs on the same branch via the workflow
 # `concurrency` group below, so the latest SHA starts immediately instead of
-# queueing behind a long run.
+# queueing behind a long run. MAIN/MASTER dispatches are keyed per commit instead,
+# so consecutive merges to main never cancel each other.
 #
 # Phase 1 — builds & setup (parallel):
 #   build-ios-simulator, build-android-apk-maestro, build-android-apk (Detox debug APK),
@@ -82,11 +83,18 @@ permissions:
   id-token: write
   actions: read
 
-# One E2E run per branch: a newer Matterwick dispatch supersedes the one already
-# in flight. GitHub cancels the older run as soon as this one is created, which
-# is earlier (and simpler) than cancelling from a step inside the new run.
+# One E2E run per branch for PRs, but per-COMMIT for main/release dispatches:
+# Matterwick dispatches MAIN/MASTER runs with ref=main (matterwick
+# server/push_events.go:319), so keying on github.ref alone would make a later
+# merge cancel an earlier commit's still-running E2E — and a cancelled run never
+# writes its build-cache entry, which is the scope PRs read from.
+#
+# For a PR the group stays per-branch (github.ref is the PR head branch, unique
+# per PR), so a newer Matterwick dispatch still supersedes the one already in
+# flight — cancelled by GitHub as the new run is created, which is earlier and
+# simpler than cancelling from a step inside the new run.
 concurrency:
-  group: e2e-${{ github.ref }}
+  group: e2e-${{ (inputs.run_type == 'MAIN' || inputs.run_type == 'MASTER') && inputs.MOBILE_VERSION || github.ref }}
   cancel-in-progress: true
 
 env:
@@ -174,12 +182,10 @@ jobs:
     steps:
       # Per-branch cancellation used to happen here via cancel-e2e-runs (removed —
       # see the workflow-level `concurrency:` group above, which supersedes it via
-      # native GitHub Actions cancellation). That guarded against force-cancelling
-      # main-branch runs when no pr_number was given; the same risk applies to the
-      # concurrency group if Matterwick ever dispatches MAIN/MASTER runs against a
-      # shared ref instead of a per-commit one — confirm with Matterwick's dispatch
-      # code before relying on it, or key the group by MOBILE_VERSION for those
-      # run types instead of github.ref.
+      # native GitHub Actions cancellation). That step also guarded main-branch runs
+      # against cancelling each other; the concurrency group keys MAIN/MASTER by
+      # MOBILE_VERSION for the same reason, since Matterwick dispatches those with
+      # ref=main.
       - name: Check PR labels for E2E/Override
         id: policy
         uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9.0.0

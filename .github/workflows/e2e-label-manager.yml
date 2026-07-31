@@ -22,11 +22,14 @@
 #      Add E2E/Run unless already present. Skips when E2E/Override is set.
 #
 #   5. Honor E2E/Override (labeled E2E/Override):
-#      Removes all E2E/Run* labels so no new run is dispatched, then posts success
-#      on every required e2e-test/* context. In-flight runs are NEVER cancelled —
-#      they finish and their finalize step re-checks the label before posting
-#      (see .github/actions/e2e-override-label), so a late result cannot re-red
-#      a check the maintainer deliberately bypassed.
+#      Removes all E2E/Run* labels so no new run is dispatched, cancels the
+#      in-flight run, then posts success on every required e2e-test/* context.
+#      The run is cancelled because merging the PR triggers Matterwick's `closed`
+#      cleanup, which destroys the test servers mid-run — the surviving run would
+#      report infra teardown as a test failure into TSIO's per-spec history. A
+#      late post from the cancelled run cannot re-red the check anyway: its
+#      finalize step re-checks the label (see .github/actions/e2e-override-label)
+#      and tsio-report-status converts failure → success while it is set.
 #
 #   6. Honor E2E/Verified (labeled/unlabeled E2E/Verified):
 #      A maintainer applies this after reading a real E2E failure and judging it
@@ -41,8 +44,8 @@
 #
 # Fork PR guard (github.event.pull_request.head.repo.full_name == github.repository)
 # is applied per-step. Fork PR contexts only get a read-only GITHUB_TOKEN, so
-# addLabels / removeLabel would all 403. Mandatory E2E for fork PRs is enforced
-# separately.
+# addLabels / removeLabel / run cancellation would all 403. Mandatory E2E for fork
+# PRs is enforced separately.
 #
 # Base-branch guard: auto E2E/Run refresh only runs for PRs targeting main.
 # Stacked PRs (base != main) are skipped so Matterwick is not triggered on every
@@ -472,12 +475,14 @@ jobs:
       issues: write
       pull-requests: write
       statuses: write
+      # Override cancels the in-flight run (see the cancel step below).
+      actions: write
     steps:
       - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
         with:
           persist-credentials: false
 
-      # ── Honor E2E/Override: strip run labels, never cancel in-flight E2E ────
+      # ── Honor E2E/Override: strip run labels, then cancel in-flight E2E ─────
       - name: Honor E2E/Override
         if: >-
           github.event.action == 'labeled'
@@ -506,9 +511,80 @@ jobs:
               }
             }
 
+      # Letting the run finish would not preserve a usable signal: merging the PR
+      # fires Matterwick's `closed` cleanup (matterwick server/pull_request.go:98 →
+      # e2e_tests.go:663 → destroyE2EInstances), which deletes the test servers out
+      # from under a still-running job regardless of whether the run labels were
+      # removed. The run then reports a red to TSIO that is infra teardown, not a
+      # test result — and TSIO per-spec history is what engineers read to decide
+      # whether a spec also fails on main, so recording infra failures there
+      # degrades flake detection for everyone. Cancel instead.
+      #
+      # Runs BEFORE the success post below so our status write lands last. A
+      # cancelled run's finalize step may still post after us; overrideCommitStatus
+      # in detox/utils/tsio-report-status.js converts failure → success while the
+      # label is set, so the check stays green and only the description differs.
+      - name: Cancel in-flight E2E runs
+        if: >-
+          github.event.pull_request.head.repo.full_name == github.repository
+          && github.event.action == 'labeled'
+          && github.event.label.name == 'E2E/Override'
+        uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9.0.0
+        with:
+          script: |
+            const owner = context.repo.owner;
+            const repo = context.repo.repo;
+            const prNumber = context.payload.pull_request.number;
+            const headBranch = context.payload.pull_request.head.ref;
+            const ACTIVE_RUN_STATUSES = ['in_progress', 'queued', 'waiting'];
+
+            const {data: workflows} = await github.rest.actions.listRepoWorkflows({owner, repo});
+            const e2eWorkflow = workflows.workflows.find((workflow) => workflow.name === 'E2E');
+            if (!e2eWorkflow) {
+              core.info('No E2E workflow found in repository');
+              return;
+            }
+
+            const runsToCancel = new Map();
+            for (const status of ACTIVE_RUN_STATUSES) {
+              const {data} = await github.rest.actions.listWorkflowRuns({
+                owner, repo, workflow_id: e2eWorkflow.id, status, branch: headBranch,
+              });
+              for (const run of data.workflow_runs) {
+                const matchesPr = !run.pull_requests?.length ||
+                  run.pull_requests.some((pr) => pr.number === prNumber);
+                if (!matchesPr) {
+                  core.info(`Skipping run ${run.id}: not associated with PR #${prNumber}`);
+                  continue;
+                }
+                runsToCancel.set(run.id, run);
+              }
+            }
+
+            if (runsToCancel.size === 0) {
+              core.info(`No active E2E runs found for PR #${prNumber} on branch ${headBranch}`);
+              return;
+            }
+
+            for (const run of runsToCancel.values()) {
+              core.info(`Cancelling E2E run ${run.id} (${run.status}, sha ${run.head_sha}) — E2E/Override applied`);
+              try {
+                await github.rest.actions.cancelWorkflowRun({owner, repo, run_id: run.id});
+                // Normal cancel skips jobs with if: always(). Run-level force-cancel
+                // stops those too (e.g. build-ios-simulator on macos-26).
+                await github.request('POST /repos/{owner}/{repo}/actions/runs/{run_id}/force-cancel', {
+                  owner, repo, run_id: run.id,
+                });
+              } catch (err) {
+                core.warning(`Cancelling run ${run.id}: ${err.message}`);
+              }
+            }
+
       # Override means "merge without E2E results", so every required context has to
-      # go green on the PR head SHA — whether E2E never ran, already failed, or is
-      # still running. Statuses are keyed by SHA, so this also clears earlier failures.
+      # go green on the PR head SHA — whether E2E never ran, already failed, or was
+      # just cancelled above. Statuses are keyed by SHA, so this also clears earlier
+      # failures. No statuses are posted from the cancel step; this is the single
+      # writer.
       - name: Publish success on required E2E contexts
         if: >-
           github.event.pull_request.head.repo.full_name == github.repository
