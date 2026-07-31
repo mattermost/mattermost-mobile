@@ -187,7 +187,7 @@ jobs:
           description: >-
             ${{ needs.resolve-e2e-policy.outputs.skip_reason == 'non-main-base'
               && 'E2E skipped — PR does not target main'
-              || 'E2E waived by E2E/Override — not run' }}
+              || 'e2e tests overridden' }}
           target_url: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
 
   calculate-tsio-identity:

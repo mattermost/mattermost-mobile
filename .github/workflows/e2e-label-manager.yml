@@ -6,6 +6,10 @@
 #      Remove + re-add E2E/Run via PAT. The in-flight run for the previous commit
 #      is superseded by the `concurrency` group in e2e-detox-pr.yml when the new
 #      dispatch lands, so nothing needs cancelling here.
+#      When E2E/Override is set it instead only strips the run labels (no dispatch)
+#      and re-posts the bypass on the new head SHA — commit statuses are keyed by
+#      SHA, so without that re-post the pushed commit has no e2e-test/* statuses
+#      and required checks would block the PR.
 #
 #   2. add-e2e-run-label (opened):
 #      Add E2E/Run unless already present. Skips when E2E/Override is set.
@@ -50,8 +54,11 @@ jobs:
     permissions:
       issues: write
       pull-requests: write
+      contents: read
+      statuses: write
     steps:
       - name: Remove and re-add E2E/Run for Matterwick
+        id: refresh
         uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9.0.0
         with:
           github-token: ${{ secrets.MATTERMOST_BUILD_GH_TOKEN }}
@@ -82,6 +89,9 @@ jobs:
                   }
                 }
               }
+              // Signal the re-post step to carry the override onto this new commit,
+              // whose SHA has no e2e-test/* statuses yet (statuses are keyed by SHA).
+              core.setOutput('e2e_override', 'true');
               return;
             }
 
@@ -104,6 +114,23 @@ jobs:
               owner, repo, issue_number: prNumber,
               labels: ['E2E/Run'],
             });
+
+      # Override is SHA-scoped: a commit pushed after the label was applied has no
+      # e2e-test/* statuses, so a required check would block it. Matterwick is not
+      # dispatched here (run labels were stripped), so re-post the bypass on the new
+      # head SHA. Idempotent with the label-manager's `labeled` post.
+      - name: Checkout for override-status
+        if: steps.refresh.outputs.e2e_override == 'true'
+        uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
+        with:
+          persist-credentials: false
+
+      - name: Re-post E2E/Override success on new commit
+        if: steps.refresh.outputs.e2e_override == 'true'
+        uses: ./.github/actions/e2e-override-status
+        with:
+          commit_sha: ${{ github.event.pull_request.head.sha }}
+          target_url: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
 
   add-e2e-run-label:
     if: >-
@@ -166,8 +193,6 @@ jobs:
     permissions:
       issues: write
       pull-requests: write
-      # Read-only: this job no longer cancels runs, it only lists them to comment.
-      actions: read
       statuses: write
     steps:
       - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
@@ -215,60 +240,6 @@ jobs:
         with:
           commit_sha: ${{ github.event.pull_request.head.sha }}
           target_url: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
-
-      - name: Note in-flight E2E runs left running
-        if: >-
-          github.event.pull_request.head.repo.full_name == github.repository
-          && github.event.action == 'labeled'
-          && github.event.label.name == 'E2E/Override'
-        continue-on-error: true
-        uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9.0.0
-        env:
-          HEAD_BRANCH: ${{ github.event.pull_request.head.ref }}
-        with:
-          script: |
-            const owner = context.repo.owner;
-            const repo = context.repo.repo;
-            const prNumber = context.payload.pull_request.number;
-
-            const {data: workflows} = await github.rest.actions.listRepoWorkflows({owner, repo});
-            const e2eWorkflow = workflows.workflows.find((workflow) => workflow.name === 'E2E');
-            if (!e2eWorkflow) {
-              return;
-            }
-
-            const activeRuns = [];
-            for (const status of ['in_progress', 'queued', 'waiting']) {
-              const {data} = await github.rest.actions.listWorkflowRuns({
-                owner, repo,
-                workflow_id: e2eWorkflow.id,
-                status,
-                branch: process.env.HEAD_BRANCH,
-              });
-              for (const run of data.workflow_runs) {
-                const matches = !run.pull_requests?.length ||
-                  run.pull_requests.some((pr) => pr.number === prNumber);
-                if (matches) {
-                  activeRuns.push(run);
-                }
-              }
-            }
-
-            if (activeRuns.length === 0) {
-              core.info(`No in-flight E2E runs for PR #${prNumber}.`);
-              return;
-            }
-
-            const links = activeRuns.map((run) => `- [run ${run.id}](${run.html_url}) (${run.status})`).join('\n');
-            await github.rest.issues.createComment({
-              owner, repo, issue_number: prNumber,
-              body: [
-                '**E2E/Override applied** — required `e2e-test/*` checks were set to success.',
-                '',
-                'The following E2E run(s) were left running rather than cancelled; their results will be reported to TSIO but will not re-block this PR while the label is set:',
-                links,
-              ].join('\n'),
-            });
 
       # Taking the escape hatch away must re-block the PR: without this the
       # success posted above would linger on the head SHA forever.

@@ -23,7 +23,7 @@ inputs:
   description:
     description: Commit status description
     required: false
-    default: E2E bypassed — E2E/Override applied
+    default: e2e tests overridden
   target_url:
     description: Link shown on the check
     required: false
