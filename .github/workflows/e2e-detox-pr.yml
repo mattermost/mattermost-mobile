@@ -9,8 +9,9 @@
 # main-branch pushes, RELEASE). Renaming the file would break the dispatch URL
 # above, so it needs a coordinated Matterwick change.
 #
-# Newer dispatches cancel older in-flight runs on the same branch (resolve-e2e-policy
-# first step) so the latest SHA starts immediately instead of queueing behind a long run.
+# Newer dispatches cancel older in-flight runs on the same branch via the workflow
+# `concurrency` group below, so the latest SHA starts immediately instead of
+# queueing behind a long run.
 #
 # Phase 1 — builds & setup (parallel):
 #   build-ios-simulator, build-android-apk-maestro, build-android-apk (Detox debug APK),
@@ -80,6 +81,13 @@ permissions:
   # must grant these.
   id-token: write
   actions: read
+
+# One E2E run per branch: a newer Matterwick dispatch supersedes the one already
+# in flight. GitHub cancels the older run as soon as this one is created, which
+# is earlier (and simpler) than cancelling from a step inside the new run.
+concurrency:
+  group: e2e-${{ github.ref }}
+  cancel-in-progress: true
 
 env:
   # Changing this switches the iOS build path. Bump CACHE_VERSION in
@@ -157,31 +165,21 @@ jobs:
     name: Resolve E2E policy (Override label)
     runs-on: ubuntu-24.04
     permissions:
-      actions: write
       contents: read
       pull-requests: read
       issues: read
-      statuses: write
     outputs:
       e2e_override: ${{ steps.policy.outputs.e2e_override }}
+      skip_reason: ${{ steps.policy.outputs.skip_reason }}
     steps:
-      - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
-        with:
-          persist-credentials: false
-      # PR-only. On a main push there is no pr_number, so runMatchesPr() matches
-      # every run on the branch and a later merge would force-cancel the E2E run of
-      # an earlier one — leaving main commits with no E2E result, and leaving the
-      # `main` cache scope unwritten (cancelled runs never reach the save step),
-      # which is what PRs read from. Every commit landing on main gets its own run.
-      - name: Cancel superseded E2E runs on this branch
-        if: inputs.run_type != 'MAIN' && inputs.run_type != 'MASTER'
-        uses: ./.github/actions/cancel-e2e-runs
-        with:
-          head_branch: ${{ github.ref_name }}
-          pr_number: ${{ inputs.pr_number }}
-          max_run_id_exclusive: ${{ github.run_id }}
-          reason: E2E superseded by newer dispatch
-
+      # Per-branch cancellation used to happen here via cancel-e2e-runs (removed —
+      # see the workflow-level `concurrency:` group above, which supersedes it via
+      # native GitHub Actions cancellation). That guarded against force-cancelling
+      # main-branch runs when no pr_number was given; the same risk applies to the
+      # concurrency group if Matterwick ever dispatches MAIN/MASTER runs against a
+      # shared ref instead of a per-commit one — confirm with Matterwick's dispatch
+      # code before relying on it, or key the group by MOBILE_VERSION for those
+      # run types instead of github.ref.
       - name: Check PR labels for E2E/Override
         id: policy
         uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9.0.0
@@ -213,6 +211,7 @@ jobs:
             if (!prNumber) {
               core.info('No PR number available — assuming E2E/Override is not set.');
               core.setOutput('e2e_override', 'false');
+              core.setOutput('skip_reason', '');
               return;
             }
 
@@ -224,6 +223,7 @@ jobs:
             if (pr.base.ref !== 'main') {
               core.info(`PR #${prNumber} targets ${pr.base.ref}, not main — skipping E2E.`);
               core.setOutput('e2e_override', 'true');
+              core.setOutput('skip_reason', 'non-main-base');
               return;
             }
 
@@ -235,6 +235,35 @@ jobs:
             const override = labels.some((label) => label.name === 'E2E/Override');
             core.info(`PR #${prNumber} E2E/Override=${override}`);
             core.setOutput('e2e_override', override ? 'true' : 'false');
+            core.setOutput('skip_reason', override ? 'override-label' : '');
+
+  # Every other job is skipped when the policy says "no E2E", and a skipped job
+  # posts nothing — the required e2e-test/* contexts would stay absent and block
+  # the merge forever. Post success here so the override actually lets it merge.
+  # Also covers the dispatch race where the label lands after Matterwick dispatched.
+  # Idempotent with the label manager, which posts the same statuses on `labeled`.
+  post-e2e-override-status:
+    name: Publish success on required E2E contexts (override)
+    runs-on: ubuntu-24.04
+    needs: resolve-e2e-policy
+    if: >-
+      needs.resolve-e2e-policy.outputs.e2e_override == 'true'
+      && (inputs.run_type == 'PR' || inputs.run_type == 'MAIN' || inputs.run_type == 'MASTER')
+    permissions:
+      contents: read
+      statuses: write
+    steps:
+      - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
+        with:
+          persist-credentials: false
+      - uses: ./.github/actions/e2e-override-status
+        with:
+          commit_sha: ${{ inputs.MOBILE_VERSION }}
+          description: >-
+            ${{ needs.resolve-e2e-policy.outputs.skip_reason == 'non-main-base'
+              && 'E2E skipped — PR does not target main'
+              || 'e2e tests overridden' }}
+          target_url: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
 
   calculate-tsio-identity:
     name: Calculate TSIO per-job identities
@@ -791,6 +820,9 @@ jobs:
       statuses: write
       actions: read
       id-token: write
+      # Finalize re-reads the PR labels for E2E/Override; a reusable workflow
+      # cannot escalate past the caller, so grant it here too.
+      issues: read
     if: |
       !cancelled() &&
       needs.resolve-e2e-policy.outputs.e2e_override != 'true' &&
@@ -824,6 +856,9 @@ jobs:
       statuses: write
       actions: read
       id-token: write
+      # Finalize re-reads the PR labels for E2E/Override; a reusable workflow
+      # cannot escalate past the caller, so grant it here too.
+      issues: read
     if: |
       !cancelled() &&
       needs.resolve-e2e-policy.outputs.e2e_override != 'true' &&
@@ -880,6 +915,9 @@ jobs:
       statuses: write
       actions: read
       id-token: write
+      # Finalize re-reads the PR labels for E2E/Override; a reusable workflow
+      # cannot escalate past the caller, so grant it here too.
+      issues: read
     if: |
       !cancelled() &&
       needs.resolve-e2e-policy.outputs.e2e_override != 'true' &&
@@ -916,6 +954,9 @@ jobs:
       statuses: write
       actions: read
       id-token: write
+      # Finalize re-reads the PR labels for E2E/Override; a reusable workflow
+      # cannot escalate past the caller, so grant it here too.
+      issues: read
     if: |
       !cancelled() &&
       needs.resolve-e2e-policy.outputs.e2e_override != 'true' &&

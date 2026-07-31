@@ -292,6 +292,9 @@ jobs:
       id-token: write
       actions: read
       statuses: write
+      # Nested template finalize reads PR labels to honour E2E/Override; a
+      # reusable workflow cannot escalate past the caller, so grant it here too.
+      issues: read
     uses: ./.github/workflows/e2e-ios-template.yml
     needs:
       - build-ios-simulator
@@ -331,6 +334,9 @@ jobs:
       id-token: write
       actions: read
       statuses: write
+      # Nested template finalize reads PR labels to honour E2E/Override; a
+      # reusable workflow cannot escalate past the caller, so grant it here too.
+      issues: read
     uses: ./.github/workflows/e2e-ios-template.yml
     needs:
       - build-ios-simulator
@@ -374,6 +380,9 @@ jobs:
       id-token: write
       actions: read
       statuses: write
+      # Nested template finalize reads PR labels to honour E2E/Override; a
+      # reusable workflow cannot escalate past the caller, so grant it here too.
+      issues: read
     uses: ./.github/workflows/e2e-maestro-template.yml
     needs:
       - build-ios-simulator
@@ -409,6 +418,9 @@ jobs:
       id-token: write
       actions: read
       statuses: write
+      # Nested template finalize reads PR labels to honour E2E/Override; a
+      # reusable workflow cannot escalate past the caller, so grant it here too.
+      issues: read
     uses: ./.github/workflows/e2e-android-template.yml
     needs:
       - build-android-apk
@@ -450,6 +462,9 @@ jobs:
       id-token: write
       actions: read
       statuses: write
+      # Nested template finalize reads PR labels to honour E2E/Override; a
+      # reusable workflow cannot escalate past the caller, so grant it here too.
+      issues: read
     uses: ./.github/workflows/e2e-maestro-template.yml
     needs:
       - build-android-apk-maestro

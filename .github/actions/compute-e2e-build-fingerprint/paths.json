@@ -51,7 +51,6 @@
     "detox/maestro/**",
     "detox/utils/**",
     ".github/workflows/e2e-*.yml",
-    ".github/actions/cancel-e2e-runs/**",
     ".github/actions/compute-e2e-build-fingerprint/**",
     ".github/actions/s3-build-cache/**",
     ".github/actions/s3-spec-durations/**",
