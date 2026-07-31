@@ -7,6 +7,7 @@ import {Text, type ViewProps} from 'react-native';
 
 import Header from '@components/navigation_header/header';
 import {fireEvent, renderWithIntlAndTheme} from '@test/intl-test-helper';
+import {advanceTimers, disableFakeTimers, enableFakeTimers} from '@test/timer_helpers';
 
 import {
     getBottomSheetHeaderOptions,
@@ -273,6 +274,9 @@ describe('navigation_header', () => {
         // React Navigation only supplies `back` when there is a screen to return to
         const inBackStack = {title: 'Channel', href: undefined};
 
+        // navigateBack waits out the screen transition before resolving
+        const NAVIGATE_BACK_DELAY = 250;
+
         type HeaderArgs = {
             back?: NativeStackHeaderProps['back'];
             headerRight?: NativeStackNavigationOptions['headerRight'];
@@ -287,6 +291,8 @@ describe('navigation_header', () => {
         };
 
         const renderHeader = (args?: HeaderArgs) => renderWithIntlAndTheme(<>{headerElement(args)}</>);
+
+        afterEach(disableFakeTimers);
 
         it('should replace the platform header with a custom one', () => {
             renderHook(() => useAppNavigationHeader('Table'));
@@ -335,12 +341,14 @@ describe('navigation_header', () => {
             expect(headerRight).toHaveBeenCalledWith({canGoBack: expected});
         });
 
-        it('should navigate back when the back button is pressed', () => {
+        it('should navigate back when the back button is pressed', async () => {
+            enableFakeTimers();
             mockCanGoBack.mockReturnValue(true);
             renderHook(() => useAppNavigationHeader('Table'));
 
             const {getByTestId} = renderHeader({back: inBackStack});
             fireEvent.press(getByTestId('navigation.header.back'));
+            await advanceTimers(NAVIGATE_BACK_DELAY);
 
             expect(mockBack).toHaveBeenCalledTimes(1);
         });
