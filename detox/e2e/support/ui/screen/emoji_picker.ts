@@ -57,10 +57,13 @@ class EmojiPickerScreen {
 
     close = async () => {
         if (isIos()) {
-            // Swipe down on the search input — it's at the top of the sheet
-            // content, and dragging it down dismisses the bottom-sheet
-            // identically to dragging the sheet container.
-            await this.searchInput.swipe('down');
+            // Swipe down on the search input to dismiss the bottom sheet. The input's
+            // top ~2px is clipped by the safe-area/header overlap (view bounds {0,0,276,40}
+            // vs visible {0,2,276,36}), so Detox's default down-swipe — which starts at
+            // startY=0 (the clipped point) — fails with "not visible around point"
+            // (SEC-11010). Start at the vertical center (startY=0.5), which is safely in
+            // the visible area; a real finger swipes the middle too.
+            await this.searchInput.swipe('down', 'fast', 0.5, 0.5, 0.5);
         } else {
             // First pressBack may dismiss the soft keyboard if it is still open
             // (e.g. after search interactions). A second pressBack is then needed
