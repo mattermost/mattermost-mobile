@@ -47,6 +47,8 @@ permissions:
   id-token: write
   actions: read
   statuses: write
+  # Nested template finalize reads PR labels to honour E2E/Override.
+  issues: read
 
 env:
   ARTIFACT_RUN_ID: ${{ inputs.artifact_run_id }}

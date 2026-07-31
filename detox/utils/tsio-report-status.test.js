@@ -10,9 +10,34 @@ const {
     buildDisplayReportUrl,
     decideStatus,
     decideTargetUrl,
+    overrideCommitStatus,
 } = require('./tsio-report-status');
 
 describe('tsio-report-status', () => {
+    describe('overrideCommitStatus', () => {
+        it('reports a failure as success so E2E/Override does not block the merge', () => {
+            assert.deepEqual(
+                overrideCommitStatus('failure', '8 passed, 2 failed, 0 skipped'),
+                {
+                    state: 'success',
+                    description: 'E2E/Override — 8 passed, 2 failed, 0 skipped',
+                },
+            );
+        });
+
+        it('leaves non-failure states untouched', () => {
+            assert.deepEqual(
+                overrideCommitStatus('success', '10 passed, 0 skipped'),
+                {state: 'success', description: '10 passed, 0 skipped'},
+            );
+        });
+
+        it('truncates the labelled description to the commit status limit', () => {
+            const {description} = overrideCommitStatus('failure', 'x'.repeat(200));
+            assert.equal(description.length, 140);
+        });
+    });
+
     describe('decideStatus', () => {
         it('returns success for completed report with no failures when upstream succeeded', () => {
             assert.deepEqual(
