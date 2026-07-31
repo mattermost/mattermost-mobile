@@ -627,7 +627,17 @@ const PostHandler = <TBase extends Constructor<ServerDataOperatorBase>>(supercla
             return [];
         }
 
-        const {firstPost, lastPost} = getPostListEdges(posts);
+        // getPostsSince returns deleted posts too, and those are dropped before persistence
+        // (see handlePosts), so they must not define the PostsInChannel interval: building or
+        // extending one from a deleted post can leave a zero-row interval on top that blanks
+        // the channel (MM-66467).
+        const validPosts = posts.filter((post) => post.delete_at === 0);
+        if (!validPosts.length) {
+            logDebug('handleReceivedPostsInChannelSince received only deleted posts; skipping interval update');
+            return [];
+        }
+
+        const {firstPost, lastPost} = getPostListEdges(validPosts);
         const channelId = firstPost.channel_id;
         const latest = lastPost.create_at;
 
@@ -668,7 +678,15 @@ const PostHandler = <TBase extends Constructor<ServerDataOperatorBase>>(supercla
             return [];
         }
 
-        const {firstPost, lastPost} = getPostListEdges(posts);
+        // Deleted posts are dropped before persistence (see handlePosts), so they must not
+        // define the PostsInChannel interval (MM-66467).
+        const validPosts = posts.filter((post) => post.delete_at === 0);
+        if (!validPosts.length) {
+            logDebug('handleReceivedPostsInChannelBefore received only deleted posts; skipping interval update');
+            return [];
+        }
+
+        const {firstPost, lastPost} = getPostListEdges(validPosts);
         const channelId = firstPost.channel_id;
         const earliest = firstPost.create_at;
 
@@ -717,7 +735,15 @@ const PostHandler = <TBase extends Constructor<ServerDataOperatorBase>>(supercla
             return [];
         }
 
-        const {firstPost, lastPost} = getPostListEdges(posts);
+        // Deleted posts are dropped before persistence (see handlePosts), so they must not
+        // define the PostsInChannel interval (MM-66467).
+        const validPosts = posts.filter((post) => post.delete_at === 0);
+        if (!validPosts.length) {
+            logDebug('handleReceivedNewPostForChannel received only deleted posts; skipping interval update');
+            return [];
+        }
+
+        const {firstPost, lastPost} = getPostListEdges(validPosts);
         const channelId = firstPost.channel_id;
         const earliest = firstPost.create_at;
         const latest = lastPost.create_at;

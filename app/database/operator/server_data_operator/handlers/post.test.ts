@@ -1237,3 +1237,120 @@ describe('*** Operator: deleted post must not create an empty PostsInChannel int
         expect(after[0].latest).toBe(1000);
     });
 });
+
+describe('*** Operator: SINCE/BEFORE/NEW handlers must not build intervals from deleted posts (MM-66467) ***', () => {
+    let database: Database;
+    let operator: ServerDataOperator;
+    const databaseName = 'baseHandler.test.com';
+    const channelId = 'mm66467sincechannel';
+
+    beforeEach(async () => {
+        await DatabaseManager.init([databaseName]);
+        const serverDatabase = DatabaseManager.serverDatabases[databaseName]!;
+        database = serverDatabase.database;
+        operator = serverDatabase.operator;
+    });
+
+    afterEach(async () => {
+        await DatabaseManager.destroyServerDatabase(databaseName);
+    });
+
+    const makePost = (over: Partial<Post>): Post => ({
+        id: 'p',
+        channel_id: channelId,
+        create_at: 1000,
+        update_at: 1000,
+        edit_at: 0,
+        delete_at: 0,
+        is_pinned: false,
+        is_following: false,
+        user_id: 'user1',
+        root_id: '',
+        original_id: '',
+        message: 'message',
+        type: '',
+        props: {},
+        hashtags: '',
+        pending_post_id: '',
+        reply_count: 0,
+        last_reply_at: 0,
+        participants: null,
+        metadata: {},
+        ...over,
+    } as Post);
+
+    const intervalsForChannel = async () =>
+        (await database.get(MM_TABLES.SERVER.POSTS_IN_CHANNEL).
+            query(Q.where('channel_id', channelId), Q.sortBy('latest', Q.desc)).fetch()) as PostsInChannelModel[];
+
+    it('RECEIVED_SINCE should not create an interval when every post is deleted', async () => {
+        // getPostsSince returns deleted posts too. If the channel has no interval yet (e.g. its
+        // interval rows were removed while myChannel.lastFetchedAt survived), building one out of
+        // deleted posts creates a zero-row interval that permanently blanks the channel.
+        await operator.handlePosts({
+            actionType: ActionType.POSTS.RECEIVED_SINCE,
+            order: ['since-deleted-id'],
+            posts: [makePost({id: 'since-deleted-id', create_at: 8000, update_at: 9000, delete_at: 9000})],
+        });
+
+        expect(await intervalsForChannel()).toHaveLength(0);
+    });
+
+    it('RECEIVED_SINCE should build a new interval from live posts only', async () => {
+        await operator.handlePosts({
+            actionType: ActionType.POSTS.RECEIVED_SINCE,
+            order: ['since-deleted-id', 'since-live-id'],
+            posts: [
+                makePost({id: 'since-live-id', create_at: 2000, update_at: 2000}),
+                makePost({id: 'since-deleted-id', create_at: 9000, update_at: 9500, delete_at: 9500}),
+            ],
+        });
+
+        const intervals = await intervalsForChannel();
+        expect(intervals).toHaveLength(1);
+        expect(intervals[0].earliest).toBe(2000);
+        expect(intervals[0].latest).toBe(2000);
+    });
+
+    it('RECEIVED_SINCE should not extend the interval to a deleted post', async () => {
+        await operator.handlePosts({
+            actionType: ActionType.POSTS.RECEIVED_IN_CHANNEL,
+            order: ['live-post-id'],
+            posts: [makePost({id: 'live-post-id', create_at: 1000, update_at: 1000})],
+        });
+
+        await operator.handlePosts({
+            actionType: ActionType.POSTS.RECEIVED_SINCE,
+            order: ['since-deleted-id', 'since-live-id'],
+            posts: [
+                makePost({id: 'since-live-id', create_at: 2500, update_at: 2500}),
+                makePost({id: 'since-deleted-id', create_at: 9000, update_at: 9500, delete_at: 9500}),
+            ],
+        });
+
+        const intervals = await intervalsForChannel();
+        expect(intervals).toHaveLength(1);
+        expect(intervals[0].earliest).toBe(1000);
+        expect(intervals[0].latest).toBe(2500);
+    });
+
+    it('RECEIVED_BEFORE should not create an interval when every post is deleted', async () => {
+        await operator.handlePosts({
+            actionType: ActionType.POSTS.RECEIVED_BEFORE,
+            order: ['before-deleted-id'],
+            posts: [makePost({id: 'before-deleted-id', create_at: 500, update_at: 900, delete_at: 900})],
+        });
+
+        expect(await intervalsForChannel()).toHaveLength(0);
+    });
+
+    it('RECEIVED_NEW should not create an interval when the post is deleted', async () => {
+        await operator.handlePosts({
+            actionType: ActionType.POSTS.RECEIVED_NEW,
+            order: ['new-deleted-id'],
+            posts: [makePost({id: 'new-deleted-id', create_at: 7000, update_at: 7500, delete_at: 7500})],
+        });
+
+        expect(await intervalsForChannel()).toHaveLength(0);
+    });
+});
