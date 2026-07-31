@@ -219,8 +219,9 @@ describe('Messaging - Mark as Unread', () => {
         await expect(ChannelListScreen.getChannelItemDisplayName(directMessagesCategory, dmChannel.name)).toBeVisible();
     });
 
-    // Skip: failed CI run 29954156963 (both) — BACK_INDEX / thread unread
-    it.skip('MM-T250_1 - should mark a reply as unread in thread view and show unread indicator', async () => {
+    // Unskipped (SEC-10993): BACK_INDEX flake resolved via the shared
+    // NavigationHeader.tapBackButton helper (ThreadScreen.back + ChannelScreen.back).
+    it('MM-T250_1 - should mark a reply as unread in thread view and show unread indicator', async () => {
         // # Create a root message and two replies via API (as admin) so testUser can mark
         // someone else's reply as unread.
         // canMarkAsUnread requires user?.id !== post.userId — own posts cannot be marked as unread.
