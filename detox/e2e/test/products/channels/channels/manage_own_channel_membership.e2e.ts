@@ -53,8 +53,10 @@ describe('Channels - Manage Own Channel Membership', () => {
         await HomeScreen.logout();
     });
 
-    // Skip both: iOS pre-existing; Android R2+R3 product — duplicate manage_members user_item matcher
-    it.skip('MM-66375 - should be able to see and manage own membership in channel members list', async () => {
+    // Unskipped (SEC-11049): duplicate manage_members user_item matcher — the
+    // members list can render the same user_item in both the GM-member section and
+    // the flat list. Verified green on iOS.
+    it('MM-66375 - should be able to see and manage own membership in channel members list', async () => {
         // # Create a channel and add the test user to it
         const {channel} = await Channel.apiCreateChannel(siteOneUrl, {teamId: testTeam.id});
         await Channel.apiAddUserToChannel(siteOneUrl, testUser.id, channel.id);

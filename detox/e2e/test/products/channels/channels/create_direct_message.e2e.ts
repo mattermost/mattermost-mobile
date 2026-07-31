@@ -68,8 +68,10 @@ describe('Channels - Create Direct Message', () => {
         await CreateDirectMessageScreen.close();
     });
 
-    // Skip both: Android 3/3 + iOS R3 — duplicate/ambiguous user_item matcher / search spinner
-    it.skip('MM-T4730_2 - should be able to create a direct message', async () => {
+    // Unskipped (SEC-11049): duplicate user_item matcher — search filters to one
+    // match, but the section_list + flat_list can both render the item during the
+    // search transition. waitFor(...).toBeVisible() rides out the spinner.
+    it('MM-T4730_2 - should be able to create a direct message', async () => {
         // # As admin, create a new user to open direct message with
         const {user: newUser} = await User.apiCreateUser(siteOneUrl);
         await Team.apiAddUserToTeam(siteOneUrl, newUser.id, testTeam.id);
@@ -113,8 +115,9 @@ describe('Channels - Create Direct Message', () => {
         await expect(ChannelListScreen.getChannelItemDisplayName(directMessagesCategory, directMessageChannel.name)).toHaveText(newUserDisplayName);
     });
 
-    // Skip both: Android 3/3 + iOS R3 — user list item not found / ambiguous matchers
-    it.skip('MM-T4730_3 - should be able to create a group message', async () => {
+    // Unskipped (SEC-11049): ambiguous user_item matcher during two-user search
+    // flow — waitFor(...).toExist() rides out the search transition.
+    it('MM-T4730_3 - should be able to create a group message', async () => {
         // # As admin, create two new users to open group message with
         const {user: firstNewUser} = await User.apiCreateUser(siteOneUrl, {prefix: 'a'});
         await Team.apiAddUserToTeam(siteOneUrl, firstNewUser.id, testTeam.id);
@@ -166,7 +169,10 @@ describe('Channels - Create Direct Message', () => {
         await ChannelListScreen.toBeVisible();
     });
 
-    // Skip Android: R1 product fail — empty-state text <50% visible despite toExist workaround
+    // SEC-11049 (QA-owned, was mis-tagged product): empty-state text renders <50%
+    // on-screen on Android edge-to-edge due to system-bar insets. The Android branch
+    // below already uses toExist() (bypasses the visibility-area threshold) — that is
+    // the fix shape. Gate kept until verified on a local API-35 emulator / CI.
     (isAndroid() ? it.skip : it)('MM-T4730_4 - should display empty search state for create direct message', async () => {
         // # Open create direct message screen and search for a non-existent user
         const searchTerm = 'blahblahblahblah';
@@ -190,7 +196,10 @@ describe('Channels - Create Direct Message', () => {
         await CreateDirectMessageScreen.close();
     });
 
-    // Skip Android: R1 product fail — deactivated-user search list item matcher
+    // SEC-11049 (QA-owned, was mis-tagged product): deactivated-user search list item
+    // matcher — the deactivated user can still match briefly (cache) or the No-matches
+    // text sits <50% on-screen on Android. Gate kept until verified on a local API-35
+    // emulator / CI.
     (isAndroid() ? it.skip : it)('MM-T63374 - should not display deactivated users in the create direct message screen', async () => {
         // # As admin, create a new user to test with
         const {user: deactivatedUser} = await User.apiCreateUser(siteOneUrl);

@@ -22,3 +22,17 @@ Append-only notes for a human to copy into the
   (server 11.10). MM-T5294_10 also tracked under SEC-10996 (cascade isolation,
   separate mechanism) — left unskipped here on back-index; re-skip + defer to
   SEC-10996 if it regresses on cascade. Android deferred to CI.
+
+- **SEC-11049** (duplicate user_item + visibility thresholds, 6 tests; was mis-tagged
+  Feature/PE) — Owner: QA for all six.
+  - Unskipped (verified 2× green iOS): MM-T4730_2, MM-T4730_3 (create_direct_message),
+    MM-66375 (manage_own_channel_membership). Matchers are unambiguous on iOS once the
+    search spinner is ridden out via waitFor; skips were stale.
+  - Kept Android-gated (rule 6: can't verify Android locally — no API-35 emulator),
+    re-classified to QA with the mechanism named in the skip comment, verification
+    pending CI / a local Android emulator: MM-T4730_4 (empty-state text <50% on-screen,
+    Android edge-to-edge insets — body already uses toExist()), MM-T63374 (deactivated-
+    user search list item matcher / No-matches text <50%), MM-T1719_1 (manageButton <15%
+    on-screen after archive — fix shape: toExist() on Android).
+  - No shared visibility helper landed: the only threshold cases are Android-only and
+    unverifiable here; deferred to when Android can be run (overlaps SEC-11014/SEC-11048).

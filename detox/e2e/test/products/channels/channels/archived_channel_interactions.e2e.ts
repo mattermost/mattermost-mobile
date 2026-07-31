@@ -218,8 +218,10 @@ describe('Channels - Archived Channel Interactions', () => {
         await ChannelListScreen.open();
     });
 
-    // Skip Android: CI run 30000635898 — manage-members visibility <15% after archive
-    // (tutorial/overlay occlusion unclear from artifact; same suite already skips MM-T1671/1685).
+    // SEC-11049 (QA-owned, was mis-tagged product): manageButton renders <15% on-screen
+    // on Android after archive (manage-members screen partially occluded by insets/
+    // post-tutorial overlay). Fix shape: assert manageButton with toExist() on Android
+    // instead of toBeVisible(). Gate kept until verified on a local API-35 emulator / CI.
     (isAndroid() ? it.skip : it)('MM-T1719_1 - should not be able to remove members from an archived channel', async () => {
         // iOS uses the search/permalink fallback path (MM-T1679_1 path) because
         // tapping an archived channel in Browse Channels does not reliably navigate
