@@ -20,6 +20,7 @@ import {
     ChannelScreen,
     HomeScreen,
     LoginScreen,
+    PostOptionsScreen,
     ServerScreen,
 } from '@support/ui/screen';
 import {getRandomId, timeouts, wait} from '@support/utils';
@@ -91,8 +92,36 @@ describe('Messaging - Post Display Behavior', () => {
         await waitFor(lastFillerItem).toBeVisible().withTimeout(timeouts.TEN_SEC);
 
         // # Scroll up from mid-screen (bottom edge is occluded by the post-draft input on iOS).
-        await ChannelScreen.getFlatPostList().scroll(5000, 'up', 0.5, 0.5);
+        // In increments rather than one 5000px drag: a single long synthetic drag dwells on the
+        // post under the start point long enough for its long-press handler to fire, which opens
+        // the post-options sheet over the draft input and makes the send below fail the 100%
+        // visibility check. Every other post-list scroll in this suite uses 50–300px.
+        for (let i = 0; i < 6; i++) {
+            try {
+                // eslint-disable-next-line no-await-in-loop
+                await ChannelScreen.getFlatPostList().scroll(500, 'up', 0.5, 0.5);
+            } catch {
+                // Detox throws when a scroll begins at the content edge — we are at the top.
+                break;
+            }
+        }
         await wait(timeouts.ONE_SEC);
+
+        // # Close the post-options sheet if a scroll gesture still tripped a long press —
+        // Detox gesture timing under CI load is outside this test's control, and the sheet
+        // would otherwise occlude the draft input and fail the send with an opaque
+        // "view is not visible" error. Probe-and-recover, matching dismissKnownModals().
+        // Runs before the assertion below so an open sheet cannot make it pass by occlusion.
+        try {
+            await waitFor(PostOptionsScreen.postOptionsScreen).toExist().withTimeout(timeouts.HALF_SEC);
+            await PostOptionsScreen.close();
+        } catch {
+            // Expected path: no sheet was opened by the scroll.
+        }
+
+        // * Verify the list actually left the bottom, so the scroll-to-bottom check below is
+        // not vacuously true if the scroll gesture silently did nothing.
+        await expect(lastFillerItem).not.toBeVisible();
 
         // # Send a new message from the UI
         const newMessage = `New bottom message ${getRandomId()}`;
