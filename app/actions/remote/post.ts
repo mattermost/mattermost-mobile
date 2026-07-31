@@ -4,8 +4,8 @@
 
 /* eslint-disable max-lines */
 
-import {markChannelAsUnread, updateLastPostAt} from '@actions/local/channel';
-import {addPostAcknowledgement, removePost, removePostAcknowledgement, storePostsForChannel} from '@actions/local/post';
+import {deletePostsForChannel, markChannelAsUnread, updateLastPostAt} from '@actions/local/channel';
+import {addPostAcknowledgement, pruneEmptyPostsInChannelIntervals, removePost, removePostAcknowledgement, storePostsForChannel} from '@actions/local/post';
 import {addRecentReaction} from '@actions/local/reactions';
 import {createThreadFromNewPost} from '@actions/local/thread';
 import {fetchChannelStats} from '@actions/remote/channel';
@@ -17,7 +17,7 @@ import NetworkManager from '@managers/network_manager';
 import {getMyChannel, prepareMissingChannelsForAllTeams, queryAllMyChannel} from '@queries/servers/channel';
 import {queryAllCustomEmojis} from '@queries/servers/custom_emoji';
 import {getFilesByIds, queryFilesForPost} from '@queries/servers/file';
-import {getPostById, getRecentPostsInChannel} from '@queries/servers/post';
+import {getPostById, getRecentPostsInChannel, queryPostsForChannel} from '@queries/servers/post';
 import {getCurrentUserId} from '@queries/servers/system';
 import {getIsCRTEnabled, prepareThreadsFromReceivedPosts} from '@queries/servers/thread';
 import {queryAllUsers} from '@queries/servers/user';
@@ -27,7 +27,7 @@ import {isBoRPost} from '@utils/bor';
 import {getValidEmojis, matchEmoticons} from '@utils/emoji/helpers';
 import {getFullErrorMessage, isServerError} from '@utils/errors';
 import {hasArrayChanged} from '@utils/helpers';
-import {logDebug, logError} from '@utils/log';
+import {logDebug, logError, logWarning} from '@utils/log';
 import {processPostsFetched} from '@utils/post';
 import {getPostIdsForCombinedUserActivityPost} from '@utils/post_list';
 
@@ -296,8 +296,19 @@ export async function fetchPostsForChannel(serverUrl: string, channelId: string,
         let postAction: Promise<PostsRequest>|undefined;
         let actionType: string|undefined;
         const myChannel = await getMyChannel(database, channelId);
-        const postsInChannel = await getRecentPostsInChannel(database, channelId);
-        const since = myChannel?.lastFetchedAt || postsInChannel?.[0]?.createAt || 0;
+        let postsInChannel = await getRecentPostsInChannel(database, channelId);
+        if (!postsInChannel.length) {
+            // The newest PostsInChannel interval renders no posts, so the channel looks blank. That
+            // happens when every post of that interval was deleted on the server, and neither a
+            // since-fetch nor a full page fetch can repair it while the empty interval stays the
+            // newest one (MM-66467). Drop the post-less intervals so a lower interval can render.
+            await pruneEmptyPostsInChannelIntervals(serverUrl, channelId);
+            postsInChannel = await getRecentPostsInChannel(database, channelId);
+        }
+
+        // Only trust lastFetchedAt while we still have posts to show: a since-fetch returns nothing
+        // when there is nothing newer, which would leave a channel with no local posts blank.
+        const since = postsInChannel.length ? (myChannel?.lastFetchedAt || postsInChannel[0].createAt) : 0;
         if (since) {
             postAction = fetchPostsSince(serverUrl, channelId, since, true, groupLabel);
             actionType = ActionType.POSTS.RECEIVED_SINCE;
@@ -335,6 +346,42 @@ export async function fetchPostsForChannel(serverUrl: string, channelId: string,
             EphemeralStore.stopLoadingMessagesForChannel(serverUrl, channelId);
         }
     }
+}
+
+/**
+ * refreshPostsForChannel: handles pull-to-refresh on a channel post list.
+ *
+ * `isBlank` says the list is rendering nothing. A channel renders nothing while it still has posts
+ * stored when its local PostsInChannel bookkeeping hides them -- the rendered interval holds no
+ * post, or holds only posts the list filters out -- and a page fetch cannot repair that: the
+ * interval it creates sorts below the bad one, so it never becomes the interval the list renders
+ * (MM-66467). Clearing the channel's cached posts and re-fetching from scratch is the only reliable
+ * recovery, so do that when we find posts the user should be seeing. Every other refresh keeps the
+ * plain page fetch.
+ *
+ * @param {string} serverUrl
+ * @param {string} channelId
+ * @param {boolean} isBlank whether the post list is currently rendering no posts
+ */
+export async function refreshPostsForChannel(serverUrl: string, channelId: string, isBlank = false) {
+    if (isBlank) {
+        try {
+            const {database} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
+            const hidden = await queryPostsForChannel(database, channelId).fetchCount();
+            if (hidden) {
+                logWarning('refreshPostsForChannel resetting the cached posts of a blank channel', channelId, hidden);
+                const {error} = await deletePostsForChannel(serverUrl, channelId);
+                if (!error) {
+                    return fetchPostsForChannel(serverUrl, channelId);
+                }
+            }
+        } catch (error) {
+            // Fall through to the regular refresh, which reports its own errors
+            logDebug('error on refreshPostsForChannel', getFullErrorMessage(error));
+        }
+    }
+
+    return fetchPosts(serverUrl, channelId);
 }
 
 export const fetchPostsForUnreadChannels = async (

@@ -120,6 +120,18 @@ export const queryPostsInChannel = (database: Database, channelId: string) => {
     );
 };
 
+// Note: unlike queryPostsInChannel, which queries the PostsInChannel intervals, this queries the
+// posts of a channel themselves, with no interval bounds. Use it with fetchCount() to tell whether
+// a channel that renders nothing still has posts stored.
+export const queryPostsForChannel = (database: Database, channelId: string, includeDeleted = false) => {
+    const conditions: Q.Where[] = [Q.where('channel_id', channelId)];
+    if (!includeDeleted) {
+        conditions.push(Q.where('delete_at', Q.eq(0)));
+    }
+
+    return database.get<PostModel>(POST).query(Q.and(...conditions));
+};
+
 export const queryPostsInThread = (database: Database, rootId: string, sorted = false, includeDeleted = false) => {
     const clauses: Q.Clause[] = [Q.where('root_id', rootId)];
     if (!includeDeleted) {

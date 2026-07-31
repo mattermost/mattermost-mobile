@@ -3,11 +3,14 @@
 
 /* eslint-disable max-lines */
 
+import {storePostsForChannel} from '@actions/local/post';
 import {ActionType, Post, ServerErrors} from '@constants';
 import {SYSTEM_IDENTIFIERS} from '@constants/database';
 import DatabaseManager from '@database/manager';
 import PostModel from '@database/models/server/post';
 import NetworkManager from '@managers/network_manager';
+import {getMyChannel} from '@queries/servers/channel';
+import {getPostById, getRecentPostsInChannel, queryPostsInChannel} from '@queries/servers/post';
 import TestHelper from '@test/test_helper';
 import {getFullErrorMessage} from '@utils/errors';
 
@@ -23,6 +26,7 @@ import {
     revealBoRPost,
     fetchPostsForChannel,
     fetchPostsForUnreadChannels,
+    refreshPostsForChannel,
     fetchPosts,
     fetchPostsBefore,
     fetchPostsSince,
@@ -39,6 +43,7 @@ import {
 import * as PostAuxilaryFunctions from './post.auxiliary';
 
 import type ServerDataOperator from '@database/operator/server_data_operator';
+import type {Database} from '@nozbe/watermelondb';
 
 const serverUrl = 'baseHandler.test.com';
 let operator: ServerDataOperator;
@@ -831,6 +836,124 @@ describe('get posts', () => {
         expect(result.error).toBeUndefined();
         expect(result.posts).toBeTruthy();
         expect(result.posts?.length).toBe(0);
+    });
+
+    it('fetchPostsForChannel - recovers a channel whose newest interval has no posts left (MM-66467)', async () => {
+        const database = DatabaseManager.serverDatabases[serverUrl]!.database;
+        await operator.handleSystem({systems: [{id: SYSTEM_IDENTIFIERS.CURRENT_USER_ID, value: user1.id}], prepareRecordsOnly: false});
+        await operator.handleMyChannel({channels: [channel1], myChannels: [channelMember1], prepareRecordsOnly: false});
+
+        // History of the channel: interval [1000, 1000].
+        const oldPost = TestHelper.fakePost({channel_id: channelId, id: 'oldpostid', user_id: user1.id, create_at: 1000, update_at: 1000});
+        await storePostsForChannel(serverUrl, channelId, [oldPost], [oldPost.id], '', ActionType.POSTS.RECEIVED_IN_CHANNEL, []);
+
+        // A much newer post arrives, creating a second, disjoint interval [9000, 9000].
+        const newPost = TestHelper.fakePost({channel_id: channelId, id: 'newpostid', user_id: user2.id, create_at: 9000, update_at: 9000});
+        await storePostsForChannel(serverUrl, channelId, [newPost], [newPost.id], '', ActionType.POSTS.RECEIVED_IN_CHANNEL, []);
+        expect((await queryPostsInChannel(database, channelId).fetch()).length).toBe(2);
+
+        // The newer post is deleted on the server, so it is dropped locally and its interval is left
+        // with no posts. That interval still has the greatest `latest`, so it is the one the channel
+        // post list renders: the channel goes blank even though the old post is still in the database.
+        await storePostsForChannel(
+            serverUrl, channelId,
+            [{...newPost, delete_at: 9500, update_at: 9500}], [newPost.id], '',
+            ActionType.POSTS.RECEIVED_IN_CHANNEL, [],
+        );
+        expect(await getRecentPostsInChannel(database, channelId)).toHaveLength(0);
+
+        // Nothing new on the server, so a since-fetch cannot repair anything.
+        mockClient.getPostsSince.mockImplementationOnce(jest.fn(() => ({posts: {}, order: []})));
+        const result = await fetchPostsForChannel(serverUrl, channelId);
+        expect(result.error).toBeUndefined();
+
+        // The post-less interval is gone and the channel renders its history again.
+        const intervals = await queryPostsInChannel(database, channelId).fetch();
+        expect(intervals.length).toBe(1);
+        expect(intervals[0].earliest).toBe(1000);
+        const recent = await getRecentPostsInChannel(database, channelId);
+        expect(recent.length).toBe(1);
+        expect(recent[0].id).toBe(oldPost.id);
+    });
+
+    it('fetchPostsForChannel - falls back to a page fetch when no interval has posts left', async () => {
+        const database = DatabaseManager.serverDatabases[serverUrl]!.database;
+        await operator.handleSystem({systems: [{id: SYSTEM_IDENTIFIERS.CURRENT_USER_ID, value: user1.id}], prepareRecordsOnly: false});
+        await operator.handleMyChannel({channels: [channel1], myChannels: [channelMember1], prepareRecordsOnly: false});
+
+        const onlyPost = TestHelper.fakePost({channel_id: channelId, id: 'onlypostid', user_id: user1.id, create_at: 1000, update_at: 1000});
+        await storePostsForChannel(serverUrl, channelId, [onlyPost], [onlyPost.id], '', ActionType.POSTS.RECEIVED_IN_CHANNEL, []);
+        await storePostsForChannel(
+            serverUrl, channelId,
+            [{...onlyPost, delete_at: 1500, update_at: 1500}], [onlyPost.id], '',
+            ActionType.POSTS.RECEIVED_IN_CHANNEL, [],
+        );
+
+        // lastFetchedAt is now 1500 while the channel has no posts at all: a since-fetch would ask
+        // for posts newer than 1500 and get nothing, leaving the channel blank forever.
+        expect((await getMyChannel(database, channelId))!.lastFetchedAt).toBe(1500);
+
+        mockClient.getPosts.mockClear();
+        mockClient.getPostsSince.mockClear();
+        const result = await fetchPostsForChannel(serverUrl, channelId);
+        expect(result.error).toBeUndefined();
+        expect(mockClient.getPostsSince).not.toHaveBeenCalled();
+        expect(mockClient.getPosts).toHaveBeenCalled();
+        expect(result.actionType).toBe(ActionType.POSTS.RECEIVED_IN_CHANNEL);
+        expect((await getRecentPostsInChannel(database, channelId)).length).toBe(2);
+    });
+
+    describe('refreshPostsForChannel', () => {
+        let database: Database;
+        const seedChannel = async () => {
+            await operator.handleChannel({channels: [channel1], prepareRecordsOnly: false});
+            await operator.handleMyChannel({channels: [channel1], myChannels: [channelMember1], prepareRecordsOnly: false});
+        };
+
+        beforeEach(() => {
+            database = DatabaseManager.serverDatabases[serverUrl]!.database;
+            mockClient.getPosts.mockClear();
+        });
+
+        it('should just fetch a page when the list is showing posts', async () => {
+            await seedChannel();
+            const post = TestHelper.fakePost({channel_id: channelId, id: 'shownpostid', create_at: 1000, update_at: 1000});
+            await storePostsForChannel(serverUrl, channelId, [post], [post.id], '', ActionType.POSTS.RECEIVED_IN_CHANNEL, []);
+
+            await refreshPostsForChannel(serverUrl, channelId, false);
+
+            expect(mockClient.getPosts).toHaveBeenCalledWith(channelId, 0, expect.any(Number), true, true, undefined);
+            expect(await getPostById(database, post.id)).toBeDefined();
+        });
+
+        it('should reset the cached posts when the list is blank but the channel has posts', async () => {
+            await seedChannel();
+
+            // A blank channel: its only interval covers a range where no post is left, so the post
+            // list renders nothing while the older post is still stored.
+            const hiddenPost = TestHelper.fakePost({channel_id: channelId, id: 'hiddenpostid', create_at: 1000, update_at: 1000});
+            await storePostsForChannel(serverUrl, channelId, [hiddenPost], [hiddenPost.id], '', ActionType.POSTS.RECEIVED_IN_CHANNEL, []);
+            await operator.handleReceivedPostsInChannel([TestHelper.fakePost({channel_id: channelId, create_at: 9000})]);
+
+            await refreshPostsForChannel(serverUrl, channelId, true);
+
+            // The stale interval and the hidden post are gone, replaced by a clean fetch.
+            expect(await getPostById(database, hiddenPost.id)).toBeUndefined();
+            const intervals = await queryPostsInChannel(database, channelId).fetch();
+            expect(intervals.length).toBe(1);
+            expect((await getRecentPostsInChannel(database, channelId)).length).toBe(2);
+            expect((await getMyChannel(database, channelId))!.lastFetchedAt).toBeGreaterThan(0);
+        });
+
+        it('should not reset anything when the channel is genuinely empty', async () => {
+            await seedChannel();
+
+            await refreshPostsForChannel(serverUrl, channelId, true);
+
+            // Nothing to repair, so it behaves like a regular refresh.
+            expect(mockClient.getPosts).toHaveBeenCalled();
+            expect((await getRecentPostsInChannel(database, channelId)).length).toBe(2);
+        });
     });
 
     it('fetchPostsForChannel - request error', async () => {

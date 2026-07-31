@@ -4,7 +4,7 @@
 import {ActionType, Post} from '@constants';
 import {SYSTEM_IDENTIFIERS} from '@constants/database';
 import DatabaseManager from '@database/manager';
-import {getPostById} from '@queries/servers/post';
+import {getPostById, queryPostsInChannel} from '@queries/servers/post';
 import TestHelper from '@test/test_helper';
 import {COMBINED_USER_ACTIVITY} from '@utils/post_list';
 
@@ -15,6 +15,7 @@ import {
     markPostAsDeleted,
     storePostsForChannel,
     getPosts,
+    pruneEmptyPostsInChannelIntervals,
     addPostAcknowledgement,
     removePostAcknowledgement,
     deletePosts,
@@ -222,6 +223,50 @@ describe('storePostsForChannel', () => {
         expect(error).toBeUndefined();
         expect(models).toBeDefined();
         expect(models?.length).toBe(4); // Post, PostsInChannel, User, MyChannel
+    });
+});
+
+describe('pruneEmptyPostsInChannelIntervals', () => {
+    const seedInterval = (earliest: number, latest: number) => operator.handleReceivedPostsInChannel([
+        TestHelper.fakePost({channel_id: channelId, create_at: earliest}),
+        TestHelper.fakePost({channel_id: channelId, create_at: latest}),
+    ]);
+
+    it('handle not found database', async () => {
+        const {models, error} = await pruneEmptyPostsInChannelIntervals('foo', channelId);
+        expect(models).toBeUndefined();
+        expect(error).toBeTruthy();
+    });
+
+    it('should remove the intervals with no posts and keep the ones with posts', async () => {
+        const database = DatabaseManager.serverDatabases[serverUrl]!.database;
+        const post = TestHelper.fakePost({channel_id: channelId, create_at: 1000, update_at: 1000});
+        await operator.handlePosts({
+            actionType: ActionType.POSTS.RECEIVED_IN_CHANNEL,
+            order: [post.id],
+            posts: [post],
+            prepareRecordsOnly: false,
+        });
+
+        // An interval covering a range where no post is left, as happens once every post it was
+        // built from is deleted on the server.
+        await seedInterval(8000, 9000);
+        expect((await queryPostsInChannel(database, channelId).fetch()).length).toBe(2);
+
+        const {models, error} = await pruneEmptyPostsInChannelIntervals(serverUrl, channelId);
+        expect(error).toBeUndefined();
+        expect(models?.length).toBe(1);
+
+        const remaining = await queryPostsInChannel(database, channelId).fetch();
+        expect(remaining.length).toBe(1);
+        expect(remaining[0].earliest).toBe(1000);
+        expect(remaining[0].latest).toBe(1000);
+    });
+
+    it('should do nothing when the channel has no intervals', async () => {
+        const {models, error} = await pruneEmptyPostsInChannelIntervals(serverUrl, channelId);
+        expect(error).toBeUndefined();
+        expect(models?.length).toBe(0);
     });
 });
 
