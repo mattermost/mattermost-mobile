@@ -121,13 +121,14 @@ class ThreadScreen {
     back = async () => {
         await waitForElementToExist(this.backButton, timeouts.TEN_SEC);
 
-        // Prefer the topmost back when thread is stacked over channel (two headers).
-        // Always create a fresh matcher per attempt — chaining atIndex() on a shared
-        // element mutates it (e.g. atIndex(0) after atIndex(1) becomes "index 0 of index 1").
+        // Thread is the pushed/topmost screen, so its header sits at the higher
+        // index when stacked over the channel. Tap index 1 first, fall back to 0
+        // when only one header is mounted. Routes through NavigationHeader.tapBackButton
+        // (shared helper) so SEC-11015 and other back-index fixes reuse one matcher.
         try {
-            await element(by.id(this.testID.backButton)).atIndex(1).tap();
+            await NavigationHeader.tapBackButton(1);
         } catch {
-            await element(by.id(this.testID.backButton)).atIndex(0).tap();
+            await NavigationHeader.tapBackButton(0);
         }
         await waitFor(this.threadScreen).not.toBeVisible().withTimeout(timeouts.TEN_SEC);
 

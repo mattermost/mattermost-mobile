@@ -33,3 +33,18 @@ Append-only notes for a human to copy into the
   (who can run 3-server shards) at the SEC-11010 conclusion (Detox-only tap/swipe start
   point in a clipped or overlapped region) to check the CI artifact against. No code
   change beyond the comments.
+
+- **SEC-11012** (markdown scroll / Back a11y / expand hittability, MM-T4895_1,
+  MM-T4899_2/4/5, MM-T1442_1) — Owner: QA. Unskipped 4 of 5; MM-T4899_2 kept as a
+  residual. Brought the SEC-10993 shared NavigationHeader.tapBackButton helper onto
+  this branch (navigation_header.ts, thread.ts, channel.ts — identical to Branch 1 so
+  they merge cleanly) and refactored TableScreen.back() to index-qualify
+  navigation.header.back (topmost 1 → base 0 → native) — fixing MM-T1442_1's
+  duplicate-Back-node dismissal. MM-T4895_1 / MM-T4899_4 / MM-T4899_5 were stale skips
+  (pass on iOS now) — unskipped, verified 2x green. MM-T4899_2 (expanded-table
+  horizontal scroll can't reveal the right column) kept skipped: reproduced — the
+  right column renders at content x=392 in a 581px table inside a 402px viewport,
+  but both the incremental whileElement().scroll and scrollTo('right') (with a
+  layout-settle wait) leave it clipped by a superview; not a duplicate-back/hit-test
+  issue, needs deeper layout investigation (or PE if a real user also can't reveal
+  it). iOS verified (iPhone 17 Pro / iOS 26.3, 11.10 server); Android deferred to CI.

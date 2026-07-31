@@ -219,7 +219,12 @@ class ChannelScreen {
         let navigated = false;
         try {
             await waitForElementToExist(this.backButton, timeouts.THREE_SEC);
-            await this.backButton.tap();
+
+            // Channel is the base screen of the stack, so its header is index 0 even
+            // when a stale pushed header (e.g. a dismissed-but-mounted Thread) is still
+            // in the tree. Tapping the raw backButton throws on the multi-match, so go
+            // through the shared indexed helper instead of this.backButton.tap().
+            await NavigationHeader.tapBackButton(0);
             navigated = true;
         } catch {
             // Back button not in hierarchy — fall through to tab/native back.
