@@ -26,17 +26,20 @@ Append-only notes for a human to copy into the
   skipped (rule 6).
 
 - **SEC-11047** (classification banner Android suite, MM-T6209_1…MM-T6213_1) —
-  Owner: QA-pending env investigation. Status: the observe()/observeSavedPostsByIds
-  theory is RULED OUT (suite passed both with and without those app changes; failed
-  on only one of three runs with identical code — same code, opposite outcomes). The
-  suite's UI flow only navigates and asserts a banner; the suite still sets up
-  classification via API and creates posts, so this does not by itself rule out a
-  product cause. The 20-min classification lock / 30-min Jest timeout makes lock
-  contention / slow acquire a plausible mechanism. Local repro blocked (no API-35
-  emulator + ephemeral server torn down). Next step: diff the Android env (emulator
-  state, ordering, prior specs in the shard) between passing 30437339535 and failing
-  30447839548, and check lock-acquire timing. Suite stays describe.skip on Android
-  (rule 6). No code change beyond the skip comment.
+  Owner: QA/CI-infra (environmental). Verdict: ENVIRONMENTAL — shard-wide app-launch
+  failure, NOT suite-specific and NOT lock contention. Direct shard-log diff (both
+  runs ran the suite in Android runId 10 → machine-10-api-35): passing 30437339535 —
+  app launched OK every time, MM-T6209_1…MM-T6212_1 all [OK]; failing 30447839548 — the
+  app NEVER launched (3 attempts, "Neither server.screen nor channel_list.screen
+  appeared within 90s"), and EVERY test in the shard failed (Edit Channel, Favorite,
+  Find Channels, Leave, Mute — all before the banner suite). Lock-contention
+  hypothesis DISPROVEN by ordering: failures began at the first test (Edit Channel),
+  which acquires no classification lock; the lock is only in this suite's beforeAll
+  (the last suite in the shard). observe()/observeSavedPostsByIds already ruled out
+  (runbook). The suite passes on a healthy shard; the failure is an emulator/app-
+  launch environment flake (QA/CI-infra, not product). describe.skip stays as a
+  quarantine until app-launch reliability is addressed (worth a CI-infra/emulator
+  follow-up), then re-enable. No code change beyond the skip comment.
 
 - **SEC-11016** (offline setURLBlacklist does not block WebSocket, MM-T6207_1) —
   Owner: QA (test infra). Spike write-up (no unskip): Detox device.setURLBlacklist
