@@ -197,7 +197,10 @@ jobs:
       target_repo: ${{ github.repository }}
       commit_sha: ${{ inputs.MOBILE_VERSION }}
       pr_number: ${{ inputs.pr_number }}
-      branch: ${{ inputs.version_name }}
+      # Matterwick does not send version_name on either path, so fall back to
+      # main for baseline runs — the ledger row's branch is what later
+      # accuracy and amnesty queries filter on.
+      branch: ${{ inputs.version_name || (inputs.run_type == 'PR' && '' || 'main') }}
       run_type: ${{ inputs.run_type }}
       evidence_artifact: ${{ needs.plan.outputs.evidence_artifact }}
       evidence_run_id: ${{ github.run_id }}

@@ -85,8 +85,25 @@ permissions:
 # One E2E run per branch: a newer Matterwick dispatch supersedes the one already
 # in flight. GitHub cancels the older run as soon as this one is created, which
 # is earlier (and simpler) than cancelling from a step inside the new run.
+#
+# Main pushes are the exception. Matterwick dispatches every main push with
+# ref=main (server/push_events.go → dispatchMobileE2EWorkflow), so under a single
+# per-ref group two merges landing close together cancel each other and main
+# coverage silently becomes "whatever the latest merge was" rather than every
+# commit. That matters beyond main's own health: main results are the baseline
+# every PR failure is compared against, and a cancelled run is a permanent hole
+# in that history. Keying main runs on the commit gives each its own group, so
+# they queue instead of cancelling.
+#
+# Cost: concurrent main runs during a merge burst instead of one. Revert by
+# dropping the run_type branch from the group expression.
 concurrency:
-  group: e2e-${{ github.ref }}
+  group: >-
+    e2e-${{ github.ref }}-${{
+      (github.event.inputs.run_type == 'MASTER' || github.event.inputs.run_type == 'MAIN')
+        && github.event.inputs.MOBILE_VERSION
+        || 'branch'
+    }}
   cancel-in-progress: true
 
 env:
