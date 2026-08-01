@@ -245,14 +245,31 @@ describe('Channels', () => {
     // carried the waitForElementToExist fix, so existence-vs-visibility is not the cause.
     // Also failed iOS on 30437339535. Needs real root-cause work, not another wait tweak.
     //
-    // SEC-11046 investigation: the cited run 30447839548's Detox Android machine shards
-    // ALL passed (gh-verified) — only the aggregate `detox-android` job failed, which
-    // looks like a reporting/TSIO issue, not an MM-T3196_1 failure. So the failure
-    // mechanism is unconfirmed in the available CI artifacts. Local repro is blocked
-    // (ephemeral test server torn down; no local API-35 emulator). Do NOT re-apply the
-    // toBeVisible→waitForElementToExist swap (disproven). Next step: a fresh repro on a
-    // stable server + Android emulator to capture the real artifact, then classify QA
-    // vs PE. Kept skipped per rule 6.
+    // SEC-11046 follow-up (RETRACTS the first-pass "reporting artifact" claim below —
+    // that claim trusted the aggregate job-list 'success' over the shard's own log):
+    // Direct shard-level evidence shows MM-T3196_1 GENUINELY FAILS on both platforms:
+    //   - iOS 30437339535, machine-7-os-iOS (job 90536293389): shard log "MM-T3196_1 [FAIL]",
+    //     "Tests: 1 failed", exit code 1, yet the GitHub job conclusion is 'success'. The
+    //     failure-time viewHierarchy shows the app on the CHANNEL LIST
+    //     (channel_list.category.channels.channel_item.*, tab_bar.home.tab), NOT the
+    //     channel screen, while the test waits for the "X was removed from the channel"
+    //     system message in post_list (10s timeout).
+    //   - Android 30447839548, machine-7-api-35 (job 90566569840): MM-T3196_1 fails twice
+    //     (run + retry), "Tests: 1 failed", exit code 1, job 'success'.
+    // Mechanism: after removing a member the app lands on the CHANNEL LIST, not the
+    // channel screen, so post_list / the removal system message is absent and the wait
+    // times out. The toBeVisible->waitForElementToExist swap didn't help — the message
+    // is genuinely absent, not just not-visible.
+    // CI-infra anomaly (flag for a separate follow-up): the machine-7 shard jobs are
+    // marked 'success' despite exit code 1 + a failing test — the job conclusion does
+    // NOT gate on the Detox step exit code, so it could misreport other failing tests.
+    // QA vs PE: undetermined without a live run. Code hypothesis (needs confirm): the
+    // removal confirm (Alert.removeButton.tap) may auto-dismiss the manage-members
+    // sheet, making the test's explicit ManageChannelMembersScreen.close() an extra pop
+    // -> channel list (QA test-flow). If removal does NOT auto-dismiss, the app's
+    // close() over-pops (PE). Next step: a live repro on a stable server (iOS) to
+    // confirm the auto-dismiss and apply the matching fix (drop the extra close, or
+    // assert channel_info after removal). Kept skipped per rule 6.
     it.skip('MM-T3196_1 - RN apps Manage members in channel', async () => {
         // # Use pre-created user (already in channel)
         const removedUser = memberUser;
