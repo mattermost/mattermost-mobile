@@ -29,6 +29,13 @@ Append-only notes for a human to copy into the
   screen mid-test, not the sheet-dismiss mechanism), and there is no local API-35
   emulator for MM-T5725_1. Hardening is staged pending CI verification on a stable
   server; tsc + lint clean. (Closed PR #9893 had the earlier swipe fix; this extends it.)
+  Follow-up (verification pack): could NOT get a clean signal — the prior ephemeral cloud
+  servers (PR #9930/#9972 sites) are torn down (302 -> /cloud/inactive) and I cannot
+  provision Mattermost cloud servers myself, so the hardening (d3584e4b1) remains
+  UNVERIFIED on a clean session. NOT closed. Next step: a fresh stable server (or a CI
+  run on this branch with E2E/Run) to run MM-T69455_1 + MM-T5725_1 2x per platform with
+  cleared device storage; green -> drop it.skip for that platform; red -> fresh artifacts
+  and decide hardening-vs-PE.
 - **SEC-11051** (Maestro iOS server-connect, MM-T67856_1/_2) — Owner: QA (test-harness);
   follow-up CORRECTS the first-pass "foundation on main covers it" claim. Checked PR #9971
   (ca20a9a20, merged) line-by-line vs the ticket's two requirements: (b) mislabel fix

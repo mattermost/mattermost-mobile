@@ -788,6 +788,16 @@ describe('Channels - Channel Bookmarks', () => {
     // skipped: local repro was contaminated by an ephemeral-server session loss (the
     // app landed on the server-connect screen mid-test), not the sheet-dismiss
     // mechanism, so the fix is staged pending CI verification on a stable server.
+    //
+    // Follow-up (verification pack): attempted to get a CLEAN signal on a fresh server
+    // session — the prior ephemeral cloud servers (PR #9930/#9972 sites) are torn down
+    // (302 -> /cloud/inactive), and I cannot provision Mattermost cloud servers myself.
+    // So the hardening (commit d3584e4b1) remains UNVERIFIED on a clean session and the
+    // contaminated-repro caveat still stands. NOT closed. Next step: a fresh stable
+    // server (or a CI run on this branch with E2E/Run) to run MM-T69455_1 + MM-T5725_1
+    // 2x per platform with cleared device storage; green -> drop it.skip for that
+    // platform, red -> capture fresh artifacts per detox/CLAUDE.md and decide whether
+    // the hardening needs another fallback or this is a PE sheet-unmount case.
     it.skip('MM-T69455_1 - should open file preview on tap and options on long press', async () => {
         const channelT69455 = await createChannel();
 
