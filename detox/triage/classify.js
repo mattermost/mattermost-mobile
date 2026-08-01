@@ -165,9 +165,7 @@ function classifyCluster(clusterRecord, opts = {}) {
         rule_verdict: scopeSatisfied ? top.verdict : null,
         confidence: scopeSatisfied ? confidence : Number((confidence / 2).toFixed(3)),
         needs_ai: !scopeSatisfied || confidence < o.skipRerunConfidence,
-        reason: scopeSatisfied ?
-            top.label :
-            `${top.label} (matched, but the ${top.scope}-scoped signature is not supported by a single-test cluster)`,
+        reason: scopeSatisfied ?top.label :`${top.label} (matched, but the ${top.scope}-scoped signature is not supported by a single-test cluster)`,
     };
 }
 

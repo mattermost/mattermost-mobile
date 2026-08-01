@@ -826,6 +826,13 @@ jobs:
       pr_number: ${{ inputs.pr_number }}
       run_type: ${{ inputs.run_type }}
       version_name: ${{ inputs.version_name }}
+      # Forwarded so the targeted rerun can re-execute failed specs against the
+      # same provisioned servers and the same build the original run used.
+      IOS_SITE_1_URL: ${{ inputs.IOS_SITE_1_URL }}
+      IOS_SITE_2_URL: ${{ inputs.IOS_SITE_2_URL }}
+      ANDROID_SITE_1_URL: ${{ inputs.ANDROID_SITE_1_URL }}
+      ANDROID_SITE_2_URL: ${{ inputs.ANDROID_SITE_2_URL }}
+      SITE_3_URL: ${{ inputs.SITE_3_URL }}
     secrets: inherit
 
   e2e-remove-matterwick-label:

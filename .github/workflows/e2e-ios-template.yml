@@ -100,6 +100,22 @@ on:
         required: false
         type: string
         default: ""
+      spec_list:
+        description: >-
+          Explicit spec files to run instead of discovering them under search_path.
+          Used by failure-triage reruns, which re-execute only the specs that
+          failed. Empty means normal discovery.
+        required: false
+        type: string
+        default: ""
+      artifact_suffix:
+        description: >-
+          Appended to the results artifact name. A rerun executes inside the same
+          workflow run as the original, so without a suffix its upload collides
+          with the original shard's artifact and fails.
+        required: false
+        type: string
+        default: ""
       tsio-config:
         description: >
           TSIO reporting config: {"composite_identity":{...},"total_reports_expected":N}.
@@ -191,6 +207,7 @@ jobs:
         with:
           parallelism: ${{ inputs.parallelism }}
           search_path: ${{ inputs.search_path }}
+          spec_list: ${{ inputs.spec_list }}
           device_name: ${{ env.DEVICE_NAME }}
           device_os_version: ${{ env.DEVICE_OS_VERSION }}
 
@@ -753,7 +770,7 @@ jobs:
         if: always()
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
-          name: ios-results-${{ needs.generate-specs.outputs.workflow_hash }}-${{ matrix.runId }}
+          name: ios-results-${{ needs.generate-specs.outputs.workflow_hash }}-${{ matrix.runId }}${{ inputs.artifact_suffix }}
           path: detox/artifacts/
 
   generate-report:

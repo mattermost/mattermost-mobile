@@ -9,6 +9,7 @@ const {test} = require('node:test');
 
 const {buildRerunPlan, classify, classifyCluster, cluster, pickTier} = require('./classify');
 const {collect, normalizeForSignature, parseJestResults, parseMaestroReport, signatureHash} = require('./collect');
+const {mergeRerun, specOutcome, OUTCOME} = require('./rerun');
 const {combineConfidence, matchSignatures, matchSuiteRules} = require('./signatures');
 
 function tmpdir() {
@@ -525,4 +526,93 @@ test('artifact lookup does not rescan the tree once per failure', () => {
     assert.ok(elapsed < 5000, `collect took ${elapsed}ms — the per-failure rescan is back`);
 
     fs.rmSync(dir, {recursive: true, force: true});
+});
+
+// ---------- rerun merge: measurement overruling inference ----------
+
+function writeRep(root, failedSpecs) {
+    const d = path.join(root, 'ios-results-abc-1');
+    fs.mkdirSync(d, {recursive: true});
+    const assertions = [
+        {fullName: 'MM-T1_0 filler', status: 'passed', duration: 1},
+        ...failedSpecs.map((spec, i) => ({
+            fullName: `MM-T9${i} ${spec}`,
+            status: 'failed',
+            duration: 1,
+            failureMessages: ['boom'],
+        })),
+    ];
+    fs.writeFileSync(path.join(d, 'jest-results.json'), JSON.stringify({
+        testResults: failedSpecs.length === 0 ?[{name: '/repo/kept.e2e.ts', assertionResults: [assertions[0]]}] :failedSpecs.map((spec, i) => ({
+            name: spec,
+            assertionResults: [assertions[i + 1]],
+        })).concat([{name: '/repo/kept.e2e.ts', assertionResults: [assertions[0]]}]),
+    }));
+}
+
+function evidenceWithPlan(spec) {
+    return {
+        clusters: [{signature_hash: 'sig1', member_count: 1, needs_ai: true}],
+        rerun_plan: {enabled: true, specs: [{platform: 'ios', spec, signature_hash: 'sig1'}], reps: 2},
+    };
+}
+
+test('a failure reproducing in every repetition is deterministic', () => {
+    const a = tmpdir();
+    const b = tmpdir();
+    const spec = path.relative(process.cwd(), '/repo/flaky.e2e.ts');
+    writeRep(a, [spec]);
+    writeRep(b, [spec]);
+
+    const merged = mergeRerun(evidenceWithPlan(spec), [a, b]);
+
+    assert.equal(merged.clusters[0].rerun.outcome, OUTCOME.DETERMINISTIC);
+    assert.equal(merged.clusters[0].reproduced_on_rerun, true);
+
+    fs.rmSync(a, {recursive: true, force: true});
+    fs.rmSync(b, {recursive: true, force: true});
+});
+
+test('a failure that stops reproducing is confirmed non-deterministic', () => {
+    const a = tmpdir();
+    const b = tmpdir();
+    const spec = path.relative(process.cwd(), '/repo/flaky.e2e.ts');
+    writeRep(a, [spec]);
+    writeRep(b, []);
+
+    const merged = mergeRerun(evidenceWithPlan(spec), [a, b]);
+
+    assert.equal(merged.clusters[0].rerun.outcome, OUTCOME.FLAKY);
+    assert.equal(merged.clusters[0].reproduced_on_rerun, false);
+    assert.equal(merged.clusters[0].cleared_on_rerun, true);
+
+    fs.rmSync(a, {recursive: true, force: true});
+    fs.rmSync(b, {recursive: true, force: true});
+});
+
+test('an empty rerun is inconclusive, never a pass', () => {
+    // A repetition that produced no report must not be read as "it passed" —
+    // that would let a rerun which never ran manufacture a flaky verdict.
+    const empty = tmpdir();
+
+    const merged = mergeRerun(evidenceWithPlan('detox/e2e/test/x.e2e.ts'), [empty]);
+
+    assert.equal(merged.clusters[0].rerun.outcome, OUTCOME.INCONCLUSIVE);
+    assert.equal(merged.clusters[0].reproduced_on_rerun, undefined);
+    assert.equal(merged.rerun_meta.usable_repetitions, 0);
+
+    fs.rmSync(empty, {recursive: true, force: true});
+});
+
+test('specOutcome ignores unusable repetitions rather than counting them as passes', () => {
+    const reps = [
+        {usable: true, failedSpecs: new Set(['a.ts']), failedTestIds: new Set()},
+        {usable: false, failedSpecs: new Set(), failedTestIds: new Set()},
+    ];
+
+    const out = specOutcome('a.ts', null, reps);
+
+    assert.equal(out.reps, 1);
+    assert.equal(out.failed_reps, 1);
+    assert.equal(out.outcome, OUTCOME.DETERMINISTIC);
 });

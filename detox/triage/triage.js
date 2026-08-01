@@ -30,6 +30,7 @@ const path = require('path');
 const {classify} = require('./classify');
 const {collect} = require('./collect');
 const {enrich, PRODUCTION_URL} = require('./history');
+const {mergeRerun} = require('./rerun');
 
 function parseArgs(argv) {
     const args = {};
@@ -124,7 +125,38 @@ async function main() {
     const baseUrl = args['tsio-url'] || PRODUCTION_URL;
     const skipHistory = args['skip-history'] === 'true';
 
+    // Comma-separated artifact roots, one per rerun repetition. Present only on
+    // the second triage pass, after the rerun jobs have uploaded their results.
+    const rerunRoots = (args['rerun-artifacts'] || '').
+        split(',').
+        map((v) => v.trim()).
+        filter(Boolean);
+
     fs.mkdirSync(outputDir, {recursive: true});
+
+    // Merge-only pass: the plan job already collected, classified, and enriched,
+    // and uploaded the result. Re-collecting here would mean re-downloading the
+    // whole artifact tree to rebuild something already known — and would have to
+    // re-resolve which spec belonged to which cluster.
+    const evidenceIn = args['evidence-in'];
+    if (evidenceIn) {
+        const prior = JSON.parse(fs.readFileSync(evidenceIn, 'utf8'));
+        const merged = rerunRoots.length > 0 ? mergeRerun(prior, rerunRoots) : prior;
+        if (rerunRoots.length > 0) {
+            console.log(
+                `rerun: ${merged.rerun_meta.usable_repetitions}/${merged.rerun_meta.repetitions} ` +
+                `usable repetition(s) over ${merged.rerun_meta.specs_rerun} spec(s)`,
+            );
+            for (const c of merged.clusters.filter((x) => x.rerun)) {
+                console.log(`  cluster ${c.signature_hash}: ${c.rerun.outcome}`);
+            }
+        } else {
+            console.log('no rerun artifacts supplied — passing prior evidence through unchanged');
+        }
+        fs.writeFileSync(path.join(outputDir, 'evidence.json'), `${JSON.stringify(merged, null, 2)}\n`);
+        fs.writeFileSync(path.join(outputDir, 'summary.md'), renderSummary(merged));
+        return;
+    }
 
     const collected = collect(artifacts);
     console.log(
@@ -135,6 +167,21 @@ async function main() {
     let result = classify(collected);
     console.log(`tier ${result.tier}: ${result.tier_reason}`);
     console.log(`${result.clusters.length} cluster(s); needs_ai=${result.needs_ai}`);
+
+    if (rerunRoots.length > 0) {
+        // The prior pass's plan says which spec belongs to which cluster, so the
+        // rerun results can be attributed. Reclassifying from scratch would lose
+        // that mapping.
+        const priorPlan = args['prior-evidence'] && fs.existsSync(args['prior-evidence']) ?JSON.parse(fs.readFileSync(args['prior-evidence'], 'utf8')).rerun_plan :result.rerun_plan;
+        result = mergeRerun({...result, rerun_plan: priorPlan}, rerunRoots);
+        console.log(
+            `rerun: ${result.rerun_meta.usable_repetitions}/${result.rerun_meta.repetitions} ` +
+            `usable repetition(s) over ${result.rerun_meta.specs_rerun} spec(s)`,
+        );
+        for (const c of result.clusters.filter((x) => x.rerun)) {
+            console.log(`  cluster ${c.signature_hash}: ${c.rerun.outcome}`);
+        }
+    }
 
     if (!skipHistory && repo) {
         try {
