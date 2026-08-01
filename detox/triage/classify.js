@@ -206,6 +206,7 @@ function buildRerunPlan(clusters, tier, opts = {}) {
 
     const specs = [];
     const seen = new Set();
+    let skippedNonDetox = 0;
     for (const c of unresolved) {
         let takenFromCluster = 0;
 
@@ -214,6 +215,13 @@ function buildRerunPlan(clusters, tier, opts = {}) {
         // per runner minute.
         const ordered = [...c.members].sort((a, b) => Number(Boolean(b.test_id)) - Number(Boolean(a.test_id)));
         for (const member of ordered) {
+            // Only Detox can be rerun from a spec list. Maestro runs named flows,
+            // and its "spec" is the JUnit report path — feeding that to the Detox
+            // template would fail spec_list validation and take the rerun with it.
+            if (member.framework !== 'detox') {
+                skippedNonDetox += 1;
+                continue;
+            }
             if (!member.spec || takenFromCluster >= o.maxSpecsPerCluster || specs.length >= o.maxRerunSpecs) {
                 continue;
             }
@@ -226,18 +234,29 @@ function buildRerunPlan(clusters, tier, opts = {}) {
                 platform: member.platform,
                 spec: member.spec,
                 test_id: member.test_id,
+                framework: member.framework,
                 signature_hash: c.signature_hash,
             });
             takenFromCluster += 1;
         }
     }
 
+    let reason;
+    if (specs.length > 0) {
+        reason = `${specs.length} representative spec(s) across ${unresolved.length} unresolved cluster(s)`;
+    } else if (skippedNonDetox > 0) {
+        reason = `${unresolved.length} unresolved cluster(s), but no Detox spec to rerun (${skippedNonDetox} Maestro failure(s) are not rerunnable by spec list)`;
+    } else {
+        reason = 'unresolved clusters carry no rerunnable spec path';
+    }
+
     return {
         enabled: specs.length > 0,
-        reason: specs.length > 0 ?`${specs.length} representative spec(s) across ${unresolved.length} unresolved cluster(s)` :'unresolved clusters carry no rerunnable spec path',
+        reason,
         specs,
         reps: o.rerunReps,
         resolved_by_rules: confidentClusters.length,
+        skipped_non_detox: skippedNonDetox,
         truncated: unresolved.length > o.maxClusters || specs.length >= o.maxRerunSpecs,
     };
 }

@@ -860,6 +860,34 @@ jobs:
           echo "==> All ${MAX_ATTEMPTS} boot attempts failed"
           exit 1
 
+      # iOS captures a device log and runs a connectivity preflight; Android had
+      # neither, which left an entire platform's environment failures
+      # undiagnosable — a red Maestro Android run looked the same whether the
+      # server was unreachable, the emulator was wedged, or a flow was genuinely
+      # broken.
+      - name: Start Android device log capture
+        continue-on-error: true
+        run: |
+          set -uo pipefail
+          mkdir -p build
+          adb logcat -c 2>/dev/null || true
+          adb logcat -v time > build/android-device.log 2> build/android-device.err &
+          echo $! > build/android-device.pid
+          echo "==> logcat capture started (pid $(cat build/android-device.pid))"
+
+      - name: Verify Android can reach the test server
+        continue-on-error: true
+        env:
+          SITE_1_URL: ${{ env.SITE_1_URL }}
+        run: |
+          set -uo pipefail
+          CODE=$(curl -s -o /dev/null -w '%{http_code}' --max-time 20 \
+            "${SITE_1_URL}/api/v4/system/ping" 2>/dev/null || echo "000")
+          echo "==> ${SITE_1_URL} ping HTTP ${CODE}"
+          if [ "$CODE" != "200" ]; then
+            echo "::error::Test server ${SITE_1_URL} is not answering (HTTP ${CODE}). This is an environment failure, not a flow failure — re-run rather than editing flows."
+          fi
+
       - name: Run Maestro Flows (Android)
         continue-on-error: true
         env:
@@ -918,6 +946,33 @@ jobs:
             --env ADMIN_TOKEN="${ADMIN_TOKEN}" \
             --env MAESTRO_APP_ID="com.mattermost.rnbeta" \
             detox/maestro/flows/account/attach_logs_disabled_when_download_logs_off.yml
+
+      - name: Stop Android device log capture
+        if: always()
+        continue-on-error: true
+        run: |
+          set -uo pipefail
+          if [ -f build/android-device.pid ]; then
+            kill "$(cat build/android-device.pid)" 2>/dev/null || true
+          fi
+          if [ -f build/android-device.log ]; then
+            echo "==> build/android-device.log size=$(wc -c < build/android-device.log)B"
+            echo "==> Last 100 lines:"
+            tail -100 build/android-device.log || true
+            echo "==> Crashes, ANRs, and app errors:"
+            grep -iE 'FATAL EXCEPTION|ANR in|force-clos|died|E ActivityManager|E AndroidRuntime' \
+              build/android-device.log | head -50 || true
+          fi
+
+      - name: Capture server diagnostics
+        if: always()
+        continue-on-error: true
+        uses: ./.github/actions/capture-server-diagnostics
+        with:
+          site_url: ${{ env.SITE_1_URL }}
+          admin_username: ${{ env.ADMIN_USERNAME }}
+          admin_password: ${{ env.ADMIN_PASSWORD }}
+          output_dir: build/server-diagnostics
 
       - name: Upload Maestro Artifacts
         if: always()

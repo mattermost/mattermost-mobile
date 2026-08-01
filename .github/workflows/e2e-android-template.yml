@@ -483,6 +483,20 @@ jobs:
           exit 1
         continue-on-error: true # We want to run all the tests
 
+      # Captured before the artifact upload so it travels with the results the
+      # triage engine reads. A server-side failure and a test-side failure look
+      # identical from the device — both are "the element never appeared" — so
+      # without this, FLAKY_SERVER could only ever be a guess.
+      - name: Capture server diagnostics
+        if: always()
+        continue-on-error: true
+        uses: ./.github/actions/capture-server-diagnostics
+        with:
+          site_url: ${{ env.SITE_1_URL }}
+          admin_username: ${{ env.ADMIN_USERNAME }}
+          admin_password: ${{ env.ADMIN_PASSWORD }}
+          output_dir: detox/artifacts/server-diagnostics
+
       - name: Upload Android Test Report
         if: always() && hashFiles('detox/artifacts/**') != ''
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1

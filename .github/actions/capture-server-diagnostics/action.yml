@@ -1,0 +1,114 @@
+# yaml-language-server: $schema=https://json.schemastore.org/github-action.json
+name: capture-server-diagnostics
+description: >-
+  Capture test-server health, version, and recent server logs into the artifact
+  tree so failure triage can tell a server-side problem apart from a test or app
+  problem.
+
+  Without this, "the server 5xx'd" and "the test is wrong" look identical from
+  the device side: both surface as an element that never appeared. This is the
+  evidence that separates them, and it is why FLAKY_SERVER can be a real verdict
+  rather than a guess.
+
+  Best-effort by design. Every failure path writes a note and exits 0 — a
+  diagnostics step must never be the reason a test job fails.
+
+inputs:
+  site_url:
+    description: Base URL of the test server to interrogate.
+    required: true
+  admin_username:
+    required: true
+  admin_password:
+    required: true
+  output_dir:
+    description: Directory to write diagnostics into. Created if absent.
+    required: false
+    default: detox/artifacts/server-diagnostics
+  log_lines:
+    description: How many recent server log lines to keep.
+    required: false
+    default: "300"
+
+runs:
+  using: composite
+  steps:
+    - name: ci/capture-server-diagnostics
+      shell: bash
+      env:
+        SITE_URL: ${{ inputs.site_url }}
+        ADMIN_USERNAME: ${{ inputs.admin_username }}
+        ADMIN_PASSWORD: ${{ inputs.admin_password }}
+        OUTPUT_DIR: ${{ inputs.output_dir }}
+        LOG_LINES: ${{ inputs.log_lines }}
+      run: |
+        # No `set -e`: this step is diagnostics. A server that is completely down
+        # is exactly when this runs, and it must still exit 0.
+        set -uo pipefail
+        mkdir -p "$OUTPUT_DIR"
+
+        if [ -z "${SITE_URL:-}" ]; then
+          echo "no site_url supplied — skipping" | tee "$OUTPUT_DIR/note.txt"
+          exit 0
+        fi
+
+        # 1. Reachability and version. This alone separates "server was down" from
+        #    everything else, and it needs no credentials.
+        PING_FILE="$OUTPUT_DIR/ping.json"
+        PING_CODE=$(curl -s -o "$PING_FILE" -w '%{http_code}' --max-time 20 \
+          "${SITE_URL}/api/v4/system/ping?get_server_status=true" 2>/dev/null || echo "000")
+        echo "ping_http_code=${PING_CODE}" > "$OUTPUT_DIR/summary.txt"
+        echo "site_url=${SITE_URL}" >> "$OUTPUT_DIR/summary.txt"
+        echo "captured_at=$(date -u +%Y-%m-%dT%H:%M:%SZ)" >> "$OUTPUT_DIR/summary.txt"
+
+        if [ "$PING_CODE" != "200" ]; then
+          echo "::warning::Test server ${SITE_URL} did not answer /api/v4/system/ping (HTTP ${PING_CODE}). Failures in this job are likely environmental."
+          echo "verdict_hint=server-unreachable" >> "$OUTPUT_DIR/summary.txt"
+          exit 0
+        fi
+
+        # 2. Server logs need an admin session. The token is captured from the
+        #    response header into a variable and never echoed — it would otherwise
+        #    land in the artifact that triage uploads and the model reads.
+        if [ -z "${ADMIN_USERNAME:-}" ] || [ -z "${ADMIN_PASSWORD:-}" ]; then
+          echo "no admin credentials — health captured, logs skipped" >> "$OUTPUT_DIR/summary.txt"
+          exit 0
+        fi
+
+        HEADERS=$(mktemp)
+        curl -s -D "$HEADERS" -o /dev/null --max-time 20 \
+          -H 'Content-Type: application/json' \
+          -d "$(printf '{"login_id":"%s","password":"%s"}' "$ADMIN_USERNAME" "$ADMIN_PASSWORD")" \
+          "${SITE_URL}/api/v4/users/login" 2>/dev/null
+        TOKEN=$(grep -i '^token:' "$HEADERS" | tr -d '\r' | awk '{print $2}')
+        rm -f "$HEADERS"
+
+        if [ -z "${TOKEN:-}" ]; then
+          echo "admin login failed — health captured, logs skipped" >> "$OUTPUT_DIR/summary.txt"
+          echo "verdict_hint=admin-login-failed" >> "$OUTPUT_DIR/summary.txt"
+          exit 0
+        fi
+
+        # Version tells us whether the provisioned server is the one expected —
+        # a version mismatch is a whole class of "mysterious" failures.
+        curl -s --max-time 20 -H "Authorization: Bearer ${TOKEN}" \
+          "${SITE_URL}/api/v4/config/client?format=old" \
+          -o "$OUTPUT_DIR/client-config.json" 2>/dev/null
+
+        # Recent server logs, trimmed. Capped because the whole point of the
+        # evidence bundle is that it stays small enough to reason over.
+        curl -s --max-time 30 -H "Authorization: Bearer ${TOKEN}" \
+          "${SITE_URL}/api/v4/logs?page=0&per_page=${LOG_LINES}" \
+          -o "$OUTPUT_DIR/server-logs.json" 2>/dev/null
+
+        if [ -s "$OUTPUT_DIR/server-logs.json" ]; then
+          BYTES=$(wc -c < "$OUTPUT_DIR/server-logs.json" | tr -d ' ')
+          echo "server_log_bytes=${BYTES}" >> "$OUTPUT_DIR/summary.txt"
+          # Surface the error lines in the job log so a human scanning CI sees
+          # them without downloading the artifact.
+          echo "==> Recent server-side errors:"
+          grep -oiE '"[^"]*(error|panic|fatal)[^"]*"' "$OUTPUT_DIR/server-logs.json" 2>/dev/null | head -20 || true
+        fi
+
+        # Best effort, always. Never fail a test job over diagnostics.
+        exit 0

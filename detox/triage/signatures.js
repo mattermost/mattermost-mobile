@@ -354,6 +354,28 @@ const SUITE_RULES = [
         },
     },
     {
+        id: 'suite.server-unreachable',
+        label: 'test server was not answering',
+
+        // Highest weight of any suite rule: this is a direct measurement taken at
+        // the time of the run, not an inference from error text. If the server
+        // was down, nothing else about the failures is worth reading.
+        weight: 0.95,
+        evaluate: (summary) => {
+            const probes = summary.serverProbes || [];
+            const down = probes.filter((p) => p.reachable === false);
+            if (down.length > 0 && summary.failed > 0) {
+                return {
+                    verdict: 'FLAKY_SERVER',
+                    reason: `test server did not answer /api/v4/system/ping (${down.
+                        map((p) => `${p.site || 'unknown'} → HTTP ${p.ping_http_code}`).
+                        join('; ')})`,
+                };
+            }
+            return null;
+        },
+    },
+    {
         id: 'suite.single-shard-wiped',
         label: 'one shard died while the rest passed',
         weight: 0.8,

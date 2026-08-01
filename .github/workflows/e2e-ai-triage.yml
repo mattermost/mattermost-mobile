@@ -264,6 +264,10 @@ jobs:
       spec_list: ${{ needs.plan.outputs.rerun_ios_specs }}
       artifact_suffix: -rr${{ matrix.rep }}
       parallelism: 1
+      # Video is off for normal runs because recording the full suite is
+      # expensive. A rerun is a handful of specs, and a recording of the moment a
+      # failure reproduced is the most useful artifact there is for diagnosing it.
+      extra_detox_args: "--record-videos failing"
     secrets: inherit
 
   rerun-android:

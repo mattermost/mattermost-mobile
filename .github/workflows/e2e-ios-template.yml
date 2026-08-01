@@ -108,6 +108,16 @@ on:
         required: false
         type: string
         default: ""
+      extra_detox_args:
+        description: >-
+          Extra flags appended to the Detox CLI invocation. Failure-triage reruns
+          pass `--record-videos failing`, which is off for normal runs because
+          recording the full suite is expensive — but a rerun is a handful of
+          specs, and a video of the moment a failure reproduced is the single
+          most useful artifact for diagnosing it.
+        required: false
+        type: string
+        default: ""
       artifact_suffix:
         description: >-
           Appended to the results artifact name. A rerun executes inside the same
@@ -695,20 +705,27 @@ jobs:
           # Use read -ra to safely word-split space-separated spec paths without
           # glob expansion or shell injection from the matrix value.
           read -ra SPECS <<< "$MATRIX_SPECS"
+          # Same treatment for the optional extra Detox flags. Guarded expansion
+          # so an unset array does not trip `set -u` in future edits.
+          EXTRA_ARGS=()
+          if [ -n "${EXTRA_DETOX_ARGS:-}" ]; then
+            read -ra EXTRA_ARGS <<< "$EXTRA_DETOX_ARGS"
+          fi
           set +e
           # `--` separates Detox args from Jest args; --json --outputFile emits
           # Jest's native JSON report (consumed by the TSIO detox parser) into
           # the existing detox/artifacts/ upload.
           if [ "$DETOX_CONFIG" = "ios.ipad.debug" ]; then
-            npm run e2e:ios-ipad-test -- "${SPECS[@]}" -- --json --outputFile=artifacts/jest-results.json
+            npm run e2e:ios-ipad-test -- "${SPECS[@]}" ${EXTRA_ARGS[@]+"${EXTRA_ARGS[@]}"} -- --json --outputFile=artifacts/jest-results.json
           else
-            npm run e2e:ios-test -- "${SPECS[@]}" -- --json --outputFile=artifacts/jest-results.json
+            npm run e2e:ios-test -- "${SPECS[@]}" ${EXTRA_ARGS[@]+"${EXTRA_ARGS[@]}"} -- --json --outputFile=artifacts/jest-results.json
           fi
           DETOX_EXIT_CODE=$?
           exit "${DETOX_EXIT_CODE:-1}"
         env:
           DETOX_CONFIG: ${{ inputs.detox_config }}
           MATRIX_SPECS: ${{ matrix.specs }}
+          EXTRA_DETOX_ARGS: ${{ inputs.extra_detox_args }}
           DETOX_DISABLE_HIERARCHY_DUMP: "YES"
           DETOX_DISABLE_SCREENSHOT_TRACKING: "YES"
           DETOX_LOGLEVEL: "info"
@@ -765,6 +782,20 @@ jobs:
           path: |
             /Users/runner/work/mattermost-mobile/mattermost-mobile/flow-output.csv
             /Users/runner/work/mattermost-mobile/mattermost-mobile/mitmdump.log
+
+      # Captured before the artifact upload so it travels with the results the
+      # triage engine reads. A server-side failure and a test-side failure look
+      # identical from the device — both are "the element never appeared" — so
+      # without this, FLAKY_SERVER could only ever be a guess.
+      - name: Capture server diagnostics
+        if: always()
+        continue-on-error: true
+        uses: ./.github/actions/capture-server-diagnostics
+        with:
+          site_url: ${{ env.SITE_1_URL }}
+          admin_username: ${{ env.ADMIN_USERNAME }}
+          admin_password: ${{ env.ADMIN_PASSWORD }}
+          output_dir: detox/artifacts/server-diagnostics
 
       - name: Upload iOS Test Report
         if: always()

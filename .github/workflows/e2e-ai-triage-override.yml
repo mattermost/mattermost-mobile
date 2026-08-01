@@ -1,0 +1,46 @@
+---
+# `/e2e-triage-override <verdict> <reason>` on a PR.
+#
+# Every triage comment advertises this command, so it has to exist. It is also
+# the only mechanism that can tell the system it was wrong: corrections are the
+# ground truth the accuracy metrics are computed from, and a waiver corrected to
+# a real-bug verdict is what the false-green count counts.
+#
+# Restricted to OWNER/MEMBER/COLLABORATOR. The command can turn a red check green,
+# so it carries the same authority as applying E2E/Override by hand and needs the
+# same trust level.
+name: E2E AI Triage Override
+
+on:
+  issue_comment:
+    types: [created]
+
+concurrency:
+  group: e2e-ai-triage-override-${{ github.event.issue.number }}
+  cancel-in-progress: false
+
+jobs:
+  override:
+    permissions:
+      contents: read
+      statuses: write
+      pull-requests: write
+      issues: write
+      id-token: write
+    if: >-
+      github.repository == 'mattermost/mattermost-mobile' &&
+      github.event.issue.pull_request &&
+      startsWith(github.event.comment.body, '/e2e-triage-override') &&
+      contains(fromJSON('["OWNER", "MEMBER", "COLLABORATOR"]'), github.event.comment.author_association)
+    # Pin to a commit SHA once the reusable workflow is stable. Using @main during
+    # initial rollout, matching pr-test-analysis-override.yml.
+    uses: mattermost/mattermost-test-automation-toolkit/.github/workflows/e2e-ai-triage-override.yml@main
+    with:
+      target_repo: mattermost/mattermost-mobile
+      pr_number: ${{ github.event.issue.number }}
+      comment_body: ${{ github.event.comment.body }}
+      comment_id: ${{ github.event.comment.id }}
+      sender: ${{ github.event.comment.user.login }}
+    secrets:
+      GH_TOKEN: ${{ secrets.GH_TOKEN || github.token }}
+      TSIO_API_KEY: ${{ secrets.TSIO_API_KEY }}

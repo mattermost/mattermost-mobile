@@ -111,9 +111,7 @@ function mergeRerun(evidence, repetitions) {
         } else if (nonePassed) {
             outcome = OUTCOME.FLAKY;
         } else {
-            outcome = usable.some((s) => s.outcome === OUTCOME.DETERMINISTIC) ?
-                OUTCOME.FLAKY :
-                OUTCOME.PASSED;
+            outcome = usable.some((s) => s.outcome === OUTCOME.DETERMINISTIC) ?OUTCOME.FLAKY :OUTCOME.PASSED;
         }
 
         return {

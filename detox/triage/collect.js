@@ -365,6 +365,31 @@ function decodeXmlEntities(s) {
         replace(/&amp;/g, '&');
 }
 
+/**
+ * Normalize a spec path to repo-relative.
+ *
+ * Jest reports carry the absolute path from the machine that ran the test, and
+ * that is a *different runner* — usually a different OS — from the one doing
+ * triage. path.relative() against the triage job's cwd therefore produces a
+ * garbage `../../../Users/runner/...` path, which then fails spec_list
+ * validation and takes the whole rerun with it.
+ *
+ * Anchoring on the `detox/` segment is stable across runners because it is the
+ * repo-relative prefix every spec shares. Anything that does not contain it is
+ * not a rerunnable spec and is left null rather than guessed at.
+ */
+function toRepoRelativeSpec(filePath) {
+    if (!filePath) {
+        return null;
+    }
+    const normalized = String(filePath).replace(/\\/g, '/');
+    const match = normalized.match(/(?:^|\/)(detox\/.*)$/);
+    if (match) {
+        return match[1];
+    }
+    return path.isAbsolute(normalized) ? null : normalized;
+}
+
 function buildFailure({spec, title, message, durationMs, platform, shard, framework, suiteLevel, root}) {
     const trimmed = String(message || '').slice(0, MAX_MESSAGE_CHARS);
     const errorType = (trimmed.match(/^\s*(\w*Error|\w*Exception|Timeout)\b/m) || [])[1] || 'Failure';
@@ -374,7 +399,7 @@ function buildFailure({spec, title, message, durationMs, platform, shard, framew
 
     return {
         test_id: (String(title || '').match(TEST_ID_RE) || [null])[0],
-        spec: spec ? path.relative(process.cwd(), spec) : null,
+        spec: toRepoRelativeSpec(spec),
         title: title || 'unknown',
         platform,
         shard,
@@ -400,6 +425,42 @@ function buildFailure({spec, title, message, durationMs, platform, shard, framew
  * `root` is the directory GitHub's download-artifact populated — one subdirectory
  * per uploaded artifact, i.e. one per shard.
  */
+/**
+ * Read whatever the capture-server-diagnostics action left behind.
+ *
+ * This is what lets FLAKY_SERVER be a verdict rather than a guess: from the
+ * device side a 502 and a broken selector are the same symptom, an element that
+ * never appeared. A recorded non-200 ping at the time of the run is the only
+ * thing that distinguishes them.
+ */
+function collectServerProbes(root) {
+    const probes = [];
+    for (const file of walk(root, (name) => name === 'summary.txt')) {
+        if (!file.includes('server-diagnostics')) {
+            continue;
+        }
+        try {
+            const text = fs.readFileSync(file, 'utf8');
+            const field = (key) => (text.match(new RegExp(`^${key}=(.*)$`, 'm')) || [])[1] || null;
+            const code = field('ping_http_code');
+            probes.push({
+                site: field('site_url'),
+                ping_http_code: code,
+                reachable: code === '200',
+                verdict_hint: field('verdict_hint'),
+                captured_at: field('captured_at'),
+                shard: shardFromPath(file, root),
+                platform: platformFromPath(file),
+                log_bytes: Number(field('server_log_bytes') || 0),
+            });
+        } catch {
+            // A diagnostics file we cannot read tells us nothing; it must not
+            // stop the rest of the collection.
+        }
+    }
+    return probes;
+}
+
 function collect(root, {cwd = process.cwd()} = {}) {
     const absRoot = path.resolve(cwd, root);
     const jestReports = walk(absRoot, (name) => /^jest-results.*\.json$/.test(name));
@@ -439,6 +500,7 @@ function collect(root, {cwd = process.cwd()} = {}) {
         platforms: [...new Set(shards.map((s) => s.platform))],
         reportsFound: jestReports.length + maestroReports.length,
         parseErrors: errors,
+        serverProbes: collectServerProbes(absRoot),
     };
 
     return {summary, failures};
@@ -446,6 +508,8 @@ function collect(root, {cwd = process.cwd()} = {}) {
 
 module.exports = {
     collect,
+    collectServerProbes,
+    toRepoRelativeSpec,
     normalizeForSignature,
     signatureHash,
     signatureLabel,
