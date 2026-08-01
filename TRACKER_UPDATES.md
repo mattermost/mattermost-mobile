@@ -14,3 +14,15 @@ Append-only notes for a human to copy into the
   toBeVisible→waitForElementToExist swap was disproven and is NOT re-applied. Next
   step: a fresh repro on a stable server + Android emulator to capture the real
   artifact, then classify QA vs PE. Test stays skipped (rule 6).
+
+- **SEC-11047** (classification banner Android suite, MM-T6209_1…MM-T6213_1) —
+  Owner: QA-pending env investigation. Status: the observe()/observeSavedPostsByIds
+  theory is RULED OUT (suite passed both with and without those app changes; failed
+  on only one of three runs with identical code — same code, opposite outcomes). The
+  suite only taps tabs and asserts a banner (never writes a preference), so a product
+  change is unlikely. The 20-min classification lock / 30-min Jest timeout makes lock
+  contention / slow acquire a plausible mechanism. Local repro blocked (no API-35
+  emulator + ephemeral server torn down). Next step: diff the Android env (emulator
+  state, ordering, prior specs in the shard) between passing 30437339535 and failing
+  30447839548, and check lock-acquire timing. Suite stays describe.skip on Android
+  (rule 6). No code change beyond the skip comment.

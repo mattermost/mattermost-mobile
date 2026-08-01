@@ -30,7 +30,18 @@ import {by, device, element, waitFor} from 'detox';
 // Lock wait is up to 20m; leave headroom for enable/setup after acquire.
 jest.setTimeout(timeouts.ONE_MIN * 30);
 
-// Skip Android: CI run 30447839548 — suite flaking on Detox Android (MM-T6209_1 … MM-T6213_1).
+// Skip Android (SEC-11047): CI run 30447839548 — suite flaking on Detox Android
+// (MM-T6209_1 … MM-T6213_1). Trigger unknown. The observe()/observeSavedPostsByIds
+// theory is RULED OUT by the runbook's comparison table (the suite passed both with
+// and without those app changes, and failed on only one of three runs with identical
+// app code — same code, opposite outcomes). The suite only taps tabs and asserts a
+// banner (it never writes a preference), so a product code change is unlikely. The
+// 20-min classification lock / 30-min Jest timeout makes lock contention or a slow
+// acquire a plausible mechanism to rule in/out. Local repro blocked (no API-35
+// emulator + ephemeral server torn down). Next step: diff the Android env (emulator
+// state, ordering, what specs ran before this shard) between passing 30437339535 and
+// failing 30447839548, and check lock-acquire timing. Owner stays QA unless that
+// points to product. Kept describe.skip on Android (rule 6).
 (isAndroid() ? describe.skip : describe)('Classification Banner - Visibility Across Screens', () => {
     const serverOneDisplayName = 'Server 1';
     let lockOwner = '';
