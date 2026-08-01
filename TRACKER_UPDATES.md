@@ -29,3 +29,22 @@ Append-only notes for a human to copy into the
   screen mid-test, not the sheet-dismiss mechanism), and there is no local API-35
   emulator for MM-T5725_1. Hardening is staged pending CI verification on a stable
   server; tsc + lint clean. (Closed PR #9893 had the earlier swipe fix; this extends it.)
+- **SEC-11051** (Maestro iOS server-connect, MM-T67856_1/_2) — Owner: QA (test-harness);
+  follow-up CORRECTS the first-pass "foundation on main covers it" claim. Checked PR #9971
+  (ca20a9a20, merged) line-by-line vs the ticket's two requirements: (b) mislabel fix
+  SATISFIED — #9971 added wait_for_server_connect_complete.yml with the non-optional
+  notVisible:server_form.display_help FIRST, so a failed connect fails in connect context,
+  not as 'tab_bar.home.tab is visible'. (a) set-and-verify URL input MISSING —
+  _enter_url_and_connect.yml does inputText:SITE_1_URL then taps Connect with NO assertion
+  the field equals SITE_1_URL (only re-enters — mitigates dropped keystrokes, does not
+  verify). NOT implemented this pass: the set-and-verify would be an unverifiable change to a
+  shared subflow used by EVERY iOS Maestro test (assertVisible id+text on
+  server_form.server_url.input, or a runScript field-value compare) — if Maestro can't read
+  the controlled RN TextInput value as text it always fails and breaks the whole iOS suite,
+  and this pass can't run Maestro to confirm (no live server; cold-start TLS is the ticket's
+  own subject). To land: add the assertion after inputText and verify on a stable server.
+  TLS cold-start: #9971's _connect_check.yml WARMS trust evaluation (runs connect up front)
+  but does NOT fix the cancellation (NSURLErrorDomain -1200) — mitigated, not fixed; not
+  re-verified this pass (no Maestro run). Dropped-keystroke: mitigated (re-enter), not
+  verified-fixed (no set-and-verify). MM-T67856_1/_2 stay iOS-excluded. SEC-11000 (MM-T1325)
+  / SEC-11018 (MM-T5611) already iOS-excluded with _DIAGNOSIS_CORRECTION references.
