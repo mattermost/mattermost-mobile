@@ -454,3 +454,75 @@ test('collect on an empty tree reports nothing found rather than crashing', () =
 
     fs.rmSync(dir, {recursive: true, force: true});
 });
+
+// ---------- artifact-name parsing across producers ----------
+
+test('a Maestro run id is not mistaken for a shard index', () => {
+    const dir = tmpdir();
+    for (const platform of ['ios', 'android']) {
+        // Maestro uploads maestro-<platform>-results-<github.run_id>. A greedy
+        // trailing-number match would read that 10-digit run id as a shard and
+        // give both platforms the same shard label, collapsing two machines into
+        // one — which is the exact distinction the suite-shape rules turn on.
+        const d = path.join(dir, `maestro-${platform}-results-1234567890`);
+        fs.mkdirSync(d, {recursive: true});
+        fs.writeFileSync(path.join(d, 'maestro-report.xml'),
+            '<testsuites><testsuite><testcase name="MM-T1 a" time="1"><failure message="boom"/></testcase></testsuite></testsuites>');
+    }
+
+    const {summary} = collect(dir);
+    const shards = summary.shards.map((s) => s.shard);
+
+    assert.equal(new Set(shards).size, 2, `iOS and Android must stay distinct shards, got ${shards}`);
+
+    fs.rmSync(dir, {recursive: true, force: true});
+});
+
+test('a Detox shard index is still read from the artifact suffix', () => {
+    const dir = tmpdir();
+    const d = path.join(dir, 'ios-results-abc123-7');
+    fs.mkdirSync(d, {recursive: true});
+    fs.writeFileSync(path.join(d, 'jest-results.json'), JSON.stringify({
+        testResults: [{name: '/repo/a.e2e.ts', assertionResults: [{fullName: 'MM-T1 a', status: 'passed', duration: 1}]}],
+    }));
+
+    const {summary} = collect(dir);
+
+    assert.equal(summary.shards[0].shard, '7');
+
+    fs.rmSync(dir, {recursive: true, force: true});
+});
+
+test('artifact lookup does not rescan the tree once per failure', () => {
+    const dir = tmpdir();
+    const shardDir = path.join(dir, 'ios-results-abc-1');
+    fs.mkdirSync(shardDir, {recursive: true});
+
+    // A tree big enough that a per-failure rescan is measurable.
+    for (let i = 0; i < 300; i++) {
+        const d = path.join(shardDir, `MM-T${i} some test name`);
+        fs.mkdirSync(d, {recursive: true});
+        fs.writeFileSync(path.join(d, 'testFnFailure.png'), 'x');
+    }
+    fs.writeFileSync(path.join(shardDir, 'jest-results.json'), JSON.stringify({
+        testResults: [{
+            name: '/repo/a.e2e.ts',
+            assertionResults: Array.from({length: 60}, (__, i) => ({
+                fullName: `MM-T${i} some test name`,
+                status: 'failed',
+                duration: 1,
+                failureMessages: [`unique failure ${i}`],
+            })),
+        }],
+    }));
+
+    const started = Date.now();
+    const {failures} = collect(dir);
+    const elapsed = Date.now() - started;
+
+    assert.equal(failures.length, 60);
+    assert.ok(failures.some((f) => f.screenshot), 'screenshots should still be resolved');
+    assert.ok(elapsed < 5000, `collect took ${elapsed}ms — the per-failure rescan is back`);
+
+    fs.rmSync(dir, {recursive: true, force: true});
+});

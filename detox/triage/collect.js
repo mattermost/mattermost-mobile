@@ -116,7 +116,14 @@ function shardFromPath(filePath, root) {
     if (!first || first === rel) {
         return 'default';
     }
-    const m = first.match(/-(\d+)$/);
+
+    // Only a short trailing number is a shard index. Detox uploads
+    // `<platform>-results-<hash>-<n>` where n is the matrix runId, but Maestro
+    // uploads `maestro-<platform>-results-<github.run_id>` — and a greedy match
+    // would read that 10-digit run id as a shard, giving the iOS and Android
+    // Maestro artifacts the *same* shard label. They would then look like one
+    // machine, which is exactly the distinction the suite-shape rules depend on.
+    const m = first.match(/-(\d{1,3})$/);
     return m ? m[1] : first;
 }
 
@@ -156,6 +163,35 @@ function readLogTail(logPath, bytes = LOG_WINDOW_BYTES) {
     }
 }
 
+// Per-root index of Detox's per-test artifact directories, built once.
+//
+// Without this the lookup below walks the entire artifact tree once per failure.
+// A run with 50 failures against a multi-hundred-megabyte artifact tree turns
+// that into a quadratic scan measured in minutes, inside a job whose whole point
+// is to be cheap.
+const artifactIndexCache = new Map();
+
+function buildArtifactIndex(root) {
+    if (artifactIndexCache.has(root)) {
+        return artifactIndexCache.get(root);
+    }
+    const index = [];
+    const seen = new Set();
+    walk(root, (name, full) => {
+        const dir = path.dirname(full);
+        if (!seen.has(dir)) {
+            seen.add(dir);
+            index.push({
+                dir,
+                slug: path.basename(dir).replace(/[^a-z0-9]+/gi, '').toLowerCase(),
+            });
+        }
+        return false;
+    });
+    artifactIndexCache.set(root, index);
+    return index;
+}
+
 /**
  * Find the artifacts Detox wrote for one test. Detox's path builder names the
  * directory after the test, so match on a slugified title rather than on an
@@ -166,25 +202,22 @@ function findTestArtifacts(root, title) {
     if (!slug) {
         return {screenshot: null, log: null};
     }
-    const dirs = [];
-    walk(root, (name, full) => {
-        const dir = path.dirname(full);
-        const dirSlug = path.basename(dir).replace(/[^a-z0-9]+/gi, '').toLowerCase();
-        if (dirSlug.includes(slug.slice(0, 24)) && !dirs.includes(dir)) {
-            dirs.push(dir);
-        }
-        return false;
-    });
-    if (dirs.length === 0) {
+    const needle = slug.slice(0, 24);
+    const hit = buildArtifactIndex(root).find((entry) => entry.slug.includes(needle));
+    if (!hit) {
         return {screenshot: null, log: null};
     }
-    const dir = dirs[0];
-    const files = fs.readdirSync(dir);
+    let files;
+    try {
+        files = fs.readdirSync(hit.dir);
+    } catch {
+        return {screenshot: null, log: null};
+    }
     const screenshot = files.find((f) => f.endsWith('.png'));
     const log = files.find((f) => f.endsWith('.log'));
     return {
-        screenshot: screenshot ? path.join(dir, screenshot) : null,
-        log: log ? path.join(dir, log) : null,
+        screenshot: screenshot ? path.join(hit.dir, screenshot) : null,
+        log: log ? path.join(hit.dir, log) : null,
     };
 }
 

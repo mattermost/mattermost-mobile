@@ -53,7 +53,7 @@ on:
         required: false
       ANTHROPIC_API_KEY:
         required: false
-      TSIO_TOKEN:
+      TSIO_API_KEY:
         required: false
       WEBHOOK_URL:
         required: false
@@ -80,6 +80,7 @@ jobs:
       failure_count: ${{ steps.triage.outputs.failure_count }}
       cluster_count: ${{ steps.triage.outputs.cluster_count }}
       needs_ai: ${{ steps.triage.outputs.needs_ai }}
+      tooling_present: ${{ steps.tooling.outputs.present }}
       evidence_artifact: e2e-triage-evidence-${{ inputs.artifact_run_id }}
       diff_overlaps: ${{ steps.overlap.outputs.overlaps }}
     steps:
@@ -135,8 +136,24 @@ jobs:
             echo "overlaps=false" >> "$GITHUB_OUTPUT"
           fi
 
+      # The checkout is at MOBILE_VERSION, so a PR branched before triage landed
+      # has no detox/triage/. That commit predates the feature and triage has
+      # nothing to say about it — so skip the whole thing rather than posting a
+      # red check on every un-rebased PR, which would be pure noise.
+      - name: ci/check-tooling
+        id: tooling
+        run: |
+          set -euo pipefail
+          if [ -f detox/triage/triage.js ]; then
+            echo "present=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "present=false" >> "$GITHUB_OUTPUT"
+            echo "::notice::detox/triage is not present at this commit — skipping E2E failure triage."
+          fi
+
       - name: ci/triage
         id: triage
+        if: steps.tooling.outputs.present == 'true'
         env:
           TRIAGE_REPO: ${{ github.repository }}
         run: |
@@ -163,7 +180,11 @@ jobs:
     # `always()` so a failed plan still reaches the toolkit, which posts red when
     # there is no evidence bundle. Skipping here would leave a required check
     # pending forever, which is worse than a red.
-    if: always()
+    #
+    # The tooling guard is the one exception: a commit that predates triage gets
+    # no status at all, because there is nothing to report rather than something
+    # bad to report.
+    if: always() && needs.plan.outputs.tooling_present == 'true'
     permissions:
       contents: read
       actions: read
@@ -188,5 +209,5 @@ jobs:
     secrets:
       GH_TOKEN: ${{ secrets.GH_TOKEN || github.token }}
       ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
-      TSIO_TOKEN: ${{ secrets.TSIO_TOKEN }}
+      TSIO_API_KEY: ${{ secrets.TSIO_API_KEY }}
       WEBHOOK_URL: ${{ secrets.WEBHOOK_URL }}
