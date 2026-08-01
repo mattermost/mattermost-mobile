@@ -139,7 +139,7 @@ describe('components/post_list/PostList', () => {
         const flatList = getByTestId('post_list.flat_list');
 
         await act(async () => {
-            flatList.props.onRefresh();
+            await flatList.props.onRefresh();
         });
 
         expect(refreshPostsSpy).toHaveBeenCalledWith('https://server.com', 'channel-id', true);
