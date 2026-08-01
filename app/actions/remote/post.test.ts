@@ -848,7 +848,7 @@ describe('get posts', () => {
         expect(result.error).toBeDefined();
     });
 
-    it('fetchPostsForChannel - recovers a channel whose newest interval lost all its posts', async () => {
+    it('fetchPostsForChannel - should recover a channel whose newest interval lost all its posts', async () => {
         // The only cached post is deleted server-side while the app is closed. On the next
         // open the since-fetch returns the tombstone, handlePosts destroys the post, and the
         // interval is left covering nothing - which would render the channel blank forever.
@@ -878,7 +878,7 @@ describe('get posts', () => {
         expect(await getRecentPostsInChannel(database, channelId)).not.toHaveLength(0);
     });
 
-    it('refreshPostsForChannel - not blank, does a plain fetch and keeps cached posts', async () => {
+    it('refreshPostsForChannel - should do a plain fetch and keep cached posts when not blank', async () => {
         await operator.handleSystem({systems: [{id: SYSTEM_IDENTIFIERS.CURRENT_USER_ID, value: user1.id}], prepareRecordsOnly: false});
         await operator.handleMyChannel({channels: [channel1], myChannels: [channelMember1], prepareRecordsOnly: false});
         await operator.handlePosts({
@@ -899,7 +899,7 @@ describe('get posts', () => {
         expect(await getPostById(database, post1.id)).toBeDefined();
     });
 
-    it('refreshPostsForChannel - blank with hidden posts, clears cache and re-fetches', async () => {
+    it('refreshPostsForChannel - should clear the cache and re-fetch when blank with hidden posts', async () => {
         await operator.handleSystem({systems: [{id: SYSTEM_IDENTIFIERS.CURRENT_USER_ID, value: user1.id}], prepareRecordsOnly: false});
         await operator.handleChannel({channels: [channel1], prepareRecordsOnly: false});
         await operator.handleMyChannel({channels: [channel1], myChannels: [channelMember1], prepareRecordsOnly: false});
@@ -924,7 +924,32 @@ describe('get posts', () => {
         expect(mockClient.getPostsSince).not.toHaveBeenCalled();
     });
 
-    it('refreshPostsForChannel - genuinely empty channel is not reset', async () => {
+    it('refreshPostsForChannel - should return the error and not fetch when clearing the cache fails', async () => {
+        await operator.handleSystem({systems: [{id: SYSTEM_IDENTIFIERS.CURRENT_USER_ID, value: user1.id}], prepareRecordsOnly: false});
+        await operator.handleChannel({channels: [channel1], prepareRecordsOnly: false});
+        await operator.handleMyChannel({channels: [channel1], myChannels: [channelMember1], prepareRecordsOnly: false});
+        await operator.handlePosts({
+            actionType: ActionType.POSTS.RECEIVED_IN_CHANNEL,
+            order: [post1.id],
+            posts: [post1],
+            prepareRecordsOnly: false,
+        });
+
+        const spyOnDelete = jest.spyOn(LocalChannelActions, 'deletePostsForChannel').
+            mockResolvedValueOnce({models: [], error: 'delete failed'});
+        mockClient.getPosts.mockClear();
+        mockClient.getPostsSince.mockClear();
+
+        const result = await refreshPostsForChannel(serverUrl, channelId, true);
+
+        expect(result.error).toBe('delete failed');
+        expect(mockClient.getPosts).not.toHaveBeenCalled();
+        expect(mockClient.getPostsSince).not.toHaveBeenCalled();
+
+        spyOnDelete.mockRestore();
+    });
+
+    it('refreshPostsForChannel - should not reset a genuinely empty channel', async () => {
         await operator.handleSystem({systems: [{id: SYSTEM_IDENTIFIERS.CURRENT_USER_ID, value: user1.id}], prepareRecordsOnly: false});
         await operator.handleMyChannel({channels: [channel1], myChannels: [channelMember1], prepareRecordsOnly: false});
 

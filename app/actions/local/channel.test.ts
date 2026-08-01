@@ -26,6 +26,7 @@ import {
     updateMyChannelFromWebsocket,
     updateChannelInfoFromChannel,
     updateLastPostAt,
+    updateMyChannelLastFetchedAt,
     updateChannelsDisplayName,
     showUnreadChannelsOnly,
     updateDmGmDisplayName,
@@ -1204,11 +1205,14 @@ describe('deletePostsForChannel', () => {
         expect(error).toBeFalsy();
     });
 
-    it('channel with no posts still clears intervals and resets the watermark', async () => {
+    it('should clear intervals and reset the watermark for a channel with no posts', async () => {
         // A PostsInChannel interval that outlived its posts is exactly the state that
         // renders a channel blank, so this must not early-return.
         await operator.handleChannel({channels: [channel], prepareRecordsOnly: false});
         await operator.handleMyChannel({channels: [channel], myChannels: [channelMember], prepareRecordsOnly: false});
+        await updateMyChannelLastFetchedAt(serverUrl, channelId, 900, false);
+        expect((await getMyChannel(operator.database, channelId))?.lastFetchedAt).toBe(900);
+
         const gone = TestHelper.fakePost({id: 'gone', channel_id: channelId, create_at: 500});
         await operator.handlePosts({actionType: ActionType.POSTS.RECEIVED_IN_CHANNEL, order: [gone.id], posts: [gone], prepareRecordsOnly: false});
 

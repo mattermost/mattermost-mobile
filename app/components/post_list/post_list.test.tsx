@@ -133,7 +133,7 @@ describe('components/post_list/PostList', () => {
         expect(refreshPostsSpy).toHaveBeenCalledWith('https://server.com', 'channel-id', false);
     });
 
-    it('passes isBlank when the list renders nothing', async () => {
+    it('should pass isBlank when the list renders nothing', async () => {
         const props = {...baseProps, posts: []};
         const {getByTestId} = renderWithEverything(<PostList {...props}/>, {database, serverUrl});
         const flatList = getByTestId('post_list.flat_list');
