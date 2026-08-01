@@ -62,6 +62,13 @@ class ChannelBookmarkScreen {
      * Bookmark options is a bottom sheet with no Cancel row, so dismiss it by swiping a row.
      */
     dismissOptionsSheet = async () => {
+        // CodeRabbit note (SEC-10992): sheetMarkers match by text (Edit/Delete/Copy
+        // Link/Share) because the app's bookmark option rows (OptionItem in
+        // bookmark_options.tsx) don't expose distinct testIDs — they default to a shared
+        // 'optionItem', so by.id() can't disambiguate them. The proper fix is to add
+        // distinct testIDs in the app (an app change needing authorization, not done
+        // here). The stray-match risk is low: the options bottom sheet occludes the
+        // rest of the screen while it is open, so no off-sheet 'Edit' is visible.
         const sheetMarkers = [this.deleteOption, this.editOption, this.copyLinkOption, this.shareOption];
 
         // True when any options-sheet row is still visible (i.e. the sheet is still up).

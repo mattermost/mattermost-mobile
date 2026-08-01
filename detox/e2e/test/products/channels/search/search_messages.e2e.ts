@@ -63,6 +63,14 @@ describe('Search - Search Messages', () => {
         // next case's ChannelListScreen.toBeVisible() failed and cascaded the whole
         // MM-T5294_3.._9 block. Tapping the channel-list tab returns to a known
         // starting state from anywhere in the search/channel flow.
+        //
+        // CodeRabbit note: this recovery targets the primary cascade (the search
+        // screen left open), which the isolation proof confirmed. It does not
+        // explicitly dismiss transient UI (team dropdown / autocomplete) or restore
+        // testTeam. The team-inherit risk is unobserved: MM-T5294_8's search team
+        // picker is search-scoped (the app stays on testTeam after close — _9 passes
+        // after _8 in 2x green runs), so a full team-restore in beforeEach is out of
+        // SEC-10996's cascade-isolation scope and would add flake-prone complexity.
         try {
             await SearchMessagesScreen.close();
         } catch {
