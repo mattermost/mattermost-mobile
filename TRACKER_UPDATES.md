@@ -8,7 +8,7 @@ Append-only notes for a human to copy into the
 - **SEC-11046** (MM-T3196_1 manage-members, existing fix disproven) — Owner: QA-pending
   classification, no fix landed. Investigation: the cited run 30447839548's Detox
   Android machine shards ALL passed (gh-verified) — only the aggregate `detox-android`
-  job failed, which looks like a reporting/TSIO issue, not a MM-T3196_1 failure. So
+  job failed, which looks like a reporting/TSIO issue, not an MM-T3196_1 failure. So
   the failure mechanism is unconfirmed in the available CI artifacts. Local repro is
   blocked (ephemeral test server torn down; no local API-35 emulator). The
   toBeVisible→waitForElementToExist swap was disproven and is NOT re-applied. Next
@@ -19,8 +19,9 @@ Append-only notes for a human to copy into the
   Owner: QA-pending env investigation. Status: the observe()/observeSavedPostsByIds
   theory is RULED OUT (suite passed both with and without those app changes; failed
   on only one of three runs with identical code — same code, opposite outcomes). The
-  suite only taps tabs and asserts a banner (never writes a preference), so a product
-  change is unlikely. The 20-min classification lock / 30-min Jest timeout makes lock
+  suite's UI flow only navigates and asserts a banner; the suite still sets up
+  classification via API and creates posts, so this does not by itself rule out a
+  product cause. The 20-min classification lock / 30-min Jest timeout makes lock
   contention / slow acquire a plausible mechanism. Local repro blocked (no API-35
   emulator + ephemeral server torn down). Next step: diff the Android env (emulator
   state, ordering, prior specs in the shard) between passing 30437339535 and failing

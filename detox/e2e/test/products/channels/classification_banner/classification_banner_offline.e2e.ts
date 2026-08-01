@@ -120,8 +120,9 @@ describe('Classification Banner - Offline / Cache Behaviour', () => {
     // stale-value assertion is untrustworthy (CI 59ec6ae). Do NOT unskip until the
     // offline path is trustworthy.
     //
-    // Why the blacklist misses the WS: Detox device.setURLBlacklist([]) fails NEW
-    // URL-based requests at the URL-loading layer. A WebSocket is a long-lived socket
+    // Why the blacklist misses the WS: the test calls device.setURLBlacklist(getBlockedServerPatterns())
+    // AFTER device.launchApp to block; that fails NEW URL-based requests at the URL-loading
+    // layer (setURLBlacklist([]) is only the cleanup clear). A WebSocket is a long-lived socket
     // that is already OPEN by the time the blacklist is applied (it connects after
     // login); the blacklist does not close an established socket, and the server keeps
     // pushing classification updates over it. So the app still receives the new value

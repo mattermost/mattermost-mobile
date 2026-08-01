@@ -34,8 +34,10 @@ jest.setTimeout(timeouts.ONE_MIN * 30);
 // (MM-T6209_1 … MM-T6213_1). Trigger unknown. The observe()/observeSavedPostsByIds
 // theory is RULED OUT by the runbook's comparison table (the suite passed both with
 // and without those app changes, and failed on only one of three runs with identical
-// app code — same code, opposite outcomes). The suite only taps tabs and asserts a
-// banner (it never writes a preference), so a product code change is unlikely. The
+// app code — same code, opposite outcomes). The UI flow only navigates and asserts a
+// banner; the suite still sets up classification via API
+// (Properties.apiSetupClassificationWithBanner) and MM-T6213_1 creates posts, so this
+// does not by itself rule out a product cause. The
 // 20-min classification lock / 30-min Jest timeout makes lock contention or a slow
 // acquire a plausible mechanism to rule in/out. Local repro blocked (no API-35
 // emulator + ephemeral server torn down). Next step: diff the Android env (emulator

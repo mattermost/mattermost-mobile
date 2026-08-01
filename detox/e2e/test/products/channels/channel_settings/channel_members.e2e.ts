@@ -247,7 +247,7 @@ describe('Channels', () => {
     //
     // SEC-11046 investigation: the cited run 30447839548's Detox Android machine shards
     // ALL passed (gh-verified) — only the aggregate `detox-android` job failed, which
-    // looks like a reporting/TSIO issue, not a MM-T3196_1 failure. So the failure
+    // looks like a reporting/TSIO issue, not an MM-T3196_1 failure. So the failure
     // mechanism is unconfirmed in the available CI artifacts. Local repro is blocked
     // (ephemeral test server torn down; no local API-35 emulator). Do NOT re-apply the
     // toBeVisible→waitForElementToExist swap (disproven). Next step: a fresh repro on a
