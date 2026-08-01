@@ -115,8 +115,26 @@ describe('Classification Banner - Offline / Cache Behaviour', () => {
         await waitFor(element(by.text('TOP SECRET'))).toBeVisible().withTimeout(timeouts.TEN_SEC);
     });
 
-    // Skip: setURLBlacklist does not reliably block WebSocket, so the new value can land in
-    // cache and the stale-value assert is untrustworthy (CI 59ec6ae).
+    // Skip (SEC-11016 spike): setURLBlacklist does not reliably block the WebSocket, so
+    // the new classification value can still land in cache via the open WS and the
+    // stale-value assertion is untrustworthy (CI 59ec6ae). Do NOT unskip until the
+    // offline path is trustworthy.
+    //
+    // Why the blacklist misses the WS: Detox device.setURLBlacklist([]) fails NEW
+    // URL-based requests at the URL-loading layer. A WebSocket is a long-lived socket
+    // that is already OPEN by the time the blacklist is applied (it connects after
+    // login); the blacklist does not close an established socket, and the server keeps
+    // pushing classification updates over it. So the app still receives the new value
+    // and updates its cache while the test believes the network is cut.
+    //
+    // Proposed approaches (pick one, prove it, then unskip):
+    //  1. Apply setURLBlacklist BEFORE device.launchApp / before the WS opens, so the
+    //     WS connection itself is blocked at launch (verify the blacklist persists
+    //     across the app lifecycle and actually prevents the WS handshake).
+    //  2. Native network-level cut: a simulator network conditioner / DNS block that
+    //     truly severs HTTP + WS to the server (more reliable than a URL filter).
+    //  3. App-side test hook: a test-only flag that disables WS open/processing under
+    //     E2E, simulating offline without relying on Detox network mocking.
     it.skip('MM-T6207_1 - should show stale cached value when API is blocked after a server change', async () => {
         // # Set up classification at TOP SECRET
         const {linkedFieldId, optionIdsByName} = await Properties.apiSetupClassificationWithBanner(siteOneUrl, {

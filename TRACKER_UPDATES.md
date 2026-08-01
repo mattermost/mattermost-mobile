@@ -26,3 +26,15 @@ Append-only notes for a human to copy into the
   state, ordering, prior specs in the shard) between passing 30437339535 and failing
   30447839548, and check lock-acquire timing. Suite stays describe.skip on Android
   (rule 6). No code change beyond the skip comment.
+
+- **SEC-11016** (offline setURLBlacklist does not block WebSocket, MM-T6207_1) —
+  Owner: QA (test infra). Spike write-up (no unskip): Detox device.setURLBlacklist
+  fails NEW URL-based requests, but the WebSocket is a long-lived socket already OPEN
+  by the time the blacklist is applied (it connects after login); the blacklist does
+  not close an established socket, so the server keeps pushing the new classification
+  value over the WS and the app cache updates while the test believes the network is
+  cut — the stale-value assertion is untrustworthy. Proposed approaches: (1) apply
+  setURLBlacklist before launchApp / before the WS opens so the WS handshake itself
+  is blocked; (2) a native network-level cut (simulator network conditioner / DNS) that
+  severs HTTP + WS; (3) an app-side test hook that disables WS under E2E. Test stays
+  it.skip until one approach is proven. No code change beyond the spike comment.
