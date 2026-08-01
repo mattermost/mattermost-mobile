@@ -29,13 +29,56 @@ function isMmBlocksSpec(filePath) {
   return path.basename(filePath).includes('mm_blocks_');
 }
 
+/**
+ * Parse an explicit spec list into repo-relative paths.
+ *
+ * Accepts whitespace- or newline-separated paths so callers can pass either a
+ * shell-friendly single line or a here-doc. Deduplicates while preserving order:
+ * a rerun list is built from failed test records, and several failures in the
+ * same spec file would otherwise run that file more than once per shard.
+ */
+function parseSpecList(raw) {
+  const seen = new Set();
+  const out = [];
+  for (const entry of raw.split(/\s+/)) {
+    const trimmed = entry.trim();
+    if (!trimmed || seen.has(trimmed)) {
+      continue;
+    }
+    seen.add(trimmed);
+    out.push(toRepoRelative(trimmed));
+  }
+  return out;
+}
+
 class Specs {
-  constructor(searchPath, parallelism, deviceInfo) {
+  constructor(searchPath, parallelism, deviceInfo, specList = '') {
     this.searchPath = searchPath;
     this.parallelism = parallelism;
     this.rawFiles = [];
     this.groupedFiles = [];
     this.deviceInfo = deviceInfo;
+    this.specList = specList;
+  }
+
+  /**
+   * Collect the specs to split — either the explicit list or a walk of searchPath.
+   *
+   * An explicit list exists for targeted reruns (failure triage reruns only the
+   * specs that failed). Discovery is skipped entirely rather than filtered, so a
+   * spec that was deleted or moved since the run under analysis surfaces as an
+   * error here instead of silently reducing the rerun to nothing.
+   */
+  collectFiles() {
+    if (this.specList.trim()) {
+      this.rawFiles = parseSpecList(this.specList);
+      const missing = this.rawFiles.filter((f) => !fs.existsSync(f));
+      if (missing.length > 0) {
+        throw new Error(`spec_list references files that do not exist: ${missing.join(', ')}`);
+      }
+      return;
+    }
+    this.findFiles();
   }
 
   findFiles() {
@@ -135,10 +178,11 @@ function main() {
   const parallelism = parseInt(process.env.PARALLELISM, 10);
   const deviceName = process.env.DEVICE_NAME;
   const deviceOsVersion = process.env.DEVICE_OS_VERSION;
+  const specList = process.env.SPEC_LIST || '';
   const deviceInfo = new DeviceInfo(deviceName, deviceOsVersion);
-  const specs = new Specs(searchPath, parallelism, deviceInfo);
+  const specs = new Specs(searchPath, parallelism, deviceInfo, specList);
 
-  specs.findFiles();
+  specs.collectFiles();
   if (specs.rawFiles.length < parallelism) {
     console.error(
       `Warning: ${specs.rawFiles.length} spec(s) < parallelism ${parallelism}; some shards will be empty`,
@@ -148,4 +192,8 @@ function main() {
   specs.dumpSplits();
 }
 
-main();
+if (require.main === module) {
+  main();
+}
+
+module.exports = {Specs, parseSpecList};

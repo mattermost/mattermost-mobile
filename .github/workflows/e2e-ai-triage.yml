@@ -1,0 +1,192 @@
+---
+# E2E failure triage — deterministic pass, then adjudication.
+#
+# Runs after the Detox and Maestro jobs finish. Two stages:
+#
+#   plan       collects every shard's artifacts, normalizes them, clusters by
+#              failure signature, applies the signature catalogue, enriches with
+#              TSIO history, and emits one evidence.json. Entirely deterministic
+#              — no model is called.
+#   adjudicate hands that bundle to the shared toolkit workflow, which decides
+#              only what the rules could not, runs everything through the policy
+#              engine, and posts `e2e-test/ai-triage`.
+#
+# The split exists because the two halves belong in different places: clustering
+# needs this repo's spec layout and its failure-signature catalogue, while
+# adjudication and policy are repo-agnostic and are shared with the other
+# Mattermost repos.
+#
+# This never touches the per-platform `e2e-test/*` contexts. Those keep reporting
+# objective truth; triage adds its own context alongside them. In assist mode it
+# additionally applies `E2E/AI-Waived`, which the existing TSIO reporter honours
+# the same way it honours a maintainer's `E2E/Override` — with a separate label
+# so an AI-granted green stays distinguishable from a human's.
+name: E2E AI Triage
+
+on:
+  workflow_call:
+    inputs:
+      MOBILE_VERSION:
+        description: "Commit SHA under test"
+        required: true
+        type: string
+      artifact_run_id:
+        description: "Run that uploaded the per-shard result artifacts"
+        required: true
+        type: string
+      pr_number:
+        required: false
+        type: string
+        default: ""
+      run_type:
+        description: "PR | MAIN | RELEASE. Only PR runs can be auto-waived."
+        required: false
+        type: string
+        default: "PR"
+      version_name:
+        description: "Branch under test"
+        required: false
+        type: string
+        default: ""
+    secrets:
+      GH_TOKEN:
+        required: false
+      ANTHROPIC_API_KEY:
+        required: false
+      TSIO_TOKEN:
+        required: false
+      WEBHOOK_URL:
+        required: false
+
+# Ceiling for the nested toolkit workflow, which posts the status, applies the
+# waiver label, comments, and authenticates the model call via OIDC. A reusable
+# workflow cannot escalate past its caller, so anything missing here silently
+# no-ops downstream rather than erroring.
+permissions:
+  contents: read
+  actions: read
+  statuses: write
+  pull-requests: write
+  issues: write
+  id-token: write
+
+jobs:
+  plan:
+    name: Collect and classify
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    outputs:
+      tier: ${{ steps.triage.outputs.tier }}
+      failure_count: ${{ steps.triage.outputs.failure_count }}
+      cluster_count: ${{ steps.triage.outputs.cluster_count }}
+      needs_ai: ${{ steps.triage.outputs.needs_ai }}
+      evidence_artifact: e2e-triage-evidence-${{ inputs.artifact_run_id }}
+      diff_overlaps: ${{ steps.overlap.outputs.overlaps }}
+    steps:
+      - name: ci/checkout
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        with:
+          ref: ${{ inputs.MOBILE_VERSION }}
+          # Deep enough for the merge-base the overlap check needs.
+          fetch-depth: 50
+          persist-credentials: false
+
+      - uses: actions/setup-node@2028fbc5c25fe9cf00d9f06a71cc4710d4507903 # v6.0.0
+        with:
+          node-version-file: '.nvmrc'
+
+      # No `name:` filter — every shard's artifact is wanted, and the collector
+      # derives shard and platform from the directory names.
+      - name: ci/download-result-artifacts
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+        continue-on-error: true
+        with:
+          path: triage-artifacts
+          pattern: "*-results-*"
+          run-id: ${{ inputs.artifact_run_id }}
+          github-token: ${{ secrets.GH_TOKEN || github.token }}
+
+      # Whether the PR touches the failing area is a fact about the diff, not
+      # something the model should assert about its own verdict. Resolved here and
+      # passed down: it is what stops a MAIN_REGRESSION from excusing a PR that is
+      # editing the very thing that broke.
+      - name: ci/detect-diff-overlap
+        id: overlap
+        if: inputs.pr_number != ''
+        continue-on-error: true
+        env:
+          GH_TOKEN: ${{ secrets.GH_TOKEN || github.token }}
+          PR_NUMBER: ${{ inputs.pr_number }}
+        run: |
+          set -uo pipefail
+          FILES=$(gh pr diff "$PR_NUMBER" --repo "${GITHUB_REPOSITORY}" --name-only 2>/dev/null || true)
+          if [ -z "$FILES" ]; then
+            echo "overlaps=false" >> "$GITHUB_OUTPUT"
+            echo "could not read PR diff — assuming no overlap"
+            exit 0
+          fi
+          printf '%s\n' "$FILES" > changed-files.txt
+          # A change under app/ or libraries/ can plausibly break a test; a change
+          # confined to CI config, docs, or the test tree itself cannot be blamed
+          # for a pre-existing main regression.
+          if grep -qE '^(app|libraries|share_extension)/' changed-files.txt; then
+            echo "overlaps=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "overlaps=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: ci/triage
+        id: triage
+        env:
+          TRIAGE_REPO: ${{ github.repository }}
+        run: |
+          set -euo pipefail
+          node detox/triage/triage.js \
+            --artifacts=triage-artifacts \
+            --output=triage-out \
+            --repo="${TRIAGE_REPO}" \
+            --commit='${{ inputs.MOBILE_VERSION }}' \
+            --branch='${{ inputs.version_name || 'main' }}' \
+            ${{ inputs.pr_number != '' && format('--pr={0}', inputs.pr_number) || '' }}
+
+      - name: ci/upload-evidence
+        if: always() && hashFiles('triage-out/evidence.json') != ''
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: e2e-triage-evidence-${{ inputs.artifact_run_id }}
+          path: triage-out/
+          retention-days: 14
+
+  adjudicate:
+    name: Adjudicate and post status
+    needs: plan
+    # `always()` so a failed plan still reaches the toolkit, which posts red when
+    # there is no evidence bundle. Skipping here would leave a required check
+    # pending forever, which is worse than a red.
+    if: always()
+    permissions:
+      contents: read
+      actions: read
+      statuses: write
+      pull-requests: write
+      issues: write
+      id-token: write
+    uses: mattermost/mattermost-test-automation-toolkit/.github/workflows/e2e-ai-triage.yml@main
+    with:
+      target_repo: ${{ github.repository }}
+      commit_sha: ${{ inputs.MOBILE_VERSION }}
+      pr_number: ${{ inputs.pr_number }}
+      branch: ${{ inputs.version_name }}
+      run_type: ${{ inputs.run_type }}
+      evidence_artifact: ${{ needs.plan.outputs.evidence_artifact }}
+      evidence_run_id: ${{ github.run_id }}
+      # Shadow until the false-green count has been zero over a real sample.
+      # Promotion is a deliberate repo-variable change, not a code change.
+      mode: ${{ vars.E2E_AI_TRIAGE_MODE || 'shadow' }}
+      diff_overlaps_failure: ${{ needs.plan.outputs.diff_overlaps == 'true' }}
+      claude_model: ${{ vars.CLAUDE_MODEL || '' }}
+    secrets:
+      GH_TOKEN: ${{ secrets.GH_TOKEN || github.token }}
+      ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+      TSIO_TOKEN: ${{ secrets.TSIO_TOKEN }}
+      WEBHOOK_URL: ${{ secrets.WEBHOOK_URL }}

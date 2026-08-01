@@ -17,6 +17,14 @@ inputs:
     description: The os of the device used for the tests
     required: false
     default: "iOS 17.1"
+  spec_list:
+    description: >-
+      Explicit whitespace/newline-separated list of spec files to split, bypassing
+      discovery under search_path. Used by targeted reruns (failure triage reruns
+      only the specs that failed) so the rerun is a fraction of a full shard.
+      Missing files are an error rather than a silent no-op.
+    required: false
+    default: ""
 
 outputs:
   specs:
@@ -32,6 +40,7 @@ runs:
         SEARCH_PATH: ${{ inputs.search_path }}
         DEVICE_NAME: ${{ inputs.device_name }}
         DEVICE_OS_VERSION: ${{ inputs.device_os_version }}
+        SPEC_LIST: ${{ inputs.spec_list }}
       run: |
         set -e
         node ${{ github.action_path }}/split-tests.js | tee output.json

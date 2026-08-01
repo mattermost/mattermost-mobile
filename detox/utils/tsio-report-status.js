@@ -7,6 +7,12 @@
 const PRODUCTION_URL = 'https://test-io.test.mattermost.com';
 const STAGING_URL = 'https://staging-test-io.test.mattermost.com';
 const OVERRIDE_LABEL = 'E2E/Override';
+
+// Automated triage waives with its own label so an AI-granted green is always
+// distinguishable from a maintainer's. Reusing E2E/Override would make the
+// false-green metric — the one number that decides whether triage is trusted —
+// impossible to compute.
+const AI_WAIVED_LABEL = 'E2E/AI-Waived';
 const TERMINAL_STATUSES = ['completed', 'incomplete'];
 const DEFAULT_POLL_ATTEMPTS = 12;
 const POLL_DELAY_MS = 5000;
@@ -169,13 +175,22 @@ async function pollGroup(baseUrl, reportId, pollAttempts) {
 // before the override must not re-red the required check when it finishes.
 // Whether the label is set is resolved by .github/actions/e2e-override-label and
 // passed in, so this stays a pure decision on its inputs.
-function overrideCommitStatus(state, description) {
+//
+// `waiver` distinguishes who granted it. Automated triage uses its own label
+// rather than reusing E2E/Override, because conflating the two would make every
+// accuracy metric meaningless: the false-green count only means something if an
+// AI-granted green can be told apart from a human deciding to merge anyway.
+// The label name is carried in the description so the reason is visible on the
+// check itself, not only in the PR timeline.
+function overrideCommitStatus(state, description, waiver = {}) {
     if (state !== 'failure') {
         return {state, description};
     }
+    const label = waiver.label || OVERRIDE_LABEL;
+    const reason = waiver.reason ? `${label} (${waiver.reason})` : label;
     return {
         state: 'success',
-        description: `${OVERRIDE_LABEL} — ${description}`.slice(0, 140),
+        description: `${reason} — ${description}`.slice(0, 140),
     };
 }
 
@@ -202,6 +217,8 @@ async function reportTsioStatus(options) {
         upstreamJobsSucceeded = true,
         githubToken,
         e2eOverride = false,
+        aiWaiver = false,
+        aiWaiverReason = '',
         failOnTestFailures = true,
         pollAttempts = DEFAULT_POLL_ATTEMPTS,
         useStaging = false,
@@ -227,6 +244,7 @@ async function reportTsioStatus(options) {
         state: 'failure',
         timed_out: false,
         override_applied: false,
+        ai_waiver_applied: false,
     };
 
     const token = githubToken || process.env.GITHUB_TOKEN;
@@ -234,10 +252,21 @@ async function reportTsioStatus(options) {
 
     const postStatus = async ({state, description, targetUrl}) => {
         let final = {state, description};
+
+        // Human override is checked first: a maintainer's explicit decision to
+        // merge outranks an automated waiver, and attributing their green to the
+        // AI would corrupt the accuracy ledger in the flattering direction.
         if (e2eOverride && state === 'failure') {
             final = overrideCommitStatus(state, description);
             result.override_applied = true;
             console.log(`${OVERRIDE_LABEL} set on PR #${compositeIdentity.gh_pr_number} — posting success for ${commitStatusContext}`);
+        } else if (aiWaiver && state === 'failure') {
+            final = overrideCommitStatus(state, description, {
+                label: AI_WAIVED_LABEL,
+                reason: aiWaiverReason,
+            });
+            result.ai_waiver_applied = true;
+            console.log(`${AI_WAIVED_LABEL} on PR #${compositeIdentity.gh_pr_number} — posting success for ${commitStatusContext} (${aiWaiverReason || 'no reason given'})`);
         }
         result.state = final.state;
         await createCommitStatus(token, compositeIdentity.repository, compositeIdentity.commit_sha, {
@@ -321,6 +350,7 @@ async function reportTsioStatus(options) {
             `**Stats:** ${stats.passed || 0} passed, ${stats.failed || 0} failed, ${stats.skipped || 0} skipped (of ${stats.total || 0})`,
             ...(timedOut ? ['', ':warning: TSIO group did not reach terminal status in time — failing open to CI job status.'] : []),
             ...(result.override_applied ? ['', `:warning: ${OVERRIDE_LABEL} is set on this PR — reporting ${state} as success so the required check does not block the merge.`] : []),
+            ...(result.ai_waiver_applied ? ['', `:robot: ${AI_WAIVED_LABEL} — automated triage classified this failure as not caused by the change${aiWaiverReason ? ` (${aiWaiverReason})` : ''}. Recorded in the TSIO triage ledger; comment \`/e2e-triage-override\` if this is wrong.`] : []),
         ];
         try {
             const fs = require('fs');
@@ -469,6 +499,30 @@ function selfTest() {
         'override leaves success untouched',
     );
 
+    const aiWaived = overrideCommitStatus('failure', '8 passed, 2 failed, 0 skipped', {
+        label: AI_WAIVED_LABEL,
+        reason: 'flaky-infra conf 0.93',
+    });
+    assert(aiWaived.state === 'success', 'AI waiver downgrades failure -> success');
+    assert(aiWaived.description.startsWith(AI_WAIVED_LABEL), 'AI waiver is attributed to its own label');
+    assert(
+        !aiWaived.description.startsWith(OVERRIDE_LABEL),
+        'AI waiver must never be reported as a human override — the accuracy ledger depends on telling them apart',
+    );
+    assert(
+        aiWaived.description.includes('flaky-infra conf 0.93'),
+        'AI waiver carries its reason on the check itself',
+    );
+    assert(
+        overrideCommitStatus('success', '10 passed', {label: AI_WAIVED_LABEL}).description === '10 passed',
+        'AI waiver leaves an already-green status untouched',
+    );
+    assert(
+        overrideCommitStatus('failure', 'x'.repeat(200), {label: AI_WAIVED_LABEL, reason: 'y'.repeat(80)}).
+            description.length <= 140,
+        'AI waiver description stays within the GitHub commit-status limit',
+    );
+
     console.log('SELF-TEST OK');
 }
 
@@ -502,6 +556,8 @@ async function main() {
             upstreamJobsSucceeded: upstreamSucceeded,
             githubToken: args['github-token'] || process.env.GITHUB_TOKEN,
             e2eOverride: args['e2e-override'] === 'true',
+            aiWaiver: args['ai-waiver'] === 'true',
+            aiWaiverReason: args['ai-waiver-reason'] || '',
             failOnTestFailures,
             pollAttempts,
             useStaging: args['use-staging'] === 'true',
@@ -533,6 +589,7 @@ module.exports = {
     beginGroup,
     pollGroup,
     OVERRIDE_LABEL,
+    AI_WAIVED_LABEL,
     PRODUCTION_URL,
     STAGING_URL,
 };

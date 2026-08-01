@@ -775,6 +775,42 @@ jobs:
       tsio-job-configs: ${{ needs.calculate-tsio-identity.outputs.job-configs }}
     secrets: inherit
 
+  # Failure triage. Runs after every test job so it sees the whole run, and with
+  # always() so a shard that died still gets classified — a run that produced no
+  # results is exactly the case triage is most useful for.
+  #
+  # Skipped when a maintainer already applied E2E/Override: the merge decision has
+  # been made by a human, and adding a machine opinion on top only adds noise.
+  e2e-ai-triage:
+    name: AI failure triage
+    if: >-
+      always() &&
+      needs.resolve-e2e-policy.outputs.e2e_override != 'true' &&
+      !cancelled()
+    needs:
+      - resolve-e2e-policy
+      - run-detox-ios
+      - run-detox-android
+      - run-maestro-ios
+      - run-maestro-android
+    permissions:
+      contents: read
+      actions: read
+      statuses: write
+      pull-requests: write
+      issues: write
+      # claude-code-action authenticates via OIDC. A reusable workflow cannot
+      # escalate beyond its caller, so the grant has to start here.
+      id-token: write
+    uses: ./.github/workflows/e2e-ai-triage.yml
+    with:
+      MOBILE_VERSION: ${{ inputs.MOBILE_VERSION }}
+      artifact_run_id: ${{ github.run_id }}
+      pr_number: ${{ inputs.pr_number }}
+      run_type: ${{ inputs.run_type }}
+      version_name: ${{ inputs.version_name }}
+    secrets: inherit
+
   e2e-remove-matterwick-label:
     name: Remove Matterwick E2E label from PR
     runs-on: ubuntu-24.04
