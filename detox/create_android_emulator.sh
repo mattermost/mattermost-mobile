@@ -283,10 +283,24 @@ setup_adb_reverse() {
 run_detox_tests() {
     echo "Running Detox tests... $@"
 
+    # EXTRA_DETOX_ARGS lets a caller append Detox CLI flags without changing this
+    # script. Failure-triage reruns use it to pass `--record-videos failing`:
+    # recording the whole suite is far too expensive, but a rerun is a handful of
+    # specs and a recording of the moment a failure reproduced is the single most
+    # useful artifact for diagnosing it.
+    #
+    # Word-split deliberately (flags are separate argv entries), and guarded so an
+    # empty value expands to nothing rather than to an empty argument.
+    local extra_args=()
+    if [[ -n "${EXTRA_DETOX_ARGS:-}" ]]; then
+        read -ra extra_args <<< "$EXTRA_DETOX_ARGS"
+        echo "Extra Detox args: ${extra_args[*]}"
+    fi
+
     cd detox
     AVD_NAME="$AVD_NAME" npm run detox:config-gen
     mkdir -p artifacts
-    npm run e2e:android-test -- "$@" -- --json --outputFile=artifacts/jest-results.json
+    npm run e2e:android-test -- "$@" ${extra_args[@]+"${extra_args[@]}"} -- --json --outputFile=artifacts/jest-results.json
 }
 
 main() {

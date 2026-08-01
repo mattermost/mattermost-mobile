@@ -41,6 +41,7 @@ jobs:
       comment_body: ${{ github.event.comment.body }}
       comment_id: ${{ github.event.comment.id }}
       sender: ${{ github.event.comment.user.login }}
+      tsio_url: ${{ vars.TSIO_URL || 'https://test-io.test.mattermost.com' }}
     secrets:
       GH_TOKEN: ${{ secrets.GH_TOKEN || github.token }}
       TSIO_API_KEY: ${{ secrets.TSIO_API_KEY }}

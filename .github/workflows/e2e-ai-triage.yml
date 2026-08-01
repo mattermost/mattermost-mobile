@@ -191,6 +191,7 @@ jobs:
             --repo="${TRIAGE_REPO}" \
             --commit='${{ inputs.MOBILE_VERSION }}' \
             --branch='${{ inputs.version_name || 'main' }}' \
+            --tsio-url='${{ vars.TSIO_URL || 'https://test-io.test.mattermost.com' }}' \
             ${{ inputs.pr_number != '' && format('--pr={0}', inputs.pr_number) || '' }}
 
       # Emitted as job outputs rather than read from the artifact by the rerun
@@ -295,6 +296,7 @@ jobs:
       spec_list: ${{ needs.plan.outputs.rerun_android_specs }}
       artifact_suffix: -rr${{ matrix.rep }}
       parallelism: 1
+      extra_detox_args: "--record-videos failing"
     secrets: inherit
 
   # Fold rerun outcomes into the evidence bundle. Merge-only: the plan job already
@@ -418,6 +420,11 @@ jobs:
       mode: ${{ vars.E2E_AI_TRIAGE_MODE || 'shadow' }}
       diff_overlaps_failure: ${{ needs.plan.outputs.diff_overlaps == 'true' }}
       claude_model: ${{ vars.CLAUDE_MODEL || '' }}
+      # Point the whole triage pipeline at a TSIO environment with one repo
+      # variable. Staging first: the history and ledger writes are new, and a
+      # bad write against production would corrupt the very metrics that decide
+      # whether triage is trusted.
+      tsio_url: ${{ vars.TSIO_URL || 'https://test-io.test.mattermost.com' }}
     secrets:
       GH_TOKEN: ${{ secrets.GH_TOKEN || github.token }}
       ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}

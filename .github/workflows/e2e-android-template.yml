@@ -107,6 +107,15 @@ on:
         required: false
         type: string
         default: ""
+      extra_detox_args:
+        description: >-
+          Extra flags appended to the Detox CLI invocation, forwarded to
+          create_android_emulator.sh as EXTRA_DETOX_ARGS. Failure-triage reruns
+          pass `--record-videos failing`; recording the full suite is far too
+          expensive, but a rerun is a handful of specs.
+        required: false
+        type: string
+        default: ""
       artifact_suffix:
         description: >-
           Appended to the results artifact name. A rerun executes inside the same
@@ -452,6 +461,8 @@ jobs:
           SITE_3_URL: ${{ env.SITE_3_URL }}
           MAX_ATTEMPTS: "2"
           ATTEMPT_TIMEOUT_MIN: "60"
+          # Inherited by the inner `bash -c` and read by run_detox_tests().
+          EXTRA_DETOX_ARGS: ${{ inputs.extra_detox_args }}
         shell: bash
         run: |
           set +e
