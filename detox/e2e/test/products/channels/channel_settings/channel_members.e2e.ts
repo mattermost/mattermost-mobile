@@ -244,6 +244,15 @@ describe('Channels', () => {
     // Skip both: failed Android on CI 30437339535 AND 30447839548 — the second run already
     // carried the waitForElementToExist fix, so existence-vs-visibility is not the cause.
     // Also failed iOS on 30437339535. Needs real root-cause work, not another wait tweak.
+    //
+    // SEC-11046 investigation: the cited run 30447839548's Detox Android machine shards
+    // ALL passed (gh-verified) — only the aggregate `detox-android` job failed, which
+    // looks like a reporting/TSIO issue, not a MM-T3196_1 failure. So the failure
+    // mechanism is unconfirmed in the available CI artifacts. Local repro is blocked
+    // (ephemeral test server torn down; no local API-35 emulator). Do NOT re-apply the
+    // toBeVisible→waitForElementToExist swap (disproven). Next step: a fresh repro on a
+    // stable server + Android emulator to capture the real artifact, then classify QA
+    // vs PE. Kept skipped per rule 6.
     it.skip('MM-T3196_1 - RN apps Manage members in channel', async () => {
         // # Use pre-created user (already in channel)
         const removedUser = memberUser;
