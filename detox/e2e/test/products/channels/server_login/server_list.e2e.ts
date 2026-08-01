@@ -244,6 +244,16 @@ describe('Server Login - Server List', () => {
     // against the SEC-11010 conclusion (Detox-only tap/swipe start point in a clipped
     // or overlapped region — here Logout overlaps Remove during the reveal animation)
     // before guessing a fix; the 3-server env gate is tracked under SEC-11004.
+    //
+    // Follow-up (verification pack): no new swipe-reveal fix was applied — building one
+    // blind, without the 3-server CI artifact showing the Remove/Logout overlap geometry
+    // at the moment the tap fails, would violate detox/CLAUDE.md's evidence-first rule.
+    // The branch is pushed and ready for CI, but I cannot trigger the 3-server CI run
+    // myself (the E2E/Run label is a user/Matterwick action). NOT closed. Next step:
+    // apply E2E/Run label, capture the 3-server shard failure artifact (screenshot +
+    // viewHierarchy at the failed Remove tap), then build the targeted fix per the
+    // SEC-11010 conclusion (tap Remove at a point not overlapped by Logout) and verify
+    // green before dropping the iOS it.skip.
     (isIos() ? it.skip : itWithThreeServers)('MM-T4691_5 - should be able to remove a server from the list', async () => {
         // * Verify on channel list screen of the first server
         await expect(ChannelListScreen.headerServerDisplayName).toHaveText(serverOneDisplayName);

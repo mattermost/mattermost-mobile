@@ -32,7 +32,14 @@ Append-only notes for a human to copy into the
   guessed without an artifact. Skip comments updated to point the next investigator
   (who can run 3-server shards) at the SEC-11010 conclusion (Detox-only tap/swipe start
   point in a clipped or overlapped region) to check the CI artifact against. No code
-  change beyond the comments.
+  change beyond the comments. Follow-up (verification pack): still NOT closed — no new
+  swipe-reveal fix was applied (building one blind, without the 3-server CI artifact
+  showing the Remove/Logout overlap geometry at the failed tap, violates the
+  evidence-first rule). The branch is pushed and ready for CI, but I cannot trigger the
+  3-server CI run myself (E2E/Run label is a user/Matterwick action). Next step: apply
+  E2E/Run label, capture the 3-server shard failure artifact, then build the targeted
+  fix (tap Remove at a point not overlapped by Logout, per SEC-11010) and verify green
+  before dropping the iOS it.skip.
 
 - **SEC-11012** (markdown scroll / Back a11y / expand hittability, MM-T4895_1,
   MM-T4899_2/4/5, MM-T1442_1) — Owner: QA. Unskipped 4 of 5; MM-T4899_2 kept as a
