@@ -9,7 +9,7 @@ import {ActionType, Events, Navigation} from '@constants';
 import {SYSTEM_IDENTIFIERS} from '@constants/database';
 import DatabaseManager from '@database/manager';
 import {getMyChannel} from '@queries/servers/channel';
-import {getPostById} from '@queries/servers/post';
+import {getPostById, queryPostsInChannel} from '@queries/servers/post';
 import {getCommonSystemValues, getTeamHistory} from '@queries/servers/system';
 import {getTeamChannelHistory} from '@queries/servers/team';
 import {navigateToRoot, dismissAllRoutesAndPopToScreen} from '@screens/navigation';
@@ -1204,13 +1204,24 @@ describe('deletePostsForChannel', () => {
         expect(error).toBeFalsy();
     });
 
-    it('channel with no posts', async () => {
+    it('channel with no posts still clears intervals and resets the watermark', async () => {
+        // A PostsInChannel interval that outlived its posts is exactly the state that
+        // renders a channel blank, so this must not early-return.
         await operator.handleChannel({channels: [channel], prepareRecordsOnly: false});
         await operator.handleMyChannel({channels: [channel], myChannels: [channelMember], prepareRecordsOnly: false});
+        const gone = TestHelper.fakePost({id: 'gone', channel_id: channelId, create_at: 500});
+        await operator.handlePosts({actionType: ActionType.POSTS.RECEIVED_IN_CHANNEL, order: [gone.id], posts: [gone], prepareRecordsOnly: false});
 
-        const {models, error} = await deletePostsForChannel(serverUrl, channelId);
-        expect(models).toEqual([]);
+        // the post is destroyed the way a received deletion destroys it, leaving the interval
+        await operator.handlePosts({actionType: ActionType.POSTS.RECEIVED_IN_CHANNEL, order: [gone.id], posts: [{...gone, delete_at: 900, update_at: 900}], prepareRecordsOnly: false});
+        expect(await queryPostsInChannel(operator.database, channelId).fetch()).toHaveLength(1);
+        expect(await getPostById(operator.database, gone.id)).toBeUndefined();
+
+        const {error} = await deletePostsForChannel(serverUrl, channelId);
         expect(error).toBeFalsy();
+
+        expect(await queryPostsInChannel(operator.database, channelId).fetch()).toHaveLength(0);
+        expect((await getMyChannel(operator.database, channelId))?.lastFetchedAt).toBe(0);
     });
 
     it('channel with posts - batch written and event emitted', async () => {
