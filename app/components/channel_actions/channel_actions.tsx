@@ -4,7 +4,7 @@
 import React, {useCallback} from 'react';
 import {StyleSheet, View} from 'react-native';
 
-import ChannelInfoStartButton from '@calls/components/channel_info_start';
+import ChannelInfoStartCallButton from '@calls/components/channel_info_start_call';
 import AddMembersBox from '@components/channel_actions/add_members_box';
 import CopyChannelLinkBox from '@components/channel_actions/copy_channel_link_box';
 import FavoriteBox from '@components/channel_actions/favorite_box';
@@ -95,10 +95,10 @@ const ChannelActions = ({
                     />
                 </>
             }
-            {callsEnabled &&
+            {callsEnabled && !isDM &&
                 <>
                     <View style={styles.separator}/>
-                    <ChannelInfoStartButton
+                    <ChannelInfoStartCallButton
                         serverUrl={serverUrl}
                         channelId={channelId}
                         dismissChannelInfo={dismissChannelInfo}

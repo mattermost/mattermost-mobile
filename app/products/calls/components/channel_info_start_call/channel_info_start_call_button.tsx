@@ -49,7 +49,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
     },
 }));
 
-const ChannelInfoStartButton = ({
+const ChannelInfoStartCallButton = ({
     serverUrl,
     channelId,
     isACallInCurrentChannel,
@@ -137,4 +137,4 @@ const ChannelInfoStartButton = ({
     );
 };
 
-export default ChannelInfoStartButton;
+export default ChannelInfoStartCallButton;
