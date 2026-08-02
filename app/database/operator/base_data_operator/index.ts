@@ -13,6 +13,7 @@ import {
 } from '@database/operator/utils/general';
 import {isDatabaseCorruptionError} from '@utils/database_errors';
 import {logWarning} from '@utils/log';
+import {withSpan} from '@utils/sentry_tracing';
 
 import type {
     HandleRecordsArgs,
@@ -191,9 +192,21 @@ export default class BaseDataOperator {
     async batchRecords(models: Model[], description: string): Promise<void> {
         try {
             if (models.length > 0) {
-                await this.database.write(async (writer) => {
-                    await writer.batch(...models);
-                }, description);
+                await withSpan(
+                    `db.batch.${description}`,
+                    'db',
+                    async () => {
+                        await this.database.write(async (writer) => {
+                            await writer.batch(...models);
+                        }, description);
+                    },
+                    {
+                        attributes: {
+                            'mm.db.description': description,
+                            'mm.db.record_count': models.length,
+                        },
+                    },
+                );
             }
         } catch (e) {
             logWarning('batchRecords error ', description, e as Error);

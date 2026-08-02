@@ -13,6 +13,7 @@ import {getCurrentUser} from '@queries/servers/user';
 
 import * as log from './log';
 import {initializeSentry, captureException, captureJSException, addSentryContext} from './sentry';
+import {testExports as sentryTracingTestExports} from './sentry_tracing';
 
 // Mocks
 jest.mock('@sentry/react-native', () => ({
@@ -20,9 +21,19 @@ jest.mock('@sentry/react-native', () => ({
     captureException: jest.fn(),
     addBreadcrumb: jest.fn(),
     setContext: jest.fn(),
-    ReactNativeTracing: jest.fn(),
-    reactNativeExpoIntegration: jest.fn().mockImplementation(() => ({
-        name: 'expo-router',
+    wrap: jest.fn((component) => component),
+    startSpan: jest.fn((_options, callback) => callback()),
+    startSpanManual: jest.fn((_options, callback) => {
+        const span = {end: jest.fn(), setAttribute: jest.fn()};
+        callback(span);
+        return span;
+    }),
+    reactNavigationIntegration: jest.fn().mockImplementation(() => ({
+        name: 'ReactNavigation',
+        registerNavigationContainer: jest.fn(),
+    })),
+    hermesProfilingIntegration: jest.fn().mockImplementation(() => ({
+        name: 'HermesProfiling',
     })),
 }));
 
@@ -70,7 +81,8 @@ jest.mock('@utils/errors', () => ({
 
 describe('initializeSentry function', () => {
     afterEach(() => {
-        jest.clearAllMocks(); // Clear all mock calls after each test
+        jest.clearAllMocks();
+        sentryTracingTestExports.resetForTesting();
     });
 
     it('should not initialize Sentry if SentryEnabled is false', () => {
@@ -95,19 +107,21 @@ describe('initializeSentry function', () => {
         Config.SentryEnabled = true;
         Config.SentryDsnAndroid = 'YOUR_ANDROID_DSN_HERE';
         Config.SentryDsnIos = 'YOUR_IOS_DSN_HERE';
+        Platform.OS = 'ios';
 
         initializeSentry();
 
         expect(Sentry.init).toHaveBeenCalled();
-        Platform.OS = 'ios';
         expect(Sentry.init).toHaveBeenCalledWith({
             dsn: 'YOUR_IOS_DSN_HERE',
             sendDefaultPii: false,
             environment: 'beta', // Assuming isBetaApp() returns true in this test
             tracesSampleRate: 1.0,
             sampleRate: 1.0,
+            profilesSampleRate: 1.0,
             attachStacktrace: true, // Adjust based on your actual logic
             enableCaptureFailedRequests: false,
+            integrations: expect.any(Array),
             beforeSend: expect.any(Function),
         });
 
@@ -123,6 +137,7 @@ describe('initializeSentry function', () => {
 describe('captureException function', () => {
     afterEach(() => {
         jest.clearAllMocks(); // Clear all mock calls after each test
+        sentryTracingTestExports.resetForTesting();
     });
 
     it('should not capture exception if Sentry is disabled', () => {
@@ -143,6 +158,7 @@ describe('captureException function', () => {
     });
 
     it('should capture exception correctly', () => {
+        Config.SentryEnabled = true;
         captureException(new Error('Test error'));
 
         expect(Sentry.captureException).toHaveBeenCalled();
@@ -153,6 +169,7 @@ describe('captureException function', () => {
 describe('captureJSException function', () => {
     afterEach(() => {
         jest.clearAllMocks(); // Clear all mock calls after each test
+        sentryTracingTestExports.resetForTesting();
     });
 
     it('should not capture exception if Sentry is disabled', () => {
@@ -173,6 +190,7 @@ describe('captureJSException function', () => {
     });
 
     it('should capture ClientError as breadcrumb', () => {
+        Config.SentryEnabled = true;
         const errorData: ClientErrorProps = {
             url: 'https://example.com',
             status_code: 400,
@@ -197,6 +215,7 @@ describe('captureJSException function', () => {
     });
 
     it('should capture other exceptions', () => {
+        Config.SentryEnabled = true;
         const error = new Error('Test error');
 
         captureJSException(error, true);
@@ -209,6 +228,7 @@ describe('captureJSException function', () => {
 describe('addSentryContext function', () => {
     afterEach(() => {
         jest.clearAllMocks(); // Clear all mock calls after each test
+        sentryTracingTestExports.resetForTesting();
     });
 
     it('should not add context if Sentry is disabled', async () => {
@@ -252,6 +272,7 @@ describe('addSentryContext function', () => {
     });
 
     it('should log an error if an exception occurs', async () => {
+        Config.SentryEnabled = true;
         (DatabaseManager.getServerDatabaseAndOperator as jest.Mock).mockImplementation(() => {
             throw new Error('Database error');
         });

@@ -13,7 +13,9 @@ import {NetworkRequestMetrics} from '@managers/performance_metrics_manager/const
 import {isErrorWithStatusCode} from '@utils/errors';
 import {getFormattedFileSize} from '@utils/file';
 import {logDebug, logInfo} from '@utils/log';
+import {withSpan} from '@utils/sentry_tracing';
 import {semverFromServerVersion} from '@utils/server';
+import {cleanUrlForLogging} from '@utils/url';
 
 import * as ClientConstants from './constants';
 import ClientError from './error';
@@ -385,10 +387,23 @@ export default class ClientTracking {
         }
 
         const performanceRequestId = NetworkPerformanceManager.startRequestTracking(this.apiClient.baseUrl, url);
+        const sanitizedPath = cleanUrlForLogging(this.apiClient.baseUrl, url);
+        const methodLabel = (method || 'get').toUpperCase();
 
         let response: ClientResponse;
         try {
-            response = await request!(url, this.buildRequestOptions(options));
+            response = await withSpan(
+                `${methodLabel} ${sanitizedPath}`,
+                'http.client',
+                () => request!(url, this.buildRequestOptions(options)),
+                {
+                    attributes: {
+                        'http.request.method': methodLabel,
+                        'http.route': sanitizedPath,
+                        ...(groupLabel ? {'mm.network_group': groupLabel} : {}),
+                    },
+                },
+            );
         } catch (error) {
             NetworkPerformanceManager.cancelRequestTracking(this.apiClient.baseUrl, performanceRequestId);
             const response_error = error as ClientError;

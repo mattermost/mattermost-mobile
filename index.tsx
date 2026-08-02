@@ -9,6 +9,7 @@ import {AppRegistry, LogBox, Platform} from 'react-native';
 import {BackgroundTimer} from 'react-native-nitro-bg-timer-plus';
 
 import {logInfo} from './app/utils/log';
+import {initializeSentry, wrapWithSentry} from './app/utils/sentry';
 
 // Opt out of the nitro-bg-timer-plus foreground service — we removed its manifest
 // entries, so we also disable it at runtime to prevent the library from attempting
@@ -16,6 +17,10 @@ import {logInfo} from './app/utils/log';
 if (Platform.OS === 'android') {
     BackgroundTimer.disableForegroundService();
 }
+
+// Initialize Sentry as early as possible so app-start and navigation instrumentation
+// can attach to the root component and navigation container.
+initializeSentry();
 
 // eslint-disable-next-line no-process-env
 process.env.EXPO_OS = Platform.OS;
@@ -67,4 +72,4 @@ export function App() {
 }
 
 // Register with the name that iOS AppDelegate expects
-AppRegistry.registerComponent('Mattermost', () => App);
+AppRegistry.registerComponent('Mattermost', () => wrapWithSentry(App));
