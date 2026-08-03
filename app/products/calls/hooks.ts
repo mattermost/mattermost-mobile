@@ -3,12 +3,13 @@
 
 // Check if calls is enabled. If it is, then run fn; if it isn't, show an alert and set
 // msgPostfix to ' (Not Available)'.
-import {useCallback, useEffect, useState} from 'react';
+import {useCallback, useEffect, useMemo, useState} from 'react';
 import {useIntl} from 'react-intl';
 import {Alert, Platform} from 'react-native';
 import Permissions from 'react-native-permissions';
 
 import {initializeVoiceTrack} from '@calls/actions/calls';
+import {leaveAndJoinWithAlert} from '@calls/alerts';
 import {
     getCallsConfig,
     getCurrentCall,
@@ -31,15 +32,18 @@ import {
 import {useServerUrl} from '@context/server';
 import DatabaseManager from '@database/manager';
 import {useAppState} from '@hooks/device';
+import {usePreventDoubleTap} from '@hooks/utils';
 import NetworkManager from '@managers/network_manager';
 import {queryAllActiveServers} from '@queries/app/servers';
 import {getCurrentUser} from '@queries/servers/user';
 import {navigateToScreen} from '@screens/navigation';
+import {isDMChannel} from '@utils/channel';
 import {getFullErrorMessage} from '@utils/errors';
 import {openUserProfile} from '@utils/navigation';
 import {isSystemAdmin} from '@utils/user';
 
 import type {Client} from '@client/rest';
+import type {NavigationButtonProps} from '@components/navigation_button';
 
 export const useTryCallsFunction = (fn: () => void) => {
     const intl = useIntl();
@@ -221,4 +225,62 @@ export const useHostMenus = () => {
     }, [currentCall?.myUserId, hostControlsAvailable, isHost, openHostControl, openProfile]);
 
     return {hostControlsAvailable, onPress, openProfile};
+};
+
+/**
+ * Hook to display the call button in the navigation header for DM channels only.
+ */
+export const useNavigationHeaderCallButtonForDM = (channelId: Channel['id'], channelType: Channel['type']): NavigationButtonProps | undefined => {
+    const intl = useIntl();
+    const serverUrl = useServerUrl();
+    const channelsWithCalls = useChannelsWithCalls(serverUrl);
+    const currentCall = useCurrentCall();
+    const isDM = isDMChannel(channelType);
+
+    const [connecting, setConnecting] = useState(false);
+
+    const isCallInChannel = Boolean(channelsWithCalls[channelId]);
+    const alreadyInCall = currentCall?.channelId === channelId;
+
+    const joinOrStart = useCallback(async () => {
+        setConnecting(true);
+        await leaveAndJoinWithAlert(intl, serverUrl, channelId);
+        setConnecting(false);
+    }, [intl, serverUrl, channelId]);
+    const [tryJoinOrStart] = useTryCallsFunction(joinOrStart);
+    const onPressJoinOrStartCall = usePreventDoubleTap(tryJoinOrStart);
+
+    const handleOnPress = useCallback(() => {
+        if (alreadyInCall) {
+            navigateToScreen(Screens.CALL);
+        } else {
+            onPressJoinOrStartCall();
+        }
+    }, [alreadyInCall, onPressJoinOrStartCall]);
+
+    const navigationHeaderCallButton = useMemo<NavigationButtonProps>(() => {
+        let accessibilityLabel = intl.formatMessage({id: 'mobile.calls_start_call', defaultMessage: 'Start call'});
+        if (alreadyInCall) {
+            accessibilityLabel = intl.formatMessage({id: 'mobile.calls_return_to_call', defaultMessage: 'Return to call'});
+        } else if (isCallInChannel) {
+            accessibilityLabel = intl.formatMessage({id: 'mobile.calls_join_call', defaultMessage: 'Join call'});
+        }
+
+        const iconName = isCallInChannel || alreadyInCall ? 'phone-in-talk' : 'phone';
+
+        return {
+            iconName,
+            isLoading: connecting,
+            onPress: handleOnPress,
+            disabled: connecting,
+            accessibilityLabel,
+            testID: 'channel_header.quick_call.button',
+        };
+    }, [alreadyInCall, isCallInChannel, handleOnPress, connecting, intl]);
+
+    if (!isDM) {
+        return undefined;
+    }
+
+    return navigationHeaderCallButton;
 };

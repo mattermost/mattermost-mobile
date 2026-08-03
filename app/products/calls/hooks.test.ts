@@ -6,6 +6,7 @@ import {Alert, AppState} from 'react-native';
 import Permissions from 'react-native-permissions';
 
 import {initializeVoiceTrack} from '@calls/actions/calls';
+import {leaveAndJoinWithAlert} from '@calls/alerts';
 import {
     getCurrentCall,
     getCallsConfig,
@@ -16,7 +17,7 @@ import {
     useGlobalCallsState,
     useIncomingCalls,
 } from '@calls/state';
-import {Preferences, Screens} from '@constants';
+import {General, Preferences, Screens} from '@constants';
 import {
     CURRENT_CALL_BAR_HEIGHT,
     JOIN_CALL_BAR_HEIGHT,
@@ -29,7 +30,7 @@ import {getCurrentUser} from '@queries/servers/user';
 import {navigateToScreen} from '@screens/navigation';
 import {openUserProfile} from '@utils/navigation';
 
-import {useTryCallsFunction, usePermissionsChecker, useCallsAdjustment, useHostControlsAvailable, useHostMenus} from './hooks';
+import {useTryCallsFunction, usePermissionsChecker, useCallsAdjustment, useHostControlsAvailable, useHostMenus, useNavigationHeaderCallButtonForDM} from './hooks';
 
 jest.mock('react-intl', () => ({
     useIntl: jest.fn().mockReturnValue({
@@ -52,6 +53,10 @@ jest.mocked(getDefaultThemeByAppearance).mockReturnValue(Preferences.THEMES.deni
 
 jest.mock('@calls/actions/calls', () => ({
     initializeVoiceTrack: jest.fn(),
+}));
+
+jest.mock('@calls/alerts', () => ({
+    leaveAndJoinWithAlert: jest.fn(),
 }));
 
 jest.mock('@calls/state', () => ({
@@ -275,6 +280,65 @@ describe('Calls Hooks', () => {
                     userId: mockSession.userId,
                 }),
             );
+        });
+    });
+
+    describe('useNavigationHeaderCallButton', () => {
+        const channelId = 'channel1';
+
+        beforeEach(() => {
+            (useChannelsWithCalls as jest.Mock).mockReturnValue({});
+            (useCurrentCall as jest.Mock).mockReturnValue(null);
+            (NetworkManager.getClient as jest.Mock).mockReturnValue({getEnabled: jest.fn().mockResolvedValue(true)});
+        });
+
+        it('returns the start call icon when there is no call in the channel', () => {
+            const {result} = renderHook(() => useNavigationHeaderCallButtonForDM(channelId, General.DM_CHANNEL));
+
+            expect(result.current).toEqual(expect.objectContaining({
+                iconName: 'phone',
+                accessibilityLabel: 'Start call',
+                disabled: false,
+                testID: 'channel_header.quick_call.button',
+            }));
+        });
+
+        it('returns the join call icon when a call is ongoing in the channel', () => {
+            (useChannelsWithCalls as jest.Mock).mockReturnValue({[channelId]: true});
+
+            const {result} = renderHook(() => useNavigationHeaderCallButtonForDM(channelId, General.DM_CHANNEL));
+
+            expect(result.current).toEqual(expect.objectContaining({
+                iconName: 'phone-in-talk',
+                accessibilityLabel: 'Join call',
+            }));
+        });
+
+        it('returns undefined when already in this channel call', () => {
+            (useChannelsWithCalls as jest.Mock).mockReturnValue({[channelId]: true});
+            (useCurrentCall as jest.Mock).mockReturnValue({channelId});
+
+            const {result} = renderHook(() => useNavigationHeaderCallButtonForDM(channelId, General.DM_CHANNEL));
+
+            expect(result.current).toBeUndefined();
+        });
+
+        it('returns a button when in a call in a different channel', () => {
+            (useCurrentCall as jest.Mock).mockReturnValue({channelId: 'other-channel'});
+
+            const {result} = renderHook(() => useNavigationHeaderCallButtonForDM(channelId, General.DM_CHANNEL));
+
+            expect(result.current?.iconName).toBe('phone');
+        });
+
+        it('joins the call on press', async () => {
+            const {result} = renderHook(() => useNavigationHeaderCallButtonForDM(channelId, General.DM_CHANNEL));
+
+            await act(async () => {
+                await result.current?.onPress();
+            });
+
+            expect(leaveAndJoinWithAlert).toHaveBeenCalledWith(expect.anything(), 'server1', channelId);
         });
     });
 });
