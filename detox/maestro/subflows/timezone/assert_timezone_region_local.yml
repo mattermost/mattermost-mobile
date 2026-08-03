@@ -2,6 +2,7 @@
 # timezone is enabled and shows a non-empty region label (any device timezone).
 appId: ${MAESTRO_APP_ID}
 ---
+# * Verify automatic timezone is on and shows a non-empty region label
 - extendedWaitUntil:
     visible:
       id: "timezone_display_settings.automatic.option.description"

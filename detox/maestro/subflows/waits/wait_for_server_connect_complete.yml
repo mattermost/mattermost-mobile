@@ -11,10 +11,13 @@
 # a successful connect behaves exactly as before on both platforms.
 appId: ${MAESTRO_APP_ID}
 ---
+# * Verify the server form was left, so a failed connect is reported as a connect error
 - extendedWaitUntil:
     notVisible:
       id: "server_form.display_help"
     timeout: 120000
+
+# * Verify we landed on the login form (fresh server) or the home tab (reused session)
 - extendedWaitUntil:
     visible:
       id: "login_form.forgot_password.button"

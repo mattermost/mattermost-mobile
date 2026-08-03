@@ -1,5 +1,9 @@
 # MM-T837: Device A creates a public channel so Device B can see it sync (multi-device).
 #
+# NOT RUN IN CI: two-device flow. CI provisions one device per job, so
+# scripts/run_ci_batches.sh skips flows/multi_device/*. Run manually via
+# scripts/run_channel_sync_two_device.sh with DEVICE_A_UDID and DEVICE_B_UDID.
+#
 # PRE-CONDITIONS:
 #   - Two devices/sessions orchestrated via scripts/run_channel_sync_two_device.sh
 #   - Same test user logged in on both Device A and Device B (matches RF-CS117's
@@ -24,8 +28,10 @@ tags:
   - MM-T837
 appId: ${MAESTRO_APP_ID}
 ---
+# # Log in as the shared test user
 - runFlow: ../../subflows/auth/login.yml
 
+# # Open the create-channel screen from the channel list plus-menu
 - tapOn:
     id: "channel_list_header.plus.button"
 - extendedWaitUntil:
@@ -35,6 +41,7 @@ appId: ${MAESTRO_APP_ID}
 - tapOn:
     id: "plus_menu_item.create_new_channel"
 
+# # Name the channel after SYNC_TOKEN and create it
 - extendedWaitUntil:
     visible:
       id: "channel_info_form.display_name.input"
@@ -45,7 +52,7 @@ appId: ${MAESTRO_APP_ID}
 - tapOn:
     id: "create_or_edit_channel.create.button"
 
-# Verify Device A landed on the new channel
+# * Verify Device A landed on the new channel
 - extendedWaitUntil:
     visible:
       id: "channel.post_draft.post.input"

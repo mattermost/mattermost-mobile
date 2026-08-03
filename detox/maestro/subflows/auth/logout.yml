@@ -3,25 +3,28 @@
 # Requires: MAESTRO_APP_ID env var
 appId: ${MAESTRO_APP_ID}
 ---
-# Dismiss the scheduled-post tooltip if it's blocking the account tab
+# # Dismiss the scheduled-post tooltip if it's blocking the account tab
 - tapOn:
     id: "scheduled_post.tooltip.close.button"
     optional: true
 - tapOn:
     id: "scheduled_post_tutorial_tooltip.close"
     optional: true
-# Navigate to Account screen
+
+# # Navigate to Account screen
 - tapOn:
     id: "tab_bar.account.tab"
 - extendedWaitUntil:
     visible:
       id: "account.screen"
     timeout: 10000
-# Tap logout
+
+# # Tap logout
 - tapOn:
     id: "account.logout.option"
-# The app shows a confirmation dialog "Are you sure you want to log out of Server 1?"
-# with a "Log out" button.
+
+# * Verify the confirmation dialog rendered — "Are you sure you want to log out of
+# Server 1?" with a "Log out" button.
 #
 # WHY point: instead of text/id — Maestro YAML uses fuzzy (substring) text matching by
 # default, so text: "Log out" matches many background elements in the account screen
@@ -39,26 +42,29 @@ appId: ${MAESTRO_APP_ID}
     visible:
       text: "Cancel"
     timeout: 10000
-# Tap the "Log out" button in the UIAlertController.
+
+# # Tap the "Log out" button in the UIAlertController.
 # iOS 26 may layout buttons horizontally (Cancel left, Log out right) or
 # vertically. Try both positions with optional taps.
 - runFlow:
     when:
       platform: iOS
     commands:
-      # Tap the "Log out" button in UIAlertController.
+      # # Tap the "Log out" button in UIAlertController.
       # Bounds: [201,480][336,524] → center at 67%,57%.
       # Coordinate tap bypasses account-screen "Log out" text matches.
       - tapOn:
           point: "70%,57%"
-# Android: AlertDialog IS in the app hierarchy. Tap positive button by resource-id.
+
+# # Android: AlertDialog IS in the app hierarchy. Tap positive button by resource-id.
 - runFlow:
     when:
       platform: Android
     commands:
       - tapOn:
           id: "android:id/button1"
-# Wait for logout to complete — login form or server list.
+
+# * Verify logout completed — login form or server list.
 # On iOS, logout may navigate to the server list (multiple servers) or
 # directly to the login form (single server). Accept either.
 - runFlow:

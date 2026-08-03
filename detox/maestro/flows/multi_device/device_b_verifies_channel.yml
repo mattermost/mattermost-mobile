@@ -1,5 +1,9 @@
 # MM-T837: Device B sees the channel Device A created appear via sync (multi-device).
 #
+# NOT RUN IN CI: two-device flow. CI provisions one device per job, so
+# scripts/run_ci_batches.sh skips flows/multi_device/*. Run manually via
+# scripts/run_channel_sync_two_device.sh with DEVICE_A_UDID and DEVICE_B_UDID.
+#
 # PRE-CONDITIONS:
 #   - device_a_creates_channel.yml completed (channel named SYNC_TOKEN exists)
 #   - Same test user logged in on Device B as Device A (matches RF-CS117's
@@ -19,15 +23,17 @@ tags:
   - MM-T837
 appId: ${MAESTRO_APP_ID}
 ---
+# # Log in as the shared test user
 - runFlow: ../../subflows/auth/login.yml
 
-# Poll the Mattermost API until the channel created by Device A appears.
+# # Poll the Mattermost API until the channel created by Device A appears.
 # This ensures Device B does not assert before the channel is synced.
 - runScript: ../../fixtures/poll_for_channel.ts
 
+# # Expand the Channels category so sidebar items are addressable
 - runFlow: ../../subflows/navigation/expand_channels_category.yml
 
-# Verify the channel from Device A is visible on Device B's sidebar
+# * Verify the channel from Device A is visible on Device B's sidebar
 - extendedWaitUntil:
     visible:
       id: "channel_list.category.channels.channel_item.${SYNC_TOKEN}"
