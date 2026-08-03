@@ -120,6 +120,7 @@ async function enrich(classified, {repo, baselineBranch = 'main', prNumber, base
             any_failing_elsewhere: entries.some(
                 (e) => e.failing_elsewhere && e.failing_elsewhere.distinct_prs > 0,
             ),
+
             // An unreachable amnesty endpoint counts as exhausted.
             //
             // This read `e.amnesty.granted === false`, so "TSIO said no" and "TSIO

@@ -62,7 +62,8 @@ jobs:
             detox/triage/triage.test.js \
             detox/triage/triage-artifacts.test.js \
             detox/triage/triage-cli.test.js \
-            detox/utils/tsio-report-status.test.js
+            detox/utils/tsio-report-status.test.js \
+            .github/actions/generate-specs/split-tests.test.js
           # The reporter carries its own assertions for the URL and status rules.
           node detox/utils/tsio-report-status.js --self-test
 
