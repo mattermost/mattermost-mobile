@@ -72,6 +72,16 @@ on:
         required: false
         type: string
         default: ""
+      use_staging:
+        description: >-
+          Target the TSIO staging deployment instead of production. Mirrors the
+          `use-staging` input on mattermost-test-system-io's
+          test-system-io-report-upload action, which is how every other TSIO call
+          in this repo selects its environment — one mechanism, not two.
+          Production by default, matching the rest of the E2E pipeline.
+        required: false
+        type: boolean
+        default: false
     secrets:
       GH_TOKEN:
         required: false
@@ -110,6 +120,10 @@ jobs:
       rerun_android_specs: ${{ steps.specs.outputs.android }}
       evidence_artifact: e2e-triage-evidence-${{ inputs.artifact_run_id }}
       diff_overlaps: ${{ steps.overlap.outputs.overlaps }}
+      # Resolved once here and consumed by both this job's triage step and the
+      # adjudicate job below, so the two halves of the pipeline can never end up
+      # pointed at different TSIO environments.
+      tsio_url: ${{ steps.tsio-env.outputs.url }}
     steps:
       - name: ci/checkout
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
@@ -167,6 +181,25 @@ jobs:
       # has no detox/triage/. That commit predates the feature and triage has
       # nothing to say about it — so skip the whole thing rather than posting a
       # red check on every un-rebased PR, which would be pure noise.
+      # The two TSIO hostnames, in one place. These are the same constants
+      # detox/utils/tsio-report-status.js carries (PRODUCTION_URL / STAGING_URL)
+      # and the same pair the test-system-io-report-upload action switches
+      # between — this keeps triage on that one convention rather than inventing
+      # a separate repo-variable override for the same choice.
+      - name: ci/resolve-tsio-url
+        id: tsio-env
+        env:
+          USE_STAGING: ${{ inputs.use_staging }}
+        run: |
+          set -euo pipefail
+          if [ "$USE_STAGING" = "true" ]; then
+            URL="https://staging-test-io.test.mattermost.com"
+          else
+            URL="https://test-io.test.mattermost.com"
+          fi
+          echo "url=$URL" >> "$GITHUB_OUTPUT"
+          echo "TSIO environment: $URL"
+
       - name: ci/check-tooling
         id: tooling
         run: |
@@ -191,7 +224,7 @@ jobs:
             --repo="${TRIAGE_REPO}" \
             --commit='${{ inputs.MOBILE_VERSION }}' \
             --branch='${{ inputs.version_name || 'main' }}' \
-            --tsio-url='${{ vars.TSIO_URL || 'https://test-io.test.mattermost.com' }}' \
+            --tsio-url='${{ steps.tsio-env.outputs.url }}' \
             ${{ inputs.pr_number != '' && format('--pr={0}', inputs.pr_number) || '' }}
 
       # Emitted as job outputs rather than read from the artifact by the rerun
@@ -420,11 +453,11 @@ jobs:
       mode: ${{ vars.E2E_AI_TRIAGE_MODE || 'shadow' }}
       diff_overlaps_failure: ${{ needs.plan.outputs.diff_overlaps == 'true' }}
       claude_model: ${{ vars.CLAUDE_MODEL || '' }}
-      # Point the whole triage pipeline at a TSIO environment with one repo
-      # variable. Staging first: the history and ledger writes are new, and a
-      # bad write against production would corrupt the very metrics that decide
-      # whether triage is trusted.
-      tsio_url: ${{ vars.TSIO_URL || 'https://test-io.test.mattermost.com' }}
+      # Same environment the plan job read history from. Resolved there so both
+      # halves cannot disagree; the literal fallback only matters if plan somehow
+      # produced no output, and it points at production because that is where
+      # every other TSIO call in this repo already goes.
+      tsio_url: ${{ needs.plan.outputs.tsio_url || 'https://test-io.test.mattermost.com' }}
     secrets:
       GH_TOKEN: ${{ secrets.GH_TOKEN || github.token }}
       ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}

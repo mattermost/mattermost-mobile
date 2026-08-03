@@ -126,6 +126,16 @@ on:
         required: false
         type: string
         default: ""
+      run_quarantined:
+        description: >-
+          Run the quarantined tests — the ones normally skipped because they are
+          known to fail. Off by default; used by the triage smoke validation,
+          which needs a run that is guaranteed to contain real failures, and for
+          periodically re-checking whether a quarantined test still fails.
+          Surfaces as RUN_QUARANTINED_TESTS to the test process.
+        required: false
+        type: boolean
+        default: false
       tsio-config:
         description: >
           TSIO reporting config: {"composite_identity":{...},"total_reports_expected":N}.
@@ -182,6 +192,11 @@ env:
   IOS: "true"
   RUNNING_E2E: "true"
   ARTIFACT_RUN_ID: ${{ inputs.artifact_run_id || github.run_id }}
+  # Read by detox/e2e/support/test_config.ts. Set at workflow level rather than
+  # via detox/.env because the .env path is relative to the detox working
+  # directory and does not resolve during a CI run — the environment is what
+  # actually reaches the test process, same as RUNNING_E2E above.
+  RUN_QUARANTINED_TESTS: ${{ inputs.run_quarantined }}
 
 jobs:
   generate-specs:

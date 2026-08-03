@@ -165,6 +165,44 @@ xcrun simctl list devices | grep Booted
 The Local Runs generate artifacts under `detox/artifacts/ios-debug-**` or `detox/artifacts/android-debug-**`.
 You can see the html report, failure screenshot under that folder.
 
+## Quarantined tests
+
+A test that is known to fail is *quarantined* rather than deleted: it stays in
+the suite but does not run. Use the hooks from `@support/quarantine` instead of a
+bare `it.skip`:
+
+```ts
+import {itQuarantined} from '@support/quarantine';
+
+// Quarantined: depends on app-side Saved Messages observe() fix.
+itQuarantined('MM-T4910_2 - should be able to display a saved message', async () => {
+```
+
+They behave exactly like `it.skip` / `describe.skip` by default. The difference
+is that a bare skip records only that someone once turned the test off — it is
+indistinguishable from a platform gate, and it cannot be turned back on without
+editing the file.
+
+Set `RUN_QUARANTINED_TESTS=true` to run them:
+
+```sh
+RUN_QUARANTINED_TESTS=true npm run e2e:ios-test
+```
+
+In CI, the `run_quarantined` input on the iOS and Android templates does the
+same. Two things use it:
+
+- **Failure-triage validation** (`e2e-triage-smoke.yml`) needs a run that is
+  guaranteed to contain real failures. A run with nothing failing proves nothing
+  about triage.
+- **Re-checking the quarantine list**, so an entry does not silently become
+  permanent after the underlying bug is fixed.
+
+Only use these hooks for "this test is broken". A test that does not apply to a
+platform or a server topology is not quarantined — keep an explicit condition
+such as `isIos() ? it.skip : it`, which stays skipped even when quarantined tests
+are enabled.
+
 ## Webhook sidecar (mm_blocks / interactive dialog specs)
 
 The `mm_blocks_*` and interactive-dialog specs register integrations that the

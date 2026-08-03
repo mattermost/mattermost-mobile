@@ -32,13 +32,46 @@ const {collect} = require('./collect');
 const {enrich, PRODUCTION_URL} = require('./history');
 const {mergeRerun} = require('./rerun');
 
-function parseArgs(argv) {
+// Every flag main() reads. Anything else is a caller mistake.
+//
+// Silently ignoring an unknown flag is the worst failure mode available here: a
+// typo in `--artifacts` leaves the default path, which is empty in CI, so triage
+// reports "no reports found" and the run resolves red. That is the correct
+// fail-closed answer to the wrong question, and it looks identical to a genuine
+// infrastructure failure — so the typo survives.
+const KNOWN_FLAGS = new Set([
+    'artifacts',
+    'output',
+    'repo',
+    'commit',
+    'branch',
+    'pr',
+    'tsio-url',
+    'skip-history',
+    'rerun-artifacts',
+    'evidence-in',
+    'prior-evidence',
+]);
+
+function parseArgs(argv, knownFlags = KNOWN_FLAGS) {
     const args = {};
+    const unknown = [];
     for (const arg of argv.slice(2)) {
         const match = arg.match(/^--([^=]+)(?:=(.*))?$/);
-        if (match) {
-            args[match[1]] = match[2] === undefined ? 'true' : match[2];
+        if (!match) {
+            continue;
         }
+        if (knownFlags && !knownFlags.has(match[1])) {
+            unknown.push(`--${match[1]}`);
+            continue;
+        }
+        args[match[1]] = match[2] === undefined ? 'true' : match[2];
+    }
+    if (unknown.length > 0) {
+        throw new Error(
+            `unknown flag(s): ${unknown.join(', ')}. ` +
+            `Known flags: ${[...knownFlags].map((f) => `--${f}`).join(', ')}`,
+        );
     }
     return args;
 }
@@ -84,7 +117,7 @@ function renderSummary(result) {
 
     if (result.clusters.length > 0) {
         lines.push('### Failure clusters', '');
-        lines.push('| # | Signature | Verdict | Conf | Shards | Platforms | Needs model |');
+        lines.push('| Members | Signature | Verdict | Conf | Shards | Platforms | Needs model |');
         lines.push('|---:|---|---|---:|---|---|---|');
         for (const c of result.clusters) {
             lines.push([
@@ -195,6 +228,23 @@ async function main() {
             console.error(`history enrichment failed (continuing without it): ${err.message}`);
         }
     }
+
+    // Stamp what this bundle is about. The evidence artifact outlives the step
+    // that produced it — the final pass downloads it back as `prior/evidence.json`
+    // and merges rerun results into it — and until now nothing in the file said
+    // which commit or run it described. A bundle that cannot identify itself
+    // cannot be checked against the run consuming it, so a mismatched artifact
+    // would merge silently.
+    result = {
+        ...result,
+        meta: {
+            repo: repo || null,
+            commit: args.commit || null,
+            branch: baselineBranch,
+            pr: prNumber === undefined ? null : prNumber,
+            generated_at: new Date().toISOString(),
+        },
+    };
 
     const evidencePath = path.join(outputDir, 'evidence.json');
     fs.writeFileSync(evidencePath, `${JSON.stringify(result, null, 2)}\n`);

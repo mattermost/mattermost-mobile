@@ -1,0 +1,315 @@
+---
+# Small real E2E run that exists to validate failure triage end to end.
+#
+# e2e-triage-replay.yml covers most of what needs validating and costs almost
+# nothing, so reach for that first. This workflow exists for the one thing
+# replay cannot reach: the **targeted rerun** stage, which re-executes failed
+# specs on real devices against real servers. Everything downstream of the rerun
+# — `reproduced_on_rerun`, and therefore the invariant that a failure which
+# reproduced every time can never be waived — is only exercised here.
+#
+# It is deliberately tiny: an explicit spec list at parallelism 1, rather than
+# ~20 shards of discovery. The builds are the floor on cost, not the tests. Build
+# artifacts do not survive between runs, so each dispatch pays for them again.
+#
+# Failures come from the quarantined tests (RUN_QUARANTINED_TESTS), not from a
+# synthetic always-failing spec. They are real tests that are already known to
+# fail, already maintained, and already reviewed — so the evidence triage sees is
+# the same shape as production evidence. A validation run with nothing failing
+# proves nothing, which is why run_quarantined defaults to true here and false
+# everywhere else.
+name: E2E Triage Smoke
+
+on:
+  workflow_dispatch:
+    inputs:
+      server_url:
+        description: >-
+          Provisioned Mattermost test server. Must be HTTPS on a Mattermost-owned
+          domain — provisioning ships admin credentials to it, so the allowlist in
+          .github/actions/validate-server-urls is enforced.
+        required: true
+        type: string
+      platform:
+        description: "Which platform(s) to run"
+        required: false
+        default: "both"
+        type: choice
+        options:
+          - android
+          - ios
+          - both
+      spec_list:
+        description: >-
+          Whitespace/newline-separated spec files. Defaults to the quarantined
+          Saved Messages spec, which contains known-failing tests. Missing files
+          are an error, not a silent no-op.
+        required: false
+        type: string
+        default: "detox/e2e/test/products/channels/search/saved_messages.e2e.ts"
+      run_quarantined:
+        description: "Run the known-failing quarantined tests, so triage has real failures to work on"
+        required: false
+        default: true
+        type: boolean
+      commit:
+        description: "SHA to build and post the status on. Defaults to the dispatch ref's head."
+        required: false
+        type: string
+        default: ""
+      pr_number:
+        description: "PR to comment on and label. Empty posts the commit status only."
+        required: false
+        type: string
+        default: ""
+
+permissions:
+  contents: read
+  id-token: write
+  actions: read
+
+env:
+  INTUNE_ENABLED: 'false'
+
+jobs:
+  resolve:
+    name: Resolve smoke target
+    runs-on: ubuntu-24.04
+    outputs:
+      commit: ${{ steps.target.outputs.commit }}
+    steps:
+      - name: ci/checkout
+        uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
+        with:
+          persist-credentials: false
+
+      - name: ci/resolve-commit
+        id: target
+        env:
+          REQUESTED_COMMIT: ${{ inputs.commit }}
+        run: |
+          set -euo pipefail
+          COMMIT="${REQUESTED_COMMIT:-$(git rev-parse HEAD)}"
+          echo "commit=$COMMIT" >> "$GITHUB_OUTPUT"
+          echo "Smoke target commit: $COMMIT"
+
+      # Fails fast, before any build is paid for, if the URL is not one we are
+      # allowed to send admin credentials to.
+      - name: ci/validate-server-url
+        uses: ./.github/actions/validate-server-urls
+        with:
+          android_site_1_url: ${{ inputs.server_url }}
+          ios_site_1_url: ${{ inputs.server_url }}
+          site_3_url: ${{ inputs.server_url }}
+
+  provision:
+    name: Provision test server
+    needs: resolve
+    runs-on: ubuntu-24.04
+    steps:
+      - name: ci/checkout
+        uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
+        with:
+          ref: ${{ needs.resolve.outputs.commit }}
+          persist-credentials: false
+
+      - name: ci/validate-server-url
+        uses: ./.github/actions/validate-server-urls
+        with:
+          android_site_1_url: ${{ inputs.server_url }}
+          ios_site_1_url: ${{ inputs.server_url }}
+          site_3_url: ${{ inputs.server_url }}
+
+      - name: Cache demo plugin fixture
+        id: demo-plugin-cache
+        uses: actions/cache@27d5ce7f107fe9357f9df03efb73ab90386fccae # v5.0.5
+        with:
+          path: detox/e2e/support/fixtures/mattermost-plugin-demo-v0.11.1-linux-amd64.tar.gz
+          key: mattermost-plugin-demo-linux-amd64-v0.11.1
+
+      - name: Download demo plugin fixture
+        if: steps.demo-plugin-cache.outputs.cache-hit != 'true'
+        run: |
+          mkdir -p detox/e2e/support/fixtures
+          curl -fsSL -o detox/e2e/support/fixtures/mattermost-plugin-demo-v0.11.1-linux-amd64.tar.gz \
+            "https://github.com/mattermost/mattermost-plugin-demo/releases/download/v0.11.1/mattermost-plugin-demo-v0.11.1-linux-amd64.tar.gz"
+
+      # Idempotent: re-provisioning an already-provisioned server is a no-op, so
+      # a server left over from an earlier run can be reused as-is.
+      - name: Provision server (license + plugins)
+        env:
+          SERVER_URL: ${{ inputs.server_url }}
+          ADMIN_USERNAME: ${{ secrets.MM_MOBILE_E2E_ADMIN_USERNAME }}
+          ADMIN_PASSWORD: ${{ secrets.MM_MOBILE_E2E_ADMIN_PASSWORD }}
+        run: |
+          set -euo pipefail
+          cd detox
+          npm ci --prefer-offline --no-audit --no-fund
+          npm run provision -- "$SERVER_URL"
+
+  build-ios-simulator:
+    name: Build iOS simulator
+    if: inputs.platform == 'ios' || inputs.platform == 'both'
+    needs: resolve
+    runs-on: macos-26
+    permissions:
+      contents: read
+      actions: write
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
+        with:
+          persist-credentials: false
+          ref: ${{ needs.resolve.outputs.commit }}
+
+      - name: Prepare iOS Build
+        uses: ./.github/actions/prepare-ios-build
+        with:
+          intune-enabled: ${{ env.INTUNE_ENABLED }}
+          intune-ssh-private-key: ${{ secrets.MM_MOBILE_INTUNE_DEPLOY_KEY }}
+
+      - name: Set .env with RUNNING_E2E=true
+        run: echo "RUNNING_E2E=true" > .env
+
+      - name: Build iOS Simulator
+        env:
+          TAG: ${{ needs.resolve.outputs.commit }}
+          GITHUB_TOKEN: ${{ secrets.MM_MOBILE_GITHUB_TOKEN }}
+        run: bundle exec fastlane ios simulator --env ios.simulator
+        working-directory: ./fastlane
+
+      - name: Upload iOS Simulator Build
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: ios-build-simulator-${{ github.run_id }}
+          path: Mattermost-simulator-*.app.zip
+
+  build-android-apk:
+    name: Build Android APK
+    if: inputs.platform == 'android' || inputs.platform == 'both'
+    needs: resolve
+    runs-on: ubuntu-latest-8-cores
+    permissions:
+      contents: read
+      actions: write
+    env:
+      ORG_GRADLE_PROJECT_jvmargs: -Xmx8g
+    steps:
+      - name: Prune Docker to free up space
+        run: docker system prune -af
+
+      - name: Checkout Repository
+        uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
+        with:
+          persist-credentials: false
+          ref: ${{ needs.resolve.outputs.commit }}
+
+      - name: Prepare Android Build
+        uses: ./.github/actions/prepare-android-build
+        env:
+          STORE_FILE: ${{ secrets.MM_MOBILE_STORE_FILE }}
+          STORE_ALIAS: ${{ secrets.MM_MOBILE_STORE_ALIAS }}
+          STORE_PASSWORD: ${{ secrets.MM_MOBILE_STORE_PASSWORD }}
+          MATTERMOST_BUILD_GH_TOKEN: ${{ secrets.MATTERMOST_BUILD_GH_TOKEN }}
+
+      - name: Cache Gradle dependencies
+        uses: actions/cache@27d5ce7f107fe9357f9df03efb73ab90386fccae # v5.0.5
+        with:
+          path: /home/runner/.gradle/caches/modules-2/
+          key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
+          restore-keys: ${{ runner.os }}-gradle-
+
+      - name: Detox build
+        run: |
+          cd detox
+          npm ci --prefer-offline --no-audit --no-fund
+          npm run e2e:android-build
+
+      - name: Upload Android Build
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: android-build-files-${{ github.run_id }}
+          path: "android/app/build/**/*"
+
+  # TSIO reporting is deliberately left off (no tsio-config). A validation run is
+  # not a real result for this commit, and uploading it would pollute the history
+  # that triage itself reads back as evidence.
+  run-detox-ios:
+    name: Detox iOS (smoke)
+    if: inputs.platform == 'ios' || inputs.platform == 'both'
+    needs:
+      - resolve
+      - provision
+      - build-ios-simulator
+    permissions:
+      contents: read
+      id-token: write
+      actions: read
+      statuses: write
+      issues: read
+    uses: ./.github/workflows/e2e-ios-template.yml
+    with:
+      MOBILE_VERSION: ${{ needs.resolve.outputs.commit }}
+      MM_TEST_SERVER_URL: ${{ inputs.server_url }}
+      MM_TEST_SERVER_URL_3: ${{ inputs.server_url }}
+      artifact_run_id: ${{ github.run_id }}
+      spec_list: ${{ inputs.spec_list }}
+      parallelism: "1"
+      run_quarantined: ${{ inputs.run_quarantined }}
+      run-type: "PR"
+    secrets: inherit
+
+  run-detox-android:
+    name: Detox Android (smoke)
+    if: inputs.platform == 'android' || inputs.platform == 'both'
+    needs:
+      - resolve
+      - provision
+      - build-android-apk
+    permissions:
+      contents: read
+      id-token: write
+      actions: read
+      statuses: write
+      issues: read
+    uses: ./.github/workflows/e2e-android-template.yml
+    with:
+      run-android-tests: true
+      MOBILE_VERSION: ${{ needs.resolve.outputs.commit }}
+      MM_TEST_SERVER_URL: ${{ inputs.server_url }}
+      MM_TEST_SERVER_URL_3: ${{ inputs.server_url }}
+      artifact_run_id: ${{ github.run_id }}
+      spec_list: ${{ inputs.spec_list }}
+      parallelism: "1"
+      run_quarantined: ${{ inputs.run_quarantined }}
+      run-type: "PR"
+    secrets: inherit
+
+  # always() so a shard that died still gets classified — a run that produced no
+  # results at all is exactly the case triage is most useful for.
+  triage:
+    name: AI failure triage (smoke)
+    if: always() && !cancelled()
+    needs:
+      - resolve
+      - run-detox-ios
+      - run-detox-android
+    permissions:
+      contents: read
+      actions: read
+      statuses: write
+      pull-requests: write
+      issues: write
+      id-token: write
+    uses: ./.github/workflows/e2e-ai-triage.yml
+    with:
+      MOBILE_VERSION: ${{ needs.resolve.outputs.commit }}
+      artifact_run_id: ${{ github.run_id }}
+      pr_number: ${{ inputs.pr_number }}
+      run_type: "PR"
+      # Forwarded so the targeted rerun can re-execute against the same server
+      # and the same build. This is the entire reason this workflow exists.
+      IOS_SITE_1_URL: ${{ inputs.server_url }}
+      ANDROID_SITE_1_URL: ${{ inputs.server_url }}
+      SITE_3_URL: ${{ inputs.server_url }}
+    secrets: inherit

@@ -1,0 +1,152 @@
+---
+# Replay failure triage over an *existing* E2E run's artifacts.
+#
+# This is the cheap validation path for the triage layer. A full E2E run is ~20
+# shards across two platforms and several provisioned servers; re-running it to
+# check a change to the triage engine costs hours and real money, and the thing
+# under test — clustering, the rule catalogue, policy, the posted status — never
+# touched a device in the first place.
+#
+# The `*-results-*` artifacts of past runs are retained and re-downloadable, so
+# triage can be driven end to end against them. Nothing is simulated: real
+# artifacts from a real run, the real triage workflow, a real `e2e-test/ai-triage`
+# commit status.
+#
+# What this does NOT exercise is the targeted rerun stage, which needs live
+# devices and provisioned servers — the server URL inputs are deliberately not
+# forwarded, so triage runs on first-run evidence alone. Use
+# e2e-triage-smoke.yml for that.
+#
+# Pick an artifact_run_id from a run that actually failed; replaying a green run
+# only proves triage stays quiet.
+#   gh run list -R mattermost/mattermost-mobile --workflow=e2e-detox-pr.yml \
+#     -L 20 --json databaseId,conclusion,headSha
+name: E2E Triage Replay
+
+on:
+  workflow_dispatch:
+    inputs:
+      artifact_run_id:
+        description: "Run ID of a past E2E run whose *-results-* artifacts to replay"
+        required: true
+        type: string
+      commit:
+        description: >-
+          SHA to post `e2e-test/ai-triage` on. Defaults to the artifact run's head
+          SHA. NOTE: the status lands on whatever commit this resolves to — if
+          that commit belongs to an open PR, its author will see the check. Pass
+          a commit you own when validating.
+        required: false
+        type: string
+        default: ""
+      pr_number:
+        description: "PR to comment on and label. Leave empty to post the status only."
+        required: false
+        type: string
+        default: ""
+      run_type:
+        description: >-
+          PR | MAIN | RELEASE. Only PR can auto-waive; MAIN and RELEASE never do.
+          Keep this on PR unless you are specifically testing the MAIN path.
+        required: false
+        default: "PR"
+        type: choice
+        options:
+          - PR
+          - MAIN
+          - RELEASE
+      use_staging:
+        description: >-
+          Read history from, and write verdicts to, TSIO staging instead of
+          production. Worth turning on while the history and ledger endpoints are
+          new: a bad write against production would corrupt the false-green
+          metric, which is the one number deciding whether triage is trusted.
+        required: false
+        type: boolean
+        default: false
+
+permissions:
+  contents: read
+  actions: read
+  statuses: write
+  pull-requests: write
+  issues: write
+  id-token: write
+
+jobs:
+  # The triage workflow needs a concrete SHA to check out and to post the status
+  # on. Resolving it here (rather than defaulting inside triage) keeps the replay
+  # explicit about which commit it is about to write a check to.
+  resolve:
+    name: Resolve replay target
+    runs-on: ubuntu-24.04
+    outputs:
+      commit: ${{ steps.target.outputs.commit }}
+    steps:
+      - name: ci/resolve-commit
+        id: target
+        env:
+          GH_TOKEN: ${{ github.token }}
+          ARTIFACT_RUN_ID: ${{ inputs.artifact_run_id }}
+          REQUESTED_COMMIT: ${{ inputs.commit }}
+          REPO: ${{ github.repository }}
+        run: |
+          set -euo pipefail
+
+          if [ -n "$REQUESTED_COMMIT" ]; then
+            COMMIT="$REQUESTED_COMMIT"
+            echo "Using requested commit: $COMMIT"
+          else
+            COMMIT=$(gh api "repos/${REPO}/actions/runs/${ARTIFACT_RUN_ID}" --jq '.head_sha')
+            echo "Resolved commit from run ${ARTIFACT_RUN_ID}: $COMMIT"
+          fi
+
+          if [ -z "$COMMIT" ] || [ "$COMMIT" = "null" ]; then
+            echo "::error::Could not resolve a commit for run ${ARTIFACT_RUN_ID}"
+            exit 1
+          fi
+
+          # A replay against a run whose artifacts have expired produces "no
+          # reports", which triage correctly resolves to red. That is a real
+          # verdict but a useless validation signal, so say so up front rather
+          # than letting it look like a triage bug.
+          COUNT=$(gh api "repos/${REPO}/actions/runs/${ARTIFACT_RUN_ID}/artifacts" --paginate \
+            --jq '[.artifacts[] | select(.name | test("-results-")) | select(.expired == false)] | length')
+          echo "Replayable (unexpired) result artifacts: ${COUNT}"
+          if [ "$COUNT" -eq 0 ]; then
+            echo "::warning::Run ${ARTIFACT_RUN_ID} has no unexpired *-results-* artifacts. Triage will see no reports and resolve red."
+          fi
+
+          echo "commit=$COMMIT" >> "$GITHUB_OUTPUT"
+
+          {
+            echo "### Triage replay"
+            echo ""
+            echo "| Field | Value |"
+            echo "|---|---|"
+            echo "| Artifact run | [\`${ARTIFACT_RUN_ID}\`](${GITHUB_SERVER_URL}/${REPO}/actions/runs/${ARTIFACT_RUN_ID}) |"
+            echo "| Status commit | \`${COMMIT}\` |"
+            echo "| Result artifacts | ${COUNT} |"
+            echo "| Rerun stage | skipped (no servers — replay is first-run evidence only) |"
+          } >> "$GITHUB_STEP_SUMMARY"
+
+  # Server URLs are intentionally omitted: without them the triage workflow skips
+  # the rerun stage, which is the only part that needs live devices.
+  triage:
+    name: AI failure triage (replay)
+    needs: resolve
+    permissions:
+      contents: read
+      actions: read
+      statuses: write
+      pull-requests: write
+      issues: write
+      id-token: write
+    uses: ./.github/workflows/e2e-ai-triage.yml
+    with:
+      MOBILE_VERSION: ${{ needs.resolve.outputs.commit }}
+      artifact_run_id: ${{ inputs.artifact_run_id }}
+      pr_number: ${{ inputs.pr_number }}
+      run_type: ${{ inputs.run_type }}
+      use_staging: ${{ inputs.use_staging }}
+    secrets: inherit
