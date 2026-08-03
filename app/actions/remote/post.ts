@@ -4,7 +4,7 @@
 
 /* eslint-disable max-lines */
 
-import {markChannelAsUnread, updateLastPostAt} from '@actions/local/channel';
+import {deletePostsForChannel, markChannelAsUnread, updateLastPostAt} from '@actions/local/channel';
 import {addPostAcknowledgement, removePost, removePostAcknowledgement, storePostsForChannel} from '@actions/local/post';
 import {addRecentReaction} from '@actions/local/reactions';
 import {createThreadFromNewPost} from '@actions/local/thread';
@@ -17,7 +17,7 @@ import NetworkManager from '@managers/network_manager';
 import {getMyChannel, prepareMissingChannelsForAllTeams, queryAllMyChannel} from '@queries/servers/channel';
 import {queryAllCustomEmojis} from '@queries/servers/custom_emoji';
 import {getFilesByIds, queryFilesForPost} from '@queries/servers/file';
-import {getPostById, getRecentPostsInChannel} from '@queries/servers/post';
+import {getPostById, getRecentPostsInChannel, queryPostsInChannel} from '@queries/servers/post';
 import {getCurrentUserId} from '@queries/servers/system';
 import {getIsCRTEnabled, prepareThreadsFromReceivedPosts} from '@queries/servers/thread';
 import {queryAllUsers} from '@queries/servers/user';
@@ -27,7 +27,7 @@ import {isBoRPost} from '@utils/bor';
 import {getValidEmojis, matchEmoticons} from '@utils/emoji/helpers';
 import {getFullErrorMessage, isServerError} from '@utils/errors';
 import {hasArrayChanged} from '@utils/helpers';
-import {logDebug, logError} from '@utils/log';
+import {logDebug, logError, logWarning} from '@utils/log';
 import {processPostsFetched} from '@utils/post';
 import {getPostIdsForCombinedUserActivityPost} from '@utils/post_list';
 
@@ -326,6 +326,25 @@ export async function fetchPostsForChannel(serverUrl: string, channelId: string,
             }
         }
 
+        // A since-fetch is the only path that receives deletions, and handlePosts destroys
+        // those posts locally. If the newest interval no longer covers any post it still
+        // wins postsInChannel[0] and renders a blank channel, and no since-fetch can
+        // repopulate it: once lastFetchedAt is past the deletion the server correctly
+        // returns nothing. Drop that interval and pull a page instead.
+        if (!fetchOnly && actionType === ActionType.POSTS.RECEIVED_SINCE) {
+            const remaining = await getRecentPostsInChannel(database, channelId);
+            if (!remaining.length) {
+                const intervals = await queryPostsInChannel(database, channelId).fetch();
+                if (intervals.length) {
+                    logWarning('fetchPostsForChannel: newest interval has no posts left, refetching', channelId);
+                    await database.write(() => intervals[0].destroyPermanently());
+
+                    const page = await fetchPosts(serverUrl, channelId, 0, General.POST_CHUNK_SIZE, false, groupLabel);
+                    return {...page, actionType: ActionType.POSTS.RECEIVED_IN_CHANNEL, channelId};
+                }
+            }
+        }
+
         return {posts: data.posts, order: data.order, authors, actionType, previousPostId: data.previousPostId, channelId};
     } catch (error) {
         logDebug('error on fetchPostsForChannel', getFullErrorMessage(error));
@@ -334,6 +353,36 @@ export async function fetchPostsForChannel(serverUrl: string, channelId: string,
         if (!fetchOnly) {
             EphemeralStore.stopLoadingMessagesForChannel(serverUrl, channelId);
         }
+    }
+}
+
+/**
+ * Pull-to-refresh for a channel. Normally a plain page fetch, but when the list is
+ * rendering nothing while posts are still stored, those posts are hidden rather than
+ * absent (e.g. a PostsInChannel interval that no longer contains any renderable post,
+ * which stays postsInChannel[0] and shadows the rest). A page fetch cannot recover that,
+ * so clear the channel's cached posts and intervals and re-fetch from scratch.
+ * @param isBlank whether the list is currently rendering zero rows
+ */
+export async function refreshPostsForChannel(serverUrl: string, channelId: string, isBlank = false) {
+    try {
+        const {database} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
+
+        if (isBlank) {
+            const intervals = await queryPostsInChannel(database, channelId).fetch();
+            if (intervals.length) {
+                logWarning('refreshPostsForChannel resetting hidden channel', channelId, intervals.length);
+                const {error: deleteError} = await deletePostsForChannel(serverUrl, channelId);
+                if (deleteError) {
+                    return {error: deleteError};
+                }
+            }
+        }
+
+        return await fetchPostsForChannel(serverUrl, channelId);
+    } catch (error) {
+        logDebug('error on refreshPostsForChannel', getFullErrorMessage(error));
+        return {error};
     }
 }
 
