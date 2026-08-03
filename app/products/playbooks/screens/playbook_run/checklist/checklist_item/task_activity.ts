@@ -10,6 +10,7 @@ export type TaskActivity = {
 };
 
 type TaskActivityItem = PlaybookChecklistItem | {
+    id: string;
     state: ChecklistItemState;
     stateModified: number;
     title: string;
@@ -18,6 +19,7 @@ type TaskActivityItem = PlaybookChecklistItem | {
 type TaskStateDetails = {
     action?: unknown;
     task?: unknown;
+    item_id?: unknown;
 };
 
 type ActionMatch = {
@@ -91,13 +93,26 @@ export const getTaskActivity = (item: TaskActivityItem, timelineEvents: Timeline
         return action && candidates.includes(action) ? [{action, details, event}] : [];
     });
 
-    let matched: ActionMatch | undefined;
-    if (matches.length === 1) {
-        matched = matches[0];
-    } else if (matches.length > 1) {
-        const titleMatches = matches.filter(({details}) => details.task === item.title);
-        if (titleMatches.length === 1) {
-            matched = titleMatches[0];
+    // Stable id join, preferred: events from current servers carry details.item_id, which links an
+    // event to exactly one task. That is unambiguous, so it needs no title tiebreak and is immune to
+    // same-millisecond collisions and duplicate titles.
+    let matched = matches.find(({details}) => details.item_id === item.id);
+
+    if (!matched) {
+        // Legacy fallback for events predating details.item_id. Never consider an event that names a
+        // different item — an id-carrying event belongs to whichever task it names, so it isn't ours.
+        //
+        // Note the title tiebreak is weaker than it looks: the server writes details.task stripped of
+        // markdown while item.title keeps it, so it cannot match for markdown titles. It is a last
+        // resort only, and unresolved ambiguity deliberately yields no actor rather than a guess.
+        const legacy = matches.filter(({details}) => !details.item_id || details.item_id === item.id);
+        if (legacy.length === 1) {
+            matched = legacy[0];
+        } else if (legacy.length > 1) {
+            const titleMatches = legacy.filter(({details}) => details.task === item.title);
+            if (titleMatches.length === 1) {
+                matched = titleMatches[0];
+            }
         }
     }
 

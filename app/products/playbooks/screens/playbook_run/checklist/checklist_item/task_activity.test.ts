@@ -146,4 +146,41 @@ describe('getTaskActivity', () => {
 
         expect(getTaskActivity(makeItem(), [event])?.actorUserId).toBe('user-1');
     });
+
+    describe('item_id matching', () => {
+        const withItemId = (itemId: string, overrides: Partial<TimelineEvent> = {}) => makeEvent({
+            details: JSON.stringify({action: 'check', task: 'Deploy release', item_id: itemId}),
+            ...overrides,
+        });
+
+        it('uses item_id to resolve a same-millisecond collision that the title cannot', () => {
+            // Both events share the timestamp and the title, so only item_id tells them apart.
+            const ours = withItemId('item-1', {subject_user_id: 'user-1'});
+            const theirs = withItemId('item-2', {id: 'event-2', subject_user_id: 'user-2'});
+
+            expect(getTaskActivity(makeItem(), [theirs, ours])?.actorUserId).toBe('user-1');
+        });
+
+        it('never attributes an event that names a different item', () => {
+            const other = withItemId('item-2', {subject_user_id: 'user-2'});
+
+            expect(getTaskActivity(makeItem(), [other])?.actorUserId).toBeUndefined();
+        });
+
+        it('matches our legacy event while ignoring an id-carrying event for another item', () => {
+            // Without excluding the other item's event, the title tiebreak would see both and bail.
+            const ours = makeEvent({subject_user_id: 'user-1'});
+            const theirs = withItemId('item-2', {id: 'event-2', subject_user_id: 'user-2'});
+
+            expect(getTaskActivity(makeItem(), [theirs, ours])?.actorUserId).toBe('user-1');
+        });
+
+        it('resolves a markdown title via item_id, which the stripped-title tiebreak cannot', () => {
+            // The server writes details.task with markdown stripped, so it never equals the raw title.
+            const ours = withItemId('item-1', {subject_user_id: 'user-1'});
+            const theirs = withItemId('item-2', {id: 'event-2', subject_user_id: 'user-2'});
+
+            expect(getTaskActivity(makeItem({title: '**Deploy** release'}), [theirs, ours])?.actorUserId).toBe('user-1');
+        });
+    });
 });
