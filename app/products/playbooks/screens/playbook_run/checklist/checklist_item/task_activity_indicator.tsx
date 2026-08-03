@@ -2,11 +2,11 @@
 // See LICENSE.txt for license information.
 
 import React, {useCallback, useMemo} from 'react';
-import {type IntlShape, useIntl} from 'react-intl';
+import {defineMessages, type IntlShape, useIntl} from 'react-intl';
 import {Text, View} from 'react-native';
 
 import BaseChip from '@components/chips/base_chip';
-import CompassIcon from '@components/compass_icon';
+import CompassIcon, {type CompassIconName} from '@components/compass_icon';
 import {getFriendlyDate} from '@components/friendly_date';
 import PressableOpacity from '@components/pressable_opacity';
 import ProfilePicture from '@components/profile_picture';
@@ -15,10 +15,37 @@ import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
 import {displayUsername} from '@utils/user';
 
-import type {TaskActivity} from './task_activity';
+import type {TaskActivity, TaskActivityAction} from './task_activity';
 import type UserModel from '@typings/database/models/servers/user';
 
 const TEST_ID = 'playbook_run.checklist_item.task_activity';
+
+// Mirrors the web chip's icon choices for the same four actions.
+const ACTION_ICONS: Record<TaskActivityAction, CompassIconName> = {
+    check: 'check',
+    uncheck: 'checkbox-blank-outline',
+    skip: 'close',
+    restore: 'refresh',
+};
+
+const actionMessages = defineMessages({
+    check: {
+        id: 'playbooks.checklist_item.activity.checked',
+        defaultMessage: 'Checked',
+    },
+    uncheck: {
+        id: 'playbooks.checklist_item.activity.unchecked',
+        defaultMessage: 'Unchecked',
+    },
+    skip: {
+        id: 'playbooks.checklist_item.activity.skipped',
+        defaultMessage: 'Skipped',
+    },
+    restore: {
+        id: 'playbooks.checklist_item.activity.restored',
+        defaultMessage: 'Restored',
+    },
+});
 
 const getStyleSheet = makeStyleSheetFromTheme((theme) => ({
     chipPrefix: {
@@ -82,13 +109,8 @@ const TaskActivityIndicator = ({activity, actor, teammateNameDisplay, timezone, 
     const relativeTime = getFriendlyDate(intl, activity.timestamp);
     const compactTime = getFriendlyDate(intl, activity.timestamp, 'narrow');
     const absoluteTime = getTaskActivityAbsoluteTime(intl, activity.timestamp, timezone, isMilitaryTime);
-    const actionLabel = intl.formatMessage(activity.action === 'check' ? {
-        id: 'playbooks.checklist_item.activity.checked',
-        defaultMessage: 'Checked',
-    } : {
-        id: 'playbooks.checklist_item.activity.unchecked',
-        defaultMessage: 'Unchecked',
-    });
+    const actionLabel = intl.formatMessage(actionMessages[activity.action]);
+    const actionIcon = ACTION_ICONS[activity.action];
     const actorName = actor ? displayUsername(actor, intl.locale, teammateNameDisplay) : undefined;
     const conciseLabel = intl.formatMessage({
         id: 'playbooks.checklist_item.activity.summary',
@@ -120,7 +142,7 @@ const TaskActivityIndicator = ({activity, actor, teammateNameDisplay, timezone, 
         const prefix = (
             <View style={styles.chipPrefix}>
                 <CompassIcon
-                    name={activity.action === 'check' ? 'check' : 'checkbox-blank-outline'}
+                    name={actionIcon}
                     size={14}
                     style={styles.chipIcon}
                     testID={`${TEST_ID}.icon`}
@@ -153,7 +175,7 @@ const TaskActivityIndicator = ({activity, actor, teammateNameDisplay, timezone, 
             testID={`${TEST_ID}.detail`}
         >
             <CompassIcon
-                name={activity.action === 'check' ? 'check' : 'checkbox-blank-outline'}
+                name={actionIcon}
                 size={24}
                 color={changeOpacity(theme.centerChannelColor, 0.56)}
                 testID={`${TEST_ID}.detail_icon`}

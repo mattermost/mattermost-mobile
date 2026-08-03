@@ -62,10 +62,56 @@ describe('getTaskActivity', () => {
 
     it.each([
         makeItem({state: 'open', state_modified: 0}),
-        makeItem({state: 'skipped'}),
         makeItem({state: 'in_progress'}),
-    ])('does not show activity for untouched, skipped, or in-progress tasks', (item) => {
+    ])('does not show activity for untouched or in-progress tasks', (item) => {
         expect(getTaskActivity(item, [makeEvent()])).toBeUndefined();
+    });
+
+    it('returns the skip action and actor for a skipped task', () => {
+        const event = makeEvent({details: JSON.stringify({action: 'skip', task: 'Deploy release'})});
+
+        expect(getTaskActivity(makeItem({state: 'skipped'}), [event])).toEqual({
+            action: 'skip',
+            actorUserId: 'user-1',
+            timestamp: 1000,
+        });
+    });
+
+    it.each([
+        makeItem({state: 'skipped', state_modified: 1000}),
+        makeItem({state: 'skipped', state_modified: 0}),
+    ])('shows nothing for a skipped task with no skip event, since state_modified is not the skip time', (item) => {
+        // The /skip route records neither state_modified nor a timeline event, so a non-zero
+        // state_modified here is a leftover from an earlier check/uncheck.
+        expect(getTaskActivity(item, [makeEvent()])).toBeUndefined();
+    });
+
+    it('returns the restore action for an open task whose event says it was restored', () => {
+        const event = makeEvent({details: JSON.stringify({action: 'restore', task: 'Deploy release'})});
+
+        expect(getTaskActivity(makeItem({state: 'open'}), [event])).toEqual({
+            action: 'restore',
+            actorUserId: 'user-1',
+            timestamp: 1000,
+        });
+    });
+
+    it('falls back to uncheck for an open task with no matching event, since open cannot distinguish it from a restore', () => {
+        expect(getTaskActivity(makeItem({state: 'open'}), [])).toEqual({
+            action: 'uncheck',
+            actorUserId: undefined,
+            timestamp: 1000,
+        });
+    });
+
+    it.each<[ChecklistItemState, string]>([
+        ['closed', 'skip'],
+        ['skipped', 'check'],
+        ['open', 'check'],
+    ])('ignores an event whose action the %p state could not have produced (%p)', (state, action) => {
+        const event = makeEvent({details: JSON.stringify({action, task: 'Deploy release'})});
+
+        expect(getTaskActivity(makeItem({state}), [event])?.actorUserId).toBeUndefined();
     });
 
     it.each([

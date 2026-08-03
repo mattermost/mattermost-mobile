@@ -10,13 +10,23 @@ import TestHelper from '@test/test_helper';
 
 import TaskActivityIndicator from './task_activity_indicator';
 
+import type {TaskActivityAction} from './task_activity';
+
 jest.mock('@components/chips/base_chip');
 jest.mocked(BaseChip).mockImplementation((props) => React.createElement('BaseChip', props, props.prefix));
 
 jest.mock('@components/profile_picture');
 jest.mocked(ProfilePicture).mockImplementation((props) => React.createElement('ProfilePicture', props));
 
-const CHECK_GLYPH = String.fromCodePoint(0xf012c);
+// Compass glyph codepoints, so the icon assertions catch a wrong icon rather than just a present one.
+const GLYPHS: Record<TaskActivityAction, string> = {
+    check: String.fromCodePoint(0xf012c),
+    uncheck: String.fromCodePoint(0xf0131),
+    skip: String.fromCodePoint(0xf0156),
+    restore: String.fromCodePoint(0xf0450),
+};
+
+const CHECK_GLYPH = GLYPHS.check;
 
 describe('TaskActivityIndicator', () => {
     const timestamp = new Date(2026, 6, 21, 10, 30).getTime();
@@ -78,6 +88,46 @@ describe('TaskActivityIndicator', () => {
         expect(chip.props.label).not.toContain('Unchecked');
         expect(chip.props.onPress).toBeUndefined();
         expect(queryByTestId('playbook_run.checklist_item.task_activity.avatar')).toBeNull();
+    });
+
+    const actionCases: Array<[TaskActivityAction, string]> = [
+        ['check', 'Checked'],
+        ['uncheck', 'Unchecked'],
+        ['skip', 'Skipped'],
+        ['restore', 'Restored'],
+    ];
+
+    it.each(actionCases)('renders the %p action with its own icon and verb in the row chip', (action, verb) => {
+        const {getByTestId} = renderWithIntl(
+            <TaskActivityIndicator
+                activity={{action, timestamp}}
+                teammateNameDisplay='username'
+                timezone=''
+                isMilitaryTime={false}
+                variant='chip'
+            />,
+        );
+
+        expect(getByTestId('playbook_run.checklist_item.task_activity.icon').props.children).toContain(GLYPHS[action]);
+
+        // The row chip shows only the compact time, so the verb lives in the accessibility label.
+        expect(getByTestId('playbook_run.checklist_item.task_activity').props.accessibilityLabel).toContain(verb);
+        expect(getByTestId('playbook_run.checklist_item.task_activity.chip').props.label).toBe('2h ago');
+    });
+
+    it.each(actionCases)('renders the %p action with its own icon and verb in the detail row', (action, verb) => {
+        const {getByTestId, getByText} = renderWithIntl(
+            <TaskActivityIndicator
+                activity={{action, timestamp}}
+                teammateNameDisplay='username'
+                timezone=''
+                isMilitaryTime={false}
+                variant='detail'
+            />,
+        );
+
+        expect(getByTestId('playbook_run.checklist_item.task_activity.detail_icon').props.children).toContain(GLYPHS[action]);
+        expect(getByText(`${verb} 2 hours ago`)).toBeVisible();
     });
 
     it('shows who, relative time, and absolute time in the detail row', () => {
