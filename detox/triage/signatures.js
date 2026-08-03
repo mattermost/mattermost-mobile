@@ -266,6 +266,51 @@ const SIGNATURES = [
         ],
     },
     {
+
+        // A spec that fails to compile reads as a mass test failure — every test
+        // in the file "fails" without a single assertion having run. Classifying
+        // it as BUILD_OR_ENV_ERROR keeps it out of the flake statistics for tests
+        // that never executed, and points at the one file that needs fixing.
+        //
+        // Scope is shard rather than suite: a shard runs several specs, and one
+        // uncompilable file does not mean the run is unusable.
+        id: 'build.spec-compile',
+        label: 'a spec failed to compile',
+        category: CATEGORY.BUILD,
+        scope: 'shard',
+        weight: 0.9,
+        frameworks: ['detox'],
+        patterns: [
+            /error TS\d+/,
+            /\bTSError\b/,
+            /Your test suite must contain at least one test/i,
+            /Cannot find module '@(?:support|screens|utils)\//,
+        ],
+    },
+    {
+
+        // Maestro's equivalent of the Detox connection signatures above. Without
+        // it a lost Maestro driver has no rule at all and goes to the model,
+        // which is both slower and less certain than a pattern that is
+        // unambiguous.
+        //
+        // Medium weight on purpose: "unable to launch app" is also what a genuine
+        // startup crash looks like from outside, so this corroborates rather than
+        // concludes.
+        id: 'device.maestro-driver-lost',
+        label: 'Maestro could not drive the device',
+        category: CATEGORY.DEVICE,
+        scope: 'shard',
+        weight: 0.4,
+        frameworks: ['maestro'],
+        patterns: [
+            /unable to launch app/i,
+            /maestro driver .{0,40}(?:failed|timed out)/i,
+            /failed to connect to (?:device|emulator|simulator)/i,
+            /no devices? found/i,
+        ],
+    },
+    {
         id: 'build.native',
         label: 'native build or signing failure',
         category: CATEGORY.BUILD,

@@ -454,3 +454,29 @@ test('collect on an empty tree reports nothing found rather than crashing', () =
 
     fs.rmSync(dir, {recursive: true, force: true});
 });
+
+test('a spec that failed to compile is a build error, not a pile of flaky tests', () => {
+    // Every test in an uncompilable file "fails" without one assertion running.
+    // Left as test failures they pollute the flake statistics of tests that never
+    // executed, and hide the single file that actually needs fixing.
+    for (const text of [
+        'error TS2551: Property does not exist on type',
+        'Your test suite must contain at least one test.',
+        "Cannot find module '@support/ui/screen' from 'channel.e2e.ts'",
+    ]) {
+        const ids = matchSignatures(text, {framework: 'detox'}).map((m) => m.id);
+        assert.ok(ids.includes('build.spec-compile'), `${text} should match build.spec-compile`);
+    }
+});
+
+test('a lost Maestro driver is recognised, and only for Maestro', () => {
+    const ids = matchSignatures('Unable to launch app com.mattermost.rn', {framework: 'maestro'}).
+        map((m) => m.id);
+    assert.ok(ids.includes('device.maestro-driver-lost'));
+
+    // Detox has its own connection signatures; the Maestro phrasing must not
+    // widen them, or a real Detox app-launch crash gets excused as infra.
+    const detoxIds = matchSignatures('Unable to launch app com.mattermost.rn', {framework: 'detox'}).
+        map((m) => m.id);
+    assert.ok(!detoxIds.includes('device.maestro-driver-lost'));
+});

@@ -39,7 +39,7 @@ jobs:
   # That is fine — but it must never merge, because main would then depend on a
   # branch that can be force-pushed or deleted underneath it.
   triage-tests:
-    name: E2E triage engine tests
+    name: E2E triage and CI-utility tests
     runs-on: ubuntu-22.04
     steps:
       - name: ci/checkout-repo
@@ -61,7 +61,10 @@ jobs:
           node --test \
             detox/triage/triage.test.js \
             detox/triage/triage-artifacts.test.js \
-            detox/triage/triage-cli.test.js
+            detox/triage/triage-cli.test.js \
+            detox/utils/tsio-report-status.test.js
+          # The reporter carries its own assertions for the URL and status rules.
+          node detox/utils/tsio-report-status.js --self-test
 
   toolkit-ref-pinned-to-main:
     name: Toolkit refs point at main

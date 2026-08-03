@@ -100,9 +100,24 @@ function decideStatus(detail, upstreamSucceeded) {
         }
         return {state, description: description.slice(0, 140), both_terminal: true, timed_out: false};
     }
+
+    // Poll timeout means the report never reached a terminal state, so nothing is
+    // known about how the tests went. That has to be red.
+    //
+    // This previously fell back to the CI job status, which reads as reasonable
+    // and is not: `upstream-succeeded` is computed from whether an upstream job
+    // was *cancelled*, not from test results, and the step that runs the tests is
+    // `continue-on-error`. So the job is "successful" on a run whose tests failed,
+    // and a slow or unavailable TSIO turned that into a green commit status with
+    // no test evidence behind it — the exact vacuous green that automated triage
+    // is being built to stop, sitting in the gate triage reports alongside.
+    //
+    // A false red here costs a re-run of a check whose data never arrived. The
+    // false green it replaces costs a shipped regression plus the credibility of
+    // every other green.
     return {
-        state: upstreamSucceeded ? 'success' : 'failure',
-        description: `TSIO poll timed out (status=${detail.status}) — using CI job status`.slice(0, 140),
+        state: 'failure',
+        description: `TSIO poll timed out (status=${detail.status}) — no test evidence`.slice(0, 140),
         both_terminal: false,
         timed_out: true,
     };
@@ -459,7 +474,10 @@ function selfTest() {
     assert(r.state === 'failure', 'failures -> failure');
 
     r = decideStatus({status: 'in_progress', test_stats: {passed: 3, failed: 0}}, true);
-    assert(r.timed_out === true && r.state === 'success', 'timeout fail-open upstream ok');
+    assert(r.timed_out === true && r.state === 'failure', 'timeout is red even when the CI job succeeded');
+
+    r = decideStatus({status: 'in_progress', test_stats: {passed: 3, failed: 0}}, false);
+    assert(r.timed_out === true && r.state === 'failure', 'timeout is red regardless of upstream');
 
     const display = 'https://test-io.test.mattermost.com/reports/mattermost-mobile/main/abc1234/mobile-pr';
     const actions = 'https://github.com/o/r/actions/runs/99';
