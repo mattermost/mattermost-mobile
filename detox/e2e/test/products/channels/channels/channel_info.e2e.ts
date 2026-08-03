@@ -90,7 +90,7 @@ describe('Channels - Channel Info', () => {
         await ChannelScreen.back();
     });
 
-    it('should match elements on channel settings screen', async () => {
+    it('MM-T849_4 - should match elements on channel settings screen', async () => {
         // # Open a channel screen, open channel info screen, and open channel settings screen
         await ChannelScreen.open(channelsCategory, testChannel.name);
         await ChannelInfoScreen.open();

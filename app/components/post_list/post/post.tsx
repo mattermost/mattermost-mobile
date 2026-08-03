@@ -3,8 +3,7 @@
 
 import React, {type ReactNode, useCallback, useEffect, useMemo, useRef, useState} from 'react';
 import {useIntl} from 'react-intl';
-import {Platform, type StyleProp, View, type ViewStyle, TouchableHighlight, type LayoutChangeEvent} from 'react-native';
-import {KeyboardController} from 'react-native-keyboard-controller';
+import {type StyleProp, View, type ViewStyle, TouchableHighlight, type LayoutChangeEvent} from 'react-native';
 
 import {removePost} from '@actions/local/post';
 import {showPermalink} from '@actions/remote/permalink';
@@ -18,6 +17,7 @@ import SystemAvatar from '@components/system_avatar';
 import SystemHeader from '@components/system_header';
 import {Screens} from '@constants';
 import {POST_TIME_TO_FAIL} from '@constants/post';
+import {PROFILE_PICTURE_SIZE} from '@constants/view';
 import {useKeyboardState} from '@context/keyboard_state';
 import {usePostConfig} from '@context/post_config';
 import {useServerUrl} from '@context/server';
@@ -28,6 +28,7 @@ import PerformanceMetricsManager from '@managers/performance_metrics_manager';
 import {navigateBack, navigateToScreen} from '@screens/navigation';
 import {isBoRPost, isUnrevealedBoRPost} from '@utils/bor';
 import {hasJumboEmojiOnly} from '@utils/emoji/helpers';
+import {dismissKeyboard} from '@utils/keyboard';
 import {fromAutoResponder, isFromWebhook, isPostFailed, isPostPendingOrFailed, isSystemMessage} from '@utils/post';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 
@@ -60,6 +61,7 @@ type PostProps = {
     highlight?: boolean;
     highlightPinnedOrSaved?: boolean;
     highlightReplyBar: boolean;
+    isAiGenerated?: boolean;
     isConsecutivePost?: boolean;
     isCRTEnabled?: boolean;
     isEphemeral: boolean;
@@ -92,7 +94,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
         consecutivePostContainer: {
             marginBottom: 10,
             marginRight: 10,
-            marginLeft: Platform.select({ios: 34, android: 33}),
+            marginLeft: PROFILE_PICTURE_SIZE,
             marginTop: 10,
         },
         container: {flexDirection: 'row'},
@@ -136,6 +138,7 @@ const Post = ({
     highlight,
     highlightPinnedOrSaved = true,
     highlightReplyBar,
+    isAiGenerated = false,
     isCRTEnabled,
     isConsecutivePost,
     isEphemeral,
@@ -233,7 +236,7 @@ const Post = ({
 
         pressDetected.current = true;
 
-        KeyboardController.dismiss();
+        dismissKeyboard();
 
         if (post) {
             setTimeout(handlePostPress, 300);
@@ -347,6 +350,7 @@ const Post = ({
                     author={author}
                     commentCount={commentCount}
                     currentUser={currentUser}
+                    isAiGenerated={isAiGenerated}
                     isAutoResponse={isAutoResponder}
                     isCRTEnabled={isCRTEnabled}
                     isEphemeral={isEphemeral}

@@ -158,6 +158,21 @@ jest.mock('@mattermost/calls-native', () => ({
     },
 }));
 
+jest.mock('react-native-webrtc', () => {
+    const getTracks = jest.fn(() => []);
+    const getUserMedia = jest.fn(() => Promise.resolve({getTracks}));
+    return {
+        mediaDevices: {
+            enumerateDevices: jest.fn(() => Promise.resolve([])),
+            getUserMedia,
+        },
+        MediaStream: jest.fn(),
+        MediaStreamTrack: jest.fn(),
+        RTCSessionDescription: jest.fn(),
+        registerGlobals: jest.fn(),
+    };
+});
+
 jest.mock('@nozbe/watermelondb/utils/common/randomId/randomId', () => ({}));
 jest.mock('@nozbe/watermelondb/react/withObservables/garbageCollector', () => {
     return {

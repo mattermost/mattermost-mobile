@@ -22,6 +22,16 @@ jest.mock('@utils/keyboard', () => ({
     dismissKeyboard: (...args: unknown[]) => mockDismissKeyboard(...args),
 }));
 
+let mockEmitNotificationError: jest.Mock;
+jest.mock('@utils/notification', () => {
+    const original = jest.requireActual('@utils/notification');
+    mockEmitNotificationError = jest.fn();
+    return {
+        ...original,
+        emitNotificationError: mockEmitNotificationError,
+    };
+});
+
 const mockedNavigationStore = jest.mocked(NavigationStore);
 
 describe('Performance metrics are set correctly', () => {
@@ -81,6 +91,7 @@ describe('Performance metrics are set correctly', () => {
     afterEach(async () => {
         await TestHelper.tearDown();
         NetworkManager.invalidateClient(serverUrl);
+        mockEmitNotificationError.mockClear();
     });
 
     it('channel notification', async () => {
@@ -201,4 +212,5 @@ describe('Performance metrics are set correctly', () => {
 
         expect(PerformanceMetricsManager.setLoadTarget).toHaveBeenCalledWith('CHANNEL');
     });
+
 });

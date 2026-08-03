@@ -33,9 +33,13 @@ function getStepStateSummary(steps = []) {
     return Object.entries(result).map(([key, value]) => `${value} ${key}`).join(',');
 }
 
+// Bounded MM-T id: word boundary, digits, optional _N sub-test suffix.
+const MM_T_ID_PATTERN = /(?:^|\s)MM-T\d+(?:_\d+)?(?=\s|$)/;
+const MM_T_ID_EXTRACT = /(?:^|\s)(MM-T\d+)(?:_\d+)?(?=\s|$)/;
+
 function getTM4JTestCases(allTests) {
     return allTests.tests.
-        filter((item) => /(MM-T)\w+/g.test(item.name)). // eslint-disable-line wrap-regex
+        filter((item) => MM_T_ID_PATTERN.test(item.name)).
         map((item) => {
             return {
                 title: item.name,
@@ -48,8 +52,8 @@ function getTM4JTestCases(allTests) {
             };
         }).
         reduce((acc, item) => {
-            // Extract the key to exactly match with "MM-T[0-9]+"
-            const key = item.title.match(/(MM-T\d+)/)[0];
+            // Zephyr case key is MM-T[digits]; optional _N is a sub-test index only.
+            const key = item.title.match(MM_T_ID_EXTRACT)[1];
 
             if (acc[key]) {
                 acc[key].push(item);
@@ -76,7 +80,7 @@ function saveToEndpoint(url, data) {
     });
 }
 
-async function createTestCycle(startDate, endDate) {
+async function createTestCycle(startDate, endDate, options = {}) {
     const {
         BRANCH,
         BUILD_ID,
@@ -85,11 +89,12 @@ async function createTestCycle(startDate, endDate) {
         ZEPHYR_CYCLE_NAME,
         ZEPHYR_FOLDER_ID,
     } = process.env;
+    const framework = options.framework || 'Detox';
 
     const testCycle = {
         projectKey: JIRA_PROJECT_KEY,
         name: ZEPHYR_CYCLE_NAME ? `${ZEPHYR_CYCLE_NAME} (${BUILD_ID}-${COMMIT_HASH}-${BRANCH})` : `${BUILD_ID}-${COMMIT_HASH}-${BRANCH}`,
-        description: `Detox automated test with ${BRANCH}`,
+        description: `${framework} automated test with ${BRANCH}`,
         plannedStartDate: startDate,
         plannedEndDate: endDate,
         statusName: 'Done',
@@ -100,13 +105,14 @@ async function createTestCycle(startDate, endDate) {
     return response.data;
 }
 
-async function createTestExecutions(allTests, testCycle) {
+async function createTestExecutions(allTests, testCycle, options = {}) {
     const {
         IOS,
         JIRA_PROJECT_KEY,
         ZEPHYR_ENVIRONMENT_NAME,
     } = process.env;
     const platform = IOS === 'true' ? 'iOS' : 'Android';
+    const framework = options.framework || 'Detox';
 
     const testCases = getTM4JTestCases(allTests);
     const startDate = new Date(allTests.start);
@@ -121,7 +127,7 @@ async function createTestExecutions(allTests, testCycle) {
                     title: item.title,
                     statusName: status[item.state],
                     actualEndDate: new Date(startTime + item.incrementalDuration).toISOString(),
-                    actualResult: 'Detox automated test completed',
+                    actualResult: `${framework} automated test completed`,
                 };
             });
 
@@ -139,7 +145,7 @@ async function createTestExecutions(allTests, testCycle) {
                 acc += prev.duration; // eslint-disable-line no-param-reassign
                 return acc;
             }, 0),
-            comment: `Detox automated test - ${getStepStateSummary(steps)}`,
+            comment: `${framework} automated test - ${getStepStateSummary(steps)}`,
         };
 
         // Temporarily log to verify cases that were being saved.

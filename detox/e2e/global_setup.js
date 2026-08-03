@@ -131,7 +131,7 @@ async function serverSetup() {
     const nodeIndex = parseInt(process.env.CI_NODE_INDEX || '0', 10);
     if (nodeIndex > 0) {
         process.stdout.write(`[globalSetup] Shard ${nodeIndex}: staggering startup by ${nodeIndex * 1500}ms\n`);
-        await new Promise((r) => setTimeout(r, nodeIndex * 1500)); // eslint-disable-line no-promise-executor-return
+        await new Promise((r) => setTimeout(r, nodeIndex * 1500));
     }
 
     http.globalAgent.options.family = 4;
@@ -175,18 +175,19 @@ async function serverSetup() {
     const headers = {Authorization: `Bearer ${token}`};
     process.stdout.write('[globalSetup] ✅ Admin login successful\n');
 
+    // Pre-warm the server so the first app request isn't also the server's cold start. This
+    // does not warm the simulator's TLS session, so -1005 drops are still possible.
+    try {
+        await axios.get(`${SITE_URL}/api/v4/system/ping`);
+    } catch (err) {
+        process.stderr.write(`[globalSetup] ⚠️ post-login ping failed (${err.message}) — continuing\n`);
+    }
+
     try {
         await axios.put(`${SITE_URL}/api/v4/config/patch`, {
-            ServiceSettings: {
-                SessionLengthWebInHours: 4320,
-                MaximumActiveUsers: 999999,
-            },
-            RateLimitSettings: {PerSec: 10000, MaxBurst: 999999},
-            TeamSettings: {ExperimentalEnableAutomaticReplies: true},
-            ExperimentalSettings: {EnableWatermark: false},
             ConnectedWorkspacesSettings: {EnableRemoteClusterService: true},
         }, {headers});
-        process.stdout.write('[globalSetup] ✅ Server configured for E2E tests\n');
+        process.stdout.write('[globalSetup] ✅ Mutable server config initialized for E2E tests\n');
     } catch (err) {
         process.stderr.write(`[globalSetup] ⚠️ Could not patch server config: ${err.message}\n`);
     }

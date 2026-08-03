@@ -5,7 +5,7 @@ import {AGENT_POST_TYPES} from '@agents/constants';
 import {ToolApprovalStage, ToolCallStatus, type ToolCall} from '@agents/types';
 import TestHelper from '@test/test_helper';
 
-import {isAgentPost, isPostRequester, isToolCallRedacted, isPendingToolResult, getToolApprovalStage, mergeToolCalls} from './utils';
+import {isAgentPost, isPostRequester, isToolCallRedacted, isPendingToolResult, getToolApprovalStage, mergeToolCalls, resolveSelectedAgent} from './utils';
 
 describe('isAgentPost', () => {
     describe('with Post objects', () => {
@@ -310,5 +310,40 @@ describe('mergeToolCalls', () => {
         expect(result[0].arguments).toEqual({q: 'secret'});
         expect(result[1].id).toBe('tc2');
         expect(result[1].arguments).toEqual({q: 'world'});
+    });
+});
+
+describe('resolveSelectedAgent', () => {
+    const a1 = {id: 'a1'};
+    const a2 = {id: 'a2', is_default: true};
+    const a3 = {id: 'a3'};
+    const agents = [a1, a2, a3];
+
+    it('should return null for an empty list', () => {
+        expect(resolveSelectedAgent([], 'a1')).toBeNull();
+    });
+
+    it('should return the saved preference when it is still available', () => {
+        expect(resolveSelectedAgent(agents, 'a3')).toBe(a3);
+    });
+
+    it('should fall back to the system default when the saved preference is missing', () => {
+        expect(resolveSelectedAgent(agents, 'unknown')).toBe(a2);
+    });
+
+    it('should fall back to the system default when no preference is provided', () => {
+        expect(resolveSelectedAgent(agents, undefined)).toBe(a2);
+        expect(resolveSelectedAgent(agents, '')).toBe(a2);
+        expect(resolveSelectedAgent(agents, null)).toBe(a2);
+    });
+
+    it('should fall back to the first agent when there is no default and no valid preference', () => {
+        const noDefault = [a1, a3];
+        expect(resolveSelectedAgent(noDefault, undefined)).toBe(a1);
+        expect(resolveSelectedAgent(noDefault, 'nope')).toBe(a1);
+    });
+
+    it('should prefer the saved preference over the system default', () => {
+        expect(resolveSelectedAgent(agents, 'a1')).toBe(a1);
     });
 });

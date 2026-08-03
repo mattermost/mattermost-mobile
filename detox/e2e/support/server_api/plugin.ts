@@ -74,8 +74,7 @@ export const DemoPlugin = {
     async getLatestDownloadUrl() {
         const latestVersion = await apiGetLatestPluginVersion(this.repo);
 
-        // return `https://github.com/${this.repo}/releases/download/v${latestVersion}/mattermost-plugin-demo-v${latestVersion}.tar.gz`;
-        return `https://github.com/${this.repo}/releases/download/v${latestVersion}/mattermost-plugin-demo-v${latestVersion}-linux-amd64.tar.gz`;
+        return `https://github.com/${this.repo}/releases/download/v${latestVersion}/mattermost-plugin-demo-v${latestVersion}.tar.gz`;
     },
 } as const;
 

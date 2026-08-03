@@ -13,7 +13,16 @@ import {useGallery} from '@context/gallery';
 
 import useDidMount from './did_mount';
 
-export function diff(context: any, name: string, value: any) {
+interface DiffEntry {
+    stash: number;
+    prev: number | null;
+}
+
+export interface DiffContext {
+    ___diffs?: Record<string, DiffEntry>;
+}
+
+export function diff(context: DiffContext, name: string, value: number) {
     'worklet';
 
     if (!context.___diffs) {

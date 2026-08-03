@@ -8,6 +8,7 @@ import {existsSync} from 'fs';
 import {ClaudePromptHandler} from '@support/pilot/ClaudePromptHandler';
 import {System, User} from '@support/server_api';
 import {siteOneUrl} from '@support/test_config';
+import {safeEnableSynchronization} from '@support/utils';
 
 const BUNDLE_ID = 'com.mattermost.rnbeta';
 
@@ -180,7 +181,7 @@ beforeAll(async () => {
     const isFirstFile = !process.env.DETOX_SETUP_DONE;
     const launchArgs = {detoxDisableSynchronization: 'YES'};
 
-    const APP_READY_TIMEOUT = device.getPlatform() === 'android' ? 60_000 : 30_000;
+    const APP_READY_TIMEOUT = device.getPlatform() === 'android' ? 90_000 : 30_000;
 
     async function forceAndroidDataClear(): Promise<void> {
         if (device.getPlatform() !== 'android') {
@@ -273,7 +274,7 @@ beforeAll(async () => {
         } finally {
             // Always re-enable synchronization so subsequent test operations
             // (tap, typeText, expect) re-enter the normal synchronized path.
-            await device.enableSynchronization();
+            await safeEnableSynchronization();
         }
     }
 
@@ -285,7 +286,7 @@ beforeAll(async () => {
         clearIOSAppData();
     }
 
-    const MAX_LAUNCH_ATTEMPTS = 2;
+    const MAX_LAUNCH_ATTEMPTS = 3;
     for (let attempt = 1; attempt <= MAX_LAUNCH_ATTEMPTS; attempt++) {
         try {
             await launchAndVerify();

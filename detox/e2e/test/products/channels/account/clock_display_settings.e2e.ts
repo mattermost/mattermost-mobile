@@ -21,7 +21,8 @@ import {
     ServerScreen,
     SettingsScreen,
 } from '@support/ui/screen';
-import {expect} from 'detox';
+import {timeouts} from '@support/utils';
+import {expect, waitFor} from 'detox';
 
 describe('Account - Settings - Clock Display Settings', () => {
     const serverOneDisplayName = 'Server 1';
@@ -67,7 +68,7 @@ describe('Account - Settings - Clock Display Settings', () => {
 
         // * Verify on display settings screen and twenty four hour is set
         await DisplaySettingsScreen.toBeVisible();
-        await expect(DisplaySettingsScreen.clockDisplayOptionInfo).toHaveText('24-hour');
+        await waitFor(DisplaySettingsScreen.clockDisplayOptionInfo).toHaveText('24-hour').withTimeout(timeouts.FOUR_SEC);
 
         // # Go back to clock display settings screen
         await ClockDisplaySettingsScreen.open();
@@ -81,7 +82,7 @@ describe('Account - Settings - Clock Display Settings', () => {
 
         // * Verify on display settings screen and twelve hour is set
         await DisplaySettingsScreen.toBeVisible();
-        await expect(DisplaySettingsScreen.clockDisplayOptionInfo).toHaveText('12-hour');
+        await waitFor(DisplaySettingsScreen.clockDisplayOptionInfo).toHaveText('12-hour').withTimeout(timeouts.FOUR_SEC);
 
         // # Go back to clock display settings screen
         await ClockDisplaySettingsScreen.open();
@@ -97,7 +98,7 @@ describe('Account - Settings - Clock Display Settings', () => {
 
         // * Verify display settings shows 12-hour
         await DisplaySettingsScreen.toBeVisible();
-        await expect(DisplaySettingsScreen.clockDisplayOptionInfo).toHaveText('12-hour');
+        await waitFor(DisplaySettingsScreen.clockDisplayOptionInfo).toHaveText('12-hour').withTimeout(timeouts.FOUR_SEC);
 
         // # Return to clock display settings screen
         await ClockDisplaySettingsScreen.open();
@@ -113,7 +114,7 @@ describe('Account - Settings - Clock Display Settings', () => {
 
         // * Verify display settings shows 24-hour
         await DisplaySettingsScreen.toBeVisible();
-        await expect(DisplaySettingsScreen.clockDisplayOptionInfo).toHaveText('24-hour');
+        await waitFor(DisplaySettingsScreen.clockDisplayOptionInfo).toHaveText('24-hour').withTimeout(timeouts.FOUR_SEC);
 
         // # Return to clock display settings screen and restore 12-hour default
         await ClockDisplaySettingsScreen.open();

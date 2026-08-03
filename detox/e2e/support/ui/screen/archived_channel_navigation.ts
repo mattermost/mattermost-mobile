@@ -24,85 +24,126 @@ import {
     waitForElementToBeVisible,
     waitForElementToExist,
 } from '@support/utils';
+import {waitFor} from 'detox';
 
 // Open Browse Channels and select the Archived filter.
 // Exported because some tests still need to verify Browse-Channels-specific
 // UI state (e.g. archived dropdown text) independent of channel navigation.
 export async function openArchivedChannelsFilter() {
     await ChannelDropdownMenuScreen.open();
+    await wait(timeouts.ONE_SEC);
 
-    if (isAndroid()) {
-        await wait(timeouts.ONE_SEC);
-        await device.disableSynchronization();
+    // Keep Detox sync enabled for this tap; disabling it races Fabric view insertion.
+    await ChannelDropdownMenuScreen.archivedChannelsItem.tap();
+    await wait(timeouts.TWO_SEC);
+}
+
+// Post a searchable sentinel so openArchivedChannelViaSearchPermalink() can find the channel.
+// Must run before the channel is archived — the server rejects posts on archived channels.
+export async function postArchivedChannelSentinel(channelId: string): Promise<{sentinel: string; postId: string}> {
+    const sentinel = `archived-channel-sentinel-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
+    const {post, error} = await Post.apiCreatePost(siteOneUrl, {channelId, message: sentinel});
+    if (error || !post?.id) {
+        throw new Error(`Failed to create archived-channel sentinel: ${JSON.stringify(error ?? 'missing post id')}`);
     }
-    try {
-        await ChannelDropdownMenuScreen.archivedChannelsItem.tap();
-    } finally {
-        if (isAndroid()) {
-            await safeEnableSynchronization();
+    return {sentinel, postId: post.id};
+}
+
+// Scroll the archived list until the channel row exists. The Browse Channels search input
+// never lands in the Android view hierarchy, so filtering by name is not an option here.
+async function waitForArchivedChannelItem(channelName: string) {
+    const channelItem = BrowseChannelsScreen.getChannelItem(channelName);
+    await wait(timeouts.TWO_SEC);
+
+    /* eslint-disable no-await-in-loop -- scroll until archived channel appears in list */
+    for (let attempt = 0; attempt < 12; attempt++) {
+        try {
+            await waitFor(channelItem).toExist().withTimeout(timeouts.THREE_SEC);
+            return channelItem;
+        } catch {
+            if (attempt === 11) {
+                throw new Error(`Archived channel item not found: ${channelName}`);
+            }
+            try {
+                await BrowseChannelsScreen.flatChannelList.scroll(300, 'down');
+            } catch {
+                // List may not need scrolling
+            }
+            await wait(timeouts.ONE_SEC);
         }
     }
-    await wait(timeouts.ONE_SEC);
+    /* eslint-enable no-await-in-loop */
+
+    return channelItem;
 }
 
-// Ensure the archived channel has a searchable sentinel post so the
-// search/permalink fallback path can find it. Posts must be created BEFORE
-// the channel is archived (server rejects posts on archived channels).
-//
-// Returns the unique sentinel message that was posted, which the caller
-// can hand to openArchivedChannelViaSearchPermalink().
-export async function postArchivedChannelSentinel(channelId: string): Promise<string> {
-    const sentinel = `archived-channel-sentinel-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
-    await Post.apiCreatePost(siteOneUrl, {channelId, message: sentinel});
-    return sentinel;
-}
-
-// Navigate to an archived channel via Browse Channels → archived filter → tap.
-// Android-only: the search/permalink path regressed MM-T1671_1 + MM-T1722_1.
 async function openArchivedChannelViaBrowseChannels(channelName: string) {
     await BrowseChannelsScreen.open();
     await BrowseChannelsScreen.dismissScheduledPostTooltip();
     await openArchivedChannelsFilter();
-    await BrowseChannelsScreen.searchInput.replaceText(channelName);
 
-    await waitFor(BrowseChannelsScreen.getChannelItem(channelName)).toExist().withTimeout(timeouts.TEN_SEC);
-    await BrowseChannelsScreen.getChannelItem(channelName).tap();
+    const channelItem = await waitForArchivedChannelItem(channelName);
+    await channelItem.tap();
 
     await waitForElementToExist(ChannelScreen.channelScreen, timeouts.ONE_MIN);
-    await waitForElementToBeVisible(ChannelScreen.postDraftArchived, timeouts.HALF_MIN);
+    if (isAndroid()) {
+        await waitForElementToExist(ChannelScreen.postDraftArchived, timeouts.HALF_MIN);
+    } else {
+        await waitForElementToBeVisible(ChannelScreen.postDraftArchived, timeouts.HALF_MIN);
+    }
 }
 
-// Navigate to an archived channel via the search results permalink flow.
-// iOS-only: Browse Channels tap does not reliably navigate on iOS in CI.
-async function openArchivedChannelViaSearchPermalink(searchableMessage: string) {
+// iOS-only: the Browse Channels tap does not reliably navigate on iOS, so go via a permalink.
+// Locate the result by postId — the search renderer splits the message across several Text nodes.
+async function openArchivedChannelViaSearchPermalink(searchableMessage: string, postId: string) {
     await SearchMessagesScreen.open();
     await SearchMessagesScreen.searchInput.replaceText(searchableMessage);
 
-    const searchResultText = element(
-        by.
-            text(searchableMessage).
-            withAncestor(by.id(SearchMessagesScreen.postList.testID.flatList)),
-    );
+    // Pass '' so getPostItemMatcher returns a pure by.id() matcher on the post container.
+    const searchResultElement = SearchMessagesScreen.postList.getPost(postId, '').postListPostItem;
+
+    const maxAttempts = 5;
+    const backoffMs = [0, timeouts.TWO_SEC, timeouts.FIVE_SEC, timeouts.TEN_SEC, timeouts.TEN_SEC];
 
     // Sync MUST be disabled before tapReturnKey — search keeps the dispatch queue busy.
     await device.disableSynchronization();
     try {
-        await SearchMessagesScreen.searchInput.tapReturnKey();
-        await waitForElementToBeVisible(searchResultText, timeouts.ONE_MIN);
+        /* eslint-disable no-await-in-loop -- search-index lag needs sequential re-submit with backoff */
+        for (let attempt = 0; attempt < maxAttempts; attempt++) {
+            if (attempt > 0) {
+                await wait(backoffMs[attempt] ?? timeouts.TEN_SEC);
+                await SearchMessagesScreen.searchInput.replaceText(searchableMessage);
+            }
+            await SearchMessagesScreen.searchInput.tapReturnKey();
+            try {
+                const searchTimeout = attempt === 0 ? timeouts.TWENTY_SEC : timeouts.ONE_MIN;
+                await waitForElementToExist(searchResultElement, searchTimeout);
+                break;
+            } catch {
+                if (attempt === maxAttempts - 1) {
+                    throw new Error(`Search result for post ${postId} not found after ${maxAttempts} attempts`);
+                }
+            }
+        }
+        /* eslint-enable no-await-in-loop */
     } finally {
-        await device.enableSynchronization();
+        await safeEnableSynchronization();
     }
 
-    await searchResultText.tap();
+    await searchResultElement.tap();
     await PermalinkScreen.toBeVisible();
     await PermalinkScreen.jumpToRecentMessages();
 
     await device.disableSynchronization();
     try {
         await waitForElementToExist(ChannelScreen.channelScreen, timeouts.ONE_MIN);
-        await waitForElementToBeVisible(ChannelScreen.postDraftArchived, timeouts.HALF_MIN);
+        if (isAndroid()) {
+            await waitForElementToExist(ChannelScreen.postDraftArchived, timeouts.HALF_MIN);
+        } else {
+            await waitForElementToBeVisible(ChannelScreen.postDraftArchived, timeouts.HALF_MIN);
+        }
     } finally {
-        await device.enableSynchronization();
+        await safeEnableSynchronization();
     }
 }
 
@@ -112,11 +153,17 @@ async function openArchivedChannelViaSearchPermalink(searchableMessage: string) 
 export async function openArchivedChannel(
     channelName: string,
     searchableMessage: string,
+    postId: string,
 ) {
     if (isAndroid()) {
-        await openArchivedChannelViaBrowseChannels(channelName);
+        try {
+            await openArchivedChannelViaBrowseChannels(channelName);
+        } catch {
+            // Archived filter list can lag behind WebSocket events — fall back to search/permalink.
+            await openArchivedChannelViaSearchPermalink(searchableMessage, postId);
+        }
     } else {
-        await openArchivedChannelViaSearchPermalink(searchableMessage);
+        await openArchivedChannelViaSearchPermalink(searchableMessage, postId);
     }
 }
 
@@ -131,9 +178,11 @@ export async function closeArchivedChannel() {
         // After Browse Channels path, the modal is still open beneath channel.screen.
         try {
             await waitFor(BrowseChannelsScreen.closeButton).toExist().withTimeout(timeouts.FOUR_SEC);
-            await BrowseChannelsScreen.closeButton.tap();
         } catch {
             // Browse Channels already dismissed.
+            return;
         }
+        await BrowseChannelsScreen.closeButton.tap();
+        await waitFor(BrowseChannelsScreen.closeButton).not.toExist().withTimeout(timeouts.TEN_SEC);
     }
 }

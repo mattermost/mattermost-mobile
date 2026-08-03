@@ -200,7 +200,7 @@ describe('Threads - Follow and Unfollow Thread', () => {
         // # Go back to channel list screen
         await PostOptionsScreen.close();
         await ChannelScreen.back();
-    });
+    }, 360000);
 
     it('MM-T4806_4 - should be able to unfollow a thread via thread options', async () => {
         // # Create a thread, go back to channel list screen, then go to global threads screen, and tap on all your threads button

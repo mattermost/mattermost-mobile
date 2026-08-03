@@ -1,7 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {isAndroid, timeouts} from '@support/utils';
+import {isAndroid, timeouts, waitForElementToNotExist} from '@support/utils';
 import {waitFor} from 'detox';
 
 class Alert {
@@ -81,6 +81,19 @@ class Alert {
             await waitFor(this.archivedChannelTitle).toBeVisible().withTimeout(timeouts.ONE_SEC);
             await this.okButton.tap();
         } catch { /* not present */ }
+    };
+
+    dismissMessageLengthAlert = async () => {
+        try {
+            await waitFor(this.messageLengthTitle).toBeVisible().withTimeout(timeouts.FOUR_SEC);
+        } catch {
+            return; // Alert not shown — nothing to dismiss.
+        }
+
+        // Once the alert is up, a failure to dismiss it must surface: a lingering
+        // alert blocks every later interaction in the spec.
+        await this.okButton.tap();
+        await waitForElementToNotExist(this.messageLengthTitle, timeouts.TEN_SEC);
     };
 }
 

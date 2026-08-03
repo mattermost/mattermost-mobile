@@ -7,8 +7,9 @@ import {ScrollView, View} from 'react-native';
 import Animated, {useAnimatedStyle, withTiming} from 'react-native-reanimated';
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
 
-import {View as ViewConstants} from '@constants';
+import {View as ViewConstants, Screens} from '@constants';
 import {useTheme} from '@context/theme';
+import useAndroidHomeTabBackHandler from '@hooks/android_home_tab_back_handler';
 import {useIsTablet} from '@hooks/device';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 
@@ -56,6 +57,8 @@ const AccountScreen = ({currentUser, enableCustomUserStatuses, showFullName}: Ac
     const route = useRoute();
     const insets = useSafeAreaInsets();
     const isTablet = useIsTablet();
+
+    useAndroidHomeTabBackHandler(Screens.ACCOUNT);
 
     let tabletSidebarStyle;
     if (isTablet) {
