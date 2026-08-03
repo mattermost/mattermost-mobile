@@ -15,7 +15,8 @@ Append-only notes for a human to copy into the
   Pro / iOS 26.3, 11.10 server): 2x consecutive green for _4…_9, plus an isolation
   proof — a simulated root-flake throw injected into _3 (after its search screen
   opens, leaving it open) made _3 fail while _4…_9 still passed via the recovery.
-  Android deferred to CI (no local API-35 emulator).
+  Android verified green (local API-35 emulator, fresh server
+  mobile-pr-9996-site-3): MM-T5294_4…_9 PASS. Both platforms green.
 
 - **SEC-10992** (dismissOptionsSheet hardening, MM-T69455_1 iOS + MM-T5725_1 Android)
   — Owner: QA. Hardened ChannelBookmarkScreen.dismissOptionsSheet with bounded fallback
