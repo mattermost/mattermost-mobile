@@ -91,15 +91,17 @@ describe('Messaging - Post Display Behavior', () => {
         const {postListPostItem: lastFillerItem} = ChannelScreen.getPostListPostItem(lastFillerPost.post.id, lastFillerPost.post.message);
         await waitFor(lastFillerItem).toBeVisible().withTimeout(timeouts.TEN_SEC);
 
-        // # Scroll up from mid-screen (bottom edge is occluded by the post-draft input on iOS).
-        // Two short scrolls rather than one 5000px drag: a single long synthetic drag dwells on
-        // the post under the start point long enough for its long-press handler to fire, which
-        // opens the post-options sheet over the draft input and makes the send below fail the
-        // 100% visibility check. Every other post-list scroll in this suite uses 50–300px.
-        // 1000px total leaves the bottom while staying well inside the content of a 20-post
-        // channel, so no scroll starts at the edge and no edge-error handling is needed.
-        await ChannelScreen.getFlatPostList().scroll(500, 'up', 0.5, 0.5);
-        await ChannelScreen.getFlatPostList().scroll(500, 'up', 0.5, 0.5);
+        // # Scroll up from mid-screen until the newest post has actually left the viewport
+        // (the bottom edge is occluded by the post-draft input on iOS, hence mid-screen).
+        // A fixed pixel budget cannot hold on both platforms: 1000px moved the newest post
+        // to the top of the Android emulator's viewport but left it fully on screen — the
+        // post is only 91px tall in a ~2400px viewport — so the "left the bottom" assertion
+        // below failed on Android while passing on iOS. Scrolling until the expectation is
+        // met removes the viewport-height dependency. Small increments also keep each
+        // synthetic drag too short to dwell on a post and fire its long-press handler, which
+        // one long drag does: that opens the post-options sheet over the draft input and
+        // makes the send below fail an opaque 100% visibility check.
+        await waitFor(lastFillerItem).not.toBeVisible().whileElement(by.id(ChannelScreen.postList.testID.flatList)).scroll(300, 'up', 0.5, 0.5);
         await wait(timeouts.ONE_SEC);
 
         // # Close the post-options sheet if a scroll gesture still tripped a long press —
@@ -119,8 +121,9 @@ describe('Messaging - Post Display Behavior', () => {
             await PostOptionsScreen.close();
         }
 
-        // * Verify the list actually left the bottom, so the scroll-to-bottom check below is
-        // not vacuously true if the scroll gesture silently did nothing.
+        // * Re-verify the list is away from the bottom now that no sheet is open, so the
+        // scroll-to-bottom check below cannot pass vacuously — either because the gesture
+        // did nothing, or because a post-options sheet, not the scroll, hid the post.
         await expect(lastFillerItem).not.toBeVisible();
 
         // # Send a new message from the UI
