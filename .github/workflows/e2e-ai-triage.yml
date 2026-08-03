@@ -434,7 +434,7 @@ jobs:
       pull-requests: write
       issues: write
       id-token: write
-    uses: mattermost/mattermost-test-automation-toolkit/.github/workflows/e2e-ai-triage.yml@main
+    uses: mattermost/mattermost-test-automation-toolkit/.github/workflows/e2e-ai-triage.yml@claude/e2e-ai-triage
     with:
       target_repo: ${{ github.repository }}
       commit_sha: ${{ inputs.MOBILE_VERSION }}

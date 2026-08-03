@@ -34,7 +34,7 @@ jobs:
       contains(fromJSON('["OWNER", "MEMBER", "COLLABORATOR"]'), github.event.comment.author_association)
     # Pin to a commit SHA once the reusable workflow is stable. Using @main during
     # initial rollout, matching pr-test-analysis-override.yml.
-    uses: mattermost/mattermost-test-automation-toolkit/.github/workflows/e2e-ai-triage-override.yml@main
+    uses: mattermost/mattermost-test-automation-toolkit/.github/workflows/e2e-ai-triage-override.yml@claude/e2e-ai-triage
     with:
       target_repo: mattermost/mattermost-mobile
       pr_number: ${{ github.event.issue.number }}
