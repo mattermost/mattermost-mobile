@@ -214,18 +214,32 @@ jobs:
       - name: ci/triage
         id: triage
         if: steps.tooling.outputs.present == 'true'
+        # Every caller-supplied value arrives as an environment variable.
+        # `version_name` is the one that makes this mandatory rather than tidy: it
+        # is the branch name, which on a fork PR is chosen by the contributor, and
+        # a single quote in it ended the quoting and started a command on a runner
+        # holding OIDC and write permissions. `git check-ref-format` accepts
+        # names containing quotes and $(...), so this was reachable.
         env:
           TRIAGE_REPO: ${{ github.repository }}
+          COMMIT_SHA: ${{ inputs.MOBILE_VERSION }}
+          BRANCH_NAME: ${{ inputs.version_name }}
+          PR_NUMBER: ${{ inputs.pr_number }}
+          TSIO_URL: ${{ steps.tsio-env.outputs.url }}
         run: |
           set -euo pipefail
-          node detox/triage/triage.js \
-            --artifacts=triage-artifacts \
-            --output=triage-out \
-            --repo="${TRIAGE_REPO}" \
-            --commit='${{ inputs.MOBILE_VERSION }}' \
-            --branch='${{ inputs.version_name || 'main' }}' \
-            --tsio-url='${{ steps.tsio-env.outputs.url }}' \
-            ${{ inputs.pr_number != '' && format('--pr={0}', inputs.pr_number) || '' }}
+          ARGS=(
+            --artifacts=triage-artifacts
+            --output=triage-out
+            "--repo=${TRIAGE_REPO}"
+            "--commit=${COMMIT_SHA}"
+            "--branch=${BRANCH_NAME:-main}"
+            "--tsio-url=${TSIO_URL}"
+          )
+          if [ -n "${PR_NUMBER}" ]; then
+            ARGS+=("--pr=${PR_NUMBER}")
+          fi
+          node detox/triage/triage.js "${ARGS[@]}"
 
       # Emitted as job outputs rather than read from the artifact by the rerun
       # jobs: a reusable-workflow `uses:` resolves its `with:` before any step of

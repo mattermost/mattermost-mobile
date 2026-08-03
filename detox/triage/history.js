@@ -120,7 +120,17 @@ async function enrich(classified, {repo, baselineBranch = 'main', prNumber, base
             any_failing_elsewhere: entries.some(
                 (e) => e.failing_elsewhere && e.failing_elsewhere.distinct_prs > 0,
             ),
-            amnesty_exhausted: entries.some((e) => e.amnesty && e.amnesty.granted === false),
+            // An unreachable amnesty endpoint counts as exhausted.
+            //
+            // This read `e.amnesty.granted === false`, so "TSIO said no" and "TSIO
+            // did not answer" both produced false — a TSIO outage silently removed
+            // the amnesty veto, and every waiver granted during the outage was
+            // also unrecorded, because the ledger write was failing for the same
+            // reason. Losing the budget check is precisely when it should bite.
+            amnesty_exhausted: entries.some(
+                (e) => (e.amnesty && e.amnesty.granted === false) || Boolean(e.amnesty_error),
+            ),
+            amnesty_unavailable: entries.some((e) => Boolean(e.amnesty_error)),
         };
     });
 
