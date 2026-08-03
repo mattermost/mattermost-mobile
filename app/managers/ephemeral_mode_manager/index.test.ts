@@ -14,6 +14,7 @@ import {getServer, getServerDisplayName} from '@queries/app/servers';
 import {navigateToScreen} from '@screens/navigation';
 import {advanceTimers, disableFakeTimers, enableFakeTimers} from '@test/timer_helpers';
 import {deleteFileCache} from '@utils/file';
+import {logError} from '@utils/log';
 
 import EphemeralModeManager from './index';
 
@@ -748,6 +749,17 @@ describe('EphemeralModeManager', () => {
 
             expect(WebsocketManager.observeWebsocketState).toHaveBeenCalledTimes(2);
         });
+
+        it('logs a wipe failure when only the file cache wipe fails', async () => {
+            jest.mocked(wipeServerFiles).mockReturnValueOnce({success: false});
+
+            await triggerWipeForServerA();
+
+            expect(logError).toHaveBeenCalledWith(
+                'EphemeralModeManager.runWipe: wipe failed after retries, server re-added with stale data',
+                serverA,
+            );
+        });
     });
 
     describe('init wipe-resumption', () => {
@@ -774,6 +786,18 @@ describe('EphemeralModeManager', () => {
 
             expect(wipeServerDatabaseWithRetry).not.toHaveBeenCalled();
             expect(wipeServerFiles).not.toHaveBeenCalled();
+        });
+
+        it('logs when a resumed wipe fails again', async () => {
+            jest.mocked(getServer).mockResolvedValue({url: serverA, persistenceFlag: 'wiped'} as ServersModel);
+            jest.mocked(wipeServerDatabaseWithRetry).mockResolvedValueOnce({success: false});
+
+            await EphemeralModeManager.init([credsA]);
+
+            expect(logError).toHaveBeenCalledWith(
+                'EphemeralModeManager.init: resumed wipe failed after retries, server re-added with stale data',
+                serverA,
+            );
         });
     });
 

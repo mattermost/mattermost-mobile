@@ -62,7 +62,10 @@ class EphemeralModeManagerSingleton {
                 if (server && server.persistenceFlag === 'wiped') {
                     // Recover from a wipe interrupted by app termination before
                     // the DB + file artifacts were both deleted.
-                    await this.wipeServerArtifacts(serverUrl);
+                    const [databaseResult, filesResult] = await this.wipeServerArtifacts(serverUrl);
+                    if (!databaseResult.success || !filesResult.success) {
+                        logError('EphemeralModeManager.init: resumed wipe failed after retries, server re-added with stale data', serverUrl);
+                    }
                 }
                 await this.addServer(serverUrl);
             } catch (error) {
@@ -454,8 +457,8 @@ class EphemeralModeManagerSingleton {
             await DatabaseManager.updatePersistenceFlag(serverUrl, 'wiped');
 
             this.pauseSubscriptions(serverUrl);
-            const [{success}] = await this.wipeServerArtifacts(serverUrl);
-            if (!success) {
+            const [databaseResult, filesResult] = await this.wipeServerArtifacts(serverUrl);
+            if (!databaseResult.success || !filesResult.success) {
                 logError('EphemeralModeManager.runWipe: wipe failed after retries, server re-added with stale data', serverUrl);
             }
             await this.addServer(serverUrl);
