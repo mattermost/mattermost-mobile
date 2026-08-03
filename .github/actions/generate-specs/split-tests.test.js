@@ -32,6 +32,17 @@ test('parseSpecList makes absolute paths repo-relative', () => {
     assert.deepEqual(parseSpecList(abs), ['detox/e2e/test/x.e2e.ts']);
 });
 
+test('the same spec written two ways is still one spec', () => {
+    // Deduplication used to key on the raw entry while emitting the normalized
+    // one, so these two spellings both survived and the spec ran twice in a
+    // single shard.
+    const abs = path.join(process.cwd(), 'detox/e2e/test/x.e2e.ts');
+    const out = parseSpecList(`${abs} detox/e2e/test/x.e2e.ts`);
+
+    assert.deepEqual(out, ['detox/e2e/test/x.e2e.ts']);
+    assert.equal(out.length, new Set(out).size, 'no spec may appear twice');
+});
+
 test('an explicit spec list skips discovery entirely', () => {
     // Discovery is skipped rather than filtered, so a spec deleted or moved since
     // the run under analysis surfaces as an error rather than silently shrinking
@@ -88,4 +99,8 @@ test('mm_blocks is not isolated into its own shard at parallelism 1', () => {
     specs.generateSplits();
 
     assert.equal(specs.groupedFiles.length, 1);
+
+    // And the merge must keep both specs — a shard count of 1 would also be
+    // satisfied by silently dropping the mm_blocks spec.
+    assert.equal(specs.groupedFiles[0].specs, 'mm_blocks_a.e2e.ts b.e2e.ts');
 });

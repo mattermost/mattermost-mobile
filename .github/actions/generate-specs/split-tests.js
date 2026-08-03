@@ -42,11 +42,19 @@ function parseSpecList(raw) {
   const out = [];
   for (const entry of raw.split(/\s+/)) {
     const trimmed = entry.trim();
-    if (!trimmed || seen.has(trimmed)) {
+    if (!trimmed) {
       continue;
     }
-    seen.add(trimmed);
-    out.push(toRepoRelative(trimmed));
+    // Normalize *before* the duplicate check. Keying `seen` on the raw entry
+    // while emitting the repo-relative form meant an absolute path and its
+    // relative spelling of the same file both survived, and the spec then ran
+    // twice in one shard — the exact thing this deduplication exists to stop.
+    const normalized = toRepoRelative(trimmed);
+    if (seen.has(normalized)) {
+      continue;
+    }
+    seen.add(normalized);
+    out.push(normalized);
   }
   return out;
 }
