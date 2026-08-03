@@ -69,6 +69,26 @@ function specOutcome(spec, testId, reps) {
     } else {
         outcome = OUTCOME.PASSED;
     }
+
+    // A clearing outcome needs every planned repetition to have reported.
+    //
+    // Unusable repetitions were filtered out above, so a rerun where one
+    // repetition passed and the other never uploaded came back PASSED — and
+    // PASSED sets cleared_on_rerun, which is affirmative "this really is a flake"
+    // evidence. One observation is not a repetition; a rerun that half happened
+    // tells us less than we asked for, not that the answer was good news.
+    //
+    // DETERMINISTIC is deliberately exempt: every repetition that did report
+    // failed, and treating partial evidence of failure as inconclusive would
+    // relax the one guard that can never be waived.
+    if (usable.length < reps.length && outcome !== OUTCOME.DETERMINISTIC) {
+        return {
+            outcome: OUTCOME.INCONCLUSIVE,
+            reps: usable.length,
+            failed_reps: failed,
+            incomplete: true,
+        };
+    }
     return {outcome, reps: usable.length, failed_reps: failed};
 }
 

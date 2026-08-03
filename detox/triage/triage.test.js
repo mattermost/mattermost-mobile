@@ -480,3 +480,24 @@ test('a lost Maestro driver is recognised, and only for Maestro', () => {
         map((m) => m.id);
     assert.ok(!detoxIds.includes('device.maestro-driver-lost'));
 });
+
+test('a rerun that only half reported cannot clear a flake', () => {
+    const {specOutcome} = require('./rerun');
+    const passed = {usable: true, failedSpecs: new Set(), failedTestIds: new Set()};
+    const missing = {usable: false, failedSpecs: new Set(), failedTestIds: new Set()};
+    const failed = {usable: true, failedSpecs: new Set(['a.e2e.ts']), failedTestIds: new Set()};
+
+    // One repetition passing and the other never uploading used to come back
+    // PASSED, which sets cleared_on_rerun — affirmative "this really is a flake"
+    // evidence built from a single observation.
+    const half = specOutcome('a.e2e.ts', null, [passed, missing]);
+    assert.equal(half.outcome, 'inconclusive');
+    assert.equal(half.incomplete, true);
+
+    // A complete rerun still clears.
+    assert.equal(specOutcome('a.e2e.ts', null, [passed, passed]).outcome, 'passed');
+
+    // Failure is the conservative direction, so partial evidence of failure still
+    // counts — otherwise the one guard that can never be waived gets relaxed.
+    assert.equal(specOutcome('a.e2e.ts', null, [failed, missing]).outcome, 'deterministic');
+});
