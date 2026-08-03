@@ -51,7 +51,15 @@ class ChannelBookmarkScreen {
     // Edit options (long press on bookmark)
     editOption = element(by.text('Edit'));
     deleteOption = element(by.text('Delete'));
-    copyLinkOption = element(by.text('Copy Link'));
+
+    // Scope Copy Link to the sheet's OptionItem so it doesn't also match channel info's
+    // 'Copy Channel Link' option (same text 'Copy Link', testID
+    // channel_info.options.copy_channel_link.option) -- which on Android stays visible
+    // behind the sheet and keeps anyMarkerVisible true after the sheet dismisses.
+    // Only this marker collides; Edit/Delete/Share are left unscoped because the
+    // withAncestor(optionItem) form trips an iOS UITransitionView visibility failure
+    // on the hard expect(editOption).toBeVisible() assertion.
+    copyLinkOption = element(by.text('Copy Link').withAncestor(by.id('optionItem')));
     shareOption = element(by.text('Share'));
 
     // Delete confirmation alert
@@ -100,6 +108,25 @@ class ChannelBookmarkScreen {
         };
         /* eslint-enable no-await-in-loop */
 
+        // Fallback: pan the gorhom sheet content itself. The store-based bookmark
+        // options sheet (GenericBottomSheetRoute) renders <BottomSheet> with no testID,
+        // so its content container carries the literal testID "undefined.screen".
+        // Starting the swipe at startY=0.1 lands on the sheet header (a non-Pressable
+        // View), so gorhom's content-pan gesture receives it -- unlike swiping an
+        // option row, which is a Pressable that swallows the touch as a tap (why
+        // swipeDownFirstRow alone does not dismiss on Android). On iOS the row swipe
+        // usually dismisses; this is the bounded second attempt.
+        const swipeDownSheetContent = async () => {
+            try {
+                const sheet = element(by.id('undefined.screen'));
+                await waitFor(sheet).toBeVisible().withTimeout(timeouts.TWO_SEC);
+                await sheet.swipe('down', 'fast', 0.9, 0.5, 0.1);
+                await wait(timeouts.ONE_SEC);
+            } catch {
+                // Sheet content not found or not pannable; fall through.
+            }
+        };
+
         if (!(await anyMarkerVisible())) {
             return; // No options sheet open.
         }
@@ -120,10 +147,13 @@ class ChannelBookmarkScreen {
             if (await anyMarkerVisible(timeouts.ONE_SEC)) {
                 await swipeDownFirstRow();
             }
+            if (await anyMarkerVisible(timeouts.ONE_SEC)) {
+                await swipeDownSheetContent();
+            }
         } else {
             await swipeDownFirstRow();
             if (await anyMarkerVisible(timeouts.ONE_SEC)) {
-                await swipeDownFirstRow();
+                await swipeDownSheetContent();
             }
         }
 

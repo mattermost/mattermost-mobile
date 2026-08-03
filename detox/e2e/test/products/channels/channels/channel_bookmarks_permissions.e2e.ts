@@ -150,12 +150,17 @@ describe('Channels - Channel Bookmarks Permissions', () => {
         await ChannelListScreen.toBeVisible();
     });
 
-    // Skip (SEC-10992): dismissOptionsSheet still fails after the swipe fix on Android CI
-    // (repeated fails 29cdff, 59ec6ae, a4c0e33). The helper is now hardened with a
-    // swipe-down fallback after pressBack + assert-gone, but this stayed skipped pending
-    // CI verification (no local API-35 emulator; iOS repro of the sibling MM-T69455_1 was
-    // contaminated by an ephemeral-server session loss, not the sheet-dismiss mechanism).
-    it.skip('MM-T5725_1 - should not be able to add, edit, or delete bookmarks in an archived channel', async () => {
+    // SEC-10992: verified green on a clean session against a fresh stable server
+    // (mobile-pr-9996-site-3). Android MM-T5725_1 passes 2x. Root cause of the prior
+    // RED was a false positive in dismissOptionsSheet: copyLinkOption (by.text('Copy
+    // Link')) also matched channel info's 'Copy Channel Link' option (same text), so
+    // anyMarkerVisible stayed true after the sheet dismissed. copyLinkOption is now
+    // scoped to the sheet's OptionItem (withAncestor(by.id('optionItem'))). The sheet
+    // itself dismisses via system back (pressBack); swipeDownFirstRow +
+    // swipeDownSheetContent are bounded fallbacks. The channel_info close after the
+    // sheet dismiss can stall >10s on Android, so it uses an inline tap + 20s wait +
+    // guarded pressBack fallback (mirroring the archive close above).
+    it('MM-T5725_1 - should not be able to add, edit, or delete bookmarks in an archived channel', async () => {
         const channelT5725 = await createChannel();
 
         // Create while the admin user's WebSocket is connected so channel info has
@@ -216,7 +221,19 @@ describe('Channels - Channel Bookmarks Permissions', () => {
 
         await ChannelBookmarkScreen.dismissOptionsSheet();
         await waitFor(ChannelInfoScreen.closeButton).toBeVisible().withTimeout(timeouts.TEN_SEC);
-        await ChannelInfoScreen.close();
+
+        // The channel_info close can stall on Android after the sheet dismiss (the close
+        // button tap registers but channel_info.screen stays mounted >10s). Tap the close
+        // button, wait longer than the helper's 10s cap, and only fall back to system back
+        // if channel_info is still mounted -- mirroring the archive close's pressBack
+        // fallback above.
+        await ChannelInfoScreen.closeButton.tap();
+        try {
+            await waitFor(element(by.id(ChannelInfoScreen.testID.channelInfoScreen))).
+                not.toBeVisible().withTimeout(timeouts.TWENTY_SEC);
+        } catch {
+            await device.pressBack();
+        }
 
         // # Close the archived channel and go back to channel list
         await ChannelScreen.postDraftArchivedCloseChannelButton.tap();
