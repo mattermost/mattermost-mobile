@@ -283,27 +283,29 @@ describe('Calls Hooks', () => {
         });
     });
 
-    describe('useNavigationHeaderCallButton', () => {
+    describe('useNavigationHeaderCallButtonForDM', () => {
         const channelId = 'channel1';
 
         beforeEach(() => {
             (useChannelsWithCalls as jest.Mock).mockReturnValue({});
             (useCurrentCall as jest.Mock).mockReturnValue(null);
             (NetworkManager.getClient as jest.Mock).mockReturnValue({getEnabled: jest.fn().mockResolvedValue(true)});
+            jest.mocked(leaveAndJoinWithAlert).mockResolvedValue(true);
         });
 
-        it('returns the start call icon when there is no call in the channel', () => {
+        it('returns the start call button when there is no call in the channel', () => {
             const {result} = renderHook(() => useNavigationHeaderCallButtonForDM(channelId, General.DM_CHANNEL));
 
             expect(result.current).toEqual(expect.objectContaining({
                 iconName: 'phone',
                 accessibilityLabel: 'Start call',
                 disabled: false,
+                isLoading: false,
                 testID: 'channel_header.quick_call.button',
             }));
         });
 
-        it('returns the join call icon when a call is ongoing in the channel', () => {
+        it('returns the join call button when a call is ongoing in the channel', () => {
             (useChannelsWithCalls as jest.Mock).mockReturnValue({[channelId]: true});
 
             const {result} = renderHook(() => useNavigationHeaderCallButtonForDM(channelId, General.DM_CHANNEL));
@@ -314,16 +316,19 @@ describe('Calls Hooks', () => {
             }));
         });
 
-        it('returns undefined when already in this channel call', () => {
+        it('returns the return to call button when already in this channel call', () => {
             (useChannelsWithCalls as jest.Mock).mockReturnValue({[channelId]: true});
             (useCurrentCall as jest.Mock).mockReturnValue({channelId});
 
             const {result} = renderHook(() => useNavigationHeaderCallButtonForDM(channelId, General.DM_CHANNEL));
 
-            expect(result.current).toBeUndefined();
+            expect(result.current).toEqual(expect.objectContaining({
+                iconName: 'phone-in-talk',
+                accessibilityLabel: 'Return to call',
+            }));
         });
 
-        it('returns a button when in a call in a different channel', () => {
+        it('returns the start call button when in a call in a different channel', () => {
             (useCurrentCall as jest.Mock).mockReturnValue({channelId: 'other-channel'});
 
             const {result} = renderHook(() => useNavigationHeaderCallButtonForDM(channelId, General.DM_CHANNEL));
@@ -331,14 +336,59 @@ describe('Calls Hooks', () => {
             expect(result.current?.iconName).toBe('phone');
         });
 
+        it.each([General.GM_CHANNEL, General.OPEN_CHANNEL, General.PRIVATE_CHANNEL])('returns undefined for %s channels', (channelType) => {
+            const {result} = renderHook(() => useNavigationHeaderCallButtonForDM(channelId, channelType as ChannelType));
+
+            expect(result.current).toBeUndefined();
+        });
+
         it('joins the call on press', async () => {
             const {result} = renderHook(() => useNavigationHeaderCallButtonForDM(channelId, General.DM_CHANNEL));
 
             await act(async () => {
-                await result.current?.onPress();
+                result.current?.onPress();
             });
 
             expect(leaveAndJoinWithAlert).toHaveBeenCalledWith(expect.anything(), 'server1', channelId);
+            expect(navigateToScreen).not.toHaveBeenCalled();
+        });
+
+        it('navigates to the call screen instead of joining when already in this channel call', async () => {
+            (useCurrentCall as jest.Mock).mockReturnValue({channelId});
+
+            const {result} = renderHook(() => useNavigationHeaderCallButtonForDM(channelId, General.DM_CHANNEL));
+
+            await act(async () => {
+                result.current?.onPress();
+            });
+
+            expect(navigateToScreen).toHaveBeenCalledWith(Screens.CALL);
+            expect(leaveAndJoinWithAlert).not.toHaveBeenCalled();
+        });
+
+        it('shows the loading state while connecting to the call', async () => {
+            let resolveJoin: () => void = () => null;
+            jest.mocked(leaveAndJoinWithAlert).mockReturnValue(new Promise<boolean>((resolve) => {
+                resolveJoin = () => resolve(true);
+            }));
+
+            const {result} = renderHook(() => useNavigationHeaderCallButtonForDM(channelId, General.DM_CHANNEL));
+
+            act(() => {
+                result.current?.onPress();
+            });
+
+            await waitFor(() => {
+                expect(result.current?.isLoading).toBe(true);
+            });
+            expect(result.current?.disabled).toBe(true);
+
+            await act(async () => {
+                resolveJoin();
+            });
+
+            expect(result.current?.isLoading).toBe(false);
+            expect(result.current?.disabled).toBe(false);
         });
     });
 });

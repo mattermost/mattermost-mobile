@@ -83,7 +83,7 @@ describe('ChannelHeader', () => {
     }
 
     function getQuickCallButton(navHeader: {props: unknown}) {
-        return getRightButtons(navHeader)?.find((button) => button.iconName === 'phone');
+        return getRightButtons(navHeader)?.find((button) => button.testID === navigationHeaderCallButton.testID);
     }
 
     it('shows the quick call button in a DM when calls are available', () => {
@@ -97,10 +97,22 @@ describe('ChannelHeader', () => {
         expect(useNavigationHeaderCallButtonForDM).toHaveBeenCalledWith('channel-id', General.DM_CHANNEL);
     });
 
-    it('does not show the quick call button when calls are unavailable in the DM', () => {
+    it('does not show the quick call button when calls are disabled in the DM', () => {
         const props = getBaseProps();
         props.channelType = General.DM_CHANNEL;
+        enableCalls(props);
         props.callsEnabledInChannel = false;
+
+        const {getByTestId} = renderWithIntl(<ChannelHeader {...props}/>);
+
+        expect(getQuickCallButton(getByTestId('navigation-header'))).toBeUndefined();
+    });
+
+    it('does not show the quick call button when the calls plugin is disabled', () => {
+        const props = getBaseProps();
+        props.channelType = General.DM_CHANNEL;
+        enableCalls(props);
+        jest.mocked(getCallsConfig).mockReturnValue({...DefaultCallsConfig, pluginEnabled: false});
 
         const {getByTestId} = renderWithIntl(<ChannelHeader {...props}/>);
 
@@ -121,7 +133,7 @@ describe('ChannelHeader', () => {
         expect(getQuickCallButton(navHeader)).toBeUndefined();
     });
 
-    it('does not show the quick call button when the user is already in the channel call', () => {
+    it('does not show the quick call button when the calls hook returns no button', () => {
         const props = getBaseProps();
         props.channelType = General.DM_CHANNEL;
         enableCalls(props);
