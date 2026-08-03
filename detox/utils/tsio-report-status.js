@@ -265,7 +265,7 @@ async function reportTsioStatus(options) {
     const token = githubToken || process.env.GITHUB_TOKEN;
     if (!token) throw new Error('githubToken (or GITHUB_TOKEN env) is required');
 
-    const postStatus = async ({state, description, targetUrl}) => {
+    const postStatus = async ({state, description, targetUrl, bothTerminal = false}) => {
         let final = {state, description};
 
         // Human override is checked first: a maintainer's explicit decision to
@@ -275,7 +275,11 @@ async function reportTsioStatus(options) {
             final = overrideCommitStatus(state, description);
             result.override_applied = true;
             console.log(`${OVERRIDE_LABEL} set on PR #${compositeIdentity.gh_pr_number} — posting success for ${commitStatusContext}`);
-        } else if (aiWaiver && state === 'failure') {
+        } else if (aiWaiver && state === 'failure' && bothTerminal && (result.test_stats.failed || 0) > 0) {
+            // AI waiver only applies to classified test failures: both TSIO and
+            // test framework reached terminal status, and there was at least one test failure.
+            // OIDC errors, group-creation failures, polling timeouts, upstream-job failures,
+            // and incomplete reports stay red.
             final = overrideCommitStatus(state, description, {
                 label: AI_WAIVED_LABEL,
                 reason: aiWaiverReason,
@@ -352,7 +356,7 @@ async function reportTsioStatus(options) {
         upstreamSucceeded: upstreamJobsSucceeded,
     });
 
-    await postStatus({state, description, targetUrl});
+    await postStatus({state, description, targetUrl, bothTerminal});
 
     if (process.env.GITHUB_STEP_SUMMARY) {
         const stats = result.test_stats;
@@ -415,9 +419,9 @@ async function reportTsioStatus(options) {
         console.warn(`E2E Mattermost notify setup failed: ${error.message}`);
     }
 
-    // Under override the commit status is green; failing the step too would only
-    // turn the run red again for a result the maintainer chose to waive.
-    if (failOnTestFailures && !result.override_applied && bothTerminal && (result.test_stats.failed || 0) > 0) {
+    // Under override or AI waiver the commit status is green; failing the step too
+    // would only turn the run red again for a result that was already waived.
+    if (failOnTestFailures && !result.override_applied && !result.ai_waiver_applied && bothTerminal && (result.test_stats.failed || 0) > 0) {
         const err = new Error('TSIO reported test failures');
         err.exitCode = 1;
         throw err;

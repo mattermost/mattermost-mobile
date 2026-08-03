@@ -174,6 +174,24 @@ async function main() {
     const evidenceIn = args['evidence-in'];
     if (evidenceIn) {
         const prior = JSON.parse(fs.readFileSync(evidenceIn, 'utf8'));
+
+        // The prior bundle must describe the run being finalized.
+        //
+        // This is the reason meta.commit is stamped at all: the plan artifact is
+        // downloaded back by a later job, and nothing else checks that what came
+        // back belongs here. Merging a stale bundle would attribute one run's
+        // rerun results to another commit's clusters.
+        //
+        // Thrown rather than returned. An early return writes no evidence.json,
+        // which reads downstream as "finalize produced nothing" and silently falls
+        // back to the plan artifact — the mismatch would be invisible. Throwing
+        // exits non-zero and says why; the caller still falls back to the plan
+        // bundle, but the reason is in the log instead of being inferred.
+        if (args.commit && prior.meta && prior.meta.commit && prior.meta.commit !== args.commit) {
+            throw new Error(
+                `evidence bundle is for commit ${prior.meta.commit}, but this run is ${args.commit}`,
+            );
+        }
         const merged = rerunRoots.length > 0 ? mergeRerun(prior, rerunRoots) : prior;
         if (rerunRoots.length > 0) {
             console.log(

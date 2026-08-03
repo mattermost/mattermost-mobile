@@ -388,6 +388,8 @@ jobs:
 
       - name: ci/merge
         id: merge
+        env:
+          COMMIT_SHA: ${{ inputs.MOBILE_VERSION }}
         run: |
           set -euo pipefail
           PLAN_ARTIFACT="e2e-triage-evidence-${{ inputs.artifact_run_id }}"
@@ -415,9 +417,13 @@ jobs:
           done
           [ -n "$ROOTS" ] || echo "no rerun artifacts were produced — evidence stands as planned"
 
+          # --commit is what makes the bundle's meta.commit check live: without it
+          # the guard has nothing to compare against and a stale artifact merges
+          # silently.
           node detox/triage/triage.js \
             --evidence-in=prior/evidence.json \
             --output=triage-final \
+            --commit="${COMMIT_SHA}" \
             ${ROOTS:+--rerun-artifacts="$ROOTS"}
 
           echo "artifact=e2e-triage-evidence-final-${{ inputs.artifact_run_id }}" >> "$GITHUB_OUTPUT"

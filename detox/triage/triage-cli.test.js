@@ -153,3 +153,21 @@ test('renderSummary lists the specs a rerun will execute', () => {
     assert.match(md, /2 repetition\(s\)/);
     assert.match(md, /`ios` detox\/e2e\/test\/a\.e2e\.ts \(MM-T4731_2\)/);
 });
+
+test('a report that could not be parsed still shows up as a shard', () => {
+    // A shard whose report is unreadable used to return shard: null and vanish
+    // from summary.shards, so a dead shard was indistinguishable from one that
+    // never existed — and the suite rules that key on "how many shards reported"
+    // could not see it.
+    const {parseJestResults} = require('./collect');
+    const dir = tmpdir();
+    const file = path.join(dir, 'ios-results-abc-3', 'jest-results.json');
+    fs.mkdirSync(path.dirname(file), {recursive: true});
+    fs.writeFileSync(file, '{ not json');
+
+    const out = parseJestResults(file, dir);
+    assert.ok(out.error, 'the parse failure is still reported');
+    assert.ok(out.shard, 'the shard must remain visible');
+    assert.equal(out.shard.total, 0);
+    assert.equal(out.shard.shard, '3');
+});

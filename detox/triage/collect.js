@@ -226,7 +226,18 @@ function parseJestResults(filePath, root) {
     try {
         doc = JSON.parse(fs.readFileSync(filePath, 'utf8'));
     } catch (err) {
-        return {failures: [], shard: null, error: `unreadable jest report: ${err.message}`};
+        return {
+            failures: [],
+            shard: {
+                shard: shardFromPath(filePath, root),
+                platform: platformFromPath(filePath),
+                total: 0,
+                passed: 0,
+                failed: 0,
+                skipped: 0,
+            },
+            error: `unreadable jest report: ${err.message}`,
+        };
     }
 
     const shard = shardFromPath(filePath, root);
@@ -300,7 +311,18 @@ function parseMaestroReport(filePath, root) {
     try {
         xml = fs.readFileSync(filePath, 'utf8');
     } catch (err) {
-        return {failures: [], shard: null, error: `unreadable maestro report: ${err.message}`};
+        return {
+            failures: [],
+            shard: {
+                shard: shardFromPath(filePath, root),
+                platform: platformFromPath(filePath),
+                total: 0,
+                passed: 0,
+                failed: 0,
+                skipped: 0,
+            },
+            error: `unreadable maestro report: ${err.message}`,
+        };
     }
 
     const shard = shardFromPath(filePath, root);
@@ -446,7 +468,7 @@ function collectServerProbes(root) {
             probes.push({
                 site: field('site_url'),
                 ping_http_code: code,
-                reachable: code === '200',
+                reachable: code === null ? null : code === '200',
                 verdict_hint: field('verdict_hint'),
                 captured_at: field('captured_at'),
                 shard: shardFromPath(file, root),

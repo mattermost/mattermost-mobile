@@ -953,7 +953,9 @@ jobs:
         run: |
           set -uo pipefail
           if [ -f build/android-device.pid ]; then
-            kill "$(cat build/android-device.pid)" 2>/dev/null || true
+            pid=$(cat build/android-device.pid)
+            kill "$pid" 2>/dev/null || true
+            wait "$pid" 2>/dev/null || true
           fi
           if [ -f build/android-device.log ]; then
             echo "==> build/android-device.log size=$(wc -c < build/android-device.log)B"

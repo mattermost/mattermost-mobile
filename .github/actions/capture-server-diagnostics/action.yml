@@ -97,17 +97,23 @@ runs:
 
         # Recent server logs, trimmed. Capped because the whole point of the
         # evidence bundle is that it stays small enough to reason over.
+        LOGS_RAW=$(mktemp)
         curl -s --max-time 30 -H "Authorization: Bearer ${TOKEN}" \
           "${SITE_URL}/api/v4/logs?page=0&per_page=${LOG_LINES}" \
-          -o "$OUTPUT_DIR/server-logs.json" 2>/dev/null
+          -o "$LOGS_RAW" 2>/dev/null
 
-        if [ -s "$OUTPUT_DIR/server-logs.json" ]; then
+        if [ -s "$LOGS_RAW" ]; then
+          # Sanitize logs before artifact upload: redact PII and sensitive data
+          # to prevent accidental exposure in publicly-accessible artifact storage.
+          python3 "${{ github.action_path }}/sanitize-logs.py" "$LOGS_RAW" "$OUTPUT_DIR/server-logs.json"
+
           BYTES=$(wc -c < "$OUTPUT_DIR/server-logs.json" | tr -d ' ')
           echo "server_log_bytes=${BYTES}" >> "$OUTPUT_DIR/summary.txt"
           # Surface the error lines in the job log so a human scanning CI sees
-          # them without downloading the artifact.
+          # them without downloading the artifact. Use sanitized logs.
           echo "==> Recent server-side errors:"
           grep -oiE '"[^"]*(error|panic|fatal)[^"]*"' "$OUTPUT_DIR/server-logs.json" 2>/dev/null | head -20 || true
+          rm -f "$LOGS_RAW"
         fi
 
         # Best effort, always. Never fail a test job over diagnostics.

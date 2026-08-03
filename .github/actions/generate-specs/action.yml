@@ -42,7 +42,7 @@ runs:
         DEVICE_OS_VERSION: ${{ inputs.device_os_version }}
         SPEC_LIST: ${{ inputs.spec_list }}
       run: |
-        set -e
+        set -e -o pipefail
         node ${{ github.action_path }}/split-tests.js | tee output.json
         echo "specs=$(cat output.json)" >> $GITHUB_OUTPUT
       shell: bash
