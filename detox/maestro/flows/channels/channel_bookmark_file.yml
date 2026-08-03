@@ -127,9 +127,9 @@ appId: ${MAESTRO_APP_ID}
       - tapOn:
           text: "SAVE"
 
-# * Verify the file bookmark was created: the modal closes.
-# Allow up to 60s — if upload was still completing when Save was tapped, the server
-# may take a moment to respond and pop the navigation stack.
+# * Verify the save completed and the bookmark modal closed.
+# Allow up to 60s for the server to respond to the save and for the navigation stack
+# to pop. Bookmark creation itself is verified by the channel-info bookmark list below.
 - extendedWaitUntil:
     notVisible:
       id: "channel_bookmark.screen"

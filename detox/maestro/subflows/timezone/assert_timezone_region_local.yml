@@ -1,8 +1,13 @@
 # Local dev fallback when EXPECTED_TIMEZONE_REGION is not passed: verify automatic
-# timezone is enabled and shows a non-empty region label (any device timezone).
+# timezone is enabled and its description renders something other than "Off"
+# (the region itself is unknown without the expected value).
 appId: ${MAESTRO_APP_ID}
 ---
-# * Verify automatic timezone is on and shows a non-empty region label
+# * Verify automatic timezone is on: the description renders and is not "Off".
+# This does not assert the label is non-empty — Maestro has no non-empty-text
+# primitive, and the exact region is unknown without EXPECTED_TIMEZONE_REGION.
+# CI always passes that variable and uses assert_timezone_region_label.yml, which
+# does check the region text; this file is the local-dev fallback only.
 - extendedWaitUntil:
     visible:
       id: "timezone_display_settings.automatic.option.description"

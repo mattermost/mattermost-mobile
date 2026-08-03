@@ -175,11 +175,12 @@ appId: ${MAESTRO_APP_ID}
     commands:
       - waitForAnimationToEnd:
           timeout: 3000
-      # * Verify the bookmark is interactive: long-press opens the options
-      # bottom sheet (handleLongPress). The tap handler (openLink) requires
-      # external browser support that may not be available on all emulators.
+      # # Long-press the bookmark to open the options bottom sheet (handleLongPress).
+      # The tap handler (openLink) requires external browser support that may not be
+      # available on all emulators, so exercise the long-press path instead.
       - longPressOn:
           id: "channel_bookmark\\..+\\.title"
+      # * Verify the bookmark is interactive: the options sheet is shown
       - extendedWaitUntil:
           visible:
             text: "Edit"

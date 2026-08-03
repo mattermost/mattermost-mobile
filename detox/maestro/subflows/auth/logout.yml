@@ -44,8 +44,9 @@ appId: ${MAESTRO_APP_ID}
     timeout: 10000
 
 # # Tap the "Log out" button in the UIAlertController.
-# iOS 26 may layout buttons horizontally (Cancel left, Log out right) or
-# vertically. Try both positions with optional taps.
+# iOS 26 lays the buttons out horizontally on this device (Cancel left, Log out right),
+# which is the single position tapped below. If a vertical layout is ever observed, add
+# a second tap for it — do not guess coordinates for a layout nobody has seen.
 - runFlow:
     when:
       platform: iOS
@@ -65,10 +66,25 @@ appId: ${MAESTRO_APP_ID}
           id: "android:id/button1"
 
 # * Verify logout completed — login form or server list.
-# On iOS, logout may navigate to the server list (multiple servers) or
-# directly to the login form (single server). Accept either.
+# Logout may navigate to the server list (multiple servers) or directly to the login
+# form (single server). Accept either, but anchor the login form per platform:
+# login_form.username.input is a FloatingTextInput, whose testID is not queryable by
+# id: on iOS (GUIDELINES §3), so checking it there is vacuously true and would send a
+# successful iOS logout into the server-list wait. iOS uses the RNEButton
+# login_form.forgot_password.button instead, matching login.yml's login-form anchor.
 - runFlow:
     when:
+      platform: iOS
+      notVisible:
+        id: "login_form.forgot_password.button"
+    commands:
+      - extendedWaitUntil:
+          visible:
+            id: "server_list.screen"
+          timeout: 60000
+- runFlow:
+    when:
+      platform: Android
       notVisible:
         id: "login_form.username.input"
     commands:

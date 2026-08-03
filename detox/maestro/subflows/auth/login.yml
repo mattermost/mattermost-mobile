@@ -63,9 +63,10 @@ appId: ${MAESTRO_APP_ID}
             id: "server_form.server_url.input"
           timeout: 90000
 
-# # Dismiss the iOS notification permission dialog, which may appear on first launch
-# after a device wipe or new test session. Allow so push can work; optional so it
-# is silently skipped when the dialog is absent.
+# # Dismiss the notification permission dialog on either platform. It may appear on
+# first launch after a device wipe or new test session, and on Android it can surface
+# later than the in-branch attempt above. Allow so push can work; optional so it is
+# silently skipped when the dialog is absent.
 - tapOn:
     text: "Allow"
     optional: true

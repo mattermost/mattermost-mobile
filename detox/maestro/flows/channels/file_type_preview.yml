@@ -169,7 +169,13 @@ appId: ${MAESTRO_APP_ID}
 - tapOn:
     id: "${PDF_FILE_ID}-file-container"
 
-# * Verify the viewer took over the screen (or the in-app download began)
+# # Give the viewer time to take over the screen (or the in-app download to begin).
+# This is a settle step, not an assertion: it is optional, so it cannot fail. Which
+# surface opens depends on the server's EnableSecureFilePreview — the in-app
+# Screens.PDF_VIEWER or the OS viewer via viewDocument() — and the in-app PDF viewer
+# screen carries no testID, so there is nothing to assert against on that path
+# without adding one in app/. Tracked separately; do not turn this into an
+# assertion until that testID exists.
 - extendedWaitUntil:
     notVisible:
       id: "channel.post_draft.post.input"
