@@ -365,7 +365,6 @@ describe('Actions.Calls', () => {
                 'channel-id',
                 leaveCb,
             );
-            myselfLeftCall();
         });
 
         expect(mockAlert).not.toHaveBeenCalled();
