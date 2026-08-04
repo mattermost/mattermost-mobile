@@ -61,18 +61,40 @@ export const timeouts = {
 };
 
 /**
+ * Poll until a Detox system-dialog element exists (or deadline).
+ * `waitFor` does not apply to `system.element(...)`.
+ */
+const waitForSystemElement = async (
+    systemElement: {tap: () => Promise<void>},
+    timeout: number,
+): Promise<void> => {
+    const {expect: detoxExpect} = require('detox');
+    const deadline = Date.now() + timeout;
+    /* eslint-disable no-await-in-loop */
+    while (Date.now() < deadline) {
+        try {
+            await detoxExpect(systemElement).toExist();
+            return;
+        } catch {
+            await wait(timeouts.HALF_SEC);
+        }
+    }
+    /* eslint-enable no-await-in-loop */
+    await detoxExpect(systemElement).toExist();
+};
+
+/**
  * Dismiss the iOS "Save Password?" sheet if present.
  *
  * On iOS 18+/26.x SharedWebCredentialViewService shows this sheet after login.
  * MDM `allowPasswordAutoFill=NO` only disables the keyboard toolbar — it does not
  * stop the sheet.
  *
- * Sync is disabled for the probe: with the sheet up, Detox idling can prevent
- * waitFor from observing system-dialog buttons even when they are on screen.
+ * Passwords.app is a *system* dialog: app-level `element(by.text/label)` cannot
+ * see it. Use Detox System APIs (`system.element(by.system.label(...))`).
  *
- * Prefer tapping "Not Now". Optionally background/foreground only when the
- * "Save Password?" title is confirmed (never when the dialog is absent — that
- * previously broke channel-list loading via unconditional sendToHome).
+ * Optionally background/foreground only when the system title is confirmed
+ * (never when the dialog is absent — that previously broke channel-list loading).
  *
  * No-op on Android.
  */
@@ -86,62 +108,44 @@ export const dismissIosSavePasswordIfVisible = async (
 
     const {allowBackgroundFallback = false} = options;
 
-    await device.disableSynchronization();
+    // Primary: Detox System API (XCUITest) — required for Passwords.app.
     try {
-        // Primary matcher (matches the previously working Detox path).
-        try {
-            const notNow = element(by.text('Not Now'));
-            await waitFor(notNow).toBeVisible().withTimeout(probeTimeout);
-            await notNow.tap();
-            await wait(timeouts.HALF_SEC);
-            return true;
-        } catch {
-            // Fall through to alternate locators.
-        }
-
-        // Short alternate probes — do not multiply the full probeTimeout.
-        const alternates = [
-            element(by.label('Not Now')),
-            element(by.type('XCUIElementTypeButton').and(by.text('Not Now'))),
-        ];
-        for (const btn of alternates) {
-            try {
-                // eslint-disable-next-line no-await-in-loop
-                await waitFor(btn).toBeVisible().withTimeout(timeouts.HALF_SEC);
-                // eslint-disable-next-line no-await-in-loop
-                await btn.tap();
-                // eslint-disable-next-line no-await-in-loop
-                await wait(timeouts.HALF_SEC);
-                return true;
-            } catch {
-                // Try next locator.
-            }
-        }
-
-        if (!allowBackgroundFallback) {
-            return false;
-        }
-
-        // Confirm the sheet before sendToHome so an absent dialog never
-        // backgrounds the app (that used to break channel-list loading).
-        try {
-            await waitFor(element(by.text('Save Password?'))).toBeVisible().withTimeout(timeouts.TWO_SEC);
-        } catch {
-            try {
-                await waitFor(element(by.label('Save Password?'))).toBeVisible().withTimeout(timeouts.ONE_SEC);
-            } catch {
-                return false;
-            }
-        }
-
-        await device.sendToHome();
+        const notNow = system.element(by.system.label('Not Now'));
+        await waitForSystemElement(notNow, probeTimeout);
+        await notNow.tap();
         await wait(timeouts.HALF_SEC);
-        await device.launchApp({newInstance: false});
-        await wait(timeouts.ONE_SEC);
         return true;
-    } finally {
-        await safeEnableSynchronization();
+    } catch {
+        // Fall through.
     }
+
+    // Legacy app-hierarchy probes (rarely work for this sheet; cheap).
+    try {
+        const notNow = element(by.text('Not Now'));
+        await waitFor(notNow).toBeVisible().withTimeout(timeouts.HALF_SEC);
+        await notNow.tap();
+        await wait(timeouts.HALF_SEC);
+        return true;
+    } catch {
+        // Fall through.
+    }
+
+    if (!allowBackgroundFallback) {
+        return false;
+    }
+
+    // Confirm via system title before sendToHome.
+    try {
+        await waitForSystemElement(system.element(by.system.label('Save Password?')), timeouts.TWO_SEC);
+    } catch {
+        return false;
+    }
+
+    await device.sendToHome();
+    await wait(timeouts.HALF_SEC);
+    await device.launchApp({newInstance: false});
+    await wait(timeouts.ONE_SEC);
+    return true;
 };
 
 /**
