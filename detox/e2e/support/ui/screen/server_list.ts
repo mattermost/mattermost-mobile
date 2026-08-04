@@ -1,9 +1,10 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import {dismissKnownModals} from '@support/ui/modal_dismiss';
 import {ChannelListScreen} from '@support/ui/screen';
-import {isIos, timeouts, wait} from '@support/utils';
-import {expect} from 'detox';
+import {isAndroid, isIos, timeouts, wait, waitForElementToExist} from '@support/utils';
+import {expect, waitFor} from 'detox';
 
 class ServerListScreen {
     testID = {
@@ -61,8 +62,23 @@ class ServerListScreen {
     };
 
     open = async () => {
-        // # Open server list screen
-        await ChannelListScreen.serverIcon.tap();
+        await dismissKnownModals(2);
+        const iconTimeout = isAndroid() ? timeouts.TWENTY_SEC : timeouts.TEN_SEC;
+        await waitForElementToExist(ChannelListScreen.serverIcon, iconTimeout);
+
+        /* eslint-disable no-await-in-loop -- retry server icon tap while header overlay clears */
+        for (let i = 0; i < 3; i++) {
+            try {
+                await ChannelListScreen.serverIcon.tap();
+                break;
+            } catch (err) {
+                if (i === 2) {
+                    throw err;
+                }
+                await wait(timeouts.ONE_SEC);
+            }
+        }
+        /* eslint-enable no-await-in-loop */
 
         return this.toBeVisible();
     };

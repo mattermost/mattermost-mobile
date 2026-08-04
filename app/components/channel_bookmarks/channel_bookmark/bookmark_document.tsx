@@ -56,6 +56,7 @@ const BookmarkDocument = ({bookmark, canDownloadFiles, enableSecureFilePreview, 
                 style={({pressed}) => [styles.pressable, pressed && {opacity: 0.72}]}
                 onPress={handlePress}
                 onLongPress={onLongPress}
+                testID={`channel_bookmark.${bookmark.id}`}
             >
                 <BookmarkDetails
                     bookmark={bookmark}

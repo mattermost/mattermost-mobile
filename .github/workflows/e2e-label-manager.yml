@@ -1,24 +1,43 @@
 # Matterwick triggers E2E only on pull_request:labeled (see matterwick/server/pull_request.go).
-# synchronize alone does nothing — on push we must cancel stale runs, remove E2E/Run*,
-# and re-add E2E/Run in one job so Matterwick receives a fresh labeled webhook.
+# synchronize alone does nothing — on push we must remove and re-add E2E/Run so
+# Matterwick receives a fresh labeled webhook.
 #
 #   1. refresh-e2e-run-label (synchronize):
-#      Force-cancel in-flight E2E, then remove + re-add E2E/Run via PAT.
+#      Remove + re-add E2E/Run via PAT. The in-flight run for the previous commit
+#      is superseded by the `concurrency` group in e2e-detox-pr.yml when the new
+#      dispatch lands, so nothing needs cancelling here.
+#      When E2E/Override is set it instead only strips the run labels (no dispatch)
+#      and hands off to repost-override-status, which re-posts the bypass on the
+#      new head SHA — commit statuses are keyed by SHA, so without that re-post the
+#      pushed commit has no e2e-test/* statuses and required checks would block the
+#      PR. The re-post is a separate job so PR-authored action code never shares a
+#      runner with the PAT.
 #
 #   2. add-e2e-run-label (opened):
 #      Add E2E/Run unless already present. Skips when E2E/Override is set.
 #
 #   3. Honor E2E/Override (labeled E2E/Override):
-#      Removes all E2E/Run* labels and cancels in-progress E2E workflow runs.
+#      Removes all E2E/Run* labels so no new run is dispatched, then posts success
+#      on every required e2e-test/* context. In-flight runs are NEVER cancelled —
+#      they finish and their finalize step re-checks the label before posting
+#      (see .github/actions/e2e-override-label), so a late result cannot re-red
+#      a check the maintainer deliberately bypassed.
 #
-#   4. Cancel in-progress E2E runs (E2E/Run* unlabeled by a human):
-#      Skips when mattermost-build (the PAT user) removed the label (refresh strip
-#      or post-run cleanup) so synchronize refresh does not race Matterwick dispatch.
+#   4. Honor E2E/Verified (labeled/unlabeled E2E/Verified):
+#      A maintainer applies this after reading a real E2E failure and judging it
+#      known flake, not a regression. Marks only the currently-failing e2e-test/*
+#      contexts success, keeping the real pass/fail description and tagging who
+#      verified it — passing platforms are left untouched. Removing the label
+#      resets exactly the contexts this action touched (matched by a marker in
+#      the description) back to pending, so the waiver never outlives the label
+#      and never clobbers a platform it didn't verify. Does not carry across a
+#      push: a new commit gets a fresh run and a fresh human judgment, unlike
+#      E2E/Override.
 #
 # Fork PR guard (github.event.pull_request.head.repo.full_name == github.repository)
 # is applied per-step. Fork PR contexts only get a read-only GITHUB_TOKEN, so
-# addLabels / removeLabel / gh-run-cancel would all 403. Mandatory E2E for fork
-# PRs is enforced separately.
+# addLabels / removeLabel would all 403. Mandatory E2E for fork PRs is enforced
+# separately.
 #
 # Base-branch guard: auto E2E/Run refresh only runs for PRs targeting main.
 # Stacked PRs (base != main) are skipped so Matterwick is not triggered on every
@@ -44,23 +63,15 @@ jobs:
       github.event.action == 'synchronize'
       && github.event.pull_request.base.ref == 'main'
       && github.event.pull_request.head.repo.full_name == github.repository
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-24.04
     permissions:
-      actions: write
-      statuses: write
       issues: write
       pull-requests: write
+    outputs:
+      e2e_override: ${{ steps.refresh.outputs.e2e_override }}
     steps:
-      - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
-      - name: Force-cancel in-flight E2E runs for the previous commit
-        uses: ./.github/actions/cancel-e2e-runs
-        with:
-          head_branch: ${{ github.event.pull_request.head.ref }}
-          pr_number: ${{ github.event.pull_request.number }}
-          exclude_head_sha: ${{ github.event.pull_request.head.sha }}
-          reason: E2E superseded by new commit push
-
       - name: Remove and re-add E2E/Run for Matterwick
+        id: refresh
         uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9.0.0
         with:
           github-token: ${{ secrets.MATTERMOST_BUILD_GH_TOKEN }}
@@ -70,7 +81,7 @@ jobs:
             const prNumber = context.payload.pull_request.number;
             const runLabels = ['E2E/Run', 'E2E/Run-iOS', 'E2E/Run-Android'];
 
-            const {data: labels} = await github.rest.issues.listLabelsOnIssue({
+            const labels = await github.paginate(github.rest.issues.listLabelsOnIssue, {
               owner, repo, issue_number: prNumber,
             });
             const labelNames = labels.map((label) => label.name);
@@ -91,6 +102,9 @@ jobs:
                   }
                 }
               }
+              // Signal the re-post step to carry the override onto this new commit,
+              // whose SHA has no e2e-test/* statuses yet (statuses are keyed by SHA).
+              core.setOutput('e2e_override', 'true');
               return;
             }
 
@@ -114,12 +128,39 @@ jobs:
               labels: ['E2E/Run'],
             });
 
+  # Override is SHA-scoped: a commit pushed after the label was applied has no
+  # e2e-test/* statuses, so a required check would block it. Matterwick is not
+  # dispatched (run labels were stripped), so re-post the bypass on the new head
+  # SHA. Idempotent with the label-manager's `labeled` post.
+  #
+  # Separate job on purpose. Checking out the PR and running a local action means
+  # running PR-authored code, so it must not share a runner with the step that
+  # receives MATTERMOST_BUILD_GH_TOKEN. This job holds no secret and only the two
+  # permissions the status post needs.
+  repost-override-status:
+    needs: refresh-e2e-run-label
+    if: needs.refresh-e2e-run-label.outputs.e2e_override == 'true'
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: read
+      statuses: write
+    steps:
+      - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
+        with:
+          persist-credentials: false
+
+      - name: Re-post E2E/Override success on new commit
+        uses: ./.github/actions/e2e-override-status
+        with:
+          commit_sha: ${{ github.event.pull_request.head.sha }}
+          target_url: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+
   add-e2e-run-label:
     if: >-
       github.event.action == 'opened'
       && github.event.pull_request.base.ref == 'main'
       && github.event.pull_request.head.repo.full_name == github.repository
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-24.04
     permissions:
       issues: write
       pull-requests: write
@@ -134,7 +175,7 @@ jobs:
             const prNumber = context.payload.pull_request.number;
             const runLabels = ['E2E/Run', 'E2E/Run-iOS', 'E2E/Run-Android'];
 
-            const {data: labels} = await github.rest.issues.listLabelsOnIssue({
+            const labels = await github.paginate(github.rest.issues.listLabelsOnIssue, {
               owner, repo, issue_number: prNumber,
             });
             const labelNames = labels.map((label) => label.name);
@@ -171,16 +212,17 @@ jobs:
             });
 
   e2e-label-manager:
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-24.04
     permissions:
       issues: write
       pull-requests: write
-      actions: write
       statuses: write
     steps:
       - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
+        with:
+          persist-credentials: false
 
-      # ── Honor E2E/Override: strip run labels + cancel in-flight E2E ─────────
+      # ── Honor E2E/Override: strip run labels, never cancel in-flight E2E ────
       - name: Honor E2E/Override
         if: >-
           github.event.action == 'labeled'
@@ -209,13 +251,60 @@ jobs:
               }
             }
 
-      - name: Cancel in-progress E2E runs
+      # Override means "merge without E2E results", so every required context has to
+      # go green on the PR head SHA — whether E2E never ran, already failed, or is
+      # still running. Statuses are keyed by SHA, so this also clears earlier failures.
+      - name: Publish success on required E2E contexts
         if: >-
           github.event.pull_request.head.repo.full_name == github.repository
           && github.event.action == 'labeled'
           && github.event.label.name == 'E2E/Override'
-        uses: ./.github/actions/cancel-e2e-runs
+        uses: ./.github/actions/e2e-override-status
         with:
-          head_branch: ${{ github.event.pull_request.head.ref }}
-          pr_number: ${{ github.event.pull_request.number }}
-          reason: E2E cancelled (E2E/Override label applied)
+          commit_sha: ${{ github.event.pull_request.head.sha }}
+          target_url: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+
+      # Taking the escape hatch away must re-block the PR: without this the
+      # success posted above would linger on the head SHA forever.
+      - name: Reset required E2E contexts when E2E/Override is removed
+        if: >-
+          github.event.pull_request.head.repo.full_name == github.repository
+          && github.event.action == 'unlabeled'
+          && github.event.label.name == 'E2E/Override'
+        uses: ./.github/actions/e2e-override-status
+        with:
+          commit_sha: ${{ github.event.pull_request.head.sha }}
+          state: pending
+          description: E2E/Override removed — re-run E2E for a real result
+          target_url: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+
+      # E2E/Verified is a narrower waiver than E2E/Override: a maintainer has read
+      # a real failure and judged it flaky, so only the currently-failing
+      # e2e-test/* contexts are marked success — a platform that is actually
+      # green is left alone.
+      - name: Publish success on flaky-verified E2E contexts
+        if: >-
+          github.event.pull_request.head.repo.full_name == github.repository
+          && github.event.action == 'labeled'
+          && github.event.label.name == 'E2E/Verified'
+        uses: ./.github/actions/e2e-verified-status
+        with:
+          commit_sha: ${{ github.event.pull_request.head.sha }}
+          mode: apply
+          actor: ${{ github.event.sender.login }}
+          target_url: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+
+      # Reset exactly what apply touched (matched by the marker in its own
+      # description), not every required context — a platform that was never
+      # verified must not be blanked back to pending just because the label
+      # was removed.
+      - name: Reset E2E contexts verified flaky when E2E/Verified is removed
+        if: >-
+          github.event.pull_request.head.repo.full_name == github.repository
+          && github.event.action == 'unlabeled'
+          && github.event.label.name == 'E2E/Verified'
+        uses: ./.github/actions/e2e-verified-status
+        with:
+          commit_sha: ${{ github.event.pull_request.head.sha }}
+          mode: reset
+          target_url: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}

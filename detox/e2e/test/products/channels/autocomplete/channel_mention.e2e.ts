@@ -25,7 +25,7 @@ import {
     ServerScreen,
 } from '@support/ui/screen';
 import {getRandomId, timeouts, wait} from '@support/utils';
-import {expect} from 'detox';
+import {expect, waitFor} from 'detox';
 
 describe('Autocomplete - Channel Mention', () => {
     const serverOneDisplayName = 'Server 1';
@@ -34,13 +34,17 @@ describe('Autocomplete - Channel Mention', () => {
     let testOtherChannel: any;
     let testTeam: any;
     let channelMentionAutocomplete: any;
+    let channelMentionAutocompleteDisplayName: any;
     let otherChannelMentionAutocomplete: any;
 
     beforeAll(async () => {
         const {channel, team, user} = await Setup.apiInit(siteOneUrl);
         testChannel = channel;
         testTeam = team;
-        ({channelMentionItem: channelMentionAutocomplete} = Autocomplete.getChannelMentionItem(testChannel.name));
+        ({
+            channelMentionItem: channelMentionAutocomplete,
+            channelMentionItemChannelDisplayName: channelMentionAutocompleteDisplayName,
+        } = Autocomplete.getChannelMentionItem(testChannel.name));
 
         ({channel: testOtherChannel} = await Channel.apiCreateChannel(siteOneUrl, {teamId: testTeam.id}));
         if (!testOtherChannel?.id) {
@@ -197,6 +201,41 @@ describe('Autocomplete - Channel Mention', () => {
 
         // * Verify channel mention autocomplete does not contain associated channel suggestion
         await expect(channelMentionAutocomplete).not.toExist();
+    });
+
+    it('MM-T4879_7 - should be able to select channel mention multiple times', async () => {
+        // # Type "~" in the post input to activate channel mention autocomplete
+        await expect(Autocomplete.sectionChannelMentionList).not.toExist();
+        await ChannelScreen.postInput.typeText('~');
+        await Autocomplete.toBeVisible();
+
+        // * Verify channel mention list is displayed
+        await expect(Autocomplete.sectionChannelMentionList).toExist();
+
+        // # Type in channel name and tap on channel mention autocomplete
+        await ChannelScreen.postInput.typeText(testChannel.name);
+
+        // iOS: the row is on screen but fails the default 100% visibility check, so wait for
+        // partial visibility while the keyboard and list animate.
+        await waitFor(channelMentionAutocomplete).toBeVisible(40).withTimeout(timeouts.TEN_SEC);
+
+        // iOS: ChannelItem's container View has no backgroundColor, so Detox rejects every
+        // coordinate tap on the row. Tap the display-name Text, as ChannelListScreen.open does.
+        await channelMentionAutocompleteDisplayName.tap();
+
+        // * Verify channel mention list disappears
+        // On iOS 26 the dropdown can stay open until a trailing space settles autocomplete state.
+        await ChannelScreen.postInput.typeText(' ');
+        await waitFor(Autocomplete.sectionChannelMentionList).not.toExist().withTimeout(timeouts.TEN_SEC);
+
+        // # Clear the input (which now contains the inserted channel mention text),
+        // then re-activate channel mention list by typing "~".
+        await ChannelScreen.postInput.clearText();
+        await ChannelScreen.postInput.typeText('~');
+        await Autocomplete.toBeVisible();
+
+        // * Verify channel mention list is displayed
+        await expect(Autocomplete.sectionChannelMentionList).toExist();
     });
 
     it('MM-T4879_8 - should be able to autocomplete archived channel', async () => {

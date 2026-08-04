@@ -32,18 +32,8 @@ appId: ${MAESTRO_APP_ID}
 - waitForAnimationToEnd:
     timeout: 3000
 
-- runFlow:
-    when:
-      visible:
-        id: "calls.current_call_bar"
-    commands:
-      - tapOn:
-          id: "calls.current_call_bar"
-
-- extendedWaitUntil:
-    visible:
-      id: "mute-unmute"
-    timeout: 30000
+# Expand the call bar into the full call screen (retries the tap; see subflow header).
+- runFlow: ../../subflows/calls/open_call_screen.yml
 - takeScreenshot: calls-leave-full-screen-before-leave
 
 - tapOn:
@@ -60,6 +50,47 @@ appId: ${MAESTRO_APP_ID}
 
 # ── Path 2: Leave from the minimized CurrentCallBar ─────────────────────────
 
+# CI bc6df62 Android (maestro-android): Path 1 leave succeeded and landed on the
+# channel list (calls-leave-full-screen-after-leave), then navigate_to_channel
+# timed out on channel.post_draft.post.input (30s). Re-anchor on Home before
+# re-entering the channel so draft is present for Path 2 join.
+- extendedWaitUntil:
+    visible:
+      id: "tab_bar.home.tab"
+    timeout: 20000
+- tapOn:
+    id: "tab_bar.home.tab"
+- waitForAnimationToEnd:
+    timeout: 3000
+# Anchor on the category header, not the channel item: the item is also absent when
+# the CHANNELS category is merely collapsed, and navigate_to_channel already expands
+# it. Keying off the item would relaunch the app for a healthy sidebar and re-enter
+# the cold-start login path this suite is trying to avoid.
+- runFlow:
+    when:
+      notVisible:
+        id: "channel_list.category_header.channels.display_name"
+    commands:
+      # iOS: stopApp:true is safe. Android: stopApp:false — stopApp:true sets the
+      # force-stopped flag and Maestro's subsequent launch intent can fail.
+      - runFlow:
+          when:
+            platform: iOS
+          commands:
+            - launchApp:
+                stopApp: true
+                clearState: false
+      - runFlow:
+          when:
+            platform: Android
+          commands:
+            - launchApp:
+                stopApp: false
+                clearState: false
+      - waitForAnimationToEnd:
+          timeout: 30000
+      # A cold relaunch lands on loading/login, so re-anchor on Home before navigating.
+      - runFlow: ../../subflows/waits/wait_for_home_tab.yml
 - runFlow: ../../subflows/navigation/navigate_to_channel.yml
 
 - runFlow: ../../subflows/calls/join_channel_call.yml
@@ -67,17 +98,7 @@ appId: ${MAESTRO_APP_ID}
 - waitForAnimationToEnd:
     timeout: 3000
 
-- runFlow:
-    when:
-      visible:
-        id: "calls.current_call_bar"
-    commands:
-      - tapOn:
-          id: "calls.current_call_bar"
-- extendedWaitUntil:
-    visible:
-      id: "mute-unmute"
-    timeout: 30000
+- runFlow: ../../subflows/calls/open_call_screen.yml
 
 # Minimize the full call screen back to CurrentCallBar.
 # iOS 26+: Maestro `back` triggers leave-call confirmation — do not use it here.
@@ -91,9 +112,20 @@ appId: ${MAESTRO_APP_ID}
       visible:
         id: "mute-unmute"
     commands:
-      - launchApp:
-          stopApp: true
-          clearState: false
+      - runFlow:
+          when:
+            platform: iOS
+          commands:
+            - launchApp:
+                stopApp: true
+                clearState: false
+      - runFlow:
+          when:
+            platform: Android
+          commands:
+            - launchApp:
+                stopApp: false
+                clearState: false
       - waitForAnimationToEnd:
           timeout: 30000
       - runFlow:
