@@ -73,6 +73,37 @@ describe('PlaybookRunModel', () => {
 
             expect(runModel.timelineEvents).toEqual([validEvent]);
         });
+
+        it('returns the same array until the stored events change', async () => {
+            const run = TestHelper.createPlaybookRuns(1, 0, 0, true)[0];
+            await operator.handlePlaybookRun({runs: [run], prepareRecordsOnly: false, processChildren: true});
+            const runModel = await operator.database.get<PlaybookRunModel>(PLAYBOOK_RUN).find(run.id);
+
+            // Consumers pass this array to withObservables as a trigger prop, so a stable reference
+            // is part of the contract: re-reading it must not invalidate their subscriptions.
+            const firstRead = runModel.timelineEvents;
+            expect(runModel.timelineEvents).toBe(firstRead);
+
+            await operator.database.write(async () => {
+                await runModel.update((record) => {
+                    (record._raw as unknown as Record<string, string>).timeline_events = JSON.stringify([{
+                        id: 'event-1',
+                        playbook_run_id: run.id,
+                        create_at: 1,
+                        event_at: 1000,
+                        event_type: 'task_state_modified',
+                        summary: '',
+                        details: '{"action":"check"}',
+                        post_id: '',
+                        subject_user_id: 'user-1',
+                        creator_user_id: 'user-1',
+                    }]);
+                });
+            });
+
+            expect(runModel.timelineEvents).not.toBe(firstRead);
+            expect(runModel.timelineEvents).toHaveLength(1);
+        });
     });
 
     describe('prepareDestroyWithRelations', () => {

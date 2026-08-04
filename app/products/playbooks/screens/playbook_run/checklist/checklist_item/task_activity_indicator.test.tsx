@@ -5,7 +5,7 @@ import React from 'react';
 
 import BaseChip from '@components/chips/base_chip';
 import ProfilePicture from '@components/profile_picture';
-import {renderWithIntl} from '@test/intl-test-helper';
+import {fireEvent, renderWithIntl} from '@test/intl-test-helper';
 import TestHelper from '@test/test_helper';
 
 import TaskActivityIndicator from './task_activity_indicator';
@@ -60,15 +60,17 @@ describe('TaskActivityIndicator', () => {
         const icon = getByTestId('playbook_run.checklist_item.task_activity.icon');
 
         // The accessibility label keeps the full verb, actor, and absolute time even though the
-        // visible chip only shows the compact relative time.
+        // visible chip only shows the compact relative time. It sits on the pressable itself so that
+        // a screen reader announces and can activate the same element.
         expect(activity.props.accessibilityLabel).toContain('Checked by alex');
         expect(activity.props.accessibilityLabel).toContain('Jul 21, 2026');
+        expect(activity.props.accessibilityRole).toBe('button');
         expect(chip.props.label).toBe('2h ago');
         expect(chip.props.label).not.toContain('Checked');
         expect(icon.props.children).toContain(CHECK_GLYPH);
         expect(getByTestId('playbook_run.checklist_item.task_activity.avatar')).toBeVisible();
 
-        chip.props.onPress();
+        fireEvent.press(activity);
         expect(onActorPress).toHaveBeenCalledWith(actor.id);
     });
 
@@ -86,8 +88,13 @@ describe('TaskActivityIndicator', () => {
         const chip = getByTestId('playbook_run.checklist_item.task_activity.chip');
         expect(chip.props.label).toBe('2h ago');
         expect(chip.props.label).not.toContain('Unchecked');
-        expect(chip.props.onPress).toBeUndefined();
         expect(queryByTestId('playbook_run.checklist_item.task_activity.avatar')).toBeNull();
+
+        // With nobody to open a profile for, the chip is only an announced group and not a button.
+        const activity = getByTestId('playbook_run.checklist_item.task_activity');
+        expect(activity.props.accessible).toBe(true);
+        expect(activity.props.accessibilityLabel).toContain('Unchecked');
+        expect(activity.props.accessibilityRole).toBeUndefined();
     });
 
     const actionCases: Array<[TaskActivityAction, string]> = [
@@ -126,12 +133,14 @@ describe('TaskActivityIndicator', () => {
             />,
         );
 
-        expect(getByTestId('playbook_run.checklist_item.task_activity.detail_icon').props.children).toContain(GLYPHS[action]);
+        // The icon repeats the verb the row already spells out, so it is hidden from accessibility.
+        expect(getByTestId('playbook_run.checklist_item.task_activity.detail_icon', {includeHiddenElements: true}).props.children).toContain(GLYPHS[action]);
         expect(getByText(`${verb} 2 hours ago`)).toBeVisible();
     });
 
     it('shows who, relative time, and absolute time in the detail row', () => {
-        const {getByTestId, getByText} = renderWithIntl(
+        const onActorPress = jest.fn();
+        const {getByLabelText, getByTestId, getByText, queryByTestId} = renderWithIntl(
             <TaskActivityIndicator
                 activity={{action: 'check', actorUserId: actor.id, timestamp}}
                 actor={actor}
@@ -139,6 +148,7 @@ describe('TaskActivityIndicator', () => {
                 timezone=''
                 isMilitaryTime={false}
                 variant='detail'
+                onActorPress={onActorPress}
             />,
         );
 
@@ -146,6 +156,18 @@ describe('TaskActivityIndicator', () => {
         expect(getByText('Checked 2 hours ago')).toBeVisible();
         expect(getByText('alex')).toBeVisible();
         expect(getByText(/Jul 21, 2026 at/)).toBeVisible();
+
+        // The three lines are announced as one label, while the actor avatar stays a reachable
+        // button of its own rather than being collapsed into that label.
+        expect(getByLabelText(/^Checked by alex, 2 hours ago, Jul 21, 2026 at/)).toBeVisible();
+        expect(queryByTestId('playbook_run.checklist_item.task_activity.detail_icon')).toBeNull();
+
+        const actorButton = getByTestId('playbook_run.checklist_item.task_activity.actor_button');
+        expect(actorButton.props.accessibilityRole).toBe('button');
+        expect(actorButton.props.accessibilityLabel).toBe('View profile of alex');
+
+        fireEvent.press(actorButton);
+        expect(onActorPress).toHaveBeenCalledWith(actor.id);
     });
 
     it('renders the absolute time in the provided timezone, not UTC', () => {

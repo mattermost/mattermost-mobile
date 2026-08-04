@@ -2,7 +2,7 @@
 // See LICENSE.txt for license information.
 
 import {withDatabase, withObservables} from '@nozbe/watermelondb/react';
-import {of as of$, switchMap} from 'rxjs';
+import {of as of$, shareReplay, switchMap} from 'rxjs';
 import {map} from 'rxjs/operators';
 
 import {General, Preferences} from '@constants';
@@ -35,8 +35,18 @@ const enhanced = withObservables(['item', 'channelId', 'timelineEvents'], ({item
     const channelType = observeChannel(database, channelId).pipe(switchMap((c) => of$(c?.type || General.OPEN_CHANNEL)));
 
     if ('observe' in item) {
-        const observedItem = item.observe();
-        const activity = observedItem.pipe(map((i) => getTaskActivity(i, timelineEvents)));
+        // Shared because the item is handed to the component and derived into the activity and the
+        // assignee below, and each of those would otherwise observe the record on its own.
+        const observedItem = item.observe().pipe(
+            shareReplay({bufferSize: 1, refCount: true}),
+        );
+
+        // Shared because it is both handed to the component and piped into activityActor below;
+        // without it the item would be observed twice and the activity resolved twice per change.
+        const activity = observedItem.pipe(
+            map((i) => getTaskActivity(i, timelineEvents)),
+            shareReplay({bufferSize: 1, refCount: true}),
+        );
 
         // We don't use assignee query  from the model because if it cannot find the user
         // it will throw an error.

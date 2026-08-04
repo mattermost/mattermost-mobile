@@ -31,10 +31,24 @@ describe('ChecklistItemBottomSheet Enhanced Component', () => {
     let database: Database;
     let operator: ServerDataOperator;
 
+    const timelineEvent: TimelineEvent = {
+        id: 'event-1',
+        playbook_run_id: 'run-1',
+        create_at: 1000,
+        event_at: 1000,
+        event_type: 'task_state_modified',
+        summary: '',
+        details: JSON.stringify({action: 'check', item_id: 'item-1'}),
+        post_id: '',
+        subject_user_id: 'activity-actor',
+        creator_user_id: 'activity-actor',
+    };
+
     function getBaseProps(): ComponentProps<typeof ChecklistItemBottomSheet> {
         return {
             item: TestHelper.fakePlaybookChecklistItem('checklist-id', {id: 'item-1'}),
             runId: 'run-1',
+            timelineEvents: [],
             checklistNumber: 1,
             itemNumber: 1,
             channelId: 'channel-1',
@@ -140,6 +154,43 @@ describe('ChecklistItemBottomSheet Enhanced Component', () => {
             });
         });
 
+        it('should resolve the task activity from the run and follow the item while open', async () => {
+            const rawItem = TestHelper.fakePlaybookChecklistItem('checklist-id', {id: 'item-1', state: 'closed', state_modified: 1000});
+            const rawRun = TestHelper.fakePlaybookRun({id: 'run-1', timeline_events: [timelineEvent]});
+            await addRunToDatabase(rawRun);
+            await addItemToDatabase(rawItem);
+            await addUserToDatabase(TestHelper.fakeUser({id: 'activity-actor'}));
+
+            const item = await getPlaybookChecklistItemById(database, rawItem.id);
+
+            const props = getBaseProps();
+            props.runId = rawRun.id;
+            props.item = item!;
+
+            const {getByTestId} = renderWithEverything(<ChecklistItemBottomSheet {...props}/>, {database});
+
+            const bottomSheet = getByTestId('checklist_item_bottom_sheet');
+            await waitFor(() => {
+                expect(bottomSheet).toHaveProp('activity', {action: 'check', actorUserId: 'activity-actor', timestamp: 1000});
+                expect(bottomSheet).toHaveProp('activityActor', expect.objectContaining({id: 'activity-actor'}));
+            });
+
+            // The task being unchecked elsewhere has to reach the open sheet.
+            await act(async () => {
+                await database.write(async () => {
+                    await item?.update((i) => {
+                        i.state = '';
+                        i.stateModified = 2000;
+                    });
+                });
+            });
+
+            await waitFor(() => {
+                expect(bottomSheet).toHaveProp('activity', {action: 'uncheck', actorUserId: undefined, timestamp: 2000});
+                expect(bottomSheet.props.activityActor).toBeUndefined();
+            });
+        });
+
         it('should handle missing run correctly', async () => {
             const rawItem = TestHelper.fakePlaybookChecklistItem('checklist-id', {id: 'item-1', assignee_id: 'user-1'});
             await addItemToDatabase(rawItem);
@@ -229,6 +280,22 @@ describe('ChecklistItemBottomSheet Enhanced Component', () => {
             expect(bottomSheet).toHaveProp('assignee', expect.objectContaining({id: 'user-1'}));
             expect(bottomSheet).toHaveProp('currentUserTimezone', expect.objectContaining({useAutomaticTimezone: false, manualTimezone: 'America/New_York', automaticTimezone: 'America/New_York'}));
             expect(bottomSheet).toHaveProp('participantIds', []);
+        });
+
+        it('should resolve the task activity from the given timeline events', async () => {
+            await addUserToDatabase(TestHelper.fakeUser({id: 'activity-actor'}));
+
+            const props = getBaseProps();
+            props.item = TestHelper.fakePlaybookChecklistItem('checklist-id', {id: 'item-1', state: 'closed', state_modified: 1000});
+            props.timelineEvents = [timelineEvent];
+
+            const {getByTestId} = renderWithEverything(<ChecklistItemBottomSheet {...props}/>, {database});
+
+            const bottomSheet = getByTestId('checklist_item_bottom_sheet');
+            await waitFor(() => {
+                expect(bottomSheet).toHaveProp('activity', {action: 'check', actorUserId: 'activity-actor', timestamp: 1000});
+                expect(bottomSheet).toHaveProp('activityActor', expect.objectContaining({id: 'activity-actor'}));
+            });
         });
 
         it('should handle assigneeId changes through observable', async () => {

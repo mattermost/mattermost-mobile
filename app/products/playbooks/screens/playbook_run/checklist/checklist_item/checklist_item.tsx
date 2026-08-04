@@ -88,6 +88,11 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => ({
 
 type Props = {
     item: PlaybookChecklistItemModel | PlaybookChecklistItem;
+
+    /**
+     * Only forwarded to the bottom sheet, which resolves its own activity so that it keeps updating
+     * while it is open. The row's own chip uses the resolved activity below.
+     */
     timelineEvents: TimelineEvent[];
     activity?: TaskActivity;
     activityActor?: UserModel;
@@ -106,6 +111,7 @@ type Props = {
 
 const ChecklistItem = ({
     item,
+    timelineEvents,
     activity,
     activityActor,
     assignee,
@@ -250,8 +256,7 @@ const ChecklistItem = ({
             conditionReason={conditionReason}
             showConditionIcon={showConditionIcon}
             conditionIconColor={iconColor}
-            activity={activity}
-            activityActor={activityActor}
+            timelineEvents={timelineEvents}
         />
     ), [
         playbookRunId,
@@ -267,8 +272,7 @@ const ChecklistItem = ({
         conditionReason,
         showConditionIcon,
         iconColor,
-        activity,
-        activityActor,
+        timelineEvents,
     ]);
 
     const onPress = useCallback(() => {

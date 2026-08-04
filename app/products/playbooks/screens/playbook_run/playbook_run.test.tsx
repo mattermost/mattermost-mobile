@@ -89,6 +89,19 @@ jest.mock('@screens/navigation');
 jest.mock('@utils/navigation');
 jest.mock('@hooks/android_back_handler');
 
+const timelineEvent: TimelineEvent = {
+    id: 'event-1',
+    playbook_run_id: 'run-1',
+    create_at: 1000,
+    event_at: 1000,
+    event_type: 'task_state_modified',
+    summary: '',
+    details: '{"action":"check"}',
+    post_id: '',
+    subject_user_id: 'user-1',
+    creator_user_id: 'user-1',
+};
+
 describe('PlaybookRun', () => {
     let database: Database;
 
@@ -108,6 +121,7 @@ describe('PlaybookRun', () => {
             summary: 'Test summary',
             endAt: 0, // Not finished
             lastSyncAt: 12345,
+            timelineEvents: [timelineEvent],
         });
 
         const mockOwner = TestHelper.fakeUserModel({
@@ -307,7 +321,7 @@ describe('PlaybookRun', () => {
 
         const checklistList = getByTestId('checklist-list');
         expect(checklistList.props.checklists).toBe(props.checklists);
-        expect(checklistList.props.timelineEvents).toBe((props.playbookRun as PlaybookRunModel).timelineEvents);
+        expect(checklistList.props.timelineEvents).toEqual([timelineEvent]);
         expect(checklistList.props.channelId).toBe((props.playbookRun as PlaybookRunModel).channelId);
         expect(checklistList.props.playbookRunId).toBe(props.playbookRun!.id);
         expect(checklistList.props.isFinished).toBe(false);

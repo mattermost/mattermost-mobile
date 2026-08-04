@@ -11,7 +11,10 @@ import {getFriendlyDate} from '@components/friendly_date';
 import PressableOpacity from '@components/pressable_opacity';
 import ProfilePicture from '@components/profile_picture';
 import {useTheme} from '@context/theme';
+import {getFullErrorMessage} from '@utils/errors';
+import {logDebug} from '@utils/log';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
+import {getFormattedTime} from '@utils/time';
 import {typography} from '@utils/typography';
 import {displayUsername} from '@utils/user';
 
@@ -27,6 +30,31 @@ const ACTION_ICONS: Record<TaskActivityAction, CompassIconName> = {
     skip: 'close',
     restore: 'refresh',
 };
+
+const ABSOLUTE_DATE_FORMAT: Intl.DateTimeFormatOptions = {year: 'numeric', month: 'short', day: 'numeric'};
+
+const messages = defineMessages({
+    absoluteTime: {
+        id: 'playbooks.checklist_item.activity.absolute_time',
+        defaultMessage: '{date} at {time}',
+    },
+    summary: {
+        id: 'playbooks.checklist_item.activity.summary',
+        defaultMessage: '{action} {time}',
+    },
+    accessibility: {
+        id: 'playbooks.checklist_item.activity.accessibility',
+        defaultMessage: '{action} {relativeTime}, {absoluteTime}',
+    },
+    accessibilityActor: {
+        id: 'playbooks.checklist_item.activity.accessibility_actor',
+        defaultMessage: '{action} by {actor}, {relativeTime}, {absoluteTime}',
+    },
+    viewProfile: {
+        id: 'playbooks.checklist_item.activity.view_profile',
+        defaultMessage: 'View profile of {actor}',
+    },
+});
 
 const actionMessages = defineMessages({
     check: {
@@ -81,15 +109,20 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => ({
     },
 }));
 
-export const getTaskActivityAbsoluteTime = (intl: IntlShape, timestamp: number, timeZone?: string, isMilitaryTime?: boolean) => {
-    // Without an explicit timeZone, formatDate/formatTime fall back to the engine default (UTC on
-    // React Native), showing the wrong local time/date. Callers pass the user's resolved timezone.
-    const date = intl.formatDate(timestamp, {year: 'numeric', month: 'short', day: 'numeric', timeZone: timeZone || undefined});
-    const time = intl.formatTime(timestamp, {hour: 'numeric', minute: '2-digit', hour12: !isMilitaryTime, timeZone: timeZone || undefined});
-    return intl.formatMessage({
-        id: 'playbooks.checklist_item.activity.absolute_time',
-        defaultMessage: '{date} at {time}',
-    }, {date, time});
+const getTaskActivityAbsoluteTime = (intl: IntlShape, timestamp: number, timeZone: string, isMilitaryTime: boolean) => {
+    // Without an explicit timeZone, the formatters fall back to the engine default (UTC on React
+    // Native), showing the wrong local time/date. Callers pass the user's resolved timezone.
+    let date;
+    try {
+        date = new Intl.DateTimeFormat(intl.locale, {...ABSOLUTE_DATE_FORMAT, timeZone: timeZone || undefined}).format(timestamp);
+    } catch (error) {
+        // A timezone the engine does not know would otherwise leave us with a raw JS date string.
+        logDebug('getTaskActivityAbsoluteTime failed to format the date', getFullErrorMessage(error));
+        date = new Intl.DateTimeFormat(intl.locale, ABSOLUTE_DATE_FORMAT).format(timestamp);
+    }
+
+    const time = getFormattedTime(isMilitaryTime, timeZone, timestamp);
+    return intl.formatMessage(messages.absoluteTime, {date, time});
 };
 
 type Props = {
@@ -112,17 +145,8 @@ const TaskActivityIndicator = ({activity, actor, teammateNameDisplay, timezone, 
     const actionLabel = intl.formatMessage(actionMessages[activity.action]);
     const actionIcon = ACTION_ICONS[activity.action];
     const actorName = actor ? displayUsername(actor, intl.locale, teammateNameDisplay) : undefined;
-    const conciseLabel = intl.formatMessage({
-        id: 'playbooks.checklist_item.activity.summary',
-        defaultMessage: '{action} {time}',
-    }, {action: actionLabel, time: relativeTime});
-    const accessibilityLabel = actorName ? intl.formatMessage({
-        id: 'playbooks.checklist_item.activity.accessibility_actor',
-        defaultMessage: '{action} by {actor}, {relativeTime}, {absoluteTime}',
-    }, {action: actionLabel, actor: actorName, relativeTime, absoluteTime}) : intl.formatMessage({
-        id: 'playbooks.checklist_item.activity.accessibility',
-        defaultMessage: '{action} {relativeTime}, {absoluteTime}',
-    }, {action: actionLabel, relativeTime, absoluteTime});
+    const conciseLabel = intl.formatMessage(messages.summary, {action: actionLabel, time: relativeTime});
+    const accessibilityLabel = actorName ? intl.formatMessage(messages.accessibilityActor, {action: actionLabel, actor: actorName, relativeTime, absoluteTime}) : intl.formatMessage(messages.accessibility, {action: actionLabel, relativeTime, absoluteTime});
     const handlePress = useCallback(() => {
         if (actor) {
             onActorPress?.(actor.id);
@@ -139,17 +163,40 @@ const TaskActivityIndicator = ({activity, actor, teammateNameDisplay, timezone, 
     ) : undefined), [actor]);
 
     if (variant === 'chip') {
-        const prefix = (
-            <View style={styles.chipPrefix}>
-                <CompassIcon
-                    name={actionIcon}
-                    size={14}
-                    style={styles.chipIcon}
-                    testID={`${TEST_ID}.icon`}
-                />
-                {avatar}
-            </View>
+        // The icon and the avatar only repeat what the label already says, so they are grouped into
+        // the single element that carries the label instead of being announced on their own.
+        const chip = (
+            <BaseChip
+                testID={`${TEST_ID}.chip`}
+                label={compactTime}
+                prefix={
+                    <View style={styles.chipPrefix}>
+                        <CompassIcon
+                            name={actionIcon}
+                            size={14}
+                            style={styles.chipIcon}
+                            testID={`${TEST_ID}.icon`}
+                        />
+                        {avatar}
+                    </View>
+                }
+            />
         );
+
+        // The press target has to be the element that carries the label, otherwise a screen reader
+        // focuses the group and has no way to reach the chip inside it.
+        if (actor && onActorPress) {
+            return (
+                <PressableOpacity
+                    onPress={handlePress}
+                    accessibilityRole='button'
+                    accessibilityLabel={accessibilityLabel}
+                    testID={TEST_ID}
+                >
+                    {chip}
+                </PressableOpacity>
+            );
+        }
 
         return (
             <View
@@ -157,20 +204,13 @@ const TaskActivityIndicator = ({activity, actor, teammateNameDisplay, timezone, 
                 accessibilityLabel={accessibilityLabel}
                 testID={TEST_ID}
             >
-                <BaseChip
-                    testID={`${TEST_ID}.chip`}
-                    label={compactTime}
-                    prefix={prefix}
-                    onPress={actor && onActorPress ? handlePress : undefined}
-                />
+                {chip}
             </View>
         );
     }
 
     return (
         <View
-            accessible={true}
-            accessibilityLabel={accessibilityLabel}
             style={styles.detailRow}
             testID={`${TEST_ID}.detail`}
         >
@@ -179,8 +219,14 @@ const TaskActivityIndicator = ({activity, actor, teammateNameDisplay, timezone, 
                 size={24}
                 color={changeOpacity(theme.centerChannelColor, 0.56)}
                 testID={`${TEST_ID}.detail_icon`}
+                accessibilityElementsHidden={true}
+                importantForAccessibility='no-hide-descendants'
             />
-            <View style={styles.detailText}>
+            <View
+                accessible={true}
+                accessibilityLabel={accessibilityLabel}
+                style={styles.detailText}
+            >
                 <Text style={styles.detailLabel}>{conciseLabel}</Text>
                 {actorName && <Text style={styles.detailInfo}>{actorName}</Text>}
                 <Text style={styles.detailDate}>{absoluteTime}</Text>
@@ -188,6 +234,8 @@ const TaskActivityIndicator = ({activity, actor, teammateNameDisplay, timezone, 
             {avatar && onActorPress ? (
                 <PressableOpacity
                     onPress={handlePress}
+                    accessibilityRole='button'
+                    accessibilityLabel={intl.formatMessage(messages.viewProfile, {actor: actorName})}
                     testID={`${TEST_ID}.actor_button`}
                 >
                     {avatar}

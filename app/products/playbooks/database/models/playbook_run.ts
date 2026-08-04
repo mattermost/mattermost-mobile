@@ -118,8 +118,15 @@ export default class PlaybookRunModel extends Model implements PlaybookRunModelI
     /** participant_ids : An array of user IDs that participate in the run */
     @json('participant_ids', safeParseJSONStringArray) participantIds!: string[];
 
-    /** timeline_events : The latest run timeline events */
-    @json('timeline_events', safeParseTimelineEvents) timelineEvents!: TimelineEvent[];
+    /**
+     * timeline_events : The latest run timeline events.
+     *
+     * Memoized on the stored JSON string: the events are handed to `withObservables` as a trigger
+     * prop by the checklist items, so a fresh array on every read would tear down and recreate every
+     * item's observables on every render of the run screen. The cache key is the raw column value,
+     * so a refreshed run still yields a new array and keeps the consumers reactive.
+     */
+    @json('timeline_events', safeParseTimelineEvents, {memo: true}) timelineEvents!: TimelineEvent[];
 
     /** summary : Summary of the playbook run */
     @field('summary') summary!: string;

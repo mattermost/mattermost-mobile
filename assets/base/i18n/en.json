@@ -1202,6 +1202,7 @@
   "playbooks.checklist_item.activity.skipped": "Skipped",
   "playbooks.checklist_item.activity.summary": "{action} {time}",
   "playbooks.checklist_item.activity.unchecked": "Unchecked",
+  "playbooks.checklist_item.activity.view_profile": "View profile of {actor}",
   "playbooks.checklist_item.add.button": "New",
   "playbooks.checklist_item.add.description_label": "Description",
   "playbooks.checklist_item.add.label": "Task name",
