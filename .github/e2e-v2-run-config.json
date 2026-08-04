@@ -17,5 +17,5 @@
   "pr_number": "10006",
   "run_type": "PR",
   "enabled": true,
-  "rerun_note": "filter: about.e2e + custom_status.e2e — fix Promise.race orphan interactions in dismissIosSavePasswordIfVisible"
+  "rerun_note": "filter v2: real copies of about.e2e + custom_status.e2e (symlinks skipped by discovery Dirent.isFile)"
 }

@@ -407,8 +407,8 @@ Cloud create/delete (when uncommented) will need whatever Cloud/Matterwick crede
 ## 11. Immediate next actions
 
 1. ~~Stage 0–3 scaffolding + smoke Detox iOS on staging~~ (done; smoke 25p/0f).
-2. **Stage 4 in progress:** widen Detox iOS (`e2e/test`, exclude `ipad`, 10 workers).
-3. After majority green: Stage 5 Detox iPad → Stage 6 Android → Stage 7 Maestro.
+2. **Stage 4:** widen hit Save Password dismiss races (`Promise.race` orphan interactions) in `about.e2e` / `custom_status.e2e`. Filter retest via `e2e/test/ci_filter_failed`, then full suite @ 20 workers.
+3. After 100% green: Stage 5 Detox iPad → Stage 6 Android → Stage 7 Maestro.
 
 ---
 
