@@ -394,8 +394,14 @@ jobs:
       contents: read
       statuses: write
     steps:
+      # Base, not the PR head. `uses: ./.github/actions/...` loads the composite
+      # action from the checked-out workspace, so a PR-head checkout would run
+      # PR-authored action code in a job holding write scopes — and the status
+      # actions also require() detox/utils/build-tsio-job-config.js from it.
+      # Nothing here needs PR content: the SHAs come from the event payload.
       - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
         with:
+          ref: ${{ github.event.pull_request.base.sha }}
           persist-credentials: false
 
       - name: Post skip status for all E2E contexts
@@ -428,8 +434,14 @@ jobs:
       contents: read
       statuses: write
     steps:
+      # Base, not the PR head. `uses: ./.github/actions/...` loads the composite
+      # action from the checked-out workspace, so a PR-head checkout would run
+      # PR-authored action code in a job holding write scopes — and the status
+      # actions also require() detox/utils/build-tsio-job-config.js from it.
+      # Nothing here needs PR content: the SHAs come from the event payload.
       - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
         with:
+          ref: ${{ github.event.pull_request.base.sha }}
           persist-credentials: false
 
       - name: Re-post E2E/Override success on new commit
@@ -508,8 +520,14 @@ jobs:
       # Override cancels the in-flight run (see the cancel step below).
       actions: write
     steps:
+      # Base, not the PR head. `uses: ./.github/actions/...` loads the composite
+      # action from the checked-out workspace, so a PR-head checkout would run
+      # PR-authored action code in a job holding write scopes — and the status
+      # actions also require() detox/utils/build-tsio-job-config.js from it.
+      # Nothing here needs PR content: the SHAs come from the event payload.
       - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
         with:
+          ref: ${{ github.event.pull_request.base.sha }}
           persist-credentials: false
 
       # ── Honor E2E/Override: strip run labels, then cancel in-flight E2E ─────
@@ -642,7 +660,11 @@ jobs:
           commit_sha: ${{ github.event.pull_request.head.sha }}
           state: pending
           description: E2E/Override removed — re-run E2E for a real result
-          target_url: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+          # No target_url on purpose. These contexts are E2E results, and at this
+          # moment there is no E2E run to link to — pointing Details at this
+          # label-manager run just lands the reader on a labelling job. The E2E
+          # run posts its own link over this as soon as it starts.
+          target_url: ''
 
       # E2E/Verified is a narrower waiver than E2E/Override: a maintainer has read
       # a real failure and judged it flaky, so only the currently-failing
@@ -673,4 +695,5 @@ jobs:
         with:
           commit_sha: ${{ github.event.pull_request.head.sha }}
           mode: reset
-          target_url: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+          # No target_url — same reason as the E2E/Override reset above.
+          target_url: ''
