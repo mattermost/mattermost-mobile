@@ -124,6 +124,7 @@ on:
       - .github/e2e-v2-run-config.json
       - .github/workflows/e2e-v2.yml
       - .github/workflows/e2e-v2-detox-ios.yml
+      - .github/workflows/e2e-v2-detox-android.yml
 
 permissions:
   contents: read
@@ -154,8 +155,10 @@ jobs:
       do_build: ${{ steps.out.outputs.do_build }}
       do_test: ${{ steps.out.outputs.do_test }}
       need_ios_build: ${{ steps.out.outputs.need_ios_build }}
+      need_android_build: ${{ steps.out.outputs.need_android_build }}
       run_detox_ios: ${{ steps.out.outputs.run_detox_ios }}
       run_detox_ipad: ${{ steps.out.outputs.run_detox_ipad }}
+      run_detox_android: ${{ steps.out.outputs.run_detox_android }}
       framework: ${{ steps.out.outputs.framework }}
       platform: ${{ steps.out.outputs.platform }}
       skip_build: ${{ steps.out.outputs.skip_build }}
@@ -258,8 +261,10 @@ jobs:
             echo "do_build=false" >> "$GITHUB_OUTPUT"
             echo "do_test=false" >> "$GITHUB_OUTPUT"
             echo "need_ios_build=false" >> "$GITHUB_OUTPUT"
+            echo "need_android_build=false" >> "$GITHUB_OUTPUT"
             echo "run_detox_ios=false" >> "$GITHUB_OUTPUT"
             echo "run_detox_ipad=false" >> "$GITHUB_OUTPUT"
+            echo "run_detox_android=false" >> "$GITHUB_OUTPUT"
             echo "framework=detox" >> "$GITHUB_OUTPUT"
             echo "platform=ios" >> "$GITHUB_OUTPUT"
             echo "skip_build=false" >> "$GITHUB_OUTPUT"
@@ -304,7 +309,9 @@ jobs:
             fi
             ARTIFACT_RUN_ID="$ARTIFACT_RUN_ID_IN"
           else
-            ARTIFACT_RUN_ID="${ARTIFACT_RUN_ID_IN:-${{ github.run_id }}}"
+            # Builds in this workflow upload under the current run id; do not
+            # reuse a stale artifact_run_id from a prior platform's build.
+            ARTIFACT_RUN_ID="${{ github.run_id }}"
           fi
 
           if [ "$PHASE" = "test" ] && [ -z "$ARTIFACT_RUN_ID_IN" ]; then
@@ -313,10 +320,15 @@ jobs:
           fi
 
           NEED_IOS_BUILD=false
+          NEED_ANDROID_BUILD=false
           RUN_DETOX_IOS=false
           RUN_DETOX_IPAD=false
+          RUN_DETOX_ANDROID=false
           if [ "$DO_BUILD" = "true" ] && echo "$PLATFORM" | grep -Eq '^(ios|ipad|ios_and_ipad|all)$'; then
             NEED_IOS_BUILD=true
+          fi
+          if [ "$DO_BUILD" = "true" ] && echo "$PLATFORM" | grep -Eq '^(android|all)$'; then
+            NEED_ANDROID_BUILD=true
           fi
           if [ "$DO_TEST" = "true" ] && echo "$FRAMEWORK" | grep -Eq '^(detox|both)$'; then
             if echo "$PLATFORM" | grep -Eq '^(ios|ios_and_ipad|all)$'; then
@@ -325,11 +337,21 @@ jobs:
             if echo "$PLATFORM" | grep -Eq '^(ipad|ios_and_ipad|all)$'; then
               RUN_DETOX_IPAD=true
             fi
+            if echo "$PLATFORM" | grep -Eq '^(android|all)$'; then
+              RUN_DETOX_ANDROID=true
+            fi
             if [ "$RUN_DETOX_IOS" = "true" ] || [ "$RUN_DETOX_IPAD" = "true" ]; then
               if [ "$SKIP_BUILD" = "true" ]; then
                 NEED_IOS_BUILD=false
               elif [ "$DO_BUILD" = "true" ]; then
                 NEED_IOS_BUILD=true
+              fi
+            fi
+            if [ "$RUN_DETOX_ANDROID" = "true" ]; then
+              if [ "$SKIP_BUILD" = "true" ]; then
+                NEED_ANDROID_BUILD=false
+              elif [ "$DO_BUILD" = "true" ]; then
+                NEED_ANDROID_BUILD=true
               fi
             fi
           fi
@@ -351,8 +373,10 @@ jobs:
             echo "do_build=${DO_BUILD}"
             echo "do_test=${DO_TEST}"
             echo "need_ios_build=${NEED_IOS_BUILD}"
+            echo "need_android_build=${NEED_ANDROID_BUILD}"
             echo "run_detox_ios=${RUN_DETOX_IOS}"
             echo "run_detox_ipad=${RUN_DETOX_IPAD}"
+            echo "run_detox_android=${RUN_DETOX_ANDROID}"
             echo "framework=${FRAMEWORK}"
             echo "platform=${PLATFORM}"
             echo "skip_build=${SKIP_BUILD}"
@@ -382,7 +406,10 @@ jobs:
             echo "| do_build | \`$DO_BUILD\` |"
             echo "| do_test | \`$DO_TEST\` |"
             echo "| need_ios_build | \`$NEED_IOS_BUILD\` |"
+            echo "| need_android_build | \`$NEED_ANDROID_BUILD\` |"
             echo "| run_detox_ios | \`$RUN_DETOX_IOS\` |"
+            echo "| run_detox_ipad | \`$RUN_DETOX_IPAD\` |"
+            echo "| run_detox_android | \`$RUN_DETOX_ANDROID\` |"
             echo "| staging test-system-io | \`$USE_STAGING\` |"
           } >> "$GITHUB_STEP_SUMMARY"
 
@@ -407,13 +434,23 @@ jobs:
     if: needs.resolve.outputs.enabled == 'true' && needs.resolve.outputs.do_test == 'true'
     runs-on: ubuntu-24.04
     steps:
-      - name: Require iOS URLs when running Detox iOS
-        if: needs.resolve.outputs.run_detox_ios == 'true'
+      - name: Require iOS URLs when running Detox iOS/iPad
+        if: needs.resolve.outputs.run_detox_ios == 'true' || needs.resolve.outputs.run_detox_ipad == 'true'
         env:
           IOS_SITE_1_URL: ${{ needs.resolve.outputs.ios_site_1_url }}
         run: |
           if [ -z "$IOS_SITE_1_URL" ]; then
-            echo "::error::ios_site_1_url is required for Detox iOS tests"
+            echo "::error::ios_site_1_url is required for Detox iOS/iPad tests"
+            exit 1
+          fi
+
+      - name: Require Android URLs when running Detox Android
+        if: needs.resolve.outputs.run_detox_android == 'true'
+        env:
+          ANDROID_SITE_1_URL: ${{ needs.resolve.outputs.android_site_1_url }}
+        run: |
+          if [ -z "$ANDROID_SITE_1_URL" ]; then
+            echo "::error::android_site_1_url is required for Detox Android tests"
             exit 1
           fi
 
@@ -492,6 +529,64 @@ jobs:
             echo "Artifact name: \`e2e-v2-ios-simulator-${{ github.run_id }}\`"
           } >> "$GITHUB_STEP_SUMMARY"
 
+  build-android-detox-v2:
+    name: Build Android Detox APK (v2)
+    needs: [resolve]
+    if: needs.resolve.outputs.enabled == 'true' && needs.resolve.outputs.need_android_build == 'true'
+    runs-on: ubuntu-latest-8-cores
+    permissions:
+      contents: read
+      actions: write
+    env:
+      ORG_GRADLE_PROJECT_jvmargs: -Xmx8g
+    steps:
+      - name: Prune Docker to free up space
+        run: docker system prune -af
+
+      - name: Checkout
+        uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
+        with:
+          ref: ${{ needs.resolve.outputs.mobile_ref }}
+          persist-credentials: false
+
+      - name: Prepare Android Build
+        uses: ./.github/actions/prepare-android-build
+        env:
+          STORE_FILE: ${{ secrets.MM_MOBILE_STORE_FILE }}
+          STORE_ALIAS: ${{ secrets.MM_MOBILE_STORE_ALIAS }}
+          STORE_PASSWORD: ${{ secrets.MM_MOBILE_STORE_PASSWORD }}
+          MATTERMOST_BUILD_GH_TOKEN: ${{ secrets.MATTERMOST_BUILD_GH_TOKEN }}
+
+      - name: Cache Gradle dependencies
+        uses: actions/cache@27d5ce7f107fe9357f9df03efb73ab90386fccae # v5.0.5
+        with:
+          path: /home/runner/.gradle/caches/modules-2/
+          key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
+          restore-keys: ${{ runner.os }}-gradle-
+
+      - name: Detox build
+        run: |
+          cd detox
+          npm ci --prefer-offline --no-audit --no-fund
+          npm run e2e:android-build
+
+      - name: Upload Android Detox build
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: e2e-v2-android-detox-${{ github.run_id }}
+          path: "android/app/build/**/*"
+          if-no-files-found: error
+
+      - name: Record artifact run id
+        run: |
+          {
+            echo "## Android Detox APK artifact"
+            echo ""
+            echo "Set \`skip_build: true\` and \`artifact_run_id: \"${{ github.run_id }}\"\` for Android retests."
+            echo ""
+            echo "Artifact name: \`e2e-v2-android-detox-${{ github.run_id }}\`"
+          } >> "$GITHUB_STEP_SUMMARY"
+
   run-detox-ios-v2:
     name: Detox iOS (orchestrated)
     needs: [resolve, verify-servers, build-ios-simulator-v2]
@@ -548,6 +643,37 @@ jobs:
       ios_device_os_name: iOS 26.2
       ios_site_1_url: ${{ needs.resolve.outputs.ios_site_1_url }}
       ios_site_2_url: ${{ needs.resolve.outputs.ios_site_2_url }}
+      site_3_url: ${{ needs.resolve.outputs.site_3_url }}
+      use_staging_test_system_io: ${{ needs.resolve.outputs.use_staging_test_system_io == 'true' }}
+      run_type: ${{ needs.resolve.outputs.run_type }}
+      pr_number: ${{ needs.resolve.outputs.pr_number }}
+      branch: ${{ needs.resolve.outputs.branch }}
+      commit_sha: ${{ needs.resolve.outputs.commit_sha }}
+      fail_on_test_failures: ${{ needs.resolve.outputs.fail_on_test_failures == 'true' }}
+    secrets:
+      MM_MOBILE_E2E_ADMIN_EMAIL: ${{ secrets.MM_MOBILE_E2E_ADMIN_EMAIL }}
+      MM_MOBILE_E2E_ADMIN_USERNAME: ${{ secrets.MM_MOBILE_E2E_ADMIN_USERNAME }}
+      MM_MOBILE_E2E_ADMIN_PASSWORD: ${{ secrets.MM_MOBILE_E2E_ADMIN_PASSWORD }}
+
+  run-detox-android-v2:
+    name: Detox Android (orchestrated)
+    needs: [resolve, verify-servers, build-android-detox-v2]
+    if: >-
+      always()
+      && needs.resolve.outputs.enabled == 'true'
+      && needs.resolve.outputs.run_detox_android == 'true'
+      && needs.verify-servers.result == 'success'
+      && (needs.build-android-detox-v2.result == 'success' || needs.build-android-detox-v2.result == 'skipped')
+    uses: ./.github/workflows/e2e-v2-detox-android.yml
+    with:
+      mobile_ref: ${{ needs.resolve.outputs.mobile_ref }}
+      artifact_run_id: ${{ needs.resolve.outputs.artifact_run_id }}
+      worker_count: ${{ needs.resolve.outputs.worker_count }}
+      detox_search_path: ${{ needs.resolve.outputs.detox_search_path }}
+      detox_exclude_dir: ipad
+      detox_config: android.emu.debug
+      android_site_1_url: ${{ needs.resolve.outputs.android_site_1_url }}
+      android_site_2_url: ${{ needs.resolve.outputs.android_site_2_url }}
       site_3_url: ${{ needs.resolve.outputs.site_3_url }}
       use_staging_test_system_io: ${{ needs.resolve.outputs.use_staging_test_system_io == 'true' }}
       run_type: ${{ needs.resolve.outputs.run_type }}
