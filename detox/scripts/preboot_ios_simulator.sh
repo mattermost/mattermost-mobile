@@ -14,7 +14,10 @@
 set -euo pipefail
 
 readonly BUNDLE_ID="com.mattermost.rnbeta"
-readonly AUTOFILL_MARKER="mattermost-ci-autofill-v1"
+# v2: also writes Library/UserConfigurationProfiles mirrors + WebUI AutoFillPasswords
+# (v1 only touched ConfigurationProfiles/UserSettings and missed the Effective mirrors
+# Settings.app updates — iOS 18+/26 still showed Passwords.app "Save Password?").
+readonly AUTOFILL_MARKER="mattermost-ci-autofill-v2"
 readonly PREWARM_SECS="${PREBOOT_PREWARM_SECS:-15}"
 readonly REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
 
@@ -45,28 +48,66 @@ boot_and_wait() {
     xcrun simctl bootstatus "$SIMULATOR_ID"
 }
 
+library_effective_plist() {
+    echo "$HOME/Library/Developer/CoreSimulator/Devices/$SIMULATOR_ID/data/Library/UserConfigurationProfiles/EffectiveUserSettings.plist"
+}
+
+library_public_effective_plist() {
+    echo "$HOME/Library/Developer/CoreSimulator/Devices/$SIMULATOR_ID/data/Library/UserConfigurationProfiles/PublicInfo/PublicEffectiveUserSettings.plist"
+}
+
+autofill_key_is_false() {
+    local plist="$1"
+    [ -f "$plist" ] || return 1
+    plutil -extract restrictedBool.allowPasswordAutoFill.value raw "$plist" 2>/dev/null | grep -qi 'false'
+}
+
 autofill_already_configured() {
-    [ -f "$AUTOFILL_STAMP" ] && return 0
-    [ -f "$SETTINGS_PLIST" ] || return 1
-    plutil -extract restrictedBool.allowPasswordAutoFill.value raw "$SETTINGS_PLIST" 2>/dev/null | grep -qi 'false'
+    [ -f "$AUTOFILL_STAMP" ] || return 1
+    autofill_key_is_false "$SETTINGS_PLIST" || return 1
+    autofill_key_is_false "$(library_effective_plist)" || return 1
+    autofill_key_is_false "$(library_public_effective_plist)" || return 1
 }
 
 configure_autofill_offline() {
-    log "Disabling password autofill (simulator shut down)..."
+    log "Disabling password AutoFill / Save Password (simulator shut down)..."
     mkdir -p "$SETTINGS_DIR"
+    mkdir -p "$HOME/Library/Developer/CoreSimulator/Devices/$SIMULATOR_ID/data/Library/UserConfigurationProfiles/PublicInfo"
     if ! (cd "$REPO_ROOT/detox" && node utils/disable_ios_autofill.js --simulator-id "$SIMULATOR_ID"); then
-        echo "Failed to disable password autofill"
+        echo "Failed to disable password autofill / Save Password restrictions"
         exit 1
     fi
     touch "$AUTOFILL_STAMP"
 }
 
 seed_password_defaults() {
-    log "Seeding Passwords.app defaults (best-effort)..."
-    xcrun simctl spawn "$SIMULATOR_ID" defaults write com.apple.Passwords AutoFill -bool NO 2>/dev/null || true
-    xcrun simctl spawn "$SIMULATOR_ID" defaults write com.apple.Passwords AutoSave -bool NO 2>/dev/null || true
-    xcrun simctl spawn "$SIMULATOR_ID" defaults write com.apple.Passwords credentialSaveNotificationsEnabled -bool NO 2>/dev/null || true
-    xcrun simctl spawn "$SIMULATOR_ID" defaults write com.apple.springboard AutoFillPasswords -bool NO 2>/dev/null || true
+    log "Seeding Passwords.app / WebUI defaults on booted simulator..."
+    if ! (cd "$REPO_ROOT/detox" && node utils/disable_ios_autofill.js --simulator-id "$SIMULATOR_ID" --seed-defaults); then
+        log "Warning: defaults seed reported failure (continuing; plists are source of truth)"
+    fi
+}
+
+# iOS sometimes regenerates EffectiveUserSettings after first boot and flips
+# allowPasswordAutoFill back to YES. Re-apply while shut down, then boot again.
+enforce_autofill_after_boot() {
+    log "Verifying AutoFill restrictions survived boot..."
+    if autofill_already_configured; then
+        log "Restrictions still in place after boot"
+        seed_password_defaults
+        return 0
+    fi
+
+    log "Restrictions missing/reverted after boot — re-applying offline + reboot"
+    shutdown_if_booted
+    configure_autofill_offline
+    boot_and_wait
+    seed_password_defaults
+
+    if ! autofill_already_configured; then
+        echo "::error::Failed to keep allowPasswordAutoFill=NO after reboot — Save Password? will block Detox"
+        exit 1
+    fi
+    log "Restrictions verified after re-apply"
 }
 
 install_app() {
@@ -186,7 +227,7 @@ SETTINGS_PLIST="$SETTINGS_DIR/UserSettings.plist"
 AUTOFILL_STAMP="$SETTINGS_DIR/.$AUTOFILL_MARKER"
 
 if autofill_already_configured; then
-    log "Autofill restrictions already configured — skipping plist edit"
+    log "Autofill restrictions already configured (v2) — skipping offline plist edit"
     if [ "$(sim_state)" != "Booted" ]; then
         boot_and_wait
     else
@@ -207,7 +248,8 @@ else
     boot_and_wait
 fi
 
-seed_password_defaults
+# Always verify (and re-apply if iOS reverted EffectiveUserSettings on boot).
+enforce_autofill_after_boot
 install_app
 grant_notifications
 grant_calls_permissions
