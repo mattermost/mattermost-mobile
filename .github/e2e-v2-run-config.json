@@ -16,6 +16,6 @@
   "site_3_url": "https://mobile-pr-10006-site-3-btn56g5m.test.mattermost.cloud",
   "pr_number": "10006",
   "run_type": "PR",
-  "enabled": true,
-  "rerun_note": "full Detox iOS (e2e/test @ 20) + iPad (ipad tree @ 2); then Stage 6 Android"
+  "enabled": false,
+  "rerun_note": "paused while full ios+ipad run 30951070568 finishes; Stage 6 Android wired next"
 }

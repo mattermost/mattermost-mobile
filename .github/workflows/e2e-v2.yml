@@ -135,7 +135,7 @@ permissions:
 concurrency:
   # Include workflow file hash-ish salt so a stuck macOS cancel cannot block
   # the next push indefinitely (GitHub sometimes leaves Detox workers uncancelled).
-  group: e2e-v2-${{ github.ref }}-r14
+  group: e2e-v2-${{ github.ref }}-r15
   cancel-in-progress: true
 
 env:

@@ -329,21 +329,23 @@ Each stage ends with: **success criteria met → commit (not the plan) → push 
 
 ### Stage 4 — Widen Detox iOS
 
-- [ ] Raise workers; point `detox_search_path` at full `e2e/test` with `detox-exclude-dir: ipad`
-- [ ] Drive toward majority green; triage flakes vs env
+- [x] Raise workers; point `detox_search_path` at full `e2e/test` with `detox-exclude-dir: ipad`
+- [x] Drive toward majority green; triage flakes vs env (prior run ~126p/6f; full retest on fresh servers in flight)
 - **Success:** majority of Detox iOS suite green on staging orchestration
 
 ### Stage 5 — Detox iPad
 
 - [x] Separate begin/workers with `detox-search-path: e2e/test/products/channels/ipad`, `detox-exclude-dir: ""`, `detox-config: ios.ipad.debug` (`run-detox-ipad-v2` job)
 - [x] Reuse same iOS simulator artifact (`30898279916`)
-- [ ] **Success:** iPad job green or majority green
+- [x] iPad-only smoke green (`30948496119`); full ios_and_ipad retest in flight
+- [ ] **Success:** iPad job green or majority green on full retest
 
 ### Stage 6 — Detox Android
 
-- [ ] Android debug APK build job + artifact
-- [ ] AVD boot + orchestration workers (`android.emu.debug`)
-- [ ] Same staging test-system-io pattern
+- [x] Android debug APK build job + artifact (`build-android-detox-v2` → `e2e-v2-android-detox-{run_id}`)
+- [x] AVD boot + orchestration workers (`e2e-v2-detox-android.yml`, `android.emu.debug`)
+- [x] Same staging test-system-io pattern (`mobile-v2-pr-detox-android`)
+- [ ] First green / majority Android Detox run
 - **Success:** build artifact reusable; majority Android Detox green
 
 ### Stage 7 — Maestro (requires #102 on staging)
