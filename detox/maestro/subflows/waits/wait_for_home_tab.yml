@@ -1,0 +1,30 @@
+# Sub-flow: wait until the home tab is visible (e.g. after leave_call).
+# Login uses a short per-attempt wait inside its own retry loop instead of this file
+# so maxRetries can fire (see login.yml / CI 30447839548).
+appId: ${MAESTRO_APP_ID}
+---
+- tapOn:
+    text: "Not Now"
+    optional: true
+- tapOn:
+    text: "Later"
+    optional: true
+- tapOn:
+    text: "Skip"
+    optional: true
+- runFlow:
+    when:
+      platform: Android
+    commands:
+      - extendedWaitUntil:
+          visible:
+            id: "tab_bar.home.tab"
+          timeout: 180000
+- runFlow:
+    when:
+      platform: iOS
+    commands:
+      - extendedWaitUntil:
+          visible:
+            id: "tab_bar.home.tab"
+          timeout: 180000

@@ -1,0 +1,37 @@
+# Open the channel header quick-actions sheet (three-dots).
+# Requires: user is on the test channel screen.
+#
+# The header three-dots button (channel_header.channel_quick_actions.button) is reliably
+# in the iOS accessibility tree immediately after navigating to a channel — the passing
+# channel_bookmark_* flows tap it directly with no wait/hideKeyboard/swipe. Mirror that.
+#
+# On a retry where a quick-actions sheet is already open, dismiss it first so the header
+# button is reachable again (the sheet content is rendered once from a snapshot and will
+# NOT update when the Calls plugin config later propagates over WebSocket — it must be
+# closed and reopened).
+appId: ${MAESTRO_APP_ID}
+---
+- runFlow:
+    when:
+      visible:
+        id: "channel.quick_actions.channel_info.action"
+    commands:
+      - swipe:
+          start: "50%, 60%"
+          end: "50%, 95%"
+          duration: 300
+      - waitForAnimationToEnd:
+          timeout: 1000
+
+- extendedWaitUntil:
+    visible:
+      id: "channel_header.channel_quick_actions.button"
+    timeout: 30000
+- tapOn:
+    id: "channel_header.channel_quick_actions.button"
+
+# Confirm the sheet actually opened (channel info action is always present in it).
+- extendedWaitUntil:
+    visible:
+      id: "channel.quick_actions.channel_info.action"
+    timeout: 10000
