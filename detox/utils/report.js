@@ -38,6 +38,13 @@ function getAllTests(testSuites) {
     let duration = 0;
     let firstTimestamp;
     let incrementalDuration = 0;
+
+    // Guard against empty reports (e.g. all test suites failed to launch)
+    if (!testSuites || !testSuites.testsuite) {
+        const now = new Date().toISOString();
+        return {suites, tests, skipped, failures, errors, duration, start: now, end: now};
+    }
+
     testSuites.testsuite.forEach((testSuite) => {
         skipped += parseInt(testSuite.skipped[0], 10);
         failures += parseInt(testSuite.failures[0], 10);
@@ -345,7 +352,8 @@ function generateTitle() {
             title = `${platform} E2E for Release Build${buildLink}${releaseDate}`;
             break;
         case 'MAIN':
-            title = `${platform} E2E for Main Nightly Build (Prod tests)${buildLink}`;
+        case 'MASTER': // Matterwick still dispatches MASTER for main-branch pushes
+            title = `${platform} E2E for Main Build (Prod tests)${buildLink}`;
             break;
         default:
             title = `${platform} E2E for Build${buildLink}`;

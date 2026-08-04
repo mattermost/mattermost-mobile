@@ -49,6 +49,14 @@ async function saveArtifacts(platform) {
             filesToUpload,
             10,
             async.asyncify(async (file) => {
+                // Skip Maestro CLI's own copyright/config files (they're copied in
+                // by the maestro workflow's `fse.copySync('../build', ...)`) — they
+                // are not test artifacts and were noisy "Failed to upload artifact"
+                // lines in the maestro CI log.
+                if (file.includes(`${path.sep}notice-file${path.sep}`)) {
+                    return {success: true};
+                }
+
                 const Key = file.replace(uploadPath, REPORT_PATH);
                 const contentType = mime.lookup(file);
                 const charset = mime.charset(contentType);
@@ -75,7 +83,14 @@ async function saveArtifacts(platform) {
                     return reject(new Error(err));
                 }
 
-                const reportLink = `https://${DETOX_AWS_S3_BUCKET}.s3.amazonaws.com/${REPORT_PATH}/jest-stare/${platform}-report.html`;
+                // Detox runs use jest-stare to produce an HTML report; maestro
+                // produces its own HTML via generateMaestroHtmlReport(). Pick the
+                // right URL so the logged "Uploaded:" line points at a file that
+                // actually exists.
+                const isMaestro = platform.startsWith('maestro-');
+                const reportLink = isMaestro ?
+                    `https://${DETOX_AWS_S3_BUCKET}.s3.amazonaws.com/${REPORT_PATH}/${platform}/maestro-report.html` :
+                    `https://${DETOX_AWS_S3_BUCKET}.s3.amazonaws.com/${REPORT_PATH}/jest-stare/${platform}-report.html`;
                 resolve({success: true, reportLink});
             },
         );
