@@ -98,7 +98,10 @@ class AccountScreen {
     open = async () => {
         // Clear Passwords.app first — it blocks every tab-bar hit-test.
         if (device.getPlatform() === 'ios') {
-            await dismissIosSavePasswordIfVisible(timeouts.FIVE_SEC, {allowBackgroundFallback: true});
+            await dismissIosSavePasswordIfVisible(timeouts.TWENTY_SEC, {
+                useSystemApi: true,
+                allowRelaunchFallback: true,
+            });
         }
 
         await dismissKnownModals(2);
@@ -122,7 +125,10 @@ class AccountScreen {
         // Dismiss iOS native dialogs whose backdrop UIView covers the full screen and
         // blocks all hit-tests — these appear after login on iOS 26+ (iPad and iPhone).
         if (device.getPlatform() === 'ios') {
-            await dismissIosSavePasswordIfVisible(timeouts.FIVE_SEC, {allowBackgroundFallback: true});
+            await dismissIosSavePasswordIfVisible(timeouts.TWENTY_SEC, {
+                useSystemApi: true,
+                allowRelaunchFallback: true,
+            });
             // "Notifications cannot be received from this server" alert.
             try {
                 await element(by.label('Okay')).tap();
@@ -167,7 +173,10 @@ class AccountScreen {
         /* eslint-disable no-await-in-loop */
         for (let attempt = 1; attempt <= maxAttempts; attempt++) {
             if (device.getPlatform() === 'ios') {
-                await dismissIosSavePasswordIfVisible(timeouts.THREE_SEC, {allowBackgroundFallback: true});
+                await dismissIosSavePasswordIfVisible(timeouts.TWENTY_SEC, {
+                    useSystemApi: true,
+                    allowRelaunchFallback: true,
+                });
             }
             try {
                 await waitFor(HomeScreen.accountTab).toExist().withTimeout(timeouts.TEN_SEC);

@@ -268,7 +268,10 @@ class ChannelListScreen {
                 await device.launchApp({newInstance: true, launchArgs: {detoxEnableSynchronization: 0}});
 
                 // Passwords.app "Save Password?" can cover the restored session.
-                await dismissIosSavePasswordIfVisible(timeouts.FIVE_SEC, {allowBackgroundFallback: true});
+                await dismissIosSavePasswordIfVisible(timeouts.TWENTY_SEC, {
+                    useSystemApi: true,
+                    allowRelaunchFallback: true,
+                });
 
                 /* eslint-disable no-await-in-loop -- sequential back-navigation: each tap must complete before probing again */
                 for (let i = 0; i < 3; i++) {

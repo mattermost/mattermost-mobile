@@ -61,8 +61,9 @@ export const timeouts = {
 };
 
 /**
- * Race a system-dialog action so misses cannot inherit Detox's long
- * default expectation timeout (which previously burned Jest's 5m hook budget).
+ * Race an async action so a stuck Detox call cannot burn the Jest hook budget.
+ * Does not cancel the underlying work (e.g. xcodebuild); callers should avoid
+ * spawning expensive system actions unless an overlay is confirmed.
  */
 const withProbeTimeout = async <T>(action: Promise<T>, timeout: number): Promise<T> => {
     return Promise.race([
@@ -78,45 +79,44 @@ const isHittableOverlayError = (error: unknown): boolean => {
     return msg.includes('hittable') || msg.includes('Failed to hit view');
 };
 
+export type DismissSavePasswordOptions = {
+    /**
+     * When true, if the tab bar is unhittable after cheaper probes, relaunch the
+     * app with newInstance:true (session persists). Never uses sendToHome — that
+     * hangs Detox's waitForBackground on iOS 26 (~240s).
+     */
+    allowRelaunchFallback?: boolean;
+    /**
+     * When true, may invoke Detox System APIs (spawns xcodebuild per tap — expensive).
+     * Only enable after login / when an overlay is suspected.
+     */
+    useSystemApi?: boolean;
+};
+
 /**
  * Dismiss the iOS "Save Password?" sheet if present.
  *
- * On iOS 18+/26.x SharedWebCredentialViewService shows this sheet after login.
- * MDM `allowPasswordAutoFill=NO` only disables the keyboard toolbar — it does not
- * stop the sheet.
- *
- * Passwords.app is a *system* dialog: app-level `element(by.text/label)` cannot
- * see it. Use Detox System APIs (`system.element(by.system.label(...))`).
- *
- * Background/foreground only when a tab-bar control is proven unhittable (sheet
- * covering the app). Never sendToHome when the dialog is absent — that previously
- * broke channel-list loading.
+ * Passwords.app is a system dialog outside the app hierarchy. App-level
+ * `element(by.text)` usually cannot see it; `system.element(by.system.label)`
+ * can, but each call runs XCUITest via xcodebuild, so it is gated behind
+ * `useSystemApi` / overlay detection.
  *
  * No-op on Android.
  */
 export const dismissIosSavePasswordIfVisible = async (
-    probeTimeout = timeouts.FIVE_SEC,
-    options: {allowBackgroundFallback?: boolean} = {},
+    probeTimeout = timeouts.TWENTY_SEC,
+    options: DismissSavePasswordOptions = {},
 ): Promise<boolean> => {
     if (isAndroid()) {
         return false;
     }
 
-    const {allowBackgroundFallback = false} = options;
+    const {
+        allowRelaunchFallback = false,
+        useSystemApi = false,
+    } = options;
 
-    // Primary: Detox System API (XCUITest) — required for Passwords.app.
-    try {
-        await withProbeTimeout(
-            system.element(by.system.label('Not Now')).tap(),
-            probeTimeout,
-        );
-        await wait(timeouts.HALF_SEC);
-        return true;
-    } catch {
-        // Fall through.
-    }
-
-    // Legacy app-hierarchy probe (cheap; rarely sees this sheet).
+    // Cheap app-hierarchy probe (almost never sees Passwords.app; safe no-op).
     try {
         const notNow = element(by.text('Not Now'));
         await waitFor(notNow).toBeVisible().withTimeout(timeouts.HALF_SEC);
@@ -127,37 +127,48 @@ export const dismissIosSavePasswordIfVisible = async (
         // Fall through.
     }
 
-    if (!allowBackgroundFallback) {
+    if (!useSystemApi && !allowRelaunchFallback) {
         return false;
     }
 
-    // Delayed sheet: one short retry after a settle.
-    await wait(timeouts.ONE_SEC);
-    try {
-        await withProbeTimeout(
-            system.element(by.system.label('Not Now')).tap(),
-            timeouts.TWO_SEC,
-        );
-        await wait(timeouts.HALF_SEC);
-        return true;
-    } catch {
-        // Fall through to hittability-gated sendToHome.
-    }
-
-    // Only background when the sheet is actually blocking hit-tests.
+    // Confirm a full-screen overlay before paying for xcodebuild / relaunch.
+    let overlayBlocking = false;
     try {
         await withProbeTimeout(element(by.id('tab_bar.home.tab')).tap(), timeouts.TWO_SEC);
-        return false;
     } catch (error) {
-        if (!isHittableOverlayError(error)) {
-            return false;
+        overlayBlocking = isHittableOverlayError(error);
+    }
+
+    if (!overlayBlocking) {
+        return false;
+    }
+
+    if (useSystemApi) {
+        try {
+            // XCUITest runner cold-start can take >10s; keep a generous cap.
+            await withProbeTimeout(
+                system.element(by.system.label('Not Now')).tap(),
+                Math.max(probeTimeout, timeouts.TWENTY_SEC),
+            );
+            await wait(timeouts.HALF_SEC);
+            return true;
+        } catch {
+            // Fall through to relaunch.
         }
     }
 
-    await device.sendToHome();
-    await wait(timeouts.HALF_SEC);
-    await device.launchApp({newInstance: false});
-    await wait(timeouts.ONE_SEC);
+    if (!allowRelaunchFallback) {
+        return false;
+    }
+
+    // Clears the system sheet without sendToHome (iOS 26 hang).
+    await device.launchApp({newInstance: true, launchArgs: {detoxEnableSynchronization: 0}});
+    await wait(timeouts.TWO_SEC);
+    try {
+        await device.disableSynchronization();
+    } catch {
+        // Already disabled.
+    }
     return true;
 };
 
@@ -172,15 +183,15 @@ export const waitForChannelListAfterLogin = async (
     const deadline = Date.now() + overallTimeout;
     /* eslint-disable no-await-in-loop */
     while (Date.now() < deadline) {
-        if (isIos()) {
-            await dismissIosSavePasswordIfVisible(timeouts.TWO_SEC, {allowBackgroundFallback: false});
-        }
         try {
             await waitFor(channelListScreen).toExist().withTimeout(timeouts.TWO_SEC);
             // Sheet often appears after the list is already in the hierarchy.
             if (isIos()) {
                 await wait(timeouts.ONE_SEC);
-                await dismissIosSavePasswordIfVisible(timeouts.THREE_SEC, {allowBackgroundFallback: true});
+                await dismissIosSavePasswordIfVisible(timeouts.TWENTY_SEC, {
+                    useSystemApi: true,
+                    allowRelaunchFallback: true,
+                });
             }
             return;
         } catch {
@@ -190,7 +201,10 @@ export const waitForChannelListAfterLogin = async (
     /* eslint-enable no-await-in-loop */
     await waitFor(channelListScreen).toExist().withTimeout(timeouts.ONE_SEC);
     if (isIos()) {
-        await dismissIosSavePasswordIfVisible(timeouts.THREE_SEC, {allowBackgroundFallback: true});
+        await dismissIosSavePasswordIfVisible(timeouts.TWENTY_SEC, {
+            useSystemApi: true,
+            allowRelaunchFallback: true,
+        });
     }
 };
 
