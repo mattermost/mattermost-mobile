@@ -370,12 +370,29 @@ jobs:
             android-emulator-${{ runner.os }}-${{ runner.arch }}-${{ env.AVD_NAME }}-api-${{ inputs.android_api_level }}-
             android-emulator-${{ runner.os }}-${{ runner.arch }}-
 
+      - name: Point Detox at CI AVD home
+        # create_android_emulator.sh only exports ANDROID_AVD_HOME inside its
+        # process; Detox (dispatch-run) must see the same path or it fails with
+        # "Cannot boot Android Emulator with the name: detox_pixel_8_api_35".
+        run: |
+          AVD_HOME="${GITHUB_WORKSPACE}/detox/.android/avd"
+          mkdir -p "$AVD_HOME"
+          {
+            echo "ANDROID_AVD_HOME=${AVD_HOME}"
+            # Full AVD id (base name + api) — matches create_android_emulator.sh
+            echo "AVD_NAME=${AVD_NAME}_api_${SDK_VERSION}"
+          } >> "$GITHUB_ENV"
+          echo "ANDROID_AVD_HOME=${AVD_HOME}"
+          ls -la "$AVD_HOME" 2>/dev/null || true
+
       - name: Bootstrap Android emulator (no Detox yet)
         env:
           BOOTSTRAP_ONLY: "true"
           JAVA_HOME: ${{ env.JAVA_HOME_17_X64 }}
           MAX_ATTEMPTS: "2"
           ATTEMPT_TIMEOUT_MIN: "20"
+          # Script expects base name (without _api_N); it appends the suffix.
+          AVD_BASE: ${{ inputs.android_avd_name }}
         shell: bash
         run: |
           set +e
@@ -385,11 +402,13 @@ jobs:
             timeout "${ATTEMPT_TIMEOUT_MIN}m" bash -c '
               cd detox
               chmod +x ./create_android_emulator.sh
-              CI=true ./create_android_emulator.sh "$SDK_VERSION" "$AVD_NAME"
+              CI=true ./create_android_emulator.sh "$SDK_VERSION" "$AVD_BASE"
             '
             rc=$?
             if (( rc == 0 )); then
               echo "==> Bootstrap succeeded"
+              adb devices -l || true
+              ls -la "${ANDROID_AVD_HOME}" || true
               exit 0
             fi
             echo "==> Attempt ${attempt} failed (exit ${rc})"
