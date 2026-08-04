@@ -56,6 +56,14 @@ on:
         required: false
         type: string
         default: ""
+  # Push-driven iteration when gh workflow_dispatch is unavailable.
+  # Gate with enabled=true in .github/e2e-v2-servers-run-config.json.
+  push:
+    branches:
+      - cursor/e2e-v2-test-system-io-orchestration-2a12
+    paths:
+      - .github/e2e-v2-servers-run-config.json
+      - .github/workflows/e2e-v2-servers.yml
 
 permissions:
   contents: read
@@ -66,13 +74,77 @@ concurrency:
   cancel-in-progress: false
 
 jobs:
+  load-config:
+    name: Load push/dispatch config
+    runs-on: ubuntu-24.04
+    outputs:
+      enabled: ${{ steps.cfg.outputs.enabled }}
+      action: ${{ steps.cfg.outputs.action }}
+      server_version: ${{ steps.cfg.outputs.server_version }}
+      android_site_1_url: ${{ steps.cfg.outputs.android_site_1_url }}
+      android_site_2_url: ${{ steps.cfg.outputs.android_site_2_url }}
+      ios_site_1_url: ${{ steps.cfg.outputs.ios_site_1_url }}
+      ios_site_2_url: ${{ steps.cfg.outputs.ios_site_2_url }}
+      site_3_url: ${{ steps.cfg.outputs.site_3_url }}
+      mobile_ref: ${{ steps.cfg.outputs.mobile_ref }}
+    steps:
+      - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
+        with:
+          persist-credentials: false
+      - id: cfg
+        env:
+          IN_ACTION: ${{ github.event.inputs.action }}
+          IN_SERVER_VERSION: ${{ github.event.inputs.server_version }}
+          IN_A1: ${{ github.event.inputs.android_site_1_url }}
+          IN_A2: ${{ github.event.inputs.android_site_2_url }}
+          IN_I1: ${{ github.event.inputs.ios_site_1_url }}
+          IN_I2: ${{ github.event.inputs.ios_site_2_url }}
+          IN_S3: ${{ github.event.inputs.site_3_url }}
+          IN_REF: ${{ github.event.inputs.mobile_ref }}
+          EVENT_NAME: ${{ github.event_name }}
+        run: |
+          python3 - <<'PY' >> "$GITHUB_OUTPUT"
+          import json, os
+          cfg = json.load(open(".github/e2e-v2-servers-run-config.json"))
+          def pick(env_key, cfg_key, default=""):
+              v = os.environ.get(env_key, "")
+              if v == "":
+                  v = cfg.get(cfg_key, default)
+              if isinstance(v, bool):
+                  return "true" if v else "false"
+              return str(v if v is not None else default)
+          # On push, require enabled=true in config. On workflow_dispatch, always enabled.
+          enabled = "true" if os.environ.get("EVENT_NAME") == "workflow_dispatch" else ("true" if cfg.get("enabled") else "false")
+          print(f"enabled={enabled}")
+          print(f"action={pick('IN_ACTION','action','verify')}")
+          print(f"server_version={pick('IN_SERVER_VERSION','server_version','')}")
+          print(f"android_site_1_url={pick('IN_A1','android_site_1_url','')}")
+          print(f"android_site_2_url={pick('IN_A2','android_site_2_url','')}")
+          print(f"ios_site_1_url={pick('IN_I1','ios_site_1_url','')}")
+          print(f"ios_site_2_url={pick('IN_I2','ios_site_2_url','')}")
+          print(f"site_3_url={pick('IN_S3','site_3_url','')}")
+          print(f"mobile_ref={pick('IN_REF','mobile_ref','') or os.environ.get('GITHUB_SHA','')}")
+          PY
+
+  skipped:
+    name: Skipped (config disabled)
+    needs: [load-config]
+    if: needs.load-config.outputs.enabled != 'true'
+    runs-on: ubuntu-24.04
+    steps:
+      - run: |
+          echo "E2E v2 Servers skipped — set enabled=true in .github/e2e-v2-servers-run-config.json"
+          echo "## Skipped" >> "$GITHUB_STEP_SUMMARY"
+          echo "Set \`enabled: true\` and server URLs in \`.github/e2e-v2-servers-run-config.json\`." >> "$GITHUB_STEP_SUMMARY"
+
   # ---------------------------------------------------------------------------
   # CREATE — commented during iteration. Uncomment when ready to spin installs
   # once, then paste the logged URLs into configure_only / verify / e2e-v2.yml.
   # ---------------------------------------------------------------------------
   create:
     name: Create cloud installs
-    if: inputs.action == 'create_and_configure'
+    needs: [load-config]
+    if: needs.load-config.outputs.enabled == 'true' && needs.load-config.outputs.action == 'create_and_configure'
     runs-on: ubuntu-24.04
     outputs:
       android_site_1_url: ${{ steps.placeholder.outputs.android_site_1_url }}
@@ -98,8 +170,11 @@ jobs:
   resolve-urls:
     name: Resolve server URLs
     runs-on: ubuntu-24.04
-    needs: [create]
-    if: always() && (needs.create.result == 'success' || needs.create.result == 'skipped')
+    needs: [load-config, create]
+    if: >-
+      always()
+      && needs.load-config.outputs.enabled == 'true'
+      && (needs.create.result == 'success' || needs.create.result == 'skipped')
     outputs:
       android_site_1_url: ${{ steps.resolve.outputs.android_site_1_url }}
       android_site_2_url: ${{ steps.resolve.outputs.android_site_2_url }}
@@ -107,7 +182,7 @@ jobs:
       ios_site_2_url: ${{ steps.resolve.outputs.ios_site_2_url }}
       site_3_url: ${{ steps.resolve.outputs.site_3_url }}
     steps:
-      - name: Prefer create outputs, else workflow inputs
+      - name: Prefer create outputs, else loaded config
         id: resolve
         run: |
           pick() {
@@ -118,20 +193,20 @@ jobs:
               echo "${name}=${from_input}" >> "$GITHUB_OUTPUT"
             fi
           }
-          pick "${{ needs.create.outputs.android_site_1_url }}" "${{ inputs.android_site_1_url }}" android_site_1_url
-          pick "${{ needs.create.outputs.android_site_2_url }}" "${{ inputs.android_site_2_url }}" android_site_2_url
-          pick "${{ needs.create.outputs.ios_site_1_url }}" "${{ inputs.ios_site_1_url }}" ios_site_1_url
-          pick "${{ needs.create.outputs.ios_site_2_url }}" "${{ inputs.ios_site_2_url }}" ios_site_2_url
-          pick "${{ needs.create.outputs.site_3_url }}" "${{ inputs.site_3_url }}" site_3_url
+          pick "${{ needs.create.outputs.android_site_1_url }}" "${{ needs.load-config.outputs.android_site_1_url }}" android_site_1_url
+          pick "${{ needs.create.outputs.android_site_2_url }}" "${{ needs.load-config.outputs.android_site_2_url }}" android_site_2_url
+          pick "${{ needs.create.outputs.ios_site_1_url }}" "${{ needs.load-config.outputs.ios_site_1_url }}" ios_site_1_url
+          pick "${{ needs.create.outputs.ios_site_2_url }}" "${{ needs.load-config.outputs.ios_site_2_url }}" ios_site_2_url
+          pick "${{ needs.create.outputs.site_3_url }}" "${{ needs.load-config.outputs.site_3_url }}" site_3_url
 
   validate-urls:
     name: Validate server URLs
     runs-on: ubuntu-24.04
-    needs: [resolve-urls]
+    needs: [load-config, resolve-urls]
     if: >-
       always()
       && needs.resolve-urls.result == 'success'
-      && contains(fromJSON('["create_and_configure","configure_only","verify","delete"]'), inputs.action)
+      && contains(fromJSON('["create_and_configure","configure_only","verify","delete"]'), needs.load-config.outputs.action)
     steps:
       - name: Allowlist HTTPS validation
         env:
@@ -140,13 +215,14 @@ jobs:
           IOS_SITE_1_URL: ${{ needs.resolve-urls.outputs.ios_site_1_url }}
           IOS_SITE_2_URL: ${{ needs.resolve-urls.outputs.ios_site_2_url }}
           SITE_3_URL: ${{ needs.resolve-urls.outputs.site_3_url }}
-          REQUIRE_URLS: ${{ inputs.action != 'delete' && 'true' || 'false' }}
+          REQUIRE_URLS: ${{ needs.load-config.outputs.action != 'delete' && 'true' || 'false' }}
+          ACTION: ${{ needs.load-config.outputs.action }}
         run: |
           validate_url() {
             local url="$1" label="$2"
             if [ -z "$url" ]; then
               if [ "$REQUIRE_URLS" = "true" ]; then
-                echo "::error::$label is required for action=${{ inputs.action }}"
+                echo "::error::$label is required for action=$ACTION"
                 exit 1
               fi
               return 0
@@ -180,16 +256,16 @@ jobs:
   configure:
     name: Configure (license + plugins)
     runs-on: ubuntu-24.04
-    needs: [resolve-urls, validate-urls]
+    needs: [load-config, resolve-urls, validate-urls]
     if: >-
       always()
       && needs.validate-urls.result == 'success'
-      && contains(fromJSON('["create_and_configure","configure_only"]'), inputs.action)
+      && contains(fromJSON('["create_and_configure","configure_only"]'), needs.load-config.outputs.action)
     steps:
       - name: Checkout
         uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
         with:
-          ref: ${{ inputs.mobile_ref || github.sha }}
+          ref: ${{ needs.load-config.outputs.mobile_ref || github.sha }}
           persist-credentials: false
 
       - name: Cache demo plugin fixture
@@ -230,12 +306,12 @@ jobs:
   verify:
     name: Verify servers accessible
     runs-on: ubuntu-24.04
-    needs: [resolve-urls, validate-urls, configure]
+    needs: [load-config, resolve-urls, validate-urls, configure]
     if: >-
       always()
       && needs.validate-urls.result == 'success'
       && (needs.configure.result == 'success' || needs.configure.result == 'skipped')
-      && contains(fromJSON('["create_and_configure","configure_only","verify"]'), inputs.action)
+      && contains(fromJSON('["create_and_configure","configure_only","verify"]'), needs.load-config.outputs.action)
     steps:
       - name: Ping each server
         env:
@@ -312,9 +388,9 @@ jobs:
   # ---------------------------------------------------------------------------
   delete:
     name: Delete cloud installs
-    if: inputs.action == 'delete'
+    if: needs.load-config.outputs.enabled == 'true' && needs.load-config.outputs.action == 'delete'
     runs-on: ubuntu-24.04
-    needs: [resolve-urls, validate-urls]
+    needs: [load-config, resolve-urls, validate-urls]
     steps:
       - name: Delete installs (DISABLED — uncomment to enable)
         env:

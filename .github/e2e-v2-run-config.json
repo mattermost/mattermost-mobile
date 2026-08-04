@@ -1,0 +1,20 @@
+{
+  "phase": "scaffold",
+  "mobile_ref": "",
+  "framework": "detox",
+  "platform": "ios",
+  "skip_build": false,
+  "artifact_run_id": "",
+  "worker_count": "2",
+  "detox_search_path": "e2e/test/products/channels/smoke_test",
+  "use_staging_test_system_io": true,
+  "fail_on_test_failures": false,
+  "android_site_1_url": "",
+  "android_site_2_url": "",
+  "ios_site_1_url": "",
+  "ios_site_2_url": "",
+  "site_3_url": "",
+  "pr_number": "",
+  "run_type": "PR",
+  "enabled": true
+}

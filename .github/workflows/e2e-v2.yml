@@ -1,13 +1,12 @@
-# E2E v2 — UI-friendly entry for Detox/Maestro via test-system-io orchestration.
+# E2E v2 — UI-friendly + push-driven entry for Detox/Maestro via test-system-io.
 #
-# workflow_dispatch only (no PR trigger yet). Designed so later adapters can call
-# the same reusable workers for main / release / CMT without rewriting them.
+# Triggers:
+#   - workflow_dispatch (Actions UI / gh) when the workflow is registered on default
+#     branch and the caller has actions:write
+#   - push to the v2 iteration branch, driven by .github/e2e-v2-run-config.json
+#     (used when gh workflow dispatch is unavailable)
 #
-# Phases (inputs.phase):
-#   scaffold         — no-op visibility check
-#   build            — build app artifacts only
-#   test             — verify servers + run tests (requires artifact_run_id or prior build in same run is N/A)
-#   build_and_test   — build then test (default path once ready)
+# Phases: scaffold | build | test | build_and_test
 name: E2E v2
 
 on:
@@ -118,6 +117,13 @@ on:
           - MAIN
           - RELEASE
           - CMT
+  push:
+    branches:
+      - cursor/e2e-v2-test-system-io-orchestration-2a12
+    paths:
+      - .github/e2e-v2-run-config.json
+      - .github/workflows/e2e-v2.yml
+      - .github/workflows/e2e-v2-detox-ios.yml
 
 permissions:
   contents: read
@@ -126,7 +132,7 @@ permissions:
   statuses: write
 
 concurrency:
-  group: e2e-v2-${{ github.ref }}-${{ inputs.platform }}-${{ inputs.framework }}
+  group: e2e-v2-${{ github.ref }}
   cancel-in-progress: true
 
 env:
@@ -137,6 +143,8 @@ jobs:
     name: Resolve inputs
     runs-on: ubuntu-24.04
     outputs:
+      enabled: ${{ steps.out.outputs.enabled }}
+      phase: ${{ steps.out.outputs.phase }}
       mobile_ref: ${{ steps.out.outputs.mobile_ref }}
       commit_sha: ${{ steps.out.outputs.commit_sha }}
       branch: ${{ steps.out.outputs.branch }}
@@ -145,25 +153,133 @@ jobs:
       do_test: ${{ steps.out.outputs.do_test }}
       need_ios_build: ${{ steps.out.outputs.need_ios_build }}
       run_detox_ios: ${{ steps.out.outputs.run_detox_ios }}
+      framework: ${{ steps.out.outputs.framework }}
+      platform: ${{ steps.out.outputs.platform }}
+      skip_build: ${{ steps.out.outputs.skip_build }}
+      worker_count: ${{ steps.out.outputs.worker_count }}
+      detox_search_path: ${{ steps.out.outputs.detox_search_path }}
+      use_staging_test_system_io: ${{ steps.out.outputs.use_staging_test_system_io }}
+      fail_on_test_failures: ${{ steps.out.outputs.fail_on_test_failures }}
+      android_site_1_url: ${{ steps.out.outputs.android_site_1_url }}
+      android_site_2_url: ${{ steps.out.outputs.android_site_2_url }}
+      ios_site_1_url: ${{ steps.out.outputs.ios_site_1_url }}
+      ios_site_2_url: ${{ steps.out.outputs.ios_site_2_url }}
+      site_3_url: ${{ steps.out.outputs.site_3_url }}
+      pr_number: ${{ steps.out.outputs.pr_number }}
+      run_type: ${{ steps.out.outputs.run_type }}
     steps:
-      - name: Checkout (for SHA resolution)
+      - name: Checkout
         uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
         with:
-          ref: ${{ inputs.mobile_ref || github.sha }}
           persist-credentials: false
 
-      - name: Compute policy
+      - name: Merge dispatch inputs with run-config
         id: out
         env:
-          PHASE: ${{ inputs.phase }}
-          SKIP_BUILD: ${{ inputs.skip_build }}
-          ARTIFACT_RUN_ID_IN: ${{ inputs.artifact_run_id }}
-          PLATFORM: ${{ inputs.platform }}
-          FRAMEWORK: ${{ inputs.framework }}
-          MOBILE_REF_IN: ${{ inputs.mobile_ref }}
+          EVENT_NAME: ${{ github.event_name }}
+          # workflow_dispatch inputs (empty on push)
+          IN_PHASE: ${{ github.event.inputs.phase }}
+          IN_MOBILE_REF: ${{ github.event.inputs.mobile_ref }}
+          IN_FRAMEWORK: ${{ github.event.inputs.framework }}
+          IN_PLATFORM: ${{ github.event.inputs.platform }}
+          IN_SKIP_BUILD: ${{ github.event.inputs.skip_build }}
+          IN_ARTIFACT_RUN_ID: ${{ github.event.inputs.artifact_run_id }}
+          IN_WORKER_COUNT: ${{ github.event.inputs.worker_count }}
+          IN_DETOX_SEARCH_PATH: ${{ github.event.inputs.detox_search_path }}
+          IN_USE_STAGING: ${{ github.event.inputs.use_staging_test_system_io }}
+          IN_FAIL_ON_FAIL: ${{ github.event.inputs.fail_on_test_failures }}
+          IN_ANDROID_1: ${{ github.event.inputs.android_site_1_url }}
+          IN_ANDROID_2: ${{ github.event.inputs.android_site_2_url }}
+          IN_IOS_1: ${{ github.event.inputs.ios_site_1_url }}
+          IN_IOS_2: ${{ github.event.inputs.ios_site_2_url }}
+          IN_SITE_3: ${{ github.event.inputs.site_3_url }}
+          IN_PR: ${{ github.event.inputs.pr_number }}
+          IN_RUN_TYPE: ${{ github.event.inputs.run_type }}
         run: |
+          set -euo pipefail
+          CFG=.github/e2e-v2-run-config.json
+          if [ ! -f "$CFG" ]; then
+            echo "::error::missing $CFG"
+            exit 1
+          fi
+
+          # Config file is the base; workflow_dispatch inputs override when non-empty.
+          eval "$(python3 - <<'PY'
+          import json, os, shlex
+          cfg = json.load(open(".github/e2e-v2-run-config.json"))
+          def pick(env_key, cfg_key, default=""):
+              v = os.environ.get(env_key, "")
+              if v == "":
+                  v = cfg.get(cfg_key, default)
+              if isinstance(v, bool):
+                  return "true" if v else "false"
+              return str(v if v is not None else default)
+          vals = {
+              "ENABLED": "true" if cfg.get("enabled", True) else "false",
+              "PHASE": pick("IN_PHASE", "phase", "scaffold"),
+              "MOBILE_REF_IN": pick("IN_MOBILE_REF", "mobile_ref", ""),
+              "FRAMEWORK": pick("IN_FRAMEWORK", "framework", "detox"),
+              "PLATFORM": pick("IN_PLATFORM", "platform", "ios"),
+              "SKIP_BUILD": pick("IN_SKIP_BUILD", "skip_build", "false"),
+              "ARTIFACT_RUN_ID_IN": pick("IN_ARTIFACT_RUN_ID", "artifact_run_id", ""),
+              "WORKER_COUNT": pick("IN_WORKER_COUNT", "worker_count", "2"),
+              "DETOX_SEARCH_PATH": pick("IN_DETOX_SEARCH_PATH", "detox_search_path", "e2e/test/products/channels/smoke_test"),
+              "USE_STAGING": pick("IN_USE_STAGING", "use_staging_test_system_io", "true"),
+              "FAIL_ON_FAIL": pick("IN_FAIL_ON_FAIL", "fail_on_test_failures", "false"),
+              "ANDROID_1": pick("IN_ANDROID_1", "android_site_1_url", ""),
+              "ANDROID_2": pick("IN_ANDROID_2", "android_site_2_url", ""),
+              "IOS_1": pick("IN_IOS_1", "ios_site_1_url", ""),
+              "IOS_2": pick("IN_IOS_2", "ios_site_2_url", ""),
+              "SITE_3": pick("IN_SITE_3", "site_3_url", ""),
+              "PR": pick("IN_PR", "pr_number", ""),
+              "RUN_TYPE": pick("IN_RUN_TYPE", "run_type", "PR"),
+          }
+          for k, v in vals.items():
+              print(f"{k}={shlex.quote(v)}")
+          PY
+          )"
+
+          if [ "$ENABLED" != "true" ]; then
+            echo "enabled=false" >> "$GITHUB_OUTPUT"
+            echo "Run config enabled=false — skipping pipeline."
+            {
+              echo "## E2E v2 skipped"
+              echo "Set \`enabled: true\` in \`.github/e2e-v2-run-config.json\` to run."
+            } >> "$GITHUB_STEP_SUMMARY"
+            # Still emit defaults so downstream if: expressions are safe
+            echo "phase=scaffold" >> "$GITHUB_OUTPUT"
+            echo "mobile_ref=${{ github.sha }}" >> "$GITHUB_OUTPUT"
+            echo "commit_sha=${{ github.sha }}" >> "$GITHUB_OUTPUT"
+            echo "branch=${{ github.ref_name }}" >> "$GITHUB_OUTPUT"
+            echo "artifact_run_id=" >> "$GITHUB_OUTPUT"
+            echo "do_build=false" >> "$GITHUB_OUTPUT"
+            echo "do_test=false" >> "$GITHUB_OUTPUT"
+            echo "need_ios_build=false" >> "$GITHUB_OUTPUT"
+            echo "run_detox_ios=false" >> "$GITHUB_OUTPUT"
+            echo "framework=detox" >> "$GITHUB_OUTPUT"
+            echo "platform=ios" >> "$GITHUB_OUTPUT"
+            echo "skip_build=false" >> "$GITHUB_OUTPUT"
+            echo "worker_count=2" >> "$GITHUB_OUTPUT"
+            echo "detox_search_path=e2e/test/products/channels/smoke_test" >> "$GITHUB_OUTPUT"
+            echo "use_staging_test_system_io=true" >> "$GITHUB_OUTPUT"
+            echo "fail_on_test_failures=false" >> "$GITHUB_OUTPUT"
+            echo "android_site_1_url=" >> "$GITHUB_OUTPUT"
+            echo "android_site_2_url=" >> "$GITHUB_OUTPUT"
+            echo "ios_site_1_url=" >> "$GITHUB_OUTPUT"
+            echo "ios_site_2_url=" >> "$GITHUB_OUTPUT"
+            echo "site_3_url=" >> "$GITHUB_OUTPUT"
+            echo "pr_number=" >> "$GITHUB_OUTPUT"
+            echo "run_type=PR" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+
           REF="${MOBILE_REF_IN:-${{ github.sha }}}"
-          SHA=$(git rev-parse HEAD)
+          # Resolve commit for the chosen ref
+          git fetch --depth=1 origin "$REF" 2>/dev/null || true
+          SHA=$(git rev-parse "FETCH_HEAD" 2>/dev/null || git rev-parse HEAD)
+          if [ -n "$MOBILE_REF_IN" ]; then
+            SHA=$(git rev-parse "$REF" 2>/dev/null || echo "$SHA")
+          fi
           BRANCH="${{ github.ref_name }}"
 
           DO_BUILD=false
@@ -173,6 +289,7 @@ jobs:
             build) DO_BUILD=true ;;
             test) DO_TEST=true ;;
             build_and_test) DO_BUILD=true; DO_TEST=true ;;
+            *) echo "::error::unknown phase=$PHASE"; exit 1 ;;
           esac
 
           if [ "$SKIP_BUILD" = "true" ]; then
@@ -196,7 +313,6 @@ jobs:
           if [ "$DO_BUILD" = "true" ] && echo "$PLATFORM" | grep -Eq '^(ios|ipad|ios_and_ipad|all)$'; then
             NEED_IOS_BUILD=true
           fi
-          # When skip_build, still "need" ios artifacts for detox ios tests
           if [ "$DO_TEST" = "true" ] && echo "$PLATFORM" | grep -Eq '^(ios|ios_and_ipad|all)$' && echo "$FRAMEWORK" | grep -Eq '^(detox|both)$'; then
             RUN_DETOX_IOS=true
             if [ "$SKIP_BUILD" = "true" ]; then
@@ -207,6 +323,8 @@ jobs:
           fi
 
           {
+            echo "enabled=true"
+            echo "phase=${PHASE}"
             echo "mobile_ref=${REF}"
             echo "commit_sha=${SHA}"
             echo "branch=${BRANCH}"
@@ -215,6 +333,20 @@ jobs:
             echo "do_test=${DO_TEST}"
             echo "need_ios_build=${NEED_IOS_BUILD}"
             echo "run_detox_ios=${RUN_DETOX_IOS}"
+            echo "framework=${FRAMEWORK}"
+            echo "platform=${PLATFORM}"
+            echo "skip_build=${SKIP_BUILD}"
+            echo "worker_count=${WORKER_COUNT}"
+            echo "detox_search_path=${DETOX_SEARCH_PATH}"
+            echo "use_staging_test_system_io=${USE_STAGING}"
+            echo "fail_on_test_failures=${FAIL_ON_FAIL}"
+            echo "android_site_1_url=${ANDROID_1}"
+            echo "android_site_2_url=${ANDROID_2}"
+            echo "ios_site_1_url=${IOS_1}"
+            echo "ios_site_2_url=${IOS_2}"
+            echo "site_3_url=${SITE_3}"
+            echo "pr_number=${PR}"
+            echo "run_type=${RUN_TYPE}"
           } >> "$GITHUB_OUTPUT"
 
           {
@@ -222,6 +354,7 @@ jobs:
             echo ""
             echo "| Key | Value |"
             echo "|-----|-------|"
+            echo "| event | \`$EVENT_NAME\` |"
             echo "| phase | \`$PHASE\` |"
             echo "| mobile_ref | \`$REF\` |"
             echo "| commit_sha | \`$SHA\` |"
@@ -230,34 +363,34 @@ jobs:
             echo "| do_test | \`$DO_TEST\` |"
             echo "| need_ios_build | \`$NEED_IOS_BUILD\` |"
             echo "| run_detox_ios | \`$RUN_DETOX_IOS\` |"
-            echo "| staging test-system-io | \`${{ inputs.use_staging_test_system_io }}\` |"
+            echo "| staging test-system-io | \`$USE_STAGING\` |"
           } >> "$GITHUB_STEP_SUMMARY"
 
   scaffold:
     name: Scaffold (visibility check)
     needs: [resolve]
-    if: inputs.phase == 'scaffold'
+    if: needs.resolve.outputs.enabled == 'true' && needs.resolve.outputs.phase == 'scaffold'
     runs-on: ubuntu-24.04
     steps:
       - name: OK
         run: |
-          echo "E2E v2 scaffold OK — workflows are visible and dispatchable."
-          echo "Next: run E2E v2 Servers (configure_only/verify), then phase=build for iOS."
+          echo "E2E v2 scaffold OK — push/config trigger works."
+          echo "Next: set phase=build in .github/e2e-v2-run-config.json (or dispatch)."
           {
             echo "## Scaffold success"
-            echo "Proceed to **E2E v2 Servers** then **E2E v2** \`phase=build\` (iOS)."
+            echo "Proceed to servers verify, then \`phase=build\` for iOS."
           } >> "$GITHUB_STEP_SUMMARY"
 
   verify-servers:
     name: Verify test servers
     needs: [resolve]
-    if: needs.resolve.outputs.do_test == 'true'
+    if: needs.resolve.outputs.enabled == 'true' && needs.resolve.outputs.do_test == 'true'
     runs-on: ubuntu-24.04
     steps:
       - name: Require iOS URLs when running Detox iOS
         if: needs.resolve.outputs.run_detox_ios == 'true'
         env:
-          IOS_SITE_1_URL: ${{ inputs.ios_site_1_url }}
+          IOS_SITE_1_URL: ${{ needs.resolve.outputs.ios_site_1_url }}
         run: |
           if [ -z "$IOS_SITE_1_URL" ]; then
             echo "::error::ios_site_1_url is required for Detox iOS tests"
@@ -266,11 +399,11 @@ jobs:
 
       - name: Ping servers
         env:
-          ANDROID_SITE_1_URL: ${{ inputs.android_site_1_url }}
-          ANDROID_SITE_2_URL: ${{ inputs.android_site_2_url }}
-          IOS_SITE_1_URL: ${{ inputs.ios_site_1_url }}
-          IOS_SITE_2_URL: ${{ inputs.ios_site_2_url }}
-          SITE_3_URL: ${{ inputs.site_3_url }}
+          ANDROID_SITE_1_URL: ${{ needs.resolve.outputs.android_site_1_url }}
+          ANDROID_SITE_2_URL: ${{ needs.resolve.outputs.android_site_2_url }}
+          IOS_SITE_1_URL: ${{ needs.resolve.outputs.ios_site_1_url }}
+          IOS_SITE_2_URL: ${{ needs.resolve.outputs.ios_site_2_url }}
+          SITE_3_URL: ${{ needs.resolve.outputs.site_3_url }}
         run: |
           ping_one() {
             local url="$1" label="$2"
@@ -294,7 +427,7 @@ jobs:
   build-ios-simulator-v2:
     name: Build iOS simulator (v2)
     needs: [resolve]
-    if: needs.resolve.outputs.need_ios_build == 'true'
+    if: needs.resolve.outputs.enabled == 'true' && needs.resolve.outputs.need_ios_build == 'true'
     runs-on: macos-26
     permissions:
       contents: read
@@ -334,7 +467,7 @@ jobs:
           {
             echo "## iOS simulator artifact"
             echo ""
-            echo "Use \`skip_build=true\` + \`artifact_run_id=${{ github.run_id }}\` on later runs."
+            echo "Set \`skip_build: true\` and \`artifact_run_id: \"${{ github.run_id }}\"\` in \`.github/e2e-v2-run-config.json\`."
             echo ""
             echo "Artifact name: \`e2e-v2-ios-simulator-${{ github.run_id }}\`"
           } >> "$GITHUB_STEP_SUMMARY"
@@ -344,6 +477,7 @@ jobs:
     needs: [resolve, verify-servers, build-ios-simulator-v2]
     if: >-
       always()
+      && needs.resolve.outputs.enabled == 'true'
       && needs.resolve.outputs.run_detox_ios == 'true'
       && needs.verify-servers.result == 'success'
       && (needs.build-ios-simulator-v2.result == 'success' || needs.build-ios-simulator-v2.result == 'skipped')
@@ -351,19 +485,19 @@ jobs:
     with:
       mobile_ref: ${{ needs.resolve.outputs.mobile_ref }}
       artifact_run_id: ${{ needs.resolve.outputs.artifact_run_id }}
-      worker_count: ${{ inputs.worker_count }}
-      detox_search_path: ${{ inputs.detox_search_path }}
+      worker_count: ${{ needs.resolve.outputs.worker_count }}
+      detox_search_path: ${{ needs.resolve.outputs.detox_search_path }}
       detox_exclude_dir: ipad
       detox_config: ios.sim.debug
-      ios_site_1_url: ${{ inputs.ios_site_1_url }}
-      ios_site_2_url: ${{ inputs.ios_site_2_url }}
-      site_3_url: ${{ inputs.site_3_url }}
-      use_staging_test_system_io: ${{ inputs.use_staging_test_system_io }}
-      run_type: ${{ inputs.run_type }}
-      pr_number: ${{ inputs.pr_number }}
+      ios_site_1_url: ${{ needs.resolve.outputs.ios_site_1_url }}
+      ios_site_2_url: ${{ needs.resolve.outputs.ios_site_2_url }}
+      site_3_url: ${{ needs.resolve.outputs.site_3_url }}
+      use_staging_test_system_io: ${{ needs.resolve.outputs.use_staging_test_system_io == 'true' }}
+      run_type: ${{ needs.resolve.outputs.run_type }}
+      pr_number: ${{ needs.resolve.outputs.pr_number }}
       branch: ${{ needs.resolve.outputs.branch }}
       commit_sha: ${{ needs.resolve.outputs.commit_sha }}
-      fail_on_test_failures: ${{ inputs.fail_on_test_failures }}
+      fail_on_test_failures: ${{ needs.resolve.outputs.fail_on_test_failures == 'true' }}
     secrets:
       MM_MOBILE_E2E_ADMIN_EMAIL: ${{ secrets.MM_MOBILE_E2E_ADMIN_EMAIL }}
       MM_MOBILE_E2E_ADMIN_USERNAME: ${{ secrets.MM_MOBILE_E2E_ADMIN_USERNAME }}
