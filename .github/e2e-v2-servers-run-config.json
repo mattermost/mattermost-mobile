@@ -1,5 +1,5 @@
 {
-  "action": "verify",
+  "action": "configure_only",
   "server_version": "",
   "android_site_1_url": "https://mobile-pr-10006-android-site-1-8inxe3u5.test.mattermost.cloud",
   "android_site_2_url": "https://mobile-pr-10006-android-site-2-spp4fk1m.test.mattermost.cloud",
