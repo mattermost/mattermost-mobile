@@ -9,13 +9,13 @@
   "detox_search_path": "e2e/test/products/channels/smoke_test",
   "use_staging_test_system_io": true,
   "fail_on_test_failures": false,
-  "android_site_1_url": "https://mobile-pr-10003-android-site-1-731fj8fg.test.mattermost.cloud",
-  "android_site_2_url": "https://mobile-pr-10003-android-site-2-ic3874pf.test.mattermost.cloud",
-  "ios_site_1_url": "https://mobile-pr-10003-ios-site-1-jrfpbonx.test.mattermost.cloud",
-  "ios_site_2_url": "https://mobile-pr-10003-ios-site-2-izeecijo.test.mattermost.cloud",
-  "site_3_url": "https://mobile-pr-10003-site-3-ot9aex97.test.mattermost.cloud",
+  "android_site_1_url": "https://mobile-pr-10006-android-site-1-fr4pp65i.test.mattermost.cloud",
+  "android_site_2_url": "https://mobile-pr-10006-android-site-2-fz9d95kr.test.mattermost.cloud",
+  "ios_site_1_url": "https://mobile-pr-10006-ios-site-1-phpeeuog.test.mattermost.cloud",
+  "ios_site_2_url": "https://mobile-pr-10006-ios-site-2-i7xwz7bk.test.mattermost.cloud",
+  "site_3_url": "https://mobile-pr-10006-site-3-ny9yfawi.test.mattermost.cloud",
   "pr_number": "10006",
   "run_type": "PR",
   "enabled": true,
-  "rerun_note": "retest after Save Password dismiss fix"
+  "rerun_note": "retest Save Password fix with PR-10006 cloud servers"
 }
