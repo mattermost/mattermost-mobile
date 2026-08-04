@@ -17,5 +17,5 @@
   "pr_number": "10006",
   "run_type": "PR",
   "enabled": true,
-  "rerun_note": "retest: simulator autofill-v2 disables Save Password at setup"
+  "rerun_note": "retest autofill-v2 after concurrency r3 bump"
 }
