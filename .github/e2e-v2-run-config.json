@@ -17,5 +17,5 @@
   "pr_number": "10006",
   "run_type": "PR",
   "enabled": true,
-  "rerun_note": "retest system.element tap with hard probe timeout + hittable sendToHome"
+  "rerun_note": "retest after concurrency group bump (stuck prior workers)"
 }
