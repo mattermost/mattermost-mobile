@@ -1,6 +1,7 @@
 # Dismiss the first-visit scheduled-post send-button tooltip (blocks channel UI on iOS).
 appId: ${MAESTRO_APP_ID}
 ---
+# # Close the tooltip by testID when the tooltip container is in the tree
 - runFlow:
     when:
       visible:
@@ -12,6 +13,7 @@ appId: ${MAESTRO_APP_ID}
           notVisible:
             id: "scheduled_post_tutorial_tooltip"
           timeout: 5000
+# # Fall back to matching the tooltip body text when only the label is exposed
 - runFlow:
     when:
       visible:

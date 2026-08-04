@@ -25,9 +25,11 @@ tags:
   - MM-T67856_2
 appId: ${MAESTRO_APP_ID}
 ---
+# # Log in as the test user
 - runFlow: ../../subflows/auth/login.yml
 
-# Open Account > Settings > Report a Problem
+# # Open Account > Settings > Report a Problem.
+# Report a Problem can sit below the fold on small Android viewports (CI 59ec6ae).
 - tapOn:
     id: "tab_bar.account.tab"
 - extendedWaitUntil:
@@ -36,7 +38,6 @@ appId: ${MAESTRO_APP_ID}
     timeout: 10000
 - tapOn:
     id: "account.settings.option"
-# Report a Problem can sit below the fold on small Android viewports (CI 59ec6ae).
 - scrollUntilVisible:
     element:
       id: "settings.report_problem.option"
@@ -48,6 +49,8 @@ appId: ${MAESTRO_APP_ID}
     timeout: 10000
 - tapOn:
     id: "settings.report_problem.option"
+
+# # Let the transition settle before branching on which screen opened.
 # On unlicensed servers, tapping "Report a Problem" opens an external browser
 # or email composer instead of the in-app screen. The conditional blocks below
 # handle both paths: run toggle + menu assertions on licensed servers, dismiss
@@ -55,19 +58,19 @@ appId: ${MAESTRO_APP_ID}
 - waitForAnimationToEnd:
     timeout: 3000
 
-# Path A: In-app Report a Problem screen (licensed server)
+# # Path A: In-app Report a Problem screen (licensed server)
 - runFlow:
     when:
       visible:
         id: "report_problem.enable_log_attachments"
     commands:
-      # Tap the toggle switch to turn it ON. Use optional:true so if toggle
+      # # Tap the toggle switch to turn it ON. Use optional:true so if toggle
       # is already ON (from a prior run's saved preference), the tap is skipped.
       - tapOn:
           id: "report_problem.enable_log_attachments.toggled.false.button"
           optional: true
 
-      # Wait for the toggle to confirm "on" state. This also gives the async
+      # * Verify the toggle confirms "on" state. This also gives the async
       # savePreference call time to complete (API + local DB write) before the
       # app is killed.
       - extendedWaitUntil:
@@ -75,11 +78,11 @@ appId: ${MAESTRO_APP_ID}
             id: "report_problem.enable_log_attachments.toggled.true.button"
           timeout: 10000
 
-      # Give the async DB write a moment to flush.
+      # # Give the async DB write a moment to flush.
       - waitForAnimationToEnd:
           timeout: 3000
 
-      # Navigate back to the Home tab, then into the test channel.
+      # # Navigate back to the Home tab, then into the test channel.
       # On iOS 26.3, Maestro's `back` doesn't dismiss modal-presented screens.
       # Re-launching the app (stopApp + clearState:false) kills and restarts the
       # app without wiping data — user stays logged in, app lands on Home tab.
@@ -87,17 +90,17 @@ appId: ${MAESTRO_APP_ID}
           stopApp: true
           clearState: false
 
-      # Wait for the app to relaunch and JS bundle to load.
+      # # Wait for the app to relaunch and JS bundle to load.
       - waitForAnimationToEnd:
           timeout: 30000
 
-      # Confirm we're on the Home tab with tab bar visible.
+      # * Verify we're on the Home tab with tab bar visible.
       - extendedWaitUntil:
           visible:
             id: "tab_bar.home.tab"
           timeout: 30000
 
-      # Wait for the channel list to render before navigating into the test channel.
+      # # Wait for the channel list to render before navigating into the test channel.
       - extendedWaitUntil:
           visible:
             id: "channel_list.category.channels.channel_item.${TEST_CHANNEL_NAME}"
@@ -105,18 +108,18 @@ appId: ${MAESTRO_APP_ID}
 
       - runFlow: ../../subflows/navigation/navigate_to_channel.yml
 
-      # Open the post-draft attachment menu. Adjust the id if `inspect_screen`
+      # # Open the post-draft attachment menu. Adjust the id if `inspect_screen`
       # shows a different prefix on your build.
       - tapOn:
           id: "channel.post_draft.quick_actions.attachment_action"
 
-      # Assert the new option exists.
+      # * Verify the Attach app logs option is now offered.
       - extendedWaitUntil:
           visible:
             id: "file_attachment.attach_logs"
           timeout: 10000
 
-# Path B: External browser / email composer (unlicensed server) — dismiss
+# # Path B: External browser / email composer (unlicensed server) — dismiss
 - runFlow:
     when:
       platform: iOS
