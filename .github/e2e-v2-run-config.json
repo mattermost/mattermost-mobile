@@ -2,11 +2,11 @@
   "phase": "test",
   "mobile_ref": "",
   "framework": "detox",
-  "platform": "ipad",
+  "platform": "ios_and_ipad",
   "skip_build": true,
   "artifact_run_id": "30898279916",
-  "worker_count": "2",
-  "detox_search_path": "e2e/test/products/channels/ipad",
+  "worker_count": "20",
+  "detox_search_path": "e2e/test",
   "use_staging_test_system_io": true,
   "fail_on_test_failures": false,
   "android_site_1_url": "https://mobile-pr-10006-android-site-1-8inxe3u5.test.mattermost.cloud",
@@ -17,5 +17,5 @@
   "pr_number": "10006",
   "run_type": "PR",
   "enabled": true,
-  "rerun_note": "stage5: fresh Matterwick servers (8inxe3u5/ydnygenn/...); Detox iPad @ 2 workers"
+  "rerun_note": "full Detox iOS (e2e/test @ 20) + iPad (ipad tree @ 2); then Stage 6 Android"
 }

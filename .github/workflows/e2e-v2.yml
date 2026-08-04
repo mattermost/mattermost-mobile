@@ -134,7 +134,7 @@ permissions:
 concurrency:
   # Include workflow file hash-ish salt so a stuck macOS cancel cannot block
   # the next push indefinitely (GitHub sometimes leaves Detox workers uncancelled).
-  group: e2e-v2-${{ github.ref }}-r13
+  group: e2e-v2-${{ github.ref }}-r14
   cancel-in-progress: true
 
 env:
@@ -536,8 +536,10 @@ jobs:
     with:
       mobile_ref: ${{ needs.resolve.outputs.mobile_ref }}
       artifact_run_id: ${{ needs.resolve.outputs.artifact_run_id }}
-      worker_count: ${{ needs.resolve.outputs.worker_count }}
-      detox_search_path: ${{ needs.resolve.outputs.detox_search_path }}
+      # Small suite (~4 specs); keep workers low even when phone uses 20.
+      worker_count: ${{ needs.resolve.outputs.platform == 'ipad' && needs.resolve.outputs.worker_count || '2' }}
+      # Always the iPad tree — do not inherit phone e2e/test when platform=ios_and_ipad.
+      detox_search_path: e2e/test/products/channels/ipad
       detox_exclude_dir: ""
       detox_config: ios.ipad.debug
       identity_name: mobile-v2-pr-detox-ipad
