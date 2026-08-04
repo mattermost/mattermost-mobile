@@ -7,6 +7,7 @@ import CallsNative from '@init/calls_native';
 import {getAllServerCredentials} from '@init/credentials';
 import ManagedApp from '@init/managed_app';
 import PushNotifications from '@init/push_notifications';
+import DraftSyncManager from '@managers/draft_sync_manager';
 import EphemeralModeManager from '@managers/ephemeral_mode_manager';
 import GlobalEventHandler from '@managers/global_event_handler';
 import NetworkManager from '@managers/network_manager';
@@ -47,6 +48,11 @@ export async function initialize() {
         // EphemeralModeManager init runs before WS init so any pending wipes
         // complete before WebSocket clients start populating server databases.
         await EphemeralModeManager.init(serverCredentials);
+
+        // Draft sync initializes after any pending ephemeral wipes finish and before
+        // WebSocket startup, so it never races a database that is being destroyed.
+        await Promise.all(serverUrls.map((serverUrl) => DraftSyncManager.initialize(serverUrl)));
+
         await WebsocketManager.init(serverCredentials);
     }
 
