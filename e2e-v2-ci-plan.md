@@ -322,8 +322,9 @@ Each stage ends with: **success criteria met → commit (not the plan) → push 
 
 - [x] `dispatch-begin` / worker matrix / `summary` for Detox iOS (`e2e-v2-detox-ios.yml`)
 - [x] Defaults: `worker_count=2`, `detox_search_path=e2e/test/products/channels/smoke_test`
-- [ ] `skip_build=true` + prior artifact once build is proven
-- [ ] Confirm report appears on staging dashboard
+- [x] `skip_build=true` + prior artifact (`artifact_run_id=30898279916`)
+- [x] Confirm report appears on staging dashboard
+- [x] Smoke green after autofill-v2 Save Password disable (run `30912082541`: 25 passed / 0 failed / 4 skipped)
 - **Success:** staging report URL in summary; majority (or all) of the narrowed suite green
 
 ### Stage 4 — Widen Detox iOS
