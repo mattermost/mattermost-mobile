@@ -61,26 +61,21 @@ export const timeouts = {
 };
 
 /**
- * Poll until a Detox system-dialog element exists (or deadline).
- * `waitFor` does not apply to `system.element(...)`.
+ * Race a system-dialog action so misses cannot inherit Detox's long
+ * default expectation timeout (which previously burned Jest's 5m hook budget).
  */
-const waitForSystemElement = async (
-    systemElement: {tap: () => Promise<void>},
-    timeout: number,
-): Promise<void> => {
-    const {expect: detoxExpect} = require('detox');
-    const deadline = Date.now() + timeout;
-    /* eslint-disable no-await-in-loop */
-    while (Date.now() < deadline) {
-        try {
-            await detoxExpect(systemElement).toExist();
-            return;
-        } catch {
-            await wait(timeouts.HALF_SEC);
-        }
-    }
-    /* eslint-enable no-await-in-loop */
-    await detoxExpect(systemElement).toExist();
+const withProbeTimeout = async <T>(action: Promise<T>, timeout: number): Promise<T> => {
+    return Promise.race([
+        action,
+        wait(timeout).then(() => {
+            throw new Error(`system dialog probe timeout after ${timeout}ms`);
+        }),
+    ]);
+};
+
+const isHittableOverlayError = (error: unknown): boolean => {
+    const msg = String(error);
+    return msg.includes('hittable') || msg.includes('Failed to hit view');
 };
 
 /**
@@ -93,8 +88,9 @@ const waitForSystemElement = async (
  * Passwords.app is a *system* dialog: app-level `element(by.text/label)` cannot
  * see it. Use Detox System APIs (`system.element(by.system.label(...))`).
  *
- * Optionally background/foreground only when the system title is confirmed
- * (never when the dialog is absent — that previously broke channel-list loading).
+ * Background/foreground only when a tab-bar control is proven unhittable (sheet
+ * covering the app). Never sendToHome when the dialog is absent — that previously
+ * broke channel-list loading.
  *
  * No-op on Android.
  */
@@ -110,16 +106,17 @@ export const dismissIosSavePasswordIfVisible = async (
 
     // Primary: Detox System API (XCUITest) — required for Passwords.app.
     try {
-        const notNow = system.element(by.system.label('Not Now'));
-        await waitForSystemElement(notNow, probeTimeout);
-        await notNow.tap();
+        await withProbeTimeout(
+            system.element(by.system.label('Not Now')).tap(),
+            probeTimeout,
+        );
         await wait(timeouts.HALF_SEC);
         return true;
     } catch {
         // Fall through.
     }
 
-    // Legacy app-hierarchy probes (rarely work for this sheet; cheap).
+    // Legacy app-hierarchy probe (cheap; rarely sees this sheet).
     try {
         const notNow = element(by.text('Not Now'));
         await waitFor(notNow).toBeVisible().withTimeout(timeouts.HALF_SEC);
@@ -134,11 +131,27 @@ export const dismissIosSavePasswordIfVisible = async (
         return false;
     }
 
-    // Confirm via system title before sendToHome.
+    // Delayed sheet: one short retry after a settle.
+    await wait(timeouts.ONE_SEC);
     try {
-        await waitForSystemElement(system.element(by.system.label('Save Password?')), timeouts.TWO_SEC);
+        await withProbeTimeout(
+            system.element(by.system.label('Not Now')).tap(),
+            timeouts.TWO_SEC,
+        );
+        await wait(timeouts.HALF_SEC);
+        return true;
     } catch {
+        // Fall through to hittability-gated sendToHome.
+    }
+
+    // Only background when the sheet is actually blocking hit-tests.
+    try {
+        await withProbeTimeout(element(by.id('tab_bar.home.tab')).tap(), timeouts.TWO_SEC);
         return false;
+    } catch (error) {
+        if (!isHittableOverlayError(error)) {
+            return false;
+        }
     }
 
     await device.sendToHome();
@@ -160,14 +173,14 @@ export const waitForChannelListAfterLogin = async (
     /* eslint-disable no-await-in-loop */
     while (Date.now() < deadline) {
         if (isIos()) {
-            await dismissIosSavePasswordIfVisible(timeouts.TWO_SEC, {allowBackgroundFallback: true});
+            await dismissIosSavePasswordIfVisible(timeouts.TWO_SEC, {allowBackgroundFallback: false});
         }
         try {
             await waitFor(channelListScreen).toExist().withTimeout(timeouts.TWO_SEC);
             // Sheet often appears after the list is already in the hierarchy.
             if (isIos()) {
                 await wait(timeouts.ONE_SEC);
-                await dismissIosSavePasswordIfVisible(timeouts.FIVE_SEC, {allowBackgroundFallback: true});
+                await dismissIosSavePasswordIfVisible(timeouts.THREE_SEC, {allowBackgroundFallback: true});
             }
             return;
         } catch {
@@ -177,7 +190,7 @@ export const waitForChannelListAfterLogin = async (
     /* eslint-enable no-await-in-loop */
     await waitFor(channelListScreen).toExist().withTimeout(timeouts.ONE_SEC);
     if (isIos()) {
-        await dismissIosSavePasswordIfVisible(timeouts.FIVE_SEC, {allowBackgroundFallback: true});
+        await dismissIosSavePasswordIfVisible(timeouts.THREE_SEC, {allowBackgroundFallback: true});
     }
 };
 
