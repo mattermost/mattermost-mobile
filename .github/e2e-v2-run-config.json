@@ -1,10 +1,10 @@
 {
-  "phase": "test",
+  "phase": "build_and_test",
   "mobile_ref": "",
   "framework": "detox",
-  "platform": "ios_and_ipad",
-  "skip_build": true,
-  "artifact_run_id": "30898279916",
+  "platform": "android",
+  "skip_build": false,
+  "artifact_run_id": "",
   "worker_count": "20",
   "detox_search_path": "e2e/test",
   "use_staging_test_system_io": true,
@@ -16,6 +16,6 @@
   "site_3_url": "https://mobile-pr-10006-site-3-btn56g5m.test.mattermost.cloud",
   "pr_number": "10006",
   "run_type": "PR",
-  "enabled": false,
-  "rerun_note": "paused while full ios+ipad run 30951070568 finishes; Stage 6 Android wired next"
+  "enabled": true,
+  "rerun_note": "stage6: Detox Android build_and_test e2e/test @ 20 workers on fresh servers"
 }
