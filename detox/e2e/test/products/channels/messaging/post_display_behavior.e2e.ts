@@ -23,7 +23,7 @@ import {
     PostOptionsScreen,
     ServerScreen,
 } from '@support/ui/screen';
-import {getRandomId, timeouts, wait} from '@support/utils';
+import {getRandomId, isAndroid, timeouts, wait} from '@support/utils';
 import {expect, waitFor} from 'detox';
 
 describe('Messaging - Post Display Behavior', () => {
@@ -75,7 +75,25 @@ describe('Messaging - Post Display Behavior', () => {
         await ChannelScreen.back();
     });
 
-    it('MM-T216_1 - should scroll to bottom when sending a message after scrolling up', async () => {
+    // Skipped on Android — SEC-11084 (under SEC-10781, Mobile E2E stabilization).
+    // iOS is green on this code and stays enabled.
+    //
+    // The test proves "the list left the bottom" by asserting the NEWEST post is no
+    // longer visible. On the Android emulator that post is 91px tall, so Espresso needs
+    // under ~45px of it showing before not.toBeVisible() holds — and the list reaches its
+    // content edge (20 filler posts) before that ever happens. whileElement().scroll()
+    // gives up when it can no longer scroll and rethrows, so the loop always throws:
+    //   'not (... covers at least <50> percent of the view's area)' doesn't match
+    //   Got: ReactViewGroup{... 0,0-1440,91} tag=channel.post_list.post.<id>
+    // Deterministic, not flaky: Android passed 7/7 on the previous single-drag version
+    // and has failed 2/2 since (PR #9972 7e2dc91, PR #9930 5f8707c9), identically.
+    //
+    // Do NOT re-tune the scroll distance — three budgets have been tried (5000px single
+    // drag, 2x500px, adaptive 300px) and each only moved the failure between platforms.
+    // Fix by proving movement positively instead, e.g. asserting an OLDER post became
+    // visible, which depends on neither viewport height nor a percentage-of-area
+    // threshold on a short row.
+    (isAndroid() ? it.skip : it)('MM-T216_1 - should scroll to bottom when sending a message after scrolling up', async () => {
         // # Create many posts via API to fill the channel history and enable scrolling
         for (let i = 0; i < 20; i++) {
             // eslint-disable-next-line no-await-in-loop
