@@ -12,8 +12,11 @@
 # Optional:
 #   PREBOOT_SKIP_PREWARM=1     — Maestro only (uses listapps readiness). Detox must pre-warm.
 #   PREBOOT_PREWARM_SECS       — first pre-warm wait (default 15; iPad often needs 10–15s).
-#   PREBOOT_GRANT_CALLS_PERMISSIONS=1 — also grant mic/camera. Detox stays notifications-only;
-#     extra privacy grants on iOS 26.x have corrupted TCC after failed simctl privacy calls.
+#
+# Grants notifications only. Maestro's Calls flows need mic/camera and grant them
+# themselves per batch (detox/maestro/scripts/run_ci_batches.sh
+# grant_ios_calls_permissions), so this script does not — see grant_notifications
+# for why extra privacy grants are avoided here.
 
 set -euo pipefail
 
@@ -92,12 +95,6 @@ grant_notifications() {
     if ! xcrun simctl privacy "$SIMULATOR_ID" grant notifications "$BUNDLE_ID"; then
         log "Warning: notification grant failed (continuing; Detox may re-request at launch)"
     fi
-}
-
-grant_calls_permissions() {
-    log "Pre-granting microphone and camera for Calls..."
-    xcrun simctl privacy "$SIMULATOR_ID" grant microphone "$BUNDLE_ID" || true
-    xcrun simctl privacy "$SIMULATOR_ID" grant camera "$BUNDLE_ID" || true
 }
 
 kill_app_via_launchd() {
@@ -232,9 +229,6 @@ fi
 seed_password_defaults
 install_app
 grant_notifications
-if [ "${PREBOOT_GRANT_CALLS_PERMISSIONS:-}" = "1" ]; then
-    grant_calls_permissions
-fi
 
 if [ "${PREBOOT_SKIP_PREWARM:-}" != "1" ]; then
     if ! prewarm_app "$PREWARM_SECS"; then

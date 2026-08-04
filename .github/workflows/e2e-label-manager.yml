@@ -239,8 +239,12 @@ jobs:
               core.info(`Cancelling E2E run ${run.id} (${run.status}, sha ${run.head_sha})`);
               try {
                 await github.rest.actions.cancelWorkflowRun({owner, repo, run_id: run.id});
-                // Normal cancel skips jobs with if: always(). Run-level force-cancel
-                // stops those too (e.g. build-ios-simulator on macos-26).
+                // The plain cancel above is what stops the expensive build jobs —
+                // they are `if: !cancelled()`, so cancelling the run ends them.
+                // What it does NOT stop is anything gated on `always()`, which
+                // keeps running through a cancellation (tsio-channel-notify, and
+                // the artifact-upload steps inside the build jobs). Run-level
+                // force-cancel stops those too.
                 await github.request('POST /repos/{owner}/{repo}/actions/runs/{run_id}/force-cancel', {
                   owner, repo, run_id: run.id,
                 });
@@ -570,8 +574,12 @@ jobs:
               core.info(`Cancelling E2E run ${run.id} (${run.status}, sha ${run.head_sha}) — E2E/Override applied`);
               try {
                 await github.rest.actions.cancelWorkflowRun({owner, repo, run_id: run.id});
-                // Normal cancel skips jobs with if: always(). Run-level force-cancel
-                // stops those too (e.g. build-ios-simulator on macos-26).
+                // The plain cancel above is what stops the expensive build jobs —
+                // they are `if: !cancelled()`, so cancelling the run ends them.
+                // What it does NOT stop is anything gated on `always()`, which
+                // keeps running through a cancellation (tsio-channel-notify, and
+                // the artifact-upload steps inside the build jobs). Run-level
+                // force-cancel stops those too.
                 await github.request('POST /repos/{owner}/{repo}/actions/runs/{run_id}/force-cancel', {
                   owner, repo, run_id: run.id,
                 });
