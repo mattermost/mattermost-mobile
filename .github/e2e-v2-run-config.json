@@ -1,5 +1,5 @@
 {
-  "phase": "scaffold",
+  "phase": "build",
   "mobile_ref": "",
   "framework": "detox",
   "platform": "ios",
