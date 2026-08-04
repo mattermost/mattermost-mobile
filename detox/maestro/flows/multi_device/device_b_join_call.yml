@@ -1,0 +1,71 @@
+# MM-T4831: Device B sees the join banner and joins User A's active call (multi-device).
+#
+# PRE-CONDITIONS:
+#   - Device A has started a call (device_a_start_call.yml completed)
+#   - User B logged in on Device B in the same channel
+#
+# REQUIRED ENV VARS:
+#   - MAESTRO_APP_ID, SITE_1_URL, TEST_USER_EMAIL, TEST_USER_PASSWORD, TEST_CHANNEL_NAME
+#
+# ASSERTIONS:
+#   - Join call banner appears in channel
+#   - Tapping Join opens call screen with mute control and participant list
+#
+# testIDs:
+#   - calls.join_call_banner.join
+#   - calls.current_call_bar
+#   - mute-unmute
+#   - users-list
+tags:
+  - MM-T4831
+appId: ${MAESTRO_APP_ID}
+---
+- runFlow: ../../subflows/auth/login.yml
+- runFlow: ../../subflows/navigation/navigate_to_channel.yml
+
+# The JoinCallBanner should appear at the top of the channel since Device A
+# started a call while Device B was logged in.
+- extendedWaitUntil:
+    visible:
+      id: "calls.join_call_banner.join"
+    timeout: 120000
+- takeScreenshot: calls-device-b-join-banner-visible
+
+# Grant microphone permission before tapping Join (system dialog appears after tap)
+- tapOn:
+    id: "calls.join_call_banner.join"
+
+# Grant permissions
+- tapOn:
+    text: "Allow"
+    optional: true
+- tapOn:
+    text: "Allow"
+    optional: true
+
+# Joining keeps the app on the channel view with a call bar overlay (same as starting
+# a call). Tap the call bar to open the full call screen so mute-unmute is accessible.
+- extendedWaitUntil:
+    visible:
+      id: "calls.current_call_bar"
+    timeout: 15000
+- tapOn:
+    id: "calls.current_call_bar"
+
+# Verify Device B is now on the call screen
+- extendedWaitUntil:
+    visible:
+      id: "mute-unmute"
+    timeout: 15000
+- takeScreenshot: calls-device-b-joined-call
+
+# Verify participants list shows both users (users-list renders one card per participant)
+- extendedWaitUntil:
+    visible:
+      id: "users-list"
+    timeout: 5000
+- takeScreenshot: calls-device-b-participants-visible
+
+# Leave intentionally omitted here for two-device orchestration:
+# device_a_verify_joined.yml runs on Device A while Device B is still on the call
+# screen, showing both participants. device_b_leave_call.yml handles cleanup after.

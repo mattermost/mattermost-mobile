@@ -1,0 +1,10 @@
+# Local dev fallback when EXPECTED_TIMEZONE_REGION is not passed: verify automatic
+# timezone is enabled and shows a non-empty region label (any device timezone).
+appId: ${MAESTRO_APP_ID}
+---
+- extendedWaitUntil:
+    visible:
+      id: "timezone_display_settings.automatic.option.description"
+    timeout: 60000
+- assertNotVisible:
+    text: "Off"
