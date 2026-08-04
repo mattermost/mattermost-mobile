@@ -23,7 +23,11 @@
 #
 #   5. Honor E2E/Override (labeled E2E/Override):
 #      Removes all E2E/Run* labels so no new run is dispatched, cancels the
-#      in-flight run, then posts success on every required e2e-test/* context.
+#      in-flight run, then marks success on the required e2e-test/* contexts that
+#      are actually blocking — pending, failing, or with no status yet. A platform
+#      that is genuinely green is left with its own result, and a failing one keeps
+#      its pass/fail counts plus an "- e2e overridden" suffix, so the checks list
+#      still shows what really happened.
 #      The run is cancelled because merging the PR triggers Matterwick's `closed`
 #      cleanup, which destroys the test servers mid-run — the surviving run would
 #      report infra teardown as a test failure into TSIO's per-spec history. A
@@ -588,11 +592,12 @@ jobs:
               }
             }
 
-      # Override means "merge without E2E results", so every required context has to
-      # go green on the PR head SHA — whether E2E never ran, already failed, or was
-      # just cancelled above. Statuses are keyed by SHA, so this also clears earlier
-      # failures. No statuses are posted from the cancel step; this is the single
-      # writer.
+      # Override means "merge without waiting on E2E", so every required context
+      # that is still blocking has to go green on the PR head SHA — whether E2E
+      # never ran, already failed, or was just cancelled above. Statuses are keyed
+      # by SHA, so this also clears earlier failures. Contexts that already pass on
+      # their own are left alone, so the checks list keeps their real results.
+      # No statuses are posted from the cancel step; this is the single writer.
       - name: Publish success on required E2E contexts
         if: >-
           github.event.pull_request.head.repo.full_name == github.repository
