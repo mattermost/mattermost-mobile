@@ -406,10 +406,9 @@ Cloud create/delete (when uncommented) will need whatever Cloud/Matterwick crede
 
 ## 11. Immediate next actions
 
-1. Push branch with plan + Stage 0–3 scaffolding — **no PR**.
-2. Dispatch Stage 0 scaffold from the Actions UI to confirm visibility.
-3. Run `e2e-v2-servers` configure/verify once; reuse URLs.
-4. Run Detox iOS build, then `skip_build` + staging test-system-io orchestration.
+1. ~~Stage 0–3 scaffolding + smoke Detox iOS on staging~~ (done; smoke 25p/0f).
+2. **Stage 4 in progress:** widen Detox iOS (`e2e/test`, exclude `ipad`, 10 workers).
+3. After majority green: Stage 5 Detox iPad → Stage 6 Android → Stage 7 Maestro.
 
 ---
 
