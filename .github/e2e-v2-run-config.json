@@ -1,10 +1,10 @@
 {
-  "phase": "build_and_test",
+  "phase": "test",
   "mobile_ref": "",
   "framework": "detox",
   "platform": "android",
-  "skip_build": false,
-  "artifact_run_id": "",
+  "skip_build": true,
+  "artifact_run_id": "30958774522",
   "worker_count": "20",
   "detox_search_path": "e2e/test",
   "use_staging_test_system_io": true,
@@ -17,5 +17,5 @@
   "pr_number": "10006",
   "run_type": "PR",
   "enabled": true,
-  "rerun_note": "stage6: Detox Android build_and_test e2e/test @ 20 workers on fresh servers"
+  "rerun_note": "stage6 retry: export ANDROID_AVD_HOME for Detox after BOOTSTRAP_ONLY; reuse APK 30958774522"
 }
