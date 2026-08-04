@@ -17,5 +17,6 @@
   "pr_number": "10006",
   "run_type": "PR",
   "enabled": true,
-  "rerun_note": "stage5: Detox iPad — e2e/test/products/channels/ipad, ios.ipad.debug, 2 workers (reuse artifact 30898279916)"
+  "rerun_note": "stage5 retry: fix SITE_3_URL GITHUB_OUTPUT newline; Detox iPad @ 2 workers"
 }
+

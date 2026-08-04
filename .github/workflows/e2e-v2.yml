@@ -134,7 +134,7 @@ permissions:
 concurrency:
   # Include workflow file hash-ish salt so a stuck macOS cancel cannot block
   # the next push indefinitely (GitHub sometimes leaves Detox workers uncancelled).
-  group: e2e-v2-${{ github.ref }}-r10
+  group: e2e-v2-${{ github.ref }}-r11
   cancel-in-progress: true
 
 env:
@@ -364,7 +364,8 @@ jobs:
             echo "android_site_2_url=${ANDROID_2}"
             echo "ios_site_1_url=${IOS_1}"
             echo "ios_site_2_url=${IOS_2}"
-            echo "site_3_url=${SITE_3}"            echo "pr_number=${PR}"
+            echo "site_3_url=${SITE_3}"
+            echo "pr_number=${PR}"
             echo "run_type=${RUN_TYPE}"
           } >> "$GITHUB_OUTPUT"
 
