@@ -3,6 +3,7 @@
 
 import {Q, type Database} from '@nozbe/watermelondb';
 
+import {reconcileTeamDrafts} from '@actions/remote/draft';
 import {MM_TABLES} from '@constants/database';
 import {DraftOutboxStatus, MAX_DRAFT_SYNC_EVENT_BUFFER} from '@constants/draft';
 import DatabaseManager from '@database/manager';
@@ -11,10 +12,16 @@ import {buildDraftOutboxId} from '@queries/servers/drafts';
 import {advanceTimers, disableFakeTimers, enableFakeTimers} from '@test/timer_helpers';
 import * as log from '@utils/log';
 
-import {exportedForTesting, default as DraftSyncManagerDefault} from './index';
+import {exportedForTesting, type ManagerBaselineInternals, default as DraftSyncManagerDefault} from './index';
 
 import type ServerDataOperator from '@database/operator/server_data_operator';
 import type DraftOutboxModel from '@typings/database/models/servers/draft_outbox';
+
+jest.mock('@actions/remote/draft', () => ({
+    reconcileTeamDrafts: jest.fn(),
+}));
+
+const mockedReconcile = jest.mocked(reconcileTeamDrafts);
 
 const {DRAFT_OUTBOX} = MM_TABLES.SERVER;
 const {DraftSyncManagerSingleton} = exportedForTesting;
@@ -32,6 +39,18 @@ type ManagerInternals = {
 
 const internals = (manager: InstanceType<typeof DraftSyncManagerSingleton>) =>
     manager as unknown as ManagerInternals;
+
+const baselineInternals = (manager: InstanceType<typeof DraftSyncManagerSingleton>) =>
+    manager as unknown as ManagerBaselineInternals;
+
+// flushMicrotasks: drain the promise queue so a fire-and-forget async reconcile (and any coalesced
+// re-run it drains) can settle under fake timers.
+const flushMicrotasks = async () => {
+    for (let i = 0; i < 10; i++) {
+        // eslint-disable-next-line no-await-in-loop
+        await new Promise(process.nextTick);
+    }
+};
 
 const fakeEvent = (): WebSocketMessage => ({
     event: 'draft_created',
@@ -79,6 +98,8 @@ describe('DraftSyncManager (Phase 3 shell)', () => {
         database = DatabaseManager.serverDatabases[SERVER_URL]!.database;
         operator = DatabaseManager.serverDatabases[SERVER_URL]!.operator;
         manager = new DraftSyncManagerSingleton();
+        mockedReconcile.mockReset();
+        mockedReconcile.mockResolvedValue({applied: 0, drafts: []});
     });
 
     afterEach(async () => {
@@ -225,6 +246,80 @@ describe('DraftSyncManager (Phase 3 shell)', () => {
             Q.where('status', DraftOutboxStatus.Pending),
         ).fetch();
         expect(rows.length).toBe(1);
+    });
+
+    describe('requestReconcile (Phase 4.1 additive reconciliation)', () => {
+        const enableManager = async () => {
+            await setSyncConfig('true');
+            await manager.initialize(SERVER_URL);
+        };
+
+        it('runs reconcileTeamDrafts and records a baseline on success', async () => {
+            await enableManager();
+            mockedReconcile.mockResolvedValue({applied: 2, drafts: []});
+
+            manager.requestReconcile(SERVER_URL, 'team1', 'test');
+            await flushMicrotasks();
+
+            expect(mockedReconcile).toHaveBeenCalledTimes(1);
+            expect(mockedReconcile).toHaveBeenCalledWith(SERVER_URL, 'team1');
+            expect(baselineInternals(manager).baseline[SERVER_URL]?.teamId).toBe('team1');
+        });
+
+        it('does not record a baseline when reconciliation fails', async () => {
+            await enableManager();
+            mockedReconcile.mockResolvedValue({error: new Error('boom')});
+
+            manager.requestReconcile(SERVER_URL, 'team1', 'test');
+            await flushMicrotasks();
+
+            expect(mockedReconcile).toHaveBeenCalledTimes(1);
+            expect(baselineInternals(manager).baseline[SERVER_URL]).toBeUndefined();
+        });
+
+        it('does not record a baseline when the epoch is invalidated mid-flight', async () => {
+            await enableManager();
+
+            let resolveReconcile: (v: {applied?: number}) => void = () => {};
+            mockedReconcile.mockReturnValue(new Promise((resolve) => {
+                resolveReconcile = resolve;
+            }));
+
+            manager.requestReconcile(SERVER_URL, 'team1', 'test');
+
+            // Invalidate while the reconcile await is still outstanding, then let it resolve.
+            manager.invalidate(SERVER_URL);
+            resolveReconcile({applied: 1});
+            await flushMicrotasks();
+
+            expect(baselineInternals(manager).baseline[SERVER_URL]).toBeUndefined();
+        });
+
+        it('coalesces rapid requests: reconciles once, then re-runs once for the coalesced request', async () => {
+            await enableManager();
+
+            let resolveFirst: (v: {applied?: number}) => void = () => {};
+            mockedReconcile.
+                mockReturnValueOnce(new Promise((resolve) => {
+                    resolveFirst = resolve;
+                })).
+                mockResolvedValue({applied: 0, drafts: []});
+
+            // First request starts in-flight; the second coalesces behind it.
+            manager.requestReconcile(SERVER_URL, 'team1', 'first');
+            manager.requestReconcile(SERVER_URL, 'team2', 'second');
+
+            expect(mockedReconcile).toHaveBeenCalledTimes(1);
+
+            // Settle the first pass; the coalesced request drains and runs exactly once more.
+            resolveFirst({applied: 1});
+            await flushMicrotasks();
+
+            expect(mockedReconcile).toHaveBeenCalledTimes(2);
+            expect(mockedReconcile).toHaveBeenNthCalledWith(1, SERVER_URL, 'team1');
+            expect(mockedReconcile).toHaveBeenNthCalledWith(2, SERVER_URL, 'team2');
+            expect(baselineInternals(manager).baseline[SERVER_URL]?.teamId).toBe('team2');
+        });
     });
 
     it('exposes a singleton default instance', () => {

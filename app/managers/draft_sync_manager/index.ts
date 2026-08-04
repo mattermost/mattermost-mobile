@@ -3,6 +3,7 @@
 
 import {Q, type Database} from '@nozbe/watermelondb';
 
+import {reconcileTeamDrafts} from '@actions/remote/draft';
 import {MM_TABLES} from '@constants/database';
 import {DraftOutboxStatus, MAX_DRAFT_SYNC_EVENT_BUFFER} from '@constants/draft';
 import DatabaseManager from '@database/manager';
@@ -58,6 +59,18 @@ class DraftSyncManagerSingleton {
     // lastReconcile: last requested reconciliation intent per server (Phase 3 records only).
     private lastReconcile: Record<string, {teamId: string; reason: string}> = {};
 
+    // baseline: the last successful reconciliation snapshot marker per server (teamId + timestamp).
+    // Set only after a reconcile whose epoch stayed valid succeeds. A later sub-step uses it to gate
+    // absence-based decisions; this sub-step only records it.
+    private baseline: Record<string, {teamId: string; at: number}> = {};
+
+    // reconcileInFlight: true while a reconcile await is outstanding for the server (single-flight).
+    private reconcileInFlight: Record<string, boolean> = {};
+
+    // reconcilePending: a coalesced reconcile request that arrived while one was in flight. Drained
+    // (run once) after the in-flight reconcile settles.
+    private reconcilePending: Record<string, {teamId: string} | undefined> = {};
+
     /**
      * initialize: idempotent per-server setup. Reads the draft-sync capability into `enabled` and,
      * when enabled, reconstructs the retry timer from the outbox. Safe to call when the server
@@ -98,8 +111,8 @@ class DraftSyncManagerSingleton {
     };
 
     /**
-     * requestReconcile: Phase 3 records the request (last teamId/reason) and ensures a retry timer
-     * exists. It does NOT perform a GET — baseline reconciliation is Phase 4.
+     * requestReconcile: records the request and fires the additive baseline reconciliation
+     * (fire-and-forget; synchronous by contract). Draining/absence-detection stay in later sub-steps.
      */
     public requestReconcile = (serverUrl: string, teamId: string, reason: string): void => {
         if (!this.isActive(serverUrl)) {
@@ -109,8 +122,59 @@ class DraftSyncManagerSingleton {
         this.lastReconcile[serverUrl] = {teamId, reason};
         logDebug('DraftSyncManager.requestReconcile', serverUrl, reason);
 
-        // Phase 4: trigger baseline reconciliation here (GET drafts for the team, diff, reconcile).
-        this.reconstructRetryTimer(serverUrl);
+        // Phase 4.1: additive baseline reconciliation (GET drafts for the team, apply the snapshot).
+        // Absence-based deletion and POST/DELETE draining are deliberately NOT done here.
+        this.reconcile(serverUrl, teamId);
+    };
+
+    /**
+     * reconcile: single-flight, epoch-guarded additive baseline reconciliation for a team. It applies
+     * the server snapshot via reconcileTeamDrafts (which never deletes for absence) and, on success,
+     * records the baseline. It never drains/POSTs/DELETEs. Concurrent requests coalesce: the latest
+     * teamId is remembered and run once after the in-flight pass settles.
+     */
+    private reconcile = async (serverUrl: string, teamId: string): Promise<void> => {
+        if (!this.isActive(serverUrl)) {
+            return;
+        }
+
+        if (this.reconcileInFlight[serverUrl]) {
+            // Coalesce: remember the latest request and let the in-flight pass drain it when it ends.
+            this.reconcilePending[serverUrl] = {teamId};
+            return;
+        }
+
+        this.reconcileInFlight[serverUrl] = true;
+        const captured = this.captureEpoch(serverUrl);
+
+        let res: Awaited<ReturnType<typeof reconcileTeamDrafts>>;
+        try {
+            res = await reconcileTeamDrafts(serverUrl, teamId);
+        } catch (error) {
+            res = {error};
+        }
+
+        // A concurrent invalidate/disable during the await discards this continuation entirely.
+        if (this.isEpochStale(serverUrl, captured) || !this.isActive(serverUrl)) {
+            this.reconcileInFlight[serverUrl] = false;
+            return;
+        }
+
+        if (res.error) {
+            // Failure: do NOT set a baseline. The heartbeat will re-request later.
+            logDebug('DraftSyncManager.reconcile: reconciliation failed', serverUrl);
+            this.reconstructRetryTimer(serverUrl);
+        } else {
+            this.baseline[serverUrl] = {teamId, at: Date.now()};
+        }
+
+        this.reconcileInFlight[serverUrl] = false;
+
+        const pending = this.reconcilePending[serverUrl];
+        if (pending) {
+            this.reconcilePending[serverUrl] = undefined;
+            this.reconcile(serverUrl, pending.teamId);
+        }
     };
 
     /**
@@ -184,6 +248,9 @@ class DraftSyncManagerSingleton {
         this.eventBuffers[serverUrl] = [];
         this.enabled[serverUrl] = false;
         this.lastReconcile[serverUrl] = {teamId: '', reason: ''};
+        delete this.baseline[serverUrl];
+        this.reconcileInFlight[serverUrl] = false;
+        this.reconcilePending[serverUrl] = undefined;
         logDebug('DraftSyncManager.invalidate', serverUrl);
     };
 
@@ -300,6 +367,12 @@ class DraftSyncManagerSingleton {
         if (!(serverUrl in this.activeCriticalSections)) {
             this.activeCriticalSections[serverUrl] = 0;
         }
+        if (!(serverUrl in this.reconcileInFlight)) {
+            this.reconcileInFlight[serverUrl] = false;
+        }
+        if (!(serverUrl in this.reconcilePending)) {
+            this.reconcilePending[serverUrl] = undefined;
+        }
     };
 
     // isActive: the server is present, enabled, and not invalidated (invalidate sets enabled=false).
@@ -319,4 +392,12 @@ export default DraftSyncManager;
 export const exportedForTesting = {
     DraftSyncManagerSingleton,
     RETRY_ELIGIBLE_STATUSES,
+};
+
+// ManagerBaselineInternals: narrow view onto the private baseline/single-flight state so tests can
+// assert reconciliation bookkeeping without adding production-only accessors.
+export type ManagerBaselineInternals = {
+    baseline: Record<string, {teamId: string; at: number}>;
+    reconcileInFlight: Record<string, boolean>;
+    reconcilePending: Record<string, {teamId: string} | undefined>;
 };
