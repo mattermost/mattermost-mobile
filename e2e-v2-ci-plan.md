@@ -408,8 +408,9 @@ Cloud create/delete (when uncommented) will need whatever Cloud/Matterwick crede
 
 1. ~~Stage 0–3 scaffolding + smoke Detox iOS on staging~~ (done; smoke 25p/0f).
 2. ~~Account Save Password race~~ (`about` / `custom_status` filter green).
-3. **Stage 4 filter:** `classification_banner/*` (lock wait was 2m vs suites expecting 20m; Account/Thread harness). Then full suite @ 20 workers.
-4. After 100% green: Stage 5 Detox iPad → Stage 6 Android → Stage 7 Maestro.
+3. ~~classification_banner filter~~ (lock wait + Account/Thread harness; 3p/0f).
+4. **Stage 4 full:** `e2e/test` (exclude `ipad`), **20 workers**. Require 100% pass.
+5. After 100% green: Stage 5 Detox iPad → Stage 6 Android → Stage 7 Maestro.
 
 ---
 
