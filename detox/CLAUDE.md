@@ -94,9 +94,12 @@ cd detox && npm run e2e:save-report
 
 | Tier | Trigger | Platform | Shards | Search Path | Approx Time |
 |------|---------|----------|--------|-------------|-------------|
-| **PR full** | Matterwick + `E2E/Run` label | Detox iOS/Android/iPad + Maestro | 20 Detox (iOS/Android), 1 iPad, 1 Maestro each | `detox/e2e/test` (full) | ~30–45+ min wall-clock |
+| **PR full** | Matterwick + `E2E/Run` label (auto on PRs → `main` only) | Detox iOS/Android/iPad + Maestro | 20 Detox (iOS/Android), 1 iPad, 1 Maestro each | `detox/e2e/test` (full) | ~30–45+ min wall-clock |
 | **Main** | Matterwick main push (`run_type=MASTER` today; `MAIN` also accepted → TSIO `mobile-main`) | Same as PR | Same as PR | `detox/e2e/test` | Same as PR |
 | **CMT / Release** | Matterwick on `build-release-*` → CMT | Detox + Maestro across server versions | Full suite on latest server; smoke subset on older | latest: `detox/e2e/test`; older: `…/smoke_test` | Varies by matrix |
+| **Release cherry-pick / PR → `release-*`** | **Manual** `E2E/Run` only (not auto-labeled) | Same as PR when labeled | Same as PR | `detox/e2e/test` | Same as PR |
+
+Cherry-picks and other PRs targeting `release-*` deliberately do **not** get auto `E2E/Run`: each mobile run holds five cloud installs, and auto-running on every release batch overloads provisioning. Add `E2E/Run` when coverage is needed. Cloud provisioning resilience under high create demand is being improved in Matterwick separately.
 
 Status contexts live under the `e2e-test/` namespace, matching the mattermost monorepo. PR/Main: `e2e-test/detox-ios`, `e2e-test/detox-android`, `e2e-test/detox-ipad`, `e2e-test/maestro-ios`, `e2e-test/maestro-android`. CMT: per-shard `e2e-test/<tsio-shard-name>` plus umbrella `e2e-test/compatibility-matrix-testing`. TSIO groups: `mobile-pr-<job>` / `mobile-main-<job>` / `mobile-release-<shard>`.
 

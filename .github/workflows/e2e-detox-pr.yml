@@ -9,6 +9,14 @@
 # main-branch pushes, RELEASE). Renaming the file would break the dispatch URL
 # above, so it needs a coordinated Matterwick change.
 #
+# Who gets E2E automatically vs manually:
+#   - PRs → main: auto E2E/Run via e2e-label-manager (app-impacting paths).
+#   - Push → main: Matterwick provisions + dispatches (run_type MAIN/MASTER).
+#   - Push → build-release-*: Matterwick CMT / release E2E.
+#   - PRs → release-* (incl. AutomatedCherryPick): manual E2E/Run only — see
+#     e2e-label-manager.yml base-branch guard. Capacity cost is five cloud
+#     servers per run; auto-trigger on cherry-pick batches is deliberately off.
+#
 # Newer dispatches cancel older in-flight runs on the same branch via the workflow
 # `concurrency` group below, so the latest SHA starts immediately instead of
 # queueing behind a long run.
