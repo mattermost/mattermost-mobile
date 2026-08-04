@@ -5,10 +5,14 @@ import {AppState, DeviceEventEmitter, Platform} from 'react-native';
 
 import {storeDeviceToken} from '@actions/app/global';
 import {markChannelAsViewed} from '@actions/local/channel';
+import {enqueueAuditEvent} from '@actions/local/ephemeral_mode/audit_queue';
 import {updateThread} from '@actions/local/thread';
 import {openNotification} from '@actions/remote/notifications';
 import {Device, Events, PushNotification, Screens} from '@constants';
+import {EphemeralModeAuditEventKind} from '@constants/ephemeral_mode';
 import DatabaseManager from '@database/manager';
+import {getServerCredentials} from '@init/credentials';
+import EphemeralModeManager from '@managers/ephemeral_mode_manager';
 import {getCurrentChannelId} from '@queries/servers/system';
 import {getIsCRTEnabled, getThreadById} from '@queries/servers/thread';
 import EphemeralStore from '@store/ephemeral_store';
@@ -85,6 +89,16 @@ jest.mock('@queries/servers/system', () => ({
 jest.mock('@queries/servers/thread', () => ({
     getIsCRTEnabled: jest.fn(),
     getThreadById: jest.fn(),
+}));
+jest.mock('@managers/ephemeral_mode_manager', () => ({
+    __esModule: true,
+    default: {isEphemeralModeEnabled: jest.fn()},
+}));
+jest.mock('@actions/local/ephemeral_mode/audit_queue', () => ({
+    enqueueAuditEvent: jest.fn(),
+}));
+jest.mock('@init/credentials', () => ({
+    getServerCredentials: jest.fn(),
 }));
 
 describe('PushNotifications', () => {
@@ -475,34 +489,102 @@ describe('PushNotifications', () => {
     });
 
     describe('handleSessionNotification', () => {
+        const SERVER_URL = 'http://test.com';
+        const NOW = 5_000;
+
         beforeEach(() => {
             jest.spyOn(DeviceEventEmitter, 'emit');
+            jest.spyOn(Date, 'now').mockReturnValue(NOW);
+            jest.mocked(EphemeralModeManager.isEphemeralModeEnabled).mockReturnValue(false);
+            jest.mocked(getServerCredentials).mockResolvedValue(null);
+            jest.mocked(enqueueAuditEvent).mockResolvedValue('audit-evt-1');
         });
 
-        it('should emit session expired event on user interaction', async () => {
+        afterEach(() => {
+            jest.mocked(Date.now).mockRestore();
+        });
+
+        it('should emit session expired event on user interaction without enqueueing an audit event', async () => {
+            jest.mocked(EphemeralModeManager.isEphemeralModeEnabled).mockReturnValue(true);
+            jest.mocked(getServerCredentials).mockResolvedValue({serverUrl: SERVER_URL, userId: 'user1', token: 'token'});
             const notification = {
                 payload: {
-                    server_url: 'http://test.com',
+                    server_url: SERVER_URL,
                 },
                 userInteraction: true,
             };
 
             await pushNotifications.handleSessionNotification(notification as any);
 
-            expect(DeviceEventEmitter.emit).toHaveBeenCalledWith(Events.SESSION_EXPIRED, 'http://test.com');
+            expect(DeviceEventEmitter.emit).toHaveBeenCalledWith(Events.SESSION_EXPIRED, SERVER_URL);
+            expect(enqueueAuditEvent).not.toHaveBeenCalled();
         });
 
-        it('should emit server logout event without user interaction', async () => {
+        it('should enqueue a sessionWipe audit event and emit server logout event on an ephemeral-mode server without user interaction', async () => {
+            jest.mocked(EphemeralModeManager.isEphemeralModeEnabled).mockReturnValue(true);
+            jest.mocked(getServerCredentials).mockResolvedValue({serverUrl: SERVER_URL, userId: 'user1', token: 'token'});
             const notification = {
                 payload: {
-                    server_url: 'http://test.com',
+                    server_url: SERVER_URL,
                 },
                 userInteraction: false,
             };
 
             await pushNotifications.handleSessionNotification(notification as any);
 
-            expect(DeviceEventEmitter.emit).toHaveBeenCalledWith(Events.SERVER_LOGOUT, {serverUrl: 'http://test.com'});
+            expect(enqueueAuditEvent).toHaveBeenCalledWith(SERVER_URL, {
+                kind: EphemeralModeAuditEventKind.SessionWipe,
+                userId: 'user1',
+                occurredAt: NOW,
+            });
+            expect(DeviceEventEmitter.emit).toHaveBeenCalledWith(Events.SERVER_LOGOUT, {serverUrl: SERVER_URL, auditEventId: 'audit-evt-1'});
+        });
+
+        it('should emit server logout event without enqueueing on a non-ephemeral-mode server', async () => {
+            jest.mocked(EphemeralModeManager.isEphemeralModeEnabled).mockReturnValue(false);
+            const notification = {
+                payload: {
+                    server_url: SERVER_URL,
+                },
+                userInteraction: false,
+            };
+
+            await pushNotifications.handleSessionNotification(notification as any);
+
+            expect(enqueueAuditEvent).not.toHaveBeenCalled();
+            expect(DeviceEventEmitter.emit).toHaveBeenCalledWith(Events.SERVER_LOGOUT, {serverUrl: SERVER_URL, auditEventId: undefined});
+        });
+
+        it('should emit server logout event without enqueueing when there are no keychain credentials', async () => {
+            jest.mocked(EphemeralModeManager.isEphemeralModeEnabled).mockReturnValue(true);
+            jest.mocked(getServerCredentials).mockResolvedValue(null);
+            const notification = {
+                payload: {
+                    server_url: SERVER_URL,
+                },
+                userInteraction: false,
+            };
+
+            await pushNotifications.handleSessionNotification(notification as any);
+
+            expect(enqueueAuditEvent).not.toHaveBeenCalled();
+            expect(DeviceEventEmitter.emit).toHaveBeenCalledWith(Events.SERVER_LOGOUT, {serverUrl: SERVER_URL, auditEventId: undefined});
+        });
+
+        it('should still emit server logout event when enqueueing the audit event rejects', async () => {
+            jest.mocked(EphemeralModeManager.isEphemeralModeEnabled).mockReturnValue(true);
+            jest.mocked(getServerCredentials).mockResolvedValue({serverUrl: SERVER_URL, userId: 'user1', token: 'token'});
+            jest.mocked(enqueueAuditEvent).mockRejectedValue(new Error('queue write failed'));
+            const notification = {
+                payload: {
+                    server_url: SERVER_URL,
+                },
+                userInteraction: false,
+            };
+
+            await pushNotifications.handleSessionNotification(notification as any);
+
+            expect(DeviceEventEmitter.emit).toHaveBeenCalledWith(Events.SERVER_LOGOUT, {serverUrl: SERVER_URL, auditEventId: undefined});
         });
     });
 

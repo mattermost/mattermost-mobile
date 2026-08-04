@@ -8,6 +8,7 @@ import {switchMap} from 'rxjs/operators';
 import {GLOBAL_IDENTIFIERS, MM_TABLES} from '@constants/database';
 import DatabaseManager from '@database/manager';
 
+import type {EphemeralModeAuditEvent} from '@constants/ephemeral_mode';
 import type GlobalModel from '@typings/database/models/app/global';
 
 const {APP: {GLOBAL}} = MM_TABLES;
@@ -106,6 +107,11 @@ export const getLastViewedChannelIdAndServer = async () => {
 export const getLastViewedThreadIdAndServer = async () => {
     const records = await queryGlobalValue(GLOBAL_IDENTIFIERS.LAST_VIEWED_THREAD)?.fetch();
     return records?.[0]?.value;
+};
+
+export const getEphemeralModeAuditEvents = async (serverUrl: string): Promise<EphemeralModeAuditEvent[]> => {
+    const records = await queryGlobalValue(`${GLOBAL_IDENTIFIERS.EPHEMERAL_MODE_AUDIT_QUEUE}${serverUrl}`)?.fetch();
+    return records?.[0]?.value ?? [];
 };
 
 export const observeTutorialWatched = (tutorial: string) => {

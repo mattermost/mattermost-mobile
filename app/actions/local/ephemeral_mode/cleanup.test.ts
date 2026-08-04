@@ -1,10 +1,13 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import {enqueueAuditEvent} from '@actions/local/ephemeral_mode/audit_queue';
 import * as LocalPost from '@actions/local/post';
+import {flushAuditQueue} from '@actions/remote/ephemeral_mode';
 import {AGENTS_TABLES} from '@agents/constants/database';
 import {Screens} from '@constants';
 import {MM_TABLES, SYSTEM_IDENTIFIERS} from '@constants/database';
+import {EphemeralModeAuditEventKind} from '@constants/ephemeral_mode';
 import {AUTO_CACHE_CLEANUP_PROTECTION_BUFFER} from '@constants/post';
 import DatabaseManager from '@database/manager';
 import EphemeralModeManager from '@managers/ephemeral_mode_manager';
@@ -52,6 +55,14 @@ jest.mock('@queries/servers/system', () => ({
 
 jest.mock('@actions/local/post', () => ({
     deletePostsInChannelsByCutoff: jest.fn(),
+}));
+
+jest.mock('@actions/local/ephemeral_mode/audit_queue', () => ({
+    enqueueAuditEvent: jest.fn(),
+}));
+
+jest.mock('@actions/remote/ephemeral_mode', () => ({
+    flushAuditQueue: jest.fn(),
 }));
 
 const SERVER_URL = 'cleanup.test.com';
@@ -115,7 +126,7 @@ describe('autoCacheCleanup', () => {
         jest.mocked(EphemeralStore.getCurrentFileViewerPostId).mockReturnValue('');
         jest.mocked(EphemeralStore.getCurrentPlaybookRunId).mockReturnValue('');
         jest.mocked(getCurrentChannelId).mockResolvedValue('');
-        jest.mocked(LocalPost.deletePostsInChannelsByCutoff).mockResolvedValue({error: undefined});
+        jest.mocked(LocalPost.deletePostsInChannelsByCutoff).mockResolvedValue({error: undefined, deletedCount: 0});
     });
 
     afterEach(async () => {
@@ -154,6 +165,21 @@ describe('autoCacheCleanup', () => {
 
         expect(LocalPost.deletePostsInChannelsByCutoff).toHaveBeenCalledTimes(1);
         expect(second).toEqual({error: undefined, skipped: true});
+        expect(enqueueAuditEvent).toHaveBeenCalledTimes(1);
+    });
+
+    it('does not run cleanup or enqueue an audit event when it already ran today', async () => {
+        // shouldRun compares against `new Date()` (no args), which isn't affected by the
+        // Date.now mock — seed with the real wall-clock time so both fall on today.
+        await operator.handleSystem({
+            systems: [{id: SYSTEM_IDENTIFIERS.LAST_AUTO_CACHE_CLEANUP_RUN, value: new Date().getTime()}],
+            prepareRecordsOnly: false,
+        });
+
+        await autoCacheCleanup(SERVER_URL);
+
+        expect(LocalPost.deletePostsInChannelsByCutoff).not.toHaveBeenCalled();
+        expect(enqueueAuditEvent).not.toHaveBeenCalled();
     });
 
     it('should skip the run without deleting anything when the cleanup already ran earlier today', async () => {
@@ -367,8 +393,49 @@ describe('autoCacheCleanup', () => {
         expect(result).toEqual({error: undefined});
     });
 
+    it('enqueues one cleanup event with the summed postsDeleted and flushes the queue, on a run that deletes posts across more than one channel', async () => {
+        const viewedChannelId = 'ch-viewed-audit';
+        const unprotectedChannelId = 'ch-unprotected-audit';
+        jest.spyOn(DatabaseManager, 'getActiveServerUrl').mockResolvedValue(SERVER_URL);
+        jest.mocked(NavigationStore.getScreensInStack).mockReturnValue([Screens.CHANNEL]);
+        jest.mocked(getCurrentChannelId).mockResolvedValue(viewedChannelId);
+        await writePiC(viewedChannelId, OLD, RECENT);
+        await writePiC(unprotectedChannelId, OLD, RECENT);
+        jest.mocked(LocalPost.deletePostsInChannelsByCutoff).
+            mockResolvedValueOnce({error: undefined, deletedCount: 3}).
+            mockResolvedValueOnce({error: undefined, deletedCount: 2});
+
+        await autoCacheCleanup(SERVER_URL);
+
+        expect(enqueueAuditEvent).toHaveBeenCalledWith(SERVER_URL, {
+            kind: EphemeralModeAuditEventKind.Cleanup,
+            postsDeleted: 5,
+            occurredAt: NOW,
+        });
+        expect(flushAuditQueue).toHaveBeenCalledWith(SERVER_URL);
+    });
+
+    it('enqueues a cleanup event with postsDeleted: 0 on a run that deletes nothing', async () => {
+        await autoCacheCleanup(SERVER_URL);
+
+        expect(enqueueAuditEvent).toHaveBeenCalledWith(SERVER_URL, {
+            kind: EphemeralModeAuditEventKind.Cleanup,
+            postsDeleted: 0,
+            occurredAt: NOW,
+        });
+    });
+
+    it('logs the error and does not flush when enqueueAuditEvent rejects', async () => {
+        jest.mocked(enqueueAuditEvent).mockRejectedValueOnce(new Error('queue write failed'));
+
+        await autoCacheCleanup(SERVER_URL);
+
+        expect(logError).toHaveBeenCalledWith('autoCacheCleanup enqueueAndFlushCleanupAuditEvent', 'queue write failed');
+        expect(flushAuditQueue).not.toHaveBeenCalled();
+    });
+
     it('should report the error when the unprotected-channels delete call returns an error', async () => {
-        jest.mocked(LocalPost.deletePostsInChannelsByCutoff).mockResolvedValueOnce({error: new Error('cleanup failed')});
+        jest.mocked(LocalPost.deletePostsInChannelsByCutoff).mockResolvedValueOnce({error: new Error('cleanup failed'), deletedCount: 0});
 
         await writePiC('ch-err');
 
@@ -376,6 +443,13 @@ describe('autoCacheCleanup', () => {
 
         expect(logError).toHaveBeenCalledWith('autoCacheCleanup', 'cleanup failed');
         expect(result).toEqual({error: new Error('cleanup failed')});
+        expect(enqueueAuditEvent).toHaveBeenCalledWith(SERVER_URL, {
+            kind: EphemeralModeAuditEventKind.Cleanup,
+            postsDeleted: 0,
+            occurredAt: NOW,
+            errorReason: 'cleanup failed before completion',
+        });
+        expect(flushAuditQueue).toHaveBeenCalledWith(SERVER_URL);
     });
 
     it('should log the error when the viewed-channel delete call returns an error', async () => {
@@ -385,7 +459,7 @@ describe('autoCacheCleanup', () => {
         jest.mocked(getCurrentChannelId).mockResolvedValue(viewedChannelId);
 
         await writePiC(viewedChannelId);
-        jest.mocked(LocalPost.deletePostsInChannelsByCutoff).mockResolvedValueOnce({error: new Error('viewed channel delete failed')});
+        jest.mocked(LocalPost.deletePostsInChannelsByCutoff).mockResolvedValueOnce({error: new Error('viewed channel delete failed'), deletedCount: 0});
 
         await autoCacheCleanup(SERVER_URL);
 
@@ -400,7 +474,7 @@ describe('autoCacheCleanup', () => {
         await writePost(rootId, threadParentChannelId, OLD);
 
         await writePiC(threadParentChannelId);
-        jest.mocked(LocalPost.deletePostsInChannelsByCutoff).mockResolvedValueOnce({error: new Error('thread parent channel delete failed')});
+        jest.mocked(LocalPost.deletePostsInChannelsByCutoff).mockResolvedValueOnce({error: new Error('thread parent channel delete failed'), deletedCount: 0});
 
         await autoCacheCleanup(SERVER_URL);
 
@@ -509,5 +583,28 @@ describe('autoCacheCleanup', () => {
         const items = await database.get(PLAYBOOK_CHECKLIST_ITEM).query().fetch();
         expect(checklists.length).toBe(0);
         expect(items.length).toBe(0);
+    });
+
+    it('reports the postsDeleted count already collected when playbook-run cleanup fails afterward', async () => {
+        const unprotectedChannelId = 'ch-unprotected-partial';
+        await writePiC(unprotectedChannelId, OLD, RECENT);
+        jest.mocked(LocalPost.deletePostsInChannelsByCutoff).mockResolvedValueOnce({error: undefined, deletedCount: 4});
+        await writePlaybookRun('run-partial-fail', OLD);
+
+        jest.spyOn(operator, 'batchRecords').mockImplementation(async (_records, description) => {
+            if (description === 'cleanupPlaybookRuns') {
+                throw new Error('playbook batch failed');
+            }
+        });
+
+        await autoCacheCleanup(SERVER_URL);
+
+        expect(logError).toHaveBeenCalledWith('autoCacheCleanup', 'playbook batch failed');
+        expect(enqueueAuditEvent).toHaveBeenCalledWith(SERVER_URL, {
+            kind: EphemeralModeAuditEventKind.Cleanup,
+            postsDeleted: 4,
+            occurredAt: NOW,
+            errorReason: 'cleanup failed before completion',
+        });
     });
 });
