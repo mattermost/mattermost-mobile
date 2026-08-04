@@ -27,7 +27,7 @@ import {
     ThreadScreen,
 } from '@support/ui/screen';
 import {getRandomId, timeouts} from '@support/utils';
-import {waitFor} from 'detox';
+import {expect, waitFor} from 'detox';
 
 describe('Threads - Reply to Thread', () => {
     const serverOneDisplayName = 'Server 1';
