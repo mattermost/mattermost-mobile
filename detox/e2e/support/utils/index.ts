@@ -65,38 +65,83 @@ export const timeouts = {
  *
  * On iOS 18+/26.x SharedWebCredentialViewService shows this sheet after login.
  * MDM `allowPasswordAutoFill=NO` only disables the keyboard toolbar — it does not
- * stop the sheet. Tap "Not Now" only; never sendToHome/relaunch (that previously
- * broke the channel-list pipeline when the dialog was absent).
+ * stop the sheet.
+ *
+ * Sync is disabled for the probe: with the sheet up, Detox idling can prevent
+ * waitFor from observing system-dialog buttons even when they are on screen.
+ *
+ * Prefer tapping "Not Now". Optionally background/foreground only when the
+ * "Save Password?" title is confirmed (never when the dialog is absent — that
+ * previously broke channel-list loading via unconditional sendToHome).
  *
  * No-op on Android.
  */
 export const dismissIosSavePasswordIfVisible = async (
-    probeTimeout = timeouts.TWO_SEC,
+    probeTimeout = timeouts.FIVE_SEC,
+    options: {allowBackgroundFallback?: boolean} = {},
 ): Promise<boolean> => {
     if (isAndroid()) {
         return false;
     }
 
-    // Keep the candidate list short: each miss burns probeTimeout.
-    const candidates = [
-        element(by.label('Not Now')).atIndex(0),
-        element(by.text('Not Now')).atIndex(0),
-    ];
+    const {allowBackgroundFallback = false} = options;
 
-    for (const btn of candidates) {
+    await device.disableSynchronization();
+    try {
+        // Primary matcher (matches the previously working Detox path).
         try {
-            // eslint-disable-next-line no-await-in-loop
-            await waitFor(btn).toExist().withTimeout(probeTimeout);
-            // eslint-disable-next-line no-await-in-loop
-            await btn.tap();
-            // eslint-disable-next-line no-await-in-loop
+            const notNow = element(by.text('Not Now'));
+            await waitFor(notNow).toBeVisible().withTimeout(probeTimeout);
+            await notNow.tap();
             await wait(timeouts.HALF_SEC);
             return true;
         } catch {
-            // Try next locator.
+            // Fall through to alternate locators.
         }
+
+        // Short alternate probes — do not multiply the full probeTimeout.
+        const alternates = [
+            element(by.label('Not Now')),
+            element(by.type('XCUIElementTypeButton').and(by.text('Not Now'))),
+        ];
+        for (const btn of alternates) {
+            try {
+                // eslint-disable-next-line no-await-in-loop
+                await waitFor(btn).toBeVisible().withTimeout(timeouts.HALF_SEC);
+                // eslint-disable-next-line no-await-in-loop
+                await btn.tap();
+                // eslint-disable-next-line no-await-in-loop
+                await wait(timeouts.HALF_SEC);
+                return true;
+            } catch {
+                // Try next locator.
+            }
+        }
+
+        if (!allowBackgroundFallback) {
+            return false;
+        }
+
+        // Confirm the sheet before sendToHome so an absent dialog never
+        // backgrounds the app (that used to break channel-list loading).
+        try {
+            await waitFor(element(by.text('Save Password?'))).toBeVisible().withTimeout(timeouts.TWO_SEC);
+        } catch {
+            try {
+                await waitFor(element(by.label('Save Password?'))).toBeVisible().withTimeout(timeouts.ONE_SEC);
+            } catch {
+                return false;
+            }
+        }
+
+        await device.sendToHome();
+        await wait(timeouts.HALF_SEC);
+        await device.launchApp({newInstance: false});
+        await wait(timeouts.ONE_SEC);
+        return true;
+    } finally {
+        await safeEnableSynchronization();
     }
-    return false;
 };
 
 /**
@@ -111,13 +156,14 @@ export const waitForChannelListAfterLogin = async (
     /* eslint-disable no-await-in-loop */
     while (Date.now() < deadline) {
         if (isIos()) {
-            await dismissIosSavePasswordIfVisible(timeouts.ONE_SEC);
+            await dismissIosSavePasswordIfVisible(timeouts.TWO_SEC, {allowBackgroundFallback: true});
         }
         try {
             await waitFor(channelListScreen).toExist().withTimeout(timeouts.TWO_SEC);
-            // Sheet can appear after the list exists; dismiss once more.
+            // Sheet often appears after the list is already in the hierarchy.
             if (isIos()) {
-                await dismissIosSavePasswordIfVisible(timeouts.TWO_SEC);
+                await wait(timeouts.ONE_SEC);
+                await dismissIosSavePasswordIfVisible(timeouts.FIVE_SEC, {allowBackgroundFallback: true});
             }
             return;
         } catch {
@@ -126,6 +172,9 @@ export const waitForChannelListAfterLogin = async (
     }
     /* eslint-enable no-await-in-loop */
     await waitFor(channelListScreen).toExist().withTimeout(timeouts.ONE_SEC);
+    if (isIos()) {
+        await dismissIosSavePasswordIfVisible(timeouts.FIVE_SEC, {allowBackgroundFallback: true});
+    }
 };
 
 export async function retryWithReload(
