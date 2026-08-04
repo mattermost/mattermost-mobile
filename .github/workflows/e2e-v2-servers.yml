@@ -1,0 +1,338 @@
+# E2E v2 — Mattermost test server lifecycle (create / configure / verify / delete).
+#
+# Separate from the test pipeline so one provisioned topology can be reused across
+# many e2e-v2.yml iterations. Create and delete steps are present but commented
+# during bootstrap so repeated dispatches do not spawn new cloud installs.
+#
+# Topology (same as v1 Matterwick layout):
+#   ANDROID_SITE_1/2, IOS_SITE_1/2, SITE_3 (shared)
+name: E2E v2 Servers
+
+on:
+  workflow_dispatch:
+    inputs:
+      action:
+        description: "Server lifecycle action"
+        required: true
+        type: choice
+        default: verify
+        options:
+          - create_and_configure
+          - configure_only
+          - verify
+          - delete
+      server_version:
+        description: "Cloud / Mattermost server version for create (unused while create is commented)"
+        required: false
+        type: string
+        default: ""
+      android_site_1_url:
+        description: "Android test server A URL"
+        required: false
+        type: string
+        default: ""
+      android_site_2_url:
+        description: "Android test server B URL"
+        required: false
+        type: string
+        default: ""
+      ios_site_1_url:
+        description: "iOS test server A URL"
+        required: false
+        type: string
+        default: ""
+      ios_site_2_url:
+        description: "iOS test server B URL"
+        required: false
+        type: string
+        default: ""
+      site_3_url:
+        description: "Shared fifth test server URL"
+        required: false
+        type: string
+        default: ""
+      mobile_ref:
+        description: "Git ref for detox/provision checkout"
+        required: false
+        type: string
+        default: ""
+
+permissions:
+  contents: read
+  actions: write
+
+concurrency:
+  group: e2e-v2-servers-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  # ---------------------------------------------------------------------------
+  # CREATE — commented during iteration. Uncomment when ready to spin installs
+  # once, then paste the logged URLs into configure_only / verify / e2e-v2.yml.
+  # ---------------------------------------------------------------------------
+  create:
+    name: Create cloud installs
+    if: inputs.action == 'create_and_configure'
+    runs-on: ubuntu-24.04
+    outputs:
+      android_site_1_url: ${{ steps.placeholder.outputs.android_site_1_url }}
+      android_site_2_url: ${{ steps.placeholder.outputs.android_site_2_url }}
+      ios_site_1_url: ${{ steps.placeholder.outputs.ios_site_1_url }}
+      ios_site_2_url: ${{ steps.placeholder.outputs.ios_site_2_url }}
+      site_3_url: ${{ steps.placeholder.outputs.site_3_url }}
+    steps:
+      - name: Create installs (DISABLED — uncomment to enable)
+        id: placeholder
+        run: |
+          echo "::error::Cloud create is intentionally disabled during v2 bootstrap."
+          echo "Uncomment the create steps in e2e-v2-servers.yml, or pass existing URLs"
+          echo "via workflow_dispatch and use action=configure_only / verify."
+          exit 1
+
+          # --- BEGIN create (commented for iteration safety) ---
+          # Call Mattermost Cloud / Matterwick-equivalent API for inputs.server_version.
+          # Write each URL to GITHUB_OUTPUT, then emit e2e-v2-server-urls.json and upload
+          # artifact e2e-v2-server-urls-<run_id>. Avoid GitHub expression markers in comments.
+          # --- END create ---
+
+  resolve-urls:
+    name: Resolve server URLs
+    runs-on: ubuntu-24.04
+    needs: [create]
+    if: always() && (needs.create.result == 'success' || needs.create.result == 'skipped')
+    outputs:
+      android_site_1_url: ${{ steps.resolve.outputs.android_site_1_url }}
+      android_site_2_url: ${{ steps.resolve.outputs.android_site_2_url }}
+      ios_site_1_url: ${{ steps.resolve.outputs.ios_site_1_url }}
+      ios_site_2_url: ${{ steps.resolve.outputs.ios_site_2_url }}
+      site_3_url: ${{ steps.resolve.outputs.site_3_url }}
+    steps:
+      - name: Prefer create outputs, else workflow inputs
+        id: resolve
+        run: |
+          pick() {
+            local from_create="$1" from_input="$2" name="$3"
+            if [ -n "$from_create" ]; then
+              echo "${name}=${from_create}" >> "$GITHUB_OUTPUT"
+            else
+              echo "${name}=${from_input}" >> "$GITHUB_OUTPUT"
+            fi
+          }
+          pick "${{ needs.create.outputs.android_site_1_url }}" "${{ inputs.android_site_1_url }}" android_site_1_url
+          pick "${{ needs.create.outputs.android_site_2_url }}" "${{ inputs.android_site_2_url }}" android_site_2_url
+          pick "${{ needs.create.outputs.ios_site_1_url }}" "${{ inputs.ios_site_1_url }}" ios_site_1_url
+          pick "${{ needs.create.outputs.ios_site_2_url }}" "${{ inputs.ios_site_2_url }}" ios_site_2_url
+          pick "${{ needs.create.outputs.site_3_url }}" "${{ inputs.site_3_url }}" site_3_url
+
+  validate-urls:
+    name: Validate server URLs
+    runs-on: ubuntu-24.04
+    needs: [resolve-urls]
+    if: >-
+      always()
+      && needs.resolve-urls.result == 'success'
+      && contains(fromJSON('["create_and_configure","configure_only","verify","delete"]'), inputs.action)
+    steps:
+      - name: Allowlist HTTPS validation
+        env:
+          ANDROID_SITE_1_URL: ${{ needs.resolve-urls.outputs.android_site_1_url }}
+          ANDROID_SITE_2_URL: ${{ needs.resolve-urls.outputs.android_site_2_url }}
+          IOS_SITE_1_URL: ${{ needs.resolve-urls.outputs.ios_site_1_url }}
+          IOS_SITE_2_URL: ${{ needs.resolve-urls.outputs.ios_site_2_url }}
+          SITE_3_URL: ${{ needs.resolve-urls.outputs.site_3_url }}
+          REQUIRE_URLS: ${{ inputs.action != 'delete' && 'true' || 'false' }}
+        run: |
+          validate_url() {
+            local url="$1" label="$2"
+            if [ -z "$url" ]; then
+              if [ "$REQUIRE_URLS" = "true" ]; then
+                echo "::error::$label is required for action=${{ inputs.action }}"
+                exit 1
+              fi
+              return 0
+            fi
+            if [[ "$url" =~ [[:space:]] ]]; then
+              echo "::error::$label contains whitespace: $url"
+              exit 1
+            fi
+            if [[ ! "$url" =~ ^https:// ]]; then
+              echo "::error::$label must use HTTPS: $url"
+              exit 1
+            fi
+            hostname=$(python3 -c 'import sys; from urllib.parse import urlparse; print(urlparse(sys.argv[1]).hostname or "")' "$url" | tr '[:upper:]' '[:lower:]')
+            if echo "$hostname" | grep -qE '^(127\.|10\.|172\.(1[6-9]|2[0-9]|3[01])\.|192\.168\.|0\.|localhost|::1$|::ffff:|fe80:)'; then
+              echo "::error::$label points to a private/internal address: $hostname"
+              exit 1
+            fi
+            if ! echo "$hostname" | grep -qE '\.(cloud\.mattermost\.com|test\.mattermost\.cloud|mattermost\.com|mattermost\.cloud)$'; then
+              echo "::error::$label domain not in allowlist: $hostname"
+              exit 1
+            fi
+            echo "✓ $label validated: $hostname"
+          }
+
+          validate_url "$ANDROID_SITE_1_URL" "ANDROID_SITE_1_URL"
+          validate_url "$ANDROID_SITE_2_URL" "ANDROID_SITE_2_URL"
+          validate_url "$IOS_SITE_1_URL" "IOS_SITE_1_URL"
+          validate_url "$IOS_SITE_2_URL" "IOS_SITE_2_URL"
+          validate_url "$SITE_3_URL" "SITE_3_URL"
+
+  configure:
+    name: Configure (license + plugins)
+    runs-on: ubuntu-24.04
+    needs: [resolve-urls, validate-urls]
+    if: >-
+      always()
+      && needs.validate-urls.result == 'success'
+      && contains(fromJSON('["create_and_configure","configure_only"]'), inputs.action)
+    steps:
+      - name: Checkout
+        uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
+        with:
+          ref: ${{ inputs.mobile_ref || github.sha }}
+          persist-credentials: false
+
+      - name: Cache demo plugin fixture
+        id: demo-plugin-cache
+        uses: actions/cache@27d5ce7f107fe9357f9df03efb73ab90386fccae # v5.0.5
+        with:
+          path: detox/e2e/support/fixtures/mattermost-plugin-demo-v0.11.1-linux-amd64.tar.gz
+          key: mattermost-plugin-demo-linux-amd64-v0.11.1
+
+      - name: Download demo plugin fixture
+        if: steps.demo-plugin-cache.outputs.cache-hit != 'true'
+        run: |
+          mkdir -p detox/e2e/support/fixtures
+          curl -fsSL -o detox/e2e/support/fixtures/mattermost-plugin-demo-v0.11.1-linux-amd64.tar.gz \
+            "https://github.com/mattermost/mattermost-plugin-demo/releases/download/v0.11.1/mattermost-plugin-demo-v0.11.1-linux-amd64.tar.gz"
+
+      - name: Provision servers
+        env:
+          ANDROID_SITE_1_URL: ${{ needs.resolve-urls.outputs.android_site_1_url }}
+          ANDROID_SITE_2_URL: ${{ needs.resolve-urls.outputs.android_site_2_url }}
+          IOS_SITE_1_URL: ${{ needs.resolve-urls.outputs.ios_site_1_url }}
+          IOS_SITE_2_URL: ${{ needs.resolve-urls.outputs.ios_site_2_url }}
+          SITE_3_URL: ${{ needs.resolve-urls.outputs.site_3_url }}
+          ADMIN_USERNAME: ${{ secrets.MM_MOBILE_E2E_ADMIN_USERNAME }}
+          ADMIN_PASSWORD: ${{ secrets.MM_MOBILE_E2E_ADMIN_PASSWORD }}
+        run: |
+          cd detox
+          npm ci --prefer-offline --no-audit --no-fund
+          declare -A provisioned=()
+          for url in "$ANDROID_SITE_1_URL" "$ANDROID_SITE_2_URL" "$IOS_SITE_1_URL" "$IOS_SITE_2_URL" "$SITE_3_URL"; do
+            if [ -n "$url" ] && [ -z "${provisioned[$url]+x}" ]; then
+              echo "--- Provisioning $url ---"
+              npm run provision -- "$url"
+              provisioned["$url"]=1
+            fi
+          done
+
+  verify:
+    name: Verify servers accessible
+    runs-on: ubuntu-24.04
+    needs: [resolve-urls, validate-urls, configure]
+    if: >-
+      always()
+      && needs.validate-urls.result == 'success'
+      && (needs.configure.result == 'success' || needs.configure.result == 'skipped')
+      && contains(fromJSON('["create_and_configure","configure_only","verify"]'), inputs.action)
+    steps:
+      - name: Ping each server
+        env:
+          ANDROID_SITE_1_URL: ${{ needs.resolve-urls.outputs.android_site_1_url }}
+          ANDROID_SITE_2_URL: ${{ needs.resolve-urls.outputs.android_site_2_url }}
+          IOS_SITE_1_URL: ${{ needs.resolve-urls.outputs.ios_site_1_url }}
+          IOS_SITE_2_URL: ${{ needs.resolve-urls.outputs.ios_site_2_url }}
+          SITE_3_URL: ${{ needs.resolve-urls.outputs.site_3_url }}
+        run: |
+          ping_one() {
+            local url="$1" label="$2"
+            [ -z "$url" ] && return 0
+            local base="${url%/}"
+            echo "--- $label: $base/api/v4/system/ping ---"
+            code=$(curl -fsS -o /tmp/ping.json -w "%{http_code}" --max-time 30 "$base/api/v4/system/ping" || true)
+            if [ "$code" != "200" ]; then
+              echo "::error::$label ping failed (HTTP $code): $base"
+              cat /tmp/ping.json 2>/dev/null || true
+              exit 1
+            fi
+            echo "✓ $label reachable (HTTP 200)"
+            cat /tmp/ping.json
+            echo
+          }
+
+          ping_one "$ANDROID_SITE_1_URL" "ANDROID_SITE_1_URL"
+          ping_one "$ANDROID_SITE_2_URL" "ANDROID_SITE_2_URL"
+          ping_one "$IOS_SITE_1_URL" "IOS_SITE_1_URL"
+          ping_one "$IOS_SITE_2_URL" "IOS_SITE_2_URL"
+          ping_one "$SITE_3_URL" "SITE_3_URL"
+
+      - name: Write reusable URL summary + artifact
+        env:
+          ANDROID_SITE_1_URL: ${{ needs.resolve-urls.outputs.android_site_1_url }}
+          ANDROID_SITE_2_URL: ${{ needs.resolve-urls.outputs.android_site_2_url }}
+          IOS_SITE_1_URL: ${{ needs.resolve-urls.outputs.ios_site_1_url }}
+          IOS_SITE_2_URL: ${{ needs.resolve-urls.outputs.ios_site_2_url }}
+          SITE_3_URL: ${{ needs.resolve-urls.outputs.site_3_url }}
+        run: |
+          jq -n \
+            --arg a1 "$ANDROID_SITE_1_URL" \
+            --arg a2 "$ANDROID_SITE_2_URL" \
+            --arg i1 "$IOS_SITE_1_URL" \
+            --arg i2 "$IOS_SITE_2_URL" \
+            --arg s3 "$SITE_3_URL" \
+            --arg run_id "${{ github.run_id }}" \
+            --arg verified_at "$(date -u +%Y-%m-%dT%H:%M:%SZ)" \
+            '{android_site_1_url:$a1, android_site_2_url:$a2, ios_site_1_url:$i1, ios_site_2_url:$i2, site_3_url:$s3, run_id:$run_id, verified_at:$verified_at}' \
+            > e2e-v2-server-urls.json
+
+          {
+            echo "## E2E v2 server URLs (reuse these)"
+            echo ""
+            echo "| Slot | URL |"
+            echo "|------|-----|"
+            echo "| android_site_1_url | \`$ANDROID_SITE_1_URL\` |"
+            echo "| android_site_2_url | \`$ANDROID_SITE_2_URL\` |"
+            echo "| ios_site_1_url | \`$IOS_SITE_1_URL\` |"
+            echo "| ios_site_2_url | \`$IOS_SITE_2_URL\` |"
+            echo "| site_3_url | \`$SITE_3_URL\` |"
+            echo ""
+            echo "Paste into **E2E v2** workflow_dispatch inputs. Artifact: \`e2e-v2-server-urls-${{ github.run_id }}\`."
+          } >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Upload server URL artifact
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: e2e-v2-server-urls-${{ github.run_id }}
+          path: e2e-v2-server-urls.json
+
+  # ---------------------------------------------------------------------------
+  # DELETE — commented during iteration. Uncomment when tearing down a topology
+  # that is no longer usable.
+  # ---------------------------------------------------------------------------
+  delete:
+    name: Delete cloud installs
+    if: inputs.action == 'delete'
+    runs-on: ubuntu-24.04
+    needs: [resolve-urls, validate-urls]
+    steps:
+      - name: Delete installs (DISABLED — uncomment to enable)
+        env:
+          ANDROID_SITE_1_URL: ${{ needs.resolve-urls.outputs.android_site_1_url }}
+          ANDROID_SITE_2_URL: ${{ needs.resolve-urls.outputs.android_site_2_url }}
+          IOS_SITE_1_URL: ${{ needs.resolve-urls.outputs.ios_site_1_url }}
+          IOS_SITE_2_URL: ${{ needs.resolve-urls.outputs.ios_site_2_url }}
+          SITE_3_URL: ${{ needs.resolve-urls.outputs.site_3_url }}
+        run: |
+          echo "::error::Cloud delete is intentionally disabled during v2 bootstrap."
+          echo "URLs that would be deleted:"
+          printf '  %s\n' "$ANDROID_SITE_1_URL" "$ANDROID_SITE_2_URL" "$IOS_SITE_1_URL" "$IOS_SITE_2_URL" "$SITE_3_URL"
+          exit 1
+
+          # --- BEGIN delete (commented for iteration safety) ---
+          # for url in "$ANDROID_SITE_1_URL" "$ANDROID_SITE_2_URL" "$IOS_SITE_1_URL" "$IOS_SITE_2_URL" "$SITE_3_URL"; do
+          #   [ -z "$url" ] && continue
+          #   echo "Deleting $url via Cloud API..."
+          #   # curl ... delete installation for "$url"
+          # done
+          # --- END delete ---

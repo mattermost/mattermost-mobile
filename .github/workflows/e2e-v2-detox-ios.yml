@@ -1,0 +1,361 @@
+# E2E v2 — Detox iOS (phone) via test-system-io orchestration (staging by default).
+# Called from e2e-v2.yml. Does not build the app; downloads e2e-v2-ios-simulator-* artifacts.
+name: E2E v2 Detox iOS
+
+on:
+  workflow_call:
+    inputs:
+      mobile_ref:
+        required: true
+        type: string
+      artifact_run_id:
+        required: true
+        type: string
+      worker_count:
+        required: true
+        type: string
+      detox_search_path:
+        description: "Path relative to detox/ (e.g. e2e/test/products/channels/smoke_test)"
+        required: true
+        type: string
+      detox_exclude_dir:
+        required: false
+        type: string
+        default: ipad
+      detox_config:
+        required: false
+        type: string
+        default: ios.sim.debug
+      ios_site_1_url:
+        required: true
+        type: string
+      ios_site_2_url:
+        required: false
+        type: string
+        default: ""
+      site_3_url:
+        required: false
+        type: string
+        default: ""
+      use_staging_test_system_io:
+        required: false
+        type: boolean
+        default: true
+      run_type:
+        required: false
+        type: string
+        default: PR
+      pr_number:
+        required: false
+        type: string
+        default: ""
+      branch:
+        required: false
+        type: string
+        default: ""
+      commit_sha:
+        required: true
+        type: string
+      identity_name:
+        required: false
+        type: string
+        default: mobile-v2-pr-detox-ios
+      commit_status_context:
+        required: false
+        type: string
+        default: e2e-test-v2/detox-ios
+      ios_device_name:
+        required: false
+        type: string
+        default: iPhone 17 Pro
+      ios_device_os_name:
+        required: false
+        type: string
+        default: iOS 26.2
+      fail_on_test_failures:
+        required: false
+        type: boolean
+        default: true
+      post_commit_status:
+        required: false
+        type: boolean
+        default: true
+    secrets:
+      MM_MOBILE_E2E_ADMIN_EMAIL:
+        required: false
+      MM_MOBILE_E2E_ADMIN_USERNAME:
+        required: false
+      MM_MOBILE_E2E_ADMIN_PASSWORD:
+        required: false
+
+# Pin: mattermost-test-system-io main (Detox orchestration).
+env:
+  TEST_SYSTEM_IO_ACTIONS_SHA: 2d15ae40a9f133d12a4024151826e52226f742a2
+  DEVICE_NAME: ${{ inputs.ios_device_name }}
+  DEVICE_OS_VERSION: ${{ inputs.ios_device_os_name }}
+  ARTIFACT_RUN_ID: ${{ inputs.artifact_run_id }}
+  ADMIN_EMAIL: ${{ secrets.MM_MOBILE_E2E_ADMIN_EMAIL }}
+  ADMIN_USERNAME: ${{ secrets.MM_MOBILE_E2E_ADMIN_USERNAME }}
+  ADMIN_PASSWORD: ${{ secrets.MM_MOBILE_E2E_ADMIN_PASSWORD }}
+  IOS: "true"
+  CI: "true"
+
+permissions:
+  contents: read
+  id-token: write
+  actions: read
+  statuses: write
+
+jobs:
+  begin:
+    name: orch-begin-detox-ios
+    runs-on: ubuntu-24.04
+    outputs:
+      identity-json: ${{ steps.identity.outputs.identity-json }}
+      report-url: ${{ steps.begin.outputs.report-url }}
+      total-units: ${{ steps.begin.outputs.total-units }}
+      worker-shards: ${{ steps.matrix.outputs.shards }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
+        with:
+          ref: ${{ inputs.mobile_ref }}
+          persist-credentials: false
+
+      - name: Composite identity
+        id: identity
+        env:
+          REPO: ${{ github.repository }}
+          SHA: ${{ inputs.commit_sha }}
+          RUN_ID: ${{ github.run_id }}
+          ATTEMPT: ${{ github.run_attempt }}
+          NAME: ${{ inputs.identity_name }}
+          BRANCH: ${{ inputs.branch || github.ref_name }}
+          PR: ${{ inputs.pr_number }}
+          RUN_TYPE: ${{ inputs.run_type }}
+        run: |
+          IDENTITY=$(jq -nc \
+            --arg repo "$REPO" \
+            --arg sha "$SHA" \
+            --arg run_id "$RUN_ID" \
+            --arg name "$NAME" \
+            --arg attempt "$ATTEMPT" \
+            --arg branch "$BRANCH" \
+            --arg pr "$PR" \
+            '{
+              repository: $repo,
+              commit_sha: $sha,
+              gh_run_id: $run_id,
+              gh_run_attempt: $attempt,
+              name: $name,
+              branch: $branch
+            }
+            + (if $pr != "" then {gh_pr_number: ($pr|tonumber)} else {} end)')
+          echo "identity-json=${IDENTITY}" >> "$GITHUB_OUTPUT"
+          echo "Identity: ${IDENTITY} (run_type=${RUN_TYPE})"
+
+      - name: Worker matrix JSON
+        id: matrix
+        env:
+          N: ${{ inputs.worker_count }}
+        run: |
+          SHARDS=$(python3 -c "import json,os; print(json.dumps(list(range(1, int(os.environ['N'])+1))))")
+          echo "shards=${SHARDS}" >> "$GITHUB_OUTPUT"
+          echo "Workers: ${SHARDS}"
+
+      - name: test-system-io dispatch begin
+        id: begin
+        uses: mattermost/mattermost-test-system-io/.github/actions/test-system-io-dispatch-begin@2d15ae40a9f133d12a4024151826e52226f742a2
+        with:
+          use-staging: ${{ inputs.use_staging_test_system_io && 'true' || 'false' }}
+          framework: detox
+          composite-identity: ${{ steps.identity.outputs.identity-json }}
+          repo-dir: ${{ github.workspace }}
+          total-reports-expected: ${{ inputs.worker_count }}
+          detox-dir: detox
+          detox-search-path: ${{ inputs.detox_search_path }}
+          detox-exclude-dir: ${{ inputs.detox_exclude_dir }}
+          post-pending-commit-status: ${{ inputs.post_commit_status && 'true' || 'false' }}
+          commit-status-context: ${{ inputs.commit_status_context }}
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          # Long Detox specs: 20m lease / 30m idle during bootstrap
+          lease-timeout-ms: "1200000"
+          idle-timeout-ms: "1800000"
+
+      - name: Begin summary
+        run: |
+          {
+            echo "## Detox iOS orchestration begin"
+            echo ""
+            echo "- report: ${{ steps.begin.outputs.report-url }}"
+            echo "- total units: ${{ steps.begin.outputs.total-units }}"
+            echo "- workers: ${{ inputs.worker_count }}"
+            echo "- search path: \`${{ inputs.detox_search_path }}\`"
+            echo "- staging: ${{ inputs.use_staging_test_system_io }}"
+          } >> "$GITHUB_STEP_SUMMARY"
+
+  workers:
+    name: detox-ios-worker-${{ matrix.shard }}
+    needs: [begin]
+    runs-on: macos-15
+    timeout-minutes: 180
+    strategy:
+      fail-fast: false
+      matrix:
+        shard: ${{ fromJSON(needs.begin.outputs.worker-shards) }}
+    env:
+      SITE_1_URL: ${{ inputs.ios_site_1_url }}
+      SITE_2_URL: ${{ inputs.ios_site_2_url }}
+      SITE_3_URL: ${{ inputs.site_3_url }}
+      IOS_SITE_1_URL: ${{ inputs.ios_site_1_url }}
+      IOS_SITE_2_URL: ${{ inputs.ios_site_2_url }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
+        with:
+          ref: ${{ inputs.mobile_ref }}
+          persist-credentials: false
+
+      - name: ci/prepare-node-deps
+        uses: ./.github/actions/prepare-node-deps
+
+      - name: Cache Homebrew applesimutils
+        uses: actions/cache@27d5ce7f107fe9357f9df03efb73ab90386fccae # v5.0.5
+        with:
+          path: |
+            ~/Library/Caches/Homebrew
+            /opt/homebrew/Cellar/applesimutils
+          key: ${{ runner.os }}-${{ runner.arch }}-brew-applesimutils-v1
+          restore-keys: ${{ runner.os }}-${{ runner.arch }}-brew-applesimutils-
+
+      - name: Install applesimutils
+        run: |
+          brew tap wix/brew
+          brew trust wix/brew
+          if brew list --formula wix/brew/applesimutils &>/dev/null || brew list --formula applesimutils &>/dev/null; then
+            brew link --overwrite --force wix/brew/applesimutils 2>/dev/null \
+              || brew link --overwrite --force applesimutils
+          else
+            brew install applesimutils
+            brew link --overwrite --force wix/brew/applesimutils 2>/dev/null \
+              || brew link --overwrite --force applesimutils
+          fi
+          command -v applesimutils
+
+      - name: Download iOS simulator build
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+        with:
+          name: e2e-v2-ios-simulator-${{ env.ARTIFACT_RUN_ID }}
+          run-id: ${{ env.ARTIFACT_RUN_ID }}
+          github-token: ${{ github.token }}
+          path: mobile-artifacts
+
+      - name: Unzip iOS simulator build
+        run: |
+          unzip -o mobile-artifacts/*.zip -d mobile-artifacts/
+          rm -f mobile-artifacts/*.zip
+          ls -la mobile-artifacts/
+
+      - name: Cache detox node_modules
+        uses: actions/cache@27d5ce7f107fe9357f9df03efb73ab90386fccae # v5.0.5
+        with:
+          path: detox/node_modules
+          key: ${{ runner.os }}-detox-deps-${{ hashFiles('detox/package-lock.json') }}
+          restore-keys: ${{ runner.os }}-detox-deps-
+
+      - name: Install Detox dependencies
+        run: cd detox && npm ci --prefer-offline --no-audit --no-fund
+
+      - name: Get Xcode version
+        id: xcode-version
+        run: echo "version=$(xcodebuild -version | head -1 | sed 's/Xcode //')" >> "$GITHUB_OUTPUT"
+
+      - name: Cache Detox framework
+        id: detox-framework-cache
+        uses: actions/cache@27d5ce7f107fe9357f9df03efb73ab90386fccae # v5.0.5
+        with:
+          path: ~/Library/Detox/ios
+          key: ${{ runner.os }}-${{ runner.arch }}-detox-framework-${{ hashFiles('detox/package-lock.json') }}-xcode-${{ steps.xcode-version.outputs.version }}
+
+      - name: Build Detox framework cache
+        if: steps.detox-framework-cache.outputs.cache-hit != 'true'
+        run: cd detox && npx detox build-framework-cache
+
+      - name: Pre-boot iOS simulator
+        env:
+          DEVICE_NAME: ${{ env.DEVICE_NAME }}
+          DEVICE_OS_VERSION: ${{ env.DEVICE_OS_VERSION }}
+        run: bash detox/scripts/preboot_ios_simulator.sh
+
+      - name: Set RUNNING_E2E
+        run: echo "RUNNING_E2E=true" > .env
+
+      - name: Start Metro bundler
+        run: |
+          npm run start > metro.log 2>&1 &
+          METRO_PID=$!
+          echo "METRO_PID=$METRO_PID" >> "$GITHUB_ENV"
+          timeout=120
+          elapsed=0
+          while [ $elapsed -lt $timeout ]; do
+            if curl -s http://localhost:8081/status 2>/dev/null | grep -q "packager-status:running"; then
+              echo "Metro ready after ${elapsed}s"
+              sleep 20
+              exit 0
+            fi
+            sleep 2
+            elapsed=$((elapsed + 2))
+          done
+          echo "::warning::Metro may not be ready; last log lines:"
+          tail -30 metro.log || true
+
+      - name: Generate Detox CI config
+        run: cd detox && npm run detox:config-gen
+
+      - name: test-system-io dispatch run
+        uses: mattermost/mattermost-test-system-io/.github/actions/test-system-io-dispatch-run@2d15ae40a9f133d12a4024151826e52226f742a2
+        with:
+          use-staging: ${{ inputs.use_staging_test_system_io && 'true' || 'false' }}
+          framework: detox
+          composite-identity: ${{ needs.begin.outputs.identity-json }}
+          repo-dir: ${{ github.workspace }}
+          artifacts-root: ${{ runner.temp }}/test-system-io
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          gh-job-name: detox-ios-worker-${{ matrix.shard }}
+          detox-dir: detox
+          detox-config: ${{ inputs.detox_config }}
+          max-idle-polls: "8"
+
+      - name: Cleanup Metro / simulator
+        if: always()
+        timeout-minutes: 2
+        run: |
+          if [ -n "${METRO_PID:-}" ]; then
+            kill -9 -"$METRO_PID" 2>/dev/null || true
+            pkill -9 -f "react-native.*start" 2>/dev/null || true
+            pkill -9 -f "metro" 2>/dev/null || true
+          fi
+          if [ -n "${SIMULATOR_ID:-}" ]; then
+            timeout 10 xcrun simctl terminate "$SIMULATOR_ID" com.mattermost.rnbeta 2>/dev/null || true
+          fi
+
+  summary:
+    name: orch-summary-detox-ios
+    needs: [begin, workers]
+    if: always() && needs.begin.result == 'success'
+    runs-on: ubuntu-24.04
+    steps:
+      - name: test-system-io summary
+        id: summary
+        uses: mattermost/mattermost-test-system-io/.github/actions/test-system-io-summary@2d15ae40a9f133d12a4024151826e52226f742a2
+        with:
+          use-staging: ${{ inputs.use_staging_test_system_io && 'true' || 'false' }}
+          framework: detox
+          composite-identity: ${{ needs.begin.outputs.identity-json }}
+          commit-status-context: ${{ inputs.commit_status_context }}
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          update-commit-status: ${{ inputs.post_commit_status && 'true' || 'false' }}
+          fail-on-test-failures: ${{ inputs.fail_on_test_failures && 'true' || 'false' }}
+          report-type: ${{ inputs.run_type }}
+          pr-number: ${{ inputs.pr_number }}
+          ref-branch: ${{ inputs.branch }}
