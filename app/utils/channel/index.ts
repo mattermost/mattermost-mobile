@@ -33,8 +33,8 @@ export function isTypeDMorGM(channelType: ChannelType | undefined): boolean {
     return Boolean(channelType && DIRECT_TYPES.includes(channelType));
 }
 
-export function isDMChannel(channelType: ChannelType): boolean {
-    return channelType === General.DM_CHANNEL;
+export function isDMChannel(channelType?: ChannelType): boolean {
+    return Boolean(channelType && channelType === General.DM_CHANNEL);
 }
 
 export function isArchived(channel: Channel | ChannelModel): boolean {
