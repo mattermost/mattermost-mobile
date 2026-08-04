@@ -15,6 +15,7 @@
 # Usage: - runFlow: ../../subflows/browser/dismiss_chrome_interstitial.yml
 appId: ${MAESTRO_APP_ID}
 ---
+# # Dismiss each known Chrome first-run / consent prompt if present
 - tapOn:
     text: "Use without an account"
     optional: true

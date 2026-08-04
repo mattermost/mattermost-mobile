@@ -14,7 +14,10 @@
 #   - inputText dropping characters, yielding a host that does not resolve (CI 30447839548)
 appId: ${MAESTRO_APP_ID}
 ---
+# # Submit the server URL
 - runFlow: _enter_url_and_connect.yml
+
+# # Re-submit only if the inline URL error proves the previous attempt failed
 - runFlow:
     when:
       visible:
@@ -27,6 +30,7 @@ appId: ${MAESTRO_APP_ID}
         id: "server_form.server_url.input.error"
     commands:
       - runFlow: _enter_url_and_connect.yml
-# Fatal arbiter: if every attempt left us on the server form, this fails naming the server
-# form instead of the home tab.
+
+# * Verify the connect completed. Fatal arbiter: if every attempt left us on the server
+# form, this fails naming the server form instead of the home tab.
 - runFlow: ../waits/wait_for_server_connect_complete.yml

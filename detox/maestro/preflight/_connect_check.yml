@@ -18,6 +18,7 @@
 # This flow lives outside flows/<category>/ so run_ci_batches.sh never picks it up.
 appId: ${MAESTRO_APP_ID}
 ---
+# # Launch from a clean state to simulate a fresh install
 - launchApp:
     stopApp: true
     clearState: true
@@ -26,13 +27,17 @@ appId: ${MAESTRO_APP_ID}
 - tapOn:
     text: "Allow"
     optional: true
-# Fresh install always shows the server form once the JS bundle loads.
+
+# * Verify the server form is shown — a fresh install always shows it once the JS bundle loads.
 - extendedWaitUntil:
     visible:
       id: "server_form.display_help"
     timeout: 180000
+
+# # Register the server
 - runFlow: ../subflows/server/connect_server_ios.yml
-# Reaching the login form proves TLS + server registration worked end to end.
+
+# * Verify we reached the login form, which proves TLS + server registration worked end to end.
 - extendedWaitUntil:
     visible:
       id: "login_form.forgot_password.button"

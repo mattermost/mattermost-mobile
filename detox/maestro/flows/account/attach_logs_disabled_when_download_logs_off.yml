@@ -23,9 +23,11 @@ tags:
   - MM-T67856_4
 appId: ${MAESTRO_APP_ID}
 ---
+# # Log in as the test user
 - runFlow: ../../subflows/auth/login.yml
 
-# Navigate Settings > Report a Problem.
+# # Navigate Settings > Report a Problem.
+# Report a Problem can sit below the fold on small Android viewports (CI 59ec6ae).
 - tapOn:
     id: "tab_bar.account.tab"
 - extendedWaitUntil:
@@ -34,7 +36,6 @@ appId: ${MAESTRO_APP_ID}
     timeout: 10000
 - tapOn:
     id: "account.settings.option"
-# Report a Problem can sit below the fold on small Android viewports (CI 59ec6ae).
 - scrollUntilVisible:
     element:
       id: "settings.report_problem.option"
@@ -47,19 +48,19 @@ appId: ${MAESTRO_APP_ID}
 - tapOn:
     id: "settings.report_problem.option"
 
-# Give the email composer / share sheet time to appear, then assert the
-# in-app screen DID NOT render. waitForAnimationToEnd settles any modal that
+# # Give the email composer / share sheet time to appear before asserting the
+# in-app screen did not render. waitForAnimationToEnd settles any modal that
 # the mail-client invocation may animate in.
 - waitForAnimationToEnd:
     timeout: 5000
 
-# Assertion: the in-app Report a Problem screen is not present, which means
+# * Verify the in-app Report a Problem screen is not present, which means
 # the toggle is unreachable (the test's "hidden" condition).
 - assertNotVisible:
     id: "report_problem.screen"
 - assertNotVisible:
     id: "report_problem.enable_log_attachments"
 
-# Defensive cleanup: dismiss any modal/share-sheet/mail composer that may
+# # Defensive cleanup: dismiss any modal/share-sheet/mail composer that may
 # have appeared so the next test starts on a clean screen.
 - back

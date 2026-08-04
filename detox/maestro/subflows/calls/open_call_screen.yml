@@ -11,6 +11,7 @@
 #   can only time out. Re-tapping the bar until mute-unmute appears removes the race.
 appId: ${MAESTRO_APP_ID}
 ---
+# # Re-tap the call bar until the full call screen is up
 - retry:
     maxRetries: 3
     commands:
