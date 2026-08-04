@@ -96,14 +96,6 @@ class AccountScreen {
     };
 
     open = async () => {
-        // Clear Passwords.app first — it blocks every tab-bar hit-test.
-        if (device.getPlatform() === 'ios') {
-            await dismissIosSavePasswordIfVisible(timeouts.TWENTY_SEC, {
-                useSystemApi: true,
-                allowRelaunchFallback: true,
-            });
-        }
-
         await dismissKnownModals(2);
 
         try {
@@ -124,11 +116,10 @@ class AccountScreen {
 
         // Dismiss iOS native dialogs whose backdrop UIView covers the full screen and
         // blocks all hit-tests — these appear after login on iOS 26+ (iPad and iPhone).
+        // Save Password is primarily disabled at simulator preboot (autofill-v2);
+        // keep a single cheap Not Now probe only (no system API / Promise.race).
         if (device.getPlatform() === 'ios') {
-            await dismissIosSavePasswordIfVisible(timeouts.TWENTY_SEC, {
-                useSystemApi: true,
-                allowRelaunchFallback: true,
-            });
+            await dismissIosSavePasswordIfVisible();
             // "Notifications cannot be received from this server" alert.
             try {
                 await element(by.label('Okay')).tap();
@@ -168,34 +159,21 @@ class AccountScreen {
             await waitFor(element(by.id('scheduled_post_tutorial_tooltip.close'))).not.toExist().withTimeout(timeouts.FIVE_SEC);
         } catch { /* no admin-variant tooltip */ }
 
-        const maxAttempts = 3;
-        let lastError: unknown;
-        /* eslint-disable no-await-in-loop */
-        for (let attempt = 1; attempt <= maxAttempts; attempt++) {
-            if (device.getPlatform() === 'ios') {
-                await dismissIosSavePasswordIfVisible(timeouts.TWENTY_SEC, {
-                    useSystemApi: true,
-                    allowRelaunchFallback: true,
-                });
-            }
+        try {
+            await waitFor(HomeScreen.accountTab).toExist().withTimeout(timeouts.TEN_SEC);
+            await HomeScreen.accountTab.tap();
+            return this.toBeVisible();
+        } catch (error) {
+            // If account tab is not found, the app might already be on account screen or in unexpected state
+            // Try to verify if we're already on account screen
             try {
-                await waitFor(HomeScreen.accountTab).toExist().withTimeout(timeouts.TEN_SEC);
-                await HomeScreen.accountTab.tap();
-                return this.toBeVisible();
-            } catch (error) {
-                lastError = error;
-                try {
-                    await waitFor(this.accountScreen).toExist().withTimeout(timeouts.TWO_SEC);
-                    return this.accountScreen;
-                } catch {
-                    if (attempt === maxAttempts) {
-                        throw lastError;
-                    }
-                }
+                await waitFor(this.accountScreen).toExist().withTimeout(timeouts.TWO_SEC);
+                return this.accountScreen;
+            } catch {
+                // Re-throw original error if we're not on account screen either
+                throw error;
             }
         }
-        /* eslint-enable no-await-in-loop */
-        throw lastError;
     };
 
     // Emoji wrapper Views fail Detox visibility on Android and can be briefly missing on iOS,

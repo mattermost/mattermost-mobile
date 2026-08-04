@@ -1,0 +1,1 @@
+../products/channels/account/about.e2e.ts
