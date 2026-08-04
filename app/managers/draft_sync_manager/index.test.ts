@@ -3,9 +3,9 @@
 
 import {Q, type Database} from '@nozbe/watermelondb';
 
-import {reconcileTeamDrafts} from '@actions/remote/draft';
+import {confirmDeleteTombstone, deleteAbsentCleanDraft, getReconcilableKeys, reconcileTeamDrafts, type ReconcileKey} from '@actions/remote/draft';
 import {MM_TABLES} from '@constants/database';
-import {DraftOutboxStatus, MAX_DRAFT_SYNC_EVENT_BUFFER} from '@constants/draft';
+import {DRAFT_ABSENCE_CONFIRMATION_DELAY_MS, DraftOutboxOperation, DraftOutboxStatus, MAX_DRAFT_SYNC_EVENT_BUFFER} from '@constants/draft';
 import DatabaseManager from '@database/manager';
 import NetworkManager from '@managers/network_manager';
 import {buildDraftOutboxId} from '@queries/servers/drafts';
@@ -16,12 +16,19 @@ import {exportedForTesting, type ManagerBaselineInternals, default as DraftSyncM
 
 import type ServerDataOperator from '@database/operator/server_data_operator';
 import type DraftOutboxModel from '@typings/database/models/servers/draft_outbox';
+import type {NormalizedDraft} from '@utils/draft/sync';
 
 jest.mock('@actions/remote/draft', () => ({
     reconcileTeamDrafts: jest.fn(),
+    getReconcilableKeys: jest.fn(),
+    deleteAbsentCleanDraft: jest.fn(),
+    confirmDeleteTombstone: jest.fn(),
 }));
 
 const mockedReconcile = jest.mocked(reconcileTeamDrafts);
+const mockedGetReconcilableKeys = jest.mocked(getReconcilableKeys);
+const mockedDeleteAbsentCleanDraft = jest.mocked(deleteAbsentCleanDraft);
+const mockedConfirmDeleteTombstone = jest.mocked(confirmDeleteTombstone);
 
 const {DRAFT_OUTBOX} = MM_TABLES.SERVER;
 const {DraftSyncManagerSingleton} = exportedForTesting;
@@ -100,6 +107,12 @@ describe('DraftSyncManager (Phase 3 shell)', () => {
         manager = new DraftSyncManagerSingleton();
         mockedReconcile.mockReset();
         mockedReconcile.mockResolvedValue({applied: 0, drafts: []});
+        mockedGetReconcilableKeys.mockReset();
+        mockedGetReconcilableKeys.mockResolvedValue([]);
+        mockedDeleteAbsentCleanDraft.mockReset();
+        mockedDeleteAbsentCleanDraft.mockResolvedValue();
+        mockedConfirmDeleteTombstone.mockReset();
+        mockedConfirmDeleteTombstone.mockResolvedValue();
     });
 
     afterEach(async () => {
@@ -319,6 +332,179 @@ describe('DraftSyncManager (Phase 3 shell)', () => {
             expect(mockedReconcile).toHaveBeenNthCalledWith(1, SERVER_URL, 'team1');
             expect(mockedReconcile).toHaveBeenNthCalledWith(2, SERVER_URL, 'team2');
             expect(baselineInternals(manager).baseline[SERVER_URL]?.teamId).toBe('team2');
+        });
+    });
+
+    describe('runAbsencePass (Phase 4.2 absence quarantine + delete confirmation)', () => {
+        const DRAFT_KEY = buildDraftOutboxId(CHANNEL_ID, ROOT_ID);
+
+        const enableManager = async () => {
+            await setSyncConfig('true');
+            await manager.initialize(SERVER_URL);
+        };
+
+        const cleanDraftKey = (over: Partial<ReconcileKey> = {}): ReconcileKey => ({
+            channelId: CHANNEL_ID,
+            rootId: ROOT_ID,
+            kind: 'draft',
+            serverUpdateAt: 1000,
+            hasOutbox: false,
+            authoritative: true,
+            ...over,
+        });
+
+        const tombstoneKey = (over: Partial<ReconcileKey> = {}): ReconcileKey => ({
+            channelId: CHANNEL_ID,
+            rootId: ROOT_ID,
+            kind: 'tombstone',
+            serverUpdateAt: 0,
+            hasOutbox: true,
+            outboxOperation: DraftOutboxOperation.Delete,
+            outboxStatus: DraftOutboxStatus.Pending,
+            keepLocal: false,
+            authoritative: true,
+            ...over,
+        });
+
+        const candidates = () => baselineInternals(manager).absenceCandidates[SERVER_URL];
+
+        it('quarantines a clean absent key on first absence without deleting it', async () => {
+            await enableManager();
+            mockedReconcile.mockResolvedValue({applied: 0, drafts: []});
+            mockedGetReconcilableKeys.mockResolvedValue([cleanDraftKey()]);
+
+            manager.requestReconcile(SERVER_URL, 'team1', 'first');
+            await flushMicrotasks();
+
+            expect(candidates().get(DRAFT_KEY)?.teamId).toBe('team1');
+            expect(candidates().size).toBe(1);
+            expect(mockedDeleteAbsentCleanDraft).not.toHaveBeenCalled();
+        });
+
+        it('deletes a clean key on a second same-scope absence after the delay and clears the candidate', async () => {
+            await enableManager();
+            mockedReconcile.mockResolvedValue({applied: 0, drafts: []});
+            mockedGetReconcilableKeys.mockResolvedValue([cleanDraftKey()]);
+
+            manager.requestReconcile(SERVER_URL, 'team1', 'first');
+            await flushMicrotasks();
+
+            await advanceTimers(DRAFT_ABSENCE_CONFIRMATION_DELAY_MS);
+
+            manager.requestReconcile(SERVER_URL, 'team1', 'second');
+            await flushMicrotasks();
+
+            expect(mockedDeleteAbsentCleanDraft).toHaveBeenCalledTimes(1);
+            expect(mockedDeleteAbsentCleanDraft).toHaveBeenCalledWith(SERVER_URL, CHANNEL_ID, ROOT_ID);
+            expect(candidates().has(DRAFT_KEY)).toBe(false);
+        });
+
+        it('does not delete when the second absence occurs before the delay elapses', async () => {
+            await enableManager();
+            mockedReconcile.mockResolvedValue({applied: 0, drafts: []});
+            mockedGetReconcilableKeys.mockResolvedValue([cleanDraftKey()]);
+
+            manager.requestReconcile(SERVER_URL, 'team1', 'first');
+            await flushMicrotasks();
+
+            await advanceTimers(DRAFT_ABSENCE_CONFIRMATION_DELAY_MS - 1);
+
+            manager.requestReconcile(SERVER_URL, 'team1', 'second');
+            await flushMicrotasks();
+
+            expect(mockedDeleteAbsentCleanDraft).not.toHaveBeenCalled();
+            expect(candidates().has(DRAFT_KEY)).toBe(true);
+        });
+
+        it('clears the candidate and never deletes when the key reappears in the snapshot', async () => {
+            await enableManager();
+            mockedGetReconcilableKeys.mockResolvedValue([cleanDraftKey()]);
+
+            // First reconcile: key absent from the snapshot -> quarantined.
+            mockedReconcile.mockResolvedValue({applied: 0, drafts: []});
+            manager.requestReconcile(SERVER_URL, 'team1', 'first');
+            await flushMicrotasks();
+            expect(candidates().has(DRAFT_KEY)).toBe(true);
+
+            // Second reconcile: key present in the snapshot -> candidate cleared, no deletion.
+            mockedReconcile.mockResolvedValue({applied: 0, drafts: [{channelId: CHANNEL_ID, rootId: ROOT_ID} as NormalizedDraft]});
+            await advanceTimers(DRAFT_ABSENCE_CONFIRMATION_DELAY_MS);
+            manager.requestReconcile(SERVER_URL, 'team1', 'second');
+            await flushMicrotasks();
+
+            expect(candidates().has(DRAFT_KEY)).toBe(false);
+            expect(mockedDeleteAbsentCleanDraft).not.toHaveBeenCalled();
+        });
+
+        it('runs no absence pass and deletes nothing when reconciliation fails', async () => {
+            await enableManager();
+            mockedReconcile.mockResolvedValue({error: new Error('boom')});
+            mockedGetReconcilableKeys.mockResolvedValue([cleanDraftKey()]);
+
+            manager.requestReconcile(SERVER_URL, 'team1', 'first');
+            await flushMicrotasks();
+
+            expect(mockedGetReconcilableKeys).not.toHaveBeenCalled();
+            expect(mockedDeleteAbsentCleanDraft).not.toHaveBeenCalled();
+            expect(candidates().size).toBe(0);
+        });
+
+        it('confirms a delete tombstone via confirmDeleteTombstone after two same-scope absences past the delay', async () => {
+            await enableManager();
+            mockedReconcile.mockResolvedValue({applied: 0, drafts: []});
+            mockedGetReconcilableKeys.mockResolvedValue([tombstoneKey()]);
+
+            manager.requestReconcile(SERVER_URL, 'team1', 'first');
+            await flushMicrotasks();
+            expect(mockedConfirmDeleteTombstone).not.toHaveBeenCalled();
+            expect(candidates().get(DRAFT_KEY)?.teamId).toBe('team1');
+
+            await advanceTimers(DRAFT_ABSENCE_CONFIRMATION_DELAY_MS);
+            manager.requestReconcile(SERVER_URL, 'team1', 'second');
+            await flushMicrotasks();
+
+            expect(mockedConfirmDeleteTombstone).toHaveBeenCalledTimes(1);
+            expect(mockedConfirmDeleteTombstone).toHaveBeenCalledWith(SERVER_URL, CHANNEL_ID, ROOT_ID);
+            expect(mockedDeleteAbsentCleanDraft).not.toHaveBeenCalled();
+            expect(candidates().has(DRAFT_KEY)).toBe(false);
+        });
+
+        it('does not confirm when the second absence is observed under a different teamId scope', async () => {
+            await enableManager();
+            mockedReconcile.mockResolvedValue({applied: 0, drafts: []});
+            mockedGetReconcilableKeys.mockResolvedValue([cleanDraftKey()]);
+
+            manager.requestReconcile(SERVER_URL, 'team1', 'first');
+            await flushMicrotasks();
+
+            await advanceTimers(DRAFT_ABSENCE_CONFIRMATION_DELAY_MS);
+            manager.requestReconcile(SERVER_URL, 'team2', 'second-other-scope');
+            await flushMicrotasks();
+
+            expect(mockedDeleteAbsentCleanDraft).not.toHaveBeenCalled();
+
+            // The observation window restarted under the new scope.
+            expect(candidates().get(DRAFT_KEY)?.teamId).toBe('team2');
+        });
+
+        it('drops an ineligible key candidate (preserve) instead of deleting it', async () => {
+            await enableManager();
+            mockedReconcile.mockResolvedValue({applied: 0, drafts: []});
+
+            // First pass: eligible clean key -> quarantined.
+            mockedGetReconcilableKeys.mockResolvedValue([cleanDraftKey()]);
+            manager.requestReconcile(SERVER_URL, 'team1', 'first');
+            await flushMicrotasks();
+            expect(candidates().has(DRAFT_KEY)).toBe(true);
+
+            // Second pass past the delay, but the key is now non-authoritative (membership lost).
+            mockedGetReconcilableKeys.mockResolvedValue([cleanDraftKey({authoritative: false})]);
+            await advanceTimers(DRAFT_ABSENCE_CONFIRMATION_DELAY_MS);
+            manager.requestReconcile(SERVER_URL, 'team1', 'second');
+            await flushMicrotasks();
+
+            expect(mockedDeleteAbsentCleanDraft).not.toHaveBeenCalled();
+            expect(candidates().has(DRAFT_KEY)).toBe(false);
         });
     });
 

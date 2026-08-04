@@ -10,7 +10,7 @@ import NetworkManager from '@managers/network_manager';
 import {buildDraftOutboxId, getDraft, getDraftOutbox} from '@queries/servers/drafts';
 import {draftContentFingerprint, normalizeServerDraft} from '@utils/draft/sync';
 
-import {fetchDraftsForTeam, reconcileTeamDrafts} from './draft';
+import {confirmDeleteTombstone, deleteAbsentCleanDraft, fetchDraftsForTeam, getReconcilableKeys, reconcileTeamDrafts} from './draft';
 
 import type ServerDataOperator from '@database/operator/server_data_operator';
 import type DraftModel from '@typings/database/models/servers/draft';
@@ -20,7 +20,9 @@ const {SERVER: {DRAFT, DRAFT_OUTBOX}} = MM_TABLES;
 
 const serverUrl = 'drafts.remote.test.com';
 const teamId = 'teamid1teamid1teamid1teamid1';
+const otherTeamId = 'otherteamotherteamotherteam1';
 const channelId = 'channelid1channelid1channel1';
+const channelId2 = 'channelid2channelid2channel2';
 const dmChannelId = 'dmchannel1dmchannel1dmchan01';
 const userId = 'userid1userid1userid1userid1';
 
@@ -49,6 +51,7 @@ type SeedOutbox = {
     deletedFingerprint?: string | null;
     lastErrorCode?: string | null;
     keepLocal?: boolean;
+    teamId?: string;
 };
 
 const serverDraft = (over: Partial<DraftApi> = {}): DraftApi => ({
@@ -108,7 +111,7 @@ describe('app/actions/remote/draft', () => {
                 o._raw.id = buildDraftOutboxId(fields.channelId, fields.rootId ?? '');
                 o.channelId = fields.channelId;
                 o.rootId = fields.rootId ?? '';
-                o.teamId = teamId;
+                o.teamId = fields.teamId ?? teamId;
                 o.operation = fields.operation;
                 o.status = fields.status;
                 o.generation = 1;
@@ -431,6 +434,122 @@ describe('app/actions/remote/draft', () => {
         it('returns {error} when the server database is missing', async () => {
             const result = await reconcileTeamDrafts('nonexistent.server', teamId);
             expect(result.error).toBeDefined();
+        });
+    });
+
+    describe('getReconcilableKeys', () => {
+        it('classifies clean drafts, dirty drafts, and in-scope tombstones with correct flags; excludes out-of-scope tombstones', async () => {
+            await seedChannel(channelId, teamId, 'O');
+            await seedMembership(channelId, teamId);
+            await seedChannel(dmChannelId, '', 'D'); // DM: authoritative even without a membership row.
+
+            // Clean server-backed draft (Rule A eligible).
+            await seedDraft({channelId, rootId: '', message: 'clean', serverUpdateAt: 1000});
+
+            // Pending-upsert draft (non-eligible: it has local intent).
+            const dirtyRoot = 'dirtyrootdirtyrootdirtyroot1';
+            await seedDraft({channelId, rootId: dirtyRoot, message: 'dirty', serverUpdateAt: 0});
+            await seedOutbox({channelId, rootId: dirtyRoot, operation: DraftOutboxOperation.Upsert, status: DraftOutboxStatus.Pending});
+
+            // keepLocal delete tombstone on a DM (team '') -> in scope via the DM/GM membership rule.
+            await seedOutbox({channelId: dmChannelId, rootId: '', operation: DraftOutboxOperation.Delete, status: DraftOutboxStatus.Pending, keepLocal: true, teamId: ''});
+
+            // Out-of-scope tombstone: stored under a different team on a non-DM/GM channel.
+            await seedChannel(channelId2, otherTeamId, 'O');
+            await seedOutbox({channelId: channelId2, rootId: '', operation: DraftOutboxOperation.Delete, status: DraftOutboxStatus.Pending, teamId: otherTeamId});
+
+            const keys = await getReconcilableKeys(database, teamId);
+
+            const clean = keys.find((k) => k.channelId === channelId && k.rootId === '' && k.kind === 'draft');
+            expect(clean).toMatchObject({serverUpdateAt: 1000, hasOutbox: false, authoritative: true});
+
+            const dirty = keys.find((k) => k.channelId === channelId && k.rootId === dirtyRoot && k.kind === 'draft');
+            expect(dirty).toMatchObject({hasOutbox: true, outboxOperation: DraftOutboxOperation.Upsert, authoritative: true});
+
+            const tombstone = keys.find((k) => k.channelId === dmChannelId && k.kind === 'tombstone');
+            expect(tombstone).toMatchObject({keepLocal: true, outboxOperation: DraftOutboxOperation.Delete, authoritative: true});
+
+            // The out-of-scope tombstone must be excluded entirely.
+            expect(keys.some((k) => k.channelId === channelId2)).toBe(false);
+            expect(keys.length).toBe(3);
+        });
+
+        it('dedups a draft+tombstone key to a single tombstone and flags membership-lost channels non-authoritative', async () => {
+            // In-team channel WITHOUT a membership row -> not authoritative.
+            await seedChannel(channelId, teamId, 'O');
+
+            // A keepLocal=true delete retains a Draft AND a tombstone under the same key.
+            await seedDraft({channelId, rootId: '', message: 'kept', serverUpdateAt: 2000});
+            await seedOutbox({channelId, rootId: '', operation: DraftOutboxOperation.Delete, status: DraftOutboxStatus.Pending, keepLocal: true});
+
+            const keys = await getReconcilableKeys(database, teamId);
+
+            const forKey = keys.filter((k) => k.channelId === channelId && k.rootId === '');
+            expect(forKey.length).toBe(1);
+            expect(forKey[0].kind).toBe('tombstone');
+            expect(forKey[0].authoritative).toBe(false);
+        });
+    });
+
+    describe('deleteAbsentCleanDraft', () => {
+        it('destroys a still-clean server-backed draft', async () => {
+            await seedChannel(channelId, teamId, 'O');
+            await seedDraft({channelId, rootId: '', message: 'clean', serverUpdateAt: 3000});
+
+            await deleteAbsentCleanDraft(serverUrl, channelId, '');
+
+            expect(await getDraft(database, channelId, '')).toBeUndefined();
+        });
+
+        it('no-ops when the draft gained an outbox (dirtied) since the decision', async () => {
+            await seedChannel(channelId, teamId, 'O');
+            await seedDraft({channelId, rootId: '', message: 'clean', serverUpdateAt: 3000});
+            await seedOutbox({channelId, rootId: '', operation: DraftOutboxOperation.Upsert, status: DraftOutboxStatus.Pending});
+
+            await deleteAbsentCleanDraft(serverUrl, channelId, '');
+
+            expect(await getDraft(database, channelId, '')).toBeDefined();
+        });
+    });
+
+    describe('confirmDeleteTombstone', () => {
+        it('removes the outbox row for an ordinary (keepLocal=false) delete', async () => {
+            await seedChannel(channelId, teamId, 'O');
+            await seedOutbox({channelId, rootId: '', operation: DraftOutboxOperation.Delete, status: DraftOutboxStatus.Pending, keepLocal: false});
+
+            await confirmDeleteTombstone(serverUrl, channelId, '');
+
+            expect(await getDraftOutbox(database, channelId, '')).toBeUndefined();
+        });
+
+        it('parks unsyncable_empty and clears serverUpdateAt for a keepLocal=true delete', async () => {
+            await seedChannel(channelId, teamId, 'O');
+            await seedDraft({channelId, rootId: '', message: 'kept', serverUpdateAt: 4000});
+            await seedOutbox({channelId, rootId: '', operation: DraftOutboxOperation.Delete, status: DraftOutboxStatus.Pending, keepLocal: true, deletedFingerprint: 'fp'});
+
+            await confirmDeleteTombstone(serverUrl, channelId, '');
+
+            const draft = await getDraft(database, channelId, '');
+            expect(draft?.serverUpdateAt).toBe(0);
+
+            const outbox = await getDraftOutbox(database, channelId, '');
+            expect(outbox?.operation).toBe(DraftOutboxOperation.Upsert);
+            expect(outbox?.status).toBe(DraftOutboxStatus.Blocked);
+            expect(outbox?.lastErrorCode).toBe('unsyncable_empty');
+            expect(outbox?.keepLocal).toBe(false);
+            expect(outbox?.deletedFingerprint).toBeNull();
+        });
+
+        it('no-ops when the tombstone flipped to a genuine upsert since the decision', async () => {
+            await seedChannel(channelId, teamId, 'O');
+            await seedDraft({channelId, rootId: '', message: 'edited', serverUpdateAt: 0});
+            await seedOutbox({channelId, rootId: '', operation: DraftOutboxOperation.Upsert, status: DraftOutboxStatus.Pending});
+
+            await confirmDeleteTombstone(serverUrl, channelId, '');
+
+            const outbox = await getDraftOutbox(database, channelId, '');
+            expect(outbox?.operation).toBe(DraftOutboxOperation.Upsert);
+            expect(outbox?.status).toBe(DraftOutboxStatus.Pending);
         });
     });
 });

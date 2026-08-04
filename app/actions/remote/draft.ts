@@ -1,13 +1,15 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import {Q, type Database, type Model} from '@nozbe/watermelondb';
+
 import {General} from '@constants';
 import {MM_TABLES} from '@constants/database';
 import {DraftOutboxOperation, DraftOutboxStatus} from '@constants/draft';
 import DatabaseManager from '@database/manager';
 import NetworkManager from '@managers/network_manager';
 import {getChannelById, getMyChannel} from '@queries/servers/channel';
-import {adoptLegacyDrafts, mutateDraftAndOutbox, type PrepareDraftAndOutbox} from '@queries/servers/drafts';
+import {adoptLegacyDrafts, buildDraftOutboxId, getDraftOutbox, mutateDraftAndOutbox, prepareDraftOutbox, queryDraftsForTeam, type PrepareDraftAndOutbox} from '@queries/servers/drafts';
 import {getConfigValue} from '@queries/servers/system';
 import {draftContentFingerprint, normalizeServerDraft, type NormalizedDraft} from '@utils/draft/sync';
 import {getFullErrorMessage} from '@utils/errors';
@@ -15,10 +17,10 @@ import {logDebug, logError} from '@utils/log';
 
 import {forceLogoutIfNecessary} from './session';
 
-import type {Model} from '@nozbe/watermelondb';
 import type DraftModel from '@typings/database/models/servers/draft';
+import type DraftOutboxModel from '@typings/database/models/servers/draft_outbox';
 
-const {SERVER: {DRAFT}} = MM_TABLES;
+const {SERVER: {DRAFT, DRAFT_OUTBOX}} = MM_TABLES;
 
 /**
  * fetchDraftsForTeam: fetch the server's authoritative draft snapshot for a team. Returns the raw
@@ -242,5 +244,177 @@ export async function reconcileTeamDrafts(serverUrl: string, teamId: string): Pr
         logError('reconcileTeamDrafts', getFullErrorMessage(error));
         forceLogoutIfNecessary(serverUrl, error);
         return {error};
+    }
+}
+
+/**
+ * ReconcileKey: the classification payload for a single in-scope draft key considered by the
+ * manager's absence pass. `kind` distinguishes a plain Draft row from a delete tombstone (which
+ * drives the decision when both a Draft and a delete outbox exist for the key). `authoritative`
+ * is false when the channel membership cannot be confirmed for this scope (membership lost), in
+ * which case the key must be preserved (never deleted).
+ */
+export type ReconcileKey = {
+    channelId: string;
+    rootId: string;
+    kind: 'draft' | 'tombstone';
+    serverUpdateAt: number;
+    hasOutbox: boolean;
+    outboxOperation?: DraftOutboxOperation;
+    outboxStatus?: DraftOutboxStatus;
+    keepLocal?: boolean;
+    authoritative: boolean;
+};
+
+/**
+ * isChannelAuthoritative: a channel is authoritative for absence decisions when it is a DM/GM
+ * (always in scope) or the current user has a confirmed membership row for it. A non-DM/GM channel
+ * whose membership row is gone is NOT authoritative — its keys are preserved, never deleted.
+ */
+const isChannelAuthoritative = async (database: Database, channelId: string): Promise<boolean> => {
+    const channel = await getChannelById(database, channelId);
+    if (channel?.type === General.DM_CHANNEL || channel?.type === General.GM_CHANNEL) {
+        return true;
+    }
+    return Boolean(await getMyChannel(database, channelId));
+};
+
+/**
+ * getReconcilableKeys: enumerate every in-scope draft key (a Draft row and/or a delete tombstone)
+ * that the manager's absence pass may need to classify for `teamId`. Delete tombstones drive the
+ * decision, so a key that has both a Draft and a delete tombstone appears once as a `tombstone`.
+ * Only tombstones within this run's authority are returned: those whose stored teamId matches, or
+ * DM/GM ('' team) tombstones whose channel is a confirmed DM/GM channel. This function performs no
+ * network activity and never mutates state.
+ */
+export async function getReconcilableKeys(database: Database, teamId: string): Promise<ReconcileKey[]> {
+    const keys: ReconcileKey[] = [];
+    const tombstoneKeys = new Set<string>();
+
+    const deleteOutboxes = await database.collections.get<DraftOutboxModel>(DRAFT_OUTBOX).query(
+        Q.where('operation', DraftOutboxOperation.Delete),
+    ).fetch();
+
+    for (const outbox of deleteOutboxes) {
+        // eslint-disable-next-line no-await-in-loop
+        const channel = await getChannelById(database, outbox.channelId);
+        const isDmGm = channel?.type === General.DM_CHANNEL || channel?.type === General.GM_CHANNEL;
+
+        // Scope gate: this run only has authority over tombstones stored under its team, or DM/GM
+        // ('' team) tombstones whose channel is a confirmed DM/GM channel. Skip everything else.
+        if (outbox.teamId !== teamId && !(outbox.teamId === '' && isDmGm)) {
+            continue;
+        }
+
+        // eslint-disable-next-line no-await-in-loop
+        const authoritative = isDmGm || Boolean(await getMyChannel(database, outbox.channelId));
+
+        tombstoneKeys.add(buildDraftOutboxId(outbox.channelId, outbox.rootId));
+        keys.push({
+            channelId: outbox.channelId,
+            rootId: outbox.rootId,
+            kind: 'tombstone',
+            serverUpdateAt: 0,
+            hasOutbox: true,
+            outboxOperation: outbox.operation,
+            outboxStatus: outbox.status,
+            keepLocal: outbox.keepLocal,
+            authoritative,
+        });
+    }
+
+    const drafts = await queryDraftsForTeam(database, teamId).fetch();
+    for (const draft of drafts) {
+        const key = buildDraftOutboxId(draft.channelId, draft.rootId);
+        if (tombstoneKeys.has(key)) {
+            // A delete tombstone already represents this key (a keepLocal=true delete retains a Draft).
+            continue;
+        }
+
+        // eslint-disable-next-line no-await-in-loop
+        const outbox = await getDraftOutbox(database, draft.channelId, draft.rootId);
+
+        // eslint-disable-next-line no-await-in-loop
+        const authoritative = await isChannelAuthoritative(database, draft.channelId);
+
+        keys.push({
+            channelId: draft.channelId,
+            rootId: draft.rootId,
+            kind: 'draft',
+            serverUpdateAt: draft.serverUpdateAt ?? 0,
+            hasOutbox: Boolean(outbox),
+            outboxOperation: outbox?.operation,
+            outboxStatus: outbox?.status,
+            keepLocal: outbox?.keepLocal,
+            authoritative,
+        });
+    }
+
+    return keys;
+}
+
+/**
+ * deleteAbsentCleanDraft: CONFIRMED-absence deletion of a clean, server-backed Draft (Rule A). It
+ * re-reads the key inside the serialized writer and only destroys the Draft when it is STILL clean
+ * (serverUpdateAt > 0 AND no outbox) — otherwise the state changed since the decision and it no-ops.
+ * Never performs a network operation.
+ */
+export async function deleteAbsentCleanDraft(serverUrl: string, channelId: string, rootId: string): Promise<void> {
+    const database = DatabaseManager.serverDatabases[serverUrl]?.database;
+    if (!database) {
+        return;
+    }
+
+    try {
+        await mutateDraftAndOutbox(database, channelId, rootId, ({draft, outbox}) => {
+            if (draft && !outbox && (draft.serverUpdateAt ?? 0) > 0) {
+                return [draft.prepareDestroyPermanently()];
+            }
+            return [];
+        });
+    } catch (error) {
+        logError('deleteAbsentCleanDraft', getFullErrorMessage(error));
+    }
+}
+
+/**
+ * confirmDeleteTombstone: CONFIRMED-absence resolution of a delete tombstone (Rule B). It re-reads
+ * the key inside the serialized writer; if the outbox is no longer a Delete (a genuine edit flipped
+ * it) it no-ops. For an ordinary delete (keepLocal=false) it removes the tombstone row (the visible
+ * Draft was already removed at enqueue time). For a keepLocal=true delete it detaches the retained
+ * Draft from the server (serverUpdateAt=0) and parks the outbox as unsyncable_empty. Never networks.
+ */
+export async function confirmDeleteTombstone(serverUrl: string, channelId: string, rootId: string): Promise<void> {
+    const database = DatabaseManager.serverDatabases[serverUrl]?.database;
+    if (!database) {
+        return;
+    }
+
+    try {
+        await mutateDraftAndOutbox(database, channelId, rootId, ({database: db, draft, outbox}) => {
+            if (!outbox || outbox.operation !== DraftOutboxOperation.Delete) {
+                return [];
+            }
+            if (outbox.status !== DraftOutboxStatus.Pending && outbox.status !== DraftOutboxStatus.ConfirmingDelete) {
+                return [];
+            }
+
+            if (!outbox.keepLocal) {
+                // Ordinary delete: the visible Draft was already removed at enqueue time. If a Draft
+                // unexpectedly exists, leave it — only drop the tombstone row.
+                return prepareDraftOutbox(db, channelId, rootId, outbox.teamId, outbox, {type: 'remove'});
+            }
+
+            const models: Model[] = [];
+            if (draft) {
+                models.push(draft.prepareUpdate((d) => {
+                    d.serverUpdateAt = 0;
+                }));
+            }
+            models.push(...prepareDraftOutbox(db, channelId, rootId, outbox.teamId, outbox, {type: 'park'}));
+            return models;
+        });
+    } catch (error) {
+        logError('confirmDeleteTombstone', getFullErrorMessage(error));
     }
 }

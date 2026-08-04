@@ -3,14 +3,39 @@
 
 import {Q, type Database} from '@nozbe/watermelondb';
 
-import {reconcileTeamDrafts} from '@actions/remote/draft';
+import {confirmDeleteTombstone, deleteAbsentCleanDraft, getReconcilableKeys, reconcileTeamDrafts, type ReconcileKey} from '@actions/remote/draft';
 import {MM_TABLES} from '@constants/database';
-import {DraftOutboxStatus, MAX_DRAFT_SYNC_EVENT_BUFFER} from '@constants/draft';
+import {DRAFT_ABSENCE_CONFIRMATION_DELAY_MS, DraftOutboxOperation, DraftOutboxStatus, MAX_DRAFT_SYNC_EVENT_BUFFER} from '@constants/draft';
 import DatabaseManager from '@database/manager';
-import {getIsDraftSyncEnabled} from '@queries/servers/drafts';
+import {buildDraftOutboxId, getIsDraftSyncEnabled} from '@queries/servers/drafts';
 import {logDebug} from '@utils/log';
 
 import type DraftOutboxModel from '@typings/database/models/servers/draft_outbox';
+import type {NormalizedDraft} from '@utils/draft/sync';
+
+// AbsenceCandidate: an in-memory record that a draft key was observed absent from a successful GET
+// snapshot. Deletion is only confirmed on a SECOND same-scope absence >= DRAFT_ABSENCE_CONFIRMATION_
+// DELAY_MS later. Losing these on restart is safe — it merely delays (never mis-triggers) deletion.
+type AbsenceCandidate = {firstAbsentAt: number; teamId: string};
+
+/**
+ * isAbsenceEligible: whether an in-scope key that is ABSENT from the snapshot may (eventually) be
+ * removed. A non-authoritative key (membership lost) is never eligible. A plain Draft is eligible
+ * only when it is clean and server-backed (serverUpdateAt > 0, no outbox). A delete tombstone is
+ * eligible only while it is a Delete in a Pending/ConfirmingDelete status.
+ */
+const isAbsenceEligible = (entry: ReconcileKey): boolean => {
+    if (!entry.authoritative) {
+        return false;
+    }
+
+    if (entry.kind === 'draft') {
+        return entry.serverUpdateAt > 0 && !entry.hasOutbox;
+    }
+
+    return entry.outboxOperation === DraftOutboxOperation.Delete &&
+        (entry.outboxStatus === DraftOutboxStatus.Pending || entry.outboxStatus === DraftOutboxStatus.ConfirmingDelete);
+};
 
 const {DRAFT_OUTBOX} = MM_TABLES.SERVER;
 
@@ -70,6 +95,11 @@ class DraftSyncManagerSingleton {
     // reconcilePending: a coalesced reconcile request that arrived while one was in flight. Drained
     // (run once) after the in-flight reconcile settles.
     private reconcilePending: Record<string, {teamId: string} | undefined> = {};
+
+    // absenceCandidates: per-server map (draftKey -> first-absence observation) for the two-observation
+    // replica-lag guard. A key is only deleted after being observed absent in TWO same-scope reconciles
+    // separated by >= DRAFT_ABSENCE_CONFIRMATION_DELAY_MS. Cleared on invalidate; safe to lose.
+    private absenceCandidates: Record<string, Map<string, AbsenceCandidate>> = {};
 
     /**
      * initialize: idempotent per-server setup. Reads the draft-sync capability into `enabled` and,
@@ -161,11 +191,16 @@ class DraftSyncManagerSingleton {
         }
 
         if (res.error) {
-            // Failure: do NOT set a baseline. The heartbeat will re-request later.
+            // Failure: do NOT set a baseline and run NO absence pass. Without a snapshot nothing may
+            // be deleted. The heartbeat will re-request later.
             logDebug('DraftSyncManager.reconcile: reconciliation failed', serverUrl);
             this.reconstructRetryTimer(serverUrl);
         } else {
             this.baseline[serverUrl] = {teamId, at: Date.now()};
+
+            // Absence pass: a successful snapshot lets us quarantine/confirm keys that are absent
+            // from it. Epoch-guarded internally; it never POSTs/DELETEs over the network.
+            await this.runAbsencePass(serverUrl, teamId, res.drafts ?? [], captured);
         }
 
         this.reconcileInFlight[serverUrl] = false;
@@ -174,6 +209,88 @@ class DraftSyncManagerSingleton {
         if (pending) {
             this.reconcilePending[serverUrl] = undefined;
             this.reconcile(serverUrl, pending.teamId);
+        }
+    };
+
+    /**
+     * runAbsencePass: SAFE absence-based local convergence after a successful snapshot. Every in-scope
+     * key that has a Draft and/or a delete tombstone is classified: keys present in the snapshot clear
+     * their candidate; ineligible keys (legacy/local-only, pending intent, membership lost) are
+     * preserved and clear their candidate; eligible-but-absent keys are QUARANTINED on first absence
+     * and only CONFIRMED (deleted / tombstone-resolved) on a second same-scope absence >= DELAY later.
+     * It performs NO network activity and re-checks epoch staleness before each mutation.
+     */
+    private runAbsencePass = async (serverUrl: string, teamId: string, drafts: NormalizedDraft[], captured: number): Promise<void> => {
+        const database = this.getDatabase(serverUrl);
+        const candidates = this.absenceCandidates[serverUrl];
+        if (!database || !candidates) {
+            return;
+        }
+
+        let universe: ReconcileKey[];
+        try {
+            universe = await getReconcilableKeys(database, teamId);
+        } catch (error) {
+            logDebug('DraftSyncManager.runAbsencePass: universe query failed', serverUrl);
+            return;
+        }
+
+        // A concurrent invalidate/disable during the await discards this pass entirely.
+        if (this.isEpochStale(serverUrl, captured) || !this.isActive(serverUrl)) {
+            return;
+        }
+
+        const present = new Set(drafts.map((d) => buildDraftOutboxId(d.channelId, d.rootId)));
+        const universeKeys = new Set(universe.map((e) => buildDraftOutboxId(e.channelId, e.rootId)));
+        const now = Date.now();
+
+        // Drop candidates for keys that vanished from the universe by other means (deleted locally, etc.).
+        for (const key of candidates.keys()) {
+            if (!universeKeys.has(key)) {
+                candidates.delete(key);
+            }
+        }
+
+        const confirmed: ReconcileKey[] = [];
+        for (const entry of universe) {
+            const key = buildDraftOutboxId(entry.channelId, entry.rootId);
+
+            // Reappeared or ineligible (preserve): clear any absence candidate.
+            if (present.has(key) || !isAbsenceEligible(entry)) {
+                candidates.delete(key);
+                continue;
+            }
+
+            const candidate = candidates.get(key);
+            if (!candidate) {
+                // First absence: quarantine, delete nothing yet.
+                candidates.set(key, {firstAbsentAt: now, teamId});
+            } else if (candidate.teamId !== teamId) {
+                // Scope changed since the first observation: restart the window under the new scope.
+                candidates.set(key, {firstAbsentAt: now, teamId});
+            } else if ((now - candidate.firstAbsentAt) >= DRAFT_ABSENCE_CONFIRMATION_DELAY_MS) {
+                // Second same-scope absence past the delay: deletion confirmed.
+                confirmed.push(entry);
+            }
+        }
+
+        for (const entry of confirmed) {
+            if (this.isEpochStale(serverUrl, captured) || !this.isActive(serverUrl)) {
+                return;
+            }
+
+            if (entry.kind === 'tombstone') {
+                // eslint-disable-next-line no-await-in-loop
+                await confirmDeleteTombstone(serverUrl, entry.channelId, entry.rootId);
+            } else {
+                // eslint-disable-next-line no-await-in-loop
+                await deleteAbsentCleanDraft(serverUrl, entry.channelId, entry.rootId);
+            }
+            candidates.delete(buildDraftOutboxId(entry.channelId, entry.rootId));
+        }
+
+        if (confirmed.length) {
+            logDebug('DraftSyncManager.runAbsencePass: confirmed absence deletions', serverUrl, confirmed.length);
         }
     };
 
@@ -251,6 +368,7 @@ class DraftSyncManagerSingleton {
         delete this.baseline[serverUrl];
         this.reconcileInFlight[serverUrl] = false;
         this.reconcilePending[serverUrl] = undefined;
+        this.absenceCandidates[serverUrl] = new Map();
         logDebug('DraftSyncManager.invalidate', serverUrl);
     };
 
@@ -373,6 +491,9 @@ class DraftSyncManagerSingleton {
         if (!(serverUrl in this.reconcilePending)) {
             this.reconcilePending[serverUrl] = undefined;
         }
+        if (!(serverUrl in this.absenceCandidates)) {
+            this.absenceCandidates[serverUrl] = new Map();
+        }
     };
 
     // isActive: the server is present, enabled, and not invalidated (invalidate sets enabled=false).
@@ -400,4 +521,5 @@ export type ManagerBaselineInternals = {
     baseline: Record<string, {teamId: string; at: number}>;
     reconcileInFlight: Record<string, boolean>;
     reconcilePending: Record<string, {teamId: string} | undefined>;
+    absenceCandidates: Record<string, Map<string, {firstAbsentAt: number; teamId: string}>>;
 };
