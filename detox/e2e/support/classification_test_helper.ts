@@ -2,14 +2,29 @@
 // See LICENSE.txt for license information.
 
 import System from '@support/server_api/system';
-import {timeouts} from '@support/utils';
+import {timeouts, wait} from '@support/utils';
 
 export const enableClassificationMarkings = async (baseUrl: string): Promise<void> => {
-    const patchResult = await System.apiPatchConfig(baseUrl, {
-        FeatureFlags: {
-            ClassificationMarkings: true,
-        },
-    });
+    let patchResult: {error?: unknown} = {};
+    for (let attempt = 0; attempt < 3; attempt++) {
+        if (attempt > 0) {
+            // eslint-disable-next-line no-await-in-loop
+            await wait(timeouts.FIVE_SEC * attempt);
+        }
+        // eslint-disable-next-line no-await-in-loop
+        patchResult = await System.apiPatchConfig(baseUrl, {
+            FeatureFlags: {
+                ClassificationMarkings: true,
+            },
+        });
+        if (!patchResult.error) {
+            break;
+        }
+        const msg = JSON.stringify(patchResult.error);
+        if (!msg.includes('524') && !msg.includes('502') && !msg.includes('503') && !msg.includes('timeout')) {
+            break;
+        }
+    }
     if (patchResult.error) {
         throw new Error(`enableClassificationMarkings: failed to patch server config: ${JSON.stringify(patchResult.error)}`);
     }

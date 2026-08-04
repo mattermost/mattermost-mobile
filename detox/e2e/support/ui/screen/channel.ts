@@ -228,7 +228,15 @@ class ChannelScreen {
             if (isAndroid()) {
                 await device.pressBack();
             } else {
-                await HomeScreen.channelListTab.tap();
+                try {
+                    await waitFor(HomeScreen.channelListTab).toExist().withTimeout(timeouts.FIVE_SEC);
+                    await HomeScreen.channelListTab.tap();
+                } catch {
+                    // Tab bar missing (e.g. bottom sheet still open) — dismiss known overlays.
+                    await dismissKnownModals();
+                    await waitFor(HomeScreen.channelListTab).toExist().withTimeout(timeouts.TEN_SEC);
+                    await HomeScreen.channelListTab.tap();
+                }
             }
         }
         await waitFor(this.channelScreen).not.toBeVisible().withTimeout(timeouts.TEN_SEC);

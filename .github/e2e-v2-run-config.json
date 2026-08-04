@@ -5,7 +5,7 @@
   "platform": "ios",
   "skip_build": true,
   "artifact_run_id": "30898279916",
-  "worker_count": "3",
+  "worker_count": "2",
   "detox_search_path": "e2e/test/ci_filter_failed",
   "use_staging_test_system_io": true,
   "fail_on_test_failures": false,
@@ -17,5 +17,5 @@
   "pr_number": "10006",
   "run_type": "PR",
   "enabled": true,
-  "rerun_note": "filter 6 failed units from 30918679009: account x2 + classification_banner x3 + reply_to_thread (find-by-message + waitFor)"
+  "rerun_note": "filter 6 fails from full@20 (30929033510): channel_summary, share_workspaces, classification x3, interactive_dialog"
 }
