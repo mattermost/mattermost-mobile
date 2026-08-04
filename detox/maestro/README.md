@@ -131,9 +131,11 @@ xcrun simctl spawn booted defaults write -g UIKeyboardPrediction -bool false
 ### 6. Seed test data
 
 ```bash
-# From the repo root (after SITE_1_URL / admin creds are set):
-npx tsx detox/maestro/fixtures/seed.ts
-source detox/maestro/.maestro-test-env.sh   # exports TEST_USER_EMAIL, TEST_USER_PASSWORD, etc.
+# From the detox directory (tsx is a detox devDependency) after
+# SITE_1_URL / ADMIN_USERNAME / ADMIN_PASSWORD are set:
+cd detox
+npx tsx maestro/fixtures/seed.ts       # writes maestro/.maestro-test-env.sh
+source maestro/.maestro-test-env.sh    # exports TEST_USER_EMAIL, TEST_USER_PASSWORD, etc.
 ```
 
 Or use the all-in-one provision + seed script for Matterwick servers:
@@ -341,7 +343,7 @@ appId: ${MAESTRO_APP_ID}
 
 | Variable | Default | Description |
 |---|---|---|
-| `SITE_1_URL` | — | Mattermost server URL (required) |
+| `SITE_1_URL` | — | Mattermost server URL (required for manual seed; `setup_local.sh` accepts `SITE_URL` and writes this) |
 | `ADMIN_USERNAME` | — | Admin account username (not email) for seeding |
 | `ADMIN_PASSWORD` | — | Admin account password for seeding |
 | `TEST_USER_EMAIL` | — | Test user email for login |
@@ -353,6 +355,9 @@ appId: ${MAESTRO_APP_ID}
 | `DEVICE_B_UDID` | — | UDID of second device (multi-device only) |
 | `ADMIN_TOKEN` | — | Mattermost personal access token for API polling |
 | `TEST_CHANNEL_ID` | — | Channel ID used in `poll_for_message.ts` |
+
+The all-in-one `scripts/setup_local.sh` helper instead accepts `SITE_URL` and
+writes `SITE_1_URL` to `.maestro-test-env.sh`.
 
 `RUNNING_E2E=true` must be set in repo-root `.env` **before building** the app (not at
 Maestro run time). It is baked into the JS bundle via `@env` and suppresses LogBox during E2E.
@@ -367,10 +372,10 @@ Maestro run time). It is baked into the JS bundle via `@env` and suppresses LogB
 |---|---|
 | `e2e-detox-pr.yml` | Matterwick entry point: builds, provision, Detox + Maestro |
 | `e2e-detox.yml` | Detox test runs (reusable; called from `e2e-detox-pr.yml`) |
-| `e2e-maestro-pr.yml` | Maestro orchestration + commit statuses (reusable) |
+| `e2e-maestro-pr.yml` | Maestro orchestration + TSIO shard uploads (reusable) |
 | `e2e-maestro-template.yml` | Reusable runner: device bootstrap, seed, `maestro test`, reports |
 
-Nightly, release, and CMT workflows call `e2e-maestro-template.yml` directly with
+Release, master, and CMT workflows call `e2e-maestro-template.yml` directly with
 `artifact_run_id: ${{ github.run_id }}` so they download artifacts from the same workflow run.
 
 ### Phase 1 — builds (parallel)
@@ -412,7 +417,7 @@ Wall time drops roughly proportionally; runner cost increases. Requires separate
 across matrix legs (already supported via `mergeMaestroJunitReports`).
 
 **Option B — smoke gate:** run `account/login.yml` + one channel flow on every PR; run the
-full suite only when labeled or on nightly.
+full suite only when labeled or on master/CMT runs.
 
 **Option C — combine stable batches:** merge attach_logs batches (already split on Android
 for isolation). Risk: one wedged flow blocks the whole combined batch.
@@ -422,27 +427,46 @@ one host are not supported; each matrix leg needs its own runner + simulator UDI
 
 ### Test servers (PR runs)
 
-Matterwick provisions `SITE_1_URL`, `SITE_2_URL`, and `SITE_3_URL`. Maestro maps them in
-`e2e-maestro-pr.yml`:
+Matterwick provisions five servers and dispatches them with explicit topology inputs:
 
-- **Maestro iOS** → `SITE_2_URL` (fallback `SITE_1_URL`)
-- **Maestro Android** → `SITE_3_URL` (fallback `SITE_1_URL`)
+- `ANDROID_SITE_1_URL` and `ANDROID_SITE_2_URL`
+- `IOS_SITE_1_URL` and `IOS_SITE_2_URL`
+- `SITE_3_URL` (shared)
 
-Detox uses `SITE_1_URL` (and additional sites per shard config).
+Maestro uses the first server for its platform. Detox rotates each platform's first and
+second servers across odd/even shards and uses the shared server as its third logical site.
 
 ### Default flow sets and exclusions
 
+PR vs nightly vs manual coverage is summarized below (and in `config/exclude_tags.json` for batch exclusions). Use it when applying Zephyr Scale labels so `automated-e2e` reflects what PR CI actually executes.
+
+| Tier | Zephyr label (recommended) | Meaning |
+|------|---------------------------|---------|
+| PR Maestro (iOS + Android) | `automated-e2e-pr-maestro` | In default `run_ci_batches.sh` on both platforms |
+| PR Maestro (Android only) | `automated-e2e-pr-maestro-android-only` | Calls flows — iOS skips `flows/calls/` |
+| Dedicated workflow step | `automated-e2e-nightly-maestro` | e.g. MM-T67856_4, start_call, file_type_preview |
+| Two physical devices | `automated-e2e-manual-maestro` | MM-T3055/3056, MM-T4830/4831 |
+| Detox only | `automated-e2e-detox` | Bookmarks MM-T5602–5612, MM-T5725, MM-T107, MM-T3251 |
+
+**PR Maestro flow count (approx.):** iOS ~8 batches, Android ~11 batches (Android includes calls/).
+
 - Default flow dirs live in `detox/maestro/scripts/run_ci_batches.sh`; override with `FLOW_PATH` or workflow `flow-path` input.
 - One flow per `maestro test` batch on iOS and Android.
-- `start_call.yml` and `file_type_preview.yml` are **not** in the default PR run (need extra seed scripts).
-- `MM-T67856_4` runs in a dedicated CI step with `AllowDownloadLogs=false` patched on the server. Tags excluded from the default batch are listed in `detox/maestro/config/exclude_tags.json` (`default` key) and consumed by `run_ci_batches.sh`. Add a new server-config variant by appending to that array — no script edit required.
+- **Skipped in default PR batch** (`should_skip_flow` in `run_ci_batches.sh`):
+  - `flows/multi_device/*` — two-device manual (`run_two_device.sh`, `run_calls_two_device.sh`)
+  - `*_picker.yml` — sub-flows invoked by parent flows
+  - `attach_logs_disabled_when_download_logs_off.yml` — dedicated step (MM-T67856_4)
+  - `file_type_preview.yml` — needs `seed_file_preview.ts`
+  - `start_call.yml` — needs `calls_seed.ts`
+  - **iOS only:** entire `flows/calls/` directory (CallKit/WebRTC unreliable on simulator)
+- `MM-T67856_4` runs in a dedicated CI step with `AllowDownloadLogs=false` patched on the server. Tag `MM-T67856_4` is listed in `detox/maestro/config/exclude_tags.json` (`default` key) so the default batch does not duplicate it.
 - Multi-device sync (`MM-T3055`/`MM-T3056`) requires two physical devices via `run_two_device.sh`.
 
 ### Reports
 
 - JUnit XML: `build/maestro-report.xml`
 - HTML report + screenshots uploaded to S3 and as GitHub Actions artifacts
-- Commit statuses: `e2e/maestro-ios-tests`, `e2e/maestro-android-tests`
+- Commit status: `maestro-ios` / `maestro-android` (per-job; posted by `tsio-report-status.js` after upload)
 
 ---
 
@@ -484,19 +508,19 @@ detox/maestro/
     poll_for_message.ts                # Node script: poll API for SYNC_TOKEN message
   flows/
     account/
-      attach_logs.yml                  # MM-T3261
+      attach_logs.yml                  # MM-T67856 (Zephyr MM-T3261 Report a Problem)
       help_url.yml                     # MM-T3260
     calls/
-      call_ui_permission.yml           # MM-T1411
-      leave_call.yml                   # calls UI
-      mute_unmute.yml                  # calls UI
-      start_call.yml                   # requires calls_seed.ts (not in default CI run)
+      call_ui_permission.yml           # MM-T1411 (Android PR CI only)
+      leave_call.yml                   # MM-T4833 (Android PR CI only)
+      mute_unmute.yml                  # MM-T4832 (Android PR CI only)
+      start_call.yml                   # MM-T4829 (nightly/manual — calls_seed.ts)
     channels/
       channel_bookmark_file.yml        # MM-T5603
-      channel_bookmark_file_android_picker.yml  # Android-specific picker variant
-      channel_bookmark_file_ios_picker.yml      # iOS-specific picker variant
-      channel_bookmark_link_external.yml        # MM-T5604
-      file_type_preview.yml            # requires seed_file_preview.ts (not in default CI run)
+      channel_bookmark_file_android_picker.yml  # sub-flow (skipped in PR batch)
+      channel_bookmark_file_ios_picker.yml      # sub-flow (skipped in PR batch)
+      channel_bookmark_link_external.yml        # MM-T5611
+      file_type_preview.yml            # MM-T3244 (nightly — seed_file_preview.ts)
     multi_device/
       device_a_start_call.yml          # MM-T4830 (two-device calls)
       device_b_join_call.yml           # MM-T4831 (two-device calls)

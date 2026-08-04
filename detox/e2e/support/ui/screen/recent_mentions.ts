@@ -9,8 +9,8 @@ import {
     HomeScreen,
     PostOptionsScreen,
 } from '@support/ui/screen';
-import {isAndroid, longPressWithRetry, timeouts, wait, waitForElementToBeVisible, waitForElementToExist} from '@support/utils';
-import {expect} from 'detox';
+import {isAndroid, longPressWithRetry, scrollElementIntoView, timeouts, wait, waitForElementToBeVisible, waitForElementToExist} from '@support/utils';
+import {expect, waitFor} from 'detox';
 
 class RecentMentionsScreen {
     testID = {
@@ -83,15 +83,40 @@ class RecentMentionsScreen {
 
     openPostOptionsFor = async (postId: string, text: string) => {
         const {postListPostItem} = this.getPostListPostItem(postId, text);
+        const flatList = this.postList.getFlatList();
 
-        // Poll for the post to become visible without waiting for idle bridge
-        await waitForElementToBeVisible(postListPostItem, timeouts.TEN_SEC);
+        try {
+            await flatList.scrollTo('top');
+        } catch {
+            // List too short to scroll
+        }
+        try {
+            await flatList.scroll(100, 'down');
+        } catch {
+            // List too short to scroll; keyboard already dismissed
+        }
+        await wait(timeouts.ONE_SEC);
 
-        // Long-press the post's TouchableHighlight directly (always rendered).
-        // post_header.date_time is only rendered on non-consecutive posts —
-        // see app/components/post_list/post/post.tsx:315.
+        try {
+            await waitForElementToExist(postListPostItem, timeouts.FIVE_SEC);
+        } catch {
+            if (isAndroid()) {
+                try {
+                    await waitFor(postListPostItem).
+                        toExist().
+                        whileElement(by.id(this.postList.testID.flatList)).
+                        scroll(250, 'down');
+                } catch {
+                    // Fall through to scrollElementIntoView
+                }
+            }
+        }
+
+        await scrollElementIntoView(postListPostItem, by.id(this.postList.testID.flatList));
+        await waitForElementToExist(postListPostItem, timeouts.TEN_SEC);
+
         const longPressTarget = element(by.id(`${this.testID.recentMentionPostList}.${postId}`));
-        await waitForElementToBeVisible(longPressTarget, timeouts.TEN_SEC);
+        await waitForElementToExist(longPressTarget, timeouts.TEN_SEC);
         await wait(timeouts.ONE_SEC);
 
         // # Open post options (with retry — longPress can fail on Android during animations)
@@ -108,6 +133,68 @@ class RecentMentionsScreen {
         await expect(
             this.getPostMessageAtIndex(index),
         ).toHaveText(postMessage);
+    };
+
+    // Wait for an edited post to appear in recent mentions. Mentions are search-backed, so
+    // callers should await Post.waitForPostMessageInSearch before calling this.
+    verifyPostEdited = async (postId: string, updatedMessage?: string) => {
+        const postContainer = by.id(`${this.testID.recentMentionPostList}.${postId}`);
+        const MAX_REFETCHES = 6;
+
+        const waitForEditedState = async () => {
+            const editedIndicator = element(by.id('edited_indicator').withAncestor(postContainer));
+            try {
+                await waitFor(editedIndicator).toExist().withTimeout(timeouts.FIVE_SEC);
+                return;
+            } catch {
+                // Fall through to message / "Edited" text.
+            }
+
+            try {
+                await waitFor(
+                    element(by.text('Edited').withAncestor(postContainer)),
+                ).toExist().withTimeout(timeouts.THREE_SEC);
+                return;
+            } catch {
+                // Fall through to updated message text.
+            }
+
+            if (!updatedMessage) {
+                throw new Error(`Could not match edited indicator for post ${postId}`);
+            }
+
+            // The message is split across Text nodes by the @mention highlight, so match the trailing
+            // token — never by.text(RegExp), which iOS matches literally.
+            const editSuffix = updatedMessage.trim().split(/\s+/).pop();
+            if (editSuffix) {
+                await waitFor(
+                    element(by.text(editSuffix).withAncestor(postContainer)),
+                ).toExist().withTimeout(timeouts.FIVE_SEC);
+                return;
+            }
+
+            throw new Error(
+                `Could not match edited message for post ${postId} (expected text "${updatedMessage}")`,
+            );
+        };
+
+        /* eslint-disable no-await-in-loop -- poll before each tab refresh */
+        for (let attempt = 1; attempt <= MAX_REFETCHES; attempt++) {
+            try {
+                await waitForEditedState();
+                return;
+            } catch (e) {
+                if (attempt === MAX_REFETCHES) {
+                    throw e;
+                }
+
+                await HomeScreen.channelListTab.tap();
+                await wait(timeouts.ONE_SEC);
+                await HomeScreen.mentionsTab.tap();
+                await this.toBeVisible();
+            }
+        }
+        /* eslint-enable no-await-in-loop */
     };
 }
 

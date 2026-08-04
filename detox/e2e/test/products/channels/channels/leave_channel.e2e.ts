@@ -23,7 +23,7 @@ import {
     ServerScreen,
     ChannelInfoScreen,
 } from '@support/ui/screen';
-import {isIos, timeouts, wait} from '@support/utils';
+import {timeouts, wait} from '@support/utils';
 import {expect} from 'detox';
 
 describe('Channels - Leave Channel', () => {
@@ -52,7 +52,8 @@ describe('Channels - Leave Channel', () => {
         await HomeScreen.logout();
     });
 
-    (isIos() ? it.skip : it)('MM-T4931_1 - should be able to leave a channel from channel info screen and confirm', async () => {
+    // Re-enabled iOS: Android 2/2 pass on CI 30250131265; prior iOS skip had no failure reason.
+    it('MM-T4931_1 - should be able to leave a channel from channel info screen and confirm', async () => {
         // # Open a channel screen, open channel info screen, and tap on leave channel option and confirm
         const {channel} = await Channel.apiCreateChannel(siteOneUrl, {teamId: testTeam.id});
         await Channel.apiAddUserToChannel(siteOneUrl, testUser.id, channel.id);
@@ -67,7 +68,7 @@ describe('Channels - Leave Channel', () => {
         await expect(ChannelListScreen.getChannelItem(channelsCategory, channel.name)).not.toExist();
     });
 
-    (isIos() ? it.skip : it)('MM-T4931_2 - should be able to leave a channel from channel info screen and cancel', async () => {
+    it('MM-T4931_2 - should be able to leave a channel from channel info screen and cancel', async () => {
         // # Open a channel screen, open channel info screen, and tap on leave channel option and cancel
         const {channel} = await Channel.apiCreateChannel(siteOneUrl, {teamId: testTeam.id});
         await Channel.apiAddUserToChannel(siteOneUrl, testUser.id, channel.id);
