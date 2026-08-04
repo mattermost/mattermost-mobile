@@ -17,6 +17,20 @@ jest.mock('react-native-keyboard-controller', () => ({
     },
 }));
 
+// The mock factory above returns one shared module object for the whole file, and
+// keyboard.ts reads isEdgeToEdge through its live binding — so mutating it here is
+// what switches the code under test between the two platforms. Every test sets it
+// explicitly instead of inheriting whatever the previous test left behind: a test
+// that failed before restoring the flag would otherwise invert the expectations of
+// every test after it, turning one failure into several unrelated-looking ones.
+const setEdgeToEdge = (value: boolean) => {
+    require('@constants/device').isEdgeToEdge = value;
+};
+
+afterEach(() => {
+    setEdgeToEdge(false);
+});
+
 describe('dismissKeyboard', () => {
     beforeEach(() => {
         jest.clearAllMocks();
@@ -28,6 +42,8 @@ describe('dismissKeyboard', () => {
     });
 
     it('should call Keyboard.dismiss on non-edge-to-edge', async () => {
+        setEdgeToEdge(false);
+
         await dismissKeyboard();
 
         expect(Keyboard.dismiss).toHaveBeenCalledTimes(1);
@@ -35,15 +51,12 @@ describe('dismissKeyboard', () => {
     });
 
     it('should call KeyboardController.dismiss with animated=false on edge-to-edge', async () => {
-        const deviceModule = require('@constants/device');
-        deviceModule.isEdgeToEdge = true;
+        setEdgeToEdge(true);
 
         await dismissKeyboard();
 
         expect(KeyboardController.dismiss).toHaveBeenCalledWith({animated: false});
         expect(Keyboard.dismiss).not.toHaveBeenCalled();
-
-        deviceModule.isEdgeToEdge = false;
     });
 });
 
@@ -53,6 +66,7 @@ describe('isKeyboardVisible', () => {
     });
 
     it('should return Keyboard.isVisible() on non-edge-to-edge', () => {
+        setEdgeToEdge(false);
         jest.spyOn(Keyboard, 'isVisible').mockReturnValue(true);
 
         expect(isKeyboardVisible()).toBe(true);
@@ -61,13 +75,10 @@ describe('isKeyboardVisible', () => {
     });
 
     it('should return KeyboardController.isVisible() on edge-to-edge', () => {
-        const deviceModule = require('@constants/device');
-        deviceModule.isEdgeToEdge = true;
+        setEdgeToEdge(true);
         jest.mocked(KeyboardController.isVisible).mockReturnValue(true);
 
         expect(isKeyboardVisible()).toBe(true);
         expect(KeyboardController.isVisible).toHaveBeenCalledTimes(1);
-
-        deviceModule.isEdgeToEdge = false;
     });
 });
