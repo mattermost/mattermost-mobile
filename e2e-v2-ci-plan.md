@@ -98,7 +98,7 @@ Keep a single internal contract so future triggers are thin adapters:
 
 | Future trigger | Adapter | Same workers? |
 |----------------|---------|---------------|
-| PR (`workflow_dispatch` / later `pull_request`) | `run_type=PR`, `gh_pr_number`, branch = PR head | Yes |
+| PR (`workflow_dispatch` / later `pull_request`) | `run_type=PR`, `gh_pr_number`, branch = `pr-<n>` (report URL segment) | Yes |
 | Merge to main | `run_type=MAIN`, branch = `main` | Yes |
 | Merge to release | `run_type=RELEASE`, branch = `release-*` | Yes |
 | CMT | Matrix over `server_version` × platform; narrower `detox-search-path` for smoke | Yes |

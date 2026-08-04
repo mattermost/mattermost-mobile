@@ -112,6 +112,7 @@ jobs:
     runs-on: ubuntu-24.04
     outputs:
       identity-json: ${{ steps.identity.outputs.identity-json }}
+      identity-branch: ${{ steps.identity.outputs.identity-branch }}
       report-url: ${{ steps.begin.outputs.report-url }}
       total-units: ${{ steps.begin.outputs.total-units }}
       worker-shards: ${{ steps.matrix.outputs.shards }}
@@ -134,13 +135,20 @@ jobs:
           PR: ${{ inputs.pr_number }}
           RUN_TYPE: ${{ inputs.run_type }}
         run: |
+          # Report URLs are /reports/{repo}/{branch}/{sha}/{name}. For PR runs
+          # use pr-<n> (not the git head ref) so links stay short and stable.
+          if [ -n "$PR" ]; then
+            IDENTITY_BRANCH="pr-${PR}"
+          else
+            IDENTITY_BRANCH="$BRANCH"
+          fi
           IDENTITY=$(jq -nc \
             --arg repo "$REPO" \
             --arg sha "$SHA" \
             --arg run_id "$RUN_ID" \
             --arg name "$NAME" \
             --arg attempt "$ATTEMPT" \
-            --arg branch "$BRANCH" \
+            --arg branch "$IDENTITY_BRANCH" \
             --arg pr "$PR" \
             '{
               repository: $repo,
@@ -152,6 +160,7 @@ jobs:
             }
             + (if $pr != "" then {gh_pr_number: ($pr|tonumber)} else {} end)')
           echo "identity-json=${IDENTITY}" >> "$GITHUB_OUTPUT"
+          echo "identity-branch=${IDENTITY_BRANCH}" >> "$GITHUB_OUTPUT"
           echo "Identity: ${IDENTITY} (run_type=${RUN_TYPE})"
 
       - name: Worker matrix JSON
@@ -358,4 +367,4 @@ jobs:
           fail-on-test-failures: ${{ inputs.fail_on_test_failures && 'true' || 'false' }}
           report-type: ${{ inputs.run_type }}
           pr-number: ${{ inputs.pr_number }}
-          ref-branch: ${{ inputs.branch }}
+          ref-branch: ${{ needs.begin.outputs.identity-branch || inputs.branch }}
