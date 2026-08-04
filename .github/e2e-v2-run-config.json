@@ -17,5 +17,5 @@
   "pr_number": "10006",
   "run_type": "PR",
   "enabled": true,
-  "rerun_note": "retest Save Password fix with PR-10006 cloud servers"
+  "rerun_note": "retest Save Password dismiss with sync-off + gated sendToHome"
 }
