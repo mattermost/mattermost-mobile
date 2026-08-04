@@ -15,14 +15,7 @@ jest.mock('@components/option_item', () => ({
     ITEM_HEIGHT: 48,
 }));
 
-// This shadows the fuller mock in test/setup.ts, so it has to keep addListener:
-// app/init/managed_app.ts constructs its singleton at import time and calls
-// Emm.addListener() there. This file's import graph reaches it transitively
-// (queries/servers/channel -> ... -> managers/network_manager -> init/managed_app),
-// and without addListener the whole suite fails to run with
-// "_reactNativeEmm.default.addListener is not a function".
 jest.mock('@mattermost/react-native-emm', () => ({
-    addListener: jest.fn(),
     useManagedConfig: () => ({}),
 }));
 
