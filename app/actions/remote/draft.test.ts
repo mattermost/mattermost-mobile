@@ -10,13 +10,36 @@ import NetworkManager from '@managers/network_manager';
 import {buildDraftOutboxId, getDraft, getDraftOutbox} from '@queries/servers/drafts';
 import {draftContentFingerprint, normalizeServerDraft} from '@utils/draft/sync';
 
-import {confirmDeleteTombstone, deleteAbsentCleanDraft, fetchDraftsForTeam, getReconcilableKeys, reconcileTeamDrafts} from './draft';
+import {computeNextAttemptAt, confirmDeleteTombstone, deleteAbsentCleanDraft, fetchDraftsForTeam, getReconcilableKeys, processOutboxDelete, processOutboxUpsert, reconcileTeamDrafts} from './draft';
+import {forceLogoutIfNecessary} from './session';
 
 import type ServerDataOperator from '@database/operator/server_data_operator';
 import type DraftModel from '@typings/database/models/servers/draft';
 import type DraftOutboxModel from '@typings/database/models/servers/draft_outbox';
 
+jest.mock('./session', () => ({
+    forceLogoutIfNecessary: jest.fn(),
+}));
+
+jest.mock('@managers/websocket_manager', () => ({
+    __esModule: true,
+    default: {
+        getClient: jest.fn(() => ({getConnectionId: () => 'conn-test'})),
+    },
+}));
+
+const mockedForceLogout = jest.mocked(forceLogoutIfNecessary);
+
 const {SERVER: {DRAFT, DRAFT_OUTBOX}} = MM_TABLES;
+
+// httpError: a minimal ClientError-shaped rejection carrying a status code (and optionally headers)
+// for exercising the worker error-classification table.
+const httpError = (statusCode: number, headers?: Record<string, string>) => ({
+    status_code: statusCode,
+    url: `https://${'drafts.remote.test.com'}/api/v4/users/me/drafts`,
+    message: 'request failed',
+    headers,
+});
 
 const serverUrl = 'drafts.remote.test.com';
 const teamId = 'teamid1teamid1teamid1teamid1';
@@ -28,6 +51,8 @@ const userId = 'userid1userid1userid1userid1';
 
 const mockClient = {
     getDrafts: jest.fn(),
+    upsertDraft: jest.fn(),
+    deleteDraft: jest.fn(),
 };
 
 type SeedDraft = {
@@ -135,6 +160,9 @@ describe('app/actions/remote/draft', () => {
         database = DatabaseManager.serverDatabases[serverUrl]!.database;
         operator = DatabaseManager.serverDatabases[serverUrl]!.operator;
         mockClient.getDrafts.mockReset();
+        mockClient.upsertDraft.mockReset();
+        mockClient.deleteDraft.mockReset();
+        mockedForceLogout.mockReset();
     });
 
     afterEach(async () => {
@@ -550,6 +578,272 @@ describe('app/actions/remote/draft', () => {
             const outbox = await getDraftOutbox(database, channelId, '');
             expect(outbox?.operation).toBe(DraftOutboxOperation.Upsert);
             expect(outbox?.status).toBe(DraftOutboxStatus.Pending);
+        });
+    });
+
+    describe('computeNextAttemptAt', () => {
+        it('honors a Retry-After (retryAfterMs) verbatim, ignoring backoff', () => {
+            expect(computeNextAttemptAt(0, 1000, 5000)).toBe(6000);
+            expect(computeNextAttemptAt(9, 1000, 250)).toBe(1250);
+        });
+
+        it('grows exponentially from the base and caps at DRAFT_SYNC_RETRY_MAX_MS', () => {
+            // Neutralize jitter (0.5 -> (0.5*2 - 1) === 0) for exact backoff assertions.
+            const rand = jest.spyOn(Math, 'random').mockReturnValue(0.5);
+
+            expect(computeNextAttemptAt(0, 0)).toBe(1000);
+            expect(computeNextAttemptAt(3, 0)).toBe(8000);
+
+            // 1000 * 2^100 is astronomically large -> ceilinged at the max.
+            expect(computeNextAttemptAt(100, 0)).toBe(300000);
+
+            rand.mockRestore();
+        });
+
+        it('stays within the jitter band and is never negative', () => {
+            const low = jest.spyOn(Math, 'random').mockReturnValue(0);
+
+            // Fully negative jitter: base 1000 - 20% = 800, still >= 0.
+            expect(computeNextAttemptAt(0, 0)).toBe(800);
+            low.mockRestore();
+
+            const high = jest.spyOn(Math, 'random').mockReturnValue(1);
+
+            // Fully positive jitter: base 1000 + 20% = 1200.
+            expect(computeNextAttemptAt(0, 0)).toBe(1200);
+            high.mockRestore();
+        });
+    });
+
+    describe('processOutboxUpsert', () => {
+        const seedUpsertReady = async (over: Partial<SeedDraft> = {}) => {
+            await seedChannel(channelId, teamId, 'O');
+            await seedMembership(channelId, teamId);
+            await seedDraft({channelId, message: 'hello', serverUpdateAt: 0, ...over});
+            await seedOutbox({channelId, operation: DraftOutboxOperation.Upsert, status: DraftOutboxStatus.Pending});
+        };
+
+        it('POSTs and removes the outbox on success, stamping serverUpdateAt from the response', async () => {
+            await seedUpsertReady();
+            mockClient.upsertDraft.mockResolvedValueOnce(serverDraft({message: 'hello', update_at: 4242}));
+
+            const result = await processOutboxUpsert(serverUrl, channelId, '');
+
+            expect(result).toEqual({outcome: 'done'});
+            expect(mockClient.upsertDraft).toHaveBeenCalledTimes(1);
+            expect(mockClient.upsertDraft.mock.calls[0][1]).toBe('conn-test');
+            expect(await getDraftOutbox(database, channelId, '')).toBeUndefined();
+            expect((await getDraft(database, channelId, ''))?.serverUpdateAt).toBe(4242);
+        });
+
+        it('does not clear the outbox or overwrite content when the generation changed during the POST', async () => {
+            await seedUpsertReady();
+
+            // Simulate a newer local edit landing while the POST is in flight: bump the generation.
+            mockClient.upsertDraft.mockImplementationOnce(async () => {
+                await database.write(async (writer) => {
+                    const o = await getDraftOutbox(database, channelId, '');
+                    await writer.batch(o!.prepareUpdate((x) => {
+                        x.generation = 9;
+                    }));
+                });
+                return serverDraft({message: 'hello', update_at: 5555});
+            });
+
+            const result = await processOutboxUpsert(serverUrl, channelId, '');
+
+            expect(result).toEqual({outcome: 'retry'});
+
+            // The newer outbox row survives (still pending) and only serverUpdateAt is advanced.
+            const outbox = await getDraftOutbox(database, channelId, '');
+            expect(outbox?.status).toBe(DraftOutboxStatus.Pending);
+            expect(outbox?.generation).toBe(9);
+            expect((await getDraft(database, channelId, ''))?.serverUpdateAt).toBe(5555);
+        });
+
+        it('blocks with missing_local_draft and never POSTs when no Draft exists', async () => {
+            await seedChannel(channelId, teamId, 'O');
+            await seedMembership(channelId, teamId);
+            await seedOutbox({channelId, operation: DraftOutboxOperation.Upsert, status: DraftOutboxStatus.Pending});
+
+            const result = await processOutboxUpsert(serverUrl, channelId, '');
+
+            expect(result).toEqual({outcome: 'blocked'});
+            expect(mockClient.upsertDraft).not.toHaveBeenCalled();
+            const outbox = await getDraftOutbox(database, channelId, '');
+            expect(outbox?.status).toBe(DraftOutboxStatus.Blocked);
+            expect(outbox?.lastErrorCode).toBe('missing_local_draft');
+        });
+
+        it('converts an empty-message draft with an attachment into a keepLocal delete without POSTing', async () => {
+            await seedUpsertReady({message: '', files: [{id: 'f1', clientId: 'c1'} as FileInfo], fileIds: ['f1']});
+
+            const result = await processOutboxUpsert(serverUrl, channelId, '');
+
+            expect(result).toEqual({outcome: 'converted'});
+            expect(mockClient.upsertDraft).not.toHaveBeenCalled();
+            const outbox = await getDraftOutbox(database, channelId, '');
+            expect(outbox?.operation).toBe(DraftOutboxOperation.Delete);
+            expect(outbox?.keepLocal).toBe(true);
+            expect(outbox?.deletedFingerprint).toBeTruthy();
+        });
+
+        it('keeps the row as waiting_for_upload when an in-progress upload (file without id) remains', async () => {
+            await seedUpsertReady({files: [{clientId: 'c1', localPath: 'p'} as FileInfo]});
+            mockClient.upsertDraft.mockResolvedValueOnce(serverDraft({message: 'hello', update_at: 7000}));
+
+            const result = await processOutboxUpsert(serverUrl, channelId, '');
+
+            expect(result).toEqual({outcome: 'done'});
+            const outbox = await getDraftOutbox(database, channelId, '');
+            expect(outbox?.status).toBe(DraftOutboxStatus.WaitingForUpload);
+        });
+
+        it('forces logout and leaves the row pending on 401', async () => {
+            await seedUpsertReady();
+            mockClient.upsertDraft.mockRejectedValueOnce(httpError(401));
+
+            const result = await processOutboxUpsert(serverUrl, channelId, '');
+
+            expect(result).toEqual({outcome: 'retry'});
+            expect(mockedForceLogout).toHaveBeenCalledTimes(1);
+            const outbox = await getDraftOutbox(database, channelId, '');
+            expect(outbox?.status).toBe(DraftOutboxStatus.Pending);
+            expect(outbox?.lastErrorCode).toBeNull();
+        });
+
+        it('blocks with forbidden on 403', async () => {
+            await seedUpsertReady();
+            mockClient.upsertDraft.mockRejectedValueOnce(httpError(403));
+
+            const result = await processOutboxUpsert(serverUrl, channelId, '');
+
+            expect(result).toEqual({outcome: 'blocked'});
+            const outbox = await getDraftOutbox(database, channelId, '');
+            expect(outbox?.status).toBe(DraftOutboxStatus.Blocked);
+            expect(outbox?.lastErrorCode).toBe('forbidden');
+        });
+
+        it('blocks with invalid on 400', async () => {
+            await seedUpsertReady();
+            mockClient.upsertDraft.mockRejectedValueOnce(httpError(400));
+
+            const result = await processOutboxUpsert(serverUrl, channelId, '');
+
+            expect(result).toEqual({outcome: 'blocked'});
+            const outbox = await getDraftOutbox(database, channelId, '');
+            expect(outbox?.lastErrorCode).toBe('invalid');
+        });
+
+        it('suspends with sync_disabled on 501', async () => {
+            await seedUpsertReady();
+            mockClient.upsertDraft.mockRejectedValueOnce(httpError(501));
+
+            const result = await processOutboxUpsert(serverUrl, channelId, '');
+
+            expect(result).toEqual({outcome: 'suspend'});
+            const outbox = await getDraftOutbox(database, channelId, '');
+            expect(outbox?.status).toBe(DraftOutboxStatus.Blocked);
+            expect(outbox?.lastErrorCode).toBe('sync_disabled');
+        });
+
+        it('keeps the row pending with a future nextAttemptAt honoring Retry-After on 429', async () => {
+            await seedUpsertReady();
+            mockClient.upsertDraft.mockRejectedValueOnce(httpError(429, {'Retry-After': '2'}));
+
+            const before = Date.now();
+            const result = await processOutboxUpsert(serverUrl, channelId, '');
+
+            expect(result).toEqual({outcome: 'retry', retryAfterMs: 2000});
+            const outbox = await getDraftOutbox(database, channelId, '');
+            expect(outbox?.status).toBe(DraftOutboxStatus.Pending);
+            expect(outbox?.attemptCount).toBe(1);
+            expect(outbox?.nextAttemptAt).toBeGreaterThanOrEqual(before + 2000);
+        });
+
+        it('keeps the row pending and backs off with an incremented attemptCount on a 500/network error', async () => {
+            await seedUpsertReady();
+            mockClient.upsertDraft.mockRejectedValueOnce(httpError(500));
+
+            const before = Date.now();
+            const result = await processOutboxUpsert(serverUrl, channelId, '');
+
+            expect(result).toEqual({outcome: 'retry'});
+            const outbox = await getDraftOutbox(database, channelId, '');
+            expect(outbox?.status).toBe(DraftOutboxStatus.Pending);
+            expect(outbox?.attemptCount).toBe(1);
+            expect(outbox?.nextAttemptAt).toBeGreaterThan(before);
+        });
+
+        it('is a no-op for a non-pending / non-upsert outbox row', async () => {
+            await seedChannel(channelId, teamId, 'O');
+            await seedMembership(channelId, teamId);
+            await seedDraft({channelId, message: 'hello', serverUpdateAt: 0});
+            await seedOutbox({channelId, operation: DraftOutboxOperation.Upsert, status: DraftOutboxStatus.Blocked});
+
+            const result = await processOutboxUpsert(serverUrl, channelId, '');
+
+            expect(result).toEqual({outcome: 'done'});
+            expect(mockClient.upsertDraft).not.toHaveBeenCalled();
+        });
+    });
+
+    describe('processOutboxDelete', () => {
+        const seedDeleteReady = async () => {
+            await seedChannel(channelId, teamId, 'O');
+            await seedMembership(channelId, teamId);
+            await seedOutbox({channelId, operation: DraftOutboxOperation.Delete, status: DraftOutboxStatus.Pending, deletedFingerprint: 'fp'});
+        };
+
+        it('hands off to confirming_delete on success while retaining the tombstone', async () => {
+            await seedDeleteReady();
+            mockClient.deleteDraft.mockResolvedValueOnce(serverDraft());
+
+            const result = await processOutboxDelete(serverUrl, channelId, '');
+
+            expect(result).toEqual({outcome: 'done'});
+            expect(mockClient.deleteDraft).toHaveBeenCalledWith(channelId, '', 'conn-test');
+            const outbox = await getDraftOutbox(database, channelId, '');
+            expect(outbox?.operation).toBe(DraftOutboxOperation.Delete);
+            expect(outbox?.status).toBe(DraftOutboxStatus.ConfirmingDelete);
+            expect(outbox?.deletedFingerprint).toBe('fp');
+        });
+
+        it('blocks with unsupported_route and suspends on a 404 (a 404 is NOT success)', async () => {
+            await seedDeleteReady();
+            mockClient.deleteDraft.mockRejectedValueOnce(httpError(404));
+
+            const result = await processOutboxDelete(serverUrl, channelId, '');
+
+            expect(result).toEqual({outcome: 'suspend'});
+            const outbox = await getDraftOutbox(database, channelId, '');
+            expect(outbox?.status).toBe(DraftOutboxStatus.Blocked);
+            expect(outbox?.lastErrorCode).toBe('unsupported_route');
+        });
+
+        it('blocks with scope_unverifiable and never DELETEs when channel membership is lost', async () => {
+            // Non-DM/GM channel with NO membership row -> authority cannot be verified.
+            await seedChannel(channelId, teamId, 'O');
+            await seedOutbox({channelId, operation: DraftOutboxOperation.Delete, status: DraftOutboxStatus.Pending});
+
+            const result = await processOutboxDelete(serverUrl, channelId, '');
+
+            expect(result).toEqual({outcome: 'blocked'});
+            expect(mockClient.deleteDraft).not.toHaveBeenCalled();
+            const outbox = await getDraftOutbox(database, channelId, '');
+            expect(outbox?.status).toBe(DraftOutboxStatus.Blocked);
+            expect(outbox?.lastErrorCode).toBe('scope_unverifiable');
+        });
+
+        it('is a no-op for a non-pending delete row', async () => {
+            await seedChannel(channelId, teamId, 'O');
+            await seedMembership(channelId, teamId);
+            await seedOutbox({channelId, operation: DraftOutboxOperation.Delete, status: DraftOutboxStatus.ConfirmingDelete});
+
+            const result = await processOutboxDelete(serverUrl, channelId, '');
+
+            expect(result).toEqual({outcome: 'done'});
+            expect(mockClient.deleteDraft).not.toHaveBeenCalled();
         });
     });
 });

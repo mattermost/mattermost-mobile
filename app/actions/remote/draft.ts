@@ -5,14 +5,15 @@ import {Q, type Database, type Model} from '@nozbe/watermelondb';
 
 import {General} from '@constants';
 import {MM_TABLES} from '@constants/database';
-import {DraftOutboxOperation, DraftOutboxStatus} from '@constants/draft';
+import {DRAFT_SYNC_RETRY_BASE_MS, DRAFT_SYNC_RETRY_JITTER, DRAFT_SYNC_RETRY_MAX_MS, DraftOutboxOperation, DraftOutboxStatus} from '@constants/draft';
 import DatabaseManager from '@database/manager';
 import NetworkManager from '@managers/network_manager';
+import websocketManager from '@managers/websocket_manager';
 import {getChannelById, getMyChannel} from '@queries/servers/channel';
-import {adoptLegacyDrafts, buildDraftOutboxId, getDraftOutbox, mutateDraftAndOutbox, prepareDraftOutbox, queryDraftsForTeam, type PrepareDraftAndOutbox} from '@queries/servers/drafts';
+import {adoptLegacyDrafts, buildDraftOutboxId, getDraft, getDraftOutbox, mutateDraftAndOutbox, prepareDraftOutbox, queryDraftsForTeam, type PrepareDraftAndOutbox} from '@queries/servers/drafts';
 import {getConfigValue} from '@queries/servers/system';
-import {draftContentFingerprint, normalizeServerDraft, type NormalizedDraft} from '@utils/draft/sync';
-import {getFullErrorMessage} from '@utils/errors';
+import {buildDraftUpsertRequest, draftContentFingerprint, normalizeServerDraft, type NormalizedDraft} from '@utils/draft/sync';
+import {getFullErrorMessage, isErrorWithStatusCode} from '@utils/errors';
 import {logDebug, logError} from '@utils/log';
 
 import {forceLogoutIfNecessary} from './session';
@@ -417,4 +418,335 @@ export async function confirmDeleteTombstone(serverUrl: string, channelId: strin
     } catch (error) {
         logError('confirmDeleteTombstone', getFullErrorMessage(error));
     }
+}
+
+/**
+ * WorkerOutcome: the result of a single per-key outbox worker run.
+ *  - done: nothing left to do for this generation (removed / acked / no-op).
+ *  - retry: transient failure or a newer generation remains; the row stays time-driven.
+ *  - blocked: parked awaiting an external signal (edit/unblock); not time-driven.
+ *  - suspend: a server-wide failure (sync disabled / unsupported route); stop this session.
+ *  - converted: the upsert was rewritten into a delete; drain will pick the delete up next.
+ */
+export type WorkerOutcome = {
+    outcome: 'done' | 'retry' | 'blocked' | 'suspend' | 'converted';
+    retryAfterMs?: number;
+};
+
+// Non-sensitive outbox error classifications persisted to last_error_code.
+const OUTBOX_ERROR = {
+    MissingLocalDraft: 'missing_local_draft',
+    Forbidden: 'forbidden',
+    UnsupportedRoute: 'unsupported_route',
+    SyncDisabled: 'sync_disabled',
+    Invalid: 'invalid',
+    ScopeUnverifiable: 'scope_unverifiable',
+} as const;
+
+/**
+ * computeNextAttemptAt: the next absolute retry timestamp for a failed outbox row. When the server
+ * supplies a Retry-After (retryAfterMs) it is honored verbatim. Otherwise it is capped exponential
+ * backoff (DRAFT_SYNC_RETRY_BASE_MS * 2^attemptCount, ceilinged at DRAFT_SYNC_RETRY_MAX_MS) with
+ * +/-DRAFT_SYNC_RETRY_JITTER proportional jitter. The result is never negative.
+ */
+export function computeNextAttemptAt(attemptCount: number, now: number, retryAfterMs?: number): number {
+    if (retryAfterMs != null) {
+        return Math.max(0, now + retryAfterMs);
+    }
+
+    const base = Math.min(DRAFT_SYNC_RETRY_BASE_MS * (2 ** attemptCount), DRAFT_SYNC_RETRY_MAX_MS);
+    const jitter = base * DRAFT_SYNC_RETRY_JITTER * ((Math.random() * 2) - 1);
+    return Math.max(0, Math.round(now + base + jitter));
+}
+
+// isErrorWithHeaders: narrow guard for a ClientError-shaped object carrying response headers.
+const isErrorWithHeaders = (error: unknown): error is {headers: Record<string, string>} => {
+    return typeof error === 'object' && error !== null && 'headers' in error &&
+        typeof (error as {headers: unknown}).headers === 'object' && (error as {headers: unknown}).headers !== null;
+};
+
+// readRetryAfterMs: parse a Retry-After (seconds) response header into milliseconds, or undefined.
+const readRetryAfterMs = (error: unknown): number | undefined => {
+    if (!isErrorWithHeaders(error)) {
+        return undefined;
+    }
+    const raw = error.headers['Retry-After'] ?? error.headers['retry-after'];
+    if (!raw) {
+        return undefined;
+    }
+    const seconds = parseInt(raw, 10);
+    if (Number.isNaN(seconds) || seconds < 0) {
+        return undefined;
+    }
+    return seconds * 1000;
+};
+
+/**
+ * classifyOutboxError: map a caught worker error to a WorkerOutcome and persist the matching outbox
+ * transition (guarded by generation so a newer local edit during the request is never clobbered).
+ * See the error-classification table in the drafts-sync spec. Never logs message/props/file/ids.
+ */
+const classifyOutboxError = async (
+    serverUrl: string,
+    database: Database,
+    channelId: string,
+    rootId: string,
+    generation: number,
+    error: unknown,
+    logPrefix: string,
+    isDelete: boolean,
+): Promise<WorkerOutcome> => {
+    const status = isErrorWithStatusCode(error) ? error.status_code : undefined;
+    logDebug(`${logPrefix}: request failed`, `status=${status ?? 'none'}`, getFullErrorMessage(error));
+
+    // Persist an outbox transition only while the generation still matches the one we sent.
+    const applyOutbox = (mutate: (o: DraftOutboxModel) => void) => mutateDraftAndOutbox(database, channelId, rootId, ({outbox}) => {
+        if (!outbox || outbox.generation !== generation) {
+            return [];
+        }
+        return [outbox.prepareUpdate(mutate)];
+    });
+
+    switch (status) {
+        case 401:
+            // The forced-logout flow owns recovery; leave the row pending for after re-auth.
+            forceLogoutIfNecessary(serverUrl, error);
+            return {outcome: 'retry'};
+        case 403:
+            await applyOutbox((o) => {
+                o.status = DraftOutboxStatus.Blocked;
+                o.lastErrorCode = OUTBOX_ERROR.Forbidden;
+            });
+            return {outcome: 'blocked'};
+        case 400:
+            await applyOutbox((o) => {
+                o.status = DraftOutboxStatus.Blocked;
+                o.lastErrorCode = OUTBOX_ERROR.Invalid;
+            });
+            return {outcome: 'blocked'};
+        case 429: {
+            const retryAfterMs = readRetryAfterMs(error);
+            await applyOutbox((o) => {
+                o.attemptCount += 1;
+                o.nextAttemptAt = computeNextAttemptAt(o.attemptCount, Date.now(), retryAfterMs);
+            });
+            return {outcome: 'retry', retryAfterMs};
+        }
+        case 501:
+            await applyOutbox((o) => {
+                o.status = DraftOutboxStatus.Blocked;
+                o.lastErrorCode = OUTBOX_ERROR.SyncDisabled;
+            });
+            return {outcome: 'suspend'};
+        case 404:
+            if (isDelete) {
+                // The supported delete route returns 200 even for an already-absent row, so a 404 means
+                // the route/capability is unavailable: block and suspend this session.
+                await applyOutbox((o) => {
+                    o.status = DraftOutboxStatus.Blocked;
+                    o.lastErrorCode = OUTBOX_ERROR.UnsupportedRoute;
+                });
+                return {outcome: 'suspend'};
+            }
+
+            // A 404 on upsert is not otherwise expected; treat as transient with capped backoff.
+            await applyOutbox((o) => {
+                o.attemptCount += 1;
+                o.nextAttemptAt = computeNextAttemptAt(o.attemptCount, Date.now());
+            });
+            return {outcome: 'retry'};
+        default:
+            // 5xx / network / timeout / malformed response: keep pending with capped backoff.
+            await applyOutbox((o) => {
+                o.attemptCount += 1;
+                o.nextAttemptAt = computeNextAttemptAt(o.attemptCount, Date.now());
+            });
+            return {outcome: 'retry'};
+    }
+};
+
+/**
+ * processOutboxUpsert: drain a single Pending upsert outbox row to the server. It is DB-focused: it
+ * captures the row generation, POSTs outside any writer, then re-checks the generation inside the ack
+ * writer so a newer local edit during the POST is never clobbered. Epoch checks are the caller's job.
+ */
+export async function processOutboxUpsert(serverUrl: string, channelId: string, rootId: string): Promise<WorkerOutcome> {
+    const database = DatabaseManager.serverDatabases[serverUrl]?.database;
+    if (!database) {
+        return {outcome: 'done'};
+    }
+
+    const outbox = await getDraftOutbox(database, channelId, rootId);
+    if (!outbox || outbox.operation !== DraftOutboxOperation.Upsert || outbox.status !== DraftOutboxStatus.Pending) {
+        return {outcome: 'done'};
+    }
+
+    const draft = await getDraft(database, channelId, rootId);
+
+    // A pending upsert with no local Draft is unresolvable: never fabricate content or POST.
+    if (!draft) {
+        logDebug('processOutboxUpsert: no local draft for pending upsert');
+        await mutateDraftAndOutbox(database, channelId, rootId, ({outbox: o}) => {
+            if (!o || o.operation !== DraftOutboxOperation.Upsert || o.status !== DraftOutboxStatus.Pending) {
+                return [];
+            }
+            return [o.prepareUpdate((x) => {
+                x.status = DraftOutboxStatus.Blocked;
+                x.lastErrorCode = OUTBOX_ERROR.MissingLocalDraft;
+            })];
+        });
+        return {outcome: 'blocked'};
+    }
+
+    const request = buildDraftUpsertRequest({
+        channelId: draft.channelId,
+        rootId: draft.rootId,
+        message: draft.message,
+        type: draft.type as PostTypesUserCreatable | null,
+        props: draft.props,
+        fileIds: draft.fileIds ?? [],
+        metadata: draft.metadata,
+    });
+    if (!request) {
+        // Empty message: the server treats an empty upsert as a delete. Convert to an explicit delete
+        // when there is remote/attachment state to clear; otherwise park as unsyncable-empty.
+        const hasFiles = draft.files.length > 0;
+        const wasDispatched = (draft.serverUpdateAt ?? 0) > 0;
+        if (hasFiles || wasDispatched) {
+            const deletedFingerprint = draftContentFingerprint({
+                message: draft.message,
+                type: draft.type,
+                props: draft.props,
+                fileIds: draft.fileIds ?? [],
+                priority: draft.metadata?.priority,
+            });
+            await mutateDraftAndOutbox(database, channelId, rootId, ({database: db, outbox: o}) => {
+                if (!o) {
+                    return [];
+                }
+                return prepareDraftOutbox(db, channelId, rootId, o.teamId, o, {type: 'delete', keepLocal: hasFiles, deletedFingerprint});
+            });
+            return {outcome: 'converted'};
+        }
+
+        await mutateDraftAndOutbox(database, channelId, rootId, ({database: db, outbox: o}) => {
+            if (!o) {
+                return [];
+            }
+            return prepareDraftOutbox(db, channelId, rootId, o.teamId, o, {type: 'park'});
+        });
+        return {outcome: 'blocked'};
+    }
+
+    const generation = outbox.generation;
+    const connectionId = websocketManager.getClient(serverUrl)?.getConnectionId();
+
+    let draftApi: DraftApi;
+    try {
+        const client = NetworkManager.getClient(serverUrl);
+        draftApi = await client.upsertDraft(request, connectionId);
+    } catch (error) {
+        return classifyOutboxError(serverUrl, database, channelId, rootId, generation, error, 'processOutboxUpsert', false);
+    }
+
+    let outcome: WorkerOutcome = {outcome: 'done'};
+    await mutateDraftAndOutbox(database, channelId, rootId, ({database: db, draft: d, outbox: o}) => {
+        // A newer local mutation happened during the POST: do not clear the outbox or overwrite newer
+        // content; only advance the observed server_update_at. A newer generation remains to send.
+        if (!o || o.generation !== generation) {
+            outcome = {outcome: 'retry'};
+            if (d) {
+                const observed = Math.max(d.serverUpdateAt ?? 0, draftApi.update_at);
+                return [d.prepareUpdate((x) => {
+                    x.serverUpdateAt = observed;
+                })];
+            }
+            return [];
+        }
+
+        const models: Model[] = [];
+        if (d) {
+            models.push(d.prepareUpdate((x) => {
+                x.serverUpdateAt = draftApi.update_at;
+            }));
+        }
+
+        // An in-progress upload (a file with no server id) keeps the row alive as waiting_for_upload so
+        // the eventual upload-complete edit re-sends; otherwise the row is fully acked and removed. The
+        // waitingForUpload INTENT would no-op on a still-Pending row, so transition the status directly.
+        const hasPendingUpload = (d?.files ?? []).some((f) => !f.id);
+        if (hasPendingUpload) {
+            models.push(o.prepareUpdate((x) => {
+                x.status = DraftOutboxStatus.WaitingForUpload;
+                x.attemptCount = 0;
+                x.nextAttemptAt = 0;
+                x.lastErrorCode = null;
+            }));
+        } else {
+            models.push(...prepareDraftOutbox(db, channelId, rootId, o.teamId, o, {type: 'remove'}));
+        }
+        outcome = {outcome: 'done'};
+        return models;
+    });
+
+    return outcome;
+}
+
+/**
+ * processOutboxDelete: drain a single Pending delete tombstone to the server. A 200 is NOT proof of
+ * absence (replica lag), so success hands off to confirming_delete; the reconciliation absence pass
+ * clears the tombstone after confirmed GET absences. A 404 means the delete route is unsupported.
+ */
+export async function processOutboxDelete(serverUrl: string, channelId: string, rootId: string): Promise<WorkerOutcome> {
+    const database = DatabaseManager.serverDatabases[serverUrl]?.database;
+    if (!database) {
+        return {outcome: 'done'};
+    }
+
+    const outbox = await getDraftOutbox(database, channelId, rootId);
+    if (!outbox || outbox.operation !== DraftOutboxOperation.Delete || outbox.status !== DraftOutboxStatus.Pending) {
+        return {outcome: 'done'};
+    }
+
+    const generation = outbox.generation;
+
+    // Scope authority: a non-DM/GM channel whose membership row is gone cannot be verified; retain the
+    // tombstone and block rather than risk deleting a draft we no longer have authority over.
+    const channel = await getChannelById(database, channelId);
+    const isDmGm = channel?.type === General.DM_CHANNEL || channel?.type === General.GM_CHANNEL;
+    if (!isDmGm) {
+        const membership = await getMyChannel(database, channelId);
+        if (!membership) {
+            await mutateDraftAndOutbox(database, channelId, rootId, ({outbox: o}) => {
+                if (!o || o.generation !== generation) {
+                    return [];
+                }
+                return [o.prepareUpdate((x) => {
+                    x.status = DraftOutboxStatus.Blocked;
+                    x.lastErrorCode = OUTBOX_ERROR.ScopeUnverifiable;
+                })];
+            });
+            return {outcome: 'blocked'};
+        }
+    }
+
+    const connectionId = websocketManager.getClient(serverUrl)?.getConnectionId();
+    try {
+        const client = NetworkManager.getClient(serverUrl);
+        await client.deleteDraft(channelId, rootId, connectionId);
+    } catch (error) {
+        return classifyOutboxError(serverUrl, database, channelId, rootId, generation, error, 'processOutboxDelete', true);
+    }
+
+    // Success: hand off to the absence pass. A genuine edit that flipped the row to a new operation (or
+    // bumped the generation) is retained untouched for the drain to pick up next.
+    await mutateDraftAndOutbox(database, channelId, rootId, ({outbox: o}) => {
+        if (!o || o.operation !== DraftOutboxOperation.Delete || o.generation !== generation) {
+            return [];
+        }
+        return [o.prepareUpdate((x) => {
+            x.status = DraftOutboxStatus.ConfirmingDelete;
+        })];
+    });
+    return {outcome: 'done'};
 }

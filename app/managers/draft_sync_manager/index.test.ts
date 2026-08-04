@@ -3,7 +3,7 @@
 
 import {Q, type Database} from '@nozbe/watermelondb';
 
-import {confirmDeleteTombstone, deleteAbsentCleanDraft, getReconcilableKeys, reconcileTeamDrafts, type ReconcileKey} from '@actions/remote/draft';
+import {confirmDeleteTombstone, deleteAbsentCleanDraft, getReconcilableKeys, processOutboxDelete, processOutboxUpsert, reconcileTeamDrafts, type ReconcileKey} from '@actions/remote/draft';
 import {MM_TABLES} from '@constants/database';
 import {DRAFT_ABSENCE_CONFIRMATION_DELAY_MS, DraftOutboxOperation, DraftOutboxStatus, MAX_DRAFT_SYNC_EVENT_BUFFER} from '@constants/draft';
 import DatabaseManager from '@database/manager';
@@ -23,12 +23,16 @@ jest.mock('@actions/remote/draft', () => ({
     getReconcilableKeys: jest.fn(),
     deleteAbsentCleanDraft: jest.fn(),
     confirmDeleteTombstone: jest.fn(),
+    processOutboxUpsert: jest.fn(),
+    processOutboxDelete: jest.fn(),
 }));
 
 const mockedReconcile = jest.mocked(reconcileTeamDrafts);
 const mockedGetReconcilableKeys = jest.mocked(getReconcilableKeys);
 const mockedDeleteAbsentCleanDraft = jest.mocked(deleteAbsentCleanDraft);
 const mockedConfirmDeleteTombstone = jest.mocked(confirmDeleteTombstone);
+const mockedProcessOutboxUpsert = jest.mocked(processOutboxUpsert);
+const mockedProcessOutboxDelete = jest.mocked(processOutboxDelete);
 
 const {DRAFT_OUTBOX} = MM_TABLES.SERVER;
 const {DraftSyncManagerSingleton} = exportedForTesting;
@@ -42,6 +46,7 @@ const ROOT_ID = '';
 type ManagerInternals = {
     eventBuffers: Record<string, WebSocketMessage[]>;
     lifecycleEpoch: Record<string, number>;
+    inFlightKeys: Record<string, Set<string>>;
 };
 
 const internals = (manager: InstanceType<typeof DraftSyncManagerSingleton>) =>
@@ -113,6 +118,10 @@ describe('DraftSyncManager (Phase 3 shell)', () => {
         mockedDeleteAbsentCleanDraft.mockResolvedValue();
         mockedConfirmDeleteTombstone.mockReset();
         mockedConfirmDeleteTombstone.mockResolvedValue();
+        mockedProcessOutboxUpsert.mockReset();
+        mockedProcessOutboxUpsert.mockResolvedValue({outcome: 'done'});
+        mockedProcessOutboxDelete.mockReset();
+        mockedProcessOutboxDelete.mockResolvedValue({outcome: 'done'});
     });
 
     afterEach(async () => {
@@ -505,6 +514,163 @@ describe('DraftSyncManager (Phase 3 shell)', () => {
 
             expect(mockedDeleteAbsentCleanDraft).not.toHaveBeenCalled();
             expect(candidates().has(DRAFT_KEY)).toBe(false);
+        });
+    });
+
+    describe('drainOutbox (Phase 4.3 outbox workers)', () => {
+        const enableManager = async () => {
+            await setSyncConfig('true');
+            await manager.initialize(SERVER_URL);
+        };
+
+        const setBaseline = (tId = 'team1') => {
+            baselineInternals(manager).baseline[SERVER_URL] = {teamId: tId, at: Date.now()};
+        };
+
+        const createOutboxRow = async (over: {
+            operation?: 'upsert' | 'delete';
+            status?: DraftOutboxStatus;
+            nextAttemptAt?: number;
+            channelId?: string;
+            rootId?: string;
+            teamId?: string;
+        } = {}) => {
+            const channelId = over.channelId ?? CHANNEL_ID;
+            const rootId = over.rootId ?? ROOT_ID;
+            await database.write(async (writer) => {
+                const record = database.collections.get<DraftOutboxModel>(DRAFT_OUTBOX).prepareCreate((o) => {
+                    o._raw.id = buildDraftOutboxId(channelId, rootId);
+                    o.channelId = channelId;
+                    o.rootId = rootId;
+                    o.teamId = over.teamId ?? 'team1';
+                    o.operation = over.operation ?? 'upsert';
+                    o.generation = 1;
+                    o.attemptCount = 0;
+                    o.nextAttemptAt = over.nextAttemptAt ?? 0;
+                    o.keepLocal = false;
+                    o.status = over.status ?? DraftOutboxStatus.Pending;
+                    o.lastErrorCode = null;
+                    o.deletedFingerprint = null;
+                });
+                await writer.batch(record);
+            });
+        };
+
+        it('does nothing (no worker call) when there is no baseline', async () => {
+            await enableManager();
+            await createOutboxRow();
+
+            manager.wake(SERVER_URL);
+            await flushMicrotasks();
+
+            expect(mockedProcessOutboxUpsert).not.toHaveBeenCalled();
+            expect(mockedProcessOutboxDelete).not.toHaveBeenCalled();
+        });
+
+        it('drains an eligible pending upsert and delete once a baseline exists', async () => {
+            await enableManager();
+            setBaseline();
+            await createOutboxRow({operation: 'upsert', channelId: CHANNEL_ID});
+
+            const deleteChannel = 'deletechanneldeletechannel00';
+            await createOutboxRow({operation: 'delete', channelId: deleteChannel});
+
+            manager.wake(SERVER_URL);
+            await flushMicrotasks();
+
+            expect(mockedProcessOutboxUpsert).toHaveBeenCalledTimes(1);
+            expect(mockedProcessOutboxUpsert).toHaveBeenCalledWith(SERVER_URL, CHANNEL_ID, ROOT_ID);
+            expect(mockedProcessOutboxDelete).toHaveBeenCalledTimes(1);
+            expect(mockedProcessOutboxDelete).toHaveBeenCalledWith(SERVER_URL, deleteChannel, ROOT_ID);
+        });
+
+        it('skips a key already marked in-flight', async () => {
+            await enableManager();
+            setBaseline();
+            await createOutboxRow();
+
+            // Pre-mark the key in-flight to simulate an overlapping drain holding it.
+            internals(manager).inFlightKeys[SERVER_URL].add(buildDraftOutboxId(CHANNEL_ID, ROOT_ID));
+
+            manager.wake(SERVER_URL);
+            await flushMicrotasks();
+
+            expect(mockedProcessOutboxUpsert).not.toHaveBeenCalled();
+        });
+
+        it('does not drain ConfirmingDelete, Blocked, or WaitingForUpload rows', async () => {
+            await enableManager();
+            setBaseline();
+            await createOutboxRow({operation: 'delete', status: DraftOutboxStatus.ConfirmingDelete, channelId: 'confirmdelchan0confirmdelcha0'});
+            await createOutboxRow({operation: 'upsert', status: DraftOutboxStatus.Blocked, channelId: 'blockedchan00blockedchan0000'});
+            await createOutboxRow({operation: 'upsert', status: DraftOutboxStatus.WaitingForUpload, channelId: 'waitupchan000waitupchan00000'});
+
+            manager.wake(SERVER_URL);
+            await flushMicrotasks();
+
+            expect(mockedProcessOutboxUpsert).not.toHaveBeenCalled();
+            expect(mockedProcessOutboxDelete).not.toHaveBeenCalled();
+        });
+
+        it('does not drain a row scheduled for the future (nextAttemptAt > now)', async () => {
+            await enableManager();
+            setBaseline();
+            await createOutboxRow({nextAttemptAt: Date.now() + 60000});
+
+            manager.wake(SERVER_URL);
+            await flushMicrotasks();
+
+            expect(mockedProcessOutboxUpsert).not.toHaveBeenCalled();
+        });
+
+        it('disables the server and clears the timer on a suspend outcome', async () => {
+            await enableManager();
+            setBaseline();
+            await createOutboxRow();
+            mockedProcessOutboxUpsert.mockResolvedValue({outcome: 'suspend'});
+
+            manager.wake(SERVER_URL);
+            await flushMicrotasks();
+
+            expect(jest.getTimerCount()).toBe(0);
+
+            // The server is now disabled for the session: new events are ignored.
+            manager.enqueueWebSocketEvent(SERVER_URL, fakeEvent());
+            expect(internals(manager).eventBuffers[SERVER_URL].length).toBe(0);
+        });
+
+        it('discards the drain result when the epoch is invalidated mid-drain', async () => {
+            await enableManager();
+            setBaseline();
+            await createOutboxRow({channelId: CHANNEL_ID});
+            await createOutboxRow({channelId: 'secondchannel0secondchannel0'});
+
+            // The first worker invalidates the manager while draining; the loop must then stop and
+            // never process the second eligible row.
+            mockedProcessOutboxUpsert.mockImplementation(async () => {
+                manager.invalidate(SERVER_URL);
+                return {outcome: 'done'};
+            });
+
+            manager.wake(SERVER_URL);
+            await flushMicrotasks();
+
+            expect(mockedProcessOutboxUpsert).toHaveBeenCalledTimes(1);
+            expect(jest.getTimerCount()).toBe(0);
+        });
+
+        it('initialize transitions a WaitingForUpload row to BlockedUpload(upload_interrupted)', async () => {
+            await setSyncConfig('true');
+            await createOutbox(DraftOutboxStatus.WaitingForUpload, 0);
+
+            await manager.initialize(SERVER_URL);
+
+            const rows = await database.collections.get<DraftOutboxModel>(DRAFT_OUTBOX).query(
+                Q.where('channel_id', CHANNEL_ID),
+            ).fetch();
+            expect(rows.length).toBe(1);
+            expect(rows[0].status).toBe(DraftOutboxStatus.BlockedUpload);
+            expect(rows[0].lastErrorCode).toBe('upload_interrupted');
         });
     });
 

@@ -3,7 +3,7 @@
 
 import {Q, type Database} from '@nozbe/watermelondb';
 
-import {confirmDeleteTombstone, deleteAbsentCleanDraft, getReconcilableKeys, reconcileTeamDrafts, type ReconcileKey} from '@actions/remote/draft';
+import {confirmDeleteTombstone, deleteAbsentCleanDraft, getReconcilableKeys, processOutboxDelete, processOutboxUpsert, reconcileTeamDrafts, type ReconcileKey, type WorkerOutcome} from '@actions/remote/draft';
 import {MM_TABLES} from '@constants/database';
 import {DRAFT_ABSENCE_CONFIRMATION_DELAY_MS, DraftOutboxOperation, DraftOutboxStatus, MAX_DRAFT_SYNC_EVENT_BUFFER} from '@constants/draft';
 import DatabaseManager from '@database/manager';
@@ -101,6 +101,11 @@ class DraftSyncManagerSingleton {
     // separated by >= DRAFT_ABSENCE_CONFIRMATION_DELAY_MS. Cleared on invalidate; safe to lose.
     private absenceCandidates: Record<string, Map<string, AbsenceCandidate>> = {};
 
+    // inFlightKeys: per-server set of outbox keys (buildDraftOutboxId) currently being drained by a
+    // worker. Guarantees per-key serialization across overlapping drains (a wake firing while a timer
+    // drain runs) so the same row is never POSTed/DELETEd twice concurrently. Cleared on invalidate.
+    private inFlightKeys: Record<string, Set<string>> = {};
+
     /**
      * initialize: idempotent per-server setup. Reads the draft-sync capability into `enabled` and,
      * when enabled, reconstructs the retry timer from the outbox. Safe to call when the server
@@ -122,8 +127,43 @@ class DraftSyncManagerSingleton {
             return;
         }
 
+        // Interrupted-upload recovery: any WaitingForUpload row survived a process restart with no
+        // live upload behind it, so it can never self-complete. Conservatively transition every such
+        // row to BlockedUpload('upload_interrupted'); a later genuine edit / upload retry re-activates
+        // it. Phase: refine with DraftEditPostUploadManager to only transition rows with no in-progress
+        // upload once that manager is reachable from here.
+        await this.recoverInterruptedUploads(database);
+
         if (this.enabled[serverUrl]) {
             await this.reconstructRetryTimer(serverUrl);
+        }
+    };
+
+    /**
+     * recoverInterruptedUploads: mark every WaitingForUpload outbox row as BlockedUpload with
+     * lastErrorCode 'upload_interrupted'. Called once on initialize because a WaitingForUpload row that
+     * outlived the process has no live upload behind it. Never throws.
+     */
+    private recoverInterruptedUploads = async (database: Database): Promise<void> => {
+        try {
+            const rows = await database.collections.get<DraftOutboxModel>(DRAFT_OUTBOX).query(
+                Q.where('status', DraftOutboxStatus.WaitingForUpload),
+            ).fetch();
+
+            if (!rows.length) {
+                return;
+            }
+
+            const updates = rows.map((row) => row.prepareUpdate((o) => {
+                o.status = DraftOutboxStatus.BlockedUpload;
+                o.lastErrorCode = 'upload_interrupted';
+            }));
+
+            await database.write(async (writer) => {
+                await writer.batch(...updates);
+            }, 'recoverInterruptedUploads');
+        } catch (error) {
+            logDebug('DraftSyncManager.recoverInterruptedUploads: query/write failed');
         }
     };
 
@@ -136,8 +176,14 @@ class DraftSyncManagerSingleton {
             return;
         }
 
-        // Fire-and-forget: reconstruction is async (DB query) but wake() is synchronous by contract.
-        this.reconstructRetryTimer(serverUrl);
+        // Fire-and-forget: draining is async (DB + HTTP) but wake() is synchronous by contract. With a
+        // baseline established, drain immediately (drainOutbox reschedules the heartbeat when it ends);
+        // without one, only (re)arm the heartbeat so the work drains once a baseline appears.
+        if (this.baseline[serverUrl]) {
+            this.drainOutbox(serverUrl);
+        } else {
+            this.reconstructRetryTimer(serverUrl);
+        }
     };
 
     /**
@@ -369,6 +415,7 @@ class DraftSyncManagerSingleton {
         this.reconcileInFlight[serverUrl] = false;
         this.reconcilePending[serverUrl] = undefined;
         this.absenceCandidates[serverUrl] = new Map();
+        this.inFlightKeys[serverUrl] = new Set();
         logDebug('DraftSyncManager.invalidate', serverUrl);
     };
 
@@ -436,10 +483,95 @@ class DraftSyncManagerSingleton {
                 return;
             }
 
-            // Phase 3: do NOT drain/POST/DELETE. Behave as a self-rescheduling heartbeat.
-            // Phase 4: drain eligible outbox work here.
-            this.reconstructRetryTimer(serverUrl);
+            // Phase 4: drain eligible outbox work. drainOutbox is baseline-gated (no POST/DELETE without
+            // a baseline) and reschedules this heartbeat when it ends, so the timer stays a self-
+            // rescheduling loop even before a baseline exists.
+            this.drainOutbox(serverUrl);
         }, delay);
+    };
+
+    /**
+     * drainOutbox: the write path. Sends eligible Pending outbox rows to the server via the per-key
+     * workers, with per-key serialization (inFlightKeys), epoch guarding around each worker, and a
+     * heartbeat reschedule when it ends. It performs NO network work until a baseline reconciliation
+     * exists for the scope (the exit criterion) — without one it only (re)arms the heartbeat.
+     */
+    private drainOutbox = async (serverUrl: string): Promise<void> => {
+        if (!this.isActive(serverUrl)) {
+            return;
+        }
+
+        const baseline = this.baseline[serverUrl];
+        if (!baseline) {
+            // NO draining without a baseline. Keep the heartbeat alive so queued work drains once a
+            // baseline is established (re-querying the outbox is not a network send).
+            await this.reconstructRetryTimer(serverUrl);
+            return;
+        }
+
+        const database = this.getDatabase(serverUrl);
+        const inFlight = this.inFlightKeys[serverUrl];
+        if (!database || !inFlight) {
+            return;
+        }
+
+        let rows: DraftOutboxModel[];
+        try {
+            rows = await database.collections.get<DraftOutboxModel>(DRAFT_OUTBOX).query(
+                Q.where('status', DraftOutboxStatus.Pending),
+                Q.where('operation', Q.oneOf([DraftOutboxOperation.Upsert, DraftOutboxOperation.Delete])),
+                Q.where('next_attempt_at', Q.lte(Date.now())),
+            ).fetch();
+        } catch (error) {
+            logDebug('DraftSyncManager.drainOutbox: outbox query failed', serverUrl);
+            return;
+        }
+
+        for (const row of rows) {
+            // Scope gate: only this baseline's team, or DM/GM ('' team) rows.
+            if (row.teamId !== baseline.teamId && row.teamId !== '') {
+                continue;
+            }
+
+            const key = buildDraftOutboxId(row.channelId, row.rootId);
+            if (inFlight.has(key)) {
+                continue;
+            }
+
+            inFlight.add(key);
+            const captured = this.captureEpoch(serverUrl);
+
+            let outcome: WorkerOutcome;
+            try {
+                outcome = row.operation === DraftOutboxOperation.Delete ?
+
+                    // eslint-disable-next-line no-await-in-loop
+                    await processOutboxDelete(serverUrl, row.channelId, row.rootId) :
+
+                    // eslint-disable-next-line no-await-in-loop
+                    await processOutboxUpsert(serverUrl, row.channelId, row.rootId);
+            } catch (error) {
+                logDebug('DraftSyncManager.drainOutbox: worker threw', serverUrl);
+                outcome = {outcome: 'retry'};
+            } finally {
+                inFlight.delete(key);
+            }
+
+            // A concurrent invalidate/disable during the worker discards its result entirely.
+            if (this.isEpochStale(serverUrl, captured) || !this.isActive(serverUrl)) {
+                return;
+            }
+
+            if (outcome.outcome === 'suspend') {
+                // Server-wide failure: stop scheduling for this session and drop the heartbeat.
+                this.enabled[serverUrl] = false;
+                this.clearRetryTimer(serverUrl);
+                return;
+            }
+        }
+
+        // Schedule the next wake for the earliest remaining nextAttemptAt.
+        await this.reconstructRetryTimer(serverUrl);
     };
 
     // getEarliestNextAttemptAt: earliest nextAttemptAt across retry-eligible outbox rows, or
@@ -493,6 +625,9 @@ class DraftSyncManagerSingleton {
         }
         if (!(serverUrl in this.absenceCandidates)) {
             this.absenceCandidates[serverUrl] = new Map();
+        }
+        if (!(serverUrl in this.inFlightKeys)) {
+            this.inFlightKeys[serverUrl] = new Set();
         }
     };
 
