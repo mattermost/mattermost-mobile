@@ -9,6 +9,7 @@ import {
 import {dismissKnownModals} from '@support/ui/modal_dismiss';
 import {HomeScreen} from '@support/ui/screen';
 import {
+    dismissIosSavePasswordIfVisible,
     isAndroid,
     safeEnableSynchronization,
     tapNativeBackButton,
@@ -248,6 +249,8 @@ class ChannelListScreen {
     };
 
     toBeVisible = async (timeout = timeouts.HALF_MIN) => {
+        // Sheet can sit over a restored session before any modal dismiss runs.
+        await dismissIosSavePasswordIfVisible(timeouts.TWO_SEC);
 
         try {
             await this.dismissAnyOpenModals();
@@ -257,20 +260,15 @@ class ChannelListScreen {
         }
         try {
             await waitForElementToExist(this.channelListScreen, timeout);
+            await dismissIosSavePasswordIfVisible(timeouts.TWO_SEC);
         } catch (firstError) {
             // eslint-disable-next-line no-console
             console.warn('[ChannelListScreen.toBeVisible] Channel list not found — attempting recovery relaunch');
             try {
                 await device.launchApp({newInstance: true, launchArgs: {detoxEnableSynchronization: 0}});
 
-                try {
-                    const savePasswordAlert = element(by.label('Save Password')).atIndex(0);
-                    await waitFor(savePasswordAlert).toExist().withTimeout(timeouts.TWO_SEC);
-                    await element(by.label('Not Now')).atIndex(0).tap();
-                    await wait(timeouts.ONE_SEC);
-                } catch {
-                    // Alert not present, proceed normally
-                }
+                // Passwords.app "Save Password?" can cover the restored session.
+                await dismissIosSavePasswordIfVisible(timeouts.TWO_SEC);
 
                 /* eslint-disable no-await-in-loop -- sequential back-navigation: each tap must complete before probing again */
                 for (let i = 0; i < 3; i++) {

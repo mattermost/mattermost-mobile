@@ -7,7 +7,7 @@ import {
 } from '@support/ui/component';
 import {dismissKnownModals} from '@support/ui/modal_dismiss';
 import {HomeScreen} from '@support/ui/screen';
-import {isAndroid, timeouts, wait, waitForElementToNotExist} from '@support/utils';
+import {dismissIosSavePasswordIfVisible, isAndroid, timeouts, wait, waitForElementToNotExist} from '@support/utils';
 import {expect, waitFor} from 'detox';
 
 class AccountScreen {
@@ -117,13 +117,7 @@ class AccountScreen {
         // Dismiss iOS native dialogs whose backdrop UIView covers the full screen and
         // blocks all hit-tests — these appear after login on iOS 26+ (iPad and iPhone).
         if (device.getPlatform() === 'ios') {
-            // "Save Password?" sheet (iOS Password manager autofill offer after login).
-            // Tap "Not Now" directly — if the native sheet is present it will be dismissed;
-            // if not present Detox throws "element not found" which we catch safely.
-            try {
-                await element(by.label('Not Now')).tap();
-                await wait(timeouts.HALF_SEC);
-            } catch { /* not present */ }
+            await dismissIosSavePasswordIfVisible(timeouts.TWO_SEC);
             // "Notifications cannot be received from this server" alert.
             try {
                 await element(by.label('Okay')).tap();

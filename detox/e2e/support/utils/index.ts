@@ -2,7 +2,7 @@
 // See LICENSE.txt for license information.
 
 import {adminEmail, adminPassword, adminUsername} from '@support/test_config';
-import {waitFor} from 'detox';
+import {by, element, waitFor} from 'detox';
 import {v4 as uuidv4} from 'uuid';
 
 export * from './email';
@@ -58,6 +58,74 @@ export const timeouts = {
     ONE_MIN: MINUTE,
     TWO_MIN: MINUTE * 2,
     FOUR_MIN: MINUTE * 4,
+};
+
+/**
+ * Dismiss the iOS "Save Password?" sheet if present.
+ *
+ * On iOS 18+/26.x SharedWebCredentialViewService shows this sheet after login.
+ * MDM `allowPasswordAutoFill=NO` only disables the keyboard toolbar — it does not
+ * stop the sheet. Tap "Not Now" only; never sendToHome/relaunch (that previously
+ * broke the channel-list pipeline when the dialog was absent).
+ *
+ * No-op on Android.
+ */
+export const dismissIosSavePasswordIfVisible = async (
+    probeTimeout = timeouts.TWO_SEC,
+): Promise<boolean> => {
+    if (isAndroid()) {
+        return false;
+    }
+
+    // Keep the candidate list short: each miss burns probeTimeout.
+    const candidates = [
+        element(by.label('Not Now')).atIndex(0),
+        element(by.text('Not Now')).atIndex(0),
+    ];
+
+    for (const btn of candidates) {
+        try {
+            // eslint-disable-next-line no-await-in-loop
+            await waitFor(btn).toExist().withTimeout(probeTimeout);
+            // eslint-disable-next-line no-await-in-loop
+            await btn.tap();
+            // eslint-disable-next-line no-await-in-loop
+            await wait(timeouts.HALF_SEC);
+            return true;
+        } catch {
+            // Try next locator.
+        }
+    }
+    return false;
+};
+
+/**
+ * After sign-in, wait for the channel list while dismissing a delayed
+ * "Save Password?" sheet that can cover the app before/while the list loads.
+ */
+export const waitForChannelListAfterLogin = async (
+    channelListScreen: Detox.NativeElement,
+    overallTimeout = isAndroid() ? timeouts.ONE_MIN : timeouts.HALF_MIN,
+): Promise<void> => {
+    const deadline = Date.now() + overallTimeout;
+    /* eslint-disable no-await-in-loop */
+    while (Date.now() < deadline) {
+        if (isIos()) {
+            await dismissIosSavePasswordIfVisible(timeouts.ONE_SEC);
+        }
+        try {
+            await waitFor(channelListScreen).toExist().withTimeout(timeouts.TWO_SEC);
+            // Sheet can appear after the list exists; dismiss once more.
+            if (isIos()) {
+                await dismissIosSavePasswordIfVisible(timeouts.TWO_SEC);
+            }
+            return;
+        } catch {
+            // Keep polling until deadline.
+        }
+    }
+    /* eslint-enable no-await-in-loop */
+    await waitFor(channelListScreen).toExist().withTimeout(timeouts.ONE_SEC);
 };
 
 export async function retryWithReload(
