@@ -301,7 +301,7 @@ Each stage ends with: **success criteria met → commit (not the plan) → push 
 - [x] Branch exists: `cursor/e2e-v2-test-system-io-orchestration-2a12`
 - [x] Plan file at repo root (`e2e-v2-ci-plan.md`)
 - [x] Add `e2e-v2.yml` + `e2e-v2-servers.yml` (+ `e2e-v2-detox-ios.yml`) with `workflow_dispatch`
-- [ ] Push branch (**no PR**); dispatch scaffold from Actions UI
+- [x] Push branch (**no PR**); dispatch scaffold from Actions UI
 - **Success:** Actions UI lists “E2E v2” and “E2E v2 Servers”; manual dispatch runs green scaffold
 
 ### Stage 1 — Test servers (configure + verify; create/delete commented)
