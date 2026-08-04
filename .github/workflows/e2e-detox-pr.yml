@@ -4,8 +4,14 @@
 #   POST /repos/{owner}/{repo}/actions/workflows/e2e-detox-pr.yml/dispatches
 # and watches workflow_run "completed" events where workflow name is "E2E".
 #
-# Newer dispatches cancel older in-flight runs on the same branch (resolve-e2e-policy
-# first step) so the latest SHA starts immediately instead of queueing behind a long run.
+# Despite the `-pr` filename this is the entry point for *every* Matterwick E2E
+# dispatch, not just PRs: run_type selects the flavour (PR, MAIN/MASTER for
+# main-branch pushes, RELEASE). Renaming the file would break the dispatch URL
+# above, so it needs a coordinated Matterwick change.
+#
+# Newer dispatches cancel older in-flight runs on the same branch via the workflow
+# `concurrency` group below, so the latest SHA starts immediately instead of
+# queueing behind a long run.
 #
 # Phase 1 — builds & setup (parallel):
 #   build-ios-simulator, build-android-apk-maestro, build-android-apk (Detox debug APK),
@@ -31,32 +37,57 @@ on:
           - ios
           - android
           - both
-      SITE_1_URL:
-        description: "URL of the first Mattermost test server (provisioned by Matterwick)"
+      ANDROID_SITE_1_URL:
+        description: "URL of Android test server A (provisioned by Matterwick)"
         required: true
         type: string
-      SITE_2_URL:
-        description: "URL of the second Mattermost test server (provisioned by Matterwick)"
-        required: false
+      ANDROID_SITE_2_URL:
+        description: "URL of Android test server B (provisioned by Matterwick)"
+        required: true
+        type: string
+      IOS_SITE_1_URL:
+        description: "URL of iOS test server A (provisioned by Matterwick)"
+        required: true
+        type: string
+      IOS_SITE_2_URL:
+        description: "URL of iOS test server B (provisioned by Matterwick)"
+        required: true
         type: string
       SITE_3_URL:
-        description: "URL of the third Mattermost test server (provisioned by Matterwick)"
-        required: false
+        description: "URL of the shared fifth Mattermost test server"
+        required: true
         type: string
       pr_number:
         description: "PR number to remove E2E label from after tests complete"
         required: false
         type: string
       run_type:
-        description: "Run type for test reporting (PR/RELEASE/NIGHTLY/MASTER). Defaults to PR."
+        description: "Run type for test reporting (PR/RELEASE/MAIN). MASTER is accepted as an alias for MAIN (Matterwick main-push)."
         required: false
         default: "PR"
+        type: string
+      version_name:
+        description: "Branch or version ref under test (e.g. feature-branch, main, release-2.40). Used as TSIO branch — not pr-{number}."
+        required: false
         type: string
 
 # Default least-privilege token; jobs that upload artifacts, post statuses, or
 # manage PR labels declare the extra scopes they need.
 permissions:
   contents: read
+  # test-system-io-report-upload (in the nested detox templates) authenticates
+  # via the workflow's OIDC token and resolves gh_job_id via the GitHub API.
+  # Reusable workflows cannot escalate beyond the caller, so the root caller
+  # must grant these.
+  id-token: write
+  actions: read
+
+# One E2E run per branch: a newer Matterwick dispatch supersedes the one already
+# in flight. GitHub cancels the older run as soon as this one is created, which
+# is earlier (and simpler) than cancelling from a step inside the new run.
+concurrency:
+  group: e2e-${{ github.ref }}
+  cancel-in-progress: true
 
 env:
   INTUNE_ENABLED: 'false'
@@ -65,25 +96,15 @@ env:
 jobs:
   resolve-e2e-policy:
     name: Resolve E2E policy (Override label)
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-24.04
     permissions:
-      actions: write
       contents: read
       pull-requests: read
       issues: read
-      statuses: write
     outputs:
       e2e_override: ${{ steps.policy.outputs.e2e_override }}
+      skip_reason: ${{ steps.policy.outputs.skip_reason }}
     steps:
-      - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
-      - name: Cancel superseded E2E runs on this branch
-        uses: ./.github/actions/cancel-e2e-runs
-        with:
-          head_branch: ${{ github.ref_name }}
-          pr_number: ${{ inputs.pr_number }}
-          max_run_id_exclusive: ${{ github.run_id }}
-          reason: E2E superseded by newer dispatch
-
       - name: Check PR labels for E2E/Override
         id: policy
         uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9.0.0
@@ -115,6 +136,7 @@ jobs:
             if (!prNumber) {
               core.info('No PR number available — assuming E2E/Override is not set.');
               core.setOutput('e2e_override', 'false');
+              core.setOutput('skip_reason', '');
               return;
             }
 
@@ -126,6 +148,7 @@ jobs:
             if (pr.base.ref !== 'main') {
               core.info(`PR #${prNumber} targets ${pr.base.ref}, not main — skipping E2E.`);
               core.setOutput('e2e_override', 'true');
+              core.setOutput('skip_reason', 'non-main-base');
               return;
             }
 
@@ -137,13 +160,134 @@ jobs:
             const override = labels.some((label) => label.name === 'E2E/Override');
             core.info(`PR #${prNumber} E2E/Override=${override}`);
             core.setOutput('e2e_override', override ? 'true' : 'false');
+            core.setOutput('skip_reason', override ? 'override-label' : '');
 
-  update-initial-status-ios:
+  # Every other job is skipped when the policy says "no E2E", and a skipped job
+  # posts nothing — the required e2e-test/* contexts would stay absent and block
+  # the merge forever. Post success here so the override actually lets it merge.
+  # Also covers the dispatch race where the label lands after Matterwick dispatched.
+  # Idempotent with the label manager, which posts the same statuses on `labeled`.
+  post-e2e-override-status:
+    name: Publish success on required E2E contexts (override)
+    runs-on: ubuntu-24.04
     needs: resolve-e2e-policy
     if: >-
+      needs.resolve-e2e-policy.outputs.e2e_override == 'true'
+      && (inputs.run_type == 'PR' || inputs.run_type == 'MAIN' || inputs.run_type == 'MASTER')
+    permissions:
+      contents: read
+      statuses: write
+    steps:
+      - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
+        with:
+          persist-credentials: false
+      - uses: ./.github/actions/e2e-override-status
+        with:
+          commit_sha: ${{ inputs.MOBILE_VERSION }}
+          description: >-
+            ${{ needs.resolve-e2e-policy.outputs.skip_reason == 'non-main-base'
+              && 'E2E skipped — PR does not target main'
+              || 'e2e tests overridden' }}
+          target_url: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+
+  calculate-tsio-identity:
+    name: Calculate TSIO per-job identities
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: read
+      pull-requests: read
+    needs: resolve-e2e-policy
+    if: needs.resolve-e2e-policy.outputs.e2e_override != 'true'
+    outputs:
+      job-configs: ${{ steps.id.outputs.job-configs }}
+      job-keys: ${{ steps.id.outputs.job-keys }}
+    steps:
+      - name: Sparse checkout TSIO job-config helper
+        uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
+        with:
+          ref: ${{ inputs.MOBILE_VERSION }}
+          persist-credentials: false
+          sparse-checkout: |
+            detox/utils/build-tsio-job-config.js
+
+      - name: Resolve branch ref for TSIO display URL
+        id: branch
+        uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9.0.0
+        env:
+          VERSION_NAME: ${{ inputs.version_name }}
+          PR_NUMBER: ${{ inputs.pr_number }}
+          RUN_TYPE: ${{ inputs.run_type || 'PR' }}
+        with:
+          script: |
+            const versionName = (process.env.VERSION_NAME || '').trim();
+            if (versionName) {
+              core.setOutput('branch', versionName.replace(/^refs\/heads\//, '').replace(/^refs\/tags\//, ''));
+              return;
+            }
+            const runType = (process.env.RUN_TYPE || 'PR').toUpperCase();
+            // Matterwick still sends MASTER for main-branch pushes; treat as MAIN.
+            if (runType === 'MAIN' || runType === 'MASTER') {
+              core.setOutput('branch', 'main');
+              return;
+            }
+            const prInput = parseInt(process.env.PR_NUMBER, 10);
+            if (Number.isFinite(prInput)) {
+              const {data: pr} = await github.rest.pulls.get({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                pull_number: prInput,
+              });
+              core.setOutput('branch', pr.head.ref);
+              return;
+            }
+            core.setOutput('branch', context.ref_name || 'main');
+
+      - id: id
+        env:
+          PLATFORM: ${{ inputs.PLATFORM }}
+          GITHUB_REPOSITORY: ${{ github.repository }}
+          MM_SHA: ${{ inputs.MOBILE_VERSION }}
+          PR_NUMBER: ${{ inputs.pr_number }}
+          RUN_TYPE: ${{ inputs.run_type || 'PR' }}
+          BRANCH: ${{ steps.branch.outputs.branch }}
+        run: |
+          # Matterwick main-push still sends MASTER; canonicalize to MAIN → mobile-main.
+          if [ "${RUN_TYPE}" = "MASTER" ]; then
+            RUN_TYPE=MAIN
+          fi
+          RUN_TYPE_LOWER=$(echo "${RUN_TYPE}" | tr '[:upper:]' '[:lower:]')
+          RUN_NAME="mobile-${RUN_TYPE_LOWER}"
+          if [ -n "${PR_NUMBER}" ]; then
+            BASE=$(jq -nc \
+              --arg repo "$GITHUB_REPOSITORY" --arg sha "$MM_SHA" --arg run_id "$GITHUB_RUN_ID" \
+              --arg attempt "$GITHUB_RUN_ATTEMPT" --arg branch "$BRANCH" --arg pr "$PR_NUMBER" --arg name "$RUN_NAME" \
+              '{repository:$repo, commit_sha:$sha, gh_run_id:$run_id, gh_run_attempt:$attempt, branch:$branch, name:$name, run_group:$name, gh_pr_number:$pr, framework:"detox"}')
+          else
+            BASE=$(jq -nc \
+              --arg repo "$GITHUB_REPOSITORY" --arg sha "$MM_SHA" --arg run_id "$GITHUB_RUN_ID" \
+              --arg attempt "$GITHUB_RUN_ATTEMPT" --arg branch "$BRANCH" --arg name "$RUN_NAME" \
+              '{repository:$repo, commit_sha:$sha, gh_run_id:$run_id, gh_run_attempt:$attempt, branch:$branch, name:$name, run_group:$name, framework:"detox"}')
+          fi
+          export BASE PLATFORM
+          JOB_CONFIGS=$(node -e '
+            const {buildTsioJobConfigMap, jobKeysForPlatform} = require("./detox/utils/build-tsio-job-config.js");
+            const base = JSON.parse(process.env.BASE);
+            const keys = jobKeysForPlatform(process.env.PLATFORM);
+            process.stdout.write(JSON.stringify(buildTsioJobConfigMap(base, keys)));
+          ')
+          echo "job-configs=$JOB_CONFIGS" >> "$GITHUB_OUTPUT"
+          echo "job-keys=$(echo "$JOB_CONFIGS" | jq -r 'keys | join(",")')" >> "$GITHUB_OUTPUT"
+
+  update-initial-tsio-status:
+    name: Set pending per-job TSIO commit statuses
+    runs-on: ubuntu-24.04
+    needs:
+      - resolve-e2e-policy
+      - calculate-tsio-identity
+    if: >-
       needs.resolve-e2e-policy.outputs.e2e_override != 'true'
-      && (inputs.PLATFORM == 'ios' || inputs.PLATFORM == 'both')
-    runs-on: ubuntu-22.04
+      && needs.calculate-tsio-identity.result == 'success'
+      && (inputs.run_type == 'PR' || inputs.run_type == 'MAIN' || inputs.run_type == 'MASTER')
     permissions:
       contents: read
       statuses: write
@@ -151,72 +295,69 @@ jobs:
       - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
         with:
           ref: ${{ inputs.MOBILE_VERSION }}
-      - uses: ./.github/actions/update-commit-status
+          persist-credentials: false
+      - name: Post pending status for each platform job
         env:
           GITHUB_TOKEN: ${{ github.token }}
-        with:
-          repository_full_name: ${{ github.repository }}
-          commit_sha: ${{ inputs.MOBILE_VERSION }}
-          context: e2e/detox-ios-tests
-          description: Detox iOS tests for mattermost mobile app have started ...
-          status: pending
+          JOB_CONFIGS: ${{ needs.calculate-tsio-identity.outputs.job-configs }}
+          COMMIT_SHA: ${{ inputs.MOBILE_VERSION }}
+          REPO: ${{ github.repository }}
+          TARGET_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+        run: |
+          echo "$JOB_CONFIGS" | jq -c 'to_entries[]' | while read -r entry; do
+            CTX=$(echo "$entry" | jq -r '.value.status_context')
+            NAME=$(echo "$entry" | jq -r '.value.composite_identity.name')
+            gh api --method POST "repos/${REPO}/statuses/${COMMIT_SHA}" \
+              -f state=pending \
+              -f context="$CTX" \
+              -f description="Mobile E2E (${NAME}) — waiting for TSIO report" \
+              -f target_url="$TARGET_URL"
+          done
 
-  update-initial-status-android:
+  resolve-server-topology:
+    name: Resolve test server topology
+    runs-on: ubuntu-24.04
     needs: resolve-e2e-policy
-    if: >-
-      needs.resolve-e2e-policy.outputs.e2e_override != 'true'
-      && (inputs.PLATFORM == 'android' || inputs.PLATFORM == 'both')
-    runs-on: ubuntu-22.04
-    permissions:
-      contents: read
-      statuses: write
+    if: needs.resolve-e2e-policy.outputs.e2e_override != 'true'
+    outputs:
+      android-site-1-url: ${{ steps.topology.outputs.android-site-1-url }}
+      android-site-2-url: ${{ steps.topology.outputs.android-site-2-url }}
+      ios-site-1-url: ${{ steps.topology.outputs.ios-site-1-url }}
+      ios-site-2-url: ${{ steps.topology.outputs.ios-site-2-url }}
+      site-3-url: ${{ steps.topology.outputs.site-3-url }}
     steps:
-      - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
-        with:
-          ref: ${{ inputs.MOBILE_VERSION }}
-      - uses: ./.github/actions/update-commit-status
+      - name: Resolve five-server inputs
+        id: topology
         env:
-          GITHUB_TOKEN: ${{ github.token }}
-        with:
-          repository_full_name: ${{ github.repository }}
-          commit_sha: ${{ inputs.MOBILE_VERSION }}
-          context: e2e/detox-android-tests
-          description: Detox Android tests for mattermost mobile app have started ...
-          status: pending
+          ANDROID_SITE_1_URL: ${{ inputs.ANDROID_SITE_1_URL }}
+          ANDROID_SITE_2_URL: ${{ inputs.ANDROID_SITE_2_URL }}
+          IOS_SITE_1_URL: ${{ inputs.IOS_SITE_1_URL }}
+          IOS_SITE_2_URL: ${{ inputs.IOS_SITE_2_URL }}
+          SITE_3_URL: ${{ inputs.SITE_3_URL }}
+        run: |
+          for name in ANDROID_SITE_1_URL ANDROID_SITE_2_URL IOS_SITE_1_URL IOS_SITE_2_URL SITE_3_URL; do
+            if [ -z "${!name}" ]; then
+              echo "::error::$name is required for the five-server topology"
+              exit 1
+            fi
+          done
 
-  update-initial-status-ipad:
-    needs: resolve-e2e-policy
-    if: >-
-      needs.resolve-e2e-policy.outputs.e2e_override != 'true'
-      && (inputs.PLATFORM == 'ios' || inputs.PLATFORM == 'both')
-    runs-on: ubuntu-22.04
-    permissions:
-      contents: read
-      statuses: write
-    steps:
-      - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
-        with:
-          ref: ${{ inputs.MOBILE_VERSION }}
-      - uses: ./.github/actions/update-commit-status
-        env:
-          GITHUB_TOKEN: ${{ github.token }}
-        with:
-          repository_full_name: ${{ github.repository }}
-          commit_sha: ${{ inputs.MOBILE_VERSION }}
-          context: e2e/detox-ipad-tests
-          description: Detox iPad tests for mattermost mobile app have started ...
-          status: pending
+          {
+            echo "android-site-1-url=$ANDROID_SITE_1_URL"
+            echo "android-site-2-url=$ANDROID_SITE_2_URL"
+            echo "ios-site-1-url=$IOS_SITE_1_URL"
+            echo "ios-site-2-url=$IOS_SITE_2_URL"
+            echo "site-3-url=$SITE_3_URL"
+          } >> "$GITHUB_OUTPUT"
 
   build-ios-simulator:
     if: >-
       !cancelled()
       && needs.resolve-e2e-policy.outputs.e2e_override != 'true'
       && (inputs.PLATFORM == 'ios' || inputs.PLATFORM == 'both')
-      && (needs.update-initial-status-ios.result == 'success' || needs.update-initial-status-ios.result == 'skipped')
     runs-on: macos-26
     needs:
       - resolve-e2e-policy
-      - update-initial-status-ios
     permissions:
       contents: read
       actions: write
@@ -224,6 +365,7 @@ jobs:
       - name: Checkout Repository
         uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
         with:
+          persist-credentials: false
           ref: ${{ inputs.MOBILE_VERSION }}
 
       - name: Prepare iOS Build
@@ -253,11 +395,9 @@ jobs:
       !cancelled()
       && needs.resolve-e2e-policy.outputs.e2e_override != 'true'
       && (inputs.PLATFORM == 'android' || inputs.PLATFORM == 'both')
-      && (needs.update-initial-status-android.result == 'success' || needs.update-initial-status-android.result == 'skipped')
     runs-on: ubuntu-latest-8-cores
     needs:
       - resolve-e2e-policy
-      - update-initial-status-android
     permissions:
       contents: read
       actions: write
@@ -270,6 +410,7 @@ jobs:
       - name: Checkout Repository
         uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
         with:
+          persist-credentials: false
           ref: ${{ inputs.MOBILE_VERSION }}
 
       - name: Prepare Android Build
@@ -307,11 +448,9 @@ jobs:
       !cancelled()
       && needs.resolve-e2e-policy.outputs.e2e_override != 'true'
       && (inputs.PLATFORM == 'android' || inputs.PLATFORM == 'both')
-      && (needs.update-initial-status-android.result == 'success' || needs.update-initial-status-android.result == 'skipped')
     runs-on: ubuntu-latest-8-cores
     needs:
       - resolve-e2e-policy
-      - update-initial-status-android
     permissions:
       contents: read
       actions: write
@@ -324,6 +463,7 @@ jobs:
       - name: Checkout Repository
         uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
         with:
+          persist-credentials: false
           ref: ${{ inputs.MOBILE_VERSION }}
 
       - name: Prepare Android Build
@@ -345,9 +485,12 @@ jobs:
 
   provision-servers:
     name: Provision test servers
-    needs: resolve-e2e-policy
-    if: needs.resolve-e2e-policy.outputs.e2e_override != 'true'
-    runs-on: ubuntu-22.04
+    needs:
+      - resolve-e2e-policy
+      - resolve-server-topology
+    if: >-
+      needs.resolve-e2e-policy.outputs.e2e_override != 'true'
+    runs-on: ubuntu-24.04
     steps:
       - name: Validate server URLs
         run: |
@@ -395,13 +538,17 @@ jobs:
             echo "✓ $label validated: $hostname"
           }
 
-          validate_url "$SITE_1_URL" "SITE_1_URL"
-          validate_url "$SITE_2_URL" "SITE_2_URL"
+          validate_url "$ANDROID_SITE_1_URL" "ANDROID_SITE_1_URL"
+          validate_url "$ANDROID_SITE_2_URL" "ANDROID_SITE_2_URL"
+          validate_url "$IOS_SITE_1_URL" "IOS_SITE_1_URL"
+          validate_url "$IOS_SITE_2_URL" "IOS_SITE_2_URL"
           validate_url "$SITE_3_URL" "SITE_3_URL"
         env:
-          SITE_1_URL: ${{ inputs.SITE_1_URL }}
-          SITE_2_URL: ${{ inputs.SITE_2_URL }}
-          SITE_3_URL: ${{ inputs.SITE_3_URL }}
+          ANDROID_SITE_1_URL: ${{ needs.resolve-server-topology.outputs.android-site-1-url }}
+          ANDROID_SITE_2_URL: ${{ needs.resolve-server-topology.outputs.android-site-2-url }}
+          IOS_SITE_1_URL: ${{ needs.resolve-server-topology.outputs.ios-site-1-url }}
+          IOS_SITE_2_URL: ${{ needs.resolve-server-topology.outputs.ios-site-2-url }}
+          SITE_3_URL: ${{ needs.resolve-server-topology.outputs.site-3-url }}
 
       - name: Checkout Repository
         uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
@@ -437,16 +584,20 @@ jobs:
           # bypassing the per-variable validation in the previous step (which
           # validates the value as a single string). The validator above also
           # rejects whitespace outright, so this is belt-and-suspenders.
-          for url in "$SITE_1_URL" "$SITE_2_URL" "$SITE_3_URL"; do
-            if [ -n "$url" ]; then
+          declare -A provisioned=()
+          for url in "$ANDROID_SITE_1_URL" "$ANDROID_SITE_2_URL" "$IOS_SITE_1_URL" "$IOS_SITE_2_URL" "$SITE_3_URL"; do
+            if [ -n "$url" ] && [ -z "${provisioned[$url]+x}" ]; then
               echo "--- Provisioning $url ---"
               npm run provision -- "$url"
+              provisioned["$url"]=1
             fi
           done
         env:
-          SITE_1_URL: ${{ inputs.SITE_1_URL }}
-          SITE_2_URL: ${{ inputs.SITE_2_URL }}
-          SITE_3_URL: ${{ inputs.SITE_3_URL }}
+          ANDROID_SITE_1_URL: ${{ needs.resolve-server-topology.outputs.android-site-1-url }}
+          ANDROID_SITE_2_URL: ${{ needs.resolve-server-topology.outputs.android-site-2-url }}
+          IOS_SITE_1_URL: ${{ needs.resolve-server-topology.outputs.ios-site-1-url }}
+          IOS_SITE_2_URL: ${{ needs.resolve-server-topology.outputs.ios-site-2-url }}
+          SITE_3_URL: ${{ needs.resolve-server-topology.outputs.site-3-url }}
           ADMIN_USERNAME: ${{ secrets.MM_MOBILE_E2E_ADMIN_USERNAME }}
           ADMIN_PASSWORD: ${{ secrets.MM_MOBILE_E2E_ADMIN_PASSWORD }}
 
@@ -456,12 +607,18 @@ jobs:
     name: Detox iOS E2E
     needs:
       - resolve-e2e-policy
+      - calculate-tsio-identity
       - build-ios-simulator
       - provision-servers
+      - resolve-server-topology
     permissions:
       contents: read
       statuses: write
       actions: read
+      id-token: write
+      # Finalize re-reads the PR labels for E2E/Override; a reusable workflow
+      # cannot escalate past the caller, so grant it here too.
+      issues: read
     if: |
       !cancelled() &&
       needs.resolve-e2e-policy.outputs.e2e_override != 'true' &&
@@ -472,23 +629,32 @@ jobs:
     with:
       MOBILE_VERSION: ${{ inputs.MOBILE_VERSION }}
       PLATFORM: ios
-      SITE_1_URL: ${{ inputs.SITE_1_URL }}
-      SITE_2_URL: ${{ inputs.SITE_2_URL }}
-      SITE_3_URL: ${{ inputs.SITE_3_URL }}
+      ANDROID_SITE_1_URL: ${{ needs.resolve-server-topology.outputs.android-site-1-url }}
+      ANDROID_SITE_2_URL: ${{ needs.resolve-server-topology.outputs.android-site-2-url }}
+      IOS_SITE_1_URL: ${{ needs.resolve-server-topology.outputs.ios-site-1-url }}
+      IOS_SITE_2_URL: ${{ needs.resolve-server-topology.outputs.ios-site-2-url }}
+      SITE_3_URL: ${{ needs.resolve-server-topology.outputs.site-3-url }}
       run_type: ${{ inputs.run_type || 'PR' }}
       artifact_run_id: ${{ github.run_id }}
+      tsio-job-configs: ${{ needs.calculate-tsio-identity.outputs.job-configs }}
     secrets: inherit
 
   run-detox-android:
     name: Detox Android E2E
     needs:
       - resolve-e2e-policy
+      - calculate-tsio-identity
       - build-android-apk
       - provision-servers
+      - resolve-server-topology
     permissions:
       contents: read
       statuses: write
       actions: read
+      id-token: write
+      # Finalize re-reads the PR labels for E2E/Override; a reusable workflow
+      # cannot escalate past the caller, so grant it here too.
+      issues: read
     if: |
       !cancelled() &&
       needs.resolve-e2e-policy.outputs.e2e_override != 'true' &&
@@ -499,22 +665,27 @@ jobs:
     with:
       MOBILE_VERSION: ${{ inputs.MOBILE_VERSION }}
       PLATFORM: android
-      SITE_1_URL: ${{ inputs.SITE_1_URL }}
-      SITE_2_URL: ${{ inputs.SITE_2_URL }}
-      SITE_3_URL: ${{ inputs.SITE_3_URL }}
+      ANDROID_SITE_1_URL: ${{ needs.resolve-server-topology.outputs.android-site-1-url }}
+      ANDROID_SITE_2_URL: ${{ needs.resolve-server-topology.outputs.android-site-2-url }}
+      IOS_SITE_1_URL: ${{ needs.resolve-server-topology.outputs.ios-site-1-url }}
+      IOS_SITE_2_URL: ${{ needs.resolve-server-topology.outputs.ios-site-2-url }}
+      SITE_3_URL: ${{ needs.resolve-server-topology.outputs.site-3-url }}
       run_type: ${{ inputs.run_type || 'PR' }}
       artifact_run_id: ${{ github.run_id }}
+      tsio-job-configs: ${{ needs.calculate-tsio-identity.outputs.job-configs }}
     secrets: inherit
 
   validate-maestro-flow-headers:
     name: Validate Maestro flow headers
     needs: resolve-e2e-policy
-    if: needs.resolve-e2e-policy.outputs.e2e_override != 'true'
-    runs-on: ubuntu-22.04
+    if: >-
+      needs.resolve-e2e-policy.outputs.e2e_override != 'true'
+    runs-on: ubuntu-24.04
     steps:
       - name: Checkout Repository
         uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
         with:
+          persist-credentials: false
           ref: ${{ inputs.MOBILE_VERSION }}
 
       - name: Validate flow header contract
@@ -530,13 +701,19 @@ jobs:
     name: Maestro iOS E2E
     needs:
       - resolve-e2e-policy
+      - calculate-tsio-identity
       - build-ios-simulator
       - provision-servers
       - validate-maestro-flow-headers
+      - resolve-server-topology
     permissions:
       contents: read
       statuses: write
       actions: read
+      id-token: write
+      # Finalize re-reads the PR labels for E2E/Override; a reusable workflow
+      # cannot escalate past the caller, so grant it here too.
+      issues: read
     if: |
       !cancelled() &&
       needs.resolve-e2e-policy.outputs.e2e_override != 'true' &&
@@ -548,25 +725,34 @@ jobs:
     with:
       MOBILE_VERSION: ${{ inputs.MOBILE_VERSION }}
       PLATFORM: ios
-      SITE_1_URL: ${{ inputs.SITE_1_URL }}
-      SITE_2_URL: ${{ inputs.SITE_2_URL }}
-      SITE_3_URL: ${{ inputs.SITE_3_URL }}
+      ANDROID_SITE_1_URL: ${{ needs.resolve-server-topology.outputs.android-site-1-url }}
+      ANDROID_SITE_2_URL: ${{ needs.resolve-server-topology.outputs.android-site-2-url }}
+      IOS_SITE_1_URL: ${{ needs.resolve-server-topology.outputs.ios-site-1-url }}
+      IOS_SITE_2_URL: ${{ needs.resolve-server-topology.outputs.ios-site-2-url }}
+      SITE_3_URL: ${{ needs.resolve-server-topology.outputs.site-3-url }}
       run_type: ${{ inputs.run_type || 'PR' }}
       artifact_run_id: ${{ github.run_id }}
-      record_tests_in_zephyr: ${{ inputs.run_type == 'RELEASE' || inputs.run_type == 'NIGHTLY' || inputs.run_type == 'MASTER' }}
+      record_tests_in_zephyr: ${{ inputs.run_type == 'RELEASE' || inputs.run_type == 'MAIN' || inputs.run_type == 'MASTER' }}
+      tsio-job-configs: ${{ needs.calculate-tsio-identity.outputs.job-configs }}
     secrets: inherit
 
   run-maestro-android:
     name: Maestro Android E2E
     needs:
       - resolve-e2e-policy
+      - calculate-tsio-identity
       - build-android-apk-maestro
       - provision-servers
       - validate-maestro-flow-headers
+      - resolve-server-topology
     permissions:
       contents: read
       statuses: write
       actions: read
+      id-token: write
+      # Finalize re-reads the PR labels for E2E/Override; a reusable workflow
+      # cannot escalate past the caller, so grant it here too.
+      issues: read
     if: |
       !cancelled() &&
       needs.resolve-e2e-policy.outputs.e2e_override != 'true' &&
@@ -578,17 +764,20 @@ jobs:
     with:
       MOBILE_VERSION: ${{ inputs.MOBILE_VERSION }}
       PLATFORM: android
-      SITE_1_URL: ${{ inputs.SITE_1_URL }}
-      SITE_2_URL: ${{ inputs.SITE_2_URL }}
-      SITE_3_URL: ${{ inputs.SITE_3_URL }}
+      ANDROID_SITE_1_URL: ${{ needs.resolve-server-topology.outputs.android-site-1-url }}
+      ANDROID_SITE_2_URL: ${{ needs.resolve-server-topology.outputs.android-site-2-url }}
+      IOS_SITE_1_URL: ${{ needs.resolve-server-topology.outputs.ios-site-1-url }}
+      IOS_SITE_2_URL: ${{ needs.resolve-server-topology.outputs.ios-site-2-url }}
+      SITE_3_URL: ${{ needs.resolve-server-topology.outputs.site-3-url }}
       run_type: ${{ inputs.run_type || 'PR' }}
       artifact_run_id: ${{ github.run_id }}
-      record_tests_in_zephyr: ${{ inputs.run_type == 'RELEASE' || inputs.run_type == 'NIGHTLY' || inputs.run_type == 'MASTER' }}
+      record_tests_in_zephyr: ${{ inputs.run_type == 'RELEASE' || inputs.run_type == 'MAIN' || inputs.run_type == 'MASTER' }}
+      tsio-job-configs: ${{ needs.calculate-tsio-identity.outputs.job-configs }}
     secrets: inherit
 
   e2e-remove-matterwick-label:
     name: Remove Matterwick E2E label from PR
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-24.04
     permissions:
       contents: read
       issues: write
@@ -725,3 +914,57 @@ jobs:
           MOBILE_VERSION: ${{ inputs.MOBILE_VERSION }}
           BRANCH: ${{ github.ref_name }}
           WORKFLOW_CONCLUSION: ${{ job.status }}
+
+  # Per-platform TSIO commit statuses are finalized inside each Detox/Maestro
+  # generate-report / maestro job after that job's upload (total_reports_expected=1).
+  # No combined e2e/mobile finalizer — avoids cross-job clobber and pending races.
+
+  # One Mattermost channel rollup (best-effort). Per-job finalize leaves channel
+  # notify off so N legs do not spam; this job posts a single summary.
+  tsio-channel-notify:
+    name: Post Mattermost E2E channel rollup
+    runs-on: ubuntu-24.04
+    if: >-
+      always() &&
+      needs.resolve-e2e-policy.outputs.e2e_override != 'true' &&
+      needs.calculate-tsio-identity.result == 'success' &&
+      (inputs.run_type == 'PR' || inputs.run_type == 'MAIN' || inputs.run_type == 'MASTER')
+    needs:
+      - resolve-e2e-policy
+      - calculate-tsio-identity
+      - run-detox-ios
+      - run-detox-android
+      - run-maestro-ios
+      - run-maestro-android
+    permissions:
+      contents: read
+      id-token: write
+    steps:
+      - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
+        with:
+          ref: ${{ inputs.MOBILE_VERSION }}
+          persist-credentials: false
+          sparse-checkout: |
+            detox/utils/tsio-channel-notify-rollup.js
+            detox/utils/tsio-report-status.js
+            detox/utils/cmt-channel-notify.js
+            detox/utils/build-tsio-job-config.js
+            detox/utils/cli-args.js
+      - name: Aggregate per-job TSIO groups and notify channel
+        env:
+          JOB_CONFIGS: ${{ needs.calculate-tsio-identity.outputs.job-configs }}
+          MATTERMOST_E2E_WEBHOOK_URL: ${{ secrets.MM_MOBILE_E2E_WEBHOOK_URL }}
+          MATTERMOST_MASTER_HEALTH_WEBHOOK_URL: ${{ secrets.MM_E2E_MASTER_HEALTH_WEBHOOK_URL }}
+          MATTERMOST_CMT_WEBHOOK_URL: ${{ secrets.MM_E2E_RELEASE_WEBHOOK_URL }}
+        run: |
+          UPSTREAM="true"
+          for r in "${{ needs.run-detox-ios.result }}" "${{ needs.run-detox-android.result }}" "${{ needs.run-maestro-ios.result }}" "${{ needs.run-maestro-android.result }}"; do
+            case "$r" in
+              success|skipped) ;;
+              *) UPSTREAM="false" ;;
+            esac
+          done
+          node detox/utils/tsio-channel-notify-rollup.js \
+            --job-configs="$JOB_CONFIGS" \
+            --upstream-succeeded="$UPSTREAM" \
+            --poll-attempts=6 || true

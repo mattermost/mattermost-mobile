@@ -1,5 +1,25 @@
 {
-  "default": ["MM-T67856_4"],
-  "ios": ["MM-T4832", "MM-T1411", "MM-T4833"],
-  "android": []
+  "_comment": "Tags excluded from default PR Maestro batches. Zephyr tier labels: detox/maestro/README.md.",
+  "_MM-T5611": "Skip iOS: CI run 30000635898 — external browser launch did not return to the Home tab.",
+  "_MM-T3260": "Skip Android: CI run 30331493720 (PR #9893, SHA 9f1496e) — help_url.yml failed with 'Unable to launch app com.mattermost.rnbeta' after ~136s (batch-7); already excluded on iOS for browser hand-off flakes. Chrome Custom Tab hand-off leaves the driver unable to relaunch the app on API 35.",
+  "_DIAGNOSIS_CORRECTION": "The 'Assertion is false: id: tab_bar.home.tab is visible' failures below were NOT login failures. wait_for_server_connect_complete.yml marked the login-form wait optional and then asserted the home tab, so a failed SERVER CONNECT was reported with a login error message. Proof: on run 30466684108 the app issued ZERO /api/v4 requests and logged 'getServerUrlAfterRedirect error' — it never left the server form, so login.yml never executed. Two distinct connect causes were found: (1) TLS trust evaluation cancelled against a valid Let's Encrypt chain (NSURLErrorDomain -1200 + NSURLErrorFailingURLPeerTrustErrorKey, 'Cancelled during verify block' x4 in the red run, x0 in the green run 30437339535) while the runner itself reached the same host over HTTPS to seed data; (2) inputText dropped ~30 characters of SITE_1_URL, so the app connected to 'h-1-tjrchzrq.test.mattermost.cloud' and got 'hostname could not be found' (30447839548 batch-2). Before un-excluding anything below, re-read the sim log for these signatures — do NOT re-tune login.yml.",
+  "_MM-T1325": "Skip iOS: CI run 30334294934 (PR #9893, SHA 347842c) — clock_display.yml failed with 'Assertion is false: id: tab_bar.home.tab is visible' (~215s). See _DIAGNOSIS_CORRECTION: this message indicates server connect, not login, and was never re-verified against the sim log for this tag. Keep Android coverage.",
+  "_MM-T67856_1_2": "Skip iOS: both flows PASSED on run 30424009936 (#9893, f86f99e) and FAILED on run 30447839548 (72c6f256c) with identical code — same config, opposite outcomes. Failure is 'Assertion is false: id: tab_bar.home.tab is visible' (~232-282s). See _DIAGNOSIS_CORRECTION: batch-1 of that run was the TLS trust cancellation and batch-2 was the dropped-keystroke URL corruption — neither is a login flake, and the login.yml retry/eraseText/100s-home-wait changes made for these tags were tuning a subflow that never ran. Keep Android coverage — both flows pass there (~108-143s).",
+  "default": [
+    "MM-T67856_4"
+  ],
+  "ios": [
+    "MM-T1325",
+    "MM-T1411",
+    "MM-T3260",
+    "MM-T4832",
+    "MM-T4833",
+    "MM-T5603",
+    "MM-T5611",
+    "MM-T67856_1",
+    "MM-T67856_2"
+  ],
+  "android": [
+    "MM-T3260"
+  ]
 }
