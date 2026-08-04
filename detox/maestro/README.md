@@ -462,6 +462,55 @@ PR vs nightly vs manual coverage is summarized below (and in `config/exclude_tag
 - `MM-T67856_4` runs in a dedicated CI step with `AllowDownloadLogs=false` patched on the server. Tag `MM-T67856_4` is listed in `detox/maestro/config/exclude_tags.json` (`default` key) so the default batch does not duplicate it.
 - Multi-device sync (`MM-T3055`/`MM-T3056`) requires two physical devices via `run_two_device.sh`.
 
+### Excluded tag audit
+
+Every tag in `detox/maestro/config/exclude_tags.json` must have a platform,
+CI run/source, and reason. Entries marked **unestablished** were quarantined
+before the current audit trail captured the exact failure mode.
+
+| Tag | Platform | CI run / source | Reason |
+|---|---|---|---|
+| `MM-T67856_4` | both | `.github/workflows/e2e-maestro-template.yml` dedicated step | Requires `SupportSettings.AllowDownloadLogs=false` patched on the server; excluded from default PR batches so the dedicated step runs it in isolation and restores the setting afterwards. |
+| `MM-T1325` | iOS | CI run `30334294934` (#9893, SHA `347842c`) | `clock_display.yml` missed the Home tab after login retries. Diagnosis correction in #9971 showed this message actually meant a failed server connect, not a login flake; iOS coverage stays excluded pending fresh verification. |
+| `MM-T1411` | iOS | CI run `28334461870` (commit `b8099f761`) | Calls plugin UI does not render on the iOS simulator (CallKit/WebRTC infrastructure issue). |
+| `MM-T3260` | iOS | unestablished | Browser hand-off flake on iOS; already excluded when Android evidence was captured (see `347842c63`). Exact iOS run ID not preserved. |
+| `MM-T3260` | Android | CI run `30331493720` (#9893, SHA `9f1496e`) | `help_url.yml` failed with "Unable to launch app" after Chrome Custom Tab hand-off on API 35. |
+| `MM-T4832` | iOS | CI run `28334461870` (commit `b8099f761`) | Calls UI does not render on iOS simulator. |
+| `MM-T4833` | iOS | CI run `28334461870` (commit `b8099f761`) | Calls UI does not render on iOS simulator. |
+| `MM-T5603` | iOS | unestablished | Quarantined alongside `MM-T3260` in commit `c4a64e7bf` to green TSIO; the exact failure mode and run ID were not preserved in the available logs. |
+| `MM-T5611` | iOS | CI run `30000635898` | External browser launch did not return to the Home tab. Re-evaluation tracked in SEC-11018. |
+| `MM-T67856_1` | iOS | CI runs `30424009936` and `30447839548` (#9893) | Passed on one run, failed on another with identical code. Failures traced to TLS trust cancellation and dropped-keystroke URL corruption (SEC-11051 diagnosis correction). |
+| `MM-T67856_2` | iOS | CI runs `30424009936` and `30447839548` (#9893) | Same as `MM-T67856_1`: connect infrastructure flakiness, not a login or flow logic defect. |
+
+### Running the `MM-T67856_4` dedicated step locally
+
+The default PR batches skip `attach_logs_disabled_when_download_logs_off.yml`
+because it mutates server config. To run it locally:
+
+1. Seed and set env as usual (`./detox/maestro/scripts/setup_local.sh` + `source detox/maestro/.maestro-test-env.sh`).
+2. Patch `SupportSettings.AllowDownloadLogs=false` on `SITE_1_URL` using an admin token:
+   ```bash
+   curl -s -H "Authorization: Bearer ${ADMIN_TOKEN}" \
+     "${SITE_1_URL}/api/v4/config" \
+     -d '{"SupportSettings":{"AllowDownloadLogs":false}}' -X PUT
+   ```
+3. Run only that flow:
+   ```bash
+   ~/.maestro/bin/maestro test --platform ios \
+     detox/maestro/flows/account/attach_logs_disabled_when_download_logs_off.yml
+   ```
+4. Restore `SupportSettings.AllowDownloadLogs=true` after the run, even on failure:
+   ```bash
+   curl -s -H "Authorization: Bearer ${ADMIN_TOKEN}" \
+     "${SITE_1_URL}/api/v4/config" \
+     -d '{"SupportSettings":{"AllowDownloadLogs":true}}' -X PUT
+   ```
+
+CI implements the same patch/run/restore sequence in
+`.github/workflows/e2e-maestro-template.yml` (iOS step ~line 383, Android step
+~line 879). Do **not** add `MM-T67856_4` to the default PR batches; that would
+require an explicit scope decision and server-config isolation review.
+
 ### Reports
 
 - JUnit XML: `build/maestro-report.xml`
