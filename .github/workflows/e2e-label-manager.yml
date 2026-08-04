@@ -102,18 +102,40 @@ jobs:
         with:
           script: |
             const detect = async () => {
+              const fs = require('fs');
               const path = require('path');
-              const {loadPaths, impactGlobs} = require(
+
+              // paths.json is read as DATA, never require()d, and paths.js is never
+              // loaded here. Everything under the sparse checkout comes from the PR
+              // head, so require()ing any of it would execute PR-authored JavaScript
+              // on the runner — arbitrary code with this job's authenticated API
+              // client. JSON.parse cannot execute. (The job is already restricted to
+              // same-repo PRs by the head.repo check above, so this is defence in
+              // depth rather than the only barrier.)
+              const paths = JSON.parse(fs.readFileSync(
                 path.join(
                   process.cwd(),
-                  '.github/actions/compute-e2e-build-fingerprint/paths.js',
+                  '.github/actions/compute-e2e-build-fingerprint/paths.json',
                 ),
-              );
+                'utf8',
+              ));
+
+              // Mirrors impactGlobs() in compute-e2e-build-fingerprint/paths.js —
+              // the single rule is "a git ls-tree dir entry (trailing /) becomes
+              // dir/**". paths.json stays the one source of truth for the list
+              // itself, which is the drift that actually matters; paths.test.js
+              // covers the same conversion on the action side.
+              const toGlob = (entry) => (entry.endsWith('/') ? `${entry}**` : entry);
+              const fingerprintGlobs = [
+                ...paths.fingerprintShared,
+                ...Object.values(paths.fingerprintByPlatform).flat(),
+              ].map(toGlob);
+
               // Hardcoded, NOT read from paths.json: the pattern list itself comes
               // from the PR head, so a PR that trimmed its own paths.json could
               // otherwise make that edit look non-impacting and skip E2E.
               const ALWAYS_IMPACTING = ['.github/actions/compute-e2e-build-fingerprint/**'];
-              const patterns = [...new Set([...ALWAYS_IMPACTING, ...impactGlobs(loadPaths())])];
+              const patterns = [...new Set([...ALWAYS_IMPACTING, ...fingerprintGlobs, ...paths.triggerExtra])];
 
               // Supports the subset used in paths.json: `**` spans path separators,
               // a single `*` does not, everything else is literal. Not a general
