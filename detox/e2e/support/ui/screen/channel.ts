@@ -291,6 +291,9 @@ class ChannelScreen {
 
         // # Open reply thread screen
         await PostOptionsScreen.replyPostOption.tap();
+        // Root bottom-sheet sits above the authenticated banner portal host;
+        // wait for dismiss before callers assert top-band UI.
+        await waitFor(PostOptionsScreen.postOptionsScreen).not.toExist().withTimeout(timeouts.TEN_SEC);
         await ThreadScreen.toBeVisible();
     };
 

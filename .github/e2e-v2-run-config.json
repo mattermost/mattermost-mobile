@@ -5,8 +5,8 @@
   "platform": "ios",
   "skip_build": true,
   "artifact_run_id": "30898279916",
-  "worker_count": "2",
-  "detox_search_path": "e2e/test/ci_filter_failed",
+  "worker_count": "1",
+  "detox_search_path": "e2e/test/products/channels/classification_banner",
   "use_staging_test_system_io": true,
   "fail_on_test_failures": false,
   "android_site_1_url": "https://mobile-pr-10006-android-site-1-fr4pp65i.test.mattermost.cloud",
@@ -17,5 +17,5 @@
   "pr_number": "10006",
   "run_type": "PR",
   "enabled": true,
-  "rerun_note": "filter v2: real copies of about.e2e + custom_status.e2e (symlinks skipped by discovery Dirent.isFile)"
+  "rerun_note": "filter: classification_banner only (1 worker) — fix 20m lock wait + Account/Thread banner harness"
 }

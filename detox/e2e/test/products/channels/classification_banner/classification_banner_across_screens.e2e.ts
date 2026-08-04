@@ -116,10 +116,9 @@ jest.setTimeout(timeouts.ONE_MIN * 30);
     });
 
     it('MM-T6212_1 - should display the classification banner on the Account screen', async () => {
-        await waitFor(element(by.id('tab_bar.account.tab'))).toExist().withTimeout(timeouts.TEN_SEC);
-        await element(by.id('tab_bar.account.tab')).tap();
-        await AccountScreen.toBeVisible();
-
+        // Use AccountScreen.open() so known modals/tooltips are dismissed before
+        // asserting the top-band portal banner (raw tab taps leave overlays).
+        await AccountScreen.open();
         await GlobalClassificationBanner.toBeVisible();
 
         await element(by.id('tab_bar.home.tab')).tap();
@@ -141,9 +140,14 @@ jest.setTimeout(timeouts.ONE_MIN * 30);
         await ChannelListScreen.toBeVisible();
         await wait(timeouts.TWO_SEC);
         await ChannelScreen.open('channels', testChannel.name);
-        await ChannelScreen.openReplyThreadFor(rootPost.id, rootPost.message);
 
+        // Banner is known-good on channel before entering the thread path.
+        await GlobalClassificationBanner.toBeVisible();
+
+        await ChannelScreen.openReplyThreadFor(rootPost.id, rootPost.message);
         await ThreadScreen.toBeVisible();
+        // Post-options sheet + card transition can briefly cover the portal host.
+        await wait(timeouts.TWO_SEC);
         await GlobalClassificationBanner.toBeVisible();
 
         await ThreadScreen.back();

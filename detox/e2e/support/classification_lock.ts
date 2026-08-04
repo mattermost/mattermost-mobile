@@ -8,9 +8,9 @@ import {getRandomId, timeouts, wait} from '@support/utils';
 const LOCK_CATEGORY = 'e2e_locks';
 const LOCK_NAME = 'classification';
 
-// Callers acquire from beforeAll, so this must stay under the Jest testTimeout
-// (240s) or the hook dies first and the timeout error below is never reported.
-const DEFAULT_TIMEOUT_MS = timeouts.ONE_MIN * 2;
+// Suites set jest.setTimeout(30m) and comment "Lock wait is up to 20m" so peer
+// classification specs can serialize on the shared server preference lock.
+const DEFAULT_TIMEOUT_MS = timeouts.ONE_MIN * 20;
 const DEFAULT_TTL_MS = timeouts.ONE_MIN * 30;
 const DEFAULT_POLL_MS = timeouts.TWO_SEC;
 
