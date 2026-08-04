@@ -75,8 +75,8 @@ describe('Messaging - Post Display Behavior', () => {
         await ChannelScreen.back();
     });
 
-    // Skipped on Android — SEC-10781 (Mobile E2E stabilization). iOS is green on this
-    // code and stays enabled.
+    // Skipped on Android — SEC-11084 (under SEC-10781, Mobile E2E stabilization).
+    // iOS is green on this code and stays enabled.
     //
     // The test proves "the list left the bottom" by asserting the NEWEST post is no
     // longer visible. On the Android emulator that post is 91px tall, so Espresso needs
