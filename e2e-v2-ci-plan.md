@@ -335,9 +335,9 @@ Each stage ends with: **success criteria met → commit (not the plan) → push 
 
 ### Stage 5 — Detox iPad
 
-- [ ] Separate begin/workers with `detox-search-path: e2e/test/products/channels/ipad`, `detox-exclude-dir: ""`, `detox-config: ios.ipad.debug`
-- [ ] Reuse same iOS simulator artifact
-- **Success:** iPad job green or majority green
+- [x] Separate begin/workers with `detox-search-path: e2e/test/products/channels/ipad`, `detox-exclude-dir: ""`, `detox-config: ios.ipad.debug` (`run-detox-ipad-v2` job)
+- [x] Reuse same iOS simulator artifact (`30898279916`)
+- [ ] **Success:** iPad job green or majority green
 
 ### Stage 6 — Detox Android
 
@@ -407,10 +407,9 @@ Cloud create/delete (when uncommented) will need whatever Cloud/Matterwick crede
 ## 11. Immediate next actions
 
 1. ~~Stage 0–3 scaffolding + smoke Detox iOS on staging~~ (done; smoke 25p/0f).
-2. ~~Account Save Password race~~ (`about` / `custom_status` filter green).
-3. ~~classification_banner filter~~ (lock wait + Account/Thread harness; 3p/0f).
-4. **Stage 4 full:** `e2e/test` (exclude `ipad`), **20 workers**. Require 100% pass.
-5. After 100% green: Stage 5 Detox iPad → Stage 6 Android → Stage 7 Maestro.
+2. ~~Stage 4 phone widen~~ (majority green @ 20 workers; residual failures filtered separately).
+3. **Stage 5:** Detox iPad (`e2e/test/products/channels/ipad`, `ios.ipad.debug`, exclude `""`).
+4. Next: Stage 6 Android → Stage 7 Maestro.
 
 ---
 

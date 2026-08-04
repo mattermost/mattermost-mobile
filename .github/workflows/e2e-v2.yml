@@ -134,7 +134,7 @@ permissions:
 concurrency:
   # Include workflow file hash-ish salt so a stuck macOS cancel cannot block
   # the next push indefinitely (GitHub sometimes leaves Detox workers uncancelled).
-  group: e2e-v2-${{ github.ref }}-r9
+  group: e2e-v2-${{ github.ref }}-r10
   cancel-in-progress: true
 
 env:
@@ -155,6 +155,7 @@ jobs:
       do_test: ${{ steps.out.outputs.do_test }}
       need_ios_build: ${{ steps.out.outputs.need_ios_build }}
       run_detox_ios: ${{ steps.out.outputs.run_detox_ios }}
+      run_detox_ipad: ${{ steps.out.outputs.run_detox_ipad }}
       framework: ${{ steps.out.outputs.framework }}
       platform: ${{ steps.out.outputs.platform }}
       skip_build: ${{ steps.out.outputs.skip_build }}
@@ -258,6 +259,7 @@ jobs:
             echo "do_test=false" >> "$GITHUB_OUTPUT"
             echo "need_ios_build=false" >> "$GITHUB_OUTPUT"
             echo "run_detox_ios=false" >> "$GITHUB_OUTPUT"
+            echo "run_detox_ipad=false" >> "$GITHUB_OUTPUT"
             echo "framework=detox" >> "$GITHUB_OUTPUT"
             echo "platform=ios" >> "$GITHUB_OUTPUT"
             echo "skip_build=false" >> "$GITHUB_OUTPUT"
@@ -312,15 +314,30 @@ jobs:
 
           NEED_IOS_BUILD=false
           RUN_DETOX_IOS=false
+          RUN_DETOX_IPAD=false
           if [ "$DO_BUILD" = "true" ] && echo "$PLATFORM" | grep -Eq '^(ios|ipad|ios_and_ipad|all)$'; then
             NEED_IOS_BUILD=true
           fi
-          if [ "$DO_TEST" = "true" ] && echo "$PLATFORM" | grep -Eq '^(ios|ios_and_ipad|all)$' && echo "$FRAMEWORK" | grep -Eq '^(detox|both)$'; then
-            RUN_DETOX_IOS=true
-            if [ "$SKIP_BUILD" = "true" ]; then
-              NEED_IOS_BUILD=false
-            elif [ "$DO_BUILD" = "true" ]; then
-              NEED_IOS_BUILD=true
+          if [ "$DO_TEST" = "true" ] && echo "$FRAMEWORK" | grep -Eq '^(detox|both)$'; then
+            if echo "$PLATFORM" | grep -Eq '^(ios|ios_and_ipad|all)$'; then
+              RUN_DETOX_IOS=true
+            fi
+            if echo "$PLATFORM" | grep -Eq '^(ipad|ios_and_ipad|all)$'; then
+              RUN_DETOX_IPAD=true
+            fi
+            if [ "$RUN_DETOX_IOS" = "true" ] || [ "$RUN_DETOX_IPAD" = "true" ]; then
+              if [ "$SKIP_BUILD" = "true" ]; then
+                NEED_IOS_BUILD=false
+              elif [ "$DO_BUILD" = "true" ]; then
+                NEED_IOS_BUILD=true
+              fi
+            fi
+          fi
+
+          # iPad-only defaults when platform=ipad and search path still points at phone suites.
+          if [ "$RUN_DETOX_IPAD" = "true" ] && [ "$RUN_DETOX_IOS" = "false" ]; then
+            if [ "$DETOX_SEARCH_PATH" = "e2e/test" ] || [ "$DETOX_SEARCH_PATH" = "e2e/test/products/channels/smoke_test" ] || [ "$DETOX_SEARCH_PATH" = "e2e/test/ci_filter_failed" ]; then
+              DETOX_SEARCH_PATH="e2e/test/products/channels/ipad"
             fi
           fi
 
@@ -335,6 +352,7 @@ jobs:
             echo "do_test=${DO_TEST}"
             echo "need_ios_build=${NEED_IOS_BUILD}"
             echo "run_detox_ios=${RUN_DETOX_IOS}"
+            echo "run_detox_ipad=${RUN_DETOX_IPAD}"
             echo "framework=${FRAMEWORK}"
             echo "platform=${PLATFORM}"
             echo "skip_build=${SKIP_BUILD}"
@@ -346,8 +364,7 @@ jobs:
             echo "android_site_2_url=${ANDROID_2}"
             echo "ios_site_1_url=${IOS_1}"
             echo "ios_site_2_url=${IOS_2}"
-            echo "site_3_url=${SITE_3}"
-            echo "pr_number=${PR}"
+            echo "site_3_url=${SITE_3}"            echo "pr_number=${PR}"
             echo "run_type=${RUN_TYPE}"
           } >> "$GITHUB_OUTPUT"
 
@@ -491,6 +508,41 @@ jobs:
       detox_search_path: ${{ needs.resolve.outputs.detox_search_path }}
       detox_exclude_dir: ipad
       detox_config: ios.sim.debug
+      ios_site_1_url: ${{ needs.resolve.outputs.ios_site_1_url }}
+      ios_site_2_url: ${{ needs.resolve.outputs.ios_site_2_url }}
+      site_3_url: ${{ needs.resolve.outputs.site_3_url }}
+      use_staging_test_system_io: ${{ needs.resolve.outputs.use_staging_test_system_io == 'true' }}
+      run_type: ${{ needs.resolve.outputs.run_type }}
+      pr_number: ${{ needs.resolve.outputs.pr_number }}
+      branch: ${{ needs.resolve.outputs.branch }}
+      commit_sha: ${{ needs.resolve.outputs.commit_sha }}
+      fail_on_test_failures: ${{ needs.resolve.outputs.fail_on_test_failures == 'true' }}
+    secrets:
+      MM_MOBILE_E2E_ADMIN_EMAIL: ${{ secrets.MM_MOBILE_E2E_ADMIN_EMAIL }}
+      MM_MOBILE_E2E_ADMIN_USERNAME: ${{ secrets.MM_MOBILE_E2E_ADMIN_USERNAME }}
+      MM_MOBILE_E2E_ADMIN_PASSWORD: ${{ secrets.MM_MOBILE_E2E_ADMIN_PASSWORD }}
+
+  run-detox-ipad-v2:
+    name: Detox iPad (orchestrated)
+    needs: [resolve, verify-servers, build-ios-simulator-v2]
+    if: >-
+      always()
+      && needs.resolve.outputs.enabled == 'true'
+      && needs.resolve.outputs.run_detox_ipad == 'true'
+      && needs.verify-servers.result == 'success'
+      && (needs.build-ios-simulator-v2.result == 'success' || needs.build-ios-simulator-v2.result == 'skipped')
+    uses: ./.github/workflows/e2e-v2-detox-ios.yml
+    with:
+      mobile_ref: ${{ needs.resolve.outputs.mobile_ref }}
+      artifact_run_id: ${{ needs.resolve.outputs.artifact_run_id }}
+      worker_count: ${{ needs.resolve.outputs.worker_count }}
+      detox_search_path: ${{ needs.resolve.outputs.detox_search_path }}
+      detox_exclude_dir: ""
+      detox_config: ios.ipad.debug
+      identity_name: mobile-v2-pr-detox-ipad
+      commit_status_context: e2e-test-v2/detox-ipad
+      ios_device_name: iPad Pro 13-inch (M5)
+      ios_device_os_name: iOS 26.2
       ios_site_1_url: ${{ needs.resolve.outputs.ios_site_1_url }}
       ios_site_2_url: ${{ needs.resolve.outputs.ios_site_2_url }}
       site_3_url: ${{ needs.resolve.outputs.site_3_url }}
