@@ -3,10 +3,12 @@
 
 import {Q, type Database} from '@nozbe/watermelondb';
 
-import {confirmDeleteTombstone, deleteAbsentCleanDraft, getReconcilableKeys, processOutboxDelete, processOutboxUpsert, reconcileTeamDrafts, type ReconcileKey, type WorkerOutcome} from '@actions/remote/draft';
+import {confirmDeleteTombstone, deleteAbsentCleanDraft, getReconcilableKeys, processOutboxDelete, processOutboxUpsert, reconcileTeamDrafts, type OutboxWorkerOpts, type ReconcileKey, type WorkerOutcome} from '@actions/remote/draft';
+import {General} from '@constants';
 import {MM_TABLES} from '@constants/database';
 import {DRAFT_ABSENCE_CONFIRMATION_DELAY_MS, DRAFT_SYNC_RETRY_BASE_MS, DRAFT_SYNC_RETRY_JITTER, DRAFT_SYNC_RETRY_MAX_MS, DraftOutboxOperation, DraftOutboxStatus, MAX_DRAFT_SYNC_EVENT_BUFFER} from '@constants/draft';
 import DatabaseManager from '@database/manager';
+import {getChannelById, getMyChannel} from '@queries/servers/channel';
 import {buildDraftOutboxId, getIsDraftSyncEnabled} from '@queries/servers/drafts';
 import {logDebug} from '@utils/log';
 
@@ -82,10 +84,6 @@ class DraftSyncManagerSingleton {
     // disabled OR invalidated so no work is scheduled.
     private enabled: Record<string, boolean> = {};
 
-    // activeCriticalSections: count of in-flight DB writer sections. invalidate() only needs to
-    // wait for these to reach 0 (there is no HTTP in this phase). Tracked here for Phase 4.
-    private activeCriticalSections: Record<string, number> = {};
-
     // lastReconcile: last requested reconciliation intent per server (Phase 3 records only).
     private lastReconcile: Record<string, {teamId: string; reason: string}> = {};
 
@@ -110,6 +108,12 @@ class DraftSyncManagerSingleton {
     // worker. Guarantees per-key serialization across overlapping drains (a wake firing while a timer
     // drain runs) so the same row is never POSTed/DELETEd twice concurrently. Cleared on invalidate.
     private inFlightKeys: Record<string, Set<string>> = {};
+
+    // observationOrdinals: per-server map (draftKey -> monotonically increasing counter). A reconcile
+    // GET that observes newer content for a key whose POST is in flight bumps its ordinal; the worker
+    // captured the ordinal before dispatch and, on ack, refuses to clobber the newer content when it
+    // changed. Init in ensureServer, cleared on invalidate; safe to lose (a re-POST re-captures it).
+    private observationOrdinals: Record<string, Map<string, number>> = {};
 
     /**
      * initialize: idempotent per-server setup. Reads the draft-sync capability into `enabled` and,
@@ -255,6 +259,17 @@ class DraftSyncManagerSingleton {
             this.reconcileAttempt[serverUrl] = 0;
             this.baseline[serverUrl] = {teamId, at: Date.now()};
 
+            // Post-dispatch observation fence: for every returned key whose POST is currently in flight,
+            // bump its observation ordinal. This GET observed the key's content, so the in-flight ack
+            // must not clobber it (the worker captured the ordinal before dispatch). Synchronous, so it
+            // is covered by the epoch check already performed after the await above.
+            const inFlight = this.inFlightKeys[serverUrl];
+            for (const draft of res.drafts ?? []) {
+                if (inFlight?.has(buildDraftOutboxId(draft.channelId, draft.rootId))) {
+                    this.bumpObservation(serverUrl, draft.channelId, draft.rootId);
+                }
+            }
+
             // Absence pass: a successful snapshot lets us quarantine/confirm keys that are absent
             // from it. Epoch-guarded internally; it never POSTs/DELETEs over the network.
             await this.runAbsencePass(serverUrl, teamId, res.drafts ?? [], captured);
@@ -264,6 +279,14 @@ class DraftSyncManagerSingleton {
             // confirming-delete/absence candidates remain).
             if (!this.isEpochStale(serverUrl, captured) && this.isActive(serverUrl)) {
                 await this.drainOutbox(serverUrl);
+            }
+
+            // Missing dependencies: the snapshot referenced channels not yet hydrated, so those keys
+            // were skipped. Record a soft attempt so scheduleWork arms a reconcile-GET retry (a real
+            // backoff delay, never zero) to re-fetch once dependencies may have hydrated. A subsequent
+            // fully-applied reconcile resets the attempt to 0.
+            if (res.missingDeps && !this.isEpochStale(serverUrl, captured) && this.isActive(serverUrl)) {
+                this.reconcileAttempt[serverUrl] = (this.reconcileAttempt[serverUrl] ?? 0) + 1;
             }
         }
 
@@ -450,6 +473,7 @@ class DraftSyncManagerSingleton {
         this.reconcileAttempt[serverUrl] = 0;
         this.absenceCandidates[serverUrl] = new Map();
         this.inFlightKeys[serverUrl] = new Set();
+        this.observationOrdinals[serverUrl] = new Map();
         logDebug('DraftSyncManager.invalidate', serverUrl);
     };
 
@@ -620,6 +644,17 @@ class DraftSyncManagerSingleton {
                 continue;
             }
 
+            // A '' team is a DM/GM scope ONLY. Validate before draining under this arbitrary baseline's
+            // team: a row mis-stamped '' for a since-resolved channel must not drain here. Require the
+            // channel to be a DM/GM or to have confirmed membership; skip otherwise.
+            if (row.teamId === '') {
+                // eslint-disable-next-line no-await-in-loop
+                const validScope = await this.isDmGmOrMember(database, row.channelId);
+                if (!validScope) {
+                    continue;
+                }
+            }
+
             const key = buildDraftOutboxId(row.channelId, row.rootId);
             if (inFlight.has(key)) {
                 continue;
@@ -627,16 +662,21 @@ class DraftSyncManagerSingleton {
 
             inFlight.add(key);
             const captured = this.captureEpoch(serverUrl);
+            const opts: OutboxWorkerOpts = {
+                shouldAbort: () => this.isEpochStale(serverUrl, captured) || !this.isActive(serverUrl),
+                captureObservation: () => this.getObservation(serverUrl, row.channelId, row.rootId),
+                observationChanged: (c: number) => this.getObservation(serverUrl, row.channelId, row.rootId) !== c,
+            };
 
             let outcome: WorkerOutcome;
             try {
                 outcome = row.operation === DraftOutboxOperation.Delete ?
 
                     // eslint-disable-next-line no-await-in-loop
-                    await processOutboxDelete(serverUrl, row.channelId, row.rootId) :
+                    await processOutboxDelete(serverUrl, row.channelId, row.rootId, opts) :
 
                     // eslint-disable-next-line no-await-in-loop
-                    await processOutboxUpsert(serverUrl, row.channelId, row.rootId);
+                    await processOutboxUpsert(serverUrl, row.channelId, row.rootId, opts);
             } catch (error) {
                 logDebug('DraftSyncManager.drainOutbox: worker threw', serverUrl);
                 outcome = {outcome: 'retry'};
@@ -692,9 +732,6 @@ class DraftSyncManagerSingleton {
         if (!(serverUrl in this.enabled)) {
             this.enabled[serverUrl] = false;
         }
-        if (!(serverUrl in this.activeCriticalSections)) {
-            this.activeCriticalSections[serverUrl] = 0;
-        }
         if (!(serverUrl in this.reconcileInFlight)) {
             this.reconcileInFlight[serverUrl] = false;
         }
@@ -713,6 +750,9 @@ class DraftSyncManagerSingleton {
         if (!(serverUrl in this.inFlightKeys)) {
             this.inFlightKeys[serverUrl] = new Set();
         }
+        if (!(serverUrl in this.observationOrdinals)) {
+            this.observationOrdinals[serverUrl] = new Map();
+        }
     };
 
     // isActive: the server is present, enabled, and not invalidated (invalidate sets enabled=false).
@@ -723,6 +763,31 @@ class DraftSyncManagerSingleton {
     // getDatabase: the server database or undefined when it is absent/destroyed. Never throws.
     private getDatabase = (serverUrl: string): Database | undefined => {
         return DatabaseManager.serverDatabases[serverUrl]?.database;
+    };
+
+    // isDmGmOrMember: whether a channel is a valid '' (DM/GM) drain scope — a DM/GM channel, or any
+    // channel the current user has a confirmed membership row for.
+    private isDmGmOrMember = async (database: Database, channelId: string): Promise<boolean> => {
+        const channel = await getChannelById(database, channelId);
+        if (channel?.type === General.DM_CHANNEL || channel?.type === General.GM_CHANNEL) {
+            return true;
+        }
+        return Boolean(await getMyChannel(database, channelId));
+    };
+
+    // bumpObservation: increment the per-key observation ordinal (a reconcile GET observed this key).
+    private bumpObservation = (serverUrl: string, channelId: string, rootId: string): void => {
+        const map = this.observationOrdinals[serverUrl];
+        if (!map) {
+            return;
+        }
+        const key = buildDraftOutboxId(channelId, rootId);
+        map.set(key, (map.get(key) ?? 0) + 1);
+    };
+
+    // getObservation: the current per-key observation ordinal (0 when never observed).
+    private getObservation = (serverUrl: string, channelId: string, rootId: string): number => {
+        return this.observationOrdinals[serverUrl]?.get(buildDraftOutboxId(channelId, rootId)) ?? 0;
     };
 }
 

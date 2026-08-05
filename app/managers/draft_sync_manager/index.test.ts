@@ -47,6 +47,7 @@ type ManagerInternals = {
     eventBuffers: Record<string, WebSocketMessage[]>;
     lifecycleEpoch: Record<string, number>;
     inFlightKeys: Record<string, Set<string>>;
+    observationOrdinals: Record<string, Map<string, number>>;
 };
 
 const internals = (manager: InstanceType<typeof DraftSyncManagerSingleton>) =>
@@ -80,6 +81,13 @@ describe('DraftSyncManager (Phase 3 shell)', () => {
         await operator.handleConfigs({
             configs: [{id: 'AllowSyncedDrafts', value}],
             configsToDelete: [],
+            prepareRecordsOnly: false,
+        });
+    };
+
+    const seedDmChannel = async (id: string) => {
+        await operator.handleChannel({
+            channels: [{id, team_id: '', type: 'D', display_name: '', total_msg_count: 0} as Channel],
             prepareRecordsOnly: false,
         });
     };
@@ -358,6 +366,38 @@ describe('DraftSyncManager (Phase 3 shell)', () => {
             expect(mockedReconcile).toHaveBeenNthCalledWith(2, SERVER_URL, 'team2');
             expect(baselineInternals(manager).baseline[SERVER_URL]?.teamId).toBe('team2');
         });
+
+        it('arms a reconcile retry (real delay) when the snapshot reported missing dependencies (fix #9)', async () => {
+            await enableManager();
+            mockedReconcile.mockResolvedValue({applied: 0, drafts: [], missingDeps: true});
+
+            manager.requestReconcile(SERVER_URL, 'team1', 'missing');
+            await flushMicrotasks();
+
+            // The additive reconcile still records a baseline, but a reconcile-GET retry is armed so the
+            // snapshot is re-fetched once the missing channels hydrate.
+            expect(baselineInternals(manager).baseline[SERVER_URL]).toBeDefined();
+            expect(jest.getTimerCount()).toBe(1);
+
+            // A real (non-zero) backoff delay — never a busy loop.
+            mockedReconcile.mockClear();
+            await advanceTimers(0);
+            expect(mockedReconcile).not.toHaveBeenCalled();
+        });
+
+        it('bumps the observation ordinal for a returned draft key whose POST is in flight (fix #6)', async () => {
+            await enableManager();
+            const key = buildDraftOutboxId(CHANNEL_ID, ROOT_ID);
+
+            // Simulate an in-flight POST for this key while the reconcile GET observes its content.
+            internals(manager).inFlightKeys[SERVER_URL].add(key);
+            mockedReconcile.mockResolvedValue({applied: 0, drafts: [{channelId: CHANNEL_ID, rootId: ROOT_ID} as NormalizedDraft]});
+
+            manager.requestReconcile(SERVER_URL, 'team1', 'observe');
+            await flushMicrotasks();
+
+            expect(internals(manager).observationOrdinals[SERVER_URL].get(key)).toBe(1);
+        });
     });
 
     describe('runAbsencePass (Phase 4.2 absence quarantine + delete confirmation)', () => {
@@ -410,6 +450,7 @@ describe('DraftSyncManager (Phase 3 shell)', () => {
             await enableManager();
             mockedReconcile.mockResolvedValue({applied: 0, drafts: []});
             mockedGetReconcilableKeys.mockResolvedValue([cleanDraftKey()]);
+
             // Simulate production: once deleted, the key leaves the reconcilable universe.
             mockedDeleteAbsentCleanDraft.mockImplementation(async () => {
                 mockedGetReconcilableKeys.mockResolvedValue([]);
@@ -603,9 +644,29 @@ describe('DraftSyncManager (Phase 3 shell)', () => {
             await flushMicrotasks();
 
             expect(mockedProcessOutboxUpsert).toHaveBeenCalledTimes(1);
-            expect(mockedProcessOutboxUpsert).toHaveBeenCalledWith(SERVER_URL, CHANNEL_ID, ROOT_ID);
+            expect(mockedProcessOutboxUpsert).toHaveBeenCalledWith(SERVER_URL, CHANNEL_ID, ROOT_ID, expect.objectContaining({shouldAbort: expect.any(Function)}));
             expect(mockedProcessOutboxDelete).toHaveBeenCalledTimes(1);
-            expect(mockedProcessOutboxDelete).toHaveBeenCalledWith(SERVER_URL, deleteChannel, ROOT_ID);
+            expect(mockedProcessOutboxDelete).toHaveBeenCalledWith(SERVER_URL, deleteChannel, ROOT_ID, expect.objectContaining({shouldAbort: expect.any(Function)}));
+        });
+
+        it('drains a teamId="" row only when its channel is DM/GM (or a confirmed member) (fix #9)', async () => {
+            await enableManager();
+            setBaseline('team1');
+
+            // A '' row whose channel IS a DM: valid scope -> drains under the baseline.
+            const dmChannel = 'dmdmdmdmdmdmdmdmdmdmdmdmdm00';
+            await seedDmChannel(dmChannel);
+            await createOutboxRow({operation: 'upsert', teamId: '', channelId: dmChannel});
+
+            // A '' row whose channel is neither DM/GM nor a confirmed membership: mis-stamped, must NOT drain.
+            const orphanChannel = 'orphanorphanorphanorphanor00';
+            await createOutboxRow({operation: 'upsert', teamId: '', channelId: orphanChannel});
+
+            manager.wake(SERVER_URL);
+            await flushMicrotasks();
+
+            expect(mockedProcessOutboxUpsert).toHaveBeenCalledTimes(1);
+            expect(mockedProcessOutboxUpsert).toHaveBeenCalledWith(SERVER_URL, dmChannel, ROOT_ID, expect.objectContaining({shouldAbort: expect.any(Function)}));
         });
 
         it('skips a key already marked in-flight', async () => {

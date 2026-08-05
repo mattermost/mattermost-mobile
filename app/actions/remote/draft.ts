@@ -41,17 +41,29 @@ export async function fetchDraftsForTeam(serverUrl: string, teamId: string, grou
 }
 
 /**
- * applyServerPriority: produce the metadata to persist when the server owns the draft's priority.
- * Existing device-local/portable metadata keys (borConfig, images) are preserved; only priority is
- * taken from the server snapshot, and it is removed when the server no longer carries one.
+ * applyServerMetadata: produce the metadata to persist for a remote update. Server-owned fields
+ * (priority and the normalized burn-on-read borConfig) come from the snapshot; only genuinely
+ * device-local metadata (markdown image dimensions) is preserved from the existing row. This keeps
+ * type and borConfig consistent: a normal->BoR update carries the reconstructed borConfig (or none
+ * when it fails closed), and a BoR->normal update drops a stale enabled borConfig so it can never
+ * be sent as burn-on-read. `sd.metadata.borConfig` is already reconstructed fail-closed upstream.
  */
-const applyServerPriority = (existing: PostMetadata | undefined, sd: NormalizedDraft): PostMetadata => {
-    const next: PostMetadata = {...existing};
+const applyServerMetadata = (existing: PostMetadata | undefined, sd: NormalizedDraft): PostMetadata => {
+    const next: PostMetadata = {};
+
+    // Device-local, non-portable metadata is preserved.
+    if (existing?.images) {
+        next.images = existing.images;
+    }
+
+    // Server-owned metadata replaces whatever was local.
     if (sd.metadata?.priority) {
         next.priority = sd.metadata.priority;
-    } else {
-        delete next.priority;
     }
+    if (sd.metadata?.borConfig) {
+        next.borConfig = sd.metadata.borConfig;
+    }
+
     return next;
 };
 
@@ -81,7 +93,7 @@ const prepareIncomingDraft = (sd: NormalizedDraft): PrepareDraftAndOutbox => ({d
         d.props = sd.props;
         d.fileIds = sd.fileIds;
         d.files = sd.files;
-        d.metadata = applyServerPriority(d.metadata, sd);
+        d.metadata = applyServerMetadata(d.metadata, sd);
         d.serverUpdateAt = sd.serverUpdateAt;
         d.updateAt = Date.now();
     });
@@ -98,12 +110,30 @@ const prepareIncomingDraft = (sd: NormalizedDraft): PrepareDraftAndOutbox => ({d
         });
 
         if (fp === outbox.deletedFingerprint) {
-            // Stale echo of what we are deleting: preserve the DELETE, ignore the server content.
+            // The server still holds the exact content we are deleting. For a Pending delete (not yet
+            // sent) that is expected — keep it pending; the drain will DELETE it. For a ConfirmingDelete
+            // (we already got a 200 but the content is still present) the delete did NOT take, so reset
+            // to Pending and let the drain retry the DELETE (naturally spaced by the confirmation GETs).
+            if (outbox.status === DraftOutboxStatus.ConfirmingDelete) {
+                return [outbox.prepareUpdate((o) => {
+                    o.status = DraftOutboxStatus.Pending;
+                    o.attemptCount = 0;
+                    o.nextAttemptAt = 0;
+                })];
+            }
             return [];
         }
 
-        // New content arrived after our delete was enqueued: abandon the DELETE and adopt the
-        // server content as a clean local draft.
+        // The server content differs from what we enqueued for deletion — another client wrote new
+        // content after our delete.
+        if (outbox.keepLocal) {
+            // keep_local: the retained empty/attachment-only local Draft must be neither resurrected
+            // nor replaced with remote text. Abandon the DELETE by parking it as unsyncable_empty so
+            // later reconciliations preserve the local Draft (and it never POSTs). Do NOT touch the Draft.
+            return prepareDraftOutbox(database, channelId, rootId, outbox.teamId, outbox, {type: 'park'});
+        }
+
+        // Ordinary delete: abandon it and adopt the new server content as a clean local draft.
         return [
             outbox.prepareDestroyPermanently(),
             draft ? updateCleanDraft(draft) : createCleanDraft(),
@@ -135,7 +165,7 @@ const prepareIncomingDraft = (sd: NormalizedDraft): PrepareDraftAndOutbox => ({d
             d.type = sd.type;
             d.props = sd.props;
             d.fileIds = sd.fileIds;
-            d.metadata = applyServerPriority(d.metadata, sd);
+            d.metadata = applyServerMetadata(d.metadata, sd);
             d.serverUpdateAt = sd.serverUpdateAt;
             d.updateAt = Date.now();
         })];
@@ -183,7 +213,7 @@ const prepareIncomingDraft = (sd: NormalizedDraft): PrepareDraftAndOutbox => ({d
  * it applies nothing when the GET fails (no baseline, no deletion). Returns the applied write count
  * and the in-scope normalized drafts so a later absence-detection sub-step can track candidates.
  */
-export async function reconcileTeamDrafts(serverUrl: string, teamId: string): Promise<{applied?: number; drafts?: NormalizedDraft[]; error?: unknown}> {
+export async function reconcileTeamDrafts(serverUrl: string, teamId: string): Promise<{applied?: number; drafts?: NormalizedDraft[]; missingDeps?: boolean; error?: unknown}> {
     const database = DatabaseManager.serverDatabases[serverUrl]?.database;
     if (!database) {
         return {error: `${serverUrl} database not found`};
@@ -207,6 +237,7 @@ export async function reconcileTeamDrafts(serverUrl: string, teamId: string): Pr
 
         const inScope: NormalizedDraft[] = [];
         let applied = 0;
+        let missingChannelCount = 0;
 
         for (const serverDraft of res.drafts) {
             const sd = normalizeServerDraft(serverDraft, durations);
@@ -214,18 +245,22 @@ export async function reconcileTeamDrafts(serverUrl: string, teamId: string): Pr
             // eslint-disable-next-line no-await-in-loop
             const channel = await getChannelById(database, sd.channelId);
             if (!channel) {
-                // Missing channel row: skip this key without aborting the others. A later reschedule
-                // reconciles it once the channel is hydrated.
-                logDebug('reconcileTeamDrafts: skipping draft for missing channel', sd.channelId);
+                // Missing channel row: skip this key without aborting the others and signal a
+                // guaranteed retry (missingDeps) so a later reschedule reconciles it once the channel
+                // is hydrated. NEVER log the channel id — DM/GM channel ids embed usernames (PII).
+                missingChannelCount += 1;
                 continue;
             }
 
             const isDmGm = channel.type === General.DM_CHANNEL || channel.type === General.GM_CHANNEL;
-            let inScopeKey = isDmGm;
-            if (!inScopeKey) {
-                // eslint-disable-next-line no-await-in-loop
-                inScopeKey = Boolean(await getMyChannel(database, sd.channelId));
-            }
+
+            // Authoritative scope: a confirmed membership row is required in every case (a DM/GM the
+            // user is not a member of is not authoritative). A non-DM/GM channel must additionally
+            // belong to the reconciled team — a channel mis-scoped to another team is not this run's
+            // authority — so it is skipped.
+            // eslint-disable-next-line no-await-in-loop
+            const isMember = Boolean(await getMyChannel(database, sd.channelId));
+            const inScopeKey = isDmGm ? isMember : (isMember && channel.teamId === teamId);
 
             if (!inScopeKey) {
                 continue;
@@ -240,7 +275,12 @@ export async function reconcileTeamDrafts(serverUrl: string, teamId: string): Pr
             }
         }
 
-        return {applied, drafts: inScope};
+        if (missingChannelCount > 0) {
+            // Count only, no ids — the skip stays traceable without logging PII.
+            logDebug('reconcileTeamDrafts: skipped drafts for missing channels', missingChannelCount);
+        }
+
+        return {applied, drafts: inScope, missingDeps: missingChannelCount > 0};
     } catch (error) {
         logError('reconcileTeamDrafts', getFullErrorMessage(error));
         forceLogoutIfNecessary(serverUrl, error);
@@ -433,6 +473,35 @@ export type WorkerOutcome = {
     retryAfterMs?: number;
 };
 
+/**
+ * OutboxWorkerOpts: caller-supplied guards a worker consults ONLY after its HTTP call resolves and
+ * immediately before any post-HTTP database write.
+ *  - shouldAbort: true when the server lifecycle changed under the request (epoch bumped / server
+ *    invalidated); the worker must not write.
+ *  - captureObservation / observationChanged: the per-key observation ordinal fence. captureObservation
+ *    is read right before the POST dispatch; observationChanged(captured) is true in the ack when a
+ *    reconcile GET observed newer content for this key while the POST was in flight, so the ack must
+ *    not clobber it (see the manager's observationOrdinals).
+ */
+export type OutboxWorkerOpts = {
+    shouldAbort?: () => boolean;
+    captureObservation?: () => number;
+    observationChanged?: (captured: number) => boolean;
+};
+
+/**
+ * shouldAbortPostHttpWrite: guards every post-HTTP database write. Returns true (abort, write nothing)
+ * when the caller signals staleness OR the server database is no longer the SAME instance captured at
+ * the top of the worker (recreated by a logout/wipe/re-login) or is now absent. A late HTTP completion
+ * must never write to a destroyed/recreated database.
+ */
+const shouldAbortPostHttpWrite = (serverUrl: string, database: Database, opts?: OutboxWorkerOpts): boolean => {
+    if (opts?.shouldAbort?.()) {
+        return true;
+    }
+    return DatabaseManager.serverDatabases[serverUrl]?.database !== database;
+};
+
 // Non-sensitive outbox error classifications persisted to last_error_code.
 const OUTBOX_ERROR = {
     MissingLocalDraft: 'missing_local_draft',
@@ -570,7 +639,7 @@ const classifyOutboxError = async (
  * captures the row generation, POSTs outside any writer, then re-checks the generation inside the ack
  * writer so a newer local edit during the POST is never clobbered. Epoch checks are the caller's job.
  */
-export async function processOutboxUpsert(serverUrl: string, channelId: string, rootId: string): Promise<WorkerOutcome> {
+export async function processOutboxUpsert(serverUrl: string, channelId: string, rootId: string, opts?: OutboxWorkerOpts): Promise<WorkerOutcome> {
     const database = DatabaseManager.serverDatabases[serverUrl]?.database;
     if (!database) {
         return {outcome: 'done'};
@@ -641,24 +710,39 @@ export async function processOutboxUpsert(serverUrl: string, channelId: string, 
     const generation = outbox.generation;
     const connectionId = websocketManager.getClient(serverUrl)?.getConnectionId();
 
+    // Read the per-key observation ordinal right before dispatch so the ack can detect a reconcile GET
+    // that observed newer content for this key while the POST was in flight (see OutboxWorkerOpts).
+    const observation = opts?.captureObservation?.() ?? 0;
+
     let draftApi: DraftApi;
     try {
         const client = NetworkManager.getClient(serverUrl);
         draftApi = await client.upsertDraft(request, connectionId);
     } catch (error) {
+        // Late failure against a destroyed/recreated DB or a torn-down server: write nothing.
+        if (shouldAbortPostHttpWrite(serverUrl, database, opts)) {
+            return {outcome: 'done'};
+        }
         return classifyOutboxError(serverUrl, database, channelId, rootId, generation, error, 'processOutboxUpsert', false);
+    }
+
+    // Guard the success ack write: a logout/wipe during the POST must not write to a stale DB.
+    if (shouldAbortPostHttpWrite(serverUrl, database, opts)) {
+        return {outcome: 'done'};
     }
 
     let outcome: WorkerOutcome = {outcome: 'done'};
     await mutateDraftAndOutbox(database, channelId, rootId, ({database: db, draft: d, outbox: o}) => {
-        // A newer local mutation happened during the POST: do not clear the outbox or overwrite newer
-        // content; only advance the observed server_update_at. A newer generation remains to send.
-        if (!o || o.generation !== generation) {
+        // A newer local mutation happened during the POST (generation bumped) OR a reconcile GET
+        // observed newer content for this key while the POST was in flight (observation ordinal
+        // changed): do not clear the outbox or overwrite newer content; only advance the observed
+        // server_update_at. A re-POST will capture the new generation/ordinal.
+        if (!o || o.generation !== generation || opts?.observationChanged?.(observation)) {
             outcome = {outcome: 'retry'};
             if (d) {
-                const observed = Math.max(d.serverUpdateAt ?? 0, draftApi.update_at);
+                const observedUpdateAt = Math.max(d.serverUpdateAt ?? 0, draftApi.update_at);
                 return [d.prepareUpdate((x) => {
-                    x.serverUpdateAt = observed;
+                    x.serverUpdateAt = observedUpdateAt;
                 })];
             }
             return [];
@@ -697,7 +781,7 @@ export async function processOutboxUpsert(serverUrl: string, channelId: string, 
  * absence (replica lag), so success hands off to confirming_delete; the reconciliation absence pass
  * clears the tombstone after confirmed GET absences. A 404 means the delete route is unsupported.
  */
-export async function processOutboxDelete(serverUrl: string, channelId: string, rootId: string): Promise<WorkerOutcome> {
+export async function processOutboxDelete(serverUrl: string, channelId: string, rootId: string, opts?: OutboxWorkerOpts): Promise<WorkerOutcome> {
     const database = DatabaseManager.serverDatabases[serverUrl]?.database;
     if (!database) {
         return {outcome: 'done'};
@@ -735,7 +819,16 @@ export async function processOutboxDelete(serverUrl: string, channelId: string, 
         const client = NetworkManager.getClient(serverUrl);
         await client.deleteDraft(channelId, rootId, connectionId);
     } catch (error) {
+        // Late failure against a destroyed/recreated DB or a torn-down server: write nothing.
+        if (shouldAbortPostHttpWrite(serverUrl, database, opts)) {
+            return {outcome: 'done'};
+        }
         return classifyOutboxError(serverUrl, database, channelId, rootId, generation, error, 'processOutboxDelete', true);
+    }
+
+    // Guard the confirming-delete transition: a logout/wipe during the DELETE must not write to a stale DB.
+    if (shouldAbortPostHttpWrite(serverUrl, database, opts)) {
+        return {outcome: 'done'};
     }
 
     // Success: hand off to the absence pass. A genuine edit that flipped the row to a new operation (or

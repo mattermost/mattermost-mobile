@@ -5,10 +5,12 @@ import {type Database} from '@nozbe/watermelondb';
 
 import {MM_TABLES} from '@constants/database';
 import {DraftOutboxOperation, DraftOutboxStatus} from '@constants/draft';
+import {PostTypes} from '@constants/post';
 import DatabaseManager from '@database/manager';
 import NetworkManager from '@managers/network_manager';
 import {buildDraftOutboxId, getDraft, getDraftOutbox} from '@queries/servers/drafts';
 import {draftContentFingerprint, normalizeServerDraft} from '@utils/draft/sync';
+import * as log from '@utils/log';
 
 import {computeNextAttemptAt, confirmDeleteTombstone, deleteAbsentCleanDraft, fetchDraftsForTeam, getReconcilableKeys, processOutboxDelete, processOutboxUpsert, reconcileTeamDrafts} from './draft';
 import {forceLogoutIfNecessary} from './session';
@@ -127,6 +129,17 @@ describe('app/actions/remote/draft', () => {
                 d.updateAt = fields.updateAt ?? 1;
             });
             await writer.batch(record);
+        });
+    };
+
+    const seedBoRConfig = async (duration = '30', maxTtl = '300') => {
+        await operator.handleConfigs({
+            configs: [
+                {id: 'BurnOnReadDurationSeconds', value: duration},
+                {id: 'BurnOnReadMaximumTimeToLiveSeconds', value: maxTtl},
+            ],
+            configsToDelete: [],
+            prepareRecordsOnly: false,
         });
     };
 
@@ -408,8 +421,9 @@ describe('app/actions/remote/draft', () => {
             // In-team channel with NO membership: out of scope.
             await seedChannel(channelId, teamId, 'O');
 
-            // DM channel (type D, empty team): always in scope.
+            // DM channel (type D, empty team) WITH a membership row: in scope.
             await seedChannel(dmChannelId, '', 'D');
+            await seedMembership(dmChannelId, '');
 
             mockClient.getDrafts.mockResolvedValueOnce([
                 serverDraft({channel_id: channelId, message: 'private', update_at: 100}),
@@ -462,6 +476,202 @@ describe('app/actions/remote/draft', () => {
         it('returns {error} when the server database is missing', async () => {
             const result = await reconcileTeamDrafts('nonexistent.server', teamId);
             expect(result.error).toBeDefined();
+        });
+
+        // --- Fix #9: tightened, authoritative per-draft scope + non-PII missing-channel handling. ---
+        describe('scope (fix #9)', () => {
+            it('skips a DM/GM channel draft when the user has no confirmed membership', async () => {
+                // DM channel present but NO membership row -> not authoritative.
+                await seedChannel(dmChannelId, '', 'D');
+                mockClient.getDrafts.mockResolvedValueOnce([serverDraft({channel_id: dmChannelId, message: 'dm', update_at: 100})]);
+
+                const result = await reconcileTeamDrafts(serverUrl, teamId);
+
+                expect(result.applied).toBe(0);
+                expect(result.drafts?.length).toBe(0);
+                expect(await getDraft(database, dmChannelId, '')).toBeUndefined();
+            });
+
+            it('skips a non-DM/GM draft whose channel belongs to a different team even with membership', async () => {
+                // Member of the channel, but the channel is scoped to another team than the one reconciled.
+                await seedChannel(channelId, otherTeamId, 'O');
+                await seedMembership(channelId, otherTeamId);
+                mockClient.getDrafts.mockResolvedValueOnce([serverDraft({channel_id: channelId, message: 'x', update_at: 100})]);
+
+                const result = await reconcileTeamDrafts(serverUrl, teamId);
+
+                expect(result.applied).toBe(0);
+                expect(result.drafts?.length).toBe(0);
+                expect(await getDraft(database, channelId, '')).toBeUndefined();
+            });
+
+            it('applies a non-DM/GM draft only with membership AND a matching channel team', async () => {
+                await seedChannel(channelId, teamId, 'O');
+                await seedMembership(channelId, teamId);
+                mockClient.getDrafts.mockResolvedValueOnce([serverDraft({channel_id: channelId, message: 'ok', update_at: 100})]);
+
+                const result = await reconcileTeamDrafts(serverUrl, teamId);
+
+                expect(result.applied).toBe(1);
+                expect(result.drafts?.length).toBe(1);
+                expect((await getDraft(database, channelId, ''))?.message).toBe('ok');
+            });
+
+            it('skips a draft for a missing channel, sets missingDeps, and never logs a channel id', async () => {
+                await seedChannel(channelId, teamId, 'O');
+                await seedMembership(channelId, teamId);
+                const logSpy = jest.spyOn(log, 'logDebug');
+
+                const missingChannelId = 'missingchan00missingchan0000';
+                mockClient.getDrafts.mockResolvedValueOnce([
+                    serverDraft({channel_id: channelId, message: 'ok', update_at: 100}),
+                    serverDraft({channel_id: missingChannelId, message: 'orphan', update_at: 200}),
+                ]);
+
+                const result = await reconcileTeamDrafts(serverUrl, teamId);
+
+                // The present-channel draft applies; the missing-channel draft is skipped but signals a retry.
+                expect(result.applied).toBe(1);
+                expect(result.missingDeps).toBe(true);
+                expect(await getDraft(database, missingChannelId, '')).toBeUndefined();
+
+                // No log call may carry the (PII) channel id — only a count is logged.
+                for (const call of logSpy.mock.calls) {
+                    expect(call).not.toContain(missingChannelId);
+                }
+            });
+
+            it('does not set missingDeps when every channel is present', async () => {
+                await seedChannel(channelId, teamId, 'O');
+                await seedMembership(channelId, teamId);
+                mockClient.getDrafts.mockResolvedValueOnce([serverDraft({channel_id: channelId, message: 'ok', update_at: 100})]);
+
+                const result = await reconcileTeamDrafts(serverUrl, teamId);
+
+                expect(result.missingDeps).toBe(false);
+            });
+        });
+
+        // --- Fix #10: burn-on-read <-> normal transitions keep type and borConfig consistent. ---
+        describe('burn-on-read reconciliation (fix #10)', () => {
+            const images = {'http://img.test/a.png': {height: 10, width: 10}} as PostMetadata['images'];
+
+            it('drops a stale enabled borConfig when a clean BoR draft becomes normal on the server', async () => {
+                await seedChannel(channelId, teamId, 'O');
+                await seedMembership(channelId, teamId);
+                await seedDraft({
+                    channelId,
+                    message: 'hi',
+                    type: PostTypes.BURN_ON_READ as PostTypesUserCreatable,
+                    metadata: {images, borConfig: {enabled: true, borDurationSeconds: 30, borMaximumTimeToLiveSeconds: 300}},
+                    serverUpdateAt: 1000,
+                });
+
+                // Server now reports a normal (type '') draft.
+                mockClient.getDrafts.mockResolvedValueOnce([serverDraft({message: 'hi', update_at: 3000})]);
+
+                const result = await reconcileTeamDrafts(serverUrl, teamId);
+
+                expect(result.applied).toBe(1);
+                const draft = await getDraft(database, channelId, '');
+                expect(draft?.type).toBe('');
+                expect(draft?.metadata?.borConfig).toBeUndefined();
+
+                // Device-local images survive the update.
+                expect(draft?.metadata?.images).toEqual(images);
+            });
+
+            it('reconstructs borConfig when a normal draft becomes BoR with valid server durations', async () => {
+                await seedChannel(channelId, teamId, 'O');
+                await seedMembership(channelId, teamId);
+                await seedBoRConfig('30', '300');
+                await seedDraft({channelId, message: 'hi', type: '', metadata: {images}, serverUpdateAt: 1000});
+
+                mockClient.getDrafts.mockResolvedValueOnce([serverDraft({message: 'hi', type: PostTypes.BURN_ON_READ as PostType, update_at: 3000})]);
+
+                const result = await reconcileTeamDrafts(serverUrl, teamId);
+
+                expect(result.applied).toBe(1);
+                const draft = await getDraft(database, channelId, '');
+                expect(draft?.type).toBe(PostTypes.BURN_ON_READ);
+                expect(draft?.metadata?.borConfig).toEqual({enabled: true, borDurationSeconds: 30, borMaximumTimeToLiveSeconds: 300});
+                expect(draft?.metadata?.images).toEqual(images);
+            });
+
+            it('fails closed (BoR type, no borConfig) when the server BoR draft has no valid durations', async () => {
+                await seedChannel(channelId, teamId, 'O');
+                await seedMembership(channelId, teamId);
+
+                // No BoR durations config seeded -> reconstruction must not fabricate one.
+                await seedDraft({channelId, message: 'hi', type: '', metadata: {images}, serverUpdateAt: 1000});
+                mockClient.getDrafts.mockResolvedValueOnce([serverDraft({message: 'hi', type: PostTypes.BURN_ON_READ as PostType, update_at: 3000})]);
+
+                const result = await reconcileTeamDrafts(serverUrl, teamId);
+
+                expect(result.applied).toBe(1);
+                const draft = await getDraft(database, channelId, '');
+                expect(draft?.type).toBe(PostTypes.BURN_ON_READ);
+                expect(draft?.metadata?.borConfig).toBeUndefined();
+                expect(draft?.metadata?.images).toEqual(images);
+            });
+        });
+
+        // --- Fix #4: a confirming-delete tombstone that matches the reappearing server content retries. ---
+        it('resets a ConfirmingDelete tombstone to Pending when the server fingerprint still matches (fix #4)', async () => {
+            await seedChannel(channelId, teamId, 'O');
+            await seedMembership(channelId, teamId);
+            const sdApi = serverDraft({message: 'deleted content', update_at: 8000});
+            const normalized = normalizeServerDraft(sdApi);
+            const fp = draftContentFingerprint({
+                message: normalized.message,
+                type: normalized.type,
+                props: normalized.props,
+                fileIds: normalized.fileIds,
+                priority: normalized.metadata?.priority,
+            });
+            await seedOutbox({channelId, operation: DraftOutboxOperation.Delete, status: DraftOutboxStatus.ConfirmingDelete, deletedFingerprint: fp});
+            mockClient.getDrafts.mockResolvedValueOnce([sdApi]);
+
+            const result = await reconcileTeamDrafts(serverUrl, teamId);
+
+            expect(result.applied).toBe(1);
+
+            // The delete did NOT take (content still present) -> retry it: reset to Pending, retry state cleared.
+            const outbox = await getDraftOutbox(database, channelId, '');
+            expect(outbox?.operation).toBe(DraftOutboxOperation.Delete);
+            expect(outbox?.status).toBe(DraftOutboxStatus.Pending);
+            expect(outbox?.attemptCount).toBe(0);
+            expect(outbox?.nextAttemptAt).toBe(0);
+            expect(await getDraft(database, channelId, '')).toBeUndefined();
+        });
+
+        // --- Fix #5: a keep_local delete whose fingerprint differs parks without disturbing the local draft. ---
+        it('parks a keep_local delete as unsyncable_empty on a differing fingerprint without touching the local draft (fix #5)', async () => {
+            await seedChannel(channelId, teamId, 'O');
+            await seedMembership(channelId, teamId);
+
+            // Retained empty/attachment-only local draft behind a keepLocal delete tombstone.
+            await seedDraft({channelId, message: '', fileIds: ['f1'], files: [{id: 'f1', clientId: 'c1'} as FileInfo], serverUpdateAt: 0});
+            await seedOutbox({channelId, operation: DraftOutboxOperation.Delete, status: DraftOutboxStatus.Pending, keepLocal: true, deletedFingerprint: 'staleotherfingerprintstale00'});
+
+            // Another client wrote genuinely new content after our delete.
+            mockClient.getDrafts.mockResolvedValueOnce([serverDraft({message: 'reappeared', update_at: 8500})]);
+
+            const result = await reconcileTeamDrafts(serverUrl, teamId);
+
+            expect(result.applied).toBe(1);
+
+            // The retained local draft is NEITHER resurrected with remote text NOR destroyed.
+            const draft = await getDraft(database, channelId, '');
+            expect(draft?.message).toBe('');
+            expect(draft?.fileIds).toEqual(['f1']);
+
+            // The delete is abandoned by parking the outbox as an unsyncable-empty upsert.
+            const outbox = await getDraftOutbox(database, channelId, '');
+            expect(outbox?.operation).toBe(DraftOutboxOperation.Upsert);
+            expect(outbox?.status).toBe(DraftOutboxStatus.Blocked);
+            expect(outbox?.lastErrorCode).toBe('unsyncable_empty');
+            expect(outbox?.keepLocal).toBe(false);
         });
     });
 
@@ -786,6 +996,68 @@ describe('app/actions/remote/draft', () => {
             expect(result).toEqual({outcome: 'done'});
             expect(mockClient.upsertDraft).not.toHaveBeenCalled();
         });
+
+        it('aborts the ack write when shouldAbort becomes true after the POST resolves (fix #1)', async () => {
+            await seedUpsertReady();
+            mockClient.upsertDraft.mockResolvedValueOnce(serverDraft({message: 'hello', update_at: 4242}));
+
+            const result = await processOutboxUpsert(serverUrl, channelId, '', {shouldAbort: () => true});
+
+            // The row is left untouched: no ack, still pending, serverUpdateAt unchanged.
+            expect(result).toEqual({outcome: 'done'});
+            const outbox = await getDraftOutbox(database, channelId, '');
+            expect(outbox?.status).toBe(DraftOutboxStatus.Pending);
+            expect((await getDraft(database, channelId, ''))?.serverUpdateAt).toBe(0);
+        });
+
+        it('aborts the ack write when the captured database is recreated during the POST (fix #1)', async () => {
+            await seedUpsertReady();
+            const originalDb = DatabaseManager.serverDatabases[serverUrl]!.database;
+            mockClient.upsertDraft.mockImplementationOnce(async () => {
+                // A logout/wipe recreates the server DB while the POST is in flight.
+                DatabaseManager.serverDatabases[serverUrl]!.database = {} as Database;
+                return serverDraft({message: 'hello', update_at: 4242});
+            });
+
+            const result = await processOutboxUpsert(serverUrl, channelId, '');
+
+            // Restore the real DB before asserting and cleaning up.
+            DatabaseManager.serverDatabases[serverUrl]!.database = originalDb;
+
+            expect(result).toEqual({outcome: 'done'});
+            const outbox = await getDraftOutbox(database, channelId, '');
+            expect(outbox?.status).toBe(DraftOutboxStatus.Pending);
+            expect((await getDraft(database, channelId, ''))?.serverUpdateAt).toBe(0);
+        });
+
+        it('does not clear the outbox when the observation ordinal changed during the POST (fix #6 fence)', async () => {
+            await seedUpsertReady();
+            mockClient.upsertDraft.mockResolvedValueOnce(serverDraft({message: 'hello', update_at: 8888}));
+
+            const result = await processOutboxUpsert(serverUrl, channelId, '', {
+                captureObservation: () => 1,
+                observationChanged: () => true, // a reconcile GET observed newer content mid-POST
+            });
+
+            // Treated like a generation mismatch: outbox retained (pending), only serverUpdateAt advances.
+            expect(result).toEqual({outcome: 'retry'});
+            const outbox = await getDraftOutbox(database, channelId, '');
+            expect(outbox?.status).toBe(DraftOutboxStatus.Pending);
+            expect((await getDraft(database, channelId, ''))?.serverUpdateAt).toBe(8888);
+        });
+
+        it('clears the outbox normally when the observation ordinal is unchanged (fix #6 fence)', async () => {
+            await seedUpsertReady();
+            mockClient.upsertDraft.mockResolvedValueOnce(serverDraft({message: 'hello', update_at: 9999}));
+
+            const result = await processOutboxUpsert(serverUrl, channelId, '', {
+                captureObservation: () => 3,
+                observationChanged: () => false,
+            });
+
+            expect(result).toEqual({outcome: 'done'});
+            expect(await getDraftOutbox(database, channelId, '')).toBeUndefined();
+        });
     });
 
     describe('processOutboxDelete', () => {
@@ -844,6 +1116,19 @@ describe('app/actions/remote/draft', () => {
 
             expect(result).toEqual({outcome: 'done'});
             expect(mockClient.deleteDraft).not.toHaveBeenCalled();
+        });
+
+        it('does not transition to confirming_delete when shouldAbort is true after the DELETE (fix #1)', async () => {
+            await seedDeleteReady();
+            mockClient.deleteDraft.mockResolvedValueOnce(serverDraft());
+
+            const result = await processOutboxDelete(serverUrl, channelId, '', {shouldAbort: () => true});
+
+            // The row is left untouched: still a Pending delete, no confirming transition written.
+            expect(result).toEqual({outcome: 'done'});
+            const outbox = await getDraftOutbox(database, channelId, '');
+            expect(outbox?.operation).toBe(DraftOutboxOperation.Delete);
+            expect(outbox?.status).toBe(DraftOutboxStatus.Pending);
         });
     });
 });
