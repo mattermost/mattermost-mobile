@@ -9,6 +9,7 @@ import {MM_TABLES} from '@constants/database';
 import {DraftOutboxOperation, DraftOutboxStatus, type DraftScreenTab} from '@constants/draft';
 import {PostTypes} from '@constants/post';
 import DatabaseManager from '@database/manager';
+import DraftSyncManager from '@managers/draft_sync_manager';
 import {getChannelById} from '@queries/servers/channel';
 import {mutateDraftAndOutbox, prepareDraftOutbox, type OutboxIntent} from '@queries/servers/drafts';
 import {getCurrentTeamId, setCurrentTeamAndChannelId} from '@queries/servers/system';
@@ -216,6 +217,7 @@ export async function updateDraftFile(serverUrl: string, channelId: string, root
             return {error: earlyError};
         }
 
+        DraftSyncManager.wake(serverUrl);
         return {draft: result};
     } catch (error) {
         logError('Failed updateDraftFile', error);
@@ -287,6 +289,7 @@ export async function removeDraftFile(serverUrl: string, channelId: string, root
             return {error: earlyError};
         }
 
+        DraftSyncManager.wake(serverUrl);
         return {draft: result};
     } catch (error) {
         logError('Failed removeDraftFile', error);
@@ -343,6 +346,7 @@ export async function updateDraftMessage(serverUrl: string, channelId: string, r
             return prepareEmptyTransition(database, channelId, rootId, draft, outbox, hasLocalContent);
         });
 
+        DraftSyncManager.wake(serverUrl);
         return {draft: result};
     } catch (error) {
         logError('Failed updateDraftMessage', error);
@@ -403,6 +407,7 @@ export async function addFilesToDraft(serverUrl: string, channelId: string, root
             return models;
         });
 
+        DraftSyncManager.wake(serverUrl);
         return {draft: result};
     } catch (error) {
         logError('Failed addFilesToDraft', error);
@@ -436,6 +441,7 @@ export const removeDraft = async (serverUrl: string, channelId: string, rootId =
             ];
         });
 
+        DraftSyncManager.wake(serverUrl);
         return {draft: result};
     } catch (error) {
         logError('Failed removeDraft', error);
@@ -485,6 +491,7 @@ export async function updateDraftPriority(serverUrl: string, channelId: string, 
             return models;
         });
 
+        DraftSyncManager.wake(serverUrl);
         return {draft: result};
     } catch (error) {
         logError('Failed updateDraftPriority', error);
@@ -537,6 +544,7 @@ export async function updateDraftBoRConfig(serverUrl: string, channelId: string,
             return models;
         });
 
+        DraftSyncManager.wake(serverUrl);
         return {draft: result};
     } catch (error) {
         logError('Failed updateDraftBoRConfig', error);

@@ -9,6 +9,7 @@ import {MM_TABLES, SYSTEM_IDENTIFIERS} from '@constants/database';
 import {DRAFT_SCREEN_TAB_DRAFTS, DRAFT_SCREEN_TAB_SCHEDULED_POSTS} from '@constants/draft';
 import {PostTypes} from '@constants/post';
 import DatabaseManager from '@database/manager';
+import DraftSyncManager from '@managers/draft_sync_manager';
 import {getDraft, getDraftOutbox} from '@queries/servers/drafts';
 import {dismissAllRoutesAndPopToScreen} from '@screens/navigation';
 import {NavigationStore} from '@store/navigation_store';
@@ -59,6 +60,11 @@ jest.mock('@utils/helpers', () => ({
 jest.mock('@screens/navigation', () => ({
     dismissAllRoutesAndPopToScreen: jest.fn(),
     navigateToScreen: jest.fn(),
+}));
+
+jest.mock('@managers/draft_sync_manager', () => ({
+    __esModule: true,
+    default: {wake: jest.fn(), initialize: jest.fn(), invalidate: jest.fn()},
 }));
 
 jest.mock('@store/navigation_store', () => ({
@@ -432,6 +438,30 @@ describe('draft actions', () => {
             });
 
             expect(await countOutbox()).toBe(0);
+        });
+    });
+
+    describe('DraftSyncManager wake coordination', () => {
+        const wakeMock = jest.mocked(DraftSyncManager.wake);
+
+        beforeEach(() => {
+            wakeMock.mockClear();
+        });
+
+        it('wakes the coordinator once after a committed portable mutation', async () => {
+            const {error} = await updateDraftMessage(serverUrl, channelId, '', 'hello');
+
+            expect(error).toBeUndefined();
+            expect(wakeMock).toHaveBeenCalledTimes(1);
+            expect(wakeMock).toHaveBeenCalledWith(serverUrl);
+        });
+
+        it('does not wake on an error/no-op path', async () => {
+            // No draft exists, so updateDraftFile short-circuits with an error and never mutates.
+            const {error} = await updateDraftFile(serverUrl, channelId, '', fileInfo);
+
+            expect(error).toBe('no draft');
+            expect(wakeMock).not.toHaveBeenCalled();
         });
     });
 
