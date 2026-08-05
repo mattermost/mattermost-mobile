@@ -21,6 +21,7 @@ jest.mock('@actions/remote/post', () => {
     return {
         fetchPosts: jest.fn(),
         fetchPostThread: jest.fn(),
+        refreshPostsForChannel: jest.fn(),
     };
 });
 jest.mock('@actions/local/post', () => ({
@@ -33,7 +34,7 @@ import type Database from '@nozbe/watermelondb/Database';
 describe('components/post_list/PostList', () => {
     let database: Database;
     const serverUrl = 'https://server.com';
-    const fetchPostsSpy = jest.spyOn(postFunctions, 'fetchPosts');
+    const refreshPostsSpy = jest.spyOn(postFunctions, 'refreshPostsForChannel');
     const fetchPostThreadSpy = jest.spyOn(postFunctions, 'fetchPostThread');
     const removePostSpy = jest.spyOn(localPostFunctions, 'removePost');
     const unrelatedNativeEventsAttributes = {
@@ -127,7 +128,20 @@ describe('components/post_list/PostList', () => {
             flatList.props.onRefresh();
         });
 
-        expect(fetchPostsSpy).toHaveBeenCalledWith('https://server.com', 'channel-id');
+        // isBlank is false: the list has posts, so refresh must not reset the cache
+        expect(refreshPostsSpy).toHaveBeenCalledWith('https://server.com', 'channel-id', false);
+    });
+
+    it('should pass isBlank when the list renders nothing', async () => {
+        const props = {...baseProps, posts: []};
+        const {getByTestId} = renderWithEverything(<PostList {...props}/>, {database, serverUrl});
+        const flatList = getByTestId('post_list.flat_list');
+
+        await act(async () => {
+            await flatList.props.onRefresh();
+        });
+
+        expect(refreshPostsSpy).toHaveBeenCalledWith('https://server.com', 'channel-id', true);
     });
 
     it('handles refresh in thread', async () => {
@@ -420,6 +434,6 @@ describe('components/post_list/PostList', () => {
             flatList.props.onRefresh();
         });
 
-        expect(fetchPostsSpy).not.toHaveBeenCalled();
+        expect(refreshPostsSpy).not.toHaveBeenCalled();
     });
 });
