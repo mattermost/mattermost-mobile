@@ -21,10 +21,9 @@ import {
     ServerScreen,
 } from '@support/ui/screen';
 import {getRandomId, isIos, timeouts, wait} from '@support/utils';
-import {expect} from 'detox';
+import {expect, waitFor} from 'detox';
 
 describe('Channels - Create Channel and Edit Channel Header', () => {
-
     const serverOneDisplayName = 'Server 1';
 
     beforeAll(async () => {
@@ -59,9 +58,15 @@ describe('Channels - Create Channel and Edit Channel Header', () => {
         await CreateOrEditChannelScreen.createButton.tap();
         await ChannelScreen.dismissScheduledPostTooltip();
 
-        // * Verify on newly created public channel
+        // * Verify on newly created public channel.
+        // The intro is the post list's ListFooterComponent, so it only mounts once the
+        // list has finished its initial load — the header title lands first. Detox
+        // expectations do not poll, so asserting the intro text directly fails the
+        // instant the header appears while the list is still loading. Wait for it to
+        // exist first, matching channel_post_list.e2e.ts.
         await ChannelScreen.toBeVisible();
         await expect(ChannelScreen.headerTitle).toHaveText(displayName);
+        await waitFor(ChannelScreen.introDisplayName).toExist().withTimeout(timeouts.TEN_SEC);
         await expect(ChannelScreen.introDisplayName).toHaveText(displayName);
 
         // # Tap on set header action to edit the channel header

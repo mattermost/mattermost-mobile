@@ -16,6 +16,11 @@ concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
 
+# CMT runs against a freshly-cut build-release-NNN branch, so the app content
+# never matches main's fingerprint — the S3 build cache would always miss.
+# CMT's optimization is structural instead: each app (iOS, Android Detox,
+# Android Maestro) is built ONCE below and reused across every server-version
+# leg of the matrix via github.run_id artifacts.
 jobs:
   calculate-commit-hash:
     runs-on: ubuntu-24.04

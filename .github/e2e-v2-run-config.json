@@ -1,10 +1,10 @@
 {
-  "phase": "test",
+  "phase": "build_and_test",
   "mobile_ref": "",
   "framework": "detox",
-  "platform": "android",
-  "skip_build": true,
-  "artifact_run_id": "30958774522",
+  "platform": "all",
+  "skip_build": false,
+  "artifact_run_id": "",
   "worker_count": "20",
   "detox_search_path": "e2e/test",
   "use_staging_test_system_io": true,
@@ -16,6 +16,6 @@
   "site_3_url": "https://mobile-pr-10006-site-3-btn56g5m.test.mattermost.cloud",
   "pr_number": "10006",
   "run_type": "PR",
-  "enabled": false,
-  "rerun_note": "paused: retest-on-fail=true + 120m lease; enable to validate"
+  "enabled": true,
+  "rerun_note": "post-split validation: build+test ios and android (platform=all)"
 }

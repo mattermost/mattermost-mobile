@@ -146,6 +146,14 @@ runs:
         restore-keys: |
           ${{ runner.os }}-pods-v4-intune-${{ inputs.intune-enabled }}-${{ steps.intune-hash.outputs.hash }}-
 
+    - name: Cache CocoaPods Ruby gems
+      uses: actions/cache@27d5ce7f107fe9357f9df03efb73ab90386fccae # v5.0.5
+      with:
+        path: vendor/bundle
+        key: ${{ runner.os }}-cocoapods-gems-${{ hashFiles('Gemfile.lock') }}
+        restore-keys: |
+          ${{ runner.os }}-cocoapods-gems-
+
     - name: ci/install-pods-dependencies
       shell: bash
       env:
@@ -153,6 +161,14 @@ runs:
       run: |
         echo "::group::install-pods-dependencies"
         echo "INTUNE_ENABLED=$INTUNE_ENABLED"
-        npm run ios-gems
-        npm run pod-install
+        bundle config set --local path vendor/bundle
+        bundle install
+        # bundle exec is required, not cosmetic: gems now live in vendor/bundle
+        # instead of the toolchain gem dir (this step used to be `npm run ios-gems`,
+        # a plain `bundle install`). react-native-network-client's podspec runs
+        # `s.prepare_command = 'ruby ios/patches/apply_patches.rb'`, whose first line
+        # is `require 'cocoapods'` — without bundler in the environment that ruby
+        # cannot see the gem and pod install dies with a LoadError. Only reproduces
+        # on a cold Pods cache, since prepare_command runs when the pod reinstalls.
+        bundle exec npm run pod-install
         echo "::endgroup::"

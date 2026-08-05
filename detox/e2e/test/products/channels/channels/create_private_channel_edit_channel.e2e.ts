@@ -21,7 +21,7 @@ import {
     ServerScreen,
 } from '@support/ui/screen';
 import {getRandomId, isIos, timeouts, wait} from '@support/utils';
-import {expect} from 'detox';
+import {expect, waitFor} from 'detox';
 
 describe('Channels - Create Channel and Edit Channel Header', () => {
 
@@ -58,9 +58,10 @@ describe('Channels - Create Channel and Edit Channel Header', () => {
         await CreateOrEditChannelScreen.headerInput.replaceText(header);
         await CreateOrEditChannelScreen.createButton.tap();
 
-        // * Verify on newly created private channel
+        // * Verify on newly created private channel (same intro mount race as public create)
         await ChannelScreen.toBeVisible();
         await expect(ChannelScreen.headerTitle).toHaveText(displayName);
+        await waitFor(ChannelScreen.introDisplayName).toExist().withTimeout(timeouts.TEN_SEC);
         await expect(ChannelScreen.introDisplayName).toHaveText(displayName);
 
         // # Tap on set header action to edit the channel header
