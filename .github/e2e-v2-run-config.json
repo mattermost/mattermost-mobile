@@ -16,6 +16,6 @@
   "site_3_url": "https://mobile-pr-10006-site-3-btn56g5m.test.mattermost.cloud",
   "pr_number": "10006",
   "run_type": "PR",
-  "enabled": true,
-  "rerun_note": "stage6 retry: export ANDROID_AVD_HOME for Detox after BOOTSTRAP_ONLY; reuse APK 30958774522"
+  "enabled": false,
+  "rerun_note": "paused: retest-on-fail=true + 120m lease; enable to validate"
 }
