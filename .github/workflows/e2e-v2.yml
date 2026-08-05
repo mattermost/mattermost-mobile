@@ -147,7 +147,7 @@ concurrency:
   # stuck group when GitHub leaves macOS Detox workers uncancelled (known flake).
   # cancel-previous also force-cancels peer E2E v2 runs on this branch so a new
   # commit does not wait on a hung prior attempt.
-  group: e2e-v2-${{ github.ref }}-r26
+  group: e2e-v2-${{ github.ref }}-r27
   cancel-in-progress: true
 
 env:
@@ -694,6 +694,8 @@ jobs:
       detox_search_path: ${{ needs.resolve.outputs.detox_search_path }}
       detox_exclude_dir: ipad
       detox_config: ios.sim.debug
+      parallel_device_count: "2"
+      batch_size: "2"
       ios_site_1_url: ${{ needs.resolve.outputs.ios_site_1_url }}
       ios_site_2_url: ${{ needs.resolve.outputs.ios_site_2_url }}
       site_3_url: ${{ needs.resolve.outputs.site_3_url }}
@@ -727,6 +729,9 @@ jobs:
       detox_search_path: e2e/test/products/channels/ipad
       detox_exclude_dir: ""
       detox_config: ios.ipad.debug
+      # Single device / single-spec leases — dual iPad preboot is slow and flaky.
+      parallel_device_count: "1"
+      batch_size: "1"
       identity_name: detox-ipad
       commit_status_context: e2e-test-v2/detox-ipad
       ios_device_name: iPad Pro 13-inch (M5)

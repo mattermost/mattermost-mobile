@@ -17,7 +17,7 @@
   "pr_number": "10006",
   "run_type": "PR",
   "enabled": true,
-  "rerun_note": "rerun on h8p9zb1z/…: fix Android sequential dual-emulator boot; batch=2 + detox_max_workers=2; iOS Metro prewarm + launch stagger; ios=40 android=30; reuse build 30976048711",
+  "rerun_note": "rerun on h8p9zb1z/…: Android all-read-only dual AVD; iOS autofill shutdown wait + no Metro hang; phone 2/2, iPad 1/1; ios=40 android=30; reuse build 30976048711",
   "ios_worker_count": "40",
   "android_worker_count": "30"
 }

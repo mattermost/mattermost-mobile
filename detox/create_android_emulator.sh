@@ -93,8 +93,11 @@ start_emulator_instance() {
     echo "Starting emulator instance ${index} on port ${port} (${serial})..."
 
     local emulator_opts="-avd $AVD_NAME -port $port -no-snapshot -no-snapshot-load -no-snapshot-save -no-boot-anim -no-audio -gpu off -no-window"
-    # Secondary instances must be read-only; Android forbids two RW users of one AVD.
-    if [[ "$index" -gt 1 ]]; then
+    # Same-AVD multi-instance requires -read-only on EVERY instance (including the
+    # first). A RW first + read-only second still fails with:
+    # "Another emulator instance is running. Please close it or run all
+    # emulators with -read-only flag."
+    if [[ "$EMULATOR_COUNT" -gt 1 ]]; then
         emulator_opts+=" -read-only"
     fi
 

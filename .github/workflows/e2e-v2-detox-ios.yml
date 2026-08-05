@@ -80,6 +80,16 @@ on:
         required: false
         type: boolean
         default: true
+      # Parallel Detox: pre-boot N sims and lease this many specs per checkout.
+      # iPhone/Android use 2/2; iPad stays 1/1 (suite is tiny; dual iPad boot is slow).
+      parallel_device_count:
+        required: false
+        type: string
+        default: "2"
+      batch_size:
+        required: false
+        type: string
+        default: "2"
     secrets:
       MM_MOBILE_E2E_ADMIN_EMAIL:
         required: false
@@ -225,9 +235,8 @@ jobs:
       SITE_3_URL: ${{ inputs.site_3_url }}
       IOS_SITE_1_URL: ${{ inputs.ios_site_1_url }}
       IOS_SITE_2_URL: ${{ inputs.ios_site_2_url }}
-      # Parallel Detox: 2 pre-booted sims + Jest maxWorkers=2; lease 4 specs per checkout.
-      DETOX_MAX_WORKERS: "2"
-      PREBOOT_COUNT: "2"
+      DETOX_MAX_WORKERS: ${{ inputs.parallel_device_count }}
+      PREBOOT_COUNT: ${{ inputs.parallel_device_count }}
     steps:
       - name: Checkout
         uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
@@ -320,14 +329,10 @@ jobs:
           while [ $elapsed -lt $timeout ]; do
             if curl -s http://localhost:8081/status 2>/dev/null | grep -q "packager-status:running"; then
               echo "Metro ready after ${elapsed}s"
-              # Pre-warm the iOS bundle once so two parallel Detox workers do not
-              # race Metro's first compile (seen as "Detox can't seem to connect").
-              echo "Pre-warming iOS Metro bundle..."
-              curl -sf --max-time 300 \
-                "http://127.0.0.1:8081/index.bundle?platform=ios&dev=true&minify=false" \
-                -o /tmp/metro-ios.bundle \
-                && ls -la /tmp/metro-ios.bundle \
-                || echo "::warning::iOS Metro bundle pre-warm failed; first launch may be slow"
+              # Short settle only — a full index.bundle pre-warm blocked workers
+              # for minutes (curl --max-time 300) and looked like a Metro hang.
+              # Parallel launch stagger in setup.ts covers first-compile races.
+              sleep 15
               exit 0
             fi
             sleep 2
@@ -353,8 +358,8 @@ jobs:
           gh-job-name: detox-ios-worker-${{ matrix.shard }}
           detox-dir: detox
           detox-config: ${{ inputs.detox_config }}
-          batch-size: "2"
-          detox-max-workers: "2"
+          batch-size: ${{ inputs.batch_size }}
+          detox-max-workers: ${{ inputs.parallel_device_count }}
           max-idle-polls: "8"
 
       - name: Cleanup Metro / simulator

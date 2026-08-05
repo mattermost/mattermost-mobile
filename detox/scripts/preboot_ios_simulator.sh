@@ -39,14 +39,16 @@ sim_state() {
 }
 
 shutdown_if_booted() {
-    if [ "$(sim_state)" = "Booted" ]; then
+    if [ "$(sim_state)" = "Booted" ] || [ "$(sim_state)" = "Booting" ]; then
         log "Shutting down simulator to edit autofill plists..."
         xcrun simctl shutdown "$SIMULATOR_ID" || true
-        for _ in 1 2 3 4 5 6 7 8; do
+        # Autofill plist writes fail verification if the sim is still Booted
+        # (seen as "Critical allowPasswordAutoFill=NO not verified").
+        for _ in $(seq 60); do
             [ "$(sim_state)" = "Shutdown" ] && return 0
             sleep 0.5
         done
-        log "Warning: simulator may not have reached Shutdown state"
+        log "Warning: simulator may not have reached Shutdown state (state=$(sim_state))"
     fi
 }
 
@@ -80,13 +82,28 @@ autofill_already_configured() {
 
 configure_autofill_offline() {
     log "Disabling password AutoFill / Save Password (simulator shut down)..."
-    mkdir -p "$SETTINGS_DIR"
-    mkdir -p "$HOME/Library/Developer/CoreSimulator/Devices/$SIMULATOR_ID/data/Library/UserConfigurationProfiles/PublicInfo"
-    if ! (cd "$REPO_ROOT/detox" && node utils/disable_ios_autofill.js --simulator-id "$SIMULATOR_ID"); then
-        echo "Failed to disable password autofill / Save Password restrictions"
+    # Must be fully Shutdown — disable_ios_autofill.js exits 1 if it observes Booted.
+    if [ "$(sim_state)" != "Shutdown" ]; then
+        shutdown_if_booted
+    fi
+    if [ "$(sim_state)" != "Shutdown" ]; then
+        echo "Simulator $SIMULATOR_ID not Shutdown before autofill configure (state=$(sim_state))"
         exit 1
     fi
-    touch "$AUTOFILL_STAMP"
+    mkdir -p "$SETTINGS_DIR"
+    mkdir -p "$HOME/Library/Developer/CoreSimulator/Devices/$SIMULATOR_ID/data/Library/UserConfigurationProfiles/PublicInfo"
+    local attempt
+    for attempt in 1 2; do
+        if (cd "$REPO_ROOT/detox" && node utils/disable_ios_autofill.js --simulator-id "$SIMULATOR_ID"); then
+            touch "$AUTOFILL_STAMP"
+            return 0
+        fi
+        log "Autofill configure attempt ${attempt} failed — forcing shutdown and retrying"
+        shutdown_if_booted
+        sleep 2
+    done
+    echo "Failed to disable password autofill / Save Password restrictions"
+    exit 1
 }
 
 seed_password_defaults() {
