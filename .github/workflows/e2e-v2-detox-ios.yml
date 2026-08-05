@@ -187,9 +187,16 @@ jobs:
           post-pending-commit-status: ${{ inputs.post_commit_status && 'true' || 'false' }}
           commit-status-context: ${{ inputs.commit_status_context }}
           github-token: ${{ secrets.GITHUB_TOKEN }}
-          # Long Detox specs: 20m lease / 30m idle during bootstrap
-          lease-timeout-ms: "1200000"
-          idle-timeout-ms: "1800000"
+          # One orchestrated retest after a definitive fail (not lease expiry).
+          retest-on-fail: "true"
+          retest-budget: "1"
+          # Detox specs routinely exceed 20m (classification lock wait alone is
+          # 20m). A short lease expires mid-spec, redispatches the unit to
+          # another worker, then records the late report as an extra badge —
+          # which looks like "retested N times" even when retest-on-fail is off.
+          # Keep lease below the 180m worker job timeout.
+          lease-timeout-ms: "7200000"
+          idle-timeout-ms: "9000000"
 
       - name: Begin summary
         run: |

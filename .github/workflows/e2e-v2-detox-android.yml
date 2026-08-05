@@ -189,8 +189,12 @@ jobs:
           post-pending-commit-status: ${{ inputs.post_commit_status && 'true' || 'false' }}
           commit-status-context: ${{ inputs.commit_status_context }}
           github-token: ${{ secrets.GITHUB_TOKEN }}
-          lease-timeout-ms: "1200000"
-          idle-timeout-ms: "1800000"
+          retest-on-fail: "true"
+          retest-budget: "1"
+          # See e2e-v2-detox-ios.yml — short leases cause expiry redispatches
+          # that look like multi-retests / retesting already-passed specs.
+          lease-timeout-ms: "7200000"
+          idle-timeout-ms: "9000000"
 
       - name: Begin summary
         run: |
