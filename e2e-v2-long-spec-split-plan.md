@@ -2,21 +2,30 @@
 
 Source report: [mobile-v2-pr-detox-ios / run 30951343934](https://staging-test-io.test.mattermost.com/reports/mattermost-mobile/pr-10006/3242f53/mobile-v2-pr-detox-ios?gh_run_id=30951343934&gh_run_attempt=1)
 
+## Status (done)
+
+- Split **49** `detox/e2e/test/products/**` multi-test specs (>4m) into **232** one-`it`-per-file specs (`mm-t*.e2e.ts`).
+- Helper: `scripts/split_long_e2e_specs.py` (handles `it`, `it.skip`, aliases like `itWithThreeServers`, and ternary wrappers such as `(isAndroid() ? it.skip : it)(...)`).
+- Cross-file MM-T id collision: `archive_channel.e2e.ts` overlaps MM-T4932_* with `archive_channel_from_settings`; those three keep `archive_channel-mm-t4932-*.e2e.ts` names.
+- **Not split** (per follow-up): `interactive_dialog*`, `global_classification_banner*`, `classification_banner*`, and all `ci_filter_failed/**` copies.
+- **Timeouts not trimmed** yet.
+- Individual tests already **&lt;5m** (even if &gt;3m) left alone for a later pass.
+
 ## Policy
 
 - Target: each orchestrated **spec file** finishes in **≤3 minutes** (`actual_duration_ms` / UI clock next to the worker badge).
 - This plan lists every first-pass attempt with **duration > 4 minutes** from the report above.
 - Duration metric: `actual_duration_ms` (matches UI, e.g. `classification_banner_across_screens` = **4m 16s**).
-- **Do not split files until this plan is reviewed.**
-- When a file has multiple tests: propose one new `.e2e.ts` per test (or per small coherent group if a single test itself is already >3m).
+- When a file has multiple tests: one new `.e2e.ts` per test (named from the MM-T id).
 - `e2e/test/ci_filter_failed/**` copies are listed separately; prefer splitting the canonical `e2e/test/products/**` sources and deleting/regenerating the filter copies.
 
 ## Summary
 
 - Specs >4m: **53** of 146 units
-- Multi-test files (>4m): **53** → split candidates
-- Single-test files (>4m): **0** → need slimming / setup isolation (cannot fix by file split alone)
-- Individual tests already >3m wall inside a suite: **44**
+- Multi-test products files split: **49** → **232** files
+- Excluded from this split: interactive_dialog + classification_banner (+ ci_filter_failed copies)
+- Individual tests already >3m and &lt;5m: defer slimming
+- Individual tests already >3m wall inside a suite (original inventory): **44**
 
 ## Index (all specs >4m)
 
