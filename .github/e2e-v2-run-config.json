@@ -17,5 +17,5 @@
   "pr_number": "10006",
   "run_type": "PR",
   "enabled": true,
-  "rerun_note": "post-split validation: build+test ios and android (platform=all)"
+  "rerun_note": "full detox v2 rerun: build+test ios/ipad/android (platform=all) after unused-local prune"
 }
