@@ -9,13 +9,13 @@
   "detox_search_path": "e2e/test",
   "use_staging_test_system_io": true,
   "fail_on_test_failures": false,
-  "android_site_1_url": "https://mobile-pr-10006-android-site-1-8inxe3u5.test.mattermost.cloud",
-  "android_site_2_url": "https://mobile-pr-10006-android-site-2-spp4fk1m.test.mattermost.cloud",
-  "ios_site_1_url": "https://mobile-pr-10006-ios-site-1-ydnygenn.test.mattermost.cloud",
-  "ios_site_2_url": "https://mobile-pr-10006-ios-site-2-wxeckpsd.test.mattermost.cloud",
-  "site_3_url": "https://mobile-pr-10006-site-3-btn56g5m.test.mattermost.cloud",
+  "android_site_1_url": "https://mobile-pr-10006-android-site-1-rsz5af8m.test.mattermost.cloud",
+  "android_site_2_url": "https://mobile-pr-10006-android-site-2-644sdc8b.test.mattermost.cloud",
+  "ios_site_1_url": "https://mobile-pr-10006-ios-site-1-54y4r1q5.test.mattermost.cloud",
+  "ios_site_2_url": "https://mobile-pr-10006-ios-site-2-s5wutda1.test.mattermost.cloud",
+  "site_3_url": "https://mobile-pr-10006-site-3-5dmo3yii.test.mattermost.cloud",
   "pr_number": "10006",
   "run_type": "PR",
   "enabled": true,
-  "rerun_note": "test-only: rename identities to detox-*; slim split beforeAll leftovers; reuse build 30976048711"
+  "rerun_note": "test-only on fresh Matterwick servers (rsz5af8m/...); reuse build 30976048711"
 }
