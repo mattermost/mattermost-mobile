@@ -1,5 +1,5 @@
 {
-  "enabled": false,
+  "enabled": true,
   "pr_number": 10006,
-  "note": "disabled after successful recreate (q889jsit/ftgdxsd7/nnxdht3t/wr589m76/p81jfdax)"
+  "note": "recreate: prior topology (q889jsit/…) no longer accessible; fresh servers before parallel-worker e2e-v2"
 }

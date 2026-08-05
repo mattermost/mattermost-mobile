@@ -4,11 +4,12 @@
 const platform = process.env.IOS === 'true' ? 'ios' : 'android';
 const shard = process.env.CI_NODE_INDEX ? process.env.CI_NODE_INDEX : '';
 const parsedMaxWorkers = Number.parseInt(process.env.DETOX_MAX_WORKERS || '', 10);
-const maxWorkers = Number.isNaN(parsedMaxWorkers) ? 1 : parsedMaxWorkers;
+const maxWorkers = Number.isNaN(parsedMaxWorkers) || parsedMaxWorkers < 1 ? 1 : parsedMaxWorkers;
 
 module.exports = {
     setupFilesAfterEnv: ['./test/setup.ts'],
-    maxWorkers: process.env.CI ? 1 : maxWorkers,
+    // CI defaults to 1; orchestration workers set DETOX_MAX_WORKERS when multiple devices are pre-booted.
+    maxWorkers,
     testSequencer: './custom_sequencer.js',
     testTimeout: (process.env.CI || process.env.LOW_BANDWIDTH_MODE === 'true') ? 300000 : 240000,
     forceExit: Boolean(process.env.CI),

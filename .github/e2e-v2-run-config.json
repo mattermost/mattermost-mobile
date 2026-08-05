@@ -16,8 +16,8 @@
   "site_3_url": "https://mobile-pr-10006-site-3-p81jfdax.test.mattermost.cloud",
   "pr_number": "10006",
   "run_type": "PR",
-  "enabled": true,
-  "rerun_note": "full test on fresh Matterwick servers (q889jsit/\u2026); provision OK in run 31006255513; ios=40 android=30; reuse build 30976048711",
+  "enabled": false,
+  "rerun_note": "paused while Matterwick recreates servers; will enable after fresh URLs (parallel: batch=4 workers=2)",
   "ios_worker_count": "40",
   "android_worker_count": "30"
 }

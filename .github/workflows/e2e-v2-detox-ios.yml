@@ -90,7 +90,7 @@ on:
 
 # Pin: mattermost-test-system-io main (Detox orchestration).
 env:
-  TEST_SYSTEM_IO_ACTIONS_SHA: 1f7ca41ff07f10ed30170179b017d185973fdf18
+  TEST_SYSTEM_IO_ACTIONS_SHA: 1b44ba5507fcf73c9fd978eb96422a6d15a98c38
   DEVICE_NAME: ${{ inputs.ios_device_name }}
   DEVICE_OS_VERSION: ${{ inputs.ios_device_os_name }}
   ARTIFACT_RUN_ID: ${{ inputs.artifact_run_id }}
@@ -225,6 +225,9 @@ jobs:
       SITE_3_URL: ${{ inputs.site_3_url }}
       IOS_SITE_1_URL: ${{ inputs.ios_site_1_url }}
       IOS_SITE_2_URL: ${{ inputs.ios_site_2_url }}
+      # Parallel Detox: 2 pre-booted sims + Jest maxWorkers=2; lease 4 specs per checkout.
+      DETOX_MAX_WORKERS: "2"
+      PREBOOT_COUNT: "2"
     steps:
       - name: Checkout
         uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
@@ -297,10 +300,11 @@ jobs:
         if: steps.detox-framework-cache.outputs.cache-hit != 'true'
         run: cd detox && npx detox build-framework-cache
 
-      - name: Pre-boot iOS simulator
+      - name: Pre-boot iOS simulators
         env:
           DEVICE_NAME: ${{ env.DEVICE_NAME }}
           DEVICE_OS_VERSION: ${{ env.DEVICE_OS_VERSION }}
+          PREBOOT_COUNT: ${{ env.PREBOOT_COUNT }}
         run: bash detox/scripts/preboot_ios_simulator.sh
 
       - name: Set RUNNING_E2E
@@ -326,10 +330,12 @@ jobs:
           tail -30 metro.log || true
 
       - name: Generate Detox CI config
+        env:
+          DETOX_MAX_WORKERS: ${{ env.DETOX_MAX_WORKERS }}
         run: cd detox && npm run detox:config-gen
 
       - name: test-system-io dispatch run
-        uses: mattermost/mattermost-test-system-io/.github/actions/test-system-io-dispatch-run@1f7ca41ff07f10ed30170179b017d185973fdf18
+        uses: mattermost/mattermost-test-system-io/.github/actions/test-system-io-dispatch-run@1b44ba5507fcf73c9fd978eb96422a6d15a98c38
         with:
           use-staging: ${{ inputs.use_staging_test_system_io && 'true' || 'false' }}
           framework: detox
@@ -340,6 +346,8 @@ jobs:
           gh-job-name: detox-ios-worker-${{ matrix.shard }}
           detox-dir: detox
           detox-config: ${{ inputs.detox_config }}
+          batch-size: "4"
+          detox-max-workers: "2"
           max-idle-polls: "8"
 
       - name: Cleanup Metro / simulator
@@ -351,9 +359,12 @@ jobs:
             pkill -9 -f "react-native.*start" 2>/dev/null || true
             pkill -9 -f "metro" 2>/dev/null || true
           fi
-          if [ -n "${SIMULATOR_ID:-}" ]; then
-            timeout 10 xcrun simctl terminate "$SIMULATOR_ID" com.mattermost.rnbeta 2>/dev/null || true
-          fi
+          IDS="${SIMULATOR_IDS:-${SIMULATOR_ID:-}}"
+          IFS=',' read -ra SIMS <<< "$IDS"
+          for sid in "${SIMS[@]}"; do
+            [ -z "$sid" ] && continue
+            timeout 10 xcrun simctl terminate "$sid" com.mattermost.rnbeta 2>/dev/null || true
+          done
 
   summary:
     name: orch-summary-detox-ios

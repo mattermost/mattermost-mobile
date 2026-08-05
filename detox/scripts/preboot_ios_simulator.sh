@@ -10,6 +10,8 @@
 #
 # Requires: DEVICE_NAME, DEVICE_OS_VERSION. Writes SIMULATOR_ID to GITHUB_ENV when set.
 # Optional:
+#   PREBOOT_COUNT=N            — boot N simulators of the same type (default 1). Use 2 with
+#                                DETOX_MAX_WORKERS=2 so Jest can run specs in parallel.
 #   PREBOOT_SKIP_PREWARM=1     — Maestro only (uses listapps readiness). Detox must pre-warm.
 #   PREBOOT_PREWARM_SECS       — first pre-warm wait (default 15; iPad often needs 10–15s).
 #
@@ -212,81 +214,109 @@ verify_health() {
 find_or_create_simulator() {
     local device_name="${DEVICE_NAME:?DEVICE_NAME is required}"
     local os_version="${DEVICE_OS_VERSION:?DEVICE_OS_VERSION is required}"
+    local instance="${1:-1}"
+    unset SIMULATOR_NEEDS_INIT_BOOT
 
-    log "Looking for simulator: $device_name ($os_version)"
-    SIMULATOR_ID=$(xcrun simctl list devices | grep "$device_name" | grep "$os_version" | head -1 | grep -oE '([0-9A-F-]{36})' || true)
-    if [ -z "$SIMULATOR_ID" ]; then
-        SIMULATOR_ID=$(xcrun simctl list devices "$os_version" 2>/dev/null | grep "$device_name" | head -1 | grep -oE '([0-9A-F-]{36})' || true)
+    # Instance 1 may reuse a warm CI image simulator; additional instances always create.
+    if [ "$instance" -eq 1 ]; then
+        log "Looking for simulator: $device_name ($os_version)"
+        SIMULATOR_ID=$(xcrun simctl list devices | grep "$device_name" | grep "$os_version" | head -1 | grep -oE '([0-9A-F-]{36})' || true)
+        if [ -z "$SIMULATOR_ID" ]; then
+            SIMULATOR_ID=$(xcrun simctl list devices "$os_version" 2>/dev/null | grep "$device_name" | head -1 | grep -oE '([0-9A-F-]{36})' || true)
+        fi
+
+        if [ -n "$SIMULATOR_ID" ]; then
+            log "Found existing simulator: $SIMULATOR_ID"
+            return 0
+        fi
     fi
 
-    if [ -n "$SIMULATOR_ID" ]; then
-        log "Found existing simulator: $SIMULATOR_ID"
-        return 0
-    fi
-
-    log "Creating simulator..."
-    local device_type runtime
+    log "Creating simulator (instance $instance)..."
+    local device_type runtime sim_name
     device_type=$(xcrun simctl list devicetypes | grep "${device_name} (" | head -1 | awk -F'[()]' '{print $(NF-1)}')
     runtime=$(xcrun simctl list runtimes | grep "$os_version" | head -1 | sed 's/.* - \(.*\)/\1/')
     if [ -z "$device_type" ] || [ -z "$runtime" ]; then
         echo "Could not resolve device type or runtime for $device_name / $os_version"
         exit 1
     fi
-    SIMULATOR_ID=$(xcrun simctl create "CI-${device_name}" "$device_type" "$runtime")
-    log "Created simulator: $SIMULATOR_ID"
+    sim_name="CI-${device_name}"
+    if [ "$instance" -gt 1 ]; then
+        sim_name="CI-${device_name}-${instance}"
+    fi
+    SIMULATOR_ID=$(xcrun simctl create "$sim_name" "$device_type" "$runtime")
+    log "Created simulator: $SIMULATOR_ID ($sim_name)"
     export SIMULATOR_NEEDS_INIT_BOOT=1
+}
+
+prepare_and_boot_simulator() {
+    SETTINGS_DIR="$HOME/Library/Developer/CoreSimulator/Devices/$SIMULATOR_ID/data/Containers/Shared/SystemGroup/systemgroup.com.apple.configurationprofiles/Library/ConfigurationProfiles"
+    SETTINGS_PLIST="$SETTINGS_DIR/UserSettings.plist"
+    AUTOFILL_STAMP="$SETTINGS_DIR/.$AUTOFILL_MARKER"
+
+    if autofill_already_configured; then
+        log "Autofill restrictions already configured (v2) — skipping offline plist edit"
+        if [ "$(sim_state)" != "Booted" ]; then
+            boot_and_wait
+        else
+            log "Simulator already booted"
+        fi
+    elif [ -n "${SIMULATOR_NEEDS_INIT_BOOT:-}" ] || [ ! -d "$SETTINGS_DIR" ]; then
+        # Fresh simulator: one boot creates system group dirs, then configure offline, then boot again.
+        log "New simulator — init boot to create CoreSimulator dirs..."
+        boot_and_wait
+        shutdown_if_booted
+        configure_autofill_offline
+        boot_and_wait
+    else
+        # Warm simulator on CI image: configure offline, single boot.
+        log "Warm simulator — applying autofill offline, then single boot"
+        shutdown_if_booted
+        configure_autofill_offline
+        boot_and_wait
+    fi
+
+    # Always verify (and re-apply if iOS reverted EffectiveUserSettings on boot).
+    enforce_autofill_after_boot
+    install_app
+    grant_notifications
+
+    if [ "${PREBOOT_SKIP_PREWARM:-}" != "1" ]; then
+        if ! prewarm_app "$PREWARM_SECS"; then
+            log "Retrying pre-warm with 25s window..."
+            prewarm_app 25 || log "Pre-warm failed — first Detox launch may be slow"
+        fi
+    else
+        log "Skipping pre-warm (PREBOOT_SKIP_PREWARM=1)"
+    fi
+
+    open -a Simulator --args -CurrentDeviceUDID "$SIMULATOR_ID" || true
+    wait_ready_quick
+    verify_health
 }
 
 # ─── Main ────────────────────────────────────────────────────────────────────
 
-find_or_create_simulator
-
-SETTINGS_DIR="$HOME/Library/Developer/CoreSimulator/Devices/$SIMULATOR_ID/data/Containers/Shared/SystemGroup/systemgroup.com.apple.configurationprofiles/Library/ConfigurationProfiles"
-SETTINGS_PLIST="$SETTINGS_DIR/UserSettings.plist"
-AUTOFILL_STAMP="$SETTINGS_DIR/.$AUTOFILL_MARKER"
-
-if autofill_already_configured; then
-    log "Autofill restrictions already configured (v2) — skipping offline plist edit"
-    if [ "$(sim_state)" != "Booted" ]; then
-        boot_and_wait
-    else
-        log "Simulator already booted"
-    fi
-elif [ -n "${SIMULATOR_NEEDS_INIT_BOOT:-}" ] || [ ! -d "$SETTINGS_DIR" ]; then
-    # Fresh simulator: one boot creates system group dirs, then configure offline, then boot again.
-    log "New simulator — init boot to create CoreSimulator dirs..."
-    boot_and_wait
-    shutdown_if_booted
-    configure_autofill_offline
-    boot_and_wait
-else
-    # Warm simulator on CI image: configure offline, single boot.
-    log "Warm simulator — applying autofill offline, then single boot"
-    shutdown_if_booted
-    configure_autofill_offline
-    boot_and_wait
+PREBOOT_COUNT="${PREBOOT_COUNT:-1}"
+if ! [[ "$PREBOOT_COUNT" =~ ^[1-9][0-9]*$ ]]; then
+    echo "PREBOOT_COUNT must be a positive integer, got: $PREBOOT_COUNT"
+    exit 1
 fi
 
-# Always verify (and re-apply if iOS reverted EffectiveUserSettings on boot).
-enforce_autofill_after_boot
-install_app
-grant_notifications
+BOOTED_IDS=()
+for ((instance = 1; instance <= PREBOOT_COUNT; instance++)); do
+    log "=== Pre-boot instance ${instance}/${PREBOOT_COUNT} ==="
+    find_or_create_simulator "$instance"
+    prepare_and_boot_simulator
+    BOOTED_IDS+=("$SIMULATOR_ID")
+done
 
-if [ "${PREBOOT_SKIP_PREWARM:-}" != "1" ]; then
-    if ! prewarm_app "$PREWARM_SECS"; then
-        log "Retrying pre-warm with 25s window..."
-        prewarm_app 25 || log "Pre-warm failed — first Detox launch may be slow"
-    fi
-else
-    log "Skipping pre-warm (PREBOOT_SKIP_PREWARM=1)"
-fi
-
-open -a Simulator --args -CurrentDeviceUDID "$SIMULATOR_ID" || true
-wait_ready_quick
-verify_health
+# First UDID kept as SIMULATOR_ID for single-worker / Maestro compatibility.
+SIMULATOR_ID="${BOOTED_IDS[0]}"
+SIMULATOR_IDS=$(IFS=,; echo "${BOOTED_IDS[*]}")
 
 if [ -n "${GITHUB_ENV:-}" ]; then
     echo "SIMULATOR_ID=$SIMULATOR_ID" >> "$GITHUB_ENV"
+    echo "SIMULATOR_IDS=$SIMULATOR_IDS" >> "$GITHUB_ENV"
 fi
 
-log "Done. SIMULATOR_ID=$SIMULATOR_ID"
+log "Done. SIMULATOR_ID=$SIMULATOR_ID SIMULATOR_IDS=$SIMULATOR_IDS"
