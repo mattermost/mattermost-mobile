@@ -1,10 +1,10 @@
 {
-  "phase": "build_and_test",
+  "phase": "test",
   "mobile_ref": "",
   "framework": "detox",
   "platform": "all",
-  "skip_build": false,
-  "artifact_run_id": "",
+  "skip_build": true,
+  "artifact_run_id": "30976048711",
   "worker_count": "20",
   "detox_search_path": "e2e/test",
   "use_staging_test_system_io": true,
@@ -17,5 +17,5 @@
   "pr_number": "10006",
   "run_type": "PR",
   "enabled": true,
-  "rerun_note": "full detox v2 rerun: build+test ios/ipad/android (platform=all) after unused-local prune"
+  "rerun_note": "test-only: reuse builds from run 30976048711 (skip_build); ios/ipad/android"
 }
