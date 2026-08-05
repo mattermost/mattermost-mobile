@@ -58,8 +58,16 @@ appId: ${MAESTRO_APP_ID}
     timeout: 30000
 - takeScreenshot: report-problem-without-logs
 
+# # Scroll to the end of the details first. assertNotVisible also passes for a
+# control that is merely below the fold, so reach the bottom before asserting.
+# Copy is the last control on the screen when the app logs are unavailable.
+- scrollUntilVisible:
+    element:
+      text: "Copy"
+    direction: DOWN
+    timeout: 10000
+
 # * Verify neither the attach-app-logs toggle nor the logs download is offered.
-# Only the troubleshooting details are listed here, so nothing is below the fold.
 - assertNotVisible:
     id: "report_problem.enable_log_attachments"
 - assertNotVisible:
