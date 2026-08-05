@@ -446,22 +446,22 @@ describe('deletePostsInChannelsByCutoff', () => {
 
         expect(error).toBeUndefined();
         const hasActiveReply = `EXISTS (SELECT 1 FROM ${POSTS_IN_THREAD} WHERE ${POSTS_IN_THREAD}.root_id = ${POST}.id AND ${POSTS_IN_THREAD}.latest >= ${CUTOFF})`;
-        const postCondition = `channel_id IN ('${channelId}') AND create_at < ${CUTOFF} AND NOT ${hasActiveReply}`;
+        const postCondition = `channel_id IN (?) AND create_at < ${CUTOFF} AND NOT ${hasActiveReply}`;
         const postSubquery = `SELECT id FROM ${POST} WHERE ${postCondition}`;
-        const rootInChannelsExists = `EXISTS (SELECT 1 FROM ${POST} WHERE ${POST}.id = ${POSTS_IN_THREAD}.root_id AND ${POST}.channel_id IN ('${channelId}'))`;
+        const rootInChannelsExists = `EXISTS (SELECT 1 FROM ${POST} WHERE ${POST}.id = ${POSTS_IN_THREAD}.root_id AND ${POST}.channel_id IN (?))`;
         expect(database.adapter.unsafeExecute).toHaveBeenCalledWith({
             sqls: [
-                [`DELETE FROM ${REACTION} WHERE post_id IN (${postSubquery})`, []],
-                [`DELETE FROM ${FILE} WHERE post_id IN (${postSubquery})`, []],
-                [`DELETE FROM ${POSTS_IN_THREAD} WHERE latest < ${CUTOFF} AND ${rootInChannelsExists}`, []],
-                [`UPDATE ${POSTS_IN_THREAD} SET earliest = ${CUTOFF} WHERE earliest < ${CUTOFF} AND ${rootInChannelsExists}`, []],
-                [`DELETE FROM ${THREAD} WHERE id IN (${postSubquery})`, []],
-                [`DELETE FROM ${THREAD_PARTICIPANT} WHERE thread_id IN (${postSubquery})`, []],
-                [`DELETE FROM ${THREADS_IN_TEAM} WHERE thread_id IN (${postSubquery})`, []],
-                [`DELETE FROM ${POST} WHERE ${postCondition}`, []],
-                [`DELETE FROM ${POSTS_IN_CHANNEL} WHERE channel_id IN ('${channelId}') AND latest < ${CUTOFF}`, []],
-                [`UPDATE ${POSTS_IN_CHANNEL} SET earliest = ${CUTOFF} WHERE channel_id IN ('${channelId}') AND earliest < ${CUTOFF}`, []],
-                [`UPDATE ${MY_CHANNEL} SET last_fetched_at = 0 WHERE id IN ('${channelId}') AND last_fetched_at > 0 AND NOT EXISTS (SELECT 1 FROM ${POSTS_IN_CHANNEL} WHERE channel_id = ${MY_CHANNEL}.id)`, []],
+                [`DELETE FROM ${REACTION} WHERE post_id IN (${postSubquery})`, [channelId]],
+                [`DELETE FROM ${FILE} WHERE post_id IN (${postSubquery})`, [channelId]],
+                [`DELETE FROM ${POSTS_IN_THREAD} WHERE latest < ${CUTOFF} AND ${rootInChannelsExists}`, [channelId]],
+                [`UPDATE ${POSTS_IN_THREAD} SET earliest = ${CUTOFF} WHERE earliest < ${CUTOFF} AND ${rootInChannelsExists}`, [channelId]],
+                [`DELETE FROM ${THREAD} WHERE id IN (${postSubquery})`, [channelId]],
+                [`DELETE FROM ${THREAD_PARTICIPANT} WHERE thread_id IN (${postSubquery})`, [channelId]],
+                [`DELETE FROM ${THREADS_IN_TEAM} WHERE thread_id IN (${postSubquery})`, [channelId]],
+                [`DELETE FROM ${POST} WHERE ${postCondition}`, [channelId]],
+                [`DELETE FROM ${POSTS_IN_CHANNEL} WHERE channel_id IN (?) AND latest < ${CUTOFF}`, [channelId]],
+                [`UPDATE ${POSTS_IN_CHANNEL} SET earliest = ${CUTOFF} WHERE channel_id IN (?) AND earliest < ${CUTOFF}`, [channelId]],
+                [`UPDATE ${MY_CHANNEL} SET last_fetched_at = 0 WHERE id IN (?) AND last_fetched_at > 0 AND NOT EXISTS (SELECT 1 FROM ${POSTS_IN_CHANNEL} WHERE channel_id = ${MY_CHANNEL}.id)`, [channelId]],
             ],
         });
     });
@@ -483,13 +483,14 @@ describe('deletePostsInChannelsByCutoff', () => {
 
         expect(error).toBeUndefined();
         const hasActiveReply = `EXISTS (SELECT 1 FROM ${POSTS_IN_THREAD} WHERE ${POSTS_IN_THREAD}.root_id = ${POST}.id AND ${POSTS_IN_THREAD}.latest >= ${CUTOFF})`;
-        const postCondition = `channel_id IN ('${channelId}') AND create_at < ${CUTOFF} AND NOT ${hasActiveReply} AND id NOT IN ('excluded-1','excluded-2')`;
+        const postCondition = `channel_id IN (?) AND create_at < ${CUTOFF} AND NOT ${hasActiveReply} AND id NOT IN (?,?)`;
         const postSubquery = `SELECT id FROM ${POST} WHERE ${postCondition}`;
+        const postConditionArgs = [channelId, 'excluded-1', 'excluded-2'];
         expect(database.adapter.unsafeExecute).toHaveBeenCalledWith(
             expect.objectContaining({
                 sqls: expect.arrayContaining([
-                    [`DELETE FROM ${REACTION} WHERE post_id IN (${postSubquery})`, []],
-                    [`DELETE FROM ${POST} WHERE ${postCondition}`, []],
+                    [`DELETE FROM ${REACTION} WHERE post_id IN (${postSubquery})`, postConditionArgs],
+                    [`DELETE FROM ${POST} WHERE ${postCondition}`, postConditionArgs],
                 ]),
             }),
         );

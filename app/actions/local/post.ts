@@ -392,21 +392,21 @@ export async function deletePosts(serverUrl: string, postIds: string[]) {
     try {
         const {database} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
 
-        const postsFormatted = `'${postIds.join("','")}'`;
+        const placeholders = postIds.map(() => '?').join(',');
 
         await database.write(() => {
             return database.adapter.unsafeExecute({
                 sqls: [
-                    [`DELETE FROM ${POST} where id IN (${postsFormatted})`, []],
-                    [`DELETE FROM ${REACTION} where post_id IN (${postsFormatted})`, []],
-                    [`DELETE FROM ${FILE} where post_id IN (${postsFormatted})`, []],
-                    [`DELETE FROM ${DRAFT} where root_id IN (${postsFormatted})`, []],
+                    [`DELETE FROM ${POST} where id IN (${placeholders})`, postIds],
+                    [`DELETE FROM ${REACTION} where post_id IN (${placeholders})`, postIds],
+                    [`DELETE FROM ${FILE} where post_id IN (${placeholders})`, postIds],
+                    [`DELETE FROM ${DRAFT} where root_id IN (${placeholders})`, postIds],
 
-                    [`DELETE FROM ${POSTS_IN_THREAD} where root_id IN (${postsFormatted})`, []],
+                    [`DELETE FROM ${POSTS_IN_THREAD} where root_id IN (${placeholders})`, postIds],
 
-                    [`DELETE FROM ${THREAD} where id IN (${postsFormatted})`, []],
-                    [`DELETE FROM ${THREAD_PARTICIPANT} where thread_id IN (${postsFormatted})`, []],
-                    [`DELETE FROM ${THREADS_IN_TEAM} where thread_id IN (${postsFormatted})`, []],
+                    [`DELETE FROM ${THREAD} where id IN (${placeholders})`, postIds],
+                    [`DELETE FROM ${THREAD_PARTICIPANT} where thread_id IN (${placeholders})`, postIds],
+                    [`DELETE FROM ${THREADS_IN_TEAM} where thread_id IN (${placeholders})`, postIds],
                 ],
             });
         });
@@ -430,40 +430,42 @@ export async function deletePostsInChannelsByCutoff(
     try {
         const {database, operator} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
 
-        const channels = `'${channelIds.join("','")}'`;
-        const exclusionClause = excludedPostIds.size > 0 ? ` AND id NOT IN ('${[...excludedPostIds].join("','")}')` : '';
+        const channelPlaceholders = channelIds.map(() => '?').join(',');
+        const excludedIds = [...excludedPostIds];
+        const exclusionClause = excludedIds.length > 0 ? ` AND id NOT IN (${excludedIds.map(() => '?').join(',')})` : '';
 
         // A thread with a reply on or after the cutoff is alive even if its root is older;
         // keep the root so the surviving reply's root_id never dangles.
         const hasActiveReply = `EXISTS (SELECT 1 FROM ${POSTS_IN_THREAD} WHERE ${POSTS_IN_THREAD}.root_id = ${POST}.id AND ${POSTS_IN_THREAD}.latest >= ${cutoff})`;
 
-        const postCondition = `channel_id IN (${channels}) AND create_at < ${cutoff} AND NOT ${hasActiveReply}${exclusionClause}`;
+        const postCondition = `channel_id IN (${channelPlaceholders}) AND create_at < ${cutoff} AND NOT ${hasActiveReply}${exclusionClause}`;
+        const postConditionArgs = [...channelIds, ...excludedIds];
         const postSubquery = `SELECT id FROM ${POST} WHERE ${postCondition}`;
 
         // Scopes PostsInThread trimming to roots in these channels.
-        const rootInChannelsExists = `EXISTS (SELECT 1 FROM ${POST} WHERE ${POST}.id = ${POSTS_IN_THREAD}.root_id AND ${POST}.channel_id IN (${channels}))`;
+        const rootInChannelsExists = `EXISTS (SELECT 1 FROM ${POST} WHERE ${POST}.id = ${POSTS_IN_THREAD}.root_id AND ${POST}.channel_id IN (${channelPlaceholders}))`;
 
         await database.write(() => {
             return database.adapter.unsafeExecute({
                 sqls: [
-                    [`DELETE FROM ${REACTION} WHERE post_id IN (${postSubquery})`, []],
-                    [`DELETE FROM ${FILE} WHERE post_id IN (${postSubquery})`, []],
+                    [`DELETE FROM ${REACTION} WHERE post_id IN (${postSubquery})`, postConditionArgs],
+                    [`DELETE FROM ${FILE} WHERE post_id IN (${postSubquery})`, postConditionArgs],
 
                     // PostsInThread bookkeeping, delete or update values depending on replies left in the thread after the cutoff
-                    [`DELETE FROM ${POSTS_IN_THREAD} WHERE latest < ${cutoff} AND ${rootInChannelsExists}`, []],
-                    [`UPDATE ${POSTS_IN_THREAD} SET earliest = ${cutoff} WHERE earliest < ${cutoff} AND ${rootInChannelsExists}`, []],
+                    [`DELETE FROM ${POSTS_IN_THREAD} WHERE latest < ${cutoff} AND ${rootInChannelsExists}`, channelIds],
+                    [`UPDATE ${POSTS_IN_THREAD} SET earliest = ${cutoff} WHERE earliest < ${cutoff} AND ${rootInChannelsExists}`, channelIds],
 
-                    [`DELETE FROM ${THREAD} WHERE id IN (${postSubquery})`, []],
-                    [`DELETE FROM ${THREAD_PARTICIPANT} WHERE thread_id IN (${postSubquery})`, []],
-                    [`DELETE FROM ${THREADS_IN_TEAM} WHERE thread_id IN (${postSubquery})`, []],
-                    [`DELETE FROM ${POST} WHERE ${postCondition}`, []],
+                    [`DELETE FROM ${THREAD} WHERE id IN (${postSubquery})`, postConditionArgs],
+                    [`DELETE FROM ${THREAD_PARTICIPANT} WHERE thread_id IN (${postSubquery})`, postConditionArgs],
+                    [`DELETE FROM ${THREADS_IN_TEAM} WHERE thread_id IN (${postSubquery})`, postConditionArgs],
+                    [`DELETE FROM ${POST} WHERE ${postCondition}`, postConditionArgs],
 
                     // PostsInChannel bookkeeping, delete or update values depending on posts left in the channel after the cutoff
-                    [`DELETE FROM ${POSTS_IN_CHANNEL} WHERE channel_id IN (${channels}) AND latest < ${cutoff}`, []],
-                    [`UPDATE ${POSTS_IN_CHANNEL} SET earliest = ${cutoff} WHERE channel_id IN (${channels}) AND earliest < ${cutoff}`, []],
+                    [`DELETE FROM ${POSTS_IN_CHANNEL} WHERE channel_id IN (${channelPlaceholders}) AND latest < ${cutoff}`, channelIds],
+                    [`UPDATE ${POSTS_IN_CHANNEL} SET earliest = ${cutoff} WHERE channel_id IN (${channelPlaceholders}) AND earliest < ${cutoff}`, channelIds],
 
                     // MyChannel bookkeeping, reset last_fetched_at for channels that have no posts left after the cutoff
-                    [`UPDATE ${MY_CHANNEL} SET last_fetched_at = 0 WHERE id IN (${channels}) AND last_fetched_at > 0 AND NOT EXISTS (SELECT 1 FROM ${POSTS_IN_CHANNEL} WHERE channel_id = ${MY_CHANNEL}.id)`, []],
+                    [`UPDATE ${MY_CHANNEL} SET last_fetched_at = 0 WHERE id IN (${channelPlaceholders}) AND last_fetched_at > 0 AND NOT EXISTS (SELECT 1 FROM ${POSTS_IN_CHANNEL} WHERE channel_id = ${MY_CHANNEL}.id)`, channelIds],
                 ],
             });
         });
