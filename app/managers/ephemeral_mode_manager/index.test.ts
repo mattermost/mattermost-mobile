@@ -15,7 +15,7 @@ import {navigateToScreen} from '@screens/navigation';
 import {advanceTimers, disableFakeTimers, enableFakeTimers} from '@test/timer_helpers';
 import {deleteFileCache} from '@utils/file';
 
-import EphemeralModeManager from './index';
+import EphemeralModeManager, {OFFLINE_CONNECTION_RECHECK_MAX_WAIT_MS, OFFLINE_CONNECTION_RECHECK_MS} from './index';
 
 import type ServersModel from '@typings/database/models/app/servers';
 
@@ -37,6 +37,7 @@ jest.mock('@managers/websocket_manager', () => ({
     default: {
         observeWebsocketState: jest.fn(),
         isConnected: jest.fn(),
+        hasFailedToConnect: jest.fn(),
     },
 }));
 jest.mock('@queries/app/servers', () => {
@@ -59,6 +60,7 @@ describe('EphemeralModeManager', () => {
     const credsB = {serverUrl: serverB, token: 'token-b'} as ServerCredential;
 
     let wsStates: Record<string, BehaviorSubject<WebsocketConnectedState>>;
+    let wsFailed: Record<string, boolean>;
     let appStateHandlers: Array<(state: AppStateStatus) => void>;
     let appStateRemoveSpies: jest.Mock[];
 
@@ -119,11 +121,21 @@ describe('EphemeralModeManager', () => {
     const getPersistedLastSeen = (url: string) => getPersistedValue<number>(url, SYSTEM_IDENTIFIERS.LAST_SEEN_TIME);
 
     const setWs = (url: string, state: WebsocketConnectedState) => {
+        // Mirror connectFailCount: a live close means an attempt failed; a connect resets it.
+        if (state === 'connected') {
+            wsFailed[url] = false;
+        } else if (state === 'not_connected') {
+            wsFailed[url] = true;
+        }
         if (wsStates[url]) {
             wsStates[url].next(state);
         } else {
             wsStates[url] = new BehaviorSubject<WebsocketConnectedState>(state);
         }
+    };
+
+    const setWsFailed = (url: string, failed: boolean) => {
+        wsFailed[url] = failed;
     };
 
     const setAppState = (state: AppStateStatus) => {
@@ -149,6 +161,7 @@ describe('EphemeralModeManager', () => {
     beforeEach(async () => {
         enableFakeTimers();
         wsStates = {};
+        wsFailed = {};
         appStateHandlers = [];
         appStateRemoveSpies = [];
 
@@ -162,6 +175,9 @@ describe('EphemeralModeManager', () => {
         });
         (WebsocketManager.isConnected as jest.Mock) = jest.fn(
             (url: string) => wsStates[url]?.getValue() === 'connected',
+        );
+        (WebsocketManager.hasFailedToConnect as jest.Mock) = jest.fn(
+            (url: string) => Boolean(wsFailed[url]),
         );
 
         (AppState as {currentState: AppStateStatus}).currentState = 'active';
@@ -263,9 +279,20 @@ describe('EphemeralModeManager', () => {
         expect(await getPersistedSince(serverA)).toBeGreaterThan(0);
     });
 
-    it('resuming after app kill with elapsed time past threshold flags the server offline on init', async () => {
+    it('resuming after app kill with elapsed time past threshold does not flag the server offline until a connection attempt has failed', async () => {
         const now = Date.now();
         await seedConfigAndRow(serverA, {enabled: true, timeoutSec: 10, disconnectedSince: now - 20_000});
+
+        await EphemeralModeManager.init([credsA]);
+        await advanceTimers(0);
+
+        expect(EphemeralModeManager.isOffline(serverA)).toBe(false);
+    });
+
+    it('resuming after app kill with a confirmed failed connection past threshold flags the server offline immediately', async () => {
+        const now = Date.now();
+        await seedConfigAndRow(serverA, {enabled: true, timeoutSec: 10, disconnectedSince: now - 20_000});
+        setWsFailed(serverA, true);
 
         await EphemeralModeManager.init([credsA]);
         await advanceTimers(0);
@@ -273,9 +300,39 @@ describe('EphemeralModeManager', () => {
         expect(EphemeralModeManager.isOffline(serverA)).toBe(true);
     });
 
+    it('resuming after app kill past threshold flags the server offline once a connection attempt fails', async () => {
+        const now = Date.now();
+        await seedConfigAndRow(serverA, {enabled: true, timeoutSec: 10, disconnectedSince: now - 20_000});
+
+        await EphemeralModeManager.init([credsA]);
+        await advanceTimers(0);
+        expect(EphemeralModeManager.isOffline(serverA)).toBe(false);
+
+        setWsFailed(serverA, true);
+        await advanceTimers(OFFLINE_CONNECTION_RECHECK_MS);
+
+        expect(EphemeralModeManager.isOffline(serverA)).toBe(true);
+    });
+
+    it('resuming after app kill past threshold flags the server offline once the recheck cap elapses without a definitive signal', async () => {
+        const now = Date.now();
+        await seedConfigAndRow(serverA, {enabled: true, timeoutSec: 10, disconnectedSince: now - 20_000});
+
+        await EphemeralModeManager.init([credsA]);
+        await advanceTimers(0);
+        expect(EphemeralModeManager.isOffline(serverA)).toBe(false);
+
+        await advanceTimers(OFFLINE_CONNECTION_RECHECK_MAX_WAIT_MS - OFFLINE_CONNECTION_RECHECK_MS);
+        expect(EphemeralModeManager.isOffline(serverA)).toBe(false);
+
+        await advanceTimers(OFFLINE_CONNECTION_RECHECK_MS);
+        expect(EphemeralModeManager.isOffline(serverA)).toBe(true);
+    });
+
     it('resuming after app kill with elapsed time below threshold schedules the remaining time', async () => {
         const now = Date.now();
         await seedConfigAndRow(serverA, {enabled: true, timeoutSec: 10, disconnectedSince: now - 5000});
+        setWsFailed(serverA, true);
 
         await EphemeralModeManager.init([credsA]);
         await advanceTimers(0);
@@ -507,6 +564,7 @@ describe('EphemeralModeManager', () => {
                 lastSeenTime: start - ONE_HOUR_MS,
             });
             wsStates[serverA] = new BehaviorSubject<WebsocketConnectedState>('not_connected');
+            setWsFailed(serverA, true);
 
             await EphemeralModeManager.init([credsA]);
             await advanceTimers(0);
