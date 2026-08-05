@@ -17,7 +17,7 @@
   "pr_number": "10006",
   "run_type": "PR",
   "enabled": true,
-  "rerun_note": "rerun on h8p9zb1z/…: Android all-read-only dual AVD; iOS autofill shutdown wait + no Metro hang; phone 2/2, iPad 1/1; ios=40 android=30; reuse build 30976048711",
+  "rerun_note": "fix iOS/iPad sim_state parse (trailing whitespace broke Shutdown guard); Android investigation: 38 unit fails = CF plugin timeouts + UI visibility + banner 300s; phone 2/2 iPad 1/1; reuse build 30976048711",
   "ios_worker_count": "40",
   "android_worker_count": "30"
 }

@@ -9,7 +9,8 @@ AVD_BASE_NAME=${2:-"detox_pixel_8"}  # Second argument is AVD base name (no api 
 AVD_NAME="${AVD_BASE_NAME}_api_${SDK_VERSION}"
 TEST_FILES=("${@:3}")          # Capture all remaining arguments as Detox test files
 EMULATOR_RAM_MB=${MM_ANDROID_EMULATOR_RAM_MB:-3072}
-# Boot N emulator instances of the same AVD (ports 5554, 5556, …). Instance 2+ use -read-only.
+# Boot N emulator instances of the same AVD (ports 5554, 5556, …).
+# When N>1 every instance uses -read-only (Android multi-instance requirement).
 EMULATOR_COUNT=${EMULATOR_COUNT:-1}
 
 setup_avd_home() {

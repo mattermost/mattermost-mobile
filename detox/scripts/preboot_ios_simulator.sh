@@ -35,7 +35,17 @@ log() {
 }
 
 sim_state() {
-    xcrun simctl list devices 2>/dev/null | grep "$SIMULATOR_ID" | sed -E 's/.*\((Booted|Shutdown|Booting|Creating)\)$/\1/' || echo "Unknown"
+    # simctl lines look like: "    iPhone 17 Pro (UDID) (Booted) " — trailing
+    # whitespace breaks a $-anchored sed, which left the full line as "state"
+    # and made shutdown_if_booted / Shutdown checks always fail.
+    local line state
+    line=$(xcrun simctl list devices 2>/dev/null | grep -F "$SIMULATOR_ID" | head -1 || true)
+    if [ -z "$line" ]; then
+        echo "Unknown"
+        return 0
+    fi
+    state=$(printf '%s' "$line" | grep -oE '\((Booted|Shutdown|Booting|Creating)\)' | tail -1 | tr -d '()')
+    echo "${state:-Unknown}"
 }
 
 shutdown_if_booted() {
