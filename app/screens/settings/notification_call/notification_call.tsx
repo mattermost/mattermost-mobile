@@ -1,9 +1,9 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import CallsNative from '@mattermost/calls-native';
 import React, {useCallback, useState} from 'react';
 import {defineMessages, useIntl} from 'react-intl';
-import InCallManager from 'react-native-incall-manager';
 
 import {updateMe} from '@actions/remote/user';
 import SettingBlock from '@components/settings/block';
@@ -55,17 +55,17 @@ const NotificationCall = ({currentUser}: Props) => {
         if (value !== callsMobileNotificationSound) {
             setCallsMobileNotificationSound(value);
 
-            await InCallManager.stopRingtone();
-            await InCallManager.startRingtone(tone, Calls.RINGTONE_VIBRATE_PATTERN);
+            await CallsNative.stopRingtone();
+            await CallsNative.startRingtone(tone, 0);
             setPlayingRingtone(true);
             return;
         }
 
         if (playingRingtone) {
-            await InCallManager.stopRingtone();
+            await CallsNative.stopRingtone();
             setPlayingRingtone(false);
         } else {
-            await InCallManager.startRingtone(tone, Calls.RINGTONE_VIBRATE_PATTERN);
+            await CallsNative.startRingtone(tone, 0);
             setPlayingRingtone(true);
         }
     }, [callsMobileNotificationSound, playingRingtone]);
@@ -73,7 +73,7 @@ const NotificationCall = ({currentUser}: Props) => {
     const selectNotificationOnOff = useCallback(async (on: boolean) => {
         setCallsMobileSound(on);
         if (!on) {
-            await InCallManager.stopRingtone();
+            await CallsNative.stopRingtone();
         }
     }, []);
 
@@ -95,7 +95,7 @@ const NotificationCall = ({currentUser}: Props) => {
             };
             updateMe(serverUrl, {notify_props});
         }
-        InCallManager.stopRingtone();
+        CallsNative.stopRingtone();
     }, [serverUrl, canSaveSettings, notifyProps, callsMobileSound, callsMobileNotificationSound]);
 
     useBackNavigation(saveNotificationSettings);

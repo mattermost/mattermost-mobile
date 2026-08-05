@@ -50,4 +50,34 @@ class MMCallsNativeModule(context: ReactApplicationContext) : ReactContextBaseJa
     fun foregroundServiceStop() {
         implementation.foregroundServiceStop()
     }
+
+    @ReactMethod
+    fun startAudioSession(promise: Promise?) {
+        implementation.startAudioSession(promise)
+    }
+
+    @ReactMethod
+    fun stopAudioSession(promise: Promise?) {
+        implementation.stopAudioSession(promise)
+    }
+
+    @ReactMethod
+    fun setAudioRoute(route: String?, promise: Promise?) {
+        implementation.setAudioRoute(route ?: "EARPIECE", promise)
+    }
+
+    @ReactMethod
+    fun getAudioRoute(promise: Promise?) {
+        implementation.getAudioRoute(promise)
+    }
+
+    @ReactMethod
+    fun startRingtone(name: String?, seconds: Double, promise: Promise?) {
+        implementation.startRingtone(name ?: "default_ringtone", seconds.toInt(), promise)
+    }
+
+    @ReactMethod
+    fun stopRingtone(promise: Promise?) {
+        implementation.stopRingtone(promise)
+    }
 }
