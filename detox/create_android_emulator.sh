@@ -161,10 +161,12 @@ start_emulators() {
         echo "EMULATOR_COUNT must be a positive integer, got: $EMULATOR_COUNT"
         exit 1
     fi
+    # Boot sequentially: a second instance of the same AVD must start only after
+    # the first holds the AVD lock. Concurrent starts fail with
+    # "Another emulator instance is running. Please close it or run all
+    # emulators with -read-only flag." even when instance 2 passes -read-only.
     for ((i = 1; i <= EMULATOR_COUNT; i++)); do
         start_emulator_instance "$i"
-    done
-    for ((i = 1; i <= EMULATOR_COUNT; i++)); do
         wait_for_emulator_serial "$(emulator_serial_for_index "$i")"
     done
     adb devices -l || true

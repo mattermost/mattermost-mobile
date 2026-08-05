@@ -17,7 +17,7 @@
   "pr_number": "10006",
   "run_type": "PR",
   "enabled": true,
-  "rerun_note": "full test on fresh Matterwick servers (h8p9zb1z/…); provision OK in run 31027132538; parallel batch=4 detox_max_workers=2; ios=40 android=30; reuse build 30976048711",
+  "rerun_note": "rerun on h8p9zb1z/…: fix Android sequential dual-emulator boot; batch=2 + detox_max_workers=2; iOS Metro prewarm + launch stagger; ios=40 android=30; reuse build 30976048711",
   "ios_worker_count": "40",
   "android_worker_count": "30"
 }

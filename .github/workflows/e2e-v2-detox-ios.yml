@@ -320,7 +320,14 @@ jobs:
           while [ $elapsed -lt $timeout ]; do
             if curl -s http://localhost:8081/status 2>/dev/null | grep -q "packager-status:running"; then
               echo "Metro ready after ${elapsed}s"
-              sleep 20
+              # Pre-warm the iOS bundle once so two parallel Detox workers do not
+              # race Metro's first compile (seen as "Detox can't seem to connect").
+              echo "Pre-warming iOS Metro bundle..."
+              curl -sf --max-time 300 \
+                "http://127.0.0.1:8081/index.bundle?platform=ios&dev=true&minify=false" \
+                -o /tmp/metro-ios.bundle \
+                && ls -la /tmp/metro-ios.bundle \
+                || echo "::warning::iOS Metro bundle pre-warm failed; first launch may be slow"
               exit 0
             fi
             sleep 2
@@ -346,7 +353,7 @@ jobs:
           gh-job-name: detox-ios-worker-${{ matrix.shard }}
           detox-dir: detox
           detox-config: ${{ inputs.detox_config }}
-          batch-size: "4"
+          batch-size: "2"
           detox-max-workers: "2"
           max-idle-polls: "8"
 
