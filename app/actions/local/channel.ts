@@ -507,21 +507,18 @@ export async function deletePostsForChannel(serverUrl: string, channelId: string
             return {models: []};
         }
 
+        // Note: intervals are cleared even when there are no posts left. A PostsInChannel
+        // row that no longer contains any post still wins postsInChannel[0] and hides the
+        // channel, so returning early here would leave the channel blank.
         const posts = await channel.posts.fetch();
-        if (!posts.length) {
-            return {models: []};
-        }
 
         const preparedPostsPromises = posts.map((post) => prepareDeletePost(post));
         const preparedPostsArrays = await Promise.all(preparedPostsPromises);
         const preparedModels: Model[] = preparedPostsArrays.flat();
 
-        const postsInChannel = await queryPostsInChannel(database, channelId);
-        if (postsInChannel.length) {
-            for (const postRange of postsInChannel) {
-                const preparedPostRanges = postRange.prepareDestroyPermanently();
-                preparedModels.push(preparedPostRanges);
-            }
+        const postsInChannel = await queryPostsInChannel(database, channelId).fetch();
+        for (const postRange of postsInChannel) {
+            preparedModels.push(postRange.prepareDestroyPermanently());
         }
 
         const threadPromises = posts.filter((post) => post.rootId === '').map((post) => {
