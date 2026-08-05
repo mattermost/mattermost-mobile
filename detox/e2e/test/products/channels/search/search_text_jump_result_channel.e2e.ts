@@ -10,27 +10,21 @@
 import {
     Post,
     Setup,
-    Team,
-    User,
 } from '@support/server_api';
 import {
     serverOneUrl,
     siteOneUrl,
 } from '@support/test_config';
 import {
-    AddMembersScreen,
     ChannelListScreen,
     ChannelScreen,
-    CreateDirectMessageScreen,
     HomeScreen,
     LoginScreen,
     PermalinkScreen,
-    PostOptionsScreen,
     SearchMessagesScreen,
     ServerScreen,
-    ThreadScreen,
 } from '@support/ui/screen';
-import {getRandomId, isAndroid, timeouts, wait} from '@support/utils';
+import {getRandomId, timeouts, wait} from '@support/utils';
 import {expect} from 'detox';
 
 describe('Search - Search Cycle', () => {
@@ -38,13 +32,11 @@ describe('Search - Search Cycle', () => {
     const serverOneDisplayName = 'Server 1';
     const channelsCategory = 'channels';
     let testChannel: any;
-    let testTeam: any;
     let testUser: any;
 
     beforeAll(async () => {
-        const {channel, team, user} = await Setup.apiInit(siteOneUrl);
+        const {channel, user} = await Setup.apiInit(siteOneUrl);
         testChannel = channel;
-        testTeam = team;
         testUser = user;
 
         // # Log in to server

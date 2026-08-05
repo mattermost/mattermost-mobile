@@ -9,25 +9,18 @@
 
 import {
     Setup,
-    Team,
 } from '@support/server_api';
 import {
     serverOneUrl,
     siteOneUrl,
 } from '@support/test_config';
 import {
-    BrowseChannelsScreen,
-    ChannelScreen,
     ChannelListScreen,
-    CreateDirectMessageScreen,
-    CreateOrEditChannelScreen,
-    FindChannelsScreen,
-    GlobalThreadsScreen,
     HomeScreen,
     LoginScreen,
     ServerScreen,
 } from '@support/ui/screen';
-import {timeouts, expectVisible, wait, waitForElementToBeVisible} from '@support/utils';
+import {expectVisible} from '@support/utils';
 import {expect} from 'detox';
 
 describe('Channels - Channel List', () => {

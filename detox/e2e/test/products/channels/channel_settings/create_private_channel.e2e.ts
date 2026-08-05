@@ -27,7 +27,6 @@ import {
     ChannelInfoScreen,
     ChannelListScreen,
     ChannelScreen,
-    ChannelSettingsScreen,
     CreateOrEditChannelScreen,
     LoginScreen,
     HomeScreen,
@@ -39,11 +38,8 @@ import {expect, waitFor} from 'detox';
 describe('Channels', () => {
 
     const serverOneDisplayName = 'Server 1';
-    const channelsCategory = 'channels';
     let testUser: any;
     let testTeam: any;
-    let publicChannelName: string;
-    let publicChannelDisplayName: string;
     let privateChannelName: string;
     let privateChannelDisplayName: string;
     let channelWithMetadata: any;

@@ -8,42 +8,26 @@
 // *******************************************************************
 
 import {
-    User,
     Setup,
 } from '@support/server_api';
 import {
     serverOneUrl,
-    serverTwoUrl,
-    serverThreeUrl,
     siteOneUrl,
-    siteTwoUrl,
-    siteThreeUrl,
-    hasThreeDistinctServers,
 } from '@support/test_config';
 import {
-    Alert,
-} from '@support/ui/component';
-import {
     ChannelListScreen,
-    EditServerScreen,
     HomeScreen,
     LoginScreen,
     ServerScreen,
     ServerListScreen,
 } from '@support/ui/screen';
-import {isAndroid, isIos, timeouts, wait, waitForElementToBeVisible, waitForElementToExist} from '@support/utils';
+import {timeouts, waitForElementToBeVisible} from '@support/utils';
 import {expect} from 'detox';
-
-const itWithThreeServers = hasThreeDistinctServers ? it : it.skip;
 
 describe('Server Login - Server List', () => {
 
     const serverOneDisplayName = 'Server 1';
-    const serverTwoDisplayName = 'Server 2';
-    const serverThreeDisplayName = 'Server 3';
     let serverOneUser: any;
-    let serverTwoUser: any;
-    let serverThreeUser: any;
 
     beforeAll(async () => {
         // # Log in to the first server

@@ -16,7 +16,6 @@ import {
     siteOneUrl,
 } from '@support/test_config';
 import {
-    BrowseChannelsScreen,
     ChannelScreen,
     ChannelListScreen,
     HomeScreen,
@@ -25,8 +24,7 @@ import {
     ChannelInfoScreen,
     ChannelSettingsScreen,
 } from '@support/ui/screen';
-import {isAndroid, timeouts, wait} from '@support/utils';
-import {expect, waitFor} from 'detox';
+import {timeouts, wait} from '@support/utils';
 
 describe('Channels - Archive Channel', () => {
 

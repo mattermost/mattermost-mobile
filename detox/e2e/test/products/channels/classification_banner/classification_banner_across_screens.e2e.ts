@@ -146,6 +146,7 @@ jest.setTimeout(timeouts.ONE_MIN * 30);
 
         await ChannelScreen.openReplyThreadFor(rootPost.id, rootPost.message);
         await ThreadScreen.toBeVisible();
+
         // Post-options sheet + card transition can briefly cover the portal host.
         await wait(timeouts.TWO_SEC);
         await GlobalClassificationBanner.toBeVisible();

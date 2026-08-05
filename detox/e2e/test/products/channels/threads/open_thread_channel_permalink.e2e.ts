@@ -24,7 +24,6 @@ import {
     LoginScreen,
     PermalinkScreen,
     ServerScreen,
-    ThreadOptionsScreen,
     ThreadScreen,
 } from '@support/ui/screen';
 import {getRandomId, timeouts, wait} from '@support/utils';

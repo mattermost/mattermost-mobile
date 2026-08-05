@@ -20,7 +20,6 @@ import {
     LoginScreen,
     ServerScreen,
 } from '@support/ui/screen';
-import {timeouts, wait} from '@support/utils';
 import {expect} from 'detox';
 
 describe('Autocomplete - Channel Post Draft', () => {

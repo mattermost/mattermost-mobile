@@ -21,8 +21,8 @@ import {
     LoginScreen,
     ServerScreen,
 } from '@support/ui/screen';
-import {isAndroid, isIos, timeouts, wait, waitForElementToExist, safeEnableSynchronization} from '@support/utils';
-import {expect, waitFor} from 'detox';
+import {isAndroid, timeouts, waitForElementToExist} from '@support/utils';
+import {waitFor} from 'detox';
 
 // iOS gallery close uses atIndex(0) because RNGH duplicates the testID.
 const dismissGallery = async () => {

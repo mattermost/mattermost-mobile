@@ -33,13 +33,11 @@ describe('Messaging - Permalink', () => {
     const serverOneDisplayName = 'Server 1';
     const channelsCategory = 'channels';
     let testChannel: any;
-    let testTeam: any;
     let testUser: any;
 
     beforeAll(async () => {
-        const {channel, team, user} = await Setup.apiInit(siteOneUrl);
+        const {channel, user} = await Setup.apiInit(siteOneUrl);
         testChannel = channel;
-        testTeam = team;
         testUser = user;
 
         // # Log in to server

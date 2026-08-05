@@ -22,13 +22,11 @@ import {
     GlobalThreadsScreen,
     HomeScreen,
     LoginScreen,
-    PostOptionsScreen,
     ServerScreen,
-    ThreadOptionsScreen,
     ThreadScreen,
 } from '@support/ui/screen';
-import {getRandomId, isAndroid, timeouts, wait, waitForElementToBeVisible} from '@support/utils';
-import {expect, waitFor} from 'detox';
+import {getRandomId, timeouts, wait, waitForElementToBeVisible} from '@support/utils';
+import {waitFor} from 'detox';
 
 describe('Threads - Follow and Unfollow Thread', () => {
 

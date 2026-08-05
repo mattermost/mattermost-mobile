@@ -67,12 +67,9 @@ export const timeouts = {
  * This is a cheap best-effort safety net only — no Promise.race (orphans Detox
  * interactions), no system.element (xcodebuild), no relaunch/sendToHome.
  *
- * No-op on Android. Optional args are accepted for call-site compatibility.
+ * No-op on Android.
  */
-export const dismissIosSavePasswordIfVisible = async (
-    _probeTimeout = timeouts.HALF_SEC,
-    _options: Record<string, unknown> = {},
-): Promise<boolean> => {
+export const dismissIosSavePasswordIfVisible = async (): Promise<boolean> => {
     if (isAndroid()) {
         return false;
     }

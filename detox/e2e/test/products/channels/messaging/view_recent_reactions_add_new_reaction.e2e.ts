@@ -8,13 +8,9 @@
 // *******************************************************************
 
 import {
-    Channel,
     Post,
     Setup,
-    Team,
-    User,
 } from '@support/server_api';
-import client from '@support/server_api/client';
 import {
     serverOneUrl,
     siteOneUrl,
@@ -26,11 +22,9 @@ import {
     HomeScreen,
     LoginScreen,
     PostOptionsScreen,
-    ReactionsScreen,
     ServerScreen,
-    UserProfileScreen,
 } from '@support/ui/screen';
-import {getRandomId, isIos, safeEnableSynchronization, timeouts} from '@support/utils';
+import {getRandomId, safeEnableSynchronization, timeouts} from '@support/utils';
 import {expect, waitFor} from 'detox';
 
 describe('Messaging - Emojis and Reactions', () => {
@@ -38,13 +32,11 @@ describe('Messaging - Emojis and Reactions', () => {
     const serverOneDisplayName = 'Server 1';
     const channelsCategory = 'channels';
     let testChannel: any;
-    let testTeam: any;
     let testUser: any;
 
     beforeAll(async () => {
-        const {channel, team, user} = await Setup.apiInit(siteOneUrl);
+        const {channel, user} = await Setup.apiInit(siteOneUrl);
         testChannel = channel;
-        testTeam = team;
         testUser = user;
 
         // # Log in to server

@@ -21,15 +21,13 @@ import {
 import {Alert} from '@support/ui/component';
 import {
     BrowseChannelsScreen,
-    ChannelDropdownMenuScreen,
-    ChannelScreen,
     ChannelListScreen,
     HomeScreen,
     LoginScreen,
     ServerScreen,
 } from '@support/ui/screen';
 import {isAndroid, timeouts, wait, waitForElementToExist} from '@support/utils';
-import {expect, waitFor} from 'detox';
+import {expect} from 'detox';
 
 // Several tests here call device.reloadReactNative(), which can take 30-90s on iOS CI.
 jest.setTimeout(360000);
@@ -37,7 +35,6 @@ jest.setTimeout(360000);
 describe('Channels - Browse Channels', () => {
 
     const serverOneDisplayName = 'Server 1';
-    const channelsCategory = 'channels';
     let testTeam: any;
     let testUser: any;
 

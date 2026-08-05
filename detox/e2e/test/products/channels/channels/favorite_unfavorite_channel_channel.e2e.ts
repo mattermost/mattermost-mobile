@@ -8,10 +8,7 @@
 // *******************************************************************
 
 import {
-    Channel,
     Setup,
-    Team,
-    User,
 } from '@support/server_api';
 import {
     serverOneUrl,
@@ -20,29 +17,24 @@ import {
 import {
     ChannelScreen,
     ChannelListScreen,
-    CreateDirectMessageScreen,
     HomeScreen,
     LoginScreen,
     ServerScreen,
-    ChannelInfoScreen,
 } from '@support/ui/screen';
 import {timeouts, wait, waitForElementToExist} from '@support/utils';
-import {expect, waitFor} from 'detox';
+import {waitFor} from 'detox';
 
 describe('Channels - Favorite and Unfavorite Channel', () => {
 
     const serverOneDisplayName = 'Server 1';
     const channelsCategory = 'channels';
     const favoritesCategory = 'favorites';
-    const directMessagesCategory = 'direct_messages';
     let testChannel: any;
-    let testTeam: any;
     let testUser: any;
 
     beforeAll(async () => {
-        const {channel, team, user} = await Setup.apiInit(siteOneUrl);
+        const {channel, user} = await Setup.apiInit(siteOneUrl);
         testChannel = channel;
-        testTeam = team;
         testUser = user;
 
         // # Log in to server

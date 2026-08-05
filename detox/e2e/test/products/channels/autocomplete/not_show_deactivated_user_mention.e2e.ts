@@ -25,7 +25,7 @@ import {
     LoginScreen,
     ServerScreen,
 } from '@support/ui/screen';
-import {getRandomId, timeouts, wait} from '@support/utils';
+import {timeouts, wait} from '@support/utils';
 import {expect} from 'detox';
 
 describe('Autocomplete - At-Mention User Filters', () => {
@@ -35,7 +35,6 @@ describe('Autocomplete - At-Mention User Filters', () => {
     let testChannel: any;
     let testTeam: any;
     let testUser: any;
-    let channelB: any;
 
     beforeAll(async () => {
         const {channel, team, user} = await Setup.apiInit(siteOneUrl);
@@ -53,7 +52,6 @@ describe('Autocomplete - At-Mention User Filters', () => {
             throw new Error('[beforeAll] Failed to create channel B');
         }
         await Channel.apiAddUserToChannel(siteOneUrl, user.id, bChannel.id);
-        channelB = bChannel;
 
         await ServerScreen.connectToServer(serverOneUrl, serverOneDisplayName);
         await LoginScreen.login(testUser);

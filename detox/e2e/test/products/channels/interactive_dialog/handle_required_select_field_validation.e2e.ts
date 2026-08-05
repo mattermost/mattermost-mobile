@@ -34,8 +34,6 @@ import {
 import {wait, isAndroid, safeEnableSynchronization, timeouts, waitForElementToBeVisible, waitForElementToExist} from '@support/utils';
 import {expect} from 'detox';
 
-const ISO_DATETIME_PATTERN = /\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d+)?(?:Z|[+-]\d{2}:\d{2})/;
-
 // MM-66558: dialog fields use replaceText instead of typeText.
 
 // ===== Helper Functions =====
@@ -82,98 +80,6 @@ async function selectUser(user: {id: string; username: string}, {multiselect = f
     await waitFor(element(by.id('integration_selector.screen'))).
         not.toExist().
         withTimeout(timeouts.TEN_SEC);
-}
-
-async function selectChannel(channel?: {id: string; display_name: string}, {multiselect = false} = {}) {
-    const waitForSelectorClosed = async () => {
-        await waitFor(element(by.id('integration_selector.screen'))).
-            not.toExist().
-            withTimeout(timeouts.TEN_SEC);
-    };
-
-    if (channel) {
-        const rowContent = element(by.id(`integration_selector.channel_list.${channel.id}`));
-        let rowTapped = false;
-        try {
-            await waitFor(rowContent).toExist().withTimeout(timeouts.FIVE_SEC);
-            await rowContent.tap();
-            rowTapped = true;
-            await wait(timeouts.ONE_SEC);
-            if (multiselect) {
-                await waitFor(element(by.id('integration_selector.multiselect.submit.button'))).
-                    toExist().
-                    withTimeout(timeouts.FIVE_SEC);
-                await expect(element(by.id('integration_selector.screen'))).toExist();
-            } else {
-                await waitForSelectorClosed();
-            }
-            return;
-        } catch {
-            if (rowTapped) {
-                throw new Error('selectChannel: row tapped but selector state did not settle');
-            }
-
-            // Fall through only when the row itself was not tappable.
-        }
-
-        try {
-            // Only use text fallback while the selector is still open.
-            await expect(element(by.id('integration_selector.screen'))).toExist();
-            await element(by.text(channel.display_name)).tap();
-            await wait(timeouts.ONE_SEC);
-            if (multiselect) {
-                await waitFor(element(by.id('integration_selector.multiselect.submit.button'))).
-                    toExist().
-                    withTimeout(timeouts.FIVE_SEC);
-                await expect(element(by.id('integration_selector.screen'))).toExist();
-            } else {
-                await waitForSelectorClosed();
-            }
-            return;
-        } catch {
-            // Fall through.
-        }
-    }
-
-    try {
-        await expect(element(by.id('integration_selector.screen'))).toExist();
-        const sharedRow = element(by.id('integration_selector.channel_list')).atIndex(0);
-        await expect(sharedRow).toExist();
-        await sharedRow.tap();
-        await wait(timeouts.ONE_SEC);
-        if (multiselect) {
-            await waitFor(element(by.id('integration_selector.multiselect.submit.button'))).
-                toExist().
-                withTimeout(timeouts.FIVE_SEC);
-            await expect(element(by.id('integration_selector.screen'))).toExist();
-        } else {
-            await waitForSelectorClosed();
-        }
-        return;
-    } catch {
-        // Fall through to well-known channel names.
-    }
-
-    for (const name of ['Town Square', 'Off-Topic', 'General']) {
-        try {
-            await expect(element(by.id('integration_selector.screen'))).toExist();
-            await element(by.text(name)).tap();
-            await wait(timeouts.ONE_SEC);
-            if (multiselect) {
-                await waitFor(element(by.id('integration_selector.multiselect.submit.button'))).
-                    toExist().
-                    withTimeout(timeouts.FIVE_SEC);
-                await expect(element(by.id('integration_selector.screen'))).toExist();
-            } else {
-                await waitForSelectorClosed();
-            }
-            return;
-        } catch {
-            // Try next name.
-        }
-    }
-
-    throw new Error('selectChannel: could not select a channel row');
 }
 
 async function ensureDialogClosed() {

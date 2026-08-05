@@ -8,36 +8,29 @@
 // *******************************************************************
 
 import {
-    Channel,
     Setup,
-    Team,
-    User,
 } from '@support/server_api';
 import {
     serverOneUrl,
     siteOneUrl,
 } from '@support/test_config';
 import {
-    ChannelScreen,
     ChannelListScreen,
     CreateDirectMessageScreen,
     HomeScreen,
     LoginScreen,
     ServerScreen,
 } from '@support/ui/screen';
-import {isAndroid, timeouts, wait, expectVisible} from '@support/utils';
+import {isAndroid, timeouts, wait} from '@support/utils';
 import {expect, waitFor} from 'detox';
 
 describe('Channels - Create Direct Message', () => {
 
     const serverOneDisplayName = 'Server 1';
-    const directMessagesCategory = 'direct_messages';
-    let testTeam: any;
     let testUser: any;
 
     beforeAll(async () => {
-        const {team, user} = await Setup.apiInit(siteOneUrl);
-        testTeam = team;
+        const {user} = await Setup.apiInit(siteOneUrl);
         testUser = user;
 
         // # Log in to server

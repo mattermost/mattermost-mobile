@@ -1,8 +1,6 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import path from 'path';
-
 // *******************************************************************
 // - [#] indicates a test step (e.g. # Go to a screen)
 // - [*] indicates an assertion (e.g. * Check the title)
@@ -12,7 +10,6 @@ import path from 'path';
 import {
     ChannelBookmark,
     Channel,
-    Post,
     Setup,
 } from '@support/server_api';
 import {serverOneUrl, siteOneUrl} from '@support/test_config';
@@ -21,12 +18,11 @@ import {
     ChannelInfoScreen,
     ChannelListScreen,
     ChannelScreen,
-    EmojiPickerScreen,
     HomeScreen,
     LoginScreen,
     ServerScreen,
 } from '@support/ui/screen';
-import {isAndroid, isIos, safeEnableSynchronization, timeouts, wait, waitForElementToExist, waitForElementToNotExist} from '@support/utils';
+import {isAndroid, isIos, safeEnableSynchronization, timeouts, wait} from '@support/utils';
 import {expect, waitFor} from 'detox';
 
 describe('Channels - Channel Bookmarks', () => {
@@ -35,43 +31,13 @@ describe('Channels - Channel Bookmarks', () => {
     const channelsCategory = 'channels';
     let testTeam: any;
     let testUser: any;
-    let channelT5600: any;
-    let channelT5601: any;
-    let channelT5602: any;
-    let channelT5604: any;
     let channelT5605: any;
     let channelT5606: any;
     let channelT5607: any;
-    let channelT5608: any;
     let channelT5609: any;
     let channelT5610: any;
-    let bookmarkT5606: any;
     let bookmarkT5607: any;
     let channelT5612: any;
-
-    const getVisibleTextElement = async (text: string, maxIndex = 3) => {
-        /* eslint-disable no-await-in-loop */
-        for (let index = 0; index < maxIndex; index++) {
-            const candidate = element(by.text(text)).atIndex(index);
-
-            try {
-                await expect(candidate).toBeVisible();
-                return candidate;
-            } catch {
-                // Try the next visible match when the same label appears in multiple layers.
-            }
-        }
-        /* eslint-enable no-await-in-loop */
-
-        throw new Error(`No visible element found for text "${text}"`);
-    };
-
-    const waitForBookmarkInChannelInfo = async (
-        bookmarkMatcher: Detox.NativeMatcher,
-        options?: {textFallback?: string; bookmarkId?: string},
-    ) => {
-        await ChannelInfoScreen.waitForBookmarkInChannelInfo(bookmarkMatcher, options);
-    };
 
     const createChannel = async () => {
         const {channel} = await Channel.apiCreateChannel(siteOneUrl, {
@@ -135,14 +101,9 @@ describe('Channels - Channel Bookmarks', () => {
         testUser = user;
 
         // ── Create all test channels ──────────────────────────────────────────
-        channelT5600 = await createChannel();
-        channelT5601 = await createChannel();
-        channelT5602 = await createChannel();
-        channelT5604 = await createChannel();
         channelT5605 = await createChannel();
         channelT5606 = await createChannel();
         channelT5607 = await createChannel();
-        channelT5608 = await createChannel();
         channelT5609 = await createChannel();
         channelT5610 = await createChannel();
         channelT5612 = await createChannel();
@@ -169,7 +130,6 @@ describe('Channels - Channel Bookmarks', () => {
         if (!bT5606?.id) {
             throw new Error('[beforeAll] Failed to create bookmarkT5606');
         }
-        bookmarkT5606 = bT5606;
         const {bookmark: bT5607} = await ChannelBookmark.apiCreateChannelBookmarkLink(
             siteOneUrl, channelT5607.id, 'Revert Emoji Test', 'https://example.com',
         );

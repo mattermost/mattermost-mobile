@@ -11,7 +11,6 @@ import {
     Channel,
     Post,
     Setup,
-    User,
 } from '@support/server_api';
 import {
     serverOneUrl,

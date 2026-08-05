@@ -25,9 +25,7 @@ import {
     HomeScreen,
     LoginScreen,
     ServerScreen,
-    ChannelSettingsScreen,
 } from '@support/ui/screen';
-import {isAndroid, isIos, timeouts, wait} from '@support/utils';
 import {expect} from 'detox';
 
 describe('Channels - Edit Channel', () => {

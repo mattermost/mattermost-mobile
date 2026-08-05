@@ -22,35 +22,28 @@ import {
     ChannelInfoScreen,
     ChannelListScreen,
     ChannelScreen,
-    EditPostScreen,
     HomeScreen,
     LoginScreen,
-    PermalinkScreen,
     PinnedMessagesScreen,
     PostOptionsScreen,
     RecentMentionsScreen,
-    SavedMessagesScreen,
     ServerScreen,
-    ThreadScreen,
 } from '@support/ui/screen';
-import {getRandomId, timeouts, waitForElementToBeVisible, waitForElementToNotExist} from '@support/utils';
-import {by, element, expect} from 'detox';
+import {getRandomId, timeouts, waitForElementToNotExist} from '@support/utils';
+import {expect} from 'detox';
 
 describe('Search - Recent Mentions', () => {
 
     const serverOneDisplayName = 'Server 1';
     const channelsCategory = 'channels';
     let testChannel: any;
-    let testTeam: any;
     let testUser: any;
     let mentionPost: any;
-    let ownMentionPost: any;
 
     beforeAll(async () => {
         // # User B = testUser (the one who will be mentioned and who logs in)
         const {channel, team, user} = await Setup.apiInit(siteOneUrl);
         testChannel = channel;
-        testTeam = team;
         testUser = user;
 
         // # User A = mentioner. Add to team + channel.
@@ -94,7 +87,6 @@ describe('Search - Recent Mentions', () => {
         if (!postByOwn?.id) {
             throw new Error('[beforeAll] Failed to post own mention as testUser');
         }
-        ownMentionPost = {...postByOwn, messageText: ownText};
 
         // # User B (testUser) logs in via UI.
         await ServerScreen.connectToServer(serverOneUrl, serverOneDisplayName);

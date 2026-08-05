@@ -30,7 +30,6 @@ describe('Teams - Invite', () => {
     let testUser: any;
     let testUser1: any;
     let testUser2: any;
-    let testUser3: any;
 
     beforeAll(async () => {
         const {team, user} = await Setup.apiInit(siteOneUrl);

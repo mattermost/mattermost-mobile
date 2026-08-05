@@ -21,11 +21,7 @@ import {
     hasThreeDistinctServers,
 } from '@support/test_config';
 import {
-    Alert,
-} from '@support/ui/component';
-import {
     ChannelListScreen,
-    EditServerScreen,
     HomeScreen,
     LoginScreen,
     ServerScreen,

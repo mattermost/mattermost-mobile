@@ -27,7 +27,7 @@ import {
     ThreadOptionsScreen,
     ThreadScreen,
 } from '@support/ui/screen';
-import {getRandomId, timeouts, wait} from '@support/utils';
+import {getRandomId, timeouts} from '@support/utils';
 import {expect, waitFor} from 'detox';
 
 describe('Threads - Open Thread in Channel', () => {

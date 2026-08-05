@@ -8,7 +8,6 @@
 // *******************************************************************
 
 import {
-    Post,
     Setup,
     Status,
     User,
@@ -19,40 +18,24 @@ import {
 } from '@support/test_config';
 import {
     AccountScreen,
-    ChannelInfoScreen,
-    ChannelListScreen,
-    ChannelScreen,
-    CreateDirectMessageScreen,
     CustomStatusScreen,
-    EmojiPickerScreen,
     HomeScreen,
     LoginScreen,
     ServerScreen,
-    UserProfileScreen,
 } from '@support/ui/screen';
-import {getRandomId, isIos, timeouts, wait} from '@support/utils';
+import {isIos, timeouts, wait} from '@support/utils';
 import {expect, waitFor} from 'detox';
 
 describe('Account - Custom Status', () => {
 
     const serverOneDisplayName = 'Server 1';
-    const channelsCategory = 'channels';
 
     // Predefined status configurations
-    const STATUSES = {
-        IN_MEETING: {emoji: 'calendar', text: 'In a meeting', duration: 'one_hour'},
-        OUT_FOR_LUNCH: {emoji: 'hamburger', text: 'Out for lunch', duration: 'thirty_minutes'},
-        OUT_SICK: {emoji: 'sneezing_face', text: 'Out sick', duration: 'today'},
-        WORKING_FROM_HOME: {emoji: 'house', text: 'Working from home', duration: 'today'},
-        ON_VACATION: {emoji: 'palm_tree', text: 'On a vacation', duration: 'this_week'},
-    };
 
-    let testChannel: any;
     let testUser: any;
 
     beforeAll(async () => {
-        const {channel, user} = await Setup.apiInit(siteOneUrl);
-        testChannel = channel;
+        const {user} = await Setup.apiInit(siteOneUrl);
         testUser = user;
 
         // # Log in to server
@@ -155,66 +138,12 @@ describe('Account - Custom Status', () => {
     });
 });
 
-
 // ==================== Helper Functions ====================
 
 const openCustomStatusScreen = async () => {
     await AccountScreen.open();
     await CustomStatusScreen.open();
     await CustomStatusScreen.toBeVisible();
-};
-
-const selectSuggestedStatus = async (status: {emoji: string; text: string; duration: string}) => {
-    const suggested = CustomStatusScreen.getSuggestedCustomStatus(status.emoji, status.text, status.duration);
-    const scrollIntoView = async (target: Detox.NativeElement) => {
-        if (isIos()) {
-            try {
-                await waitFor(target).toBeVisible(50).whileElement(by.id(CustomStatusScreen.testID.scrollView)).scroll(100, 'down');
-            } catch {
-                try {
-                    await waitFor(target).toBeVisible(50).whileElement(by.id(CustomStatusScreen.testID.scrollView)).scroll(100, 'up');
-                } catch { /* already in view */ }
-            }
-        }
-        await waitFor(target).toExist().withTimeout(timeouts.FIVE_SEC);
-        await target.tap();
-    };
-    try {
-        await waitFor(suggested.customStatusSuggestion).toExist().withTimeout(timeouts.TWO_SEC);
-        await scrollIntoView(suggested.customStatusSuggestion);
-        return;
-    } catch { /* try recents */ }
-    const recent = CustomStatusScreen.getRecentCustomStatus(status.emoji, status.text, status.duration);
-    await scrollIntoView(recent.customStatusSuggestion);
-};
-
-const openEmojiPickerForDefault = async () => {
-    const defaultEmoji = CustomStatusScreen.getCustomStatusEmoji('default');
-    try {
-        await waitFor(defaultEmoji).toExist().withTimeout(timeouts.TEN_SEC);
-    } catch {
-        try {
-            await waitFor(CustomStatusScreen.statusInputClearButton).toBeVisible().withTimeout(timeouts.TWO_SEC);
-            await CustomStatusScreen.statusInputClearButton.tap();
-            await waitFor(defaultEmoji).toExist().withTimeout(timeouts.FIVE_SEC);
-        } catch {
-            // No clear button to use — fall through to the picker open below.
-        }
-    }
-    await CustomStatusScreen.openEmojiPicker('default');
-};
-
-const verifyStatusInInput = async (status: {emoji: string; text: string; duration: string}) => {
-    await expect(CustomStatusScreen.getCustomStatusEmoji(status.emoji)).toBeVisible();
-    if (isIos()) {
-        await expect(CustomStatusScreen.statusInput).toHaveValue(status.text);
-    } else {
-        await expect(CustomStatusScreen.statusInput).toHaveText(status.text);
-    }
-};
-
-const clearStatusInput = async () => {
-    await CustomStatusScreen.statusInputClearButton.tap();
 };
 
 const verifyAllSuggestedStatuses = async () => {
@@ -249,20 +178,3 @@ const verifySuggestedOrRecentCustomStatus = async (emojiName: string, text: stri
     }
 };
 
-const verifyStatusSetOnAccountScreen = async (status: {emoji: string; text: string; duration: string}) => {
-    await AccountScreen.waitForCustomStatus(status);
-    await AccountScreen.toBeVisible();
-    const {accountCustomStatusEmoji, accountCustomStatusText, accountCustomStatusExpiry} =
-        AccountScreen.getCustomStatus(status.emoji, status.duration);
-
-    await expect(accountCustomStatusEmoji).toExist();
-    await expect(accountCustomStatusText).toHaveText(status.text);
-    await expect(accountCustomStatusExpiry).toBeVisible();
-};
-
-const verifyStatusCleared = async () => {
-    // Prefer not.toExist: on iOS the clear control can linger as "not visible" after a
-    // successful clear (CI 30250131265).
-    await waitFor(AccountScreen.customStatusClearButton).not.toExist().withTimeout(timeouts.TEN_SEC);
-    await expect(AccountScreen.setStatusOption).toExist();
-};

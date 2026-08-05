@@ -18,17 +18,16 @@ import {
     serverOneUrl,
     siteOneUrl,
 } from '@support/test_config';
-import {Alert, Autocomplete} from '@support/ui/component';
+import {Alert} from '@support/ui/component';
 import {
     ChannelListScreen,
     ChannelScreen,
     HomeScreen,
     LoginScreen,
     ServerScreen,
-    UserProfileScreen,
 } from '@support/ui/screen';
-import {isIos, timeouts, wait, waitForElementToExist} from '@support/utils';
-import {by, element, expect, waitFor} from 'detox';
+import {timeouts, wait} from '@support/utils';
+import {expect} from 'detox';
 
 describe('Messaging - At-Mention', () => {
 

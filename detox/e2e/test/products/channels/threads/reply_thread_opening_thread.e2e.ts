@@ -23,7 +23,6 @@ import {
     HomeScreen,
     LoginScreen,
     ServerScreen,
-    ThreadOptionsScreen,
     ThreadScreen,
 } from '@support/ui/screen';
 import {getRandomId, timeouts} from '@support/utils';

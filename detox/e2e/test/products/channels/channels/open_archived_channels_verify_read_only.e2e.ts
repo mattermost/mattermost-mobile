@@ -40,10 +40,6 @@ describe('Channels - Archive Channel from Settings', () => {
     let testUser: any;
 
     // Pre-create channels before login — sidebar sync via HTTP, not delayed WS on Android API 35.
-    let channelForT4932_1: any;
-    let channelForT4932_2: any;
-    let channelForT4932_3: any;
-    let channelForT3208: any;
     let channelForT1703: any;
 
     beforeAll(async () => {
@@ -66,10 +62,6 @@ describe('Channels - Archive Channel from Settings', () => {
             await Channel.apiAddUserToChannel(siteOneUrl, testUser.id, channel.id);
             return channel;
         };
-        channelForT4932_1 = await makeChannel('O', 'arc-pub-1');
-        channelForT4932_2 = await makeChannel('O', 'arc-pub-2');
-        channelForT4932_3 = await makeChannel('P', 'arc-prv-1');
-        channelForT3208 = await makeChannel('O', 'arc-pub-3');
         channelForT1703 = await makeChannel('O', 'arc-t1703');
 
         // # Log in to server

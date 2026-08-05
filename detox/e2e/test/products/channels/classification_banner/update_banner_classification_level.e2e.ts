@@ -12,8 +12,8 @@ import {enableClassificationMarkings} from '@support/classification_test_helper'
 import {Properties, Setup, System} from '@support/server_api';
 import {serverOneUrl, siteOneUrl} from '@support/test_config';
 import {GlobalClassificationBanner} from '@support/ui/component';
-import {ChannelListScreen, ChannelScreen, GlobalThreadsScreen, HomeScreen, LoginScreen, ServerScreen} from '@support/ui/screen';
-import {timeouts, wait} from '@support/utils';
+import {ChannelListScreen, HomeScreen, LoginScreen, ServerScreen} from '@support/ui/screen';
+import {timeouts} from '@support/utils';
 import {by, device, element, expect, waitFor} from 'detox';
 
 // Lock wait is up to 20m; leave headroom for enable/setup after acquire.

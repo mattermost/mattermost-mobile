@@ -44,31 +44,26 @@ describe('Channels', () => {
     let testTeam: any;
     let publicChannelName: string;
     let publicChannelDisplayName: string;
-    let privateChannelName: string;
-    let privateChannelDisplayName: string;
-    let channelWithMetadata: any;
 
     beforeAll(async () => {
         const {user, team} = await Setup.apiInit(siteOneUrl);
         testUser = user;
         testTeam = team;
 
-        // Create a channel with header and purpose for copy tests
-        const {channel: metadataChannel} = await Channel.apiCreateChannel(siteOneUrl, {
+        publicChannelName = `channel-${getRandomId()}`;
+        publicChannelDisplayName = publicChannelName.replace(/-/g, ' ');
+        const {channel} = await Channel.apiCreateChannel(siteOneUrl, {
             teamId: testTeam.id,
-            name: `channel-metadata-${getRandomId()}`,
-            displayName: `Channel Metadata ${getRandomId()}`,
+            name: publicChannelName,
+            displayName: publicChannelDisplayName,
             type: 'O',
-            header: 'This is test header',
-            purpose: 'Test purpose for copying',
         });
-        if (!metadataChannel?.id) {
-            throw new Error('[beforeAll] Failed to create channel with metadata');
+        if (!channel?.id) {
+            throw new Error('[beforeAll] Failed to create public channel for edit test');
         }
-        channelWithMetadata = metadataChannel;
+        await Channel.apiAddUserToChannel(siteOneUrl, testUser.id, channel.id);
 
         await wait(timeouts.THREE_SEC);
-        await Channel.apiAddUserToChannel(siteOneUrl, testUser.id, channelWithMetadata.id);
         await ServerScreen.connectToServer(serverOneUrl, serverOneDisplayName);
         await LoginScreen.login(testUser);
     });

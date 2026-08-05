@@ -21,7 +21,6 @@ import {
     HomeScreen,
     LoginScreen,
     ServerScreen,
-    ChannelInfoScreen,
 } from '@support/ui/screen';
 import {timeouts, wait} from '@support/utils';
 import {expect} from 'detox';

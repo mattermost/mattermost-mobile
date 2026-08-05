@@ -11,8 +11,6 @@ import {
     Channel,
     Setup,
     System,
-    Team,
-    User,
 } from '@support/server_api';
 import {
     serverOneUrl,
@@ -21,15 +19,14 @@ import {
 import {Alert} from '@support/ui/component';
 import {
     BrowseChannelsScreen,
-    ChannelDropdownMenuScreen,
     ChannelScreen,
     ChannelListScreen,
     HomeScreen,
     LoginScreen,
     ServerScreen,
 } from '@support/ui/screen';
-import {isAndroid, timeouts, wait, waitForElementToExist} from '@support/utils';
-import {expect, waitFor} from 'detox';
+import {isAndroid, timeouts, wait} from '@support/utils';
+import {expect} from 'detox';
 
 // Several tests here call device.reloadReactNative(), which can take 30-90s on iOS CI.
 jest.setTimeout(360000);

@@ -8,7 +8,6 @@
 // *******************************************************************
 
 import {
-    Post,
     Setup,
     System,
 } from '@support/server_api';
@@ -18,26 +17,20 @@ import {
 } from '@support/test_config';
 import {
     ChannelListScreen,
-    ChannelScreen,
     GlobalThreadsScreen,
     HomeScreen,
     LoginScreen,
     ServerScreen,
-    ThreadScreen,
 } from '@support/ui/screen';
-import {getRandomId, timeouts, wait} from '@support/utils';
 import {expect} from 'detox';
 
 describe('Threads - Global Threads', () => {
 
     const serverOneDisplayName = 'Server 1';
-    const channelsCategory = 'channels';
-    let testChannel: any;
     let testUser: any;
 
     beforeAll(async () => {
-        const {channel, user} = await Setup.apiInit(siteOneUrl);
-        testChannel = channel;
+        const {user} = await Setup.apiInit(siteOneUrl);
         testUser = user;
 
         // # Enable Collapsed Reply Threads so the global threads UI surfaces

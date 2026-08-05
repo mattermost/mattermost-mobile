@@ -7,7 +7,7 @@
 // - Use element testID when selecting an element. Create one if none.
 // *******************************************************************
 
-import {Post, Setup, User} from '@support/server_api';
+import {Post, Setup} from '@support/server_api';
 import {
     serverOneUrl,
     siteOneUrl,
@@ -15,14 +15,12 @@ import {
 import {
     AccountScreen,
     ChannelScreen,
-    CustomStatusScreen,
     EditProfileScreen,
     HomeScreen,
     LoginScreen,
     ServerScreen,
-    SettingsScreen,
 } from '@support/ui/screen';
-import {getRandomId, safeEnableSynchronization, timeouts, wait} from '@support/utils';
+import {getRandomId, timeouts, wait} from '@support/utils';
 import {expect, waitFor} from 'detox';
 
 describe('Account - Account Menu', () => {

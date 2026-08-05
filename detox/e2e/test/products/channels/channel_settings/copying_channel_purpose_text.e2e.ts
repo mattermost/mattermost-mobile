@@ -27,14 +27,12 @@ import {
     ChannelInfoScreen,
     ChannelListScreen,
     ChannelScreen,
-    ChannelSettingsScreen,
-    CreateOrEditChannelScreen,
     LoginScreen,
     HomeScreen,
     ServerScreen,
 } from '@support/ui/screen';
 import {getRandomId, timeouts, wait} from '@support/utils';
-import {expect, waitFor} from 'detox';
+import {expect} from 'detox';
 
 describe('Channels', () => {
 
@@ -42,10 +40,6 @@ describe('Channels', () => {
     const channelsCategory = 'channels';
     let testUser: any;
     let testTeam: any;
-    let publicChannelName: string;
-    let publicChannelDisplayName: string;
-    let privateChannelName: string;
-    let privateChannelDisplayName: string;
     let channelWithMetadata: any;
 
     beforeAll(async () => {

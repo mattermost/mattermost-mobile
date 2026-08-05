@@ -8,7 +8,6 @@
 // *******************************************************************
 
 import {
-    Post,
     Setup,
     Team,
     User,
@@ -20,15 +19,10 @@ import {
 import {
     AddMembersScreen,
     ChannelListScreen,
-    ChannelScreen,
     CreateDirectMessageScreen,
     HomeScreen,
     LoginScreen,
-    PermalinkScreen,
-    PostOptionsScreen,
-    SearchMessagesScreen,
     ServerScreen,
-    ThreadScreen,
 } from '@support/ui/screen';
 import {getRandomId, isAndroid, timeouts, wait} from '@support/utils';
 import {expect} from 'detox';
@@ -36,14 +30,11 @@ import {expect} from 'detox';
 describe('Search - Search Cycle', () => {
 
     const serverOneDisplayName = 'Server 1';
-    const channelsCategory = 'channels';
-    let testChannel: any;
     let testTeam: any;
     let testUser: any;
 
     beforeAll(async () => {
-        const {channel, team, user} = await Setup.apiInit(siteOneUrl);
-        testChannel = channel;
+        const {team, user} = await Setup.apiInit(siteOneUrl);
         testTeam = team;
         testUser = user;
 

@@ -250,7 +250,7 @@ class ChannelListScreen {
 
     toBeVisible = async (timeout = timeouts.HALF_MIN) => {
         // Sheet can sit over a restored session before any modal dismiss runs.
-        await dismissIosSavePasswordIfVisible(timeouts.HALF_SEC);
+        await dismissIosSavePasswordIfVisible();
 
         try {
             await this.dismissAnyOpenModals();
@@ -260,7 +260,7 @@ class ChannelListScreen {
         }
         try {
             await waitForElementToExist(this.channelListScreen, timeout);
-            await dismissIosSavePasswordIfVisible(timeouts.HALF_SEC);
+            await dismissIosSavePasswordIfVisible();
         } catch (firstError) {
             // eslint-disable-next-line no-console
             console.warn('[ChannelListScreen.toBeVisible] Channel list not found — attempting recovery relaunch');

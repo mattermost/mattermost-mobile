@@ -28,9 +28,7 @@ describe('Teams - Invite', () => {
 
     let testTeam: any;
     let testUser: any;
-    let testUser1: any;
     let testUser2: any;
-    let testUser3: any;
 
     beforeAll(async () => {
         const {team, user} = await Setup.apiInit(siteOneUrl);
@@ -40,7 +38,6 @@ describe('Teams - Invite', () => {
         if (!user1?.id) {
             throw new Error('[beforeAll] Failed to create testUser1');
         }
-        testUser1 = user1;
         const {user: user2} = await User.apiCreateUser(siteOneUrl);
         if (!user2?.id) {
             throw new Error('[beforeAll] Failed to create testUser2');

@@ -21,9 +21,6 @@ import {
     HomeScreen,
     LoginScreen,
     PermalinkScreen,
-    PostOptionsScreen,
-    RecentMentionsScreen,
-    SavedMessagesScreen,
     SearchMessagesScreen,
     ServerScreen,
 } from '@support/ui/screen';
@@ -33,7 +30,6 @@ import {expect} from 'detox';
 describe('Search - Hashtag Search', () => {
 
     const serverOneDisplayName = 'Server 1';
-    const channelsCategory = 'channels';
     let testChannel: any;
     let testUser: any;
 

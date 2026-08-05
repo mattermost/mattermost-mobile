@@ -29,9 +29,8 @@ import {
     HomeScreen,
     LoginScreen,
     ServerScreen,
-    ThreadScreen,
 } from '@support/ui/screen';
-import {getRandomId, isAndroid, isIos, timeouts, wait} from '@support/utils';
+import {isIos, timeouts, wait} from '@support/utils';
 import {expect} from 'detox';
 
 describe('Messaging - File Upload', () => {

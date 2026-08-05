@@ -192,6 +192,7 @@ function restrictionPlistPaths(udid) {
             root,
             'Containers/Shared/SystemGroup/systemgroup.com.apple.configurationprofiles/Library/ConfigurationProfiles/EffectiveUserSettings.plist',
         ),
+
         // Settings.app toggle also writes these Library mirrors — missing them
         // leaves CoreRestrictions reading allowPasswordAutoFill=YES.
         path.join(root, 'Library/UserConfigurationProfiles/EffectiveUserSettings.plist'),
@@ -240,6 +241,7 @@ function writeRestrictionPlists(udid) {
 
     const expected = (restrictionPlistPaths(udid).length * RESTRICTION_KEYS.length) + 1;
     console.log(`\nRestriction write summary: ${verified}/${expected} keys verified (attempts=${wrote})`);
+
     // Require the primary allowPasswordAutoFill key on UserSettings + both Library mirrors.
     const critical = [
         restrictionPlistPaths(udid)[0],

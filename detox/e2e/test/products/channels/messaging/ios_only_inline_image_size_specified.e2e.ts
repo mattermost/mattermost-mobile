@@ -7,31 +7,22 @@
 // - Use element testID when selecting an element. Create one if none.
 // *******************************************************************
 
-import fs from 'fs';
-import os from 'os';
-import path from 'path';
-
-import {DEFAULT_MAX_FILE_SIZE_BYTES} from '@support/constants/file_settings';
 import {
     Post,
     Setup,
-    System,
-    User,
 } from '@support/server_api';
 import {
     serverOneUrl,
     siteOneUrl,
 } from '@support/test_config';
-import {AttachmentOptions} from '@support/ui/component';
 import {
     ChannelListScreen,
     ChannelScreen,
     HomeScreen,
     LoginScreen,
     ServerScreen,
-    ThreadScreen,
 } from '@support/ui/screen';
-import {getRandomId, isAndroid, isIos, timeouts, wait} from '@support/utils';
+import {isIos, timeouts, wait} from '@support/utils';
 import {expect} from 'detox';
 
 describe('Messaging - File Upload', () => {
@@ -40,7 +31,6 @@ describe('Messaging - File Upload', () => {
     const channelsCategory = 'channels';
 
     // Fallback when GET /config omits cloud_restrictable FileSettings.
-    const FALLBACK_MAX_FILE_SIZE = DEFAULT_MAX_FILE_SIZE_BYTES;
     let testChannel: any;
 
     beforeAll(async () => {

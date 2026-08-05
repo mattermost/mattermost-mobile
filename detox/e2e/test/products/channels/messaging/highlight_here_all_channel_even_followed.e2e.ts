@@ -22,8 +22,7 @@ import {
     LoginScreen,
     ServerScreen,
 } from '@support/ui/screen';
-import {getRandomId, isAndroid, timeouts, wait} from '@support/utils';
-import {expect, waitFor} from 'detox';
+import {expect} from 'detox';
 
 describe('Messaging - Message Post', () => {
 

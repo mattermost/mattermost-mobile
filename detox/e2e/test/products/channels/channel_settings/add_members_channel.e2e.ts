@@ -27,13 +27,11 @@ import {
     ChannelInfoScreen,
     ChannelListScreen,
     ChannelScreen,
-    CreateDirectMessageScreen,
     HomeScreen,
     LoginScreen,
-    ManageChannelMembersScreen,
     ServerScreen,
 } from '@support/ui/screen';
-import {isIos, timeouts, wait, waitForElementToExist} from '@support/utils';
+import {timeouts, wait} from '@support/utils';
 import {expect} from 'detox';
 
 describe('Channels', () => {
@@ -48,24 +46,6 @@ describe('Channels', () => {
 
     // Test-specific data
     let addMemberUser: any; // For MM-T3195
-    let user2: any; // For MM-T856
-    let memberUser: any; // For MM-T3196
-    let privateChannel1: any; // For MM-T3204
-    let privUser: any; // For MM-T3204
-    let privateChannel2: any; // For MM-T3205
-    let removeMeUser: any; // For MM-T3205
-    let gmUser1: any; // For MM-T878
-    let gmUser2: any; // For MM-T878
-
-    const tapMembersOption = async () => {
-        try {
-            await ChannelInfoScreen.scrollView.scroll(200, 'down');
-        } catch {
-            // scrollView may not need scrolling
-        }
-        await waitFor(ChannelInfoScreen.membersOption).toBeVisible().withTimeout(timeouts.TEN_SEC);
-        await ChannelInfoScreen.membersOption.tap();
-    };
 
     beforeAll(async () => {
         // 1. Base setup (shared across all tests)
@@ -88,7 +68,6 @@ describe('Channels', () => {
             throw new Error('[beforeAll] Failed to create user2');
         }
         await Team.apiAddUserToTeam(siteOneUrl, newUser2.id, testTeam.id);
-        user2 = newUser2;
 
         // 4. Test 3 (MM-T3196): User already in channel for removal
         const {user: newUser3} = await User.apiCreateUser(siteOneUrl, {prefix: 'member'});
@@ -97,7 +76,6 @@ describe('Channels', () => {
         }
         await Team.apiAddUserToTeam(siteOneUrl, newUser3.id, testTeam.id);
         await Channel.apiAddUserToChannel(siteOneUrl, newUser3.id, testChannel.id);
-        memberUser = newUser3;
 
         // 5. Test 4 (MM-T3204): Private channel + user to add
         const {channel: privChan1} = await Channel.apiCreateChannel(siteOneUrl, {
@@ -108,14 +86,12 @@ describe('Channels', () => {
             throw new Error('[beforeAll] Failed to create private channel 1');
         }
         await Channel.apiAddUserToChannel(siteOneUrl, testUser.id, privChan1.id);
-        privateChannel1 = privChan1;
 
         const {user: newUser4} = await User.apiCreateUser(siteOneUrl, {prefix: 'privuser'});
         if (!newUser4?.id) {
             throw new Error('[beforeAll] Failed to create privUser');
         }
         await Team.apiAddUserToTeam(siteOneUrl, newUser4.id, testTeam.id);
-        privUser = newUser4;
 
         // 6. Test 5 (MM-T3205): Private channel + user already in it for removal
         const {channel: privChan2} = await Channel.apiCreateChannel(siteOneUrl, {
@@ -126,7 +102,6 @@ describe('Channels', () => {
             throw new Error('[beforeAll] Failed to create private channel 2');
         }
         await Channel.apiAddUserToChannel(siteOneUrl, testUser.id, privChan2.id);
-        privateChannel2 = privChan2;
 
         const {user: newUser5} = await User.apiCreateUser(siteOneUrl, {prefix: 'removeme'});
         if (!newUser5?.id) {
@@ -134,7 +109,6 @@ describe('Channels', () => {
         }
         await Team.apiAddUserToTeam(siteOneUrl, newUser5.id, testTeam.id);
         await Channel.apiAddUserToChannel(siteOneUrl, newUser5.id, privChan2.id);
-        removeMeUser = newUser5;
 
         // 7. Test 6 (MM-T878): Two users for GM creation
         const {user: gmUserOne} = await User.apiCreateUser(siteOneUrl, {prefix: 'gmuser1'});
@@ -151,8 +125,6 @@ describe('Channels', () => {
         await wait(timeouts.ONE_SEC);
         await Team.apiAddUserToTeam(siteOneUrl, gmUserTwo.id, testTeam.id);
         await wait(timeouts.ONE_SEC);
-        gmUser1 = gmUserOne;
-        gmUser2 = gmUserTwo;
 
         // 8. Login once with test user
         await ServerScreen.connectToServer(serverOneUrl, serverOneDisplayName);

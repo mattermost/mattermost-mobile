@@ -8,7 +8,6 @@
 // *******************************************************************
 
 import {
-    Channel,
     Setup,
     Team,
     User,
@@ -18,20 +17,18 @@ import {
     siteOneUrl,
 } from '@support/test_config';
 import {
-    ChannelScreen,
     ChannelListScreen,
     CreateDirectMessageScreen,
     HomeScreen,
     LoginScreen,
     ServerScreen,
 } from '@support/ui/screen';
-import {isAndroid, timeouts, wait, expectVisible} from '@support/utils';
-import {expect, waitFor} from 'detox';
+import {isAndroid, timeouts, wait} from '@support/utils';
+import {expect} from 'detox';
 
 describe('Channels - Create Direct Message', () => {
 
     const serverOneDisplayName = 'Server 1';
-    const directMessagesCategory = 'direct_messages';
     let testTeam: any;
     let testUser: any;
 

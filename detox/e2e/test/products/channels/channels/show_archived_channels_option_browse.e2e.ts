@@ -7,23 +7,18 @@
 // - Use element testID when selecting an element. Create one if none.
 // *******************************************************************
 
-import {Channel, Post, Setup, System} from '@support/server_api';
+import {Setup, System} from '@support/server_api';
 import {serverOneUrl, siteOneUrl} from '@support/test_config';
 import {Alert} from '@support/ui/component';
 import {
     BrowseChannelsScreen,
-    ChannelScreen,
     ChannelListScreen,
     ChannelDropdownMenuScreen,
-    ChannelInfoScreen,
-    ChannelSettingsScreen,
     HomeScreen,
     LoginScreen,
     ServerScreen,
-    closeArchivedChannel,
-    openArchivedChannel,
 } from '@support/ui/screen';
-import {isAndroid, timeouts, wait, waitForElementToBeVisible} from '@support/utils';
+import {timeouts, wait, waitForElementToBeVisible} from '@support/utils';
 import {expect, waitFor} from 'detox';
 
 // beforeAll: 4 channels + login under CI load — 6min hook timeout.
@@ -35,16 +30,9 @@ jest.setTimeout(360000);
 describe('Channels - Archive Channel from Settings', () => {
 
     const serverOneDisplayName = 'Server 1';
-    const channelsCategory = 'channels';
-    let testTeam: any;
     let testUser: any;
 
     // Pre-create channels before login — sidebar sync via HTTP, not delayed WS on Android API 35.
-    let channelForT4932_1: any;
-    let channelForT4932_2: any;
-    let channelForT4932_3: any;
-    let channelForT3208: any;
-    let channelForT1703: any;
 
     beforeAll(async () => {
         // # Ensure archived channels are visible in browse channels
@@ -54,23 +42,12 @@ describe('Channels - Archive Channel from Settings', () => {
         });
         await wait(timeouts.ONE_SEC);
 
-        const {team, user} = await Setup.apiInit(siteOneUrl);
-        testTeam = team;
+        const {user} = await Setup.apiInit(siteOneUrl);
         testUser = user;
 
         // Create channels and add testUser BEFORE login. The initial HTTP channel
         // sync on login fetches all member channels, so these appear in the sidebar
         // without depending on a WebSocket user_added event.
-        const makeChannel = async (type: 'O' | 'P', prefix: string) => {
-            const {channel} = await Channel.apiCreateChannel(siteOneUrl, {type, teamId: testTeam.id, prefix});
-            await Channel.apiAddUserToChannel(siteOneUrl, testUser.id, channel.id);
-            return channel;
-        };
-        channelForT4932_1 = await makeChannel('O', 'arc-pub-1');
-        channelForT4932_2 = await makeChannel('O', 'arc-pub-2');
-        channelForT4932_3 = await makeChannel('P', 'arc-prv-1');
-        channelForT3208 = await makeChannel('O', 'arc-pub-3');
-        channelForT1703 = await makeChannel('O', 'arc-t1703');
 
         // # Log in to server
         await ServerScreen.connectToServer(serverOneUrl, serverOneDisplayName);

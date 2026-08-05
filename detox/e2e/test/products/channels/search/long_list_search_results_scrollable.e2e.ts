@@ -22,22 +22,17 @@ import {
 } from '@support/test_config';
 import {
     ChannelListScreen,
-    ChannelScreen,
     HomeScreen,
     LoginScreen,
-    PermalinkScreen,
-    PostOptionsScreen,
-    SavedMessagesScreen,
     SearchMessagesScreen,
     ServerScreen,
 } from '@support/ui/screen';
-import {getRandomId, timeouts, wait, waitForElementToBeVisible} from '@support/utils';
+import {getRandomId, timeouts, wait} from '@support/utils';
 import {expect, waitFor} from 'detox';
 
 describe('Search - Result Interactions', () => {
 
     const serverOneDisplayName = 'Server 1';
-    const channelsCategory = 'channels';
     let testChannel: any;
     let testUser: any;
 

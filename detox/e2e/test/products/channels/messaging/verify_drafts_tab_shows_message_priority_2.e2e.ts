@@ -70,7 +70,6 @@ describe('Messaging - Message Draft', () => {
     });
 });
 
-
 async function openChannel(channelsCategory: string, testChannel: any) {
     await ChannelListScreen.draftsButton.toNotBeVisible();
     await ChannelScreen.open(channelsCategory, testChannel.name);

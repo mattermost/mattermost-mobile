@@ -24,7 +24,7 @@ import {
     ServerScreen,
     ThreadScreen,
 } from '@support/ui/screen';
-import {getRandomId, isAndroid, timeouts} from '@support/utils';
+import {getRandomId, timeouts} from '@support/utils';
 import {expect, waitFor} from 'detox';
 
 describe('Messaging - Message Reply', () => {

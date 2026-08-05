@@ -16,20 +16,15 @@ import {
     siteOneUrl,
 } from '@support/test_config';
 import {
-    ChannelInfoScreen,
     ChannelListScreen,
     ChannelScreen,
     HomeScreen,
     LoginScreen,
-    PinnedMessagesScreen,
-    PostOptionsScreen,
-    RecentMentionsScreen,
-    SavedMessagesScreen,
     SearchMessagesScreen,
     ServerScreen,
 } from '@support/ui/screen';
-import {getRandomId, timeouts} from '@support/utils';
-import {expect, waitFor} from 'detox';
+import {getRandomId} from '@support/utils';
+import {expect} from 'detox';
 
 describe('Smoke Test - Search', () => {
 

@@ -25,7 +25,7 @@ import {
     ThreadScreen,
 } from '@support/ui/screen';
 import {getRandomId, timeouts, wait} from '@support/utils';
-import {expect, waitFor} from 'detox';
+import {waitFor} from 'detox';
 
 describe('Messaging - Message Delete', () => {
 

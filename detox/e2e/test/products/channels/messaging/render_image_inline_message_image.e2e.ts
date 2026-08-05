@@ -21,18 +21,10 @@ import {
     LoginScreen,
     ServerScreen,
 } from '@support/ui/screen';
-import {isAndroid, isIos, timeouts, wait, waitForElementToExist, safeEnableSynchronization} from '@support/utils';
+import {isAndroid, timeouts} from '@support/utils';
 import {expect, waitFor} from 'detox';
 
 // iOS gallery close uses atIndex(0) because RNGH duplicates the testID.
-const dismissGallery = async () => {
-    if (isAndroid()) {
-        await device.pressBack();
-    } else {
-        await element(by.id('gallery.header.close.button')).atIndex(0).tap();
-    }
-    await waitFor(element(by.id('gallery.header.close.button'))).not.toExist().withTimeout(timeouts.TEN_SEC);
-};
 
 describe('Messaging - File Preview Gallery', () => {
 

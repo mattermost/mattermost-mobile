@@ -16,7 +16,6 @@ import {
     Setup,
     System,
     User,
-    Post,
 } from '@support/server_api';
 import {
     serverOneUrl,
@@ -31,18 +30,12 @@ import {
     LoginScreen,
     ServerScreen,
 } from '@support/ui/screen';
-import {wait, isAndroid, safeEnableSynchronization, timeouts, waitForElementToBeVisible, waitForElementToExist} from '@support/utils';
+import {wait, isAndroid, safeEnableSynchronization, timeouts, waitForElementToBeVisible} from '@support/utils';
 import {expect} from 'detox';
-
-const ISO_DATETIME_PATTERN = /\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d+)?(?:Z|[+-]\d{2}:\d{2})/;
 
 // MM-66558: dialog fields use replaceText instead of typeText.
 
 // ===== Helper Functions =====
-async function waitForDialogSelectorButton(testId: string) {
-    await wait(timeouts.HALF_SEC);
-    await waitForElementToExist(element(by.id(testId)), timeouts.TEN_SEC);
-}
 
 // Selector rows differ per data source: user_list.user_item.<id>.<id>, channel_list.<id>,
 // options by text. Tap the display_name id — by.text hits the search field instead.

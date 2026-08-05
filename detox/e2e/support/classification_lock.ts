@@ -13,6 +13,7 @@ const LOCK_NAME = 'classification';
 const DEFAULT_TIMEOUT_MS = timeouts.ONE_MIN * 20;
 const DEFAULT_TTL_MS = timeouts.ONE_MIN * 30;
 const DEFAULT_POLL_MS = timeouts.TWO_SEC;
+
 // Parallel CI runs share the same cloud admin preference. Steal a lock held by
 // a different GITHUB_RUN_ID after a short grace so one stuck run cannot block
 // another for the full TTL.

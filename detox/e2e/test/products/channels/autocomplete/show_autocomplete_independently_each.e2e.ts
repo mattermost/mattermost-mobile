@@ -10,8 +10,6 @@
 import {
     Channel,
     Setup,
-    Team,
-    User,
 } from '@support/server_api';
 import {
     serverOneUrl,
@@ -25,7 +23,7 @@ import {
     LoginScreen,
     ServerScreen,
 } from '@support/ui/screen';
-import {getRandomId, timeouts, wait} from '@support/utils';
+import {timeouts, wait} from '@support/utils';
 import {expect} from 'detox';
 
 describe('Autocomplete - At-Mention User Filters', () => {
@@ -33,14 +31,12 @@ describe('Autocomplete - At-Mention User Filters', () => {
     const serverOneDisplayName = 'Server 1';
     const channelsCategory = 'channels';
     let testChannel: any;
-    let testTeam: any;
     let testUser: any;
     let channelB: any;
 
     beforeAll(async () => {
         const {channel, team, user} = await Setup.apiInit(siteOneUrl);
         testChannel = channel;
-        testTeam = team;
         testUser = user;
 
         // # Pre-create channel B BEFORE login so it lands in the initial sidebar sync.

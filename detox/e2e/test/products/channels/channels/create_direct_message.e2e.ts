@@ -25,7 +25,7 @@ import {
     LoginScreen,
     ServerScreen,
 } from '@support/ui/screen';
-import {isAndroid, timeouts, wait, expectVisible} from '@support/utils';
+import {timeouts} from '@support/utils';
 import {expect, waitFor} from 'detox';
 
 describe('Channels - Create Direct Message', () => {

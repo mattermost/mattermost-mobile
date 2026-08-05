@@ -16,7 +16,6 @@ import {
     serverOneUrl,
     siteOneUrl,
 } from '@support/test_config';
-import {Alert} from '@support/ui/component';
 import {
     ChannelListScreen,
     ChannelScreen,
@@ -24,10 +23,9 @@ import {
     HomeScreen,
     LoginScreen,
     ServerScreen,
-    ThreadOptionsScreen,
     ThreadScreen,
 } from '@support/ui/screen';
-import {getRandomId, timeouts, wait} from '@support/utils';
+import {getRandomId} from '@support/utils';
 import {expect} from 'detox';
 
 describe('Threads - Mark Thread as Read and Unread', () => {

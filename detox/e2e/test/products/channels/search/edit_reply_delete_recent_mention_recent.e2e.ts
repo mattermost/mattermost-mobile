@@ -19,38 +19,29 @@ import {
     siteOneUrl,
 } from '@support/test_config';
 import {
-    ChannelInfoScreen,
     ChannelListScreen,
-    ChannelScreen,
     EditPostScreen,
     HomeScreen,
     LoginScreen,
-    PermalinkScreen,
-    PinnedMessagesScreen,
     PostOptionsScreen,
     RecentMentionsScreen,
-    SavedMessagesScreen,
     ServerScreen,
     ThreadScreen,
 } from '@support/ui/screen';
-import {getRandomId, timeouts, waitForElementToBeVisible, waitForElementToNotExist} from '@support/utils';
+import {getRandomId, timeouts, waitForElementToBeVisible} from '@support/utils';
 import {by, element, expect} from 'detox';
 
 describe('Search - Recent Mentions', () => {
 
     const serverOneDisplayName = 'Server 1';
-    const channelsCategory = 'channels';
     let testChannel: any;
-    let testTeam: any;
     let testUser: any;
-    let mentionPost: any;
     let ownMentionPost: any;
 
     beforeAll(async () => {
         // # User B = testUser (the one who will be mentioned and who logs in)
         const {channel, team, user} = await Setup.apiInit(siteOneUrl);
         testChannel = channel;
-        testTeam = team;
         testUser = user;
 
         // # User A = mentioner. Add to team + channel.
@@ -78,7 +69,6 @@ describe('Search - Recent Mentions', () => {
         if (!postByOther?.id) {
             throw new Error('[beforeAll] Failed to post mention as User A');
         }
-        mentionPost = {...postByOther, messageText: mentionText};
 
         // # Fixture 2: testUser self-posts a mention of itself — MM-T4909_3 needs testUser to own
         // the post, and self-mentions still surface in the search-backed mentions feed.

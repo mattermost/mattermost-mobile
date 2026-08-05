@@ -23,7 +23,6 @@ import {
     GlobalThreadsScreen,
     HomeScreen,
     LoginScreen,
-    PermalinkScreen,
     ServerScreen,
     ThreadOptionsScreen,
     ThreadScreen,

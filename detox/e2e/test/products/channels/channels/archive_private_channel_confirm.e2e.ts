@@ -25,7 +25,7 @@ import {
     ChannelInfoScreen,
     ChannelSettingsScreen,
 } from '@support/ui/screen';
-import {isAndroid, timeouts, wait} from '@support/utils';
+import {timeouts, wait} from '@support/utils';
 import {expect, waitFor} from 'detox';
 
 describe('Channels - Archive Channel', () => {

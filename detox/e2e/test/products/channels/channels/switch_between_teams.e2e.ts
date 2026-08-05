@@ -16,34 +16,21 @@ import {
     siteOneUrl,
 } from '@support/test_config';
 import {
-    BrowseChannelsScreen,
-    ChannelScreen,
     ChannelListScreen,
-    CreateDirectMessageScreen,
-    CreateOrEditChannelScreen,
-    FindChannelsScreen,
-    GlobalThreadsScreen,
     HomeScreen,
     LoginScreen,
     ServerScreen,
 } from '@support/ui/screen';
-import {timeouts, expectVisible, wait, waitForElementToBeVisible} from '@support/utils';
 import {expect} from 'detox';
 
 describe('Channels - Channel List', () => {
 
     const serverOneDisplayName = 'Server 1';
-    const directMessagesCategory = 'direct_messages';
-    const offTopicChannelName = 'off-topic';
-    const townSquareChannelName = 'town-square';
-    const channelsCategory = 'channels';
-    let testChannel: any;
     let testTeam: any;
     let testUser: any;
 
     beforeAll(async () => {
-        const {channel, team, user} = await Setup.apiInit(siteOneUrl);
-        testChannel = channel;
+        const {team, user} = await Setup.apiInit(siteOneUrl);
         testTeam = team;
         testUser = user;
 

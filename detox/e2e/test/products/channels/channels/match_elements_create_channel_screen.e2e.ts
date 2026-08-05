@@ -14,13 +14,11 @@ import {
 } from '@support/test_config';
 import {
     ChannelListScreen,
-    ChannelScreen,
     CreateOrEditChannelScreen,
     HomeScreen,
     LoginScreen,
     ServerScreen,
 } from '@support/ui/screen';
-import {getRandomId, isIos, timeouts, wait} from '@support/utils';
 import {expect} from 'detox';
 
 describe('Channels - Create Channel and Edit Channel Header', () => {

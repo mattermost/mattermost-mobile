@@ -22,15 +22,11 @@ import {
 import {
     ChannelListScreen,
     ChannelScreen,
-    EmojiPickerScreen,
     HomeScreen,
     LoginScreen,
-    PostOptionsScreen,
-    ReactionsScreen,
     ServerScreen,
-    UserProfileScreen,
 } from '@support/ui/screen';
-import {getRandomId, isIos, safeEnableSynchronization, timeouts} from '@support/utils';
+import {getRandomId, safeEnableSynchronization, timeouts} from '@support/utils';
 import {expect, waitFor} from 'detox';
 
 describe('Messaging - Emojis and Reactions', () => {

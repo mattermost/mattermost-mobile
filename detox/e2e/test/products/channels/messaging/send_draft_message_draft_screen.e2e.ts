@@ -65,7 +65,6 @@ describe('Messaging - Message Draft', () => {
     });
 });
 
-
 async function openChannel(channelsCategory: string, testChannel: any) {
     await ChannelListScreen.draftsButton.toNotBeVisible();
     await ChannelScreen.open(channelsCategory, testChannel.name);
@@ -92,8 +91,3 @@ async function verifyDraftonChannelList(draftCount: string) {
     await expect(element(by.id(ChannelListScreen.testID.draftCountListScreen))).toHaveText(draftCount);
 }
 
-async function cleanupDrafts() {
-    // # Clean up drafts
-    await DraftScreen.openDraftPostActions();
-    await DraftScreen.deleteDraftPostFromDraftActions();
-}

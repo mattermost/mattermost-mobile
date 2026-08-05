@@ -17,7 +17,6 @@ import {
     ChannelScreen,
     HomeScreen,
     LoginScreen,
-    PermalinkScreen,
     PostOptionsScreen,
     ServerScreen,
 } from '@support/ui/screen';

@@ -7,7 +7,7 @@
 // - Use element testID when selecting an element. Create one if none.
 // *******************************************************************
 
-import {Post, Setup, User} from '@support/server_api';
+import {Setup} from '@support/server_api';
 import {
     serverOneUrl,
     siteOneUrl,
@@ -16,26 +16,21 @@ import {
     AccountScreen,
     ChannelScreen,
     CustomStatusScreen,
-    EditProfileScreen,
     HomeScreen,
     LoginScreen,
     ServerScreen,
-    SettingsScreen,
 } from '@support/ui/screen';
-import {getRandomId, safeEnableSynchronization, timeouts, wait} from '@support/utils';
-import {expect, waitFor} from 'detox';
+import {timeouts, wait} from '@support/utils';
+import {expect} from 'detox';
 
 describe('Account - Account Menu', () => {
 
     const serverOneDisplayName = 'Server 1';
-    const channelsCategory = 'channels';
     let testUser: any;
-    let testChannel: any;
 
     beforeAll(async () => {
-        const {channel, user} = await Setup.apiInit(siteOneUrl);
+        const {user} = await Setup.apiInit(siteOneUrl);
         testUser = user;
-        testChannel = channel;
 
         // # Log in to server and go to account screen
         await ServerScreen.connectToServer(serverOneUrl, serverOneDisplayName);

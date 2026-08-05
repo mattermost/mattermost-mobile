@@ -22,7 +22,6 @@ import {
     LoginScreen,
     PostOptionsScreen,
     ServerScreen,
-    ThreadScreen,
 } from '@support/ui/screen';
 import {getRandomId, isAndroid, timeouts, wait, waitForElementToExist} from '@support/utils';
 import {expect, waitFor} from 'detox';

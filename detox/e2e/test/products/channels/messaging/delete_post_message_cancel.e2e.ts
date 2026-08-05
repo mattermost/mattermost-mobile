@@ -22,10 +22,9 @@ import {
     LoginScreen,
     PostOptionsScreen,
     ServerScreen,
-    ThreadScreen,
 } from '@support/ui/screen';
-import {getRandomId, timeouts, wait} from '@support/utils';
-import {expect, waitFor} from 'detox';
+import {getRandomId} from '@support/utils';
+import {expect} from 'detox';
 
 describe('Messaging - Message Delete', () => {
 

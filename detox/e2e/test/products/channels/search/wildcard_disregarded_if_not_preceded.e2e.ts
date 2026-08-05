@@ -12,7 +12,6 @@
 // list, search input behavior (wildcard, clear, replace), and focus state.
 
 import {
-    Post,
     Setup,
 } from '@support/server_api';
 import {
@@ -21,25 +20,21 @@ import {
 } from '@support/test_config';
 import {
     ChannelListScreen,
-    ChannelScreen,
     HomeScreen,
     LoginScreen,
     SearchMessagesScreen,
     ServerScreen,
 } from '@support/ui/screen';
-import {getRandomId, timeouts, wait, waitForElementToBeVisible} from '@support/utils';
+import {timeouts, wait} from '@support/utils';
 import {expect} from 'detox';
 
 describe('Search - Recents and Input', () => {
 
     const serverOneDisplayName = 'Server 1';
-    const channelsCategory = 'channels';
-    let testChannel: any;
     let testUser: any;
 
     beforeAll(async () => {
-        const {channel, user} = await Setup.apiInit(siteOneUrl);
-        testChannel = channel;
+        const {user} = await Setup.apiInit(siteOneUrl);
         testUser = user;
 
         // # Log in to server

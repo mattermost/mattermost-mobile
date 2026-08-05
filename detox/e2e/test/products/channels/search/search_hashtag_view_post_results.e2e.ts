@@ -21,19 +21,15 @@ import {
     HomeScreen,
     LoginScreen,
     PermalinkScreen,
-    PostOptionsScreen,
-    RecentMentionsScreen,
-    SavedMessagesScreen,
     SearchMessagesScreen,
     ServerScreen,
 } from '@support/ui/screen';
-import {getRandomId, isAndroid, timeouts, wait, waitForElementToBeVisible} from '@support/utils';
+import {getRandomId, timeouts, wait} from '@support/utils';
 import {expect} from 'detox';
 
 describe('Search - Hashtag Search', () => {
 
     const serverOneDisplayName = 'Server 1';
-    const channelsCategory = 'channels';
     let testChannel: any;
     let testUser: any;
 

@@ -19,23 +19,16 @@ import {
 import {
     ChannelScreen,
     ChannelListScreen,
-    EditPostScreen,
-    EmojiPickerScreen,
     HomeScreen,
     LoginScreen,
-    PostOptionsScreen,
     ServerScreen,
-    ThreadScreen,
 } from '@support/ui/screen';
-import {getRandomId, isAndroid, timeouts, wait, waitForElementToExist} from '@support/utils';
-import {expect, waitFor} from 'detox';
+import {getRandomId} from '@support/utils';
 
 describe('Smoke Test - Messaging', () => {
 
     const serverOneDisplayName = 'Server 1';
     const channelsCategory = 'channels';
-    const savedText = 'Saved';
-    const pinnedText = 'Pinned';
     let testChannel: any;
     let testTeam: any;
     let testUser: any;

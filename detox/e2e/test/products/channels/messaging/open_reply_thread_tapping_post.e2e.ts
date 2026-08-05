@@ -20,12 +20,11 @@ import {
     ChannelListScreen,
     HomeScreen,
     LoginScreen,
-    PostOptionsScreen,
     ServerScreen,
     ThreadScreen,
 } from '@support/ui/screen';
-import {getRandomId, isAndroid, timeouts} from '@support/utils';
-import {expect, waitFor} from 'detox';
+import {getRandomId, timeouts} from '@support/utils';
+import {waitFor} from 'detox';
 
 describe('Messaging - Message Reply', () => {
 

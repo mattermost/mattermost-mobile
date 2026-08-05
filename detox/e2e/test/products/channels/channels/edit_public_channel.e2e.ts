@@ -20,14 +20,13 @@ import {
     ChannelScreen,
     ChannelInfoScreen,
     ChannelListScreen,
-    CreateDirectMessageScreen,
     CreateOrEditChannelScreen,
     HomeScreen,
     LoginScreen,
     ServerScreen,
     ChannelSettingsScreen,
 } from '@support/ui/screen';
-import {isAndroid, isIos, timeouts, wait} from '@support/utils';
+import {isAndroid, isIos} from '@support/utils';
 import {expect} from 'detox';
 
 describe('Channels - Edit Channel', () => {
