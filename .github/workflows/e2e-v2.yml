@@ -58,10 +58,20 @@ on:
         type: string
         default: ""
       worker_count:
-        description: "Orchestration worker count (== total-reports-expected)"
+        description: "Fallback worker count when ios/android counts are unset"
         required: false
         type: string
         default: "2"
+      ios_worker_count:
+        description: "Detox iOS orchestration worker count"
+        required: false
+        type: string
+        default: ""
+      android_worker_count:
+        description: "Detox Android orchestration worker count"
+        required: false
+        type: string
+        default: ""
       detox_search_path:
         description: "Detox search path relative to detox/ (narrow for bootstrap)"
         required: false
@@ -137,7 +147,7 @@ concurrency:
   # stuck group when GitHub leaves macOS Detox workers uncancelled (known flake).
   # cancel-previous also force-cancels peer E2E v2 runs on this branch so a new
   # commit does not wait on a hung prior attempt.
-  group: e2e-v2-${{ github.ref }}-r20
+  group: e2e-v2-${{ github.ref }}-r21
   cancel-in-progress: true
 
 env:
@@ -227,6 +237,8 @@ jobs:
       platform: ${{ steps.out.outputs.platform }}
       skip_build: ${{ steps.out.outputs.skip_build }}
       worker_count: ${{ steps.out.outputs.worker_count }}
+      ios_worker_count: ${{ steps.out.outputs.ios_worker_count }}
+      android_worker_count: ${{ steps.out.outputs.android_worker_count }}
       detox_search_path: ${{ steps.out.outputs.detox_search_path }}
       use_staging_test_system_io: ${{ steps.out.outputs.use_staging_test_system_io }}
       fail_on_test_failures: ${{ steps.out.outputs.fail_on_test_failures }}
@@ -255,6 +267,8 @@ jobs:
           IN_SKIP_BUILD: ${{ github.event.inputs.skip_build }}
           IN_ARTIFACT_RUN_ID: ${{ github.event.inputs.artifact_run_id }}
           IN_WORKER_COUNT: ${{ github.event.inputs.worker_count }}
+          IN_IOS_WORKER_COUNT: ${{ github.event.inputs.ios_worker_count }}
+          IN_ANDROID_WORKER_COUNT: ${{ github.event.inputs.android_worker_count }}
           IN_DETOX_SEARCH_PATH: ${{ github.event.inputs.detox_search_path }}
           IN_USE_STAGING: ${{ github.event.inputs.use_staging_test_system_io }}
           IN_FAIL_ON_FAIL: ${{ github.event.inputs.fail_on_test_failures }}
@@ -293,6 +307,8 @@ jobs:
               "SKIP_BUILD": pick("IN_SKIP_BUILD", "skip_build", "false"),
               "ARTIFACT_RUN_ID_IN": pick("IN_ARTIFACT_RUN_ID", "artifact_run_id", ""),
               "WORKER_COUNT": pick("IN_WORKER_COUNT", "worker_count", "2"),
+              "IOS_WORKER_COUNT": pick("IN_IOS_WORKER_COUNT", "ios_worker_count", ""),
+              "ANDROID_WORKER_COUNT": pick("IN_ANDROID_WORKER_COUNT", "android_worker_count", ""),
               "DETOX_SEARCH_PATH": pick("IN_DETOX_SEARCH_PATH", "detox_search_path", "e2e/test/products/channels/smoke_test"),
               "USE_STAGING": pick("IN_USE_STAGING", "use_staging_test_system_io", "true"),
               "FAIL_ON_FAIL": pick("IN_FAIL_ON_FAIL", "fail_on_test_failures", "false"),
@@ -333,6 +349,8 @@ jobs:
             echo "platform=ios" >> "$GITHUB_OUTPUT"
             echo "skip_build=false" >> "$GITHUB_OUTPUT"
             echo "worker_count=2" >> "$GITHUB_OUTPUT"
+            echo "ios_worker_count=2" >> "$GITHUB_OUTPUT"
+            echo "android_worker_count=2" >> "$GITHUB_OUTPUT"
             echo "detox_search_path=e2e/test/products/channels/smoke_test" >> "$GITHUB_OUTPUT"
             echo "use_staging_test_system_io=true" >> "$GITHUB_OUTPUT"
             echo "fail_on_test_failures=false" >> "$GITHUB_OUTPUT"
@@ -427,6 +445,10 @@ jobs:
             fi
           fi
 
+          # Per-platform workers fall back to worker_count when unset.
+          IOS_WORKER_COUNT="${IOS_WORKER_COUNT:-$WORKER_COUNT}"
+          ANDROID_WORKER_COUNT="${ANDROID_WORKER_COUNT:-$WORKER_COUNT}"
+
           {
             echo "enabled=true"
             echo "phase=${PHASE}"
@@ -445,6 +467,8 @@ jobs:
             echo "platform=${PLATFORM}"
             echo "skip_build=${SKIP_BUILD}"
             echo "worker_count=${WORKER_COUNT}"
+            echo "ios_worker_count=${IOS_WORKER_COUNT}"
+            echo "android_worker_count=${ANDROID_WORKER_COUNT}"
             echo "detox_search_path=${DETOX_SEARCH_PATH}"
             echo "use_staging_test_system_io=${USE_STAGING}"
             echo "fail_on_test_failures=${FAIL_ON_FAIL}"
@@ -474,6 +498,8 @@ jobs:
             echo "| run_detox_ios | \`$RUN_DETOX_IOS\` |"
             echo "| run_detox_ipad | \`$RUN_DETOX_IPAD\` |"
             echo "| run_detox_android | \`$RUN_DETOX_ANDROID\` |"
+            echo "| ios_worker_count | \`$IOS_WORKER_COUNT\` |"
+            echo "| android_worker_count | \`$ANDROID_WORKER_COUNT\` |"
             echo "| staging test-system-io | \`$USE_STAGING\` |"
           } >> "$GITHUB_STEP_SUMMARY"
 
@@ -664,7 +690,7 @@ jobs:
     with:
       mobile_ref: ${{ needs.resolve.outputs.mobile_ref }}
       artifact_run_id: ${{ needs.resolve.outputs.artifact_run_id }}
-      worker_count: ${{ needs.resolve.outputs.worker_count }}
+      worker_count: ${{ needs.resolve.outputs.ios_worker_count }}
       detox_search_path: ${{ needs.resolve.outputs.detox_search_path }}
       detox_exclude_dir: ipad
       detox_config: ios.sim.debug
@@ -695,8 +721,8 @@ jobs:
     with:
       mobile_ref: ${{ needs.resolve.outputs.mobile_ref }}
       artifact_run_id: ${{ needs.resolve.outputs.artifact_run_id }}
-      # Small suite (~4 specs); keep workers low even when phone uses 20.
-      worker_count: ${{ needs.resolve.outputs.platform == 'ipad' && needs.resolve.outputs.worker_count || '2' }}
+      # Small suite (~4 specs); keep workers low even when phone uses many.
+      worker_count: ${{ needs.resolve.outputs.platform == 'ipad' && needs.resolve.outputs.ios_worker_count || '2' }}
       # Always the iPad tree — do not inherit phone e2e/test when platform=ios_and_ipad.
       detox_search_path: e2e/test/products/channels/ipad
       detox_exclude_dir: ""
@@ -732,7 +758,7 @@ jobs:
     with:
       mobile_ref: ${{ needs.resolve.outputs.mobile_ref }}
       artifact_run_id: ${{ needs.resolve.outputs.artifact_run_id }}
-      worker_count: ${{ needs.resolve.outputs.worker_count }}
+      worker_count: ${{ needs.resolve.outputs.android_worker_count }}
       detox_search_path: ${{ needs.resolve.outputs.detox_search_path }}
       detox_exclude_dir: ipad
       detox_config: android.emu.debug

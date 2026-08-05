@@ -5,7 +5,7 @@
   "platform": "all",
   "skip_build": true,
   "artifact_run_id": "30976048711",
-  "worker_count": "20",
+  "worker_count": "40",
   "detox_search_path": "e2e/test",
   "use_staging_test_system_io": true,
   "fail_on_test_failures": false,
@@ -17,5 +17,7 @@
   "pr_number": "10006",
   "run_type": "PR",
   "enabled": true,
-  "rerun_note": "test-only on fresh Matterwick servers (rsz5af8m/...); reuse build 30976048711"
+  "rerun_note": "iOS flake fixes + 5m timeout caps; TSIO actions @1f7ca41 (#102); Matterwick re-provision 30997695282; detox-ios=40 detox-android=30; reuse build 30976048711",
+  "ios_worker_count": "40",
+  "android_worker_count": "30"
 }

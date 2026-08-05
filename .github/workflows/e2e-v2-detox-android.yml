@@ -89,7 +89,7 @@ on:
         required: false
 
 env:
-  TEST_SYSTEM_IO_ACTIONS_SHA: 2d15ae40a9f133d12a4024151826e52226f742a2
+  TEST_SYSTEM_IO_ACTIONS_SHA: 1f7ca41ff07f10ed30170179b017d185973fdf18
   ARTIFACT_RUN_ID: ${{ inputs.artifact_run_id }}
   ADMIN_EMAIL: ${{ secrets.MM_MOBILE_E2E_ADMIN_EMAIL }}
   ADMIN_USERNAME: ${{ secrets.MM_MOBILE_E2E_ADMIN_USERNAME }}
@@ -176,7 +176,7 @@ jobs:
 
       - name: test-system-io dispatch begin
         id: begin
-        uses: mattermost/mattermost-test-system-io/.github/actions/test-system-io-dispatch-begin@2d15ae40a9f133d12a4024151826e52226f742a2
+        uses: mattermost/mattermost-test-system-io/.github/actions/test-system-io-dispatch-begin@1f7ca41ff07f10ed30170179b017d185973fdf18
         with:
           use-staging: ${{ inputs.use_staging_test_system_io && 'true' || 'false' }}
           framework: detox
@@ -431,7 +431,7 @@ jobs:
         run: cd detox && npm run detox:config-gen
 
       - name: test-system-io dispatch run
-        uses: mattermost/mattermost-test-system-io/.github/actions/test-system-io-dispatch-run@2d15ae40a9f133d12a4024151826e52226f742a2
+        uses: mattermost/mattermost-test-system-io/.github/actions/test-system-io-dispatch-run@1f7ca41ff07f10ed30170179b017d185973fdf18
         with:
           use-staging: ${{ inputs.use_staging_test_system_io && 'true' || 'false' }}
           framework: detox
@@ -462,7 +462,7 @@ jobs:
     steps:
       - name: test-system-io summary
         id: summary
-        uses: mattermost/mattermost-test-system-io/.github/actions/test-system-io-summary@2d15ae40a9f133d12a4024151826e52226f742a2
+        uses: mattermost/mattermost-test-system-io/.github/actions/test-system-io-summary@1f7ca41ff07f10ed30170179b017d185973fdf18
         with:
           use-staging: ${{ inputs.use_staging_test_system_io && 'true' || 'false' }}
           framework: detox
