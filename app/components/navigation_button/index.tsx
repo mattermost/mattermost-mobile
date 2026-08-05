@@ -12,6 +12,7 @@ import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
 
 export type NavigationButtonProps = {
+    id: string;
     accessibilityLabel?: string;
     borderless?: boolean;
     color?: string;
@@ -39,6 +40,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
 }));
 
 function NavigationButton({
+    id,
     accessibilityLabel,
     borderless = true,
     color,
@@ -64,6 +66,7 @@ function NavigationButton({
 
     return (
         <Pressable
+            id={id}
             accessibilityLabel={accessibilityLabel}
             onPress={onPress}
             disabled={disabled || isLoading}

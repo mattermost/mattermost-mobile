@@ -4,6 +4,7 @@
 import {fireEvent, render, within} from '@testing-library/react-native';
 import React, {type ComponentProps} from 'react';
 
+import {type NavigationButtonProps} from '@components/navigation_button';
 import {Preferences} from '@constants';
 
 import Header from './header';
@@ -21,6 +22,7 @@ describe('Header', () => {
         const props = getBaseProps();
         props.rightButtons = [
             {
+                id: 'playbooks',
                 iconName: 'playlist-check',
                 count: 123,
                 onPress: jest.fn(),
@@ -34,6 +36,7 @@ describe('Header', () => {
 
         props.rightButtons = [
             {
+                id: 'playbooks',
                 iconName: 'playlist-check',
                 count: undefined,
                 onPress: jest.fn(),
@@ -51,15 +54,15 @@ describe('Header', () => {
     it('right buttons show a spinner and cannot be pressed while loading', () => {
         const props = getBaseProps();
         const onPress = jest.fn();
-        props.rightButtons = [
-            {
-                accessibilityLabel: 'Start call',
-                iconName: 'phone',
-                isLoading: true,
-                onPress,
-                testID: 'test-button',
-            },
-        ];
+        const callButton: NavigationButtonProps = {
+            id: 'calls',
+            accessibilityLabel: 'Start call',
+            iconName: 'phone',
+            isLoading: true,
+            onPress,
+            testID: 'test-button',
+        };
+        props.rightButtons = [callButton];
         const {getByTestId, queryByTestId, rerender} = render(<Header {...props}/>);
 
         const button = getByTestId('test-button');
@@ -69,7 +72,7 @@ describe('Header', () => {
         fireEvent.press(button);
         expect(onPress).not.toHaveBeenCalled();
 
-        props.rightButtons = [{...props.rightButtons[0], isLoading: false}];
+        props.rightButtons = [{...callButton, isLoading: false}];
         rerender(<Header {...props}/>);
 
         expect(queryByTestId('test-button.loading')).toBeNull();
@@ -82,6 +85,7 @@ describe('Header', () => {
         const onPress = jest.fn();
         props.rightButtons = [
             {
+                id: 'calls',
                 disabled: true,
                 iconName: 'phone',
                 onPress,
@@ -92,6 +96,38 @@ describe('Header', () => {
 
         fireEvent.press(getByTestId('test-button'));
         expect(onPress).not.toHaveBeenCalled();
+    });
+
+    it('right buttons are keyed by id so a changing icon does not remount the button', () => {
+        const props = getBaseProps();
+        const onPress = jest.fn();
+        const callButton: NavigationButtonProps = {
+            id: 'calls',
+            iconName: 'phone',
+            onPress,
+            testID: 'call-button',
+        };
+        props.rightButtons = [
+            callButton,
+            {
+                id: 'channel-quick-actions',
+                iconName: 'dots-horizontal',
+                onPress: jest.fn(),
+                testID: 'quick-actions-button',
+            },
+        ];
+        const {getByTestId, rerender} = render(<Header {...props}/>);
+
+        const button = getByTestId('call-button');
+        expect(getByTestId('quick-actions-button')).toBeOnTheScreen();
+
+        // A call starting swaps the icon; the button instance must survive so an in-flight press is not lost.
+        props.rightButtons = [{...callButton, iconName: 'phone-in-talk'}, props.rightButtons[1]];
+        rerender(<Header {...props}/>);
+
+        expect(getByTestId('call-button')).toBe(button);
+        fireEvent.press(getByTestId('call-button'));
+        expect(onPress).toHaveBeenCalledTimes(1);
     });
 });
 

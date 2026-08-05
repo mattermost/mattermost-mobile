@@ -35,7 +35,7 @@ jest.mock('@calls/state', () => ({
 jest.mock('@calls/hooks', () => ({
     useNavigationHeaderCallButtonForDM: jest.fn(),
 }));
-const navigationHeaderCallButton = {iconName: 'phone' as const, onPress: jest.fn(), testID: 'channel_header.quick_call.button'};
+const navigationHeaderCallButton = {id: 'calls', iconName: 'phone' as const, onPress: jest.fn(), testID: 'channel_header.quick_call.button'};
 
 const serverUrl = 'some.server.url';
 jest.mock('@context/server');

@@ -246,7 +246,8 @@ const Header = ({
                 {Boolean(rightButtons?.length) &&
                 rightButtons?.map((r) => (
                     <NavigationButton
-                        key={r.iconName}
+                        id={r.id}
+                        key={r.id}
                         accessibilityLabel={r.accessibilityLabel}
                         borderless={r.borderless}
                         disabled={r.disabled}

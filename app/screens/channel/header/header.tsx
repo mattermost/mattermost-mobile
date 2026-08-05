@@ -12,6 +12,7 @@ import {CHANNEL_ACTIONS_OPTIONS_HEIGHT} from '@components/channel_actions/channe
 import ChannelBanner from '@components/channel_banner';
 import CompassIcon from '@components/compass_icon';
 import CustomStatusEmoji from '@components/custom_status/custom_status_emoji';
+import {type NavigationButtonProps} from '@components/navigation_button';
 import NavigationHeader from '@components/navigation_header';
 import {ITEM_HEIGHT} from '@components/option_item';
 import OtherMentionsBadge from '@components/other_mentions_badge';
@@ -32,8 +33,6 @@ import {typography} from '@utils/typography';
 
 import ChannelHeaderBookmarks from './bookmarks';
 import QuickActions, {MARGIN, SEPARATOR_HEIGHT} from './quick_actions';
-
-import type {NavigationButtonProps} from '@components/navigation_button';
 
 type ChannelProps = {
     canAddBookmarks: boolean;
@@ -219,6 +218,7 @@ const ChannelHeader = ({
         const buttons: NavigationButtonProps[] = [];
         if (isPlaybooksEnabled && !isDMorGM) {
             buttons.push({
+                id: 'playbooks',
                 iconName: 'product-playbooks',
                 onPress: openPlaybooksRuns,
                 count: playbooksActiveRuns || '+',
@@ -230,6 +230,7 @@ const ChannelHeader = ({
         }
 
         buttons.push({
+            id: 'channel-quick-actions',
             iconName: Platform.select({android: 'dots-vertical', default: 'dots-horizontal'}),
             onPress: onChannelQuickAction,
             testID: 'channel_header.channel_quick_actions.button',
