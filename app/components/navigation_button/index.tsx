@@ -12,7 +12,7 @@ import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
 
 export type NavigationButtonProps = {
-    id: string;
+    id?: string;
     accessibilityLabel?: string;
     borderless?: boolean;
     color?: string;

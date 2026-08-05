@@ -36,8 +36,8 @@ jest.mock('react-intl', () => ({
     useIntl: jest.fn().mockReturnValue({
         formatMessage: jest.fn(({defaultMessage}) => defaultMessage),
     }),
-    defineMessage: (message: any) => message,
-    defineMessages: (messages: any) => messages,
+    defineMessage: (message: unknown) => message,
+    defineMessages: (messages: unknown) => messages,
 }));
 
 jest.mock('@context/server', () => ({
