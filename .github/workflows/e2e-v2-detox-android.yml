@@ -67,7 +67,7 @@ on:
       identity_name:
         required: false
         type: string
-        default: mobile-v2-pr-detox-android
+        default: detox-android
       commit_status_context:
         required: false
         type: string

@@ -38,96 +38,30 @@ describe('Channels', () => {
 
     const serverOneDisplayName = 'Server 1';
 
-    // Base setup (shared across all tests)
     let testUser: any;
     let testTeam: any;
-    let testChannel: any;
-
-    // Test-specific data
-    let privateChannel1: any; // For MM-T3204
-    let privUser: any; // For MM-T3204
+    let privateChannel1: any;
+    let privUser: any;
 
     beforeAll(async () => {
-        // 1. Base setup (shared across all tests)
-        const {user, team, channel} = await Setup.apiInit(siteOneUrl);
+        const {user, team} = await Setup.apiInit(siteOneUrl);
         testUser = user;
         testTeam = team;
-        testChannel = channel;
-
-        // 2. Test 1 (MM-T3195): User for adding to channel
-        const {user: newUser1} = await User.apiCreateUser(siteOneUrl, {prefix: 'addmember'});
-        if (!newUser1?.id) {
-            throw new Error('[beforeAll] Failed to create addMemberUser');
-        }
-        await Team.apiAddUserToTeam(siteOneUrl, newUser1.id, testTeam.id);
-
-        // 3. Test 2 (MM-T856): Another user for adding to channel
-        const {user: newUser2} = await User.apiCreateUser(siteOneUrl, {prefix: 'user2'});
-        if (!newUser2?.id) {
-            throw new Error('[beforeAll] Failed to create user2');
-        }
-        await Team.apiAddUserToTeam(siteOneUrl, newUser2.id, testTeam.id);
-
-        // 4. Test 3 (MM-T3196): User already in channel for removal
-        const {user: newUser3} = await User.apiCreateUser(siteOneUrl, {prefix: 'member'});
-        if (!newUser3?.id) {
-            throw new Error('[beforeAll] Failed to create memberUser');
-        }
-        await Team.apiAddUserToTeam(siteOneUrl, newUser3.id, testTeam.id);
-        await Channel.apiAddUserToChannel(siteOneUrl, newUser3.id, testChannel.id);
-
-        // 5. Test 4 (MM-T3204): Private channel + user to add
-        const {channel: privChan1} = await Channel.apiCreateChannel(siteOneUrl, {
+        const {channel: privChan} = await Channel.apiCreateChannel(siteOneUrl, {
             teamId: testTeam.id,
             type: 'P',
         });
-        if (!privChan1?.id) {
-            throw new Error('[beforeAll] Failed to create private channel 1');
+        if (!privChan?.id) {
+            throw new Error('[beforeAll] Failed to create private channel');
         }
-        await Channel.apiAddUserToChannel(siteOneUrl, testUser.id, privChan1.id);
-        privateChannel1 = privChan1;
-
-        const {user: newUser4} = await User.apiCreateUser(siteOneUrl, {prefix: 'privuser'});
-        if (!newUser4?.id) {
-            throw new Error('[beforeAll] Failed to create privUser');
+        await Channel.apiAddUserToChannel(siteOneUrl, testUser.id, privChan.id);
+        privateChannel1 = privChan;
+        const {user: newPrivUser} = await User.apiCreateUser(siteOneUrl, {prefix: 'privuser'});
+        if (!newPrivUser?.id) {
+            throw new Error('[beforeAll] Failed to create private-channel user');
         }
-        await Team.apiAddUserToTeam(siteOneUrl, newUser4.id, testTeam.id);
-        privUser = newUser4;
-
-        // 6. Test 5 (MM-T3205): Private channel + user already in it for removal
-        const {channel: privChan2} = await Channel.apiCreateChannel(siteOneUrl, {
-            teamId: testTeam.id,
-            type: 'P',
-        });
-        if (!privChan2?.id) {
-            throw new Error('[beforeAll] Failed to create private channel 2');
-        }
-        await Channel.apiAddUserToChannel(siteOneUrl, testUser.id, privChan2.id);
-
-        const {user: newUser5} = await User.apiCreateUser(siteOneUrl, {prefix: 'removeme'});
-        if (!newUser5?.id) {
-            throw new Error('[beforeAll] Failed to create removeMeUser');
-        }
-        await Team.apiAddUserToTeam(siteOneUrl, newUser5.id, testTeam.id);
-        await Channel.apiAddUserToChannel(siteOneUrl, newUser5.id, privChan2.id);
-
-        // 7. Test 6 (MM-T878): Two users for GM creation
-        const {user: gmUserOne} = await User.apiCreateUser(siteOneUrl, {prefix: 'gmuser1'});
-        if (!gmUserOne?.id) {
-            throw new Error('[beforeAll] Failed to create gmUser1');
-        }
-        await wait(timeouts.ONE_SEC);
-        const {user: gmUserTwo} = await User.apiCreateUser(siteOneUrl, {prefix: 'gmuser2'});
-        if (!gmUserTwo?.id) {
-            throw new Error('[beforeAll] Failed to create gmUser2');
-        }
-        await wait(timeouts.ONE_SEC);
-        await Team.apiAddUserToTeam(siteOneUrl, gmUserOne.id, testTeam.id);
-        await wait(timeouts.ONE_SEC);
-        await Team.apiAddUserToTeam(siteOneUrl, gmUserTwo.id, testTeam.id);
-        await wait(timeouts.ONE_SEC);
-
-        // 8. Login once with test user
+        await Team.apiAddUserToTeam(siteOneUrl, newPrivUser.id, testTeam.id);
+        privUser = newPrivUser;
         await ServerScreen.connectToServer(serverOneUrl, serverOneDisplayName);
         await LoginScreen.login(testUser);
     });

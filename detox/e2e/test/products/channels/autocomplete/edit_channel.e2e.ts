@@ -40,10 +40,11 @@ describe('Autocomplete - Edit Channel', () => {
         // * Verify on channel list screen
         await ChannelListScreen.toBeVisible();
 
-        // # Open a channel screen, open channel info screen, and open edit channel screen
+        // # Open a channel screen, open channel info screen, and open edit channel screen.
+        // Prefer the header path: introChannelInfoAction is a ListFooterComponent and often
+        // has not mounted yet when ChannelScreen.toBeVisible resolves.
         await ChannelScreen.open(channelsCategory, channel.name);
-        await ChannelScreen.introChannelInfoAction.tap();
-        await ChannelInfoScreen.toBeVisible();
+        await ChannelInfoScreen.open();
         await CreateOrEditChannelScreen.openEditChannel();
     });
 

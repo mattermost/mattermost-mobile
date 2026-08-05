@@ -17,5 +17,5 @@
   "pr_number": "10006",
   "run_type": "PR",
   "enabled": true,
-  "rerun_note": "test-only: reuse builds from run 30976048711 (skip_build); ios/ipad/android"
+  "rerun_note": "test-only: rename identities to detox-*; slim split beforeAll leftovers; reuse build 30976048711"
 }

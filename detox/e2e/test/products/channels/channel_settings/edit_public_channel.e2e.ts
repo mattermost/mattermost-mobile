@@ -7,17 +7,6 @@
 // - Use element testID when selecting an element. Create one if none.
 // *******************************************************************
 
-/**
- * Test Cases Included:
- * - MM-T3201: RN apps Create public channel
- * - MM-T3203: RN apps Create private channel
- * - MM-T3199: RN apps Edit public channel
- * - MM-T3206: RN apps Edit private channel
- * - MM-T854: RN apps Channel can be created using 2 non-latin characters
- * - MM-T867: RN apps Copying channel header text
- * - MM-T865: RN apps Copying channel purpose text
- */
-
 import {Channel, Setup} from '@support/server_api';
 import {
     serverOneUrl,
@@ -37,7 +26,6 @@ import {getRandomId, timeouts, wait} from '@support/utils';
 import {expect, waitFor} from 'detox';
 
 describe('Channels', () => {
-
     const serverOneDisplayName = 'Server 1';
     const channelsCategory = 'channels';
     let testUser: any;
@@ -63,16 +51,17 @@ describe('Channels', () => {
         }
         await Channel.apiAddUserToChannel(siteOneUrl, testUser.id, channel.id);
 
-        await wait(timeouts.THREE_SEC);
         await ServerScreen.connectToServer(serverOneUrl, serverOneDisplayName);
         await LoginScreen.login(testUser);
+
+        // Force a fresh WebSocket sync so the API-created channel is in the sidebar.
+        await wait(timeouts.TWO_SEC);
+        await device.reloadReactNative();
+        await ChannelListScreen.toBeVisible();
+        await ChannelListScreen.waitForSidebarPublicChannelDisplayNameVisible(publicChannelName);
     });
 
     beforeEach(async () => {
-        // Recovery anchor for every test: ensures the previous test's modal/stack state
-        // is dismissed and we are back on the channel list before proceeding.
-        // ChannelListScreen.toBeVisible() internally dismisses any open modals and pops
-        // back navigation until the channel list is visible (see channel_list.ts).
         await ChannelListScreen.toBeVisible();
     });
 
@@ -105,10 +94,6 @@ describe('Channels', () => {
 
         await CreateOrEditChannelScreen.saveButton.tap();
 
-        // After saving, app pops back to ChannelSettings (not ChannelInfo directly).
-        // Anchor on the Edit Channel screen dismissing — a fixed 2s sleep is fragile when
-        // the save round-trip or pop animation is slower on CI. Waiting on the screen
-        // transition is deterministic and bounded by the same TEN_SEC envelope.
         await waitFor(CreateOrEditChannelScreen.createOrEditChannelScreen).not.toBeVisible().withTimeout(timeouts.TEN_SEC);
         await ChannelSettingsScreen.toBeVisible();
         await ChannelSettingsScreen.close();

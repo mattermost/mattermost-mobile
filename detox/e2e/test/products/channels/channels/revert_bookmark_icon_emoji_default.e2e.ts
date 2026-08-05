@@ -31,19 +31,17 @@ describe('Channels - Channel Bookmarks', () => {
     const channelsCategory = 'channels';
     let testTeam: any;
     let testUser: any;
-    let channelT5605: any;
-    let channelT5606: any;
     let channelT5607: any;
-    let channelT5609: any;
-    let channelT5610: any;
     let bookmarkT5607: any;
-    let channelT5612: any;
 
     const createChannel = async () => {
         const {channel} = await Channel.apiCreateChannel(siteOneUrl, {
             type: 'O',
             teamId: testTeam.id,
         });
+        if (!channel?.id) {
+            throw new Error('[beforeAll] Failed to create channel');
+        }
         await Channel.apiAddUserToChannel(siteOneUrl, testUser.id, channel.id);
         return channel;
     };
@@ -100,56 +98,19 @@ describe('Channels - Channel Bookmarks', () => {
         testTeam = team;
         testUser = user;
 
-        // ── Create all test channels ──────────────────────────────────────────
-        channelT5605 = await createChannel();
-        channelT5606 = await createChannel();
         channelT5607 = await createChannel();
-        channelT5609 = await createChannel();
-        channelT5610 = await createChannel();
-        channelT5612 = await createChannel();
 
-        // Connect before creating bookmarks so the client receives the WebSocket events; these
-        // tests exercise bookmark UI, not the eventually-consistent channel-open fetch.
         await ServerScreen.connectToServer(serverOneUrl, serverOneDisplayName);
         await LoginScreen.login(testUser);
 
-        // ── Pre-create bookmarks ──────────────────────────────────────────────
-        const {bookmark: bT5610} = await ChannelBookmark.apiCreateChannelBookmarkLink(
-            siteOneUrl, channelT5610.id, 'Original Bookmark', 'https://mattermost.com',
-        );
-        if (!bT5610?.id) {
-            throw new Error('[beforeAll] Failed to create bookmarkT5610');
-        }
-
-        await ChannelBookmark.apiCreateChannelBookmarkLink(
-            siteOneUrl, channelT5605.id, 'No Favicon Bookmark', 'https://example.com',
-        );
-        const {bookmark: bT5606} = await ChannelBookmark.apiCreateChannelBookmarkLink(
-            siteOneUrl, channelT5606.id, 'Emoji Icon Test', 'https://example.com',
-        );
-        if (!bT5606?.id) {
-            throw new Error('[beforeAll] Failed to create bookmarkT5606');
-        }
-        const {bookmark: bT5607} = await ChannelBookmark.apiCreateChannelBookmarkLink(
+        const {bookmark: b} = await ChannelBookmark.apiCreateChannelBookmarkLink(
             siteOneUrl, channelT5607.id, 'Revert Emoji Test', 'https://example.com',
         );
-        if (!bT5607?.id) {
+        if (!b?.id) {
             throw new Error('[beforeAll] Failed to create bookmarkT5607');
         }
-        bookmarkT5607 = bT5607;
-        await ChannelBookmark.apiCreateChannelBookmarkLink(
-            siteOneUrl, channelT5609.id, 'Banner Test Bookmark', 'https://mattermost.com',
-        );
+        bookmarkT5607 = b;
 
-        /* eslint-disable no-await-in-loop */
-        for (let i = 1; i <= 12; i++) {
-            await ChannelBookmark.apiCreateChannelBookmarkLink(
-                siteOneUrl, channelT5612.id, `Scroll Bookmark ${i}`, `https://example.com/${i}`,
-            );
-        }
-        /* eslint-enable no-await-in-loop */
-
-        // Reload after the WebSocket-backed setup has settled.
         await wait(timeouts.TWO_SEC);
         await device.reloadReactNative();
         await ChannelListScreen.toBeVisible();

@@ -63,6 +63,7 @@ describe('Channels - Create Channel and Edit Channel Header', () => {
         await expect(ChannelScreen.headerTitle).toHaveText(displayName);
         await waitFor(ChannelScreen.introDisplayName).toExist().withTimeout(timeouts.TEN_SEC);
         await expect(ChannelScreen.introDisplayName).toHaveText(displayName);
+        await waitFor(ChannelScreen.introSetHeaderAction).toExist().withTimeout(timeouts.TEN_SEC);
 
         // # Tap on set header action to edit the channel header
         await ChannelScreen.introSetHeaderAction.tap();
