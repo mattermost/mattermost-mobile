@@ -470,25 +470,15 @@ describe('alerts', () => {
             formatMessage: ({defaultMessage}: {defaultMessage: string}) => defaultMessage,
         };
 
-        it('shows end call confirmation for non-host', async () => {
+        it('shows the host end call choice, with no separate confirmation step', async () => {
             const mockAlert = jest.spyOn(Alert, 'alert');
-            const promise = endCallConfirmationAlert(intl as any, false);
+            const promise = endCallConfirmationAlert(intl as any);
 
             expect(mockAlert).toHaveBeenCalledWith(
                 'Are you sure you want to leave this call?',
                 '',
                 expect.any(Array),
             );
-
-            // Simulate leave
-            const leaveButton = mockAlert.mock.calls[0][2]![1];
-            leaveButton.onPress?.();
-            expect(await promise).toBe(EndCallReturn.LeaveCall);
-        });
-
-        it('shows end call confirmation for host', async () => {
-            const mockAlert = jest.spyOn(Alert, 'alert');
-            const promise = endCallConfirmationAlert(intl as any, true);
 
             const buttons = mockAlert.mock.calls[0][2]!;
             expect(buttons).toHaveLength(3);
