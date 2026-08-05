@@ -17,7 +17,7 @@
   "pr_number": "10006",
   "run_type": "PR",
   "enabled": false,
-  "rerun_note": "paused until e2e-v2-servers configure_only succeeds after provision timeout bump",
+  "rerun_note": "paused until Matterwick E2E/Reset-Servers creates fresh installs",
   "ios_worker_count": "40",
   "android_worker_count": "30"
 }
