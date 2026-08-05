@@ -523,53 +523,39 @@ export const removeFromCall = (serverUrl: string, displayName: string, callId: s
     }]);
 };
 
-export const endCallConfirmationAlert = (intl: IntlShape, showHostControls: boolean) => {
+export const endCallConfirmationAlert = (intl: IntlShape) => {
     const {formatMessage} = intl;
 
     const asyncAlert = async () => new Promise((resolve) => {
-        const buttons: AlertButton[] = [{
+        const cancelButton: AlertButton = {
             text: formatMessage({
                 id: 'mobile.calls_cancel',
                 defaultMessage: 'Cancel',
             }),
             onPress: () => resolve(EndCallReturn.Cancel),
             style: 'cancel',
-        }, {
+        };
+        const endCallButton: AlertButton = {
+            text: formatMessage({
+                id: 'mobile.calls_host_end_confirm',
+                defaultMessage: 'End call for everyone',
+            }),
+            onPress: () => resolve(EndCallReturn.EndCall),
+            style: 'destructive',
+        };
+        const leaveCallButton: AlertButton = {
             text: formatMessage({
                 id: 'mobile.calls_host_leave_confirm',
                 defaultMessage: 'Leave call',
             }),
             onPress: () => resolve(EndCallReturn.LeaveCall),
-            style: 'destructive',
-        }];
+        };
+        const buttons = Platform.OS === 'ios' ? [cancelButton, endCallButton, leaveCallButton] : [cancelButton, leaveCallButton, endCallButton];
+
         const questionMsg = formatMessage({
             id: 'mobile.calls_host_leave_title',
             defaultMessage: 'Are you sure you want to leave this call?',
         });
-
-        if (showHostControls) {
-            const endCallButton: AlertButton = {
-                text: formatMessage({
-                    id: 'mobile.calls_host_end_confirm',
-                    defaultMessage: 'End call for everyone',
-                }),
-                onPress: () => resolve(EndCallReturn.EndCall),
-                style: 'destructive',
-            };
-            const leaveCallButton = {
-                text: formatMessage({
-                    id: 'mobile.calls_host_leave_confirm',
-                    defaultMessage: 'Leave call',
-                }),
-                onPress: () => resolve(EndCallReturn.LeaveCall),
-            };
-
-            if (Platform.OS === 'ios') {
-                buttons.splice(1, 1, endCallButton, leaveCallButton);
-            } else {
-                buttons.splice(1, 1, leaveCallButton, endCallButton);
-            }
-        }
 
         if (Platform.OS === 'ios') {
             Alert.alert(questionMsg, '', buttons);
