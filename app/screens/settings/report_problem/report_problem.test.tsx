@@ -129,9 +129,32 @@ describe('screens/settings/report_problem/report_problem', () => {
         });
     });
 
-    it('should open forum link directly when type is default and free edition', async () => {
+    it('should navigate to report problem screen when type is default and free edition', async () => {
         const props = {
             ...baseProps,
+            reportAProblemType: 'default',
+            isFreeEdition: true,
+        };
+
+        const {getByTestId} = renderWithIntl(
+            <ReportProblem {...props}/>,
+        );
+
+        await act(async () => {
+            fireEvent.press(getByTestId('settings.report_problem.option'));
+            expect(navigateToSettingsScreen).toHaveBeenCalledWith(
+                Screens.REPORT_PROBLEM,
+                {title: 'Report a problem'},
+            );
+            expect(tryOpenURL).not.toHaveBeenCalled();
+            expect(emailLogs).not.toHaveBeenCalled();
+        });
+    });
+
+    it('should open forum link directly when type is default, free edition, and logs not allowed', async () => {
+        const props = {
+            ...baseProps,
+            allowDownloadLogs: false,
             reportAProblemType: 'default',
             isFreeEdition: true,
         };

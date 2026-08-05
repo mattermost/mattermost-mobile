@@ -37,10 +37,12 @@ const ReportProblem = ({
 }: ReportProblemProps) => {
     const intl = useIntl();
     const onlyAllowLogs = allowDownloadLogs && reportAProblemType === 'hidden';
-    const skipReportAProblemScreen =
-        (reportAProblemType === 'email' && !allowDownloadLogs) ||
-        (reportAProblemType === 'default' && isFreeEdition === true) ||
-        (reportAProblemType === 'default' && isFreeEdition === false && !allowDownloadLogs);
+
+    // The screen exists to show the troubleshooting details and the app logs, so it is only
+    // skipped when there are no logs to download. Free edition servers still get the screen,
+    // where the report action points to the forums instead of a support ticket.
+    const skipReportAProblemScreen = !allowDownloadLogs &&
+        (reportAProblemType === 'email' || reportAProblemType === 'default');
 
     const onPress = useCallback(() => {
         if (skipReportAProblemScreen) {
