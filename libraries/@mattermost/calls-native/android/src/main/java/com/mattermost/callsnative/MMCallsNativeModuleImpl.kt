@@ -17,6 +17,9 @@ import android.media.MediaPlayer
 import android.os.Build
 import android.os.Handler
 import android.os.Looper
+import android.os.VibrationEffect
+import android.os.Vibrator
+import android.os.VibratorManager
 import com.facebook.react.bridge.Arguments
 import com.facebook.react.bridge.Promise
 import com.facebook.react.bridge.ReactApplicationContext
@@ -40,6 +43,16 @@ class MMCallsNativeModuleImpl(private val context: ReactApplicationContext) {
     private var ringtoneStopRunnable: Runnable? = null
     private var headsetReceiver: BroadcastReceiver? = null
     private var btReceiver: BroadcastReceiver? = null
+    private val vibrator: Vibrator by lazy {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+            (context.getSystemService(Context.VIBRATOR_MANAGER_SERVICE) as VibratorManager).defaultVibrator
+        } else {
+            @Suppress("DEPRECATION")
+            context.getSystemService(Context.VIBRATOR_SERVICE) as Vibrator
+        }
+    }
+
+    private val ringtoneVibratePattern = longArrayOf(0, 1000, 500, 1000, 500, 1000, 500, 1000, 500, 1000)
 
     // Track whether the user selected Bluetooth so getAudioRoute can reflect it.
     private var btActive = false
@@ -232,6 +245,12 @@ class MMCallsNativeModuleImpl(private val context: ReactApplicationContext) {
             }
             player.start()
             ringtonePlayer = player
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                vibrator.vibrate(VibrationEffect.createWaveform(ringtoneVibratePattern, 0))
+            } else {
+                @Suppress("DEPRECATION")
+                vibrator.vibrate(ringtoneVibratePattern, 0)
+            }
             promise?.resolve(null)
         } catch (e: Exception) {
             promise?.reject("ringtone_error", e.message ?: "Unknown error")
@@ -264,6 +283,7 @@ class MMCallsNativeModuleImpl(private val context: ReactApplicationContext) {
             it.release()
         }
         ringtonePlayer = null
+        vibrator.cancel()
     }
 
     private fun registerAudioReceivers() {
