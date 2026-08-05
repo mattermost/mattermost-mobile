@@ -184,7 +184,7 @@ class MMCallsNativeModuleImpl(private val context: ReactApplicationContext) {
             "WIRED_HEADSET" -> {
                 stopBluetoothAudio(audio)
                 btActive = false
-                routeToEarpiece(audio)
+                routeToWiredHeadset(audio)
             }
             "BLUETOOTH" -> {
                 routeToEarpiece(audio)
@@ -362,6 +362,17 @@ class MMCallsNativeModuleImpl(private val context: ReactApplicationContext) {
         } else {
             @Suppress("DEPRECATION")
             audio.isSpeakerphoneOn = true
+        }
+    }
+
+    private fun routeToWiredHeadset(audio: AudioManager) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+            val dev = audio.availableCommunicationDevices
+                .firstOrNull { it.type == AudioDeviceInfo.TYPE_WIRED_HEADSET || it.type == AudioDeviceInfo.TYPE_WIRED_HEADPHONES }
+            if (dev != null) audio.setCommunicationDevice(dev) else audio.clearCommunicationDevice()
+        } else {
+            @Suppress("DEPRECATION")
+            audio.isSpeakerphoneOn = false
         }
     }
 
