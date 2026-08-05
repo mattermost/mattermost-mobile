@@ -11,6 +11,7 @@ extension CallsBridge {
         case CallDeclined
         case CallEnded
         case CallMuted
+        case AudioRouteChanged
     }
 
     @objc
