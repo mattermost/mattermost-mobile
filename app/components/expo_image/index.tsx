@@ -30,7 +30,8 @@ function shouldAttachServerAuthHeaders(uri: string | undefined, serverUrl: strin
             return false;
         }
 
-        return requestUrl.pathname.startsWith('/api/v4/');
+        const serverBasePath = serverBaseUrl.pathname.replace(/\/+$/, '');
+        return requestUrl.pathname.startsWith(`${serverBasePath}/api/v4/`);
     } catch {
         // On any parsing error, do not attach auth headers
         return false;
@@ -178,6 +179,10 @@ const ExpoImageAnimated = Animated.createAnimatedComponent(ExpoImage);
 export {
     ExpoImageAnimated,
     ExpoImageBackground,
+};
+
+export const testExports = {
+    shouldAttachServerAuthHeaders,
 };
 
 export default ExpoImage;
