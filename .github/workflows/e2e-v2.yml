@@ -133,17 +133,81 @@ permissions:
   statuses: write
 
 concurrency:
-  # Include workflow file hash-ish salt so a stuck macOS cancel cannot block
-  # the next push indefinitely (GitHub sometimes leaves Detox workers uncancelled).
-  group: e2e-v2-${{ github.ref }}-r19
+  # cancel-in-progress stops the prior push's parent run. Salt bumps escape a
+  # stuck group when GitHub leaves macOS Detox workers uncancelled (known flake).
+  # cancel-previous also force-cancels peer E2E v2 runs on this branch so a new
+  # commit does not wait on a hung prior attempt.
+  group: e2e-v2-${{ github.ref }}-r20
   cancel-in-progress: true
 
 env:
   INTUNE_ENABLED: "false"
 
 jobs:
+  cancel-previous:
+    name: Cancel previous E2E v2 runs
+    runs-on: ubuntu-24.04
+    permissions:
+      actions: write
+    steps:
+      - name: Force-cancel other active E2E v2 runs on this branch
+        uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9.0.0
+        with:
+          script: |
+            const owner = context.repo.owner;
+            const repo = context.repo.repo;
+            const branch = context.ref.replace(/^refs\/heads\//, '');
+            const excludeRunId = context.runId;
+            const ACTIVE_RUN_STATUSES = ['in_progress', 'queued', 'waiting', 'pending', 'requested'];
+
+            const {data: workflows} = await github.rest.actions.listRepoWorkflows({owner, repo, per_page: 100});
+            const workflow = workflows.workflows.find((w) => w.path === '.github/workflows/e2e-v2.yml' || w.name === 'E2E v2');
+            if (!workflow) {
+              core.info('E2E v2 workflow not found; nothing to cancel');
+              return;
+            }
+
+            const runsToCancel = new Map();
+            for (const status of ACTIVE_RUN_STATUSES) {
+              const {data} = await github.rest.actions.listWorkflowRuns({
+                owner,
+                repo,
+                workflow_id: workflow.id,
+                status,
+                branch,
+                per_page: 50,
+              });
+              for (const run of data.workflow_runs) {
+                if (run.id === excludeRunId) {
+                  continue;
+                }
+                runsToCancel.set(run.id, run);
+              }
+            }
+
+            if (runsToCancel.size === 0) {
+              core.info(`No other active E2E v2 runs on branch ${branch}`);
+              return;
+            }
+
+            for (const run of runsToCancel.values()) {
+              core.info(`Cancelling E2E v2 run ${run.id} (${run.status}, sha ${run.head_sha})`);
+              try {
+                await github.rest.actions.cancelWorkflowRun({owner, repo, run_id: run.id});
+                // force-cancel also stops jobs gated on always() that survive plain cancel
+                await github.request('POST /repos/{owner}/{repo}/actions/runs/{run_id}/force-cancel', {
+                  owner,
+                  repo,
+                  run_id: run.id,
+                });
+              } catch (err) {
+                core.warning(`Cancelling run ${run.id}: ${err.message}`);
+              }
+            }
+
   resolve:
     name: Resolve inputs
+    needs: [cancel-previous]
     runs-on: ubuntu-24.04
     outputs:
       enabled: ${{ steps.out.outputs.enabled }}
