@@ -13,11 +13,11 @@ import {Properties, Setup, System} from '@support/server_api';
 import {serverOneUrl, siteOneUrl} from '@support/test_config';
 import {GlobalClassificationBanner} from '@support/ui/component';
 import {ChannelListScreen, HomeScreen, LoginScreen, ServerScreen} from '@support/ui/screen';
-import {timeouts} from '@support/utils';
+import {isAndroid, timeouts} from '@support/utils';
 import {by, device, element, expect} from 'detox';
 
-// Lock wait is up to 20m; leave headroom for enable/setup after acquire.
-jest.setTimeout(timeouts.ONE_MIN * 30);
+// Lock wait is up to 5m; jest timeout matches the classification lock budget.
+jest.setTimeout(timeouts.ONE_MIN * 5);
 
 describe('Classification Banner - Global Classification Banner', () => {
 
@@ -63,7 +63,8 @@ describe('Classification Banner - Global Classification Banner', () => {
         await Properties.apiCleanupClassification(siteOneUrl);
     });
 
-    it('MM-T6197_1 - should render the banner on the channel list screen when classification is configured', async () => {
+    // Skip Android: FeatureFlagClassificationMarkings needs a server restart to take effect on fresh cloud installs.
+    (isAndroid() ? it.skip : it)('MM-T6197_1 - should render the banner on the channel list screen when classification is configured', async () => {
         await enableClassificationMarkings(siteOneUrl);
         await Properties.apiSetupClassificationWithBanner(siteOneUrl, {
             levelId: 'lvltopsecret00000000000000',

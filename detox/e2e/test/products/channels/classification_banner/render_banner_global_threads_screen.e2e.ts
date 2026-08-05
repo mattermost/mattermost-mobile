@@ -16,8 +16,8 @@ import {ChannelListScreen, GlobalThreadsScreen, HomeScreen, LoginScreen, ServerS
 import {timeouts} from '@support/utils';
 import {by, device, element, expect} from 'detox';
 
-// Lock wait is up to 20m; leave headroom for enable/setup after acquire.
-jest.setTimeout(timeouts.ONE_MIN * 30);
+// Lock wait is up to 5m; jest timeout matches the classification lock budget.
+jest.setTimeout(timeouts.ONE_MIN * 5);
 
 describe('Classification Banner - Global Classification Banner', () => {
 

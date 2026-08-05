@@ -58,6 +58,7 @@ export const timeouts = {
     ONE_MIN: MINUTE,
     TWO_MIN: MINUTE * 2,
     FOUR_MIN: MINUTE * 4,
+    FIVE_MIN: MINUTE * 5,
 };
 
 /**

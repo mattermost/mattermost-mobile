@@ -309,6 +309,16 @@ class ChannelListScreen {
     openPlusMenu = async () => {
         await dismissKnownModals(2);
         await this.toBeVisible();
+
+        // Channel-screen coachmarks ("Type a message and long press…") can still cover the list.
+        try {
+            const scheduledClose = element(by.id('scheduled_post.tooltip.close.button'));
+            await waitFor(scheduledClose).toExist().withTimeout(timeouts.TWO_SEC);
+            await scheduledClose.tap();
+            await waitFor(scheduledClose).not.toExist().withTimeout(timeouts.FIVE_SEC);
+        } catch {
+            // No scheduled-post tooltip.
+        }
         await waitForElementToExist(this.headerPlusButton, timeouts.HALF_MIN);
 
         const disableSyncForOpen = isAndroid();

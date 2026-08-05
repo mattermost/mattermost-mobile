@@ -56,6 +56,8 @@ describe('Channels', () => {
         await wait(timeouts.TWO_SEC);
         await device.reloadReactNative();
         await ChannelListScreen.toBeVisible();
+        // Private channels are not always in the public sidebar matcher; still wait for WS sync.
+        await wait(timeouts.FIVE_SEC);
     });
 
     beforeEach(async () => {

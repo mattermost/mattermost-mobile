@@ -58,6 +58,8 @@ class ServerListScreen {
             await waitFor(this.serverListScreen).toExist().withTimeout(timeouts.TEN_SEC);
         }
 
+        // Tutorial overlay makes list chrome (title/screen) unhittable for swipes.
+        await this.closeTutorial();
         return this.serverListScreen;
     };
 
@@ -80,7 +82,11 @@ class ServerListScreen {
         }
         /* eslint-enable no-await-in-loop */
 
-        return this.toBeVisible();
+        await this.toBeVisible();
+
+        // "Swipe left on a server…" tutorial covers the list until dismissed.
+        await this.closeTutorial();
+        return this.serverListScreen;
     };
 
     close = async () => {
@@ -95,14 +101,12 @@ class ServerListScreen {
     };
 
     closeTutorial = async () => {
-        if (isIos()) {
+        try {
             await waitFor(this.tutorialHighlight).toExist().withTimeout(timeouts.TEN_SEC);
             await this.tutorialSwipeLeft.tap();
-            await expect(this.tutorialHighlight).not.toExist();
-        } else {
-            await wait(timeouts.ONE_SEC);
-            await device.pressBack();
-            await wait(timeouts.ONE_SEC);
+            await waitFor(this.tutorialHighlight).not.toExist().withTimeout(timeouts.TEN_SEC);
+        } catch {
+            // Tutorial already dismissed or not shown for this account.
         }
     };
 }

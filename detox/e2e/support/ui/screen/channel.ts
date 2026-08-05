@@ -164,6 +164,10 @@ class ChannelScreen {
 
     toBeVisible = async (timeout = isAndroid() ? timeouts.HALF_MIN : timeouts.TEN_SEC) => {
         await wait(timeouts.ONE_SEC);
+
+        // Scheduled-post coachmark ("Type a message and long press…") can cover the screen
+        // right after channel open/create and make channel.screen appear missing.
+        await this.dismissScheduledPostTooltip();
         await waitForElementToExist(this.channelScreen, timeout);
 
         return this.channelScreen;
@@ -171,17 +175,21 @@ class ChannelScreen {
 
     dismissScheduledPostTooltip = async () => {
         try {
-            await waitFor(this.scheduledPostTooltipCloseButton).toBeVisible().withTimeout(timeouts.FOUR_SEC);
+            await waitFor(this.scheduledPostTooltipCloseButton).toExist().withTimeout(timeouts.FOUR_SEC);
             await this.scheduledPostTooltipCloseButton.tap();
+            await waitFor(this.scheduledPostTooltipCloseButton).not.toExist().withTimeout(timeouts.FIVE_SEC);
+            await wait(timeouts.HALF_SEC);
+            return;
+        } catch {
+            // try admin-variant close below
+        }
+        try {
+            await waitFor(this.scheduledPostTooltipCloseButtonAdminAccount).toExist().withTimeout(timeouts.TWO_SEC);
+            await this.scheduledPostTooltipCloseButtonAdminAccount.tap();
+            await waitFor(this.scheduledPostTooltipCloseButtonAdminAccount).not.toExist().withTimeout(timeouts.FIVE_SEC);
             await wait(timeouts.HALF_SEC);
         } catch {
-            try {
-                await waitFor(this.scheduledPostTooltipCloseButtonAdminAccount).toBeVisible().withTimeout(timeouts.FOUR_SEC);
-                await this.scheduledPostTooltipCloseButtonAdminAccount.tap();
-                await wait(timeouts.HALF_SEC);
-            } catch {
-                // Tooltip not visible.
-            }
+            // Tooltip not visible.
         }
     };
 
@@ -201,17 +209,36 @@ class ChannelScreen {
     // For API-created private channels not yet in the sidebar.
     openViaFindChannels = async (channelName: string) => {
         await ChannelListScreen.toBeVisible();
-        await FindChannelsScreen.open();
-        await FindChannelsScreen.searchInput.replaceText(channelName);
-        await FindChannelsScreen.searchInput.tapReturnKey();
-        await wait(timeouts.TWO_SEC);
-        await waitForElementToBeVisible(
-            FindChannelsScreen.getFilteredChannelItem(channelName),
-            timeouts.HALF_MIN,
-        );
-        await FindChannelsScreen.getFilteredChannelItem(channelName).tap();
-        await this.dismissScheduledPostTooltip();
-        return this.toBeVisible();
+
+        /* eslint-disable no-await-in-loop -- retry Find Channels until WS sync lands */
+        let lastError: unknown;
+        for (let attempt = 0; attempt < 3; attempt++) {
+            try {
+                await FindChannelsScreen.open();
+                await FindChannelsScreen.searchInput.replaceText(channelName);
+                await FindChannelsScreen.searchInput.tapReturnKey();
+                await wait(timeouts.TWO_SEC);
+                await waitForElementToBeVisible(
+                    FindChannelsScreen.getFilteredChannelItem(channelName),
+                    timeouts.TWENTY_SEC,
+                );
+                await FindChannelsScreen.getFilteredChannelItem(channelName).tap();
+                await this.dismissScheduledPostTooltip();
+                return this.toBeVisible();
+            } catch (err) {
+                lastError = err;
+                try {
+                    await FindChannelsScreen.close();
+                } catch {
+                    // Screen may already be dismissed.
+                }
+                await wait(timeouts.THREE_SEC);
+            }
+        }
+        /* eslint-enable no-await-in-loop */
+        throw lastError instanceof Error
+            ? lastError
+            : new Error(`openViaFindChannels failed for ${channelName}: ${String(lastError)}`);
     };
 
     back = async () => {

@@ -64,6 +64,7 @@ describe('Messaging - Message Draft', () => {
         await ChannelScreen.applyPostPrioritySettings();
         await verifyDraftonChannelList('1');
         await ChannelListScreen.draftsButton.tap();
+        await DraftScreen.dismissDraftTooltip();
         await expect(DraftScreen.persistentNotificationIcon).toBeVisible();
         await DraftScreen.backButton.tap();
     });

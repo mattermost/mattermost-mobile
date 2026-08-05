@@ -27,10 +27,10 @@ import {isAndroid, timeouts, wait, waitForElementToBeVisible} from '@support/uti
 import {expect, waitFor} from 'detox';
 
 // beforeAll: 4 channels + login under CI load — 6min hook timeout.
-jest.setTimeout(360000);
+jest.setTimeout(timeouts.ONE_MIN * 5);
 
 // beforeAll: 4 channels + login under CI load — 6min hook timeout.
-jest.setTimeout(360000);
+jest.setTimeout(timeouts.ONE_MIN * 5);
 
 describe('Channels - Archive Channel from Settings', () => {
 

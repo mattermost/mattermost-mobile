@@ -28,7 +28,7 @@ import {timeouts} from '@support/utils';
 import {waitFor} from 'detox';
 
 // Several tests here call device.reloadReactNative(), which can take 30-90s on iOS CI.
-jest.setTimeout(360000);
+jest.setTimeout(timeouts.ONE_MIN * 5);
 
 describe('Channels - Browse Channels', () => {
 

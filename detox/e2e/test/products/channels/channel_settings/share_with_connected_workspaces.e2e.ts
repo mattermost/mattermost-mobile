@@ -24,7 +24,7 @@ import {tapNativeBackButton, timeouts, wait} from '@support/utils';
 import {expect, device, element, by, waitFor} from 'detox';
 
 // beforeAll: apiInit + config + login under CI load — 6min hook timeout.
-jest.setTimeout(360000);
+jest.setTimeout(timeouts.ONE_MIN * 5);
 
 describe('Share with connected workspaces', () => {
     // Skipped on PR/main CI: beforeAll hits 360s hook timeout without Shared Channels

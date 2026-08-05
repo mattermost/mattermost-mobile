@@ -125,5 +125,5 @@ describe('Threads - Follow and Unfollow Thread', () => {
         // # Go back to channel list screen
         await PostOptionsScreen.close();
         await ChannelScreen.back();
-    }, 360000);
+    }, timeouts.ONE_MIN * 5);
 });

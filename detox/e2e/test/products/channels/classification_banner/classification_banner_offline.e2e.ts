@@ -22,8 +22,8 @@ import {ChannelListScreen, HomeScreen, LoginScreen, ServerScreen} from '@support
 import {timeouts, wait} from '@support/utils';
 import {by, device, element, waitFor} from 'detox';
 
-// Lock wait is up to 20m; leave headroom for enable/setup after acquire.
-jest.setTimeout(timeouts.ONE_MIN * 30);
+// Lock wait is up to 5m; jest timeout matches the classification lock budget.
+jest.setTimeout(timeouts.ONE_MIN * 5);
 
 const escapeRegex = (value: string) => value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 
