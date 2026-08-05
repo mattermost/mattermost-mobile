@@ -45,6 +45,7 @@ export const getAdminAccount = () => {
 const SECOND = 1000 * (process.env.LOW_BANDWIDTH_MODE === 'true' ? 5 : 1);
 const MINUTE = 60 * 1000;
 
+// Matterwick provision kick
 export const timeouts = {
     HALF_SEC: SECOND / 2,
     ONE_SEC: SECOND,

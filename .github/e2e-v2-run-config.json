@@ -16,8 +16,8 @@
   "site_3_url": "https://mobile-pr-10006-site-3-5dmo3yii.test.mattermost.cloud",
   "pr_number": "10006",
   "run_type": "PR",
-  "enabled": true,
-  "rerun_note": "iOS flake fixes + 5m timeout caps; TSIO actions @1f7ca41 (#102); Matterwick re-provision 30997695282; detox-ios=40 detox-android=30; reuse build 30976048711",
+  "enabled": false,
+  "rerun_note": "paused while Matterwick re-provisions servers after ios-site-1 config/patch timeouts",
   "ios_worker_count": "40",
   "android_worker_count": "30"
 }
