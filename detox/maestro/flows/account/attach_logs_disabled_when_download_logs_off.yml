@@ -19,8 +19,10 @@
 #   - account.settings.option
 #   - settings.report_problem.option
 #   - report_problem.screen
+#   - report_problem.metadata.copy.button
 #   - report_problem.enable_log_attachments
 #   - app_logs_download_button
+#   - tab_bar.home.tab
 tags:
   - MM-T67856_4
 appId: ${MAESTRO_APP_ID}
@@ -60,10 +62,10 @@ appId: ${MAESTRO_APP_ID}
 
 # # Scroll to the end of the details first. assertNotVisible also passes for a
 # control that is merely below the fold, so reach the bottom before asserting.
-# Copy is the last control on the screen when the app logs are unavailable.
+# Copy metadata is the last control on the screen when the app logs are unavailable.
 - scrollUntilVisible:
     element:
-      text: "Copy"
+      id: "report_problem.metadata.copy.button"
     direction: DOWN
     timeout: 10000
 
@@ -99,3 +101,6 @@ appId: ${MAESTRO_APP_ID}
           visible:
             id: "settings.report_problem.option"
           timeout: 10000
+
+# # Capture the final state
+- takeScreenshot: report-problem-logs-disabled-end

@@ -120,3 +120,6 @@ appId: ${MAESTRO_APP_ID}
     visible:
       id: "file_attachment.attach_logs"
     timeout: 10000
+
+# # Capture the final state
+- takeScreenshot: attach-app-logs-option-offered

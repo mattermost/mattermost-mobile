@@ -89,3 +89,6 @@ appId: ${MAESTRO_APP_ID}
           visible:
             id: "settings.report_problem.option"
           timeout: 10000
+
+# # Capture the final state
+- takeScreenshot: report-problem-toggle-visible-end
