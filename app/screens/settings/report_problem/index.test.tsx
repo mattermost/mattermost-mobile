@@ -2,7 +2,7 @@
 // See LICENSE.txt for license information.
 
 import {Database} from '@nozbe/watermelondb';
-import React, {type ComponentProps} from 'react';
+import React from 'react';
 import {View, Text} from 'react-native';
 
 import DatabaseManager from '@database/manager';
@@ -16,15 +16,11 @@ jest.mock('./report_problem', () => ({
     __esModule: true,
     default: jest.fn(),
 }));
-jest.mocked(ReportProblem).mockImplementation((props) => {
+jest.mocked(ReportProblem).mockImplementation(({allowDownloadLogs, reportAProblemType}) => {
     return (
         <View>
-            {Object.keys(props).map((key) => (
-                <Text
-                    key={key}
-                    testID={key}
-                >{`${props[key as keyof ComponentProps<typeof ReportProblem>]}`}</Text>
-            ))}
+            <Text testID='allowDownloadLogs'>{`${allowDownloadLogs}`}</Text>
+            <Text testID='reportAProblemType'>{`${reportAProblemType}`}</Text>
         </View>
     );
 });
