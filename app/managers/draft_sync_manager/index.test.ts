@@ -137,13 +137,15 @@ describe('DraftSyncManager (Phase 3 shell)', () => {
         expect(getClientSpy).not.toHaveBeenCalled();
     });
 
-    it('initialize reads capability and schedules a retry timer when an eligible outbox row exists and sync is enabled', async () => {
+    it('initialize arms NO timer with a pending row but no baseline and no known team (busy-loop guard)', async () => {
         await setSyncConfig('true');
         await createOutbox(DraftOutboxStatus.Pending, 0);
 
         await manager.initialize(SERVER_URL);
 
-        expect(jest.getTimerCount()).toBe(1);
+        // The drain timer needs a baseline; the reconcile timer needs a known team. On a cold start
+        // there is neither, so nothing is armed — this is what prevents a setTimeout(0) busy loop.
+        expect(jest.getTimerCount()).toBe(0);
     });
 
     it('initialize schedules no timer when sync is disabled even with an eligible outbox row', async () => {
@@ -164,31 +166,33 @@ describe('DraftSyncManager (Phase 3 shell)', () => {
         expect(jest.getTimerCount()).toBe(0);
     });
 
-    it('the retry timer firing performs no network call and reschedules itself', async () => {
+    it('a failed reconciliation GET arms a backoff reconcile timer (real delay, never a zero-delay loop)', async () => {
         await setSyncConfig('true');
         await createOutbox(DraftOutboxStatus.Pending, 0);
-
-        const getClientSpy = jest.spyOn(NetworkManager, 'getClient');
-        const querySpy = jest.spyOn(database.collections.get<DraftOutboxModel>(DRAFT_OUTBOX), 'query');
+        mockedReconcile.mockResolvedValue({error: new Error('offline')});
 
         await manager.initialize(SERVER_URL);
+        manager.requestReconcile(SERVER_URL, 'team1', 'trigger');
+        await flushMicrotasks();
+
+        // GET failed -> no baseline, so no drain timer; a reconcile-GET retry is armed with a real
+        // (>= base) backoff delay so a persistently failing GET can never busy-loop.
         expect(jest.getTimerCount()).toBe(1);
 
-        querySpy.mockClear();
-
-        // Fire the heartbeat. It must re-query the outbox and reschedule (row still eligible)
-        // without ever touching the network.
-        await advanceTimers(1);
-
-        expect(getClientSpy).not.toHaveBeenCalled();
-        expect(querySpy).toHaveBeenCalledTimes(1);
-        expect(jest.getTimerCount()).toBe(1);
+        mockedReconcile.mockClear();
+        await advanceTimers(0);
+        expect(mockedReconcile).not.toHaveBeenCalled(); // not a zero-delay timer
     });
 
     it('invalidate synchronously increments the epoch, cancels the timer and clears the event buffer', async () => {
         await setSyncConfig('true');
         await createOutbox(DraftOutboxStatus.Pending, 0);
+        mockedReconcile.mockResolvedValue({error: new Error('offline')});
         await manager.initialize(SERVER_URL);
+
+        // Arm a (reconcile backoff) timer to have something to cancel.
+        manager.requestReconcile(SERVER_URL, 'team1', 'x');
+        await flushMicrotasks();
 
         manager.enqueueWebSocketEvent(SERVER_URL, fakeEvent());
         expect(internals(manager).eventBuffers[SERVER_URL].length).toBe(1);
@@ -206,26 +210,28 @@ describe('DraftSyncManager (Phase 3 shell)', () => {
         expect(internals(manager).eventBuffers[SERVER_URL].length).toBe(0);
     });
 
-    it('rejects a retry-timer continuation captured before invalidate as stale and touches nothing', async () => {
+    it('rejects a timer continuation captured before invalidate as stale and touches nothing', async () => {
         await setSyncConfig('true');
         await createOutbox(DraftOutboxStatus.Pending, 0);
+        mockedReconcile.mockResolvedValue({error: new Error('offline')});
 
         const setTimeoutSpy = jest.spyOn(global, 'setTimeout');
         await manager.initialize(SERVER_URL);
+        manager.requestReconcile(SERVER_URL, 'team1', 'x');
+        await flushMicrotasks();
 
-        // Capture the heartbeat callback the manager registered.
+        // Capture the reconcile-timer callback the manager registered.
         const lastCall = setTimeoutSpy.mock.calls[setTimeoutSpy.mock.calls.length - 1];
         const fireCallback = lastCall[0] as () => void;
 
         manager.invalidate(SERVER_URL);
+        mockedReconcile.mockClear();
 
-        const querySpy = jest.spyOn(database.collections.get<DraftOutboxModel>(DRAFT_OUTBOX), 'query');
-
-        // Firing the stale continuation must not re-query the DB nor reschedule a timer.
+        // Firing the stale continuation must not reconcile nor reschedule a timer.
         fireCallback();
         await advanceTimers(0);
 
-        expect(querySpy).not.toHaveBeenCalled();
+        expect(mockedReconcile).not.toHaveBeenCalled();
         expect(jest.getTimerCount()).toBe(0);
     });
 
@@ -248,26 +254,36 @@ describe('DraftSyncManager (Phase 3 shell)', () => {
         );
     });
 
-    it('handleCapabilityChange reconstructs the timer on disabled->enabled and cancels it on enabled->disabled without deleting outbox rows', async () => {
-        // Start disabled with an eligible row: initialize leaves capability off and no timer.
-        await createOutbox(DraftOutboxStatus.Pending, 0);
-        await manager.initialize(SERVER_URL);
-        expect(jest.getTimerCount()).toBe(0);
-
-        // disabled -> enabled reconstructs the heartbeat.
+    it('handleCapabilityChange clears the baseline gate on disable and requires a fresh GET on re-enable, keeping durable rows', async () => {
         await setSyncConfig('true');
-        await manager.handleCapabilityChange(SERVER_URL);
-        expect(jest.getTimerCount()).toBe(1);
+        await createOutbox(DraftOutboxStatus.Pending, 0);
+        mockedReconcile.mockResolvedValue({applied: 0, drafts: []});
+        await manager.initialize(SERVER_URL);
 
-        // enabled -> disabled cancels the timer but keeps the durable outbox row.
+        // Establish a baseline + a known team.
+        manager.requestReconcile(SERVER_URL, 'team1', 'first');
+        await flushMicrotasks();
+        expect(baselineInternals(manager).baseline[SERVER_URL]).toBeDefined();
+
+        // enabled -> disabled: the baseline gate is reset and timers are cleared (a re-enable must not
+        // drain against a stale snapshot), but the durable outbox row is preserved.
         await setSyncConfig('false');
         await manager.handleCapabilityChange(SERVER_URL);
+        expect(baselineInternals(manager).baseline[SERVER_URL]).toBeUndefined();
         expect(jest.getTimerCount()).toBe(0);
 
         const rows = await database.collections.get<DraftOutboxModel>(DRAFT_OUTBOX).query(
             Q.where('status', DraftOutboxStatus.Pending),
         ).fetch();
         expect(rows.length).toBe(1);
+
+        // disabled -> enabled with a known team: a fresh reconciliation GET is triggered before any
+        // draining resumes (no draining against the pre-disable baseline).
+        mockedReconcile.mockClear();
+        await setSyncConfig('true');
+        await manager.handleCapabilityChange(SERVER_URL);
+        await flushMicrotasks();
+        expect(mockedReconcile).toHaveBeenCalled();
     });
 
     describe('requestReconcile (Phase 4.1 additive reconciliation)', () => {
@@ -390,17 +406,22 @@ describe('DraftSyncManager (Phase 3 shell)', () => {
             expect(mockedDeleteAbsentCleanDraft).not.toHaveBeenCalled();
         });
 
-        it('deletes a clean key on a second same-scope absence after the delay and clears the candidate', async () => {
+        it('deletes a clean key on the auto-scheduled second same-scope absence after the delay and clears the candidate', async () => {
             await enableManager();
             mockedReconcile.mockResolvedValue({applied: 0, drafts: []});
             mockedGetReconcilableKeys.mockResolvedValue([cleanDraftKey()]);
+            // Simulate production: once deleted, the key leaves the reconcilable universe.
+            mockedDeleteAbsentCleanDraft.mockImplementation(async () => {
+                mockedGetReconcilableKeys.mockResolvedValue([]);
+            });
 
             manager.requestReconcile(SERVER_URL, 'team1', 'first');
             await flushMicrotasks();
 
-            await advanceTimers(DRAFT_ABSENCE_CONFIRMATION_DELAY_MS);
+            // First absence only quarantines; the manager auto-schedules the delayed second GET.
+            expect(mockedDeleteAbsentCleanDraft).not.toHaveBeenCalled();
 
-            manager.requestReconcile(SERVER_URL, 'team1', 'second');
+            await advanceTimers(DRAFT_ABSENCE_CONFIRMATION_DELAY_MS);
             await flushMicrotasks();
 
             expect(mockedDeleteAbsentCleanDraft).toHaveBeenCalledTimes(1);
@@ -458,10 +479,13 @@ describe('DraftSyncManager (Phase 3 shell)', () => {
             expect(candidates().size).toBe(0);
         });
 
-        it('confirms a delete tombstone via confirmDeleteTombstone after two same-scope absences past the delay', async () => {
+        it('confirms a delete tombstone via confirmDeleteTombstone on the auto-scheduled second same-scope absence past the delay', async () => {
             await enableManager();
             mockedReconcile.mockResolvedValue({applied: 0, drafts: []});
             mockedGetReconcilableKeys.mockResolvedValue([tombstoneKey()]);
+            mockedConfirmDeleteTombstone.mockImplementation(async () => {
+                mockedGetReconcilableKeys.mockResolvedValue([]);
+            });
 
             manager.requestReconcile(SERVER_URL, 'team1', 'first');
             await flushMicrotasks();
@@ -469,7 +493,6 @@ describe('DraftSyncManager (Phase 3 shell)', () => {
             expect(candidates().get(DRAFT_KEY)?.teamId).toBe('team1');
 
             await advanceTimers(DRAFT_ABSENCE_CONFIRMATION_DELAY_MS);
-            manager.requestReconcile(SERVER_URL, 'team1', 'second');
             await flushMicrotasks();
 
             expect(mockedConfirmDeleteTombstone).toHaveBeenCalledTimes(1);
@@ -478,22 +501,23 @@ describe('DraftSyncManager (Phase 3 shell)', () => {
             expect(candidates().has(DRAFT_KEY)).toBe(false);
         });
 
-        it('does not confirm when the second absence is observed under a different teamId scope', async () => {
+        it('does not confirm when the next observation is under a different teamId scope (window restarts)', async () => {
             await enableManager();
             mockedReconcile.mockResolvedValue({applied: 0, drafts: []});
             mockedGetReconcilableKeys.mockResolvedValue([cleanDraftKey()]);
 
             manager.requestReconcile(SERVER_URL, 'team1', 'first');
             await flushMicrotasks();
+            expect(candidates().get(DRAFT_KEY)?.teamId).toBe('team1');
 
-            await advanceTimers(DRAFT_ABSENCE_CONFIRMATION_DELAY_MS);
+            // A team switch reconciles under team2 (which also clears the team1 auto-timer). The team2
+            // observation sees a team1 candidate, so the window restarts under team2 and nothing is
+            // confirmed — scope, not timing, is the gate here.
             manager.requestReconcile(SERVER_URL, 'team2', 'second-other-scope');
             await flushMicrotasks();
 
-            expect(mockedDeleteAbsentCleanDraft).not.toHaveBeenCalled();
-
-            // The observation window restarted under the new scope.
             expect(candidates().get(DRAFT_KEY)?.teamId).toBe('team2');
+            expect(mockedDeleteAbsentCleanDraft).not.toHaveBeenCalled();
         });
 
         it('drops an ineligible key candidate (preserve) instead of deleting it', async () => {

@@ -5,7 +5,7 @@ import {Q, type Database} from '@nozbe/watermelondb';
 
 import {confirmDeleteTombstone, deleteAbsentCleanDraft, getReconcilableKeys, processOutboxDelete, processOutboxUpsert, reconcileTeamDrafts, type ReconcileKey, type WorkerOutcome} from '@actions/remote/draft';
 import {MM_TABLES} from '@constants/database';
-import {DRAFT_ABSENCE_CONFIRMATION_DELAY_MS, DraftOutboxOperation, DraftOutboxStatus, MAX_DRAFT_SYNC_EVENT_BUFFER} from '@constants/draft';
+import {DRAFT_ABSENCE_CONFIRMATION_DELAY_MS, DRAFT_SYNC_RETRY_BASE_MS, DRAFT_SYNC_RETRY_JITTER, DRAFT_SYNC_RETRY_MAX_MS, DraftOutboxOperation, DraftOutboxStatus, MAX_DRAFT_SYNC_EVENT_BUFFER} from '@constants/draft';
 import DatabaseManager from '@database/manager';
 import {buildDraftOutboxId, getIsDraftSyncEnabled} from '@queries/servers/drafts';
 import {logDebug} from '@utils/log';
@@ -39,23 +39,16 @@ const isAbsenceEligible = (entry: ReconcileKey): boolean => {
 
 const {DRAFT_OUTBOX} = MM_TABLES.SERVER;
 
-// RETRY_ELIGIBLE_STATUSES: outbox statuses that represent outstanding work the retry timer must
-// wake up for. Blocked/BlockedUpload/WaitingForUpload rows are intentionally excluded — they are
-// parked awaiting an external signal (unblock, upload completion) and are NOT time-driven.
-const RETRY_ELIGIBLE_STATUSES: DraftOutboxStatus[] = [
-    DraftOutboxStatus.Pending,
-    DraftOutboxStatus.ConfirmingDelete,
-];
-
 /**
- * DraftSyncManager (Phase 3 shell): the per-server coordinator for synchronized drafts.
+ * DraftSyncManager: the per-server coordinator for synchronized drafts.
  *
- * CRITICAL: this phase performs NO network activity. It owns per-server lifecycle state, a
- * lifecycle epoch used to reject stale async continuations, a bounded inbound WebSocket event
- * buffer, and a single durable retry timer per server that reconstructs itself from the
- * DraftOutbox. The retry timer's fire callback does NOT send anything — it merely re-queries the
- * outbox and reschedules itself (a self-rescheduling heartbeat). Phase 4 will add draining/POST/
- * DELETE/GET at the marked call sites.
+ * It owns per-server lifecycle state, a lifecycle epoch that rejects stale async continuations, a
+ * bounded inbound WebSocket event buffer, the baseline gate, in-memory absence candidates, and two
+ * timers scheduled by scheduleWork: a DRAIN timer (POST/DELETE the outbox, only with a baseline) and
+ * a RECONCILE timer (GET the team snapshot to establish/refresh the baseline or run a delayed
+ * absence/confirmation observation, only with a known team). Neither timer can form a zero-delay
+ * loop: the drain timer requires due Pending work under a baseline, and the reconcile timer always
+ * uses a real backoff/confirmation delay.
  *
  * Per-server state is keyed by serverUrl. A server entry is "present" once initialize() (or any
  * scheduling path) has created it. A missing entry is treated as invalidated: no new work is
@@ -66,8 +59,20 @@ class DraftSyncManagerSingleton {
     // epoch that no longer matches (or whose server entry is gone) marks a stale continuation.
     private lifecycleEpoch: Record<string, number> = {};
 
-    // retryTimers: at most one active setTimeout per server (the self-rescheduling heartbeat).
+    // retryTimers: the OUTBOX DRAIN timer (at most one per server). Armed only when a baseline exists
+    // and there are due Pending rows in scope; its fire calls drainOutbox. Never armed without a
+    // baseline (draining without a baseline would no-op), so it can never form a zero-delay loop.
     private retryTimers: Record<string, ReturnType<typeof setTimeout>> = {};
+
+    // reconcileTimers: the RECONCILE (GET) timer (at most one per server). Armed with a real delay
+    // (never 0) to (a) establish a baseline before draining, (b) retry a failed GET with backoff, or
+    // (c) run the delayed second observation for confirming-delete tombstones / absence candidates.
+    // Requires a known team (baseline.teamId or the last requested team); without one, nothing is armed.
+    private reconcileTimers: Record<string, ReturnType<typeof setTimeout>> = {};
+
+    // reconcileAttempt: consecutive failed-GET count per server, driving the reconcile backoff. Reset
+    // to 0 on a successful reconcile.
+    private reconcileAttempt: Record<string, number> = {};
 
     // eventBuffers: inbound WebSocket events awaiting Phase 4 draining, bounded by
     // MAX_DRAFT_SYNC_EVENT_BUFFER. Overflowing events are dropped (oldest kept) with a debug log.
@@ -134,8 +139,11 @@ class DraftSyncManagerSingleton {
         // upload once that manager is reachable from here.
         await this.recoverInterruptedUploads(database);
 
+        // Do NOT arm a drain timer here: there is no baseline yet (draining needs one) and no known
+        // team to reconcile until a trigger (requestReconcile) supplies one. scheduleWork therefore
+        // arms nothing on a cold start with no team/baseline, which is what prevents a busy loop.
         if (this.enabled[serverUrl]) {
-            await this.reconstructRetryTimer(serverUrl);
+            await this.scheduleWork(serverUrl);
         }
     };
 
@@ -177,12 +185,13 @@ class DraftSyncManagerSingleton {
         }
 
         // Fire-and-forget: draining is async (DB + HTTP) but wake() is synchronous by contract. With a
-        // baseline established, drain immediately (drainOutbox reschedules the heartbeat when it ends);
-        // without one, only (re)arm the heartbeat so the work drains once a baseline appears.
+        // baseline established, drain immediately (drainOutbox reschedules via scheduleWork when it
+        // ends); without one, let scheduleWork arm a reconcile (only if a team is known) so the work
+        // drains once a baseline appears.
         if (this.baseline[serverUrl]) {
             this.drainOutbox(serverUrl);
         } else {
-            this.reconstructRetryTimer(serverUrl);
+            this.scheduleWork(serverUrl);
         }
     };
 
@@ -237,19 +246,31 @@ class DraftSyncManagerSingleton {
         }
 
         if (res.error) {
-            // Failure: do NOT set a baseline and run NO absence pass. Without a snapshot nothing may
-            // be deleted. The heartbeat will re-request later.
+            // Failure: do NOT set a baseline and run NO absence pass (without a snapshot nothing may be
+            // deleted). Increment the backoff count; scheduleWork arms a reconcile-GET retry with a real
+            // delay (never 0) so a persistently failing GET can never form a busy loop.
             logDebug('DraftSyncManager.reconcile: reconciliation failed', serverUrl);
-            this.reconstructRetryTimer(serverUrl);
+            this.reconcileAttempt[serverUrl] = (this.reconcileAttempt[serverUrl] ?? 0) + 1;
         } else {
+            this.reconcileAttempt[serverUrl] = 0;
             this.baseline[serverUrl] = {teamId, at: Date.now()};
 
             // Absence pass: a successful snapshot lets us quarantine/confirm keys that are absent
             // from it. Epoch-guarded internally; it never POSTs/DELETEs over the network.
             await this.runAbsencePass(serverUrl, teamId, res.drafts ?? [], captured);
+
+            // A fresh baseline means queued outbox work can now drain. drainOutbox re-checks epoch and
+            // calls scheduleWork when it ends (which re-arms the delayed confirmation reconcile if any
+            // confirming-delete/absence candidates remain).
+            if (!this.isEpochStale(serverUrl, captured) && this.isActive(serverUrl)) {
+                await this.drainOutbox(serverUrl);
+            }
         }
 
         this.reconcileInFlight[serverUrl] = false;
+
+        // Re-evaluate timers (reconcile backoff on failure; delayed confirmation on success).
+        await this.scheduleWork(serverUrl);
 
         const pending = this.reconcilePending[serverUrl];
         if (pending) {
@@ -386,17 +407,28 @@ class DraftSyncManagerSingleton {
 
         if (wasEnabled && !nowEnabled) {
             // enabled -> disabled: stop scheduling and drop transient state, but keep durable rows.
+            // CRITICAL: clear the baseline and absence candidates so re-enabling cannot drain/POST
+            // against a stale snapshot — a fresh successful GET is required before draining resumes.
             this.clearRetryTimer(serverUrl);
+            this.clearReconcileTimer(serverUrl);
             this.eventBuffers[serverUrl] = [];
+            delete this.baseline[serverUrl];
+            this.absenceCandidates[serverUrl] = new Map();
+            this.reconcileAttempt[serverUrl] = 0;
             logDebug('DraftSyncManager.handleCapabilityChange: disabled', serverUrl);
             return;
         }
 
         if (!wasEnabled && nowEnabled) {
-            // disabled -> enabled: resume the heartbeat.
+            // disabled -> enabled: require a fresh baseline before any draining. If a team is known,
+            // reconcile now (which will drain on success); otherwise scheduleWork waits for a trigger.
             logDebug('DraftSyncManager.handleCapabilityChange: enabled', serverUrl);
-            await this.reconstructRetryTimer(serverUrl);
-            this.wake(serverUrl);
+            const teamId = this.lastReconcile[serverUrl]?.teamId;
+            if (teamId) {
+                this.reconcile(serverUrl, teamId);
+            } else {
+                await this.scheduleWork(serverUrl);
+            }
         }
     };
 
@@ -408,12 +440,14 @@ class DraftSyncManagerSingleton {
     public invalidate = (serverUrl: string): void => {
         this.lifecycleEpoch[serverUrl] = (this.lifecycleEpoch[serverUrl] ?? 0) + 1;
         this.clearRetryTimer(serverUrl);
+        this.clearReconcileTimer(serverUrl);
         this.eventBuffers[serverUrl] = [];
         this.enabled[serverUrl] = false;
         this.lastReconcile[serverUrl] = {teamId: '', reason: ''};
         delete this.baseline[serverUrl];
         this.reconcileInFlight[serverUrl] = false;
         this.reconcilePending[serverUrl] = undefined;
+        this.reconcileAttempt[serverUrl] = 0;
         this.absenceCandidates[serverUrl] = new Map();
         this.inFlightKeys[serverUrl] = new Set();
         logDebug('DraftSyncManager.invalidate', serverUrl);
@@ -434,60 +468,113 @@ class DraftSyncManagerSingleton {
     };
 
     /**
-     * reconstructRetryTimer: rebuilds the single per-server heartbeat from the outbox.
+     * scheduleWork: the single decider for which timers to arm. Called after initialize, wake,
+     * reconcile, and drainOutbox. It arms at most two timers, and never a zero-delay busy loop:
      *
-     * - When disabled/invalidated or the DB is absent, clears any existing timer and returns.
-     * - Queries retry-eligible rows (Pending / ConfirmingDelete) and finds the earliest
-     *   nextAttemptAt (0 meaning "eligible now").
-     * - With none pending, clears the timer.
-     * - Otherwise schedules ONE setTimeout for max(0, earliest - now). When it fires it guards on
-     *   epoch staleness, then re-runs reconstruction (self-rescheduling). It sends NOTHING.
+     * - DRAIN timer (retryTimers): only when a baseline exists AND there is a due Pending upsert/delete
+     *   row in scope. Its fire drains those rows. A due row fires once, is consumed (removed or backed
+     *   off to a future nextAttemptAt), so it cannot re-arm at zero.
+     * - RECONCILE timer (reconcileTimers): armed only when a team is known, with a real delay:
+     *     (a) failed GET  -> reconcile backoff (>= base);
+     *     (b) no baseline but Pending work exists -> base delay, to establish a baseline first;
+     *     (c) confirming-delete rows or absence candidates -> DELAY, for the second observation GET.
+     *
+     * With no baseline and no known team (a cold start before any reconcile trigger), NOTHING is armed.
      */
-    private reconstructRetryTimer = async (serverUrl: string): Promise<void> => {
+    private scheduleWork = async (serverUrl: string): Promise<void> => {
         if (!this.isActive(serverUrl)) {
             this.clearRetryTimer(serverUrl);
+            this.clearReconcileTimer(serverUrl);
             return;
         }
 
         const database = this.getDatabase(serverUrl);
         if (!database) {
             this.clearRetryTimer(serverUrl);
+            this.clearReconcileTimer(serverUrl);
             return;
         }
 
         const captured = this.captureEpoch(serverUrl);
 
-        let earliest: number | undefined;
+        let rows: DraftOutboxModel[];
         try {
-            earliest = await this.getEarliestNextAttemptAt(database);
+            rows = await database.collections.get<DraftOutboxModel>(DRAFT_OUTBOX).query().fetch();
         } catch (error) {
-            logDebug('DraftSyncManager.reconstructRetryTimer: outbox query failed', serverUrl);
+            logDebug('DraftSyncManager.scheduleWork: outbox query failed', serverUrl);
             return;
         }
 
-        // A concurrent invalidate/disable during the await must not resurrect a timer.
         if (this.isEpochStale(serverUrl, captured) || !this.isActive(serverUrl)) {
             return;
         }
 
-        // Always clear the prior timer before deciding — guarantees one timer per server.
-        this.clearRetryTimer(serverUrl);
+        const baseline = this.baseline[serverUrl];
+        const teamId = baseline?.teamId || this.lastReconcile[serverUrl]?.teamId || '';
+        const inScope = (row: DraftOutboxModel) => row.teamId === teamId || row.teamId === '';
+        const isPendingWork = (row: DraftOutboxModel) => row.status === DraftOutboxStatus.Pending &&
+            (row.operation === DraftOutboxOperation.Upsert || row.operation === DraftOutboxOperation.Delete);
+        const now = Date.now();
 
-        if (earliest === undefined) {
-            return;
+        // --- Drain timer ---
+        this.clearRetryTimer(serverUrl);
+        if (baseline) {
+            const pendingDue = rows.filter((r) => inScope(r) && isPendingWork(r));
+            if (pendingDue.length) {
+                const earliest = Math.min(...pendingDue.map((r) => r.nextAttemptAt));
+                this.armDrainTimer(serverUrl, Math.max(0, earliest - now), captured);
+            }
         }
 
-        const delay = Math.max(0, earliest - Date.now());
+        // --- Reconcile timer ---
+        this.clearReconcileTimer(serverUrl);
+        if (teamId) {
+            const attempt = this.reconcileAttempt[serverUrl] ?? 0;
+            const hasPendingInScope = rows.some((r) => inScope(r) && isPendingWork(r));
+            const hasConfirmingInScope = rows.some((r) => inScope(r) && r.status === DraftOutboxStatus.ConfirmingDelete);
+            const hasCandidates = (this.absenceCandidates[serverUrl]?.size ?? 0) > 0;
+
+            let delay: number | undefined;
+            if (attempt > 0) {
+                delay = this.reconcileBackoffMs(attempt);
+            } else if (!baseline && hasPendingInScope) {
+                delay = DRAFT_SYNC_RETRY_BASE_MS;
+            } else if (hasConfirmingInScope || hasCandidates) {
+                delay = DRAFT_ABSENCE_CONFIRMATION_DELAY_MS;
+            }
+
+            if (delay !== undefined) {
+                this.armReconcileTimer(serverUrl, teamId, delay, captured);
+            }
+        }
+    };
+
+    // armDrainTimer: schedule ONE drain timer; the fire re-checks epoch then drains.
+    private armDrainTimer = (serverUrl: string, delay: number, captured: number): void => {
         this.retryTimers[serverUrl] = setTimeout(() => {
             if (this.isEpochStale(serverUrl, captured)) {
                 return;
             }
-
-            // Phase 4: drain eligible outbox work. drainOutbox is baseline-gated (no POST/DELETE without
-            // a baseline) and reschedules this heartbeat when it ends, so the timer stays a self-
-            // rescheduling loop even before a baseline exists.
             this.drainOutbox(serverUrl);
         }, delay);
+    };
+
+    // armReconcileTimer: schedule ONE reconcile-GET timer; the fire re-checks epoch then reconciles.
+    private armReconcileTimer = (serverUrl: string, teamId: string, delay: number, captured: number): void => {
+        this.reconcileTimers[serverUrl] = setTimeout(() => {
+            if (this.isEpochStale(serverUrl, captured)) {
+                return;
+            }
+            this.reconcile(serverUrl, teamId);
+        }, delay);
+    };
+
+    // reconcileBackoffMs: capped exponential backoff (attempt 1 -> base) with +/- jitter, for retrying
+    // a failed reconciliation GET.
+    private reconcileBackoffMs = (attempt: number): number => {
+        const capped = Math.min(DRAFT_SYNC_RETRY_BASE_MS * (2 ** (attempt - 1)), DRAFT_SYNC_RETRY_MAX_MS);
+        const jitter = 1 + ((Math.random() * 2 * DRAFT_SYNC_RETRY_JITTER) - DRAFT_SYNC_RETRY_JITTER);
+        return Math.max(0, Math.round(capped * jitter));
     };
 
     /**
@@ -503,9 +590,9 @@ class DraftSyncManagerSingleton {
 
         const baseline = this.baseline[serverUrl];
         if (!baseline) {
-            // NO draining without a baseline. Keep the heartbeat alive so queued work drains once a
-            // baseline is established (re-querying the outbox is not a network send).
-            await this.reconstructRetryTimer(serverUrl);
+            // NO draining without a baseline. Defer to scheduleWork, which arms a reconcile-GET (only
+            // if a team is known) to establish one; it never arms a zero-delay drain loop.
+            await this.scheduleWork(serverUrl);
             return;
         }
 
@@ -563,43 +650,34 @@ class DraftSyncManagerSingleton {
             }
 
             if (outcome.outcome === 'suspend') {
-                // Server-wide failure: stop scheduling for this session and drop the heartbeat.
+                // Server-wide failure: stop scheduling for this session and drop both timers.
                 this.enabled[serverUrl] = false;
                 this.clearRetryTimer(serverUrl);
+                this.clearReconcileTimer(serverUrl);
                 return;
             }
         }
 
-        // Schedule the next wake for the earliest remaining nextAttemptAt.
-        await this.reconstructRetryTimer(serverUrl);
+        // Re-evaluate timers: arm the drain timer for the earliest remaining Pending row and, if any
+        // confirming-delete/absence work remains, the delayed reconcile GET.
+        await this.scheduleWork(serverUrl);
     };
 
-    // getEarliestNextAttemptAt: earliest nextAttemptAt across retry-eligible outbox rows, or
-    // undefined when there is no outstanding work.
-    private getEarliestNextAttemptAt = async (database: Database): Promise<number | undefined> => {
-        const rows = await database.collections.get<DraftOutboxModel>(DRAFT_OUTBOX).query(
-            Q.where('status', Q.oneOf(RETRY_ELIGIBLE_STATUSES)),
-        ).fetch();
-
-        if (!rows.length) {
-            return undefined;
-        }
-
-        let earliest = rows[0].nextAttemptAt;
-        for (const row of rows) {
-            if (row.nextAttemptAt < earliest) {
-                earliest = row.nextAttemptAt;
-            }
-        }
-        return earliest;
-    };
-
-    // clearRetryTimer: cancels and forgets the per-server timer if present.
+    // clearRetryTimer: cancels and forgets the per-server drain timer if present.
     private clearRetryTimer = (serverUrl: string): void => {
         const timer = this.retryTimers[serverUrl];
         if (timer) {
             clearTimeout(timer);
             delete this.retryTimers[serverUrl];
+        }
+    };
+
+    // clearReconcileTimer: cancels and forgets the per-server reconcile-GET timer if present.
+    private clearReconcileTimer = (serverUrl: string): void => {
+        const timer = this.reconcileTimers[serverUrl];
+        if (timer) {
+            clearTimeout(timer);
+            delete this.reconcileTimers[serverUrl];
         }
     };
 
@@ -619,6 +697,12 @@ class DraftSyncManagerSingleton {
         }
         if (!(serverUrl in this.reconcileInFlight)) {
             this.reconcileInFlight[serverUrl] = false;
+        }
+        if (!(serverUrl in this.reconcileAttempt)) {
+            this.reconcileAttempt[serverUrl] = 0;
+        }
+        if (!(serverUrl in this.lastReconcile)) {
+            this.lastReconcile[serverUrl] = {teamId: '', reason: ''};
         }
         if (!(serverUrl in this.reconcilePending)) {
             this.reconcilePending[serverUrl] = undefined;
@@ -647,7 +731,6 @@ export default DraftSyncManager;
 
 export const exportedForTesting = {
     DraftSyncManagerSingleton,
-    RETRY_ELIGIBLE_STATUSES,
 };
 
 // ManagerBaselineInternals: narrow view onto the private baseline/single-flight state so tests can
