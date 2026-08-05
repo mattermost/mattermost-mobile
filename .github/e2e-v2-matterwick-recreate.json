@@ -1,5 +1,5 @@
 {
-  "enabled": true,
+  "enabled": false,
   "pr_number": 10006,
-  "note": "Destroy degraded PR-10006 cloud installs (config/patch hangs), then re-add E2E/Run for fresh Matterwick servers"
+  "note": "disabled after successful recreate (q889jsit/ftgdxsd7/nnxdht3t/wr589m76/p81jfdax)"
 }
