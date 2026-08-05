@@ -312,7 +312,13 @@ export const leaveCallConfirmation = async (
     channelId: string,
     leaveCb?: () => void) => {
     const showHostControls = (isHost || isAdmin) && otherParticipants;
-    const ret = await endCallConfirmationAlert(intl, showHostControls) as EndCallReturn;
+    if (!showHostControls) {
+        leaveCall();
+        leaveCb?.();
+        return;
+    }
+
+    const ret = await endCallConfirmationAlert(intl) as EndCallReturn;
     switch (ret) {
         case EndCallReturn.Cancel:
             return;
