@@ -302,13 +302,68 @@ def find_top_level_calls(body: str, names: set[str]) -> list[tuple[int, int, str
     return results
 
 
+# Words dropped from titles when building short filenames.
+_SLUG_STOP = {
+    "a",
+    "an",
+    "the",
+    "to",
+    "and",
+    "or",
+    "of",
+    "in",
+    "on",
+    "for",
+    "with",
+    "from",
+    "via",
+    "when",
+    "be",
+    "able",
+    "should",
+    "rn",
+    "apps",
+    "as",
+    "by",
+    "is",
+    "it",
+    "its",
+    "into",
+    "that",
+    "this",
+    "than",
+    "then",
+}
+_SLUG_KEEP = {"not", "no", "all", "dm", "gm", "ios", "utc", "at"}
+
+
+def title_to_slug(title: str, max_len: int = 40) -> str:
+    """Short snake_case slug from a test title (not the MM-T id)."""
+    t = title.strip()
+    t = re.sub(r"^MM-T[\w]+\s*", "", t, flags=re.I)
+    t = re.sub(r"^[-–—:]\s*", "", t)
+    t = re.sub(r"\([^)]*\)", "", t)
+    t = re.sub(r"^should\s+(be\s+able\s+to\s+)?", "", t, flags=re.I)
+    words = re.findall(r"[a-z0-9]+", t.lower())
+    words = [w for w in words if w not in _SLUG_STOP or w in _SLUG_KEEP]
+    slug = "_".join(words)
+    if len(slug) > max_len:
+        parts = slug.split("_")
+        out: list[str] = []
+        for p in parts:
+            trial = "_".join(out + [p]) if out else p
+            if len(trial) > max_len and out:
+                break
+            if len(trial) > max_len and not out:
+                out.append(p[:max_len])
+                break
+            out.append(p)
+        slug = "_".join(out)
+    return slug or "test"
+
+
 def title_to_filename(title: str, fallback_idx: int) -> str:
-    m = re.match(r"(MM-T[\w]+)", title.strip(), re.I)
-    if m:
-        slug = m.group(1).lower().replace("_", "-")
-        return f"{slug}.e2e.ts"
-    # fallback
-    slug = re.sub(r"[^a-z0-9]+", "-", title.lower()).strip("-")[:60] or f"test-{fallback_idx}"
+    slug = title_to_slug(title) or f"test_{fallback_idx}"
     return f"{slug}.e2e.ts"
 
 
@@ -375,18 +430,18 @@ def split_file(src: Path, dry_run: bool = False) -> list[Path]:
         if fname in used_names:
             used_names[fname] += 1
             stem = fname[: -len(".e2e.ts")]
-            fname = f"{stem}-{used_names[fname]}.e2e.ts"
+            fname = f"{stem}_{used_names[fname]}.e2e.ts"
         else:
             used_names[fname] = 1
 
         out_path = src.parent / fname
-        # Cross-file MM-T id collision (another suite already wrote this name).
+        # Cross-file title slug collision (another suite already wrote this name).
         if out_path.exists() and out_path.resolve() != src.resolve():
             stem = fname[: -len(".e2e.ts")]
-            out_path = src.parent / f"{src.stem}-{stem}.e2e.ts"
+            out_path = src.parent / f"{src.stem}_{stem}.e2e.ts"
             n = 2
             while out_path.exists():
-                out_path = src.parent / f"{src.stem}-{stem}-{n}.e2e.ts"
+                out_path = src.parent / f"{src.stem}_{stem}_{n}.e2e.ts"
                 n += 1
 
         orig_quote = text[arg0]
@@ -437,11 +492,100 @@ def products_from_plan() -> list[Path]:
     return out
 
 
+def extract_single_test_title(path: Path) -> str | None:
+    text = path.read_text()
+    aliases = collect_it_aliases(text)
+    desc_m = re.search(r"(?m)^describe\s*\(", text)
+    if not desc_m:
+        return None
+    desc_paren_open = desc_m.end() - 1
+    desc_paren_close = find_matching(text, desc_paren_open)
+    arg0 = skip_ws_and_comments(text, desc_paren_open + 1)
+    _, after_title = extract_string_literal(text, arg0)
+    rest = skip_ws_and_comments(text, after_title)
+    if rest >= len(text) or text[rest] != ",":
+        return None
+    rest = skip_ws_and_comments(text, rest + 1)
+    brace = text.find("{", rest)
+    if brace < 0 or brace > desc_paren_close:
+        return None
+    body_close = find_matching(text, brace)
+    body = text[brace + 1 : body_close]
+    tests = [t for t in find_top_level_calls(body, aliases) if t[2] not in {"beforeAll", "beforeEach", "afterAll", "afterEach"}]
+    if len(tests) != 1:
+        return None
+    return tests[0][3]
+
+
+def rename_mm_t_files(dry_run: bool = False) -> int:
+    """Rename mm-t*.e2e.ts (and archive_channel-mm-t*) to short title slugs."""
+    roots = [DETOX / "e2e/test/products"]
+    candidates: list[Path] = []
+    for root in roots:
+        for p in root.rglob("*.e2e.ts"):
+            name = p.name
+            if name.startswith("mm-t") or name.startswith("archive_channel-mm-t"):
+                candidates.append(p)
+
+    # Phase 1: compute targets
+    planned: list[tuple[Path, Path, str]] = []
+    used: dict[Path, int] = {}
+    for src in sorted(candidates):
+        title = extract_single_test_title(src)
+        if not title:
+            print(f"SKIP (no single title): {src.relative_to(ROOT)}", file=sys.stderr)
+            continue
+        fname = title_to_filename(title, 1)
+        dest = src.parent / fname
+        key = dest
+        if key in used or (dest.exists() and dest.resolve() != src.resolve()):
+            used[key] = used.get(key, 1) + 1
+            stem = fname[: -len(".e2e.ts")]
+            dest = src.parent / f"{stem}_{used[key]}.e2e.ts"
+            while dest.exists() and dest.resolve() != src.resolve():
+                used[key] += 1
+                dest = src.parent / f"{stem}_{used[key]}.e2e.ts"
+        else:
+            used[key] = 1
+        if dest.resolve() == src.resolve():
+            continue
+        planned.append((src, dest, title))
+
+    if dry_run:
+        for src, dest, title in planned:
+            print(f"WOULD RENAME {src.relative_to(ROOT)} -> {dest.name} ← {title[:70]}")
+        print(f"\nWould rename {len(planned)} files")
+        return 0
+
+    # Phase 2: rename via temp names to avoid clobber
+    temps: list[tuple[Path, Path, str]] = []
+    for i, (src, dest, title) in enumerate(planned):
+        tmp = src.with_name(f".rename_tmp_{i}_{src.name}")
+        src.rename(tmp)
+        temps.append((tmp, dest, title))
+
+    for tmp, dest, title in temps:
+        if dest.exists():
+            raise SystemExit(f"Refusing to overwrite {dest}")
+        tmp.rename(dest)
+        print(f"RENAME {dest.relative_to(ROOT)} ← {title[:70]}")
+    print(f"\nRenamed {len(temps)} files")
+    return 0
+
+
 def main() -> int:
     ap = argparse.ArgumentParser()
     ap.add_argument("--dry-run", action="store_true")
     ap.add_argument("--file", action="append", default=[])
+    ap.add_argument(
+        "--rename-mm-t",
+        action="store_true",
+        help="Rename existing mm-t*.e2e.ts splits to short title-based names",
+    )
     args = ap.parse_args()
+
+    if args.rename_mm_t:
+        return rename_mm_t_files(dry_run=args.dry_run)
 
     files = [Path(f) if Path(f).is_absolute() else ROOT / f for f in args.file] if args.file else products_from_plan()
 

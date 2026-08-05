@@ -4,10 +4,12 @@ Source report: [mobile-v2-pr-detox-ios / run 30951343934](https://staging-test-i
 
 ## Status (done)
 
-- Split **49** `detox/e2e/test/products/**` multi-test specs (>4m) into **232** one-`it`-per-file specs (`mm-t*.e2e.ts`).
-- Helper: `scripts/split_long_e2e_specs.py` (handles `it`, `it.skip`, aliases like `itWithThreeServers`, and ternary wrappers such as `(isAndroid() ? it.skip : it)(...)`).
-- Cross-file MM-T id collision: `archive_channel.e2e.ts` overlaps MM-T4932_* with `archive_channel_from_settings`; those three keep `archive_channel-mm-t4932-*.e2e.ts` names.
-- **Not split** (per follow-up): `interactive_dialog*`, `global_classification_banner*`, `classification_banner*`, and all `ci_filter_failed/**` copies.
+- Split long `detox/e2e/test/products/**` multi-test specs into one-`it`-per-file specs.
+- Filenames: short snake_case from the test title (not `mm-t####.e2e.ts`).
+- Helper: `scripts/split_long_e2e_specs.py` (`it` / `it.skip` / aliases / ternary wrappers; `--rename-mm-t`).
+- Also split: `interactive_dialog` (25) and `global_classification_banner` (10). Unskipped iOS skip on MM-T4201.
+- Deleted: `detox/e2e/test/ci_filter_failed/**`.
+- Left unsplit: `classification_banner_across_screens`, `classification_banner_offline` (not in this pass).
 - **Timeouts not trimmed** yet.
 - Individual tests already **&lt;5m** (even if &gt;3m) left alone for a later pass.
 
