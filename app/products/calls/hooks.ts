@@ -45,11 +45,12 @@ import {isSystemAdmin} from '@utils/user';
 import type {Client} from '@client/rest';
 import type {NavigationButtonProps} from '@components/navigation_button';
 
-export const useTryCallsFunction = (fn: () => void) => {
+export const useTryCallsFunction = (fn: () => void): [() => Promise<void>, string, boolean] => {
     const intl = useIntl();
     const serverUrl = useServerUrl();
     const [msgPostfix, setMsgPostfix] = useState('');
     const [clientError, setClientError] = useState('');
+    const [isLoading, setIsLoading] = useState(false);
 
     let client: Client | undefined;
     if (!clientError) {
@@ -61,11 +62,14 @@ export const useTryCallsFunction = (fn: () => void) => {
     }
     const tryFn = useCallback(async () => {
         let enabled;
+        setIsLoading(true);
         try {
             enabled = await client?.getEnabled();
         } catch (error) {
             errorAlert(getFullErrorMessage(error), intl);
             return;
+        } finally {
+            setIsLoading(false);
         }
 
         if (enabled) {
@@ -109,7 +113,7 @@ export const useTryCallsFunction = (fn: () => void) => {
         setMsgPostfix(` ${notAvailable}`);
     }, [client, fn, clientError, intl]);
 
-    return [tryFn, msgPostfix] as [() => Promise<void>, string];
+    return [tryFn, msgPostfix, isLoading];
 };
 
 const micPermission = Platform.select({
@@ -237,17 +241,17 @@ export const useNavigationHeaderCallButtonForDM = (channelId: Channel['id'], cha
     const currentCall = useCurrentCall();
     const isDM = isDMChannel(channelType);
 
-    const [connecting, setConnecting] = useState(false);
+    const [isJoiningOrStarting, setIsJoiningOrStarting] = useState(false);
 
     const isCallInChannel = Boolean(channelsWithCalls[channelId]);
     const alreadyInCall = currentCall?.channelId === channelId;
 
     const joinOrStart = useCallback(async () => {
-        setConnecting(true);
+        setIsJoiningOrStarting(true);
         await leaveAndJoinWithAlert(intl, serverUrl, channelId);
-        setConnecting(false);
+        setIsJoiningOrStarting(false);
     }, [intl, serverUrl, channelId]);
-    const [tryJoinOrStart] = useTryCallsFunction(joinOrStart);
+    const [tryJoinOrStart, , isLoadingTryCallsFunction] = useTryCallsFunction(joinOrStart);
     const onPressJoinOrStartCall = usePreventDoubleTap(tryJoinOrStart);
 
     const handleOnPress = useCallback(() => {
@@ -257,6 +261,8 @@ export const useNavigationHeaderCallButtonForDM = (channelId: Channel['id'], cha
             onPressJoinOrStartCall();
         }
     }, [alreadyInCall, onPressJoinOrStartCall]);
+
+    const isLoading = isJoiningOrStarting || isLoadingTryCallsFunction;
 
     const navigationHeaderCallButton = useMemo<NavigationButtonProps>(() => {
         let accessibilityLabel = intl.formatMessage({id: 'mobile.calls_start_call', defaultMessage: 'Start call'});
@@ -269,14 +275,15 @@ export const useNavigationHeaderCallButtonForDM = (channelId: Channel['id'], cha
         const iconName = isCallInChannel || alreadyInCall ? 'phone-in-talk' : 'phone';
 
         return {
+            id: 'calls',
             iconName,
-            isLoading: connecting,
+            isLoading,
             onPress: handleOnPress,
-            disabled: connecting,
+            disabled: isLoading,
             accessibilityLabel,
             testID: 'channel_header.quick_call.button',
         };
-    }, [alreadyInCall, isCallInChannel, handleOnPress, connecting, intl]);
+    }, [alreadyInCall, isCallInChannel, handleOnPress, isLoading, intl]);
 
     if (!isDM) {
         return undefined;

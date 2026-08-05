@@ -390,5 +390,35 @@ describe('Calls Hooks', () => {
             expect(result.current?.isLoading).toBe(false);
             expect(result.current?.disabled).toBe(false);
         });
+
+        it('shows the loading state while checking whether calls is enabled', async () => {
+            let resolveEnabled: () => void = () => null;
+            (NetworkManager.getClient as jest.Mock).mockReturnValue({
+                getEnabled: jest.fn().mockReturnValue(new Promise<boolean>((resolve) => {
+                    resolveEnabled = () => resolve(true);
+                })),
+            });
+
+            const {result} = renderHook(() => useNavigationHeaderCallButtonForDM(channelId, General.DM_CHANNEL));
+
+            act(() => {
+                result.current?.onPress();
+            });
+
+            // The button is busy before joinOrStart runs, so a second press cannot start another call.
+            await waitFor(() => {
+                expect(result.current?.isLoading).toBe(true);
+            });
+            expect(result.current?.disabled).toBe(true);
+            expect(leaveAndJoinWithAlert).not.toHaveBeenCalled();
+
+            await act(async () => {
+                resolveEnabled();
+            });
+
+            expect(leaveAndJoinWithAlert).toHaveBeenCalledTimes(1);
+            expect(result.current?.isLoading).toBe(false);
+            expect(result.current?.disabled).toBe(false);
+        });
     });
 });
