@@ -39,6 +39,7 @@ import {getCurrentUser} from '@queries/servers/user';
 import {navigateToScreen} from '@screens/navigation';
 import {isDMChannel} from '@utils/channel';
 import {getFullErrorMessage} from '@utils/errors';
+import {logError} from '@utils/log';
 import {openUserProfile} from '@utils/navigation';
 import {isSystemAdmin} from '@utils/user';
 
@@ -248,8 +249,13 @@ export const useNavigationHeaderCallButtonForDM = (channelId: Channel['id'], cha
 
     const joinOrStart = useCallback(async () => {
         setIsJoiningOrStarting(true);
-        await leaveAndJoinWithAlert(intl, serverUrl, channelId);
-        setIsJoiningOrStarting(false);
+        try {
+            await leaveAndJoinWithAlert(intl, serverUrl, channelId);
+        } catch (error) {
+            logError('error on useNavigationHeaderCallButtonForDM.joinOrStart', getFullErrorMessage(error));
+        } finally {
+            setIsJoiningOrStarting(false);
+        }
     }, [intl, serverUrl, channelId]);
     const [tryJoinOrStart, , isLoadingTryCallsFunction] = useTryCallsFunction(joinOrStart);
     const onPressJoinOrStartCall = usePreventDoubleTap(tryJoinOrStart);
