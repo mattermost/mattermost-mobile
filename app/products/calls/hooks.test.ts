@@ -293,7 +293,7 @@ describe('Calls Hooks', () => {
             jest.mocked(leaveAndJoinWithAlert).mockResolvedValue(true);
         });
 
-        it('returns the start call button when there is no call in the channel', () => {
+        it('should return the start call button when there is no call in the channel', () => {
             const {result} = renderHook(() => useNavigationHeaderCallButtonForDM(channelId, General.DM_CHANNEL));
 
             expect(result.current).toEqual(expect.objectContaining({
@@ -305,7 +305,7 @@ describe('Calls Hooks', () => {
             }));
         });
 
-        it('returns the join call button when a call is ongoing in the channel', () => {
+        it('should return the join call button when a call is ongoing in the channel', () => {
             (useChannelsWithCalls as jest.Mock).mockReturnValue({[channelId]: true});
 
             const {result} = renderHook(() => useNavigationHeaderCallButtonForDM(channelId, General.DM_CHANNEL));
@@ -316,7 +316,7 @@ describe('Calls Hooks', () => {
             }));
         });
 
-        it('returns the return to call button when already in this channel call', () => {
+        it('should return the return to call button when already in this channel call', () => {
             (useChannelsWithCalls as jest.Mock).mockReturnValue({[channelId]: true});
             (useCurrentCall as jest.Mock).mockReturnValue({channelId});
 
@@ -328,7 +328,7 @@ describe('Calls Hooks', () => {
             }));
         });
 
-        it('returns the start call button when in a call in a different channel', () => {
+        it('should return the start call button when in a call in a different channel', () => {
             (useCurrentCall as jest.Mock).mockReturnValue({channelId: 'other-channel'});
 
             const {result} = renderHook(() => useNavigationHeaderCallButtonForDM(channelId, General.DM_CHANNEL));
@@ -336,13 +336,13 @@ describe('Calls Hooks', () => {
             expect(result.current?.iconName).toBe('phone');
         });
 
-        it.each([General.GM_CHANNEL, General.OPEN_CHANNEL, General.PRIVATE_CHANNEL])('returns undefined for %s channels', (channelType) => {
+        it.each([General.GM_CHANNEL, General.OPEN_CHANNEL, General.PRIVATE_CHANNEL])('should return undefined for %s channels', (channelType) => {
             const {result} = renderHook(() => useNavigationHeaderCallButtonForDM(channelId, channelType as ChannelType));
 
             expect(result.current).toBeUndefined();
         });
 
-        it('joins the call on press', async () => {
+        it('should join the call on press', async () => {
             const {result} = renderHook(() => useNavigationHeaderCallButtonForDM(channelId, General.DM_CHANNEL));
 
             await act(async () => {
@@ -353,7 +353,7 @@ describe('Calls Hooks', () => {
             expect(navigateToScreen).not.toHaveBeenCalled();
         });
 
-        it('navigates to the call screen instead of joining when already in this channel call', async () => {
+        it('should navigate to the call screen instead of joining when already in this channel call', async () => {
             (useCurrentCall as jest.Mock).mockReturnValue({channelId});
 
             const {result} = renderHook(() => useNavigationHeaderCallButtonForDM(channelId, General.DM_CHANNEL));
@@ -366,7 +366,7 @@ describe('Calls Hooks', () => {
             expect(leaveAndJoinWithAlert).not.toHaveBeenCalled();
         });
 
-        it('shows the loading state while connecting to the call', async () => {
+        it('should show the loading state while connecting to the call', async () => {
             let resolveJoin: () => void = () => null;
             jest.mocked(leaveAndJoinWithAlert).mockReturnValue(new Promise<boolean>((resolve) => {
                 resolveJoin = () => resolve(true);
@@ -391,7 +391,7 @@ describe('Calls Hooks', () => {
             expect(result.current?.disabled).toBe(false);
         });
 
-        it('shows the loading state while checking whether calls is enabled', async () => {
+        it('should show the loading state while checking whether calls is enabled', async () => {
             let resolveEnabled: () => void = () => null;
             (NetworkManager.getClient as jest.Mock).mockReturnValue({
                 getEnabled: jest.fn().mockReturnValue(new Promise<boolean>((resolve) => {
@@ -418,6 +418,21 @@ describe('Calls Hooks', () => {
 
             expect(leaveAndJoinWithAlert).toHaveBeenCalledTimes(1);
             expect(result.current?.isLoading).toBe(false);
+            expect(result.current?.disabled).toBe(false);
+        });
+
+        it('should clear the loading state when joining the call rejects', async () => {
+            jest.mocked(leaveAndJoinWithAlert).mockRejectedValue(new Error('failed to join'));
+
+            const {result} = renderHook(() => useNavigationHeaderCallButtonForDM(channelId, General.DM_CHANNEL));
+
+            await act(async () => {
+                result.current?.onPress();
+            });
+
+            await waitFor(() => {
+                expect(result.current?.isLoading).toBe(false);
+            });
             expect(result.current?.disabled).toBe(false);
         });
     });

@@ -86,7 +86,7 @@ describe('ChannelHeader', () => {
         return getRightButtons(navHeader)?.find((button) => button.testID === navigationHeaderCallButton.testID);
     }
 
-    it('shows the quick call button in a DM when calls are available', () => {
+    it('should show the quick call button in a DM when calls are available', () => {
         const props = getBaseProps();
         props.channelType = General.DM_CHANNEL;
         enableCalls(props);
@@ -97,7 +97,7 @@ describe('ChannelHeader', () => {
         expect(useNavigationHeaderCallButtonForDM).toHaveBeenCalledWith('channel-id', General.DM_CHANNEL);
     });
 
-    it('does not show the quick call button when calls are disabled in the DM', () => {
+    it('should not show the quick call button when calls are disabled in the DM', () => {
         const props = getBaseProps();
         props.channelType = General.DM_CHANNEL;
         enableCalls(props);
@@ -108,7 +108,7 @@ describe('ChannelHeader', () => {
         expect(getQuickCallButton(getByTestId('navigation-header'))).toBeUndefined();
     });
 
-    it('does not show the quick call button when the calls plugin is disabled', () => {
+    it('should not show the quick call button when the calls plugin is disabled', () => {
         const props = getBaseProps();
         props.channelType = General.DM_CHANNEL;
         enableCalls(props);
@@ -119,7 +119,7 @@ describe('ChannelHeader', () => {
         expect(getQuickCallButton(getByTestId('navigation-header'))).toBeUndefined();
     });
 
-    it('does not show the quick call button outside of DMs', () => {
+    it('should not show the quick call button outside of DMs', () => {
         const props = getBaseProps();
         enableCalls(props);
 
@@ -133,7 +133,7 @@ describe('ChannelHeader', () => {
         expect(getQuickCallButton(navHeader)).toBeUndefined();
     });
 
-    it('does not show the quick call button when the calls hook returns no button', () => {
+    it('should not show the quick call button when the calls hook returns no button', () => {
         const props = getBaseProps();
         props.channelType = General.DM_CHANNEL;
         enableCalls(props);
@@ -144,7 +144,7 @@ describe('ChannelHeader', () => {
         expect(getQuickCallButton(getByTestId('navigation-header'))).toBeUndefined();
     });
 
-    it('places the quick call button before the overflow menu', () => {
+    it('should place the quick call button before the overflow menu', () => {
         const props = getBaseProps();
         props.channelType = General.DM_CHANNEL;
         enableCalls(props);

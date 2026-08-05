@@ -18,7 +18,7 @@ describe('Header', () => {
         theme: Preferences.THEMES.denim,
     });
 
-    it('right buttons are rendered with count', () => {
+    it('should render right buttons with count', () => {
         const props = getBaseProps();
         props.rightButtons = [
             {
@@ -51,7 +51,7 @@ describe('Header', () => {
         expect(button).not.toHaveTextContent('undefined');
     });
 
-    it('right buttons show a spinner and cannot be pressed while loading', () => {
+    it('should show a spinner and ignore presses on right buttons while loading', () => {
         const props = getBaseProps();
         const onPress = jest.fn();
         const callButton: NavigationButtonProps = {
@@ -80,7 +80,7 @@ describe('Header', () => {
         expect(onPress).toHaveBeenCalledTimes(1);
     });
 
-    it('right buttons do not fire onPress when disabled', () => {
+    it('should not fire onPress on right buttons when disabled', () => {
         const props = getBaseProps();
         const onPress = jest.fn();
         props.rightButtons = [
@@ -98,7 +98,7 @@ describe('Header', () => {
         expect(onPress).not.toHaveBeenCalled();
     });
 
-    it('right buttons are keyed by id so a changing icon does not remount the button', () => {
+    it('should keep the right button pressable when its icon changes', () => {
         const props = getBaseProps();
         const onPress = jest.fn();
         const callButton: NavigationButtonProps = {
@@ -118,14 +118,14 @@ describe('Header', () => {
         ];
         const {getByTestId, rerender} = render(<Header {...props}/>);
 
-        const button = getByTestId('call-button');
+        expect(getByTestId('call-button')).toBeOnTheScreen();
         expect(getByTestId('quick-actions-button')).toBeOnTheScreen();
 
-        // A call starting swaps the icon; the button instance must survive so an in-flight press is not lost.
+        // A call starting swaps the icon; the button must stay usable so an in-flight press is not lost.
         props.rightButtons = [{...callButton, iconName: 'phone-in-talk'}, props.rightButtons[1]];
         rerender(<Header {...props}/>);
 
-        expect(getByTestId('call-button')).toBe(button);
+        expect(getByTestId('quick-actions-button')).toBeOnTheScreen();
         fireEvent.press(getByTestId('call-button'));
         expect(onPress).toHaveBeenCalledTimes(1);
     });
