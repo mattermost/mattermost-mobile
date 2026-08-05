@@ -1,11 +1,11 @@
 {
   "action": "verify",
   "server_version": "",
-  "android_site_1_url": "https://mobile-pr-10006-android-site-1-8inxe3u5.test.mattermost.cloud",
-  "android_site_2_url": "https://mobile-pr-10006-android-site-2-spp4fk1m.test.mattermost.cloud",
-  "ios_site_1_url": "https://mobile-pr-10006-ios-site-1-ydnygenn.test.mattermost.cloud",
-  "ios_site_2_url": "https://mobile-pr-10006-ios-site-2-wxeckpsd.test.mattermost.cloud",
-  "site_3_url": "https://mobile-pr-10006-site-3-btn56g5m.test.mattermost.cloud",
+  "android_site_1_url": "https://mobile-pr-10006-android-site-1-rsz5af8m.test.mattermost.cloud",
+  "android_site_2_url": "https://mobile-pr-10006-android-site-2-644sdc8b.test.mattermost.cloud",
+  "ios_site_1_url": "https://mobile-pr-10006-ios-site-1-54y4r1q5.test.mattermost.cloud",
+  "ios_site_2_url": "https://mobile-pr-10006-ios-site-2-s5wutda1.test.mattermost.cloud",
+  "site_3_url": "https://mobile-pr-10006-site-3-5dmo3yii.test.mattermost.cloud",
   "mobile_ref": "",
   "enabled": false
 }
