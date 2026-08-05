@@ -22,6 +22,16 @@ export const getDeviceToken = async (): Promise<string> => {
     }
 };
 
+export const getVoIPDeviceToken = async (): Promise<string> => {
+    try {
+        const {database} = DatabaseManager.getAppDatabaseAndOperator();
+        const tokens = await database.get<GlobalModel>(GLOBAL).find(GLOBAL_IDENTIFIERS.VOIP_DEVICE_TOKEN);
+        return tokens?.value || '';
+    } catch {
+        return '';
+    }
+};
+
 export const queryGlobalValue = (key: string) => {
     try {
         const {database} = DatabaseManager.getAppDatabaseAndOperator();
@@ -78,6 +88,11 @@ export const getFirstLaunch = async () => {
     }
 
     return records[0].value;
+};
+
+export const getLastViewedTeamIdAndServer = async () => {
+    const records = await queryGlobalValue(GLOBAL_IDENTIFIERS.LAST_VIEWED_TEAM)?.fetch();
+    return records?.[0]?.value;
 };
 
 export const getLastViewedChannelIdAndServer = async () => {

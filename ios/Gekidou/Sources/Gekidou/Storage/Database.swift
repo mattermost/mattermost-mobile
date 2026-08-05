@@ -169,6 +169,45 @@ public class Database: NSObject {
         }
     }
     
+    public func isZeroPersistenceServer(_ serverUrl: String) -> Bool {
+        guard !DEFAULT_DB_PATH.isEmpty,
+              let db = try? openConnection(DEFAULT_DB_PATH) else { return false }
+        let url = Expression<String>("url")
+        let persistenceFlag = Expression<String?>("persistence_flag")
+        let query = serversTable.select(persistenceFlag).filter(url == serverUrl)
+        do {
+            if let result = try db.pluck(query) {
+                return (try result.get(persistenceFlag)) == "zero-persistence"
+            }
+        } catch {
+            GekidouLogger.shared.log(.error, "Gekidou Database: failed to query zero persistence mode for server %{public}@ - %{public}@", serverUrl, String(describing: error))
+            return false
+        }
+        return false
+    }
+
+    public func getZeroPersistenceSigningKey(_ serverUrl: String) -> String? {
+        guard !DEFAULT_DB_PATH.isEmpty,
+              let db = try? openConnection(DEFAULT_DB_PATH) else { return nil }
+        let idCol = Expression<String>("id")
+        let valueCol = Expression<String>("value")
+        let query = globalTable.select(valueCol).filter(idCol == "pushSigningKey\(serverUrl)")
+        do {
+            if let result = try db.pluck(query) {
+                let rawValue = try result.get(valueCol)
+                guard let data = rawValue.data(using: .utf8),
+                      let decoded = try? JSONDecoder().decode(String.self, from: data)
+                else {
+                    return rawValue
+                }
+                return decoded
+            }
+        } catch {
+            GekidouLogger.shared.log(.error, "Gekidou Database: failed to get push signing key for server %{public}@ - %{public}@", serverUrl, String(describing: error))
+        }
+        return nil
+    }
+
     public func getAllActiveDatabases<T: Codable>() -> [T] {
         guard let db = try? openConnection(DEFAULT_DB_PATH) else {return []}
         let lastActiveAt = Expression<Int64>("last_active_at")
@@ -211,7 +250,8 @@ public class Database: NSObject {
         do {
             let lastActiveAt = Expression<Int64>("last_active_at")
             let identifier = Expression<String>("identifier")
-            let query = serversTable.filter(lastActiveAt > 0 && identifier != "").order(lastActiveAt.desc)
+            let persistenceFlag = Expression<String>("persistence_flag")
+            let query = serversTable.filter(lastActiveAt > 0 && identifier != "" && persistenceFlag !== "zero-persistence").order(lastActiveAt.desc)
             
             if let result = try db.pluck(query) {
                 let server: T = try result.decode()

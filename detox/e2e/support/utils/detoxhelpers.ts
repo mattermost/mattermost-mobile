@@ -24,46 +24,25 @@ export async function waitForLoadingSpinner(testID: string, timeout = 10000): Pr
     await waitFor(element(by.id(testID))).not.toBeVisible().withTimeout(timeout);
 }
 
-/**
- * Tap the native stack header's back button on screens that use the expo-router /
- * `@react-navigation/native-stack` native header (Thread, ThemeDisplaySettings,
- * PinnedMessages, Table, etc.).
- *
- * History: before the RNN→expo-router migration (commit b6fc85385), the app set
- * `topBar.backButton.testID = 'screen.back.button'` on RNN's native top bar, so
- * Detox could find it by id. After the migration, the native-stack header in
- * `@react-navigation/native-stack` v7 / `react-native-screens` v4.24 exposes NO
- * testID API for the back chevron. The custom `<NavigationHeader>` testID
- * `navigation.header.back` only exists on screens that render that component
- * (e.g. ChannelScreen). On native-stack screens it doesn't exist at all, which
- * was the root cause of ~33 Detox failures referencing the back chevron.
- *
- * Cross-platform approach without touching production:
- *   - Android: tap the AppCompat Toolbar's navigation icon by its default
- *     accessibility content description "Navigate up". We do NOT use
- *     `device.pressBack()` here because some screens
- *     (e.g. notification_settings family — verified locally on
- *     detox_pixel_8_api_35) register `useAndroidHardwareBackHandler` to
- *     handle save-on-back, which swallows the hardware back press without
- *     popping the screen. Tapping the chevron exercises the same code path
- *     a real user takes.
- *   - iOS: the iOS native stack chevron exposes `accessibilityLabel = "Back"`
- *     even with `headerBackButtonDisplayMode: 'minimal'`. Tap it by label.
- */
+// Tap the native-stack back chevron. Prefer NavigationHeader testID when present;
+// iOS 26 native headers often omit the "Back" accessibility label.
 export async function tapNativeBackButton(timeout = 10_000): Promise<void> {
+    const headerBack = element(by.id('navigation.header.back'));
+    try {
+        await waitFor(headerBack).toExist().withTimeout(Math.min(timeout, 3_000));
+        await headerBack.tap();
+        return;
+    } catch {
+        // Native stack header without the shared testID.
+    }
+
     const label = device.getPlatform() === 'ios' ? 'Back' : 'Navigate up';
     const backButton = element(by.label(label)).atIndex(0);
     await waitFor(backButton).toBeVisible().withTimeout(timeout);
     await backButton.tap();
 }
 
-/**
- * Retry an element visibility check with linear backoff
- * Helps handle race conditions during navigation and UI transitions
- * @param elementToCheck - Detox element to check visibility
- * @param timeout - Timeout for each attempt in milliseconds
- * @param maxAttempts - Maximum number of retry attempts
- */
+// Retry visibility checks with linear backoff during navigation transitions.
 export async function waitForVisibilityWithRetry(
     elementToCheck: Detox.NativeElement,
     timeout?: number,

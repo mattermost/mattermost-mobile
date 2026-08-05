@@ -3,10 +3,10 @@
 This file is the authoritative guide for AI agents working in the `detox/` directory.
 Follow these rules exactly. Do not improvise on conventions that are explicitly defined here.
 
-> **Working on Maestro flows?** See `maestro/CLAUDE.md` for flow gotchas
+> **Working on Maestro flows?** See `maestro/GUIDELINES.md` for the authoring spec and flow gotchas.
 > (toggle-tap pattern, modal back-nav on iOS 26.3, server preference persistence,
 > `AllowDownloadLogs` path under `SupportSettings`, etc.) and per-flow server-setting
-> requirements. Server provisioning lives in `detox/provision_server.js` and is
+> requirements. Server provisioning lives in `detox/provision/` (run via `npm run provision` in the detox package) and is
 > shared between Detox and Maestro.
 
 ---
@@ -94,24 +94,58 @@ cd detox && npm run e2e:save-report
 
 | Tier | Trigger | Platform | Shards | Search Path | Approx Time |
 |------|---------|----------|--------|-------------|-------------|
-| **Smoke** | Every PR push (default) | iOS + Android | 1 each | `detox/e2e/test/products/channels/smoke_test` | 30–45 min |
-| **Full iOS** | Label: `E2E iOS tests for PR` | iOS | 10 | `detox/e2e/test` | 60–180 min |
-| **Full Android** | Label: `E2E Android tests for PR` | Android | 10 | `detox/e2e/test` | 90–180 min |
-| **Scheduled** | Wednesday + Thursday midnight | iOS + Android | 10 each | `detox/e2e/test` | 90–180 min |
+| **PR full** | Matterwick + `E2E/Run` label | Detox iOS/Android/iPad + Maestro | 20 Detox (iOS/Android), 1 iPad, 1 Maestro each | `detox/e2e/test` (full) | ~30–45+ min wall-clock |
+| **Main** | Matterwick main push (`run_type=MASTER` today; `MAIN` also accepted → TSIO `mobile-main`) | Same as PR | Same as PR | `detox/e2e/test` | Same as PR |
+| **CMT / Release** | Matterwick on `build-release-*` → CMT | Detox + Maestro across server versions | Full suite on latest server; smoke subset on older | latest: `detox/e2e/test`; older: `…/smoke_test` | Varies by matrix |
+
+Status contexts live under the `e2e-test/` namespace, matching the mattermost monorepo. PR/Main: `e2e-test/detox-ios`, `e2e-test/detox-android`, `e2e-test/detox-ipad`, `e2e-test/maestro-ios`, `e2e-test/maestro-android`. CMT: per-shard `e2e-test/<tsio-shard-name>` plus umbrella `e2e-test/compatibility-matrix-testing`. TSIO groups: `mobile-pr-<job>` / `mobile-main-<job>` / `mobile-release-<shard>`.
+
+Matterwick provisions five servers for every mobile server-version entry: two Android-only, two iOS-only, and one shared third site. CMT therefore uses `5 × server version count` installations (up to 25 at the five-version cap). The full latest-version suite needs this isolation for its parallel shards; older-version smoke jobs intentionally retain the same topology for consistent URL semantics, even though their single shard uses less of its capacity. iPad shares the iOS pair, and Maestro uses the first server for its platform.
 
 ### Smoke Tests Location
 
-`detox/e2e/test/products/channels/smoke_test/` — 7 files, quick regression coverage.
-These run automatically on every PR push without any label.
+`detox/e2e/test/products/channels/smoke_test/` — quick regression suite used as the **CMT older-server subset**, not as an automatic every-PR-push tier.
+PR E2E runs the full `detox/e2e/test` tree when labeled.
 
 ### Workflow Files
 
 | File | Purpose |
 |------|---------|
-| `.github/workflows/e2e-detox-pr.yml` | PR trigger, build + dispatch to templates |
-| `.github/workflows/e2e-ios-template.yml` | iOS shard runner (reusable workflow) |
-| `.github/workflows/e2e-android-template.yml` | Android shard runner (reusable workflow) |
-| `.github/workflows/e2e-detox-scheduled.yml` | Nightly scheduled runs |
+| `.github/workflows/e2e-detox-pr.yml` | Matterwick entry: builds, Detox + Maestro dispatch, TSIO status |
+| `.github/workflows/e2e-detox.yml` / `e2e-maestro-pr.yml` | Platform orchestration (reusable) |
+| `.github/workflows/e2e-ios-template.yml` | Detox iOS shard runner |
+| `.github/workflows/e2e-android-template.yml` | Detox Android shard runner |
+| `.github/workflows/e2e-maestro-template.yml` | Maestro iOS/Android runner |
+| `.github/workflows/compatibility-matrix-testing.yml` | CMT / release multi-server matrix |
+
+### Checks for CI PRs
+
+Before opening a PR that touches `.github/workflows/`, `.github/actions/`, or `detox/utils/`:
+
+```bash
+actionlint -shellcheck= .github/workflows/*.yml
+cd detox && node --test utils/*.test.js && npm run check
+```
+
+These failure modes stay invisible in an otherwise-green run, so they are worth
+checking by hand:
+
+| Failure mode | Why it hides |
+|--------------|--------------|
+| A `secrets.FOO` not declared in the callee's `on.workflow_call.secrets` | GitHub resolves it to an empty string, so the step passes and the notify/upload it feeds silently never happens. `actionlint` catches it. |
+| `node foo.js \` followed by `RC=$?` | The trailing backslash makes `RC=$?` an *argument*, so the exit code is never captured and the failure gate below always passes. |
+| A job running `tsio-report-status.js` / `tsio-channel-notify-rollup.js` without `permissions.id-token: write` | `mintOidcToken()` warns and exits 0, skipping the commit status or channel rollup. |
+
+Reusable-workflow secrets must be **declared in the callee and forwarded by every
+caller** that uses an explicit `secrets:` block. Callers using `secrets: inherit`
+pass everything automatically — which is why a gap can work on one path (Maestro PR)
+and silently no-op on another (Detox PR, CMT).
+
+Optional AI review of local changes before pushing, if the CLI is installed and logged in:
+
+```bash
+coderabbit --plain --type uncommitted
+```
 
 ### Detox Configuration (`.detoxrc.json`)
 
@@ -182,7 +216,7 @@ detox/
 │           │   ├── channels/      # 16 files
 │           │   ├── account/       # 15 files
 │           │   ├── threads/       # 6 files
-│           │   └── smoke_test/    # 7 files (smoke tier, run on every PR)
+│           │   └── smoke_test/    # quick suite (CMT older-server subset)
 │           ├── agents/            # AI agent product tests
 │           └── playbooks/         # Playbooks product tests
 ```
@@ -387,7 +421,7 @@ const {channel} = await Channel.apiCreateChannel(siteOneUrl, {
 const {user} = await User.apiCreateUser(siteOneUrl);
 await Team.apiAddUserToTeam(siteOneUrl, user.id, team.id);
 await Channel.apiAddUserToChannel(siteOneUrl, user.id, channel.id);
-await Channel.apiCreatePost(siteOneUrl, {channelId: channel.id, message: 'Hello'});
+await Post.apiCreatePost(siteOneUrl, {channelId: channel.id, message: 'Hello'});
 ```
 
 ### URL Constants
@@ -423,9 +457,9 @@ await waitForElementToBeVisible(element(by.id('...')), timeouts.TEN_SEC);
 
 ## TEST COVERAGE MAP
 
-### Smoke (`e2e/test/products/channels/smoke_test/`) — runs on every PR
+### Smoke (`e2e/test/products/channels/smoke_test/`) — CMT older-server subset
 
-7 files covering quick regression of core flows.
+Quick regression of core flows. Used when CMT runs against non-latest server versions; PR E2E uses the full suite.
 
 ### Search (`e2e/test/products/channels/search/`)
 
@@ -506,9 +540,9 @@ This rule overrides any default tendency to "patch first and see." If a detox te
    > Side effect occurred (HTTP/DB/nav): YES/NO (evidence: `<log line>`)
    > UI re-rendered: YES/NO (evidence: viewHierarchy testIDs)
    > Therefore root cause is: <pick one>
-   >   - test (selector/timing/missing wait)
-   >   - detox/native (tap missed, sync stuck, simulator)
-   >   - app (handler didn't fire / state didn't update / observer didn't emit)
+   > - test (selector/timing/missing wait)
+   > - detox/native (tap missed, sync stuck, simulator)
+   > - app (handler didn't fire / state didn't update / observer didn't emit)
 
 Only after stating those four findings may you propose a fix. If finding 4 says "app bug," the fix is NOT a retry loop or longer timeout in the test — say so and either fix the app or stop and report.
 
@@ -554,7 +588,7 @@ Artifacts saved to `detox/artifacts/` after each run:
 |---------|-------------|-----|
 | `element not found` timeout | testID mismatch or screen not loaded | Check actual testID in app source; add `toBeVisible()` wait before interaction |
 | Test passes locally, fails on CI | Race condition or emulator timing | Add `wait(timeouts.ONE_SEC)` before flaky assertion; verify emulator fully booted |
-| All tests fail with login error | Server not reachable | Check `SITE_1_URL` env var; verify server is up |
+| All tests fail with login error | Server not reachable | Check the platform-specific server URL; verify server is up |
 | `element is not visible` on tap | Element exists but off-screen | Scroll to element first: `await scrollView.scroll(100, 'down')` |
 | Android emulator hangs | AVD not fully booted | `create_android_emulator.sh` waits for `boot_completed`; check its output in CI logs |
 

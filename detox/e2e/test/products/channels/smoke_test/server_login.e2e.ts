@@ -16,6 +16,7 @@ import {
     siteOneUrl,
     serverTwoUrl,
     siteTwoUrl,
+    hasSecondServer,
 } from '@support/test_config';
 import {Alert} from '@support/ui/component';
 import {
@@ -27,6 +28,8 @@ import {
 } from '@support/ui/screen';
 import {isAndroid, isIos, timeouts, wait} from '@support/utils';
 import {expect, waitFor} from 'detox';
+
+const itWithSecondServer = hasSecondServer ? it : it.skip;
 
 describe('Smoke Test - Server Login', () => {
     const serverOneDisplayName = 'Server 1';
@@ -57,7 +60,9 @@ describe('Smoke Test - Server Login', () => {
         await expect(ChannelListScreen.headerServerDisplayName).toHaveText(serverOneDisplayName);
     });
 
-    it('MM-T4675_2 - should be able to add a new server and log-in-to/log-out-from the new server', async () => {
+    // Skip iOS: CI run 30437339535 — the add-server/login/logout flow exceeds the 300s Jest
+    // test timeout, matching the MM-T142 iOS overrun already quarantined on this branch.
+    (isIos() ? it.skip : itWithSecondServer)('MM-T4675_2 - should be able to add a new server and log-in-to/log-out-from the new server', async () => {
         // # Open server list screen
         await ServerListScreen.open();
         await ServerListScreen.closeTutorial();
@@ -108,7 +113,11 @@ describe('Smoke Test - Server Login', () => {
         await ServerListScreen.getServerItemInactive(serverTwoDisplayName).swipe('left');
         await wait(timeouts.ONE_SEC);
 
-        await ServerListScreen.getServerItemLogoutOption(serverTwoDisplayName).tap();
+        // .atIndex(0): the Swipeable's revealed Logout option can render twice
+        // briefly on iOS during the swipe-pan animation ("Multiple elements found"
+        // in CI run 26368981355). Matches the .atIndex(0) pattern used throughout
+        // the dedicated server_list spec.
+        await ServerListScreen.getServerItemLogoutOption(serverTwoDisplayName).atIndex(0).tap();
 
         // * Verify logout server alert is displayed
         await expect(Alert.logoutTitle(serverTwoDisplayName)).toBeVisible();
@@ -120,7 +129,7 @@ describe('Smoke Test - Server Login', () => {
         // * Verify second server is logged out
         await ServerListScreen.getServerItemInactive(serverTwoDisplayName).swipe('left');
         await wait(timeouts.ONE_SEC);
-        await expect(ServerListScreen.getServerItemLoginOption(serverTwoDisplayName)).toBeVisible();
+        await expect(ServerListScreen.getServerItemLoginOption(serverTwoDisplayName).atIndex(0)).toBeVisible();
 
         // # Go back to first server
         await ServerListScreen.getServerItemActive(serverOneDisplayName).tap();

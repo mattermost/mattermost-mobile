@@ -1,0 +1,41 @@
+# MM-T3055: Device A sends a sync message for Device B to receive (multi-device).
+#
+# NOT RUN IN CI: two-device flow. CI provisions one device per job, so
+# scripts/run_ci_batches.sh skips flows/multi_device/*. Run manually via
+# scripts/run_two_device.sh with DEVICE_A_UDID and DEVICE_B_UDID.
+#
+# PRE-CONDITIONS:
+#   - Two devices orchestrated via scripts/run_two_device.sh
+#   - User A logged in on Device A in the test channel
+#
+# REQUIRED ENV VARS:
+#   - MAESTRO_APP_ID, SITE_1_URL, TEST_USER_EMAIL, TEST_USER_PASSWORD, TEST_CHANNEL_NAME
+#   - SYNC_TOKEN (unique token embedded in message text)
+#
+# ASSERTIONS:
+#   - Message containing SYNC_TOKEN is sent and visible on Device A
+#
+# testIDs:
+#   - channel.post_draft.post.input
+#   - channel.post_draft.send_action.send.button
+tags:
+  - MM-T3055
+appId: ${MAESTRO_APP_ID}
+---
+# # Log in as User A and open the test channel
+- runFlow: ../../subflows/auth/login.yml
+- runFlow: ../../subflows/navigation/navigate_to_channel.yml
+
+# # Type and send a message containing SYNC_TOKEN so Device B can detect it via API
+- tapOn:
+    id: "channel.post_draft.post.input"
+- inputText: "MM-T3055 sync test message ${SYNC_TOKEN}"
+- tapOn:
+    id: "channel.post_draft.send_action.send.button"
+
+# * Verify the message appeared in the channel on this device
+- extendedWaitUntil:
+    visible:
+      text: "MM-T3055 sync test message ${SYNC_TOKEN}"
+    timeout: 10000
+- takeScreenshot: user-a-sent-message

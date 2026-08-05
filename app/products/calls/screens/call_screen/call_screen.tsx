@@ -638,6 +638,7 @@ const CallScreen = ({
                 isOwnDirectMessage={isOwnDirectMessage}
             />
             <Pressable
+                testID='calls.collapse.button'
                 onPress={navigateBack}
                 style={[style.headerRight, !(waitingForRecording || recording) && style.headerLeftRightRecOff]}
             >

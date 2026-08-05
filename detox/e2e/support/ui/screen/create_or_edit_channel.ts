@@ -7,7 +7,7 @@ import {
     ChannelListScreen,
     ChannelSettingsScreen,
 } from '@support/ui/screen';
-import {isIos, tapNativeBackButton, timeouts, wait} from '@support/utils';
+import {isIos, tapNativeBackButton, timeouts, wait, waitForElementToBeVisible} from '@support/utils';
 import {expect, waitFor} from 'detox';
 
 class CreateOrEditChannelScreen {
@@ -50,40 +50,17 @@ class CreateOrEditChannelScreen {
     };
 
     openCreateChannel = async () => {
-        // Dismiss any lingering iOS system alert (e.g. "Save Password?") that may
-        // block taps on the channel list header. On iOS 26.x the alert can appear
-        // after the login flow's own dismissal attempt has timed out.
         if (isIos()) {
             try {
                 await waitFor(element(by.text('Not Now'))).toBeVisible().withTimeout(3000);
                 await element(by.text('Not Now')).tap();
-
-                console.log('[debug:2a0143] openCreateChannel dismissed lingering system alert'); // eslint-disable-line no-console
             } catch {
-                // No system alert — proceed normally
+                // No system alert.
             }
         }
 
-        // # Open create channel screen — wait for the button to be hittable before
-        // tapping; on iOS a UITransitionView animation overlay can block the tap
-        // if the channel list just appeared. Retry up to 3 times with a 1s gap.
-        await waitFor(ChannelListScreen.headerPlusButton).toBeVisible().withTimeout(timeouts.HALF_MIN);
-        let tapError: unknown;
-        /* eslint-disable no-await-in-loop -- sequential retry: each tap must complete before retrying */
-        for (let i = 0; i < 3; i++) {
-            try {
-                await ChannelListScreen.headerPlusButton.tap();
-                tapError = undefined;
-                break;
-            } catch (err) {
-                tapError = err;
-                await wait(timeouts.ONE_SEC);
-            }
-        }
-        /* eslint-enable no-await-in-loop */
-        if (tapError) {
-            throw tapError;
-        }
+        await ChannelListScreen.openPlusMenu();
+        await waitForElementToBeVisible(ChannelListScreen.createNewChannelItem, timeouts.TEN_SEC);
         await ChannelListScreen.createNewChannelItem.tap();
 
         return this.toBeVisible();
@@ -110,9 +87,6 @@ class CreateOrEditChannelScreen {
     };
 
     back = async () => {
-        // Edit Channel uses expo-router's native stack header (getHeaderOptions), not the
-        // custom NavigationHeader component, so 'navigation.header.back' testID does not
-        // exist on this screen. Use the native back button instead.
         await tapNativeBackButton();
         await expect(this.createOrEditChannelScreen).not.toBeVisible();
     };
@@ -120,6 +94,46 @@ class CreateOrEditChannelScreen {
     close = async () => {
         await this.closeButton.tap();
         await expect(this.createOrEditChannelScreen).not.toBeVisible();
+    };
+
+    save = async () => {
+        // The save button sits in the modal header, above the keyboard. A blind pressBack here
+        // dismisses create_or_edit_channel.screen itself and the save button with it.
+        await this.saveButton.tap();
+
+        // Save can leave an empty create_or_edit_channel.screen shell that blocks not.toExist, so
+        // require the save button to disappear before accepting the destination screen.
+        const {channelInfoScreen} = ChannelInfoScreen;
+        const {channelSettingsScreen} = ChannelSettingsScreen;
+        const startTime = Date.now();
+        /* eslint-disable no-await-in-loop */
+        while (Date.now() - startTime < timeouts.HALF_MIN) {
+            try {
+                await expect(this.saveButton).not.toExist();
+            } catch {
+                await wait(timeouts.HALF_SEC);
+                continue;
+            }
+
+            try {
+                await expect(channelInfoScreen).toExist();
+                return;
+            } catch {
+                /* not on channel info yet */
+            }
+            try {
+                await expect(channelSettingsScreen).toExist();
+                return;
+            } catch {
+                /* not on channel settings yet */
+            }
+
+            // Modal dismissed even if destination matcher is still settling.
+            return;
+        }
+        /* eslint-enable no-await-in-loop */
+
+        throw new Error('save: edit channel screen did not dismiss after save');
     };
 
     toggleMakePrivateOn = async () => {

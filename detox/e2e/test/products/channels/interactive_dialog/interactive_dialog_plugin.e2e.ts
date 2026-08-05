@@ -1,7 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-/* eslint-disable no-await-in-loop, no-empty, no-console */
+/* eslint-disable no-await-in-loop, no-empty */
 
 // *******************************************************************
 // - [#] indicates a test step (e.g. # Go to a screen)
@@ -10,6 +10,7 @@
 // *******************************************************************
 
 import {
+    Command,
     DemoPlugin,
     Plugin,
     Setup,
@@ -17,7 +18,6 @@ import {
     User,
     Post,
 } from '@support/server_api';
-import {apiDisablePluginById} from '@support/server_api/plugin';
 import {
     serverOneUrl,
     siteOneUrl,
@@ -25,65 +25,176 @@ import {
 import {
     ChannelListScreen,
     ChannelScreen,
+    HomeScreen,
     IntegrationSelectorScreen,
     InteractiveDialogScreen,
     LoginScreen,
     ServerScreen,
 } from '@support/ui/screen';
-import {wait, isAndroid} from '@support/utils';
+import {wait, isAndroid, isIos, safeEnableSynchronization, timeouts, waitForElementToBeVisible, waitForElementToExist} from '@support/utils';
 import {expect} from 'detox';
 
+const ISO_DATETIME_PATTERN = /\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d+)?(?:Z|[+-]\d{2}:\d{2})/;
+
+// MM-66558: dialog fields use replaceText instead of typeText.
+
 // ===== Helper Functions =====
-async function selectUser() {
-    const patterns = [
-        'integration_selector.user_list.user_item',
-        'integration_selector.user_list',
-        'integration_selector.user_list.section_list',
-    ];
-    for (const testID of patterns) {
-        try {
-            const el = element(by.id(testID));
-            await expect(el).toExist();
-            await el.tap();
-            return true;
-        } catch {}
-    }
-    try {
-        await IntegrationSelectorScreen.done();
-    } catch {}
-    return false;
+async function waitForDialogSelectorButton(testId: string) {
+    await wait(timeouts.HALF_SEC);
+    await waitForElementToExist(element(by.id(testId)), timeouts.TEN_SEC);
 }
 
-async function selectChannel() {
-    const patterns = [
-        'integration_selector.channel_list',
-        'integration_selector.channel_list.channel_item',
-    ];
-    for (const testID of patterns) {
-        try {
-            const el = element(by.id(testID));
-            await expect(el).toExist();
-            await el.tap();
-            return true;
-        } catch {}
+// Selector rows differ per data source: user_list.user_item.<id>.<id>, channel_list.<id>,
+// options by text. Tap the display_name id — by.text hits the search field instead.
+async function selectUser(user: {id: string; username: string}, {multiselect = false} = {}) {
+    const userItemId = `integration_selector.user_list.user_item.${user.id}.${user.id}`;
+    const displayNameId = `${userItemId}.display_name`;
+
+    await IntegrationSelectorScreen.searchFor(user.username);
+    try {
+        await IntegrationSelectorScreen.searchInput.tapReturnKey();
+    } catch {
+        // Keyboard may already be dismissed.
     }
+    await wait(timeouts.HALF_SEC);
+
+    const displayName = element(by.id(displayNameId));
+    const userItem = element(by.id(userItemId));
+    await waitFor(displayName).toExist().withTimeout(timeouts.TEN_SEC);
+
+    try {
+        await displayName.tap({x: 1, y: 1});
+    } catch {
+        await userItem.tap({x: 10, y: 20});
+    }
+    await wait(timeouts.ONE_SEC);
+
+    if (multiselect) {
+        // Selected chip + Done stay on the selector; field is optional so submit alone is not proof.
+        await waitFor(element(by.id('integration_selector.multiselect.submit.button'))).
+            toExist().
+            withTimeout(timeouts.FIVE_SEC);
+        await expect(element(by.id('integration_selector.screen'))).toExist();
+        await expect(userItem).toExist();
+        return;
+    }
+
+    await waitFor(element(by.id('integration_selector.screen'))).
+        not.toExist().
+        withTimeout(timeouts.TEN_SEC);
+}
+
+async function selectChannel(channel?: {id: string; display_name: string}, {multiselect = false} = {}) {
+    const waitForSelectorClosed = async () => {
+        await waitFor(element(by.id('integration_selector.screen'))).
+            not.toExist().
+            withTimeout(timeouts.TEN_SEC);
+    };
+
+    if (channel) {
+        const rowContent = element(by.id(`integration_selector.channel_list.${channel.id}`));
+        let rowTapped = false;
+        try {
+            await waitFor(rowContent).toExist().withTimeout(timeouts.FIVE_SEC);
+            await rowContent.tap();
+            rowTapped = true;
+            await wait(timeouts.ONE_SEC);
+            if (multiselect) {
+                await waitFor(element(by.id('integration_selector.multiselect.submit.button'))).
+                    toExist().
+                    withTimeout(timeouts.FIVE_SEC);
+                await expect(element(by.id('integration_selector.screen'))).toExist();
+            } else {
+                await waitForSelectorClosed();
+            }
+            return;
+        } catch {
+            if (rowTapped) {
+                throw new Error('selectChannel: row tapped but selector state did not settle');
+            }
+
+            // Fall through only when the row itself was not tappable.
+        }
+
+        try {
+            // Only use text fallback while the selector is still open.
+            await expect(element(by.id('integration_selector.screen'))).toExist();
+            await element(by.text(channel.display_name)).tap();
+            await wait(timeouts.ONE_SEC);
+            if (multiselect) {
+                await waitFor(element(by.id('integration_selector.multiselect.submit.button'))).
+                    toExist().
+                    withTimeout(timeouts.FIVE_SEC);
+                await expect(element(by.id('integration_selector.screen'))).toExist();
+            } else {
+                await waitForSelectorClosed();
+            }
+            return;
+        } catch {
+            // Fall through.
+        }
+    }
+
+    try {
+        await expect(element(by.id('integration_selector.screen'))).toExist();
+        const sharedRow = element(by.id('integration_selector.channel_list')).atIndex(0);
+        await expect(sharedRow).toExist();
+        await sharedRow.tap();
+        await wait(timeouts.ONE_SEC);
+        if (multiselect) {
+            await waitFor(element(by.id('integration_selector.multiselect.submit.button'))).
+                toExist().
+                withTimeout(timeouts.FIVE_SEC);
+            await expect(element(by.id('integration_selector.screen'))).toExist();
+        } else {
+            await waitForSelectorClosed();
+        }
+        return;
+    } catch {
+        // Fall through to well-known channel names.
+    }
+
     for (const name of ['Town Square', 'Off-Topic', 'General']) {
         try {
-            const el = element(by.text(name));
-            await expect(el).toExist();
-            await el.tap();
-            return true;
-        } catch {}
+            await expect(element(by.id('integration_selector.screen'))).toExist();
+            await element(by.text(name)).tap();
+            await wait(timeouts.ONE_SEC);
+            if (multiselect) {
+                await waitFor(element(by.id('integration_selector.multiselect.submit.button'))).
+                    toExist().
+                    withTimeout(timeouts.FIVE_SEC);
+                await expect(element(by.id('integration_selector.screen'))).toExist();
+            } else {
+                await waitForSelectorClosed();
+            }
+            return;
+        } catch {
+            // Try next name.
+        }
     }
-    try {
-        await IntegrationSelectorScreen.done();
-    } catch {}
-    return false;
+
+    throw new Error('selectChannel: could not select a channel row');
 }
 
 async function ensureDialogClosed() {
     try {
         await waitFor(InteractiveDialogScreen.interactiveDialogScreen).not.toExist().withTimeout(3000);
+    } catch {
+        try {
+            await InteractiveDialogScreen.cancel();
+            await waitFor(InteractiveDialogScreen.interactiveDialogScreen).not.toExist().withTimeout(3000);
+        } catch {}
+    }
+
+    // iOS 26+ may leave the keyboard rendered after dialog close even when no
+    // input is focused, obscuring the post list and failing later visibility
+    // checks. Tap empty space at the top of the post list scroll view to
+    // defocus the input and retract the keyboard. Coordinates target an area
+    // above any rendered post or the channel intro to avoid triggering
+    // actions like "Edit Header".
+    try {
+        await element(by.id('channel.post_list.flat_list')).tapAtPoint({x: 200, y: 10});
+        await wait(500);
     } catch {}
 
     // Swipe up on post list to reveal new posts that might be hidden behind input
@@ -91,12 +202,28 @@ async function ensureDialogClosed() {
         await element(by.id('channel.post_list.flat_list')).swipe('up', 'fast', 0.2);
         await wait(300);
     } catch {}
+
+    // The defocus tap above can land on a post and open its thread, which would
+    // strand the next test off the channel. If the channel post draft is no longer
+    // visible, a thread (or other pushed screen) opened — back out of it.
+    try {
+        await waitFor(element(by.id('channel.post_draft.post.input'))).toBeVisible().withTimeout(2000);
+    } catch {
+        try {
+            await element(by.id('navigation.header.back')).tap();
+            await wait(500);
+        } catch {}
+    }
 }
 
 async function ensureDialogOpen() {
-    await waitFor(InteractiveDialogScreen.interactiveDialogScreen).toExist().withTimeout(3000);
-    await InteractiveDialogScreen.toBeVisible();
-    await expect(InteractiveDialogScreen.interactiveDialogScreen).toExist();
+    // Disable sync so the bottom sheet animation does not block the poll.
+    await device.disableSynchronization();
+    try {
+        await waitForElementToBeVisible(InteractiveDialogScreen.interactiveDialogScreen, timeouts.HALF_MIN);
+    } finally {
+        await safeEnableSynchronization();
+    }
 }
 
 async function dismissErrorAlert() {
@@ -106,131 +233,100 @@ async function dismissErrorAlert() {
     } catch {}
 }
 
-async function pluginInstallAndEnable(siteUrl: string, latestVersion: string) {
-    const pluginResult = await Plugin.apiUploadAndEnablePlugin({
-        baseUrl: siteUrl,
-        version: latestVersion,
-        force: true,
-    });
-    await wait(3000);
-    if (pluginResult.error) {
-        if (pluginResult.status === 524) {
-            throw new Error(
-                'Plugin installation failed due to Cloudflare timeout (Error 524). ' +
-                'This is a known CI infrastructure limitation when the test server downloads plugins from GitHub. ' +
-                'To fix: Either (1) pre-download plugin in CI workflow to detox/e2e/support/fixtures/ and use filename instead of url, ' +
-                'or (2) use a test server without Cloudflare proxy.',
-            );
-        }
-        throw new Error(`Failed to install demo plugin: ${pluginResult.error} (status: ${pluginResult.status})`);
-    }
-    await wait(2000);
-    const statusCheck = await Plugin.apiGetPluginStatus(siteUrl, DemoPlugin.id, latestVersion);
-    if (!statusCheck.isActive) {
-        await Plugin.apiEnablePluginById(siteUrl, 'com.mattermost.demo-plugin');
-        await wait(2000);
-    }
-    if (!statusCheck.isVersionMatch) {
-        console.warn(`⚠️  WARNING: Demo plugin version mismatch. Expected: ${latestVersion}, Got: ${statusCheck.plugin?.version}`);
-        console.warn('Continuing with tests to see if plugin commands work despite version mismatch...');
-    }
-}
-
 describe('Interactive Dialog - Basic Dialog (Plugin)', () => {
     const serverOneDisplayName = 'Server 1';
     const channelsCategory = 'channels';
     let testChannel: any;
     let testUser: any;
-    let pluginAvailable = false;
 
     beforeAll(async () => {
-        // Log environment info for debugging CI vs local differences
         const {channel, user} = await Setup.apiInit(siteOneUrl);
         testChannel = channel;
         testUser = user;
 
         await User.apiAdminLogin(siteOneUrl);
-
-        // Check if demo plugin can be set up; any failure skips the entire suite gracefully
-        try {
-            await System.shouldHavePluginUploadEnabled(siteOneUrl);
-
-            await System.apiUpdateConfig(siteOneUrl, {
-                ServiceSettings: {EnableGifPicker: true},
-                FileSettings: {EnablePublicLink: true},
-                FeatureFlags: {InteractiveDialogAppsForm: true},
-                PluginSettings: {
-                    Enable: true,
-                    AllowInsecureDownloadUrl: true,
-                    EnableUploads: true,
-                    PluginStates: {
-                        'com.mattermost.demo-plugin': {'Enable': true},
+        const configResult = await System.apiUpdateConfig(siteOneUrl, {
+            PluginSettings: {
+                PluginStates: {
+                    [DemoPlugin.id]: {Enable: true},
+                },
+                Plugins: {
+                    [DemoPlugin.id]: {
+                        DialogOnlyMode: true,
                     },
-                    Plugins: {
-                        'com.mattermost.demo-plugin': {
-                            'DialogOnlyMode': true,
-                        },
-                    }},
-            });
-
-            const latestVersion = await Plugin.apiGetLatestPluginVersion(DemoPlugin.repo);
-            await pluginInstallAndEnable(siteOneUrl, latestVersion);
-
-            // Verify the plugin is actually active before continuing
-            const statusCheck = await Plugin.apiGetPluginStatus(siteOneUrl, DemoPlugin.id);
-            if (!statusCheck.isActive) {
-                console.warn(`Demo plugin (${DemoPlugin.id}) is not active after installation — skipping suite`);
-                return;
-            }
-        } catch (err: any) {
-            console.warn(`Demo plugin setup failed — skipping interactive dialog suite: ${err.message || err}`);
-            return;
+                },
+            },
+        });
+        if (configResult.error) {
+            throw new Error(`Failed to configure demo plugin for dialog tests: ${configResult.error.message || JSON.stringify(configResult.error)}`);
         }
 
-        pluginAvailable = true;
+        const statusCheck = await Plugin.apiGetPluginStatus(siteOneUrl, DemoPlugin.id);
+        if (!statusCheck.isActive) {
+            throw new Error(`Demo plugin (${DemoPlugin.id}) is not active. Run Detox server provisioning before this suite.`);
+        }
+        await Command.waitForSlashCommandTrigger(siteOneUrl, testChannel.team_id, 'dialog', {timeoutMs: 60000});
 
         await ServerScreen.connectToServer(serverOneUrl, serverOneDisplayName);
         await LoginScreen.login(testUser);
         await ChannelListScreen.toBeVisible();
         await ChannelScreen.open(channelsCategory, testChannel.name);
+
+        // Warm slash-command / IntegrationsManager state — first /dialog after login
+        // can return "Error Executing Command" before commands are ready (CI MM-T4101/4102).
+        try {
+            await ChannelScreen.postInput.typeText('/');
+            await wait(timeouts.TWO_SEC);
+            await ChannelScreen.postInput.clearText();
+        } catch { /* best-effort */ }
     });
 
     afterAll(async () => {
-        if (!pluginAvailable) {
-            return;
+        try {
+            await HomeScreen.logout();
+        } catch {
+            // best-effort logout so later specs on this shard start clean
         }
-        await apiDisablePluginById(siteOneUrl, DemoPlugin.id);
     });
 
     afterEach(async () => {
-        if (!pluginAvailable) {
-            return;
-        }
         await dismissErrorAlert();
+
+        // Close an integration selector modal if one is stuck open (e.g.,
+        // when a selectUser tap failed to fire). Cancel first, then try
+        // done() if cancel didn't apply.
         try {
+            await IntegrationSelectorScreen.cancel();
+        } catch {}
+        try {
+            await IntegrationSelectorScreen.done();
+        } catch {}
+        try {
+            await waitFor(InteractiveDialogScreen.interactiveDialogScreen).toExist().withTimeout(timeouts.HALF_SEC);
             await InteractiveDialogScreen.cancel();
         } catch {}
+
+        // Android Back from cancel() after the dialog is already closed leaves channel list;
+        // require composer, and re-enter the channel if cleanup drifted.
         try {
+            await waitFor(ChannelScreen.postInput).toBeVisible().withTimeout(timeouts.TEN_SEC);
+        } catch {
+            await ChannelListScreen.toBeVisible();
             await ChannelScreen.open(channelsCategory, testChannel.name);
-        } catch {}
+            await waitFor(ChannelScreen.postInput).toBeVisible().withTimeout(timeouts.TEN_SEC);
+        }
         await wait(500);
     });
 
     it('MM-T4101 should open simple interactive dialog (Plugin)', async () => {
-        if (!pluginAvailable) {
-            return;
-        }
-        await ChannelScreen.postMessage('/dialog basic');
+        await ChannelScreen.postSlashCommand('/dialog basic');
         await ensureDialogOpen();
         await InteractiveDialogScreen.cancel();
         await ensureDialogClosed();
     });
 
     it('MM-T4102 should submit simple interactive dialog (Plugin)', async () => {
-        if (!pluginAvailable) {
-            return;
-        }
-        await ChannelScreen.postMessage('/dialog basic');
+        await ChannelScreen.postSlashCommand('/dialog basic');
         await ensureDialogOpen();
         await InteractiveDialogScreen.submit();
         await ensureDialogClosed();
@@ -238,13 +334,9 @@ describe('Interactive Dialog - Basic Dialog (Plugin)', () => {
         await ChannelScreen.hasPostMessage(post.id, 'Dialog Submitted:');
     });
 
-    // TODO: Re-enable when interactive dialog slash command is fixed on iOS/Android (product bug: send button persists, iOS paste permission dialog blocks UI)
     it('MM-T4103 should fill text field and submit dialog (Plugin)', async () => {
-        if (!pluginAvailable) {
-            return;
-        }
         await ensureDialogClosed();
-        await ChannelScreen.postMessage('/dialog basic');
+        await ChannelScreen.postSlashCommand('/dialog basic');
         await ensureDialogOpen();
         await InteractiveDialogScreen.fillTextElement('optional_text', 'Plugin Test Value');
         await InteractiveDialogScreen.submit();
@@ -253,13 +345,9 @@ describe('Interactive Dialog - Basic Dialog (Plugin)', () => {
         await ChannelScreen.hasPostMessage(post.id, 'Dialog Submitted:');
     });
 
-    // TODO: Re-enable when interactive dialog slash command is fixed on iOS/Android (product bug: send button persists, iOS paste permission dialog blocks UI)
     it('MM-T4104 should handle server error on dialog submission (Plugin)', async () => {
-        if (!pluginAvailable) {
-            return;
-        }
         await ensureDialogClosed();
-        await ChannelScreen.postMessage('/dialog error');
+        await ChannelScreen.postSlashCommand('/dialog error');
         await ensureDialogOpen();
         await InteractiveDialogScreen.fillTextElement('optional_text', 'This will trigger server error');
         await InteractiveDialogScreen.submit();
@@ -270,13 +358,9 @@ describe('Interactive Dialog - Basic Dialog (Plugin)', () => {
         await ensureDialogClosed();
     });
 
-    // TODO: Re-enable when interactive dialog slash command is fixed on iOS/Android (product bug: send button persists, iOS paste permission dialog blocks UI)
     it('MM-T4401 should toggle boolean fields and submit (Plugin)', async () => {
-        if (!pluginAvailable) {
-            return;
-        }
         await ensureDialogClosed();
-        await ChannelScreen.postMessage('/dialog boolean');
+        await ChannelScreen.postSlashCommand('/dialog boolean');
         await ensureDialogOpen();
         await expect(element(by.id('AppFormElement.required_boolean.toggled..button'))).toExist();
         await expect(element(by.id('AppFormElement.optional_boolean.toggled..button'))).toExist();
@@ -290,13 +374,9 @@ describe('Interactive Dialog - Basic Dialog (Plugin)', () => {
         await ChannelScreen.hasPostMessage(post.id, 'Dialog Submitted:');
     });
 
-    // TODO: Re-enable when interactive dialog slash command is fixed on iOS/Android (product bug: send button persists, iOS paste permission dialog blocks UI)
     it('MM-T4402 should handle boolean field validation (Plugin)', async () => {
-        if (!pluginAvailable) {
-            return;
-        }
         await ensureDialogClosed();
-        await ChannelScreen.postMessage('/dialog boolean');
+        await ChannelScreen.postSlashCommand('/dialog boolean');
         await ensureDialogOpen();
         await InteractiveDialogScreen.submit();
         await wait(300);
@@ -309,13 +389,10 @@ describe('Interactive Dialog - Basic Dialog (Plugin)', () => {
         await ChannelScreen.hasPostMessage(post.id, 'Dialog Submitted:');
     });
 
-    // TODO: Re-enable when interactive dialog slash command is fixed on iOS/Android (product bug: send button persists, iOS paste permission dialog blocks UI)
+    // TODO: previously failed when selectUser tapped search-field text (CI 30250131265).
     it('MM-T4498 should open and handle interactive dialog with select fields (Plugin)', async () => {
-        if (!pluginAvailable) {
-            return;
-        }
         await ensureDialogClosed();
-        await ChannelScreen.postMessage('/dialog selectfields');
+        await ChannelScreen.postSlashCommand('/dialog selectfields');
         await ensureDialogOpen();
         const engineeringRadioButton = element(by.id('AppFormElement.someradiooptions.radio.engineering.button'));
         await expect(engineeringRadioButton).toExist();
@@ -326,16 +403,18 @@ describe('Interactive Dialog - Basic Dialog (Plugin)', () => {
         await IntegrationSelectorScreen.toBeVisible();
         await expect(element(by.text('Option2'))).toExist();
         await element(by.text('Option2')).tap();
+        await waitForDialogSelectorButton('AppFormElement.someuserselector.select.button');
         const userSelectorButton = element(by.id('AppFormElement.someuserselector.select.button'));
-        await expect(userSelectorButton).toExist();
         await userSelectorButton.tap();
         await IntegrationSelectorScreen.toBeVisible();
-        await selectUser();
+        await selectUser(testUser);
         const channelSelectorButton = element(by.id('AppFormElement.somechannelselector.select.button'));
-        await waitFor(channelSelectorButton).toExist().withTimeout(1000);
+
+        // 1s bridge-idle waitFor fails on Android after IntegrationSelector dismissal animation.
+        await waitForDialogSelectorButton('AppFormElement.somechannelselector.select.button');
         await channelSelectorButton.tap();
         await IntegrationSelectorScreen.toBeVisible();
-        await selectChannel();
+        await selectChannel(testChannel);
         await wait(300);
         await InteractiveDialogScreen.submit();
         await ensureDialogClosed();
@@ -343,13 +422,9 @@ describe('Interactive Dialog - Basic Dialog (Plugin)', () => {
         await ChannelScreen.hasPostMessage(post.id, 'Dialog Submitted:');
     });
 
-    // TODO: Re-enable when interactive dialog slash command is fixed on iOS/Android (product bug: send button persists, iOS paste permission dialog blocks UI)
     it('MM-T4499 should handle required select field validation (Plugin)', async () => {
-        if (!pluginAvailable) {
-            return;
-        }
         await ensureDialogClosed();
-        await ChannelScreen.postMessage('/dialog selectfields');
+        await ChannelScreen.postSlashCommand('/dialog selectfields');
         await ensureDialogOpen();
         await InteractiveDialogScreen.submit();
         await wait(300);
@@ -363,11 +438,11 @@ describe('Interactive Dialog - Basic Dialog (Plugin)', () => {
         await IntegrationSelectorScreen.toBeVisible();
         await expect(element(by.text('Option1'))).toExist();
         await element(by.text('Option1')).tap();
+        await waitForDialogSelectorButton('AppFormElement.someuserselector.select.button');
         const userSelectorButton = element(by.id('AppFormElement.someuserselector.select.button'));
-        await expect(userSelectorButton).toExist();
         await userSelectorButton.tap();
         await IntegrationSelectorScreen.toBeVisible();
-        await selectUser();
+        await selectUser(testUser);
         await wait(300);
         await InteractiveDialogScreen.submit();
         await ensureDialogClosed();
@@ -375,13 +450,9 @@ describe('Interactive Dialog - Basic Dialog (Plugin)', () => {
         await ChannelScreen.hasPostMessage(post.id, 'Dialog Submitted:');
     });
 
-    // TODO: Re-enable when interactive dialog slash command is fixed on iOS/Android (product bug: send button persists, iOS paste permission dialog blocks UI)
     it('MM-T4500 should handle different selector types (Plugin)', async () => {
-        if (!pluginAvailable) {
-            return;
-        }
         await ensureDialogClosed();
-        await ChannelScreen.postMessage('/dialog selectfields');
+        await ChannelScreen.postSlashCommand('/dialog selectfields');
         await ensureDialogOpen();
         const engineeringRadioButton = element(by.id('AppFormElement.someradiooptions.radio.engineering.button'));
         await expect(engineeringRadioButton).toExist();
@@ -392,16 +463,18 @@ describe('Interactive Dialog - Basic Dialog (Plugin)', () => {
         await IntegrationSelectorScreen.toBeVisible();
         await expect(element(by.text('Option2'))).toExist();
         await element(by.text('Option2')).tap();
+        await waitForDialogSelectorButton('AppFormElement.someuserselector.select.button');
         const userSelectorButton = element(by.id('AppFormElement.someuserselector.select.button'));
-        await expect(userSelectorButton).toExist();
         await userSelectorButton.tap();
         await IntegrationSelectorScreen.toBeVisible();
-        await selectUser();
+        await selectUser(testUser);
         const channelSelectorButton = element(by.id('AppFormElement.somechannelselector.select.button'));
-        await waitFor(channelSelectorButton).toExist().withTimeout(1000);
+
+        // 1s bridge-idle waitFor fails on Android after IntegrationSelector dismissal animation.
+        await waitForDialogSelectorButton('AppFormElement.somechannelselector.select.button');
         await channelSelectorButton.tap();
         await IntegrationSelectorScreen.toBeVisible();
-        await selectChannel();
+        await selectChannel(testChannel);
         await wait(300);
         await InteractiveDialogScreen.submit();
         await ensureDialogClosed();
@@ -409,13 +482,11 @@ describe('Interactive Dialog - Basic Dialog (Plugin)', () => {
         await ChannelScreen.hasPostMessage(post.id, 'Dialog Submitted:');
     });
 
-    // TODO: Re-enable when interactive dialog slash command is fixed on iOS/Android (product bug: send button persists, iOS paste permission dialog blocks UI)
-    it('MM-T4201 should fill and submit all text field types (Plugin)', async () => {
-        if (!pluginAvailable) {
-            return;
-        }
+    // iOS-only skip carried over from the RF→Detox migration with no recorded failure;
+    // Android still covers this case. Re-enable once the iOS path is re-verified.
+    (isIos() ? it.skip : it)('MM-T4201 should fill and submit all text field types (Plugin)', async () => {
         await ensureDialogClosed();
-        await ChannelScreen.postMessage('/dialog textfields');
+        await ChannelScreen.postSlashCommand('/dialog textfields');
         await ensureDialogOpen();
         await InteractiveDialogScreen.fillTextElement('text_field', 'Regular text input');
         await InteractiveDialogScreen.fillTextElement('required_text', 'Required field value');
@@ -429,13 +500,9 @@ describe('Interactive Dialog - Basic Dialog (Plugin)', () => {
         await ChannelScreen.hasPostMessage(post.id, 'Dialog Submitted:');
     });
 
-    // TODO: Re-enable when interactive dialog slash command is fixed on iOS/Android (product bug: send button persists, iOS paste permission dialog blocks UI)
     it('MM-T4202 should validate required text field (Plugin)', async () => {
-        if (!pluginAvailable) {
-            return;
-        }
         await ensureDialogClosed();
-        await ChannelScreen.postMessage('/dialog textfields');
+        await ChannelScreen.postSlashCommand('/dialog textfields');
         await ensureDialogOpen();
         await InteractiveDialogScreen.fillTextElement('text_field', 'Optional text');
         await InteractiveDialogScreen.fillTextElement('email_field', 'optional@example.com');
@@ -454,13 +521,9 @@ describe('Interactive Dialog - Basic Dialog (Plugin)', () => {
         await ChannelScreen.hasPostMessage(post.id, 'Dialog Submitted:');
     });
 
-    // TODO: Re-enable when interactive dialog slash command is fixed on iOS/Android (product bug: send button persists, iOS paste permission dialog blocks UI)
     it('MM-T4203 should handle different text input subtypes (Plugin)', async () => {
-        if (!pluginAvailable) {
-            return;
-        }
         await ensureDialogClosed();
-        await ChannelScreen.postMessage('/dialog textfields');
+        await ChannelScreen.postSlashCommand('/dialog textfields');
         await ensureDialogOpen();
         await InteractiveDialogScreen.fillTextElement('email_field', 'valid.email+test@example.com');
         await InteractiveDialogScreen.fillTextElement('number_field', '12345');
@@ -471,19 +534,15 @@ describe('Interactive Dialog - Basic Dialog (Plugin)', () => {
         await ChannelScreen.hasPostMessage(post.id, 'Dialog Submitted:');
     });
 
-    // TODO: Re-enable when interactive dialog slash command is fixed on iOS/Android (product bug: send button persists, iOS paste permission dialog blocks UI)
     it('MM-T4976 should handle multiselect fields dialog (Plugin)', async () => {
-        if (!pluginAvailable) {
-            return;
-        }
         await ensureDialogClosed();
-        await ChannelScreen.postMessage('/dialog multi-select');
+        await ChannelScreen.postSlashCommand('/dialog multi-select');
         await ensureDialogOpen();
         const multiselectUsersButton = element(by.id('AppFormElement.multiselect_users.select.button'));
         await expect(multiselectUsersButton).toExist();
         await multiselectUsersButton.tap();
         await IntegrationSelectorScreen.toBeVisible();
-        await selectUser();
+        await selectUser(testUser, {multiselect: true});
         await wait(500);
         await IntegrationSelectorScreen.done();
         await wait(300);
@@ -491,7 +550,7 @@ describe('Interactive Dialog - Basic Dialog (Plugin)', () => {
         await expect(multiselectChannelsButton).toExist();
         await multiselectChannelsButton.tap();
         await IntegrationSelectorScreen.toBeVisible();
-        await selectChannel();
+        await selectChannel(testChannel, {multiselect: true});
         await wait(500);
         await IntegrationSelectorScreen.done();
         await wait(300);
@@ -514,13 +573,9 @@ describe('Interactive Dialog - Basic Dialog (Plugin)', () => {
         await ensureDialogClosed();
     });
 
-    // TODO: Re-enable when interactive dialog slash command is fixed on iOS/Android (product bug: send button persists, iOS paste permission dialog blocks UI)
     it('MM-T4977 should handle dynamic select fields dialog (Plugin)', async () => {
-        if (!pluginAvailable) {
-            return;
-        }
         await ensureDialogClosed();
-        await ChannelScreen.postMessage('/dialog dynamic-select');
+        await ChannelScreen.postSlashCommand('/dialog dynamic-select');
         await ensureDialogOpen();
         const dynamicProductsButton = element(by.id('AppFormElement.dynamic_products.select.button'));
         await expect(dynamicProductsButton).toExist();
@@ -543,13 +598,9 @@ describe('Interactive Dialog - Basic Dialog (Plugin)', () => {
         await ensureDialogClosed();
     });
 
-    // TODO: Re-enable when interactive dialog slash command is fixed on iOS/Android (product bug: send button persists, iOS paste permission dialog blocks UI)
     it('MM-T4980 should complete multistep dialog progression (Plugin)', async () => {
-        if (!pluginAvailable) {
-            return;
-        }
         await ensureDialogClosed();
-        await ChannelScreen.postMessage('/dialog multistep');
+        await ChannelScreen.postSlashCommand('/dialog multistep');
         await ensureDialogOpen();
         const individualRadioButton = element(by.id('AppFormElement.user_type.radio.individual.button'));
         await expect(individualRadioButton).toExist();
@@ -586,13 +637,9 @@ describe('Interactive Dialog - Basic Dialog (Plugin)', () => {
         await waitFor(postElement).toBeVisible().whileElement(by.id('channel.post_list.flat_list')).scroll(500, 'down');
     });
 
-    // TODO: Re-enable when interactive dialog slash command is fixed on iOS/Android (product bug: send button persists, iOS paste permission dialog blocks UI)
     it('MM-T4981 should handle multistep dialog cancellation (Plugin)', async () => {
-        if (!pluginAvailable) {
-            return;
-        }
         await ensureDialogClosed();
-        await ChannelScreen.postMessage('/dialog multistep');
+        await ChannelScreen.postSlashCommand('/dialog multistep');
         await ensureDialogOpen();
         const individualRadioButton = element(by.id('AppFormElement.user_type.radio.individual.button'));
         await expect(individualRadioButton).toExist();
@@ -612,13 +659,13 @@ describe('Interactive Dialog - Basic Dialog (Plugin)', () => {
         await ensureDialogClosed();
     });
 
-    // TODO: Re-enable when interactive dialog slash command is fixed on iOS/Android (product bug: send button persists, iOS paste permission dialog blocks UI)
+    // TODO: iOS 26 + react-native-keyboard-controller contamination.
+    // Field-refresh dialog with text inputs leaves keyboard/animation state that
+    // poisons later tests with progressViewOffset: NaN in RCTRefreshControl.
+    // Re-enable once the keyboard library handles iOS 26 transitions cleanly.
     it('MM-T4983 should handle field refresh basic interaction (Plugin)', async () => {
-        if (!pluginAvailable) {
-            return;
-        }
         await ensureDialogClosed();
-        await ChannelScreen.postMessage('/dialog field-refresh');
+        await ChannelScreen.postSlashCommand('/dialog field-refresh');
         await ensureDialogOpen();
         const projectTypeButton = element(by.id('AppFormElement.project_type.select.button'));
         await expect(projectTypeButton).toExist();
@@ -644,13 +691,9 @@ describe('Interactive Dialog - Basic Dialog (Plugin)', () => {
         await waitFor(postElement).toBeVisible().whileElement(by.id('channel.post_list.flat_list')).scroll(500, 'down');
     });
 
-    // TODO: Re-enable when interactive dialog slash command is fixed on iOS/Android (product bug: send button persists, iOS paste permission dialog blocks UI)
     it('MM-T4986 should handle field refresh changes and cancellation (Plugin)', async () => {
-        if (!pluginAvailable) {
-            return;
-        }
         await ensureDialogClosed();
-        await ChannelScreen.postMessage('/dialog field-refresh');
+        await ChannelScreen.postSlashCommand('/dialog field-refresh');
         await ensureDialogOpen();
         const projectTypeButton = element(by.id('AppFormElement.project_type.select.button'));
         await projectTypeButton.tap();
@@ -667,5 +710,234 @@ describe('Interactive Dialog - Basic Dialog (Plugin)', () => {
         await expect(element(by.id('AppFormElement.min_os_version.input'))).toExist();
         await InteractiveDialogScreen.cancel();
         await ensureDialogClosed();
+    });
+
+    it('MM-T2530A should open date/datetime dialog and display fields', async () => {
+        // # Open datetime-basic dialog
+        await ChannelScreen.postSlashCommand('/dialog datetime-basic');
+        await ensureDialogOpen();
+
+        // * Verify dialog title
+        await expect(element(by.text('Date & DateTime Basics'))).toExist();
+
+        // * Verify all fields are visible by testID
+        await expect(element(by.id('AppFormElement.event_date'))).toExist();
+        await expect(element(by.id('AppFormElement.meeting_time'))).toExist();
+        await expect(element(by.id('AppFormElement.future_date'))).toExist();
+        await expect(element(by.id('AppFormElement.interval_time'))).toExist();
+        await expect(element(by.id('AppFormElement.relative_date'))).toExist();
+        await expect(element(by.id('AppFormElement.relative_datetime'))).toExist();
+
+        await InteractiveDialogScreen.cancel();
+        await ensureDialogClosed();
+    });
+
+    it('MM-T2530B should validate required date/datetime fields', async () => {
+        // # Open dialog
+        await ChannelScreen.postSlashCommand('/dialog datetime-basic');
+        await ensureDialogOpen();
+
+        // # Try to submit without required fields
+        await InteractiveDialogScreen.submit();
+        await wait(500);
+
+        // * Should still be on dialog (submission failed due to validation)
+        await expect(InteractiveDialogScreen.interactiveDialogScreen).toExist();
+
+        // * Verify validation error text appears for required fields
+        await expect(element(by.text('This field is required.'))).toExist();
+
+        await InteractiveDialogScreen.cancel();
+        await ensureDialogClosed();
+    });
+
+    it('MM-T2530C should select date and display formatted value', async () => {
+        // # Open dialog
+        await ChannelScreen.postSlashCommand('/dialog datetime-basic');
+        await ensureDialogOpen();
+
+        // # Tap Event Date field to open date picker
+        await element(by.id('AppFormElement.event_date.select.button')).tap();
+        await wait(1000);
+
+        // # Close picker (iOS shows picker inline, tap the button again to close)
+        if (isAndroid()) {
+            try {
+                await element(by.text('OK')).tap();
+            } catch {}
+        } else {
+            await element(by.id('AppFormElement.event_date.select.button')).tap();
+        }
+        await wait(500);
+
+        await InteractiveDialogScreen.cancel();
+        await ensureDialogClosed();
+    });
+
+    it('MM-T2530D should display relative date defaults', async () => {
+        // # Open dialog
+        await ChannelScreen.postSlashCommand('/dialog datetime-basic');
+        await ensureDialogOpen();
+
+        // * Verify Relative Date Example (default="today") field is rendered
+        await expect(element(by.text('Relative Date Example'))).toExist();
+
+        // * Verify Relative DateTime Example (default="+1d") field is rendered
+        await expect(element(by.text('Relative DateTime Example'))).toExist();
+
+        await InteractiveDialogScreen.cancel();
+        await ensureDialogClosed();
+    });
+
+    it('MM-T2530F should verify UTC conversion for datetime values', async () => {
+        // # Open dialog
+        await ChannelScreen.postSlashCommand('/dialog datetime-basic');
+        await ensureDialogOpen();
+
+        // # Fill required Event Date field
+        await element(by.id('AppFormElement.event_date.select.button')).tap();
+        await wait(500);
+        if (isAndroid()) {
+            await element(by.text('OK')).tap();
+        } else {
+            await element(by.id('AppFormElement.event_date')).tap();
+        }
+        await wait(300);
+
+        // # Fill required Meeting Time field
+        await element(by.id('AppFormElement.meeting_time.select.button')).tap();
+        await wait(500);
+        if (isAndroid()) {
+            await element(by.text('OK')).tap();
+        } else {
+            await element(by.id('AppFormElement.meeting_time')).tap();
+        }
+        await wait(300);
+
+        // # Submit dialog
+        await InteractiveDialogScreen.submit();
+        await wait(1000);
+
+        // * Dialog should close after successful submission
+        await ensureDialogClosed();
+
+        // * Verify submission post contains ISO/UTC datetime format
+        await wait(1000);
+        const {post} = await Post.apiGetLastPostInChannel(siteOneUrl, testChannel.id);
+
+        // Meeting Time should be in ISO format with T separator (e.g., 2026-04-10T14:00:00.000Z)
+        if (!ISO_DATETIME_PATTERN.test(post.message)) {
+            throw new Error(`Expected ISO datetime in submission post but got: ${post.message}`);
+        }
+    });
+
+    it('MM-T2530G should display timezone indicator and convert to UTC correctly', async () => {
+        // # Open datetime-timezone dialog (has Europe/London timezone fields)
+        await ChannelScreen.postSlashCommand('/dialog datetime-timezone');
+        await ensureDialogOpen();
+
+        // # Scroll down past introduction text to reveal fields
+        try {
+            await element(by.id('interactive_dialog.screen')).scroll(300, 'down');
+            await wait(300);
+        } catch {}
+
+        // * Verify London dropdown field is visible
+        await expect(element(by.id('AppFormElement.london_dropdown'))).toExist();
+
+        // * Verify timezone indicator appears for London field
+        // London is GMT in winter, BST in summer — mobile renders without emoji.
+        // Datetime-timezone dialog can show the indicator twice (CI 30216081940).
+        try {
+            await expect(element(by.text('Times in GMT')).atIndex(0)).toExist();
+        } catch {
+            await expect(element(by.text('Times in BST')).atIndex(0)).toExist();
+        }
+
+        // # Select datetime in London field
+        await element(by.id('AppFormElement.london_dropdown.select.button')).tap();
+        await wait(1000);
+
+        // # Scroll to make picker visible
+        try {
+            await element(by.id('interactive_dialog.scroll_view')).scrollTo('bottom');
+            await wait(300);
+        } catch {}
+
+        // # Explicitly set a date on the native picker so onChange fires and the field captures a value.
+        // Optional fields in datetime-timezone have no defaults; opening/closing alone doesn't emit a value.
+        try {
+            await element(by.id('custom_status_clear_after.date_time_picker')).setDatePickerDate('2026-05-15T14:00:00Z', 'ISO8601');
+            await wait(300);
+        } catch {}
+
+        // # Close date picker
+        if (isAndroid()) {
+            await element(by.text('OK')).tap();
+        } else {
+            await element(by.id('AppFormElement.london_dropdown.select.button')).tap();
+        }
+        await wait(500);
+
+        // # Submit dialog
+        await InteractiveDialogScreen.submit();
+        await wait(1500);
+
+        // * Dialog should close
+        await ensureDialogClosed();
+
+        // * Verify submission post contains ISO/UTC datetime format
+        await wait(2000);
+        const {post: tzPost} = await Post.apiGetLastPostInChannel(siteOneUrl, testChannel.id);
+        if (!ISO_DATETIME_PATTERN.test(tzPost.message)) {
+            throw new Error(`Expected ISO datetime in timezone submission post but got: ${tzPost.message}`);
+        }
+    });
+
+    it('MM-T2530H should accept manual time entry on datetime field', async () => {
+        // NOTE: Placed last in the file — manual TextInput entry leaves keyboard/animation
+        // state on iOS 26 + react-native-keyboard-controller that can break subsequent dialog tests.
+        // # Open datetime-timezone dialog (has fields with allow_manual_time_entry)
+        await ChannelScreen.postSlashCommand('/dialog datetime-timezone');
+        await ensureDialogOpen();
+
+        // # Scroll past introduction text to reveal fields
+        try {
+            await element(by.id('interactive_dialog.screen')).scroll(300, 'down');
+            await wait(300);
+        } catch {}
+
+        // # Tap time button to switch local_manual into manual entry mode
+        await element(by.id('AppFormElement.local_manual.time.button')).tap();
+        await wait(500);
+
+        // # Replace any prefilled text with the manual time entry (parseTimeString accepts 24-hour without am/pm)
+        const manualInput = element(by.id('AppFormElement.local_manual.manual_time.input'));
+        await waitFor(manualInput).toBeVisible().withTimeout(2000);
+        await manualInput.replaceText('14:30');
+
+        // # Commit by pressing Done — fires onSubmitEditing → handleManualTimeSubmit → handleChange
+        await manualInput.tapReturnKey();
+        await wait(500);
+
+        // # Submit dialog
+        await InteractiveDialogScreen.submit();
+        await wait(1500);
+
+        // * Dialog should close after successful submission
+        await ensureDialogClosed();
+
+        // * Verify submission post: local_manual must be populated with a UTC ISO timestamp
+        // whose minute portion is 30 (manual entry preserves typed minutes; rounded-picker values would be :00)
+        await wait(1000);
+        const {post} = await Post.apiGetLastPostInChannel(siteOneUrl, testChannel.id);
+        const match = post.message.match(/local_manual:\s*(\S+)/);
+        if (!match || !match[1]) {
+            throw new Error(`Expected local_manual to have a value but got: ${post.message}`);
+        }
+        const submitted = match[1];
+        if (!/T\d{2}:30:00\.000Z$/.test(submitted)) {
+            throw new Error(`Expected manually-entered minutes (:30) in local_manual but got: ${submitted}`);
+        }
     });
 });

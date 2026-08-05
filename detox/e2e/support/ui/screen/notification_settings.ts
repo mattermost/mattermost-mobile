@@ -19,11 +19,7 @@ class NotificationSettingsScreen {
 
     notificationSettingsScreen = element(by.id(this.testID.notificationSettingsScreen));
 
-    // expo-router native stack screen — the custom NavigationHeader's
-    // 'navigation.header.back' testID is not rendered here. The chevron is
-    // owned by @react-navigation/native-stack: iOS surfaces it via
-    // `accessibilityLabel="Back"`, Android via the Toolbar's default
-    // navigation-icon contentDescription "Navigate up".
+    // Native-stack back chevron via accessibility label.
     get backButton(): Detox.NativeElement {
         return isIos()
             ? element(by.label('Back')).atIndex(0)
@@ -52,9 +48,7 @@ class NotificationSettingsScreen {
     };
 
     back = async () => {
-        // Use platform-native back chevron: Android via device.pressBack(),
-        // iOS via by.label('Back'). The custom NavigationHeader's testID
-        // does not exist on this screen (expo-router native stack).
+        // Native-stack back chevron.
         await tapNativeBackButton();
         await waitFor(this.notificationSettingsScreen).not.toBeVisible().withTimeout(timeouts.TEN_SEC);
     };

@@ -5,6 +5,12 @@ import AboutScreen from './about';
 import AccountScreen from './account';
 import AddMembersScreen from './add_members';
 import AdvancedSettingsScreen from './advanced_settings';
+import {
+    closeArchivedChannel,
+    openArchivedChannel,
+    openArchivedChannelsFilter,
+    postArchivedChannelSentinel,
+} from './archived_channel_navigation';
 import AutoResponderNotificationSettingsScreen from './auto_responder_notification_settings';
 import BrowseChannelsScreen from './browse_channels';
 import ChannelScreen from './channel';
@@ -113,4 +119,8 @@ export {
     UserProfileScreen,
     DraftScreen,
     ScheduleMessageScreen,
+    closeArchivedChannel,
+    openArchivedChannel,
+    openArchivedChannelsFilter,
+    postArchivedChannelSentinel,
 };

@@ -1,7 +1,55 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import moment from 'moment-timezone';
+import {Platform} from 'react-native';
+
 import type {IntlShape} from 'react-intl';
+
+export type ValidMinuteInterval = 1 | 2 | 3 | 4 | 5 | 6 | 10 | 12 | 15 | 20 | 30;
+
+const IOS_VALID_INTERVALS = new Set<ValidMinuteInterval>([1, 2, 3, 4, 5, 6, 10, 12, 15, 20, 30]);
+
+export function toValidMinuteInterval(interval?: number): ValidMinuteInterval {
+    if (Platform.OS !== 'ios') {
+        // Android doesn't use minuteInterval — return 30 as a no-op default
+        return 30;
+    }
+    if (interval && IOS_VALID_INTERVALS.has(interval as ValidMinuteInterval)) {
+        return interval as ValidMinuteInterval;
+    }
+
+    // iOS doesn't support 60+ — clamp to 30
+    return 30;
+}
+
+/**
+ * Parses flexible time string input into hours and minutes.
+ * Supports: "13:40", "1:30pm", "1:30 PM", "2pm", "14:00", etc.
+ */
+export function parseTimeString(input: string): {hours: number; minutes: number} | null {
+    const trimmed = input.trim();
+
+    const formats = [
+        'H:mm', // 0:00 - 23:59
+        'HH:mm',
+        'h:mm A', // 2:30 PM
+        'h:mma', // 2:30pm
+        'ha', // 2pm
+        'h A', // 2 PM
+    ];
+
+    const m = moment(trimmed, formats, true);
+
+    if (!m.isValid()) {
+        return null;
+    }
+
+    return {
+        hours: m.hour(),
+        minutes: m.minute(),
+    };
+}
 
 export function isSameDate(a: Date, b: Date = new Date()): boolean {
     return a.getDate() === b.getDate() && isSameMonth(a, b) && isSameYear(a, b);
@@ -57,12 +105,7 @@ export function getReadableTimestamp(timestamp: number, timeZone: string, isMili
         hour: 'numeric',
         minute: '2-digit',
         hour12: !isMilitaryTime,
-
-        // Omit timeZone when empty (users without a reported automatic timezone):
-        // an empty string is an invalid IANA name — V8 throws a RangeError and
-        // iOS Hermes renders the literal string "Invalid Date" for a valid date
-        // (MM-T5720 "Send on Invalid Date").
-        ...(timeZone ? {timeZone} : {}),
+        timeZone: timeZone as string,
         ...(isCurrentYear ? {} : {year: 'numeric'}),
     };
 

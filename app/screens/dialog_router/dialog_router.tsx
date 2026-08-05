@@ -9,7 +9,6 @@ import {submitInteractiveDialog, lookupInteractiveDialog} from '@actions/remote/
 import {AppCallResponseTypes} from '@constants/apps';
 import {useServerUrl} from '@context/server';
 import AppsFormComponent from '@screens/apps_form/apps_form_component';
-import InteractiveDialog from '@screens/interactive_dialog';
 import {isAppSelectOption} from '@utils/dialog_utils';
 import {getFullErrorMessage} from '@utils/errors';
 import {InteractiveDialogAdapter} from '@utils/interactive_dialog_adapter';
@@ -17,20 +16,8 @@ import {logDebug} from '@utils/log';
 
 export type DialogRouterProps = {
     config: InteractiveDialogConfig;
-    isAppsFormEnabled: boolean;
 };
 
-/**
- * DialogRouter - Routes between legacy InteractiveDialog and modern AppsForm
- * Based on webapp DialogRouter component from PR #31821
- *
- * When InteractiveDialogAppsForm feature flag is enabled:
- * - Converts dialog config to AppForm format
- * - Renders AppsFormContainer with conversion handlers
- *
- * When feature flag is disabled:
- * - Renders legacy InteractiveDialog component
- */
 /**
  * Converts error to user-friendly message based on error type
  */
@@ -64,7 +51,6 @@ function getSubmissionErrorMessage(error: unknown, intl: IntlShape): string {
 
 export const DialogRouter = React.memo<DialogRouterProps>(({
     config,
-    isAppsFormEnabled,
 }) => {
     const navigation = useNavigation();
     const serverUrl = useServerUrl();
@@ -207,18 +193,17 @@ export const DialogRouter = React.memo<DialogRouterProps>(({
 
     // Memoize form conversion to avoid recalculation on every render
     const appForm = useMemo(() => {
-        if (!isAppsFormEnabled || !currentConfig?.dialog) {
+        if (!currentConfig?.dialog) {
             return null;
         }
 
         try {
-            const converted = InteractiveDialogAdapter.convertToAppForm(currentConfig);
-
-            return converted;
+            return InteractiveDialogAdapter.convertToAppForm(currentConfig);
         } catch (error) {
+            logDebug('[DialogRouter.appForm]', getFullErrorMessage(error));
             return null;
         }
-    }, [currentConfig, isAppsFormEnabled]);
+    }, [currentConfig]);
 
     // Helper function to find the dialog element by field name
     function findDialogElement(elements: any[], fieldName: string) {
@@ -350,33 +335,32 @@ export const DialogRouter = React.memo<DialogRouterProps>(({
         }
     }, [currentConfig, serverUrl, intl, setCurrentConfig, accumulatedValues]);
 
-    if (isAppsFormEnabled && appForm && appForm.fields) {
-        // Pre-populate form fields with accumulated values to preserve field refresh state
-        const formWithValues = {
-            ...appForm,
-            fields: appForm.fields.map((field) => {
-                if (field.name && accumulatedValues[field.name] !== undefined && !field.value) {
-                    return {
-                        ...field,
-                        value: accumulatedValues[field.name],
-                    };
-                }
-                return field;
-            }),
-        };
-
-        return (
-            <AppsFormComponent
-                form={formWithValues}
-                submit={handleSubmit}
-                performLookupCall={performLookupCall}
-                refreshOnSelect={refreshOnSelect}
-            />
-        );
+    if (!appForm || !appForm.fields) {
+        return null;
     }
 
-    // Feature flag disabled or AppsForm failed - use legacy InteractiveDialog
-    return (<InteractiveDialog config={currentConfig}/>);
+    // Pre-populate form fields with accumulated values to preserve field refresh state
+    const formWithValues = {
+        ...appForm,
+        fields: appForm.fields.map((field) => {
+            if (field.name && accumulatedValues[field.name] !== undefined && !field.value) {
+                return {
+                    ...field,
+                    value: accumulatedValues[field.name],
+                };
+            }
+            return field;
+        }),
+    };
+
+    return (
+        <AppsFormComponent
+            form={formWithValues}
+            submit={handleSubmit}
+            performLookupCall={performLookupCall}
+            refreshOnSelect={refreshOnSelect}
+        />
+    );
 });
 
 DialogRouter.displayName = 'DialogRouter';

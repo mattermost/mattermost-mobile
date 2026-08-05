@@ -53,10 +53,10 @@ describe('Teams - Invite', () => {
     });
 
     beforeEach(async () => {
-        await device.reloadReactNative();
-
-        // * Verify on channel list screen
+        // Avoid device.reloadReactNative() — CI 59ec6ae iOS: T5360 passed then
+        // reload disconnected Detox and killed T5361–T5365.
         await ChannelListScreen.toBeVisible();
+        await wait(timeouts.TWO_SEC);
 
         // # Open invite screen
         await Invite.open();
@@ -212,7 +212,7 @@ describe('Teams - Invite', () => {
         await waitFor(Invite.getSearchListUserItem(testUser.id)).toExist().withTimeout(timeouts.TEN_SEC);
 
         // # Select user item.
-        await Invite.getSearchListUserItem(testUser.id).tap();
+        await Invite.getSearchListUserItem(testUser.id).tap({x: 1, y: 1});
 
         // # Send invitation
         await Invite.sendButton.tap();

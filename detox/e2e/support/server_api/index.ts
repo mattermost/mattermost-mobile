@@ -4,7 +4,7 @@
 import Bot from './bot';
 import Channel from './channel';
 import ChannelBookmark from './channel_bookmark';
-import Command from './command';
+import Command, {apiGetTeamCommands, waitForSlashCommandTrigger} from './command';
 import CustomProfileAttributes from './custom_profile_attributes';
 import Ldap from './ldap';
 import Playbooks from './playbooks';
@@ -12,6 +12,7 @@ import PlaybooksHelpers from './playbooks_helpers';
 import Plugin, {AgentsPlugin, CallsPlugin, DemoPlugin} from './plugin';
 import Post from './post';
 import Preference from './preference';
+import Properties from './properties';
 import Setup from './setup';
 import Status from './status';
 import System from './system';
@@ -26,6 +27,8 @@ export {
     Channel,
     ChannelBookmark,
     Command,
+    apiGetTeamCommands,
+    waitForSlashCommandTrigger,
     CustomProfileAttributes,
     DemoPlugin,
     Ldap,
@@ -34,6 +37,7 @@ export {
     Plugin,
     Post,
     Preference,
+    Properties,
     Setup,
     Status,
     System,

@@ -75,7 +75,7 @@ export async function processChannelPostsByTeam(
         const {operator} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
 
         const models = await Promise.all(prepareModelsPromises);
-        operator.batchRecords(removeDuplicatesModels(models.flat()), 'processTeamChannels');
+        await operator.batchRecords(removeDuplicatesModels(models.flat()), 'processTeamChannels');
     }
     if (!skipAuthors && allPosts.length) {
         await fetchPostAuthors(serverUrl, allPosts, false, groupLabel);

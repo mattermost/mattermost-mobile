@@ -30,6 +30,7 @@ type Props = {
     contentFit?: ImageContentFit;
     wrapperWidth: number;
     updateFileForGallery?: (idx: number, file: FileInfo) => void;
+    testID?: string;
 }
 
 const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
@@ -63,7 +64,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
 
 const VideoFile = ({
     index, file, forwardRef, inViewPort, isSingleImage,
-    contentFit = 'cover', wrapperWidth, updateFileForGallery,
+    contentFit = 'cover', wrapperWidth, updateFileForGallery, testID,
 }: Props) => {
     const serverUrl = useServerUrl();
     const [failed, setFailed] = useState(false);
@@ -188,6 +189,8 @@ const VideoFile = ({
 
     return (
         <View
+            testID={testID}
+            collapsable={false}
             style={style.fileImageWrapper}
         >
             {!isSingleImage && !failed && <View style={style.boxPlaceholder}/>}

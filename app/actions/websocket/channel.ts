@@ -119,7 +119,7 @@ export async function handleChannelUpdatedEvent(serverUrl: string, msg: any) {
         if (infoModel.model) {
             models.push(...infoModel.model);
         }
-        operator.batchRecords(models, 'handleChannelUpdatedEvent');
+        await operator.batchRecords(models, 'handleChannelUpdatedEvent');
 
         // This indicates a GM was converted to a private channel
         if (existingChannelType === General.GM_CHANNEL && updatedChannel.type === General.PRIVATE_CHANNEL) {
@@ -185,7 +185,7 @@ export async function handleMultipleChannelsViewedEvent(serverUrl: string, msg: 
         }, []);
 
         if (members.length) {
-            operator.batchRecords(members, 'handleMultipleCahnnelViewedEvent');
+            await operator.batchRecords(members, 'handleMultipleCahnnelViewedEvent');
         }
     } catch {
         // do nothing
@@ -219,7 +219,7 @@ export async function handleChannelMemberUpdatedEvent(serverUrl: string, msg: an
         if (rolesRequest.roles?.length) {
             models.push(...await operator.handleRole({roles: rolesRequest.roles, prepareRecordsOnly: true}));
         }
-        operator.batchRecords(models, 'handleChannelMemberUpdatedEvent');
+        await operator.batchRecords(models, 'handleChannelMemberUpdatedEvent');
     } catch {
         // do nothing
     }
@@ -284,7 +284,7 @@ export async function handleDirectAddedEvent(serverUrl: string, msg: WebSocketMe
             models.push(...userModels);
         }
 
-        operator.batchRecords(models, 'handleDirectAddedEvent');
+        await operator.batchRecords(models, 'handleDirectAddedEvent');
     } catch {
         // do nothing
     }
@@ -420,7 +420,7 @@ export async function handleUserRemovedFromChannelEvent(serverUrl: string, msg: 
             }
         }
 
-        operator.batchRecords(models, 'handleUserRemovedFromChannelEvent');
+        await operator.batchRecords(models, 'handleUserRemovedFromChannelEvent');
     } catch (error) {
         logDebug('cannot handle user removed from channel websocket event', error);
     }

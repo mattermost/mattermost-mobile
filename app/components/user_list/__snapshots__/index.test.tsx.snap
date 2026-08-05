@@ -7,6 +7,7 @@ exports[`components/channel_list_row should show no results 1`] = `
   contentContainerStyle={
     {
       "flexGrow": 1,
+      "gap": 8,
     }
   }
   data={[]}
@@ -577,6 +578,7 @@ exports[`components/channel_list_row should show results and tutorial 1`] = `
   contentContainerStyle={
     {
       "flexGrow": 1,
+      "gap": 8,
     }
   }
   data={
@@ -667,7 +669,6 @@ exports[`components/channel_list_row should show results and tutorial 1`] = `
               "backgroundColor": "rgba(63,67,80,0.08)",
               "height": 24,
               "justifyContent": "center",
-              "marginHorizontal": 12,
               "paddingLeft": 16,
             }
           }
@@ -732,20 +733,15 @@ exports[`components/channel_list_row should show results and tutorial 1`] = `
         <View
           style={
             [
-              [
-                {
-                  "alignItems": "center",
-                  "flexDirection": "row",
-                  "height": 40,
-                  "paddingBottom": 8,
-                  "paddingTop": 4,
-                },
-                {
-                  "opacity": 1,
-                  "paddingHorizontal": 20,
-                },
-                undefined,
-              ],
+              {
+                "alignItems": "center",
+                "flexDirection": "row",
+                "paddingBottom": 8,
+                "paddingTop": 4,
+              },
+              {
+                "opacity": 1,
+              },
               undefined,
             ]
           }
@@ -941,6 +937,7 @@ exports[`components/channel_list_row should show results no tutorial 1`] = `
   contentContainerStyle={
     {
       "flexGrow": 1,
+      "gap": 8,
     }
   }
   data={
@@ -1031,7 +1028,6 @@ exports[`components/channel_list_row should show results no tutorial 1`] = `
               "backgroundColor": "rgba(63,67,80,0.08)",
               "height": 24,
               "justifyContent": "center",
-              "marginHorizontal": 12,
               "paddingLeft": 16,
             }
           }
@@ -1096,20 +1092,15 @@ exports[`components/channel_list_row should show results no tutorial 1`] = `
         <View
           style={
             [
-              [
-                {
-                  "alignItems": "center",
-                  "flexDirection": "row",
-                  "height": 40,
-                  "paddingBottom": 8,
-                  "paddingTop": 4,
-                },
-                {
-                  "opacity": 1,
-                  "paddingHorizontal": 20,
-                },
-                undefined,
-              ],
+              {
+                "alignItems": "center",
+                "flexDirection": "row",
+                "paddingBottom": 8,
+                "paddingTop": 4,
+              },
+              {
+                "opacity": 1,
+              },
               undefined,
             ]
           }
@@ -1305,6 +1296,7 @@ exports[`components/channel_list_row should show results no tutorial 2 users 1`]
   contentContainerStyle={
     {
       "flexGrow": 1,
+      "gap": 8,
     }
   }
   data={
@@ -1433,7 +1425,6 @@ exports[`components/channel_list_row should show results no tutorial 2 users 1`]
               "backgroundColor": "rgba(63,67,80,0.08)",
               "height": 24,
               "justifyContent": "center",
-              "marginHorizontal": 12,
               "paddingLeft": 16,
             }
           }
@@ -1498,20 +1489,15 @@ exports[`components/channel_list_row should show results no tutorial 2 users 1`]
         <View
           style={
             [
-              [
-                {
-                  "alignItems": "center",
-                  "flexDirection": "row",
-                  "height": 40,
-                  "paddingBottom": 8,
-                  "paddingTop": 4,
-                },
-                {
-                  "opacity": 1,
-                  "paddingHorizontal": 20,
-                },
-                undefined,
-              ],
+              {
+                "alignItems": "center",
+                "flexDirection": "row",
+                "paddingBottom": 8,
+                "paddingTop": 4,
+              },
+              {
+                "opacity": 1,
+              },
               undefined,
             ]
           }
@@ -1696,7 +1682,6 @@ exports[`components/channel_list_row should show results no tutorial 2 users 1`]
               "backgroundColor": "rgba(63,67,80,0.08)",
               "height": 24,
               "justifyContent": "center",
-              "marginHorizontal": 12,
               "paddingLeft": 16,
             }
           }
@@ -1761,20 +1746,15 @@ exports[`components/channel_list_row should show results no tutorial 2 users 1`]
         <View
           style={
             [
-              [
-                {
-                  "alignItems": "center",
-                  "flexDirection": "row",
-                  "height": 40,
-                  "paddingBottom": 8,
-                  "paddingTop": 4,
-                },
-                {
-                  "opacity": 1,
-                  "paddingHorizontal": 20,
-                },
-                undefined,
-              ],
+              {
+                "alignItems": "center",
+                "flexDirection": "row",
+                "paddingBottom": 8,
+                "paddingTop": 4,
+              },
+              {
+                "opacity": 1,
+              },
               undefined,
             ]
           }

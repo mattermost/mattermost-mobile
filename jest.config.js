@@ -17,7 +17,7 @@ module.exports = {
     setupFilesAfterEnv: ['<rootDir>/test/setup.ts'],
     collectCoverageFrom: ['app/**/*.{js,jsx,ts,tsx}'],
     coverageReporters: ['lcov', 'text-summary', 'json-summary'],
-    testPathIgnorePatterns: ['/node_modules/'],
+    testPathIgnorePatterns: ['/node_modules/', '/detox/'],
     coveragePathIgnorePatterns: ['/node_modules/', '/components/', '/screens/', '/routes/'],
     transformIgnorePatterns: [
         'node_modules/(?!' +
@@ -27,7 +27,7 @@ module.exports = {
         'react-intl|@formatjs/[^/]+|intl-messageformat|@messageformat/[^/]+|' +
         'validator|' +
         'hast-util-from-selector|hastscript|property-information|hast-util-parse-selector|space-separated-tokens|comma-separated-tokens|zwitch|' +
-        '@mattermost/calls|@mattermost/rnutils|@mattermost/hardware-keyboard|@mattermost/rnshare|@mattermost/secure-pdf-viewer|@mattermost/compass-icons|@voximplant/react-native-foreground-service|' +
+        '@mattermost/calls|@mattermost/rnutils|@mattermost/hardware-keyboard|@mattermost/rnshare|@mattermost/secure-pdf-viewer|@mattermost/compass-icons|' +
         '@rneui/base|' +
         '@shopify/flash-list|' +
         'ratex-react-native)',

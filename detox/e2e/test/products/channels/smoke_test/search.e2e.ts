@@ -29,7 +29,7 @@ import {
     ServerScreen,
 } from '@support/ui/screen';
 import {getRandomId, timeouts} from '@support/utils';
-import {waitFor} from 'detox';
+import {expect, waitFor} from 'detox';
 
 describe('Smoke Test - Search', () => {
     const serverOneDisplayName = 'Server 1';
@@ -67,12 +67,10 @@ describe('Smoke Test - Search', () => {
 
         // * Verify on recent mentions screen and recent mention is displayed
         await RecentMentionsScreen.toBeVisible();
+        await RecentMentionsScreen.recentMentionPostListToBeVisible();
         const {post} = await Post.apiGetLastPostInChannel(siteOneUrl, testChannel.id);
         const {postListPostItem} = RecentMentionsScreen.getPostListPostItem(post.id, message);
-
-        // iOS 26: post items can be partially obscured by bottom chrome;
-        // use toExist() instead of toBeVisible() for reliability.
-        await waitFor(postListPostItem).toExist().withTimeout(timeouts.TEN_SEC);
+        await waitFor(postListPostItem).toBeVisible().withTimeout(timeouts.TEN_SEC);
 
         // # Go back to channel list screen
         await ChannelListScreen.open();
@@ -92,10 +90,7 @@ describe('Smoke Test - Search', () => {
         // * Verify on saved messages screen and saved message is displayed
         await SavedMessagesScreen.toBeVisible();
         const {postListPostItem} = SavedMessagesScreen.getPostListPostItem(post.id, message);
-
-        // iOS 26: post items can be partially obscured by bottom chrome;
-        // use toExist() instead of toBeVisible() for reliability.
-        await waitFor(postListPostItem).toExist().withTimeout(timeouts.TEN_SEC);
+        await expect(postListPostItem).toBeVisible();
 
         // # Go back to channel list screen
         await ChannelListScreen.open();
@@ -115,10 +110,7 @@ describe('Smoke Test - Search', () => {
         // * Verify on pinned messages screen and pinned message is displayed
         await PinnedMessagesScreen.toBeVisible();
         const {postListPostItem} = PinnedMessagesScreen.getPostListPostItem(post.id, message);
-
-        // iOS 26: post items can be partially obscured by bottom chrome;
-        // use toExist() instead of toBeVisible() for reliability.
-        await waitFor(postListPostItem).toExist().withTimeout(timeouts.TEN_SEC);
+        await expect(postListPostItem).toBeVisible();
 
         // # Go back to channel list screen
         await PinnedMessagesScreen.back();
@@ -140,10 +132,7 @@ describe('Smoke Test - Search', () => {
         // * Verify search results contain searched message
         const {post} = await Post.apiGetLastPostInChannel(siteOneUrl, testChannel.id);
         const {postListPostItem} = SearchMessagesScreen.getPostListPostItem(post.id, message);
-
-        // iOS 26: post items can be partially obscured by bottom chrome;
-        // use toExist() instead of toBeVisible() for reliability.
-        await waitFor(postListPostItem).toExist().withTimeout(timeouts.TEN_SEC);
+        await expect(postListPostItem).toBeVisible();
 
         // # Clear search input, remove recent search item, and go back to channel list screen
         await SearchMessagesScreen.searchClearButton.tap();

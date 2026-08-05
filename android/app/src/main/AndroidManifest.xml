@@ -57,6 +57,15 @@
         <meta-data android:name="firebase_analytics_collection_deactivated" android:value="true" />
         <meta-data android:name="android.content.APP_RESTRICTIONS"
                    android:resource="@xml/app_restrictions" />
+        <provider
+            android:name="androidx.core.content.FileProvider"
+            android:authorities="${applicationId}.provider"
+            android:exported="false"
+            android:grantUriPermissions="true">
+            <meta-data
+                android:name="android.support.FILE_PROVIDER_PATHS"
+                android:resource="@xml/file_viewer_provider_paths" />
+        </provider>
       <activity
         android:name=".MainActivity"
         android:configChanges="keyboard|keyboardHidden|orientation|screenLayout|screenSize|smallestScreenSize|uiMode"
@@ -106,13 +115,6 @@
               <data android:mimeType="*/*" />
           </intent-filter>
       </activity>
-
-        <!-- For Calls microphone to work in the background -->
-        <service
-                android:name="com.voximplant.foregroundservice.VIForegroundService"
-                android:foregroundServiceType="microphone"
-                android:exported="false"
-        />
 
       <!-- Android 14 requires the correct Foreground Service (FGS) type for RNShare -->
       <service

@@ -105,7 +105,10 @@ describe('Channels', () => {
         await ChannelInfoScreen.favoriteAction.tap();
 
         await wait(timeouts.ONE_SEC);
-        await expect(ChannelInfoScreen.unfavoriteAction).toBeVisible();
+
+        // Android: unfavoriteAction can be clipped by the nav bars below 50% visibility, so assert
+        // presence with toExist().
+        await waitFor(ChannelInfoScreen.unfavoriteAction).toExist().withTimeout(timeouts.TEN_SEC);
 
         await ChannelInfoScreen.close();
         await ChannelScreen.back();
@@ -130,10 +133,6 @@ describe('Channels', () => {
         await expect(ChannelListScreen.getChannelItemDisplayName(channelsCategory, testChannel.name)).toBeVisible();
     });
 
-    // SKIPPED — Same archive-observable bug as
-    // archive_channel_from_settings.e2e.ts MM-T4932_1. The `channelIsArchived`
-    // observable in post_draft doesn't fire on `c.deleteAt` change written via
-    // `prepareUpdate + batchRecords`. Track separately as an app-side bug.
     it('MM-T3197 - RN apps Archive public or private channel', async () => {
         // # Navigate to the archive channel
         await ChannelScreen.open(channelsCategory, archiveChannel.name);
@@ -160,10 +159,6 @@ describe('Channels', () => {
         await ChannelListScreen.toBeVisible();
 
         // * Verify archived channel is not visible in the list
-        // On Android, waitFor().not.toBeVisible() blocks on bridge-idle before evaluating —
-        // after the back() navigation the bridge is still busy, causing the 10s budget to
-        // expire before the check runs. Use polling waitForElementToNotExist (bypasses
-        // bridge-idle) on Android; keep the standard waitFor for iOS.
         const archivedChannelItem = ChannelListScreen.getChannelItemDisplayName(channelsCategory, archiveChannel.name);
         if (isAndroid()) {
             await waitForElementToNotExist(archivedChannelItem, timeouts.HALF_MIN);

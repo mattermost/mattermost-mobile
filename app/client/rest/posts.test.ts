@@ -275,29 +275,89 @@ describe('ClientPosts', () => {
         expect(spy).toHaveBeenCalledWith(postId, actionId, '', selectedOption);
     });
 
-    test('doPostActionWithCookie', async () => {
+    describe('doPostActionWithCookie', () => {
         const postId = 'post_id';
         const actionId = 'action_id';
-        const actionCookie = 'action_cookie';
-        const selectedOption = 'selected_option';
-        await client.doPostActionWithCookie(postId, actionId, actionCookie, selectedOption);
 
-        expect(client.doFetch).toHaveBeenCalledWith(
-            `${client.getPostRoute(postId)}/actions/${encodeURIComponent(actionId)}`,
-            {method: 'post', body: {selected_option: selectedOption, cookie: actionCookie}},
+        const getEndpoint = (id = actionId) => (
+            `${client.getPostRoute(postId)}/actions/${encodeURIComponent(id)}`
         );
-    });
 
-    test('doPostActionWithQuery', async () => {
-        const postId = 'post_id';
-        const actionId = 'action_id';
-        const query = {row: '12', col: 'A'};
-        await client.doPostActionWithQuery(postId, actionId, query);
+        test('should post selected option and cookie', async () => {
+            const actionCookie = 'action_cookie';
+            const selectedOption = 'selected_option';
+            await client.doPostActionWithCookie(postId, actionId, actionCookie, selectedOption);
 
-        expect(client.doFetch).toHaveBeenCalledWith(
-            `${client.getPostRoute(postId)}/actions/${encodeURIComponent(actionId)}`,
-            {method: 'post', body: {query}},
-        );
+            expect(client.doFetch).toHaveBeenCalledWith(
+                getEndpoint(),
+                {method: 'post', body: {selected_option: selectedOption, cookie: actionCookie, integration_format: 'attachment'}},
+            );
+        });
+
+        test('should omit cookie when actionCookie is empty', async () => {
+            await client.doPostActionWithCookie(postId, actionId, '', 'option');
+
+            expect(client.doFetch).toHaveBeenCalledWith(
+                getEndpoint(),
+                {method: 'post', body: {selected_option: 'option', integration_format: 'attachment'}},
+            );
+        });
+
+        test('should include query when provided', async () => {
+            const query = {row: '1', col: 'A'};
+            await client.doPostActionWithCookie(postId, actionId, 'cookie', '', query);
+
+            expect(client.doFetch).toHaveBeenCalledWith(
+                getEndpoint(),
+                {method: 'post', body: {selected_option: '', cookie: 'cookie', query, integration_format: 'attachment'}},
+            );
+        });
+
+        test('should omit query when empty', async () => {
+            await client.doPostActionWithCookie(postId, actionId, 'cookie', '', {});
+
+            expect(client.doFetch).toHaveBeenCalledWith(
+                getEndpoint(),
+                {method: 'post', body: {selected_option: '', cookie: 'cookie', integration_format: 'attachment'}},
+            );
+        });
+
+        test('should include integration_format when provided', async () => {
+            await client.doPostActionWithCookie(postId, actionId, '', '', undefined, 'mm_block');
+
+            expect(client.doFetch).toHaveBeenCalledWith(
+                getEndpoint(),
+                {method: 'post', body: {selected_option: '', integration_format: 'mm_block'}},
+            );
+        });
+
+        test('should encode actionId in the URL', async () => {
+            const encodedActionId = 'action/with spaces';
+            await client.doPostActionWithCookie(postId, encodedActionId, 'cookie');
+
+            expect(client.doFetch).toHaveBeenCalledWith(
+                getEndpoint(encodedActionId),
+                {method: 'post', body: {selected_option: '', cookie: 'cookie', integration_format: 'attachment'}},
+            );
+        });
+
+        test('should include all optional body fields', async () => {
+            const query = {key: 'value'};
+            await client.doPostActionWithCookie(postId, actionId, 'cookie', 'selected', query, 'block');
+
+            expect(client.doFetch).toHaveBeenCalledWith(
+                getEndpoint(),
+                {
+                    method: 'post',
+                    body: {
+                        selected_option: 'selected',
+                        cookie: 'cookie',
+                        query,
+                        integration_format: 'block',
+                    },
+                },
+            );
+        });
     });
 
     test('acknowledgePost', async () => {

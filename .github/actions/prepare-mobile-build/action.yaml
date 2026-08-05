@@ -4,24 +4,21 @@ description: Action to prepare environment for mobile build
 runs:
   using: composite
   steps:
-    # The required ruby version is mentioned in '.ruby-version'
-    - uses: ruby/setup-ruby@cb0fda56a307b8c78d38320cd40d9eb22a3bf04e # v1.242.0
-
-    - name: ci/setup-fastlane-dependencies
+    # bundler-cache restores/installs fastlane/Gemfile.lock gems before the job
+    # continues. The previous manual cache targeted repo-root vendor/bundle while
+    # bundle install ran in fastlane/, so the cache never hit or saved.
+    # ruby-version must be set explicitly: working-directory makes setup-ruby look
+    # for .ruby-version under fastlane/, but the file lives at the repo root.
+    - name: Read Ruby version
+      id: ruby-version
       shell: bash
-      run: |
-        echo "::group::setup-fastlane-dependencies"
-        bundle install
-        echo "::endgroup::"
-      working-directory: ./fastlane
+      run: echo "version=$(tr -d '[:space:]' < .ruby-version)" >> "$GITHUB_OUTPUT"
 
-    - name: Cache Ruby gems
-      uses: actions/cache@5a3ec84eff668545956fd18022155c47e93e2684 # v4.2.3
+    - uses: ruby/setup-ruby@89f90524b88a01fe6e0b732220432cc6142926af # v1.313.0
       with:
-        path: vendor/bundle
-        key: ${{ runner.os }}-gems-${{ hashFiles('**/Gemfile.lock') }}
-        restore-keys: |
-          ${{ runner.os }}-gems-
+        ruby-version: ${{ steps.ruby-version.outputs.version }}
+        bundler-cache: true
+        working-directory: fastlane
 
     - name: ci/prepare-node-deps
       uses: ./.github/actions/prepare-node-deps

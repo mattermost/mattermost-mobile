@@ -9,6 +9,7 @@ import {waitFor} from 'detox';
 class LoginScreen {
     testID = {
         loginScreen: 'login.screen',
+        backButton: 'navigation.header.back',
         titleLoginToAccount: 'login_options.title.login_to_account',
         titleCantLogin: 'login_options.title.cant_login',
         descriptionEnterCredentials: 'login_options.description.enter_credentials',
@@ -177,7 +178,9 @@ class LoginScreen {
                     } catch {
                         // Try "OK" (GlobalEventHandler variant)
                         try {
-                            const okBtn = isAndroid() ? element(by.text('OK')) : element(by.text('OK'));
+                            const okBtn = element(by.text('OK'));
+                            // eslint-disable-next-line no-await-in-loop
+                            await waitFor(okBtn).toBeVisible().withTimeout(timeouts.ONE_SEC);
                             // eslint-disable-next-line no-await-in-loop
                             await okBtn.tap();
                         } catch { /* neither button found */ }

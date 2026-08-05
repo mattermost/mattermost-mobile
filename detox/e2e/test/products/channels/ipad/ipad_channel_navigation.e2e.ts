@@ -44,7 +44,7 @@ describe('iPad - Channel Navigation', () => {
         await HomeScreen.logout();
     });
 
-    it('MM-TIPAD_6 - should navigate to a channel by tapping it in the sidebar on iPad', async () => {
+    it('MM-T5616_6 - should navigate to a channel by tapping it in the sidebar on iPad', async () => {
         if (!isIpad()) {
             return;
         }
@@ -64,7 +64,7 @@ describe('iPad - Channel Navigation', () => {
         await ChannelListScreen.toBeVisible();
     });
 
-    it('MM-TIPAD_7 - should keep the sidebar visible after navigating to a channel on iPad', async () => {
+    it('MM-T5616_7 - should keep the sidebar visible after navigating to a channel on iPad', async () => {
         if (!isIpad()) {
             return;
         }
@@ -82,7 +82,7 @@ describe('iPad - Channel Navigation', () => {
         await expect(ChannelListScreen.channelListScreen).toBeVisible();
     });
 
-    it('MM-TIPAD_8 - should highlight the active channel in the sidebar on iPad', async () => {
+    it('MM-T5616_8 - should highlight the active channel in the sidebar on iPad', async () => {
         if (!isIpad()) {
             return;
         }
@@ -100,7 +100,7 @@ describe('iPad - Channel Navigation', () => {
         await expect(ChannelListScreen.getChannelItemDisplayName(channelsCategory, testChannel.name)).toBeVisible();
     });
 
-    it('MM-TIPAD_9 - should show the search field button in the sidebar on iPad', async () => {
+    it('MM-T5616_9 - should show the search field button in the sidebar on iPad', async () => {
         if (!isIpad()) {
             return;
         }

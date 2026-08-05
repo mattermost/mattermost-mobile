@@ -15,8 +15,9 @@ type PropertyFieldType =
 // Canonical server values are 'post' | 'channel' | 'user' (see managed_categories WS handler,
 // REST property endpoints). 'card' is a mobile/boards-only domain alias — boards cards are
 // backed by 'post' on the server, so API object_type is 'post'; keep 'card' only for
-// mobile-local representations.
-type PropertyFieldObjectType = 'card' | 'post' | 'channel' | 'user';
+// mobile-local representations. 'system' and 'template' are used by the classification-markings
+// fields (see @constants/classification).
+type PropertyFieldObjectType = 'card' | 'post' | 'channel' | 'user' | 'system' | 'template';
 
 type PropertyFieldTargetLevel = 'system' | 'team' | 'channel';
 
@@ -26,6 +27,7 @@ type PropertyFieldOption = {
     id: string;
     name: string;
     color?: string;
+    rank?: number;
 };
 
 type PropertyFieldAttrs = {
@@ -43,15 +45,16 @@ type PropertyField = {
     object_type: PropertyFieldObjectType;
     target_id: string;
     target_type: PropertyFieldTargetLevel;
-    protected: boolean;
+    linked_field_id?: string;
+    protected?: boolean;
     permission_field?: string;
     permission_values?: unknown;
     permission_options?: unknown;
     create_at: number;
     update_at: number;
     delete_at: number;
-    created_by: string;
-    updated_by: string;
+    created_by?: string;
+    updated_by?: string;
 };
 
 type PropertyValue<T = unknown> = {
@@ -64,8 +67,8 @@ type PropertyValue<T = unknown> = {
     create_at: number;
     update_at: number;
     delete_at: number;
-    created_by: string;
-    updated_by: string;
+    created_by?: string;
+    updated_by?: string;
 };
 
 type PropertyValuePatch<T = unknown> = Partial<Pick<PropertyValue<T>, 'value'>>;

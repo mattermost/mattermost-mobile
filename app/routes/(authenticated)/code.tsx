@@ -8,7 +8,7 @@ import CodeScreen, {type CodeScreenProps} from '@screens/code';
 
 export default function CodeRoute() {
     const theme = useTheme();
-    const {title, ...props} = usePropsFromParams<CodeScreenProps & {title: string}>();
+    const {code, title, ...props} = usePropsFromParams<CodeScreenProps & {title: string}>();
 
     useNavigationHeader({
         showWhenPushed: true,
@@ -18,5 +18,10 @@ export default function CodeRoute() {
         },
     });
 
-    return (<CodeScreen {...props}/>);
+    return (
+        <CodeScreen
+            {...props}
+            code={code}
+        />
+    );
 }

@@ -140,8 +140,7 @@ const FloatingTextInput = forwardRef<FloatingTextInputRef, FloatingTextInputProp
             focused={focused}
             focusedLabel={focusedLabel}
             editable={editable}
-            testID={testID ? `${testID}.container` : 'floating-text-input-label'}
-            errorTestID={testID}
+            testID={testID || 'floating-text-input-label'}
         >
             <TextInput
                 {...textInputProps}
@@ -169,3 +168,4 @@ const FloatingTextInput = forwardRef<FloatingTextInputRef, FloatingTextInputProp
 FloatingTextInput.displayName = 'FloatingTextInput';
 
 export default FloatingTextInput;
+

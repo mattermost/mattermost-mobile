@@ -1,0 +1,30 @@
+# Expand the Channels sidebar category when collapsed (chevron points right).
+# Fresh installs / clearState logins often leave CHANNELS collapsed so channel_item
+# testIDs are not in the accessibility tree.
+#
+# The category header must be rendered before the collapsed-state guard is evaluated.
+# On slow cold clearState logins the sidebar lags; evaluating `visible: collapsed.true`
+# before the header renders makes the guard silently no-op, leaving CHANNELS collapsed
+# and every channel_item testID permanently absent (the caller's 30s item wait then
+# fails, since collapsed-category items are never in the tree). Anchor on the
+# always-present display_name Text first so the guard evaluates reliably.
+appId: ${MAESTRO_APP_ID}
+---
+# # Wait for the category header to render before evaluating the collapsed-state guard
+- extendedWaitUntil:
+    visible:
+      id: "channel_list.category_header.channels.display_name"
+    timeout: 30000
+
+# # Expand the category only if it is currently collapsed
+- runFlow:
+    when:
+      visible:
+        id: "channel_list.category_header.channels.collapsed.true"
+    commands:
+      - tapOn:
+          id: "channel_list.category_header.channels.collapsed.true"
+      - extendedWaitUntil:
+          visible:
+            id: "channel_list.category_header.channels.collapsed.false"
+          timeout: 10000

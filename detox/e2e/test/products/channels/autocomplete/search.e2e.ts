@@ -20,7 +20,7 @@ import {
     SearchMessagesScreen,
     ServerScreen,
 } from '@support/ui/screen';
-import {isAndroid, isIos, timeouts, wait} from '@support/utils';
+import {isAndroid, timeouts, wait} from '@support/utils';
 import {expect, waitFor} from 'detox';
 
 describe('Autocomplete - Search', () => {
@@ -54,8 +54,8 @@ describe('Autocomplete - Search', () => {
         await wait(timeouts.ONE_SEC);
         await expect(Autocomplete.sectionChannelMentionList).not.toExist();
 
-        // # Tap the in: modifier to trigger channel mention autocomplete
-        await SearchMessagesScreen.searchModifierIn.tap();
+        // # Tap the in: modifier to trigger channel mention autocomplete.
+        await SearchMessagesScreen.searchModifierIn.tap({x: 1, y: 1});
 
         // * Verify channel mention autocomplete list is displayed
         await waitFor(Autocomplete.sectionChannelMentionList).toExist().withTimeout(timeouts.TEN_SEC);
@@ -64,15 +64,10 @@ describe('Autocomplete - Search', () => {
         if (isAndroid()) {
             await device.pressBack();
             await wait(timeouts.ONE_SEC);
+            await ChannelListScreen.toBeVisible();
+        } else {
+            await SearchMessagesScreen.searchClearButton.tap();
+            await ChannelListScreen.open();
         }
-        if (isIos()) {
-            try {
-                await SearchMessagesScreen.searchModifierHeader.tap();
-            } catch {
-                // header may be off-screen after expansion; fall through
-            }
-            await wait(timeouts.HALF_SEC);
-        }
-        await ChannelListScreen.open();
     });
 });

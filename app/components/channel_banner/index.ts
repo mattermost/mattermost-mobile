@@ -7,6 +7,7 @@ import {switchMap} from 'rxjs/operators';
 
 import {ChannelBanner} from '@components/channel_banner/channel_banner';
 import {observeChannel} from '@queries/servers/channel';
+import {observeChannelClassificationBanner} from '@queries/servers/properties';
 
 import type {WithDatabaseArgs} from '@typings/database/database';
 
@@ -18,8 +19,13 @@ const enhanced = withObservables(['channelId'], ({channelId, database}: Props) =
     const channel = observeChannel(database, channelId);
     const bannerInfo = channel.pipe(switchMap((c) => of$(c?.bannerInfo)));
 
+    const channelClassification = bannerInfo.pipe(
+        switchMap((bi) => observeChannelClassificationBanner(database, channelId, bi?.text)),
+    );
+
     return {
         bannerInfo,
+        channelClassification,
     };
 });
 

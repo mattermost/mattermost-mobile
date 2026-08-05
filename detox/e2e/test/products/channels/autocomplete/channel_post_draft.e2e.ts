@@ -26,6 +26,7 @@ import {expect} from 'detox';
 describe('Autocomplete - Channel Post Draft', () => {
     const serverOneDisplayName = 'Server 1';
     const channelsCategory = 'channels';
+    let testChannel: {name: string};
 
     beforeAll(async () => {
         // Force a clean app process. Without this, when a prior spec in the
@@ -42,6 +43,7 @@ describe('Autocomplete - Channel Post Draft', () => {
         await device.launchApp({newInstance: true});
 
         const {channel, user} = await Setup.apiInit(siteOneUrl);
+        testChannel = channel;
 
         // # Log in to server
         await ServerScreen.connectToServer(serverOneUrl, serverOneDisplayName);
@@ -49,12 +51,12 @@ describe('Autocomplete - Channel Post Draft', () => {
 
         // * Verify on channel list screen
         await ChannelListScreen.toBeVisible();
-
-        // # Open a channel screen
-        await ChannelScreen.open(channelsCategory, channel.name);
     });
 
     beforeEach(async () => {
+        await ChannelListScreen.toBeVisible();
+        await ChannelScreen.open(channelsCategory, testChannel.name);
+
         // # Clear post input
         await ChannelScreen.postInput.clearText();
 
@@ -62,9 +64,13 @@ describe('Autocomplete - Channel Post Draft', () => {
         await Autocomplete.toBeVisible(false);
     });
 
+    afterEach(async () => {
+        await ChannelScreen.back();
+        await ChannelListScreen.toBeVisible();
+    });
+
     afterAll(async () => {
         // # Log out
-        await ChannelScreen.back();
         await HomeScreen.logout();
     });
 

@@ -9,10 +9,7 @@ import axios from 'axios';
 import {wrapper} from 'axios-cookiejar-support';
 import {CookieJar} from 'tough-cookie';
 
-// Force IPv4 to avoid IPv6 connection timeouts in CI environments
-// where the test server is behind Cloudflare and IPv6 is unreachable.
-// Set on global agents because axios-cookiejar-support v5 does not
-// support custom httpAgent/httpsAgent (it uses its own internally).
+// Force IPv4 — axios-cookiejar-support v5 uses global agents.
 (http.globalAgent as any).options.family = 4;
 (https.globalAgent as any).options.family = 4;
 
@@ -36,15 +33,14 @@ baseClient.interceptors.request.use(async (config) => {
     return config;
 });
 
-// Add response interceptor to auto-retry on 401 by re-logging in as admin.
-// This prevents flaky CI failures when the admin session expires between test files.
+// Auto-retry on 401 by re-logging in as admin.
 let isRetrying = false;
 baseClient.interceptors.response.use(
     (response) => response,
     async (error) => {
         const originalRequest = error.config;
 
-        // Only retry once, only on 401, and never retry the login endpoint itself
+        // Retry once on 401.
         if (
             error.response?.status === 401 &&
             !originalRequest._retried &&
@@ -55,18 +51,13 @@ baseClient.interceptors.response.use(
             isRetrying = true;
 
             try {
-                // Clear stale cookies before re-login
                 await clearCookies();
-
-                // Re-login as admin
                 await baseClient.post(
                     `${originalRequest.url?.split('/api/')[0]}/api/v4/users/login`,
                     {login_id: adminUsername, password: adminPassword},
                 );
 
                 console.info('🔄 Admin session refreshed after 401'); // eslint-disable-line no-console
-
-                // Retry the original request
                 return baseClient(originalRequest);
             } catch (retryErr) {
                 return Promise.reject(retryErr);
@@ -79,19 +70,48 @@ baseClient.interceptors.response.use(
     },
 );
 
-// Add response interceptor to retry on transient 5xx server errors (502, 503, 504).
-// During beforeAll API calls a single 502 from Cloudflare/the server would otherwise
-// cause the whole test suite to fail. Linear backoff: 1s, 2s, 3s.
+/** Cloudflare edge failures — 520–524 stay retryable alongside the gateway 5xx below. */
+const CLOUDFLARE_EDGE_STATUSES: ReadonlySet<number> = new Set([520, 521, 522, 523, 524]);
+
+const TRANSIENT_HTTP_STATUSES: ReadonlySet<number> = new Set([502, 503, 504, ...CLOUDFLARE_EDGE_STATUSES]);
+
+/**
+ * Cloudflare could not reach the origin, so the request provably had no side effect.
+ * 522 is excluded: the connection can also time out after the origin accepted the request.
+ */
+const PRE_ORIGIN_STATUSES: ReadonlySet<number> = new Set([521, 523]);
+
+const IDEMPOTENT_METHODS: ReadonlySet<string> = new Set(['get', 'head', 'options']);
+
+/** Gateway 5xx plus Cloudflare edge — shared with the apiInit retry layer in setup.ts. */
+export const isTransientHttpStatus = (status?: number): status is number =>
+    status !== undefined && TRANSIENT_HTTP_STATUSES.has(status);
+
+/**
+ * Upper bound for an honored Cloudflare `retry_after`; the advertised tens of seconds blow
+ * Detox's 300s beforeAll budget. Shared with the apiInit retry layer in setup.ts.
+ */
+export const MAX_RETRY_AFTER_SEC = 3;
+
+// Retry transient gateway / Cloudflare edge 5xx with short backoff.
 baseClient.interceptors.response.use(
     (response) => response,
     async (error) => {
-        const config = error.config;
+        const config = error.config as typeof error.config & {_5xxRetries?: number};
         const status = error.response?.status;
-        const isTransient = status === 502 || status === 503 || status === 504;
 
-        if (isTransient && (config._5xxRetries ?? 0) < 3) {
+        // A write may already have reached the origin behind 502/503/504 and CF 520/522/524, so
+        // only idempotent methods are retried on those; CF 521/523 never reach the origin at all.
+        const isSafeToRetry = isTransientHttpStatus(status) &&
+            (IDEMPOTENT_METHODS.has((config.method ?? 'get').toLowerCase()) || PRE_ORIGIN_STATUSES.has(status));
+
+        if (isSafeToRetry && (config._5xxRetries ?? 0) < 3) {
             config._5xxRetries = (config._5xxRetries ?? 0) + 1;
-            const delay = config._5xxRetries * 1000;
+            const retryAfterSec = Number(error.response?.data?.retry_after);
+            const cappedRetryAfterMs = Number.isFinite(retryAfterSec) && retryAfterSec > 0 ?
+                Math.min(retryAfterSec, MAX_RETRY_AFTER_SEC) * 1000 :
+                0;
+            const delay = cappedRetryAfterMs || (config._5xxRetries * 1000);
             console.warn(`[client] ${status} from server — retry ${config._5xxRetries}/3 in ${delay}ms`); // eslint-disable-line no-console
             await new Promise((r) => setTimeout(r, delay)); // eslint-disable-line no-promise-executor-return
             return baseClient(config);
@@ -100,11 +120,7 @@ baseClient.interceptors.response.use(
     },
 );
 
-// Add response interceptor to retry on 'cloud/inaccessible' HTML redirects.
-// Matterwick test workspaces occasionally return HTTP 200 with an HTML body
-// containing `<meta http-equiv="refresh" content="0; url=...cloud/inaccessible">`
-// when the workspace pod is restarting or cold-starting. This is not a 4xx/5xx,
-// so the standard retry path above doesn't catch it. Linear backoff: 3s, 6s, 9s.
+// Retry cloud/inaccessible HTML responses during workspace cold starts.
 baseClient.interceptors.response.use(
     async (response) => {
         const data = response.data;
@@ -118,7 +134,6 @@ baseClient.interceptors.response.use(
         const attempts = (config._cloudInaccessibleRetries ?? 0) + 1;
 
         if (attempts > 3) {
-            // Out of retries — surface a real error to the caller instead of returning HTML.
             return Promise.reject(new Error(`Server returned cloud/inaccessible HTML after 3 retries for ${config.url}`));
         }
 
@@ -131,10 +146,6 @@ baseClient.interceptors.response.use(
     (error) => Promise.reject(error),
 );
 
-/**
- * Remove all cookies from the jar.
- * Call before login to prevent stale session/CSRF tokens from interfering.
- */
 export const clearCookies = async (): Promise<void> => {
     await jar.removeAllCookies();
 };

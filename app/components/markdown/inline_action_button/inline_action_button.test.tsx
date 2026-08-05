@@ -4,12 +4,14 @@
 import {act, fireEvent} from '@testing-library/react-native';
 import React from 'react';
 
+import {handleGotoLocation} from '@actions/remote/command';
 import * as integrationActions from '@actions/remote/integrations';
 import * as serverContext from '@context/server';
 import {renderWithIntlAndTheme} from '@test/intl-test-helper';
 
 import InlineActionButton from './inline_action_button';
 
+jest.mock('@actions/remote/command');
 jest.mock('@actions/remote/integrations');
 jest.mock('@context/server', () => ({
     ...jest.requireActual('@context/server'),
@@ -105,8 +107,8 @@ describe('InlineActionButton', () => {
         expect(getByText('children-text')).toBeTruthy();
     });
 
-    it('should dispatch postActionWithQuery with parsed query on press', async () => {
-        jest.mocked(integrationActions.postActionWithQuery).mockResolvedValue({data: {}});
+    it('should dispatch postActionWithCookie with parsed query on press', async () => {
+        jest.mocked(integrationActions.postActionWithCookie).mockResolvedValue({data: {}});
 
         const {getByTestId} = renderWithIntlAndTheme(
             <InlineActionButton
@@ -124,16 +126,19 @@ describe('InlineActionButton', () => {
             await new Promise((resolve) => process.nextTick(resolve));
         });
 
-        expect(integrationActions.postActionWithQuery).toHaveBeenCalledWith(
+        expect(integrationActions.postActionWithCookie).toHaveBeenCalledWith(
             SERVER_URL,
             POST_ID,
             'MxPlan',
+            '',
+            '',
             {row: '12', col: 'A'},
+            'mm_block',
         );
     });
 
     it('should not dispatch twice on rapid double press', async () => {
-        jest.mocked(integrationActions.postActionWithQuery).mockReturnValue(new Promise(() => {}));
+        jest.mocked(integrationActions.postActionWithCookie).mockReturnValue(new Promise(() => {}));
 
         const {getByTestId} = renderWithIntlAndTheme(
             <InlineActionButton
@@ -149,11 +154,11 @@ describe('InlineActionButton', () => {
         fireEvent.press(button);
         fireEvent.press(button);
 
-        expect(integrationActions.postActionWithQuery).toHaveBeenCalledTimes(1);
+        expect(integrationActions.postActionWithCookie).toHaveBeenCalledTimes(1);
     });
 
     it('should render error label when dispatch resolves with error', async () => {
-        jest.mocked(integrationActions.postActionWithQuery).mockResolvedValue({error: new Error('boom')});
+        jest.mocked(integrationActions.postActionWithCookie).mockResolvedValue({error: new Error('boom')});
 
         const {getByTestId, getByText} = renderWithIntlAndTheme(
             <InlineActionButton
@@ -174,9 +179,38 @@ describe('InlineActionButton', () => {
         expect(getByText('Action failed to execute.')).toBeTruthy();
     });
 
+    it('should call handleGotoLocation when dispatch returns goto_location', async () => {
+        const gotoLocation = 'https://server.com/team/channels/town-square';
+        jest.mocked(integrationActions.postActionWithCookie).mockResolvedValue({
+            data: {goto_location: gotoLocation},
+        });
+
+        const {getByTestId} = renderWithIntlAndTheme(
+            <InlineActionButton
+                href={VALID_HREF}
+                postId={POST_ID}
+                baseTextStyle={null}
+            >
+                {'Click me'}
+            </InlineActionButton>,
+        );
+
+        fireEvent.press(getByTestId('inline_action_button'));
+
+        await act(async () => {
+            await new Promise((resolve) => process.nextTick(resolve));
+        });
+
+        expect(handleGotoLocation).toHaveBeenCalledWith(
+            SERVER_URL,
+            expect.anything(),
+            gotoLocation,
+        );
+    });
+
     it('should render timeout error when dispatch hangs past 15s', async () => {
         jest.useFakeTimers({doNotFake: ['nextTick']});
-        jest.mocked(integrationActions.postActionWithQuery).mockReturnValue(new Promise(() => {}));
+        jest.mocked(integrationActions.postActionWithCookie).mockReturnValue(new Promise(() => {}));
 
         const {getByTestId, getByText} = renderWithIntlAndTheme(
             <InlineActionButton
@@ -200,7 +234,7 @@ describe('InlineActionButton', () => {
 
     it('should not setState after unmount', async () => {
         jest.useFakeTimers({doNotFake: ['nextTick']});
-        jest.mocked(integrationActions.postActionWithQuery).mockReturnValue(new Promise(() => {}));
+        jest.mocked(integrationActions.postActionWithCookie).mockReturnValue(new Promise(() => {}));
 
         const consoleSpy = jest.spyOn(console, 'error').mockImplementation(() => {});
 

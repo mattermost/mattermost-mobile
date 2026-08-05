@@ -169,6 +169,9 @@ export interface LLMBot {
     userAccessLevel: UserAccessLevel;
     userIDs: string[];
     teamIDs: string[];
+
+    // System-wide default bot flag. Absent on older servers.
+    is_default?: boolean;
 }
 
 /**

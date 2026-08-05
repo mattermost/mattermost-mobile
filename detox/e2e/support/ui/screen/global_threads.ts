@@ -62,7 +62,7 @@ class GlobalThreadsScreen {
 
     toBeVisible = async () => {
         const timeout = isAndroid() ? timeouts.TWENTY_SEC : timeouts.TEN_SEC;
-        await waitForElementToExist(this.globalThreadsScreen, timeout);
+        await waitFor(this.globalThreadsScreen).toExist().withTimeout(timeout);
 
         return this.globalThreadsScreen;
     };

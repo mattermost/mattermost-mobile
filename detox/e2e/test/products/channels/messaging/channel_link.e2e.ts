@@ -24,8 +24,8 @@ import {
     ServerScreen,
     ThreadScreen,
 } from '@support/ui/screen';
-import {timeouts, wait} from '@support/utils';
-import {expect} from 'detox';
+import {isAndroid, timeouts, wait} from '@support/utils';
+import {expect, waitFor} from 'detox';
 
 describe('Messaging - Channel Link', () => {
     const serverOneDisplayName = 'Server 1';
@@ -53,10 +53,11 @@ describe('Messaging - Channel Link', () => {
         replyThreadChannelLink = `${serverOneUrl}/${testTeam.name}/channels/${targetChannel.name}`;
         replyThreadTargetDisplayName = targetChannel.display_name;
 
-        await Post.apiCreatePost(siteOneUrl, {channelId: testChannel.id, message: 'Reply thread parent message'});
-
-        const {post} = await Post.apiGetLastPostInChannel(siteOneUrl, testChannel.id);
-        replyThreadPostId = post.id;
+        const {post: parentPost} = await Post.apiCreatePost(siteOneUrl, {
+            channelId: testChannel.id,
+            message: 'Reply thread parent message',
+        });
+        replyThreadPostId = parentPost.id;
     });
 
     beforeEach(async () => {
@@ -88,11 +89,6 @@ describe('Messaging - Channel Link', () => {
         await ChannelScreen.back();
     });
 
-    // Android: KeyboardAnimationController crash via react-native-keyboard-controller
-    // ("Animation in progress. Can not start a new request to
-    // controlWindowInsetsAnimation()") when the thread reply input gains
-    // focus during the channel-link tap flow. Wait for keyboard/insets to
-    // fully settle before tapping the channel link.
     it('MM-T4877_2 - should be able to open joined channel by tapping on channel link from reply thread', async () => {
         // # Open testChannel and open the reply thread for the pre-posted plain-text parent.
         await ChannelScreen.open(channelsCategory, testChannel.name);
@@ -102,9 +98,21 @@ describe('Messaging - Channel Link', () => {
         await ThreadScreen.postMessage(replyThreadChannelLink);
         await wait(timeouts.TWO_SEC);
 
+        if (isAndroid()) {
+            // Dismiss the soft keyboard so the reply text is not occluded. Assert we are still in the
+            // thread first — pressBack pops the thread when the keyboard is already closed.
+            await device.disableSynchronization();
+            try {
+                await device.pressBack();
+                await wait(timeouts.THREE_SEC);
+            } finally {
+                await device.enableSynchronization();
+            }
+            await ThreadScreen.toBeVisible();
+        }
+
         // # Tap on channel link from within the reply thread
-        // Wait for keyboard/insets animation to fully settle before tapping
-        await wait(timeouts.ONE_SEC);
+        await waitFor(element(by.text(replyThreadChannelLink)).atIndex(0)).toExist().withTimeout(timeouts.TEN_SEC);
         await element(by.text(replyThreadChannelLink)).atIndex(0).tap();
         await wait(timeouts.FOUR_SEC);
 

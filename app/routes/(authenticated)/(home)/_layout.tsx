@@ -19,13 +19,6 @@ export default function TabLayout() {
     const theme = useTheme();
     const styles = getStyleSheet(theme);
 
-    // freezeOnBlur must stay OFF for all tabs: their screens are driven by
-    // WatermelonDB withObservables subscriptions, and react-freeze suspension
-    // permanently drops subscription updates that arrive while a tab is
-    // blurred — the tab then renders stale data even after refocusing.
-    // Verified by app/screens/home/saved_messages/freeze_repro.test.tsx and by
-    // e2e A/B across CI runs 27273317261/27302480506 (freeze on → saved/
-    // mentions tests fail) vs 27342307081 (freeze off → they pass).
     return (
         <Tabs
             screenOptions={{
@@ -57,7 +50,7 @@ export default function TabLayout() {
                     title: 'Search',
                     href: null,
                     tabBarButtonTestID: 'tab_bar.search.tab',
-                    freezeOnBlur: false,
+                    freezeOnBlur: true,
                 }}
             />
             <Tabs.Screen
@@ -66,7 +59,7 @@ export default function TabLayout() {
                     title: 'Mentions',
                     href: null,
                     tabBarButtonTestID: 'tab_bar.mentions.tab',
-                    freezeOnBlur: false,
+                    freezeOnBlur: true,
                 }}
             />
             <Tabs.Screen
@@ -75,7 +68,7 @@ export default function TabLayout() {
                     title: 'Saved',
                     href: null,
                     tabBarButtonTestID: 'tab_bar.saved_messages.tab',
-                    freezeOnBlur: false,
+                    freezeOnBlur: true,
                 }}
             />
             <Tabs.Screen
@@ -84,7 +77,7 @@ export default function TabLayout() {
                     title: 'Account',
                     href: null,
                     tabBarButtonTestID: 'tab_bar.account.tab',
-                    freezeOnBlur: false,
+                    freezeOnBlur: true,
                 }}
             />
         </Tabs>

@@ -45,7 +45,7 @@ const ServerOptions = ({onEdit, onLogin, onLogout, onRemove, progress, server}: 
         defaultMessage: 'Log in',
     });
 
-    const serverItem = `server_list.server_item.${server.displayName.replace(/ /g, '_').toLocaleLowerCase()}.options`;
+    const serverItem = `server_list.server_item.${server.displayName.replace(/ /g, '_').toLocaleLowerCase()}`;
     const loginOrLogoutOptionTestId = isLoggedIn ? `${serverItem}.logout.option` : `${serverItem}.login.option`;
 
     return (

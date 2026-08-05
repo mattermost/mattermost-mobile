@@ -58,8 +58,8 @@ describe('Threads - Global Threads', () => {
     });
 
     beforeEach(async () => {
-        // * Verify on channel list screen
-        await ChannelListScreen.toBeVisible();
+        // # Reset to the channel list even if the previous thread back navigation returned to its channel.
+        await ChannelListScreen.open();
     });
 
     afterAll(async () => {
@@ -121,10 +121,7 @@ describe('Threads - Global Threads', () => {
 
         // * Verify on thread screen
         await ThreadScreen.toBeVisible();
-
-        // iOS 26: post items can be partially obscured by the input bar,
-        // so toExist() is more reliable than toBeVisible() for the post check.
-        await waitFor(replyPostListPostItem).toExist().withTimeout(timeouts.TEN_SEC);
+        await expect(replyPostListPostItem).toBeVisible();
 
         // # Go back to channel list screen
         await ThreadScreen.back();
@@ -144,7 +141,7 @@ describe('Threads - Global Threads', () => {
         await ThreadScreen.followingButton.tap();
 
         // * Verify thread is not followed by the current user
-        await expect(ThreadScreen.followButton).toBeVisible();
+        await waitFor(ThreadScreen.followButton).toBeVisible().withTimeout(timeouts.TEN_SEC);
 
         // # Go back to channel list screen, then go to global threads screen, and tap on all your threads button
         await ThreadScreen.back();
@@ -153,7 +150,7 @@ describe('Threads - Global Threads', () => {
         await GlobalThreadsScreen.headerAllThreadsButton.tap();
 
         // * Verify the thread started by the current user is not displayed
-        await expect(GlobalThreadsScreen.getThreadItem(parentPost.id)).not.toBeVisible();
+        await waitFor(GlobalThreadsScreen.getThreadItem(parentPost.id)).not.toBeVisible().withTimeout(timeouts.TEN_SEC);
 
         // # Go back to channel list screen
         await GlobalThreadsScreen.back();
@@ -193,10 +190,7 @@ describe('Threads - Global Threads', () => {
 
         // * Verify on thread screen
         await ThreadScreen.toBeVisible();
-
-        // iOS 26: post items can be partially obscured by the input bar,
-        // so toExist() is more reliable than toBeVisible() for the post check.
-        await waitFor(replyPostListPostItem).toExist().withTimeout(timeouts.TEN_SEC);
+        await expect(replyPostListPostItem).toBeVisible();
 
         // # Go back to channel list screen
         await ThreadScreen.back();
@@ -217,7 +211,7 @@ describe('Threads - Global Threads', () => {
         await ThreadScreen.followingButton.tap();
 
         // * Verify thread is not followed by the current user
-        await expect(ThreadScreen.followButton).toBeVisible();
+        await waitFor(ThreadScreen.followButton).toBeVisible().withTimeout(timeouts.TEN_SEC);
 
         // # Go back to channel list screen, then go to global threads screen, and tap on all your threads button
         await ThreadScreen.back();
@@ -226,7 +220,7 @@ describe('Threads - Global Threads', () => {
         await GlobalThreadsScreen.headerAllThreadsButton.tap();
 
         // * Verify the thread replied to by the current user is not displayed
-        await expect(GlobalThreadsScreen.getThreadItem(parentPost.id)).not.toBeVisible();
+        await waitFor(GlobalThreadsScreen.getThreadItem(parentPost.id)).not.toBeVisible().withTimeout(timeouts.TEN_SEC);
 
         // # Go back to channel list screen
         await GlobalThreadsScreen.back();

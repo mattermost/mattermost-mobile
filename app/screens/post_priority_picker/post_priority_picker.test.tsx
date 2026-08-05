@@ -25,8 +25,8 @@ describe('post_priority_picker', () => {
         mockedIsTablet.mockReturnValue(false);
         const props = getBaseProps();
         renderWithIntl(<PostPriorityPicker {...props}/>);
-        expect(await screen.findByText('Apply', {includeHiddenElements: true})).toBeVisible();
-        expect(await screen.findByText('Cancel', {includeHiddenElements: true})).toBeVisible();
+        expect(await screen.findByText('Apply')).toBeVisible();
+        expect(await screen.findByText('Cancel')).toBeVisible();
     });
 
     it('correctly shows the apply and cancel buttons on tablet', async () => {

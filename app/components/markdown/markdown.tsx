@@ -60,6 +60,7 @@ export type MarkdownProps = {
     disableCodeBlock?: boolean;
     disableGallery?: boolean;
     disableHashtags?: boolean;
+    disableLinks?: boolean;
     disableHeading?: boolean;
     disableQuotes?: boolean;
     disableTables?: boolean;
@@ -81,6 +82,12 @@ export type MarkdownProps = {
     theme: Theme;
     value?: string;
     onLinkLongPress?: (url?: string) => void;
+
+    /** Encrypted mm_blocks_actions cookie from post.props; used with allowInlineActions for mmaction:// links. */
+    mmBlocksActionCookie?: string;
+
+    /** integration_format for postActionWithCookie when mmBlocksActionCookie is set. */
+    integrationFormat?: PostActionIntegrationFormat;
     isUnsafeLinksPost?: boolean;
 }
 
@@ -165,6 +172,7 @@ const Markdown = ({
     disableCodeBlock,
     disableGallery,
     disableHashtags,
+    disableLinks,
     disableHeading,
     disableTables,
     enableInlineLatex,
@@ -186,6 +194,8 @@ const Markdown = ({
     value = '',
     baseParagraphStyle,
     onLinkLongPress,
+    mmBlocksActionCookie,
+    integrationFormat,
     isUnsafeLinksPost,
 }: MarkdownProps) => {
     const style = getStyleSheet(theme);
@@ -493,7 +503,7 @@ const Markdown = ({
     }, [baseTextStyle, enableInlineLatex, isUnsafeLinksPost, renderText, theme]);
 
     const renderLink = useCallback(({children, href}: {children: ReactElement; href: string}) => {
-        if (isUnsafeLinksPost) {
+        if (isUnsafeLinksPost || disableLinks) {
             return renderText({context: [], literal: href});
         }
 
@@ -504,6 +514,8 @@ const Markdown = ({
                         href={href}
                         postId={postId}
                         baseTextStyle={baseTextStyle}
+                        mmBlocksActionCookie={mmBlocksActionCookie}
+                        integrationFormat={integrationFormat}
                     >
                         {children}
                     </InlineActionButton>
@@ -520,7 +532,7 @@ const Markdown = ({
                 {children}
             </MarkdownLink>
         );
-    }, [allowInlineActions, baseTextStyle, isUnsafeLinksPost, onLinkLongPress, postId, renderText]);
+    }, [allowInlineActions, baseTextStyle, disableLinks, integrationFormat, isUnsafeLinksPost, mmBlocksActionCookie, onLinkLongPress, postId, renderText]);
 
     const renderList = useCallback(({children, start, tight, type}: any) => {
         return (

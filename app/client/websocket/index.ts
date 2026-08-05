@@ -298,8 +298,7 @@ export default class WebSocketClient {
         this.conn!.onError((evt: any) => {
             if (evt.url === this.url) {
                 if (this.connectFailCount <= 1) {
-                    logError('websocket error', this.url);
-                    logError('WEBSOCKET ERROR EVENT', evt);
+                    logError('websocket error', 'server', this.serverUrl, 'code', evt?.code, 'reason', evt?.reason);
                 }
 
                 if (this.errorCallback) {

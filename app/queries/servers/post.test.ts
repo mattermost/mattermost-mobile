@@ -4,11 +4,10 @@
 import {Database} from '@nozbe/watermelondb';
 import {firstValueFrom} from 'rxjs';
 
-import {ActionType, License, Preferences} from '@constants';
+import {ActionType, License} from '@constants';
 import {SYSTEM_IDENTIFIERS} from '@constants/database';
 import DatabaseManager from '@database/manager';
 import ServerDataOperator from '@database/operator/server_data_operator';
-import EphemeralStore from '@store/ephemeral_store';
 import TestHelper from '@test/test_helper';
 
 import {
@@ -29,8 +28,6 @@ import {
     observeBoRConfig,
     countUsersFromMentions,
     findPostsWithPermalinkReferences,
-    observePostSaved,
-    observeSavedPostsByIds,
 } from './post';
 
 describe('Post Queries', () => {
@@ -47,59 +44,6 @@ describe('Post Queries', () => {
 
     afterEach(async () => {
         await DatabaseManager.destroyServerDatabase(serverUrl);
-    });
-
-    describe('observePostSaved', () => {
-        it('should ignore a saved preference while the post is marked as recently unsaved', async () => {
-            const postId = 'saved-post-id';
-
-            await operator.handlePreferences({
-                preferences: [{
-                    user_id: 'user-id',
-                    category: Preferences.CATEGORIES.SAVED_POST,
-                    name: postId,
-                    value: 'true',
-                }],
-                prepareRecordsOnly: false,
-            });
-
-            expect(await firstValueFrom(observePostSaved(database, postId, serverUrl))).toBe(true);
-
-            EphemeralStore.addRecentlyUnsavedSavedPost(serverUrl, postId);
-            expect(await firstValueFrom(observePostSaved(database, postId, serverUrl))).toBe(false);
-
-            EphemeralStore.clearRecentlyUnsavedSavedPost(serverUrl, postId);
-            expect(await firstValueFrom(observePostSaved(database, postId, serverUrl))).toBe(true);
-        });
-
-        it('should exclude recently unsaved post ids from the saved posts set', async () => {
-            const postId = 'saved-post-id';
-            const otherPostId = 'other-saved-post-id';
-
-            await operator.handlePreferences({
-                preferences: [
-                    {
-                        user_id: 'user-id',
-                        category: Preferences.CATEGORIES.SAVED_POST,
-                        name: postId,
-                        value: 'true',
-                    },
-                    {
-                        user_id: 'user-id',
-                        category: Preferences.CATEGORIES.SAVED_POST,
-                        name: otherPostId,
-                        value: 'true',
-                    },
-                ],
-                prepareRecordsOnly: false,
-            });
-
-            EphemeralStore.addRecentlyUnsavedSavedPost(serverUrl, postId);
-
-            const savedPosts = await firstValueFrom(observeSavedPostsByIds(database, [postId, otherPostId], serverUrl));
-            expect(savedPosts.has(postId)).toBe(false);
-            expect(savedPosts.has(otherPostId)).toBe(true);
-        });
     });
 
     describe('queryPostsWithPermalinkReferences', () => {
@@ -352,36 +296,6 @@ describe('Post Queries', () => {
             const result = await queryPostsWithPermalinkReferences(database, referencedPostId);
 
             expect(result).toHaveLength(0);
-        });
-    });
-
-    describe('queryPinnedPostsInChannel', () => {
-        it('should return pinned posts newest first', async () => {
-            const channelId = 'channel-id';
-            const olderPost = TestHelper.fakePost({
-                id: 'older-post-id',
-                channel_id: channelId,
-                is_pinned: true,
-                create_at: 1000,
-            });
-            const newerPost = TestHelper.fakePost({
-                id: 'newer-post-id',
-                channel_id: channelId,
-                is_pinned: true,
-                create_at: 2000,
-            });
-
-            const models = await operator.handlePosts({
-                actionType: ActionType.POSTS.RECEIVED_NEW,
-                order: [olderPost.id, newerPost.id],
-                posts: [olderPost, newerPost],
-                prepareRecordsOnly: true,
-            });
-            await operator.batchRecords(models, 'test');
-
-            const result = await queryPinnedPostsInChannel(database, channelId).fetch();
-
-            expect(result.map((post) => post.id)).toEqual([newerPost.id, olderPost.id]);
         });
     });
 

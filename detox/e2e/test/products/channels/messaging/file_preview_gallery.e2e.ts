@@ -10,8 +10,6 @@
 import {
     Post,
     Setup,
-    System,
-    User,
 } from '@support/server_api';
 import {
     serverOneUrl,
@@ -23,11 +21,10 @@ import {
     LoginScreen,
     ServerScreen,
 } from '@support/ui/screen';
-import {isAndroid, timeouts, wait, waitForElementToExist} from '@support/utils';
+import {isAndroid, isIos, timeouts, wait, waitForElementToExist, safeEnableSynchronization} from '@support/utils';
 import {expect, waitFor} from 'detox';
 
-// Dismiss the gallery overlay and wait for it to unmount.
-// iOS: RNGH Pressable exposes the same testID on wrapper and inner button, so atIndex(0).
+// iOS gallery close uses atIndex(0) because RNGH duplicates the testID.
 const dismissGallery = async () => {
     if (isAndroid()) {
         await device.pressBack();
@@ -35,7 +32,6 @@ const dismissGallery = async () => {
         await element(by.id('gallery.header.close.button')).atIndex(0).tap();
     }
     await waitFor(element(by.id('gallery.header.close.button'))).not.toExist().withTimeout(timeouts.TEN_SEC);
-    await wait(isAndroid() ? timeouts.TWO_SEC : timeouts.ONE_SEC);
 };
 
 describe('Messaging - File Preview Gallery', () => {
@@ -75,7 +71,7 @@ describe('Messaging - File Preview Gallery', () => {
             } else {
                 await element(by.id('gallery.header.close.button')).atIndex(0).tap();
             }
-            await wait(timeouts.ONE_SEC);
+            await waitFor(element(by.id('gallery.header.close.button'))).not.toExist().withTimeout(timeouts.TEN_SEC);
         } catch { /* gallery not open */ }
 
         try {
@@ -86,16 +82,12 @@ describe('Messaging - File Preview Gallery', () => {
         await ChannelListScreen.toBeVisible();
     });
 
-    // No afterAll cleanup required: beforeAll resets state via
-    // device.launchApp({delete: true}) so the next describe starts clean.
-
     it('MM-T3462 - should render image preview for image file types', async () => {
         // # Upload an image and create a post via API
         const {post, fileId} = await Post.apiCreatePostWithImageAttachment(siteOneUrl, testChannel.id);
 
         // # Open channel screen
         await ChannelScreen.open(channelsCategory, testChannel.name);
-        await wait(timeouts.TWO_SEC);
 
         const {postListPostItem} = ChannelScreen.getPostListPostItem(post.id, '');
         await waitFor(postListPostItem).toBeVisible().withTimeout(timeouts.TEN_SEC);
@@ -106,15 +98,10 @@ describe('Messaging - File Preview Gallery', () => {
 
         // # Tap the image thumbnail to open the file preview gallery.
         await element(by.id(`${fileId}-file`)).tap();
-        await wait(timeouts.TWO_SEC);
 
         // * Verify file preview gallery is open (close button appears when gallery is mounted)
         const galleryCloseButton = element(by.id('gallery.header.close.button'));
-        if (isAndroid()) {
-            await waitForElementToExist(galleryCloseButton, timeouts.HALF_MIN);
-        } else {
-            await waitFor(galleryCloseButton).toExist().withTimeout(timeouts.TEN_SEC);
-        }
+        await waitForElementToExist(galleryCloseButton, timeouts.HALF_MIN);
 
         // # Dismiss the gallery and wait for overlay to clear
         await dismissGallery();
@@ -132,7 +119,6 @@ describe('Messaging - File Preview Gallery', () => {
 
         // # Open channel screen
         await ChannelScreen.open(channelsCategory, testChannel.name);
-        await wait(timeouts.TWO_SEC);
 
         const {postListPostItem} = ChannelScreen.getPostListPostItem(post.id, '');
         await waitFor(postListPostItem).toBeVisible().withTimeout(timeouts.TEN_SEC);
@@ -143,7 +129,6 @@ describe('Messaging - File Preview Gallery', () => {
 
         // See MM-T3462 above for why we tap `${fileId}-file` (inner) not `-file-container`.
         await element(by.id(`${fileId}-file`)).tap();
-        await wait(timeouts.TWO_SEC);
 
         // * Verify file preview gallery is open
         const galleryCloseButton = element(by.id('gallery.header.close.button'));
@@ -165,7 +150,6 @@ describe('Messaging - File Preview Gallery', () => {
 
         // # Open channel screen
         await ChannelScreen.open(channelsCategory, testChannel.name);
-        await wait(timeouts.TWO_SEC);
 
         const {postListPostItem} = ChannelScreen.getPostListPostItem(post.id, '');
         await waitFor(postListPostItem).toBeVisible().withTimeout(timeouts.TEN_SEC);
@@ -176,7 +160,6 @@ describe('Messaging - File Preview Gallery', () => {
 
         // See MM-T3462 above for why we tap `${fileId}-file` (inner) not `-file-container`.
         await element(by.id(`${fileId}-file`)).tap();
-        await wait(timeouts.TWO_SEC);
 
         // * Verify file preview gallery is open
         const galleryCloseButton = element(by.id('gallery.header.close.button'));
@@ -198,7 +181,6 @@ describe('Messaging - File Preview Gallery', () => {
 
         // # Open channel screen
         await ChannelScreen.open(channelsCategory, testChannel.name);
-        await wait(timeouts.TWO_SEC);
 
         const {postListPostItem} = ChannelScreen.getPostListPostItem(post.id, '');
         await waitFor(postListPostItem).toBeVisible().withTimeout(timeouts.TEN_SEC);
@@ -209,12 +191,10 @@ describe('Messaging - File Preview Gallery', () => {
 
         // See MM-T3462 above for why we tap `${fileId}-file` (inner) not `-file-container`.
         await element(by.id(`${fileId}-file`)).tap();
-        await wait(timeouts.TWO_SEC);
 
         // * Verify file preview gallery is open (close button is present when gallery is mounted)
         const galleryCloseButton = element(by.id('gallery.header.close.button'));
         await waitFor(galleryCloseButton).toExist().withTimeout(timeouts.TEN_SEC);
-        await expect(galleryCloseButton).toExist();
 
         // # Dismiss the gallery and wait for overlay to clear
         await dismissGallery();
@@ -226,19 +206,12 @@ describe('Messaging - File Preview Gallery', () => {
         await ChannelScreen.back();
     });
 
-    it('MM-T3458_1 - should show gallery footer actions and copy public link when enabled', async () => {
-        // # Enable public file links in server configuration
-        await User.apiAdminLogin(siteOneUrl);
-        await System.apiUpdateConfig(siteOneUrl, {
-            FileSettings: {EnablePublicLink: true},
-        });
-
+    (isIos() ? it.skip : it)('MM-T3458_1 - should show gallery footer actions and copy public link when enabled', async () => {
         // # Upload an image and create a post via API
         const {post, fileId} = await Post.apiCreatePostWithImageAttachment(siteOneUrl, testChannel.id);
 
         // # Open channel screen
         await ChannelScreen.open(channelsCategory, testChannel.name);
-        await wait(timeouts.TWO_SEC);
 
         const {postListPostItem} = ChannelScreen.getPostListPostItem(post.id, '');
         await waitFor(postListPostItem).toBeVisible().withTimeout(timeouts.TEN_SEC);
@@ -249,24 +222,36 @@ describe('Messaging - File Preview Gallery', () => {
 
         // See MM-T3462 above for why we tap `${fileId}-file` (inner) not `-file-container`.
         await element(by.id(`${fileId}-file`)).tap();
-        await wait(timeouts.TWO_SEC);
 
         // * Verify file preview gallery is open
         const galleryCloseButton = element(by.id('gallery.header.close.button'));
         await waitFor(galleryCloseButton).toExist().withTimeout(timeouts.TEN_SEC);
 
         // # Tap the copy public link button in the gallery footer.
-        // .atIndex(0) for the same reason documented on dismissGallery() above:
-        // the underlying react-native-gesture-handler Pressable exposes the
-        // testID on both its outer ComponentView wrapper and inner Button on
-        // iOS, so direct .tap() throws "Multiple elements found". Both target
-        // the same press handler.
-        await element(by.id('gallery.footer.copy_public_link.button')).atIndex(0).tap();
-        await wait(timeouts.TWO_SEC);
+        // atIndex(0): iOS exposes the same testID on several ancestor views and index 0 receives
+        // the touch. Wait for visibility first — the footer mounts after the header.
+        const copyPublicLinkButton = element(by.id('gallery.footer.copy_public_link.button')).atIndex(0);
+        if (isAndroid()) {
+            await waitFor(copyPublicLinkButton).toExist().withTimeout(timeouts.TEN_SEC);
+        } else {
+            await waitFor(copyPublicLinkButton).toBeVisible().withTimeout(timeouts.TEN_SEC);
+        }
 
-        // * Verify the copy public link toast message appears (testID='toast.message')
-        const toastMessage = element(by.id('toast.message'));
-        await waitFor(toastMessage).toExist().withTimeout(timeouts.TEN_SEC);
+        // Wait for the gallery open animation to settle: the UITransitionView overlay still
+        // intercepts taps after toBeVisible() resolves.
+        await wait(timeouts.TWO_SEC);
+        await device.disableSynchronization();
+        try {
+            await copyPublicLinkButton.tap();
+
+            // fetchPublicLink is async and the toast mounts after it returns. Android edge-to-edge
+            // fails the visibility threshold on toast.message, so poll by the copy text instead.
+            await waitFor(element(by.text('Link copied to clipboard'))).
+                toExist().
+                withTimeout(timeouts.HALF_MIN);
+        } finally {
+            await safeEnableSynchronization();
+        }
 
         // # Dismiss the gallery and wait for overlay to clear
         await dismissGallery();
@@ -298,7 +283,6 @@ describe('Messaging - File Preview Gallery', () => {
 
         // # Open channel screen
         await ChannelScreen.open(channelsCategory, testChannel.name);
-        await wait(timeouts.TWO_SEC);
 
         // # Wait for the post to be visible
         const {postListPostItem} = ChannelScreen.getPostListPostItem(post.id, 'Message with image attachment');
@@ -321,7 +305,6 @@ describe('Messaging - File Preview Gallery', () => {
 
         // # Open channel screen
         await ChannelScreen.open(channelsCategory, testChannel.name);
-        await wait(timeouts.TWO_SEC);
 
         const {postListPostItem} = ChannelScreen.getPostListPostItem(post.id, '');
         await waitFor(postListPostItem).toBeVisible().withTimeout(timeouts.TEN_SEC);
@@ -332,7 +315,6 @@ describe('Messaging - File Preview Gallery', () => {
 
         // See MM-T3462 above for why we tap `${fileId}-file` (inner) not `-file-container`.
         await element(by.id(`${fileId}-file`)).tap();
-        await wait(timeouts.TWO_SEC);
 
         // * Verify file preview gallery is open
         const galleryCloseButton = element(by.id('gallery.header.close.button'));

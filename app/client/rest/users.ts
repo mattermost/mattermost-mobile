@@ -17,10 +17,10 @@ export interface ClientUsersMix {
     getKnownUsers: () => Promise<string[]>;
     sendPasswordResetEmail: (email: string) => Promise<any>;
     setDefaultProfileImage: (userId: string) => Promise<any>;
-    login: (loginId: string, password: string, token?: string, deviceId?: string, ldapOnly?: boolean) => Promise<UserProfile>;
-    loginById: (id: string, password: string, token?: string, deviceId?: string) => Promise<UserProfile>;
-    loginByMagicLinkLogin: (token: string, deviceId?: string) => Promise<UserProfile>;
-    loginByIntune: (accessToken: string, deviceId?: string) => Promise<UserProfile>;
+    login: (loginId: string, password: string, token?: string, deviceId?: string, voipDeviceId?: string, ldapOnly?: boolean) => Promise<UserProfile>;
+    loginById: (id: string, password: string, token?: string, deviceId?: string, voipDeviceId?: string) => Promise<UserProfile>;
+    loginByMagicLinkLogin: (token: string, deviceId?: string, voipDeviceId?: string) => Promise<UserProfile>;
+    loginByIntune: (accessToken: string, deviceId?: string, voipDeviceId?: string) => Promise<UserProfile>;
     logout: () => Promise<any>;
     getProfiles: (page?: number, perPage?: number, options?: Record<string, any>) => Promise<UserProfile[]>;
     getProfilesByIds: (userIds: string[], options?: Record<string, any>, groupLabel?: RequestGroupLabel) => Promise<UserProfile[]>;
@@ -40,7 +40,7 @@ export interface ClientUsersMix {
     autocompleteUsers: (name: string, teamId: string, channelId?: string, options?: Record<string, any>) => Promise<{users: UserProfile[]; out_of_channel?: UserProfile[]; agents?: UserProfile[]}>;
     getSessions: (userId: string) => Promise<Session[]>;
     checkUserMfa: (loginId: string) => Promise<{mfa_required: boolean}>;
-    setExtraSessionProps: (deviceId: string, notificationsEnabled: boolean, version: string | null, groupLabel?: RequestGroupLabel) => Promise<{}>;
+    setExtraSessionProps: (deviceId: string, notificationsEnabled: boolean, version: string | null, voipDeviceId?: string, groupLabel?: RequestGroupLabel) => Promise<{}>;
     searchUsers: (term: string, options: SearchUserOptions) => Promise<UserProfile[]>;
     getStatusesByIds: (userIds: string[]) => Promise<UserStatus[]>;
     getStatus: (userId: string, groupLabel?: RequestGroupLabel) => Promise<UserStatus>;
@@ -119,9 +119,10 @@ const ClientUsers = <TBase extends Constructor<ClientBase>>(superclass: TBase) =
         );
     };
 
-    login = async (loginId: string, password: string, token = '', deviceId = '', ldapOnly = false) => {
+    login = async (loginId: string, password: string, token = '', deviceId = '', voipDeviceId = '', ldapOnly = false) => {
         const body: any = {
             device_id: deviceId,
+            voip_device_id: voipDeviceId,
             login_id: loginId,
             password,
             token,
@@ -144,9 +145,10 @@ const ClientUsers = <TBase extends Constructor<ClientBase>>(superclass: TBase) =
         return resp?.data;
     };
 
-    loginById = async (id: string, password: string, token = '', deviceId = '') => {
+    loginById = async (id: string, password: string, token = '', deviceId = '', voipDeviceId = '') => {
         const body = {
             device_id: deviceId,
+            voip_device_id: voipDeviceId,
             id,
             password,
             token,
@@ -165,9 +167,10 @@ const ClientUsers = <TBase extends Constructor<ClientBase>>(superclass: TBase) =
         return resp?.data;
     };
 
-    loginByIntune = async (accessToken: string, deviceId = '') => {
+    loginByIntune = async (accessToken: string, deviceId = '', voipDeviceId = '') => {
         const body = {
             device_id: deviceId,
+            voip_device_id: voipDeviceId,
             access_token: accessToken,
         };
 
@@ -184,10 +187,11 @@ const ClientUsers = <TBase extends Constructor<ClientBase>>(superclass: TBase) =
         return resp?.data;
     };
 
-    loginByMagicLinkLogin = async (token: string, deviceId = '') => {
+    loginByMagicLinkLogin = async (token: string, deviceId = '', voipDeviceId = '') => {
         const body = {
             magic_link_token: token,
             device_id: deviceId,
+            voip_device_id: voipDeviceId,
         };
 
         const resp = await this.doFetch(
@@ -381,16 +385,20 @@ const ClientUsers = <TBase extends Constructor<ClientBase>>(superclass: TBase) =
         );
     };
 
-    setExtraSessionProps = async (deviceId: string, deviceNotificationDisabled: boolean, version: string | null, groupLabel?: RequestGroupLabel) => {
+    setExtraSessionProps = async (deviceId: string, deviceNotificationDisabled: boolean, version: string | null, voipDeviceId?: string, groupLabel?: RequestGroupLabel) => {
+        const body: Record<string, string> = {
+            device_id: deviceId,
+            device_notification_disabled: deviceNotificationDisabled ? 'true' : 'false',
+            mobile_version: version || '',
+        };
+        if (voipDeviceId) {
+            body.voip_device_id = voipDeviceId;
+        }
         return this.doFetch(
             `${this.getUsersRoute()}/sessions/device`,
             {
                 method: 'put',
-                body: {
-                    device_id: deviceId,
-                    device_notification_disabled: deviceNotificationDisabled ? 'true' : 'false',
-                    mobile_version: version || '',
-                },
+                body,
                 groupLabel,
             },
         );

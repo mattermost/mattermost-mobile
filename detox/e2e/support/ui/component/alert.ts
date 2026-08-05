@@ -1,7 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {isAndroid, timeouts} from '@support/utils';
+import {isAndroid, timeouts, waitForElementToNotExist} from '@support/utils';
 import {waitFor} from 'detox';
 
 class Alert {
@@ -69,25 +69,31 @@ class Alert {
     removedFromChannelTitle = isAndroid() ? element(by.text('Removed from channel')) : element(by.label('Removed from channel')).atIndex(0);
     archivedChannelTitle = isAndroid() ? element(by.text('Archived channel')) : element(by.label('Archived channel')).atIndex(0);
 
-    /**
-     * Dismiss "Removed from channel" or "Archived channel" dialogs if present.
-     * These dialogs appear asynchronously via WebSocket events when a channel is
-     * archived or the user is removed from a channel. Both use an "OK" button.
-     * Safe to call even when no dialog is present — the catch block handles that.
-     */
+    // Dismiss async "Removed from channel" / "Archived channel" alerts if present.
     dismissChannelRemoveOrArchiveAlert = async () => {
         try {
-            // Check for "Removed from channel" first
             await waitFor(this.removedFromChannelTitle).toBeVisible().withTimeout(timeouts.FOUR_SEC);
             await this.okButton.tap();
             return;
         } catch { /* not present */ }
 
         try {
-            // Check for "Archived channel"
             await waitFor(this.archivedChannelTitle).toBeVisible().withTimeout(timeouts.ONE_SEC);
             await this.okButton.tap();
         } catch { /* not present */ }
+    };
+
+    dismissMessageLengthAlert = async () => {
+        try {
+            await waitFor(this.messageLengthTitle).toBeVisible().withTimeout(timeouts.FOUR_SEC);
+        } catch {
+            return; // Alert not shown — nothing to dismiss.
+        }
+
+        // Once the alert is up, a failure to dismiss it must surface: a lingering
+        // alert blocks every later interaction in the spec.
+        await this.okButton.tap();
+        await waitForElementToNotExist(this.messageLengthTitle, timeouts.TEN_SEC);
     };
 }
 

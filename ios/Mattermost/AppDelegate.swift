@@ -6,6 +6,7 @@ import RNKeychain
 import RNNotifications
 import RNSentry
 import react_native_paste_input
+import mattermost_calls_native
 import mattermost_rnutils
 import mattermost_hardware_keyboard
 import TurboLogIOSNative
@@ -22,6 +23,7 @@ import mattermost_intune
 #endif
 
 private let notificationClearAction = "clear"
+private let notificationSessionAction = "session"
 private let notificationTestAction = "test"
 
 @main
@@ -83,6 +85,11 @@ class AppDelegate: ExpoAppDelegate, OrientationLockable {
 
         // Configure Gekidou to use TurboLog via wrapper
         GekidouWrapper.default.configureTurboLogForGekidou()
+
+        // Bootstrap @mattermost/calls-native: allocates the singleton
+        // PKPushRegistry + CXProvider on the main queue, synchronously,
+        // before any VoIP push delegate can fire.
+        CallsBridge.shared.bootstrap()
 
         #if canImport(mattermost_intune)
         // Initialize Intune MAM delegates BEFORE React Native
@@ -166,6 +173,7 @@ class AppDelegate: ExpoAppDelegate, OrientationLockable {
         let action = userInfo["type"] as? String
         let isClearAction = action == notificationClearAction
         let isTestAction = action == notificationTestAction
+        let isSessionAction = action == notificationSessionAction
 
         if isTestAction {
             completionHandler(.noData)
@@ -181,6 +189,12 @@ class AppDelegate: ExpoAppDelegate, OrientationLockable {
 
         if isClearAction {
             NotificationHelper.default.clearChannelOrThreadNotifications(userInfo: userInfo as NSDictionary)
+            GekidouWrapper.default.postNotificationReceipt(userInfo)
+            RNNotifications.didReceiveBackgroundNotification(userInfo, withCompletionHandler: completionHandler)
+            return
+        }
+
+        if isSessionAction {
             GekidouWrapper.default.postNotificationReceipt(userInfo)
             RNNotifications.didReceiveBackgroundNotification(userInfo, withCompletionHandler: completionHandler)
             return
@@ -289,14 +303,10 @@ class AppDelegate: ExpoAppDelegate, OrientationLockable {
         databaseLockBackgroundTask = UIApplication.shared.beginBackgroundTask(withName: "MMDatabaseLockProtection") { [weak self] in
             self?.endDatabaseLockProtection()
         }
-        // TEMP (device verification, remove before merge): grep MMLogs for "MMDatabaseLockProtection".
-        TurboLogger.write(level: .info, message: "MMDatabaseLockProtection: begin taskId \(databaseLockBackgroundTask.rawValue)")
     }
 
     private func endDatabaseLockProtection() {
         guard databaseLockBackgroundTask != .invalid else { return }
-        // TEMP (device verification, remove before merge)
-        TurboLogger.write(level: .info, message: "MMDatabaseLockProtection: end taskId \(databaseLockBackgroundTask.rawValue)")
         UIApplication.shared.endBackgroundTask(databaseLockBackgroundTask)
         databaseLockBackgroundTask = .invalid
     }
