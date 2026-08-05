@@ -17,7 +17,7 @@
   "pr_number": "10006",
   "run_type": "PR",
   "enabled": false,
-  "rerun_note": "paused while Matterwick re-provisions servers after ios-site-1 config/patch timeouts",
+  "rerun_note": "paused until e2e-v2-servers configure_only succeeds after provision timeout bump",
   "ios_worker_count": "40",
   "android_worker_count": "30"
 }

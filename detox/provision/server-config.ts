@@ -11,8 +11,8 @@ import type {MattermostClient} from './types';
 
 type ApiErrorBody = {message?: string};
 
-const CONFIG_PATCH_MAX_ATTEMPTS = 3;
-const CONFIG_PATCH_RETRY_BASE_DELAY_MS = 2_000;
+const CONFIG_PATCH_MAX_ATTEMPTS = 5;
+const CONFIG_PATCH_RETRY_BASE_DELAY_MS = 5_000;
 
 const TEST_SERVER_CONFIG_PATCH = {
     PluginSettings: {

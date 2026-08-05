@@ -67,7 +67,8 @@ export function createMattermostClient(serverUrl: string): MattermostClient {
                 });
             });
 
-            req.setTimeout(30_000, () => {
+            // Cloud config/patch can exceed 30s under load; keep headroom for provision.
+            req.setTimeout(120_000, () => {
                 req.destroy();
                 reject(new Error(`Request to ${serverUrl}${requestPath} timed out`));
             });
