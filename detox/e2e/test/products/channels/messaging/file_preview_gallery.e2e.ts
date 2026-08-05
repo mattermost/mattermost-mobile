@@ -10,8 +10,6 @@
 import {
     Post,
     Setup,
-    System,
-    User,
 } from '@support/server_api';
 import {
     serverOneUrl,
@@ -23,7 +21,7 @@ import {
     LoginScreen,
     ServerScreen,
 } from '@support/ui/screen';
-import {isAndroid, isIos, timeouts, waitForElementToExist} from '@support/utils';
+import {isAndroid, isIos, timeouts, wait, waitForElementToExist, safeEnableSynchronization} from '@support/utils';
 import {expect, waitFor} from 'detox';
 
 // iOS gallery close uses atIndex(0) because RNGH duplicates the testID.
@@ -209,12 +207,6 @@ describe('Messaging - File Preview Gallery', () => {
     });
 
     (isIos() ? it.skip : it)('MM-T3458_1 - should show gallery footer actions and copy public link when enabled', async () => {
-        // # Enable public file links in server configuration
-        await User.apiAdminLogin(siteOneUrl);
-        await System.apiUpdateConfig(siteOneUrl, {
-            FileSettings: {EnablePublicLink: true},
-        });
-
         // # Upload an image and create a post via API
         const {post, fileId} = await Post.apiCreatePostWithImageAttachment(siteOneUrl, testChannel.id);
 
@@ -236,18 +228,30 @@ describe('Messaging - File Preview Gallery', () => {
         await waitFor(galleryCloseButton).toExist().withTimeout(timeouts.TEN_SEC);
 
         // # Tap the copy public link button in the gallery footer.
-        // .atIndex(0) for the same reason documented on dismissGallery() above:
-        // the underlying react-native-gesture-handler Pressable exposes the
-        // testID on both its outer ComponentView wrapper and inner Button on
-        // iOS, so direct .tap() throws "Multiple elements found". Both target
-        // the same press handler.
+        // atIndex(0): iOS exposes the same testID on several ancestor views and index 0 receives
+        // the touch. Wait for visibility first — the footer mounts after the header.
         const copyPublicLinkButton = element(by.id('gallery.footer.copy_public_link.button')).atIndex(0);
-        await waitFor(copyPublicLinkButton).toBeVisible().withTimeout(timeouts.TEN_SEC);
-        await copyPublicLinkButton.tap();
+        if (isAndroid()) {
+            await waitFor(copyPublicLinkButton).toExist().withTimeout(timeouts.TEN_SEC);
+        } else {
+            await waitFor(copyPublicLinkButton).toBeVisible().withTimeout(timeouts.TEN_SEC);
+        }
 
-        // * Verify the copy public link toast message appears (testID='toast.message')
-        const toastMessage = element(by.id('toast.message'));
-        await waitFor(toastMessage).toExist().withTimeout(timeouts.TEN_SEC);
+        // Wait for the gallery open animation to settle: the UITransitionView overlay still
+        // intercepts taps after toBeVisible() resolves.
+        await wait(timeouts.TWO_SEC);
+        await device.disableSynchronization();
+        try {
+            await copyPublicLinkButton.tap();
+
+            // fetchPublicLink is async and the toast mounts after it returns. Android edge-to-edge
+            // fails the visibility threshold on toast.message, so poll by the copy text instead.
+            await waitFor(element(by.text('Link copied to clipboard'))).
+                toExist().
+                withTimeout(timeouts.HALF_MIN);
+        } finally {
+            await safeEnableSynchronization();
+        }
 
         // # Dismiss the gallery and wait for overlay to clear
         await dismissGallery();

@@ -13,7 +13,7 @@ permissions: {}
 
 jobs:
   signal:
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-24.04
     steps:
       - name: Signal matterwick
         run: echo "CMT provisioning requested — matterwick will handle provisioning and dispatch."

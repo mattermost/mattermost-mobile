@@ -140,6 +140,8 @@ type Post = {
 type PostProps = {
     disable_group_highlight?: boolean;
     mentionHighlightDisabled: boolean;
+    ai_generated_by?: string;
+    ai_generated_by_username?: string;
 };
 
 type PostResponse = {

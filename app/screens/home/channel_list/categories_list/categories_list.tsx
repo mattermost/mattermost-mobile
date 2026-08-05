@@ -18,6 +18,7 @@ import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
 import DatabaseManager from '@database/manager';
 import {useIsTablet} from '@hooks/device';
+import {useIsInitialSync} from '@hooks/is_initial_sync';
 import {useTeamsLoading} from '@hooks/teams_loading';
 import PlaybooksButton from '@playbooks/components/playbooks_button';
 import {getDefaultTeamId} from '@queries/servers/team';
@@ -76,10 +77,11 @@ const CategoriesList = ({
     showPlaybooksButton,
 }: ChannelListProps) => {
     const theme = useTheme();
+    const serverUrl = useServerUrl();
+    const isInitialSync = useIsInitialSync(serverUrl);
     const styles = getStyleSheet(theme);
     const {width} = useWindowDimensions();
     const isTablet = useIsTablet();
-    const serverUrl = useServerUrl();
     const isTeamLoading = useTeamsLoading(serverUrl);
     const tabletWidth = useSharedValue(isTablet ? getTabletWidth(moreThanOneTeam) : 0);
     const [activeScreen, setActiveScreen] = useState<ScreenType>(isTablet && lastChannelId ? lastChannelId : Screens.CHANNEL);
@@ -205,7 +207,7 @@ const CategoriesList = ({
     }, [threadButtonComponent, draftsButtonComponent, agentsButtonComponent, playbooksButtonComponent]);
 
     const content = useMemo(() => {
-        if (!hasChannels) {
+        if (!hasChannels && !isInitialSync) {
             if (isTeamLoading) {
                 return (
                     <Loading
@@ -240,7 +242,7 @@ const CategoriesList = ({
                 />
             </SafeAreaView>
         );
-    }, [agentsButtonComponent, draftsButtonComponent, hasChannels, isTablet, isTeamLoading, listHeight, onListLayout, playbooksButtonComponent, styles.flex, threadButtonComponent]);
+    }, [agentsButtonComponent, draftsButtonComponent, hasChannels, isInitialSync, isTablet, isTeamLoading, listHeight, onListLayout, playbooksButtonComponent, styles.flex, threadButtonComponent]);
 
     return (
         <Animated.View style={[styles.container, tabletStyle]}>

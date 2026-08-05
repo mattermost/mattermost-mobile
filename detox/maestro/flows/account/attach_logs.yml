@@ -29,8 +29,10 @@ tags:
   - MM-T67856
 appId: ${MAESTRO_APP_ID}
 ---
+# # Log in as the test user
 - runFlow: ../../subflows/auth/login.yml
 
+# # Open the Account tab
 - tapOn:
     id: "tab_bar.account.tab"
 - extendedWaitUntil:
@@ -38,17 +40,25 @@ appId: ${MAESTRO_APP_ID}
       id: "account.screen"
     timeout: 10000
 
+# # Open Settings and reveal Report a Problem.
+# Report a Problem can sit below the fold; also wait for config sync on first login.
 - tapOn:
     id: "account.settings.option"
-# Report a Problem can take up to 30s to appear while server config syncs on first login.
+- scrollUntilVisible:
+    element:
+      id: "settings.report_problem.option"
+    direction: DOWN
+    timeout: 30000
 - extendedWaitUntil:
     visible:
       id: "settings.report_problem.option"
     timeout: 30000
 
+# # Tap Report a Problem
 - tapOn:
     id: "settings.report_problem.option"
 
+# * Verify the report form opened, then dismiss it and return to Settings.
 # iOS: free-edition servers open an external browser; licensed servers show in-app screen.
 - runFlow:
     when:
@@ -71,7 +81,7 @@ appId: ${MAESTRO_APP_ID}
               id: "report_problem.screen"
           commands:
             - takeScreenshot: report-problem-in-app
-            # iOS 26+: modal Report a Problem ignores Maestro `back`; relaunch keeps session.
+            # # iOS 26+: modal Report a Problem ignores Maestro `back`; relaunch keeps session.
             - launchApp:
                 stopApp: true
                 clearState: false
@@ -90,6 +100,7 @@ appId: ${MAESTRO_APP_ID}
             - tapOn:
                 id: "account.settings.option"
 
+# * Verify the browser tab opened on Android, then Back returns to Settings.
 # Android: Chrome Custom Tab opens; Settings option leaves the tree until Back is pressed.
 - runFlow:
     when:
@@ -102,6 +113,7 @@ appId: ${MAESTRO_APP_ID}
       - takeScreenshot: report-problem-opened
       - pressKey: Back
 
+# * Verify Settings is visible again with Report a Problem listed
 - extendedWaitUntil:
     visible:
       id: "settings.report_problem.option"

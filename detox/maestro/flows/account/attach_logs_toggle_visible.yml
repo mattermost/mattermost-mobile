@@ -22,9 +22,11 @@ tags:
   - MM-T67856_1
 appId: ${MAESTRO_APP_ID}
 ---
+# # Log in as the test user
 - runFlow: ../../subflows/auth/login.yml
 
-# Go to Account tab > Settings > Report a Problem
+# # Go to Account tab > Settings > Report a Problem.
+# Report a Problem can sit below the fold on small Android viewports (CI 59ec6ae).
 - tapOn:
     id: "tab_bar.account.tab"
 - extendedWaitUntil:
@@ -33,6 +35,11 @@ appId: ${MAESTRO_APP_ID}
     timeout: 10000
 - tapOn:
     id: "account.settings.option"
+- scrollUntilVisible:
+    element:
+      id: "settings.report_problem.option"
+    direction: DOWN
+    timeout: 15000
 - extendedWaitUntil:
     visible:
       id: "settings.report_problem.option"
@@ -40,12 +47,13 @@ appId: ${MAESTRO_APP_ID}
 - tapOn:
     id: "settings.report_problem.option"
 
+# # Let the transition settle.
 # Unlicensed servers open external browser/email — conditional blocks handle both paths.
 - waitForAnimationToEnd:
     timeout: 3000
 
-# Path A: In-app Report a Problem screen (licensed server)
-# Toggle is below the fold — use scrollUntilVisible (assertVisible does not auto-scroll).
+# * Verify the attach-app-logs toggle is visible on the in-app screen (licensed server).
+# Path A. Toggle is below the fold — use scrollUntilVisible (assertVisible does not auto-scroll).
 - runFlow:
     when:
       visible:
@@ -57,7 +65,7 @@ appId: ${MAESTRO_APP_ID}
           direction: DOWN
           timeout: 10000
 
-# Path B: External browser / email composer (unlicensed server) — dismiss
+# # Path B: External browser / email composer (unlicensed server) — dismiss
 - runFlow:
     when:
       platform: iOS

@@ -34,6 +34,30 @@ jobs:
           ./scripts/precommit/i18n.sh
           echo "::endgroup::"
 
+  detox-lint-typecheck:
+    # The detox/ package has its own tsconfig and is not covered by the root
+    # check above. A TypeScript error in a detox test file makes its whole suite
+    # fail to run, so the E2E shard exits non-zero and drops its JUnit, silently
+    # reducing the reported test count. Type-check detox on every PR so the error
+    # surfaces here instead.
+    runs-on: ubuntu-22.04
+    steps:
+      - name: ci/checkout-repo
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+      - name: ci/prepare-node-deps
+        uses: ./.github/actions/prepare-node-deps
+      - name: ci/detox-install
+        shell: bash
+        # prepare-node-deps only installs the top-level node_modules; the detox
+        # package has its own, needed for its type-check.
+        run: cd detox && npm ci
+      - name: ci/detox-typecheck
+        shell: bash
+        run: |
+          echo "::group::detox-typecheck"
+          cd detox && npm run tsc
+          echo "::endgroup::"
+
   test:
     runs-on: ubuntu-22.04
     steps:
