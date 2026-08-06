@@ -17,7 +17,7 @@
   "pr_number": "10006",
   "run_type": "PR",
   "enabled": true,
-  "rerun_note": "framework=maestro platform=android: fix Android permission dialogs (notifications Allow + mic While using the app) via launchApp permissions + dismiss subflow",
+  "rerun_note": "framework=maestro platform=android: permission dialog fix (headers validated)",
   "ios_worker_count": "40",
   "android_worker_count": "30",
   "maestro_worker_count": "4"
