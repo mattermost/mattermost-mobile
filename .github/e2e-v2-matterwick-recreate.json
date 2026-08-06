@@ -1,5 +1,5 @@
 {
-  "enabled": false,
+  "enabled": true,
   "pr_number": 10006,
-  "note": "disabled after successful recreate (5gfdzfpa/wq4safaf/1hbesmzy/93z8mtgd/gmtt4g9n); Matterwick E2E 31077045999"
+  "note": "recreate fresh Matterwick servers before Maestro iOS e2e-v2 (Reset-Servers → E2E/Run)"
 }
