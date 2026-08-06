@@ -1,5 +1,5 @@
 {
-  "enabled": true,
+  "enabled": false,
   "pr_number": 10006,
-  "note": "retry recreate after E2E/Run was stripped by stale cleanup (Matterwick context canceled); settle+reassert E2E/Run before Maestro iOS"
+  "note": "disabled after successful recreate — hosts ep3rdcfs/ihrch97j/iwnis6ih/s9gnrtj7/wyit93au"
 }
