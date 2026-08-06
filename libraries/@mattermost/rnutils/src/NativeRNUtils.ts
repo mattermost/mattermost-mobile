@@ -51,6 +51,9 @@ export interface Spec extends TurboModule {
     addListener: (eventType: string) => void;
     removeListeners: (count: number) => void;
 
+    /** True when Detox (or similar) launched with disableTutorials. */
+    areTutorialsDisabled: () => boolean;
+
     getRealFilePath: (filePath: string) => Promise<string>;
     saveFile: (filePath: string) => Promise<string>;
 

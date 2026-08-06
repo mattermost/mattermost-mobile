@@ -66,6 +66,23 @@ class RNUtilsModuleImpl(private val reactContext: ReactApplicationContext): Life
         return map
     }
 
+    /**
+     * Detox puts user launchArgs in the activity intent under "launchArgs".
+     * Values are strings (booleans arrive as "true" / "false").
+     */
+    fun areTutorialsDisabled(): Boolean {
+        val activity = reactContext.currentActivity ?: return false
+        val launchArgs = activity.intent?.getBundleExtra("launchArgs") ?: return false
+        val value = launchArgs.get("disableTutorials") ?: return false
+        return when (value) {
+            is Boolean -> value
+            is String -> value.equals("true", ignoreCase = true) ||
+                value.equals("YES", ignoreCase = true) ||
+                value == "1"
+            else -> false
+        }
+    }
+
     fun getRealFilePath(filePath: String?, promise: Promise?) {
         val currentActivity: Activity? = reactContext.currentActivity
         var result = ""
