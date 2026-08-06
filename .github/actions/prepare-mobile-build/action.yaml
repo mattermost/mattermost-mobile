@@ -38,33 +38,14 @@ runs:
           ${{ runner.os }}-gems-
 
     # --- E2E path ---
-    # bundler-cache restores/installs fastlane/Gemfile.lock gems correctly under
-    # fastlane/vendor/bundle. Requires the runner platform to be in Gemfile.lock
-    # because setup-ruby enables Bundler deployment mode.
+    # bundler-cache restores/installs fastlane/Gemfile.lock gems under
+    # fastlane/vendor/bundle. Runner platforms must be listed in Gemfile.lock
+    # (deployment mode); add new ones via PR when GitHub runner images change.
     - name: Read Ruby version
       if: inputs.bundler-cache == 'true'
       id: ruby-version
       shell: bash
       run: echo "version=$(tr -d '[:space:]' < .ruby-version)" >> "$GITHUB_OUTPUT"
-
-    - uses: ruby/setup-ruby@89f90524b88a01fe6e0b732220432cc6142926af # v1.313.0
-      if: inputs.bundler-cache == 'true'
-      with:
-        ruby-version: ${{ steps.ruby-version.outputs.version }}
-        working-directory: fastlane
-
-    - name: Ensure Bundler platform is locked
-      if: inputs.bundler-cache == 'true'
-      shell: bash
-      working-directory: fastlane
-      run: |
-        platform="$(ruby -e 'require "bundler"; print Bundler.local_platform')"
-        if grep -qE "^[[:space:]]+${platform}$" Gemfile.lock; then
-          echo "Platform ${platform} already present in Gemfile.lock"
-        else
-          echo "Adding missing platform ${platform} to Gemfile.lock"
-          bundle lock --add-platform "${platform}"
-        fi
 
     - uses: ruby/setup-ruby@89f90524b88a01fe6e0b732220432cc6142926af # v1.313.0
       if: inputs.bundler-cache == 'true'
