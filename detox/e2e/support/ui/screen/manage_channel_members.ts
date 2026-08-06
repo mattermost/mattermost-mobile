@@ -71,6 +71,15 @@ class ManageChannelMembersScreen {
         await waitFor(ChannelInfoScreen.membersOption).toBeVisible().withTimeout(timeouts.TEN_SEC);
         await ChannelInfoScreen.membersOption.tap();
 
+        // SEC-11049: on Android the first-run onboarding tutorial (a React Native Modal)
+        // opens over ManageChannelMembersScreen and steals Espresso's window focus, so
+        // `manage_members.screen` is not matchable until the tutorial is dismissed. The
+        // tutorial must be dismissed BEFORE toBeVisible, not after (the previous order
+        // — closeTutorial called by the test after open() — never ran because open()'s
+        // toBeVisible threw first). closeTutorial is a no-op if the tutorial does not
+        // appear (already dismissed in an earlier run).
+        await this.closeTutorial();
+
         return this.toBeVisible();
     };
 

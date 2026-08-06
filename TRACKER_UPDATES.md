@@ -50,13 +50,18 @@ PE_FINDING_classification_values_filter.md).
 - **MM-T5604_1** (channel_bookmarks, SEC-11048) — **2× green.** Unskipped on Android.
   Tapping "Add a link" reaches channel_bookmark.screen and the link title auto-populates;
   prior failure not reproduced.
-- **MM-66375** (manage_own_channel_membership, SEC-11049) — **FAIL, kept skipped.** Real
-  Android-specific failure: after tapping `channel_info.options.members.option`
-  successfully, `manage_members.screen` is never found (polled null for 30s). iOS passes.
-  NOT the overlay. Mechanism: the Members tap on Android does not navigate to a screen with
-  testID `manage_members.screen` (screen testID differs, or navigation target differs).
-  Test-fix/PE territory; needs isolation of which screen actually mounts. Artifact:
-  artifacts/android.emu.debug.2026-08-06 14-39-27Z/.
+- **MM-66375** (manage_own_channel_membership, SEC-11049) — **UNSKIPPED, 2x green**
+  (2026-08-06). The earlier FAIL was re-checked against the ticket's own documented cause
+  ("tutorial pressBack on API 35 — a test-flow issue, not product"). The device.log from
+  the failing run showed the onboarding tutorial (`tutorial_highlight`, a React Native
+  Modal) was present and stole Espresso's window focus, so `manage_members.screen` was
+  not matchable. The previous test order called `closeTutorial()` AFTER `open()`'s
+  `toBeVisible`, which threw first. Fix: dismiss the tutorial inside
+  `ManageChannelMembersScreen.open()` (after the members tap, before `toBeVisible`).
+  `open()` is only called by this test, so the blast radius is one test. Verified 2x green
+  on Android (API-35 emulator, live PR-9996 server 11.10.0, flag ON). The
+  classification-overlay theory is retracted; the product/screen-testID theory from the
+  prior report is also retracted (the tutorial, not a testID mismatch, was the blocker).
 - **MM-T4675_2** (server_login, SEC-11048) — **FAIL, kept skipped.** Real Android failure:
   `channel_list.servers.server_icon` is never found (polled null) during the multi-server
   add/switch/logout flow. NOT the overlay. Test-fix territory (server-list item matcher or

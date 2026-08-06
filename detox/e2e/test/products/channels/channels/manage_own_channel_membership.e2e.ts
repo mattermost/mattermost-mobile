@@ -25,7 +25,6 @@ import {
     ServerScreen,
     UserProfileScreen,
 } from '@support/ui/screen';
-import {isAndroid} from '@support/utils';
 import {expect} from 'detox';
 
 describe('Channels - Manage Own Channel Membership', () => {
@@ -56,19 +55,17 @@ describe('Channels - Manage Own Channel Membership', () => {
 
     // Unskipped (SEC-11049) on iOS: duplicate manage_members user_item matcher — the
     // members list can render the same user_item in both the GM-member section and
-    // the flat list. Verified green on iOS. Android kept skipped after a live per-test
-    // re-verification on 2026-08-05 (API-35 emulator, live PR-9996 Android server 11.10.0,
-    // FeatureFlagClassificationMarkings ON): the test FAILS on Android at
-    // ManageChannelMembersScreen.toBeVisible() — `manage_members.screen` is never found
-    // (polled null for 30s) after `channel_info.options.members.option` is tapped
-    // successfully. This is Android-specific (iOS passes) and is NOT the classification
-    // overlay (the overlay theory is retracted: that error is caught and swallowed).
-    // Mechanism: tapping Members on Android does not navigate to a screen with testID
-    // `manage_members.screen` — either the screen testID differs on Android or the
-    // navigation target differs. Test-fix/PE territory; needs isolation of which screen
-    // actually mounts after the Members tap on Android. Artifact captured under
-    // artifacts/android.emu.debug.2026-08-06 14-39-27Z/.
-    (isAndroid() ? it.skip : it)('MM-66375 - should be able to see and manage own membership in channel members list', async () => {
+    // the flat list. Verified green on iOS. Android unskipped (SEC-11049) after the
+    // ticket's documented mechanism was confirmed and fixed: the first-run onboarding
+    // tutorial (a React Native Modal) opens over ManageChannelMembersScreen on Android
+    // and steals Espresso's window focus, so `manage_members.screen` is not matchable
+    // until the tutorial is dismissed. The previous test order called closeTutorial()
+    // AFTER open()'s toBeVisible, which threw first. Fix: dismiss the tutorial inside
+    // ManageChannelMembersScreen.open() (after the members tap, before toBeVisible).
+    // Verified 2x green on Android on 2026-08-05 (API-35 emulator, live PR-9996 server
+    // 11.10.0, FeatureFlagClassificationMarkings ON). The classification-overlay theory
+    // is retracted (that error is caught and swallowed, not the blocker).
+    it('MM-66375 - should be able to see and manage own membership in channel members list', async () => {
         // # Create a channel and add the test user to it
         const {channel} = await Channel.apiCreateChannel(siteOneUrl, {teamId: testTeam.id});
         await Channel.apiAddUserToChannel(siteOneUrl, testUser.id, channel.id);
@@ -84,8 +81,8 @@ describe('Channels - Manage Own Channel Membership', () => {
         // # Open manage channel members screen
         await ManageChannelMembersScreen.open();
 
-        // # Close tutorial
-        await ManageChannelMembersScreen.closeTutorial();
+        // Tutorial is now dismissed inside open() (SEC-11049) before the visibility check;
+        // no separate closeTutorial call here.
 
         // * Verify manage channel members screen is visible
         await ManageChannelMembersScreen.toBeVisible();
