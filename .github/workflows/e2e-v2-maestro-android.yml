@@ -513,7 +513,7 @@ jobs:
           exit 1
 
       - name: test-system-io dispatch run
-        uses: mattermost/mattermost-test-system-io/.github/actions/test-system-io-dispatch-run@bd9f0928e3aa76a950b7b0fb01c0fe0dcbcf37e5
+        uses: mattermost/mattermost-test-system-io/.github/actions/test-system-io-dispatch-run@96e1d981c0351cc49224c47712114ca2903a18cf
         with:
           use-staging: ${{ inputs.use_staging_test_system_io && 'true' || 'false' }}
           framework: maestro

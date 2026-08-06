@@ -1,7 +1,7 @@
 {
   "phase": "test",
   "mobile_ref": "",
-  "framework": "both",
+  "framework": "maestro",
   "platform": "all",
   "skip_build": true,
   "artifact_run_id": "30976048711",
@@ -17,7 +17,7 @@
   "pr_number": "10006",
   "run_type": "PR",
   "enabled": true,
-  "rerun_note": "framework=both: Detox + Maestro share iOS sim + Android debug APK/Metro (artifact 30976048711); no separate Maestro APK build; maestro_workers=4; ios=40 android=30",
+  "rerun_note": "framework=maestro: verify dispatch-run@96e1d98 failure screenshots (--debug-output + stage to output/); share artifacts 30976048711; maestro_workers=4",
   "ios_worker_count": "40",
   "android_worker_count": "30",
   "maestro_worker_count": "4"
