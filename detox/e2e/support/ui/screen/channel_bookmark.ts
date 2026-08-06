@@ -44,6 +44,17 @@ class ChannelBookmarkScreen {
     attachAFileOption = element(by.text('Attach a file'));
 
     tapAddALinkOption = async () => {
+        // The bottom sheet renders option rows without stable testIDs in the current
+        // build. Prefer the option-item testID (channel_bookmark.type.link) when present;
+        // fall back to the text label for older builds.
+        const linkOptionById = element(by.id('channel_bookmark.type.link'));
+        try {
+            await waitForElementToExist(linkOptionById, timeouts.TWO_SEC);
+            await linkOptionById.tap();
+            return;
+        } catch {
+            // fall through to text-based matcher
+        }
         await waitForElementToExist(this.addALinkOption, timeouts.TEN_SEC);
         await this.addALinkOption.tap();
     };
