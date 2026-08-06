@@ -83,7 +83,12 @@ function shutdownZombieSimulators() {
 
 // One-time server health check and CI config before tests load.
 
-const SITE_URL = process.env.SITE_1_URL || 'http://localhost:8065';
+// Resolve the health-check URL the same way test_config does: an explicit SITE_1_URL
+// wins (CI sets it per shard); otherwise fall back to the platform-specific URL so a
+// local .env without SITE_1_URL still works on both iOS and Android runs.
+const _isIos = process.env.IOS === 'true';
+const _platformSiteOneUrl = _isIos ? process.env.IOS_SITE_1_URL : process.env.ANDROID_SITE_1_URL;
+const SITE_URL = process.env.SITE_1_URL || _platformSiteOneUrl || 'http://localhost:8065';
 const ADMIN_USERNAME = process.env.ADMIN_USERNAME || 'sysadmin';
 const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || 'Sys@dmin-sample1';
 
