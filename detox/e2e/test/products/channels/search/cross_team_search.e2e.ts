@@ -270,5 +270,5 @@ describe('Search - Cross Team Search', () => {
         await ChannelScreen.back();
 
     // 360s timeout: cross-team flow ~236s on iOS 26.2 sim (CI 28290273101) — budget, not app bug.
-    }, 360000);
+    }, timeouts.ONE_MIN * 5);
 });

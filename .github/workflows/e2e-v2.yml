@@ -1,0 +1,881 @@
+# E2E v2 — UI-friendly + push-driven entry for Detox/Maestro via test-system-io.
+#
+# Triggers:
+#   - workflow_dispatch (Actions UI / gh) when the workflow is registered on default
+#     branch and the caller has actions:write
+#   - push to the v2 iteration branch, driven by .github/e2e-v2-run-config.json
+#     (used when gh workflow dispatch is unavailable)
+#
+# Phases: scaffold | build | test | build_and_test
+name: E2E v2
+
+on:
+  workflow_dispatch:
+    inputs:
+      phase:
+        description: "Pipeline phase"
+        required: true
+        type: choice
+        default: scaffold
+        options:
+          - scaffold
+          - build
+          - test
+          - build_and_test
+      mobile_ref:
+        description: "Git ref / SHA to build and test"
+        required: false
+        type: string
+        default: ""
+      framework:
+        description: "Test framework"
+        required: true
+        type: choice
+        default: detox
+        options:
+          - detox
+          - maestro
+          - both
+      platform:
+        description: "Target platform (start with ios)"
+        required: true
+        type: choice
+        default: ios
+        options:
+          - ios
+          - ipad
+          - android
+          - ios_and_ipad
+          - all
+      skip_build:
+        description: "Reuse artifacts from artifact_run_id (skip build jobs)"
+        required: false
+        type: boolean
+        default: false
+      artifact_run_id:
+        description: "Prior run_id that uploaded e2e-v2-*-{run_id} artifacts"
+        required: false
+        type: string
+        default: ""
+      worker_count:
+        description: "Fallback worker count when ios/android counts are unset"
+        required: false
+        type: string
+        default: "2"
+      ios_worker_count:
+        description: "Detox iOS orchestration worker count"
+        required: false
+        type: string
+        default: ""
+      android_worker_count:
+        description: "Detox Android orchestration worker count"
+        required: false
+        type: string
+        default: ""
+      maestro_worker_count:
+        description: "Maestro iOS/Android orchestration worker count"
+        required: false
+        type: string
+        default: ""
+      detox_search_path:
+        description: "Detox search path relative to detox/ (narrow for bootstrap)"
+        required: false
+        type: string
+        default: e2e/test/products/channels/smoke_test
+      use_staging_test_system_io:
+        description: "Target staging-test-io.test.mattermost.com"
+        required: false
+        type: boolean
+        default: true
+      fail_on_test_failures:
+        description: "Fail summary job when tests fail"
+        required: false
+        type: boolean
+        default: false
+      android_site_1_url:
+        description: "Android site 1 (required for android tests)"
+        required: false
+        type: string
+        default: ""
+      android_site_2_url:
+        description: "Android site 2"
+        required: false
+        type: string
+        default: ""
+      ios_site_1_url:
+        description: "iOS site 1 (required for ios/ipad tests)"
+        required: false
+        type: string
+        default: ""
+      ios_site_2_url:
+        description: "iOS site 2"
+        required: false
+        type: string
+        default: ""
+      site_3_url:
+        description: "Shared site 3"
+        required: false
+        type: string
+        default: ""
+      pr_number:
+        description: "Optional PR number for commit status / identity"
+        required: false
+        type: string
+        default: ""
+      run_type:
+        description: "Run flavor hook (PR / MAIN / RELEASE / CMT)"
+        required: false
+        type: choice
+        default: PR
+        options:
+          - PR
+          - MAIN
+          - RELEASE
+          - CMT
+  push:
+    branches:
+      - cursor/e2e-v2-test-system-io-orchestration-2a12
+    paths:
+      - .github/e2e-v2-run-config.json
+      - .github/workflows/e2e-v2.yml
+      - .github/workflows/e2e-v2-detox-ios.yml
+      - .github/workflows/e2e-v2-detox-android.yml
+      - .github/workflows/e2e-v2-maestro-ios.yml
+      - .github/workflows/e2e-v2-maestro-android.yml
+
+permissions:
+  contents: read
+  id-token: write
+  actions: write
+  statuses: write
+
+concurrency:
+  # cancel-in-progress stops the prior push's parent run. Salt bumps escape a
+  # stuck group when GitHub leaves macOS Detox workers uncancelled (known flake).
+  # cancel-previous also force-cancels peer E2E v2 runs on this branch so a new
+  # commit does not wait on a hung prior attempt.
+  group: e2e-v2-${{ github.ref }}-r35
+  cancel-in-progress: true
+
+env:
+  INTUNE_ENABLED: "false"
+
+jobs:
+  cancel-previous:
+    name: Cancel previous E2E v2 runs
+    runs-on: ubuntu-24.04
+    permissions:
+      actions: write
+    steps:
+      - name: Force-cancel other active E2E v2 runs on this branch
+        uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9.0.0
+        with:
+          script: |
+            const owner = context.repo.owner;
+            const repo = context.repo.repo;
+            const branch = context.ref.replace(/^refs\/heads\//, '');
+            const excludeRunId = context.runId;
+            const ACTIVE_RUN_STATUSES = ['in_progress', 'queued', 'waiting', 'pending', 'requested'];
+
+            const {data: workflows} = await github.rest.actions.listRepoWorkflows({owner, repo, per_page: 100});
+            const workflow = workflows.workflows.find((w) => w.path === '.github/workflows/e2e-v2.yml' || w.name === 'E2E v2');
+            if (!workflow) {
+              core.info('E2E v2 workflow not found; nothing to cancel');
+              return;
+            }
+
+            const runsToCancel = new Map();
+            for (const status of ACTIVE_RUN_STATUSES) {
+              const {data} = await github.rest.actions.listWorkflowRuns({
+                owner,
+                repo,
+                workflow_id: workflow.id,
+                status,
+                branch,
+                per_page: 50,
+              });
+              for (const run of data.workflow_runs) {
+                if (run.id === excludeRunId) {
+                  continue;
+                }
+                runsToCancel.set(run.id, run);
+              }
+            }
+
+            if (runsToCancel.size === 0) {
+              core.info(`No other active E2E v2 runs on branch ${branch}`);
+              return;
+            }
+
+            for (const run of runsToCancel.values()) {
+              core.info(`Cancelling E2E v2 run ${run.id} (${run.status}, sha ${run.head_sha})`);
+              try {
+                await github.rest.actions.cancelWorkflowRun({owner, repo, run_id: run.id});
+                // force-cancel also stops jobs gated on always() that survive plain cancel
+                await github.request('POST /repos/{owner}/{repo}/actions/runs/{run_id}/force-cancel', {
+                  owner,
+                  repo,
+                  run_id: run.id,
+                });
+              } catch (err) {
+                core.warning(`Cancelling run ${run.id}: ${err.message}`);
+              }
+            }
+
+  resolve:
+    name: Resolve inputs
+    needs: [cancel-previous]
+    runs-on: ubuntu-24.04
+    outputs:
+      enabled: ${{ steps.out.outputs.enabled }}
+      phase: ${{ steps.out.outputs.phase }}
+      mobile_ref: ${{ steps.out.outputs.mobile_ref }}
+      commit_sha: ${{ steps.out.outputs.commit_sha }}
+      branch: ${{ steps.out.outputs.branch }}
+      artifact_run_id: ${{ steps.out.outputs.artifact_run_id }}
+      do_build: ${{ steps.out.outputs.do_build }}
+      do_test: ${{ steps.out.outputs.do_test }}
+      need_ios_build: ${{ steps.out.outputs.need_ios_build }}
+      need_android_build: ${{ steps.out.outputs.need_android_build }}
+      run_detox_ios: ${{ steps.out.outputs.run_detox_ios }}
+      run_detox_ipad: ${{ steps.out.outputs.run_detox_ipad }}
+      run_detox_android: ${{ steps.out.outputs.run_detox_android }}
+      run_maestro_ios: ${{ steps.out.outputs.run_maestro_ios }}
+      run_maestro_android: ${{ steps.out.outputs.run_maestro_android }}
+      framework: ${{ steps.out.outputs.framework }}
+      platform: ${{ steps.out.outputs.platform }}
+      skip_build: ${{ steps.out.outputs.skip_build }}
+      worker_count: ${{ steps.out.outputs.worker_count }}
+      ios_worker_count: ${{ steps.out.outputs.ios_worker_count }}
+      android_worker_count: ${{ steps.out.outputs.android_worker_count }}
+      maestro_worker_count: ${{ steps.out.outputs.maestro_worker_count }}
+      detox_search_path: ${{ steps.out.outputs.detox_search_path }}
+      use_staging_test_system_io: ${{ steps.out.outputs.use_staging_test_system_io }}
+      fail_on_test_failures: ${{ steps.out.outputs.fail_on_test_failures }}
+      android_site_1_url: ${{ steps.out.outputs.android_site_1_url }}
+      android_site_2_url: ${{ steps.out.outputs.android_site_2_url }}
+      ios_site_1_url: ${{ steps.out.outputs.ios_site_1_url }}
+      ios_site_2_url: ${{ steps.out.outputs.ios_site_2_url }}
+      site_3_url: ${{ steps.out.outputs.site_3_url }}
+      pr_number: ${{ steps.out.outputs.pr_number }}
+      run_type: ${{ steps.out.outputs.run_type }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
+        with:
+          persist-credentials: false
+
+      - name: Merge dispatch inputs with run-config
+        id: out
+        env:
+          EVENT_NAME: ${{ github.event_name }}
+          # workflow_dispatch inputs (empty on push)
+          IN_PHASE: ${{ github.event.inputs.phase }}
+          IN_MOBILE_REF: ${{ github.event.inputs.mobile_ref }}
+          IN_FRAMEWORK: ${{ github.event.inputs.framework }}
+          IN_PLATFORM: ${{ github.event.inputs.platform }}
+          IN_SKIP_BUILD: ${{ github.event.inputs.skip_build }}
+          IN_ARTIFACT_RUN_ID: ${{ github.event.inputs.artifact_run_id }}
+          IN_WORKER_COUNT: ${{ github.event.inputs.worker_count }}
+          IN_IOS_WORKER_COUNT: ${{ github.event.inputs.ios_worker_count }}
+          IN_ANDROID_WORKER_COUNT: ${{ github.event.inputs.android_worker_count }}
+          IN_MAESTRO_WORKER_COUNT: ${{ github.event.inputs.maestro_worker_count }}
+          IN_DETOX_SEARCH_PATH: ${{ github.event.inputs.detox_search_path }}
+          IN_USE_STAGING: ${{ github.event.inputs.use_staging_test_system_io }}
+          IN_FAIL_ON_FAIL: ${{ github.event.inputs.fail_on_test_failures }}
+          IN_ANDROID_1: ${{ github.event.inputs.android_site_1_url }}
+          IN_ANDROID_2: ${{ github.event.inputs.android_site_2_url }}
+          IN_IOS_1: ${{ github.event.inputs.ios_site_1_url }}
+          IN_IOS_2: ${{ github.event.inputs.ios_site_2_url }}
+          IN_SITE_3: ${{ github.event.inputs.site_3_url }}
+          IN_PR: ${{ github.event.inputs.pr_number }}
+          IN_RUN_TYPE: ${{ github.event.inputs.run_type }}
+        run: |
+          set -euo pipefail
+          CFG=.github/e2e-v2-run-config.json
+          if [ ! -f "$CFG" ]; then
+            echo "::error::missing $CFG"
+            exit 1
+          fi
+
+          # Config file is the base; workflow_dispatch inputs override when non-empty.
+          eval "$(python3 - <<'PY'
+          import json, os, shlex
+          cfg = json.load(open(".github/e2e-v2-run-config.json"))
+          def pick(env_key, cfg_key, default=""):
+              v = os.environ.get(env_key, "")
+              if v == "":
+                  v = cfg.get(cfg_key, default)
+              if isinstance(v, bool):
+                  return "true" if v else "false"
+              return str(v if v is not None else default)
+          vals = {
+              "ENABLED": "true" if cfg.get("enabled", True) else "false",
+              "PHASE": pick("IN_PHASE", "phase", "scaffold"),
+              "MOBILE_REF_IN": pick("IN_MOBILE_REF", "mobile_ref", ""),
+              "FRAMEWORK": pick("IN_FRAMEWORK", "framework", "detox"),
+              "PLATFORM": pick("IN_PLATFORM", "platform", "ios"),
+              "SKIP_BUILD": pick("IN_SKIP_BUILD", "skip_build", "false"),
+              "ARTIFACT_RUN_ID_IN": pick("IN_ARTIFACT_RUN_ID", "artifact_run_id", ""),
+              "WORKER_COUNT": pick("IN_WORKER_COUNT", "worker_count", "2"),
+              "IOS_WORKER_COUNT": pick("IN_IOS_WORKER_COUNT", "ios_worker_count", ""),
+              "ANDROID_WORKER_COUNT": pick("IN_ANDROID_WORKER_COUNT", "android_worker_count", ""),
+              "MAESTRO_WORKER_COUNT": pick("IN_MAESTRO_WORKER_COUNT", "maestro_worker_count", "4"),
+              "DETOX_SEARCH_PATH": pick("IN_DETOX_SEARCH_PATH", "detox_search_path", "e2e/test/products/channels/smoke_test"),
+              "USE_STAGING": pick("IN_USE_STAGING", "use_staging_test_system_io", "true"),
+              "FAIL_ON_FAIL": pick("IN_FAIL_ON_FAIL", "fail_on_test_failures", "false"),
+              "ANDROID_1": pick("IN_ANDROID_1", "android_site_1_url", ""),
+              "ANDROID_2": pick("IN_ANDROID_2", "android_site_2_url", ""),
+              "IOS_1": pick("IN_IOS_1", "ios_site_1_url", ""),
+              "IOS_2": pick("IN_IOS_2", "ios_site_2_url", ""),
+              "SITE_3": pick("IN_SITE_3", "site_3_url", ""),
+              "PR": pick("IN_PR", "pr_number", ""),
+              "RUN_TYPE": pick("IN_RUN_TYPE", "run_type", "PR"),
+          }
+          for k, v in vals.items():
+              print(f"{k}={shlex.quote(v)}")
+          PY
+          )"
+
+          if [ "$ENABLED" != "true" ]; then
+            echo "enabled=false" >> "$GITHUB_OUTPUT"
+            echo "Run config enabled=false — skipping pipeline."
+            {
+              echo "## E2E v2 skipped"
+              echo "Set \`enabled: true\` in \`.github/e2e-v2-run-config.json\` to run."
+            } >> "$GITHUB_STEP_SUMMARY"
+            # Still emit defaults so downstream if: expressions are safe
+            echo "phase=scaffold" >> "$GITHUB_OUTPUT"
+            echo "mobile_ref=${{ github.sha }}" >> "$GITHUB_OUTPUT"
+            echo "commit_sha=${{ github.sha }}" >> "$GITHUB_OUTPUT"
+            echo "branch=${{ github.ref_name }}" >> "$GITHUB_OUTPUT"
+            echo "artifact_run_id=" >> "$GITHUB_OUTPUT"
+            echo "do_build=false" >> "$GITHUB_OUTPUT"
+            echo "do_test=false" >> "$GITHUB_OUTPUT"
+            echo "need_ios_build=false" >> "$GITHUB_OUTPUT"
+            echo "need_android_build=false" >> "$GITHUB_OUTPUT"
+            echo "run_detox_ios=false" >> "$GITHUB_OUTPUT"
+            echo "run_detox_ipad=false" >> "$GITHUB_OUTPUT"
+            echo "run_detox_android=false" >> "$GITHUB_OUTPUT"
+            echo "run_maestro_ios=false" >> "$GITHUB_OUTPUT"
+            echo "run_maestro_android=false" >> "$GITHUB_OUTPUT"
+            echo "framework=detox" >> "$GITHUB_OUTPUT"
+            echo "platform=ios" >> "$GITHUB_OUTPUT"
+            echo "skip_build=false" >> "$GITHUB_OUTPUT"
+            echo "worker_count=2" >> "$GITHUB_OUTPUT"
+            echo "ios_worker_count=2" >> "$GITHUB_OUTPUT"
+            echo "android_worker_count=2" >> "$GITHUB_OUTPUT"
+            echo "maestro_worker_count=4" >> "$GITHUB_OUTPUT"
+            echo "detox_search_path=e2e/test/products/channels/smoke_test" >> "$GITHUB_OUTPUT"
+            echo "use_staging_test_system_io=true" >> "$GITHUB_OUTPUT"
+            echo "fail_on_test_failures=false" >> "$GITHUB_OUTPUT"
+            echo "android_site_1_url=" >> "$GITHUB_OUTPUT"
+            echo "android_site_2_url=" >> "$GITHUB_OUTPUT"
+            echo "ios_site_1_url=" >> "$GITHUB_OUTPUT"
+            echo "ios_site_2_url=" >> "$GITHUB_OUTPUT"
+            echo "site_3_url=" >> "$GITHUB_OUTPUT"
+            echo "pr_number=" >> "$GITHUB_OUTPUT"
+            echo "run_type=PR" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+
+          REF="${MOBILE_REF_IN:-${{ github.sha }}}"
+          # Resolve commit for the chosen ref
+          git fetch --depth=1 origin "$REF" 2>/dev/null || true
+          SHA=$(git rev-parse "FETCH_HEAD" 2>/dev/null || git rev-parse HEAD)
+          if [ -n "$MOBILE_REF_IN" ]; then
+            SHA=$(git rev-parse "$REF" 2>/dev/null || echo "$SHA")
+          fi
+          BRANCH="${{ github.ref_name }}"
+
+          DO_BUILD=false
+          DO_TEST=false
+          case "$PHASE" in
+            scaffold) ;;
+            build) DO_BUILD=true ;;
+            test) DO_TEST=true ;;
+            build_and_test) DO_BUILD=true; DO_TEST=true ;;
+            *) echo "::error::unknown phase=$PHASE"; exit 1 ;;
+          esac
+
+          if [ "$SKIP_BUILD" = "true" ]; then
+            DO_BUILD=false
+            if [ -z "$ARTIFACT_RUN_ID_IN" ]; then
+              echo "::error::skip_build=true requires artifact_run_id"
+              exit 1
+            fi
+            ARTIFACT_RUN_ID="$ARTIFACT_RUN_ID_IN"
+          else
+            # Builds in this workflow upload under the current run id; do not
+            # reuse a stale artifact_run_id from a prior platform's build.
+            ARTIFACT_RUN_ID="${{ github.run_id }}"
+          fi
+
+          if [ "$PHASE" = "test" ] && [ -z "$ARTIFACT_RUN_ID_IN" ]; then
+            echo "::error::phase=test requires artifact_run_id (and typically skip_build=true)"
+            exit 1
+          fi
+
+          NEED_IOS_BUILD=false
+          NEED_ANDROID_BUILD=false
+          RUN_DETOX_IOS=false
+          RUN_DETOX_IPAD=false
+          RUN_DETOX_ANDROID=false
+          RUN_MAESTRO_IOS=false
+          RUN_MAESTRO_ANDROID=false
+          if [ "$DO_BUILD" = "true" ] && echo "$PLATFORM" | grep -Eq '^(ios|ipad|ios_and_ipad|all)$'; then
+            NEED_IOS_BUILD=true
+          fi
+          if [ "$DO_BUILD" = "true" ] && echo "$PLATFORM" | grep -Eq '^(android|all)$'; then
+            NEED_ANDROID_BUILD=true
+          fi
+          if [ "$DO_TEST" = "true" ] && echo "$FRAMEWORK" | grep -Eq '^(detox|both)$'; then
+            if echo "$PLATFORM" | grep -Eq '^(ios|ios_and_ipad|all)$'; then
+              RUN_DETOX_IOS=true
+            fi
+            if echo "$PLATFORM" | grep -Eq '^(ipad|ios_and_ipad|all)$'; then
+              RUN_DETOX_IPAD=true
+            fi
+            if echo "$PLATFORM" | grep -Eq '^(android|all)$'; then
+              RUN_DETOX_ANDROID=true
+            fi
+          fi
+          if [ "$DO_TEST" = "true" ] && echo "$FRAMEWORK" | grep -Eq '^(maestro|both)$'; then
+            if echo "$PLATFORM" | grep -Eq '^(ios|ios_and_ipad|all)$'; then
+              RUN_MAESTRO_IOS=true
+            fi
+            if echo "$PLATFORM" | grep -Eq '^(android|all)$'; then
+              RUN_MAESTRO_ANDROID=true
+            fi
+          fi
+
+          # iOS sim serves Detox phone/iPad and Maestro iOS.
+          if [ "$RUN_DETOX_IOS" = "true" ] || [ "$RUN_DETOX_IPAD" = "true" ] || [ "$RUN_MAESTRO_IOS" = "true" ]; then
+            if [ "$SKIP_BUILD" = "true" ]; then
+              NEED_IOS_BUILD=false
+            elif [ "$DO_BUILD" = "true" ]; then
+              NEED_IOS_BUILD=true
+            fi
+          fi
+          # Shared Android debug APK + Metro for Detox and Maestro (no separate
+          # Maestro release build in v2).
+          if [ "$RUN_DETOX_ANDROID" = "true" ] || [ "$RUN_MAESTRO_ANDROID" = "true" ]; then
+            if [ "$SKIP_BUILD" = "true" ]; then
+              NEED_ANDROID_BUILD=false
+            elif [ "$DO_BUILD" = "true" ]; then
+              NEED_ANDROID_BUILD=true
+            fi
+          fi
+
+          # iPad-only defaults when platform=ipad and search path still points at phone suites.
+          if [ "$RUN_DETOX_IPAD" = "true" ] && [ "$RUN_DETOX_IOS" = "false" ]; then
+            if [ "$DETOX_SEARCH_PATH" = "e2e/test" ] || [ "$DETOX_SEARCH_PATH" = "e2e/test/products/channels/smoke_test" ] || [ "$DETOX_SEARCH_PATH" = "e2e/test/ci_filter_failed" ]; then
+              DETOX_SEARCH_PATH="e2e/test/products/channels/ipad"
+            fi
+          fi
+
+          # Per-platform workers fall back to worker_count when unset.
+          IOS_WORKER_COUNT="${IOS_WORKER_COUNT:-$WORKER_COUNT}"
+          ANDROID_WORKER_COUNT="${ANDROID_WORKER_COUNT:-$WORKER_COUNT}"
+          # ~15 Maestro flows after excludes; default 4 (set in pick() above).
+          MAESTRO_WORKER_COUNT="${MAESTRO_WORKER_COUNT:-4}"
+
+          {
+            echo "enabled=true"
+            echo "phase=${PHASE}"
+            echo "mobile_ref=${REF}"
+            echo "commit_sha=${SHA}"
+            echo "branch=${BRANCH}"
+            echo "artifact_run_id=${ARTIFACT_RUN_ID}"
+            echo "do_build=${DO_BUILD}"
+            echo "do_test=${DO_TEST}"
+            echo "need_ios_build=${NEED_IOS_BUILD}"
+            echo "need_android_build=${NEED_ANDROID_BUILD}"
+            echo "run_detox_ios=${RUN_DETOX_IOS}"
+            echo "run_detox_ipad=${RUN_DETOX_IPAD}"
+            echo "run_detox_android=${RUN_DETOX_ANDROID}"
+            echo "run_maestro_ios=${RUN_MAESTRO_IOS}"
+            echo "run_maestro_android=${RUN_MAESTRO_ANDROID}"
+            echo "framework=${FRAMEWORK}"
+            echo "platform=${PLATFORM}"
+            echo "skip_build=${SKIP_BUILD}"
+            echo "worker_count=${WORKER_COUNT}"
+            echo "ios_worker_count=${IOS_WORKER_COUNT}"
+            echo "android_worker_count=${ANDROID_WORKER_COUNT}"
+            echo "maestro_worker_count=${MAESTRO_WORKER_COUNT}"
+            echo "detox_search_path=${DETOX_SEARCH_PATH}"
+            echo "use_staging_test_system_io=${USE_STAGING}"
+            echo "fail_on_test_failures=${FAIL_ON_FAIL}"
+            echo "android_site_1_url=${ANDROID_1}"
+            echo "android_site_2_url=${ANDROID_2}"
+            echo "ios_site_1_url=${IOS_1}"
+            echo "ios_site_2_url=${IOS_2}"
+            echo "site_3_url=${SITE_3}"
+            echo "pr_number=${PR}"
+            echo "run_type=${RUN_TYPE}"
+          } >> "$GITHUB_OUTPUT"
+
+          {
+            echo "## E2E v2 resolve"
+            echo ""
+            echo "| Key | Value |"
+            echo "|-----|-------|"
+            echo "| event | \`$EVENT_NAME\` |"
+            echo "| phase | \`$PHASE\` |"
+            echo "| framework | \`$FRAMEWORK\` |"
+            echo "| mobile_ref | \`$REF\` |"
+            echo "| commit_sha | \`$SHA\` |"
+            echo "| artifact_run_id | \`$ARTIFACT_RUN_ID\` |"
+            echo "| do_build | \`$DO_BUILD\` |"
+            echo "| do_test | \`$DO_TEST\` |"
+            echo "| need_ios_build | \`$NEED_IOS_BUILD\` |"
+            echo "| need_android_build | \`$NEED_ANDROID_BUILD\` |"
+            echo "| run_detox_ios | \`$RUN_DETOX_IOS\` |"
+            echo "| run_detox_ipad | \`$RUN_DETOX_IPAD\` |"
+            echo "| run_detox_android | \`$RUN_DETOX_ANDROID\` |"
+            echo "| run_maestro_ios | \`$RUN_MAESTRO_IOS\` |"
+            echo "| run_maestro_android | \`$RUN_MAESTRO_ANDROID\` |"
+            echo "| ios_worker_count | \`$IOS_WORKER_COUNT\` |"
+            echo "| android_worker_count | \`$ANDROID_WORKER_COUNT\` |"
+            echo "| maestro_worker_count | \`$MAESTRO_WORKER_COUNT\` |"
+            echo "| staging test-system-io | \`$USE_STAGING\` |"
+          } >> "$GITHUB_STEP_SUMMARY"
+
+  scaffold:
+    name: Scaffold (visibility check)
+    needs: [resolve]
+    if: needs.resolve.outputs.enabled == 'true' && needs.resolve.outputs.phase == 'scaffold'
+    runs-on: ubuntu-24.04
+    steps:
+      - name: OK
+        run: |
+          echo "E2E v2 scaffold OK — push/config trigger works."
+          echo "Next: set phase=build in .github/e2e-v2-run-config.json (or dispatch)."
+          {
+            echo "## Scaffold success"
+            echo "Proceed to servers verify, then \`phase=build\` for iOS."
+          } >> "$GITHUB_STEP_SUMMARY"
+
+  verify-servers:
+    name: Verify test servers
+    needs: [resolve]
+    if: needs.resolve.outputs.enabled == 'true' && needs.resolve.outputs.do_test == 'true'
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Require iOS URLs when running Detox/Maestro iOS
+        if: >-
+          needs.resolve.outputs.run_detox_ios == 'true'
+          || needs.resolve.outputs.run_detox_ipad == 'true'
+          || needs.resolve.outputs.run_maestro_ios == 'true'
+        env:
+          IOS_SITE_1_URL: ${{ needs.resolve.outputs.ios_site_1_url }}
+        run: |
+          if [ -z "$IOS_SITE_1_URL" ]; then
+            echo "::error::ios_site_1_url is required for Detox/Maestro iOS tests"
+            exit 1
+          fi
+
+      - name: Require Android URLs when running Detox/Maestro Android
+        if: >-
+          needs.resolve.outputs.run_detox_android == 'true'
+          || needs.resolve.outputs.run_maestro_android == 'true'
+        env:
+          ANDROID_SITE_1_URL: ${{ needs.resolve.outputs.android_site_1_url }}
+        run: |
+          if [ -z "$ANDROID_SITE_1_URL" ]; then
+            echo "::error::android_site_1_url is required for Detox/Maestro Android tests"
+            exit 1
+          fi
+
+      - name: Ping servers
+        env:
+          ANDROID_SITE_1_URL: ${{ needs.resolve.outputs.android_site_1_url }}
+          ANDROID_SITE_2_URL: ${{ needs.resolve.outputs.android_site_2_url }}
+          IOS_SITE_1_URL: ${{ needs.resolve.outputs.ios_site_1_url }}
+          IOS_SITE_2_URL: ${{ needs.resolve.outputs.ios_site_2_url }}
+          SITE_3_URL: ${{ needs.resolve.outputs.site_3_url }}
+        run: |
+          ping_one() {
+            local url="$1" label="$2"
+            [ -z "$url" ] && return 0
+            local base="${url%/}"
+            echo "--- $label: $base/api/v4/system/ping ---"
+            code=$(curl -fsS -o /tmp/ping.json -w "%{http_code}" --max-time 30 "$base/api/v4/system/ping" || true)
+            if [ "$code" != "200" ]; then
+              echo "::error::$label ping failed (HTTP $code)"
+              cat /tmp/ping.json 2>/dev/null || true
+              exit 1
+            fi
+            echo "✓ $label reachable"
+          }
+          ping_one "$ANDROID_SITE_1_URL" "ANDROID_SITE_1_URL"
+          ping_one "$ANDROID_SITE_2_URL" "ANDROID_SITE_2_URL"
+          ping_one "$IOS_SITE_1_URL" "IOS_SITE_1_URL"
+          ping_one "$IOS_SITE_2_URL" "IOS_SITE_2_URL"
+          ping_one "$SITE_3_URL" "SITE_3_URL"
+
+  build-ios-simulator-v2:
+    name: Build iOS simulator (v2)
+    needs: [resolve]
+    if: needs.resolve.outputs.enabled == 'true' && needs.resolve.outputs.need_ios_build == 'true'
+    runs-on: macos-26
+    permissions:
+      contents: read
+      actions: write
+    steps:
+      - name: Checkout
+        uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
+        with:
+          ref: ${{ needs.resolve.outputs.mobile_ref }}
+          persist-credentials: false
+
+      - name: Prepare iOS Build
+        uses: ./.github/actions/prepare-ios-build
+        with:
+          intune-enabled: ${{ env.INTUNE_ENABLED }}
+          intune-ssh-private-key: ${{ secrets.MM_MOBILE_INTUNE_DEPLOY_KEY }}
+
+      - name: Set .env with RUNNING_E2E=true
+        run: echo "RUNNING_E2E=true" > .env
+
+      - name: Build iOS Simulator
+        env:
+          TAG: ${{ needs.resolve.outputs.mobile_ref }}
+          GITHUB_TOKEN: ${{ secrets.MM_MOBILE_GITHUB_TOKEN }}
+        run: bundle exec fastlane ios simulator --env ios.simulator
+        working-directory: ./fastlane
+
+      - name: Upload iOS Simulator Build
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: e2e-v2-ios-simulator-${{ github.run_id }}
+          path: Mattermost-simulator-*.app.zip
+          if-no-files-found: error
+
+      - name: Record artifact run id
+        run: |
+          {
+            echo "## iOS simulator artifact"
+            echo ""
+            echo "Set \`skip_build: true\` and \`artifact_run_id: \"${{ github.run_id }}\"\` in \`.github/e2e-v2-run-config.json\`."
+            echo ""
+            echo "Artifact name: \`e2e-v2-ios-simulator-${{ github.run_id }}\`"
+          } >> "$GITHUB_STEP_SUMMARY"
+
+  build-android-detox-v2:
+    name: Build Android Detox APK (v2)
+    needs: [resolve]
+    if: needs.resolve.outputs.enabled == 'true' && needs.resolve.outputs.need_android_build == 'true'
+    runs-on: ubuntu-latest-8-cores
+    permissions:
+      contents: read
+      actions: write
+    env:
+      ORG_GRADLE_PROJECT_jvmargs: -Xmx8g
+    steps:
+      - name: Prune Docker to free up space
+        run: docker system prune -af
+
+      - name: Checkout
+        uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
+        with:
+          ref: ${{ needs.resolve.outputs.mobile_ref }}
+          persist-credentials: false
+
+      - name: Prepare Android Build
+        uses: ./.github/actions/prepare-android-build
+        env:
+          STORE_FILE: ${{ secrets.MM_MOBILE_STORE_FILE }}
+          STORE_ALIAS: ${{ secrets.MM_MOBILE_STORE_ALIAS }}
+          STORE_PASSWORD: ${{ secrets.MM_MOBILE_STORE_PASSWORD }}
+          MATTERMOST_BUILD_GH_TOKEN: ${{ secrets.MATTERMOST_BUILD_GH_TOKEN }}
+
+      - name: Cache Gradle dependencies
+        uses: actions/cache@27d5ce7f107fe9357f9df03efb73ab90386fccae # v5.0.5
+        with:
+          path: /home/runner/.gradle/caches/modules-2/
+          key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
+          restore-keys: ${{ runner.os }}-gradle-
+
+      - name: Detox build
+        run: |
+          cd detox
+          npm ci --prefer-offline --no-audit --no-fund
+          npm run e2e:android-build
+
+      - name: Upload Android Detox build
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: e2e-v2-android-detox-${{ github.run_id }}
+          path: "android/app/build/**/*"
+          if-no-files-found: error
+
+      - name: Record artifact run id
+        run: |
+          {
+            echo "## Android Detox APK artifact"
+            echo ""
+            echo "Set \`skip_build: true\` and \`artifact_run_id: \"${{ github.run_id }}\"\` for Android retests."
+            echo ""
+            echo "Artifact name: \`e2e-v2-android-detox-${{ github.run_id }}\`"
+          } >> "$GITHUB_STEP_SUMMARY"
+
+  run-detox-ios-v2:
+    name: Detox iOS (orchestrated)
+    needs: [resolve, verify-servers, build-ios-simulator-v2]
+    if: >-
+      always()
+      && needs.resolve.outputs.enabled == 'true'
+      && needs.resolve.outputs.run_detox_ios == 'true'
+      && needs.verify-servers.result == 'success'
+      && (needs.build-ios-simulator-v2.result == 'success' || needs.build-ios-simulator-v2.result == 'skipped')
+    uses: ./.github/workflows/e2e-v2-detox-ios.yml
+    with:
+      mobile_ref: ${{ needs.resolve.outputs.mobile_ref }}
+      artifact_run_id: ${{ needs.resolve.outputs.artifact_run_id }}
+      worker_count: ${{ needs.resolve.outputs.ios_worker_count }}
+      detox_search_path: ${{ needs.resolve.outputs.detox_search_path }}
+      detox_exclude_dir: ipad
+      detox_config: ios.sim.debug
+      parallel_device_count: "2"
+      batch_size: "2"
+      ios_site_1_url: ${{ needs.resolve.outputs.ios_site_1_url }}
+      ios_site_2_url: ${{ needs.resolve.outputs.ios_site_2_url }}
+      site_3_url: ${{ needs.resolve.outputs.site_3_url }}
+      use_staging_test_system_io: ${{ needs.resolve.outputs.use_staging_test_system_io == 'true' }}
+      run_type: ${{ needs.resolve.outputs.run_type }}
+      pr_number: ${{ needs.resolve.outputs.pr_number }}
+      branch: ${{ needs.resolve.outputs.branch }}
+      commit_sha: ${{ needs.resolve.outputs.commit_sha }}
+      fail_on_test_failures: ${{ needs.resolve.outputs.fail_on_test_failures == 'true' }}
+    secrets:
+      MM_MOBILE_E2E_ADMIN_EMAIL: ${{ secrets.MM_MOBILE_E2E_ADMIN_EMAIL }}
+      MM_MOBILE_E2E_ADMIN_USERNAME: ${{ secrets.MM_MOBILE_E2E_ADMIN_USERNAME }}
+      MM_MOBILE_E2E_ADMIN_PASSWORD: ${{ secrets.MM_MOBILE_E2E_ADMIN_PASSWORD }}
+
+  run-detox-ipad-v2:
+    name: Detox iPad (orchestrated)
+    needs: [resolve, verify-servers, build-ios-simulator-v2]
+    if: >-
+      always()
+      && needs.resolve.outputs.enabled == 'true'
+      && needs.resolve.outputs.run_detox_ipad == 'true'
+      && needs.verify-servers.result == 'success'
+      && (needs.build-ios-simulator-v2.result == 'success' || needs.build-ios-simulator-v2.result == 'skipped')
+    uses: ./.github/workflows/e2e-v2-detox-ios.yml
+    with:
+      mobile_ref: ${{ needs.resolve.outputs.mobile_ref }}
+      artifact_run_id: ${{ needs.resolve.outputs.artifact_run_id }}
+      # Small suite (~4 specs); keep workers low even when phone uses many.
+      worker_count: ${{ needs.resolve.outputs.platform == 'ipad' && needs.resolve.outputs.ios_worker_count || '2' }}
+      # Always the iPad tree — do not inherit phone e2e/test when platform=ios_and_ipad.
+      detox_search_path: e2e/test/products/channels/ipad
+      detox_exclude_dir: ""
+      detox_config: ios.ipad.debug
+      # Single device / single-spec leases — dual iPad preboot is slow and flaky.
+      parallel_device_count: "1"
+      batch_size: "1"
+      identity_name: detox-ipad
+      commit_status_context: e2e-test-v2/detox-ipad
+      ios_device_name: iPad Pro 13-inch (M5)
+      ios_device_os_name: iOS 26.2
+      ios_site_1_url: ${{ needs.resolve.outputs.ios_site_1_url }}
+      ios_site_2_url: ${{ needs.resolve.outputs.ios_site_2_url }}
+      site_3_url: ${{ needs.resolve.outputs.site_3_url }}
+      use_staging_test_system_io: ${{ needs.resolve.outputs.use_staging_test_system_io == 'true' }}
+      run_type: ${{ needs.resolve.outputs.run_type }}
+      pr_number: ${{ needs.resolve.outputs.pr_number }}
+      branch: ${{ needs.resolve.outputs.branch }}
+      commit_sha: ${{ needs.resolve.outputs.commit_sha }}
+      fail_on_test_failures: ${{ needs.resolve.outputs.fail_on_test_failures == 'true' }}
+    secrets:
+      MM_MOBILE_E2E_ADMIN_EMAIL: ${{ secrets.MM_MOBILE_E2E_ADMIN_EMAIL }}
+      MM_MOBILE_E2E_ADMIN_USERNAME: ${{ secrets.MM_MOBILE_E2E_ADMIN_USERNAME }}
+      MM_MOBILE_E2E_ADMIN_PASSWORD: ${{ secrets.MM_MOBILE_E2E_ADMIN_PASSWORD }}
+
+  run-detox-android-v2:
+    name: Detox Android (orchestrated)
+    needs: [resolve, verify-servers, build-android-detox-v2]
+    if: >-
+      always()
+      && needs.resolve.outputs.enabled == 'true'
+      && needs.resolve.outputs.run_detox_android == 'true'
+      && needs.verify-servers.result == 'success'
+      && (needs.build-android-detox-v2.result == 'success' || needs.build-android-detox-v2.result == 'skipped')
+    uses: ./.github/workflows/e2e-v2-detox-android.yml
+    with:
+      mobile_ref: ${{ needs.resolve.outputs.mobile_ref }}
+      artifact_run_id: ${{ needs.resolve.outputs.artifact_run_id }}
+      worker_count: ${{ needs.resolve.outputs.android_worker_count }}
+      detox_search_path: ${{ needs.resolve.outputs.detox_search_path }}
+      detox_exclude_dir: ipad
+      detox_config: android.emu.debug
+      android_site_1_url: ${{ needs.resolve.outputs.android_site_1_url }}
+      android_site_2_url: ${{ needs.resolve.outputs.android_site_2_url }}
+      site_3_url: ${{ needs.resolve.outputs.site_3_url }}
+      use_staging_test_system_io: ${{ needs.resolve.outputs.use_staging_test_system_io == 'true' }}
+      run_type: ${{ needs.resolve.outputs.run_type }}
+      pr_number: ${{ needs.resolve.outputs.pr_number }}
+      branch: ${{ needs.resolve.outputs.branch }}
+      commit_sha: ${{ needs.resolve.outputs.commit_sha }}
+      fail_on_test_failures: ${{ needs.resolve.outputs.fail_on_test_failures == 'true' }}
+    secrets:
+      MM_MOBILE_E2E_ADMIN_EMAIL: ${{ secrets.MM_MOBILE_E2E_ADMIN_EMAIL }}
+      MM_MOBILE_E2E_ADMIN_USERNAME: ${{ secrets.MM_MOBILE_E2E_ADMIN_USERNAME }}
+      MM_MOBILE_E2E_ADMIN_PASSWORD: ${{ secrets.MM_MOBILE_E2E_ADMIN_PASSWORD }}
+
+  run-maestro-ios-v2:
+    name: Maestro iOS (orchestrated)
+    needs: [resolve, verify-servers, build-ios-simulator-v2]
+    if: >-
+      always()
+      && needs.resolve.outputs.enabled == 'true'
+      && needs.resolve.outputs.run_maestro_ios == 'true'
+      && needs.verify-servers.result == 'success'
+      && (needs.build-ios-simulator-v2.result == 'success' || needs.build-ios-simulator-v2.result == 'skipped')
+    uses: ./.github/workflows/e2e-v2-maestro-ios.yml
+    with:
+      mobile_ref: ${{ needs.resolve.outputs.mobile_ref }}
+      artifact_run_id: ${{ needs.resolve.outputs.artifact_run_id }}
+      worker_count: ${{ needs.resolve.outputs.maestro_worker_count }}
+      ios_site_1_url: ${{ needs.resolve.outputs.ios_site_1_url }}
+      ios_site_2_url: ${{ needs.resolve.outputs.ios_site_2_url }}
+      site_3_url: ${{ needs.resolve.outputs.site_3_url }}
+      use_staging_test_system_io: ${{ needs.resolve.outputs.use_staging_test_system_io == 'true' }}
+      run_type: ${{ needs.resolve.outputs.run_type }}
+      pr_number: ${{ needs.resolve.outputs.pr_number }}
+      branch: ${{ needs.resolve.outputs.branch }}
+      commit_sha: ${{ needs.resolve.outputs.commit_sha }}
+      fail_on_test_failures: ${{ needs.resolve.outputs.fail_on_test_failures == 'true' }}
+    secrets:
+      MM_MOBILE_E2E_ADMIN_EMAIL: ${{ secrets.MM_MOBILE_E2E_ADMIN_EMAIL }}
+      MM_MOBILE_E2E_ADMIN_USERNAME: ${{ secrets.MM_MOBILE_E2E_ADMIN_USERNAME }}
+      MM_MOBILE_E2E_ADMIN_PASSWORD: ${{ secrets.MM_MOBILE_E2E_ADMIN_PASSWORD }}
+
+  run-maestro-android-v2:
+    name: Maestro Android (orchestrated)
+    needs: [resolve, verify-servers, build-android-detox-v2]
+    if: >-
+      always()
+      && needs.resolve.outputs.enabled == 'true'
+      && needs.resolve.outputs.run_maestro_android == 'true'
+      && needs.verify-servers.result == 'success'
+      && (needs.build-android-detox-v2.result == 'success' || needs.build-android-detox-v2.result == 'skipped')
+    uses: ./.github/workflows/e2e-v2-maestro-android.yml
+    with:
+      mobile_ref: ${{ needs.resolve.outputs.mobile_ref }}
+      artifact_run_id: ${{ needs.resolve.outputs.artifact_run_id }}
+      worker_count: ${{ needs.resolve.outputs.maestro_worker_count }}
+      android_site_1_url: ${{ needs.resolve.outputs.android_site_1_url }}
+      android_site_2_url: ${{ needs.resolve.outputs.android_site_2_url }}
+      site_3_url: ${{ needs.resolve.outputs.site_3_url }}
+      use_staging_test_system_io: ${{ needs.resolve.outputs.use_staging_test_system_io == 'true' }}
+      run_type: ${{ needs.resolve.outputs.run_type }}
+      pr_number: ${{ needs.resolve.outputs.pr_number }}
+      branch: ${{ needs.resolve.outputs.branch }}
+      commit_sha: ${{ needs.resolve.outputs.commit_sha }}
+      fail_on_test_failures: ${{ needs.resolve.outputs.fail_on_test_failures == 'true' }}
+    secrets:
+      MM_MOBILE_E2E_ADMIN_EMAIL: ${{ secrets.MM_MOBILE_E2E_ADMIN_EMAIL }}
+      MM_MOBILE_E2E_ADMIN_USERNAME: ${{ secrets.MM_MOBILE_E2E_ADMIN_USERNAME }}
+      MM_MOBILE_E2E_ADMIN_PASSWORD: ${{ secrets.MM_MOBILE_E2E_ADMIN_PASSWORD }}

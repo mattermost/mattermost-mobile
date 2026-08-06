@@ -164,6 +164,10 @@ class ChannelScreen {
 
     toBeVisible = async (timeout = isAndroid() ? timeouts.HALF_MIN : timeouts.TEN_SEC) => {
         await wait(timeouts.ONE_SEC);
+
+        // Scheduled-post coachmark ("Type a message and long press…") can cover the screen
+        // right after channel open/create and make channel.screen appear missing.
+        await this.dismissScheduledPostTooltip();
         await waitForElementToExist(this.channelScreen, timeout);
 
         return this.channelScreen;
@@ -171,17 +175,21 @@ class ChannelScreen {
 
     dismissScheduledPostTooltip = async () => {
         try {
-            await waitFor(this.scheduledPostTooltipCloseButton).toBeVisible().withTimeout(timeouts.FOUR_SEC);
+            await waitFor(this.scheduledPostTooltipCloseButton).toExist().withTimeout(timeouts.FOUR_SEC);
             await this.scheduledPostTooltipCloseButton.tap();
+            await waitFor(this.scheduledPostTooltipCloseButton).not.toExist().withTimeout(timeouts.FIVE_SEC);
+            await wait(timeouts.HALF_SEC);
+            return;
+        } catch {
+            // try admin-variant close below
+        }
+        try {
+            await waitFor(this.scheduledPostTooltipCloseButtonAdminAccount).toExist().withTimeout(timeouts.TWO_SEC);
+            await this.scheduledPostTooltipCloseButtonAdminAccount.tap();
+            await waitFor(this.scheduledPostTooltipCloseButtonAdminAccount).not.toExist().withTimeout(timeouts.FIVE_SEC);
             await wait(timeouts.HALF_SEC);
         } catch {
-            try {
-                await waitFor(this.scheduledPostTooltipCloseButtonAdminAccount).toBeVisible().withTimeout(timeouts.FOUR_SEC);
-                await this.scheduledPostTooltipCloseButtonAdminAccount.tap();
-                await wait(timeouts.HALF_SEC);
-            } catch {
-                // Tooltip not visible.
-            }
+            // Tooltip not visible.
         }
     };
 
@@ -228,7 +236,15 @@ class ChannelScreen {
             if (isAndroid()) {
                 await device.pressBack();
             } else {
-                await HomeScreen.channelListTab.tap();
+                try {
+                    await waitFor(HomeScreen.channelListTab).toExist().withTimeout(timeouts.FIVE_SEC);
+                    await HomeScreen.channelListTab.tap();
+                } catch {
+                    // Tab bar missing (e.g. bottom sheet still open) — dismiss known overlays.
+                    await dismissKnownModals();
+                    await waitFor(HomeScreen.channelListTab).toExist().withTimeout(timeouts.TEN_SEC);
+                    await HomeScreen.channelListTab.tap();
+                }
             }
         }
         await waitFor(this.channelScreen).not.toBeVisible().withTimeout(timeouts.TEN_SEC);
@@ -291,6 +307,10 @@ class ChannelScreen {
 
         // # Open reply thread screen
         await PostOptionsScreen.replyPostOption.tap();
+
+        // Root bottom-sheet sits above the authenticated banner portal host;
+        // wait for dismiss before callers assert top-band UI.
+        await waitFor(PostOptionsScreen.postOptionsScreen).not.toExist().withTimeout(timeouts.TEN_SEC);
         await ThreadScreen.toBeVisible();
     };
 

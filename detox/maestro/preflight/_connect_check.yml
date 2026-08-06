@@ -22,11 +22,13 @@ appId: ${MAESTRO_APP_ID}
 - launchApp:
     stopApp: true
     clearState: true
+    permissions:
+      all: allow
+    arguments:
+      disableTutorials: true
 - waitForAnimationToEnd:
     timeout: 45000
-- tapOn:
-    text: "Allow"
-    optional: true
+- runFlow: ../subflows/system/dismiss_permission_dialogs.yml
 
 # * Verify the server form is shown — a fresh install always shows it once the JS bundle loads.
 - extendedWaitUntil:

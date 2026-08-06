@@ -1,0 +1,7 @@
+# MM-T3244 — needs seed_file_preview.ts for IMAGE_FILE_ID / VIDEO_FILE_ID / …
+# The bare flow under flows/channels/ is excluded via tag MM-T3244; this
+# scenario seeds then runs the flow so e2e-v2 can lease it as one unit.
+name: File type preview (MM-T3244)
+script: detox/maestro/scripts/run_file_type_preview.sh
+tags:
+  - file_type_preview

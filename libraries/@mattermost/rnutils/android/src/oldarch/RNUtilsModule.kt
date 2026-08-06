@@ -81,6 +81,11 @@ class RNUtilsModule(context: ReactApplicationContext) :
         return implementation.deleteEntitiesFile()
     }
 
+    @ReactMethod(isBlockingSynchronousMethod = true)
+    fun areTutorialsDisabled(): Boolean {
+        return implementation.areTutorialsDisabled()
+    }
+
     @ReactMethod
     fun getDeliveredNotifications(promise: Promise?) {
         implementation.getDeliveredNotifications(promise)

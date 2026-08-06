@@ -1,0 +1,92 @@
+// Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
+// See LICENSE.txt for license information.
+
+// *******************************************************************
+// - [#] indicates a test step (e.g. # Go to a screen)
+// - [*] indicates an assertion (e.g. * Check the title)
+// - Use element testID when selecting an element. Create one if none.
+// *******************************************************************
+
+import {Setup} from '@support/server_api';
+import {
+    serverOneUrl,
+    siteOneUrl,
+} from '@support/test_config';
+import {
+    AccountScreen,
+    ChannelListScreen,
+    EditProfileScreen,
+    HomeScreen,
+    LoginScreen,
+    ServerScreen,
+} from '@support/ui/screen';
+import {isIos, timeouts, wait} from '@support/utils';
+import {expect} from 'detox';
+
+describe('Account - Profile Picture', () => {
+
+    const serverOneDisplayName = 'Server 1';
+    let testUser: any;
+
+    beforeAll(async () => {
+        const {user} = await Setup.apiInit(siteOneUrl);
+        testUser = user;
+
+        // # Log in to server
+        await ServerScreen.connectToServer(serverOneUrl, serverOneDisplayName);
+        await LoginScreen.login(testUser);
+    });
+
+    beforeEach(async () => {
+        // * Verify on channel list screen
+        await ChannelListScreen.toBeVisible();
+    });
+
+    afterAll(async () => {
+        await HomeScreen.logout();
+    });
+
+    // MM-T3260 moved to maestro/flows/account/help_url.yml: Help opens system browser UI
+    // (Chrome / SFSafariViewController) that Detox cannot control.
+
+    it('MM-T289_1 - should show Remove Photo option when user has a custom profile picture', async () => {
+        // # Open account screen and navigate to edit profile
+        await AccountScreen.open();
+        await EditProfileScreen.open();
+
+        // * Verify edit profile screen is visible
+        await EditProfileScreen.toBeVisible();
+
+        // * Verify the profile picture element is visible
+        await expect(EditProfileScreen.getEditProfilePicture(testUser.id)).toExist();
+
+        // # Tap the profile picture to open the image picker bottom sheet
+        await EditProfileScreen.getEditProfilePicturePicker(testUser.id).tap();
+
+        // * Verify the bottom sheet options are visible
+        await waitFor(element(by.id('attachment.browseFiles'))).toBeVisible().withTimeout(timeouts.TWO_SEC);
+        await expect(element(by.id('attachment.browseFiles'))).toBeVisible();
+
+        // * NOTE: The 'Remove Photo' option (testID: 'attachment.removeImage') is only shown
+        // when the user has a custom profile picture (i.e. the image URL contains a timestamp query
+        // string from the hasPictureUrl check in profile_image_picker.tsx).
+        // Since the test user has the default avatar, the remove option will NOT appear here.
+        // TODO: Pre-upload a profile picture via API and then verify 'attachment.removeImage'
+        // appears and tapping it resets to the default avatar.
+
+        // # Dismiss the bottom sheet — on iOS swipe it down; device.pressBack() is Android-only
+        if (isIos()) {
+            await element(by.id('attachment.browseFiles')).swipe('down', 'fast');
+        } else {
+            await device.pressBack();
+        }
+        await waitFor(element(by.id('attachment.browseFiles'))).not.toBeVisible().withTimeout(timeouts.TWO_SEC);
+
+        // # Close edit profile and return to channel list
+        await wait(timeouts.ONE_SEC);
+        await EditProfileScreen.close();
+        await AccountScreen.toBeVisible();
+        await HomeScreen.channelListTab.tap();
+        await ChannelListScreen.toBeVisible();
+    });
+});

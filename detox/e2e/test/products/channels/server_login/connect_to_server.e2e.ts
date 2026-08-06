@@ -78,9 +78,7 @@ describe('Server Login - Connect to Server', () => {
 
         // * Verify invalid url error
         await waitFor(serverUrlInputError).toExist().withTimeout(timeouts.TEN_SEC);
-        const expectedErrorText = isIos()
-            ? 'URLSessionTask failed with error: A server with the specified hostname could not be found.'
-            : 'Unable to resolve host "invalid": No address associated with hostname';
+        const expectedErrorText = isIos()? 'URLSessionTask failed with error: A server with the specified hostname could not be found.': 'Unable to resolve host "invalid": No address associated with hostname';
 
         await expect(serverUrlInputError).toHaveText(expectedErrorText);
     });

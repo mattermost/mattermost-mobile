@@ -1,0 +1,114 @@
+// Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
+// See LICENSE.txt for license information.
+
+// *******************************************************************
+// - [#] indicates a test step (e.g. # Go to a screen)
+// - [*] indicates an assertion (e.g. * Check the title)
+// - Use element testID when selecting an element. Create one if none.
+// *******************************************************************
+
+import {Channel, Setup, System} from '@support/server_api';
+import {serverOneUrl, siteOneUrl} from '@support/test_config';
+import {Alert} from '@support/ui/component';
+import {
+    BrowseChannelsScreen,
+    ChannelScreen,
+    ChannelListScreen,
+    ChannelInfoScreen,
+    ChannelSettingsScreen,
+    HomeScreen,
+    LoginScreen,
+    ServerScreen,
+} from '@support/ui/screen';
+import {timeouts, wait} from '@support/utils';
+import {waitFor} from 'detox';
+
+// beforeAll: 4 channels + login under CI load — 6min hook timeout.
+jest.setTimeout(timeouts.ONE_MIN * 5);
+
+// beforeAll: 4 channels + login under CI load — 6min hook timeout.
+jest.setTimeout(timeouts.ONE_MIN * 5);
+
+describe('Channels - Archive Channel from Settings', () => {
+
+    const serverOneDisplayName = 'Server 1';
+    const channelsCategory = 'channels';
+    let testTeam: any;
+    let testUser: any;
+
+    // Pre-create channels before login — sidebar sync via HTTP, not delayed WS on Android API 35.
+    let channelForT4932_2: any;
+
+    beforeAll(async () => {
+        // # Ensure archived channels are visible in browse channels
+        // Set config BEFORE login so the config is fetched during connection
+        await System.apiUpdateConfig(siteOneUrl, {
+            TeamSettings: {ExperimentalViewArchivedChannels: true},
+        });
+        await wait(timeouts.ONE_SEC);
+
+        const {team, user} = await Setup.apiInit(siteOneUrl);
+        testTeam = team;
+        testUser = user;
+
+        // Create channels and add testUser BEFORE login. The initial HTTP channel
+        // sync on login fetches all member channels, so these appear in the sidebar
+        // without depending on a WebSocket user_added event.
+        const makeChannel = async (type: 'O' | 'P', prefix: string) => {
+            const {channel} = await Channel.apiCreateChannel(siteOneUrl, {type, teamId: testTeam.id, prefix});
+            await Channel.apiAddUserToChannel(siteOneUrl, testUser.id, channel.id);
+            return channel;
+        };
+        channelForT4932_2 = await makeChannel('O', 'arc-pub-2');
+
+        // # Log in to server
+        await ServerScreen.connectToServer(serverOneUrl, serverOneDisplayName);
+        await LoginScreen.login(testUser);
+        await ChannelListScreen.toBeVisible();
+    });
+
+    beforeEach(async () => {
+        // Dismiss any lingering "Removed from channel" or "Archived channel"
+        // dialogs that may have appeared asynchronously via WebSocket events
+        // from the previous test's channel archival. These native Alert dialogs
+        // block all Detox interactions until dismissed.
+        await Alert.dismissChannelRemoveOrArchiveAlert();
+
+        // Close Browse Channels if a prior test timed out mid-navigation — an open
+        // modal blocks ChannelListScreen.toBeVisible() and causes 300s hook timeouts.
+        try {
+            await waitFor(BrowseChannelsScreen.browseChannelsScreen).toExist().withTimeout(timeouts.TWO_SEC);
+            await BrowseChannelsScreen.close();
+            await wait(timeouts.ONE_SEC);
+        } catch {
+            // Browse Channels is not open
+        }
+
+        // * Verify on channel list screen
+        await ChannelListScreen.toBeVisible();
+    });
+
+    afterAll(async () => {
+        // # Log out
+        await HomeScreen.logout();
+    });
+
+    it('MM-T4932_2 - should be able to archive a public channel and cancel', async () => {
+        // # Open a public channel screen, open channel info screen, go to channel settings, and tap on archive channel option and cancel
+        const publicChannel = channelForT4932_2;
+        await ChannelListScreen.waitForSidebarPublicChannelDisplayNameVisible(publicChannel.name, timeouts.ONE_MIN);
+        await ChannelScreen.open(channelsCategory, publicChannel.name);
+        await ChannelInfoScreen.open();
+        await ChannelInfoScreen.openChannelSettings();
+        await ChannelSettingsScreen.toBeVisible();
+        await ChannelSettingsScreen.archivePublicChannel({confirm: false});
+
+        // * Verify still on channel settings screen
+        await ChannelSettingsScreen.toBeVisible();
+
+        // # Go back to channel list screen
+        await ChannelSettingsScreen.close();
+        await ChannelInfoScreen.close();
+        await ChannelScreen.back();
+    });
+});

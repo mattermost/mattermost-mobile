@@ -66,6 +66,29 @@ class RNUtilsModuleImpl(private val reactContext: ReactApplicationContext): Life
         return map
     }
 
+    /**
+     * Detox: extras bundle "launchArgs" (string values).
+     * Maestro: direct intent extras (boolean / string).
+     */
+    fun areTutorialsDisabled(): Boolean {
+        val intent = reactContext.currentActivity?.intent ?: return false
+        val detoxValue = intent.getBundleExtra("launchArgs")?.get("disableTutorials")
+        if (isTruthyLaunchArg(detoxValue)) {
+            return true
+        }
+        return isTruthyLaunchArg(intent.extras?.get("disableTutorials"))
+    }
+
+    private fun isTruthyLaunchArg(value: Any?): Boolean {
+        return when (value) {
+            is Boolean -> value
+            is String -> value.equals("true", ignoreCase = true) ||
+                value.equals("YES", ignoreCase = true) ||
+                value == "1"
+            else -> false
+        }
+    }
+
     fun getRealFilePath(filePath: String?, promise: Promise?) {
         val currentActivity: Activity? = reactContext.currentActivity
         var result = ""

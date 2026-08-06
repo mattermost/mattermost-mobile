@@ -85,6 +85,8 @@ appId: ${MAESTRO_APP_ID}
             - launchApp:
                 stopApp: true
                 clearState: false
+                arguments:
+                  disableTutorials: true
             - waitForAnimationToEnd:
                 timeout: 30000
             - extendedWaitUntil:

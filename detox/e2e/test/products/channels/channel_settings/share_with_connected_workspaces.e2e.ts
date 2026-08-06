@@ -24,7 +24,7 @@ import {tapNativeBackButton, timeouts, wait} from '@support/utils';
 import {expect, device, element, by, waitFor} from 'detox';
 
 // beforeAll: apiInit + config + login under CI load — 6min hook timeout.
-jest.setTimeout(360000);
+jest.setTimeout(timeouts.ONE_MIN * 5);
 
 describe('Share with connected workspaces', () => {
     // Skipped on PR/main CI: beforeAll hits 360s hook timeout without Shared Channels
@@ -92,6 +92,12 @@ describe('Share with connected workspaces', () => {
             });
         }
 
+        // Without Shared Channels remotes every test early-returns — skip the expensive
+        // Detox login that previously burned the full 360s beforeAll budget on CI.
+        if (!sharedChannelsAvailable) {
+            return;
+        }
+
         // Enable autotranslation so the Configuration option is always visible in Channel Settings
         // (required when shared channels is disabled, e.g. TC-MOB-02).
         await System.apiPatchConfig(siteOneUrl, {
@@ -121,7 +127,9 @@ describe('Share with connected workspaces', () => {
                 EnableRemoteClusterService: false,
             },
         });
-        await HomeScreen.logout();
+        if (sharedChannelsAvailable) {
+            await HomeScreen.logout();
+        }
     });
 
     const navigateToConfiguration = async (channelName: string = testChannel.name) => {

@@ -14,16 +14,41 @@ const BUNDLE_ID = 'com.mattermost.rnbeta';
 
 function getSimulatorId(): string {
     try {
+        // Prefer the Detox-allocated device for this Jest worker. Falling back to
+        // process.env.SIMULATOR_ID (always the first pre-booted sim) would wipe
+        // the wrong device when DETOX_MAX_WORKERS > 1.
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const udid = (device as any)._deviceId || (device as any).id || process.env.SIMULATOR_ID || '';
-        return typeof udid === 'string' ? udid : '';
+        const udid = (device as any)._deviceId || (device as any).id || '';
+        if (typeof udid === 'string' && udid.length > 0) {
+            return udid;
+        }
     } catch {
-        return process.env.SIMULATOR_ID || '';
+        // device not ready yet
+    }
+    return '';
+}
+
+/** adb serial for the Detox-allocated emulator (required when EMULATOR_COUNT > 1). */
+function getAdbSerial(): string {
+    try {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const id = (device as any).id || (device as any)._deviceId || process.env.ANDROID_SERIAL || '';
+        return typeof id === 'string' ? id : '';
+    } catch {
+        return process.env.ANDROID_SERIAL || '';
     }
 }
 
-let cachedDataContainer: string | undefined;
-let cachedAppGroupContainer: string | undefined;
+function adb(args: string): string {
+    const serial = getAdbSerial();
+    const serialFlag = serial ? `-s "${serial}" ` : '';
+    return execSync(`adb ${serialFlag}${args}`, {encoding: 'utf8', stdio: ['pipe', 'pipe', 'pipe']});
+}
+
+// Container paths are per-simulator; key the cache so a worker never reuses
+// another device's paths if Detox reallocates (or after a reinstall).
+const cachedDataContainerBySim = new Map<string, string>();
+const cachedAppGroupContainerBySim = new Map<string, string>();
 
 function resolveContainerPath(simId: string, kind: string): string | undefined {
     try {
@@ -60,14 +85,18 @@ function clearIOSAppData(): void {
     }
 
     // 2. Find the app's data container and delete its contents.
-    if (!cachedDataContainer) {
-        cachedDataContainer = resolveContainerPath(simId, 'data');
+    let dataContainer = cachedDataContainerBySim.get(simId);
+    if (!dataContainer) {
+        dataContainer = resolveContainerPath(simId, 'data');
+        if (dataContainer) {
+            cachedDataContainerBySim.set(simId, dataContainer);
+        }
     }
-    if (cachedDataContainer) {
+    if (dataContainer) {
         try {
             // Remove all contents of Documents, Library, tmp (but keep the container dir)
-            execSync(`find "${cachedDataContainer}" -mindepth 1 -maxdepth 1 -exec rm -rf {} +`, {stdio: 'pipe'});
-            console.info(`[clearIOSAppData] Cleared data container: ${cachedDataContainer}`);
+            execSync(`find "${dataContainer}" -mindepth 1 -maxdepth 1 -exec rm -rf {} +`, {stdio: 'pipe'});
+            console.info(`[clearIOSAppData] Cleared data container: ${dataContainer}`);
         } catch {
             console.warn('[clearIOSAppData] data-container wipe failed');
         }
@@ -75,14 +104,18 @@ function clearIOSAppData(): void {
         console.warn('[clearIOSAppData] Could not resolve data container (app may not be installed yet)');
     }
 
-    if (!cachedAppGroupContainer) {
-        cachedAppGroupContainer = resolveContainerPath(simId, 'group.com.mattermost.rnbeta');
+    let appGroupContainer = cachedAppGroupContainerBySim.get(simId);
+    if (!appGroupContainer) {
+        appGroupContainer = resolveContainerPath(simId, 'group.com.mattermost.rnbeta');
+        if (appGroupContainer) {
+            cachedAppGroupContainerBySim.set(simId, appGroupContainer);
+        }
     }
-    if (cachedAppGroupContainer) {
-        if (existsSync(cachedAppGroupContainer)) {
+    if (appGroupContainer) {
+        if (existsSync(appGroupContainer)) {
             try {
-                execSync(`find "${cachedAppGroupContainer}" -mindepth 1 -maxdepth 1 -exec rm -rf {} +`, {stdio: 'pipe'});
-                console.info(`[clearIOSAppData] Cleared App Group container: ${cachedAppGroupContainer}`);
+                execSync(`find "${appGroupContainer}" -mindepth 1 -maxdepth 1 -exec rm -rf {} +`, {stdio: 'pipe'});
+                console.info(`[clearIOSAppData] Cleared App Group container: ${appGroupContainer}`);
             } catch {
                 console.warn('[clearIOSAppData] App-Group-container wipe failed');
             }
@@ -148,7 +181,7 @@ async function grantAndroidNotificationPermission(): Promise<void> {
         return;
     }
     try {
-        execSync(`adb shell pm grant ${BUNDLE_ID} android.permission.POST_NOTIFICATIONS`, {stdio: 'pipe'});
+        adb(`shell pm grant ${BUNDLE_ID} android.permission.POST_NOTIFICATIONS`);
     } catch {
         // API < 33 or already granted
     }
@@ -161,25 +194,31 @@ async function grantAndroidNotificationPermission(): Promise<void> {
 beforeAll(async () => {
     if (device.getPlatform() === 'android') {
         try {
-            execSync(`adb shell am force-stop ${BUNDLE_ID}`, {stdio: 'pipe'});
+            adb(`shell am force-stop ${BUNDLE_ID}`);
         } catch { /* app may not be running */ }
         try {
-            execSync(`adb shell pm clear ${BUNDLE_ID}`, {stdio: 'pipe'});
+            adb(`shell pm clear ${BUNDLE_ID}`);
         } catch {
             // Package might not be installed yet on first run
         }
 
         try {
-            execSync('adb shell settings put secure show_ime_with_hard_keyboard 0', {stdio: 'pipe'});
-            execSync('adb shell settings put secure spell_checker_enabled 0', {stdio: 'pipe'});
-            execSync('adb shell settings put secure auto_text_enabled 0', {stdio: 'pipe'});
+            adb('shell settings put secure show_ime_with_hard_keyboard 0');
+            adb('shell settings put secure spell_checker_enabled 0');
+            adb('shell settings put secure auto_text_enabled 0');
         } catch {
             // Older AVDs may not support these — non-fatal.
         }
     }
 
     const isFirstFile = !process.env.DETOX_SETUP_DONE;
-    const launchArgs = {detoxDisableSynchronization: 'YES'};
+    const launchArgs = {
+        detoxDisableSynchronization: 'YES',
+
+        // App treats tutorials as watched when this is set (RNUtils) or when
+        // RUNNING_E2E=true is baked/served via Metro (.env).
+        disableTutorials: true,
+    };
 
     const APP_READY_TIMEOUT = device.getPlatform() === 'android' ? 90_000 : 30_000;
 
@@ -189,10 +228,10 @@ beforeAll(async () => {
         }
         try {
             // Stop the app process first so pm clear can safely wipe its data dir.
-            execSync(`adb shell am force-stop ${BUNDLE_ID}`, {stdio: 'pipe'});
+            adb(`shell am force-stop ${BUNDLE_ID}`);
         } catch { /* app may not be running */ }
         try {
-            execSync(`adb shell pm clear ${BUNDLE_ID}`, {stdio: 'pipe'});
+            adb(`shell pm clear ${BUNDLE_ID}`);
             console.info('[forceAndroidDataClear] pm clear succeeded');
         } catch (e) {
             console.warn('[forceAndroidDataClear] pm clear failed:', String(e).slice(0, 200));
@@ -204,8 +243,8 @@ beforeAll(async () => {
             return;
         }
         try {
-            execSync('adb reverse tcp:8081 tcp:8081', {stdio: 'pipe'});
-            const reverseList = execSync('adb reverse --list', {encoding: 'utf8'});
+            adb('reverse tcp:8081 tcp:8081');
+            const reverseList = adb('reverse --list');
             if (!reverseList.includes('tcp:8081')) {
                 console.warn('[ensureAndroidMetroReverse] tcp:8081 reverse missing after setup');
             }
@@ -280,6 +319,15 @@ beforeAll(async () => {
 
     if (isFirstFile) {
         process.env.DETOX_SETUP_DONE = 'true';
+    }
+
+    // Stagger parallel Jest workers so two launchApp() calls do not race Metro's
+    // first iOS/Android bundle compile (seen as "Detox can't seem to connect").
+    const jestWorkerId = Number.parseInt(process.env.JEST_WORKER_ID || '1', 10);
+    if (Number.isFinite(jestWorkerId) && jestWorkerId > 1) {
+        const staggerMs = (jestWorkerId - 1) * 15_000;
+        console.info(`[beforeAll] Staggering launch by ${staggerMs}ms (JEST_WORKER_ID=${jestWorkerId})`);
+        await new Promise((resolve) => setTimeout(resolve, staggerMs));
     }
 
     if (device.getPlatform() === 'ios') {

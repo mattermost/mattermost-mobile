@@ -2,7 +2,7 @@
 // See LICENSE.txt for license information.
 
 import {adminEmail, adminPassword, adminUsername} from '@support/test_config';
-import {waitFor} from 'detox';
+import {by, element, waitFor} from 'detox';
 import {v4 as uuidv4} from 'uuid';
 
 export * from './email';
@@ -45,6 +45,7 @@ export const getAdminAccount = () => {
 const SECOND = 1000 * (process.env.LOW_BANDWIDTH_MODE === 'true' ? 5 : 1);
 const MINUTE = 60 * 1000;
 
+// Matterwick provision kick
 export const timeouts = {
     HALF_SEC: SECOND / 2,
     ONE_SEC: SECOND,
@@ -58,6 +59,61 @@ export const timeouts = {
     ONE_MIN: MINUTE,
     TWO_MIN: MINUTE * 2,
     FOUR_MIN: MINUTE * 4,
+    FIVE_MIN: MINUTE * 5,
+};
+
+/**
+ * Dismiss the iOS "Save Password?" sheet if it appears in the app hierarchy.
+ *
+ * Primary prevention is simulator autofill disable (autofill-v2) at preboot.
+ * This is a cheap best-effort safety net only — no Promise.race (orphans Detox
+ * interactions), no system.element (xcodebuild), no relaunch/sendToHome.
+ *
+ * No-op on Android.
+ */
+export const dismissIosSavePasswordIfVisible = async (): Promise<boolean> => {
+    if (isAndroid()) {
+        return false;
+    }
+
+    try {
+        const notNow = element(by.text('Not Now'));
+        await waitFor(notNow).toBeVisible().withTimeout(timeouts.HALF_SEC);
+        await notNow.tap();
+        await wait(timeouts.HALF_SEC);
+        return true;
+    } catch {
+        return false;
+    }
+};
+
+/**
+ * After sign-in, wait for the channel list while dismissing a delayed
+ * "Save Password?" sheet that can cover the app before/while the list loads.
+ */
+export const waitForChannelListAfterLogin = async (
+    channelListScreen: Detox.NativeElement,
+    overallTimeout = isAndroid() ? timeouts.ONE_MIN : timeouts.HALF_MIN,
+): Promise<void> => {
+    const deadline = Date.now() + overallTimeout;
+    /* eslint-disable no-await-in-loop */
+    while (Date.now() < deadline) {
+        try {
+            await waitFor(channelListScreen).toExist().withTimeout(timeouts.TWO_SEC);
+            if (isIos()) {
+                await wait(timeouts.ONE_SEC);
+                await dismissIosSavePasswordIfVisible();
+            }
+            return;
+        } catch {
+            // Keep polling until deadline.
+        }
+    }
+    /* eslint-enable no-await-in-loop */
+    await waitFor(channelListScreen).toExist().withTimeout(timeouts.ONE_SEC);
+    if (isIos()) {
+        await dismissIosSavePasswordIfVisible();
+    }
 };
 
 export async function retryWithReload(

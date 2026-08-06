@@ -54,11 +54,8 @@ appId: ${MAESTRO_APP_ID}
 - waitForAnimationToEnd:
     timeout: 5000
 
-# # iOS system permission / network-access dialogs. These are SpringBoard alerts with no
-# app testID, so text is the only available locator.
-- tapOn:
-    text: "Allow"
-    optional: true
+# # OS permission / network-access dialogs (SpringBoard on iOS; system sheets on Android).
+- runFlow: ../system/dismiss_permission_dialogs.yml
 
 # # App-level "Notifications cannot be received" alert (non-blocking info).
 - tapOn:

@@ -1,0 +1,108 @@
+// Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
+// See LICENSE.txt for license information.
+
+// *******************************************************************
+// - [#] indicates a test step (e.g. # Go to a screen)
+// - [*] indicates an assertion (e.g. * Check the title)
+// - Use element testID when selecting an element. Create one if none.
+// *******************************************************************
+
+import {
+    Channel,
+    Setup,
+} from '@support/server_api';
+import {
+    serverOneUrl,
+    siteOneUrl,
+} from '@support/test_config';
+import {Autocomplete} from '@support/ui/component';
+import {
+    ChannelListScreen,
+    ChannelScreen,
+    HomeScreen,
+    LoginScreen,
+    ServerScreen,
+} from '@support/ui/screen';
+import {timeouts, wait} from '@support/utils';
+import {expect} from 'detox';
+
+describe('Autocomplete - At-Mention User Filters', () => {
+
+    const serverOneDisplayName = 'Server 1';
+    const channelsCategory = 'channels';
+    let testChannel: any;
+    let testUser: any;
+    let channelB: any;
+
+    beforeAll(async () => {
+        const {channel, team, user} = await Setup.apiInit(siteOneUrl);
+        testChannel = channel;
+        testUser = user;
+
+        // # Pre-create channel B BEFORE login so it lands in the initial sidebar sync.
+        const {channel: bChannel} = await Channel.apiCreateChannel(siteOneUrl, {
+            teamId: team.id,
+            type: 'O',
+            prefix: 'channel-b',
+        });
+        if (!bChannel?.id) {
+            throw new Error('[beforeAll] Failed to create channel B');
+        }
+        await Channel.apiAddUserToChannel(siteOneUrl, user.id, bChannel.id);
+        channelB = bChannel;
+
+        await ServerScreen.connectToServer(serverOneUrl, serverOneDisplayName);
+        await LoginScreen.login(testUser);
+    });
+
+    beforeEach(async () => {
+        await ChannelListScreen.toBeVisible();
+    });
+
+    afterAll(async () => {
+        await HomeScreen.logout();
+    });
+
+    it('MM-T132_1 - should show autocomplete independently in each channel draft', async () => {
+        // # Open channel A (testChannel) and type a partial @mention
+        await ChannelScreen.open(channelsCategory, testChannel.name);
+        await ChannelScreen.postInput.tap();
+        await ChannelScreen.postInput.typeText('@');
+        await wait(timeouts.ONE_SEC);
+
+        // * Verify autocomplete is visible in channel A
+        await Autocomplete.toBeVisible();
+
+        // # Go back to channel list (saves draft in channel A)
+        await ChannelScreen.back();
+
+        // # Open channel B and type the same partial @mention
+        await ChannelScreen.open(channelsCategory, channelB.name);
+        await ChannelScreen.postInput.tap();
+        await ChannelScreen.postInput.typeText('@');
+        await wait(timeouts.ONE_SEC);
+
+        // * Verify autocomplete works independently in channel B
+        await Autocomplete.toBeVisible();
+        await expect(Autocomplete.sectionAtMentionList).toExist();
+
+        // # Clear input in channel B and go back
+        await ChannelScreen.postInput.clearText();
+        await wait(timeouts.HALF_SEC);
+        await ChannelScreen.back();
+
+        // # Return to channel A and verify autocomplete still works
+        await ChannelScreen.open(channelsCategory, testChannel.name);
+        await ChannelScreen.postInput.tap();
+        await ChannelScreen.postInput.typeText('@');
+        await wait(timeouts.ONE_SEC);
+
+        // * Verify autocomplete is shown in channel A
+        await Autocomplete.toBeVisible();
+
+        // # Clear input and go back
+        await ChannelScreen.postInput.clearText();
+        await wait(timeouts.HALF_SEC);
+        await ChannelScreen.back();
+    });
+});

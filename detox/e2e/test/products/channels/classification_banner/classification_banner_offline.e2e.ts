@@ -22,8 +22,8 @@ import {ChannelListScreen, HomeScreen, LoginScreen, ServerScreen} from '@support
 import {timeouts, wait} from '@support/utils';
 import {by, device, element, waitFor} from 'detox';
 
-// Lock wait is up to 20m; leave headroom for enable/setup after acquire.
-jest.setTimeout(timeouts.ONE_MIN * 30);
+// Lock wait is up to 5m; jest timeout matches the classification lock budget.
+jest.setTimeout(timeouts.ONE_MIN * 5);
 
 const escapeRegex = (value: string) => value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 
@@ -66,14 +66,15 @@ describe('Classification Banner - Offline / Cache Behaviour', () => {
 
     afterAll(async () => {
         try {
-            // Each step runs even if an earlier one fails, so a cleanup error cannot leave
-            // the feature flag enabled or the session logged in for later suites.
+            // Keep cleanup resilient: property fields off, FF restored to the
+            // shared-server default, then logout — each step runs even if an
+            // earlier one fails.
             try {
                 await Properties.apiCleanupClassification(siteOneUrl);
             } finally {
                 try {
                     await System.apiPatchConfig(siteOneUrl, {
-                        FeatureFlags: {ClassificationMarkings: false},
+                        FeatureFlags: {ClassificationMarkings: true},
                     });
                 } finally {
                     await HomeScreen.logout();

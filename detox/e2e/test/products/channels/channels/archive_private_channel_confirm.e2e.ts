@@ -1,0 +1,91 @@
+// Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
+// See LICENSE.txt for license information.
+
+// *******************************************************************
+// - [#] indicates a test step (e.g. # Go to a screen)
+// - [*] indicates an assertion (e.g. * Check the title)
+// - Use element testID when selecting an element. Create one if none.
+// *******************************************************************
+
+import {
+    Channel,
+    Setup,
+} from '@support/server_api';
+import {
+    serverOneUrl,
+    siteOneUrl,
+} from '@support/test_config';
+import {
+    BrowseChannelsScreen,
+    ChannelScreen,
+    ChannelListScreen,
+    HomeScreen,
+    LoginScreen,
+    ServerScreen,
+    ChannelInfoScreen,
+    ChannelSettingsScreen,
+} from '@support/ui/screen';
+import {timeouts, wait} from '@support/utils';
+import {expect, waitFor} from 'detox';
+
+describe('Channels - Archive Channel', () => {
+
+    const serverOneDisplayName = 'Server 1';
+    const channelsCategory = 'channels';
+    let testTeam: any;
+    let testUser: any;
+
+    beforeAll(async () => {
+        const {team, user} = await Setup.apiInit(siteOneUrl);
+        testTeam = team;
+        testUser = user;
+
+        // # Log in to server
+        await ServerScreen.connectToServer(serverOneUrl, serverOneDisplayName);
+        await LoginScreen.login(testUser);
+    });
+
+    beforeEach(async () => {
+        // * Verify on channel list screen
+        await ChannelListScreen.toBeVisible();
+    });
+
+    afterAll(async () => {
+        // # Log out
+        await HomeScreen.logout();
+    });
+
+    // Skip Android: R1 product — archive confirm leaves unexpected SafeArea view matcher
+
+    it('MM-T4932_3 - should be able to archive a private channel and confirm', async () => {
+        // # Open a private channel screen, open channel info screen, go to channel settings, and tap on archive channel option and confirm
+        const {channel: privateChannel} = await Channel.apiCreateChannel(siteOneUrl, {type: 'P', teamId: testTeam.id});
+        await Channel.apiAddUserToChannel(siteOneUrl, testUser.id, privateChannel.id);
+        await wait(timeouts.TWO_SEC);
+        await device.reloadReactNative();
+        await ChannelScreen.open(channelsCategory, privateChannel.name);
+        await ChannelInfoScreen.open();
+        await ChannelInfoScreen.openChannelSettings();
+        await ChannelSettingsScreen.toBeVisible();
+        await ChannelSettingsScreen.archivePrivateChannel({confirm: true});
+
+        // # Dismiss channel info and return to channel list before opening browse channels
+        await ChannelInfoScreen.close();
+        await waitFor(ChannelScreen.postDraftArchivedCloseChannelButton).
+            toBeVisible().
+            withTimeout(timeouts.TEN_SEC);
+        await ChannelScreen.back();
+        await ChannelListScreen.toBeVisible();
+
+        // # Open browse channels screen and search for the archived private channel
+        await BrowseChannelsScreen.open();
+        await BrowseChannelsScreen.searchInput.replaceText(privateChannel.name);
+
+        // * Verify search returns the archived private channel item
+        await wait(timeouts.ONE_SEC);
+        await expect(element(by.text(`No matches found for “${privateChannel.name}”`))).toBeVisible();
+
+        // # Go back to channel list screen
+        await BrowseChannelsScreen.close();
+    });
+});

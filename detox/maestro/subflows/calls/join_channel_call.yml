@@ -56,10 +56,7 @@ appId: ${MAESTRO_APP_ID}
           timeout: 12000
       - tapOn:
           id: "channel_info.channel_actions.join_start_call.action"
-      - tapOn:
-          text: "Allow"
-          optional: true
-      - tapOn:
-          text: "Allow"
-          optional: true
+      # # Mic dialog buttons are "While using the app" / "Only this time", not "Allow".
+      - runFlow: ../system/dismiss_permission_dialogs.yml
+      - runFlow: ../system/dismiss_permission_dialogs.yml
       - runFlow: wait_for_active_call.yml

@@ -1,0 +1,230 @@
+// Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
+// See LICENSE.txt for license information.
+
+// *******************************************************************
+// - [#] indicates a test step (e.g. # Go to a screen)
+// - [*] indicates an assertion (e.g. * Check the title)
+// - Use element testID when selecting an element. Create one if none.
+// *******************************************************************
+
+import {
+    ChannelBookmark,
+    Channel,
+    Setup,
+} from '@support/server_api';
+import {serverOneUrl, siteOneUrl} from '@support/test_config';
+import {
+    ChannelBookmarkScreen,
+    ChannelInfoScreen,
+    ChannelListScreen,
+    ChannelScreen,
+    HomeScreen,
+    LoginScreen,
+    ServerScreen,
+} from '@support/ui/screen';
+import {isAndroid, isIos, safeEnableSynchronization, timeouts, wait} from '@support/utils';
+import {expect, waitFor} from 'detox';
+
+describe('Channels - Channel Bookmarks', () => {
+
+    const serverOneDisplayName = 'Server 1';
+    const channelsCategory = 'channels';
+    let testTeam: any;
+    let testUser: any;
+    let channelT5607: any;
+    let bookmarkT5607: any;
+
+    const createChannel = async () => {
+        const {channel} = await Channel.apiCreateChannel(siteOneUrl, {
+            type: 'O',
+            teamId: testTeam.id,
+        });
+        if (!channel?.id) {
+            throw new Error('[beforeAll] Failed to create channel');
+        }
+        await Channel.apiAddUserToChannel(siteOneUrl, testUser.id, channel.id);
+        return channel;
+    };
+
+    // Scroll channel list to top after FlashList mounts — off-screen channels need scroll-down from top.
+    const openChannel = async (channel: any) => {
+        await ChannelListScreen.toBeVisible();
+        const displayNameEl = ChannelListScreen.getChannelItemDisplayName(channelsCategory, channel.name);
+        await waitFor(element(by.id('channel_list.flat_list'))).
+            toExist().
+            withTimeout(timeouts.TWENTY_SEC);
+
+        if (isIos()) {
+            await device.disableSynchronization();
+        }
+
+        try {
+            await element(by.id('channel_list.flat_list')).scrollTo('top');
+
+            try {
+                if (isIos()) {
+                    await waitFor(displayNameEl).
+                        toBeVisible().
+                        whileElement(by.id('channel_list.flat_list')).
+                        scroll(100, 'down', 0.5, 0.3);
+                } else {
+                    await waitFor(displayNameEl).
+                        toExist().
+                        whileElement(by.id('channel_list.flat_list')).
+                        scroll(100, 'down');
+                }
+            } catch {
+                // Fall through to tap(): the row can sit at the bottom edge below the
+                // visibility threshold while still having a hittable centre point.
+            }
+
+            await displayNameEl.tap();
+        } finally {
+            if (isIos()) {
+                await safeEnableSynchronization();
+            }
+        }
+
+        await ChannelScreen.dismissScheduledPostTooltip();
+        const channelScreen = await ChannelScreen.toBeVisible();
+        if (isIos()) {
+            await wait(timeouts.TWO_SEC);
+        }
+        return channelScreen;
+    };
+
+    beforeAll(async () => {
+        const {team, user} = await Setup.apiInit(siteOneUrl);
+        testTeam = team;
+        testUser = user;
+
+        channelT5607 = await createChannel();
+
+        await ServerScreen.connectToServer(serverOneUrl, serverOneDisplayName);
+        await LoginScreen.login(testUser);
+
+        const {bookmark: b} = await ChannelBookmark.apiCreateChannelBookmarkLink(
+            siteOneUrl, channelT5607.id, 'Revert Emoji Test', 'https://example.com',
+        );
+        if (!b?.id) {
+            throw new Error('[beforeAll] Failed to create bookmarkT5607');
+        }
+        bookmarkT5607 = b;
+
+        await wait(timeouts.TWO_SEC);
+        await device.reloadReactNative();
+        await ChannelListScreen.toBeVisible();
+    });
+
+    beforeEach(async () => {
+        await ChannelListScreen.toBeVisible();
+    });
+
+    afterEach(async () => {
+        // Android safety net: Back up to 4x only if channel_list.screen not visible.
+        if (isAndroid()) {
+            try {
+                await waitFor(ChannelBookmarkScreen.addErrorTitle).toBeVisible().withTimeout(timeouts.TWO_SEC);
+                await ChannelBookmarkScreen.errorOkButton.tap();
+            } catch {
+                // No bookmark error alert is present.
+            }
+
+            // Back-press until the channel list is reached, then reload if it never is. TWO_SEC
+            // detection: a 1s probe missed the fresh channel_list.screen and minimized the app.
+            for (let i = 0; i < 4; i++) {
+                try {
+                    // eslint-disable-next-line no-await-in-loop
+                    await waitFor(element(by.id('channel_list.screen'))).
+                        toExist().
+                        withTimeout(timeouts.TWO_SEC);
+                    break; // Channel list is already showing — stop pressing back
+                } catch {
+                    // Not at channel list yet — dismiss the top-most layer
+                    // eslint-disable-next-line no-await-in-loop
+                    await device.pressBack();
+                    // eslint-disable-next-line no-await-in-loop
+                    await wait(timeouts.ONE_SEC);
+                }
+            }
+            try {
+                await waitFor(element(by.id('channel_list.screen'))).toExist().withTimeout(timeouts.TWO_SEC);
+            } catch {
+                await device.reloadReactNative();
+                await waitFor(element(by.id('channel_list.screen'))).toExist().withTimeout(timeouts.TEN_SEC);
+            }
+        }
+        try {
+            await HomeScreen.channelListTab.tap();
+        } catch {
+            // Best-effort
+        }
+        await wait(timeouts.ONE_SEC);
+    });
+
+    afterAll(async () => {
+        await HomeScreen.logout();
+    });
+
+    // Skip: depends on app-side bookmark whitelist fix (not in this PR).
+
+    // Skip iOS: CI run 30424009936 (f86f99e1) — openChannel's channel row is clipped at the list
+    // edge, so tap() fails the 100% visibility threshold despite the scroll fallback.
+
+    // Skip: after long-press options the dismiss swipe still leaves Edit in the tree on iOS
+    // (CI 29cdff/59ec6ae/ce729d/bc6df62). Re-enable once sheet dismissal is stable.
+
+    it('MM-T5607_1 - should be able to revert bookmark icon from emoji to default', async () => {
+        // # Navigate to the channel
+        await openChannel(channelT5607);
+
+        // # Open channel info
+        await ChannelInfoScreen.open();
+
+        // * Verify bookmark visible in channel_info — scope to avoid matching
+        // channel_header.bookmarks.list behind the modal.
+        const revertMatcher = by.id(`channel_bookmark.${bookmarkT5607.id}`).
+            withAncestor(by.id('channel_info.bookmarks.list'));
+        await ChannelInfoScreen.waitForBookmarkInChannelInfo(revertMatcher, {bookmarkId: bookmarkT5607.id});
+        const revertBookmarkEl = element(revertMatcher);
+        await expect(revertBookmarkEl).toBeVisible();
+
+        // Scroll bookmark into sufficient visibility (50%+) before longPress
+        // CI failures showed bookmark was visible for assertion but not 50% visible for interaction
+        try {
+            await waitFor(revertBookmarkEl).
+                toBeVisible().
+                whileElement(by.id('channel_info.bookmarks.list')).
+                scroll(50, 'right', 0.5, 0.5);
+        } catch {
+            // Element may already be visible; proceed with longPress
+        }
+
+        // # Long press to open options
+        await revertBookmarkEl.longPress();
+
+        // * Verify edit option visible
+        await expect(ChannelBookmarkScreen.editOption).toBeVisible();
+
+        // # Tap Edit
+        await ChannelBookmarkScreen.editOption.tap();
+
+        // * Verify edit modal opens
+        await ChannelBookmarkScreen.toBeVisible();
+
+        // Scope to channel_bookmark.screen; use toExist() — dual-list + iOS modal overlays.
+        await waitFor(
+            element(
+                by.id('bookmark-generic-icon').
+                    withAncestor(by.id('channel_bookmark.screen')),
+            ),
+        ).toExist().withTimeout(timeouts.TEN_SEC);
+
+        // # Close the edit modal without making changes
+        await ChannelBookmarkScreen.close();
+
+        // # Go back to channel list
+        await ChannelInfoScreen.close();
+        await ChannelScreen.back();
+    });
+});

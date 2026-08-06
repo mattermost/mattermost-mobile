@@ -1,0 +1,5 @@
+# Multi-device channel creation sync (MM-T837).
+name: Multi-device channel sync (MM-T837)
+script: detox/maestro/scripts/run_channel_sync_two_device.sh
+tags:
+  - multi_device

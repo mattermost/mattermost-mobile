@@ -10,6 +10,8 @@
 #
 # Requires: DEVICE_NAME, DEVICE_OS_VERSION. Writes SIMULATOR_ID to GITHUB_ENV when set.
 # Optional:
+#   PREBOOT_COUNT=N            — boot N simulators of the same type (default 1). Use 2 with
+#                                DETOX_MAX_WORKERS=2 so Jest can run specs in parallel.
 #   PREBOOT_SKIP_PREWARM=1     — Maestro only (uses listapps readiness). Detox must pre-warm.
 #   PREBOOT_PREWARM_SECS       — first pre-warm wait (default 15; iPad often needs 10–15s).
 #
@@ -21,7 +23,10 @@
 set -euo pipefail
 
 readonly BUNDLE_ID="com.mattermost.rnbeta"
-readonly AUTOFILL_MARKER="mattermost-ci-autofill-v1"
+# v2: also writes Library/UserConfigurationProfiles mirrors + WebUI AutoFillPasswords
+# (v1 only touched ConfigurationProfiles/UserSettings and missed the Effective mirrors
+# Settings.app updates — iOS 18+/26 still showed Passwords.app "Save Password?").
+readonly AUTOFILL_MARKER="mattermost-ci-autofill-v2"
 readonly PREWARM_SECS="${PREBOOT_PREWARM_SECS:-15}"
 readonly REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
 
@@ -30,18 +35,30 @@ log() {
 }
 
 sim_state() {
-    xcrun simctl list devices 2>/dev/null | grep "$SIMULATOR_ID" | sed -E 's/.*\((Booted|Shutdown|Booting|Creating)\)$/\1/' || echo "Unknown"
+    # simctl lines look like: "    iPhone 17 Pro (UDID) (Booted) " — trailing
+    # whitespace breaks a $-anchored sed, which left the full line as "state"
+    # and made shutdown_if_booted / Shutdown checks always fail.
+    local line state
+    line=$(xcrun simctl list devices 2>/dev/null | grep -F "$SIMULATOR_ID" | head -1 || true)
+    if [ -z "$line" ]; then
+        echo "Unknown"
+        return 0
+    fi
+    state=$(printf '%s' "$line" | grep -oE '\((Booted|Shutdown|Booting|Creating)\)' | tail -1 | tr -d '()')
+    echo "${state:-Unknown}"
 }
 
 shutdown_if_booted() {
-    if [ "$(sim_state)" = "Booted" ]; then
+    if [ "$(sim_state)" = "Booted" ] || [ "$(sim_state)" = "Booting" ]; then
         log "Shutting down simulator to edit autofill plists..."
         xcrun simctl shutdown "$SIMULATOR_ID" || true
-        for _ in 1 2 3 4 5 6 7 8; do
+        # Autofill plist writes fail verification if the sim is still Booted
+        # (seen as "Critical allowPasswordAutoFill=NO not verified").
+        for _ in $(seq 60); do
             [ "$(sim_state)" = "Shutdown" ] && return 0
             sleep 0.5
         done
-        log "Warning: simulator may not have reached Shutdown state"
+        log "Warning: simulator may not have reached Shutdown state (state=$(sim_state))"
     fi
 }
 
@@ -52,28 +69,81 @@ boot_and_wait() {
     xcrun simctl bootstatus "$SIMULATOR_ID"
 }
 
+library_effective_plist() {
+    echo "$HOME/Library/Developer/CoreSimulator/Devices/$SIMULATOR_ID/data/Library/UserConfigurationProfiles/EffectiveUserSettings.plist"
+}
+
+library_public_effective_plist() {
+    echo "$HOME/Library/Developer/CoreSimulator/Devices/$SIMULATOR_ID/data/Library/UserConfigurationProfiles/PublicInfo/PublicEffectiveUserSettings.plist"
+}
+
+autofill_key_is_false() {
+    local plist="$1"
+    [ -f "$plist" ] || return 1
+    plutil -extract restrictedBool.allowPasswordAutoFill.value raw "$plist" 2>/dev/null | grep -qi 'false'
+}
+
 autofill_already_configured() {
-    [ -f "$AUTOFILL_STAMP" ] && return 0
-    [ -f "$SETTINGS_PLIST" ] || return 1
-    plutil -extract restrictedBool.allowPasswordAutoFill.value raw "$SETTINGS_PLIST" 2>/dev/null | grep -qi 'false'
+    [ -f "$AUTOFILL_STAMP" ] || return 1
+    autofill_key_is_false "$SETTINGS_PLIST" || return 1
+    autofill_key_is_false "$(library_effective_plist)" || return 1
+    autofill_key_is_false "$(library_public_effective_plist)" || return 1
 }
 
 configure_autofill_offline() {
-    log "Disabling password autofill (simulator shut down)..."
-    mkdir -p "$SETTINGS_DIR"
-    if ! (cd "$REPO_ROOT/detox" && node utils/disable_ios_autofill.js --simulator-id "$SIMULATOR_ID"); then
-        echo "Failed to disable password autofill"
+    log "Disabling password AutoFill / Save Password (simulator shut down)..."
+    # Must be fully Shutdown — disable_ios_autofill.js exits 1 if it observes Booted.
+    if [ "$(sim_state)" != "Shutdown" ]; then
+        shutdown_if_booted
+    fi
+    if [ "$(sim_state)" != "Shutdown" ]; then
+        echo "Simulator $SIMULATOR_ID not Shutdown before autofill configure (state=$(sim_state))"
         exit 1
     fi
-    touch "$AUTOFILL_STAMP"
+    mkdir -p "$SETTINGS_DIR"
+    mkdir -p "$HOME/Library/Developer/CoreSimulator/Devices/$SIMULATOR_ID/data/Library/UserConfigurationProfiles/PublicInfo"
+    local attempt
+    for attempt in 1 2; do
+        if (cd "$REPO_ROOT/detox" && node utils/disable_ios_autofill.js --simulator-id "$SIMULATOR_ID"); then
+            touch "$AUTOFILL_STAMP"
+            return 0
+        fi
+        log "Autofill configure attempt ${attempt} failed — forcing shutdown and retrying"
+        shutdown_if_booted
+        sleep 2
+    done
+    echo "Failed to disable password autofill / Save Password restrictions"
+    exit 1
 }
 
 seed_password_defaults() {
-    log "Seeding Passwords.app defaults (best-effort)..."
-    xcrun simctl spawn "$SIMULATOR_ID" defaults write com.apple.Passwords AutoFill -bool NO 2>/dev/null || true
-    xcrun simctl spawn "$SIMULATOR_ID" defaults write com.apple.Passwords AutoSave -bool NO 2>/dev/null || true
-    xcrun simctl spawn "$SIMULATOR_ID" defaults write com.apple.Passwords credentialSaveNotificationsEnabled -bool NO 2>/dev/null || true
-    xcrun simctl spawn "$SIMULATOR_ID" defaults write com.apple.springboard AutoFillPasswords -bool NO 2>/dev/null || true
+    log "Seeding Passwords.app / WebUI defaults on booted simulator..."
+    if ! (cd "$REPO_ROOT/detox" && node utils/disable_ios_autofill.js --simulator-id "$SIMULATOR_ID" --seed-defaults); then
+        log "Warning: defaults seed reported failure (continuing; plists are source of truth)"
+    fi
+}
+
+# iOS sometimes regenerates EffectiveUserSettings after first boot and flips
+# allowPasswordAutoFill back to YES. Re-apply while shut down, then boot again.
+enforce_autofill_after_boot() {
+    log "Verifying AutoFill restrictions survived boot..."
+    if autofill_already_configured; then
+        log "Restrictions still in place after boot"
+        seed_password_defaults
+        return 0
+    fi
+
+    log "Restrictions missing/reverted after boot — re-applying offline + reboot"
+    shutdown_if_booted
+    configure_autofill_offline
+    boot_and_wait
+    seed_password_defaults
+
+    if ! autofill_already_configured; then
+        echo "::error::Failed to keep allowPasswordAutoFill=NO after reboot — Save Password? will block Detox"
+        exit 1
+    fi
+    log "Restrictions verified after re-apply"
 }
 
 install_app() {
@@ -171,80 +241,109 @@ verify_health() {
 find_or_create_simulator() {
     local device_name="${DEVICE_NAME:?DEVICE_NAME is required}"
     local os_version="${DEVICE_OS_VERSION:?DEVICE_OS_VERSION is required}"
+    local instance="${1:-1}"
+    unset SIMULATOR_NEEDS_INIT_BOOT
 
-    log "Looking for simulator: $device_name ($os_version)"
-    SIMULATOR_ID=$(xcrun simctl list devices | grep "$device_name" | grep "$os_version" | head -1 | grep -oE '([0-9A-F-]{36})' || true)
-    if [ -z "$SIMULATOR_ID" ]; then
-        SIMULATOR_ID=$(xcrun simctl list devices "$os_version" 2>/dev/null | grep "$device_name" | head -1 | grep -oE '([0-9A-F-]{36})' || true)
+    # Instance 1 may reuse a warm CI image simulator; additional instances always create.
+    if [ "$instance" -eq 1 ]; then
+        log "Looking for simulator: $device_name ($os_version)"
+        SIMULATOR_ID=$(xcrun simctl list devices | grep "$device_name" | grep "$os_version" | head -1 | grep -oE '([0-9A-F-]{36})' || true)
+        if [ -z "$SIMULATOR_ID" ]; then
+            SIMULATOR_ID=$(xcrun simctl list devices "$os_version" 2>/dev/null | grep "$device_name" | head -1 | grep -oE '([0-9A-F-]{36})' || true)
+        fi
+
+        if [ -n "$SIMULATOR_ID" ]; then
+            log "Found existing simulator: $SIMULATOR_ID"
+            return 0
+        fi
     fi
 
-    if [ -n "$SIMULATOR_ID" ]; then
-        log "Found existing simulator: $SIMULATOR_ID"
-        return 0
-    fi
-
-    log "Creating simulator..."
-    local device_type runtime
+    log "Creating simulator (instance $instance)..."
+    local device_type runtime sim_name
     device_type=$(xcrun simctl list devicetypes | grep "${device_name} (" | head -1 | awk -F'[()]' '{print $(NF-1)}')
     runtime=$(xcrun simctl list runtimes | grep "$os_version" | head -1 | sed 's/.* - \(.*\)/\1/')
     if [ -z "$device_type" ] || [ -z "$runtime" ]; then
         echo "Could not resolve device type or runtime for $device_name / $os_version"
         exit 1
     fi
-    SIMULATOR_ID=$(xcrun simctl create "CI-${device_name}" "$device_type" "$runtime")
-    log "Created simulator: $SIMULATOR_ID"
+    sim_name="CI-${device_name}"
+    if [ "$instance" -gt 1 ]; then
+        sim_name="CI-${device_name}-${instance}"
+    fi
+    SIMULATOR_ID=$(xcrun simctl create "$sim_name" "$device_type" "$runtime")
+    log "Created simulator: $SIMULATOR_ID ($sim_name)"
     export SIMULATOR_NEEDS_INIT_BOOT=1
+}
+
+prepare_and_boot_simulator() {
+    SETTINGS_DIR="$HOME/Library/Developer/CoreSimulator/Devices/$SIMULATOR_ID/data/Containers/Shared/SystemGroup/systemgroup.com.apple.configurationprofiles/Library/ConfigurationProfiles"
+    SETTINGS_PLIST="$SETTINGS_DIR/UserSettings.plist"
+    AUTOFILL_STAMP="$SETTINGS_DIR/.$AUTOFILL_MARKER"
+
+    if autofill_already_configured; then
+        log "Autofill restrictions already configured (v2) — skipping offline plist edit"
+        if [ "$(sim_state)" != "Booted" ]; then
+            boot_and_wait
+        else
+            log "Simulator already booted"
+        fi
+    elif [ -n "${SIMULATOR_NEEDS_INIT_BOOT:-}" ] || [ ! -d "$SETTINGS_DIR" ]; then
+        # Fresh simulator: one boot creates system group dirs, then configure offline, then boot again.
+        log "New simulator — init boot to create CoreSimulator dirs..."
+        boot_and_wait
+        shutdown_if_booted
+        configure_autofill_offline
+        boot_and_wait
+    else
+        # Warm simulator on CI image: configure offline, single boot.
+        log "Warm simulator — applying autofill offline, then single boot"
+        shutdown_if_booted
+        configure_autofill_offline
+        boot_and_wait
+    fi
+
+    # Always verify (and re-apply if iOS reverted EffectiveUserSettings on boot).
+    enforce_autofill_after_boot
+    install_app
+    grant_notifications
+
+    if [ "${PREBOOT_SKIP_PREWARM:-}" != "1" ]; then
+        if ! prewarm_app "$PREWARM_SECS"; then
+            log "Retrying pre-warm with 25s window..."
+            prewarm_app 25 || log "Pre-warm failed — first Detox launch may be slow"
+        fi
+    else
+        log "Skipping pre-warm (PREBOOT_SKIP_PREWARM=1)"
+    fi
+
+    open -a Simulator --args -CurrentDeviceUDID "$SIMULATOR_ID" || true
+    wait_ready_quick
+    verify_health
 }
 
 # ─── Main ────────────────────────────────────────────────────────────────────
 
-find_or_create_simulator
-
-SETTINGS_DIR="$HOME/Library/Developer/CoreSimulator/Devices/$SIMULATOR_ID/data/Containers/Shared/SystemGroup/systemgroup.com.apple.configurationprofiles/Library/ConfigurationProfiles"
-SETTINGS_PLIST="$SETTINGS_DIR/UserSettings.plist"
-AUTOFILL_STAMP="$SETTINGS_DIR/.$AUTOFILL_MARKER"
-
-if autofill_already_configured; then
-    log "Autofill restrictions already configured — skipping plist edit"
-    if [ "$(sim_state)" != "Booted" ]; then
-        boot_and_wait
-    else
-        log "Simulator already booted"
-    fi
-elif [ -n "${SIMULATOR_NEEDS_INIT_BOOT:-}" ] || [ ! -d "$SETTINGS_DIR" ]; then
-    # Fresh simulator: one boot creates system group dirs, then configure offline, then boot again.
-    log "New simulator — init boot to create CoreSimulator dirs..."
-    boot_and_wait
-    shutdown_if_booted
-    configure_autofill_offline
-    boot_and_wait
-else
-    # Warm simulator on CI image: configure offline, single boot.
-    log "Warm simulator — applying autofill offline, then single boot"
-    shutdown_if_booted
-    configure_autofill_offline
-    boot_and_wait
+PREBOOT_COUNT="${PREBOOT_COUNT:-1}"
+if ! [[ "$PREBOOT_COUNT" =~ ^[1-9][0-9]*$ ]]; then
+    echo "PREBOOT_COUNT must be a positive integer, got: $PREBOOT_COUNT"
+    exit 1
 fi
 
-seed_password_defaults
-install_app
-grant_notifications
+BOOTED_IDS=()
+for ((instance = 1; instance <= PREBOOT_COUNT; instance++)); do
+    log "=== Pre-boot instance ${instance}/${PREBOOT_COUNT} ==="
+    find_or_create_simulator "$instance"
+    prepare_and_boot_simulator
+    BOOTED_IDS+=("$SIMULATOR_ID")
+done
 
-if [ "${PREBOOT_SKIP_PREWARM:-}" != "1" ]; then
-    if ! prewarm_app "$PREWARM_SECS"; then
-        log "Retrying pre-warm with 25s window..."
-        prewarm_app 25 || log "Pre-warm failed — first Detox launch may be slow"
-    fi
-else
-    log "Skipping pre-warm (PREBOOT_SKIP_PREWARM=1)"
-fi
-
-open -a Simulator --args -CurrentDeviceUDID "$SIMULATOR_ID" || true
-wait_ready_quick
-verify_health
+# First UDID kept as SIMULATOR_ID for single-worker / Maestro compatibility.
+SIMULATOR_ID="${BOOTED_IDS[0]}"
+SIMULATOR_IDS=$(IFS=,; echo "${BOOTED_IDS[*]}")
 
 if [ -n "${GITHUB_ENV:-}" ]; then
     echo "SIMULATOR_ID=$SIMULATOR_ID" >> "$GITHUB_ENV"
+    echo "SIMULATOR_IDS=$SIMULATOR_IDS" >> "$GITHUB_ENV"
 fi
 
-log "Done. SIMULATOR_ID=$SIMULATOR_ID"
+log "Done. SIMULATOR_ID=$SIMULATOR_ID SIMULATOR_IDS=$SIMULATOR_IDS"

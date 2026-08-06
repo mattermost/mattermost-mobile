@@ -1,0 +1,11 @@
+{
+  "action": "verify",
+  "server_version": "",
+  "android_site_1_url": "https://mobile-pr-10006-android-site-1-ep3rdcfs.test.mattermost.cloud",
+  "android_site_2_url": "https://mobile-pr-10006-android-site-2-ihrch97j.test.mattermost.cloud",
+  "ios_site_1_url": "https://mobile-pr-10006-ios-site-1-iwnis6ih.test.mattermost.cloud",
+  "ios_site_2_url": "https://mobile-pr-10006-ios-site-2-s9gnrtj7.test.mattermost.cloud",
+  "site_3_url": "https://mobile-pr-10006-site-3-wyit93au.test.mattermost.cloud",
+  "mobile_ref": "",
+  "enabled": false
+}

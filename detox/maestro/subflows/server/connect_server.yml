@@ -24,9 +24,7 @@ appId: ${MAESTRO_APP_ID}
       platform: Android
     commands:
       # # Notification / autofill overlays can appear after clearState; dismiss before typing.
-      - tapOn:
-          text: "Allow"
-          optional: true
+      - runFlow: ../system/dismiss_permission_dialogs.yml
       - tapOn:
           text: "No thanks"
           optional: true
@@ -77,11 +75,9 @@ appId: ${MAESTRO_APP_ID}
 - waitForAnimationToEnd:
     timeout: 5000
 
-# # iOS: dismiss system-level "Allow notifications?" or network-access permission
-# dialogs that may block navigation after tapping Connect.
-- tapOn:
-    text: "Allow"
-    optional: true
+# # Dismiss system-level notification / network-access permission dialogs that
+# may block navigation after tapping Connect.
+- runFlow: ../system/dismiss_permission_dialogs.yml
 
 # # App-level "Notifications cannot be received" alert (non-blocking info).
 # Dismiss if present; safe to skip if absent.
@@ -118,9 +114,7 @@ appId: ${MAESTRO_APP_ID}
           id: "server_form.connect.button"
       - waitForAnimationToEnd:
           timeout: 5000
-      - tapOn:
-          text: "Allow"
-          optional: true
+      - runFlow: ../system/dismiss_permission_dialogs.yml
       - tapOn:
           text: "Okay"
           optional: true

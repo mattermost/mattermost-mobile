@@ -1,0 +1,126 @@
+# One-shot Matterwick server recreate for the e2e-v2 iteration branch.
+# Applies E2E/Reset-Servers (destroy) then E2E/Run (create) via the build PAT.
+name: E2E v2 Matterwick recreate
+
+on:
+  push:
+    branches:
+      - cursor/e2e-v2-test-system-io-orchestration-2a12
+    paths:
+      - .github/e2e-v2-matterwick-recreate.json
+      - .github/workflows/e2e-v2-matterwick-recreate.yml
+
+permissions:
+  contents: read
+
+concurrency:
+  group: e2e-v2-matterwick-recreate-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  recreate:
+    name: Reset then re-run Matterwick E2E servers
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
+        with:
+          persist-credentials: false
+
+      - name: Load config
+        id: cfg
+        run: |
+          python3 - <<'PY' >> "$GITHUB_OUTPUT"
+          import json
+          cfg = json.load(open(".github/e2e-v2-matterwick-recreate.json"))
+          print(f"enabled={'true' if cfg.get('enabled') else 'false'}")
+          print(f"pr_number={int(cfg.get('pr_number') or 0)}")
+          PY
+
+      - name: Skip when disabled
+        if: steps.cfg.outputs.enabled != 'true'
+        run: echo "e2e-v2-matterwick-recreate disabled"
+
+      - name: Destroy servers (E2E/Reset-Servers) then re-add E2E/Run
+        if: steps.cfg.outputs.enabled == 'true'
+        uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9.0.0
+        with:
+          github-token: ${{ secrets.MATTERMOST_BUILD_GH_TOKEN }}
+          script: |
+            const owner = context.repo.owner;
+            const repo = context.repo.repo;
+            const prNumber = Number('${{ steps.cfg.outputs.pr_number }}');
+            if (!prNumber) {
+              throw new Error('pr_number is required');
+            }
+
+            const resetLabel = 'E2E/Reset-Servers';
+            const runLabel = 'E2E/Run';
+            const runLabels = ['E2E/Run', 'E2E/Run-iOS', 'E2E/Run-Android'];
+
+            const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
+
+            const listLabels = async () => {
+              const labels = await github.paginate(github.rest.issues.listLabelsOnIssue, {
+                owner, repo, issue_number: prNumber,
+              });
+              return labels.map((l) => l.name);
+            };
+
+            const removeLabel = async (name) => {
+              try {
+                await github.rest.issues.removeLabel({
+                  owner, repo, issue_number: prNumber, name,
+                });
+                core.info(`Removed ${name}`);
+              } catch (err) {
+                if (err.status !== 404) {
+                  throw err;
+                }
+                core.info(`${name} already absent`);
+              }
+            };
+
+            // Strip run labels first so Reset + later Run emit clean webhooks.
+            for (const name of runLabels) {
+              await removeLabel(name);
+            }
+
+            // Matterwick destroys existing cloud installs on this label.
+            core.info(`Adding ${resetLabel} to destroy existing servers...`);
+            await github.rest.issues.addLabels({
+              owner, repo, issue_number: prNumber, labels: [resetLabel],
+            });
+
+            // Give Matterwick time to process destroy before creating again.
+            await sleep(90_000);
+
+            await removeLabel(resetLabel);
+
+            // Fresh create + workflow dispatch.
+            core.info(`Adding ${runLabel} to provision fresh servers...`);
+            await github.rest.issues.addLabels({
+              owner, repo, issue_number: prNumber, labels: [runLabel],
+            });
+
+            // Stale e2e-detox-pr cleanup can strip E2E/Run seconds after we add it
+            // (seen as Matterwick "installation wait cancelled"). Re-assert for a
+            // short window so the labeled webhook sticks.
+            for (let i = 0; i < 6; i++) {
+              await sleep(30_000);
+              const names = await listLabels();
+              if (names.includes(runLabel)) {
+                core.info(`${runLabel} still present after settle poll ${i + 1}/6`);
+                continue;
+              }
+              core.warning(`${runLabel} missing on settle poll ${i + 1}/6 — re-adding`);
+              await github.rest.issues.addLabels({
+                owner, repo, issue_number: prNumber, labels: [runLabel],
+              });
+            }
+
+            const finalLabels = await listLabels();
+            core.info(`PR #${prNumber} labels now: ${finalLabels.join(', ')}`);
+            if (!finalLabels.includes(runLabel)) {
+              throw new Error(`${runLabel} did not stick on PR #${prNumber}`);
+            }
+            core.summary.addRaw(`Recreated Matterwick servers for PR #${prNumber} via ${resetLabel} → ${runLabel}.`);

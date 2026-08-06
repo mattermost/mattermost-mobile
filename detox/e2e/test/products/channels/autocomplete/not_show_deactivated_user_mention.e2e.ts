@@ -1,0 +1,90 @@
+// Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
+// See LICENSE.txt for license information.
+
+// *******************************************************************
+// - [#] indicates a test step (e.g. # Go to a screen)
+// - [*] indicates an assertion (e.g. * Check the title)
+// - Use element testID when selecting an element. Create one if none.
+// *******************************************************************
+
+import {
+    Channel,
+    Setup,
+    Team,
+    User,
+} from '@support/server_api';
+import {
+    serverOneUrl,
+    siteOneUrl,
+} from '@support/test_config';
+import {Autocomplete} from '@support/ui/component';
+import {
+    ChannelListScreen,
+    ChannelScreen,
+    HomeScreen,
+    LoginScreen,
+    ServerScreen,
+} from '@support/ui/screen';
+import {timeouts, wait} from '@support/utils';
+import {expect} from 'detox';
+
+describe('Autocomplete - At-Mention User Filters', () => {
+
+    const serverOneDisplayName = 'Server 1';
+    const channelsCategory = 'channels';
+    let testChannel: any;
+    let testTeam: any;
+    let testUser: any;
+
+    beforeAll(async () => {
+        const {channel, team, user} = await Setup.apiInit(siteOneUrl);
+        testChannel = channel;
+        testTeam = team;
+        testUser = user;
+
+        // # Pre-create channel B BEFORE login so it lands in the initial sidebar sync.
+        const {channel: bChannel} = await Channel.apiCreateChannel(siteOneUrl, {
+            teamId: team.id,
+            type: 'O',
+            prefix: 'channel-b',
+        });
+        if (!bChannel?.id) {
+            throw new Error('[beforeAll] Failed to create channel B');
+        }
+        await Channel.apiAddUserToChannel(siteOneUrl, user.id, bChannel.id);
+
+        await ServerScreen.connectToServer(serverOneUrl, serverOneDisplayName);
+        await LoginScreen.login(testUser);
+    });
+
+    beforeEach(async () => {
+        await ChannelListScreen.toBeVisible();
+    });
+
+    afterAll(async () => {
+        await HomeScreen.logout();
+    });
+
+    it('MM-T511_1 - should not show deactivated user in @ mention autocomplete', async () => {
+        // # Create a new user, add to team/channel, then deactivate
+        const {user: deactivatedUser} = await User.apiCreateUser(siteOneUrl, {prefix: 'deact'});
+        await Team.apiAddUserToTeam(siteOneUrl, deactivatedUser.id, testTeam.id);
+        await Channel.apiAddUserToChannel(siteOneUrl, deactivatedUser.id, testChannel.id);
+        await User.apiDeactivateUser(siteOneUrl, deactivatedUser.id);
+
+        // # Open the channel screen and type "@username"
+        await ChannelScreen.open(channelsCategory, testChannel.name);
+        await ChannelScreen.postInput.tap();
+        await ChannelScreen.postInput.typeText(`@${deactivatedUser.username}`);
+        await wait(timeouts.ONE_SEC);
+
+        // * Verify the deactivated user does NOT appear in autocomplete suggestions
+        const {atMentionItem} = Autocomplete.getAtMentionItem(deactivatedUser.id);
+        await expect(atMentionItem).not.toExist();
+
+        // # Clear input and go back
+        await ChannelScreen.postInput.clearText();
+        await wait(timeouts.HALF_SEC);
+        await ChannelScreen.back();
+    });
+});
