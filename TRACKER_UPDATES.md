@@ -17,7 +17,8 @@ Append-only notes for a human to copy into the
   MM-T4862_4; verified 2x green on iOS (iPhone 17 Pro / iOS 26.3, 11.10 server).
   No reusable hit-test helper landed — the mechanism is specific to this
   close-swipe start point; Tasks 2.2/2.3 check their own symptoms (per runbook).
-  Android deferred to CI.
+  Android verified green (local API-35 emulator, fresh server
+  mobile-pr-9996-site-3): MM-T4862_3 + MM-T4862_4 PASS. Both platforms green.
 
 - **SEC-11017** (server list swipe actions unhittable on iOS, MM-T4691_5/6/7) —
   Owner: QA, verification pending CI 3-server shards. Status: investigated but NOT
@@ -54,4 +55,6 @@ Append-only notes for a human to copy into the
   but both the incremental whileElement().scroll and scrollTo('right') (with a
   layout-settle wait) leave it clipped by a superview; not a duplicate-back/hit-test
   issue, needs deeper layout investigation (or PE if a real user also can't reveal
-  it). iOS verified (iPhone 17 Pro / iOS 26.3, 11.10 server); Android deferred to CI.
+  it). iOS verified (iPhone 17 Pro / iOS 26.3, 11.10 server); Android verified green
+  (local API-35 emulator, fresh server mobile-pr-9996-site-3): MM-T1442_1,
+  MM-T4895_1, MM-T4899_4, MM-T4899_5 PASS. Both platforms green.
