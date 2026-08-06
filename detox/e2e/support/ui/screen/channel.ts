@@ -209,36 +209,17 @@ class ChannelScreen {
     // For API-created private channels not yet in the sidebar.
     openViaFindChannels = async (channelName: string) => {
         await ChannelListScreen.toBeVisible();
-
-        /* eslint-disable no-await-in-loop -- retry Find Channels until WS sync lands */
-        let lastError: unknown;
-        for (let attempt = 0; attempt < 3; attempt++) {
-            try {
-                await FindChannelsScreen.open();
-                await FindChannelsScreen.searchInput.replaceText(channelName);
-                await FindChannelsScreen.searchInput.tapReturnKey();
-                await wait(timeouts.TWO_SEC);
-                await waitForElementToBeVisible(
-                    FindChannelsScreen.getFilteredChannelItem(channelName),
-                    timeouts.TWENTY_SEC,
-                );
-                await FindChannelsScreen.getFilteredChannelItem(channelName).tap();
-                await this.dismissScheduledPostTooltip();
-                return this.toBeVisible();
-            } catch (err) {
-                lastError = err;
-                try {
-                    await FindChannelsScreen.close();
-                } catch {
-                    // Screen may already be dismissed.
-                }
-                await wait(timeouts.THREE_SEC);
-            }
-        }
-        /* eslint-enable no-await-in-loop */
-        throw lastError instanceof Error
-            ? lastError
-            : new Error(`openViaFindChannels failed for ${channelName}: ${String(lastError)}`);
+        await FindChannelsScreen.open();
+        await FindChannelsScreen.searchInput.replaceText(channelName);
+        await FindChannelsScreen.searchInput.tapReturnKey();
+        await wait(timeouts.TWO_SEC);
+        await waitForElementToBeVisible(
+            FindChannelsScreen.getFilteredChannelItem(channelName),
+            timeouts.HALF_MIN,
+        );
+        await FindChannelsScreen.getFilteredChannelItem(channelName).tap();
+        await this.dismissScheduledPostTooltip();
+        return this.toBeVisible();
     };
 
     back = async () => {
