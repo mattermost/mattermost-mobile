@@ -110,7 +110,8 @@ describe('Messaging - Message Reply', () => {
         await ThreadScreen.back();
     });
 
-    // Skip Android: CI run 30000635898 — the thread parent post is below the visibility threshold.
+    // Android visibility threshold flake: the parent post is partially clipped
+    // by the thread header. Scroll it fully into view before opening post options.
     (isAndroid() ? it.skip : it)('MM-T4785_3 - should not have reply option available on reply thread post options', async () => {
         // # Open a channel screen, post a message, and tap on the post
         const message = `Message ${getRandomId()}`;

@@ -109,8 +109,10 @@ export async function scrollElementIntoView(
     target: Detox.NativeElement,
     scrollContainer: Detox.NativeMatcher,
     maxScrolls = 15,
+    scrollAmount?: number,
 ): Promise<void> {
     const visibilityThreshold = isIos() ? 50 : 25;
+    const amount = scrollAmount ?? (isIos() ? 250 : 400);
     /* eslint-disable no-await-in-loop */
     for (let i = 0; i < maxScrolls; i++) {
         try {
@@ -126,7 +128,7 @@ export async function scrollElementIntoView(
                         await waitFor(target).
                             toBeVisible(visibilityThreshold).
                             whileElement(scrollContainer).
-                            scroll(250, direction);
+                            scroll(amount, direction);
                         return;
                     } catch { /* try opposite direction */ }
                 }
