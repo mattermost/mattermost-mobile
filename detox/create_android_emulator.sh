@@ -12,6 +12,11 @@ EMULATOR_RAM_MB=${MM_ANDROID_EMULATOR_RAM_MB:-3072}
 # Boot N emulator instances of the same AVD (ports 5554, 5556, …).
 # When N>1 every instance uses -read-only (Android multi-instance requirement).
 EMULATOR_COUNT=${EMULATOR_COUNT:-1}
+# Absolute paths — start_server() used to `cd ..` and leave cwd at the repo
+# root, which made relative fixture lookups silently miss (and skip the push).
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+REPO_ROOT="$(cd "${SCRIPT_DIR}/.." && pwd)"
+E2E_BOOKMARK_FIXTURE="${SCRIPT_DIR}/e2e/support/fixtures/image.png"
 
 setup_avd_home() {
     if [[ "$CI" == "true" ]]; then
@@ -252,19 +257,29 @@ configure_chrome_for_ci_on() {
 
 push_e2e_fixtures_on() {
     local serial=$1
-    local fixture="../detox/e2e/support/fixtures/image.png"
-    if [[ -f "$fixture" ]]; then
-        adb -s "$serial" push "$fixture" /sdcard/Download/test_bookmark.png
-        echo "Pushed test fixture to ${serial}:/sdcard/Download/test_bookmark.png"
-        adb -s "$serial" shell am broadcast -a android.intent.action.MEDIA_SCANNER_SCAN_FILE \
-            -d file:///sdcard/Download/test_bookmark.png 2>/dev/null || true
+    # Required by channel_bookmark_file.yml (MM-T5603): DocumentsUI search for
+    # test_bookmark.png under Downloads. Fail loudly — a silent skip leaves the
+    # flow failing later with Assertion is false: "test_bookmark.png" is visible.
+    if [[ ! -f "$E2E_BOOKMARK_FIXTURE" ]]; then
+        echo "ERROR: bookmark fixture missing at ${E2E_BOOKMARK_FIXTURE} (cwd=$(pwd))" >&2
+        exit 1
+    fi
+    adb -s "$serial" push "$E2E_BOOKMARK_FIXTURE" /sdcard/Download/test_bookmark.png
+    echo "Pushed test fixture to ${serial}:/sdcard/Download/test_bookmark.png"
+    adb -s "$serial" shell am broadcast -a android.intent.action.MEDIA_SCANNER_SCAN_FILE \
+        -d file:///sdcard/Download/test_bookmark.png 2>/dev/null || true
+    if ! adb -s "$serial" shell ls /sdcard/Download/test_bookmark.png >/dev/null 2>&1; then
+        echo "ERROR: fixture not present on ${serial} after adb push" >&2
+        exit 1
     fi
 }
 
 start_server() {
     echo "Starting the server..."
-    cd ..
-    RUNNING_E2E=true npm run start &
+    # Launch Metro from the repo root without changing this script's cwd —
+    # a bare `cd ..` previously left cwd at REPO_ROOT and made the relative
+    # bookmark-fixture path in push_e2e_fixtures_on miss silently.
+    (cd "$REPO_ROOT" && RUNNING_E2E=true npm run start &)
     local timeout=120 interval=5 elapsed=0
 
     until nc -z localhost 8081; do
@@ -340,7 +355,7 @@ setup_adb_reverse_on() {
 run_detox_tests() {
     echo "Running Detox tests... $@"
 
-    cd detox
+    cd "$SCRIPT_DIR"
     AVD_NAME="$AVD_NAME" npm run detox:config-gen
     mkdir -p artifacts
     npm run e2e:android-test -- "$@" -- --json --outputFile=artifacts/jest-results.json
