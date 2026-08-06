@@ -40,8 +40,13 @@ echo "Sync token: $SYNC_TOKEN"
 echo "App ID: $MAESTRO_APP_ID"
 echo "Maestro: $MAESTRO_BIN"
 
-# Seed test data: creates 2 users on the same channel using the Detox server API
-tsx --tsconfig detox/tsconfig.json detox/maestro/fixtures/calls_seed.ts --two-users
+# Seed test data: creates 2 users on the same channel using the Detox server API.
+# calls_seed.ts imports detox/e2e/support/* — run via npx from detox/ so local
+# tsx + node_modules resolve (bare `tsx` is not on PATH in CI → exit 127).
+(
+  cd detox
+  npx tsx --tsconfig tsconfig.json maestro/fixtures/calls_seed.ts --two-users
+)
 
 # shellcheck disable=SC1091
 source detox/maestro/.maestro-test-env.sh

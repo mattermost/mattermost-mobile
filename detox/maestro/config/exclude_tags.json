@@ -6,8 +6,12 @@
   "_MM-T1325": "Skip iOS: CI run 30334294934 (PR #9893, SHA 347842c) — clock_display.yml failed with 'Assertion is false: id: tab_bar.home.tab is visible' (~215s). See _DIAGNOSIS_CORRECTION: this message indicates server connect, not login, and was never re-verified against the sim log for this tag. Keep Android coverage.",
   "_MM-T67856_1_2": "Skip iOS: both flows PASSED on run 30424009936 (#9893, f86f99e) and FAILED on run 30447839548 (72c6f256c) with identical code — same config, opposite outcomes. Failure is 'Assertion is false: id: tab_bar.home.tab is visible' (~232-282s). See _DIAGNOSIS_CORRECTION: batch-1 of that run was the TLS trust cancellation and batch-2 was the dropped-keystroke URL corruption — neither is a login flake, and the login.yml retry/eraseText/100s-home-wait changes made for these tags were tuning a subflow that never ran. Keep Android coverage — both flows pass there (~108-143s).",
   "default": [
-    "MM-T67856_4"
+    "MM-T67856_4",
+    "MM-T3244",
+    "MM-T4829"
   ],
+  "_MM-T3244": "Skip bare file_type_preview.yml in discovery — needs seed_file_preview.ts (IMAGE_FILE_ID etc.). e2e-v2 runs it via scenarios/channels/file_type_preview.scenario.yml instead. Matches run_ci_batches.sh should_skip_flow.",
+  "_MM-T4829": "Skip bare start_call.yml in discovery — needs calls_seed.ts. Multi-device Calls coverage is scenarios/multi_device/calls.scenario.yml. Matches run_ci_batches.sh should_skip_flow.",
   "ios": [
     "MM-T1325",
     "MM-T1411",

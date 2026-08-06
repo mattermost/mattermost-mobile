@@ -322,6 +322,11 @@ jobs:
           fi
           ls -lh "$APP_APK" "$TEST_APK"
 
+      # calls_seed.ts (multi-device Calls scenario) imports detox/e2e/support/* and
+      # needs detox/node_modules. iOS workers already install this for preboot.
+      - name: Install Detox dependencies
+        run: cd detox && npm ci --prefer-offline --no-audit --no-fund
+
       - name: Seed test data
         run: |
           cd detox/maestro
