@@ -42,6 +42,31 @@ Append-only notes for a human to copy into the
   fix (tap Remove at a point not overlapped by Logout, per SEC-11010) and verify green
   before dropping the iOS it.skip.
 
+  **Live-attempt update (2026-08-05, 3-server env now available):** With 5 distinct
+  PR-9996 server URLs in detox/.env, hasThreeDistinctServers / itWithThreeServers now
+  resolves true on both platforms, so the 3-server env gate is no longer the blocker —
+  the gated suite executes. The three iOS-skipped tests (MM-T4691_5/6/7) were temporarily
+  un-skipped and the whole file was run on iOS (iPhone 17 Pro / iOS 26.3, flag ON). Result:
+  RED, but NOT at the swipe-reveal. ALL 7 tests in server_list.e2e.ts (including
+  MM-T4691_1…_4, which are NOT part of SEC-11017 and pass in CI) failed at
+  ServerListScreen.open() → ChannelListScreen.serverIcon.tap() with "View is not
+  visible... does not pass visibility percent threshold (100)" — the 24×24 server icon
+  is ~8px clipped top-left (view bounds {{8,8},{24,24}}). The 3-retry loop in open()
+  exhausted all attempts. Artifacts captured: DETOX_VISIBILITY_*SCREEN/_TEST.png +
+  device.log under artifacts/ios.sim.debug.2026-08-06 14-22-03Z/. This is a DIFFERENT
+  mechanism than the CI swipe-reveal failure (which was the revealed Logout/Remove
+  action unhittable AFTER a swipe). Prime suspect: the local iOS app binary is stale —
+  mobile-artifacts/Mattermost.app is v786 / Jul 23, while current source is v793 (7
+  build numbers behind); _1…_4 pass in CI with fresh builds but fail locally with this
+  binary, so the binary is the variable. No swipe-reveal fix was guessed (evidence-first:
+  the captured symptom is the server icon, not the swipe action). The temp un-skip was
+  reverted; the iOS it.skip stays. Next step: rebuild the iOS debug binary from current
+  source and re-run server_list.e2e.ts on iOS — if _1…_4 then pass and only _5/6/7 fail
+  at the swipe, the SEC-11017 swipe-reveal is isolated and the targeted fix can be
+  built against that artifact. SEC-11017 stays NOT closed; the swipe-reveal itself is
+  still unverified locally because the upstream server-icon hittability must be resolved
+  first (rebuild the binary).
+
 - **SEC-11012** (markdown scroll / Back a11y / expand hittability, MM-T4895_1,
   MM-T4899_2/4/5, MM-T1442_1) — Owner: QA. Unskipped 4 of 5; MM-T4899_2 kept as a
   residual. Brought the SEC-10993 shared NavigationHeader.tapBackButton helper onto
