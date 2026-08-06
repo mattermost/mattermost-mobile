@@ -20,6 +20,7 @@ class ServerListScreen {
     addServerButton = element(by.text('Add a server'));
     tutorialHighlight = element(by.id(this.testID.tutorialHighlight));
     tutorialSwipeLeft = element(by.id(this.testID.tutorialSwipeLeft));
+    swipeTutorialText = element(by.text('Swipe left on a server to see more actions'));
 
     toServerItemTestIdPrefix = (serverDisplayName: string) => {
         return `server_list.server_item.${serverDisplayName.replace(/ /g, '_').toLocaleLowerCase()}`;
@@ -53,13 +54,28 @@ class ServerListScreen {
         return element(by.id(`${this.toServerItemTestIdPrefix(serverDisplayName)}.logout.option`));
     };
 
-    toBeVisible = async () => {
-        if (isIos()) {
-            await waitFor(this.serverListScreen).toExist().withTimeout(timeouts.TEN_SEC);
+    // RN Modal with pointerEvents='none' on the illustration; only hardware Back dismisses it.
+    // Press Back exactly once, and only while the tutorial text is present.
+    dismissSwipeTutorial = async () => {
+        try {
+            await waitFor(this.swipeTutorialText).toBeVisible().withTimeout(timeouts.THREE_SEC);
+            await device.pressBack();
+            await waitFor(this.swipeTutorialText).not.toExist().withTimeout(timeouts.FIVE_SEC);
+        } catch {
+            // Tutorial not shown or already dismissed.
         }
+    };
 
-        // Tutorial overlay makes list chrome (title/screen) unhittable for swipes.
-        await this.closeTutorial();
+    toBeVisible = async () => {
+        // On Android the swipe tutorial is a RN Modal (separate Dialog window). Espresso
+        // searches that focused window, so server_list.screen appears missing until dismissed.
+        if (isAndroid()) {
+            await this.dismissSwipeTutorial();
+            await waitForElementToExist(this.serverListScreen, timeouts.TEN_SEC);
+        } else {
+            await waitFor(this.serverListScreen).toExist().withTimeout(timeouts.TEN_SEC);
+            await this.closeTutorial();
+        }
         return this.serverListScreen;
     };
 
@@ -83,9 +99,6 @@ class ServerListScreen {
         /* eslint-enable no-await-in-loop */
 
         await this.toBeVisible();
-
-        // "Swipe left on a server…" tutorial covers the list until dismissed.
-        await this.closeTutorial();
         return this.serverListScreen;
     };
 
@@ -102,9 +115,14 @@ class ServerListScreen {
 
     closeTutorial = async () => {
         try {
-            await waitFor(this.tutorialHighlight).toExist().withTimeout(timeouts.TEN_SEC);
-            await this.tutorialSwipeLeft.tap();
-            await waitFor(this.tutorialHighlight).not.toExist().withTimeout(timeouts.TEN_SEC);
+            if (isIos()) {
+                await waitFor(this.tutorialHighlight).toExist().withTimeout(timeouts.TEN_SEC);
+                await this.tutorialSwipeLeft.tap();
+                await waitFor(this.tutorialHighlight).not.toExist().withTimeout(timeouts.TEN_SEC);
+            } else {
+                // Guarded pressBack — a blind pressBack dismisses server_list underneath.
+                await this.dismissSwipeTutorial();
+            }
         } catch {
             // Tutorial already dismissed or not shown for this account.
         }
