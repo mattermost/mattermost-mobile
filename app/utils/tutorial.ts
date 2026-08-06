@@ -17,8 +17,8 @@ function launchArgDisablesTutorials(): boolean {
  * Tutorials are device-local WatermelonDB flags. Detox wipes app data between
  * files, so they would otherwise reappear and steal Espresso focus on Android.
  *
- * Prefer Detox launchArgs.disableTutorials (via RNUtils). RUNNING_E2E covers
- * Metro / skip_build runs where the native binary may not yet expose the flag.
+ * Prefer Detox/Maestro disableTutorials launch args (via RNUtils). RUNNING_E2E
+ * covers Metro / skip_build runs where the native binary may not expose the flag.
  */
 export function areTutorialsDisabled(
     runningE2e: string = RUNNING_E2E,

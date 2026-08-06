@@ -115,9 +115,22 @@ import React
         return appGroupId
     }
 
-    /// Detox passes launchArgs as `-key value` process arguments.
+    /// Detox: `-disableTutorials <value>`. Maestro: key in process args / UserDefaults.
     @objc public func areTutorialsDisabled() -> Bool {
         let args = ProcessInfo.processInfo.arguments
+        if args.contains("disableTutorials") {
+            return true
+        }
+        if let defaultsValue = UserDefaults.standard.object(forKey: "disableTutorials") {
+            if let boolValue = defaultsValue as? Bool {
+                return boolValue
+            }
+            if let stringValue = defaultsValue as? String {
+                return stringValue.caseInsensitiveCompare("true") == .orderedSame ||
+                    stringValue.caseInsensitiveCompare("YES") == .orderedSame ||
+                    stringValue == "1"
+            }
+        }
         guard let index = args.firstIndex(of: "-disableTutorials"),
               args.index(after: index) < args.endIndex else {
             return false

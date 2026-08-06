@@ -25,6 +25,8 @@ appId: ${MAESTRO_APP_ID}
       - launchApp:
           stopApp: true
           clearState: true
+          arguments:
+            disableTutorials: true
       # # After clearState, the JS bundle loads fresh + notification dialog
       # may appear. Wait longer for bundle + permission dialog.
       - waitForAnimationToEnd:
@@ -48,6 +50,8 @@ appId: ${MAESTRO_APP_ID}
       - launchApp:
           stopApp: false
           clearState: true
+          arguments:
+            disableTutorials: true
       # # After clearState, the Android notification permission dialog appears
       # shortly after launch. Give it time to render, then dismiss if present.
       - waitForAnimationToEnd:

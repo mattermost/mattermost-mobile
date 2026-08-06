@@ -67,13 +67,19 @@ class RNUtilsModuleImpl(private val reactContext: ReactApplicationContext): Life
     }
 
     /**
-     * Detox puts user launchArgs in the activity intent under "launchArgs".
-     * Values are strings (booleans arrive as "true" / "false").
+     * Detox: extras bundle "launchArgs" (string values).
+     * Maestro: direct intent extras (boolean / string).
      */
     fun areTutorialsDisabled(): Boolean {
-        val activity = reactContext.currentActivity ?: return false
-        val launchArgs = activity.intent?.getBundleExtra("launchArgs") ?: return false
-        val value = launchArgs.get("disableTutorials") ?: return false
+        val intent = reactContext.currentActivity?.intent ?: return false
+        val detoxValue = intent.getBundleExtra("launchArgs")?.get("disableTutorials")
+        if (isTruthyLaunchArg(detoxValue)) {
+            return true
+        }
+        return isTruthyLaunchArg(intent.extras?.get("disableTutorials"))
+    }
+
+    private fun isTruthyLaunchArg(value: Any?): Boolean {
         return when (value) {
             is Boolean -> value
             is String -> value.equals("true", ignoreCase = true) ||
