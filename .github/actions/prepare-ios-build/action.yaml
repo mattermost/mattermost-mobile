@@ -9,6 +9,10 @@ inputs:
   intune-ssh-private-key:
     description: 'SSH private key for Intune submodule repository access (required if intune-enabled is true)'
     required: false
+  bundler-cache:
+    description: 'Enable Fastlane gem bundler-cache (E2E only; leave false for release/beta builds)'
+    required: false
+    default: 'false'
 
 runs:
   using: composite
@@ -117,6 +121,8 @@ runs:
 
     - name: ci/prepare-mobile-build
       uses: ./.github/actions/prepare-mobile-build
+      with:
+        bundler-cache: ${{ inputs.bundler-cache }}
 
     - name: ci/setup-intune
       if: inputs.intune-enabled == 'true'

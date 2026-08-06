@@ -1,20 +1,73 @@
 name: prepare-mobile-build
 description: Action to prepare environment for mobile build
 
+inputs:
+  bundler-cache:
+    description: >
+      Use setup-ruby bundler-cache (deployment mode). Enable for E2E builds only.
+      Release/beta/PR production builds should leave this false to keep the
+      historical plain bundle install path.
+    required: false
+    default: 'false'
+
 runs:
   using: composite
   steps:
-    # bundler-cache restores/installs fastlane/Gemfile.lock gems before the job
-    # continues. The previous manual cache targeted repo-root vendor/bundle while
-    # bundle install ran in fastlane/, so the cache never hit or saved.
-    # ruby-version must be set explicitly: working-directory makes setup-ruby look
-    # for .ruby-version under fastlane/, but the file lives at the repo root.
+    # --- Release / production path (default) ---
+    # Plain bundle install without deployment mode. Do not change this path
+    # for E2E caching concerns.
+    - uses: ruby/setup-ruby@89f90524b88a01fe6e0b732220432cc6142926af # v1.313.0
+      if: inputs.bundler-cache != 'true'
+
+    - name: ci/setup-fastlane-dependencies
+      if: inputs.bundler-cache != 'true'
+      shell: bash
+      run: |
+        echo "::group::setup-fastlane-dependencies"
+        bundle install
+        echo "::endgroup::"
+      working-directory: ./fastlane
+
+    - name: Cache Ruby gems
+      if: inputs.bundler-cache != 'true'
+      uses: actions/cache@27d5ce7f107fe9357f9df03efb73ab90386fccae # v5.0.5
+      with:
+        path: vendor/bundle
+        key: ${{ runner.os }}-gems-${{ hashFiles('**/Gemfile.lock') }}
+        restore-keys: |
+          ${{ runner.os }}-gems-
+
+    # --- E2E path ---
+    # bundler-cache restores/installs fastlane/Gemfile.lock gems correctly under
+    # fastlane/vendor/bundle. Requires the runner platform to be in Gemfile.lock
+    # because setup-ruby enables Bundler deployment mode.
     - name: Read Ruby version
+      if: inputs.bundler-cache == 'true'
       id: ruby-version
       shell: bash
       run: echo "version=$(tr -d '[:space:]' < .ruby-version)" >> "$GITHUB_OUTPUT"
 
     - uses: ruby/setup-ruby@89f90524b88a01fe6e0b732220432cc6142926af # v1.313.0
+      if: inputs.bundler-cache == 'true'
+      with:
+        ruby-version: ${{ steps.ruby-version.outputs.version }}
+        working-directory: fastlane
+
+    - name: Ensure Bundler platform is locked
+      if: inputs.bundler-cache == 'true'
+      shell: bash
+      working-directory: fastlane
+      run: |
+        platform="$(ruby -e 'require "bundler"; print Bundler.local_platform')"
+        if grep -qE "^[[:space:]]+${platform}$" Gemfile.lock; then
+          echo "Platform ${platform} already present in Gemfile.lock"
+        else
+          echo "Adding missing platform ${platform} to Gemfile.lock"
+          bundle lock --add-platform "${platform}"
+        fi
+
+    - uses: ruby/setup-ruby@89f90524b88a01fe6e0b732220432cc6142926af # v1.313.0
+      if: inputs.bundler-cache == 'true'
       with:
         ruby-version: ${{ steps.ruby-version.outputs.version }}
         bundler-cache: true
