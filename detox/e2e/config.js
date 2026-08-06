@@ -8,6 +8,7 @@ const maxWorkers = Number.isNaN(parsedMaxWorkers) || parsedMaxWorkers < 1 ? 1 : 
 
 module.exports = {
     setupFilesAfterEnv: ['./test/setup.ts'],
+
     // CI defaults to 1; orchestration workers set DETOX_MAX_WORKERS when multiple devices are pre-booted.
     maxWorkers,
     testSequencer: './custom_sequencer.js',
