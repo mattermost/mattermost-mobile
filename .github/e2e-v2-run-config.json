@@ -1,7 +1,7 @@
 {
   "phase": "test",
   "mobile_ref": "",
-  "framework": "detox",
+  "framework": "both",
   "platform": "all",
   "skip_build": true,
   "artifact_run_id": "30976048711",
@@ -17,7 +17,8 @@
   "pr_number": "10006",
   "run_type": "PR",
   "enabled": true,
-  "rerun_note": "full Detox v2 on fresh Matterwick servers (5gfdzfpa/…); ClassificationMarkings default-on; Maestro via Matterwick E2E 31077045999; reuse build 30976048711; ios=40 android=30",
+  "rerun_note": "framework=both: Detox v2 + Maestro v2 orchestration on fresh servers (5gfdzfpa/…); reuse Detox/iOS artifacts 30976048711; build Maestro Android APK in-run; maestro_workers=4; ios=40 android=30",
   "ios_worker_count": "40",
-  "android_worker_count": "30"
+  "android_worker_count": "30",
+  "maestro_worker_count": "4"
 }

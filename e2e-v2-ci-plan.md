@@ -350,9 +350,9 @@ Each stage ends with: **success criteria met → commit (not the plan) → push 
 
 ### Stage 7 — Maestro (requires #102 on staging)
 
-- [ ] Confirm staging has Maestro orchestration migration
-- [ ] Pin actions to `feat-maestro` SHA (or merged main)
-- [ ] Maestro iOS then Android
+- [x] Confirm staging has Maestro orchestration migration (`000026` / `FrameworkMaestro`; PR #102 merged)
+- [x] Pin actions to merged main (`1f7ca41` begin/summary, `bd9f092` dispatch-run)
+- [x] Maestro iOS + Android via `e2e-v2-maestro-*.yml` when `framework: maestro|both`
 - **Success:** Maestro reports on staging; majority green
 
 ### Stage 8 — Polish & extensibility
