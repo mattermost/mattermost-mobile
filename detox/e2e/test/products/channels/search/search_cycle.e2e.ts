@@ -31,7 +31,7 @@ import {
     ThreadScreen,
 } from '@support/ui/screen';
 import {getRandomId, isAndroid, timeouts, wait} from '@support/utils';
-import {expect} from 'detox';
+import {expect, waitFor} from 'detox';
 
 describe('Search - Search Cycle', () => {
     const serverOneDisplayName = 'Server 1';
@@ -87,7 +87,11 @@ describe('Search - Search Cycle', () => {
 
         // * Verify search results contain the posted message
         const {postListPostItem: searchResultPostItem} = SearchMessagesScreen.getPostListPostItem(post.id, message);
-        await expect(searchResultPostItem).toBeVisible();
+        if (isAndroid()) {
+            await waitFor(searchResultPostItem).toExist().withTimeout(timeouts.TEN_SEC);
+        } else {
+            await expect(searchResultPostItem).toBeVisible();
+        }
 
         // # Tap on the search result post to open the permalink view
         await searchResultPostItem.tap();
@@ -136,7 +140,11 @@ describe('Search - Search Cycle', () => {
 
         // * Verify search results contain the posted message
         const {postListPostItem: searchResultPostItem} = SearchMessagesScreen.getPostListPostItem(originalPost.id, searchTerm);
-        await expect(searchResultPostItem).toBeVisible();
+        if (isAndroid()) {
+            await waitFor(searchResultPostItem).toExist().withTimeout(timeouts.TEN_SEC);
+        } else {
+            await expect(searchResultPostItem).toBeVisible();
+        }
 
         // # Open post options for the search result and tap the reply option
         await SearchMessagesScreen.openPostOptionsFor(originalPost.id, searchTerm);

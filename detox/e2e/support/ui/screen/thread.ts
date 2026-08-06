@@ -119,16 +119,47 @@ class ThreadScreen {
     };
 
     back = async () => {
-        await waitForElementToExist(this.backButton, timeouts.TEN_SEC);
-
-        // Thread is the pushed/topmost screen, so its header sits at the higher
-        // index when stacked over the channel. Tap index 1 first, fall back to 0
-        // when only one header is mounted. Routes through NavigationHeader.tapBackButton
-        // (shared helper) so SEC-11015 and other back-index fixes reuse one matcher.
+        let navigated = false;
         try {
-            await NavigationHeader.tapBackButton(1);
+            // Wait longer on Android: the header back button can take a while to
+            // mount after the thread screen content renders.
+            const backTimeout = isAndroid() ? timeouts.HALF_MIN : timeouts.TEN_SEC;
+            await waitForElementToExist(this.backButton, backTimeout);
+
+            // Thread is the pushed/topmost screen, so its header sits at the higher
+            // index when stacked over the channel. Tap index 1 first, fall back to 0
+            // when only one header is mounted. Routes through NavigationHeader.tapBackButton
+            // (shared helper) so SEC-11015 and other back-index fixes reuse one matcher.
+            try {
+                await NavigationHeader.tapBackButton(1);
+            } catch {
+                await NavigationHeader.tapBackButton(0);
+            }
+            navigated = true;
         } catch {
-            await NavigationHeader.tapBackButton(0);
+            // Back button not in hierarchy — fall through to tab/native back.
+        }
+        if (!navigated && isAndroid()) {
+            // A single system back sometimes only dismisses the soft keyboard or a
+            // transient overlay in thread-from-search contexts. Give it two attempts
+            // before giving up.
+            // eslint-disable-next-line no-await-in-loop
+            for (let attempt = 0; attempt < 2 && !navigated; attempt++) {
+                try {
+                    // eslint-disable-next-line no-await-in-loop
+                    await device.pressBack();
+                    // eslint-disable-next-line no-await-in-loop
+                    await wait(timeouts.TWO_SEC);
+                    // eslint-disable-next-line no-await-in-loop
+                    await waitFor(this.threadScreen).not.toBeVisible().withTimeout(timeouts.FIVE_SEC);
+                    navigated = true;
+                } catch {
+                    // still visible, retry
+                }
+            }
+        }
+        if (!navigated) {
+            throw new Error('ThreadScreen.back: could not navigate back');
         }
         await waitFor(this.threadScreen).not.toBeVisible().withTimeout(timeouts.TEN_SEC);
 
