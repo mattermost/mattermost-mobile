@@ -1,5 +1,5 @@
 # E2E v2 — Maestro iOS via test-system-io orchestration (staging by default).
-# Called from e2e-v2.yml. Does not build the app; downloads e2e-v2-ios-simulator-* artifacts.
+# Called from e2e-v2.yml. Reuses the Detox iOS sim artifact + Metro (same as Detox).
 name: E2E v2 Maestro iOS
 
 on:
@@ -316,6 +316,29 @@ jobs:
           xcrun simctl spawn "$SIMULATOR_ID" launchctl setenv TZ "America/New_York"
           echo "Simulator timezone set to America/New_York"
 
+      - name: Set RUNNING_E2E
+        run: echo "RUNNING_E2E=true" > .env
+
+      # Same Metro path as Detox iOS — shared sim artifact loads JS from the packager.
+      - name: Start Metro bundler
+        run: |
+          npm run start > metro.log 2>&1 &
+          METRO_PID=$!
+          echo "METRO_PID=$METRO_PID" >> "$GITHUB_ENV"
+          timeout=120
+          elapsed=0
+          while [ $elapsed -lt $timeout ]; do
+            if curl -s http://localhost:8081/status 2>/dev/null | grep -q "packager-status:running"; then
+              echo "Metro ready after ${elapsed}s"
+              sleep 15
+              exit 0
+            fi
+            sleep 2
+            elapsed=$((elapsed + 2))
+          done
+          echo "::warning::Metro may not be ready; last log lines:"
+          tail -30 metro.log || true
+
       - name: Seed test data
         run: |
           cd detox/maestro
@@ -417,10 +440,15 @@ jobs:
           maestro-timeout-ms: "540000"
           max-idle-polls: "8"
 
-      - name: Cleanup simulator
+      - name: Cleanup Metro / simulator
         if: always()
         timeout-minutes: 2
         run: |
+          if [ -n "${METRO_PID:-}" ]; then
+            kill -9 -"$METRO_PID" 2>/dev/null || true
+            pkill -9 -f "react-native.*start" 2>/dev/null || true
+            pkill -9 -f "metro" 2>/dev/null || true
+          fi
           IDS="${SIMULATOR_IDS:-${SIMULATOR_ID:-}}"
           IFS=',' read -ra SIMS <<< "$IDS"
           for sid in "${SIMS[@]}"; do

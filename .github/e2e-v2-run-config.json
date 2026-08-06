@@ -17,7 +17,7 @@
   "pr_number": "10006",
   "run_type": "PR",
   "enabled": true,
-  "rerun_note": "framework=both: Detox v2 + Maestro v2 orchestration on fresh servers (5gfdzfpa/…); reuse Detox/iOS artifacts 30976048711; build Maestro Android APK in-run; maestro_workers=4; ios=40 android=30",
+  "rerun_note": "framework=both: Detox + Maestro share iOS sim + Android debug APK/Metro (artifact 30976048711); no separate Maestro APK build; maestro_workers=4; ios=40 android=30",
   "ios_worker_count": "40",
   "android_worker_count": "30",
   "maestro_worker_count": "4"

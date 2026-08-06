@@ -288,7 +288,7 @@ Same shape; pin actions to PR #102 SHA until merge:
 - `maestro-flow-path: flows`
 - `maestro-exclude-dir: multi_device`
 - Workers pass `maestro-platform`, `maestro-device`, `maestro-env` (`SITE_1_URL=…` lines)
-- Release Android APK + iOS sim build with `RUNNING_E2E=true` (no Metro)
+- Shared artifacts with Detox: iOS sim + Android debug APK; Maestro workers start Metro like Detox (v2 — no separate Maestro release APK)
 
 ---
 
