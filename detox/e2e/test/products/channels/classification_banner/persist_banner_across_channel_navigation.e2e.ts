@@ -13,7 +13,7 @@ import {Properties, Setup, System} from '@support/server_api';
 import {serverOneUrl, siteOneUrl} from '@support/test_config';
 import {GlobalClassificationBanner} from '@support/ui/component';
 import {ChannelListScreen, ChannelScreen, HomeScreen, LoginScreen, ServerScreen} from '@support/ui/screen';
-import {isAndroid, timeouts, wait} from '@support/utils';
+import {timeouts, wait} from '@support/utils';
 import {by, device, element, expect, waitFor} from 'detox';
 
 // Lock wait is up to 5m; jest timeout matches the classification lock budget.
@@ -29,12 +29,6 @@ describe('Classification Banner - Global Classification Banner', () => {
         lockOwner = createClassificationLockOwner();
         await acquireClassificationLock(siteOneUrl, lockOwner);
 
-        await System.apiPatchConfig(siteOneUrl, {
-            FeatureFlags: {
-                ClassificationMarkings: false,
-            },
-        });
-
         const {user} = await Setup.apiInit(siteOneUrl);
         testUser = user;
 
@@ -49,7 +43,7 @@ describe('Classification Banner - Global Classification Banner', () => {
             await Properties.apiCleanupClassification(siteOneUrl);
             await System.apiPatchConfig(siteOneUrl, {
                 FeatureFlags: {
-                    ClassificationMarkings: false,
+                    ClassificationMarkings: true,
                 },
             });
 
@@ -63,8 +57,7 @@ describe('Classification Banner - Global Classification Banner', () => {
         await Properties.apiCleanupClassification(siteOneUrl);
     });
 
-    // Skip Android: FeatureFlagClassificationMarkings needs a server restart to take effect on fresh cloud installs.
-    (isAndroid() ? it.skip : it)('MM-T6201_1 - should persist the banner across channel navigation', async () => {
+    it('MM-T6201_1 - should persist the banner across channel navigation', async () => {
         await enableClassificationMarkings(siteOneUrl);
         await Properties.apiSetupClassificationWithBanner(siteOneUrl, {
             levelId: 'lvltopsecret00000000000000',

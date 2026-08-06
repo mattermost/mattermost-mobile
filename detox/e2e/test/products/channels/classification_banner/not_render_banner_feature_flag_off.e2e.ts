@@ -28,12 +28,6 @@ describe('Classification Banner - Global Classification Banner', () => {
         lockOwner = createClassificationLockOwner();
         await acquireClassificationLock(siteOneUrl, lockOwner);
 
-        await System.apiPatchConfig(siteOneUrl, {
-            FeatureFlags: {
-                ClassificationMarkings: false,
-            },
-        });
-
         const {user} = await Setup.apiInit(siteOneUrl);
         testUser = user;
 
@@ -48,7 +42,7 @@ describe('Classification Banner - Global Classification Banner', () => {
             await Properties.apiCleanupClassification(siteOneUrl);
             await System.apiPatchConfig(siteOneUrl, {
                 FeatureFlags: {
-                    ClassificationMarkings: false,
+                    ClassificationMarkings: true,
                 },
             });
 
@@ -73,5 +67,12 @@ describe('Classification Banner - Global Classification Banner', () => {
         await ChannelListScreen.toBeVisible();
 
         await GlobalClassificationBanner.toNotBeVisible();
+
+        // Restore shared-server default before releasing the classification lock.
+        await System.apiPatchConfig(siteOneUrl, {
+            FeatureFlags: {
+                ClassificationMarkings: true,
+            },
+        });
     });
 });

@@ -8,6 +8,9 @@ import {getRandomId, timeouts, wait} from '@support/utils';
 const LOCK_CATEGORY = 'e2e_locks';
 const LOCK_NAME = 'classification';
 
+// FeatureFlags.ClassificationMarkings defaults to true in detox/provision and
+// global_setup (banner still needs property fields). This lock serializes suite
+// mutations of that shared flag / property setup on Matterwick hosts.
 // Suites set jest.setTimeout(5m); lock wait/TTL stay within the same budget so
 // peer classification specs serialize without multi-tens-of-minutes hangs.
 const DEFAULT_TIMEOUT_MS = timeouts.ONE_MIN * 5;

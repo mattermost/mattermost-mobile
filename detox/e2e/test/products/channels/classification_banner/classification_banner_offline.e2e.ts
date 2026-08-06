@@ -66,14 +66,15 @@ describe('Classification Banner - Offline / Cache Behaviour', () => {
 
     afterAll(async () => {
         try {
-            // Each step runs even if an earlier one fails, so a cleanup error cannot leave
-            // the feature flag enabled or the session logged in for later suites.
+            // Keep cleanup resilient: property fields off, FF restored to the
+            // shared-server default, then logout — each step runs even if an
+            // earlier one fails.
             try {
                 await Properties.apiCleanupClassification(siteOneUrl);
             } finally {
                 try {
                     await System.apiPatchConfig(siteOneUrl, {
-                        FeatureFlags: {ClassificationMarkings: false},
+                        FeatureFlags: {ClassificationMarkings: true},
                     });
                 } finally {
                     await HomeScreen.logout();

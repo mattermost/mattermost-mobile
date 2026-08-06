@@ -39,6 +39,17 @@ const TEST_SERVER_CONFIG_PATCH = {
     TeamSettings: {
         ExperimentalViewArchivedChannels: true,
     },
+    // Suite-wide defaults for shared Matterwick hosts. Banner UI still requires
+    // property-field setup (cleaned per classification suite), so leaving the
+    // feature flag on does not affect unrelated specs. Runtime toggles that
+    // need off use the classification lock.
+    FeatureFlags: {
+        ClassificationMarkings: true,
+    },
+    ServiceSettings: {
+        EnableCrossTeamSearch: true,
+        CollapsedThreads: 'always_on',
+    },
     ConnectedWorkspacesSettings: {
         EnableSharedChannels: true,
         EnableRemoteClusterService: true,

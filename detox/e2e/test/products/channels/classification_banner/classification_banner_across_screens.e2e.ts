@@ -68,11 +68,6 @@ jest.setTimeout(timeouts.ONE_MIN * 5);
                 await Properties.apiCleanupClassification(siteOneUrl);
             } finally {
                 try {
-                    await System.apiPatchConfig(siteOneUrl, {
-                        FeatureFlags: {
-                            ClassificationMarkings: false,
-                        },
-                    });
                 } finally {
                     await HomeScreen.logout();
                 }

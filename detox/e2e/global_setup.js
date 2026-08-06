@@ -184,8 +184,15 @@ async function serverSetup() {
     }
 
     try {
+        // Keep shared-server defaults aligned with detox/provision/server-config.ts.
+        // ClassificationMarkings alone does not show a banner (needs property fields).
         await axios.put(`${SITE_URL}/api/v4/config/patch`, {
             ConnectedWorkspacesSettings: {EnableRemoteClusterService: true},
+            FeatureFlags: {ClassificationMarkings: true},
+            ServiceSettings: {
+                EnableCrossTeamSearch: true,
+                CollapsedThreads: 'always_on',
+            },
         }, {headers});
         process.stdout.write('[globalSetup] ✅ Mutable server config initialized for E2E tests\n');
     } catch (err) {
