@@ -204,14 +204,12 @@ describe('autoCacheCleanup', () => {
 
         await autoCacheCleanup(SERVER_URL);
 
-        // unprotected channel is called with reconcile observers set to false
         expect(LocalPost.deletePostsInChannelsByCutoff).toHaveBeenCalledWith(
             SERVER_URL, [unprotectedChannelId], CUTOFF, expect.any(Set),
         );
 
-        // the viewed channel is called with reconcile observers set to true
         expect(LocalPost.deletePostsInChannelsByCutoff).toHaveBeenCalledWith(
-            SERVER_URL, [viewedChannelId], CUTOFF, expect.any(Set), true,
+            SERVER_URL, [viewedChannelId], CUTOFF, expect.any(Set),
         );
     });
 
@@ -226,7 +224,7 @@ describe('autoCacheCleanup', () => {
 
         expect(LocalPost.deletePostsInChannelsByCutoff).toHaveBeenCalledTimes(1);
         expect(LocalPost.deletePostsInChannelsByCutoff).toHaveBeenCalledWith(
-            SERVER_URL, [viewedChannelId], CUTOFF, expect.any(Set), true,
+            SERVER_URL, [viewedChannelId], CUTOFF, expect.any(Set),
         );
     });
 
@@ -254,7 +252,7 @@ describe('autoCacheCleanup', () => {
         const PROTECTION_CUTOFF = OLDEST_VISIBLE - (AUTO_CACHE_CLEANUP_PROTECTION_BUFFER * 105);
 
         expect(LocalPost.deletePostsInChannelsByCutoff).toHaveBeenCalledWith(
-            SERVER_URL, [viewedChannelId], PROTECTION_CUTOFF, expect.any(Set), true,
+            SERVER_URL, [viewedChannelId], PROTECTION_CUTOFF, expect.any(Set),
         );
     });
 
@@ -277,7 +275,7 @@ describe('autoCacheCleanup', () => {
 
         // viewedChannelLimit = Infinity → effective cutoff = raw CUTOFF
         expect(LocalPost.deletePostsInChannelsByCutoff).toHaveBeenCalledWith(
-            SERVER_URL, [viewedChannelId], CUTOFF, expect.any(Set), true,
+            SERVER_URL, [viewedChannelId], CUTOFF, expect.any(Set),
         );
     });
 
@@ -330,9 +328,8 @@ describe('autoCacheCleanup', () => {
         await autoCacheCleanup(SERVER_URL);
 
         // without the root.createAt floor, this would fall back to the raw (less protective) CUTOFF
-        // thread parent channel is called with reconcile observers set to true
         expect(LocalPost.deletePostsInChannelsByCutoff).toHaveBeenCalledWith(
-            SERVER_URL, [threadParentChannelId], rootCreateAt, expect.any(Set), true,
+            SERVER_URL, [threadParentChannelId], rootCreateAt, expect.any(Set),
         );
     });
 
@@ -354,7 +351,7 @@ describe('autoCacheCleanup', () => {
 
         // without folding threadParentLimit in, this would fall back to the raw (less protective) CUTOFF
         expect(LocalPost.deletePostsInChannelsByCutoff).toHaveBeenCalledWith(
-            SERVER_URL, [sharedChannelId], rootCreateAt, expect.any(Set), true,
+            SERVER_URL, [sharedChannelId], rootCreateAt, expect.any(Set),
         );
     });
 

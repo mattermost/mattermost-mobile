@@ -154,7 +154,7 @@ async function cleanupPosts(
     ]);
 
     // delete posts in channels not currently being viewed using a single query.
-    // PostsInChannel/MyChannel bookkeeping is applied atomically inside this call.
+    // PostsInChannel/PostsInThread/MyChannel bookkeeping is applied atomically inside this call.
     if (unprotectedChannels.size > 0) {
         const {error: deleteError} = await deletePostsInChannelsByCutoff(serverUrl, Array.from(unprotectedChannels), cutoff, excludedPostIds);
         if (deleteError) {
@@ -162,19 +162,19 @@ async function cleanupPosts(
         }
     }
 
-    // delete posts in viewed channel if any; reconcile so its mounted post list re-queries
+    // delete posts in viewed channel if any
     if (protections.viewedChannelId && channelsWithPostRanges.has(protections.viewedChannelId)) {
         const computedChannelCutoff = Math.min(cutoff, channelProtectionLimit(protections.viewedChannelId, protections));
-        const {error: deleteError} = await deletePostsInChannelsByCutoff(serverUrl, [protections.viewedChannelId], computedChannelCutoff, excludedPostIds, true);
+        const {error: deleteError} = await deletePostsInChannelsByCutoff(serverUrl, [protections.viewedChannelId], computedChannelCutoff, excludedPostIds);
         if (deleteError) {
             throw deleteError;
         }
     }
 
-    // delete posts in thread parent channel if any; reconcile so its mounted post list re-queries
+    // delete posts in thread parent channel if any
     if (protections.threadParentChannelId && protections.threadParentChannelId !== protections.viewedChannelId && channelsWithPostRanges.has(protections.threadParentChannelId)) {
         const computedChannelCutoff = Math.min(cutoff, channelProtectionLimit(protections.threadParentChannelId, protections));
-        const {error: deleteError} = await deletePostsInChannelsByCutoff(serverUrl, [protections.threadParentChannelId], computedChannelCutoff, excludedPostIds, true);
+        const {error: deleteError} = await deletePostsInChannelsByCutoff(serverUrl, [protections.threadParentChannelId], computedChannelCutoff, excludedPostIds);
         if (deleteError) {
             throw deleteError;
         }

@@ -21,6 +21,7 @@ import {updateLastPostAt, updateMyChannelLastFetchedAt} from './channel';
 import type MyChannelModel from '@typings/database/models/servers/my_channel';
 import type PostModel from '@typings/database/models/servers/post';
 import type PostsInChannelModel from '@typings/database/models/servers/posts_in_channel';
+import type PostsInThreadModel from '@typings/database/models/servers/posts_in_thread';
 import type UserModel from '@typings/database/models/servers/user';
 
 const {SERVER: {DRAFT, FILE, MY_CHANNEL, POST, POSTS_IN_CHANNEL, POSTS_IN_THREAD, REACTION, THREAD, THREAD_PARTICIPANT, THREADS_IN_TEAM}} = MM_TABLES;
@@ -421,7 +422,6 @@ export async function deletePostsInChannelsByCutoff(
     channelIds: string[],
     cutoff: number,
     excludedPostIds: Set<string> = new Set(),
-    reconcileObservers = false,
 ): Promise<{error: unknown}> {
     if (channelIds.length === 0) {
         return {error: undefined};
@@ -470,18 +470,33 @@ export async function deletePostsInChannelsByCutoff(
             });
         });
 
-        // Re-apply the raw-SQL Posts In Channel 'earliest' bump through the model layer so mounted post lists re-observe
-        // Opt-in since only mounted channels have live observers.
-        if (reconcileObservers) {
-            const rows = await database.get<PostsInChannelModel>(POSTS_IN_CHANNEL).query(Q.where('channel_id', Q.oneOf(channelIds))).fetch();
-            const prepared = rows.
+        // Re-apply the raw-SQL bookkeeping through the model layer so cached rows and
+        // mounted observers reflect it too - unsafeExecute writes bypass both.
+        const channelIdFilter = Q.oneOf(channelIds);
+        const picRows = await database.get<PostsInChannelModel>(POSTS_IN_CHANNEL).query(Q.where('channel_id', channelIdFilter)).fetch();
+        const pitRows = await database.get<PostsInThreadModel>(POSTS_IN_THREAD).query(Q.on(POST, Q.where('channel_id', channelIdFilter))).fetch();
+        const myChannelRows = await database.get<MyChannelModel>(MY_CHANNEL).query(Q.where('id', channelIdFilter)).fetch();
+        const channelsWithSurvivingPosts = new Set(picRows.map((row) => row.channelId));
+
+        const prepared: Model[] = [
+            ...picRows.
                 filter((row) => row.earliest < cutoff).
                 map((row) => row.prepareUpdate((r) => {
                     r.earliest = cutoff;
-                }));
-            if (prepared.length > 0) {
-                await operator.batchRecords(prepared, 'deletePostsInChannelsByCutoff.reconcile');
-            }
+                })),
+            ...pitRows.
+                filter((row) => row.earliest < cutoff).
+                map((row) => row.prepareUpdate((r) => {
+                    r.earliest = cutoff;
+                })),
+            ...myChannelRows.
+                filter((row) => row.lastFetchedAt > 0 && !channelsWithSurvivingPosts.has(row.id)).
+                map((row) => row.prepareUpdate((r) => {
+                    r.lastFetchedAt = 0;
+                })),
+        ];
+        if (prepared.length > 0) {
+            await operator.batchRecords(prepared, 'deletePostsInChannelsByCutoff.reconcile');
         }
 
         return {error: undefined};
