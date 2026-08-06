@@ -2,7 +2,7 @@
   "phase": "test",
   "mobile_ref": "",
   "framework": "maestro",
-  "platform": "all",
+  "platform": "android",
   "skip_build": true,
   "artifact_run_id": "30976048711",
   "worker_count": "40",
@@ -17,7 +17,7 @@
   "pr_number": "10006",
   "run_type": "PR",
   "enabled": true,
-  "rerun_note": "framework=maestro: verify dispatch-run@96e1d98 failure screenshots (--debug-output + stage to output/); share artifacts 30976048711; maestro_workers=4",
+  "rerun_note": "framework=maestro platform=android: retry after site-2 blip; verify dispatch-run@96e1d98 screenshots",
   "ios_worker_count": "40",
   "android_worker_count": "30",
   "maestro_worker_count": "4"

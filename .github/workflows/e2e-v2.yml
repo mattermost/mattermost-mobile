@@ -154,7 +154,7 @@ concurrency:
   # stuck group when GitHub leaves macOS Detox workers uncancelled (known flake).
   # cancel-previous also force-cancels peer E2E v2 runs on this branch so a new
   # commit does not wait on a hung prior attempt.
-  group: e2e-v2-${{ github.ref }}-r32
+  group: e2e-v2-${{ github.ref }}-r33
   cancel-in-progress: true
 
 env:
