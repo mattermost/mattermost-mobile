@@ -110,8 +110,13 @@ describe('Messaging - Message Reply', () => {
         await ThreadScreen.back();
     });
 
-    // Android visibility threshold flake: the parent post is partially clipped
-    // by the thread header. Scroll it fully into view before opening post options.
+    // iOS continues to run (it was already unskipped). Android re-skipped: the
+    // scrollElementIntoView scrollAmount change (400px scroll on Android) is unverified
+    // — the test servers were inactive (302 → cloud/inactive) when the re-run was
+    // attempted, so the parent-post-clip fix was never confirmed on Android. Reverted
+    // to skipped for consistency with the other unverified unskips in this pass.
+    // Re-attempt when the servers are reachable and FeatureFlagClassificationMarkings is
+    // back ON (normal config). Tracked under SEC-11014.
     (isAndroid() ? it.skip : it)('MM-T4785_3 - should not have reply option available on reply thread post options', async () => {
         // # Open a channel screen, post a message, and tap on the post
         const message = `Message ${getRandomId()}`;
