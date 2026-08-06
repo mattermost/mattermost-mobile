@@ -1,5 +1,5 @@
 {
-  "enabled": false,
+  "enabled": true,
   "pr_number": 10006,
-  "note": "disabled after successful recreate (r66878et/4rff635k/8i5wu1h7/msdx5uix/j4zijsd5)"
+  "note": "recreate before full Detox v2 retest (tutorial disable + prior Android/iOS fixes)"
 }
