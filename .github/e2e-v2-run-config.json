@@ -16,8 +16,8 @@
   "site_3_url": "https://mobile-pr-10006-site-3-xfw59o5e.test.mattermost.cloud",
   "pr_number": "10006",
   "run_type": "PR",
-  "enabled": true,
-  "rerun_note": "fix iOS/iPad sim_state parse (trailing whitespace broke Shutdown guard); Android investigation: 38 unit fails = CF plugin timeouts + UI visibility + banner 300s; phone 2/2 iPad 1/1; reuse build 30976048711",
+  "enabled": false,
+  "rerun_note": "paused while Matterwick recreates servers (old hosts return HTTP 302 on ping)",
   "ios_worker_count": "40",
   "android_worker_count": "30"
 }
