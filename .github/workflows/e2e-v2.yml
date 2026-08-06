@@ -140,6 +140,8 @@ on:
       - .github/workflows/e2e-v2.yml
       - .github/workflows/e2e-v2-detox-ios.yml
       - .github/workflows/e2e-v2-detox-android.yml
+      - .github/workflows/e2e-v2-maestro-ios.yml
+      - .github/workflows/e2e-v2-maestro-android.yml
 
 permissions:
   contents: read
@@ -152,7 +154,7 @@ concurrency:
   # stuck group when GitHub leaves macOS Detox workers uncancelled (known flake).
   # cancel-previous also force-cancels peer E2E v2 runs on this branch so a new
   # commit does not wait on a hung prior attempt.
-  group: e2e-v2-${{ github.ref }}-r29
+  group: e2e-v2-${{ github.ref }}-r30
   cancel-in-progress: true
 
 env:
