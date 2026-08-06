@@ -19,7 +19,6 @@ import {isOwnBoRPost, isUnrevealedBoRPost} from '@utils/bor';
 import {bottomSheetSnapPoint} from '@utils/helpers';
 import {isSystemMessage} from '@utils/post';
 
-import AppBindingsPostOptions from './options/app_bindings_post_option';
 import DeletePostOption from './options/delete_post_option';
 import EditOption from './options/edit_option';
 import MarkAsUnreadOption from './options/mark_unread_option';
@@ -45,8 +44,6 @@ type PostOptionsProps = {
     sourceScreen: AvailableScreens;
     post: PostModel;
     thread?: ThreadModel;
-    bindings: AppBinding[];
-    serverUrl: string;
     isBoRPost?: boolean;
     showBoRReadReceipts?: boolean;
     borReceiptData?: BurnOnReadRecipientData;
@@ -56,7 +53,7 @@ const PostOptions = ({
     canAddReaction, canDelete, canEdit,
     canMarkAsUnread, canPin, canReply, canViewTranslation,
     combinedPost, isSaved,
-    sourceScreen, post, thread, bindings, serverUrl,
+    sourceScreen, post, thread,
     isBoRPost, showBoRReadReceipts, borReceiptData, currentUser,
 }: PostOptionsProps) => {
     const managedConfig = useManagedConfig<ManagedConfig>();
@@ -70,7 +67,6 @@ const PostOptions = ({
     const canSavePost = !isSystemPost && (!isUnrevealedBoRPost(post) || isOwnBoRPost(post, currentUser?.id));
 
     const shouldRenderFollow = !(sourceScreen !== Screens.CHANNEL || !thread);
-    const shouldShowBindings = bindings.length > 0 && !isSystemPost;
 
     const shouldShowBORReadReceipts = showBoRReadReceipts && borReceiptData;
 
@@ -81,7 +77,7 @@ const PostOptions = ({
             canMarkAsUnread, canPin, canReply, canSavePost, shouldRenderFollow, canViewTranslation,
         ].reduce((acc, v) => {
             return v ? acc + 1 : acc;
-        }, 0) + (shouldShowBindings ? 0.5 : 0);
+        }, 0);
 
         const snapBottom = isEdgeToEdge ? bottom : NOT_EDGE_TO_EDGE_BOTTOM_SHEET_MARGIN;
 
@@ -91,12 +87,8 @@ const PostOptions = ({
             (shouldShowBORReadReceipts ? BOR_READ_RECEIPTS_HEIGHT : 0) + snapBottom,
         );
 
-        if (shouldShowBindings) {
-            items.push('80%');
-        }
-
         return items;
-    }, [canCopyPermalink, canCopyText, canDelete, canEdit, canMarkAsUnread, canPin, canReply, canSavePost, shouldRenderFollow, canViewTranslation, shouldShowBindings, canAddReaction, shouldShowBORReadReceipts, bottom]);
+    }, [canCopyPermalink, canCopyText, canDelete, canEdit, canMarkAsUnread, canPin, canReply, canSavePost, shouldRenderFollow, canViewTranslation, canAddReaction, shouldShowBORReadReceipts, bottom]);
 
     const renderContent = () => {
         return (
@@ -155,13 +147,6 @@ const PostOptions = ({
                     post={post}
                     currentUser={currentUser}
                 />}
-                {shouldShowBindings &&
-                <AppBindingsPostOptions
-                    post={post}
-                    serverUrl={serverUrl}
-                    bindings={bindings}
-                />
-                }
             </BottomSheetScrollView>
         );
     };

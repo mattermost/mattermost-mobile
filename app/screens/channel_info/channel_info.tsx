@@ -8,13 +8,11 @@ import {type Edge, SafeAreaView} from 'react-native-safe-area-context';
 import ChannelActions from '@components/channel_actions';
 import ChannelBookmarks from '@components/channel_bookmarks';
 import {General, Screens} from '@constants';
-import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
 import useAndroidHardwareBackHandler from '@hooks/android_back_handler';
 import {navigateBack} from '@screens/navigation';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 
-import ChannelInfoAppBindings from './app_bindings';
 import DestructiveOptions from './destructive_options';
 import Extra from './extra';
 import Options from './options';
@@ -67,7 +65,6 @@ const ChannelInfo = ({
     channelDisplayName,
 }: Props) => {
     const theme = useTheme();
-    const serverUrl = useServerUrl();
     const styles = getStyleSheet(theme);
 
     // NOTE: isCallsEnabledInChannel will be true/false (not undefined) based on explicit state + the DefaultEnabled system setting
@@ -128,11 +125,6 @@ const ChannelInfo = ({
                         channelDisplayName={channelDisplayName}
                     />
                     <View style={styles.separator}/>
-                    <ChannelInfoAppBindings
-                        channelId={channelId}
-                        serverUrl={serverUrl}
-                        dismissChannelInfo={onPressed}
-                    />
                     <DestructiveOptions
                         channelId={channelId}
                     />

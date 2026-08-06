@@ -13,7 +13,6 @@ import {DeepLink, Events, General, Preferences, Screens} from '@constants';
 import DatabaseManager from '@database/manager';
 import {privateChannelJoinPrompt} from '@helpers/api/channel';
 import {getTeammateNameDisplaySetting} from '@helpers/api/preference';
-import AppsManager from '@managers/apps_manager';
 import NetworkManager from '@managers/network_manager';
 import {getActiveServer} from '@queries/app/servers';
 import {prepareMyChannelsForTeam, getChannelById, getChannelByName, getMyChannel, getChannelInfo, queryMyChannelSettingsByIds, getMembersCountByChannelsId, deleteChannelMembership, queryChannelsById} from '@queries/servers/channel';
@@ -1196,10 +1195,6 @@ export async function switchToChannelById(serverUrl: string, channelId: string, 
     fetchGroupsForChannelIfConstrained(serverUrl, channelId, false, groupLabel);
 
     DeviceEventEmitter.emit(Events.CHANNEL_SWITCH, false);
-
-    if (await AppsManager.isAppsEnabled(serverUrl)) {
-        AppsManager.fetchBindings(serverUrl, channelId, false, groupLabel);
-    }
 
     return {};
 }

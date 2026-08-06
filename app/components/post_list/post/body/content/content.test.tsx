@@ -41,11 +41,6 @@ jest.mock('./youtube', () => ({
     default: jest.fn(),
 }));
 
-jest.mock('./embedded_bindings', () => ({
-    __esModule: true,
-    default: jest.fn(),
-}));
-
 jest.mock('./interactive_messages', () => ({
     __esModule: true,
     default: jest.fn(),

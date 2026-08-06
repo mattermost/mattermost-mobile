@@ -1,76 +1,10 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-type AppManifest = {
-    app_id: string;
-    display_name: string;
-    description?: string;
-    homepage_url?: string;
-}
-
-type AppModalState = {
-    form: AppForm;
-    call: AppCallRequest;
-}
-
-type AppsState = {
-    bindings: AppBinding[];
-    bindingsForms: AppCommandFormMap;
-    threadBindings: AppBinding[];
-    threadBindingsForms: AppCommandFormMap;
-    threadBindingsChannelId: string;
-    pluginEnabled: boolean;
-};
-
-type AppBinding = {
-    app_id?: string;
-    location?: string;
-    icon?: string;
-
-    // Label is the (usually short) primary text to display at the location.
-    // - For LocationPostMenu is the menu item text.
-    // - For LocationChannelHeader is the dropdown text.
-    // - For LocationCommand is the name of the command
-    label?: string;
-
-    // Hint is the secondary text to display
-    // - LocationPostMenu: not used
-    // - LocationChannelHeader: tooltip
-    // - LocationCommand: the "Hint" line
-    hint?: string;
-
-    // Description is the (optional) extended help text, used in modals and autocomplete
-    description?: string;
-
-    role_id?: string;
-    depends_on_team?: boolean;
-    depends_on_channel?: boolean;
-    depends_on_user?: boolean;
-    depends_on_post?: boolean;
-
-    // A Binding is either an action (makes a call), a Form, or is a
-    // "container" for other locations - i.e. menu sub-items or subcommands.
-    bindings?: AppBinding[];
-    form?: AppForm;
-    submit?: AppCall;
-};
-
-type AppCallValues = {
-    [name: string]: any;
-};
-
 type AppCall = {
     path?: string;
     expand?: AppExpand;
     state?: any;
-};
-
-type AppCallRequest = AppCall & {
-    context: AppContext;
-    values?: AppCallValues;
-    raw_command?: string;
-    selected_field?: string;
-    query?: string;
 };
 
 type AppCallResponseType = string;
@@ -89,24 +23,6 @@ type AppCallResponse<Res = unknown> = {
 type AppMetadataForClient = {
     bot_user_id: string;
     bot_username: string;
-};
-
-type AppContext = {
-    app_id: string;
-    location?: string;
-    acting_user_id?: string;
-    user_id?: string;
-    channel_id?: string;
-    team_id?: string;
-    post_id?: string;
-    root_id?: string;
-    props?: AppContextProps;
-    user_agent?: string;
-    track_as_submit?: boolean;
-};
-
-type AppContextProps = {
-    [name: string]: string;
 };
 
 type AppExpandLevel = string;
@@ -204,17 +120,6 @@ type DateTimeConfig = {
     allow_manual_time_entry?: boolean;
 };
 
-type AutocompleteElement = AppField;
-type AutocompleteStaticSelect = AutocompleteElement & {
-    options: AppSelectOption[];
-};
-
-type AutocompleteDynamicSelect = AutocompleteElement;
-
-type AutocompleteUserSelect = AutocompleteElement;
-
-type AutocompleteChannelSelect = AutocompleteElement;
-
 type FormResponseData = {
     errors?: {
         [field: string]: string;
@@ -224,8 +129,6 @@ type FormResponseData = {
 type AppLookupResponse = {
     items: AppSelectOption[];
 }
-
-type AppCommandFormMap = {[location: string]: AppForm}
 
 type DoAppCallResult<Res=unknown> = {
     data?: AppCallResponse<Res>;

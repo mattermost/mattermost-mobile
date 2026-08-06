@@ -8,7 +8,6 @@ import {switchMap} from 'rxjs/operators';
 import {observeIsChannelAutotranslated} from '@queries/servers/channel';
 import {queryAllCustomEmojis} from '@queries/servers/custom_emoji';
 import {observePinnedPostsInChannel} from '@queries/servers/post';
-import {observeConfigBooleanValue} from '@queries/servers/system';
 import {observeIsCRTEnabled} from '@queries/servers/thread';
 import {observeCurrentUser} from '@queries/servers/user';
 import {mapCustomEmojiNames} from '@utils/emoji/helpers';
@@ -28,7 +27,6 @@ const enhance = withObservables(['channelId'], ({channelId, database}: Props) =>
 
     return {
         currentUser,
-        appsEnabled: observeConfigBooleanValue(database, 'FeatureFlagAppsEnabled'),
         currentTimezone: currentUser.pipe((switchMap((user) => of$(getTimezone(user?.timezone || null))))),
         customEmojiNames: queryAllCustomEmojis(database).observe().pipe(
             switchMap((customEmojis) => of$(mapCustomEmojiNames(customEmojis))),

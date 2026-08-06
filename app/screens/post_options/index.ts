@@ -6,11 +6,9 @@ import {combineLatest, of as of$, Observable} from 'rxjs';
 import {combineLatestWith, distinctUntilChanged, switchMap} from 'rxjs/operators';
 
 import {Permissions, Post, Screens} from '@constants';
-import {AppBindingLocations} from '@constants/apps';
 import {MAX_ALLOWED_REACTIONS} from '@constants/emoji';
 import {withServerUrl} from '@context/server';
 import {DEFAULT_LOCALE} from '@i18n';
-import AppsManager from '@managers/apps_manager';
 import {observeChannel, observeIsReadOnlyChannel, observeIsChannelAutotranslated, observeChannelInfo} from '@queries/servers/channel';
 import {observePost, observePostSaved} from '@queries/servers/post';
 import {observeReactionsForPost} from '@queries/servers/reaction';
@@ -101,7 +99,6 @@ const enhanced = withObservables([], ({combinedPost, post, showAddReaction, sour
     const allowEditPost = observeConfigValue(database, 'AllowEditPost');
     const serverVersion = observeConfigValue(database, 'Version');
     const postEditTimeLimit = observeConfigIntValue(database, 'PostEditTimeLimit', -1);
-    const bindings = AppsManager.observeBindings(serverUrl, AppBindingLocations.POST_MENU_ITEM);
     const borPost = isBoRPost(post);
 
     const canPostPermission = combineLatest([channel, currentUser]).pipe(switchMap(([c, u]) => observePermissionForChannel(database, c, u, Permissions.CREATE_POST, false)));
@@ -213,7 +210,6 @@ const enhanced = withObservables([], ({combinedPost, post, showAddReaction, sour
         canViewTranslation,
         post,
         thread,
-        bindings,
         isBoRPost: of$(borPost),
         showBoRReadReceipts,
         borReceiptData,

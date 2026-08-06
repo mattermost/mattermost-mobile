@@ -207,10 +207,6 @@ export default class ClientBase extends ClientTracking {
         return `/plugins/${id}`;
     }
 
-    getAppsProxyRoute() {
-        return this.getPluginRoute('com.mattermost.apps');
-    }
-
     getCallsRoute() {
         return this.getPluginRoute(Calls.PluginId);
     }

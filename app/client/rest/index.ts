@@ -7,7 +7,6 @@ import ClientPlugins, {type ClientPluginsMix} from '@client/rest/plugins';
 import ClientPlaybooks, {type ClientPlaybooksMix} from '@playbooks/client/rest';
 import mix from '@utils/mix';
 
-import ClientApps, {type ClientAppsMix} from './apps';
 import ClientBase from './base';
 import ClientCategories, {type ClientCategoriesMix} from './categories';
 import ClientChannelBookmarks, {type ClientChannelBookmarksMix} from './channel_bookmark';
@@ -33,7 +32,6 @@ import type {APIClientInterface} from '@mattermost/react-native-network-client';
 
 interface Client extends ClientBase,
     ClientAgentsMix,
-    ClientAppsMix,
     ClientCategoriesMix,
     ClientChannelsMix,
     ClientChannelBookmarksMix,
@@ -62,7 +60,6 @@ interface Client extends ClientBase,
 
 class Client extends mix(ClientBase).with(
     ClientAgents,
-    ClientApps,
     ClientCategories,
     ClientChannels,
     ClientChannelBookmarks,

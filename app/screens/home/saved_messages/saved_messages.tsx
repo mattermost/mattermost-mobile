@@ -32,7 +32,6 @@ import type PostModel from '@typings/database/models/servers/post';
 import type UserModel from '@typings/database/models/servers/user';
 
 type Props = {
-    appsEnabled?: boolean;
     currentUser: UserModel;
     customEmojiNames: string[];
     posts: PostModel[];
@@ -51,7 +50,7 @@ const styles = StyleSheet.create({
     },
 });
 
-function SavedMessages({appsEnabled, posts, currentUser, customEmojiNames}: Props) {
+function SavedMessages({posts, currentUser, customEmojiNames}: Props) {
     const intl = useIntl();
     const [loading, setLoading] = useState(!posts.length);
     const [refreshing, setRefreshing] = useState(false);
@@ -162,7 +161,6 @@ function SavedMessages({appsEnabled, posts, currentUser, customEmojiNames}: Prop
             case 'post':
                 return (
                     <PostWithChannelInfo
-                        appsEnabled={appsEnabled ?? false}
                         currentUser={currentUser}
                         customEmojiNames={customEmojiNames}
                         key={item.value.currentPost.id}
@@ -175,7 +173,7 @@ function SavedMessages({appsEnabled, posts, currentUser, customEmojiNames}: Prop
             default:
                 return null;
         }
-    }, [appsEnabled, currentUser, currentTimezone, customEmojiNames]);
+    }, [currentUser, currentTimezone, customEmojiNames]);
 
     return (
         <SafeAreaView

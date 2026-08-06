@@ -15,7 +15,6 @@ import AtMention from './at_mention/';
 import ChannelMention from './channel_mention/';
 import EmojiSuggestion from './emoji_suggestion/';
 import SlashSuggestion from './slash_suggestion/';
-import AppSlashSuggestion from './slash_suggestion/app_slash_suggestion/';
 
 const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
     return {
@@ -55,7 +54,6 @@ type Props = {
     isSearch?: boolean;
     value: string;
     enableDateSuggestion?: boolean;
-    isAppsEnabled: boolean;
     nestedScrollEnabled?: boolean;
     updateValue: (v: string) => void;
     shouldDirectlyReact?: boolean;
@@ -94,7 +92,6 @@ const Autocomplete = ({
     availableSpace,
 
     //enableDateSuggestion = false,
-    isAppsEnabled,
     nestedScrollEnabled = false,
     updateValue,
     shouldDirectlyReact = false,
@@ -116,12 +113,10 @@ const Autocomplete = ({
     const [showingChannelMention, setShowingChannelMention] = useState(false);
     const [showingEmoji, setShowingEmoji] = useState(false);
     const [showingCommand, setShowingCommand] = useState(false);
-    const [showingAppCommand, setShowingAppCommand] = useState(false);
 
     // const [showingDate, setShowingDate] = useState(false);
 
-    const hasElements = showingChannelMention || showingEmoji || showingAtMention || showingCommand || showingAppCommand; // || showingDate;
-    const appsTakeOver = showingAppCommand;
+    const hasElements = showingChannelMention || showingEmoji || showingAtMention || showingCommand; // || showingDate;
     const showCommands = !(showingChannelMention || showingEmoji || showingAtMention);
 
     const isLandscape = dimensions.width > dimensions.height;
@@ -157,77 +152,63 @@ const Autocomplete = ({
             testID='autocomplete'
             style={[containerStyles, containerAnimatedStyle]}
         >
-            {isAppsEnabled && channelId && autocompleteProviders.slash && (
-                <AppSlashSuggestion
+            {autocompleteProviders.user && (
+                <AtMention
+                    cursorPosition={cursorPosition}
                     listStyle={style.listStyle}
                     updateValue={updateValue}
-                    onShowingChange={setShowingAppCommand}
+                    onShowingChange={setShowingAtMention}
+                    value={value || ''}
+                    nestedScrollEnabled={nestedScrollEnabled}
+                    isSearch={isSearch}
+                    channelId={channelId}
+                    teamId={teamId}
+                />
+            )}
+            {autocompleteProviders.channel && (
+                <ChannelMention
+                    cursorPosition={cursorPosition}
+                    listStyle={style.listStyle}
+                    updateValue={updateValue}
+                    onShowingChange={setShowingChannelMention}
+                    value={value || ''}
+                    nestedScrollEnabled={nestedScrollEnabled}
+                    isSearch={isSearch}
+                    channelId={channelId}
+                    teamId={teamId}
+                />
+            )}
+            {!isSearch && autocompleteProviders.emoji && (
+                <EmojiSuggestion
+                    cursorPosition={cursorPosition}
+                    listStyle={style.listStyle}
+                    updateValue={updateValue}
+                    onShowingChange={setShowingEmoji}
+                    value={value || ''}
+                    nestedScrollEnabled={nestedScrollEnabled}
+                    rootId={rootId}
+                    shouldDirectlyReact={shouldDirectlyReact}
+                />
+            )}
+            {showCommands && channelId && autocompleteProviders.slash && (
+                <SlashSuggestion
+                    listStyle={style.listStyle}
+                    updateValue={updateValue}
+                    onShowingChange={setShowingCommand}
                     value={value || ''}
                     nestedScrollEnabled={nestedScrollEnabled}
                     channelId={channelId}
                     rootId={rootId}
                 />
             )}
-            {(!appsTakeOver || !isAppsEnabled) && (<>
-                {autocompleteProviders.user && (
-                    <AtMention
-                        cursorPosition={cursorPosition}
-                        listStyle={style.listStyle}
-                        updateValue={updateValue}
-                        onShowingChange={setShowingAtMention}
-                        value={value || ''}
-                        nestedScrollEnabled={nestedScrollEnabled}
-                        isSearch={isSearch}
-                        channelId={channelId}
-                        teamId={teamId}
-                    />
-                )}
-                {autocompleteProviders.channel && (
-                    <ChannelMention
-                        cursorPosition={cursorPosition}
-                        listStyle={style.listStyle}
-                        updateValue={updateValue}
-                        onShowingChange={setShowingChannelMention}
-                        value={value || ''}
-                        nestedScrollEnabled={nestedScrollEnabled}
-                        isSearch={isSearch}
-                        channelId={channelId}
-                        teamId={teamId}
-                    />
-                )}
-                {!isSearch && autocompleteProviders.emoji && (
-                    <EmojiSuggestion
-                        cursorPosition={cursorPosition}
-                        listStyle={style.listStyle}
-                        updateValue={updateValue}
-                        onShowingChange={setShowingEmoji}
-                        value={value || ''}
-                        nestedScrollEnabled={nestedScrollEnabled}
-                        rootId={rootId}
-                        shouldDirectlyReact={shouldDirectlyReact}
-                    />
-                )}
-                {showCommands && channelId && autocompleteProviders.slash && (
-                    <SlashSuggestion
-                        listStyle={style.listStyle}
-                        updateValue={updateValue}
-                        onShowingChange={setShowingCommand}
-                        value={value || ''}
-                        nestedScrollEnabled={nestedScrollEnabled}
-                        channelId={channelId}
-                        rootId={rootId}
-                        isAppsEnabled={isAppsEnabled}
-                    />
-                )}
-                {/* {(isSearch && enableDateSuggestion) &&
-                    <DateSuggestion
-                        cursorPosition={cursorPosition}
-                        updateValue={updateValue}
-                        onResultCountChange={setShowingDate}
-                        value={value || ''}
-                    />
-                    } */}
-            </>)}
+            {/* {(isSearch && enableDateSuggestion) &&
+                <DateSuggestion
+                    cursorPosition={cursorPosition}
+                    updateValue={updateValue}
+                    onResultCountChange={setShowingDate}
+                    value={value || ''}
+                />
+                } */}
         </Animated.View>
     );
 

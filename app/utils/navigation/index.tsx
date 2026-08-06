@@ -130,8 +130,3 @@ export function openAttachmentOptions(
     bottomSheet(renderContent, [1, componentHeight]);
 }
 
-export function openAppsForm(form: AppForm, context: AppContext) {
-    DeviceEventEmitter.emit(Events.BLUR_AND_DISMISS_KEYBOARD);
-    const props = {form, context};
-    navigateToScreen(Screens.APPS_FORM, props);
-}

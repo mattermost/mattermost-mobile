@@ -13,7 +13,6 @@ import {openAllUnreadChannels} from '@actions/remote/preference';
 import {loadConfigAndCalls} from '@calls/actions/calls';
 import {isSupportedServerCalls} from '@calls/utils';
 import DatabaseManager from '@database/manager';
-import AppsManager from '@managers/apps_manager';
 import {handlePlaybookReconnect} from '@playbooks/actions/websocket/reconnect';
 import {getActiveServerUrl} from '@queries/app/servers';
 import {getLastPostInThread} from '@queries/servers/post';
@@ -38,7 +37,6 @@ jest.mock('@actions/remote/user');
 jest.mock('@calls/actions/calls');
 jest.mock('@calls/utils');
 jest.mock('@database/manager');
-jest.mock('@managers/apps_manager');
 jest.mock('@queries/app/servers');
 jest.mock('@queries/servers/post');
 jest.mock('@queries/servers/system');
@@ -161,7 +159,6 @@ describe('WebSocket Index Actions', () => {
             expect(openAllUnreadChannels).toHaveBeenCalled();
             expect(dataRetentionCleanup).toHaveBeenCalled();
             expect(expiredBoRPostCleanup).toHaveBeenCalled();
-            expect(AppsManager.refreshAppBindings).toHaveBeenCalled();
             expect(handlePlaybookReconnect).toHaveBeenCalledWith(serverUrl);
         });
 

@@ -3,11 +3,7 @@
 
 import {Alert} from 'react-native';
 
-import {doAppSubmit, postEphemeralCallResponseForCommandArgs} from '@actions/remote/apps';
-import {AppCommandParser} from '@components/autocomplete/slash_suggestion/app_command_parser/app_command_parser';
-import {AppCallResponseTypes} from '@constants/apps';
 import DatabaseManager from '@database/manager';
-import AppsManager from '@managers/apps_manager';
 import IntegrationsManager from '@managers/integrations_manager';
 import NetworkManager from '@managers/network_manager';
 import {getChannelById} from '@queries/servers/channel';
@@ -15,7 +11,6 @@ import {getConfig, getCurrentTeamId} from '@queries/servers/system';
 import {handleDeepLink, matchDeepLink} from '@utils/deep_link';
 import {getFullErrorMessage} from '@utils/errors';
 import {logDebug} from '@utils/log';
-import {openAppsForm} from '@utils/navigation';
 import {tryOpenURL} from '@utils/url';
 
 import type {Client} from '@client/rest';
@@ -45,14 +40,6 @@ export const executeCommand = async (serverUrl: string, intl: IntlShape, message
         parent_id: rootId,
     };
 
-    const appsEnabled = await AppsManager.isAppsEnabled(serverUrl);
-    if (appsEnabled) {
-        const parser = new AppCommandParser(serverUrl, intl, channelId, teamId, rootId);
-        if (parser.isAppCommand(message)) {
-            return executeAppCommand(serverUrl, intl, parser, message, args);
-        }
-    }
-
     let msg = filterEmDashForCommand(message);
 
     let cmdLength = msg.indexOf(' ');
@@ -80,52 +67,6 @@ export const executeCommand = async (serverUrl: string, intl: IntlShape, message
     }
 
     return {data};
-};
-
-export const executeAppCommand = async (serverUrl: string, intl: IntlShape, parser: AppCommandParser, msg: string, args: CommandArgs) => {
-    const {creq, errorMessage} = await parser.composeCommandSubmitCall(msg);
-    const createErrorMessage = (errMessage: string) => {
-        return {error: {message: errMessage}};
-    };
-
-    if (!creq) {
-        return createErrorMessage(errorMessage!);
-    }
-
-    const res = await doAppSubmit(serverUrl, creq, intl);
-    if ('error' in res) {
-        const errorResponse = res.error;
-        return createErrorMessage(errorResponse.text || intl.formatMessage({
-            id: 'apps.error.unknown',
-            defaultMessage: 'Unknown error occurred.',
-        }));
-    }
-    const callResp = res.data;
-
-    switch (callResp.type) {
-        case AppCallResponseTypes.OK:
-            if (callResp.text) {
-                postEphemeralCallResponseForCommandArgs(serverUrl, callResp, callResp.text, args);
-            }
-            return {data: {}};
-        case AppCallResponseTypes.FORM:
-            if (callResp.form) {
-                openAppsForm(callResp.form, creq.context);
-            }
-            return {data: {}};
-        case AppCallResponseTypes.NAVIGATE:
-            if (callResp.navigate_to_url) {
-                handleGotoLocation(serverUrl, intl, callResp.navigate_to_url);
-            }
-            return {data: {}};
-        default:
-            return createErrorMessage(intl.formatMessage({
-                id: 'apps.error.responses.unknown_type',
-                defaultMessage: 'App response type not supported. Response type: {type}.',
-            }, {
-                type: callResp.type,
-            }));
-    }
 };
 
 const filterEmDashForCommand = (command: string): string => {

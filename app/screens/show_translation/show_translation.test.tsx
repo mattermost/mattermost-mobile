@@ -37,7 +37,6 @@ describe('ShowTranslation', () => {
         return {
             currentUser: TestHelper.fakeUserModel(),
             post: undefined,
-            appsEnabled: false,
             customEmojiNames: [],
             isCRTEnabled: false,
         };
@@ -78,7 +77,6 @@ describe('ShowTranslation', () => {
         const props = {
             ...getBaseProps(),
             post,
-            appsEnabled: true,
             customEmojiNames: ['custom_emoji'],
             isCRTEnabled: true,
         };
@@ -91,7 +89,6 @@ describe('ShowTranslation', () => {
         expect(originalPost).toHaveProp('post', post);
         expect(originalPost).toHaveProp('location', Screens.SHOW_TRANSLATION);
         expect(originalPost).toHaveProp('isChannelAutotranslated', false);
-        expect(originalPost).toHaveProp('appsEnabled', true);
         expect(originalPost).toHaveProp('customEmojiNames', ['custom_emoji']);
         expect(originalPost).toHaveProp('isCRTEnabled', true);
         expect(originalPost).toHaveProp('shouldRenderReplyButton', false);

@@ -50,7 +50,6 @@ import type {SearchPattern} from '@typings/global/markdown';
 import type {AvailableScreens} from '@typings/screens/navigation';
 
 type PostProps = {
-    appsEnabled: boolean;
     mmBlocksEnabled: boolean;
     author?: UserModel;
     canDelete: boolean;
@@ -127,7 +126,6 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
 });
 
 const Post = ({
-    appsEnabled,
     mmBlocksEnabled,
     author,
     canDelete,
@@ -410,7 +408,6 @@ const Post = ({
     } else {
         body = (
             <Body
-                appsEnabled={appsEnabled}
                 mmBlocksEnabled={mmBlocksEnabled}
                 filesInfo={filesInfo}
                 hasReactions={hasReactions}

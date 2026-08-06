@@ -2,7 +2,6 @@
 // See LICENSE.txt for license information.
 
 import React, {useCallback, useEffect, useRef, useState} from 'react';
-import {useIntl} from 'react-intl';
 import {
     FlatList,
     Platform,
@@ -15,7 +14,6 @@ import {useServerUrl} from '@context/server';
 import {useDebounce} from '@hooks/utils';
 import IntegrationsManager from '@managers/integrations_manager';
 
-import {AppCommandParser} from './app_command_parser/app_command_parser';
 import SlashSuggestionItem from './slash_suggestion_item';
 
 // TODO: Remove when all below commands have been implemented https://mattermost.atlassian.net/browse/MM-43478
@@ -57,7 +55,6 @@ export type SlashSuggestionProps = {
     nestedScrollEnabled?: boolean;
     rootId?: string;
     channelId: string;
-    isAppsEnabled: boolean;
     listStyle: StyleProp<ViewStyle>;
 };
 
@@ -69,15 +66,12 @@ const SlashSuggestion = ({
     currentTeamId,
     rootId,
     onShowingChange,
-    isAppsEnabled,
     nestedScrollEnabled,
     updateValue,
     value = '',
     listStyle,
 }: SlashSuggestionProps) => {
-    const intl = useIntl();
     const serverUrl = useServerUrl();
-    const appCommandParser = useRef<AppCommandParser>(new AppCommandParser(serverUrl, intl, channelId, currentTeamId, rootId));
     const mounted = useRef(false);
     const [noResultsTerm, setNoResultsTerm] = useState<string|null>(null);
 
@@ -110,21 +104,8 @@ const SlashSuggestion = ({
         }
     }, [updateSuggestions]), 200);
 
-    const getAppBaseCommandSuggestions = (pretext: string): AutocompleteSuggestion[] => {
-        appCommandParser.current.setChannelContext(channelId, currentTeamId, rootId);
-        const suggestions = appCommandParser.current.getSuggestionsBase(pretext);
-        return suggestions;
-    };
-
     const showBaseCommands = (text: string) => {
-        let matches: AutocompleteSuggestion[] = [];
-
-        if (isAppsEnabled) {
-            const appCommands = getAppBaseCommandSuggestions(text);
-            matches = matches.concat(appCommands);
-        }
-
-        matches = matches.concat(filterCommands(text.substring(1), commands!));
+        const matches: AutocompleteSuggestion[] = filterCommands(text.substring(1), commands!);
 
         matches.sort((match1, match2) => {
             if (match1.Suggestion === match2.Suggestion) {

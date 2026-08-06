@@ -34,7 +34,6 @@ describe('performance metrics', () => {
 
     function getBaseProps(): ComponentProps<typeof Post> {
         return {
-            appsEnabled: false,
             mmBlocksEnabled: false,
             canDelete: false,
             customEmojiNames: [],
@@ -134,7 +133,6 @@ describe('ephemeral post header', () => {
 
     function getBaseProps(): ComponentProps<typeof Post> {
         return {
-            appsEnabled: false,
             mmBlocksEnabled: false,
             canDelete: false,
             customEmojiNames: [],

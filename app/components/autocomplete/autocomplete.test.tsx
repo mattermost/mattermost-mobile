@@ -10,12 +10,10 @@ import Autocomplete from './autocomplete';
 import ChannelMention from './channel_mention/';
 import EmojiSuggestion from './emoji_suggestion/';
 import SlashSuggestion from './slash_suggestion/';
-import AppSlashSuggestion from './slash_suggestion/app_slash_suggestion/';
 
 import type {AtMentionProps} from './at_mention/at_mention';
 import type {ChannelMentionProps} from './channel_mention/channel_mention';
 import type {EmojiSuggestionProps} from './emoji_suggestion/emoji_suggestion';
-import type {AppSlashSuggestionPropsProps} from './slash_suggestion/app_slash_suggestion/app_slash_suggestion';
 import type {SlashSuggestionProps} from './slash_suggestion/slash_suggestion';
 import type {SharedValue} from 'react-native-reanimated';
 
@@ -31,15 +29,11 @@ jest.mocked(EmojiSuggestion).mockImplementation((props: EmojiSuggestionProps) =>
 jest.mock('./slash_suggestion/');
 jest.mocked(SlashSuggestion).mockImplementation((props: SlashSuggestionProps) => React.createElement('SlashSuggestion', {...props, testID: 'slash-suggestion-mock'}));
 
-jest.mock('./slash_suggestion/app_slash_suggestion/');
-jest.mocked(AppSlashSuggestion).mockImplementation((props: AppSlashSuggestionPropsProps) => React.createElement('AppSlashSuggestion', {...props, testID: 'app-slash-suggestion-mock'}));
-
 describe('Autocomplete', () => {
     function getBaseProps(): ComponentProps<typeof Autocomplete> {
         return {
             availableSpace: {value: 0} as SharedValue<number>,
             cursorPosition: 0,
-            isAppsEnabled: true,
             position: {value: 0} as SharedValue<number>,
             updateValue: jest.fn(),
             value: '',
@@ -67,7 +61,6 @@ describe('Autocomplete', () => {
         expect(getByTestId('channel-mention-mock')).toBeTruthy();
         expect(getByTestId('emoji-suggestion-mock')).toBeTruthy();
         expect(getByTestId('slash-suggestion-mock')).toBeTruthy();
-        expect(getByTestId('app-slash-suggestion-mock')).toBeTruthy();
 
         props.autocompleteProviders = {
             user: true,
@@ -81,7 +74,6 @@ describe('Autocomplete', () => {
         expect(getByTestId('channel-mention-mock')).toBeTruthy();
         expect(getByTestId('emoji-suggestion-mock')).toBeTruthy();
         expect(queryByTestId('slash-suggestion-mock')).toBeNull();
-        expect(queryByTestId('app-slash-suggestion-mock')).toBeNull();
 
         props.autocompleteProviders = {
             user: false,
@@ -95,7 +87,6 @@ describe('Autocomplete', () => {
         expect(getByTestId('channel-mention-mock')).toBeTruthy();
         expect(getByTestId('emoji-suggestion-mock')).toBeTruthy();
         expect(getByTestId('slash-suggestion-mock')).toBeTruthy();
-        expect(getByTestId('app-slash-suggestion-mock')).toBeTruthy();
 
         props.autocompleteProviders = {
             user: true,
@@ -109,7 +100,6 @@ describe('Autocomplete', () => {
         expect(queryByTestId('channel-mention-mock')).toBeNull();
         expect(getByTestId('emoji-suggestion-mock')).toBeTruthy();
         expect(getByTestId('slash-suggestion-mock')).toBeTruthy();
-        expect(getByTestId('app-slash-suggestion-mock')).toBeTruthy();
 
         props.autocompleteProviders = {
             user: true,
@@ -123,7 +113,6 @@ describe('Autocomplete', () => {
         expect(getByTestId('channel-mention-mock')).toBeTruthy();
         expect(queryByTestId('emoji-suggestion-mock')).toBeNull();
         expect(getByTestId('slash-suggestion-mock')).toBeTruthy();
-        expect(getByTestId('app-slash-suggestion-mock')).toBeTruthy();
     });
 
     it('should render with the correct horizontal padding', () => {

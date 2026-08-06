@@ -14,7 +14,6 @@ import type {SearchPattern} from '@typings/global/markdown';
 import type {AvailableScreens} from '@typings/screens/navigation';
 
 type Props = {
-    appsEnabled: boolean;
     currentUser: UserModel;
     customEmojiNames: string[];
     isCRTEnabled: boolean;
@@ -39,7 +38,6 @@ const styles = StyleSheet.create({
 });
 
 function PostWithChannelInfo({
-    appsEnabled,
     currentUser,
     customEmojiNames,
     isCRTEnabled,
@@ -59,7 +57,6 @@ function PostWithChannelInfo({
             />
             <View style={styles.content}>
                 <Post
-                    appsEnabled={appsEnabled}
                     currentUser={currentUser}
                     customEmojiNames={customEmojiNames}
                     isCRTEnabled={isCRTEnabled}

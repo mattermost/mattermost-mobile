@@ -9,7 +9,7 @@ import {switchMap} from 'rxjs/operators';
 
 import {queryAllCustomEmojis} from '@queries/servers/custom_emoji';
 import {queryPostsById} from '@queries/servers/post';
-import {observeConfigBooleanValue, observeRecentMentions} from '@queries/servers/system';
+import {observeRecentMentions} from '@queries/servers/system';
 import {observeCurrentUser} from '@queries/servers/user';
 import {mapCustomEmojiNames} from '@utils/emoji/helpers';
 import {getTimezone} from '@utils/user';
@@ -23,7 +23,6 @@ const enhance = withObservables([], ({database}: WithDatabaseArgs) => {
 
     return {
         currentUser,
-        appsEnabled: observeConfigBooleanValue(database, 'FeatureFlagAppsEnabled'),
         mentions: observeRecentMentions(database).pipe(
             switchMap((recentMentions) => {
                 if (!recentMentions.length) {
