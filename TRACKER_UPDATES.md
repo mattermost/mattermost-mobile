@@ -67,6 +67,27 @@ Append-only notes for a human to copy into the
   still unverified locally because the upstream server-icon hittability must be resolved
   first (rebuild the binary).
 
+  **Fresh-binary update (2026-08-06):** The iOS debug binary was rebuilt from current
+  source (v793, was v786/Jul 23) via `npm run pod-install` (Ruby 3.2.0) + `npm run ios`,
+  and copied to mobile-artifacts/Mattermost.app. Re-ran server_list.e2e.ts on iOS
+  (iPhone 17 Pro / iOS 26.3, flag ON). Result: the stale-binary server-icon block is
+  GONE — MM-T4691_1/_2/_3/_4 now PASS (ServerListScreen.open() works). The TRUE
+  SEC-11017 symptom is now exposed and isolated: MM-T4691_5/_6/_7 FAIL at the
+  swipe-reveal, NOT at server-list open. Precise mechanism (MM-T4691_5, line 274-276):
+  `waitFor(server_list.server_item.server_1.remove.option).toBeVisible(100)` times
+  out at 10s — after swiping left on the server item, the Remove option never reaches
+  100% visibility (Logout overlaps it during the reveal). This is exactly the
+  SEC-11010 conclusion (revealed action unhittable because a sibling overlaps it),
+  now confirmed with a fresh artifact on a fresh binary (artifacts/ios.sim.debug.
+  2026-08-06 16-07-49Z/, DETOX_VISIBILITY_UITransitionView screenshots). MM-T4691_6
+  fails the same way at the Logout option; MM-T4691_7 fails at the Add-Server action
+  visibility. The temp un-skip was reverted; the iOS it.skip stays. The targeted fix
+  (tap Remove at a point not overlapped by Logout, per SEC-11010) is now UNBLOCKED —
+  the exact failing testID and the overlap are captured. Building it needs the
+  Remove/Logout frame geometry from the screenshot (not guessed blind). SEC-11017
+  stays NOT closed: real swipe-reveal failure confirmed and isolated; fix is the next
+  step with the artifact in hand.
+
 - **SEC-11012** (markdown scroll / Back a11y / expand hittability, MM-T4895_1,
   MM-T4899_2/4/5, MM-T1442_1) — Owner: QA. Unskipped 4 of 5; MM-T4899_2 kept as a
   residual. Brought the SEC-10993 shared NavigationHeader.tapBackButton helper onto
