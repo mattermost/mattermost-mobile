@@ -1,5 +1,5 @@
 {
-  "enabled": true,
+  "enabled": false,
   "pr_number": 10006,
-  "note": "recreate: current topology returns HTTP 302 on /api/v4/system/ping (h8p9zb1z/…)"
+  "note": "disabled after successful recreate (r66878et/4rff635k/8i5wu1h7/msdx5uix/j4zijsd5)"
 }
