@@ -19,7 +19,12 @@ import {logDebug, logError} from '@utils/log';
 
 type ServerEntry =
     | {kind: 'zpm'}
-    | {kind: 'mem'; thresholdMs: number; purgeThresholdMs: number};
+    | {kind: 'mem'; thresholdMs: number; purgeThresholdMs: number; cleanupDays: number};
+
+function parseNonNegativeConfigNumber(value: string | undefined): number {
+    const parsed = Number(value ?? '0');
+    return Number.isFinite(parsed) ? Math.max(0, parsed) : 0;
+}
 
 class EphemeralModeManagerSingleton {
     private offlineSubjects: {[serverUrl: string]: BehaviorSubject<boolean>} = {};
@@ -30,7 +35,6 @@ class EphemeralModeManagerSingleton {
     private appStateSubscription?: NativeEventSubscription;
 
     private trackedServers = new Map<string, ServerEntry>();
-    private cleanupDays: Record<string, number> = {};
     private wipeInProgress = new Set<string>();
     private evalQueue: Record<string, Promise<unknown>> = {};
 
@@ -89,7 +93,6 @@ class EphemeralModeManagerSingleton {
         this.trackedServers.delete(serverUrl);
         this.configSubscriptions[serverUrl]?.unsubscribe();
         delete this.configSubscriptions[serverUrl];
-        delete this.cleanupDays[serverUrl];
         delete this.offlineSubjects[serverUrl];
         this.maybeRemoveAppStateListener();
     };
@@ -99,7 +102,8 @@ class EphemeralModeManagerSingleton {
     };
 
     public getAutoCacheCleanupDays = (serverUrl: string): number => {
-        return this.cleanupDays[serverUrl] ?? 0;
+        const entry = this.trackedServers.get(serverUrl);
+        return entry?.kind === 'mem' ? entry.cleanupDays : 0;
     };
 
     public isZeroPersistenceMode = (serverUrl: string): boolean => {
@@ -148,18 +152,17 @@ class EphemeralModeManagerSingleton {
         cleanupDaysStr: string | undefined,
     ) => {
         const nextEnabled = enabledStr === 'true';
-        const nextThresholdMs = Math.max(0, Number(timeoutStr ?? '0')) * 1000;
-        const nextPurgeThresholdMs = Math.max(0, Number(purgeHoursStr ?? '0')) * 3600 * 1000;
-        const nextCleanupDays = Math.max(0, Number(cleanupDaysStr ?? '0'));
+        const nextThresholdMs = parseNonNegativeConfigNumber(timeoutStr) * 1000;
+        const nextPurgeThresholdMs = parseNonNegativeConfigNumber(purgeHoursStr) * 3600 * 1000;
+        const nextCleanupDays = parseNonNegativeConfigNumber(cleanupDaysStr);
         const wasActive = this.trackedServers.get(serverUrl)?.kind === 'mem';
-        this.cleanupDays[serverUrl] = nextCleanupDays;
 
-        if (nextCleanupDays > 0) {
+        if (nextEnabled && nextCleanupDays > 0) {
             logDebug('EphemeralModeManager: auto cache cleanup config received, days:', nextCleanupDays, 'for', serverUrl);
         }
 
         if (nextEnabled && !wasActive) {
-            this.track(serverUrl, nextThresholdMs, nextPurgeThresholdMs);
+            this.track(serverUrl, nextThresholdMs, nextPurgeThresholdMs, nextCleanupDays);
             return;
         }
         if (!nextEnabled && wasActive) {
@@ -167,7 +170,7 @@ class EphemeralModeManagerSingleton {
             return;
         }
         if (nextEnabled && wasActive) {
-            this.trackedServers.set(serverUrl, {kind: 'mem', thresholdMs: nextThresholdMs, purgeThresholdMs: nextPurgeThresholdMs});
+            this.trackedServers.set(serverUrl, {kind: 'mem', thresholdMs: nextThresholdMs, purgeThresholdMs: nextPurgeThresholdMs, cleanupDays: nextCleanupDays});
             this.enqueueEval(serverUrl, async () => {
                 await this.evaluateServer(serverUrl);
                 if (this.isOffline(serverUrl)) {
@@ -181,8 +184,8 @@ class EphemeralModeManagerSingleton {
         await setDisconnectedSince(serverUrl, null);
     };
 
-    private track = (serverUrl: string, thresholdMs: number, purgeThresholdMs: number) => {
-        this.trackedServers.set(serverUrl, {kind: 'mem', thresholdMs, purgeThresholdMs});
+    private track = (serverUrl: string, thresholdMs: number, purgeThresholdMs: number, cleanupDays: number) => {
+        this.trackedServers.set(serverUrl, {kind: 'mem', thresholdMs, purgeThresholdMs, cleanupDays});
         this.ensureAppStateListener();
 
         // skip(1) drops the BehaviorSubject's replay of the current WS state so it

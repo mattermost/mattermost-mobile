@@ -66,8 +66,9 @@ describe('EphemeralModeManager', () => {
         url: string,
         opts: {
             enabled?: boolean;
-            timeoutSec?: number;
-            purgeHours?: number;
+            timeoutSec?: number | string;
+            purgeHours?: number | string;
+            cleanupDays?: number | string;
             disconnectedSince?: number;
             offlineSince?: number;
             lastSeenTime?: number;
@@ -80,6 +81,9 @@ describe('EphemeralModeManager', () => {
         }
         if (opts.timeoutSec !== undefined) {
             configs.push({id: 'MobileEphemeralModeDisconnectionTimeoutSeconds', value: String(opts.timeoutSec)});
+        }
+        if (opts.cleanupDays !== undefined) {
+            configs.push({id: 'MobileEphemeralModeAutoCacheCleanupDays', value: String(opts.cleanupDays)});
         }
 
         // Default to a very large purge threshold so disconnection-only tests don't accidentally
@@ -131,7 +135,7 @@ describe('EphemeralModeManager', () => {
         appStateHandlers.forEach((h) => h(state));
     };
 
-    const updateConfig = async (url: string, patch: {enabled?: boolean; timeoutSec?: number; purgeHours?: number}) => {
+    const updateConfig = async (url: string, patch: {enabled?: boolean; timeoutSec?: number | string; purgeHours?: number | string; cleanupDays?: number | string}) => {
         const {operator} = DatabaseManager.getServerDatabaseAndOperator(url);
         const configs: Array<{id: string; value: string}> = [];
         if (patch.enabled !== undefined) {
@@ -142,6 +146,9 @@ describe('EphemeralModeManager', () => {
         }
         if (patch.purgeHours !== undefined) {
             configs.push({id: 'MobileEphemeralModeOfflinePersistenceTimerHours', value: String(patch.purgeHours)});
+        }
+        if (patch.cleanupDays !== undefined) {
+            configs.push({id: 'MobileEphemeralModeAutoCacheCleanupDays', value: String(patch.cleanupDays)});
         }
         await operator.handleConfigs({configs, configsToDelete: [], prepareRecordsOnly: false});
     };
@@ -199,6 +206,19 @@ describe('EphemeralModeManager', () => {
         expect(AppState.addEventListener).not.toHaveBeenCalled();
         expect(EphemeralModeManager.isOffline(serverA)).toBe(false);
         expect(await getPersistedSince(serverA)).toBeUndefined();
+    });
+
+    it('a non-numeric disconnection timeout falls back to flagging the server offline immediately', async () => {
+        await seedConfigAndRow(serverA, {enabled: true, timeoutSec: 'garbage'});
+        wsStates[serverA] = new BehaviorSubject<WebsocketConnectedState>('connected');
+
+        await EphemeralModeManager.init([credsA]);
+        await advanceTimers(0);
+
+        setWs(serverA, 'not_connected');
+        await advanceTimers(0);
+
+        expect(EphemeralModeManager.isOffline(serverA)).toBe(true);
     });
 
     it('disconnecting with a zero threshold flags the server offline immediately', async () => {
@@ -326,6 +346,53 @@ describe('EphemeralModeManager', () => {
 
         await advanceTimers(60_000);
         expect(EphemeralModeManager.isOffline(serverA)).toBe(false);
+    });
+
+    describe('auto cache cleanup days', () => {
+        it('exposes the configured cleanup days once ephemeral mode is enabled', async () => {
+            await seedConfigAndRow(serverA, {enabled: true, timeoutSec: 10, cleanupDays: 14});
+
+            await EphemeralModeManager.init([credsA]);
+            await advanceTimers(0);
+
+            expect(EphemeralModeManager.getAutoCacheCleanupDays(serverA)).toBe(14);
+        });
+
+        it('disabling ephemeral mode at runtime stops exposing the previously configured cleanup days', async () => {
+            await seedConfigAndRow(serverA, {enabled: true, timeoutSec: 10, cleanupDays: 14});
+
+            await EphemeralModeManager.init([credsA]);
+            await advanceTimers(0);
+            expect(EphemeralModeManager.getAutoCacheCleanupDays(serverA)).toBe(14);
+
+            await updateConfig(serverA, {enabled: false});
+            await advanceTimers(0);
+
+            expect(EphemeralModeManager.getAutoCacheCleanupDays(serverA)).toBe(0);
+            expect(EphemeralModeManager.isZeroPersistenceMode(serverA)).toBe(false);
+        });
+
+        it('updating cleanup days while ephemeral mode remains enabled reflects the new value', async () => {
+            await seedConfigAndRow(serverA, {enabled: true, timeoutSec: 10, cleanupDays: 7});
+
+            await EphemeralModeManager.init([credsA]);
+            await advanceTimers(0);
+            expect(EphemeralModeManager.getAutoCacheCleanupDays(serverA)).toBe(7);
+
+            await updateConfig(serverA, {cleanupDays: 21});
+            await advanceTimers(0);
+
+            expect(EphemeralModeManager.getAutoCacheCleanupDays(serverA)).toBe(21);
+        });
+
+        it('falls back to 0 cleanup days when the server sends a non-numeric value', async () => {
+            await seedConfigAndRow(serverA, {enabled: true, timeoutSec: 10, cleanupDays: 'not-a-number'});
+
+            await EphemeralModeManager.init([credsA]);
+            await advanceTimers(0);
+
+            expect(EphemeralModeManager.getAutoCacheCleanupDays(serverA)).toBe(0);
+        });
     });
 
     it('changing the threshold while disconnected reschedules the timer against the persisted disconnect time', async () => {
