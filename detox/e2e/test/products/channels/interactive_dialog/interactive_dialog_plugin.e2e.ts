@@ -482,8 +482,18 @@ describe('Interactive Dialog - Basic Dialog (Plugin)', () => {
         await ChannelScreen.hasPostMessage(post.id, 'Dialog Submitted:');
     });
 
-    // iOS-only skip carried over from the RF→Detox migration with no recorded failure;
-    // Android still covers this case. Re-enable once the iOS path is re-verified.
+    // iOS kept skipped (SEC-11020) after a live re-verification attempt on 2026-08-05
+    // (iPhone 17 Pro / iOS 26.3, live PR-9996 server 11.10.0): the test FAILS on iOS —
+    // `channel.post_draft.post.input` is not found ("No elements found") in the
+    // beforeEach clearText and again in the test body. The afterEach fallback
+    // (waitFor postInput toBeVisible) also fails. Artifact shows a Detox visibility
+    // check on a `PasteInput` RCTUITextView — a paste overlay/banner may be covering
+    // the composer so the post-input testID is not matchable. This is NOT a universal
+    // stale-binary break (MM-T3205 in channel_members.e2e.ts passed 2x with the same
+    // binary); it is specific to the interactive-dialog / post-input flow. Failing
+    // assertion: Expected channel.post_draft.post.input to exist; Got: no elements
+    // found. Owner: QA/test-infra — isolate whether a paste overlay is blocking the
+    // composer testID on iOS, then re-unskip. Android still covers this case.
     (isIos() ? it.skip : it)('MM-T4201 should fill and submit all text field types (Plugin)', async () => {
         await ensureDialogClosed();
         await ChannelScreen.postSlashCommand('/dialog textfields');
