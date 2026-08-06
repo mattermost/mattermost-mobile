@@ -84,9 +84,9 @@ on:
       MM_MOBILE_E2E_ADMIN_PASSWORD:
         required: false
 
-# Pin: mattermost-test-system-io maestro multi-device scenarios @ 3675095.
+# Pin: mattermost-test-system-io maestro multi-device scenarios @ a37096f.
 env:
-  TEST_SYSTEM_IO_ACTIONS_SHA: 36750956f71218c75ebb435d136f7a9aab84faab
+  TEST_SYSTEM_IO_ACTIONS_SHA: a37096fa1c671fe5fd843d4757a21a95ea0a95a3
   DEVICE_NAME: ${{ inputs.ios_device_name }}
   DEVICE_OS_VERSION: ${{ inputs.ios_device_os_name }}
   ARTIFACT_RUN_ID: ${{ inputs.artifact_run_id }}
@@ -177,7 +177,7 @@ jobs:
 
       - name: test-system-io dispatch begin
         id: begin
-        uses: mattermost/mattermost-test-system-io/.github/actions/test-system-io-dispatch-begin@36750956f71218c75ebb435d136f7a9aab84faab
+        uses: mattermost/mattermost-test-system-io/.github/actions/test-system-io-dispatch-begin@a37096fa1c671fe5fd843d4757a21a95ea0a95a3
         with:
           use-staging: ${{ inputs.use_staging_test_system_io && 'true' || 'false' }}
           framework: maestro
@@ -458,7 +458,7 @@ jobs:
           exit 1
 
       - name: test-system-io dispatch run
-        uses: mattermost/mattermost-test-system-io/.github/actions/test-system-io-dispatch-run@36750956f71218c75ebb435d136f7a9aab84faab
+        uses: mattermost/mattermost-test-system-io/.github/actions/test-system-io-dispatch-run@a37096fa1c671fe5fd843d4757a21a95ea0a95a3
         with:
           use-staging: ${{ inputs.use_staging_test_system_io && 'true' || 'false' }}
           framework: maestro
