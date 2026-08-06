@@ -40,13 +40,9 @@ appId: ${MAESTRO_APP_ID}
 - tapOn:
     id: "calls.join_call_banner.join"
 
-# # Grant permissions
-- tapOn:
-    text: "Allow"
-    optional: true
-- tapOn:
-    text: "Allow"
-    optional: true
+# # Grant / dismiss mic permission (Android uses "While using the app", not "Allow")
+- runFlow: ../../subflows/system/dismiss_permission_dialogs.yml
+- runFlow: ../../subflows/system/dismiss_permission_dialogs.yml
 
 # # Open the full call screen from the call bar.
 # Joining keeps the app on the channel view with a call bar overlay (same as starting

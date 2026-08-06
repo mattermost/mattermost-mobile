@@ -1,0 +1,19 @@
+# Dismiss OS permission prompts that block the app under test.
+# Usage: - runFlow: ../../subflows/system/dismiss_permission_dialogs.yml
+#
+# Android 13+ notifications: "Allow" / "Don't allow"
+# Android mic/camera (API 31+): "While using the app" / "Only this time" / "Don't allow"
+#   — tapOn text: "Allow" does NOT match the mic/camera dialog (leave_call CI
+#   screenshot showed "Allow Mattermost Beta to record audio?" with no Allow button).
+# iOS notifications / local network: "Allow"
+appId: ${MAESTRO_APP_ID}
+---
+- tapOn:
+    text: "While using the app"
+    optional: true
+- tapOn:
+    text: "Only this time"
+    optional: true
+- tapOn:
+    text: "Allow"
+    optional: true

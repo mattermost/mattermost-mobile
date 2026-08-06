@@ -221,7 +221,10 @@ grant_android_calls_permissions() {
   [[ "$PLATFORM" != "android" ]] && return 0
   command -v adb >/dev/null 2>&1 || return 0
 
-  echo "==> Re-granting Android microphone/camera for Calls ($MAESTRO_APP_ID)"
+  echo "==> Re-granting Android notifications/microphone/camera ($MAESTRO_APP_ID)"
+  # login.yml clearState wipes these; notifications dialog blocks the server form,
+  # mic dialog blocks Calls ("While using the app", not "Allow").
+  adb shell pm grant "$MAESTRO_APP_ID" android.permission.POST_NOTIFICATIONS 2>/dev/null || true
   adb shell pm grant "$MAESTRO_APP_ID" android.permission.RECORD_AUDIO 2>/dev/null || true
   adb shell pm grant "$MAESTRO_APP_ID" android.permission.CAMERA 2>/dev/null || true
 }
@@ -365,8 +368,10 @@ for batch_paths in "${BATCHES[@]}"; do
   if [[ "$batch_paths" == *"/calls/"* ]]; then
     ensure_calls_channel_enabled
     grant_ios_calls_permissions
-    grant_android_calls_permissions
   fi
+  # login.yml clearState wipes runtime grants every flow — re-grant before each
+  # Android batch so notification/mic dialogs cannot cover the UI.
+  grant_android_calls_permissions
   [[ "$PLATFORM" == "android" ]] && reset_android_app_state
   ensure_android_app_launchable
 

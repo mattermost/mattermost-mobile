@@ -5,9 +5,10 @@
 #
 # iOS: clearState:true is used here. It simulates a fresh install and triggers
 # the native "Allow Notifications?" dialog — handled below with an optional tap.
-# Android: clearState:true wipes app data (including granted permissions) so a
-# stale session can't interfere, but it re-triggers the notification permission
-# dialog. The flow handles this with a timed wait + optional Allow tap.
+# Android: clearState:true wipes app data (including adb pm grant). Re-grant via
+# launchApp permissions + setPermissions so notification/mic/camera dialogs do
+# not cover the server form or Calls UI (CI screenshots showed those dialogs
+# blocking server_form.server_url.input and leave_call).
 appId: ${MAESTRO_APP_ID}
 ---
 # # Relaunch the app from a clean state so no stale session interferes.
@@ -25,16 +26,15 @@ appId: ${MAESTRO_APP_ID}
       - launchApp:
           stopApp: true
           clearState: true
+          permissions:
+            all: allow
           arguments:
             disableTutorials: true
       # # After clearState, the JS bundle loads fresh + notification dialog
       # may appear. Wait longer for bundle + permission dialog.
       - waitForAnimationToEnd:
           timeout: 45000
-      # # Notification permission dialog — dismiss if present.
-      - tapOn:
-          text: "Allow"
-          optional: true
+      - runFlow: ../system/dismiss_permission_dialogs.yml
       # * Verify the fresh install shows the server form once the JS bundle loads.
       # iOS: FloatingTextInput testID (server_url.input) is NOT exposed to the
       # native accessibility tree that Maestro queries — use display_help
@@ -50,30 +50,28 @@ appId: ${MAESTRO_APP_ID}
       - launchApp:
           stopApp: false
           clearState: true
+          # clearState drops runtime grants; re-allow so the system dialog never
+          # covers the server form (notifications) or later Calls actions (mic).
+          permissions:
+            all: allow
           arguments:
             disableTutorials: true
-      # # After clearState, the Android notification permission dialog appears
-      # shortly after launch. Give it time to render, then dismiss if present.
-      - waitForAnimationToEnd:
-          timeout: 5000
-      - tapOn:
-          text: "Allow"
-          optional: true
-      # * Verify the server connect form is shown. After clearState the app has no
-      # server registered and always shows it. Wait up to 90s for the JS bundle to
-      # load on slow emulators.
-      - extendedWaitUntil:
-          visible:
-            id: "server_form.server_url.input"
-          timeout: 90000
+      - setPermissions:
+          permissions:
+            all: allow
+      # # Dialog can still race the grant on some API 35 images — dismiss while
+      # waiting for the form rather than a single early optional tap.
+      - retry:
+          maxRetries: 6
+          commands:
+            - runFlow: ../system/dismiss_permission_dialogs.yml
+            - extendedWaitUntil:
+                visible:
+                  id: "server_form.server_url.input"
+                timeout: 15000
 
-# # Dismiss the notification permission dialog on either platform. It may appear on
-# first launch after a device wipe or new test session, and on Android it can surface
-# later than the in-branch attempt above. Allow so push can work; optional so it is
-# silently skipped when the dialog is absent.
-- tapOn:
-    text: "Allow"
-    optional: true
+# # Late-arriving OS permission dialogs (either platform).
+- runFlow: ../system/dismiss_permission_dialogs.yml
 
 # # If on the full call screen, leave the call first so back presses work cleanly.
 # Each back press on the call screen triggers a leave-confirmation dialog, which
@@ -155,12 +153,8 @@ appId: ${MAESTRO_APP_ID}
         id: "tab_bar.home.tab"
     file: logout.yml
 
-# # Android: notification permission dialog may appear after the initial navigation
-# cleanup (dialog takes longer to surface than on iOS). Second optional dismiss
-# handles the case where the dialog was not yet visible on the first attempt above.
-- tapOn:
-    text: "Allow"
-    optional: true
+# # Android: notification / mic dialogs can surface after navigation cleanup.
+- runFlow: ../system/dismiss_permission_dialogs.yml
 
 # # Server connection section — only runs when the server form is visible.
 # After a fresh DB wipe or first run, no server is registered and the form
