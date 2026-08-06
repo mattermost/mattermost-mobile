@@ -40,4 +40,28 @@ class MMCallsNativeModule(reactContext: ReactApplicationContext) : NativeMMCalls
     override fun foregroundServiceStop() {
         implementation.foregroundServiceStop()
     }
+
+    override fun startAudioSession(promise: Promise?) {
+        implementation.startAudioSession(promise)
+    }
+
+    override fun stopAudioSession(promise: Promise?) {
+        implementation.stopAudioSession(promise)
+    }
+
+    override fun setAudioRoute(route: String?, promise: Promise?) {
+        implementation.setAudioRoute(route ?: "EARPIECE", promise)
+    }
+
+    override fun getAudioRoute(promise: Promise?) {
+        implementation.getAudioRoute(promise)
+    }
+
+    override fun startRingtone(name: String?, seconds: Double, promise: Promise?) {
+        implementation.startRingtone(name ?: "default_ringtone", seconds.toInt(), promise)
+    }
+
+    override fun stopRingtone(promise: Promise?) {
+        implementation.stopRingtone(promise)
+    }
 }

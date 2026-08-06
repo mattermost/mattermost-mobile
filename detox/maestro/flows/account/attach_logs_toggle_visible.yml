@@ -1,15 +1,15 @@
-# MM-T67856_1: The attach-app-logs toggle is visible on the in-app Report a Problem screen.
+# MM-T67856_1: The attach-app-logs toggle is visible on the Report a Problem screen.
 #
 # PRE-CONDITIONS:
-#   - Logged-in test user on a licensed server with default Report a Problem settings
+#   - Logged-in test user with default Report a Problem settings
 #   - AllowDownloadLogs enabled (default Matterwick provisioning)
-#   - Tapping Report a Problem opens the in-app screen (not email-only shortcut)
+#   - Any license tier: the report screen opens on unlicensed and Entry servers too
 #
 # REQUIRED ENV VARS:
 #   - MAESTRO_APP_ID, TEST_USER_EMAIL, TEST_USER_PASSWORD
 #
 # ASSERTIONS:
-#   - In-app Report a Problem screen appears after tapping the settings entry
+#   - The Report a Problem screen appears after tapping the settings entry
 #   - "Show an option to attach app logs" toggle row is visible
 #
 # testIDs:
@@ -22,9 +22,11 @@ tags:
   - MM-T67856_1
 appId: ${MAESTRO_APP_ID}
 ---
+# # Log in as the test user
 - runFlow: ../../subflows/auth/login.yml
 
-# Go to Account tab > Settings > Report a Problem
+# # Go to Account tab > Settings > Report a Problem.
+# Report a Problem can sit below the fold on small Android viewports (CI 59ec6ae).
 - tapOn:
     id: "tab_bar.account.tab"
 - extendedWaitUntil:
@@ -33,7 +35,6 @@ appId: ${MAESTRO_APP_ID}
     timeout: 10000
 - tapOn:
     id: "account.settings.option"
-# Report a Problem can sit below the fold on small Android viewports (CI 59ec6ae).
 - scrollUntilVisible:
     element:
       id: "settings.report_problem.option"
@@ -46,45 +47,48 @@ appId: ${MAESTRO_APP_ID}
 - tapOn:
     id: "settings.report_problem.option"
 
-# Unlicensed servers open external browser/email — conditional blocks handle both paths.
-- waitForAnimationToEnd:
-    timeout: 3000
+# * Verify the report screen opened.
+# The logs setting arrives with the server config, which can lag on first login.
+- extendedWaitUntil:
+    visible:
+      id: "report_problem.screen"
+    timeout: 30000
 
-# Path A: In-app Report a Problem screen (licensed server)
-# Toggle is below the fold — use scrollUntilVisible (assertVisible does not auto-scroll).
-- runFlow:
-    when:
-      visible:
-        id: "report_problem.screen"
-    commands:
-      - scrollUntilVisible:
-          element:
-            id: "report_problem.enable_log_attachments"
-          direction: DOWN
-          timeout: 10000
+# * Verify the attach-app-logs toggle is offered.
+# The toggle is below the fold — scrollUntilVisible is required because
+# assertVisible does not auto-scroll.
+- scrollUntilVisible:
+    element:
+      id: "report_problem.enable_log_attachments"
+    direction: DOWN
+    timeout: 10000
+- takeScreenshot: report-problem-attach-logs-toggle
 
-# Path B: External browser / email composer (unlicensed server) — dismiss
+# # Leave the report screen so the next flow starts on a clean screen.
+# On iOS 26.3 Maestro's `back` does not dismiss modal-presented screens; relaunching
+# (stopApp + clearState:false) restarts the app without wiping data.
 - runFlow:
     when:
       platform: iOS
     commands:
-      - runFlow:
-          when:
-            visible:
-              id: "breadcrumb"
-          commands:
-            - tapOn:
-                id: "breadcrumb"
-            - tapOn:
-                text: "Done"
-                optional: true
+      - launchApp:
+          stopApp: true
+          clearState: false
+      - waitForAnimationToEnd:
+          timeout: 30000
+      - extendedWaitUntil:
+          visible:
+            id: "tab_bar.home.tab"
+          timeout: 30000
 - runFlow:
     when:
       platform: Android
     commands:
-      - runFlow:
-          when:
-            notVisible:
-              id: "settings.report_problem.option"
-          commands:
-            - pressKey: Back
+      - pressKey: Back
+      - extendedWaitUntil:
+          visible:
+            id: "settings.report_problem.option"
+          timeout: 10000
+
+# # Capture the final state
+- takeScreenshot: report-problem-toggle-visible-end

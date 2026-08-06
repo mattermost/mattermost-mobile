@@ -3357,8 +3357,6 @@ PODS:
     - React-perflogger (= 0.83.9)
     - React-utils (= 0.83.9)
     - SocketRocket
-  - ReactNativeIncallManager (4.2.1):
-    - React-Core
   - RNCClipboard (1.16.3):
     - boost
     - DoubleConversion
@@ -4095,7 +4093,6 @@ DEPENDENCIES:
   - ReactAppDependencyProvider (from `build/generated/ios/ReactAppDependencyProvider`)
   - ReactCodegen (from `build/generated/ios/ReactCodegen`)
   - ReactCommon/turbomodule/core (from `../node_modules/react-native/ReactCommon`)
-  - ReactNativeIncallManager (from `../node_modules/react-native-incall-manager`)
   - "RNCClipboard (from `../node_modules/@react-native-clipboard/clipboard`)"
   - "RNDateTimePicker (from `../node_modules/@react-native-community/datetimepicker`)"
   - RNGestureHandler (from `../node_modules/react-native-gesture-handler`)
@@ -4384,8 +4381,6 @@ EXTERNAL SOURCES:
     :path: build/generated/ios/ReactCodegen
   ReactCommon:
     :path: "../node_modules/react-native/ReactCommon"
-  ReactNativeIncallManager:
-    :path: "../node_modules/react-native-incall-manager"
   RNCClipboard:
     :path: "../node_modules/@react-native-clipboard/clipboard"
   RNDateTimePicker:
@@ -4561,7 +4556,6 @@ SPEC CHECKSUMS:
   ReactAppDependencyProvider: 87593e9dfdba8dac1d7b2af1af05f0eff2a05684
   ReactCodegen: 0d7a23448e4c6a3547fe36b961b46156824df3db
   ReactCommon: e3671aa40073668776ada8a2c328060613e33d00
-  ReactNativeIncallManager: dccd3e7499caa3bb73d3acfedf4fb0360f1a87d5
   RNCClipboard: e560338bf6cc4656a09ff90610b62ddc0dbdad65
   RNDateTimePicker: ea25d20659754bfe1014e0d5905d21dbc18ff705
   RNGestureHandler: 445f4e60308b44ab423660b37073afc01977f48c
