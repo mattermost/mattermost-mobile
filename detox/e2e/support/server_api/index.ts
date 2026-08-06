@@ -9,7 +9,7 @@ import CustomProfileAttributes from './custom_profile_attributes';
 import Ldap from './ldap';
 import Playbooks from './playbooks';
 import PlaybooksHelpers from './playbooks_helpers';
-import Plugin, {AgentsPlugin, CallsPlugin, DemoPlugin} from './plugin';
+import Plugin, {AgentsPlugin, CallsPlugin, DemoPlugin, ensureDemoPluginForDialogTests} from './plugin';
 import Post from './post';
 import Preference from './preference';
 import Properties from './properties';
@@ -31,6 +31,7 @@ export {
     waitForSlashCommandTrigger,
     CustomProfileAttributes,
     DemoPlugin,
+    ensureDemoPluginForDialogTests,
     Ldap,
     Playbooks,
     PlaybooksHelpers,

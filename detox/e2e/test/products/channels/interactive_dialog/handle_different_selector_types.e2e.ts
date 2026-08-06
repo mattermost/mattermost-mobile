@@ -11,10 +11,9 @@
 
 import {
     Command,
-    DemoPlugin,
+    ensureDemoPluginForDialogTests,
     Plugin,
     Setup,
-    System,
     User,
     Post,
 } from '@support/server_api';
@@ -244,26 +243,7 @@ describe('Interactive Dialog - Basic Dialog (Plugin)', () => {
         testUser = user;
 
         await User.apiAdminLogin(siteOneUrl);
-        const configResult = await System.apiUpdateConfig(siteOneUrl, {
-            PluginSettings: {
-                PluginStates: {
-                    [DemoPlugin.id]: {Enable: true},
-                },
-                Plugins: {
-                    [DemoPlugin.id]: {
-                        DialogOnlyMode: true,
-                    },
-                },
-            },
-        });
-        if (configResult.error) {
-            throw new Error(`Failed to configure demo plugin for dialog tests: ${configResult.error.message || JSON.stringify(configResult.error)}`);
-        }
-
-        const statusCheck = await Plugin.apiGetPluginStatus(siteOneUrl, DemoPlugin.id);
-        if (!statusCheck.isActive) {
-            throw new Error(`Demo plugin (${DemoPlugin.id}) is not active. Run Detox server provisioning before this suite.`);
-        }
+        await ensureDemoPluginForDialogTests(siteOneUrl);
         await Command.waitForSlashCommandTrigger(siteOneUrl, testChannel.team_id, 'dialog', {timeoutMs: 60000});
 
         await ServerScreen.connectToServer(serverOneUrl, serverOneDisplayName);

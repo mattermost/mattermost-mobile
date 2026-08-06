@@ -98,9 +98,9 @@ on:
       MM_MOBILE_E2E_ADMIN_PASSWORD:
         required: false
 
-# Pin: mattermost-test-system-io main (Detox orchestration).
+# Pin: mattermost-test-system-io PR #103 @ bd9f092 (Detox batch_size + parallel workers).
 env:
-  TEST_SYSTEM_IO_ACTIONS_SHA: 1b44ba5507fcf73c9fd978eb96422a6d15a98c38
+  TEST_SYSTEM_IO_ACTIONS_SHA: bd9f0928e3aa76a950b7b0fb01c0fe0dcbcf37e5
   DEVICE_NAME: ${{ inputs.ios_device_name }}
   DEVICE_OS_VERSION: ${{ inputs.ios_device_os_name }}
   ARTIFACT_RUN_ID: ${{ inputs.artifact_run_id }}
@@ -347,7 +347,7 @@ jobs:
         run: cd detox && npm run detox:config-gen
 
       - name: test-system-io dispatch run
-        uses: mattermost/mattermost-test-system-io/.github/actions/test-system-io-dispatch-run@1b44ba5507fcf73c9fd978eb96422a6d15a98c38
+        uses: mattermost/mattermost-test-system-io/.github/actions/test-system-io-dispatch-run@bd9f0928e3aa76a950b7b0fb01c0fe0dcbcf37e5
         with:
           use-staging: ${{ inputs.use_staging_test_system_io && 'true' || 'false' }}
           framework: detox
