@@ -23,6 +23,17 @@ Append-only notes for a human to copy into the
   separate mechanism) — left unskipped here on back-index; re-skip + defer to
   SEC-10996 if it regresses on cascade. Android deferred to CI.
 
+  **Cross-branch split (6/6 unskipped):** SEC-11015's 6 tracked tests are MM-T1750,
+  MM-T4784_3, MM-T4865_2, MM-T373, MM-T5294_10, MM-T250_1. The 5 iOS unskips above
+  landed on this branch (commit c5c8fc086); the 6th, MM-T250_1, was unskipped under
+  SEC-10993 (same shared NavigationHeader.tapBackButton mechanism) -- so all 6 are
+  unskipped, attributed across SEC-11015 (5) and SEC-10993 (1, MM-T250_1). The ANDROID
+  unskip for MM-T4865_2 (verified 2x green on Android, live PR-9996 server 11.10.0, flag
+  ON) landed on a sibling branch fix/detox-android-back-index-gap (commit 30df89dd8) --
+  the same test iOS-unskipped here. The two branches are complementary, not duplicate:
+  iOS unskips here, the Android MM-T4865_2 unskip there. The other 4 Android cases
+  (MM-T1750, MM-T4784_3, MM-T373, MM-T5294_10) remain Android-deferred-to-CI as above.
+
 - **SEC-11049** (duplicate user_item + visibility thresholds, 6 tests; was mis-tagged
   Feature/PE) — Owner: QA for all six.
   - Unskipped (verified 2× green iOS): MM-T4730_2, MM-T4730_3 (create_direct_message),
