@@ -130,8 +130,14 @@ describe('Smoke Test - Autocomplete', () => {
         await ChannelScreen.hasPostMessage(post.id, '🦊');
     });
 
-    // Skip Android: CI run 30424009936 (f86f99e1) failed both attempts — the slash autocomplete
-    // never becomes visible after typing "/" (Autocomplete.toBeVisible, 10s).
+    // Skip Android (SEC-11048): re-verified live on 2026-08-06 (API-35 emulator, live
+    // PR-9996 server 11.10.0, flag ON) — still FAILS, matching the CI 30424009936 symptom:
+    // after typing "/", `Autocomplete.toBeVisible` (waitFor autocomplete.atIndex(0)
+    // toBeVisible(1), 10s) times out — the slash autocomplete never becomes visible on
+    // Android. Test ran 17s (not a Jest timeout). iOS passes. Owner: QA/PE — the slash
+    // autocomplete does not render on Android; needs isolation of whether the autocomplete
+    // component mounts at all on Android (test-fix) or a product rendering issue. Kept
+    // skipped on Android. Artifact: artifacts/android.emu.debug.2026-08-06 16-26-02Z/.
     (isAndroid() ? it.skip : it)('MM-T4886_4 - should be able to select and post slash suggestion', async () => {
         // # Type in "/" to activate slash suggestion autocomplete
         await ChannelScreen.postInput.typeText('/');

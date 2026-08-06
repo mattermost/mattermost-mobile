@@ -31,7 +31,7 @@ import {
     ServerScreen,
     ChannelSettingsScreen,
 } from '@support/ui/screen';
-import {getRandomId, isAndroid, isIos, timeouts, wait} from '@support/utils';
+import {getRandomId, isAndroid, timeouts, wait} from '@support/utils';
 import {device, expect, waitFor} from 'detox';
 
 describe('Smoke Test - Channels', () => {
@@ -181,9 +181,11 @@ describe('Smoke Test - Channels', () => {
         await ChannelListScreen.toBeVisible();
     });
 
-    // Skip iOS: failed on CI 30437339535. The waitFor-polling fix added afterwards was never
-    // exercised — its shard was cancelled on 30447839548 — so treat it as unverified. Android passes.
-    (isIos() ? it.skip : it)('MM-T4774_5 - should be able to favorite and mute a channel', async () => {
+    // Unskipped on iOS (SEC-11048) after live re-verification on 2026-08-06 (iPhone 17
+    // Pro / iOS 26.3, fresh v793 binary, live PR-9996 server 11.10.0): 2x green. The
+    // waitFor-polling fix (added after CI 30437339535 failed but never exercised because
+    // its shard was cancelled) works on iOS. Android already passes.
+    it('MM-T4774_5 - should be able to favorite and mute a channel', async () => {
         // # Reload React Native to establish a fresh WebSocket connection.
         await device.reloadReactNative();
         await ChannelListScreen.toBeVisible();

@@ -64,9 +64,37 @@ PE_FINDING_classification_values_filter.md).
   prior report is also retracted (the tutorial, not a testID mismatch, was the blocker).
 - **MM-T4675_2** (server_login, SEC-11048) — **FAIL, kept skipped.** Real Android failure:
   `channel_list.servers.server_icon` is never found (polled null) during the multi-server
-  add/switch/logout flow. NOT the overlay. Test-fix territory (server-list item matcher or
-  rendering/timing in the multi-server flow); needs isolation of the exact step. Artifact:
-  artifacts/android.emu.debug.2026-08-06 14-51-59Z/.
+  add/switch/logout flow. NOT the overlay. **Timing evidence vs the ticket:** the ticket's
+  documented mechanism for MM-T4675_2 is "add-server/login/logout exceeds the 300s Jest
+  timeout." The local failure ran only 37.3s before failing (Jest timeout is 240s locally /
+  300s in CI) — far from the timeout, so the local icon-not-found is a genuinely separate
+  failure mode from the CI 300s-timeout symptom, not what a near-timeout looks like. This
+  is new evidence distinguishing the local failure from the documented CI symptom.
+  Test-fix territory (server-list item matcher or rendering/timing in the multi-server
+  flow); needs isolation of the exact step. Artifact: artifacts/android.emu.debug.2026-08-06
+  14-51-59Z/.
+
+### SEC-11048 remaining two tests (2026-08-06, live PR-9996 servers, flag ON)
+
+- **MM-T4774_5** (smoke_test/channels.e2e.ts, iOS) — **UNSKIPPED, 2x green.** The
+  waitFor-polling fix added after CI 30437339535 (never exercised because its shard was
+  cancelled) works on iOS. Verified 2x green on iPhone 17 Pro / iOS 26.3 with the fresh
+  v793 binary against a live PR-9996 server (11.10.0). Android already passes.
+- **MM-T4886_4** (smoke_test/autocomplete.e2e.ts, Android) — **FAIL, kept skipped.**
+  Re-verified live on API-35 / live PR-9996 server 11.10.0: still FAILS, matching the CI
+  30424009936 symptom — after typing "/", `Autocomplete.toBeVisible`
+  (waitFor autocomplete.atIndex(0) toBeVisible(1), 10s) times out; the slash autocomplete
+  never becomes visible on Android. Test ran 17s (not a Jest timeout). iOS passes. Owner:
+  QA/PE — the slash autocomplete does not render on Android; needs isolation of whether
+  the autocomplete component mounts at all on Android (test-fix) or a product rendering
+  issue. Kept skipped. Artifact: artifacts/android.emu.debug.2026-08-06 16-26-02Z/.
+
+**SEC-11048 per-test verdict (all 4 tracked tests):** MM-T5604_1 = unskipped (2x green
+Android); MM-T4675_2 = FAIL kept skipped (Android, separate failure mode from the CI
+300s-timeout, new evidence); MM-T4774_5 = unskipped (2x green iOS); MM-T4886_4 = FAIL kept
+skipped (Android, matches CI symptom). 2/4 green-and-unskipped, 2/4 documented-and-skipped
+with real mechanisms. SEC-11048 is NOT fully closed (2 Android failures remain, both with
+isolated mechanisms and artifacts).
 
 MM-T4785_3 (message_reply, SEC-11014) is OUT of scope for this pass (separate discarded
 scrollElementIntoView change) and remains skipped.
