@@ -1,5 +1,5 @@
 {
   "enabled": true,
   "pr_number": 10006,
-  "note": "recreate fresh Matterwick servers before Maestro iOS e2e-v2 (Reset-Servers → E2E/Run)"
+  "note": "retry recreate after E2E/Run was stripped by stale cleanup (Matterwick context canceled); settle+reassert E2E/Run before Maestro iOS"
 }

@@ -102,6 +102,25 @@ jobs:
               owner, repo, issue_number: prNumber, labels: [runLabel],
             });
 
+            // Stale e2e-detox-pr cleanup can strip E2E/Run seconds after we add it
+            // (seen as Matterwick "installation wait cancelled"). Re-assert for a
+            // short window so the labeled webhook sticks.
+            for (let i = 0; i < 6; i++) {
+              await sleep(30_000);
+              const names = await listLabels();
+              if (names.includes(runLabel)) {
+                core.info(`${runLabel} still present after settle poll ${i + 1}/6`);
+                continue;
+              }
+              core.warning(`${runLabel} missing on settle poll ${i + 1}/6 — re-adding`);
+              await github.rest.issues.addLabels({
+                owner, repo, issue_number: prNumber, labels: [runLabel],
+              });
+            }
+
             const finalLabels = await listLabels();
             core.info(`PR #${prNumber} labels now: ${finalLabels.join(', ')}`);
+            if (!finalLabels.includes(runLabel)) {
+              throw new Error(`${runLabel} did not stick on PR #${prNumber}`);
+            }
             core.summary.addRaw(`Recreated Matterwick servers for PR #${prNumber} via ${resetLabel} → ${runLabel}.`);
