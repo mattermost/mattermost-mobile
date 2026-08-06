@@ -12,7 +12,6 @@
 import {
     Command,
     ensureDemoPluginForDialogTests,
-    Plugin,
     Setup,
     User,
 } from '@support/server_api';
