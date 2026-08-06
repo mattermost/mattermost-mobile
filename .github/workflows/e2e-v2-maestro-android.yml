@@ -1,0 +1,558 @@
+# E2E v2 — Maestro Android via test-system-io orchestration (staging by default).
+# Called from e2e-v2.yml. Does not build the app; downloads e2e-v2-android-maestro-* artifacts.
+name: E2E v2 Maestro Android
+
+on:
+  workflow_call:
+    inputs:
+      mobile_ref:
+        required: true
+        type: string
+      artifact_run_id:
+        required: true
+        type: string
+      worker_count:
+        required: true
+        type: string
+      android_site_1_url:
+        required: true
+        type: string
+      android_site_2_url:
+        required: false
+        type: string
+        default: ""
+      site_3_url:
+        required: false
+        type: string
+        default: ""
+      android_avd_name:
+        required: false
+        type: string
+        default: detox_pixel_8
+      android_api_level:
+        required: false
+        type: string
+        default: "35"
+      use_staging_test_system_io:
+        required: false
+        type: boolean
+        default: true
+      run_type:
+        required: false
+        type: string
+        default: PR
+      pr_number:
+        required: false
+        type: string
+        default: ""
+      branch:
+        required: false
+        type: string
+        default: ""
+      commit_sha:
+        required: true
+        type: string
+      identity_name:
+        required: false
+        type: string
+        default: maestro-android
+      commit_status_context:
+        required: false
+        type: string
+        default: e2e-test-v2/maestro-android
+      fail_on_test_failures:
+        required: false
+        type: boolean
+        default: false
+      post_commit_status:
+        required: false
+        type: boolean
+        default: true
+      maestro_flow_path:
+        required: false
+        type: string
+        default: flows
+      maestro_exclude_dir:
+        required: false
+        type: string
+        default: multi_device
+    secrets:
+      MM_MOBILE_E2E_ADMIN_EMAIL:
+        required: false
+      MM_MOBILE_E2E_ADMIN_USERNAME:
+        required: false
+      MM_MOBILE_E2E_ADMIN_PASSWORD:
+        required: false
+
+env:
+  TEST_SYSTEM_IO_ACTIONS_SHA: bd9f0928e3aa76a950b7b0fb01c0fe0dcbcf37e5
+  ARTIFACT_RUN_ID: ${{ inputs.artifact_run_id }}
+  ADMIN_EMAIL: ${{ secrets.MM_MOBILE_E2E_ADMIN_EMAIL }}
+  ADMIN_USERNAME: ${{ secrets.MM_MOBILE_E2E_ADMIN_USERNAME }}
+  ADMIN_PASSWORD: ${{ secrets.MM_MOBILE_E2E_ADMIN_PASSWORD }}
+  AVD_NAME: ${{ inputs.android_avd_name }}
+  SDK_VERSION: ${{ inputs.android_api_level }}
+  DEVICE_NAME: ${{ inputs.android_avd_name }}
+  DEVICE_OS_VERSION: ${{ inputs.android_api_level }}
+  HEADLESS: "true"
+  CI: "true"
+  ANDROID_HOME: /usr/local/lib/android/sdk
+  ANDROID_SDK_ROOT: /usr/local/lib/android/sdk
+
+permissions:
+  contents: read
+  id-token: write
+  actions: read
+  statuses: write
+
+jobs:
+  begin:
+    name: orch-begin-maestro-android
+    runs-on: ubuntu-24.04
+    outputs:
+      identity-json: ${{ steps.identity.outputs.identity-json }}
+      identity-branch: ${{ steps.identity.outputs.identity-branch }}
+      report-url: ${{ steps.begin.outputs.report-url }}
+      total-units: ${{ steps.begin.outputs.total-units }}
+      worker-shards: ${{ steps.matrix.outputs.shards }}
+      maestro-exclude-tags: ${{ steps.exclude-tags.outputs.tags }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
+        with:
+          ref: ${{ inputs.mobile_ref }}
+          persist-credentials: false
+
+      - name: Composite identity
+        id: identity
+        env:
+          REPO: ${{ github.repository }}
+          SHA: ${{ inputs.commit_sha }}
+          RUN_ID: ${{ github.run_id }}
+          ATTEMPT: ${{ github.run_attempt }}
+          NAME: ${{ inputs.identity_name }}
+          BRANCH: ${{ inputs.branch || github.ref_name }}
+          PR: ${{ inputs.pr_number }}
+          RUN_TYPE: ${{ inputs.run_type }}
+        run: |
+          if [ -n "$PR" ]; then
+            IDENTITY_BRANCH="pr-${PR}"
+          else
+            IDENTITY_BRANCH="$BRANCH"
+          fi
+          IDENTITY=$(jq -nc \
+            --arg repo "$REPO" \
+            --arg sha "$SHA" \
+            --arg run_id "$RUN_ID" \
+            --arg name "$NAME" \
+            --arg attempt "$ATTEMPT" \
+            --arg branch "$IDENTITY_BRANCH" \
+            --arg pr "$PR" \
+            '{
+              repository: $repo,
+              commit_sha: $sha,
+              gh_run_id: $run_id,
+              gh_run_attempt: $attempt,
+              name: $name,
+              branch: $branch
+            }
+            + (if $pr != "" then {gh_pr_number: ($pr|tonumber)} else {} end)')
+          echo "identity-json=${IDENTITY}" >> "$GITHUB_OUTPUT"
+          echo "identity-branch=${IDENTITY_BRANCH}" >> "$GITHUB_OUTPUT"
+          echo "Identity: ${IDENTITY} (run_type=${RUN_TYPE})"
+
+      - name: Worker matrix JSON
+        id: matrix
+        env:
+          N: ${{ inputs.worker_count }}
+        run: |
+          SHARDS=$(python3 -c "import json,os; print(json.dumps(list(range(1, int(os.environ['N'])+1))))")
+          echo "shards=${SHARDS}" >> "$GITHUB_OUTPUT"
+          echo "Workers: ${SHARDS}"
+
+      - name: Compute maestro-exclude-tags
+        id: exclude-tags
+        run: |
+          TAGS=$(jq -r '(.default + .android) | unique | join(",")' detox/maestro/config/exclude_tags.json)
+          echo "tags=${TAGS}" >> "$GITHUB_OUTPUT"
+          echo "maestro-exclude-tags: ${TAGS}"
+
+      - name: test-system-io dispatch begin
+        id: begin
+        uses: mattermost/mattermost-test-system-io/.github/actions/test-system-io-dispatch-begin@1f7ca41ff07f10ed30170179b017d185973fdf18
+        with:
+          use-staging: ${{ inputs.use_staging_test_system_io && 'true' || 'false' }}
+          framework: maestro
+          composite-identity: ${{ steps.identity.outputs.identity-json }}
+          repo-dir: ${{ github.workspace }}
+          total-reports-expected: ${{ inputs.worker_count }}
+          maestro-dir: detox/maestro
+          maestro-flow-path: ${{ inputs.maestro_flow_path }}
+          maestro-exclude-dir: ${{ inputs.maestro_exclude_dir }}
+          maestro-exclude-tags: ${{ steps.exclude-tags.outputs.tags }}
+          post-pending-commit-status: ${{ inputs.post_commit_status && 'true' || 'false' }}
+          commit-status-context: ${{ inputs.commit_status_context }}
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          retest-on-fail: "true"
+          retest-budget: "1"
+          # Maestro flows are shorter than Detox specs; 1h lease / 1.5h idle.
+          lease-timeout-ms: "3600000"
+          idle-timeout-ms: "5400000"
+
+      - name: Begin summary
+        run: |
+          {
+            echo "## Maestro Android orchestration begin"
+            echo ""
+            echo "- report: ${{ steps.begin.outputs.report-url }}"
+            echo "- total units: ${{ steps.begin.outputs.total-units }}"
+            echo "- workers: ${{ inputs.worker_count }}"
+            echo "- flow path: \`${{ inputs.maestro_flow_path }}\`"
+            echo "- exclude tags: \`${{ steps.exclude-tags.outputs.tags }}\`"
+            echo "- staging: ${{ inputs.use_staging_test_system_io }}"
+          } >> "$GITHUB_STEP_SUMMARY"
+
+  workers:
+    name: maestro-android-worker-${{ matrix.shard }}
+    needs: [begin]
+    runs-on: ubuntu-latest-8-cores
+    timeout-minutes: 120
+    strategy:
+      fail-fast: false
+      matrix:
+        shard: ${{ fromJSON(needs.begin.outputs.worker-shards) }}
+    env:
+      EMULATOR_COUNT: "1"
+    steps:
+      - name: Checkout
+        uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
+        with:
+          ref: ${{ inputs.mobile_ref }}
+          persist-credentials: false
+
+      - name: Rotate logical test sites by shard
+        env:
+          SERVER_A: ${{ inputs.android_site_1_url }}
+          SERVER_B: ${{ inputs.android_site_2_url }}
+          SERVER_SHARED: ${{ inputs.site_3_url }}
+          SHARD_ID: ${{ matrix.shard }}
+        run: |
+          SERVER_B="${SERVER_B:-$SERVER_A}"
+          if (( 10#$SHARD_ID % 2 == 1 )); then
+            SITE_1_URL="$SERVER_A"
+            SITE_2_URL="$SERVER_B"
+          else
+            SITE_1_URL="$SERVER_B"
+            SITE_2_URL="$SERVER_A"
+          fi
+          {
+            echo "SITE_1_URL=$SITE_1_URL"
+            echo "SITE_2_URL=$SITE_2_URL"
+            echo "SITE_3_URL=$SERVER_SHARED"
+          } >> "$GITHUB_ENV"
+
+      - name: Install Dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libpulse0 scrot ffmpeg xvfb
+
+      - name: Enable KVM
+        run: |
+          echo 'KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS+="static_node=kvm"' | sudo tee /etc/udev/rules.d/99-kvm4all.rules
+          sudo udevadm control --reload-rules
+          sudo udevadm trigger --name-match=kvm
+
+      - name: ci/prepare-node-deps
+        uses: ./.github/actions/prepare-node-deps
+
+      - name: Cache Maestro
+        id: maestro-cache
+        uses: actions/cache@27d5ce7f107fe9357f9df03efb73ab90386fccae # v5.0.5
+        with:
+          path: ~/.maestro
+          key: maestro-00f516729f57d48f36ded55244cfbe358ada6b00-linux
+
+      - name: Install Maestro CLI
+        if: steps.maestro-cache.outputs.cache-hit != 'true'
+        run: |
+          MAESTRO_VERSION=$(jq -r .version detox/maestro/maestro-version.json)
+          MAESTRO_COMMIT=$(jq -r .commit detox/maestro/maestro-version.json)
+          echo "Installing Maestro ${MAESTRO_VERSION} (pinned to commit ${MAESTRO_COMMIT})"
+          export MAESTRO_VERSION
+          curl -fsSL "https://get.maestro.mobile.dev" | bash
+          MAESTRO_BIN="$HOME/.maestro/bin/maestro"
+          if [ ! -f "$MAESTRO_BIN" ]; then
+            echo "Error: Maestro binary not found at $MAESTRO_BIN"
+            exit 1
+          fi
+          echo "Maestro installed successfully at $MAESTRO_BIN"
+          "$MAESTRO_BIN" --version
+
+      - name: Add Maestro to PATH
+        run: |
+          echo "$HOME/.maestro/bin" >> "$GITHUB_PATH"
+          "$HOME/.maestro/bin/maestro" --version
+
+      - name: Download Maestro Android build
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+        with:
+          name: e2e-v2-android-maestro-${{ env.ARTIFACT_RUN_ID }}
+          run-id: ${{ env.ARTIFACT_RUN_ID }}
+          github-token: ${{ github.token }}
+          path: android/app/build/outputs/apk/release
+
+      - name: Verify Maestro Android APK
+        run: |
+          APP_APK="android/app/build/outputs/apk/release/app-release.apk"
+          if [ ! -f "$APP_APK" ]; then
+            # Artifact layout may nest under an extra directory; flatten if needed.
+            FOUND=$(find android/app/build/outputs/apk/release -name 'app-release.apk' -type f | head -1 || true)
+            if [ -n "$FOUND" ] && [ "$FOUND" != "$APP_APK" ]; then
+              mv "$FOUND" "$APP_APK"
+            fi
+          fi
+          if [ ! -f "$APP_APK" ]; then
+            echo "::error::Missing APK from e2e-v2-android-maestro-${ARTIFACT_RUN_ID}"
+            find android/app/build -name '*.apk' 2>/dev/null || true
+            exit 1
+          fi
+          ls -lh "$APP_APK"
+
+      - name: Seed test data
+        run: |
+          cd detox/maestro
+          npm ci --prefer-offline --no-audit --no-fund
+          npx tsx fixtures/seed.ts
+        env:
+          SITE_1_URL: ${{ env.SITE_1_URL }}
+          ADMIN_EMAIL: ${{ env.ADMIN_EMAIL }}
+          ADMIN_USERNAME: ${{ env.ADMIN_USERNAME }}
+          ADMIN_PASSWORD: ${{ env.ADMIN_PASSWORD }}
+
+      - name: Build maestro-env for dispatch-run
+        id: maestro-env
+        run: |
+          set -a
+          source detox/maestro/.maestro-test-env.sh
+          set +a
+          {
+            echo "env<<EOF"
+            echo "SITE_1_URL=${SITE_1_URL}"
+            [ -n "${TEST_USER_EMAIL:-}" ] && echo "TEST_USER_EMAIL=${TEST_USER_EMAIL}"
+            [ -n "${TEST_USER_PASSWORD:-}" ] && echo "TEST_USER_PASSWORD=${TEST_USER_PASSWORD}"
+            [ -n "${TEST_CHANNEL_NAME:-}" ] && echo "TEST_CHANNEL_NAME=${TEST_CHANNEL_NAME}"
+            [ -n "${TEST_TEAM_NAME:-}" ] && echo "TEST_TEAM_NAME=${TEST_TEAM_NAME}"
+            [ -n "${ADMIN_TOKEN:-}" ] && echo "ADMIN_TOKEN=${ADMIN_TOKEN}"
+            echo "MAESTRO_APP_ID=${MAESTRO_APP_ID:-com.mattermost.rnbeta}"
+            echo "EOF"
+          } >> "$GITHUB_OUTPUT"
+
+      - name: Set up Android SDK PATH
+        run: |
+          echo "ANDROID_HOME=$ANDROID_HOME" >> "$GITHUB_ENV"
+          echo "ANDROID_SDK_ROOT=$ANDROID_SDK_ROOT" >> "$GITHUB_ENV"
+          echo "PATH=$ANDROID_HOME/cmdline-tools/latest/bin:$ANDROID_HOME/emulator:$ANDROID_HOME/platform-tools:$PATH" >> "$GITHUB_ENV"
+
+      - name: Start Xvfb
+        run: |
+          Xvfb :99 -screen 0 1920x1080x24 &
+          echo "DISPLAY=:99" >> "$GITHUB_ENV"
+
+      - name: Accept Android licenses
+        run: |
+          mkdir -p ~/.android
+          yes | sdkmanager --licenses > sdk_licenses_output.txt || true
+          if ! grep -q "All SDK package licenses accepted" sdk_licenses_output.txt; then
+            echo "::error::Android SDK licenses not fully accepted"
+            cat sdk_licenses_output.txt
+            exit 1
+          fi
+
+      - name: Cache Android SDK components
+        id: android-sdk-cache
+        uses: actions/cache@27d5ce7f107fe9357f9df03efb73ab90386fccae # v5.0.5
+        with:
+          path: .android-sdk-cache
+          key: android-sdk-${{ inputs.android_api_level }}-google-apis-x86_64-v2
+
+      - name: Apply cached Android SDK components
+        if: steps.android-sdk-cache.outputs.cache-hit == 'true'
+        env:
+          API_LEVEL: ${{ inputs.android_api_level }}
+        run: |
+          for component in platform-tools emulator; do
+            if [ -d ".android-sdk-cache/${component}" ]; then
+              rm -rf "${ANDROID_HOME:?}/${component}"
+              cp -a ".android-sdk-cache/${component}" "${ANDROID_HOME}/"
+            fi
+          done
+          if [ -d ".android-sdk-cache/platforms/android-${API_LEVEL}" ]; then
+            rm -rf "${ANDROID_HOME}/platforms/android-${API_LEVEL}"
+            mkdir -p "${ANDROID_HOME}/platforms"
+            cp -a ".android-sdk-cache/platforms/android-${API_LEVEL}" "${ANDROID_HOME}/platforms/"
+          fi
+          if [ -d ".android-sdk-cache/system-images/android-${API_LEVEL}" ]; then
+            rm -rf "${ANDROID_HOME}/system-images/android-${API_LEVEL}"
+            mkdir -p "${ANDROID_HOME}/system-images"
+            cp -a ".android-sdk-cache/system-images/android-${API_LEVEL}" "${ANDROID_HOME}/system-images/"
+          fi
+
+      - name: Install Android SDK components
+        if: steps.android-sdk-cache.outputs.cache-hit != 'true'
+        env:
+          API_LEVEL: ${{ inputs.android_api_level }}
+          JAVA_HOME: ${{ env.JAVA_HOME_17_X64 }}
+        run: |
+          for attempt in 1 2 3; do
+            if yes | sdkmanager --install "platform-tools" "emulator" "platforms;android-${API_LEVEL}" "system-images;android-${API_LEVEL};google_apis;x86_64"; then
+              break
+            fi
+            if [ "$attempt" = "3" ]; then
+              echo "::error::SDK install failed after 3 attempts"
+              exit 1
+            fi
+            sleep 10
+          done
+          mkdir -p .android-sdk-cache/platforms .android-sdk-cache/system-images
+          cp -a "${ANDROID_HOME}/platform-tools" .android-sdk-cache/
+          cp -a "${ANDROID_HOME}/emulator" .android-sdk-cache/
+          cp -a "${ANDROID_HOME}/platforms/android-${API_LEVEL}" .android-sdk-cache/platforms/
+          cp -a "${ANDROID_HOME}/system-images/android-${API_LEVEL}" .android-sdk-cache/system-images/
+
+      - name: Cache Android Emulator & AVD
+        uses: actions/cache@27d5ce7f107fe9357f9df03efb73ab90386fccae # v5.0.5
+        with:
+          path: |
+            detox/.android
+            detox/${{ env.AVD_NAME }}_api_${{ inputs.android_api_level }}
+          key: android-emulator-${{ runner.os }}-${{ runner.arch }}-${{ env.AVD_NAME }}-api-${{ inputs.android_api_level }}-v3
+          restore-keys: |
+            android-emulator-${{ runner.os }}-${{ runner.arch }}-${{ env.AVD_NAME }}-api-${{ inputs.android_api_level }}-
+            android-emulator-${{ runner.os }}-${{ runner.arch }}-
+
+      - name: Point CI at AVD home
+        run: |
+          AVD_HOME="${GITHUB_WORKSPACE}/detox/.android/avd"
+          mkdir -p "$AVD_HOME"
+          {
+            echo "ANDROID_AVD_HOME=${AVD_HOME}"
+            echo "AVD_NAME=${AVD_NAME}_api_${SDK_VERSION}"
+          } >> "$GITHUB_ENV"
+          echo "ANDROID_AVD_HOME=${AVD_HOME}"
+          ls -la "$AVD_HOME" 2>/dev/null || true
+
+      - name: Bootstrap Android emulator (Maestro)
+        env:
+          BOOTSTRAP_ONLY: "true"
+          MAESTRO_ANDROID: "true"
+          JAVA_HOME: ${{ env.JAVA_HOME_17_X64 }}
+          MAX_ATTEMPTS: "2"
+          ATTEMPT_TIMEOUT_MIN: "15"
+          AVD_BASE: ${{ inputs.android_avd_name }}
+          EMULATOR_COUNT: "1"
+        shell: bash
+        run: |
+          set +e
+          attempt=1
+          while (( attempt <= MAX_ATTEMPTS )); do
+            echo "==> Boot attempt ${attempt}/${MAX_ATTEMPTS} (EMULATOR_COUNT=${EMULATOR_COUNT})"
+            timeout "${ATTEMPT_TIMEOUT_MIN}m" bash -c '
+              cd detox
+              chmod +x ./create_android_emulator.sh
+              CI=true MAESTRO_ANDROID=true EMULATOR_COUNT="$EMULATOR_COUNT" ./create_android_emulator.sh "$SDK_VERSION" "$AVD_BASE"
+            '
+            rc=$?
+            if (( rc == 0 )); then
+              echo "==> Bootstrap succeeded"
+              adb devices -l || true
+              ls -la "${ANDROID_AVD_HOME}" || true
+              exit 0
+            fi
+            echo "==> Attempt ${attempt} failed (exit ${rc})"
+            if (( attempt < MAX_ATTEMPTS )); then
+              adb -s emulator-5554 emu kill 2>/dev/null || true
+              pkill -9 -f qemu-system 2>/dev/null || true
+              pkill -9 -f emulator 2>/dev/null || true
+              sleep 5
+            fi
+            attempt=$(( attempt + 1 ))
+          done
+          echo "::error::Android emulator bootstrap failed"
+          exit 1
+
+      - name: Resolve MAESTRO_DEVICE serial
+        run: |
+          SERIAL=$(adb devices | awk '/^emulator-/{print $1; exit}')
+          if [ -z "$SERIAL" ]; then
+            echo "::error::No emulator serial found in adb devices"
+            adb devices -l || true
+            exit 1
+          fi
+          echo "MAESTRO_DEVICE=$SERIAL" >> "$GITHUB_ENV"
+          echo "Resolved MAESTRO_DEVICE=$SERIAL"
+
+      - name: Pre-flight — emulator can reach test server
+        env:
+          MAESTRO_DRIVER_STARTUP_TIMEOUT: "180000"
+        run: |
+          set -a
+          source detox/maestro/.maestro-test-env.sh
+          set +a
+          for attempt in 1 2 3; do
+            if maestro --platform android --device "$MAESTRO_DEVICE" test \
+                --env "SITE_1_URL=$SITE_1_URL" \
+                --env "MAESTRO_APP_ID=${MAESTRO_APP_ID:-com.mattermost.rnbeta}" \
+                detox/maestro/preflight/_connect_check.yml; then
+              echo "==> Pre-flight connect OK (attempt $attempt)"
+              exit 0
+            fi
+            echo "==> Pre-flight connect failed (attempt $attempt/3)"
+          done
+          echo "::error::Emulator could not connect to $SITE_1_URL after 3 attempts."
+          exit 1
+
+      - name: test-system-io dispatch run
+        uses: mattermost/mattermost-test-system-io/.github/actions/test-system-io-dispatch-run@bd9f0928e3aa76a950b7b0fb01c0fe0dcbcf37e5
+        with:
+          use-staging: ${{ inputs.use_staging_test_system_io && 'true' || 'false' }}
+          framework: maestro
+          composite-identity: ${{ needs.begin.outputs.identity-json }}
+          repo-dir: ${{ github.workspace }}
+          artifacts-root: ${{ runner.temp }}/test-system-io
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          gh-job-name: maestro-android-worker-${{ matrix.shard }}
+          maestro-dir: detox/maestro
+          maestro-platform: android
+          maestro-device: ${{ env.MAESTRO_DEVICE }}
+          maestro-env: ${{ steps.maestro-env.outputs.env }}
+          maestro-timeout-ms: "540000"
+          max-idle-polls: "8"
+
+      - name: Cleanup emulator
+        if: always()
+        timeout-minutes: 2
+        run: |
+          adb -s emulator-5554 emu kill 2>/dev/null || true
+          pkill -9 -f qemu-system 2>/dev/null || true
+          pkill -9 -f emulator 2>/dev/null || true
+
+  summary:
+    name: orch-summary-maestro-android
+    needs: [begin, workers]
+    if: always() && needs.begin.result == 'success'
+    runs-on: ubuntu-24.04
+    steps:
+      - name: test-system-io summary
+        id: summary
+        uses: mattermost/mattermost-test-system-io/.github/actions/test-system-io-summary@1f7ca41ff07f10ed30170179b017d185973fdf18
+        with:
+          use-staging: ${{ inputs.use_staging_test_system_io && 'true' || 'false' }}
+          framework: maestro
+          composite-identity: ${{ needs.begin.outputs.identity-json }}
+          commit-status-context: ${{ inputs.commit_status_context }}
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          update-commit-status: ${{ inputs.post_commit_status && 'true' || 'false' }}
+          fail-on-test-failures: ${{ inputs.fail_on_test_failures && 'true' || 'false' }}
+          report-type: ${{ inputs.run_type }}
+          pr-number: ${{ inputs.pr_number }}
+          ref-branch: ${{ needs.begin.outputs.identity-branch || inputs.branch }}

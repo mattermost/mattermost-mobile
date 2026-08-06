@@ -1,0 +1,450 @@
+# E2E v2 — Maestro iOS via test-system-io orchestration (staging by default).
+# Called from e2e-v2.yml. Does not build the app; downloads e2e-v2-ios-simulator-* artifacts.
+name: E2E v2 Maestro iOS
+
+on:
+  workflow_call:
+    inputs:
+      mobile_ref:
+        required: true
+        type: string
+      artifact_run_id:
+        required: true
+        type: string
+      worker_count:
+        required: true
+        type: string
+      ios_site_1_url:
+        required: true
+        type: string
+      ios_site_2_url:
+        required: false
+        type: string
+        default: ""
+      site_3_url:
+        required: false
+        type: string
+        default: ""
+      use_staging_test_system_io:
+        required: false
+        type: boolean
+        default: true
+      run_type:
+        required: false
+        type: string
+        default: PR
+      pr_number:
+        required: false
+        type: string
+        default: ""
+      branch:
+        required: false
+        type: string
+        default: ""
+      commit_sha:
+        required: true
+        type: string
+      identity_name:
+        required: false
+        type: string
+        default: maestro-ios
+      commit_status_context:
+        required: false
+        type: string
+        default: e2e-test-v2/maestro-ios
+      ios_device_name:
+        required: false
+        type: string
+        default: iPhone 17 Pro
+      ios_device_os_name:
+        required: false
+        type: string
+        default: iOS 26.2
+      fail_on_test_failures:
+        required: false
+        type: boolean
+        default: false
+      post_commit_status:
+        required: false
+        type: boolean
+        default: true
+      maestro_flow_path:
+        required: false
+        type: string
+        default: flows
+      maestro_exclude_dir:
+        required: false
+        type: string
+        default: multi_device
+    secrets:
+      MM_MOBILE_E2E_ADMIN_EMAIL:
+        required: false
+      MM_MOBILE_E2E_ADMIN_USERNAME:
+        required: false
+      MM_MOBILE_E2E_ADMIN_PASSWORD:
+        required: false
+
+# Pin: mattermost-test-system-io PR #103 @ bd9f092 (Detox batch_size + parallel workers).
+env:
+  TEST_SYSTEM_IO_ACTIONS_SHA: bd9f0928e3aa76a950b7b0fb01c0fe0dcbcf37e5
+  DEVICE_NAME: ${{ inputs.ios_device_name }}
+  DEVICE_OS_VERSION: ${{ inputs.ios_device_os_name }}
+  ARTIFACT_RUN_ID: ${{ inputs.artifact_run_id }}
+  ADMIN_EMAIL: ${{ secrets.MM_MOBILE_E2E_ADMIN_EMAIL }}
+  ADMIN_USERNAME: ${{ secrets.MM_MOBILE_E2E_ADMIN_USERNAME }}
+  ADMIN_PASSWORD: ${{ secrets.MM_MOBILE_E2E_ADMIN_PASSWORD }}
+  CI: "true"
+
+permissions:
+  contents: read
+  id-token: write
+  actions: read
+  statuses: write
+
+jobs:
+  begin:
+    name: orch-begin-maestro-ios
+    runs-on: ubuntu-24.04
+    outputs:
+      identity-json: ${{ steps.identity.outputs.identity-json }}
+      identity-branch: ${{ steps.identity.outputs.identity-branch }}
+      report-url: ${{ steps.begin.outputs.report-url }}
+      total-units: ${{ steps.begin.outputs.total-units }}
+      worker-shards: ${{ steps.matrix.outputs.shards }}
+      maestro-exclude-tags: ${{ steps.exclude-tags.outputs.tags }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
+        with:
+          ref: ${{ inputs.mobile_ref }}
+          persist-credentials: false
+
+      - name: Composite identity
+        id: identity
+        env:
+          REPO: ${{ github.repository }}
+          SHA: ${{ inputs.commit_sha }}
+          RUN_ID: ${{ github.run_id }}
+          ATTEMPT: ${{ github.run_attempt }}
+          NAME: ${{ inputs.identity_name }}
+          BRANCH: ${{ inputs.branch || github.ref_name }}
+          PR: ${{ inputs.pr_number }}
+          RUN_TYPE: ${{ inputs.run_type }}
+        run: |
+          # Report URLs are /reports/{repo}/{branch}/{sha}/{name}. For PR runs
+          # use pr-<n> (not the git head ref) so links stay short and stable.
+          if [ -n "$PR" ]; then
+            IDENTITY_BRANCH="pr-${PR}"
+          else
+            IDENTITY_BRANCH="$BRANCH"
+          fi
+          IDENTITY=$(jq -nc \
+            --arg repo "$REPO" \
+            --arg sha "$SHA" \
+            --arg run_id "$RUN_ID" \
+            --arg name "$NAME" \
+            --arg attempt "$ATTEMPT" \
+            --arg branch "$IDENTITY_BRANCH" \
+            --arg pr "$PR" \
+            '{
+              repository: $repo,
+              commit_sha: $sha,
+              gh_run_id: $run_id,
+              gh_run_attempt: $attempt,
+              name: $name,
+              branch: $branch
+            }
+            + (if $pr != "" then {gh_pr_number: ($pr|tonumber)} else {} end)')
+          echo "identity-json=${IDENTITY}" >> "$GITHUB_OUTPUT"
+          echo "identity-branch=${IDENTITY_BRANCH}" >> "$GITHUB_OUTPUT"
+          echo "Identity: ${IDENTITY} (run_type=${RUN_TYPE})"
+
+      - name: Worker matrix JSON
+        id: matrix
+        env:
+          N: ${{ inputs.worker_count }}
+        run: |
+          SHARDS=$(python3 -c "import json,os; print(json.dumps(list(range(1, int(os.environ['N'])+1))))")
+          echo "shards=${SHARDS}" >> "$GITHUB_OUTPUT"
+          echo "Workers: ${SHARDS}"
+
+      - name: Compute maestro-exclude-tags
+        id: exclude-tags
+        run: |
+          TAGS=$(jq -r '(.default + .ios) | unique | join(",")' detox/maestro/config/exclude_tags.json)
+          echo "tags=${TAGS}" >> "$GITHUB_OUTPUT"
+          echo "maestro-exclude-tags: ${TAGS}"
+
+      - name: test-system-io dispatch begin
+        id: begin
+        uses: mattermost/mattermost-test-system-io/.github/actions/test-system-io-dispatch-begin@1f7ca41ff07f10ed30170179b017d185973fdf18
+        with:
+          use-staging: ${{ inputs.use_staging_test_system_io && 'true' || 'false' }}
+          framework: maestro
+          composite-identity: ${{ steps.identity.outputs.identity-json }}
+          repo-dir: ${{ github.workspace }}
+          total-reports-expected: ${{ inputs.worker_count }}
+          maestro-dir: detox/maestro
+          maestro-flow-path: ${{ inputs.maestro_flow_path }}
+          maestro-exclude-dir: ${{ inputs.maestro_exclude_dir }}
+          maestro-exclude-tags: ${{ steps.exclude-tags.outputs.tags }}
+          post-pending-commit-status: ${{ inputs.post_commit_status && 'true' || 'false' }}
+          commit-status-context: ${{ inputs.commit_status_context }}
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          retest-on-fail: "true"
+          retest-budget: "1"
+          # Maestro flows are shorter than Detox specs; 1h lease / 1.5h idle.
+          lease-timeout-ms: "3600000"
+          idle-timeout-ms: "5400000"
+
+      - name: Begin summary
+        run: |
+          {
+            echo "## Maestro iOS orchestration begin"
+            echo ""
+            echo "- report: ${{ steps.begin.outputs.report-url }}"
+            echo "- total units: ${{ steps.begin.outputs.total-units }}"
+            echo "- workers: ${{ inputs.worker_count }}"
+            echo "- flow path: \`${{ inputs.maestro_flow_path }}\`"
+            echo "- exclude tags: \`${{ steps.exclude-tags.outputs.tags }}\`"
+            echo "- staging: ${{ inputs.use_staging_test_system_io }}"
+          } >> "$GITHUB_STEP_SUMMARY"
+
+  workers:
+    name: maestro-ios-worker-${{ matrix.shard }}
+    needs: [begin]
+    runs-on: macos-15
+    timeout-minutes: 120
+    strategy:
+      fail-fast: false
+      matrix:
+        shard: ${{ fromJSON(needs.begin.outputs.worker-shards) }}
+    env:
+      SITE_1_URL: ${{ inputs.ios_site_1_url }}
+      SITE_2_URL: ${{ inputs.ios_site_2_url }}
+      SITE_3_URL: ${{ inputs.site_3_url }}
+      PREBOOT_SKIP_PREWARM: "1"
+      PREBOOT_COUNT: "1"
+    steps:
+      - name: Checkout
+        uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
+        with:
+          ref: ${{ inputs.mobile_ref }}
+          persist-credentials: false
+
+      - name: ci/prepare-node-deps
+        uses: ./.github/actions/prepare-node-deps
+
+      # preboot_ios_simulator.sh runs detox/utils/disable_ios_autofill.js (shelljs).
+      - name: Install Detox dependencies
+        run: cd detox && npm ci --prefer-offline --no-audit --no-fund
+
+      - name: Cache Maestro
+        id: maestro-cache
+        uses: actions/cache@27d5ce7f107fe9357f9df03efb73ab90386fccae # v5.0.5
+        with:
+          path: ~/.maestro
+          key: maestro-00f516729f57d48f36ded55244cfbe358ada6b00-macos
+
+      - name: Install Maestro CLI
+        if: steps.maestro-cache.outputs.cache-hit != 'true'
+        run: |
+          MAESTRO_VERSION=$(jq -r .version detox/maestro/maestro-version.json)
+          MAESTRO_COMMIT=$(jq -r .commit detox/maestro/maestro-version.json)
+          echo "Installing Maestro ${MAESTRO_VERSION} (pinned to commit ${MAESTRO_COMMIT})"
+          export MAESTRO_VERSION
+          curl -fsSL "https://get.maestro.mobile.dev" | bash
+          MAESTRO_BIN="$HOME/.maestro/bin/maestro"
+          if [ ! -f "$MAESTRO_BIN" ]; then
+            echo "Error: Maestro binary not found at $MAESTRO_BIN"
+            exit 1
+          fi
+          echo "Maestro installed successfully at $MAESTRO_BIN"
+          "$MAESTRO_BIN" --version
+
+      - name: Add Maestro to PATH
+        run: |
+          echo "$HOME/.maestro/bin" >> "$GITHUB_PATH"
+          "$HOME/.maestro/bin/maestro" --version
+
+      - name: Download iOS simulator build
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+        with:
+          name: e2e-v2-ios-simulator-${{ env.ARTIFACT_RUN_ID }}
+          run-id: ${{ env.ARTIFACT_RUN_ID }}
+          github-token: ${{ github.token }}
+          path: mobile-artifacts
+
+      - name: Unzip iOS simulator build
+        run: |
+          unzip -o mobile-artifacts/*.zip -d mobile-artifacts/
+          rm -f mobile-artifacts/*.zip
+          ls -la mobile-artifacts/
+
+      - name: Patch iOS app Info.plist for file-sharing flows
+        run: |
+          APP_PATH=$(find mobile-artifacts -name "*.app" -maxdepth 2 | head -1)
+          if [ -z "$APP_PATH" ]; then
+            echo "Error: Could not find .app bundle in mobile-artifacts/"
+            ls -la mobile-artifacts/
+            exit 1
+          fi
+          plutil -replace UIFileSharingEnabled -bool true "$APP_PATH/Info.plist" 2>/dev/null || \
+            plutil -insert UIFileSharingEnabled -bool true "$APP_PATH/Info.plist" 2>/dev/null || true
+          plutil -replace LSSupportsOpeningDocumentsInPlace -bool true "$APP_PATH/Info.plist" 2>/dev/null || \
+            plutil -insert LSSupportsOpeningDocumentsInPlace -bool true "$APP_PATH/Info.plist" 2>/dev/null || true
+          echo "UIFileSharingEnabled patched in $APP_PATH/Info.plist"
+
+      - name: Pre-boot iOS simulator
+        env:
+          DEVICE_NAME: ${{ env.DEVICE_NAME }}
+          DEVICE_OS_VERSION: ${{ env.DEVICE_OS_VERSION }}
+          PREBOOT_SKIP_PREWARM: "1"
+          PREBOOT_COUNT: "1"
+        run: bash detox/scripts/preboot_ios_simulator.sh
+
+      - name: Wait for Simulator UI readiness
+        run: |
+          for i in $(seq 1 30); do
+            xcrun simctl listapps "$SIMULATOR_ID" &>/dev/null && exit 0
+            sleep 2
+          done
+          echo "Warning: listapps did not succeed within 60s"
+
+      - name: Set simulator timezone for timezone flow
+        run: |
+          xcrun simctl spawn "$SIMULATOR_ID" launchctl setenv TZ "America/New_York"
+          echo "Simulator timezone set to America/New_York"
+
+      - name: Seed test data
+        run: |
+          cd detox/maestro
+          npm ci --prefer-offline --no-audit --no-fund
+          npx tsx fixtures/seed.ts
+        env:
+          SITE_1_URL: ${{ env.SITE_1_URL }}
+          ADMIN_EMAIL: ${{ env.ADMIN_EMAIL }}
+          ADMIN_USERNAME: ${{ env.ADMIN_USERNAME }}
+          ADMIN_PASSWORD: ${{ env.ADMIN_PASSWORD }}
+
+      - name: Push test fixture into iOS simulator FileProvider
+        continue-on-error: true
+        run: |
+          set +e
+          UDID=$(xcrun simctl list devices booted 2>/dev/null | grep -oE '[0-9A-F]{8}-[0-9A-F]{4}-[0-9A-F]{4}-[0-9A-F]{4}-[0-9A-F]{12}' | head -1)
+          if [ -z "$UDID" ]; then
+            echo "Warning: no booted iOS simulator found; skipping fixture push"
+            exit 0
+          fi
+          echo "Resolved booted simulator UDID: $UDID"
+          LOCAL_STORAGE=$(find "$HOME/Library/Developer/CoreSimulator/Devices/$UDID/data/Containers/Shared/AppGroup" \
+            -name ".com.apple.mobile_container_manager.metadata.plist" \
+            -exec grep -l "FileProvider.LocalStorage" {} \; 2>/dev/null | xargs -I{} dirname {} | head -1)
+          if [ -n "$LOCAL_STORAGE" ]; then
+            mkdir -p "$LOCAL_STORAGE/File Provider Storage"
+            cp detox/e2e/support/fixtures/image.png "$LOCAL_STORAGE/File Provider Storage/test_bookmark.png"
+            echo "Pushed test fixture to $LOCAL_STORAGE/File Provider Storage/test_bookmark.png"
+          else
+            echo "Warning: FileProvider.LocalStorage container not found; channel_bookmark_file.yml may fail"
+          fi
+
+      - name: Build maestro-env for dispatch-run
+        id: maestro-env
+        run: |
+          set -a
+          source detox/maestro/.maestro-test-env.sh
+          set +a
+          {
+            echo "env<<EOF"
+            echo "SITE_1_URL=${SITE_1_URL}"
+            [ -n "${TEST_USER_EMAIL:-}" ] && echo "TEST_USER_EMAIL=${TEST_USER_EMAIL}"
+            [ -n "${TEST_USER_PASSWORD:-}" ] && echo "TEST_USER_PASSWORD=${TEST_USER_PASSWORD}"
+            [ -n "${TEST_CHANNEL_NAME:-}" ] && echo "TEST_CHANNEL_NAME=${TEST_CHANNEL_NAME}"
+            [ -n "${TEST_TEAM_NAME:-}" ] && echo "TEST_TEAM_NAME=${TEST_TEAM_NAME}"
+            [ -n "${ADMIN_TOKEN:-}" ] && echo "ADMIN_TOKEN=${ADMIN_TOKEN}"
+            echo "MAESTRO_APP_ID=${MAESTRO_APP_ID:-com.mattermost.rnbeta}"
+            echo "EOF"
+          } >> "$GITHUB_OUTPUT"
+
+      - name: Resolve SIMULATOR_ID
+        run: |
+          if [ -n "${SIMULATOR_ID:-}" ]; then
+            echo "SIMULATOR_ID already set: $SIMULATOR_ID"
+            exit 0
+          fi
+          SID=$(xcrun simctl list devices booted 2>/dev/null | grep -oE '[0-9A-F]{8}-[0-9A-F]{4}-[0-9A-F]{4}-[0-9A-F]{4}-[0-9A-F]{12}' | head -1 || true)
+          if [ -z "$SID" ]; then
+            echo "::error::Could not resolve SIMULATOR_ID"
+            exit 1
+          fi
+          echo "SIMULATOR_ID=$SID" >> "$GITHUB_ENV"
+          echo "Resolved SIMULATOR_ID=$SID"
+
+      - name: Pre-flight — simulator can reach test server
+        env:
+          MAESTRO_DRIVER_STARTUP_TIMEOUT: "180000"
+        run: |
+          set -a
+          source detox/maestro/.maestro-test-env.sh
+          set +a
+          for attempt in 1 2 3; do
+            if maestro --device "$SIMULATOR_ID" test \
+                --env "SITE_1_URL=$SITE_1_URL" \
+                --env "MAESTRO_APP_ID=${MAESTRO_APP_ID:-com.mattermost.rnbeta}" \
+                detox/maestro/preflight/_connect_check.yml; then
+              echo "==> Pre-flight connect OK (attempt $attempt)"
+              exit 0
+            fi
+            echo "==> Pre-flight connect failed (attempt $attempt/3)"
+          done
+          echo "::error::Simulator could not connect to $SITE_1_URL after 3 attempts."
+          exit 1
+
+      - name: test-system-io dispatch run
+        uses: mattermost/mattermost-test-system-io/.github/actions/test-system-io-dispatch-run@bd9f0928e3aa76a950b7b0fb01c0fe0dcbcf37e5
+        with:
+          use-staging: ${{ inputs.use_staging_test_system_io && 'true' || 'false' }}
+          framework: maestro
+          composite-identity: ${{ needs.begin.outputs.identity-json }}
+          repo-dir: ${{ github.workspace }}
+          artifacts-root: ${{ runner.temp }}/test-system-io
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          gh-job-name: maestro-ios-worker-${{ matrix.shard }}
+          maestro-dir: detox/maestro
+          maestro-platform: ios
+          maestro-device: ${{ env.SIMULATOR_ID }}
+          maestro-env: ${{ steps.maestro-env.outputs.env }}
+          maestro-timeout-ms: "540000"
+          max-idle-polls: "8"
+
+      - name: Cleanup simulator
+        if: always()
+        timeout-minutes: 2
+        run: |
+          IDS="${SIMULATOR_IDS:-${SIMULATOR_ID:-}}"
+          IFS=',' read -ra SIMS <<< "$IDS"
+          for sid in "${SIMS[@]}"; do
+            [ -z "$sid" ] && continue
+            timeout 10 xcrun simctl terminate "$sid" com.mattermost.rnbeta 2>/dev/null || true
+          done
+
+  summary:
+    name: orch-summary-maestro-ios
+    needs: [begin, workers]
+    if: always() && needs.begin.result == 'success'
+    runs-on: ubuntu-24.04
+    steps:
+      - name: test-system-io summary
+        id: summary
+        uses: mattermost/mattermost-test-system-io/.github/actions/test-system-io-summary@1f7ca41ff07f10ed30170179b017d185973fdf18
+        with:
+          use-staging: ${{ inputs.use_staging_test_system_io && 'true' || 'false' }}
+          framework: maestro
+          composite-identity: ${{ needs.begin.outputs.identity-json }}
+          commit-status-context: ${{ inputs.commit_status_context }}
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          update-commit-status: ${{ inputs.post_commit_status && 'true' || 'false' }}
+          fail-on-test-failures: ${{ inputs.fail_on_test_failures && 'true' || 'false' }}
+          report-type: ${{ inputs.run_type }}
+          pr-number: ${{ inputs.pr_number }}
+          ref-branch: ${{ needs.begin.outputs.identity-branch || inputs.branch }}
