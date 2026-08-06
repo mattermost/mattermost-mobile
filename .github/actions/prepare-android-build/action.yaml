@@ -5,12 +5,18 @@ inputs:
   sign:
     description: Flag to enable android package signing
     default: "true"
+  bundler-cache:
+    description: 'Enable Fastlane gem bundler-cache (E2E only; leave false for release/beta builds)'
+    required: false
+    default: 'false'
 
 runs:
   using: composite
   steps:
     - name: ci/prepare-mobile-build
       uses: ./.github/actions/prepare-mobile-build
+      with:
+        bundler-cache: ${{ inputs.bundler-cache }}
 
     - name: ci/setup-java
       uses: actions/setup-java@ad2b38190b15e4d6bdf0c97fb4fca8412226d287 # v5.3.0
