@@ -1,5 +1,5 @@
 {
-  "enabled": true,
+  "enabled": false,
   "pr_number": 10006,
-  "note": "recreate fresh Matterwick servers before full Detox v2 + Maestro (E2E/Run); ClassificationMarkings enabled in provision defaults"
+  "note": "disabled after successful recreate (5gfdzfpa/wq4safaf/1hbesmzy/93z8mtgd/gmtt4g9n); Matterwick E2E 31077045999"
 }
