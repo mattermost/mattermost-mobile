@@ -56,13 +56,18 @@ describe('Channels - Manage Own Channel Membership', () => {
 
     // Unskipped (SEC-11049) on iOS: duplicate manage_members user_item matcher — the
     // members list can render the same user_item in both the GM-member section and
-    // the flat list. Verified green on iOS. Android re-skipped: during a failing
-    // Android run a React Native dev error overlay (red box) from the channel banner's
-    // `fetchChannelClassificationValue` (`TypeError: values.filter is not a function
-    // (it is undefined)`) was present, and ManageChannelMembersScreen.toBeVisible()
-    // timed out in that same env. The overlay is suspected of blocking the screen
-    // mount but was NOT isolated as the specific blocker for this test. Do not
-    // re-attempt on Android without isolated per-test evidence (or until the PE bug is fixed).
+    // the flat list. Verified green on iOS. Android kept skipped after a live per-test
+    // re-verification on 2026-08-05 (API-35 emulator, live PR-9996 Android server 11.10.0,
+    // FeatureFlagClassificationMarkings ON): the test FAILS on Android at
+    // ManageChannelMembersScreen.toBeVisible() — `manage_members.screen` is never found
+    // (polled null for 30s) after `channel_info.options.members.option` is tapped
+    // successfully. This is Android-specific (iOS passes) and is NOT the classification
+    // overlay (the overlay theory is retracted: that error is caught and swallowed).
+    // Mechanism: tapping Members on Android does not navigate to a screen with testID
+    // `manage_members.screen` — either the screen testID differs on Android or the
+    // navigation target differs. Test-fix/PE territory; needs isolation of which screen
+    // actually mounts after the Members tap on Android. Artifact captured under
+    // artifacts/android.emu.debug.2026-08-06 14-39-27Z/.
     (isAndroid() ? it.skip : it)('MM-66375 - should be able to see and manage own membership in channel members list', async () => {
         // # Create a channel and add the test user to it
         const {channel} = await Channel.apiCreateChannel(siteOneUrl, {teamId: testTeam.id});

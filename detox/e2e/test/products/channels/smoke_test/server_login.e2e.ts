@@ -60,13 +60,16 @@ describe('Smoke Test - Server Login', () => {
         await expect(ChannelListScreen.headerServerDisplayName).toHaveText(serverOneDisplayName);
     });
 
-    // iOS skipped (300s timeout overrun). Android skipped: during a failing Android
-    // run a React Native dev error overlay (red box) from the channel banner's
-    // `fetchChannelClassificationValue` (`TypeError: values.filter is not a function
-    // (it is undefined)`) was present, and ServerListScreen.open() could not find the
-    // server icon in that same env. The overlay is suspected of blocking the server-list
-    // path but was NOT isolated as the specific blocker for this test. Do not re-attempt
-    // on Android without isolated per-test evidence (or until the PE bug is fixed).
+    // iOS skipped (300s timeout overrun). Android kept skipped after a live per-test
+    // re-verification on 2026-08-05 (API-35 emulator, live PR-9996 Android server 11.10.0,
+    // FeatureFlagClassificationMarkings ON): the test FAILS on Android —
+    // `channel_list.servers.server_icon` is never found (polled null) during the
+    // multi-server add/switch/logout flow. This is NOT the classification overlay (that
+    // theory is retracted: the error is caught and swallowed). Mechanism: a server-list
+    // item icon is not rendered/found on Android at the failing step of the add-second-
+    // server→switch→logout flow. Test-fix territory (server-list item matcher on Android
+    // or a rendering/timing issue in the multi-server flow); needs isolation of the exact
+    // step. Artifact captured under artifacts/android.emu.debug.2026-08-06 14-51-59Z/.
     // Tracked under SEC-11048.
     itWithSecondServer.skip('MM-T4675_2 - should be able to add a new server and log-in-to/log-out-from the new server', async () => {
         // # Open server list screen

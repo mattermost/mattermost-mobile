@@ -386,15 +386,14 @@ describe('Channels - Channel Bookmarks', () => {
         await ChannelScreen.back();
     });
 
-    // iOS skipped (edge-clipped channel row in CI). Android skipped: during a failing
-    // Android run a React Native dev error overlay (red box) from the channel banner's
-    // `fetchChannelClassificationValue` (`TypeError: values.filter is not a function
-    // (it is undefined)`) was present, and tapping "Add a link" never reached
-    // channel_bookmark.screen in that same env. The overlay is suspected of blocking
-    // the screen transition but was NOT isolated as the specific blocker for this test.
-    // Do not re-attempt on Android without isolated per-test evidence (or until the PE
-    // bug is fixed). Tracked under SEC-11048.
-    it.skip('MM-T5604_1 - should auto-populate title from page when adding a bookmark link', async () => {
+    // iOS skipped (edge-clipped channel row in CI). Android unskipped (SEC-11048)
+    // after a live per-test re-verification on 2026-08-05: 2x consecutive green on a
+    // local API-35 emulator against a live PR-9996 Android server (11.10.0) with
+    // FeatureFlagClassificationMarkings ON (normal config). The earlier classification-
+    // overlay theory is disproven for this test — tapping "Add a link" reaches
+    // channel_bookmark.screen and the link title auto-populates cleanly under normal
+    // config; the prior failure was not reproduced.
+    it('MM-T5604_1 - should auto-populate title from page when adding a bookmark link', async () => {
         // # Navigate to the channel
         await openChannel(channelT5604);
 

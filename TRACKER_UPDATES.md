@@ -36,3 +36,32 @@ Append-only notes for a human to copy into the
     on-screen after archive — fix shape: toExist() on Android).
   - No shared visibility helper landed: the only threshold cases are Android-only and
     unverifiable here; deferred to when Android can be run (overlaps SEC-11014/SEC-11048).
+
+## P1 — live per-test Android re-verification (2026-08-05, PR-9996 live servers, flag ON)
+
+Re-ran the four Android residuals reverted in commit 66a260ae7 individually on Android
+against a live PR-9996 server (11.10.0), FeatureFlagClassificationMarkings ON (normal
+config), API-35 emulator. Each treated as fully independent. The classification-overlay
+theory is retracted for all four (that error is caught and swallowed; see
+PE_FINDING_classification_values_filter.md).
+
+- **MM-T4865_2** (pin_and_unpin_message, SEC-11015) — **2× green.** Unskipped on Android.
+  Passes cleanly under normal config; the prior failure was not reproduced.
+- **MM-T5604_1** (channel_bookmarks, SEC-11048) — **2× green.** Unskipped on Android.
+  Tapping "Add a link" reaches channel_bookmark.screen and the link title auto-populates;
+  prior failure not reproduced.
+- **MM-66375** (manage_own_channel_membership, SEC-11049) — **FAIL, kept skipped.** Real
+  Android-specific failure: after tapping `channel_info.options.members.option`
+  successfully, `manage_members.screen` is never found (polled null for 30s). iOS passes.
+  NOT the overlay. Mechanism: the Members tap on Android does not navigate to a screen with
+  testID `manage_members.screen` (screen testID differs, or navigation target differs).
+  Test-fix/PE territory; needs isolation of which screen actually mounts. Artifact:
+  artifacts/android.emu.debug.2026-08-06 14-39-27Z/.
+- **MM-T4675_2** (server_login, SEC-11048) — **FAIL, kept skipped.** Real Android failure:
+  `channel_list.servers.server_icon` is never found (polled null) during the multi-server
+  add/switch/logout flow. NOT the overlay. Test-fix territory (server-list item matcher or
+  rendering/timing in the multi-server flow); needs isolation of the exact step. Artifact:
+  artifacts/android.emu.debug.2026-08-06 14-51-59Z/.
+
+MM-T4785_3 (message_reply, SEC-11014) is OUT of scope for this pass (separate discarded
+scrollElementIntoView change) and remains skipped.
