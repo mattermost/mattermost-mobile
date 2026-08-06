@@ -84,9 +84,9 @@ on:
       MM_MOBILE_E2E_ADMIN_PASSWORD:
         required: false
 
-# Pin: mattermost-test-system-io PR #103 @ bd9f092 (Detox batch_size + parallel workers).
+# Pin: mattermost-test-system-io maestro multi-device scenarios @ 3675095.
 env:
-  TEST_SYSTEM_IO_ACTIONS_SHA: bd9f0928e3aa76a950b7b0fb01c0fe0dcbcf37e5
+  TEST_SYSTEM_IO_ACTIONS_SHA: 36750956f71218c75ebb435d136f7a9aab84faab
   DEVICE_NAME: ${{ inputs.ios_device_name }}
   DEVICE_OS_VERSION: ${{ inputs.ios_device_os_name }}
   ARTIFACT_RUN_ID: ${{ inputs.artifact_run_id }}
@@ -177,7 +177,7 @@ jobs:
 
       - name: test-system-io dispatch begin
         id: begin
-        uses: mattermost/mattermost-test-system-io/.github/actions/test-system-io-dispatch-begin@1f7ca41ff07f10ed30170179b017d185973fdf18
+        uses: mattermost/mattermost-test-system-io/.github/actions/test-system-io-dispatch-begin@36750956f71218c75ebb435d136f7a9aab84faab
         with:
           use-staging: ${{ inputs.use_staging_test_system_io && 'true' || 'false' }}
           framework: maestro
@@ -187,6 +187,9 @@ jobs:
           maestro-dir: detox/maestro
           maestro-flow-path: ${{ inputs.maestro_flow_path }}
           maestro-exclude-dir: ${{ inputs.maestro_exclude_dir }}
+          # Discovers detox/maestro/scenarios/**/*.scenario.yml (multi-device
+          # orchestrators). Half-flows under multi_device/ stay excluded.
+          maestro-scenarios-path: scenarios
           maestro-exclude-tags: ${{ steps.exclude-tags.outputs.tags }}
           post-pending-commit-status: ${{ inputs.post_commit_status && 'true' || 'false' }}
           commit-status-context: ${{ inputs.commit_status_context }}
@@ -224,7 +227,10 @@ jobs:
       SITE_2_URL: ${{ inputs.ios_site_2_url }}
       SITE_3_URL: ${{ inputs.site_3_url }}
       PREBOOT_SKIP_PREWARM: "1"
-      PREBOOT_COUNT: "1"
+      # Boot Device A + B for multi-device scenarios. Single-device flows use A
+      # only; scenarios run serially (TSIO Maestro batch_size=1) on the pair.
+      # Parallel single-device leasing across both devices is future work.
+      PREBOOT_COUNT: "2"
     steps:
       - name: Checkout
         uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
@@ -300,21 +306,37 @@ jobs:
           DEVICE_NAME: ${{ env.DEVICE_NAME }}
           DEVICE_OS_VERSION: ${{ env.DEVICE_OS_VERSION }}
           PREBOOT_SKIP_PREWARM: "1"
-          PREBOOT_COUNT: "1"
+          PREBOOT_COUNT: ${{ env.PREBOOT_COUNT }}
         run: bash detox/scripts/preboot_ios_simulator.sh
 
       - name: Wait for Simulator UI readiness
         run: |
-          for i in $(seq 1 30); do
-            xcrun simctl listapps "$SIMULATOR_ID" &>/dev/null && exit 0
-            sleep 2
+          IDS="${SIMULATOR_IDS:-${SIMULATOR_ID:-}}"
+          IFS=',' read -ra SIMS <<< "$IDS"
+          for sid in "${SIMS[@]}"; do
+            [ -z "$sid" ] && continue
+            ready=0
+            for i in $(seq 1 30); do
+              if xcrun simctl listapps "$sid" &>/dev/null; then
+                ready=1
+                break
+              fi
+              sleep 2
+            done
+            if (( ready == 0 )); then
+              echo "Warning: listapps did not succeed within 60s for $sid"
+            fi
           done
-          echo "Warning: listapps did not succeed within 60s"
 
       - name: Set simulator timezone for timezone flow
         run: |
-          xcrun simctl spawn "$SIMULATOR_ID" launchctl setenv TZ "America/New_York"
-          echo "Simulator timezone set to America/New_York"
+          IDS="${SIMULATOR_IDS:-${SIMULATOR_ID:-}}"
+          IFS=',' read -ra SIMS <<< "$IDS"
+          for sid in "${SIMS[@]}"; do
+            [ -z "$sid" ] && continue
+            xcrun simctl spawn "$sid" launchctl setenv TZ "America/New_York"
+            echo "Simulator timezone set to America/New_York on $sid"
+          done
 
       - name: Set RUNNING_E2E
         run: echo "RUNNING_E2E=true" > .env
@@ -385,23 +407,35 @@ jobs:
             [ -n "${TEST_CHANNEL_NAME:-}" ] && echo "TEST_CHANNEL_NAME=${TEST_CHANNEL_NAME}"
             [ -n "${TEST_TEAM_NAME:-}" ] && echo "TEST_TEAM_NAME=${TEST_TEAM_NAME}"
             [ -n "${ADMIN_TOKEN:-}" ] && echo "ADMIN_TOKEN=${ADMIN_TOKEN}"
+            [ -n "${ADMIN_EMAIL:-}" ] && echo "ADMIN_EMAIL=${ADMIN_EMAIL}"
+            [ -n "${ADMIN_PASSWORD:-}" ] && echo "ADMIN_PASSWORD=${ADMIN_PASSWORD}"
             echo "MAESTRO_APP_ID=${MAESTRO_APP_ID:-com.mattermost.rnbeta}"
             echo "EOF"
           } >> "$GITHUB_OUTPUT"
+        env:
+          ADMIN_EMAIL: ${{ env.ADMIN_EMAIL }}
+          ADMIN_PASSWORD: ${{ env.ADMIN_PASSWORD }}
 
-      - name: Resolve SIMULATOR_ID
+      - name: Resolve MAESTRO_DEVICE_A / MAESTRO_DEVICE_B
         run: |
-          if [ -n "${SIMULATOR_ID:-}" ]; then
-            echo "SIMULATOR_ID already set: $SIMULATOR_ID"
-            exit 0
+          IDS="${SIMULATOR_IDS:-}"
+          if [ -z "$IDS" ] && [ -n "${SIMULATOR_ID:-}" ]; then
+            IDS="$SIMULATOR_ID"
           fi
-          SID=$(xcrun simctl list devices booted 2>/dev/null | grep -oE '[0-9A-F]{8}-[0-9A-F]{4}-[0-9A-F]{4}-[0-9A-F]{4}-[0-9A-F]{12}' | head -1 || true)
-          if [ -z "$SID" ]; then
-            echo "::error::Could not resolve SIMULATOR_ID"
+          if [ -z "$IDS" ]; then
+            mapfile -t BOOTED < <(xcrun simctl list devices booted 2>/dev/null | grep -oE '[0-9A-F]{8}-[0-9A-F]{4}-[0-9A-F]{4}-[0-9A-F]{4}-[0-9A-F]{12}' || true)
+            IDS=$(IFS=,; echo "${BOOTED[*]}")
+          fi
+          IFS=',' read -ra SIMS <<< "$IDS"
+          if (( ${#SIMS[@]} < 2 )); then
+            echo "::error::Need 2 simulator UDIDs for Device A/B, found ${#SIMS[@]} (SIMULATOR_IDS=${SIMULATOR_IDS:-empty})"
+            xcrun simctl list devices booted || true
             exit 1
           fi
-          echo "SIMULATOR_ID=$SID" >> "$GITHUB_ENV"
-          echo "Resolved SIMULATOR_ID=$SID"
+          echo "SIMULATOR_ID=${SIMS[0]}" >> "$GITHUB_ENV"
+          echo "MAESTRO_DEVICE_A=${SIMS[0]}" >> "$GITHUB_ENV"
+          echo "MAESTRO_DEVICE_B=${SIMS[1]}" >> "$GITHUB_ENV"
+          echo "Resolved MAESTRO_DEVICE_A=${SIMS[0]} MAESTRO_DEVICE_B=${SIMS[1]}"
 
       - name: Pre-flight — simulator can reach test server
         env:
@@ -411,11 +445,11 @@ jobs:
           source detox/maestro/.maestro-test-env.sh
           set +a
           for attempt in 1 2 3; do
-            if maestro --device "$SIMULATOR_ID" test \
+            if maestro --device "$MAESTRO_DEVICE_A" test \
                 --env "SITE_1_URL=$SITE_1_URL" \
                 --env "MAESTRO_APP_ID=${MAESTRO_APP_ID:-com.mattermost.rnbeta}" \
                 detox/maestro/preflight/_connect_check.yml; then
-              echo "==> Pre-flight connect OK (attempt $attempt)"
+              echo "==> Pre-flight connect OK on Device A (attempt $attempt)"
               exit 0
             fi
             echo "==> Pre-flight connect failed (attempt $attempt/3)"
@@ -424,7 +458,7 @@ jobs:
           exit 1
 
       - name: test-system-io dispatch run
-        uses: mattermost/mattermost-test-system-io/.github/actions/test-system-io-dispatch-run@96e1d981c0351cc49224c47712114ca2903a18cf
+        uses: mattermost/mattermost-test-system-io/.github/actions/test-system-io-dispatch-run@36750956f71218c75ebb435d136f7a9aab84faab
         with:
           use-staging: ${{ inputs.use_staging_test_system_io && 'true' || 'false' }}
           framework: maestro
@@ -435,7 +469,8 @@ jobs:
           gh-job-name: maestro-ios-worker-${{ matrix.shard }}
           maestro-dir: detox/maestro
           maestro-platform: ios
-          maestro-device: ${{ env.SIMULATOR_ID }}
+          maestro-device: ${{ env.MAESTRO_DEVICE_A }}
+          maestro-device-b: ${{ env.MAESTRO_DEVICE_B }}
           maestro-env: ${{ steps.maestro-env.outputs.env }}
           maestro-timeout-ms: "540000"
           max-idle-polls: "8"

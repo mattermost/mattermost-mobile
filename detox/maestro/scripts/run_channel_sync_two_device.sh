@@ -16,6 +16,14 @@ DEVICE_A_UDID="${DEVICE_A_UDID:?Error: DEVICE_A_UDID is required}"
 DEVICE_B_UDID="${DEVICE_B_UDID:?Error: DEVICE_B_UDID is required}"
 SITE_1_URL="${SITE_1_URL:?Error: SITE_1_URL is required}"
 MAESTRO_APP_ID="${MAESTRO_APP_ID:-com.mattermost.rnbeta}"
+MAESTRO_BIN="${MAESTRO_BIN:-$HOME/.maestro/bin/maestro}"
+if [ ! -x "$MAESTRO_BIN" ]; then
+  MAESTRO_BIN="$(command -v maestro || true)"
+fi
+if [ -z "$MAESTRO_BIN" ]; then
+  echo "Error: maestro CLI not found (set MAESTRO_BIN or install Maestro)" >&2
+  exit 1
+fi
 # Lowercase alphanumeric only: doubles as the channel display name AND URL name,
 # so Device B can query for it without predicting Mattermost's slug transformation.
 SYNC_TOKEN="${SYNC_TOKEN:-$(LC_ALL=C tr -dc a-z0-9 </dev/urandom | head -c 8)}"
@@ -31,6 +39,7 @@ echo "Device A: $DEVICE_A_UDID"
 echo "Device B: $DEVICE_B_UDID"
 echo "Sync token / channel name: $SYNC_TOKEN"
 echo "App ID: $MAESTRO_APP_ID"
+echo "Maestro: $MAESTRO_BIN"
 
 # Seed test data (single user, one team - no channel needed since the test creates one)
 npx tsx maestro/fixtures/seed.ts
@@ -49,7 +58,7 @@ trap cleanup EXIT
 mkdir -p build
 
 echo "--- Starting Device A (creates channel) ---"
-~/.maestro/bin/maestro \
+"$MAESTRO_BIN" \
   --device "$DEVICE_A_UDID" \
   test \
   --format junit \
@@ -75,7 +84,7 @@ if ! SYNC_TOKEN="${SYNC_TOKEN}" TEST_TEAM_ID="${TEST_TEAM_ID}" ADMIN_TOKEN="${AD
 fi
 
 echo "--- Starting Device B (verifies channel synced) ---"
-~/.maestro/bin/maestro \
+"$MAESTRO_BIN" \
   --device "$DEVICE_B_UDID" \
   test \
   --format junit \

@@ -20,6 +20,14 @@ SITE_1_URL="${SITE_1_URL:?Error: SITE_1_URL is required}"
 ADMIN_EMAIL="${ADMIN_EMAIL:?Error: ADMIN_EMAIL is required}"
 ADMIN_PASSWORD="${ADMIN_PASSWORD:?Error: ADMIN_PASSWORD is required}"
 MAESTRO_APP_ID="${MAESTRO_APP_ID:-com.mattermost.rnbeta}"
+MAESTRO_BIN="${MAESTRO_BIN:-$HOME/.maestro/bin/maestro}"
+if [ ! -x "$MAESTRO_BIN" ]; then
+  MAESTRO_BIN="$(command -v maestro || true)"
+fi
+if [ -z "$MAESTRO_BIN" ]; then
+  echo "Error: maestro CLI not found (set MAESTRO_BIN or install Maestro)" >&2
+  exit 1
+fi
 
 # A unique token posted to the channel so Device B knows the call is active
 SYNC_TOKEN="${SYNC_TOKEN:-$(LC_ALL=C tr -dc a-z0-9 </dev/urandom | head -c 8)}"
@@ -30,6 +38,7 @@ echo "Device A: $DEVICE_A_UDID"
 echo "Device B: $DEVICE_B_UDID"
 echo "Sync token: $SYNC_TOKEN"
 echo "App ID: $MAESTRO_APP_ID"
+echo "Maestro: $MAESTRO_BIN"
 
 # Seed test data: creates 2 users on the same channel using the Detox server API
 tsx --tsconfig detox/tsconfig.json detox/maestro/fixtures/calls_seed.ts --two-users
@@ -40,7 +49,7 @@ source detox/maestro/.maestro-test-env.sh
 mkdir -p build
 
 echo "--- Starting Device A (starts call) ---"
-~/.maestro/bin/maestro \
+"$MAESTRO_BIN" \
     --device "$DEVICE_A_UDID" \
     test \
     --format junit \
@@ -83,7 +92,7 @@ sleep 20
 
 echo "--- Starting Device B (joins call via banner) ---"
 DEVICE_B_EXIT=0
-~/.maestro/bin/maestro \
+"$MAESTRO_BIN" \
     --device "$DEVICE_B_UDID" \
     test \
     --format junit \

@@ -8,6 +8,14 @@ DEVICE_A_UDID="${DEVICE_A_UDID:?Error: DEVICE_A_UDID is required}"
 DEVICE_B_UDID="${DEVICE_B_UDID:?Error: DEVICE_B_UDID is required}"
 SITE_1_URL="${SITE_1_URL:?Error: SITE_1_URL is required}"
 SYNC_TOKEN="${SYNC_TOKEN:-$(LC_ALL=C tr -dc a-z0-9 </dev/urandom | head -c 8)}"
+MAESTRO_BIN="${MAESTRO_BIN:-$HOME/.maestro/bin/maestro}"
+if [ ! -x "$MAESTRO_BIN" ]; then
+  MAESTRO_BIN="$(command -v maestro || true)"
+fi
+if [ -z "$MAESTRO_BIN" ]; then
+  echo "Error: maestro CLI not found (set MAESTRO_BIN or install Maestro)" >&2
+  exit 1
+fi
 
 export SYNC_TOKEN
 
@@ -15,6 +23,7 @@ echo "=== Two-Device Maestro Test ==="
 echo "Device A: $DEVICE_A_UDID"
 echo "Device B: $DEVICE_B_UDID"
 echo "Sync token: $SYNC_TOKEN"
+echo "Maestro: $MAESTRO_BIN"
 
 # Seed test data (creates 2 users sharing 1 channel)
 npx tsx detox/maestro/fixtures/seed.ts --two-users
@@ -31,7 +40,7 @@ cleanup() {
 trap cleanup EXIT
 
 echo "--- Starting Device A (sends message) ---"
-~/.maestro/bin/maestro \
+"$MAESTRO_BIN" \
   --device "$DEVICE_A_UDID" \
   test \
   --format junit \
@@ -63,7 +72,7 @@ until npx tsx detox/maestro/fixtures/poll_for_message.ts; do
 done
 
 echo "--- Starting Device B (receives message) ---"
-~/.maestro/bin/maestro \
+"$MAESTRO_BIN" \
   --device "$DEVICE_B_UDID" \
   test \
   --format junit \

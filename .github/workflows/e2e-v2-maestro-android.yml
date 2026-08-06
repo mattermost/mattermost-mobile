@@ -84,8 +84,9 @@ on:
       MM_MOBILE_E2E_ADMIN_PASSWORD:
         required: false
 
+# Pin: mattermost-test-system-io maestro multi-device scenarios @ 3675095.
 env:
-  TEST_SYSTEM_IO_ACTIONS_SHA: bd9f0928e3aa76a950b7b0fb01c0fe0dcbcf37e5
+  TEST_SYSTEM_IO_ACTIONS_SHA: 36750956f71218c75ebb435d136f7a9aab84faab
   ARTIFACT_RUN_ID: ${{ inputs.artifact_run_id }}
   ADMIN_EMAIL: ${{ secrets.MM_MOBILE_E2E_ADMIN_EMAIL }}
   ADMIN_USERNAME: ${{ secrets.MM_MOBILE_E2E_ADMIN_USERNAME }}
@@ -179,7 +180,7 @@ jobs:
 
       - name: test-system-io dispatch begin
         id: begin
-        uses: mattermost/mattermost-test-system-io/.github/actions/test-system-io-dispatch-begin@1f7ca41ff07f10ed30170179b017d185973fdf18
+        uses: mattermost/mattermost-test-system-io/.github/actions/test-system-io-dispatch-begin@36750956f71218c75ebb435d136f7a9aab84faab
         with:
           use-staging: ${{ inputs.use_staging_test_system_io && 'true' || 'false' }}
           framework: maestro
@@ -189,6 +190,9 @@ jobs:
           maestro-dir: detox/maestro
           maestro-flow-path: ${{ inputs.maestro_flow_path }}
           maestro-exclude-dir: ${{ inputs.maestro_exclude_dir }}
+          # Discovers detox/maestro/scenarios/**/*.scenario.yml (multi-device
+          # orchestrators). Half-flows under multi_device/ stay excluded.
+          maestro-scenarios-path: scenarios
           maestro-exclude-tags: ${{ steps.exclude-tags.outputs.tags }}
           post-pending-commit-status: ${{ inputs.post_commit_status && 'true' || 'false' }}
           commit-status-context: ${{ inputs.commit_status_context }}
@@ -222,7 +226,10 @@ jobs:
       matrix:
         shard: ${{ fromJSON(needs.begin.outputs.worker-shards) }}
     env:
-      EMULATOR_COUNT: "1"
+      # Boot Device A + B for multi-device scenarios. Single-device flows use A
+      # only; scenarios run serially (TSIO Maestro batch_size=1) on the pair.
+      # Parallel single-device leasing across both devices is future work.
+      EMULATOR_COUNT: "2"
     steps:
       - name: Checkout
         uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
@@ -340,9 +347,14 @@ jobs:
             [ -n "${TEST_CHANNEL_NAME:-}" ] && echo "TEST_CHANNEL_NAME=${TEST_CHANNEL_NAME}"
             [ -n "${TEST_TEAM_NAME:-}" ] && echo "TEST_TEAM_NAME=${TEST_TEAM_NAME}"
             [ -n "${ADMIN_TOKEN:-}" ] && echo "ADMIN_TOKEN=${ADMIN_TOKEN}"
+            [ -n "${ADMIN_EMAIL:-}" ] && echo "ADMIN_EMAIL=${ADMIN_EMAIL}"
+            [ -n "${ADMIN_PASSWORD:-}" ] && echo "ADMIN_PASSWORD=${ADMIN_PASSWORD}"
             echo "MAESTRO_APP_ID=${MAESTRO_APP_ID:-com.mattermost.rnbeta}"
             echo "EOF"
           } >> "$GITHUB_OUTPUT"
+        env:
+          ADMIN_EMAIL: ${{ env.ADMIN_EMAIL }}
+          ADMIN_PASSWORD: ${{ env.ADMIN_PASSWORD }}
 
       - name: Set up Android SDK PATH
         run: |
@@ -448,7 +460,7 @@ jobs:
           MAX_ATTEMPTS: "2"
           ATTEMPT_TIMEOUT_MIN: "25"
           AVD_BASE: ${{ inputs.android_avd_name }}
-          EMULATOR_COUNT: "1"
+          EMULATOR_COUNT: ${{ env.EMULATOR_COUNT }}
         shell: bash
         run: |
           set +e
@@ -470,6 +482,7 @@ jobs:
             echo "==> Attempt ${attempt} failed (exit ${rc})"
             if (( attempt < MAX_ATTEMPTS )); then
               adb -s emulator-5554 emu kill 2>/dev/null || true
+              adb -s emulator-5556 emu kill 2>/dev/null || true
               pkill -9 -f qemu-system 2>/dev/null || true
               pkill -9 -f emulator 2>/dev/null || true
               pkill -9 -f "react-native.*start" 2>/dev/null || true
@@ -481,16 +494,18 @@ jobs:
           echo "::error::Android emulator bootstrap failed"
           exit 1
 
-      - name: Resolve MAESTRO_DEVICE serial
+      - name: Resolve MAESTRO_DEVICE_A / MAESTRO_DEVICE_B serials
         run: |
-          SERIAL=$(adb devices | awk '/^emulator-/{print $1; exit}')
-          if [ -z "$SERIAL" ]; then
-            echo "::error::No emulator serial found in adb devices"
+          mapfile -t SERIALS < <(adb devices | awk '/^emulator-/{print $1}')
+          if (( ${#SERIALS[@]} < 2 )); then
+            echo "::error::Need 2 emulator serials for Device A/B, found ${#SERIALS[@]}"
             adb devices -l || true
             exit 1
           fi
-          echo "MAESTRO_DEVICE=$SERIAL" >> "$GITHUB_ENV"
-          echo "Resolved MAESTRO_DEVICE=$SERIAL"
+          echo "MAESTRO_DEVICE=${SERIALS[0]}" >> "$GITHUB_ENV"
+          echo "MAESTRO_DEVICE_A=${SERIALS[0]}" >> "$GITHUB_ENV"
+          echo "MAESTRO_DEVICE_B=${SERIALS[1]}" >> "$GITHUB_ENV"
+          echo "Resolved MAESTRO_DEVICE_A=${SERIALS[0]} MAESTRO_DEVICE_B=${SERIALS[1]}"
 
       - name: Pre-flight — emulator can reach test server
         env:
@@ -500,11 +515,11 @@ jobs:
           source detox/maestro/.maestro-test-env.sh
           set +a
           for attempt in 1 2 3; do
-            if maestro --platform android --device "$MAESTRO_DEVICE" test \
+            if maestro --platform android --device "$MAESTRO_DEVICE_A" test \
                 --env "SITE_1_URL=$SITE_1_URL" \
                 --env "MAESTRO_APP_ID=${MAESTRO_APP_ID:-com.mattermost.rnbeta}" \
                 detox/maestro/preflight/_connect_check.yml; then
-              echo "==> Pre-flight connect OK (attempt $attempt)"
+              echo "==> Pre-flight connect OK on Device A (attempt $attempt)"
               exit 0
             fi
             echo "==> Pre-flight connect failed (attempt $attempt/3)"
@@ -513,7 +528,7 @@ jobs:
           exit 1
 
       - name: test-system-io dispatch run
-        uses: mattermost/mattermost-test-system-io/.github/actions/test-system-io-dispatch-run@96e1d981c0351cc49224c47712114ca2903a18cf
+        uses: mattermost/mattermost-test-system-io/.github/actions/test-system-io-dispatch-run@36750956f71218c75ebb435d136f7a9aab84faab
         with:
           use-staging: ${{ inputs.use_staging_test_system_io && 'true' || 'false' }}
           framework: maestro
@@ -524,7 +539,8 @@ jobs:
           gh-job-name: maestro-android-worker-${{ matrix.shard }}
           maestro-dir: detox/maestro
           maestro-platform: android
-          maestro-device: ${{ env.MAESTRO_DEVICE }}
+          maestro-device: ${{ env.MAESTRO_DEVICE_A }}
+          maestro-device-b: ${{ env.MAESTRO_DEVICE_B }}
           maestro-env: ${{ steps.maestro-env.outputs.env }}
           maestro-timeout-ms: "540000"
           max-idle-polls: "8"
@@ -534,6 +550,7 @@ jobs:
         timeout-minutes: 2
         run: |
           adb -s emulator-5554 emu kill 2>/dev/null || true
+          adb -s emulator-5556 emu kill 2>/dev/null || true
           pkill -9 -f qemu-system 2>/dev/null || true
           pkill -9 -f emulator 2>/dev/null || true
           pkill -9 -f "react-native.*start" 2>/dev/null || true
