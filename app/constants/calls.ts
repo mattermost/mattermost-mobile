@@ -27,6 +27,10 @@ const CALL_QUALITY_RESET_MS = toMilliseconds({minutes: 1});
 const CAPTION_TIMEOUT = 5000;
 const RING_LENGTH = 30000;
 
+// How long the caller hears the outbound ringback tone before it auto-stops.
+// Mirrors the server's DM no-answer timeout.
+const RINGBACK_TIMEOUT = 30000;
+
 export enum Ringtone {
     Calm = 'Calm',
     Dynamic = 'Dynamic',
@@ -60,5 +64,6 @@ export default {
     JOB_TYPE_TRANSCRIBING,
     JOB_TYPE_CAPTIONING,
     RING_LENGTH,
+    RINGBACK_TIMEOUT,
     RINGTONE_DEFAULT,
 };

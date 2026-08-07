@@ -306,6 +306,83 @@ const stopIncomingCallsRinging = () => {
     setIncomingCalls({...incomingCalls, currentRingingCallId: undefined});
 };
 
+// Ringback: the outbound tone the DM/GM call owner hears while waiting for the
+// first other participant to answer. Scoped to a single global slot since a
+// device can only be in one call at a time (mirrors the incoming-ring state above).
+//
+// seconds=0 loops the 'ringback' asset indefinitely (CallsNative behaviour on both platforms).
+//
+// The channel currently playing the ringback tone, or null if none is playing.
+let ringbackChannelId: string | null = null;
+
+// The channel of a call that's already been answered (another session joined),
+// so ringback must never (re)start for it — even if that session later leaves.
+let ringbackHandledChannelId: string | null = null;
+let ringbackTimeout: ReturnType<typeof setTimeout> | null = null;
+
+export const stopRingback = () => {
+    if (ringbackTimeout) {
+        clearTimeout(ringbackTimeout);
+        ringbackTimeout = null;
+    }
+    if (ringbackChannelId) {
+        CallsNative.stopRingtone();
+        ringbackChannelId = null;
+    }
+};
+
+const otherSessionHasJoined = (currentCall: CurrentCall) => {
+    return Object.values(currentCall.sessions).some((session) => session.userId !== currentCall.myUserId);
+};
+
+export const startRingbackIfNeeded = async (currentCall: CurrentCall) => {
+    if (!currentCall.connected || currentCall.ownerId !== currentCall.myUserId) {
+        return;
+    }
+
+    const {channelId, serverUrl} = currentCall;
+    if (ringbackChannelId === channelId || ringbackHandledChannelId === channelId) {
+        return;
+    }
+
+    if (!getCallsConfig(serverUrl).EnableRinging || otherSessionHasJoined(currentCall)) {
+        return;
+    }
+
+    try {
+        const {database} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
+        const channel = await getChannelById(database, channelId);
+        if (!channel || !isDMorGM(channel)) {
+            return;
+        }
+    } catch (error) {
+        logError('failed to getServerDatabase in startRingbackIfNeeded', error);
+        return;
+    }
+
+    // Re-check nothing changed while we were awaiting the channel lookup.
+    const latestCall = getCurrentCall();
+    if (
+        !latestCall ||
+        latestCall.channelId !== channelId ||
+        !latestCall.connected ||
+        otherSessionHasJoined(latestCall) ||
+        ringbackChannelId === channelId ||
+        ringbackHandledChannelId === channelId
+    ) {
+        return;
+    }
+
+    ringbackChannelId = channelId;
+    CallsNative.startRingtone('ringback', 0);
+    ringbackTimeout = setTimeout(() => {
+        ringbackTimeout = null;
+        if (ringbackChannelId === channelId) {
+            stopRingback();
+        }
+    }, Calls.RINGBACK_TIMEOUT);
+};
+
 export const setCallForChannel = (serverUrl: string, channelId: string, call?: Call, enabled?: boolean) => {
     const callsState = getCallsState(serverUrl);
     let nextEnabled = callsState.enabled;
@@ -383,6 +460,13 @@ export const userJoinedCall = (serverUrl: string, channelId: string, userId: str
         }
 
         setCurrentCall(nextCurrentCall);
+
+        if (userId === nextCurrentCall.myUserId) {
+            startRingbackIfNeeded(nextCurrentCall);
+        } else {
+            ringbackHandledChannelId = channelId;
+            stopRingback();
+        }
     }
 
     // We've joined (from whatever client), so remove that call's notification
@@ -463,6 +547,11 @@ export const newCurrentCall = (serverUrl: string, channelId: string, myUserId: s
         existingCall = callsState.calls[channelId];
     }
 
+    // Fresh call setup for this channel — clear any leftover ringback guards
+    // from a previous call in the same channel.
+    stopRingback();
+    ringbackHandledChannelId = null;
+
     setCurrentCall({
         ...DefaultCurrentCall,
         ...existingCall,
@@ -484,9 +573,11 @@ export const setCurrentCallConnected = (channelId: string, sessionId: string) =>
         mySessionId: sessionId,
     };
     setCurrentCall(nextCurrentCall);
+    startRingbackIfNeeded(nextCurrentCall);
 };
 
 export const myselfLeftCall = async () => {
+    stopRingback();
     setCurrentCall(null);
 
     if (NavigationStore.isScreenInStack(Screens.CALL)) {

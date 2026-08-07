@@ -290,7 +290,7 @@ export const joinCall = async (
 
         return {data: channelId};
     } catch (e) {
-        connection.disconnect();
+        connection?.disconnect();
         connection = null;
         return {error: `unable to connect to the voice call: ${e}`};
     }
