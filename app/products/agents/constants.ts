@@ -52,3 +52,16 @@ export const THREAD_ANALYSIS_TYPES = {
     OPEN_QUESTIONS: 'open_questions',
 } as const;
 export type ThreadAnalysisType = typeof THREAD_ANALYSIS_TYPES[keyof typeof THREAD_ANALYSIS_TYPES];
+
+/**
+ * The preset_prompt values accepted by the plugin's channel interval endpoint
+ * (api/api_channel.go handleInterval); anything else is rejected with a 400.
+ * A fourth preset, summarize_range, exists but is not used by the unreads
+ * summarization feature.
+ */
+export const CHANNEL_INTERVAL_PRESETS = {
+    SUMMARIZE_UNREADS: 'summarize_unreads',
+    ACTION_ITEMS: 'action_items',
+    OPEN_QUESTIONS: 'open_questions',
+} as const;
+export type ChannelIntervalPreset = typeof CHANNEL_INTERVAL_PRESETS[keyof typeof CHANNEL_INTERVAL_PRESETS];

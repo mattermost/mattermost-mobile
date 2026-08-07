@@ -23,6 +23,13 @@ export type ChannelAnalysisResponse = {
 };
 
 /**
+ * Response from the channel interval API (api/api_channel.go handleInterval):
+ * the post/channel of the bot DM the summary streams into. Same shape as the
+ * other analysis endpoints.
+ */
+export type ChannelIntervalResponse = ChannelAnalysisResponse;
+
+/**
  * Response from thread analysis API (api/api_post.go handleThreadAnalysis):
  * the post/channel of the bot DM the analysis streams into.
  */

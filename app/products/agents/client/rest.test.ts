@@ -136,6 +136,31 @@ describe('ClientAgents', () => {
         });
     });
 
+    describe('doChannelInterval', () => {
+        it('should post millisecond start time, end time 0, and the preset with the bot username in the query', async () => {
+            await client.doChannelInterval('channel-1', 1723000000000, 0, 'summarize_unreads', 'ai-bot');
+            expect(mockDoFetch).toHaveBeenCalledWith(
+                '/plugins/mattermost-ai/channel/channel-1/interval?botUsername=ai-bot',
+                {
+                    method: 'post',
+                    body: {
+                        start_time: 1723000000000,
+                        end_time: 0,
+                        preset_prompt: 'summarize_unreads',
+                        prompt: '',
+                    },
+                },
+            );
+        });
+
+        it('should percent-encode a bot username that needs encoding', async () => {
+            await client.doChannelInterval('channel-1', 1723000000000, 0, 'action_items', 'my bot');
+            expect(mockDoFetch.mock.calls[0][0]).toBe(
+                '/plugins/mattermost-ai/channel/channel-1/interval?botUsername=my%20bot',
+            );
+        });
+    });
+
     describe('doThreadAnalysis', () => {
         it('should post the analysis type in the body with the bot username in the query', async () => {
             await client.doThreadAnalysis('post-123', 'summarize_thread', 'ai-bot');

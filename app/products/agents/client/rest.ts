@@ -2,7 +2,7 @@
 // See LICENSE.txt for license information.
 
 import type {AIBotsResponse, ConversationResponse, RawAIThread, ToolAnswer, ToolCall} from '@agents/types';
-import type {AgentsStatusResponse, ChannelAnalysisOptions, ChannelAnalysisResponse, CustomPrompt, CustomPromptRenderRequest, CustomPromptRenderResponse, RewriteRequest, RewriteResponse, ThreadAnalysisResponse} from '@agents/types/api';
+import type {AgentsStatusResponse, ChannelAnalysisOptions, ChannelAnalysisResponse, ChannelIntervalResponse, CustomPrompt, CustomPromptRenderRequest, CustomPromptRenderResponse, RewriteRequest, RewriteResponse, ThreadAnalysisResponse} from '@agents/types/api';
 
 export interface ClientAgentsMix {
     getAgentsRoute: () => string;
@@ -17,6 +17,13 @@ export interface ClientAgentsMix {
         botUsername: string,
         options?: ChannelAnalysisOptions,
     ) => Promise<ChannelAnalysisResponse>;
+    doChannelInterval: (
+        channelId: string,
+        startTime: number,
+        endTime: number,
+        presetPrompt: string,
+        botUsername: string,
+    ) => Promise<ChannelIntervalResponse>;
     doThreadAnalysis: (
         postId: string,
         analysisType: string,
@@ -103,6 +110,33 @@ const ClientAgents = (superclass: any) => class extends superclass {
                     days,
                     prompt,
                     team_id,
+                },
+            },
+        );
+    };
+
+    // Summarize a time window of channel messages (api/api_channel.go
+    // handleInterval). Times are Mattermost unix milliseconds. CAUTION: always
+    // send endTime 0 ("until present") — the server's 14-day-cap validation
+    // compares millisecond timestamps against a seconds constant, so any
+    // nonzero end_time range longer than ~20 minutes gets a 400. The webapp
+    // always sends 0 and mobile must too.
+    doChannelInterval = async (
+        channelId: string,
+        startTime: number,
+        endTime: number,
+        presetPrompt: string,
+        botUsername: string,
+    ): Promise<ChannelIntervalResponse> => {
+        return this.doFetch(
+            `${this.getAgentsRoute()}/channel/${channelId}/interval?botUsername=${encodeURIComponent(botUsername)}`,
+            {
+                method: 'post',
+                body: {
+                    start_time: startTime,
+                    end_time: endTime,
+                    preset_prompt: presetPrompt,
+                    prompt: '',
                 },
             },
         );
