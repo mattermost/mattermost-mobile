@@ -43,12 +43,12 @@ describe('doPing', () => {
         expect(result).toHaveProperty('error');
     });
 
-    it('should return empty object on successful ping without push proxy verification', async () => {
+    it('should return serverUrl on successful ping without push proxy verification', async () => {
         const mockClient = makePingClient();
         (NetworkManager.createClient as jest.Mock).mockResolvedValue(mockClient);
 
         const result = await doPing(serverUrl, false);
-        expect(result).toEqual({});
+        expect(result).toEqual({serverUrl});
     });
 
     it('should return certificate error on 401 response', async () => {
@@ -67,6 +67,120 @@ describe('doPing', () => {
         const result = await doPing(serverUrl, false);
         expect(result).toHaveProperty('error');
         expect(NetworkManager.invalidateClient).toHaveBeenCalledWith(serverUrl);
+    });
+
+    it('should retry ping once with base_url from 406 response', async () => {
+        const wrongUrl = 'https://example.com/wrong';
+        const correctUrl = 'https://example.com/correct';
+        const failingClient = makePingClient({
+            ping: jest.fn().mockResolvedValue({
+                ok: false,
+                code: 406,
+                data: {base_url: correctUrl},
+                headers: {},
+            }),
+        });
+        const successClient = makePingClient();
+        (NetworkManager.createClient as jest.Mock).
+            mockResolvedValueOnce(failingClient).
+            mockResolvedValueOnce(successClient);
+
+        const result = await doPing(wrongUrl, false);
+        expect(result).toEqual({serverUrl: correctUrl});
+        expect(NetworkManager.createClient).toHaveBeenCalledTimes(2);
+        expect(NetworkManager.createClient).toHaveBeenNthCalledWith(1, wrongUrl, undefined, undefined);
+        expect(NetworkManager.createClient).toHaveBeenNthCalledWith(2, correctUrl, undefined, undefined);
+        expect(NetworkManager.invalidateClient).toHaveBeenCalledWith(wrongUrl);
+    });
+
+    it('should sanitize base_url before retrying ping', async () => {
+        const wrongUrl = 'https://example.com/wrong';
+        const correctUrl = 'https://example.com/correct/';
+        const failingClient = makePingClient({
+            ping: jest.fn().mockResolvedValue({
+                ok: false,
+                code: 406,
+                data: {base_url: correctUrl},
+                headers: {},
+            }),
+        });
+        const successClient = makePingClient();
+        (NetworkManager.createClient as jest.Mock).
+            mockResolvedValueOnce(failingClient).
+            mockResolvedValueOnce(successClient);
+
+        const result = await doPing(wrongUrl, false);
+        expect(result).toEqual({serverUrl: 'https://example.com/correct'});
+        expect(NetworkManager.createClient).toHaveBeenNthCalledWith(2, 'https://example.com/correct', undefined, undefined);
+    });
+
+    it('should create a new client when retrying ping with base_url and external client was provided', async () => {
+        const wrongUrl = 'https://example.com/wrong';
+        const correctUrl = 'https://example.com/correct';
+        const externalClient = makePingClient({
+            ping: jest.fn().mockResolvedValue({
+                ok: false,
+                code: 406,
+                data: {base_url: correctUrl},
+                headers: {},
+            }),
+        });
+        const successClient = makePingClient();
+        (NetworkManager.createClient as jest.Mock).mockResolvedValueOnce(successClient);
+
+        const result = await doPing(wrongUrl, false, 5000, undefined, externalClient as any);
+        expect(result).toEqual({serverUrl: correctUrl});
+        expect(NetworkManager.createClient).toHaveBeenCalledTimes(1);
+        expect(NetworkManager.createClient).toHaveBeenCalledWith(correctUrl, undefined, undefined);
+        expect(NetworkManager.invalidateClient).not.toHaveBeenCalled();
+    });
+
+    it('should retry ping once with base_url from thrown 406 error', async () => {
+        const wrongUrl = 'https://example.com/wrong';
+        const correctUrl = 'https://example.com/correct';
+        const failingClient = makePingClient({
+            ping: jest.fn().mockRejectedValue({
+                status_code: 406,
+                details: {base_url: correctUrl},
+            }),
+        });
+        const successClient = makePingClient();
+        (NetworkManager.createClient as jest.Mock).
+            mockResolvedValueOnce(failingClient).
+            mockResolvedValueOnce(successClient);
+
+        const result = await doPing(wrongUrl, false);
+        expect(result).toEqual({serverUrl: correctUrl});
+        expect(NetworkManager.createClient).toHaveBeenCalledTimes(2);
+    });
+
+    it('should not retry ping when 406 response has no base_url', async () => {
+        const mockClient = makePingClient({
+            ping: jest.fn().mockResolvedValue({ok: false, code: 406, data: {}, headers: {}}),
+        });
+        (NetworkManager.createClient as jest.Mock).mockResolvedValue(mockClient);
+
+        const result = await doPing(serverUrl, false);
+        expect(result).toHaveProperty('error');
+        expect(NetworkManager.createClient).toHaveBeenCalledTimes(1);
+    });
+
+    it('should not retry ping more than once when base_url retry also fails', async () => {
+        const wrongUrl = 'https://example.com/wrong';
+        const correctUrl = 'https://example.com/correct';
+        const failingClient = makePingClient({
+            ping: jest.fn().mockResolvedValue({
+                ok: false,
+                code: 406,
+                data: {base_url: correctUrl},
+                headers: {},
+            }),
+        });
+        (NetworkManager.createClient as jest.Mock).mockResolvedValue(failingClient);
+
+        const result = await doPing(wrongUrl, false);
+        expect(result).toHaveProperty('error');
+        expect(NetworkManager.createClient).toHaveBeenCalledTimes(2);
     });
 
     it('should not invalidate client when client is provided externally', async () => {
