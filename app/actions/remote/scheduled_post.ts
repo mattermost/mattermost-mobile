@@ -40,15 +40,31 @@ export async function createScheduledPost(serverUrl: string, schedulePost: Sched
     }
 }
 
-export async function updateScheduledPost(serverUrl: string, scheduledPost: ScheduledPost | ScheduledPostModel, updateTime: number, fetchOnly = false) {
+/**
+ * The scheduling fields a reschedule may override. The recurrence fields travel together so that a
+ * weekly post can never be sent without the timezone the server requires to advance it.
+ */
+export type UpdateSchedulingInfo = {scheduled_at: number} & (
+    {repeat_type?: undefined; repeat_timezone?: undefined} |
+    {repeat_type: ScheduledPostRepeatType; repeat_timezone: string}
+);
+
+/**
+ * Reschedules an existing scheduled post.
+ *
+ * `schedulingInfo` overrides the post's own fields. The server treats the PUT body as a full
+ * overwrite, so omitting the recurrence preserves it — `toApi()` round-trips `repeat_type` and
+ * `repeat_timezone` off the model — while passing it overrides it, and `repeat_type: ''` makes the
+ * post one-time.
+ */
+export async function updateScheduledPost(serverUrl: string, scheduledPost: ScheduledPost | ScheduledPostModel, schedulingInfo: UpdateSchedulingInfo, fetchOnly = false) {
     try {
         const {operator, database} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
         const client = NetworkManager.getClient(serverUrl);
         const currentUserId = await getCurrentUserId(database);
         const normalizedScheduledPost = isScheduledPostModel(scheduledPost) ? scheduledPost.toApi(currentUserId) : scheduledPost;
-        normalizedScheduledPost.scheduled_at = updateTime;
         const connectionId = websocketManager.getClient(serverUrl)?.getConnectionId();
-        const response = await client.updateScheduledPost(normalizedScheduledPost, connectionId);
+        const response = await client.updateScheduledPost({...normalizedScheduledPost, ...schedulingInfo}, connectionId);
 
         if (response && !fetchOnly) {
             await operator.handleScheduledPosts({

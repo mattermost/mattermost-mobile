@@ -182,7 +182,7 @@ describe('RescheduledDraft', () => {
             expect(updateScheduledPost).toHaveBeenCalledWith(
                 SERVER_URL,
                 mockDraft,
-                newDate.valueOf(),
+                {scheduled_at: newDate.valueOf()},
             );
             expect(navigateBack).toHaveBeenCalled();
         });

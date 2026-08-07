@@ -32,6 +32,18 @@ const {BOARD_VIEW} = BOARDS_TABLES;
 
 export default schemaMigrations({migrations: [
     {
+        toVersion: 21,
+        steps: [
+            addColumns({
+                table: SCHEDULED_POST,
+                columns: [
+                    {name: 'repeat_type', type: 'string'},
+                    {name: 'repeat_timezone', type: 'string'},
+                ],
+            }),
+        ],
+    },
+    {
         toVersion: 20,
         steps: [
             createTable({

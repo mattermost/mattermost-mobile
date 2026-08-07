@@ -60,7 +60,7 @@ const {PLAYBOOK_RUN, PLAYBOOK_CHECKLIST, PLAYBOOK_CHECKLIST_ITEM, PLAYBOOK_RUN_A
 describe('*** Test schema for SERVER database ***', () => {
     it('=> The SERVER SCHEMA should strictly match', () => {
         expect(serverSchema).toEqual({
-            version: 20,
+            version: 21,
             unsafeSql: undefined,
             tables: {
                 [AI_BOT]: {
@@ -778,6 +778,8 @@ describe('*** Test schema for SERVER database ***', () => {
                         processed_at: {name: 'processed_at', type: 'number'},
                         error_code: {name: 'error_code', type: 'string'},
                         type: {name: 'type', type: 'string', isOptional: true},
+                        repeat_type: {name: 'repeat_type', type: 'string'},
+                        repeat_timezone: {name: 'repeat_timezone', type: 'string'},
                     },
                     columnArray: [
                         {name: 'channel_id', type: 'string', isIndexed: true},
@@ -791,6 +793,8 @@ describe('*** Test schema for SERVER database ***', () => {
                         {name: 'processed_at', type: 'number'},
                         {name: 'error_code', type: 'string'},
                         {name: 'type', type: 'string', isOptional: true},
+                        {name: 'repeat_type', type: 'string'},
+                        {name: 'repeat_timezone', type: 'string'},
                     ],
                 },
                 [SYSTEM]: {

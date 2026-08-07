@@ -93,7 +93,7 @@ const RescheduledDraft: React.FC<Props> = ({
             return;
         }
 
-        const res = await updateScheduledPost(serverUrl, draft, parseInt(selectedTime.current, 10));
+        const res = await updateScheduledPost(serverUrl, draft, {scheduled_at: parseInt(selectedTime.current, 10)});
         handleUIUpdates(res);
     }, [draft, handleUIUpdates, intl, selectedTime, serverUrl]));
 

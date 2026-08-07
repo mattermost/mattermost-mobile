@@ -1,4 +1,4 @@
-# Server Database - Schema Version 20
+# Server Database - Schema Version 21
 # Please bump the version by 1, any time the schema changes.
 # Also, include the migration plan under app/database/migration/server,
 # update all models, relationships and types.
@@ -113,6 +113,8 @@ scheduled_at number
 processed_at number NULL
 error_code string
 type string NULL
+repeat_type string
+repeat_timezone string
 
 
 File
