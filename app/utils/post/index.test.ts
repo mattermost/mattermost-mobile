@@ -772,6 +772,17 @@ describe('post utils', () => {
             expect(result.metadata?.files).toEqual(postFiles);
         });
 
+        it('should carry the recurrence through, since the post being scheduled has none', () => {
+            const result: ScheduledPost = scheduledPostFromPost(post, {
+                ...schedulingInfo,
+                repeat_type: 'weekly',
+                repeat_timezone: 'America/New_York',
+            });
+
+            expect(result.repeat_type).toBe('weekly');
+            expect(result.repeat_timezone).toBe('America/New_York');
+        });
+
         it('should return a scheduled post with the same properties as the original post', () => {
             const result: ScheduledPost = scheduledPostFromPost(post, schedulingInfo);
             expect(result.id).toBe(post.id);
