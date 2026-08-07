@@ -68,6 +68,10 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
             color: changeOpacity(theme.centerChannelColor, 0.75),
             ...typography('Body', 50),
         },
+        noParametersText: {
+            color: changeOpacity(theme.centerChannelColor, 0.64),
+            ...typography('Body', 75),
+        },
         responseLabel: {
             flexDirection: 'row',
             alignItems: 'center',
@@ -229,15 +233,30 @@ const ToolCard = ({
     const isRejected = tool.status === ToolCallStatus.Rejected;
     const isResultPhase = approvalStage === ToolApprovalStage.Result;
 
+    // Prefer the server-provided bare name for MCP tools; title-casing the
+    // raw wire name would render the namespace prefix (e.g. "Mattermost
+    // Read Post"). `||` because the server redacts mcp_bare_name to an empty
+    // string for non-requesters.
     const displayName = useMemo(() => {
-        return tool.name.
+        const baseName = tool.mcp_bare_name || tool.name;
+        return baseName.
             replace(/_/g, ' ').
             replace(/\b\w/g, (char) => char.toUpperCase());
-    }, [tool.name]);
+    }, [tool.mcp_bare_name, tool.name]);
+
+    // Null arguments were redacted for this viewer — render no arguments
+    // section at all. An empty object gets a "No parameters required" line
+    // instead of a `{}` code block.
+    const isEmptyArguments = tool.arguments != null &&
+        typeof tool.arguments === 'object' &&
+        !Array.isArray(tool.arguments) &&
+        Object.keys(tool.arguments).length === 0;
 
     const argumentsMarkdown = useMemo(() => {
-        const value = tool.arguments ?? {};
-        return `\`\`\`json\n${JSON.stringify(value, null, 2)}\n\`\`\``;
+        if (tool.arguments == null) {
+            return '';
+        }
+        return `\`\`\`json\n${JSON.stringify(tool.arguments, null, 2)}\n\`\`\``;
     }, [tool.arguments]);
 
     // Render result as code block - try to detect if it's JSON
@@ -373,7 +392,20 @@ const ToolCard = ({
                     entering={FadeIn.duration(200)}
                     exiting={Platform.select({ios: FadeOut.duration(200)})}
                 >
-                    {showArguments && (
+                    {showArguments && isEmptyArguments && (
+                        <View
+                            style={styles.argumentsContainer}
+                            testID={`${testIdPrefix}.arguments.empty`}
+                        >
+                            <FormattedText
+                                id='agents.tool_call.no_parameters_required'
+                                defaultMessage='No parameters required'
+                                style={styles.noParametersText}
+                            />
+                        </View>
+                    )}
+
+                    {showArguments && !isEmptyArguments && argumentsMarkdown !== '' && (
                         <View
                             style={styles.argumentsContainer}
                             testID={`${testIdPrefix}.arguments`}
@@ -466,6 +498,43 @@ const ToolCard = ({
                         </View>
                     )}
                 </Animated.View>
+            )}
+
+            {/* A decided card in a multi-tool batch keeps reflecting the
+                user's choice while the remaining tools await decisions. */}
+            {hasLocalDecision && (
+                <View
+                    style={styles.statusContainer}
+                    testID={`${testIdPrefix}.status.local_decision`}
+                >
+                    {localDecision ? (
+                        <>
+                            <CompassIcon
+                                name='check-circle'
+                                size={12}
+                                color={theme.onlineIndicator}
+                            />
+                            <FormattedText
+                                id='agents.tool_call.status.accepted'
+                                defaultMessage='Accepted'
+                                style={styles.statusText}
+                            />
+                        </>
+                    ) : (
+                        <>
+                            <CompassIcon
+                                name='close-circle-outline'
+                                size={12}
+                                color={theme.dndIndicator}
+                            />
+                            <FormattedText
+                                id='agents.tool_call.status.rejected'
+                                defaultMessage='Rejected'
+                                style={styles.statusText}
+                            />
+                        </>
+                    )}
+                </View>
             )}
 
             {isPending && !hasLocalDecision && isProcessing && (

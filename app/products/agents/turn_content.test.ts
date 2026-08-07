@@ -12,6 +12,7 @@ import {
     extractAnnotationsFromTurn,
     extractReasoningFromTurn,
     statusStringToEnum,
+    stripOpenAICitations,
 } from './turn_content';
 
 const POST_ID = 'anchorPost';
@@ -177,6 +178,73 @@ describe('extractAnnotationsFromTurn', () => {
         expect(annotations).toHaveLength(2);
         expect(annotations.map((a) => a.index)).toEqual([0, 1]);
         expect(annotations[1]).toMatchObject({url: 'https://c', title: 'C'});
+    });
+
+    it('should extract url_citation annotations from an Annotations block web_search_context', () => {
+        const turn = makeTurn({
+            sequence: 1,
+            role: 'assistant',
+            content: [
+                {type: BlockType.Text, text: 'answer'},
+                {
+                    type: BlockType.Annotations,
+                    web_search_context: {
+                        results: [
+                            {type: 'url_citation', start_index: 0, end_index: 5, url: 'https://a', title: 'A', cited_text: 'quoted', index: 3},
+                            {type: 'other_kind', url: 'https://ignored'},
+                            {type: 'url_citation', url: 'https://b'},
+                        ],
+                        executed_queries: null,
+                        count: 3,
+                    },
+                },
+            ],
+        });
+
+        const annotations = extractAnnotationsFromTurn(turn);
+
+        expect(annotations).toHaveLength(2);
+        expect(annotations[0]).toEqual({
+            type: 'url_citation',
+            start_index: 0,
+            end_index: 5,
+            url: 'https://a',
+            title: 'A',
+            cited_text: 'quoted',
+            index: 3,
+        });
+
+        // Missing indices default to 0 and the running index is preserved.
+        expect(annotations[1]).toMatchObject({url: 'https://b', start_index: 0, end_index: 0, index: 1});
+    });
+
+    it('should ignore an Annotations block whose results are not an array', () => {
+        const turn = makeTurn({
+            sequence: 1,
+            role: 'assistant',
+            content: [
+                {
+                    type: BlockType.Annotations,
+                    web_search_context: {results: {not: 'an array'}, executed_queries: null, count: 0},
+                },
+            ],
+        });
+
+        expect(extractAnnotationsFromTurn(turn)).toEqual([]);
+    });
+});
+
+describe('stripOpenAICitations', () => {
+    it('should remove inline (source: https://…) noise and tidy the space left before punctuation', () => {
+        const input = 'The sky is blue (source: https://example.com/sky) .';
+
+        expect(stripOpenAICitations(input)).toBe('The sky is blue.');
+    });
+
+    it('should leave text without citation noise unchanged', () => {
+        const input = 'A normal sentence with a [link](https://example.com) in it.\nAnd a second line.';
+
+        expect(stripOpenAICitations(input)).toBe(input);
     });
 });
 
@@ -380,6 +448,66 @@ describe('buildRoundsFromTurns', () => {
         expect(rounds).toHaveLength(1);
         expect(rounds[0].toolCalls).toHaveLength(1);
         expect(rounds[0].toolCalls[0].result).toBe('late result');
+    });
+
+    it('should carry the tool_use block metadata onto the tool call', () => {
+        const conversation = makeConversation([
+            makeTurn({sequence: 0, role: 'user', content: []}),
+            makeTurn({
+                sequence: 1,
+                role: 'assistant',
+                post_id: POST_ID,
+                content: [{
+                    type: BlockType.ToolUse,
+                    id: 'call1',
+                    name: 'mattermost__read_post',
+                    mcp_bare_name: 'read_post',
+                    server_origin: 'https://mcp.example.com',
+                    user_interaction: 'select',
+                    would_auto_execute: true,
+                    status: ToolCallStatusString.Pending,
+                }],
+            }),
+        ]);
+
+        const rounds = buildRoundsFromTurns(conversation, POST_ID);
+
+        expect(rounds[0].toolCalls[0]).toMatchObject({
+            id: 'call1',
+            name: 'mattermost__read_post',
+            mcp_bare_name: 'read_post',
+            server_origin: 'https://mcp.example.com',
+            user_interaction: 'select',
+            would_auto_execute: true,
+            decided: false,
+        });
+    });
+
+    it('should mark a tool call decided when its result block records decided_at', () => {
+        const conversation = makeConversation([
+            makeTurn({sequence: 0, role: 'user', content: []}),
+            makeTurn({
+                sequence: 1,
+                role: 'assistant',
+                post_id: POST_ID,
+                content: [
+                    {type: BlockType.ToolUse, id: 'decidedCall', name: 'search', status: ToolCallStatusString.Success},
+                    {type: BlockType.ToolUse, id: 'undecidedCall', name: 'read', status: ToolCallStatusString.Success},
+                ],
+            }),
+            makeTurn({
+                sequence: 2,
+                role: 'tool_result',
+                content: [
+                    {type: BlockType.ToolResult, tool_use_id: 'decidedCall', content: 'ok', decided_at: 1723000000000},
+                    {type: BlockType.ToolResult, tool_use_id: 'undecidedCall', content: 'ok'},
+                ],
+            }),
+        ]);
+
+        const rounds = buildRoundsFromTurns(conversation, POST_ID);
+
+        expect(rounds[0].toolCalls.map((t) => t.decided)).toEqual([true, false]);
     });
 
     it('should yield undefined arguments when the tool_use input was nulled by the privacy filter', () => {

@@ -7,6 +7,7 @@ import {View} from 'react-native';
 import {regenerateResponse, stopGeneration} from '@agents/actions/remote/generation_controls';
 import {fetchToolCallPrivate, fetchToolResultPrivate} from '@agents/actions/remote/tool_private';
 import {useStreamingState} from '@agents/store/streaming_store';
+import {stripOpenAICitations} from '@agents/turn_content';
 import {ToolApprovalStage, type Annotation, type ToolCall} from '@agents/types';
 import {getToolApprovalStage, isPostRequester, isToolCallRedacted, mergeToolCalls} from '@agents/utils';
 import FormattedText from '@components/formatted_text';
@@ -107,7 +108,11 @@ const AgentPostLegacy = ({post, currentUserId, location, isDM}: AgentPostLegacyP
     const streamingState = useStreamingState(serverUrl, post.id);
 
     // Determine the message to display (use ?? not || to preserve empty string during streaming)
-    const displayMessage = streamingState?.message ?? post.message ?? '';
+    const rawMessage = streamingState?.message ?? post.message ?? '';
+
+    // Strip OpenAI-style "(source: https://…)" inline clutter from agent text
+    // for both the streaming and the persisted message.
+    const displayMessage = useMemo(() => stripOpenAICitations(rawMessage), [rawMessage]);
     const isGenerating = streamingState?.generating ?? false;
     const isPrecontent = streamingState?.precontent ?? false;
 

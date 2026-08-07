@@ -303,6 +303,40 @@ describe('StreamingStoreSingleton', () => {
             expect(state?.generating).toBe(true);
         });
 
+        it('should carry tool metadata (would_auto_execute, mcp_bare_name, server_origin) through parse and merge', () => {
+            const postId = 'post123';
+            streamingStore.startStreaming(SERVER_URL, postId);
+
+            streamingStore.updateToolCalls(SERVER_URL, postId, JSON.stringify([
+                {
+                    id: 'a',
+                    name: 'mattermost__read_post',
+                    description: '',
+                    arguments: {},
+                    status: ToolCallStatus.Pending,
+                    would_auto_execute: true,
+                    mcp_bare_name: 'read_post',
+                    server_origin: 'https://mcp.example.com',
+                },
+                {id: 'b', name: 'search', description: '', arguments: {}, status: ToolCallStatus.Pending},
+            ]));
+
+            // A later status-only update for 'b' must not drop 'a' or its metadata.
+            streamingStore.updateToolCalls(SERVER_URL, postId, JSON.stringify([
+                {id: 'b', name: 'search', description: '', arguments: {}, status: ToolCallStatus.Accepted},
+            ]));
+
+            const state = streamingStore.getStreamingState(SERVER_URL, postId);
+            expect(state?.toolCalls).toHaveLength(2);
+            expect(state?.toolCalls[0]).toMatchObject({
+                id: 'a',
+                would_auto_execute: true,
+                mcp_bare_name: 'read_post',
+                server_origin: 'https://mcp.example.com',
+            });
+            expect(state?.toolCalls[1].status).toBe(ToolCallStatus.Accepted);
+        });
+
         it('should update existing tools in place when a later event changes their status', () => {
             const postId = 'post123';
             streamingStore.startStreaming(SERVER_URL, postId);

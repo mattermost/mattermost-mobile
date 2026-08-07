@@ -215,6 +215,92 @@ describe('ToolApprovalSet — batch decisions (B10) and canApprove gating (C1)',
         expect(submitToolApproval).toHaveBeenCalledWith('https://test.mattermost.com', 'p1', []);
     });
 
+    it('should hide auto-approved-policy calls from cards and exclude them from the decision count in a mixed batch', () => {
+        const tools: ToolCall[] = [
+            makeTool({id: 'a', name: 'first_tool', status: ToolCallStatus.Pending, result: undefined}),
+            makeTool({id: 'b', name: 'auto_tool', status: ToolCallStatus.Pending, result: undefined, would_auto_execute: true}),
+            makeTool({id: 'c', name: 'third_tool', status: ToolCallStatus.Pending, result: undefined}),
+        ];
+
+        const {getByText, getByTestId, queryByTestId} = renderWithIntlAndTheme(
+            <ToolApprovalSet
+                postId='p1'
+                toolCalls={tools}
+                approvalStage={ToolApprovalStage.Call}
+                canApprove={true}
+                canExpand={true}
+                showArguments={true}
+                showResults={true}
+            />,
+        );
+
+        // The policy-approved call renders no card at all in a mixed batch and
+        // never gets approval controls (the server runs it on resume).
+        expect(queryByTestId('agents.tool_card.b')).toBeNull();
+        expect(queryByTestId('agents.tool_card.b.approve')).toBeNull();
+
+        // Only the two manual calls count as pending decisions.
+        expect(getByText('2 tools need decisions')).toBeTruthy();
+        expect(getByTestId('agents.tool_card.a.approve')).toBeTruthy();
+        expect(getByTestId('agents.tool_card.c.approve')).toBeTruthy();
+    });
+
+    it('should show a single Run tools button that submits an empty accepted list for an interrupted all-auto round', async () => {
+        const tools: ToolCall[] = [
+            makeTool({id: 'a', name: 'first_tool', status: ToolCallStatus.Pending, result: undefined, would_auto_execute: true}),
+            makeTool({id: 'b', name: 'second_tool', status: ToolCallStatus.Pending, result: undefined, would_auto_execute: true}),
+        ];
+
+        const {getByTestId, queryByTestId} = renderWithIntlAndTheme(
+            <ToolApprovalSet
+                postId='p1'
+                toolCalls={tools}
+                approvalStage={ToolApprovalStage.Call}
+                canApprove={true}
+                canExpand={true}
+                showArguments={true}
+                showResults={true}
+            />,
+        );
+
+        // Cards stay visible in an interrupted all-auto round, but no per-tool
+        // or batch approval controls are offered.
+        expect(getByTestId('agents.tool_card.a')).toBeTruthy();
+        expect(queryByTestId('agents.tool_card.a.approve')).toBeNull();
+        expect(queryByTestId('agents.tool_approval_set.pending_decisions')).toBeNull();
+
+        await act(async () => {
+            fireEvent.press(getByTestId('agents.tool_approval_set.run_tools'));
+        });
+
+        // The server re-checks the auto-execution policy itself; no ids are accepted.
+        expect(submitToolApproval).toHaveBeenCalledWith('https://test.mattermost.com', 'p1', []);
+    });
+
+    it('should not re-prompt share/keep-private for results that were already decided server-side', () => {
+        const tools: ToolCall[] = [
+            makeTool({id: 'd1', name: 'first_tool', status: ToolCallStatus.Success, decided: true}),
+            makeTool({id: 'd2', name: 'second_tool', status: ToolCallStatus.Success}),
+        ];
+
+        const {getByTestId, queryByTestId} = renderWithIntlAndTheme(
+            <ToolApprovalSet
+                postId='p1'
+                toolCalls={tools}
+                approvalStage={ToolApprovalStage.Result}
+                canApprove={true}
+                canExpand={true}
+                showArguments={true}
+                showResults={true}
+            />,
+        );
+
+        expect(queryByTestId('agents.tool_card.d1.share')).toBeNull();
+        expect(queryByTestId('agents.tool_card.d1.keep_private')).toBeNull();
+        expect(getByTestId('agents.tool_card.d2.share')).toBeTruthy();
+        expect(getByTestId('agents.tool_card.d2.keep_private')).toBeTruthy();
+    });
+
     it('should suppress the status bar and per-card buttons for a viewer who cannot approve', () => {
         const {queryByTestId} = renderWithIntlAndTheme(
             <ToolApprovalSet

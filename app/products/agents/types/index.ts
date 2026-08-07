@@ -40,17 +40,40 @@ export interface ToolCall {
     arguments: any;
     result?: string;
     status: ToolCallStatus;
+
+    // Identifies the MCP server the tool came from (omitempty on the server;
+    // present only for MCP tools).
+    server_origin?: string;
+
+    // Bare tool name without the MCP server namespace prefix; preferred for
+    // display when present. Redacted (empty) for non-requesters.
+    mcp_bare_name?: string;
+
+    // Non-empty for tools answered by the user instead of executed by the
+    // server (e.g. AskUserQuestion).
+    user_interaction?: string;
+
+    // True for a pending call that passed the auto-execution policy. The call
+    // may be running live or paused in a persisted round, but never needs an
+    // individual approval decision.
+    would_auto_execute?: boolean;
+
+    // True when the matching tool result has already received its terminal
+    // share/keep-private decision (decided_at set server-side). Derived from
+    // the conversation API; absent on live websocket payloads.
+    decided?: boolean;
 }
 
 /**
- * Citation/annotation data structure
+ * Citation/annotation data structure. `url`/`title` are optional because
+ * web-search annotations persisted by the plugin may omit them.
  */
 export interface Annotation {
     type: string;
     start_index: number;
     end_index: number;
-    url: string;
-    title: string;
+    url?: string;
+    title?: string;
     cited_text?: string;
     index: number;
 }

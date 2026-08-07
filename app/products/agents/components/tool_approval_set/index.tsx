@@ -33,6 +33,44 @@ type ToolDecision = {
     [toolId: string]: boolean | null; // true = approved, false = rejected, null = undecided
 };
 
+// A tool requires an explicit user decision in the given stage. Calls that
+// passed the auto-execution policy run server-side once the rest of the batch
+// is resolved, and results that are user-authored (user_interaction) or
+// already decided (decided_at recorded server-side) need no share decision.
+function isDecisionTool(tool: ToolCall, approvalStage: ToolApprovalStage): boolean {
+    if (approvalStage === ToolApprovalStage.Call) {
+        return tool.status === ToolCallStatus.Pending && !tool.would_auto_execute;
+    }
+    if (approvalStage === ToolApprovalStage.Result) {
+        return !tool.user_interaction &&
+            !tool.decided &&
+            (tool.status === ToolCallStatus.Success ||
+                tool.status === ToolCallStatus.Error ||
+                tool.status === ToolCallStatus.AutoApproved);
+    }
+
+    // 'done' stage — server says no decision remains, render no buttons.
+    return false;
+}
+
+// Default expansion for a card the user has not toggled yet. Pending tools
+// (call stage) expand so users see what they are asked to approve; executed
+// tools (result stage) expand so the output is visible during the share
+// decision. Auto-approved tools always default collapsed — the user never
+// interacted with them.
+function isDefaultExpanded(tool: ToolCall, approvalStage: ToolApprovalStage): boolean {
+    if (tool.status === ToolCallStatus.AutoApproved) {
+        return false;
+    }
+    if (approvalStage === ToolApprovalStage.Call) {
+        return tool.status === ToolCallStatus.Pending;
+    }
+    if (approvalStage === ToolApprovalStage.Result) {
+        return tool.status === ToolCallStatus.Success || tool.status === ToolCallStatus.Error;
+    }
+    return false;
+}
+
 const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
     return {
         container: {
@@ -97,24 +135,13 @@ const ToolApprovalSet = ({postId, toolCalls, approvalStage, canApprove, canExpan
 
     // Clear local decisions when tool status changes from actionable to something else
     useEffect(() => {
-        const isActionable = (tool: ToolCall) => {
-            if (approvalStage === ToolApprovalStage.Result) {
-                return (
-                    tool.status === ToolCallStatus.Success ||
-                    tool.status === ToolCallStatus.Error ||
-                    tool.status === ToolCallStatus.AutoApproved
-                );
-            }
-            return tool.status === ToolCallStatus.Pending;
-        };
-
         const filterActionableDecisions = (decisions: ToolDecision): ToolDecision => {
             const updated: ToolDecision = {};
             const prevToolIds = Object.keys(decisions);
 
             for (const toolId of prevToolIds) {
                 const tool = toolCalls.find((t) => t.id === toolId);
-                if (tool && isActionable(tool)) {
+                if (tool && isDecisionTool(tool, approvalStage)) {
                     updated[toolId] = decisions[toolId];
                 }
             }
@@ -137,20 +164,20 @@ const ToolApprovalSet = ({postId, toolCalls, approvalStage, canApprove, canExpan
         if (!canApprove) {
             return [];
         }
-        if (approvalStage === ToolApprovalStage.Call) {
-            return toolCalls.filter((call) => call.status === ToolCallStatus.Pending);
-        }
-        if (approvalStage === ToolApprovalStage.Result) {
-            return toolCalls.filter((call) =>
-                call.status === ToolCallStatus.Success ||
-                call.status === ToolCallStatus.Error ||
-                call.status === ToolCallStatus.AutoApproved,
-            );
-        }
-
-        // 'done' stage — server says no decision remains, render no buttons.
-        return [];
+        return toolCalls.filter((call) => isDecisionTool(call, approvalStage));
     }, [toolCalls, approvalStage, canApprove]);
+
+    // An interrupted round consisting only of policy-approved calls (e.g. the
+    // stream died before they ran). The user is never offered per-tool
+    // decisions for those; a single "Run tools" action resumes the round and
+    // the server re-checks the auto-execution policy before running them.
+    const isInterruptedAutoRound = useMemo(() => {
+        if (approvalStage !== ToolApprovalStage.Call) {
+            return false;
+        }
+        const pendingToolCalls = toolCalls.filter((call) => call.status === ToolCallStatus.Pending);
+        return pendingToolCalls.length > 0 && pendingToolCalls.every((call) => call.would_auto_execute);
+    }, [toolCalls, approvalStage]);
 
     const submitDecisions = useCallback(async (decisions: ToolDecision) => {
         const approvedToolIds = Object.entries(decisions).
@@ -217,14 +244,24 @@ const ToolApprovalSet = ({postId, toolCalls, approvalStage, canApprove, canExpan
     const handleAcceptAll = usePreventDoubleTap(useCallback(() => handleBatchDecision(true), [handleBatchDecision]));
     const handleRejectAll = usePreventDoubleTap(useCallback(() => handleBatchDecision(false), [handleBatchDecision]));
 
+    // Resume an interrupted all-auto round. Submits an empty accepted list —
+    // the server executes the policy-approved calls itself after re-checking
+    // the auto-execution policy (matches the webapp's Run tools submission).
+    const handleRunTools = usePreventDoubleTap(useCallback(() => {
+        if (isSubmitting) {
+            return;
+        }
+        submitDecisions({});
+    }, [isSubmitting, submitDecisions]));
+
     const toggleCollapse = useCallback((toolId: string) => {
         const tool = toolCalls.find((t) => t.id === toolId);
-        const isActionableTool = tool ? actionableTools.some((a) => a.id === tool.id) : false;
+        const defaultExpanded = tool ? isDefaultExpanded(tool, approvalStage) : false;
         setExpandedTools((prev) => ({
             ...prev,
-            [toolId]: !(prev[toolId] ?? isActionableTool),
+            [toolId]: !(prev[toolId] ?? defaultExpanded),
         }));
-    }, [toolCalls, actionableTools]);
+    }, [toolCalls, approvalStage]);
 
     const undecidedCount = useMemo(() => {
         return actionableTools.filter(
@@ -238,21 +275,9 @@ const ToolApprovalSet = ({postId, toolCalls, approvalStage, canApprove, canExpan
 
     const actionableIds = new Set(actionableTools.map((t) => t.id));
     const isCallStage = approvalStage === ToolApprovalStage.Call;
-    const isResultStage = approvalStage === ToolApprovalStage.Result;
 
     const isToolCollapsed = (tool: ToolCall) => {
-        // Auto-approved tools default collapsed; the user never interacted with them.
-        if (tool.status === ToolCallStatus.AutoApproved) {
-            return !(expandedTools[tool.id] ?? false);
-        }
-
-        let defaultExpanded = false;
-        if (isCallStage) {
-            defaultExpanded = tool.status === ToolCallStatus.Pending;
-        } else if (isResultStage) {
-            defaultExpanded = tool.status === ToolCallStatus.Success || tool.status === ToolCallStatus.Error;
-        }
-        return !(expandedTools[tool.id] ?? defaultExpanded);
+        return !(expandedTools[tool.id] ?? isDefaultExpanded(tool, approvalStage));
     };
 
     return (
@@ -262,12 +287,23 @@ const ToolApprovalSet = ({postId, toolCalls, approvalStage, canApprove, canExpan
         >
             {toolCalls.map((tool) => {
                 const isActionable = actionableIds.has(tool.id);
+
+                // In a mixed approval batch, policy-approved calls stay hidden
+                // until the user's decisions let the server run them. Live
+                // calls and interrupted all-auto rounds remain visible.
+                if (tool.status === ToolCallStatus.Pending &&
+                    tool.would_auto_execute &&
+                    isCallStage &&
+                    !isInterruptedAutoRound) {
+                    return null;
+                }
+
                 return (
                     <ToolCard
                         key={tool.id}
                         tool={tool}
                         isCollapsed={isToolCollapsed(tool)}
-                        isProcessing={isActionable && isSubmitting}
+                        isProcessing={(isActionable || isInterruptedAutoRound) && isSubmitting}
                         localDecision={isActionable ? toolDecisions[tool.id] : undefined}
                         onToggleCollapse={toggleCollapse}
                         onApprove={isActionable ? handleApprove : undefined}
@@ -334,6 +370,39 @@ const ToolApprovalSet = ({postId, toolCalls, approvalStage, canApprove, canExpan
                             />
                         </Pressable>
                     </View>
+                </View>
+            )}
+
+            {isInterruptedAutoRound && canApprove && (
+                <View
+                    style={styles.statusBar}
+                    testID='agents.tool_approval_set.run_tools_bar'
+                >
+                    {isSubmitting ? (
+                        <>
+                            <Loading
+                                size='small'
+                                color={changeOpacity(theme.centerChannelColor, 0.64)}
+                            />
+                            <FormattedText
+                                id='agents.tool_call.submitting'
+                                defaultMessage='Submitting...'
+                                style={styles.statusText}
+                            />
+                        </>
+                    ) : (
+                        <Pressable
+                            onPress={handleRunTools}
+                            style={({pressed}) => [styles.batchButton, pressed && {opacity: 0.72}]}
+                            testID='agents.tool_approval_set.run_tools'
+                        >
+                            <FormattedText
+                                id='agents.tool_call.run_tools'
+                                defaultMessage='Run tools'
+                                style={styles.batchButtonText}
+                            />
+                        </Pressable>
+                    )}
                 </View>
             )}
         </View>

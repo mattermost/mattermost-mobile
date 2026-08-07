@@ -91,6 +91,11 @@ function toolUseBlockToToolCall(block: ContentBlock, resultMap: Map<string, Cont
         arguments: block.input ?? undefined,
         result: resultBlock?.content ?? undefined,
         status: statusStringToEnum(block.status),
+        server_origin: block.server_origin ?? undefined,
+        mcp_bare_name: block.mcp_bare_name ?? undefined,
+        user_interaction: block.user_interaction ?? undefined,
+        would_auto_execute: block.would_auto_execute ?? undefined,
+        decided: resultBlock?.decided_at != null,
     };
 }
 
@@ -116,14 +121,37 @@ export function extractAnnotationsFromTurn(turn: Turn | undefined): Annotation[]
     let runningIndex = 0;
 
     for (const block of turn.content) {
+        // Annotations block (web search context). The streamer persists the
+        // live annotations array verbatim into web_search_context.results, so
+        // surface those without re-deriving indices.
+        if (block.type === BlockType.Annotations && block.web_search_context) {
+            const results = block.web_search_context.results;
+            if (Array.isArray(results)) {
+                for (const r of results as Array<Partial<Annotation>>) {
+                    if (r && r.type === 'url_citation') {
+                        annotations.push({
+                            type: 'url_citation',
+                            start_index: r.start_index ?? 0,
+                            end_index: r.end_index ?? 0,
+                            url: r.url,
+                            title: r.title,
+                            cited_text: r.cited_text,
+                            index: r.index ?? runningIndex,
+                        });
+                        runningIndex++;
+                    }
+                }
+            }
+        }
+
         if (block.type === BlockType.Text && block.citations) {
             for (const c of block.citations) {
                 annotations.push({
                     type: 'url_citation',
                     start_index: c.start_index,
                     end_index: c.end_index,
-                    url: c.url ?? '',
-                    title: c.title ?? '',
+                    url: c.url,
+                    title: c.title,
                     index: runningIndex,
                 });
                 runningIndex++;
@@ -132,6 +160,20 @@ export function extractAnnotationsFromTurn(turn: Turn | undefined): Annotation[]
     }
 
     return annotations;
+}
+
+// Matches OpenAI-style inline citation clutter like "(source: https://…)"
+// that some models emit mid-sentence. Ported from the plugin webapp's
+// citation_processor.tsx openAICitationRegex.
+const openAICitationRegex = /\([^\s:]+\s*:\s*https?:\/\/[\S^)]*\)/g;
+
+// Strip inline "(source: https://…)" noise from agent-generated text before
+// rendering. The trailing cleanup collapses the " ." left behind by a
+// mid-sentence removal; it intentionally only eats spaces/tabs (not newlines,
+// which are structural in markdown — the webapp runs on post-render text
+// nodes where that distinction doesn't exist).
+export function stripOpenAICitations(text: string): string {
+    return text.replace(openAICitationRegex, '').replace(/[ \t]+\./g, '.');
 }
 
 // Build the ordered rounds for a post's response: one Round per assistant turn,

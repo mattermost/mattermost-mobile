@@ -14,6 +14,7 @@ import {
     anyToolHasResult,
     buildRoundsFromTurns,
     deriveApprovalStageForPost,
+    stripOpenAICitations,
 } from '@agents/turn_content';
 import {ToolApprovalStage, type Annotation, type Round} from '@agents/types';
 import FormattedText from '@components/formatted_text';
@@ -104,6 +105,10 @@ const RoundView = ({
     const showArguments = isDM || anyToolHasArguments(round.toolCalls);
     const showResults = isDM || anyToolHasResult(round.toolCalls);
 
+    // Applies to both streaming (live/snapshotted) and persisted rounds since
+    // every agent round renders through this component.
+    const text = useMemo(() => stripOpenAICitations(round.text), [round.text]);
+
     return (
         <View style={isFirst ? undefined : styles.roundSpacing}>
             {round.reasoning.summary !== '' && (
@@ -112,11 +117,11 @@ const RoundView = ({
                     isReasoningLoading={isReasoningLoading}
                 />
             )}
-            {round.text !== '' && (
+            {text !== '' && (
                 <View style={styles.messageContainer}>
                     <Markdown
                         baseTextStyle={styles.messageText}
-                        value={round.text}
+                        value={text}
                         theme={theme}
                         location={location}
                     />
@@ -261,10 +266,12 @@ const AgentPostNew = ({post, conversationId, currentUserId, location, isDM}: Age
         const all: Annotation[] = [];
         for (const round of renderedRounds) {
             for (const annotation of round.annotations) {
-                if (annotation.url && seen.has(annotation.url)) {
-                    continue;
+                if (annotation.url) {
+                    if (seen.has(annotation.url)) {
+                        continue;
+                    }
+                    seen.add(annotation.url);
                 }
-                seen.add(annotation.url);
                 all.push(annotation);
             }
         }
