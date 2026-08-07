@@ -53,3 +53,16 @@ export const THREAD_ANALYSIS_TYPES = {
 
 // eslint-disable-next-line @typescript-eslint/no-redeclare -- TypeScript supports same-name type/value pairs as enum alternative
 export type THREAD_ANALYSIS_TYPES = typeof THREAD_ANALYSIS_TYPES[keyof typeof THREAD_ANALYSIS_TYPES];
+
+/**
+ * Preset prompts accepted by POST /channel/{id}/interval (handleInterval).
+ * summarize_range exists server-side but mobile only offers the unreads flow.
+ */
+export const INTERVAL_PRESETS = {
+    SummarizeUnreads: 'summarize_unreads',
+    ActionItems: 'action_items',
+    OpenQuestions: 'open_questions',
+} as const;
+
+// eslint-disable-next-line @typescript-eslint/no-redeclare -- TypeScript supports same-name type/value pairs as enum alternative
+export type INTERVAL_PRESETS = typeof INTERVAL_PRESETS[keyof typeof INTERVAL_PRESETS];

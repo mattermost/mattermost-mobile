@@ -24,6 +24,13 @@ export interface ClientAgentsMix {
         analysisType: string,
         botUsername: string,
     ) => Promise<ChannelAnalysisResponse>;
+    getChannelInterval: (
+        channelId: string,
+        botUsername: string,
+        startTime: number,
+        endTime: number,
+        presetPrompt: string,
+    ) => Promise<ChannelAnalysisResponse>;
     submitToolApproval: (postId: string, acceptedToolIds: string[], toolAnswers?: Record<string, ToolAnswer>) => Promise<void>;
 
     // Legacy endpoints (plugin < 2.0): redaction fetched via dedicated routes.
@@ -120,6 +127,27 @@ const ClientAgents = (superclass: any) => class extends superclass {
             {
                 method: 'post',
                 body: {analysis_type: analysisType},
+            },
+        );
+    };
+
+    getChannelInterval = async (
+        channelId: string,
+        botUsername: string,
+        startTime: number,
+        endTime: number,
+        presetPrompt: string,
+    ): Promise<ChannelAnalysisResponse> => {
+        return this.doFetch(
+            `${this.getAgentsRoute()}/channel/${channelId}/interval?botUsername=${encodeURIComponent(botUsername)}`,
+            {
+                method: 'post',
+                body: {
+                    start_time: startTime,
+                    end_time: endTime,
+                    preset_prompt: presetPrompt,
+                    prompt: '',
+                },
             },
         );
     };

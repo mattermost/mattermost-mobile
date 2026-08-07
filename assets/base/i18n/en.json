@@ -95,6 +95,8 @@
   "agents.tool_call.status.accepted": "Accepted",
   "agents.tool_call.status.rejected": "Rejected",
   "agents.tool_call.submitting": "Submitting...",
+  "agents.unreads_summary.error_title": "Unable to summarize new messages",
+  "agents.unreads_summary.option.summarize_new": "Summarize new messages",
   "ai_rewrite.agent_selector_title": "Select AI Agent",
   "ai_rewrite.custom_prompt": "Ask AI to edit message...",
   "ai_rewrite.elaborate": "Elaborate",
