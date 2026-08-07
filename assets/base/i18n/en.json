@@ -1435,6 +1435,7 @@
   "scheduled_post.picker.next_monday": "Next Monday at {9amTime}",
   "scheduled_post.picker.title": "Schedule draft",
   "scheduled_post.picker.tomorrow": "Tomorrow at {9amTime}",
+  "scheduled_post.repeat_weekly": "Repeat weekly",
   "scheduled_post.root_post_not_exist": "Sending post failed",
   "scheduled_post.root_post_not_exist.message": "Someone delete the message on which you tried to post a comment.",
   "scheduled_post.tooltip.description": "Long-press on an item to see scheduled post actions",

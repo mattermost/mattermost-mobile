@@ -7,6 +7,7 @@
 import React from 'react';
 
 import {SYSTEM_IDENTIFIERS} from '@constants/database';
+import {RECURRING_SCHEDULED_POSTS_VERSION} from '@constants/versions';
 import DatabaseManager from '@database/manager/__mocks__';
 import {ScheduledPostOptions} from '@screens/scheduled_post_options/scheduled_post_picker';
 import {renderWithEverything} from '@test/intl-test-helper';
@@ -70,5 +71,16 @@ describe('EnhancedRescheduledDraft', () => {
 
         expect(getByTestId('scheduled-post-options')).toBeTruthy();
         expect(getByTestId('scheduled-post-options').props.currentUserTimezone).toBeUndefined();
+    });
+
+    it('should enable recurrence from the server version', async () => {
+        await operator.handleConfigs({configs: [{id: 'Version', value: RECURRING_SCHEDULED_POSTS_VERSION.join('.')}], configsToDelete: [], prepareRecordsOnly: false});
+
+        const {getByTestId} = renderWithEverything(
+            <EnhancedScheduledPostPicker/>,
+            {database},
+        );
+
+        expect(getByTestId('scheduled-post-options').props.isRecurringEnabled).toBe(true);
     });
 });

@@ -1,7 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {defineMessages, type IntlShape} from 'react-intl';
+import {defineMessage, defineMessages, type IntlShape} from 'react-intl';
 import {Alert} from 'react-native';
 
 import {deleteScheduledPost} from '@actions/remote/scheduled_post';
@@ -10,6 +10,7 @@ import DatabaseManager from '@database/manager';
 import {getPostById} from '@queries/servers/post';
 import {getErrorMessage} from '@utils/errors';
 import {showSnackBar} from '@utils/snack_bar';
+import {getTimezone} from '@utils/user';
 
 import type ScheduledPostModel from '@typings/database/models/servers/scheduled_post';
 import type {ScheduledPostErrorCode} from '@typings/utils/scheduled_post';
@@ -72,6 +73,24 @@ export function deleteScheduledPostConfirmation({
 
 export const hasScheduledPostError = (scheduledPosts: ScheduledPostModel[]) =>
     scheduledPosts.some((post) => post.errorCode !== '');
+
+export const repeatWeeklyLabel = defineMessage({
+    id: 'scheduled_post.repeat_weekly',
+    defaultMessage: 'Repeat weekly',
+});
+
+/**
+ * Builds the recurrence half of a scheduling payload. The server advances a weekly post in
+ * `repeat_timezone`, so it rejects a weekly post without a loadable IANA zone; the timezone is
+ * resolved at every (re)schedule rather than carried over from the existing post.
+ */
+export function getScheduledPostRecurrence(repeatWeekly: boolean, currentUserTimezone?: UserTimezone | null) {
+    if (!repeatWeekly) {
+        return {repeat_type: '', repeat_timezone: ''} as const;
+    }
+
+    return {repeat_type: 'weekly', repeat_timezone: getTimezone(currentUserTimezone) || 'UTC'} as const;
+}
 
 const errorCodeToErrorMessage = defineMessages<ScheduledPostErrorCode>({
     unknown: {

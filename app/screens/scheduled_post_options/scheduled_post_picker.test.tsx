@@ -35,6 +35,7 @@ describe('ScheduledPostOptions', () => {
     const baseProps = {
         onSchedule: jest.fn().mockResolvedValue({data: true}),
         currentUserTimezone: timezone,
+        isRecurringEnabled: false,
     };
     let database: Database;
 
@@ -175,5 +176,72 @@ describe('ScheduledPostOptions', () => {
         });
 
         expect(dismissBottomSheet).toHaveBeenCalled();
+    });
+
+    describe('repeat weekly', () => {
+        const repeatWeeklyTestID = 'scheduled_post_options.repeat_weekly';
+
+        const scheduleAtMondayWithRepeatWeekly = (repeatWeekly: boolean) => {
+            jest.spyOn(Date, 'now').mockImplementation(() => 1735693200000); //1st Jan 2025, Wednesday 12:00 AM (New year!!!)
+            const onSchedule = jest.fn().mockResolvedValue({data: true});
+            CallbackStore.setCallback(onSchedule);
+
+            renderWithEverything(
+                <ScheduledPostOptions
+                    {...baseProps}
+                    isRecurringEnabled={true}
+                />,
+                {database},
+            );
+
+            fireEvent.press(screen.getByText(/Monday at/));
+            if (repeatWeekly) {
+                fireEvent(screen.getByTestId(`${repeatWeeklyTestID}.toggled.false.button`), 'valueChange', true);
+            }
+            fireEvent.press(screen.getByTestId('scheduled_post_create_button'));
+
+            act(() => {
+                jest.runAllTimers();
+            });
+
+            return onSchedule;
+        };
+
+        it('should not render the toggle when the server does not support recurrence', () => {
+            renderWithEverything(<ScheduledPostOptions {...baseProps}/>, {database});
+
+            expect(screen.queryByTestId(repeatWeeklyTestID)).toBeNull();
+        });
+
+        it('should render the toggle off by default when the server supports recurrence', () => {
+            renderWithEverything(
+                <ScheduledPostOptions
+                    {...baseProps}
+                    isRecurringEnabled={true}
+                />,
+                {database},
+            );
+
+            expect(screen.getByText('Repeat weekly')).toBeVisible();
+            expect(screen.getByTestId(`${repeatWeeklyTestID}.toggled.false.button`)).toBeVisible();
+        });
+
+        it('should schedule with the user timezone when the toggle is on', () => {
+            const onSchedule = scheduleAtMondayWithRepeatWeekly(true);
+
+            expect(onSchedule).toHaveBeenCalledWith(expect.objectContaining({
+                repeat_type: 'weekly',
+                repeat_timezone: 'America/New_York',
+            }));
+        });
+
+        it('should schedule a one-time post when the toggle is left off', () => {
+            const onSchedule = scheduleAtMondayWithRepeatWeekly(false);
+
+            expect(onSchedule).toHaveBeenCalledWith(expect.objectContaining({
+                repeat_type: '',
+                repeat_timezone: '',
+            }));
+        });
     });
 });

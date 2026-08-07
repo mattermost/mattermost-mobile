@@ -6,8 +6,10 @@ import {combineLatest, of as of$} from 'rxjs';
 import {switchMap, distinctUntilChanged} from 'rxjs/operators';
 
 import {MM_TABLES} from '@constants/database';
+import {RECURRING_SCHEDULED_POSTS_VERSION} from '@constants/versions';
+import {isMinimumServerVersion} from '@utils/helpers';
 
-import {getConfigValue, getLicense, observeConfigBooleanValue, observeLicense} from './system';
+import {getConfigValue, getLicense, observeConfigBooleanValue, observeConfigValue, observeLicense} from './system';
 
 import type ScheduledPostModel from '@typings/database/models/servers/scheduled_post';
 const {SERVER: {CHANNEL, SCHEDULED_POST}} = MM_TABLES;
@@ -94,6 +96,15 @@ export const observeScheduledPostEnabled = (database: Database) => {
     );
 
     return isScheduledPostEnabled;
+};
+
+// Recurrence only needs the version check on top of the scheduled-post enablement the entry points
+// already apply, so this stays a pure version gate rather than duplicating the config/license checks.
+export const observeRecurringScheduledPostsEnabled = (database: Database) => {
+    return observeConfigValue(database, 'Version').pipe(
+        switchMap((version) => of$(isMinimumServerVersion(version, ...RECURRING_SCHEDULED_POSTS_VERSION))),
+        distinctUntilChanged(),
+    );
 };
 
 export const getIsScheduledPostEnabled = async (database: Database) => {

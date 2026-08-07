@@ -11,6 +11,11 @@ export const GM_AS_DM_VERSION = [9, 1, 0];
 export const CHANNEL_BOOKMARKS_FLAG_REMOVED_VERSION = [11, 10, 0];
 export const CUSTOM_PROFILE_ATTRIBUTES_FLAG_REMOVED_VERSION = [11, 10, 0];
 
+// Weekly recurring scheduled posts have no feature flag or config. Older servers silently ignore
+// repeat_type/repeat_timezone, so the version check is the only way to avoid offering a toggle
+// whose effect would be silently dropped.
+export const RECURRING_SCHEDULED_POSTS_VERSION = [11, 10, 0];
+
 export const OS_VERSION = {
     ANDROID: 'android',
     IOS: 'ios',

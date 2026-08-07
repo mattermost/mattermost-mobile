@@ -5,6 +5,7 @@ import {withDatabase, withObservables} from '@nozbe/watermelondb/react';
 import {of as of$} from 'rxjs';
 import {switchMap} from 'rxjs/operators';
 
+import {observeRecurringScheduledPostsEnabled} from '@queries/servers/scheduled_post';
 import {observeCurrentUser} from '@queries/servers/user';
 import {ScheduledPostOptions} from '@screens/scheduled_post_options/scheduled_post_picker';
 
@@ -14,6 +15,7 @@ const enhanced = withObservables([], ({database}: WithDatabaseArgs) => {
     const currentUserTimezone = observeCurrentUser(database).pipe(switchMap((u) => of$(u?.timezone)));
     return {
         currentUserTimezone,
+        isRecurringEnabled: observeRecurringScheduledPostsEnabled(database),
     };
 });
 
