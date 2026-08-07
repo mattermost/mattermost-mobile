@@ -1,7 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import type {AIBotsResponse, ConversationResponse, RawAIThread, ToolCall} from '@agents/types';
+import type {AIBotsResponse, ConversationResponse, RawAIThread, ToolAnswer, ToolCall} from '@agents/types';
 import type {AgentsStatusResponse, ChannelAnalysisOptions, ChannelAnalysisResponse, RewriteRequest, RewriteResponse} from '@agents/types/api';
 
 export interface ClientAgentsMix {
@@ -17,7 +17,7 @@ export interface ClientAgentsMix {
         botUsername: string,
         options?: ChannelAnalysisOptions,
     ) => Promise<ChannelAnalysisResponse>;
-    submitToolApproval: (postId: string, acceptedToolIds: string[]) => Promise<void>;
+    submitToolApproval: (postId: string, acceptedToolIds: string[], toolAnswers?: {[toolId: string]: ToolAnswer}) => Promise<void>;
 
     // Legacy endpoints (plugin < 2.0): redaction fetched via dedicated routes.
     // New plugin scopes privacy at the conversation-fetch / websocket layer.
@@ -97,12 +97,12 @@ const ClientAgents = (superclass: any) => class extends superclass {
         );
     };
 
-    submitToolApproval = async (postId: string, acceptedToolIds: string[]) => {
+    submitToolApproval = async (postId: string, acceptedToolIds: string[], toolAnswers?: {[toolId: string]: ToolAnswer}) => {
         return this.doFetch(
             `${this.getAgentsRoute()}/post/${postId}/tool_call`,
             {
                 method: 'post',
-                body: {accepted_tool_ids: acceptedToolIds},
+                body: toolAnswers ? {accepted_tool_ids: acceptedToolIds, tool_answers: toolAnswers} : {accepted_tool_ids: acceptedToolIds},
             },
         );
     };

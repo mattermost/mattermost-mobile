@@ -31,6 +31,22 @@ export const ToolApprovalStage = {
 export type ToolApprovalStage = typeof ToolApprovalStage[keyof typeof ToolApprovalStage];
 
 /**
+ * Marks a tool answered by the user picking from a set of options (e.g.
+ * AskUserQuestion). Mirrors llm.UserInteractionSelect on the server.
+ */
+export const UserInteractionSelect = 'select';
+
+/**
+ * A user's answer to a user-interaction tool call: the predefined option
+ * labels picked, plus optional free-form text. Mirrors
+ * mmtools.UserInteractionAnswer on the server.
+ */
+export interface ToolAnswer {
+    selected: string[];
+    custom?: string;
+}
+
+/**
  * Tool call data structure
  */
 export interface ToolCall {

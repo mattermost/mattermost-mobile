@@ -6,7 +6,7 @@ import {Pressable, View} from 'react-native';
 
 import {submitToolApproval} from '@agents/actions/remote/tool_approval';
 import {submitToolResult} from '@agents/actions/remote/tool_result';
-import {ToolApprovalStage, ToolCallStatus, type ToolCall} from '@agents/types';
+import {ToolApprovalStage, ToolCallStatus, UserInteractionSelect, type ToolAnswer, type ToolCall} from '@agents/types';
 import FormattedText from '@components/formatted_text';
 import Loading from '@components/loading';
 import {SNACK_BAR_TYPE} from '@constants/snack_bar';
@@ -17,6 +17,8 @@ import {showSnackBar} from '@utils/snack_bar';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
 
+import QuestionCard from '../question_card';
+import {parseQuestionArgs} from '../question_card/utils';
 import ToolCard from '../tool_card';
 
 interface ToolApprovalSetProps {
@@ -124,12 +126,17 @@ const ToolApprovalSet = ({postId, toolCalls, approvalStage, canApprove, canExpan
     const [expandedTools, setExpandedTools] = useState<Record<string, boolean>>({});
     const [toolDecisions, setToolDecisions] = useState<ToolDecision>({});
 
+    // Structured answers for accepted user-interaction tools (questions),
+    // keyed by tool call ID. Sent as tool_answers alongside accepted_tool_ids.
+    const toolAnswersRef = useRef<{[toolId: string]: ToolAnswer}>({});
+
     // Reset decisions when approval stage transitions (e.g., Phase 1 → Phase 2)
     const prevStageRef = useRef(approvalStage);
     useEffect(() => {
         if (prevStageRef.current !== approvalStage) {
             prevStageRef.current = approvalStage;
             setToolDecisions({});
+            toolAnswersRef.current = {};
         }
     }, [approvalStage]);
 
@@ -185,8 +192,21 @@ const ToolApprovalSet = ({postId, toolCalls, approvalStage, canApprove, canExpan
             map(([id]) => id);
 
         setIsSubmitting(true);
-        const submit = approvalStage === ToolApprovalStage.Result ? submitToolResult : submitToolApproval;
-        const {error} = await submit(serverUrl, postId, approvedToolIds);
+        let error: unknown;
+        if (approvalStage === ToolApprovalStage.Result) {
+            ({error} = await submitToolResult(serverUrl, postId, approvedToolIds));
+        } else {
+            // Attach the stored answers for accepted questions only; rejected
+            // (skipped) questions must not carry an answer.
+            const answers: {[toolId: string]: ToolAnswer} = {};
+            for (const id of approvedToolIds) {
+                if (toolAnswersRef.current[id]) {
+                    answers[id] = toolAnswersRef.current[id];
+                }
+            }
+            const hasAnswers = Object.keys(answers).length > 0;
+            ({error} = await submitToolApproval(serverUrl, postId, approvedToolIds, hasAnswers ? answers : undefined));
+        }
 
         setIsSubmitting(false);
 
@@ -228,18 +248,44 @@ const ToolApprovalSet = ({postId, toolCalls, approvalStage, canApprove, canExpan
         handleToolDecision(toolId, false);
     }, [handleToolDecision]);
 
-    // Batch decide every actionable tool in one tap and submit immediately.
+    // Store the structured answer for a question, then route it through the
+    // regular decision flow so it batches with the round's other decisions
+    // (matches the webapp: submission happens once nothing remains undecided).
+    const handleQuestionAnswer = useCallback((toolId: string, selections: string[], custom: string) => {
+        toolAnswersRef.current = {
+            ...toolAnswersRef.current,
+            [toolId]: custom ? {selected: selections, custom} : {selected: selections},
+        };
+        handleToolDecision(toolId, true);
+    }, [handleToolDecision]);
+
+    // Batch decide every actionable tool in one tap. Questions cannot be
+    // batch-decided — an answer (or explicit skip) is required per question —
+    // so submission waits until the remaining questions are answered/skipped.
     const handleBatchDecision = useCallback(async (approved: boolean) => {
         if (isSubmitting) {
             return;
         }
-        const decisions: ToolDecision = {};
-        for (const tool of actionableTools) {
-            decisions[tool.id] = approved;
+        let updatedDecisions: ToolDecision = {};
+        setToolDecisions((prev) => {
+            updatedDecisions = {...prev};
+            for (const tool of actionableTools) {
+                if (approvalStage === ToolApprovalStage.Call && tool.user_interaction) {
+                    continue;
+                }
+                updatedDecisions[tool.id] = approved;
+            }
+            return updatedDecisions;
+        });
+
+        const hasUndecided = actionableTools.some((tool) => {
+            return !(tool.id in updatedDecisions) || updatedDecisions[tool.id] === null;
+        });
+
+        if (!hasUndecided) {
+            await submitDecisions(updatedDecisions);
         }
-        setToolDecisions(decisions);
-        await submitDecisions(decisions);
-    }, [isSubmitting, actionableTools, submitDecisions]);
+    }, [isSubmitting, actionableTools, approvalStage, submitDecisions]);
 
     const handleAcceptAll = usePreventDoubleTap(useCallback(() => handleBatchDecision(true), [handleBatchDecision]));
     const handleRejectAll = usePreventDoubleTap(useCallback(() => handleBatchDecision(false), [handleBatchDecision]));
@@ -263,11 +309,18 @@ const ToolApprovalSet = ({postId, toolCalls, approvalStage, canApprove, canExpan
         }));
     }, [toolCalls, approvalStage]);
 
+    // The "N tools need decisions" bar and batch buttons only make sense for
+    // approval-type decisions; questions are self-describing cards that must
+    // be answered (or skipped) individually.
+    const approvalDecisionTools = useMemo(() => {
+        return actionableTools.filter((tool) => !tool.user_interaction);
+    }, [actionableTools]);
+
     const undecidedCount = useMemo(() => {
-        return actionableTools.filter(
+        return approvalDecisionTools.filter(
             (tool) => !(tool.id in toolDecisions),
         ).length;
-    }, [actionableTools, toolDecisions]);
+    }, [approvalDecisionTools, toolDecisions]);
 
     if (toolCalls.length === 0) {
         return null;
@@ -298,6 +351,26 @@ const ToolApprovalSet = ({postId, toolCalls, approvalStage, canApprove, canExpan
                     return null;
                 }
 
+                if (tool.user_interaction === UserInteractionSelect) {
+                    // Redacted calls (non-requesters) have no arguments to
+                    // render; fall through to the generic tool card.
+                    const question = parseQuestionArgs(tool.arguments);
+                    if (question) {
+                        return (
+                            <QuestionCard
+                                key={tool.id}
+                                tool={tool}
+                                question={question}
+                                isProcessing={isActionable && isSubmitting}
+                                localDecision={isActionable ? toolDecisions[tool.id] : undefined}
+                                canAnswer={isActionable && isCallStage}
+                                onAnswer={isActionable ? handleQuestionAnswer : undefined}
+                                onSkip={isActionable ? handleReject : undefined}
+                            />
+                        );
+                    }
+                }
+
                 return (
                     <ToolCard
                         key={tool.id}
@@ -318,7 +391,7 @@ const ToolApprovalSet = ({postId, toolCalls, approvalStage, canApprove, canExpan
                 );
             })}
 
-            {actionableTools.length > 1 && isSubmitting && (
+            {approvalDecisionTools.length > 1 && isSubmitting && (
                 <View
                     style={styles.statusBar}
                     testID='agents.tool_approval_set.submitting'
@@ -335,7 +408,7 @@ const ToolApprovalSet = ({postId, toolCalls, approvalStage, canApprove, canExpan
                 </View>
             )}
 
-            {actionableTools.length > 1 && undecidedCount > 0 && !isSubmitting && (
+            {approvalDecisionTools.length > 1 && undecidedCount > 0 && !isSubmitting && (
                 <View
                     style={styles.statusBar}
                     testID='agents.tool_approval_set.pending_decisions'
