@@ -6,6 +6,7 @@ import {View} from 'react-native';
 
 import {regenerateResponse, stopGeneration} from '@agents/actions/remote/generation_controls';
 import {fetchToolCallPrivate, fetchToolResultPrivate} from '@agents/actions/remote/tool_private';
+import {useAgentsConfig} from '@agents/store/agents_config';
 import {useStreamingState} from '@agents/store/streaming_store';
 import {ToolApprovalStage, type Annotation, type ToolCall} from '@agents/types';
 import {getToolApprovalStage, isPostRequester, isToolCallRedacted, mergeToolCalls} from '@agents/utils';
@@ -74,6 +75,10 @@ const AgentPostLegacy = ({post, currentUserId, location, isDM}: AgentPostLegacyP
     const theme = useTheme();
     const styles = getStyleSheet(theme);
     const serverUrl = useServerUrl();
+
+    // Agent post content may be prompt-injected, so links/channel links/
+    // hashtags/LaTeX stay inert unless the admin allowed them (matches web).
+    const {allowUnsafeLinks} = useAgentsConfig(serverUrl);
 
     // Extract persisted reasoning from post props
     const persistedReasoning = useMemo(() => {
@@ -275,6 +280,7 @@ const AgentPostLegacy = ({post, currentUserId, location, isDM}: AgentPostLegacyP
                             value={displayMessage}
                             theme={theme}
                             location={location}
+                            isUnsafeLinksPost={!allowUnsafeLinks}
                         />
                     ) : null}
                     {isGenerating && !isPrecontent && (

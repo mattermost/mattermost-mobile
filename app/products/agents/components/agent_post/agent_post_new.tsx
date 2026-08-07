@@ -1,12 +1,13 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React, {useCallback, useEffect, useMemo, useRef} from 'react';
+import React, {useCallback, useEffect, useMemo, useRef, useState} from 'react';
 import {View} from 'react-native';
 
 import {refetchConversation} from '@agents/actions/remote/conversation';
 import {regenerateResponse, stopGeneration} from '@agents/actions/remote/generation_controls';
 import {isConversationRequester} from '@agents/requester';
+import {useAgentsConfig} from '@agents/store/agents_config';
 import {useConversation} from '@agents/store/conversation_store';
 import streamingStore, {useStreamingState} from '@agents/store/streaming_store';
 import {
@@ -18,6 +19,7 @@ import {
 } from '@agents/turn_content';
 import {ToolApprovalStage, type Annotation, type Round} from '@agents/types';
 import FormattedText from '@components/formatted_text';
+import Loading from '@components/loading';
 import Markdown from '@components/markdown';
 import {SNACK_BAR_TYPE} from '@constants/snack_bar';
 import {useServerUrl} from '@context/server';
@@ -99,6 +101,11 @@ const RoundView = ({
 }: RoundViewProps) => {
     const theme = useTheme();
     const styles = getStyleSheet(theme);
+    const serverUrl = useServerUrl();
+
+    // Agent post content may be prompt-injected, so links/channel links/
+    // hashtags/LaTeX stay inert unless the admin allowed them (matches web).
+    const {allowUnsafeLinks} = useAgentsConfig(serverUrl);
 
     // The server filters per-user already, so non-DMs hide tools whose
     // arguments/results were redacted for this viewer.
@@ -124,6 +131,7 @@ const RoundView = ({
                         value={messageText}
                         theme={theme}
                         location={location}
+                        isUnsafeLinksPost={!allowUnsafeLinks}
                     />
                     {showCursor && (
                         <StreamingIndicator/>
@@ -166,10 +174,22 @@ const AgentPostNew = ({post, conversationId, currentUserId, location, isDM}: Age
     const isReasoningLoading = streamingState?.isReasoningLoading ?? false;
     const isGenerationInProgress = isGenerating || isReasoningLoading;
 
+    // Suppresses persistedRounds while regenerating so the prior generation
+    // doesn't render above the new stream — the server has already deleted
+    // those turns. Cleared once the post-stream refetch lands.
+    const [isRegenerating, setIsRegenerating] = useState(false);
+    const isRegeneratingRef = useRef(isRegenerating);
+    isRegeneratingRef.current = isRegenerating;
+
     // Persisted rounds derived from the conversation turns (the server truth).
     const persistedRounds = useMemo(
-        () => (conversation ? buildRoundsFromTurns(conversation, post.id) : []),
-        [conversation, post.id],
+        () => {
+            if (!conversation || isRegenerating) {
+                return [];
+            }
+            return buildRoundsFromTurns(conversation, post.id);
+        },
+        [conversation, post.id, isRegenerating],
     );
 
     // The in-progress round assembled from the live streaming buffers.
@@ -218,7 +238,13 @@ const AgentPostNew = ({post, conversationId, currentUserId, location, isDM}: Age
         const wasGenerating = wasGeneratingRef.current;
         wasGeneratingRef.current = isGenerating;
         if (wasGenerating && !isGenerating) {
-            refetchConversation(serverUrl, conversationId);
+            const refetch = refetchConversation(serverUrl, conversationId);
+
+            // Once the refetch after a regeneration stream lands, the cached
+            // conversation reflects the regenerated turns; stop suppressing.
+            if (isRegeneratingRef.current) {
+                refetch.then(() => setIsRegenerating(false));
+            }
         }
     }, [serverUrl, conversationId, isGenerating]);
 
@@ -260,11 +286,16 @@ const AgentPostNew = ({post, conversationId, currentUserId, location, isDM}: Age
             hadStreamingRef.current = true;
             return;
         }
+        if (isRegenerating) {
+            // Regeneration clears the streaming state and suppresses the
+            // persisted rounds on purpose; the post-stream refetch handles it.
+            return;
+        }
         if (hadStreamingRef.current && !conversationLoading && !conversationError && persistedRounds.length === 0) {
             hadStreamingRef.current = false;
             refetchConversation(serverUrl, conversationId);
         }
-    }, [streamingState, conversationLoading, conversationError, persistedRounds.length, serverUrl, conversationId]);
+    }, [streamingState, isRegenerating, conversationLoading, conversationError, persistedRounds.length, serverUrl, conversationId]);
 
     const isRequester = isConversationRequester({post, conversation, currentUserId});
     const canApprove = isRequester;
@@ -315,10 +346,13 @@ const AgentPostNew = ({post, conversationId, currentUserId, location, isDM}: Age
 
     const handleRegenerate = useCallback(async () => {
         // Clear the streaming store so the new stream starts from a clean slate
-        // instead of showing the previous round's data.
+        // instead of showing the previous round's data, and suppress the prior
+        // persisted rounds — the server deletes them on regeneration.
+        setIsRegenerating(true);
         streamingStore.removePost(serverUrl, post.id);
         const {error} = await regenerateResponse(serverUrl, post.id);
         if (error) {
+            setIsRegenerating(false);
             showSnackBar({barType: SNACK_BAR_TYPE.AGENT_REGENERATE_ERROR});
         }
     }, [serverUrl, post.id]);
@@ -359,6 +393,17 @@ const AgentPostNew = ({post, conversationId, currentUserId, location, isDM}: Age
                         style={styles.precontentText}
                     />
                     <StreamingIndicator/>
+                </View>
+            )}
+            {!hasContent && !isPrecontent && !conversationError && (conversationLoading || isRegenerating) && (
+                <View
+                    style={styles.precontentContainer}
+                    testID='agents.agent_post.loading'
+                >
+                    <Loading
+                        size='small'
+                        color={changeOpacity(theme.centerChannelColor, 0.6)}
+                    />
                 </View>
             )}
             {annotations.length > 0 && (

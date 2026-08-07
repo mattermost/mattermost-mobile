@@ -5,6 +5,7 @@ import React, {useCallback, useEffect, useMemo} from 'react';
 import {Platform, Pressable, Text, View} from 'react-native';
 import Animated, {FadeIn, FadeOut, useAnimatedStyle, useSharedValue, withTiming} from 'react-native-reanimated';
 
+import {useAgentsConfig} from '@agents/store/agents_config';
 import {ToolApprovalStage, ToolCallStatus, type ToolCall} from '@agents/types';
 import {stripWirePrefix} from '@agents/utils';
 import CompassIcon from '@components/compass_icon';
@@ -12,6 +13,7 @@ import FormattedText from '@components/formatted_text';
 import Loading from '@components/loading';
 import Markdown from '@components/markdown';
 import {Screens} from '@constants';
+import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
 import {usePreventDoubleTap} from '@hooks/utils';
 import {safeParseJSON} from '@utils/helpers';
@@ -215,6 +217,11 @@ const ToolCard = ({
 }: ToolCardProps) => {
     const theme = useTheme();
     const styles = getStyleSheet(theme);
+    const serverUrl = useServerUrl();
+
+    // Tool arguments/results may carry prompt-injected content; keep links
+    // inert unless the admin allowed them (matches web's tool card).
+    const {allowUnsafeLinks} = useAgentsConfig(serverUrl);
     const chevronRotation = useSharedValue(isCollapsed ? 0 : 90);
 
     useEffect(() => {
@@ -403,6 +410,7 @@ const ToolCard = ({
                                 value={argumentsMarkdown}
                                 theme={theme}
                                 location={Screens.CHANNEL}
+                                isUnsafeLinksPost={!allowUnsafeLinks}
                             />
                         </View>
                     )}
@@ -451,6 +459,7 @@ const ToolCard = ({
                                     value={resultMarkdown}
                                     theme={theme}
                                     location={Screens.CHANNEL}
+                                    isUnsafeLinksPost={!allowUnsafeLinks}
                                 />
                             </View>
                             {isResultPhase && canApprove && (
