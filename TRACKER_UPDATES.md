@@ -104,3 +104,18 @@ Append-only notes for a human to copy into the
   it). iOS verified (iPhone 17 Pro / iOS 26.3, 11.10 server); Android verified green
   (local API-35 emulator, fresh server mobile-pr-9996-site-3): MM-T1442_1,
   MM-T4895_1, MM-T4899_4, MM-T4899_5 PASS. Both platforms green.
+
+## P3 — SEC-10998 (MM-T4886_2, smoke_test/autocomplete.e2e.ts, iOS) — 2026-08-07
+
+SEC-10998 asked to port the MM-T4879_7 fix (PR #9893: waitFor(row).toBeVisible(40) then
+tap the display-name Text) to MM-T4886_2. Attempted on a fresh v793 iOS binary (iPhone 17
+Pro / iOS 26.3, live PR-9996 server 11.10.0). Result: the ported pattern FAILS, and -- this
+is the key finding -- the sibling MM-T4879_7 (channel_mention.e2e.ts) that #9893 "fixed"
+ALSO FAILS the same way on this build: waitFor(autocomplete.channel_mention_item.<name>)
+toBeVisible(40) times out at 10s. The channel-mention item is under 1% visible on iOS
+(visible bounds ~{{0,0},...}, behind the sticky header). The #9893 tap-target pattern has
+REGRESSED on the current build; this is PE/layout territory (MM-70015: fix the row
+press-area / dropdown positioning so the item is not behind the header), not a portable
+test workaround. Kept iOS-skipped; Android passes. The skip comment on MM-T4886_2 records
+this evidence. NOTE: MM-70015 (PE) would supersede any workaround here; do not treat a
+future tap-target fix as permanent once MM-70015 lands.

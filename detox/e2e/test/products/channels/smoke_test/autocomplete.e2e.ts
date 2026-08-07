@@ -98,6 +98,11 @@ describe('Smoke Test - Autocomplete', () => {
 
         // # Select and post channel mention suggestion
         // Default center tap — {x:1,y:1} fails Detox hit-testing on iOS (CI MM-T4886_2).
+        // SEC-10998 (2026-08-07): porting the MM-T4879_7 fix (PR #9893: waitFor row
+        // toBeVisible(40) then tap display-name) FAILS on this build -- and the sibling
+        // MM-T4879_7 itself ALSO FAILS the same way (channel_mention_item under 40%
+        // visible, behind the sticky header). The #9893 pattern has regressed; this is
+        // PE/layout territory (MM-70015), not a portable workaround. Kept iOS-skipped.
         await channelMentionItem.tap();
         await ChannelScreen.sendButton.tap();
 
