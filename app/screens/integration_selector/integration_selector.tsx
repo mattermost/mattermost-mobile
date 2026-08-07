@@ -94,7 +94,7 @@ const filterSearchData = (source: string, searchData: DataTypeList, searchTerm: 
         return searchData;
     }
 
-    return (searchData as DialogOption[]).filter((option) => option.text && option.text.includes(lowerCasedTerm));
+    return (searchData as DialogOption[]).filter((option) => option.text && option.text.toLowerCase().includes(lowerCasedTerm));
 };
 
 const handleIdSelection = (dataSource: string, currentIds: {[id: string]: DataType}, item: DataType) => {
@@ -403,7 +403,8 @@ function IntegrationSelector({
         }
 
         if (dataSource === ViewConstants.DATA_SOURCE_DYNAMIC) {
-            listData = (integrationData as DialogOption[]).filter((option) => option.text && option.text.toLowerCase().includes(term));
+            const lowerTerm = term.toLowerCase();
+            listData = (integrationData as DialogOption[]).filter((option) => option.text && option.text.toLowerCase().includes(lowerTerm));
         }
 
         setCustomListData(listData);

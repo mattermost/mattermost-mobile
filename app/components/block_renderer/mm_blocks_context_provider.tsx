@@ -6,10 +6,13 @@ import React, {useMemo, type ReactNode} from 'react';
 import {
     MmBlocksLayoutWidthContext,
     MmBlocksRenderContext,
+    type MmBlocksFieldUploadingHandler,
     type MmBlocksInlineMarkdownActions,
     type MmBlocksRenderContextValue,
 } from './context';
+import {type MmBlocksFormRelayApi} from './form';
 
+import type {LookupHandler} from './types';
 import type {AvailableScreens} from '@typings/screens/navigation';
 
 export type MmBlocksContextProviderProps = {
@@ -17,6 +20,9 @@ export type MmBlocksContextProviderProps = {
     location: AvailableScreens;
     postId: string;
     children: ReactNode;
+
+    /** Where the blocks are rendered; defaults to `dialog`. */
+    context?: BlockActionContext;
     imagesMetadata?: Record<string, PostImage>;
     inlineMarkdownActions?: MmBlocksInlineMarkdownActions;
     layoutWidth?: number;
@@ -27,6 +33,7 @@ export const MmBlocksContextProvider = ({
     location,
     postId,
     children,
+    context = 'dialog',
     imagesMetadata,
     inlineMarkdownActions,
     layoutWidth,
@@ -34,12 +41,13 @@ export const MmBlocksContextProvider = ({
     const renderContextValue = useMemo(
         (): MmBlocksRenderContextValue => ({
             channelId,
+            context,
             location,
             postId,
             imagesMetadata,
             inlineMarkdownActions: inlineMarkdownActions ?? {},
         }),
-        [channelId, imagesMetadata, inlineMarkdownActions, location, postId],
+        [channelId, context, imagesMetadata, inlineMarkdownActions, location, postId],
     );
 
     return (
@@ -53,4 +61,9 @@ export const MmBlocksContextProvider = ({
 
 export type MmBlocksExpandedContentPayload = MmBlocksRenderContextValue & {
     renderContent: () => ReactNode;
+    formApi?: MmBlocksFormRelayApi;
+    onLookup?: LookupHandler;
+    setFieldUploading?: MmBlocksFieldUploadingHandler;
+    hasUploadingFields?: boolean;
+    interactionsDisabled?: boolean;
 };

@@ -30,6 +30,8 @@ export const DialogElementTypes = {
     BOOL: 'bool' as const,
     DATE: 'date' as const,
     DATETIME: 'datetime' as const,
+    FILE: 'file' as const,
+    ACTION_BUTTON: 'action_button' as const,
 } as const;
 
 /**

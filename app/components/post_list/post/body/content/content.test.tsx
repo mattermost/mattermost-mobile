@@ -55,7 +55,7 @@ jest.mocked(PermalinkPreview).mockImplementation((props: PermalinkPreviewProps) 
     React.createElement('div', {testID: 'permalink-preview', ...props}),
 );
 
-jest.mocked(InteractiveMessages).mockImplementation((props) =>
+jest.mocked(InteractiveMessages).mockImplementation((props: any) =>
     React.createElement('div', {testID: 'interactive-messages', ...props}),
 );
 

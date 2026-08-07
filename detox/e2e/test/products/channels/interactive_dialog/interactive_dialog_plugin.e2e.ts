@@ -9,6 +9,7 @@
 // - Use element testID when selecting an element. Create one if none.
 // *******************************************************************
 
+import {MmBlocksTestHelper} from '@support/mm_blocks_test_helper';
 import {
     Command,
     DemoPlugin,
@@ -362,10 +363,10 @@ describe('Interactive Dialog - Basic Dialog (Plugin)', () => {
         await ensureDialogClosed();
         await ChannelScreen.postSlashCommand('/dialog boolean');
         await ensureDialogOpen();
-        await expect(element(by.id('AppFormElement.required_boolean.toggled..button'))).toExist();
-        await expect(element(by.id('AppFormElement.optional_boolean.toggled..button'))).toExist();
-        await expect(element(by.id('AppFormElement.boolean_default_true.toggled.true.button'))).toExist();
-        await expect(element(by.id('AppFormElement.boolean_default_false.toggled..button'))).toExist();
+        await expect(element(by.id('mm_blocks.bool_input.required_boolean.toggled.false.button'))).toExist();
+        await expect(element(by.id('mm_blocks.bool_input.optional_boolean.toggled.false.button'))).toExist();
+        await expect(element(by.id('mm_blocks.bool_input.boolean_default_true.toggled.true.button'))).toExist();
+        await expect(element(by.id('mm_blocks.bool_input.boolean_default_false.toggled.false.button'))).toExist();
         await InteractiveDialogScreen.toggleBooleanElement('required_boolean');
         await InteractiveDialogScreen.toggleBooleanElement('boolean_default_false');
         await InteractiveDialogScreen.submit();
@@ -394,24 +395,24 @@ describe('Interactive Dialog - Basic Dialog (Plugin)', () => {
         await ensureDialogClosed();
         await ChannelScreen.postSlashCommand('/dialog selectfields');
         await ensureDialogOpen();
-        const engineeringRadioButton = element(by.id('AppFormElement.someradiooptions.radio.engineering.button'));
+        const engineeringRadioButton = element(by.id('mm_blocks.select_input.someradiooptions.radio.engineering.button'));
         await expect(engineeringRadioButton).toExist();
         await engineeringRadioButton.tap();
-        const selectDropdownButton = element(by.id('AppFormElement.someoptionselector.select.button'));
+        const selectDropdownButton = element(by.id('mm_blocks.select_input.someoptionselector.select.button'));
         await expect(selectDropdownButton).toExist();
         await selectDropdownButton.tap();
         await IntegrationSelectorScreen.toBeVisible();
         await expect(element(by.text('Option2'))).toExist();
         await element(by.text('Option2')).tap();
-        await waitForDialogSelectorButton('AppFormElement.someuserselector.select.button');
-        const userSelectorButton = element(by.id('AppFormElement.someuserselector.select.button'));
+        await waitForDialogSelectorButton('mm_blocks.select_input.someuserselector.select.button');
+        const userSelectorButton = element(by.id('mm_blocks.select_input.someuserselector.select.button'));
         await userSelectorButton.tap();
         await IntegrationSelectorScreen.toBeVisible();
         await selectUser(testUser);
-        const channelSelectorButton = element(by.id('AppFormElement.somechannelselector.select.button'));
+        const channelSelectorButton = element(by.id('mm_blocks.select_input.somechannelselector.select.button'));
 
         // 1s bridge-idle waitFor fails on Android after IntegrationSelector dismissal animation.
-        await waitForDialogSelectorButton('AppFormElement.somechannelselector.select.button');
+        await waitForDialogSelectorButton('mm_blocks.select_input.somechannelselector.select.button');
         await channelSelectorButton.tap();
         await IntegrationSelectorScreen.toBeVisible();
         await selectChannel(testChannel);
@@ -429,17 +430,17 @@ describe('Interactive Dialog - Basic Dialog (Plugin)', () => {
         await InteractiveDialogScreen.submit();
         await wait(300);
         await ensureDialogOpen();
-        const engineeringRadioButton = element(by.id('AppFormElement.someradiooptions.radio.engineering.button'));
+        const engineeringRadioButton = element(by.id('mm_blocks.select_input.someradiooptions.radio.engineering.button'));
         await expect(engineeringRadioButton).toExist();
         await engineeringRadioButton.tap();
-        const selectDropdownButton = element(by.id('AppFormElement.someoptionselector.select.button'));
+        const selectDropdownButton = element(by.id('mm_blocks.select_input.someoptionselector.select.button'));
         await expect(selectDropdownButton).toExist();
         await selectDropdownButton.tap();
         await IntegrationSelectorScreen.toBeVisible();
         await expect(element(by.text('Option1'))).toExist();
         await element(by.text('Option1')).tap();
-        await waitForDialogSelectorButton('AppFormElement.someuserselector.select.button');
-        const userSelectorButton = element(by.id('AppFormElement.someuserselector.select.button'));
+        await waitForDialogSelectorButton('mm_blocks.select_input.someuserselector.select.button');
+        const userSelectorButton = element(by.id('mm_blocks.select_input.someuserselector.select.button'));
         await userSelectorButton.tap();
         await IntegrationSelectorScreen.toBeVisible();
         await selectUser(testUser);
@@ -454,24 +455,24 @@ describe('Interactive Dialog - Basic Dialog (Plugin)', () => {
         await ensureDialogClosed();
         await ChannelScreen.postSlashCommand('/dialog selectfields');
         await ensureDialogOpen();
-        const engineeringRadioButton = element(by.id('AppFormElement.someradiooptions.radio.engineering.button'));
+        const engineeringRadioButton = element(by.id('mm_blocks.select_input.someradiooptions.radio.engineering.button'));
         await expect(engineeringRadioButton).toExist();
         await engineeringRadioButton.tap();
-        const selectDropdownButton = element(by.id('AppFormElement.someoptionselector.select.button'));
+        const selectDropdownButton = element(by.id('mm_blocks.select_input.someoptionselector.select.button'));
         await expect(selectDropdownButton).toExist();
         await selectDropdownButton.tap();
         await IntegrationSelectorScreen.toBeVisible();
         await expect(element(by.text('Option2'))).toExist();
         await element(by.text('Option2')).tap();
-        await waitForDialogSelectorButton('AppFormElement.someuserselector.select.button');
-        const userSelectorButton = element(by.id('AppFormElement.someuserselector.select.button'));
+        await waitForDialogSelectorButton('mm_blocks.select_input.someuserselector.select.button');
+        const userSelectorButton = element(by.id('mm_blocks.select_input.someuserselector.select.button'));
         await userSelectorButton.tap();
         await IntegrationSelectorScreen.toBeVisible();
         await selectUser(testUser);
-        const channelSelectorButton = element(by.id('AppFormElement.somechannelselector.select.button'));
+        const channelSelectorButton = element(by.id('mm_blocks.select_input.somechannelselector.select.button'));
 
         // 1s bridge-idle waitFor fails on Android after IntegrationSelector dismissal animation.
-        await waitForDialogSelectorButton('AppFormElement.somechannelselector.select.button');
+        await waitForDialogSelectorButton('mm_blocks.select_input.somechannelselector.select.button');
         await channelSelectorButton.tap();
         await IntegrationSelectorScreen.toBeVisible();
         await selectChannel(testChannel);
@@ -538,7 +539,7 @@ describe('Interactive Dialog - Basic Dialog (Plugin)', () => {
         await ensureDialogClosed();
         await ChannelScreen.postSlashCommand('/dialog multi-select');
         await ensureDialogOpen();
-        const multiselectUsersButton = element(by.id('AppFormElement.multiselect_users.select.button'));
+        const multiselectUsersButton = element(by.id('mm_blocks.select_input.multiselect_users.select.button'));
         await expect(multiselectUsersButton).toExist();
         await multiselectUsersButton.tap();
         await IntegrationSelectorScreen.toBeVisible();
@@ -546,7 +547,7 @@ describe('Interactive Dialog - Basic Dialog (Plugin)', () => {
         await wait(500);
         await IntegrationSelectorScreen.done();
         await wait(300);
-        const multiselectChannelsButton = element(by.id('AppFormElement.multiselect_channels.select.button'));
+        const multiselectChannelsButton = element(by.id('mm_blocks.select_input.multiselect_channels.select.button'));
         await expect(multiselectChannelsButton).toExist();
         await multiselectChannelsButton.tap();
         await IntegrationSelectorScreen.toBeVisible();
@@ -554,7 +555,7 @@ describe('Interactive Dialog - Basic Dialog (Plugin)', () => {
         await wait(500);
         await IntegrationSelectorScreen.done();
         await wait(300);
-        const multiselectOptionsButton = element(by.id('AppFormElement.multiselect_options.select.button'));
+        const multiselectOptionsButton = element(by.id('mm_blocks.select_input.multiselect_options.select.button'));
         await expect(multiselectOptionsButton).toExist();
         await multiselectOptionsButton.tap();
         await IntegrationSelectorScreen.toBeVisible();
@@ -577,21 +578,21 @@ describe('Interactive Dialog - Basic Dialog (Plugin)', () => {
         await ensureDialogClosed();
         await ChannelScreen.postSlashCommand('/dialog dynamic-select');
         await ensureDialogOpen();
-        const dynamicProductsButton = element(by.id('AppFormElement.dynamic_products.select.button'));
+        const dynamicProductsButton = element(by.id('mm_blocks.select_input.dynamic_products.select.button'));
         await expect(dynamicProductsButton).toExist();
         await dynamicProductsButton.tap();
         await IntegrationSelectorScreen.toBeVisible();
         await IntegrationSelectorScreen.searchFor('macbook');
-        await waitFor(element(by.text('MacBook Pro 16-inch'))).toExist().withTimeout(3000);
+        await waitFor(element(by.text('MacBook Pro 16-inch'))).toExist().withTimeout(timeouts.TEN_SEC);
         await element(by.text('MacBook Pro 16-inch')).tap();
         await wait(300);
-        const dynamicCompaniesButton = element(by.id('AppFormElement.dynamic_companies.select.button'));
+        const dynamicCompaniesButton = element(by.id('mm_blocks.select_input.dynamic_companies.select.button'));
         await waitFor(dynamicCompaniesButton).toExist().withTimeout(3000);
         await dynamicCompaniesButton.tap();
         await wait(300);
         await IntegrationSelectorScreen.toBeVisible();
         await IntegrationSelectorScreen.searchFor('apple');
-        await waitFor(element(by.text('Apple Inc.'))).toExist().withTimeout(3000);
+        await waitFor(element(by.text('Apple Inc.'))).toExist().withTimeout(timeouts.TEN_SEC);
         await element(by.text('Apple Inc.')).tap();
         await wait(300);
         await InteractiveDialogScreen.submit();
@@ -602,10 +603,10 @@ describe('Interactive Dialog - Basic Dialog (Plugin)', () => {
         await ensureDialogClosed();
         await ChannelScreen.postSlashCommand('/dialog multistep');
         await ensureDialogOpen();
-        const individualRadioButton = element(by.id('AppFormElement.user_type.radio.individual.button'));
+        const individualRadioButton = element(by.id('mm_blocks.select_input.user_type.radio.individual.button'));
         await expect(individualRadioButton).toExist();
         await individualRadioButton.tap();
-        const useCaseButton = element(by.id('AppFormElement.use_case.select.button'));
+        const useCaseButton = element(by.id('mm_blocks.select_input.use_case.select.button'));
         await expect(useCaseButton).toExist();
         await useCaseButton.tap();
         await IntegrationSelectorScreen.toBeVisible();
@@ -617,7 +618,7 @@ describe('Interactive Dialog - Basic Dialog (Plugin)', () => {
         await InteractiveDialogScreen.submit();
         await ensureDialogOpen();
         await InteractiveDialogScreen.fillTextElement('experience_years', '5');
-        const devEnvButton = element(by.id('AppFormElement.dev_environment.select.button'));
+        const devEnvButton = element(by.id('mm_blocks.select_input.dev_environment.select.button'));
         await expect(devEnvButton).toExist();
         await devEnvButton.tap();
         await IntegrationSelectorScreen.toBeVisible();
@@ -641,10 +642,10 @@ describe('Interactive Dialog - Basic Dialog (Plugin)', () => {
         await ensureDialogClosed();
         await ChannelScreen.postSlashCommand('/dialog multistep');
         await ensureDialogOpen();
-        const individualRadioButton = element(by.id('AppFormElement.user_type.radio.individual.button'));
+        const individualRadioButton = element(by.id('mm_blocks.select_input.user_type.radio.individual.button'));
         await expect(individualRadioButton).toExist();
         await individualRadioButton.tap();
-        const useCaseButton = element(by.id('AppFormElement.use_case.select.button'));
+        const useCaseButton = element(by.id('mm_blocks.select_input.use_case.select.button'));
         await expect(useCaseButton).toExist();
         await useCaseButton.tap();
         await IntegrationSelectorScreen.toBeVisible();
@@ -667,13 +668,13 @@ describe('Interactive Dialog - Basic Dialog (Plugin)', () => {
         await ensureDialogClosed();
         await ChannelScreen.postSlashCommand('/dialog field-refresh');
         await ensureDialogOpen();
-        const projectTypeButton = element(by.id('AppFormElement.project_type.select.button'));
+        const projectTypeButton = element(by.id('mm_blocks.select_input.project_type.select.button'));
         await expect(projectTypeButton).toExist();
         await projectTypeButton.tap();
         await IntegrationSelectorScreen.toBeVisible();
         await expect(element(by.text('Web Application'))).toExist();
         await element(by.text('Web Application')).tap();
-        const frontendButton = element(by.id('AppFormElement.frontend_framework.select.button'));
+        const frontendButton = element(by.id('mm_blocks.select_input.frontend_framework.select.button'));
         await waitFor(frontendButton).toExist().withTimeout(2000);
         await frontendButton.tap();
         await IntegrationSelectorScreen.toBeVisible();
@@ -695,19 +696,19 @@ describe('Interactive Dialog - Basic Dialog (Plugin)', () => {
         await ensureDialogClosed();
         await ChannelScreen.postSlashCommand('/dialog field-refresh');
         await ensureDialogOpen();
-        const projectTypeButton = element(by.id('AppFormElement.project_type.select.button'));
+        const projectTypeButton = element(by.id('mm_blocks.select_input.project_type.select.button'));
         await projectTypeButton.tap();
         await IntegrationSelectorScreen.toBeVisible();
         await expect(element(by.text('Web Application'))).toExist();
         await element(by.text('Web Application')).tap();
-        await waitFor(element(by.id('AppFormElement.frontend_framework.select.button'))).toExist().withTimeout(2000);
-        await expect(element(by.id('AppFormElement.enable_pwa.toggled..button'))).toExist();
+        await waitFor(element(by.id('mm_blocks.select_input.frontend_framework.select.button'))).toExist().withTimeout(2000);
+        await expect(element(by.id('mm_blocks.bool_input.enable_pwa.toggled.false.button'))).toExist();
         await projectTypeButton.tap();
         await IntegrationSelectorScreen.toBeVisible();
         await expect(element(by.text('Mobile Application'))).toExist();
         await element(by.text('Mobile Application')).tap();
-        await waitFor(element(by.id('AppFormElement.mobile_platform.select.button'))).toExist().withTimeout(2000);
-        await expect(element(by.id('AppFormElement.min_os_version.input'))).toExist();
+        await waitFor(element(by.id('mm_blocks.select_input.mobile_platform.select.button'))).toExist().withTimeout(2000);
+        await expect(element(by.id('mm_blocks.text_input.min_os_version.input'))).toExist();
         await InteractiveDialogScreen.cancel();
         await ensureDialogClosed();
     });
@@ -721,12 +722,12 @@ describe('Interactive Dialog - Basic Dialog (Plugin)', () => {
         await expect(element(by.text('Date & DateTime Basics'))).toExist();
 
         // * Verify all fields are visible by testID
-        await expect(element(by.id('AppFormElement.event_date'))).toExist();
-        await expect(element(by.id('AppFormElement.meeting_time'))).toExist();
-        await expect(element(by.id('AppFormElement.future_date'))).toExist();
-        await expect(element(by.id('AppFormElement.interval_time'))).toExist();
-        await expect(element(by.id('AppFormElement.relative_date'))).toExist();
-        await expect(element(by.id('AppFormElement.relative_datetime'))).toExist();
+        await expect(element(by.id('mm_blocks.date_input.event_date'))).toExist();
+        await expect(element(by.id('mm_blocks.datetime_input.meeting_time'))).toExist();
+        await expect(element(by.id('mm_blocks.date_input.future_date'))).toExist();
+        await expect(element(by.id('mm_blocks.datetime_input.interval_time'))).toExist();
+        await expect(element(by.id('mm_blocks.date_input.relative_date'))).toExist();
+        await expect(element(by.id('mm_blocks.datetime_input.relative_datetime'))).toExist();
 
         await InteractiveDialogScreen.cancel();
         await ensureDialogClosed();
@@ -744,8 +745,8 @@ describe('Interactive Dialog - Basic Dialog (Plugin)', () => {
         // * Should still be on dialog (submission failed due to validation)
         await expect(InteractiveDialogScreen.interactiveDialogScreen).toExist();
 
-        // * Verify validation error text appears for required fields
-        await expect(element(by.text('This field is required.'))).toExist();
+        // * Verify validation error text appears for required fields (two fields → ambiguous text match)
+        await expect(element(by.text('This field is required.')).atIndex(0)).toExist();
 
         await InteractiveDialogScreen.cancel();
         await ensureDialogClosed();
@@ -757,7 +758,7 @@ describe('Interactive Dialog - Basic Dialog (Plugin)', () => {
         await ensureDialogOpen();
 
         // # Tap Event Date field to open date picker
-        await element(by.id('AppFormElement.event_date.select.button')).tap();
+        await element(by.id('mm_blocks.date_input.event_date.select.button')).tap();
         await wait(1000);
 
         // # Close picker (iOS shows picker inline, tap the button again to close)
@@ -766,7 +767,7 @@ describe('Interactive Dialog - Basic Dialog (Plugin)', () => {
                 await element(by.text('OK')).tap();
             } catch {}
         } else {
-            await element(by.id('AppFormElement.event_date.select.button')).tap();
+            await element(by.id('mm_blocks.date_input.event_date.select.button')).tap();
         }
         await wait(500);
 
@@ -794,38 +795,23 @@ describe('Interactive Dialog - Basic Dialog (Plugin)', () => {
         await ChannelScreen.postSlashCommand('/dialog datetime-basic');
         await ensureDialogOpen();
 
-        // # Fill required Event Date field
-        await element(by.id('AppFormElement.event_date.select.button')).tap();
-        await wait(500);
-        if (isAndroid()) {
-            await element(by.text('OK')).tap();
-        } else {
-            await element(by.id('AppFormElement.event_date')).tap();
-        }
-        await wait(300);
-
-        // # Fill required Meeting Time field
-        await element(by.id('AppFormElement.meeting_time.select.button')).tap();
-        await wait(500);
-        if (isAndroid()) {
-            await element(by.text('OK')).tap();
-        } else {
-            await element(by.id('AppFormElement.meeting_time')).tap();
-        }
-        await wait(300);
+        // # Fill required Event Date and Meeting Time fields
+        await MmBlocksTestHelper.pickDialogDate('event_date', '2026-04-10T12:00:00Z', 'date_input');
+        await MmBlocksTestHelper.pickDialogDate('meeting_time', '2026-04-10T14:00:00Z', 'datetime_input');
 
         // # Submit dialog
         await InteractiveDialogScreen.submit();
         await wait(1000);
 
-        // * Dialog should close after successful submission
+        // * Dialog should close after successful submission (do not cancel on failure — that hides the real error)
+        await waitFor(InteractiveDialogScreen.interactiveDialogScreen).not.toExist().withTimeout(timeouts.TEN_SEC);
         await ensureDialogClosed();
 
         // * Verify submission post contains ISO/UTC datetime format
-        await wait(1000);
-        const {post} = await Post.apiGetLastPostInChannel(siteOneUrl, testChannel.id);
-
-        // Meeting Time should be in ISO format with T separator (e.g., 2026-04-10T14:00:00.000Z)
+        const {post, error} = await Post.apiFindPostInChannelByMessage(siteOneUrl, testChannel.id, 'meeting_time:');
+        if (error || !post) {
+            throw new Error(`Expected datetime submission post but got: ${error?.message || 'no matching post'}`);
+        }
         if (!ISO_DATETIME_PATTERN.test(post.message)) {
             throw new Error(`Expected ISO datetime in submission post but got: ${post.message}`);
         }
@@ -838,12 +824,12 @@ describe('Interactive Dialog - Basic Dialog (Plugin)', () => {
 
         // # Scroll down past introduction text to reveal fields
         try {
-            await element(by.id('interactive_dialog.screen')).scroll(300, 'down');
+            await element(by.id('interactive_dialog.scroll_view')).scroll(300, 'down');
             await wait(300);
         } catch {}
 
         // * Verify London dropdown field is visible
-        await expect(element(by.id('AppFormElement.london_dropdown'))).toExist();
+        await expect(element(by.id('mm_blocks.datetime_input.london_dropdown'))).toExist();
 
         // * Verify timezone indicator appears for London field
         // London is GMT in winter, BST in summer — mobile renders without emoji.
@@ -855,7 +841,7 @@ describe('Interactive Dialog - Basic Dialog (Plugin)', () => {
         }
 
         // # Select datetime in London field
-        await element(by.id('AppFormElement.london_dropdown.select.button')).tap();
+        await element(by.id('mm_blocks.datetime_input.london_dropdown.select.button')).tap();
         await wait(1000);
 
         // # Scroll to make picker visible
@@ -875,7 +861,7 @@ describe('Interactive Dialog - Basic Dialog (Plugin)', () => {
         if (isAndroid()) {
             await element(by.text('OK')).tap();
         } else {
-            await element(by.id('AppFormElement.london_dropdown.select.button')).tap();
+            await element(by.id('mm_blocks.datetime_input.london_dropdown.select.button')).tap();
         }
         await wait(500);
 
@@ -903,17 +889,19 @@ describe('Interactive Dialog - Basic Dialog (Plugin)', () => {
 
         // # Scroll past introduction text to reveal fields
         try {
-            await element(by.id('interactive_dialog.screen')).scroll(300, 'down');
+            await element(by.id('interactive_dialog.scroll_view')).scroll(300, 'down');
             await wait(300);
         } catch {}
 
         // # Tap time button to switch local_manual into manual entry mode
-        await element(by.id('AppFormElement.local_manual.time.button')).tap();
+        const localManualTimeButton = element(by.id('mm_blocks.datetime_input.local_manual.time.button'));
+        await waitFor(localManualTimeButton).toExist().withTimeout(timeouts.TEN_SEC);
+        await localManualTimeButton.tap();
         await wait(500);
 
         // # Replace any prefilled text with the manual time entry (parseTimeString accepts 24-hour without am/pm)
-        const manualInput = element(by.id('AppFormElement.local_manual.manual_time.input'));
-        await waitFor(manualInput).toBeVisible().withTimeout(2000);
+        const manualInput = element(by.id('mm_blocks.datetime_input.local_manual.manual_time.input'));
+        await waitFor(manualInput).toBeVisible().withTimeout(timeouts.TEN_SEC);
         await manualInput.replaceText('14:30');
 
         // # Commit by pressing Done — fires onSubmitEditing → handleManualTimeSubmit → handleChange

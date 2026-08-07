@@ -77,7 +77,21 @@ export function convertAppFormValuesToDialogSubmission(
                 break;
 
             case DialogElementTypes.BOOL:
-                submission[fieldName] = Boolean(value);
+                if (typeof value === 'boolean') {
+                    submission[fieldName] = value;
+                } else if (typeof value === 'string') {
+                    const lower = value.toLowerCase().trim();
+                    if (lower === 'true' || lower === '1' || lower === 'yes') {
+                        submission[fieldName] = true;
+                    } else if (lower === 'false' || lower === '0' || lower === 'no') {
+                        submission[fieldName] = false;
+                    } else {
+                        // Noncanonical truthy strings (e.g. "on") keep Boolean() coercion.
+                        submission[fieldName] = Boolean(value);
+                    }
+                } else {
+                    submission[fieldName] = Boolean(value);
+                }
                 break;
 
             default:
@@ -147,26 +161,32 @@ export function convertDialogElementToAppField(element: DialogElement): AppField
 }
 
 /**
- * Converts InteractiveDialogConfig to AppForm
+ * Converts InteractiveDialogConfig to AppForm. Requires the legacy `dialog` field
+ * (native `block_dialog` configs are handled by BlocksDialogRouter when block actions are enabled).
  */
 export function convertDialogToAppForm(config: InteractiveDialogConfig): AppForm {
-    const convertedFields = config.dialog.elements?.map((element, index) => ({
+    const {dialog} = config;
+    if (!dialog) {
+        throw new Error('convertDialogToAppForm requires config.dialog');
+    }
+
+    const convertedFields = dialog.elements?.map((element, index) => ({
         ...convertDialogElementToAppField(element),
         position: index,
     })) || [];
 
     // Set source only if source_url is provided or if any fields have refresh enabled (matching webapp behavior)
     const hasRefreshFields = convertedFields.some((field) => field.refresh === true);
-    const sourceUrl = config.dialog.source_url;
+    const sourceUrl = dialog.source_url;
 
     const form: AppForm = {
-        title: config.dialog.title,
-        header: config.dialog.introduction_text || undefined,
+        title: dialog.title,
+        header: dialog.introduction_text || undefined,
         fields: convertedFields,
         submit_buttons: undefined,
 
         // Pass through submit label from dialog config
-        submit_label: config.dialog.submit_label || undefined,
+        submit_label: dialog.submit_label || undefined,
 
         // Set source if sourceUrl is provided or if any fields have refresh enabled (matching webapp behavior)
         source: ((sourceUrl && sourceUrl.trim()) || hasRefreshFields) ? {

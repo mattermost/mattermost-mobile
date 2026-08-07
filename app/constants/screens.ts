@@ -82,6 +82,7 @@ const SETTINGS_NOTIFICATION_CALL = 'settings_notification_call';
 const SSO = 'sso';
 const TABLE = 'table';
 const MM_BLOCKS_CONTENT = 'mm_blocks_content';
+const MM_BLOCKS_TEXT_INPUT = 'mm_blocks_text_input';
 const TEAM_SELECTOR_LIST = 'team_selector_list';
 const TERMS_OF_SERVICE = 'terms_of_service';
 const THREAD = 'thread';
@@ -169,6 +170,7 @@ export default {
     SSO,
     TABLE,
     MM_BLOCKS_CONTENT,
+    MM_BLOCKS_TEXT_INPUT,
     TEAM_SELECTOR_LIST,
     TERMS_OF_SERVICE,
     THREAD,
@@ -195,6 +197,8 @@ export const MODAL_SCREENS = new Set<string>([
     INTEGRATION_SELECTOR,
     INVITE,
     MANAGE_CHANNEL_MEMBERS,
+    MM_BLOCKS_CONTENT,
+    MM_BLOCKS_TEXT_INPUT,
     PDF_VIEWER,
     RESCHEDULE_DRAFT,
     JOIN_TEAM,
