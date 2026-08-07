@@ -7,7 +7,6 @@ import DatabaseManager from '@database/manager';
 import NetworkManager from '@managers/network_manager';
 import {getConfigValue, getCurrentTeamId, getCurrentUserId, getLicense} from '@queries/servers/system';
 import {logError} from '@utils/log';
-import {isScheduledPostModel} from '@utils/scheduled_post';
 
 import {createScheduledPost, deleteScheduledPost, fetchScheduledPosts, updateScheduledPost} from './scheduled_post';
 
@@ -105,12 +104,6 @@ jest.mock('@queries/servers/system', () => ({
 jest.mock('@managers/websocket_manager', () => ({
     getClient: jest.fn(() => mockWebSocketClient),
 }));
-
-jest.mock('@utils/scheduled_post', () => {
-    return {
-        isScheduledPostModel: jest.fn(() => false),
-    };
-});
 
 const mockedGetConfigValue = jest.mocked(getConfigValue);
 const mockedGetLicense = jest.mocked(getLicense);
@@ -275,7 +268,6 @@ describe('updateScheduledPost', () => {
     });
 
     it('should keep the recurrence stored on a scheduled post model when the scheduling info omits it', async () => {
-        jest.mocked(isScheduledPostModel).mockReturnValueOnce(true);
         jest.mocked(getCurrentUserId).mockResolvedValueOnce(user1.id);
         mockClient.updateScheduledPost.mockResolvedValueOnce({...weeklyScheduledPost});
 

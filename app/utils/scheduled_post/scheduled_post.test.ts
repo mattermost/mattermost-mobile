@@ -352,6 +352,13 @@ describe('getScheduledPostRecurrence', () => {
         });
     });
 
+    it('should use the automatic timezone when the user has not opted out of it', () => {
+        expect(getScheduledPostRecurrence(true, {useAutomaticTimezone: true, automaticTimezone: 'America/New_York', manualTimezone: 'Asia/Tokyo'})).toEqual({
+            repeat_type: 'weekly',
+            repeat_timezone: 'America/New_York',
+        });
+    });
+
     it('should use the manual timezone when the user opted out of the automatic one', () => {
         expect(getScheduledPostRecurrence(true, {useAutomaticTimezone: false, automaticTimezone: 'America/New_York', manualTimezone: 'Asia/Tokyo'})).toEqual({
             repeat_type: 'weekly',

@@ -117,9 +117,12 @@ export function ScheduledPostOptions({currentUserTimezone, hasFiles, isRecurring
 
         setIsError(false);
         setIsScheduling(true);
+
+        // Gate on the offer too: the toggle can stop being offered while the sheet is open, and a
+        // stale `repeatWeekly` would then send a recurrence the user can no longer see or change.
         const schedulingInfo: SchedulingInfo = {
             scheduled_at: parseInt(selectedTime, 10),
-            ...getScheduledPostRecurrence(repeatWeekly, currentUserTimezone),
+            ...getScheduledPostRecurrence(offerRepeatWeekly && repeatWeekly, currentUserTimezone),
         };
 
         const onSchedule = CallbackStore.getCallback<((schedulingInfo: SchedulingInfo) => Promise<void | {data?: boolean; error?: unknown}>)>();
@@ -133,7 +136,7 @@ export function ScheduledPostOptions({currentUserTimezone, hasFiles, isRecurring
         }
         CallbackStore.removeCallback();
         dismissBottomSheet();
-    }, [currentUserTimezone, repeatWeekly, selectedTime]));
+    }, [currentUserTimezone, offerRepeatWeekly, repeatWeekly, selectedTime]));
 
     const renderContent = () => {
         return (

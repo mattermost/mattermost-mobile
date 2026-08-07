@@ -119,7 +119,7 @@ describe('DraftScheduledPostOptions', () => {
         expect(screen.queryByTestId('edit_draft')).toBeFalsy(); // Edit option should not be present for scheduled posts
     });
 
-    it('does not render the send option for a recurring scheduled post', () => {
+    it('should not render the send option for a recurring scheduled post', () => {
         const recurringProps = {
             ...baseProps,
             channelId: scheduled![1].channelId,

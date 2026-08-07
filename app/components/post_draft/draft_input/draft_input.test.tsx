@@ -172,7 +172,7 @@ describe('DraftInput', () => {
 
         // The picker hides its recurrence toggle for drafts with attachments, since the server rejects
         // a recurring post that has files.
-        it('tells the scheduled post options when the draft has attachments', async () => {
+        it('should tell the scheduled post options when the draft has attachments', async () => {
             jest.mocked(navigateToScreen).mockImplementation(() => {});
             const props = {
                 ...baseProps,

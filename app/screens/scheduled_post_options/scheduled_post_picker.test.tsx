@@ -9,6 +9,7 @@ import {ScheduledPostOptions} from '@screens/scheduled_post_options/scheduled_po
 import CallbackStore from '@store/callback_store';
 import {renderWithEverything} from '@test/intl-test-helper';
 import TestHelper from '@test/test_helper';
+import {advanceTimers, enableFakeTimers} from '@test/timer_helpers';
 import {showScheduledPostCreationErrorSnackbar} from '@utils/snack_bar';
 
 import type Database from '@nozbe/watermelondb/Database';
@@ -182,12 +183,15 @@ describe('ScheduledPostOptions', () => {
     describe('repeat weekly', () => {
         const repeatWeeklyTestID = 'scheduled_post_options.repeat_weekly';
 
-        const scheduleAtMondayWithRepeatWeekly = (repeatWeekly: boolean) => {
+        // These tests await the scheduling promise, so process.nextTick has to stay real.
+        beforeEach(enableFakeTimers);
+
+        const renderWithRecurrenceEnabled = () => {
             jest.spyOn(Date, 'now').mockImplementation(() => 1735693200000); //1st Jan 2025, Wednesday 12:00 AM (New year!!!)
             const onSchedule = jest.fn().mockResolvedValue({data: true});
             CallbackStore.setCallback(onSchedule);
 
-            renderWithEverything(
+            const {rerender} = renderWithEverything(
                 <ScheduledPostOptions
                     {...baseProps}
                     isRecurringEnabled={true}
@@ -195,15 +199,24 @@ describe('ScheduledPostOptions', () => {
                 {database},
             );
 
+            return {onSchedule, rerender};
+        };
+
+        const schedule = async () => {
+            fireEvent.press(screen.getByTestId('scheduled_post_create_button'));
+            await act(async () => {
+                await advanceTimers(0);
+            });
+        };
+
+        const scheduleAtMondayWithRepeatWeekly = async (repeatWeekly: boolean) => {
+            const {onSchedule} = renderWithRecurrenceEnabled();
+
             fireEvent.press(screen.getByText(/Monday at/));
             if (repeatWeekly) {
                 fireEvent(screen.getByTestId(`${repeatWeeklyTestID}.toggled.false.button`), 'valueChange', true);
             }
-            fireEvent.press(screen.getByTestId('scheduled_post_create_button'));
-
-            act(() => {
-                jest.runAllTimers();
-            });
+            await schedule();
 
             return onSchedule;
         };
@@ -242,8 +255,8 @@ describe('ScheduledPostOptions', () => {
             expect(screen.getByTestId(`${repeatWeeklyTestID}.toggled.false.button`)).toBeVisible();
         });
 
-        it('should schedule with the user timezone when the toggle is on', () => {
-            const onSchedule = scheduleAtMondayWithRepeatWeekly(true);
+        it('should schedule with the user timezone when the toggle is on', async () => {
+            const onSchedule = await scheduleAtMondayWithRepeatWeekly(true);
 
             expect(onSchedule).toHaveBeenCalledWith(expect.objectContaining({
                 repeat_type: 'weekly',
@@ -251,8 +264,32 @@ describe('ScheduledPostOptions', () => {
             }));
         });
 
-        it('should schedule a one-time post when the toggle is left off', () => {
-            const onSchedule = scheduleAtMondayWithRepeatWeekly(false);
+        it('should schedule a one-time post when the toggle is left off', async () => {
+            const onSchedule = await scheduleAtMondayWithRepeatWeekly(false);
+
+            expect(onSchedule).toHaveBeenCalledWith(expect.objectContaining({
+                repeat_type: '',
+                repeat_timezone: '',
+            }));
+        });
+
+        // The toggle can stop being offered while the sheet is open, and the user cannot untick a
+        // toggle they can no longer see.
+        it('should schedule a one-time post when the toggle stops being offered after being turned on', async () => {
+            const {onSchedule, rerender} = renderWithRecurrenceEnabled();
+
+            fireEvent.press(screen.getByText(/Monday at/));
+            fireEvent(screen.getByTestId(`${repeatWeeklyTestID}.toggled.false.button`), 'valueChange', true);
+
+            rerender(
+                <ScheduledPostOptions
+                    {...baseProps}
+                    isRecurringEnabled={false}
+                />,
+            );
+            expect(screen.queryByTestId(repeatWeeklyTestID)).toBeNull();
+
+            await schedule();
 
             expect(onSchedule).toHaveBeenCalledWith(expect.objectContaining({
                 repeat_type: '',
