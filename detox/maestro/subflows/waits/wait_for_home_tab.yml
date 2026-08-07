@@ -3,6 +3,7 @@
 # so maxRetries can fire (see login.yml / CI 30447839548).
 appId: ${MAESTRO_APP_ID}
 ---
+# # Dismiss any password/save prompt that could block the home tab
 - tapOn:
     text: "Not Now"
     optional: true
@@ -12,6 +13,8 @@ appId: ${MAESTRO_APP_ID}
 - tapOn:
     text: "Skip"
     optional: true
+
+# * Verify the home tab is visible
 - runFlow:
     when:
       platform: Android

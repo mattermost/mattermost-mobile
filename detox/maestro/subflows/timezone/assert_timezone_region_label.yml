@@ -2,6 +2,7 @@
 # Requires EXPECTED_TIMEZONE_REGION (e.g. "New York" for America/New_York).
 appId: ${MAESTRO_APP_ID}
 ---
+# * Verify the automatic-timezone description shows EXPECTED_TIMEZONE_REGION
 - extendedWaitUntil:
     visible:
       id: "timezone_display_settings.automatic.option.description"

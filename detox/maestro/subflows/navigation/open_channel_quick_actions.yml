@@ -11,6 +11,7 @@
 # closed and reopened).
 appId: ${MAESTRO_APP_ID}
 ---
+# # Dismiss an already-open sheet from a previous retry so the header button is reachable
 - runFlow:
     when:
       visible:
@@ -23,6 +24,7 @@ appId: ${MAESTRO_APP_ID}
       - waitForAnimationToEnd:
           timeout: 1000
 
+# # Tap the header three-dots button
 - extendedWaitUntil:
     visible:
       id: "channel_header.channel_quick_actions.button"
@@ -30,7 +32,7 @@ appId: ${MAESTRO_APP_ID}
 - tapOn:
     id: "channel_header.channel_quick_actions.button"
 
-# Confirm the sheet actually opened (channel info action is always present in it).
+# * Verify the sheet actually opened (channel info action is always present in it).
 - extendedWaitUntil:
     visible:
       id: "channel.quick_actions.channel_info.action"
