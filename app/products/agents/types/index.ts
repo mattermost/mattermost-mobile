@@ -31,7 +31,9 @@ export const ToolApprovalStage = {
 export type ToolApprovalStage = typeof ToolApprovalStage[keyof typeof ToolApprovalStage];
 
 /**
- * Tool call data structure
+ * Tool call data structure. Mirrors the fields the plugin sends on
+ * llm.ToolCall (streaming) and the tool_use/tool_result content blocks
+ * (persisted conversations).
  */
 export interface ToolCall {
     id: string;
@@ -40,17 +42,33 @@ export interface ToolCall {
     arguments: any;
     result?: string;
     status: ToolCallStatus;
+
+    // Bare tool name for MCP tools (without the server-namespace prefix).
+    // Server-provided; preferred over `name` for display.
+    mcp_bare_name?: string;
+
+    // MCP server this tool came from (the BaseURL). Empty for built-in tools.
+    server_origin?: string;
+
+    // Pending call that passed the auto-execution policy. Never show approval
+    // controls for it — the server re-checks the policy and runs it on resume.
+    would_auto_execute?: boolean;
+
+    // Set when the share/keep-private decision on the result is final (from
+    // the tool_result block). Absent means the result still needs a decision.
+    decided_at?: number;
 }
 
 /**
- * Citation/annotation data structure
+ * Citation/annotation data structure. `url`/`title` may be absent on
+ * annotations persisted from web-search context results.
  */
 export interface Annotation {
     type: string;
     start_index: number;
     end_index: number;
-    url: string;
-    title: string;
+    url?: string;
+    title?: string;
     cited_text?: string;
     index: number;
 }

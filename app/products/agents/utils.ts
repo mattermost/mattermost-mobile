@@ -49,6 +49,24 @@ export function resolveAgentSelection<T extends {id: string; isDefault?: boolean
 }
 
 /**
+ * Heuristic wire-prefix strip for MCP tool names ("mattermost__read_post" ->
+ * "read_post") at call sites without server context, e.g. pending tool_use
+ * blocks where the server omits mcp_bare_name. Mirrors the webapp's
+ * stripWirePrefix.
+ */
+export function stripWirePrefix(toolName: string): string {
+    const idx = toolName.indexOf('__');
+    if (idx <= 0) {
+        return toolName;
+    }
+    const prefix = toolName.slice(0, idx);
+    if (!(/^[a-zA-Z0-9_-]+$/).test(prefix)) {
+        return toolName;
+    }
+    return toolName.slice(idx + 2);
+}
+
+/**
  * Check if a post is an agent post
  */
 export function isAgentPost(post: PostModel | Post): boolean {

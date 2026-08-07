@@ -205,30 +205,32 @@ describe('ToolCard', () => {
     });
 
     describe('arguments rendering', () => {
-        it('should fall back to an empty object when arguments is undefined so "undefined" never leaks into the code block', () => {
-            const props = getBaseProps();
-            props.tool = createMockTool({arguments: undefined as unknown as ToolCall['arguments']});
-            props.isCollapsed = false;
-            const {getAllByTestId} = renderWithIntlAndTheme(<ToolCard {...props}/>);
-
-            const markdowns = getAllByTestId('mock-markdown');
-            expect(markdowns).toHaveLength(1);
-            const argumentsText = markdowns[0].props.children;
-            expect(argumentsText).toContain('{}');
-            expect(argumentsText).not.toContain('undefined');
-        });
-
-        it('should fall back to an empty object when arguments is null (server redacted for non-requester)', () => {
+        it('should render nothing for redacted arguments (null/undefined for this viewer)', () => {
             const props = getBaseProps();
             props.tool = createMockTool({arguments: null as unknown as ToolCall['arguments']});
             props.isCollapsed = false;
-            const {getAllByTestId} = renderWithIntlAndTheme(<ToolCard {...props}/>);
+            const {queryAllByTestId, queryByTestId} = renderWithIntlAndTheme(<ToolCard {...props}/>);
 
-            const markdowns = getAllByTestId('mock-markdown');
-            expect(markdowns).toHaveLength(1);
-            const argumentsText = markdowns[0].props.children;
-            expect(argumentsText).toContain('{}');
-            expect(argumentsText).not.toContain('null');
+            expect(queryAllByTestId('mock-markdown')).toHaveLength(0);
+            expect(queryByTestId('agents.tool_card.tool-123.no_parameters')).toBeNull();
+        });
+
+        it('should render "No parameters required" instead of an empty JSON object', () => {
+            const props = getBaseProps();
+            props.tool = createMockTool({arguments: {}});
+            props.isCollapsed = false;
+            const {getByText, queryAllByTestId} = renderWithIntlAndTheme(<ToolCard {...props}/>);
+
+            expect(queryAllByTestId('mock-markdown')).toHaveLength(0);
+            expect(getByText('No parameters required')).toBeTruthy();
+        });
+
+        it('should prefer the server-provided MCP bare name for the title', () => {
+            const props = getBaseProps();
+            props.tool = createMockTool({name: 'mattermost__read_post', mcp_bare_name: 'read_post'});
+            const {getByText} = renderWithIntlAndTheme(<ToolCard {...props}/>);
+
+            expect(getByText('Read Post')).toBeTruthy();
         });
     });
 
