@@ -12,6 +12,7 @@ import {getErrorMessage} from '@utils/errors';
 import {showSnackBar} from '@utils/snack_bar';
 import {getTimezone} from '@utils/user';
 
+import type DraftModel from '@typings/database/models/servers/draft';
 import type ScheduledPostModel from '@typings/database/models/servers/scheduled_post';
 import type {ScheduledPostErrorCode} from '@typings/utils/scheduled_post';
 import type {SwipeableMethods} from 'react-native-gesture-handler/lib/typescript/components/ReanimatedSwipeable';
@@ -73,6 +74,9 @@ export function deleteScheduledPostConfirmation({
 
 export const hasScheduledPostError = (scheduledPosts: ScheduledPostModel[]) =>
     scheduledPosts.some((post) => post.errorCode !== '');
+
+export const isRecurringScheduledPost = (post: DraftModel | ScheduledPostModel): post is ScheduledPostModel =>
+    'repeatType' in post && post.repeatType === 'weekly';
 
 export const repeatWeeklyLabel = defineMessage({
     id: 'scheduled_post.repeat_weekly',

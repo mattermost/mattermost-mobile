@@ -1421,6 +1421,7 @@
   "scheduled_post.error_code.user_deleted": "User Deleted",
   "scheduled_post.error_code.user_missing": "User Deleted",
   "scheduled_post.feature_tooltip": "Type a message and long press the send button to schedule it for a later time.",
+  "scheduled_post.header.repeats_weekly": "Repeats weekly",
   "scheduled_post.header.sent": "Sent",
   "scheduled_post.no_permission": "Sending post failed",
   "scheduled_post.no_permission.message": "You do not have permission to post in this channel.",

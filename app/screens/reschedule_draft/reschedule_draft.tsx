@@ -21,7 +21,7 @@ import {usePreventDoubleTap} from '@hooks/utils';
 import {navigateBack} from '@screens/navigation';
 import PickerOption from '@screens/post_priority_picker/components/picker_option';
 import {logDebug} from '@utils/log';
-import {getScheduledPostRecurrence, repeatWeeklyLabel} from '@utils/scheduled_post';
+import {getScheduledPostRecurrence, isRecurringScheduledPost, repeatWeeklyLabel} from '@utils/scheduled_post';
 import {showSnackBar} from '@utils/snack_bar';
 import {getTimezone} from '@utils/user';
 
@@ -71,7 +71,7 @@ const RescheduledDraft: React.FC<Props> = ({
     const [isUpdating, setIsUpdating] = useState(false);
     const selectedTime = useRef<string | null>(null);
     const userTimezone = getTimezone(currentUserTimezone);
-    const wasRepeatingWeekly = draft.repeatType === 'weekly';
+    const wasRepeatingWeekly = isRecurringScheduledPost(draft);
     const [repeatWeekly, setRepeatWeekly] = useState(wasRepeatingWeekly);
 
     const onClose = useCallback(() => {
