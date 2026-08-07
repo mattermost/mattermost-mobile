@@ -103,6 +103,8 @@ type Props = {
     wrapChildren?: boolean;
     helpText?: string;
     testID: string;
+    labelTestID?: string;
+    pressableTestID?: string;
 }
 const FloatingInputContainer = ({
     children,
@@ -121,6 +123,8 @@ const FloatingInputContainer = ({
     wrapChildren = false,
     helpText,
     testID,
+    labelTestID,
+    pressableTestID,
 }: Props) => {
     const styles = getStyleSheet(theme);
     const positions = useMemo(() => getLabelPositions(styles.textInput, styles.bigLabel, styles.smallLabel), [styles]);
@@ -196,14 +200,20 @@ const FloatingInputContainer = ({
             onLayout={onLayout}
         >
             <View style={styles.container}>
-                <Pressable onPress={handlePressOnContainer}>
-                    <Animated.Text
-                        style={[styles.label, textAnimatedTextStyle]}
-                        suppressHighlighting={true}
-                        numberOfLines={1}
-                    >
-                        {label}
-                    </Animated.Text>
+                <Pressable
+                    onPress={handlePressOnContainer}
+                    testID={pressableTestID}
+                >
+                    {Boolean(label) && (
+                        <Animated.Text
+                            style={[styles.label, textAnimatedTextStyle]}
+                            suppressHighlighting={true}
+                            numberOfLines={1}
+                            testID={labelTestID}
+                        >
+                            {label}
+                        </Animated.Text>
+                    )}
                     <View style={combinedTextInputContainerStyle}>
                         {children}
                     </View>

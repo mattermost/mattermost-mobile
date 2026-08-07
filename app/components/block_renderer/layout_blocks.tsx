@@ -11,12 +11,25 @@ import {usePreventDoubleTap} from '@hooks/utils';
 import {navigateToScreen} from '@screens/navigation';
 import CallbackStore from '@store/callback_store';
 
+import {BoolInputElement} from './bool_input_element';
 import {ButtonElement} from './button_element';
 import ClippedScrollContent from './clipped_scroll_content';
-import {MmBlocksLayoutWidthContext, MmBlocksRenderContext} from './context';
+import {
+    MmBlocksFieldUploadingContext,
+    MmBlocksHasUploadingFieldsContext,
+    MmBlocksInteractionsDisabledContext,
+    MmBlocksLayoutWidthContext,
+    MmBlocksLookupContext,
+    MmBlocksRenderContext,
+} from './context';
+import DateInputElement from './date_input_element';
+import DateTimeInputElement from './datetime_input_element';
 import {DividerBlock} from './divider_block';
+import {FileInputElement} from './file_input_element';
+import {createMmBlocksFormRelayApi, MmBlocksFormContext} from './form';
 import {ImageBlock} from './image_block';
 import {type MmBlocksExpandedContentPayload} from './mm_blocks_context_provider';
+import {SelectInputElement} from './select_input_element';
 import {StaticSelectElement} from './static_select_element';
 import {
     containerGapStyle,
@@ -25,6 +38,7 @@ import {
     isMmContainerSemanticAccent,
 } from './styles';
 import {TextBlock} from './text_block';
+import {TextInputElement} from './text_input_element';
 
 import type {ActionHandler} from './types';
 
@@ -99,6 +113,52 @@ export const BlockSwitch = ({block, currentLayout, onAction, theme}: BlockSwitch
                     onAction={onAction}
                 />
             );
+        case 'text_input':
+            return (
+                <TextInputElement
+                    element={block}
+                    onAction={onAction}
+                    theme={theme}
+                />
+            );
+        case 'bool_input':
+            return (
+                <BoolInputElement
+                    element={block}
+                    onAction={onAction}
+                />
+            );
+        case 'select':
+            return (
+                <SelectInputElement
+                    element={block}
+                    onAction={onAction}
+                />
+            );
+        case 'date_input':
+            return (
+                <DateInputElement
+                    element={block}
+                    onAction={onAction}
+                    theme={theme}
+                />
+            );
+        case 'datetime_input':
+            return (
+                <DateTimeInputElement
+                    element={block}
+                    onAction={onAction}
+                    theme={theme}
+                />
+            );
+        case 'file_input':
+            return (
+                <FileInputElement
+                    element={block}
+                    onAction={onAction}
+                    theme={theme}
+                />
+            );
         default:
             return null;
     }
@@ -168,6 +228,11 @@ export const ContainerBlock = ({block, ...switchProps}: ContainerBlockProps) => 
     const style = getStyleSheet(theme);
     const parentLayoutWidth = useContext(MmBlocksLayoutWidthContext);
     const renderContext = useContext(MmBlocksRenderContext);
+    const form = useContext(MmBlocksFormContext);
+    const onLookup = useContext(MmBlocksLookupContext);
+    const setFieldUploading = useContext(MmBlocksFieldUploadingContext);
+    const hasUploadingFields = useContext(MmBlocksHasUploadingFieldsContext);
+    const interactionsDisabled = useContext(MmBlocksInteractionsDisabledContext);
     const [measuredLayoutWidth, setMeasuredLayoutWidth] = useState<number | undefined>(undefined);
 
     const contextLayoutWidth = measuredLayoutWidth ?? parentLayoutWidth;
@@ -232,19 +297,40 @@ export const ContainerBlock = ({block, ...switchProps}: ContainerBlockProps) => 
             max_height: undefined,
         };
 
+        const formApi = form ? createMmBlocksFormRelayApi(form) : undefined;
+        const onAction: ActionHandler = async (params) => {
+            await switchProps.onAction(params);
+            formApi?.resync?.();
+        };
+
         const payload: MmBlocksExpandedContentPayload = {
             ...renderContext,
+            formApi,
+            onLookup,
+            setFieldUploading,
+            hasUploadingFields,
+            interactionsDisabled,
             renderContent: () => (
                 <ContainerBlock
                     block={expandedBlock}
                     {...switchProps}
+                    onAction={onAction}
                 />
             ),
         };
 
         CallbackStore.setCallback(payload);
         navigateToScreen(Screens.MM_BLOCKS_CONTENT);
-    }, [block, renderContext, switchProps]);
+    }, [
+        block,
+        form,
+        hasUploadingFields,
+        interactionsDisabled,
+        onLookup,
+        renderContext,
+        setFieldUploading,
+        switchProps,
+    ]);
 
     if (!block.content || block.content.length === 0) {
         return null;

@@ -185,7 +185,7 @@ class NavigationStoreSingleton {
             // This captures the full stack including screens underneath overlays
             routes.forEach((route: NavigationRoute<ParamListBase, string>) => {
                 const screenId = this.getScreenIdFromRouteKey(route.key);
-                if (screenId && !screenStack.includes(screenId)) {
+                if (screenId) {
                     screenStack.push(screenId);
                 }
 

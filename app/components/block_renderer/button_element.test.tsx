@@ -10,6 +10,7 @@ import {renderWithEverything} from '@test/intl-test-helper';
 import TestHelper from '@test/test_helper';
 
 import {ButtonElement} from './button_element';
+import {MmBlocksForm} from './form';
 
 import type Database from '@nozbe/watermelondb/Database';
 
@@ -54,7 +55,12 @@ describe('ButtonElement', () => {
         props: ComponentProps<typeof ButtonElement>,
     ) {
         return renderWithEverything(
-            <ButtonElement {...props}/>,
+            <MmBlocksForm
+                errors={{}}
+                onErrorsChange={jest.fn()}
+            >
+                <ButtonElement {...props}/>
+            </MmBlocksForm>,
             {database, serverUrl},
         );
     }
@@ -67,10 +73,15 @@ describe('ButtonElement', () => {
         expect(queryByTestId('mm_blocks.button.submit_action')).toBeNull();
 
         rerender(
-            <ButtonElement
-                {...getBaseProps()}
-                element={{type: 'button', text: 'Submit', action_id: ''}}
-            />,
+            <MmBlocksForm
+                errors={{}}
+                onErrorsChange={jest.fn()}
+            >
+                <ButtonElement
+                    {...getBaseProps()}
+                    element={{type: 'button', text: 'Submit', action_id: ''}}
+                />
+            </MmBlocksForm>,
         );
         expect(queryByTestId('mm_blocks.button.')).toBeNull();
     });
@@ -97,7 +108,28 @@ describe('ButtonElement', () => {
             await Promise.resolve();
         });
 
-        expect(onAction).toHaveBeenCalledWith('submit_action', undefined, {row: '1'}, 'attachment-cookie');
+        expect(onAction).toHaveBeenCalledWith({actionId: 'submit_action', query: {row: '1'}, attachmentCookie: 'attachment-cookie'});
+    });
+
+    it('should send form values for submit subtype buttons', async () => {
+        onAction.mockResolvedValue(undefined);
+        const {getByTestId} = renderButton({
+            ...getBaseProps(),
+            element: {
+                type: 'button',
+                text: 'Submit',
+                action_id: 'submit_action',
+                subtype: 'submit',
+            },
+        });
+
+        fireEvent.press(getByTestId('mm_blocks.button.submit_action'));
+
+        await act(async () => {
+            await Promise.resolve();
+        });
+
+        expect(onAction).toHaveBeenCalledWith({actionId: 'submit_action', formValues: {}, subtype: 'submit'});
     });
 
     it('should not dispatch twice on rapid double press', async () => {

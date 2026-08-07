@@ -203,6 +203,22 @@ describe('dialog_conversion', () => {
             expect(result.errors).toEqual([]);
         });
 
+        it('should map canonical boolean strings and coerce the rest', () => {
+            const submitBool = (value: AppFormValue) => convertAppFormValuesToDialogSubmission(
+                {bool_field: value},
+                mockElements,
+            ).submission.bool_field;
+
+            expect(submitBool('true')).toBe(true);
+            expect(submitBool('1')).toBe(true);
+            expect(submitBool(' Yes ')).toBe(true);
+            expect(submitBool('false')).toBe(false);
+            expect(submitBool('0')).toBe(false);
+            expect(submitBool('NO')).toBe(false);
+            expect(submitBool('on')).toBe(true);
+            expect(submitBool('')).toBe(false);
+        });
+
         it('should handle unknown field types as strings', () => {
             const elementsWithUnknown: DialogElement[] = [
                 {
@@ -899,7 +915,7 @@ describe('dialog_conversion', () => {
             const configWithoutElements = {
                 ...mockConfig,
                 dialog: {
-                    ...mockConfig.dialog,
+                    ...mockConfig.dialog!,
                     elements: [],
                 },
             };
@@ -913,7 +929,7 @@ describe('dialog_conversion', () => {
             const configWithEmptyElements = {
                 ...mockConfig,
                 dialog: {
-                    ...mockConfig.dialog,
+                    ...mockConfig.dialog!,
                     elements: [],
                 },
             };
@@ -927,7 +943,7 @@ describe('dialog_conversion', () => {
             const configWithoutIntro = {
                 ...mockConfig,
                 dialog: {
-                    ...mockConfig.dialog,
+                    ...mockConfig.dialog!,
                     introduction_text: '',
                 },
             };
@@ -941,7 +957,7 @@ describe('dialog_conversion', () => {
             const configWithManyFields = {
                 ...mockConfig,
                 dialog: {
-                    ...mockConfig.dialog,
+                    ...mockConfig.dialog!,
                     elements: [
                         {
                             name: 'field1',
@@ -1008,9 +1024,9 @@ describe('dialog_conversion', () => {
             const configWithRefreshField = {
                 ...mockConfig,
                 dialog: {
-                    ...mockConfig.dialog,
+                    ...mockConfig.dialog!,
                     elements: [
-                        ...mockConfig.dialog.elements,
+                        ...mockConfig.dialog!.elements!,
                         {
                             name: 'refresh_field',
                             type: DialogElementTypes.SELECT,
@@ -1043,7 +1059,7 @@ describe('dialog_conversion', () => {
             const configWithSourceUrl = {
                 ...mockConfig,
                 dialog: {
-                    ...mockConfig.dialog,
+                    ...mockConfig.dialog!,
                     source_url: 'https://example.com/refresh',
                 },
             };
@@ -1060,7 +1076,7 @@ describe('dialog_conversion', () => {
             const configWithBoth = {
                 ...mockConfig,
                 dialog: {
-                    ...mockConfig.dialog,
+                    ...mockConfig.dialog!,
                     source_url: 'https://example.com/custom-refresh',
                     elements: [
                         {

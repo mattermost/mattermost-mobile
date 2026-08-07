@@ -9,6 +9,7 @@ import {switchMap} from 'rxjs/operators';
 import {withServerUrl} from '@context/server';
 import {observeIsChannelAutotranslated} from '@queries/servers/channel';
 import {queryAllCustomEmojis} from '@queries/servers/custom_emoji';
+import {observeMmBlocksEnabled} from '@queries/servers/features';
 import {observeSavedPostsByIds, observeIsPostAcknowledgementsEnabled} from '@queries/servers/post';
 import {observeConfigBooleanValue} from '@queries/servers/system';
 import {observeCurrentUser} from '@queries/servers/user';
@@ -27,7 +28,7 @@ type OwnProps = {
 const enhancedWithoutPosts = withObservables(['channelId'], ({database, channelId}: OwnProps) => {
     return {
         appsEnabled: observeConfigBooleanValue(database, 'FeatureFlagAppsEnabled'),
-        mmBlocksEnabled: observeConfigBooleanValue(database, 'FeatureFlagMmBlocksEnabled'),
+        mmBlocksEnabled: observeMmBlocksEnabled(database),
         currentUser: observeCurrentUser(database),
         customEmojiNames: queryAllCustomEmojis(database).observeWithColumns(['name']).pipe(
             switchMap((customEmojis) => of$(mapCustomEmojiNames(customEmojis))),

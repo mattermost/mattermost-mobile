@@ -98,6 +98,17 @@ export async function navigateBack() {
     }
 }
 
+/** Pops every stacked scrollable mm_blocks content screen while it is on top.
+ * Nested max_height expands can push multiple MM_BLOCKS_CONTENT screens; a single
+ * navigateBack is not enough. Stops when another screen (e.g. a dialog) is visible.
+ */
+export async function dismissMmBlocksExpandedContentIfOpen() {
+    while (NavigationStore.getVisibleScreen() === Screens.MM_BLOCKS_CONTENT) {
+        // eslint-disable-next-line no-await-in-loop
+        await navigateBack();
+    }
+}
+
 export function navigateToHomeTab(params?: Record<string, unknown>) {
     DeviceEventEmitter.emit(Navigation.NAVIGATE_TO_TAB, {
         screen: Screens.CHANNEL_LIST,

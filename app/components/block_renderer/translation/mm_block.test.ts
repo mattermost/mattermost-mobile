@@ -4,6 +4,26 @@
 import {translateMMBlocks} from './mm_block';
 
 describe('translateMMBlocks interactive blocks', () => {
+    it('should accept form input blocks without a label except bool_input', () => {
+        expect(translateMMBlocks([
+            {type: 'text_input', name: 'title'},
+            {type: 'bool_input', name: 'notify'},
+            {type: 'bool_input', name: 'agree', label: '   '},
+            {type: 'bool_input', name: 'enabled', label: 'Enabled'},
+            {type: 'select', name: 'role', options: [{text: 'A', value: 'a'}]},
+            {type: 'date_input', name: 'due'},
+            {type: 'datetime_input', name: 'starts_at'},
+            {type: 'file_input', name: 'attachment'},
+        ])).toEqual([
+            {type: 'text_input', name: 'title'},
+            {type: 'bool_input', name: 'enabled', label: 'Enabled'},
+            {type: 'select', name: 'role', options: [{text: 'A', value: 'a'}]},
+            {type: 'date_input', name: 'due'},
+            {type: 'datetime_input', name: 'starts_at'},
+            {type: 'file_input', name: 'attachment'},
+        ]);
+    });
+
     it('should reject button blocks with empty text or action_id', () => {
         expect(translateMMBlocks([
             {type: 'button', text: '   ', action_id: 'ok'},
@@ -51,6 +71,23 @@ describe('translateMMBlocks interactive blocks', () => {
             action_id: 'sel_action',
             placeholder: 'Pick one',
             options: [{text: 'A', value: 'a'}],
+        }]);
+    });
+
+    it('should reject datetime blocks with a non-positive time_interval', () => {
+        const datetimeBlock = (timeInterval: unknown) => ({
+            type: 'datetime_input',
+            name: 'starts_at',
+            label: 'Starts at',
+            datetime_config: {time_interval: timeInterval},
+        });
+
+        expect(translateMMBlocks([datetimeBlock(0), datetimeBlock(-15)])).toEqual([]);
+        expect(translateMMBlocks([datetimeBlock(15)])).toEqual([{
+            type: 'datetime_input',
+            name: 'starts_at',
+            label: 'Starts at',
+            datetime_config: {time_interval: 15},
         }]);
     });
 
@@ -148,5 +185,45 @@ describe('translateMMBlocks interactive blocks', () => {
                 {type: 'column', items: [{type: 'text', text: 'B'}]},
             ],
         }]);
+    });
+
+    it('should preserve file_input initial_value from a string or string array', () => {
+        expect(translateMMBlocks([
+            {
+                type: 'file_input',
+                name: 'attachments',
+                label: 'Attachments',
+                initial_value: 'file-1,file-2',
+            },
+            {
+                type: 'file_input',
+                name: 'single',
+                label: 'Single',
+                initial_value: ['file-a', 'file-b'],
+            },
+            {
+                type: 'file_input',
+                name: 'plain',
+                label: 'Plain',
+            },
+        ])).toEqual([
+            {
+                type: 'file_input',
+                name: 'attachments',
+                label: 'Attachments',
+                initial_value: 'file-1,file-2',
+            },
+            {
+                type: 'file_input',
+                name: 'single',
+                label: 'Single',
+                initial_value: 'file-a,file-b',
+            },
+            {
+                type: 'file_input',
+                name: 'plain',
+                label: 'Plain',
+            },
+        ]);
     });
 });

@@ -172,7 +172,7 @@ describe('InteractiveDialogAdapter', () => {
 
             expect(mockConvertAppFormValuesToDialogSubmission).toHaveBeenCalledWith(
                 mockAppFormValues,
-                mockConfig.dialog.elements,
+                mockConfig.dialog!.elements,
             );
             expect(result).toEqual({
                 url: 'https://test.com/dialog',
@@ -371,7 +371,7 @@ describe('InteractiveDialogAdapter', () => {
             const configWithNotification = {
                 ...mockConfig,
                 dialog: {
-                    ...mockConfig.dialog,
+                    ...mockConfig.dialog!,
                     notify_on_cancel: true,
                 },
             };
@@ -402,7 +402,7 @@ describe('InteractiveDialogAdapter', () => {
             const configWithNotification = {
                 ...mockConfig,
                 dialog: {
-                    ...mockConfig.dialog,
+                    ...mockConfig.dialog!,
                     notify_on_cancel: true,
                 },
             };

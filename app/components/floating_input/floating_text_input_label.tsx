@@ -42,6 +42,7 @@ type FloatingTextInputProps = /*TextInputProps &*/ {
     endAdornment?: React.ReactNode;
     error?: string;
     errorIcon?: string;
+    helpText?: string;
     label: string;
     multiline?: boolean;
     multilineInputHeight?: number;
@@ -66,12 +67,14 @@ type FloatingTextInputProps = /*TextInputProps &*/ {
     autoComplete?: TextInputProps['autoComplete'];
     disableFullscreenUI?: TextInputProps['disableFullscreenUI'];
     maxLength?: TextInputProps['maxLength'];
+    textContentType?: TextInputProps['textContentType'];
 }
 
 const FloatingTextInput = forwardRef<FloatingTextInputRef, FloatingTextInputProps>(({
     editable = true,
     error,
     endAdornment,
+    helpText,
     label = '',
     multiline,
     multilineInputHeight,
@@ -134,6 +137,7 @@ const FloatingTextInput = forwardRef<FloatingTextInputRef, FloatingTextInputProp
             onLayout={onLayout}
             label={label}
             error={error}
+            helpText={helpText}
             hideErrorIcon={hideErrorIcon}
             theme={theme}
             focus={focus}

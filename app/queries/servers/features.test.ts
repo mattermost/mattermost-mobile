@@ -5,11 +5,19 @@ import {firstValueFrom} from 'rxjs';
 
 import {SYSTEM_IDENTIFIERS} from '@constants/database';
 import {MIN_REQUIRED_VERSION} from '@constants/supported_server';
-import {CHANNEL_BOOKMARKS_FLAG_REMOVED_VERSION, CUSTOM_PROFILE_ATTRIBUTES_FLAG_REMOVED_VERSION} from '@constants/versions';
+import {BLOCK_ACTIONS_VERSION, CHANNEL_BOOKMARKS_FLAG_REMOVED_VERSION, CUSTOM_PROFILE_ATTRIBUTES_FLAG_REMOVED_VERSION} from '@constants/versions';
 import DatabaseManager from '@database/manager';
 import {isMinimumServerVersion} from '@utils/helpers';
 
-import {getChannelBookmarksEnabled, observeChannelBookmarksEnabled, observeCustomProfileAttributesEnabled} from './features';
+import {
+    getBlockActionsEnabled,
+    getChannelBookmarksEnabled,
+    getMmBlocksEnabled,
+    observeBlockActionsEnabled,
+    observeChannelBookmarksEnabled,
+    observeCustomProfileAttributesEnabled,
+    observeMmBlocksEnabled,
+} from './features';
 
 import type ServerDataOperator from '@database/operator/server_data_operator';
 import type {Database} from '@nozbe/watermelondb';
@@ -95,5 +103,54 @@ describe('getChannelBookmarksEnabled (async variant)', () => {
 
         await setConfigs([{id: 'Version', value: CHANNEL_BOOKMARKS_FLAG_REMOVED_VERSION.join('.')}]);
         expect(await getChannelBookmarksEnabled(database)).toBe(true);
+    });
+});
+
+describe('MmBlocks feature flag', () => {
+    it('honors FeatureFlagMmBlocksEnabled', async () => {
+        await setConfigs([{id: 'FeatureFlagMmBlocksEnabled', value: 'true'}]);
+        expect(await firstValueFrom(observeMmBlocksEnabled(database))).toBe(true);
+        expect(await getMmBlocksEnabled(database)).toBe(true);
+
+        await setConfigs([{id: 'FeatureFlagMmBlocksEnabled', value: 'false'}]);
+        expect(await firstValueFrom(observeMmBlocksEnabled(database))).toBe(false);
+        expect(await getMmBlocksEnabled(database)).toBe(false);
+    });
+
+    it('is disabled when the flag is not sent', async () => {
+        expect(await firstValueFrom(observeMmBlocksEnabled(database))).toBe(false);
+        expect(await getMmBlocksEnabled(database)).toBe(false);
+    });
+});
+
+describe('block actions gate', () => {
+    const atBlockActions = BLOCK_ACTIONS_VERSION.join('.');
+    const belowBlockActions = '11.10.0';
+
+    it('is enabled when the server supports block actions and MmBlocks is on', async () => {
+        await setConfigs([
+            {id: 'Version', value: atBlockActions},
+            {id: 'FeatureFlagMmBlocksEnabled', value: 'true'},
+        ]);
+        expect(await firstValueFrom(observeBlockActionsEnabled(database))).toBe(true);
+        expect(await getBlockActionsEnabled(database)).toBe(true);
+    });
+
+    it('is disabled below BLOCK_ACTIONS_VERSION even when MmBlocks is on', async () => {
+        await setConfigs([
+            {id: 'Version', value: belowBlockActions},
+            {id: 'FeatureFlagMmBlocksEnabled', value: 'true'},
+        ]);
+        expect(await firstValueFrom(observeBlockActionsEnabled(database))).toBe(false);
+        expect(await getBlockActionsEnabled(database)).toBe(false);
+    });
+
+    it('is disabled when MmBlocks is off even on BLOCK_ACTIONS_VERSION+', async () => {
+        await setConfigs([
+            {id: 'Version', value: atBlockActions},
+            {id: 'FeatureFlagMmBlocksEnabled', value: 'false'},
+        ]);
+        expect(await firstValueFrom(observeBlockActionsEnabled(database))).toBe(false);
+        expect(await getBlockActionsEnabled(database)).toBe(false);
     });
 });

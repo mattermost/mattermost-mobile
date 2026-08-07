@@ -132,8 +132,8 @@ export const DialogRouter = React.memo<DialogRouterProps>(({
 
                 legacySubmission = {
                     url: currentConfig.url || '',
-                    callback_id: currentConfig.dialog.callback_id || '',
-                    state: currentConfig.dialog.state || '',
+                    callback_id: currentConfig.dialog?.callback_id || '',
+                    state: currentConfig.dialog?.state || '',
                     submission: multiformSubmission,
                     user_id: '', // Will be populated by mobile action
                     channel_id: '', // Will be populated by mobile action
@@ -164,8 +164,8 @@ export const DialogRouter = React.memo<DialogRouterProps>(({
                     dialog: {
                         ...rawDialogData, // Use the raw dialog response from server
                         // Preserve some properties from current config if not provided
-                        icon_url: rawDialogData.icon_url || currentConfig.dialog.icon_url,
-                        notify_on_cancel: rawDialogData.notify_on_cancel ?? currentConfig.dialog.notify_on_cancel,
+                        icon_url: rawDialogData.icon_url || currentConfig.dialog?.icon_url,
+                        notify_on_cancel: rawDialogData.notify_on_cancel ?? currentConfig.dialog?.notify_on_cancel,
                     },
                 };
 

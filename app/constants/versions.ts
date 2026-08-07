@@ -11,6 +11,11 @@ export const GM_AS_DM_VERSION = [9, 1, 0];
 export const CHANNEL_BOOKMARKS_FLAG_REMOVED_VERSION = [11, 10, 0];
 export const CUSTOM_PROFILE_ATTRIBUTES_FLAG_REMOVED_VERSION = [11, 10, 0];
 
+// Server version where POST /api/v4/actions/blocks/do (doBlockAction) and mm_blocks form
+// input blocks (text_input, select, bool_input, date/datetime/file_input) are available.
+// Below this, post actions fall back to doPostActionWithCookie and form inputs are ignored.
+export const BLOCK_ACTIONS_VERSION = [11, 11, 0];
+
 export const OS_VERSION = {
     ANDROID: 'android',
     IOS: 'ios',

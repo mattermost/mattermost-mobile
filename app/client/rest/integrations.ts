@@ -13,8 +13,10 @@ export interface ClientIntegrationsMix {
     getAutocompleteCommandsList: (teamId: string, page?: number, perPage?: number) => Promise<Command[]>;
     executeCommand: (command: string, commandArgs?: CommandArgs) => Promise<CommandResponse>;
     addCommand: (command: Command) => Promise<Command>;
-    submitInteractiveDialog: (data: DialogSubmission) => Promise<any>;
-    lookupInteractiveDialog: (data: DialogSubmission) => Promise<any>;
+    submitInteractiveDialog: (data: DialogSubmission) => Promise<SubmitDialogResponse>;
+    lookupInteractiveDialog: (data: DialogSubmission) => Promise<LookupDialogResponse>;
+    executeDialogAction: (url: string, context: Record<string, string> | undefined, channelId: string, teamId: string) => Promise<PostActionResponse>;
+    doBlockAction: (request: DoBlockActionRequest) => Promise<DoBlockActionResponse>;
 }
 
 const ClientIntegrations = <TBase extends Constructor<ClientBase>>(superclass: TBase) => class extends superclass {
@@ -64,6 +66,20 @@ const ClientIntegrations = <TBase extends Constructor<ClientBase>>(superclass: T
         return this.doFetch(
             `${this.urlVersion}/actions/dialogs/lookup`,
             {method: 'post', body: data},
+        );
+    };
+
+    executeDialogAction = async (url: string, context: Record<string, string> | undefined, channelId: string, teamId: string) => {
+        return this.doFetch(
+            `${this.urlVersion}/actions/dialogs/execute`,
+            {method: 'post', body: {url, context, channel_id: channelId, team_id: teamId}},
+        );
+    };
+
+    doBlockAction = async (request: DoBlockActionRequest) => {
+        return this.doFetch(
+            `${this.urlVersion}/actions/blocks/do`,
+            {method: 'post', body: request},
         );
     };
 };

@@ -1,7 +1,14 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {checkDialogElementForError, checkIfErrorsMatchElements, selectKeyboardType} from './integrations';
+import {
+    checkDateTimeFieldValue,
+    checkDialogElementForError,
+    checkIfErrorsMatchElements,
+    dialogFieldErrorMessages,
+    formatDialogFieldError,
+    selectKeyboardType,
+} from './integrations';
 
 import type {IntlShape, MessageDescriptor} from 'react-intl';
 
@@ -18,6 +25,24 @@ function makeIntl(): IntlShape {
             return descriptor.defaultMessage as string;
         }),
     } as unknown as IntlShape;
+}
+
+function dialogElement(overrides: Partial<DialogElement> = {}): DialogElement {
+    return {
+        name: 'field1',
+        type: 'text',
+        display_name: '',
+        subtype: undefined,
+        default: '',
+        placeholder: '',
+        help_text: '',
+        optional: false,
+        min_length: 0,
+        max_length: 0,
+        data_source: '',
+        options: [],
+        ...overrides,
+    };
 }
 
 describe('checkDialogElementForError', () => {
@@ -208,6 +233,65 @@ describe('checkDialogElementForError', () => {
         expect(checkDialogElementForError(elemRadio, 'option1', intl)).toBeNull();
     });
 
+    it('should return required error for an empty required radio', () => {
+        const elem = dialogElement({type: 'radio', options: [{text: 'One', value: '1'}]});
+
+        expect(checkDialogElementForError(elem, '', makeIntl())).toBe('This field is required.');
+    });
+
+    it('should skip option validation for an empty optional radio', () => {
+        const elem = dialogElement({type: 'radio', optional: true, options: [{text: 'One', value: '1'}]});
+
+        expect(checkDialogElementForError(elem, '', makeIntl())).toBeNull();
+    });
+
+    it('should return required error for an empty required select', () => {
+        const elem = dialogElement({type: 'select', options: [{text: 'One', value: '1'}]});
+
+        expect(checkDialogElementForError(elem, '', makeIntl())).toBe('This field is required.');
+    });
+
+    it('should return invalid option error for a single select value outside the options', () => {
+        const elem = dialogElement({type: 'select', options: [{text: 'One', value: '1'}]});
+
+        expect(checkDialogElementForError(elem, '2', makeIntl())).toBe('Must be a valid option');
+    });
+
+    it('should unwrap select and radio option objects before validating them', () => {
+        const select = dialogElement({type: 'select', options: [{text: 'One', value: '1'}]});
+        const radio = dialogElement({type: 'radio', options: [{text: 'One', value: '1'}]});
+
+        expect(checkDialogElementForError(select, {text: 'One', value: '1'}, makeIntl())).toBeNull();
+        expect(checkDialogElementForError(select, {text: 'Two', value: '2'}, makeIntl())).toBe('Must be a valid option');
+        expect(checkDialogElementForError(radio, {text: 'One', value: '1'}, makeIntl())).toBeNull();
+        expect(checkDialogElementForError(radio, {text: 'Two', value: '2'}, makeIntl())).toBe('Must be a valid option');
+    });
+
+    it('should skip option validation when the select has no options', () => {
+        const elem = dialogElement({type: 'select', options: undefined as unknown as DialogOption[]});
+
+        expect(checkDialogElementForError(elem, 'anything', makeIntl())).toBeNull();
+    });
+
+    it('should return null for element types without value validation', () => {
+        const elem = dialogElement({type: 'file'});
+
+        expect(checkDialogElementForError(elem, 'file-1', makeIntl())).toBeNull();
+    });
+
+    it('should require a required bool field to be checked', () => {
+        const elem = dialogElement({type: 'bool'});
+
+        expect(checkDialogElementForError(elem, false, makeIntl())).toBe('This field is required.');
+        expect(checkDialogElementForError(elem, true, makeIntl())).toBeNull();
+    });
+
+    it('should allow an unchecked optional bool field', () => {
+        const elem = dialogElement({type: 'bool', optional: true});
+
+        expect(checkDialogElementForError(elem, false, makeIntl())).toBeNull();
+    });
+
     describe('multiselect SELECT validation', () => {
         const multiselectElement: DialogElement = {
             name: 'multiselect_field',
@@ -249,9 +333,77 @@ describe('checkDialogElementForError', () => {
             expect(checkDialogElementForError(multiselectElement, ['optB'], makeIntl())).toBeNull();
         });
 
+        it('should unwrap option objects in multiselect arrays', () => {
+            expect(checkDialogElementForError(multiselectElement, [{text: 'Option A', value: 'optA'}], makeIntl())).toBeNull();
+            expect(checkDialogElementForError(multiselectElement, [{text: 'Option D', value: 'optD'}], makeIntl())).toBe('Must be a valid option');
+        });
+
         it('should handle all options selected', () => {
             expect(checkDialogElementForError(multiselectElement, ['optA', 'optB', 'optC'], makeIntl())).toBeNull();
         });
+    });
+});
+
+describe('formatDialogFieldError', () => {
+    it.each(Object.entries(dialogFieldErrorMessages))('should format the %s descriptor', (_name, descriptor) => {
+        expect(formatDialogFieldError(makeIntl(), descriptor)).toBe(descriptor.defaultMessage);
+    });
+
+    it('should interpolate the length values', () => {
+        const intl = makeIntl();
+
+        expect(formatDialogFieldError(intl, {...dialogFieldErrorMessages.tooShort, values: {minLength: 5}})).toBe('Minimum input length is 5.');
+        expect(formatDialogFieldError(intl, {...dialogFieldErrorMessages.tooLong, values: {maxLength: 10}})).toBe('Maximum input length is 10.');
+    });
+
+    it('should fall back to the default message for an unknown error id', () => {
+        expect(formatDialogFieldError(makeIntl(), {
+            id: 'some.unmapped.error',
+            defaultMessage: 'Something went wrong',
+        })).toBe('Something went wrong');
+    });
+});
+
+describe('checkDateTimeFieldValue', () => {
+    it('should reject a value that is not a parseable date', () => {
+        expect(checkDateTimeFieldValue('not-a-date', 'date')).toBe(dialogFieldErrorMessages.badFormat);
+    });
+
+    it('should require the YYYY-MM-DD storage format for date fields', () => {
+        expect(checkDateTimeFieldValue('2026-07-30T10:00:00Z', 'date')).toBe(dialogFieldErrorMessages.badDateFormat);
+        expect(checkDateTimeFieldValue('2026-07-30', 'date')).toBeNull();
+    });
+
+    it('should require a timezone offset for datetime fields', () => {
+        expect(checkDateTimeFieldValue('2026-07-30T10:00:00', 'datetime')).toBe(dialogFieldErrorMessages.badDatetimeFormat);
+        expect(checkDateTimeFieldValue('2026-07-30T10:00:00Z', 'datetime')).toBeNull();
+        expect(checkDateTimeFieldValue('2026-07-30T10:00:00.500+02:00', 'datetime')).toBeNull();
+    });
+
+    it('should enforce the min and max bounds', () => {
+        expect(checkDateTimeFieldValue('2026-07-30', 'date', {min_date: '2026-08-01'})).toBe(dialogFieldErrorMessages.beforeMinDate);
+        expect(checkDateTimeFieldValue('2026-07-30', 'date', {max_date: '2026-07-01'})).toBe(dialogFieldErrorMessages.afterMaxDate);
+        expect(checkDateTimeFieldValue('2026-07-30', 'date', {min_date: '2026-07-01', max_date: '2026-08-01'})).toBeNull();
+    });
+
+    it('should prefer the datetime_config bounds over the top level ones', () => {
+        expect(checkDateTimeFieldValue('2026-07-30T10:00:00Z', 'datetime', {
+            min_date: '2020-01-01',
+            datetime_config: {min_date: '2026-08-01'},
+        })).toBe(dialogFieldErrorMessages.beforeMinDate);
+
+        expect(checkDateTimeFieldValue('2026-07-30T10:00:00Z', 'datetime', {
+            max_date: '2030-01-01',
+            datetime_config: {max_date: '2026-07-01'},
+        })).toBe(dialogFieldErrorMessages.afterMaxDate);
+    });
+
+    it('should resolve relative bounds', () => {
+        expect(checkDateTimeFieldValue('2020-01-01', 'date', {min_date: 'today'})).toBe(dialogFieldErrorMessages.beforeMinDate);
+    });
+
+    it('should ignore bounds that cannot be resolved to a date', () => {
+        expect(checkDateTimeFieldValue('2026-07-30', 'date', {min_date: 'nonsense', max_date: 'nonsense'})).toBeNull();
     });
 });
 

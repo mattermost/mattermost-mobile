@@ -61,7 +61,12 @@ export class InteractiveDialogAdapter {
         values: AppFormValues,
         config: InteractiveDialogConfig,
     ): DialogSubmission {
-        const elements = config.dialog.elements || [];
+        const {dialog} = config;
+        if (!dialog) {
+            throw new Error('convertValuesToSubmission requires config.dialog');
+        }
+
+        const elements = dialog.elements || [];
 
         const {submission, errors} = convertAppFormValuesToDialogSubmission(
             values,
@@ -77,8 +82,8 @@ export class InteractiveDialogAdapter {
 
         return {
             url: config.url || '',
-            callback_id: config.dialog.callback_id || '',
-            state: config.dialog.state || '',
+            callback_id: dialog.callback_id || '',
+            state: dialog.state || '',
             submission: submission as {[x: string]: string},
             user_id: '', // Will be populated by mobile action
             channel_id: '', // Will be populated by mobile action
@@ -146,7 +151,7 @@ export class InteractiveDialogAdapter {
         serverUrl: string,
     ) {
         return async (): Promise<void> => {
-            if (config.dialog.notify_on_cancel) {
+            if (config.dialog?.notify_on_cancel) {
                 try {
                     const legacySubmission = InteractiveDialogAdapter.convertValuesToSubmission({}, config);
                     await submitInteractiveDialog(serverUrl, {

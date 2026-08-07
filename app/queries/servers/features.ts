@@ -4,10 +4,10 @@
 import {combineLatest, of as of$} from 'rxjs';
 import {distinctUntilChanged, switchMap} from 'rxjs/operators';
 
-import {CHANNEL_BOOKMARKS_FLAG_REMOVED_VERSION, CUSTOM_PROFILE_ATTRIBUTES_FLAG_REMOVED_VERSION, GM_AS_DM_VERSION} from '@constants/versions';
+import {BLOCK_ACTIONS_VERSION, CHANNEL_BOOKMARKS_FLAG_REMOVED_VERSION, CUSTOM_PROFILE_ATTRIBUTES_FLAG_REMOVED_VERSION, GM_AS_DM_VERSION} from '@constants/versions';
 import {isMinimumServerVersion} from '@utils/helpers';
 
-import {getConfigValue, getLicense, observeConfigValue, observeLicense} from './system';
+import {getConfigBooleanValue, getConfigValue, getLicense, observeConfigBooleanValue, observeConfigValue, observeLicense} from './system';
 
 import type {Database} from '@nozbe/watermelondb';
 
@@ -45,6 +45,39 @@ const getFeatureFlagWithVersion = async (database: Database, flag: keyof ClientC
         getConfigValue(database, flag),
     ]);
     return isFeatureFlagEnabled(version, value, removedVersion, defaultValue);
+};
+
+/** True when FeatureFlagMmBlocksEnabled is on. */
+export const observeMmBlocksEnabled = (database: Database) => {
+    return observeConfigBooleanValue(database, 'FeatureFlagMmBlocksEnabled');
+};
+
+export const getMmBlocksEnabled = async (database: Database) => {
+    return getConfigBooleanValue(database, 'FeatureFlagMmBlocksEnabled');
+};
+
+/**
+ * True when doBlockAction and mm_blocks form inputs are available: server is at
+ * BLOCK_ACTIONS_VERSION+ and MmBlocks is enabled via feature flag.
+ */
+export const observeBlockActionsEnabled = (database: Database) => {
+    return combineLatest([
+        observeConfigValue(database, 'Version'),
+        observeMmBlocksEnabled(database),
+    ]).pipe(
+        switchMap(([version, mmBlocksEnabled]) => of$(
+            isMinimumServerVersion(version || '', ...BLOCK_ACTIONS_VERSION) && mmBlocksEnabled,
+        )),
+        distinctUntilChanged(),
+    );
+};
+
+export const getBlockActionsEnabled = async (database: Database) => {
+    const [version, mmBlocksEnabled] = await Promise.all([
+        getConfigValue(database, 'Version'),
+        getMmBlocksEnabled(database),
+    ]);
+    return isMinimumServerVersion(version || '', ...BLOCK_ACTIONS_VERSION) && mmBlocksEnabled;
 };
 
 // Channel bookmarks additionally require a license, so both the observable and async variants include

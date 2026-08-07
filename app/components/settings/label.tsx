@@ -18,7 +18,6 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
         label: {
             fontSize: 14,
             color: theme.centerChannelColor,
-            marginLeft: 15,
         },
         optional: {
             color: changeOpacity(theme.centerChannelColor, 0.5),
@@ -44,6 +43,10 @@ function Label({
 }: Props) {
     const theme = useTheme();
     const style = getStyleSheet(theme);
+
+    if (!label.trim()) {
+        return null;
+    }
 
     return (
         <View style={style.labelContainer}>

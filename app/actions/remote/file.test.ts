@@ -8,6 +8,7 @@ import {
     downloadFile,
     downloadProfileImage,
     uploadFile,
+    fetchFileInfo,
     fetchPublicLink,
     buildFileUrl,
     buildAbsoluteUrl,
@@ -27,6 +28,7 @@ describe('actions/remote/file', () => {
         getFileRoute: jest.fn(),
         getProfilePictureUrl: jest.fn(),
         uploadAttachment: jest.fn(),
+        getFileInfo: jest.fn(),
         getFilePublicLink: jest.fn(),
         getFileUrl: jest.fn(),
         getAbsoluteUrl: jest.fn(),
@@ -178,6 +180,27 @@ describe('actions/remote/file', () => {
                 has_preview_image: true,
                 localPath: '/path/to/file',
             }, 'channel123');
+
+            expect(result).toEqual({error});
+        });
+    });
+
+    describe('fetchFileInfo', () => {
+        it('should return the file info for the given file id', async () => {
+            const file = {id: 'file123', name: 'test.jpg', extension: 'jpg', size: 1024} as FileInfo;
+            mockClient.getFileInfo.mockResolvedValue(file);
+
+            const result = await fetchFileInfo(serverUrl, 'file123');
+
+            expect(mockClient.getFileInfo).toHaveBeenCalledWith('file123');
+            expect(result).toEqual({file});
+        });
+
+        it('should return an error when the file cannot be fetched', async () => {
+            const error = new Error('Not found');
+            mockClient.getFileInfo.mockRejectedValue(error);
+
+            const result = await fetchFileInfo(serverUrl, 'file123');
 
             expect(result).toEqual({error});
         });

@@ -1,14 +1,15 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React, {useMemo} from 'react';
-import {View, Text, Switch} from 'react-native';
+import React from 'react';
+import {Platform, Switch, Text, View} from 'react-native';
 
+import FormattedText from '@components/formatted_text';
 import {useTheme} from '@context/theme';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
+import {typography} from '@utils/typography';
 
 import Footer from './footer';
-import Label from './label';
 
 import type {AvailableScreens} from '@typings/screens/navigation';
 
@@ -28,31 +29,47 @@ type Props = {
 
 const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
     return {
-        inputContainer: {
+        container: {
             backgroundColor: theme.centerChannelBg,
+        },
+        row: {
             flexDirection: 'row',
             alignItems: 'center',
-            paddingHorizontal: 15,
-            paddingVertical: 10,
-            minHeight: 40,
+            justifyContent: 'space-between',
+            gap: 12,
+            minHeight: 48,
+            paddingHorizontal: 16,
+            paddingVertical: 12,
         },
         disabled: {
-            backgroundColor: changeOpacity(theme.centerChannelColor, 0.1),
+            opacity: 0.6,
         },
-        placeholderText: {
-            color: changeOpacity(theme.centerChannelColor, 0.5),
-            fontSize: 15,
-            width: '80%',
+        labelContainer: {
+            flex: 1,
+            justifyContent: 'center',
+        },
+        titleRow: {
+            flexDirection: 'row',
             flexWrap: 'wrap',
+            alignItems: 'center',
         },
-        inputSwitch: {
-            position: 'absolute',
-            right: 12,
+        label: {
+            color: theme.centerChannelColor,
+            ...typography('Body', 200),
         },
-        separator: {
-            backgroundColor: changeOpacity(theme.centerChannelColor, 0.1),
-            height: 1,
-            width: '100%',
+        optional: {
+            color: changeOpacity(theme.centerChannelColor, 0.5),
+            ...typography('Body', 200),
+            marginLeft: 5,
+        },
+        asterisk: {
+            color: theme.errorTextColor,
+            ...typography('Body', 200),
+        },
+        description: {
+            color: changeOpacity(theme.centerChannelColor, 0.64),
+            ...typography('Body', 75),
+            marginTop: 2,
         },
     };
 });
@@ -73,43 +90,67 @@ function BoolSetting({
     const theme = useTheme();
     const style = getStyleSheet(theme);
 
-    const inputContainerStyle = useMemo(() => (disabled ? [style.inputContainer, style.disabled] : style.inputContainer), [style, disabled]);
+    // Prefer label as the row title; fall back to placeholder for legacy dialogs that only set placeholder.
+    const title = label?.trim() || placeholder?.trim() || '';
+    const description = label?.trim() ? (helpText || placeholder) : helpText;
+
+    const trackColor = Platform.select({
+        ios: {true: theme.buttonBg, false: changeOpacity(theme.centerChannelColor, 0.16)},
+        default: {true: changeOpacity(theme.buttonBg, 0.32), false: changeOpacity(theme.centerChannelColor, 0.24)},
+    });
+    const thumbColor = Platform.select({
+        android: value ? theme.buttonBg : '#F3F3F3',
+    });
 
     return (
-        <>
-            {label && (
-                <>
-                    <Label
-                        label={label}
-                        optional={optional}
-                        testID={testID}
-                    />
-                    <View style={style.separator}/>
-                </>
-            )}
-            <View style={inputContainerStyle}>
-                <Text style={style.placeholderText}>
-                    {placeholder}
-                </Text>
+        <View style={style.container}>
+            <View style={[style.row, disabled && style.disabled]}>
+                <View style={style.labelContainer}>
+                    {Boolean(title) && (
+                        <View style={style.titleRow}>
+                            <Text
+                                style={style.label}
+                                testID={`${testID}.label`}
+                            >
+                                {title}
+                            </Text>
+                            {!optional && (
+                                <Text style={style.asterisk}>{' *'}</Text>
+                            )}
+                            {optional && (
+                                <FormattedText
+                                    style={style.optional}
+                                    id='channel_modal.optional'
+                                    defaultMessage='(optional)'
+                                />
+                            )}
+                        </View>
+                    )}
+                    {Boolean(description) && (
+                        <Text
+                            style={style.description}
+                            testID={`${testID}.description`}
+                        >
+                            {description}
+                        </Text>
+                    )}
+                </View>
                 <Switch
+                    disabled={disabled}
                     onValueChange={onChange}
                     value={value}
-                    style={style.inputSwitch}
-                    disabled={disabled}
+                    trackColor={trackColor}
+                    thumbColor={thumbColor}
                     testID={`${testID}.toggled.${value}.button`}
                 />
             </View>
-            <View style={style.separator}/>
-            <View>
-                <Footer
-                    disabled={disabled}
-                    disabledText={disabledText}
-                    errorText={errorText}
-                    helpText={helpText}
-                    location={location}
-                />
-            </View>
-        </>
+            <Footer
+                disabled={disabled}
+                disabledText={disabledText}
+                errorText={errorText}
+                location={location}
+            />
+        </View>
     );
 }
 

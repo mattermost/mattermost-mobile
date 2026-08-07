@@ -36,6 +36,7 @@ type Props = {
     disabledText?: string;
     helpText?: string;
     errorText?: string;
+    errorTestID?: string;
     location: AvailableScreens;
 }
 function Footer({
@@ -43,6 +44,7 @@ function Footer({
     disabledText,
     helpText,
     errorText,
+    errorTestID,
     location,
 }: Props) {
     const theme = useTheme();
@@ -73,7 +75,10 @@ function Footer({
                 </View>
             )}
             {Boolean(errorText) && (
-                <View style={style.errorTextContainer} >
+                <View
+                    style={style.errorTextContainer}
+                    testID={errorTestID}
+                >
                     <Markdown
                         baseTextStyle={style.errorText}
                         disableAtMentions={true}

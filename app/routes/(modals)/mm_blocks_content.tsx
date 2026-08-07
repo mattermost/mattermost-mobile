@@ -4,8 +4,9 @@
 import {useIntl} from 'react-intl';
 
 import {useTheme} from '@context/theme';
-import {getHeaderOptions, useNavigationHeader} from '@hooks/navigation_header';
+import {getModalHeaderOptions, useNavigationHeader} from '@hooks/navigation_header';
 import MmBlocksContentScreen from '@screens/mm_blocks_content';
+import {navigateBack} from '@screens/navigation';
 
 export default function MmBlocksContentRoute() {
     const intl = useIntl();
@@ -18,7 +19,7 @@ export default function MmBlocksContentRoute() {
                 id: 'mobile.routes.mm_blocks_content',
                 defaultMessage: 'Scrollable content',
             }),
-            ...getHeaderOptions(theme),
+            ...getModalHeaderOptions(theme, navigateBack, 'close.mm_blocks_content.button'),
         },
     });
 

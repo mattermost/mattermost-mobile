@@ -34,7 +34,12 @@ export const StaticSelectElement = ({element, onAction}: StaticSelectElementProp
         if (!selectedItem || Array.isArray(selectedItem) || !element.action_id) {
             return;
         }
-        await onAction(element.action_id, selectedItem.value, element.query, element.cookie);
+        await onAction({
+            actionId: element.action_id,
+            selectedOption: selectedItem.value,
+            query: element.query,
+            attachmentCookie: element.cookie,
+        });
         setSelected(selectedItem.value);
     }, [element.action_id, element.cookie, element.query, onAction]));
 

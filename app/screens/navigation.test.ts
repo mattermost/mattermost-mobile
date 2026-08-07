@@ -15,6 +15,7 @@ import {
     bottomSheet,
     dismissAllRoutesAndPopToScreen,
     dismissBottomSheet,
+    dismissMmBlocksExpandedContentIfOpen,
     dismissToStackRoot,
     navigateBack,
     navigateToChannelInfoScreen,
@@ -300,6 +301,48 @@ describe('navigation', () => {
 
             await navigateBack();
             expect(router.canGoBack).toHaveBeenCalled();
+            expect(router.back).not.toHaveBeenCalled();
+        });
+    });
+
+    describe('dismissMmBlocksExpandedContentIfOpen', () => {
+        it('should navigate back when the content screen is visible', async () => {
+            jest.spyOn(NavigationStore, 'getVisibleScreen').
+                mockReturnValueOnce(Screens.MM_BLOCKS_CONTENT).
+                mockReturnValue(Screens.CHANNEL);
+            jest.mocked(router.canGoBack).mockReturnValue(true);
+
+            await dismissMmBlocksExpandedContentIfOpen();
+
+            expect(router.back).toHaveBeenCalledTimes(1);
+        });
+
+        it('should dismiss nested content screens until another screen is visible', async () => {
+            jest.spyOn(NavigationStore, 'getVisibleScreen').
+                mockReturnValueOnce(Screens.MM_BLOCKS_CONTENT).
+                mockReturnValueOnce(Screens.MM_BLOCKS_CONTENT).
+                mockReturnValue(Screens.CHANNEL);
+            jest.mocked(router.canGoBack).mockReturnValue(true);
+
+            await dismissMmBlocksExpandedContentIfOpen();
+
+            expect(router.back).toHaveBeenCalledTimes(2);
+        });
+
+        it('should not navigate back when the content screen is under another screen', async () => {
+            jest.spyOn(NavigationStore, 'getVisibleScreen').mockReturnValue(Screens.DIALOG_ROUTER);
+            jest.mocked(router.canGoBack).mockReturnValue(true);
+
+            await dismissMmBlocksExpandedContentIfOpen();
+
+            expect(router.back).not.toHaveBeenCalled();
+        });
+
+        it('should not navigate back when the content screen is not open', async () => {
+            jest.spyOn(NavigationStore, 'getVisibleScreen').mockReturnValue(Screens.CHANNEL);
+
+            await dismissMmBlocksExpandedContentIfOpen();
+
             expect(router.back).not.toHaveBeenCalled();
         });
     });

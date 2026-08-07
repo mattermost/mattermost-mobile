@@ -133,6 +133,12 @@ const AppsFormFieldComponent = React.memo(({
         onChange(name, newValue);
     }, [name, onChange]);
 
+    const handleRadioChange = useCallback((newValue: string | string[]) => {
+        if (typeof newValue === 'string') {
+            onChange(name, newValue);
+        }
+    }, [name, onChange]);
+
     const handleSelect = useCallback((newValue: SelectedDialogOption) => {
         if (!newValue) {
             const emptyValue = field.multiselect ? [] : '';
@@ -254,7 +260,6 @@ const AppsFormFieldComponent = React.memo(({
                     errorText={errorText}
                     placeholder={placeholder}
                     selected={selectedValue}
-                    roundedBorders={false}
                     disabled={field.readonly}
                     isMultiselect={field.multiselect}
                     testID={testID}
@@ -285,7 +290,7 @@ const AppsFormFieldComponent = React.memo(({
                     helpText={field.description}
                     errorText={errorText}
                     options={field.options?.map(appSelectOptionToDialogOption)}
-                    onChange={handleChange}
+                    onChange={handleRadioChange}
                     testID={testID}
                     value={value as string}
                     location={Screens.APPS_FORM}
