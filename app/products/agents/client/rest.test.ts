@@ -136,6 +136,30 @@ describe('ClientAgents', () => {
         });
     });
 
+    describe('doThreadAnalysis', () => {
+        it('should post the analysis type in the body with the bot username in the query', async () => {
+            await client.doThreadAnalysis('post-123', 'summarize_thread', 'ai-bot');
+            expect(mockDoFetch).toHaveBeenCalledWith(
+                '/plugins/mattermost-ai/post/post-123/analyze?botUsername=ai-bot',
+                {
+                    method: 'post',
+                    body: {analysis_type: 'summarize_thread'},
+                },
+            );
+        });
+
+        it('should percent-encode a bot username that needs encoding', async () => {
+            await client.doThreadAnalysis('post-123', 'action_items', 'my bot');
+            expect(mockDoFetch).toHaveBeenCalledWith(
+                '/plugins/mattermost-ai/post/post-123/analyze?botUsername=my%20bot',
+                {
+                    method: 'post',
+                    body: {analysis_type: 'action_items'},
+                },
+            );
+        });
+    });
+
     describe('getConversation', () => {
         it('should make correct API call', async () => {
             await client.getConversation('conv-123');

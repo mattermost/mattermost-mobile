@@ -2,7 +2,7 @@
 // See LICENSE.txt for license information.
 
 import type {AIBotsResponse, ConversationResponse, RawAIThread, ToolAnswer, ToolCall} from '@agents/types';
-import type {AgentsStatusResponse, ChannelAnalysisOptions, ChannelAnalysisResponse, RewriteRequest, RewriteResponse} from '@agents/types/api';
+import type {AgentsStatusResponse, ChannelAnalysisOptions, ChannelAnalysisResponse, RewriteRequest, RewriteResponse, ThreadAnalysisResponse} from '@agents/types/api';
 
 export interface ClientAgentsMix {
     getAgentsRoute: () => string;
@@ -17,6 +17,11 @@ export interface ClientAgentsMix {
         botUsername: string,
         options?: ChannelAnalysisOptions,
     ) => Promise<ChannelAnalysisResponse>;
+    doThreadAnalysis: (
+        postId: string,
+        analysisType: string,
+        botUsername: string,
+    ) => Promise<ThreadAnalysisResponse>;
     submitToolApproval: (postId: string, acceptedToolIds: string[], toolAnswers?: {[toolId: string]: ToolAnswer}) => Promise<void>;
 
     // Legacy endpoints (plugin < 2.0): redaction fetched via dedicated routes.
@@ -93,6 +98,20 @@ const ClientAgents = (superclass: any) => class extends superclass {
                     prompt,
                     team_id,
                 },
+            },
+        );
+    };
+
+    doThreadAnalysis = async (
+        postId: string,
+        analysisType: string,
+        botUsername: string,
+    ): Promise<ThreadAnalysisResponse> => {
+        return this.doFetch(
+            `${this.getAgentsRoute()}/post/${postId}/analyze?botUsername=${encodeURIComponent(botUsername)}`,
+            {
+                method: 'post',
+                body: {analysis_type: analysisType},
             },
         );
     };

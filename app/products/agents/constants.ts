@@ -41,3 +41,14 @@ export const CONTROL_SIGNALS = {
 
 export const DEFAULT_AGENT_BOT_USERNAME = 'ai-bot';
 export const AGENT_ANALYSIS_SUMMARY = 'summarize_channel';
+
+/**
+ * The analysis_type values accepted by the plugin's thread analysis endpoint
+ * (api/api_post.go handleThreadAnalysis).
+ */
+export const THREAD_ANALYSIS_TYPES = {
+    SUMMARIZE_THREAD: 'summarize_thread',
+    ACTION_ITEMS: 'action_items',
+    OPEN_QUESTIONS: 'open_questions',
+} as const;
+export type ThreadAnalysisType = typeof THREAD_ANALYSIS_TYPES[keyof typeof THREAD_ANALYSIS_TYPES];

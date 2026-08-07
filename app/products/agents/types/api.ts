@@ -23,6 +23,15 @@ export type ChannelAnalysisResponse = {
 };
 
 /**
+ * Response from thread analysis API (api/api_post.go handleThreadAnalysis):
+ * the post/channel of the bot DM the analysis streams into.
+ */
+export type ThreadAnalysisResponse = {
+    postid: string;
+    channelid: string;
+};
+
+/**
  * Response from agents status API
  */
 export type AgentsStatusResponse = {
