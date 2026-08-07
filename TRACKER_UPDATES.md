@@ -75,6 +75,14 @@ PE_FINDING_classification_values_filter.md).
   on Android (API-35 emulator, live PR-9996 server 11.10.0, flag ON). The
   classification-overlay theory is retracted; the product/screen-testID theory from the
   prior report is also retracted (the tutorial, not a testID mismatch, was the blocker).
+
+  **Both-platforms update (2026-08-07):** re-ran MM-66375 on iOS (iPhone 17 Pro / iOS 26.3,
+  fresh v793 binary, live server) 2x green. The `open()` reorder runs unconditionally on iOS
+  too; on iOS no tutorial is present and `closeTutorial()` is a no-op there (verified, not
+  assumed) — no timing issue introduced. MM-66375 is CLOSED on BOTH platforms (Android 2x
+  green + iOS 2x green). NOTE: SEC-11049 as a whole is still PARTIAL (this is MM-66375's
+  contribution toward it; the other SEC-11049 tests remain as documented) — do not mark
+  SEC-11049 closed.
 - **MM-T4675_2** (server_login, SEC-11048) — **FAIL, kept skipped.** Real Android failure:
   `channel_list.servers.server_icon` is never found (polled null) during the multi-server
   add/switch/logout flow. NOT the overlay. **Timing evidence vs the ticket:** the ticket's
