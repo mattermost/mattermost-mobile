@@ -179,6 +179,12 @@ export function stripOpenAICitations(text: string): string {
 // Build the ordered rounds for a post's response: one Round per assistant turn,
 // in sequence order, so multi-step tool answers render in their true order
 // instead of being flattened into a single block.
+//
+// BlockType.File / BlockType.Image blocks are intentionally not rendered,
+// mirroring the plugin webapp (turn_content_utils.ts only reads Text, Thinking,
+// ToolUse, ToolResult and Annotations blocks): generated files are merged into
+// post.FileIds by the plugin, so they render through the standard post file
+// attachments chrome (Files inside the post Body), not from conversation turns.
 export function buildRoundsFromTurns(conversation: ConversationResponse, postId: string): Round[] {
     const turns = collectResponseTurns(conversation, postId);
     if (turns.length === 0) {

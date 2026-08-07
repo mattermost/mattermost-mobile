@@ -5,6 +5,7 @@ import React, {useCallback, useMemo, useState} from 'react';
 import {useIntl} from 'react-intl';
 import {type LayoutChangeEvent, type StyleProp, View, type ViewStyle} from 'react-native';
 
+import AgentPost from '@agents/components/agent_post';
 import Files from '@components/files';
 import FormattedText from '@components/formatted_text';
 import JumboEmoji from '@components/jumbo_emoji';
@@ -29,8 +30,10 @@ import type {AvailableScreens} from '@typings/screens/navigation';
 type BodyProps = {
     appsEnabled: boolean;
     mmBlocksEnabled: boolean;
+    currentUserId?: string;
     filesInfo: FileInfo[];
     hasReactions: boolean;
+    isAgentPost?: boolean;
     highlight: boolean;
     highlightReplyBar: boolean;
     isCRTEnabled?: boolean;
@@ -91,8 +94,10 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
 const Body = ({
     appsEnabled,
     mmBlocksEnabled,
+    currentUserId,
     filesInfo,
     hasReactions,
+    isAgentPost,
     highlight,
     highlightReplyBar,
     isCRTEnabled,
@@ -164,6 +169,17 @@ const Body = ({
                 style={style.message}
                 id='post_body.deleted'
                 defaultMessage='(message deleted)'
+            />
+        );
+    } else if (isAgentPost) {
+        // AgentPost owns the message slot (streaming text, reasoning, tool
+        // approvals); the surrounding chrome (content embeds, files,
+        // acknowledgements, reactions) still renders below like any post.
+        message = (
+            <AgentPost
+                post={post}
+                currentUserId={currentUserId}
+                location={location}
             />
         );
     } else if (post.type === PLAYBOOKS_UPDATE_STATUS_POST_TYPE && post.props != null) {
