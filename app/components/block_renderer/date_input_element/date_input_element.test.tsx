@@ -170,16 +170,27 @@ describe('DateInputElement', () => {
         expect(onAction).toHaveBeenCalledWith({actionId: 'refresh_action', formValues: {due_date: '2026-03-05'}});
     });
 
-    it('should update the value but not dispatch onChange when interactions are disabled', async () => {
+    it('should not update the value or dispatch onChange when interactions are disabled', async () => {
         const view = await renderInput({
             ...getBaseProps(),
             element: {...getBaseProps().element, onChange: 'refresh_action'},
         }, true);
 
+        expect(selectorProps().disabled).toBe(true);
+
         await pickDate('2026-03-05 10:30');
 
-        expect(formValues(view)).toEqual({due_date: '2026-03-05'});
+        expect(formValues(view)).toEqual({due_date: '2026-01-15'});
         expect(onAction).not.toHaveBeenCalled();
+    });
+
+    it('should pass disabled to the picker when the element is disabled', async () => {
+        await renderInput({
+            ...getBaseProps(),
+            element: {...getBaseProps().element, disabled: true},
+        });
+
+        expect(selectorProps().disabled).toBe(true);
     });
 
     it('should resolve relative min and max dates and block past dates when min_date is today', async () => {

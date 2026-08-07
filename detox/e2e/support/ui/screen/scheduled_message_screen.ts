@@ -17,8 +17,8 @@ class ScheduledMessageScreen {
         scheduledDraftTime: 'scheduled_post_header.scheduled_at',
     };
 
-    selectDateButton = element(by.text(isIos()? 'Select Date': 'SELECT DATE'));
-    selectTimeButton = element(by.text(isIos()? 'Select Time': 'SELECT TIME'));
+    selectDateButton = element(by.text('Select Date'));
+    selectTimeButton = element(by.text('Select Time'));
     saveButton = element(by.text(isIos()? 'Save': 'SAVE'));
     androidCalenderOkButton = element(by.text('OK'));
     scheduledDraftTime = element(by.id(this.testID.scheduledDraftTime));

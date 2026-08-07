@@ -190,4 +190,25 @@ describe('DateTimeSelector', () => {
 
         expect(getByTestId(`${testID}.manual_time.input`).props.placeholder).toBe('2:30 PM');
     });
+
+    it('disables select buttons and does not open the picker when disabled', () => {
+        const testID = 'dt';
+        const {getByTestId, queryByTestId} = renderWithEverything(
+            <DateTimeSelector
+                {...baseProps}
+                disabled={true}
+                showInitially={undefined}
+                testID={testID}
+            />,
+            {database},
+        );
+
+        const dateButton = getByTestId(`${testID}.select.button`);
+        expect(dateButton).toBeDisabled();
+
+        fireEvent.press(dateButton);
+
+        expect(queryByTestId('custom_status_clear_after.date_time_picker')).toBeNull();
+        expect(mockHandleChange).not.toHaveBeenCalled();
+    });
 });

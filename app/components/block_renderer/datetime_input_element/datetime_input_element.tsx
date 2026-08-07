@@ -14,7 +14,7 @@ import Label from '@components/settings/label';
 import {DEFAULT_TIME_INTERVAL_MINUTES} from '@constants/apps';
 import {getDateValue, isRelativeDate, parseDateInTimezone, resolveRelativeDate} from '@utils/date_utils';
 import {getCurrentMomentForTimezone} from '@utils/helpers';
-import {makeStyleSheetFromTheme} from '@utils/theme';
+import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
 
 import {MmBlocksInteractionsDisabledContext} from '../context';
@@ -23,9 +23,9 @@ import {MmBlocksFieldError, useMmBlocksForm} from '../form';
 import type {ActionHandler} from '../types';
 
 const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
-    container: {marginBottom: 24},
     dateDisplay: {marginLeft: 15, marginBottom: 8},
     dateText: {color: theme.linkColor, ...typography('Body', 100, 'Regular')},
+    dateTextDisabled: {color: changeOpacity(theme.linkColor, 0.5)},
     helpText: {color: theme.centerChannelColor, marginLeft: 15, marginTop: 4, opacity: 0.64, ...typography('Body', 75, 'Regular')},
     timezoneIndicator: {flexDirection: 'row', alignItems: 'center', marginLeft: 15, marginBottom: 8, marginTop: -4},
     timezoneText: {color: theme.centerChannelColor, opacity: 0.64, marginLeft: 4, ...typography('Body', 75, 'Regular')},
@@ -49,6 +49,7 @@ function normalizeDateTimeValue(value: unknown): string {
 const DateTimeInputElement = ({element, onAction, theme, userTimezone, isMilitaryTime}: DateTimeInputElementProps) => {
     const intl = useIntl();
     const interactionsDisabled = useContext(MmBlocksInteractionsDisabledContext);
+    const disabled = interactionsDisabled || element.disabled === true;
     const {values, setValue, setDefaultValue} = useMmBlocksForm();
     const style = getStyleSheet(theme);
 
@@ -78,10 +79,14 @@ const DateTimeInputElement = ({element, onAction, theme, userTimezone, isMilitar
     }, [element.name, element.initial_value, setDefaultValue, displayTimezone]);
 
     const handleChange = useCallback((picked: Moment) => {
+        if (disabled) {
+            return;
+        }
+
         const next = picked.toISOString();
         setValue(element.name, next);
 
-        if (!element.onChange || interactionsDisabled) {
+        if (!element.onChange) {
             return;
         }
 
@@ -89,7 +94,7 @@ const DateTimeInputElement = ({element, onAction, theme, userTimezone, isMilitar
             actionId: element.onChange,
             formValues: {...values, [element.name]: next},
         });
-    }, [element.name, element.onChange, interactionsDisabled, onAction, setValue, values]);
+    }, [disabled, element.name, element.onChange, onAction, setValue, values]);
 
     const minDateConfig = element.datetime_config?.min_date;
     const maxDateConfig = element.datetime_config?.max_date;
@@ -111,7 +116,7 @@ const DateTimeInputElement = ({element, onAction, theme, userTimezone, isMilitar
     }
 
     return (
-        <View style={style.container}>
+        <View>
             {Boolean(element.label?.trim()) && (
                 <Label
                     label={element.label ?? ''}
@@ -121,7 +126,7 @@ const DateTimeInputElement = ({element, onAction, theme, userTimezone, isMilitar
             )}
             {selectedDate && (
                 <View style={style.dateDisplay}>
-                    <Text style={style.dateText}>
+                    <Text style={[style.dateText, disabled && style.dateTextDisabled]}>
                         <FormattedDate
                             value={selectedDate.toDate()}
                             format={{dateStyle: 'medium'}}
@@ -157,6 +162,7 @@ const DateTimeInputElement = ({element, onAction, theme, userTimezone, isMilitar
                 maxDate={resolvedMaxDate}
                 minuteInterval={element.datetime_config?.time_interval || DEFAULT_TIME_INTERVAL_MINUTES}
                 allowManualTimeEntry={element.datetime_config?.manual_time_entry}
+                disabled={disabled}
                 testID={`mm_blocks.datetime_input.${element.name}`}
             />
             {Boolean(element.help_text) && (

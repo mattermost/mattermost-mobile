@@ -5,8 +5,9 @@ import DateTimePicker, {type DateTimePickerEvent} from '@react-native-community/
 import moment, {type Moment} from 'moment-timezone';
 import React, {useCallback, useMemo, useState} from 'react';
 import {useIntl} from 'react-intl';
-import {View, Button, Platform, TextInput} from 'react-native';
+import {View, Platform, TextInput} from 'react-native';
 
+import Button from '@components/button';
 import FormattedText from '@components/formatted_text';
 import {parseDateInTimezone} from '@utils/date_utils';
 import {parseTimeString, toValidMinuteInterval} from '@utils/datetime';
@@ -28,9 +29,12 @@ type Props = {
     minDate?: string;
     maxDate?: string;
     allowManualTimeEntry?: boolean;
+    disabled?: boolean;
 }
 
 type AndroidMode = 'date' | 'time';
+
+const BUTTON_CONTAINER_STYLE = {flex: 1};
 
 const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
     container: {
@@ -40,7 +44,8 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
     buttonContainer: {
         flexDirection: 'row',
         alignItems: 'center',
-        justifyContent: 'space-evenly',
+        gap: 8,
+        marginHorizontal: 15,
         marginBottom: 10,
     },
     manualTimeInput: {
@@ -77,6 +82,7 @@ const DateTimeSelector = ({
     minDate,
     maxDate,
     allowManualTimeEntry = false,
+    disabled = false,
 }: Props) => {
     const intl = useIntl();
     const styles = getStyleSheet(theme);
@@ -137,15 +143,21 @@ const DateTimeSelector = ({
     }, [date, timezone, handleChange]);
 
     const showDatepicker = useCallback(() => {
+        if (disabled) {
+            return;
+        }
         if (show && mode === 'date') {
             setShow(false);
         } else {
             setShow(true);
             setMode('date');
         }
-    }, [show, mode]);
+    }, [disabled, show, mode]);
 
     const showTimepicker = useCallback(() => {
+        if (disabled) {
+            return;
+        }
         if (allowManualTimeEntry) {
             const entering = !useManualEntry;
             setUseManualEntry(entering);
@@ -160,7 +172,7 @@ const DateTimeSelector = ({
             setShow(true);
             setMode('time');
         }
-    }, [allowManualTimeEntry, useManualEntry, date, isMilitaryTime, show, mode]);
+    }, [disabled, allowManualTimeEntry, useManualEntry, date, isMilitaryTime, show, mode]);
 
     const handleManualTimeSubmit = useCallback(() => {
         const parsed = parseTimeString(manualTimeText);
@@ -183,21 +195,29 @@ const DateTimeSelector = ({
         >
             <View style={styles.buttonContainer}>
                 <Button
-                    testID={testID ? `${testID}.select.button` : 'custom_status_clear_after.menu_item.date_and_time.button.date'}
+                    theme={theme}
+                    size='m'
+                    emphasis='tertiary'
+                    text={intl.formatMessage({id: 'date_time_selector.select_date', defaultMessage: 'Select Date'})}
                     onPress={showDatepicker}
-                    title={intl.formatMessage({id: 'date_time_selector.select_date', defaultMessage: 'Select Date'})}
-                    color={theme.buttonBg}
+                    disabled={disabled}
+                    buttonContainerStyle={BUTTON_CONTAINER_STYLE}
+                    testID={testID ? `${testID}.select.button` : 'custom_status_clear_after.menu_item.date_and_time.button.date'}
                 />
                 {!dateOnly && (
                     <Button
-                        testID={testID ? `${testID}.time.button` : 'custom_status_clear_after.menu_item.date_and_time.button.time'}
+                        theme={theme}
+                        size='m'
+                        emphasis='tertiary'
+                        text={intl.formatMessage({id: 'date_time_selector.select_time', defaultMessage: 'Select Time'})}
                         onPress={showTimepicker}
-                        title={intl.formatMessage({id: 'date_time_selector.select_time', defaultMessage: 'Select Time'})}
-                        color={theme.buttonBg}
+                        disabled={disabled}
+                        buttonContainerStyle={BUTTON_CONTAINER_STYLE}
+                        testID={testID ? `${testID}.time.button` : 'custom_status_clear_after.menu_item.date_and_time.button.time'}
                     />
                 )}
             </View>
-            {!dateOnly && allowManualTimeEntry && useManualEntry && (
+            {!dateOnly && allowManualTimeEntry && useManualEntry && !disabled && (
                 <View>
                     <TextInput
                         testID={testID ? `${testID}.manual_time.input` : 'custom_date_time_picker.manual_time.input'}
@@ -220,7 +240,7 @@ const DateTimeSelector = ({
                     />
                 </View>
             )}
-            {show && (
+            {show && !disabled && (
                 <DateTimePicker
                     testID='custom_status_clear_after.date_time_picker'
                     value={date.toDate()}

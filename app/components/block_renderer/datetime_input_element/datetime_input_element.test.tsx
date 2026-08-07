@@ -179,16 +179,27 @@ describe('DateTimeInputElement', () => {
         expect(onAction).toHaveBeenCalledWith({actionId: 'refresh_action', formValues: {starts_at: '2026-03-06T13:15:00.000Z'}});
     });
 
-    it('should update the value but not dispatch onChange when interactions are disabled', async () => {
+    it('should not update the value or dispatch onChange when interactions are disabled', async () => {
         const view = await renderInput({
             ...getBaseProps(),
             element: {...getBaseProps().element, onChange: 'refresh_action'},
         }, true);
 
+        expect(selectorProps().disabled).toBe(true);
+
         await pickDateTime('2026-03-06 08:15');
 
-        expect(formValues(view)).toEqual({starts_at: '2026-03-06T13:15:00.000Z'});
+        expect(formValues(view)).toEqual({starts_at: '2026-03-05T15:30:00Z'});
         expect(onAction).not.toHaveBeenCalled();
+    });
+
+    it('should pass disabled to the picker when the element is disabled', async () => {
+        await renderInput({
+            ...getBaseProps(),
+            element: {...getBaseProps().element, disabled: true},
+        });
+
+        expect(selectorProps().disabled).toBe(true);
     });
 
     it('should forward the datetime config to the picker', async () => {

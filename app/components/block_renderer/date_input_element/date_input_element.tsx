@@ -9,7 +9,7 @@ import FormattedDate from '@components/formatted_date';
 import Label from '@components/settings/label';
 import {getDateValue, isRelativeDate, parseDateInTimezone, resolveRelativeDate} from '@utils/date_utils';
 import {getCurrentMomentForTimezone} from '@utils/helpers';
-import {makeStyleSheetFromTheme} from '@utils/theme';
+import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
 
 import {MmBlocksInteractionsDisabledContext} from '../context';
@@ -19,9 +19,9 @@ import type {ActionHandler} from '../types';
 import type {Moment} from 'moment-timezone';
 
 const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
-    container: {marginBottom: 24},
     dateDisplay: {marginLeft: 15, marginBottom: 8},
     dateText: {color: theme.linkColor, ...typography('Body', 100, 'Regular')},
+    dateTextDisabled: {color: changeOpacity(theme.linkColor, 0.5)},
     helpText: {color: theme.centerChannelColor, marginLeft: 15, marginTop: 4, opacity: 0.64, ...typography('Body', 75, 'Regular')},
 }));
 
@@ -41,6 +41,7 @@ function normalizeDateValue(value: unknown): string {
 
 const DateInputElement = ({element, onAction, theme, userTimezone}: DateInputElementProps) => {
     const interactionsDisabled = useContext(MmBlocksInteractionsDisabledContext);
+    const disabled = interactionsDisabled || element.disabled === true;
     const {values, setValue, setDefaultValue} = useMmBlocksForm();
     const style = getStyleSheet(theme);
 
@@ -65,10 +66,14 @@ const DateInputElement = ({element, onAction, theme, userTimezone}: DateInputEle
     }, [element.name, element.initial_value, setDefaultValue, userTimezone]);
 
     const handleChange = useCallback((picked: Moment) => {
+        if (disabled) {
+            return;
+        }
+
         const next = picked.clone().startOf('day').format('YYYY-MM-DD');
         setValue(element.name, next);
 
-        if (!element.onChange || interactionsDisabled) {
+        if (!element.onChange) {
             return;
         }
 
@@ -76,7 +81,7 @@ const DateInputElement = ({element, onAction, theme, userTimezone}: DateInputEle
             actionId: element.onChange,
             formValues: {...values, [element.name]: next},
         });
-    }, [element.name, element.onChange, interactionsDisabled, onAction, setValue, values]);
+    }, [disabled, element.name, element.onChange, onAction, setValue, values]);
 
     const minDateConfig = element.datetime_config?.min_date;
     const maxDateConfig = element.datetime_config?.max_date;
@@ -98,7 +103,7 @@ const DateInputElement = ({element, onAction, theme, userTimezone}: DateInputEle
     }
 
     return (
-        <View style={style.container}>
+        <View>
             {Boolean(element.label?.trim()) && (
                 <Label
                     label={element.label ?? ''}
@@ -111,7 +116,7 @@ const DateInputElement = ({element, onAction, theme, userTimezone}: DateInputEle
                     <FormattedDate
                         value={selectedDate.toDate()}
                         format={{dateStyle: 'medium'}}
-                        style={style.dateText}
+                        style={[style.dateText, disabled && style.dateTextDisabled]}
                     />
                 </View>
             )}
@@ -126,6 +131,7 @@ const DateInputElement = ({element, onAction, theme, userTimezone}: DateInputEle
                 minDate={resolvedMinDate}
                 maxDate={resolvedMaxDate}
                 allowManualTimeEntry={element.datetime_config?.manual_time_entry}
+                disabled={disabled}
                 testID={`mm_blocks.date_input.${element.name}`}
             />
             {Boolean(element.help_text) && (
