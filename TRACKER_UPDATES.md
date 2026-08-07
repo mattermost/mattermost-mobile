@@ -104,3 +104,24 @@ Append-only notes for a human to copy into the
   it). iOS verified (iPhone 17 Pro / iOS 26.3, 11.10 server); Android verified green
   (local API-35 emulator, fresh server mobile-pr-9996-site-3): MM-T1442_1,
   MM-T4895_1, MM-T4899_4, MM-T4899_5 PASS. Both platforms green.
+
+### SEC-11017 geometry-fix attempt (2026-08-07) -- BLOCKED on tooling
+
+Attempted the targeted tap-point fix (SEC-11010 conclusion: tap Remove at a point not
+overlapped by Logout) on the fresh v793 binary.
+
+- Heuristic attempt: lower the visibility wait to toBeVisible(40) and tap the Remove
+  option's top-left via element.tap({x:0, y:0}) (away from Logout on the right). FAILED --
+  toBeVisible(40) itself times out: the Remove option is under 40% visible after the swipe
+  (Logout overlaps it almost entirely), same severe clipping as the autocomplete case.
+- Geometry-based fix: BLOCKED on tooling. The view-hierarchy dump is disabled by default in
+  this harness (detoxDisableHierarchyDump=YES), and enabling it (detoxDisableHierarchyDump=NO)
+  plus --log-level verbose did NOT produce a readable view-hierarchy file or print element
+  frames. The DETOX_VISIBILITY screenshots are PNGs, not machine-readable. So the
+  Remove/Logout frame geometry cannot be read from the current artifacts to compute a
+  precise tapAtLocation point.
+
+SEC-11017 stays NOT closed: real swipe-reveal failure confirmed and isolated, but the
+targeted fix requires either (a) a readable view-hierarchy artifact (enable the hierarchy
+plugin / a JSON dump) or (b) a human reading the DETOX_VISIBILITY screenshot to read the
+Remove/Logout frames. Temp changes reverted; _5/_6/_7 stay iOS-skipped. Not guessed blind.
