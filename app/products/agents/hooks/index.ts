@@ -3,3 +3,4 @@
 
 export {useRewrite, useRewriteState} from './use_rewrite';
 export {useAgents} from './use_agents';
+export {useCustomPrompts} from './use_custom_prompts';

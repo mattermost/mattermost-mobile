@@ -63,6 +63,27 @@ export function isAgentAvailableInChannel<T extends {channelAccessLevel?: number
 }
 
 /**
+ * Whether a channel is some agent's DM channel with the current user. In an
+ * agent DM the agent already sees every post, so custom prompt messages don't
+ * need an @mention prepend. Mirrors the webapp's isBotDMChannel check.
+ */
+export function isAgentDMChannel<T extends {dmChannelID?: string}>(agents: T[], channelId: string): boolean {
+    return agents.some((agent) => agent.dmChannelID === channelId);
+}
+
+/**
+ * Compose the message a rendered custom prompt produces: outside an agent DM
+ * the agent must be @mentioned or it never sees the post. Mirrors the webapp's
+ * custom_prompts_dropdown handlePromptClick.
+ */
+export function buildCustomPromptMessage(rendered: string, botUsername: string | undefined, isBotDM: boolean): string {
+    if (!isBotDM && botUsername) {
+        return `@${botUsername} ${rendered}`;
+    }
+    return rendered;
+}
+
+/**
  * Heuristic wire-prefix strip for MCP tool names ("mattermost__read_post" ->
  * "read_post") at call sites without server context, e.g. pending tool_use
  * blocks where the server omits mcp_bare_name. Mirrors the webapp's

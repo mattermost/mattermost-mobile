@@ -29,8 +29,8 @@ describe('fetchAgents', () => {
 
         expect(result.error).toBeUndefined();
         expect(result.data).toEqual([
-            {id: 'bot1', displayName: 'Matty', username: 'matty', isDefault: true},
-            {id: 'bot2', displayName: 'Scout', username: 'scout', isDefault: undefined},
+            {id: 'bot1', displayName: 'Matty', username: 'matty', isDefault: true, dmChannelID: 'dm1'},
+            {id: 'bot2', displayName: 'Scout', username: 'scout', isDefault: undefined, dmChannelID: 'dm2'},
         ]);
         expect(rewriteStore.getAgents(serverUrl)).toHaveLength(2);
     });

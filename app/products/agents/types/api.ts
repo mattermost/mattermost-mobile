@@ -44,6 +44,35 @@ export type Agent = {
     // are already applied server-side before /ai_bots returns.
     channelAccessLevel?: number;
     channelIDs?: string[];
+
+    // The requesting user's DM channel with this agent. Used to detect
+    // "already talking to the agent" contexts (no @mention prepend needed).
+    dmChannelID?: string;
+};
+
+/**
+ * A saved prompt template from the plugin's custom prompts store
+ * (customprompts.CustomPrompt wire shape). Mobile only consumes these;
+ * authoring/management stays on the webapp.
+ */
+export type CustomPrompt = {
+    id: string;
+    creator_id: string;
+    name: string;
+    description: string;
+    template: string;
+    is_shared: boolean;
+    created_at: number;
+    updated_at: number;
+    deleted_at: number;
+};
+
+/**
+ * Response from POST /custom-prompts/{id}/render — the template with
+ * context variables (channel/user/bot/server) resolved server-side.
+ */
+export type RenderCustomPromptResponse = {
+    rendered: string;
 };
 
 /**

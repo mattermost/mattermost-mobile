@@ -5,7 +5,7 @@ import {AGENT_POST_TYPES} from '@agents/constants';
 import {ToolApprovalStage, ToolCallStatus, type ToolCall} from '@agents/types';
 import TestHelper from '@test/test_helper';
 
-import {isAgentMentionReminderPost, isAgentPost, isPostRequester, isToolCallRedacted, isPendingToolResult, getToolApprovalStage, isAgentAvailableInChannel, mergeToolCalls, resolveAgentSelection, resolveSelectedAgent} from './utils';
+import {isAgentMentionReminderPost, isAgentPost, isPostRequester, isToolCallRedacted, isPendingToolResult, getToolApprovalStage, buildCustomPromptMessage, isAgentAvailableInChannel, isAgentDMChannel, mergeToolCalls, resolveAgentSelection, resolveSelectedAgent} from './utils';
 
 describe('isAgentPost', () => {
     describe('with Post objects', () => {
@@ -404,5 +404,35 @@ describe('resolveAgentSelection', () => {
     it('should request the picker with a resolved preselection when multiple agents are available', () => {
         expect(resolveAgentSelection([a1, a2], null)).toEqual({agent: a2, showPicker: true});
         expect(resolveAgentSelection([a1, a2], 'a1')).toEqual({agent: a1, showPicker: true});
+    });
+});
+
+describe('isAgentDMChannel', () => {
+    const agents = [
+        {dmChannelID: 'dm1'},
+        {dmChannelID: 'dm2'},
+    ];
+
+    it('should detect a channel that is some agent DM', () => {
+        expect(isAgentDMChannel(agents, 'dm2')).toBe(true);
+    });
+
+    it('should reject a regular channel, including when agents lack dmChannelID', () => {
+        expect(isAgentDMChannel(agents, 'town-square')).toBe(false);
+        expect(isAgentDMChannel([{}], 'dm1')).toBe(false);
+    });
+});
+
+describe('buildCustomPromptMessage', () => {
+    it('should prepend the agent @mention outside an agent DM', () => {
+        expect(buildCustomPromptMessage('Do the thing', 'matty', false)).toBe('@matty Do the thing');
+    });
+
+    it('should not prepend inside an agent DM', () => {
+        expect(buildCustomPromptMessage('Do the thing', 'matty', true)).toBe('Do the thing');
+    });
+
+    it('should not prepend when no agent username is available', () => {
+        expect(buildCustomPromptMessage('Do the thing', undefined, false)).toBe('Do the thing');
     });
 });

@@ -27,6 +27,7 @@ export const fetchAgents = async (serverUrl: string): Promise<{data?: Agent[]; e
         isDefault: bot.isDefault,
         channelAccessLevel: bot.channelAccessLevel,
         channelIDs: bot.channelIDs,
+        dmChannelID: bot.dmChannelID,
     }));
 
     rewriteStore.setAgents(serverUrl, agents);
