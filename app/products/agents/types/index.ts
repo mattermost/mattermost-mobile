@@ -147,10 +147,8 @@ export interface StreamingState {
 // Normalised mobile shape: `id` is always the root post id (see fetchAIThreads).
 export interface AIThread {
     id: string;
-    message: string;
     title: string;
     channel_id: string;
-    reply_count: number;
     turn_count: number;
     update_at: number;
 
@@ -162,10 +160,8 @@ export interface AIThread {
 // Wire-format AI thread before normalisation. plugin < 2.0 omits root_post_id.
 export type RawAIThread = {
     id: string;
-    message?: string;
     title?: string;
     channel_id?: string | null;
-    reply_count?: number;
     turn_count?: number;
     update_at?: number;
     root_post_id?: string | null;

@@ -5,7 +5,7 @@ import {PortalHost} from '@gorhom/portal';
 import {useIsFocused} from '@react-navigation/native';
 import React, {useCallback, useEffect, useMemo, useRef, useState} from 'react';
 import {useIntl} from 'react-intl';
-import {type LayoutChangeEvent, StyleSheet} from 'react-native';
+import {DeviceEventEmitter, type LayoutChangeEvent, StyleSheet} from 'react-native';
 import {SafeAreaView, useSafeAreaInsets, type Edge} from 'react-native-safe-area-context';
 
 import {createDirectChannel} from '@actions/remote/channel';
@@ -20,13 +20,14 @@ import {resolveSelectedAgent} from '@agents/utils';
 import {KeyboardAwarePostDraftContainer} from '@components/keyboard_aware_post_draft_container';
 import PostDraft from '@components/post_draft';
 import {ITEM_HEIGHT} from '@components/slide_up_panel_item';
-import {Screens} from '@constants';
+import {Events, Screens} from '@constants';
 import {BOTTOM_TAB_HEIGHT} from '@constants/view';
 import {KeyboardStateProvider} from '@context/keyboard_state';
 import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
 import useAndroidHardwareBackHandler from '@hooks/android_back_handler';
 import {useIsTablet} from '@hooks/device';
+import useDidMount from '@hooks/did_mount';
 import {useDefaultHeaderHeight} from '@hooks/header';
 import {usePreventDoubleTap} from '@hooks/utils';
 import {TITLE_HEIGHT} from '@screens/bottom_sheet/content';
@@ -172,6 +173,16 @@ const AgentChat = ({bots, selectedAgentId}: Props) => {
     }, []);
 
     useAndroidHardwareBackHandler(Screens.AGENT_CHAT, exit);
+
+    // The threads list's "new chat" button emits this before popping back to
+    // this still-mounted screen. Clearing the root starts a fresh conversation
+    // while keeping the currently-selected agent (and its DM channel).
+    useDidMount(() => {
+        const listener = DeviceEventEmitter.addListener(Events.AGENT_NEW_CHAT, () => {
+            setRootId(null);
+        });
+        return () => listener.remove();
+    });
 
     const handleHistoryPress = useCallback(() => {
         goToAgentThreadsList();

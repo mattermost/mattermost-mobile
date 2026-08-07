@@ -95,18 +95,14 @@ describe('*** Test schema for SERVER database ***', () => {
                     name: AI_THREAD,
                     unsafeSql: undefined,
                     columns: {
-                        message: {name: 'message', type: 'string'},
                         title: {name: 'title', type: 'string'},
                         channel_id: {name: 'channel_id', type: 'string', isIndexed: true},
-                        reply_count: {name: 'reply_count', type: 'number'},
                         turn_count: {name: 'turn_count', type: 'number'},
                         update_at: {name: 'update_at', type: 'number', isIndexed: true},
                     },
                     columnArray: [
-                        {name: 'message', type: 'string'},
                         {name: 'title', type: 'string'},
                         {name: 'channel_id', type: 'string', isIndexed: true},
-                        {name: 'reply_count', type: 'number'},
                         {name: 'turn_count', type: 'number'},
                         {name: 'update_at', type: 'number', isIndexed: true},
                     ],

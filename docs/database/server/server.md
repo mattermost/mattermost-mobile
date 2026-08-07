@@ -442,10 +442,8 @@ is_default bool
 AiThread
 -
 id PK string
-message string
 title string
 channel_id string INDEX FK >- Channel.id
-reply_count number
 turn_count number
 update_at number INDEX
 

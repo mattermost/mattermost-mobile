@@ -9,11 +9,12 @@ const {AI_THREAD} = AGENTS_TABLES;
 
 export default tableSchema({
     name: AI_THREAD,
+
+    // The 2.0 history DTO dropped the message preview and reply_count;
+    // migrated installs keep orphaned sqlite columns which WatermelonDB ignores.
     columns: [
-        {name: 'message', type: 'string'},
         {name: 'title', type: 'string'},
         {name: 'channel_id', type: 'string', isIndexed: true},
-        {name: 'reply_count', type: 'number'},
         {name: 'turn_count', type: 'number'},
         {name: 'update_at', type: 'number', isIndexed: true},
     ],

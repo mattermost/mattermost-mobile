@@ -35,10 +35,8 @@ export const shouldUpdateAiBotRecord = (existingRecord: AiBotModel, newRaw: LLMB
 export const shouldUpdateAiThreadRecord = (existingRecord: AiThreadModel, newRaw: AIThread): boolean => {
     // Check for any changes that would require an update
     return (
-        existingRecord.message !== newRaw.message ||
         existingRecord.title !== newRaw.title ||
         existingRecord.channelId !== newRaw.channel_id ||
-        existingRecord.replyCount !== newRaw.reply_count ||
         existingRecord.turnCount !== newRaw.turn_count ||
         existingRecord.updateAt !== newRaw.update_at
     );
