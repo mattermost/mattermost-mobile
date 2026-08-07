@@ -57,8 +57,15 @@ export function collectResponseTurns(conversation: ConversationResponse, postId:
             break;
         }
 
-        // Crossed into a foreign post's response; stop or we'd sweep in its tool_use blocks.
-        if (t.post_id && t.post_id !== postId) {
+        // Any post-anchored turn bounds this response: either a foreign post's
+        // anchor (sweeping on would pull in its tool_use blocks) or a
+        // superseded generation of this same post — regen paths that don't
+        // scrub prior response turns (e.g. thread analysis) leave one anchored
+        // assistant turn per generation, and collecting them would stack every
+        // prior answer above the current one. Mid-response turns never carry a
+        // post_id: tool rounds are written without one and a continuation
+        // demotes the prior anchor to null before the new anchor is created.
+        if (t.post_id) {
             break;
         }
         out.unshift(t);
