@@ -8,6 +8,7 @@ import Renderer from 'commonmark-react-renderer';
 import React, {type ReactElement, useCallback, useMemo, useRef} from 'react';
 import {Dimensions, type StyleProp, StyleSheet, Text, type TextStyle, View, type ViewStyle} from 'react-native';
 import performance from 'react-native-performance';
+import urlParse from 'url-parse';
 
 import CompassIcon from '@components/compass_icon';
 import EditedIndicator from '@components/edited_indicator';
@@ -19,7 +20,7 @@ import {computeTextStyle, getMarkdownBlockStyles, getMarkdownTextStyles} from '@
 import PostListPerformance from '@utils/performance/post_list_performance';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
-import {getScheme} from '@utils/url';
+import {getScheme, isValidUrl} from '@utils/url';
 
 import AtMention from './at_mention';
 import ChannelMention from './channel_mention';
@@ -113,6 +114,65 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
         },
     };
 });
+
+const FILE_ENDPOINT_PATTERN = /^\/api\/v4\/files\/[a-z0-9]{26}(?:\/preview)?$/;
+const UNSAFE_URL_CHARACTER_PATTERN = /[\u0000-\u001F\u007F\\]/;
+
+const getCurrentServerFileSource = (source: string, serverUrl: string) => {
+    if (!source || !serverUrl || UNSAFE_URL_CHARACTER_PATTERN.test(source)) {
+        return undefined;
+    }
+
+    const parsedServerUrl = urlParse(serverUrl);
+    if (!['http:', 'https:'].includes(parsedServerUrl.protocol) || !parsedServerUrl.hostname) {
+        return undefined;
+    }
+
+    let fileEndpointPath: string;
+    if (source.startsWith('/')) {
+        if (source.startsWith('//')) {
+            return undefined;
+        }
+
+        fileEndpointPath = urlParse(source).pathname;
+    } else {
+        if (!isValidUrl(source)) {
+            return undefined;
+        }
+
+        const parsedSource = urlParse(source);
+        if (
+            parsedSource.username ||
+            parsedSource.password ||
+            parsedSource.protocol !== parsedServerUrl.protocol ||
+            parsedSource.hostname.toLowerCase() !== parsedServerUrl.hostname.toLowerCase() ||
+            parsedSource.port !== parsedServerUrl.port
+        ) {
+            return undefined;
+        }
+
+        const serverBasePath = parsedServerUrl.pathname.replace(/\/+$/, '');
+        if (!parsedSource.pathname.startsWith(`${serverBasePath}/`)) {
+            return undefined;
+        }
+        fileEndpointPath = parsedSource.pathname.slice(serverBasePath.length);
+    }
+
+    if (!FILE_ENDPOINT_PATTERN.test(fileEndpointPath)) {
+        return undefined;
+    }
+
+    if (fileEndpointPath.endsWith('/preview')) {
+        return source;
+    }
+
+    const suffixStart = source.search(/[?#]/);
+    if (suffixStart === -1) {
+        return `${source}/preview`;
+    }
+
+    return `${source.slice(0, suffixStart)}/preview${source.slice(suffixStart)}`;
+};
 
 const getExtraPropsForNode = (node: any) => {
     const extraProps: Record<string, any> = {
@@ -444,7 +504,12 @@ const Markdown = ({
     }, [renderText, style.block]);
 
     const renderImage = useCallback(({linkDestination, context, src, size}: MarkdownImageRenderer) => {
-        if (!imagesMetadata || isUnsafeLinksPost) {
+        if (isUnsafeLinksPost) {
+            return null;
+        }
+
+        const imageSource = imagesMetadata ? src : getCurrentServerFileSource(src, serverUrl);
+        if (!imageSource) {
             return null;
         }
 
@@ -453,6 +518,10 @@ const Markdown = ({
         const disableInteraction = (disableGallery ?? Boolean(!location)) || isInsideLink;
 
         if (context.indexOf('table') !== -1) {
+            if (!imagesMetadata) {
+                return null;
+            }
+
             // We have enough problems rendering images as is, so just render a link inside of a table
             return (
                 <MarkdownTableImage
@@ -477,12 +546,12 @@ const Markdown = ({
                 isReplyPost={isReplyPost}
                 location={location}
                 postId={postId!}
-                source={src}
+                source={imageSource}
                 sourceSize={size}
                 theme={theme}
             />
         );
-    }, [baseTextStyle, disableGallery, imagesMetadata, isReplyPost, isUnsafeLinksPost, layoutHeight, layoutWidth, location, postId, textStyles, theme]);
+    }, [baseTextStyle, disableGallery, imagesMetadata, isReplyPost, isUnsafeLinksPost, layoutHeight, layoutWidth, location, postId, serverUrl, textStyles, theme]);
 
     const renderLatexInline = useCallback(({context, latexCode}: MarkdownLatexRenderer) => {
         if (!enableInlineLatex || isUnsafeLinksPost) {
@@ -797,6 +866,7 @@ const Markdown = ({
 };
 
 export const testExports = {
+    getCurrentServerFileSource,
     renderHashtagWithStyles,
 };
 

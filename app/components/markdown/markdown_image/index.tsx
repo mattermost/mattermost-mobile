@@ -36,7 +36,7 @@ import type {GalleryItemType} from '@typings/screens/gallery';
 type MarkdownImageProps = {
     disabled?: boolean;
     errorTextStyle: StyleProp<TextStyle>;
-    imagesMetadata: Record<string, PostImage | undefined>;
+    imagesMetadata?: Record<string, PostImage | undefined>;
     isReplyPost?: boolean;
     linkDestination?: string;
     layoutHeight?: number;

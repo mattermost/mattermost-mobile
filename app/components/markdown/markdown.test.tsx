@@ -5,9 +5,10 @@ import {screen} from '@testing-library/react-native';
 import * as CommonMark from 'commonmark';
 const {Node} = CommonMark;
 import React from 'react';
-import {StyleSheet} from 'react-native';
+import {StyleSheet, Text} from 'react-native';
 
 import {Preferences, Screens} from '@constants';
+import ServerUrlProvider from '@context/server';
 import {renderWithIntl} from '@test/intl-test-helper';
 import {getMarkdownTextStyles} from '@utils/markdown';
 import {typography} from '@utils/typography';
@@ -16,10 +17,18 @@ import Markdown, {testExports} from './markdown';
 import * as Transforms from './transform';
 
 const Parser = jest.requireActual('commonmark').Parser;
+const SERVER_URL = 'https://mattermost.example.com/mattermost';
+const FILE_ID = 'abcdefghijklmnopqrstuvwxyz';
+
+function MockMarkdownImage({source}: {source: string}) {
+    return <Text testID='markdown_image'>{source}</Text>;
+}
 
 jest.mock('@screens/navigation', () => ({
     navigateToRoot: jest.fn(),
 }));
+
+jest.mock('./markdown_image', () => MockMarkdownImage);
 
 describe('Markdown', () => {
     const baseProps: React.ComponentProps<typeof Markdown> = {
@@ -142,6 +151,143 @@ describe('Markdown', () => {
 
             expect(screen.queryByText('This is a text')).not.toBeVisible();
             expect(screen.getByText('An error occurred while rendering this text')).toBeVisible();
+        });
+    });
+
+    describe('image render gate', () => {
+        const {getCurrentServerFileSource} = testExports;
+
+        beforeEach(() => {
+            jest.restoreAllMocks();
+        });
+
+        it.each([
+            `${SERVER_URL}/api/v4/files/${FILE_ID}`,
+            `${SERVER_URL}/api/v4/files/${FILE_ID}/preview?width=120#image`,
+            `/api/v4/files/${FILE_ID}`,
+            `/api/v4/files/${FILE_ID}/preview`,
+        ])('should accept a current-server file endpoint: %s', (source) => {
+            expect(getCurrentServerFileSource(source, SERVER_URL)).toBeDefined();
+        });
+
+        it.each([
+            `https://external.example.com/mattermost/api/v4/files/${FILE_ID}`,
+            `https://mattermost.example.com.evil.test/mattermost/api/v4/files/${FILE_ID}`,
+            `https://mattermost.example.com:8443/mattermost/api/v4/files/${FILE_ID}`,
+            `http://mattermost.example.com/mattermost/api/v4/files/${FILE_ID}`,
+            `https://mattermost.example.com/mattermost/api/v4/users/${FILE_ID}`,
+            `https://mattermost.example.com/mattermost/api/v4/files/${FILE_ID}/preview/extra`,
+            `https://user@mattermost.example.com/mattermost/api/v4/files/${FILE_ID}`,
+            `//mattermost.example.com/mattermost/api/v4/files/${FILE_ID}`,
+            `https://mattermost.example.com/api/v4/files/${FILE_ID}`,
+            `https://mattermost.example.com/mattermost/api/v4/files%2F${FILE_ID}`,
+            `/api/v4/files/${FILE_ID.toUpperCase()}`,
+        ])('should reject a non-file or malformed endpoint: %s', (source) => {
+            expect(getCurrentServerFileSource(source, SERVER_URL)).toBeUndefined();
+        });
+
+        it.each([
+            [
+                `${SERVER_URL}/api/v4/files/${FILE_ID}`,
+                `${SERVER_URL}/api/v4/files/${FILE_ID}/preview`,
+            ],
+            [
+                `${SERVER_URL}/api/v4/files/${FILE_ID}?width=120#image`,
+                `${SERVER_URL}/api/v4/files/${FILE_ID}/preview?width=120#image`,
+            ],
+            [
+                `${SERVER_URL}/api/v4/files/${FILE_ID}/preview?width=120#image`,
+                `${SERVER_URL}/api/v4/files/${FILE_ID}/preview?width=120#image`,
+            ],
+        ])('should render metadata-less current-server file source %s as a preview', (source, expectedSource) => {
+            renderWithIntl(
+                <ServerUrlProvider server={{displayName: 'Mattermost', url: SERVER_URL}}>
+                    <Markdown
+                        {...baseProps}
+                        postId='post-id'
+                        value={`![](${source})`}
+                    />
+                </ServerUrlProvider>,
+            );
+
+            expect(screen.getByTestId('markdown_image').props.children).toBe(expectedSource);
+        });
+
+        it('should suppress an external image without image metadata', () => {
+            renderWithIntl(
+                <ServerUrlProvider server={{displayName: 'Mattermost', url: SERVER_URL}}>
+                    <Markdown
+                        {...baseProps}
+                        postId='post-id'
+                        value='![](https://external.example.com/image.png)'
+                    />
+                </ServerUrlProvider>,
+            );
+
+            expect(screen.queryByTestId('markdown_image')).not.toBeVisible();
+        });
+
+        it('should preserve external image rendering when image metadata is present', () => {
+            renderWithIntl(
+                <ServerUrlProvider server={{displayName: 'Mattermost', url: SERVER_URL}}>
+                    <Markdown
+                        {...baseProps}
+                        imagesMetadata={{}}
+                        postId='post-id'
+                        value='![](https://external.example.com/image.png)'
+                    />
+                </ServerUrlProvider>,
+            );
+
+            expect(screen.getByTestId('markdown_image')).toBeVisible();
+        });
+
+        it('should suppress a metadata-less file image inside a table', () => {
+            const value = `| image |\n| --- |\n| ![](${SERVER_URL}/api/v4/files/${FILE_ID}) |`;
+            renderWithIntl(
+                <ServerUrlProvider server={{displayName: 'Mattermost', url: SERVER_URL}}>
+                    <Markdown
+                        {...baseProps}
+                        postId='post-id'
+                        value={value}
+                    />
+                </ServerUrlProvider>,
+            );
+
+            expect(screen.queryByTestId('markdown_image')).not.toBeVisible();
+            expect(screen.queryByTestId('markdown_table_image')).not.toBeVisible();
+        });
+
+        it('should preserve metadata-backed image rendering inside a table', () => {
+            const value = '| image |\n| --- |\n| ![](https://external.example.com/image.png) |';
+            renderWithIntl(
+                <ServerUrlProvider server={{displayName: 'Mattermost', url: SERVER_URL}}>
+                    <Markdown
+                        {...baseProps}
+                        imagesMetadata={{}}
+                        postId='post-id'
+                        value={value}
+                    />
+                </ServerUrlProvider>,
+            );
+
+            expect(screen.getByTestId('markdown_table_image')).toBeVisible();
+        });
+
+        it('should suppress a current-server file URL in an unsafe-links post', () => {
+            renderWithIntl(
+                <ServerUrlProvider server={{displayName: 'Mattermost', url: SERVER_URL}}>
+                    <Markdown
+                        {...baseProps}
+                        imagesMetadata={{}}
+                        isUnsafeLinksPost={true}
+                        postId='post-id'
+                        value={`![](${SERVER_URL}/api/v4/files/${FILE_ID})`}
+                    />
+                </ServerUrlProvider>,
+            );
+
+            expect(screen.queryByTestId('markdown_image')).not.toBeVisible();
         });
     });
 
