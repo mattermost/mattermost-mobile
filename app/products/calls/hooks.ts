@@ -9,7 +9,8 @@ import {Alert, Platform} from 'react-native';
 import Permissions from 'react-native-permissions';
 
 import {initializeVoiceTrack} from '@calls/actions/calls';
-import {leaveAndJoinWithAlert} from '@calls/alerts';
+import {leaveAndJoinWithAlert, showLimitRestrictedAlert} from '@calls/alerts';
+import {observeIsCallLimitRestricted, type LimitRestrictedInfo} from '@calls/observers';
 import {
     getCallsConfig,
     getCurrentCall,
@@ -45,6 +46,12 @@ import {isSystemAdmin} from '@utils/user';
 
 import type {Client} from '@client/rest';
 import type {NavigationButtonProps} from '@components/navigation_button';
+
+const DEFAULT_LIMIT_RESTRICTED_INFO: LimitRestrictedInfo = {
+    limitRestricted: false,
+    maxParticipants: 0,
+    isCloudStarter: false,
+};
 
 export const useTryCallsFunction = (fn: () => void): [() => Promise<void>, string, boolean] => {
     const intl = useIntl();
@@ -233,6 +240,26 @@ export const useHostMenus = () => {
 };
 
 /**
+ * Hook to observe whether a call in the given channel has reached the participant limit.
+ */
+export const useCallLimitRestrictedInfo = (serverUrl: string, channelId: string): LimitRestrictedInfo => {
+    const [limitRestrictedInfo, setLimitRestrictedInfo] = useState(DEFAULT_LIMIT_RESTRICTED_INFO);
+
+    useEffect(() => {
+        const database = DatabaseManager.serverDatabases[serverUrl]?.database;
+        if (!database) {
+            return undefined;
+        }
+
+        const subscription = observeIsCallLimitRestricted(database, serverUrl, channelId).subscribe(setLimitRestrictedInfo);
+
+        return () => subscription.unsubscribe();
+    }, [serverUrl, channelId]);
+
+    return limitRestrictedInfo;
+};
+
+/**
  * Hook to display the call button in the navigation header for DM channels only.
  */
 export const useNavigationHeaderCallButtonForDM = (channelId: Channel['id'], channelType: Channel['type']): NavigationButtonProps | undefined => {
@@ -241,6 +268,7 @@ export const useNavigationHeaderCallButtonForDM = (channelId: Channel['id'], cha
     const channelsWithCalls = useChannelsWithCalls(serverUrl);
     const currentCall = useCurrentCall();
     const isDM = isDMChannel(channelType);
+    const limitRestrictedInfo = useCallLimitRestrictedInfo(serverUrl, channelId);
 
     const [isJoiningOrStarting, setIsJoiningOrStarting] = useState(false);
 
@@ -248,6 +276,11 @@ export const useNavigationHeaderCallButtonForDM = (channelId: Channel['id'], cha
     const alreadyInCall = currentCall?.channelId === channelId;
 
     const joinOrStart = useCallback(async () => {
+        if (limitRestrictedInfo.limitRestricted) {
+            showLimitRestrictedAlert(limitRestrictedInfo, intl);
+            return;
+        }
+
         setIsJoiningOrStarting(true);
         try {
             await leaveAndJoinWithAlert(intl, serverUrl, channelId);
@@ -256,17 +289,18 @@ export const useNavigationHeaderCallButtonForDM = (channelId: Channel['id'], cha
         } finally {
             setIsJoiningOrStarting(false);
         }
-    }, [intl, serverUrl, channelId]);
+    }, [limitRestrictedInfo, intl, serverUrl, channelId]);
     const [tryJoinOrStart, , isLoadingTryCallsFunction] = useTryCallsFunction(joinOrStart);
-    const onPressJoinOrStartCall = usePreventDoubleTap(tryJoinOrStart);
 
     const handleOnPress = useCallback(() => {
         if (alreadyInCall) {
             navigateToScreen(Screens.CALL);
         } else {
-            onPressJoinOrStartCall();
+            tryJoinOrStart();
         }
-    }, [alreadyInCall, onPressJoinOrStartCall]);
+    }, [alreadyInCall, tryJoinOrStart]);
+
+    const onPress = usePreventDoubleTap(handleOnPress);
 
     const isLoading = isJoiningOrStarting || isLoadingTryCallsFunction;
 
@@ -284,12 +318,12 @@ export const useNavigationHeaderCallButtonForDM = (channelId: Channel['id'], cha
             id: 'calls',
             iconName,
             isLoading,
-            onPress: handleOnPress,
+            onPress,
             disabled: isLoading,
             accessibilityLabel,
             testID: 'channel_header.quick_call.button',
         };
-    }, [alreadyInCall, isCallInChannel, handleOnPress, isLoading, intl]);
+    }, [alreadyInCall, isCallInChannel, onPress, isLoading, intl]);
 
     if (!isDM) {
         return undefined;

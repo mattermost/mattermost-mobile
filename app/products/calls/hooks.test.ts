@@ -4,9 +4,11 @@
 import {act, renderHook, waitFor} from '@testing-library/react-native';
 import {Alert, AppState} from 'react-native';
 import Permissions from 'react-native-permissions';
+import {of as of$} from 'rxjs';
 
 import {initializeVoiceTrack} from '@calls/actions/calls';
-import {leaveAndJoinWithAlert} from '@calls/alerts';
+import {leaveAndJoinWithAlert, showLimitRestrictedAlert} from '@calls/alerts';
+import {observeIsCallLimitRestricted} from '@calls/observers';
 import {
     getCurrentCall,
     getCallsConfig,
@@ -57,6 +59,11 @@ jest.mock('@calls/actions/calls', () => ({
 
 jest.mock('@calls/alerts', () => ({
     leaveAndJoinWithAlert: jest.fn(),
+    showLimitRestrictedAlert: jest.fn(),
+}));
+
+jest.mock('@calls/observers', () => ({
+    observeIsCallLimitRestricted: jest.fn(),
 }));
 
 jest.mock('@calls/state', () => ({
@@ -285,12 +292,14 @@ describe('Calls Hooks', () => {
 
     describe('useNavigationHeaderCallButtonForDM', () => {
         const channelId = 'channel1';
+        const notLimitRestricted = {limitRestricted: false, maxParticipants: 8, isCloudStarter: false};
 
         beforeEach(() => {
             (useChannelsWithCalls as jest.Mock).mockReturnValue({});
             (useCurrentCall as jest.Mock).mockReturnValue(null);
             (NetworkManager.getClient as jest.Mock).mockReturnValue({getEnabled: jest.fn().mockResolvedValue(true)});
             jest.mocked(leaveAndJoinWithAlert).mockResolvedValue(true);
+            (observeIsCallLimitRestricted as jest.Mock).mockReturnValue(of$(notLimitRestricted));
         });
 
         it('should return the start call button when there is no call in the channel', () => {
@@ -419,6 +428,46 @@ describe('Calls Hooks', () => {
             expect(leaveAndJoinWithAlert).toHaveBeenCalledTimes(1);
             expect(result.current?.isLoading).toBe(false);
             expect(result.current?.disabled).toBe(false);
+        });
+
+        it('should show the capacity alert and not join when the call is at the participant limit', async () => {
+            const limitRestrictedInfo = {limitRestricted: true, maxParticipants: 8, isCloudStarter: false};
+            (observeIsCallLimitRestricted as jest.Mock).mockReturnValue(of$(limitRestrictedInfo));
+            (useChannelsWithCalls as jest.Mock).mockReturnValue({[channelId]: true});
+
+            const {result} = renderHook(() => useNavigationHeaderCallButtonForDM(channelId, General.DM_CHANNEL));
+
+            await act(async () => {
+                result.current?.onPress();
+            });
+
+            expect(showLimitRestrictedAlert).toHaveBeenCalledWith(limitRestrictedInfo, expect.anything());
+            expect(leaveAndJoinWithAlert).not.toHaveBeenCalled();
+            expect(result.current?.isLoading).toBe(false);
+        });
+
+        it('should only join once when the button is pressed twice in quick succession', async () => {
+            const {result} = renderHook(() => useNavigationHeaderCallButtonForDM(channelId, General.DM_CHANNEL));
+
+            await act(async () => {
+                result.current?.onPress();
+                result.current?.onPress();
+            });
+
+            expect(leaveAndJoinWithAlert).toHaveBeenCalledTimes(1);
+        });
+
+        it('should only navigate once when the return to call button is pressed twice in quick succession', async () => {
+            (useCurrentCall as jest.Mock).mockReturnValue({channelId});
+
+            const {result} = renderHook(() => useNavigationHeaderCallButtonForDM(channelId, General.DM_CHANNEL));
+
+            await act(async () => {
+                result.current?.onPress();
+                result.current?.onPress();
+            });
+
+            expect(navigateToScreen).toHaveBeenCalledTimes(1);
         });
 
         it('should clear the loading state when joining the call rejects', async () => {
