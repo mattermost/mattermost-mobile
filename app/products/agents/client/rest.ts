@@ -80,7 +80,7 @@ const ClientAgents = (superclass: any) => class extends superclass {
         botUsername: string,
         options?: ChannelAnalysisOptions,
     ): Promise<ChannelAnalysisResponse> => {
-        const {since, until, days, prompt, unreads_only} = options || {};
+        const {since, until, days, prompt, team_id} = options || {};
         return this.doFetch(
             `${this.getAgentsRoute()}/channel/${channelId}/analyze?botUsername=${encodeURIComponent(botUsername)}`,
             {
@@ -91,7 +91,7 @@ const ClientAgents = (superclass: any) => class extends superclass {
                     until,
                     days,
                     prompt,
-                    unreads_only,
+                    team_id,
                 },
             },
         );

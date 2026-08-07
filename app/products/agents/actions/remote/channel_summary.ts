@@ -5,24 +5,33 @@ import {fetchMyChannel, switchToChannelById} from '@actions/remote/channel';
 import DatabaseManager from '@database/manager';
 import NetworkManager from '@managers/network_manager';
 import {getMyChannel} from '@queries/servers/channel';
+import {getCurrentTeamId} from '@queries/servers/system';
 import {getFullErrorMessage} from '@utils/errors';
 import {logDebug, logError} from '@utils/log';
 
 import type {ChannelAnalysisOptions, ChannelAnalysisResponse} from '@agents/types/api';
+
+export type ChannelSummaryRequestOptions = ChannelAnalysisOptions & {
+
+    // "Summarize unreads": resolved into a `since` bound from the channel
+    // member's lastViewedAt before the request is sent. The plugin has no
+    // unreads flag of its own; this mirrors what the webapp sends.
+    sinceLastViewed?: boolean;
+};
 
 export async function requestChannelSummary(
     serverUrl: string,
     channelId: string,
     analysisType: string,
     botUsername: string,
-    options?: ChannelAnalysisOptions,
+    options?: ChannelSummaryRequestOptions,
 ): Promise<{data?: ChannelAnalysisResponse; error?: string}> {
     try {
         // Ensure channel exists in database and user has membership before requesting
         // This is critical for offline compatibility - switchToChannelById expects
         // the channel to already exist in the database
         const {database} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
-        const myChannel = await getMyChannel(database, channelId);
+        let myChannel = await getMyChannel(database, channelId);
         if (!myChannel) {
             // Channel doesn't exist or user doesn't have membership - fetch and persist it
             // Use empty string for teamId - fetchMyChannel will use channel.team_id if available
@@ -31,10 +40,24 @@ export async function requestChannelSummary(
                 logDebug('[requestChannelSummary] Failed to fetch channel', getFullErrorMessage(channelResult.error));
                 return {error: getFullErrorMessage(channelResult.error)};
             }
+            myChannel = await getMyChannel(database, channelId);
+        }
+
+        const {sinceLastViewed, ...analysisOptions} = options ?? {};
+        if (sinceLastViewed) {
+            analysisOptions.since = new Date(myChannel?.lastViewedAt ?? 0).toISOString();
+        }
+
+        // The server uses team_id to set the LLM context team for DM/GM
+        // channels (and ignores it otherwise); web always sends the current
+        // team id, so mirror that.
+        const currentTeamId = await getCurrentTeamId(database);
+        if (currentTeamId) {
+            analysisOptions.team_id = currentTeamId;
         }
 
         const client = NetworkManager.getClient(serverUrl);
-        const result = await client.doChannelAnalysis(channelId, analysisType, botUsername, options);
+        const result = await client.doChannelAnalysis(channelId, analysisType, botUsername, analysisOptions);
 
         if (!result?.postid || !result?.channelid) {
             logDebug('[requestChannelSummary] Invalid response - missing postid or channelid');

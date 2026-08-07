@@ -111,6 +111,31 @@ describe('ClientAgents', () => {
         });
     });
 
+    describe('doChannelAnalysis', () => {
+        it('should send since and team_id in the body without an unreads_only field', async () => {
+            await client.doChannelAnalysis('channel-1', 'summarize_channel', 'ai-bot', {
+                since: '2026-08-01T12:34:56.000Z',
+                team_id: 'team-1',
+                prompt: 'focus on decisions',
+            });
+            expect(mockDoFetch).toHaveBeenCalledWith(
+                '/plugins/mattermost-ai/channel/channel-1/analyze?botUsername=ai-bot',
+                {
+                    method: 'post',
+                    body: {
+                        analysis_type: 'summarize_channel',
+                        since: '2026-08-01T12:34:56.000Z',
+                        until: undefined,
+                        days: undefined,
+                        prompt: 'focus on decisions',
+                        team_id: 'team-1',
+                    },
+                },
+            );
+            expect('unreads_only' in mockDoFetch.mock.calls[0][1].body).toBe(false);
+        });
+    });
+
     describe('getConversation', () => {
         it('should make correct API call', async () => {
             await client.getConversation('conv-123');

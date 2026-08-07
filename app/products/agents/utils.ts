@@ -2,7 +2,7 @@
 // See LICENSE.txt for license information.
 
 import {AGENT_POST_TYPES} from '@agents/constants';
-import {ToolApprovalStage, ToolCallStatus, type ToolCall} from '@agents/types';
+import {ChannelAccessLevel, ToolApprovalStage, ToolCallStatus, type ToolCall} from '@agents/types';
 
 import type PostModel from '@typings/database/models/servers/post';
 
@@ -24,6 +24,21 @@ export function resolveSelectedAgent<T extends {id: string; isDefault?: boolean}
     }
 
     return agents.find((a) => a.isDefault) ?? agents[0];
+}
+
+/**
+ * Filter agents to those usable in a given channel, mirroring the plugin
+ * webapp's useBotlistForChannel predicate: All always passes; Allow requires
+ * the channel to be listed in channelIds; Block requires it not to be. Agents
+ * disallowed here would be rejected (403) by the server on use.
+ */
+export function filterAgentsForChannel<T extends {channelAccessLevel: ChannelAccessLevel; channelIds?: string[] | null}>(agents: T[], channelId: string): T[] {
+    return agents.filter((agent) => {
+        const channelIds = agent.channelIds ?? [];
+        return agent.channelAccessLevel === ChannelAccessLevel.All ||
+            (agent.channelAccessLevel === ChannelAccessLevel.Allow && channelIds.includes(channelId)) ||
+            (agent.channelAccessLevel === ChannelAccessLevel.Block && !channelIds.includes(channelId));
+    });
 }
 
 /**

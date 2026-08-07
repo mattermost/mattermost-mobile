@@ -2,14 +2,16 @@
 // See LICENSE.txt for license information.
 
 /**
- * Options for channel analysis requests
+ * Options for channel analysis requests. Mirrors the plugin's request struct
+ * (api/api_channel.go): analysis_type/since/until/days/prompt/team_id.
+ * `team_id` sets the LLM context team for DM/GM channels.
  */
 export type ChannelAnalysisOptions = {
     since?: string;
     until?: string;
     days?: number;
     prompt?: string;
-    unreads_only?: boolean;
+    team_id?: string;
 };
 
 /**

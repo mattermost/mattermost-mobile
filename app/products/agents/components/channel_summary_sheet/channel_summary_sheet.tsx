@@ -7,10 +7,10 @@ import {defineMessages, useIntl, type MessageDescriptor} from 'react-intl';
 import {Alert, Pressable, Text, View} from 'react-native';
 
 import {fetchAIBots} from '@agents/actions/remote/bots';
-import {requestChannelSummary} from '@agents/actions/remote/channel_summary';
+import {requestChannelSummary, type ChannelSummaryRequestOptions} from '@agents/actions/remote/channel_summary';
 import {saveSelectedAgent} from '@agents/actions/remote/preference';
 import {AGENT_ANALYSIS_SUMMARY} from '@agents/constants';
-import {resolveAgentSelection} from '@agents/utils';
+import {filterAgentsForChannel, resolveAgentSelection} from '@agents/utils';
 import CompassIcon from '@components/compass_icon';
 import FloatingTextInput from '@components/floating_input/floating_text_input_label';
 import FormattedText from '@components/formatted_text';
@@ -110,6 +110,23 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
         justifyContent: 'center',
         alignItems: 'center',
     },
+    emptyContainer: {
+        alignItems: 'center',
+        justifyContent: 'center',
+        paddingVertical: 32,
+        paddingHorizontal: 16,
+        gap: 12,
+    },
+    emptyText: {
+        color: changeOpacity(theme.centerChannelColor, 0.72),
+        textAlign: 'center',
+        ...typography('Body', 200, 'Regular'),
+    },
+    privacyFooter: {
+        color: changeOpacity(theme.centerChannelColor, 0.64),
+        paddingTop: 8,
+        ...typography('Body', 75, 'Regular'),
+    },
 }));
 
 const ChannelSummarySheet = ({channelId, bots, selectedAgentId}: Props) => {
@@ -123,9 +140,16 @@ const ChannelSummarySheet = ({channelId, bots, selectedAgentId}: Props) => {
     const [showDatePicker, setShowDatePicker] = useState(false);
     const [showAgentSelector, setShowAgentSelector] = useState(false);
 
+    // Only offer agents the server will accept for this channel; picking a
+    // channel-disallowed agent would 403 on submit.
+    const channelBots = useMemo(
+        () => filterAgentsForChannel(bots, channelId),
+        [bots, channelId],
+    );
+
     const {agent: autoResolvedAgent, showPicker} = useMemo(
-        () => resolveAgentSelection(bots, selectedAgentId),
-        [bots, selectedAgentId],
+        () => resolveAgentSelection(channelBots, selectedAgentId),
+        [channelBots, selectedAgentId],
     );
     const [selectedAgent, setSelectedAgent] = useState<SelectableAgent | null>(autoResolvedAgent);
 
@@ -160,14 +184,14 @@ const ChannelSummarySheet = ({channelId, bots, selectedAgentId}: Props) => {
         }
 
         setSubmitting(true);
-        const options: Record<string, string | number | boolean | undefined> = {};
+        const options: ChannelSummaryRequestOptions = {};
 
         if (option.days) {
             options.days = option.days;
         }
 
         if (option.id === 'unreads') {
-            options.unreads_only = true;
+            options.sinceLastViewed = true;
         }
 
         if (customPrompt.trim()) {
@@ -217,7 +241,7 @@ const ChannelSummarySheet = ({channelId, bots, selectedAgentId}: Props) => {
         }
 
         setSubmitting(true);
-        const options: Record<string, string | number | undefined> = {
+        const options: ChannelSummaryRequestOptions = {
             prompt: customPrompt.trim(),
         };
 
@@ -253,7 +277,7 @@ const ChannelSummarySheet = ({channelId, bots, selectedAgentId}: Props) => {
         const sinceUtc = new Date(Date.UTC(since.getFullYear(), since.getMonth(), since.getDate(), 0, 0, 0));
         const untilUtc = new Date(Date.UTC(until.getFullYear(), until.getMonth(), until.getDate(), 23, 59, 59));
 
-        const options: Record<string, string | number | undefined> = {
+        const options: ChannelSummaryRequestOptions = {
             since: sinceUtc.toISOString(),
             until: untilUtc.toISOString(),
         };
@@ -285,10 +309,30 @@ const ChannelSummarySheet = ({channelId, bots, selectedAgentId}: Props) => {
     const handleCustomPromptSubmitDebounced = usePreventDoubleTap(handleCustomPromptSubmit);
     const handleDateRangeSubmitDebounced = usePreventDoubleTap(handleDateRangeSubmit);
 
+    if (channelBots.length === 0) {
+        return (
+            <BottomSheetScrollView>
+                <View style={styles.emptyContainer}>
+                    <CompassIcon
+                        name='creation-outline'
+                        size={48}
+                        color={changeOpacity(theme.centerChannelColor, 0.48)}
+                    />
+                    <FormattedText
+                        id='agents.channel_summary.no_agents'
+                        defaultMessage='No agents are available for this channel.'
+                        style={styles.emptyText}
+                        testID='agents.channel_summary.no_agents'
+                    />
+                </View>
+            </BottomSheetScrollView>
+        );
+    }
+
     if (showAgentSelector) {
         return (
             <AgentSelectorPanel
-                agents={bots}
+                agents={channelBots}
                 currentAgentUsername={selectedAgent?.username ?? ''}
                 onSelectAgent={handleAgentSelect}
                 onBack={handleAgentSelectorBack}
@@ -379,6 +423,13 @@ const ChannelSummarySheet = ({channelId, bots, selectedAgentId}: Props) => {
                     />
                 ))}
             </View>
+
+            <FormattedText
+                id='agents.channel_summary.only_visible_to_you'
+                defaultMessage='Agents post responses in a direct message which will only be visible to you.'
+                style={styles.privacyFooter}
+                testID='agents.channel_summary.only_visible_to_you'
+            />
 
             {submitting && (
                 <View style={styles.loadingOverlay}>
