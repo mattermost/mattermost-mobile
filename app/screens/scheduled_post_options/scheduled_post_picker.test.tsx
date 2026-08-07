@@ -35,6 +35,7 @@ describe('ScheduledPostOptions', () => {
     const baseProps = {
         onSchedule: jest.fn().mockResolvedValue({data: true}),
         currentUserTimezone: timezone,
+        hasFiles: false,
         isRecurringEnabled: false,
     };
     let database: Database;
@@ -207,13 +208,28 @@ describe('ScheduledPostOptions', () => {
             return onSchedule;
         };
 
-        it('should not render the toggle when the server does not support recurrence', () => {
+        it('should not render the toggle when the feature flag is off', () => {
             renderWithEverything(<ScheduledPostOptions {...baseProps}/>, {database});
 
             expect(screen.queryByTestId(repeatWeeklyTestID)).toBeNull();
         });
 
-        it('should render the toggle off by default when the server supports recurrence', () => {
+        // A file belongs to the first post it is sent with, so the server rejects a recurring post
+        // that has attachments.
+        it('should not render the toggle when the draft has attachments', () => {
+            renderWithEverything(
+                <ScheduledPostOptions
+                    {...baseProps}
+                    hasFiles={true}
+                    isRecurringEnabled={true}
+                />,
+                {database},
+            );
+
+            expect(screen.queryByTestId(repeatWeeklyTestID)).toBeNull();
+        });
+
+        it('should render the toggle off by default when recurrence is available', () => {
             renderWithEverything(
                 <ScheduledPostOptions
                     {...baseProps}

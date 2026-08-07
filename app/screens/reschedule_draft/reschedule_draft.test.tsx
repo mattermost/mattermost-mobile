@@ -77,6 +77,7 @@ describe('RescheduledDraft', () => {
     const mockDraft = {
         scheduledAt: moment().add(1, 'day').valueOf(),
         repeatType: '',
+        files: [],
         toApi: jest.fn().mockResolvedValue({
             scheduled_at: moment().add(1, 'day').valueOf(),
         }),
@@ -434,10 +435,10 @@ describe('RescheduledDraft', () => {
     describe('repeat weekly', () => {
         const repeatWeeklyTestID = 'reschedule_draft.repeat_weekly';
 
-        const renderWithRecurrence = (repeatType: string) => {
+        const renderWithRecurrence = (repeatType: string, files: FileInfo[] = []) => {
             const props = getBaseProps();
             props.isRecurringEnabled = true;
-            props.draft = {...mockDraft, repeatType} as unknown as ScheduledPostModel;
+            props.draft = {...mockDraft, repeatType, files} as unknown as ScheduledPostModel;
 
             return renderWithEverything(<RescheduledDraft {...props}/>, {database});
         };
@@ -454,11 +455,37 @@ describe('RescheduledDraft', () => {
             });
         };
 
-        it('should not render the toggle when the server does not support recurrence', () => {
+        it('should not render the toggle when the feature flag is off', () => {
             const props = getBaseProps();
             const {queryByTestId} = renderWithEverything(<RescheduledDraft {...props}/>, {database});
 
             expect(queryByTestId(repeatWeeklyTestID)).toBeNull();
+        });
+
+        // A file belongs to the first post it is sent with, so the server rejects a recurring post
+        // that has attachments.
+        it('should not render the toggle when the post has attachments', () => {
+            const {queryByTestId} = renderWithRecurrence('', [TestHelper.fakeFileInfo({id: 'file1'})]);
+
+            expect(queryByTestId(repeatWeeklyTestID)).toBeNull();
+        });
+
+        it('should omit the recurrence from the save payload when the toggle is not offered', async () => {
+            const {getByTestId} = renderWithRecurrence('', [TestHelper.fakeFileInfo({id: 'file1'})]);
+            const newDate = moment().add(2, 'days');
+
+            await act(async () => {
+                getByTestId('custom_date_time_picker').props.handleChange(newDate);
+            });
+            await save();
+
+            await waitFor(() => {
+                expect(updateScheduledPost).toHaveBeenCalledWith(
+                    SERVER_URL,
+                    expect.anything(),
+                    {scheduled_at: newDate.valueOf()},
+                );
+            });
         });
 
         it('should pre-check the toggle for a weekly post', () => {

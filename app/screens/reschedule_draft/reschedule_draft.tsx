@@ -74,6 +74,11 @@ const RescheduledDraft: React.FC<Props> = ({
     const wasRepeatingWeekly = isRecurringScheduledPost(draft);
     const [repeatWeekly, setRepeatWeekly] = useState(wasRepeatingWeekly);
 
+    // The server refuses to make a post with attachments recurring, since a file belongs to the first
+    // post it is sent with. An existing weekly post therefore never has files, so this only stops a
+    // one-time post with attachments from being turned into a series.
+    const offerRepeatWeekly = isRecurringEnabled && draft.files.length === 0;
+
     const onClose = useCallback(() => {
         Keyboard.dismiss();
         navigateBack();
@@ -108,16 +113,15 @@ const RescheduledDraft: React.FC<Props> = ({
             return;
         }
 
-        // Omitting the recurrence preserves whatever the post already has, which is what a server too
-        // old to understand it needs.
+        // When the toggle was never offered, omit the recurrence so the post keeps whatever it has.
         let schedulingInfo: UpdateSchedulingInfo = {scheduled_at: parseInt(selectedTime.current, 10)};
-        if (isRecurringEnabled) {
+        if (offerRepeatWeekly) {
             schedulingInfo = {...schedulingInfo, ...getScheduledPostRecurrence(repeatWeekly, currentUserTimezone)};
         }
 
         const res = await updateScheduledPost(serverUrl, draft, schedulingInfo);
         handleUIUpdates(res);
-    }, [currentUserTimezone, draft, handleUIUpdates, intl, isRecurringEnabled, repeatWeekly, selectedTime, serverUrl]));
+    }, [currentUserTimezone, draft, handleUIUpdates, intl, offerRepeatWeekly, repeatWeekly, selectedTime, serverUrl]));
 
     useEffect(() => {
         navigation.setOptions({
@@ -175,7 +179,7 @@ const RescheduledDraft: React.FC<Props> = ({
                     showInitially='date'
                     initialDate={moment(draft.scheduledAt)}
                 />
-                {isRecurringEnabled && (
+                {offerRepeatWeekly && (
                     <View style={styles.toggleOptionContainer}>
                         <PickerOption
                             action={onToggleRepeatWeekly}

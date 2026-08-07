@@ -5,7 +5,6 @@ import {Database} from '@nozbe/watermelondb';
 import {firstValueFrom} from 'rxjs';
 
 import {ActionType} from '@constants';
-import {RECURRING_SCHEDULED_POSTS_VERSION} from '@constants/versions';
 import DatabaseManager from '@database/manager';
 import ServerDataOperator from '@database/operator/server_data_operator';
 import TestHelper from '@test/test_helper';
@@ -289,21 +288,22 @@ describe('Scheduled Post Queries', () => {
     });
 
     describe('observeRecurringScheduledPostsEnabled', () => {
-        const setVersion = (value: string) => operator.handleConfigs({
-            configs: [{id: 'Version', value}],
+        const setFlag = (value: string) => operator.handleConfigs({
+            configs: [{id: 'FeatureFlagRecurringScheduledPosts', value}],
             configsToDelete: [],
             prepareRecordsOnly: false,
         });
 
         it.each([
-            {version: RECURRING_SCHEDULED_POSTS_VERSION.join('.'), expected: true},
-            {version: '11.9.0', expected: false},
-        ])('should be $expected on a $version server', async ({version, expected}) => {
-            await setVersion(version);
+            {value: 'true', expected: true},
+            {value: 'false', expected: false},
+        ])('should be $expected when the feature flag is $value', async ({value, expected}) => {
+            await setFlag(value);
             expect(await firstValueFrom(observeRecurringScheduledPostsEnabled(database))).toBe(expected);
         });
 
-        it('should be false when the server has not reported a version', async () => {
+        // Servers that predate the feature never send the flag at all.
+        it('should be false when the server does not send the feature flag', async () => {
             expect(await firstValueFrom(observeRecurringScheduledPostsEnabled(database))).toBe(false);
         });
     });

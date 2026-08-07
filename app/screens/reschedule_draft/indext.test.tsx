@@ -4,7 +4,6 @@
 import React from 'react';
 
 import {SYSTEM_IDENTIFIERS} from '@constants/database';
-import {RECURRING_SCHEDULED_POSTS_VERSION} from '@constants/versions';
 import DatabaseManager from '@database/manager/__mocks__';
 import {renderWithEverything} from '@test/intl-test-helper';
 import TestHelper from '@test/test_helper';
@@ -77,9 +76,9 @@ describe('EnhancedRescheduledDraft', () => {
         expect(getByTestId('reschedule-draft').props.currentUserTimezone).toBeUndefined();
     });
 
-    it('should enable recurrence from the server version', async () => {
+    it('should enable recurrence from the feature flag', async () => {
         await operator.handleScheduledPosts({scheduledPosts: [TestHelper.fakeScheduledPost({id: 'draft1'})], actionType: 'create', prepareRecordsOnly: false});
-        await operator.handleConfigs({configs: [{id: 'Version', value: RECURRING_SCHEDULED_POSTS_VERSION.join('.')}], configsToDelete: [], prepareRecordsOnly: false});
+        await operator.handleConfigs({configs: [{id: 'FeatureFlagRecurringScheduledPosts', value: 'true'}], configsToDelete: [], prepareRecordsOnly: false});
 
         const {getByTestId} = renderWithEverything(
             <EnhancedRescheduledDraft

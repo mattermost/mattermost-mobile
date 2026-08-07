@@ -11,6 +11,13 @@ import {ScheduledPostOptions} from '@screens/scheduled_post_options/scheduled_po
 
 import type {WithDatabaseArgs} from '@typings/database/database';
 
+export type ScheduledPostOptionsProps = {
+
+    // The server refuses to schedule a recurring post that has attachments, so the draft's files
+    // decide whether the recurrence toggle can be offered at all.
+    hasFiles: boolean;
+}
+
 const enhanced = withObservables([], ({database}: WithDatabaseArgs) => {
     const currentUserTimezone = observeCurrentUser(database).pipe(switchMap((u) => of$(u?.timezone)));
     return {

@@ -64,12 +64,13 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
     },
 }));
 
-type ScheduledPostOptionsProps = {
+type Props = {
     currentUserTimezone?: UserTimezone | null;
+    hasFiles: boolean;
     isRecurringEnabled: boolean;
 }
 
-export function ScheduledPostOptions({currentUserTimezone, isRecurringEnabled}: ScheduledPostOptionsProps) {
+export function ScheduledPostOptions({currentUserTimezone, hasFiles, isRecurringEnabled}: Props) {
     const intl = useIntl();
     const theme = useTheme();
     const [isScheduling, setIsScheduling] = useState(false);
@@ -78,6 +79,10 @@ export function ScheduledPostOptions({currentUserTimezone, isRecurringEnabled}: 
     const [repeatWeekly, setRepeatWeekly] = useState(false);
     const [isError, setIsError] = useState(false);
     const userTimezone = getTimezone(currentUserTimezone);
+
+    // A file is bound to the first post it is attached to, so later occurrences of a weekly post would
+    // silently send without it. The server rejects the combination outright.
+    const offerRepeatWeekly = isRecurringEnabled && !hasFiles;
 
     const style = getStyleSheet(theme);
 
@@ -88,11 +93,11 @@ export function ScheduledPostOptions({currentUserTimezone, isRecurringEnabled}: 
         const iosNumberOfItems = customTimeSelected ? 9 : 4;
         const andriodNumberOfItems = customTimeSelected ? 5 : 4;
         const errorHeight = isError ? ERROR_HEIGHT : 0;
-        const repeatWeeklyHeight = isRecurringEnabled ? OPTIONS_SEPARATOR_HEIGHT + TOGGLE_OPTION_MARGIN_TOP + ITEM_HEIGHT : 0;
+        const repeatWeeklyHeight = offerRepeatWeekly ? OPTIONS_SEPARATOR_HEIGHT + TOGGLE_OPTION_MARGIN_TOP + ITEM_HEIGHT : 0;
         const numberOfItems = Platform.select({ios: iosNumberOfItems, default: andriodNumberOfItems});
         const componentHeight = TITLE_HEIGHT + (numberOfItems * ITEM_HEIGHT) + FOOTER_HEIGHT + errorHeight + repeatWeeklyHeight + bottomSheetAdjust;
         return [1, componentHeight];
-    }, [customTimeSelected, isError, isRecurringEnabled]);
+    }, [customTimeSelected, isError, offerRepeatWeekly]);
 
     const onSelectTime = useCallback((selectedValue: string) => {
         setIsError(false);
@@ -146,7 +151,7 @@ export function ScheduledPostOptions({currentUserTimezone, isRecurringEnabled}: 
                         onSelectOption={onSelectTime}
                         onCustomTimeSelected={setCustomTimeSelected}
                     />
-                    {isRecurringEnabled && (
+                    {offerRepeatWeekly && (
                         <>
                             <View style={style.optionsSeparator}/>
                             <View style={style.toggleOptionContainer}>

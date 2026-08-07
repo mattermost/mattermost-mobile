@@ -207,8 +207,8 @@ function DraftInput({
 
         await blurAndDismissKeyboard();
         CallbackStore.setCallback<((schedulingInfo: SchedulingInfo) => Promise<void | {data?: boolean; error?: unknown}>)>(handleSendMessage);
-        navigateToScreen(Screens.SCHEDULED_POST_OPTIONS);
-    }, [blurAndDismissKeyboard, handleSendMessage, scheduledPostsEnabled]);
+        navigateToScreen(Screens.SCHEDULED_POST_OPTIONS, {hasFiles: files.length > 0});
+    }, [blurAndDismissKeyboard, files.length, handleSendMessage, scheduledPostsEnabled]);
 
     const sendActionDisabled = !canSend || noMentionsError;
     useAnimatedReaction(

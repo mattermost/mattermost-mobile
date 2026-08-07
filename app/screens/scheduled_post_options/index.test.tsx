@@ -7,7 +7,6 @@
 import React from 'react';
 
 import {SYSTEM_IDENTIFIERS} from '@constants/database';
-import {RECURRING_SCHEDULED_POSTS_VERSION} from '@constants/versions';
 import DatabaseManager from '@database/manager/__mocks__';
 import {ScheduledPostOptions} from '@screens/scheduled_post_options/scheduled_post_picker';
 import {renderWithEverything} from '@test/intl-test-helper';
@@ -49,7 +48,7 @@ describe('EnhancedRescheduledDraft', () => {
         await operator.handleUsers({users: [TestHelper.fakeUser({id: 'user1', timezone: {useAutomaticTimezone: false, manualTimezone: 'America/New_York', automaticTimezone: 'America/New_York'}})], prepareRecordsOnly: false});
 
         const {getByTestId} = renderWithEverything(
-            <EnhancedScheduledPostPicker/>,
+            <EnhancedScheduledPostPicker hasFiles={false}/>,
             {database},
         );
 
@@ -65,7 +64,7 @@ describe('EnhancedRescheduledDraft', () => {
         await operator.handleUsers({users: [TestHelper.fakeUser({id: 'user1', timezone: undefined})], prepareRecordsOnly: false});
 
         const {getByTestId} = renderWithEverything(
-            <EnhancedScheduledPostPicker/>,
+            <EnhancedScheduledPostPicker hasFiles={false}/>,
             {database},
         );
 
@@ -73,11 +72,11 @@ describe('EnhancedRescheduledDraft', () => {
         expect(getByTestId('scheduled-post-options').props.currentUserTimezone).toBeUndefined();
     });
 
-    it('should enable recurrence from the server version', async () => {
-        await operator.handleConfigs({configs: [{id: 'Version', value: RECURRING_SCHEDULED_POSTS_VERSION.join('.')}], configsToDelete: [], prepareRecordsOnly: false});
+    it('should enable recurrence from the feature flag', async () => {
+        await operator.handleConfigs({configs: [{id: 'FeatureFlagRecurringScheduledPosts', value: 'true'}], configsToDelete: [], prepareRecordsOnly: false});
 
         const {getByTestId} = renderWithEverything(
-            <EnhancedScheduledPostPicker/>,
+            <EnhancedScheduledPostPicker hasFiles={false}/>,
             {database},
         );
 

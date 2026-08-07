@@ -52,10 +52,9 @@ export type UpdateSchedulingInfo = {scheduled_at: number} & (
 /**
  * Reschedules an existing scheduled post.
  *
- * `schedulingInfo` overrides the post's own fields. The server treats the PUT body as a full
- * overwrite, so omitting the recurrence preserves it — `toApi()` round-trips `repeat_type` and
- * `repeat_timezone` off the model — while passing it overrides it, and `repeat_type: ''` makes the
- * post one-time.
+ * `schedulingInfo` overrides the post's own fields. Omitting the recurrence preserves it —
+ * `toApi()` round-trips `repeat_type` and `repeat_timezone` off the model — while passing it
+ * overrides it, and `repeat_type: ''` makes the post one-time.
  */
 export async function updateScheduledPost(serverUrl: string, scheduledPost: ScheduledPost | ScheduledPostModel, schedulingInfo: UpdateSchedulingInfo, fetchOnly = false) {
     try {
