@@ -2,14 +2,19 @@
 // See LICENSE.txt for license information.
 
 /**
- * Options for channel analysis requests
+ * Options for channel analysis requests. Mirrors the request struct the
+ * plugin binds in handleChannelAnalysis (analysis_type/since/until/days/
+ * prompt/team_id — there is no unreads_only server-side).
  */
 export type ChannelAnalysisOptions = {
     since?: string;
     until?: string;
     days?: number;
     prompt?: string;
-    unreads_only?: boolean;
+
+    // Lets the server set the team context for DM/GM channels, which have
+    // no team of their own.
+    team_id?: string;
 };
 
 /**
@@ -33,6 +38,12 @@ export type Agent = {
 
     // System-wide default agent flag. Omitted by the server when false.
     isDefault?: boolean;
+
+    // Channel scoping (llm.ChannelAccessLevel semantics: 0 all, 1 allow
+    // only channelIDs, 2 block channelIDs, 3 none). User-level restrictions
+    // are already applied server-side before /ai_bots returns.
+    channelAccessLevel?: number;
+    channelIDs?: string[];
 };
 
 /**

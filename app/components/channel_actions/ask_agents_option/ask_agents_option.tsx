@@ -14,12 +14,16 @@ type Props = {
     channelId: string;
     showAsLabel?: boolean;
     testID?: string;
+    isAnalysisLicensed: boolean;
+    hasAgents: boolean;
 }
 
 const AskAgentsOption = ({
     channelId,
     showAsLabel,
     testID,
+    isAnalysisLicensed,
+    hasAgents,
 }: Props) => {
     const intl = useIntl();
 
@@ -40,6 +44,12 @@ const AskAgentsOption = ({
             [1, Platform.select({ios: '60%', default: '40%'})],
         );
     }, [channelId]);
+
+    // Channel analysis is a licensed plugin feature (the server would 403),
+    // and with no agents at all every path through the sheet dead-ends.
+    if (!isAnalysisLicensed || !hasAgents) {
+        return null;
+    }
 
     if (showAsLabel) {
         return (

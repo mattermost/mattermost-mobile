@@ -5,7 +5,7 @@ import {AGENT_POST_TYPES} from '@agents/constants';
 import {ToolApprovalStage, ToolCallStatus, type ToolCall} from '@agents/types';
 import TestHelper from '@test/test_helper';
 
-import {isAgentMentionReminderPost, isAgentPost, isPostRequester, isToolCallRedacted, isPendingToolResult, getToolApprovalStage, mergeToolCalls, resolveAgentSelection, resolveSelectedAgent} from './utils';
+import {isAgentMentionReminderPost, isAgentPost, isPostRequester, isToolCallRedacted, isPendingToolResult, getToolApprovalStage, isAgentAvailableInChannel, mergeToolCalls, resolveAgentSelection, resolveSelectedAgent} from './utils';
 
 describe('isAgentPost', () => {
     describe('with Post objects', () => {
@@ -365,6 +365,27 @@ describe('resolveSelectedAgent', () => {
 
     it('should prefer the saved preference over the system default', () => {
         expect(resolveSelectedAgent(agents, 'a1')).toBe(a1);
+    });
+});
+
+describe('isAgentAvailableInChannel', () => {
+    it('should allow agents with the All level anywhere, and treat a missing level as All', () => {
+        expect(isAgentAvailableInChannel({channelAccessLevel: 0, channelIDs: []}, 'ch1')).toBe(true);
+        expect(isAgentAvailableInChannel({}, 'ch1')).toBe(true);
+    });
+
+    it('should honor allow-lists and block-lists', () => {
+        const allowed = {channelAccessLevel: 1, channelIDs: ['ch1']};
+        expect(isAgentAvailableInChannel(allowed, 'ch1')).toBe(true);
+        expect(isAgentAvailableInChannel(allowed, 'ch2')).toBe(false);
+
+        const blocked = {channelAccessLevel: 2, channelIDs: ['ch1']};
+        expect(isAgentAvailableInChannel(blocked, 'ch1')).toBe(false);
+        expect(isAgentAvailableInChannel(blocked, 'ch2')).toBe(true);
+    });
+
+    it('should always filter agents with the None level', () => {
+        expect(isAgentAvailableInChannel({channelAccessLevel: 3, channelIDs: []}, 'ch1')).toBe(false);
     });
 });
 

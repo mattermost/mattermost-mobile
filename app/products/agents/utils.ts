@@ -2,7 +2,7 @@
 // See LICENSE.txt for license information.
 
 import {AGENT_POST_TYPES} from '@agents/constants';
-import {ToolApprovalStage, ToolCallStatus, type ToolCall} from '@agents/types';
+import {ChannelAccessLevel, ToolApprovalStage, ToolCallStatus, type ToolCall} from '@agents/types';
 
 import type PostModel from '@typings/database/models/servers/post';
 
@@ -46,6 +46,20 @@ export function resolveAgentSelection<T extends {id: string; isDefault?: boolean
     }
 
     return {agent: resolveSelectedAgent(agents, savedPrefId), showPicker: true};
+}
+
+/**
+ * Whether an agent may be used in a given channel, per its channel-scope
+ * configuration. Mirrors the webapp's useBotlistForChannel predicate; the
+ * 'none' access level (3) fails every branch and is always filtered.
+ * User-level restrictions are applied server-side before /ai_bots returns.
+ */
+export function isAgentAvailableInChannel<T extends {channelAccessLevel?: number; channelIDs?: string[]}>(agent: T, channelId: string): boolean {
+    const channelIds = agent.channelIDs ?? [];
+    const level = agent.channelAccessLevel ?? ChannelAccessLevel.All;
+    return level === ChannelAccessLevel.All ||
+        (level === ChannelAccessLevel.Allow && channelIds.includes(channelId)) ||
+        (level === ChannelAccessLevel.Block && !channelIds.includes(channelId));
 }
 
 /**

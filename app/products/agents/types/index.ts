@@ -176,6 +176,7 @@ export const ChannelAccessLevel = {
     All: 0,
     Allow: 1,
     Block: 2,
+    None: 3,
 } as const;
 
 // eslint-disable-next-line @typescript-eslint/no-redeclare -- TypeScript supports same-name type/value pairs as enum alternative

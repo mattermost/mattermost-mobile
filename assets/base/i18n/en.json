@@ -23,6 +23,8 @@
   "agents.channel_summary.date_picker.submit": "Summarize",
   "agents.channel_summary.date_picker.title": "Select date range",
   "agents.channel_summary.error_title": "Unable to start summary",
+  "agents.channel_summary.no_agents": "No agents are available in this channel. Contact your system admin.",
+  "agents.channel_summary.only_visible_to_you": "Results are only visible to you",
   "agents.channel_summary.option.14d": "Summarize last 14 days",
   "agents.channel_summary.option.7d": "Summarize last 7 days",
   "agents.channel_summary.option.custom": "Select date range to summarize",
