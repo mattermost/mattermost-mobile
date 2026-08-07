@@ -101,13 +101,13 @@ describe('AgentsHandler', () => {
         });
 
         it('should update existing thread record when data changes', async () => {
-            await operator.handleAIThreads({threads: [TestHelper.fakeAiThread({id: 'thread1', message: 'Old message'})], prepareRecordsOnly: false});
+            await operator.handleAIThreads({threads: [TestHelper.fakeAiThread({id: 'thread1', turn_count: 2})], prepareRecordsOnly: false});
 
-            await operator.handleAIThreads({threads: [TestHelper.fakeAiThread({id: 'thread1', message: 'New message'})], prepareRecordsOnly: false});
+            await operator.handleAIThreads({threads: [TestHelper.fakeAiThread({id: 'thread1', turn_count: 4})], prepareRecordsOnly: false});
 
             const records = await operator.database.collections.get<AiThreadModel>(AI_THREAD).query().fetch();
             expect(records).toHaveLength(1);
-            expect(records[0].message).toBe('New message');
+            expect(records[0].turnCount).toBe(4);
         });
 
         it('should delete stale threads not in the incoming list', async () => {

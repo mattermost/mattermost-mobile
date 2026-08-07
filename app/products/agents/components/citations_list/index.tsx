@@ -159,8 +159,8 @@ const CitationsList = ({annotations}: CitationsListProps) => {
                 >
                     {annotations.map((annotation) => (
                         <Pressable
-                            key={`citation-${annotation.index}-${annotation.url}`}
-                            onPress={() => handleCitationPress(annotation.url)}
+                            key={`citation-${annotation.index}-${annotation.url ?? ''}`}
+                            onPress={() => handleCitationPress(annotation.url ?? '')}
                             style={({pressed}) => [styles.citationItem, pressed && {opacity: 0.72}]}
                             testID={`citations.list.item.${annotation.index}`}
                         >
@@ -176,13 +176,13 @@ const CitationsList = ({annotations}: CitationsListProps) => {
                                     style={styles.citationTitle}
                                     numberOfLines={2}
                                 >
-                                    {annotation.title || getUrlDomain(annotation.url)}
+                                    {annotation.title || getUrlDomain(annotation.url ?? '')}
                                 </Text>
                                 <Text
                                     style={styles.citationUrl}
                                     numberOfLines={1}
                                 >
-                                    {getUrlDomain(annotation.url)}
+                                    {getUrlDomain(annotation.url ?? '')}
                                 </Text>
                             </View>
                             <CompassIcon

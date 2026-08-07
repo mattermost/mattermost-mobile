@@ -60,7 +60,7 @@ const {PLAYBOOK_RUN, PLAYBOOK_CHECKLIST, PLAYBOOK_CHECKLIST_ITEM, PLAYBOOK_RUN_A
 describe('*** Test schema for SERVER database ***', () => {
     it('=> The SERVER SCHEMA should strictly match', () => {
         expect(serverSchema).toEqual({
-            version: 20,
+            version: 21,
             unsafeSql: undefined,
             tables: {
                 [AI_BOT]: {
@@ -76,6 +76,7 @@ describe('*** Test schema for SERVER database ***', () => {
                         user_access_level: {name: 'user_access_level', type: 'number'},
                         user_ids: {name: 'user_ids', type: 'string'},
                         team_ids: {name: 'team_ids', type: 'string'},
+                        is_default: {name: 'is_default', type: 'boolean'},
                     },
                     columnArray: [
                         {name: 'display_name', type: 'string'},
@@ -87,6 +88,7 @@ describe('*** Test schema for SERVER database ***', () => {
                         {name: 'user_access_level', type: 'number'},
                         {name: 'user_ids', type: 'string'},
                         {name: 'team_ids', type: 'string'},
+                        {name: 'is_default', type: 'boolean'},
                     ],
                 },
                 [AI_THREAD]: {
@@ -97,6 +99,7 @@ describe('*** Test schema for SERVER database ***', () => {
                         title: {name: 'title', type: 'string'},
                         channel_id: {name: 'channel_id', type: 'string', isIndexed: true},
                         reply_count: {name: 'reply_count', type: 'number'},
+                        turn_count: {name: 'turn_count', type: 'number'},
                         update_at: {name: 'update_at', type: 'number', isIndexed: true},
                     },
                     columnArray: [
@@ -104,6 +107,7 @@ describe('*** Test schema for SERVER database ***', () => {
                         {name: 'title', type: 'string'},
                         {name: 'channel_id', type: 'string', isIndexed: true},
                         {name: 'reply_count', type: 'number'},
+                        {name: 'turn_count', type: 'number'},
                         {name: 'update_at', type: 'number', isIndexed: true},
                     ],
                 },

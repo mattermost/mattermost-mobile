@@ -1,12 +1,13 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React, {useCallback, useEffect, useMemo, useRef} from 'react';
+import React, {useCallback, useEffect, useMemo, useRef, useState} from 'react';
 import {View} from 'react-native';
 
 import {refetchConversation} from '@agents/actions/remote/conversation';
 import {regenerateResponse, stopGeneration} from '@agents/actions/remote/generation_controls';
 import {isConversationRequester} from '@agents/requester';
+import {useAgentsConfig} from '@agents/store/agents_config';
 import {useConversation} from '@agents/store/conversation_store';
 import streamingStore, {useStreamingState} from '@agents/store/streaming_store';
 import {
@@ -14,9 +15,11 @@ import {
     anyToolHasResult,
     buildRoundsFromTurns,
     deriveApprovalStageForPost,
+    stripCitationClutter,
 } from '@agents/turn_content';
 import {ToolApprovalStage, type Annotation, type Round} from '@agents/types';
 import FormattedText from '@components/formatted_text';
+import Loading from '@components/loading';
 import Markdown from '@components/markdown';
 import {SNACK_BAR_TYPE} from '@constants/snack_bar';
 import {useServerUrl} from '@context/server';
@@ -37,6 +40,9 @@ import type {AvailableScreens} from '@typings/screens/navigation';
 
 // Sentinel id for the in-progress streaming round; persisted rounds use turn ids.
 const LIVE_ROUND_ID = 'live';
+
+// Backoff ladder for the terminal-state self-heal refetch (see below).
+const SELF_HEAL_DELAYS_MS = [500, 2000, 5000];
 
 const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
     return {
@@ -98,11 +104,20 @@ const RoundView = ({
 }: RoundViewProps) => {
     const theme = useTheme();
     const styles = getStyleSheet(theme);
+    const serverUrl = useServerUrl();
+
+    // Agent post content may be prompt-injected, so links/channel links/
+    // hashtags/LaTeX stay inert unless the admin allowed them (matches web).
+    const {allowUnsafeLinks} = useAgentsConfig(serverUrl);
 
     // The server filters per-user already, so non-DMs hide tools whose
     // arguments/results were redacted for this viewer.
     const showArguments = isDM || anyToolHasArguments(round.toolCalls);
     const showResults = isDM || anyToolHasResult(round.toolCalls);
+
+    // Structured citations render in the Sources list; strip the inline
+    // "(source: https://…)" duplicates some OpenAI models emit.
+    const messageText = useMemo(() => stripCitationClutter(round.text), [round.text]);
 
     return (
         <View style={isFirst ? undefined : styles.roundSpacing}>
@@ -116,9 +131,10 @@ const RoundView = ({
                 <View style={styles.messageContainer}>
                     <Markdown
                         baseTextStyle={styles.messageText}
-                        value={round.text}
+                        value={messageText}
                         theme={theme}
                         location={location}
+                        isUnsafeLinksPost={!allowUnsafeLinks}
                     />
                     {showCursor && (
                         <StreamingIndicator/>
@@ -161,10 +177,22 @@ const AgentPostNew = ({post, conversationId, currentUserId, location, isDM}: Age
     const isReasoningLoading = streamingState?.isReasoningLoading ?? false;
     const isGenerationInProgress = isGenerating || isReasoningLoading;
 
+    // Suppresses persistedRounds while regenerating so the prior generation
+    // doesn't render above the new stream — the server has already deleted
+    // those turns. Cleared once the post-stream refetch lands.
+    const [isRegenerating, setIsRegenerating] = useState(false);
+    const isRegeneratingRef = useRef(isRegenerating);
+    isRegeneratingRef.current = isRegenerating;
+
     // Persisted rounds derived from the conversation turns (the server truth).
     const persistedRounds = useMemo(
-        () => (conversation ? buildRoundsFromTurns(conversation, post.id) : []),
-        [conversation, post.id],
+        () => {
+            if (!conversation || isRegenerating) {
+                return [];
+            }
+            return buildRoundsFromTurns(conversation, post.id);
+        },
+        [conversation, post.id, isRegenerating],
     );
 
     // The in-progress round assembled from the live streaming buffers.
@@ -213,7 +241,13 @@ const AgentPostNew = ({post, conversationId, currentUserId, location, isDM}: Age
         const wasGenerating = wasGeneratingRef.current;
         wasGeneratingRef.current = isGenerating;
         if (wasGenerating && !isGenerating) {
-            refetchConversation(serverUrl, conversationId);
+            const refetch = refetchConversation(serverUrl, conversationId);
+
+            // Once the refetch after a regeneration stream lands, the cached
+            // conversation reflects the regenerated turns; stop suppressing.
+            if (isRegeneratingRef.current) {
+                refetch.then(() => setIsRegenerating(false));
+            }
         }
     }, [serverUrl, conversationId, isGenerating]);
 
@@ -243,6 +277,48 @@ const AgentPostNew = ({post, conversationId, currentUserId, location, isDM}: Age
         }
     }, [streamingState, isGenerationInProgress, persistedRounds.length, serverUrl, post.id]);
 
+    // Terminal-state self-heal: POST_EDITED clears the streaming state, but the
+    // stream-end refetch can race the server's turn finalization and cache a
+    // conversation that predates this post's turns. When a streaming session
+    // for this post cleared and the cached conversation still has no rounds for
+    // it, retry the fetch on a short backoff ladder so the post doesn't render
+    // blank until a remount. Server-side persistence can lag stream-end by
+    // seconds, so a single immediate refetch isn't enough. Bounded per
+    // streaming session; cold mounts never fire.
+    const hadStreamingRef = useRef(false);
+    const selfHealAttemptRef = useRef(0);
+    useEffect(() => {
+        if (streamingState) {
+            hadStreamingRef.current = true;
+            selfHealAttemptRef.current = 0;
+            return undefined;
+        }
+        if (isRegenerating) {
+            // Regeneration clears the streaming state and suppresses the
+            // persisted rounds on purpose; the post-stream refetch handles it.
+            return undefined;
+        }
+        if (!hadStreamingRef.current || conversationLoading || conversationError) {
+            return undefined;
+        }
+        if (persistedRounds.length > 0) {
+            // Healed (or was never stale) — disarm until the next session.
+            hadStreamingRef.current = false;
+            return undefined;
+        }
+        if (selfHealAttemptRef.current >= SELF_HEAL_DELAYS_MS.length) {
+            // Give up; conversation legitimately has no rounds for this post.
+            hadStreamingRef.current = false;
+            return undefined;
+        }
+        const delay = SELF_HEAL_DELAYS_MS[selfHealAttemptRef.current];
+        selfHealAttemptRef.current += 1;
+        const timer = setTimeout(() => {
+            refetchConversation(serverUrl, conversationId);
+        }, delay);
+        return () => clearTimeout(timer);
+    }, [streamingState, isRegenerating, conversationLoading, conversationError, persistedRounds.length, serverUrl, conversationId]);
+
     const isRequester = isConversationRequester({post, conversation, currentUserId});
     const canApprove = isRequester;
     const canExpand = isRequester;
@@ -261,10 +337,12 @@ const AgentPostNew = ({post, conversationId, currentUserId, location, isDM}: Age
         const all: Annotation[] = [];
         for (const round of renderedRounds) {
             for (const annotation of round.annotations) {
-                if (annotation.url && seen.has(annotation.url)) {
-                    continue;
+                if (annotation.url) {
+                    if (seen.has(annotation.url)) {
+                        continue;
+                    }
+                    seen.add(annotation.url);
                 }
-                seen.add(annotation.url);
                 all.push(annotation);
             }
         }
@@ -290,10 +368,13 @@ const AgentPostNew = ({post, conversationId, currentUserId, location, isDM}: Age
 
     const handleRegenerate = useCallback(async () => {
         // Clear the streaming store so the new stream starts from a clean slate
-        // instead of showing the previous round's data.
+        // instead of showing the previous round's data, and suppress the prior
+        // persisted rounds — the server deletes them on regeneration.
+        setIsRegenerating(true);
         streamingStore.removePost(serverUrl, post.id);
         const {error} = await regenerateResponse(serverUrl, post.id);
         if (error) {
+            setIsRegenerating(false);
             showSnackBar({barType: SNACK_BAR_TYPE.AGENT_REGENERATE_ERROR});
         }
     }, [serverUrl, post.id]);
@@ -334,6 +415,17 @@ const AgentPostNew = ({post, conversationId, currentUserId, location, isDM}: Age
                         style={styles.precontentText}
                     />
                     <StreamingIndicator/>
+                </View>
+            )}
+            {!hasContent && !isPrecontent && !conversationError && (conversationLoading || isRegenerating) && (
+                <View
+                    style={styles.precontentContainer}
+                    testID='agents.agent_post.loading'
+                >
+                    <Loading
+                        size='small'
+                        color={changeOpacity(theme.centerChannelColor, 0.6)}
+                    />
                 </View>
             )}
             {annotations.length > 0 && (

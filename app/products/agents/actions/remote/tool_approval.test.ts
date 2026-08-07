@@ -34,7 +34,7 @@ describe('submitToolApproval', () => {
         const result = await submitToolApproval(serverUrl, postId, acceptedToolIds);
 
         expect(NetworkManager.getClient).toHaveBeenCalledWith(serverUrl);
-        expect(mockClient.submitToolApproval).toHaveBeenCalledWith(postId, acceptedToolIds);
+        expect(mockClient.submitToolApproval).toHaveBeenCalledWith(postId, acceptedToolIds, undefined);
         expect(result).toEqual({});
         expect(result.error).toBeUndefined();
     });

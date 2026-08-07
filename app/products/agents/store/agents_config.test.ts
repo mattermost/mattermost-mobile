@@ -25,14 +25,14 @@ describe('AgentsConfigStore', () => {
     describe('getAgentsConfig / setAgentsConfig', () => {
         it('should return default config for a new server URL', () => {
             const config = getAgentsConfig('server1');
-            expect(config).toEqual({pluginEnabled: false});
+            expect(config).toEqual({pluginEnabled: false, allowUnsafeLinks: false});
         });
 
         it('should update config when setAgentsConfig is called', () => {
             setAgentsConfig('server1', {pluginEnabled: true});
 
             const config = getAgentsConfig('server1');
-            expect(config).toEqual({pluginEnabled: true});
+            expect(config).toEqual({pluginEnabled: true, allowUnsafeLinks: false});
         });
 
         it('should merge partial config updates', () => {
@@ -50,8 +50,8 @@ describe('AgentsConfigStore', () => {
             setAgentsConfig('server1', {pluginEnabled: true});
             setAgentsConfig('server2', {pluginEnabled: false});
 
-            expect(getAgentsConfig('server1')).toEqual({pluginEnabled: true});
-            expect(getAgentsConfig('server2')).toEqual({pluginEnabled: false});
+            expect(getAgentsConfig('server1')).toEqual({pluginEnabled: true, allowUnsafeLinks: false});
+            expect(getAgentsConfig('server2')).toEqual({pluginEnabled: false, allowUnsafeLinks: false});
         });
     });
 
@@ -64,7 +64,7 @@ describe('AgentsConfigStore', () => {
             });
 
             expect(receivedConfigs).toHaveLength(1);
-            expect(receivedConfigs[0]).toEqual({pluginEnabled: false});
+            expect(receivedConfigs[0]).toEqual({pluginEnabled: false, allowUnsafeLinks: false});
 
             subscription.unsubscribe();
         });
@@ -79,7 +79,7 @@ describe('AgentsConfigStore', () => {
             setAgentsConfig('server1', {pluginEnabled: true});
 
             expect(receivedConfigs).toHaveLength(2);
-            expect(receivedConfigs[1]).toEqual({pluginEnabled: true});
+            expect(receivedConfigs[1]).toEqual({pluginEnabled: true, allowUnsafeLinks: false});
 
             subscription.unsubscribe();
         });
@@ -93,16 +93,16 @@ describe('useAgentsConfig', () => {
 
     it('should return default config initially', () => {
         const {result} = renderHook(() => useAgentsConfig('hook-test-default'));
-        expect(result.current).toEqual({pluginEnabled: false});
+        expect(result.current).toEqual({pluginEnabled: false, allowUnsafeLinks: false});
     });
 
     it('should update when config changes', () => {
         const {result} = renderHook(() => useAgentsConfig('hook-test-update'));
-        expect(result.current).toEqual({pluginEnabled: false});
+        expect(result.current).toEqual({pluginEnabled: false, allowUnsafeLinks: false});
 
         act(() => {
             setAgentsConfig('hook-test-update', {pluginEnabled: true});
         });
-        expect(result.current).toEqual({pluginEnabled: true});
+        expect(result.current).toEqual({pluginEnabled: true, allowUnsafeLinks: false});
     });
 });

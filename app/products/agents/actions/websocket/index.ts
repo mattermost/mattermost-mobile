@@ -1,6 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import {fetchAgents} from '@agents/actions/remote/agents';
 import {refetchConversation} from '@agents/actions/remote/conversation';
 import streamingStore from '@agents/store/streaming_store';
 
@@ -33,4 +34,14 @@ export function handleAgentConversationUpdated(
         return;
     }
     refetchConversation(serverUrl, conversationId);
+}
+
+/**
+ * Handle the plugin's bots_invalidate broadcast: an agent was created,
+ * updated or deleted server-side. Refetch the unified agent list so the
+ * cached bots (and the composer AI gate that derives from them) update
+ * without an app restart.
+ */
+export function handleAgentsBotsInvalidate(serverUrl: string): void {
+    fetchAgents(serverUrl);
 }

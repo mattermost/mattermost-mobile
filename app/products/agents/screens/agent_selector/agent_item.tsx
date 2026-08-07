@@ -21,7 +21,7 @@ const AgentItem = ({agent, selectedAgentId, onSelect}: Props) => {
     return (
         <OptionItem
             label={agent.displayName}
-            description={`@${agent.username} • ${agent.service_type}`}
+            description={`@${agent.username}`}
             action={handleSelect}
             type='radio'
             selected={agent.id === selectedAgentId}

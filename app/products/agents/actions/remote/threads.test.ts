@@ -35,14 +35,13 @@ beforeEach(() => {
 });
 
 describe('fetchAIThreads', () => {
-    it('should normalise plugin >= 2.0 threads so id is the root post id', async () => {
+    it('should normalise threads so id is the root post id and carry turn_count', async () => {
         mockClient.getAIThreads.mockResolvedValue([
             {
                 id: 'conv-abc',
-                message: '',
                 title: 'A chat',
                 channel_id: 'dm-1',
-                reply_count: 3,
+                turn_count: 3,
                 update_at: 100,
                 root_post_id: 'post-xyz',
                 bot_id: 'bot-1',
@@ -55,10 +54,9 @@ describe('fetchAIThreads', () => {
         expect(mockOperator.handleAIThreads).toHaveBeenCalledWith({
             threads: [{
                 id: 'post-xyz',
-                message: '',
                 title: 'A chat',
                 channel_id: 'dm-1',
-                reply_count: 3,
+                turn_count: 3,
                 update_at: 100,
                 root_post_id: 'post-xyz',
                 bot_id: 'bot-1',
@@ -69,17 +67,15 @@ describe('fetchAIThreads', () => {
         expect(result.threads?.[0].id).toBe('post-xyz');
     });
 
-    it('should preserve plugin < 2.0 shape where id is already the root post id', async () => {
+    it('should drop rows without a root_post_id (plugin < 2.0 shape is unsupported)', async () => {
         mockClient.getAIThreads.mockResolvedValue([
-            {id: 'post-legacy', channel_id: 'dm-1', title: 'Legacy', reply_count: 1, update_at: 50},
+            {id: 'post-legacy', channel_id: 'dm-1', title: 'Legacy', update_at: 50},
         ]);
 
         const result = await fetchAIThreads(serverUrl);
 
         expect(result.error).toBeUndefined();
-        expect(result.threads).toHaveLength(1);
-        expect(result.threads?.[0].id).toBe('post-legacy');
-        expect(result.threads?.[0].root_post_id).toBeUndefined();
+        expect(result.threads).toHaveLength(0);
     });
 
     it('should drop threadless plugin >= 2.0 conversations that have no root post yet', async () => {

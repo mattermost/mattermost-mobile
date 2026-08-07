@@ -4,6 +4,7 @@
 import React from 'react';
 import {type StyleProp, View, type ViewStyle} from 'react-native';
 
+import NewMessagesAskAgents from '@agents/components/new_messages_ask_agents';
 import FormattedText from '@components/formatted_text';
 import {makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
@@ -12,6 +13,11 @@ type NewMessagesLineProps = {
     style?: StyleProp<ViewStyle>;
     theme: Theme;
     testID?: string;
+
+    // When provided, an "Ask Agents" unreads-summary button renders on the
+    // separator (subject to its own license/agent gating).
+    channelId?: string;
+    lastViewedAt?: number;
 }
 
 const getStyleFromTheme = makeStyleSheetFromTheme((theme: Theme) => {
@@ -38,7 +44,7 @@ const getStyleFromTheme = makeStyleSheetFromTheme((theme: Theme) => {
     };
 });
 
-function NewMessagesLine({style, testID, theme}: NewMessagesLineProps) {
+function NewMessagesLine({style, testID, theme, channelId, lastViewedAt}: NewMessagesLineProps) {
     const styles = getStyleFromTheme(theme);
 
     return (
@@ -52,6 +58,12 @@ function NewMessagesLine({style, testID, theme}: NewMessagesLineProps) {
                     testID={testID}
                 />
             </View>
+            {channelId && lastViewedAt ? (
+                <NewMessagesAskAgents
+                    channelId={channelId}
+                    lastViewedAt={lastViewedAt}
+                />
+            ) : null}
             <View style={styles.line}/>
         </View>
     );
