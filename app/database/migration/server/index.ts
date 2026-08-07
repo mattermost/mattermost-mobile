@@ -18,6 +18,7 @@ const {
     CUSTOM_PROFILE_ATTRIBUTE,
     CUSTOM_PROFILE_FIELD,
     DRAFT,
+    DRAFT_OUTBOX,
     FILE,
     MY_CHANNEL,
     POST,
@@ -31,6 +32,35 @@ const {AI_BOT, AI_THREAD} = AGENTS_TABLES;
 const {BOARD_VIEW} = BOARDS_TABLES;
 
 export default schemaMigrations({migrations: [
+    {
+        toVersion: 21,
+        steps: [
+            addColumns({
+                table: DRAFT,
+                columns: [
+                    {name: 'server_update_at', type: 'number', isOptional: true},
+                    {name: 'props', type: 'string', isOptional: true},
+                    {name: 'file_ids', type: 'string', isOptional: true},
+                ],
+            }),
+            createTable({
+                name: DRAFT_OUTBOX,
+                columns: [
+                    {name: 'channel_id', type: 'string', isIndexed: true},
+                    {name: 'root_id', type: 'string', isIndexed: true},
+                    {name: 'team_id', type: 'string', isIndexed: true},
+                    {name: 'operation', type: 'string'},
+                    {name: 'generation', type: 'number'},
+                    {name: 'keep_local', type: 'boolean'},
+                    {name: 'attempt_count', type: 'number'},
+                    {name: 'next_attempt_at', type: 'number'},
+                    {name: 'status', type: 'string'},
+                    {name: 'last_error_code', type: 'string', isOptional: true},
+                    {name: 'deleted_fingerprint', type: 'string', isOptional: true},
+                ],
+            }),
+        ],
+    },
     {
         toVersion: 20,
         steps: [

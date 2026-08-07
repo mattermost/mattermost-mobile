@@ -1,4 +1,4 @@
-# Server Database - Schema Version 20
+# Server Database - Schema Version 21
 # Please bump the version by 1, any time the schema changes.
 # Also, include the migration plan under app/database/migration/server,
 # update all models, relationships and types.
@@ -96,7 +96,28 @@ channel_id string  INDEX FK >- Channel.id
 files string #stringify (array)
 message string
 root_id string INDEX NULL FK >- Post.id
+metadata string NULL
+update_at number
 type string NULL
+server_update_at number NULL # last server-stamped update_at observed; ancestry hint, not a revision
+props string NULL #stringify (object)
+file_ids string NULL #stringify (array); authoritative portable server attachment IDs
+
+
+DraftOutbox
+-
+id PK string # deterministic: `${channel_id}-${root_id || 'root'}`
+channel_id string INDEX FK >- Channel.id
+root_id string INDEX # empty for channel draft; root post ID for reply
+team_id string INDEX # team scope; empty string for DM/GM
+operation string # upsert | delete
+generation number # monotonically increasing local mutation generation
+keep_local boolean # preserve visible unsyncable local Draft after removing stale remote representation
+attempt_count number
+next_attempt_at number # 0 means immediately eligible
+status string # pending | waiting_for_upload | blocked_upload | confirming_delete | blocked
+last_error_code string NULL
+deleted_fingerprint string NULL # non-reversible content hash of deleted content at enqueue time
 
 
 ScheduledPost

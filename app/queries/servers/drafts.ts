@@ -7,7 +7,21 @@ import {of as of$, switchMap} from 'rxjs';
 import {MM_TABLES} from '@constants/database';
 import DraftModel from '@typings/database/models/servers/draft';
 
-const {SERVER: {DRAFT, CHANNEL}} = MM_TABLES;
+import type Model from '@nozbe/watermelondb/Model';
+import type DraftOutboxModel from '@typings/database/models/servers/draft_outbox';
+
+const {SERVER: {DRAFT, DRAFT_OUTBOX, CHANNEL}} = MM_TABLES;
+
+/**
+ * buildDraftOutboxId: shared deterministic local ID for a DraftOutbox row.
+ * Mattermost IDs are alphanumeric and cannot contain the hyphen delimiter, and the
+ * `root` fallback for channel drafts (root_id === '') cannot collide with a real
+ * 26-character alphanumeric root ID. This is a local-only WatermelonDB record ID and
+ * is never sent to the server.
+ */
+export const buildDraftOutboxId = (channelId: string, rootId = '') => {
+    return `${channelId}-${rootId || 'root'}`;
+};
 
 export const getDraft = async (database: Database, channelId: string, rootId = '') => {
     const record = await queryDraft(database, channelId, rootId).fetch();
@@ -59,4 +73,115 @@ export const observeDraftById = (database: Database, draftId: string) => {
         query(Q.where('id', draftId)).observe().pipe(
             switchMap((drafts) => observeFirstDraft(drafts)),
         );
+};
+
+export const queryDraftOutbox = (database: Database, channelId: string, rootId = '') => {
+    return database.collections.get<DraftOutboxModel>(DRAFT_OUTBOX).query(
+        Q.where('channel_id', channelId),
+        Q.where('root_id', rootId),
+    );
+};
+
+export const getDraftOutbox = async (database: Database, channelId: string, rootId = '') => {
+    const records = await queryDraftOutbox(database, channelId, rootId).fetch();
+    return records.length ? records[0] : undefined;
+};
+
+/**
+ * Prepare function passed to mutateDraftAndOutbox. It receives the current Draft and
+ * DraftOutbox rows for the composite key (already fetched inside the writer) and must
+ * return the prepared records (via prepareCreate/prepareUpdate/prepareDestroyPermanently)
+ * to commit. It must NOT commit anything itself; the primitive batches everything atomically.
+ */
+export type PrepareDraftAndOutbox = (args: {
+    database: Database;
+    channelId: string;
+    rootId: string;
+    draft?: DraftModel;
+    outbox?: DraftOutboxModel;
+}) => Model[] | Promise<Model[]>;
+
+/**
+ * mutateDraftAndOutbox: the single serialized primitive for all Draft/DraftOutbox state
+ * transitions. It enters database.write BEFORE querying both tables, queries by the full
+ * composite key (channel_id, root_id), lets the caller prepare all changes, and commits
+ * them in one writer.batch. WatermelonDB serializes writers, so concurrent callers see each
+ * other's committed rows, which preserves the "at most one Draft and one DraftOutbox per key"
+ * invariant. Do not route these transitions through the generic read-before-write handlers.
+ */
+export const mutateDraftAndOutbox = async (
+    database: Database,
+    channelId: string,
+    rootId: string,
+    prepare: PrepareDraftAndOutbox,
+): Promise<Model[]> => {
+    return database.write(async (writer) => {
+        const draft = await getDraft(database, channelId, rootId);
+        const outbox = await getDraftOutbox(database, channelId, rootId);
+        const models = await prepare({database, channelId, rootId, draft, outbox});
+        if (models.length) {
+            await writer.batch(...models);
+        }
+        return models;
+    }, 'mutateDraftAndOutbox');
+};
+
+/**
+ * repairDuplicateDrafts: deterministically removes pre-existing duplicate Draft rows that
+ * share a composite key (channel_id, root_id). Keeps the row with the greatest local
+ * update_at; on ties keeps the greatest WatermelonDB ID by UTF-16 code-unit order. Returns
+ * the number of removed rows.
+ *
+ * The fetch, grouping, winner selection, and deletion all happen inside a single
+ * database.write. Because WatermelonDB serializes writers, this prevents a concurrent
+ * mutateDraftAndOutbox from updating a row after it has been selected for deletion (which
+ * would otherwise destroy a freshly-edited draft).
+ */
+export const repairDuplicateDrafts = async (database: Database): Promise<number> => {
+    return database.write(async (writer) => {
+        const drafts = await database.collections.get<DraftModel>(DRAFT).query().fetch();
+
+        const groups = new Map<string, DraftModel[]>();
+        for (const draft of drafts) {
+            // JSON.stringify of the key tuple is unambiguous regardless of the characters
+            // in channel_id/root_id, and keeps the file free of control characters.
+            const key = JSON.stringify([draft.channelId, draft.rootId]);
+            const group = groups.get(key);
+            if (group) {
+                group.push(draft);
+            } else {
+                groups.set(key, [draft]);
+            }
+        }
+
+        const toDestroy: DraftModel[] = [];
+        for (const group of groups.values()) {
+            if (group.length <= 1) {
+                continue;
+            }
+
+            const sorted = [...group].sort((a, b) => {
+                if (b.updateAt !== a.updateAt) {
+                    return b.updateAt - a.updateAt;
+                }
+
+                // Descending UTF-16 code-unit comparison so the greatest id is kept.
+                // localeCompare is locale-aware and not guaranteed to match code-unit order
+                // for mixed-case WatermelonDB IDs.
+                if (a.id === b.id) {
+                    return 0;
+                }
+                return a.id > b.id ? -1 : 1;
+            });
+
+            // Keep sorted[0] (greatest update_at, then greatest id); remove the rest.
+            toDestroy.push(...sorted.slice(1));
+        }
+
+        if (toDestroy.length) {
+            await writer.batch(...toDestroy.map((draft) => draft.prepareDestroyPermanently()));
+        }
+
+        return toDestroy.length;
+    }, 'repairDuplicateDrafts');
 };
