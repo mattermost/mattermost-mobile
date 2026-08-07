@@ -2,7 +2,7 @@
 // See LICENSE.txt for license information.
 
 import {Portal} from '@gorhom/portal';
-import React, {useEffect, useMemo} from 'react';
+import React, {useEffect, useMemo, useRef} from 'react';
 import {StyleSheet, View} from 'react-native';
 import {SafeAreaInsetsContext, useSafeAreaInsets} from 'react-native-safe-area-context';
 
@@ -40,10 +40,16 @@ export default function GlobalClassificationBannerContainer({visible, levelName,
         [realInsets, bannerHeight],
     );
 
-    // Re-fetch on mount and whenever the feature flag flips, so a runtime toggle
-    // (delivered via the config_changed websocket event) refreshes the banner data.
+    // Respect the in-memory cache on mount/server switch, but force a refresh when
+    // the feature flag actually flips for the same server (runtime toggle via
+    // config_changed websocket). A server switch is a cache-respecting mount, not
+    // a flag flip, so the previous value is scoped per server.
+    const prev = useRef({serverUrl, enabled: classificationEnabled});
     useEffect(() => {
-        fetchClassificationBanner(serverUrl);
+        const sameServer = prev.current.serverUrl === serverUrl;
+        const flagChanged = sameServer && prev.current.enabled !== classificationEnabled;
+        prev.current = {serverUrl, enabled: classificationEnabled};
+        fetchClassificationBanner(serverUrl, flagChanged);
     }, [serverUrl, classificationEnabled]);
 
     return (
