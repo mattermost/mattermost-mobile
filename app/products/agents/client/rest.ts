@@ -2,7 +2,7 @@
 // See LICENSE.txt for license information.
 
 import type {AIBotsResponse, ConversationResponse, RawAIThread, ToolCall} from '@agents/types';
-import type {Agent, AgentsResponse, AgentsStatusResponse, ChannelAnalysisOptions, ChannelAnalysisResponse, RewriteRequest, RewriteResponse} from '@agents/types/api';
+import type {Agent, AgentsStatusResponse, ChannelAnalysisOptions, ChannelAnalysisResponse, RewriteRequest, RewriteResponse} from '@agents/types/api';
 
 export type {Agent};
 
@@ -10,7 +10,6 @@ export interface ClientAgentsMix {
     getAgentsRoute: () => string;
     getAIBots: () => Promise<AIBotsResponse>;
     getAIThreads: () => Promise<RawAIThread[] | null>;
-    getAgents: () => Promise<Agent[]>;
     stopGeneration: (postId: string) => Promise<void>;
     regenerateResponse: (postId: string) => Promise<void>;
     doLoopInAgent: (postId: string, botUsername: string) => Promise<void>;
@@ -54,19 +53,6 @@ const ClientAgents = (superclass: any) => class extends superclass {
             `${this.getAgentsRoute()}/ai_threads`,
             {method: 'get'},
         );
-    };
-
-    getAgents = async (): Promise<Agent[]> => {
-        const response = await this.doFetch(
-            `${this.urlVersion}/agents`,
-            {method: 'get'},
-        );
-
-        // Handle both array response and wrapped response
-        if (Array.isArray(response)) {
-            return response;
-        }
-        return (response as AgentsResponse).agents || [];
     };
 
     stopGeneration = async (postId: string) => {

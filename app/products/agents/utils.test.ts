@@ -5,7 +5,7 @@ import {AGENT_POST_TYPES} from '@agents/constants';
 import {ToolApprovalStage, ToolCallStatus, type ToolCall} from '@agents/types';
 import TestHelper from '@test/test_helper';
 
-import {isAgentMentionReminderPost, isAgentPost, isPostRequester, isToolCallRedacted, isPendingToolResult, getToolApprovalStage, mergeToolCalls, resolveSelectedAgent} from './utils';
+import {isAgentMentionReminderPost, isAgentPost, isPostRequester, isToolCallRedacted, isPendingToolResult, getToolApprovalStage, mergeToolCalls, resolveAgentSelection, resolveSelectedAgent} from './utils';
 
 describe('isAgentPost', () => {
     describe('with Post objects', () => {
@@ -335,7 +335,7 @@ describe('mergeToolCalls', () => {
 
 describe('resolveSelectedAgent', () => {
     const a1 = {id: 'a1'};
-    const a2 = {id: 'a2', is_default: true};
+    const a2 = {id: 'a2', isDefault: true};
     const a3 = {id: 'a3'};
     const agents = [a1, a2, a3];
 
@@ -365,5 +365,23 @@ describe('resolveSelectedAgent', () => {
 
     it('should prefer the saved preference over the system default', () => {
         expect(resolveSelectedAgent(agents, 'a1')).toBe(a1);
+    });
+});
+
+describe('resolveAgentSelection', () => {
+    const a1 = {id: 'a1'};
+    const a2 = {id: 'a2', isDefault: true};
+
+    it('should return no agent and no picker for an empty list', () => {
+        expect(resolveAgentSelection([], 'a1')).toEqual({agent: null, showPicker: false});
+    });
+
+    it('should silently use a single agent without a picker, even when the preference points elsewhere', () => {
+        expect(resolveAgentSelection([a1], 'a2')).toEqual({agent: a1, showPicker: false});
+    });
+
+    it('should request the picker with a resolved preselection when multiple agents are available', () => {
+        expect(resolveAgentSelection([a1, a2], null)).toEqual({agent: a2, showPicker: true});
+        expect(resolveAgentSelection([a1, a2], 'a1')).toEqual({agent: a1, showPicker: true});
     });
 });

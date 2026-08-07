@@ -27,6 +27,9 @@ declare class AiThreadModel extends Model {
     /** Number of replies in the thread */
     replyCount: number;
 
+    /** Number of user<->agent turns in the conversation (plugin 2.x) */
+    turnCount: number;
+
     /** Timestamp when the thread was last updated */
     updateAt: number;
 

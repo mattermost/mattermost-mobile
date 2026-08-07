@@ -112,6 +112,7 @@ export interface AIThread {
     title: string;
     channel_id: string;
     reply_count: number;
+    turn_count: number;
     update_at: number;
 
     // Raw plugin >= 2.0 fields, surfaced for callers that need them.
@@ -119,13 +120,14 @@ export interface AIThread {
     bot_id?: string;
 }
 
-// Wire-format AI thread before normalisation. plugin < 2.0 omits root_post_id.
+// Wire-format AI thread before normalisation (plugin 2.x aiThreadResponse).
 export type RawAIThread = {
     id: string;
     message?: string;
     title?: string;
     channel_id?: string | null;
     reply_count?: number;
+    turn_count?: number;
     update_at?: number;
     root_post_id?: string | null;
     bot_id?: string;
@@ -170,8 +172,8 @@ export interface LLMBot {
     userIDs: string[];
     teamIDs: string[];
 
-    // System-wide default bot flag. Absent on older servers.
-    is_default?: boolean;
+    // System-wide default bot flag. Omitted by the server when false.
+    isDefault?: boolean;
 }
 
 /**

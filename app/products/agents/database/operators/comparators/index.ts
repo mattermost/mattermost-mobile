@@ -17,6 +17,7 @@ export const shouldUpdateAiBotRecord = (existingRecord: AiBotModel, newRaw: LLMB
         existingRecord.dmChannelId !== newRaw.dmChannelID ||
         existingRecord.channelAccessLevel !== newRaw.channelAccessLevel ||
         existingRecord.userAccessLevel !== newRaw.userAccessLevel ||
+        existingRecord.isDefault !== (newRaw.isDefault ?? false) ||
         JSON.stringify(existingRecord.channelIds) !== JSON.stringify(newRaw.channelIDs) ||
         JSON.stringify(existingRecord.userIds) !== JSON.stringify(newRaw.userIDs) ||
         JSON.stringify(existingRecord.teamIds) !== JSON.stringify(newRaw.teamIDs)
@@ -33,6 +34,7 @@ export const shouldUpdateAiThreadRecord = (existingRecord: AiThreadModel, newRaw
         existingRecord.title !== newRaw.title ||
         existingRecord.channelId !== newRaw.channel_id ||
         existingRecord.replyCount !== newRaw.reply_count ||
+        existingRecord.turnCount !== newRaw.turn_count ||
         existingRecord.updateAt !== newRaw.update_at
     );
 };

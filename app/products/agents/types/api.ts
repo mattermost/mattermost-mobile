@@ -21,24 +21,18 @@ export type ChannelAnalysisResponse = {
 };
 
 /**
- * Agent data structure
+ * Agent data structure. A lightweight projection of the plugin's
+ * `/ai_bots` wire shape (`AIBotInfo`) used by selector surfaces.
+ * The bot's MM user id is shared with the bridge `agent_id` accepted by
+ * `/api/v4/posts/rewrite`, so this works for rewrite targeting too.
  */
 export type Agent = {
     id: string;
     displayName: string;
     username: string;
-    service_type?: string;
-    service_id?: string;
 
-    // System-wide default agent flag. Absent on older servers.
-    is_default?: boolean;
-};
-
-/**
- * Response from agents list API
- */
-export type AgentsResponse = {
-    agents: Agent[];
+    // System-wide default agent flag. Omitted by the server when false.
+    isDefault?: boolean;
 };
 
 /**

@@ -9,9 +9,10 @@ import type PostModel from '@typings/database/models/servers/post';
 /**
  * Resolve which agent/bot should be selected when a selector opens.
  * Precedence: saved preference (if still available) -> system default -> first.
- * `is_default` is tolerated when absent (older servers / DB-backed lists).
+ * `isDefault` matches the camelCase field on the plugin's /ai_bots wire shape;
+ * the server omits it when false.
  */
-export function resolveSelectedAgent<T extends {id: string; is_default?: boolean}>(agents: T[], savedPrefId?: string | null): T | null {
+export function resolveSelectedAgent<T extends {id: string; isDefault?: boolean}>(agents: T[], savedPrefId?: string | null): T | null {
     if (agents.length === 0) {
         return null;
     }
@@ -23,7 +24,28 @@ export function resolveSelectedAgent<T extends {id: string; is_default?: boolean
         }
     }
 
-    return agents.find((a) => a.is_default) ?? agents[0];
+    return agents.find((a) => a.isDefault) ?? agents[0];
+}
+
+/**
+ * Shared agent-selection rule for action entry points (channel/thread
+ * analysis, custom prompts, unreads summarization): only surface an agent
+ * picker when the user actually has a choice.
+ *
+ * - 0 agents  -> {agent: null, showPicker: false}: caller renders its empty state.
+ * - 1 agent   -> {agent, showPicker: false}: use it silently, no picker.
+ * - >1 agents -> {agent, showPicker: true}: `agent` is the resolved
+ *   preselection (saved preference -> default -> first).
+ */
+export function resolveAgentSelection<T extends {id: string; isDefault?: boolean}>(
+    agents: T[],
+    savedPrefId?: string | null,
+): {agent: T | null; showPicker: boolean} {
+    if (agents.length <= 1) {
+        return {agent: agents[0] ?? null, showPicker: false};
+    }
+
+    return {agent: resolveSelectedAgent(agents, savedPrefId), showPicker: true};
 }
 
 /**

@@ -1,29 +1,35 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import {fetchAIBots} from '@agents/actions/remote/bots';
 import {rewriteStore} from '@agents/store';
 import NetworkManager from '@managers/network_manager';
 import {getFullErrorMessage} from '@utils/errors';
-import {logDebug, logError} from '@utils/log';
+import {logError} from '@utils/log';
 
-import type {RewriteAction} from '@agents/types';
+import type {Agent, RewriteAction} from '@agents/types';
 
 /**
- * Fetch available agents from the server and store them in the rewrite store
+ * Fetch available agents from the plugin's /ai_bots endpoint, persist them to
+ * the database (via fetchAIBots) and mirror a lightweight projection into the
+ * rewrite store for selector surfaces and the composer gate.
  */
-export const fetchAgents = async (serverUrl: string) => {
-    try {
-        const client = NetworkManager.getClient(serverUrl);
-        const agents = await client.getAgents();
-
-        // Store agents in rewriteStore
-        rewriteStore.setAgents(serverUrl, agents);
-
-        return {data: agents};
-    } catch (error) {
-        logDebug('[fetchAgents] Error:', getFullErrorMessage(error));
+export const fetchAgents = async (serverUrl: string): Promise<{data?: Agent[]; error?: unknown}> => {
+    const {bots, error} = await fetchAIBots(serverUrl);
+    if (error) {
         return {error};
     }
+
+    const agents: Agent[] = (bots ?? []).map((bot) => ({
+        id: bot.id,
+        displayName: bot.displayName,
+        username: bot.username,
+        isDefault: bot.isDefault,
+    }));
+
+    rewriteStore.setAgents(serverUrl, agents);
+
+    return {data: agents};
 };
 
 /**
