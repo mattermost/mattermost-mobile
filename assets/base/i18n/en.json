@@ -765,6 +765,7 @@
   "mobile.calls_removed_alert_title": "You were removed from the call",
   "mobile.calls_request_message": "Calls are currently running in test mode and only system admins can start them. Reach out directly to your system admin for assistance",
   "mobile.calls_request_title": "Calls is not currently enabled",
+  "mobile.calls_return_to_call": "Return to call",
   "mobile.calls_see_logs": "See server logs",
   "mobile.calls_show_cc": "Show live captions",
   "mobile.calls_speaker": "Speaker",

@@ -4,6 +4,7 @@
 import React, {forwardRef} from 'react';
 import Animated, {useAnimatedStyle, useDerivedValue, type SharedValue} from 'react-native-reanimated';
 
+import {type NavigationButtonProps} from '@components/navigation_button';
 import {SEARCH_INPUT_HEIGHT, SEARCH_INPUT_MARGIN} from '@constants/view';
 import {useTheme} from '@context/theme';
 import useHeaderHeight, {MAX_OVERSCROLL} from '@hooks/header';
@@ -14,7 +15,6 @@ import Header from './header';
 import NavigationHeaderLargeTitle from './large';
 import NavigationSearch from './search';
 
-import type {NavigationButtonProps} from '@components/navigation_button';
 import type {SearchProps, SearchRef} from '@components/search';
 
 type Props = SearchProps & {
