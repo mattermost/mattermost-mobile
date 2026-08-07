@@ -112,6 +112,7 @@ export interface AIThread {
     title: string;
     channel_id: string;
     reply_count: number;
+    turn_count: number;
     update_at: number;
 
     // Raw plugin >= 2.0 fields, surfaced for callers that need them.
@@ -126,6 +127,7 @@ export type RawAIThread = {
     title?: string;
     channel_id?: string | null;
     reply_count?: number;
+    turn_count?: number;
     update_at?: number;
     root_post_id?: string | null;
     bot_id?: string;
@@ -170,9 +172,21 @@ export interface LLMBot {
     userIDs: string[];
     teamIDs: string[];
 
-    // System-wide default bot flag. Absent on older servers.
-    is_default?: boolean;
+    // System-wide default bot flag. Sent as camelCase `isDefault` with
+    // omitempty by the plugin, so it is absent when false.
+    isDefault?: boolean;
 }
+
+/**
+ * Minimal serialisable agent identity used by agent selector flows. AiBot
+ * records satisfy this shape structurally; map to plain objects when agent
+ * data must cross navigation params.
+ */
+export type SelectableAgent = {
+    id: string;
+    displayName: string;
+    username: string;
+};
 
 /**
  * AI Bots response from the server
@@ -193,7 +207,5 @@ export {
     type TurnRole,
     type WebSearchContext,
 } from './conversation';
-
-export type {Agent} from './api';
 
 export type RewriteAction = 'shorten' | 'elaborate' | 'improve_writing' | 'fix_spelling' | 'simplify' | 'summarize' | 'custom';

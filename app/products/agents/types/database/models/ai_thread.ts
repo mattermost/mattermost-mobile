@@ -27,6 +27,9 @@ declare class AiThreadModel extends Model {
     /** Number of replies in the thread */
     replyCount: number;
 
+    /** Number of assistant turns in the conversation */
+    turnCount: number;
+
     /** Timestamp when the thread was last updated */
     updateAt: number;
 

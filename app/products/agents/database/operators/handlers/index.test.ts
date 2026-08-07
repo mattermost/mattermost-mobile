@@ -2,6 +2,7 @@
 // See LICENSE.txt for license information.
 
 import {AGENTS_TABLES} from '@agents/constants/database';
+import {queryAIBots} from '@agents/database/queries/bot';
 import DatabaseManager from '@database/manager';
 import TestHelper from '@test/test_helper';
 
@@ -79,6 +80,21 @@ describe('AgentsHandler', () => {
             const records = await operator.database.collections.get<AiBotModel>(AI_BOT).query().fetch();
             expect(records).toHaveLength(1);
         });
+
+        it('should persist isDefault and sort the default bot first in queryAIBots', async () => {
+            const bots = [
+                TestHelper.fakeLLMBot({id: 'bot1', displayName: 'Alpha'}),
+                TestHelper.fakeLLMBot({id: 'bot2', displayName: 'Zulu', isDefault: true}),
+            ];
+            await operator.handleAIBots({bots, prepareRecordsOnly: false});
+
+            const records = await queryAIBots(operator.database).fetch();
+            expect(records).toHaveLength(2);
+            expect(records[0].id).toBe('bot2');
+            expect(records[0].isDefault).toBe(true);
+            expect(records[1].id).toBe('bot1');
+            expect(records[1].isDefault).toBe(false);
+        });
     });
 
     describe('handleAIThreads', () => {
@@ -126,6 +142,17 @@ describe('AgentsHandler', () => {
             expect(records.length).toBeGreaterThan(0);
             const dbRecords = await operator.database.collections.get<AiThreadModel>(AI_THREAD).query().fetch();
             expect(dbRecords).toHaveLength(0);
+        });
+
+        it('should persist turn_count and update the record when only turn_count changes', async () => {
+            const thread = TestHelper.fakeAiThread({id: 'thread1', turn_count: 2});
+            await operator.handleAIThreads({threads: [thread], prepareRecordsOnly: false});
+
+            await operator.handleAIThreads({threads: [{...thread, turn_count: 3}], prepareRecordsOnly: false});
+
+            const records = await operator.database.collections.get<AiThreadModel>(AI_THREAD).query().fetch();
+            expect(records).toHaveLength(1);
+            expect(records[0].turnCount).toBe(3);
         });
     });
 });

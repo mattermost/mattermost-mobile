@@ -1,6 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import {fetchAIBots} from '@agents/actions/remote/bots';
 import {updateAgentsVersion} from '@agents/actions/remote/version';
 import DatabaseManager from '@database/manager';
 import {logDebug} from '@utils/log';
@@ -9,6 +10,7 @@ import {handleAgentsReconnect} from './reconnect';
 
 const serverUrl = 'test-server.com';
 
+jest.mock('@agents/actions/remote/bots');
 jest.mock('@agents/actions/remote/version');
 jest.mock('@utils/log');
 
@@ -17,6 +19,7 @@ describe('handleAgentsReconnect', () => {
         await DatabaseManager.init([serverUrl]);
 
         jest.mocked(updateAgentsVersion).mockResolvedValue({data: true});
+        jest.mocked(fetchAIBots).mockResolvedValue({bots: []});
     });
 
     afterEach(async () => {
@@ -29,13 +32,16 @@ describe('handleAgentsReconnect', () => {
         await handleAgentsReconnect(serverUrl);
 
         expect(updateAgentsVersion).not.toHaveBeenCalled();
+        expect(fetchAIBots).not.toHaveBeenCalled();
     });
 
-    it('should update agents version', async () => {
+    it('should update agents version and refresh the AI bot list', async () => {
         await handleAgentsReconnect(serverUrl);
 
         expect(updateAgentsVersion).toHaveBeenCalledWith(serverUrl);
         expect(updateAgentsVersion).toHaveBeenCalledTimes(1);
+        expect(fetchAIBots).toHaveBeenCalledWith(serverUrl);
+        expect(fetchAIBots).toHaveBeenCalledTimes(1);
     });
 
     it('should handle error from updateAgentsVersion', async () => {

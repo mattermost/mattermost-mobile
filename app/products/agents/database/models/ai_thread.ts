@@ -40,6 +40,9 @@ export default class AiThreadModel extends Model implements AiThreadModelInterfa
     /** reply_count : Number of replies in the thread */
     @field('reply_count') replyCount!: number;
 
+    /** turn_count : Number of assistant turns in the conversation */
+    @field('turn_count') turnCount!: number;
+
     /** update_at : Timestamp when the thread was last updated */
     @field('update_at') updateAt!: number;
 

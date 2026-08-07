@@ -9,9 +9,9 @@ import type PostModel from '@typings/database/models/servers/post';
 /**
  * Resolve which agent/bot should be selected when a selector opens.
  * Precedence: saved preference (if still available) -> system default -> first.
- * `is_default` is tolerated when absent (older servers / DB-backed lists).
+ * `isDefault` is tolerated when absent (the plugin omits it when false).
  */
-export function resolveSelectedAgent<T extends {id: string; is_default?: boolean}>(agents: T[], savedPrefId?: string | null): T | null {
+export function resolveSelectedAgent<T extends {id: string; isDefault?: boolean}>(agents: T[], savedPrefId?: string | null): T | null {
     if (agents.length === 0) {
         return null;
     }
@@ -23,7 +23,19 @@ export function resolveSelectedAgent<T extends {id: string; is_default?: boolean
         }
     }
 
-    return agents.find((a) => a.is_default) ?? agents[0];
+    return agents.find((a) => a.isDefault) ?? agents[0];
+}
+
+/**
+ * Resolve the agent an entry point should use and whether an agent picker is
+ * warranted. Pickers only appear when more than one agent is available; with
+ * exactly one agent, it is used silently.
+ */
+export function resolveAgentSelection<T extends {id: string; isDefault?: boolean}>(agents: T[], savedPrefId?: string | null): {agent: T | null; showPicker: boolean} {
+    return {
+        agent: resolveSelectedAgent(agents, savedPrefId),
+        showPicker: agents.length > 1,
+    };
 }
 
 /**

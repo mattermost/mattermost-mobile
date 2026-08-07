@@ -2,6 +2,6 @@
 // See LICENSE.txt for license information.
 
 // Minimum version of the mattermost-plugin-agents required for mobile support
-export const MINIMUM_MAJOR_VERSION = 1;
-export const MINIMUM_MINOR_VERSION = 4;
+export const MINIMUM_MAJOR_VERSION = 2;
+export const MINIMUM_MINOR_VERSION = 0;
 export const MINIMUM_PATCH_VERSION = 0;

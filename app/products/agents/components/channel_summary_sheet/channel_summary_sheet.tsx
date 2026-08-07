@@ -2,16 +2,15 @@
 // See LICENSE.txt for license information.
 
 import {BottomSheetScrollView} from '@gorhom/bottom-sheet';
-import React, {useCallback, useEffect, useState} from 'react';
+import React, {useCallback, useEffect, useMemo, useState} from 'react';
 import {defineMessages, useIntl, type MessageDescriptor} from 'react-intl';
 import {Alert, Pressable, Text, View} from 'react-native';
 
-import {fetchAgents} from '@agents/actions/remote/agents';
+import {fetchAIBots} from '@agents/actions/remote/bots';
 import {requestChannelSummary} from '@agents/actions/remote/channel_summary';
 import {saveSelectedAgent} from '@agents/actions/remote/preference';
-import {type Agent} from '@agents/client/rest';
 import {AGENT_ANALYSIS_SUMMARY} from '@agents/constants';
-import {resolveSelectedAgent} from '@agents/utils';
+import {resolveAgentSelection} from '@agents/utils';
 import CompassIcon from '@components/compass_icon';
 import FloatingTextInput from '@components/floating_input/floating_text_input_label';
 import FormattedText from '@components/formatted_text';
@@ -28,6 +27,9 @@ import {typography} from '@utils/typography';
 
 import AgentSelectorPanel from './agent_selector_panel';
 import DateRangePicker from './date_range_picker';
+
+import type {SelectableAgent} from '@agents/types';
+import type AiBotModel from '@agents/types/database/models/ai_bot';
 
 type SummaryOptionId = 'unreads' | '7d' | '14d' | 'custom';
 
@@ -54,6 +56,7 @@ const SUMMARY_OPTIONS: SummaryOption[] = [
 
 type Props = {
     channelId: string;
+    bots: AiBotModel[];
     selectedAgentId: string;
 };
 
@@ -109,7 +112,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
     },
 }));
 
-const ChannelSummarySheet = ({channelId, selectedAgentId}: Props) => {
+const ChannelSummarySheet = ({channelId, bots, selectedAgentId}: Props) => {
     const intl = useIntl();
     const theme = useTheme();
     const serverUrl = useServerUrl();
@@ -119,29 +122,22 @@ const ChannelSummarySheet = ({channelId, selectedAgentId}: Props) => {
     const [submitting, setSubmitting] = useState(false);
     const [showDatePicker, setShowDatePicker] = useState(false);
     const [showAgentSelector, setShowAgentSelector] = useState(false);
-    const [agents, setAgents] = useState<Agent[]>([]);
-    const [selectedAgent, setSelectedAgent] = useState<Agent | null>(null);
-    const [loadingAgents, setLoadingAgents] = useState(true);
 
-    // Fetch agents on mount.
+    const {agent: autoResolvedAgent, showPicker} = useMemo(
+        () => resolveAgentSelection(bots, selectedAgentId),
+        [bots, selectedAgentId],
+    );
+    const [selectedAgent, setSelectedAgent] = useState<SelectableAgent | null>(autoResolvedAgent);
+
+    // Refresh the DB-backed bot list on open.
     useEffect(() => {
-        const loadAgents = async () => {
-            setLoadingAgents(true);
-            const result = await fetchAgents(serverUrl);
-            if (result.data && result.data.length > 0) {
-                setAgents(result.data);
-            }
-            setLoadingAgents(false);
-        };
-        loadAgents();
+        fetchAIBots(serverUrl);
     }, [serverUrl]);
 
     // Auto-resolve the selected agent (saved pref -> default -> first) without persisting.
     useEffect(() => {
-        if (agents.length > 0) {
-            setSelectedAgent((current) => current ?? resolveSelectedAgent(agents, selectedAgentId));
-        }
-    }, [agents, selectedAgentId]);
+        setSelectedAgent((current) => current ?? autoResolvedAgent);
+    }, [autoResolvedAgent]);
 
     const handleOptionPress = useCallback(async (optionId: string | boolean) => {
         if (submitting) {
@@ -206,7 +202,7 @@ const ChannelSummarySheet = ({channelId, selectedAgentId}: Props) => {
         setShowAgentSelector(false);
     }, []);
 
-    const handleAgentSelect = useCallback(async (agent: Agent) => {
+    const handleAgentSelect = useCallback(async (agent: SelectableAgent) => {
         setSelectedAgent(agent);
         setShowAgentSelector(false);
         const {error} = await saveSelectedAgent(serverUrl, agent.id);
@@ -292,7 +288,7 @@ const ChannelSummarySheet = ({channelId, selectedAgentId}: Props) => {
     if (showAgentSelector) {
         return (
             <AgentSelectorPanel
-                agents={agents}
+                agents={bots}
                 currentAgentUsername={selectedAgent?.username ?? ''}
                 onSelectAgent={handleAgentSelect}
                 onBack={handleAgentSelectorBack}
@@ -315,32 +311,28 @@ const ChannelSummarySheet = ({channelId, selectedAgentId}: Props) => {
         <BottomSheetScrollView>
             {/* Header Section - Agent selector + Prompt input */}
             <View style={styles.headerSection}>
-                <Pressable
-                    onPress={handleAgentSelectorOpen}
-                    style={({pressed}) => [styles.agentRow, pressed && {opacity: 0.72}]}
-                    testID='agents.channel_summary.agent_selector'
-                    disabled={submitting || loadingAgents}
-                >
-                    <FormattedText
-                        id='agents.channel_summary.selected_agent'
-                        defaultMessage='Selected Agent'
-                        style={styles.agentLabel}
-                    />
-                    <View style={styles.agentSelector}>
-                        {loadingAgents ? (
-                            <Loading size='small'/>
-                        ) : (
-                            <>
-                                <Text style={styles.agentName}>{selectedAgentDisplayName}</Text>
-                                <CompassIcon
-                                    name='chevron-right'
-                                    size={20}
-                                    color={changeOpacity(theme.centerChannelColor, 0.32)}
-                                />
-                            </>
-                        )}
-                    </View>
-                </Pressable>
+                {showPicker && (
+                    <Pressable
+                        onPress={handleAgentSelectorOpen}
+                        style={({pressed}) => [styles.agentRow, pressed && {opacity: 0.72}]}
+                        testID='agents.channel_summary.agent_selector'
+                        disabled={submitting}
+                    >
+                        <FormattedText
+                            id='agents.channel_summary.selected_agent'
+                            defaultMessage='Selected Agent'
+                            style={styles.agentLabel}
+                        />
+                        <View style={styles.agentSelector}>
+                            <Text style={styles.agentName}>{selectedAgentDisplayName}</Text>
+                            <CompassIcon
+                                name='chevron-right'
+                                size={20}
+                                color={changeOpacity(theme.centerChannelColor, 0.32)}
+                            />
+                        </View>
+                    </Pressable>
+                )}
 
                 <View style={styles.promptWrapper}>
                     <FloatingTextInput

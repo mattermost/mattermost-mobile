@@ -1044,6 +1044,7 @@ class TestHelperSingleton {
             title: this.generateId(),
             channel_id: this.generateId(),
             reply_count: 0,
+            turn_count: 0,
             update_at: Date.now(),
             ...overwrite,
         };

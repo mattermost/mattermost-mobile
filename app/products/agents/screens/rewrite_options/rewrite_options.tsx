@@ -7,8 +7,8 @@ import {Alert, Keyboard, TextInput, View} from 'react-native';
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
 
 import {saveSelectedAgent} from '@agents/actions/remote/preference';
-import {useAgents, useRewrite} from '@agents/hooks';
-import {resolveSelectedAgent} from '@agents/utils';
+import {useRewrite} from '@agents/hooks';
+import {resolveAgentSelection} from '@agents/utils';
 import CompassIcon, {type CompassIconName} from '@components/compass_icon';
 import OptionItem, {ITEM_HEIGHT} from '@components/option_item';
 import {Screens} from '@constants';
@@ -27,7 +27,8 @@ import {logError, logWarning} from '@utils/log';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
 
-import type {Agent, RewriteAction} from '@agents/types';
+import type {RewriteAction, SelectableAgent} from '@agents/types';
+import type AiBotModel from '@agents/types/database/models/ai_bot';
 
 const messages = defineMessages({
     errorTitle: {
@@ -89,6 +90,7 @@ export type updateValueFn = (value: string | ((prevValue: string) => string)) =>
 type Props = {
     originalMessage: string;
     updateValue?: updateValueFn;
+    bots: AiBotModel[];
     selectedAgentId: string;
 };
 
@@ -146,6 +148,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
 const RewriteOptions = ({
     originalMessage,
     updateValue,
+    bots,
     selectedAgentId,
 }: Props) => {
     const intl = useIntl();
@@ -156,20 +159,20 @@ const RewriteOptions = ({
     const {startRewrite} = useRewrite();
 
     const [customPrompt, setCustomPrompt] = useState('');
-    const agents = useAgents(serverUrl);
 
-    // Warm-init from cache when available; effect below covers the cold path.
-    const [selectedAgent, setSelectedAgent] = useState<Agent | null>(
-        () => resolveSelectedAgent(agents, selectedAgentId),
+    const {agent: autoResolvedAgent, showPicker} = useMemo(
+        () => resolveAgentSelection(bots, selectedAgentId),
+        [bots, selectedAgentId],
     );
+
+    // Warm-init from the DB-backed list; effect below covers late arrivals.
+    const [selectedAgent, setSelectedAgent] = useState<SelectableAgent | null>(autoResolvedAgent);
     const textInputRef = useRef<TextInput>(null);
 
     // Auto-resolve the selected agent (saved pref -> default -> first) without persisting.
     useEffect(() => {
-        if (agents.length > 0) {
-            setSelectedAgent((current) => current ?? resolveSelectedAgent(agents, selectedAgentId));
-        }
-    }, [agents, selectedAgentId]);
+        setSelectedAgent((current) => current ?? autoResolvedAgent);
+    }, [autoResolvedAgent]);
 
     useDidMount(() => {
         return () => {
@@ -261,7 +264,7 @@ const RewriteOptions = ({
     }, [customPrompt, handleRewrite]);
 
     const handleOpenAgentSelector = useCallback(() => {
-        const onSelectAgent = async (agent: Agent) => {
+        const onSelectAgent = async (agent: SelectableAgent) => {
             setSelectedAgent(agent);
             const {error} = await saveSelectedAgent(serverUrl, agent.id);
             if (error) {
@@ -269,14 +272,17 @@ const RewriteOptions = ({
             }
         };
         CallbackStore.setCallback(onSelectAgent);
+
+        // Map DB records to plain objects: navigation params are serialised.
+        const agents: SelectableAgent[] = bots.map((bot) => ({id: bot.id, displayName: bot.displayName, username: bot.username}));
         navigateToScreen(Screens.AGENTS_SELECTOR, {agents, selectedAgentId: selectedAgent?.id || ''});
-    }, [agents, selectedAgent, serverUrl]);
+    }, [bots, selectedAgent, serverUrl]);
 
     const snapPoints = useMemo(() => {
         const paddingBottom = 10;
 
         // Add agent selector height if multiple agents available
-        const agentSelectorHeight = agents.length > 1 ? ITEM_HEIGHT : 0;
+        const agentSelectorHeight = showPicker ? ITEM_HEIGHT : 0;
 
         // Use the same height for both generation and editing modes
         const optionsHeight = OPTIONS_PADDING + bottomSheetSnapPoint(6, ITEM_HEIGHT);
@@ -284,12 +290,12 @@ const RewriteOptions = ({
         const COMPONENT_HEIGHT = agentSelectorHeight + CUSTOM_PROMPT_INPUT_HEIGHT + optionsHeight + paddingBottom + bottom;
 
         return [1, COMPONENT_HEIGHT];
-    }, [agents.length, insets.bottom]);
+    }, [showPicker, insets.bottom]);
 
     const renderContent = useCallback(() => (
         <View style={styles.container}>
             <View style={styles.headerContainer}>
-                {agents.length > 1 && (
+                {showPicker && (
                     <OptionItem
                         label={intl.formatMessage(messages.selectedAgent)}
                         info={selectedAgent?.displayName || intl.formatMessage(messages.noAgentSelected)}
@@ -338,7 +344,7 @@ const RewriteOptions = ({
                 </View>
             )}
         </View>
-    ), [styles, agents, intl, selectedAgent, handleOpenAgentSelector, theme, isInGenerationMode, customPrompt, handleCustomPromptSubmit, handleRewrite]);
+    ), [styles, showPicker, intl, selectedAgent, handleOpenAgentSelector, theme, isInGenerationMode, customPrompt, handleCustomPromptSubmit, handleRewrite]);
 
     return (
         <BottomSheet

@@ -5,7 +5,7 @@ import {MINIMUM_MAJOR_VERSION, MINIMUM_MINOR_VERSION, MINIMUM_PATCH_VERSION} fro
 import {SYSTEM_IDENTIFIERS} from '@constants/database';
 import DatabaseManager from '@database/manager';
 
-import {fetchIsAgentsEnabled, observeIsAgentsEnabled} from './version';
+import {fetchIsAgentsVersionSupported, observeIsAgentsVersionSupported} from './version';
 
 import type ServerDataOperator from '@database/operator/server_data_operator';
 
@@ -23,10 +23,10 @@ describe('Agents Version Queries', () => {
         await DatabaseManager.destroyServerDatabase('agents-version.test.com');
     });
 
-    describe('observeIsAgentsEnabled', () => {
+    describe('observeIsAgentsVersionSupported', () => {
         it('should return false when no agents version is set', async () => {
             const subscriptionNext = jest.fn();
-            const result = observeIsAgentsEnabled(operator.database);
+            const result = observeIsAgentsVersionSupported(operator.database);
             result.subscribe({next: subscriptionNext});
 
             expect(subscriptionNext).toHaveBeenCalledWith(false);
@@ -34,7 +34,7 @@ describe('Agents Version Queries', () => {
 
         it(`should return true when agents version meets minimum requirements (${MINIMUM_VERSION})`, async () => {
             const subscriptionNext = jest.fn();
-            const result = observeIsAgentsEnabled(operator.database);
+            const result = observeIsAgentsVersionSupported(operator.database);
             result.subscribe({next: subscriptionNext});
 
             expect(subscriptionNext).toHaveBeenCalledWith(false);
@@ -51,7 +51,7 @@ describe('Agents Version Queries', () => {
         it('should return true when agents version has higher major version', async () => {
             const subscriptionNext = jest.fn();
             const higherVersion = `${MINIMUM_MAJOR_VERSION + 1}.0.0`;
-            const result = observeIsAgentsEnabled(operator.database);
+            const result = observeIsAgentsVersionSupported(operator.database);
             result.subscribe({next: subscriptionNext});
 
             expect(subscriptionNext).toHaveBeenCalledWith(false);
@@ -67,7 +67,7 @@ describe('Agents Version Queries', () => {
 
         it('should handle empty version string', async () => {
             const subscriptionNext = jest.fn();
-            const result = observeIsAgentsEnabled(operator.database);
+            const result = observeIsAgentsVersionSupported(operator.database);
             result.subscribe({next: subscriptionNext});
 
             expect(subscriptionNext).toHaveBeenCalledWith(false);
@@ -83,7 +83,7 @@ describe('Agents Version Queries', () => {
 
         it('should react to version changes', async () => {
             const subscriptionNext = jest.fn();
-            const result = observeIsAgentsEnabled(operator.database);
+            const result = observeIsAgentsVersionSupported(operator.database);
             result.subscribe({next: subscriptionNext});
 
             expect(subscriptionNext).toHaveBeenCalledWith(false);
@@ -109,9 +109,9 @@ describe('Agents Version Queries', () => {
         });
     });
 
-    describe('fetchIsAgentsEnabled', () => {
+    describe('fetchIsAgentsVersionSupported', () => {
         it('should return false when no agents version is set', async () => {
-            const result = await fetchIsAgentsEnabled(operator.database);
+            const result = await fetchIsAgentsVersionSupported(operator.database);
             expect(result).toBe(false);
         });
 
@@ -121,7 +121,7 @@ describe('Agents Version Queries', () => {
                 prepareRecordsOnly: false,
             });
 
-            const result = await fetchIsAgentsEnabled(operator.database);
+            const result = await fetchIsAgentsVersionSupported(operator.database);
             expect(result).toBe(true);
         });
 
@@ -132,7 +132,7 @@ describe('Agents Version Queries', () => {
                 prepareRecordsOnly: false,
             });
 
-            const result = await fetchIsAgentsEnabled(operator.database);
+            const result = await fetchIsAgentsVersionSupported(operator.database);
             expect(result).toBe(true);
         });
 
@@ -142,7 +142,7 @@ describe('Agents Version Queries', () => {
                 prepareRecordsOnly: false,
             });
 
-            const result = await fetchIsAgentsEnabled(operator.database);
+            const result = await fetchIsAgentsVersionSupported(operator.database);
             expect(result).toBe(false);
         });
 
@@ -153,7 +153,7 @@ describe('Agents Version Queries', () => {
                 prepareRecordsOnly: false,
             });
 
-            const result = await fetchIsAgentsEnabled(operator.database);
+            const result = await fetchIsAgentsVersionSupported(operator.database);
             expect(result).toBe(false);
         });
     });

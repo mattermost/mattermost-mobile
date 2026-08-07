@@ -21,27 +21,6 @@ export type ChannelAnalysisResponse = {
 };
 
 /**
- * Agent data structure
- */
-export type Agent = {
-    id: string;
-    displayName: string;
-    username: string;
-    service_type?: string;
-    service_id?: string;
-
-    // System-wide default agent flag. Absent on older servers.
-    is_default?: boolean;
-};
-
-/**
- * Response from agents list API
- */
-export type AgentsResponse = {
-    agents: Agent[];
-};
-
-/**
  * Response from agents status API
  */
 export type AgentsStatusResponse = {

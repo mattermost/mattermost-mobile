@@ -3,15 +3,19 @@
 
 import {map} from 'rxjs/operators';
 
-import {rewriteStore} from '@agents/store';
+import {observeAIBots} from '@agents/database/queries/bot';
 import {Preferences} from '@constants';
 import {queryPreferencesByCategoryAndName} from '@queries/servers/preference';
 
 import type {Database} from '@nozbe/watermelondb';
 
-export const observeIsAgentsEnabled = (serverUrl: string) => {
-    return rewriteStore.observeAgents(serverUrl).pipe(
-        map((agents) => agents.length > 0),
+/**
+ * Observe whether at least one AI agent is available on this server.
+ * Drives the composer AI-rewrite gate and similar agent entry points.
+ */
+export const observeHasAvailableAgents = (database: Database) => {
+    return observeAIBots(database).pipe(
+        map((bots) => bots.length > 0),
     );
 };
 

@@ -59,6 +59,7 @@ describe('fetchAIThreads', () => {
                 title: 'A chat',
                 channel_id: 'dm-1',
                 reply_count: 3,
+                turn_count: 0,
                 update_at: 100,
                 root_post_id: 'post-xyz',
                 bot_id: 'bot-1',
