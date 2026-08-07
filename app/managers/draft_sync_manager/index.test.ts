@@ -25,6 +25,9 @@ jest.mock('@actions/remote/draft', () => ({
     confirmDeleteTombstone: jest.fn(),
     processOutboxUpsert: jest.fn(),
     processOutboxDelete: jest.fn(),
+
+    // Deterministic backoff: a real future timestamp so the mis-scoped-row back-off assertion is stable.
+    computeNextAttemptAt: jest.fn((_attemptCount: number, now: number) => now + 1000),
 }));
 
 const mockedReconcile = jest.mocked(reconcileTeamDrafts);
@@ -308,7 +311,10 @@ describe('DraftSyncManager (Phase 3 shell)', () => {
             await flushMicrotasks();
 
             expect(mockedReconcile).toHaveBeenCalledTimes(1);
-            expect(mockedReconcile).toHaveBeenCalledWith(SERVER_URL, 'team1');
+            expect(mockedReconcile).toHaveBeenCalledWith(SERVER_URL, 'team1', expect.objectContaining({
+                shouldAbort: expect.any(Function),
+                onSnapshot: expect.any(Function),
+            }));
             expect(baselineInternals(manager).baseline[SERVER_URL]?.teamId).toBe('team1');
         });
 
@@ -362,8 +368,8 @@ describe('DraftSyncManager (Phase 3 shell)', () => {
             await flushMicrotasks();
 
             expect(mockedReconcile).toHaveBeenCalledTimes(2);
-            expect(mockedReconcile).toHaveBeenNthCalledWith(1, SERVER_URL, 'team1');
-            expect(mockedReconcile).toHaveBeenNthCalledWith(2, SERVER_URL, 'team2');
+            expect(mockedReconcile).toHaveBeenNthCalledWith(1, SERVER_URL, 'team1', expect.any(Object));
+            expect(mockedReconcile).toHaveBeenNthCalledWith(2, SERVER_URL, 'team2', expect.any(Object));
             expect(baselineInternals(manager).baseline[SERVER_URL]?.teamId).toBe('team2');
         });
 
@@ -389,9 +395,14 @@ describe('DraftSyncManager (Phase 3 shell)', () => {
             await enableManager();
             const key = buildDraftOutboxId(CHANNEL_ID, ROOT_ID);
 
-            // Simulate an in-flight POST for this key while the reconcile GET observes its content.
+            // Simulate an in-flight POST for this key while the reconcile GET observes its content. The
+            // real reconcileTeamDrafts invokes onSnapshot SYNCHRONOUSLY as the GET resolves (before its
+            // apply loop) — reproduce that here so the fence bumps the ordinal for the in-flight key.
             internals(manager).inFlightKeys[SERVER_URL].add(key);
-            mockedReconcile.mockResolvedValue({applied: 0, drafts: [{channelId: CHANNEL_ID, rootId: ROOT_ID} as NormalizedDraft]});
+            mockedReconcile.mockImplementation((_su, _tid, opts) => {
+                opts?.onSnapshot?.([{channelId: CHANNEL_ID, rootId: ROOT_ID}]);
+                return Promise.resolve({applied: 0, drafts: [{channelId: CHANNEL_ID, rootId: ROOT_ID} as NormalizedDraft]});
+            });
 
             manager.requestReconcile(SERVER_URL, 'team1', 'observe');
             await flushMicrotasks();
@@ -667,6 +678,32 @@ describe('DraftSyncManager (Phase 3 shell)', () => {
 
             expect(mockedProcessOutboxUpsert).toHaveBeenCalledTimes(1);
             expect(mockedProcessOutboxUpsert).toHaveBeenCalledWith(SERVER_URL, dmChannel, ROOT_ID, expect.objectContaining({shouldAbort: expect.any(Function)}));
+        });
+
+        it('backs off a mis-scoped teamId="" row rather than leaving it due (fix #2: no zero-delay drain loop)', async () => {
+            await enableManager();
+            setBaseline('team1');
+
+            // A due '' row for a channel that is neither DM/GM nor a confirmed membership. Before the
+            // fix, drainOutbox skipped it without progress while scheduleWork kept counting it as due
+            // Pending work, re-arming a zero-delay drain that skipped it again — a busy loop.
+            const orphanChannel = 'orphanorphanorphanorphanor00';
+            await createOutboxRow({operation: 'upsert', teamId: '', channelId: orphanChannel, nextAttemptAt: 0});
+
+            manager.wake(SERVER_URL);
+            await flushMicrotasks();
+
+            // Not drained (mis-scoped)...
+            expect(mockedProcessOutboxUpsert).not.toHaveBeenCalled();
+
+            // ...but its next_attempt_at is pushed into the future (attempt count bumped), so it leaves
+            // the due set and scheduleWork can only arm a future-delayed drain — never a zero-delay loop.
+            const [row] = await database.collections.get<DraftOutboxModel>(DRAFT_OUTBOX).query(
+                Q.where('id', buildDraftOutboxId(orphanChannel, ROOT_ID)),
+            ).fetch();
+            expect(row.status).toBe(DraftOutboxStatus.Pending);
+            expect(row.attemptCount).toBe(1);
+            expect(row.nextAttemptAt).toBeGreaterThan(Date.now());
         });
 
         it('skips a key already marked in-flight', async () => {

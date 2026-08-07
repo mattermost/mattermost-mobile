@@ -478,6 +478,35 @@ describe('app/actions/remote/draft', () => {
             expect(result.error).toBeDefined();
         });
 
+        // --- Fix #1: the GET path must not write to a torn-down database after the HTTP await. ---
+        it('writes nothing and returns {error} when shouldAbort() fires after the GET (fix #1)', async () => {
+            await seedChannel(channelId, teamId, 'O');
+            await seedMembership(channelId, teamId);
+            mockClient.getDrafts.mockResolvedValueOnce([serverDraft({message: 'late', update_at: 4000})]);
+
+            // The server was torn down while the GET was in flight: the snapshot write must be skipped.
+            const result = await reconcileTeamDrafts(serverUrl, teamId, {shouldAbort: () => true});
+
+            expect(result.error).toBeDefined();
+            expect(await getDraft(database, channelId, '')).toBeUndefined();
+            expect(await getDraftOutbox(database, channelId, '')).toBeUndefined();
+        });
+
+        // --- Fix #6: every observed key is announced via onSnapshot as the GET resolves (the manager
+        // uses this to bump the in-flight observation ordinal; the synchronous timing that closes the
+        // race is asserted in the manager suite's "bumps the observation ordinal" test). ---
+        it('announces every observed key via onSnapshot (fix #6)', async () => {
+            await seedChannel(channelId, teamId, 'O');
+            await seedMembership(channelId, teamId);
+            const onSnapshot = jest.fn();
+            mockClient.getDrafts.mockResolvedValueOnce([serverDraft({message: 'observed', update_at: 4200})]);
+
+            await reconcileTeamDrafts(serverUrl, teamId, {onSnapshot});
+
+            expect(onSnapshot).toHaveBeenCalledTimes(1);
+            expect(onSnapshot).toHaveBeenCalledWith([{channelId, rootId: ''}]);
+        });
+
         // --- Fix #9: tightened, authoritative per-draft scope + non-PII missing-channel handling. ---
         describe('scope (fix #9)', () => {
             it('skips a DM/GM channel draft when the user has no confirmed membership', async () => {

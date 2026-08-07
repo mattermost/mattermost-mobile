@@ -3,13 +3,13 @@
 
 import {Q, type Database} from '@nozbe/watermelondb';
 
-import {confirmDeleteTombstone, deleteAbsentCleanDraft, getReconcilableKeys, processOutboxDelete, processOutboxUpsert, reconcileTeamDrafts, type OutboxWorkerOpts, type ReconcileKey, type WorkerOutcome} from '@actions/remote/draft';
+import {computeNextAttemptAt, confirmDeleteTombstone, deleteAbsentCleanDraft, getReconcilableKeys, processOutboxDelete, processOutboxUpsert, reconcileTeamDrafts, type OutboxWorkerOpts, type ReconcileKey, type WorkerOutcome} from '@actions/remote/draft';
 import {General} from '@constants';
 import {MM_TABLES} from '@constants/database';
 import {DRAFT_ABSENCE_CONFIRMATION_DELAY_MS, DRAFT_SYNC_RETRY_BASE_MS, DRAFT_SYNC_RETRY_JITTER, DRAFT_SYNC_RETRY_MAX_MS, DraftOutboxOperation, DraftOutboxStatus, MAX_DRAFT_SYNC_EVENT_BUFFER} from '@constants/draft';
 import DatabaseManager from '@database/manager';
 import {getChannelById, getMyChannel} from '@queries/servers/channel';
-import {buildDraftOutboxId, getIsDraftSyncEnabled} from '@queries/servers/drafts';
+import {buildDraftOutboxId, getIsDraftSyncEnabled, mutateDraftAndOutbox} from '@queries/servers/drafts';
 import {logDebug} from '@utils/log';
 
 import type DraftOutboxModel from '@typings/database/models/servers/draft_outbox';
@@ -238,7 +238,26 @@ class DraftSyncManagerSingleton {
 
         let res: Awaited<ReturnType<typeof reconcileTeamDrafts>>;
         try {
-            res = await reconcileTeamDrafts(serverUrl, teamId);
+            res = await reconcileTeamDrafts(serverUrl, teamId, {
+
+                // Fail closed if the server was torn down while the GET was in flight: no snapshot write.
+                shouldAbort: () => this.isEpochStale(serverUrl, captured) || !this.isActive(serverUrl),
+
+                // Post-dispatch observation fence: bump the ordinal for every observed key whose POST is
+                // in flight, SYNCHRONOUSLY as the GET resolves (before the apply loop). A concurrent ack
+                // then sees the change and refuses to clear the outbox / clobber this GET's observation.
+                onSnapshot: (keys) => {
+                    const inFlight = this.inFlightKeys[serverUrl];
+                    if (!inFlight) {
+                        return;
+                    }
+                    for (const {channelId, rootId} of keys) {
+                        if (inFlight.has(buildDraftOutboxId(channelId, rootId))) {
+                            this.bumpObservation(serverUrl, channelId, rootId);
+                        }
+                    }
+                },
+            });
         } catch (error) {
             res = {error};
         }
@@ -259,16 +278,8 @@ class DraftSyncManagerSingleton {
             this.reconcileAttempt[serverUrl] = 0;
             this.baseline[serverUrl] = {teamId, at: Date.now()};
 
-            // Post-dispatch observation fence: for every returned key whose POST is currently in flight,
-            // bump its observation ordinal. This GET observed the key's content, so the in-flight ack
-            // must not clobber it (the worker captured the ordinal before dispatch). Synchronous, so it
-            // is covered by the epoch check already performed after the await above.
-            const inFlight = this.inFlightKeys[serverUrl];
-            for (const draft of res.drafts ?? []) {
-                if (inFlight?.has(buildDraftOutboxId(draft.channelId, draft.rootId))) {
-                    this.bumpObservation(serverUrl, draft.channelId, draft.rootId);
-                }
-            }
+            // (The observation fence for in-flight POSTs is bumped synchronously via onSnapshot above,
+            // the moment the GET resolves — not here, which would be after the whole apply loop.)
 
             // Absence pass: a successful snapshot lets us quarantine/confirm keys that are absent
             // from it. Epoch-guarded internally; it never POSTs/DELETEs over the network.
@@ -651,6 +662,20 @@ class DraftSyncManagerSingleton {
                 // eslint-disable-next-line no-await-in-loop
                 const validScope = await this.isDmGmOrMember(database, row.channelId);
                 if (!validScope) {
+                    // Do NOT bare-continue: the row stays Pending-and-due, so scheduleWork would re-arm a
+                    // zero-delay drain that skips it again — a busy loop. Back its next_attempt_at off so
+                    // it leaves the due set until its channel/membership may have hydrated (a valid drain
+                    // resets the count). The delay caps at DRAFT_SYNC_RETRY_MAX_MS for a truly orphaned row.
+                    // eslint-disable-next-line no-await-in-loop
+                    await mutateDraftAndOutbox(database, row.channelId, row.rootId, ({outbox: o}) => {
+                        if (!o || o.status !== DraftOutboxStatus.Pending) {
+                            return [];
+                        }
+                        return [o.prepareUpdate((x) => {
+                            x.attemptCount += 1;
+                            x.nextAttemptAt = computeNextAttemptAt(x.attemptCount, Date.now());
+                        })];
+                    });
                     continue;
                 }
             }

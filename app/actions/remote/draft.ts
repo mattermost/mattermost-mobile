@@ -213,7 +213,7 @@ const prepareIncomingDraft = (sd: NormalizedDraft): PrepareDraftAndOutbox => ({d
  * it applies nothing when the GET fails (no baseline, no deletion). Returns the applied write count
  * and the in-scope normalized drafts so a later absence-detection sub-step can track candidates.
  */
-export async function reconcileTeamDrafts(serverUrl: string, teamId: string): Promise<{applied?: number; drafts?: NormalizedDraft[]; missingDeps?: boolean; error?: unknown}> {
+export async function reconcileTeamDrafts(serverUrl: string, teamId: string, opts?: ReconcileOpts): Promise<{applied?: number; drafts?: NormalizedDraft[]; missingDeps?: boolean; error?: unknown}> {
     const database = DatabaseManager.serverDatabases[serverUrl]?.database;
     if (!database) {
         return {error: `${serverUrl} database not found`};
@@ -229,6 +229,11 @@ export async function reconcileTeamDrafts(serverUrl: string, teamId: string): Pr
             return {error: res.error};
         }
 
+        // Post-dispatch observation fence: announce every observed key SYNCHRONOUSLY, in the same tick
+        // the GET resolved and before any apply-loop await, so an in-flight POST's ack (which may run
+        // during that loop) sees the bumped ordinal and does not clobber content this GET observed.
+        opts?.onSnapshot?.(res.drafts.map((d) => ({channelId: d.channel_id, rootId: d.root_id})));
+
         // BoR durations live in server config, not in draft props. Read them once; fail closed to
         // undefined when unavailable so burn-on-read reconstruction never fabricates durations.
         const borDurationSeconds = parseInt(await getConfigValue(database, 'BurnOnReadDurationSeconds') ?? '', 10);
@@ -240,6 +245,14 @@ export async function reconcileTeamDrafts(serverUrl: string, teamId: string): Pr
         let missingChannelCount = 0;
 
         for (const serverDraft of res.drafts) {
+            // The GET awaited above may have outlived the server: a logout/wipe/persistence-mode change
+            // can have destroyed or recreated the database mid-flight. Re-check before every snapshot
+            // write so a late completion never writes to a stale/destroyed database (the manager's own
+            // epoch check only runs AFTER this function returns — too late for these in-loop writes).
+            if (shouldAbortPostHttpWrite(serverUrl, database, opts)) {
+                return {error: 'reconcileTeamDrafts: server torn down during reconcile'};
+            }
+
             const sd = normalizeServerDraft(serverDraft, durations);
 
             // eslint-disable-next-line no-await-in-loop
@@ -490,12 +503,25 @@ export type OutboxWorkerOpts = {
 };
 
 /**
+ * ReconcileOpts: caller-supplied guards for the GET/reconcile path (see reconcileTeamDrafts).
+ *  - shouldAbort: same semantics as OutboxWorkerOpts.shouldAbort — true when the server lifecycle
+ *    changed under the in-flight GET, so no snapshot may be written to the (now stale) database.
+ *  - onSnapshot: invoked SYNCHRONOUSLY the moment the GET response is received (before any apply-loop
+ *    await), with every observed key. The manager uses it to bump the per-key observation ordinal for
+ *    in-flight POSTs, so a concurrent ack cannot clobber content this GET already observed.
+ */
+export type ReconcileOpts = {
+    shouldAbort?: () => boolean;
+    onSnapshot?: (keys: Array<{channelId: string; rootId: string}>) => void;
+};
+
+/**
  * shouldAbortPostHttpWrite: guards every post-HTTP database write. Returns true (abort, write nothing)
  * when the caller signals staleness OR the server database is no longer the SAME instance captured at
  * the top of the worker (recreated by a logout/wipe/re-login) or is now absent. A late HTTP completion
  * must never write to a destroyed/recreated database.
  */
-const shouldAbortPostHttpWrite = (serverUrl: string, database: Database, opts?: OutboxWorkerOpts): boolean => {
+const shouldAbortPostHttpWrite = (serverUrl: string, database: Database, opts?: {shouldAbort?: () => boolean}): boolean => {
     if (opts?.shouldAbort?.()) {
         return true;
     }
