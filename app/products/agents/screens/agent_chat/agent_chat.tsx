@@ -275,6 +275,9 @@ const AgentChat = ({bots, selectedAgentId}: Props) => {
                         <AgentChatContent
                             loading={loading && bots.length === 0}
                             error={error}
+                            channelId={channelId}
+                            botUsername={selectedBot?.username}
+                            onPromptPosted={handlePostCreated}
                         />
                     ))}
                 >

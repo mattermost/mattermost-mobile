@@ -83,12 +83,17 @@ const messages = defineMessages({
         id: 'ai_rewrite.summarize',
         defaultMessage: 'Summarize',
     },
+    customPrompts: {
+        id: 'agents.custom_prompts.menu_label',
+        defaultMessage: 'Custom prompts',
+    },
 });
 
 export type updateValueFn = (value: string | ((prevValue: string) => string)) => void;
 
 type Props = {
     originalMessage: string;
+    channelId?: string;
     updateValue?: updateValueFn;
     bots: AiBotModel[];
     selectedAgentId: string;
@@ -147,6 +152,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
 
 const RewriteOptions = ({
     originalMessage,
+    channelId,
     updateValue,
     bots,
     selectedAgentId,
@@ -278,6 +284,17 @@ const RewriteOptions = ({
         navigateToScreen(Screens.AGENTS_SELECTOR, {agents, selectedAgentId: selectedAgent?.id || ''});
     }, [bots, selectedAgent, serverUrl]);
 
+    const handleOpenCustomPrompts = useCallback(() => {
+        // The prompt list renders the selection server-side and pushes the
+        // result straight into the composer draft via this callback.
+        CallbackStore.setCallback(updateValue);
+        navigateToScreen(Screens.AGENTS_CUSTOM_PROMPTS, {
+            channelId,
+            botUsername: selectedAgent?.username ?? '',
+            isBotDMChannel: bots.some((bot) => bot.dmChannelId === channelId),
+        });
+    }, [bots, channelId, selectedAgent, updateValue]);
+
     const snapPoints = useMemo(() => {
         const paddingBottom = 10;
 
@@ -285,7 +302,8 @@ const RewriteOptions = ({
         const agentSelectorHeight = showPicker ? ITEM_HEIGHT : 0;
 
         // Use the same height for both generation and editing modes
-        const optionsHeight = OPTIONS_PADDING + bottomSheetSnapPoint(6, ITEM_HEIGHT);
+        // (6 rewrite options + the custom prompts entry)
+        const optionsHeight = OPTIONS_PADDING + bottomSheetSnapPoint(7, ITEM_HEIGHT);
         const bottom = isEdgeToEdge ? insets.bottom : NOT_EDGE_TO_EDGE_BOTTOM_SHEET_MARGIN;
         const COMPONENT_HEIGHT = agentSelectorHeight + CUSTOM_PROMPT_INPUT_HEIGHT + optionsHeight + paddingBottom + bottom;
 
@@ -343,8 +361,18 @@ const RewriteOptions = ({
                     ))}
                 </View>
             )}
+
+            <View style={isInGenerationMode ? styles.optionsContainer : null}>
+                <OptionItem
+                    label={intl.formatMessage(messages.customPrompts)}
+                    icon='code-tags'
+                    action={handleOpenCustomPrompts}
+                    type='arrow'
+                    testID='ai_rewrite.custom_prompts'
+                />
+            </View>
         </View>
-    ), [styles, showPicker, intl, selectedAgent, handleOpenAgentSelector, theme, isInGenerationMode, customPrompt, handleCustomPromptSubmit, handleRewrite]);
+    ), [styles, showPicker, intl, selectedAgent, handleOpenAgentSelector, theme, isInGenerationMode, customPrompt, handleCustomPromptSubmit, handleRewrite, handleOpenCustomPrompts]);
 
     return (
         <BottomSheet

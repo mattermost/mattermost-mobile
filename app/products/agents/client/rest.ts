@@ -2,7 +2,7 @@
 // See LICENSE.txt for license information.
 
 import type {AIBotsResponse, ConversationResponse, RawAIThread, ToolAnswer, ToolCall} from '@agents/types';
-import type {AgentsStatusResponse, ChannelAnalysisOptions, ChannelAnalysisResponse, RewriteRequest, RewriteResponse, ThreadAnalysisResponse} from '@agents/types/api';
+import type {AgentsStatusResponse, ChannelAnalysisOptions, ChannelAnalysisResponse, CustomPrompt, CustomPromptRenderRequest, CustomPromptRenderResponse, RewriteRequest, RewriteResponse, ThreadAnalysisResponse} from '@agents/types/api';
 
 export interface ClientAgentsMix {
     getAgentsRoute: () => string;
@@ -33,6 +33,12 @@ export interface ClientAgentsMix {
     // Conversation entity (plugin >= 2.0): source of truth for tool calls,
     // reasoning, and annotations after a stream finalizes.
     getConversation: (conversationId: string) => Promise<ConversationResponse>;
+
+    // Custom prompts (consumption only): list, pinned ids, server-side render.
+    // Pins are read-only on mobile; pin management lives in the webapp.
+    getCustomPrompts: () => Promise<CustomPrompt[]>;
+    getCustomPromptPins: () => Promise<string[]>;
+    renderCustomPrompt: (promptId: string, context: CustomPromptRenderRequest) => Promise<CustomPromptRenderResponse>;
 
     // Rewrite methods
     getRewrittenMessage: (message: string, action?: string, customPrompt?: string, agentId?: string) => Promise<string>;
@@ -154,6 +160,37 @@ const ClientAgents = (superclass: any) => class extends superclass {
         return this.doFetch(
             `${this.getAgentsRoute()}/conversations/${conversationId}`,
             {method: 'get'},
+        );
+    };
+
+    // =========================================================================
+    // Custom Prompts Methods
+    // =========================================================================
+
+    getCustomPrompts = async (): Promise<CustomPrompt[]> => {
+        return this.doFetch(
+            `${this.getAgentsRoute()}/custom-prompts`,
+            {method: 'get'},
+        );
+    };
+
+    getCustomPromptPins = async (): Promise<string[]> => {
+        return this.doFetch(
+            `${this.getAgentsRoute()}/custom-prompts/pins`,
+            {method: 'get'},
+        );
+    };
+
+    renderCustomPrompt = async (promptId: string, context: CustomPromptRenderRequest): Promise<CustomPromptRenderResponse> => {
+        return this.doFetch(
+            `${this.getAgentsRoute()}/custom-prompts/${encodeURIComponent(promptId)}/render`,
+            {
+                method: 'post',
+                body: {
+                    channel_id: context.channel_id,
+                    bot_username: context.bot_username,
+                },
+            },
         );
     };
 

@@ -170,6 +170,50 @@ describe('ClientAgents', () => {
         });
     });
 
+    describe('getCustomPrompts', () => {
+        it('should make correct API call', async () => {
+            await client.getCustomPrompts();
+            expect(mockDoFetch).toHaveBeenCalledWith(
+                '/plugins/mattermost-ai/custom-prompts',
+                {method: 'get'},
+            );
+        });
+    });
+
+    describe('getCustomPromptPins', () => {
+        it('should make correct API call', async () => {
+            await client.getCustomPromptPins();
+            expect(mockDoFetch).toHaveBeenCalledWith(
+                '/plugins/mattermost-ai/custom-prompts/pins',
+                {method: 'get'},
+            );
+        });
+    });
+
+    describe('renderCustomPrompt', () => {
+        it('should post channel_id and bot_username in the body', async () => {
+            await client.renderCustomPrompt('prompt-1', {channel_id: 'channel-1', bot_username: 'ai-bot'});
+            expect(mockDoFetch).toHaveBeenCalledWith(
+                '/plugins/mattermost-ai/custom-prompts/prompt-1/render',
+                {
+                    method: 'post',
+                    body: {channel_id: 'channel-1', bot_username: 'ai-bot'},
+                },
+            );
+        });
+
+        it('should percent-encode the prompt id in the path', async () => {
+            await client.renderCustomPrompt('prompt/one', {});
+            expect(mockDoFetch).toHaveBeenCalledWith(
+                '/plugins/mattermost-ai/custom-prompts/prompt%2Fone/render',
+                {
+                    method: 'post',
+                    body: {channel_id: undefined, bot_username: undefined},
+                },
+            );
+        });
+    });
+
     describe('doLoopInAgent', () => {
         it('should make correct API call with the bot username in the query', async () => {
             await client.doLoopInAgent('post-123', 'ai-bot');

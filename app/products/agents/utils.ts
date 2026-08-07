@@ -54,6 +54,19 @@ export function resolveAgentSelection<T extends {id: string; isDefault?: boolean
 }
 
 /**
+ * Build the composer draft for a rendered custom prompt. Outside a bot DM the
+ * agent's @mention is prepended so the agent actually answers when the message
+ * is posted (webapp parity: custom_prompts_dropdown.tsx); inside a bot DM the
+ * rendered text is used as-is.
+ */
+export function buildCustomPromptDraft(rendered: string, botUsername: string | undefined, isBotDMChannel: boolean): string {
+    if (!isBotDMChannel && botUsername) {
+        return `@${botUsername} ${rendered}`;
+    }
+    return rendered;
+}
+
+/**
  * Check if a post is an agent post
  */
 export function isAgentPost(post: PostModel | Post): boolean {

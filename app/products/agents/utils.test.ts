@@ -5,7 +5,7 @@ import {AGENT_POST_TYPES} from '@agents/constants';
 import {ChannelAccessLevel, ToolApprovalStage, ToolCallStatus, type ToolCall} from '@agents/types';
 import TestHelper from '@test/test_helper';
 
-import {isAgentMentionReminderPost, isAgentPost, isPostRequester, isToolCallRedacted, isPendingToolResult, isUnsafeLinksPost, getToolApprovalStage, mergeToolCalls, resolveSelectedAgent, resolveAgentSelection, filterAgentsForChannel} from './utils';
+import {isAgentMentionReminderPost, isAgentPost, isPostRequester, isToolCallRedacted, isPendingToolResult, isUnsafeLinksPost, getToolApprovalStage, mergeToolCalls, resolveSelectedAgent, resolveAgentSelection, filterAgentsForChannel, buildCustomPromptDraft} from './utils';
 
 describe('isAgentPost', () => {
     describe('with Post objects', () => {
@@ -427,5 +427,19 @@ describe('filterAgentsForChannel', () => {
 
     it('should return an empty list when no agent is usable in the channel', () => {
         expect(filterAgentsForChannel([allowedElsewhere, blockedHere], channelId)).toHaveLength(0);
+    });
+});
+
+describe('buildCustomPromptDraft', () => {
+    it('should prepend the agent @mention outside a bot DM', () => {
+        expect(buildCustomPromptDraft('Summarize this channel', 'ai-bot', false)).toBe('@ai-bot Summarize this channel');
+    });
+
+    it('should not prepend inside a bot DM', () => {
+        expect(buildCustomPromptDraft('Summarize this channel', 'ai-bot', true)).toBe('Summarize this channel');
+    });
+
+    it('should not prepend when no agent username is available', () => {
+        expect(buildCustomPromptDraft('Summarize this channel', undefined, false)).toBe('Summarize this channel');
     });
 });

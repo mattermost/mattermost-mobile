@@ -40,6 +40,40 @@ export type AgentsStatusResponse = {
 };
 
 /**
+ * A user-created prompt template. Mirrors the plugin's CustomPrompt struct
+ * (customprompts/store.go): the server only returns prompts visible to the
+ * requesting user (own prompts plus shared ones, never soft-deleted).
+ */
+export type CustomPrompt = {
+    id: string;
+    creator_id: string;
+    name: string;
+    description: string;
+    template: string;
+    is_shared: boolean;
+    created_at: number;
+    updated_at: number;
+    deleted_at: number;
+};
+
+/**
+ * Context for a server-side custom prompt render (api/api_custom_prompts.go
+ * RenderRequest). Both fields are optional on the server: channel_id scopes
+ * {{.Channel}}/{{.Team}} variables, bot_username resolves {{.BotName}}.
+ */
+export type CustomPromptRenderRequest = {
+    channel_id?: string;
+    bot_username?: string;
+};
+
+/**
+ * Response from the custom prompt render endpoint
+ */
+export type CustomPromptRenderResponse = {
+    rendered: string;
+};
+
+/**
  * Request payload for rewriting a message
  */
 export type RewriteRequest = {
