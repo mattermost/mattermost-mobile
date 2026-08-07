@@ -56,3 +56,43 @@ Append-only notes for a human to copy into the
   re-verified this pass (no Maestro run). Dropped-keystroke: mitigated (re-enter), not
   verified-fixed (no set-and-verify). MM-T67856_1/_2 stay iOS-excluded. SEC-11000 (MM-T1325)
   / SEC-11018 (MM-T5611) already iOS-excluded with _DIAGNOSIS_CORRECTION references.
+
+## P3 — branch 8 (fix/detox-recovery-followup) Maestro re-verify — 2026-08-07
+
+Local Maestro run (debug v793 build + Metro, iPhone 17 Pro / iOS 26.3, live PR-9996 iOS
+server, setup_local.sh provisioned + seeded). All three branch-8 items are blocked
+UPSTREAM by the shared server-connect subflow (connect_server_ios.yml /
+_enter_url_and_connect.yml) flakiness, NOT by the ticket-specific assertions.
+
+- **SEC-11051 (set-and-verify URL input):** ATTEMPTED, BLOCKED on a Maestro interpolation
+  quirk. Added `assertVisible: text: "${SITE_1_URL}"` to _enter_url_and_connect.yml after
+  inputText. Maestro compiles `assertVisible.text` to `textRegex` and resolves
+  `${SITE_1_URL}` to the literal "undefined" (confirmed in the commands.json:
+  `assertConditionCommand/condition/visible/textRegex = ${SITE_1_URL}` -> error
+  "undefined is visible"), while `inputText: ${SITE_1_URL}` interpolates correctly and
+  types the real URL. A simple assertVisible cannot do an env-var-derived set-and-verify
+  here; it would fail EVERY iOS flow (exactly the regression risk the status note flagged).
+  Reverted the subflow change (no regression). Needs a runScript/variable-based assertion
+  (read the field value, compare to SITE_1_URL). Full-suite validation also blocked by the
+  connect flakiness below. NOT closed.
+
+- **SEC-11000 (MM-T1325, clock_display.yml) re-verify:** FAILED at the server-connect step
+  (first connect attempt errored -> server_form.server_url.input.error visible -> retry ->
+  retry's "Tap on Enter Server URL" FAILED). The flow NEVER reached the clock/timezone
+  assertion. This CONFIRMS the prior "connect-not-login" diagnosis: the failure is at
+  connect, not the timezone assertion. The connect flakiness is the ticket's own subject
+  (TLS cold-start NSURLErrorDomain -1200 / inputText dropped chars, PE/infra handoff).
+  Not a new finding; prior diagnosis holds. Not closed (blocked upstream at connect).
+
+- **SEC-11018 (MM-T5611, channel_bookmark_link_external.yml) re-verify:** FAILED at the
+  SAME server-connect step, never reaching the external-browser step. The prior
+  "external browser launch did not return to Home tab" diagnosis is NOT reproduced here --
+  the current blocker is the shared connect subflow flakiness, identical to SEC-11000.
+  So in this local env MM-T5611 is blocked upstream at connect, not at the browser step.
+  The external-browser diagnosis is superseded by "blocked at connect" until the connect
+  flakiness is resolved (or verified on a CI release build where connect is stable).
+
+Net: all three branch-8 items are blocked upstream by the shared connect-subflow flakiness
+(the ticket's own PE/infra subject). SEC-11051 additionally blocked on the Maestro
+interpolation quirk. No code change landed this pass (the SEC-11051 assertion was reverted).
+None closed.
