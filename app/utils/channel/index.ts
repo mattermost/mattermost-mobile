@@ -33,6 +33,10 @@ export function isTypeDMorGM(channelType: ChannelType | undefined): boolean {
     return Boolean(channelType && DIRECT_TYPES.includes(channelType));
 }
 
+export function isDMChannel(channelType?: ChannelType): boolean {
+    return Boolean(channelType && channelType === General.DM_CHANNEL);
+}
+
 export function isArchived(channel: Channel | ChannelModel): boolean {
     const deleteAt = 'delete_at' in channel ? channel.delete_at : channel.deleteAt;
     return deleteAt > 0;
