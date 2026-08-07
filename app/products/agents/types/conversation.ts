@@ -61,6 +61,10 @@ export interface ContentBlock {
     // must not offer approval controls for it.
     would_auto_execute?: boolean;
 
+    // Persisted form of llm.Tool.UserInteraction ('select' for
+    // AskUserQuestion); answered through the approval flow.
+    user_interaction?: string;
+
     tool_use_id?: string;
     content?: string;
 

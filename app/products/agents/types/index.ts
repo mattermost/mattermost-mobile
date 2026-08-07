@@ -31,6 +31,23 @@ export const ToolApprovalStage = {
 export type ToolApprovalStage = typeof ToolApprovalStage[keyof typeof ToolApprovalStage];
 
 /**
+ * User-interaction kinds a tool can declare. Mirrors llm.UserInteraction*
+ * in the plugin; 'select' is answered by picking from offered options
+ * (AskUserQuestion).
+ */
+export const UserInteractionSelect = 'select';
+
+/**
+ * A user's structured answer to a pending user-interaction tool call:
+ * the predefined option labels picked, plus optional free-form text.
+ * Mirrors mmtools.UserInteractionAnswer.
+ */
+export interface ToolAnswer {
+    selected: string[];
+    custom?: string;
+}
+
+/**
  * Tool call data structure. Mirrors the fields the plugin sends on
  * llm.ToolCall (streaming) and the tool_use/tool_result content blocks
  * (persisted conversations).
@@ -42,6 +59,10 @@ export interface ToolCall {
     arguments: any;
     result?: string;
     status: ToolCallStatus;
+
+    // Tool answered through user interaction (e.g. 'select' for
+    // AskUserQuestion) rather than server-side execution.
+    user_interaction?: string;
 
     // Bare tool name for MCP tools (without the server-namespace prefix).
     // Server-provided; preferred over `name` for display.

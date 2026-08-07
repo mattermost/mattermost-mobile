@@ -1,7 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import type {AIBotsResponse, ConversationResponse, RawAIThread, ToolCall} from '@agents/types';
+import type {AIBotsResponse, ConversationResponse, RawAIThread, ToolAnswer, ToolCall} from '@agents/types';
 import type {Agent, AgentsStatusResponse, ChannelAnalysisOptions, ChannelAnalysisResponse, RewriteRequest, RewriteResponse} from '@agents/types/api';
 
 export type {Agent};
@@ -19,7 +19,7 @@ export interface ClientAgentsMix {
         botUsername: string,
         options?: ChannelAnalysisOptions,
     ) => Promise<ChannelAnalysisResponse>;
-    submitToolApproval: (postId: string, acceptedToolIds: string[]) => Promise<void>;
+    submitToolApproval: (postId: string, acceptedToolIds: string[], toolAnswers?: Record<string, ToolAnswer>) => Promise<void>;
 
     // Legacy endpoints (plugin < 2.0): redaction fetched via dedicated routes.
     // New plugin scopes privacy at the conversation-fetch / websocket layer.
@@ -99,12 +99,21 @@ const ClientAgents = (superclass: any) => class extends superclass {
         );
     };
 
-    submitToolApproval = async (postId: string, acceptedToolIds: string[]) => {
+    submitToolApproval = async (postId: string, acceptedToolIds: string[], toolAnswers?: Record<string, ToolAnswer>) => {
+        const body: {accepted_tool_ids: string[]; tool_answers?: Record<string, ToolAnswer>} = {
+            accepted_tool_ids: acceptedToolIds,
+        };
+
+        // Answers for accepted user-interaction tool calls (AskUserQuestion),
+        // keyed by tool_use block ID. Omitted entirely when there are none.
+        if (toolAnswers && Object.keys(toolAnswers).length > 0) {
+            body.tool_answers = toolAnswers;
+        }
         return this.doFetch(
             `${this.getAgentsRoute()}/post/${postId}/tool_call`,
             {
                 method: 'post',
-                body: {accepted_tool_ids: acceptedToolIds},
+                body,
             },
         );
     };

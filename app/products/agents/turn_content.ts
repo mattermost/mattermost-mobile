@@ -94,6 +94,7 @@ function toolUseBlockToToolCall(block: ContentBlock, resultMap: Map<string, Cont
         mcp_bare_name: block.mcp_bare_name,
         server_origin: block.server_origin,
         would_auto_execute: block.would_auto_execute,
+        user_interaction: block.user_interaction,
         decided_at: resultBlock?.decided_at,
     };
 }
