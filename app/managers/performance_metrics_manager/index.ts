@@ -6,6 +6,7 @@ import {AppState, type AppStateStatus} from 'react-native';
 import performance from 'react-native-performance';
 
 import {logDebug, logInfo, logWarning} from '@utils/log';
+import {endManualTransaction, startManualTransaction} from '@utils/sentry_tracing';
 
 import Batcher from './performance_metrics_batcher';
 
@@ -24,6 +25,7 @@ type MetricName = 'mobile_channel_switch' |
 
 const RETRY_TIME = 100;
 const MAX_RETRIES = 3;
+const LOAD_TRANSACTION_KEY = 'ui.load.first_screen';
 
 class PerformanceMetricsManagerSingleton {
     private target: Target;
@@ -55,9 +57,15 @@ class PerformanceMetricsManagerSingleton {
 
     public setLoadTarget(target: Target) {
         this.target = target;
+        if (target) {
+            startManualTransaction(LOAD_TRANSACTION_KEY, 'ui.load.first_screen', 'ui.load', {
+                'mm.target': target,
+            });
+        }
     }
 
     public skipLoadMetric() {
+        endManualTransaction(LOAD_TRANSACTION_KEY, {'mm.skipped': true});
         RNUtils.setHasRegisteredLoad();
     }
 
@@ -78,6 +86,10 @@ class PerformanceMetricsManagerSingleton {
                 timestamp: Date.now(),
             });
             performance.clearMeasures('mobile_load');
+            endManualTransaction(LOAD_TRANSACTION_KEY, {
+                'mm.target': location || 'unknown',
+                'mm.duration_ms': Math.round(measure.duration),
+            });
         } catch {
             // There seems to be a race condition where in some scenarios, the mobile load
             // mark does not exist. We add this to avoid crashes related to this.
@@ -86,6 +98,10 @@ class PerformanceMetricsManagerSingleton {
                 return;
             }
             logWarning('We could not retrieve the mobile load metric');
+            endManualTransaction(LOAD_TRANSACTION_KEY, {
+                'mm.target': location || 'unknown',
+                'mm.error': 'missing_native_launch_mark',
+            });
         }
 
         RNUtils.setHasRegisteredLoad();
@@ -93,6 +109,9 @@ class PerformanceMetricsManagerSingleton {
 
     public startMetric(metricName: MetricName) {
         performance.mark(metricName, {detail: 'startMetric'});
+        startManualTransaction(metricName, metricName, 'ui.action', {
+            'mm.metric': metricName,
+        });
     }
 
     public mark(metricName: MetricName, options?: MarkOptions) {
@@ -131,6 +150,11 @@ class PerformanceMetricsManagerSingleton {
             metric: metricName,
             value: duration,
             timestamp: Date.now(),
+        });
+
+        endManualTransaction(metricName, {
+            'mm.metric': metricName,
+            'mm.duration_ms': Math.round(duration),
         });
 
         performance.clearMarks(metricName);

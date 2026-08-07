@@ -15,6 +15,7 @@ import SessionManager from '@managers/session_manager';
 import WebsocketManager from '@managers/websocket_manager';
 import EphemeralStore from '@store/ephemeral_store';
 import {NavigationStore} from '@store/navigation_store';
+import {withSpan} from '@utils/sentry_tracing';
 
 // Controls whether the main initialization (database, etc...) is done, either on app launch
 // or on the Share Extension, for example.
@@ -36,33 +37,37 @@ Promise.allSettled = Promise.allSettled || (<T>(promises: Array<Promise<T>>) => 
 ));
 
 export async function initialize() {
-    if (!baseAppInitialized) {
-        baseAppInitialized = true;
-        serverCredentials = await getAllServerCredentials();
-        const serverUrls = serverCredentials.map((credential) => credential.serverUrl);
+    await withSpan('app.initialize', 'app.init', async () => {
+        if (!baseAppInitialized) {
+            baseAppInitialized = true;
+            serverCredentials = await getAllServerCredentials();
+            const serverUrls = serverCredentials.map((credential) => credential.serverUrl);
 
-        await DatabaseManager.init(serverUrls);
-        await NetworkManager.init(serverCredentials);
+            await withSpan('app.initialize.database', 'app.init', () => DatabaseManager.init(serverUrls), {
+                attributes: {'mm.server_count': serverUrls.length},
+            });
+            await withSpan('app.initialize.network', 'app.init', () => NetworkManager.init(serverCredentials));
 
-        // EphemeralModeManager init runs before WS init so any pending wipes
-        // complete before WebSocket clients start populating server databases.
-        await EphemeralModeManager.init(serverCredentials);
-        await WebsocketManager.init(serverCredentials);
-    }
+            // EphemeralModeManager init runs before WS init so any pending wipes
+            // complete before WebSocket clients start populating server databases.
+            await withSpan('app.initialize.ephemeral_mode', 'app.init', () => EphemeralModeManager.init(serverCredentials));
+            await withSpan('app.initialize.websocket', 'app.init', () => WebsocketManager.init(serverCredentials));
+        }
 
-    NavigationStore.reset();
-    EphemeralStore.setCurrentThreadId('');
-    EphemeralStore.setProcessingNotification('');
+        NavigationStore.reset();
+        EphemeralStore.setCurrentThreadId('');
+        EphemeralStore.setProcessingNotification('');
 
-    await SecurityManager.init();
+        await withSpan('app.initialize.security', 'app.init', () => SecurityManager.init());
 
-    GlobalEventHandler.init();
-    ManagedApp.init();
-    SessionManager.init();
-    CallsManager.initialize();
-    CallsNative.init();
+        GlobalEventHandler.init();
+        ManagedApp.init();
+        SessionManager.init();
+        CallsManager.initialize();
+        CallsNative.init();
 
-    PushNotifications.init(serverCredentials.length > 0);
+        PushNotifications.init(serverCredentials.length > 0);
+    }, {onlyIfParent: false});
 }
 
 export function cleanup() {
