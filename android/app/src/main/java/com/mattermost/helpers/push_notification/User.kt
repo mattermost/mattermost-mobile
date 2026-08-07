@@ -12,7 +12,7 @@ internal suspend fun PushNotificationDataRunnable.Companion.fetchUsersById(serve
         val options = Arguments.createMap()
         options.putArray("body", ReadableArrayUtils.toWritableArray(ReadableArrayUtils.toArray(userIds)))
         val result = fetchWithPost(serverUrl, endpoint, options)
-        result?.getArray("data")
+        result?.safeGetArray("data")
     } catch (e: Exception) {
         e.printStackTrace()
         null
@@ -25,7 +25,7 @@ internal suspend fun PushNotificationDataRunnable.Companion.fetchUsersByUsername
         val options = Arguments.createMap()
         options.putArray("body", ReadableArrayUtils.toWritableArray(ReadableArrayUtils.toArray(usernames)))
         val result = fetchWithPost(serverUrl, endpoint, options)
-        result?.getArray("data")
+        result?.safeGetArray("data")
     } catch (e: Exception) {
         e.printStackTrace()
         null

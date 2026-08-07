@@ -13,15 +13,19 @@ internal suspend fun PushNotificationDataRunnable.Companion.fetch(serverUrl: Str
     return suspendCoroutine { cont ->
         Network.get(serverUrl, endpoint, null, object : ResolvePromise() {
             override fun resolve(value: Any?) {
-                val response = value as ReadableMap?
-                if (response != null && !response.getBoolean("ok")) {
-                    // Server may return "data" as a Map (normal error response), String
-                    // (e.g. HTML error pages, proxy errors), or other types. Handle each
-                    // ReadableType explicitly to avoid UnexpectedNativeTypeException.
-                    val errorMessage = formatErrorMessage(response)
-                    cont.resumeWith(Result.failure(IOException(errorMessage)))
-                } else {
-                    cont.resumeWith(Result.success(response))
+                try {
+                    val response = value as ReadableMap?
+                    if (response != null && !response.getBoolean("ok")) {
+                        // Server may return "data" as a Map (normal error response), String
+                        // (e.g. HTML error pages, proxy errors), or other types. Handle each
+                        // ReadableType explicitly to avoid UnexpectedNativeTypeException.
+                        val errorMessage = formatErrorMessage(response)
+                        cont.resumeWith(Result.failure(IOException(errorMessage)))
+                    } else {
+                        cont.resumeWith(Result.success(response))
+                    }
+                } catch (e: Exception) {
+                    cont.resumeWith(Result.failure(IOException("Unexpected response format", e)))
                 }
             }
 
@@ -40,8 +44,12 @@ internal suspend fun PushNotificationDataRunnable.Companion.fetchWithPost(server
     return suspendCoroutine { cont ->
         Network.post(serverUrl, endpoint, options, object : ResolvePromise() {
             override fun resolve(value: Any?) {
-                val response = value as ReadableMap?
-                cont.resumeWith(Result.success(response))
+                try {
+                    val response = value as ReadableMap?
+                    cont.resumeWith(Result.success(response))
+                } catch (e: Exception) {
+                    cont.resumeWith(Result.failure(IOException("Unexpected response format", e)))
+                }
             }
 
             override fun reject(code: String, message: String?) {
