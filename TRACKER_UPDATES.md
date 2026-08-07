@@ -135,3 +135,17 @@ Per the ticket, the two platforms failed for unrelated reasons -- fixed/re-check
 - Android: the ticket's "channel setup cascade" from CI 30000635898 did NOT reproduce
   locally on the live server -- Android passes 2x green with no change. The CI cascade was
   environmental, not a code defect.
+
+## P3 — SEC-11004 (3-server env gate) — 2026-08-07
+
+SEC-11004 is the itWithThreeServers / hasThreeDistinctServers env gate. Confirmed working
+LOCALLY: with 5 distinct PR-9996 server URLs in detox/.env, hasThreeDistinctServers and
+hasSecondServer resolve true on both platforms, and the gated suite executes (MM-T4691_2/_3/_4
+ran on iOS with the fresh v793 binary; server_list.e2e.ts). The gate that was the blocker is
+no longer the blocker.
+
+NOT formally closed: the ticket's AC asks for a CI log excerpt from a labelled PR E2E run
+showing three distinct SITE_1/SITE_2/SITE_3 values, not just a local confirmation. To close
+by the ticket's own letter: push the branch, apply the E2E/Run label, and pull the shard
+log from the resulting CI run. Status: gate confirmed working locally; CI log excerpt still
+needed to formally close.
