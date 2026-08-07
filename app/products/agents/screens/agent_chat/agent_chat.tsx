@@ -5,7 +5,7 @@ import {PortalHost} from '@gorhom/portal';
 import {useIsFocused} from '@react-navigation/native';
 import React, {useCallback, useEffect, useMemo, useRef, useState} from 'react';
 import {useIntl} from 'react-intl';
-import {type LayoutChangeEvent, StyleSheet} from 'react-native';
+import {type LayoutChangeEvent, DeviceEventEmitter, StyleSheet} from 'react-native';
 import {SafeAreaView, useSafeAreaInsets, type Edge} from 'react-native-safe-area-context';
 
 import {createDirectChannel} from '@actions/remote/channel';
@@ -20,7 +20,7 @@ import {resolveSelectedAgent} from '@agents/utils';
 import {KeyboardAwarePostDraftContainer} from '@components/keyboard_aware_post_draft_container';
 import PostDraft from '@components/post_draft';
 import {ITEM_HEIGHT} from '@components/slide_up_panel_item';
-import {Screens} from '@constants';
+import {Events, Screens} from '@constants';
 import {BOTTOM_TAB_HEIGHT} from '@constants/view';
 import {KeyboardStateProvider} from '@context/keyboard_state';
 import {useServerUrl} from '@context/server';
@@ -175,6 +175,16 @@ const AgentChat = ({bots, selectedAgentId}: Props) => {
 
     const handleHistoryPress = useCallback(() => {
         goToAgentThreadsList();
+    }, []);
+
+    // The threads list's "new chat" button pops back into this (still
+    // mounted) screen; reset the conversation root so the next message
+    // starts a fresh conversation with the currently selected agent.
+    useEffect(() => {
+        const listener = DeviceEventEmitter.addListener(Events.AGENT_CHAT_NEW_CONVERSATION, () => {
+            setRootId(null);
+        });
+        return () => listener.remove();
     }, []);
 
     const handleBotSelect = useCallback(async (bot: AiBotModel) => {

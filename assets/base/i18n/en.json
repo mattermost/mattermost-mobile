@@ -66,7 +66,7 @@
   "agents.threads_list.empty_title": "No conversations yet",
   "agents.threads_list.error_loading": "Failed to load conversations. Please try again.",
   "agents.threads_list.error_title": "Unable to load conversations",
-  "agents.threads_list.reply_count": "{count, plural, one {# reply} other {# replies}}",
+  "agents.threads_list.message_count": "{count, plural, one {# message} other {# messages}}",
   "agents.threads_list.title": "Agent chat history",
   "agents.tool_call.accept_all": "Accept all",
   "agents.tool_call.approval_warning": "Approving lets Agents use this response in their next message. That message will be visible to everyone in the channel — only approve results you are comfortable sharing.",

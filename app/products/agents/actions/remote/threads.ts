@@ -8,21 +8,19 @@ import {logError} from '@utils/log';
 
 import type {AIThread, RawAIThread} from '@agents/types';
 
-// plugin >= 2.0 carries root_post_id; plugin < 2.0 has the post id in `id`.
+// The conversation id and the root post id differ; the mobile list keys on
+// the root post id so taps can open the thread directly.
 // Returns null for threadless conversations so callers can filter them out.
 function normaliseThread(raw: RawAIThread): AIThread | null {
-    const hasRootPostField = 'root_post_id' in raw;
-    const postId = hasRootPostField ? raw.root_post_id : raw.id;
+    const postId = raw.root_post_id;
     if (!postId) {
         return null;
     }
 
     return {
         id: postId,
-        message: raw.message ?? '',
         title: raw.title ?? '',
         channel_id: raw.channel_id ?? '',
-        reply_count: raw.reply_count ?? 0,
         turn_count: raw.turn_count ?? 0,
         update_at: raw.update_at ?? 0,
         root_post_id: raw.root_post_id ?? undefined,

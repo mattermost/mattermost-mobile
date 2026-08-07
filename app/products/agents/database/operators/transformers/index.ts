@@ -61,10 +61,8 @@ export const transformAiThreadRecord = ({action, database, value}: TransformerAr
 
     const fieldsMapper = (thread: AiThreadModel) => {
         thread._raw.id = isCreateAction ? (raw?.id ?? thread.id) : thread.id;
-        thread.message = raw.message ?? record?.message ?? '';
         thread.title = raw.title ?? record?.title ?? '';
         thread.channelId = raw.channel_id ?? record?.channelId ?? '';
-        thread.replyCount = raw.reply_count ?? record?.replyCount ?? 0;
         thread.turnCount = raw.turn_count ?? record?.turnCount ?? 0;
         thread.updateAt = raw.update_at ?? record?.updateAt ?? 0;
     };
