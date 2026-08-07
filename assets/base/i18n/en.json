@@ -1067,7 +1067,7 @@
   "mobile.system_message.channel_unarchived_message": "{username} unarchived the channel",
   "mobile.system_message.update_channel_displayname_message_and_forget.updated_from": "{username} updated the channel display name from: {oldDisplayName} to: {newDisplayName}",
   "mobile.system_message.update_channel_header_message_and_forget.removed": "{username} removed the channel header (was: {oldHeader})",
-  "mobile.system_message.update_channel_header_message_and_forget.updated_from": "{username} updated the channel header from: {oldHeader} to: {newHeader}",
+  "mobile.system_message.update_channel_header_message_and_forget.updated_from": "{username} updated the channel header\n**From:** {oldHeader}\n**To:** {newHeader}",
   "mobile.system_message.update_channel_header_message_and_forget.updated_to": "{username} updated the channel header to: {newHeader}",
   "mobile.system_message.update_channel_purpose_message.removed": "{username} removed the channel purpose (was: {oldPurpose})",
   "mobile.system_message.update_channel_purpose_message.updated_from": "{username} updated the channel purpose from: {oldPurpose} to: {newPurpose}",
