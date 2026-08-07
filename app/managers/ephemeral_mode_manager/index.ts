@@ -10,6 +10,7 @@ import {clearEphemeralModeState, setDisconnectedSince, setLastSeenTime, setOffli
 import {Screens} from '@constants';
 import DatabaseManager from '@database/manager';
 import PushNotifications from '@init/push_notifications';
+import DraftSyncManager from '@managers/draft_sync_manager';
 import WebsocketManager from '@managers/websocket_manager';
 import {getServer, getServerDisplayName} from '@queries/app/servers';
 import {getDisconnectedSince, getLastSeenTime, getOfflineSince, observeConfigValue} from '@queries/servers/system';
@@ -408,6 +409,9 @@ class EphemeralModeManagerSingleton {
     };
 
     private wipeServerArtifacts = (serverUrl: string) => {
+        // Stop draft sync before the database is wiped so a late HTTP completion cannot touch a
+        // destroyed database. A wiped/zero-persistence database intentionally loses its outbox.
+        DraftSyncManager.invalidate(serverUrl);
         PushNotifications.removeServerNotifications(serverUrl);
         return Promise.all([
             wipeServerDatabaseWithRetry(serverUrl),
@@ -437,6 +441,9 @@ class EphemeralModeManagerSingleton {
                 logError('EphemeralModeManager.runWipe: wipe failed after retries, server re-added with stale data', serverUrl);
             }
             await this.addServer(serverUrl);
+
+            // Re-initialize draft sync against the freshly re-added (recreated) database.
+            await DraftSyncManager.initialize(serverUrl);
         } catch (error) {
             logError('EphemeralModeManager.runWipe', error);
         } finally {

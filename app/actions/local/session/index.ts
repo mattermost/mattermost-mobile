@@ -12,6 +12,7 @@ import DatabaseManager from '@database/manager';
 import {resetMomentLocale} from '@i18n';
 import {getAllServerCredentials, removeServerCredentials} from '@init/credentials';
 import PushNotifications from '@init/push_notifications';
+import DraftSyncManager from '@managers/draft_sync_manager';
 import NetworkManager from '@managers/network_manager';
 import WebsocketManager from '@managers/websocket_manager';
 import {getDeviceToken} from '@queries/app/global';
@@ -140,6 +141,11 @@ export const terminateSession = async (serverUrl: string, removeServer: boolean)
 
     // Remove push notifications (synchronous, no error handling needed)
     PushNotifications.removeServerNotifications(serverUrl);
+
+    // Stop draft sync before invalidating the client and destroying the database so a late
+    // HTTP completion cannot touch a destroyed database (invalidate is synchronous). Un-flushed
+    // outbox intent is intentionally discarded on logout/session termination.
+    DraftSyncManager.invalidate(serverUrl);
 
     // Invalidate clients (websocket waits for close event before destroying)
     await safeExecute('invalidateNetworkClient', async () => {

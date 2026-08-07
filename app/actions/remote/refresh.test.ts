@@ -6,6 +6,7 @@ import {terminateSession} from '@actions/local/session';
 import {refetchCurrentUser} from '@actions/remote/user';
 import DatabaseManager from '@database/manager';
 import {getServerCredentials} from '@init/credentials';
+import DraftSyncManager from '@managers/draft_sync_manager';
 import EphemeralModeManager from '@managers/ephemeral_mode_manager';
 import WebsocketManager from '@managers/websocket_manager';
 import {getCurrentChannelId, getCurrentTeamId, getPushVerificationStatus, prepareCommonSystemValues} from '@queries/servers/system';
@@ -25,6 +26,10 @@ jest.mock('@actions/remote/user', () => ({
 }));
 jest.mock('@init/credentials', () => ({
     getServerCredentials: jest.fn(),
+}));
+jest.mock('@managers/draft_sync_manager', () => ({
+    __esModule: true,
+    default: {initialize: jest.fn(), invalidate: jest.fn(), wake: jest.fn()},
 }));
 jest.mock('@managers/ephemeral_mode_manager', () => ({
     __esModule: true,
@@ -78,9 +83,20 @@ describe('applyPersistenceModeChange', () => {
 
         expect(WebsocketManager.invalidateClient).toHaveBeenCalledWith(serverUrl);
         expect(EphemeralModeManager.removeServer).toHaveBeenCalledWith(serverUrl);
+        expect(DraftSyncManager.invalidate).toHaveBeenCalledWith(serverUrl);
         expect(wipeServerDatabaseWithRetry).toHaveBeenCalledWith(serverUrl);
         expect(refetchCurrentUser).toHaveBeenCalledWith(serverUrl, undefined);
+        expect(DraftSyncManager.initialize).toHaveBeenCalledWith(serverUrl);
         expect(WebsocketManager.createClient).toHaveBeenCalledWith(serverUrl, 'tok', 'preauth');
+
+        // Draft sync must stop before the wipe and re-initialize after the DB is recreated but before WS startup.
+        const invalidateOrder = jest.mocked(DraftSyncManager.invalidate).mock.invocationCallOrder[0];
+        const wipeOrder = jest.mocked(wipeServerDatabaseWithRetry).mock.invocationCallOrder[0];
+        const initializeOrder = jest.mocked(DraftSyncManager.initialize).mock.invocationCallOrder[0];
+        const createClientOrder = jest.mocked(WebsocketManager.createClient).mock.invocationCallOrder[0];
+        expect(invalidateOrder).toBeLessThan(wipeOrder);
+        expect(wipeOrder).toBeLessThan(initializeOrder);
+        expect(initializeOrder).toBeLessThan(createClientOrder);
         expect(WebsocketManager.initializeClient).toHaveBeenCalledWith(serverUrl);
         expect(setActiveServerDatabaseSpy).toHaveBeenCalledWith(serverUrl);
         expect(terminateSession).not.toHaveBeenCalled();

@@ -5,6 +5,7 @@ import {wipeServerDatabaseWithRetry, wipeServerFiles} from '@actions/local/ephem
 import {cancelSessionNotification, terminateSession} from '@actions/local/session';
 import DatabaseManager from '@database/manager';
 import {getServerCredentials} from '@init/credentials';
+import DraftSyncManager from '@managers/draft_sync_manager';
 import EphemeralModeManager from '@managers/ephemeral_mode_manager';
 import WebsocketManager from '@managers/websocket_manager';
 import {getCurrentChannelId, getCurrentTeamId, getPushVerificationStatus, prepareCommonSystemValues} from '@queries/servers/system';
@@ -35,6 +36,9 @@ export const applyPersistenceModeChange = async (serverUrl: string): Promise<{er
         }
 
         await WebsocketManager.invalidateClient(serverUrl);
+
+        // Stop draft sync before the DB is destroyed so late HTTP callbacks can't touch it.
+        DraftSyncManager.invalidate(serverUrl);
         const {success} = await wipeServerDatabaseWithRetry(serverUrl);
         if (!success) {
             throw new Error('Failed to wipe server database after changing persistence mode');
@@ -57,6 +61,9 @@ export const applyPersistenceModeChange = async (serverUrl: string): Promise<{er
         if (systemModels?.length) {
             await operator.batchRecords(systemModels, 'applyPersistenceModeChange');
         }
+
+        // The DB has been recreated and re-seeded; re-initialize draft sync before WebSocket startup.
+        await DraftSyncManager.initialize(serverUrl);
 
         if (credentials?.token) {
             await WebsocketManager.createClient(serverUrl, credentials.token, credentials.preauthSecret);

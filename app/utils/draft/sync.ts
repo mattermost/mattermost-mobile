@@ -20,7 +20,7 @@ type DraftLike = {
 // It uses the DraftModel property names so a later phase can assign the values
 // directly onto a prepared record. It intentionally never carries a record id or
 // a local update_at; the caller stamps update_at when content actually changes.
-type NormalizedDraft = {
+export type NormalizedDraft = {
     channelId: string;
     rootId: string;
     message: string;
