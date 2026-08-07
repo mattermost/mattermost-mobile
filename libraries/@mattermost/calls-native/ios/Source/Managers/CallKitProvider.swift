@@ -202,6 +202,13 @@ private struct CallInfo {
                 return
             }
             self.provider.reportOutgoingCall(with: uuid, startedConnectingAt: nil)
+            #if targetEnvironment(simulator)
+            // The simulator's CallKit ends outgoing calls that stay "connecting"
+            // within ~50ms. Skip straight to connected so it doesn't issue a
+            // spurious CXEndCallAction before the WebRTC handshake can start.
+            // On a real device, JS drives reportConnected when WebRTC is ready.
+            self.provider.reportOutgoingCall(with: uuid, connectedAt: nil)
+            #endif
             GekidouLogger.shared.log(.info,
                 "CallKitProvider: reported outgoing call uuid=\(uuid.uuidString)")
             completion(uuid, nil)
@@ -209,7 +216,10 @@ private struct CallInfo {
     }
 
     @objc public func reportConnected(uuid: UUID) {
+        #if !targetEnvironment(simulator)
+        // On simulator, connectedAt was already reported in reportOutgoingCall.
         provider.reportOutgoingCall(with: uuid, connectedAt: nil)
+        #endif
         updateCallInfo(for: uuid) { $0.isAnswered = true }
         GekidouLogger.shared.log(.info, "CallKitProvider: reportConnected uuid=\(uuid.uuidString)")
     }
