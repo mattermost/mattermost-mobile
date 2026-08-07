@@ -41,3 +41,15 @@ export const CONTROL_SIGNALS = {
 
 export const DEFAULT_AGENT_BOT_USERNAME = 'ai-bot';
 export const AGENT_ANALYSIS_SUMMARY = 'summarize_channel';
+
+/**
+ * Analysis types accepted by POST /post/{id}/analyze (handleThreadAnalysis).
+ */
+export const THREAD_ANALYSIS_TYPES = {
+    Summarize: 'summarize_thread',
+    ActionItems: 'action_items',
+    OpenQuestions: 'open_questions',
+} as const;
+
+// eslint-disable-next-line @typescript-eslint/no-redeclare -- TypeScript supports same-name type/value pairs as enum alternative
+export type THREAD_ANALYSIS_TYPES = typeof THREAD_ANALYSIS_TYPES[keyof typeof THREAD_ANALYSIS_TYPES];

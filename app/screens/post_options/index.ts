@@ -5,6 +5,8 @@ import {withDatabase, withObservables} from '@nozbe/watermelondb/react';
 import {combineLatest, of as of$, Observable} from 'rxjs';
 import {combineLatestWith, distinctUntilChanged, switchMap} from 'rxjs/operators';
 
+import {observeHasAgents} from '@agents/queries/agents';
+import {observeIsAgentsAnalysisLicensed} from '@agents/queries/license';
 import {Permissions, Post, Screens} from '@constants';
 import {AppBindingLocations} from '@constants/apps';
 import {MAX_ALLOWED_REACTIONS} from '@constants/emoji';
@@ -201,7 +203,18 @@ const enhanced = withObservables([], ({combinedPost, post, showAddReaction, sour
         }),
     );
 
+    // Thread analysis is a licensed plugin feature and needs at least one
+    // agent; shown on every regular post (D17), not only posts with replies.
+    const canAskAgents = borPost || isSystemMessage(post) ? of$(false) : combineLatest([
+        observeIsAgentsAnalysisLicensed(database),
+        observeHasAgents(serverUrl),
+        channelIsArchived,
+    ]).pipe(
+        switchMap(([licensed, hasAgents, isArchived]) => of$(licensed && hasAgents && !isArchived)),
+    );
+
     return {
+        canAskAgents,
         canMarkAsUnread,
         canAddReaction,
         canDelete,

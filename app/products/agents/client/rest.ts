@@ -19,6 +19,11 @@ export interface ClientAgentsMix {
         botUsername: string,
         options?: ChannelAnalysisOptions,
     ) => Promise<ChannelAnalysisResponse>;
+    doThreadAnalysis: (
+        postId: string,
+        analysisType: string,
+        botUsername: string,
+    ) => Promise<ChannelAnalysisResponse>;
     submitToolApproval: (postId: string, acceptedToolIds: string[], toolAnswers?: Record<string, ToolAnswer>) => Promise<void>;
 
     // Legacy endpoints (plugin < 2.0): redaction fetched via dedicated routes.
@@ -95,6 +100,20 @@ const ClientAgents = (superclass: any) => class extends superclass {
                     prompt,
                     team_id,
                 },
+            },
+        );
+    };
+
+    doThreadAnalysis = async (
+        postId: string,
+        analysisType: string,
+        botUsername: string,
+    ): Promise<ChannelAnalysisResponse> => {
+        return this.doFetch(
+            `${this.getAgentsRoute()}/post/${postId}/analyze?botUsername=${encodeURIComponent(botUsername)}`,
+            {
+                method: 'post',
+                body: {analysis_type: analysisType},
             },
         );
     };

@@ -41,6 +41,9 @@ import type {AvailableScreens} from '@typings/screens/navigation';
 // Sentinel id for the in-progress streaming round; persisted rounds use turn ids.
 const LIVE_ROUND_ID = 'live';
 
+// Backoff ladder for the terminal-state self-heal refetch (see below).
+const SELF_HEAL_DELAYS_MS = [500, 2000, 5000];
+
 const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
     return {
         container: {
@@ -277,24 +280,43 @@ const AgentPostNew = ({post, conversationId, currentUserId, location, isDM}: Age
     // Terminal-state self-heal: POST_EDITED clears the streaming state, but the
     // stream-end refetch can race the server's turn finalization and cache a
     // conversation that predates this post's turns. When a streaming session
-    // for this post just cleared and the cached conversation still has no
-    // rounds for it, force one more fetch so the post doesn't render blank
-    // until a remount. One-shot per streaming session (cold mounts never fire).
+    // for this post cleared and the cached conversation still has no rounds for
+    // it, retry the fetch on a short backoff ladder so the post doesn't render
+    // blank until a remount. Server-side persistence can lag stream-end by
+    // seconds, so a single immediate refetch isn't enough. Bounded per
+    // streaming session; cold mounts never fire.
     const hadStreamingRef = useRef(false);
+    const selfHealAttemptRef = useRef(0);
     useEffect(() => {
         if (streamingState) {
             hadStreamingRef.current = true;
-            return;
+            selfHealAttemptRef.current = 0;
+            return undefined;
         }
         if (isRegenerating) {
             // Regeneration clears the streaming state and suppresses the
             // persisted rounds on purpose; the post-stream refetch handles it.
-            return;
+            return undefined;
         }
-        if (hadStreamingRef.current && !conversationLoading && !conversationError && persistedRounds.length === 0) {
+        if (!hadStreamingRef.current || conversationLoading || conversationError) {
+            return undefined;
+        }
+        if (persistedRounds.length > 0) {
+            // Healed (or was never stale) — disarm until the next session.
             hadStreamingRef.current = false;
-            refetchConversation(serverUrl, conversationId);
+            return undefined;
         }
+        if (selfHealAttemptRef.current >= SELF_HEAL_DELAYS_MS.length) {
+            // Give up; conversation legitimately has no rounds for this post.
+            hadStreamingRef.current = false;
+            return undefined;
+        }
+        const delay = SELF_HEAL_DELAYS_MS[selfHealAttemptRef.current];
+        selfHealAttemptRef.current += 1;
+        const timer = setTimeout(() => {
+            refetchConversation(serverUrl, conversationId);
+        }, delay);
+        return () => clearTimeout(timer);
     }, [streamingState, isRegenerating, conversationLoading, conversationError, persistedRounds.length, serverUrl, conversationId]);
 
     const isRequester = isConversationRequester({post, conversation, currentUserId});
