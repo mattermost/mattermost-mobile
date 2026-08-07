@@ -2,7 +2,7 @@
 // See LICENSE.txt for license information.
 
 import React, {useCallback, useState} from 'react';
-import {Pressable, Text, View} from 'react-native';
+import {Pressable, ScrollView, Text, View} from 'react-native';
 import Animated, {useAnimatedStyle, useSharedValue, withTiming} from 'react-native-reanimated';
 
 import {TOUCH_TARGET_SIZE} from '@agents/constants';
@@ -120,11 +120,18 @@ const ReasoningDisplay = ({reasoningSummary, isReasoningLoading}: ReasoningDispl
             </Pressable>
             {isExpanded && reasoningSummary ? (
                 <Animated.View style={[styles.reasoningContentContainer, contentAnimatedStyle]}>
-                    <View style={styles.reasoningContent}>
+                    {/* Content taller than the height cap stays reachable by
+                        scrolling within the block; nestedScrollEnabled lets
+                        Android hand off between this and the post list. */}
+                    <ScrollView
+                        style={styles.reasoningContent}
+                        nestedScrollEnabled={true}
+                        testID='agents.reasoning.scroll_view'
+                    >
                         <Text style={styles.reasoningText}>
                             {reasoningSummary}
                         </Text>
-                    </View>
+                    </ScrollView>
                 </Animated.View>
             ) : null}
         </View>

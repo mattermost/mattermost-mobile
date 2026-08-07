@@ -112,6 +112,16 @@ describe('ReasoningDisplay', () => {
 
             expect(getByText('A'.repeat(1000))).toBeTruthy();
         });
+
+        it('should render the expanded content in a nested-scroll container so text past the height cap stays reachable', () => {
+            const props = getBaseProps();
+            const {getByText, getByTestId} = renderWithIntlAndTheme(<ReasoningDisplay {...props}/>);
+
+            fireEvent.press(getByText('Thinking'));
+
+            const scrollView = getByTestId('agents.reasoning.scroll_view');
+            expect(scrollView.props.nestedScrollEnabled).toBe(true);
+        });
     });
 
 });

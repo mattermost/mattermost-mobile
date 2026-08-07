@@ -7,7 +7,7 @@ import {View} from 'react-native';
 import {regenerateResponse, stopGeneration} from '@agents/actions/remote/generation_controls';
 import {fetchToolCallPrivate, fetchToolResultPrivate} from '@agents/actions/remote/tool_private';
 import {useAgentsConfig} from '@agents/store/agents_config';
-import {useStreamingState} from '@agents/store/streaming_store';
+import streamingStore, {useStreamingState} from '@agents/store/streaming_store';
 import {stripOpenAICitations} from '@agents/turn_content';
 import {ToolApprovalStage, type Annotation, type ToolCall} from '@agents/types';
 import {getToolApprovalStage, isPostRequester, isToolCallRedacted, isUnsafeLinksPost, mergeToolCalls} from '@agents/utils';
@@ -253,6 +253,10 @@ const AgentPostLegacy = ({post, currentUserId, location, isDM}: AgentPostLegacyP
 
     // Handler for regenerate button
     const handleRegenerate = useCallback(async () => {
+        // Clear the streaming store so the new stream starts from a clean
+        // slate — startStreaming preserves early buffers, so a leftover state
+        // from the previous stream would resurface the old answer.
+        streamingStore.removePost(serverUrl, post.id);
         const {error} = await regenerateResponse(serverUrl, post.id);
         if (error) {
             showSnackBar({barType: SNACK_BAR_TYPE.AGENT_REGENERATE_ERROR});
