@@ -155,6 +155,24 @@ export function getToolApprovalStage(post: PostModel | Post, toolCalls: ToolCall
 }
 
 /**
+ * Heuristic strip of the MCP namespace prefix (`<ns>__`) from a tool's wire
+ * name for call sites without server context (e.g. persisted conversation
+ * payloads that carry no mcp_bare_name). Ported from the plugin webapp's
+ * stripWirePrefix (webapp/src/utils/tool_names.ts) — keep the two in sync.
+ */
+export function stripWirePrefix(toolName: string): string {
+    const idx = toolName.indexOf('__');
+    if (idx <= 0) {
+        return toolName;
+    }
+    const prefix = toolName.slice(0, idx);
+    if (!(/^[a-zA-Z0-9_-]+$/).test(prefix)) {
+        return toolName;
+    }
+    return toolName.slice(idx + 2);
+}
+
+/**
  * Merge public tool calls with private data, preserving status from public and arguments/results from private
  */
 export function mergeToolCalls(publicCalls: ToolCall[], privateCalls: ToolCall[] | null): ToolCall[] {

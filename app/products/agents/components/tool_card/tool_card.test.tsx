@@ -79,12 +79,22 @@ describe('ToolCard', () => {
             expect(queryByText('Mattermost  Read Post')).toBeNull();
         });
 
-        it('should fall back to the wire name when mcp_bare_name is redacted to an empty string', () => {
+        it('should strip the MCP namespace prefix from the wire name when mcp_bare_name is absent', () => {
+            const props = getBaseProps();
+            props.tool = createMockTool({name: 'mattermost__get_me'});
+            const {getByText, queryByText} = renderWithIntlAndTheme(<ToolCard {...props}/>);
+
+            expect(getByText('Get Me')).toBeTruthy();
+            expect(queryByText('Mattermost  Get Me')).toBeNull();
+        });
+
+        it('should strip the MCP namespace prefix when mcp_bare_name is redacted to an empty string', () => {
             const props = getBaseProps();
             props.tool = createMockTool({name: 'mattermost__read_post', mcp_bare_name: ''});
-            const {getByText} = renderWithIntlAndTheme(<ToolCard {...props}/>);
+            const {getByText, queryByText} = renderWithIntlAndTheme(<ToolCard {...props}/>);
 
-            expect(getByText('Mattermost  Read Post')).toBeTruthy();
+            expect(getByText('Read Post')).toBeTruthy();
+            expect(queryByText('Mattermost  Read Post')).toBeNull();
         });
     });
 

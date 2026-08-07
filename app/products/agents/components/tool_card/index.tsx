@@ -7,6 +7,7 @@ import Animated, {FadeIn, FadeOut, useAnimatedStyle, useSharedValue, withTiming}
 
 import {useAgentsConfig} from '@agents/store/agents_config';
 import {ToolApprovalStage, ToolCallStatus, type ToolCall} from '@agents/types';
+import {stripWirePrefix} from '@agents/utils';
 import CompassIcon from '@components/compass_icon';
 import FormattedText from '@components/formatted_text';
 import Loading from '@components/loading';
@@ -247,9 +248,11 @@ const ToolCard = ({
     // Prefer the server-provided bare name for MCP tools; title-casing the
     // raw wire name would render the namespace prefix (e.g. "Mattermost
     // Read Post"). `||` because the server redacts mcp_bare_name to an empty
-    // string for non-requesters.
+    // string for non-requesters. When mcp_bare_name is absent (persisted
+    // conversation payloads don't carry it), strip the `<ns>__` prefix
+    // heuristically before title-casing (webapp tool_card parity).
     const displayName = useMemo(() => {
-        const baseName = tool.mcp_bare_name || tool.name;
+        const baseName = tool.mcp_bare_name || stripWirePrefix(tool.name);
         return baseName.
             replace(/_/g, ' ').
             replace(/\b\w/g, (char) => char.toUpperCase());

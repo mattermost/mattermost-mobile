@@ -5,7 +5,7 @@ import {AGENT_POST_TYPES} from '@agents/constants';
 import {ChannelAccessLevel, ToolApprovalStage, ToolCallStatus, type ToolCall} from '@agents/types';
 import TestHelper from '@test/test_helper';
 
-import {isAgentMentionReminderPost, isAgentPost, isPostRequester, isToolCallRedacted, isPendingToolResult, isUnsafeLinksPost, getToolApprovalStage, mergeToolCalls, resolveSelectedAgent, resolveAgentSelection, filterAgentsForChannel, buildCustomPromptDraft} from './utils';
+import {isAgentMentionReminderPost, isAgentPost, isPostRequester, isToolCallRedacted, isPendingToolResult, isUnsafeLinksPost, getToolApprovalStage, mergeToolCalls, resolveSelectedAgent, resolveAgentSelection, filterAgentsForChannel, buildCustomPromptDraft, stripWirePrefix} from './utils';
 
 describe('isAgentPost', () => {
     describe('with Post objects', () => {
@@ -274,6 +274,28 @@ describe('getToolApprovalStage', () => {
             props: {pending_tool_result: 'true'},
         });
         expect(getToolApprovalStage(post, [pendingToolCall])).toBe(ToolApprovalStage.Result);
+    });
+});
+
+// Mirrors the plugin webapp's stripWirePrefix tests (tool_names.test.ts);
+// keep the two in sync.
+describe('stripWirePrefix', () => {
+    it('should strip the wire prefix from a namespaced name', () => {
+        expect(stripWirePrefix('mattermost__get_me')).toBe('get_me');
+        expect(stripWirePrefix('com_mattermost_plugin-mcp-demo__echo')).toBe('echo');
+    });
+
+    it('should leave plain tool names unchanged', () => {
+        expect(stripWirePrefix('read_channel')).toBe('read_channel');
+        expect(stripWirePrefix('search')).toBe('search');
+    });
+
+    it('should leave names with a leading "__" unchanged (no prefix token)', () => {
+        expect(stripWirePrefix('__weird')).toBe('__weird');
+    });
+
+    it('should leave names whose prefix token has invalid characters unchanged', () => {
+        expect(stripWirePrefix('with space__tool')).toBe('with space__tool');
     });
 });
 

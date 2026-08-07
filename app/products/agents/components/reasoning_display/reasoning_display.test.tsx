@@ -2,6 +2,7 @@
 // See LICENSE.txt for license information.
 
 import React, {type ComponentProps} from 'react';
+import {ScrollView as GestureHandlerScrollView} from 'react-native-gesture-handler';
 
 import {fireEvent, renderWithIntlAndTheme} from '@test/intl-test-helper';
 
@@ -113,13 +114,17 @@ describe('ReasoningDisplay', () => {
             expect(getByText('A'.repeat(1000))).toBeTruthy();
         });
 
-        it('should render the expanded content in a nested-scroll container so text past the height cap stays reachable', () => {
+        it('should render the expanded content in an RNGH nested-scroll container so text past the height cap stays reachable', () => {
             const props = getBaseProps();
-            const {getByText, getByTestId} = renderWithIntlAndTheme(<ReasoningDisplay {...props}/>);
+            const {getByText, UNSAFE_getByType: getByType} = renderWithIntlAndTheme(<ReasoningDisplay {...props}/>);
 
             fireEvent.press(getByText('Thinking'));
 
-            const scrollView = getByTestId('agents.reasoning.scroll_view');
+            // Must be the react-native-gesture-handler ScrollView: the post
+            // list is an inverted FlatList wrapped in a GestureDetector, and a
+            // plain RN ScrollView never wins the gesture arbitration against
+            // it on Android.
+            const scrollView = getByType(GestureHandlerScrollView);
             expect(scrollView.props.nestedScrollEnabled).toBe(true);
         });
     });
