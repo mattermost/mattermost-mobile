@@ -5,7 +5,7 @@ import {withDatabase, withObservables} from '@nozbe/watermelondb/react';
 import {of as of$} from 'rxjs';
 import {distinctUntilChanged, switchMap} from 'rxjs/operators';
 
-import ChannelInfoStartButton from '@calls/components/channel_info_start/channel_info_start_button';
+import ChannelInfoStartCallButton from '@calls/components/channel_info_start_call/channel_info_start_call_button';
 import {observeEndCallDetails, observeIsCallLimitRestricted} from '@calls/observers';
 import {observeChannelsWithCalls, observeCurrentCall} from '@calls/state';
 
@@ -37,4 +37,4 @@ const enhanced = withObservables([], ({serverUrl, channelId, database}: EnhanceP
     };
 });
 
-export default withDatabase(enhanced(ChannelInfoStartButton));
+export default withDatabase(enhanced(ChannelInfoStartCallButton));
