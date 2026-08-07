@@ -192,7 +192,7 @@ describe('ToolApprovalSet — batch decisions (B10) and canApprove gating (C1)',
             fireEvent.press(getByTestId('agents.tool_approval_set.accept_all'));
         });
 
-        expect(submitToolApproval).toHaveBeenCalledWith('https://test.mattermost.com', 'p1', ['a', 'b']);
+        expect(submitToolApproval).toHaveBeenCalledWith('https://test.mattermost.com', 'p1', ['a', 'b'], {});
     });
 
     it('should reject every actionable tool with an empty approved list', async () => {
@@ -212,7 +212,7 @@ describe('ToolApprovalSet — batch decisions (B10) and canApprove gating (C1)',
             fireEvent.press(getByTestId('agents.tool_approval_set.reject_all'));
         });
 
-        expect(submitToolApproval).toHaveBeenCalledWith('https://test.mattermost.com', 'p1', []);
+        expect(submitToolApproval).toHaveBeenCalledWith('https://test.mattermost.com', 'p1', [], {});
     });
 
     it('should suppress the status bar and per-card buttons for a viewer who cannot approve', () => {
@@ -293,7 +293,7 @@ describe('ToolApprovalSet — auto-execution policy and decided results', () => 
             fireEvent.press(getByTestId('agents.tool_approval_set.run_tools'));
         });
 
-        expect(submitToolApproval).toHaveBeenCalledWith('https://test.mattermost.com', 'p1', []);
+        expect(submitToolApproval).toHaveBeenCalledWith('https://test.mattermost.com', 'p1', [], {});
     });
 
     it('should not re-prompt share/keep-private for results whose decision is already recorded', () => {

@@ -248,6 +248,24 @@ const AgentPostNew = ({post, conversationId, currentUserId, location, isDM}: Age
         }
     }, [streamingState, isGenerationInProgress, persistedRounds.length, serverUrl, post.id]);
 
+    // Terminal-state self-heal: POST_EDITED clears the streaming state, but the
+    // stream-end refetch can race the server's turn finalization and cache a
+    // conversation that predates this post's turns. When a streaming session
+    // for this post just cleared and the cached conversation still has no
+    // rounds for it, force one more fetch so the post doesn't render blank
+    // until a remount. One-shot per streaming session (cold mounts never fire).
+    const hadStreamingRef = useRef(false);
+    useEffect(() => {
+        if (streamingState) {
+            hadStreamingRef.current = true;
+            return;
+        }
+        if (hadStreamingRef.current && !conversationLoading && !conversationError && persistedRounds.length === 0) {
+            hadStreamingRef.current = false;
+            refetchConversation(serverUrl, conversationId);
+        }
+    }, [streamingState, conversationLoading, conversationError, persistedRounds.length, serverUrl, conversationId]);
+
     const isRequester = isConversationRequester({post, conversation, currentUserId});
     const canApprove = isRequester;
     const canExpand = isRequester;
