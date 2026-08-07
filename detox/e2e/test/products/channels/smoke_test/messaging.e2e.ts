@@ -170,8 +170,15 @@ describe('Smoke Test - Messaging', () => {
         await ChannelScreen.back();
     });
 
-    // Skip both: CI run 30000635898 — iOS post-option actions are unhittable and Android cascades at channel setup.
-    it.skip('MM-T4786_4 - should be able to follow/unfollow a message, save/unsave a message, and pin/unpin a message', async () => {
+    // Unskipped (SEC-11009) on both platforms after live re-verification 2026-08-07
+    // (fresh v793 iOS binary / API-35 Android, live PR-9996 server 11.10.0, flag ON):
+    // iOS 2x green, Android 2x green. iOS fix: the unpin post-option container is not
+    // 100% hittable (positioned lower in the menu), so tap the Label Text -- the
+    // SEC-11010/11012 pattern (pin's option tap worked on iOS, unpin's did not). The
+    // openPostOptionsFor helper (longPressWithScrollRetry) already covered opening
+    // options and the other action taps. The Android "channel setup cascade" from CI
+    // 30000635898 did not reproduce locally on the live server.
+    it('MM-T4786_4 - should be able to follow/unfollow a message, save/unsave a message, and pin/unpin a message', async () => {
         // # Open a channel screen, post a message, open post options for message, and tap on follow message option
         const message = `Message ${getRandomId()}`;
         await ChannelScreen.open(channelsCategory, testChannel.name);
@@ -236,11 +243,11 @@ describe('Smoke Test - Messaging', () => {
         // # Go back to channel, open post options for message, and tap on unpin from channel option
         await ThreadScreen.back();
         await ChannelScreen.openPostOptionsFor(post.id, message);
-        if (isAndroid()) {
-            await PostOptionsScreen.unpinPostOptionLabel.tap();
-        } else {
-            await PostOptionsScreen.unpinPostOption.tap();
-        }
+
+        // iOS: the unpin option container is not 100% hittable (positioned lower in the
+        // post-options menu), so tap the Label Text on both platforms -- the SEC-11010/11012
+        // pattern. (Pin's option tap happened to work on iOS, but unpin does not.)
+        await PostOptionsScreen.unpinPostOptionLabel.tap();
 
         // * Verify post options closed and pinned text is not displayed on the post pre-header
         await waitFor(PostOptionsScreen.postOptionsScreen).not.toBeVisible().withTimeout(timeouts.TWO_SEC);

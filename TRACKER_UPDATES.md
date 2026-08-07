@@ -119,3 +119,19 @@ press-area / dropdown positioning so the item is not behind the header), not a p
 test workaround. Kept iOS-skipped; Android passes. The skip comment on MM-T4886_2 records
 this evidence. NOTE: MM-70015 (PE) would supersede any workaround here; do not treat a
 future tap-target fix as permanent once MM-70015 lands.
+
+## P3 — SEC-11009 (MM-T4786_4, smoke_test/messaging.e2e.ts, iOS + Android) — 2026-08-07
+
+Unskipped on BOTH platforms after live re-verification (fresh v793 iOS binary / API-35
+Android, live PR-9996 server 11.10.0, flag ON). iOS 2x green, Android 2x green.
+
+Per the ticket, the two platforms failed for unrelated reasons -- fixed/re-checked separately:
+- iOS: post-option action taps are visible but not tappable. The openPostOptionsFor helper
+  (longPressWithScrollRetry, SEC-11010/11012) already covered opening options and the
+  follow/save/unsave/pin action taps; the test got through all of those and failed only at
+  the UNPIN tap (unpinPostOption container <100% hittable, positioned lower in the menu).
+  Fix: tap the Label Text (unpinPostOptionLabel) -- the SEC-11010/11012 label-tap pattern
+  (pin's option tap happened to work on iOS, unpin's did not). 2x green.
+- Android: the ticket's "channel setup cascade" from CI 30000635898 did NOT reproduce
+  locally on the live server -- Android passes 2x green with no change. The CI cascade was
+  environmental, not a code defect.
