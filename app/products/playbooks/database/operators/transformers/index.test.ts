@@ -18,9 +18,22 @@ import type PlaybookRunPropertyValueModel from '@playbooks/types/database/models
 
 const {PLAYBOOK_RUN, PLAYBOOK_RUN_ATTRIBUTE, PLAYBOOK_RUN_ATTRIBUTE_VALUE} = PLAYBOOK_TABLES;
 
+const timelineEvent: TimelineEvent = {
+    id: 'event_1',
+    playbook_run_id: 'playbook_run_1',
+    create_at: 1620000000000,
+    event_at: 1620000000000,
+    event_type: 'task_state_modified',
+    summary: '',
+    details: JSON.stringify({action: 'check', task: 'Task 1'}),
+    post_id: '',
+    subject_user_id: 'user_1',
+    creator_user_id: 'user_1',
+};
+
 describe('*** PLAYBOOK_RUN Prepare Records Test ***', () => {
     it('=> transformPlaybookRunRecord: should return a record of type PlaybookRun for CREATE action', async () => {
-        expect.assertions(3);
+        expect.assertions(4);
 
         const database = await createTestConnection({databaseName: 'playbook_run_prepare_records', setActive: true});
         expect(database).toBeTruthy();
@@ -63,7 +76,7 @@ describe('*** PLAYBOOK_RUN Prepare Records Test ***', () => {
                     remove_channel_member_on_removed_participant: false,
                     invited_user_ids: [],
                     invited_group_ids: [],
-                    timeline_events: [],
+                    timeline_events: [timelineEvent],
                     broadcast_channel_ids: [],
                     webhook_on_creation_urls: [],
                     webhook_on_status_update_urls: [],
@@ -78,6 +91,7 @@ describe('*** PLAYBOOK_RUN Prepare Records Test ***', () => {
 
         expect(preparedRecord).toBeTruthy();
         expect(preparedRecord!.collection.table).toBe(PLAYBOOK_RUN);
+        expect(preparedRecord!.timelineEvents).toEqual([timelineEvent]);
     });
 
     it('=> transformPlaybookRunRecord: should return a record of type PlaybookRun for UPDATE action', async () => {
@@ -104,6 +118,7 @@ describe('*** PLAYBOOK_RUN Prepare Records Test ***', () => {
                 record.activeStage = 1;
                 record.activeStageTitle = 'Stage 1';
                 record.participantIds = ['user_2', 'user_3'];
+                record.timelineEvents = [timelineEvent];
                 record.summary = 'Existing summary';
                 record.currentStatus = 'InProgress';
                 record.lastStatusUpdateAt = 1620000001000;
@@ -256,6 +271,7 @@ describe('*** PLAYBOOK_RUN Prepare Records Test ***', () => {
                 record.activeStage = 1;
                 record.activeStageTitle = 'Stage 1';
                 record.participantIds = ['user_2', 'user_3'];
+                record.timelineEvents = [timelineEvent];
                 record.summary = 'Existing summary';
                 record.currentStatus = 'InProgress';
                 record.lastStatusUpdateAt = 1620000001000;
@@ -300,6 +316,7 @@ describe('*** PLAYBOOK_RUN Prepare Records Test ***', () => {
         expect(preparedRecord.activeStage).toBe(1);
         expect(preparedRecord.activeStageTitle).toBe('Stage 1');
         expect(preparedRecord.participantIds).toEqual(['user_2', 'user_3']);
+        expect(preparedRecord.timelineEvents).toEqual([timelineEvent]);
         expect(preparedRecord.summary).toBe('Existing summary');
         expect(preparedRecord.currentStatus).toBe('InProgress');
         expect(preparedRecord.lastStatusUpdateAt).toBe(1620000001000);

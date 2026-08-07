@@ -96,6 +96,7 @@ describe('ChecklistItemBottomSheet', () => {
             teammateNameDisplay: mockTeammateNameDisplay,
             isDisabled: false,
             currentUserTimezone: {useAutomaticTimezone: false, automaticTimezone: '', manualTimezone: 'America/New_York'},
+            isMilitaryTime: false,
             participantIds: ['user-1', 'user-2'],
             conditionReason: '',
             showConditionIcon: false,
@@ -129,6 +130,16 @@ describe('ChecklistItemBottomSheet', () => {
 
         expect(getByText('Test Checklist Item')).toBeVisible();
         expect(queryByText('This is a test description')).toBeNull();
+    });
+
+    it('renders the latest task activity details when available', () => {
+        const props = getBaseProps();
+        props.activity = {action: 'check', actorUserId: mockAssignee.id, timestamp: Date.now()};
+        props.activityActor = mockAssignee;
+
+        const {getByTestId} = renderWithIntl(<ChecklistItemBottomSheet {...props}/>);
+
+        expect(getByTestId('playbook_run.checklist_item.task_activity.detail')).toBeVisible();
     });
 
     it('renders correctly without assignee', () => {
