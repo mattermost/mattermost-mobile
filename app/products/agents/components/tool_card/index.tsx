@@ -5,12 +5,14 @@ import React, {useCallback, useEffect, useMemo} from 'react';
 import {Platform, Pressable, Text, View} from 'react-native';
 import Animated, {FadeIn, FadeOut, useAnimatedStyle, useSharedValue, withTiming} from 'react-native-reanimated';
 
+import {useAgentsConfig} from '@agents/store/agents_config';
 import {ToolApprovalStage, ToolCallStatus, type ToolCall} from '@agents/types';
 import CompassIcon from '@components/compass_icon';
 import FormattedText from '@components/formatted_text';
 import Loading from '@components/loading';
 import Markdown from '@components/markdown';
 import {Screens} from '@constants';
+import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
 import {usePreventDoubleTap} from '@hooks/utils';
 import {safeParseJSON} from '@utils/helpers';
@@ -213,6 +215,15 @@ const ToolCard = ({
 }: ToolCardProps) => {
     const theme = useTheme();
     const styles = getStyleSheet(theme);
+    const serverUrl = useServerUrl();
+
+    // Tool arguments/results are agent-generated too, so they gate on the
+    // global config alone (webapp tool_card parity: unsafeLinks =
+    // !allowUnsafeLinks). The post model isn't available here, but every
+    // agent post carries the unsafe_links prop anyway.
+    const {allowUnsafeLinks} = useAgentsConfig(serverUrl);
+    const unsafeLinks = !allowUnsafeLinks;
+
     const chevronRotation = useSharedValue(isCollapsed ? 0 : 90);
 
     useEffect(() => {
@@ -415,6 +426,7 @@ const ToolCard = ({
                                 value={argumentsMarkdown}
                                 theme={theme}
                                 location={Screens.CHANNEL}
+                                isUnsafeLinksPost={unsafeLinks}
                             />
                         </View>
                     )}
@@ -451,6 +463,7 @@ const ToolCard = ({
                                     value={resultMarkdown}
                                     theme={theme}
                                     location={Screens.CHANNEL}
+                                    isUnsafeLinksPost={unsafeLinks}
                                 />
                             </View>
                             {isResultPhase && canApprove && (

@@ -5,7 +5,7 @@ import {AGENT_POST_TYPES} from '@agents/constants';
 import {ToolApprovalStage, ToolCallStatus, type ToolCall} from '@agents/types';
 import TestHelper from '@test/test_helper';
 
-import {isAgentMentionReminderPost, isAgentPost, isPostRequester, isToolCallRedacted, isPendingToolResult, getToolApprovalStage, mergeToolCalls, resolveSelectedAgent, resolveAgentSelection} from './utils';
+import {isAgentMentionReminderPost, isAgentPost, isPostRequester, isToolCallRedacted, isPendingToolResult, isUnsafeLinksPost, getToolApprovalStage, mergeToolCalls, resolveSelectedAgent, resolveAgentSelection} from './utils';
 
 describe('isAgentPost', () => {
     describe('with Post objects', () => {
@@ -63,6 +63,23 @@ describe('isAgentMentionReminderPost', () => {
     it('returns false for other agent and non-agent post types', () => {
         expect(isAgentMentionReminderPost(TestHelper.fakePost({type: AGENT_POST_TYPES.LLMBOT}))).toBe(false);
         expect(isAgentMentionReminderPost(TestHelper.fakePost({type: ''}))).toBe(false);
+    });
+});
+
+describe('isUnsafeLinksPost', () => {
+    it('should return true when the post carries the unsafe_links prop and the config disallows rendering', () => {
+        const post = TestHelper.fakePostModel({props: {unsafe_links: 'true'}});
+        expect(isUnsafeLinksPost(post, false)).toBe(true);
+    });
+
+    it('should return false when the server config allows unsafe links', () => {
+        const post = TestHelper.fakePostModel({props: {unsafe_links: 'true'}});
+        expect(isUnsafeLinksPost(post, true)).toBe(false);
+    });
+
+    it('should return false for posts without the unsafe_links prop', () => {
+        const post = TestHelper.fakePostModel({props: {}});
+        expect(isUnsafeLinksPost(post, false)).toBe(false);
     });
 });
 

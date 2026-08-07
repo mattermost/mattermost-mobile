@@ -56,6 +56,23 @@ export function isAgentMentionReminderPost(post: PostModel | Post): boolean {
 }
 
 /**
+ * Whether an agent post's markdown must be rendered with links/hashtags/LaTeX
+ * disabled. The plugin tags every bot post with unsafe_links=true because the
+ * content may be prompt-injected; the admin-controlled AllowUnsafeLinks server
+ * config re-enables rendering (webapp parity: `unsafeLinks: !allowUnsafeLinks`).
+ * @param post The agent post
+ * @param allowUnsafeLinks The server's global allowUnsafeLinks config
+ * @returns true when the post carries the unsafe_links prop and the config does not allow rendering
+ */
+export function isUnsafeLinksPost(post: PostModel | Post, allowUnsafeLinks: boolean): boolean {
+    if (allowUnsafeLinks) {
+        return false;
+    }
+    const props = post.props as Record<string, unknown> | undefined;
+    return Boolean(props?.unsafe_links && props.unsafe_links !== '');
+}
+
+/**
  * Check if the current user is the requester of an agent post
  * @param post The agent post
  * @param currentUserId The current user ID

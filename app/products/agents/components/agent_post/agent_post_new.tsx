@@ -7,6 +7,7 @@ import {View} from 'react-native';
 import {refetchConversation} from '@agents/actions/remote/conversation';
 import {regenerateResponse, stopGeneration} from '@agents/actions/remote/generation_controls';
 import {isConversationRequester} from '@agents/requester';
+import {useAgentsConfig} from '@agents/store/agents_config';
 import {useConversation} from '@agents/store/conversation_store';
 import streamingStore, {useStreamingState} from '@agents/store/streaming_store';
 import {
@@ -17,6 +18,7 @@ import {
     stripOpenAICitations,
 } from '@agents/turn_content';
 import {ToolApprovalStage, type Annotation, type Round} from '@agents/types';
+import {isUnsafeLinksPost} from '@agents/utils';
 import FormattedText from '@components/formatted_text';
 import Markdown from '@components/markdown';
 import {SNACK_BAR_TYPE} from '@constants/snack_bar';
@@ -81,6 +83,7 @@ interface RoundViewProps {
     showCursor: boolean;
     isReasoningLoading: boolean;
     isFirst: boolean;
+    unsafeLinks: boolean;
 }
 
 // Renders one assistant round as a vertical sequence reasoning -> text -> tools,
@@ -96,6 +99,7 @@ const RoundView = ({
     showCursor,
     isReasoningLoading,
     isFirst,
+    unsafeLinks,
 }: RoundViewProps) => {
     const theme = useTheme();
     const styles = getStyleSheet(theme);
@@ -124,6 +128,7 @@ const RoundView = ({
                         value={text}
                         theme={theme}
                         location={location}
+                        isUnsafeLinksPost={unsafeLinks}
                     />
                     {showCursor && (
                         <StreamingIndicator/>
@@ -157,6 +162,9 @@ const AgentPostNew = ({post, conversationId, currentUserId, location, isDM}: Age
     const theme = useTheme();
     const styles = getStyleSheet(theme);
     const serverUrl = useServerUrl();
+
+    const {allowUnsafeLinks} = useAgentsConfig(serverUrl);
+    const unsafeLinks = isUnsafeLinksPost(post, allowUnsafeLinks);
 
     const {conversation, loading: conversationLoading, error: conversationError} = useConversation(serverUrl, conversationId);
 
@@ -330,6 +338,7 @@ const AgentPostNew = ({post, conversationId, currentUserId, location, isDM}: Age
                         showCursor={isLive && showCursorOnLive}
                         isReasoningLoading={isLive && isReasoningLoading}
                         isFirst={idx === 0}
+                        unsafeLinks={unsafeLinks}
                     />
                 );
             })}
