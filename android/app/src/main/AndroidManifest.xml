@@ -55,6 +55,8 @@
       android:usesCleartextTraffic="true"
     >
         <meta-data android:name="firebase_analytics_collection_deactivated" android:value="true" />
+        <meta-data android:name="com.google.android.gms.car.application"
+                   android:resource="@xml/automotive_app_desc" />
         <meta-data android:name="android.content.APP_RESTRICTIONS"
                    android:resource="@xml/app_restrictions" />
         <provider
@@ -97,6 +99,9 @@
                 android:enabled="true"
                 android:exported="false" />
       <receiver android:name=".NotificationReplyBroadcastReceiver"
+               android:enabled="true"
+               android:exported="false" />
+      <receiver android:name=".NotificationMarkAsReadReceiver"
                android:enabled="true"
                android:exported="false" />
       <activity
