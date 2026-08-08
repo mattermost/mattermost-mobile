@@ -112,11 +112,11 @@ function pickTier(summary, failureCount, opts = {}) {
         };
     }
     if (failureCount <= o.tier1Max) {
-        return {tier: 1, reason: `${failureCount} failures — full evidence gathering is affordable`};
+        return {tier: 1, reason: `${failureCount} failures — gathering history and targeted rerun evidence`};
     }
     return {
         tier: 2,
-        reason: `${failureCount} failures — rerun cluster representatives only`,
+        reason: `${failureCount} failures — gathering history and rerunning representative failures`,
     };
 }
 

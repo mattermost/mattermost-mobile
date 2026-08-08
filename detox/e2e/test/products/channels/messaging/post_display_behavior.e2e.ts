@@ -20,9 +20,10 @@ import {
     ChannelScreen,
     HomeScreen,
     LoginScreen,
+    PostOptionsScreen,
     ServerScreen,
 } from '@support/ui/screen';
-import {getRandomId, timeouts, wait} from '@support/utils';
+import {getRandomId, isAndroid, timeouts, wait} from '@support/utils';
 import {expect, waitFor} from 'detox';
 
 describe('Messaging - Post Display Behavior', () => {
@@ -74,7 +75,25 @@ describe('Messaging - Post Display Behavior', () => {
         await ChannelScreen.back();
     });
 
-    it('MM-T216_1 - should scroll to bottom when sending a message after scrolling up', async () => {
+    // Skipped on Android — SEC-11084 (under SEC-10781, Mobile E2E stabilization).
+    // iOS is green on this code and stays enabled.
+    //
+    // The test proves "the list left the bottom" by asserting the NEWEST post is no
+    // longer visible. On the Android emulator that post is 91px tall, so Espresso needs
+    // under ~45px of it showing before not.toBeVisible() holds — and the list reaches its
+    // content edge (20 filler posts) before that ever happens. whileElement().scroll()
+    // gives up when it can no longer scroll and rethrows, so the loop always throws:
+    //   'not (... covers at least <50> percent of the view's area)' doesn't match
+    //   Got: ReactViewGroup{... 0,0-1440,91} tag=channel.post_list.post.<id>
+    // Deterministic, not flaky: Android passed 7/7 on the previous single-drag version
+    // and has failed 2/2 since (PR #9972 7e2dc91, PR #9930 5f8707c9), identically.
+    //
+    // Do NOT re-tune the scroll distance — three budgets have been tried (5000px single
+    // drag, 2x500px, adaptive 300px) and each only moved the failure between platforms.
+    // Fix by proving movement positively instead, e.g. asserting an OLDER post became
+    // visible, which depends on neither viewport height nor a percentage-of-area
+    // threshold on a short row.
+    (isAndroid() ? it.skip : it)('MM-T216_1 - should scroll to bottom when sending a message after scrolling up', async () => {
         // # Create many posts via API to fill the channel history and enable scrolling
         for (let i = 0; i < 20; i++) {
             // eslint-disable-next-line no-await-in-loop
@@ -90,9 +109,40 @@ describe('Messaging - Post Display Behavior', () => {
         const {postListPostItem: lastFillerItem} = ChannelScreen.getPostListPostItem(lastFillerPost.post.id, lastFillerPost.post.message);
         await waitFor(lastFillerItem).toBeVisible().withTimeout(timeouts.TEN_SEC);
 
-        // # Scroll up from mid-screen (bottom edge is occluded by the post-draft input on iOS).
-        await ChannelScreen.getFlatPostList().scroll(5000, 'up', 0.5, 0.5);
+        // # Scroll up from mid-screen until the newest post has actually left the viewport
+        // (the bottom edge is occluded by the post-draft input on iOS, hence mid-screen).
+        // A fixed pixel budget cannot hold on both platforms: 1000px moved the newest post
+        // to the top of the Android emulator's viewport but left it fully on screen — the
+        // post is only 91px tall in a ~2400px viewport — so the "left the bottom" assertion
+        // below failed on Android while passing on iOS. Scrolling until the expectation is
+        // met removes the viewport-height dependency. Small increments also keep each
+        // synthetic drag too short to dwell on a post and fire its long-press handler, which
+        // one long drag does: that opens the post-options sheet over the draft input and
+        // makes the send below fail an opaque 100% visibility check.
+        await waitFor(lastFillerItem).not.toBeVisible().whileElement(by.id(ChannelScreen.postList.testID.flatList)).scroll(300, 'up', 0.5, 0.5);
         await wait(timeouts.ONE_SEC);
+
+        // # Close the post-options sheet if a scroll gesture still tripped a long press —
+        // Detox gesture timing under CI load is outside this test's control, and the sheet
+        // would otherwise occlude the draft input and fail the send with an opaque
+        // "view is not visible" error. Probe-and-recover, matching dismissKnownModals().
+        // Runs before the assertion below so an open sheet cannot make it pass by occlusion.
+        let postOptionsOpen = true;
+        try {
+            await waitFor(PostOptionsScreen.postOptionsScreen).toExist().withTimeout(timeouts.HALF_SEC);
+        } catch {
+            // Expected path: no sheet was opened by the scroll.
+            postOptionsOpen = false;
+        }
+        if (postOptionsOpen) {
+            // Outside the catch: a failure to close is a real problem, not an absent sheet.
+            await PostOptionsScreen.close();
+        }
+
+        // * Re-verify the list is away from the bottom now that no sheet is open, so the
+        // scroll-to-bottom check below cannot pass vacuously — either because the gesture
+        // did nothing, or because a post-options sheet, not the scroll, hid the post.
+        await expect(lastFillerItem).not.toBeVisible();
 
         // # Send a new message from the UI
         const newMessage = `New bottom message ${getRandomId()}`;

@@ -1,0 +1,172 @@
+name: S3 Build Cache
+description: >-
+  Cache/restore compiled app binaries in S3 keyed by content fingerprint.
+  Uses S3 instead of actions/cache because large binaries (200MB–1GB)
+  blow the 10GB GHA cache limit and cause eviction thrashing.
+
+  Trust model — a flat shared prefix would let any branch's build be served to
+  every other branch (S3 has none of actions/cache's branch isolation), so keys
+  are scoped: `<prefix><scope>/<platform>/<fingerprint>.tar.gz`. A run only ever
+  WRITES its own scope, and READS `main` first and then its own scope. So a PR
+  can poison neither `main` nor another PR, while still getting cache hits both
+  from main (the test-only-change case) and from its own earlier pushes.
+
+  Object retention is handled natively by an S3 lifecycle expiration rule on the
+  `e2e-builds/` prefix (bucket-side config), not by a pruning job in this repo.
+  That rule must cover the `pr-*` scopes too.
+
+inputs:
+  fingerprint:
+    description: 'Content fingerprint (from compute-e2e-build-fingerprint)'
+    required: true
+  platform:
+    description: 'Platform key: ios, android-detox, android-maestro'
+    required: true
+  bucket:
+    description: 'S3 bucket name'
+    required: true
+  scope:
+    description: >-
+      Trust scope this run owns (e.g. main, pr-1234, branch-release-2.40).
+      Writes go only here; restores try `main` first, then this scope.
+    required: true
+  s3-key-prefix:
+    description: 'Key prefix in the bucket (e.g. e2e-builds/)'
+    required: false
+    default: 'e2e-builds/'
+  cache-path:
+    description: 'Local path to cache (glob for restore, directory for save)'
+    required: true
+  mode:
+    description: 'restore (check + download) or save (upload after build)'
+    required: true
+
+outputs:
+  cache-hit:
+    description: 'true if a cached build was found and restored'
+    value: ${{ steps.s3-cache.outputs.cache-hit }}
+
+runs:
+  using: composite
+  steps:
+    # Skipped rather than failed when a caller has no AWS secrets: this step runs
+    # before the shell guards below, so without the condition it would be the one
+    # way this action can still take a build down. The shell then treats absent
+    # credentials as "cache disabled".
+    - name: Configure AWS credentials
+      if: env.DETOX_AWS_ACCESS_KEY_ID != '' && env.DETOX_AWS_SECRET_ACCESS_KEY != ''
+      uses: aws-actions/configure-aws-credentials@61815dcd50bd041e203e49132bacad1fd04d2708 # v5.1.1
+      with:
+        aws-access-key-id: ${{ env.DETOX_AWS_ACCESS_KEY_ID }}
+        aws-secret-access-key: ${{ env.DETOX_AWS_SECRET_ACCESS_KEY }}
+        aws-region: us-east-1
+
+    - name: S3 cache ${{ inputs.mode }}
+      id: s3-cache
+      shell: bash
+      env:
+        FINGERPRINT: ${{ inputs.fingerprint }}
+        PLATFORM: ${{ inputs.platform }}
+        BUCKET: ${{ inputs.bucket }}
+        KEY_PREFIX: ${{ inputs.s3-key-prefix }}
+        CACHE_PATH: ${{ inputs.cache-path }}
+        MODE: ${{ inputs.mode }}
+        SCOPE: ${{ inputs.scope }}
+      run: |
+        set -eu
+
+        # A cache is an optimization: never fail the build over one. An unusable
+        # key (upstream fingerprint job failed, or ls-tree fell back to the
+        # `nocache-<sha>` sentinel) degrades to "miss on restore, skip on save"
+        # rather than erroring — the build jobs run with `if: !cancelled()` and do
+        # not gate on the fingerprint job, so a hard error here would mean no
+        # build at all.
+        KEY_USABLE=true
+        if [ -z "${DETOX_AWS_ACCESS_KEY_ID:-}" ] || [ -z "${DETOX_AWS_SECRET_ACCESS_KEY:-}" ]; then
+          echo "::warning::DETOX_AWS_* credentials not provided — cache disabled for this step."
+          KEY_USABLE=false
+        elif [ -z "$FINGERPRINT" ]; then
+          echo "::warning::fingerprint is empty (upstream job likely failed) — cache disabled for this step."
+          KEY_USABLE=false
+        elif [ "${FINGERPRINT#nocache-}" != "$FINGERPRINT" ]; then
+          echo "::warning::fingerprint is the '${FINGERPRINT}' sentinel — cache disabled (an object keyed on it could never be hit)."
+          KEY_USABLE=false
+        fi
+
+        if [ "$MODE" = "restore" ]; then
+          if [ "$KEY_USABLE" = "false" ]; then
+            echo "cache-hit=false" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+
+          # Trusted scope first: if main and this PR both built this fingerprint,
+          # prefer main's binary. An empty scope reads main only — never a
+          # double-slash key, which would be an unscoped shared location.
+          READ_SCOPES="main"
+          if [ -n "$SCOPE" ] && [ "$SCOPE" != "main" ]; then
+            READ_SCOPES="main ${SCOPE}"
+          fi
+
+          HIT=false
+          for read_scope in $READ_SCOPES; do
+            S3_KEY="${KEY_PREFIX}${read_scope}/${PLATFORM}/${FINGERPRINT}.tar.gz"
+            echo "Checking s3://${BUCKET}/${S3_KEY} ..."
+            if ! aws s3 ls "s3://${BUCKET}/${S3_KEY}" 2>/dev/null; then
+              continue
+            fi
+            # Any download/extract failure must degrade to a cache miss so the
+            # build still runs instead of aborting the action under set -eu.
+            if aws s3 cp "s3://${BUCKET}/${S3_KEY}" /tmp/build-cache.tar.gz \
+              && tar xzf /tmp/build-cache.tar.gz; then
+              rm -f /tmp/build-cache.tar.gz
+              echo "Restored build from scope '${read_scope}' (fingerprint=${FINGERPRINT:0:12})"
+              HIT=true
+              break
+            fi
+            echo "::warning::Cache restore from scope '${read_scope}' failed (download/extract error) — trying next scope."
+            rm -f /tmp/build-cache.tar.gz || true
+          done
+
+          if [ "$HIT" = "false" ]; then
+            echo "Cache MISS — no cached build for fingerprint ${FINGERPRINT:0:12} in: ${READ_SCOPES}"
+          fi
+          echo "cache-hit=${HIT}" >> "$GITHUB_OUTPUT"
+        elif [ "$MODE" = "save" ]; then
+          if [ "$KEY_USABLE" = "false" ]; then
+            echo "Skipping cache save — no usable key."
+            echo "cache-hit=false" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+          if [ -z "$SCOPE" ]; then
+            # Writing `e2e-builds//<platform>/...` would be an unscoped location
+            # readable by every branch — the exact thing scoping prevents.
+            echo "::warning::scope is empty — refusing to write an unscoped cache object."
+            echo "cache-hit=false" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+
+          # Own scope is the only writable location; main is read-only for everyone else.
+          S3_KEY="${KEY_PREFIX}${SCOPE}/${PLATFORM}/${FINGERPRINT}.tar.gz"
+          # nullglob: non-matching glob → empty array instead of literal pattern.
+          shopt -s nullglob
+          FILES=()
+          for f in $CACHE_PATH; do
+            [ -e "$f" ] && FILES+=("$f")
+          done
+          shopt -u nullglob
+
+          if [ ${#FILES[@]} -eq 0 ]; then
+            echo "::warning::No files found at '$CACHE_PATH' — skipping S3 cache save."
+            echo "cache-hit=false" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+
+          echo "Uploading ${#FILES[@]} path(s) to s3://${BUCKET}/${S3_KEY} ..."
+          tar czf /tmp/build-cache.tar.gz "${FILES[@]}"
+          aws s3 cp /tmp/build-cache.tar.gz "s3://${BUCKET}/${S3_KEY}"
+          rm -f /tmp/build-cache.tar.gz
+          echo "Saved build to S3 (fingerprint=${FINGERPRINT:0:12})"
+        else
+          echo "::error::Invalid mode: $MODE (expected restore or save)"
+          exit 1
+        fi

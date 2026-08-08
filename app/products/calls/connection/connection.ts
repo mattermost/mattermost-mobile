@@ -3,15 +3,15 @@
 
 import {RTCMonitor, RTCPeer, parseRTCStats} from '@mattermost/calls/lib';
 import {hasDCSignalingLockSupport} from '@mattermost/calls/lib/utils';
+import CallsNative from '@mattermost/calls-native';
 import {zlibSync, strToU8} from 'fflate';
-import {DeviceEventEmitter, type EmitterSubscription, NativeEventEmitter, NativeModules, Platform} from 'react-native';
-import InCallManager from 'react-native-incall-manager';
+import {DeviceEventEmitter, type EmitterSubscription, Platform} from 'react-native';
 import {mediaDevices, MediaStream, MediaStreamTrack, registerGlobals, RTCSessionDescription} from 'react-native-webrtc';
 
-import {setPreferredAudioRoute, setSpeakerphoneOn} from '@calls/actions/calls';
+import {setPreferredAudioRoute} from '@calls/actions/calls';
 import {foregroundServiceStart, foregroundServiceStop} from '@calls/connection/foreground_service';
 import {processMeanOpinionScore, setAudioDeviceInfo} from '@calls/state';
-import {AudioDevice, type AudioDeviceInfo, type AudioDeviceInfoRaw, type CallsConnection} from '@calls/types/calls';
+import {AudioDevice, type AudioDeviceType, type CallsConnection} from '@calls/types/calls';
 import {getICEServersConfigs} from '@calls/utils';
 import {WebsocketEvents} from '@constants';
 import {getServerCredentials} from '@init/credentials';
@@ -26,8 +26,6 @@ import type {IntlShape} from 'react-intl';
 
 const peerConnectTimeout = 5000;
 const rtcMonitorInterval = 10000;
-
-const InCallManagerEmitter = new NativeEventEmitter(NativeModules.InCallManager);
 
 export async function newConnection(
     serverUrl: string,
@@ -45,8 +43,7 @@ export async function newConnection(
     let voiceTrack: MediaStreamTrack | null = null;
     let isClosed = false;
     let onCallEnd: EmitterSubscription | null = null;
-    let audioDeviceChanged: EmitterSubscription | null = null;
-    let wiredHeadsetEvent: EmitterSubscription | null = null;
+    let audioRouteEvent: EmitterSubscription | null = null;
 
     // Resolver for waitForPeerConnection. Set before peer exists;
     // called from inside ws.on('join') once peer emits 'connect'.
@@ -103,42 +100,35 @@ export async function newConnection(
         }
     }
 
-    // audio device changed listener is added before InCallManager.start() to listen for the first audio device change event.
-    let btInitialized = false;
-    let speakerInitialized = false;
-    if (Platform.OS === 'android') {
-        audioDeviceChanged = DeviceEventEmitter.addListener('onAudioDeviceChanged', (data: AudioDeviceInfoRaw) => {
-            const info: AudioDeviceInfo = {
-                availableAudioDeviceList: JSON.parse(data.availableAudioDeviceList),
-                selectedAudioDevice: data.selectedAudioDevice,
-            };
-            setAudioDeviceInfo(info);
-            logDebug('calls: AudioDeviceChanged, info:', info);
+    let previousAvailableDevices: AudioDeviceType[] = [];
+    let userSelectedRoute: AudioDeviceType | null = null;
 
-            // Auto switch to bluetooth the first time we connect to bluetooth, but not after.
-            if (!btInitialized) {
-                if (info.availableAudioDeviceList.includes(AudioDevice.Bluetooth)) {
-                    setPreferredAudioRoute(AudioDevice.Bluetooth);
-                    btInitialized = true;
-                } else if (!speakerInitialized) {
-                    // If we don't have bluetooth available, default to speakerphone on.
-                    setPreferredAudioRoute(AudioDevice.Speakerphone);
-                    speakerInitialized = true;
-                }
-            }
-        });
-    }
+    const getAutoRoute = (available: AudioDeviceType[]): AudioDeviceType => {
+        if (available.includes(AudioDevice.Bluetooth)) {
+            return AudioDevice.Bluetooth;
+        }
+        if (available.includes(AudioDevice.WiredHeadset)) {
+            return AudioDevice.WiredHeadset;
+        }
+        return AudioDevice.Earpiece;
+    };
+
+    const setUserSelectedAudioRoute = (route: AudioDeviceType) => {
+        userSelectedRoute = route;
+    };
 
     const ws = new WebSocketClient(serverUrl, client.getWebSocketUrl(), credentials?.token);
 
-    InCallManager.start();
-    InCallManager.stopProximitySensor();
+    try {
+        await CallsNative.startAudioSession();
+    } catch (err) {
+        throw new Error(`calls: failed to start audio session: ${getErrorMessage(err)}`);
+    }
 
     try {
         await ws.initialize();
     } catch (err) {
-        InCallManager.stop();
-        audioDeviceChanged?.remove();
+        await CallsNative.stopAudioSession();
 
         // Rethrows the error, to be caught by the caller.
         throw err;
@@ -172,9 +162,8 @@ export async function newConnection(
 
         peer?.destroy();
         peer = null;
-        InCallManager.stop();
-        audioDeviceChanged?.remove();
-        wiredHeadsetEvent?.remove();
+        CallsNative.stopAudioSession();
+        audioRouteEvent?.remove();
 
         if (Platform.OS === 'android') {
             foregroundServiceStop();
@@ -368,28 +357,38 @@ export async function newConnection(
             foregroundServiceStart(intl);
         }
 
-        // We default to speakerphone, but not if the WiredHeadset is plugged in.
-        if (Platform.OS === 'ios') {
-            wiredHeadsetEvent = InCallManagerEmitter.addListener('WiredHeadset', (data) => {
-                // Log for customer debugging. For the moment we're not changing output labels because of incall-manager iOS
-                // limitations with how it reports Bluetooth -- namely that it doesn't, so we don't know when Bluetooth is
-                // overriding the earpiece and/or headset.
-                logDebug('calls: WiredHeadset plugged in, data:', data);
+        // Listen for audio route changes on both platforms via calls-native.
+        audioRouteEvent?.remove();
+        audioRouteEvent = CallsNative.onAudioRouteChanged((route) => {
+            setAudioDeviceInfo(route);
+            logDebug('calls: AudioRouteChanged, info:', route);
 
-                // iOS switches to the headset when we connect it, so turn off speakerphone to keep UI in sync.
-                if (data.isPlugged) {
-                    setSpeakerphoneOn(false);
-                }
-            });
+            const available = route.availableAudioDeviceList;
 
-            // If headset is plugged in when the call starts, use it.
-            const report = await InCallManager.getIsWiredHeadsetPluggedIn();
-            if (report.isWiredHeadsetPluggedIn) {
-                setSpeakerphoneOn(false);
-            } else {
-                setSpeakerphoneOn(true);
+            // If the user's pinned device disappeared (e.g. BT headset ran out
+            // of battery), clear their intent so auto-routing resumes.
+            const selectedRouteDisconnected = Boolean(userSelectedRoute && !available.includes(userSelectedRoute));
+            if (selectedRouteDisconnected) {
+                userSelectedRoute = null;
             }
-        }
+
+            // Re-route when a new device appears OR when the pinned device just
+            // disconnected — in both cases the current route may no longer follow
+            // the intended priority policy.
+            const isNewDevice = (d: AudioDeviceType) => !previousAvailableDevices.includes(d);
+            const newDeviceAppeared = available.some(isNewDevice);
+            previousAvailableDevices = available;
+
+            if (!userSelectedRoute && (selectedRouteDisconnected || newDeviceAppeared)) {
+                setPreferredAudioRoute(getAutoRoute(available));
+            }
+        });
+
+        // Set initial audio route based on current hardware state.
+        const initialRoute = await CallsNative.getAudioRoute();
+        setAudioDeviceInfo(initialRoute);
+        previousAvailableDevices = initialRoute.availableAudioDeviceList;
+        setPreferredAudioRoute(getAutoRoute(initialRoute.availableAudioDeviceList));
 
         peer = new RTCPeer({
             iceServers: iceConfigs || [],
@@ -493,6 +492,7 @@ export async function newConnection(
         unraiseHand,
         sendReaction,
         initializeVoiceTrack,
+        setUserSelectedAudioRoute,
     };
 
     return connection;

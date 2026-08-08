@@ -11,7 +11,8 @@
 #
 # Newer dispatches cancel older in-flight runs on the same branch via the workflow
 # `concurrency` group below, so the latest SHA starts immediately instead of
-# queueing behind a long run.
+# queueing behind a long run. MAIN/MASTER dispatches are keyed per commit instead,
+# so consecutive merges to main never cancel each other.
 #
 # Phase 1 — builds & setup (parallel):
 #   build-ios-simulator, build-android-apk-maestro, build-android-apk (Detox debug APK),
@@ -82,35 +83,92 @@ permissions:
   id-token: write
   actions: read
 
-# One E2E run per branch: a newer Matterwick dispatch supersedes the one already
-# in flight. GitHub cancels the older run as soon as this one is created, which
-# is earlier (and simpler) than cancelling from a step inside the new run.
+# One E2E run per branch for PRs, but per-COMMIT for main/release dispatches:
+# Matterwick dispatches MAIN/MASTER runs with ref=main (matterwick
+# server/push_events.go:319), so keying on github.ref alone would make a later
+# merge cancel an earlier commit's still-running E2E — and a cancelled run never
+# writes its build-cache entry, which is the scope PRs read from.
 #
-# Main pushes are the exception. Matterwick dispatches every main push with
-# ref=main (server/push_events.go → dispatchMobileE2EWorkflow), so under a single
-# per-ref group two merges landing close together cancel each other and main
-# coverage silently becomes "whatever the latest merge was" rather than every
-# commit. That matters beyond main's own health: main results are the baseline
-# every PR failure is compared against, and a cancelled run is a permanent hole
-# in that history. Keying main runs on the commit gives each its own group, so
-# they queue instead of cancelling.
-#
-# Cost: concurrent main runs during a merge burst instead of one. Revert by
-# dropping the run_type branch from the group expression.
+# For a PR the group stays per-branch (github.ref is the PR head branch, unique
+# per PR), so a newer Matterwick dispatch still supersedes the one already in
+# flight — cancelled by GitHub as the new run is created, which is earlier and
+# simpler than cancelling from a step inside the new run.
 concurrency:
-  group: >-
-    e2e-${{ github.ref }}-${{
-      (github.event.inputs.run_type == 'MASTER' || github.event.inputs.run_type == 'MAIN')
-        && github.event.inputs.MOBILE_VERSION
-        || 'branch'
-    }}
+  group: e2e-${{ (inputs.run_type == 'MAIN' || inputs.run_type == 'MASTER') && inputs.MOBILE_VERSION || github.ref }}
   cancel-in-progress: true
 
 env:
+  # Changing this switches the iOS build path. Bump CACHE_VERSION in
+  # .github/actions/compute-e2e-build-fingerprint/action.yml or cached
+  # binaries built under the previous INTUNE setting will be served.
   INTUNE_ENABLED: 'false'
   DETOX_AWS_S3_BUCKET: "mattermost-detox-report"
 
 jobs:
+  # Compute content fingerprints for S3 build caching.
+  compute-build-fingerprints:
+    name: Compute build fingerprints
+    runs-on: ubuntu-24.04
+    outputs:
+      ios: ${{ steps.ios.outputs.fingerprint }}
+      android-detox: ${{ steps.android-detox.outputs.fingerprint }}
+      android-maestro: ${{ steps.android-maestro.outputs.fingerprint }}
+      cache-scope: ${{ steps.scope.outputs.scope }}
+    steps:
+      - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
+        with:
+          ref: ${{ inputs.MOBILE_VERSION }}
+          persist-credentials: false
+
+      # Cache trust scope. Only main-push runs write the `main` scope that every
+      # other run reads; a PR writes (and additionally reads) only `pr-<n>`, so
+      # one PR's build can never be served to main or to another PR.
+      - name: Resolve cache trust scope
+        id: scope
+        env:
+          RUN_TYPE: ${{ inputs.run_type || 'PR' }}
+          PR_NUMBER: ${{ inputs.pr_number }}
+          VERSION_NAME: ${{ inputs.version_name }}
+          REF_NAME: ${{ github.ref_name }}
+        run: |
+          set -eu
+          # Matterwick still sends MASTER for main-branch pushes; treat as MAIN.
+          if [ "$RUN_TYPE" = "MAIN" ] || [ "$RUN_TYPE" = "MASTER" ]; then
+            scope=main
+          elif [ -n "$PR_NUMBER" ]; then
+            # Digits only — a crafted pr_number must not be able to escape the prefix.
+            pr=$(printf '%s' "$PR_NUMBER" | tr -cd '0-9')
+            if [ -z "$pr" ]; then
+              echo "::error::pr_number '$PR_NUMBER' contains no digits — cannot build a safe cache scope."
+              exit 1
+            fi
+            scope="pr-${pr}"
+          else
+            raw="${VERSION_NAME:-$REF_NAME}"
+            slug=$(printf '%s' "$raw" | tr -c 'a-zA-Z0-9._-' '-' | cut -c1-60)
+            scope="branch-${slug}"
+          fi
+          echo "scope=$scope" >> "$GITHUB_OUTPUT"
+          echo "Cache trust scope: $scope"
+
+      - name: Compute iOS fingerprint
+        id: ios
+        uses: ./.github/actions/compute-e2e-build-fingerprint
+        with:
+          platform: ios
+
+      - name: Compute Android Detox fingerprint
+        id: android-detox
+        uses: ./.github/actions/compute-e2e-build-fingerprint
+        with:
+          platform: android-detox
+
+      - name: Compute Android Maestro fingerprint
+        id: android-maestro
+        uses: ./.github/actions/compute-e2e-build-fingerprint
+        with:
+          platform: android-maestro
+
   resolve-e2e-policy:
     name: Resolve E2E policy (Override label)
     runs-on: ubuntu-24.04
@@ -122,6 +180,12 @@ jobs:
       e2e_override: ${{ steps.policy.outputs.e2e_override }}
       skip_reason: ${{ steps.policy.outputs.skip_reason }}
     steps:
+      # Per-branch cancellation used to happen here via cancel-e2e-runs (removed —
+      # see the workflow-level `concurrency:` group above, which supersedes it via
+      # native GitHub Actions cancellation). That step also guarded main-branch runs
+      # against cancelling each other; the concurrency group keys MAIN/MASTER by
+      # MOBILE_VERSION for the same reason, since Matterwick dispatches those with
+      # ref=main.
       - name: Check PR labels for E2E/Override
         id: policy
         uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9.0.0
@@ -372,9 +436,13 @@ jobs:
       !cancelled()
       && needs.resolve-e2e-policy.outputs.e2e_override != 'true'
       && (inputs.PLATFORM == 'ios' || inputs.PLATFORM == 'both')
+    # Runner / Xcode image is not in the git tree. Changing this label (or the
+    # Xcode on it) without bumping CACHE_VERSION in
+    # compute-e2e-build-fingerprint/action.yml serves stale cached binaries.
     runs-on: macos-26
     needs:
       - resolve-e2e-policy
+      - compute-build-fingerprints
     permissions:
       contents: read
       actions: write
@@ -385,36 +453,80 @@ jobs:
           persist-credentials: false
           ref: ${{ inputs.MOBILE_VERSION }}
 
+      # S3 build cache — skip rebuild when fingerprint matches (test-only PRs hit the cache seeded by main-push runs).
+      - name: Check for cached iOS build
+        id: cache-check
+        continue-on-error: true
+        uses: ./.github/actions/s3-build-cache
+        env:
+          DETOX_AWS_ACCESS_KEY_ID: ${{ secrets.MM_MOBILE_DETOX_AWS_ACCESS_KEY_ID }}
+          DETOX_AWS_SECRET_ACCESS_KEY: ${{ secrets.MM_MOBILE_DETOX_AWS_SECRET_ACCESS_KEY }}
+        with:
+          fingerprint: ${{ needs.compute-build-fingerprints.outputs.ios }}
+          scope: ${{ needs.compute-build-fingerprints.outputs.cache-scope }}
+          platform: ios
+          bucket: ${{ env.DETOX_AWS_S3_BUCKET }}
+          cache-path: 'Mattermost-simulator-*.app.zip'
+          mode: restore
+
+      - name: Skip build if cache hit
+        if: steps.cache-check.outputs.cache-hit == 'true'
+        run: echo "SKIP_BUILD=true" >> "$GITHUB_ENV"
+
       - name: Prepare iOS Build
+        if: env.SKIP_BUILD != 'true'
         uses: ./.github/actions/prepare-ios-build
         with:
           intune-enabled: ${{ env.INTUNE_ENABLED }}
           intune-ssh-private-key: ${{ secrets.MM_MOBILE_INTUNE_DEPLOY_KEY }}
+          bundler-cache: true
 
       - name: Set .env with RUNNING_E2E=true
+        if: env.SKIP_BUILD != 'true'
         run: echo "RUNNING_E2E=true" > .env
 
       - name: Build iOS Simulator
+        if: env.SKIP_BUILD != 'true'
         env:
           TAG: ${{ inputs.MOBILE_VERSION }}
           GITHUB_TOKEN: ${{ secrets.MM_MOBILE_GITHUB_TOKEN }}
         run: bundle exec fastlane ios simulator --env ios.simulator
         working-directory: ./fastlane
 
+      # Always upload artifact (from cache or fresh build) so test jobs can download it.
       - name: Upload iOS Simulator Build
+        if: always() && hashFiles('Mattermost-simulator-*.app.zip') != ''
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
           name: ios-build-simulator-${{ github.run_id }}
           path: Mattermost-simulator-*.app.zip
+
+      - name: Save iOS build to S3
+        if: env.SKIP_BUILD != 'true' && hashFiles('Mattermost-simulator-*.app.zip') != ''
+        continue-on-error: true
+        uses: ./.github/actions/s3-build-cache
+        env:
+          DETOX_AWS_ACCESS_KEY_ID: ${{ secrets.MM_MOBILE_DETOX_AWS_ACCESS_KEY_ID }}
+          DETOX_AWS_SECRET_ACCESS_KEY: ${{ secrets.MM_MOBILE_DETOX_AWS_SECRET_ACCESS_KEY }}
+        with:
+          fingerprint: ${{ needs.compute-build-fingerprints.outputs.ios }}
+          scope: ${{ needs.compute-build-fingerprints.outputs.cache-scope }}
+          platform: ios
+          bucket: ${{ env.DETOX_AWS_S3_BUCKET }}
+          cache-path: 'Mattermost-simulator-*.app.zip'
+          mode: save
 
   build-android-apk:
     if: >-
       !cancelled()
       && needs.resolve-e2e-policy.outputs.e2e_override != 'true'
       && (inputs.PLATFORM == 'android' || inputs.PLATFORM == 'both')
+    # Runner image is not in the git tree — bump CACHE_VERSION in
+    # compute-e2e-build-fingerprint/action.yml when changing this label.
     runs-on: ubuntu-latest-8-cores
     needs:
       - resolve-e2e-policy
+      - compute-build-fingerprints
     permissions:
       contents: read
       actions: write
@@ -430,8 +542,31 @@ jobs:
           persist-credentials: false
           ref: ${{ inputs.MOBILE_VERSION }}
 
+      # S3 build cache — skip rebuild when fingerprint matches.
+      - name: Check for cached Android Detox build
+        id: cache-check
+        continue-on-error: true
+        uses: ./.github/actions/s3-build-cache
+        env:
+          DETOX_AWS_ACCESS_KEY_ID: ${{ secrets.MM_MOBILE_DETOX_AWS_ACCESS_KEY_ID }}
+          DETOX_AWS_SECRET_ACCESS_KEY: ${{ secrets.MM_MOBILE_DETOX_AWS_SECRET_ACCESS_KEY }}
+        with:
+          fingerprint: ${{ needs.compute-build-fingerprints.outputs.android-detox }}
+          scope: ${{ needs.compute-build-fingerprints.outputs.cache-scope }}
+          platform: android-detox
+          bucket: ${{ env.DETOX_AWS_S3_BUCKET }}
+          cache-path: 'android/app/build'
+          mode: restore
+
+      - name: Skip build if cache hit
+        if: steps.cache-check.outputs.cache-hit == 'true'
+        run: echo "SKIP_BUILD=true" >> "$GITHUB_ENV"
+
       - name: Prepare Android Build
+        if: env.SKIP_BUILD != 'true'
         uses: ./.github/actions/prepare-android-build
+        with:
+          bundler-cache: true
         env:
           STORE_FILE: ${{ secrets.MM_MOBILE_STORE_FILE }}
           STORE_ALIAS: ${{ secrets.MM_MOBILE_STORE_ALIAS }}
@@ -442,6 +577,7 @@ jobs:
       # PR + release workflows share cache. Saves 3-5 min on warm runs by
       # skipping gradle plugin resolution + Maven dep downloads.
       - name: Cache Gradle dependencies
+        if: env.SKIP_BUILD != 'true'
         uses: actions/cache@27d5ce7f107fe9357f9df03efb73ab90386fccae # v5.0.5
         with:
           path: /home/runner/.gradle/caches/modules-2/
@@ -449,25 +585,46 @@ jobs:
           restore-keys: ${{ runner.os }}-gradle-
 
       - name: Detox build
+        if: env.SKIP_BUILD != 'true'
         run: |
           cd detox
           npm ci --prefer-offline --no-audit --no-fund
           npm run e2e:android-build
 
+      # Always upload artifact (from cache or fresh build) so test jobs can download it.
       - name: Upload Android Build
+        if: always() && hashFiles('android/app/build/**/*') != ''
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
           name: android-build-files-${{ github.run_id }}
           path: "android/app/build/**/*"
+
+      - name: Save Android Detox build to S3
+        if: env.SKIP_BUILD != 'true' && hashFiles('android/app/build/**/*') != ''
+        continue-on-error: true
+        uses: ./.github/actions/s3-build-cache
+        env:
+          DETOX_AWS_ACCESS_KEY_ID: ${{ secrets.MM_MOBILE_DETOX_AWS_ACCESS_KEY_ID }}
+          DETOX_AWS_SECRET_ACCESS_KEY: ${{ secrets.MM_MOBILE_DETOX_AWS_SECRET_ACCESS_KEY }}
+        with:
+          fingerprint: ${{ needs.compute-build-fingerprints.outputs.android-detox }}
+          scope: ${{ needs.compute-build-fingerprints.outputs.cache-scope }}
+          platform: android-detox
+          bucket: ${{ env.DETOX_AWS_S3_BUCKET }}
+          cache-path: 'android/app/build'
+          mode: save
 
   build-android-apk-maestro:
     if: >-
       !cancelled()
       && needs.resolve-e2e-policy.outputs.e2e_override != 'true'
       && (inputs.PLATFORM == 'android' || inputs.PLATFORM == 'both')
+    # Runner image is not in the git tree — bump CACHE_VERSION in
+    # compute-e2e-build-fingerprint/action.yml when changing this label.
     runs-on: ubuntu-latest-8-cores
     needs:
       - resolve-e2e-policy
+      - compute-build-fingerprints
     permissions:
       contents: read
       actions: write
@@ -483,8 +640,31 @@ jobs:
           persist-credentials: false
           ref: ${{ inputs.MOBILE_VERSION }}
 
+      # S3 build cache — skip rebuild when fingerprint matches.
+      - name: Check for cached Android Maestro build
+        id: cache-check
+        continue-on-error: true
+        uses: ./.github/actions/s3-build-cache
+        env:
+          DETOX_AWS_ACCESS_KEY_ID: ${{ secrets.MM_MOBILE_DETOX_AWS_ACCESS_KEY_ID }}
+          DETOX_AWS_SECRET_ACCESS_KEY: ${{ secrets.MM_MOBILE_DETOX_AWS_SECRET_ACCESS_KEY }}
+        with:
+          fingerprint: ${{ needs.compute-build-fingerprints.outputs.android-maestro }}
+          scope: ${{ needs.compute-build-fingerprints.outputs.cache-scope }}
+          platform: android-maestro
+          bucket: ${{ env.DETOX_AWS_S3_BUCKET }}
+          cache-path: 'android/app/build/outputs/apk/release/'
+          mode: restore
+
+      - name: Skip build if cache hit
+        if: steps.cache-check.outputs.cache-hit == 'true'
+        run: echo "SKIP_BUILD=true" >> "$GITHUB_ENV"
+
       - name: Prepare Android Build
+        if: env.SKIP_BUILD != 'true'
         uses: ./.github/actions/prepare-android-build
+        with:
+          bundler-cache: true
         env:
           STORE_FILE: ${{ secrets.MM_MOBILE_STORE_FILE }}
           STORE_ALIAS: ${{ secrets.MM_MOBILE_STORE_ALIAS }}
@@ -492,13 +672,31 @@ jobs:
           MATTERMOST_BUILD_GH_TOKEN: ${{ secrets.MATTERMOST_BUILD_GH_TOKEN }}
 
       - name: Build Maestro Android APK
+        if: env.SKIP_BUILD != 'true'
         uses: ./.github/actions/build-android-maestro-apk
 
+      # Always upload artifact (from cache or fresh build) so test jobs can download it.
       - name: Upload Maestro Android Build
+        if: always() && hashFiles('android/app/build/outputs/apk/release/*.apk') != ''
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
           name: android-maestro-build-files-${{ github.run_id }}
           path: android/app/build/outputs/apk/release/
+
+      - name: Save Android Maestro build to S3
+        if: env.SKIP_BUILD != 'true' && hashFiles('android/app/build/outputs/apk/release/*.apk') != ''
+        continue-on-error: true
+        uses: ./.github/actions/s3-build-cache
+        env:
+          DETOX_AWS_ACCESS_KEY_ID: ${{ secrets.MM_MOBILE_DETOX_AWS_ACCESS_KEY_ID }}
+          DETOX_AWS_SECRET_ACCESS_KEY: ${{ secrets.MM_MOBILE_DETOX_AWS_SECRET_ACCESS_KEY }}
+        with:
+          fingerprint: ${{ needs.compute-build-fingerprints.outputs.android-maestro }}
+          scope: ${{ needs.compute-build-fingerprints.outputs.cache-scope }}
+          platform: android-maestro
+          bucket: ${{ env.DETOX_AWS_S3_BUCKET }}
+          cache-path: 'android/app/build/outputs/apk/release/'
+          mode: save
 
   provision-servers:
     name: Provision test servers
@@ -509,24 +707,69 @@ jobs:
       needs.resolve-e2e-policy.outputs.e2e_override != 'true'
     runs-on: ubuntu-24.04
     steps:
-      # Checkout precedes validation because the validator now lives in a
-      # composite action in this repo, and `uses: ./` needs the workspace
-      # populated. Checking out before validating sends nothing to the
-      # unvalidated URLs, so the ordering is inert.
+      - name: Validate server URLs
+        run: |
+          validate_url() {
+            local url="$1" label="$2"
+            if [ -z "$url" ]; then return 0; fi
+
+            # Reject any whitespace (space, tab, newline). Without this, an input
+            # like "https://valid.cloud  https://evil.example.com" would pass the
+            # rest of the validators (urlparse only inspects up to the first
+            # space) but then get word-split into two URLs by an unquoted shell
+            # iteration downstream — letting the second, unvalidated URL reach
+            # the provisioning sink. Whitespace is never legal in a URL anyway.
+            if [[ "$url" =~ [[:space:]] ]]; then
+              echo "::error::$label contains whitespace: $url"
+              exit 1
+            fi
+
+            # Must be HTTPS
+            if [[ ! "$url" =~ ^https:// ]]; then
+              echo "::error::$label must use HTTPS: $url"
+              exit 1
+            fi
+
+            # Extract hostname safely using Python URL parser to prevent SSRF bypass via userinfo.
+            # CRITICAL: the URL is passed as argv[1], NOT interpolated into the Python source.
+            # The Python code is single-quoted so bash performs no expansion inside it; "$url"
+            # is a separate argv argument, treated as a literal string by Python. This prevents
+            # injection of Python syntax (e.g. https://a.com')+__import__('os').system(...)+(' )
+            # that would escape the urlparse() call if the URL were interpolated.
+            hostname=$(python3 -c 'import sys; from urllib.parse import urlparse; print(urlparse(sys.argv[1]).hostname or "")' "$url" | tr '[:upper:]' '[:lower:]')
+
+            # Block private/internal IPs
+            if echo "$hostname" | grep -qE '^(127\.|10\.|172\.(1[6-9]|2[0-9]|3[01])\.|192\.168\.|0\.|localhost|::1$|::ffff:|fe80:)'; then
+              echo "::error::$label points to a private/internal address: $hostname"
+              exit 1
+            fi
+
+            # Allowlist: only Mattermost-operated domains
+            if ! echo "$hostname" | grep -qE '\.(cloud\.mattermost\.com|test\.mattermost\.cloud|mattermost\.com|mattermost\.cloud)$'; then
+              echo "::error::$label domain not in allowlist: $hostname"
+              exit 1
+            fi
+
+            echo "✓ $label validated: $hostname"
+          }
+
+          validate_url "$ANDROID_SITE_1_URL" "ANDROID_SITE_1_URL"
+          validate_url "$ANDROID_SITE_2_URL" "ANDROID_SITE_2_URL"
+          validate_url "$IOS_SITE_1_URL" "IOS_SITE_1_URL"
+          validate_url "$IOS_SITE_2_URL" "IOS_SITE_2_URL"
+          validate_url "$SITE_3_URL" "SITE_3_URL"
+        env:
+          ANDROID_SITE_1_URL: ${{ needs.resolve-server-topology.outputs.android-site-1-url }}
+          ANDROID_SITE_2_URL: ${{ needs.resolve-server-topology.outputs.android-site-2-url }}
+          IOS_SITE_1_URL: ${{ needs.resolve-server-topology.outputs.ios-site-1-url }}
+          IOS_SITE_2_URL: ${{ needs.resolve-server-topology.outputs.ios-site-2-url }}
+          SITE_3_URL: ${{ needs.resolve-server-topology.outputs.site-3-url }}
+
       - name: Checkout Repository
         uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
         with:
           ref: ${{ inputs.MOBILE_VERSION }}
           persist-credentials: false
-
-      - name: Validate server URLs
-        uses: ./.github/actions/validate-server-urls
-        with:
-          android_site_1_url: ${{ needs.resolve-server-topology.outputs.android-site-1-url }}
-          android_site_2_url: ${{ needs.resolve-server-topology.outputs.android-site-2-url }}
-          ios_site_1_url: ${{ needs.resolve-server-topology.outputs.ios-site-1-url }}
-          ios_site_2_url: ${{ needs.resolve-server-topology.outputs.ios-site-2-url }}
-          site_3_url: ${{ needs.resolve-server-topology.outputs.site-3-url }}
 
       # Download the demo plugin once per workflow (or on cache miss) so
       # provision can upload from a local fixture instead of install_from_url.
@@ -747,12 +990,7 @@ jobs:
       tsio-job-configs: ${{ needs.calculate-tsio-identity.outputs.job-configs }}
     secrets: inherit
 
-  # Failure triage. Runs after every test job so it sees the whole run, and with
-  # always() so a shard that died still gets classified — a run that produced no
-  # results is exactly the case triage is most useful for.
-  #
-  # Skipped when a maintainer already applied E2E/Override: the merge decision has
-  # been made by a human, and adding a machine opinion on top only adds noise.
+  # Failure triage runs after every test job so it can classify the complete run.
   e2e-ai-triage:
     name: AI failure triage
     if: >-
@@ -772,8 +1010,6 @@ jobs:
       statuses: write
       pull-requests: write
       issues: write
-      # claude-code-action authenticates via OIDC. A reusable workflow cannot
-      # escalate beyond its caller, so the grant has to start here.
       id-token: write
     uses: ./.github/workflows/e2e-ai-triage.yml
     with:
@@ -783,15 +1019,12 @@ jobs:
       run_type: ${{ inputs.run_type }}
       version_name: ${{ inputs.version_name }}
       platform: ${{ inputs.PLATFORM }}
-      # A selected platform with no count is unknown, not zero. The -1 sentinel
-      # survives into the manifest and makes completeness fail closed.
+      # A selected platform with no count is unknown, not zero.
       expected_detox_ios_reports: ${{ (inputs.PLATFORM == 'ios' || inputs.PLATFORM == 'both') && (needs.run-detox-ios.outputs.expected_ios_reports || '-1') || '0' }}
       expected_detox_ipad_reports: ${{ (inputs.PLATFORM == 'ios' || inputs.PLATFORM == 'both') && (needs.run-detox-ios.outputs.expected_ipad_reports || '-1') || '0' }}
       expected_detox_android_reports: ${{ (inputs.PLATFORM == 'android' || inputs.PLATFORM == 'both') && (needs.run-detox-android.outputs.expected_android_reports || '-1') || '0' }}
       expected_maestro_ios_reports: ${{ (inputs.PLATFORM == 'ios' || inputs.PLATFORM == 'both') && '1' || '0' }}
       expected_maestro_android_reports: ${{ (inputs.PLATFORM == 'android' || inputs.PLATFORM == 'both') && '1' || '0' }}
-      # Forward resolved topology URLs so the rerun re-executes against the same
-      # provisioned servers. The topology job handles fallback for empty inputs.
       IOS_SITE_1_URL: ${{ needs.resolve-server-topology.outputs.ios-site-1-url }}
       IOS_SITE_2_URL: ${{ needs.resolve-server-topology.outputs.ios-site-2-url }}
       ANDROID_SITE_1_URL: ${{ needs.resolve-server-topology.outputs.android-site-1-url }}

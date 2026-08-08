@@ -102,6 +102,42 @@ RCT_EXPORT_BLOCKING_SYNCHRONOUS_METHOD(foregroundServiceStart:(NSDictionary *)co
 RCT_EXPORT_BLOCKING_SYNCHRONOUS_METHOD(foregroundServiceStop) {
     return nil;
 }
+
+// iOS: normally CallKit configures the audio session via CXAnswerCallAction /
+// CXStartCallAction. Call configureForCall() here as a fallback for the case
+// where CallKit registration failed but the JS connection still proceeds.
+RCT_EXPORT_METHOD(startAudioSession:(RCTPromiseResolveBlock)resolve
+                  rejecter:(RCTPromiseRejectBlock)reject) {
+    [self startAudioSessionImpl:resolve reject:reject];
+}
+
+RCT_EXPORT_METHOD(stopAudioSession:(RCTPromiseResolveBlock)resolve
+                  rejecter:(RCTPromiseRejectBlock)reject) {
+    [self stopAudioSessionImpl:resolve reject:reject];
+}
+
+RCT_EXPORT_METHOD(setAudioRoute:(NSString *)route
+                  resolver:(RCTPromiseResolveBlock)resolve
+                  rejecter:(RCTPromiseRejectBlock)reject) {
+    [self setAudioRouteImpl:route resolve:resolve reject:reject];
+}
+
+RCT_EXPORT_METHOD(getAudioRoute:(RCTPromiseResolveBlock)resolve
+                  rejecter:(RCTPromiseRejectBlock)reject) {
+    [self getAudioRouteImpl:resolve reject:reject];
+}
+
+RCT_EXPORT_METHOD(startRingtone:(NSString *)name
+                  seconds:(double)seconds
+                  resolver:(RCTPromiseResolveBlock)resolve
+                  rejecter:(RCTPromiseRejectBlock)reject) {
+    [self startRingtoneImpl:name resolve:resolve reject:reject];
+}
+
+RCT_EXPORT_METHOD(stopRingtone:(RCTPromiseResolveBlock)resolve
+                  rejecter:(RCTPromiseRejectBlock)reject) {
+    [self stopRingtoneImpl:resolve reject:reject];
+}
 #endif
 
 #ifdef RCT_NEW_ARCH_ENABLED
@@ -145,6 +181,39 @@ RCT_EXPORT_BLOCKING_SYNCHRONOUS_METHOD(foregroundServiceStop) {
 
 - (void)foregroundServiceStop {
     // no-op
+}
+
+- (void)startAudioSession:(RCTPromiseResolveBlock)resolve
+                   reject:(RCTPromiseRejectBlock)reject {
+    [self startAudioSessionImpl:resolve reject:reject];
+}
+
+- (void)stopAudioSession:(RCTPromiseResolveBlock)resolve
+                  reject:(RCTPromiseRejectBlock)reject {
+    [self stopAudioSessionImpl:resolve reject:reject];
+}
+
+- (void)setAudioRoute:(NSString *)route
+              resolve:(RCTPromiseResolveBlock)resolve
+               reject:(RCTPromiseRejectBlock)reject {
+    [self setAudioRouteImpl:route resolve:resolve reject:reject];
+}
+
+- (void)getAudioRoute:(RCTPromiseResolveBlock)resolve
+               reject:(RCTPromiseRejectBlock)reject {
+    [self getAudioRouteImpl:resolve reject:reject];
+}
+
+- (void)startRingtone:(NSString *)name
+              seconds:(double)seconds
+              resolve:(RCTPromiseResolveBlock)resolve
+               reject:(RCTPromiseRejectBlock)reject {
+    [self startRingtoneImpl:name resolve:resolve reject:reject];
+}
+
+- (void)stopRingtone:(RCTPromiseResolveBlock)resolve
+              reject:(RCTPromiseRejectBlock)reject {
+    [self stopRingtoneImpl:resolve reject:reject];
 }
 #endif
 
@@ -225,6 +294,54 @@ RCT_EXPORT_BLOCKING_SYNCHRONOUS_METHOD(foregroundServiceStop) {
         }
         resolve(nil);
     }];
+}
+
+- (void)startAudioSessionImpl:(RCTPromiseResolveBlock)resolve
+                        reject:(RCTPromiseRejectBlock)reject {
+    NSError *error = nil;
+    BOOL ok = [[CallsBridge shared].audioSession startAudioSessionWithError:&error];
+    if (!ok || error) {
+        reject(@"start_audio_session_failed", error.localizedDescription ?: @"unknown error", error);
+        return;
+    }
+    resolve(nil);
+}
+
+- (void)stopAudioSessionImpl:(RCTPromiseResolveBlock)resolve
+                       reject:(RCTPromiseRejectBlock)reject {
+    [[CallsBridge shared].audioSession resetSession];
+    resolve(nil);
+}
+
+- (void)setAudioRouteImpl:(NSString *)route
+                  resolve:(RCTPromiseResolveBlock)resolve
+                   reject:(RCTPromiseRejectBlock)reject {
+    [[CallsBridge shared].audioSession setAudioRoute:route];
+    resolve(nil);
+}
+
+- (void)getAudioRouteImpl:(RCTPromiseResolveBlock)resolve
+                   reject:(RCTPromiseRejectBlock)reject {
+    NSDictionary *route = [[CallsBridge shared].audioSession currentAudioRoute];
+    resolve(route);
+}
+
+- (void)startRingtoneImpl:(NSString *)name
+                  resolve:(RCTPromiseResolveBlock)resolve
+                   reject:(RCTPromiseRejectBlock)reject {
+    NSError *error = nil;
+    [[CallsBridge shared].audioSession startRingtone:name error:&error];
+    if (error) {
+        reject(@"start_ringtone_failed", error.localizedDescription, error);
+        return;
+    }
+    resolve(nil);
+}
+
+- (void)stopRingtoneImpl:(RCTPromiseResolveBlock)resolve
+                  reject:(RCTPromiseRejectBlock)reject {
+    [[CallsBridge shared].audioSession stopRingtone];
+    resolve(nil);
 }
 
 @end

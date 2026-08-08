@@ -2,6 +2,7 @@
 # Usage: - runFlow: ../../subflows/browser/reopen_settings_screen.yml
 appId: ${MAESTRO_APP_ID}
 ---
+# # Relaunch the app, keeping the session (iOS may stopApp; Android must not)
 - runFlow:
     when:
       platform: iOS
@@ -18,6 +19,8 @@ appId: ${MAESTRO_APP_ID}
           clearState: false
 - waitForAnimationToEnd:
     timeout: 30000
+
+# # Re-anchor on the Home tab, then navigate Account > Settings
 - extendedWaitUntil:
     visible:
       id: "tab_bar.home.tab"

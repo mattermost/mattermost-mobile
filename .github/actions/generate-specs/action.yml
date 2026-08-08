@@ -17,12 +17,17 @@ inputs:
     description: The os of the device used for the tests
     required: false
     default: "iOS 17.1"
+  durations_file:
+    description: >-
+      Optional spec-duration manifest (from .github/actions/s3-spec-durations).
+      When present, specs are bin-packed by recorded duration instead of split
+      into equal counts. Absent/unreadable falls back to the even split.
+    required: false
+    default: ""
   spec_list:
     description: >-
-      Explicit whitespace/newline-separated list of spec files to split, bypassing
-      discovery under search_path. Used by targeted reruns (failure triage reruns
-      only the specs that failed) so the rerun is a fraction of a full shard.
-      Missing files are an error rather than a silent no-op.
+      Explicit whitespace/newline-separated spec files. Used by targeted reruns
+      to bypass discovery. Missing files are an error.
     required: false
     default: ""
 
@@ -43,11 +48,19 @@ runs:
         SEARCH_PATH: ${{ inputs.search_path }}
         DEVICE_NAME: ${{ inputs.device_name }}
         DEVICE_OS_VERSION: ${{ inputs.device_os_version }}
+        DURATIONS_FILE: ${{ inputs.durations_file }}
         SPEC_LIST: ${{ inputs.spec_list }}
       run: |
-        set -e -o pipefail
-        node ${{ github.action_path }}/split-tests.js | tee output.json
-        echo "specs=$(cat output.json)" >> $GITHUB_OUTPUT
+        # pipefail: without it, `node ... | tee` reports tee's exit status, so a
+        # crash in split-tests.js would leave output.json empty and be treated as
+        # a successful split.
+        set -eo pipefail
+        node "${{ github.action_path }}/split-tests.js" | tee output.json
+        if [ ! -s output.json ]; then
+          echo "::error::split-tests.js produced no matrix output."
+          exit 1
+        fi
+        echo "specs=$(cat output.json)" >> "$GITHUB_OUTPUT"
         REPORT_COUNT=$(node -e 'const fs=require("fs"); const matrix=JSON.parse(fs.readFileSync("output.json", "utf8")); process.stdout.write(String((matrix.include || []).length));')
-        echo "report_count=$REPORT_COUNT" >> $GITHUB_OUTPUT
+        echo "report_count=$REPORT_COUNT" >> "$GITHUB_OUTPUT"
       shell: bash

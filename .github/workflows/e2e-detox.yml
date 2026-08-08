@@ -72,6 +72,7 @@ jobs:
       run-type: ${{ inputs.run_type || 'PR' }}
       tsio-config: ${{ toJSON(fromJSON(inputs.tsio-job-configs)['detox-ios']) }}
       tsio-shard-name: detox-ios
+      durations_key: detox-ios
       record_tests_in_zephyr: ${{ inputs.run_type == 'RELEASE' || inputs.run_type == 'MAIN' || inputs.run_type == 'MASTER' }}
       MOBILE_VERSION: ${{ inputs.MOBILE_VERSION }}
       MM_TEST_SERVER_URL: ${{ inputs.IOS_SITE_1_URL }}
@@ -101,6 +102,7 @@ jobs:
       run-type: ${{ inputs.run_type || 'PR' }}
       tsio-config: ${{ toJSON(fromJSON(inputs.tsio-job-configs)['detox-android']) }}
       tsio-shard-name: detox-android
+      durations_key: detox-android
       record_tests_in_zephyr: ${{ inputs.run_type == 'RELEASE' || inputs.run_type == 'MAIN' || inputs.run_type == 'MASTER' }}
       MOBILE_VERSION: ${{ inputs.MOBILE_VERSION }}
       MM_TEST_SERVER_URL: ${{ inputs.ANDROID_SITE_1_URL }}
@@ -129,6 +131,7 @@ jobs:
       run-type: ${{ inputs.run_type || 'PR' }}
       tsio-config: ${{ toJSON(fromJSON(inputs.tsio-job-configs)['detox-ipad']) }}
       tsio-shard-name: detox-ipad
+      durations_key: detox-ipad
       MOBILE_VERSION: ${{ inputs.MOBILE_VERSION }}
       MM_TEST_SERVER_URL: ${{ inputs.IOS_SITE_1_URL }}
       MM_TEST_SERVER_URL_2: ${{ inputs.IOS_SITE_2_URL }}

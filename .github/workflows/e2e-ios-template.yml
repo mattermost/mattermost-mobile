@@ -148,6 +148,13 @@ on:
         required: false
         type: string
         default: ""
+      durations_key:
+        description: >
+          Spec-duration manifest key (e.g. detox-ios, detox-ipad). Enables
+          duration-aware shard packing. Empty keeps the even alphabetical split.
+        required: false
+        type: string
+        default: ""
     outputs:
       expected_report_count:
         description: Number of generate-specs matrix shards expected to report
@@ -230,6 +237,22 @@ jobs:
           echo "MOBILE_SHA=$(git rev-parse HEAD)" >> ${GITHUB_OUTPUT}
           echo "MOBILE_REF=$(git rev-parse --abbrev-ref HEAD)" >> ${GITHUB_OUTPUT}
 
+      # Duration history from the last main-push run; absent → even split.
+      # continue-on-error: this job gates the entire test matrix, and shard packing
+      # is an optimization — a missing manifest or an AWS hiccup must not stop the
+      # run, it must fall back to the even split.
+      - name: Restore spec-duration manifest
+        if: inputs.durations_key != ''
+        continue-on-error: true
+        uses: ./.github/actions/s3-spec-durations
+        env:
+          DETOX_AWS_ACCESS_KEY_ID: ${{ secrets.MM_MOBILE_DETOX_AWS_ACCESS_KEY_ID }}
+          DETOX_AWS_SECRET_ACCESS_KEY: ${{ secrets.MM_MOBILE_DETOX_AWS_SECRET_ACCESS_KEY }}
+        with:
+          key: ${{ inputs.durations_key }}
+          bucket: ${{ env.DETOX_AWS_S3_BUCKET }}
+          mode: restore
+
       - name: Generate Test Specs
         id: generate-specs
         uses: ./.github/actions/generate-specs
@@ -239,6 +262,7 @@ jobs:
           spec_list: ${{ inputs.spec_list }}
           device_name: ${{ env.DEVICE_NAME }}
           device_os_version: ${{ env.DEVICE_OS_VERSION }}
+          durations_file: ${{ inputs.durations_key != '' && 'detox/artifacts/spec-durations.json' || '' }}
 
   e2e-ios:
     name: machine-${{ matrix.runId }}-os-${{ matrix.deviceOsVersion }}
@@ -296,6 +320,7 @@ jobs:
       - name: ci/prepare-node-deps
         uses: ./.github/actions/prepare-node-deps
 
+      # Cache Homebrew packages including applesimutils
       - name: Cache Homebrew packages
         uses: actions/cache@27d5ce7f107fe9357f9df03efb73ab90386fccae # v5.0.5
         with:
@@ -876,6 +901,59 @@ jobs:
         run: |
           path="${BUILD_ID}-${MOBILE_SHA}-${MOBILE_REF}"
           echo "path=$(echo "${path}" | sed 's/\./-/g')" >> "$GITHUB_OUTPUT"
+
+      # ── Spec durations for the next run's shard packing ────────────────────
+      # Must run before e2e:save-report, which deletes the ios-results-* dirs the
+      # per-shard jest-results.json live in. Only main-push publishes (a PR must
+      # not steer how other branches shard); PR runs still compute it so the step
+      # is exercised on every PR that touches this workflow.
+      # Re-fetch the published manifest here: this is a different runner from
+      # generate-specs, so without it the EWMA would have no history to smooth
+      # against and the manifest would collapse to "last run only".
+      - name: Restore previous spec-duration manifest
+        if: always() && inputs.durations_key != ''
+        continue-on-error: true
+        uses: ./.github/actions/s3-spec-durations
+        env:
+          DETOX_AWS_ACCESS_KEY_ID: ${{ secrets.MM_MOBILE_DETOX_AWS_ACCESS_KEY_ID }}
+          DETOX_AWS_SECRET_ACCESS_KEY: ${{ secrets.MM_MOBILE_DETOX_AWS_SECRET_ACCESS_KEY }}
+        with:
+          key: ${{ inputs.durations_key }}
+          bucket: ${{ env.DETOX_AWS_S3_BUCKET }}
+          mode: restore
+
+      - name: Build spec-duration manifest
+        if: always() && inputs.durations_key != ''
+        continue-on-error: true
+        env:
+          DURATIONS_KEY: ${{ inputs.durations_key }}
+        run: |
+          node detox/utils/spec-durations.js \
+            --dir detox/artifacts \
+            --previous detox/artifacts/spec-durations.json \
+            --output detox/artifacts/spec-durations.next.json \
+            --key "$DURATIONS_KEY" \
+            --repo-root "$GITHUB_WORKSPACE"
+
+      # spec-durations.js merges the restored manifest into the new one, so the
+      # freshly built manifest already carries every valid entry of the previously
+      # published one — there is nothing to fall back to. (Entries the restored
+      # manifest had that were malformed or non-positive are dropped on purpose.)
+      # An empty/zero manifest is rejected by
+      # the action's `validate` guard rather than published (publishing one would
+      # poison duration packing for every branch until main rewrote it).
+      - name: Publish spec-duration manifest
+        if: always() && inputs.durations_key != '' && (inputs.run-type == 'MAIN' || inputs.run-type == 'MASTER') && hashFiles('detox/artifacts/spec-durations.next.json') != ''
+        continue-on-error: true
+        uses: ./.github/actions/s3-spec-durations
+        env:
+          DETOX_AWS_ACCESS_KEY_ID: ${{ secrets.MM_MOBILE_DETOX_AWS_ACCESS_KEY_ID }}
+          DETOX_AWS_SECRET_ACCESS_KEY: ${{ secrets.MM_MOBILE_DETOX_AWS_SECRET_ACCESS_KEY }}
+        with:
+          key: ${{ inputs.durations_key }}
+          bucket: ${{ env.DETOX_AWS_S3_BUCKET }}
+          manifest-path: detox/artifacts/spec-durations.next.json
+          mode: save
 
       # ── TSIO report upload (before e2e:save-report) ────────────────────────
       # save-report deletes ios-results-* dirs (where Detox PNGs live). Upload

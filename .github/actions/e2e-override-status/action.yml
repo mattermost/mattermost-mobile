@@ -1,12 +1,25 @@
 # yaml-language-server: $schema=https://json.schemastore.org/github-action.json
 name: Publish required E2E commit statuses
 description: >-
-  Post success on every required e2e-test/* commit status for a SHA so a PR
-  with an explicitly authorized E2E waiver can merge under required checks.
+  Unblock the required e2e-test/* commit statuses for a SHA so a PR carrying
+  E2E/Override (or one that skipped E2E entirely) can merge under required
+  checks.
 
-  Covers human E2E/Override and E2E/AI-Waived reposting after triage. Statuses are
-  keyed by SHA, so this overwrites earlier failures. Callers own authorization,
-  descriptions, and protection against a late test result re-posting red.
+  Only touches contexts that are actually blocking — pending, failing, or with
+  no status yet. A context that is genuinely green keeps its own result and
+  description, so the checks list still shows what really passed instead of
+  reporting every platform as overridden.
+
+  A failing context keeps its real pass/fail counts and gains an "- e2e
+  overridden" suffix, so the check reads "522 passed, 1 failed, 81 skipped -
+  e2e overridden" rather than hiding what failed.
+
+  Covers human E2E/Override and automated E2E/AI-Waived paths. E2E may never
+  have dispatched, may already have failed,
+  (statuses are keyed by SHA, so this overwrites the failures), and E2E still
+  running. In-flight runs are never cancelled — their finalize step re-checks
+  the label (.github/actions/e2e-override-label) so a late result cannot re-red
+  a check the maintainer deliberately bypassed.
 
 inputs:
   commit_sha:
@@ -16,12 +29,15 @@ inputs:
     description: >-
       Commit status state (success | pending). Use pending to re-block the PR
       when E2E/Override is removed, so the waiver does not linger on the SHA.
+      pending only resets contexts this action previously overrode.
     required: false
     default: success
   description:
-    description: Commit status description
+    description: >-
+      Commit status description for contexts that were pending or had no status.
+      A failing context keeps its own description plus an override suffix.
     required: false
-    default: e2e tests overridden
+    default: e2e overridden
   target_url:
     description: Link shown on the check
     required: false
@@ -74,10 +90,78 @@ runs:
             throw new Error(`e2e-override-status: unsupported platform ${platform}`);
           });
 
-          // Attempt every context before reporting, so one bad write does not
-          // leave the remaining required checks blocking the merge.
+          // Present in every success description this action writes, so the
+          // pending path can reset exactly the contexts it overrode and never a
+          // platform that passed on its own merits.
+          const OVERRIDE_MARKER = 'e2e overridden';
+          const marker = state === 'pending' || !description.startsWith('E2E/AI-Waived') ?
+            OVERRIDE_MARKER :
+            'E2E/AI-Waived';
+
+          // getCombinedStatusForRef caps statuses at 100 per page. This repo only
+          // has 5 required contexts today, but other tooling can post legacy
+          // statuses on the same SHA — paginate so a busy commit can't silently
+          // hide one of the 5 required contexts past page 1.
+          const statuses = [];
+          for (let page = 1; ; page++) {
+            const {data: combined} = await github.rest.repos.getCombinedStatusForRef({
+              owner, repo, ref: sha, per_page: 100, page,
+            });
+            statuses.push(...combined.statuses);
+            if (combined.statuses.length < 100) {
+              break;
+            }
+          }
+
+          // Only the latest status per context matters — this is current state,
+          // not history.
+          const latestByContext = new Map(
+            statuses.map((status) => [status.context, status]),
+          );
+
           const failures = [];
+          let touched = 0;
           for (const statusContext of contexts) {
+            const latest = latestByContext.get(statusContext);
+            const latestDescription = latest?.description || '';
+            let statusDescription;
+            let statusTargetUrl;
+
+            if (state === 'pending') {
+              // Undo only what this action did. A context that never carried the
+              // override — including one that failed on its own after a later
+              // push — keeps its real result.
+              if (!latestDescription.includes(OVERRIDE_MARKER)) {
+                continue;
+              }
+              statusDescription = description;
+              statusTargetUrl = targetUrl;
+            } else if (latest?.state === 'success') {
+              // Nothing to unblock: either genuinely green — leave the real result
+              // and its counts alone — or already overridden, in which case
+              // re-posting would only replace a description carrying the real
+              // counts with a bare one.
+              continue;
+            } else if (latest?.state === 'failure' || latest?.state === 'error') {
+              // Keep the real counts so the check still says what failed.
+              // Reserve room for the suffix before truncating the base: TSIO
+              // descriptions are already capped at 140 (decideStatus in
+              // tsio-report-status.js), and truncating after concatenation could
+              // cut the marker off a long one, leaving the pending path unable to
+              // recognise this context as overridden.
+              const suffix = ` - ${marker}`;
+              const base = latestDescription.substring(0, Math.max(0, 140 - suffix.length));
+              statusDescription = `${base}${suffix}`.substring(0, 140);
+              // Keep the link to the real report — that is what a reviewer needs
+              // to judge whether the bypass was reasonable, not this action's run.
+              statusTargetUrl = latest.target_url || targetUrl;
+            } else {
+              // Pending, or no status at all (E2E never dispatched / new SHA).
+              statusDescription = description;
+              statusTargetUrl = targetUrl;
+            }
+
+            touched++;
             try {
               await github.rest.repos.createCommitStatus({
                 owner,
@@ -85,14 +169,22 @@ runs:
                 sha,
                 state,
                 context: statusContext,
-                description,
-                ...(targetUrl ? {target_url: targetUrl} : {}),
+                description: statusDescription,
+                ...(statusTargetUrl ? {target_url: statusTargetUrl} : {}),
               });
               core.info(`Published ${state} for ${statusContext} on ${sha}`);
             } catch (err) {
               core.warning(`createCommitStatus ${statusContext} on ${sha}: ${err.message}`);
               failures.push(`${statusContext}: ${err.message}`);
             }
+          }
+
+          if (touched === 0) {
+            core.info(
+              state === 'pending' ?
+                `No e2e-test/* contexts carry the override marker for ${sha} — nothing to reset.` :
+                `All required e2e-test/* contexts already pass on their own for ${sha} — nothing to override.`,
+            );
           }
 
           if (failures.length > 0) {
