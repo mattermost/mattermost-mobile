@@ -40,6 +40,12 @@ const DEFAULTS = {
     skipRerunConfidence: 0.9,
 };
 
+const EXHAUSTIVE_SUITE_RULES = new Set([
+    'suite.expected-reports-unavailable',
+    'suite.no-results',
+    'suite.all-shards-failed-early',
+]);
+
 /**
  * Group failures by signature hash.
  *
@@ -208,7 +214,7 @@ function buildRerunPlan(clusters, tier, opts = {}) {
     }
 
     const specs = [];
-    const seen = new Set();
+    const executionSpecs = new Set();
     let skippedNonDetox = 0;
     for (const c of unresolved) {
         let takenFromCluster = 0;
@@ -225,14 +231,18 @@ function buildRerunPlan(clusters, tier, opts = {}) {
                 skippedNonDetox += 1;
                 continue;
             }
-            if (!member.spec || takenFromCluster >= o.maxSpecsPerCluster || specs.length >= o.maxRerunSpecs) {
+            if (!member.spec || takenFromCluster >= o.maxSpecsPerCluster) {
                 continue;
             }
-            const key = `${member.platform}::${member.spec}`;
-            if (seen.has(key)) {
+
+            // Keep one target per cluster even when several failures share a
+            // spec. writeSpecLists deduplicates execution paths, while these
+            // target records let the same rerun classify every affected test.
+            const executionKey = `${member.platform}::${member.spec}`;
+            if (!executionSpecs.has(executionKey) && executionSpecs.size >= o.maxRerunSpecs) {
                 continue;
             }
-            seen.add(key);
+            executionSpecs.add(executionKey);
             specs.push({
                 platform: member.platform,
                 spec: member.spec,
@@ -246,7 +256,7 @@ function buildRerunPlan(clusters, tier, opts = {}) {
 
     let reason;
     if (specs.length > 0) {
-        reason = `${specs.length} representative spec(s) across ${unresolved.length} unresolved cluster(s)`;
+        reason = `${executionSpecs.size} representative spec(s) covering ${specs.length} target(s) across ${unresolved.length} unresolved cluster(s)`;
     } else if (skippedNonDetox > 0) {
         reason = `${unresolved.length} unresolved cluster(s), but no Detox spec to rerun (${skippedNonDetox} Maestro failure(s) are not rerunnable by spec list)`;
     } else {
@@ -260,7 +270,32 @@ function buildRerunPlan(clusters, tier, opts = {}) {
         reps: o.rerunReps,
         resolved_by_rules: confidentClusters.length,
         skipped_non_detox: skippedNonDetox,
-        truncated: unresolved.length > o.maxClusters || specs.length >= o.maxRerunSpecs,
+        execution_specs: executionSpecs.size,
+        truncated: unresolved.length > o.maxClusters || executionSpecs.size >= o.maxRerunSpecs,
+    };
+}
+
+function buildDecision(clusters, suiteVerdict) {
+    const suiteVerdictAuthoritative = Boolean(
+        suiteVerdict &&
+        !suiteVerdict.invalidated_by &&
+        EXHAUSTIVE_SUITE_RULES.has(suiteVerdict.rule_id),
+    );
+    const unresolved = suiteVerdictAuthoritative ?[] :clusters.filter((c) => c.needs_ai);
+    const waivable = clusters.filter((c) => c.rerun_evidence && c.rerun_evidence.waivable);
+    const nonWaivable = clusters.filter((c) => c.rerun_evidence && c.rerun_evidence.waivable === false);
+
+    return {
+        needs_ai: unresolved.length > 0,
+        unresolved_clusters: unresolved.map((c) => c.signature_hash),
+        model_clusters: unresolved.map((c) => c.signature_hash),
+        waivable_clusters: waivable.map((c) => c.signature_hash),
+        non_waivable_clusters: nonWaivable.map((c) => c.signature_hash),
+
+        // A suite rule is useful context, but it cannot decide clusters that its
+        // evidence did not resolve. This is the prompt contract's explicit guard
+        // against a stale suite verdict suppressing model adjudication.
+        suite_verdict_authoritative: suiteVerdictAuthoritative,
     };
 }
 
@@ -268,9 +303,9 @@ function buildRerunPlan(clusters, tier, opts = {}) {
  * Full deterministic pass: cluster → suite rules → per-cluster rules → tier →
  * rerun plan.
  *
- * The suite verdict, when one fires, outranks per-cluster verdicts. If every
- * shard died before running a test, what the individual assertion messages say is
- * noise.
+ * An exhaustive suite verdict outranks per-cluster verdicts. If every shard died
+ * before running a test, what the individual assertion messages say is noise.
+ * Shape heuristics remain context and cannot suppress unresolved clusters.
  */
 function classify({summary, failures}, opts = {}) {
     const o = {...DEFAULTS, ...opts};
@@ -288,18 +323,33 @@ function classify({summary, failures}, opts = {}) {
         tierReason = `${clusters.length} distinct failure clusters exceeds the ${o.maxClusters} expected of an isolated cause — treating as systemic`;
     }
 
+    const suiteVerdict = suiteHit ?{
+        verdict: suiteHit.verdict,
+        confidence: suiteHit.weight,
+        reason: suiteHit.reason,
+        rule_id: suiteHit.id,
+    } :null;
+    const decision = buildDecision(clusters, suiteVerdict);
+    if (tier === 4 && decision.needs_ai) {
+        tier = 3;
+        tierReason = `${tierReason} — unresolved causes still require adjudication`;
+    }
     const rerunPlan = buildRerunPlan(clusters, tier, o);
+    const suiteSignal = suiteVerdict ?{
+        ...suiteVerdict,
+        authoritative: decision.suite_verdict_authoritative,
+    } :null;
 
     return {
         tier,
         tier_reason: tierReason,
         summary,
-        suite_verdict: suiteHit ?{
-            verdict: suiteHit.verdict,
-            confidence: suiteHit.weight,
-            reason: suiteHit.reason,
-            rule_id: suiteHit.id,
-        } :null,
+
+        // Keep the legacy field authoritative-only: the pinned toolkit treats
+        // any truthy suite_verdict as exhaustive and would otherwise discard
+        // per-cluster model decisions.
+        suite_verdict: decision.suite_verdict_authoritative ?suiteSignal :null,
+        suite_signal: suiteSignal,
         clusters: clusters.map((c) => ({
             signature_hash: c.signature_hash,
             signature_label: c.signature_label,
@@ -320,7 +370,8 @@ function classify({summary, failures}, opts = {}) {
             member_test_ids: c.members.map((m) => m.test_id).filter(Boolean),
         })),
         rerun_plan: rerunPlan,
-        needs_ai: !suiteHit && clusters.some((c) => c.needs_ai),
+        decision,
+        needs_ai: decision.needs_ai,
     };
 }
 
@@ -330,5 +381,6 @@ module.exports = {
     pickTier,
     classifyCluster,
     buildRerunPlan,
+    buildDecision,
     classify,
 };

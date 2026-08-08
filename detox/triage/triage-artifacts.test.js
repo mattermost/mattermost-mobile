@@ -63,6 +63,58 @@ test('a Maestro run id is not mistaken for a shard index', () => {
     fs.rmSync(dir, {recursive: true, force: true});
 });
 
+test('collect uses only the canonical Maestro report when raw flow reports are present', () => {
+    const dir = tmpdir();
+    for (const platform of ['ios', 'android']) {
+        const d = path.join(dir, `maestro-${platform}-results-1234567890`);
+        fs.mkdirSync(d, {recursive: true});
+        fs.writeFileSync(
+            path.join(d, 'maestro-report-T67856_4.xml'),
+            '<testsuites><testsuite><testcase name="MM-T67856_4 raw"><failure message="early failure"/></testcase></testsuite></testsuites>',
+        );
+        fs.writeFileSync(
+            path.join(d, 'maestro-report.xml'),
+            '<testsuites><testsuite><testcase name="MM-T67856_4 canonical"/></testsuite></testsuites>',
+        );
+    }
+
+    const {summary, failures, reports} = collect(dir, {
+        expectedReports: [
+            {framework: 'maestro', platform: 'ios', count: 1},
+            {framework: 'maestro', platform: 'android', count: 1},
+        ],
+    });
+
+    assert.equal(summary.reportsFound, 2);
+    assert.equal(summary.shards.length, 2);
+    assert.equal(summary.totalTests, 2);
+    assert.equal(summary.reportsComplete, true);
+    assert.equal(reports.length, 2);
+    assert.equal(failures.length, 0, 'the superseded raw flow result must not be counted');
+
+    fs.rmSync(dir, {recursive: true, force: true});
+});
+
+test('raw Maestro flow reports do not satisfy expected-report completeness', () => {
+    const dir = tmpdir();
+    const d = path.join(dir, 'maestro-ios-results-1234567890');
+    fs.mkdirSync(d, {recursive: true});
+    fs.writeFileSync(
+        path.join(d, 'maestro-report-T67856_4.xml'),
+        '<testsuites><testsuite><testcase name="MM-T67856_4 raw"/></testsuite></testsuites>',
+    );
+
+    const {summary} = collect(dir, {
+        expectedReports: [{framework: 'maestro', platform: 'ios', count: 1}],
+    });
+
+    assert.equal(summary.reportsFound, 0);
+    assert.equal(summary.reportsComplete, false);
+    assert.equal(summary.unavailableReports[0].found, 0);
+
+    fs.rmSync(dir, {recursive: true, force: true});
+});
+
 test('a Detox shard index is still read from the artifact suffix', () => {
     const dir = tmpdir();
     const d = path.join(dir, 'ios-results-abc123-7');
@@ -135,15 +187,21 @@ test('artifact lookup does not rescan the tree once per failure', () => {
 
 // ---------- rerun merge: measurement overruling inference ----------
 
-function writeRep(root, platform, reportedSpecs, failedSpecs = []) {
+function writeRep(root, platform, reportedSpecs, failedSpecs = [], skippedSpecs = []) {
     const d = path.join(root, `${platform}-results-abc-1`);
+    const statusFor = (spec) => {
+        if (skippedSpecs.includes(spec)) {
+            return 'skipped';
+        }
+        return failedSpecs.includes(spec) ?'failed' :'passed';
+    };
     fs.mkdirSync(d, {recursive: true});
     fs.writeFileSync(path.join(d, 'jest-results.json'), JSON.stringify({
         testResults: reportedSpecs.map((spec, i) => ({
             name: spec,
             assertionResults: [{
                 fullName: `MM-T9${i} ${spec}`,
-                status: failedSpecs.includes(spec) ? 'failed' : 'passed',
+                status: statusFor(spec),
                 duration: 1,
                 failureMessages: failedSpecs.includes(spec) ? ['boom'] : [],
             }],
@@ -193,6 +251,15 @@ test('a failure that stops reproducing is confirmed non-deterministic', () => {
     assert.equal(merged.clusters[0].rerun.outcome, OUTCOME.FLAKY);
     assert.equal(merged.clusters[0].reproduced_on_rerun, false);
     assert.equal(merged.clusters[0].cleared_on_rerun, true);
+    assert.equal(merged.clusters[0].confidence, 0.95);
+    assert.equal(merged.clusters[0].rule_verdict, 'FLAKY_TEST');
+    assert.equal(merged.clusters[0].needs_ai, false);
+    assert.equal(
+        merged.clusters[0].matched_signatures.filter((entry) => entry.id.startsWith('rerun.measurement.')).length,
+        2,
+    );
+    assert.equal(merged.clusters[0].rerun_evidence.waivable, true);
+    assert.equal(merged.rerun_meta.complete, true);
 
     fs.rmSync(a, {recursive: true, force: true});
     fs.rmSync(b, {recursive: true, force: true});
@@ -221,8 +288,101 @@ test('one of two planned repetitions absent is inconclusive', () => {
 
     assert.equal(merged.clusters[0].rerun.outcome, OUTCOME.INCONCLUSIVE);
     assert.equal(merged.clusters[0].cleared_on_rerun, undefined);
+    assert.equal(merged.clusters[0].confidence, undefined);
+    assert.equal(merged.rerun_meta.complete, false);
 
     fs.rmSync(root, {recursive: true, force: true});
+});
+
+test('skipped rerun targets are inconclusive, never measured passes', () => {
+    const a = tmpdir();
+    const b = tmpdir();
+    const spec = 'detox/e2e/test/skipped.e2e.ts';
+    writeRep(a, 'ios', [spec], [], [spec]);
+    writeRep(b, 'ios', [spec], [], [spec]);
+
+    const merged = mergeRerun(evidenceWithPlan(spec), [a, b]);
+
+    assert.equal(merged.clusters[0].rerun.outcome, OUTCOME.INCONCLUSIVE);
+    assert.equal(merged.clusters[0].rerun_evidence, undefined);
+    assert.equal(merged.clusters[0].needs_ai, true);
+
+    fs.rmSync(a, {recursive: true, force: true});
+    fs.rmSync(b, {recursive: true, force: true});
+});
+
+test('one incomplete platform target prevents every measured clearing from becoming waivable', () => {
+    const a = tmpdir();
+    const b = tmpdir();
+    const iosSpec = 'detox/e2e/test/ios.e2e.ts';
+    const androidSpec = 'detox/e2e/test/android.e2e.ts';
+    writeRep(a, 'ios', [iosSpec]);
+    writeRep(b, 'ios', [iosSpec]);
+    const evidence = {
+        clusters: [
+            {signature_hash: 'ios-sig', member_count: 1, needs_ai: true},
+            {signature_hash: 'android-sig', member_count: 1, needs_ai: true},
+        ],
+        rerun_plan: {
+            enabled: true,
+            reps: 2,
+            specs: [
+                {platform: 'ios', spec: iosSpec, signature_hash: 'ios-sig'},
+                {platform: 'android', spec: androidSpec, signature_hash: 'android-sig'},
+            ],
+        },
+    };
+
+    const merged = mergeRerun(evidence, [a, b]);
+
+    assert.equal(merged.rerun_meta.complete, false);
+    assert.equal(merged.clusters[0].rerun.outcome, OUTCOME.PASSED);
+    assert.equal(merged.clusters[0].cleared_on_rerun, undefined);
+    assert.equal(merged.clusters[0].rerun_evidence, undefined);
+    assert.equal(merged.clusters[0].needs_ai, true);
+    assert.equal(merged.needs_ai, true);
+
+    fs.rmSync(a, {recursive: true, force: true});
+    fs.rmSync(b, {recursive: true, force: true});
+});
+
+test('rerun merge recomputes stale suite authority and routes unplanned clusters to the model', () => {
+    const a = tmpdir();
+    const b = tmpdir();
+    const spec = 'detox/e2e/test/measured.e2e.ts';
+    writeRep(a, 'ios', [spec]);
+    writeRep(b, 'ios', [spec]);
+    const evidence = {
+        suite_verdict: {
+            verdict: 'FLAKY_INFRA',
+            confidence: 0.8,
+            reason: 'stale suite shape',
+            rule_id: 'suite.single-shard-wiped',
+        },
+        needs_ai: false,
+        clusters: [
+            {signature_hash: 'measured', member_count: 1, needs_ai: true},
+            {signature_hash: 'unresolved', member_count: 1, needs_ai: true},
+        ],
+        rerun_plan: {
+            enabled: true,
+            reps: 2,
+            specs: [{platform: 'ios', spec, signature_hash: 'measured'}],
+        },
+    };
+
+    const merged = mergeRerun(evidence, [a, b]);
+
+    assert.equal(merged.clusters[0].rerun_evidence.waivable, true);
+    assert.equal(merged.clusters[1].needs_ai, true);
+    assert.equal(merged.suite_verdict, null);
+    assert.equal(merged.suite_signal.authoritative, false);
+    assert.equal(merged.needs_ai, true);
+    assert.deepEqual(merged.decision.model_clusters, ['unresolved']);
+    assert.deepEqual(merged.decision.waivable_clusters, ['measured']);
+
+    fs.rmSync(a, {recursive: true, force: true});
+    fs.rmSync(b, {recursive: true, force: true});
 });
 
 test('Android planned rerun is inconclusive when only iOS reports', () => {
@@ -374,9 +534,10 @@ test('an unreachable server is read from the diagnostics, not inferred from erro
 
     const result = classify(collect(dir));
 
-    assert.equal(result.suite_verdict.verdict, 'FLAKY_SERVER');
-    assert.match(result.suite_verdict.reason, /HTTP 502/);
-    assert.equal(result.needs_ai, false, 'a measured server outage needs no adjudication');
+    assert.equal(result.suite_verdict, null);
+    assert.equal(result.suite_signal.verdict, 'FLAKY_SERVER');
+    assert.match(result.suite_signal.reason, /HTTP 502/);
+    assert.equal(result.needs_ai, true, 'an uncorrelated outage cannot suppress per-cluster adjudication');
 
     fs.rmSync(dir, {recursive: true, force: true});
 });

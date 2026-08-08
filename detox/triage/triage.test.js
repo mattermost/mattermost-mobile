@@ -7,7 +7,7 @@ const os = require('node:os');
 const path = require('node:path');
 const {test} = require('node:test');
 
-const {buildRerunPlan, classify, classifyCluster, cluster, pickTier} = require('./classify');
+const {buildDecision, buildRerunPlan, classify, classifyCluster, cluster, pickTier} = require('./classify');
 const {collect, normalizeForSignature, parseJestResults, parseMaestroReport, signatureHash} = require('./collect');
 const {combineConfidence, matchSignatures, matchSuiteRules} = require('./signatures');
 
@@ -280,6 +280,53 @@ test('rerun prefers members carrying a stable test ID', () => {
     assert.equal(plan.specs[0].test_id, 'MM-T4783_1');
 });
 
+test('one rerun spec retains targets for every cluster in that spec', () => {
+    const sharedSpec = 'detox/e2e/test/shared.e2e.ts';
+    const plan = buildRerunPlan([
+        {
+            signature_hash: 'first',
+            confidence: 0,
+            members: [makeFailure({test_id: 'MM-T1', spec: sharedSpec})],
+        },
+        {
+            signature_hash: 'second',
+            confidence: 0,
+            members: [makeFailure({test_id: 'MM-T2', spec: sharedSpec})],
+        },
+    ], 1);
+
+    assert.deepEqual(
+        plan.specs.map((entry) => ({signature: entry.signature_hash, testId: entry.test_id})),
+        [
+            {signature: 'first', testId: 'MM-T1'},
+            {signature: 'second', testId: 'MM-T2'},
+        ],
+    );
+});
+
+test('shared targets do not consume the unique execution-spec budget', () => {
+    const sharedSpec = 'detox/e2e/test/shared.e2e.ts';
+    const distinctSpec = 'detox/e2e/test/distinct.e2e.ts';
+    const clusters = [
+        ...Array.from({length: 9}, (_, index) => ({
+            signature_hash: `shared-${index}`,
+            confidence: 0,
+            members: [makeFailure({test_id: `MM-T${index}`, spec: sharedSpec})],
+        })),
+        {
+            signature_hash: 'distinct',
+            confidence: 0,
+            members: [makeFailure({test_id: 'MM-T99', spec: distinctSpec})],
+        },
+    ];
+
+    const plan = buildRerunPlan(clusters, 1, {maxRerunSpecs: 8, maxSpecsPerCluster: 1});
+
+    assert.equal(plan.specs.length, 10);
+    assert.equal(plan.execution_specs, 2);
+    assert.ok(plan.specs.some((entry) => entry.spec === distinctSpec));
+});
+
 // ---------- end-to-end classify ----------
 
 test('too many distinct clusters is itself evidence of one systemic cause', () => {
@@ -307,6 +354,62 @@ test('classify surfaces a suite verdict that outranks per-cluster ones', () => {
 
     assert.equal(result.suite_verdict.verdict, 'FLAKY_INFRA');
     assert.equal(result.needs_ai, false, 'a decided suite verdict needs no model call');
+});
+
+test('a suite verdict cannot suppress a remaining unresolved cluster', () => {
+    const result = classify({
+        summary: makeSummary({
+            totalTests: 10,
+            passed: 5,
+            failed: 5,
+            shards: [
+                {shard: 'dead', platform: 'android', total: 1, passed: 0, failed: 1, skipped: 0},
+                {shard: 'healthy', platform: 'ios', total: 9, passed: 5, failed: 4, skipped: 0},
+            ],
+        }),
+        failures: [makeFailure({
+            platform: 'android',
+            shard: 'dead',
+            error_message: 'unknown product behavior',
+        })],
+    });
+
+    assert.equal(result.suite_verdict, null);
+    assert.equal(result.suite_signal.rule_id, 'suite.single-shard-wiped');
+    assert.equal(result.suite_signal.authoritative, false);
+    assert.equal(result.clusters[0].needs_ai, true);
+    assert.equal(result.needs_ai, true);
+    assert.deepEqual(result.decision.model_clusters, ['aaaaaaaaaaaa']);
+});
+
+test('a non-exhaustive suite signal never replaces resolved cluster verdicts', () => {
+    const decision = buildDecision([{signature_hash: 'resolved', needs_ai: false}], {
+        verdict: 'FLAKY_INFRA',
+        confidence: 0.8,
+        rule_id: 'suite.single-shard-wiped',
+    });
+
+    assert.equal(decision.suite_verdict_authoritative, false);
+    assert.equal(decision.needs_ai, false);
+});
+
+test('tier four with unresolved causes is routed to model adjudication', () => {
+    const result = classify({
+        summary: makeSummary({
+            totalTests: 10,
+            passed: 4,
+            failed: 6,
+            shards: [{shard: '1', platform: 'ios', total: 10, passed: 4, failed: 6, skipped: 0}],
+        }),
+        failures: Array.from({length: 6}, () => makeFailure({
+            error_message: 'unknown failure',
+            signature_hash: 'unknown',
+        })),
+    });
+
+    assert.equal(result.tier, 3);
+    assert.equal(result.needs_ai, true);
+    assert.deepEqual(result.decision.model_clusters, ['unknown']);
 });
 
 // ---------- report parsing ----------
@@ -579,6 +682,7 @@ test('a rerun that only half reported cannot clear a flake', () => {
         platform: 'ios',
         usable: true,
         specs: ['a.e2e.ts'],
+        executed_specs: ['a.e2e.ts'],
         test_ids: [],
     };
     const passed = {usable: true, reports: [report], failures: []};

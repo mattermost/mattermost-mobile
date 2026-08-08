@@ -105,13 +105,17 @@ function renderSummary(result) {
         '',
     );
 
-    if (result.suite_verdict) {
+    const suiteSignal = result.suite_verdict || result.suite_signal;
+    if (suiteSignal) {
+        const authoritative = suiteSignal.authoritative !== false;
         lines.push(
-            `### Suite-level verdict: \`${result.suite_verdict.verdict}\``,
+            `### Suite-level verdict${authoritative ?'' :' (non-authoritative)'}: \`${suiteSignal.verdict}\``,
             '',
-            `${result.suite_verdict.reason} _(rule \`${result.suite_verdict.rule_id}\`, confidence ${result.suite_verdict.confidence})_`,
+            `${suiteSignal.reason} _(rule \`${suiteSignal.rule_id}\`, confidence ${suiteSignal.confidence})_`,
             '',
-            'A suite-level verdict outranks per-cluster ones: when the run itself failed, individual assertion messages are noise.',
+            authoritative ?
+                'This authoritative suite-level verdict outranks per-cluster ones: when the run itself failed, individual assertion messages are noise.' :
+                'This suite-level verdict is context only and does not outrank per-cluster evidence.',
             '',
         );
     }

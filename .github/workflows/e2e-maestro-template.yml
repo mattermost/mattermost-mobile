@@ -426,13 +426,6 @@ jobs:
             --env MAESTRO_APP_ID="com.mattermost.rnbeta" \
             detox/maestro/flows/account/attach_logs_disabled_when_download_logs_off.yml
 
-      - name: Upload Maestro Artifacts
-        if: always()
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
-        with:
-          name: maestro-ios-results-${{ github.run_id }}
-          path: build/
-
       - name: Parse Maestro Report
         id: summary
         if: always()
@@ -492,6 +485,13 @@ jobs:
             --output build/maestro-report.xml \
             --job-name "$TSIO_SHARD_NAME" \
             --reason "Maestro job failed or was cancelled before maestro-report.xml was written"
+
+      - name: Upload Maestro Artifacts
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: maestro-ios-results-${{ github.run_id }}
+          path: build/
 
       - name: Resolve per-job TSIO config
         if: always() && inputs.tsio-config != '' && vars.TSIO_UPLOAD_ENABLED != 'false'
@@ -980,13 +980,6 @@ jobs:
           admin_password: ${{ env.ADMIN_PASSWORD }}
           output_dir: build/server-diagnostics
 
-      - name: Upload Maestro Artifacts
-        if: always()
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
-        with:
-          name: maestro-android-results-${{ github.run_id }}
-          path: build/
-
       - name: Parse Maestro Report
         id: summary
         if: always()
@@ -1045,6 +1038,13 @@ jobs:
             --output build/maestro-report.xml \
             --job-name "$TSIO_SHARD_NAME" \
             --reason "Maestro job failed or was cancelled before maestro-report.xml was written"
+
+      - name: Upload Maestro Artifacts
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: maestro-android-results-${{ github.run_id }}
+          path: build/
 
       - name: Resolve per-job TSIO config
         if: always() && inputs.tsio-config != '' && vars.TSIO_UPLOAD_ENABLED != 'false'

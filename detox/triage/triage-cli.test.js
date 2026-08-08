@@ -133,6 +133,38 @@ test('renderSummary escapes a pipe in a signature label so the table survives', 
     assert.match(md, /expected a \\\| b/);
 });
 
+test('renderSummary labels a non-authoritative suite verdict as context only', () => {
+    const md = renderSummary(evidence({
+        suite_signal: {
+            verdict: 'FLAKY_INFRA',
+            confidence: 0.8,
+            reason: 'stale suite shape',
+            rule_id: 'suite.single-shard-wiped',
+            authoritative: false,
+        },
+    }));
+
+    assert.match(md, /Suite-level verdict \(non-authoritative\): `FLAKY_INFRA`/);
+    assert.match(md, /context only and does not outrank per-cluster evidence/);
+    assert.doesNotMatch(md, /authoritative suite-level verdict outranks/);
+});
+
+test('renderSummary describes an authoritative suite verdict as outranking cluster evidence', () => {
+    const md = renderSummary(evidence({
+        suite_verdict: {
+            verdict: 'FLAKY_INFRA',
+            confidence: 0.95,
+            reason: 'all shards failed before running tests',
+            rule_id: 'suite.all-shards-failed-early',
+            authoritative: true,
+        },
+    }));
+
+    assert.match(md, /Suite-level verdict: `FLAKY_INFRA`/);
+    assert.match(md, /authoritative suite-level verdict outranks per-cluster ones/);
+    assert.doesNotMatch(md, /non-authoritative/);
+});
+
 test('renderSummary reports a skipped rerun with its reason', () => {
     const md = renderSummary(evidence({
         rerun_plan: {enabled: false, reason: 'too many failures to rerun affordably'},

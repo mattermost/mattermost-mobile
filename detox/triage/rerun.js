@@ -14,6 +14,7 @@
  * the reps are independent samples rather than retries of one attempt.
  */
 
+const {buildDecision} = require('./classify');
 const {collect} = require('./collect');
 
 const OUTCOME = {
@@ -30,6 +31,7 @@ const OUTCOME = {
     // The rerun produced nothing usable, so it adds no evidence either way.
     INCONCLUSIVE: 'inconclusive',
 };
+const MEASURED_RERUN_CONFIDENCE = 0.95;
 
 /**
  * Read one repetition's artifact directory.
@@ -70,6 +72,7 @@ function specOutcome(spec, testId, platform, reps, plannedReps = reps.length) {
             report.platform === platform &&
             report.usable &&
             report.specs.includes(spec) &&
+            report.executed_specs.includes(spec) &&
             (!testId || report.test_ids.includes(testId))
         ));
         if (!targetReport) {
@@ -130,6 +133,12 @@ function mergeRerun(evidence, repetitions) {
         }
         bySignature.get(entry.signature_hash).push({spec: entry.spec, ...outcome});
     }
+    const plannedOutcomes = [...bySignature.values()].flat();
+    const rerunComplete = planned.length > 0 &&
+        plannedReps > 0 &&
+        reps.length === plannedReps &&
+        plannedOutcomes.length === planned.length &&
+        plannedOutcomes.every((outcome) => !outcome.incomplete && outcome.outcome !== OUTCOME.INCONCLUSIVE);
 
     const clusters = evidence.clusters.map((c) => {
         const specs = bySignature.get(c.signature_hash);
@@ -151,7 +160,7 @@ function mergeRerun(evidence, repetitions) {
             outcome = specs.some((s) => s.outcome === OUTCOME.DETERMINISTIC) ?OUTCOME.FLAKY :OUTCOME.PASSED;
         }
 
-        return {
+        const measured = {
             ...c,
             rerun: {outcome, specs, reps: reps.filter((r) => r.usable).length},
 
@@ -160,21 +169,74 @@ function mergeRerun(evidence, repetitions) {
             // model is about the error text — this is the measurement overruling
             // the inference, which is the whole reason the rerun exists.
             reproduced_on_rerun: outcome === OUTCOME.DETERMINISTIC,
+        };
 
-            // Evidence going the other way is what earns a flake verdict its
-            // second, independent citation.
-            cleared_on_rerun: outcome === OUTCOME.PASSED || outcome === OUTCOME.FLAKY,
+        if (!rerunComplete) {
+            return measured;
+        }
+
+        if (outcome === OUTCOME.PASSED || outcome === OUTCOME.FLAKY) {
+            const rerunCitations = Array.from({length: plannedReps}, (_, index) => ({
+                id: `rerun.measurement.${index + 1}`,
+                label: `targeted rerun repetition ${index + 1}`,
+                verdict: 'FLAKY_TEST',
+                weight: MEASURED_RERUN_CONFIDENCE,
+            }));
+            return {
+                ...measured,
+                matched_signatures: [...(measured.matched_signatures || []), ...rerunCitations],
+                rule_verdict: 'FLAKY_TEST',
+                confidence: MEASURED_RERUN_CONFIDENCE,
+                needs_ai: false,
+                reason: `targeted rerun measured ${outcome} across every planned repetition and platform target`,
+                cleared_on_rerun: true,
+                rerun_evidence: {
+                    complete: true,
+                    verdict: 'FLAKY_TEST',
+                    confidence: MEASURED_RERUN_CONFIDENCE,
+                    waivable: true,
+                    basis: 'all planned rerun repetitions and platform targets completed',
+                },
+            };
+        }
+
+        return {
+            ...measured,
+            needs_ai: true,
+            rerun_evidence: {
+                complete: true,
+                verdict: 'DETERMINISTIC_FAILURE',
+                confidence: MEASURED_RERUN_CONFIDENCE,
+                waivable: false,
+                basis: 'failure reproduced across all planned rerun repetitions and platform targets',
+            },
         };
     });
 
+    const priorSuiteSignal = evidence.suite_verdict || evidence.suite_signal;
+    const suiteVerdictCandidate = priorSuiteSignal && planned.length > 0 ?{
+        ...priorSuiteSignal,
+        invalidated_by: 'targeted_rerun_evidence',
+    } :priorSuiteSignal;
+    const decision = buildDecision(clusters, suiteVerdictCandidate);
+    const suiteSignal = suiteVerdictCandidate ?{
+        ...suiteVerdictCandidate,
+        authoritative: decision.suite_verdict_authoritative,
+    } :null;
+
     return {
         ...evidence,
+        suite_verdict: decision.suite_verdict_authoritative ?suiteSignal :null,
+        suite_signal: suiteSignal,
         clusters,
+        decision,
+        needs_ai: decision.needs_ai,
         rerun_meta: {
             repetitions: reps.length,
             expected_repetitions: plannedReps,
             usable_repetitions: reps.filter((r) => r.usable).length,
             specs_rerun: planned.length,
+            complete: rerunComplete,
             platforms: [...new Set(planned.map((entry) => entry.platform))].map((platform) => ({
                 platform,
                 usable_repetitions: reps.filter((rep) => hasUsablePlatformReport(rep, platform)).length,

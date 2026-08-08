@@ -238,13 +238,14 @@ function parseJestResults(filePath, root) {
                 failed: 0,
                 skipped: 0,
             },
-            report: {framework: 'detox', platform, shard, usable: false, specs: [], test_ids: []},
+            report: {framework: 'detox', platform, shard, usable: false, specs: [], executed_specs: [], test_ids: []},
             error: `unreadable jest report: ${err.message}`,
         };
     }
 
     const failures = [];
     const specs = new Set();
+    const executedSpecs = new Set();
     const testIds = new Set();
     let total = 0;
     let passed = 0;
@@ -263,6 +264,9 @@ function parseJestResults(filePath, root) {
         if ((!suite.assertionResults || suite.assertionResults.length === 0) && suite.message) {
             failed += 1;
             total += 1;
+            if (spec) {
+                executedSpecs.add(spec);
+            }
             failures.push(buildFailure({
                 spec: suite.name,
                 title: `${path.basename(suite.name || 'unknown')} (suite-level failure)`,
@@ -280,15 +284,18 @@ function parseJestResults(filePath, root) {
         for (const assertion of suite.assertionResults || []) {
             total += 1;
             const testId = (String(assertion.fullName || assertion.title || '').match(TEST_ID_RE) || [null])[0];
+            if (assertion.status === 'pending' || assertion.status === 'skipped' || assertion.status === 'todo') {
+                skipped += 1;
+                continue;
+            }
+            if (spec) {
+                executedSpecs.add(spec);
+            }
             if (testId) {
                 testIds.add(testId);
             }
             if (assertion.status === 'passed') {
                 passed += 1;
-                continue;
-            }
-            if (assertion.status === 'pending' || assertion.status === 'skipped' || assertion.status === 'todo') {
-                skipped += 1;
                 continue;
             }
             failed += 1;
@@ -315,6 +322,7 @@ function parseJestResults(filePath, root) {
             shard,
             usable: total > 0,
             specs: [...specs],
+            executed_specs: [...executedSpecs],
             test_ids: [...testIds],
         },
         error: null,
@@ -524,7 +532,12 @@ function collectServerProbes(root) {
 function collect(root, {cwd = process.cwd(), expectedReports = []} = {}) {
     const absRoot = path.resolve(cwd, root);
     const jestReports = walk(absRoot, (name) => /^jest-results.*\.json$/.test(name));
-    const maestroReports = walk(absRoot, (name) => /^maestro-report.*\.xml$/.test(name));
+
+    // The workflow keeps the per-flow Maestro XML next to the merged report.
+    // Only the merged report is authoritative: reading both double-counts tests
+    // and can manufacture a dead shard from an early failed flow even when the
+    // canonical report records the full run.
+    const maestroReports = walk(absRoot, (name) => name === 'maestro-report.xml');
 
     const failures = [];
     const shards = [];
@@ -546,6 +559,7 @@ function collect(root, {cwd = process.cwd(), expectedReports = []} = {}) {
     }
     for (const file of maestroReports) {
         const result = parseMaestroReport(file, absRoot);
+
         failures.push(...result.failures);
         if (result.shard) {
             shards.push(result.shard);
