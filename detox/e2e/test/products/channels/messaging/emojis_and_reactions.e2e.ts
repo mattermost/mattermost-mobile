@@ -151,7 +151,10 @@ describe('Messaging - Emojis and Reactions', () => {
         await ChannelScreen.back();
     });
 
-    // SEC-11010 repro (temp unskip): emoji picker search input visible but not hittable (CI 30000635898).
+    // Unskipped (SEC-11010): EmojiPickerScreen.close() began its swipe at the clipped top
+    // edge (search input top ~2px clipped by the safe-area/header overlap), so Detox's
+    // default down-swipe started at a point that was "not visible around point". close()
+    // now swipes from the visible vertical center. Permanently unskipped.
     it('MM-T4862_3 - should be able to include emojis in a message and be able to find them in emoji bar and recently used section', async () => {
         // # Open a channel screen and post a message that includes emojis
         const message = 'brown fox :fox_face: lazy dog :dog:';
