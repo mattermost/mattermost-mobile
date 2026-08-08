@@ -10,6 +10,7 @@
 # dialog. The flow handles this with a timed wait + optional Allow tap.
 appId: ${MAESTRO_APP_ID}
 ---
+# # Relaunch the app from a clean state so no stale session interferes.
 # iOS: stopApp:true force-kills the app before relaunch. This clears any stuck
 # state from a previous test run (e.g. a blank WebRTC call screen with no
 # accessible elements). Safe on iOS — does NOT set Android's force-stopped flag.
@@ -24,15 +25,15 @@ appId: ${MAESTRO_APP_ID}
       - launchApp:
           stopApp: true
           clearState: true
-      # After clearState, the JS bundle loads fresh + notification dialog
+      # # After clearState, the JS bundle loads fresh + notification dialog
       # may appear. Wait longer for bundle + permission dialog.
       - waitForAnimationToEnd:
           timeout: 45000
-      # Notification permission dialog — dismiss if present.
+      # # Notification permission dialog — dismiss if present.
       - tapOn:
           text: "Allow"
           optional: true
-      # Fresh install shows the server form once the JS bundle loads (same as Android).
+      # * Verify the fresh install shows the server form once the JS bundle loads.
       # iOS: FloatingTextInput testID (server_url.input) is NOT exposed to the
       # native accessibility tree that Maestro queries — use display_help
       # (a FormattedText) as the anchor instead. See connect_server.yml note.
@@ -47,26 +48,30 @@ appId: ${MAESTRO_APP_ID}
       - launchApp:
           stopApp: false
           clearState: true
-      # After clearState, the Android notification permission dialog appears
+      # # After clearState, the Android notification permission dialog appears
       # shortly after launch. Give it time to render, then dismiss if present.
       - waitForAnimationToEnd:
           timeout: 5000
       - tapOn:
           text: "Allow"
           optional: true
-      # After clearState the app has no server registered and always shows the server
-      # connect form. Wait up to 90s for the JS bundle to load on slow emulators.
+      # * Verify the server connect form is shown. After clearState the app has no
+      # server registered and always shows it. Wait up to 90s for the JS bundle to
+      # load on slow emulators.
       - extendedWaitUntil:
           visible:
             id: "server_form.server_url.input"
           timeout: 90000
-# iOS notification permission dialog may appear on first launch after a device
-# wipe or new test session. Dismiss with Allow so push can work; optional so it
-# is silently skipped when the dialog is absent.
+
+# # Dismiss the notification permission dialog on either platform. It may appear on
+# first launch after a device wipe or new test session, and on Android it can surface
+# later than the in-branch attempt above. Allow so push can work; optional so it is
+# silently skipped when the dialog is absent.
 - tapOn:
     text: "Allow"
     optional: true
-# If on the full call screen, leave the call first so back presses work cleanly.
+
+# # If on the full call screen, leave the call first so back presses work cleanly.
 # Each back press on the call screen triggers a leave-confirmation dialog, which
 # means 3 back presses can never escape the call screen. Tap Leave + confirm instead.
 - runFlow:
@@ -83,7 +88,8 @@ appId: ${MAESTRO_APP_ID}
           notVisible:
             id: "mute-unmute"
           timeout: 10000
-# If on a channel screen (tab bar hidden inside channel nav stack), tap the
+
+# # If on a channel screen (tab bar hidden inside channel nav stack), tap the
 # navigation back button to return to the channel list where the tab bar
 # becomes visible. Using the header back button because iOS swipe-back
 # gesture ('back') may be disabled on this screen by react-native-navigation.
@@ -94,7 +100,8 @@ appId: ${MAESTRO_APP_ID}
     commands:
       - tapOn:
           id: "navigation.header.back"
-# If the app is already on the home screen (tab bar visible), log out before
+
+# # If the app is already on the home screen (tab bar visible), log out before
 # pressing back. This handles the case where a previous flow left the app on
 # the channel list — pressing back from the home screen on Android navigates
 # away from the app entirely, making the tab bar check below unreliable.
@@ -103,7 +110,8 @@ appId: ${MAESTRO_APP_ID}
       visible:
         id: "tab_bar.home.tab"
     file: logout.yml
-# On iOS, logout navigates to the server list (not the login form).
+
+# # On iOS, logout navigates to the server list (not the login form).
 # Tap the first server to navigate to the login form.
 - runFlow:
     when:
@@ -112,7 +120,8 @@ appId: ${MAESTRO_APP_ID}
     commands:
       - tapOn:
           id: "server_list.server_item.server_1"
-# Only press back if we are NOT already on the login form, NOT on the server
+
+# # Only press back if we are NOT already on the login form, NOT on the server
 # connect form, AND NOT on the home screen. If we're on the home screen, the
 # logout block below will handle it. Without this home-screen check, back
 # presses fire on the home screen and navigate away from the app entirely.
@@ -134,19 +143,22 @@ appId: ${MAESTRO_APP_ID}
                   - back
                   - back
                   - back
-# If back presses returned us to the home screen, logout to reach login form.
+
+# # If back presses returned us to the home screen, logout to reach login form.
 - runFlow:
     when:
       visible:
         id: "tab_bar.home.tab"
     file: logout.yml
-# Android: notification permission dialog may appear after the initial navigation
+
+# # Android: notification permission dialog may appear after the initial navigation
 # cleanup (dialog takes longer to surface than on iOS). Second optional dismiss
 # handles the case where the dialog was not yet visible on the first attempt above.
 - tapOn:
     text: "Allow"
     optional: true
-# Server connection section — only runs when the server form is visible.
+
+# # Server connection section — only runs when the server form is visible.
 # After a fresh DB wipe or first run, no server is registered and the form
 # shows empty. After logout the server stays in the DB and the login form
 # appears directly, bypassing this block entirely.
@@ -165,23 +177,28 @@ appId: ${MAESTRO_APP_ID}
       visible:
         id: "server_form.display_help"
     file: ../server/connect_server.yml
-# If connect_server navigated to an already-logged-in home screen (server was
+
+# # If connect_server navigated to an already-logged-in home screen (server was
 # previously registered with an active session), logout to reach the login form.
 - runFlow:
     when:
       visible:
         id: "tab_bar.home.tab"
     file: logout.yml
-# Login screen — allow slow JS bundle load on iOS CI (Release sim, no Metro).
+
+# * Verify the login screen is shown — allow slow JS bundle load on iOS CI
+# (Release sim, no Metro).
 - extendedWaitUntil:
     visible:
       id: "login_form.forgot_password.button"
     timeout: 180000
+
+# # Enter credentials
 - runFlow:
     when:
       platform: iOS
     commands:
-      # Cold-start first Maestro batch: Next+inputText can miss the password
+      # # Cold-start first Maestro batch: Next+inputText can miss the password
       # field (FloatingTextInput + secureTextEntry). Empty password keeps
       # testID login_form.signin.button.disabled — Maestro then fails waiting
       # for login_form.signin.button.
@@ -199,11 +216,11 @@ appId: ${MAESTRO_APP_ID}
             - inputText: ${TEST_USER_EMAIL}
             - tapOn:
                 text: "Next"
-            # Erase first: on a retry the password field still holds the previous
+            # # Erase first: on a retry the password field still holds the previous
             # attempt's text, and inputText would append to it.
             - eraseText: 80
             - inputText: ${TEST_USER_PASSWORD}
-            # Dismiss keyboard so Log In is on-screen (Detox taps this description).
+            # # Dismiss keyboard so Log In is on-screen (Detox taps this description).
             - tapOn:
                 id: "login_options.description.enter_credentials"
                 optional: true
@@ -225,7 +242,9 @@ appId: ${MAESTRO_APP_ID}
           visible:
             id: "login_form.signin.button"
           timeout: 10000
-# iOS: URLSession can drop the first login POST right after server connect on cold sims.
+
+# # Submit the login, retrying because iOS URLSession can drop the first login POST
+# right after server connect on cold sims.
 # iOS per-attempt home wait is sized to hedge two competing failure modes:
 #   - dropped POST  → the wait must expire soon enough for a retry to re-tap Log In
 #   - slow cold sim → the wait must be long enough that a working login is not cut short
@@ -246,7 +265,7 @@ appId: ${MAESTRO_APP_ID}
                 timeout: 8000
       - tapOn:
           id: "login_form.signin.button"
-      # Dismiss password/save prompts each attempt so they do not block home tab.
+      # # Dismiss password/save prompts each attempt so they do not block home tab.
       - tapOn:
           text: "Not Now"
           optional: true
@@ -259,6 +278,7 @@ appId: ${MAESTRO_APP_ID}
       - tapOn:
           text: "Skip"
           optional: true
+      # * Verify login succeeded by waiting for the home tab.
       - runFlow:
           when:
             platform: iOS
