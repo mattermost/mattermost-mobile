@@ -21,6 +21,10 @@ class ChannelBookmarkScreen {
         emojiPickerScreen: 'emoji_picker.screen',
         emojiPickerSearchInput: 'emoji_picker.search_bar.search.input',
         emojiPickerToolTipCloseButton: 'skin_selector.tooltip.close.button',
+
+        // Generic bottom sheet (generic_bottom_sheet route) renders its content View as
+        // `${testID}.screen`; that route passes no testID, so the content is 'undefined.screen'.
+        optionsSheet: 'undefined.screen',
     };
 
     channelBookmarkScreen = element(by.id(this.testID.channelBookmarkScreen));
@@ -60,25 +64,21 @@ class ChannelBookmarkScreen {
 
     /**
      * Dismiss the bookmark options bottom sheet (generic_bottom_sheet route). The
-     * sheet content View is exposed as 'undefined.screen' (BottomSheet renders
-     * `${testID}.screen` and generic_bottom_sheet passes no testID); it is unique
-     * while the sheet is open and is the draggable sheet content, so it doubles as
-     * the dismiss target (iOS swipe) and the unmount assertion (not.toExist). This
-     * mirrors PostOptionsScreen.close() — the codebase's working @gorhom dismiss
-     * pattern — instead of probing option-row text, which is ambiguous on Android
-     * (channel info also has a 'Copy Link' row) and gave false 'dismissed' signals
-     * while the sheet was still mounted (SEC-10992 CI 29cdff/59ec6ae/a4c0e33).
+     * sheet content View is exposed via this.testID.optionsSheet (BottomSheet renders
+     * `${testID}.screen`; the generic_bottom_sheet route passes no testID); it is
+     * unique while the sheet is open and is the draggable sheet content, so it
+     * doubles as the dismiss target (iOS swipe) and the unmount assertion
+     * (not.toExist). This follows the codebase's @gorhom dismiss pattern (iOS swipe
+     * the sheet content / Android system back), without PostOptionsScreen's pressBack
+     * retry since this options sheet has no text input whose keyboard a first back
+     * press would clear — instead of probing option-row text, which is ambiguous on
+     * Android (channel info also has a 'Copy Link' row) and gave false 'dismissed'
+     * signals while the sheet was still mounted (SEC-10992 CI 29cdff/59ec6ae/a4c0e33).
      */
     dismissOptionsSheet = async () => {
-        const sheet = element(by.id('undefined.screen'));
+        const sheet = element(by.id(this.testID.optionsSheet));
         if (isAndroid()) {
             await device.pressBack();
-            try {
-                await waitFor(sheet).not.toExist().withTimeout(timeouts.TWO_SEC);
-            } catch {
-                // First back may have only cleared the soft keyboard; retry.
-                await device.pressBack();
-            }
         } else {
             await sheet.swipe('down');
         }
