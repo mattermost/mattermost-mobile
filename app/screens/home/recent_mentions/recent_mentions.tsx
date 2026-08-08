@@ -32,7 +32,6 @@ const EDGES: Edge[] = ['left', 'right'];
 
 type Props = {
     currentUser: UserModel;
-    appsEnabled: boolean;
     customEmojiNames: string[];
     currentTimezone: string | null;
     mentions: PostModel[];
@@ -49,7 +48,7 @@ const styles = StyleSheet.create({
     },
 });
 
-const RecentMentionsScreen = ({appsEnabled, currentUser, customEmojiNames, mentions, currentTimezone}: Props) => {
+const RecentMentionsScreen = ({currentUser, customEmojiNames, mentions, currentTimezone}: Props) => {
     const theme = useTheme();
     const route = useRoute();
     const isFocused = useIsFocused();
@@ -160,7 +159,6 @@ const RecentMentionsScreen = ({appsEnabled, currentUser, customEmojiNames, menti
                 return (
                     <PostWithChannelInfo
                         currentUser={currentUser}
-                        appsEnabled={appsEnabled}
                         customEmojiNames={customEmojiNames}
                         key={item.value.currentPost.id}
                         location={Screens.MENTIONS}
@@ -171,7 +169,7 @@ const RecentMentionsScreen = ({appsEnabled, currentUser, customEmojiNames, menti
             default:
                 return null;
         }
-    }, [appsEnabled, currentTimezone, currentUser, customEmojiNames]);
+    }, [currentTimezone, currentUser, customEmojiNames]);
 
     return (
         <SafeAreaView

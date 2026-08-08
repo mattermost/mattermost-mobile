@@ -67,7 +67,6 @@ describe('components/post_list/PostList', () => {
     ];
 
     const baseProps: ComponentProps<typeof PostList> = {
-        appsEnabled: false,
         mmBlocksEnabled: false,
         channelId: 'channel-id',
         currentUser: TestHelper.fakeUserModel({

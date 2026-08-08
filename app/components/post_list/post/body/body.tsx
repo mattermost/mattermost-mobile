@@ -27,7 +27,6 @@ import type {SearchPattern} from '@typings/global/markdown';
 import type {AvailableScreens} from '@typings/screens/navigation';
 
 type BodyProps = {
-    appsEnabled: boolean;
     mmBlocksEnabled: boolean;
     filesInfo: FileInfo[];
     hasReactions: boolean;
@@ -89,7 +88,6 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
 });
 
 const Body = ({
-    appsEnabled,
     mmBlocksEnabled,
     filesInfo,
     hasReactions,
@@ -119,13 +117,11 @@ const Body = ({
     let body;
     let message;
 
-    const nBindings = Array.isArray(post.props?.app_bindings) ? post.props?.app_bindings.length : 0;
     const nAttachments = Array.isArray(post.props?.attachments) ? post.props?.attachments.length : 0;
 
     const isReplyPost = Boolean(post.rootId && (!isEphemeral || !hasBeenDeleted) && location !== Screens.THREAD);
     const hasContent = Boolean(
         post.metadata?.embeds?.length ||
-        (appsEnabled && nBindings) ||
         hasInteractivePostContent(post, mmBlocksEnabled) ||
         (!mmBlocksEnabled && nAttachments),
     );

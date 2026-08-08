@@ -25,7 +25,6 @@ import type PostModel from '@typings/database/models/servers/post';
 import type UserModel from '@typings/database/models/servers/user';
 
 type Props = {
-    appsEnabled: boolean;
     channelId: string;
     currentUser: UserModel;
     currentTimezone: string | null;
@@ -52,7 +51,6 @@ const styles = StyleSheet.create({
 });
 
 function SavedMessages({
-    appsEnabled,
     channelId,
     currentUser,
     currentTimezone,
@@ -123,7 +121,6 @@ function SavedMessages({
             case 'post':
                 return (
                     <Post
-                        appsEnabled={appsEnabled}
                         customEmojiNames={customEmojiNames}
                         currentUser={currentUser}
                         highlightPinnedOrSaved={false}
@@ -144,7 +141,7 @@ function SavedMessages({
             default:
                 return null;
         }
-    }, [appsEnabled, currentTimezone, currentUser, customEmojiNames, isCRTEnabled, isChannelAutotranslated]);
+    }, [currentTimezone, currentUser, customEmojiNames, isCRTEnabled, isChannelAutotranslated]);
 
     return (
         <SafeAreaView

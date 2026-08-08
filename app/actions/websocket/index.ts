@@ -20,7 +20,6 @@ import {loadConfigAndCalls} from '@calls/actions/calls';
 import {isSupportedServerCalls} from '@calls/utils';
 import {Screens} from '@constants';
 import DatabaseManager from '@database/manager';
-import AppsManager from '@managers/apps_manager';
 import {handlePlaybookReconnect} from '@playbooks/actions/websocket/reconnect';
 import {getActiveServerUrl} from '@queries/app/servers';
 import {getLastPostInThread} from '@queries/servers/post';
@@ -112,7 +111,6 @@ async function doReconnect(serverUrl: string, groupLabel?: BaseRequestGroupLabel
 
         expiredBoRPostCleanup(serverUrl);
 
-        AppsManager.refreshAppBindings(serverUrl, groupLabel);
         return undefined;
     } finally {
         setTeamLoading(serverUrl, false);

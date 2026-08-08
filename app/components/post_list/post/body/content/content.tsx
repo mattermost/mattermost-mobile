@@ -7,7 +7,6 @@ import {isMessageAttachmentArray} from '@utils/message_attachment';
 import {hasInteractivePostContent} from '@utils/post';
 import {isYoutubeLink} from '@utils/url';
 
-import EmbeddedBindings from './embedded_bindings';
 import ImagePreview from './image_preview';
 import InteractiveMessages from './interactive_messages';
 import MessageAttachments from './message_attachments';
@@ -29,7 +28,6 @@ type ContentProps = {
 }
 
 const contentType: Record<string, string> = {
-    app_bindings: 'app_bindings',
     image: 'image',
     message_attachment: 'message_attachment',
     opengraph: 'opengraph',
@@ -49,12 +47,7 @@ const Content = ({isReplyPost, layoutWidth, location, mmBlocksEnabled, post, the
         );
     }
 
-    let type: string | undefined = post.metadata?.embeds?.[0].type;
-
-    const nAppBindings = Array.isArray(post.props?.app_bindings) ? post.props.app_bindings.length : 0;
-    if (!type && nAppBindings) {
-        type = contentType.app_bindings;
-    }
+    const type: string | undefined = post.metadata?.embeds?.[0].type;
 
     if (!type) {
         return null;
@@ -105,17 +98,6 @@ const Content = ({isReplyPost, layoutWidth, location, mmBlocksEnabled, post, the
                         location={location}
                         metadata={post.metadata}
                         postId={post.id}
-                        theme={theme}
-                    />
-                );
-            }
-            break;
-        case contentType.app_bindings:
-            if (nAppBindings) {
-                return (
-                    <EmbeddedBindings
-                        location={location}
-                        post={post}
                         theme={theme}
                     />
                 );

@@ -60,7 +60,6 @@ const WebsocketEvents = {
     THREAD_READ_CHANGED: 'thread_read_changed',
     DELETE_TEAM: 'delete_team',
     RESTORE_TEAM: 'restore_team',
-    APPS_FRAMEWORK_REFRESH_BINDINGS: 'custom_com.mattermost.apps_refresh_bindings',
     POST_TRANSLATION_UPDATED: 'post_translation_updated',
 
     CALLS_CHANNEL_ENABLED: `custom_${Calls.PluginId}_channel_enable_voice`,

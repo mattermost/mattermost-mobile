@@ -467,7 +467,6 @@ const EditPost = ({
                 cursorPosition={cursorPosition}
                 position={animatedAutocompletePosition}
                 availableSpace={animatedAutocompleteAvailableSpace}
-                serverUrl={serverUrl}
             />
         </EditPostProvider>
     );

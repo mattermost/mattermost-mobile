@@ -40,7 +40,6 @@ import type UserModel from '@typings/database/models/servers/user';
 import type {AvailableScreens} from '@typings/screens/navigation';
 
 type Props = {
-    appsEnabled: boolean;
     mmBlocksEnabled: boolean;
     channelId: string;
     contentContainerStyle?: StyleProp<AnimatedStyle<ViewStyle>>;
@@ -90,7 +89,6 @@ const styles = StyleSheet.create({
 });
 
 const PostList = ({
-    appsEnabled,
     mmBlocksEnabled,
     channelId,
     currentUser,
@@ -456,7 +454,6 @@ const PostList = ({
                 const {isSaved, nextPost, previousPost} = item.value;
                 const skipSavedHeader = (location === Screens.THREAD && post.id === rootId);
                 const postProps = {
-                    appsEnabled,
                     mmBlocksEnabled,
                     currentUser,
                     customEmojiNames,
@@ -484,7 +481,7 @@ const PostList = ({
                 );
             }
         }
-    }, [appsEnabled, mmBlocksEnabled, currentTimezone, currentUser, currentUsername, customEmojiNames, highlightPinnedOrSaved, highlightedId, isCRTEnabled, isChannelAutotranslated, isPostAcknowledgementEnabled, location, rootId, shouldRenderReplyButton, shouldShowJoinLeaveMessages, testID, theme]);
+    }, [mmBlocksEnabled, currentTimezone, currentUser, currentUsername, customEmojiNames, highlightPinnedOrSaved, highlightedId, isCRTEnabled, isChannelAutotranslated, isPostAcknowledgementEnabled, location, rootId, shouldRenderReplyButton, shouldShowJoinLeaveMessages, testID, theme]);
 
     useEffect(() => {
         const t = setTimeout(() => {

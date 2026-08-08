@@ -5,12 +5,11 @@ import {router} from 'expo-router';
 import {createIntl} from 'react-intl';
 import {Alert, DeviceEventEmitter} from 'react-native';
 
-import {Events, Screens, ServerErrors} from '@constants';
+import {Events, ServerErrors} from '@constants';
 import {DEFAULT_LOCALE, getTranslations} from '@i18n';
-import * as Navigation from '@screens/navigation';
 import CallbackStore from '@store/callback_store';
 
-import {alertTeamRemove, alertChannelRemove, alertChannelArchived, alertTeamAddError, previewPdf, openUserProfile, openAppsForm} from './index';
+import {alertTeamRemove, alertChannelRemove, alertChannelArchived, alertTeamAddError, previewPdf, openUserProfile} from './index';
 
 jest.mock('expo-router', () => ({
     router: {
@@ -175,14 +174,6 @@ describe('Navigation utils', () => {
                 pathname: '/(bottom_sheet)/user_profile',
                 params: {userId: '"user123"', username: '"johndoe"'},
             });
-        });
-    });
-
-    describe('openAppsForm', () => {
-        it('should call navigateToScreen with the right props', () => {
-            const navigateToScreenSpy = jest.spyOn(Navigation, 'navigateToScreen');
-            openAppsForm({title: 'Form Title'}, {} as AppContext);
-            expect(navigateToScreenSpy).toHaveBeenCalledWith(Screens.APPS_FORM, {context: {}, form: {title: 'Form Title'}});
         });
     });
 });

@@ -5,7 +5,6 @@ import React, {useEffect, useState} from 'react';
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
 
 import Autocomplete from '@components/autocomplete';
-import {useServerUrl} from '@context/server';
 import {useAutocompleteDefaultAnimatedValues} from '@hooks/autocomplete';
 import {useDefaultHeaderHeight} from '@hooks/header';
 
@@ -58,7 +57,6 @@ function PostDraft({
     const [postInputTop, setPostInputTop] = useState(0);
     const [isFocused, setIsFocused] = useState(false);
     const headerHeight = useDefaultHeaderHeight();
-    const serverUrl = useServerUrl();
     const {bottom} = useSafeAreaInsets();
 
     // Update draft in case we switch channels or threads
@@ -126,7 +124,6 @@ function PostDraft({
             isSearch={isSearch}
             shouldDirectlyReact={!Boolean(files?.length)}
             availableSpace={animatedAutocompleteAvailableSpace}
-            serverUrl={serverUrl}
             usePortal={true}
             portalName={portalName}
         />

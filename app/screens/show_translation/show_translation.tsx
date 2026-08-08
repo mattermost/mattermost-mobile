@@ -22,7 +22,6 @@ import type UserModel from '@typings/database/models/servers/user';
 type Props = {
     currentUser: UserModel;
     post?: PostModel;
-    appsEnabled: boolean;
     customEmojiNames: string[];
     isCRTEnabled: boolean;
 }
@@ -64,7 +63,6 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
 function ShowTranslation({
     currentUser,
     post,
-    appsEnabled,
     customEmojiNames,
     isCRTEnabled,
 }: Props) {
@@ -102,7 +100,6 @@ function ShowTranslation({
                 </View>
                 <Post
                     currentUser={currentUser}
-                    appsEnabled={appsEnabled}
                     customEmojiNames={customEmojiNames}
                     highlightPinnedOrSaved={false}
                     isCRTEnabled={isCRTEnabled}

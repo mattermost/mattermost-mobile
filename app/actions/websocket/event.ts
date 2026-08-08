@@ -171,8 +171,6 @@ export async function handleWebSocketEvent(serverUrl: string, msg: WebSocketMess
         case WebsocketEvents.OPEN_DIALOG:
             handleOpenDialogEvent(serverUrl, msg);
             break;
-        case WebsocketEvents.APPS_FRAMEWORK_REFRESH_BINDINGS:
-            break;
 
         case WebsocketEvents.THREAD_UPDATED:
             handleThreadUpdatedEvent(serverUrl, msg);

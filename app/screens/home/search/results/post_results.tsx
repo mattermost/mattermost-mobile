@@ -31,7 +31,6 @@ const getStyles = makeStyleSheetFromTheme((theme: Theme) => ({
 }));
 
 type Props = {
-    appsEnabled: boolean;
     customEmojiNames: string[];
     currentUser: UserModel;
     currentTimezone: string;
@@ -42,7 +41,6 @@ type Props = {
 }
 
 const PostResults = ({
-    appsEnabled,
     currentTimezone,
     currentUser,
     customEmojiNames,
@@ -81,7 +79,6 @@ const PostResults = ({
                 return (
                     <PostWithChannelInfo
                         currentUser={currentUser}
-                        appsEnabled={appsEnabled}
                         customEmojiNames={customEmojiNames}
                         key={key}
                         location={Screens.SEARCH}
@@ -94,7 +91,7 @@ const PostResults = ({
             default:
                 return null;
         }
-    }, [currentTimezone, searchValue, matches, currentUser, appsEnabled, customEmojiNames]);
+    }, [currentTimezone, searchValue, matches, currentUser, customEmojiNames]);
 
     const noResults = useMemo(() => (
         <NoResultsWithTerm

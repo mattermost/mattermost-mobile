@@ -41,7 +41,6 @@ const getStyles = (width: number) => {
 
 type Props = {
     currentUser: UserModel;
-    appsEnabled: boolean;
     canDownloadFiles: boolean;
     currentTimezone: string;
     customEmojiNames: string[];
@@ -58,7 +57,6 @@ type Props = {
 }
 
 const Results = ({
-    appsEnabled,
     canDownloadFiles,
     currentUser,
     currentTimezone,
@@ -109,7 +107,6 @@ const Results = ({
                     <Freeze freeze={selectedTab !== TabTypes.MESSAGES}>
                         <PostResults
                             currentUser={currentUser}
-                            appsEnabled={appsEnabled}
                             currentTimezone={currentTimezone}
                             customEmojiNames={customEmojiNames}
                             posts={posts}
