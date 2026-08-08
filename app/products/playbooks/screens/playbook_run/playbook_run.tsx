@@ -16,10 +16,12 @@ import {Screens} from '@constants';
 import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
 import useAndroidHardwareBackHandler from '@hooks/android_back_handler';
+import useDidMount from '@hooks/did_mount';
 import {finishRun, setOwner} from '@playbooks/actions/remote/runs';
 import {PLAYBOOK_RUN_TYPES} from '@playbooks/constants/playbook_run';
 import {getRunScheduledTimestamp, isRunFinished} from '@playbooks/utils/run';
 import {navigateBack} from '@screens/navigation';
+import EphemeralStore from '@store/ephemeral_store';
 import {openUserProfile} from '@utils/navigation';
 import {showPlaybookErrorSnackbar} from '@utils/snack_bar';
 import {makeStyleSheetFromTheme, changeOpacity} from '@utils/theme';
@@ -165,6 +167,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => ({
 }));
 
 type Props = {
+    playbookRunId: string;
     playbookRun?: PlaybookRunModel | PlaybookRun;
     owner?: UserModel;
     participants: UserModel[];
@@ -177,6 +180,7 @@ type Props = {
 }
 
 export default function PlaybookRun({
+    playbookRunId,
     playbookRun,
     owner,
     participants,
@@ -197,6 +201,12 @@ export default function PlaybookRun({
     const channelId = playbookRun && 'channelId' in playbookRun ? playbookRun.channelId : (playbookRun?.channel_id || '');
 
     useAndroidHardwareBackHandler(Screens.PLAYBOOK_RUN, navigateBack);
+
+    useDidMount(() => {
+        const previousPlaybookRunId = EphemeralStore.getCurrentPlaybookRunId();
+        EphemeralStore.setCurrentPlaybookRunId(playbookRunId);
+        return () => EphemeralStore.setCurrentPlaybookRunId(previousPlaybookRunId);
+    });
 
     const isParticipant = participants.some((p) => p.id === currentUserId) || owner?.id === currentUserId;
 
