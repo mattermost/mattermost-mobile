@@ -481,7 +481,7 @@ describe('Channels - Channel Bookmarks', () => {
         } catch {
             // Element may already be visible; proceed with longPress
         }
-        await bookmarkEl.longPress();
+        await bookmarkEl.longPress(timeouts.FOUR_SEC);
 
         // * Verify bookmark options appear
         await expect(ChannelBookmarkScreen.editOption).toBeVisible();
@@ -566,7 +566,7 @@ describe('Channels - Channel Bookmarks', () => {
         }
 
         // # Long press to open options
-        await revertBookmarkEl.longPress();
+        await revertBookmarkEl.longPress(timeouts.FOUR_SEC);
 
         // * Verify edit option visible
         await expect(ChannelBookmarkScreen.editOption).toBeVisible();
@@ -798,7 +798,7 @@ describe('Channels - Channel Bookmarks', () => {
     // 2x per platform with cleared device storage; green -> drop it.skip for that
     // platform, red -> capture fresh artifacts per detox/CLAUDE.md and decide whether
     // the hardening needs another fallback or this is a PE sheet-unmount case.
-    it.skip('MM-T69455_1 - should open file preview on tap and options on long press', async () => {
+    it('MM-T69455_1 - should open file preview on tap and options on long press', async () => {
         const channelT69455 = await createChannel();
 
         const {bookmark: linkT69455, error: linkError} = await ChannelBookmark.apiCreateChannelBookmarkLink(
@@ -907,7 +907,7 @@ describe('Channels - Channel Bookmarks', () => {
         await ensureHeaderBookmarkVisible(linkBookmarkEl, 'Tap Link Bookmark');
 
         // # Long press the link bookmark to open options
-        await linkBookmarkEl.longPress();
+        await linkBookmarkEl.longPress(timeouts.FOUR_SEC);
 
         // * Verify long press opens the bookmark options bottom sheet
         await expect(ChannelBookmarkScreen.editOption).toBeVisible();

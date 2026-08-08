@@ -59,77 +59,30 @@ class ChannelBookmarkScreen {
     deleteConfirmCancelButton = element(by.text('Cancel'));
 
     /**
-     * Bookmark options is a bottom sheet with no Cancel row, so dismiss it by swiping a row.
+     * Dismiss the bookmark options bottom sheet (generic_bottom_sheet route). The
+     * sheet content View is exposed as 'undefined.screen' (BottomSheet renders
+     * `${testID}.screen` and generic_bottom_sheet passes no testID); it is unique
+     * while the sheet is open and is the draggable sheet content, so it doubles as
+     * the dismiss target (iOS swipe) and the unmount assertion (not.toExist). This
+     * mirrors PostOptionsScreen.close() — the codebase's working @gorhom dismiss
+     * pattern — instead of probing option-row text, which is ambiguous on Android
+     * (channel info also has a 'Copy Link' row) and gave false 'dismissed' signals
+     * while the sheet was still mounted (SEC-10992 CI 29cdff/59ec6ae/a4c0e33).
      */
     dismissOptionsSheet = async () => {
-        // CodeRabbit note (SEC-10992): sheetMarkers match by text (Edit/Delete/Copy
-        // Link/Share) because the app's bookmark option rows (OptionItem in
-        // bookmark_options.tsx) don't expose distinct testIDs — they default to a shared
-        // 'optionItem', so by.id() can't disambiguate them. The proper fix is to add
-        // distinct testIDs in the app (an app change needing authorization, not done
-        // here). The stray-match risk is low: the options bottom sheet occludes the
-        // rest of the screen while it is open, so no off-sheet 'Edit' is visible.
-        const sheetMarkers = [this.deleteOption, this.editOption, this.copyLinkOption, this.shareOption];
-
-        // True when any options-sheet row is still visible (i.e. the sheet is still up).
-        /* eslint-disable no-await-in-loop -- probe each marker */
-        const anyMarkerVisible = async (timeout = timeouts.TWO_SEC) => {
-            for (const target of sheetMarkers) {
-                try {
-                    await waitFor(target).toBeVisible().withTimeout(timeout);
-                    return true;
-                } catch {
-                    // Row not present / not visible.
-                }
-            }
-            return false;
-        };
-
-        // Swipe down the first visible sheet row (the sheet's primary dismiss gesture).
-        const swipeDownFirstRow = async () => {
-            for (const target of sheetMarkers) {
-                try {
-                    await waitFor(target).toBeVisible().withTimeout(timeouts.TWO_SEC);
-                    await target.swipe('down', 'fast', 0.9, 0.5, 0.1);
-                    await wait(timeouts.ONE_SEC);
-                    return;
-                } catch {
-                    // Try next row.
-                }
-            }
-        };
-        /* eslint-enable no-await-in-loop */
-
-        if (!(await anyMarkerVisible())) {
-            return; // No options sheet open.
-        }
-
-        // SEC-10992: bounded dismissal -- assert the sheet is gone between attempts so
-        // we never retry blindly. iOS: swipe down, then a second swipe if the first
-        // didn't clear. Android: system back, then a swipe-down fallback (pressBack
-        // alone still leaves the sheet per CI 29cdff/59ec6ae/a4c0e33). If it still
-        // won't unmount after a legitimate dismiss, throw so the caller keeps the test
-        // skipped / hands off to PE rather than looping.
+        const sheet = element(by.id('undefined.screen'));
         if (isAndroid()) {
+            await device.pressBack();
             try {
-                await device.pressBack();
-                await wait(timeouts.ONE_SEC);
+                await waitFor(sheet).not.toExist().withTimeout(timeouts.TWO_SEC);
             } catch {
-                // pressBack may be unavailable; fall through to swipe.
-            }
-            if (await anyMarkerVisible(timeouts.ONE_SEC)) {
-                await swipeDownFirstRow();
+                // First back may have only cleared the soft keyboard; retry.
+                await device.pressBack();
             }
         } else {
-            await swipeDownFirstRow();
-            if (await anyMarkerVisible(timeouts.ONE_SEC)) {
-                await swipeDownFirstRow();
-            }
+            await sheet.swipe('down');
         }
-
-        if (await anyMarkerVisible(timeouts.ONE_SEC)) {
-            throw new Error('dismissOptionsSheet: options sheet did not unmount after dismiss attempts (SEC-10992)');
-        }
+        await waitFor(sheet).not.toExist().withTimeout(timeouts.FIVE_SEC);
     };
 
     // Error alert
