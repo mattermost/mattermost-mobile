@@ -28,7 +28,7 @@ import {
     ServerScreen,
     TeamDropdownMenuScreen,
 } from '@support/ui/screen';
-import {getRandomId, isIos, timeouts, wait, waitForElementToBeVisible} from '@support/utils';
+import {getRandomId, timeouts, wait, waitForElementToBeVisible} from '@support/utils';
 import {expect} from 'detox';
 
 describe('Search - Search Messages', () => {
@@ -57,20 +57,7 @@ describe('Search - Search Messages', () => {
     });
 
     beforeEach(async () => {
-        // SEC-10996: recover to the channel list regardless of where the previous
-        // case left the app. A search-modifier test that throws mid-flow (e.g.
-        // MM-T5294_3's not-hittable modifier) leaves the search screen open, so the
-        // next case's ChannelListScreen.toBeVisible() failed and cascaded the whole
-        // MM-T5294_3.._9 block. Tapping the channel-list tab returns to a known
-        // starting state from anywhere in the search/channel flow.
-        //
-        // CodeRabbit note: this recovery targets the primary cascade (the search
-        // screen left open), which the isolation proof confirmed. It does not
-        // explicitly dismiss transient UI (team dropdown / autocomplete) or restore
-        // testTeam. The team-inherit risk is unobserved: MM-T5294_8's search team
-        // picker is search-scoped (the app stays on testTeam after close — _9 passes
-        // after _8 in 2x green runs), so a full team-restore in beforeEach is out of
-        // SEC-10996's cascade-isolation scope and would add flake-prone complexity.
+
         try {
             await SearchMessagesScreen.close();
         } catch {
@@ -138,11 +125,7 @@ describe('Search - Search Messages', () => {
         await ChannelListScreen.toBeVisible();
     });
 
-    // Root flake of the MM-T5294_3.._9 cluster (SEC-10996): the in-search-modifier
-    // is not hittable on iOS CI (hit-test family — see SEC-11010/SEC-11017). SEC-10996
-    // only isolates the cascade via the beforeEach recovery above, so this root stays
-    // skipped until the hit-test helper lands; the collateral _4.._9 are unskipped.
-    (isIos() ? it.skip : it)('MM-T5294_3 - should be able to search messages in a specific channel', async () => {
+    it('MM-T5294_3 - should be able to search messages in a specific channel', async () => {
         // # Open a channel screen, post a message, go back to channel list screen, and open search messages screen
         const message = `Message ${getRandomId()}`;
         await ChannelScreen.open(channelsCategory, testChannel.name);
@@ -175,8 +158,6 @@ describe('Search - Search Messages', () => {
         await ChannelListScreen.toBeVisible();
     });
 
-    // Unskipped (SEC-10996): was pure cascade collateral from MM-T5294_3 — the
-    // beforeEach recovery now returns to a known search starting state.
     it('MM-T5294_4 - should be able to search messages excluding search terms', async () => {
         // # Open a channel screen, post a message prefix plus non-excluded term, post another message prefix plus excluded term, go back to channel list screen, and open search messages screen
         const excludedTerm = getRandomId();
@@ -214,8 +195,6 @@ describe('Search - Search Messages', () => {
         await ChannelListScreen.toBeVisible();
     });
 
-    // Unskipped (SEC-10996): was cascade collateral from MM-T5294_3 — the
-    // beforeEach recovery now returns to a known search starting state.
     it('MM-T5294_5 - should be able to search messages with phrases', async () => {
         // # Open a channel screen, post a message prefix plus non-included term, post another message prefix plus included term, go back to channel list screen, and open search messages screen
         const includedTerm = getRandomId();
@@ -263,8 +242,6 @@ describe('Search - Search Messages', () => {
         await ChannelListScreen.toBeVisible();
     });
 
-    // Unskipped (SEC-10996): was cascade collateral from MM-T5294_3 — the
-    // beforeEach recovery now returns to a known search starting state.
     it('MM-T5294_6 - should be able to search messages using combination of modifiers', async () => {
         // # Open a channel screen, post a message, go back to channel list screen, and open search messages screen
         const message = `Message ${getRandomId()}`;
@@ -293,8 +270,6 @@ describe('Search - Search Messages', () => {
         await ChannelListScreen.toBeVisible();
     });
 
-    // Unskipped (SEC-10996): was cascade collateral from MM-T5294_3 — the
-    // beforeEach recovery now returns to a known search starting state.
     it('MM-T5294_7 - should be able to search messages using recent searches', async () => {
         // # Open a channel screen, post a message, go back to channel list screen, and open search messages screen
         const searchTerm = getRandomId();
@@ -332,8 +307,6 @@ describe('Search - Search Messages', () => {
         await ChannelListScreen.toBeVisible();
     });
 
-    // Unskipped (SEC-10996): was cascade collateral from MM-T5294_3 — the
-    // beforeEach recovery now returns to a known search starting state.
     it('MM-T5294_8 - should be able to search messages on a another joined team', async () => {
         // # As admin, create a second team, add user to the second team, create a new channel on second team, and add user to new channel; as user, terminate app and relaunch app
         const {team: testTeamTwo} = await Team.apiCreateTeam(siteOneUrl, {prefix: 'a'});
@@ -389,8 +362,6 @@ describe('Search - Search Messages', () => {
         await ChannelListScreen.toBeVisible();
     });
 
-    // Unskipped (SEC-10996): was cascade collateral from MM-T5294_3 — the
-    // beforeEach recovery now returns to a known search starting state.
     it('MM-T5294_9 - should show empty search results screen when search result is empty', async () => {
         // # Open a channel screen, post a message, go back to channel list screen, and open search messages screen
         const message = `Message ${getRandomId()}`;
@@ -418,8 +389,4 @@ describe('Search - Search Messages', () => {
         await SearchMessagesScreen.close();
         await ChannelListScreen.toBeVisible();
     });
-
-    // MM-T5294_10, _11, _12 (post actions on search results — edit/save/pin)
-    // moved to ./search_message_post_actions.e2e.ts. Combined this file ran 20.3 min
-    // per-test runtime in CI run 26368981355 — too close to a single shard's budget.
 });
