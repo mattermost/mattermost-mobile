@@ -254,17 +254,33 @@ appId: ${MAESTRO_APP_ID}
 # full attempts in ~3.5 min and clears the observed slow-but-working case.
 # Android keeps the original 180s budget from wait_for_home_tab.yml — Android login was
 # never the failing path (all flows pass in ~57s), so shortening it would only add risk.
+#
+# The submit is gated on the home tab NOT being visible so that a retry is idempotent.
+# Without the gate the retry re-taps Log In after a login that already succeeded, and
+# the flow dies on "Element not found: login_form.signin.button" — the button is gone
+# because the user is on the home screen. Evidence: CI 31276319392 attach_logs (iOS).
+# sim-device.log shows the login POST returning 200 at 16:30:49-50 and the WebSocket
+# upgrading (status 101) with a 31-request sync burst at 16:32:19, i.e. 11s AFTER the
+# 100s home wait had already expired; attempts 2 and 3 then failed on the missing
+# button rather than simply continuing to wait. With the gate, an attempt after a
+# successful-but-slow login degrades to "keep waiting for the home tab" (the correct
+# recovery), while a genuinely dropped POST still leaves the form up and is re-tapped.
 - retry:
     maxRetries: 3
     commands:
       - runFlow:
           when:
-            platform: iOS
+            notVisible:
+              id: "tab_bar.home.tab"
           commands:
-            - waitForAnimationToEnd:
-                timeout: 8000
-      - tapOn:
-          id: "login_form.signin.button"
+            - runFlow:
+                when:
+                  platform: iOS
+                commands:
+                  - waitForAnimationToEnd:
+                      timeout: 8000
+            - tapOn:
+                id: "login_form.signin.button"
       # # Dismiss password/save prompts each attempt so they do not block home tab.
       - tapOn:
           text: "Not Now"
