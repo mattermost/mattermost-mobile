@@ -236,7 +236,24 @@ describe('Server Login - Server List', () => {
         await ServerListScreen.getServerItemActive(serverOneDisplayName).atIndex(0).tap();
     });
 
-    // Skip iOS: CI run 30000635898 — swipe action Remove does not become reliably hittable.
+    // Skip iOS (SEC-11017): CI run 30000635898 — swipe action Remove does not become
+    // reliably hittable even after waitFor(toBeVisible(100)). Local verification is
+    // blocked: itWithThreeServers needs 3 distinct servers (hasThreeDistinctServers),
+    // and this env has one — so the test can't run locally regardless of the iOS skip.
+    // Kept skipped per rule 6 (can't verify green). Check the 3-server-shard CI artifact
+    // against the SEC-11010 conclusion (Detox-only tap/swipe start point in a clipped
+    // or overlapped region — here Logout overlaps Remove during the reveal animation)
+    // before guessing a fix; the 3-server env gate is tracked under SEC-11004.
+    //
+    // Follow-up (verification pack): no new swipe-reveal fix was applied — building one
+    // blind, without the 3-server CI artifact showing the Remove/Logout overlap geometry
+    // at the moment the tap fails, would violate detox/CLAUDE.md's evidence-first rule.
+    // The branch is pushed and ready for CI, but I cannot trigger the 3-server CI run
+    // myself (the E2E/Run label is a user/Matterwick action). NOT closed. Next step:
+    // apply E2E/Run label, capture the 3-server shard failure artifact (screenshot +
+    // viewHierarchy at the failed Remove tap), then build the targeted fix per the
+    // SEC-11010 conclusion (tap Remove at a point not overlapped by Logout) and verify
+    // green before dropping the iOS it.skip.
     (isIos() ? it.skip : itWithThreeServers)('MM-T4691_5 - should be able to remove a server from the list', async () => {
         // * Verify on channel list screen of the first server
         await expect(ChannelListScreen.headerServerDisplayName).toHaveText(serverOneDisplayName);
@@ -287,7 +304,10 @@ describe('Server Login - Server List', () => {
         await LoginScreen.login(serverOneUser);
     });
 
-    // Skip iOS: CI run 30000635898 — revealed Logout action remains unhittable.
+    // Skip iOS (SEC-11017): CI run 30000635898 — revealed Logout action remains
+    // unhittable. Local verification blocked by the 3-server env gate (see MM-T4691_5
+    // comment); kept skipped per rule 6. Check the 3-server-shard CI artifact against
+    // the SEC-11010 conclusion before guessing a fix.
     (isIos() ? it.skip : itWithThreeServers)('MM-T4691_6 - should be able to log out a server from the list', async () => {
         // * Verify on channel list screen of the first server
         await expect(ChannelListScreen.headerServerDisplayName).toHaveText(serverOneDisplayName);
@@ -333,7 +353,9 @@ describe('Server Login - Server List', () => {
         await ServerListScreen.getServerItemActive(serverOneDisplayName).atIndex(0).tap();
     });
 
-    // Skip iOS: CI run 30000635898 — server-list Add Server action remains unhittable after scrolling.
+    // Skip iOS (SEC-11017): CI run 30000635898 — server-list Add Server action remains
+    // unhittable after scrolling. Local verification blocked by the 3-server env gate
+    // (see MM-T4691_5 comment); kept skipped per rule 6.
     (isIos() ? it.skip : itWithThreeServers)('MM-T4691_7 - should not be able to add server for an already existing server', async () => {
         // * Verify on channel list screen of the first server
         await expect(ChannelListScreen.headerServerDisplayName).toHaveText(serverOneDisplayName);
