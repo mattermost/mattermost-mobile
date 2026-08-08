@@ -34,10 +34,8 @@ jobs:
           ./scripts/precommit/i18n.sh
           echo "::endgroup::"
 
-  # A reusable workflow's `uses:` cannot take an expression, so testing a
-  # mobile PR against an unmerged toolkit branch means editing the ref by hand.
-  # That is fine — but it must never merge, because main would then depend on a
-  # branch that can be force-pushed or deleted underneath it.
+  # Pre-merge integration may pin an unmerged toolkit commit. Immutable SHAs are
+  # safe to test and safe if accidentally merged; mutable feature branches are not.
   triage-tests:
     name: E2E triage and CI-utility tests
     runs-on: ubuntu-22.04
@@ -71,7 +69,7 @@ jobs:
           node detox/utils/tsio-report-status.js --self-test
 
   toolkit-ref-pinned-to-main:
-    name: Toolkit refs point at main
+    name: Toolkit refs are immutable
     runs-on: ubuntu-22.04
     steps:
       - name: ci/checkout-repo
@@ -80,19 +78,44 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          # Anchored on `uses:` so the check does not match its own pattern
-          # string in this file.
-          BAD=$(grep -rnE "^[[:space:]]*uses:[[:space:]]*mattermost/mattermost-test-automation-toolkit/" \
-            .github/workflows/ | grep -v "@main" || true)
-          if [ -n "$BAD" ]; then
-            echo "::error::Toolkit workflow refs must be @main before merging. Found:"
-            echo "$BAD"
-            echo ""
-            echo "Pinning to a toolkit branch is expected while testing an unmerged"
-            echo "toolkit change — revert the ref before this PR merges."
-            exit 1
-          fi
-          echo "All toolkit refs point at @main."
+          node <<'NODE'
+          const fs = require('node:fs');
+          const path = require('node:path');
+
+          const workflowDir = '.github/workflows';
+          const allowed = (ref) => ref === 'main' || /^[0-9a-f]{40}$/.test(ref);
+          const failures = [];
+
+          for (const name of fs.readdirSync(workflowDir)) {
+            if (!name.endsWith('.yml') && !name.endsWith('.yaml')) {
+              continue;
+            }
+            const file = path.join(workflowDir, name);
+            const text = fs.readFileSync(file, 'utf8');
+            const uses = [...text.matchAll(
+              /^\s*uses:\s*mattermost\/mattermost-test-automation-toolkit\/[^\s@]+@([^\s#]+)\s*$/gm,
+            )];
+            if (uses.length === 0) {
+              continue;
+            }
+            const checkoutRefs = [...text.matchAll(/^\s*toolkit_ref:\s*([^\s#]+)\s*$/gm)].map((match) => match[1]);
+            for (const match of uses) {
+              const ref = match[1];
+              if (!allowed(ref)) {
+                failures.push(`${file}: mutable workflow ref @${ref}`);
+              } else if (!checkoutRefs.includes(ref)) {
+                failures.push(`${file}: workflow ref @${ref} does not match toolkit_ref`);
+              }
+            }
+          }
+
+          if (failures.length > 0) {
+            console.error('Toolkit refs must use @main or an immutable 40-character commit SHA:');
+            failures.forEach((failure) => console.error(`- ${failure}`));
+            process.exit(1);
+          }
+          console.log('Toolkit workflow and checkout refs are immutable and aligned.');
+          NODE
 
   detox-lint-typecheck:
     # The detox/ package has its own tsconfig and is not covered by the root

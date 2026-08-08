@@ -15,6 +15,10 @@ const overrideWorkflow = fs.readFileSync(
     path.join(repoRoot, '.github/workflows/e2e-ai-triage-override.yml'),
     'utf8',
 );
+const ciWorkflow = fs.readFileSync(
+    path.join(repoRoot, '.github/workflows/ci.yml'),
+    'utf8',
+);
 const platformWorkflows = [
     '.github/workflows/e2e-ios-template.yml',
     '.github/workflows/e2e-android-template.yml',
@@ -43,6 +47,17 @@ test('only known triage modes reach the toolkit', () => {
     assert.match(triageWorkflow, /echo "mode=shadow" >> "\$GITHUB_OUTPUT"[\s\S]*exit 1/);
     assert.match(triageWorkflow, /mode: \$\{\{ needs\.plan\.outputs\.triage_mode \}\}/);
     assert.doesNotMatch(triageWorkflow, /mode: \$\{\{ vars\.E2E_AI_TRIAGE_MODE/);
+});
+
+test('pre-merge toolkit integration uses aligned immutable refs', () => {
+    for (const workflow of [triageWorkflow, overrideWorkflow]) {
+        const usesRef = workflow.match(/mattermost-test-automation-toolkit\/[^\s@]+@([0-9a-f]{40})/)?.[1];
+        const checkoutRef = workflow.match(/toolkit_ref:\s*([0-9a-f]{40})/)?.[1];
+        assert.ok(usesRef, 'toolkit workflow must use an immutable commit SHA');
+        assert.equal(checkoutRef, usesRef, 'toolkit workflow and checkout refs must match');
+    }
+    assert.match(ciWorkflow, /ref === 'main' \|\| \/\^\[0-9a-f\]\{40\}\$\//);
+    assert.doesNotMatch(ciWorkflow, /grep -v "@main"/);
 });
 
 test('automated waiver repost is PR-only and requires exact successful toolkit output', () => {
