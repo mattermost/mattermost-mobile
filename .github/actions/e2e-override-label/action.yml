@@ -13,6 +13,10 @@ inputs:
     description: Pull request number. Empty for main / CMT runs, where no label can apply.
     required: false
     default: ''
+  commit_sha:
+    description: Commit SHA whose AI triage status must authorize E2E/AI-Waived
+    required: false
+    default: ''
 
 outputs:
   override:
@@ -34,6 +38,7 @@ runs:
       uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9.0.0
       env:
         PR_NUMBER: ${{ inputs.pr_number }}
+        COMMIT_SHA: ${{ inputs.commit_sha }}
       with:
         script: |
           const prNumber = parseInt(process.env.PR_NUMBER, 10);
@@ -52,7 +57,17 @@ runs:
             });
             const names = new Set(labels.map((label) => label.name));
             const override = names.has('E2E/Override');
-            const aiWaived = names.has('E2E/AI-Waived');
+            let aiWaived = false;
+            if (names.has('E2E/AI-Waived') && process.env.COMMIT_SHA) {
+              const statuses = await github.paginate(github.rest.repos.listCommitStatusesForRef, {
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                ref: process.env.COMMIT_SHA,
+                per_page: 100,
+              });
+              const triageStatus = statuses.find((status) => status.context === 'e2e-test/ai-triage');
+              aiWaived = triageStatus?.state === 'success';
+            }
             core.info(`PR #${prNumber} E2E/Override=${override} E2E/AI-Waived=${aiWaived}`);
             core.setOutput('override', override ? 'true' : 'false');
             core.setOutput('ai_waived', aiWaived ? 'true' : 'false');

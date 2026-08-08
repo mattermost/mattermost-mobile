@@ -370,6 +370,23 @@ const SIGNATURES = [
  */
 const SUITE_RULES = [
     {
+        id: 'suite.expected-reports-unavailable',
+        label: 'expected test reports are unavailable',
+        weight: 1,
+        evaluate: (summary) => {
+            const unavailable = summary.unavailableReports || [];
+            if (unavailable.length > 0) {
+                return {
+                    verdict: 'UNAVAILABLE',
+                    reason: `missing expected report(s): ${unavailable.
+                        map((entry) => `${entry.framework}/${entry.platform} ${entry.found}/${entry.expected}`).
+                        join(', ')}`,
+                };
+            }
+            return null;
+        },
+    },
+    {
         id: 'suite.no-results',
         label: 'no test results produced',
         weight: 0.95,

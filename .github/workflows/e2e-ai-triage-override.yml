@@ -34,10 +34,10 @@ jobs:
       contains(fromJSON('["OWNER", "MEMBER", "COLLABORATOR"]'), github.event.comment.author_association)
     # Pin to a commit SHA once the reusable workflow is stable. Using @main during
     # initial rollout, matching pr-test-analysis-override.yml.
-    uses: mattermost/mattermost-test-automation-toolkit/.github/workflows/e2e-ai-triage-override.yml@claude/e2e-ai-triage
+    uses: mattermost/mattermost-test-automation-toolkit/.github/workflows/e2e-ai-triage-override.yml@cursor/fix-e2e-triage-toolkit-00d9
     with:
       # REVERT WITH THE uses: PIN ABOVE — see the note in e2e-ai-triage.yml.
-      toolkit_ref: claude/e2e-ai-triage
+      toolkit_ref: cursor/fix-e2e-triage-toolkit-00d9
       target_repo: mattermost/mattermost-mobile
       pr_number: ${{ github.event.issue.number }}
       comment_body: ${{ github.event.comment.body }}
@@ -53,3 +53,63 @@ jobs:
     secrets:
       GH_TOKEN: ${{ secrets.GH_TOKEN || github.token }}
       TSIO_API_KEY: ${{ secrets.TSIO_API_KEY }}
+
+  # Contract required from the toolkit reusable workflow:
+  #   waived: exactly "true" only when the human verdict is waivable and every
+  #           override write has succeeded; false for a correction back to red.
+  #   commit_sha: the verified current head SHA of the overridden PR.
+  #   triage_url: the canonical correction/triage URL (optional; this run is the
+  #               safe fallback).
+  # The toolkit does not expose these outputs yet. Until it does, the exact-match
+  # guard below skips reposting rather than guessing that an override waived E2E.
+  repost-platform-contexts:
+    name: Re-post human-triaged platform contexts
+    needs: override
+    if: >-
+      always() &&
+      needs.override.result == 'success' &&
+      needs.override.outputs.waived == 'true' &&
+      needs.override.outputs.commit_sha != ''
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    permissions:
+      contents: read
+      statuses: write
+      pull-requests: read
+      issues: read
+    steps:
+      - name: ci/verify-waiver-still-targets-pr-head
+        uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9.0.0
+        env:
+          PR_NUMBER: ${{ github.event.issue.number }}
+          COMMIT_SHA: ${{ needs.override.outputs.commit_sha }}
+        with:
+          script: |
+            const prNumber = Number.parseInt(process.env.PR_NUMBER, 10);
+            const {data: pr} = await github.rest.pulls.get({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              pull_number: prNumber,
+            });
+            if (pr.head.sha !== process.env.COMMIT_SHA) {
+              throw new Error(`PR head changed from ${process.env.COMMIT_SHA} to ${pr.head.sha}`);
+            }
+            const labels = await github.paginate(github.rest.issues.listLabelsOnIssue, {
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: prNumber,
+            });
+            if (!labels.some((label) => label.name === 'E2E/AI-Waived')) {
+              throw new Error('E2E/AI-Waived is no longer present');
+            }
+
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        with:
+          persist-credentials: false
+
+      - name: ci/re-post-human-triaged-platform-contexts
+        uses: ./.github/actions/e2e-override-status
+        with:
+          commit_sha: ${{ needs.override.outputs.commit_sha }}
+          description: E2E/AI-Waived — maintainer triage override
+          target_url: ${{ needs.override.outputs.triage_url || format('{0}/{1}/actions/runs/{2}', github.server_url, github.repository, github.run_id) }}

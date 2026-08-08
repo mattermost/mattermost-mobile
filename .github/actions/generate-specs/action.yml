@@ -30,6 +30,9 @@ outputs:
   specs:
     description: The specs generated for the strategy
     value: ${{ steps.generate-specs.outputs.specs }}
+  report_count:
+    description: Number of matrix shards expected to upload a report
+    value: ${{ steps.generate-specs.outputs.report_count }}
 runs:
   using: "composite"
   steps:
@@ -45,4 +48,6 @@ runs:
         set -e -o pipefail
         node ${{ github.action_path }}/split-tests.js | tee output.json
         echo "specs=$(cat output.json)" >> $GITHUB_OUTPUT
+        REPORT_COUNT=$(node -e 'const fs=require("fs"); const matrix=JSON.parse(fs.readFileSync("output.json", "utf8")); process.stdout.write(String((matrix.include || []).length));')
+        echo "report_count=$REPORT_COUNT" >> $GITHUB_OUTPUT
       shell: bash

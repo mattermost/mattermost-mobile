@@ -90,6 +90,9 @@ function pickTier(summary, failureCount, opts = {}) {
     const total = summary.totalTests || 0;
     const share = total > 0 ? failureCount / total : 0;
 
+    if (summary.reportsComplete === false) {
+        return {tier: 4, reason: 'one or more expected reports are unavailable — results are incomplete'};
+    }
     if (total === 0 || summary.reportsFound === 0) {
         return {tier: 4, reason: 'no usable results were produced — rules only, no model call'};
     }

@@ -530,6 +530,7 @@ jobs:
         uses: ./.github/actions/e2e-override-label
         with:
           pr_number: ${{ fromJSON(steps.tsio-cfg.outputs.config).composite_identity.gh_pr_number }}
+          commit_sha: ${{ fromJSON(steps.tsio-cfg.outputs.config).composite_identity.commit_sha }}
 
       - name: Post per-job TSIO commit status
         if: always() && inputs.tsio-config != '' && vars.TSIO_UPLOAD_ENABLED != 'false' && steps.tsio-cfg.outputs.config != ''
@@ -537,6 +538,7 @@ jobs:
           GITHUB_TOKEN: ${{ github.token }}
           TSIO_CONFIG: ${{ steps.tsio-cfg.outputs.config }}
           E2E_OVERRIDE: ${{ steps.e2e-override.outputs.override }}
+          AI_WAIVER: ${{ steps.e2e-override.outputs.ai_waived }}
           MATTERMOST_E2E_WEBHOOK_URL: ${{ secrets.MM_MOBILE_E2E_WEBHOOK_URL }}
           MATTERMOST_MASTER_HEALTH_WEBHOOK_URL: ${{ secrets.MM_E2E_MASTER_HEALTH_WEBHOOK_URL }}
           MATTERMOST_CMT_WEBHOOK_URL: ${{ secrets.MM_E2E_RELEASE_WEBHOOK_URL }}
@@ -554,6 +556,8 @@ jobs:
             --context="$CONTEXT" \
             --upstream-succeeded="$UPSTREAM" \
             --e2e-override="$E2E_OVERRIDE" \
+            --ai-waiver="$AI_WAIVER" \
+            --ai-waiver-reason="automated triage waiver" \
             --poll-attempts=24
           RC=$?
           echo "tsio-report-status exit=$RC upstream_succeeded=$UPSTREAM context=$CONTEXT"
@@ -1079,6 +1083,7 @@ jobs:
         uses: ./.github/actions/e2e-override-label
         with:
           pr_number: ${{ fromJSON(steps.tsio-cfg.outputs.config).composite_identity.gh_pr_number }}
+          commit_sha: ${{ fromJSON(steps.tsio-cfg.outputs.config).composite_identity.commit_sha }}
 
       - name: Post per-job TSIO commit status
         if: always() && inputs.tsio-config != '' && vars.TSIO_UPLOAD_ENABLED != 'false' && steps.tsio-cfg.outputs.config != ''
@@ -1086,6 +1091,7 @@ jobs:
           GITHUB_TOKEN: ${{ github.token }}
           TSIO_CONFIG: ${{ steps.tsio-cfg.outputs.config }}
           E2E_OVERRIDE: ${{ steps.e2e-override.outputs.override }}
+          AI_WAIVER: ${{ steps.e2e-override.outputs.ai_waived }}
           MATTERMOST_E2E_WEBHOOK_URL: ${{ secrets.MM_MOBILE_E2E_WEBHOOK_URL }}
           MATTERMOST_MASTER_HEALTH_WEBHOOK_URL: ${{ secrets.MM_E2E_MASTER_HEALTH_WEBHOOK_URL }}
           MATTERMOST_CMT_WEBHOOK_URL: ${{ secrets.MM_E2E_RELEASE_WEBHOOK_URL }}
@@ -1103,6 +1109,8 @@ jobs:
             --context="$CONTEXT" \
             --upstream-succeeded="$UPSTREAM" \
             --e2e-override="$E2E_OVERRIDE" \
+            --ai-waiver="$AI_WAIVER" \
+            --ai-waiver-reason="automated triage waiver" \
             --poll-attempts=24
           RC=$?
           echo "tsio-report-status exit=$RC upstream_succeeded=$UPSTREAM context=$CONTEXT"

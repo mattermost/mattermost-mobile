@@ -16,11 +16,10 @@
 # adjudication and policy are repo-agnostic and are shared with the other
 # Mattermost repos.
 #
-# This never touches the per-platform `e2e-test/*` contexts. Those keep reporting
-# objective truth; triage adds its own context alongside them. In assist mode it
-# additionally applies `E2E/AI-Waived`, which the existing TSIO reporter honours
-# the same way it honours a maintainer's `E2E/Override` — with a separate label
-# so an AI-granted green stays distinguishable from a human's.
+# Per-platform `e2e-test/*` contexts report objective test results. After an
+# explicit successful automated waiver, this workflow re-posts those contexts
+# with an E2E/AI-Waived description and a link back to triage. This remains
+# distinguishable from the human E2E/Override path.
 name: E2E AI Triage
 
 on:
@@ -48,6 +47,36 @@ on:
         required: false
         type: string
         default: ""
+      platform:
+        description: "Original E2E platform selection: ios, android, or both"
+        required: false
+        type: string
+        default: "both"
+      expected_detox_ios_reports:
+        description: "Expected original Detox iOS phone shard reports"
+        required: false
+        type: string
+        default: "0"
+      expected_detox_ipad_reports:
+        description: "Expected original Detox iPad shard reports"
+        required: false
+        type: string
+        default: "0"
+      expected_detox_android_reports:
+        description: "Expected original Detox Android shard reports"
+        required: false
+        type: string
+        default: "0"
+      expected_maestro_ios_reports:
+        description: "Expected original Maestro iOS reports"
+        required: false
+        type: string
+        default: "0"
+      expected_maestro_android_reports:
+        description: "Expected original Maestro Android reports"
+        required: false
+        type: string
+        default: "0"
       # The rerun re-executes failed specs on the same build against the same
       # provisioned servers, so it needs everything the original test jobs got.
       # Absent means the rerun stage is skipped and triage runs on first-run
@@ -119,7 +148,8 @@ jobs:
       rerun_ios_specs: ${{ steps.specs.outputs.ios }}
       rerun_android_specs: ${{ steps.specs.outputs.android }}
       evidence_artifact: e2e-triage-evidence-${{ inputs.artifact_run_id }}
-      diff_overlaps: ${{ steps.overlap.outputs.overlaps }}
+      diff_overlap_state: ${{ steps.overlap.outputs.state || 'unknown' }}
+      triage_mode: ${{ steps.mode.outputs.mode || 'shadow' }}
       # Resolved once here and consumed by both this job's triage step and the
       # adjudicate job below, so the two halves of the pipeline can never end up
       # pointed at different TSIO environments.
@@ -156,6 +186,27 @@ jobs:
             echo "::notice::detox/triage is not present at this commit — skipping E2E failure triage."
           fi
 
+      # Never pass an unrecognised repository variable to the policy engine.
+      # Emit shadow before failing so adjudication still has a non-authoritative
+      # value if this job stops here; the failed plan also keeps the workflow red.
+      - name: ci/validate-triage-mode
+        id: mode
+        if: steps.tooling.outputs.present == 'true'
+        env:
+          REQUESTED_MODE: ${{ vars.E2E_AI_TRIAGE_MODE || 'shadow' }}
+        run: |
+          set -euo pipefail
+          case "${REQUESTED_MODE}" in
+            shadow|assist|gate)
+              echo "mode=${REQUESTED_MODE}" >> "$GITHUB_OUTPUT"
+              ;;
+            *)
+              echo "mode=shadow" >> "$GITHUB_OUTPUT"
+              echo "::error::E2E_AI_TRIAGE_MODE must be shadow, assist, or gate; got '${REQUESTED_MODE}'"
+              exit 1
+              ;;
+          esac
+
       - uses: actions/setup-node@2028fbc5c25fe9cf00d9f06a71cc4710d4507903 # v6.0.0
         with:
           node-version-file: '.nvmrc'
@@ -184,20 +235,39 @@ jobs:
           PR_NUMBER: ${{ inputs.pr_number }}
         run: |
           set -uo pipefail
-          FILES=$(gh pr diff "$PR_NUMBER" --repo "${GITHUB_REPOSITORY}" --name-only 2>/dev/null || true)
-          if [ -z "$FILES" ]; then
-            echo "overlaps=false" >> "$GITHUB_OUTPUT"
-            echo "could not read PR diff — assuming no overlap"
+          # Write the conservative result first. If gh, jq, pagination, or any
+          # later command fails, this remains the step output.
+          echo "state=unknown" >> "$GITHUB_OUTPUT"
+          if ! gh api "repos/${GITHUB_REPOSITORY}/pulls/${PR_NUMBER}" \
+            --jq '.changed_files' > changed-file-count.txt; then
+            echo "::warning::could not establish the PR changed-file count; diff overlap is unknown"
             exit 0
           fi
-          printf '%s\n' "$FILES" > changed-files.txt
+          if ! gh api --paginate \
+            "repos/${GITHUB_REPOSITORY}/pulls/${PR_NUMBER}/files?per_page=100" \
+            --jq '.[].filename' > changed-files.txt; then
+            echo "::warning::could not establish the PR file list; diff overlap is unknown"
+            exit 0
+          fi
+
+          EXPECTED_COUNT=$(tr -d '[:space:]' < changed-file-count.txt)
+          ACTUAL_COUNT=$(wc -l < changed-files.txt | tr -d '[:space:]')
+          if ! [[ "${EXPECTED_COUNT}" =~ ^[0-9]+$ ]] || [ "${ACTUAL_COUNT}" != "${EXPECTED_COUNT}" ]; then
+            echo "::warning::PR files API returned ${ACTUAL_COUNT}/${EXPECTED_COUNT:-unknown} files; diff overlap is unknown"
+            exit 0
+          fi
+
+          # Successful, complete API responses with zero rows establish a
+          # genuinely empty diff. Empty output from `gh pr diff` cannot make that
+          # distinction because API and diff-generation failures also produce no
+          # stdout. Comparing counts also catches GitHub's 3,000-file API cap.
           # A change under app/ or libraries/ can plausibly break a test; a change
           # confined to CI config, docs, or the test tree itself cannot be blamed
           # for a pre-existing main regression.
           if grep -qE '^(app|libraries|share_extension)/' changed-files.txt; then
-            echo "overlaps=true" >> "$GITHUB_OUTPUT"
+            echo "state=true" >> "$GITHUB_OUTPUT"
           else
-            echo "overlaps=false" >> "$GITHUB_OUTPUT"
+            echo "state=false" >> "$GITHUB_OUTPUT"
           fi
 
       # The two TSIO hostnames, in one place. These are the same constants
@@ -234,11 +304,33 @@ jobs:
           BRANCH_NAME: ${{ inputs.version_name }}
           PR_NUMBER: ${{ inputs.pr_number }}
           TSIO_URL: ${{ steps.tsio-env.outputs.url }}
+          EXPECTED_DETOX_IOS: ${{ inputs.expected_detox_ios_reports }}
+          EXPECTED_DETOX_IPAD: ${{ inputs.expected_detox_ipad_reports }}
+          EXPECTED_DETOX_ANDROID: ${{ inputs.expected_detox_android_reports }}
+          EXPECTED_MAESTRO_IOS: ${{ inputs.expected_maestro_ios_reports }}
+          EXPECTED_MAESTRO_ANDROID: ${{ inputs.expected_maestro_android_reports }}
+          SELECTED_PLATFORM: ${{ inputs.platform }}
         run: |
           set -euo pipefail
+          mkdir -p triage-out
+          jq -n \
+            --argjson detox_ios "$EXPECTED_DETOX_IOS" \
+            --argjson detox_ipad "$EXPECTED_DETOX_IPAD" \
+            --argjson detox_android "$EXPECTED_DETOX_ANDROID" \
+            --argjson maestro_ios "$EXPECTED_MAESTRO_IOS" \
+            --argjson maestro_android "$EXPECTED_MAESTRO_ANDROID" \
+            --arg selected_platform "$SELECTED_PLATFORM" \
+            '[
+              {framework: "detox", platform: "ios", count: $detox_ios, selected: ($selected_platform == "ios" or $selected_platform == "both")},
+              {framework: "detox", platform: "ipad", count: $detox_ipad, selected: ($selected_platform == "ios" or $selected_platform == "both")},
+              {framework: "detox", platform: "android", count: $detox_android, selected: ($selected_platform == "android" or $selected_platform == "both")},
+              {framework: "maestro", platform: "ios", count: $maestro_ios, selected: ($selected_platform == "ios" or $selected_platform == "both")},
+              {framework: "maestro", platform: "android", count: $maestro_android, selected: ($selected_platform == "android" or $selected_platform == "both")}
+            ] | map(select(.selected) | del(.selected))' > triage-out/expected-reports.json
           ARGS=(
             --artifacts=triage-artifacts
             --output=triage-out
+            --expected-reports=triage-out/expected-reports.json
             "--repo=${TRIAGE_REPO}"
             "--commit=${COMMIT_SHA}"
             "--branch=${BRANCH_NAME:-main}"
@@ -412,18 +504,15 @@ jobs:
           ROOTS=""
           for REP in 1 2; do
             DEST="rerun-rep${REP}"
-            FOUND=0
+            mkdir -p "$DEST"
             for DIR in rerun/*-rr${REP}; do
               [ -d "$DIR" ] || continue
-              mkdir -p "$DEST"
               mv "$DIR" "$DEST/"
-              FOUND=1
             done
-            if [ "$FOUND" = "1" ]; then
-              ROOTS="${ROOTS:+$ROOTS,}$DEST"
-            fi
+            # Keep the empty repetition root. Its absence is evidence that the
+            # planned repetition did not report, not permission to shorten the plan.
+            ROOTS="${ROOTS:+$ROOTS,}$DEST"
           done
-          [ -n "$ROOTS" ] || echo "no rerun artifacts were produced — evidence stands as planned"
 
           # --commit is what makes the bundle's meta.commit check live: without it
           # the guard has nothing to compare against and a stale artifact merges
@@ -462,12 +551,12 @@ jobs:
       pull-requests: write
       issues: write
       id-token: write
-    uses: mattermost/mattermost-test-automation-toolkit/.github/workflows/e2e-ai-triage.yml@claude/e2e-ai-triage
+    uses: mattermost/mattermost-test-automation-toolkit/.github/workflows/e2e-ai-triage.yml@cursor/fix-e2e-triage-toolkit-00d9
     with:
       # REVERT WITH THE uses: PIN ABOVE. The toolkit cannot derive its own ref —
       # inside a called reusable workflow the github context describes this
       # caller — so the branch has to be named twice while testing.
-      toolkit_ref: claude/e2e-ai-triage
+      toolkit_ref: cursor/fix-e2e-triage-toolkit-00d9
       target_repo: ${{ github.repository }}
       commit_sha: ${{ inputs.MOBILE_VERSION }}
       pr_number: ${{ inputs.pr_number }}
@@ -482,8 +571,10 @@ jobs:
       evidence_run_id: ${{ github.run_id }}
       # Shadow until the false-green count has been zero over a real sample.
       # Promotion is a deliberate repo-variable change, not a code change.
-      mode: ${{ vars.E2E_AI_TRIAGE_MODE || 'shadow' }}
-      diff_overlaps_failure: ${{ needs.plan.outputs.diff_overlaps == 'true' }}
+      mode: ${{ needs.plan.outputs.triage_mode }}
+      # Map unknown to true so an unavailable or skipped diff vetoes a
+      # MAIN_REGRESSION waiver.
+      diff_overlaps_failure: ${{ needs.plan.outputs.diff_overlap_state != 'false' }}
       claude_model: ${{ vars.CLAUDE_MODEL || '' }}
       # Same environment the plan job read history from. Resolved there so both
       # halves cannot disagree; the literal fallback only matters if plan somehow
@@ -495,6 +586,67 @@ jobs:
       ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
       TSIO_API_KEY: ${{ secrets.TSIO_API_KEY }}
       WEBHOOK_URL: ${{ secrets.WEBHOOK_URL }}
+
+  # Missing or differently-cased outputs skip this job, so an incomplete
+  # toolkit contract cannot turn failed platform contexts green.
+  repost-platform-contexts:
+    name: Re-post AI-waived platform contexts
+    needs: adjudicate
+    if: >-
+      always() &&
+      inputs.run_type == 'PR' &&
+      needs.adjudicate.result == 'success' &&
+      needs.adjudicate.outputs.waived == 'true'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    permissions:
+      contents: read
+      statuses: write
+      pull-requests: read
+      issues: read
+    steps:
+      - name: ci/verify-waiver-still-targets-pr-head
+        uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9.0.0
+        env:
+          PR_NUMBER: ${{ inputs.pr_number }}
+          COMMIT_SHA: ${{ inputs.MOBILE_VERSION }}
+        with:
+          script: |
+            const prNumber = Number.parseInt(process.env.PR_NUMBER, 10);
+            if (!Number.isFinite(prNumber)) {
+              throw new Error('AI waiver repost requires a PR number');
+            }
+            const {data: pr} = await github.rest.pulls.get({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              pull_number: prNumber,
+            });
+            if (pr.head.sha !== process.env.COMMIT_SHA) {
+              throw new Error(`PR head changed from ${process.env.COMMIT_SHA} to ${pr.head.sha}`);
+            }
+            const labels = await github.paginate(github.rest.issues.listLabelsOnIssue, {
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: prNumber,
+            });
+            if (!labels.some((label) => label.name === 'E2E/AI-Waived')) {
+              throw new Error('E2E/AI-Waived is no longer present');
+            }
+
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        with:
+          # The status action is trusted workflow code; do not execute the PR's
+          # copy with a token that can write commit statuses.
+          ref: ${{ github.event.repository.default_branch }}
+          persist-credentials: false
+
+      - name: ci/re-post-ai-waived-platform-contexts
+        uses: ./.github/actions/e2e-override-status
+        with:
+          commit_sha: ${{ inputs.MOBILE_VERSION }}
+          description: E2E/AI-Waived — automated triage waiver
+          target_url: ${{ needs.adjudicate.outputs.triage_url || format('{0}/{1}/actions/runs/{2}', github.server_url, github.repository, github.run_id) }}
+          platform: ${{ inputs.platform }}
 
   # The one path where nothing above can speak.
   #

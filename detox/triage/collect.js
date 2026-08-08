@@ -222,6 +222,8 @@ function findTestArtifacts(root, title) {
 }
 
 function parseJestResults(filePath, root) {
+    const shard = shardFromPath(filePath, root);
+    const platform = platformFromPath(filePath);
     let doc;
     try {
         doc = JSON.parse(fs.readFileSync(filePath, 'utf8'));
@@ -229,26 +231,32 @@ function parseJestResults(filePath, root) {
         return {
             failures: [],
             shard: {
-                shard: shardFromPath(filePath, root),
-                platform: platformFromPath(filePath),
+                shard,
+                platform,
                 total: 0,
                 passed: 0,
                 failed: 0,
                 skipped: 0,
             },
+            report: {framework: 'detox', platform, shard, usable: false, specs: [], test_ids: []},
             error: `unreadable jest report: ${err.message}`,
         };
     }
 
-    const shard = shardFromPath(filePath, root);
-    const platform = platformFromPath(filePath);
     const failures = [];
+    const specs = new Set();
+    const testIds = new Set();
     let total = 0;
     let passed = 0;
     let failed = 0;
     let skipped = 0;
 
     for (const suite of doc.testResults || []) {
+        const spec = toRepoRelativeSpec(suite.name);
+        if (spec) {
+            specs.add(spec);
+        }
+
         // A suite that blew up during setup has no assertionResults at all — its
         // message is the only record that anything happened, and dropping it here
         // is exactly how a whole-shard death becomes invisible to triage.
@@ -271,6 +279,10 @@ function parseJestResults(filePath, root) {
 
         for (const assertion of suite.assertionResults || []) {
             total += 1;
+            const testId = (String(assertion.fullName || assertion.title || '').match(TEST_ID_RE) || [null])[0];
+            if (testId) {
+                testIds.add(testId);
+            }
             if (assertion.status === 'passed') {
                 passed += 1;
                 continue;
@@ -294,7 +306,19 @@ function parseJestResults(filePath, root) {
         }
     }
 
-    return {failures, shard: {shard, platform, total, passed, failed, skipped}, error: null};
+    return {
+        failures,
+        shard: {shard, platform, total, passed, failed, skipped},
+        report: {
+            framework: 'detox',
+            platform,
+            shard,
+            usable: total > 0,
+            specs: [...specs],
+            test_ids: [...testIds],
+        },
+        error: null,
+    };
 }
 
 /**
@@ -307,6 +331,8 @@ function parseJestResults(filePath, root) {
  * nothing" — the correct conclusion.
  */
 function parseMaestroReport(filePath, root) {
+    const shard = shardFromPath(filePath, root);
+    const platform = platformFromPath(filePath);
     let xml;
     try {
         xml = fs.readFileSync(filePath, 'utf8');
@@ -314,20 +340,20 @@ function parseMaestroReport(filePath, root) {
         return {
             failures: [],
             shard: {
-                shard: shardFromPath(filePath, root),
-                platform: platformFromPath(filePath),
+                shard,
+                platform,
                 total: 0,
                 passed: 0,
                 failed: 0,
                 skipped: 0,
             },
+            report: {framework: 'maestro', platform, shard, usable: false, specs: [], test_ids: []},
             error: `unreadable maestro report: ${err.message}`,
         };
     }
 
-    const shard = shardFromPath(filePath, root);
-    const platform = platformFromPath(filePath);
     const failures = [];
+    const testIds = new Set();
     let total = 0;
     let failed = 0;
     let skipped = 0;
@@ -343,6 +369,10 @@ function parseMaestroReport(filePath, root) {
         const attrs = match[1] || '';
         const body = match[2] || '';
         const name = (attrs.match(/name="([^"]*)"/) || [])[1] || 'unknown';
+        const testId = (name.match(TEST_ID_RE) || [null])[0];
+        if (testId) {
+            testIds.add(testId);
+        }
         const timeAttr = parseFloat((attrs.match(/time="([^"]*)"/) || [])[1] || '0');
 
         if (/<skipped\b/.test(body)) {
@@ -373,6 +403,14 @@ function parseMaestroReport(filePath, root) {
     return {
         failures,
         shard: {shard, platform, total, passed: total - failed - skipped, failed, skipped},
+        report: {
+            framework: 'maestro',
+            platform,
+            shard,
+            usable: total > 0,
+            specs: [],
+            test_ids: [...testIds],
+        },
         error: null,
     };
 }
@@ -483,13 +521,14 @@ function collectServerProbes(root) {
     return probes;
 }
 
-function collect(root, {cwd = process.cwd()} = {}) {
+function collect(root, {cwd = process.cwd(), expectedReports = []} = {}) {
     const absRoot = path.resolve(cwd, root);
     const jestReports = walk(absRoot, (name) => /^jest-results.*\.json$/.test(name));
     const maestroReports = walk(absRoot, (name) => /^maestro-report.*\.xml$/.test(name));
 
     const failures = [];
     const shards = [];
+    const reports = [];
     const errors = [];
 
     for (const file of jestReports) {
@@ -497,6 +536,9 @@ function collect(root, {cwd = process.cwd()} = {}) {
         failures.push(...result.failures);
         if (result.shard) {
             shards.push(result.shard);
+        }
+        if (result.report) {
+            reports.push(result.report);
         }
         if (result.error) {
             errors.push({file, error: result.error});
@@ -508,11 +550,31 @@ function collect(root, {cwd = process.cwd()} = {}) {
         if (result.shard) {
             shards.push(result.shard);
         }
+        if (result.report) {
+            reports.push(result.report);
+        }
         if (result.error) {
             errors.push({file, error: result.error});
         }
     }
 
+    const expectedReportStatus = expectedReports.map((entry) => {
+        const count = Number(entry.count);
+        const validCount = Number.isInteger(count) && count > 0;
+        const found = reports.filter(
+            (report) => report.framework === entry.framework && report.platform === entry.platform && report.usable,
+        ).length;
+        return {
+            framework: entry.framework,
+            platform: entry.platform,
+            expected: validCount ? count : null,
+            found,
+            missing: validCount ? Math.max(0, count - found) : null,
+            available: validCount && found >= count,
+            ...(validCount ? {} : {count_known: false}),
+        };
+    });
+    const unavailableReports = expectedReportStatus.filter((entry) => !entry.available);
     const summary = {
         totalTests: shards.reduce((n, s) => n + s.total, 0),
         passed: shards.reduce((n, s) => n + s.passed, 0),
@@ -521,11 +583,14 @@ function collect(root, {cwd = process.cwd()} = {}) {
         shards,
         platforms: [...new Set(shards.map((s) => s.platform))],
         reportsFound: jestReports.length + maestroReports.length,
+        expectedReports: expectedReportStatus,
+        unavailableReports,
+        reportsComplete: unavailableReports.length === 0,
         parseErrors: errors,
         serverProbes: collectServerProbes(absRoot),
     };
 
-    return {summary, failures};
+    return {summary, failures, reports};
 }
 
 module.exports = {

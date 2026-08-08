@@ -443,6 +443,97 @@ test('collect walks a multi-shard artifact tree and aggregates the summary', () 
     fs.rmSync(dir, {recursive: true, force: true});
 });
 
+test('a missing expected original shard is unavailable and fails closed', () => {
+    const dir = tmpdir();
+    for (const shard of ['1', '2']) {
+        const shardDir = path.join(dir, `ios-results-abc-${shard}`);
+        fs.mkdirSync(shardDir, {recursive: true});
+        fs.writeFileSync(path.join(shardDir, 'jest-results.json'), JSON.stringify({
+            testResults: [{
+                name: `/repo/detox/e2e/test/s${shard}.e2e.ts`,
+                assertionResults: [{fullName: `MM-T${shard}00_1 ok`, status: 'passed'}],
+            }],
+        }));
+    }
+
+    const collected = collect(dir, {
+        expectedReports: [{framework: 'detox', platform: 'ios', count: 3}],
+    });
+    const result = classify(collected);
+
+    assert.equal(collected.summary.reportsComplete, false);
+    assert.deepEqual(collected.summary.unavailableReports, [{
+        framework: 'detox',
+        platform: 'ios',
+        expected: 3,
+        found: 2,
+        missing: 1,
+        available: false,
+    }]);
+    assert.equal(result.tier, 4);
+    assert.equal(result.suite_verdict.verdict, 'UNAVAILABLE');
+
+    fs.rmSync(dir, {recursive: true, force: true});
+});
+
+test('an unusable report does not satisfy expected report completeness', () => {
+    const dir = tmpdir();
+    const goodDir = path.join(dir, 'ios-results-abc-1');
+    const badDir = path.join(dir, 'ios-results-abc-2');
+    fs.mkdirSync(goodDir, {recursive: true});
+    fs.mkdirSync(badDir, {recursive: true});
+    fs.writeFileSync(path.join(goodDir, 'jest-results.json'), JSON.stringify({
+        testResults: [{
+            name: '/repo/detox/e2e/test/good.e2e.ts',
+            assertionResults: [{fullName: 'MM-T100_1 ok', status: 'passed'}],
+        }],
+    }));
+    fs.writeFileSync(path.join(badDir, 'jest-results.json'), '{not-json');
+
+    const collected = collect(dir, {
+        expectedReports: [{framework: 'detox', platform: 'ios', count: 2}],
+    });
+    const result = classify(collected);
+
+    assert.equal(collected.summary.reportsFound, 2);
+    assert.equal(collected.summary.expectedReports[0].found, 1);
+    assert.equal(collected.summary.reportsComplete, false);
+    assert.equal(result.suite_verdict.verdict, 'UNAVAILABLE');
+
+    fs.rmSync(dir, {recursive: true, force: true});
+});
+
+test('an unknown expected shard count is unavailable even when a report exists', () => {
+    const dir = tmpdir();
+    const shardDir = path.join(dir, 'ios-results-abc-1');
+    fs.mkdirSync(shardDir, {recursive: true});
+    fs.writeFileSync(path.join(shardDir, 'jest-results.json'), JSON.stringify({
+        testResults: [{
+            name: '/repo/detox/e2e/test/s1.e2e.ts',
+            assertionResults: [{fullName: 'MM-T100_1 ok', status: 'passed'}],
+        }],
+    }));
+
+    const collected = collect(dir, {
+        expectedReports: [{framework: 'detox', platform: 'ios', count: -1}],
+    });
+    const result = classify(collected);
+
+    assert.deepEqual(collected.summary.unavailableReports, [{
+        framework: 'detox',
+        platform: 'ios',
+        expected: null,
+        found: 1,
+        missing: null,
+        available: false,
+        count_known: false,
+    }]);
+    assert.equal(result.tier, 4);
+    assert.equal(result.suite_verdict.verdict, 'UNAVAILABLE');
+
+    fs.rmSync(dir, {recursive: true, force: true});
+});
+
 test('collect on an empty tree reports nothing found rather than crashing', () => {
     const dir = tmpdir();
 
@@ -483,21 +574,28 @@ test('a lost Maestro driver is recognised, and only for Maestro', () => {
 
 test('a rerun that only half reported cannot clear a flake', () => {
     const {specOutcome} = require('./rerun');
-    const passed = {usable: true, failedSpecs: new Set(), failedTestIds: new Set()};
-    const missing = {usable: false, failedSpecs: new Set(), failedTestIds: new Set()};
-    const failed = {usable: true, failedSpecs: new Set(['a.e2e.ts']), failedTestIds: new Set()};
+    const report = {
+        framework: 'detox',
+        platform: 'ios',
+        usable: true,
+        specs: ['a.e2e.ts'],
+        test_ids: [],
+    };
+    const passed = {usable: true, reports: [report], failures: []};
+    const failed = {
+        usable: true,
+        reports: [report],
+        failures: [{platform: 'ios', spec: 'a.e2e.ts', test_id: null}],
+    };
 
-    // One repetition passing and the other never uploading used to come back
-    // PASSED, which sets cleared_on_rerun — affirmative "this really is a flake"
-    // evidence built from a single observation.
-    const half = specOutcome('a.e2e.ts', null, [passed, missing]);
+    const half = specOutcome('a.e2e.ts', null, 'ios', [passed], 2);
     assert.equal(half.outcome, 'inconclusive');
     assert.equal(half.incomplete, true);
 
     // A complete rerun still clears.
-    assert.equal(specOutcome('a.e2e.ts', null, [passed, passed]).outcome, 'passed');
+    assert.equal(specOutcome('a.e2e.ts', null, 'ios', [passed, passed], 2).outcome, 'passed');
 
-    // Failure is the conservative direction, so partial evidence of failure still
-    // counts — otherwise the one guard that can never be waived gets relaxed.
-    assert.equal(specOutcome('a.e2e.ts', null, [failed, missing]).outcome, 'deterministic');
+    // Confirming a deterministic failure is also strict: all planned repetitions
+    // must execute the planned target.
+    assert.equal(specOutcome('a.e2e.ts', null, 'ios', [failed], 2).outcome, 'inconclusive');
 });

@@ -51,6 +51,7 @@ const KNOWN_FLAGS = new Set([
     'rerun-artifacts',
     'evidence-in',
     'prior-evidence',
+    'expected-reports',
 ]);
 
 function parseArgs(argv, knownFlags = KNOWN_FLAGS) {
@@ -209,13 +210,20 @@ async function main() {
         return;
     }
 
-    const collected = collect(artifacts);
+    const expectedReportsPath = args['expected-reports'];
+    const expectedReports = expectedReportsPath ?
+        JSON.parse(fs.readFileSync(expectedReportsPath, 'utf8')) :
+        [];
+    const collected = collect(artifacts, {expectedReports});
     console.log(
         `collected ${collected.failures.length} failure(s) from ${collected.summary.reportsFound} report(s) ` +
         `across ${collected.summary.shards.length} shard(s)`,
     );
 
-    let result = classify(collected);
+    let result = {
+        ...classify(collected),
+        expected_reports: collected.summary.expectedReports,
+    };
     console.log(`tier ${result.tier}: ${result.tier_reason}`);
     console.log(`${result.clusters.length} cluster(s); needs_ai=${result.needs_ai}`);
 

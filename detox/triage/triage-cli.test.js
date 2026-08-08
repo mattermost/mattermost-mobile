@@ -52,6 +52,7 @@ test('parseArgs accepts every flag the CLI documents', () => {
         '--artifacts=a', '--output=b', '--repo=o/r', '--commit=deadbeef',
         '--branch=main', '--pr=123', '--tsio-url=https://x', '--skip-history=true',
         '--rerun-artifacts=r1,r2', '--evidence-in=e.json', '--prior-evidence=p.json',
+        '--expected-reports=expected.json',
     ));
     assert.equal(args.pr, '123');
     assert.equal(args['rerun-artifacts'], 'r1,r2');

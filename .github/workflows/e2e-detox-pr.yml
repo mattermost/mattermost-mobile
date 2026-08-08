@@ -782,6 +782,14 @@ jobs:
       pr_number: ${{ inputs.pr_number }}
       run_type: ${{ inputs.run_type }}
       version_name: ${{ inputs.version_name }}
+      platform: ${{ inputs.PLATFORM }}
+      # A selected platform with no count is unknown, not zero. The -1 sentinel
+      # survives into the manifest and makes completeness fail closed.
+      expected_detox_ios_reports: ${{ (inputs.PLATFORM == 'ios' || inputs.PLATFORM == 'both') && (needs.run-detox-ios.outputs.expected_ios_reports || '-1') || '0' }}
+      expected_detox_ipad_reports: ${{ (inputs.PLATFORM == 'ios' || inputs.PLATFORM == 'both') && (needs.run-detox-ios.outputs.expected_ipad_reports || '-1') || '0' }}
+      expected_detox_android_reports: ${{ (inputs.PLATFORM == 'android' || inputs.PLATFORM == 'both') && (needs.run-detox-android.outputs.expected_android_reports || '-1') || '0' }}
+      expected_maestro_ios_reports: ${{ (inputs.PLATFORM == 'ios' || inputs.PLATFORM == 'both') && '1' || '0' }}
+      expected_maestro_android_reports: ${{ (inputs.PLATFORM == 'android' || inputs.PLATFORM == 'both') && '1' || '0' }}
       # Forward resolved topology URLs so the rerun re-executes against the same
       # provisioned servers. The topology job handles fallback for empty inputs.
       IOS_SITE_1_URL: ${{ needs.resolve-server-topology.outputs.ios-site-1-url }}

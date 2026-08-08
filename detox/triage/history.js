@@ -105,10 +105,18 @@ async function enrich(classified, {repo, baselineBranch = 'main', prNumber, base
     const byId = new Map(results.map((r) => [r.test_id, r]));
 
     const clusters = classified.clusters.map((c) => {
-        const entries = c.member_test_ids.map((id) => byId.get(id)).filter(Boolean);
+        const stableTestIds = c.member_test_ids.filter(Boolean);
+        const entries = stableTestIds.map((id) => byId.get(id)).filter(Boolean);
+        const hasStableTestIds = stableTestIds.length > 0;
+        const allMembersHaveStableTestIds = hasStableTestIds && stableTestIds.length === c.member_count;
+        const historyOrAmnestyUnavailable = entries.length !== stableTestIds.length || entries.some(
+            (e) => Boolean(e.history_error) || Boolean(e.amnesty_error),
+        );
         return {
             ...c,
             history: entries,
+            has_stable_test_ids: hasStableTestIds,
+            all_members_have_stable_test_ids: allMembersHaveStableTestIds,
 
             // A cluster where every identified member was already failing on the
             // baseline branch is a main regression, and no rerun will change that.
@@ -121,16 +129,17 @@ async function enrich(classified, {repo, baselineBranch = 'main', prNumber, base
                 (e) => e.failing_elsewhere && e.failing_elsewhere.distinct_prs > 0,
             ),
 
-            // An unreachable amnesty endpoint counts as exhausted.
+            // A cluster without a stable test ID cannot be granted amnesty:
+            // there is no durable identity against which to count waivers.
+            // Likewise, unavailable history or amnesty data counts as exhausted.
             //
-            // This read `e.amnesty.granted === false`, so "TSIO said no" and "TSIO
-            // did not answer" both produced false — a TSIO outage silently removed
-            // the amnesty veto, and every waiver granted during the outage was
-            // also unrecorded, because the ledger write was failing for the same
-            // reason. Losing the budget check is precisely when it should bite.
-            amnesty_exhausted: entries.some(
-                (e) => (e.amnesty && e.amnesty.granted === false) || Boolean(e.amnesty_error),
+            // This must stay conservative when only one TSIO endpoint fails:
+            // partial history cannot establish eligibility, and an outage may
+            // also prevent granted waivers from being recorded.
+            amnesty_exhausted: !allMembersHaveStableTestIds || historyOrAmnestyUnavailable || entries.some(
+                (e) => e.amnesty && e.amnesty.granted === false,
             ),
+            amnesty_ineligible: !allMembersHaveStableTestIds,
             amnesty_unavailable: entries.some((e) => Boolean(e.amnesty_error)),
         };
     });

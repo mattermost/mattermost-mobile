@@ -40,29 +40,59 @@ const OUTCOME = {
  * stage could fail.
  */
 function readRepetition(artifactRoot) {
-    const {summary, failures} = collect(artifactRoot);
+    const {summary, failures, reports} = collect(artifactRoot);
     return {
         usable: summary.reportsFound > 0 && summary.totalTests > 0,
         summary,
-        failedSpecs: new Set(failures.map((f) => f.spec).filter(Boolean)),
-        failedTestIds: new Set(failures.map((f) => f.test_id).filter(Boolean)),
+        reports,
+        failures,
     };
 }
 
 /**
  * Decide one spec's rerun outcome across repetitions.
  */
-function specOutcome(spec, testId, reps) {
-    const usable = reps.filter((r) => r.usable);
-    if (usable.length === 0) {
-        return {outcome: OUTCOME.INCONCLUSIVE, reps: 0, failed_reps: 0};
+function specOutcome(spec, testId, platform, reps, plannedReps = reps.length) {
+    if (reps.length !== plannedReps) {
+        return {
+            outcome: OUTCOME.INCONCLUSIVE,
+            reps: reps.length,
+            failed_reps: 0,
+            incomplete: true,
+        };
     }
-    const failed = usable.filter(
-        (r) => r.failedSpecs.has(spec) || (testId && r.failedTestIds.has(testId)),
-    ).length;
+
+    let failed = 0;
+    let targetReps = 0;
+    for (const rep of reps) {
+        const targetReport = (rep.reports || []).find((report) => (
+            report.framework === 'detox' &&
+            report.platform === platform &&
+            report.usable &&
+            report.specs.includes(spec) &&
+            (!testId || report.test_ids.includes(testId))
+        ));
+        if (!targetReport) {
+            return {
+                outcome: OUTCOME.INCONCLUSIVE,
+                reps: targetReps,
+                failed_reps: failed,
+                incomplete: true,
+            };
+        }
+        targetReps += 1;
+
+        const targetFailed = (rep.failures || []).some((failure) => (
+            failure.platform === platform &&
+            (testId ? failure.test_id === testId : failure.spec === spec)
+        ));
+        if (targetFailed) {
+            failed += 1;
+        }
+    }
 
     let outcome;
-    if (failed === usable.length) {
+    if (failed === plannedReps) {
         outcome = OUTCOME.DETERMINISTIC;
     } else if (failed > 0) {
         outcome = OUTCOME.FLAKY;
@@ -70,26 +100,13 @@ function specOutcome(spec, testId, reps) {
         outcome = OUTCOME.PASSED;
     }
 
-    // A clearing outcome needs every planned repetition to have reported.
-    //
-    // Unusable repetitions were filtered out above, so a rerun where one
-    // repetition passed and the other never uploaded came back PASSED — and
-    // PASSED sets cleared_on_rerun, which is affirmative "this really is a flake"
-    // evidence. One observation is not a repetition; a rerun that half happened
-    // tells us less than we asked for, not that the answer was good news.
-    //
-    // DETERMINISTIC is deliberately exempt: every repetition that did report
-    // failed, and treating partial evidence of failure as inconclusive would
-    // relax the one guard that can never be waived.
-    if (usable.length < reps.length && outcome !== OUTCOME.DETERMINISTIC) {
-        return {
-            outcome: OUTCOME.INCONCLUSIVE,
-            reps: usable.length,
-            failed_reps: failed,
-            incomplete: true,
-        };
-    }
-    return {outcome, reps: usable.length, failed_reps: failed};
+    return {outcome, reps: plannedReps, failed_reps: failed};
+}
+
+function hasUsablePlatformReport(rep, platform) {
+    return rep.reports.some(
+        (report) => report.framework === 'detox' && report.platform === platform && report.usable,
+    );
 }
 
 /**
@@ -103,10 +120,11 @@ function specOutcome(spec, testId, reps) {
 function mergeRerun(evidence, repetitions) {
     const reps = repetitions.map(readRepetition);
     const planned = (evidence.rerun_plan && evidence.rerun_plan.specs) || [];
+    const plannedReps = Number((evidence.rerun_plan && evidence.rerun_plan.reps) || 0);
 
     const bySignature = new Map();
     for (const entry of planned) {
-        const outcome = specOutcome(entry.spec, entry.test_id, reps);
+        const outcome = specOutcome(entry.spec, entry.test_id, entry.platform, reps, plannedReps);
         if (!bySignature.has(entry.signature_hash)) {
             bySignature.set(entry.signature_hash, []);
         }
@@ -118,20 +136,19 @@ function mergeRerun(evidence, repetitions) {
         if (!specs || specs.length === 0) {
             return c;
         }
-        const usable = specs.filter((s) => s.outcome !== OUTCOME.INCONCLUSIVE);
-        if (usable.length === 0) {
+        if (specs.some((s) => s.outcome === OUTCOME.INCONCLUSIVE)) {
             return {...c, rerun: {outcome: OUTCOME.INCONCLUSIVE, specs}};
         }
 
-        const allDeterministic = usable.every((s) => s.outcome === OUTCOME.DETERMINISTIC);
-        const nonePassed = usable.every((s) => s.outcome !== OUTCOME.PASSED);
+        const allDeterministic = specs.every((s) => s.outcome === OUTCOME.DETERMINISTIC);
+        const nonePassed = specs.every((s) => s.outcome !== OUTCOME.PASSED);
         let outcome;
         if (allDeterministic) {
             outcome = OUTCOME.DETERMINISTIC;
         } else if (nonePassed) {
             outcome = OUTCOME.FLAKY;
         } else {
-            outcome = usable.some((s) => s.outcome === OUTCOME.DETERMINISTIC) ?OUTCOME.FLAKY :OUTCOME.PASSED;
+            outcome = specs.some((s) => s.outcome === OUTCOME.DETERMINISTIC) ?OUTCOME.FLAKY :OUTCOME.PASSED;
         }
 
         return {
@@ -155,8 +172,13 @@ function mergeRerun(evidence, repetitions) {
         clusters,
         rerun_meta: {
             repetitions: reps.length,
+            expected_repetitions: plannedReps,
             usable_repetitions: reps.filter((r) => r.usable).length,
             specs_rerun: planned.length,
+            platforms: [...new Set(planned.map((entry) => entry.platform))].map((platform) => ({
+                platform,
+                usable_repetitions: reps.filter((rep) => hasUsablePlatformReport(rep, platform)).length,
+            })),
         },
     };
 }

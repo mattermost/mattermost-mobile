@@ -149,6 +149,9 @@ on:
         type: string
         default: ""
     outputs:
+      expected_report_count:
+        description: Number of generate-specs matrix shards expected to report
+        value: ${{ jobs.generate-specs.outputs.report_count }}
       STATUS:
         value: ${{ jobs.generate-report.outputs.STATUS }}
       TARGET_URL:
@@ -203,6 +206,7 @@ jobs:
     runs-on: ubuntu-24.04
     outputs:
       specs: ${{ steps.generate-specs.outputs.specs }}
+      report_count: ${{ steps.generate-specs.outputs.report_count }}
       build_id: ${{ steps.resolve-device.outputs.BUILD_ID }}
       mobile_sha: ${{ steps.resolve-device.outputs.MOBILE_SHA }}
       mobile_ref: ${{ steps.resolve-device.outputs.MOBILE_REF }}
@@ -942,6 +946,7 @@ jobs:
         uses: ./.github/actions/e2e-override-label
         with:
           pr_number: ${{ fromJSON(steps.tsio-cfg.outputs.config).composite_identity.gh_pr_number }}
+          commit_sha: ${{ fromJSON(steps.tsio-cfg.outputs.config).composite_identity.commit_sha }}
 
       - name: Post per-job TSIO commit status
         if: always() && inputs.tsio-config != '' && vars.TSIO_UPLOAD_ENABLED != 'false' && steps.tsio-cfg.outputs.config != ''
@@ -949,6 +954,7 @@ jobs:
           GITHUB_TOKEN: ${{ github.token }}
           TSIO_CONFIG: ${{ steps.tsio-cfg.outputs.config }}
           E2E_OVERRIDE: ${{ steps.e2e-override.outputs.override }}
+          AI_WAIVER: ${{ steps.e2e-override.outputs.ai_waived }}
           SPECS_RESULT: ${{ needs.generate-specs.result }}
           E2E_RESULT: ${{ needs.e2e-ios.result }}
           JOB_STATUS: ${{ job.status }}
@@ -975,6 +981,8 @@ jobs:
             --context="$CONTEXT" \
             --upstream-succeeded="$UPSTREAM" \
             --e2e-override="$E2E_OVERRIDE" \
+            --ai-waiver="$AI_WAIVER" \
+            --ai-waiver-reason="automated triage waiver" \
             --poll-attempts=24
           RC=$?
           echo "tsio-report-status exit=$RC upstream_succeeded=$UPSTREAM context=$CONTEXT"

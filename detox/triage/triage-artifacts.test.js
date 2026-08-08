@@ -13,7 +13,7 @@ const {test} = require('node:test');
 
 const {buildRerunPlan, classify} = require('./classify');
 const {collect} = require('./collect');
-const {mergeRerun, specOutcome, OUTCOME} = require('./rerun');
+const {mergeRerun, OUTCOME} = require('./rerun');
 
 function tmpdir() {
     return fs.mkdtempSync(path.join(os.tmpdir(), 'triage-test-'));
@@ -78,6 +78,27 @@ test('a Detox shard index is still read from the artifact suffix', () => {
     fs.rmSync(dir, {recursive: true, force: true});
 });
 
+test('an iPad artifact suffix preserves its platform identity', () => {
+    const dir = tmpdir();
+    const d = path.join(dir, 'ios-results-abc123-1-ipad');
+    fs.mkdirSync(d, {recursive: true});
+    fs.writeFileSync(path.join(d, 'jest-results.json'), JSON.stringify({
+        testResults: [{
+            name: '/repo/detox/e2e/test/products/channels/ipad/navigation.e2e.ts',
+            assertionResults: [{fullName: 'MM-T1 iPad navigation', status: 'passed'}],
+        }],
+    }));
+
+    const {summary} = collect(dir, {
+        expectedReports: [{framework: 'detox', platform: 'ipad', count: 1}],
+    });
+
+    assert.equal(summary.shards[0].platform, 'ipad');
+    assert.equal(summary.reportsComplete, true);
+
+    fs.rmSync(dir, {recursive: true, force: true});
+});
+
 test('artifact lookup does not rescan the tree once per failure', () => {
     const dir = tmpdir();
     const shardDir = path.join(dir, 'ios-results-abc-1');
@@ -114,30 +135,33 @@ test('artifact lookup does not rescan the tree once per failure', () => {
 
 // ---------- rerun merge: measurement overruling inference ----------
 
-function writeRep(root, failedSpecs) {
-    const d = path.join(root, 'ios-results-abc-1');
+function writeRep(root, platform, reportedSpecs, failedSpecs = []) {
+    const d = path.join(root, `${platform}-results-abc-1`);
     fs.mkdirSync(d, {recursive: true});
-    const assertions = [
-        {fullName: 'MM-T1_0 filler', status: 'passed', duration: 1},
-        ...failedSpecs.map((spec, i) => ({
-            fullName: `MM-T9${i} ${spec}`,
-            status: 'failed',
-            duration: 1,
-            failureMessages: ['boom'],
-        })),
-    ];
     fs.writeFileSync(path.join(d, 'jest-results.json'), JSON.stringify({
-        testResults: failedSpecs.length === 0 ?[{name: '/repo/kept.e2e.ts', assertionResults: [assertions[0]]}] :failedSpecs.map((spec, i) => ({
+        testResults: reportedSpecs.map((spec, i) => ({
             name: spec,
-            assertionResults: [assertions[i + 1]],
-        })).concat([{name: '/repo/kept.e2e.ts', assertionResults: [assertions[0]]}]),
+            assertionResults: [{
+                fullName: `MM-T9${i} ${spec}`,
+                status: failedSpecs.includes(spec) ? 'failed' : 'passed',
+                duration: 1,
+                failureMessages: failedSpecs.includes(spec) ? ['boom'] : [],
+            }],
+        })).concat([{
+            name: '/repo/kept.e2e.ts',
+            assertionResults: [{
+                fullName: 'MM-T1_0 filler',
+                status: 'passed',
+                duration: 1,
+            }],
+        }]),
     }));
 }
 
-function evidenceWithPlan(spec) {
+function evidenceWithPlan(spec, platform = 'ios') {
     return {
         clusters: [{signature_hash: 'sig1', member_count: 1, needs_ai: true}],
-        rerun_plan: {enabled: true, specs: [{platform: 'ios', spec, signature_hash: 'sig1'}], reps: 2},
+        rerun_plan: {enabled: true, specs: [{platform, spec, signature_hash: 'sig1'}], reps: 2},
     };
 }
 
@@ -145,8 +169,8 @@ test('a failure reproducing in every repetition is deterministic', () => {
     const a = tmpdir();
     const b = tmpdir();
     const spec = path.relative(process.cwd(), '/repo/flaky.e2e.ts');
-    writeRep(a, [spec]);
-    writeRep(b, [spec]);
+    writeRep(a, 'ios', [spec], [spec]);
+    writeRep(b, 'ios', [spec], [spec]);
 
     const merged = mergeRerun(evidenceWithPlan(spec), [a, b]);
 
@@ -161,8 +185,8 @@ test('a failure that stops reproducing is confirmed non-deterministic', () => {
     const a = tmpdir();
     const b = tmpdir();
     const spec = path.relative(process.cwd(), '/repo/flaky.e2e.ts');
-    writeRep(a, [spec]);
-    writeRep(b, []);
+    writeRep(a, 'ios', [spec], [spec]);
+    writeRep(b, 'ios', [spec]);
 
     const merged = mergeRerun(evidenceWithPlan(spec), [a, b]);
 
@@ -188,17 +212,49 @@ test('an empty rerun is inconclusive, never a pass', () => {
     fs.rmSync(empty, {recursive: true, force: true});
 });
 
-test('specOutcome ignores unusable repetitions rather than counting them as passes', () => {
-    const reps = [
-        {usable: true, failedSpecs: new Set(['a.ts']), failedTestIds: new Set()},
-        {usable: false, failedSpecs: new Set(), failedTestIds: new Set()},
-    ];
+test('one of two planned repetitions absent is inconclusive', () => {
+    const root = tmpdir();
+    const spec = 'detox/e2e/test/a.e2e.ts';
+    writeRep(root, 'ios', [spec], [spec]);
 
-    const out = specOutcome('a.ts', null, reps);
+    const merged = mergeRerun(evidenceWithPlan(spec), [root]);
 
-    assert.equal(out.reps, 1);
-    assert.equal(out.failed_reps, 1);
-    assert.equal(out.outcome, OUTCOME.DETERMINISTIC);
+    assert.equal(merged.clusters[0].rerun.outcome, OUTCOME.INCONCLUSIVE);
+    assert.equal(merged.clusters[0].cleared_on_rerun, undefined);
+
+    fs.rmSync(root, {recursive: true, force: true});
+});
+
+test('Android planned rerun is inconclusive when only iOS reports', () => {
+    const a = tmpdir();
+    const b = tmpdir();
+    const spec = 'detox/e2e/test/a.e2e.ts';
+    writeRep(a, 'ios', [spec]);
+    writeRep(b, 'ios', [spec]);
+
+    const merged = mergeRerun(evidenceWithPlan(spec, 'android'), [a, b]);
+
+    assert.equal(merged.clusters[0].rerun.outcome, OUTCOME.INCONCLUSIVE);
+    assert.equal(merged.clusters[0].cleared_on_rerun, undefined);
+
+    fs.rmSync(a, {recursive: true, force: true});
+    fs.rmSync(b, {recursive: true, force: true});
+});
+
+test('report omitting the planned spec is inconclusive', () => {
+    const a = tmpdir();
+    const b = tmpdir();
+    const planned = 'detox/e2e/test/planned.e2e.ts';
+    writeRep(a, 'ios', ['detox/e2e/test/other.e2e.ts']);
+    writeRep(b, 'ios', ['detox/e2e/test/other.e2e.ts']);
+
+    const merged = mergeRerun(evidenceWithPlan(planned), [a, b]);
+
+    assert.equal(merged.clusters[0].rerun.outcome, OUTCOME.INCONCLUSIVE);
+    assert.equal(merged.clusters[0].cleared_on_rerun, undefined);
+
+    fs.rmSync(a, {recursive: true, force: true});
+    fs.rmSync(b, {recursive: true, force: true});
 });
 
 // ---------- rerun plan must only contain things that can actually be rerun ----------

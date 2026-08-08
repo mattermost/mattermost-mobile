@@ -1,14 +1,12 @@
 # yaml-language-server: $schema=https://json.schemastore.org/github-action.json
-name: Publish E2E/Override commit statuses
+name: Publish required E2E commit statuses
 description: >-
   Post success on every required e2e-test/* commit status for a SHA so a PR
-  carrying E2E/Override can merge under required checks.
+  with an explicitly authorized E2E waiver can merge under required checks.
 
-  Covers all three override paths: E2E never dispatched, E2E already failed
-  (statuses are keyed by SHA, so this overwrites the failures), and E2E still
-  running. In-flight runs are never cancelled — their finalize step re-checks
-  the label (.github/actions/e2e-override-label) so a late result cannot re-red
-  a check the maintainer deliberately bypassed.
+  Covers human E2E/Override and E2E/AI-Waived reposting after triage. Statuses are
+  keyed by SHA, so this overwrites earlier failures. Callers own authorization,
+  descriptions, and protection against a late test result re-posting red.
 
 inputs:
   commit_sha:
@@ -28,6 +26,10 @@ inputs:
     description: Link shown on the check
     required: false
     default: ''
+  platform:
+    description: Platform contexts to publish (ios, android, or both)
+    required: false
+    default: both
 
 runs:
   using: composite
@@ -38,6 +40,7 @@ runs:
         STATE: ${{ inputs.state }}
         DESCRIPTION: ${{ inputs.description }}
         TARGET_URL: ${{ inputs.target_url }}
+        PLATFORM: ${{ inputs.platform }}
       with:
         script: |
           const owner = context.repo.owner;
@@ -54,11 +57,27 @@ runs:
           // Relative requires resolve against the workspace, so the repo must be
           // checked out before this action runs.
           const {E2E_STATUS_CONTEXTS} = require('./detox/utils/build-tsio-job-config.js');
+          const platform = process.env.PLATFORM || 'both';
+          const contexts = E2E_STATUS_CONTEXTS.filter((statusContext) => {
+            if (platform === 'both') {
+              return true;
+            }
+            if (platform === 'ios') {
+              return statusContext.endsWith('/detox-ios') ||
+                statusContext.endsWith('/detox-ipad') ||
+                statusContext.endsWith('/maestro-ios');
+            }
+            if (platform === 'android') {
+              return statusContext.endsWith('/detox-android') ||
+                statusContext.endsWith('/maestro-android');
+            }
+            throw new Error(`e2e-override-status: unsupported platform ${platform}`);
+          });
 
           // Attempt every context before reporting, so one bad write does not
           // leave the remaining required checks blocking the merge.
           const failures = [];
-          for (const statusContext of E2E_STATUS_CONTEXTS) {
+          for (const statusContext of contexts) {
             try {
               await github.rest.repos.createCommitStatus({
                 owner,
@@ -77,5 +96,5 @@ runs:
           }
 
           if (failures.length > 0) {
-            throw new Error(`Failed to publish ${failures.length} E2E/Override ${state} status(es): ${failures.join('; ')}`);
+            throw new Error(`Failed to publish ${failures.length} required E2E ${state} status(es): ${failures.join('; ')}`);
           }

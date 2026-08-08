@@ -41,6 +41,16 @@ on:
         description: "JSON map of per-platform TSIO configs from parent calculate-tsio-identity"
         required: true
         type: string
+    outputs:
+      expected_ios_reports:
+        description: Expected Detox iOS phone reports
+        value: ${{ jobs.run-ios-tests.outputs.expected_report_count }}
+      expected_ipad_reports:
+        description: Expected Detox iPad reports
+        value: ${{ jobs.run-ios-ipad-tests.outputs.expected_report_count }}
+      expected_android_reports:
+        description: Expected Detox Android reports
+        value: ${{ jobs.run-android-tests.outputs.expected_report_count }}
 
 permissions:
   contents: read
@@ -128,6 +138,9 @@ jobs:
       search_path: "detox/e2e/test/products/channels/ipad"
       parallelism: "1"
       detox_config: "ios.ipad.debug"
+      # Preserve iPad identity in the artifact tree so report completeness does
+      # not mistake this report for a second iPhone shard.
+      artifact_suffix: "-ipad"
       artifact_run_id: ${{ inputs.artifact_run_id }}
     secrets:
       MM_MOBILE_E2E_ADMIN_EMAIL: ${{ secrets.MM_MOBILE_E2E_ADMIN_EMAIL }}
