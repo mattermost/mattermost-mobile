@@ -91,6 +91,7 @@ function toolUseBlockToToolCall(block: ContentBlock, resultMap: Map<string, Cont
         arguments: block.input ?? undefined,
         result: resultBlock?.content ?? undefined,
         status: statusStringToEnum(block.status),
+        would_auto_execute: block.would_auto_execute,
     };
 }
 
