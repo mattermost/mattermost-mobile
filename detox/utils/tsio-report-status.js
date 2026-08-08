@@ -367,7 +367,7 @@ async function reportTsioStatus(options) {
             `**Display report:** [${compositeIdentity.name}](${result.display_report_url})`,
             `**Group:** [${reportId}](${result.group_url}) — ${result.status}`,
             `**Stats:** ${stats.passed || 0} passed, ${stats.failed || 0} failed, ${stats.skipped || 0} skipped (of ${stats.total || 0})`,
-            ...(timedOut ? ['', ':warning: TSIO group did not reach terminal status in time — failing open to CI job status.'] : []),
+            ...(timedOut ? ['', ':warning: TSIO group did not reach terminal status in time — reporting failure, because no test evidence arrived.'] : []),
             ...(result.override_applied ? ['', `:warning: ${OVERRIDE_LABEL} is set on this PR — reporting ${state} as success so the required check does not block the merge.`] : []),
             ...(result.ai_waiver_applied ? ['', `:robot: ${AI_WAIVED_LABEL} — automated triage classified this failure as not caused by the change${aiWaiverReason ? ` (${aiWaiverReason})` : ''}. Recorded in the TSIO triage ledger; comment \`/e2e-triage-override\` if this is wrong.`] : []),
         ];
