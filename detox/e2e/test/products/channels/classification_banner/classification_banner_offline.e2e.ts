@@ -48,11 +48,13 @@ const getBlockedServerPatterns = () => {
 describe('Classification Banner - Offline / Cache Behaviour', () => {
     const serverOneDisplayName = 'Server 1';
     let lockOwner = '';
+    let lockAcquired = false;
     let testUser: any;
 
     beforeAll(async () => {
         lockOwner = createClassificationLockOwner();
         await acquireClassificationLock(siteOneUrl, lockOwner);
+        lockAcquired = true;
 
         await enableClassificationMarkings(siteOneUrl);
         const {user} = await Setup.apiInit(siteOneUrl);
@@ -65,6 +67,12 @@ describe('Classification Banner - Offline / Cache Behaviour', () => {
     });
 
     afterAll(async () => {
+        // Never tear down shared server state we do not own — see the same guard in
+        // classification_banner_across_screens.e2e.ts.
+        if (!lockAcquired) {
+            return;
+        }
+
         try {
             // Each step runs even if an earlier one fails, so a cleanup error cannot leave
             // the feature flag enabled or the session logged in for later suites.

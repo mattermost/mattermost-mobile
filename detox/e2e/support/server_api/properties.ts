@@ -248,6 +248,28 @@ export const apiSetupClassificationWithBanner = async (
         if (!linkedOptions.some((o) => o.id === selectedOption.id)) {
             return `linked field missing selected option ${selectedOption.id}. options=${JSON.stringify(linkedOptions)}`;
         }
+
+        // The field alone is not enough: deriveClassificationBannerState() returns
+        // {visible: false} unless a system property VALUE for the linked field also
+        // resolves to one of the field's options (app/utils/classification.ts). The app
+        // reads it with client.getSystemPropertyValues(GROUP_NAME), and it propagates
+        // independently of the field — so polling only the field lets the suite start
+        // while GET /system/values is still empty. fetchClassificationBanner() then
+        // stores fields with no value and, because it only re-runs on mount or on a
+        // feature-flag flip, the banner never appears for the rest of the suite.
+        // Evidence: CI 31276319392 — every "banner is visible" test failed on both
+        // platforms (iOS across_screens 5/5, Android MM-T6197_1) with the field poll
+        // green. Poll the same endpoint the app uses.
+        const verifyValues = await apiGetSystemPropertyValues(baseUrl, GROUP_NAME) as {values?: any[]; error?: unknown};
+        const linkedValue = (verifyValues.values ?? []).find((v) => v.field_id === linkedField.id);
+        if (!linkedValue) {
+            return `no system property value for linked field ${linkedField.id} from GET ` +
+                `/properties/groups/${GROUP_NAME}/system/values. Response: ${JSON.stringify(verifyValues)}`;
+        }
+        if (linkedValue.value !== selectedOption.id) {
+            return `system property value for linked field ${linkedField.id} is ` +
+                `${JSON.stringify(linkedValue.value)}, expected ${selectedOption.id}`;
+        }
         return undefined;
     };
 
