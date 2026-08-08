@@ -13,11 +13,23 @@ inputs:
     description: Pull request number. Empty for main / CMT runs, where no label can apply.
     required: false
     default: ''
+  commit_sha:
+    description: Commit SHA whose AI triage status must authorize E2E/AI-Waived
+    required: false
+    default: ''
 
 outputs:
   override:
     description: '"true" when E2E/Override is set on the PR, "false" otherwise'
     value: ${{ steps.check.outputs.override }}
+  ai_waived:
+    description: >-
+      '"true" when E2E/AI-Waived is set on the PR, "false" otherwise. Kept
+      separate from `override` on purpose: a human deciding to merge anyway and
+      automated triage classifying a failure as not-your-fault are different
+      claims, and conflating them makes the triage false-green metric
+      uncomputable.'
+    value: ${{ steps.check.outputs.ai_waived }}
 
 runs:
   using: composite
@@ -26,12 +38,14 @@ runs:
       uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9.0.0
       env:
         PR_NUMBER: ${{ inputs.pr_number }}
+        COMMIT_SHA: ${{ inputs.commit_sha }}
       with:
         script: |
           const prNumber = parseInt(process.env.PR_NUMBER, 10);
           if (!Number.isFinite(prNumber)) {
-            core.info('No PR number for this run — E2E/Override cannot apply.');
+            core.info('No PR number for this run — no waiver label can apply.');
             core.setOutput('override', 'false');
+            core.setOutput('ai_waived', 'false');
             return;
           }
 
@@ -41,11 +55,28 @@ runs:
               repo: context.repo.repo,
               issue_number: prNumber,
             });
-            const override = labels.some((label) => label.name === 'E2E/Override');
-            core.info(`PR #${prNumber} E2E/Override=${override}`);
+            const names = new Set(labels.map((label) => label.name));
+            const override = names.has('E2E/Override');
+            let aiWaived = false;
+            if (names.has('E2E/AI-Waived') && process.env.COMMIT_SHA) {
+              const statuses = await github.paginate(github.rest.repos.listCommitStatusesForRef, {
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                ref: process.env.COMMIT_SHA,
+                per_page: 100,
+              });
+              const triageStatus = statuses.find((status) => status.context === 'e2e-test/ai-triage');
+              aiWaived = triageStatus?.state === 'success';
+            }
+            core.info(`PR #${prNumber} E2E/Override=${override} E2E/AI-Waived=${aiWaived}`);
             core.setOutput('override', override ? 'true' : 'false');
+            core.setOutput('ai_waived', aiWaived ? 'true' : 'false');
           } catch (err) {
-            // Fail closed: an unreadable label list must not turn a real failure green.
+            // Fail closed: an unreadable label list must not turn a real failure
+            // green. This matters more for the AI waiver than for the human one —
+            // a maintainer who applied E2E/Override will notice a still-red check,
+            // whereas nobody is watching on triage's behalf.
             core.warning(`Could not read labels for PR #${prNumber}: ${err.message}`);
             core.setOutput('override', 'false');
+            core.setOutput('ai_waived', 'false');
           }

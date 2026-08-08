@@ -113,15 +113,42 @@ function isMmBlocksSpec(filePath) {
   return path.basename(filePath).includes('mm_blocks_');
 }
 
+function parseSpecList(raw) {
+  const seen = new Set();
+  const specs = [];
+  for (const entry of raw.split(/\s+/)) {
+    const normalized = toRepoRelative(entry.trim());
+    if (!normalized || seen.has(normalized)) {
+      continue;
+    }
+    seen.add(normalized);
+    specs.push(normalized);
+  }
+  return specs;
+}
 
 class Specs {
-  constructor(searchPath, parallelism, deviceInfo, durations = {}) {
+  constructor(searchPath, parallelism, deviceInfo, durations = {}, specList = '') {
     this.searchPath = searchPath;
     this.parallelism = parallelism;
     this.rawFiles = [];
     this.groupedFiles = [];
     this.deviceInfo = deviceInfo;
     this.durations = durations;
+    this.specList = specList;
+  }
+
+  collectFiles() {
+    if (!this.specList.trim()) {
+      this.findFiles();
+      return;
+    }
+
+    this.rawFiles = parseSpecList(this.specList);
+    const missing = this.rawFiles.filter((file) => !fs.existsSync(file));
+    if (missing.length > 0) {
+      throw new Error(`spec_list references files that do not exist: ${missing.join(', ')}`);
+    }
   }
 
   findFiles() {
@@ -246,9 +273,10 @@ function main() {
   const deviceOsVersion = process.env.DEVICE_OS_VERSION;
   const deviceInfo = new DeviceInfo(deviceName, deviceOsVersion);
   const durations = loadDurations(process.env.DURATIONS_FILE);
-  const specs = new Specs(searchPath, parallelism, deviceInfo, durations);
+  const specList = process.env.SPEC_LIST || '';
+  const specs = new Specs(searchPath, parallelism, deviceInfo, durations, specList);
 
-  specs.findFiles();
+  specs.collectFiles();
   if (specs.rawFiles.length < parallelism) {
     console.error(
       `Warning: ${specs.rawFiles.length} spec(s) < parallelism ${parallelism}; some shards will be empty`,
@@ -262,4 +290,4 @@ if (require.main === module) {
   main();
 }
 
-module.exports = {Specs, DeviceInfo, SpecGroup, loadDurations, packByDuration};
+module.exports = {Specs, DeviceInfo, SpecGroup, loadDurations, packByDuration, parseSpecList};

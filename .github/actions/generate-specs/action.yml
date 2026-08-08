@@ -24,11 +24,20 @@ inputs:
       into equal counts. Absent/unreadable falls back to the even split.
     required: false
     default: ""
+  spec_list:
+    description: >-
+      Explicit whitespace/newline-separated spec files. Used by targeted reruns
+      to bypass discovery. Missing files are an error.
+    required: false
+    default: ""
 
 outputs:
   specs:
     description: The specs generated for the strategy
     value: ${{ steps.generate-specs.outputs.specs }}
+  report_count:
+    description: Number of matrix shards expected to upload a report
+    value: ${{ steps.generate-specs.outputs.report_count }}
 runs:
   using: "composite"
   steps:
@@ -40,6 +49,7 @@ runs:
         DEVICE_NAME: ${{ inputs.device_name }}
         DEVICE_OS_VERSION: ${{ inputs.device_os_version }}
         DURATIONS_FILE: ${{ inputs.durations_file }}
+        SPEC_LIST: ${{ inputs.spec_list }}
       run: |
         # pipefail: without it, `node ... | tee` reports tee's exit status, so a
         # crash in split-tests.js would leave output.json empty and be treated as
@@ -51,4 +61,6 @@ runs:
           exit 1
         fi
         echo "specs=$(cat output.json)" >> "$GITHUB_OUTPUT"
+        REPORT_COUNT=$(node -e 'const fs=require("fs"); const matrix=JSON.parse(fs.readFileSync("output.json", "utf8")); process.stdout.write(String((matrix.include || []).length));')
+        echo "report_count=$REPORT_COUNT" >> "$GITHUB_OUTPUT"
       shell: bash

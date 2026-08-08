@@ -990,6 +990,51 @@ jobs:
       tsio-job-configs: ${{ needs.calculate-tsio-identity.outputs.job-configs }}
     secrets: inherit
 
+  # Failure triage runs after every test job so it can classify the complete run.
+  e2e-ai-triage:
+    name: AI failure triage
+    if: >-
+      always() &&
+      needs.resolve-e2e-policy.outputs.e2e_override != 'true' &&
+      !cancelled()
+    needs:
+      - resolve-e2e-policy
+      - resolve-server-topology
+      - run-detox-ios
+      - run-detox-android
+      - run-maestro-ios
+      - run-maestro-android
+    permissions:
+      contents: read
+      actions: read
+      statuses: write
+      pull-requests: write
+      issues: write
+      id-token: write
+    uses: ./.github/workflows/e2e-ai-triage.yml
+    with:
+      MOBILE_VERSION: ${{ inputs.MOBILE_VERSION }}
+      artifact_run_id: ${{ github.run_id }}
+      pr_number: ${{ inputs.pr_number }}
+      run_type: ${{ inputs.run_type }}
+      version_name: ${{ inputs.version_name }}
+      platform: ${{ inputs.PLATFORM }}
+      # PR #101 is deployed to staging for pre-merge integration testing.
+      # Revert to false after the TSIO changes merge to production.
+      use_staging: true
+      # A selected platform with no count is unknown, not zero.
+      expected_detox_ios_reports: ${{ (inputs.PLATFORM == 'ios' || inputs.PLATFORM == 'both') && (needs.run-detox-ios.outputs.expected_ios_reports || '-1') || '0' }}
+      expected_detox_ipad_reports: ${{ (inputs.PLATFORM == 'ios' || inputs.PLATFORM == 'both') && (needs.run-detox-ios.outputs.expected_ipad_reports || '-1') || '0' }}
+      expected_detox_android_reports: ${{ (inputs.PLATFORM == 'android' || inputs.PLATFORM == 'both') && (needs.run-detox-android.outputs.expected_android_reports || '-1') || '0' }}
+      expected_maestro_ios_reports: ${{ (inputs.PLATFORM == 'ios' || inputs.PLATFORM == 'both') && '1' || '0' }}
+      expected_maestro_android_reports: ${{ (inputs.PLATFORM == 'android' || inputs.PLATFORM == 'both') && '1' || '0' }}
+      IOS_SITE_1_URL: ${{ needs.resolve-server-topology.outputs.ios-site-1-url }}
+      IOS_SITE_2_URL: ${{ needs.resolve-server-topology.outputs.ios-site-2-url }}
+      ANDROID_SITE_1_URL: ${{ needs.resolve-server-topology.outputs.android-site-1-url }}
+      ANDROID_SITE_2_URL: ${{ needs.resolve-server-topology.outputs.android-site-2-url }}
+      SITE_3_URL: ${{ needs.resolve-server-topology.outputs.site-3-url }}
+    secrets: inherit
+
   e2e-remove-matterwick-label:
     name: Remove Matterwick E2E label from PR
     runs-on: ubuntu-24.04

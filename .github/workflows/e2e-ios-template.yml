@@ -100,6 +100,42 @@ on:
         required: false
         type: string
         default: ""
+      spec_list:
+        description: >-
+          Explicit spec files to run instead of discovering them under search_path.
+          Used by failure-triage reruns, which re-execute only the specs that
+          failed. Empty means normal discovery.
+        required: false
+        type: string
+        default: ""
+      extra_detox_args:
+        description: >-
+          Extra flags appended to the Detox CLI invocation. Failure-triage reruns
+          pass `--record-videos failing`, which is off for normal runs because
+          recording the full suite is expensive — but a rerun is a handful of
+          specs, and a video of the moment a failure reproduced is the single
+          most useful artifact for diagnosing it.
+        required: false
+        type: string
+        default: ""
+      artifact_suffix:
+        description: >-
+          Appended to the results artifact name. A rerun executes inside the same
+          workflow run as the original, so without a suffix its upload collides
+          with the original shard's artifact and fails.
+        required: false
+        type: string
+        default: ""
+      run_quarantined:
+        description: >-
+          Run the quarantined tests — the ones normally skipped because they are
+          known to fail. Off by default; used by the triage smoke validation,
+          which needs a run that is guaranteed to contain real failures, and for
+          periodically re-checking whether a quarantined test still fails.
+          Surfaces as RUN_QUARANTINED_TESTS to the test process.
+        required: false
+        type: boolean
+        default: false
       tsio-config:
         description: >
           TSIO reporting config: {"composite_identity":{...},"total_reports_expected":N}.
@@ -120,6 +156,9 @@ on:
         type: string
         default: ""
     outputs:
+      expected_report_count:
+        description: Number of generate-specs matrix shards expected to report
+        value: ${{ jobs.generate-specs.outputs.report_count }}
       STATUS:
         value: ${{ jobs.generate-report.outputs.STATUS }}
       TARGET_URL:
@@ -163,12 +202,18 @@ env:
   IOS: "true"
   RUNNING_E2E: "true"
   ARTIFACT_RUN_ID: ${{ inputs.artifact_run_id || github.run_id }}
+  # Read by detox/e2e/support/test_config.ts. Set at workflow level rather than
+  # via detox/.env because the .env path is relative to the detox working
+  # directory and does not resolve during a CI run — the environment is what
+  # actually reaches the test process, same as RUNNING_E2E above.
+  RUN_QUARANTINED_TESTS: ${{ inputs.run_quarantined }}
 
 jobs:
   generate-specs:
     runs-on: ubuntu-24.04
     outputs:
       specs: ${{ steps.generate-specs.outputs.specs }}
+      report_count: ${{ steps.generate-specs.outputs.report_count }}
       build_id: ${{ steps.resolve-device.outputs.BUILD_ID }}
       mobile_sha: ${{ steps.resolve-device.outputs.MOBILE_SHA }}
       mobile_ref: ${{ steps.resolve-device.outputs.MOBILE_REF }}
@@ -214,6 +259,7 @@ jobs:
         with:
           parallelism: ${{ inputs.parallelism }}
           search_path: ${{ inputs.search_path }}
+          spec_list: ${{ inputs.spec_list }}
           device_name: ${{ env.DEVICE_NAME }}
           device_os_version: ${{ env.DEVICE_OS_VERSION }}
           durations_file: ${{ inputs.durations_key != '' && 'detox/artifacts/spec-durations.json' || '' }}
@@ -703,20 +749,27 @@ jobs:
           # Use read -ra to safely word-split space-separated spec paths without
           # glob expansion or shell injection from the matrix value.
           read -ra SPECS <<< "$MATRIX_SPECS"
+          # Same treatment for the optional extra Detox flags. Guarded expansion
+          # so an unset array does not trip `set -u` in future edits.
+          EXTRA_ARGS=()
+          if [ -n "${EXTRA_DETOX_ARGS:-}" ]; then
+            read -ra EXTRA_ARGS <<< "$EXTRA_DETOX_ARGS"
+          fi
           set +e
           # `--` separates Detox args from Jest args; --json --outputFile emits
           # Jest's native JSON report (consumed by the TSIO detox parser) into
           # the existing detox/artifacts/ upload.
           if [ "$DETOX_CONFIG" = "ios.ipad.debug" ]; then
-            npm run e2e:ios-ipad-test -- "${SPECS[@]}" -- --json --outputFile=artifacts/jest-results.json
+            npm run e2e:ios-ipad-test -- "${SPECS[@]}" ${EXTRA_ARGS[@]+"${EXTRA_ARGS[@]}"} -- --json --outputFile=artifacts/jest-results.json
           else
-            npm run e2e:ios-test -- "${SPECS[@]}" -- --json --outputFile=artifacts/jest-results.json
+            npm run e2e:ios-test -- "${SPECS[@]}" ${EXTRA_ARGS[@]+"${EXTRA_ARGS[@]}"} -- --json --outputFile=artifacts/jest-results.json
           fi
           DETOX_EXIT_CODE=$?
           exit "${DETOX_EXIT_CODE:-1}"
         env:
           DETOX_CONFIG: ${{ inputs.detox_config }}
           MATRIX_SPECS: ${{ matrix.specs }}
+          EXTRA_DETOX_ARGS: ${{ inputs.extra_detox_args }}
           DETOX_DISABLE_HIERARCHY_DUMP: "YES"
           DETOX_DISABLE_SCREENSHOT_TRACKING: "YES"
           DETOX_LOGLEVEL: "info"
@@ -774,11 +827,25 @@ jobs:
             /Users/runner/work/mattermost-mobile/mattermost-mobile/flow-output.csv
             /Users/runner/work/mattermost-mobile/mattermost-mobile/mitmdump.log
 
+      # Captured before the artifact upload so it travels with the results the
+      # triage engine reads. A server-side failure and a test-side failure look
+      # identical from the device — both are "the element never appeared" — so
+      # without this, FLAKY_SERVER could only ever be a guess.
+      - name: Capture server diagnostics
+        if: always()
+        continue-on-error: true
+        uses: ./.github/actions/capture-server-diagnostics
+        with:
+          site_url: ${{ env.SITE_1_URL }}
+          admin_username: ${{ env.ADMIN_USERNAME }}
+          admin_password: ${{ env.ADMIN_PASSWORD }}
+          output_dir: detox/artifacts/server-diagnostics
+
       - name: Upload iOS Test Report
         if: always()
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
-          name: ios-results-${{ needs.generate-specs.outputs.workflow_hash }}-${{ matrix.runId }}
+          name: ios-results-${{ needs.generate-specs.outputs.workflow_hash }}-${{ matrix.runId }}${{ inputs.artifact_suffix }}
           path: detox/artifacts/
 
   generate-report:
@@ -957,6 +1024,7 @@ jobs:
         uses: ./.github/actions/e2e-override-label
         with:
           pr_number: ${{ fromJSON(steps.tsio-cfg.outputs.config).composite_identity.gh_pr_number }}
+          commit_sha: ${{ fromJSON(steps.tsio-cfg.outputs.config).composite_identity.commit_sha }}
 
       - name: Post per-job TSIO commit status
         if: always() && inputs.tsio-config != '' && vars.TSIO_UPLOAD_ENABLED != 'false' && steps.tsio-cfg.outputs.config != ''
@@ -964,6 +1032,7 @@ jobs:
           GITHUB_TOKEN: ${{ github.token }}
           TSIO_CONFIG: ${{ steps.tsio-cfg.outputs.config }}
           E2E_OVERRIDE: ${{ steps.e2e-override.outputs.override }}
+          AI_WAIVER: ${{ steps.e2e-override.outputs.ai_waived }}
           SPECS_RESULT: ${{ needs.generate-specs.result }}
           E2E_RESULT: ${{ needs.e2e-ios.result }}
           JOB_STATUS: ${{ job.status }}
@@ -990,6 +1059,8 @@ jobs:
             --context="$CONTEXT" \
             --upstream-succeeded="$UPSTREAM" \
             --e2e-override="$E2E_OVERRIDE" \
+            --ai-waiver="$AI_WAIVER" \
+            --ai-waiver-reason="automated triage waiver" \
             --poll-attempts=24
           RC=$?
           echo "tsio-report-status exit=$RC upstream_succeeded=$UPSTREAM context=$CONTEXT"

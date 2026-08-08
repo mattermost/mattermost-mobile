@@ -333,6 +333,21 @@ jobs:
             });
             const labelNames = labels.map((label) => label.name);
 
+            // Automated waivers are commit-scoped. A push invalidates the old
+            // evidence immediately, before the replacement E2E run starts.
+            if (labelNames.includes('E2E/AI-Waived')) {
+              try {
+                await github.rest.issues.removeLabel({
+                  owner, repo, issue_number: prNumber, name: 'E2E/AI-Waived',
+                });
+                core.info(`Removed stale E2E/AI-Waived from PR #${prNumber}.`);
+              } catch (err) {
+                if (err.status !== 404) {
+                  throw err;
+                }
+              }
+            }
+
             if (labelNames.includes('E2E/Override')) {
               core.info(`PR #${prNumber} has E2E/Override — stripping run labels only.`);
               for (const label of runLabels) {
