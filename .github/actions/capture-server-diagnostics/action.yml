@@ -105,7 +105,7 @@ runs:
         if [ -s "$LOGS_RAW" ]; then
           # Sanitize logs before artifact upload: redact PII and sensitive data
           # to prevent accidental exposure in publicly-accessible artifact storage.
-          python3 "${{ github.action_path }}/sanitize-logs.py" "$LOGS_RAW" "$OUTPUT_DIR/server-logs.json"
+          node "${{ github.action_path }}/sanitize-logs.js" "$LOGS_RAW" "$OUTPUT_DIR/server-logs.json"
 
           BYTES=$(wc -c < "$OUTPUT_DIR/server-logs.json" | tr -d ' ')
           echo "server_log_bytes=${BYTES}" >> "$OUTPUT_DIR/summary.txt"
