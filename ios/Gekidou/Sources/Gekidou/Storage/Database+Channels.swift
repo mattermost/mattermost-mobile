@@ -231,14 +231,26 @@ extension Database {
         let isUnread = messageCount > 0
         
         if hasThread(db, threadId: myChannel.id) {
-            let updateQuery = myChannelTable.where(idCol == myChannel.id)
-                .update(
-                    messageCountCol <- messageCount,
-                    mentionsCol <- mentionsCount,
-                    isUnreadCol <- isUnreadCol,
-                    lastPostAtCol <- lastPostAt,
-                    lastFetchedAtCol <- lastFetchedAt
-                )
+            // Read the current last_fetched_at to ensure monotonicity:
+            // never regress the cursor backwards (e.g. when a deleted-only fetch computes
+            // an older create_at, or an empty fetch computes 0).
+            let existingLastFetchedAt: Double
+            if let row = try? db.pluck(myChannelTable.where(idCol == myChannel.id)) {
+                existingLastFetchedAt = (try? row.get(lastFetchedAtCol)) ?? 0
+            } else {
+                existingLastFetchedAt = 0
+            }
+
+            var updateSetters: [Setter] = [
+                messageCountCol <- messageCount,
+                mentionsCol <- mentionsCount,
+                isUnreadCol <- isUnread,
+                lastPostAtCol <- lastPostAt,
+            ]
+            if lastFetchedAt > existingLastFetchedAt {
+                updateSetters.append(lastFetchedAtCol <- lastFetchedAt)
+            }
+            let updateQuery = myChannelTable.where(idCol == myChannel.id).update(updateSetters)
             let _ = try db.run(updateQuery)
         } else {
             let rolesCol = Expression<String>("roles")

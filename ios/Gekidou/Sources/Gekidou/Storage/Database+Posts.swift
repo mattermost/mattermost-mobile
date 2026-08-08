@@ -110,8 +110,13 @@ extension Database {
         let sortedAndNotDeletedPosts = sortedChainedPosts.filter({$0.deleteAt == 0})
 
         if (!receivingThreads) {
-            if let first = sortedAndNotDeletedPosts.first,
-               let last = sortedAndNotDeletedPosts.last {
+            // Use non-deleted posts for the range when available; fall back to all posts
+            // (including deleted) so that a PostsInChannel record is always created.
+            // Without this, a notification race where the only fetched post is already deleted
+            // leaves PostsInChannel empty, which makes the channel appear completely empty in the UI.
+            let postsForRange = sortedAndNotDeletedPosts.isEmpty ? sortedChainedPosts : sortedAndNotDeletedPosts
+            if let first = postsForRange.first,
+               let last = postsForRange.last {
                 let earliest = first.createAt
                 let latest = last.createAt
                 try handlePostsInChannel(db, channelId, earliest, latest)
