@@ -2,15 +2,16 @@
 // See LICENSE.txt for license information.
 
 import {withDatabase, withObservables} from '@nozbe/watermelondb/react';
+import React from 'react';
 
-import {observeCurrentChannelId} from '@queries/servers/system';
+import {observeCanUploadFiles} from '@queries/servers/security';
 
-import {DialogRouter} from './dialog_router';
+import AppsFormFileField from './apps_form_file_field';
 
 import type {WithDatabaseArgs} from '@typings/database/database';
 
 const enhanced = withObservables([], ({database}: WithDatabaseArgs) => ({
-    channelId: observeCurrentChannelId(database),
+    canUploadFiles: observeCanUploadFiles(database),
 }));
 
-export default withDatabase(enhanced(DialogRouter));
+export default React.memo(withDatabase(enhanced(AppsFormFileField)));

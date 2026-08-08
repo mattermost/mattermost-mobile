@@ -4,7 +4,7 @@
 import {DOWNLOAD_TIMEOUT} from '@constants/network';
 import NetworkManager from '@managers/network_manager';
 import {getFullErrorMessage} from '@utils/errors';
-import {logDebug} from '@utils/log';
+import {logDebug, logError} from '@utils/log';
 
 import {forceLogoutIfNecessary} from './session';
 
@@ -37,6 +37,31 @@ export const uploadFile = (
     } catch (error) {
         logDebug('error on uploadFile', getFullErrorMessage(error));
         return {error};
+    }
+};
+
+export const fetchFilesInfo = async (serverUrl: string, fileIds: string[]): Promise<{files: FileInfo[]}> => {
+    try {
+        const client = NetworkManager.getClient(serverUrl);
+
+        // Fetch each file independently so a single missing/deleted file
+        // (e.g. one cleared server-side) doesn't drop the rest.
+        const results = await Promise.allSettled(fileIds.map((id) => client.getFileInfo(id)));
+        const files: FileInfo[] = [];
+        results.forEach((result) => {
+            if (result.status === 'fulfilled' && result.value) {
+                files.push(result.value);
+            } else if (result.status === 'rejected') {
+                logDebug('error on fetchFilesInfo', getFullErrorMessage(result.reason));
+            }
+        });
+
+        return {files};
+    } catch (error) {
+        // Hard failure (e.g. client not registered) — louder than the per-file
+        // rejections above, which are expected 404s for deleted files.
+        logError('error on fetchFilesInfo', getFullErrorMessage(error));
+        return {files: []};
     }
 };
 
