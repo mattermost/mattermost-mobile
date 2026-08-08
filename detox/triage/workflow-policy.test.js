@@ -100,13 +100,10 @@ test('CMT triages every server version with isolated artifacts and status contex
     assert.match(cmtWorkflow, /UPSTREAM="\$\{\{ needs\.cmt-ai-triage\.result == 'success'/);
 });
 
-test('human triage override consumes equivalent fail-closed outputs', () => {
-    assert.match(overrideWorkflow, /needs\.override\.result == 'success'/);
-    assert.match(overrideWorkflow, /needs\.override\.outputs\.waived == 'true'/);
-    assert.match(overrideWorkflow, /needs\.override\.outputs\.commit_sha != ''/);
-    assert.match(overrideWorkflow, /description: E2E\/AI-Waived — maintainer triage override/);
-    assert.match(overrideWorkflow, /target_url: \$\{\{ needs\.override\.outputs\.triage_url/);
-    assert.doesNotMatch(overrideWorkflow, /continue-on-error:/);
+test('human triage overrides delegate platform reposting to E2E Override label handling', () => {
+    assert.match(overrideWorkflow, /e2e-ai-triage-override\.yml@a0d93b896bf68567149de15e76290d3c95d18007/);
+    assert.doesNotMatch(overrideWorkflow, /repost-platform-contexts:/);
+    assert.doesNotMatch(overrideWorkflow, /E2E\/AI-Waived — maintainer triage override/);
 });
 
 test('late platform finalizers honor only commit-scoped AI waivers', () => {

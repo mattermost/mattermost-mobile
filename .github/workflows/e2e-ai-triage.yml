@@ -578,11 +578,11 @@ jobs:
       pull-requests: write
       issues: write
       id-token: write
-    uses: mattermost/mattermost-test-automation-toolkit/.github/workflows/e2e-ai-triage.yml@e3e1bb1f2b82ca9b28875e27de108540d84a3a43
+    uses: mattermost/mattermost-test-automation-toolkit/.github/workflows/e2e-ai-triage.yml@a0d93b896bf68567149de15e76290d3c95d18007
     with:
       # Keep this aligned with the immutable `uses:` SHA above. A called workflow
       # sees the caller's ref, so it cannot derive its own checkout ref.
-      toolkit_ref: e3e1bb1f2b82ca9b28875e27de108540d84a3a43
+      toolkit_ref: a0d93b896bf68567149de15e76290d3c95d18007
       target_repo: ${{ github.repository }}
       commit_sha: ${{ inputs.MOBILE_VERSION }}
       pr_number: ${{ inputs.pr_number }}
