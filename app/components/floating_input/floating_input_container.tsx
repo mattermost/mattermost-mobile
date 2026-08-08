@@ -202,7 +202,10 @@ const FloatingInputContainer = ({
             accessible={isRunningE2e ? false : undefined}
         >
             <View style={styles.container}>
-                <Pressable onPress={handlePressOnContainer} accessible={isRunningE2e ? false : undefined}>
+                <Pressable
+                    onPress={handlePressOnContainer}
+                    accessible={isRunningE2e ? false : undefined}
+                >
                     <Animated.Text
                         style={[styles.label, textAnimatedTextStyle]}
                         suppressHighlighting={true}
