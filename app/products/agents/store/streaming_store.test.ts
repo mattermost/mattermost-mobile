@@ -334,6 +334,7 @@ describe('StreamingStoreSingleton', () => {
             ]));
 
             let state = streamingStore.getStreamingState(SERVER_URL, postId);
+            expect(state?.toolCalls).toHaveLength(2);
             expect(state?.toolCalls.map((t) => t.would_auto_execute)).toEqual([true, true]);
 
             // The server omits the flag once the call resolves.
@@ -342,6 +343,7 @@ describe('StreamingStoreSingleton', () => {
             ]));
 
             state = streamingStore.getStreamingState(SERVER_URL, postId);
+            expect(state?.toolCalls).toHaveLength(2);
             expect(state?.toolCalls[0].would_auto_execute).toBeUndefined();
             expect(state?.toolCalls[1].would_auto_execute).toBe(true);
         });

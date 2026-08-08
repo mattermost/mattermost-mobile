@@ -414,6 +414,8 @@ describe('buildRoundsFromTurns', () => {
 
         const rounds = buildRoundsFromTurns(conversation, POST_ID);
 
+        expect(rounds).toHaveLength(1);
+        expect(rounds[0].toolCalls).toHaveLength(2);
         expect(rounds[0].toolCalls[0].would_auto_execute).toBe(true);
         expect(rounds[0].toolCalls[1].would_auto_execute).toBeUndefined();
     });

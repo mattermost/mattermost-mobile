@@ -108,7 +108,10 @@ const ToolApprovalSet = ({postId, toolCalls, approvalStage, canApprove, canExpan
                     tool.status === ToolCallStatus.AutoApproved
                 );
             }
-            return tool.status === ToolCallStatus.Pending;
+
+            // A call that turns auto-executing after the user decided it must
+            // drop that decision, or its id would ride along in the submission.
+            return tool.status === ToolCallStatus.Pending && !tool.would_auto_execute;
         };
 
         const filterActionableDecisions = (decisions: ToolDecision): ToolDecision => {

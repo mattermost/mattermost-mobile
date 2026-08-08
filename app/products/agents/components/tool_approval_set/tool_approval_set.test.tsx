@@ -245,6 +245,46 @@ describe('ToolApprovalSet — batch decisions (B10) and canApprove gating (C1)',
         expect(submitToolApproval).toHaveBeenCalledWith('https://test.mattermost.com', 'p1', ['manual']);
     });
 
+    it('should drop a local decision when its call turns auto-executing, so it cannot be submitted', async () => {
+        const manualA = makeTool({id: 'manual_a', name: 'first_tool', status: ToolCallStatus.Pending, result: undefined});
+        const manualB = makeTool({id: 'manual_b', name: 'second_tool', status: ToolCallStatus.Pending, result: undefined});
+
+        const renderSet = (toolCalls: ToolCall[]) => (
+            <ToolApprovalSet
+                postId='p1'
+                toolCalls={toolCalls}
+                approvalStage={ToolApprovalStage.Call}
+                canApprove={true}
+                canExpand={true}
+                showArguments={true}
+                showResults={true}
+            />
+        );
+
+        const {getByTestId, queryByTestId, rerender} = renderWithIntlAndTheme(renderSet([manualA, manualB]));
+
+        // Decide one tool; the still-undecided one keeps the batch open.
+        await act(async () => {
+            fireEvent.press(getByTestId('agents.tool_card.manual_a.approve'));
+        });
+        expect(queryByTestId('agents.tool_card.manual_a.approve')).toBeNull();
+        expect(submitToolApproval).not.toHaveBeenCalled();
+
+        // A streaming update marks the decided call as auto-executing; it is
+        // hidden while the rest of the batch awaits a decision.
+        await act(async () => {
+            rerender(renderSet([{...manualA, would_auto_execute: true}, manualB]));
+        });
+        expect(queryByTestId('agents.tool_card.manual_a')).toBeNull();
+
+        // The stale decision is gone: were it retained, the id would ride along
+        // in accepted_tool_ids for a call the user must never decide.
+        await act(async () => {
+            rerender(renderSet([manualA, manualB]));
+        });
+        expect(getByTestId('agents.tool_card.manual_a.approve')).toBeTruthy();
+    });
+
     it('should resume an interrupted all-auto round with an empty accepted list', async () => {
         const autoTools: ToolCall[] = [
             makeTool({id: 'auto_a', name: 'first_tool', status: ToolCallStatus.Pending, result: undefined, would_auto_execute: true}),
