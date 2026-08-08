@@ -63,11 +63,6 @@ jest.setTimeout(timeouts.ONE_MIN * 30);
     });
 
     afterAll(async () => {
-        // Never tear down shared server state we do not own. When beforeAll fails to
-        // acquire the lock, another suite is mid-run with the feature flag on and the
-        // classification configured; disabling/deleting it here would break that suite
-        // from the outside (CI 31276319392, iOS shard 20 cleaning up at 20:54 while
-        // shard 16 still held the lock).
         if (!lockAcquired) {
             return;
         }

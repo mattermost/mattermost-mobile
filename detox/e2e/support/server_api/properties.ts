@@ -226,14 +226,6 @@ export const apiSetupClassificationWithBanner = async (
         throw new Error(`Failed to set system property value for field_id=${linkedField.id}, value=${selectedOption.id}: ${JSON.stringify(patchResult.error)}`);
     }
 
-    // Poll the same list endpoint the mobile app uses until the linked field (and its selected
-    // option) are readable. On cloud servers the config/property write propagates slowly, so a
-    // single GET right after create races propagation and the app's post-reload fetch then logs
-    // "No classification fields returned". Polling here guarantees the server has fully
-    // propagated before the test reloads the app.
-    // NOTE: pass '' for target_id to mirror the app client exactly — app/client/rest/properties.ts
-    // uses `if (targetId !== undefined)` and CLASSIFICATIONS_FIELD_TARGET_ID = '', so the app sends
-    // `&target_id=`. The verify GET must send the identical URL or it proves nothing.
     const checkLinkedVisible = async (): Promise<string | undefined> => {
         const verify = await apiGetPropertyFields(baseUrl, GROUP_NAME, LINKED_OBJECT_TYPE, TARGET_TYPE, '') as {fields?: any[]; error?: unknown};
         const visibleLinked = (verify.fields ?? []).filter(
@@ -249,17 +241,6 @@ export const apiSetupClassificationWithBanner = async (
             return `linked field missing selected option ${selectedOption.id}. options=${JSON.stringify(linkedOptions)}`;
         }
 
-        // The field alone is not enough: deriveClassificationBannerState() returns
-        // {visible: false} unless a system property VALUE for the linked field also
-        // resolves to one of the field's options (app/utils/classification.ts). The app
-        // reads it with client.getSystemPropertyValues(GROUP_NAME), and it propagates
-        // independently of the field — so polling only the field lets the suite start
-        // while GET /system/values is still empty. fetchClassificationBanner() then
-        // stores fields with no value and, because it only re-runs on mount or on a
-        // feature-flag flip, the banner never appears for the rest of the suite.
-        // Evidence: CI 31276319392 — every "banner is visible" test failed on both
-        // platforms (iOS across_screens 5/5, Android MM-T6197_1) with the field poll
-        // green. Poll the same endpoint the app uses.
         const verifyValues = await apiGetSystemPropertyValues(baseUrl, GROUP_NAME) as {values?: any[]; error?: unknown};
         const linkedValue = (verifyValues.values ?? []).find((v) => v.field_id === linkedField.id);
         if (!linkedValue) {

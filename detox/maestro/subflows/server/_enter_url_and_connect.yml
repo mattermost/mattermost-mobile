@@ -6,14 +6,6 @@
 # still in flight: setConnecting(true) in app/screens/server/index.tsx does NOT set
 # buttonDisabled, so server_form.connect.button keeps its enabled testID during the
 # request and a second tap would submit a duplicate connect.
-#
-# The URL is re-entered every attempt because Maestro's inputText can drop characters
-# against the controlled RN TextInput (CI 30447839548 batch-2 produced host
-# "h-1-tjrchzrq.test.mattermost.cloud"), and re-tapping Connect alone can never recover
-# from a corrupted URL. eraseText exceeds the 64-char URL because on a retry the field is
-# not empty. Typing also clears urlError, which re-enables the Connect button — the app
-# sets buttonDisabled(true) on failure, flipping the testID to
-# server_form.connect.button.disabled, so the fields must be filled before waiting for it.
 appId: ${MAESTRO_APP_ID}
 ---
 # # Scroll back up: a previous attempt scrolled the form down to reach Connect.
@@ -30,11 +22,6 @@ appId: ${MAESTRO_APP_ID}
     text: "Enter Server URL"
 - eraseText: 120
 - inputText: ${SITE_1_URL}
-# # SEC-11051 set-and-verify: confirm the field actually holds the full URL before
-# submitting. inputText can drop chars against the controlled RN TextInput, so assert
-# the field text equals SITE_1_URL via copyTextFrom + evalScript (a compiled-regex
-# assertVisible can't interpolate the env var). Requires the RUNNING_E2E-gated
-# accessibility exposure in floating_input_container/floating_text_input_label.
 - copyTextFrom:
     id: "server_form.server_url.input"
 - evalScript: ${output.urlOk = (maestro.copiedText == SITE_1_URL)}

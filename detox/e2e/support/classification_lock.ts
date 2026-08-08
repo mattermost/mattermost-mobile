@@ -7,23 +7,7 @@ import {getRandomId, timeouts, wait} from '@support/utils';
 
 const LOCK_CATEGORY = 'e2e_locks';
 const LOCK_NAME = 'classification';
-
-// Callers acquire from beforeAll and every caller sets jest.setTimeout(30m), so the
-// wait budget must fit under that, not under Jest's 240s default.
-//
-// The budget has to exceed one full hold by another shard, otherwise a queued suite
-// is starved rather than serialized: in CI 31276319392 the iOS across-screens suite
-// held the lock for ~9m (20:47:03 -> 20:55) and the global-banner suite gave up after
-// the old 2m budget, failing all 10 of its tests without ever running them.
 const DEFAULT_TIMEOUT_MS = timeouts.ONE_MIN * 20;
-
-// A run that is cancelled mid-suite (cancel-stale-e2e-on-push) never reaches
-// releaseClassificationLock, so the only thing that frees the lock is this TTL — and
-// the servers are per-PR, not per-run, so the next run inherits it. In CI 31276319392
-// the Android shard waited on owner "31275211507-…", a run cancelled 25 minutes
-// earlier. Keep the TTL under the wait budget above so a leaked lock always expires
-// inside a single acquire, while still leaving ~2x headroom over the longest observed
-// legitimate hold.
 const DEFAULT_TTL_MS = timeouts.ONE_MIN * 18;
 const DEFAULT_POLL_MS = timeouts.TWO_SEC;
 
