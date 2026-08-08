@@ -75,7 +75,10 @@ test('platform diagnoses independently republish PR and baseline contexts', () =
 
     assert.match(triageWorkflow, /needs\.adjudicate\.result == 'success'/);
     assert.match(repostJob, /needs\.adjudicate\.outputs\.platform_outcomes != '\{\}'/);
+    assert.match(repostJob, /needs\.adjudicate\.outputs\.operational_outcome == 'FLAKY_CONFIRMED'/);
     assert.match(repostJob, /ci\/prepare-platform-outcomes/);
+    assert.match(repostJob, /Toolkit platform outcomes unavailable; using global FLAKY_CONFIRMED fallback/);
+    assert.match(repostJob, /suffix: "verified to be flaky"/);
     assert.equal((repostJob.match(/uses: \.\/\.github\/actions\/e2e-override-status/g) || []).length, 2);
     assert.match(repostJob, /steps\.platforms\.outputs\.ios_suffix/);
     assert.match(repostJob, /steps\.platforms\.outputs\.android_suffix/);

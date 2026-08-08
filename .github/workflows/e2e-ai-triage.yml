@@ -609,8 +609,13 @@ jobs:
       needs.adjudicate.result == 'success' &&
       inputs.run_type != 'RELEASE' &&
       inputs.run_type != 'CMT' &&
-      needs.adjudicate.outputs.platform_outcomes != '' &&
-      needs.adjudicate.outputs.platform_outcomes != '{}'
+      (
+        (
+          needs.adjudicate.outputs.platform_outcomes != '' &&
+          needs.adjudicate.outputs.platform_outcomes != '{}'
+        ) ||
+        needs.adjudicate.outputs.operational_outcome == 'FLAKY_CONFIRMED'
+      )
     runs-on: ubuntu-24.04
     timeout-minutes: 5
     permissions:
@@ -643,8 +648,24 @@ jobs:
         id: platforms
         env:
           PLATFORM_OUTCOMES: ${{ needs.adjudicate.outputs.platform_outcomes }}
+          OPERATIONAL_OUTCOME: ${{ needs.adjudicate.outputs.operational_outcome }}
+          SELECTED_PLATFORM: ${{ inputs.platform }}
         run: |
           set -euo pipefail
+          if [ -z "$PLATFORM_OUTCOMES" ] || [ "$PLATFORM_OUTCOMES" = "{}" ]; then
+            if [ "$OPERATIONAL_OUTCOME" != "FLAKY_CONFIRMED" ]; then
+              echo "::error::Missing platform outcomes for ${OPERATIONAL_OUTCOME:-unknown}."
+              exit 1
+            fi
+            PLATFORM_OUTCOMES=$(jq -nc --arg selected "$SELECTED_PLATFORM" '
+              ({classification: "FLAKY", state: "success", suffix: "verified to be flaky"}) as $flaky
+              | if $selected == "ios" then {ios: $flaky}
+                elif $selected == "android" then {android: $flaky}
+                else {ios: $flaky, android: $flaky}
+                end
+            ')
+            echo "Toolkit platform outcomes unavailable; using global FLAKY_CONFIRMED fallback."
+          fi
           echo "$PLATFORM_OUTCOMES" | jq -e 'type == "object"' >/dev/null
           for PLATFORM in ios android; do
             STATE=$(echo "$PLATFORM_OUTCOMES" | jq -r --arg p "$PLATFORM" '.[$p].state // ""')
