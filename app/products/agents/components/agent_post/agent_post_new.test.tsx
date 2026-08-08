@@ -3,8 +3,10 @@
 
 import {act} from '@testing-library/react-native';
 import React from 'react';
+import {Alert} from 'react-native';
 
 import {clearConversationCacheForServer} from '@agents/actions/remote/conversation';
+import {regenerateResponse} from '@agents/actions/remote/generation_controls';
 import {CONTROL_SIGNALS} from '@agents/constants';
 import streamingStore from '@agents/store/streaming_store';
 import {BlockType, ToolCallStatusString, type ConversationResponse} from '@agents/types';
@@ -591,6 +593,135 @@ describe('AgentPostNew — regenerate gating (C9 no_regen)', () => {
 
         await findByText('Answer');
         expect(queryByTestId('agents.controls_bar.regenerate_button')).toBeTruthy();
+    });
+});
+
+describe('AgentPostNew — regenerate suppresses the stale answer (7a)', () => {
+    jest.spyOn(Alert, 'alert');
+
+    // The regenerate button opens a confirmation Alert; press its
+    // destructive "Regenerate" option to run the actual handler.
+    function confirmRegenerate() {
+        const buttons = jest.mocked(Alert.alert).mock.lastCall?.[2];
+        buttons?.find((b) => b.text === 'Regenerate')?.onPress?.();
+    }
+
+    const oldConversation = makeConversation({
+        turns: [
+            {id: 't1', post_id: POST_ID, role: 'assistant', sequence: 1, tokens_in: 0, tokens_out: 0, content: [{type: BlockType.Text, text: 'Old answer'}]},
+        ],
+    });
+    const newConversation = makeConversation({
+        turns: [
+            {id: 't2', post_id: POST_ID, role: 'assistant', sequence: 1, tokens_in: 0, tokens_out: 0, content: [{type: BlockType.Text, text: 'New answer'}]},
+        ],
+    });
+
+    it('should hide the old persisted answer for the whole regeneration and clear the flag once the stream-end refetch lands', async () => {
+        mockFetchConversation.mockResolvedValueOnce({data: oldConversation});
+        mockFetchConversation.mockResolvedValueOnce({data: newConversation});
+
+        const {findByText, getByText, getByTestId, queryByText} = renderWithIntlAndTheme(
+            <AgentPostNew
+                post={makePost({message: 'Old answer'})}
+                conversationId={CONV_ID}
+                currentUserId={USER_ID}
+                location={Screens.CHANNEL}
+                isDM={true}
+            />,
+        );
+
+        await findByText('Old answer');
+
+        // Tap regenerate: the stale answer disappears immediately and the
+        // placeholder covers the gap until the new stream starts.
+        await act(async () => {
+            fireEvent.press(getByTestId('agents.controls_bar.regenerate_button'));
+            confirmRegenerate();
+            await flush();
+        });
+        expect(queryByText('Old answer')).toBeNull();
+        expect(getByText('Generating response...')).toBeTruthy();
+
+        // While the new stream runs, the old answer must not stack above it.
+        await act(async () => {
+            streamingStore.handleWebSocketMessage('https://test.mattermost.com', {post_id: POST_ID, control: CONTROL_SIGNALS.START});
+            streamingStore.handleWebSocketMessage('https://test.mattermost.com', {post_id: POST_ID, next: 'New answer streaming'});
+            await flush();
+        });
+        expect(getByText('New answer streaming')).toBeTruthy();
+        expect(queryByText('Old answer')).toBeNull();
+
+        // Stream end → refetch delivers the regenerated turns → the flag
+        // clears and the persisted new answer takes over cleanly.
+        await act(async () => {
+            streamingStore.handleWebSocketMessage('https://test.mattermost.com', {post_id: POST_ID, control: CONTROL_SIGNALS.END});
+            await flush();
+        });
+        expect(getByText('New answer')).toBeTruthy();
+        expect(queryByText('Old answer')).toBeNull();
+        expect(queryByText('New answer streaming')).toBeNull();
+    });
+
+    it('should restore the old answer when the regenerate request fails so the post is not left blank', async () => {
+        mockFetchConversation.mockResolvedValue({data: oldConversation});
+        jest.mocked(regenerateResponse).mockResolvedValueOnce({error: 'boom'});
+
+        const {findByText, getByText, getByTestId} = renderWithIntlAndTheme(
+            <AgentPostNew
+                post={makePost({message: 'Old answer'})}
+                conversationId={CONV_ID}
+                currentUserId={USER_ID}
+                location={Screens.CHANNEL}
+                isDM={true}
+            />,
+        );
+
+        await findByText('Old answer');
+
+        await act(async () => {
+            fireEvent.press(getByTestId('agents.controls_bar.regenerate_button'));
+            confirmRegenerate();
+            await flush();
+        });
+
+        expect(getByText('Old answer')).toBeTruthy();
+    });
+});
+
+describe('AgentPostNew — cold-open loading placeholder (7c)', () => {
+    it('should show the placeholder while the conversation fetch is in flight instead of a blank body', async () => {
+        let resolveFetch: (value: {data: ConversationResponse}) => void = () => {};
+        mockFetchConversation.mockReturnValue(new Promise((resolve) => {
+            resolveFetch = resolve;
+        }));
+
+        const {findByText, getByText, queryByText} = renderWithIntlAndTheme(
+            <AgentPostNew
+                post={makePost({message: 'Final answer'})}
+                conversationId={CONV_ID}
+                currentUserId={USER_ID}
+                location={Screens.CHANNEL}
+                isDM={true}
+            />,
+        );
+
+        // Nothing is renderable yet — the placeholder fills the body.
+        expect(getByText('Generating response...')).toBeTruthy();
+
+        await act(async () => {
+            resolveFetch({
+                data: makeConversation({
+                    turns: [
+                        {id: 't1', post_id: POST_ID, role: 'assistant', sequence: 1, tokens_in: 0, tokens_out: 0, content: [{type: BlockType.Text, text: 'Final answer'}]},
+                    ],
+                }),
+            });
+            await flush();
+        });
+
+        expect(await findByText('Final answer')).toBeTruthy();
+        expect(queryByText('Generating response...')).toBeNull();
     });
 });
 

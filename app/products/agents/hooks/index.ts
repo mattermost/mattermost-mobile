@@ -2,4 +2,3 @@
 // See LICENSE.txt for license information.
 
 export {useRewrite, useRewriteState} from './use_rewrite';
-export {useAgents} from './use_agents';

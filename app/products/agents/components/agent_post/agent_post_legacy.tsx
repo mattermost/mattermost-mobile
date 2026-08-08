@@ -6,9 +6,11 @@ import {View} from 'react-native';
 
 import {regenerateResponse, stopGeneration} from '@agents/actions/remote/generation_controls';
 import {fetchToolCallPrivate, fetchToolResultPrivate} from '@agents/actions/remote/tool_private';
-import {useStreamingState} from '@agents/store/streaming_store';
+import {useAgentsConfig} from '@agents/store/agents_config';
+import streamingStore, {useStreamingState} from '@agents/store/streaming_store';
+import {stripOpenAICitations} from '@agents/turn_content';
 import {ToolApprovalStage, type Annotation, type ToolCall} from '@agents/types';
-import {getToolApprovalStage, isPostRequester, isToolCallRedacted, mergeToolCalls} from '@agents/utils';
+import {getToolApprovalStage, isPostRequester, isToolCallRedacted, isUnsafeLinksPost, mergeToolCalls} from '@agents/utils';
 import FormattedText from '@components/formatted_text';
 import Markdown from '@components/markdown';
 import {SNACK_BAR_TYPE} from '@constants/snack_bar';
@@ -75,6 +77,9 @@ const AgentPostLegacy = ({post, currentUserId, location, isDM}: AgentPostLegacyP
     const styles = getStyleSheet(theme);
     const serverUrl = useServerUrl();
 
+    const {allowUnsafeLinks} = useAgentsConfig(serverUrl);
+    const unsafeLinks = isUnsafeLinksPost(post, allowUnsafeLinks);
+
     // Extract persisted reasoning from post props
     const persistedReasoning = useMemo(() => {
         const props = post.props as Record<string, unknown>;
@@ -107,7 +112,11 @@ const AgentPostLegacy = ({post, currentUserId, location, isDM}: AgentPostLegacyP
     const streamingState = useStreamingState(serverUrl, post.id);
 
     // Determine the message to display (use ?? not || to preserve empty string during streaming)
-    const displayMessage = streamingState?.message ?? post.message ?? '';
+    const rawMessage = streamingState?.message ?? post.message ?? '';
+
+    // Strip OpenAI-style "(source: https://…)" inline clutter from agent text
+    // for both the streaming and the persisted message.
+    const displayMessage = useMemo(() => stripOpenAICitations(rawMessage), [rawMessage]);
     const isGenerating = streamingState?.generating ?? false;
     const isPrecontent = streamingState?.precontent ?? false;
 
@@ -244,6 +253,10 @@ const AgentPostLegacy = ({post, currentUserId, location, isDM}: AgentPostLegacyP
 
     // Handler for regenerate button
     const handleRegenerate = useCallback(async () => {
+        // Clear the streaming store so the new stream starts from a clean
+        // slate — startStreaming preserves early buffers, so a leftover state
+        // from the previous stream would resurface the old answer.
+        streamingStore.removePost(serverUrl, post.id);
         const {error} = await regenerateResponse(serverUrl, post.id);
         if (error) {
             showSnackBar({barType: SNACK_BAR_TYPE.AGENT_REGENERATE_ERROR});
@@ -275,6 +288,7 @@ const AgentPostLegacy = ({post, currentUserId, location, isDM}: AgentPostLegacyP
                             value={displayMessage}
                             theme={theme}
                             location={location}
+                            isUnsafeLinksPost={unsafeLinks}
                         />
                     ) : null}
                     {isGenerating && !isPrecontent && (

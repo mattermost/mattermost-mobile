@@ -1,6 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import {fetchAIBots} from '@agents/actions/remote/bots';
 import {updateAgentsVersion} from '@agents/actions/remote/version';
 import DatabaseManager from '@database/manager';
 import {logDebug} from '@utils/log';
@@ -16,4 +17,7 @@ export async function handleAgentsReconnect(serverUrl: string) {
     if (updateResult.error) {
         logDebug('Error updating agents version on reconnect', updateResult.error);
     }
+
+    // Refresh the DB-backed agent list (feeds the composer gate and pickers)
+    await fetchAIBots(serverUrl);
 }

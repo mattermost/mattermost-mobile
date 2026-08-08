@@ -2,6 +2,7 @@
 // See LICENSE.txt for license information.
 
 import {fetchMissingProfilesByIds} from '@actions/remote/user';
+import {setAgentsConfig} from '@agents/store/agents_config';
 import DatabaseManager from '@database/manager';
 import NetworkManager from '@managers/network_manager';
 import {getFullErrorMessage} from '@utils/errors';
@@ -20,6 +21,12 @@ export async function fetchAIBots(
     try {
         const client = NetworkManager.getClient(serverUrl);
         const response = await client.getAIBots();
+
+        // Persist the global unsafe-links config so agent renderers can gate
+        // markdown links. fetchAIBots runs on cold start and websocket
+        // reconnect, keeping this current. Partial update — pluginEnabled is
+        // owned by checkIsAgentsPluginEnabled and stays untouched.
+        setAgentsConfig(serverUrl, {allowUnsafeLinks: Boolean(response.allowUnsafeLinks)});
 
         // Store bots in database and remove any that no longer exist on the server
         const {operator} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);

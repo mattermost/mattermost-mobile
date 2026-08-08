@@ -110,7 +110,7 @@ const CitationsList = ({annotations}: CitationsListProps) => {
     // eslint-disable-next-line react-hooks/exhaustive-deps -- contentHeight is a stable shared value ref
     }, []);
 
-    const handleCitationPress = useCallback((url: string) => {
+    const handleCitationPress = useCallback((url?: string) => {
         if (url) {
             tryOpenURL(url);
         }
@@ -176,13 +176,13 @@ const CitationsList = ({annotations}: CitationsListProps) => {
                                     style={styles.citationTitle}
                                     numberOfLines={2}
                                 >
-                                    {annotation.title || getUrlDomain(annotation.url)}
+                                    {annotation.title || getUrlDomain(annotation.url ?? '')}
                                 </Text>
                                 <Text
                                     style={styles.citationUrl}
                                     numberOfLines={1}
                                 >
-                                    {getUrlDomain(annotation.url)}
+                                    {getUrlDomain(annotation.url ?? '')}
                                 </Text>
                             </View>
                             <CompassIcon

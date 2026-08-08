@@ -53,8 +53,18 @@ export interface ContentBlock {
     name?: string;
     server_origin?: string;
     input?: Record<string, unknown> | null;
+    mcp_bare_name?: string;
     status?: ToolCallStatusString;
     shared?: boolean;
+
+    // Persisted form of llm.Tool.UserInteraction; non-empty for tools answered
+    // by the user instead of executed by the server (e.g. AskUserQuestion).
+    user_interaction?: string;
+
+    // Marks a pending tool_use block that passed the auto-execution policy.
+    // The client must not show approval controls for it; the server re-checks
+    // the policy before executing it on resume.
+    would_auto_execute?: boolean;
 
     tool_use_id?: string;
     content?: string;

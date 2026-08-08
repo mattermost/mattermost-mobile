@@ -3,9 +3,11 @@
 
 import {act, fireEvent, waitFor} from '@testing-library/react-native';
 import React from 'react';
+import {DeviceEventEmitter} from 'react-native';
 
 import {createDirectChannel} from '@actions/remote/channel';
 import {saveSelectedAgent} from '@agents/actions/remote/preference';
+import {Events} from '@constants';
 import NetworkManager from '@managers/network_manager';
 import {bottomSheet} from '@screens/navigation';
 import {renderWithEverything} from '@test/intl-test-helper';
@@ -244,6 +246,31 @@ describe('AgentChat', () => {
         expect(saveSelectedAgent).not.toHaveBeenCalled();
 
         await act(async () => {});
+    });
+
+    it('should subscribe to AGENT_NEW_CHAT while mounted so the threads list can reset the conversation', async () => {
+        // The reset itself is just setRootId(null); what can regress silently
+        // is the listener lifecycle, so pin registration and cleanup.
+        const baseline = DeviceEventEmitter.listenerCount(Events.AGENT_NEW_CHAT);
+
+        const {getByTestId, unmount} = renderWithEverything(
+            <AgentChat
+                bots={[mockBot]}
+                selectedAgentId=''
+            />,
+            {database},
+        );
+
+        await waitFor(() => {
+            expect(getByTestId('agent_chat.post_draft')).toBeTruthy();
+        });
+
+        expect(DeviceEventEmitter.listenerCount(Events.AGENT_NEW_CHAT)).toBe(baseline + 1);
+
+        await act(async () => {});
+        unmount();
+
+        expect(DeviceEventEmitter.listenerCount(Events.AGENT_NEW_CHAT)).toBe(baseline);
     });
 
     it('should persist the preference when a bot is explicitly selected', async () => {

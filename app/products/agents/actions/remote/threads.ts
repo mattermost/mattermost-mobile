@@ -19,10 +19,9 @@ function normaliseThread(raw: RawAIThread): AIThread | null {
 
     return {
         id: postId,
-        message: raw.message ?? '',
         title: raw.title ?? '',
         channel_id: raw.channel_id ?? '',
-        reply_count: raw.reply_count ?? 0,
+        turn_count: raw.turn_count ?? 0,
         update_at: raw.update_at ?? 0,
         root_post_id: raw.root_post_id ?? undefined,
         bot_id: raw.bot_id,

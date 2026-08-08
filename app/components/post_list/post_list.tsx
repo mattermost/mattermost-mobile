@@ -416,6 +416,9 @@ const PostList = ({
                         key={item.value}
                         theme={theme}
                         testID={`${testID}.new_messages_line`}
+                        channelId={channelId}
+                        lastViewedAt={lastViewedAt}
+                        location={location}
                     />
                 );
             case 'date':
@@ -484,7 +487,7 @@ const PostList = ({
                 );
             }
         }
-    }, [appsEnabled, mmBlocksEnabled, currentTimezone, currentUser, currentUsername, customEmojiNames, highlightPinnedOrSaved, highlightedId, isCRTEnabled, isChannelAutotranslated, isPostAcknowledgementEnabled, location, rootId, shouldRenderReplyButton, shouldShowJoinLeaveMessages, testID, theme]);
+    }, [appsEnabled, mmBlocksEnabled, channelId, currentTimezone, currentUser, currentUsername, customEmojiNames, highlightPinnedOrSaved, highlightedId, isCRTEnabled, isChannelAutotranslated, isPostAcknowledgementEnabled, lastViewedAt, location, rootId, shouldRenderReplyButton, shouldShowJoinLeaveMessages, testID, theme]);
 
     useEffect(() => {
         const t = setTimeout(() => {

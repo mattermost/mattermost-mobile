@@ -4,6 +4,7 @@
 import {screen, waitFor} from '@testing-library/react-native';
 
 import {ActionType, Screens} from '@constants';
+import {SYSTEM_IDENTIFIERS} from '@constants/database';
 import {PostTypes} from '@constants/post';
 import DatabaseManager from '@database/manager';
 import {renderWithEverything} from '@test/intl-test-helper';
@@ -268,6 +269,89 @@ describe('PostOptions', () => {
         });
 
         expect(screen.getByText('Read by 2 of 99 recipients')).toBeVisible();
+    });
+
+    describe('ask agents option', () => {
+        it('should not show Ask Agents when no agents are available', async () => {
+            const post = TestHelper.fakePost({
+                channel_id: TestHelper.basicChannel!.id,
+                user_id: TestHelper.basicUser!.id,
+                message: 'A regular post',
+            });
+            const models = await operator.handlePosts({posts: [post], order: [post.id], actionType: ActionType.POSTS.RECEIVED_NEW, prepareRecordsOnly: false});
+            const postModel = models[0] as PostModel;
+
+            renderWithEverything(
+                <PostOptions
+                    postId={postModel.id}
+                    serverUrl={serverUrl}
+                    showAddReaction={true}
+                    sourceScreen={Screens.DRAFT_SCHEDULED_POST_OPTIONS}
+                />,
+                {database},
+            );
+
+            await waitFor(() => {
+                expect(screen.queryByText('Copy Link')).toBeVisible();
+            });
+            expect(screen.queryByText('Ask Agents')).not.toBeVisible();
+        });
+
+        it('should show Ask Agents for a regular post when agents exist and analysis is licensed', async () => {
+            await operator.handleSystem({
+                systems: [{id: SYSTEM_IDENTIFIERS.LICENSE, value: {SkuShortName: 'enterprise'}}],
+                prepareRecordsOnly: false,
+            });
+            await operator.handleAIBots({bots: [TestHelper.fakeLLMBot({id: 'bot1'})], prepareRecordsOnly: false});
+
+            const post = TestHelper.fakePost({
+                channel_id: TestHelper.basicChannel!.id,
+                user_id: TestHelper.basicUser!.id,
+                message: 'A regular post',
+            });
+            const models = await operator.handlePosts({posts: [post], order: [post.id], actionType: ActionType.POSTS.RECEIVED_NEW, prepareRecordsOnly: false});
+            const postModel = models[0] as PostModel;
+
+            renderWithEverything(
+                <PostOptions
+                    postId={postModel.id}
+                    serverUrl={serverUrl}
+                    showAddReaction={true}
+                    sourceScreen={Screens.DRAFT_SCHEDULED_POST_OPTIONS}
+                />,
+                {database},
+            );
+
+            await waitFor(() => {
+                expect(screen.queryByText('Ask Agents')).toBeVisible();
+            });
+        });
+
+        it('should not show Ask Agents for a system post even when agents exist and analysis is licensed', async () => {
+            const post = TestHelper.fakePost({
+                type: PostTypes.JOIN_CHANNEL,
+                channel_id: TestHelper.basicChannel!.id,
+                user_id: TestHelper.basicUser!.id,
+                message: 'user joined the channel',
+            });
+            const models = await operator.handlePosts({posts: [post], order: [post.id], actionType: ActionType.POSTS.RECEIVED_NEW, prepareRecordsOnly: false});
+            const postModel = models[0] as PostModel;
+
+            renderWithEverything(
+                <PostOptions
+                    postId={postModel.id}
+                    serverUrl={serverUrl}
+                    showAddReaction={true}
+                    sourceScreen={Screens.DRAFT_SCHEDULED_POST_OPTIONS}
+                />,
+                {database},
+            );
+
+            await waitFor(() => {
+                expect(screen.queryByTestId('post_options.scroll_view')).toBeVisible();
+            });
+            expect(screen.queryByText('Ask Agents')).not.toBeVisible();
+        });
     });
 
     it('should not show BOR read receipts for other users BoR post', async () => {

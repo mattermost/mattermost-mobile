@@ -4,6 +4,7 @@
 import React from 'react';
 import {Text, View} from 'react-native';
 
+import CustomPromptPills from '@agents/components/custom_prompt_pills';
 import AgentsIntroIllustration from '@agents/components/illustrations';
 import FormattedText from '@components/formatted_text';
 import Loading from '@components/loading';
@@ -14,6 +15,9 @@ import {typography} from '@utils/typography';
 type Props = {
     loading: boolean;
     error: string | null;
+    channelId: string | null;
+    botUsername?: string;
+    onPromptPosted: (postId: string) => void;
 }
 
 const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
@@ -43,7 +47,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
     },
 }));
 
-const AgentChatIntro = ({loading, error}: Props) => {
+const AgentChatIntro = ({loading, error, channelId, botUsername, onPromptPosted}: Props) => {
     const theme = useTheme();
     const styles = getStyleSheet(theme);
 
@@ -70,6 +74,13 @@ const AgentChatIntro = ({loading, error}: Props) => {
                 defaultMessage='Agents are here to help.'
                 style={styles.descriptionText}
             />
+            {channelId && (
+                <CustomPromptPills
+                    channelId={channelId}
+                    botUsername={botUsername}
+                    onPostCreated={onPromptPosted}
+                />
+            )}
             {error && <Text style={styles.errorText}>{error}</Text>}
         </View>
     );

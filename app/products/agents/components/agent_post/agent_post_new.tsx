@@ -1,12 +1,13 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React, {useCallback, useEffect, useMemo, useRef} from 'react';
+import React, {useCallback, useEffect, useMemo, useRef, useState} from 'react';
 import {View} from 'react-native';
 
 import {refetchConversation} from '@agents/actions/remote/conversation';
 import {regenerateResponse, stopGeneration} from '@agents/actions/remote/generation_controls';
 import {isConversationRequester} from '@agents/requester';
+import {useAgentsConfig} from '@agents/store/agents_config';
 import {useConversation} from '@agents/store/conversation_store';
 import streamingStore, {useStreamingState} from '@agents/store/streaming_store';
 import {
@@ -14,8 +15,10 @@ import {
     anyToolHasResult,
     buildRoundsFromTurns,
     deriveApprovalStageForPost,
+    stripOpenAICitations,
 } from '@agents/turn_content';
-import {ToolApprovalStage, type Annotation, type Round} from '@agents/types';
+import {ToolApprovalStage, type Annotation, type ConversationResponse, type Round} from '@agents/types';
+import {isUnsafeLinksPost} from '@agents/utils';
 import FormattedText from '@components/formatted_text';
 import Markdown from '@components/markdown';
 import {SNACK_BAR_TYPE} from '@constants/snack_bar';
@@ -80,6 +83,7 @@ interface RoundViewProps {
     showCursor: boolean;
     isReasoningLoading: boolean;
     isFirst: boolean;
+    unsafeLinks: boolean;
 }
 
 // Renders one assistant round as a vertical sequence reasoning -> text -> tools,
@@ -95,6 +99,7 @@ const RoundView = ({
     showCursor,
     isReasoningLoading,
     isFirst,
+    unsafeLinks,
 }: RoundViewProps) => {
     const theme = useTheme();
     const styles = getStyleSheet(theme);
@@ -104,6 +109,10 @@ const RoundView = ({
     const showArguments = isDM || anyToolHasArguments(round.toolCalls);
     const showResults = isDM || anyToolHasResult(round.toolCalls);
 
+    // Applies to both streaming (live/snapshotted) and persisted rounds since
+    // every agent round renders through this component.
+    const text = useMemo(() => stripOpenAICitations(round.text), [round.text]);
+
     return (
         <View style={isFirst ? undefined : styles.roundSpacing}>
             {round.reasoning.summary !== '' && (
@@ -112,13 +121,14 @@ const RoundView = ({
                     isReasoningLoading={isReasoningLoading}
                 />
             )}
-            {round.text !== '' && (
+            {text !== '' && (
                 <View style={styles.messageContainer}>
                     <Markdown
                         baseTextStyle={styles.messageText}
-                        value={round.text}
+                        value={text}
                         theme={theme}
                         location={location}
+                        isUnsafeLinksPost={unsafeLinks}
                     />
                     {showCursor && (
                         <StreamingIndicator/>
@@ -153,6 +163,9 @@ const AgentPostNew = ({post, conversationId, currentUserId, location, isDM}: Age
     const styles = getStyleSheet(theme);
     const serverUrl = useServerUrl();
 
+    const {allowUnsafeLinks} = useAgentsConfig(serverUrl);
+    const unsafeLinks = isUnsafeLinksPost(post, allowUnsafeLinks);
+
     const {conversation, loading: conversationLoading, error: conversationError} = useConversation(serverUrl, conversationId);
 
     const streamingState = useStreamingState(serverUrl, post.id);
@@ -160,6 +173,16 @@ const AgentPostNew = ({post, conversationId, currentUserId, location, isDM}: Age
     const isPrecontent = streamingState?.precontent ?? false;
     const isReasoningLoading = streamingState?.isReasoningLoading ?? false;
     const isGenerationInProgress = isGenerating || isReasoningLoading;
+
+    // Suppresses the stale persisted rounds while a regenerate is in flight —
+    // the server deletes the prior response turns as soon as regeneration
+    // starts, but the cached conversation still holds them until the
+    // stream-end refetch lands. Mirrors the webapp's `regenerating` state.
+    const [regenerating, setRegenerating] = useState(false);
+
+    // Conversation object captured when regenerate was tapped; any different
+    // object afterwards is a fresh fetch of the regenerated turns.
+    const regenBaselineRef = useRef<ConversationResponse | undefined>(undefined);
 
     // Persisted rounds derived from the conversation turns (the server truth).
     const persistedRounds = useMemo(
@@ -192,19 +215,24 @@ const AgentPostNew = ({post, conversationId, currentUserId, location, isDM}: Age
     // doesn't blink out during the refetch gap.
     const {renderedRounds, lastPersistedIdx} = useMemo(() => {
         const storeRounds = streamingState?.rounds ?? [];
+
+        // While regenerating, the cached persisted rounds are the prior answer
+        // the server has already deleted — hide them so the old response never
+        // stacks above the new stream (webapp computeRenderedRounds parity).
+        const visiblePersisted = regenerating ? [] : persistedRounds;
         if (isGenerationInProgress) {
-            const out = [...persistedRounds, ...storeRounds];
+            const out = [...visiblePersisted, ...storeRounds];
             if (liveRound) {
                 out.push(liveRound);
             }
-            return {renderedRounds: out, lastPersistedIdx: persistedRounds.length - 1};
+            return {renderedRounds: out, lastPersistedIdx: visiblePersisted.length - 1};
         }
-        if (persistedRounds.length > 0) {
-            return {renderedRounds: persistedRounds, lastPersistedIdx: persistedRounds.length - 1};
+        if (visiblePersisted.length > 0) {
+            return {renderedRounds: visiblePersisted, lastPersistedIdx: visiblePersisted.length - 1};
         }
         const out = liveRound ? [...storeRounds, liveRound] : [...storeRounds];
         return {renderedRounds: out, lastPersistedIdx: -1};
-    }, [isGenerationInProgress, streamingState, liveRound, persistedRounds]);
+    }, [isGenerationInProgress, streamingState, liveRound, persistedRounds, regenerating]);
 
     // Invalidate the cached conversation when a stream finishes so the next
     // fetch surfaces the finalised turns.
@@ -234,14 +262,34 @@ const AgentPostNew = ({post, conversationId, currentUserId, location, isDM}: Age
         }
     }, [serverUrl, conversationId, continueSeq]);
 
+    // Lift the regenerate suppression once a fresh conversation object lands
+    // (the post-stream refetch delivering the regenerated turns — this covers
+    // both `end` and `cancel`, since any generating→false transition refetches).
+    // Also lift it when a refetch fails after the stream settled so the post
+    // falls back to whatever it has instead of staying blank. Webapp parity:
+    // llmbot_post clears `regenerating` in its pendingRefetch layout-effect
+    // and on the `cancel` control event.
+    useEffect(() => {
+        if (!regenerating) {
+            return;
+        }
+        if (conversation !== regenBaselineRef.current) {
+            setRegenerating(false);
+        } else if (conversationError && !conversationLoading && !isGenerationInProgress) {
+            setRegenerating(false);
+        }
+    }, [regenerating, conversation, conversationError, conversationLoading, isGenerationInProgress]);
+
     // Once a finished stream's refetch has populated the persisted rounds, drop
     // the streaming store entry so the snapshotted rounds aren't rendered twice
     // (POST_EDITED also clears it; this guards the refetch-before-POST_EDITED gap).
+    // Skipped while regenerating: the persisted rounds are the stale pre-regen
+    // turns then, and dropping the store would blank the streamed answer.
     useEffect(() => {
-        if (streamingState && !isGenerationInProgress && persistedRounds.length > 0) {
+        if (streamingState && !isGenerationInProgress && persistedRounds.length > 0 && !regenerating) {
             streamingStore.removePost(serverUrl, post.id);
         }
-    }, [streamingState, isGenerationInProgress, persistedRounds.length, serverUrl, post.id]);
+    }, [streamingState, isGenerationInProgress, persistedRounds.length, serverUrl, post.id, regenerating]);
 
     const isRequester = isConversationRequester({post, conversation, currentUserId});
     const canApprove = isRequester;
@@ -261,10 +309,12 @@ const AgentPostNew = ({post, conversationId, currentUserId, location, isDM}: Age
         const all: Annotation[] = [];
         for (const round of renderedRounds) {
             for (const annotation of round.annotations) {
-                if (annotation.url && seen.has(annotation.url)) {
-                    continue;
+                if (annotation.url) {
+                    if (seen.has(annotation.url)) {
+                        continue;
+                    }
+                    seen.add(annotation.url);
                 }
-                seen.add(annotation.url);
                 all.push(annotation);
             }
         }
@@ -278,6 +328,13 @@ const AgentPostNew = ({post, conversationId, currentUserId, location, isDM}: Age
     const showRegenerateButton = !isGenerationInProgress && isRequester && hasContent && isDM && !noRegen;
     const showCursorOnLive = isGenerating && !isPrecontent;
 
+    // Beyond the streaming precontent phase, show the placeholder when there is
+    // nothing else to render: on a cold open while the conversation fetch is in
+    // flight (web parity: llmbot_post.tsx), and right after a regenerate tap
+    // before the new stream's `start` event arrives.
+    const showPlaceholder = isPrecontent ||
+        (!hasContent && (regenerating || (conversationLoading && !isGenerating)));
+
     const handleStop = useCallback(async () => {
         // Mark stopped first so late `next` events are ignored before the
         // server's cancel/end lands.
@@ -289,14 +346,18 @@ const AgentPostNew = ({post, conversationId, currentUserId, location, isDM}: Age
     }, [serverUrl, post.id]);
 
     const handleRegenerate = useCallback(async () => {
-        // Clear the streaming store so the new stream starts from a clean slate
-        // instead of showing the previous round's data.
+        // Suppress the stale persisted rounds and clear the streaming store so
+        // the new stream starts from a clean slate instead of showing the
+        // previous round's data.
+        regenBaselineRef.current = conversation;
+        setRegenerating(true);
         streamingStore.removePost(serverUrl, post.id);
         const {error} = await regenerateResponse(serverUrl, post.id);
         if (error) {
+            setRegenerating(false);
             showSnackBar({barType: SNACK_BAR_TYPE.AGENT_REGENERATE_ERROR});
         }
-    }, [serverUrl, post.id]);
+    }, [serverUrl, post.id, conversation]);
 
     return (
         <View style={styles.container}>
@@ -323,10 +384,11 @@ const AgentPostNew = ({post, conversationId, currentUserId, location, isDM}: Age
                         showCursor={isLive && showCursorOnLive}
                         isReasoningLoading={isLive && isReasoningLoading}
                         isFirst={idx === 0}
+                        unsafeLinks={unsafeLinks}
                     />
                 );
             })}
-            {isPrecontent && (
+            {showPlaceholder && (
                 <View style={styles.precontentContainer}>
                     <FormattedText
                         id='agents.generating'

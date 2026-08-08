@@ -9,7 +9,7 @@ import {appEntry} from './app';
 
 jest.mock('@actions/local/systems');
 jest.mock('@actions/remote/user');
-jest.mock('@agents/actions/remote/agents');
+jest.mock('@agents/actions/remote/bots');
 jest.mock('@managers/websocket_manager');
 jest.mock('@queries/servers/system');
 jest.mock('./common');
