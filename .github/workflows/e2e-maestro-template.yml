@@ -32,6 +32,11 @@ on:
         required: false
         type: string
         default: ""
+      artifact_suffix:
+        description: "Suffix used to isolate result artifacts for CMT server versions"
+        required: false
+        type: string
+        default: ""
       record_tests_in_zephyr:
         description: "Record Maestro test results in Zephyr Scale (release/main runs)"
         required: false
@@ -490,7 +495,7 @@ jobs:
         if: always()
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
-          name: maestro-ios-results-${{ github.run_id }}
+          name: maestro-ios-results-${{ github.run_id }}${{ inputs.artifact_suffix }}
           path: build/
 
       - name: Resolve per-job TSIO config
@@ -1043,7 +1048,7 @@ jobs:
         if: always()
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
-          name: maestro-android-results-${{ github.run_id }}
+          name: maestro-android-results-${{ github.run_id }}${{ inputs.artifact_suffix }}
           path: build/
 
       - name: Resolve per-job TSIO config

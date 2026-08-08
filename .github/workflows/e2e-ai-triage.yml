@@ -33,15 +33,35 @@ on:
         description: "Run that uploaded the per-shard result artifacts"
         required: true
         type: string
+      artifact_pattern:
+        description: "Artifact glob to collect; CMT uses a server-version suffix"
+        required: false
+        type: string
+        default: "*-results-*"
+      artifact_namespace:
+        description: "Suffix namespace preventing CMT rerun artifact collisions"
+        required: false
+        type: string
+        default: ""
       pr_number:
         required: false
         type: string
         default: ""
       run_type:
-        description: "PR | MAIN | RELEASE. Only PR runs can be auto-waived."
+        description: "PR | MAIN | MASTER | RELEASE"
         required: false
         type: string
         default: "PR"
+      mode:
+        description: "Triage authority mode"
+        required: false
+        type: string
+        default: "gate"
+      status_context:
+        description: "Commit-status context owned by this triage invocation"
+        required: false
+        type: string
+        default: "e2e-test/ai-triage"
       version_name:
         description: "Branch under test"
         required: false
@@ -111,6 +131,15 @@ on:
         required: false
         type: boolean
         default: false
+    outputs:
+      state:
+        value: ${{ jobs.adjudicate.outputs.state }}
+      waived:
+        value: ${{ jobs.adjudicate.outputs.waived }}
+      operational_outcome:
+        value: ${{ jobs.adjudicate.outputs.operational_outcome }}
+      triage_url:
+        value: ${{ jobs.adjudicate.outputs.triage_url }}
     secrets:
       GH_TOKEN:
         required: false
@@ -193,7 +222,7 @@ jobs:
         id: mode
         if: steps.tooling.outputs.present == 'true'
         env:
-          REQUESTED_MODE: ${{ vars.E2E_AI_TRIAGE_MODE || 'shadow' }}
+          REQUESTED_MODE: ${{ inputs.mode }}
         run: |
           set -euo pipefail
           case "${REQUESTED_MODE}" in
@@ -211,14 +240,12 @@ jobs:
         with:
           node-version-file: '.nvmrc'
 
-      # No `name:` filter — every shard's artifact is wanted, and the collector
-      # derives shard and platform from the directory names.
       - name: ci/download-result-artifacts
         uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
         continue-on-error: true
         with:
           path: triage-artifacts
-          pattern: "*-results-*"
+          pattern: ${{ inputs.artifact_pattern }}
           run-id: ${{ inputs.artifact_run_id }}
           github-token: ${{ secrets.GH_TOKEN || github.token }}
 
@@ -410,7 +437,7 @@ jobs:
       MM_TEST_SERVER_URL_3: ${{ inputs.SITE_3_URL }}
       artifact_run_id: ${{ inputs.artifact_run_id }}
       spec_list: ${{ needs.plan.outputs.rerun_ios_specs }}
-      artifact_suffix: -rr${{ matrix.rep }}
+      artifact_suffix: ${{ inputs.artifact_namespace }}-rr${{ matrix.rep }}
       parallelism: 1
       # Video is off for normal runs because recording the full suite is
       # expensive. A rerun is a handful of specs, and a recording of the moment a
@@ -441,7 +468,7 @@ jobs:
       MM_TEST_SERVER_URL_3: ${{ inputs.SITE_3_URL }}
       artifact_run_id: ${{ inputs.artifact_run_id }}
       spec_list: ${{ needs.plan.outputs.rerun_android_specs }}
-      artifact_suffix: -rr${{ matrix.rep }}
+      artifact_suffix: ${{ inputs.artifact_namespace }}-rr${{ matrix.rep }}
       parallelism: 1
       extra_detox_args: "--record-videos failing"
     secrets: inherit
@@ -482,7 +509,7 @@ jobs:
         uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
         with:
           path: rerun
-          pattern: "*-rr*"
+          pattern: "*${{ inputs.artifact_namespace }}-rr*"
           run-id: ${{ inputs.artifact_run_id }}
           github-token: ${{ secrets.GH_TOKEN || github.token }}
 
@@ -505,7 +532,7 @@ jobs:
           for REP in 1 2; do
             DEST="rerun-rep${REP}"
             mkdir -p "$DEST"
-            for DIR in rerun/*-rr${REP}; do
+            for DIR in rerun/*${{ inputs.artifact_namespace }}-rr${REP}; do
               [ -d "$DIR" ] || continue
               mv "$DIR" "$DEST/"
             done
@@ -564,6 +591,7 @@ jobs:
       # accuracy and amnesty queries filter on.
       branch: ${{ inputs.version_name || (inputs.run_type == 'PR' && '' || 'main') }}
       run_type: ${{ inputs.run_type }}
+      status_context: ${{ inputs.status_context }}
       # finalize falls back to the plan artifact when no rerun ran, so this is
       # always the freshest evidence available.
       evidence_artifact: ${{ needs.finalize.outputs.evidence_artifact || needs.plan.outputs.evidence_artifact }}
@@ -593,9 +621,14 @@ jobs:
     needs: adjudicate
     if: >-
       always() &&
-      inputs.run_type == 'PR' &&
       needs.adjudicate.result == 'success' &&
-      needs.adjudicate.outputs.waived == 'true'
+      needs.adjudicate.outputs.state == 'success' &&
+      needs.adjudicate.outputs.operational_outcome == 'FLAKY_CONFIRMED' &&
+      (
+        (inputs.run_type == 'PR' && needs.adjudicate.outputs.waived == 'true') ||
+        inputs.run_type == 'MAIN' ||
+        inputs.run_type == 'MASTER'
+      )
     runs-on: ubuntu-24.04
     timeout-minutes: 5
     permissions:
@@ -605,6 +638,7 @@ jobs:
       issues: read
     steps:
       - name: ci/verify-waiver-still-targets-pr-head
+        if: inputs.run_type == 'PR'
         uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9.0.0
         env:
           PR_NUMBER: ${{ inputs.pr_number }}
@@ -643,9 +677,28 @@ jobs:
         uses: ./.github/actions/e2e-override-status
         with:
           commit_sha: ${{ inputs.MOBILE_VERSION }}
-          description: E2E/AI-Waived — automated triage waiver
+          description: ${{ inputs.run_type == 'PR' && 'E2E/AI-Waived — confirmed flaky' || 'E2E triage — confirmed flaky' }}
           target_url: ${{ needs.adjudicate.outputs.triage_url || format('{0}/{1}/actions/runs/{2}', github.server_url, github.repository, github.run_id) }}
           platform: ${{ inputs.platform }}
+
+  enforce-outcome:
+    name: Enforce triage outcome
+    needs:
+      - adjudicate
+      - repost-platform-contexts
+    if: always()
+    runs-on: ubuntu-24.04
+    steps:
+      - name: ci/enforce-triage-outcome
+        env:
+          STATE: ${{ needs.adjudicate.outputs.state }}
+          OUTCOME: ${{ needs.adjudicate.outputs.operational_outcome }}
+        run: |
+          if [ "$STATE" != "success" ]; then
+            echo "::error::E2E triage blocked this run (${OUTCOME:-TRIAGE_FAILED})."
+            exit 1
+          fi
+          echo "E2E triage passed: ${OUTCOME}"
 
   # The one path where nothing above can speak.
   #

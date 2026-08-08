@@ -19,6 +19,10 @@ const ciWorkflow = fs.readFileSync(
     path.join(repoRoot, '.github/workflows/ci.yml'),
     'utf8',
 );
+const cmtWorkflow = fs.readFileSync(
+    path.join(repoRoot, '.github/workflows/compatibility-matrix-testing.yml'),
+    'utf8',
+);
 const platformWorkflows = [
     '.github/workflows/e2e-ios-template.yml',
     '.github/workflows/e2e-android-template.yml',
@@ -45,6 +49,8 @@ test('diff overlap is tri-state and unknown vetoes the boolean toolkit waiver', 
 test('only known triage modes reach the toolkit', () => {
     assert.match(triageWorkflow, /shadow\|assist\|gate\)/);
     assert.match(triageWorkflow, /echo "mode=shadow" >> "\$GITHUB_OUTPUT"[\s\S]*exit 1/);
+    assert.match(triageWorkflow, /default: "gate"/);
+    assert.match(triageWorkflow, /REQUESTED_MODE: \$\{\{ inputs\.mode \}\}/);
     assert.match(triageWorkflow, /mode: \$\{\{ needs\.plan\.outputs\.triage_mode \}\}/);
     assert.doesNotMatch(triageWorkflow, /mode: \$\{\{ vars\.E2E_AI_TRIAGE_MODE/);
 });
@@ -61,20 +67,37 @@ test('pre-merge toolkit integration uses aligned immutable refs', () => {
     assert.doesNotMatch(ciWorkflow, /grep -v "@main"/);
 });
 
-test('automated waiver repost is PR-only and requires exact successful toolkit output', () => {
+test('confirmed flakes repost PR and baseline platform contexts', () => {
     const repostJob = triageWorkflow.slice(
         triageWorkflow.indexOf('  repost-platform-contexts:'),
         triageWorkflow.indexOf('  no-verdict:'),
     );
 
     assert.match(triageWorkflow, /inputs\.run_type == 'PR'/);
+    assert.match(triageWorkflow, /inputs\.run_type == 'MAIN'/);
+    assert.match(triageWorkflow, /inputs\.run_type == 'MASTER'/);
     assert.match(triageWorkflow, /needs\.adjudicate\.result == 'success'/);
     assert.match(triageWorkflow, /needs\.adjudicate\.outputs\.waived == 'true'/);
+    assert.match(repostJob, /operational_outcome == 'FLAKY_CONFIRMED'/);
     assert.match(repostJob, /uses: \.\/\.github\/actions\/e2e-override-status/);
-    assert.match(repostJob, /description: E2E\/AI-Waived/);
+    assert.match(repostJob, /E2E\/AI-Waived — confirmed flaky/);
     assert.match(repostJob, /target_url: \$\{\{ needs\.adjudicate\.outputs\.triage_url/);
     assert.match(repostJob, /platform: \$\{\{ inputs\.platform \}\}/);
     assert.doesNotMatch(repostJob, /continue-on-error:/);
+});
+
+test('triage exposes and enforces one operational outcome', () => {
+    assert.match(triageWorkflow, /operational_outcome:\s*\n\s*value: \$\{\{ jobs\.adjudicate\.outputs\.operational_outcome \}\}/);
+    assert.match(triageWorkflow, /  enforce-outcome:/);
+    assert.match(triageWorkflow, /if \[ "\$STATE" != "success" \]/);
+});
+
+test('CMT triages every server version with isolated artifacts and status contexts', () => {
+    assert.match(cmtWorkflow, /  cmt-ai-triage:/);
+    assert.match(cmtWorkflow, /artifact_pattern: "\*-Server_\$\{\{ matrix\.server\.version \}\}\*"/);
+    assert.match(cmtWorkflow, /artifact_namespace: -Server_\$\{\{ matrix\.server\.version \}\}/);
+    assert.match(cmtWorkflow, /status_context: e2e-test\/ai-triage-Server_\$\{\{ matrix\.server\.version \}\}/);
+    assert.match(cmtWorkflow, /UPSTREAM="\$\{\{ needs\.cmt-ai-triage\.result == 'success'/);
 });
 
 test('human triage override consumes equivalent fail-closed outputs', () => {
