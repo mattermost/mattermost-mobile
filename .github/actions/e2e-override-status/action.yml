@@ -27,7 +27,7 @@ inputs:
     required: true
   state:
     description: >-
-      Commit status state (success | pending). Use pending to re-block the PR
+      Commit status state (success | failure | pending). Use pending to re-block the PR
       when E2E/Override is removed, so the waiver does not linger on the SHA.
       pending only resets contexts this action previously overrode.
     required: false
@@ -46,6 +46,10 @@ inputs:
     description: Platform contexts to publish (ios, android, or both)
     required: false
     default: both
+  status_suffix:
+    description: Classification suffix appended while preserving test counts
+    required: false
+    default: ''
 
 runs:
   using: composite
@@ -57,6 +61,7 @@ runs:
         DESCRIPTION: ${{ inputs.description }}
         TARGET_URL: ${{ inputs.target_url }}
         PLATFORM: ${{ inputs.platform }}
+        STATUS_SUFFIX: ${{ inputs.status_suffix }}
       with:
         script: |
           const owner = context.repo.owner;
@@ -65,6 +70,7 @@ runs:
           const state = process.env.STATE || 'success';
           const description = (process.env.DESCRIPTION || '').substring(0, 140);
           const targetUrl = process.env.TARGET_URL?.trim();
+          const requestedSuffix = process.env.STATUS_SUFFIX?.trim();
 
           if (!sha) {
             throw new Error('e2e-override-status: commit_sha is required');
@@ -94,9 +100,7 @@ runs:
           // pending path can reset exactly the contexts it overrode and never a
           // platform that passed on its own merits.
           const OVERRIDE_MARKER = 'e2e overridden';
-          const marker = state === 'pending' || !description.startsWith('E2E/AI-Waived') ?
-            OVERRIDE_MARKER :
-            'E2E/AI-Waived';
+          const marker = requestedSuffix || OVERRIDE_MARKER;
 
           // getCombinedStatusForRef caps statuses at 100 per page. This repo only
           // has 5 required contexts today, but other tooling can post legacy
@@ -136,12 +140,17 @@ runs:
               }
               statusDescription = description;
               statusTargetUrl = targetUrl;
-            } else if (latest?.state === 'success') {
+            } else if (latest?.state === 'success' && state === 'success') {
               // Nothing to unblock: either genuinely green — leave the real result
               // and its counts alone — or already overridden, in which case
               // re-posting would only replace a description carrying the real
               // counts with a bare one.
               continue;
+            } else if (latest?.state === 'success') {
+              const suffix = ` - ${marker}`;
+              const base = latestDescription.substring(0, Math.max(0, 140 - suffix.length));
+              statusDescription = `${base}${suffix}`.substring(0, 140);
+              statusTargetUrl = latest.target_url || targetUrl;
             } else if (latest?.state === 'failure' || latest?.state === 'error') {
               // Keep the real counts so the check still says what failed.
               // Reserve room for the suffix before truncating the base: TSIO

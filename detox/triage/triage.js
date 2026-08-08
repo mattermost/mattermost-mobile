@@ -224,10 +224,7 @@ async function main() {
         `across ${collected.summary.shards.length} shard(s)`,
     );
 
-    let result = {
-        ...classify(collected),
-        expected_reports: collected.summary.expectedReports,
-    };
+    let result = classify(collected);
     console.log(`tier ${result.tier}: ${result.tier_reason}`);
     console.log(`${result.clusters.length} cluster(s); needs_ai=${result.needs_ai}`);
 
@@ -290,17 +287,6 @@ async function main() {
     const summaryPath = path.join(outputDir, 'summary.md');
     fs.writeFileSync(summaryPath, renderSummary(result));
 
-    if (process.env.GITHUB_OUTPUT) {
-        fs.appendFileSync(process.env.GITHUB_OUTPUT, [
-            `tier=${result.tier}`,
-            `failure_count=${collected.failures.length}`,
-            `cluster_count=${result.clusters.length}`,
-            `needs_ai=${result.needs_ai}`,
-            `rerun_enabled=${result.rerun_plan.enabled}`,
-            `evidence_path=${evidencePath}`,
-            '',
-        ].join('\n'));
-    }
     if (process.env.GITHUB_STEP_SUMMARY) {
         fs.appendFileSync(process.env.GITHUB_STEP_SUMMARY, renderSummary(result));
     }

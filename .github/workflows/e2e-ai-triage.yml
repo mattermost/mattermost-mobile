@@ -16,10 +16,9 @@
 # adjudication and policy are repo-agnostic and are shared with the other
 # Mattermost repos.
 #
-# Per-platform `e2e-test/*` contexts report objective test results. After an
-# explicit successful automated waiver, this workflow re-posts those contexts
-# with an E2E/AI-Waived description and a link back to triage. This remains
-# distinguishable from the human E2E/Override path.
+# Per-platform `e2e-test/*` contexts first report objective test results, then
+# receive a verified flaky/test-bug/product-bug suffix from adjudication while
+# retaining their original counts and report links.
 name: E2E AI Triage
 
 on:
@@ -131,15 +130,6 @@ on:
         required: false
         type: boolean
         default: false
-    outputs:
-      state:
-        value: ${{ jobs.adjudicate.outputs.state }}
-      waived:
-        value: ${{ jobs.adjudicate.outputs.waived }}
-      operational_outcome:
-        value: ${{ jobs.adjudicate.outputs.operational_outcome }}
-      triage_url:
-        value: ${{ jobs.adjudicate.outputs.triage_url }}
     secrets:
       GH_TOKEN:
         required: false
@@ -168,10 +158,6 @@ jobs:
     runs-on: ubuntu-24.04
     timeout-minutes: 20
     outputs:
-      tier: ${{ steps.triage.outputs.tier }}
-      failure_count: ${{ steps.triage.outputs.failure_count }}
-      cluster_count: ${{ steps.triage.outputs.cluster_count }}
-      needs_ai: ${{ steps.triage.outputs.needs_ai }}
       tooling_present: ${{ steps.tooling.outputs.present }}
       rerun_enabled: ${{ steps.specs.outputs.rerun_enabled }}
       rerun_ios_specs: ${{ steps.specs.outputs.ios }}
@@ -317,7 +303,6 @@ jobs:
           echo "TSIO environment: $URL"
 
       - name: ci/triage
-        id: triage
         if: steps.tooling.outputs.present == 'true'
         # Every caller-supplied value arrives as an environment variable.
         # `version_name` is the one that makes this mandatory rather than tidy: it
@@ -614,21 +599,18 @@ jobs:
       TSIO_API_KEY: ${{ secrets.TSIO_API_KEY }}
       WEBHOOK_URL: ${{ secrets.WEBHOOK_URL }}
 
-  # Missing or differently-cased outputs skip this job, so an incomplete
-  # toolkit contract cannot turn failed platform contexts green.
+  # Re-publish every platform with its independently aggregated diagnosis while
+  # preserving the test counts and report URL from the raw status.
   repost-platform-contexts:
-    name: Re-post AI-waived platform contexts
+    name: Publish classified platform contexts
     needs: adjudicate
     if: >-
       always() &&
       needs.adjudicate.result == 'success' &&
-      needs.adjudicate.outputs.state == 'success' &&
-      needs.adjudicate.outputs.operational_outcome == 'FLAKY_CONFIRMED' &&
-      (
-        (inputs.run_type == 'PR' && needs.adjudicate.outputs.waived == 'true') ||
-        inputs.run_type == 'MAIN' ||
-        inputs.run_type == 'MASTER'
-      )
+      inputs.run_type != 'RELEASE' &&
+      inputs.run_type != 'CMT' &&
+      needs.adjudicate.outputs.platform_outcomes != '' &&
+      needs.adjudicate.outputs.platform_outcomes != '{}'
     runs-on: ubuntu-24.04
     timeout-minutes: 5
     permissions:
@@ -637,7 +619,7 @@ jobs:
       pull-requests: read
       issues: read
     steps:
-      - name: ci/verify-waiver-still-targets-pr-head
+      - name: ci/verify-outcome-still-targets-pr-head
         if: inputs.run_type == 'PR'
         uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9.0.0
         env:
@@ -657,14 +639,21 @@ jobs:
             if (pr.head.sha !== process.env.COMMIT_SHA) {
               throw new Error(`PR head changed from ${process.env.COMMIT_SHA} to ${pr.head.sha}`);
             }
-            const labels = await github.paginate(github.rest.issues.listLabelsOnIssue, {
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              issue_number: prNumber,
-            });
-            if (!labels.some((label) => label.name === 'E2E/AI-Waived')) {
-              throw new Error('E2E/AI-Waived is no longer present');
-            }
+      - name: ci/prepare-platform-outcomes
+        id: platforms
+        env:
+          PLATFORM_OUTCOMES: ${{ needs.adjudicate.outputs.platform_outcomes }}
+        run: |
+          set -euo pipefail
+          echo "$PLATFORM_OUTCOMES" | jq -e 'type == "object"' >/dev/null
+          for PLATFORM in ios android; do
+            STATE=$(echo "$PLATFORM_OUTCOMES" | jq -r --arg p "$PLATFORM" '.[$p].state // ""')
+            SUFFIX=$(echo "$PLATFORM_OUTCOMES" | jq -r --arg p "$PLATFORM" '.[$p].suffix // ""')
+            {
+              echo "${PLATFORM}_state=$STATE"
+              echo "${PLATFORM}_suffix=$SUFFIX"
+            } >> "$GITHUB_OUTPUT"
+          done
 
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
         with:
@@ -673,13 +662,27 @@ jobs:
           ref: ${{ github.event.repository.default_branch }}
           persist-credentials: false
 
-      - name: ci/re-post-ai-waived-platform-contexts
+      - name: ci/publish-ios-outcome
+        if: steps.platforms.outputs.ios_state != ''
         uses: ./.github/actions/e2e-override-status
         with:
           commit_sha: ${{ inputs.MOBILE_VERSION }}
-          description: ${{ inputs.run_type == 'PR' && 'E2E/AI-Waived — confirmed flaky' || 'E2E triage — confirmed flaky' }}
+          state: ${{ steps.platforms.outputs.ios_state }}
+          description: ${{ steps.platforms.outputs.ios_suffix }}
+          status_suffix: ${{ steps.platforms.outputs.ios_suffix }}
           target_url: ${{ needs.adjudicate.outputs.triage_url || format('{0}/{1}/actions/runs/{2}', github.server_url, github.repository, github.run_id) }}
-          platform: ${{ inputs.platform }}
+          platform: ios
+
+      - name: ci/publish-android-outcome
+        if: steps.platforms.outputs.android_state != ''
+        uses: ./.github/actions/e2e-override-status
+        with:
+          commit_sha: ${{ inputs.MOBILE_VERSION }}
+          state: ${{ steps.platforms.outputs.android_state }}
+          description: ${{ steps.platforms.outputs.android_suffix }}
+          status_suffix: ${{ steps.platforms.outputs.android_suffix }}
+          target_url: ${{ needs.adjudicate.outputs.triage_url || format('{0}/{1}/actions/runs/{2}', github.server_url, github.repository, github.run_id) }}
+          platform: android
 
   enforce-outcome:
     name: Enforce triage outcome

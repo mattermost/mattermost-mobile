@@ -67,27 +67,27 @@ test('pre-merge toolkit integration uses aligned immutable refs', () => {
     assert.doesNotMatch(ciWorkflow, /grep -v "@main"/);
 });
 
-test('confirmed flakes repost PR and baseline platform contexts', () => {
+test('platform diagnoses independently republish PR and baseline contexts', () => {
     const repostJob = triageWorkflow.slice(
         triageWorkflow.indexOf('  repost-platform-contexts:'),
         triageWorkflow.indexOf('  no-verdict:'),
     );
 
-    assert.match(triageWorkflow, /inputs\.run_type == 'PR'/);
-    assert.match(triageWorkflow, /inputs\.run_type == 'MAIN'/);
-    assert.match(triageWorkflow, /inputs\.run_type == 'MASTER'/);
     assert.match(triageWorkflow, /needs\.adjudicate\.result == 'success'/);
-    assert.match(triageWorkflow, /needs\.adjudicate\.outputs\.waived == 'true'/);
-    assert.match(repostJob, /operational_outcome == 'FLAKY_CONFIRMED'/);
-    assert.match(repostJob, /uses: \.\/\.github\/actions\/e2e-override-status/);
-    assert.match(repostJob, /E2E\/AI-Waived — confirmed flaky/);
+    assert.match(repostJob, /needs\.adjudicate\.outputs\.platform_outcomes != '\{\}'/);
+    assert.match(repostJob, /ci\/prepare-platform-outcomes/);
+    assert.equal((repostJob.match(/uses: \.\/\.github\/actions\/e2e-override-status/g) || []).length, 2);
+    assert.match(repostJob, /steps\.platforms\.outputs\.ios_suffix/);
+    assert.match(repostJob, /steps\.platforms\.outputs\.android_suffix/);
+    assert.match(repostJob, /status_suffix:/);
     assert.match(repostJob, /target_url: \$\{\{ needs\.adjudicate\.outputs\.triage_url/);
-    assert.match(repostJob, /platform: \$\{\{ inputs\.platform \}\}/);
+    assert.match(repostJob, /platform: ios/);
+    assert.match(repostJob, /platform: android/);
     assert.doesNotMatch(repostJob, /continue-on-error:/);
 });
 
-test('triage exposes and enforces one operational outcome', () => {
-    assert.match(triageWorkflow, /operational_outcome:\s*\n\s*value: \$\{\{ jobs\.adjudicate\.outputs\.operational_outcome \}\}/);
+test('triage enforces the toolkit operational outcome without unused workflow outputs', () => {
+    assert.doesNotMatch(triageWorkflow, /value: \$\{\{ jobs\.adjudicate\.outputs\./);
     assert.match(triageWorkflow, /  enforce-outcome:/);
     assert.match(triageWorkflow, /if \[ "\$STATE" != "success" \]/);
 });

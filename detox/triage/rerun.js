@@ -106,12 +106,6 @@ function specOutcome(spec, testId, platform, reps, plannedReps = reps.length) {
     return {outcome, reps: plannedReps, failed_reps: failed};
 }
 
-function hasUsablePlatformReport(rep, platform) {
-    return rep.reports.some(
-        (report) => report.framework === 'detox' && report.platform === platform && report.usable,
-    );
-}
-
 /**
  * Attach rerun outcomes to the clusters they were gathered for.
  *
@@ -189,27 +183,12 @@ function mergeRerun(evidence, repetitions) {
                 confidence: MEASURED_RERUN_CONFIDENCE,
                 needs_ai: false,
                 reason: `targeted rerun measured ${outcome} across every planned repetition and platform target`,
-                cleared_on_rerun: true,
-                rerun_evidence: {
-                    complete: true,
-                    verdict: 'FLAKY_TEST',
-                    confidence: MEASURED_RERUN_CONFIDENCE,
-                    waivable: true,
-                    basis: 'all planned rerun repetitions and platform targets completed',
-                },
             };
         }
 
         return {
             ...measured,
             needs_ai: true,
-            rerun_evidence: {
-                complete: true,
-                verdict: 'DETERMINISTIC_FAILURE',
-                confidence: MEASURED_RERUN_CONFIDENCE,
-                waivable: false,
-                basis: 'failure reproduced across all planned rerun repetitions and platform targets',
-            },
         };
     });
 
@@ -229,18 +208,12 @@ function mergeRerun(evidence, repetitions) {
         suite_verdict: decision.suite_verdict_authoritative ?suiteSignal :null,
         suite_signal: suiteSignal,
         clusters,
-        decision,
         needs_ai: decision.needs_ai,
         rerun_meta: {
             repetitions: reps.length,
-            expected_repetitions: plannedReps,
             usable_repetitions: reps.filter((r) => r.usable).length,
             specs_rerun: planned.length,
             complete: rerunComplete,
-            platforms: [...new Set(planned.map((entry) => entry.platform))].map((platform) => ({
-                platform,
-                usable_repetitions: reps.filter((rep) => hasUsablePlatformReport(rep, platform)).length,
-            })),
         },
     };
 }

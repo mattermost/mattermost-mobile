@@ -200,7 +200,6 @@ function buildRerunPlan(clusters, tier, opts = {}) {
         };
     }
 
-    const confidentClusters = clusters.filter((c) => c.confidence >= o.skipRerunConfidence);
     const unresolved = clusters.filter((c) => c.confidence < o.skipRerunConfidence);
 
     if (unresolved.length === 0) {
@@ -209,7 +208,6 @@ function buildRerunPlan(clusters, tier, opts = {}) {
             reason: `every cluster resolved by signature at >= ${o.skipRerunConfidence} confidence`,
             specs: [],
             reps: 0,
-            resolved_by_rules: confidentClusters.length,
         };
     }
 
@@ -268,10 +266,6 @@ function buildRerunPlan(clusters, tier, opts = {}) {
         reason,
         specs,
         reps: o.rerunReps,
-        resolved_by_rules: confidentClusters.length,
-        skipped_non_detox: skippedNonDetox,
-        execution_specs: executionSpecs.size,
-        truncated: unresolved.length > o.maxClusters || executionSpecs.size >= o.maxRerunSpecs,
     };
 }
 
@@ -282,15 +276,8 @@ function buildDecision(clusters, suiteVerdict) {
         EXHAUSTIVE_SUITE_RULES.has(suiteVerdict.rule_id),
     );
     const unresolved = suiteVerdictAuthoritative ?[] :clusters.filter((c) => c.needs_ai);
-    const waivable = clusters.filter((c) => c.rerun_evidence && c.rerun_evidence.waivable);
-    const nonWaivable = clusters.filter((c) => c.rerun_evidence && c.rerun_evidence.waivable === false);
-
     return {
         needs_ai: unresolved.length > 0,
-        unresolved_clusters: unresolved.map((c) => c.signature_hash),
-        model_clusters: unresolved.map((c) => c.signature_hash),
-        waivable_clusters: waivable.map((c) => c.signature_hash),
-        non_waivable_clusters: nonWaivable.map((c) => c.signature_hash),
 
         // A suite rule is useful context, but it cannot decide clusters that its
         // evidence did not resolve. This is the prompt contract's explicit guard
@@ -370,7 +357,6 @@ function classify({summary, failures}, opts = {}) {
             member_test_ids: c.members.map((m) => m.test_id).filter(Boolean),
         })),
         rerun_plan: rerunPlan,
-        decision,
         needs_ai: decision.needs_ai,
     };
 }

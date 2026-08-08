@@ -250,7 +250,6 @@ test('a failure that stops reproducing is confirmed non-deterministic', () => {
 
     assert.equal(merged.clusters[0].rerun.outcome, OUTCOME.FLAKY);
     assert.equal(merged.clusters[0].reproduced_on_rerun, false);
-    assert.equal(merged.clusters[0].cleared_on_rerun, true);
     assert.equal(merged.clusters[0].confidence, 0.95);
     assert.equal(merged.clusters[0].rule_verdict, 'FLAKY_TEST');
     assert.equal(merged.clusters[0].needs_ai, false);
@@ -258,7 +257,6 @@ test('a failure that stops reproducing is confirmed non-deterministic', () => {
         merged.clusters[0].matched_signatures.filter((entry) => entry.id.startsWith('rerun.measurement.')).length,
         2,
     );
-    assert.equal(merged.clusters[0].rerun_evidence.waivable, true);
     assert.equal(merged.rerun_meta.complete, true);
 
     fs.rmSync(a, {recursive: true, force: true});
@@ -287,7 +285,6 @@ test('one of two planned repetitions absent is inconclusive', () => {
     const merged = mergeRerun(evidenceWithPlan(spec), [root]);
 
     assert.equal(merged.clusters[0].rerun.outcome, OUTCOME.INCONCLUSIVE);
-    assert.equal(merged.clusters[0].cleared_on_rerun, undefined);
     assert.equal(merged.clusters[0].confidence, undefined);
     assert.equal(merged.rerun_meta.complete, false);
 
@@ -304,7 +301,6 @@ test('skipped rerun targets are inconclusive, never measured passes', () => {
     const merged = mergeRerun(evidenceWithPlan(spec), [a, b]);
 
     assert.equal(merged.clusters[0].rerun.outcome, OUTCOME.INCONCLUSIVE);
-    assert.equal(merged.clusters[0].rerun_evidence, undefined);
     assert.equal(merged.clusters[0].needs_ai, true);
 
     fs.rmSync(a, {recursive: true, force: true});
@@ -337,8 +333,6 @@ test('one incomplete platform target prevents every measured clearing from becom
 
     assert.equal(merged.rerun_meta.complete, false);
     assert.equal(merged.clusters[0].rerun.outcome, OUTCOME.PASSED);
-    assert.equal(merged.clusters[0].cleared_on_rerun, undefined);
-    assert.equal(merged.clusters[0].rerun_evidence, undefined);
     assert.equal(merged.clusters[0].needs_ai, true);
     assert.equal(merged.needs_ai, true);
 
@@ -373,13 +367,11 @@ test('rerun merge recomputes stale suite authority and routes unplanned clusters
 
     const merged = mergeRerun(evidence, [a, b]);
 
-    assert.equal(merged.clusters[0].rerun_evidence.waivable, true);
+    assert.equal(merged.clusters[0].rule_verdict, 'FLAKY_TEST');
     assert.equal(merged.clusters[1].needs_ai, true);
     assert.equal(merged.suite_verdict, null);
     assert.equal(merged.suite_signal.authoritative, false);
     assert.equal(merged.needs_ai, true);
-    assert.deepEqual(merged.decision.model_clusters, ['unresolved']);
-    assert.deepEqual(merged.decision.waivable_clusters, ['measured']);
 
     fs.rmSync(a, {recursive: true, force: true});
     fs.rmSync(b, {recursive: true, force: true});
@@ -395,7 +387,6 @@ test('Android planned rerun is inconclusive when only iOS reports', () => {
     const merged = mergeRerun(evidenceWithPlan(spec, 'android'), [a, b]);
 
     assert.equal(merged.clusters[0].rerun.outcome, OUTCOME.INCONCLUSIVE);
-    assert.equal(merged.clusters[0].cleared_on_rerun, undefined);
 
     fs.rmSync(a, {recursive: true, force: true});
     fs.rmSync(b, {recursive: true, force: true});
@@ -411,7 +402,6 @@ test('report omitting the planned spec is inconclusive', () => {
     const merged = mergeRerun(evidenceWithPlan(planned), [a, b]);
 
     assert.equal(merged.clusters[0].rerun.outcome, OUTCOME.INCONCLUSIVE);
-    assert.equal(merged.clusters[0].cleared_on_rerun, undefined);
 
     fs.rmSync(a, {recursive: true, force: true});
     fs.rmSync(b, {recursive: true, force: true});
@@ -453,7 +443,6 @@ test('Maestro failures never enter the Detox rerun plan', () => {
 
     assert.equal(plan.enabled, false, 'Maestro runs named flows, not a spec list');
     assert.equal(plan.specs.length, 0);
-    assert.equal(plan.skipped_non_detox, 1);
     assert.match(plan.reason, /not rerunnable by spec list/);
 });
 
@@ -469,7 +458,6 @@ test('a mixed cluster reruns only its Detox members', () => {
 
     assert.equal(plan.enabled, true);
     assert.deepEqual(plan.specs.map((s) => s.spec), ['detox/e2e/test/real.e2e.ts']);
-    assert.equal(plan.skipped_non_detox, 1);
 });
 
 test('an end-to-end Maestro-only run produces no spec list at all', () => {

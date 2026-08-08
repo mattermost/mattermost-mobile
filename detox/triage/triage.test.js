@@ -263,7 +263,6 @@ test('a confidently-classified cluster is not rerun to prove what rules already 
     const plan = buildRerunPlan([{signature_hash: 'x', confidence: 0.95, members: [makeFailure()]}], 1);
 
     assert.equal(plan.enabled, false);
-    assert.equal(plan.resolved_by_rules, 1);
 });
 
 test('rerun prefers members carrying a stable test ID', () => {
@@ -323,7 +322,6 @@ test('shared targets do not consume the unique execution-spec budget', () => {
     const plan = buildRerunPlan(clusters, 1, {maxRerunSpecs: 8, maxSpecsPerCluster: 1});
 
     assert.equal(plan.specs.length, 10);
-    assert.equal(plan.execution_specs, 2);
     assert.ok(plan.specs.some((entry) => entry.spec === distinctSpec));
 });
 
@@ -379,7 +377,6 @@ test('a suite verdict cannot suppress a remaining unresolved cluster', () => {
     assert.equal(result.suite_signal.authoritative, false);
     assert.equal(result.clusters[0].needs_ai, true);
     assert.equal(result.needs_ai, true);
-    assert.deepEqual(result.decision.model_clusters, ['aaaaaaaaaaaa']);
 });
 
 test('a non-exhaustive suite signal never replaces resolved cluster verdicts', () => {
@@ -409,7 +406,6 @@ test('tier four with unresolved causes is routed to model adjudication', () => {
 
     assert.equal(result.tier, 3);
     assert.equal(result.needs_ai, true);
-    assert.deepEqual(result.decision.model_clusters, ['unknown']);
 });
 
 // ---------- report parsing ----------
