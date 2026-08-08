@@ -25,10 +25,10 @@ describe('actions/remote/entry/app', () => {
     beforeEach(() => {
         jest.clearAllMocks();
 
-        DatabaseManager.getServerDatabaseAndOperator = jest.fn().mockReturnValue({
-            database: mockDatabase,
-            operator: mockOperator,
-        }) as typeof DatabaseManager.getServerDatabaseAndOperator;
+        jest.spyOn(DatabaseManager, 'getServerDatabaseAndOperator').mockReturnValue({
+            database: mockDatabase as never,
+            operator: mockOperator as never,
+        });
 
         jest.mocked(prepareCommonSystemValues).mockResolvedValue([]);
         jest.mocked(getCurrentUserId).mockResolvedValue('user1');
