@@ -59,46 +59,30 @@ class ChannelBookmarkScreen {
     deleteConfirmCancelButton = element(by.text('Cancel'));
 
     /**
-     * Bookmark options is a bottom sheet with no Cancel row, so dismiss it by swiping a row.
+     * Dismiss the bookmark options bottom sheet (generic_bottom_sheet route). The
+     * sheet content View is exposed as 'undefined.screen' (BottomSheet renders
+     * `${testID}.screen` and generic_bottom_sheet passes no testID); it is unique
+     * while the sheet is open and is the draggable sheet content, so it doubles as
+     * the dismiss target (iOS swipe) and the unmount assertion (not.toExist). This
+     * mirrors PostOptionsScreen.close() — the codebase's working @gorhom dismiss
+     * pattern — instead of probing option-row text, which is ambiguous on Android
+     * (channel info also has a 'Copy Link' row) and gave false 'dismissed' signals
+     * while the sheet was still mounted (SEC-10992 CI 29cdff/59ec6ae/a4c0e33).
      */
     dismissOptionsSheet = async () => {
-        const swipeTargets = [this.deleteOption, this.editOption, this.copyLinkOption, this.shareOption];
-        let sheetVisible = false;
-        /* eslint-disable no-await-in-loop -- probe which option rows are on this sheet */
-        for (const target of swipeTargets) {
-            try {
-                await waitFor(target).toBeVisible().withTimeout(timeouts.TWO_SEC);
-                sheetVisible = true;
-                break;
-            } catch {
-                // Row not present on this sheet variant.
-            }
-        }
-        /* eslint-enable no-await-in-loop */
-
-        if (!sheetVisible) {
-            return;
-        }
-
+        const sheet = element(by.id('undefined.screen'));
         if (isAndroid()) {
             await device.pressBack();
-        } else {
-            /* eslint-disable no-await-in-loop -- swipe the first visible sheet row */
-            for (const target of swipeTargets) {
-                try {
-                    await waitFor(target).toBeVisible().withTimeout(timeouts.TWO_SEC);
-                    await target.swipe('down', 'fast', 0.9, 0.5, 0.1);
-                    await wait(timeouts.ONE_SEC);
-                    break;
-                } catch {
-                    // Try next row.
-                }
+            try {
+                await waitFor(sheet).not.toExist().withTimeout(timeouts.TWO_SEC);
+            } catch {
+                // First back may have only cleared the soft keyboard; retry.
+                await device.pressBack();
             }
-            /* eslint-enable no-await-in-loop */
+        } else {
+            await sheet.swipe('down');
         }
-
-        await waitFor(this.editOption).not.toExist().withTimeout(timeouts.FIVE_SEC);
-        await waitFor(this.copyLinkOption).not.toExist().withTimeout(timeouts.FIVE_SEC);
+        await waitFor(sheet).not.toExist().withTimeout(timeouts.FIVE_SEC);
     };
 
     // Error alert

@@ -30,6 +30,15 @@ appId: ${MAESTRO_APP_ID}
     text: "Enter Server URL"
 - eraseText: 120
 - inputText: ${SITE_1_URL}
+# # SEC-11051 set-and-verify: confirm the field actually holds the full URL before
+# submitting. inputText can drop chars against the controlled RN TextInput, so assert
+# the field text equals SITE_1_URL via copyTextFrom + evalScript (a compiled-regex
+# assertVisible can't interpolate the env var). Requires the RUNNING_E2E-gated
+# accessibility exposure in floating_input_container/floating_text_input_label.
+- copyTextFrom:
+    id: "server_form.server_url.input"
+- evalScript: ${output.urlOk = (maestro.copiedText == SITE_1_URL)}
+- assertTrue: ${output.urlOk}
 - tapOn:
     text: "Display Name"
 - eraseText: 120

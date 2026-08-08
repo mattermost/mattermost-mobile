@@ -165,7 +165,20 @@ export default defineConfig([
       "import/no-unresolved": "off",
       "max-nested-callbacks": "off",
       "no-process-env": "off",
-      "no-unused-expressions": "off"
+      "no-unused-expressions": "off",
+      // SEC-10992: Detox's bare element.longPress() (no duration) resolves to a single
+      // tap on Android (detoxsingletap), not a long press — it fires onPress instead of
+      // onLongPress (e.g. opening a link bookmark's URL in the browser). Always pass an
+      // explicit duration, e.g. .longPress(timeouts.TWO_SEC). The selector matches only
+      // zero-arg calls, so .longPress(timeouts.X) / .longPress(2000) are unaffected, and
+      // Gesture.LongPress (capital L, react-native-gesture-handler) is excluded too.
+      "no-restricted-syntax": [
+        "error",
+        {
+          "selector": "CallExpression[callee.type=\"MemberExpression\"][callee.property.name=\"longPress\"][arguments.length=0]",
+          "message": "Pass an explicit duration to longPress() (e.g. .longPress(timeouts.TWO_SEC)). Bare .longPress() with no args resolves to a single tap on Android, firing onPress instead of onLongPress. See SEC-10992."
+        }
+      ]
     }
   }
 ]);

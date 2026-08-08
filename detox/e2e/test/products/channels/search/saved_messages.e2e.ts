@@ -154,7 +154,7 @@ describe('Search - Saved Messages', () => {
         await ChannelScreen.assertPostMessageEdited(savedPost.id, updatedMessage, 'saved_messages_page');
 
         // # Open post options for updated saved message and tap on reply option
-        await element(by.id(`saved_messages.post_list.post.${savedPost.id}`)).longPress();
+        await element(by.id(`saved_messages.post_list.post.${savedPost.id}`)).longPress(timeouts.TWO_SEC);
         await PostOptionsScreen.replyPostOption.tap();
 
         // * Verify on thread screen
@@ -181,7 +181,7 @@ describe('Search - Saved Messages', () => {
         await waitForElementToBeVisible(element(by.text('Follow')), timeouts.TWO_SEC);
 
         // # Open post options for updated saved message and delete post
-        await element(by.id(`saved_messages.post_list.post.${savedPost.id}`)).longPress();
+        await element(by.id(`saved_messages.post_list.post.${savedPost.id}`)).longPress(timeouts.TWO_SEC);
         await PostOptionsScreen.deletePost({confirm: true});
 
         // * Verify updated saved message is deleted
