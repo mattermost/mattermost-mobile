@@ -133,6 +133,29 @@ jobs:
           fetch-depth: 50
           persist-credentials: false
 
+      # The checkout is at MOBILE_VERSION, so a PR branched before triage landed
+      # has no detox/triage/. That commit predates the feature and triage has
+      # nothing to say about it — so skip the whole thing rather than posting a
+      # red check on every un-rebased PR, which would be pure noise.
+      #
+      # Resolved here, immediately after the checkout, rather than further down:
+      # `adjudicate` is gated on this output, so any step that failed ahead of it
+      # left the output empty and skipped adjudication — and a check that is
+      # absent is not a check that failed closed, it is silence. Keeping the
+      # window down to the checkout itself means a Node or network failure still
+      # gets the full red that adjudicate posts, and `no-verdict` below only has
+      # to cover the one case left.
+      - name: ci/check-tooling
+        id: tooling
+        run: |
+          set -euo pipefail
+          if [ -f detox/triage/triage.js ]; then
+            echo "present=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "present=false" >> "$GITHUB_OUTPUT"
+            echo "::notice::detox/triage is not present at this commit — skipping E2E failure triage."
+          fi
+
       - uses: actions/setup-node@2028fbc5c25fe9cf00d9f06a71cc4710d4507903 # v6.0.0
         with:
           node-version-file: '.nvmrc'
@@ -177,10 +200,6 @@ jobs:
             echo "overlaps=false" >> "$GITHUB_OUTPUT"
           fi
 
-      # The checkout is at MOBILE_VERSION, so a PR branched before triage landed
-      # has no detox/triage/. That commit predates the feature and triage has
-      # nothing to say about it — so skip the whole thing rather than posting a
-      # red check on every un-rebased PR, which would be pure noise.
       # The two TSIO hostnames, in one place. These are the same constants
       # detox/utils/tsio-report-status.js carries (PRODUCTION_URL / STAGING_URL)
       # and the same pair the test-system-io-report-upload action switches
@@ -199,17 +218,6 @@ jobs:
           fi
           echo "url=$URL" >> "$GITHUB_OUTPUT"
           echo "TSIO environment: $URL"
-
-      - name: ci/check-tooling
-        id: tooling
-        run: |
-          set -euo pipefail
-          if [ -f detox/triage/triage.js ]; then
-            echo "present=true" >> "$GITHUB_OUTPUT"
-          else
-            echo "present=false" >> "$GITHUB_OUTPUT"
-            echo "::notice::detox/triage is not present at this commit — skipping E2E failure triage."
-          fi
 
       - name: ci/triage
         id: triage
@@ -487,3 +495,48 @@ jobs:
       ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
       TSIO_API_KEY: ${{ secrets.TSIO_API_KEY }}
       WEBHOOK_URL: ${{ secrets.WEBHOOK_URL }}
+
+  # The one path where nothing above can speak.
+  #
+  # `adjudicate` needs plan's `tooling_present`, and plan cannot report it if it
+  # died before ci/check-tooling ran — so `adjudicate` was skipped and no
+  # `e2e-test/ai-triage` status existed at all. Every other failure mode in this
+  # pipeline resolves to red; this one resolved to nothing, and nothing is not
+  # fail-closed. It reads as "triage had no opinion" when the truth is "triage
+  # never got to look".
+  #
+  # Deliberately checks out nothing and installs nothing: a failing checkout is
+  # the main thing this covers, so it must not depend on one. `gh` is preinstalled
+  # on the runner.
+  no-verdict:
+    name: Report that triage could not run
+    needs: plan
+    # '' means ci/check-tooling never executed, which is the gap. 'false' is the
+    # deliberate silence for a commit predating triage, and 'true' means
+    # adjudicate owns the status — posting here in either case would either
+    # re-red un-rebased PRs or race adjudicate for the same context.
+    if: always() && !cancelled() && needs.plan.outputs.tooling_present == ''
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    permissions:
+      statuses: write
+    steps:
+      - name: ci/post-red
+        env:
+          GH_TOKEN: ${{ secrets.GH_TOKEN || github.token }}
+          REPO: ${{ github.repository }}
+          COMMIT_SHA: ${{ inputs.MOBILE_VERSION }}
+          RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+          PLAN_RESULT: ${{ needs.plan.result }}
+        run: |
+          set -euo pipefail
+          # Duplicated from the toolkit's STATUS_CONTEXT rather than shared: a
+          # workflow cannot import a constant from the repo it calls into, and
+          # posting on a different context would leave the real one absent, which
+          # is the bug this job exists to fix.
+          gh api --method POST "repos/${REPO}/statuses/${COMMIT_SHA}" \
+            -f state=failure \
+            -f context=e2e-test/ai-triage \
+            -f description="triage did not run (plan ${PLAN_RESULT}) — manual triage required" \
+            -f target_url="${RUN_URL}"
+          echo "posted red on e2e-test/ai-triage: plan finished ${PLAN_RESULT} before reaching ci/check-tooling"
