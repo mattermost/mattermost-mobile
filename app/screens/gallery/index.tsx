@@ -61,7 +61,7 @@ const GalleryScreen = ({galleryIdentifier, hideActions, initialIndex, items}: Ga
         };
     }, [onClose]);
 
-    useAndroidHardwareBackHandler(Screens.GALLERY, close);
+    useAndroidHardwareBackHandler(Screens.GALLERY, onClose);
 
     return (
         <View style={containerStyle}>
