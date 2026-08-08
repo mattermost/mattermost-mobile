@@ -9,7 +9,8 @@ import NetworkManager from '@managers/network_manager';
 
 import {updateAgentsVersion} from './version';
 
-const serverUrl = 'agents-remote-version.test.com';
+let testIndex = 0;
+let serverUrl: string;
 
 const mockManifest = {
     id: AGENTS_PLUGIN_ID,
@@ -28,6 +29,7 @@ beforeAll(() => {
 });
 
 beforeEach(async () => {
+    serverUrl = `agents-remote-version-${testIndex++}.test.com`;
     await DatabaseManager.init([serverUrl]);
 });
 
