@@ -2,6 +2,7 @@
 // See LICENSE.txt for license information.
 
 import React, {useCallback, useEffect, useMemo, useRef, useState} from 'react';
+import {defineMessages} from 'react-intl';
 import {Pressable, View} from 'react-native';
 
 import {submitToolApproval} from '@agents/actions/remote/tool_approval';
@@ -18,6 +19,13 @@ import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
 
 import ToolCard from '../tool_card';
+
+const messages = defineMessages({
+    runTools: {
+        id: 'agents.tool_call.run_tools',
+        defaultMessage: 'Run tools',
+    },
+});
 
 interface ToolApprovalSetProps {
     postId: string;
@@ -383,8 +391,7 @@ const ToolApprovalSet = ({postId, toolCalls, approvalStage, canApprove, canExpan
                         testID='agents.tool_approval_set.run_tools'
                     >
                         <FormattedText
-                            id='agents.tool_call.run_tools'
-                            defaultMessage='Run tools'
+                            {...messages.runTools}
                             style={styles.batchButtonText}
                         />
                     </Pressable>
