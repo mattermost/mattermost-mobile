@@ -133,6 +133,10 @@ const ToolApprovalSet = ({postId, toolCalls, approvalStage, canApprove, canExpan
         });
     }, [toolCalls, approvalStage]);
 
+    const pendingToolCalls = useMemo(() => {
+        return toolCalls.filter((call) => call.status === ToolCallStatus.Pending);
+    }, [toolCalls]);
+
     const actionableTools = useMemo(() => {
         // Non-requesters can view but not act, so nothing is actionable for
         // them — this collapses the per-card decision buttons AND the multi-tool
@@ -143,7 +147,7 @@ const ToolApprovalSet = ({postId, toolCalls, approvalStage, canApprove, canExpan
         if (approvalStage === ToolApprovalStage.Call) {
             // Policy-approved calls run server-side, so the user never decides
             // them; waiting on them would block the batch from submitting.
-            return toolCalls.filter((call) => call.status === ToolCallStatus.Pending && !call.would_auto_execute);
+            return pendingToolCalls.filter((call) => !call.would_auto_execute);
         }
         if (approvalStage === ToolApprovalStage.Result) {
             return toolCalls.filter((call) =>
@@ -155,18 +159,14 @@ const ToolApprovalSet = ({postId, toolCalls, approvalStage, canApprove, canExpan
 
         // 'done' stage — server says no decision remains, render no buttons.
         return [];
-    }, [toolCalls, approvalStage, canApprove]);
+    }, [toolCalls, pendingToolCalls, approvalStage, canApprove]);
 
     // A round where every pending call is policy-approved was interrupted
     // mid-execution: nothing needs a decision, but the server still has to be
     // told to resume, so the cards stay visible with a resume button.
-    const isInterruptedAutoRound = useMemo(() => {
-        if (!isCallStage) {
-            return false;
-        }
-        const pending = toolCalls.filter((call) => call.status === ToolCallStatus.Pending);
-        return pending.length > 0 && pending.every((call) => call.would_auto_execute);
-    }, [isCallStage, toolCalls]);
+    const isInterruptedAutoRound = isCallStage &&
+        pendingToolCalls.length > 0 &&
+        pendingToolCalls.every((call) => call.would_auto_execute);
 
     const submitDecisions = useCallback(async (decisions: ToolDecision) => {
         const approvedToolIds = Object.entries(decisions).
