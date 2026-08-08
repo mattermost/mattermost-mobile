@@ -551,12 +551,12 @@ jobs:
       pull-requests: write
       issues: write
       id-token: write
-    uses: mattermost/mattermost-test-automation-toolkit/.github/workflows/e2e-ai-triage.yml@cursor/fix-e2e-triage-toolkit-00d9
+    uses: mattermost/mattermost-test-automation-toolkit/.github/workflows/e2e-ai-triage.yml@claude/e2e-ai-triage
     with:
       # REVERT WITH THE uses: PIN ABOVE. The toolkit cannot derive its own ref —
       # inside a called reusable workflow the github context describes this
       # caller — so the branch has to be named twice while testing.
-      toolkit_ref: cursor/fix-e2e-triage-toolkit-00d9
+      toolkit_ref: claude/e2e-ai-triage
       target_repo: ${{ github.repository }}
       commit_sha: ${{ inputs.MOBILE_VERSION }}
       pr_number: ${{ inputs.pr_number }}
