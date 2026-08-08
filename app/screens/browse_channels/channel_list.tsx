@@ -64,7 +64,7 @@ export default function ChannelList({
 
     const style = getStyleFromTheme(theme);
     const keyboardHeight = useKeyboardHeight();
-    const noResutsStyle = useMemo(() => [
+    const noResultsStyle = useMemo(() => [
         style.noResultContainer,
         {paddingBottom: keyboardHeight},
     ], [style, keyboardHeight]);
@@ -98,14 +98,14 @@ export default function ChannelList({
     const renderNoResults = useCallback(() => {
         if (term) {
             return (
-                <View style={noResutsStyle}>
+                <View style={noResultsStyle}>
                     <NoResultsWithTerm term={term}/>
                 </View>
             );
         }
 
         return (
-            <View style={noResutsStyle}>
+            <View style={noResultsStyle}>
                 <FormattedText
                     id='browse_channels.noMore'
                     defaultMessage='No more channels to join'
@@ -113,7 +113,7 @@ export default function ChannelList({
                 />
             </View>
         );
-    }, [style, term, noResutsStyle]);
+    }, [style, term, noResultsStyle]);
 
     const renderSeparator = useCallback(() => (
         <View
