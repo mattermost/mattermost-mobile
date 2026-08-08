@@ -104,7 +104,7 @@ test('CMT triages every server version with isolated artifacts and status contex
 });
 
 test('human triage overrides delegate platform reposting to E2E Override label handling', () => {
-    assert.match(overrideWorkflow, /e2e-ai-triage-override\.yml@a0d93b896bf68567149de15e76290d3c95d18007/);
+    assert.match(overrideWorkflow, /e2e-ai-triage-override\.yml@6bc0833b99d3c5cbb0e9a96005f53c75691e19ac/);
     assert.doesNotMatch(overrideWorkflow, /repost-platform-contexts:/);
     assert.doesNotMatch(overrideWorkflow, /E2E\/AI-Waived — maintainer triage override/);
 });
