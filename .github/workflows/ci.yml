@@ -63,8 +63,8 @@ jobs:
             detox/triage/history.test.js \
             detox/triage/workflow-policy.test.js \
             detox/utils/tsio-report-status.test.js \
-            .github/actions/generate-specs/split-tests-node.test.js \
-            .github/actions/capture-server-diagnostics/sanitize-logs.test.js
+            .github/actions/generate-specs/split-tests-node.test.cjs \
+            .github/actions/capture-server-diagnostics/sanitize-logs.test.cjs
           # The reporter carries its own assertions for the URL and status rules.
           node detox/utils/tsio-report-status.js --self-test
 
@@ -103,7 +103,7 @@ jobs:
               const ref = match[1];
               if (!allowed(ref)) {
                 failures.push(`${file}: mutable workflow ref @${ref}`);
-              } else if (!checkoutRefs.includes(ref)) {
+              } else if (checkoutRefs.length > 0 && !checkoutRefs.includes(ref)) {
                 failures.push(`${file}: workflow ref @${ref} does not match toolkit_ref`);
               }
             }

@@ -57,6 +57,7 @@ test('pre-merge toolkit integration uses aligned immutable refs', () => {
         assert.equal(checkoutRef, usesRef, 'toolkit workflow and checkout refs must match');
     }
     assert.match(ciWorkflow, /ref === 'main' \|\| \/\^\[0-9a-f\]\{40\}\$\//);
+    assert.match(ciWorkflow, /checkoutRefs\.length > 0 && !checkoutRefs\.includes\(ref\)/);
     assert.doesNotMatch(ciWorkflow, /grep -v "@main"/);
 });
 

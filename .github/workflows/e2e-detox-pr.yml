@@ -1019,6 +1019,9 @@ jobs:
       run_type: ${{ inputs.run_type }}
       version_name: ${{ inputs.version_name }}
       platform: ${{ inputs.PLATFORM }}
+      # PR #101 is deployed to staging for pre-merge integration testing.
+      # Revert to false after the TSIO changes merge to production.
+      use_staging: true
       # A selected platform with no count is unknown, not zero.
       expected_detox_ios_reports: ${{ (inputs.PLATFORM == 'ios' || inputs.PLATFORM == 'both') && (needs.run-detox-ios.outputs.expected_ios_reports || '-1') || '0' }}
       expected_detox_ipad_reports: ${{ (inputs.PLATFORM == 'ios' || inputs.PLATFORM == 'both') && (needs.run-detox-ios.outputs.expected_ipad_reports || '-1') || '0' }}
