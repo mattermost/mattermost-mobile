@@ -86,6 +86,9 @@ const ToolApprovalSet = ({postId, toolCalls, approvalStage, canApprove, canExpan
     const [expandedTools, setExpandedTools] = useState<Record<string, boolean>>({});
     const [toolDecisions, setToolDecisions] = useState<ToolDecision>({});
 
+    const isCallStage = approvalStage === ToolApprovalStage.Call;
+    const isResultStage = approvalStage === ToolApprovalStage.Result;
+
     // Reset decisions when approval stage transitions (e.g., Phase 1 → Phase 2)
     const prevStageRef = useRef(approvalStage);
     useEffect(() => {
@@ -138,7 +141,9 @@ const ToolApprovalSet = ({postId, toolCalls, approvalStage, canApprove, canExpan
             return [];
         }
         if (approvalStage === ToolApprovalStage.Call) {
-            return toolCalls.filter((call) => call.status === ToolCallStatus.Pending);
+            // Policy-approved calls run server-side, so the user never decides
+            // them; waiting on them would block the batch from submitting.
+            return toolCalls.filter((call) => call.status === ToolCallStatus.Pending && !call.would_auto_execute);
         }
         if (approvalStage === ToolApprovalStage.Result) {
             return toolCalls.filter((call) =>
@@ -151,6 +156,17 @@ const ToolApprovalSet = ({postId, toolCalls, approvalStage, canApprove, canExpan
         // 'done' stage — server says no decision remains, render no buttons.
         return [];
     }, [toolCalls, approvalStage, canApprove]);
+
+    // A round where every pending call is policy-approved was interrupted
+    // mid-execution: nothing needs a decision, but the server still has to be
+    // told to resume, so the cards stay visible with a resume button.
+    const isInterruptedAutoRound = useMemo(() => {
+        if (!isCallStage) {
+            return false;
+        }
+        const pending = toolCalls.filter((call) => call.status === ToolCallStatus.Pending);
+        return pending.length > 0 && pending.every((call) => call.would_auto_execute);
+    }, [isCallStage, toolCalls]);
 
     const submitDecisions = useCallback(async (decisions: ToolDecision) => {
         const approvedToolIds = Object.entries(decisions).
@@ -217,6 +233,15 @@ const ToolApprovalSet = ({postId, toolCalls, approvalStage, canApprove, canExpan
     const handleAcceptAll = usePreventDoubleTap(useCallback(() => handleBatchDecision(true), [handleBatchDecision]));
     const handleRejectAll = usePreventDoubleTap(useCallback(() => handleBatchDecision(false), [handleBatchDecision]));
 
+    // Resuming carries no decisions: the server re-checks the policy for each
+    // marked call, so an empty accepted list is what restarts execution.
+    const handleRunTools = usePreventDoubleTap(useCallback(async () => {
+        if (isSubmitting) {
+            return;
+        }
+        await submitDecisions({});
+    }, [isSubmitting, submitDecisions]));
+
     const toggleCollapse = useCallback((toolId: string) => {
         const tool = toolCalls.find((t) => t.id === toolId);
         const isActionableTool = tool ? actionableTools.some((a) => a.id === tool.id) : false;
@@ -237,8 +262,7 @@ const ToolApprovalSet = ({postId, toolCalls, approvalStage, canApprove, canExpan
     }
 
     const actionableIds = new Set(actionableTools.map((t) => t.id));
-    const isCallStage = approvalStage === ToolApprovalStage.Call;
-    const isResultStage = approvalStage === ToolApprovalStage.Result;
+    const showResumeControls = isInterruptedAutoRound && canApprove;
 
     const isToolCollapsed = (tool: ToolCall) => {
         // Auto-approved tools default collapsed; the user never interacted with them.
@@ -261,13 +285,21 @@ const ToolApprovalSet = ({postId, toolCalls, approvalStage, canApprove, canExpan
             testID='agents.tool_approval_set'
         >
             {toolCalls.map((tool) => {
+                // In a mixed approval batch, policy-approved calls stay hidden
+                // until the user's decisions let the server run them; they
+                // reappear as auto-approved cards once executed. Live calls and
+                // interrupted all-auto rounds remain visible.
+                if (tool.status === ToolCallStatus.Pending && tool.would_auto_execute && isCallStage && !isInterruptedAutoRound) {
+                    return null;
+                }
+
                 const isActionable = actionableIds.has(tool.id);
                 return (
                     <ToolCard
                         key={tool.id}
                         tool={tool}
                         isCollapsed={isToolCollapsed(tool)}
-                        isProcessing={isActionable && isSubmitting}
+                        isProcessing={(isActionable || isInterruptedAutoRound) && isSubmitting}
                         localDecision={isActionable ? toolDecisions[tool.id] : undefined}
                         onToggleCollapse={toggleCollapse}
                         onApprove={isActionable ? handleApprove : undefined}
@@ -282,7 +314,7 @@ const ToolApprovalSet = ({postId, toolCalls, approvalStage, canApprove, canExpan
                 );
             })}
 
-            {actionableTools.length > 1 && isSubmitting && (
+            {(actionableTools.length > 1 || showResumeControls) && isSubmitting && (
                 <View
                     style={styles.statusBar}
                     testID='agents.tool_approval_set.submitting'
@@ -334,6 +366,25 @@ const ToolApprovalSet = ({postId, toolCalls, approvalStage, canApprove, canExpan
                             />
                         </Pressable>
                     </View>
+                </View>
+            )}
+
+            {showResumeControls && !isSubmitting && (
+                <View
+                    style={styles.statusBar}
+                    testID='agents.tool_approval_set.resume'
+                >
+                    <Pressable
+                        onPress={handleRunTools}
+                        style={({pressed}) => [styles.batchButton, pressed && {opacity: 0.72}]}
+                        testID='agents.tool_approval_set.run_tools'
+                    >
+                        <FormattedText
+                            id='agents.tool_call.run_tools'
+                            defaultMessage='Run tools'
+                            style={styles.batchButtonText}
+                        />
+                    </Pressable>
                 </View>
             )}
         </View>

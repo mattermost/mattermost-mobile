@@ -42,7 +42,7 @@ describe('ToolCard', () => {
         onToggleCollapse: jest.fn(),
         onApprove: jest.fn(),
         onReject: jest.fn(),
-        approvalStage: ToolApprovalStage.Done,
+        approvalStage: ToolApprovalStage.Call,
     });
 
     describe('tool name display', () => {
@@ -170,6 +170,26 @@ describe('ToolCard', () => {
             props.tool = createMockTool({status: ToolCallStatus.Success});
             const {queryByText} = renderWithIntlAndTheme(<ToolCard {...props}/>);
 
+            expect(queryByText('Accept')).toBeNull();
+            expect(queryByText('Reject')).toBeNull();
+        });
+
+        it('should never show accept/reject for a pending tool that will auto-execute', () => {
+            const props = getBaseProps();
+            props.tool = createMockTool({status: ToolCallStatus.Pending, would_auto_execute: true});
+            const {queryByText} = renderWithIntlAndTheme(<ToolCard {...props}/>);
+
+            expect(queryByText('Accept')).toBeNull();
+            expect(queryByText('Reject')).toBeNull();
+        });
+
+        it('should show a spinner without buttons for a live auto-executing tool', () => {
+            const props = getBaseProps();
+            props.tool = createMockTool({status: ToolCallStatus.Pending, would_auto_execute: true});
+            props.approvalStage = ToolApprovalStage.Done;
+            const {getByTestId, queryByText} = renderWithIntlAndTheme(<ToolCard {...props}/>);
+
+            expect(getByTestId('tool-loading')).toBeTruthy();
             expect(queryByText('Accept')).toBeNull();
             expect(queryByText('Reject')).toBeNull();
         });

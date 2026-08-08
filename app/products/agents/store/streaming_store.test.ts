@@ -323,6 +323,28 @@ describe('StreamingStoreSingleton', () => {
             expect(state?.toolCalls[0].result).toBe('ok');
             expect(state?.toolCalls[1].status).toBe(ToolCallStatus.Pending);
         });
+
+        it('should take would_auto_execute from the latest event so a resolved call drops the flag', () => {
+            const postId = 'post123';
+            streamingStore.startStreaming(SERVER_URL, postId);
+
+            streamingStore.updateToolCalls(SERVER_URL, postId, JSON.stringify([
+                {id: 'a', name: 'search', description: '', arguments: {}, status: ToolCallStatus.Pending, would_auto_execute: true},
+                {id: 'b', name: 'read', description: '', arguments: {}, status: ToolCallStatus.Pending, would_auto_execute: true},
+            ]));
+
+            let state = streamingStore.getStreamingState(SERVER_URL, postId);
+            expect(state?.toolCalls.map((t) => t.would_auto_execute)).toEqual([true, true]);
+
+            // The server omits the flag once the call resolves.
+            streamingStore.updateToolCalls(SERVER_URL, postId, JSON.stringify([
+                {id: 'a', name: 'search', description: '', arguments: {}, status: ToolCallStatus.AutoApproved, result: 'ok'},
+            ]));
+
+            state = streamingStore.getStreamingState(SERVER_URL, postId);
+            expect(state?.toolCalls[0].would_auto_execute).toBeUndefined();
+            expect(state?.toolCalls[1].would_auto_execute).toBe(true);
+        });
     });
 
     describe('round snapshotting', () => {
