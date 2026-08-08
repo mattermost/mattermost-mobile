@@ -7,6 +7,7 @@ import {StyleSheet, View} from 'react-native';
 import Checklist from './checklist';
 
 import type PlaybookChecklistModel from '@playbooks/types/database/models/playbook_checklist';
+import type {TaskFilters} from '@playbooks/utils/task_filters';
 
 type Props = {
     checklists: Array<PlaybookChecklistModel | PlaybookChecklist>;
@@ -15,6 +16,10 @@ type Props = {
     playbookRunName: string;
     isFinished: boolean;
     isParticipant: boolean;
+    filters: TaskFilters;
+    currentUserId: string;
+    collapseAll: boolean;
+    collapseAllEpoch: number;
 }
 
 const styles = StyleSheet.create({
@@ -30,6 +35,10 @@ const ChecklistList = ({
     playbookRunName,
     isFinished,
     isParticipant,
+    filters,
+    currentUserId,
+    collapseAll,
+    collapseAllEpoch,
 }: Props) => {
     return (
         <View style={(isFinished || !isParticipant) ? styles.container : undefined}>
@@ -43,6 +52,10 @@ const ChecklistList = ({
                     checklistNumber={index}
                     isFinished={isFinished}
                     isParticipant={isParticipant}
+                    filters={filters}
+                    currentUserId={currentUserId}
+                    collapseAll={collapseAll}
+                    collapseAllEpoch={collapseAllEpoch}
                 />
             ))}
         </View>
