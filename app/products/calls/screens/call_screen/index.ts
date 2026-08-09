@@ -11,6 +11,7 @@ import {observeCurrentCall, observeGlobalCallsState} from '@calls/state';
 import {General} from '@constants';
 import {observeChannel} from '@queries/servers/channel';
 import {observeTeammateNameDisplay, observeUser} from '@queries/servers/user';
+import {isDMChannel} from '@utils/channel';
 import {getUserIdFromChannelName} from '@utils/user';
 
 import type {WithDatabaseArgs} from '@typings/database/database';
@@ -44,6 +45,10 @@ const enhanced = withObservables([], ({database}: WithDatabaseArgs) => {
         combineLatestWith(dmUser),
         switchMap(([cc, dm]) => of$(cc?.myUserId === dm?.id)),
     );
+    const isDM = channel.pipe(
+        switchMap((c) => of$(isDMChannel(c?.type))),
+        distinctUntilChanged(),
+    );
     const displayName = channel.pipe(switchMap((c) => of$(c?.displayName)));
 
     return {
@@ -53,6 +58,7 @@ const enhanced = withObservables([], ({database}: WithDatabaseArgs) => {
         teammateNameDisplay,
         displayName,
         isOwnDirectMessage,
+        isDM,
         ...observeEndCallDetails(),
     };
 });
