@@ -178,6 +178,48 @@ function classifyCluster(clusterRecord, opts = {}) {
     };
 }
 
+function applyContextualRules(clusterRecord, summary) {
+    const representative = clusterRecord.members[0];
+    const maestroDriverUnavailable =
+        representative.framework === 'maestro' &&
+        /io\.grpc\.StatusRuntimeException:\s*UNAVAILABLE[\s\S]{0,3000}MaestroDriverGrpc/i.
+            test(representative.error_message);
+    if (!maestroDriverUnavailable) {
+        return clusterRecord;
+    }
+
+    const shardRecovered = summary.shards.some((shard) =>
+        shard.shard === representative.shard &&
+        shard.platform === representative.platform &&
+        shard.passed > 0,
+    );
+    if (!shardRecovered) {
+        return clusterRecord;
+    }
+
+    return {
+        ...clusterRecord,
+        matched_signatures: [
+            {
+                id: 'device.maestro-grpc-unavailable',
+                label: 'Maestro lost its device-driver connection',
+                verdict: 'FLAKY_INFRA',
+                weight: 0.95,
+            },
+            {
+                id: 'device.maestro-shard-recovered',
+                label: 'the same Maestro shard completed other flows',
+                verdict: 'FLAKY_INFRA',
+                weight: 0.95,
+            },
+        ],
+        rule_verdict: 'FLAKY_INFRA',
+        confidence: 0.95,
+        needs_ai: false,
+        reason: 'Maestro temporarily lost its driver connection and recovered within the same shard',
+    };
+}
+
 /**
  * Choose which specs to rerun.
  *
@@ -296,7 +338,9 @@ function buildDecision(clusters, suiteVerdict) {
  */
 function classify({summary, failures}, opts = {}) {
     const o = {...DEFAULTS, ...opts};
-    const clusters = cluster(failures).map((c) => classifyCluster(c, o));
+    const clusters = cluster(failures).
+        map((c) => classifyCluster(c, o)).
+        map((c) => applyContextualRules(c, summary));
     const tierInfo = pickTier(summary, failures.length, o);
     const suiteHit = matchSuiteRules(summary);
 
@@ -368,5 +412,6 @@ module.exports = {
     classifyCluster,
     buildRerunPlan,
     buildDecision,
+    applyContextualRules,
     classify,
 };

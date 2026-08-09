@@ -671,6 +671,66 @@ test('a lost Maestro driver is recognised, and only for Maestro', () => {
     assert.ok(!detoxIds.includes('device.maestro-driver-lost'));
 });
 
+test('a Maestro gRPC outage that recovers in the same shard is confirmed flaky infra', () => {
+    const shard = 'maestro-android-results-1';
+    const error = [
+        'io.grpc.StatusRuntimeException: UNAVAILABLE',
+        'at maestro_android.MaestroDriverGrpc$MaestroDriverBlockingStub.deviceInfo(MaestroDriverGrpc.java:740)',
+    ].join('\n');
+    const result = classify({
+        summary: makeSummary({
+            totalTests: 9,
+            passed: 8,
+            failed: 1,
+            shards: [{shard, platform: 'android', total: 9, passed: 8, failed: 1, skipped: 0}],
+            platforms: ['android'],
+            reportsFound: 1,
+        }),
+        failures: [makeFailure({
+            test_id: null,
+            spec: null,
+            framework: 'maestro',
+            platform: 'android',
+            shard,
+            error_message: error,
+            signature_hash: 'grpc-unavailable',
+        })],
+    });
+    const [classified] = result.clusters;
+
+    assert.equal(classified.rule_verdict, 'FLAKY_INFRA');
+    assert.equal(classified.confidence, 0.95);
+    assert.equal(classified.needs_ai, false);
+    assert.equal(classified.matched_signatures.length, 2);
+    assert.equal(result.needs_ai, false);
+});
+
+test('a Maestro gRPC outage without shard recovery still requires adjudication', () => {
+    const shard = 'maestro-android-results-1';
+    const result = classify({
+        summary: makeSummary({
+            totalTests: 1,
+            passed: 0,
+            failed: 1,
+            shards: [{shard, platform: 'android', total: 1, passed: 0, failed: 1, skipped: 0}],
+            platforms: ['android'],
+            reportsFound: 1,
+        }),
+        failures: [makeFailure({
+            test_id: null,
+            spec: null,
+            framework: 'maestro',
+            platform: 'android',
+            shard,
+            error_message: 'io.grpc.StatusRuntimeException: UNAVAILABLE at MaestroDriverGrpc.deviceInfo',
+            signature_hash: 'grpc-unavailable',
+        })],
+    });
+
+    assert.equal(result.clusters[0].rule_verdict, null);
+    assert.equal(result.needs_ai, true);
+});
+
 test('a rerun that only half reported cannot clear a flake', () => {
     const {specOutcome} = require('./rerun');
     const report = {
