@@ -125,6 +125,12 @@ describe('Search - Search Messages', () => {
         await ChannelListScreen.toBeVisible();
     });
 
+    // SEC-10996: MM-T5294_3 was the root flake that cascaded into _4.._9 (CI 29964359308).
+    // Left UNSKIPPED (not just carried along) after verifying it is stable: PASSED on both
+    // iOS (shard ios-15) and Android (shard android-3) in CI run 31281879487 (HEAD ab3cf5127,
+    // green) and in 31276319392 (12b40b0114, whose only failures were classification-banner
+    // + Maestro TLS infra, not this test). The beforeEach close/back recovery above
+    // isolates the cascade.
     it('MM-T5294_3 - should be able to search messages in a specific channel', async () => {
         // # Open a channel screen, post a message, go back to channel list screen, and open search messages screen
         const message = `Message ${getRandomId()}`;
