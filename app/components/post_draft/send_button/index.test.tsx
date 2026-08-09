@@ -2,19 +2,22 @@
 // See LICENSE.txt for license information.
 
 import React from 'react';
+import {of} from 'rxjs';
 
-import {storeGlobal} from '@actions/app/global';
 import {Tutorial} from '@constants';
-import {SYSTEM_IDENTIFIERS} from '@constants/database';
 import DatabaseManager from '@database/manager';
+import {observeTutorialWatched} from '@queries/app/global';
 import {renderWithEverything, waitFor} from '@test/intl-test-helper';
 
 import SendButton from './send_button';
 
 import EnhancedSendButton from './index';
 
-import type ServerDataOperator from '@database/operator/server_data_operator';
 import type {Database} from '@nozbe/watermelondb';
+
+jest.mock('@queries/app/global', () => ({
+    observeTutorialWatched: jest.fn(),
+}));
 
 jest.mock('./send_button', () => ({
     __esModule: true,
@@ -24,19 +27,16 @@ jest.mock('./send_button', () => ({
 jest.mocked(SendButton).mockImplementation((props) => React.createElement('SendButton', {...props, testID: 'send-button'}));
 
 describe('SendButton', () => {
-    const serverUrl = 'server-1';
-    const teamId = 'team1';
+    let testIndex = 0;
+    let serverUrl: string;
     let database: Database;
-    let operator: ServerDataOperator;
     let unmount: () => void;
 
     beforeEach(async () => {
+        serverUrl = `send-button-${testIndex++}.test.com`;
         await DatabaseManager.init([serverUrl]);
-        const serverDatabaseAndOperator = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
-        database = serverDatabaseAndOperator.database;
-        operator = serverDatabaseAndOperator.operator;
-
-        await operator.handleSystem({systems: [{id: SYSTEM_IDENTIFIERS.CURRENT_TEAM_ID, value: teamId}], prepareRecordsOnly: false});
+        database = DatabaseManager.getServerDatabaseAndOperator(serverUrl).database;
+        jest.mocked(observeTutorialWatched).mockReturnValue(of(false));
     });
 
     afterEach(async () => {
@@ -45,7 +45,6 @@ describe('SendButton', () => {
         // unwrapped state updates after the test ends.
         unmount?.();
         await DatabaseManager.destroyServerDatabase(serverUrl);
-        await storeGlobal(Tutorial.SCHEDULED_POST, null, false);
     });
 
     const defaultProps: Parameters<typeof EnhancedSendButton>[0] = {
@@ -60,10 +59,11 @@ describe('SendButton', () => {
         const {getByTestId, unmount: u} = renderWithEverything(<EnhancedSendButton {...defaultProps}/>, {database});
         unmount = u;
         await waitFor(() => expect(getByTestId('send-button').props.scheduledPostFeatureTooltipWatched).toBe(false));
+        expect(observeTutorialWatched).toHaveBeenCalledWith(Tutorial.SCHEDULED_POST);
     });
 
     it('should return true if the scheduled post tutorial is watched', async () => {
-        await storeGlobal(Tutorial.SCHEDULED_POST, 'true', false);
+        jest.mocked(observeTutorialWatched).mockReturnValue(of(true));
         const {getByTestId, unmount: u} = renderWithEverything(<EnhancedSendButton {...defaultProps}/>, {database});
         unmount = u;
         await waitFor(() => expect(getByTestId('send-button').props.scheduledPostFeatureTooltipWatched).toBe(true));
