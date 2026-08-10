@@ -140,10 +140,10 @@ describe('Search - Search Messages', () => {
     // SEC-10996: MM-T5294_3 was the root flake that cascaded into _4.._9 (CI 29964359308).
     // It passed on iOS in runs 31276319392 and 31281879487, then failed again in
     // 31329196036 and took _4.._8 with it, so it is intermittent rather than fixed. Both
-    // legs of that failure are addressed above: the corner-tap below (the centre tap is
-    // not hittable when the autocomplete header clips the row) and the searchClearButton
-    // reset in beforeEach (close/back alone leaves the query in the box, which is what
-    // turned one failure into six).
+    // legs of that failure are addressed: the 100%-threshold wait below (the row is a few
+    // px short of fully visible while the autocomplete card settles) and the
+    // searchClearButton reset in beforeEach (close/back alone leaves the query in the box,
+    // which is what turned one failure into six).
     it('MM-T5294_3 - should be able to search messages in a specific channel', async () => {
         // # Open a channel screen, post a message, go back to channel list screen, and open search messages screen
         const message = `Message ${getRandomId()}`;
@@ -161,13 +161,16 @@ describe('Search - Search Messages', () => {
         await SearchMessagesScreen.searchModifierIn.tap({x: 1, y: 1});
         await SearchMessagesScreen.searchInput.typeText(testChannel.name);
         const {channelMentionItem} = Autocomplete.getChannelMentionItem(testChannel.name);
-        await waitForElementToBeVisible(channelMentionItem, timeouts.TWO_SEC);
 
-        // Corner-tap: the wait above uses iOS's 75% threshold but tap() demands 100%, and
-        // the "PUBLIC CHANNELS" header card clips the row's top edge — so a centre tap
-        // fails with "not hittable at its visible point" on a row that is fully on screen
-        // (CI 31329196036 MM-T5294_3, view bounds 352x40, point {176, 20}).
-        await channelMentionItem.tap({x: 1, y: 1});
+        // Wait at the SAME threshold tap() enforces. waitForElementToBeVisible defaults to
+        // 75% on iOS while an action requires 100%, so the old wait let the test tap while
+        // the autocomplete card was still settling and the row was a few px short of fully
+        // visible — "View does not pass visibility percent threshold (100)" on a row the
+        // screenshot shows plainly on screen. That gate is whole-view, so passing a tap
+        // point does not bypass it: CI 31329196036 failed at the centre {176, 20} and
+        // 31368420580 failed again at the corner {1, 1}, both with 352x40 bounds.
+        await waitForElementToBeVisible(channelMentionItem, timeouts.TEN_SEC, timeouts.HALF_SEC, 100);
+        await channelMentionItem.tap();
         await SearchMessagesScreen.searchInput.tapReturnKey();
 
         // * Verify search results contain messages in channel
