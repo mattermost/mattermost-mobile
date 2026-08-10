@@ -27,6 +27,11 @@ try {
 }
 
 if (cfg.status_context && cfg.composite_identity?.name) {
+  // Keep pass-through total_reports_expected aligned with the worker matrix.
+  const workers = process.env.TSIO_WORKERS ? Number.parseInt(process.env.TSIO_WORKERS, 10) : undefined;
+  if (Number.isFinite(workers) && workers > 0) {
+    cfg.total_reports_expected = workers;
+  }
   process.stdout.write(JSON.stringify(cfg));
   process.exit(0);
 }

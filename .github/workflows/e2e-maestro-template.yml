@@ -103,8 +103,12 @@ env:
 jobs:
   begin:
     name: orch-begin-${{ inputs.tsio-shard-name != '' && inputs.tsio-shard-name || format('maestro-{0}', inputs.platform) }}
-    if: inputs.tsio-config != '' && vars.TSIO_UPLOAD_ENABLED != 'false'
+    if: inputs.tsio-config != ''
     runs-on: ubuntu-24.04
+    permissions:
+      contents: read
+      id-token: write
+      statuses: write
     outputs:
       identity-json: ${{ steps.cfg.outputs.identity-json }}
       status-context: ${{ steps.cfg.outputs.status-context }}
@@ -208,15 +212,22 @@ jobs:
           idle-timeout-ms: "5400000"
 
       - name: Begin summary
+        env:
+          PLATFORM: ${{ inputs.platform }}
+          REPORT_URL: ${{ steps.begin.outputs.report-url }}
+          TOTAL_UNITS: ${{ steps.begin.outputs.total-units }}
+          WORKERS: ${{ inputs.parallelism }}
+          FLOW_PATH: ${{ steps.paths.outputs.maestro-flow-path }}
+          EXCLUDE_TAGS: ${{ steps.exclude-tags.outputs.tags }}
         run: |
           {
-            echo "## Maestro ${{ inputs.platform }} orchestration begin"
+            echo "## Maestro ${PLATFORM} orchestration begin"
             echo ""
-            echo "- report: ${{ steps.begin.outputs.report-url }}"
-            echo "- total units: ${{ steps.begin.outputs.total-units }}"
-            echo "- workers: ${{ inputs.parallelism }}"
-            echo "- flow path: \`${{ steps.paths.outputs.maestro-flow-path }}\`"
-            echo "- exclude tags: \`${{ steps.exclude-tags.outputs.tags }}\`"
+            echo "- report: ${REPORT_URL}"
+            echo "- total units: ${TOTAL_UNITS}"
+            echo "- workers: ${WORKERS}"
+            echo "- flow path: \`${FLOW_PATH}\`"
+            echo "- exclude tags: \`${EXCLUDE_TAGS}\`"
           } >> "$GITHUB_STEP_SUMMARY"
 
   workers-ios:
@@ -225,6 +236,10 @@ jobs:
     if: needs.begin.result == 'success' && (inputs.platform == 'ios' || inputs.platform == '')
     runs-on: macos-26
     timeout-minutes: 120
+    permissions:
+      contents: read
+      id-token: write
+      actions: read
     strategy:
       fail-fast: false
       matrix:
@@ -359,6 +374,10 @@ jobs:
           set -a
           source detox/maestro/.maestro-test-env.sh
           set +a
+          for secret_var in TEST_USER_PASSWORD ADMIN_TOKEN ADMIN_PASSWORD ADMIN_EMAIL; do
+            value="${!secret_var:-}"
+            [ -n "$value" ] && echo "::add-mask::${value}"
+          done
           {
             echo "env<<EOF"
             echo "SITE_1_URL=${SITE_1_URL}"
@@ -424,6 +443,10 @@ jobs:
     if: needs.begin.result == 'success' && inputs.platform == 'android'
     runs-on: ubuntu-latest-8-cores
     timeout-minutes: 120
+    permissions:
+      contents: read
+      id-token: write
+      actions: read
     strategy:
       fail-fast: false
       matrix:
@@ -612,6 +635,10 @@ jobs:
           set -a
           source detox/maestro/.maestro-test-env.sh
           set +a
+          for secret_var in TEST_USER_PASSWORD ADMIN_TOKEN ADMIN_PASSWORD ADMIN_EMAIL; do
+            value="${!secret_var:-}"
+            [ -n "$value" ] && echo "::add-mask::${value}"
+          done
           {
             echo "env<<EOF"
             echo "SITE_1_URL=${SITE_1_URL}"
@@ -699,3 +726,44 @@ jobs:
           SUMMARY_OUTCOME: ${{ steps.summary.outcome }}
         run: |
           [ "$SUMMARY_OUTCOME" = "success" ]
+
+  finalize-skipped:
+    name: finalize-skipped-${{ inputs.tsio-shard-name != '' && inputs.tsio-shard-name || format('maestro-{0}', inputs.platform) }}
+    needs: [begin]
+    if: always() && needs.begin.result == 'skipped' && inputs.tsio-config != ''
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: read
+      statuses: write
+    steps:
+      - name: Checkout helpers
+        uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
+        with:
+          ref: ${{ inputs.MOBILE_VERSION }}
+          persist-credentials: false
+          sparse-checkout: |
+            detox/utils
+            .github/actions/update-commit-status
+
+      - name: Resolve TSIO config
+        id: cfg
+        env:
+          TSIO_CONFIG: ${{ inputs.tsio-config }}
+          TSIO_SHARD_NAME: ${{ inputs.tsio-shard-name }}
+          TSIO_WORKERS: ${{ inputs.parallelism }}
+        run: |
+          set -euo pipefail
+          CFG=$(bash detox/utils/resolve-tsio-job-config.sh)
+          echo "status-context=$(echo "$CFG" | jq -r '.status_context')" >> "$GITHUB_OUTPUT"
+          echo "commit-sha=$(echo "$CFG" | jq -r '.composite_identity.commit_sha')" >> "$GITHUB_OUTPUT"
+
+      - name: Mark commit status skipped
+        uses: ./.github/actions/update-commit-status
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          repository_full_name: ${{ github.repository }}
+          commit_sha: ${{ steps.cfg.outputs.commit-sha }}
+          context: ${{ steps.cfg.outputs.status-context }}
+          description: "E2E orchestration skipped"
+          status: error

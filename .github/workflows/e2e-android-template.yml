@@ -144,7 +144,7 @@ permissions:
 jobs:
   begin:
     name: orch-begin-${{ inputs.tsio-shard-name != '' && inputs.tsio-shard-name || 'detox-android' }}
-    if: inputs.run-android-tests && inputs.tsio-config != '' && vars.TSIO_UPLOAD_ENABLED != 'false'
+    if: inputs.run-android-tests && inputs.tsio-config != ''
     runs-on: ubuntu-24.04
     outputs:
       identity-json: ${{ steps.cfg.outputs.identity-json }}
@@ -243,14 +243,19 @@ jobs:
           idle-timeout-ms: "9000000"
 
       - name: Begin summary
+        env:
+          REPORT_URL: ${{ steps.begin.outputs.report-url }}
+          TOTAL_UNITS: ${{ steps.begin.outputs.total-units }}
+          WORKERS: ${{ inputs.parallelism }}
+          SEARCH_PATH: ${{ steps.paths.outputs.detox-search-path }}
         run: |
           {
             echo "## Detox Android orchestration begin"
             echo ""
-            echo "- report: ${{ steps.begin.outputs.report-url }}"
-            echo "- total units: ${{ steps.begin.outputs.total-units }}"
-            echo "- workers: ${{ inputs.parallelism }}"
-            echo "- search path: \`${{ steps.paths.outputs.detox-search-path }}\`"
+            echo "- report: ${REPORT_URL}"
+            echo "- total units: ${TOTAL_UNITS}"
+            echo "- workers: ${WORKERS}"
+            echo "- search path: \`${SEARCH_PATH}\`"
           } >> "$GITHUB_STEP_SUMMARY"
 
   workers:
@@ -515,6 +520,17 @@ jobs:
           detox-max-workers: "1"
           max-idle-polls: "8"
 
+      - name: Upload Detox debug artifacts
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: detox-android-worker-${{ matrix.shard }}-debug
+          path: |
+            ${{ runner.temp }}/test-system-io/
+            detox/artifacts/
+          retention-days: 5
+          if-no-files-found: ignore
+
       - name: Cleanup emulator
         if: always()
         timeout-minutes: 2
@@ -573,3 +589,44 @@ jobs:
           SUMMARY_OUTCOME: ${{ steps.summary.outcome }}
         run: |
           [ "$SUMMARY_OUTCOME" = "success" ]
+
+  finalize-skipped:
+    name: finalize-skipped-${{ inputs.tsio-shard-name != '' && inputs.tsio-shard-name || 'detox-android' }}
+    needs: [begin]
+    if: always() && needs.begin.result == 'skipped' && inputs.tsio-config != '' && inputs.run-android-tests
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: read
+      statuses: write
+    steps:
+      - name: Checkout helpers
+        uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
+        with:
+          ref: ${{ inputs.MOBILE_VERSION }}
+          persist-credentials: false
+          sparse-checkout: |
+            detox/utils
+            .github/actions/update-commit-status
+
+      - name: Resolve TSIO config
+        id: cfg
+        env:
+          TSIO_CONFIG: ${{ inputs.tsio-config }}
+          TSIO_SHARD_NAME: ${{ inputs.tsio-shard-name }}
+          TSIO_WORKERS: ${{ inputs.parallelism }}
+        run: |
+          set -euo pipefail
+          CFG=$(bash detox/utils/resolve-tsio-job-config.sh)
+          echo "status-context=$(echo "$CFG" | jq -r '.status_context')" >> "$GITHUB_OUTPUT"
+          echo "commit-sha=$(echo "$CFG" | jq -r '.composite_identity.commit_sha')" >> "$GITHUB_OUTPUT"
+
+      - name: Mark commit status skipped
+        uses: ./.github/actions/update-commit-status
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          repository_full_name: ${{ github.repository }}
+          commit_sha: ${{ steps.cfg.outputs.commit-sha }}
+          context: ${{ steps.cfg.outputs.status-context }}
+          description: "E2E orchestration skipped"
+          status: error
