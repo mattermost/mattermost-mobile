@@ -5,11 +5,19 @@ import {firstValueFrom} from 'rxjs';
 
 import {SYSTEM_IDENTIFIERS} from '@constants/database';
 import {MIN_REQUIRED_VERSION} from '@constants/supported_server';
-import {CHANNEL_BOOKMARKS_FLAG_REMOVED_VERSION, CUSTOM_PROFILE_ATTRIBUTES_FLAG_REMOVED_VERSION} from '@constants/versions';
+import {BLOCK_ACTIONS_VERSION, CHANNEL_BOOKMARKS_FLAG_REMOVED_VERSION, CUSTOM_PROFILE_ATTRIBUTES_FLAG_REMOVED_VERSION} from '@constants/versions';
 import DatabaseManager from '@database/manager';
 import {isMinimumServerVersion} from '@utils/helpers';
 
-import {getChannelBookmarksEnabled, observeChannelBookmarksEnabled, observeCustomProfileAttributesEnabled} from './features';
+import {
+    getBlockActionsEnabled,
+    getChannelBookmarksEnabled,
+    getMmBlocksEnabled,
+    observeBlockActionsEnabled,
+    observeChannelBookmarksEnabled,
+    observeCustomProfileAttributesEnabled,
+    observeMmBlocksEnabled,
+} from './features';
 
 import type ServerDataOperator from '@database/operator/server_data_operator';
 import type {Database} from '@nozbe/watermelondb';
@@ -53,24 +61,24 @@ describe.each([
     const atRemoval = removedVersion.join('.');
     const olderServer = '10.0.0';
 
-    it('is enabled once the flag is removed, even though it is no longer sent', async () => {
+    it('should be enabled once the flag is removed, even though it is no longer sent', async () => {
         await setConfigs([{id: 'Version', value: atRemoval}]);
         expect(await firstValueFrom(observeEnabled(database))).toBe(true);
     });
 
-    it('honors the flag on older servers that still send it', async () => {
+    it('should honor the flag on older servers that still send it', async () => {
         await setConfigs([{id: 'Version', value: olderServer}, {id: flag, value: 'true'}]);
         expect(await firstValueFrom(observeEnabled(database))).toBe(true);
     });
 
-    it('is disabled on older servers that do not enable the flag', async () => {
+    it('should be disabled on older servers that do not enable the flag', async () => {
         await setConfigs([{id: 'Version', value: olderServer}]);
         expect(await firstValueFrom(observeEnabled(database))).toBe(false);
     });
 
     // Once MIN_REQUIRED_VERSION reaches the removal version, every supported server has the flag gone, the
     // gate is always true, and this shim is dead code — delete the helper, constant, and call sites then.
-    it('shim is still needed: min supported server predates flag removal', () => {
+    it('should still need the shim: min supported server predates flag removal', () => {
         expect(isMinimumServerVersion(MIN_REQUIRED_VERSION, ...removedVersion)).toBe(false);
     });
 });
@@ -78,7 +86,7 @@ describe.each([
 // Channel bookmarks additionally gate on license, unlike the other promoted flags. Both variants apply
 // the same gate so UI and fetch paths stay consistent.
 describe('ChannelBookmarks license gate', () => {
-    it('disables both variants on an unlicensed server even when the feature is otherwise enabled', async () => {
+    it('should disable both variants on an unlicensed server even when the feature is otherwise enabled', async () => {
         await setConfigs([{id: 'Version', value: CHANNEL_BOOKMARKS_FLAG_REMOVED_VERSION.join('.')}]);
         await setLicensed(false);
         expect(await firstValueFrom(observeChannelBookmarksEnabled(database))).toBe(false);
@@ -89,11 +97,64 @@ describe('ChannelBookmarks license gate', () => {
 // getChannelBookmarksEnabled is the async variant used by the channel bookmark action; confirm it applies
 // the same version gate as the observe helper.
 describe('getChannelBookmarksEnabled (async variant)', () => {
-    it('applies the version gate', async () => {
+    it('should apply the version gate', async () => {
         await setConfigs([{id: 'Version', value: '10.0.0'}]);
         expect(await getChannelBookmarksEnabled(database)).toBe(false);
 
         await setConfigs([{id: 'Version', value: CHANNEL_BOOKMARKS_FLAG_REMOVED_VERSION.join('.')}]);
         expect(await getChannelBookmarksEnabled(database)).toBe(true);
+    });
+});
+
+describe('MmBlocks feature flag', () => {
+    it('should honor FeatureFlagMmBlocksEnabled', async () => {
+        await setConfigs([{id: 'FeatureFlagMmBlocksEnabled', value: 'true'}]);
+        expect(await firstValueFrom(observeMmBlocksEnabled(database))).toBe(true);
+        expect(await getMmBlocksEnabled(database)).toBe(true);
+
+        await setConfigs([{id: 'FeatureFlagMmBlocksEnabled', value: 'false'}]);
+        expect(await firstValueFrom(observeMmBlocksEnabled(database))).toBe(false);
+        expect(await getMmBlocksEnabled(database)).toBe(false);
+    });
+
+    it('should be disabled when the flag is not sent', async () => {
+        expect(await firstValueFrom(observeMmBlocksEnabled(database))).toBe(false);
+        expect(await getMmBlocksEnabled(database)).toBe(false);
+    });
+});
+
+describe('block actions gate', () => {
+    const atBlockActions = BLOCK_ACTIONS_VERSION.join('.');
+    const belowBlockActions = [
+        BLOCK_ACTIONS_VERSION[0],
+        BLOCK_ACTIONS_VERSION[1] - 1,
+        BLOCK_ACTIONS_VERSION[2],
+    ].join('.');
+
+    it('should be enabled when the server supports block actions and MmBlocks is on', async () => {
+        await setConfigs([
+            {id: 'Version', value: atBlockActions},
+            {id: 'FeatureFlagMmBlocksEnabled', value: 'true'},
+        ]);
+        expect(await firstValueFrom(observeBlockActionsEnabled(database))).toBe(true);
+        expect(await getBlockActionsEnabled(database)).toBe(true);
+    });
+
+    it('should be disabled below BLOCK_ACTIONS_VERSION even when MmBlocks is on', async () => {
+        await setConfigs([
+            {id: 'Version', value: belowBlockActions},
+            {id: 'FeatureFlagMmBlocksEnabled', value: 'true'},
+        ]);
+        expect(await firstValueFrom(observeBlockActionsEnabled(database))).toBe(false);
+        expect(await getBlockActionsEnabled(database)).toBe(false);
+    });
+
+    it('should be disabled when MmBlocks is off even on BLOCK_ACTIONS_VERSION+', async () => {
+        await setConfigs([
+            {id: 'Version', value: atBlockActions},
+            {id: 'FeatureFlagMmBlocksEnabled', value: 'false'},
+        ]);
+        expect(await firstValueFrom(observeBlockActionsEnabled(database))).toBe(false);
+        expect(await getBlockActionsEnabled(database)).toBe(false);
     });
 });

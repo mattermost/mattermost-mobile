@@ -2,50 +2,32 @@
 // See LICENSE.txt for license information.
 
 import React, {useMemo} from 'react';
-import {View, TextInput, Platform, type KeyboardTypeOptions, type TextInputProps} from 'react-native';
+import {defineMessages, useIntl} from 'react-intl';
+import {Platform, View, type KeyboardTypeOptions, type TextInputProps} from 'react-native';
 
+import FloatingTextInput from '@components/floating_input/floating_text_input_label';
 import {useTheme} from '@context/theme';
-import {
-    changeOpacity,
-    makeStyleSheetFromTheme,
-    getKeyboardAppearanceFromTheme,
-} from '@utils/theme';
+import {makeStyleSheetFromTheme} from '@utils/theme';
 
 import Footer from './footer';
-import Label from './label';
 
 import type {AvailableScreens} from '@typings/screens/navigation';
 
-const getStyleSheet = makeStyleSheetFromTheme((theme) => {
-    const input = {
-        color: theme.centerChannelColor,
-        fontSize: 14,
-        paddingHorizontal: 15,
-    };
+const MULTILINE_INPUT_HEIGHT = 125;
 
-    return {
-        inputContainer: {
-            borderTopWidth: 1,
-            borderBottomWidth: 1,
-            borderTopColor: changeOpacity(theme.centerChannelColor, 0.1),
-            borderBottomColor: changeOpacity(theme.centerChannelColor, 0.1),
-            backgroundColor: theme.centerChannelBg,
-        },
-        input: {
-            ...input,
-            height: 40,
-        },
-        multiline: {
-            ...input,
-            paddingTop: 10,
-            paddingBottom: 13,
-            height: 125,
-        },
-        disabled: {
-            backgroundColor: changeOpacity(theme.centerChannelColor, 0.1),
-        },
-    };
+const messages = defineMessages({
+    optional: {
+        id: 'channel_modal.optional',
+        defaultMessage: '(optional)',
+    },
 });
+
+const getStyleSheet = makeStyleSheetFromTheme(() => ({
+    container: {
+        width: '100%',
+        marginTop: 12,
+    },
+}));
 
 type Props = {
     label: string;
@@ -65,6 +47,7 @@ type Props = {
     testID: string;
     location: AvailableScreens;
 }
+
 function TextSetting({
     label,
     placeholder,
@@ -83,56 +66,53 @@ function TextSetting({
     testID,
     location,
 }: Props) {
+    const intl = useIntl();
     const theme = useTheme();
     const style = getStyleSheet(theme);
 
-    const inputContainerStyle = useMemo(() => (disabled ? [style.inputContainer, style.disabled] : style.inputContainer), [style, disabled]);
-    const inputStyle = useMemo(() => (multiline ? style.multiline : style.input), [multiline, style]);
-
     const actualKeyboardType: KeyboardTypeOptions = keyboardType === 'url' ? Platform.select({android: 'default', default: 'url'}) : keyboardType;
 
+    const trimmedLabel = label?.trim();
+    const floatingLabel = useMemo(() => {
+        if (!trimmedLabel) {
+            return '';
+        }
+        if (optional) {
+            return `${trimmedLabel} ${intl.formatMessage(messages.optional)}`;
+        }
+        return `${trimmedLabel} *`;
+    }, [intl, optional, trimmedLabel]);
+
     return (
-        <View testID={testID}>
-            {label && (
-                <Label
-                    label={label}
-                    optional={optional}
-                    testID={testID}
-                />
-            )}
-            <View style={inputContainerStyle}>
-                <View>
-                    <TextInput
-                        allowFontScaling={true}
-                        value={value}
-                        placeholder={placeholder}
-                        placeholderTextColor={changeOpacity(theme.centerChannelColor, 0.5)}
-                        onChangeText={onChange}
-                        style={inputStyle}
-                        autoCapitalize='none'
-                        autoCorrect={false}
-                        maxLength={maxLength}
-                        editable={!disabled}
-                        underlineColorAndroid='transparent'
-                        disableFullscreenUI={true}
-                        multiline={multiline}
-                        keyboardType={actualKeyboardType}
-                        secureTextEntry={secureTextEntry}
-                        textContentType={textContentType}
-                        keyboardAppearance={getKeyboardAppearanceFromTheme(theme)}
-                        testID={`${testID}.input`}
-                    />
-                </View>
-            </View>
-            <View>
+        <View
+            style={style.container}
+            testID={testID}
+        >
+            <FloatingTextInput
+                editable={!disabled}
+                error={errorText}
+                keyboardType={actualKeyboardType}
+                label={floatingLabel}
+                maxLength={maxLength}
+                multiline={multiline}
+                multilineInputHeight={multiline ? MULTILINE_INPUT_HEIGHT : undefined}
+                onChangeText={onChange}
+                placeholder={placeholder}
+                rawInput={true}
+                secureTextEntry={secureTextEntry}
+                testID={`${testID}.input`}
+                textContentType={textContentType}
+                theme={theme}
+                value={value}
+            />
+            {Boolean(helpText || (disabled && disabledText)) && (
                 <Footer
                     disabled={disabled}
                     disabledText={disabledText}
-                    errorText={errorText}
                     helpText={helpText}
                     location={location}
                 />
-            </View>
+            )}
         </View>
     );
 }

@@ -40,6 +40,7 @@ import Invite from './invite';
 import LoginScreen from './login';
 import ManageChannelMembersScreen from './manage_channel_members';
 import MentionNotificationSettingsScreen from './mention_notification_settings';
+import MmBlocksTextInputScreen from './mm_blocks_text_input';
 import NotificationSettingsScreen from './notification_settings';
 import PermalinkScreen from './permalink';
 import PinnedMessagesScreen from './pinned_messages';
@@ -94,6 +95,7 @@ export {
     InteractiveDialogScreen,
     Invite,
     LoginScreen,
+    MmBlocksTextInputScreen,
     ManageChannelMembersScreen,
     MentionNotificationSettingsScreen,
     NotificationSettingsScreen,

@@ -1,12 +1,14 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React, {useCallback, useMemo, useState} from 'react';
+import React, {useCallback, useContext, useMemo, useState} from 'react';
 import {type StyleProp, type TextStyle, type ViewStyle} from 'react-native';
 
 import Button from '@components/button';
 import {usePreventDoubleTap} from '@hooks/utils';
 
+import {MmBlocksHasUploadingFieldsContext} from './context';
+import {useMmBlocksForm} from './form';
 import {resolveMmButtonColors} from './utils/button';
 
 import type {ActionHandler} from './types';
@@ -18,9 +20,12 @@ type ButtonElementProps = {
 };
 
 export const ButtonElement = ({element, onAction, theme}: ButtonElementProps) => {
+    const form = useMmBlocksForm();
+    const hasUploadingFields = useContext(MmBlocksHasUploadingFieldsContext);
     const [isExecuting, setIsExecuting] = useState(false);
     const isPrimary = element.style === 'primary';
-    const isDisabled = element.disabled === true || isExecuting;
+    const isSubmit = element.subtype === 'submit';
+    const isDisabled = element.disabled === true || isExecuting || (isSubmit && hasUploadingFields);
     const useStyledTertiary = !isPrimary && !isDisabled;
 
     const buttonColors = useMemo(
@@ -49,11 +54,18 @@ export const ButtonElement = ({element, onAction, theme}: ButtonElementProps) =>
     const handlePress = usePreventDoubleTap(useCallback(async () => {
         try {
             setIsExecuting(true);
-            await onAction(element.action_id, undefined, element.query, element.cookie);
+            const formValues = isSubmit ? form.values : undefined;
+            await onAction({
+                actionId: element.action_id,
+                query: element.query,
+                attachmentCookie: element.cookie,
+                formValues,
+                subtype: element.subtype,
+            });
         } finally {
             setIsExecuting(false);
         }
-    }, [element.action_id, element.cookie, element.query, onAction]));
+    }, [element.action_id, element.cookie, element.query, element.subtype, form.values, isSubmit, onAction]));
 
     if (!element.text || !element.action_id) {
         return null;

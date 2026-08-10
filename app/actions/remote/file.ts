@@ -40,6 +40,18 @@ export const uploadFile = (
     }
 };
 
+export const fetchFileInfo = async (serverUrl: string, fileId: string) => {
+    try {
+        const client = NetworkManager.getClient(serverUrl);
+        const file = await client.getFileInfo(fileId);
+        return {file};
+    } catch (error) {
+        forceLogoutIfNecessary(serverUrl, error);
+        logDebug('error on fetchFileInfo', getFullErrorMessage(error));
+        return {error};
+    }
+};
+
 export const fetchPublicLink = async (serverUrl: string, fileId: string) => {
     try {
         const client = NetworkManager.getClient(serverUrl);

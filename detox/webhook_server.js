@@ -1,7 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-/* eslint-disable camelcase, no-console */
+/* eslint-disable no-console */
 
 const axios = require('axios');
 const ClientOAuth2 = require('client-oauth2');
@@ -68,6 +68,19 @@ server.post('/mm_blocks_integration_update', postMmBlocksIntegrationUpdate);
 server.post('/mm_blocks_integration_static_select', postMmBlocksIntegrationStaticSelect);
 server.post('/mm_blocks_integration_echo_query', postMmBlocksIntegrationEchoQuery);
 server.post('/mm_blocks_integration_echo_context', postMmBlocksIntegrationEchoContext);
+server.post('/mm_blocks_integration_echo_form_values', postMmBlocksIntegrationEchoFormValues);
+server.post('/mm_blocks_integration_lookup', postMmBlocksIntegrationLookup);
+server.post('/mm_blocks_dialog_open', postMmBlocksDialogOpen);
+server.post('/mm_blocks_dialog_return', postMmBlocksDialogReturn);
+server.post('/mm_blocks_dialog_submit', postMmBlocksDialogSubmit);
+server.post('/mm_blocks_dialog_cancel', postMmBlocksDialogCancel);
+server.post('/mm_blocks_dialog_refresh', postMmBlocksDialogRefresh);
+server.post('/mm_blocks_dialog_errors', postMmBlocksDialogErrors);
+server.post('/mm_blocks_dialog_error', postMmBlocksDialogError);
+server.post('/mm_blocks_dialog_goto', postMmBlocksDialogGoto);
+server.post('/mm_blocks_dialog_field_refresh', postMmBlocksDialogFieldRefresh);
+server.post('/mm_blocks_dialog_multistep', postMmBlocksDialogMultistep);
+server.post('/mm_blocks_dialog_child', postMmBlocksDialogChild);
 
 // Catch-all route for unmatched requests
 server.use((req, res) => {
@@ -181,13 +194,21 @@ function postMessageMenus(req, res) {
     return res.json(responseData);
 }
 
+// Most callers invoke this fire-and-forget, so a rejection here would become an
+// unhandled rejection and take the whole sidecar down.
 async function openDialog(dialog) {
     const baseUrl = getBaseUrl();
-    await axios({
-        method: 'post',
-        url: `${baseUrl}/api/v4/actions/dialogs/open`,
-        data: dialog,
-    });
+    try {
+        await axios({
+            method: 'post',
+            url: `${baseUrl}/api/v4/actions/dialogs/open`,
+            data: dialog,
+        });
+    } catch (err) {
+        const status = err.response && err.response.status;
+        const body = err.response && err.response.data;
+        console.error('openDialog request failed:', status || err.code || err.message, body ? JSON.stringify(body) : '');
+    }
 }
 
 function onDialogRequest(req, res) {
@@ -551,6 +572,214 @@ function postMmBlocksIntegrationStaticSelect(req, res) {
     return res.status(200).json({
         ephemeral_text: `Detox mm_blocks static_select OK (selected_option: ${label}).`,
         skip_slack_parsing: true,
+    });
+}
+
+/**
+ * Form field values arrive under context.form_values for both submit buttons and
+ * form-field onChange. Values may be strings, booleans, numbers, or arrays of scalars.
+ */
+function formatFormValuesSummary(formValues) {
+    return Object.keys(formValues || {}).
+        sort().
+        map((k) => {
+            const v = formValues[k];
+            const rendered = Array.isArray(v) ? v.join(',') : String(v);
+            return `${k}=${rendered}`;
+        }).
+        join('&');
+}
+
+function getUpstreamFormValues(req) {
+    const ctx = (req.body && req.body.context) || {};
+    return (ctx.form_values && typeof ctx.form_values === 'object' && !Array.isArray(ctx.form_values)) ?ctx.form_values :{};
+}
+
+function postMmBlocksIntegrationEchoFormValues(req, res) {
+    const summary = formatFormValuesSummary(getUpstreamFormValues(req));
+
+    res.setHeader('Content-Type', 'application/json');
+    return res.status(200).json({
+        ephemeral_text: `Detox mm_blocks form_values OK (${summary})`,
+        skip_slack_parsing: true,
+    });
+}
+
+/**
+ * Returns LookupDialogResponse items for a select with data_source=dynamic.
+ * Search text arrives as URL query `query` (do-block-action) or context.query.
+ */
+function postMmBlocksIntegrationLookup(req, res) {
+    const ctx = (req.body && req.body.context) || {};
+    const searchText = ctx.query || req.query.query || '';
+
+    res.setHeader('Content-Type', 'application/json');
+    return res.status(200).json({items: webhookUtils.getMmBlocksLookupOptions(searchText)});
+}
+
+/** Path A: post action opens a blocks dialog via dialogs/open using trigger_id. */
+async function postMmBlocksDialogOpen(req, res) {
+    const body = req.body || {};
+    const triggerId = body.trigger_id;
+    const ctx = body.context || {};
+    const marker = typeof ctx.marker === 'string' ? ctx.marker : '';
+
+    res.setHeader('Content-Type', 'application/json');
+
+    if (!triggerId) {
+        return res.status(200).json({
+            type: 'ok',
+            error: 'mm_blocks_dialog_open requires trigger_id',
+        });
+    }
+
+    const dialog = webhookUtils.getMmBlocksDialog(triggerId, getWebhookBaseUrl(), {
+        title: 'Detox Blocks (open)',
+        marker,
+    });
+    await openDialog(dialog);
+
+    return res.status(200).json({type: 'ok'});
+}
+
+/**
+ * Path B: post action returns type:dialog so the client opens the modal directly.
+ * Optional context.scenario selects a specialized block_dialog fixture.
+ */
+function postMmBlocksDialogReturn(req, res) {
+    const ctx = (req.body && req.body.context) || {};
+    const marker = typeof ctx.marker === 'string' ? ctx.marker : '';
+    const scenario = typeof ctx.scenario === 'string' && ctx.scenario ? ctx.scenario : 'default';
+    const webhookBaseUrl = getWebhookBaseUrl();
+
+    const blockDialog = scenario === 'default' ?webhookUtils.getMmBlocksDialog('unused', webhookBaseUrl, {title: 'Detox Blocks (return)', marker}).block_dialog :webhookUtils.getMmBlocksDialogByScenario(webhookBaseUrl, scenario, {marker});
+
+    res.setHeader('Content-Type', 'application/json');
+    return res.status(200).json({
+        type: 'dialog',
+        block_dialog: blockDialog,
+    });
+}
+
+function postMmBlocksDialogSubmit(req, res) {
+    const ctx = (req.body && req.body.context) || {};
+
+    // Form fields arrive under context.form_values; static action context keys
+    // (form, step, …) stay at the top level of context.
+    const summary = formatFormValuesSummary(getUpstreamFormValues(req));
+    const step = ctx.step ? ` step=${ctx.step}` : '';
+
+    res.setHeader('Content-Type', 'application/json');
+    return res.status(200).json({
+        type: 'ok',
+        ephemeral_text: `Detox mm_blocks dialog submit OK${step} (${summary})`,
+        skip_slack_parsing: true,
+    });
+}
+
+function postMmBlocksDialogCancel(req, res) {
+    const ctx = (req.body && req.body.context) || {};
+    const reason = typeof ctx.reason === 'string' ? ctx.reason : 'cancel';
+
+    res.setHeader('Content-Type', 'application/json');
+    return res.status(200).json({
+        type: 'ok',
+        ephemeral_text: `Detox mm_blocks dialog cancelled (reason=${reason})`,
+        skip_slack_parsing: true,
+    });
+}
+
+/** Submit button → type:refresh replacing the form in place with step 2. */
+function postMmBlocksDialogRefresh(req, res) {
+    const formValues = getUpstreamFormValues(req);
+    const previousTitle = typeof formValues.title === 'string' && formValues.title ? formValues.title : 'Demo ticket';
+
+    res.setHeader('Content-Type', 'application/json');
+    return res.status(200).json({
+        type: 'refresh',
+        block_dialog: webhookUtils.getMmBlocksDialogStep2(getWebhookBaseUrl(), previousTitle),
+    });
+}
+
+/** Field onChange → type:refresh with type-specific extra fields. */
+function postMmBlocksDialogFieldRefresh(req, res) {
+    const formValues = getUpstreamFormValues(req);
+    const projectType = typeof formValues.project_type === 'string' ? formValues.project_type : '';
+    const projectName = typeof formValues.project_name === 'string' ? formValues.project_name : '';
+
+    res.setHeader('Content-Type', 'application/json');
+    return res.status(200).json({
+        type: 'refresh',
+        block_dialog: webhookUtils.getMmBlocksFieldRefreshDialog(getWebhookBaseUrl(), {projectType, projectName}),
+    });
+}
+
+/** Multistep Next: step 1 → step 2, step 2 → step 3. */
+function postMmBlocksDialogMultistep(req, res) {
+    const ctx = (req.body && req.body.context) || {};
+    const step = String(ctx.step || '1');
+    const webhookBaseUrl = getWebhookBaseUrl();
+
+    const blockDialog = step === '1' ?webhookUtils.getMmBlocksMultistep2Dialog(webhookBaseUrl) :webhookUtils.getMmBlocksMultistep3Dialog(webhookBaseUrl);
+
+    res.setHeader('Content-Type', 'application/json');
+    return res.status(200).json({
+        type: 'refresh',
+        block_dialog: blockDialog,
+    });
+}
+
+/**
+ * Stack a child block_dialog on top of the parent. Opens via dialogs/open using the
+ * action trigger_id, then returns keep_dialog_open so the client leaves the parent
+ * modal in place (a plain type:ok would close it).
+ */
+async function postMmBlocksDialogChild(req, res) {
+    const body = req.body || {};
+    const ctx = body.context || {};
+    const source = typeof ctx.source === 'string' ? ctx.source : 'Unknown';
+    const triggerId = body.trigger_id;
+
+    res.setHeader('Content-Type', 'application/json');
+
+    if (!triggerId) {
+        return res.status(200).json({
+            type: 'ok',
+            keep_dialog_open: true,
+            error: 'mm_blocks_dialog_child requires trigger_id',
+        });
+    }
+
+    // Await open so the dialog is stored before the client receives the response.
+    await openDialog(webhookUtils.getMmBlocksChildOpenRequest(triggerId, getWebhookBaseUrl(), source));
+
+    return res.status(200).json({type: 'ok', keep_dialog_open: true});
+}
+
+function postMmBlocksDialogErrors(req, res) {
+    res.setHeader('Content-Type', 'application/json');
+    return res.status(200).json({
+        type: 'ok',
+        errors: {
+            title: 'Title looks wrong',
+            email: 'Email is invalid',
+            pick: 'Pick something else',
+        },
+    });
+}
+
+function postMmBlocksDialogError(req, res) {
+    res.setHeader('Content-Type', 'application/json');
+    return res.status(200).json({
+        type: 'ok',
+        error: 'Detox mm_blocks dialog top-level error',
+    });
+}
+
+function postMmBlocksDialogGoto(req, res) {
+    res.setHeader('Content-Type', 'application/json');
+    return res.status(200).json({
+        goto_location: '/',
     });
 }
 

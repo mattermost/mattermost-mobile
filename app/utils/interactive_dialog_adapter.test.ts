@@ -26,7 +26,7 @@ const mockIntl = {
 };
 
 describe('InteractiveDialogAdapter', () => {
-    const mockConfig: InteractiveDialogConfig = {
+    const mockConfig: InteractiveDialogConfig & {dialog: Dialog & {elements: DialogElement[]}} = {
         app_id: 'test-app',
         dialog: {
             callback_id: 'test-callback',

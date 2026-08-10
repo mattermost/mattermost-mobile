@@ -4,6 +4,7 @@
 import {fetchCommands} from '@actions/remote/command';
 import {Screens} from '@constants';
 import {navigateToScreen} from '@screens/navigation';
+import CallbackStore from '@store/callback_store';
 
 const TIME_TO_REFETCH_COMMANDS = 60000; // 1 minute
 class ServerIntegrationsManager {
@@ -58,7 +59,12 @@ class ServerIntegrationsManager {
             return;
         }
 
-        navigateToScreen(Screens.DIALOG_ROUTER, {title: config.dialog.title, config});
+        // Pass config via CallbackStore — dialog payloads (especially block_dialog with
+        // encrypted actions) can exceed Expo Router URL param size limits, which leaves
+        // the modal title intact but drops the config body.
+        const title = config.block_dialog?.title || config.dialog?.title;
+        CallbackStore.setCallback(config);
+        navigateToScreen(Screens.DIALOG_ROUTER, {title});
     }
 }
 

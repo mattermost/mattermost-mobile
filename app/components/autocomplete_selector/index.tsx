@@ -2,14 +2,16 @@
 // See LICENSE.txt for license information.
 
 import {withDatabase, withObservables} from '@nozbe/watermelondb/react';
-import React, {useCallback, useEffect, useState} from 'react';
-import {type IntlShape, useIntl} from 'react-intl';
+import React, {useCallback, useEffect, useMemo, useRef, useState} from 'react';
+import {defineMessages, type IntlShape, useIntl} from 'react-intl';
 import {Text, View} from 'react-native';
 
+import SelectedChannelChip from '@components/chips/selected_channel_chip';
+import SelectedChip from '@components/chips/selected_chip';
+import SelectedUserChipById from '@components/chips/selected_user_chip_by_id';
 import CompassIcon from '@components/compass_icon';
+import FloatingInputContainer from '@components/floating_input/floating_input_container';
 import Footer from '@components/settings/footer';
-import Label from '@components/settings/label';
-import TouchableWithFeedback from '@components/touchable_with_feedback';
 import {Screens, View as ViewConstants} from '@constants';
 import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
@@ -43,7 +45,6 @@ type AutoCompleteSelectorProps = {
     optional?: boolean;
     options?: DialogOption[];
     placeholder?: string;
-    roundedBorders?: boolean;
     selected?: SelectedDialogValue;
     teammateNameDisplay: string;
     isMultiselect?: boolean;
@@ -56,21 +57,17 @@ type AutoCompleteSelectorProps = {
     omitMargins?: boolean;
 }
 
-const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
-    const input = {
-        borderWidth: 1,
-        borderColor: changeOpacity(theme.centerChannelColor, 0.1),
-        backgroundColor: changeOpacity(theme.centerChannelBg, 0.9),
-        paddingLeft: 10,
-        paddingRight: 30,
-        paddingVertical: 7,
-        height: 40,
-    };
-    const baseText = {
-        ...typography('Body', 200),
-        color: theme.centerChannelColor,
-    };
+const CHIP_GAP = 8;
+const INPUT_HEIGHT = 48;
 
+const messages = defineMessages({
+    optional: {
+        id: 'channel_modal.optional',
+        defaultMessage: '(optional)',
+    },
+});
+
+const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
     return {
         container: {
             width: '100%',
@@ -78,29 +75,32 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
             marginRight: 8,
             marginTop: 10,
         },
-        roundedInput: {
-            ...input,
-            borderRadius: 5,
-        },
-        input,
-        dropdownPlaceholder: {
-            ...baseText,
-        },
-        dropdownSelected: {
-            ...baseText,
-        },
-        icon: {
-            position: 'absolute',
-            top: 10,
-            right: 12,
-        },
-        disabled: {
-            opacity: 0.5,
-        },
         noMargins: {
             marginBottom: 0,
             marginRight: 0,
             marginTop: 0,
+        },
+        input: {
+            flex: 1,
+            flexDirection: 'row',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            gap: 8,
+        },
+        disabled: {
+            opacity: 0.5,
+        },
+        dropdownPlaceholder: {
+            ...typography('Body', 200),
+            color: changeOpacity(theme.centerChannelColor, 0.5),
+            flex: 1,
+        },
+        chips: {
+            flex: 1,
+            flexDirection: 'row',
+            flexWrap: 'wrap',
+            gap: CHIP_GAP,
+            alignItems: 'center',
         },
     };
 });
@@ -152,6 +152,16 @@ async function getItemName(serverUrl: string, selected: string, teammateNameDisp
     return option?.text || '';
 }
 
+function rememberSelectionLabels(selection: DialogOption | DialogOption[], labelByValue: Record<string, string>) {
+    if (Array.isArray(selection)) {
+        for (const option of selection) {
+            labelByValue[option.value] = option.text;
+        }
+        return;
+    }
+    labelByValue[selection.value] = selection.text;
+}
+
 function getTextAndValueFromSelectedItem(item: Selection, teammateNameDisplay: string, locale: string, dataSource?: string) {
     if (dataSource === ViewConstants.DATA_SOURCE_USERS) {
         const user = item as UserProfile;
@@ -161,6 +171,42 @@ function getTextAndValueFromSelectedItem(item: Selection, teammateNameDisplay: s
         return {text: channel.display_name, value: channel.id};
     }
     return item as DialogOption;
+}
+
+function normalizeSelectedValues(selected?: SelectedDialogValue): string[] {
+    if (!selected) {
+        return [];
+    }
+    return Array.isArray(selected) ? selected : [selected];
+}
+
+function mergeOptionLabels(
+    prev: Record<string, string>,
+    selectedValues: string[],
+    names: string[],
+    cachedLabels: Record<string, string>,
+): Record<string, string> {
+    const next = {...prev};
+    for (let index = 0; index < selectedValues.length; index++) {
+        const value = selectedValues[index];
+        const known = cachedLabels[value] || prev[value];
+        if (known) {
+            next[value] = known;
+            continue;
+        }
+        if (names[index]) {
+            next[value] = names[index];
+        }
+    }
+    return next;
+}
+
+function labelsFromOptions(options: DialogOption[]): Record<string, string> {
+    const next: Record<string, string> = {};
+    for (const option of options) {
+        next[option.value] = option.text;
+    }
+    return next;
 }
 
 function AutoCompleteSelector({
@@ -174,7 +220,6 @@ function AutoCompleteSelector({
     optional = false,
     options,
     placeholder,
-    roundedBorders = true,
     selected,
     teammateNameDisplay,
     isMultiselect = false,
@@ -184,10 +229,33 @@ function AutoCompleteSelector({
 }: AutoCompleteSelectorProps) {
     const intl = useIntl();
     const theme = useTheme();
-    const [itemText, setItemText] = useState('');
+    const [optionLabels, setOptionLabels] = useState<Record<string, string>>({});
     const style = getStyleSheet(theme);
-    const title = placeholder || intl.formatMessage({id: 'mobile.action_menu.select', defaultMessage: 'Select an option'});
+    const selectorTitle = placeholder || intl.formatMessage({id: 'mobile.action_menu.select', defaultMessage: 'Select an option'});
     const serverUrl = useServerUrl();
+    const selectedValues = useMemo(() => normalizeSelectedValues(selected), [selected]);
+    const hasValue = selectedValues.length > 0;
+    const isUserSource = dataSource === ViewConstants.DATA_SOURCE_USERS;
+    const isChannelSource = dataSource === ViewConstants.DATA_SOURCE_CHANNELS;
+
+    const trimmedLabel = label?.trim() || '';
+    const floatingLabel = useMemo(() => {
+        if (!trimmedLabel) {
+            return '';
+        }
+        if (optional) {
+            return `${trimmedLabel} ${intl.formatMessage(messages.optional)}`;
+        }
+        return `${trimmedLabel} *`;
+    }, [intl, optional, trimmedLabel]);
+
+    // Float when filled or when a placeholder keeps the small label parked on the border.
+    // With only a field label and no placeholder, the empty state uses the large in-box label.
+    const focusedLabel = hasValue || Boolean(placeholder?.trim());
+
+    // Dynamic selects do not pass `options`, so after a selection the form updates `selected` and
+    // the effect below cannot resolve a label from options alone. Cache labels from the picker.
+    const selectionLabelsRef = useRef<Record<string, string>>({});
 
     const handleSelect = useCallback((newSelection?: Selection) => {
         if (!newSelection) {
@@ -196,7 +264,10 @@ function AutoCompleteSelector({
 
         if (!Array.isArray(newSelection)) {
             const selectedOption = getTextAndValueFromSelectedItem(newSelection, teammateNameDisplay, intl.locale, dataSource);
-            setItemText(selectedOption.text);
+            rememberSelectionLabels(selectedOption, selectionLabelsRef.current);
+            if (!isUserSource) {
+                setOptionLabels((prev) => ({...prev, [selectedOption.value]: selectedOption.text}));
+            }
 
             if (onSelected) {
                 onSelected(selectedOption);
@@ -205,75 +276,163 @@ function AutoCompleteSelector({
         }
 
         const selectedOptions = newSelection.map((option) => getTextAndValueFromSelectedItem(option, teammateNameDisplay, intl.locale, dataSource));
-        setItemText(selectedOptions.map((option) => option.text).join(', '));
+        rememberSelectionLabels(selectedOptions, selectionLabelsRef.current);
+        if (!isUserSource) {
+            setOptionLabels((prev) => ({...prev, ...labelsFromOptions(selectedOptions)}));
+        }
         if (onSelected) {
             onSelected(selectedOptions);
         }
-    }, [teammateNameDisplay, intl, dataSource, onSelected]);
+    }, [teammateNameDisplay, intl, dataSource, isUserSource, onSelected]);
+
+    const handleRemove = useCallback((id: string) => {
+        if (disabled) {
+            return;
+        }
+
+        const remainingIds = selectedValues.filter((value) => value !== id);
+        if (!remainingIds.length) {
+            onSelected?.(undefined);
+            return;
+        }
+
+        const remainingOptions = remainingIds.map((value) => ({
+            value,
+            text: selectionLabelsRef.current[value] || optionLabels[value] || value,
+        }));
+        onSelected?.(isMultiselect ? remainingOptions : remainingOptions[0]);
+    }, [disabled, isMultiselect, onSelected, optionLabels, selectedValues]);
 
     const goToSelectorScreen = usePreventDoubleTap(useCallback((() => {
         SettingsStore.setIntegrationsSelectCallback(handleSelect);
         SettingsStore.setIntegrationsDynamicOptionsCallback(getDynamicOptions);
-        navigateToScreen(Screens.INTEGRATION_SELECTOR, {dataSource, options, selected, title, isMultiselect});
-    }), [handleSelect, getDynamicOptions, dataSource, options, selected, title, isMultiselect]));
-
-    // Handle the text for the default value.
-    useEffect(() => {
-        if (!selected) {
-            return;
-        }
-
-        if (!Array.isArray(selected)) {
-            getItemName(serverUrl, selected, teammateNameDisplay, intl, dataSource, options).then((res) => setItemText(res));
-            return;
-        }
-
-        const namePromises = [];
-        for (const item of selected) {
-            namePromises.push(getItemName(serverUrl, item, teammateNameDisplay, intl, dataSource, options));
-        }
-        Promise.all(namePromises).then((names) => {
-            setItemText(names.join(', '));
+        navigateToScreen(Screens.INTEGRATION_SELECTOR, {
+            dataSource,
+            options,
+            selected,
+            title: selectorTitle,
+            isMultiselect,
         });
-    }, [dataSource, teammateNameDisplay, intl, options, selected, serverUrl]);
+    }), [handleSelect, getDynamicOptions, dataSource, options, selected, selectorTitle, isMultiselect]));
+
+    // Keep pill labels in sync with the controlled `selected` value (defaults / external updates).
+    useEffect(() => {
+        let cancelled = false;
+
+        if (!selectedValues.length || isUserSource) {
+            return () => {
+                cancelled = true;
+            };
+        }
+
+        const cachedOptions = Object.entries(selectionLabelsRef.current).map(([value, text]) => ({value, text}));
+        const optionsWithCache = options?.length ? [...options, ...cachedOptions] : cachedOptions;
+        const namePromises = selectedValues.map((item) => (
+            getItemName(serverUrl, item, teammateNameDisplay, intl, dataSource, optionsWithCache)
+        ));
+
+        Promise.all(namePromises).then((names) => {
+            if (cancelled) {
+                return;
+            }
+            setOptionLabels((prev) => mergeOptionLabels(prev, selectedValues, names, selectionLabelsRef.current));
+        });
+
+        return () => {
+            cancelled = true;
+        };
+    }, [dataSource, teammateNameDisplay, intl, isUserSource, options, selectedValues, serverUrl]);
+
+    let selectionContent;
+    if (hasValue) {
+        selectionContent = (
+            <View style={style.chips}>
+                {selectedValues.map((value) => {
+                    if (isUserSource) {
+                        return (
+                            <SelectedUserChipById
+                                key={value}
+                                userId={value}
+                                onPress={handleRemove}
+                                teammateNameDisplay={teammateNameDisplay}
+                                testID={`${testID}.user_chip.${value}`}
+                            />
+                        );
+                    }
+
+                    const chipText = selectionLabelsRef.current[value] || optionLabels[value] || value;
+                    if (isChannelSource) {
+                        return (
+                            <SelectedChannelChip
+                                key={value}
+                                id={value}
+                                text={chipText}
+                                onRemove={handleRemove}
+                                testID={`${testID}.channel_chip.${value}`}
+                            />
+                        );
+                    }
+
+                    return (
+                        <SelectedChip
+                            key={value}
+                            id={value}
+                            text={chipText}
+                            onRemove={handleRemove}
+                            testID={`${testID}.option_chip.${value}`}
+                        />
+                    );
+                })}
+            </View>
+        );
+    } else if (placeholder?.trim()) {
+        selectionContent = (
+            <Text
+                numberOfLines={1}
+                style={style.dropdownPlaceholder}
+            >
+                {placeholder}
+            </Text>
+        );
+    } else {
+        selectionContent = <View style={style.chips}/>;
+    }
 
     return (
         <View style={[style.container, omitMargins && style.noMargins]}>
-            {Boolean(label) && (
-                <Label
-                    label={label!}
-                    optional={optional}
-                    testID={testID}
-                />
-            )}
-            <TouchableWithFeedback
-                disabled={disabled}
-                onPress={goToSelectorScreen}
-                style={disabled ? style.disabled : null}
-                type='opacity'
-                testID={`${testID}.select.button`}
+            <FloatingInputContainer
+                canGrow={true}
+                defaultHeight={INPUT_HEIGHT}
+                editable={!disabled}
+                error={errorText}
+                focus={disabled ? undefined : goToSelectorScreen}
+                focused={false}
+                focusedLabel={focusedLabel}
+                hasValue={hasValue}
+                hideErrorIcon={true}
+                label={floatingLabel}
+                labelTestID={`${testID}.label`}
+                pressableTestID={`${testID}.select.button`}
+                testID={`${testID}.select`}
+                theme={theme}
+                wrapChildren={true}
             >
-                <View style={roundedBorders ? style.roundedInput : style.input}>
-                    <Text
-                        numberOfLines={1}
-                        style={itemText ? style.dropdownSelected : style.dropdownPlaceholder}
-                    >
-                        {itemText || title}
-                    </Text>
+                <View style={[style.input, disabled && style.disabled]}>
+                    {selectionContent}
                     <CompassIcon
-                        name='chevron-down'
+                        name='chevron-right'
                         size={20}
                         color={changeOpacity(theme.centerChannelColor, 0.5)}
-                        style={style.icon}
                     />
                 </View>
-            </TouchableWithFeedback>
-            <Footer
-                disabled={disabled}
-                helpText={helpText}
-                errorText={errorText}
-                location={location}
-            />
+            </FloatingInputContainer>
+            {Boolean(helpText) && (
+                <Footer
+                    disabled={disabled}
+                    helpText={helpText}
+                    location={location}
+                />
+            )}
         </View>
     );
 }

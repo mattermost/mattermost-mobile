@@ -35,6 +35,7 @@ jest.mocked(MmBlocksContextProvider).mockImplementation(
 function getPayload(overrides: Partial<MmBlocksExpandedContentPayload> = {}): MmBlocksExpandedContentPayload {
     return {
         channelId: 'channel-id',
+        context: 'dialog',
         location: Screens.CHANNEL,
         postId: 'post-id',
         renderContent: () => React.createElement(Text, {testID: 'mm_blocks_content.rendered'}, 'Expanded content'),
@@ -73,6 +74,7 @@ describe('MmBlocksContent', () => {
 
         const contextProvider = getByTestId('mm_blocks_content.context_provider');
         expect(contextProvider).toHaveProp('channelId', payload.channelId);
+        expect(contextProvider).toHaveProp('context', payload.context);
         expect(contextProvider).toHaveProp('location', payload.location);
         expect(contextProvider).toHaveProp('postId', payload.postId);
         expect(contextProvider).toHaveProp('imagesMetadata', payload.imagesMetadata);
@@ -97,6 +99,16 @@ describe('MmBlocksContent', () => {
             Screens.MM_BLOCKS_CONTENT,
             navigateBack,
         );
+    });
+
+    it('should keep the captured payload when CallbackStore is cleared after mount', () => {
+        CallbackStore.setCallback(getPayload());
+        const {getByTestId} = renderWithIntlAndTheme(<MmBlocksContent/>);
+
+        CallbackStore.removeCallback();
+
+        expect(getByTestId('mm_blocks_content.screen')).toBeTruthy();
+        expect(getByTestId('mm_blocks_content.rendered')).toHaveTextContent('Expanded content');
     });
 
     it('should update layoutWidth when content layout width is greater than zero', () => {

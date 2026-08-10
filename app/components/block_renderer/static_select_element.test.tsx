@@ -128,7 +128,7 @@ describe('StaticSelectElement', () => {
             await Promise.resolve();
         });
 
-        expect(onAction).toHaveBeenCalledWith('pick_one', 'b', {source: 'mm_blocks'}, 'select-cookie');
+        expect(onAction).toHaveBeenCalledWith({actionId: 'pick_one', selectedOption: 'b', query: {source: 'mm_blocks'}, attachmentCookie: 'select-cookie'});
         expect(getByText('b')).toBeTruthy();
     });
 });

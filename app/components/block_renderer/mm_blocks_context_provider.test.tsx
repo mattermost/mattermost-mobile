@@ -43,6 +43,7 @@ describe('MmBlocksContextProvider', () => {
         expect(JSON.parse(getByTestId('context-consumer').props.children)).toEqual({
             renderContext: {
                 channelId: 'channel-id',
+                context: 'dialog',
                 location: Screens.CHANNEL,
                 postId: 'post-id',
                 imagesMetadata,
@@ -50,6 +51,21 @@ describe('MmBlocksContextProvider', () => {
             },
             layoutWidth: 320,
         });
+    });
+
+    it('should provide the post context when requested', () => {
+        const {getByTestId} = renderWithIntlAndTheme(
+            <MmBlocksContextProvider
+                channelId='channel-id'
+                context='post'
+                location={Screens.CHANNEL}
+                postId='post-id'
+            >
+                <ContextConsumer/>
+            </MmBlocksContextProvider>,
+        );
+
+        expect(JSON.parse(getByTestId('context-consumer').props.children).renderContext.context).toBe('post');
     });
 
     it('should default optional values when omitted', () => {
@@ -66,6 +82,7 @@ describe('MmBlocksContextProvider', () => {
         expect(JSON.parse(getByTestId('context-consumer').props.children)).toEqual({
             renderContext: {
                 channelId: 'channel-id',
+                context: 'dialog',
                 location: Screens.CHANNEL,
                 postId: 'post-id',
                 imagesMetadata: undefined,

@@ -6,7 +6,8 @@ import {useIntl, type IntlShape} from 'react-intl';
 import {Alert, Switch, Text, View} from 'react-native';
 
 import AutocompleteSelector from '@components/autocomplete_selector';
-import {BlockRenderer} from '@components/block_renderer';
+import {BlockRenderer, type ActionHandler} from '@components/block_renderer';
+import {type MmBlocksFormErrors} from '@components/block_renderer/form';
 import {translateAdaptiveCards} from '@components/block_renderer/translation/adaptive_cards';
 import {translateAttachments} from '@components/block_renderer/translation/attachments';
 import {translateBlockKit} from '@components/block_renderer/translation/block_kit';
@@ -196,6 +197,7 @@ const MmBlocksComponentLibrary = () => {
     const [drafts, setDrafts] = useState<Record<InputMode, string>>(() => ({...INITIAL_DRAFTS}));
     const [selectedBlockPath, setSelectedBlockPath] = useState<BlockPath | null>(null);
     const [simulateSlowAction, setSimulateSlowAction] = useState(false);
+    const [fieldErrors, setFieldErrors] = useState<MmBlocksFormErrors>({});
 
     const jsonText = drafts[inputMode];
     const parsed = useMemo(() => parsePayload(jsonText, inputMode, intl), [jsonText, inputMode, intl]);
@@ -219,7 +221,12 @@ const MmBlocksComponentLibrary = () => {
         setDrafts((d) => ({...d, mm_blocks: serializeMmBlocks(blocks)}));
     }, []);
 
-    const onAction = useCallback(async (actionId: string, selectedOption?: string, query?: Record<string, string>, attachmentCookie?: string) => {
+    const onAction = useCallback<ActionHandler>(async ({
+        actionId,
+        selectedOption,
+        query,
+        attachmentCookie,
+    }) => {
         if (simulateSlowAction) {
             await new Promise<void>((resolve) => {
                 setTimeout(resolve, SLOW_ACTION_DELAY_MS);
@@ -296,8 +303,10 @@ const MmBlocksComponentLibrary = () => {
                 <BlockRenderer
                     blocks={parsed.blocks}
                     channelId={COMPONENT_LIBRARY_CHANNEL_ID}
+                    errors={fieldErrors}
                     location={Screens.COMPONENT_LIBRARY}
                     onAction={onAction}
+                    onErrorsChange={setFieldErrors}
                     postId={COMPONENT_LIBRARY_POST_ID}
                     theme={theme}
                 />

@@ -22,7 +22,7 @@ import {getDateValue, parseDateInTimezone, resolveRelativeDate} from '@utils/dat
 import {isAppSelectOption} from '@utils/dialog_utils';
 import {getCurrentMomentForTimezone} from '@utils/helpers';
 import {selectKeyboardType} from '@utils/integrations';
-import {makeStyleSheetFromTheme} from '@utils/theme';
+import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
 
 const TEXT_DEFAULT_MAX_LENGTH = 150;
@@ -72,6 +72,7 @@ const getDateTimeStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
     asterisk: {color: theme.errorTextColor, ...typography('Body', 100, 'Regular')},
     dateTimeDisplay: {flexShrink: 0},
     dateTimeText: {color: theme.linkColor, ...typography('Body', 100, 'Regular')},
+    dateTimeTextDisabled: {color: changeOpacity(theme.linkColor, 0.5)},
     helpText: {color: theme.centerChannelColor, marginLeft: 15, marginTop: 4, opacity: 0.64, ...typography('Body', 75, 'Regular')},
     errorText: {color: theme.errorTextColor, marginLeft: 15, marginTop: 4, ...typography('Body', 75, 'Regular')},
     timezoneIndicator: {flexDirection: 'row', alignItems: 'center', marginLeft: 15, marginBottom: 8, marginTop: -4},
@@ -133,6 +134,12 @@ const AppsFormFieldComponent = React.memo(({
         onChange(name, newValue);
     }, [name, onChange]);
 
+    const handleRadioChange = useCallback((newValue: string | string[]) => {
+        if (typeof newValue === 'string') {
+            onChange(name, newValue);
+        }
+    }, [name, onChange]);
+
     const handleSelect = useCallback((newValue: SelectedDialogOption) => {
         if (!newValue) {
             const emptyValue = field.multiselect ? [] : '';
@@ -150,6 +157,9 @@ const AppsFormFieldComponent = React.memo(({
     }, [onChange, field, name]);
 
     const handleDateChange = useCallback((pickedDate: Moment) => {
+        if (field.readonly) {
+            return;
+        }
         if (field.type === AppFieldTypes.DATE) {
             // For date-only fields, use start of day to avoid timezone issues
             const startOfDay = pickedDate.clone().startOf('day');
@@ -159,7 +169,7 @@ const AppsFormFieldComponent = React.memo(({
             // For datetime fields, return full ISO string
             onChange(name, pickedDate.toISOString());
         }
-    }, [name, onChange, field.type]);
+    }, [name, onChange, field.type, field.readonly]);
 
     const getDynamicOptions = useCallback(async (userInput = ''): Promise<DialogOption[]> => {
         if (!field.name) {
@@ -254,7 +264,6 @@ const AppsFormFieldComponent = React.memo(({
                     errorText={errorText}
                     placeholder={placeholder}
                     selected={selectedValue}
-                    roundedBorders={false}
                     disabled={field.readonly}
                     isMultiselect={field.multiselect}
                     testID={testID}
@@ -285,7 +294,7 @@ const AppsFormFieldComponent = React.memo(({
                     helpText={field.description}
                     errorText={errorText}
                     options={field.options?.map(appSelectOptionToDialogOption)}
-                    onChange={handleChange}
+                    onChange={handleRadioChange}
                     testID={testID}
                     value={value as string}
                     location={Screens.APPS_FORM}
@@ -315,6 +324,8 @@ const AppsFormFieldComponent = React.memo(({
         case AppFieldTypes.DATETIME: {
             const hasValue = Boolean(value);
             const timezoneAbbr = showTimezoneIndicator ? moment.tz(displayTimezone).format('z') : '';
+            const readonly = Boolean(field.readonly);
+            const dateTimeTextStyle = [dateTimeStyles.dateTimeText, readonly && dateTimeStyles.dateTimeTextDisabled];
 
             return (
                 <View style={dateTimeStyles.container}>
@@ -334,10 +345,10 @@ const AppsFormFieldComponent = React.memo(({
                                     <FormattedDate
                                         value={selectedDate.toDate()}
                                         format={{dateStyle: 'medium'}}
-                                        style={dateTimeStyles.dateTimeText}
+                                        style={dateTimeTextStyle}
                                     />
                                 ) : (
-                                    <Text style={dateTimeStyles.dateTimeText}>
+                                    <Text style={dateTimeTextStyle}>
                                         <FormattedDate
                                             value={selectedDate.toDate()}
                                             format={{dateStyle: 'medium'}}
@@ -376,6 +387,7 @@ const AppsFormFieldComponent = React.memo(({
                         maxDate={resolvedMaxDate}
                         minuteInterval={field.datetime_config?.time_interval || field.time_interval || DEFAULT_TIME_INTERVAL_MINUTES}
                         allowManualTimeEntry={field.datetime_config?.allow_manual_time_entry}
+                        disabled={readonly}
                         testID={testID}
                     />
 

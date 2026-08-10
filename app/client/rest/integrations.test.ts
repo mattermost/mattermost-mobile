@@ -94,4 +94,44 @@ describe('ClientIntegrations', () => {
             {method: 'post', body: data},
         );
     });
+
+    it('should lookup interactive dialog', async () => {
+        const data = {url: 'data'} as DialogSubmission;
+        await client.lookupInteractiveDialog(data);
+
+        expect(client.doFetch).toHaveBeenCalledWith(
+            `${client.urlVersion}/actions/dialogs/lookup`,
+            {method: 'post', body: data},
+        );
+    });
+
+    it('should execute dialog action', async () => {
+        const url = 'https://example.com/dialog/action';
+        const context = {field: 'value'};
+        const channelId = 'channel_id';
+        await client.executeDialogAction(url, context, channelId, teamId);
+
+        expect(client.doFetch).toHaveBeenCalledWith(
+            `${client.urlVersion}/actions/dialogs/execute`,
+            {method: 'post', body: {url, context, channel_id: channelId, team_id: teamId}},
+        );
+    });
+
+    it('should do block action', async () => {
+        const request: DoBlockActionRequest = {
+            subtype: 'execute',
+            context: 'post',
+            post_id: 'post_id',
+            action_id: 'action_id',
+            cookie: 'cookie',
+            form_values: {title: 'Bug'},
+            integration_format: 'mm_block',
+        };
+        await client.doBlockAction(request);
+
+        expect(client.doFetch).toHaveBeenCalledWith(
+            `${client.urlVersion}/actions/blocks/do`,
+            {method: 'post', body: request},
+        );
+    });
 });

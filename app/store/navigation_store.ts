@@ -33,6 +33,8 @@ class NavigationStoreSingleton {
         return this.state.screenStack[this.state.screenStack.length - 1];
     }
 
+    // Stack navigators may repeat the same screen ID; tab navigators only include the
+    // active tab and de-duplicate IDs via extractScreenIds.
     getScreensInStack() {
         return this.state.screenStack;
     }
@@ -185,7 +187,7 @@ class NavigationStoreSingleton {
             // This captures the full stack including screens underneath overlays
             routes.forEach((route: NavigationRoute<ParamListBase, string>) => {
                 const screenId = this.getScreenIdFromRouteKey(route.key);
-                if (screenId && !screenStack.includes(screenId)) {
+                if (screenId) {
                     screenStack.push(screenId);
                 }
 
