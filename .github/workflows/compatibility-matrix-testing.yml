@@ -38,7 +38,8 @@ jobs:
         run: echo "MOBILE_SHA=$(git rev-parse HEAD)" >> "${GITHUB_OUTPUT}"
 
   # Phase 5 — base TSIO identity for this CMT run. Each matrix leg builds its
-  # own per-job report group (total_reports_expected=1) from this base + tsio-shard-name.
+  # own per-job report group from this base + tsio-shard-name. Worker counts
+  # match template parallelism (10 latest Detox phone, else 1).
   cmt-identity:
     name: Calculate CMT TSIO base identity
     runs-on: ubuntu-24.04
@@ -80,10 +81,13 @@ jobs:
           # Per-shard configs so the final rollup can poll every leg's TSIO group.
           export BASE CMT_MATRIX MAESTRO_MATRIX
           JOB_CONFIGS=$(node -e '
-            const {buildTsioJobConfigMap, cmtJobKeys} = require("./detox/utils/build-tsio-job-config.js");
+            const {buildCmtTsioJobConfigMap} = require("./detox/utils/build-tsio-job-config.js");
             const base = JSON.parse(process.env.BASE);
-            const keys = cmtJobKeys(JSON.parse(process.env.CMT_MATRIX), JSON.parse(process.env.MAESTRO_MATRIX));
-            process.stdout.write(JSON.stringify(buildTsioJobConfigMap(base, keys)));
+            process.stdout.write(JSON.stringify(buildCmtTsioJobConfigMap(
+              base,
+              JSON.parse(process.env.CMT_MATRIX),
+              JSON.parse(process.env.MAESTRO_MATRIX),
+            )));
           ')
           echo "tsio-job-configs=$JOB_CONFIGS" >> "$GITHUB_OUTPUT"
 

@@ -165,7 +165,7 @@ Located at `libraries/@mattermost/`:
 - Add mocks to central `setup.ts` file, not individual test files
 
 ### E2E Status Reporting (TSIO)
-E2E results are uploaded to Test System IO (TSIO) and surfaced as GitHub commit statuses. Each platform job owns its own report group (`total_reports_expected=1`) and commit-status context. Contexts are namespaced `e2e-test/*`, matching the mattermost monorepo:
+E2E results are orchestrated via Test System IO (`dispatch-begin` / `dispatch-run` / `summary`) and surfaced as GitHub commit statuses. Each platform job owns its own report group (`total_reports_expected` = worker matrix size) and commit-status context. Contexts are namespaced `e2e-test/*`, matching the mattermost monorepo:
 
 | Flow | Context(s) | TSIO group name(s) |
 |------|------------|---------------------|

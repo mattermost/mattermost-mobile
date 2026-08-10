@@ -1126,7 +1126,7 @@ jobs:
           WORKFLOW_CONCLUSION: ${{ job.status }}
 
   # Per-platform TSIO commit statuses are finalized inside each Detox/Maestro
-  # generate-report / maestro job after that job's upload (total_reports_expected=1).
+  # summary job after workers finish uploading shards (total_reports_expected=workers).
   # No combined e2e/mobile finalizer — avoids cross-job clobber and pending races.
 
   # One Mattermost channel rollup (best-effort). Per-job finalize leaves channel

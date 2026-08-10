@@ -43,6 +43,8 @@ const prefix = webhookBucketForReportName(name) || name;
 base.name = prefix;
 base.run_group = prefix;
 
-const expanded = buildTsioJobConfig(base, shard);
+const workers = process.env.TSIO_WORKERS ? Number.parseInt(process.env.TSIO_WORKERS, 10) : undefined;
+const overrides = Number.isFinite(workers) ? {workers} : {};
+const expanded = buildTsioJobConfig(base, shard, overrides);
 process.stdout.write(JSON.stringify(expanded));
 NODE

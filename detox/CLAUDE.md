@@ -92,11 +92,11 @@ cd detox && npm run e2e:save-report
 
 ### Trigger Tiers
 
-| Tier | Trigger | Platform | Shards | Search Path | Approx Time |
-|------|---------|----------|--------|-------------|-------------|
-| **PR full** | Matterwick + `E2E/Run` label | Detox iOS/Android/iPad + Maestro | 20 Detox (iOS/Android), 1 iPad, 1 Maestro each | `detox/e2e/test` (full) | ~30–45+ min wall-clock |
+| Tier | Trigger | Platform | Workers | Search Path | Approx Time |
+|------|---------|----------|---------|-------------|-------------|
+| **PR full** | Matterwick + `E2E/Run` label | Detox iOS/Android/iPad + Maestro | 20 Detox (iOS/Android), 1 iPad, 1 Maestro each via TSIO orchestration | `detox/e2e/test` (full) | ~30–45+ min wall-clock |
 | **Main** | Matterwick main push (`run_type=MASTER` today; `MAIN` also accepted → TSIO `mobile-main`) | Same as PR | Same as PR | `detox/e2e/test` | Same as PR |
-| **CMT / Release** | Matterwick on `build-release-*` → CMT | Detox + Maestro across server versions | Full suite on latest server; smoke subset on older | latest: `detox/e2e/test`; older: `…/smoke_test` | Varies by matrix |
+| **CMT / Release** | Matterwick on `build-release-*` → CMT | Detox + Maestro across server versions | Full suite on latest server (10 Detox workers); smoke subset on older (1) | latest: `detox/e2e/test`; older: `…/smoke_test` | Varies by matrix |
 
 Status contexts live under the `e2e-test/` namespace, matching the mattermost monorepo. PR/Main: `e2e-test/detox-ios`, `e2e-test/detox-android`, `e2e-test/detox-ipad`, `e2e-test/maestro-ios`, `e2e-test/maestro-android`. CMT: per-shard `e2e-test/<tsio-shard-name>` plus umbrella `e2e-test/compatibility-matrix-testing`. TSIO groups: `mobile-pr-<job>` / `mobile-main-<job>` / `mobile-release-<shard>`.
 
@@ -113,9 +113,9 @@ PR E2E runs the full `detox/e2e/test` tree when labeled.
 |------|---------|
 | `.github/workflows/e2e-detox-pr.yml` | Matterwick entry: builds, Detox + Maestro dispatch, TSIO status |
 | `.github/workflows/e2e-detox.yml` / `e2e-maestro-pr.yml` | Platform orchestration (reusable) |
-| `.github/workflows/e2e-ios-template.yml` | Detox iOS shard runner |
-| `.github/workflows/e2e-android-template.yml` | Detox Android shard runner |
-| `.github/workflows/e2e-maestro-template.yml` | Maestro iOS/Android runner |
+| `.github/workflows/e2e-ios-template.yml` | Detox iOS TSIO orchestration (begin/workers/summary) |
+| `.github/workflows/e2e-android-template.yml` | Detox Android TSIO orchestration (begin/workers/summary) |
+| `.github/workflows/e2e-maestro-template.yml` | Maestro iOS/Android TSIO orchestration (begin/workers/summary) |
 | `.github/workflows/compatibility-matrix-testing.yml` | CMT / release multi-server matrix |
 
 ### Checks for CI PRs

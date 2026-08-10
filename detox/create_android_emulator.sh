@@ -153,9 +153,9 @@ install_app() {
     app_apk=$(resolve_app_apk)
     echo "Installing the app from $app_apk..."
     adb install -r "$app_apk"
-    if [[ "${MAESTRO_ANDROID:-}" != "true" && "${BOOTSTRAP_ONLY:-}" != "true" ]]; then
-        # Install the test/instrumentation APK — required by Detox (reinstallApp: false assumes
-        # both the main APK and the test APK are already present on the device).
+    # Detox needs the instrumentation APK even when BOOTSTRAP_ONLY=true (orchestration
+    # runs detox test later). Maestro release path never needs it.
+    if [[ "${MAESTRO_ANDROID:-}" != "true" ]]; then
         adb install -r ../android/app/build/outputs/apk/androidTest/debug/app-debug-androidTest.apk
     fi
     adb shell pm list packages | grep "com.mattermost.rnbeta" && echo "App is installed." || echo "App is not installed."

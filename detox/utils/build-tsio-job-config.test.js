@@ -8,6 +8,7 @@ const {
     E2E_STATUS_CONTEXTS,
     buildTsioJobConfig,
     buildTsioJobConfigMap,
+    buildCmtTsioJobConfigMap,
     jobKeysForPlatform,
     cmtJobKeys,
     webhookBucketForReportName,
@@ -43,7 +44,7 @@ describe('buildTsioJobConfig', () => {
 
     it('should give each job its own report group and status context', () => {
         const cfg = buildTsioJobConfig(base, 'detox-ios');
-        assert.equal(cfg.total_reports_expected, 1);
+        assert.equal(cfg.total_reports_expected, 20);
         assert.equal(cfg.status_context, 'e2e-test/detox-ios');
         assert.equal(cfg.composite_identity.name, 'mobile-pr-detox-ios');
         assert.equal(cfg.composite_identity.run_group, 'mobile-pr-detox-ios');
@@ -53,6 +54,7 @@ describe('buildTsioJobConfig', () => {
 
     it('should label maestro jobs with maestro framework and context', () => {
         const cfg = buildTsioJobConfig(base, 'maestro-android-e2e');
+        assert.equal(cfg.total_reports_expected, 1);
         assert.equal(cfg.status_context, 'e2e-test/maestro-android');
         assert.equal(cfg.composite_identity.framework, 'maestro');
         assert.equal(cfg.composite_identity.name, 'mobile-pr-maestro-android-e2e');
@@ -64,6 +66,11 @@ describe('buildTsioJobConfig', () => {
         assert.equal(cfg.total_reports_expected, 1);
         assert.equal(cfg.composite_identity.name, 'mobile-release-detox-ios-Server_11.9.0');
         assert.equal(cfg.status_context, 'e2e-test/detox-ios-Server_11.9.0');
+    });
+
+    it('should honour an explicit workers override', () => {
+        const cfg = buildTsioJobConfig(base, 'detox-ios', {workers: 10});
+        assert.equal(cfg.total_reports_expected, 10);
     });
 
     // The CMT base identity hardcodes framework=detox, but the upload action posts
@@ -94,7 +101,7 @@ describe('buildTsioJobConfigMap / jobKeysForPlatform', () => {
     });
 });
 
-describe('cmtJobKeys', () => {
+describe('cmtJobKeys / buildCmtTsioJobConfigMap', () => {
     const cmtMatrix = {
         server: [
             {version: '11.9.0', latest: true},
@@ -116,6 +123,22 @@ describe('cmtJobKeys', () => {
             'maestro-ios-Server_11.9.0',
             'maestro-android-Server_11.9.0',
         ]);
+    });
+
+    it('should set CMT worker counts to match template parallelism', () => {
+        const cmtBase = {
+            repository: 'mattermost/mattermost-mobile',
+            commit_sha: 'abc1234',
+            name: 'mobile-release',
+            run_group: 'mobile-release',
+        };
+        const maestroMatrix = {server: [{version: '11.9.0', latest: true}]};
+        const map = buildCmtTsioJobConfigMap(cmtBase, cmtMatrix, maestroMatrix);
+        assert.equal(map['detox-ios-Server_11.9.0'].total_reports_expected, 10);
+        assert.equal(map['detox-android-Server_11.9.0'].total_reports_expected, 10);
+        assert.equal(map['detox-ipad-Server_11.9.0'].total_reports_expected, 1);
+        assert.equal(map['detox-ios-Server_10.5.14'].total_reports_expected, 1);
+        assert.equal(map['maestro-ios-Server_11.9.0'].total_reports_expected, 1);
     });
 
     it('should produce keys that resolve to the mobile-release webhook bucket', () => {

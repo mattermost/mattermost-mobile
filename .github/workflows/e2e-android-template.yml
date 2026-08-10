@@ -1,3 +1,5 @@
+# Detox Android E2E — test-system-io orchestration (dispatch-begin / dispatch-run / summary).
+# Called from e2e-detox.yml after shared builds and server provisioning complete.
 name: Detox Android E2E Tests Template
 
 on:
@@ -15,8 +17,6 @@ on:
         required: false
       MM_MOBILE_E2E_WEBHOOK_URL:
         required: false
-      # Channel-notify routing for the per-job TSIO finalize step. Callers that use
-      # an explicit `secrets:` block must forward these or notify silently no-ops.
       MM_E2E_MASTER_HEALTH_WEBHOOK_URL:
         required: false
       MM_E2E_RELEASE_WEBHOOK_URL:
@@ -25,7 +25,6 @@ on:
         required: false
       MM_MOBILE_DETOX_AWS_SECRET_ACCESS_KEY:
         required: false
-      # Webhook sidecar. Unset means mm_blocks specs fall back to trycloudflare.
       MM_MOBILE_E2E_WEBHOOK_PUBLIC_BASE_URL:
         required: false
       MM_MOBILE_E2E_CLOUDFLARED_TUNNEL_TOKEN:
@@ -65,7 +64,7 @@ on:
         required: false
         default: "PR"
       record_tests_in_zephyr:
-        description: "Record test results in Zephyr, typically for release and main runs"
+        description: "Record test results in Zephyr (reserved; TSIO is the primary report)"
         required: false
         type: boolean
         default: false
@@ -75,12 +74,12 @@ on:
         type: boolean
         default: false
       search_path:
-        description: "Path to search for test specs (use for smoke test subset)"
+        description: "Path to search for test specs (repo- or detox-relative)"
         required: false
         type: string
         default: "detox/e2e/test"
       parallelism:
-        description: "Number of parallel test shards"
+        description: "Number of parallel orchestration workers"
         required: false
         type: string
         default: "20"
@@ -95,166 +94,189 @@ on:
         type: string
         default: "35"
       artifact_run_id:
-        description: "Run ID of the workflow that uploaded android-build-files-* (defaults to caller run)"
+        description: "Run ID of the workflow that uploaded android-build-files-*"
         required: false
         type: string
         default: ""
       tsio-config:
         description: >
-          TSIO reporting config: {"composite_identity":{...},"total_reports_expected":N}.
-          Empty disables TSIO upload for this platform.
+          TSIO reporting config: {"composite_identity":{...},"status_context":"..."}.
+          Empty disables orchestration for this platform.
         required: false
         type: string
         default: ""
       tsio-shard-name:
-        description: "Display name for this shard in TSIO (e.g. detox-android-Server_11.9.0-rc3)"
+        description: "Display name for this platform in TSIO (e.g. detox-android)"
         required: false
         type: string
         default: ""
       durations_key:
-        description: >
-          Spec-duration manifest key (e.g. detox-android). Enables duration-aware
-          shard packing. Empty keeps the even alphabetical split.
+        description: "Unused with orchestration (kept for caller compatibility)"
         required: false
         type: string
         default: ""
-    outputs:
-      STATUS:
-        value: ${{ jobs.generate-report.outputs.STATUS }}
-      TARGET_URL:
-        value: ${{ jobs.generate-report.outputs.TARGET_URL }}
-      FAILURES:
-        value: ${{ jobs.generate-report.outputs.FAILURES }}
-      PASSES:
-        value: ${{ jobs.generate-report.outputs.PASSES }}
-      TOTAL:
-        value: ${{ jobs.generate-report.outputs.TOTAL }}
-      SKIPPED:
-        value: ${{ jobs.generate-report.outputs.SKIPPED }}
-      ERRORS:
-        value: ${{ jobs.generate-report.outputs.ERRORS }}
-      PERCENTAGE:
-        value: ${{ jobs.generate-report.outputs.PERCENTAGE }}
 
 env:
+  TEST_SYSTEM_IO_ACTIONS_SHA: e2d5032cfa71a3ad11b0975b135cd221564f2787
   AWS_REGION: "us-east-1"
   ADMIN_EMAIL: ${{ secrets.MM_MOBILE_E2E_ADMIN_EMAIL }}
   ADMIN_USERNAME: ${{ inputs.MM_TEST_USER_NAME || secrets.MM_MOBILE_E2E_ADMIN_USERNAME }}
   ADMIN_PASSWORD: ${{ inputs.MM_TEST_PASSWORD || secrets.MM_MOBILE_E2E_ADMIN_PASSWORD }}
-  BRANCH: ${{ github.event_name == 'pull_request' && github.head_ref || github.ref_name }}
-  COMMIT_HASH: ${{ github.sha }}
-  DEVICE_NAME: ${{ inputs.android_avd_name }} # This is needed to split tests as same code is used in iOS job
+  DEVICE_NAME: ${{ inputs.android_avd_name }}
   DEVICE_OS_VERSION: ${{ inputs.android_api_level }}
-  DETOX_AWS_S3_BUCKET: "mattermost-detox-report"
-  HEADLESS: "true"
-  TYPE: ${{ inputs.run-type }}
-  PULL_REQUEST: "https://github.com/mattermost/mattermost-mobile/pull/${{ github.event.number }}"
-  SITE_1_URL: ${{ inputs.MM_TEST_SERVER_URL }}
-  SITE_2_URL: ${{ inputs.MM_TEST_SERVER_URL_2 }}
-  SITE_3_URL: ${{ inputs.MM_TEST_SERVER_URL_3 }}
-  ZEPHYR_ENABLE: ${{ inputs.record_tests_in_zephyr }}
-  JIRA_PROJECT_KEY: "MM"
-  ZEPHYR_API_KEY: ${{ secrets.MM_MOBILE_E2E_ZEPHYR_API_KEY }}
-  ZEPHYR_FOLDER_ID: "3233873"
-  TEST_CYCLE_LINK_PREFIX: ${{ secrets.MM_MOBILE_E2E_TEST_CYCLE_LINK_PREFIX }}
-  WEBHOOK_URL: ${{ secrets.MM_MOBILE_E2E_WEBHOOK_URL }}
-  FAILURE_MESSAGE: "Something has failed"
-  IOS: "false"
-  RUNNING_E2E: "true"
   AVD_NAME: ${{ inputs.android_avd_name }}
   SDK_VERSION: ${{ inputs.android_api_level }}
-  ARTIFACT_RUN_ID: ${{ inputs.artifact_run_id }}
+  HEADLESS: "true"
+  TYPE: ${{ inputs.run-type }}
+  IOS: "false"
+  CI: "true"
+  ARTIFACT_RUN_ID: ${{ inputs.artifact_run_id || github.run_id }}
+  ANDROID_HOME: /usr/local/lib/android/sdk
+  ANDROID_SDK_ROOT: /usr/local/lib/android/sdk
+
+permissions:
+  contents: read
+  id-token: write
+  actions: read
+  statuses: write
+  issues: read
 
 jobs:
-  generate-specs:
+  begin:
+    name: orch-begin-${{ inputs.tsio-shard-name != '' && inputs.tsio-shard-name || 'detox-android' }}
+    if: inputs.run-android-tests && inputs.tsio-config != '' && vars.TSIO_UPLOAD_ENABLED != 'false'
     runs-on: ubuntu-24.04
     outputs:
-      specs: ${{ steps.generate-specs.outputs.specs }}
-      build_id: ${{ steps.resolve-device.outputs.BUILD_ID }}
-      mobile_sha: ${{ steps.resolve-device.outputs.MOBILE_SHA }}
-      mobile_ref: ${{ steps.resolve-device.outputs.MOBILE_REF }}
-      workflow_hash: ${{ steps.resolve-device.outputs.WORKFLOW_HASH }}
+      identity-json: ${{ steps.cfg.outputs.identity-json }}
+      status-context: ${{ steps.cfg.outputs.status-context }}
+      identity-branch: ${{ steps.cfg.outputs.identity-branch }}
+      report-url: ${{ steps.begin.outputs.report-url }}
+      total-units: ${{ steps.begin.outputs.total-units }}
+      worker-shards: ${{ steps.matrix.outputs.shards }}
+      detox-search-path: ${{ steps.paths.outputs.detox-search-path }}
+      detox-exclude-dir: ${{ steps.paths.outputs.detox-exclude-dir }}
+      pr-number: ${{ steps.cfg.outputs.pr-number }}
     steps:
-      - name: Checkout Repository
+      - name: Checkout
         uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
         with:
           ref: ${{ inputs.MOBILE_VERSION }}
+          persist-credentials: false
 
-      - name: Set Build ID
-        id: resolve-device
-        run: |
-          BUILD_ID="${{ github.run_id }}-${{ env.AVD_NAME }}-${{ env.SDK_VERSION}}"
-          WORKFLOW_HASH=$(tr -dc a-z0-9 </dev/urandom | head -c 10)
-
-          ## We need that hash to separate the artifacts
-          echo "WORKFLOW_HASH=${WORKFLOW_HASH}" >> ${GITHUB_OUTPUT}
-
-          echo "BUILD_ID=$(echo ${BUILD_ID} | sed 's/ /_/g')" >> ${GITHUB_OUTPUT}
-          echo "MOBILE_SHA=$(git rev-parse HEAD)" >> ${GITHUB_OUTPUT}
-          echo "MOBILE_REF=$(git rev-parse --abbrev-ref HEAD)" >> ${GITHUB_OUTPUT}
-
-      # Duration history from the last main-push run; absent → even split.
-      # continue-on-error: this job gates the entire test matrix, and shard packing
-      # is an optimization — a missing manifest or an AWS hiccup must not stop the
-      # run, it must fall back to the even split.
-      - name: Restore spec-duration manifest
-        if: inputs.durations_key != ''
-        continue-on-error: true
-        uses: ./.github/actions/s3-spec-durations
+      - name: Resolve TSIO config
+        id: cfg
         env:
-          DETOX_AWS_ACCESS_KEY_ID: ${{ secrets.MM_MOBILE_DETOX_AWS_ACCESS_KEY_ID }}
-          DETOX_AWS_SECRET_ACCESS_KEY: ${{ secrets.MM_MOBILE_DETOX_AWS_SECRET_ACCESS_KEY }}
-        with:
-          key: ${{ inputs.durations_key }}
-          bucket: ${{ env.DETOX_AWS_S3_BUCKET }}
-          mode: restore
+          TSIO_CONFIG: ${{ inputs.tsio-config }}
+          TSIO_SHARD_NAME: ${{ inputs.tsio-shard-name }}
+          TSIO_WORKERS: ${{ inputs.parallelism }}
+        run: |
+          set -euo pipefail
+          # PR/main pass a full per-job config; CMT passes a base identity + shard name.
+          CFG=$(bash detox/utils/resolve-tsio-job-config.sh)
+          IDENTITY=$(echo "$CFG" | jq -c '.composite_identity')
+          CONTEXT=$(echo "$CFG" | jq -r '.status_context // empty')
+          if [ -z "$CONTEXT" ]; then
+            echo "::error::resolved tsio-config.status_context is empty"
+            exit 1
+          fi
+          BRANCH=$(echo "$IDENTITY" | jq -r '.branch // empty')
+          PR=$(echo "$IDENTITY" | jq -r '.gh_pr_number // empty')
+          if [ -n "$PR" ] && [ "$PR" != "null" ]; then
+            IDENTITY_BRANCH="pr-${PR}"
+          else
+            IDENTITY_BRANCH="$BRANCH"
+          fi
+          IDENTITY=$(echo "$IDENTITY" | jq -c --arg b "$IDENTITY_BRANCH" '.branch = $b')
+          {
+            echo "identity-json=${IDENTITY}"
+            echo "status-context=${CONTEXT}"
+            echo "identity-branch=${IDENTITY_BRANCH}"
+            echo "pr-number=${PR}"
+          } >> "$GITHUB_OUTPUT"
 
-      - name: Generate Test Specs
-        id: generate-specs
-        uses: ./.github/actions/generate-specs
-        with:
-          parallelism: ${{ inputs.parallelism }}
-          search_path: ${{ inputs.search_path }}
-          device_name: ${{ env.AVD_NAME }}
-          device_os_version: ${{ env.SDK_VERSION }}
-          durations_file: ${{ inputs.durations_key != '' && 'detox/artifacts/spec-durations.json' || '' }}
+      - name: Resolve detox-search-path
+        id: paths
+        env:
+          SEARCH_PATH: ${{ inputs.search_path }}
+        run: |
+          set -euo pipefail
+          SP="${SEARCH_PATH#./}"
+          case "$SP" in
+            detox/*) SP="${SP#detox/}" ;;
+          esac
+          EXCLUDE="ipad"
+          case "$SP" in
+            */ipad|*/ipad/*|ipad|ipad/*) EXCLUDE="" ;;
+          esac
+          {
+            echo "detox-search-path=${SP}"
+            echo "detox-exclude-dir=${EXCLUDE}"
+          } >> "$GITHUB_OUTPUT"
 
-  e2e-android:
-    name: machine-${{ matrix.runId }}-api-${{ matrix.deviceOsVersion }}
+      - name: Worker matrix JSON
+        id: matrix
+        env:
+          N: ${{ inputs.parallelism }}
+        run: |
+          SHARDS=$(python3 -c "import json,os; print(json.dumps(list(range(1, int(os.environ['N'])+1))))")
+          echo "shards=${SHARDS}" >> "$GITHUB_OUTPUT"
+          echo "Workers: ${SHARDS}"
+
+      - name: test-system-io dispatch begin
+        id: begin
+        uses: mattermost/mattermost-test-system-io/.github/actions/test-system-io-dispatch-begin@e2d5032cfa71a3ad11b0975b135cd221564f2787
+        with:
+          use-staging: ${{ vars.E2E_USE_STAGING_TEST_IO_URL == 'true' }}
+          framework: detox
+          composite-identity: ${{ steps.cfg.outputs.identity-json }}
+          repo-dir: ${{ github.workspace }}
+          total-reports-expected: ${{ inputs.parallelism }}
+          detox-dir: detox
+          detox-search-path: ${{ steps.paths.outputs.detox-search-path }}
+          detox-exclude-dir: ${{ steps.paths.outputs.detox-exclude-dir }}
+          post-pending-commit-status: "false"
+          commit-status-context: ${{ steps.cfg.outputs.status-context }}
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          retest-on-fail: "false"
+          retest-budget: "0"
+          lease-timeout-ms: "7200000"
+          idle-timeout-ms: "9000000"
+
+      - name: Begin summary
+        run: |
+          {
+            echo "## Detox Android orchestration begin"
+            echo ""
+            echo "- report: ${{ steps.begin.outputs.report-url }}"
+            echo "- total units: ${{ steps.begin.outputs.total-units }}"
+            echo "- workers: ${{ inputs.parallelism }}"
+            echo "- search path: \`${{ steps.paths.outputs.detox-search-path }}\`"
+          } >> "$GITHUB_STEP_SUMMARY"
+
+  workers:
+    name: detox-android-worker-${{ matrix.shard }}
+    needs: [begin]
+    if: needs.begin.result == 'success'
     runs-on: ubuntu-latest-8-cores
-    continue-on-error: true
-    timeout-minutes: 240
-    env:
-      ANDROID_HOME: /usr/local/lib/android/sdk
-      ANDROID_SDK_ROOT: /usr/local/lib/android/sdk
-    needs:
-      - generate-specs
+    timeout-minutes: ${{ inputs.low_bandwidth_mode && 240 || 180 }}
     strategy:
       fail-fast: false
-      matrix: ${{ fromJSON(needs.generate-specs.outputs.specs) }}
+      matrix:
+        shard: ${{ fromJSON(needs.begin.outputs.worker-shards) }}
     steps:
-      - name: Checkout Repository
+      - name: Checkout
         uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
         with:
           ref: ${{ inputs.MOBILE_VERSION }}
+          persist-credentials: false
 
-      # Each platform gets two provisioned test servers. SITE_1_URL is where a spec
-      # does most of its setup, so pinning every shard to the same server would put
-      # all parallel shards on one instance while the second sits mostly idle —
-      # concurrent setup on one server is what drives API rate limiting and
-      # cross-shard interference. Alternating SITE_1/SITE_2 on shard parity spreads
-      # that load evenly while still giving each shard two distinct sites for the
-      # multi-server specs.
       - name: Rotate logical test sites by shard
         env:
           SERVER_A: ${{ inputs.MM_TEST_SERVER_URL }}
           SERVER_B: ${{ inputs.MM_TEST_SERVER_URL_2 }}
           SERVER_SHARED: ${{ inputs.MM_TEST_SERVER_URL_3 }}
-          SHARD_ID: ${{ matrix.runId }}
+          SHARD_ID: ${{ matrix.shard }}
         run: |
-          # Single-server topologies leave SERVER_B unset; without this the even
-          # shards would export an empty SITE_1_URL and test_config would silently
-          # fall back to localhost instead of the provisioned server.
           SERVER_B="${SERVER_B:-$SERVER_A}"
           if (( 10#$SHARD_ID % 2 == 1 )); then
             SITE_1_URL="$SERVER_A"
@@ -272,8 +294,7 @@ jobs:
       - name: Install Dependencies
         run: |
           sudo apt-get update
-          sudo apt-get install -y libpulse0
-          sudo apt-get install -y scrot ffmpeg xvfb
+          sudo apt-get install -y libpulse0 scrot ffmpeg xvfb
 
       - name: Enable KVM
         run: |
@@ -291,38 +312,28 @@ jobs:
           key: ${{ runner.os }}-detox-deps-${{ hashFiles('detox/package-lock.json') }}
           restore-keys: ${{ runner.os }}-detox-deps-
 
-      - name: Install Detox Dependencies
-        run: |
-          cd detox
-          npm install
+      - name: Install Detox dependencies
+        run: cd detox && npm ci --prefer-offline --no-audit --no-fund
 
-      - name: Set .env with RUNNING_E2E=true
-        run: |
-          cat > .env <<EOF
-          RUNNING_E2E=true
-          EOF
-  
-      # Must precede the download: download-artifact consumes ARTIFACT_RUN_ID and
-      # fails with an opaque API error when it is empty.
+      - name: Set RUNNING_E2E
+        run: echo "RUNNING_E2E=true" > .env
+
       - name: Verify artifact_run_id was passed by the parent workflow
-        env:
-          ARTIFACT_RUN_ID: ${{ env.ARTIFACT_RUN_ID }}
         run: |
           if [ -z "${ARTIFACT_RUN_ID}" ]; then
             echo "❌ ARTIFACT_RUN_ID is empty — parent workflow must pass artifact_run_id from build-android-apk"
             exit 1
           fi
 
-      - name: Download Detox Android build from parent workflow
+      - name: Download Detox Android build
         uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
         with:
           name: android-build-files-${{ env.ARTIFACT_RUN_ID }}
-          repository: ${{ github.repository }}
           run-id: ${{ env.ARTIFACT_RUN_ID }}
           github-token: ${{ github.token }}
           path: android/app/build
 
-      - name: Verify Detox Android app from parent build
+      - name: Verify Detox Android APKs
         run: |
           APP_APK="android/app/build/outputs/apk/debug/app-debug.apk"
           TEST_APK="android/app/build/outputs/apk/androidTest/debug/app-debug-androidTest.apk"
@@ -336,40 +347,29 @@ jobs:
             find android/app/build -name '*.apk' 2>/dev/null || true
             exit 1
           fi
-          echo "✅ Detox will use Android APKs from parent workflow run ${ARTIFACT_RUN_ID}:"
           ls -lh "$APP_APK" "$TEST_APK"
-        env:
-          ARTIFACT_RUN_ID: ${{ env.ARTIFACT_RUN_ID }}
 
-      - name: Set up Android SDK
+      - name: Set up Android SDK PATH
         run: |
-          export ANDROID_HOME=/usr/local/lib/android/sdk
-          export PATH=$ANDROID_HOME/cmdline-tools/latest/bin:$ANDROID_HOME/emulator:$ANDROID_HOME/tools/bin:$ANDROID_HOME/platform-tools:$PATH
-          echo "ANDROID_HOME=$ANDROID_HOME" >> $GITHUB_ENV
-          echo "PATH=$PATH" >> $GITHUB_ENV
+          echo "ANDROID_HOME=$ANDROID_HOME" >> "$GITHUB_ENV"
+          echo "ANDROID_SDK_ROOT=$ANDROID_SDK_ROOT" >> "$GITHUB_ENV"
+          echo "PATH=$ANDROID_HOME/cmdline-tools/latest/bin:$ANDROID_HOME/emulator:$ANDROID_HOME/platform-tools:$PATH" >> "$GITHUB_ENV"
 
       - name: Start Xvfb
         run: |
           Xvfb :99 -screen 0 1920x1080x24 &
-          export DISPLAY=:99
-          echo "DISPLAY=:99" >> $GITHUB_ENV
+          echo "DISPLAY=:99" >> "$GITHUB_ENV"
 
       - name: Accept Android licenses
         run: |
           mkdir -p ~/.android
           yes | sdkmanager --licenses > sdk_licenses_output.txt || true
-      
-          # Check if "All SDK package licenses accepted" appears in output
-          if grep -q "All SDK package licenses accepted" sdk_licenses_output.txt; then
-            echo "✅ All licenses accepted successfully."
-          else
-            echo "❌ Licenses not fully accepted."
+          if ! grep -q "All SDK package licenses accepted" sdk_licenses_output.txt; then
+            echo "::error::Android SDK licenses not fully accepted"
             cat sdk_licenses_output.txt
             exit 1
           fi
 
-      # Cache SDK under the workspace (not /usr/local) — tar restore into system
-      # SDK dirs often fails with exit code 2 when paths already exist on the image.
       - name: Cache Android SDK components
         id: android-sdk-cache
         uses: actions/cache@27d5ce7f107fe9357f9df03efb73ab90386fccae # v5.0.5
@@ -428,7 +428,6 @@ jobs:
           cp -a "${ANDROID_HOME}/platforms/android-${API_LEVEL}" .android-sdk-cache/platforms/
           cp -a "${ANDROID_HOME}/system-images/android-${API_LEVEL}" .android-sdk-cache/system-images/
 
-      # CI AVDs live under detox/.android/avd (see create_android_emulator.sh), not ~/.android/avd.
       - name: Cache Android Emulator & AVD
         uses: actions/cache@27d5ce7f107fe9357f9df03efb73ab90386fccae # v5.0.5
         with:
@@ -440,10 +439,18 @@ jobs:
             android-emulator-${{ runner.os }}-${{ runner.arch }}-${{ env.AVD_NAME }}-api-${{ inputs.android_api_level }}-
             android-emulator-${{ runner.os }}-${{ runner.arch }}-
 
-      # mm_blocks specs are sharded alone (split-tests.js). Script bounds curls and
-      # exits 0 on tunnel failure; prefer WEBHOOK_PUBLIC_BASE_URL over trycloudflare.
+      - name: Point Detox at CI AVD home
+        run: |
+          AVD_HOME="${GITHUB_WORKSPACE}/detox/.android/avd"
+          mkdir -p "$AVD_HOME"
+          {
+            echo "ANDROID_AVD_HOME=${AVD_HOME}"
+            echo "AVD_NAME=${AVD_NAME}_api_${SDK_VERSION}"
+          } >> "$GITHUB_ENV"
+          echo "ANDROID_AVD_HOME=${AVD_HOME}"
+
+      # Any worker may lease mm_blocks_* specs under orchestration.
       - name: Start mm_blocks webhook sidecar
-        if: contains(matrix.specs, 'mm_blocks_')
         continue-on-error: true
         env:
           SITE_1_URL: ${{ env.SITE_1_URL }}
@@ -451,355 +458,118 @@ jobs:
           CLOUDFLARED_TUNNEL_TOKEN: ${{ secrets.MM_MOBILE_E2E_CLOUDFLARED_TUNNEL_TOKEN }}
         run: bash detox/scripts/start_webhook_sidecar.sh
 
-      - name: Create and run Android Emulator
+      - name: Bootstrap Android emulator (no Detox yet)
         env:
-          MATRIX_SPECS: ${{ matrix.specs }}
-          SITE_1_URL: ${{ env.SITE_1_URL }}
-          SITE_2_URL: ${{ env.SITE_2_URL }}
-          SITE_3_URL: ${{ env.SITE_3_URL }}
+          BOOTSTRAP_ONLY: "true"
+          JAVA_HOME: ${{ env.JAVA_HOME_17_X64 }}
           MAX_ATTEMPTS: "2"
-          ATTEMPT_TIMEOUT_MIN: "60"
+          ATTEMPT_TIMEOUT_MIN: "25"
+          AVD_BASE: ${{ inputs.android_avd_name }}
         shell: bash
         run: |
           set +e
           attempt=1
           while (( attempt <= MAX_ATTEMPTS )); do
-            echo "==> Attempt ${attempt}/${MAX_ATTEMPTS} (timeout ${ATTEMPT_TIMEOUT_MIN}m)"
+            echo "==> Boot attempt ${attempt}/${MAX_ATTEMPTS}"
             timeout "${ATTEMPT_TIMEOUT_MIN}m" bash -c '
               cd detox
               chmod +x ./create_android_emulator.sh
-              CI=true ./create_android_emulator.sh "$SDK_VERSION" "$AVD_NAME" $MATRIX_SPECS
+              CI=true ./create_android_emulator.sh "$SDK_VERSION" "$AVD_BASE"
             '
             rc=$?
             if (( rc == 0 )); then
-              echo "==> Attempt ${attempt} succeeded"
+              echo "==> Bootstrap succeeded"
+              adb devices -l || true
               exit 0
             fi
-            echo "==> Attempt ${attempt} failed with exit ${rc}"
+            echo "==> Attempt ${attempt} failed (exit ${rc})"
             if (( attempt < MAX_ATTEMPTS )); then
-              echo "==> Cleaning up before retry"
               adb -s emulator-5554 emu kill 2>/dev/null || true
               pkill -9 -f qemu-system 2>/dev/null || true
               pkill -9 -f emulator 2>/dev/null || true
-              rm -rf detox/artifacts/* 2>/dev/null || true
               sleep 5
             fi
             attempt=$(( attempt + 1 ))
           done
-          echo "==> All ${MAX_ATTEMPTS} attempts failed"
+          echo "::error::Android emulator bootstrap failed"
           exit 1
-        continue-on-error: true # We want to run all the tests
 
-      - name: Upload Android Test Report
-        if: always() && hashFiles('detox/artifacts/**') != ''
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+      - name: Generate Detox CI config
+        env:
+          DETOX_MAX_WORKERS: "1"
+        run: cd detox && npm run detox:config-gen
+
+      - name: test-system-io dispatch run
+        uses: mattermost/mattermost-test-system-io/.github/actions/test-system-io-dispatch-run@e2d5032cfa71a3ad11b0975b135cd221564f2787
         with:
-          name: android-results-${{ needs.generate-specs.outputs.workflow_hash }}-${{ matrix.runId }}
-          path: detox/artifacts/
+          use-staging: ${{ vars.E2E_USE_STAGING_TEST_IO_URL == 'true' }}
+          framework: detox
+          composite-identity: ${{ needs.begin.outputs.identity-json }}
+          repo-dir: ${{ github.workspace }}
+          artifacts-root: ${{ runner.temp }}/test-system-io
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          gh-job-name: detox-android-worker-${{ matrix.shard }}
+          detox-dir: detox
+          detox-config: android.emu.debug
+          batch-size: "1"
+          detox-max-workers: "1"
+          max-idle-polls: "8"
 
-  generate-report:
-    # TSIO displays gh-job-name as the shard label — keep it aligned with tsio-shard-name.
-    name: ${{ inputs.tsio-shard-name != '' && inputs.tsio-shard-name || 'generate-report' }}
-    if: always()
+      - name: Cleanup emulator
+        if: always()
+        timeout-minutes: 2
+        run: |
+          adb -s emulator-5554 emu kill 2>/dev/null || true
+          pkill -9 -f qemu-system 2>/dev/null || true
+          pkill -9 -f emulator 2>/dev/null || true
+          pkill -9 -f "react-native.*start" 2>/dev/null || true
+          pkill -9 -f metro 2>/dev/null || true
+
+  summary:
+    name: ${{ inputs.tsio-shard-name != '' && inputs.tsio-shard-name || 'orch-summary-detox-android' }}
+    needs: [begin, workers]
+    if: always() && needs.begin.result == 'success'
     runs-on: ubuntu-24.04
-    needs:
-      - generate-specs
-      - e2e-android
     permissions:
       contents: read
-      # test-system-io-report-upload authenticates via the workflow's OIDC
-      # token and resolves gh_job_id via the GitHub API.
       id-token: write
-      actions: read
-      # Per-job TSIO finalize posts detox-android (or CMT <shard>).
       statuses: write
-      # Finalize re-reads the PR labels so a result landing after E2E/Override was
-      # applied reports success instead of re-blocking the merge.
       issues: read
-    outputs:
-      TARGET_URL: ${{ steps.set-url.outputs.TARGET_URL }}
-      STATUS: ${{ steps.determine-status.outputs.STATUS }}
-      FAILURES: ${{ steps.summary.outputs.FAILURES }}
-      PASSES: ${{ steps.summary.outputs.PASSES }}
-      TOTAL: ${{ steps.summary.outputs.TOTAL }}
-      SKIPPED: ${{ steps.summary.outputs.SKIPPED }}
-      ERRORS: ${{ steps.summary.outputs.ERRORS }}
-      PERCENTAGE: ${{ steps.summary.outputs.PERCENTAGE }}
     steps:
-      - name: Checkout Repository
+      - name: Checkout
         uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
         with:
           ref: ${{ inputs.MOBILE_VERSION }}
+          persist-credentials: false
+          sparse-checkout: |
+            .github/actions/e2e-override-label
+            detox/utils
 
-      - name: ci/prepare-node-deps
-        uses: ./.github/actions/prepare-node-deps
-
-      - name: Download Android Artifacts
-        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
-        with:
-          path: detox/artifacts/
-          pattern: android-results-${{ needs.generate-specs.outputs.workflow_hash }}-*
-        continue-on-error: true
-
-      - name: Generate Report Path
-        id: s3
-        env:
-          BUILD_ID: ${{ needs.generate-specs.outputs.build_id }}
-          MOBILE_SHA: ${{ needs.generate-specs.outputs.mobile_sha }}
-          MOBILE_REF: ${{ needs.generate-specs.outputs.mobile_ref }}
-        run: |
-          path="${BUILD_ID}-${MOBILE_SHA}-${MOBILE_REF}"
-          echo "path=$(echo "${path}" | sed 's/\./-/g')" >> "$GITHUB_OUTPUT"
-
-      # ── Spec durations for the next run's shard packing ────────────────────
-      # Must run before e2e:save-report, which deletes the android-results-* dirs
-      # the per-shard jest-results.json live in. Only main-push publishes (a PR
-      # must not steer how other branches shard); PR runs still compute it so the
-      # step is exercised on every PR that touches this workflow.
-      # Re-fetch first: this is a different runner from generate-specs, so without
-      # it the EWMA would have no history and collapse to "last run only".
-      - name: Restore previous spec-duration manifest
-        if: always() && inputs.durations_key != ''
-        continue-on-error: true
-        uses: ./.github/actions/s3-spec-durations
-        env:
-          DETOX_AWS_ACCESS_KEY_ID: ${{ secrets.MM_MOBILE_DETOX_AWS_ACCESS_KEY_ID }}
-          DETOX_AWS_SECRET_ACCESS_KEY: ${{ secrets.MM_MOBILE_DETOX_AWS_SECRET_ACCESS_KEY }}
-        with:
-          key: ${{ inputs.durations_key }}
-          bucket: ${{ env.DETOX_AWS_S3_BUCKET }}
-          mode: restore
-
-      - name: Build spec-duration manifest
-        if: always() && inputs.durations_key != ''
-        continue-on-error: true
-        env:
-          DURATIONS_KEY: ${{ inputs.durations_key }}
-        run: |
-          node detox/utils/spec-durations.js \
-            --dir detox/artifacts \
-            --previous detox/artifacts/spec-durations.json \
-            --output detox/artifacts/spec-durations.next.json \
-            --key "$DURATIONS_KEY" \
-            --repo-root "$GITHUB_WORKSPACE"
-
-      # spec-durations.js merges the restored manifest into the new one, so the
-      # freshly built manifest already carries every valid entry of the previously
-      # published one — there is nothing to fall back to. (Entries the restored
-      # manifest had that were malformed or non-positive are dropped on purpose.)
-      # An empty/zero manifest is rejected by
-      # the action's `validate` guard rather than published (publishing one would
-      # poison duration packing for every branch until main rewrote it).
-      - name: Publish spec-duration manifest
-        if: always() && inputs.durations_key != '' && (inputs.run-type == 'MAIN' || inputs.run-type == 'MASTER') && hashFiles('detox/artifacts/spec-durations.next.json') != ''
-        continue-on-error: true
-        uses: ./.github/actions/s3-spec-durations
-        env:
-          DETOX_AWS_ACCESS_KEY_ID: ${{ secrets.MM_MOBILE_DETOX_AWS_ACCESS_KEY_ID }}
-          DETOX_AWS_SECRET_ACCESS_KEY: ${{ secrets.MM_MOBILE_DETOX_AWS_SECRET_ACCESS_KEY }}
-        with:
-          key: ${{ inputs.durations_key }}
-          bucket: ${{ env.DETOX_AWS_S3_BUCKET }}
-          manifest-path: detox/artifacts/spec-durations.next.json
-          mode: save
-
-      # ── TSIO report upload (before e2e:save-report) ────────────────────────
-      # save-report deletes android-results-* dirs (where Detox PNGs live). Upload
-      # while those artifact trees are still on disk.
-      # Each matrix leg wrote Jest CLI --json (name + assertionResults). TSIO's
-      # extractDetox expects testFilePath + nested testResults — convert while
-      # merging. gh-job-name must match this job's rendered `name:` (tsio-shard-name).
-      - name: Merge per-shard Jest JSON for TSIO
-        if: always() && inputs.tsio-config != '' && vars.TSIO_UPLOAD_ENABLED != 'false'
-        id: tsio-merge
-        run: |
-          set +e
-          # TSIO extractDetox expects testFilePath + nested testResults (not Jest CLI
-          # name + assertionResults). Convert while merging shard JSON files.
-          if ! node detox/utils/merge-jest-results-for-tsio.js \
-            --dir detox/artifacts \
-            --repo-root "${GITHUB_WORKSPACE}" \
-            --output detox/artifacts/jest-results-merged.json; then
-            echo "skip=true" >> "$GITHUB_OUTPUT"
-            echo "No jest-results.json found or merge failed — skipping TSIO upload."
-            exit 0
-          fi
-          echo "skip=false" >> "$GITHUB_OUTPUT"
-
-      - name: Write TSIO failure stub when Detox JSON is missing
-        if: always() && inputs.tsio-config != '' && vars.TSIO_UPLOAD_ENABLED != 'false' && steps.tsio-merge.outputs.skip == 'true'
-        env:
-          TSIO_SHARD_NAME: ${{ inputs.tsio-shard-name != '' && inputs.tsio-shard-name || 'generate-report' }}
-        run: |
-          node detox/utils/write-tsio-failure-stub.mjs \
-            --format jest \
-            --output detox/artifacts/jest-results-merged.json \
-            --job-name "$TSIO_SHARD_NAME" \
-            --reason "Detox job failed or was cancelled before jest-results.json was written"
-
-      - name: Resolve per-job TSIO config
-        if: always() && inputs.tsio-config != '' && vars.TSIO_UPLOAD_ENABLED != 'false'
-        id: tsio-cfg
-        env:
-          TSIO_CONFIG: ${{ inputs.tsio-config }}
-          TSIO_SHARD_NAME: ${{ inputs.tsio-shard-name }}
-        run: |
-          CFG=$(bash detox/utils/resolve-tsio-job-config.sh)
-          {
-            echo "config<<EOF"
-            echo "$CFG"
-            echo "EOF"
-          } >> "$GITHUB_OUTPUT"
-          echo "Resolved TSIO job: $(echo "$CFG" | jq -r '.composite_identity.name') context=$(echo "$CFG" | jq -r '.status_context')"
-
-      - name: Upload report to Test System IO
-        if: always() && inputs.tsio-config != '' && vars.TSIO_UPLOAD_ENABLED != 'false' && hashFiles('detox/artifacts/jest-results-merged.json') != '' && steps.tsio-cfg.outputs.config != ''
-        uses: mattermost/mattermost-test-system-io/.github/actions/test-system-io-report-upload@0661accd8cc9ab9dde6ec93f6f5ad40d06deb0d3 # release-0.14.0 / main@0661acc (#93 unique release tags per run)
-        with:
-          composite-identity: ${{ toJSON(fromJSON(steps.tsio-cfg.outputs.config).composite_identity) }}
-          total-reports-expected: ${{ fromJSON(steps.tsio-cfg.outputs.config).total_reports_expected }}
-          framework: detox
-          github-token: ${{ github.token }}
-          gh-job-name: ${{ inputs.tsio-shard-name != '' && inputs.tsio-shard-name || 'generate-report' }}
-          json-path: detox/artifacts/jest-results-merged.json
-          screenshots-dir: detox/artifacts/
-
-      # Resolved here rather than inside tsio-report-status.js so the GitHub API
-      # call stays in the Actions layer and the reporter acts on its inputs.
-      - name: Check E2E/Override on the PR
+      - name: Resolve E2E/Override
         id: e2e-override
-        if: always() && inputs.tsio-config != '' && vars.TSIO_UPLOAD_ENABLED != 'false' && steps.tsio-cfg.outputs.config != ''
         uses: ./.github/actions/e2e-override-label
         with:
-          pr_number: ${{ fromJSON(steps.tsio-cfg.outputs.config).composite_identity.gh_pr_number }}
+          pr_number: ${{ needs.begin.outputs.pr-number }}
 
-      - name: Post per-job TSIO commit status
-        if: always() && inputs.tsio-config != '' && vars.TSIO_UPLOAD_ENABLED != 'false' && steps.tsio-cfg.outputs.config != ''
-        env:
-          GITHUB_TOKEN: ${{ github.token }}
-          TSIO_CONFIG: ${{ steps.tsio-cfg.outputs.config }}
-          E2E_OVERRIDE: ${{ steps.e2e-override.outputs.override }}
-          SPECS_RESULT: ${{ needs.generate-specs.result }}
-          E2E_RESULT: ${{ needs.e2e-android.result }}
-          JOB_STATUS: ${{ job.status }}
-          MATTERMOST_E2E_WEBHOOK_URL: ${{ secrets.MM_MOBILE_E2E_WEBHOOK_URL }}
-          MATTERMOST_MASTER_HEALTH_WEBHOOK_URL: ${{ secrets.MM_E2E_MASTER_HEALTH_WEBHOOK_URL }}
-          MATTERMOST_CMT_WEBHOOK_URL: ${{ secrets.MM_E2E_RELEASE_WEBHOOK_URL }}
-        run: |
-          set +e
-          UPSTREAM="true"
-          # This job runs with always(), so job.status stays success when an upstream
-          # job is cancelled — read the needs results to detect that.
-          if [ "$SPECS_RESULT" = "cancelled" ] ||
-             [ "$E2E_RESULT" = "cancelled" ] ||
-             [ "$JOB_STATUS" = "cancelled" ]; then
-            UPSTREAM="false"
-          fi
-          IDENTITY=$(echo "$TSIO_CONFIG" | jq -c '.composite_identity')
-          CONTEXT=$(echo "$TSIO_CONFIG" | jq -r '.status_context // "e2e-test/detox-android"')
-          TOTAL=$(echo "$TSIO_CONFIG" | jq -r '.total_reports_expected // 1')
-          node detox/utils/tsio-report-status.js \
-            --composite-identity="$IDENTITY" \
-            --total-reports-expected="$TOTAL" \
-            --github-token="$GITHUB_TOKEN" \
-            --context="$CONTEXT" \
-            --upstream-succeeded="$UPSTREAM" \
-            --e2e-override="$E2E_OVERRIDE" \
-            --poll-attempts=24
-          RC=$?
-          echo "tsio-report-status exit=$RC upstream_succeeded=$UPSTREAM context=$CONTEXT"
-          if [ "$RC" -ne 0 ] && [ "$UPSTREAM" = "true" ]; then
-            echo "::error::TSIO reported test failures for $CONTEXT"
-            exit 1
-          fi
-          exit 0
-
-      - name: Save report Detox Dependencies
-        id: report-link
-        if: always()
-        continue-on-error: true
-        run: |
-          cd detox
-          npm ci
-          npm run e2e:save-report
-        env:
-          DETOX_AWS_ACCESS_KEY_ID: ${{ secrets.MM_MOBILE_DETOX_AWS_ACCESS_KEY_ID }}
-          DETOX_AWS_SECRET_ACCESS_KEY: ${{ secrets.MM_MOBILE_DETOX_AWS_SECRET_ACCESS_KEY }}
-          BUILD_ID: ${{ needs.generate-specs.outputs.build_id }}
-          REPORT_PATH: ${{ steps.s3.outputs.path }}
-          ## These are needed for the MM Webhook report
-          COMMIT_HASH: ${{ needs.generate-specs.outputs.mobile_sha }}
-          BRANCH: ${{ needs.generate-specs.outputs.mobile_ref }}
-
-      - name: Calculate failures
+      - name: test-system-io summary
         id: summary
-        if: always()
-        run: |
-          if [ -f detox/artifacts/summary.json ]; then
-            echo "FAILURES=$(cat detox/artifacts/summary.json | jq .stats.failures)" >> ${GITHUB_OUTPUT}
-            echo "PASSES=$(cat detox/artifacts/summary.json | jq .stats.passes)" >> ${GITHUB_OUTPUT}
-            echo "SKIPPED=$(cat detox/artifacts/summary.json | jq .stats.skipped)" >> ${GITHUB_OUTPUT}
-            echo "TOTAL=$(cat detox/artifacts/summary.json | jq .stats.tests)" >> ${GITHUB_OUTPUT}
-            echo "ERRORS=$(cat detox/artifacts/summary.json | jq .stats.errors)" >> ${GITHUB_OUTPUT}
-            echo "PERCENTAGE=$(cat detox/artifacts/summary.json | jq .stats.passPercent)" >> ${GITHUB_OUTPUT}
-          else
-            echo "⚠️ No summary.json found — all test machines likely failed before producing results"
-            echo "FAILURES=-1" >> ${GITHUB_OUTPUT}
-            echo "PASSES=0" >> ${GITHUB_OUTPUT}
-            echo "SKIPPED=0" >> ${GITHUB_OUTPUT}
-            echo "TOTAL=0" >> ${GITHUB_OUTPUT}
-            echo "ERRORS=0" >> ${GITHUB_OUTPUT}
-            echo "PERCENTAGE=0" >> ${GITHUB_OUTPUT}
-          fi
+        continue-on-error: true
+        uses: mattermost/mattermost-test-system-io/.github/actions/test-system-io-summary@e2d5032cfa71a3ad11b0975b135cd221564f2787
+        with:
+          use-staging: ${{ vars.E2E_USE_STAGING_TEST_IO_URL == 'true' }}
+          framework: detox
+          composite-identity: ${{ needs.begin.outputs.identity-json }}
+          commit-status-context: ${{ needs.begin.outputs.status-context }}
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          update-commit-status: ${{ steps.e2e-override.outputs.override != 'true' && 'true' || 'false' }}
+          fail-on-test-failures: ${{ steps.e2e-override.outputs.override != 'true' && 'true' || 'false' }}
+          report-type: ${{ inputs.run-type }}
+          pr-number: ${{ needs.begin.outputs.pr-number }}
+          ref-branch: ${{ needs.begin.outputs.identity-branch }}
 
-      - name: Set Target URL
-        id: set-url
-        if: always()
+      - name: Assert summary
+        if: steps.e2e-override.outputs.override != 'true'
         env:
-          S3_BUCKET: ${{ env.DETOX_AWS_S3_BUCKET }}
-          REPORT_PATH: ${{ steps.s3.outputs.path }}
+          SUMMARY_OUTCOME: ${{ steps.summary.outcome }}
         run: |
-          echo "TARGET_URL=https://${S3_BUCKET}.s3.amazonaws.com/${REPORT_PATH}/jest-stare/android-report.html" >> "$GITHUB_OUTPUT"
-
-      - name: Determine Status
-        id: determine-status
-        if: always()
-        env:
-          FAILURES: ${{ steps.summary.outputs.FAILURES }}
-          ERRORS: ${{ steps.summary.outputs.ERRORS }}
-          TOTAL: ${{ steps.summary.outputs.TOTAL }}
-        run: |
-          # Fail on missing/empty reports (infra died before tests) and on real failures.
-          if [[ "$FAILURES" == "-1" || "$FAILURES" -gt 0 || "${ERRORS:-0}" -gt 0 || "${TOTAL:-0}" -eq 0 ]]; then
-            echo "STATUS=failure" >> ${GITHUB_OUTPUT}
-          else
-            echo "STATUS=success" >> ${GITHUB_OUTPUT}
-          fi
-
-      - name: Generate Summary
-        if: always()
-        env:
-          TOTAL: ${{ steps.summary.outputs.TOTAL }}
-          PASSES: ${{ steps.summary.outputs.PASSES }}
-          FAILURES: ${{ steps.summary.outputs.FAILURES }}
-          SKIPPED: ${{ steps.summary.outputs.SKIPPED }}
-          ERRORS: ${{ steps.summary.outputs.ERRORS }}
-          PERCENTAGE: ${{ steps.summary.outputs.PERCENTAGE }}
-          TARGET_URL: ${{ steps.set-url.outputs.TARGET_URL }}
-        run: |
-          echo "| Tests | Passed :white_check_mark: | Failed :x: | Skipped :fast_forward: | Errors :warning: | " >> ${GITHUB_STEP_SUMMARY}
-          echo "|:---:|:---:|:---:|:---:|:---:|" >> ${GITHUB_STEP_SUMMARY}
-          echo "| ${TOTAL} | ${PASSES} | ${FAILURES} | ${SKIPPED} | ${ERRORS} |" >> ${GITHUB_STEP_SUMMARY}
-          echo "" >> ${GITHUB_STEP_SUMMARY}
-          echo "You can check the full report [here](${TARGET_URL})" >> ${GITHUB_STEP_SUMMARY}
-          echo "There was **${PERCENTAGE}%** success rate." >> ${GITHUB_STEP_SUMMARY}
-
-      - name: Fail job on test failures
-        if: always() && steps.determine-status.outputs.STATUS == 'failure'
-        env:
-          FAILURES: ${{ steps.summary.outputs.FAILURES }}
-          TOTAL: ${{ steps.summary.outputs.TOTAL }}
-          ERRORS: ${{ steps.summary.outputs.ERRORS }}
-        run: |
-          echo "::error::Detox reported test failures (FAILURES=${FAILURES}, TOTAL=${TOTAL}, ERRORS=${ERRORS})"
-          exit 1
+          [ "$SUMMARY_OUTCOME" = "success" ]

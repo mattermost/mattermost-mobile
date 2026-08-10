@@ -5,19 +5,21 @@
 /**
  * Build per-platform TSIO upload + GitHub commit-status config.
  *
- * Each Detox/Maestro platform job owns one report group (total_reports_expected=1)
- * and one commit-status context, so jobs cannot clobber each other's finalize.
+ * Each Detox/Maestro platform job owns one report group and one commit-status
+ * context. With orchestration, total_reports_expected equals the worker matrix
+ * size so the report group finalizes when every worker shard uploads.
  */
 
 // Commit-status namespace, aligned with the mattermost monorepo (`e2e-test/*`).
 const STATUS_CONTEXT_PREFIX = 'e2e-test';
 
+// workers = orchestration matrix size (must match template `parallelism` defaults).
 const PR_MAIN_JOBS = {
-    'detox-ios': {statusName: 'detox-ios', framework: 'detox'},
-    'detox-android': {statusName: 'detox-android', framework: 'detox'},
-    'detox-ipad': {statusName: 'detox-ipad', framework: 'detox'},
-    'maestro-ios-e2e': {statusName: 'maestro-ios', framework: 'maestro'},
-    'maestro-android-e2e': {statusName: 'maestro-android', framework: 'maestro'},
+    'detox-ios': {statusName: 'detox-ios', framework: 'detox', workers: 20},
+    'detox-android': {statusName: 'detox-android', framework: 'detox', workers: 20},
+    'detox-ipad': {statusName: 'detox-ipad', framework: 'detox', workers: 1},
+    'maestro-ios-e2e': {statusName: 'maestro-ios', framework: 'maestro', workers: 1},
+    'maestro-android-e2e': {statusName: 'maestro-android', framework: 'maestro', workers: 1},
 };
 
 /**
@@ -52,9 +54,29 @@ function frameworkFromJobKey(jobKey) {
 }
 
 /**
+ * Default worker count for a CMT shard key when not overridden.
+ * Latest Detox phone shards use 10; everything else uses 1.
+ * @param {string} jobKey
+ * @param {boolean} latest
+ * @returns {number}
+ */
+function cmtWorkersForJobKey(jobKey, latest) {
+    if (!latest) {
+        return 1;
+    }
+    if (jobKey.startsWith('detox-ios-') && !jobKey.includes('ipad')) {
+        return 10;
+    }
+    if (jobKey.startsWith('detox-android-')) {
+        return 10;
+    }
+    return 1;
+}
+
+/**
  * @param {object} baseIdentity - shared fields (repository, commit_sha, branch, name prefix, …)
  * @param {string} jobKey - tsio-shard-name / platform key (e.g. detox-ios, detox-ios-Server_11.9.0)
- * @param {{statusName?: string, framework?: string}} [overrides]
+ * @param {{statusName?: string, framework?: string, workers?: number, totalReportsExpected?: number}} [overrides]
  * @returns {{composite_identity: object, total_reports_expected: number, status_context: string}}
  */
 function buildTsioJobConfig(baseIdentity, jobKey, overrides = {}) {
@@ -71,6 +93,7 @@ function buildTsioJobConfig(baseIdentity, jobKey, overrides = {}) {
     const framework = overrides.framework || known?.framework ||
         frameworkFromJobKey(jobKey) || baseIdentity.framework || 'detox';
     const statusName = overrides.statusName || known?.statusName || jobKey;
+    const workers = overrides.totalReportsExpected ?? overrides.workers ?? known?.workers ?? 1;
 
     return {
         composite_identity: {
@@ -79,7 +102,7 @@ function buildTsioJobConfig(baseIdentity, jobKey, overrides = {}) {
             run_group: reportName,
             framework,
         },
-        total_reports_expected: 1,
+        total_reports_expected: workers,
         status_context: statusContextFor(statusName),
     };
 }
@@ -87,12 +110,14 @@ function buildTsioJobConfig(baseIdentity, jobKey, overrides = {}) {
 /**
  * @param {object} baseIdentity
  * @param {string[]} jobKeys
+ * @param {(jobKey: string) => ({workers?: number, totalReportsExpected?: number, framework?: string}|undefined)} [overrideForKey]
  * @returns {Record<string, ReturnType<typeof buildTsioJobConfig>>}
  */
-function buildTsioJobConfigMap(baseIdentity, jobKeys) {
+function buildTsioJobConfigMap(baseIdentity, jobKeys, overrideForKey) {
     const out = {};
     for (const key of jobKeys) {
-        out[key] = buildTsioJobConfig(baseIdentity, key);
+        const overrides = typeof overrideForKey === 'function' ? (overrideForKey(key) || {}) : {};
+        out[key] = buildTsioJobConfig(baseIdentity, key, overrides);
     }
     return out;
 }
@@ -146,6 +171,30 @@ function cmtJobKeys(cmtMatrix, maestroMatrix) {
 }
 
 /**
+ * Build CMT per-shard TSIO configs with total_reports_expected matching each
+ * template's parallelism (10 for latest Detox phone, else 1).
+ *
+ * @param {object} baseIdentity
+ * @param {{server?: Array<{version?: string, latest?: boolean}>}} cmtMatrix
+ * @param {{server?: Array<{version?: string, latest?: boolean}>}} [maestroMatrix]
+ * @returns {Record<string, ReturnType<typeof buildTsioJobConfig>>}
+ */
+function buildCmtTsioJobConfigMap(baseIdentity, cmtMatrix, maestroMatrix) {
+    const latestVersions = new Set(
+        (cmtMatrix && Array.isArray(cmtMatrix.server) ? cmtMatrix.server : []).
+            filter((entry) => entry && entry.latest && entry.version).
+            map((entry) => entry.version),
+    );
+    const keys = cmtJobKeys(cmtMatrix, maestroMatrix);
+    return buildTsioJobConfigMap(baseIdentity, keys, (jobKey) => {
+        const versionMatch = /Server_(.+)$/.exec(jobKey);
+        const version = versionMatch ? versionMatch[1] : '';
+        const latest = latestVersions.has(version);
+        return {workers: cmtWorkersForJobKey(jobKey, latest)};
+    });
+}
+
+/**
  * Map report group name to webhook routing bucket (mobile-pr / mobile-main / mobile-release).
  * @param {string} reportName
  * @returns {string}
@@ -170,8 +219,10 @@ module.exports = {
     PR_MAIN_JOBS,
     E2E_STATUS_CONTEXTS,
     frameworkFromJobKey,
+    cmtWorkersForJobKey,
     buildTsioJobConfig,
     buildTsioJobConfigMap,
+    buildCmtTsioJobConfigMap,
     jobKeysForPlatform,
     cmtJobKeys,
     webhookBucketForReportName,
