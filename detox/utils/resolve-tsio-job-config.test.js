@@ -1,6 +1,8 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+/* eslint-disable no-process-env -- spawns the bash resolver with inherited PATH */
+
 const assert = require('node:assert/strict');
 const {spawnSync} = require('node:child_process');
 const path = require('node:path');
@@ -43,9 +45,9 @@ describe('resolve-tsio-job-config.sh', () => {
     });
 
     it('should reject the first unsafe integer', () => {
+        // MAX_SAFE_INTEGER is 9007199254740991; +2 is the first odd unsafe int.
         const result = run({
             TSIO_CONFIG: PASS_THROUGH,
-            // MAX_SAFE_INTEGER is 9007199254740991; +2 is the first odd unsafe int.
             TSIO_WORKERS: '9007199254740993',
         });
         assert.notEqual(result.status, 0);
