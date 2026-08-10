@@ -68,6 +68,10 @@ RCT_REMAP_BLOCKING_SYNCHRONOUS_METHOD(deleteEntitiesFile, NSNumber*, deleteEntit
     return [wrapper deleteEntitiesFile];
 }
 
+RCT_REMAP_BLOCKING_SYNCHRONOUS_METHOD(areTutorialsDisabled, NSNumber*, tutorialsDisabled) {
+    return @([wrapper areTutorialsDisabled]);
+}
+
 RCT_REMAP_BLOCKING_SYNCHRONOUS_METHOD(isRunningInSplitView, NSDictionary*, isSplitView) {
     return [wrapper isRunningInSplitView];
 }
@@ -178,6 +182,10 @@ RCT_EXPORT_METHOD(createZipFile:(NSArray<NSString *> *)paths
 
 - (NSNumber *)deleteEntitiesFile {
     return [wrapper deleteEntitiesFile];
+}
+
+- (NSNumber *)areTutorialsDisabled {
+    return @([wrapper areTutorialsDisabled]);
 }
 
 - (NSDictionary *)isRunningInSplitView {

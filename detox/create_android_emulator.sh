@@ -9,6 +9,14 @@ AVD_BASE_NAME=${2:-"detox_pixel_8"}  # Second argument is AVD base name (no api 
 AVD_NAME="${AVD_BASE_NAME}_api_${SDK_VERSION}"
 TEST_FILES=("${@:3}")          # Capture all remaining arguments as Detox test files
 EMULATOR_RAM_MB=${MM_ANDROID_EMULATOR_RAM_MB:-3072}
+# Boot N emulator instances of the same AVD (ports 5554, 5556, …).
+# When N>1 every instance uses -read-only (Android multi-instance requirement).
+EMULATOR_COUNT=${EMULATOR_COUNT:-1}
+# Absolute paths — start_server() used to `cd ..` and leave cwd at the repo
+# root, which made relative fixture lookups silently miss (and skip the push).
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+REPO_ROOT="$(cd "${SCRIPT_DIR}/.." && pwd)"
+E2E_BOOKMARK_FIXTURE="${SCRIPT_DIR}/e2e/support/fixtures/image.png"
 
 setup_avd_home() {
     if [[ "$CI" == "true" ]]; then
@@ -74,14 +82,35 @@ start_adb_server() {
     adb start-server
 }
 
-start_emulator() {
-    echo "Starting the emulator..."
-    local emulator_opts="-avd $AVD_NAME -no-snapshot -no-snapshot-load -no-snapshot-save -no-boot-anim -no-audio -gpu off -no-window"
+emulator_port_for_index() {
+    # adb console ports: 5554, 5556, 5558, …
+    echo $((5554 + ($1 - 1) * 2))
+}
+
+emulator_serial_for_index() {
+    echo "emulator-$(emulator_port_for_index "$1")"
+}
+
+start_emulator_instance() {
+    local index=$1
+    local port serial
+    port=$(emulator_port_for_index "$index")
+    serial=$(emulator_serial_for_index "$index")
+    echo "Starting emulator instance ${index} on port ${port} (${serial})..."
+
+    local emulator_opts="-avd $AVD_NAME -port $port -no-snapshot -no-snapshot-load -no-snapshot-save -no-boot-anim -no-audio -gpu off -no-window"
+    # Same-AVD multi-instance requires -read-only on EVERY instance (including the
+    # first). A RW first + read-only second still fails with:
+    # "Another emulator instance is running. Please close it or run all
+    # emulators with -read-only flag."
+    if [[ "$EMULATOR_COUNT" -gt 1 ]]; then
+        emulator_opts+=" -read-only"
+    fi
 
     if [[ "$CI" == "true" || "$(uname -s)" == "Linux" ]]; then
         emulator $emulator_opts -gpu swiftshader_indirect -accel on -qemu -m "$EMULATOR_RAM_MB" &
     else
-        emulator $emulator_opts -gpu guest -verbose -qemu -vnc :0
+        emulator $emulator_opts -gpu guest -verbose -qemu -vnc :0 &
     fi
 }
 
@@ -89,20 +118,21 @@ emulator_process_running() {
     pgrep -f "emulator.*${AVD_NAME}" >/dev/null 2>&1 || pgrep -f 'qemu-system-x86_64' >/dev/null 2>&1
 }
 
-wait_for_emulator() {
+wait_for_emulator_serial() {
+    local serial=$1
     if [[ "$CI" != "true" ]]; then return; fi
 
-    echo "Waiting for emulator to boot..."
+    echo "Waiting for ${serial} to boot..."
     local device_timeout=120
     local device_elapsed=0
-    until adb devices | grep -qE '^emulator-[0-9]+\s+device'; do
+    until adb devices | grep -qE "^${serial}[[:space:]]+device"; do
         if [[ $device_elapsed -ge $device_timeout ]]; then
-            echo "Emulator device did not appear within ${device_timeout}s"
+            echo "Emulator ${serial} did not appear within ${device_timeout}s"
             adb devices -l || true
             exit 1
         fi
         if ! emulator_process_running; then
-            echo "Emulator process exited before device appeared (check snapshot/cache state)"
+            echo "Emulator process exited before ${serial} appeared (check snapshot/cache state)"
             exit 1
         fi
         sleep 5
@@ -111,27 +141,44 @@ wait_for_emulator() {
 
     local boot_timeout=300  # 5 minutes max
     local boot_elapsed=0
-    until [[ "$(adb shell getprop sys.boot_completed 2>/dev/null | tr -d '\r')" == "1" ]]; do
+    until [[ "$(adb -s "$serial" shell getprop sys.boot_completed 2>/dev/null | tr -d '\r')" == "1" ]]; do
         if [[ $boot_elapsed -ge $boot_timeout ]]; then
-            echo "Emulator failed to boot within 5 minutes"
+            echo "Emulator ${serial} failed to boot within 5 minutes"
             exit 1
         fi
         if ! emulator_process_running; then
-            echo "Emulator process exited during boot"
+            echo "Emulator process exited during boot of ${serial}"
             exit 1
         fi
-        echo "Waiting for emulator to fully boot..."
+        echo "Waiting for ${serial} to fully boot..."
         sleep 10
         boot_elapsed=$((boot_elapsed + 10))
     done
-    echo "Emulator is fully booted."
+    echo "${serial} is fully booted."
 
     # API 35 emulators take longer to stabilize the instrumentation layer after
     # sys.boot_completed — 15s was insufficient, causing the first Detox app
     # launch to fail with "No activities in stage RESUMED".
     sleep 30
-    adb shell pm list packages > /dev/null 2>&1
-    echo "Emulator is fully ready."
+    adb -s "$serial" shell pm list packages > /dev/null 2>&1
+    echo "${serial} is fully ready."
+}
+
+start_emulators() {
+    local i
+    if ! [[ "$EMULATOR_COUNT" =~ ^[1-9][0-9]*$ ]]; then
+        echo "EMULATOR_COUNT must be a positive integer, got: $EMULATOR_COUNT"
+        exit 1
+    fi
+    # Boot sequentially: a second instance of the same AVD must start only after
+    # the first holds the AVD lock. Concurrent starts fail with
+    # "Another emulator instance is running. Please close it or run all
+    # emulators with -read-only flag." even when instance 2 passes -read-only.
+    for ((i = 1; i <= EMULATOR_COUNT; i++)); do
+        start_emulator_instance "$i"
+        wait_for_emulator_serial "$(emulator_serial_for_index "$i")"
+    done
+    adb devices -l || true
 }
 
 resolve_app_apk() {
@@ -148,67 +195,91 @@ resolve_app_apk() {
     echo "../android/app/build/outputs/apk/debug/app-debug.apk"
 }
 
-install_app() {
+for_each_emulator() {
+    local fn=$1
+    local i serial
+    for ((i = 1; i <= EMULATOR_COUNT; i++)); do
+        serial=$(emulator_serial_for_index "$i")
+        "$fn" "$serial"
+    done
+}
+
+install_app_on() {
+    local serial=$1
     local app_apk
     app_apk=$(resolve_app_apk)
-    echo "Installing the app from $app_apk..."
-    adb install -r "$app_apk"
+    echo "Installing the app on ${serial} from $app_apk..."
+    adb -s "$serial" install -r "$app_apk"
     # Detox needs the instrumentation APK even when BOOTSTRAP_ONLY=true (orchestration
     # runs detox test later). Maestro release path never needs it.
     if [[ "${MAESTRO_ANDROID:-}" != "true" ]]; then
-        adb install -r ../android/app/build/outputs/apk/androidTest/debug/app-debug-androidTest.apk
+        adb -s "$serial" install -r ../android/app/build/outputs/apk/androidTest/debug/app-debug-androidTest.apk
     fi
-    adb shell pm list packages | grep "com.mattermost.rnbeta" && echo "App is installed." || echo "App is not installed."
+    adb -s "$serial" shell pm list packages | grep "com.mattermost.rnbeta" && echo "App is installed on ${serial}." || echo "App is not installed on ${serial}."
 }
 
-grant_android_runtime_permissions() {
+grant_android_runtime_permissions_on() {
+    local serial=$1
     local bundle_id="com.mattermost.rnbeta"
-    adb shell pm grant "$bundle_id" android.permission.POST_NOTIFICATIONS 2>/dev/null || true
-    adb shell pm grant "$bundle_id" android.permission.RECORD_AUDIO 2>/dev/null || true
-    adb shell pm grant "$bundle_id" android.permission.CAMERA 2>/dev/null || true
-    adb shell settings put secure show_ime_with_hard_keyboard 0 2>/dev/null || true
-    adb shell settings put secure spell_checker_enabled 0 2>/dev/null || true
-    adb shell settings put secure auto_text_enabled 0 2>/dev/null || true
+    adb -s "$serial" shell pm grant "$bundle_id" android.permission.POST_NOTIFICATIONS 2>/dev/null || true
+    adb -s "$serial" shell pm grant "$bundle_id" android.permission.RECORD_AUDIO 2>/dev/null || true
+    adb -s "$serial" shell pm grant "$bundle_id" android.permission.CAMERA 2>/dev/null || true
+    adb -s "$serial" shell settings put secure show_ime_with_hard_keyboard 0 2>/dev/null || true
+    adb -s "$serial" shell settings put secure spell_checker_enabled 0 2>/dev/null || true
+    adb -s "$serial" shell settings put secure auto_text_enabled 0 2>/dev/null || true
     # google_apis images ship Google Autofill; overlays on the server form hide
     # FloatingTextInput testIDs from Maestro (same class of issue as iOS autofill).
-    adb shell settings put secure autofill_service null 2>/dev/null || true
+    adb -s "$serial" shell settings put secure autofill_service null 2>/dev/null || true
 }
 
-configure_emulator_for_tests() {
-    adb shell settings put global window_animation_scale 0
-    adb shell settings put global transition_animation_scale 0
-    adb shell settings put global animator_duration_scale 0
-    adb shell input keyevent 82 2>/dev/null || true
-    adb root 2>/dev/null || true
-    adb shell setprop persist.sys.timezone "America/New_York" 2>/dev/null || true
-    adb shell setprop sys.timezone "America/New_York" 2>/dev/null || true
-    adb shell am broadcast -a android.intent.action.TIMEZONE_CHANGED \
+configure_emulator_for_tests_on() {
+    local serial=$1
+    adb -s "$serial" shell settings put global window_animation_scale 0
+    adb -s "$serial" shell settings put global transition_animation_scale 0
+    adb -s "$serial" shell settings put global animator_duration_scale 0
+    adb -s "$serial" shell input keyevent 82 2>/dev/null || true
+    adb -s "$serial" root 2>/dev/null || true
+    adb -s "$serial" shell setprop persist.sys.timezone "America/New_York" 2>/dev/null || true
+    adb -s "$serial" shell setprop sys.timezone "America/New_York" 2>/dev/null || true
+    adb -s "$serial" shell am broadcast -a android.intent.action.TIMEZONE_CHANGED \
         --ez bypassUserRestrictions true 2>/dev/null || true
-    configure_chrome_for_ci
+    configure_chrome_for_ci_on "$serial"
 }
 
-configure_chrome_for_ci() {
-    adb shell 'mkdir -p /data/local/tmp' 2>/dev/null || true
-    adb shell 'echo "chrome --disable-fre --no-first-run --no-default-browser-check" > /data/local/tmp/chrome-command-line' 2>/dev/null || true
-    adb shell am start -n com.android.chrome/com.google.android.apps.chrome.Main 2>/dev/null || true
+configure_chrome_for_ci_on() {
+    local serial=$1
+    adb -s "$serial" shell 'mkdir -p /data/local/tmp' 2>/dev/null || true
+    adb -s "$serial" shell 'echo "chrome --disable-fre --no-first-run --no-default-browser-check" > /data/local/tmp/chrome-command-line' 2>/dev/null || true
+    adb -s "$serial" shell am start -n com.android.chrome/com.google.android.apps.chrome.Main 2>/dev/null || true
     sleep 3
-    adb shell input keyevent 4 2>/dev/null || true
+    adb -s "$serial" shell input keyevent 4 2>/dev/null || true
 }
 
-push_e2e_fixtures() {
-    local fixture="../detox/e2e/support/fixtures/image.png"
-    if [[ -f "$fixture" ]]; then
-        adb push "$fixture" /sdcard/Download/test_bookmark.png
-        echo "Pushed test fixture to /sdcard/Download/test_bookmark.png"
-        adb shell am broadcast -a android.intent.action.MEDIA_SCANNER_SCAN_FILE \
-            -d file:///sdcard/Download/test_bookmark.png 2>/dev/null || true
+push_e2e_fixtures_on() {
+    local serial=$1
+    # Required by channel_bookmark_file.yml (MM-T5603): DocumentsUI search for
+    # test_bookmark.png under Downloads. Fail loudly — a silent skip leaves the
+    # flow failing later with Assertion is false: "test_bookmark.png" is visible.
+    if [[ ! -f "$E2E_BOOKMARK_FIXTURE" ]]; then
+        echo "ERROR: bookmark fixture missing at ${E2E_BOOKMARK_FIXTURE} (cwd=$(pwd))" >&2
+        exit 1
+    fi
+    adb -s "$serial" push "$E2E_BOOKMARK_FIXTURE" /sdcard/Download/test_bookmark.png
+    echo "Pushed test fixture to ${serial}:/sdcard/Download/test_bookmark.png"
+    adb -s "$serial" shell am broadcast -a android.intent.action.MEDIA_SCANNER_SCAN_FILE \
+        -d file:///sdcard/Download/test_bookmark.png 2>/dev/null || true
+    if ! adb -s "$serial" shell ls /sdcard/Download/test_bookmark.png >/dev/null 2>&1; then
+        echo "ERROR: fixture not present on ${serial} after adb push" >&2
+        exit 1
     fi
 }
 
 start_server() {
     echo "Starting the server..."
-    cd ..
-    RUNNING_E2E=true npm run start &
+    # Launch Metro from the repo root without changing this script's cwd —
+    # a bare `cd ..` previously left cwd at REPO_ROOT and made the relative
+    # bookmark-fixture path in push_e2e_fixtures_on miss silently.
+    (cd "$REPO_ROOT" && RUNNING_E2E=true npm run start &)
     local timeout=120 interval=5 elapsed=0
 
     until nc -z localhost 8081; do
@@ -267,23 +338,24 @@ start_server() {
     echo "Metro Android bundle is ready (${bundle_bytes} bytes)."
 }
 
-setup_adb_reverse() {
-    echo "Setting up ADB reverse port forwarding..."
+setup_adb_reverse_on() {
+    local serial=$1
+    echo "Setting up ADB reverse port forwarding on ${serial}..."
     # adb root (in configure_emulator_for_tests) restarts adbd and drops prior reverse mappings.
-    adb reverse --remove-all 2>/dev/null || true
-    adb reverse tcp:8081 tcp:8081
-    if ! adb reverse --list | grep -q 'tcp:8081'; then
-        echo "ERROR: adb reverse tcp:8081 is not active after setup"
-        adb reverse --list || true
+    adb -s "$serial" reverse --remove-all 2>/dev/null || true
+    adb -s "$serial" reverse tcp:8081 tcp:8081
+    if ! adb -s "$serial" reverse --list | grep -q 'tcp:8081'; then
+        echo "ERROR: adb reverse tcp:8081 is not active on ${serial} after setup"
+        adb -s "$serial" reverse --list || true
         exit 1
     fi
-    echo "adb reverse verified: $(adb reverse --list)"
+    echo "adb reverse verified on ${serial}: $(adb -s "$serial" reverse --list)"
 }
 
 run_detox_tests() {
     echo "Running Detox tests... $@"
 
-    cd detox
+    cd "$SCRIPT_DIR"
     AVD_NAME="$AVD_NAME" npm run detox:config-gen
     mkdir -p artifacts
     npm run e2e:android-test -- "$@" -- --json --outputFile=artifacts/jest-results.json
@@ -301,21 +373,20 @@ main() {
 
     prepare_avd_for_boot
     start_adb_server
-    start_emulator
-    wait_for_emulator
+    start_emulators
 
     if [[ "$CI" == "true" ]]; then
-        install_app
+        for_each_emulator install_app_on
         # Maestro uses a release APK with an embedded bundle (mirrors iOS simulator builds).
         if [[ "${MAESTRO_ANDROID:-}" != "true" ]]; then
             start_server
         fi
-        grant_android_runtime_permissions
-        configure_emulator_for_tests
+        for_each_emulator grant_android_runtime_permissions_on
+        for_each_emulator configure_emulator_for_tests_on
         if [[ "${MAESTRO_ANDROID:-}" != "true" ]]; then
-            setup_adb_reverse
+            for_each_emulator setup_adb_reverse_on
         fi
-        push_e2e_fixtures
+        for_each_emulator push_e2e_fixtures_on
     fi
 
     if [[ "${BOOTSTRAP_ONLY:-}" == "true" ]]; then

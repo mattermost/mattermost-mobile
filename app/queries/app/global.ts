@@ -7,6 +7,7 @@ import {switchMap} from 'rxjs/operators';
 
 import {GLOBAL_IDENTIFIERS, MM_TABLES} from '@constants/database';
 import DatabaseManager from '@database/manager';
+import {areTutorialsDisabled} from '@utils/tutorial';
 
 import type GlobalModel from '@typings/database/models/app/global';
 
@@ -106,6 +107,10 @@ export const getLastViewedThreadIdAndServer = async () => {
 };
 
 export const observeTutorialWatched = (tutorial: string) => {
+    if (areTutorialsDisabled()) {
+        return of$(true);
+    }
+
     const query = queryGlobalValue(tutorial);
     if (!query) {
         return of$(false);

@@ -114,6 +114,19 @@ import React
         
         return appGroupId
     }
+
+    /// Detox passes launchArgs as `-key value` process arguments.
+    @objc public func areTutorialsDisabled() -> Bool {
+        let args = ProcessInfo.processInfo.arguments
+        guard let index = args.firstIndex(of: "-disableTutorials"),
+              args.index(after: index) < args.endIndex else {
+            return false
+        }
+        let value = args[args.index(after: index)]
+        return value.caseInsensitiveCompare("true") == .orderedSame ||
+            value.caseInsensitiveCompare("YES") == .orderedSame ||
+            value == "1"
+    }
     
     @objc public func appGroupSharedDirectory() -> Dictionary<String, Any> {
         let fileManager = FileManager.default
