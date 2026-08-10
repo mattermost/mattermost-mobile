@@ -55,6 +55,20 @@ test('only known triage modes reach the toolkit', () => {
     assert.doesNotMatch(triageWorkflow, /mode: \$\{\{ vars\.E2E_AI_TRIAGE_MODE/);
 });
 
+test('AI hypotheses narrow reruns and safely fall back when unavailable', () => {
+    const candidate = triageWorkflow.indexOf('  ai-candidates:');
+    const prepare = triageWorkflow.indexOf('  prepare-rerun:');
+    const rerun = triageWorkflow.indexOf('  rerun-ios:');
+
+    assert.ok(candidate > 0 && candidate < prepare && prepare < rerun);
+    assert.match(triageWorkflow, /needs\.ai-candidates\.outputs\.available == 'true'/);
+    assert.match(triageWorkflow, /CANDIDATE_AVAILABLE: \$\{\{ needs\.ai-candidates\.outputs\.available \}\}/);
+    assert.match(triageWorkflow, /--candidate-available="\$\{CANDIDATE_AVAILABLE\}"/);
+    assert.match(triageWorkflow, /candidate_artifact: \$\{\{ needs\.ai-candidates\.outputs\.available/);
+    assert.match(triageWorkflow, /needs\.prepare-rerun\.outputs\.rerun_ios_specs/);
+    assert.doesNotMatch(triageWorkflow, /needs\.plan\.outputs\.rerun_ios_specs/);
+});
+
 test('pre-merge toolkit integration uses aligned immutable refs', () => {
     for (const workflow of [triageWorkflow, overrideWorkflow]) {
         const usesRef = workflow.match(/mattermost-test-automation-toolkit\/[^\s@]+@([0-9a-f]{40})/)?.[1];
