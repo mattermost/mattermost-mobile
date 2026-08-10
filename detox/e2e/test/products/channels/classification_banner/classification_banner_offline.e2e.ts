@@ -93,7 +93,11 @@ describe('Classification Banner - Offline / Cache Behaviour', () => {
     });
 
     afterEach(async () => {
-        await Properties.apiCleanupClassification(siteOneUrl);
+        // setURLBlacklist is local to this device, so it runs either way; the shared
+        // classification config is guarded like afterAll (see global_classification_banner).
+        if (lockAcquired) {
+            await Properties.apiCleanupClassification(siteOneUrl);
+        }
         await device.setURLBlacklist([]);
     });
 

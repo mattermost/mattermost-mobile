@@ -252,8 +252,15 @@ appId: ${MAESTRO_APP_ID}
                 commands:
                   - waitForAnimationToEnd:
                       timeout: 8000
-            - tapOn:
-                id: "login_form.signin.button"
+            # # Re-check after the animation wait: a slow login can land during those 8s,
+            # at which point the button is gone and tapping it would fail the retry.
+            - runFlow:
+                when:
+                  notVisible:
+                    id: "tab_bar.home.tab"
+                commands:
+                  - tapOn:
+                      id: "login_form.signin.button"
       # # Dismiss password/save prompts each attempt so they do not block home tab.
       - tapOn:
           text: "Not Now"

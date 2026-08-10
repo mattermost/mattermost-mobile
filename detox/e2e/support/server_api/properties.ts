@@ -245,7 +245,9 @@ export const apiSetupClassificationWithBanner = async (
         const linkedValue = (verifyValues.values ?? []).find((v) => v.field_id === linkedField.id);
         if (!linkedValue) {
             return `no system property value for linked field ${linkedField.id} from GET ` +
-                `/properties/groups/${GROUP_NAME}/system/values. Response: ${JSON.stringify(verifyValues)}`;
+                `/properties/groups/${GROUP_NAME}/system/values ` +
+                `(values returned: ${verifyValues.values?.length ?? 'none'}, ` +
+                `request errored: ${verifyValues.error ? 'yes' : 'no'})`;
         }
         if (linkedValue.value !== selectedOption.id) {
             return `system property value for linked field ${linkedField.id} is ` +
