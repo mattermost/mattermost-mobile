@@ -200,6 +200,10 @@ async function serverSetup() {
     try {
         await axios.put(`${SITE_URL}/api/v4/config/patch`, {
             ConnectedWorkspacesSettings: {EnableRemoteClusterService: true},
+            ServiceSettings: {
+                EnableCrossTeamSearch: true,
+                CollapsedThreads: 'always_on',
+            },
         }, {headers});
         process.stdout.write('[globalSetup] ✅ Mutable server config initialized for E2E tests\n');
     } catch (err) {
