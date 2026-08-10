@@ -28,7 +28,7 @@ import {
     ServerScreen,
     TeamDropdownMenuScreen,
 } from '@support/ui/screen';
-import {getRandomId, timeouts, wait, waitForElementToBeVisible} from '@support/utils';
+import {getRandomId, timeouts, wait, waitForElementToBeVisible, waitForElementToExist} from '@support/utils';
 import {expect} from 'detox';
 
 describe('Search - Search Messages', () => {
@@ -57,6 +57,17 @@ describe('Search - Search Messages', () => {
     });
 
     beforeEach(async () => {
+        // A test that fails mid-flow never reaches its own searchClearButton tap, so its
+        // query stays in the search box. The next test then opens onto the results view
+        // instead of "Search options", and its searchModifier* lookups fail — which is how
+        // a single failure took out all six of MM-T5294_3.._8 in CI 31329196036. Closing
+        // the screen alone does not reset the query, so clear it here first.
+        try {
+            await waitForElementToExist(SearchMessagesScreen.searchClearButton, timeouts.TWO_SEC);
+            await SearchMessagesScreen.searchClearButton.tap();
+        } catch {
+            // Search screen not open, or the input is already empty — nothing to clear.
+        }
 
         try {
             await SearchMessagesScreen.close();
@@ -106,7 +117,8 @@ describe('Search - Search Messages', () => {
         await SearchMessagesScreen.toBeVisible();
 
         // # Tap on from-search-modifier, type in username, tap on user at-mention autocomplete, and tap on search key
-        await SearchMessagesScreen.searchModifierFrom.tap();
+        // Corner-tap: same 100%-visibility clip as searchModifierIn/Phrases below.
+        await SearchMessagesScreen.searchModifierFrom.tap({x: 1, y: 1});
         await SearchMessagesScreen.searchInput.typeText(testUser.username);
         const {atMentionItem} = Autocomplete.getAtMentionItem(testUser.id);
         await waitForElementToBeVisible(atMentionItem, timeouts.TWO_SEC);
@@ -126,11 +138,12 @@ describe('Search - Search Messages', () => {
     });
 
     // SEC-10996: MM-T5294_3 was the root flake that cascaded into _4.._9 (CI 29964359308).
-    // Left UNSKIPPED (not just carried along) after verifying it is stable: PASSED on both
-    // iOS (shard ios-15) and Android (shard android-3) in CI run 31281879487 (HEAD ab3cf5127,
-    // green) and in 31276319392 (12b40b0114, whose only failures were classification-banner
-    // + Maestro TLS infra, not this test). The beforeEach close/back recovery above
-    // isolates the cascade.
+    // It passed on iOS in runs 31276319392 and 31281879487, then failed again in
+    // 31329196036 and took _4.._8 with it, so it is intermittent rather than fixed. Both
+    // legs of that failure are addressed above: the corner-tap below (the centre tap is
+    // not hittable when the autocomplete header clips the row) and the searchClearButton
+    // reset in beforeEach (close/back alone leaves the query in the box, which is what
+    // turned one failure into six).
     it('MM-T5294_3 - should be able to search messages in a specific channel', async () => {
         // # Open a channel screen, post a message, go back to channel list screen, and open search messages screen
         const message = `Message ${getRandomId()}`;
@@ -149,7 +162,12 @@ describe('Search - Search Messages', () => {
         await SearchMessagesScreen.searchInput.typeText(testChannel.name);
         const {channelMentionItem} = Autocomplete.getChannelMentionItem(testChannel.name);
         await waitForElementToBeVisible(channelMentionItem, timeouts.TWO_SEC);
-        await channelMentionItem.tap();
+
+        // Corner-tap: the wait above uses iOS's 75% threshold but tap() demands 100%, and
+        // the "PUBLIC CHANNELS" header card clips the row's top edge — so a centre tap
+        // fails with "not hittable at its visible point" on a row that is fully on screen
+        // (CI 31329196036 MM-T5294_3, view bounds 352x40, point {176, 20}).
+        await channelMentionItem.tap({x: 1, y: 1});
         await SearchMessagesScreen.searchInput.tapReturnKey();
 
         // * Verify search results contain messages in channel
@@ -185,7 +203,11 @@ describe('Search - Search Messages', () => {
 
         // # Type in the message prefix, tap on excluded-search modifier, type in the excluded term, and tap on search key
         await SearchMessagesScreen.searchInput.typeText(messagePrefix);
-        await SearchMessagesScreen.searchModifierExclude.tap();
+
+        // Corner-tap: a centre tap here landed without inserting the "-" modifier, so the
+        // query became "Message<term>" instead of "Message -<term>" and returned 0 results
+        // (CI 31329196036 MM-T5294_4). Same clip as searchModifierIn/Phrases.
+        await SearchMessagesScreen.searchModifierExclude.tap({x: 1, y: 1});
         await SearchMessagesScreen.searchInput.typeText(excludedTerm);
         await SearchMessagesScreen.searchInput.tapReturnKey();
 
