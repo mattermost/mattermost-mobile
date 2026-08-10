@@ -16,8 +16,23 @@ node <<'NODE'
 const path = require('path');
 const {buildTsioJobConfig, webhookBucketForReportName} = require(path.join(process.env.SCRIPT_DIR, 'build-tsio-job-config.js'));
 
+/** @returns {number|undefined} positive integer, or undefined when unset */
+function parsePositiveWorkers(raw) {
+  if (raw === undefined || raw === null || raw === '') {
+    return undefined;
+  }
+  const trimmed = String(raw).trim();
+  // Reject decimals, suffixes, exponents, signs, and leading zeros (parseInt traps).
+  if (!/^[1-9]\d*$/.test(trimmed)) {
+    console.error(`resolve-tsio-job-config: TSIO_WORKERS must be a positive integer, got ${JSON.stringify(raw)}`);
+    process.exit(1);
+  }
+  return Number.parseInt(trimmed, 10);
+}
+
 const raw = process.env.TSIO_CONFIG;
 const shard = process.env.TSIO_SHARD_NAME || '';
+const workers = parsePositiveWorkers(process.env.TSIO_WORKERS);
 let cfg;
 try {
   cfg = JSON.parse(raw);
@@ -28,8 +43,7 @@ try {
 
 if (cfg.status_context && cfg.composite_identity?.name) {
   // Keep pass-through total_reports_expected aligned with the worker matrix.
-  const workers = process.env.TSIO_WORKERS ? Number.parseInt(process.env.TSIO_WORKERS, 10) : undefined;
-  if (Number.isFinite(workers) && workers > 0) {
+  if (workers !== undefined) {
     cfg.total_reports_expected = workers;
   }
   process.stdout.write(JSON.stringify(cfg));
@@ -48,8 +62,7 @@ const prefix = webhookBucketForReportName(name) || name;
 base.name = prefix;
 base.run_group = prefix;
 
-const workers = process.env.TSIO_WORKERS ? Number.parseInt(process.env.TSIO_WORKERS, 10) : undefined;
-const overrides = Number.isFinite(workers) ? {workers} : {};
+const overrides = workers !== undefined ? {workers} : {};
 const expanded = buildTsioJobConfig(base, shard, overrides);
 process.stdout.write(JSON.stringify(expanded));
 NODE
