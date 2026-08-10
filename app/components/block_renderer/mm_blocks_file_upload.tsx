@@ -215,6 +215,9 @@ function MmBlocksFileUpload({
     const hasInteractedRef = useRef(false);
     const cancelUploadsRef = useRef(new Map<string, CancelUpload>());
     const sourceFilesRef = useRef(new Map<string, ExtractedFileInfo>());
+
+    // Survives removals so a delayed callback for a removed upload cannot collide with a reselection.
+    const issuedClientIdsRef = useRef(new Set<string>());
     const initialFileIdsRef = useRef(value);
 
     const maxFiles = allowMultiple ? MAX_DIALOG_FILE_IDS : 1;
@@ -304,18 +307,18 @@ function MmBlocksFileUpload({
         }
 
         const added: UploadFileState[] = [];
-        const usedClientIds = new Set(sourceFilesRef.current.keys());
+        const issuedClientIds = issuedClientIdsRef.current;
         for (const file of toUpload) {
             // Add uniqueness by using a suffix in case the same file is selected multiple times.
             let clientId = file.clientId ?? file.localPath ?? file.name;
-            if (usedClientIds.has(clientId)) {
+            if (issuedClientIds.has(clientId)) {
                 let suffix = 1;
-                while (usedClientIds.has(`${clientId}-${suffix}`)) {
+                while (issuedClientIds.has(`${clientId}-${suffix}`)) {
                     suffix += 1;
                 }
                 clientId = `${clientId}-${suffix}`;
             }
-            usedClientIds.add(clientId);
+            issuedClientIds.add(clientId);
             sourceFilesRef.current.set(clientId, file);
             added.push({
                 clientId,
@@ -369,6 +372,9 @@ function MmBlocksFileUpload({
             hydrateFileIds(serverUrl, fileIds).then((hydrated) => {
                 if (cancelled || !isMountedRef.current) {
                     return;
+                }
+                for (const file of hydrated) {
+                    issuedClientIdsRef.current.add(file.clientId);
                 }
                 setFiles(hydrated);
 

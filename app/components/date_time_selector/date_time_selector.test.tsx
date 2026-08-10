@@ -196,6 +196,7 @@ describe('DateTimeSelector', () => {
         const {getByTestId, queryByTestId} = renderWithEverything(
             <DateTimeSelector
                 {...baseProps}
+                allowManualTimeEntry={true}
                 disabled={true}
                 showInitially={undefined}
                 testID={testID}
@@ -232,6 +233,34 @@ describe('DateTimeSelector', () => {
             />,
             {database},
         );
+
+        fireEvent.press(getByTestId(`${testID}.select.button`));
+        expect(getByTestId('custom_status_clear_after.date_time_picker')).toBeTruthy();
+
+        rerender(
+            <DateTimeSelector
+                {...baseProps}
+                allowManualTimeEntry={true}
+                disabled={true}
+                showInitially={undefined}
+                testID={testID}
+            />,
+        );
+
+        expect(queryByTestId('custom_status_clear_after.date_time_picker')).toBeNull();
+        expect(queryByTestId(`${testID}.manual_time.input`)).toBeNull();
+
+        rerender(
+            <DateTimeSelector
+                {...baseProps}
+                allowManualTimeEntry={true}
+                disabled={false}
+                showInitially={undefined}
+                testID={testID}
+            />,
+        );
+
+        expect(queryByTestId('custom_status_clear_after.date_time_picker')).toBeNull();
 
         fireEvent.press(getByTestId(`${testID}.time.button`));
         expect(getByTestId(`${testID}.manual_time.input`)).toBeTruthy();

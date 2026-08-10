@@ -328,6 +328,35 @@ describe('MmBlocksFileUpload', () => {
             expect(onFileSelected).not.toHaveBeenCalled();
             expect(onPendingChange).toHaveBeenLastCalledWith(false);
         });
+
+        it('should ignore a stale upload after remove and reselection of the same file', async () => {
+            const {getByTestId, queryByTestId} = renderUpload({allowMultiple: true});
+
+            await openPicker();
+            await pickFiles([pickedFile('notes.txt', 'client-1')]);
+
+            await act(async () => {
+                fireEvent.press(getByTestId(`${TEST_ID}.file.client-1.remove`));
+            });
+
+            await pickFiles([pickedFile('notes.txt', 'client-1')]);
+
+            expect(queryByTestId(`${TEST_ID}.file.client-1`)).toBeNull();
+            expect(getByTestId(`${TEST_ID}.file.client-1-1`)).toHaveProp('loading', true);
+
+            await act(async () => {
+                uploads[0].onComplete(uploadResponse(201, 'stale-file'));
+            });
+
+            expect(getByTestId(`${TEST_ID}.file.client-1-1`)).toHaveProp('loading', true);
+            expect(onFileSelected).not.toHaveBeenCalledWith(['stale-file']);
+
+            await act(async () => {
+                uploads[1].onComplete(uploadResponse(201, 'fresh-file'));
+            });
+
+            expect(onFileSelected).toHaveBeenLastCalledWith(['fresh-file']);
+        });
     });
 
     it('should show the placeholder only while no file is attached', async () => {
