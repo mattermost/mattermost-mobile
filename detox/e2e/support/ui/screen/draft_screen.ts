@@ -38,7 +38,7 @@ class DraftScreen {
     };
 
     openDraftPostActions = async () => {
-        await this.draftPost.longPress();
+        await this.draftPost.longPress(timeouts.TWO_SEC);
     };
 
     swipeDraftPostLeft = async () => {

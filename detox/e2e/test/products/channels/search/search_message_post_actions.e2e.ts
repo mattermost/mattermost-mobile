@@ -124,7 +124,7 @@ describe('Search - Search Message Post Actions', () => {
         await waitForElementToBeVisible(element(by.text('1 reply')), timeouts.TEN_SEC);
 
         // # Open post options for updated searched message and delete post
-        await element(by.id(`search_results.post_list.post.${searchedPost.id}`)).longPress();
+        await element(by.id(`search_results.post_list.post.${searchedPost.id}`)).longPress(timeouts.TWO_SEC);
         await PostOptionsScreen.deletePost({confirm: true});
 
         // * Verify updated searched message is deleted

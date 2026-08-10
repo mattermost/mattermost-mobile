@@ -34,12 +34,14 @@ jest.setTimeout(timeouts.ONE_MIN * 30);
 (isAndroid() ? describe.skip : describe)('Classification Banner - Visibility Across Screens', () => {
     const serverOneDisplayName = 'Server 1';
     let lockOwner = '';
+    let lockAcquired = false;
     let testChannel: any;
     let testUser: any;
 
     beforeAll(async () => {
         lockOwner = createClassificationLockOwner();
         await acquireClassificationLock(siteOneUrl, lockOwner);
+        lockAcquired = true;
 
         const {channel, user} = await Setup.apiInit(siteOneUrl);
         testChannel = channel;
@@ -61,6 +63,10 @@ jest.setTimeout(timeouts.ONE_MIN * 30);
     });
 
     afterAll(async () => {
+        if (!lockAcquired) {
+            return;
+        }
+
         try {
             // Each step runs even if an earlier one fails, so a cleanup error cannot leave
             // the feature flag enabled or the session logged in for later suites.
