@@ -2,6 +2,7 @@
 # CI simulators may connect WebRTC slowly; accept either UI state (GUIDELINES §3 waits).
 appId: ${MAESTRO_APP_ID}
 ---
+# * Verify a call is active in either UI state — minimized bar, else full call screen
 - extendedWaitUntil:
     visible:
       id: "calls.current_call_bar"

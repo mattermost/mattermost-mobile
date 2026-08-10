@@ -7,11 +7,40 @@ import {ToolApprovalStage, ToolCallStatus, type ToolCall} from '@agents/types';
 import type PostModel from '@typings/database/models/servers/post';
 
 /**
+ * Resolve which agent/bot should be selected when a selector opens.
+ * Precedence: saved preference (if still available) -> system default -> first.
+ * `is_default` is tolerated when absent (older servers / DB-backed lists).
+ */
+export function resolveSelectedAgent<T extends {id: string; is_default?: boolean}>(agents: T[], savedPrefId?: string | null): T | null {
+    if (agents.length === 0) {
+        return null;
+    }
+
+    if (savedPrefId) {
+        const saved = agents.find((a) => a.id === savedPrefId);
+        if (saved) {
+            return saved;
+        }
+    }
+
+    return agents.find((a) => a.is_default) ?? agents[0];
+}
+
+/**
  * Check if a post is an agent post
  */
 export function isAgentPost(post: PostModel | Post): boolean {
     return post.type === AGENT_POST_TYPES.LLMBOT ||
            post.type === AGENT_POST_TYPES.LLM_POSTBACK;
+}
+
+/**
+ * Check if a post is an agent @mention reminder post (an interactive "loop in
+ * the agent" hint). Distinct from isAgentPost so it routes to its own renderer,
+ * not the streaming AgentPost.
+ */
+export function isAgentMentionReminderPost(post: PostModel | Post): boolean {
+    return post.type === AGENT_POST_TYPES.AGENT_MENTION_REMINDER;
 }
 
 /**

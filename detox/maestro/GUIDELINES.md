@@ -57,6 +57,56 @@ appId: ${MAESTRO_APP_ID}
 | `tags:` | Yes | At least the Zephyr ticket id |
 | `appId` | Yes | `${MAESTRO_APP_ID}` |
 
+**Exempt from this contract** (enforced by `scripts/validate-flow-headers.sh`, which scans only `flows/**` and skips `_`-prefixed basenames):
+
+- `subflows/**` — reusable fragments, not test cases.
+- `_*.yml` anywhere — helper fragments invoked by another flow.
+- `preflight/**` — environment gates run by CI before the reported suite (e.g. `preflight/_connect_check.yml` verifies the device can reach `SITE_1_URL`). These have no Zephyr id because they assert no product behavior; a failure means the environment is broken, not that a test failed.
+
+Exempt files still need `appId: ${MAESTRO_APP_ID}` and a comment block explaining what they do and why they exist.
+
+### Body comment markers — `# #` steps, `# *` assertions
+
+Below the `---`, every comment block that introduces one or more commands **must** start with a marker:
+
+| Marker | Means | Use for |
+|---|---|---|
+| `# #` | Test step / action | `tapOn`, `inputText`, `launchApp`, `runFlow`, `swipe`, `pressKey`, `runScript`, waits that exist only to reach the next step |
+| `# *` | Assertion / expected result | `assertVisible`, `assertNotVisible`, and `extendedWaitUntil` used to verify an outcome |
+
+This mirrors the Detox convention (`// #` / `// *`, see `detox/CLAUDE.md`) so both suites map onto the same test management system.
+
+```yaml
+# GOOD
+# # Open Settings and reveal Report a Problem.
+# Report a Problem can sit below the fold; also wait for config sync on first login.
+- tapOn:
+    id: "account.settings.option"
+
+# * Verify Settings is visible again with Report a Problem listed
+- extendedWaitUntil:
+    visible:
+      id: "settings.report_problem.option"
+    timeout: 10000
+
+# BAD — no marker; a "why" comment is not a substitute for one
+# Report a Problem can sit below the fold.
+- tapOn:
+    id: "account.settings.option"
+
+# BAD — decorative section banners
+# --- Open channel info ---
+# ── Path 1: Leave from the full call screen ──
+```
+
+Rules:
+
+- Only the **first** line of a block carries the marker. Continuation lines stay plain `#`, same as Detox.
+- The marker goes at the block's own indentation, including inside nested `commands:` lists.
+- A comment block that introduces no command (a trailing note at end of file) needs no marker.
+- Applies to `flows/**`, `subflows/**`, `preflight/**`, and `_`-prefixed fragments — the header contract exemptions do **not** exempt a file from this.
+- Enforced by `scripts/validate-flow-headers.sh` (`npm run validate-headers`), which runs in CI as the *Validate Maestro flow headers* job.
+
 ### Comment style — DO / DON'T
 
 ```yaml
@@ -94,6 +144,9 @@ These align with [Maestro docs](https://docs.maestro.dev/) and lessons from Matt
 - **Always** `id:` (testID). **Never** `point:` except to dismiss system overlays with no accessibility node.
 - **Exception**: Apple system apps (Photos, Safari share sheet) have no testIDs — share-extension coordinate-tap utils live on `rf-split/maestro-ios-deferred-flows` (not in default CI on `rf-split/maestro`).
 - If an element lacks a testID, add one in `app/` — do not work around with coordinates.
+- **`text:` is allowed in exactly two cases** (both already relied on by merged flows; prefer `id:` everywhere else):
+  1. **iOS `FloatingTextInput` fields.** The component passes its testID to the container, not to the inner `TextInput`, so on iOS neither the field nor its value is queryable by `id:` — only the rendered label is. Hence `text: "Enter Server URL"` / `text: "Display Name"` in `subflows/server/`. Android exposes these fields normally and **must** use `id:` (`server_form.server_url.input`). The inline validation error *is* addressable: `<testID>.error` (see `app/components/floating_input/floating_input_container.tsx`).
+  2. **System (SpringBoard / Android framework) alert buttons** — `Allow`, `Okay`, `Not now`, `No thanks`. These are OS-owned views with no app testID and cannot be given one. Keep them `optional: true`; do not substitute `point:`, which is more brittle than the label.
 - Verify hierarchy before authoring: `maestro --device <id> hierarchy`
 
 testIDs follow `component.subcomponent.element`:
@@ -282,6 +335,7 @@ Before opening a PR, verify every changed flow:
 
 - [ ] Header has ticket, PRE-CONDITIONS, REQUIRED ENV VARS, ASSERTIONS, testIDs
 - [ ] No Detox references, `app/` paths, or React implementation details in comments
+- [ ] Every body comment block introducing a command starts with `# #` (step) or `# *` (assertion)
 - [ ] All interactions use `id:` selectors verified via `grep -rn 'testID=' app/`
 - [ ] `tags:` includes the Zephyr id
 - [ ] Login sub-flow present when auth is required

@@ -1,7 +1,9 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import {removeLastViewedTeamIdAndServer} from '@actions/app/global';
 import DatabaseManager from '@database/manager';
+import {getLastViewedTeamIdAndServer} from '@queries/app/global';
 import {prepareDeleteTeam, getMyTeamById, queryTeamSearchHistoryByTeamId, removeTeamFromTeamHistory, getTeamSearchHistoryById, getTeamById} from '@queries/servers/team';
 import {logError} from '@utils/log';
 
@@ -26,6 +28,11 @@ export async function removeUserFromTeam(serverUrl: string, teamId: string) {
             if (models.length) {
                 await operator.batchRecords(models, 'removeUserFromTeam');
             }
+        }
+
+        const lastViewedTeam = await getLastViewedTeamIdAndServer();
+        if (lastViewedTeam?.server_url === serverUrl && lastViewedTeam.team_id === teamId) {
+            await removeLastViewedTeamIdAndServer();
         }
 
         return {error: undefined};

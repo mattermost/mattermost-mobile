@@ -70,17 +70,48 @@ baseClient.interceptors.response.use(
     },
 );
 
-// Retry transient 5xx responses with linear backoff.
+/** Cloudflare edge failures — 520–524 stay retryable alongside the gateway 5xx below. */
+const CLOUDFLARE_EDGE_STATUSES: ReadonlySet<number> = new Set([520, 521, 522, 523, 524]);
+
+const TRANSIENT_HTTP_STATUSES: ReadonlySet<number> = new Set([502, 503, 504, ...CLOUDFLARE_EDGE_STATUSES]);
+
+/**
+ * Cloudflare could not reach the origin, so the request provably had no side effect.
+ * 522 is excluded: the connection can also time out after the origin accepted the request.
+ */
+const PRE_ORIGIN_STATUSES: ReadonlySet<number> = new Set([521, 523]);
+
+const IDEMPOTENT_METHODS: ReadonlySet<string> = new Set(['get', 'head', 'options']);
+
+/** Gateway 5xx plus Cloudflare edge — shared with the apiInit retry layer in setup.ts. */
+export const isTransientHttpStatus = (status?: number): status is number =>
+    status !== undefined && TRANSIENT_HTTP_STATUSES.has(status);
+
+/**
+ * Upper bound for an honored Cloudflare `retry_after`; the advertised tens of seconds blow
+ * Detox's 300s beforeAll budget. Shared with the apiInit retry layer in setup.ts.
+ */
+export const MAX_RETRY_AFTER_SEC = 3;
+
+// Retry transient gateway / Cloudflare edge 5xx with short backoff.
 baseClient.interceptors.response.use(
     (response) => response,
     async (error) => {
-        const config = error.config;
+        const config = error.config as typeof error.config & {_5xxRetries?: number};
         const status = error.response?.status;
-        const isTransient = status === 502 || status === 503 || status === 504;
 
-        if (isTransient && (config._5xxRetries ?? 0) < 3) {
+        // A write may already have reached the origin behind 502/503/504 and CF 520/522/524, so
+        // only idempotent methods are retried on those; CF 521/523 never reach the origin at all.
+        const isSafeToRetry = isTransientHttpStatus(status) &&
+            (IDEMPOTENT_METHODS.has((config.method ?? 'get').toLowerCase()) || PRE_ORIGIN_STATUSES.has(status));
+
+        if (isSafeToRetry && (config._5xxRetries ?? 0) < 3) {
             config._5xxRetries = (config._5xxRetries ?? 0) + 1;
-            const delay = config._5xxRetries * 1000;
+            const retryAfterSec = Number(error.response?.data?.retry_after);
+            const cappedRetryAfterMs = Number.isFinite(retryAfterSec) && retryAfterSec > 0 ?
+                Math.min(retryAfterSec, MAX_RETRY_AFTER_SEC) * 1000 :
+                0;
+            const delay = cappedRetryAfterMs || (config._5xxRetries * 1000);
             console.warn(`[client] ${status} from server — retry ${config._5xxRetries}/3 in ${delay}ms`); // eslint-disable-line no-console
             await new Promise((r) => setTimeout(r, delay)); // eslint-disable-line no-promise-executor-return
             return baseClient(config);

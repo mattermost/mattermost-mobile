@@ -16,6 +16,7 @@ import {
     siteOneUrl,
     serverTwoUrl,
     siteTwoUrl,
+    hasSecondServer,
 } from '@support/test_config';
 import {Alert} from '@support/ui/component';
 import {
@@ -28,8 +29,6 @@ import {
 import {isAndroid, isIos, timeouts, wait} from '@support/utils';
 import {expect, waitFor} from 'detox';
 
-// Skip MM-T4675_2 when SITE_2_URL is unset or equals SITE_1_URL (e.g. CMT single-server runs).
-const hasSecondServer = Boolean(process.env.SITE_2_URL) && process.env.SITE_2_URL !== process.env.SITE_1_URL;
 const itWithSecondServer = hasSecondServer ? it : it.skip;
 
 describe('Smoke Test - Server Login', () => {
@@ -61,7 +60,9 @@ describe('Smoke Test - Server Login', () => {
         await expect(ChannelListScreen.headerServerDisplayName).toHaveText(serverOneDisplayName);
     });
 
-    itWithSecondServer('MM-T4675_2 - should be able to add a new server and log-in-to/log-out-from the new server', async () => {
+    // Skip iOS: CI run 30437339535 — the add-server/login/logout flow exceeds the 300s Jest
+    // test timeout, matching the MM-T142 iOS overrun already quarantined on this branch.
+    (isIos() ? it.skip : itWithSecondServer)('MM-T4675_2 - should be able to add a new server and log-in-to/log-out-from the new server', async () => {
         // # Open server list screen
         await ServerListScreen.open();
         await ServerListScreen.closeTutorial();

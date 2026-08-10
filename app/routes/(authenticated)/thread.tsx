@@ -1,7 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {useLocalSearchParams, useNavigation} from 'expo-router';
+import {useNavigation} from 'expo-router';
 import {useCallback, useEffect} from 'react';
 import {defineMessages, useIntl} from 'react-intl';
 
@@ -9,6 +9,7 @@ import Header from '@components/navigation_header/header';
 import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
 import {useDefaultHeaderHeight} from '@hooks/header';
+import {usePropsFromParams} from '@hooks/props_from_params';
 import ThreadScreen from '@screens/thread';
 
 import type {NativeStackHeaderProps} from '@react-navigation/native-stack';
@@ -30,7 +31,7 @@ export default function ThreadRoute() {
     const intl = useIntl();
     const serverUrl = useServerUrl();
     const defaultHeight = useDefaultHeaderHeight();
-    const {channelName, rootId, title: routeTitle} = useLocalSearchParams<{channelName: string; rootId: string; title?: string}>();
+    const {channelName, rootId, title: routeTitle} = usePropsFromParams<{channelName: string; rootId: string; title?: string}>();
 
     const title = routeTitle || intl.formatMessage(threadMessages.thread);
     const subtitle = channelName ? intl.formatMessage(threadMessages.threadIn, {channelName}) : undefined;
