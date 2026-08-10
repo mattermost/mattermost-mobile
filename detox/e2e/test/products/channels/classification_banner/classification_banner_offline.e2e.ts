@@ -45,7 +45,9 @@ const getBlockedServerPatterns = () => {
     return Array.from(patterns);
 };
 
-describe('Classification Banner - Offline / Cache Behaviour', () => {
+// FeatureFlagClassificationMarkings toggles require a Mattermost server restart;
+// CI workers cannot restart Matterwick hosts. Re-enable on a provisioned server.
+describe.skip('Classification Banner - Offline / Cache Behaviour', () => {
     const serverOneDisplayName = 'Server 1';
     let lockOwner = '';
     let lockAcquired = false;

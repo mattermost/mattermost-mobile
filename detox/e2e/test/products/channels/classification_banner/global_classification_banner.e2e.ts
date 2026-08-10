@@ -19,7 +19,9 @@ import {by, device, element, expect, waitFor} from 'detox';
 // Lock wait is up to 20m; leave headroom for enable/setup after acquire.
 jest.setTimeout(timeouts.ONE_MIN * 30);
 
-describe('Classification Banner - Global Classification Banner', () => {
+// FeatureFlagClassificationMarkings toggles require a Mattermost server restart;
+// CI workers cannot restart Matterwick hosts. Re-enable on a provisioned server.
+describe.skip('Classification Banner - Global Classification Banner', () => {
     const serverOneDisplayName = 'Server 1';
     let lockOwner = '';
     let lockAcquired = false;

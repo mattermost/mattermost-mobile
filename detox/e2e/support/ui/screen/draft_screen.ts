@@ -52,7 +52,7 @@ class DraftScreen {
     openDraftPostActions = async () => {
         await this.dismissDraftTooltip();
         await waitFor(this.draftPost).toBeVisible().withTimeout(timeouts.TEN_SEC);
-        await this.draftPost.longPress();
+        await this.draftPost.longPress(timeouts.TWO_SEC);
     };
 
     swipeDraftPostLeft = async () => {
