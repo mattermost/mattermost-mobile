@@ -92,6 +92,12 @@ describe('Share with connected workspaces', () => {
             });
         }
 
+        // Without Shared Channels remotes every test early-returns — skip the
+        // expensive Detox login that otherwise burns the beforeAll budget on CI.
+        if (!sharedChannelsAvailable) {
+            return;
+        }
+
         // Enable autotranslation so the Configuration option is always visible in Channel Settings
         // (required when shared channels is disabled, e.g. TC-MOB-02).
         await System.apiPatchConfig(siteOneUrl, {
@@ -121,7 +127,9 @@ describe('Share with connected workspaces', () => {
                 EnableRemoteClusterService: false,
             },
         });
-        await HomeScreen.logout();
+        if (sharedChannelsAvailable) {
+            await HomeScreen.logout();
+        }
     });
 
     const navigateToConfiguration = async (channelName: string = testChannel.name) => {
