@@ -11,9 +11,11 @@
     "MM-T67856_4"
   ],
   "ios": [
-    "MM-T5603"
+    "MM-T5603",
+    "@android_only"
   ],
   "android": [
-    "MM-T3260"
+    "MM-T3260",
+    "@ios_only"
   ]
 }
