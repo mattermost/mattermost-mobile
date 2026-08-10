@@ -6,6 +6,7 @@ import path from 'path';
 
 import client from './client';
 import {apiUploadFile, getResponseFromError} from './common';
+import {apiGetConfig, apiUpdateConfig} from './system';
 
 // ****************************************************************
 // Plugins
@@ -476,6 +477,52 @@ export const apiInstallPluginFromMarketplace = async (baseUrl: string, pluginId:
 };
 
 /**
+ * Ensure demo plugin is active with DialogOnlyMode for interactive dialog specs.
+ *
+ * Provisioning already applies this config. Under parallel CI, every dialog
+ * beforeAll hitting PUT /api/v4/config concurrently stalls the Matterwick
+ * origin past Cloudflare's 120s proxy read timeout (HTTP 524). Skip the patch
+ * when the setting is already present.
+ */
+export const ensureDemoPluginForDialogTests = async (baseUrl: string): Promise<void> => {
+    const statusCheck = await apiGetPluginStatus(baseUrl, DemoPlugin.id);
+    if (!statusCheck.isActive) {
+        throw new Error(
+            `Demo plugin (${DemoPlugin.id}) is not active. Run Detox server provisioning before this suite.`,
+        );
+    }
+
+    const {config, error: getError} = await apiGetConfig(baseUrl);
+    if (!getError && config) {
+        const enabled = config.PluginSettings?.PluginStates?.[DemoPlugin.id]?.Enable;
+        const dialogOnly = config.PluginSettings?.Plugins?.[DemoPlugin.id]?.DialogOnlyMode;
+        if (enabled && dialogOnly === true) {
+            return;
+        }
+    }
+
+    const configResult = await apiUpdateConfig(baseUrl, {
+        PluginSettings: {
+            PluginStates: {
+                [DemoPlugin.id]: {Enable: true},
+            },
+            Plugins: {
+                [DemoPlugin.id]: {
+                    DialogOnlyMode: true,
+                },
+            },
+        },
+    });
+    if (configResult.error) {
+        throw new Error(
+            `Failed to configure demo plugin for dialog tests: ${
+                configResult.error.message || JSON.stringify(configResult.error)
+            }`,
+        );
+    }
+};
+
+/**
  * Ensure a plugin is installed and active, installing from Marketplace if needed.
  * @param {string} baseUrl - the base server URL
  * @param {string} pluginId - the plugin ID
@@ -529,6 +576,7 @@ export const Plugin = {
     apiRemovePluginById,
     apiUploadPlugin,
     apiUploadAndEnablePlugin,
+    ensureDemoPluginForDialogTests,
 };
 
 export default Plugin;

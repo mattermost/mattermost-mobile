@@ -228,7 +228,14 @@ class ChannelScreen {
             if (isAndroid()) {
                 await device.pressBack();
             } else {
-                await HomeScreen.channelListTab.tap();
+                try {
+                    await waitFor(HomeScreen.channelListTab).toExist().withTimeout(timeouts.FIVE_SEC);
+                    await HomeScreen.channelListTab.tap();
+                } catch {
+                    await dismissKnownModals();
+                    await waitFor(HomeScreen.channelListTab).toExist().withTimeout(timeouts.TEN_SEC);
+                    await HomeScreen.channelListTab.tap();
+                }
             }
         }
         await waitFor(this.channelScreen).not.toBeVisible().withTimeout(timeouts.TEN_SEC);

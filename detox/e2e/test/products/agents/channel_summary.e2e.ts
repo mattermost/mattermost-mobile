@@ -81,11 +81,20 @@ describe('Agents - Channel Summary', () => {
                 console.warn('Ask Agents quick action not visible on iOS — tests remain skipped');
             }
             try {
-                await element(by.id('channel.quick_actions.ask_agents')).swipe('down', 'fast');
+                // Dismiss via the sheet root — ask_agents is absent when Agents UI isn't ready.
+                await element(by.id('channel.quick_actions')).swipe('down', 'fast');
             } catch {
-                // Sheet may already be closed if ask_agents was not visible.
+                try {
+                    await element(by.id('channel.quick_actions.ask_agents')).swipe('down', 'fast');
+                } catch {
+                    // Sheet may already be closed.
+                }
             }
-            await ChannelScreen.back();
+            try {
+                await ChannelScreen.back();
+            } catch {
+                // beforeAll must not throw — tests no-op when Ask Agents is unavailable.
+            }
         }
     });
 
@@ -131,7 +140,7 @@ describe('Agents - Channel Summary', () => {
         if (isAndroid()) {
             await device.pressBack();
         } else {
-            await element(by.id('channel.quick_actions.ask_agents')).swipe('down', 'fast');
+            await element(by.id('channel.quick_actions')).swipe('down', 'fast');
         }
         await ChannelScreen.back();
     });

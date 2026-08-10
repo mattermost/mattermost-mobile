@@ -116,7 +116,7 @@ async function loginAdmin(): Promise<void> {
         }
     }
 
-    const MAX_ATTEMPTS = 3;
+    const MAX_ATTEMPTS = 5;
     for (let attempt = 1; attempt <= MAX_ATTEMPTS; attempt++) {
         const {error: loginError} = await User.apiAdminLogin(siteOneUrl);
         if (loginError) {
@@ -124,7 +124,11 @@ async function loginAdmin(): Promise<void> {
                 throw new Error(`Admin login failed after ${MAX_ATTEMPTS} attempts: ${JSON.stringify(loginError)}`);
             }
             console.warn(`⚠️ Admin login attempt ${attempt} failed, retrying...`);
-            await new Promise((resolve) => setTimeout(resolve, 2000 * attempt));
+
+            // Cloudflare 524 / AggregateError under parallel CI needs longer backoff.
+            const msg = JSON.stringify(loginError);
+            const delay = (msg.includes('524') || msg.includes('AggregateError')) ? 120_000 * attempt : 2000 * attempt;
+            await new Promise((resolve) => setTimeout(resolve, delay));
             continue;
         }
 
