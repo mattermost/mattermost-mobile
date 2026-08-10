@@ -273,6 +273,7 @@ jobs:
         shard: ${{ fromJSON(needs.begin.outputs.worker-shards) }}
     env:
       IOS: "true"
+      CI_NODE_INDEX: ${{ matrix.shard }}
     steps:
       - name: Checkout
         uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
@@ -384,7 +385,9 @@ jobs:
         run: bash detox/scripts/preboot_ios_simulator.sh
 
       - name: Set RUNNING_E2E
-        run: echo "RUNNING_E2E=true" > .env
+        run: |
+          echo "RUNNING_E2E=true" > .env
+          echo "RUNNING_E2E=true" > detox/.env
 
       - name: Start Metro bundler
         run: |
