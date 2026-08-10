@@ -60,6 +60,52 @@ export const timeouts = {
     FOUR_MIN: MINUTE * 4,
 };
 
+/**
+ * Cheap best-effort dismiss for iOS "Save Password?" when it appears in the
+ * app hierarchy. Primary prevention is autofill-v2 at simulator preboot.
+ */
+export const dismissIosSavePasswordIfVisible = async (): Promise<boolean> => {
+    if (isAndroid()) {
+        return false;
+    }
+
+    try {
+        const notNow = element(by.text('Not Now'));
+        await waitFor(notNow).toBeVisible().withTimeout(timeouts.HALF_SEC);
+        await notNow.tap();
+        await wait(timeouts.HALF_SEC);
+        return true;
+    } catch {
+        return false;
+    }
+};
+
+/** Wait for channel list after login; probe Save Password while polling on iOS. */
+export const waitForChannelListAfterLogin = async (
+    channelListScreen: Detox.NativeElement,
+    overallTimeout = isAndroid() ? timeouts.ONE_MIN : timeouts.HALF_MIN,
+): Promise<void> => {
+    const deadline = Date.now() + overallTimeout;
+    /* eslint-disable no-await-in-loop */
+    while (Date.now() < deadline) {
+        try {
+            await waitFor(channelListScreen).toExist().withTimeout(timeouts.TWO_SEC);
+            if (isIos()) {
+                await wait(timeouts.ONE_SEC);
+                await dismissIosSavePasswordIfVisible();
+            }
+            return;
+        } catch {
+            // Keep polling until deadline.
+        }
+    }
+    /* eslint-enable no-await-in-loop */
+    await waitFor(channelListScreen).toExist().withTimeout(timeouts.ONE_SEC);
+    if (isIos()) {
+        await dismissIosSavePasswordIfVisible();
+    }
+};
+
 export async function retryWithReload(
     func: () => Promise<void>,
     retries: number = 2,

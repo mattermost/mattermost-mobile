@@ -2,19 +2,34 @@
 // See LICENSE.txt for license information.
 /* eslint-disable no-console, no-process-env */
 
+/**
+ * Disable iOS Simulator password AutoFill / Save Password prompts for E2E.
+ *
+ * Detox cannot reliably dismiss Passwords.app "Save Password?" on iOS 18+/26
+ * (system dialog; sendToHome hangs). This script writes the same restriction
+ * keys the Settings → Passwords → AutoFill Passwords toggle changes, across
+ * every plist iOS is known to read, plus WebUI / Passwords preference domains.
+ *
+ * Must run while the simulator is shut down for the ConfigurationProfiles
+ * plists; call again after boot (or use --seed-defaults) to fight iOS resetting
+ * EffectiveUserSettings during first-boot.
+ */
+
 const os = require('os');
 const path = require('path');
 
 const shell = require('shelljs');
 
-// Parse command line arguments
 const args = process.argv.slice(2);
 let simulatorId = null;
+let seedDefaultsOnly = false;
 
 for (let i = 0; i < args.length; i++) {
     if ((args[i] === '--simulator-id' || args[i] === '-s') && args[i + 1]) {
         simulatorId = args[i + 1];
-        break;
+    }
+    if (args[i] === '--seed-defaults') {
+        seedDefaultsOnly = true;
     }
 }
 
@@ -32,14 +47,12 @@ function getSimulators() {
     let currentOS = '';
 
     for (const line of lines) {
-        // Match iOS version headers like "-- iOS 17.2 --"
         const osMatch = line.match(/-- (iOS [0-9.]+) --/);
         if (osMatch) {
             currentOS = osMatch[1];
             continue;
         }
 
-        // Match simulator lines like "    iPhone 15 Pro (A9A6D652-D75B-4C3A-9CD4-C6BA5E76C6F4) (Shutdown)"
         const simMatch = line.match(/^\s+(.+?)\s+\(([A-F0-9-]{36})\)\s+\((Booted|Shutdown|Creating|Booting)\)/);
         if (simMatch && currentOS) {
             simulators.push({
@@ -54,282 +67,290 @@ function getSimulators() {
     return simulators;
 }
 
-function disablePasswordAutofill(udid) {
-    const settingsDir = path.join(
-        os.homedir(),
-        'Library/Developer/CoreSimulator/Devices',
-        udid,
-        'data/Containers/Shared/SystemGroup/systemgroup.com.apple.configurationprofiles/Library/ConfigurationProfiles',
+function deviceDataRoot(udid) {
+    return path.join(os.homedir(), 'Library/Developer/CoreSimulator/Devices', udid, 'data');
+}
+
+/**
+ * Restriction keys Settings → Passwords → AutoFill Passwords writes.
+ * allowPasswordAutoFill=NO is the primary kill switch for credential UI on
+ * older iOS; on iOS 18+/26 we still write it plus every Effective* mirror and
+ * Passwords defaults because SharedWebCredentialViewService ignores a single
+ * plist when the others still say YES.
+ */
+const RESTRICTION_KEYS = [
+    {
+        path: 'restrictedBool.allowPasswordAutoFill.value',
+        type: 'bool',
+        value: 'NO',
+        description: 'allowPasswordAutoFill',
+    },
+    {
+        path: 'restrictedBool.allowCloudKeychainSync.value',
+        type: 'bool',
+        value: 'NO',
+        description: 'allowCloudKeychainSync',
+    },
+    {
+        path: 'restrictedBool.allowPasswordSharing.value',
+        type: 'bool',
+        value: 'NO',
+        description: 'allowPasswordSharing',
+    },
+    {
+        path: 'restrictedBool.allowPasswordProximityRequests.value',
+        type: 'bool',
+        value: 'NO',
+        description: 'allowPasswordProximityRequests',
+    },
+];
+
+function ensurePlist(plistPath) {
+    const dir = path.dirname(plistPath);
+    shell.mkdir('-p', dir);
+    if (!shell.test('-f', plistPath)) {
+        const created = shell.exec(`plutil -create xml1 "${plistPath}"`, {silent: true});
+        if (created.code !== 0) {
+            console.error(`Error: Failed to create ${plistPath}`);
+            console.error(created.stderr);
+            return false;
+        }
+    }
+    return true;
+}
+
+function setPlistKey(plistPath, key) {
+    let result = shell.exec(
+        `plutil -replace ${key.path} -${key.type} ${key.value} "${plistPath}"`,
+        {silent: true},
     );
-    const settingsPlist = path.join(settingsDir, 'UserSettings.plist');
+    if (result.code === 0) {
+        return true;
+    }
 
-    // EffectiveUserSettings.plist is the merged/computed version iOS reads at runtime.
-    // Both files must be updated — UserSettings is the source, EffectiveUserSettings
-    // is what CoreRestrictions actually enforces.
-    const effectivePlist = path.join(settingsDir, 'EffectiveUserSettings.plist');
+    const pathParts = key.path.split('.');
+    const rootKey = pathParts[0];
+    const middleKey = pathParts[1];
 
-    console.log(`\nDisabling password autofill for simulator ${udid}...`);
-
-    // Check if file exists
-    if (!shell.test('-f', settingsPlist)) {
-        console.log('UserSettings.plist not found, creating it...');
-
-        // Ensure directory exists
-        shell.mkdir('-p', settingsDir);
-
-        // Create empty plist file
-        const result = shell.exec(`plutil -create xml1 "${settingsPlist}"`, {silent: true});
+    const checkRoot = shell.exec(
+        `plutil -extract ${rootKey} xml1 -o - "${plistPath}" 2>/dev/null`,
+        {silent: true},
+    );
+    if (checkRoot.code !== 0) {
+        result = shell.exec(`plutil -insert ${rootKey} -dictionary "${plistPath}"`, {silent: true});
         if (result.code !== 0) {
-            console.error(`Error: Failed to create UserSettings.plist at ${settingsPlist}`);
-            console.error(result.stderr);
             return false;
         }
     }
 
-    // Keys that actually exist in the iOS 26.2 UserSettings.plist and are
-    // recognized by CoreRestrictions. Verified by inspecting the plist on an
-    // iOS 26.2 simulator — only keys present in the system-initialized plist
-    // are honoured; unknown keys are silently ignored by iOS.
-    //
-    // NOTE: allowPasswordAutoFill=NO disables the AutoFill KEYBOARD TOOLBAR
-    // (the bar above the keyboard that suggests saved passwords). It does NOT
-    // prevent the "Save Password?" modal sheet shown by the Passwords.app
-    // credential provider on iOS 18+. That modal is handled separately via
-    // `xcrun simctl spawn defaults write com.apple.Passwords` in the workflow
-    // and by dismissing it in the test login flow after the channel list loads.
-    const keysToSet = [
-        {
-            path: 'restrictedBool.allowPasswordAutoFill.value',
-            type: 'bool',
-            value: 'NO',
-            description: 'allowPasswordAutoFill (disables keyboard autofill bar)',
-        },
-        {
-            path: 'restrictedBool.allowCloudKeychainSync.value',
-            type: 'bool',
-            value: 'NO',
-            description: 'allowCloudKeychainSync (prevents iCloud Keychain sync)',
-        },
-    ];
-
-    let successCount = 0;
-
-    for (const key of keysToSet) {
-        console.log(`Setting ${key.description}...`);
-
-        // Try to replace the value directly first
-        let result = shell.exec(
-            `plutil -replace ${key.path} -${key.type} ${key.value} "${settingsPlist}"`,
+    const checkMiddle = shell.exec(
+        `plutil -extract ${rootKey}.${middleKey} xml1 -o - "${plistPath}" 2>/dev/null`,
+        {silent: true},
+    );
+    if (checkMiddle.code !== 0) {
+        result = shell.exec(
+            `plutil -insert ${rootKey}.${middleKey} -dictionary "${plistPath}"`,
             {silent: true},
         );
-
-        if (result.code === 0) {
-            successCount++;
-            continue;
-        }
-
-        // Direct replace failed, need to create the key structure
-        const pathParts = key.path.split('.');
-        const rootKey = pathParts[0]; // restrictedBool or restrictedValue
-        const middleKey = pathParts[1]; // e.g., allowPasswordAutoFill
-
-        // Ensure root dictionary exists (restrictedBool or restrictedValue)
-        const checkRoot = shell.exec(
-            `plutil -extract ${rootKey} xml1 -o - "${settingsPlist}" 2>/dev/null`,
-            {silent: true},
-        );
-
-        if (checkRoot.code !== 0) {
-            result = shell.exec(`plutil -insert ${rootKey} -dictionary "${settingsPlist}"`, {silent: true});
-            if (result.code !== 0) {
-                console.error(`⚠️  Failed to insert ${rootKey} dictionary`);
-                console.error(result.stderr);
-                continue;
-            }
-        }
-
-        // Ensure middle dictionary exists (e.g., allowPasswordAutoFill)
-        const checkMiddle = shell.exec(
-            `plutil -extract ${rootKey}.${middleKey} xml1 -o - "${settingsPlist}" 2>/dev/null`,
-            {silent: true},
-        );
-
-        if (checkMiddle.code !== 0) {
-            result = shell.exec(
-                `plutil -insert ${rootKey}.${middleKey} -dictionary "${settingsPlist}"`,
-                {silent: true},
-            );
-            if (result.code !== 0) {
-                console.error(`⚠️  Failed to insert ${rootKey}.${middleKey} dictionary`);
-                console.error(result.stderr);
-                continue;
-            }
-        }
-
-        // Set the value (insert or replace)
-        const checkValue = shell.exec(
-            `plutil -extract ${key.path} xml1 -o - "${settingsPlist}" 2>/dev/null`,
-            {silent: true},
-        );
-
-        if (checkValue.code === 0) {
-            // Value exists, replace it
-            result = shell.exec(
-                `plutil -replace ${key.path} -${key.type} ${key.value} "${settingsPlist}"`,
-                {silent: true},
-            );
-        } else {
-            // Value doesn't exist, insert it
-            result = shell.exec(
-                `plutil -insert ${key.path} -${key.type} ${key.value} "${settingsPlist}"`,
-                {silent: true},
-            );
-        }
-
-        if (result.code === 0) {
-            successCount++;
-        } else {
-            console.error(`⚠️  Failed to set ${key.description}`);
-            console.error(result.stderr);
+        if (result.code !== 0) {
+            return false;
         }
     }
 
-    // Verify that all keys were actually written to the plist
-    console.log('\nVerifying restriction keys...');
-    let verifiedCount = 0;
+    const checkValue = shell.exec(
+        `plutil -extract ${key.path} xml1 -o - "${plistPath}" 2>/dev/null`,
+        {silent: true},
+    );
+    const op = checkValue.code === 0 ? 'replace' : 'insert';
+    result = shell.exec(
+        `plutil -${op} ${key.path} -${key.type} ${key.value} "${plistPath}"`,
+        {silent: true},
+    );
+    return result.code === 0;
+}
 
-    for (const key of keysToSet) {
-        const checkResult = shell.exec(
-            `plutil -extract ${key.path} xml1 -o - "${settingsPlist}" 2>/dev/null`,
-            {silent: true},
-        );
-
-        if (checkResult.code === 0) {
-            // Extract just the value for logging
-            const valueMatch = checkResult.stdout.match(/<(true|false|integer)>([^<]*)<\/(true|false|integer)>/);
-            if (valueMatch) {
-                console.log(`  ✓ ${key.description}: ${valueMatch[0]}`);
-                verifiedCount++;
-            }
-        } else {
-            console.log(`  ✗ ${key.description}: MISSING or FAILED`);
-        }
-    }
-
-    if (verifiedCount === keysToSet.length) {
-        console.log(`\n✅ All ${keysToSet.length} restriction keys verified in plist`);
-    } else {
-        console.error(`\n⚠️  Only ${verifiedCount}/${keysToSet.length} keys verified`);
-    }
-
-    if (successCount === keysToSet.length) {
-        console.log(`✅ Password autofill disabled successfully (${keysToSet.length} restriction keys set)`);
-    } else if (successCount > 0) {
-        console.log(`⚠️  Partially successful: ${successCount}/${keysToSet.length} keys set`);
-    } else {
-        console.error('⚠️  Failed to disable password autofill');
+function verifyPlistKey(plistPath, key) {
+    const checkResult = shell.exec(
+        `plutil -extract ${key.path} raw -o - "${plistPath}" 2>/dev/null`,
+        {silent: true},
+    );
+    if (checkResult.code !== 0) {
         return false;
     }
+    const raw = String(checkResult.stdout).trim().toLowerCase();
+    return raw === 'false' || raw === '0' || raw === 'no';
+}
 
-    // Mirror the same keys to EffectiveUserSettings.plist — iOS reads the effective
-    // settings at runtime, not the source UserSettings.plist directly.
-    // All inputs (effectivePlist, key.path, key.type, key.value) are internal
-    // constants — no user-controlled data is interpolated.
-    if (shell.test('-f', effectivePlist)) {
-        console.log('\nMirroring keys to EffectiveUserSettings.plist...');
-        for (const key of keysToSet) {
-            const checkValue = shell.exec(
-                `plutil -extract ${key.path} xml1 -o - "${effectivePlist}" 2>/dev/null`,
-                {silent: true},
-            );
-            const cmd = checkValue.code === 0 ? 'replace' : 'insert';
-            const mirrorResult = shell.exec(
-                `plutil -${cmd} ${key.path} -${key.type} ${key.value} "${effectivePlist}"`,
-                {silent: true},
-            );
-            if (mirrorResult.code !== 0) {
-                console.log(`  ⚠️  Failed to mirror ${key.description} to EffectiveUserSettings.plist`);
+function restrictionPlistPaths(udid) {
+    const root = deviceDataRoot(udid);
+    return [
+        path.join(
+            root,
+            'Containers/Shared/SystemGroup/systemgroup.com.apple.configurationprofiles/Library/ConfigurationProfiles/UserSettings.plist',
+        ),
+        path.join(
+            root,
+            'Containers/Shared/SystemGroup/systemgroup.com.apple.configurationprofiles/Library/ConfigurationProfiles/EffectiveUserSettings.plist',
+        ),
+        // Settings.app toggle also writes these Library mirrors — missing them
+        // leaves CoreRestrictions reading allowPasswordAutoFill=YES.
+        path.join(root, 'Library/UserConfigurationProfiles/EffectiveUserSettings.plist'),
+        path.join(root, 'Library/UserConfigurationProfiles/PublicInfo/PublicEffectiveUserSettings.plist'),
+    ];
+}
+
+function writeRestrictionPlists(udid) {
+    console.log(`\nWriting password restriction plists for ${udid}...`);
+    let wrote = 0;
+    let verified = 0;
+
+    for (const plistPath of restrictionPlistPaths(udid)) {
+        console.log(`\n→ ${plistPath}`);
+        if (!ensurePlist(plistPath)) {
+            continue;
+        }
+        for (const key of RESTRICTION_KEYS) {
+            if (setPlistKey(plistPath, key)) {
+                wrote += 1;
+                if (verifyPlistKey(plistPath, key)) {
+                    console.log(`  ✓ ${key.description}=NO`);
+                    verified += 1;
+                } else {
+                    console.log(`  ⚠️  ${key.description} written but verify failed`);
+                }
+            } else {
+                console.log(`  ⚠️  failed to set ${key.description}`);
             }
         }
     }
 
-    return successCount > 0;
+    // WebUI AutoFillPasswords (Safari / credential UI preference domain).
+    const webUiPlist = path.join(deviceDataRoot(udid), 'Library/Preferences/com.apple.WebUI.plist');
+    console.log(`\n→ ${webUiPlist}`);
+    if (ensurePlist(webUiPlist)) {
+        const webKey = {path: 'AutoFillPasswords', type: 'bool', value: 'NO', description: 'AutoFillPasswords'};
+        if (setPlistKey(webUiPlist, webKey) && verifyPlistKey(webUiPlist, webKey)) {
+            console.log('  ✓ AutoFillPasswords=NO');
+            wrote += 1;
+            verified += 1;
+        } else {
+            console.log('  ⚠️  failed to set AutoFillPasswords');
+        }
+    }
 
+    const expected = (restrictionPlistPaths(udid).length * RESTRICTION_KEYS.length) + 1;
+    console.log(`\nRestriction write summary: ${verified}/${expected} keys verified (attempts=${wrote})`);
+    // Require the primary allowPasswordAutoFill key on UserSettings + both Library mirrors.
+    const critical = [
+        restrictionPlistPaths(udid)[0],
+        restrictionPlistPaths(udid)[2],
+        restrictionPlistPaths(udid)[3],
+    ];
+    const primary = RESTRICTION_KEYS[0];
+    const criticalOk = critical.every((p) => shell.test('-f', p) && verifyPlistKey(p, primary));
+    if (!criticalOk) {
+        console.error('❌ Critical allowPasswordAutoFill=NO not verified on all primary plists');
+        return false;
+    }
+    console.log('✅ Critical allowPasswordAutoFill=NO verified on UserSettings + Library Effective mirrors');
+    return true;
+}
+
+/**
+ * Preference-domain seeds that must run against a *booted* simulator.
+ * Best-effort: unknown keys are ignored by the OS.
+ */
+function seedPasswordDefaults(udid) {
+    console.log(`\nSeeding Passwords / SpringBoard defaults on booted sim ${udid}...`);
+    const writes = [
+        ['com.apple.Passwords', 'AutoFill', 'NO'],
+        ['com.apple.Passwords', 'AutoSave', 'NO'],
+        ['com.apple.Passwords', 'credentialSaveNotificationsEnabled', 'NO'],
+        ['com.apple.Passwords', 'PasswordAutoFill', 'NO'],
+        ['com.apple.Passwords', 'AutoFillPasswords', 'NO'],
+        ['com.apple.springboard', 'AutoFillPasswords', 'NO'],
+        ['com.apple.WebUI', 'AutoFillPasswords', 'NO'],
+        ['com.apple.Preferences', 'PasswordAutoFill', 'NO'],
+    ];
+
+    let ok = 0;
+    for (const [domain, key, value] of writes) {
+        const result = shell.exec(
+            `xcrun simctl spawn "${udid}" defaults write ${domain} ${key} -bool ${value}`,
+            {silent: true},
+        );
+        if (result.code === 0) {
+            ok += 1;
+            console.log(`  ✓ ${domain} ${key}=${value}`);
+        } else {
+            console.log(`  ⚠️  ${domain} ${key} (ignored)`);
+        }
+    }
+    console.log(`Defaults seed: ${ok}/${writes.length} succeeded`);
+    return ok > 0;
+}
+
+function resolveSimulator() {
+    const simulators = getSimulators();
+    if (simulators.length === 0) {
+        console.error('Error: No iOS simulators found');
+        process.exit(1);
+    }
+
+    if (simulatorId) {
+        const selected = simulators.find((sim) => sim.udid === simulatorId);
+        if (!selected) {
+            console.error(`Error: Simulator with ID ${simulatorId} not found`);
+            process.exit(1);
+        }
+        return selected;
+    }
+
+    const defaultDeviceName = process.env.IOS_SIMULATOR_DEVICE || process.env.DEVICE_NAME || 'iPhone 17 Pro';
+    const defaultOsPrefix = process.env.IOS_SIMULATOR_OS_PREFIX || process.env.DEVICE_OS_VERSION || 'iOS 26.';
+    const selected = simulators.find((sim) =>
+        sim.name === defaultDeviceName &&
+        sim.os.startsWith(defaultOsPrefix),
+    );
+    if (!selected) {
+        const osDisplay = defaultOsPrefix.endsWith('.') ? `${defaultOsPrefix}x` : defaultOsPrefix;
+        console.error(`Error: No ${defaultDeviceName} running ${osDisplay} found`);
+        process.exit(1);
+    }
+    return selected;
 }
 
 async function main() {
-    console.log('iOS Simulator - Disable Password Autofill\n');
-    console.log('This tool sets MDM restriction keys in UserSettings.plist to disable');
-    console.log('the AutoFill keyboard toolbar on iOS simulators.');
-    console.log('NOTE: This does NOT prevent the "Save Password?" modal on iOS 18+.');
-    console.log('That modal is handled via xcrun simctl spawn defaults write in CI.\n');
+    console.log('iOS Simulator — Disable Password AutoFill / Save Password\n');
 
-    // Check if running on macOS
     if (process.platform !== 'darwin') {
         console.error('Error: This tool only works on macOS');
         process.exit(1);
     }
-
-    // Check if xcrun is available
     if (!shell.which('xcrun')) {
         console.error('Error: xcrun not found. Please install Xcode and command line tools');
         process.exit(1);
     }
 
-    // Get list of simulators
-    const simulators = getSimulators();
+    const selected = resolveSimulator();
+    console.log(`Target: ${selected.name} (${selected.os}) [${selected.udid}] state=${selected.state}`);
 
-    if (simulators.length === 0) {
-        console.error('Error: No iOS simulators found');
-        console.error('Create a simulator in Xcode first');
-        process.exit(1);
-    }
-
-    let selectedSimulator;
-
-    if (simulatorId) {
-        // Use provided simulator ID
-        selectedSimulator = simulators.find((sim) => sim.udid === simulatorId);
-
-        if (!selectedSimulator) {
-            console.error(`Error: Simulator with ID ${simulatorId} not found`);
+    if (seedDefaultsOnly) {
+        if (selected.state !== 'Booted') {
+            console.error('Error: --seed-defaults requires a Booted simulator');
             process.exit(1);
         }
+        process.exit(seedPasswordDefaults(selected.udid) ? 0 : 1);
+    }
 
-        console.log(`Target: ${selectedSimulator.name} (${selectedSimulator.os})`);
-        console.log(`Using simulator: ${selectedSimulator.name} (${selectedSimulator.os})`);
+    const plistOk = writeRestrictionPlists(selected.udid);
+    if (selected.state === 'Booted') {
+        seedPasswordDefaults(selected.udid);
     } else {
-        // Automatically select simulator using env-configurable device name and OS prefix.
-        // Priority: IOS_SIMULATOR_DEVICE > DEVICE_NAME > hardcoded default (and same for OS).
-        const defaultDeviceName = process.env.IOS_SIMULATOR_DEVICE || process.env.DEVICE_NAME || 'iPhone 17 Pro';
-        const defaultOsPrefix = process.env.IOS_SIMULATOR_OS_PREFIX || process.env.DEVICE_OS_VERSION || 'iOS 26.';
-        selectedSimulator = simulators.find((sim) =>
-            sim.name === defaultDeviceName &&
-            sim.os.startsWith(defaultOsPrefix),
-        );
-
-        if (!selectedSimulator) {
-            // Append "x" only when the prefix is a major-version wildcard (ends with "."),
-            // e.g. "iOS 26." → "iOS 26.x"; a full version like "iOS 26.2" is shown as-is.
-            const osDisplay = defaultOsPrefix.endsWith('.') ? `${defaultOsPrefix}x` : defaultOsPrefix;
-            console.error(`Error: No ${defaultDeviceName} running ${osDisplay} found`);
-            console.error(`Please create a ${defaultDeviceName} simulator with ${osDisplay} in Xcode first.`);
-            console.error('\nAvailable simulators:');
-            simulators.forEach((sim) => {
-                const stateIndicator = sim.state === 'Booted' ? '🟢' : '⚪';
-                console.error(`  ${stateIndicator} ${sim.name} (${sim.os}) - ${sim.state}`);
-            });
-            process.exit(1);
-        }
-
-        console.log(`Target: ${selectedSimulator.name} (${selectedSimulator.os})`);
-        console.log(`Using simulator: ${selectedSimulator.name} (${selectedSimulator.os})`);
+        console.log('\nSimulator is shut down — defaults seed skipped (run --seed-defaults after boot).');
     }
 
-    // Apply the setting
-    const success = disablePasswordAutofill(selectedSimulator.udid);
-
-    process.exit(success ? 0 : 1);
+    process.exit(plistOk ? 0 : 1);
 }
 
 main();
