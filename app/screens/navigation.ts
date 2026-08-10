@@ -101,11 +101,20 @@ export async function navigateBack() {
 /** Pops every stacked scrollable mm_blocks content screen while it is on top.
  * Nested max_height expands can push multiple MM_BLOCKS_CONTENT screens; a single
  * navigateBack is not enough. Stops when another screen (e.g. a dialog) is visible.
+ *
+ * We add a limit of 10 pops to prevent infinite loops. This should never happen in
+ * real scenarios, since it would imply 10 nested scrollable blocks.
  */
 export async function dismissMmBlocksExpandedContentIfOpen() {
-    while (NavigationStore.getVisibleScreen() === Screens.MM_BLOCKS_CONTENT) {
+    const MAX = 10;
+    let i = 0;
+    while (NavigationStore.getVisibleScreen() === Screens.MM_BLOCKS_CONTENT && i < MAX) {
+        if (!router?.canGoBack()) {
+            break;
+        }
         // eslint-disable-next-line no-await-in-loop
         await navigateBack();
+        i++;
     }
 }
 

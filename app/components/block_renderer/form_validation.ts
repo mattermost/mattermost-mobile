@@ -190,7 +190,7 @@ export function checkMmBlocksFormFieldForError(
             if (field.subtype === 'number' && Number.isNaN(Number(stringValue))) {
                 return dialogFieldErrorMessages.badNumber;
             }
-            if (field.subtype === 'url' && !stringValue.includes('http://') && !stringValue.includes('https://')) {
+            if (field.subtype === 'url' && !stringValue.startsWith('http://') && !stringValue.startsWith('https://')) {
                 return dialogFieldErrorMessages.badUrl;
             }
             return null;

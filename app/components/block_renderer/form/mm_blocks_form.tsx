@@ -54,26 +54,23 @@ export function MmBlocksForm({children, errors, onErrorsChange}: MmBlocksFormPro
     const getErrors = useCallback(() => errorsRef.current, []);
 
     const setValue = useCallback((name: string, value: MmFormValue) => {
-        setValues((prev) => {
-            if (prev[name] === value) {
-                return prev;
-            }
+        const prev = valuesRef.current;
+        if (prev[name] !== value) {
             const next = {...prev, [name]: value};
             valuesRef.current = next;
-            return next;
-        });
+            setValues(next);
+        }
         clearError(name);
     }, [clearError]);
 
     const setDefaultValue = useCallback((name: string, value: MmFormValue) => {
-        setValues((prev) => {
-            if (Object.prototype.hasOwnProperty.call(prev, name)) {
-                return prev;
-            }
-            const next = {...prev, [name]: value};
-            valuesRef.current = next;
-            return next;
-        });
+        const prev = valuesRef.current;
+        if (Object.prototype.hasOwnProperty.call(prev, name)) {
+            return;
+        }
+        const next = {...prev, [name]: value};
+        valuesRef.current = next;
+        setValues(next);
     }, []);
 
     const contextValue = useMemo((): MmBlocksFormContextValue => ({

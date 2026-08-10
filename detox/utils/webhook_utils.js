@@ -440,10 +440,12 @@ function getDynamicOptionsResponse(searchText = '') {
         {text: 'Sales Pipeline', value: 'sales'},
     ];
 
+    const search = String(searchText || '').toLowerCase();
+
     // Filter options based on search text
-    const filteredOptions = searchText ?baseOptions.filter((option) =>
-        option.text.toLowerCase().includes(searchText) ||
-            option.value.toLowerCase().includes(searchText)) :baseOptions.slice(0, 6); // Limit to first 6 if no search
+    const filteredOptions = search ? baseOptions.filter((option) =>
+        option.text.toLowerCase().includes(search) ||
+            option.value.toLowerCase().includes(search)) : baseOptions.slice(0, 6); // Limit to first 6 if no search
 
     return {
         items: filteredOptions,

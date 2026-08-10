@@ -5,6 +5,7 @@ import Model from '@nozbe/watermelondb/Model';
 import {applicationName} from 'expo-application';
 import {Directory, File, Paths, type FileInfo as ExpoFileInfo} from 'expo-file-system';
 import mimeDB from 'mime-db';
+import {defineMessages, type IntlShape} from 'react-intl';
 import {Alert, Linking, Platform} from 'react-native';
 import Permissions, {PERMISSIONS} from 'react-native-permissions';
 
@@ -18,12 +19,18 @@ import {urlSafeBase64Encode} from '@utils/security';
 import type {PastedFile} from '@mattermost/react-native-paste-input';
 import type {DocumentPickerResponse} from '@react-native-documents/picker';
 import type FileModel from '@typings/database/models/servers/file';
-import type {IntlShape} from 'react-intl';
 import type {Asset} from 'react-native-image-picker';
 
 const EXTRACT_TYPE_REGEXP = /^\s*([^;\s]*)(?:;|\s|$)/;
 const CONTENT_DISPOSITION_REGEXP = /inline;filename=".*\.([a-z]+)";/i;
 const DEFAULT_SERVER_MAX_FILE_SIZE = 50 * 1024 * 1024;// 50 Mb
+
+const messages = defineMessages({
+    fileMaxWarning: {
+        id: 'mobile.file_upload.max_warning',
+        defaultMessage: 'Uploads limited to {count} {count, plural, one {file} other {files}} maximum.',
+    },
+});
 
 export const FileFilters = keyMirror({
     ALL: null,
@@ -467,10 +474,7 @@ export function fileSizeWarning(intl: IntlShape, maxFileSize: number) {
 }
 
 export function fileMaxWarning(intl: IntlShape, maxFileCount: number) {
-    return intl.formatMessage({
-        id: 'mobile.file_upload.max_warning',
-        defaultMessage: 'Uploads limited to {count} files maximum.',
-    }, {
+    return intl.formatMessage(messages.fileMaxWarning, {
         count: maxFileCount,
     });
 }

@@ -95,7 +95,7 @@ describe('ClientIntegrations', () => {
         );
     });
 
-    test('lookupInteractiveDialog', async () => {
+    it('should lookup interactive dialog', async () => {
         const data = {url: 'data'} as DialogSubmission;
         await client.lookupInteractiveDialog(data);
 
@@ -105,7 +105,7 @@ describe('ClientIntegrations', () => {
         );
     });
 
-    test('executeDialogAction', async () => {
+    it('should execute dialog action', async () => {
         const url = 'https://example.com/dialog/action';
         const context = {field: 'value'};
         const channelId = 'channel_id';
@@ -117,7 +117,7 @@ describe('ClientIntegrations', () => {
         );
     });
 
-    test('doBlockAction', async () => {
+    it('should do block action', async () => {
         const request: DoBlockActionRequest = {
             subtype: 'execute',
             context: 'post',

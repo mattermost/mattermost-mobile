@@ -109,4 +109,39 @@ describe('BoolInputElement', () => {
 
         expect(onAction).toHaveBeenCalledWith({actionId: 'refresh_action', formValues: {agree: true}});
     });
+
+    it('should not register an empty-string key when name is blank', () => {
+        const {getByTestId} = renderWithIntlAndTheme(
+            <MmBlocksContextProvider
+                channelId='channel-id'
+                location={Screens.CHANNEL}
+                postId='post-id'
+            >
+                <MmBlocksForm
+                    errors={{}}
+                    onErrorsChange={jest.fn()}
+                >
+                    <BoolInputElement
+                        element={{type: 'bool_input', name: '', label: 'Invalid'}}
+                        onAction={onAction}
+                    />
+                    <BoolInputElement
+                        element={{
+                            type: 'bool_input',
+                            name: 'agree',
+                            label: 'I agree',
+                            onChange: 'refresh_action',
+                        }}
+                        onAction={onAction}
+                    />
+                </MmBlocksForm>
+            </MmBlocksContextProvider>,
+        );
+
+        fireEvent(getByTestId('mm_blocks.bool_input.agree.toggled.false.button'), 'valueChange', true);
+
+        const formValues = onAction.mock.calls[0][0].formValues;
+        expect(formValues).not.toHaveProperty('');
+        expect(formValues).toEqual({agree: true});
+    });
 });

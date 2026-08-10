@@ -9,7 +9,7 @@
 
 import {MmBlocksTestHelper} from '@support/mm_blocks_test_helper';
 import {hasStableWebhookIngress} from '@support/test_config';
-import {ChannelScreen, HomeScreen} from '@support/ui/screen';
+import {ChannelScreen, HomeScreen, InteractiveDialogScreen} from '@support/ui/screen';
 import {expect} from 'detox';
 
 // Every case needs Mattermost→sidecar reachability: the dialog only exists after the
@@ -69,15 +69,15 @@ describeBlocksDialog('Interactive mm_blocks - blocks dialog file inputs', () => 
 
         // * Verify the label follows allow_multiple
         await expect(
-            element(by.id('mm_blocks.file_input.single_document.choose_file.button-label')),
+            element(by.id(InteractiveDialogScreen.fileChooseFileButtonLabelTestID('single_document'))),
         ).toHaveText('Choose File');
         await expect(
-            element(by.id('mm_blocks.file_input.multiple_files.choose_file.button-label')),
+            element(by.id(InteractiveDialogScreen.fileChooseFileButtonLabelTestID('multiple_files'))),
         ).toHaveText('Choose Files');
 
         // * Verify each field also offers the photo library picker
-        await expect(element(by.id('mm_blocks.file_input.single_document.choose_photo.button'))).toExist();
-        await expect(element(by.id('mm_blocks.file_input.multiple_files.choose_photo.button'))).toExist();
+        await expect(element(by.id(InteractiveDialogScreen.fileChoosePhotoButtonTestID('single_document')))).toExist();
+        await expect(element(by.id(InteractiveDialogScreen.fileChoosePhotoButtonTestID('multiple_files')))).toExist();
     });
 
     it('MM-T6273_1 - should block submit while a required file field has no files', async () => {
@@ -89,8 +89,8 @@ describeBlocksDialog('Interactive mm_blocks - blocks dialog file inputs', () => 
 
         // * Verify the dialog stayed open and both file fields are flagged
         await MmBlocksTestHelper.blocksDialogToBeVisible();
-        await expect(element(by.id('single_document-error'))).toExist();
-        await expect(element(by.id('multiple_files-error'))).toExist();
+        await expect(element(by.id(InteractiveDialogScreen.fieldErrorTestID('single_document')))).toExist();
+        await expect(element(by.id(InteractiveDialogScreen.fieldErrorTestID('multiple_files')))).toExist();
         await MmBlocksTestHelper.expectDialogTopLevelError(FIX_FIELD_ERRORS);
     });
 

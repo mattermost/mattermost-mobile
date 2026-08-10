@@ -191,7 +191,7 @@ describe('DateTimeSelector', () => {
         expect(getByTestId(`${testID}.manual_time.input`).props.placeholder).toBe('2:30 PM');
     });
 
-    it('disables select buttons and does not open the picker when disabled', () => {
+    it('should disable select buttons and not open the picker when disabled', () => {
         const testID = 'dt';
         const {getByTestId, queryByTestId} = renderWithEverything(
             <DateTimeSelector
@@ -210,5 +210,56 @@ describe('DateTimeSelector', () => {
 
         expect(queryByTestId('custom_status_clear_after.date_time_picker')).toBeNull();
         expect(mockHandleChange).not.toHaveBeenCalled();
+
+        const timeButton = getByTestId(`${testID}.time.button`);
+        expect(timeButton).toBeDisabled();
+
+        fireEvent.press(timeButton);
+
+        expect(queryByTestId('custom_status_clear_after.date_time_picker')).toBeNull();
+        expect(queryByTestId(`${testID}.manual_time.input`)).toBeNull();
+        expect(mockHandleChange).not.toHaveBeenCalled();
+    });
+
+    it('should reset open picker and manual entry when disabled becomes true', () => {
+        const testID = 'dt';
+        const {getByTestId, queryByTestId, rerender} = renderWithEverything(
+            <DateTimeSelector
+                {...baseProps}
+                allowManualTimeEntry={true}
+                showInitially={undefined}
+                testID={testID}
+            />,
+            {database},
+        );
+
+        fireEvent.press(getByTestId(`${testID}.time.button`));
+        expect(getByTestId(`${testID}.manual_time.input`)).toBeTruthy();
+
+        rerender(
+            <DateTimeSelector
+                {...baseProps}
+                allowManualTimeEntry={true}
+                disabled={true}
+                showInitially={undefined}
+                testID={testID}
+            />,
+        );
+
+        expect(queryByTestId(`${testID}.manual_time.input`)).toBeNull();
+        expect(queryByTestId('custom_status_clear_after.date_time_picker')).toBeNull();
+
+        rerender(
+            <DateTimeSelector
+                {...baseProps}
+                allowManualTimeEntry={true}
+                disabled={false}
+                showInitially={undefined}
+                testID={testID}
+            />,
+        );
+
+        expect(queryByTestId(`${testID}.manual_time.input`)).toBeNull();
+        expect(queryByTestId('custom_status_clear_after.date_time_picker')).toBeNull();
     });
 });

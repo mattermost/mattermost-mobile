@@ -19,6 +19,7 @@ import {
     IntegrationSelectorScreen,
     InteractiveDialogScreen,
     LoginScreen,
+    MmBlocksTextInputScreen,
     PostOptionsScreen,
     ServerScreen,
     ThreadScreen,
@@ -104,7 +105,15 @@ export class MmBlocksTestHelper {
         return `${this.WEBHOOK_BASE_URL}${path}`;
     }
 
-    static async setupChannelTest(): Promise<{channel: any; team: any; user: any}> {
+    /**
+     * Wraps Setup.apiInit (team + channel + user), then logs in and opens the channel.
+     * Prefer returning to ChannelListScreen between tests and re-opening the channel.
+     */
+    static async setupChannelTest(): Promise<{
+        channel: {id: string; name: string; display_name: string};
+        team: {id: string; name?: string};
+        user: {id: string; username: string};
+    }> {
         await this.assertMmBlocksEnabled(siteOneUrl);
         const {channel, team, user} = await Setup.apiInit(siteOneUrl);
 
@@ -132,7 +141,7 @@ export class MmBlocksTestHelper {
 
     private static async activeScrollContainer(): Promise<Detox.NativeMatcher> {
         // A blocks dialog is a modal over the post list, so scroll the dialog, not the list behind it.
-        const dialogScroll = by.id('interactive_dialog.scroll_view');
+        const dialogScroll = by.id(InteractiveDialogScreen.testID.scrollView);
         try {
             await waitFor(element(dialogScroll).atIndex(0)).toExist().withTimeout(timeouts.ONE_SEC);
             return dialogScroll;
@@ -160,11 +169,11 @@ export class MmBlocksTestHelper {
         // Sticky dialog footer covers the bottom of the scroll viewport; after the first
         // scroll settles near the footer, nudge further so the target clears 25–50% visible.
         try {
-            await waitFor(element(by.id('interactive_dialog.scroll_view')).atIndex(0)).
+            await waitFor(element(by.id(InteractiveDialogScreen.testID.scrollView)).atIndex(0)).
                 toExist().
                 withTimeout(timeouts.HALF_SEC);
-            await element(by.id('interactive_dialog.scroll_view')).atIndex(0).scroll(200, 'down');
-            await scrollElementIntoView(target, by.id('interactive_dialog.scroll_view'));
+            await element(by.id(InteractiveDialogScreen.testID.scrollView)).atIndex(0).scroll(200, 'down');
+            await scrollElementIntoView(target, by.id(InteractiveDialogScreen.testID.scrollView));
         } catch {
             // Not in a dialog, or already as far as we can scroll.
         }
@@ -322,10 +331,10 @@ export class MmBlocksTestHelper {
      */
     private static async elementPreferringDialogOrThread(testID: string): Promise<Detox.NativeElement> {
         try {
-            await waitFor(element(by.id('interactive_dialog.scroll_view')).atIndex(0)).
+            await waitFor(element(by.id(InteractiveDialogScreen.testID.scrollView)).atIndex(0)).
                 toExist().
                 withTimeout(timeouts.ONE_SEC);
-            return element(by.id(testID).withAncestor(by.id('interactive_dialog.scroll_view')));
+            return element(by.id(testID).withAncestor(by.id(InteractiveDialogScreen.testID.scrollView)));
         } catch {
             return this.elementPreferringThread(testID);
         }
@@ -686,23 +695,22 @@ export class MmBlocksTestHelper {
      * MM_BLOCKS_TEXT_INPUT screen; inside a dialog they are inline TextSettings.
      */
     static async openTextInputScreen(fieldName: string): Promise<void> {
-        const editButton = await this.elementPreferringThread(`mm_blocks.text_input.${fieldName}.edit.button`);
+        const editButton = await this.elementPreferringThread(InteractiveDialogScreen.textInputEditButtonTestID(fieldName));
         await waitFor(editButton).toExist().withTimeout(timeouts.TEN_SEC);
         await this.bringIntoView(editButton);
         await waitFor(editButton).toBeVisible().withTimeout(timeouts.TEN_SEC);
         await editButton.tap();
-        await waitFor(element(by.id('mm_blocks_text_input.screen'))).toExist().withTimeout(timeouts.TEN_SEC);
+        await MmBlocksTextInputScreen.toBeVisible();
     }
 
     /** Fill and save the text input screen opened by openTextInputScreen. */
     static async saveTextInputScreen(value: string): Promise<void> {
-        const input = element(by.id('mm_blocks_text_input.input'));
-        await waitFor(input).toBeVisible().withTimeout(timeouts.TEN_SEC);
+        await waitFor(MmBlocksTextInputScreen.input).toBeVisible().withTimeout(timeouts.TEN_SEC);
 
         // replaceText avoids the iOS paste-permission dialog (MM-66558).
-        await input.replaceText(value);
-        await element(by.id('mm_blocks.text_input.save.button')).tap();
-        await waitFor(element(by.id('mm_blocks_text_input.screen'))).not.toExist().withTimeout(timeouts.TEN_SEC);
+        await MmBlocksTextInputScreen.input.replaceText(value);
+        await MmBlocksTextInputScreen.saveButton.tap();
+        await MmBlocksTextInputScreen.toBeVisible(false);
     }
 
     static async setPostTextInput(fieldName: string, value: string): Promise<void> {
@@ -801,15 +809,18 @@ export class MmBlocksTestHelper {
         isoDateTime: string,
         kind: 'date_input' | 'datetime_input' = 'date_input',
     ): Promise<void> {
-        const selectButton = element(by.id(`mm_blocks.${kind}.${fieldName}.select.button`));
+        const selectButton = element(by.id(
+            kind === 'datetime_input' ?
+                InteractiveDialogScreen.dateTimeSelectButtonTestID(fieldName) :
+                InteractiveDialogScreen.dateSelectButtonTestID(fieldName),
+        ));
         await waitFor(selectButton).toExist().withTimeout(timeouts.TEN_SEC);
         await this.bringIntoView(selectButton);
         await waitFor(selectButton).toBeVisible().withTimeout(timeouts.TEN_SEC);
         await selectButton.tap();
 
-        const picker = element(by.id('custom_status_clear_after.date_time_picker'));
-        await waitFor(picker).toExist().withTimeout(timeouts.TEN_SEC);
-        await picker.setDatePickerDate(isoDateTime, 'ISO8601');
+        await waitFor(InteractiveDialogScreen.nativeDateTimePicker).toExist().withTimeout(timeouts.TEN_SEC);
+        await InteractiveDialogScreen.nativeDateTimePicker.setDatePickerDate(isoDateTime, 'ISO8601');
         await wait(timeouts.HALF_SEC);
 
         // Android renders the picker as a modal that must be confirmed; iOS keeps it inline.
@@ -892,7 +903,7 @@ export class MmBlocksTestHelper {
     }
 
     static async expectDialogTopLevelError(message = MmBlocksTestHelper.DIALOG_TOP_LEVEL_ERROR): Promise<void> {
-        await waitFor(element(by.id('interactive_dialog.error'))).toExist().withTimeout(timeouts.TEN_SEC);
+        await waitFor(element(by.id(InteractiveDialogScreen.testID.error))).toExist().withTimeout(timeouts.TEN_SEC);
         await expect(element(by.text(message))).toExist();
     }
 }

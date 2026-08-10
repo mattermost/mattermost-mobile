@@ -188,6 +188,11 @@ describe('form_validation', () => {
 
             expect(checkMmBlocksFormFieldForError(
                 {type: 'text_input', name: 'site', label: 'Site', subtype: 'url'},
+                'prefixhttps://example.com',
+            )?.id).toBe('interactive_dialog.error.bad_url');
+
+            expect(checkMmBlocksFormFieldForError(
+                {type: 'text_input', name: 'site', label: 'Site', subtype: 'url'},
                 'https://example.com',
             )).toBeNull();
         });

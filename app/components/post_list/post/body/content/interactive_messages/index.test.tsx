@@ -13,6 +13,7 @@ import {MM_BLOCKS_SIMPLE} from '@components/block_renderer/translation/test_fixt
 import {Preferences, Screens} from '@constants';
 import * as serverContext from '@context/server';
 import IntegrationsManager from '@managers/integrations_manager';
+import {dismissMmBlocksExpandedContentIfOpen} from '@screens/navigation';
 import {renderWithIntlAndTheme} from '@test/intl-test-helper';
 import TestHelper from '@test/test_helper';
 
@@ -412,8 +413,7 @@ describe('InteractiveMessages', () => {
             await onAction({actionId: 'refresh'});
         });
 
-        const {dismissMmBlocksExpandedContentIfOpen} = require('@screens/navigation');
-        expect(dismissMmBlocksExpandedContentIfOpen).toHaveBeenCalled();
+        expect(jest.mocked(dismissMmBlocksExpandedContentIfOpen)).toHaveBeenCalled();
         expect(getByTestId('block-renderer').props.blocks).toEqual([
             {type: 'text', text: 'Updated'},
         ]);

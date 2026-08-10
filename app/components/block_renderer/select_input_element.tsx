@@ -70,7 +70,11 @@ export const SelectInputElement = ({element, onAction}: SelectInputElementProps)
 
     const rawValue = values[element.name];
     const singleValue = typeof rawValue === 'string' ? rawValue : (element.initial_option ?? '');
-    const multiValue = normalizeMultiValue(rawValue, initialMultiValue(element));
+    const multiValue = useMemo(
+        () => normalizeMultiValue(rawValue, initialMultiValue(element)),
+        // eslint-disable-next-line react-hooks/exhaustive-deps -- identity tied to raw value / initial option(s)
+        [rawValue, element.initial_option, element.initial_options],
+    );
 
     const commitValue = useCallback((next: string | string[]) => {
         setValue(element.name, next);

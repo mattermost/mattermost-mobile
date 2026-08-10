@@ -82,6 +82,7 @@ export const useBooleanProp = (
             value={value}
             label={propName}
             location={Screens.COMPONENT_LIBRARY}
+            optional={true}
         />
     ), [propName, value]);
     const preparedProp = useMemo(() => ({[propName]: value}), [propName, value]);

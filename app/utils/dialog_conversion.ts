@@ -83,7 +83,7 @@ export function convertAppFormValuesToDialogSubmission(
                     const lower = value.toLowerCase().trim();
                     if (lower === 'true' || lower === '1' || lower === 'yes') {
                         submission[fieldName] = true;
-                    } else if (lower === 'false' || lower === '0' || lower === 'no') {
+                    } else if (lower === 'false' || lower === '0' || lower === 'no' || lower === 'off') {
                         submission[fieldName] = false;
                     } else {
                         // Noncanonical truthy strings (e.g. "on") keep Boolean() coercion.
@@ -170,10 +170,17 @@ export function convertDialogToAppForm(config: InteractiveDialogConfig): AppForm
         throw new Error('convertDialogToAppForm requires config.dialog');
     }
 
-    const convertedFields = dialog.elements?.map((element, index) => ({
-        ...convertDialogElementToAppField(element),
-        position: index,
-    })) || [];
+    // FILE and ACTION_BUTTON are not representable as AppField types; skip rather than
+    // falling through mapDialogTypeToAppFieldType's default → 'text'.
+    const convertedFields = dialog.elements?.
+        filter((element) => (
+            element.type !== DialogElementTypes.FILE &&
+            element.type !== DialogElementTypes.ACTION_BUTTON
+        )).
+        map((element, index) => ({
+            ...convertDialogElementToAppField(element),
+            position: index,
+        })) || [];
 
     // Set source only if source_url is provided or if any fields have refresh enabled (matching webapp behavior)
     const hasRefreshFields = convertedFields.some((field) => field.refresh === true);

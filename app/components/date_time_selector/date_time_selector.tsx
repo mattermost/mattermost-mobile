@@ -3,7 +3,7 @@
 
 import DateTimePicker, {type DateTimePickerEvent} from '@react-native-community/datetimepicker';
 import moment, {type Moment} from 'moment-timezone';
-import React, {useCallback, useMemo, useState} from 'react';
+import React, {useCallback, useEffect, useMemo, useState} from 'react';
 import {useIntl} from 'react-intl';
 import {View, Platform, TextInput} from 'react-native';
 
@@ -123,9 +123,16 @@ const DateTimeSelector = ({
         return getRoundedTime(currentTime, effectiveInterval);
     });
     const [mode, setMode] = useState<AndroidMode>(showInitially || 'date');
-    const [show, setShow] = useState<boolean>(Boolean(showInitially));
+    const [show, setShow] = useState<boolean>(Boolean(showInitially) && !disabled);
     const [manualTimeText, setManualTimeText] = useState<string>('');
     const [useManualEntry, setUseManualEntry] = useState<boolean>(false);
+
+    useEffect(() => {
+        if (disabled) {
+            setShow(false);
+            setUseManualEntry(false);
+        }
+    }, [disabled]);
 
     const onChange = useCallback((event: DateTimePickerEvent, selectedDate?: Date) => {
         // On Android, dismiss (back/cancel) fires onChange with type 'dismissed'

@@ -15,6 +15,7 @@ import {hasStableWebhookIngress, siteOneUrl} from '@support/test_config';
 import {
     ChannelScreen,
     HomeScreen,
+    InteractiveDialogScreen,
     ThreadScreen,
 } from '@support/ui/screen';
 import {
@@ -32,24 +33,21 @@ const itNeedsStableIngress = hasStableWebhookIngress ? it : it.skip;
 
 const FIXTURES_DIR = path.resolve(__dirname, '../../../../support/fixtures');
 
-// DateTimeSelector hardcodes the native picker testID, so only one picker may be open at a time.
-const nativeDateTimePicker = element(by.id('custom_status_clear_after.date_time_picker'));
-
 const field = {
-    textInputLabel: (name: string) => element(by.id(`mm_blocks.text_input.${name}.label`)),
-    textInputRow: (name: string) => element(by.id(`mm_blocks.text_input.${name}.edit.button`)),
-    boolInputLabel: (name: string) => element(by.id(`mm_blocks.bool_input.${name}.label`)),
-    boolInputToggle: (name: string, value: boolean) => element(by.id(`mm_blocks.bool_input.${name}.toggled.${value}.button`)),
-    selectInputLabel: (name: string) => element(by.id(`mm_blocks.select_input.${name}.label`)),
-    selectInputButton: (name: string) => element(by.id(`mm_blocks.select_input.${name}.select.button`)),
-    selectInputRadio: (name: string, value: string) => element(by.id(`mm_blocks.select_input.${name}.radio.${value}.button`)),
-    dateInputLabel: (name: string) => element(by.id(`mm_blocks.date_input.${name}.label`)),
-    dateInputButton: (name: string) => element(by.id(`mm_blocks.date_input.${name}.select.button`)),
-    datetimeInputLabel: (name: string) => element(by.id(`mm_blocks.datetime_input.${name}.label`)),
-    datetimeInputTimeButton: (name: string) => element(by.id(`mm_blocks.datetime_input.${name}.time.button`)),
-    datetimeManualTimeInput: (name: string) => element(by.id(`mm_blocks.datetime_input.${name}.manual_time.input`)),
-    fileInputLabel: (name: string) => element(by.id(`mm_blocks.file_input.${name}.label`)),
-    fileInputChooseButton: (name: string) => element(by.id(`mm_blocks.file_input.${name}.choose_file.button`)),
+    textInputLabel: (name: string) => element(by.id(InteractiveDialogScreen.textInputLabelTestID(name))),
+    textInputRow: (name: string) => element(by.id(InteractiveDialogScreen.textInputEditButtonTestID(name))),
+    boolInputLabel: (name: string) => element(by.id(InteractiveDialogScreen.boolInputLabelTestID(name))),
+    boolInputToggle: (name: string, value: boolean) => element(by.id(InteractiveDialogScreen.boolInputTestID(name, value))),
+    selectInputLabel: (name: string) => element(by.id(InteractiveDialogScreen.selectInputLabelTestID(name))),
+    selectInputButton: (name: string) => element(by.id(InteractiveDialogScreen.selectButtonTestID(name))),
+    selectInputRadio: (name: string, value: string) => element(by.id(InteractiveDialogScreen.radioOptionTestID(name, value))),
+    dateInputLabel: (name: string) => element(by.id(InteractiveDialogScreen.dateInputLabelTestID(name))),
+    dateInputButton: (name: string) => element(by.id(InteractiveDialogScreen.dateSelectButtonTestID(name))),
+    datetimeInputLabel: (name: string) => element(by.id(InteractiveDialogScreen.dateTimeInputLabelTestID(name))),
+    datetimeInputTimeButton: (name: string) => element(by.id(InteractiveDialogScreen.dateTimeTimeButtonTestID(name))),
+    datetimeManualTimeInput: (name: string) => element(by.id(InteractiveDialogScreen.dateTimeManualTimeInputTestID(name))),
+    fileInputLabel: (name: string) => element(by.id(InteractiveDialogScreen.fileInputLabelTestID(name))),
+    fileInputChooseButton: (name: string) => element(by.id(InteractiveDialogScreen.fileChooseFileButtonTestID(name))),
 };
 
 describe('Interactive mm_blocks - Form inputs', () => {
@@ -486,7 +484,7 @@ describe('Interactive mm_blocks - Form inputs', () => {
         await openThreadForFormPost(marker);
 
         // * Verify the picker entry point is enabled for an editable field
-        await expect(inThread('mm_blocks.file_input.attachments.choose_file.button')).toExist();
+        await expect(inThread(InteractiveDialogScreen.fileChooseFileButtonTestID('attachments'))).toExist();
 
         // # Submit the hydrated file id
         await MmBlocksTestHelper.tapMmBlocksButton(actionId);
@@ -501,9 +499,10 @@ describe('Interactive mm_blocks - Form inputs', () => {
     // break later specs (same ordering constraint as MM-T2530H).
     itNeedsStableIngress('MM-T6247_1 - should submit date_input and datetime_input values', async () => {
         const marker = MmBlocksTestHelper.randomMarker('E2E mm_blocks date datetime submit');
+        const dueDate = '2027-03-15';
 
         // Both fields are optional so client-side validation never masks a picker problem —
-        // the assertion below still requires real date/datetime values.
+        // the assertion below still requires the intended date/datetime values.
         const actionId = await MmBlocksTestHelper.postFormValuesEchoPost(testChannel.id, {
             marker,
             actionId: 'detox_form_values_dates',
@@ -528,29 +527,25 @@ describe('Interactive mm_blocks - Form inputs', () => {
 
         await openThreadForFormPost(marker);
 
-        // # Pick a due date on the native picker
-        await tapInThread('mm_blocks.date_input.due.select.button');
+        // # Pick a due date on the native picker (do not swallow setDatePickerDate failures)
+        await tapInThread(InteractiveDialogScreen.dateSelectButtonTestID('due'));
         await wait(timeouts.ONE_SEC);
-        try {
-            await nativeDateTimePicker.setDatePickerDate('2027-03-15T12:00:00Z', 'ISO8601');
-            await wait(timeouts.HALF_SEC);
-        } catch {
-            // Android renders a dialog picker Detox cannot always drive; confirming below still
-            // commits the default date, which is all the assertion needs.
-        }
+        await waitFor(InteractiveDialogScreen.nativeDateTimePicker).toExist().withTimeout(timeouts.TEN_SEC);
+        await InteractiveDialogScreen.nativeDateTimePicker.setDatePickerDate(`${dueDate}T12:00:00Z`, 'ISO8601');
+        await wait(timeouts.HALF_SEC);
 
         // # Dismiss the picker — iOS keeps it mounted after onChange, and a second open picker
         // would make the shared picker testID ambiguous.
         if (isAndroid()) {
             await element(by.text('OK')).tap();
         } else {
-            await tapInThread('mm_blocks.date_input.due.select.button');
+            await tapInThread(InteractiveDialogScreen.dateSelectButtonTestID('due'));
         }
         await wait(timeouts.ONE_SEC);
 
         // # Enter the meeting time manually (reliable alternative to the native time spinner)
-        await tapInThread('mm_blocks.datetime_input.meeting.time.button');
-        const manualTime = inThread('mm_blocks.datetime_input.meeting.manual_time.input');
+        await tapInThread(InteractiveDialogScreen.dateTimeTimeButtonTestID('meeting'));
+        const manualTime = inThread(InteractiveDialogScreen.dateTimeManualTimeInputTestID('meeting'));
         await waitFor(manualTime).toBeVisible().withTimeout(timeouts.TEN_SEC);
         await manualTime.replaceText('14:30');
         await manualTime.tapReturnKey();
@@ -559,9 +554,13 @@ describe('Interactive mm_blocks - Form inputs', () => {
         // # Submit both values
         await MmBlocksTestHelper.tapMmBlocksButton(actionId);
 
-        // * Verify an ISO date and an ISO datetime reached the integration
+        // * Verify the intended ISO date and an ISO datetime reached the integration
         await MmBlocksTestHelper.waitForTextMatching(
-            /Detox mm_blocks form_values OK \(due=\d{4}-\d{2}-\d{2}&meeting=\d{4}-\d{2}-\d{2}T.*\)/,
+            MmBlocksTestHelper.textContaining(`due=${dueDate}&meeting=`),
+            timeouts.TWENTY_SEC,
+        );
+        await MmBlocksTestHelper.waitForTextMatching(
+            /.*meeting=\d{4}-\d{2}-\d{2}T.*/,
             timeouts.TWENTY_SEC,
         );
         await MmBlocksTestHelper.expectOnlyVisibleToYou();

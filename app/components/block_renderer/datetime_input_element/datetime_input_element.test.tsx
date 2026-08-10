@@ -24,9 +24,11 @@ jest.mock('@components/date_time_selector', () => ({
     __esModule: true,
     default: jest.fn(),
 }));
-jest.mocked(DateTimeSelector).mockImplementation(
-    (props: ComponentProps<typeof DateTimeSelector>) => React.createElement('DateTimeSelector', {...props}),
+
+const mockDateTimeSelector = (props: ComponentProps<typeof DateTimeSelector>) => (
+    React.createElement('DateTimeSelector', {...props})
 );
+jest.mocked(DateTimeSelector).mockImplementation(mockDateTimeSelector);
 
 const TIMEZONE = 'America/New_York';
 
@@ -51,7 +53,10 @@ describe('DateTimeInputElement', () => {
     const onAction = jest.fn();
     let database: Database;
 
-    beforeAll(async () => {
+    beforeEach(async () => {
+        jest.clearAllMocks();
+        jest.mocked(DateTimeSelector).mockImplementation(mockDateTimeSelector);
+
         const server = await TestHelper.setupServerDatabase(serverUrl);
         database = server.database;
         await server.operator.handleUsers({
@@ -64,7 +69,7 @@ describe('DateTimeInputElement', () => {
         });
     });
 
-    afterAll(async () => {
+    afterEach(async () => {
         await DatabaseManager.destroyServerDatabase(serverUrl);
     });
 
@@ -155,8 +160,7 @@ describe('DateTimeInputElement', () => {
     it('should display the selected value as a date and a time in the user timezone', async () => {
         const view = await renderInput(getBaseProps());
 
-        expect(view.getByText('Mar 5, 2026')).toBeVisible();
-        expect(view.getByText('10:30 AM')).toBeVisible();
+        expect(view.getByText('Mar 5, 2026 at 10:30 AM')).toBeVisible();
     });
 
     it('should store the picked value as an ISO timestamp', async () => {

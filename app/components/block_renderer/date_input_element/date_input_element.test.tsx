@@ -23,9 +23,11 @@ jest.mock('@components/date_time_selector', () => ({
     __esModule: true,
     default: jest.fn(),
 }));
-jest.mocked(DateTimeSelector).mockImplementation(
-    (props: ComponentProps<typeof DateTimeSelector>) => React.createElement('DateTimeSelector', {...props}),
+
+const mockDateTimeSelector = (props: ComponentProps<typeof DateTimeSelector>) => (
+    React.createElement('DateTimeSelector', {...props})
 );
+jest.mocked(DateTimeSelector).mockImplementation(mockDateTimeSelector);
 
 const TIMEZONE = 'America/New_York';
 
@@ -50,7 +52,10 @@ describe('DateInputElement', () => {
     const onAction = jest.fn();
     let database: Database;
 
-    beforeAll(async () => {
+    beforeEach(async () => {
+        jest.clearAllMocks();
+        jest.mocked(DateTimeSelector).mockImplementation(mockDateTimeSelector);
+
         const server = await TestHelper.setupServerDatabase(serverUrl);
         database = server.database;
         await server.operator.handleUsers({
@@ -63,7 +68,7 @@ describe('DateInputElement', () => {
         });
     });
 
-    afterAll(async () => {
+    afterEach(async () => {
         await DatabaseManager.destroyServerDatabase(serverUrl);
     });
 

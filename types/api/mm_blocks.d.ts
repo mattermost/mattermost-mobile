@@ -70,7 +70,7 @@ type MmStaticSelectBlock = {
     options?: MmStaticSelectOption[];
     initial_option?: string;
     disabled?: boolean;
-    data_source?: string;
+    data_source?: 'users' | 'channels' | 'dynamic' | (string & {});
 
     /**
      * Legacy attachment actions only: encrypted cookie from `attachments[].actions[].cookie`.
@@ -155,7 +155,7 @@ type MmSelectInputBlock = MmFormFieldProps & {
     option_groups?: MmSelectOptionGroup[];
 
     /** `users`, `channels`, `dynamic`, or a custom data source string. */
-    data_source?: 'users' | 'channels' | 'dynamic' | string;
+    data_source?: 'users' | 'channels' | 'dynamic' | (string & {});
 
     /** Action id used to fetch options when `data_source` is `dynamic`. */
     data_source_action?: string;

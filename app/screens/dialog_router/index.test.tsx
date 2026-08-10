@@ -5,6 +5,8 @@ import {render} from '@testing-library/react-native';
 import React from 'react';
 import {of as of$} from 'rxjs';
 
+import {observeBlockActionsEnabled} from '@queries/servers/features';
+
 import DialogRouterScreen from './index';
 
 jest.mock('@nozbe/watermelondb/react', () => ({
@@ -47,7 +49,7 @@ jest.mock('./dialog_router', () => {
     };
 });
 
-const {observeBlockActionsEnabled} = require('@queries/servers/features');
+const mockedObserveBlockActionsEnabled = jest.mocked(observeBlockActionsEnabled);
 
 describe('DialogRouterScreen', () => {
     const config: InteractiveDialogConfig = {
@@ -61,7 +63,7 @@ describe('DialogRouterScreen', () => {
     });
 
     it('should render BlocksDialogRouter when block actions are enabled', () => {
-        observeBlockActionsEnabled.mockReturnValue(of$(true));
+        mockedObserveBlockActionsEnabled.mockReturnValue(of$(true));
 
         const {getByTestId} = render(<DialogRouterScreen config={config}/>);
 
@@ -69,7 +71,7 @@ describe('DialogRouterScreen', () => {
     });
 
     it('should render Apps Form DialogRouter when block actions are disabled', () => {
-        observeBlockActionsEnabled.mockReturnValue(of$(false));
+        mockedObserveBlockActionsEnabled.mockReturnValue(of$(false));
 
         const {getByTestId} = render(<DialogRouterScreen config={config}/>);
 

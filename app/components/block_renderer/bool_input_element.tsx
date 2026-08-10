@@ -25,6 +25,9 @@ export const BoolInputElement = ({element, onAction}: BoolInputElementProps) => 
     const {values, errors, setValue, setDefaultValue} = useMmBlocksForm();
 
     useEffect(() => {
+        if (!element.name) {
+            return;
+        }
         setDefaultValue(element.name, element.initial_value ?? false);
     }, [element.name, element.initial_value, setDefaultValue]);
 

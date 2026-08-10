@@ -250,6 +250,11 @@ describe('Image utils', () => {
             const msg = fileMaxWarning(intl, 10);
             expect(msg).toBe('Uploads limited to 10 files maximum.');
         });
+
+        it('should return singular wording for one file', () => {
+            const msg = fileMaxWarning(intl, 1);
+            expect(msg).toBe('Uploads limited to 1 file maximum.');
+        });
     });
 
     describe('uploadDisabledWarning', () => {

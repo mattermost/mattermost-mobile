@@ -9,7 +9,7 @@
 
 import {MmBlocksTestHelper} from '@support/mm_blocks_test_helper';
 import {hasStableWebhookIngress} from '@support/test_config';
-import {ChannelScreen, HomeScreen} from '@support/ui/screen';
+import {ChannelScreen, HomeScreen, InteractiveDialogScreen} from '@support/ui/screen';
 import {timeouts} from '@support/utils';
 import {expect} from 'detox';
 
@@ -68,9 +68,9 @@ describeBlocksDialog('Interactive mm_blocks - blocks dialog date and time', () =
         await MmBlocksTestHelper.expectBlocksDialogTitle('Detox DateTime');
 
         // * Verify the date_input exposes only a date row while the datetime_input also has a time row
-        await expect(element(by.id('mm_blocks.date_input.event_date.select.button'))).toExist();
-        await expect(element(by.id('mm_blocks.date_input.event_date.time.button'))).not.toExist();
-        await expect(element(by.id('mm_blocks.datetime_input.meeting_time.time.button'))).toExist();
+        await expect(element(by.id(InteractiveDialogScreen.dateSelectButtonTestID('event_date')))).toExist();
+        await expect(element(by.id(InteractiveDialogScreen.dateTimeButtonTestID('event_date')))).not.toExist();
+        await expect(element(by.id(InteractiveDialogScreen.dateTimeTimeButtonTestID('meeting_time')))).toExist();
 
         // # Drive the native pickers so each field commits a value
         await MmBlocksTestHelper.pickDialogDate('event_date', `${EVENT_DATE}T12:00:00Z`);
@@ -104,8 +104,8 @@ describeBlocksDialog('Interactive mm_blocks - blocks dialog date and time', () =
         await MmBlocksTestHelper.openBlocksDialogFromPost(actionId);
 
         // * Verify both pickers render
-        await expect(element(by.id('mm_blocks.date_input.relative_date.select.button'))).toExist();
-        await expect(element(by.id('mm_blocks.datetime_input.relative_datetime.select.button'))).toExist();
+        await expect(element(by.id(InteractiveDialogScreen.dateSelectButtonTestID('relative_date')))).toExist();
+        await expect(element(by.id(InteractiveDialogScreen.dateTimeSelectButtonTestID('relative_datetime')))).toExist();
 
         // # Submit without touching the pickers
         await MmBlocksTestHelper.submitBlocksDialog();

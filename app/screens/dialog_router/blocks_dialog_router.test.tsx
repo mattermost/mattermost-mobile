@@ -10,10 +10,14 @@ import type {BlocksDialogShellProps} from './blocks_dialog_shell';
 
 jest.mock('./blocks_dialog_shell', () => {
     const mockReact = require('react');
-    return jest.fn((props: BlocksDialogShellProps) => mockReact.createElement('View', {testID: `blocks-dialog-shell-${props.mode}`}));
+    const mockFn = jest.fn((props: BlocksDialogShellProps) => mockReact.createElement('View', {testID: `blocks-dialog-shell-${props.mode}`}));
+    return {
+        __esModule: true,
+        default: mockFn,
+    };
 });
 
-const mockBlocksDialogShell = require('./blocks_dialog_shell');
+const mockBlocksDialogShell = require('./blocks_dialog_shell').default;
 
 describe('BlocksDialogRouter', () => {
     beforeEach(() => {
@@ -41,6 +45,31 @@ describe('BlocksDialogRouter', () => {
         expect(mockBlocksDialogShell).not.toHaveBeenCalled();
     });
 
+    it('should ignore non-array block_dialog.blocks and render nothing without a url', () => {
+        const config = {
+            trigger_id: 'trigger',
+            block_dialog: {title: 'Broken', blocks: 'not-an-array'},
+        } as unknown as InteractiveDialogConfig;
+
+        const {toJSON} = render(<BlocksDialogRouter config={config}/>);
+
+        expect(toJSON()).toBeNull();
+        expect(mockBlocksDialogShell).not.toHaveBeenCalled();
+    });
+
+    it('should fall back to legacy mode when block_dialog.blocks is not an array but a url is present', () => {
+        const config = {
+            trigger_id: 'trigger',
+            url: 'https://example.com/dialog',
+            dialog: {title: 'Legacy', elements: []},
+            block_dialog: {title: 'Broken', blocks: {type: 'text'}},
+        } as unknown as InteractiveDialogConfig;
+
+        const {getByTestId} = render(<BlocksDialogRouter config={config}/>);
+
+        expect(getByTestId('blocks-dialog-shell-legacy')).toBeTruthy();
+    });
+
     it('should render BlocksDialogShell in native mode when block_dialog has blocks', () => {
         const config: InteractiveDialogConfig = {
             trigger_id: 'trigger',
@@ -60,7 +89,7 @@ describe('BlocksDialogRouter', () => {
         const {getByTestId} = render(<BlocksDialogRouter config={config}/>);
 
         expect(getByTestId('blocks-dialog-shell-native')).toBeTruthy();
-        expect(mockBlocksDialogShell).toHaveBeenCalledWith(
+        expect(mockBlocksDialogShell.mock.calls[0][0]).toEqual(
             expect.objectContaining({
                 mode: 'native',
                 title: 'Native Dialog',
@@ -72,7 +101,6 @@ describe('BlocksDialogRouter', () => {
                 blockSubmit: {label: 'Save', action: 'submit_action'},
                 blockCancel: {label: 'Discard', action: 'cancel_action'},
             }),
-            undefined,
         );
     });
 
@@ -96,7 +124,7 @@ describe('BlocksDialogRouter', () => {
         const {getByTestId} = render(<BlocksDialogRouter config={config}/>);
 
         expect(getByTestId('blocks-dialog-shell-legacy')).toBeTruthy();
-        expect(mockBlocksDialogShell).toHaveBeenCalledWith(
+        expect(mockBlocksDialogShell.mock.calls[0][0]).toEqual(
             expect.objectContaining({
                 mode: 'legacy',
                 url: 'https://example.com/dialog',
@@ -110,7 +138,6 @@ describe('BlocksDialogRouter', () => {
                 sourceUrl: 'https://example.com/refresh',
                 channelId: 'channel-1',
             }),
-            undefined,
         );
     });
 

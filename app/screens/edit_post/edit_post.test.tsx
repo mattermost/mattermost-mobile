@@ -87,7 +87,7 @@ const TEST_FILES = {
 
 const ERROR_MESSAGES = {
     uploadsDisabled: 'File uploads from mobile are disabled.',
-    maxFilesReached: 'Uploads limited to 1 files maximum.',
+    maxFilesReached: 'Uploads limited to 1 file maximum.',
     fileTooLarge: 'Files must be less than 1000 B',
     confirmDelete: 'Delete attachment',
     confirmDeleteMessage: 'Are you sure you want to remove test-3?',

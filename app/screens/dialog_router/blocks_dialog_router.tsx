@@ -18,7 +18,9 @@ export const BlocksDialogRouter = React.memo<DialogRouterProps>(({config}) => {
     const blockDialog = config.block_dialog;
     const dialog = config.dialog;
 
-    const hasMmBlocks = Boolean(blockDialog?.blocks?.length);
+    // WS / action payloads are JSON-cast; require a real array before native mode.
+    const mmBlocks = Array.isArray(blockDialog?.blocks) ? blockDialog.blocks : undefined;
+    const hasMmBlocks = Boolean(mmBlocks?.length);
     const hasUrl = Boolean(config.url);
     const hasContent = hasMmBlocks || hasUrl;
 
@@ -35,7 +37,7 @@ export const BlocksDialogRouter = React.memo<DialogRouterProps>(({config}) => {
                 notifyOnCancel={blockDialog?.notify_on_cancel}
                 state={blockDialog?.state}
                 channelId={config.channel_id}
-                mmBlocks={blockDialog?.blocks}
+                mmBlocks={mmBlocks}
                 mmBlocksActions={typeof blockDialog?.actions === 'string' ? blockDialog.actions : undefined}
                 blockSubmit={blockDialog?.submit}
                 blockCancel={blockDialog?.cancel}

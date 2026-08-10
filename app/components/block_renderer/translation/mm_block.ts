@@ -456,8 +456,18 @@ function translateTextInputBlock(raw: Record<string, unknown>): MmTextInputBlock
     return out;
 }
 
-function translateDateInputBlock(raw: Record<string, unknown>): MmDateInputBlock | null {
-    if (!hasRequiredKeys(raw, DATE_INPUT_REQUIRED_KEYS)) {
+type DateOrDateTimeInputType = 'date_input' | 'datetime_input';
+
+type DateOrDateTimeInputBlock<T extends DateOrDateTimeInputType> = T extends 'date_input'
+    ? MmDateInputBlock
+    : MmDateTimeInputBlock;
+
+function translateDateOrDateTimeInputBlock<T extends DateOrDateTimeInputType>(
+    raw: Record<string, unknown>,
+    requiredKeys: string[],
+    type: T,
+): DateOrDateTimeInputBlock<T> | null {
+    if (!hasRequiredKeys(raw, requiredKeys)) {
         return null;
     }
     const name = ensureString(raw.name);
@@ -478,11 +488,11 @@ function translateDateInputBlock(raw: Record<string, unknown>): MmDateInputBlock
         return null;
     }
 
-    const out: MmDateInputBlock = {
-        type: 'date_input',
+    const out = {
+        type,
         name,
         ...common,
-    };
+    } as DateOrDateTimeInputBlock<T>;
     if (initialValue !== undefined) {
         out.initial_value = initialValue;
     }
@@ -492,40 +502,12 @@ function translateDateInputBlock(raw: Record<string, unknown>): MmDateInputBlock
     return out;
 }
 
+function translateDateInputBlock(raw: Record<string, unknown>): MmDateInputBlock | null {
+    return translateDateOrDateTimeInputBlock(raw, DATE_INPUT_REQUIRED_KEYS, 'date_input');
+}
+
 function translateDateTimeInputBlock(raw: Record<string, unknown>): MmDateTimeInputBlock | null {
-    if (!hasRequiredKeys(raw, DATETIME_INPUT_REQUIRED_KEYS)) {
-        return null;
-    }
-    const name = ensureString(raw.name);
-    if (!name.trim()) {
-        return null;
-    }
-
-    const common = parseCommonInputFields(raw);
-    if (!common) {
-        return null;
-    }
-    const initialValue = parseOptionalStringField(raw, 'initial_value');
-    if (initialValue === null) {
-        return null;
-    }
-    const datetimeConfig = parseDateTimeConfig(raw.datetime_config);
-    if (datetimeConfig === null) {
-        return null;
-    }
-
-    const out: MmDateTimeInputBlock = {
-        type: 'datetime_input',
-        name,
-        ...common,
-    };
-    if (initialValue !== undefined) {
-        out.initial_value = initialValue;
-    }
-    if (datetimeConfig !== undefined && Object.keys(datetimeConfig).length > 0) {
-        out.datetime_config = datetimeConfig;
-    }
-    return out;
+    return translateDateOrDateTimeInputBlock(raw, DATETIME_INPUT_REQUIRED_KEYS, 'datetime_input');
 }
 
 function translateFileInputBlock(raw: Record<string, unknown>): MmFileInputBlock | null {

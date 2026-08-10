@@ -9,7 +9,7 @@
 
 import {MmBlocksTestHelper} from '@support/mm_blocks_test_helper';
 import {hasStableWebhookIngress} from '@support/test_config';
-import {ChannelScreen, HomeScreen} from '@support/ui/screen';
+import {ChannelListScreen, ChannelScreen, HomeScreen} from '@support/ui/screen';
 import {getRandomId, timeouts} from '@support/utils';
 import {expect} from 'detox';
 
@@ -29,7 +29,7 @@ const DIALOG_ACTION = {
 const OPEN_VIA_TRIGGER_TIMEOUT = timeouts.TWENTY_SEC;
 
 describeBlocksDialog('Interactive mm_blocks - blocks dialog', () => {
-    let testChannel: any;
+    let testChannel: Awaited<ReturnType<typeof MmBlocksTestHelper.setupChannelTest>>['channel'];
 
     beforeAll(async () => {
         await MmBlocksTestHelper.requireWebhookSidecar();
@@ -37,14 +37,24 @@ describeBlocksDialog('Interactive mm_blocks - blocks dialog', () => {
         testChannel = setup.channel;
     });
 
-    beforeEach(() => {
+    beforeEach(async () => {
         MmBlocksTestHelper.assertSuiteRunnable();
+        try {
+            await ChannelListScreen.toBeVisible();
+        } catch {
+            // setupChannelTest leaves the suite on the channel for the first case.
+            await ChannelScreen.back();
+            await ChannelListScreen.toBeVisible();
+        }
+        await ChannelScreen.open(MmBlocksTestHelper.CHANNELS_CATEGORY, testChannel.name);
     });
 
     afterEach(async () => {
         try {
             await MmBlocksTestHelper.dismissBlocksDialogIfOpen();
             await MmBlocksTestHelper.ensureOnChannelScreen();
+            await ChannelScreen.back();
+            await ChannelListScreen.toBeVisible();
         } catch {
             // Next test will re-assert / abort if the suite is blocked.
         }
@@ -55,8 +65,9 @@ describeBlocksDialog('Interactive mm_blocks - blocks dialog', () => {
             await MmBlocksTestHelper.dismissBlocksDialogIfOpen();
             await MmBlocksTestHelper.ensureOnChannelScreen();
             await ChannelScreen.back();
+            await ChannelListScreen.toBeVisible();
         } catch {
-            // Relaunch recovery may already be on the channel list.
+            // Relaunch recovery / afterEach may already be on the channel list.
         }
         await HomeScreen.logout();
     });

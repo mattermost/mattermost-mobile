@@ -81,6 +81,12 @@ export const FileInputElement = ({element, onAction, theme}: FileInputElementPro
         setFieldUploading?.(element.name, uploading);
     }, [element.name, setFieldUploading]);
 
+    useEffect(() => {
+        return () => {
+            setFieldUploading?.(element.name, false);
+        };
+    }, [element.name, setFieldUploading]);
+
     if (!element.name || !renderContext) {
         return null;
     }

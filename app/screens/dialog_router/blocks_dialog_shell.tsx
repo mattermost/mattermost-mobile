@@ -38,7 +38,7 @@ const messages = defineMessages({
     actionFailed: {id: 'interactive_dialog.action_failed', defaultMessage: 'Action failed to execute'},
     submitFailed: {id: 'interactive_dialog.submit_failed', defaultMessage: 'Submission failed'},
     refreshFailed: {id: 'interactive_dialog.refresh_failed', defaultMessage: 'Failed to refresh form fields'},
-    fixFieldErrors: {id: 'apps.error.form.required_fields_empty', defaultMessage: 'Please fix all field errors'},
+    fixFieldErrors: {id: 'interactive_dialog.error.required_fields_empty', defaultMessage: 'Please fix all field errors'},
     filesUploading: {id: 'interactive_dialog.files_uploading', defaultMessage: 'Please wait for file uploads to finish'},
 });
 
@@ -127,7 +127,7 @@ export type BlocksDialogShellProps = {
     sourceUrl?: string;
 
     // Native block_dialog
-    mmBlocks?: Array<Record<string, unknown>>;
+    mmBlocks?: unknown[];
     mmBlocksActions?: string;
     blockSubmit?: BlockDialogButton;
     blockCancel?: BlockDialogButton;
@@ -264,7 +264,7 @@ export const BlocksDialogShell = ({
         if (blocksOverride) {
             raw = blocksOverride;
         } else if (mode === 'native') {
-            raw = translateMMBlocks(initialMmBlocks || []);
+            raw = translateMMBlocks(Array.isArray(initialMmBlocks) ? initialMmBlocks : []);
         } else {
             // Legacy dialog elements keep working on older servers via dialog APIs.
             return convertDialogToMmBlocks(elements, introductionText).blocks;
@@ -308,7 +308,7 @@ export const BlocksDialogShell = ({
         setDialogStateValue(dialog.state);
         setBlockSubmit(dialog.submit);
         setBlockCancel(dialog.cancel);
-        setBlocksOverride(translateMMBlocks(dialog.blocks || []));
+        setBlocksOverride(translateMMBlocks(Array.isArray(dialog.blocks) ? dialog.blocks : []));
         if (typeof dialog.actions === 'string') {
             setCookieOverride(dialog.actions);
         }
@@ -654,6 +654,16 @@ export const BlocksDialogShell = ({
         }
     }, [handleLegacySubmit, notifyOnCancel]);
 
+    const handleLegacyFooterSubmit = useCallback((formValues: MmBlocksFormValues) => {
+        return handleLegacySubmit(formValues, false);
+    }, [handleLegacySubmit]);
+
+    const showLegacySubmit = dialogShouldShowSubmitChrome(elements, submitLabel);
+    const legacyBlockSubmit = showLegacySubmit ? {
+        action: DIALOG_SUBMIT_ACTION_ID,
+        label: submitLabel,
+    } : undefined;
+
     const content = (
         <KeyboardAwareScrollView
             style={style.scroll}
@@ -689,16 +699,6 @@ export const BlocksDialogShell = ({
             )}
         </KeyboardAwareScrollView>
     );
-
-    const showLegacySubmit = dialogShouldShowSubmitChrome(elements, submitLabel);
-    const legacyBlockSubmit = showLegacySubmit ? {
-        action: DIALOG_SUBMIT_ACTION_ID,
-        label: submitLabel,
-    } : undefined;
-
-    const handleLegacyFooterSubmit = useCallback((formValues: MmBlocksFormValues) => {
-        return handleLegacySubmit(formValues, false);
-    }, [handleLegacySubmit]);
 
     return (
         <MmBlocksForm

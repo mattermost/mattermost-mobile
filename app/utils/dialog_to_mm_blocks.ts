@@ -22,7 +22,7 @@ function boolDefault(value: string | boolean | undefined): boolean | undefined {
     if (typeof value === 'boolean') {
         return value;
     }
-    const lower = value.toLowerCase();
+    const lower = value.trim().toLowerCase();
     if (lower === 'true' || lower === 'yes' || lower === '1') {
         return true;
     }

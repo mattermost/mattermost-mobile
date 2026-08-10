@@ -89,6 +89,7 @@ function BoolSetting({
 }: Props) {
     const theme = useTheme();
     const style = getStyleSheet(theme);
+    const checked = value === true;
 
     // Prefer label as the row title; fall back to placeholder for legacy dialogs that only set placeholder.
     const title = label?.trim() || placeholder?.trim() || '';
@@ -99,7 +100,7 @@ function BoolSetting({
         default: {true: changeOpacity(theme.buttonBg, 0.32), false: changeOpacity(theme.centerChannelColor, 0.24)},
     });
     const thumbColor = Platform.select({
-        android: value ? theme.buttonBg : '#F3F3F3',
+        android: checked ? theme.buttonBg : '#F3F3F3',
     });
 
     return (
@@ -138,10 +139,10 @@ function BoolSetting({
                 <Switch
                     disabled={disabled}
                     onValueChange={onChange}
-                    value={value}
+                    value={checked}
                     trackColor={trackColor}
                     thumbColor={thumbColor}
-                    testID={`${testID}.toggled.${value}.button`}
+                    testID={`${testID}.toggled.${checked}.button`}
                 />
             </View>
             <Footer

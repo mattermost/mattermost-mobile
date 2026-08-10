@@ -158,7 +158,10 @@ function translateBlockKitDatetimepicker(
     applyBlockKitInputSharedProps(out, b, name);
 
     if (typeof el.initial_date_time === 'number' && Number.isFinite(el.initial_date_time)) {
-        out.initial_value = new Date(el.initial_date_time * 1000).toISOString();
+        const date = new Date(el.initial_date_time * 1000);
+        if (Number.isFinite(date.getTime())) {
+            out.initial_value = date.toISOString();
+        }
     }
 
     return out;

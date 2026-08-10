@@ -345,6 +345,15 @@ describe('navigation', () => {
 
             expect(router.back).not.toHaveBeenCalled();
         });
+
+        it('should resolve without navigating when content is visible but router cannot go back', async () => {
+            jest.spyOn(NavigationStore, 'getVisibleScreen').mockReturnValue(Screens.MM_BLOCKS_CONTENT);
+            jest.mocked(router.canGoBack).mockReturnValue(false);
+
+            await expect(dismissMmBlocksExpandedContentIfOpen()).resolves.toBeUndefined();
+
+            expect(router.back).not.toHaveBeenCalled();
+        });
     });
 
     describe('navigateToHomeTab', () => {

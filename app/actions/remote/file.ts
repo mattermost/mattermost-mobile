@@ -46,6 +46,7 @@ export const fetchFileInfo = async (serverUrl: string, fileId: string) => {
         const file = await client.getFileInfo(fileId);
         return {file};
     } catch (error) {
+        forceLogoutIfNecessary(serverUrl, error);
         logDebug('error on fetchFileInfo', getFullErrorMessage(error));
         return {error};
     }

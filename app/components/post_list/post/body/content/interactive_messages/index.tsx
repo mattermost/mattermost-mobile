@@ -46,7 +46,7 @@ type Props = {
 const messages = defineMessages({
     errorTitle: {id: 'interactive_dialog.error_title', defaultMessage: 'Error'},
     actionFailed: {id: 'post.message_attachment.action_failed', defaultMessage: 'An error occurred while executing the action.'},
-    fixFieldErrors: {id: 'apps.error.form.required_fields_empty', defaultMessage: 'Please fix all field errors'},
+    fixFieldErrors: {id: 'interactive_dialog.error.required_fields_empty', defaultMessage: 'Please fix all field errors'},
     filesUploading: {id: 'interactive_dialog.files_uploading', defaultMessage: 'Please wait for file uploads to finish'},
 });
 

@@ -1,7 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React, {useCallback, useEffect, useMemo, useState} from 'react';
+import React, {useCallback, useEffect, useMemo, useRef, useState} from 'react';
 
 import {
     MmBlocksFieldUploadingContext,
@@ -76,8 +76,13 @@ export const BlockRenderer = ({
     }, []);
 
     const hasUploadingFields = uploadingFields.size > 0;
+    const lastNotifiedUploadingRef = useRef<boolean | undefined>(undefined);
 
     useEffect(() => {
+        if (lastNotifiedUploadingRef.current === hasUploadingFields) {
+            return;
+        }
+        lastNotifiedUploadingRef.current = hasUploadingFields;
         onUploadingChange?.(hasUploadingFields);
     }, [hasUploadingFields, onUploadingChange]);
 

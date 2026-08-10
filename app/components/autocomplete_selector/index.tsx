@@ -286,6 +286,10 @@ function AutoCompleteSelector({
     }, [teammateNameDisplay, intl, dataSource, isUserSource, onSelected]);
 
     const handleRemove = useCallback((id: string) => {
+        if (disabled) {
+            return;
+        }
+
         const remainingIds = selectedValues.filter((value) => value !== id);
         if (!remainingIds.length) {
             onSelected?.(undefined);
@@ -297,7 +301,7 @@ function AutoCompleteSelector({
             text: selectionLabelsRef.current[value] || optionLabels[value] || value,
         }));
         onSelected?.(isMultiselect ? remainingOptions : remainingOptions[0]);
-    }, [isMultiselect, onSelected, optionLabels, selectedValues]);
+    }, [disabled, isMultiselect, onSelected, optionLabels, selectedValues]);
 
     const goToSelectorScreen = usePreventDoubleTap(useCallback((() => {
         SettingsStore.setIntegrationsSelectCallback(handleSelect);

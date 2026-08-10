@@ -209,7 +209,7 @@ describe('FileInputElement', () => {
     });
 
     it('should surface an error and keep the field empty when an upload fails', async () => {
-        const {getByTestId, queryByTestId} = renderInput({
+        const {getByTestId} = renderInput({
             ...getBaseProps(),
             element: {
                 type: 'file_input',
@@ -230,7 +230,7 @@ describe('FileInputElement', () => {
         });
 
         expect(getByTestId('mm_blocks.file_input.attachment.file.client-1')).toBeTruthy();
-        expect(queryByTestId('mm_blocks.file_input.attachment.file.client-1.remove')).toBeTruthy();
+        expect(getByTestId('mm_blocks.file_input.attachment.file.client-1.remove')).toBeTruthy();
         expect(onAction).toHaveBeenCalledWith({
             actionId: 'refresh_action',
             formValues: {attachment: []},

@@ -596,9 +596,20 @@ describe('BlocksDialogShell', () => {
                 <BlocksDialogShell {...nativeProps()}/>,
             );
 
+            // Simulate BlockRenderer aggregating multiple field uploads into onUploadingChange(boolean).
+            const uploadingFields = new Set<string>();
+            const setFieldUploading = (fieldName: string, uploading: boolean) => {
+                if (uploading) {
+                    uploadingFields.add(fieldName);
+                } else {
+                    uploadingFields.delete(fieldName);
+                }
+                getByTestId('block-renderer').props.onUploadingChange(uploadingFields.size > 0);
+            };
+
             act(() => {
-                getByTestId('block-renderer').props.onUploadingChange(true);
-                getByTestId('block-renderer').props.onUploadingChange(true);
+                setFieldUploading('attachment', true);
+                setFieldUploading('document', true);
             });
 
             expect(getByTestId('interactive_dialog.submit.button')).toBeDisabled();
@@ -612,7 +623,13 @@ describe('BlocksDialogShell', () => {
             expect(getByTestId('interactive_dialog.error')).toHaveTextContent(/Please wait for file uploads to finish/);
 
             act(() => {
-                getByTestId('block-renderer').props.onUploadingChange(false);
+                setFieldUploading('attachment', false);
+            });
+
+            expect(getByTestId('interactive_dialog.submit.button')).toBeDisabled();
+
+            act(() => {
+                setFieldUploading('document', false);
             });
 
             await act(async () => {

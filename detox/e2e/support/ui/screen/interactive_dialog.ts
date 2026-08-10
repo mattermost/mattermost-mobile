@@ -4,28 +4,29 @@
 import {isAndroid, scrollElementIntoView, timeouts, wait} from '@support/utils';
 import {expect} from 'detox';
 
-/** Synthetic submit action id for legacy Interactive Dialog → mm_blocks conversion. */
-const LEGACY_DIALOG_SUBMIT_ACTION_ID = 'dialog_submit';
-
 class InteractiveDialogScreen {
-    // BlocksDialogShell exposes the scroll view; Apps Form used interactive_dialog.screen.
+    // BlocksDialogShell exposes the scroll view as the dialog container (no separate .screen id).
     testID = {
-        interactiveDialogScreen: 'interactive_dialog.scroll_view',
         scrollView: 'interactive_dialog.scroll_view',
         submitButton: 'interactive_dialog.submit.button',
-        legacySubmitButton: `mm_blocks.button.${LEGACY_DIALOG_SUBMIT_ACTION_ID}`,
         closeButton: 'close.interactive_dialog.button',
         cancelButton: 'interactive_dialog.cancel.button',
         error: 'interactive_dialog.error',
         integrationSelector: 'integration_selector',
+
+        // DateTimeSelector hardcodes this picker id even when used from mm_blocks fields.
+        nativeDateTimePicker: 'custom_status_clear_after.date_time_picker',
     };
 
-    interactiveDialogScreen = element(by.id(this.testID.interactiveDialogScreen));
     scrollView = element(by.id(this.testID.scrollView));
+
+    // Alias for callers that historically treated the scroll view as the screen container.
+    interactiveDialogScreen = this.scrollView;
+
     submitButton = element(by.id(this.testID.submitButton));
-    legacySubmitButton = element(by.id(this.testID.legacySubmitButton));
     closeButton = element(by.id(this.testID.closeButton));
     cancelButton = element(by.id(this.testID.cancelButton));
+    nativeDateTimePicker = element(by.id(this.testID.nativeDateTimePicker));
 
     platformCancelButton = isAndroid() ? element(by.text('CANCEL')) : element(by.label('Cancel')).atIndex(0);
 
@@ -34,12 +35,30 @@ class InteractiveDialogScreen {
 
     textInputTestID = (elementName: string) => `mm_blocks.text_input.${elementName}`;
     textInputFieldTestID = (elementName: string) => `${this.textInputTestID(elementName)}.input`;
+    textInputLabelTestID = (elementName: string) => `${this.textInputTestID(elementName)}.label`;
+    textInputEditButtonTestID = (elementName: string) => `${this.textInputTestID(elementName)}.edit.button`;
     boolInputTestID = (elementName: string, value: boolean) => `mm_blocks.bool_input.${elementName}.toggled.${value}.button`;
+    boolInputLabelTestID = (elementName: string) => `mm_blocks.bool_input.${elementName}.label`;
     selectInputTestID = (elementName: string) => `mm_blocks.select_input.${elementName}`;
+    selectInputLabelTestID = (elementName: string) => `${this.selectInputTestID(elementName)}.label`;
     selectButtonTestID = (elementName: string) => `${this.selectInputTestID(elementName)}.select.button`;
     radioOptionTestID = (elementName: string, optionValue: string) => `${this.selectInputTestID(elementName)}.radio.${optionValue}.button`;
     dateInputTestID = (elementName: string) => `mm_blocks.date_input.${elementName}`;
+    dateInputLabelTestID = (elementName: string) => `${this.dateInputTestID(elementName)}.label`;
+    dateSelectButtonTestID = (elementName: string) => `${this.dateInputTestID(elementName)}.select.button`;
+    dateTimeButtonTestID = (elementName: string) => `${this.dateInputTestID(elementName)}.time.button`;
     dateTimeInputTestID = (elementName: string) => `mm_blocks.datetime_input.${elementName}`;
+    dateTimeInputLabelTestID = (elementName: string) => `${this.dateTimeInputTestID(elementName)}.label`;
+    dateTimeSelectButtonTestID = (elementName: string) => `${this.dateTimeInputTestID(elementName)}.select.button`;
+    dateTimeTimeButtonTestID = (elementName: string) => `${this.dateTimeInputTestID(elementName)}.time.button`;
+    dateTimeManualTimeInputTestID = (elementName: string) => `${this.dateTimeInputTestID(elementName)}.manual_time.input`;
+    fileInputTestID = (elementName: string) => `mm_blocks.file_input.${elementName}`;
+    fileInputLabelTestID = (elementName: string) => `${this.fileInputTestID(elementName)}.label`;
+    fileChooseFileButtonTestID = (elementName: string) => `${this.fileInputTestID(elementName)}.choose_file.button`;
+    fileChooseFileButtonLabelTestID = (elementName: string) => `${this.fileChooseFileButtonTestID(elementName)}-label`;
+    fileChoosePhotoButtonTestID = (elementName: string) => `${this.fileInputTestID(elementName)}.choose_photo.button`;
+    fieldErrorTestID = (elementName: string) => `${elementName}-error`;
+    buttonTestID = (actionId: string) => `mm_blocks.button.${actionId}`;
 
     // replaceText avoids the iOS paste-permission dialog (MM-66558).
     setDialogInputText = async (input: Detox.NativeElement, value: string) => {
@@ -95,17 +114,11 @@ class InteractiveDialogScreen {
     };
 
     /**
-     * Native block_dialog and legacy plugin dialogs both render submit in the footer.
-     * Keep a fallback for older builds that still injected mm_blocks.button.dialog_submit.
+     * Native and legacy dialogs both render interactive_dialog.submit.button in NativeDialogFooter.
      */
     submit = async () => {
-        try {
-            await expect(this.submitButton).toExist();
-            await this.submitButton.tap();
-        } catch {
-            await expect(this.legacySubmitButton).toExist();
-            await this.legacySubmitButton.tap();
-        }
+        await waitFor(this.submitButton).toExist().withTimeout(timeouts.TWO_SEC);
+        await this.submitButton.tap();
         await wait(timeouts.ONE_SEC);
     };
 

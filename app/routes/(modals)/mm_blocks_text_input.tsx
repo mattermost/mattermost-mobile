@@ -1,7 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {useIntl} from 'react-intl';
+import {defineMessages, useIntl} from 'react-intl';
 
 import {useTheme} from '@context/theme';
 import {getModalHeaderOptions, useNavigationHeader} from '@hooks/navigation_header';
@@ -13,6 +13,13 @@ type Props = MmBlocksTextInputProps & {
     title?: string;
 };
 
+const messages = defineMessages({
+    title: {
+        id: 'mm_blocks.text_input.title',
+        defaultMessage: 'Enter text',
+    },
+});
+
 export default function MmBlocksTextInputRoute() {
     const intl = useIntl();
     const theme = useTheme();
@@ -21,7 +28,7 @@ export default function MmBlocksTextInputRoute() {
     useNavigationHeader({
         showWhenPushed: true,
         headerOptions: {
-            headerTitle: title || intl.formatMessage({id: 'mm_blocks.text_input.title', defaultMessage: 'Enter text'}),
+            headerTitle: title || intl.formatMessage(messages.title),
             ...getModalHeaderOptions(theme, navigateBack, 'close.mm_blocks_text_input.button'),
         },
     });

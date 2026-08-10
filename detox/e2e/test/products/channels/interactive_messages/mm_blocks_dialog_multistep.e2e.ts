@@ -9,7 +9,7 @@
 
 import {MmBlocksTestHelper} from '@support/mm_blocks_test_helper';
 import {hasStableWebhookIngress} from '@support/test_config';
-import {ChannelScreen, HomeScreen} from '@support/ui/screen';
+import {ChannelScreen, HomeScreen, InteractiveDialogScreen} from '@support/ui/screen';
 import {timeouts} from '@support/utils';
 import {expect} from 'detox';
 
@@ -74,18 +74,18 @@ describeBlocksDialog('Interactive mm_blocks - blocks dialog multistep', () => {
         await MmBlocksTestHelper.selectInputOption('project_type', 'Mobile App');
 
         // * Verify the refreshed form gained the platform field and kept the typed name
-        await waitFor(element(by.id('mm_blocks.select_input.platform.select.button'))).
+        await waitFor(element(by.id(InteractiveDialogScreen.selectButtonTestID('platform')))).
             toExist().withTimeout(REFRESH_TIMEOUT);
-        await expect(element(by.id('mm_blocks.text_input.project_name.input'))).toHaveText('Detox Project');
-        await expect(element(by.id('mm_blocks.select_input.framework.select.button'))).not.toExist();
+        await expect(element(by.id(InteractiveDialogScreen.textInputFieldTestID('project_name')))).toHaveText('Detox Project');
+        await expect(element(by.id(InteractiveDialogScreen.selectButtonTestID('framework')))).not.toExist();
 
         // # Switch to a project type served by a different field
         await MmBlocksTestHelper.selectInputOption('project_type', 'API Service');
 
         // * Verify the previous type-specific field was replaced
-        await waitFor(element(by.id('mm_blocks.select_input.language.select.button'))).
+        await waitFor(element(by.id(InteractiveDialogScreen.selectButtonTestID('language')))).
             toExist().withTimeout(REFRESH_TIMEOUT);
-        await expect(element(by.id('mm_blocks.select_input.platform.select.button'))).not.toExist();
+        await expect(element(by.id(InteractiveDialogScreen.selectButtonTestID('platform')))).not.toExist();
     });
 
     it('MM-T6276_1 - should walk the three multistep dialogs and submit the final step', async () => {
@@ -100,9 +100,9 @@ describeBlocksDialog('Interactive mm_blocks - blocks dialog multistep', () => {
 
         // * Verify step 2 replaced step 1 in the same modal
         await MmBlocksTestHelper.expectBlocksDialogTitle('Step 2 - Work Info');
-        await waitFor(element(by.id('mm_blocks.select_input.department.select.button'))).
+        await waitFor(element(by.id(InteractiveDialogScreen.selectButtonTestID('department')))).
             toExist().withTimeout(REFRESH_TIMEOUT);
-        await expect(element(by.id('mm_blocks.text_input.first_name.input'))).not.toExist();
+        await expect(element(by.id(InteractiveDialogScreen.textInputFieldTestID('first_name')))).not.toExist();
 
         // # Fill step 2 and advance
         await MmBlocksTestHelper.selectInputOption('department', 'Engineering');
@@ -111,7 +111,7 @@ describeBlocksDialog('Interactive mm_blocks - blocks dialog multistep', () => {
 
         // * Verify step 3 is up
         await MmBlocksTestHelper.expectBlocksDialogTitle('Step 3 - Final Details');
-        await waitFor(element(by.id('mm_blocks.bool_input.terms_accepted.toggled.false.button'))).
+        await waitFor(element(by.id(InteractiveDialogScreen.boolInputTestID('terms_accepted', false)))).
             toExist().withTimeout(REFRESH_TIMEOUT);
 
         // # Accept the terms and complete the registration

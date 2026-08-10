@@ -9,7 +9,7 @@
 
 import {MmBlocksTestHelper} from '@support/mm_blocks_test_helper';
 import {hasStableWebhookIngress} from '@support/test_config';
-import {ChannelScreen, HomeScreen} from '@support/ui/screen';
+import {ChannelListScreen, ChannelScreen, HomeScreen} from '@support/ui/screen';
 import {timeouts} from '@support/utils';
 import {expect} from 'detox';
 
@@ -20,9 +20,12 @@ const describeBlocksDialog = hasStableWebhookIngress ? describe : describe.skip;
 const REQUIRED_FIELD_ERROR = 'This field is required.';
 const FIX_FIELD_ERRORS = 'Please fix all field errors';
 
+type ChannelTestSetup = Awaited<ReturnType<typeof MmBlocksTestHelper.setupChannelTest>>;
+
 describeBlocksDialog('Interactive mm_blocks - blocks dialog selects', () => {
-    let testChannel: any;
-    let testUser: any;
+    // setupChannelTest wraps Setup.apiInit (team + channel + user) then logs in.
+    let testChannel: ChannelTestSetup['channel'];
+    let testUser: ChannelTestSetup['user'];
 
     beforeAll(async () => {
         await MmBlocksTestHelper.requireWebhookSidecar();
@@ -31,14 +34,24 @@ describeBlocksDialog('Interactive mm_blocks - blocks dialog selects', () => {
         testUser = setup.user;
     });
 
-    beforeEach(() => {
+    beforeEach(async () => {
         MmBlocksTestHelper.assertSuiteRunnable();
+        try {
+            await ChannelListScreen.toBeVisible();
+        } catch {
+            // setupChannelTest leaves the suite on the channel for the first case.
+            await ChannelScreen.back();
+            await ChannelListScreen.toBeVisible();
+        }
+        await ChannelScreen.open(MmBlocksTestHelper.CHANNELS_CATEGORY, testChannel.name);
     });
 
     afterEach(async () => {
         try {
             await MmBlocksTestHelper.dismissBlocksDialogIfOpen();
             await MmBlocksTestHelper.ensureOnChannelScreen();
+            await ChannelScreen.back();
+            await ChannelListScreen.toBeVisible();
         } catch {
             // Next test will re-assert / abort if the suite is blocked.
         }
@@ -49,8 +62,9 @@ describeBlocksDialog('Interactive mm_blocks - blocks dialog selects', () => {
             await MmBlocksTestHelper.dismissBlocksDialogIfOpen();
             await MmBlocksTestHelper.ensureOnChannelScreen();
             await ChannelScreen.back();
+            await ChannelListScreen.toBeVisible();
         } catch {
-            // Relaunch recovery may already be on the channel list.
+            // Relaunch recovery / afterEach may already be on the channel list.
         }
         await HomeScreen.logout();
     });

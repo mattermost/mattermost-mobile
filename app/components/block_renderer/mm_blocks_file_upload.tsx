@@ -304,8 +304,18 @@ function MmBlocksFileUpload({
         }
 
         const added: UploadFileState[] = [];
+        const usedClientIds = new Set(sourceFilesRef.current.keys());
         for (const file of toUpload) {
-            const clientId = file.clientId ?? file.localPath ?? file.name;
+            // Add uniqueness by using a suffix in case the same file is selected multiple times.
+            let clientId = file.clientId ?? file.localPath ?? file.name;
+            if (usedClientIds.has(clientId)) {
+                let suffix = 1;
+                while (usedClientIds.has(`${clientId}-${suffix}`)) {
+                    suffix += 1;
+                }
+                clientId = `${clientId}-${suffix}`;
+            }
+            usedClientIds.add(clientId);
             sourceFilesRef.current.set(clientId, file);
             added.push({
                 clientId,

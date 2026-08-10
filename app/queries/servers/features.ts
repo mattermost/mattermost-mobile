@@ -66,7 +66,7 @@ export const observeBlockActionsEnabled = (database: Database) => {
         observeMmBlocksEnabled(database),
     ]).pipe(
         switchMap(([version, mmBlocksEnabled]) => of$(
-            isMinimumServerVersion(version || '', ...BLOCK_ACTIONS_VERSION) && mmBlocksEnabled,
+            isMinimumServerVersion(version ?? '', ...BLOCK_ACTIONS_VERSION) && mmBlocksEnabled,
         )),
         distinctUntilChanged(),
     );
@@ -77,7 +77,7 @@ export const getBlockActionsEnabled = async (database: Database) => {
         getConfigValue(database, 'Version'),
         getMmBlocksEnabled(database),
     ]);
-    return isMinimumServerVersion(version || '', ...BLOCK_ACTIONS_VERSION) && mmBlocksEnabled;
+    return isMinimumServerVersion(version ?? '', ...BLOCK_ACTIONS_VERSION) && mmBlocksEnabled;
 };
 
 // Channel bookmarks additionally require a license, so both the observable and async variants include

@@ -215,6 +215,7 @@ describe('dialog_conversion', () => {
             expect(submitBool('false')).toBe(false);
             expect(submitBool('0')).toBe(false);
             expect(submitBool('NO')).toBe(false);
+            expect(submitBool('off')).toBe(false);
             expect(submitBool('on')).toBe(true);
             expect(submitBool('')).toBe(false);
         });
@@ -825,7 +826,7 @@ describe('dialog_conversion', () => {
     });
 
     describe('convertDialogToAppForm', () => {
-        const mockConfig: InteractiveDialogConfig = {
+        const mockConfig: InteractiveDialogConfig & {dialog: Dialog & {elements: DialogElement[]}} = {
             app_id: 'test-app',
             dialog: {
                 callback_id: 'test-callback',
@@ -911,11 +912,53 @@ describe('dialog_conversion', () => {
             });
         });
 
+        it('should filter FILE and ACTION_BUTTON elements from Apps Form fallback', () => {
+            const configWithUnsupported: InteractiveDialogConfig & {dialog: Dialog & {elements: DialogElement[]}} = {
+                ...mockConfig,
+                dialog: {
+                    ...mockConfig.dialog,
+                    elements: [
+                        ...mockConfig.dialog.elements,
+                        {
+                            name: 'attachment',
+                            type: DialogElementTypes.FILE,
+                            display_name: 'Attachment',
+                            optional: true,
+                            default: '',
+                            placeholder: '',
+                            help_text: '',
+                            min_length: 0,
+                            max_length: 0,
+                            data_source: '',
+                            options: [],
+                        },
+                        {
+                            name: 'do_something',
+                            type: DialogElementTypes.ACTION_BUTTON,
+                            display_name: 'Do Something',
+                            optional: true,
+                            default: '',
+                            placeholder: '',
+                            help_text: '',
+                            min_length: 0,
+                            max_length: 0,
+                            data_source: '',
+                            options: [],
+                        },
+                    ],
+                },
+            };
+
+            const result = convertDialogToAppForm(configWithUnsupported);
+
+            expect(result.fields?.map((field) => field.name)).toEqual(['text_field', 'select_field']);
+        });
+
         it('should handle dialog without elements', () => {
             const configWithoutElements = {
                 ...mockConfig,
                 dialog: {
-                    ...mockConfig.dialog!,
+                    ...mockConfig.dialog,
                     elements: [],
                 },
             };
@@ -929,7 +972,7 @@ describe('dialog_conversion', () => {
             const configWithEmptyElements = {
                 ...mockConfig,
                 dialog: {
-                    ...mockConfig.dialog!,
+                    ...mockConfig.dialog,
                     elements: [],
                 },
             };
@@ -943,7 +986,7 @@ describe('dialog_conversion', () => {
             const configWithoutIntro = {
                 ...mockConfig,
                 dialog: {
-                    ...mockConfig.dialog!,
+                    ...mockConfig.dialog,
                     introduction_text: '',
                 },
             };
@@ -957,7 +1000,7 @@ describe('dialog_conversion', () => {
             const configWithManyFields = {
                 ...mockConfig,
                 dialog: {
-                    ...mockConfig.dialog!,
+                    ...mockConfig.dialog,
                     elements: [
                         {
                             name: 'field1',
@@ -1002,7 +1045,7 @@ describe('dialog_conversion', () => {
                 },
             };
 
-            const result = convertDialogToAppForm(configWithManyFields as InteractiveDialogConfig);
+            const result = convertDialogToAppForm(configWithManyFields);
 
             expect(result.fields![0].position).toBe(0);
             expect(result.fields![1].position).toBe(1);
@@ -1024,9 +1067,9 @@ describe('dialog_conversion', () => {
             const configWithRefreshField = {
                 ...mockConfig,
                 dialog: {
-                    ...mockConfig.dialog!,
+                    ...mockConfig.dialog,
                     elements: [
-                        ...mockConfig.dialog!.elements!,
+                        ...mockConfig.dialog.elements,
                         {
                             name: 'refresh_field',
                             type: DialogElementTypes.SELECT,
@@ -1047,7 +1090,7 @@ describe('dialog_conversion', () => {
                 },
             };
 
-            const result = convertDialogToAppForm(configWithRefreshField as InteractiveDialogConfig);
+            const result = convertDialogToAppForm(configWithRefreshField);
 
             expect(result.source).toEqual({
                 path: '/dialog/refresh',
@@ -1059,7 +1102,7 @@ describe('dialog_conversion', () => {
             const configWithSourceUrl = {
                 ...mockConfig,
                 dialog: {
-                    ...mockConfig.dialog!,
+                    ...mockConfig.dialog,
                     source_url: 'https://example.com/refresh',
                 },
             };
@@ -1076,7 +1119,7 @@ describe('dialog_conversion', () => {
             const configWithBoth = {
                 ...mockConfig,
                 dialog: {
-                    ...mockConfig.dialog!,
+                    ...mockConfig.dialog,
                     source_url: 'https://example.com/custom-refresh',
                     elements: [
                         {
@@ -1097,7 +1140,7 @@ describe('dialog_conversion', () => {
                 },
             };
 
-            const result = convertDialogToAppForm(configWithBoth as InteractiveDialogConfig);
+            const result = convertDialogToAppForm(configWithBoth);
 
             expect(result.source).toEqual({
                 path: 'https://example.com/custom-refresh',

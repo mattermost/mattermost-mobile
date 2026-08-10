@@ -63,7 +63,7 @@ describe('convertDialogToMmBlocks', () => {
         expect(dialogShouldShowSubmitChrome(elements, 'Save')).toBe(true);
     });
 
-    it('maps dynamic select to data_source_action', () => {
+    it('should map dynamic select to data_source_action', () => {
         const block = convertDialogElementToMmBlock({
             ...textElement,
             type: 'select',
@@ -77,7 +77,7 @@ describe('convertDialogToMmBlocks', () => {
         });
     });
 
-    it('maps textarea to multiline text_input', () => {
+    it('should map textarea to multiline text_input', () => {
         const block = convertDialogElementToMmBlock({
             ...textElement,
             type: 'textarea',
@@ -85,7 +85,7 @@ describe('convertDialogToMmBlocks', () => {
         expect(block).toMatchObject({type: 'text_input', multiline: true});
     });
 
-    it('maps date, datetime, and file elements', () => {
+    it('should map date, datetime, and file elements', () => {
         expect(convertDialogElementToMmBlock({
             ...textElement,
             name: 'due',
@@ -155,7 +155,7 @@ describe('convertDialogToMmBlocks', () => {
         });
     });
 
-    it('converts action_button elements to execute buttons with dialog action query keys', () => {
+    it('should convert action_button elements to execute buttons with dialog action query keys', () => {
         const block = convertDialogElementToMmBlock({
             ...textElement,
             name: 'do_thing',
@@ -176,7 +176,7 @@ describe('convertDialogToMmBlocks', () => {
         });
     });
 
-    it('keeps the reserved action query keys when the context reuses them', () => {
+    it('should keep the reserved action query keys when the context reuses them', () => {
         const block = convertDialogElementToMmBlock({
             ...textElement,
             name: 'do_thing',
@@ -195,7 +195,7 @@ describe('convertDialogToMmBlocks', () => {
         });
     });
 
-    it('omits footer submit chrome for action-button-only dialogs', () => {
+    it('should omit footer submit chrome for action-button-only dialogs unless submit_label is set', () => {
         const elements: DialogElement[] = [{
             ...textElement,
             type: 'action_button',
@@ -206,40 +206,29 @@ describe('convertDialogToMmBlocks', () => {
         expect(blocks.some((b) => b.type === 'button' && 'action_id' in b && b.action_id === DIALOG_SUBMIT_ACTION_ID)).toBe(false);
         expect(blocks.some((b) => b.type === 'button')).toBe(true);
         expect(dialogShouldShowSubmitChrome(elements, undefined)).toBe(false);
-    });
-
-    it('shows footer submit chrome for action-button-only dialogs when submit_label is set', () => {
-        const elements: DialogElement[] = [{
-            ...textElement,
-            type: 'action_button',
-            action_button: {url: '/plugins/foo/action'},
-        }];
-        const {blocks} = convertDialogToMmBlocks(elements, undefined);
-
-        expect(blocks.some((b) => b.type === 'button' && 'action_id' in b && b.action_id === DIALOG_SUBMIT_ACTION_ID)).toBe(false);
         expect(dialogShouldShowSubmitChrome(elements, 'Save')).toBe(true);
     });
 
-    it('shows footer submit chrome when there are no elements', () => {
+    it('should show footer submit chrome when there are no elements', () => {
         const {blocks} = convertDialogToMmBlocks(undefined, undefined);
 
         expect(blocks).toHaveLength(0);
         expect(dialogShouldShowSubmitChrome(undefined, undefined)).toBe(true);
     });
 
-    it('returns null for elements without a name or type', () => {
+    it('should return null for elements without a name or type', () => {
         expect(convertDialogElementToMmBlock({...textElement, name: ''})).toBeNull();
         expect(convertDialogElementToMmBlock({...textElement, type: undefined as unknown as 'text'})).toBeNull();
     });
 
-    it('returns null for unsupported element types', () => {
+    it('should return null for unsupported element types', () => {
         expect(convertDialogElementToMmBlock({
             ...textElement,
             type: 'unsupported' as InteractiveDialogElementType,
         })).toBeNull();
     });
 
-    it('keeps known text subtypes and falls back to text for unknown ones', () => {
+    it('should keep known text subtypes and fall back to text for unknown ones', () => {
         const subtypeOf = (subtype?: InteractiveDialogTextSubtype) => (
             convertDialogElementToMmBlock({...textElement, subtype}) as MmTextInputBlock
         ).subtype;
@@ -253,7 +242,7 @@ describe('convertDialogToMmBlocks', () => {
         expect(subtypeOf(undefined)).toBeUndefined();
     });
 
-    it('parses bool defaults from booleans and truthy or falsy strings', () => {
+    it('should parse bool defaults from booleans and truthy or falsy strings', () => {
         const initialValueOf = (value: string | boolean) => (
             convertDialogElementToMmBlock({...textElement, type: 'bool', default: value}) as MmBoolInputBlock
         ).initial_value;
@@ -264,20 +253,21 @@ describe('convertDialogToMmBlocks', () => {
         expect(initialValueOf('YES')).toBe(true);
         expect(initialValueOf('1')).toBe(true);
         expect(initialValueOf('false')).toBe(false);
+        expect(initialValueOf(' false ')).toBe(false);
         expect(initialValueOf('no')).toBe(false);
         expect(initialValueOf('0')).toBe(false);
         expect(initialValueOf('maybe')).toBeUndefined();
         expect(initialValueOf('')).toBeUndefined();
     });
 
-    it('ignores non-string defaults on string valued elements', () => {
+    it('should ignore non-string defaults on string valued elements', () => {
         expect((convertDialogElementToMmBlock({
             ...textElement,
             default: true,
         }) as MmTextInputBlock).initial_value).toBeUndefined();
     });
 
-    it('omits options when a select has none', () => {
+    it('should omit options when a select has none', () => {
         expect((convertDialogElementToMmBlock({
             ...textElement,
             type: 'select',
@@ -285,7 +275,7 @@ describe('convertDialogToMmBlocks', () => {
         }) as MmSelectInputBlock).options).toBeUndefined();
     });
 
-    it('splits the default of a multiselect into initial_options', () => {
+    it('should split the default of a multiselect into initial_options', () => {
         expect(convertDialogElementToMmBlock({
             ...textElement,
             type: 'select',
@@ -300,7 +290,7 @@ describe('convertDialogToMmBlocks', () => {
         });
     });
 
-    it('maps refresh elements to an onChange action and drops empty help text', () => {
+    it('should map refresh elements to an onChange action and drop empty help text', () => {
         expect(convertDialogElementToMmBlock({
             ...textElement,
             refresh: true,
@@ -312,7 +302,7 @@ describe('convertDialogToMmBlocks', () => {
         });
     });
 
-    it('omits empty optional fields for every element type', () => {
+    it('should omit empty optional fields for every element type', () => {
         const bare: DialogElement = {
             ...textElement,
             placeholder: '',
@@ -368,7 +358,7 @@ describe('convertDialogToMmBlocks', () => {
         });
     });
 
-    it('coerces option text and value to strings', () => {
+    it('should coerce option text and value to strings', () => {
         expect(convertDialogElementToMmBlock({
             ...textElement,
             type: 'radio',
@@ -376,7 +366,7 @@ describe('convertDialogToMmBlocks', () => {
         })).toMatchObject({options: [{text: '', value: ''}]});
     });
 
-    it('skips elements that cannot be converted', () => {
+    it('should skip elements that cannot be converted', () => {
         const {blocks} = convertDialogToMmBlocks([{...textElement, name: ''}, textElement], undefined);
 
         expect(blocks).toEqual([
@@ -384,7 +374,7 @@ describe('convertDialogToMmBlocks', () => {
         ]);
     });
 
-    it('labels elements with their name when there is no display name', () => {
+    it('should label elements with their name when there is no display name', () => {
         expect(convertDialogElementToMmBlock({
             ...textElement,
             display_name: '',

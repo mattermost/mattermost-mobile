@@ -137,7 +137,7 @@ type BlockDialog = {
 
     /** When set, renders a footer cancel button (default label "Cancel"); header X also invokes it. */
     cancel?: BlockDialogButton;
-    blocks: Array<Record<string, unknown>>;
+    blocks: MmBlock[];
 
     /** Plaintext actions map on open; encrypted cookie string after server processing / on WS. */
     actions?: Record<string, unknown> | string;
@@ -221,10 +221,7 @@ type DoBlockActionRequest = {
     integration_format?: PostActionIntegrationFormat;
 };
 
-type DialogSelectOption = {
-    text: string;
-    value: string;
-};
+type DialogSelectOption = DialogOption;
 
 type DoBlockActionResponse = {
     trigger_id?: string;

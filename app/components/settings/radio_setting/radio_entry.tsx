@@ -22,6 +22,9 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
             paddingVertical: 12,
             gap: 12,
         },
+        disabled: {
+            opacity: 0.6,
+        },
         text: {
             flex: 1,
             color: theme.centerChannelColor,
@@ -110,8 +113,10 @@ function RadioEntry({
                 onPress={onPress}
                 type='opacity'
                 testID={testID}
+                accessibilityRole={variant === 'checklist' ? 'checkbox' : 'radio'}
+                accessibilityState={{checked: isSelected, disabled}}
             >
-                <View style={style.container}>
+                <View style={[style.container, disabled && style.disabled]}>
                     <Text style={style.text}>{text}</Text>
                     {indicator}
                 </View>

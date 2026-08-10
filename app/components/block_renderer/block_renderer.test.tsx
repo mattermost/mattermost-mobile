@@ -181,15 +181,27 @@ describe('BlockRenderer', () => {
         act(() => setFieldUploading('attachment', true));
         expect(JSON.parse(getByTestId('upload-probe').props.children).hasUploadingFields).toBe(true);
         expect(onUploadingChange).toHaveBeenLastCalledWith(true);
+        expect(onUploadingChange).toHaveBeenCalledTimes(2);
+
+        act(() => setFieldUploading('document', true));
+        expect(JSON.parse(getByTestId('upload-probe').props.children).hasUploadingFields).toBe(true);
+        expect(onUploadingChange).toHaveBeenCalledTimes(2);
 
         act(() => setFieldUploading('attachment', true));
         expect(JSON.parse(getByTestId('upload-probe').props.children).hasUploadingFields).toBe(true);
+        expect(onUploadingChange).toHaveBeenCalledTimes(2);
 
         act(() => setFieldUploading('attachment', false));
+        expect(JSON.parse(getByTestId('upload-probe').props.children).hasUploadingFields).toBe(true);
+        expect(onUploadingChange).toHaveBeenCalledTimes(2);
+
+        act(() => setFieldUploading('document', false));
         expect(JSON.parse(getByTestId('upload-probe').props.children).hasUploadingFields).toBe(false);
         expect(onUploadingChange).toHaveBeenLastCalledWith(false);
+        expect(onUploadingChange).toHaveBeenCalledTimes(3);
 
-        act(() => setFieldUploading('attachment', false));
+        act(() => setFieldUploading('document', false));
         expect(JSON.parse(getByTestId('upload-probe').props.children).hasUploadingFields).toBe(false);
+        expect(onUploadingChange).toHaveBeenCalledTimes(3);
     });
 });

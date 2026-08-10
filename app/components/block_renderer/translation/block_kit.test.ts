@@ -158,6 +158,22 @@ describe('translateBlockKit input plain_text_input', () => {
         expect(fileInput(1)).toEqual([{type: 'file_input', name: 'files', label: 'Files'}]);
     });
 
+    it('should skip invalid oversized initial_date_time without throwing', () => {
+        expect(translateBlockKit([{
+            type: 'input',
+            label: {type: 'plain_text', text: 'Meeting'},
+            element: {
+                type: 'datetimepicker',
+                action_id: 'meeting',
+                initial_date_time: Number.MAX_VALUE,
+            },
+        }])).toEqual([{
+            type: 'datetime_input',
+            name: 'meeting',
+            label: 'Meeting',
+        }]);
+    });
+
     it('should ignore unsupported input element types', () => {
         expect(translateBlockKit([{
             type: 'input',

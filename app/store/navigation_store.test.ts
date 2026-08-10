@@ -148,6 +148,36 @@ describe('NavigationStore', () => {
         it('should return empty array initially', () => {
             expect(NavigationStore.getScreensInStack()).toEqual([]);
         });
+
+        it('should preserve duplicate screen IDs in stack navigators and de-duplicate in tab navigators', () => {
+            const stackState = createNavigationState([
+                {key: 'channel-1', name: 'channel'},
+                {key: 'thread-2', name: 'thread'},
+                {key: 'channel-3', name: 'channel'},
+            ]);
+
+            NavigationStore.updateFromNavigationState(stackState);
+
+            expect(NavigationStore.getScreensInStack()).toEqual(['channel', 'thread', 'channel']);
+
+            NavigationStore.reset();
+
+            const tabState = createNavigationState([
+                {
+                    key: 'channel-1',
+                    name: 'channel',
+                    state: createTabNavigationState([
+                        {key: 'channel-2', name: 'channel'},
+                        {key: 'account-3', name: 'account'},
+                    ], 0),
+                },
+            ]);
+
+            NavigationStore.updateFromNavigationState(tabState);
+
+            // Stack preserves 'channel'; active tab's matching ID is de-duplicated.
+            expect(NavigationStore.getScreensInStack()).toEqual(['channel']);
+        });
     });
 
     describe('isScreenInStack', () => {

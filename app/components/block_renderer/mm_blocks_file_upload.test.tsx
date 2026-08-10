@@ -40,7 +40,7 @@ jest.mock('@components/upload_item_shared', () => ({
 
 const TEST_ID = 'file_upload';
 const MAX_FILES_WARNING = 'Uploads limited to 10 files maximum.';
-const SINGLE_FILE_WARNING = 'Uploads limited to 1 files maximum.';
+const SINGLE_FILE_WARNING = 'Uploads limited to 1 file maximum.';
 
 const mockedUploadFile = jest.mocked(uploadFile);
 const mockedFetchFileInfo = jest.mocked(fetchFileInfo);

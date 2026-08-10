@@ -3,24 +3,30 @@
 
 import moment, {type Moment} from 'moment-timezone';
 import React, {useCallback, useContext, useEffect, useMemo} from 'react';
-import {useIntl} from 'react-intl';
+import {defineMessages, useIntl} from 'react-intl';
 import {Text, View} from 'react-native';
 
 import DateTimeSelector from '@components/date_time_selector';
-import FormattedDate from '@components/formatted_date';
 import FormattedText from '@components/formatted_text';
-import FormattedTime from '@components/formatted_time';
 import Label from '@components/settings/label';
 import {DEFAULT_TIME_INTERVAL_MINUTES} from '@constants/apps';
 import {getDateValue, isRelativeDate, parseDateInTimezone, resolveRelativeDate} from '@utils/date_utils';
 import {getCurrentMomentForTimezone} from '@utils/helpers';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
+import {getFormattedTime} from '@utils/time';
 import {typography} from '@utils/typography';
 
 import {MmBlocksInteractionsDisabledContext} from '../context';
 import {MmBlocksFieldError, useMmBlocksForm} from '../form';
 
 import type {ActionHandler} from '../types';
+
+const messages = defineMessages({
+    dateAtTime: {
+        id: 'date_time_selector.date_at_time',
+        defaultMessage: '{date} at {time}',
+    },
+});
 
 const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
     dateDisplay: {marginLeft: 15, marginBottom: 8},
@@ -110,6 +116,16 @@ const DateTimeInputElement = ({element, onAction, theme, userTimezone, isMilitar
 
     const value = normalizeDateTimeValue(values[element.name] ?? element.initial_value);
     const selectedDate = useMemo(() => getDateValue(value, displayTimezone, true), [value, displayTimezone]);
+    const selectedDateDisplay = useMemo(() => {
+        if (!selectedDate) {
+            return '';
+        }
+        const date = selectedDate.toDate();
+        return intl.formatMessage(messages.dateAtTime, {
+            date: intl.formatDate(date, {dateStyle: 'medium', timeZone: displayTimezone}),
+            time: getFormattedTime(isMilitaryTime, displayTimezone, date),
+        });
+    }, [selectedDate, displayTimezone, intl, isMilitaryTime]);
 
     if (!element.name) {
         return null;
@@ -124,19 +140,10 @@ const DateTimeInputElement = ({element, onAction, theme, userTimezone, isMilitar
                     testID={`mm_blocks.datetime_input.${element.name}`}
                 />
             )}
-            {selectedDate && (
+            {Boolean(selectedDateDisplay) && (
                 <View style={style.dateDisplay}>
                     <Text style={[style.dateText, disabled && style.dateTextDisabled]}>
-                        <FormattedDate
-                            value={selectedDate.toDate()}
-                            format={{dateStyle: 'medium'}}
-                        />
-                        {` ${intl.formatMessage({id: 'date_time_selector.at', defaultMessage: 'at'})} `}
-                        <FormattedTime
-                            isMilitaryTime={isMilitaryTime}
-                            timezone={displayTimezone}
-                            value={selectedDate.toDate()}
-                        />
+                        {selectedDateDisplay}
                     </Text>
                 </View>
             )}
