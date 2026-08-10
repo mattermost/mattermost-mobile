@@ -16,7 +16,7 @@ node <<'NODE'
 const path = require('path');
 const {buildTsioJobConfig, webhookBucketForReportName} = require(path.join(process.env.SCRIPT_DIR, 'build-tsio-job-config.js'));
 
-/** @returns {number|undefined} positive integer, or undefined when unset */
+/** @returns {number|undefined} positive safe integer, or undefined when unset */
 function parsePositiveWorkers(raw) {
   if (raw === undefined || raw === null || raw === '') {
     return undefined;
@@ -27,7 +27,13 @@ function parsePositiveWorkers(raw) {
     console.error(`resolve-tsio-job-config: TSIO_WORKERS must be a positive integer, got ${JSON.stringify(raw)}`);
     process.exit(1);
   }
-  return Number.parseInt(trimmed, 10);
+  const workers = Number.parseInt(trimmed, 10);
+  // Guard unsafe integers / Infinity so JSON never serializes null for the count.
+  if (!Number.isSafeInteger(workers) || workers < 1) {
+    console.error(`resolve-tsio-job-config: TSIO_WORKERS must be a positive integer, got ${JSON.stringify(raw)}`);
+    process.exit(1);
+  }
+  return workers;
 }
 
 const raw = process.env.TSIO_CONFIG;
