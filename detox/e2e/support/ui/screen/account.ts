@@ -120,6 +120,7 @@ class AccountScreen {
         // keep a single cheap Not Now probe only.
         if (device.getPlatform() === 'ios') {
             await dismissIosSavePasswordIfVisible();
+
             // "Notifications cannot be received from this server" alert.
             try {
                 await element(by.label('Okay')).tap();
