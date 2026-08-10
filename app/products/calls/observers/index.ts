@@ -96,8 +96,8 @@ export const observeCallDatabase = () => {
     );
 };
 
-// Observes the current call's channel from the call's own server database, which is not necessarily the
-// active server's database (the call screen can be opened from the current call bar while viewing another server).
+// Observes the current call's channel from the call's own server database,
+// which is not necessarily the active server's database.
 export const observeCallChannel = () => {
     const channelId = observeCurrentCall().pipe(
         switchMap((call) => of$(call?.channelId || '')),
