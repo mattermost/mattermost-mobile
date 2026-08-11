@@ -28,14 +28,17 @@ runs:
         echo "::endgroup::"
       working-directory: ./fastlane
 
+    # Keyed by arch: vendor/bundle holds compiled native extensions, so restoring
+    # an arm64 cache onto an x86_64 runner fails with an incompatible-architecture
+    # LoadError. runner.os alone is just "macOS" and spans both.
     - name: Cache Ruby gems
       if: inputs.bundler-cache != 'true'
       uses: actions/cache@27d5ce7f107fe9357f9df03efb73ab90386fccae # v5.0.5
       with:
         path: vendor/bundle
-        key: ${{ runner.os }}-gems-${{ hashFiles('**/Gemfile.lock') }}
+        key: ${{ runner.os }}-${{ runner.arch }}-gems-${{ hashFiles('**/Gemfile.lock') }}
         restore-keys: |
-          ${{ runner.os }}-gems-
+          ${{ runner.os }}-${{ runner.arch }}-gems-
 
     # --- E2E path ---
     # bundler-cache restores/installs fastlane/Gemfile.lock gems under
