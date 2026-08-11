@@ -679,6 +679,7 @@
   "mobile.calls_call_ended": "Call ended",
   "mobile.calls_call_screen": "Call",
   "mobile.calls_call_thread": "Call Thread",
+  "mobile.calls_calling": "Calling...",
   "mobile.calls_cancel": "Cancel",
   "mobile.calls_captions": "Captions",
   "mobile.calls_captions_turned_on": "Live captions turned on",
