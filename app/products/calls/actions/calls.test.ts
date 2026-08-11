@@ -3,10 +3,10 @@
 
 import assert from 'assert';
 
+import CallsNative from '@mattermost/calls-native';
 import {act, renderHook} from '@testing-library/react-native';
 import {createIntl} from 'react-intl';
 import {Alert} from 'react-native';
-import InCallManager from 'react-native-incall-manager';
 
 import * as CallsActions from '@calls/actions';
 import {getConnectionForTesting} from '@calls/actions/calls';
@@ -90,6 +90,7 @@ jest.mock('@calls/connection/connection', () => ({
         waitForPeerConnection: jest.fn(() => Promise.resolve('session-id')),
         initializeVoiceTrack: jest.fn(),
         sendReaction: jest.fn(),
+        setUserSelectedAudioRoute: jest.fn(),
     })),
 }));
 
@@ -193,11 +194,6 @@ describe('Actions.Calls', () => {
     const {newConnection} = require('@calls/connection/connection');
     const {updateThreadFollowing} = require('@actions/remote/thread');
 
-    InCallManager.setSpeakerphoneOn = jest.fn();
-    InCallManager.setForceSpeakerphoneOn = jest.fn();
-    InCallManager.chooseAudioRoute = jest.fn();
-
-    // eslint-disable-next-line
     // @ts-ignore
     NetworkManager.getClient = () => mockClient;
     jest.spyOn(Permissions, 'hasMicrophonePermission').mockReturnValue(Promise.resolve(true));
@@ -443,7 +439,6 @@ describe('Actions.Calls', () => {
         // setup
         const oldGetCalls = mockClient.getCalls;
 
-        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
         // @ts-ignore
         mockClient.getCalls = jest.fn(() => null);
 
@@ -1192,9 +1187,38 @@ describe('Actions.Calls', () => {
         expect(forceLogout).toHaveBeenCalledWith('server1', forceLogoutError);
     });
 
-    it('setPreferredAudioRoute', async () => {
-        await CallsActions.setPreferredAudioRoute(AudioDevice.Speakerphone);
-        expect(InCallManager.chooseAudioRoute).toHaveBeenCalledWith('SPEAKER_PHONE');
+    it('should not pin the route when setPreferredAudioRoute is called without fromUser', async () => {
+        addFakeCall('server1', 'channel-id');
+        await act(async () => {
+            await CallsActions.joinCall('server1', 'channel-id', 'myUserId', true, createIntl({locale: 'en', messages: {}}));
+            newCurrentCall('server1', 'channel-id', 'myUserId');
+        });
+
+        await CallsActions.setPreferredAudioRoute(AudioDevice.Bluetooth);
+
+        expect(CallsNative.setAudioRoute).toHaveBeenCalledWith('BLUETOOTH');
+        expect(getConnectionForTesting()?.setUserSelectedAudioRoute).not.toHaveBeenCalled();
+
+        await act(async () => {
+            CallsActions.leaveCall();
+        });
+    });
+
+    it('should pin the route when setPreferredAudioRoute is called with fromUser', async () => {
+        addFakeCall('server1', 'channel-id');
+        await act(async () => {
+            await CallsActions.joinCall('server1', 'channel-id', 'myUserId', true, createIntl({locale: 'en', messages: {}}));
+            newCurrentCall('server1', 'channel-id', 'myUserId');
+        });
+
+        await CallsActions.setPreferredAudioRoute(AudioDevice.Bluetooth, true);
+
+        expect(CallsNative.setAudioRoute).toHaveBeenCalledWith('BLUETOOTH');
+        expect(getConnectionForTesting()?.setUserSelectedAudioRoute).toHaveBeenCalledWith(AudioDevice.Bluetooth);
+
+        await act(async () => {
+            CallsActions.leaveCall();
+        });
     });
 
     it('initializeVoiceTrack', async () => {

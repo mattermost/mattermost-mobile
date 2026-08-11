@@ -1,27 +1,28 @@
-# MM-T67856: Tapping Report a Problem leaves Settings and opens the report form.
+# MM-T67856: Tapping Report a Problem opens the report screen and you can get back to Settings.
 #
 # PRE-CONDITIONS:
 #   - Logged-in test user (via subflows/auth/login.yml)
-#   - Unlicensed / free-edition server (default Matterwick provisioning)
+#   - Any license tier, including unlicensed / Entry (default Matterwick provisioning)
+#   - AllowDownloadLogs enabled (default Matterwick provisioning)
 #
 # REQUIRED ENV VARS:
 #   - MAESTRO_APP_ID, TEST_USER_EMAIL, TEST_USER_PASSWORD
 #
 # ASSERTIONS:
-#   - Tapping Report a Problem navigates away from the Settings list
-#   - User can return to Settings and see Report a Problem again
-#   - iOS: external browser sheet OR in-app report screen is shown, then dismissed
-#   - Android: external browser tab opens, Back returns to Settings
+#   - Tapping Report a Problem opens the report screen, on every license tier
+#   - The app logs download is reachable from it
+#   - User can leave the screen and see Report a Problem in Settings again
 #
 # testIDs:
 #   - tab_bar.account.tab
 #   - account.screen
 #   - account.settings.option
 #   - settings.report_problem.option
-#   - breadcrumb
 #   - report_problem.screen
+#   - app_logs_download_button
+#   - tab_bar.home.tab
 #
-# Related flows (in-app report screen path):
+# Related flows:
 #   - MM-T67856_1 attach_logs_toggle_visible.yml
 #   - MM-T67856_2 attach_logs_toggle_on_surfaces_option.yml
 #   - MM-T67856_4 attach_logs_disabled_when_download_logs_off.yml
@@ -58,64 +59,56 @@ appId: ${MAESTRO_APP_ID}
 - tapOn:
     id: "settings.report_problem.option"
 
-# * Verify the report form opened, then dismiss it and return to Settings.
-# iOS: free-edition servers open an external browser; licensed servers show in-app screen.
+# * Verify the report screen opened rather than an external browser or mail composer.
+- extendedWaitUntil:
+    visible:
+      id: "report_problem.screen"
+    timeout: 30000
+- takeScreenshot: report-problem-opened
+
+# * Verify the app logs are reachable from the screen.
+# The logs section sits below the troubleshooting details, so scrolling is required.
+- scrollUntilVisible:
+    element:
+      id: "app_logs_download_button"
+    direction: DOWN
+    timeout: 10000
+
+# # Leave the report screen and return to Settings.
+# On iOS 26.3 Maestro's `back` does not dismiss modal-presented screens; relaunching
+# (stopApp + clearState:false) restarts the app without wiping data, so the user stays
+# logged in and lands on the Home tab.
 - runFlow:
     when:
       platform: iOS
     commands:
-      - runFlow:
-          when:
-            visible:
-              id: "breadcrumb"
-          commands:
-            - takeScreenshot: report-problem-opened
-            - tapOn:
-                id: "breadcrumb"
-            - tapOn:
-                text: "Done"
-                optional: true
-      - runFlow:
-          when:
-            visible:
-              id: "report_problem.screen"
-          commands:
-            - takeScreenshot: report-problem-in-app
-            # # iOS 26+: modal Report a Problem ignores Maestro `back`; relaunch keeps session.
-            - launchApp:
-                stopApp: true
-                clearState: false
-            - waitForAnimationToEnd:
-                timeout: 30000
-            - extendedWaitUntil:
-                visible:
-                  id: "tab_bar.home.tab"
-                timeout: 15000
-            - tapOn:
-                id: "tab_bar.account.tab"
-            - extendedWaitUntil:
-                visible:
-                  id: "account.settings.option"
-                timeout: 10000
-            - tapOn:
-                id: "account.settings.option"
-
-# * Verify the browser tab opened on Android, then Back returns to Settings.
-# Android: Chrome Custom Tab opens; Settings option leaves the tree until Back is pressed.
+      - launchApp:
+          stopApp: true
+          clearState: false
+      - waitForAnimationToEnd:
+          timeout: 30000
+      - extendedWaitUntil:
+          visible:
+            id: "tab_bar.home.tab"
+          timeout: 30000
+      - tapOn:
+          id: "tab_bar.account.tab"
+      - extendedWaitUntil:
+          visible:
+            id: "account.settings.option"
+          timeout: 10000
+      - tapOn:
+          id: "account.settings.option"
 - runFlow:
     when:
       platform: Android
     commands:
-      - extendedWaitUntil:
-          notVisible:
-            id: "settings.report_problem.option"
-          timeout: 8000
-      - takeScreenshot: report-problem-opened
       - pressKey: Back
 
 # * Verify Settings is visible again with Report a Problem listed
-- extendedWaitUntil:
-    visible:
+- scrollUntilVisible:
+    element:
       id: "settings.report_problem.option"
-    timeout: 10000
+    direction: DOWN
+    timeout: 15000
 - takeScreenshot: report-problem-dismissed
