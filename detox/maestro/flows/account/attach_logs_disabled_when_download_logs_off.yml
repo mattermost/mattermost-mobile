@@ -1,31 +1,37 @@
-# MM-T67856_4: With AllowDownloadLogs disabled, Report a Problem skips the in-app screen.
+# MM-T67856_4: With AllowDownloadLogs disabled, Report a Problem still opens the in-app
+# screen, but without the app logs or the attach-app-logs toggle.
 #
 # PRE-CONDITIONS:
 #   - Server SupportSettings.AllowDownloadLogs=false (patched in CI before this flow runs)
-#   - Logged-in test user on a licensed server
+#   - Logged-in test user
 #   - CI restores AllowDownloadLogs=true after this flow (exclude-tag + dedicated step)
 #
 # REQUIRED ENV VARS:
 #   - MAESTRO_APP_ID, TEST_USER_EMAIL, TEST_USER_PASSWORD, SITE_1_URL, ADMIN_TOKEN
 #
 # ASSERTIONS:
-#   - Tapping Report a Problem does not open the in-app report screen
-#   - Attach-app-logs toggle is never shown (screen is bypassed)
-#   - Mail composer or share sheet may appear and is dismissed via Back
+#   - Tapping Report a Problem opens the in-app report screen
+#   - Attach-app-logs toggle is not offered
+#   - App logs download is not offered
 #
 # testIDs:
 #   - tab_bar.account.tab
 #   - account.settings.option
 #   - settings.report_problem.option
 #   - report_problem.screen
+#   - report_problem.metadata.copy.button
 #   - report_problem.enable_log_attachments
+#   - app_logs_download_button
+#   - tab_bar.home.tab
 tags:
   - MM-T67856_4
 appId: ${MAESTRO_APP_ID}
 ---
+# # Log in as the test user
 - runFlow: ../../subflows/auth/login.yml
 
-# Navigate Settings > Report a Problem.
+# # Navigate Settings > Report a Problem.
+# Report a Problem can sit below the fold on small Android viewports (CI 59ec6ae).
 - tapOn:
     id: "tab_bar.account.tab"
 - extendedWaitUntil:
@@ -34,7 +40,6 @@ appId: ${MAESTRO_APP_ID}
     timeout: 10000
 - tapOn:
     id: "account.settings.option"
-# Report a Problem can sit below the fold on small Android viewports (CI 59ec6ae).
 - scrollUntilVisible:
     element:
       id: "settings.report_problem.option"
@@ -47,19 +52,55 @@ appId: ${MAESTRO_APP_ID}
 - tapOn:
     id: "settings.report_problem.option"
 
-# Give the email composer / share sheet time to appear, then assert the
-# in-app screen DID NOT render. waitForAnimationToEnd settles any modal that
-# the mail-client invocation may animate in.
-- waitForAnimationToEnd:
-    timeout: 5000
+# * Verify the report screen opens even when logs cannot be downloaded.
+# The logs setting arrives with the server config, which can lag on first login.
+- extendedWaitUntil:
+    visible:
+      id: "report_problem.screen"
+    timeout: 30000
+- takeScreenshot: report-problem-without-logs
 
-# Assertion: the in-app Report a Problem screen is not present, which means
-# the toggle is unreachable (the test's "hidden" condition).
-- assertNotVisible:
-    id: "report_problem.screen"
+# # Scroll to the end of the details first. assertNotVisible also passes for a
+# control that is merely below the fold, so reach the bottom before asserting.
+# Copy metadata is the last control on the screen when the app logs are unavailable.
+- scrollUntilVisible:
+    element:
+      id: "report_problem.metadata.copy.button"
+    direction: DOWN
+    timeout: 10000
+
+# * Verify neither the attach-app-logs toggle nor the logs download is offered.
 - assertNotVisible:
     id: "report_problem.enable_log_attachments"
+- assertNotVisible:
+    id: "app_logs_download_button"
 
-# Defensive cleanup: dismiss any modal/share-sheet/mail composer that may
-# have appeared so the next test starts on a clean screen.
-- back
+# # Leave the report screen so the next flow starts on a clean screen.
+# On iOS 26.3 Maestro's `back` does not dismiss modal-presented screens; relaunching
+# (stopApp + clearState:false) restarts the app without wiping data, so the user stays
+# logged in and lands on the Home tab.
+- runFlow:
+    when:
+      platform: iOS
+    commands:
+      - launchApp:
+          stopApp: true
+          clearState: false
+      - waitForAnimationToEnd:
+          timeout: 30000
+      - extendedWaitUntil:
+          visible:
+            id: "tab_bar.home.tab"
+          timeout: 30000
+- runFlow:
+    when:
+      platform: Android
+    commands:
+      - pressKey: Back
+      - extendedWaitUntil:
+          visible:
+            id: "settings.report_problem.option"
+          timeout: 10000
+
+# # Capture the final state
+- takeScreenshot: report-problem-logs-disabled-end

@@ -442,7 +442,7 @@ class ChannelScreen {
 
         await device.disableSynchronization();
         try {
-            await this.sendButton.longPress();
+            await this.sendButton.longPress(timeouts.TWO_SEC);
 
             await waitForElementToExist(
                 element(by.id(this.testID.scheduledPostOptionsBottomSheet)),

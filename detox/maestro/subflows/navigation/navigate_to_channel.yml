@@ -6,6 +6,7 @@
 # Dismiss it via testID if present.
 appId: ${MAESTRO_APP_ID}
 ---
+# # Expand the Channels category and open the test channel
 - runFlow: expand_channels_category.yml
 - extendedWaitUntil:
     visible:
@@ -13,13 +14,17 @@ appId: ${MAESTRO_APP_ID}
     timeout: 30000
 - tapOn:
     id: "channel_list.category.channels.channel_item.${TEST_CHANNEL_NAME}"
-# Wait until the channel list item scrolls off-screen (confirms navigation started)
+
+# # Wait until the channel list item scrolls off-screen (confirms navigation started)
 - extendedWaitUntil:
     notVisible:
       id: "channel_list.category.channels.channel_item.${TEST_CHANNEL_NAME}"
     timeout: 10000
-# Dismiss any "Schedule a message" tutorial tooltip if present
+
+# # Dismiss any "Schedule a message" tutorial tooltip if present
 - runFlow: dismiss_scheduled_post_tooltip.yml
+
+# * Verify the channel screen is up (post draft input is present)
 - extendedWaitUntil:
     visible:
       id: "channel.post_draft.post.input"

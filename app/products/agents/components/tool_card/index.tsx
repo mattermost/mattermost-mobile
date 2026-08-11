@@ -33,6 +33,7 @@ interface ToolCardProps {
     onReject?: (toolId: string) => void;
     approvalStage: ToolApprovalStage;
     canExpand?: boolean;
+    canApprove?: boolean;
     showArguments?: boolean;
     showResults?: boolean;
     isAutoApproved?: boolean;
@@ -79,9 +80,18 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
             color: changeOpacity(theme.centerChannelColor, 0.75),
             ...typography('Body', 100),
         },
-        autoApprovedLabel: {
-            color: changeOpacity(theme.centerChannelColor, 0.56),
-            ...typography('Body', 75),
+        autoApprovedBadge: {
+            flexDirection: 'row',
+            alignItems: 'center',
+            gap: 4,
+            paddingVertical: 2,
+            paddingHorizontal: 8,
+            borderRadius: 4,
+            backgroundColor: changeOpacity(theme.onlineIndicator, 0.12),
+        },
+        autoApprovedBadgeText: {
+            color: theme.onlineIndicator,
+            ...typography('Body', 75, 'SemiBold'),
         },
         resultContainer: {
             marginLeft: CONTENT_INDENT,
@@ -192,6 +202,7 @@ const ToolCard = ({
     onReject,
     approvalStage,
     canExpand = true,
+    canApprove = true,
     showArguments = true,
     showResults = true,
     isAutoApproved = false,
@@ -205,6 +216,10 @@ const ToolCard = ({
     }, [isCollapsed, chevronRotation]);
 
     const isPending = tool.status === ToolCallStatus.Pending;
+
+    // Accepted is the in-flight state between approval and the result landing;
+    // show the same processing spinner as Pending.
+    const isAccepted = tool.status === ToolCallStatus.Accepted;
     const hasLocalDecision = localDecision !== undefined && localDecision !== null;
     const isAutoApprovedStatus = tool.status === ToolCallStatus.AutoApproved || isAutoApproved;
 
@@ -259,7 +274,7 @@ const ToolCard = ({
 
     // Determine icon based on status
     const getStatusIcon = () => {
-        if (isPending) {
+        if (isPending || isAccepted) {
             return (
                 <Loading
                     size='small'
@@ -334,6 +349,23 @@ const ToolCard = ({
                 >
                     {displayName}
                 </Text>
+                {isAutoApprovedStatus && (
+                    <View
+                        style={styles.autoApprovedBadge}
+                        testID={`${testIdPrefix}.auto_approved_badge`}
+                    >
+                        <CompassIcon
+                            name='check-circle'
+                            size={12}
+                            color={theme.onlineIndicator}
+                        />
+                        <FormattedText
+                            id='agents.tool_call.auto_approved_badge'
+                            defaultMessage='Auto-approved'
+                            style={styles.autoApprovedBadgeText}
+                        />
+                    </View>
+                )}
             </Pressable>
 
             {!isCollapsed && (
@@ -380,13 +412,6 @@ const ToolCard = ({
                                     defaultMessage='Response'
                                     style={styles.responseLabelText}
                                 />
-                                {isAutoApprovedStatus && (
-                                    <FormattedText
-                                        id='agents.tool_call.auto_approved'
-                                        defaultMessage='(Auto-approved)'
-                                        style={styles.autoApprovedLabel}
-                                    />
-                                )}
                             </View>
                             <View style={styles.resultContainer}>
                                 <Markdown
@@ -396,7 +421,7 @@ const ToolCard = ({
                                     location={Screens.CHANNEL}
                                 />
                             </View>
-                            {isResultPhase && (
+                            {isResultPhase && canApprove && (
                                 <View
                                     style={styles.warningCallout}
                                     testID={`${testIdPrefix}.warning`}

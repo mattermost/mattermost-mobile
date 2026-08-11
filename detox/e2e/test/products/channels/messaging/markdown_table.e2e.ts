@@ -73,12 +73,10 @@ describe('Messaging - Markdown Table', () => {
     });
 
     // Skip iOS (SEC-11012): expanded-table horizontal scroll cannot reveal the right
-    // column. Reproduced: the right column renders at content x=392 in a 581px-wide
-    // table inside a 402px viewport, but both the incremental whileElement().scroll
-    // and scrollTo('right') (with a layout-settle wait) leave it "clipped by one or
-    // more superviews' bounds" — the scroll does not reveal it. Not a duplicate-back
-    // or hit-test issue; needs deeper layout investigation (or PE if a real user
-    // also can't reveal the right column). Kept skipped per rule 6.
+    // column — it renders at content x=392 in a 581px table inside a 402px viewport, and
+    // neither whileElement().scroll nor scrollTo('right') reveals it. Reproduced locally
+    // 2026-08-11. Not a duplicate-back or hit-test issue. NOTE: main enabled this test in
+    // c5a25c9a2; kept skipped here on reproduced evidence.
     (isIos() ? it.skip : it)('MM-T4899_2 - should be able to display markdown table with long text wrapped properly', async () => {
         // # Open a channel screen and post a markdown table with long text
         const markdownTable =
@@ -163,8 +161,6 @@ describe('Messaging - Markdown Table', () => {
         await ChannelScreen.back();
     });
 
-    // Unskipped (SEC-11012): stale skip — vertical scroll in full view passes on
-    // iOS now. Verified green.
     it('MM-T4899_4 - should be able to open markdown table in full view and allow vertical scroll', async () => {
         // # Open a channel screen and post a markdown table with more rows past vertical view
         const markdownTable =
@@ -210,10 +206,6 @@ describe('Messaging - Markdown Table', () => {
         await ChannelScreen.back();
     });
 
-    // Unskipped (SEC-11012): duplicate Back accessibility nodes resolved via the
-    // shared NavigationHeader.tapBackButton helper (SEC-10993) — TableScreen.back()
-    // and ChannelScreen.back() now index-qualify navigation.header.back instead of
-    // tapping the raw multi-match element. Verified 2x green on iOS.
     it('MM-T1442_1 - should display markdown table with multiple row heights correctly', async () => {
         // # Open a channel screen and post a markdown table with multiple row heights
         const markdownTable =
@@ -253,8 +245,6 @@ describe('Messaging - Markdown Table', () => {
         await ChannelScreen.back();
     });
 
-    // Unskipped (SEC-11012): stale skip — the expand control is hittable and the
-    // large-table horizontal+vertical scrolls pass on iOS now. Verified green.
     it('MM-T4899_5 - should be able to open markdown table in full view and allow both horizontal and vertical scrolls', async () => {
         // # Open a channel screen and post a markdown table with more columns and rows past horizontal and vertical views
         const markdownTable =

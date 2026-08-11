@@ -51,6 +51,22 @@ export type EndCallReason =
   | 'answeredElsewhere'
   | 'declinedElsewhere';
 
+// Audio route info emitted by onAudioRouteChanged and returned by getAudioRoute.
+export type AudioDeviceType = 'SPEAKER_PHONE' | 'EARPIECE' | 'BLUETOOTH' | 'WIRED_HEADSET' | 'NONE';
+
+export const AudioDevice = {
+    Speakerphone: 'SPEAKER_PHONE' as AudioDeviceType,
+    Earpiece: 'EARPIECE' as AudioDeviceType,
+    Bluetooth: 'BLUETOOTH' as AudioDeviceType,
+    WiredHeadset: 'WIRED_HEADSET' as AudioDeviceType,
+    None: 'NONE' as AudioDeviceType,
+};
+
+export type AudioRoute = Readonly<{
+  selectedAudioDevice: AudioDeviceType;
+  availableAudioDeviceList: AudioDeviceType[];
+}>
+
 // Event names — values must match the native Event enum
 export const CallsNativeEvents = {
     VoIPTokenUpdated: 'VoIPTokenUpdated',
@@ -59,6 +75,7 @@ export const CallsNativeEvents = {
     CallDeclined: 'CallDeclined',
     CallEnded: 'CallEnded',
     CallMuted: 'CallMuted',
+    AudioRouteChanged: 'AudioRouteChanged',
 } as const;
 
 export interface Spec extends TurboModule {
@@ -86,6 +103,26 @@ export interface Spec extends TurboModule {
     // microphone alive while the app is backgrounded.
     foregroundServiceStart: (config: ForegroundNotificationConfig) => void;
     foregroundServiceStop: () => void;
+
+    // Audio session lifecycle.
+    // Android: sets MODE_IN_COMMUNICATION + requests audio focus.
+    // iOS: no-op (CallKit manages activation via CXAnswerCallAction / CXStartCallAction).
+    startAudioSession: () => Promise<void>;
+
+    // Audio session teardown.
+    // Android: restores original audio mode, abandons focus, stops BT SCO.
+    // iOS: deactivates AVAudioSession when CallKit didDeactivate has not fired.
+    stopAudioSession: () => Promise<void>;
+
+    // Select the output audio route.
+    setAudioRoute: (route: AudioDeviceType) => Promise<void>;
+
+    // Query the current output route and available devices.
+    getAudioRoute: () => Promise<AudioRoute>;
+
+    // Ringtone playback. seconds=0 loops indefinitely; seconds>0 auto-stops after that duration (Android only — iOS always loops and relies on stopRingtone()).
+    startRingtone: (name: string, seconds: number) => Promise<void>;
+    stopRingtone: () => Promise<void>;
 }
 
 export default TurboModuleRegistry.getEnforcing<Spec>('MMCallsNative');

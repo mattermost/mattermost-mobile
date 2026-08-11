@@ -135,7 +135,7 @@ describe('Messaging - Emojis and Reactions', () => {
         await expect(reaction).toExist();
 
         // # Long press on the reaction
-        await reaction.longPress();
+        await reaction.longPress(timeouts.TWO_SEC);
 
         // * Verify user who reacted with the emoji
         await ReactionsScreen.toBeVisible();

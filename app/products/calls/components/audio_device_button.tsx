@@ -6,7 +6,7 @@ import {useIntl} from 'react-intl';
 import {Pressable, type StyleProp, Text, type TextStyle, View, type ViewStyle} from 'react-native';
 
 import {setPreferredAudioRoute} from '@calls/actions/calls';
-import {AudioDevice, type CurrentCall} from '@calls/types/calls';
+import {AudioDevice, type AudioDeviceType, type CurrentCall} from '@calls/types/calls';
 import CompassIcon, {type CompassIconName} from '@components/compass_icon';
 import SlideUpPanelItem, {ITEM_HEIGHT} from '@components/slide_up_panel_item';
 import {Device} from '@constants';
@@ -48,8 +48,8 @@ export const AudioDeviceButton = ({pressableStyle, iconStyle, buttonTextStyle, c
         if (available.includes(AudioDevice.WiredHeadset)) {
             available = available.filter((d) => d !== AudioDevice.Earpiece);
         }
-        const selectDevice = (device: AudioDevice) => {
-            setPreferredAudioRoute(device);
+        const selectDevice = (device: AudioDeviceType) => {
+            setPreferredAudioRoute(device, true);
             dismissBottomSheet();
         };
 
