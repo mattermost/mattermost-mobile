@@ -28,6 +28,7 @@
 #   - breadcrumb (iOS: Safari's back-to-app pill, not an app testID)
 tags:
   - MM-T5611
+  - shared
 appId: ${MAESTRO_APP_ID}
 ---
 # # Log in and navigate to the test channel

@@ -24,6 +24,7 @@
 #   - mute-unmute
 tags:
   - MM-T4830
+  - shared
 appId: ${MAESTRO_APP_ID}
 ---
 # # Log in as User A and open the test channel

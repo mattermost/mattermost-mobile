@@ -44,7 +44,7 @@ describe('buildTsioJobConfig', () => {
 
     it('should give each job its own report group and status context', () => {
         const cfg = buildTsioJobConfig(base, 'detox-ios');
-        assert.equal(cfg.total_reports_expected, 20);
+        assert.equal(cfg.total_reports_expected, 2);
         assert.equal(cfg.status_context, 'e2e-test/detox-ios');
         assert.equal(cfg.composite_identity.name, 'detox-ios');
         assert.equal(cfg.composite_identity.run_group, 'mobile-pr');

@@ -20,6 +20,7 @@
 #   - channel.post_draft.send_action.send.button
 tags:
   - MM-T3055
+  - shared
 appId: ${MAESTRO_APP_ID}
 ---
 # # Log in as User A and open the test channel

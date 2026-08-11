@@ -41,6 +41,7 @@ Every file under `detox/maestro/flows/**/*.yml` **must** start with this block *
 #   - report_problem.screen
 tags:
   - MM-TXXXX
+  - shared   # or ios-only | android-only — see platform tags below
 appId: ${MAESTRO_APP_ID}
 ---
 ```
@@ -54,8 +55,20 @@ appId: ${MAESTRO_APP_ID}
 | REQUIRED ENV VARS | Yes | Only variables referenced in the flow |
 | ASSERTIONS | Yes | Pass/fail outcomes in product language |
 | testIDs | Yes | Every `id:` selector used in the flow (grep `app/` for source of truth) |
-| `tags:` | Yes | At least the Zephyr ticket id |
+| `tags:` | Yes | Zephyr ticket id **plus** exactly one platform tag (`ios-only` \| `android-only` \| `shared`) |
 | `appId` | Yes | `${MAESTRO_APP_ID}` |
+
+### Platform tags (PR discovery)
+
+Test System IO discovers Maestro flows by path + `tags:`. Every flow must declare exactly one platform tag so PR CI can run **Android full / iOS partial**:
+
+| Tag | Meaning | PR dispatch |
+|---|---|---|
+| `shared` | Covered on both OS; Android is source of truth | Android only (`shared` excluded on iOS) |
+| `android-only` | Android-specific (e.g. Calls / CallKit gaps on simulator) | Android only |
+| `ios-only` | iOS-specific surface (e.g. Safari hand-off) | iOS only |
+
+Configured in `detox/maestro/config/exclude_tags.json` (`ios` excludes `android-only` + `shared`; `android` excludes `ios-only`). Full plan: `detox/docs/android_full_ios_partial_plan.md`.
 
 **Exempt from this contract** (enforced by `scripts/validate-flow-headers.sh`, which scans only `flows/**` and skips `_`-prefixed basenames):
 

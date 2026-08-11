@@ -28,6 +28,7 @@
 #   - MM-T67856_4 attach_logs_disabled_when_download_logs_off.yml
 tags:
   - MM-T67856
+  - shared
 appId: ${MAESTRO_APP_ID}
 ---
 # # Log in as the test user

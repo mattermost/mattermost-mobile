@@ -61,6 +61,13 @@ validate_flow() {
     fail "${rel}" "tags must include Zephyr id ${ticket} (tags: [${ticket}])"
   fi
 
+  # Exactly one PR platform tag for Test System IO Android-full / iOS-partial discovery.
+  local platform_tag_count
+  platform_tag_count="$(printf '%s\n' "${header}" | grep -E '^[[:space:]]*-[[:space:]]+(ios-only|android-only|shared)[[:space:]]*$' | wc -l | tr -d ' ')"
+  if [[ "${platform_tag_count}" != "1" ]]; then
+    fail "${rel}" "tags must include exactly one platform tag (ios-only | android-only | shared)"
+  fi
+
   # testIDs section should list at least one entry (or an explicit none/system note).
   local testids_block
   testids_block="$(printf '%s\n' "${header}" | awk '

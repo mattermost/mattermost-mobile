@@ -204,9 +204,17 @@ jobs:
           case "$SP" in
             detox/*) SP="${SP#detox/}" ;;
           esac
+          # PR complementary tree is materialized from ios_complementary_specs.json.
+          case "$SP" in
+            *ios_complementary*|.ios_complementary|e2e/test/.ios_complementary)
+              node detox/utils/materialize_ios_complementary_specs.js
+              SP="e2e/test/.ios_complementary"
+              ;;
+          esac
           EXCLUDE="ipad"
           case "$SP" in
             */ipad|*/ipad/*|ipad|ipad/*) EXCLUDE="" ;;
+            *ios_complementary*) EXCLUDE="" ;;
           esac
           {
             echo "detox-search-path=${SP}"
@@ -280,6 +288,10 @@ jobs:
         with:
           ref: ${{ inputs.MOBILE_VERSION }}
           persist-credentials: false
+
+      - name: Materialize iOS complementary specs
+        if: contains(needs.begin.outputs.detox-search-path, 'ios_complementary')
+        run: node detox/utils/materialize_ios_complementary_specs.js
 
       - name: Rotate logical test sites by shard
         env:

@@ -26,6 +26,7 @@
 #   - channel.post_draft.post.input
 tags:
   - MM-T837
+  - shared
 appId: ${MAESTRO_APP_ID}
 ---
 # # Log in as the shared test user

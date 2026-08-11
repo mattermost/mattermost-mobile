@@ -26,6 +26,7 @@
 #   - file_attachment.attach_logs
 tags:
   - MM-T67856_2
+  - shared
 appId: ${MAESTRO_APP_ID}
 ---
 # # Log in as the test user

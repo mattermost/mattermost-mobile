@@ -22,6 +22,7 @@
 #   - users-list
 tags:
   - MM-T4831
+  - shared
 appId: ${MAESTRO_APP_ID}
 ---
 # # Log in as User B and open the same channel

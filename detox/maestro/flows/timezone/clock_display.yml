@@ -25,6 +25,7 @@
 #   - timezone_display_settings.automatic.option.description
 tags:
   - MM-T1325
+  - shared
 appId: ${MAESTRO_APP_ID}
 env:
   SIMULATOR_TIMEZONE: ${SIMULATOR_TIMEZONE || "America/New_York"}

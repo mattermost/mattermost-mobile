@@ -20,6 +20,7 @@
 #   - report_problem.enable_log_attachments
 tags:
   - MM-T67856_1
+  - shared
 appId: ${MAESTRO_APP_ID}
 ---
 # # Log in as the test user

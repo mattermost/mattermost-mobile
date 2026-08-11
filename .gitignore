@@ -144,3 +144,6 @@ detox/maestro/.maestro-test-env*.sh
 detox/maestro/.maestro-test-env*.bak
 
 .e2e-debug/
+
+# Materialized PR Detox iOS complementary search tree (symlinks)
+detox/e2e/test/.ios_complementary/

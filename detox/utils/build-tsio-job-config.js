@@ -14,8 +14,10 @@
 const STATUS_CONTEXT_PREFIX = 'e2e-test';
 
 // workers = orchestration matrix size (must match template `parallelism` defaults).
+// PR defaults: Android full (20 Detox workers); iOS phone complementary (2).
+// MAIN/MASTER/RELEASE override detox-ios parallelism back to 20 in e2e-detox.yml.
 const PR_MAIN_JOBS = {
-    'detox-ios': {statusName: 'detox-ios', framework: 'detox', workers: 20},
+    'detox-ios': {statusName: 'detox-ios', framework: 'detox', workers: 2},
     'detox-android': {statusName: 'detox-android', framework: 'detox', workers: 20},
     'detox-ipad': {statusName: 'detox-ipad', framework: 'detox', workers: 1},
     'maestro-ios': {statusName: 'maestro-ios', framework: 'maestro', workers: 1},
