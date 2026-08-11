@@ -385,7 +385,8 @@ jobs:
         # run the single flow, then restore. Always restore even on failure.
         # Failure here does not fail the job — the main report is the source
         # of truth; this is additive coverage.
-        if: always()
+        # Skip when seed never wrote the env file (e.g. inactive Matterwick site).
+        if: always() && hashFiles('detox/maestro/.maestro-test-env.sh') != ''
         continue-on-error: true
         run: |
           set -a
@@ -880,7 +881,8 @@ jobs:
         # Isolated step: patch server config to AllowDownloadLogs=false, run
         # the single flow, restore on exit. continue-on-error so the main
         # report stays authoritative.
-        if: always()
+        # Skip when seed never wrote the env file (e.g. inactive Matterwick site).
+        if: always() && hashFiles('detox/maestro/.maestro-test-env.sh') != ''
         continue-on-error: true
         run: |
           set -a
