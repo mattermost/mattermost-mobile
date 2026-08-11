@@ -4,107 +4,64 @@ Companion plan for [PR #10032](https://github.com/mattermost/mattermost-mobile/p
 
 ## Goal
 
-Cut the iOS critical path on **PR** E2E while keeping coverage. **Android owns the full functional matrix**; **iOS only covers platform-unique surfaces** that Android cannot exercise. `MAIN` / `MASTER` / `RELEASE` keep full Detox iOS phone suite.
+Cut the iOS critical path on **PR** E2E while keeping coverage. **Android owns the full functional matrix**; **iOS only covers complementary surfaces**. `MAIN` / `MASTER` / `RELEASE` keep full Detox iOS phone suite.
 
 ## How PR specs are identified / tagged
 
 ### Maestro — platform tags on each flow
 
-Every flow under `detox/maestro/flows/**/*.yml` declares:
+Every flow under `detox/maestro/flows/**/*.yml` declares its Zephyr id plus **exactly one** platform tag:
 
-1. Its Zephyr id (`MM-T…`)
-2. **Exactly one** platform tag:
+| Tag | PR dispatch |
+|---|---|
+| `shared` | Android only |
+| `android-only` | Android only |
+| `ios-only` | iOS only |
 
-| Tag | Meaning | PR dispatch |
-|---|---|---|
-| `shared` | Same product path on both OS; Android is source of truth | **Android only** |
-| `android-only` | Android-specific (Calls / surfaces that hang on iOS simulator) | **Android only** |
-| `ios-only` | iOS-specific (Safari hand-off, iOS file picker, …) | **iOS only** |
+Filter: `detox/maestro/config/exclude_tags.json` → Test System IO `maestro-exclude-tags`.
 
-Example:
+### Detox — `// Tags:` on each complementary spec file
 
-```yaml
-tags:
-  - MM-T3260
-  - ios-only
+Test System IO discovers Detox specs as normal `*.e2e.ts` paths under `detox/e2e/test` (excluding `ipad/`), then filters by preamble tags:
+
+```ts
+// Copyright …
+// See LICENSE.txt for license information.
+
+// Tags: @ios_complementary
 ```
 
-**Discovery filter** (Test System IO `maestro-exclude-tags`, from `detox/maestro/config/exclude_tags.json`):
-
-- `ios` = existing flake/seed excludes + `android-only` + `shared`
-- `android` = existing flake/seed excludes + `ios-only`
-
-Enforced by `detox/maestro/scripts/validate-flow-headers.sh` and documented in `detox/maestro/GUIDELINES.md`.
-
-**Current PR Maestro shape:**
-
-| Platform | Dispatched flows (approx) |
+| Input | Meaning |
 |---|---|
-| Android | All non-excluded (`shared` + `android-only`; Calls included) |
-| iOS | `ios-only` only (today: `flows/account/help_url.yml`) |
+| `detox-include-tags: @ios_complementary` | PR iOS phone — only tagged files are registered as dispatch units |
+| (empty) | Android / full iOS / iPad — no include filter |
 
-### Detox — file allowlist (not Jest tags)
+Requires Test System IO `test-system-io-dispatch-begin` with `detox-include-tags` ([PR #106](https://github.com/mattermost/mattermost-test-system-io/pull/106)).
 
-Test System IO Detox discovery is **path-based** (one unit per `*.e2e.ts`). Jest `@tags` / `testNamePattern` are **not** used — they would not shrink the lease set.
+**Important:** units keep real paths (`e2e/test/products/channels/…/*.e2e.ts`). Workers lease and report them like any other Detox run — no symlink trees or side JSON allowlists.
 
-| Leg | PR identification |
+| Leg | PR selection |
 |---|---|
-| Detox Android | Full tree `detox/e2e/test` (excludes `ipad/`) |
-| Detox iPad | Unchanged: `detox/e2e/test/products/channels/ipad` |
-| Detox iOS phone | Allowlist in `detox/e2e/config/ios_complementary_specs.json` |
+| Detox Android | Full tree (`e2e/test`, exclude `ipad`) |
+| Detox iPad | `…/ipad` (unchanged) |
+| Detox iOS phone | Full tree + `@ios_complementary` (~30 screen-representative specs, 4 workers) |
 
-Allowlist entries are paths relative to `detox/`. At begin + worker startup, `detox/utils/materialize_ios_complementary_specs.js` symlinks them into `detox/e2e/test/.ios_complementary/` for discovery.
-
-**Initial allowlist rule:** files that contain at least one `(isAndroid() ? it.skip : it)` case (Android never runs that test). Suite-level `describe.skip` files are omitted. Expand the JSON when adding true iOS-only Detox coverage.
-
-| Run type | Detox iOS phone `search_path` | Workers |
+| Run type | Detox iOS phone filter | Workers |
 |---|---|---|
-| `PR` (default) | `e2e/test/.ios_complementary` | 2 |
-| `MAIN` / `MASTER` / `RELEASE` | `e2e/test` (full) | 20 |
+| `PR` | `@ios_complementary` | 4 |
+| `MAIN` / `MASTER` / `RELEASE` | none (full suite) | 20 |
 
-Wired in `.github/workflows/e2e-detox.yml` + `e2e-ios-template.yml`.
-
-## Investigation baseline — run [31458940326](https://github.com/mattermost/mattermost-mobile/actions/runs/31458940326) @ `20e82637c`
-
-### Maestro iOS “3 failed”
-
-[Report](https://test-io.test.mattermost.com/reports/mattermost-mobile/pr-10032/20e8263/maestro-ios?gh_run_id=31458940326): not assertion failures. Units ended `interrupted` at ~540s (`maestro-timeout-ms`):
-
-| Flow | Tag | Attempt |
-|---|---|---|
-| `flows/calls/call_ui_permission.yml` | MM-T1411 | interrupted ~541s |
-| `flows/calls/leave_call.yml` | MM-T4833 | interrupted ~541s |
-| `flows/calls/mute_unmute.yml` | MM-T4832 | interrupted ~541s |
-
-Same three flows **passed on Maestro Android** (~2–4m each). Root cause: Calls are unsuitable on iOS simulator; they are now `android-only` (and still Zephyr-excluded on iOS).
-
-### Why wall clock ~1h 48m (04:35 → 06:23 UTC)
-
-Critical path was **iOS build (~37m) → full Detox iOS (~70m)**. After this split, PR phone iOS Detox should lease ~8 files / 2 workers; Maestro iOS ~1 `ios-only` flow.
-
-| Phase | Duration (that run) |
-|---|---|
-| `build-android-apk` (Detox) | ~20m |
-| `build-android-apk-maestro` | ~10.5m |
-| `build-ios-simulator` | ~37m |
-| Maestro Android worker | ~26m |
-| Detox Android workers | ~30–42m (20 shards) |
-| Detox iPad worker | ~26m |
-| Maestro iOS worker | ~65m (incl. ~27m wasted on Calls timeouts) |
-| Detox iOS workers | ~47–70m (20 shards, full suite) |
+Add/remove complementary coverage by editing the `// Tags:` line on the spec file (grep `@ios_complementary`).
 
 ## Out of scope
 
 - No orchestrator retries (`retest-on-fail: false` stays)
 - No rename of `e2e-detox-pr.yml` (Matterwick entry)
-- Optional later: `maestro-include-tags` in Test System IO (symmetric to exclude) so iOS can select `ios-only` without excluding `shared` by name
 
 ## Checklist
 
-- [x] Document Maestro platform tags + Detox allowlist identification
-- [x] Tag Maestro flows (`ios-only` / `android-only` / `shared`)
-- [x] Wire `exclude_tags.json` platform filters
-- [x] Add Detox iOS complementary allowlist + materialize script
-- [x] PR workflows: complementary search path + 2 workers; full suite on MAIN/MASTER/RELEASE
-- [ ] Re-run PR E2E (`E2E/Run`) and confirm wall clock + commit statuses
-- [ ] Grow allowlist / `ios-only` flows as new OS-unique coverage lands
+- [x] Maestro platform tags + exclude_tags filters
+- [x] Detox `// Tags: @ios_complementary` + Test System IO include-tags discovery
+- [x] ~30 screen-representative iOS complementary specs
+- [x] PR workflows register real paths through orchestration
+- [ ] Re-run PR E2E and confirm all platforms green

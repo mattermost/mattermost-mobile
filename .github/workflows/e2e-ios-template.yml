@@ -84,6 +84,13 @@ on:
         required: false
         type: string
         default: "detox/e2e/test"
+      detox-include-tags:
+        description: >
+          Comma-separated // Tags: filter for Test System IO discovery
+          (e.g. @ios_complementary). Empty = no include filter.
+        required: false
+        type: string
+        default: ""
       parallelism:
         description: "Number of parallel orchestration workers"
         required: false
@@ -117,9 +124,9 @@ on:
         type: string
         default: ""
 
-# Pin: mattermost-test-system-io @ e2d5032 (Detox batch_size + parallel workers).
+# Pin: mattermost-test-system-io @ cec992f (Detox // Tags: include/exclude filter).
 env:
-  TEST_SYSTEM_IO_ACTIONS_SHA: e2d5032cfa71a3ad11b0975b135cd221564f2787
+  TEST_SYSTEM_IO_ACTIONS_SHA: cec992f5e878fe5757b83800b7568c0cf342287f
   AWS_REGION: "us-east-1"
   ADMIN_EMAIL: ${{ secrets.MM_MOBILE_E2E_ADMIN_EMAIL }}
   ADMIN_USERNAME: ${{ inputs.MM_TEST_USER_NAME || secrets.MM_MOBILE_E2E_ADMIN_USERNAME }}
@@ -154,6 +161,7 @@ jobs:
       worker-shards: ${{ steps.matrix.outputs.shards }}
       detox-search-path: ${{ steps.paths.outputs.detox-search-path }}
       detox-exclude-dir: ${{ steps.paths.outputs.detox-exclude-dir }}
+      detox-include-tags: ${{ steps.paths.outputs.detox-include-tags }}
       pr-number: ${{ steps.cfg.outputs.pr-number }}
     steps:
       - name: Checkout
@@ -198,29 +206,23 @@ jobs:
         id: paths
         env:
           SEARCH_PATH: ${{ inputs.search_path }}
+          INCLUDE_TAGS: ${{ inputs.detox-include-tags }}
         run: |
           set -euo pipefail
           SP="${SEARCH_PATH#./}"
           case "$SP" in
             detox/*) SP="${SP#detox/}" ;;
           esac
-          # PR complementary tree is materialized from ios_complementary_specs.json.
-          case "$SP" in
-            *ios_complementary*|.ios_complementary|e2e/test/.ios_complementary)
-              node detox/utils/materialize_ios_complementary_specs.js
-              SP="e2e/test/.ios_complementary"
-              ;;
-          esac
           EXCLUDE="ipad"
           case "$SP" in
             */ipad|*/ipad/*|ipad|ipad/*) EXCLUDE="" ;;
-            *ios_complementary*) EXCLUDE="" ;;
           esac
           {
             echo "detox-search-path=${SP}"
             echo "detox-exclude-dir=${EXCLUDE}"
+            echo "detox-include-tags=${INCLUDE_TAGS}"
           } >> "$GITHUB_OUTPUT"
-          echo "detox-search-path=${SP} detox-exclude-dir='${EXCLUDE}'"
+          echo "detox-search-path=${SP} detox-exclude-dir='${EXCLUDE}' detox-include-tags='${INCLUDE_TAGS}'"
 
       - name: Worker matrix JSON
         id: matrix
@@ -233,7 +235,7 @@ jobs:
 
       - name: test-system-io dispatch begin
         id: begin
-        uses: mattermost/mattermost-test-system-io/.github/actions/test-system-io-dispatch-begin@e2d5032cfa71a3ad11b0975b135cd221564f2787
+        uses: mattermost/mattermost-test-system-io/.github/actions/test-system-io-dispatch-begin@cec992f5e878fe5757b83800b7568c0cf342287f
         with:
           use-staging: ${{ vars.E2E_USE_STAGING_TEST_IO_URL == 'true' }}
           framework: detox
@@ -243,6 +245,7 @@ jobs:
           detox-dir: detox
           detox-search-path: ${{ steps.paths.outputs.detox-search-path }}
           detox-exclude-dir: ${{ steps.paths.outputs.detox-exclude-dir }}
+          detox-include-tags: ${{ steps.paths.outputs.detox-include-tags }}
           # Parent e2e-detox-pr already posts pending statuses.
           post-pending-commit-status: "false"
           commit-status-context: ${{ steps.cfg.outputs.status-context }}
@@ -259,6 +262,7 @@ jobs:
           TOTAL_UNITS: ${{ steps.begin.outputs.total-units }}
           WORKERS: ${{ inputs.parallelism }}
           SEARCH_PATH: ${{ steps.paths.outputs.detox-search-path }}
+          INCLUDE_TAGS: ${{ steps.paths.outputs.detox-include-tags }}
         run: |
           {
             echo "## Detox iOS orchestration begin"
@@ -267,6 +271,7 @@ jobs:
             echo "- total units: ${TOTAL_UNITS}"
             echo "- workers: ${WORKERS}"
             echo "- search path: \`${SEARCH_PATH}\`"
+            echo "- include tags: \`${INCLUDE_TAGS:-*}\`"
           } >> "$GITHUB_STEP_SUMMARY"
 
   workers:
@@ -288,10 +293,6 @@ jobs:
         with:
           ref: ${{ inputs.MOBILE_VERSION }}
           persist-credentials: false
-
-      - name: Materialize iOS complementary specs
-        if: contains(needs.begin.outputs.detox-search-path, 'ios_complementary')
-        run: node detox/utils/materialize_ios_complementary_specs.js
 
       - name: Rotate logical test sites by shard
         env:
@@ -427,7 +428,7 @@ jobs:
         run: cd detox && npm run detox:config-gen
 
       - name: test-system-io dispatch run
-        uses: mattermost/mattermost-test-system-io/.github/actions/test-system-io-dispatch-run@e2d5032cfa71a3ad11b0975b135cd221564f2787
+        uses: mattermost/mattermost-test-system-io/.github/actions/test-system-io-dispatch-run@cec992f5e878fe5757b83800b7568c0cf342287f
         with:
           use-staging: ${{ vars.E2E_USE_STAGING_TEST_IO_URL == 'true' }}
           framework: detox
@@ -498,7 +499,7 @@ jobs:
       - name: test-system-io summary
         id: summary
         continue-on-error: true
-        uses: mattermost/mattermost-test-system-io/.github/actions/test-system-io-summary@e2d5032cfa71a3ad11b0975b135cd221564f2787
+        uses: mattermost/mattermost-test-system-io/.github/actions/test-system-io-summary@cec992f5e878fe5757b83800b7568c0cf342287f
         with:
           use-staging: ${{ vars.E2E_USE_STAGING_TEST_IO_URL == 'true' }}
           framework: detox

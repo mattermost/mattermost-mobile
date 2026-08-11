@@ -63,10 +63,12 @@ jobs:
       tsio-config: ${{ toJSON(fromJSON(inputs.tsio-job-configs)['detox-ios']) }}
       tsio-shard-name: detox-ios
       durations_key: detox-ios
-      # PR: complementary allowlist only (see detox/e2e/config/ios_complementary_specs.json).
-      # MAIN/MASTER/RELEASE: full phone suite.
-      search_path: ${{ (inputs.run_type == 'MAIN' || inputs.run_type == 'MASTER' || inputs.run_type == 'RELEASE') && 'detox/e2e/test' || 'detox/e2e/test/.ios_complementary' }}
-      parallelism: ${{ (inputs.run_type == 'MAIN' || inputs.run_type == 'MASTER' || inputs.run_type == 'RELEASE') && '20' || '2' }}
+      # PR: full tree + // Tags: @ios_complementary filter (real paths, orchestration as usual).
+      # MAIN/MASTER/RELEASE: full phone suite (no include-tags filter).
+      search_path: detox/e2e/test
+      # Avoid `cond && '' || tag` — empty string is falsy in GHA expressions.
+      detox-include-tags: ${{ (inputs.run_type != 'MAIN' && inputs.run_type != 'MASTER' && inputs.run_type != 'RELEASE') && '@ios_complementary' || '' }}
+      parallelism: ${{ (inputs.run_type == 'MAIN' || inputs.run_type == 'MASTER' || inputs.run_type == 'RELEASE') && '20' || '4' }}
       record_tests_in_zephyr: ${{ inputs.run_type == 'RELEASE' || inputs.run_type == 'MAIN' || inputs.run_type == 'MASTER' }}
       MOBILE_VERSION: ${{ inputs.MOBILE_VERSION }}
       MM_TEST_SERVER_URL: ${{ inputs.IOS_SITE_1_URL }}
