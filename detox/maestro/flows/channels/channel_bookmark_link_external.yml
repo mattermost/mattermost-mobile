@@ -25,6 +25,8 @@
 #   - channel_bookmark.edit.save_button
 #   - close.channel_info.button
 #   - channel_header.bookmarks.list
+#   - channel_bookmark.<id>.title
+#   - channel_bookmark.options.edit
 tags:
   - MM-T5611
 appId: ${MAESTRO_APP_ID}
@@ -166,25 +168,13 @@ appId: ${MAESTRO_APP_ID}
 # interactivity via long-press → options sheet instead (same product path as handleLongPress).
 - waitForAnimationToEnd:
     timeout: 3000
-- runFlow:
-    when:
-      platform: iOS
-    commands:
-      # # Match the bookmark by its OG-autofilled title as a REGEX. Maestro's `text`
-      # matcher is a full-string match, so exact "Mattermost" never matches
-      # "Mattermost | Collaboration Platform...".
-      - longPressOn:
-          text: ".*[Mm]attermost.*"
-- runFlow:
-    when:
-      platform: Android
-    commands:
-      - longPressOn:
-          id: "channel_bookmark\\..+\\.title"
-# * Verify the bookmark is interactive: the options sheet is shown
+# # Long-press the bookmark title (stable testID; avoids OG title text / locale).
+- longPressOn:
+    id: "channel_bookmark\\..+\\.title"
+# * Verify the bookmark is interactive: the options sheet Edit action is shown
 - extendedWaitUntil:
     visible:
-      text: "Edit"
+      id: "channel_bookmark.options.edit"
     timeout: 15000
 - takeScreenshot: bookmark-options-visible
 # # Dismiss the options bottom sheet.

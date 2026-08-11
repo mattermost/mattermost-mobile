@@ -19,12 +19,13 @@ import {NavigationHeader} from '@support/ui/component';
 import {
     ChannelListScreen,
     ChannelScreen,
+    CodeScreen,
     HomeScreen,
     LoginScreen,
     ServerScreen,
 } from '@support/ui/screen';
 import {isAndroid, isIos, timeouts, wait} from '@support/utils';
-import {by, element, expect, waitFor} from 'detox';
+import {expect, waitFor} from 'detox';
 
 describe('Messaging - Code Block Dismisses Keyboard', () => {
     const serverOneDisplayName = 'Server 1';
@@ -46,12 +47,7 @@ describe('Messaging - Code Block Dismisses Keyboard', () => {
     });
 
     afterAll(async () => {
-        try {
-            await HomeScreen.logout();
-        } catch {
-            // Do not mask the test failure with an afterAll logout race
-            // (CI 31506724244: concurrent tooltip dismiss + account tab waits).
-        }
+        await HomeScreen.logout();
     });
 
     // Skip iOS: R1 product — Code preview back (NavigationHeader) not visible; Android uses pressBack
@@ -75,17 +71,17 @@ describe('Messaging - Code Block Dismisses Keyboard', () => {
         // # Reveal the code block above the keyboard (same pattern as markdown_code.e2e.ts)
         const {postListPostItemCodeBlock} = ChannelScreen.getPostListPostItem(codePost.id, '');
         await waitFor(postListPostItemCodeBlock).toExist().withTimeout(timeouts.TEN_SEC);
+
+        // Scroll up fails when the post list is already at the top (Detox scroll boundary).
         try {
             await ChannelScreen.getFlatPostList().scroll(300, 'up', 0.5, 0.5);
-        } catch {
-            // Already near top — non-fatal.
-        }
+        } catch { /* already at top — non-fatal */ }
 
         // # Tap the code block — navigates to Code preview screen and dismisses the keyboard
         await postListPostItemCodeBlock.tap();
 
-        // * Verify Code preview opened (title "Code" when language is unspecified)
-        await waitFor(element(by.text('Code'))).toExist().withTimeout(timeouts.TEN_SEC);
+        // * Verify Code preview opened
+        await CodeScreen.toBeVisible();
 
         // # Go back from Code preview screen to channel screen.
         // Code route uses custom NavigationHeader (headerBackTitle ''), so by.label('Back')

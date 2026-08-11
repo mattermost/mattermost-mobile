@@ -21,6 +21,7 @@ import ChannelInfoScreen from './channel_info';
 import ChannelListScreen from './channel_list';
 import ChannelSettingsScreen from './channel_settings';
 import ClockDisplaySettingsScreen from './clock_display_settings';
+import CodeScreen from './code';
 import CreateDirectMessageScreen from './create_direct_message';
 import CreateOrEditChannelScreen from './create_or_edit_channel';
 import CustomStatusScreen from './custom_status';
@@ -78,6 +79,7 @@ export {
     ChannelConfigurationScreen,
     ChannelSettingsScreen,
     ClockDisplaySettingsScreen,
+    CodeScreen,
     CreateDirectMessageScreen,
     CreateOrEditChannelScreen,
     CustomStatusScreen,

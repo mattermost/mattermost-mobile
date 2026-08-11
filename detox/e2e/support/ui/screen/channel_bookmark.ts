@@ -21,7 +21,8 @@ class ChannelBookmarkScreen {
         emojiPickerScreen: 'emoji_picker.screen',
         emojiPickerSearchInput: 'emoji_picker.search_bar.search.input',
         emojiPickerToolTipCloseButton: 'skin_selector.tooltip.close.button',
-        optionsSheet: 'undefined.screen',
+        optionsSheet: 'channel_bookmark.options',
+        editOption: 'channel_bookmark.options.edit',
     };
 
     channelBookmarkScreen = element(by.id(this.testID.channelBookmarkScreen));
@@ -50,7 +51,7 @@ class ChannelBookmarkScreen {
     };
 
     // Edit options (long press on bookmark)
-    editOption = element(by.text('Edit'));
+    editOption = element(by.id(this.testID.editOption));
     deleteOption = element(by.text('Delete'));
     copyLinkOption = element(by.text('Copy Link'));
     shareOption = element(by.text('Share'));

@@ -388,12 +388,23 @@ for batch_paths in "${BATCHES[@]}"; do
       flow_label="${path_arr[0]:-unknown_flow}"
       flow_base="${flow_label##*/}"
       flow_id="${flow_base%.yml}"
+      # Escape for XML attributes/text so parseMaestroReport accepts the report.
+      xml_escape() {
+        local s="$1"
+        s="${s//&/&amp;}"
+        s="${s//</&lt;}"
+        s="${s//>/&gt;}"
+        s="${s//\"/&quot;}"
+        printf '%s' "$s"
+      }
+      flow_label_xml="$(xml_escape "$flow_label")"
+      flow_id_xml="$(xml_escape "$flow_id")"
       cat > "$batch_xml" <<EOF
 <?xml version='1.0' encoding='UTF-8'?>
 <testsuites>
-  <testsuite name="${flow_label}" tests="1" failures="1" errors="0" skipped="0" time="0">
-    <testcase id="${flow_id}" name="${flow_id}" classname="${flow_label}" file="${flow_label}" time="0" status="ERROR">
-      <failure>Maestro batch ${batch_idx} exited ${rc} without writing JUnit XML (${flow_label})</failure>
+  <testsuite name="${flow_label_xml}" tests="1" failures="1" errors="0" skipped="0" time="0">
+    <testcase id="${flow_id_xml}" name="${flow_id_xml}" classname="${flow_label_xml}" file="${flow_label_xml}" time="0" status="ERROR">
+      <failure>Maestro batch ${batch_idx} exited ${rc} without writing JUnit XML (${flow_label_xml})</failure>
     </testcase>
   </testsuite>
 </testsuites>
