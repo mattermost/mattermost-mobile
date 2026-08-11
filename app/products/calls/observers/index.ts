@@ -99,13 +99,13 @@ export const observeCallDatabase = () => {
 // Observes the current call's channel from the call's own server database,
 // which is not necessarily the active server's database.
 export const observeCallChannel = () => {
-    const channelId = observeCurrentCall().pipe(
-        switchMap((call) => of$(call?.channelId || '')),
-        distinctUntilChanged(),
-    );
-
-    return combineLatest([observeCallDatabase(), channelId]).pipe(
-        switchMap(([db, id]) => (db && id ? observeChannel(db, id) : of$(undefined))),
+    return observeCurrentCall().pipe(
+        distinctUntilChanged((a, b) => a?.channelId === b?.channelId && a?.serverUrl === b?.serverUrl),
+        switchMap((call) => {
+            const db = call ? DatabaseManager.serverDatabases[call.serverUrl]?.database : undefined;
+            const id = call?.channelId || '';
+            return db && id ? observeChannel(db, id) : of$(undefined);
+        }),
     );
 };
 
