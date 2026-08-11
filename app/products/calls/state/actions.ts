@@ -35,6 +35,7 @@ import {
     type LiveCaptionMobile,
     type ReactionStreamEmoji,
 } from '@calls/types/calls';
+import {hasOtherUserJoined} from '@calls/utils';
 import {Calls, General, Screens} from '@constants';
 import DatabaseManager from '@database/manager';
 import {getChannelById} from '@queries/servers/channel';
@@ -380,6 +381,16 @@ export const userJoinedCall = (serverUrl: string, channelId: string, userId: str
         if (userId === nextCurrentCall.myUserId && !nextCurrentCall.connected) {
             nextCurrentCall.connected = true;
             nextCurrentCall.mySessionId = sessionId;
+        }
+
+        // TODO: Restrict this to DM calls only.
+        // This synchronous event path does not have channel type, so we should pass it through
+        // currentCall setup instead of adding an async channel lookup here.
+        if (
+            userId === nextCurrentCall.myUserId &&
+            !nextCurrentCall.dmCalleeAnsweredAt &&
+            hasOtherUserJoined(nextCurrentCall.sessions, nextCurrentCall.myUserId)) {
+            nextCurrentCall.dmCalleeAnsweredAt = Date.now();
         }
 
         setCurrentCall(nextCurrentCall);

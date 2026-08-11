@@ -169,6 +169,15 @@ const callDM: Call = {
     dismissed: {},
 };
 
+// userJoinedCall stamps dmCalleeAnsweredAt with the current time when I join a call someone else is already in,
+// so tests that assert on the whole current call need that moment to be deterministic.
+const ANSWERED_AT = 1700000000000;
+const atAnsweredTime = (fn: () => void) => {
+    const now = jest.spyOn(Date, 'now').mockReturnValue(ANSWERED_AT);
+    fn();
+    now.mockRestore();
+};
+
 describe('useCallsState', () => {
     const {updateThreadFollowing} = require('@actions/remote/thread');
 
@@ -338,6 +347,47 @@ describe('useCallsState', () => {
         assert.deepEqual(result.current[0].calls, expectedCallsState);
         assert.deepEqual(result.current[1], expectedChannelsWithCallsState);
         assert.deepEqual(result.current[2], expectedCurrentCallState);
+    });
+
+    it('joinedCall stamps dmCalleeAnsweredAt when I join a call another user is already in', () => {
+        const emptyCall: Call = {
+            ...callDM,
+            channelId: 'channel-1',
+            sessions: {},
+        };
+        const setUpCall = (call: Call) => {
+            act(() => {
+                setCallsState('server1', {...DefaultCallsState, myUserId: 'myUserId', calls: {'channel-1': call}});
+                setCurrentCall({
+                    ...DefaultCurrentCall,
+                    ...call,
+                    serverUrl: 'server1',
+                    myUserId: 'myUserId',
+                });
+            });
+        };
+        const {result} = renderHook(() => useCurrentCall());
+
+        // Joining a call nobody else is in yet: there is nothing to count from.
+        setUpCall(emptyCall);
+        act(() => atAnsweredTime(() => userJoinedCall('server1', 'channel-1', 'myUserId', 'mySessionId')));
+        assert.equal(result.current?.dmCalleeAnsweredAt, undefined);
+
+        // ...and someone joining after me doesn't stamp it either, since only my own join is handled here.
+        act(() => atAnsweredTime(() => userJoinedCall('server1', 'channel-1', 'user-2', 'session2')));
+        assert.equal(result.current?.dmCalleeAnsweredAt, undefined);
+
+        // Joining a call another user is already in: that's the moment it was answered.
+        setUpCall({
+            ...emptyCall,
+            sessions: {session2: {sessionId: 'session2', userId: 'user-2', muted: true, raisedHand: 0}},
+        });
+        act(() => atAnsweredTime(() => userJoinedCall('server1', 'channel-1', 'myUserId', 'mySessionId')));
+        assert.equal(result.current?.dmCalleeAnsweredAt, ANSWERED_AT);
+
+        // Another device of mine joining later doesn't move that moment.
+        act(() => userJoinedCall('server1', 'channel-1', 'myUserId', 'myOtherSessionId'));
+        assert.equal(result.current?.dmCalleeAnsweredAt, ANSWERED_AT);
     });
 
     it('leftCall', () => {
@@ -767,6 +817,7 @@ describe('useCallsState', () => {
             myUserId: 'myUserId',
             mySessionId: 'mySessionId',
             ...newCall1,
+            dmCalleeAnsweredAt: ANSWERED_AT,
         };
 
         // setup
@@ -778,10 +829,10 @@ describe('useCallsState', () => {
         assert.deepEqual(result.current[1], null);
 
         // test
-        act(() => {
+        act(() => atAnsweredTime(() => {
             newCurrentCall('server1', 'channel-1', 'myUserId');
             userJoinedCall('server1', 'channel-1', 'myUserId', 'mySessionId');
-        });
+        }));
         assert.deepEqual(result.current[0], expectedCallsState);
         assert.deepEqual(result.current[1], expectedCurrentCallState);
 
@@ -946,6 +997,7 @@ describe('useCallsState', () => {
             mySessionId: 'mySessionId',
             connected: true,
             ...newCall1,
+            dmCalleeAnsweredAt: ANSWERED_AT,
         };
         const secondExpectedCurrentCallState: CurrentCall = {
             ...expectedCurrentCallState,
@@ -966,11 +1018,11 @@ describe('useCallsState', () => {
         assert.deepEqual(result.current[2], initialGlobalState);
 
         // join call
-        act(() => {
+        act(() => atAnsweredTime(() => {
             setMicPermissionsGranted(false);
             newCurrentCall('server1', 'channel-1', 'myUserId');
             userJoinedCall('server1', 'channel-1', 'myUserId', 'mySessionId');
-        });
+        }));
         assert.deepEqual(result.current[0], expectedCallsState);
         assert.deepEqual(result.current[1], expectedCurrentCallState);
         assert.deepEqual(result.current[2], initialGlobalState);
@@ -1046,6 +1098,7 @@ describe('useCallsState', () => {
             mySessionId: 'mySessionId',
             connected: true,
             ...newCall1,
+            dmCalleeAnsweredAt: ANSWERED_AT,
         };
 
         // setup
@@ -1057,10 +1110,10 @@ describe('useCallsState', () => {
         assert.deepEqual(result.current[1], null);
 
         // join call
-        act(() => {
+        act(() => atAnsweredTime(() => {
             newCurrentCall('server1', 'channel-1', 'myUserId');
             userJoinedCall('server1', 'channel-1', 'myUserId', 'mySessionId');
-        });
+        }));
         assert.deepEqual(result.current[0], expectedCallsState);
         assert.deepEqual(result.current[1], currentCallNoAlertNoDismissed);
 
