@@ -11,6 +11,7 @@ import SwiftUI
 import UIKit
 import os.log
 import Sentry
+import react_native_network_client
 
 class ShareViewController: UIViewController {
   private var fileManager: LocalFileManager?
@@ -20,6 +21,7 @@ class ShareViewController: UIViewController {
   
   override func viewDidLoad() {
     super.viewDidLoad()
+    SessionAttributesOutboundHeader.setHandler { SessionAttributes.getOutboundHeader($0) }
     self.isModalInPresentation = true
     self.addObservers()
     fileManager = LocalFileManager()

@@ -35,6 +35,9 @@ import java.util.Objects
 class ShareWorker(private val context: Context, workerParameters: WorkerParameters) : Worker(context, workerParameters) {
     companion object {
         private const val HEADER_X_MATTERMOST_PREAUTH_SECRET = "X-Mattermost-Preauth-Secret"
+        private const val HEADER_SESSION_ATTRIBUTES = "X-MM-Session-Attributes"
+
+        var getSessionAttributesHeader: ((Context, String) -> String?)? = null
     }
     private val jsonType: MediaType? = "application/json; charset=utf-8".toMediaTypeOrNull()
     private val okHttpClient: OkHttpClient
@@ -138,6 +141,10 @@ class ShareWorker(private val context: Context, workerParameters: WorkerParamete
                 .url("$serverUrl/api/v4/posts")
                 .post(body)
 
+        getSessionAttributesHeader?.invoke(context, serverUrl)?.let { header ->
+            requestBuilder.header(HEADER_SESSION_ATTRIBUTES, header)
+        }
+
         if (preauthSecret != null) {
             requestBuilder.header(HEADER_X_MATTERMOST_PREAUTH_SECRET, preauthSecret)
         }
@@ -173,6 +180,10 @@ class ShareWorker(private val context: Context, workerParameters: WorkerParamete
                     .header("Authorization", "BEARER $token")
                     .url("$serverUrl/api/v4/files")
                     .post(body)
+
+            getSessionAttributesHeader?.invoke(context, serverUrl)?.let { header ->
+                requestBuilder.header(HEADER_SESSION_ATTRIBUTES, header)
+            }
 
             if (preauthSecret != null) {
                 requestBuilder.header(HEADER_X_MATTERMOST_PREAUTH_SECRET, preauthSecret)
