@@ -389,13 +389,11 @@ for batch_paths in "${BATCHES[@]}"; do
       flow_base="${flow_label##*/}"
       flow_id="${flow_base%.yml}"
       # Escape for XML attributes/text so parseMaestroReport accepts the report.
+      # Use sed (not ${var//pat/repl}): Bash 5.2 corrupts < > " with unescaped & in
+      # the replacement; Bash 3.2 treats \& as a literal backslash. sed is portable.
+      # Order: & first so later replacements do not double-escape amp entities.
       xml_escape() {
-        local s="$1"
-        s="${s//&/&amp;}"
-        s="${s//</&lt;}"
-        s="${s//>/&gt;}"
-        s="${s//\"/&quot;}"
-        printf '%s' "$s"
+        printf '%s' "$1" | sed -e 's/\&/\&amp;/g' -e 's/</\&lt;/g' -e 's/>/\&gt;/g' -e 's/"/\&quot;/g'
       }
       flow_label_xml="$(xml_escape "$flow_label")"
       flow_id_xml="$(xml_escape "$flow_id")"

@@ -12,7 +12,7 @@ class CodeScreen {
     title = element(by.id(this.testID.title));
 
     toBeVisible = async () => {
-        await waitFor(this.title).toExist().withTimeout(timeouts.TEN_SEC);
+        await waitFor(this.title).toBeVisible().withTimeout(timeouts.TEN_SEC);
         return this.title;
     };
 }
