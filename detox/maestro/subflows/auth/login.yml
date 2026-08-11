@@ -202,11 +202,6 @@ appId: ${MAESTRO_APP_ID}
       # field (FloatingTextInput + secureTextEntry). Empty password keeps
       # testID login_form.signin.button.disabled — Maestro then fails waiting
       # for login_form.signin.button.
-      # Evidence: CI 30340678924 MM-T67856_2 (first batch after MM-T1325 skip);
-      # same flow passed as batch-2 on 30334294934 once the sim was warm.
-      # Tap email label each attempt; erase before retype. Do not insert
-      # waitForAnimationToEnd between Next and password — it dismisses the
-      # keyboard so Next is no longer hittable.
       - retry:
           maxRetries: 4
           commands:
@@ -243,28 +238,29 @@ appId: ${MAESTRO_APP_ID}
             id: "login_form.signin.button"
           timeout: 10000
 
-# # Submit the login, retrying because iOS URLSession can drop the first login POST
-# right after server connect on cold sims.
-# iOS per-attempt home wait is sized to hedge two competing failure modes:
-#   - dropped POST  → the wait must expire soon enough for a retry to re-tap Log In
-#   - slow cold sim → the wait must be long enough that a working login is not cut short
-# 180s nested wait_for_home_tab starved retries (CI 30447839548 MM-T67856_1/_2 timed out
-# at ~232–282s with no effective re-login); 60s risks killing a login that merely needs
-# ~90s (#9893 run 30424009936 passed these flows with batch 1 at 5m39s). 100s gives two
-# full attempts in ~3.5 min and clears the observed slow-but-working case.
-# Android keeps the original 180s budget from wait_for_home_tab.yml — Android login was
-# never the failing path (all flows pass in ~57s), so shortening it would only add risk.
 - retry:
     maxRetries: 3
     commands:
       - runFlow:
           when:
-            platform: iOS
+            notVisible:
+              id: "tab_bar.home.tab"
           commands:
-            - waitForAnimationToEnd:
-                timeout: 8000
-      - tapOn:
-          id: "login_form.signin.button"
+            - runFlow:
+                when:
+                  platform: iOS
+                commands:
+                  - waitForAnimationToEnd:
+                      timeout: 8000
+            # # Re-check after the animation wait: a slow login can land during those 8s,
+            # at which point the button is gone and tapping it would fail the retry.
+            - runFlow:
+                when:
+                  notVisible:
+                    id: "tab_bar.home.tab"
+                commands:
+                  - tapOn:
+                      id: "login_form.signin.button"
       # # Dismiss password/save prompts each attempt so they do not block home tab.
       - tapOn:
           text: "Not Now"

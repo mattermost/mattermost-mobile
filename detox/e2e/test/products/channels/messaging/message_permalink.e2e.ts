@@ -307,7 +307,7 @@ describe('Messaging - Message Permalink Preview', () => {
         await ChannelScreen.open(channelsCategory, testChannel.name);
 
         const {postListPostItem: postToDelete} = ChannelScreen.getPostListPostItem(targetPost.id, targetMessage);
-        await postToDelete.longPress();
+        await postToDelete.longPress(timeouts.TWO_SEC);
 
         await PostOptionsScreen.toBeVisible();
         await PostOptionsScreen.deletePost({confirm: true});

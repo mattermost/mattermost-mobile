@@ -203,7 +203,7 @@ class ThreadScreen {
 
         await device.disableSynchronization();
         try {
-            await this.sendButton.longPress();
+            await this.sendButton.longPress(timeouts.TWO_SEC);
 
             // Wait for the schedule picker bottom sheet using polling (no sync dependency).
             await waitForElementToExist(

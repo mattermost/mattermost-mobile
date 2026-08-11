@@ -166,7 +166,7 @@ class ChannelInfoScreen {
 
     copyChannelHeader = async (headerText: string) => {
         // Long press on header text
-        await element(by.text(headerText)).longPress();
+        await element(by.text(headerText)).longPress(timeouts.TWO_SEC);
 
         // Wait for bottom sheet
         const copyAction = element(by.id(this.testID.copyHeaderTextAction));
@@ -190,7 +190,7 @@ class ChannelInfoScreen {
 
     cancelCopyChannelHeader = async (headerText: string) => {
         // Long press on header text
-        await element(by.text(headerText)).longPress();
+        await element(by.text(headerText)).longPress(timeouts.TWO_SEC);
 
         // Wait for bottom sheet
         await waitFor(element(by.id(this.testID.copyHeaderTextAction))).
@@ -203,7 +203,7 @@ class ChannelInfoScreen {
 
     copyChannelPurpose = async (purposeText: string) => {
         // Long press on purpose text
-        await element(by.text(purposeText)).longPress();
+        await element(by.text(purposeText)).longPress(timeouts.TWO_SEC);
 
         // Wait for bottom sheet
         const copyAction = element(by.id(this.testID.copyPurposeAction));
@@ -226,7 +226,7 @@ class ChannelInfoScreen {
 
     cancelCopyChannelPurpose = async (purposeText: string) => {
         // Long press on purpose text
-        await element(by.text(purposeText)).longPress();
+        await element(by.text(purposeText)).longPress(timeouts.TWO_SEC);
 
         // Wait for bottom sheet
         await waitFor(element(by.id(this.testID.copyPurposeAction))).
