@@ -24,7 +24,7 @@ import {
     ServerScreen,
 } from '@support/ui/screen';
 import {isAndroid, isIos, timeouts, wait} from '@support/utils';
-import {expect, waitFor} from 'detox';
+import {by, element, expect, waitFor} from 'detox';
 
 describe('Messaging - Code Block Dismisses Keyboard', () => {
     const serverOneDisplayName = 'Server 1';
@@ -46,25 +46,46 @@ describe('Messaging - Code Block Dismisses Keyboard', () => {
     });
 
     afterAll(async () => {
-        await HomeScreen.logout();
+        try {
+            await HomeScreen.logout();
+        } catch {
+            // Do not mask the test failure with an afterAll logout race
+            // (CI 31506724244: concurrent tooltip dismiss + account tab waits).
+        }
     });
 
     // Skip iOS: R1 product — Code preview back (NavigationHeader) not visible; Android uses pressBack
     (isIos() ? it.skip : it)('MM-T1433_1 - should dismiss keyboard when tapping a code block', async () => {
-        // # Post a message containing a code block
+        // # Open channel and post a code block via the app UI.
+        // CI 31506724244: Post.apiCreatePost hung for the full 300s Jest budget with no
+        // response / no [client] log (silent TCP stall). UI send uses the app network stack
+        // and keeps this suite moving when the Detox API client would otherwise wedge.
         const codeBlockMessage = '```\nconst x = 1;\n```';
-        await Post.apiCreatePost(siteOneUrl, {channelId: testChannel.id, message: codeBlockMessage});
-        const {post: codePost} = await Post.apiGetLastPostInChannel(siteOneUrl, testChannel.id);
-
-        // # Open channel and tap post input to open the keyboard
         await ChannelScreen.open(channelsCategory, testChannel.name);
+        await ChannelScreen.postMessage(codeBlockMessage);
+        const {post: codePost} = await Post.apiGetLastPostInChannel(siteOneUrl, testChannel.id);
+        if (!codePost?.id) {
+            throw new Error('MM-T1433_1: could not resolve code-block post after UI send');
+        }
+
+        // # Tap post input to open the keyboard
         await ChannelScreen.postInput.tap();
         await wait(timeouts.ONE_SEC);
 
-        // # Tap the code block — navigates to Code preview screen and dismisses the keyboard
+        // # Reveal the code block above the keyboard (same pattern as markdown_code.e2e.ts)
         const {postListPostItemCodeBlock} = ChannelScreen.getPostListPostItem(codePost.id, '');
+        await waitFor(postListPostItemCodeBlock).toExist().withTimeout(timeouts.TEN_SEC);
+        try {
+            await ChannelScreen.getFlatPostList().scroll(300, 'up', 0.5, 0.5);
+        } catch {
+            // Already near top — non-fatal.
+        }
+
+        // # Tap the code block — navigates to Code preview screen and dismisses the keyboard
         await postListPostItemCodeBlock.tap();
-        await wait(timeouts.ONE_SEC);
+
+        // * Verify Code preview opened (title "Code" when language is unspecified)
+        await waitFor(element(by.text('Code'))).toExist().withTimeout(timeouts.TEN_SEC);
 
         // # Go back from Code preview screen to channel screen.
         // Code route uses custom NavigationHeader (headerBackTitle ''), so by.label('Back')
@@ -78,6 +99,7 @@ describe('Messaging - Code Block Dismisses Keyboard', () => {
         await ChannelScreen.toBeVisible();
 
         // * Verify the keyboard is dismissed — send button is disabled (no text in draft)
+        await waitFor(ChannelScreen.sendButtonDisabled).toBeVisible().withTimeout(timeouts.TEN_SEC);
         await expect(ChannelScreen.sendButtonDisabled).toBeVisible();
 
         // # Go back to channel list screen

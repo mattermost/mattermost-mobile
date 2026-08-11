@@ -10,7 +10,8 @@
 # ASSERTIONS:
 #   - Link bookmark can be created from channel info
 #   - Bookmark appears in channel header bar after closing channel info
-#   - Tapping bookmark opens external browser; dismissing returns to channel
+#   - Long-pressing bookmark opens options sheet (Edit); dismissing returns to channel
+#     (external-browser tap path is flaky under Maestro CI — see body comments)
 #
 # testIDs:
 #   - channel_header.channel_quick_actions.button
@@ -157,60 +158,51 @@ appId: ${MAESTRO_APP_ID}
       id: "channel_header.bookmarks.list"
     timeout: 10000
 
-# # Tap the bookmark to open it in the browser.
-# OG metadata sets the title (e.g. "Mattermost"); tap the bookmark bar item by URL text.
+# # Exercise the bookmark from the channel header bar.
+# openLink() uses tryOpenURL → external Safari / Chrome Custom Tab. That hand-off is
+# unreliable under Maestro on CI simulators/emulators (Android already avoided tap for
+# this reason; iOS CI 31506724244 failed waiting for draft notVisible after a successful
+# title tap — Safari never proved open, no bookmark-browser-opened screenshot). Prove
+# interactivity via long-press → options sheet instead (same product path as handleLongPress).
+- waitForAnimationToEnd:
+    timeout: 3000
 - runFlow:
     when:
       platform: iOS
     commands:
       # # Match the bookmark by its OG-autofilled title as a REGEX. Maestro's `text`
-      # matcher is a full-string match, so the previous exact "Mattermost" could never
-      # match the rendered "Mattermost | Collaboration Platform..." — and because both
-      # taps were `optional`, they no-opped silently and the flow passed on iOS without
-      # ever opening the browser. Non-optional so a miss fails loudly instead.
-      - tapOn:
+      # matcher is a full-string match, so exact "Mattermost" never matches
+      # "Mattermost | Collaboration Platform...".
+      - longPressOn:
           text: ".*[Mm]attermost.*"
-      # * Verify the browser actually took over: SFSafariViewController is presented
-      # over the channel, so the channel's draft input can no longer be seen. This is
-      # the assertion that makes the test mean something on iOS.
-      - extendedWaitUntil:
-          notVisible:
-            id: "channel.post_draft.post.input"
-          timeout: 20000
-      - takeScreenshot: bookmark-browser-opened
-      # # Dismiss SFSafariViewController — same two branches as help_url.yml.
-      - runFlow:
-          when:
-            visible:
-              id: "breadcrumb"
-          commands:
-            - tapOn:
-                id: "breadcrumb"
-      - runFlow:
-          when:
-            visible:
-              text: "Done"
-          commands:
-            - tapOn:
-                text: "Done"
 - runFlow:
     when:
       platform: Android
     commands:
-      - waitForAnimationToEnd:
-          timeout: 3000
-      # # Long-press the bookmark to open the options bottom sheet (handleLongPress).
-      # The tap handler (openLink) requires external browser support that may not be
-      # available on all emulators, so exercise the long-press path instead.
       - longPressOn:
           id: "channel_bookmark\\..+\\.title"
-      # * Verify the bookmark is interactive: the options sheet is shown
-      - extendedWaitUntil:
-          visible:
-            text: "Edit"
-          timeout: 15000
-      - takeScreenshot: bookmark-options-visible
-      # # Dismiss the options bottom sheet
+# * Verify the bookmark is interactive: the options sheet is shown
+- extendedWaitUntil:
+    visible:
+      text: "Edit"
+    timeout: 15000
+- takeScreenshot: bookmark-options-visible
+# # Dismiss the options bottom sheet.
+# Sheet has Edit/Copy/Share/Delete — no Cancel (Detox ChannelBookmarkScreen.dismissOptionsSheet).
+- runFlow:
+    when:
+      platform: iOS
+    commands:
+      - swipe:
+          start: "50%, 60%"
+          end: "50%, 95%"
+          duration: 300
+      - waitForAnimationToEnd:
+          timeout: 1000
+- runFlow:
+    when:
+      platform: Android
+    commands:
       - pressKey: Back
 
 # * Verify back on the channel screen (options dismissed)

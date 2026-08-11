@@ -381,6 +381,25 @@ for batch_paths in "${BATCHES[@]}"; do
   if [[ $rc -ne 0 ]]; then
     echo "==> Batch $batch_idx failed (exit $rc) — continuing with remaining batches"
     BATCH_FAILED=1
+    # Main run 31472714588: batch 2 (channel_bookmark_link_external) exited 1 but wrote no
+    # JUnit XML. mergeMaestroJunitReports then silently skipped it ("Merged 5 … 0 failures")
+    # and TSIO reported e2e-test/maestro-ios green. Synthesize a failure so counts stay honest.
+    if [[ ! -s "$batch_xml" ]]; then
+      flow_label="${path_arr[0]:-unknown_flow}"
+      flow_base="${flow_label##*/}"
+      flow_id="${flow_base%.yml}"
+      cat > "$batch_xml" <<EOF
+<?xml version='1.0' encoding='UTF-8'?>
+<testsuites>
+  <testsuite name="${flow_label}" tests="1" failures="1" errors="0" skipped="0" time="0">
+    <testcase id="${flow_id}" name="${flow_id}" classname="${flow_label}" file="${flow_label}" time="0" status="ERROR">
+      <failure>Maestro batch ${batch_idx} exited ${rc} without writing JUnit XML (${flow_label})</failure>
+    </testcase>
+  </testsuite>
+</testsuites>
+EOF
+      echo "==> Wrote synthetic failure JUnit for missing ${batch_xml}"
+    fi
     if [[ "$PLATFORM" == "ios" ]]; then
       ensure_ios_simulator_healthy
     fi

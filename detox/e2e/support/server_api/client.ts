@@ -14,9 +14,16 @@ import {CookieJar} from 'tough-cookie';
 (https.globalAgent as any).options.family = 4;
 
 const jar = new CookieJar();
+
+// Bound hung TCP / silent Cloudflare stalls. CI 31506724244 MM-T1433: apiCreatePost
+// sat in test_fn for exactly 300s (Jest limit) with zero Detox UI actions and no
+// [client] retry log — axios had no timeout, so the suite burned a full shard slot.
+const REQUEST_TIMEOUT_MS = 30_000;
+
 const baseClient = wrapper(axios.create({
     headers: {'X-Requested-With': 'XMLHttpRequest'},
     jar,
+    timeout: REQUEST_TIMEOUT_MS,
 }));
 
 // Add request interceptor to handle CSRF tokens
