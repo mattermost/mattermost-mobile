@@ -72,12 +72,10 @@ describe('Messaging - Markdown Table', () => {
         await ChannelScreen.back();
     });
 
-    // Skip iOS (SEC-11012): expanded-table horizontal scroll cannot reveal the right
-    // column — it renders at content x=392 in a 581px table inside a 402px viewport, and
-    // neither whileElement().scroll nor scrollTo('right') reveals it. Reproduced locally
-    // 2026-08-11. Not a duplicate-back or hit-test issue. NOTE: main enabled this test in
-    // c5a25c9a2; kept skipped here on reproduced evidence.
-    (isIos() ? it.skip : it)('MM-T4899_2 - should be able to display markdown table with long text wrapped properly', async () => {
+    // iOS: keep wrap assertions; skip only expanded-table right-column scroll below
+    // (SEC-11012). Right column sits at x≈392 in a 581px table inside a ~402px viewport;
+    // neither whileElement().scroll nor scrollTo('right') reveals it.
+    it('MM-T4899_2 - should be able to display markdown table with long text wrapped properly', async () => {
         // # Open a channel screen and post a markdown table with long text
         const markdownTable =
             '| Left header that wraps | Center header that wraps | Right header that wraps |\n' +
