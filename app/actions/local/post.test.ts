@@ -27,7 +27,7 @@ import type ServerDataOperator from '@database/operator/server_data_operator';
 import type MyChannelModel from '@typings/database/models/servers/my_channel';
 import type PostsInThreadModel from '@typings/database/models/servers/posts_in_thread';
 
-const {SERVER: {FILE, MY_CHANNEL, POST, POSTS_IN_CHANNEL, POSTS_IN_THREAD, REACTION, THREAD, THREAD_PARTICIPANT, THREADS_IN_TEAM}} = MM_TABLES;
+const {SERVER: {DRAFT, FILE, MY_CHANNEL, POST, POSTS_IN_CHANNEL, POSTS_IN_THREAD, REACTION, THREAD, THREAD_PARTICIPANT, THREADS_IN_TEAM}} = MM_TABLES;
 
 const serverUrl = 'baseHandler.test.com';
 let operator: ServerDataOperator;
@@ -524,7 +524,8 @@ describe('deletePostsInChannelsByCutoff', () => {
 
         expect(error).toBeUndefined();
         const hasActiveReply = `EXISTS (SELECT 1 FROM ${POSTS_IN_THREAD} WHERE ${POSTS_IN_THREAD}.root_id = ${POST}.id AND ${POSTS_IN_THREAD}.latest >= ${CUTOFF})`;
-        const postCondition = `channel_id IN (?) AND create_at < ${CUTOFF} AND NOT ${hasActiveReply}`;
+        const hasDraft = `EXISTS (SELECT 1 FROM ${DRAFT} WHERE ${DRAFT}.root_id = ${POST}.id)`;
+        const postCondition = `channel_id IN (?) AND create_at < ${CUTOFF} AND NOT ${hasActiveReply} AND NOT ${hasDraft}`;
         const postSubquery = `SELECT id FROM ${POST} WHERE ${postCondition}`;
         const rootInChannelsExists = `EXISTS (SELECT 1 FROM ${POST} WHERE ${POST}.id = ${POSTS_IN_THREAD}.root_id AND ${POST}.channel_id IN (?))`;
         expect(database.adapter.unsafeExecute).toHaveBeenCalledWith({
@@ -561,7 +562,8 @@ describe('deletePostsInChannelsByCutoff', () => {
 
         expect(error).toBeUndefined();
         const hasActiveReply = `EXISTS (SELECT 1 FROM ${POSTS_IN_THREAD} WHERE ${POSTS_IN_THREAD}.root_id = ${POST}.id AND ${POSTS_IN_THREAD}.latest >= ${CUTOFF})`;
-        const postCondition = `channel_id IN (?) AND create_at < ${CUTOFF} AND NOT ${hasActiveReply} AND id NOT IN (?,?)`;
+        const hasDraft = `EXISTS (SELECT 1 FROM ${DRAFT} WHERE ${DRAFT}.root_id = ${POST}.id)`;
+        const postCondition = `channel_id IN (?) AND create_at < ${CUTOFF} AND NOT ${hasActiveReply} AND NOT ${hasDraft} AND id NOT IN (?,?)`;
         const postSubquery = `SELECT id FROM ${POST} WHERE ${postCondition}`;
         const postConditionArgs = [channelId, 'excluded-1', 'excluded-2'];
         expect(database.adapter.unsafeExecute).toHaveBeenCalledWith(

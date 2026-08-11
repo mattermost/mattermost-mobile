@@ -438,7 +438,10 @@ export async function deletePostsInChannelsByCutoff(
         // keep the root so the surviving reply's root_id never dangles.
         const hasActiveReply = `EXISTS (SELECT 1 FROM ${POSTS_IN_THREAD} WHERE ${POSTS_IN_THREAD}.root_id = ${POST}.id AND ${POSTS_IN_THREAD}.latest >= ${cutoff})`;
 
-        const postCondition = `channel_id IN (${channelPlaceholders}) AND create_at < ${cutoff} AND NOT ${hasActiveReply}${exclusionClause}`;
+        // Keep the root so a draft reply's root_id never dangles.
+        const hasDraft = `EXISTS (SELECT 1 FROM ${DRAFT} WHERE ${DRAFT}.root_id = ${POST}.id)`;
+
+        const postCondition = `channel_id IN (${channelPlaceholders}) AND create_at < ${cutoff} AND NOT ${hasActiveReply} AND NOT ${hasDraft}${exclusionClause}`;
         const postConditionArgs = [...channelIds, ...excludedIds];
         const postSubquery = `SELECT id FROM ${POST} WHERE ${postCondition}`;
 
