@@ -3,7 +3,7 @@
 
 import {markChannelAsViewed} from '@actions/local/channel';
 import {autoCacheCleanup} from '@actions/local/ephemeral_mode/cleanup';
-import {dataRetentionCleanup, expiredBoRPostCleanup} from '@actions/local/systems';
+import {dataRetentionCleanup, expiredBoRPostCleanup, performVacuum} from '@actions/local/systems';
 import {markChannelAsRead} from '@actions/remote/channel';
 import {fetchClassificationBanner} from '@actions/remote/classification';
 import {
@@ -109,16 +109,25 @@ async function doReconnect(serverUrl: string, groupLabel?: BaseRequestGroupLabel
 
         openAllUnreadChannels(serverUrl, groupLabel);
 
-        dataRetentionCleanup(serverUrl);
-
-        expiredBoRPostCleanup(serverUrl);
-
-        autoCacheCleanup(serverUrl);
+        doCleanup(serverUrl);
 
         AppsManager.refreshAppBindings(serverUrl, groupLabel);
         return undefined;
     } finally {
         setTeamLoading(serverUrl, false);
+    }
+}
+
+async function doCleanup(serverUrl: string) {
+    const dataRetention = await dataRetentionCleanup(serverUrl);
+    const autoCache = await autoCacheCleanup(serverUrl);
+    await expiredBoRPostCleanup(serverUrl);
+
+    const dataRetentionRan = !dataRetention.skipped && !dataRetention.error;
+    const autoCacheRan = !autoCache.skipped && !autoCache.error;
+
+    if (dataRetentionRan || autoCacheRan) {
+        await performVacuum(serverUrl);
     }
 }
 

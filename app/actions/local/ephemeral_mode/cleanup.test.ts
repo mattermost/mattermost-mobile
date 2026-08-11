@@ -136,9 +136,6 @@ describe('autoCacheCleanup', () => {
         await DatabaseManager.init([SERVER_URL]);
         ({database, operator} = DatabaseManager.getServerDatabaseAndOperator(SERVER_URL));
         jest.spyOn(DatabaseManager, 'getActiveServerUrl').mockResolvedValue('other-server');
-
-        // LokiJS adapter has no unsafeVacuum; mock it to avoid a hanging toPromise callback
-        jest.spyOn(database, 'unsafeVacuum').mockResolvedValue();
         jest.mocked(EphemeralModeManager.getAutoCacheCleanupDays).mockReturnValue(1);
         jest.mocked(NavigationStore.getScreensInStack).mockReturnValue([]);
         jest.mocked(EphemeralStore.getCurrentChannelOldestVisibleCreateAt).mockReturnValue(0);
@@ -158,30 +155,47 @@ describe('autoCacheCleanup', () => {
         const dbSpy = jest.spyOn(DatabaseManager, 'getServerDatabaseAndOperator');
 
         jest.mocked(EphemeralModeManager.getAutoCacheCleanupDays).mockReturnValue(0);
-        await autoCacheCleanup(SERVER_URL);
+        const result = await autoCacheCleanup(SERVER_URL);
 
         jest.mocked(EphemeralModeManager.getAutoCacheCleanupDays).mockReturnValue(-3);
         await autoCacheCleanup(SERVER_URL);
 
         expect(dbSpy).not.toHaveBeenCalled();
+        expect(result).toEqual({error: undefined, skipped: true});
     });
 
-    it('logs an error and returns when getServerDatabaseAndOperator throws', async () => {
+    it('reports an error rather than a skip when getServerDatabaseAndOperator throws', async () => {
         jest.spyOn(DatabaseManager, 'getServerDatabaseAndOperator').mockImplementationOnce(() => {
             throw new Error('db unavailable');
         });
 
-        await autoCacheCleanup(SERVER_URL);
+        const result = await autoCacheCleanup(SERVER_URL);
 
         expect(logError).toHaveBeenCalledWith('autoCacheCleanup getServerDatabaseAndOperator', 'db unavailable');
+        expect(result).toEqual({error: new Error('db unavailable')});
     });
 
     it('skips a concurrent invocation for the same server while a run is in flight', async () => {
         await writePiC('ch-concurrent', OLD, RECENT);
 
-        await Promise.all([autoCacheCleanup(SERVER_URL), autoCacheCleanup(SERVER_URL)]);
+        const [, second] = await Promise.all([autoCacheCleanup(SERVER_URL), autoCacheCleanup(SERVER_URL)]);
 
         expect(LocalPost.deletePostsInChannelsByCutoff).toHaveBeenCalledTimes(1);
+        expect(second).toEqual({error: undefined, skipped: true});
+    });
+
+    it('skips the run without deleting anything when the cleanup already ran earlier today', async () => {
+        // The same-day check compares against `new Date()`, which the Date.now mock does not affect
+        await operator.handleSystem({
+            systems: [{id: SYSTEM_IDENTIFIERS.LAST_AUTO_CACHE_CLEANUP_RUN, value: new Date().getTime()}],
+            prepareRecordsOnly: false,
+        });
+        await writePiC('ch-already-ran', OLD, RECENT);
+
+        const result = await autoCacheCleanup(SERVER_URL);
+
+        expect(LocalPost.deletePostsInChannelsByCutoff).not.toHaveBeenCalled();
+        expect(result).toEqual({error: undefined, skipped: true});
     });
 
     it('does not call getCurrentChannelId when the channel screen is not in the navigation stack', async () => {
@@ -367,27 +381,10 @@ describe('autoCacheCleanup', () => {
         expect((excludedPostIds as Set<string>).has(filePostId)).toBe(true);
     });
 
-    it('calls unsafeVacuum and stamps LAST_AUTO_CACHE_CLEANUP_RUN after a successful run', async () => {
-        const vacuumSpy = jest.spyOn(database, 'unsafeVacuum');
+    it('stamps LAST_AUTO_CACHE_CLEANUP_RUN after a successful run', async () => {
         const handleSystemSpy = jest.spyOn(operator, 'handleSystem');
 
-        await autoCacheCleanup(SERVER_URL);
-
-        expect(vacuumSpy).toHaveBeenCalledTimes(1);
-        expect(handleSystemSpy).toHaveBeenCalledWith(
-            expect.objectContaining({
-                systems: expect.arrayContaining([
-                    expect.objectContaining({id: SYSTEM_IDENTIFIERS.LAST_AUTO_CACHE_CLEANUP_RUN}),
-                ]),
-            }),
-        );
-    });
-
-    it('stamps LAST_AUTO_CACHE_CLEANUP_RUN and logs the error when unsafeVacuum rejects', async () => {
-        jest.spyOn(database, 'unsafeVacuum').mockRejectedValue(new Error('vacuum failed'));
-        const handleSystemSpy = jest.spyOn(operator, 'handleSystem');
-
-        await autoCacheCleanup(SERVER_URL);
+        const result = await autoCacheCleanup(SERVER_URL);
 
         expect(handleSystemSpy).toHaveBeenCalledWith(
             expect.objectContaining({
@@ -396,23 +393,21 @@ describe('autoCacheCleanup', () => {
                 ]),
             }),
         );
-        expect(logError).toHaveBeenCalledWith('autoCacheCleanup unsafeVacuum', 'vacuum failed');
+        expect(result).toEqual({error: undefined});
     });
 
-    it('does not call unsafeVacuum and logs the error when the unprotected-channels delete call returns an error', async () => {
+    it('reports the error when the unprotected-channels delete call returns an error', async () => {
         jest.mocked(LocalPost.deletePostsInChannelsByCutoff).mockResolvedValueOnce({error: new Error('cleanup failed')});
 
         await writePiC('ch-err', OLD, RECENT);
 
-        const vacuumSpy = jest.spyOn(database, 'unsafeVacuum').mockResolvedValue();
+        const result = await autoCacheCleanup(SERVER_URL);
 
-        await autoCacheCleanup(SERVER_URL);
-
-        expect(vacuumSpy).not.toHaveBeenCalled();
         expect(logError).toHaveBeenCalledWith('autoCacheCleanup', 'cleanup failed');
+        expect(result).toEqual({error: new Error('cleanup failed')});
     });
 
-    it('does not call unsafeVacuum and logs the error when the viewed-channel delete call returns an error', async () => {
+    it('logs the error when the viewed-channel delete call returns an error', async () => {
         const viewedChannelId = 'ch-viewed-err';
         jest.spyOn(DatabaseManager, 'getActiveServerUrl').mockResolvedValue(SERVER_URL);
         jest.mocked(NavigationStore.getScreensInStack).mockReturnValue([Screens.CHANNEL]);
@@ -421,15 +416,12 @@ describe('autoCacheCleanup', () => {
         await writePiC(viewedChannelId, OLD, RECENT);
         jest.mocked(LocalPost.deletePostsInChannelsByCutoff).mockResolvedValueOnce({error: new Error('viewed channel delete failed')});
 
-        const vacuumSpy = jest.spyOn(database, 'unsafeVacuum').mockResolvedValue();
-
         await autoCacheCleanup(SERVER_URL);
 
-        expect(vacuumSpy).not.toHaveBeenCalled();
         expect(logError).toHaveBeenCalledWith('autoCacheCleanup', 'viewed channel delete failed');
     });
 
-    it('does not call unsafeVacuum and logs the error when the thread-parent-channel delete call returns an error', async () => {
+    it('logs the error when the thread-parent-channel delete call returns an error', async () => {
         const rootId = 'root-err';
         const threadParentChannelId = 'ch-thread-parent-err';
         jest.spyOn(DatabaseManager, 'getActiveServerUrl').mockResolvedValue(SERVER_URL);
@@ -439,11 +431,8 @@ describe('autoCacheCleanup', () => {
         await writePiC(threadParentChannelId, OLD, RECENT);
         jest.mocked(LocalPost.deletePostsInChannelsByCutoff).mockResolvedValueOnce({error: new Error('thread parent channel delete failed')});
 
-        const vacuumSpy = jest.spyOn(database, 'unsafeVacuum').mockResolvedValue();
-
         await autoCacheCleanup(SERVER_URL);
 
-        expect(vacuumSpy).not.toHaveBeenCalled();
         expect(logError).toHaveBeenCalledWith('autoCacheCleanup', 'thread parent channel delete failed');
     });
 

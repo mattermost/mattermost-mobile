@@ -220,16 +220,16 @@ async function cleanupPlaybookRuns(
     }
 }
 
-export async function autoCacheCleanup(serverUrl: string): Promise<void> {
+export async function autoCacheCleanup(serverUrl: string): Promise<{error?: unknown; skipped?: boolean}> {
     const cleanupDays = EphemeralModeManager.getAutoCacheCleanupDays(serverUrl);
     if (cleanupDays <= 0) {
         logDebug('autoCacheCleanup: cleanupDays <= 0 for', serverUrl);
-        return;
+        return {error: undefined, skipped: true};
     }
 
     if (inFlight.has(serverUrl)) {
         logDebug('autoCacheCleanup: already running for', serverUrl);
-        return;
+        return {error: undefined, skipped: true};
     }
     inFlight.add(serverUrl);
 
@@ -240,7 +240,7 @@ export async function autoCacheCleanup(serverUrl: string): Promise<void> {
             ({database, operator} = DatabaseManager.getServerDatabaseAndOperator(serverUrl));
         } catch (error) {
             logError('autoCacheCleanup getServerDatabaseAndOperator', getFullErrorMessage(error));
-            return;
+            return {error};
         }
 
         const toDate = (ms: number) => (ms ? new Date(ms).toString() : undefined);
@@ -248,7 +248,7 @@ export async function autoCacheCleanup(serverUrl: string): Promise<void> {
         const shouldRun = !lastRunAt || new Date(lastRunAt).toDateString() !== new Date().toDateString();
         logDebug('autoCacheCleanup: rolling cleanup check for', serverUrl, '— lastRunAt:', toDate(lastRunAt), '— shouldRun:', shouldRun);
         if (!shouldRun) {
-            return;
+            return {error: undefined, skipped: true};
         }
 
         try {
@@ -282,17 +282,12 @@ export async function autoCacheCleanup(serverUrl: string): Promise<void> {
 
             await setLastAutoCacheCleanupRun(serverUrl);
 
-            try {
-                await database.unsafeVacuum();
-            } catch (vacuumError) {
-                logError('autoCacheCleanup unsafeVacuum', getFullErrorMessage(vacuumError));
-            }
-
             logDebug('autoCacheCleanup: completed successfully for', serverUrl);
+            return {error: undefined};
         } catch (error) {
             logError('autoCacheCleanup', getFullErrorMessage(error));
+            return {error};
         }
-        logDebug('autoCacheCleanup: done for', serverUrl);
     } finally {
         inFlight.delete(serverUrl);
     }
