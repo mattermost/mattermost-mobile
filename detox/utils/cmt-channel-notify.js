@@ -6,7 +6,7 @@
  * Post a Mobile E2E / CMT rollup to a Mattermost incoming webhook.
  *
  * Expected job names (gh_job_name / tsio-shard-name):
- *   PR/Main: detox-ios, detox-android, detox-ipad, maestro-ios-e2e, maestro-android-e2e
+ *   PR/Main: detox-ios, detox-android, detox-ipad, maestro-ios, maestro-android
  *   CMT:     detox-ios-Server_11.9.0, maestro-android-Server_10.5.14, ...
  */
 
@@ -57,7 +57,7 @@ function parseMobileJobName(jobName) {
         };
     }
 
-    // PR/Main: detox-ios | maestro-ios-e2e | detox-ipad
+    // PR/Main: detox-ios | maestro-ios | detox-ipad (legacy: maestro-ios-e2e)
     const prMatch = jobName.match(/^(detox|maestro)-(ios|android|ipad)(?:-e2e)?$/);
     if (prMatch) {
         return {
@@ -86,7 +86,8 @@ function parseMobileJobName(jobName) {
  * @returns {string}
  */
 function resolveWebhookUrl(reportName, env = process.env) {
-    // Per-job groups are named mobile-pr-<shard>, mobile-main-<shard>, etc.
+    // Prefer run_group buckets (mobile-pr / mobile-main / mobile-release).
+    // Legacy per-job names were mobile-pr-<shard>; short names (detox-ios) need run_group.
     const {webhookBucketForReportName} = require('./build-tsio-job-config');
     const bucket = webhookBucketForReportName(reportName);
     if (bucket === 'mobile-release') {
@@ -470,7 +471,8 @@ async function notifyCmtChannel({
     webhookUrl,
 }) {
     try {
-        const resolvedWebhook = webhookUrl || resolveWebhookUrl(compositeIdentity?.name);
+        const resolvedWebhook = webhookUrl ||
+            resolveWebhookUrl(compositeIdentity?.run_group || compositeIdentity?.name);
         let counts = perJobCounts;
         if (!counts) {
             counts = {};

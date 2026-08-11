@@ -52,7 +52,7 @@ on:
         type: string
         default: ""
       tsio-shard-name:
-        description: "Display name for this shard in TSIO (e.g. maestro-ios-e2e)"
+        description: "Display name for this shard in TSIO (e.g. maestro-ios)"
         required: false
         type: string
         default: ""

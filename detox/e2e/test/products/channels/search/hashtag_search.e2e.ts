@@ -30,7 +30,8 @@ import {
 import {getRandomId, isAndroid, timeouts, wait, waitForElementToBeVisible} from '@support/utils';
 import {expect} from 'detox';
 
-describe('Search - Hashtag Search', () => {
+// Skip: flaky under TSIO parallel CI — recent mentions / visibility (runs 31418589782, 31424131052).
+describe.skip('Search - Hashtag Search', () => {
     const serverOneDisplayName = 'Server 1';
     const channelsCategory = 'channels';
     let testChannel: any;

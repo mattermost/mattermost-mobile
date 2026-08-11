@@ -70,7 +70,8 @@ async function openPostOptionsFor(postId: string, message: string, screen: typeo
     }
 }
 
-describe('Messaging - Mark as Unread', () => {
+// Skip: flaky under TSIO parallel CI — sidebar channel display name not visible (run 31429345000).
+describe.skip('Messaging - Mark as Unread', () => {
     const serverOneDisplayName = 'Server 1';
     const channelsCategory = 'channels';
     const directMessagesCategory = 'direct_messages';

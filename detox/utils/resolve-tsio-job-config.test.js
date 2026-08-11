@@ -11,7 +11,7 @@ const {describe, it} = require('node:test');
 const SCRIPT = path.join(__dirname, 'resolve-tsio-job-config.sh');
 const PASS_THROUGH = {
     status_context: 'e2e-test/detox-ios',
-    composite_identity: {name: 'mobile-pr-detox-ios', commit_sha: 'abc'},
+    composite_identity: {name: 'detox-ios', run_group: 'mobile-pr', commit_sha: 'abc'},
     total_reports_expected: 20,
 };
 const PASS_THROUGH_JSON = JSON.stringify(PASS_THROUGH);

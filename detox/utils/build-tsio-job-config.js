@@ -18,8 +18,8 @@ const PR_MAIN_JOBS = {
     'detox-ios': {statusName: 'detox-ios', framework: 'detox', workers: 20},
     'detox-android': {statusName: 'detox-android', framework: 'detox', workers: 20},
     'detox-ipad': {statusName: 'detox-ipad', framework: 'detox', workers: 1},
-    'maestro-ios-e2e': {statusName: 'maestro-ios', framework: 'maestro', workers: 1},
-    'maestro-android-e2e': {statusName: 'maestro-android', framework: 'maestro', workers: 1},
+    'maestro-ios': {statusName: 'maestro-ios', framework: 'maestro', workers: 1},
+    'maestro-android': {statusName: 'maestro-android', framework: 'maestro', workers: 1},
 };
 
 /**
@@ -88,8 +88,10 @@ function buildTsioJobConfig(baseIdentity, jobKey, overrides = {}) {
     }
 
     const known = PR_MAIN_JOBS[jobKey];
+    // Report group names are the shard key only (detox-ios, maestro-android, …).
+    // Keep the mobile-pr/main/release bucket on run_group for webhook routing.
     const prefix = baseIdentity.name || baseIdentity.run_group || 'mobile-pr';
-    const reportName = `${prefix}-${jobKey}`;
+    const webhookBucket = webhookBucketForReportName(prefix) || prefix;
     const framework = overrides.framework || known?.framework ||
         frameworkFromJobKey(jobKey) || baseIdentity.framework || 'detox';
     const statusName = overrides.statusName || known?.statusName || jobKey;
@@ -98,8 +100,8 @@ function buildTsioJobConfig(baseIdentity, jobKey, overrides = {}) {
     return {
         composite_identity: {
             ...baseIdentity,
-            name: reportName,
-            run_group: reportName,
+            name: jobKey,
+            run_group: webhookBucket,
             framework,
         },
         total_reports_expected: workers,
@@ -130,10 +132,10 @@ function buildTsioJobConfigMap(baseIdentity, jobKeys, overrideForKey) {
 function jobKeysForPlatform(platform) {
     const p = (platform || 'both').toLowerCase();
     if (p === 'ios') {
-        return ['detox-ios', 'detox-ipad', 'maestro-ios-e2e'];
+        return ['detox-ios', 'detox-ipad', 'maestro-ios'];
     }
     if (p === 'android') {
-        return ['detox-android', 'maestro-android-e2e'];
+        return ['detox-android', 'maestro-android'];
     }
     return Object.keys(PR_MAIN_JOBS);
 }
@@ -195,7 +197,9 @@ function buildCmtTsioJobConfigMap(baseIdentity, cmtMatrix, maestroMatrix) {
 }
 
 /**
- * Map report group name to webhook routing bucket (mobile-pr / mobile-main / mobile-release).
+ * Map report group name or run_group to webhook routing bucket
+ * (mobile-pr / mobile-main / mobile-release).
+ * Accepts legacy prefixed names (mobile-pr-detox-ios) and bare buckets (mobile-pr).
  * @param {string} reportName
  * @returns {string}
  */

@@ -40,6 +40,12 @@ describe('cmt-channel-notify', () => {
                 serverVersion: 'default',
                 kind: 'e2e',
             });
+            assert.deepEqual(parseMobileJobName('maestro-android'), {
+                framework: 'maestro',
+                platform: 'android',
+                serverVersion: 'default',
+                kind: 'e2e',
+            });
             assert.deepEqual(parseMobileJobName('maestro-android-e2e'), {
                 framework: 'maestro',
                 platform: 'android',

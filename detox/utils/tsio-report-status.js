@@ -342,7 +342,7 @@ async function reportTsioStatus(options) {
             webhookBucketForReportName(compositeIdentity.name);
         if (shouldNotify && (bucket === 'mobile-release' || bucket === 'mobile-pr' || bucket === 'mobile-main')) {
             const {notifyCmtChannel, resolveWebhookUrl} = require('./cmt-channel-notify.js');
-            const webhookUrl = resolveWebhookUrl(compositeIdentity.name);
+            const webhookUrl = resolveWebhookUrl(compositeIdentity.run_group || compositeIdentity.name);
             if (webhookUrl) {
                 const failedShards = (detail.reports || []).
                     filter((r) => r.status && r.status !== 'complete' && r.status !== 'completed').

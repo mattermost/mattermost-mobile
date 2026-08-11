@@ -84,7 +84,7 @@ const COUNT_KEYS = ['passed', 'failed', 'skipped', 'flaky'];
 /**
  * Merge per-leg spec counts across jobs.
  *
- * Each job owns its own TSIO group (`mobile-main-detox-ios`, …), and the consolidated
+ * Each job owns its own TSIO group (`detox-ios`, …), and the consolidated
  * endpoint is scoped to one group name, so counts must be fetched once per job with
  * that job's identity. Querying the rollup bucket (`mobile-main`) instead returns no
  * specs, which renders every leg as ⚠️ no-results.

@@ -80,8 +80,8 @@ jobs:
       MM_TEST_SERVER_URL: ${{ inputs.IOS_SITE_1_URL }}
       artifact_run_id: ${{ inputs.artifact_run_id }}
       record_tests_in_zephyr: ${{ inputs.record_tests_in_zephyr }}
-      tsio-config: ${{ toJSON(fromJSON(inputs.tsio-job-configs)['maestro-ios-e2e']) }}
-      tsio-shard-name: maestro-ios-e2e
+      tsio-config: ${{ toJSON(fromJSON(inputs.tsio-job-configs)['maestro-ios']) }}
+      tsio-shard-name: maestro-ios
     secrets: inherit
 
   run-maestro-android:
@@ -95,6 +95,6 @@ jobs:
       MM_TEST_SERVER_URL: ${{ inputs.ANDROID_SITE_1_URL }}
       artifact_run_id: ${{ inputs.artifact_run_id }}
       record_tests_in_zephyr: ${{ inputs.record_tests_in_zephyr }}
-      tsio-config: ${{ toJSON(fromJSON(inputs.tsio-job-configs)['maestro-android-e2e']) }}
-      tsio-shard-name: maestro-android-e2e
+      tsio-config: ${{ toJSON(fromJSON(inputs.tsio-job-configs)['maestro-android']) }}
+      tsio-shard-name: maestro-android
     secrets: inherit

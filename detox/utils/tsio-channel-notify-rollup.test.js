@@ -19,8 +19,8 @@ const identityFor = (job) => ({
     branch: 'refs/heads/main',
     commit_sha: 'a1b2c3d4e5f6',
     gh_run_id: '30424009936',
-    name: `mobile-main-${job}`,
-    run_group: `mobile-main-${job}`,
+    name: job,
+    run_group: 'mobile-main',
 });
 
 describe('tsio-channel-notify-rollup', () => {
@@ -70,12 +70,11 @@ describe('tsio-channel-notify-rollup', () => {
                 fetchCounts: (baseUrl, identity) => {
                     assert.equal(baseUrl, BASE_URL);
                     seenNames.push(identity.name);
-                    const job = identity.name.replace('mobile-main-', '');
-                    return Promise.resolve({[job]: {passed: 10, failed: 1, skipped: 2, flaky: 0}});
+                    return Promise.resolve({[identity.name]: {passed: 10, failed: 1, skipped: 2, flaky: 0}});
                 },
             });
 
-            assert.deepEqual(seenNames, ['mobile-main-detox-ios', 'mobile-main-detox-android']);
+            assert.deepEqual(seenNames, ['detox-ios', 'detox-android']);
             assert.deepEqual(counts, {
                 'detox-ios': {passed: 10, failed: 1, skipped: 2, flaky: 0},
                 'detox-android': {passed: 10, failed: 1, skipped: 2, flaky: 0},
@@ -92,7 +91,7 @@ describe('tsio-channel-notify-rollup', () => {
                     {identity: identityFor('detox-ipad'), detail: {reports: []}},
                 ],
                 fetchCounts: (baseUrl, identity) => {
-                    if (identity.name === 'mobile-main-detox-android') {
+                    if (identity.name === 'detox-android') {
                         return Promise.reject(new Error('consolidated fetch failed: 500'));
                     }
                     return Promise.resolve({'detox-ipad': {passed: 3, failed: 0, skipped: 0, flaky: 1}});
@@ -102,7 +101,7 @@ describe('tsio-channel-notify-rollup', () => {
 
             assert.deepEqual(counts, {'detox-ipad': {passed: 3, failed: 0, skipped: 0, flaky: 1}});
             assert.equal(warnings.length, 1);
-            assert.match(warnings[0], /mobile-main-detox-android/);
+            assert.match(warnings[0], /detox-android/);
         });
     });
 });
