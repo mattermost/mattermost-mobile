@@ -154,7 +154,8 @@ describe('Search - Saved Messages', () => {
         await ChannelScreen.assertPostMessageEdited(savedPost.id, updatedMessage, 'saved_messages_page');
 
         // # Open post options for updated saved message and tap on reply option
-        await element(by.id(`saved_messages.post_list.post.${savedPost.id}`)).longPress();
+        const {postListPostItem} = SavedMessagesScreen.getPostListPostItem(savedPost.id, updatedMessage);
+        await postListPostItem.longPress(timeouts.TWO_SEC);
         await PostOptionsScreen.replyPostOption.tap();
 
         // * Verify on thread screen
@@ -173,7 +174,6 @@ describe('Search - Saved Messages', () => {
         await ThreadScreen.back();
 
         // * Verify reply count and thread follow control on the saved message
-        const {postListPostItem} = SavedMessagesScreen.getPostListPostItem(savedPost.id, updatedMessage);
         await waitForElementToBeVisible(element(by.text('1 reply')), timeouts.TWO_SEC);
 
         // This suite does not enable ThreadAutoFollow, so replying does not auto-follow the
@@ -181,7 +181,7 @@ describe('Search - Saved Messages', () => {
         await waitForElementToBeVisible(element(by.text('Follow')), timeouts.TWO_SEC);
 
         // # Open post options for updated saved message and delete post
-        await element(by.id(`saved_messages.post_list.post.${savedPost.id}`)).longPress();
+        await postListPostItem.longPress(timeouts.TWO_SEC);
         await PostOptionsScreen.deletePost({confirm: true});
 
         // * Verify updated saved message is deleted

@@ -163,12 +163,36 @@ appId: ${MAESTRO_APP_ID}
     when:
       platform: iOS
     commands:
+      # # Match the bookmark by its OG-autofilled title as a REGEX. Maestro's `text`
+      # matcher is a full-string match, so the previous exact "Mattermost" could never
+      # match the rendered "Mattermost | Collaboration Platform..." — and because both
+      # taps were `optional`, they no-opped silently and the flow passed on iOS without
+      # ever opening the browser. Non-optional so a miss fails loudly instead.
       - tapOn:
-          text: "mattermost.com"
-          optional: true
-      - tapOn:
-          text: "Mattermost"
-          optional: true
+          text: ".*[Mm]attermost.*"
+      # * Verify the browser actually took over: SFSafariViewController is presented
+      # over the channel, so the channel's draft input can no longer be seen. This is
+      # the assertion that makes the test mean something on iOS.
+      - extendedWaitUntil:
+          notVisible:
+            id: "channel.post_draft.post.input"
+          timeout: 20000
+      - takeScreenshot: bookmark-browser-opened
+      # # Dismiss SFSafariViewController — same two branches as help_url.yml.
+      - runFlow:
+          when:
+            visible:
+              id: "breadcrumb"
+          commands:
+            - tapOn:
+                id: "breadcrumb"
+      - runFlow:
+          when:
+            visible:
+              text: "Done"
+          commands:
+            - tapOn:
+                text: "Done"
 - runFlow:
     when:
       platform: Android
