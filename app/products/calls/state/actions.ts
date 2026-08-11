@@ -383,11 +383,10 @@ export const userJoinedCall = (serverUrl: string, channelId: string, userId: str
             nextCurrentCall.mySessionId = sessionId;
         }
 
-        // TODO: Restrict this to DM calls only.
-        // This synchronous event path does not have channel type, so we should pass it through
-        // currentCall setup instead of adding an async channel lookup here.
+        // TODO: Since this is a synchronous event path, we should only set dmCalleeAnsweredAt for DM calls.
+        // Make changes so that we only set dmCalleeAnsweredAt for DM calls by passing the channel type to this function
+        // in the function parent call chain.
         if (
-            userId === nextCurrentCall.myUserId &&
             !nextCurrentCall.dmCalleeAnsweredAt &&
             hasOtherUserJoined(nextCurrentCall.sessions, nextCurrentCall.myUserId)) {
             nextCurrentCall.dmCalleeAnsweredAt = Date.now();

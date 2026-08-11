@@ -323,6 +323,7 @@ describe('useCallsState', () => {
         const expectedCurrentCallState: CurrentCall = {
             ...initialCurrentCallState,
             ...expectedCallsState['channel-1'],
+            dmCalleeAnsweredAt: ANSWERED_AT,
         };
 
         // setup
@@ -339,7 +340,7 @@ describe('useCallsState', () => {
         assert.deepEqual(result.current[2], initialCurrentCallState);
 
         // test
-        act(() => userJoinedCall('server1', 'channel-1', 'user-3', 'session3'));
+        act(() => atAnsweredTime(() => userJoinedCall('server1', 'channel-1', 'user-3', 'session3')));
         assert.deepEqual(result.current[0].calls, expectedCallsState);
         assert.deepEqual(result.current[1], expectedChannelsWithCallsState);
         assert.deepEqual(result.current[2], expectedCurrentCallState);
@@ -349,7 +350,7 @@ describe('useCallsState', () => {
         assert.deepEqual(result.current[2], expectedCurrentCallState);
     });
 
-    it('joinedCall stamps dmCalleeAnsweredAt when I join a call another user is already in', () => {
+    it('joinedCall stamps dmCalleeAnsweredAt the first time the call holds two distinct users', () => {
         const emptyCall: Call = {
             ...callDM,
             channelId: 'channel-1',
@@ -373,11 +374,15 @@ describe('useCallsState', () => {
         act(() => atAnsweredTime(() => userJoinedCall('server1', 'channel-1', 'myUserId', 'mySessionId')));
         assert.equal(result.current?.dmCalleeAnsweredAt, undefined);
 
-        // ...and someone joining after me doesn't stamp it either, since only my own join is handled here.
+        // The other party joining is what answers the call for the caller.
         act(() => atAnsweredTime(() => userJoinedCall('server1', 'channel-1', 'user-2', 'session2')));
-        assert.equal(result.current?.dmCalleeAnsweredAt, undefined);
+        assert.equal(result.current?.dmCalleeAnsweredAt, ANSWERED_AT);
 
-        // Joining a call another user is already in: that's the moment it was answered.
+        // A later joiner doesn't move that moment.
+        act(() => userJoinedCall('server1', 'channel-1', 'user-3', 'session3'));
+        assert.equal(result.current?.dmCalleeAnsweredAt, ANSWERED_AT);
+
+        // Joining a call another user is already in: for the callee, that's the moment it was answered.
         setUpCall({
             ...emptyCall,
             sessions: {session2: {sessionId: 'session2', userId: 'user-2', muted: true, raisedHand: 0}},
