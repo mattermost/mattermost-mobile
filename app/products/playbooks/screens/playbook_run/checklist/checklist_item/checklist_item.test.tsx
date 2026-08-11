@@ -10,6 +10,7 @@ import UserChip from '@components/chips/user_chip';
 import {General, Preferences, Screens} from '@constants';
 import {useServerUrl} from '@context/server';
 import {runChecklistItem, skipChecklistItem, updateChecklistItem} from '@playbooks/actions/remote/checklist';
+import {goToFillRequirements} from '@playbooks/screens/navigation';
 import {bottomSheet, dismissAllRoutesAndPopToScreen} from '@screens/navigation';
 import {renderWithIntl} from '@test/intl-test-helper';
 import TestHelper from '@test/test_helper';
@@ -38,6 +39,9 @@ jest.mocked(ChecklistItemBottomSheet).mockImplementation((props: ComponentProps<
 
 jest.mock('@calls/actions');
 jest.mock('@playbooks/actions/remote/checklist');
+jest.mock('@playbooks/screens/navigation', () => ({
+    goToFillRequirements: jest.fn(),
+}));
 jest.mock('@utils/snack_bar');
 jest.mock('@screens/navigation');
 jest.mock('@utils/navigation');
@@ -67,6 +71,7 @@ describe('ChecklistItem', () => {
             isDisabled: false,
             currentUserId: 'user-id-1',
             channelType: General.OPEN_CHANNEL,
+            taskRequirementsEnabled: false,
         };
     }
 
@@ -161,6 +166,34 @@ describe('ChecklistItem', () => {
         await waitFor(() => {
             expect(updateChecklistItem).toHaveBeenCalledWith(serverUrl, props.playbookRunId, props.item.id, props.checklistNumber, props.itemNumber, '');
         });
+    });
+
+    it('should open fill requirements instead of closing when requirements exist', async () => {
+        const props = getBaseProps();
+        props.taskRequirementsEnabled = true;
+        props.item.requirements = [{id: 'req-1', label: 'Ticket URL', value: ''}];
+        props.item.state = '';
+
+        const {getByTestId} = renderWithIntl(<ChecklistItem {...props}/>);
+        const checkbox = getByTestId('checkbox-component');
+
+        act(() => {
+            checkbox.props.onPress();
+        });
+
+        await waitFor(() => {
+            expect(goToFillRequirements).toHaveBeenCalledWith({
+                playbookRunId: props.playbookRunId,
+                itemId: props.item.id,
+                checklistNumber: props.checklistNumber,
+                itemNumber: props.itemNumber,
+                taskTitle: props.item.title,
+                requirements: props.item.requirements,
+                currentState: '',
+                editMode: false,
+            });
+        });
+        expect(updateChecklistItem).not.toHaveBeenCalled();
     });
 
     it('shows snackbar when checklist item fails to toggle', async () => {

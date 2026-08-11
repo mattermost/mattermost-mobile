@@ -24,11 +24,24 @@ export const updateChecklistItem = async (
     checklistNumber: number,
     itemNumber: number,
     state: ChecklistItemState,
+    requirementValues?: Record<string, string>,
 ) => {
     try {
         const client = NetworkManager.getClient(serverUrl);
 
-        await client.setChecklistItemState(playbookRunId, checklistNumber, itemNumber, state);
+        await client.setChecklistItemState(playbookRunId, checklistNumber, itemNumber, state, requirementValues);
+
+        // Prefer a full run sync when requirement values change so labels/values stay in sync
+        // with server state after partial saves (state may be unchanged).
+        if (requirementValues) {
+            const run = await client.fetchPlaybookRun(playbookRunId);
+            const result = await handlePlaybookRuns(serverUrl, [run], false, true);
+            if (result.error) {
+                return {error: result.error};
+            }
+            return {data: true};
+        }
+
         await localUpdateChecklistItem(serverUrl, itemId, state);
         return {data: true};
     } catch (error) {

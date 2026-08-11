@@ -16,6 +16,9 @@ const mockManifest = {
 };
 
 jest.mock('@playbooks/actions/local/version');
+jest.mock('@playbooks/actions/remote/settings', () => ({
+    updatePlaybooksSettings: jest.fn().mockResolvedValue({data: true}),
+}));
 
 const mockClient = {
     getPluginsManifests: jest.fn(),

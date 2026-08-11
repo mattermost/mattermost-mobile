@@ -90,8 +90,38 @@ describe('checklist', () => {
             expect(result).toBeDefined();
             expect(result.error).toBeUndefined();
             expect(result.data).toBe(true);
-            expect(mockClient.setChecklistItemState).toHaveBeenCalledWith(playbookRunId, checklistNumber, itemNumber, 'closed');
+            expect(mockClient.setChecklistItemState).toHaveBeenCalledWith(playbookRunId, checklistNumber, itemNumber, 'closed', undefined);
             expect(localUpdateChecklistItem).toHaveBeenCalledWith(serverUrl, itemId, 'closed');
+        });
+
+        it('should sync the full run when saving requirement values', async () => {
+            const requirementValues = {req1: 'https://example.com'};
+            const run = {id: playbookRunId, checklists: []};
+            mockClient.setChecklistItemState.mockResolvedValueOnce({});
+            mockClient.fetchPlaybookRun.mockResolvedValueOnce(run);
+            jest.mocked(handlePlaybookRuns).mockResolvedValueOnce({data: []});
+
+            const result = await updateChecklistItem(
+                serverUrl,
+                playbookRunId,
+                itemId,
+                checklistNumber,
+                itemNumber,
+                '',
+                requirementValues,
+            );
+
+            expect(result).toEqual({data: true});
+            expect(mockClient.setChecklistItemState).toHaveBeenCalledWith(
+                playbookRunId,
+                checklistNumber,
+                itemNumber,
+                '',
+                requirementValues,
+            );
+            expect(mockClient.fetchPlaybookRun).toHaveBeenCalledWith(playbookRunId);
+            expect(handlePlaybookRuns).toHaveBeenCalledWith(serverUrl, [run], false, true);
+            expect(localUpdateChecklistItem).not.toHaveBeenCalled();
         });
     });
 

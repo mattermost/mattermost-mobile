@@ -6,7 +6,27 @@ import Model, {type Associations} from '@nozbe/watermelondb/Model';
 
 import {MM_TABLES} from '@constants/database';
 import {PLAYBOOK_TABLES} from '@playbooks/constants/database';
-import {safeParseJSONStringArray} from '@utils/helpers';
+import {safeParseJSON, safeParseJSONStringArray} from '@utils/helpers';
+
+function safeParseTaskRequirements(raw: unknown): TaskRequirement[] {
+    const parsed = safeParseJSON(raw as string | Record<string, unknown> | unknown[]);
+    if (!Array.isArray(parsed)) {
+        return [];
+    }
+
+    return parsed.filter((item): item is TaskRequirement => {
+        return Boolean(
+            item &&
+            typeof item === 'object' &&
+            typeof (item as TaskRequirement).id === 'string' &&
+            typeof (item as TaskRequirement).label === 'string',
+        );
+    }).map((item) => ({
+        id: item.id,
+        label: item.label,
+        value: typeof item.value === 'string' ? item.value : '',
+    }));
+}
 
 import type {Relation} from '@nozbe/watermelondb';
 import type PlaybookChecklistModel from '@playbooks/types/database/models/playbook_checklist';
@@ -69,6 +89,9 @@ export default class PlaybookChecklistItemModel extends Model implements Playboo
 
     /** task_actions : The JSON string representing the task actions */
     @json('task_actions', safeParseJSONStringArray) taskActions!: TaskAction[];
+
+    /** requirements : Required fields to fill when checking off the task */
+    @json('requirements', safeParseTaskRequirements) requirements!: TaskRequirement[];
 
     /** condition_action : The condition action for the checklist item */
     @field('condition_action') conditionAction!: ConditionAction;

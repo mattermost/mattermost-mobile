@@ -22,6 +22,7 @@ export default tableSchema({
         {name: 'due_date', type: 'number'},
         {name: 'completed_at', type: 'number'},
         {name: 'task_actions', type: 'string', isOptional: true}, // JSON string
+        {name: 'requirements', type: 'string', isOptional: true}, // JSON string
         {name: 'condition_action', type: 'string'},
         {name: 'condition_reason', type: 'string'},
         {name: 'sync', type: 'string', isIndexed: true, isOptional: true},
