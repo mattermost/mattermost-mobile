@@ -20,7 +20,7 @@ type Props = {
  * Shows elapsed call time after answer, or "Calling…" while ringing (DM only).
  * Timer starts at answer, excluding ring time.
  */
-const CallStatusTimer = ({isCalling, value, style, truncateWhenLong}: Props) => {
+export function CallStatusTimer({isCalling, value, style, truncateWhenLong}: Props) {
     const callingPulseAnimationStyle = useCallingPulseAnimationStyle(isCalling);
 
     if (isCalling) {
@@ -45,6 +45,4 @@ const CallStatusTimer = ({isCalling, value, style, truncateWhenLong}: Props) => 
             truncateWhenLong={truncateWhenLong}
         />
     );
-};
-
-export default CallStatusTimer;
+}

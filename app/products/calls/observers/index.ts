@@ -154,7 +154,10 @@ export const observeDMCallingState = () => {
         distinctUntilChanged(),
     );
 
+    // TODO: Remove startTime fallback
     // A DM call's duration counts from when it was answered; every other call counts from when it started.
+    // The startTime fallback also covers a DM call we never saw answered — joined from a reconnect snapshot, or
+    // relaunched straight into an active call. Without it a 0 would reach the timer.
     const dmCalleeAnsweredAt = combineLatest([currentCall, isDMCall]).pipe(
         switchMap(([call, isDM]) => of$((isDM && call?.dmCalleeAnsweredAt) || call?.startTime || 0)),
         distinctUntilChanged(),

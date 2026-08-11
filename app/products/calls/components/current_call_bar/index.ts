@@ -5,13 +5,13 @@ import {withObservables} from '@nozbe/watermelondb/react';
 import {combineLatest, of as of$} from 'rxjs';
 import {distinctUntilChanged, switchMap} from 'rxjs/operators';
 
-import {observeCurrentSessionsDict, observeEndCallDetails} from '@calls/observers';
+import {observeCurrentSessionsDict, observeDMCallingState, observeEndCallDetails} from '@calls/observers';
 import {observeCurrentCall, observeGlobalCallsState} from '@calls/state';
 import DatabaseManager from '@database/manager';
 import {observeChannel} from '@queries/servers/channel';
 import {observeTeammateNameDisplay} from '@queries/servers/user';
 
-import CurrentCallBar from './current_call_bar';
+import {CurrentCallBar} from './current_call_bar';
 
 const enhanced = withObservables([], () => {
     const currentCall = observeCurrentCall();
@@ -47,6 +47,7 @@ const enhanced = withObservables([], () => {
         teammateNameDisplay,
         micPermissionsGranted,
         ...observeEndCallDetails(),
+        ...observeDMCallingState(),
     };
 });
 
