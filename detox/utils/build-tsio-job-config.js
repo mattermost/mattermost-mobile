@@ -88,6 +88,7 @@ function buildTsioJobConfig(baseIdentity, jobKey, overrides = {}) {
     }
 
     const known = PR_MAIN_JOBS[jobKey];
+
     // Report group names are the shard key only (detox-ios, maestro-android, …).
     // Keep the mobile-pr/main/release bucket on run_group for webhook routing.
     const prefix = baseIdentity.name || baseIdentity.run_group || 'mobile-pr';
