@@ -14,6 +14,7 @@ import WebsocketManager from '@managers/websocket_manager';
 import {getServer, getServerDisplayName} from '@queries/app/servers';
 import {getDisconnectedSince, getLastSeenTime, getOfflineSince, observeConfigValue} from '@queries/servers/system';
 import {navigateToScreen} from '@screens/navigation';
+import {toMilliseconds} from '@utils/datetime';
 import {deleteFileCache} from '@utils/file';
 import {logDebug, logError} from '@utils/log';
 
@@ -134,8 +135,10 @@ class EphemeralModeManagerSingleton {
             observeConfigValue(database, 'MobileEphemeralModeAutoCacheCleanupDays'),
         ]).pipe(
             distinctUntilChanged(
-                ([prevEnabled, prevTimeout, prevPurgeHours, prevCleanupDays],
-                    [nextEnabled, nextTimeout, nextPurgeHours, nextCleanupDays]) =>
+                (
+                    [prevEnabled, prevTimeout, prevPurgeHours, prevCleanupDays],
+                    [nextEnabled, nextTimeout, nextPurgeHours, nextCleanupDays],
+                ) =>
                     prevEnabled === nextEnabled && prevTimeout === nextTimeout &&
                     prevPurgeHours === nextPurgeHours && prevCleanupDays === nextCleanupDays,
             ),
@@ -152,8 +155,8 @@ class EphemeralModeManagerSingleton {
         cleanupDaysStr: string | undefined,
     ) => {
         const nextEnabled = enabledStr === 'true';
-        const nextThresholdMs = parseNonNegativeConfigNumber(timeoutStr) * 1000;
-        const nextPurgeThresholdMs = parseNonNegativeConfigNumber(purgeHoursStr) * 3600 * 1000;
+        const nextThresholdMs = toMilliseconds({seconds: parseNonNegativeConfigNumber(timeoutStr)});
+        const nextPurgeThresholdMs = toMilliseconds({hours: parseNonNegativeConfigNumber(purgeHoursStr)});
         const nextCleanupDays = parseNonNegativeConfigNumber(cleanupDaysStr);
         const wasActive = this.trackedServers.get(serverUrl)?.kind === 'mem';
 

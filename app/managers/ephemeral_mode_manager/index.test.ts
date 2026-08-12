@@ -393,6 +393,15 @@ describe('EphemeralModeManager', () => {
 
             expect(EphemeralModeManager.getAutoCacheCleanupDays(serverA)).toBe(0);
         });
+
+        it('clamps negative cleanup days to 0', async () => {
+            await seedConfigAndRow(serverA, {enabled: true, timeoutSec: 10, cleanupDays: -7});
+
+            await EphemeralModeManager.init([credsA]);
+            await advanceTimers(0);
+
+            expect(EphemeralModeManager.getAutoCacheCleanupDays(serverA)).toBe(0);
+        });
     });
 
     it('changing the threshold while disconnected reschedules the timer against the persisted disconnect time', async () => {

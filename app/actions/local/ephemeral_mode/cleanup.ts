@@ -5,7 +5,6 @@ import {deletePostsInChannelsByCutoff} from '@actions/local/post';
 import {queryAIThreadsBefore} from '@agents/database/queries/thread';
 import {Screens} from '@constants';
 import {MM_TABLES, SYSTEM_IDENTIFIERS} from '@constants/database';
-import DateConstants from '@constants/datetime';
 import {AUTO_CACHE_CLEANUP_PROTECTION_BUFFER} from '@constants/post';
 import DatabaseManager from '@database/manager';
 import EphemeralModeManager from '@managers/ephemeral_mode_manager';
@@ -17,6 +16,7 @@ import {
 import {getCurrentChannelId} from '@queries/servers/system';
 import EphemeralStore from '@store/ephemeral_store';
 import {NavigationStore} from '@store/navigation_store';
+import {toMilliseconds} from '@utils/datetime';
 import {getFullErrorMessage} from '@utils/errors';
 import {logDebug, logError} from '@utils/log';
 
@@ -252,7 +252,7 @@ export async function autoCacheCleanup(serverUrl: string): Promise<{error?: unkn
         }
 
         try {
-            const cutoff = Date.now() - (cleanupDays * DateConstants.SECONDS.DAY * 1000);
+            const cutoff = Date.now() - toMilliseconds({days: cleanupDays});
             const activeUrl = await DatabaseManager.getActiveServerUrl();
             const isActive = serverUrl === activeUrl;
 

@@ -28,6 +28,7 @@ import {
     observeBoRConfig,
     countUsersFromMentions,
     findPostsWithPermalinkReferences,
+    createAtOfNthPostOlderThan,
 } from './post';
 
 describe('Post Queries', () => {
@@ -563,6 +564,65 @@ describe('post query helpers', () => {
         it('should return empty array when no posts reference the given id', async () => {
             const results = await findPostsWithPermalinkReferences(database, 'nonexistent');
             expect(results).toEqual([]);
+        });
+    });
+
+    describe('createAtOfNthPostOlderThan', () => {
+        const anchor = 10000;
+        const channelId = 'channel-nth-post';
+
+        const savePosts = async (posts: Post[]) => {
+            await operator.handlePosts({
+                posts,
+                order: posts.map((p) => p.id),
+                previousPostId: '',
+                actionType: ActionType.POSTS.RECEIVED_NEW,
+                prepareRecordsOnly: false,
+            });
+        };
+
+        it('should return the create_at of the nth oldest post older than the anchor', async () => {
+            await savePosts([
+                ...Array.from({length: 6}, (_, idx) => TestHelper.fakePost({
+                    channel_id: channelId,
+                    create_at: anchor - ((idx + 1) * 100),
+                })),
+
+                // same create_at as the anchor, so it must not be counted
+                TestHelper.fakePost({channel_id: channelId, create_at: anchor}),
+            ]);
+
+            // would be the 2nd match if the channel filter were dropped
+            await savePosts([TestHelper.fakePost({channel_id: 'other-channel', create_at: anchor - 150})]);
+
+            expect(await createAtOfNthPostOlderThan(database, channelId, anchor, 3)).toBe(anchor - 300);
+        });
+
+        it('should return undefined when fewer than n older posts exist', async () => {
+            await savePosts([
+                TestHelper.fakePost({channel_id: channelId, create_at: anchor - 100}),
+                TestHelper.fakePost({channel_id: channelId, create_at: anchor - 200}),
+            ]);
+
+            expect(await createAtOfNthPostOlderThan(database, channelId, anchor, 3)).toBeUndefined();
+        });
+
+        it('should not count soft-deleted posts toward n', async () => {
+            const deleted = TestHelper.fakePost({channel_id: channelId, create_at: anchor - 100});
+            await savePosts([
+                deleted,
+                TestHelper.fakePost({channel_id: channelId, create_at: anchor - 200}),
+            ]);
+
+            // handlePosts destroys posts that arrive with delete_at set, so mirror markPostAsDeleted instead
+            const [model] = await queryPostsById(database, [deleted.id]).fetch();
+            await database.write(async () => {
+                await model.update((p) => {
+                    p.deleteAt = anchor;
+                });
+            });
+
+            expect(await createAtOfNthPostOlderThan(database, channelId, anchor, 1)).toBe(anchor - 200);
         });
     });
 });
