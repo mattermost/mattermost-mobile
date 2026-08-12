@@ -544,6 +544,39 @@ index 4d23e20..5e6d392 100644
    var pixelCount: Double {
      return width * height * scale * scale
    }
+diff --git a/node_modules/expo-image/android/src/main/java/expo/modules/image/ExpoImageViewWrapper.kt b/node_modules/expo-image/android/src/main/java/expo/modules/image/ExpoImageViewWrapper.kt
+--- a/node_modules/expo-image/android/src/main/java/expo/modules/image/ExpoImageViewWrapper.kt
++++ b/node_modules/expo-image/android/src/main/java/expo/modules/image/ExpoImageViewWrapper.kt
+@@ -448,6 +448,15 @@ class ExpoImageViewWrapper(context: Context, appContext: AppContext) : ExpoView(c
+     requestManager.clear(secondTarget)
+   }
+ 
++  fun onTargetCleared(target: ImageViewWrapperTarget) {
++    if (firstView.currentTarget === target) {
++      firstView.recycleView()
++    }
++    if (secondView.currentTarget === target) {
++      secondView.recycleView()
++    }
++  }
++
+   private fun cleanIfNeeded(
+     newBestSource: Source?,
+     newBestSourceModel: GlideModelProvider?,
+diff --git a/node_modules/expo-image/android/src/main/java/expo/modules/image/ImageViewWrapperTarget.kt b/node_modules/expo-image/android/src/main/java/expo/modules/image/ImageViewWrapperTarget.kt
+--- a/node_modules/expo-image/android/src/main/java/expo/modules/image/ImageViewWrapperTarget.kt
++++ b/node_modules/expo-image/android/src/main/java/expo/modules/image/ImageViewWrapperTarget.kt
+@@ -128,7 +128,9 @@ class ImageViewWrapperTarget(
+     endLoadingNewImageTraceBlock()
+   }
+ 
+-  override fun onLoadCleared(placeholder: Drawable?) = Unit
++  override fun onLoadCleared(placeholder: Drawable?) {
++    imageViewHolder.get()?.onTargetCleared(this)
++  }
+ 
+   override fun getSize(cb: SizeReadyCallback) {
+     // If we can't resolve the image, we just return unknown size.
 diff --git a/node_modules/expo-image/ios/ImageView.swift b/node_modules/expo-image/ios/ImageView.swift
 index 034b662..efec047 100644
 --- a/node_modules/expo-image/ios/ImageView.swift
