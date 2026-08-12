@@ -124,7 +124,7 @@ on:
         type: string
         default: ""
 
-# Pin: mattermost-test-system-io @ 3a87485 (Detox // Tags: include/exclude filter).
+# Pin: mattermost-test-system-io @ bc3e753 (Detox Tags filter + report URL branch encoding).
 env:
   TEST_SYSTEM_IO_ACTIONS_SHA: bc3e7532b3a993e58443e7ecd309000cb381c9e4
   AWS_REGION: "us-east-1"
