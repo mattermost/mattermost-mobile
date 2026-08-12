@@ -6,13 +6,13 @@ const {describe, it} = require('node:test');
 
 const {
     E2E_STATUS_CONTEXTS,
-    buildTsioJobConfig,
-    buildTsioJobConfigMap,
-    buildCmtTsioJobConfigMap,
+    buildTestSystemIoJobConfig,
+    buildTestSystemIoJobConfigMap,
+    buildCmtTestSystemIoJobConfigMap,
     jobKeysForPlatform,
     cmtJobKeys,
     webhookBucketForReportName,
-} = require('./build-tsio-job-config');
+} = require('./build-test-system-io-job-config');
 
 // The override/cancel actions waive and reset exactly these contexts; if this
 // list drifts from the required checks, a PR either cannot merge or merges
@@ -29,7 +29,7 @@ describe('E2E_STATUS_CONTEXTS', () => {
     });
 });
 
-describe('buildTsioJobConfig', () => {
+describe('buildTestSystemIoJobConfig', () => {
     const base = {
         repository: 'mattermost/mattermost-mobile',
         commit_sha: 'abc1234',
@@ -43,8 +43,8 @@ describe('buildTsioJobConfig', () => {
     };
 
     it('should give each job its own report group and status context', () => {
-        const cfg = buildTsioJobConfig(base, 'detox-ios');
-        assert.equal(cfg.total_reports_expected, 4);
+        const cfg = buildTestSystemIoJobConfig(base, 'detox-ios');
+        assert.equal(cfg.total_reports_expected, 20);
         assert.equal(cfg.status_context, 'e2e-test/detox-ios');
         assert.equal(cfg.composite_identity.name, 'detox-ios');
         assert.equal(cfg.composite_identity.run_group, 'mobile-pr');
@@ -53,7 +53,7 @@ describe('buildTsioJobConfig', () => {
     });
 
     it('should label maestro jobs with maestro framework and context', () => {
-        const cfg = buildTsioJobConfig(base, 'maestro-android');
+        const cfg = buildTestSystemIoJobConfig(base, 'maestro-android');
         assert.equal(cfg.total_reports_expected, 1);
         assert.equal(cfg.status_context, 'e2e-test/maestro-android');
         assert.equal(cfg.composite_identity.framework, 'maestro');
@@ -63,7 +63,7 @@ describe('buildTsioJobConfig', () => {
 
     it('should support CMT shard names with <shard> context', () => {
         const cmtBase = {...base, name: 'mobile-release', run_group: 'mobile-release'};
-        const cfg = buildTsioJobConfig(cmtBase, 'detox-ios-Server_11.9.0');
+        const cfg = buildTestSystemIoJobConfig(cmtBase, 'detox-ios-Server_11.9.0');
         assert.equal(cfg.total_reports_expected, 1);
         assert.equal(cfg.composite_identity.name, 'detox-ios-Server_11.9.0');
         assert.equal(cfg.composite_identity.run_group, 'mobile-release');
@@ -71,7 +71,7 @@ describe('buildTsioJobConfig', () => {
     });
 
     it('should honour an explicit workers override', () => {
-        const cfg = buildTsioJobConfig(base, 'detox-ios', {workers: 10});
+        const cfg = buildTestSystemIoJobConfig(base, 'detox-ios', {workers: 10});
         assert.equal(cfg.total_reports_expected, 10);
     });
 
@@ -79,25 +79,25 @@ describe('buildTsioJobConfig', () => {
     // framework=maestro for maestro shards — both must describe the same group.
     it('should infer maestro framework for CMT maestro shards', () => {
         const cmtBase = {...base, name: 'mobile-release', run_group: 'mobile-release'};
-        const cfg = buildTsioJobConfig(cmtBase, 'maestro-android-Server_11.9.0');
+        const cfg = buildTestSystemIoJobConfig(cmtBase, 'maestro-android-Server_11.9.0');
         assert.equal(cfg.composite_identity.framework, 'maestro');
         assert.equal(cfg.status_context, 'e2e-test/maestro-android-Server_11.9.0');
     });
 
     it('should let an explicit override win over the inferred framework', () => {
-        const cfg = buildTsioJobConfig(base, 'maestro-ios-Server_11.9.0', {framework: 'detox'});
+        const cfg = buildTestSystemIoJobConfig(base, 'maestro-ios-Server_11.9.0', {framework: 'detox'});
         assert.equal(cfg.composite_identity.framework, 'detox');
     });
 });
 
-describe('buildTsioJobConfigMap / jobKeysForPlatform', () => {
+describe('buildTestSystemIoJobConfigMap / jobKeysForPlatform', () => {
     it('should only include ios jobs for PLATFORM=ios', () => {
         assert.deepEqual(jobKeysForPlatform('ios'), ['detox-ios', 'detox-ipad', 'maestro-ios']);
     });
 
     it('should build a map for the selected keys', () => {
         const base = {name: 'mobile-main', repository: 'mattermost/mattermost-mobile', commit_sha: 'deadbee'};
-        const map = buildTsioJobConfigMap(base, jobKeysForPlatform('android'));
+        const map = buildTestSystemIoJobConfigMap(base, jobKeysForPlatform('android'));
         assert.deepEqual(Object.keys(map).sort(), ['detox-android', 'maestro-android']);
         assert.equal(map['detox-android'].status_context, 'e2e-test/detox-android');
         assert.equal(map['detox-android'].composite_identity.name, 'detox-android');
@@ -105,7 +105,7 @@ describe('buildTsioJobConfigMap / jobKeysForPlatform', () => {
     });
 });
 
-describe('cmtJobKeys / buildCmtTsioJobConfigMap', () => {
+describe('cmtJobKeys / buildCmtTestSystemIoJobConfigMap', () => {
     const cmtMatrix = {
         server: [
             {version: '11.9.0', latest: true},
@@ -137,7 +137,7 @@ describe('cmtJobKeys / buildCmtTsioJobConfigMap', () => {
             run_group: 'mobile-release',
         };
         const maestroMatrix = {server: [{version: '11.9.0', latest: true}]};
-        const map = buildCmtTsioJobConfigMap(cmtBase, cmtMatrix, maestroMatrix);
+        const map = buildCmtTestSystemIoJobConfigMap(cmtBase, cmtMatrix, maestroMatrix);
         assert.equal(map['detox-ios-Server_11.9.0'].total_reports_expected, 10);
         assert.equal(map['detox-android-Server_11.9.0'].total_reports_expected, 10);
         assert.equal(map['detox-ipad-Server_11.9.0'].total_reports_expected, 1);
@@ -147,7 +147,7 @@ describe('cmtJobKeys / buildCmtTsioJobConfigMap', () => {
 
     it('should produce keys that resolve to the mobile-release webhook bucket', () => {
         const base = {name: 'mobile-release', run_group: 'mobile-release', commit_sha: 'abc1234'};
-        const map = buildTsioJobConfigMap(base, cmtJobKeys(cmtMatrix, {server: [{version: '11.9.0'}]}));
+        const map = buildTestSystemIoJobConfigMap(base, cmtJobKeys(cmtMatrix, {server: [{version: '11.9.0'}]}));
         assert.equal(Object.keys(map).length, 8);
         assert.equal(map['maestro-ios-Server_11.9.0'].composite_identity.framework, 'maestro');
         assert.equal(map['detox-ios-Server_11.9.0'].composite_identity.name, 'detox-ios-Server_11.9.0');

@@ -2,7 +2,7 @@
 // See LICENSE.txt for license information.
 /* eslint-disable no-console, no-process-env, no-await-in-loop, curly, brace-style, max-statements-per-line, no-empty, no-negated-condition, multiline-ternary -- CI utility script */
 
-// Posts one GitHub commit status from a TSIO report group (poll + display URL).
+// Posts one GitHub commit status from a Test System IO report group (poll + display URL).
 
 const PRODUCTION_URL = 'https://test-io.test.mattermost.com';
 const STAGING_URL = 'https://staging-test-io.test.mattermost.com';
@@ -34,7 +34,7 @@ function buildDisplayReportUrl(baseUrl, identity) {
     const branch = rawBranch.replace(/^refs\/heads\//, '').replace(/^refs\/tags\//, '').replace(/\//g, '~');
     const shortSha = (identity.commit_sha || '').slice(0, 7);
 
-    // Prefer producer-declared run_group (TSIO consolidates by this), else name.
+    // Prefer producer-declared run_group (Test System IO consolidates by this), else name.
     const name = identity.run_group || identity.name || 'mobile-pr';
     return `${baseUrl}/reports/${encodeURIComponent(repoTrailing)}/${encodeURIComponent(branch)}/${shortSha}/${encodeURIComponent(name)}`;
 }
@@ -47,7 +47,7 @@ function buildWorkflowRunUrl(identity) {
 }
 
 // Commit-status target_url policy:
-//   - Terminal TSIO group with a usable report → TSIO (success, test failures, or incomplete).
+//   - Terminal Test System IO group with a usable report → Test System IO (success, test failures, or incomplete).
 //   - Clean completed report but CI failed outside tests (upstreamSucceeded=false) → workflow run.
 //   - Non-terminal / missing report (OIDC/begin/poll callers use runUrl separately) → workflow run.
 function decideTargetUrl(state, bothTerminal, displayReportUrl, reportId, runUrl, opts = {}) {
@@ -96,7 +96,7 @@ function decideStatus(detail, upstreamSucceeded) {
     }
     return {
         state: upstreamSucceeded ? 'success' : 'failure',
-        description: `TSIO poll timed out (status=${detail.status}) — using CI job status`.slice(0, 140),
+        description: `Test System IO poll timed out (status=${detail.status}) — using CI job status`.slice(0, 140),
         both_terminal: false,
         timed_out: true,
     };
@@ -156,7 +156,7 @@ async function pollGroup(baseUrl, reportId, pollAttempts) {
             detail = await res.json();
             if (TERMINAL_STATUSES.includes(detail.status)) return detail;
         } catch (err) {
-            console.error(`tsio-report-status (poll attempt ${attempt + 1}/${attempts}):`, err.message);
+            console.error(`test-system-io-report-status (poll attempt ${attempt + 1}/${attempts}):`, err.message);
             if (attempt >= attempts - 1) throw err;
         }
         if (attempt < attempts - 1) await sleep(POLL_DELAY_MS);
@@ -217,7 +217,7 @@ async function reportTsioStatus(options) {
 
     const result = {
         context: commitStatusContext,
-        tsio_url: baseUrl,
+        test_system_io_url: baseUrl,
         upstream_succeeded: upstreamJobsSucceeded,
         report_id: null,
         group_url: null,
@@ -253,10 +253,10 @@ async function reportTsioStatus(options) {
     try {
         idToken = await mintOidcToken(audience);
     } catch (err) {
-        console.error('tsio-report-status (OIDC):', err.message);
+        console.error('test-system-io-report-status (OIDC):', err.message);
         await postStatus({
             state: 'failure',
-            description: `TSIO error: ${err.message}`.slice(0, 140),
+            description: `Test System IO error: ${err.message}`.slice(0, 140),
             targetUrl: runUrl,
         });
         result.error = err.message;
@@ -267,10 +267,10 @@ async function reportTsioStatus(options) {
     try {
         reportId = await beginGroup(baseUrl, idToken, compositeIdentity, totalReportsExpected);
     } catch (err) {
-        console.error('tsio-report-status (begin):', err.message);
+        console.error('test-system-io-report-status (begin):', err.message);
         await postStatus({
             state: 'failure',
-            description: `TSIO begin failed: ${err.message}`.slice(0, 140),
+            description: `Test System IO begin failed: ${err.message}`.slice(0, 140),
             targetUrl: runUrl,
         });
         result.error = err.message;
@@ -284,10 +284,10 @@ async function reportTsioStatus(options) {
     try {
         detail = await pollGroup(baseUrl, reportId, pollAttempts);
     } catch (err) {
-        console.error('tsio-report-status (poll):', err.message);
+        console.error('test-system-io-report-status (poll):', err.message);
         await postStatus({
             state: 'failure',
-            description: `TSIO poll failed: ${err.message}`.slice(0, 140),
+            description: `Test System IO poll failed: ${err.message}`.slice(0, 140),
             targetUrl: runUrl,
         });
         result.error = err.message;
@@ -313,13 +313,13 @@ async function reportTsioStatus(options) {
     if (process.env.GITHUB_STEP_SUMMARY) {
         const stats = result.test_stats;
         const lines = [
-            `### TSIO status — ${commitStatusContext}`,
+            `### Test System IO status — ${commitStatusContext}`,
             '',
             `**State:** ${result.state}`,
             `**Display report:** [${compositeIdentity.name}](${result.display_report_url})`,
             `**Group:** [${reportId}](${result.group_url}) — ${result.status}`,
             `**Stats:** ${stats.passed || 0} passed, ${stats.failed || 0} failed, ${stats.skipped || 0} skipped (of ${stats.total || 0})`,
-            ...(timedOut ? ['', ':warning: TSIO group did not reach terminal status in time — failing open to CI job status.'] : []),
+            ...(timedOut ? ['', ':warning: Test System IO group did not reach terminal status in time — failing open to CI job status.'] : []),
             ...(result.override_applied ? ['', `:warning: ${OVERRIDE_LABEL} is set on this PR — reporting ${state} as success so the required check does not block the merge.`] : []),
         ];
         try {
@@ -336,7 +336,7 @@ async function reportTsioStatus(options) {
     // Opt in with channelNotify / CHANNEL_NOTIFY=true (summary job or explicit).
     try {
         const shouldNotify = channelNotify === true || process.env.CHANNEL_NOTIFY === 'true';
-        const {webhookBucketForReportName} = require('./build-tsio-job-config');
+        const {webhookBucketForReportName} = require('./build-test-system-io-job-config');
         const reportName = compositeIdentity.run_group || compositeIdentity.name;
         const bucket = webhookBucketForReportName(reportName) ||
             webhookBucketForReportName(compositeIdentity.name);
@@ -373,7 +373,7 @@ async function reportTsioStatus(options) {
     // Under override the commit status is green; failing the step too would only
     // turn the run red again for a result the maintainer chose to waive.
     if (failOnTestFailures && !result.override_applied && bothTerminal && (result.test_stats.failed || 0) > 0) {
-        const err = new Error('TSIO reported test failures');
+        const err = new Error('Test System IO reported test failures');
         err.exitCode = 1;
         throw err;
     }
@@ -398,11 +398,11 @@ function selfTest() {
     const urlSlashBranch = buildDisplayReportUrl(PRODUCTION_URL, {
         repository: 'mattermost/mattermost-mobile',
         commit_sha: 'abc1234deadbeef',
-        branch: 'feat/tsio-mobile-reporting',
+        branch: 'feat/test-system-io-mobile-reporting',
         name: 'mobile-pr',
         run_group: 'mobile-pr',
     });
-    assert(urlSlashBranch === 'https://test-io.test.mattermost.com/reports/mattermost-mobile/feat~tsio-mobile-reporting/abc1234/mobile-pr', `slash branch URL: ${urlSlashBranch}`);
+    assert(urlSlashBranch === 'https://test-io.test.mattermost.com/reports/mattermost-mobile/feat~test-system-io-mobile-reporting/abc1234/mobile-pr', `slash branch URL: ${urlSlashBranch}`);
 
     const urlMain = buildDisplayReportUrl(PRODUCTION_URL, {
         repository: 'mattermost/mattermost-mobile',
@@ -436,12 +436,12 @@ function selfTest() {
     assert(
         decideTargetUrl('success', true, display, 'gid-1', actions, {failed: 0, reportStatus: 'completed'}) ===
         `${display}?gid=gid-1`,
-        'success -> TSIO report URL',
+        'success -> Test System IO report URL',
     );
     assert(
         decideTargetUrl('failure', true, display, 'gid-1', actions, {failed: 2, reportStatus: 'completed'}) ===
         `${display}?gid=gid-1`,
-        'test failures -> TSIO report URL',
+        'test failures -> Test System IO report URL',
     );
     assert(
         decideTargetUrl('failure', true, display, 'gid-1', actions, {
@@ -454,7 +454,7 @@ function selfTest() {
     assert(
         decideTargetUrl('failure', true, display, 'gid-1', actions, {failed: 0, reportStatus: 'incomplete'}) ===
         `${display}?gid=gid-1`,
-        'incomplete report -> TSIO report URL',
+        'incomplete report -> Test System IO report URL',
     );
     assert(
         decideTargetUrl('success', false, display, 'gid-1', actions) === actions,
@@ -480,14 +480,14 @@ async function main() {
     try {
         identity = JSON.parse(args['composite-identity']);
     } catch (err) {
-        console.error('tsio-report-status: invalid --composite-identity JSON:', err.message);
+        console.error('test-system-io-report-status: invalid --composite-identity JSON:', err.message);
         process.exit(1);
     }
 
     const totalReportsExpected = parseInt(args['total-reports-expected'] || '1', 10);
     const context = args.context;
     if (!context) {
-        console.error('tsio-report-status: --context is required (e.g. e2e-test/detox-ios)');
+        console.error('test-system-io-report-status: --context is required (e.g. e2e-test/detox-ios)');
         process.exit(1);
     }
     const upstreamSucceeded = args['upstream-succeeded'] !== 'false';
@@ -513,10 +513,10 @@ async function main() {
         process.exit(0);
     } catch (err) {
         if (err.exitCode === 1) {
-            console.error('tsio-report-status:', err.message);
+            console.error('test-system-io-report-status:', err.message);
             process.exit(1);
         }
-        console.error('tsio-report-status fatal:', err.message);
+        console.error('test-system-io-report-status fatal:', err.message);
         process.exit(1);
     }
 }
@@ -539,7 +539,7 @@ module.exports = {
 
 if (require.main === module) {
     main().catch((err) => {
-        console.error('tsio-report-status fatal:', err.message);
+        console.error('test-system-io-report-status fatal:', err.message);
         process.exit(1);
     });
 }

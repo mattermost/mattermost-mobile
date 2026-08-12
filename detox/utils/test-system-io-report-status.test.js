@@ -1,7 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-// CI util unit tests: run with `node --test detox/utils/tsio-report-status.test.js`.
+// CI util unit tests: run with `node --test detox/utils/test-system-io-report-status.test.js`.
 
 const assert = require('node:assert/strict');
 const {describe, it} = require('node:test');
@@ -11,9 +11,9 @@ const {
     decideStatus,
     decideTargetUrl,
     overrideCommitStatus,
-} = require('./tsio-report-status');
+} = require('./test-system-io-report-status');
 
-describe('tsio-report-status', () => {
+describe('test-system-io-report-status', () => {
     describe('overrideCommitStatus', () => {
         it('reports a failure as success so E2E/Override does not block the merge', () => {
             assert.deepEqual(
@@ -89,7 +89,7 @@ describe('tsio-report-status', () => {
                 decideStatus({status: 'processing', test_stats: {passed: 1, failed: 0}}, true),
                 {
                     state: 'success',
-                    description: 'TSIO poll timed out (status=processing) — using CI job status',
+                    description: 'Test System IO poll timed out (status=processing) — using CI job status',
                     both_terminal: false,
                     timed_out: true,
                 },
@@ -124,7 +124,7 @@ describe('tsio-report-status', () => {
         const display = 'https://test-io.test.mattermost.com/reports/mattermost-mobile/main/abc1234/mobile-pr';
         const runUrl = 'https://github.com/mattermost/mattermost-mobile/actions/runs/99';
 
-        it('returns TSIO URL with gid when both terminal and success', () => {
+        it('returns Test System IO URL with gid when both terminal and success', () => {
             assert.equal(
                 decideTargetUrl('success', true, display, 'gid-1', runUrl, {
                     failed: 0,
@@ -134,7 +134,7 @@ describe('tsio-report-status', () => {
             );
         });
 
-        it('returns TSIO URL when tests failed but report uploaded', () => {
+        it('returns Test System IO URL when tests failed but report uploaded', () => {
             assert.equal(
                 decideTargetUrl('failure', true, display, 'gid-1', runUrl, {
                     failed: 187,
@@ -145,7 +145,7 @@ describe('tsio-report-status', () => {
             );
         });
 
-        it('returns TSIO URL for incomplete terminal report', () => {
+        it('returns Test System IO URL for incomplete terminal report', () => {
             assert.equal(
                 decideTargetUrl('failure', true, display, 'gid-1', runUrl, {
                     failed: 0,
@@ -192,11 +192,11 @@ describe('tsio-report-status', () => {
             assert.equal(
                 buildDisplayReportUrl(base, {
                     repository: 'mattermost/mattermost-mobile',
-                    branch: 'refs/heads/feat/tsio-mobile',
+                    branch: 'refs/heads/feat/test-system-io-mobile',
                     commit_sha: 'abcdef1234567890',
                     name: 'mobile-pr',
                 }),
-                `${base}/reports/mattermost-mobile/feat~tsio-mobile/abcdef1/mobile-pr`,
+                `${base}/reports/mattermost-mobile/feat~test-system-io-mobile/abcdef1/mobile-pr`,
             );
         });
 

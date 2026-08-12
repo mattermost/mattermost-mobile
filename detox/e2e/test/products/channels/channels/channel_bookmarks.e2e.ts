@@ -29,7 +29,7 @@ import {
 import {isAndroid, isIos, safeEnableSynchronization, timeouts, wait, waitForElementToExist, waitForElementToNotExist} from '@support/utils';
 import {expect, waitFor} from 'detox';
 
-// Skip: flaky under TSIO parallel CI — channel.screen / bookmark UI (run 31418589782).
+// Skip: flaky under Test System IO parallel CI — channel.screen / bookmark UI (run 31418589782).
 describe.skip('Channels - Channel Bookmarks', () => {
     const serverOneDisplayName = 'Server 1';
     const channelsCategory = 'channels';

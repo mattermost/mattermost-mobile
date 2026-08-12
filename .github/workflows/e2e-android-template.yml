@@ -64,7 +64,7 @@ on:
         required: false
         default: "PR"
       record_tests_in_zephyr:
-        description: "Record test results in Zephyr (reserved; TSIO is the primary report)"
+        description: "Record test results in Zephyr (reserved; Test System IO is the primary report)"
         required: false
         type: boolean
         default: false
@@ -78,6 +78,13 @@ on:
         required: false
         type: string
         default: "detox/e2e/test"
+      detox-exclude-tags:
+        description: >
+          Comma-separated // Tags: exclude filter for Test System IO discovery
+          (e.g. @ipad_only). Empty = no exclude filter.
+        required: false
+        type: string
+        default: "@ipad_only"
       parallelism:
         description: "Number of parallel orchestration workers"
         required: false
@@ -98,15 +105,15 @@ on:
         required: false
         type: string
         default: ""
-      tsio-config:
+      test-system-io-config:
         description: >
-          TSIO reporting config: {"composite_identity":{...},"status_context":"..."}.
+          Test System IO reporting config: {"composite_identity":{...},"status_context":"..."}.
           Empty disables orchestration for this platform.
         required: false
         type: string
         default: ""
-      tsio-shard-name:
-        description: "Display name for this platform in TSIO (e.g. detox-android)"
+      test-system-io-shard-name:
+        description: "Display name for this platform in Test System IO (e.g. detox-android)"
         required: false
         type: string
         default: ""
@@ -143,8 +150,8 @@ permissions:
 
 jobs:
   begin:
-    name: orch-begin-${{ inputs.tsio-shard-name != '' && inputs.tsio-shard-name || 'detox-android' }}
-    if: inputs.run-android-tests && inputs.tsio-config != ''
+    name: orch-begin-${{ inputs.test-system-io-shard-name != '' && inputs.test-system-io-shard-name || 'detox-android' }}
+    if: inputs.run-android-tests && inputs.test-system-io-config != ''
     runs-on: ubuntu-24.04
     outputs:
       identity-json: ${{ steps.cfg.outputs.identity-json }}
@@ -154,7 +161,7 @@ jobs:
       total-units: ${{ steps.begin.outputs.total-units }}
       worker-shards: ${{ steps.matrix.outputs.shards }}
       detox-search-path: ${{ steps.paths.outputs.detox-search-path }}
-      detox-exclude-dir: ${{ steps.paths.outputs.detox-exclude-dir }}
+      detox-exclude-tags: ${{ steps.paths.outputs.detox-exclude-tags }}
       pr-number: ${{ steps.cfg.outputs.pr-number }}
     steps:
       - name: Checkout
@@ -163,20 +170,20 @@ jobs:
           ref: ${{ inputs.MOBILE_VERSION }}
           persist-credentials: false
 
-      - name: Resolve TSIO config
+      - name: Resolve Test System IO config
         id: cfg
         env:
-          TSIO_CONFIG: ${{ inputs.tsio-config }}
-          TSIO_SHARD_NAME: ${{ inputs.tsio-shard-name }}
-          TSIO_WORKERS: ${{ inputs.parallelism }}
+          TEST_SYSTEM_IO_CONFIG: ${{ inputs.test-system-io-config }}
+          TEST_SYSTEM_IO_SHARD_NAME: ${{ inputs.test-system-io-shard-name }}
+          TEST_SYSTEM_IO_WORKERS: ${{ inputs.parallelism }}
         run: |
           set -euo pipefail
           # PR/main pass a full per-job config; CMT passes a base identity + shard name.
-          CFG=$(bash detox/utils/resolve-tsio-job-config.sh)
+          CFG=$(bash detox/utils/resolve-test-system-io-job-config.sh)
           IDENTITY=$(echo "$CFG" | jq -c '.composite_identity')
           CONTEXT=$(echo "$CFG" | jq -r '.status_context // empty')
           if [ -z "$CONTEXT" ]; then
-            echo "::error::resolved tsio-config.status_context is empty"
+            echo "::error::resolved test-system-io-config.status_context is empty"
             exit 1
           fi
           BRANCH=$(echo "$IDENTITY" | jq -r '.branch // empty')
@@ -198,27 +205,25 @@ jobs:
         id: paths
         env:
           SEARCH_PATH: ${{ inputs.search_path }}
+          EXCLUDE_TAGS: ${{ inputs.detox-exclude-tags }}
         run: |
           set -euo pipefail
           SP="${SEARCH_PATH#./}"
           case "$SP" in
             detox/*) SP="${SP#detox/}" ;;
           esac
-          EXCLUDE="ipad"
-          case "$SP" in
-            */ipad|*/ipad/*|ipad|ipad/*) EXCLUDE="" ;;
-          esac
           {
             echo "detox-search-path=${SP}"
-            echo "detox-exclude-dir=${EXCLUDE}"
+            echo "detox-exclude-tags=${EXCLUDE_TAGS}"
           } >> "$GITHUB_OUTPUT"
+          echo "detox-search-path=${SP} exclude='${EXCLUDE_TAGS}'"
 
       - name: Worker matrix JSON
         id: matrix
         env:
           N: ${{ inputs.parallelism }}
         run: |
-          SHARDS=$(python3 -c "import json,os; print(json.dumps(list(range(1, int(os.environ['N'])+1))))")
+          SHARDS=$(jq -nc --argjson n "${N}" '[range(1; $n+1)]')
           echo "shards=${SHARDS}" >> "$GITHUB_OUTPUT"
           echo "Workers: ${SHARDS}"
 
@@ -233,7 +238,9 @@ jobs:
           total-reports-expected: ${{ inputs.parallelism }}
           detox-dir: detox
           detox-search-path: ${{ steps.paths.outputs.detox-search-path }}
-          detox-exclude-dir: ${{ steps.paths.outputs.detox-exclude-dir }}
+          # Prefer @ipad_only exclude tags over directory filters.
+          detox-exclude-dir: ""
+          detox-exclude-tags: ${{ steps.paths.outputs.detox-exclude-tags }}
           # Refresh the early pending row with the live report-page target_url.
           post-pending-commit-status: "true"
           commit-status-context: ${{ steps.cfg.outputs.status-context }}
@@ -545,7 +552,7 @@ jobs:
           pkill -9 -f metro 2>/dev/null || true
 
   summary:
-    name: ${{ inputs.tsio-shard-name != '' && inputs.tsio-shard-name || 'orch-summary-detox-android' }}
+    name: ${{ inputs.test-system-io-shard-name != '' && inputs.test-system-io-shard-name || 'orch-summary-detox-android' }}
     needs: [begin, workers]
     if: always() && needs.begin.result == 'success'
     runs-on: ubuntu-24.04
@@ -594,9 +601,9 @@ jobs:
           [ "$SUMMARY_OUTCOME" = "success" ]
 
   finalize-skipped:
-    name: finalize-skipped-${{ inputs.tsio-shard-name != '' && inputs.tsio-shard-name || 'detox-android' }}
+    name: finalize-skipped-${{ inputs.test-system-io-shard-name != '' && inputs.test-system-io-shard-name || 'detox-android' }}
     needs: [begin]
-    if: always() && needs.begin.result == 'skipped' && inputs.tsio-config != '' && inputs.run-android-tests
+    if: always() && needs.begin.result == 'skipped' && inputs.test-system-io-config != '' && inputs.run-android-tests
     runs-on: ubuntu-24.04
     permissions:
       contents: read
@@ -611,15 +618,15 @@ jobs:
             detox/utils
             .github/actions/update-commit-status
 
-      - name: Resolve TSIO config
+      - name: Resolve Test System IO config
         id: cfg
         env:
-          TSIO_CONFIG: ${{ inputs.tsio-config }}
-          TSIO_SHARD_NAME: ${{ inputs.tsio-shard-name }}
-          TSIO_WORKERS: ${{ inputs.parallelism }}
+          TEST_SYSTEM_IO_CONFIG: ${{ inputs.test-system-io-config }}
+          TEST_SYSTEM_IO_SHARD_NAME: ${{ inputs.test-system-io-shard-name }}
+          TEST_SYSTEM_IO_WORKERS: ${{ inputs.parallelism }}
         run: |
           set -euo pipefail
-          CFG=$(bash detox/utils/resolve-tsio-job-config.sh)
+          CFG=$(bash detox/utils/resolve-test-system-io-job-config.sh)
           echo "status-context=$(echo "$CFG" | jq -r '.status_context')" >> "$GITHUB_OUTPUT"
           echo "commit-sha=$(echo "$CFG" | jq -r '.composite_identity.commit_sha')" >> "$GITHUB_OUTPUT"
 

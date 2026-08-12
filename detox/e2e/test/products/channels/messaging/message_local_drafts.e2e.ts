@@ -26,7 +26,7 @@ import {
 import {getRandomId, isIos} from '@support/utils';
 import {expect} from 'detox';
 
-// Skip: flaky under TSIO parallel CI — draft.tooltip.close.button missing when tutorials disabled (run 31429345000).
+// Skip: flaky under Test System IO parallel CI — draft.tooltip.close.button missing when tutorials disabled (run 31429345000).
 describe.skip('Messaging - Message Draft', () => {
     const serverOneDisplayName = 'Server 1';
     const channelsCategory = 'channels';

@@ -66,7 +66,7 @@ runs:
 
           // Relative requires resolve against the workspace, so the repo must be
           // checked out before this action runs.
-          const {E2E_STATUS_CONTEXTS} = require('./detox/utils/build-tsio-job-config.js');
+          const {E2E_STATUS_CONTEXTS} = require('./detox/utils/build-test-system-io-job-config.js');
 
           // Present in every success description this action writes, so the
           // pending path can reset exactly the contexts it overrode and never a
@@ -119,9 +119,9 @@ runs:
               continue;
             } else if (latest?.state === 'failure' || latest?.state === 'error') {
               // Keep the real counts so the check still says what failed.
-              // Reserve room for the suffix before truncating the base: TSIO
+              // Reserve room for the suffix before truncating the base: Test System IO
               // descriptions are already capped at 140 (decideStatus in
-              // tsio-report-status.js), and truncating after concatenation could
+              // test-system-io-report-status.js), and truncating after concatenation could
               // cut the marker off a long one, leaving the pending path unable to
               // recognise this context as overridden.
               const suffix = ` - ${OVERRIDE_MARKER}`;

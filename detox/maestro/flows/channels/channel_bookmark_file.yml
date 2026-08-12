@@ -24,7 +24,7 @@
 #   - channel_info.bookmarks.list
 tags:
   - MM-T5603
-  - android-only
+  - @android_only
 appId: ${MAESTRO_APP_ID}
 ---
 # # Log in and navigate to the test channel

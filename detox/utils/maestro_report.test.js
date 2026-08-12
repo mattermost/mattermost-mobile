@@ -15,7 +15,7 @@ describe('writeMaestroJestJsonForTsio', () => {
     let tmpDir;
 
     beforeEach(() => {
-        tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), 'maestro-jest-tsio-'));
+        tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), 'maestro-jest-test-system-io-'));
     });
 
     afterEach(() => {

@@ -5,7 +5,7 @@
 /**
  * Post a Mobile E2E / CMT rollup to a Mattermost incoming webhook.
  *
- * Expected job names (gh_job_name / tsio-shard-name):
+ * Expected job names (gh_job_name / test-system-io-shard-name):
  *   PR/Main: detox-ios, detox-android, detox-ipad, maestro-ios, maestro-android
  *   CMT:     detox-ios-Server_11.9.0, maestro-android-Server_10.5.14, ...
  */
@@ -88,7 +88,7 @@ function parseMobileJobName(jobName) {
 function resolveWebhookUrl(reportName, env = process.env) {
     // Prefer run_group buckets (mobile-pr / mobile-main / mobile-release).
     // Legacy per-job names were mobile-pr-<shard>; short names (detox-ios) need run_group.
-    const {webhookBucketForReportName} = require('./build-tsio-job-config');
+    const {webhookBucketForReportName} = require('./build-test-system-io-job-config');
     const bucket = webhookBucketForReportName(reportName);
     if (bucket === 'mobile-release') {
         return env.MATTERMOST_CMT_WEBHOOK_URL || '';
@@ -222,7 +222,7 @@ function formatLegResultText(leg) {
 }
 
 function reportTitleForIdentity(compositeIdentity) {
-    const {webhookBucketForReportName} = require('./build-tsio-job-config');
+    const {webhookBucketForReportName} = require('./build-test-system-io-job-config');
     const bucket = webhookBucketForReportName(
         compositeIdentity?.run_group || compositeIdentity?.name || '',
     );
@@ -328,10 +328,10 @@ function formatCmtChannelMessage({
     if (!upstreamJobsSucceeded && failed === 0) {
         lines.push('_One or more CI jobs failed outside tracked tests (install/build/teardown)._', '');
     } else if (hasFailures && failed === 0) {
-        lines.push('_TSIO reported failed shard(s) not reflected in the test totals; check the full report._', '');
+        lines.push('_Test System IO reported failed shard(s) not reflected in the test totals; check the full report._', '');
     }
     if (detail?.status && detail.status !== 'completed' && upstreamJobsSucceeded) {
-        lines.push(`_TSIO report status: \`${detail.status}\`._`, '');
+        lines.push(`_Test System IO report status: \`${detail.status}\`._`, '');
     }
 
     if (reportUrl) {
@@ -453,7 +453,7 @@ async function postMattermostWebhook({core, webhookUrl, text, username = 'Mobile
  * Build + post the channel message. Never throws to the caller — notify is best-effort.
  *
  * `perJobCounts` lets a caller supply already-merged counts. Rollup callers must do
- * this: their `compositeIdentity` is a routing bucket (`mobile-main`) with no TSIO
+ * this: their `compositeIdentity` is a routing bucket (`mobile-main`) with no Test System IO
  * group of its own, so a bucket-scoped consolidated fetch returns nothing.
  *
  * @param {Object} params
@@ -479,7 +479,7 @@ async function notifyCmtChannel({
             try {
                 counts = await fetchPerJobCountsFromConsolidated(baseUrl, compositeIdentity, detail);
             } catch (error) {
-                core.warning(`Could not load per-leg TSIO counts: ${error.message}`);
+                core.warning(`Could not load per-leg Test System IO counts: ${error.message}`);
             }
         }
 

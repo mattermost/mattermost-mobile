@@ -70,7 +70,7 @@ async function openPostOptionsFor(postId: string, message: string, screen: typeo
     }
 }
 
-// Skip: flaky under TSIO parallel CI — sidebar channel display name not visible (run 31429345000).
+// Skip: flaky under Test System IO parallel CI — sidebar channel display name not visible (run 31429345000).
 describe.skip('Messaging - Mark as Unread', () => {
     const serverOneDisplayName = 'Server 1';
     const channelsCategory = 'channels';

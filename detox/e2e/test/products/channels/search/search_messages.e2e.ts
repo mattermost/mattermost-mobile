@@ -31,7 +31,7 @@ import {
 import {getRandomId, isIos, timeouts, wait, waitForElementToBeVisible, waitForElementToExist} from '@support/utils';
 import {expect} from 'detox';
 
-// Skip: flaky under TSIO parallel CI — search suite visibility (run 31418589782).
+// Skip: flaky under Test System IO parallel CI — search suite visibility (run 31418589782).
 describe.skip('Search - Search Messages', () => {
     const serverOneDisplayName = 'Server 1';
     const channelsCategory = 'channels';

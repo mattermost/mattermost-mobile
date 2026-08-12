@@ -61,11 +61,16 @@ validate_flow() {
     fail "${rel}" "tags must include Zephyr id ${ticket} (tags: [${ticket}])"
   fi
 
-  # Exactly one PR platform tag for Test System IO Android-full / iOS-partial discovery.
+  # Plan tags: @snake_case, always @-prefixed. Untagged = all platforms.
+  # At most one of @ios_only / @android_only. @multi_device is optional (two-device flows).
+  if printf '%s\n' "${header}" | grep -qE '^[[:space:]]*-[[:space:]]+(shared|ios-only|android-only)[[:space:]]*$'; then
+    fail "${rel}" "legacy platform tags are forbidden — use @ios_only / @android_only / @multi_device (or omit for all platforms)"
+  fi
   local platform_tag_count
-  platform_tag_count="$(printf '%s\n' "${header}" | grep -E '^[[:space:]]*-[[:space:]]+(ios-only|android-only|shared)[[:space:]]*$' | wc -l | tr -d ' ')"
-  if [[ "${platform_tag_count}" != "1" ]]; then
-    fail "${rel}" "tags must include exactly one platform tag (ios-only | android-only | shared)"
+  # grep -c exits 1 on zero matches; keep pipefail happy inside set -e.
+  platform_tag_count="$(printf '%s\n' "${header}" | grep -cE '^[[:space:]]*-[[:space:]]+@(ios_only|android_only)[[:space:]]*$' || true)"
+  if [[ "${platform_tag_count}" -gt 1 ]]; then
+    fail "${rel}" "tags must include at most one of @ios_only | @android_only (omit both when the flow applies to all platforms)"
   fi
 
   # testIDs section should list at least one entry (or an explicit none/system note).

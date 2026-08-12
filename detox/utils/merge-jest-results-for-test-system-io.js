@@ -3,7 +3,7 @@
 /* eslint-disable no-console, no-process-env -- CI utility script */
 
 /**
- * Merge per-shard Jest `--json` reports into the shape TSIO's Detox ingest
+ * Merge per-shard Jest `--json` reports into the shape Test System IO's Detox ingest
  * expects (`testFilePath` + nested `testResults`), not Jest CLI's
  * (`name` + `assertionResults`).
  *
@@ -49,7 +49,7 @@ function relativizeDetoxPath(filePath, opts = {}) {
     }
     const normalized = filePath.replace(/\\/g, '/');
 
-    // Already repo-relative — keep as-is for stable TSIO identity across moves.
+    // Already repo-relative — keep as-is for stable Test System IO identity across moves.
     if (!path.isAbsolute(filePath) && !normalized.startsWith('/')) {
         return normalized.replace(/^\.\//, '');
     }
@@ -76,7 +76,7 @@ function relativizeDetoxPath(filePath, opts = {}) {
 }
 
 /**
- * Map one suite from Jest CLI JSON (or already-TSIO-shaped) into TSIO Detox shape.
+ * Map one suite from Jest CLI JSON (or already-Test System IO-shaped) into Test System IO Detox shape.
  *
  * @param {object} suite
  * @param {{repoRoot?: string}} [opts]
@@ -192,7 +192,7 @@ function main() {
     const args = parseArgs(process.argv);
     const output = args.output;
     if (!output) {
-        console.error('merge-jest-results-for-tsio: --output is required');
+        console.error('merge-jest-results-for-test-system-io: --output is required');
         process.exit(1);
     }
 
@@ -202,7 +202,7 @@ function main() {
     }
 
     if (inputPaths.length === 0) {
-        console.error('merge-jest-results-for-tsio: no jest-results.json found');
+        console.error('merge-jest-results-for-test-system-io: no jest-results.json found');
         process.exit(1);
     }
 

@@ -42,12 +42,12 @@ on:
         required: false
         type: boolean
         default: false
-      tsio-job-configs:
-        description: "JSON map of per-platform TSIO configs from parent calculate-tsio-identity"
+      test-system-io-job-configs:
+        description: "JSON map of per-platform Test System IO configs from parent calculate-test-system-io-identity"
         required: true
         type: string
 
-# Least-privilege defaults; the TSIO upload (in the nested maestro template)
+# Least-privilege defaults; the Test System IO upload (in the nested maestro template)
 # needs id-token: write to mint an OIDC token and actions: read to resolve
 # gh_job_id. Reusable workflows cannot escalate beyond the caller, so grant
 # here too.
@@ -80,8 +80,8 @@ jobs:
       MM_TEST_SERVER_URL: ${{ inputs.IOS_SITE_1_URL }}
       artifact_run_id: ${{ inputs.artifact_run_id }}
       record_tests_in_zephyr: ${{ inputs.record_tests_in_zephyr }}
-      tsio-config: ${{ toJSON(fromJSON(inputs.tsio-job-configs)['maestro-ios']) }}
-      tsio-shard-name: maestro-ios
+      test-system-io-config: ${{ toJSON(fromJSON(inputs.test-system-io-job-configs)['maestro-ios']) }}
+      test-system-io-shard-name: maestro-ios
     secrets: inherit
 
   run-maestro-android:
@@ -95,6 +95,6 @@ jobs:
       MM_TEST_SERVER_URL: ${{ inputs.ANDROID_SITE_1_URL }}
       artifact_run_id: ${{ inputs.artifact_run_id }}
       record_tests_in_zephyr: ${{ inputs.record_tests_in_zephyr }}
-      tsio-config: ${{ toJSON(fromJSON(inputs.tsio-job-configs)['maestro-android']) }}
-      tsio-shard-name: maestro-android
+      test-system-io-config: ${{ toJSON(fromJSON(inputs.test-system-io-job-configs)['maestro-android']) }}
+      test-system-io-shard-name: maestro-android
     secrets: inherit

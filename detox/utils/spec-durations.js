@@ -20,7 +20,7 @@ const fs = require('fs');
 const path = require('path');
 
 const {parseArgs} = require('./cli-args');
-const {findJestResultFiles, relativizeDetoxPath} = require('./merge-jest-results-for-tsio');
+const {findJestResultFiles, relativizeDetoxPath} = require('./merge-jest-results-for-test-system-io');
 
 // Weight given to the newest observation. 0.5 halves the influence of any single
 // run within two runs while still tracking real changes in spec cost quickly.

@@ -8,21 +8,24 @@ Cut the iOS critical path on **PR** E2E while keeping coverage. **Android owns t
 
 ## How PR specs are identified / tagged
 
-### Maestro — platform tags on each flow
+Convention (Detox + Maestro): plan tags are **`@snake_case`**, always `@`-prefixed. **Untagged = applies to all** — do not invent a `shared` tag. Prefer include/exclude tags over directory filters.
 
-Every flow under `detox/maestro/flows/**/*.yml` declares its Zephyr id plus **exactly one** platform tag:
+### Maestro — plan tags on each flow
 
-| Tag | PR dispatch |
+Every flow under `detox/maestro/flows/**/*.yml` declares its Zephyr id. Optional plan tags:
+
+| Tag | Dispatch |
 |---|---|
-| `shared` | Android only |
-| `android-only` | Android only |
-| `ios-only` | iOS only |
+| *(none)* | Android + iOS |
+| `@android_only` | Android only |
+| `@ios_only` | iOS only |
+| `@multi_device` | Excluded from single-device CI |
 
-Filter: `detox/maestro/config/exclude_tags.json` → Test System IO `maestro-exclude-tags`.
+Filter: `detox/maestro/config/exclude_tags.json` → Test System IO `maestro-exclude-tags` (no `maestro-exclude-dir`).
 
-### Detox — `// Tags: @ios_pr`
+### Detox — `// Tags: @ios_pr` / `@ipad_only`
 
-Test System IO discovers Detox specs as normal `*.e2e.ts` paths under `detox/e2e/test` (excluding `ipad/`), then filters by preamble tags:
+Test System IO discovers Detox specs as normal `*.e2e.ts` paths under `detox/e2e/test`, then filters by preamble tags:
 
 ```ts
 // Copyright …
@@ -34,17 +37,19 @@ Test System IO discovers Detox specs as normal `*.e2e.ts` paths under `detox/e2e
 | Input | Meaning |
 |---|---|
 | `detox-include-tags: @ios_pr` | PR iOS phone — only tagged files are registered as dispatch units |
-| (empty) | Android / full iOS / iPad — no include filter |
+| `detox-include-tags: @ipad_only` | iPad job — only iPad-tagged specs (specs may live anywhere) |
+| `detox-exclude-tags: @ipad_only` | Phone Android / full iOS — drop iPad-only specs |
+| (empty include) | No include filter |
 
-Requires Test System IO `detox-include-tags` ([PR #106](https://github.com/mattermost/mattermost-test-system-io/pull/106)).
+Requires Test System IO `detox-include-tags` / `detox-exclude-tags` ([PR #106](https://github.com/mattermost/mattermost-test-system-io/pull/106)).
 
 Units keep real paths (`e2e/test/products/channels/…/*.e2e.ts`). Workers lease and report them like any other Detox run.
 
 | Leg | PR selection |
 |---|---|
-| Detox Android | Full tree (`e2e/test`, exclude `ipad`) |
-| Detox iPad | `…/ipad` (unchanged) |
-| Detox iOS phone | Full tree + `@ios_pr` (31 specs below, 4 workers) |
+| Detox Android | Full tree + exclude `@ipad_only` |
+| Detox iPad | Full tree + include `@ipad_only` |
+| Detox iOS phone | Full tree + include `@ios_pr` (31 specs below, 20 workers) |
 
 | Run type | Detox iOS phone filter | Workers |
 |---|---|---|

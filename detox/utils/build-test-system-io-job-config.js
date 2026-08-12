@@ -3,7 +3,7 @@
 /* eslint-disable no-console -- CI utility script */
 
 /**
- * Build per-platform TSIO upload + GitHub commit-status config.
+ * Build per-platform Test System IO upload + GitHub commit-status config.
  *
  * Each Detox/Maestro platform job owns one report group and one commit-status
  * context. With orchestration, total_reports_expected equals the worker matrix
@@ -14,10 +14,9 @@
 const STATUS_CONTEXT_PREFIX = 'e2e-test';
 
 // workers = orchestration matrix size (must match template `parallelism` defaults).
-// PR defaults: Android full (20 Detox workers); iOS phone PR-tagged (@ios_pr) (~30 tagged specs / 4 workers).
-// MAIN/MASTER/RELEASE override detox-ios parallelism back to 20 in e2e-detox.yml.
+// Detox phone: 20 workers (same as e2e-ios/android-template defaults). iPad / Maestro: 1.
 const PR_MAIN_JOBS = {
-    'detox-ios': {statusName: 'detox-ios', framework: 'detox', workers: 4},
+    'detox-ios': {statusName: 'detox-ios', framework: 'detox', workers: 20},
     'detox-android': {statusName: 'detox-android', framework: 'detox', workers: 20},
     'detox-ipad': {statusName: 'detox-ipad', framework: 'detox', workers: 1},
     'maestro-ios': {statusName: 'maestro-ios', framework: 'maestro', workers: 1},
@@ -77,16 +76,16 @@ function cmtWorkersForJobKey(jobKey, latest) {
 
 /**
  * @param {object} baseIdentity - shared fields (repository, commit_sha, branch, name prefix, …)
- * @param {string} jobKey - tsio-shard-name / platform key (e.g. detox-ios, detox-ios-Server_11.9.0)
+ * @param {string} jobKey - test-system-io-shard-name / platform key (e.g. detox-ios, detox-ios-Server_11.9.0)
  * @param {{statusName?: string, framework?: string, workers?: number, totalReportsExpected?: number}} [overrides]
  * @returns {{composite_identity: object, total_reports_expected: number, status_context: string}}
  */
-function buildTsioJobConfig(baseIdentity, jobKey, overrides = {}) {
+function buildTestSystemIoJobConfig(baseIdentity, jobKey, overrides = {}) {
     if (!baseIdentity || typeof baseIdentity !== 'object') {
-        throw new Error('buildTsioJobConfig: baseIdentity is required');
+        throw new Error('buildTestSystemIoJobConfig: baseIdentity is required');
     }
     if (!jobKey || typeof jobKey !== 'string') {
-        throw new Error('buildTsioJobConfig: jobKey is required');
+        throw new Error('buildTestSystemIoJobConfig: jobKey is required');
     }
 
     const known = PR_MAIN_JOBS[jobKey];
@@ -116,13 +115,13 @@ function buildTsioJobConfig(baseIdentity, jobKey, overrides = {}) {
  * @param {object} baseIdentity
  * @param {string[]} jobKeys
  * @param {(jobKey: string) => ({workers?: number, totalReportsExpected?: number, framework?: string}|undefined)} [overrideForKey]
- * @returns {Record<string, ReturnType<typeof buildTsioJobConfig>>}
+ * @returns {Record<string, ReturnType<typeof buildTestSystemIoJobConfig>>}
  */
-function buildTsioJobConfigMap(baseIdentity, jobKeys, overrideForKey) {
+function buildTestSystemIoJobConfigMap(baseIdentity, jobKeys, overrideForKey) {
     const out = {};
     for (const key of jobKeys) {
         const overrides = typeof overrideForKey === 'function' ? (overrideForKey(key) || {}) : {};
-        out[key] = buildTsioJobConfig(baseIdentity, key, overrides);
+        out[key] = buildTestSystemIoJobConfig(baseIdentity, key, overrides);
     }
     return out;
 }
@@ -144,7 +143,7 @@ function jobKeysForPlatform(platform) {
 }
 
 // CMT shard names are `<framework>-<platform>-Server_<version>` (see
-// compatibility-matrix-testing.yml tsio-shard-name inputs).
+// compatibility-matrix-testing.yml test-system-io-shard-name inputs).
 const CMT_DETOX_SHARD_PREFIXES = ['detox-ios', 'detox-ipad', 'detox-android'];
 const CMT_MAESTRO_SHARD_PREFIXES = ['maestro-ios', 'maestro-android'];
 
@@ -176,22 +175,22 @@ function cmtJobKeys(cmtMatrix, maestroMatrix) {
 }
 
 /**
- * Build CMT per-shard TSIO configs with total_reports_expected matching each
+ * Build CMT per-shard Test System IO configs with total_reports_expected matching each
  * template's parallelism (10 for latest Detox phone, else 1).
  *
  * @param {object} baseIdentity
  * @param {{server?: Array<{version?: string, latest?: boolean}>}} cmtMatrix
  * @param {{server?: Array<{version?: string, latest?: boolean}>}} [maestroMatrix]
- * @returns {Record<string, ReturnType<typeof buildTsioJobConfig>>}
+ * @returns {Record<string, ReturnType<typeof buildTestSystemIoJobConfig>>}
  */
-function buildCmtTsioJobConfigMap(baseIdentity, cmtMatrix, maestroMatrix) {
+function buildCmtTestSystemIoJobConfigMap(baseIdentity, cmtMatrix, maestroMatrix) {
     const latestVersions = new Set(
         (cmtMatrix && Array.isArray(cmtMatrix.server) ? cmtMatrix.server : []).
             filter((entry) => entry && entry.latest && entry.version).
             map((entry) => entry.version),
     );
     const keys = cmtJobKeys(cmtMatrix, maestroMatrix);
-    return buildTsioJobConfigMap(baseIdentity, keys, (jobKey) => {
+    return buildTestSystemIoJobConfigMap(baseIdentity, keys, (jobKey) => {
         const versionMatch = /Server_(.+)$/.exec(jobKey);
         const version = versionMatch ? versionMatch[1] : '';
         const latest = latestVersions.has(version);
@@ -227,9 +226,9 @@ module.exports = {
     E2E_STATUS_CONTEXTS,
     frameworkFromJobKey,
     cmtWorkersForJobKey,
-    buildTsioJobConfig,
-    buildTsioJobConfigMap,
-    buildCmtTsioJobConfigMap,
+    buildTestSystemIoJobConfig,
+    buildTestSystemIoJobConfigMap,
+    buildCmtTestSystemIoJobConfigMap,
     jobKeysForPlatform,
     cmtJobKeys,
     webhookBucketForReportName,

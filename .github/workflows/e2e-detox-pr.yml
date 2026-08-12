@@ -68,7 +68,7 @@ on:
         default: "PR"
         type: string
       version_name:
-        description: "Branch or version ref under test (e.g. feature-branch, main, release-2.40). Used as TSIO branch — not pr-{number}."
+        description: "Branch or version ref under test (e.g. feature-branch, main, release-2.40). Used as Test System IO branch — not pr-{number}."
         required: false
         type: string
 
@@ -271,8 +271,8 @@ jobs:
               || 'e2e tests overridden' }}
           target_url: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
 
-  calculate-tsio-identity:
-    name: Calculate TSIO per-job identities
+  calculate-test-system-io-identity:
+    name: Calculate Test System IO per-job identities
     runs-on: ubuntu-24.04
     permissions:
       contents: read
@@ -283,15 +283,15 @@ jobs:
       job-configs: ${{ steps.id.outputs.job-configs }}
       job-keys: ${{ steps.id.outputs.job-keys }}
     steps:
-      - name: Sparse checkout TSIO job-config helper
+      - name: Sparse checkout Test System IO job-config helper
         uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
         with:
           ref: ${{ inputs.MOBILE_VERSION }}
           persist-credentials: false
           sparse-checkout: |
-            detox/utils/build-tsio-job-config.js
+            detox/utils/build-test-system-io-job-config.js
 
-      - name: Resolve branch ref for TSIO display URL
+      - name: Resolve branch ref for Test System IO display URL
         id: branch
         uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9.0.0
         env:
@@ -349,33 +349,25 @@ jobs:
               --arg attempt "$GITHUB_RUN_ATTEMPT" --arg branch "$BRANCH" --arg name "$RUN_NAME" \
               '{repository:$repo, commit_sha:$sha, gh_run_id:$run_id, gh_run_attempt:$attempt, branch:$branch, name:$name, run_group:$name, framework:"detox"}')
           fi
-          export BASE PLATFORM RUN_TYPE
+          export BASE PLATFORM
           JOB_CONFIGS=$(node -e '
-            const {buildTsioJobConfigMap, jobKeysForPlatform} = require("./detox/utils/build-tsio-job-config.js");
+            const {buildTestSystemIoJobConfigMap, jobKeysForPlatform} = require("./detox/utils/build-test-system-io-job-config.js");
             const base = JSON.parse(process.env.BASE);
             const keys = jobKeysForPlatform(process.env.PLATFORM);
-            const runType = (process.env.RUN_TYPE || "PR").toUpperCase();
-            const fullIos = runType === "MAIN" || runType === "MASTER" || runType === "RELEASE";
-            process.stdout.write(JSON.stringify(buildTsioJobConfigMap(base, keys, (key) => {
-              // PR defaults keep detox-ios at 2 PR (@ios_pr) workers; full runs use 20.
-              if (key === "detox-ios" && fullIos) {
-                return {workers: 20};
-              }
-              return undefined;
-            })));
+            process.stdout.write(JSON.stringify(buildTestSystemIoJobConfigMap(base, keys)));
           ')
           echo "job-configs=$JOB_CONFIGS" >> "$GITHUB_OUTPUT"
           echo "job-keys=$(echo "$JOB_CONFIGS" | jq -r 'keys | join(",")')" >> "$GITHUB_OUTPUT"
 
-  update-initial-tsio-status:
-    name: Set pending per-job TSIO commit statuses
+  update-initial-test-system-io-status:
+    name: Set pending per-job Test System IO commit statuses
     runs-on: ubuntu-24.04
     needs:
       - resolve-e2e-policy
-      - calculate-tsio-identity
+      - calculate-test-system-io-identity
     if: >-
       needs.resolve-e2e-policy.outputs.e2e_override != 'true'
-      && needs.calculate-tsio-identity.result == 'success'
+      && needs.calculate-test-system-io-identity.result == 'success'
       && (inputs.run_type == 'PR' || inputs.run_type == 'MAIN' || inputs.run_type == 'MASTER')
     permissions:
       contents: read
@@ -388,7 +380,7 @@ jobs:
       - name: Post pending status for each platform job
         env:
           GITHUB_TOKEN: ${{ github.token }}
-          JOB_CONFIGS: ${{ needs.calculate-tsio-identity.outputs.job-configs }}
+          JOB_CONFIGS: ${{ needs.calculate-test-system-io-identity.outputs.job-configs }}
           COMMIT_SHA: ${{ inputs.MOBILE_VERSION }}
           REPO: ${{ github.repository }}
           USE_STAGING: ${{ vars.E2E_USE_STAGING_TEST_IO_URL }}
@@ -752,13 +744,9 @@ jobs:
               exit 1
             fi
 
-            # Extract hostname safely using Python URL parser to prevent SSRF bypass via userinfo.
-            # CRITICAL: the URL is passed as argv[1], NOT interpolated into the Python source.
-            # The Python code is single-quoted so bash performs no expansion inside it; "$url"
-            # is a separate argv argument, treated as a literal string by Python. This prevents
-            # injection of Python syntax (e.g. https://a.com')+__import__('os').system(...)+(' )
-            # that would escape the urlparse() call if the URL were interpolated.
-            hostname=$(python3 -c 'import sys; from urllib.parse import urlparse; print(urlparse(sys.argv[1]).hostname or "")' "$url" | tr '[:upper:]' '[:lower:]')
+            # Extract hostname via Node URL (argv, not string interpolation) so userinfo cannot
+            # bypass the allowlist / private-IP checks.
+            hostname=$(node -e 'const {URL}=require("url"); const u=new URL(process.argv[1]); process.stdout.write((u.hostname||"").toLowerCase())' "$url")
 
             # Block private/internal IPs
             if echo "$hostname" | grep -qE '^(127\.|10\.|172\.(1[6-9]|2[0-9]|3[01])\.|192\.168\.|0\.|localhost|::1$|::ffff:|fe80:)'; then
@@ -844,7 +832,7 @@ jobs:
     name: Detox iOS E2E
     needs:
       - resolve-e2e-policy
-      - calculate-tsio-identity
+      - calculate-test-system-io-identity
       - build-ios-simulator
       - provision-servers
       - resolve-server-topology
@@ -873,14 +861,14 @@ jobs:
       SITE_3_URL: ${{ needs.resolve-server-topology.outputs.site-3-url }}
       run_type: ${{ inputs.run_type || 'PR' }}
       artifact_run_id: ${{ github.run_id }}
-      tsio-job-configs: ${{ needs.calculate-tsio-identity.outputs.job-configs }}
+      test-system-io-job-configs: ${{ needs.calculate-test-system-io-identity.outputs.job-configs }}
     secrets: inherit
 
   run-detox-android:
     name: Detox Android E2E
     needs:
       - resolve-e2e-policy
-      - calculate-tsio-identity
+      - calculate-test-system-io-identity
       - build-android-apk
       - provision-servers
       - resolve-server-topology
@@ -909,7 +897,7 @@ jobs:
       SITE_3_URL: ${{ needs.resolve-server-topology.outputs.site-3-url }}
       run_type: ${{ inputs.run_type || 'PR' }}
       artifact_run_id: ${{ github.run_id }}
-      tsio-job-configs: ${{ needs.calculate-tsio-identity.outputs.job-configs }}
+      test-system-io-job-configs: ${{ needs.calculate-test-system-io-identity.outputs.job-configs }}
     secrets: inherit
 
   validate-maestro-flow-headers:
@@ -938,7 +926,7 @@ jobs:
     name: Maestro iOS E2E
     needs:
       - resolve-e2e-policy
-      - calculate-tsio-identity
+      - calculate-test-system-io-identity
       - build-ios-simulator
       - provision-servers
       - validate-maestro-flow-headers
@@ -970,14 +958,14 @@ jobs:
       run_type: ${{ inputs.run_type || 'PR' }}
       artifact_run_id: ${{ github.run_id }}
       record_tests_in_zephyr: ${{ inputs.run_type == 'RELEASE' || inputs.run_type == 'MAIN' || inputs.run_type == 'MASTER' }}
-      tsio-job-configs: ${{ needs.calculate-tsio-identity.outputs.job-configs }}
+      test-system-io-job-configs: ${{ needs.calculate-test-system-io-identity.outputs.job-configs }}
     secrets: inherit
 
   run-maestro-android:
     name: Maestro Android E2E
     needs:
       - resolve-e2e-policy
-      - calculate-tsio-identity
+      - calculate-test-system-io-identity
       - build-android-apk-maestro
       - provision-servers
       - validate-maestro-flow-headers
@@ -1009,7 +997,7 @@ jobs:
       run_type: ${{ inputs.run_type || 'PR' }}
       artifact_run_id: ${{ github.run_id }}
       record_tests_in_zephyr: ${{ inputs.run_type == 'RELEASE' || inputs.run_type == 'MAIN' || inputs.run_type == 'MASTER' }}
-      tsio-job-configs: ${{ needs.calculate-tsio-identity.outputs.job-configs }}
+      test-system-io-job-configs: ${{ needs.calculate-test-system-io-identity.outputs.job-configs }}
     secrets: inherit
 
   e2e-remove-matterwick-label:
@@ -1152,23 +1140,23 @@ jobs:
           BRANCH: ${{ github.ref_name }}
           WORKFLOW_CONCLUSION: ${{ job.status }}
 
-  # Per-platform TSIO commit statuses are finalized inside each Detox/Maestro
+  # Per-platform Test System IO commit statuses are finalized inside each Detox/Maestro
   # summary job after workers finish uploading shards (total_reports_expected=workers).
   # No combined e2e/mobile finalizer — avoids cross-job clobber and pending races.
 
   # One Mattermost channel rollup (best-effort). Per-job finalize leaves channel
   # notify off so N legs do not spam; this job posts a single summary.
-  tsio-channel-notify:
+  test-system-io-channel-notify:
     name: Post Mattermost E2E channel rollup
     runs-on: ubuntu-24.04
     if: >-
       always() &&
       needs.resolve-e2e-policy.outputs.e2e_override != 'true' &&
-      needs.calculate-tsio-identity.result == 'success' &&
+      needs.calculate-test-system-io-identity.result == 'success' &&
       (inputs.run_type == 'PR' || inputs.run_type == 'MAIN' || inputs.run_type == 'MASTER')
     needs:
       - resolve-e2e-policy
-      - calculate-tsio-identity
+      - calculate-test-system-io-identity
       - run-detox-ios
       - run-detox-android
       - run-maestro-ios
@@ -1182,14 +1170,14 @@ jobs:
           ref: ${{ inputs.MOBILE_VERSION }}
           persist-credentials: false
           sparse-checkout: |
-            detox/utils/tsio-channel-notify-rollup.js
-            detox/utils/tsio-report-status.js
+            detox/utils/test-system-io-channel-notify-rollup.js
+            detox/utils/test-system-io-report-status.js
             detox/utils/cmt-channel-notify.js
-            detox/utils/build-tsio-job-config.js
+            detox/utils/build-test-system-io-job-config.js
             detox/utils/cli-args.js
-      - name: Aggregate per-job TSIO groups and notify channel
+      - name: Aggregate per-job Test System IO groups and notify channel
         env:
-          JOB_CONFIGS: ${{ needs.calculate-tsio-identity.outputs.job-configs }}
+          JOB_CONFIGS: ${{ needs.calculate-test-system-io-identity.outputs.job-configs }}
           MATTERMOST_E2E_WEBHOOK_URL: ${{ secrets.MM_MOBILE_E2E_WEBHOOK_URL }}
           MATTERMOST_MASTER_HEALTH_WEBHOOK_URL: ${{ secrets.MM_E2E_MASTER_HEALTH_WEBHOOK_URL }}
           MATTERMOST_CMT_WEBHOOK_URL: ${{ secrets.MM_E2E_RELEASE_WEBHOOK_URL }}
@@ -1201,7 +1189,7 @@ jobs:
               *) UPSTREAM="false" ;;
             esac
           done
-          node detox/utils/tsio-channel-notify-rollup.js \
+          node detox/utils/test-system-io-channel-notify-rollup.js \
             --job-configs="$JOB_CONFIGS" \
             --upstream-succeeded="$UPSTREAM" \
             --poll-attempts=6 || true

@@ -294,7 +294,7 @@ function mergeMaestroJunitReports(xmlPaths, outputPath) {
         return `    <testcase id="${escapeXmlAttr(f.name)}" name="${escapeXmlAttr(f.name)}" classname="${escapeXmlAttr(classname)}"${fileAttr} time="${f.time.toFixed(1)}" status="${statusAttr}">${innerBlock}\n    </testcase>`;
     };
 
-    // One testsuite per flow file when every flow has a path — TSIO reads `file`
+    // One testsuite per flow file when every flow has a path — Test System IO reads `file`
     // into suite FilePath; suite name doubles as a readable title.
     const allHaveFiles = mergedFlows.length > 0 && mergedFlows.every((f) => f.file);
     let suitesXml;
@@ -607,7 +607,7 @@ h2 { font-size:16px; font-weight:600; margin:24px 0 12px; color:var(--muted); te
 
 /**
  * Convert a Maestro JUnit XML report into Jest --json shape.
- * Prefer uploading JUnit with framework=maestro (TSIO #76+). Kept for local/
+ * Prefer uploading JUnit with framework=maestro (Test System IO #76+). Kept for local/
  * tooling that still wants a Jest-shaped artifact.
  *
  * @param {string} xmlPath
@@ -714,7 +714,7 @@ function writeMaestroJestJsonForTsio(xmlPath, outputPath) {
 
     fse.outputFileSync(outputPath, JSON.stringify(payload, null, 2));
     console.log(
-        `Wrote Maestro→Jest JSON for TSIO -> ${outputPath} ` +
+        `Wrote Maestro→Jest JSON for Test System IO -> ${outputPath} ` +
         `(${numTotalTests} tests, ${numFailedTests} failed)`,
     );
     return true;
@@ -800,10 +800,10 @@ function buildScreenshotMapFromFlowYamls(flows, repoRoot = process.cwd()) {
 }
 
 /**
- * Stage Maestro screenshots into per-flow folders for TSIO linking.
+ * Stage Maestro screenshots into per-flow folders for Test System IO linking.
  *
  * Maestro writes takeScreenshot PNGs as flat `screenshots/<name>.png`, which
- * cannot match JUnit full_title (`<flow.yml> > <flowName>`). TSIO's linker
+ * cannot match JUnit full_title (`<flow.yml> > <flowName>`). Test System IO's linker
  * matches folder-derived test_name against full_title, so we copy images to
  * `<outputDir>/<flowName>/<basename>.png` using the same attribution as the
  * HTML report (command logs + YAML takeScreenshot map + scoreFlowMatch).

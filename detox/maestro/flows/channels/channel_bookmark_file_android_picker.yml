@@ -15,7 +15,7 @@
 #   - com.google.android.documentsui:id/search_src_text
 tags:
   - MM-T5603
-  - android-only
+  - @android_only
 appId: ${MAESTRO_APP_ID}
 ---
 # * Verify the document picker opened on Recent

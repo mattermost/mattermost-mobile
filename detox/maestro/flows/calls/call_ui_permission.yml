@@ -21,7 +21,7 @@
 #   - leave
 tags:
   - MM-T1411
-  - android-only
+  - @android_only
 appId: ${MAESTRO_APP_ID}
 ---
 # # Log in and open the test channel

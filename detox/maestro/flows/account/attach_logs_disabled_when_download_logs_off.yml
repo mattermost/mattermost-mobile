@@ -25,7 +25,6 @@
 #   - tab_bar.home.tab
 tags:
   - MM-T67856_4
-  - shared
 appId: ${MAESTRO_APP_ID}
 ---
 # # Log in as the test user

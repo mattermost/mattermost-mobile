@@ -1,7 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-// CI util unit tests: run with `node --test detox/utils/tsio-channel-notify-rollup.test.js`.
+// CI util unit tests: run with `node --test detox/utils/test-system-io-channel-notify-rollup.test.js`.
 
 const assert = require('node:assert/strict');
 const {describe, it} = require('node:test');
@@ -10,7 +10,7 @@ const {
     bucketIdentity,
     mergeDetails,
     collectPerJobCounts,
-} = require('./tsio-channel-notify-rollup');
+} = require('./test-system-io-channel-notify-rollup');
 
 const BASE_URL = 'https://test-io.test.mattermost.com';
 
@@ -23,7 +23,7 @@ const identityFor = (job) => ({
     run_group: 'mobile-main',
 });
 
-describe('tsio-channel-notify-rollup', () => {
+describe('test-system-io-channel-notify-rollup', () => {
     describe('bucketIdentity', () => {
         it('collapses a per-job group name to its routing bucket', () => {
             const rollup = bucketIdentity(identityFor('detox-ios'));

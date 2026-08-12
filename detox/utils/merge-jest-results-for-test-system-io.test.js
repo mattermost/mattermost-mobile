@@ -1,7 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-// CI util unit tests: run with `node --test detox/utils/merge-jest-results-for-tsio.test.js`.
+// CI util unit tests: run with `node --test detox/utils/merge-jest-results-for-test-system-io.test.js`.
 
 const assert = require('node:assert/strict');
 const fs = require('node:fs');
@@ -14,9 +14,9 @@ const {
     toTsioDetoxSuite,
     relativizeDetoxPath,
     writeMergedJestResultsForTsio,
-} = require('./merge-jest-results-for-tsio');
+} = require('./merge-jest-results-for-test-system-io');
 
-describe('merge-jest-results-for-tsio', () => {
+describe('merge-jest-results-for-test-system-io', () => {
     it('should keep already-relative paths (any e2e layout) unchanged', () => {
         assert.equal(
             relativizeDetoxPath('detox/e2e/test/foo.e2e.ts'),
@@ -59,7 +59,7 @@ describe('merge-jest-results-for-tsio', () => {
         );
     });
 
-    it('should convert Jest CLI suites (name + assertionResults) to TSIO Detox shape', () => {
+    it('should convert Jest CLI suites (name + assertionResults) to Test System IO Detox shape', () => {
         const converted = toTsioDetoxSuite({
             name: '/repo/e2e/detox/test/products/agents/agent_mention.e2e.ts',
             startTime: 1000,
@@ -87,7 +87,7 @@ describe('merge-jest-results-for-tsio', () => {
         });
     });
 
-    it('should pass through suites already in TSIO Detox shape', () => {
+    it('should pass through suites already in Test System IO Detox shape', () => {
         const converted = toTsioDetoxSuite({
             testFilePath: 'e2e/detox/test/foo.e2e.ts',
             testResults: [{
@@ -105,8 +105,8 @@ describe('merge-jest-results-for-tsio', () => {
         assert.equal(converted.testResults[0].status, 'passed');
     });
 
-    it('should merge multiple CLI shard files into one TSIO payload with real test cases', () => {
-        const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'tsio-merge-'));
+    it('should merge multiple CLI shard files into one Test System IO payload with real test cases', () => {
+        const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'test-system-io-merge-'));
         const a = path.join(dir, 'a.json');
         const b = path.join(dir, 'b.json');
         fs.writeFileSync(a, JSON.stringify({

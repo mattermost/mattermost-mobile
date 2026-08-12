@@ -8,7 +8,7 @@ const {spawnSync} = require('node:child_process');
 const path = require('node:path');
 const {describe, it} = require('node:test');
 
-const SCRIPT = path.join(__dirname, 'resolve-tsio-job-config.sh');
+const SCRIPT = path.join(__dirname, 'resolve-test-system-io-job-config.sh');
 const PASS_THROUGH = {
     status_context: 'e2e-test/detox-ios',
     composite_identity: {name: 'detox-ios', run_group: 'mobile-pr', commit_sha: 'abc'},
@@ -30,12 +30,12 @@ function run(env, unsetKeys = []) {
 function assertWorkersRejected(result) {
     assert.equal(result.error, undefined, result.error?.message);
     assert.equal(result.status, 1, result.stderr);
-    assert.match(result.stderr, /TSIO_WORKERS must be a positive integer/);
+    assert.match(result.stderr, /TEST_SYSTEM_IO_WORKERS must be a positive integer/);
 }
 
-describe('resolve-tsio-job-config.sh', () => {
-    it('should pass through config and honour a valid TSIO_WORKERS override', () => {
-        const result = run({TSIO_CONFIG: PASS_THROUGH_JSON, TSIO_WORKERS: '10'});
+describe('resolve-test-system-io-job-config.sh', () => {
+    it('should pass through config and honour a valid TEST_SYSTEM_IO_WORKERS override', () => {
+        const result = run({TEST_SYSTEM_IO_CONFIG: PASS_THROUGH_JSON, TEST_SYSTEM_IO_WORKERS: '10'});
         assert.equal(result.status, 0, result.stderr);
         assert.deepEqual(JSON.parse(result.stdout), {
             ...PASS_THROUGH,
@@ -43,16 +43,16 @@ describe('resolve-tsio-job-config.sh', () => {
         });
     });
 
-    it('should leave total_reports_expected unchanged when TSIO_WORKERS is unset', () => {
-        const result = run({TSIO_CONFIG: PASS_THROUGH_JSON}, ['TSIO_WORKERS']);
+    it('should leave total_reports_expected unchanged when TEST_SYSTEM_IO_WORKERS is unset', () => {
+        const result = run({TEST_SYSTEM_IO_CONFIG: PASS_THROUGH_JSON}, ['TEST_SYSTEM_IO_WORKERS']);
         assert.equal(result.status, 0, result.stderr);
         assert.deepEqual(JSON.parse(result.stdout), PASS_THROUGH);
     });
 
     it('should accept Number.MAX_SAFE_INTEGER', () => {
         const result = run({
-            TSIO_CONFIG: PASS_THROUGH_JSON,
-            TSIO_WORKERS: String(Number.MAX_SAFE_INTEGER),
+            TEST_SYSTEM_IO_CONFIG: PASS_THROUGH_JSON,
+            TEST_SYSTEM_IO_WORKERS: String(Number.MAX_SAFE_INTEGER),
         });
         assert.equal(result.status, 0, result.stderr);
         assert.deepEqual(JSON.parse(result.stdout), {
@@ -64,23 +64,23 @@ describe('resolve-tsio-job-config.sh', () => {
     // First unsafe integer is MAX_SAFE_INTEGER + 1 (9007199254740992).
     it('should reject the first unsafe integer', () => {
         const result = run({
-            TSIO_CONFIG: PASS_THROUGH_JSON,
-            TSIO_WORKERS: String(Number.MAX_SAFE_INTEGER + 1),
+            TEST_SYSTEM_IO_CONFIG: PASS_THROUGH_JSON,
+            TEST_SYSTEM_IO_WORKERS: String(Number.MAX_SAFE_INTEGER + 1),
         });
         assertWorkersRejected(result);
     });
 
     it('should reject values that parse to Infinity', () => {
         const result = run({
-            TSIO_CONFIG: PASS_THROUGH_JSON,
-            TSIO_WORKERS: '9'.repeat(309),
+            TEST_SYSTEM_IO_CONFIG: PASS_THROUGH_JSON,
+            TEST_SYSTEM_IO_WORKERS: '9'.repeat(309),
         });
         assertWorkersRejected(result);
     });
 
     for (const value of ['0', '-1', '2.5', '2workers', '1e3', '01', '+2', 'abc']) {
-        it(`should reject invalid TSIO_WORKERS=${JSON.stringify(value)}`, () => {
-            assertWorkersRejected(run({TSIO_CONFIG: PASS_THROUGH_JSON, TSIO_WORKERS: value}));
+        it(`should reject invalid TEST_SYSTEM_IO_WORKERS=${JSON.stringify(value)}`, () => {
+            assertWorkersRejected(run({TEST_SYSTEM_IO_CONFIG: PASS_THROUGH_JSON, TEST_SYSTEM_IO_WORKERS: value}));
         });
     }
 });

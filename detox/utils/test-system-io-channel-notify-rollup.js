@@ -3,18 +3,18 @@
 /* eslint-disable no-console, no-process-env, no-await-in-loop -- CI utility script */
 
 /**
- * Post one Mattermost channel rollup after per-job TSIO uploads.
+ * Post one Mattermost channel rollup after per-job Test System IO uploads.
  * Does not write GitHub commit statuses (those are finalized per job).
  *
  * Env:
- *   JOB_CONFIGS — JSON map from buildTsioJobConfigMap
+ *   JOB_CONFIGS — JSON map from buildTestSystemIoJobConfigMap
  *   UPSTREAM_SUCCEEDED — "true" | "false"
- *   USE_STAGING — "true" to hit staging TSIO
+ *   USE_STAGING — "true" to hit staging Test System IO
  *   GITHUB_TOKEN — unused here but kept for parity with other CI utils
  *   MATTERMOST_*_WEBHOOK_URL — routed via resolveWebhookUrl / webhookBucketForReportName
  */
 
-const {webhookBucketForReportName} = require('./build-tsio-job-config');
+const {webhookBucketForReportName} = require('./build-test-system-io-job-config');
 const {parseArgs} = require('./cli-args');
 const {
     fetchPerJobCountsFromConsolidated,
@@ -28,7 +28,7 @@ const {
     buildWorkflowRunUrl,
     PRODUCTION_URL,
     STAGING_URL,
-} = require('./tsio-report-status');
+} = require('./test-system-io-report-status');
 
 function bucketIdentity(sampleIdentity) {
     const bucket = webhookBucketForReportName(sampleIdentity.run_group || sampleIdentity.name) ||
@@ -84,7 +84,7 @@ const COUNT_KEYS = ['passed', 'failed', 'skipped', 'flaky'];
 /**
  * Merge per-leg spec counts across jobs.
  *
- * Each job owns its own TSIO group (`detox-ios`, …), and the consolidated
+ * Each job owns its own Test System IO group (`detox-ios`, …), and the consolidated
  * endpoint is scoped to one group name, so counts must be fetched once per job with
  * that job's identity. Querying the rollup bucket (`mobile-main`) instead returns no
  * specs, which renders every leg as ⚠️ no-results.
@@ -112,7 +112,7 @@ async function collectPerJobCounts({
         try {
             counts = await fetchCounts(baseUrl, identity, detail);
         } catch (err) {
-            warn(`tsio-channel-notify-rollup: no per-leg counts for ${identity.name}: ${err.message}`);
+            warn(`test-system-io-channel-notify-rollup: no per-leg counts for ${identity.name}: ${err.message}`);
             continue;
         }
 
@@ -135,13 +135,13 @@ async function main() {
     try {
         jobConfigs = JSON.parse(raw);
     } catch (err) {
-        console.error('tsio-channel-notify-rollup: invalid JOB_CONFIGS JSON:', err.message);
+        console.error('test-system-io-channel-notify-rollup: invalid JOB_CONFIGS JSON:', err.message);
         process.exit(1);
     }
 
     const entries = Object.values(jobConfigs || {});
     if (entries.length === 0) {
-        console.log('tsio-channel-notify-rollup: no job configs — skipping');
+        console.log('test-system-io-channel-notify-rollup: no job configs — skipping');
         return;
     }
 
@@ -155,7 +155,7 @@ async function main() {
     const rollupIdentity = bucketIdentity(sampleIdentity);
     const webhookUrl = resolveWebhookUrl(rollupIdentity.name);
     if (!webhookUrl) {
-        console.log(`tsio-channel-notify-rollup: no webhook for ${rollupIdentity.name} — skipping`);
+        console.log(`test-system-io-channel-notify-rollup: no webhook for ${rollupIdentity.name} — skipping`);
         return;
     }
 
@@ -163,7 +163,7 @@ async function main() {
     try {
         idToken = await mintOidcToken(audience);
     } catch (err) {
-        console.warn('tsio-channel-notify-rollup (OIDC):', err.message);
+        console.warn('test-system-io-channel-notify-rollup (OIDC):', err.message);
         return;
     }
 
@@ -176,7 +176,7 @@ async function main() {
             const detail = await pollGroup(baseUrl, reportId, pollAttempts);
             results.push({identity, detail});
         } catch (err) {
-            console.warn(`tsio-channel-notify-rollup: skip ${identity.name}: ${err.message}`);
+            console.warn(`test-system-io-channel-notify-rollup: skip ${identity.name}: ${err.message}`);
             results.push({identity, detail: null});
         }
     }
@@ -184,9 +184,9 @@ async function main() {
     const detail = mergeDetails(results.map((r) => r.detail));
     const perJobCounts = await collectPerJobCounts({baseUrl, results});
 
-    // The bucket name has no single TSIO group of its own (each job owns
+    // The bucket name has no single Test System IO group of its own (each job owns
     // mobile-<flow>-<job>), so the rollup links to the workflow run and each leg
-    // row deep-links to its own TSIO report.
+    // row deep-links to its own Test System IO report.
     const runUrl = buildWorkflowRunUrl(rollupIdentity);
     const hasFailures = (detail.test_stats.failed || 0) > 0 ||
         (detail.reports || []).some((r) => r.status && r.status !== 'complete' && r.status !== 'completed');
@@ -211,7 +211,7 @@ async function main() {
 
 if (require.main === module) {
     main().catch((err) => {
-        console.warn('tsio-channel-notify-rollup fatal:', err.message);
+        console.warn('test-system-io-channel-notify-rollup fatal:', err.message);
         process.exit(0);
     });
 }

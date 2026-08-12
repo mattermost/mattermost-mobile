@@ -26,7 +26,7 @@ import {
 import {isAndroid, timeouts, wait} from '@support/utils';
 import {device, expect, waitFor} from 'detox';
 
-// Skip: flaky under TSIO parallel CI — ask_agents / quick_actions (runs 31407140087, 31418589782).
+// Skip: flaky under Test System IO parallel CI — ask_agents / quick_actions (runs 31407140087, 31418589782).
 describe.skip('Agents - Channel Summary', () => {
     const serverOneDisplayName = 'Server 1';
     const channelsCategory = 'channels';

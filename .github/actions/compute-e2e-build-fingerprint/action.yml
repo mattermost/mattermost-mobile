@@ -36,7 +36,7 @@ runs:
         # test-only PRs still hit cache while still running E2E.
         #
         # Deliberately NOT fingerprinted: e2e-detox-pr.yml itself. It mixes the
-        # build steps with unrelated orchestration (TSIO, statuses, provisioning),
+        # build steps with unrelated orchestration (Test System IO, statuses, provisioning),
         # so including it would invalidate every cache entry on unrelated edits.
         # Changes to what the build actually does land in the actions/fastlane
         # paths in paths.json — bump CACHE_VERSION when the workflow's build

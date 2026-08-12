@@ -188,7 +188,7 @@ describe('cmt-channel-notify', () => {
             const text = formatCmtChannelMessage({
                 compositeIdentity: {
                     repository: 'mattermost/mattermost-mobile',
-                    branch: 'feat/tsio',
+                    branch: 'feat/test-system-io',
                     commit_sha: '55afc0b839545804ee156fe95b4c1ac05c9d0cdc',
                     name: 'mobile-pr',
                     gh_pr_number: '9925',
@@ -198,7 +198,7 @@ describe('cmt-channel-notify', () => {
                     test_stats: {passed: 240, failed: 0, skipped: 10, total: 250},
                     reports: [],
                 },
-                reportUrl: 'https://test-io.test.mattermost.com/reports/mattermost-mobile/feat~tsio/55afc0b/mobile-pr',
+                reportUrl: 'https://test-io.test.mattermost.com/reports/mattermost-mobile/feat~test-system-io/55afc0b/mobile-pr',
                 baseUrl: 'https://test-io.test.mattermost.com',
                 perJobCounts: {},
                 upstreamJobsSucceeded: true,
@@ -229,7 +229,7 @@ describe('cmt-channel-notify', () => {
             });
             assert.match(text, /^## ❌ Mobile Main E2E\n/);
             assert.match(text, /\| \*\*Overall\*\* \| \*\*100\*\* \| \*\*0\*\* \| \*\*0\*\* \| ❌ Failed \|/);
-            assert.match(text, /TSIO reported failed shard\(s\) not reflected in the test totals/);
+            assert.match(text, /Test System IO reported failed shard\(s\) not reflected in the test totals/);
         });
 
         it('does not blame CI when the failing jobs are explained by failing tests', () => {
@@ -262,7 +262,7 @@ describe('cmt-channel-notify', () => {
             assert.match(text, /outside tracked tests \(install\/build\/teardown\)/);
         });
 
-        it('links the CI run separately from the TSIO report', () => {
+        it('links the CI run separately from the Test System IO report', () => {
             const text = formatCmtChannelMessage({
                 compositeIdentity: {branch: 'main', commit_sha: 'a1b2c3d', name: 'mobile-main'},
                 detail: {status: 'completed', test_stats: {passed: 1}, reports: []},

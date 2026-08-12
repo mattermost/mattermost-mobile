@@ -28,7 +28,7 @@ import {
 } from '@support/utils';
 import {expect, waitFor} from 'detox';
 
-// Skip: flaky under TSIO parallel CI — timeout / undefined id (runs 31407140087, 31418589782).
+// Skip: flaky under Test System IO parallel CI — timeout / undefined id (runs 31407140087, 31418589782).
 describe.skip('Messaging - Message Permalink Preview', () => {
     const serverOneDisplayName = 'Server 1';
     const channelsCategory = 'channels';

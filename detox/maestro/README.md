@@ -372,7 +372,7 @@ Maestro run time). It is baked into the JS bundle via `@env` and suppresses LogB
 |---|---|
 | `e2e-detox-pr.yml` | Matterwick entry point: builds, provision, Detox + Maestro |
 | `e2e-detox.yml` | Detox test runs (reusable; called from `e2e-detox-pr.yml`) |
-| `e2e-maestro-pr.yml` | Maestro orchestration + TSIO shard uploads (reusable) |
+| `e2e-maestro-pr.yml` | Maestro orchestration + Test System IO shard uploads (reusable) |
 | `e2e-maestro-template.yml` | Reusable runner: device bootstrap, seed, `maestro test`, reports |
 
 Release, master, and CMT workflows call `e2e-maestro-template.yml` directly with
@@ -466,7 +466,7 @@ PR vs nightly vs manual coverage is summarized below (and in `config/exclude_tag
 
 - JUnit XML: `build/maestro-report.xml`
 - HTML report + screenshots uploaded to S3 and as GitHub Actions artifacts
-- Commit status: `maestro-ios` / `maestro-android` (per-job; posted by `tsio-report-status.js` after upload)
+- Commit status: `maestro-ios` / `maestro-android` (per-job; posted by `test-system-io-report-status.js` after upload)
 
 ---
 

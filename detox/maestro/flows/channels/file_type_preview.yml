@@ -20,7 +20,6 @@
 #   - channel.post_draft.post.input
 tags:
   - MM-T3244
-  - shared
 appId: ${MAESTRO_APP_ID}
 ---
 # # Log in and navigate to the test channel

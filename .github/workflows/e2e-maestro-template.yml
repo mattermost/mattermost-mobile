@@ -35,7 +35,7 @@ on:
         type: string
         default: ""
       record_tests_in_zephyr:
-        description: "Record Maestro test results in Zephyr Scale (reserved; TSIO is primary)"
+        description: "Record Maestro test results in Zephyr Scale (reserved; Test System IO is primary)"
         required: false
         type: boolean
         default: false
@@ -44,15 +44,15 @@ on:
         required: false
         type: string
         default: "1"
-      tsio-config:
+      test-system-io-config:
         description: >
-          TSIO reporting config: {"composite_identity":{...},"status_context":"..."}.
+          Test System IO reporting config: {"composite_identity":{...},"status_context":"..."}.
           Empty disables orchestration for this platform.
         required: false
         type: string
         default: ""
-      tsio-shard-name:
-        description: "Display name for this shard in TSIO (e.g. maestro-ios)"
+      test-system-io-shard-name:
+        description: "Display name for this shard in Test System IO (e.g. maestro-ios)"
         required: false
         type: string
         default: ""
@@ -102,8 +102,8 @@ env:
 
 jobs:
   begin:
-    name: orch-begin-${{ inputs.tsio-shard-name != '' && inputs.tsio-shard-name || format('maestro-{0}', inputs.platform) }}
-    if: inputs.tsio-config != ''
+    name: orch-begin-${{ inputs.test-system-io-shard-name != '' && inputs.test-system-io-shard-name || format('maestro-{0}', inputs.platform) }}
+    if: inputs.test-system-io-config != ''
     runs-on: ubuntu-24.04
     permissions:
       contents: read
@@ -126,20 +126,20 @@ jobs:
           ref: ${{ inputs.MOBILE_VERSION }}
           persist-credentials: false
 
-      - name: Resolve TSIO config
+      - name: Resolve Test System IO config
         id: cfg
         env:
-          TSIO_CONFIG: ${{ inputs.tsio-config }}
-          TSIO_SHARD_NAME: ${{ inputs.tsio-shard-name }}
-          TSIO_WORKERS: ${{ inputs.parallelism }}
+          TEST_SYSTEM_IO_CONFIG: ${{ inputs.test-system-io-config }}
+          TEST_SYSTEM_IO_SHARD_NAME: ${{ inputs.test-system-io-shard-name }}
+          TEST_SYSTEM_IO_WORKERS: ${{ inputs.parallelism }}
         run: |
           set -euo pipefail
           # PR/main pass a full per-job config; CMT passes a base identity + shard name.
-          CFG=$(bash detox/utils/resolve-tsio-job-config.sh)
+          CFG=$(bash detox/utils/resolve-test-system-io-job-config.sh)
           IDENTITY=$(echo "$CFG" | jq -c '.composite_identity')
           CONTEXT=$(echo "$CFG" | jq -r '.status_context // empty')
           if [ -z "$CONTEXT" ]; then
-            echo "::error::resolved tsio-config.status_context is empty"
+            echo "::error::resolved test-system-io-config.status_context is empty"
             exit 1
           fi
           BRANCH=$(echo "$IDENTITY" | jq -r '.branch // empty')
@@ -186,7 +186,7 @@ jobs:
         env:
           N: ${{ inputs.parallelism }}
         run: |
-          SHARDS=$(python3 -c "import json,os; print(json.dumps(list(range(1, int(os.environ['N'])+1))))")
+          SHARDS=$(jq -nc --argjson n "${N}" '[range(1; $n+1)]')
           echo "shards=${SHARDS}" >> "$GITHUB_OUTPUT"
           echo "Workers: ${SHARDS}"
 
@@ -201,7 +201,8 @@ jobs:
           total-reports-expected: ${{ inputs.parallelism }}
           maestro-dir: detox/maestro
           maestro-flow-path: ${{ steps.paths.outputs.maestro-flow-path }}
-          maestro-exclude-dir: multi_device
+          # Prefer @multi_device exclude tags over directory filters.
+          maestro-exclude-dir: ""
           maestro-exclude-tags: ${{ steps.exclude-tags.outputs.tags }}
           # Refresh the early pending row with the live report-page target_url.
           post-pending-commit-status: "true"
@@ -680,7 +681,7 @@ jobs:
           pkill -9 -f emulator 2>/dev/null || true
 
   summary:
-    name: ${{ inputs.tsio-shard-name != '' && inputs.tsio-shard-name || format('orch-summary-maestro-{0}', inputs.platform) }}
+    name: ${{ inputs.test-system-io-shard-name != '' && inputs.test-system-io-shard-name || format('orch-summary-maestro-{0}', inputs.platform) }}
     needs: [begin, workers-ios, workers-android]
     if: always() && needs.begin.result == 'success'
     runs-on: ubuntu-24.04
@@ -729,9 +730,9 @@ jobs:
           [ "$SUMMARY_OUTCOME" = "success" ]
 
   finalize-skipped:
-    name: finalize-skipped-${{ inputs.tsio-shard-name != '' && inputs.tsio-shard-name || format('maestro-{0}', inputs.platform) }}
+    name: finalize-skipped-${{ inputs.test-system-io-shard-name != '' && inputs.test-system-io-shard-name || format('maestro-{0}', inputs.platform) }}
     needs: [begin]
-    if: always() && needs.begin.result == 'skipped' && inputs.tsio-config != ''
+    if: always() && needs.begin.result == 'skipped' && inputs.test-system-io-config != ''
     runs-on: ubuntu-24.04
     permissions:
       contents: read
@@ -746,15 +747,15 @@ jobs:
             detox/utils
             .github/actions/update-commit-status
 
-      - name: Resolve TSIO config
+      - name: Resolve Test System IO config
         id: cfg
         env:
-          TSIO_CONFIG: ${{ inputs.tsio-config }}
-          TSIO_SHARD_NAME: ${{ inputs.tsio-shard-name }}
-          TSIO_WORKERS: ${{ inputs.parallelism }}
+          TEST_SYSTEM_IO_CONFIG: ${{ inputs.test-system-io-config }}
+          TEST_SYSTEM_IO_SHARD_NAME: ${{ inputs.test-system-io-shard-name }}
+          TEST_SYSTEM_IO_WORKERS: ${{ inputs.parallelism }}
         run: |
           set -euo pipefail
-          CFG=$(bash detox/utils/resolve-tsio-job-config.sh)
+          CFG=$(bash detox/utils/resolve-test-system-io-job-config.sh)
           echo "status-context=$(echo "$CFG" | jq -r '.status_context')" >> "$GITHUB_OUTPUT"
           echo "commit-sha=$(echo "$CFG" | jq -r '.composite_identity.commit_sha')" >> "$GITHUB_OUTPUT"
 
