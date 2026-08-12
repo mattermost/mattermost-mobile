@@ -81,7 +81,7 @@ test('pre-merge toolkit integration uses aligned immutable refs', () => {
     assert.doesNotMatch(ciWorkflow, /grep -v "@main"/);
 });
 
-test('platform diagnoses independently republish PR and baseline contexts', () => {
+test('platform diagnoses only republish contexts that triage clears', () => {
     const repostJob = triageWorkflow.slice(
         triageWorkflow.indexOf('  repost-platform-contexts:'),
         triageWorkflow.indexOf('  no-verdict:'),
@@ -96,6 +96,9 @@ test('platform diagnoses independently republish PR and baseline contexts', () =
     assert.equal((repostJob.match(/uses: \.\/\.github\/actions\/e2e-override-status/g) || []).length, 2);
     assert.match(repostJob, /steps\.platforms\.outputs\.ios_suffix/);
     assert.match(repostJob, /steps\.platforms\.outputs\.android_suffix/);
+    assert.match(repostJob, /if: steps\.platforms\.outputs\.ios_state == 'success'/);
+    assert.match(repostJob, /if: steps\.platforms\.outputs\.android_state == 'success'/);
+    assert.doesNotMatch(repostJob, /if: steps\.platforms\.outputs\.(?:ios|android)_state != ''/);
     assert.match(repostJob, /status_suffix:/);
     assert.match(repostJob, /target_url: \$\{\{ needs\.adjudicate\.outputs\.triage_url/);
     assert.match(repostJob, /platform: ios/);

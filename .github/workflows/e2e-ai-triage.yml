@@ -749,7 +749,7 @@ jobs:
           persist-credentials: false
 
       - name: ci/publish-ios-outcome
-        if: steps.platforms.outputs.ios_state != ''
+        if: steps.platforms.outputs.ios_state == 'success'
         uses: ./.github/actions/e2e-override-status
         with:
           commit_sha: ${{ inputs.MOBILE_VERSION }}
@@ -760,7 +760,7 @@ jobs:
           platform: ios
 
       - name: ci/publish-android-outcome
-        if: steps.platforms.outputs.android_state != ''
+        if: steps.platforms.outputs.android_state == 'success'
         uses: ./.github/actions/e2e-override-status
         with:
           commit_sha: ${{ inputs.MOBILE_VERSION }}
