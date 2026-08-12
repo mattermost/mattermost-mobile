@@ -68,7 +68,10 @@ on:
         default: "PR"
         type: string
       version_name:
-        description: "Branch or version ref under test (e.g. feature-branch, main, release-2.40). Used as Test System IO branch — not pr-{number}."
+        description: >
+          Branch or version ref under test (e.g. feature-branch, main, release-2.40).
+          For PR runs the Test System IO branch is always `pr-{number}` (mattermost
+          monorepo pattern); this value is only used when there is no pr_number.
         required: false
         type: string
 
@@ -289,37 +292,29 @@ jobs:
           sparse-checkout: |
             detox/utils/build-test-system-io-job-config.js
 
-      - name: Resolve branch ref for Test System IO display URL
+      - name: Resolve Test System IO branch segment
         id: branch
-        uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9.0.0
         env:
           VERSION_NAME: ${{ inputs.version_name }}
           PR_NUMBER: ${{ inputs.pr_number }}
           RUN_TYPE: ${{ inputs.run_type || 'PR' }}
-        with:
-          script: |
-            const versionName = (process.env.VERSION_NAME || '').trim();
-            if (versionName) {
-              core.setOutput('branch', versionName.replace(/^refs\/heads\//, '').replace(/^refs\/tags\//, ''));
-              return;
-            }
-            const runType = (process.env.RUN_TYPE || 'PR').toUpperCase();
-            // Matterwick still sends MASTER for main-branch pushes; treat as MAIN.
-            if (runType === 'MAIN' || runType === 'MASTER') {
-              core.setOutput('branch', 'main');
-              return;
-            }
-            const prInput = parseInt(process.env.PR_NUMBER, 10);
-            if (Number.isFinite(prInput)) {
-              const {data: pr} = await github.rest.pulls.get({
-                owner: context.repo.owner,
-                repo: context.repo.repo,
-                pull_number: prInput,
-              });
-              core.setOutput('branch', pr.head.ref);
-              return;
-            }
-            core.setOutput('branch', context.ref_name || 'main');
+        run: |
+          set -euo pipefail
+          # Match mattermost Playwright/Cypress: PR runs group under pr-{number}
+          # so report URLs stay stable across head-branch renames/pushes.
+          PR_DIGITS=$(echo "${PR_NUMBER}" | tr -cd '0-9')
+          RUN_TYPE_UPPER=$(echo "${RUN_TYPE}" | tr '[:lower:]' '[:upper:]')
+          VERSION_NAME="${VERSION_NAME#refs/heads/}"
+          VERSION_NAME="${VERSION_NAME#refs/tags/}"
+          if [ -n "${PR_DIGITS}" ]; then
+            echo "branch=pr-${PR_DIGITS}" >> "$GITHUB_OUTPUT"
+          elif [ "${RUN_TYPE_UPPER}" = "MAIN" ] || [ "${RUN_TYPE_UPPER}" = "MASTER" ]; then
+            echo "branch=main" >> "$GITHUB_OUTPUT"
+          elif [ -n "${VERSION_NAME}" ]; then
+            echo "branch=${VERSION_NAME}" >> "$GITHUB_OUTPUT"
+          else
+            echo "branch=${GITHUB_REF_NAME:-main}" >> "$GITHUB_OUTPUT"
+          fi
 
       - id: id
         env:
@@ -336,10 +331,11 @@ jobs:
           fi
           RUN_TYPE_LOWER=$(echo "${RUN_TYPE}" | tr '[:upper:]' '[:lower:]')
           RUN_NAME="mobile-${RUN_TYPE_LOWER}"
-          if [ -n "${PR_NUMBER}" ]; then
+          PR_DIGITS=$(echo "${PR_NUMBER}" | tr -cd '0-9')
+          if [ -n "${PR_DIGITS}" ]; then
             BASE=$(jq -nc \
               --arg repo "$GITHUB_REPOSITORY" --arg sha "$MM_SHA" --arg run_id "$GITHUB_RUN_ID" \
-              --arg attempt "$GITHUB_RUN_ATTEMPT" --arg branch "$BRANCH" --arg pr "$PR_NUMBER" --arg name "$RUN_NAME" \
+              --arg attempt "$GITHUB_RUN_ATTEMPT" --arg branch "$BRANCH" --arg pr "$PR_DIGITS" --arg name "$RUN_NAME" \
               '{repository:$repo, commit_sha:$sha, gh_run_id:$run_id, gh_run_attempt:$attempt, branch:$branch, name:$name, run_group:$name, gh_pr_number:$pr, framework:"detox"}')
           else
             BASE=$(jq -nc \
@@ -403,7 +399,8 @@ jobs:
                   | gsub("/"; "~")) as $branch
               | ($id.commit_sha[0:7]) as $sha
               | ($id.name) as $name
-              | "\($base)/reports/\($repo|@uri)/\($branch|@uri)/\($sha)/\($name|@uri)?gh_run_id=\($id.gh_run_id|@uri)"
+              | ($id.gh_run_attempt // "1") as $attempt
+              | "\($base)/reports/\($repo|@uri)/\($branch|@uri)/\($sha)/\($name|@uri)?gh_run_id=\($id.gh_run_id|@uri)&gh_run_attempt=\($attempt|@uri)"
             ')
             gh api --method POST "repos/${REPO}/statuses/${COMMIT_SHA}" \
               -f state=pending \

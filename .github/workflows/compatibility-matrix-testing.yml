@@ -121,7 +121,8 @@ jobs:
                 | sub("^refs/tags/"; "")
                 | gsub("/"; "~")) as $branch
             | ($id.commit_sha[0:7]) as $sha
-            | "\($base)/reports/\($repo|@uri)/\($branch|@uri)/\($sha)/mobile-release?gh_run_id=\($id.gh_run_id)"
+            | ($id.gh_run_attempt // "1") as $attempt
+            | "\($base)/reports/\($repo|@uri)/\($branch|@uri)/\($sha)/mobile-release?gh_run_id=\($id.gh_run_id|@uri)&gh_run_attempt=\($attempt|@uri)"
           ')
           echo "target_url=$URL" >> "$GITHUB_OUTPUT"
 

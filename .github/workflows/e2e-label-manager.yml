@@ -620,7 +620,7 @@ jobs:
                 // The plain cancel above is what stops the expensive build jobs —
                 // they are `if: !cancelled()`, so cancelling the run ends them.
                 // What it does NOT stop is anything gated on `always()`, which
-                // keeps running through a cancellation (test-system-io-summary webhook, and
+                // keeps running through a cancellation (template summary jobs, and
                 // the artifact-upload steps inside the build jobs). Run-level
                 // force-cancel stops those too.
                 await github.request('POST /repos/{owner}/{repo}/actions/runs/{run_id}/force-cancel', {
