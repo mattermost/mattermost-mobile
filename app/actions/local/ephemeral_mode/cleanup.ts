@@ -135,10 +135,10 @@ function channelProtectionLimit(channelId: string, protections: CleanupProtectio
 
 async function cleanupPosts(
     serverUrl: string,
-    database: Database,
     cutoff: number,
     protections: CleanupProtections,
 ): Promise<void> {
+    const {database} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
     const postsInChannelItems = await database.get<PostInChannelModel>(POSTS_IN_CHANNEL).query().fetch();
     const channelsWithPostRanges = new Set(postsInChannelItems.map((row) => row.channelId));
 
@@ -276,7 +276,7 @@ export async function autoCacheCleanup(serverUrl: string): Promise<{error?: unkn
                 '— currentPlaybookRunId:', limits.viewedPlaybookRunId,
             );
 
-            await cleanupPosts(serverUrl, database, cutoff, limits);
+            await cleanupPosts(serverUrl, cutoff, limits);
             await cleanupAiThreads(database, operator, cutoff, limits.viewedThreadId);
             await cleanupPlaybookRuns(database, operator, cutoff, limits.viewedPlaybookRunId);
 
