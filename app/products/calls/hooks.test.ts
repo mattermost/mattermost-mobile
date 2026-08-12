@@ -351,7 +351,7 @@ describe('Calls Hooks', () => {
             expect(result.current).toBeUndefined();
         });
 
-        it('should join the call on press', async () => {
+        it('should join the call and open the full screen call view on press', async () => {
             const {result} = renderHook(() => useNavigationHeaderCallButtonForDM(channelId, General.DM_CHANNEL));
 
             await act(async () => {
@@ -359,6 +359,19 @@ describe('Calls Hooks', () => {
             });
 
             expect(leaveAndJoinWithAlert).toHaveBeenCalledWith(expect.anything(), 'server1', channelId);
+            expect(navigateToScreen).toHaveBeenCalledWith(Screens.CALL);
+        });
+
+        it('should not open the full screen call view when the user does not join the call due to error', async () => {
+            jest.mocked(leaveAndJoinWithAlert).mockResolvedValue(false);
+
+            const {result} = renderHook(() => useNavigationHeaderCallButtonForDM(channelId, General.DM_CHANNEL));
+
+            await act(async () => {
+                result.current?.onPress();
+            });
+
+            expect(leaveAndJoinWithAlert).toHaveBeenCalled();
             expect(navigateToScreen).not.toHaveBeenCalled();
         });
 
@@ -483,6 +496,7 @@ describe('Calls Hooks', () => {
                 expect(result.current?.isLoading).toBe(false);
             });
             expect(result.current?.disabled).toBe(false);
+            expect(navigateToScreen).not.toHaveBeenCalled();
         });
     });
 });
