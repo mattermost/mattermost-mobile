@@ -84,7 +84,7 @@ permissions:
   issues: read
 
 env:
-  TEST_SYSTEM_IO_ACTIONS_SHA: 66ce4f357d16a25bd99c597f62c9af8775fa38e6
+  TEST_SYSTEM_IO_ACTIONS_SHA: 8569a0e7789466df2f1d43d9c360de66efd0e68d
   ADMIN_EMAIL: ${{ secrets.MM_MOBILE_E2E_ADMIN_EMAIL }}
   ADMIN_USERNAME: ${{ secrets.MM_MOBILE_E2E_ADMIN_USERNAME }}
   ADMIN_PASSWORD: ${{ secrets.MM_MOBILE_E2E_ADMIN_PASSWORD }}
@@ -192,7 +192,7 @@ jobs:
 
       - name: test-system-io dispatch begin
         id: begin
-        uses: mattermost/mattermost-test-system-io/.github/actions/test-system-io-dispatch-begin@66ce4f357d16a25bd99c597f62c9af8775fa38e6
+        uses: mattermost/mattermost-test-system-io/.github/actions/test-system-io-dispatch-begin@8569a0e7789466df2f1d43d9c360de66efd0e68d
         with:
           use-staging: ${{ vars.E2E_USE_STAGING_TEST_IO_URL == 'true' }}
           framework: maestro
@@ -201,8 +201,6 @@ jobs:
           total-reports-expected: ${{ inputs.parallelism }}
           maestro-dir: detox/maestro
           maestro-flow-path: ${{ steps.paths.outputs.maestro-flow-path }}
-          # Prefer @multi_device exclude tags over directory filters.
-          maestro-exclude-dir: ""
           maestro-exclude-tags: ${{ steps.exclude-tags.outputs.tags }}
           # Refresh the early pending row with the live report-page target_url.
           post-pending-commit-status: "true"
@@ -415,7 +413,7 @@ jobs:
           exit 1
 
       - name: test-system-io dispatch run
-        uses: mattermost/mattermost-test-system-io/.github/actions/test-system-io-dispatch-run@66ce4f357d16a25bd99c597f62c9af8775fa38e6
+        uses: mattermost/mattermost-test-system-io/.github/actions/test-system-io-dispatch-run@8569a0e7789466df2f1d43d9c360de66efd0e68d
         with:
           use-staging: ${{ vars.E2E_USE_STAGING_TEST_IO_URL == 'true' }}
           framework: maestro
@@ -656,7 +654,7 @@ jobs:
           } >> "$GITHUB_OUTPUT"
 
       - name: test-system-io dispatch run
-        uses: mattermost/mattermost-test-system-io/.github/actions/test-system-io-dispatch-run@66ce4f357d16a25bd99c597f62c9af8775fa38e6
+        uses: mattermost/mattermost-test-system-io/.github/actions/test-system-io-dispatch-run@8569a0e7789466df2f1d43d9c360de66efd0e68d
         with:
           use-staging: ${{ vars.E2E_USE_STAGING_TEST_IO_URL == 'true' }}
           framework: maestro
@@ -709,7 +707,7 @@ jobs:
       - name: test-system-io summary
         id: summary
         continue-on-error: true
-        uses: mattermost/mattermost-test-system-io/.github/actions/test-system-io-summary@66ce4f357d16a25bd99c597f62c9af8775fa38e6
+        uses: mattermost/mattermost-test-system-io/.github/actions/test-system-io-summary@8569a0e7789466df2f1d43d9c360de66efd0e68d
         with:
           use-staging: ${{ vars.E2E_USE_STAGING_TEST_IO_URL == 'true' }}
           framework: maestro
