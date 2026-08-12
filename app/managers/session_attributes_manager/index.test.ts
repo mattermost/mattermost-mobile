@@ -44,7 +44,7 @@ jest.mock('@mattermost/react-native-network-client', () => ({
 jest.mock('@queries/servers/system');
 jest.mock('@utils/log');
 
-import {SessionAttributesManager} from './index';
+import {SessionAttributesManagerSingleton} from './index';
 
 const serverUrl = 'https://chat.example.com';
 const manifest: SAField[] = [
@@ -60,13 +60,13 @@ const iosStableValues = {
 };
 
 describe('SessionAttributesManager', () => {
-    let manager: SessionAttributesManager;
+    let manager: SessionAttributesManagerSingleton;
     const mockDatabase = {};
 
     beforeEach(() => {
         jest.clearAllMocks();
         Platform.OS = 'ios';
-        manager = new SessionAttributesManager();
+        manager = new SessionAttributesManagerSingleton();
         (DatabaseManager.serverDatabases as Record<string, unknown>)[serverUrl] = {database: mockDatabase};
         jest.mocked(getConfigBooleanValue).mockResolvedValue(true);
         jest.mocked(getLicense).mockResolvedValue({
@@ -100,10 +100,12 @@ describe('SessionAttributesManager', () => {
         expect(getAndroidId).toHaveBeenCalled();
     });
 
-    it('should push stable values before refreshing the manifest', async () => {
+    it('should push stable values before pushing the manifest to native', async () => {
         await manager.refreshManifest(serverUrl);
 
-        expect(mockSetSessionAttributesStableValues).toHaveBeenCalledWith(iosStableValues);
+        const stableValuesOrder = mockSetSessionAttributesStableValues.mock.invocationCallOrder[0];
+        const manifestOrder = mockSetSessionAttributesManifest.mock.invocationCallOrder[0];
+        expect(stableValuesOrder).toBeLessThan(manifestOrder);
     });
 
     it('should enable native collection and push the manifest when refreshManifest succeeds', async () => {
@@ -118,7 +120,7 @@ describe('SessionAttributesManager', () => {
 
         await manager.refreshManifest(serverUrl);
 
-        expect(mockSetSessionAttributesEnabled).toHaveBeenCalledWith(serverUrl, false);
+        expect(mockRemoveSessionAttributesServer).toHaveBeenCalledWith(serverUrl);
         expect(mockSetSessionAttributesManifest).not.toHaveBeenCalled();
     });
 
@@ -127,15 +129,24 @@ describe('SessionAttributesManager', () => {
 
         await manager.refreshManifest(serverUrl);
 
-        expect(mockSetSessionAttributesEnabled).toHaveBeenCalledWith(serverUrl, false);
+        expect(mockRemoveSessionAttributesServer).toHaveBeenCalledWith(serverUrl);
     });
 
-    it('should remove the server when the manifest is empty', async () => {
+    it('should clear the manifest when the server returns an empty manifest', async () => {
         mockFetchSessionAttributesManifest.mockResolvedValue({manifest: []});
 
         await manager.refreshManifest(serverUrl);
 
-        expect(mockRemoveSessionAttributesServer).toHaveBeenCalledWith(serverUrl);
+        expect(mockSetSessionAttributesManifest).toHaveBeenCalledWith(serverUrl, []);
+    });
+
+    it('should leave native state untouched when the manifest fetch fails', async () => {
+        mockFetchSessionAttributesManifest.mockResolvedValue({error: new Error('network error')});
+
+        await manager.refreshManifest(serverUrl);
+
+        expect(mockSetSessionAttributesManifest).not.toHaveBeenCalled();
+        expect(mockRemoveSessionAttributesServer).not.toHaveBeenCalled();
     });
 
     it('should remove the server when the database is missing', async () => {

@@ -17,6 +17,7 @@ import {queryDisplayNamePreferences} from '@queries/servers/preference';
 import {getConfig, getLicense} from '@queries/servers/system';
 import {getCurrentUser} from '@queries/servers/user';
 import {customProfileAttributeId} from '@utils/custom_profile_attribute';
+import {getFullErrorMessage} from '@utils/errors';
 import {safeParseJSON} from '@utils/helpers';
 import {logError} from '@utils/log';
 import {displayUsername} from '@utils/user';
@@ -232,6 +233,6 @@ export function handleSessionAttributesPropertyFieldEvent(serverUrl: string, msg
             grace_period_seconds: field.attrs.grace_period_seconds,
         });
     } catch (error) {
-        logError('Error handling session attributes property field event', error);
+        logError('[handleSessionAttributesPropertyFieldEvent]', getFullErrorMessage(error));
     }
 }

@@ -21,7 +21,7 @@ import {getFullErrorMessage} from '@utils/errors';
 import {isMinimumLicenseTier} from '@utils/helpers';
 import {logDebug} from '@utils/log';
 
-export class SessionAttributesManager {
+export class SessionAttributesManagerSingleton {
     syncStaticValues = async (): Promise<void> => {
         const values = await this.collectStaticValues();
         setSessionAttributesStableValues(values);
@@ -31,7 +31,7 @@ export class SessionAttributesManager {
         try {
             await this.syncStaticValues();
 
-            const database = DatabaseManager.serverDatabases[serverUrl]?.database;
+            const {database} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
             if (!database) {
                 removeSessionAttributesServer(serverUrl);
                 return;
@@ -41,14 +41,21 @@ export class SessionAttributesManager {
             const license = await getLicense(database);
             const enabled = sessionAttributesEnabled &&
                 isMinimumLicenseTier(license, License.SKU_SHORT_NAME.EnterpriseAdvanced);
-            setSessionAttributesEnabled(serverUrl, enabled);
             if (!enabled) {
+                removeSessionAttributesServer(serverUrl);
                 return;
             }
 
-            const {manifest} = await fetchSessionAttributesManifest(serverUrl);
+            setSessionAttributesEnabled(serverUrl, true);
+
+            const {manifest, error} = await fetchSessionAttributesManifest(serverUrl);
+            if (error) {
+                logDebug('[SessionAttributesManager.refreshManifest]', getFullErrorMessage(error));
+                return;
+            }
+
             if (!Array.isArray(manifest) || !manifest.length) {
-                removeSessionAttributesServer(serverUrl);
+                setSessionAttributesManifest(serverUrl, []);
                 return;
             }
 
@@ -100,5 +107,5 @@ export class SessionAttributesManager {
     };
 }
 
-const sessionAttributesManager = new SessionAttributesManager();
-export default sessionAttributesManager;
+const SessionAttributesManager = new SessionAttributesManagerSingleton();
+export default SessionAttributesManager;
