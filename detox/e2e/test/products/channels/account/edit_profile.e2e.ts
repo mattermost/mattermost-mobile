@@ -2,7 +2,7 @@
 // See LICENSE.txt for license information.
 
 
-// Tags: @ios_complementary
+// Tags: @ios_pr
 // *******************************************************************
 // - [#] indicates a test step (e.g. # Go to a screen)
 // - [*] indicates an assertion (e.g. * Check the title)
