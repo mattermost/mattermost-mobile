@@ -771,7 +771,7 @@ export async function markChannelAsReadOnceFetched(serverUrl: string, channelId:
     const {error: fetchError} = await postsRequest;
     if (fetchError) {
         logDebug('skipping markChannelAsRead, the posts fetch failed for channel', channelId);
-        return;
+        return {error: fetchError};
     }
 
     try {
@@ -780,14 +780,14 @@ export async function markChannelAsReadOnceFetched(serverUrl: string, channelId:
         // suppress its push notifications.
         const database = DatabaseManager.serverDatabases[serverUrl]?.database;
         if (!database || (await getCurrentChannelId(database)) !== channelId) {
-            return;
+            return {};
         }
     } catch (error) {
         logDebug('error on markChannelAsReadOnceFetched', getFullErrorMessage(error));
-        return;
+        return {error};
     }
 
-    markChannelAsRead(serverUrl, channelId, false, groupLabel);
+    return markChannelAsRead(serverUrl, channelId, false, groupLabel);
 }
 
 export async function unsetActiveChannelOnServer(serverUrl: string) {

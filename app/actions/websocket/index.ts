@@ -160,11 +160,16 @@ async function fetchPostDataIfNeeded(serverUrl: string, groupLabel?: RequestGrou
             // unread state and the mention badge for messages the user never received.
             if (error) {
                 logDebug('skipped marking channel as read after reconnect, the posts fetch failed for channel', currentChannelId);
-            } else {
+            } else if ((await getCurrentChannelId(database)) === currentChannelId) {
                 markChannelAsRead(serverUrl, currentChannelId, false, groupLabel);
                 if (!EphemeralStore.wasNotificationTapped()) {
                     markChannelAsViewed(serverUrl, currentChannelId, true);
                 }
+            } else {
+                // The user switched channels while the posts were being fetched. Viewing a channel
+                // also sets it as the active one on the server, so marking the one they left would
+                // suppress its push notifications.
+                logDebug('skipped marking channel as read after reconnect, the user left channel', currentChannelId);
             }
             EphemeralStore.setNotificationTapped(false);
         }

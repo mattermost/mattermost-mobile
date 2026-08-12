@@ -448,28 +448,33 @@ describe('app/actions/remote/channel', () => {
             expect(result).not.toHaveProperty('error');
         });
 
-        it('markChannelAsReadOnceFetched - marks the channel as read when the posts were fetched', async () => {
-            await operator.handleSystem({systems: [{id: SYSTEM_IDENTIFIERS.CURRENT_CHANNEL_ID, value: channelId}], prepareRecordsOnly: false});
+        describe('markChannelAsReadOnceFetched', () => {
+            it('should mark the channel as read when the posts were fetched', async () => {
+                await operator.handleSystem({systems: [{id: SYSTEM_IDENTIFIERS.CURRENT_CHANNEL_ID, value: channelId}], prepareRecordsOnly: false});
 
-            await markChannelAsReadOnceFetched(serverUrl, channelId, Promise.resolve({posts: [], order: []}));
+                const result = await markChannelAsReadOnceFetched(serverUrl, channelId, Promise.resolve({posts: [], order: []}));
 
-            expect(mockClient.viewMyChannel).toHaveBeenCalledWith(channelId, undefined, undefined);
-        });
+                expect(mockClient.viewMyChannel).toHaveBeenCalledWith(channelId, undefined, undefined);
+                expect(result).not.toHaveProperty('error');
+            });
 
-        it('markChannelAsReadOnceFetched - does not mark the channel as read when the posts fetch failed', async () => {
-            await operator.handleSystem({systems: [{id: SYSTEM_IDENTIFIERS.CURRENT_CHANNEL_ID, value: channelId}], prepareRecordsOnly: false});
+            it('should not mark the channel as read when the posts fetch failed', async () => {
+                await operator.handleSystem({systems: [{id: SYSTEM_IDENTIFIERS.CURRENT_CHANNEL_ID, value: channelId}], prepareRecordsOnly: false});
+                const fetchError = new Error('Too many requests');
 
-            await markChannelAsReadOnceFetched(serverUrl, channelId, Promise.resolve({error: new Error('Too many requests')}));
+                const result = await markChannelAsReadOnceFetched(serverUrl, channelId, Promise.resolve({error: fetchError}));
 
-            expect(mockClient.viewMyChannel).not.toHaveBeenCalled();
-        });
+                expect(mockClient.viewMyChannel).not.toHaveBeenCalled();
+                expect(result).toEqual({error: fetchError});
+            });
 
-        it('markChannelAsReadOnceFetched - does not mark the channel as read when the user already left the channel', async () => {
-            await operator.handleSystem({systems: [{id: SYSTEM_IDENTIFIERS.CURRENT_CHANNEL_ID, value: 'another-channel-id'}], prepareRecordsOnly: false});
+            it('should not mark the channel as read when the user already left the channel', async () => {
+                await operator.handleSystem({systems: [{id: SYSTEM_IDENTIFIERS.CURRENT_CHANNEL_ID, value: 'another-channel-id'}], prepareRecordsOnly: false});
 
-            await markChannelAsReadOnceFetched(serverUrl, channelId, Promise.resolve({posts: [], order: []}));
+                await markChannelAsReadOnceFetched(serverUrl, channelId, Promise.resolve({posts: [], order: []}));
 
-            expect(mockClient.viewMyChannel).not.toHaveBeenCalled();
+                expect(mockClient.viewMyChannel).not.toHaveBeenCalled();
+            });
         });
 
         it('unsetActiveChannelOnServer - base case', async () => {

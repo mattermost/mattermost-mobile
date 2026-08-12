@@ -187,6 +187,22 @@ describe('WebSocket Index Actions', () => {
             expect(EphemeralStore.setNotificationTapped).toHaveBeenCalledWith(false);
         });
 
+        it('should not mark the channel as read when the user switched channels during the fetch', async () => {
+            jest.mocked(NavigationStore.getScreensInStack).mockReturnValue(['channel']);
+
+            // The user leaves the channel while the posts are still being fetched.
+            jest.mocked(fetchPostsForChannel).mockImplementation(async () => {
+                jest.mocked(getCurrentChannelId).mockResolvedValue('another-channel-id');
+                return {};
+            });
+
+            await handleReconnect(serverUrl);
+
+            expect(fetchPostsForChannel).toHaveBeenCalledWith(serverUrl, currentChannelId, false, false, 'WebSocket Reconnect');
+            expect(markChannelAsRead).not.toHaveBeenCalled();
+            expect(markChannelAsViewed).not.toHaveBeenCalled();
+        });
+
         it('should fetch thread posts when CRT enabled', async () => {
             const threadId = 'thread-id';
             const lastPost = TestHelper.fakePostModel({id: 'post-id', createAt: 123});
