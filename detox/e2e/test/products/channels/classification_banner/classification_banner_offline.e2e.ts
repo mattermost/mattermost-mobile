@@ -7,15 +7,18 @@
 // - Use element testID when selecting an element. Create one if none.
 // *******************************************************************
 
-// NOTE: These tests rely on `device.setURLBlacklist` to simulate offline behaviour.
-// If network-blocking proves unreliable in CI (e.g., some requests still slip through),
-// the assertion can be relaxed to a `toNotBeVisible` only if a cached value is NOT expected.
-// MM-T6207 is the most sensitive because it expects the OLD cached value after the
-// server changes while the app is offline.
+// NOTE: These tests rely on `device.setURLBlacklist` to simulate HTTP offline
+// behaviour for reload/cache hydration (MM-T6206 / MM-T6208).
+//
+// SEC-11016: MM-T6207_1 (stale cache after server change while "offline") was
+// removed — setURLBlacklist does not cut the WebSocket, so a server-side
+// property patch can still land in the local DB and the stale-value assert is
+// untrustworthy (CI 59ec6ae). Do not re-add that case until Detox can reliably
+// disconnect/block WebSocket (or the app exposes a test-only WS cut hook).
 
 import {acquireClassificationLock, createClassificationLockOwner, releaseClassificationLock} from '@support/classification_lock';
 import {enableClassificationMarkings} from '@support/classification_test_helper';
-import {Properties, Setup, System} from '@support/server_api';
+import {Properties, Setup} from '@support/server_api';
 import {serverOneUrl, siteOneUrl} from '@support/test_config';
 import {GlobalClassificationBanner} from '@support/ui/component';
 import {ChannelListScreen, HomeScreen, LoginScreen, ServerScreen} from '@support/ui/screen';
@@ -75,17 +78,15 @@ describe('Classification Banner - Offline / Cache Behaviour', () => {
 
         try {
             // Each step runs even if an earlier one fails, so a cleanup error cannot leave
-            // the feature flag enabled or the session logged in for later suites.
+            // the session logged in for later suites.
+            //
+            // ClassificationMarkings is deliberately NOT unset here — it is server-global and
+            // shared by ~10 shards per server. See the invariant in
+            // global_classification_banner.e2e.ts.
             try {
                 await Properties.apiCleanupClassification(siteOneUrl);
             } finally {
-                try {
-                    await System.apiPatchConfig(siteOneUrl, {
-                        FeatureFlags: {ClassificationMarkings: false},
-                    });
-                } finally {
-                    await HomeScreen.logout();
-                }
+                await HomeScreen.logout();
             }
         } finally {
             await releaseClassificationLock(siteOneUrl, lockOwner);
@@ -125,43 +126,6 @@ describe('Classification Banner - Offline / Cache Behaviour', () => {
         // * Banner should still be visible from cached data
         await GlobalClassificationBanner.toBeVisible();
         await waitFor(element(by.text('TOP SECRET'))).toBeVisible().withTimeout(timeouts.TEN_SEC);
-    });
-
-    // Skip: setURLBlacklist does not reliably block WebSocket, so the new value can land in
-    // cache and the stale-value assert is untrustworthy (CI 59ec6ae).
-    it.skip('MM-T6207_1 - should show stale cached value when API is blocked after a server change', async () => {
-        // # Set up classification at TOP SECRET
-        const {linkedFieldId, optionIdsByName} = await Properties.apiSetupClassificationWithBanner(siteOneUrl, {
-            levelId: 'lvltopsecret00000000000000',
-            user: testUser,
-        });
-        const secretOptionId = optionIdsByName.SECRET;
-        if (!secretOptionId) {
-            throw new Error(`SECRET option id missing from setup. Available: ${Object.keys(optionIdsByName).join(', ')}`);
-        }
-        await device.launchApp({newInstance: true});
-        await ChannelListScreen.toBeVisible();
-        await GlobalClassificationBanner.toBeVisible();
-        await waitFor(element(by.text('TOP SECRET'))).toBeVisible().withTimeout(timeouts.HALF_MIN);
-
-        // # Block API calls BEFORE changing the server value — patching while online lets
-        // WebSocket write the new value into the local DB (CI 30250131265).
-        await device.setURLBlacklist(getBlockedServerPatterns());
-
-        // # Change classification value on the server to SECRET (test host → API;
-        // the app must not observe this while blacklisted).
-        await Properties.apiPatchSystemPropertyValues(siteOneUrl, 'access_control', [
-            {field_id: linkedFieldId, value: secretOptionId},
-        ]);
-
-        // # Reload — app should load old cache (TOP SECRET, not SECRET)
-        await device.reloadReactNative();
-        await ChannelListScreen.toBeVisible();
-
-        // * Stale cached value (TOP SECRET) should appear — the new value (SECRET) was never fetched
-        await GlobalClassificationBanner.toBeVisible();
-        await waitFor(element(by.text('TOP SECRET'))).toBeVisible().withTimeout(timeouts.TEN_SEC);
-        await waitFor(element(by.text('SECRET'))).not.toBeVisible().withTimeout(timeouts.FOUR_SEC);
     });
 
     it('MM-T6208_1 - should not display the banner when there is no cached data and the API is blocked', async () => {

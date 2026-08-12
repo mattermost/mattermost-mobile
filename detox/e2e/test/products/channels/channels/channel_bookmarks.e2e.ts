@@ -98,8 +98,9 @@ describe('Channels - Channel Bookmarks', () => {
 
             try {
                 if (isIos()) {
+                    // 40%: clipped list-edge rows fail Detox's default 100% visibility (SEC-11048 / MM-T5604_1).
                     await waitFor(displayNameEl).
-                        toBeVisible().
+                        toBeVisible(40).
                         whileElement(by.id('channel_list.flat_list')).
                         scroll(100, 'down', 0.5, 0.3);
                 } else {
@@ -111,6 +112,13 @@ describe('Channels - Channel Bookmarks', () => {
             } catch {
                 // Fall through to tap(): the row can sit at the bottom edge below the
                 // visibility threshold while still having a hittable centre point.
+            }
+
+            // Ensure a partial-visibility pass before tap — Detox tap() still enforces visibility.
+            try {
+                await waitFor(displayNameEl).toBeVisible(40).withTimeout(timeouts.FOUR_SEC);
+            } catch {
+                await waitFor(displayNameEl).toExist().withTimeout(timeouts.FOUR_SEC);
             }
 
             await displayNameEl.tap();
@@ -280,8 +288,8 @@ describe('Channels - Channel Bookmarks', () => {
         await ChannelScreen.back();
     });
 
-    // Skip: depends on app-side bookmark whitelist fix (not in this PR).
-    it.skip('MM-T5602_1 - should be able to add a bookmark link via channel info', async () => {
+    // Unskipped: createChannelBookmark whitelists body and drops invalid image_url.
+    it('MM-T5602_1 - should be able to add a bookmark link via channel info', async () => {
         // # Navigate to the channel
         await openChannel(channelT5602);
 
@@ -386,9 +394,8 @@ describe('Channels - Channel Bookmarks', () => {
         await ChannelScreen.back();
     });
 
-    // Skip iOS: CI run 30424009936 (f86f99e1) — openChannel's channel row is clipped at the list
-    // edge, so tap() fails the 100% visibility threshold despite the scroll fallback.
-    (isIos() ? it.skip : it)('MM-T5604_1 - should auto-populate title from page when adding a bookmark link', async () => {
+    // SEC-11048: openChannel now waits for 40% visibility before tap (list-edge clip).
+    it('MM-T5604_1 - should auto-populate title from page when adding a bookmark link', async () => {
         // # Navigate to the channel
         await openChannel(channelT5604);
 

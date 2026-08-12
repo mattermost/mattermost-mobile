@@ -19,6 +19,20 @@ import {by, device, element, expect, waitFor} from 'detox';
 // Lock wait is up to 20m; leave headroom for enable/setup after acquire.
 jest.setTimeout(timeouts.ONE_MIN * 30);
 
+// INVARIANT — ClassificationMarkings is enabled once per suite and never unset.
+//
+// FeatureFlags.ClassificationMarkings is server-GLOBAL config and ~10 Detox shards share
+// each provisioned server (shard parity picks the server; see the "Rotate logical test
+// sites by shard" step in e2e-ios-template.yml). This suite used to flip the flag ~13
+// times, and PR #9926 run 31499667305 shows what that costs: machine-16 ran this suite and
+// machine-20 ran classification_banner_across_screens, both even shards so both on
+// SERVER_B, 20 seconds apart. machine-20 blocked ~13 minutes and then failed with
+// "FeatureFlagClassificationMarkings did not become true" — it needed the flag steadily on
+// while this suite was toggling it off.
+//
+// So: enable in beforeAll, never patch it false, and let each classification suite enable
+// it idempotently under its own lock. MM-T6204_1 is the single exception (toggling off is
+// the behaviour it exists to assert); it runs LAST and restores the flag before releasing.
 describe('Classification Banner - Global Classification Banner', () => {
     const serverOneDisplayName = 'Server 1';
     let lockOwner = '';
@@ -30,11 +44,8 @@ describe('Classification Banner - Global Classification Banner', () => {
         await acquireClassificationLock(siteOneUrl, lockOwner);
         lockAcquired = true;
 
-        await System.apiPatchConfig(siteOneUrl, {
-            FeatureFlags: {
-                ClassificationMarkings: false,
-            },
-        });
+        // Enable once for the whole suite. Individual tests must not re-enable or unset it.
+        await enableClassificationMarkings(siteOneUrl);
 
         const {user} = await Setup.apiInit(siteOneUrl);
         testUser = user;
@@ -53,12 +64,9 @@ describe('Classification Banner - Global Classification Banner', () => {
         }
 
         try {
+            // Clean up the classification config (per-suite state) but leave the feature
+            // flag enabled — see the suite invariant above.
             await Properties.apiCleanupClassification(siteOneUrl);
-            await System.apiPatchConfig(siteOneUrl, {
-                FeatureFlags: {
-                    ClassificationMarkings: false,
-                },
-            });
 
             await HomeScreen.logout();
         } finally {
@@ -77,21 +85,14 @@ describe('Classification Banner - Global Classification Banner', () => {
         await Properties.apiCleanupClassification(siteOneUrl);
     });
 
-    it('MM-T6196_1 - should not render the banner when the feature flag is off', async () => {
-        await System.apiPatchConfig(siteOneUrl, {
-            FeatureFlags: {
-                ClassificationMarkings: false,
-            },
-        });
-        await device.reloadReactNative();
-
-        await ChannelListScreen.toBeVisible();
-
-        await GlobalClassificationBanner.toNotBeVisible();
-    });
+    // MM-T6196_1 ("should not render the banner when the feature flag is off") was removed
+    // when the suite stopped unsetting the shared feature flag. Its assertion — no banner
+    // rendered — is already covered by MM-T6200_1 (no classification value set) and
+    // MM-T6205_1 (classification removed), and the flag-off path specifically is asserted by
+    // MM-T6204_1 below. Keeping it would have required flipping global config mid-suite,
+    // which is the defect this file's invariant exists to prevent.
 
     it('MM-T6197_1 - should render the banner on the channel list screen when classification is configured', async () => {
-        await enableClassificationMarkings(siteOneUrl);
         await Properties.apiSetupClassificationWithBanner(siteOneUrl, {
             levelId: 'lvltopsecret00000000000000',
             user: testUser,
@@ -106,7 +107,6 @@ describe('Classification Banner - Global Classification Banner', () => {
     });
 
     it('MM-T6198_1 - should render the banner on the channel screen when classification is configured', async () => {
-        await enableClassificationMarkings(siteOneUrl);
         await Properties.apiSetupClassificationWithBanner(siteOneUrl, {
             levelId: 'lvltopsecret00000000000000',
             user: testUser,
@@ -126,7 +126,6 @@ describe('Classification Banner - Global Classification Banner', () => {
     });
 
     it('MM-T6199_1 - should render the banner on the global threads screen when classification is configured', async () => {
-        await enableClassificationMarkings(siteOneUrl);
         await Properties.apiSetupClassificationWithBanner(siteOneUrl, {
             levelId: 'lvltopsecret00000000000000',
             user: testUser,
@@ -144,7 +143,6 @@ describe('Classification Banner - Global Classification Banner', () => {
     });
 
     it('MM-T6200_1 - should not render the banner when no classification value is set', async () => {
-        await enableClassificationMarkings(siteOneUrl);
         await device.reloadReactNative();
 
         await ChannelListScreen.toBeVisible();
@@ -153,7 +151,6 @@ describe('Classification Banner - Global Classification Banner', () => {
     });
 
     it('MM-T6201_1 - should persist the banner across channel navigation', async () => {
-        await enableClassificationMarkings(siteOneUrl);
         await Properties.apiSetupClassificationWithBanner(siteOneUrl, {
             levelId: 'lvltopsecret00000000000000',
             user: testUser,
@@ -179,7 +176,6 @@ describe('Classification Banner - Global Classification Banner', () => {
     });
 
     it('MM-T6202_1 - should update the banner when classification level changes', async () => {
-        await enableClassificationMarkings(siteOneUrl);
         const {linkedFieldId, optionIdsByName} = await Properties.apiSetupClassificationWithBanner(siteOneUrl, {
             levelId: 'lvltopsecret00000000000000',
             user: testUser,
@@ -208,7 +204,6 @@ describe('Classification Banner - Global Classification Banner', () => {
     });
 
     it('MM-T6203_1 - should remove the banner when classification configuration is deleted', async () => {
-        await enableClassificationMarkings(siteOneUrl);
         await Properties.apiSetupClassificationWithBanner(siteOneUrl, {
             levelId: 'lvltopsecret00000000000000',
             user: testUser,
@@ -228,8 +223,42 @@ describe('Classification Banner - Global Classification Banner', () => {
         await GlobalClassificationBanner.toNotBeVisible();
     });
 
+    it('MM-T6205_1 - should not render the banner on the channel screen when classification is removed while on channel list', async () => {
+        await Properties.apiSetupClassificationWithBanner(siteOneUrl, {
+            levelId: 'lvltopsecret00000000000000',
+            user: testUser,
+        });
+        await device.reloadReactNative();
+
+        await ChannelListScreen.toBeVisible();
+
+        // The reload-and-retry that used to guard this assertion is gone with its cause:
+        // it only existed because MM-T6204_1 turned ClassificationMarkings off immediately
+        // before this test, so the first reload could race the client config catching up on
+        // re-enable (CI bc6df62). MM-T6204_1 now runs last and the flag is never off here.
+        await GlobalClassificationBanner.toBeVisible();
+
+        await Properties.apiCleanupClassification(siteOneUrl);
+        await device.reloadReactNative();
+        await ChannelListScreen.toBeVisible();
+
+        await GlobalClassificationBanner.toNotBeVisible();
+
+        await waitFor(element(by.id('channel_list_header.team_display_name'))).toExist().withTimeout(timeouts.TEN_SEC * 3);
+        await wait(timeouts.TWO_SEC);
+        await ChannelScreen.open('channels', 'town-square');
+
+        await GlobalClassificationBanner.toNotBeVisible();
+
+        await ChannelScreen.back();
+    });
+
+    // LAST TEST BY DESIGN. This is the only place the suite unsets the shared
+    // ClassificationMarkings flag, because toggling it off is the behaviour under test.
+    // Running last means no sibling test in this file needs the flag on afterwards, and the
+    // flag is restored below before afterAll releases the lock — so the window in which a
+    // concurrent suite could observe it off is confined to this test, under the lock.
     it('MM-T6204_1 - should remove the banner when the feature flag is toggled off', async () => {
-        await enableClassificationMarkings(siteOneUrl);
         await Properties.apiSetupClassificationWithBanner(siteOneUrl, {
             levelId: 'lvltopsecret00000000000000',
             user: testUser,
@@ -252,40 +281,9 @@ describe('Classification Banner - Global Classification Banner', () => {
         await ChannelListScreen.toBeVisible();
 
         await waitFor(element(by.id('global_classification_banner'))).not.toBeVisible().withTimeout(timeouts.TEN_SEC);
-    });
 
-    it('MM-T6205_1 - should not render the banner on the channel screen when classification is removed while on channel list', async () => {
+        // # Restore the suite invariant while still holding the lock, so the server is left
+        // with the flag enabled for whichever suite runs next on it.
         await enableClassificationMarkings(siteOneUrl);
-        await Properties.apiSetupClassificationWithBanner(siteOneUrl, {
-            levelId: 'lvltopsecret00000000000000',
-            user: testUser,
-        });
-        await device.reloadReactNative();
-
-        await ChannelListScreen.toBeVisible();
-
-        // After MM-T6204 turns ClassificationMarkings off, the first reload after re-enable can
-        // miss the banner; one extra reload lets the client config catch up (CI bc6df62).
-        try {
-            await GlobalClassificationBanner.toBeVisible();
-        } catch {
-            await device.reloadReactNative();
-            await ChannelListScreen.toBeVisible();
-            await GlobalClassificationBanner.toBeVisible();
-        }
-
-        await Properties.apiCleanupClassification(siteOneUrl);
-        await device.reloadReactNative();
-        await ChannelListScreen.toBeVisible();
-
-        await GlobalClassificationBanner.toNotBeVisible();
-
-        await waitFor(element(by.id('channel_list_header.team_display_name'))).toExist().withTimeout(timeouts.TEN_SEC * 3);
-        await wait(timeouts.TWO_SEC);
-        await ChannelScreen.open('channels', 'town-square');
-
-        await GlobalClassificationBanner.toNotBeVisible();
-
-        await ChannelScreen.back();
     });
 });

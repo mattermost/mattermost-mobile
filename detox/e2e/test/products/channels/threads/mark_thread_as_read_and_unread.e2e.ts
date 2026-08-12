@@ -27,8 +27,8 @@ import {
     ThreadOptionsScreen,
     ThreadScreen,
 } from '@support/ui/screen';
-import {getRandomId, timeouts, wait} from '@support/utils';
-import {expect} from 'detox';
+import {getRandomId, timeouts} from '@support/utils';
+import {expect, waitFor} from 'detox';
 
 describe('Threads - Mark Thread as Read and Unread', () => {
     const serverOneDisplayName = 'Server 1';
@@ -131,15 +131,14 @@ describe('Threads - Mark Thread as Read and Unread', () => {
         await ThreadOptionsScreen.markAsReadOption.tap();
 
         // * Verify thread is not displayed anymore in unread threads section
-        await wait(timeouts.ONE_SEC);
-        await expect(GlobalThreadsScreen.getThreadItem(parentPost.id)).not.toBeVisible();
+        await waitFor(GlobalThreadsScreen.getThreadItem(parentPost.id)).not.toBeVisible().withTimeout(timeouts.TEN_SEC);
 
         // # Tap on all your threads button
         await GlobalThreadsScreen.headerAllThreadsButton.tap();
 
         // * Verify thread is displayed as read in all your threads section without unread dot badge and with footer reply count
-        await expect(GlobalThreadsScreen.getThreadItem(parentPost.id)).toBeVisible();
-        await expect(GlobalThreadsScreen.getThreadItemUnreadDotBadge(parentPost.id)).not.toBeVisible();
+        await waitFor(GlobalThreadsScreen.getThreadItem(parentPost.id)).toBeVisible().withTimeout(timeouts.TEN_SEC);
+        await waitFor(GlobalThreadsScreen.getThreadItemUnreadDotBadge(parentPost.id)).not.toBeVisible().withTimeout(timeouts.TEN_SEC);
         await expect(GlobalThreadsScreen.getThreadItemFooterReplyCount(parentPost.id)).toHaveText('1 reply');
 
         // # Open thread options for thread and tap on mark as unread option
@@ -147,9 +146,8 @@ describe('Threads - Mark Thread as Read and Unread', () => {
         await ThreadOptionsScreen.markAsUnreadOption.tap();
 
         // * Verify thread is displayed as unread in all your threads section with unread dot badge and footer unread replies
-        await wait(timeouts.ONE_SEC);
+        await waitFor(GlobalThreadsScreen.getThreadItemUnreadDotBadge(parentPost.id)).toBeVisible().withTimeout(timeouts.TEN_SEC);
         await expect(GlobalThreadsScreen.getThreadItem(parentPost.id)).toBeVisible();
-        await expect(GlobalThreadsScreen.getThreadItemUnreadDotBadge(parentPost.id)).toBeVisible();
         await expect(GlobalThreadsScreen.getThreadItemFooterUnreadReplies(parentPost.id)).toHaveText('1 new reply');
 
         // # Go back to channel list screen

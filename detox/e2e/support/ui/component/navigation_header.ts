@@ -31,6 +31,23 @@ class NavigationHeader {
     tapBackButton = async (index = 0) => {
         await element(by.id(this.testID.backButton)).atIndex(index).tap();
     };
+
+    // Prefer the topmost (highest-index) back control when stacked headers share the
+    // same testID. Falls back toward index 0 when only one header is mounted
+    // (SEC-10993 / SEC-11015 BACK_INDEX).
+    tapTopmostBackButton = async (maxIndex = 2) => {
+        /* eslint-disable no-await-in-loop */
+        for (let index = maxIndex; index >= 0; index -= 1) {
+            try {
+                await element(by.id(this.testID.backButton)).atIndex(index).tap();
+                return;
+            } catch {
+                // Index may be out of bounds when fewer headers are mounted.
+            }
+        }
+        /* eslint-enable no-await-in-loop */
+        throw new Error(`No hittable ${this.testID.backButton} found (tried indices ${maxIndex}..0)`);
+    };
 }
 
 const navigationHeader = new NavigationHeader();

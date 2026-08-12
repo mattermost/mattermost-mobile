@@ -75,8 +75,9 @@ describe('Search - Saved Messages', () => {
         await SavedMessagesScreen.close();
     });
 
-    // Skip: depends on app-side Saved Messages observe() fix (not in this PR).
-    it.skip('MM-T4910_2 - should be able to display a saved message in saved messages screen and navigate to message channel', async () => {
+    // Unskipped: Saved Messages re-subscribes on focus + observeSavedPostIds uses full
+    // observe() so preference CREATE/DELETE emits (tracker PE fix).
+    it('MM-T4910_2 - should be able to display a saved message in saved messages screen and navigate to message channel', async () => {
         // # Open a channel screen, post a message, open post options for message, and tap on save option
         const message = `Message ${getRandomId()}`;
         await ChannelScreen.open(channelsCategory, testChannel.name);
@@ -119,8 +120,8 @@ describe('Search - Saved Messages', () => {
         await SavedMessagesScreen.close();
     });
 
-    // Skip: depends on app-side Saved Messages observe() fix (not in this PR).
-    it.skip('MM-T4910_3 - should be able to edit, reply to, and delete a saved message from saved messages screen', async () => {
+    // Unskipped: Saved Messages re-subscribes on focus + observeSavedPostIds uses full observe().
+    it('MM-T4910_3 - should be able to edit, reply to, and delete a saved message from saved messages screen', async () => {
         // # Open a channel screen, post a message, open post options for message, tap on save option, go back to channel list screen, and open saved messages screen
         const message = `Message ${getRandomId()}`;
         await ChannelScreen.open(channelsCategory, testChannel.name);
@@ -154,7 +155,9 @@ describe('Search - Saved Messages', () => {
         await ChannelScreen.assertPostMessageEdited(savedPost.id, updatedMessage, 'saved_messages_page');
 
         // # Open post options for updated saved message and tap on reply option
-        const {postListPostItem} = SavedMessagesScreen.getPostListPostItem(savedPost.id, updatedMessage);
+        // Post text now renders as "<message> edit (edited)", so the exact-text matcher
+        // would not match; use the post-id-only matcher (same pattern as message_edit.e2e.ts).
+        const {postListPostItem} = SavedMessagesScreen.getPostListPostItem(savedPost.id);
         await postListPostItem.longPress(timeouts.TWO_SEC);
         await PostOptionsScreen.replyPostOption.tap();
 
@@ -191,8 +194,8 @@ describe('Search - Saved Messages', () => {
         await SavedMessagesScreen.close();
     });
 
-    // Skip: depends on app-side Saved Messages observe() fix (not in this PR).
-    it.skip('MM-T4910_4 - should be able to unsave a message from saved messages screen', async () => {
+    // Unskipped: Saved Messages re-subscribes on focus + observeSavedPostIds uses full observe().
+    it('MM-T4910_4 - should be able to unsave a message from saved messages screen', async () => {
         // # Open a channel screen, post a message, open post options for message, tap on save option, go back to channel list screen, and open saved messages screen
         const message = `Message ${getRandomId()}`;
         await ChannelScreen.open(channelsCategory, testChannel.name);
@@ -225,8 +228,8 @@ describe('Search - Saved Messages', () => {
         await SavedMessagesScreen.close();
     });
 
-    // Skip: depends on app-side Saved Messages observe() fix (not in this PR).
-    it.skip('MM-T4910_5 - should be able to pin/unpin a saved message from saved messages screen', async () => {
+    // Unskipped: Saved Messages re-subscribes on focus + observeSavedPostIds uses full observe().
+    it('MM-T4910_5 - should be able to pin/unpin a saved message from saved messages screen', async () => {
         // # Open a channel screen, post a message, open post options for message, tap on save option, go back to channel list screen, and open saved messages screen
         const message = `Message ${getRandomId()}`;
         await ChannelScreen.open(channelsCategory, testChannel.name);

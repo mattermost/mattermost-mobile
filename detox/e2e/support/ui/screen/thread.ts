@@ -122,14 +122,9 @@ class ThreadScreen {
         await waitForElementToExist(this.backButton, timeouts.TEN_SEC);
 
         // Thread is the pushed/topmost screen, so its header sits at the higher
-        // index when stacked over the channel. Tap index 1 first, fall back to 0
-        // when only one header is mounted. Routes through NavigationHeader.tapBackButton
-        // (shared helper) so SEC-11015 and other back-index fixes reuse one matcher.
-        try {
-            await NavigationHeader.tapBackButton(1);
-        } catch {
-            await NavigationHeader.tapBackButton(0);
-        }
+        // index when stacked over the channel. Prefer topmost via shared helper
+        // (SEC-10993 / SEC-11015) instead of hardcoding index 1 then 0.
+        await NavigationHeader.tapTopmostBackButton();
         await waitFor(this.threadScreen).not.toBeVisible().withTimeout(timeouts.TEN_SEC);
 
         // Wait for the previous screen to be fully loaded and rendered

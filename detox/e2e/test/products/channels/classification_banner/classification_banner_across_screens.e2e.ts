@@ -9,7 +9,7 @@
 
 import {acquireClassificationLock, createClassificationLockOwner, releaseClassificationLock} from '@support/classification_lock';
 import {enableClassificationMarkings} from '@support/classification_test_helper';
-import {Post, Properties, Setup, System} from '@support/server_api';
+import {Post, Properties, Setup} from '@support/server_api';
 import {serverOneUrl, siteOneUrl} from '@support/test_config';
 import {GlobalClassificationBanner} from '@support/ui/component';
 import {
@@ -70,19 +70,17 @@ jest.setTimeout(timeouts.ONE_MIN * 30);
 
         try {
             // Each step runs even if an earlier one fails, so a cleanup error cannot leave
-            // the feature flag enabled or the session logged in for later suites.
+            // the session logged in for later suites.
+            //
+            // ClassificationMarkings is deliberately NOT unset here. It is server-global and
+            // ~10 shards share each provisioned server, so unsetting it yanks the flag out
+            // from under any concurrent classification suite — the failure seen on PR #9926
+            // run 31499667305. See the invariant documented in
+            // global_classification_banner.e2e.ts; every suite enables it idempotently.
             try {
                 await Properties.apiCleanupClassification(siteOneUrl);
             } finally {
-                try {
-                    await System.apiPatchConfig(siteOneUrl, {
-                        FeatureFlags: {
-                            ClassificationMarkings: false,
-                        },
-                    });
-                } finally {
-                    await HomeScreen.logout();
-                }
+                await HomeScreen.logout();
             }
         } finally {
             await releaseClassificationLock(siteOneUrl, lockOwner);

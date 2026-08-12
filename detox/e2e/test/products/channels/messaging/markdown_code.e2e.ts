@@ -22,7 +22,6 @@ import {
     LoginScreen,
     ServerScreen,
 } from '@support/ui/screen';
-import {isIos} from '@support/utils';
 import {expect} from 'detox';
 
 describe('Messaging - Markdown Code', () => {
@@ -49,10 +48,9 @@ describe('Messaging - Markdown Code', () => {
         await HomeScreen.logout();
     });
 
-    // Skip iOS (SEC-11012): the keyboard-dismiss scroll at line 70 fails with "Unable to
-    // scroll up" — the list is already at its top edge. Fails on a COLD app (CI 31435071883
-    // and local cold run 1); only passes on a warm simulator, which CI never is.
-    (isIos() ? it.skip : it)('MM-T4895_1 - should be able to display markdown code block', async () => {
+    // Unskipped iOS (SEC-11012): cold-app "Unable to scroll up" is non-fatal — same try/catch
+    // pattern as MM-T4895_2. Assertion is toExist(), so a no-op scroll is fine.
+    it('MM-T4895_1 - should be able to display markdown code block', async () => {
         // # Open a channel screen and post a markdown code block
         const line1 = 'let x = 10;';
         const line2 = 'let y = 20;';
@@ -67,9 +65,11 @@ describe('Messaging - Markdown Code', () => {
         const {postListPostItemCodeBlock} = ChannelScreen.getPostListPostItem(post.id);
         await waitFor(postListPostItemCodeBlock).toExist().withTimeout(10000);
 
-        // Scroll to dismiss the keyboard and clear the message input bar so the code block passes
-        // the 50% visibility threshold.
-        await ChannelScreen.getFlatPostList().scroll(300, 'up', 0.5, 0.5);
+        // Scroll to dismiss the keyboard when possible. Wrap: scroll up fails when the
+        // post list is already at the top (cold iOS, CI 31435071883).
+        try {
+            await ChannelScreen.getFlatPostList().scroll(300, 'up', 0.5, 0.5);
+        } catch { /* already at top — non-fatal */ }
 
         // toExist() confirms the code block rendered: the message input bar can clip a short block
         // below even the 50% visibility threshold.

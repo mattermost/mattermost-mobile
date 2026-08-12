@@ -261,8 +261,8 @@ describe('Search - Pinned Messages', () => {
         await ChannelScreen.back();
     });
 
-    // Skip: depends on app-side Saved Messages observe() fix (not in this PR).
-    it.skip('MM-T4918_5 - should be able to save/unsave a pinned message from pinned messages screen', async () => {
+    // Unskipped: Saved Messages re-subscribes on focus + observeSavedPostIds uses full observe().
+    it('MM-T4918_5 - should be able to save/unsave a pinned message from pinned messages screen', async () => {
         // # Open a channel screen, post a message, open post options for message, tap on pin to channel option, open channel info screen, and open pinned messages screen
         const message = `Message ${getRandomId()}`;
         await ChannelScreen.open(channelsCategory, testChannel.name);

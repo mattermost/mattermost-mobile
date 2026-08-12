@@ -148,8 +148,8 @@ describe('Search - Recent Mentions', () => {
         await ChannelListScreen.open();
     });
 
-    // Skip: depends on app-side Saved Messages observe() fix (not in this PR).
-    it.skip('MM-T4909_4 - should be able to save/unsave a recent mention from recent mentions screen', async () => {
+    // Unskipped: Saved Messages re-subscribes on focus + observeSavedPostIds uses full observe().
+    it('MM-T4909_4 - should be able to save/unsave a recent mention from recent mentions screen', async () => {
         // # Open recent mentions screen
         await RecentMentionsScreen.open();
         await RecentMentionsScreen.toBeVisible();

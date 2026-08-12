@@ -85,10 +85,9 @@ describe('Channels - Archived Channel Interactions', () => {
         await HomeScreen.logout();
     });
 
-    // Skip both: iOS Detox browse-modal tap flake; Android R1+R3 product — openArchivedChannelViaBrowseChannels timeout
-    it.skip('MM-T1671_1 - should be able to view members in an archived channel', async () => {
-        // Previously iOS-only skip (browse modal tap). Android also fails R1+R3 on browse open.
-
+    // SEC-10995 / SEC-11021: iOS uses search/permalink (not browse modal); Android browse path
+    // now waits for a hittable display-name before asserting the archived channel screen.
+    it('MM-T1671_1 - should be able to view members in an archived channel', async () => {
         // # Create a public channel, add user, post a sentinel message, then archive.
         const {channel: archivedChannel} = await Channel.apiCreateChannel(
             siteOneUrl,

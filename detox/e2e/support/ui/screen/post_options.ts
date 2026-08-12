@@ -136,7 +136,8 @@ class PostOptionsScreen {
         await this.toBeVisible();
 
         if (isIos()) {
-            await option.tap();
+            // Corner tap avoids center hit-test failures on gorhom sheet rows (SEC-11009).
+            await option.tap({x: 1, y: 1});
             return;
         }
 

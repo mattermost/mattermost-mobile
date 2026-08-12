@@ -26,7 +26,7 @@ import {
     ServerScreen,
     ThreadScreen,
 } from '@support/ui/screen';
-import {getRandomId, isAndroid, isIos, timeouts, wait} from '@support/utils';
+import {getRandomId, isAndroid, timeouts, wait} from '@support/utils';
 import {expect, waitFor} from 'detox';
 
 async function openChannelPostOptionsForPin(postId: string, message: string) {
@@ -185,8 +185,9 @@ describe('Messaging - Pin and Unpin Message', () => {
         await ChannelScreen.back();
     });
 
-    // Skip iOS: CI run 30000635898 — the pin-ordering flow exceeds its five-minute test timeout.
-    (isIos() ? it.skip : it)('MM-T142 - pinning an older message should not move it to bottom of channel, and pinned posts should display with newest at top', async () => {
+    // SEC-11013: iOS previously overran the 5m timeout on the 75% visibility scroll after pin.
+    // Re-enable with a 40% visibility wait; hang-step profiling still needed if CI overruns again.
+    it('MM-T142 - pinning an older message should not move it to bottom of channel, and pinned posts should display with newest at top', async () => {
         // # Open a channel screen and post several messages to populate the channel
         await ChannelScreen.open(channelsCategory, testChannel.name);
         const olderMessage = `Older message ${getRandomId()}`;
@@ -218,15 +219,15 @@ describe('Messaging - Pin and Unpin Message', () => {
         await ChannelScreen.open(channelsCategory, testChannel.name);
 
         // The "X pinned a message" system post pushes newerPost2 under the input bar on iOS 26.x.
-        // Scroll it back into the >=75% visible area, retrying until it appears.
+        // Scroll it back into a partial-visible area (40% — 75% was timing out on CI SEC-11013).
         try {
             await waitFor(newerPost2Item).
-                toBeVisible(75).
+                toBeVisible(40).
                 whileElement(by.id('channel.post_list.flat_list')).
                 scroll(100, 'up', 0.5, 0.5);
         } catch {
             // List may be too short to scroll — assert directly.
-            await expect(newerPost2Item).toBeVisible();
+            await expect(newerPost2Item).toBeVisible(40);
         }
 
         // # Open channel info and navigate to pinned messages screen

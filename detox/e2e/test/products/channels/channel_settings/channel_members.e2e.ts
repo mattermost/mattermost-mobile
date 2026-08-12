@@ -315,9 +315,9 @@ describe('Channels', () => {
         await ChannelScreen.back();
     });
 
-    // iOS-only skip carried over from the RF→Detox migration with no recorded failure;
-    // Android still covers this case. Re-enable once the iOS path is re-verified.
-    (isIos() ? it.skip : it)('MM-T3205 - RN apps Remove user from private channel', async () => {
+    // SEC-11019: RF→Detox iOS skip had no recorded failure; siblings in this file run on iOS
+    // and this case already has an iOS close path after searchAndRemoveUser.
+    it('MM-T3205 - RN apps Remove user from private channel', async () => {
         // # Use pre-created private channel and user (already in channel)
         const privateChannel = privateChannel2;
         const removedUser = removeMeUser;
