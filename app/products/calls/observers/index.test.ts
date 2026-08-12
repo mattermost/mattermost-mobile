@@ -12,6 +12,7 @@ import {
 import {DefaultCallsState} from '@calls/types/calls';
 import {License} from '@constants';
 import DatabaseManager from '@database/manager';
+import {observeChannel} from '@queries/servers/channel';
 import {observeConfigValue, observeLicense} from '@queries/servers/system';
 import {queryUsersById} from '@queries/servers/user';
 
@@ -19,11 +20,13 @@ import {
     observeIsCallsEnabledInChannel,
     observeIsCallLimitRestricted,
     observeCallStateInChannel,
+    observeCallChannel,
     observeEndCallDetails,
     observeCurrentSessionsDict,
 } from './index';
 
 jest.mock('@calls/state');
+jest.mock('@queries/servers/channel');
 jest.mock('@queries/servers/system');
 jest.mock('@queries/servers/user');
 
@@ -235,6 +238,39 @@ describe('Calls Observers', () => {
                 session1: {...sessions.session1, userModel: userModels[0]},
                 session2: {...sessions.session2, userModel: userModels[1]},
             });
+        });
+    });
+
+    describe('observeCallChannel', () => {
+        it('should resolve the channel from the call server database', async () => {
+            const callServerDatabase = {id: 'call-server-db'} as any;
+            (DatabaseManager as any).serverDatabases = {'test-server': {database: callServerDatabase}};
+            (observeCurrentCall as jest.Mock).mockReturnValue(of$({serverUrl: 'test-server', channelId: 'channel1'}));
+            (observeChannel as jest.Mock).mockReturnValue(of$({id: 'channel1', type: 'D'}));
+
+            const result = await firstValueFrom(observeCallChannel());
+
+            expect(observeChannel).toHaveBeenCalledWith(callServerDatabase, 'channel1');
+            expect(result).toEqual({id: 'channel1', type: 'D'});
+        });
+
+        it('should emit undefined when the call server has no database', async () => {
+            // the call is on a server other than the one whose database is loaded
+            (observeCurrentCall as jest.Mock).mockReturnValue(of$({serverUrl: 'other-server', channelId: 'channel1'}));
+
+            const result = await firstValueFrom(observeCallChannel());
+
+            expect(result).toBeUndefined();
+            expect(observeChannel).not.toHaveBeenCalled();
+        });
+
+        it('should emit undefined when there is no current call', async () => {
+            (observeCurrentCall as jest.Mock).mockReturnValue(of$(null));
+
+            const result = await firstValueFrom(observeCallChannel());
+
+            expect(result).toBeUndefined();
+            expect(observeChannel).not.toHaveBeenCalled();
         });
     });
 

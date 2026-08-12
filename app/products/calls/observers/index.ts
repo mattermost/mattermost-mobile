@@ -13,6 +13,7 @@ import {
 import {fillUserModels, userIds} from '@calls/utils';
 import {License} from '@constants';
 import DatabaseManager from '@database/manager';
+import {observeChannel} from '@queries/servers/channel';
 import {observeConfigValue, observeLicense} from '@queries/servers/system';
 import {queryUsersById} from '@queries/servers/user';
 import UserModel from '@typings/database/models/servers/user';
@@ -92,6 +93,19 @@ export const observeCallDatabase = () => {
         switchMap((call) => of$(call ? call.serverUrl : '')),
         distinctUntilChanged(),
         switchMap((url) => of$(DatabaseManager.serverDatabases[url]?.database)),
+    );
+};
+
+// Observes the current call's channel from the call's own server database,
+// which is not necessarily the active server's database.
+export const observeCallChannel = () => {
+    return observeCurrentCall().pipe(
+        distinctUntilChanged((a, b) => a?.channelId === b?.channelId && a?.serverUrl === b?.serverUrl),
+        switchMap((call) => {
+            const db = call ? DatabaseManager.serverDatabases[call.serverUrl]?.database : undefined;
+            const id = call?.channelId || '';
+            return db && id ? observeChannel(db, id) : of$(undefined);
+        }),
     );
 };
 

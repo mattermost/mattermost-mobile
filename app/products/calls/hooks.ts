@@ -283,7 +283,10 @@ export const useNavigationHeaderCallButtonForDM = (channelId: Channel['id'], cha
 
         setIsJoiningOrStarting(true);
         try {
-            await leaveAndJoinWithAlert(intl, serverUrl, channelId);
+            const joined = await leaveAndJoinWithAlert(intl, serverUrl, channelId);
+            if (joined) {
+                navigateToScreen(Screens.CALL);
+            }
         } catch (error) {
             logError('error on useNavigationHeaderCallButtonForDM.joinOrStart', getFullErrorMessage(error));
         } finally {
