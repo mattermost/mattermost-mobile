@@ -198,6 +198,17 @@ callbacks on `:3000`, and the server must be able to reach it:
   Pin a different `cloudflared` with `CLOUDFLARED_VERSION`; the script defaults to
   a known-good release rather than `latest`.
 
+CI (PR / main / CMT) maps platform-specific repo secrets into those env vars so
+iOS and Android mm_blocks shards can run in parallel without sharing a tunnel:
+
+| Platform | `WEBHOOK_PUBLIC_BASE_URL` secret | `CLOUDFLARED_TUNNEL_TOKEN` secret |
+|----------|----------------------------------|-----------------------------------|
+| iOS | `MM_MOBILE_E2E_WEBHOOK_PUBLIC_BASE_URL_IOS` | `MM_MOBILE_E2E_CLOUDFLARED_TUNNEL_TOKEN_IOS` |
+| Android | `MM_MOBILE_E2E_WEBHOOK_PUBLIC_BASE_URL_ANDROID` | `MM_MOBILE_E2E_CLOUDFLARED_TUNNEL_TOKEN_ANDROID` |
+
+These are fixed callback hostnames for the runner sidecar — not Matterwick
+`SITE_*` URLs, which change per dispatch.
+
 The script always exits 0 — it exports `WEBHOOK_SIDECAR_READY` and
 `WEBHOOK_CALLBACKS_REACHABLE` instead of failing, and specs that need a webhook
 fail fast on their own health check. A quick tunnel passes outbound health checks

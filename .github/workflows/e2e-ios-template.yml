@@ -25,10 +25,11 @@ on:
         required: false
       MM_MOBILE_DETOX_AWS_SECRET_ACCESS_KEY:
         required: false
-      # Webhook sidecar. Unset means mm_blocks specs fall back to trycloudflare.
-      MM_MOBILE_E2E_WEBHOOK_PUBLIC_BASE_URL:
+      # iOS mm_blocks sidecar. Unset means those specs fall back to trycloudflare.
+      # Use a dedicated named tunnel so parallel Android shards cannot steal callbacks.
+      MM_MOBILE_E2E_WEBHOOK_PUBLIC_BASE_URL_IOS:
         required: false
-      MM_MOBILE_E2E_CLOUDFLARED_TUNNEL_TOKEN:
+      MM_MOBILE_E2E_CLOUDFLARED_TUNNEL_TOKEN_IOS:
         required: false
     inputs:
       MM_TEST_SERVER_URL:
@@ -598,8 +599,8 @@ jobs:
         env:
           SITE_1_URL: ${{ env.SITE_1_URL }}
           # Prefer a stable public origin over trycloudflare (optional repo secrets).
-          WEBHOOK_PUBLIC_BASE_URL: ${{ secrets.MM_MOBILE_E2E_WEBHOOK_PUBLIC_BASE_URL }}
-          CLOUDFLARED_TUNNEL_TOKEN: ${{ secrets.MM_MOBILE_E2E_CLOUDFLARED_TUNNEL_TOKEN }}
+          WEBHOOK_PUBLIC_BASE_URL: ${{ secrets.MM_MOBILE_E2E_WEBHOOK_PUBLIC_BASE_URL_IOS }}
+          CLOUDFLARED_TUNNEL_TOKEN: ${{ secrets.MM_MOBILE_E2E_CLOUDFLARED_TUNNEL_TOKEN_IOS }}
         # mm_blocks specs are sharded alone (split-tests.js). This step must not hang:
         # the script bounds all curls and exits 0 on tunnel failure so Jest still runs.
         run: bash detox/scripts/start_webhook_sidecar.sh

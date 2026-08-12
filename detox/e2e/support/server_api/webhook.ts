@@ -20,8 +20,9 @@ export const requireWebhookServer = async (baseUrl: string): Promise<void> => {
     if (!baseUrl?.trim()) {
         throw new Error(
             'WEBHOOK_BASE_URL is empty — Cloudflare quick tunnel did not come up on this shard. ' +
-            'Configure MM_MOBILE_E2E_WEBHOOK_PUBLIC_BASE_URL (+ optional CLOUDFLARED_TUNNEL_TOKEN) ' +
-            'for stable ingress. Non-mm_blocks specs on other shards are unaffected.',
+            'Configure MM_MOBILE_E2E_WEBHOOK_PUBLIC_BASE_URL_IOS / _ANDROID ' +
+            '(+ matching CLOUDFLARED_TUNNEL_TOKEN_*) for stable ingress. ' +
+            'Non-mm_blocks specs on other shards are unaffected.',
         );
     }
     try {

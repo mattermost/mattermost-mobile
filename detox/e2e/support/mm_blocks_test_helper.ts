@@ -78,7 +78,7 @@ export class MmBlocksTestHelper {
         if (this.suiteBlockedReason) {
             throw new Error(
                 `[mm_blocks] Suite aborted after earlier failure: ${this.suiteBlockedReason}. ` +
-                'Configure MM_MOBILE_E2E_WEBHOOK_PUBLIC_BASE_URL for stable Mattermost→sidecar callbacks.',
+                'Configure MM_MOBILE_E2E_WEBHOOK_PUBLIC_BASE_URL_IOS / _ANDROID for stable Mattermost→sidecar callbacks.',
             );
         }
     }
