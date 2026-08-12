@@ -522,6 +522,29 @@ jobs:
           pr-number: ${{ needs.begin.outputs.pr-number }}
           ref-branch: ${{ needs.begin.outputs.identity-branch }}
 
+      # Same pattern as mattermost Playwright/Cypress: summary builds webhook_payload;
+      # the workflow only POSTs it. Commit status is handled by begin + summary.
+      - name: Publish Mattermost webhook
+        if: steps.e2e-override.outputs.override != 'true'
+        env:
+          RUN_TYPE: ${{ inputs.run-type }}
+          PAYLOAD: ${{ steps.summary.outputs.webhook_payload }}
+          MM_MOBILE_E2E_WEBHOOK_URL: ${{ secrets.MM_MOBILE_E2E_WEBHOOK_URL }}
+          MM_E2E_MASTER_HEALTH_WEBHOOK_URL: ${{ secrets.MM_E2E_MASTER_HEALTH_WEBHOOK_URL }}
+          MM_E2E_RELEASE_WEBHOOK_URL: ${{ secrets.MM_E2E_RELEASE_WEBHOOK_URL }}
+        run: |
+          set -euo pipefail
+          case "${RUN_TYPE}" in
+            MAIN|MASTER) WEBHOOK_URL="${MM_E2E_MASTER_HEALTH_WEBHOOK_URL}" ;;
+            RELEASE) WEBHOOK_URL="${MM_E2E_RELEASE_WEBHOOK_URL}" ;;
+            *) WEBHOOK_URL="${MM_MOBILE_E2E_WEBHOOK_URL}" ;;
+          esac
+          if [ -z "${WEBHOOK_URL}" ] || [ -z "${PAYLOAD}" ]; then
+            echo "Skipping webhook (url or payload empty)"
+            exit 0
+          fi
+          curl -fsS -X POST -H "Content-Type: application/json" -d "${PAYLOAD}" "${WEBHOOK_URL}"
+
       - name: Assert summary
         if: steps.e2e-override.outputs.override != 'true'
         env:

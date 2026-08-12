@@ -76,10 +76,8 @@ on:
 # manage PR labels declare the extra scopes they need.
 permissions:
   contents: read
-  # test-system-io-report-upload (in the nested detox templates) authenticates
-  # via the workflow's OIDC token and resolves gh_job_id via the GitHub API.
-  # Reusable workflows cannot escalate beyond the caller, so the root caller
-  # must grant these.
+  # Nested detox/maestro templates call test-system-io-dispatch-* / summary via
+  # OIDC. Reusable workflows cannot escalate beyond the caller.
   id-token: write
   actions: read
 
@@ -1140,56 +1138,6 @@ jobs:
           BRANCH: ${{ github.ref_name }}
           WORKFLOW_CONCLUSION: ${{ job.status }}
 
-  # Per-platform Test System IO commit statuses are finalized inside each Detox/Maestro
-  # summary job after workers finish uploading shards (total_reports_expected=workers).
-  # No combined e2e/mobile finalizer — avoids cross-job clobber and pending races.
-
-  # One Mattermost channel rollup (best-effort). Per-job finalize leaves channel
-  # notify off so N legs do not spam; this job posts a single summary.
-  test-system-io-channel-notify:
-    name: Post Mattermost E2E channel rollup
-    runs-on: ubuntu-24.04
-    if: >-
-      always() &&
-      needs.resolve-e2e-policy.outputs.e2e_override != 'true' &&
-      needs.calculate-test-system-io-identity.result == 'success' &&
-      (inputs.run_type == 'PR' || inputs.run_type == 'MAIN' || inputs.run_type == 'MASTER')
-    needs:
-      - resolve-e2e-policy
-      - calculate-test-system-io-identity
-      - run-detox-ios
-      - run-detox-android
-      - run-maestro-ios
-      - run-maestro-android
-    permissions:
-      contents: read
-      id-token: write
-    steps:
-      - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
-        with:
-          ref: ${{ inputs.MOBILE_VERSION }}
-          persist-credentials: false
-          sparse-checkout: |
-            detox/utils/test-system-io-channel-notify-rollup.js
-            detox/utils/test-system-io-report-status.js
-            detox/utils/cmt-channel-notify.js
-            detox/utils/build-test-system-io-job-config.js
-            detox/utils/cli-args.js
-      - name: Aggregate per-job Test System IO groups and notify channel
-        env:
-          JOB_CONFIGS: ${{ needs.calculate-test-system-io-identity.outputs.job-configs }}
-          MATTERMOST_E2E_WEBHOOK_URL: ${{ secrets.MM_MOBILE_E2E_WEBHOOK_URL }}
-          MATTERMOST_MASTER_HEALTH_WEBHOOK_URL: ${{ secrets.MM_E2E_MASTER_HEALTH_WEBHOOK_URL }}
-          MATTERMOST_CMT_WEBHOOK_URL: ${{ secrets.MM_E2E_RELEASE_WEBHOOK_URL }}
-        run: |
-          UPSTREAM="true"
-          for r in "${{ needs.run-detox-ios.result }}" "${{ needs.run-detox-android.result }}" "${{ needs.run-maestro-ios.result }}" "${{ needs.run-maestro-android.result }}"; do
-            case "$r" in
-              success|skipped) ;;
-              *) UPSTREAM="false" ;;
-            esac
-          done
-          node detox/utils/test-system-io-channel-notify-rollup.js \
-            --job-configs="$JOB_CONFIGS" \
-            --upstream-succeeded="$UPSTREAM" \
-            --poll-attempts=6 || true
+  # Per-platform GitHub commit status + Mattermost channel notify are handled by
+  # test-system-io-dispatch-begin / test-system-io-summary in each Detox/Maestro
+  # template (same as mattermost Playwright/Cypress). No custom rollup job.

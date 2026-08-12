@@ -121,7 +121,7 @@ runs:
               // Keep the real counts so the check still says what failed.
               // Reserve room for the suffix before truncating the base: Test System IO
               // descriptions are already capped at 140 (decideStatus in
-              // test-system-io-report-status.js), and truncating after concatenation could
+              // test-system-io-summary), and truncating after concatenation could
               // cut the marker off a long one, leaving the pending path unable to
               // recognise this context as overridden.
               const suffix = ` - ${OVERRIDE_MARKER}`;

@@ -98,7 +98,7 @@ cd detox && npm run e2e:save-report
 | **Main** | Matterwick main push (`run_type=MASTER` today; `MAIN` also accepted → Test System IO `mobile-main`) | Same as PR | Same as PR | `detox/e2e/test` | Same as PR |
 | **CMT / Release** | Matterwick on `build-release-*` → CMT | Detox + Maestro across server versions | Full suite on latest server (10 Detox workers); smoke subset on older (1) | latest: `detox/e2e/test`; older: `…/smoke_test` | Varies by matrix |
 
-Status contexts live under the `e2e-test/` namespace, matching the mattermost monorepo. PR/Main: `e2e-test/detox-ios`, `e2e-test/detox-android`, `e2e-test/detox-ipad`, `e2e-test/maestro-ios`, `e2e-test/maestro-android`. CMT: per-shard `e2e-test/<test-system-io-shard-name>` plus umbrella `e2e-test/compatibility-matrix-testing`. Test System IO groups: `mobile-pr-<job>` / `mobile-main-<job>` / `mobile-release-<shard>`.
+Status contexts live under the `e2e-test/` namespace, matching the mattermost monorepo. PR/Main: `e2e-test/detox-ios`, `e2e-test/detox-android`, `e2e-test/detox-ipad`, `e2e-test/maestro-ios`, `e2e-test/maestro-android`. CMT: per-shard `e2e-test/<test-system-io-shard-name>` plus umbrella `e2e-test/compatibility-matrix-testing`. Test System IO groups: `mobile-pr` / `mobile-main` / `mobile-release` with per-job `name` (e.g. `detox-ios`). Commit status + channel notify come from `dispatch-begin` / `summary` (webhook_payload curl).
 
 Matterwick provisions five servers for every mobile server-version entry: two Android-only, two iOS-only, and one shared third site. CMT therefore uses `5 × server version count` installations (up to 25 at the five-version cap). The full latest-version suite needs this isolation for its parallel shards; older-version smoke jobs intentionally retain the same topology for consistent URL semantics, even though their single shard uses less of its capacity. iPad shares the iOS pair, and Maestro uses the first server for its platform.
 
@@ -134,7 +134,7 @@ checking by hand:
 |--------------|--------------|
 | A `secrets.FOO` not declared in the callee's `on.workflow_call.secrets` | GitHub resolves it to an empty string, so the step passes and the notify/upload it feeds silently never happens. `actionlint` catches it. |
 | `node foo.js \` followed by `RC=$?` | The trailing backslash makes `RC=$?` an *argument*, so the exit code is never captured and the failure gate below always passes. |
-| A job running `test-system-io-report-status.js` / `test-system-io-channel-notify-rollup.js` without `permissions.id-token: write` | `mintOidcToken()` warns and exits 0, skipping the commit status or channel rollup. |
+| A template job calling `test-system-io-dispatch-*` / `summary` without `permissions.id-token: write` | OIDC auth fails and begin/run/summary cannot talk to Test System IO. |
 
 Reusable-workflow secrets must be **declared in the callee and forwarded by every
 caller** that uses an explicit `secrets:` block. Callers using `secrets: inherit`

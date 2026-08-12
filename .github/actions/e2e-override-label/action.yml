@@ -4,9 +4,8 @@ description: >-
   Report whether E2E/Override is currently set on a PR, so a Test System IO result landing
   after the label was applied does not re-red a check the maintainer bypassed.
 
-  The lookup lives here rather than in detox/utils/test-system-io-report-status.js: talking
-  to GitHub belongs in the Actions layer, and the reporter stays a utility that
-  acts on its inputs.
+  The lookup lives in the Actions layer so templates can gate
+  test-system-io-summary's update-commit-status / fail-on-test-failures inputs.
 
 inputs:
   pr_number:

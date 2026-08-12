@@ -108,7 +108,7 @@ runs:
               state = 'success';
               // Reserve room for the suffix before truncating the base description.
               // Test System IO descriptions are already capped at 140 (see decideStatus in
-              // test-system-io-report-status.js) — truncating after concatenation could cut
+              // test-system-io-summary) — truncating after concatenation could cut
               // the marker itself off a long one, and reset below would then never
               // recognize this context as verified, leaving it stuck on success.
               const suffix = `${VERIFIED_MARKER}${actor}`;

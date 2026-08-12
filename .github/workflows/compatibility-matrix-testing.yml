@@ -506,8 +506,6 @@ jobs:
     permissions:
       contents: read
       statuses: write
-      # the channel rollup mints an OIDC token to read each shard's Test System IO group.
-      id-token: write
     needs:
       - cmt-identity
       - calculate-commit-hash
@@ -517,11 +515,6 @@ jobs:
       - maestro-ios-e2e
       - maestro-android-e2e
     steps:
-      - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
-        with:
-          ref: ${{ inputs.MOBILE_VERSION }}
-          persist-credentials: false
-
       - name: Resolve upstream matrix outcome
         id: upstream
         run: |
@@ -534,7 +527,8 @@ jobs:
           done
           echo "succeeded=$UPSTREAM" >> "$GITHUB_OUTPUT"
 
-      # Umbrella context only — each matrix leg already posted <shard> from Test System IO.
+      # Umbrella context only — each matrix leg already finalized e2e-test/<shard>
+      # via test-system-io-summary (and posted its Mattermost webhook_payload).
       - name: Finalize umbrella CMT commit status from CI job results
         env:
           GITHUB_TOKEN: ${{ github.token }}
@@ -555,20 +549,5 @@ jobs:
             -f context="e2e-test/compatibility-matrix-testing" \
             -f description="$DESC" \
             -f target_url="$TARGET_URL"
-
-      # Per-shard Test System IO groups are finalized in each matrix leg, which leaves channel
-      # notify off so N legs do not spam. This umbrella polls every shard group and
-      # posts one aggregated summary (no second commit status) — same path as PR/main.
-      - name: Post Mattermost CMT channel rollup
-        if: always()
-        env:
-          JOB_CONFIGS: ${{ needs.cmt-identity.outputs.test-system-io-job-configs }}
-          MATTERMOST_CMT_WEBHOOK_URL: ${{ secrets.MM_E2E_RELEASE_WEBHOOK_URL }}
-          UPSTREAM_SUCCEEDED: ${{ steps.upstream.outputs.succeeded }}
-        run: |
-          node detox/utils/test-system-io-channel-notify-rollup.js \
-            --job-configs="$JOB_CONFIGS" \
-            --upstream-succeeded="$UPSTREAM_SUCCEEDED" \
-            --poll-attempts=6 || true
 
       # Instance cleanup is handled by matterwick on workflow_run completed.

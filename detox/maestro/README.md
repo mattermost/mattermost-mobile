@@ -466,7 +466,7 @@ PR vs nightly vs manual coverage is summarized below (and in `config/exclude_tag
 
 - JUnit XML: `build/maestro-report.xml`
 - HTML report + screenshots uploaded to S3 and as GitHub Actions artifacts
-- Commit status: `maestro-ios` / `maestro-android` (per-job; posted by `test-system-io-report-status.js` after upload)
+- Commit status + channel notify: `maestro-ios` / `maestro-android` via `test-system-io-dispatch-begin` + `test-system-io-summary`
 
 ---
 

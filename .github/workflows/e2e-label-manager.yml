@@ -33,7 +33,7 @@
 #      report infra teardown as a test failure into Test System IO's per-spec history. A
 #      late post from the cancelled run cannot re-red the check anyway: its
 #      finalize step re-checks the label (see .github/actions/e2e-override-label)
-#      and test-system-io-report-status converts failure → success while it is set.
+#      and test-system-io-summary skips updating the commit status while Override is set.
 #
 #   6. Honor E2E/Verified (labeled/unlabeled E2E/Verified):
 #      A maintainer applies this after reading a real E2E failure and judging it
@@ -268,7 +268,7 @@ jobs:
                 // The plain cancel above is what stops the expensive build jobs —
                 // they are `if: !cancelled()`, so cancelling the run ends them.
                 // What it does NOT stop is anything gated on `always()`, which
-                // keeps running through a cancellation (test-system-io-channel-notify, and
+                // keeps running through a cancellation (template summary jobs, and
                 // the artifact-upload steps inside the build jobs). Run-level
                 // force-cancel stops those too.
                 await github.request('POST /repos/{owner}/{repo}/actions/runs/{run_id}/force-cancel', {
@@ -569,9 +569,8 @@ jobs:
       # degrades flake detection for everyone. Cancel instead.
       #
       # Runs BEFORE the success post below so our status write lands last. A
-      # cancelled run's finalize step may still post after us; overrideCommitStatus
-      # in detox/utils/test-system-io-report-status.js converts failure → success while the
-      # label is set, so the check stays green and only the description differs.
+      # cancelled run's summary may still run after us; templates re-check E2E/Override
+      # and pass update-commit-status=false so the check stays green.
       - name: Cancel in-flight E2E runs
         if: >-
           github.event.pull_request.head.repo.full_name == github.repository
@@ -621,7 +620,7 @@ jobs:
                 // The plain cancel above is what stops the expensive build jobs —
                 // they are `if: !cancelled()`, so cancelling the run ends them.
                 // What it does NOT stop is anything gated on `always()`, which
-                // keeps running through a cancellation (test-system-io-channel-notify, and
+                // keeps running through a cancellation (test-system-io-summary webhook, and
                 // the artifact-upload steps inside the build jobs). Run-level
                 // force-cancel stops those too.
                 await github.request('POST /repos/{owner}/{repo}/actions/runs/{run_id}/force-cancel', {
