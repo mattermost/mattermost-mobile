@@ -91,53 +91,6 @@ jobs:
           ')
           echo "test-system-io-job-configs=$JOB_CONFIGS" >> "$GITHUB_OUTPUT"
 
-  update-initial-status:
-    runs-on: ubuntu-24.04
-    permissions:
-      contents: read
-      statuses: write
-    needs:
-      - calculate-commit-hash
-      - cmt-identity
-    steps:
-      - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
-        with:
-          ref: ${{ inputs.MOBILE_VERSION }}
-          persist-credentials: false
-
-      # Pending statuses are posted per matrix leg when each job starts; keep a
-      # single umbrella pending only when MOBILE_SHA is known so the PR/commit
-      # UI shows CMT is running before the first shard uploads.
-      - name: Build Test System IO report URL (release group prefix)
-        id: test-system-io-url
-        env:
-          TEST_SYSTEM_IO_BASE: ${{ needs.cmt-identity.outputs.test-system-io-base-config }}
-        run: |
-          URL=$(jq -nr --argjson cfg "$TEST_SYSTEM_IO_BASE" --arg base "https://test-io.test.mattermost.com" '
-            ($cfg.composite_identity) as $id
-            | ($id.repository | split("/") | .[-1]) as $repo
-            | ($id.branch // "main"
-                | sub("^refs/heads/"; "")
-                | sub("^refs/tags/"; "")
-                | gsub("/"; "~")) as $branch
-            | ($id.commit_sha[0:7]) as $sha
-            | ($id.gh_run_attempt // "1") as $attempt
-            | "\($base)/reports/\($repo|@uri)/\($branch|@uri)/\($sha)/mobile-release?gh_run_id=\($id.gh_run_id|@uri)&gh_run_attempt=\($attempt|@uri)"
-          ')
-          echo "target_url=$URL" >> "$GITHUB_OUTPUT"
-
-      - uses: ./.github/actions/update-commit-status
-        if: ${{ needs.calculate-commit-hash.outputs.MOBILE_SHA != '' }}
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          repository_full_name: ${{ github.repository }}
-          commit_sha: ${{ needs.calculate-commit-hash.outputs.MOBILE_SHA }}
-          context: e2e-test/compatibility-matrix-testing
-          description: "Compatibility Matrix Testing for ${{ inputs.MOBILE_VERSION }} version — per-job checks also posted"
-          status: pending
-          target_url: ${{ steps.test-system-io-url.outputs.target_url }}
-
   # Maestro only runs against the latest server version; matrix filtering happens here since job-level if: can't access matrix.
   prepare-maestro-matrix:
     runs-on: ubuntu-24.04
@@ -181,8 +134,6 @@ jobs:
     # Xcode 26 requirement always fails here. e2e-detox-pr.yml and
     # e2e-maestro-template.yml already build on macos-26 successfully — match that.
     runs-on: macos-26
-    needs:
-      - update-initial-status
     permissions:
       contents: read
       actions: write
@@ -211,8 +162,6 @@ jobs:
 
   build-android-apk:
     runs-on: ubuntu-latest-8-cores
-    needs:
-      - update-initial-status
     permissions:
       contents: read
       actions: write
@@ -254,8 +203,6 @@ jobs:
 
   build-android-apk-maestro:
     runs-on: ubuntu-latest-8-cores
-    needs:
-      - update-initial-status
     permissions:
       contents: read
       actions: write

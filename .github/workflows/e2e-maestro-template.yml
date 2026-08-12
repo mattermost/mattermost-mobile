@@ -202,7 +202,7 @@ jobs:
           maestro-dir: detox/maestro
           maestro-flow-path: ${{ steps.paths.outputs.maestro-flow-path }}
           maestro-exclude-tags: ${{ steps.exclude-tags.outputs.tags }}
-          # Refresh the early pending row with the live report-page target_url.
+          # Post pending commit status after orch-begin (report page exists).
           post-pending-commit-status: "true"
           commit-status-context: ${{ steps.cfg.outputs.status-context }}
           github-token: ${{ secrets.GITHUB_TOKEN }}

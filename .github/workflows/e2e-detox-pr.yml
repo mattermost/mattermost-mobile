@@ -353,62 +353,6 @@ jobs:
           echo "job-configs=$JOB_CONFIGS" >> "$GITHUB_OUTPUT"
           echo "job-keys=$(echo "$JOB_CONFIGS" | jq -r 'keys | join(",")')" >> "$GITHUB_OUTPUT"
 
-  update-initial-test-system-io-status:
-    name: Set pending per-job Test System IO commit statuses
-    runs-on: ubuntu-24.04
-    needs:
-      - resolve-e2e-policy
-      - calculate-test-system-io-identity
-    if: >-
-      needs.resolve-e2e-policy.outputs.e2e_override != 'true'
-      && needs.calculate-test-system-io-identity.result == 'success'
-      && (inputs.run_type == 'PR' || inputs.run_type == 'MAIN' || inputs.run_type == 'MASTER')
-    permissions:
-      contents: read
-      statuses: write
-    steps:
-      - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
-        with:
-          ref: ${{ inputs.MOBILE_VERSION }}
-          persist-credentials: false
-      - name: Post pending status for each platform job
-        env:
-          GITHUB_TOKEN: ${{ github.token }}
-          JOB_CONFIGS: ${{ needs.calculate-test-system-io-identity.outputs.job-configs }}
-          COMMIT_SHA: ${{ inputs.MOBILE_VERSION }}
-          REPO: ${{ github.repository }}
-          USE_STAGING: ${{ vars.E2E_USE_STAGING_TEST_IO_URL }}
-        run: |
-          # Deep-link each e2e-test/* row to its Test System IO report page
-          # (same path shape as test-system-io-dispatch-begin / summary).
-          # orch-begin later refreshes the same pending status once the run exists.
-          if [ "${USE_STAGING}" = "true" ]; then
-            BASE_URL="https://staging-test-io.test.mattermost.com"
-          else
-            BASE_URL="https://test-io.test.mattermost.com"
-          fi
-          echo "$JOB_CONFIGS" | jq -c 'to_entries[]' | while read -r entry; do
-            CTX=$(echo "$entry" | jq -r '.value.status_context')
-            NAME=$(echo "$entry" | jq -r '.value.composite_identity.name')
-            TARGET_URL=$(echo "$entry" | jq -nr --arg base "$BASE_URL" --argjson e "$entry" '
-              ($e.value.composite_identity) as $id
-              | ($id.repository | split("/") | .[-1]) as $repo
-              | ($id.branch // "main"
-                  | sub("^refs/heads/"; "")
-                  | sub("^refs/tags/"; "")
-                  | gsub("/"; "~")) as $branch
-              | ($id.commit_sha[0:7]) as $sha
-              | ($id.name) as $name
-              | ($id.gh_run_attempt // "1") as $attempt
-              | "\($base)/reports/\($repo|@uri)/\($branch|@uri)/\($sha)/\($name|@uri)?gh_run_id=\($id.gh_run_id|@uri)&gh_run_attempt=\($attempt|@uri)"
-            ')
-            gh api --method POST "repos/${REPO}/statuses/${COMMIT_SHA}" \
-              -f state=pending \
-              -f context="$CTX" \
-              -f description="Mobile E2E (${NAME}) — waiting for orchestration" \
-              -f target_url="$TARGET_URL"
-          done
-
   resolve-server-topology:
     name: Resolve test server topology
     runs-on: ubuntu-24.04
