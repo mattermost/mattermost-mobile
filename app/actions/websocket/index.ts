@@ -153,10 +153,18 @@ async function fetchPostDataIfNeeded(serverUrl: string, groupLabel?: RequestGrou
         }
 
         if (currentChannelId && (isChannelScreenMounted || tabletDevice)) {
-            await fetchPostsForChannel(serverUrl, currentChannelId, false, false, groupLabel);
-            markChannelAsRead(serverUrl, currentChannelId, false, groupLabel);
-            if (!EphemeralStore.wasNotificationTapped()) {
-                markChannelAsViewed(serverUrl, currentChannelId, true);
+            const {error} = await fetchPostsForChannel(serverUrl, currentChannelId, false, false, groupLabel);
+
+            // Only clear the unread state once we have the posts. Marking the channel as read resets
+            // the membership counters on the server, so doing it after a failed fetch loses the
+            // unread state and the mention badge for messages the user never received.
+            if (error) {
+                logDebug('skipped marking channel as read after reconnect, the posts fetch failed for channel', currentChannelId);
+            } else {
+                markChannelAsRead(serverUrl, currentChannelId, false, groupLabel);
+                if (!EphemeralStore.wasNotificationTapped()) {
+                    markChannelAsViewed(serverUrl, currentChannelId, true);
+                }
             }
             EphemeralStore.setNotificationTapped(false);
         }

@@ -35,7 +35,7 @@ import {displayGroupMessageName, displayUsername} from '@utils/user';
 import {addChannelToManagedCategoryIfNeeded, fetchCategories} from './category';
 import {fetchChannelBookmarks} from './channel_bookmark';
 import {fetchGroupsForChannelIfConstrained} from './groups';
-import {fetchPostsForChannel} from './post';
+import {fetchPostsForChannel, type PostsForChannel} from './post';
 import {openChannelIfNeeded, savePreference} from './preference';
 import {fetchRolesIfNeeded} from './role';
 import {forceLogoutIfNecessary} from './session';
@@ -756,13 +756,47 @@ export async function markChannelAsRead(serverUrl: string, channelId: string, up
     }
 }
 
+/**
+ * Marks the channel as read on the server, but only once the posts request that should have
+ * brought in the new messages actually succeeded.
+ *
+ * Telling the server the channel was read resets the membership msg_count and mention_count, and
+ * that is not recoverable: the unread state and the mention badge are cleared on every device even
+ * though the user never got to see the messages. So when the fetch fails (a 429 from a rate limited
+ * server, a dropped connection, ...) we leave the server state alone. The local optimistic clear
+ * done by markChannelAsViewed is then repaired by the next membership sync, which recomputes
+ * is_unread from the server counters, and the read is retried once the posts do arrive.
+ */
+export async function markChannelAsReadOnceFetched(serverUrl: string, channelId: string, postsRequest: Promise<PostsForChannel>, groupLabel?: RequestGroupLabel) {
+    const {error: fetchError} = await postsRequest;
+    if (fetchError) {
+        logDebug('skipping markChannelAsRead, the posts fetch failed for channel', channelId);
+        return;
+    }
+
+    try {
+        // The fetch may have outlived the channel the user is looking at. Viewing a channel also sets
+        // it as the active one on the server, so marking a channel the user already left would
+        // suppress its push notifications.
+        const database = DatabaseManager.serverDatabases[serverUrl]?.database;
+        if (!database || (await getCurrentChannelId(database)) !== channelId) {
+            return;
+        }
+    } catch (error) {
+        logDebug('error on markChannelAsReadOnceFetched', getFullErrorMessage(error));
+        return;
+    }
+
+    markChannelAsRead(serverUrl, channelId, false, groupLabel);
+}
+
 export async function unsetActiveChannelOnServer(serverUrl: string) {
     try {
         const client = NetworkManager.getClient(serverUrl);
         await client.viewMyChannel('');
         return {};
     } catch (error) {
-        logDebug('error on markChannelAsRead', getFullErrorMessage(error));
+        logDebug('error on unsetActiveChannelOnServer', getFullErrorMessage(error));
         return {error};
     }
 }
@@ -1187,11 +1221,11 @@ export async function switchToChannelById(serverUrl: string, channelId: string, 
     DeviceEventEmitter.emit(Events.BLUR_AND_DISMISS_KEYBOARD);
     DeviceEventEmitter.emit(Events.CHANNEL_SWITCH, true);
 
-    fetchPostsForChannel(serverUrl, channelId, false, false, groupLabel);
+    const postsRequest = fetchPostsForChannel(serverUrl, channelId, false, false, groupLabel);
     fetchChannelBookmarks(serverUrl, channelId, false, groupLabel);
     await switchToChannel(serverUrl, channelId, teamId, skipLastUnread);
     openChannelIfNeeded(serverUrl, channelId, groupLabel);
-    markChannelAsRead(serverUrl, channelId, false, groupLabel);
+    markChannelAsReadOnceFetched(serverUrl, channelId, postsRequest, groupLabel);
     fetchChannelStats(serverUrl, channelId, false, groupLabel);
     fetchGroupsForChannelIfConstrained(serverUrl, channelId, false, groupLabel);
 

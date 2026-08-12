@@ -128,6 +128,7 @@ describe('WebSocket Index Actions', () => {
             jest.mocked(getIsCRTEnabled).mockResolvedValue(false);
             jest.mocked(EphemeralStore.getCurrentThreadId).mockReturnValue('');
             jest.mocked(EphemeralStore.wasNotificationTapped).mockReturnValue(false);
+            jest.mocked(fetchPostsForChannel).mockResolvedValue({});
         });
 
         it('should handle reconnection successfully', async () => {
@@ -172,6 +173,18 @@ describe('WebSocket Index Actions', () => {
             expect(fetchPostsForChannel).toHaveBeenCalledWith(serverUrl, currentChannelId, false, false, 'WebSocket Reconnect');
             expect(markChannelAsRead).toHaveBeenCalledWith(serverUrl, currentChannelId, false, 'WebSocket Reconnect');
             expect(markChannelAsViewed).toHaveBeenCalledWith(serverUrl, currentChannelId, true);
+        });
+
+        it('should not mark the channel as read when fetching the posts failed', async () => {
+            jest.mocked(NavigationStore.getScreensInStack).mockReturnValue(['channel']);
+            jest.mocked(fetchPostsForChannel).mockResolvedValue({error: new Error('Too many requests')});
+
+            await handleReconnect(serverUrl);
+
+            expect(fetchPostsForChannel).toHaveBeenCalledWith(serverUrl, currentChannelId, false, false, 'WebSocket Reconnect');
+            expect(markChannelAsRead).not.toHaveBeenCalled();
+            expect(markChannelAsViewed).not.toHaveBeenCalled();
+            expect(EphemeralStore.setNotificationTapped).toHaveBeenCalledWith(false);
         });
 
         it('should fetch thread posts when CRT enabled', async () => {
