@@ -4,6 +4,11 @@
 #
 # NOTE: The "Schedule a message" tutorial tooltip may appear on the first channel visit.
 # Dismiss it via testID if present.
+#
+# CI flake (MM-T5611 / runs 31434596229, 31506724244): waiting only for
+# channel.post_draft.post.input timed out after the list item went notVisible.
+# Anchor on channel.screen (route mount) first; recover via Home + re-tap if the
+# composer is still missing.
 appId: ${MAESTRO_APP_ID}
 ---
 # # Expand the Channels category and open the test channel
@@ -15,16 +20,43 @@ appId: ${MAESTRO_APP_ID}
 - tapOn:
     id: "channel_list.category.channels.channel_item.${TEST_CHANNEL_NAME}"
 
-# # Wait until the channel list item scrolls off-screen (confirms navigation started)
+# # Wait until the channel screen route is mounted
 - extendedWaitUntil:
-    notVisible:
-      id: "channel_list.category.channels.channel_item.${TEST_CHANNEL_NAME}"
-    timeout: 10000
+    visible:
+      id: "channel.screen"
+    timeout: 30000
 
 # # Dismiss any "Schedule a message" tutorial tooltip if present
 - runFlow: dismiss_scheduled_post_tooltip.yml
 
-# * Verify the channel screen is up (post draft input is present)
+# # If the composer is missing (stale tap / overlay), re-anchor via Home and retry once
+- runFlow:
+    when:
+      notVisible:
+        id: "channel.post_draft.post.input"
+    commands:
+      - tapOn:
+          id: "tab_bar.home.tab"
+          optional: true
+      - tapOn:
+          id: "navigation.header.back"
+          optional: true
+      - waitForAnimationToEnd:
+          timeout: 2000
+      - runFlow: expand_channels_category.yml
+      - extendedWaitUntil:
+          visible:
+            id: "channel_list.category.channels.channel_item.${TEST_CHANNEL_NAME}"
+          timeout: 30000
+      - tapOn:
+          id: "channel_list.category.channels.channel_item.${TEST_CHANNEL_NAME}"
+      - extendedWaitUntil:
+          visible:
+            id: "channel.screen"
+          timeout: 30000
+      - runFlow: dismiss_scheduled_post_tooltip.yml
+
+# * Verify the composer is ready
 - extendedWaitUntil:
     visible:
       id: "channel.post_draft.post.input"

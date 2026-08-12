@@ -86,6 +86,18 @@ describe('getReadableTimestamp', () => {
         const deResult = getReadableTimestamp(timestamp, timeZone, false, 'de-DE');
         expect(deResult).toBe('15. Juni, 8:00 AM');
     });
+
+    it('should return empty string for NaN/undefined timestamps', () => {
+        expect(getReadableTimestamp(Number.NaN, 'America/New_York', false, 'en-US')).toBe('');
+        expect(getReadableTimestamp(undefined as unknown as number, 'America/New_York', false, 'en-US')).toBe('');
+    });
+
+    it('should omit empty timeZone instead of rendering Invalid Date', () => {
+        const timestamp = new Date('2025-06-15T12:00:00Z').getTime();
+        const result = getReadableTimestamp(timestamp, '', false, 'en-US');
+        expect(result).not.toBe('Invalid Date');
+        expect(result.length).toBeGreaterThan(0);
+    });
 });
 
 describe('formatTime', () => {

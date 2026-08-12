@@ -3,7 +3,7 @@
 
 import React, {useCallback, useEffect, useReducer, useRef, useState} from 'react';
 
-import {fetchArchivedChannels, fetchChannels, fetchSharedChannels, searchChannels} from '@actions/remote/channel';
+import {fetchArchivedChannels, fetchChannels, fetchSharedChannels, searchArchivedChannels, searchChannels} from '@actions/remote/channel';
 import {General} from '@constants';
 import {useServerUrl} from '@context/server';
 import useDidUpdate from '@hooks/did_update';
@@ -213,8 +213,11 @@ export default function SearchHandler(props: Props) {
             if (searchTimeout.current) {
                 clearTimeout(searchTimeout.current);
             }
+            // Autocomplete omits deleted channels; archived browse must use search_archived
+            // or MM-T4729_5 / SEC-11021 shows "No matches" after filtering delete_at !== 0.
+            const searchFn = typeOfChannels === ARCHIVED ? searchArchivedChannels : searchChannels;
             searchTimeout.current = setTimeout(async () => {
-                const results = await searchChannels(serverUrl, text, currentTeamId);
+                const results = await searchFn(serverUrl, text, currentTeamId);
                 if (results.channels) {
                     setSearchResults(results.channels);
                 }
@@ -226,7 +229,7 @@ export default function SearchHandler(props: Props) {
         } else {
             stopSearch();
         }
-    }, [searchResults, serverUrl, currentTeamId, stopSearch]);
+    }, [searchResults, serverUrl, currentTeamId, stopSearch, typeOfChannels]);
 
     const changeChannelType = useCallback((channelType: string) => {
         setTypeOfChannels(channelType);

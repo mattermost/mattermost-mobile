@@ -214,9 +214,8 @@ describe('Account - Custom Status', () => {
         await wait(timeouts.ONE_SEC);
     });
 
-    // Skip: clear.button stays in the tree after tapping account clear (CI 29cdff Android,
-    // bc6df62 iOS) and additional waits did not help.
-    it.skip('MM-T4990_4 - should be able to clear custom status from account', async () => {
+    // MM-70007: clear is a sibling control + local clear awaits DB write / empty status is expired.
+    it('MM-T4990_4 - should be able to clear custom status from account', async () => {
         const status = STATUSES.IN_MEETING;
 
         await openCustomStatusScreen();
@@ -228,9 +227,7 @@ describe('Account - Custom Status', () => {
         await verifyStatusSetOnAccountScreen(status);
 
         // # Clear status from account screen
-        await waitFor(AccountScreen.customStatusClearButton).toBeVisible().withTimeout(timeouts.TEN_SEC);
-        await AccountScreen.customStatusClearButton.tap();
-        await wait(timeouts.TWO_SEC);
+        await AccountScreen.clearCustomStatus();
 
         // * Verify status is cleared
         await verifyStatusCleared();
@@ -303,9 +300,8 @@ describe('Account - Custom Status', () => {
         await wait(timeouts.ONE_SEC);
     });
 
-    // CI 59ec6ae/ce729d Android + bc6df62 iOS: same clear.button residual after account
-    // clear (verifyStatusCleared NOT TOEXIST, 10s). Skip both; no proven app/ fix.
-    it.skip('MM-T3891 - should be able to set custom status with emoji picker and manage it', async () => {
+    // MM-70007: same clear.button residual fix as MM-T4990_4.
+    it('MM-T3891 - should be able to set custom status with emoji picker and manage it', async () => {
         const customStatusText = `Status ${getRandomId()}`;
         const customEmojiName = 'fire';
         const customStatusDuration = 'today';
@@ -338,7 +334,7 @@ describe('Account - Custom Status', () => {
         await verifyStatusSetOnAccountScreen({emoji: customEmojiName, text: customStatusText, duration: customStatusDuration});
 
         // # Clear status from account screen
-        await AccountScreen.customStatusClearButton.tap();
+        await AccountScreen.clearCustomStatus();
         await wait(timeouts.ONE_SEC);
         await verifyStatusCleared();
 
@@ -402,7 +398,7 @@ describe('Account - Custom Status', () => {
         await verifyStatusSetOnAccountScreen({emoji: customEmojiName, text: customStatusText, duration: customStatusDuration});
 
         // # Clear and verify in recent section
-        await AccountScreen.customStatusClearButton.tap();
+        await AccountScreen.clearCustomStatus();
         await CustomStatusScreen.open();
         await expect(CustomStatusScreen.recents).toExist();
 
@@ -423,7 +419,7 @@ describe('Account - Custom Status', () => {
         await verifyStatusSetOnAccountScreen(suggestedStatus);
 
         // # Clear and verify in recent section
-        await AccountScreen.customStatusClearButton.tap();
+        await AccountScreen.clearCustomStatus();
         await CustomStatusScreen.open();
 
         const {customStatusSuggestion: recentSuggestedStatus, customStatusClearButton: recentSuggestedClearButton} =
@@ -613,7 +609,12 @@ const verifyStatusSetOnAccountScreen = async (status: {emoji: string; text: stri
 
 const verifyStatusCleared = async () => {
     // Prefer not.toExist: on iOS the clear control can linger as "not visible" after a
-    // successful clear (CI 30250131265).
-    await waitFor(AccountScreen.customStatusClearButton).not.toExist().withTimeout(timeouts.TEN_SEC);
+    // successful clear (CI 30250131265). Retry clear once for missed taps (MM-70007 harness).
+    try {
+        await waitFor(AccountScreen.customStatusClearButton).not.toExist().withTimeout(timeouts.TEN_SEC);
+    } catch {
+        await AccountScreen.clearCustomStatus();
+        await waitFor(AccountScreen.customStatusClearButton).not.toExist().withTimeout(timeouts.TEN_SEC);
+    }
     await expect(AccountScreen.setStatusOption).toExist();
 };

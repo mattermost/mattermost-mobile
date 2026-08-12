@@ -129,7 +129,7 @@ const DraftAndScheduledPostHeader: React.FC<Props> = ({
 
         const isSent = scheduledPostErrorCode === 'post_send_success_delete_failed';
         const scheduledTime = getReadableTimestamp(
-            postScheduledAt!,
+            postScheduledAt ?? Number.NaN,
             getUserTimezone(currentUser),
             isMilitaryTime,
             currentUser?.locale || DEFAULT_LOCALE,

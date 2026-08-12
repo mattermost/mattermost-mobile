@@ -25,6 +25,7 @@ import {
     ServerScreen,
     UserProfileScreen,
 } from '@support/ui/screen';
+import {expectVisible} from '@support/utils';
 import {expect} from 'detox';
 
 describe('Channels - Manage Own Channel Membership', () => {
@@ -53,8 +54,8 @@ describe('Channels - Manage Own Channel Membership', () => {
         await HomeScreen.logout();
     });
 
-    // Skip both: iOS pre-existing; Android R2+R3 product — duplicate manage_members user_item matcher
-    it.skip('MM-66375 - should be able to see and manage own membership in channel members list', async () => {
+    // SEC-11049: per-userId display_name + guarded Android tutorial dismiss (no blind pressBack).
+    it('MM-66375 - should be able to see and manage own membership in channel members list', async () => {
         // # Create a channel and add the test user to it
         const {channel} = await Channel.apiCreateChannel(siteOneUrl, {teamId: testTeam.id});
         await Channel.apiAddUserToChannel(siteOneUrl, testUser.id, channel.id);
@@ -70,14 +71,14 @@ describe('Channels - Manage Own Channel Membership', () => {
         // # Open manage channel members screen
         await ManageChannelMembersScreen.open();
 
-        // # Close tutorial
+        // # Close tutorial (guarded — SEC-11049 / API 35 pressBack under tutorial Modal)
         await ManageChannelMembersScreen.closeTutorial();
 
         // * Verify manage channel members screen is visible
         await ManageChannelMembersScreen.toBeVisible();
 
         // * Verify the current user appears in the members list
-        await expect(ManageChannelMembersScreen.getUserItemDisplayName(testUser.id)).toBeVisible();
+        await expectVisible(ManageChannelMembersScreen.getUserItemDisplayName(testUser.id));
 
         // # Enable manage mode
         await ManageChannelMembersScreen.toggleManageMode();
@@ -85,11 +86,11 @@ describe('Channels - Manage Own Channel Membership', () => {
         // * Verify manage mode is enabled (done button should be visible)
         await expect(ManageChannelMembersScreen.doneButton).toBeVisible();
 
-        // * Verify the current user can be selected in manage mode
-        await expect(ManageChannelMembersScreen.getUserItem(testUser.id)).toBeVisible();
+        // * Verify the current user can be selected in manage mode via unique display_name
+        await expectVisible(ManageChannelMembersScreen.getUserItemDisplayName(testUser.id));
 
-        // # Tap on the current user in manage mode
-        await ManageChannelMembersScreen.getUserItem(testUser.id).tap();
+        // # Tap on the current user in manage mode (display_name, not ambiguous row)
+        await ManageChannelMembersScreen.selectUser(testUser.id);
 
         // * Verify that tapping on own user in manage mode opens the user profile
         // This verifies that the restriction preventing users from managing their own membership has been removed

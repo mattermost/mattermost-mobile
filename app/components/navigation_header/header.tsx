@@ -32,6 +32,7 @@ type Props = {
     title?: string;
     titleCompanion?: React.ReactElement;
     titleTestID?: string;
+    backButtonTestID?: string;
 }
 
 const hitSlop = {top: 20, bottom: 20, left: 20, right: 20};
@@ -141,6 +142,7 @@ const Header = ({
     title,
     titleCompanion,
     titleTestID = 'navigation.header.title',
+    backButtonTestID = 'navigation.header.back',
 }: Props) => {
     const styles = getStyleSheet(theme);
     const insets = useSafeAreaInsets();
@@ -193,7 +195,7 @@ const Header = ({
                     onPress={onBackPress}
                     rippleRadius={20}
                     type={Platform.select({android: 'native', default: 'opacity'})}
-                    testID='navigation.header.back'
+                    testID={backButtonTestID}
                     hitSlop={hitSlop}
                 >
                     <Animated.View style={styles.leftAction}>

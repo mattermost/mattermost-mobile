@@ -353,6 +353,15 @@ describe('navigation_header', () => {
             expect(mockBack).toHaveBeenCalledTimes(1);
         });
 
+        it('should use a scoped back button testID when provided', () => {
+            renderHook(() => useAppNavigationHeader('Code', false, 0, false, 'code.screen.title', 'code.screen.back'));
+
+            const {getByTestId, queryByTestId} = renderHeader({back: inBackStack});
+
+            expect(getByTestId('code.screen.back')).toBeTruthy();
+            expect(queryByTestId('navigation.header.back')).toBeNull();
+        });
+
         it('should default to a plain, non-collapsing header', () => {
             renderHook(() => useAppNavigationHeader('Table'));
 

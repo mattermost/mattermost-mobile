@@ -2,8 +2,8 @@
 // See LICENSE.txt for license information.
 
 import {Alert, NavigationHeader} from '@support/ui/component';
-import {timeouts, wait} from '@support/utils';
-import {expect} from 'detox';
+import {longPressWithScrollRetry, timeouts, wait} from '@support/utils';
+import {expect, waitFor} from 'detox';
 
 class DraftScreen {
     testID = {
@@ -11,8 +11,13 @@ class DraftScreen {
         deleteDraft: 'delete_draft',
         draftMessageContent: 'draft_message',
         draftScreen: 'global_drafts_list',
+        scheduledList: 'global_scheduled_post_list',
         draftTooltipCloseButton: 'draft.tooltip.close.button',
-        draftPost: 'draft_message',
+
+        // Long-press target is the Pressable wrapper (draft_post), not the
+        // nested markdown body — body can sit under the nav/tab header on iOS.
+        draftPost: 'draft_post',
+        draftOptions: 'draft_options',
         draftSendButton: 'send_draft_button',
         draftEmptyTitle: 'drafts.empty.title',
         requestACKIcon: 'drafts.requested_ack.icon',
@@ -38,7 +43,18 @@ class DraftScreen {
     };
 
     openDraftPostActions = async () => {
-        await this.draftPost.longPress(timeouts.TWO_SEC);
+        // Prefer scheduled list when on that tab; fall back to drafts list.
+        let scrollMatcher = by.id(this.testID.scheduledList);
+        try {
+            await waitFor(element(scrollMatcher)).toExist().withTimeout(timeouts.ONE_SEC);
+        } catch {
+            scrollMatcher = by.id(this.testID.draftScreen);
+        }
+        await longPressWithScrollRetry(
+            this.draftPost,
+            scrollMatcher,
+            element(by.id(this.testID.draftOptions)),
+        );
     };
 
     swipeDraftPostLeft = async () => {

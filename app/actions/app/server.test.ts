@@ -13,7 +13,6 @@ import {getPreauthSecret} from '@init/credentials';
 import SecurityManager from '@managers/security_manager';
 import WebsocketManager from '@managers/websocket_manager';
 import {getServer, getServerByIdentifier} from '@queries/app/servers';
-import TestHelper from '@test/test_helper';
 import {logError} from '@utils/log';
 import {canReceiveNotifications} from '@utils/push_proxy';
 import {alertServerAlreadyConnected, alertServerError} from '@utils/server';
@@ -76,8 +75,6 @@ describe('switchToServer', () => {
 
         await Actions.switchToServer('serverUrl');
 
-        // Wait for the async database operation to complete (setActiveServerDatabase is called without await)
-        await TestHelper.wait(10);
         const options = {
             skipJailbreakCheck: true,
             skipBiometricCheck: true,

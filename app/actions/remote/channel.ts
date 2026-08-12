@@ -1238,6 +1238,17 @@ export async function searchChannels(serverUrl: string, term: string, teamId: st
     }
 }
 
+export async function searchArchivedChannels(serverUrl: string, term: string, teamId: string) {
+    try {
+        const client = NetworkManager.getClient(serverUrl);
+        const channels = await client.searchArchivedChannels(teamId, term);
+        return {channels};
+    } catch (error) {
+        logDebug('error on searchArchivedChannels', getFullErrorMessage(error));
+        return {error};
+    }
+}
+
 export async function fetchChannelById(serverUrl: string, id: string) {
     try {
         const client = NetworkManager.getClient(serverUrl);

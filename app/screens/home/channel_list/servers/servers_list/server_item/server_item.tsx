@@ -3,8 +3,7 @@
 
 import React, {useCallback, useEffect, useMemo, useRef, useState} from 'react';
 import {useIntl} from 'react-intl';
-import {Animated, DeviceEventEmitter, Platform, processColor, type StyleProp, Text, View, type ViewStyle} from 'react-native';
-import {RectButton} from 'react-native-gesture-handler';
+import {Animated, DeviceEventEmitter, Platform, type StyleProp, Text, View, type ViewStyle, Pressable} from 'react-native';
 import Swipeable from 'react-native-gesture-handler/Swipeable';
 
 import {storeMultiServerTutorial} from '@actions/app/global';
@@ -263,18 +262,23 @@ const ServerItem = ({
         }
 
         setSwitching(true);
-        if (server.lastActiveAt) {
-            await dismissBottomSheet();
-            await switchToServer(server.url);
-            return;
-        }
-        await switchToServerAndLogin(server.url, intl, async (data?: ConfigAndLicenseRequest) => {
-            setSwitching(false);
-            await dismissBottomSheet();
-            if (data?.config && data.license) {
-                loginToServer(theme, server.url, server.displayName, data.config, data.license);
+        try {
+            if (server.lastActiveAt) {
+                // Switch before dismiss so last_active_at is committed while the sheet
+                // is still mounted; dismiss-first left SEC-11017 stuck on the prior server.
+                await switchToServer(server.url);
+                await dismissBottomSheet();
+                return;
             }
-        });
+            await switchToServerAndLogin(server.url, intl, async (data?: ConfigAndLicenseRequest) => {
+                await dismissBottomSheet();
+                if (data?.config && data.license) {
+                    loginToServer(theme, server.url, server.displayName, data.config, data.license);
+                }
+            });
+        } finally {
+            setSwitching(false);
+        }
     }, [intl, isActive, server.displayName, server.lastActiveAt, server.url, theme]);
 
     const onSwipeableWillOpen = useCallback(() => {
@@ -351,13 +355,12 @@ const ServerItem = ({
                 <View
                     style={containerStyle}
                     ref={viewRef}
-                    testID={serverItemTestId}
                     onLayout={onLayout}
                 >
-                    <RectButton
+                    <Pressable
                         onPress={onServerPressed}
-                        style={styles.button}
-                        rippleColor={processColor(changeOpacity(theme.centerChannelColor, 0.16))}
+                        style={({pressed}) => [styles.button, pressed && {opacity: 0.72}]}
+                        testID={serverItemTestId}
                     >
                         <View style={serverStyle}>
                             {!switching &&
@@ -372,7 +375,7 @@ const ServerItem = ({
                                 size={36}
                                 unreadStyle={styles.unread}
                                 style={styles.serverIcon}
-                                testID={`${serverItem}}.server_icon`}
+                                testID={`${serverItem}.server_icon`}
                             />
                             }
                             {switching &&
@@ -418,7 +421,7 @@ const ServerItem = ({
                             />
                         </View>
                         }
-                    </RectButton>
+                    </Pressable>
                 </View>
             </Swipeable>
             {Boolean(pushAlertText && server.persistenceFlag !== 'wiped' && pushProxyStatus !== PUSH_PROXY_STATUS_VERIFIED) && (

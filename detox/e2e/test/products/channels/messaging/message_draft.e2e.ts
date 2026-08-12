@@ -128,8 +128,8 @@ describe('Messaging - Message Draft', () => {
         await ChannelScreen.back();
     });
 
-    // Skip iOS: CI run 30000635898 — the native Message Length alert remains mounted after dismissal.
-    (isIos() ? it.skip : it)('MM-T4781_3 - should show character count warning when message exceeds character limit', async () => {
+    // MM-70004: Message Length alert now ships an explicit OK button so dismissal is reliable.
+    it('MM-T4781_3 - should show character count warning when message exceeds character limit', async () => {
         // # Open a channel screen and create a message draft that exceeds character limit (> 16383)
         let message = '1234567890'.repeat(1638) + '1234';
         await ChannelScreen.open(channelsCategory, testChannel.name);
@@ -157,8 +157,8 @@ describe('Messaging - Message Draft', () => {
         await ChannelScreen.back();
     });
 
-    // Skip both: CI run 30000635898 — oversized draft leaves navigation/input state unusable.
-    it.skip('MM-T107 - should show alert when message exceeds character limit', async () => {
+    // MM-70004: same alert dismissal path as MM-T4781_3.
+    it('MM-T107 - should show alert when message exceeds character limit', async () => {
         // MaxPostSize comes from server config, so a hard-coded 4001 chars does not exceed the
         // common 16383 value and the send button stays enabled.
         const {config} = await System.apiGetConfig(siteOneUrl);
@@ -173,7 +173,7 @@ describe('Messaging - Message Draft', () => {
 
         // * Verify message length alert is shown
         await expect(Alert.messageLengthTitle).toBeVisible();
-        await Alert.okButton.tap();
+        await Alert.dismissMessageLengthAlert();
 
         // # Clear post draft and go back to channel list screen
         await ChannelScreen.postInput.clearText();
@@ -181,6 +181,7 @@ describe('Messaging - Message Draft', () => {
     });
 
     // Skip both: CI run 30000635898 — thread draft input is missing or the channel-open cascade prevents setup.
+    // Not addressed by Message Length alert fix (MM-70004); leave skipped.
     it.skip('MM-T4781_4 - should be able to create a message draft from reply thread', async () => {
         // # Open a channel screen, post a message, and tap on the post to open reply thread
         const message = `Message ${getRandomId()}`;

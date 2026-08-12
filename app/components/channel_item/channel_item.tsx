@@ -88,6 +88,10 @@ export const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
         borderLeftColor: theme.sidebarTextActiveBorder,
         borderLeftWidth: 5,
     },
+    // Opaque fill so Detox visibility checks pass for autocomplete rows (SEC-10998).
+    onCenterBg: {
+        backgroundColor: theme.centerChannelBg,
+    },
     textActive: {
         color: theme.sidebarText,
     },
@@ -168,15 +172,16 @@ const ChannelItem = ({
         showActive && isOnHome && {
             paddingLeft: HOME_PADDING.paddingLeft - styles.activeItem.borderLeftWidth,
         },
+        isOnCenterBg && styles.onCenterBg,
         {minHeight: height},
-    ], [height, showActive, styles, isOnHome]);
+    ], [height, showActive, styles, isOnHome, isOnCenterBg]);
 
     return (
-        <TouchableOpacity onPress={handleOnPress}>
-            <View
-                style={containerStyle}
-                testID={channelItemTestId}
-            >
+        <TouchableOpacity
+            onPress={handleOnPress}
+            testID={channelItemTestId}
+        >
+            <View style={containerStyle}>
                 <ChannelIcon
                     hasDraft={hasDraft}
                     isActive={isTablet && isActive}

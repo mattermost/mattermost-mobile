@@ -11,6 +11,7 @@ import {CustomStatusDurationEnum} from '@constants/custom_status';
 import {DEFAULT_LOCALE, getLocalizedMessage} from '@i18n';
 import {safeParseJSON, toTitleCase} from '@utils/helpers';
 import {logError} from '@utils/log';
+import {getDeviceTimezone} from '@utils/timezone';
 
 import type {CustomProfileFieldModel, CustomProfileAttributeModel} from '@database/models/server';
 import type {CustomAttribute, CustomAttributeSet} from '@typings/api/custom_profile_attributes';
@@ -137,7 +138,7 @@ export const getUserTimezone = (user?: UserModel | UserProfile) => {
 
 export const getTimezone = (timezone?: UserTimezone | null) => {
     if (!timezone) {
-        return '';
+        return getDeviceTimezone();
     }
 
     const {useAutomaticTimezone} = timezone;
@@ -146,11 +147,10 @@ export const getTimezone = (timezone?: UserTimezone | null) => {
         useAutomatic = useAutomaticTimezone === 'true';
     }
 
-    if (useAutomatic) {
-        return timezone.automaticTimezone;
-    }
+    const zone = useAutomatic ? timezone.automaticTimezone : timezone.manualTimezone;
 
-    return timezone.manualTimezone;
+    // Empty zone breaks moment.tz / Intl (scheduled "Send on Invalid Date" on iOS, MM-T5720).
+    return zone || getDeviceTimezone();
 };
 
 export const getTimezoneRegion = (timezone: string): string => {
@@ -183,7 +183,9 @@ export function isCustomStatusExpired(user?: UserModel | UserProfile) {
 
     const customStatus = getUserCustomStatus(user);
 
-    if (!customStatus) {
+    // Empty object/`{}` is what updateLocalCustomStatus historically wrote on clear —
+    // treat "no emoji and no text" as cleared/expired so Account UI drops the clear control.
+    if (!customStatus?.emoji && !customStatus?.text) {
         return true;
     }
 

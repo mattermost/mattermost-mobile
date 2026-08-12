@@ -301,10 +301,10 @@ describe('getUserTimezone', () => {
         expect(result).toBe('America/New_York');
     });
 
-    it('should return an empty string if the user timezone does not exist', () => {
+    it('should fall back to the device timezone if the user timezone does not exist', () => {
         const user = TestHelper.fakeUserModel({timezone: null});
         const result = getUserTimezone(user);
-        expect(result).toBe('');
+        expect(result).toBe('World/Somewhere');
     });
 });
 
@@ -321,9 +321,15 @@ describe('getTimezone', () => {
         expect(result).toBe('America/Los_Angeles');
     });
 
-    it('should return an empty string if the timezone does not exist', () => {
+    it('should fall back to the device timezone if the timezone does not exist', () => {
         const result = getTimezone(null);
-        expect(result).toBe('');
+        expect(result).toBe('World/Somewhere');
+    });
+
+    it('should fall back to the device timezone when automaticTimezone is empty', () => {
+        const timezone: UserTimezone = {useAutomaticTimezone: 'true', automaticTimezone: '', manualTimezone: 'America/Los_Angeles'};
+        const result = getTimezone(timezone);
+        expect(result).toBe('World/Somewhere');
     });
 });
 
@@ -386,6 +392,14 @@ describe('isCustomStatusExpired', () => {
         const user = TestHelper.fakeUserModel();
         const result = isCustomStatusExpired(user);
         expect(result).toBe(true);
+    });
+
+    it('should return true if the custom status is an empty object (cleared locally)', () => {
+        const user = TestHelper.fakeUser({
+            username: 'john_doe',
+            props: {customStatus: {}},
+        });
+        expect(isCustomStatusExpired(user)).toBe(true);
     });
 });
 

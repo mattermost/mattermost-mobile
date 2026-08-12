@@ -42,7 +42,8 @@ export function ScheduledPostCoreOptions({userTimezone, isMilitaryTime, onSelect
     const [selectedOption, setSelectedOptions] = useState<string>();
     const [showDateTimePicker, setShowDateTimePicker] = useState(false);
 
-    const now = moment().tz(userTimezone);
+    // moment().tz('') is invalid and yields NaN scheduled_at → "Invalid Date" labels (MM-T5720).
+    const now = userTimezone ? moment().tz(userTimezone) : moment();
 
     const handleSelectOption = useCallback((optionKey: string) => {
         setSelectedOptions(optionKey);
@@ -71,8 +72,7 @@ export function ScheduledPostCoreOptions({userTimezone, isMilitaryTime, onSelect
         onSelectOption(selectedTime.valueOf().toString());
     }, [onSelectOption]);
 
-    const nineAmTime = moment().
-        tz(userTimezone).
+    const nineAmTime = (userTimezone ? moment().tz(userTimezone) : moment()).
         set({hour: 9, minute: 0, second: 0, millisecond: 0}).
         valueOf();
     const formattedTimeString = getFormattedTime(isMilitaryTime, userTimezone, nineAmTime);

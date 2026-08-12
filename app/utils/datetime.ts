@@ -99,17 +99,24 @@ export function getReadableTimestamp(timestamp: number, timeZone: string, isMili
     const now = new Date();
     const isCurrentYear = date.getFullYear() === now.getFullYear();
 
+    // Empty/invalid timeZone makes Intl throw (Node) or return "Invalid Date" (Hermes/iOS).
+    // Omit the option so formatting falls back to the device zone instead of poisoning the label.
     const options: Intl.DateTimeFormatOptions = {
         month: 'short',
         day: 'numeric',
         hour: 'numeric',
         minute: '2-digit',
         hour12: !isMilitaryTime,
-        timeZone: timeZone as string,
+        ...(timeZone ? {timeZone} : {}),
         ...(isCurrentYear ? {} : {year: 'numeric'}),
     };
 
-    return date.toLocaleString(currentUserLocale, options);
+    try {
+        const formatted = date.toLocaleString(currentUserLocale, options);
+        return formatted === 'Invalid Date' ? '' : formatted;
+    } catch {
+        return '';
+    }
 }
 
 export function formatTime(seconds: number, textTime: boolean = false, intl?: IntlShape) {

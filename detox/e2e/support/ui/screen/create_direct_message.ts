@@ -53,16 +53,41 @@ class CreateDirectMessageScreen {
         return element(by.id(`${this.testID.selectedUserPrefix}${userId}.remove.button`));
     };
 
+    // App builds user_item.{id}.{userId} (UserListRow + UserItem). Prefer display_name —
+    // the row container can fail Detox visibility/hittest while the text child is unique (SEC-11049).
     getUserItem = (userId: string) => {
         return element(by.id(`${this.testID.userItemPrefix}${userId}.${userId}`));
     };
 
     getUserItemProfilePicture = (userId: string) => {
-        return element(ProfilePicture.getProfilePictureItemMatcher(this.testID.userItemPrefix, userId));
+        return element(ProfilePicture.getProfilePictureItemMatcher(this.testID.userItemPrefix, `${userId}.${userId}`));
     };
 
     getUserItemDisplayName = (userId: string) => {
         return element(by.id(`${this.testID.userItemPrefix}${userId}.${userId}.display_name`));
+    };
+
+    // Wait for search spinner to settle on the per-userId display_name, then tap it.
+    selectUser = async (userId: string) => {
+        const displayName = this.getUserItemDisplayName(userId);
+        await waitFor(displayName).toBeVisible(isAndroid() ? 40 : 75).withTimeout(timeouts.HALF_MIN);
+
+        // Corner-tap on Android: row center can sit under keyboard/insets.
+        if (isAndroid()) {
+            await displayName.tap({x: 1, y: 1});
+        } else {
+            await displayName.tap();
+        }
+    };
+
+    searchAndSelectUser = async (username: string, userId: string) => {
+        await this.searchInput.replaceText(username);
+        try {
+            await this.searchInput.tapReturnKey();
+        } catch {
+            // Keyboard may already be dismissed.
+        }
+        await this.selectUser(userId);
     };
 
     longPressProfileTutorialText = element(by.text("Long-press on an item to view a user's profile"));

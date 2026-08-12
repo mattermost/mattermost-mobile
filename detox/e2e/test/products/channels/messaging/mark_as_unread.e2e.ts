@@ -27,47 +27,13 @@ import {
     ServerScreen,
     ThreadScreen,
 } from '@support/ui/screen';
-import {getRandomId, isAndroid, timeouts, wait} from '@support/utils';
+import {getRandomId, timeouts, wait} from '@support/utils';
 import {expect, waitFor} from 'detox';
 
-// On Android, long-pressing the post container is unreliable — long-press on the
-// inner text element instead, with a shorter TEN_SEC check timeout so retries
-// happen quickly (mirrors the approach in pin_and_unpin_message.e2e.ts).
+// Prefer ChannelScreen / ThreadScreen.openPostOptionsFor (longPressWithScrollRetry;
+// Android long-presses the inner text target). Local retry loops were less reliable.
 async function openPostOptionsFor(postId: string, message: string, screen: typeof ChannelScreen | typeof ThreadScreen) {
-    if (!isAndroid()) {
-        await screen.openPostOptionsFor(postId, message);
-        return;
-    }
-
-    const prefix = screen === ThreadScreen ? 'thread' : 'channel';
-    const flatList = screen === ThreadScreen ? ThreadScreen.getFlatPostList() : ChannelScreen.getFlatPostList();
-    const target = element(by.text(message).withAncestor(by.id(`${prefix}.post_list.post.${postId}`)));
-
-    await waitFor(target).toBeVisible().withTimeout(timeouts.TEN_SEC);
-
-    for (let attempt = 1; attempt <= 3; attempt++) {
-        try {
-            // eslint-disable-next-line no-await-in-loop
-            await flatList.scroll(100, 'down', 0.5, 0.5);
-        } catch {
-            // Ignore scroll failures at list boundaries.
-        }
-        // eslint-disable-next-line no-await-in-loop
-        await wait(timeouts.THREE_SEC);
-        // eslint-disable-next-line no-await-in-loop
-        await target.longPress(timeouts.FIVE_SEC);
-        try {
-            // eslint-disable-next-line no-await-in-loop
-            await waitFor(PostOptionsScreen.postOptionsScreen).toExist().withTimeout(timeouts.TEN_SEC);
-            // eslint-disable-next-line no-await-in-loop
-            await wait(timeouts.TWO_SEC);
-            return;
-        } catch {
-            if (attempt === 3) {
-                throw new Error(`Post options did not appear for "${message}" after ${attempt} attempts`);
-            }
-        }
-    }
+    await screen.openPostOptionsFor(postId, message);
 }
 
 describe('Messaging - Mark as Unread', () => {
@@ -219,8 +185,9 @@ describe('Messaging - Mark as Unread', () => {
         await expect(ChannelListScreen.getChannelItemDisplayName(directMessagesCategory, dmChannel.name)).toBeVisible();
     });
 
-    // Skip: failed CI run 29954156963 (both) — BACK_INDEX / thread unread
-    it.skip('MM-T250_1 - should mark a reply as unread in thread view and show unread indicator', async () => {
+    // SEC-11015: BACK_INDEX unskip — ThreadScreen.back (tapTopmostBackButton) +
+    // screen.openPostOptionsFor. Skip was BACK_INDEX / thread unread only.
+    it('MM-T250_1 - should mark a reply as unread in thread view and show unread indicator', async () => {
         // # Create a root message and two replies via API (as admin) so testUser can mark
         // someone else's reply as unread.
         // canMarkAsUnread requires user?.id !== post.userId — own posts cannot be marked as unread.

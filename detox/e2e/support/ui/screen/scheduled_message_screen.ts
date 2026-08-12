@@ -69,6 +69,30 @@ class ScheduledMessageScreen {
     };
 
     selectDateTime = async () => {
+        // Save stays disabled until handleChange fires with a time ≠ scheduledAt.
+        // Tapping Select Date/Time alone does not change the value — nudge the
+        // iOS spinner so onChange runs (MM-T5720).
+        await this.selectTimeButton.tap();
+        if (isIos()) {
+            /* eslint-disable no-await-in-loop -- successive picker nudges until Save enables */
+            for (let attempt = 0; attempt < 3; attempt++) {
+                try {
+                    await element(by.type('UIDatePicker')).swipe('up', 'slow', 0.2);
+                } catch {
+                    try {
+                        await element(by.type('UIPickerView')).atIndex(0).swipe('up', 'slow', 0.2);
+                    } catch { /* picker type varies by iOS */ }
+                }
+                await wait(timeouts.HALF_SEC);
+            }
+            /* eslint-enable no-await-in-loop */
+
+            // Prefer testID; text matcher can hit the disabled gray "Save" label.
+            await waitFor(element(by.id('reschedule_draft.save.button'))).toExist().withTimeout(timeouts.FIVE_SEC);
+            await element(by.id('reschedule_draft.save.button')).tap();
+            await waitFor(this.customDateTimePickerScreen).not.toExist().withTimeout(timeouts.TEN_SEC);
+            return;
+        }
         await this.selectDateButton.tap();
         await this.selectTimeButton.tap();
         await this.saveButton.tap();

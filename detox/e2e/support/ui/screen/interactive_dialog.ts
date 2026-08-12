@@ -2,7 +2,7 @@
 // See LICENSE.txt for license information.
 
 import {isAndroid, timeouts, wait} from '@support/utils';
-import {expect} from 'detox';
+import {expect, waitFor} from 'detox';
 
 class InteractiveDialogScreen {
     testID = {
@@ -96,7 +96,12 @@ class InteractiveDialogScreen {
     };
 
     submit = async () => {
-        await expect(this.submitButton).toExist();
+        // Scroll the dialog so the submit control is not obscured by the keyboard /
+        // safe-area on iOS (MM-T4102 borderline visibility).
+        try {
+            await this.interactiveDialogScreen.scroll(200, 'down');
+        } catch { /* short dialogs may not scroll */ }
+        await waitFor(this.submitButton).toBeVisible(40).withTimeout(timeouts.TEN_SEC);
         await this.submitButton.tap();
         await wait(timeouts.ONE_SEC);
     };

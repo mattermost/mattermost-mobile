@@ -130,9 +130,11 @@ const UserItem = ({
             nonThemedStyles.row,
             {
                 opacity: disabled ? 0.32 : 1,
+                // Opaque fill so Detox visibility checks pass for at-mention rows (SEC-10998).
+                backgroundColor: theme.centerChannelBg,
             },
         ];
-    }, [disabled]);
+    }, [disabled, theme.centerChannelBg]);
 
     const onPress = useCallback(() => {
         if (user) {
