@@ -357,7 +357,7 @@ jobs:
             const runType = (process.env.RUN_TYPE || "PR").toUpperCase();
             const fullIos = runType === "MAIN" || runType === "MASTER" || runType === "RELEASE";
             process.stdout.write(JSON.stringify(buildTsioJobConfigMap(base, keys, (key) => {
-              // PR defaults keep detox-ios at 2 complementary workers; full runs use 20.
+              // PR defaults keep detox-ios at 2 PR (@ios_pr) workers; full runs use 20.
               if (key === "detox-ios" && fullIos) {
                 return {workers: 20};
               }
