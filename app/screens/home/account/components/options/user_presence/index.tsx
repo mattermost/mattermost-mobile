@@ -75,16 +75,25 @@ const UserStatus = ({currentUser}: Props) => {
         setStatus(serverUrl, userStatus);
     }, [currentUser.id, serverUrl]);
 
+    // Dismiss the sheet and let Fabric finish unmounting slide-up views before
+    // updateLocalUser remounts the presence indicator. Updating status while the
+    // sheet is still tearing down redboxes Android addViewAt ("child already has
+    // a parent") and leaves Detox with ReactContext null (CI MM-T4988_2).
+    const dismissThenUpdateStatus = useCallback(async (status: string) => {
+        await dismiss();
+        await new Promise((resolve) => setTimeout(resolve, 150));
+        updateStatus(status);
+    }, [dismiss, updateStatus]);
+
     const setUserStatus = useCallback(async (status: string) => {
         if (currentUser.status === OUT_OF_OFFICE) {
             await dismiss();
             return confirmOutOfOfficeDisabled(intl, status, updateStatus);
         }
 
-        updateStatus(status);
-        await dismiss();
+        await dismissThenUpdateStatus(status);
         return null;
-    }, [currentUser.status, dismiss, intl, updateStatus]);
+    }, [currentUser.status, dismiss, dismissThenUpdateStatus, intl, updateStatus]);
 
     const handleSetStatus = usePreventDoubleTap(useCallback(() => {
         const renderContent = () => (

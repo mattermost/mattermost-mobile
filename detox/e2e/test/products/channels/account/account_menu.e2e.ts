@@ -125,6 +125,9 @@ describe('Account - Account Menu', () => {
             await wait(timeouts.TWO_SEC);
             await waitFor(AccountScreen.getUserPresenceIndicator('online')).toExist().withTimeout(timeouts.TEN_SEC);
             await expect(AccountScreen.getUserPresenceLabel('online')).toHaveText('Online');
+            // Let the last sheet dismiss + presence remount settle before
+            // re-enabling sync (Android Fabric ReactContext races).
+            await wait(timeouts.TWO_SEC);
         } finally {
             await safeEnableSynchronization();
         }
