@@ -110,8 +110,8 @@ export async function fetchChannelClassificationValue(serverUrl: string, channel
         const optionId = values[0]?.value;
         if (optionId && !EphemeralStore.getClassificationFieldSyncAttempted(serverUrl, optionId)) {
             const fields = await getPropertyFieldsByNames(database, [CLASSIFICATIONS_FIELD_NAME]);
-            const fieldWithOptions = fields.find((f) => (f.attrs?.options as PropertyFieldOption[] | undefined)?.length);
-            const options = (fieldWithOptions?.attrs?.options as PropertyFieldOption[] | undefined) ?? [];
+            const channelFieldDef = fields.find((f) => f.objectType === CLASSIFICATIONS_CHANNEL_OBJECT_TYPE);
+            const options = (channelFieldDef?.attrs?.options as PropertyFieldOption[] | undefined) ?? [];
             if (!options.some((o) => o.id === optionId)) {
                 const {error} = await fetchClassificationBanner(serverUrl, true);
 

@@ -466,6 +466,19 @@ describe('fetchChannelClassificationValue', () => {
         expect(EphemeralStore.getClassificationFieldSyncAttempted(serverUrl, 'opt-unknown')).toBe(true);
     });
 
+    it('should look the option up on the channel field rather than the system field', async () => {
+        const {operator} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
+        const channelOnly = {...channelField, attrs: {options: [{id: 'opt-channel-only', name: 'CHANNEL ONLY', color: '#00FF00'}]}};
+        await operator.handlePropertyFields({fields: [systemField, channelOnly], prepareRecordsOnly: false});
+
+        mockedGetConfigValue.mockResolvedValueOnce('true');
+        mockClient.getPropertyValues.mockResolvedValueOnce([{...channelValue, value: 'opt-channel-only'}]);
+
+        await fetchChannelClassificationValue(serverUrl, channelId);
+
+        expect(mockClient.getPropertyFields).not.toHaveBeenCalled();
+    });
+
     it('should not force a field refresh when the value option is already known', async () => {
         const {operator} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
         await operator.handlePropertyFields({fields: [channelField], prepareRecordsOnly: false});

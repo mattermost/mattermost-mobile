@@ -27,10 +27,11 @@ type Props = {
     levelName: string;
     color: string;
     classificationEnabled: boolean;
+    hostName: string;
     children: React.ReactNode;
 }
 
-export default function GlobalClassificationBannerContainer({visible, levelName, color, classificationEnabled, children}: Props) {
+export default function GlobalClassificationBannerContainer({visible, levelName, color, classificationEnabled, hostName, children}: Props) {
     const serverUrl = useServerUrl();
     const realInsets = useSafeAreaInsets();
     const bannerHeight = visible ? CLASSIFICATION_BANNER_TOTAL_HEIGHT : 0;
@@ -58,7 +59,7 @@ export default function GlobalClassificationBannerContainer({visible, levelName,
                 {children}
             </SafeAreaInsetsContext.Provider>
             {visible && (
-                <Portal hostName={GLOBAL_BANNER_PORTAL_HOST}>
+                <Portal hostName={hostName}>
                     <View
                         style={[styles.wrapper, {top: realInsets.top}]}
                         pointerEvents='none'
