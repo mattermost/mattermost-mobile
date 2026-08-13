@@ -175,8 +175,7 @@ describe('Messaging - At-Mention', () => {
         const {user: outOfChannelUser} = await User.apiCreateUser(siteOneUrl);
         await Team.apiAddUserToTeam(siteOneUrl, outOfChannelUser.id, testTeam.id);
 
-        // Wait until autocomplete returns the user. A search before the index
-        // catches up caches an empty result and never retries that term.
+        // Fresh users can miss the first search until the server index catches up.
         await User.waitForUserInAutocomplete(siteOneUrl, {
             teamId: testTeam.id,
             channelId: testChannel.id,
@@ -185,11 +184,15 @@ describe('Messaging - At-Mention', () => {
             timeoutMs: timeouts.HALF_MIN,
         });
 
-        // # Open a channel screen and set "@" + full username in one update.
+        // # Open the channel and type "@" then the username.
+        // Android replaceText writes the draft but does not move the cursor, so
+        // AtMention reads value.substring(0, 0) and never opens the list.
         await ChannelScreen.open(channelsCategory, testChannel.name);
         await ChannelScreen.postInput.tap();
         await wait(timeouts.ONE_SEC);
-        await ChannelScreen.postInput.replaceText(`@${outOfChannelUser.username}`);
+        await ChannelScreen.postInput.typeText('@');
+        await Autocomplete.toBeVisible();
+        await ChannelScreen.postInput.typeText(outOfChannelUser.username);
 
         // * Verify at-mention autocomplete contains the out-of-channel user suggestion.
         const {atMentionItem} = Autocomplete.getAtMentionItem(outOfChannelUser.id);
