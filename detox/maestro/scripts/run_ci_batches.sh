@@ -128,7 +128,8 @@ should_skip_flow() {
   # Skip flows whose tags appear in the platform-specific exclude list.
   if [[ -n "$EXCLUDE_TAGS_STR" && -f "$flow" ]]; then
     local flow_tags
-    flow_tags=$(awk '/^tags:/{found=1; next} found{if (!/^  - /) exit; print $2}' "$flow" 2>/dev/null || true)
+    # Strip YAML quotes so "@android_only" matches exclude_tags.json entries.
+    flow_tags=$(awk '/^tags:/{found=1; next} found{if (!/^  - /) exit; gsub(/["'\'']/,"",$2); print $2}' "$flow" 2>/dev/null || true)
     local tag
     for tag in $flow_tags; do
       [[ ",$EXCLUDE_TAGS_STR," == *",$tag,"* ]] && return 0

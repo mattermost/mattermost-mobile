@@ -14,7 +14,7 @@
 #   - (system Files UI — text selectors: Recents, Browse, On My iPhone, test_bookmark.png)
 tags:
   - MM-T5603
-  - @ios_only
+  - "@ios_only"
 appId: ${MAESTRO_APP_ID}
 ---
 # * Verify the picker opened on Recents

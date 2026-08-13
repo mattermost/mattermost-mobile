@@ -22,7 +22,7 @@
 #   - users-list
 tags:
   - MM-T4831
-  - @multi_device
+  - "@multi_device"
 appId: ${MAESTRO_APP_ID}
 ---
 # # Log in as User B and open the same channel

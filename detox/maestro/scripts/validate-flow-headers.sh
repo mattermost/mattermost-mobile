@@ -61,14 +61,18 @@ validate_flow() {
     fail "${rel}" "tags must include Zephyr id ${ticket} (tags: [${ticket}])"
   fi
 
-  # Plan tags: @snake_case, always @-prefixed. Untagged = all platforms.
+  # Plan tags: @snake_case, always @-prefixed, and YAML-quoted (unquoted @ is invalid
+  # YAML and Maestro fails with "Parsing Failed"). Untagged = all platforms.
   # At most one of @ios_only / @android_only. @multi_device is optional (two-device flows).
   if printf '%s\n' "${header}" | grep -qE '^[[:space:]]*-[[:space:]]+(shared|ios-only|android-only)[[:space:]]*$'; then
-    fail "${rel}" "legacy platform tags are forbidden — use @ios_only / @android_only / @multi_device (or omit for all platforms)"
+    fail "${rel}" "legacy platform tags are forbidden — use \"@ios_only\" / \"@android_only\" / \"@multi_device\" (or omit for all platforms)"
+  fi
+  if printf '%s\n' "${header}" | grep -qE '^[[:space:]]*-[[:space:]]+@[A-Za-z0-9_]+[[:space:]]*$'; then
+    fail "${rel}" 'plan tags must be YAML-quoted (e.g. - "@android_only") — unquoted @ is invalid YAML and Maestro cannot parse the flow'
   fi
   local platform_tag_count
   # grep -c exits 1 on zero matches; keep pipefail happy inside set -e.
-  platform_tag_count="$(printf '%s\n' "${header}" | grep -cE '^[[:space:]]*-[[:space:]]+@(ios_only|android_only)[[:space:]]*$' || true)"
+  platform_tag_count="$(printf '%s\n' "${header}" | grep -cE '^[[:space:]]*-[[:space:]]+["'\'']@(ios_only|android_only)["'\''][[:space:]]*$' || true)"
   if [[ "${platform_tag_count}" -gt 1 ]]; then
     fail "${rel}" "tags must include at most one of @ios_only | @android_only (omit both when the flow applies to all platforms)"
   fi

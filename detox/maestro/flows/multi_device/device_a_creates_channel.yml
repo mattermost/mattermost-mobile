@@ -26,7 +26,7 @@
 #   - channel.post_draft.post.input
 tags:
   - MM-T837
-  - @multi_device
+  - "@multi_device"
 appId: ${MAESTRO_APP_ID}
 ---
 # # Log in as the shared test user

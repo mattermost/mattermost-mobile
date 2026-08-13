@@ -8,7 +8,7 @@ Cut the iOS critical path on **PR** E2E while keeping coverage. **Android owns t
 
 ## How PR specs are identified / tagged
 
-Convention (Detox + Maestro): plan tags are **`@snake_case`**, always `@`-prefixed. **Untagged = applies to all** — do not invent a `shared` tag. Prefer include/exclude tags over directory filters.
+Convention (Detox + Maestro): plan tags are **`@snake_case`**, always `@`-prefixed. In Maestro YAML they must be **quoted** (`- "@android_only"`) — unquoted `@` is invalid YAML. **Untagged = applies to all** — do not invent a `shared` tag. Prefer include/exclude tags over directory filters.
 
 ### Maestro — plan tags on each flow
 
@@ -17,9 +17,9 @@ Every flow under `detox/maestro/flows/**/*.yml` declares its Zephyr id. Optional
 | Tag | Dispatch |
 |---|---|
 | *(none)* | Android + iOS |
-| `@android_only` | Android only |
-| `@ios_only` | iOS only |
-| `@multi_device` | Excluded from single-device CI |
+| `"@android_only"` | Android only |
+| `"@ios_only"` | iOS only |
+| `"@multi_device"` | Excluded from single-device CI |
 
 Filter: `detox/maestro/config/exclude_tags.json` → Test System IO `maestro-exclude-tags` (no `maestro-exclude-dir`).
 

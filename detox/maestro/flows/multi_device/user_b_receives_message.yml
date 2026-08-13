@@ -19,7 +19,7 @@
 #   - channel message text containing SYNC_TOKEN (assertVisible by text)
 tags:
   - MM-T3056
-  - @multi_device
+  - "@multi_device"
 appId: ${MAESTRO_APP_ID}
 ---
 # # Log in as User B and open the test channel

@@ -21,7 +21,7 @@
 #   - channel_list.category.channels.channel_item.${SYNC_TOKEN}
 tags:
   - MM-T837
-  - @multi_device
+  - "@multi_device"
 appId: ${MAESTRO_APP_ID}
 ---
 # # Log in as the shared test user
