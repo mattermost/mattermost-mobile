@@ -363,6 +363,7 @@ jobs:
       MM_TEST_SERVER_URL_3: ${{ matrix.server.site_3_url }}
       MOBILE_VERSION: ${{ inputs.MOBILE_VERSION }}
       search_path: ${{ matrix.server.latest && 'detox/e2e/test' || 'detox/e2e/test/products/channels/smoke_test' }}
+      detox-exclude-tags: '@ipad_only'
       parallelism: ${{ matrix.server.latest && '10' || '1' }}
       artifact_run_id: ${{ github.run_id }}
 
