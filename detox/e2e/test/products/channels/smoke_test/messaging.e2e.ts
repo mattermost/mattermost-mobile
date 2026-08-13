@@ -170,9 +170,6 @@ describe('Smoke Test - Messaging', () => {
         await ChannelScreen.back();
     });
 
-    // SEC-11009: use PostOptionsScreen tap helpers (corner tap / label fallback) instead of
-    // raw .tap() — Aug 7 artifact failed with "View is not hittable at its visible point"
-    // while Unpin was on-screen in the post-options sheet.
     it('MM-T4786_4 - should be able to follow/unfollow a message, save/unsave a message, and pin/unpin a message', async () => {
         // # Open a channel screen, post a message, open post options for message, and tap on follow message option
         const message = `Message ${getRandomId()}`;

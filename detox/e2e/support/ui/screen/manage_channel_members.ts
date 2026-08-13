@@ -57,10 +57,6 @@ class ManageChannelMembersScreen {
     };
 
     toBeVisible = async () => {
-        // Use polling on both platforms: navigating to ManageChannelMembersScreen triggers
-        // a stack push and network/DB fetch for the member list. This keeps the JS bridge
-        // busy, causing waitFor().toExist() bridge-idle sync to block for the full timeout
-        // (especially for archived channels where member fetch is a distinct API path).
         const timeout = isAndroid() ? timeouts.HALF_MIN : timeouts.TEN_SEC;
         await waitForElementToExist(this.manageMembersScreen, timeout);
 
@@ -68,8 +64,6 @@ class ManageChannelMembersScreen {
     };
 
     open = async () => {
-        // Scroll down to bring the members option into view — on iOS 26.x the channel
-        // info screen is taller than the viewport and the members option can be clipped.
         try {
             await ChannelInfoScreen.scrollView.scroll(200, 'down');
         } catch {
@@ -83,10 +77,6 @@ class ManageChannelMembersScreen {
 
     close = async () => {
         if (isIos()) {
-            // The navigation.header.back button on this screen is permanently obscured by
-            // iOS 26.3's liquid-glass UIVisualEffectView, causing EarlGrey's 100% visibility
-            // threshold tap to fail. Use the iOS interactive pop gesture (left-edge swipe)
-            // instead, which the UINavigationController intercepts at the system level.
             await this.manageMembersScreen.swipe('right', 'slow', 0.75, 0.01, 0.5);
         } else {
             await device.pressBack();
@@ -110,8 +100,6 @@ class ManageChannelMembersScreen {
 
     longPressProfileTutorialText = element(by.text("Long-press on an item to view a user's profile"));
 
-    // SEC-11049 / MM-66375: a blind pressBack on API 35 dismissed manage_members under the
-    // tutorial Modal. Only pressBack while the tutorial copy is present.
     dismissLongPressProfileTutorial = async () => {
         try {
             await waitFor(this.longPressProfileTutorialText).toBeVisible().withTimeout(timeouts.THREE_SEC);

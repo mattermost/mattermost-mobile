@@ -14,14 +14,6 @@ export const enableClassificationMarkings = async (baseUrl: string): Promise<voi
         throw new Error(`enableClassificationMarkings: failed to patch server config: ${JSON.stringify(patchResult.error)}`);
     }
 
-    // No apiReplaceConfig fallback here. apiReplaceConfig is a full PUT /api/v4/config:
-    // it reads the entire config, edits one flag, and writes the whole document back,
-    // silently reverting any setting another spec changed in between. Six specs call
-    // apiPatchConfig (the three classification suites plus
-    // share_with_connected_workspaces, mm_blocks_ephemeral and mm_blocks_incoming_webhook)
-    // and ~10 shards share each provisioned server, so that read-modify-write clobbers
-    // unrelated suites. It only ever ran when the patch above had already failed, so it
-    // traded a visible failure for an invisible one elsewhere.
     const enabled = await System.waitForClientConfigFlag(
         baseUrl,
         'FeatureFlagClassificationMarkings',

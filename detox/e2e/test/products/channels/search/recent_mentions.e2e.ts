@@ -115,11 +115,6 @@ describe('Search - Recent Mentions', () => {
         await RecentMentionsScreen.open();
         await RecentMentionsScreen.toBeVisible();
 
-        // * Verify the fixture mention is displayed with channel + team info.
-        // Wait on the specific post (by id) — the generic
-        // `recentMentionPostListToBeVisible()` helper matches the bare
-        // `recent_mentions.post_list.post` tag, which is ambiguous when
-        // multiple fixtures live in the feed.
         const {
             postListPostItem: recentMentionsPostListPostItem,
             postListPostItemChannelInfoChannelDisplayName,
@@ -148,7 +143,6 @@ describe('Search - Recent Mentions', () => {
         await ChannelListScreen.open();
     });
 
-    // Unskipped: Saved Messages unmounts on blur so the list re-reads preferences.
     it('MM-T4909_4 - should be able to save/unsave a recent mention from recent mentions screen', async () => {
         // # Open recent mentions screen
         await RecentMentionsScreen.open();

@@ -9,31 +9,9 @@ import {withTransportRetry, type ApiResult} from '@support/utils/transport_retry
 const LOCK_CATEGORY = 'e2e_locks';
 const LOCK_NAME = 'classification';
 const DEFAULT_TIMEOUT_MS = timeouts.ONE_MIN * 20;
-
-// Must outlast the longest hold a caller can legitimately take, or the lock expires
-// mid-suite and a waiting shard steals it while the owner is still mutating shared
-// server config. Every caller sets jest.setTimeout(30m), so the TTL covers that plus
-// margin. Recovering a lock leaked by a cancelled run is the acquire budget's job,
-// not the TTL's.
 const DEFAULT_TTL_MS = timeouts.ONE_MIN * 35;
 const DEFAULT_POLL_MS = timeouts.TWO_SEC;
-
-// A single transient network error used to abort the whole suite. One
-// `getaddrinfo ENOTFOUND` on the runner lost all 10 tests of
-// global_classification_banner: the spec either side of it passed against the same host, admin login succeeded
-// one request earlier, the hostname still resolves, and no other shard saw it. The acquire
-// loop below already budgets 20 minutes, so spending a few seconds on retries costs nothing.
-// The retry loop itself lives in @support/utils/transport_retry (kept dependency-free and
-// unit-tested there); this constant stays here so production uses exactly timeouts.TWO_SEC,
-// including under LOW_BANDWIDTH_MODE.
 const NETWORK_RETRY_DELAY_MS = timeouts.TWO_SEC;
-
-// The write in acquireClassificationLock is not a compare-and-swap, so two shards that both
-// read "free" can both write and both confirm. Re-reading after a settle delay closes the
-// window where the loser's write lands just after the winner's confirm. This narrows the
-// race, it does not eliminate it — a real mutex needs a server-side unique constraint.
-// Acceptable because under the "never unset the flag" invariant the only conflicting
-// mutation left is MM-T6204_1's toggle, which restores the flag before releasing.
 const CONFIRM_SETTLE_MS = timeouts.ONE_SEC;
 
 type ClassificationLock = {

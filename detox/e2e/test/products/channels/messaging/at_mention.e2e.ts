@@ -170,25 +170,18 @@ describe('Messaging - At-Mention', () => {
         await ChannelScreen.back();
     });
 
-    // Unskipped: type the full @username in one replaceText so iOS does not
-    // cache a short prefix miss in noResultsTerm before the new user is indexed.
     it('MM-T0171_1 - should be able to autocomplete at-mention for out-of-channel member', async () => {
         // # Create a user who is on the team but not in the channel
         const {user: outOfChannelUser} = await User.apiCreateUser(siteOneUrl);
         await Team.apiAddUserToTeam(siteOneUrl, outOfChannelUser.id, testTeam.id);
 
         // # Open a channel screen and set "@" + full username in one update.
-        // typeText sends characters incrementally; a 3-char prefix can miss a
-        // freshly created user and cache noResultsTerm, blocking later searches.
         await ChannelScreen.open(channelsCategory, testChannel.name);
         await ChannelScreen.postInput.tap();
         await wait(timeouts.ONE_SEC);
         await ChannelScreen.postInput.replaceText(`@${outOfChannelUser.username}`);
 
         // * Verify at-mention autocomplete contains the out-of-channel user suggestion.
-        // Poll directly for the specific item (not the generic sectionAtMentionList) so
-        // the assertion fails fast if a different user appears instead. Use HALF_MIN to
-        // give the search backend enough time to index a freshly-created user.
         const {atMentionItem} = Autocomplete.getAtMentionItem(outOfChannelUser.id);
         await waitForElementToExist(atMentionItem, timeouts.HALF_MIN);
 

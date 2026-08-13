@@ -98,7 +98,6 @@ describe('Channels - Channel Bookmarks', () => {
 
             try {
                 if (isIos()) {
-                    // 40%: clipped list-edge rows fail Detox's default 100% visibility (SEC-11048 / MM-T5604_1).
                     await waitFor(displayNameEl).
                         toBeVisible(40).
                         whileElement(by.id('channel_list.flat_list')).
@@ -123,7 +122,6 @@ describe('Channels - Channel Bookmarks', () => {
 
             // List-edge rows can be ~40% visible (visible height ~10 of 24).
             // Default center tap aims below the clip and fails "not hittable at its visible point".
-            // Tap near the top of the label (still inside the visible strip) on iOS; Android uses full tap.
             if (isIos()) {
                 await displayNameEl.tap({x: 20, y: 2});
             } else {
@@ -406,7 +404,6 @@ describe('Channels - Channel Bookmarks', () => {
         await ChannelScreen.back();
     });
 
-    // SEC-11048: openChannel now waits for 40% visibility before tap (list-edge clip).
     it('MM-T5604_1 - should auto-populate title from page when adding a bookmark link', async () => {
         // # Navigate to the channel
         await openChannel(channelT5604);

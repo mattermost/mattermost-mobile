@@ -72,9 +72,6 @@ describe('Messaging - Markdown Table', () => {
         await ChannelScreen.back();
     });
 
-    // iOS: keep wrap assertions; skip only expanded-table right-column scroll below
-    // (SEC-11012). Right column sits at x≈392 in a 581px table inside a ~402px viewport;
-    // neither whileElement().scroll nor scrollTo('right') reveals it.
     it('MM-T4899_2 - should be able to display markdown table with long text wrapped properly', async () => {
         // # Open a channel screen and post a markdown table with long text
         const markdownTable =
@@ -115,9 +112,6 @@ describe('Messaging - Markdown Table', () => {
 
         // Android pushes the right-side columns beyond the viewport, so scroll the table
         // horizontally until the right header and row become visible.
-        // Skip iOS (SEC-11012): expanded-table horizontal scroll cannot reveal the right
-        // column — content sits at x≈392 in a 581px table inside a ~402px viewport, and
-        // neither whileElement().scroll nor scrollTo('right') reveals it.
         if (!isIos()) {
             await waitFor(element(by.text('Right header that wraps'))).toBeVisible(50).whileElement(by.id(TableScreen.testID.tableScrollView)).scroll(150, 'right');
             await waitFor(element(by.text('Right text that wraps row'))).toBeVisible(50).whileElement(by.id(TableScreen.testID.tableScrollView)).scroll(150, 'right');

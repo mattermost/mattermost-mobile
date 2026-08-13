@@ -1,12 +1,6 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-// Run with: cd detox && npx tsx --test e2e/support/utils/transport_retry.test.ts
-// Unit-tests the classification lock's transport-retry helpers without any Detox device,
-// simulator, or Mattermost server. The module under test is dependency-free, so this runs
-// under plain node via tsx. The retry delay is injected as 0ms so no test sleeps for real
-// (production delay of 2000ms is exercised only by the constants, never awaited here).
-
 import assert from 'node:assert/strict';
 import {describe, it} from 'node:test';
 

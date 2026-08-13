@@ -261,7 +261,6 @@ describe('Search - Pinned Messages', () => {
         await ChannelScreen.back();
     });
 
-    // Unskipped: Saved Messages unmounts on blur so the list re-reads preferences.
     it('MM-T4918_5 - should be able to save/unsave a pinned message from pinned messages screen', async () => {
         // # Open a channel screen, post a message, open post options for message, tap on pin to channel option, open channel info screen, and open pinned messages screen
         const message = `Message ${getRandomId()}`;

@@ -110,9 +110,6 @@ describe('Messaging - Message Reply', () => {
         await ThreadScreen.back();
     });
 
-    // Unskipped Android (SEC-11014): openPostOptionsFor already scrolls + long-presses the
-    // inner text on Android. Channel-list entry only needs the post to exist before tap —
-    // toBeVisible() was failing the default threshold while the post was on screen.
     it('MM-T4785_3 - should not have reply option available on reply thread post options', async () => {
         // # Open a channel screen, post a message, and tap on the post
         const message = `Message ${getRandomId()}`;

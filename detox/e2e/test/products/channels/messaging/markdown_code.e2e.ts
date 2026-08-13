@@ -48,8 +48,6 @@ describe('Messaging - Markdown Code', () => {
         await HomeScreen.logout();
     });
 
-    // Unskipped iOS (SEC-11012): cold-app "Unable to scroll up" is non-fatal — same try/catch
-    // pattern as MM-T4895_2. Assertion is toExist(), so a no-op scroll is fine.
     it('MM-T4895_1 - should be able to display markdown code block', async () => {
         // # Open a channel screen and post a markdown code block
         const line1 = 'let x = 10;';

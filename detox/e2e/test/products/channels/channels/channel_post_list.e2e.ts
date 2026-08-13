@@ -57,8 +57,6 @@ describe('Channels - Channel Post List', () => {
         await expect(ChannelScreen.backButton).toExist();
         await expect(ChannelScreen.headerTitle).toHaveText(testChannel.display_name);
 
-        // Intro is ListFooterComponent on an inverted list — it mounts after the initial
-        // fetch (MM-T4731_2 waits 10s) and can sit above the viewport when a join post exists.
         if (isIos()) {
             await device.disableSynchronization();
             try {
@@ -97,8 +95,6 @@ describe('Channels - Channel Post List', () => {
         await attachmentAction.tap();
 
         // * Verify file attachment options and its items are visible
-        // Note: The generic bottom sheet wrapper does not receive a testID, so there is no
-        // 'attachment_action.screen' element — verify presence via the first list item instead.
         await waitForElementToExist(element(by.id('file_attachment.photo_library')), timeouts.TEN_SEC);
         await expect(element(by.id('file_attachment.take_photo'))).toExist();
         await expect(element(by.id('file_attachment.take_video'))).toExist();

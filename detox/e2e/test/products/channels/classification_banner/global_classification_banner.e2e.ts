@@ -85,13 +85,6 @@ describe('Classification Banner - Global Classification Banner', () => {
         await Properties.apiCleanupClassification(siteOneUrl);
     });
 
-    // MM-T6196_1 ("should not render the banner when the feature flag is off") was removed
-    // when the suite stopped unsetting the shared feature flag. Its assertion — no banner
-    // rendered — is already covered by MM-T6200_1 (no classification value set) and
-    // MM-T6205_1 (classification removed), and the flag-off path specifically is asserted by
-    // MM-T6204_1 below. Keeping it would have required flipping global config mid-suite,
-    // which is the defect this file's invariant exists to prevent.
-
     it('MM-T6197_1 - should render the banner on the channel list screen when classification is configured', async () => {
         await Properties.apiSetupClassificationWithBanner(siteOneUrl, {
             levelId: 'lvltopsecret00000000000000',

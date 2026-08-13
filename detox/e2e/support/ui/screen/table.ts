@@ -23,13 +23,6 @@ class TableScreen {
     };
 
     back = async () => {
-        // SEC-11012 / SEC-10993: the table screen is pushed over the channel, so
-        // navigation.header.back matches both the table header (topmost, higher
-        // index) and the stale channel header expo-router keeps mounted off-screen.
-        // Tap the topmost index first, fall back to the base, then the native label —
-        // via the shared NavigationHeader.tapBackButton helper (SEC-10993) so the
-        // matcher is index-qualified and fresh per attempt (chaining atIndex on the
-        // shared backButton mutates it).
         try {
             await NavigationHeader.tapBackButton(1);
         } catch {

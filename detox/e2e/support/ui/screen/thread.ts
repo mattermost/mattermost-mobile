@@ -120,10 +120,6 @@ class ThreadScreen {
 
     back = async () => {
         await waitForElementToExist(this.backButton, timeouts.TEN_SEC);
-
-        // Thread is the pushed/topmost screen, so its header sits at the higher
-        // index when stacked over the channel. Prefer topmost via shared helper
-        // (SEC-10993 / SEC-11015) instead of hardcoding index 1 then 0.
         await NavigationHeader.tapTopmostBackButton();
         await waitFor(this.threadScreen).not.toBeVisible().withTimeout(timeouts.TEN_SEC);
 

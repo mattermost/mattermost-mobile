@@ -136,9 +136,6 @@ describe('Search - Search Message Post Actions', () => {
         await SearchMessagesScreen.close();
         await ChannelListScreen.toBeVisible();
     });
-
-    // Unskipped: wait for the flag on the server, then open Saved and retry a
-    // tab switch if the frozen Saved list has not painted the new preference yet.
     it('MM-T5294_11 - should be able to save/unsave a searched message from search results screen', async () => {
         // # Open a channel screen, post a message, go back to channel list screen, and open search messages screen
         const searchTerm = getRandomId();
@@ -170,8 +167,6 @@ describe('Search - Search Message Post Actions', () => {
         await SearchMessagesScreen.openPostOptionsFor(searchedPost.id, message);
         await PostOptionsScreen.unsavePostOption.tap();
 
-        // Confirm the server dropped the flag before opening the screen, otherwise it can
-        // render the stale saved list.
         await Post.waitForPostUnflagged(siteOneUrl, testUser.id, searchedPost.id);
         await SavedMessagesScreen.open();
 

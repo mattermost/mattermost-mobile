@@ -7,16 +7,6 @@
 // - Use element testID when selecting an element. Create one if none.
 // *******************************************************************
 
-/**
- * Test Cases Included:
- * - MM-T3195: RN apps Add members to channel
- * - MM-T856: Add existing users to public channel from drop-down Add Members
- * - MM-T3196: RN apps Manage members in channel
- * - MM-T3204: RN apps Add user to private channel
- * - MM-T3205: RN apps Remove user from private channel
- * - MM-T878: RN apps View Members in GM
- */
-
 import {Channel, Setup, Team, User} from '@support/server_api';
 import {
     serverOneUrl,
@@ -190,11 +180,6 @@ describe('Channels', () => {
 
         // # Search and add user
         await AddMembersScreen.searchAndAddUser(newUser.username, newUser.id);
-
-        // With expo-router, tapping "Add Members" pops AddMembersScreen one level back to
-        // Channel Info (its navigation parent). RNN used to pop all the way to Channel.
-        // Close Channel Info explicitly before verifying the system message, following the
-        // same pattern used in MM-T3196 / MM-T3205 after ManageChannelMembersScreen.
         await ChannelInfoScreen.close();
 
         // * Verify user added system message appears
