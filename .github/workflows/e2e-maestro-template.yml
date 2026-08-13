@@ -237,8 +237,8 @@ jobs:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           retest-on-fail: "false"
           retest-budget: "0"
-          lease-timeout-ms: "3600000"
-          idle-timeout-ms: "5400000"
+          lease-timeout-ms: "3600000" # 1h
+          idle-timeout-ms: "5400000" # 1.5h
 
       - name: Begin summary
         env:
