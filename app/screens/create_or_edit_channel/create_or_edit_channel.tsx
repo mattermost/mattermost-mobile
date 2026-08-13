@@ -132,7 +132,6 @@ const CreateOrEditChannel = ({
             return;
         }
 
-        setCanSave(false);
         const createdChannel = await createChannel(serverUrl, displayName, purpose, header, type);
         if (createdChannel.error) {
             dispatch({
@@ -166,7 +165,6 @@ const CreateOrEditChannel = ({
             },
         };
 
-        setCanSave(false);
         const patchedChannel = await handlePatchChannel(serverUrl, channel.id, patchChannel);
         if (patchedChannel.error) {
             dispatch({
@@ -179,6 +177,8 @@ const CreateOrEditChannel = ({
         close();
     }, [channel, isValidDisplayName, header, displayName, purpose, serverUrl]);
 
+    const createEnabled = canSave && !appState.saving;
+
     useEffect(() => {
         const buttonText = editing ? formatMessage({id: 'mobile.edit_channel', defaultMessage: 'Save'}) : formatMessage({id: 'mobile.create_channel', defaultMessage: 'Create'});
         navigation.setOptions({
@@ -187,12 +187,12 @@ const CreateOrEditChannel = ({
                     onPress={editing ? onUpdateChannel : onCreateChannel}
                     text={buttonText}
                     testID={editing ? 'create_or_edit_channel.save.button' : 'create_or_edit_channel.create.button'}
-                    color={canSave ? theme.sidebarHeaderTextColor : changeOpacity(theme.sidebarHeaderTextColor, 0.5)}
-                    disabled={!canSave}
+                    color={createEnabled ? theme.sidebarHeaderTextColor : changeOpacity(theme.sidebarHeaderTextColor, 0.5)}
+                    disabled={!createEnabled}
                 />
             ),
         });
-    }, [editing, formatMessage, navigation, onUpdateChannel, onCreateChannel, canSave, theme.sidebarHeaderTextColor]);
+    }, [editing, formatMessage, navigation, onUpdateChannel, onCreateChannel, createEnabled, theme.sidebarHeaderTextColor]);
 
     useEffect(() => {
         setCanSave(
