@@ -175,6 +175,16 @@ describe('Messaging - At-Mention', () => {
         const {user: outOfChannelUser} = await User.apiCreateUser(siteOneUrl);
         await Team.apiAddUserToTeam(siteOneUrl, outOfChannelUser.id, testTeam.id);
 
+        // Wait until autocomplete returns the user. A search before the index
+        // catches up caches an empty result and never retries that term.
+        await User.waitForUserInAutocomplete(siteOneUrl, {
+            teamId: testTeam.id,
+            channelId: testChannel.id,
+            userId: outOfChannelUser.id,
+            name: outOfChannelUser.username,
+            timeoutMs: timeouts.HALF_MIN,
+        });
+
         // # Open a channel screen and set "@" + full username in one update.
         await ChannelScreen.open(channelsCategory, testChannel.name);
         await ChannelScreen.postInput.tap();
