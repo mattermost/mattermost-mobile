@@ -326,6 +326,7 @@ describe('Channels - Channel Bookmarks', () => {
         await ChannelBookmarkScreen.runUnsynchronized(async () => {
             await linkInput.tap();
             await linkInput.typeText('https://example.com');
+
             // Let the OG debounce start, then wait it out so save uses a settled bookmark
             // (link_url set, image_url already normalized) instead of a mid-fetch payload.
             await wait(timeouts.ONE_SEC);
