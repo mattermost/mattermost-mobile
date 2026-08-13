@@ -261,7 +261,7 @@ describe('Search - Pinned Messages', () => {
         await ChannelScreen.back();
     });
 
-    // Unskipped: Saved Messages re-subscribes on focus + observeSavedPostIds uses full observe().
+    // Unskipped: Saved Messages page object remounts the freezeOnBlur tab when needed.
     it('MM-T4918_5 - should be able to save/unsave a pinned message from pinned messages screen', async () => {
         // # Open a channel screen, post a message, open post options for message, tap on pin to channel option, open channel info screen, and open pinned messages screen
         const message = `Message ${getRandomId()}`;
@@ -291,8 +291,7 @@ describe('Search - Pinned Messages', () => {
         await SavedMessagesScreen.open();
 
         // * Verify pinned message is displayed on saved messages screen
-        const {postListPostItem} = SavedMessagesScreen.getPostListPostItem(pinnedPost.id, message);
-        await expect(postListPostItem).toBeVisible();
+        await SavedMessagesScreen.waitForPostInList(pinnedPost.id, message);
 
         // # Go back to pinned messages screen, open post options for pinned message, tap on unsave option, go back to channel list screen, and open saved messages screen
         await ChannelListScreen.open();

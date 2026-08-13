@@ -219,14 +219,24 @@ describe('Messaging - Pin and Unpin Message', () => {
         await ChannelScreen.open(channelsCategory, testChannel.name);
 
         // The "X pinned a message" system post pushes newerPost2 under the input bar on iOS 26.x.
-        // Scroll it back into a partial-visible area (40% — 75% was timing out on CI SEC-11013).
-        try {
-            await waitFor(newerPost2Item).
-                toBeVisible(40).
-                whileElement(by.id('channel.post_list.flat_list')).
-                scroll(100, 'up', 0.5, 0.5);
-        } catch {
-            // List may be too short to scroll — assert directly.
+        // Bounded scroll only — whileElement().scroll can hang until Jest's 300s cap (CI 31576979897 / MM-T142).
+        let newerVisible = false;
+        /* eslint-disable no-await-in-loop -- bounded scroll until visible or attempts exhausted */
+        for (let i = 0; i < 12; i++) {
+            try {
+                await waitFor(newerPost2Item).toBeVisible(40).withTimeout(timeouts.TWO_SEC);
+                newerVisible = true;
+                break;
+            } catch {
+                try {
+                    await element(by.id('channel.post_list.flat_list')).scroll(100, 'up', 0.5, 0.5);
+                } catch {
+                    break;
+                }
+            }
+        }
+        /* eslint-enable no-await-in-loop */
+        if (!newerVisible) {
             await expect(newerPost2Item).toBeVisible(40);
         }
 

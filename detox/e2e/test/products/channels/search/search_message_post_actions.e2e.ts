@@ -137,7 +137,7 @@ describe('Search - Search Message Post Actions', () => {
         await ChannelListScreen.toBeVisible();
     });
 
-    // Unskipped: Saved Messages re-subscribes on focus + observeSavedPostIds uses full observe().
+    // Unskipped: Saved Messages page object remounts the freezeOnBlur tab when needed.
     it('MM-T5294_11 - should be able to save/unsave a searched message from search results screen', async () => {
         // # Open a channel screen, post a message, go back to channel list screen, and open search messages screen
         const searchTerm = getRandomId();
@@ -162,8 +162,7 @@ describe('Search - Search Message Post Actions', () => {
         await SavedMessagesScreen.open();
 
         // * Verify searched message is displayed on saved messages screen
-        const {postListPostItem} = SavedMessagesScreen.getPostListPostItem(searchedPost.id, message);
-        await expect(postListPostItem).toBeVisible();
+        await SavedMessagesScreen.waitForPostInList(searchedPost.id, message);
 
         // # Go back to searched messages screen, open post options for searched message, tap on unsave option, and open saved messages screen
         await SearchMessagesScreen.open();

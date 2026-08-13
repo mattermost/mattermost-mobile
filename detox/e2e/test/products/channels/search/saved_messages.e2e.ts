@@ -75,8 +75,8 @@ describe('Search - Saved Messages', () => {
         await SavedMessagesScreen.close();
     });
 
-    // Unskipped: Saved Messages re-subscribes on focus + observeSavedPostIds uses full
-    // observe() so preference CREATE/DELETE emits (tracker PE fix).
+    // Unskipped: page object remounts the freezeOnBlur tab when Detox JSI
+    // does not notify the mount-time saved-preference query.
     it('MM-T4910_2 - should be able to display a saved message in saved messages screen and navigate to message channel', async () => {
         // # Open a channel screen, post a message, open post options for message, and tap on save option
         const message = `Message ${getRandomId()}`;
@@ -120,7 +120,8 @@ describe('Search - Saved Messages', () => {
         await SavedMessagesScreen.close();
     });
 
-    // Unskipped: Saved Messages re-subscribes on focus + observeSavedPostIds uses full observe().
+    // Unskipped: page object remounts the freezeOnBlur tab when Detox JSI
+    // does not notify the mount-time saved-preference query.
     it('MM-T4910_3 - should be able to edit, reply to, and delete a saved message from saved messages screen', async () => {
         // # Open a channel screen, post a message, open post options for message, tap on save option, go back to channel list screen, and open saved messages screen
         const message = `Message ${getRandomId()}`;
@@ -194,7 +195,8 @@ describe('Search - Saved Messages', () => {
         await SavedMessagesScreen.close();
     });
 
-    // Unskipped: Saved Messages re-subscribes on focus + observeSavedPostIds uses full observe().
+    // Unskipped: page object remounts the freezeOnBlur tab when Detox JSI
+    // does not notify the mount-time saved-preference query.
     it('MM-T4910_4 - should be able to unsave a message from saved messages screen', async () => {
         // # Open a channel screen, post a message, open post options for message, tap on save option, go back to channel list screen, and open saved messages screen
         const message = `Message ${getRandomId()}`;
@@ -228,7 +230,8 @@ describe('Search - Saved Messages', () => {
         await SavedMessagesScreen.close();
     });
 
-    // Unskipped: Saved Messages re-subscribes on focus + observeSavedPostIds uses full observe().
+    // Unskipped: page object remounts the freezeOnBlur tab when Detox JSI
+    // does not notify the mount-time saved-preference query.
     it('MM-T4910_5 - should be able to pin/unpin a saved message from saved messages screen', async () => {
         // # Open a channel screen, post a message, open post options for message, tap on save option, go back to channel list screen, and open saved messages screen
         const message = `Message ${getRandomId()}`;

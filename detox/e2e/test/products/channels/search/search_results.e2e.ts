@@ -250,8 +250,7 @@ describe('Search - Result Interactions', () => {
         await SavedMessagesScreen.toBeVisible();
 
         // * Verify the message appears in Saved Messages (without search highlighting context)
-        const {postListPostItem: savedPostItem} = SavedMessagesScreen.getPostListPostItem(searchedPostId, message);
-        await waitForElementToBeVisible(savedPostItem, timeouts.HALF_MIN);
+        await SavedMessagesScreen.waitForPostInList(searchedPostId, message);
 
         // # Unsave the post to clean up, then go back to channel list
         await SavedMessagesScreen.openPostOptionsFor(searchedPostId, message);

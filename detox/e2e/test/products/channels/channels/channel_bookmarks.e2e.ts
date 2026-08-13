@@ -121,7 +121,14 @@ describe('Channels - Channel Bookmarks', () => {
                 await waitFor(displayNameEl).toExist().withTimeout(timeouts.FOUR_SEC);
             }
 
-            await displayNameEl.tap();
+            // CI 31576979897 / MM-T69455_1: list-edge rows can be ~40% visible (visible height ~10 of 24).
+            // Default center tap aims below the clip and fails "not hittable at its visible point".
+            // Tap near the top of the label (still inside the visible strip) on iOS; Android uses full tap.
+            if (isIos()) {
+                await displayNameEl.tap({x: 20, y: 2});
+            } else {
+                await displayNameEl.tap();
+            }
         } finally {
             if (isIos()) {
                 await safeEnableSynchronization();

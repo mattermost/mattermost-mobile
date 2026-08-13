@@ -10,7 +10,7 @@ import {
     PostOptionsScreen,
 } from '@support/ui/screen';
 import {isAndroid, longPressWithRetry, scrollElementIntoView, timeouts, wait, waitForElementToExist, waitForElementToNotExist} from '@support/utils';
-import {expect, waitFor} from 'detox';
+import {by, expect, waitFor} from 'detox';
 
 class SavedMessagesScreen {
     testID = {
@@ -72,32 +72,29 @@ class SavedMessagesScreen {
         await wait(timeouts.TWO_SEC);
     };
 
-    // Poll for a saved post row, refreshing the tab when the fetch lags (CI
-    // 28416284905 MM-T4910_2: row missing after 10s despite a successful save).
+    // freezeOnBlur keeps this tab mounted after the first visit. Detox debug
+    // JSI often does not notify the mount-time preference query, so leaving
+    // and returning does not rebuild the list. Reload remounts withObservables
+    // against current SQLite (same pattern as channel_bookmarks / classification).
+    remount = async () => {
+        await device.reloadReactNative();
+        await waitFor(element(by.id('channel_list.screen'))).toExist().withTimeout(timeouts.TWENTY_SEC);
+        await waitFor(HomeScreen.savedMessagesTab).toExist().withTimeout(timeouts.TEN_SEC);
+        await HomeScreen.savedMessagesTab.tap();
+        await this.toBeVisible();
+    };
+
+    // Poll for a saved post row. If the freezeOnBlur tab still shows the
+    // mount-time list, remount once so withObservables re-reads SQLite.
     waitForPostInList = async (postId: string, text: string) => {
         const {postListPostItem} = this.getPostListPostItem(postId, text);
 
-        // A saved post can still be missing from the flagged-posts index after three tab refreshes,
-        // so allow extra refreshes to give the server time to index it.
-        const MAX_REFETCHES = 5;
-
-        /* eslint-disable no-await-in-loop -- poll before each tab refresh */
-        for (let attempt = 1; attempt <= MAX_REFETCHES; attempt++) {
-            try {
-                await waitFor(postListPostItem).toExist().withTimeout(timeouts.TEN_SEC);
-                return;
-            } catch (e) {
-                if (attempt === MAX_REFETCHES) {
-                    throw e;
-                }
-
-                await HomeScreen.channelListTab.tap();
-                await wait(timeouts.ONE_SEC);
-                await HomeScreen.savedMessagesTab.tap();
-                await this.toBeVisible();
-            }
+        try {
+            await waitFor(postListPostItem).toExist().withTimeout(timeouts.TEN_SEC);
+        } catch {
+            await this.remount();
+            await waitFor(postListPostItem).toExist().withTimeout(timeouts.TEN_SEC);
         }
-        /* eslint-enable no-await-in-loop */
     };
 
     ensurePostVisible = async (postId: string, text: string) => {
@@ -135,25 +132,13 @@ class SavedMessagesScreen {
 
     verifyPostUnsaved = async (postId: string) => {
         const postListPostItem = element(by.id(`${this.postList.testID.postListPostItem}.${postId}`));
-        const MAX_REFETCHES = 3;
 
-        /* eslint-disable no-await-in-loop -- poll for row removal before each tab refresh */
-        for (let attempt = 1; attempt <= MAX_REFETCHES; attempt++) {
-            try {
-                await waitFor(postListPostItem).not.toExist().withTimeout(timeouts.TEN_SEC);
-                return;
-            } catch (e) {
-                if (attempt === MAX_REFETCHES) {
-                    throw e;
-                }
-
-                await HomeScreen.channelListTab.tap();
-                await wait(timeouts.ONE_SEC);
-                await HomeScreen.savedMessagesTab.tap();
-                await this.toBeVisible();
-            }
+        try {
+            await waitFor(postListPostItem).not.toExist().withTimeout(timeouts.TEN_SEC);
+        } catch {
+            await this.remount();
+            await waitFor(postListPostItem).not.toExist().withTimeout(timeouts.TEN_SEC);
         }
-        /* eslint-enable no-await-in-loop */
     };
 
     hasPostMessage = async (postId: string, postMessage: string) => {

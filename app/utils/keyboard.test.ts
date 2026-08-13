@@ -6,12 +6,8 @@ import {KeyboardController} from 'react-native-keyboard-controller';
 
 import {dismissKeyboard, isKeyboardVisible} from './keyboard';
 
-let mockIsEdgeToEdge = false;
-
 jest.mock('@constants/device', () => ({
-    get isEdgeToEdge() {
-        return mockIsEdgeToEdge;
-    },
+    isEdgeToEdge: false,
 }));
 
 jest.mock('react-native-keyboard-controller', () => ({
@@ -20,10 +16,6 @@ jest.mock('react-native-keyboard-controller', () => ({
         isVisible: jest.fn(() => false),
     },
 }));
-
-beforeEach(() => {
-    mockIsEdgeToEdge = false;
-});
 
 describe('dismissKeyboard', () => {
     beforeEach(() => {
@@ -43,12 +35,15 @@ describe('dismissKeyboard', () => {
     });
 
     it('should call KeyboardController.dismiss with animated=false on edge-to-edge', async () => {
-        mockIsEdgeToEdge = true;
+        const deviceModule = require('@constants/device');
+        deviceModule.isEdgeToEdge = true;
 
         await dismissKeyboard();
 
         expect(KeyboardController.dismiss).toHaveBeenCalledWith({animated: false});
         expect(Keyboard.dismiss).not.toHaveBeenCalled();
+
+        deviceModule.isEdgeToEdge = false;
     });
 });
 
@@ -66,10 +61,13 @@ describe('isKeyboardVisible', () => {
     });
 
     it('should return KeyboardController.isVisible() on edge-to-edge', () => {
-        mockIsEdgeToEdge = true;
+        const deviceModule = require('@constants/device');
+        deviceModule.isEdgeToEdge = true;
         jest.mocked(KeyboardController.isVisible).mockReturnValue(true);
 
         expect(isKeyboardVisible()).toBe(true);
         expect(KeyboardController.isVisible).toHaveBeenCalledTimes(1);
+
+        deviceModule.isEdgeToEdge = false;
     });
 });

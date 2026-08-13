@@ -148,7 +148,7 @@ describe('Search - Recent Mentions', () => {
         await ChannelListScreen.open();
     });
 
-    // Unskipped: Saved Messages re-subscribes on focus + observeSavedPostIds uses full observe().
+    // Unskipped: Saved Messages page object remounts the freezeOnBlur tab when needed.
     it('MM-T4909_4 - should be able to save/unsave a recent mention from recent mentions screen', async () => {
         // # Open recent mentions screen
         await RecentMentionsScreen.open();
@@ -162,8 +162,7 @@ describe('Search - Recent Mentions', () => {
         await SavedMessagesScreen.open();
 
         // * Verify mention appears on saved messages screen
-        const {postListPostItem} = SavedMessagesScreen.getPostListPostItem(mentionPost.id, mentionPost.messageText);
-        await expect(postListPostItem).toBeVisible();
+        await SavedMessagesScreen.waitForPostInList(mentionPost.id, mentionPost.messageText);
 
         // # Unsave: back to recent mentions, open post options, tap Unsave
         await RecentMentionsScreen.open();

@@ -89,8 +89,7 @@ describe('Smoke Test - Search', () => {
 
         // * Verify on saved messages screen and saved message is displayed
         await SavedMessagesScreen.toBeVisible();
-        const {postListPostItem} = SavedMessagesScreen.getPostListPostItem(post.id, message);
-        await expect(postListPostItem).toBeVisible();
+        await SavedMessagesScreen.waitForPostInList(post.id, message);
 
         // # Go back to channel list screen
         await ChannelListScreen.open();
