@@ -12,11 +12,11 @@ import {PLAYBOOK_TABLES} from '@playbooks/constants/database';
 import {getCurrentChannelId} from '@queries/servers/system';
 import EphemeralStore from '@store/ephemeral_store';
 import {NavigationStore} from '@store/navigation_store';
+import TestHelper from '@test/test_helper';
 import {logError} from '@utils/log';
 
 import {autoCacheCleanup} from './cleanup';
 
-import type AiThreadModel from '@agents/types/database/models/ai_thread';
 import type ServerDataOperator from '@database/operator/server_data_operator';
 import type {Database} from '@nozbe/watermelondb';
 import type PostsInChannelModel from '@typings/database/models/servers/posts_in_channel';
@@ -63,19 +63,19 @@ const CUTOFF = NOW - (86_400 * 1000); // 13_600_000
 const OLD = 1_000_000; // below CUTOFF
 const RECENT = NOW; // above CUTOFF
 
+const PLAYBOOK_SEED = {processChildren: true, keepFinishedRuns: true, prepareRecordsOnly: false} as const;
+
 let database: Database;
 let operator: ServerDataOperator;
 
-async function writePiC(channelId: string, earliest: number, latest: number): Promise<PostsInChannelModel> {
-    let record!: PostsInChannelModel;
+async function writePiC(channelId: string): Promise<void> {
     await database.write(async () => {
-        record = await database.get<PostsInChannelModel>(POSTS_IN_CHANNEL).create((r) => {
+        await database.get<PostsInChannelModel>(POSTS_IN_CHANNEL).create((r) => {
             r.channelId = channelId;
-            r.earliest = earliest;
-            r.latest = latest;
+            r.earliest = OLD;
+            r.latest = RECENT;
         });
     });
-    return record;
 }
 
 async function writePost(id: string, channelId: string, createAt: number): Promise<void> {
@@ -97,34 +97,6 @@ async function writePost(id: string, channelId: string, createAt: number): Promi
             r.type = '';
             r.updateAt = 0;
             r.userId = '';
-        });
-    });
-}
-
-async function writeAiThread(id: string, updateAt: number): Promise<void> {
-    await database.write(async () => {
-        await database.get<AiThreadModel>(AI_THREAD).create((r) => {
-            r._raw.id = id;
-            r.channelId = 'bot-dm';
-            r.message = '';
-            r.title = '';
-            r.replyCount = 0;
-            r.updateAt = updateAt;
-        });
-    });
-}
-
-async function writePlaybookRun(id: string, createAt: number): Promise<void> {
-    await database.write(async () => {
-        const run = await database.get(PLAYBOOK_RUN).create((r: any) => {
-            r._raw.id = id;
-            r.createAt = createAt;
-        });
-        const checklist = await database.get(PLAYBOOK_CHECKLIST).create((r: any) => {
-            r.runId = run.id;
-        });
-        await database.get(PLAYBOOK_CHECKLIST_ITEM).create((r: any) => {
-            r.checklistId = checklist.id;
         });
     });
 }
@@ -176,7 +148,7 @@ describe('autoCacheCleanup', () => {
     });
 
     it('skips a concurrent invocation for the same server while a run is in flight', async () => {
-        await writePiC('ch-concurrent', OLD, RECENT);
+        await writePiC('ch-concurrent');
 
         const [, second] = await Promise.all([autoCacheCleanup(SERVER_URL), autoCacheCleanup(SERVER_URL)]);
 
@@ -190,7 +162,7 @@ describe('autoCacheCleanup', () => {
             systems: [{id: SYSTEM_IDENTIFIERS.LAST_AUTO_CACHE_CLEANUP_RUN, value: new Date().getTime()}],
             prepareRecordsOnly: false,
         });
-        await writePiC('ch-already-ran', OLD, RECENT);
+        await writePiC('ch-already-ran');
 
         const result = await autoCacheCleanup(SERVER_URL);
 
@@ -200,7 +172,6 @@ describe('autoCacheCleanup', () => {
 
     it('does not call getCurrentChannelId when the channel screen is not in the navigation stack', async () => {
         jest.spyOn(DatabaseManager, 'getActiveServerUrl').mockResolvedValue(SERVER_URL);
-        jest.mocked(NavigationStore.getScreensInStack).mockReturnValue([]);
 
         await autoCacheCleanup(SERVER_URL);
 
@@ -213,8 +184,8 @@ describe('autoCacheCleanup', () => {
         jest.spyOn(DatabaseManager, 'getActiveServerUrl').mockResolvedValue(SERVER_URL);
         jest.mocked(NavigationStore.getScreensInStack).mockReturnValue([Screens.CHANNEL]);
         jest.mocked(getCurrentChannelId).mockResolvedValue(viewedChannelId);
-        await writePiC(viewedChannelId, OLD, RECENT);
-        await writePiC(unprotectedChannelId, OLD, RECENT);
+        await writePiC(viewedChannelId);
+        await writePiC(unprotectedChannelId);
 
         await autoCacheCleanup(SERVER_URL);
 
@@ -232,7 +203,7 @@ describe('autoCacheCleanup', () => {
         jest.spyOn(DatabaseManager, 'getActiveServerUrl').mockResolvedValue(SERVER_URL);
         jest.mocked(NavigationStore.getScreensInStack).mockReturnValue([Screens.CHANNEL]);
         jest.mocked(getCurrentChannelId).mockResolvedValue(viewedChannelId);
-        await writePiC(viewedChannelId, OLD, RECENT);
+        await writePiC(viewedChannelId);
 
         await autoCacheCleanup(SERVER_URL);
 
@@ -258,7 +229,7 @@ describe('autoCacheCleanup', () => {
                 writePost(`post-${idx + 1}`, viewedChannelId, OLDEST_VISIBLE - ((idx + 1) * 105)),
             ),
         );
-        await writePiC(viewedChannelId, OLD, RECENT);
+        await writePiC(viewedChannelId);
 
         await autoCacheCleanup(SERVER_URL);
 
@@ -283,7 +254,7 @@ describe('autoCacheCleanup', () => {
                 writePost(`post-few-${idx + 1}`, viewedChannelId, (CUTOFF + 500) - ((idx + 1) * 10)),
             ),
         );
-        await writePiC(viewedChannelId, OLD, RECENT);
+        await writePiC(viewedChannelId);
 
         await autoCacheCleanup(SERVER_URL);
 
@@ -298,12 +269,12 @@ describe('autoCacheCleanup', () => {
         jest.spyOn(DatabaseManager, 'getActiveServerUrl').mockResolvedValue(SERVER_URL);
         jest.mocked(NavigationStore.getScreensInStack).mockReturnValue([Screens.CHANNEL]);
         jest.mocked(getCurrentChannelId).mockResolvedValue(viewedChannelId);
-        await writePiC('ch-other-with-pic', OLD, RECENT);
+        await writePiC('ch-other-with-pic');
 
         await autoCacheCleanup(SERVER_URL);
 
         const calls = jest.mocked(LocalPost.deletePostsInChannelsByCutoff).mock.calls;
-        expect(calls.some((c) => (c[1] as string[]).includes(viewedChannelId))).toBe(false);
+        expect(calls.some((c) => c[1].includes(viewedChannelId))).toBe(false);
     });
 
     it('adds the open thread root to excluded IDs and skips the thread-parent-channel delete when it has no PostsInChannel row', async () => {
@@ -312,10 +283,10 @@ describe('autoCacheCleanup', () => {
         jest.spyOn(DatabaseManager, 'getActiveServerUrl').mockResolvedValue(SERVER_URL);
         jest.mocked(EphemeralStore.getCurrentThreadId).mockReturnValue(rootId);
 
-        await writePost(rootId, threadParentChannelId, OLD + 500);
+        await writePost(rootId, threadParentChannelId, OLD);
 
         // needs a PiC row so deletePostsInChannelsByCutoff is actually invoked
-        await writePiC('ch-other', OLD, RECENT);
+        await writePiC('ch-other');
 
         await autoCacheCleanup(SERVER_URL);
 
@@ -325,7 +296,7 @@ describe('autoCacheCleanup', () => {
         expect(excluded).toContain(rootId);
 
         // threadParentChannelId has no PiC row, so its channel-specific call is skipped
-        expect(calls.some((c) => (c[1] as string[]).includes(threadParentChannelId))).toBe(false);
+        expect(calls.some((c) => c[1].includes(threadParentChannelId))).toBe(false);
     });
 
     it('protects the thread-parent channel down to the root create_at when fewer than BUFFER posts precede the root', async () => {
@@ -337,7 +308,7 @@ describe('autoCacheCleanup', () => {
 
         // no posts precede the root in this channel → createAtOfNthPostOlderThan returns undefined
         await writePost(rootId, threadParentChannelId, rootCreateAt);
-        await writePiC(threadParentChannelId, OLD, RECENT);
+        await writePiC(threadParentChannelId);
 
         await autoCacheCleanup(SERVER_URL);
 
@@ -359,7 +330,7 @@ describe('autoCacheCleanup', () => {
         // oldest-visible left at 0 (falsy) so viewedChannelLimit stays Infinity and can't
         // provide the protection on its own — only the thread-parent floor can.
         await writePost(rootId, sharedChannelId, rootCreateAt);
-        await writePiC(sharedChannelId, OLD, RECENT);
+        await writePiC(sharedChannelId);
 
         await autoCacheCleanup(SERVER_URL);
 
@@ -373,7 +344,7 @@ describe('autoCacheCleanup', () => {
         const filePostId = 'file-post-id';
         jest.spyOn(DatabaseManager, 'getActiveServerUrl').mockResolvedValue(SERVER_URL);
         jest.mocked(EphemeralStore.getCurrentFileViewerPostId).mockReturnValue(filePostId);
-        await writePiC('ch-file', OLD, RECENT);
+        await writePiC('ch-file');
 
         await autoCacheCleanup(SERVER_URL);
 
@@ -399,7 +370,7 @@ describe('autoCacheCleanup', () => {
     it('reports the error when the unprotected-channels delete call returns an error', async () => {
         jest.mocked(LocalPost.deletePostsInChannelsByCutoff).mockResolvedValueOnce({error: new Error('cleanup failed')});
 
-        await writePiC('ch-err', OLD, RECENT);
+        await writePiC('ch-err');
 
         const result = await autoCacheCleanup(SERVER_URL);
 
@@ -413,7 +384,7 @@ describe('autoCacheCleanup', () => {
         jest.mocked(NavigationStore.getScreensInStack).mockReturnValue([Screens.CHANNEL]);
         jest.mocked(getCurrentChannelId).mockResolvedValue(viewedChannelId);
 
-        await writePiC(viewedChannelId, OLD, RECENT);
+        await writePiC(viewedChannelId);
         jest.mocked(LocalPost.deletePostsInChannelsByCutoff).mockResolvedValueOnce({error: new Error('viewed channel delete failed')});
 
         await autoCacheCleanup(SERVER_URL);
@@ -426,9 +397,9 @@ describe('autoCacheCleanup', () => {
         const threadParentChannelId = 'ch-thread-parent-err';
         jest.spyOn(DatabaseManager, 'getActiveServerUrl').mockResolvedValue(SERVER_URL);
         jest.mocked(EphemeralStore.getCurrentThreadId).mockReturnValue(rootId);
-        await writePost(rootId, threadParentChannelId, OLD + 500);
+        await writePost(rootId, threadParentChannelId, OLD);
 
-        await writePiC(threadParentChannelId, OLD, RECENT);
+        await writePiC(threadParentChannelId);
         jest.mocked(LocalPost.deletePostsInChannelsByCutoff).mockResolvedValueOnce({error: new Error('thread parent channel delete failed')});
 
         await autoCacheCleanup(SERVER_URL);
@@ -437,8 +408,13 @@ describe('autoCacheCleanup', () => {
     });
 
     it('deletes AI threads older than the cutoff and keeps newer ones', async () => {
-        await writeAiThread('ai-old', OLD);
-        await writeAiThread('ai-recent', RECENT);
+        await operator.handleAIThreads({
+            threads: [
+                TestHelper.fakeAiThread({id: 'ai-old', update_at: OLD}),
+                TestHelper.fakeAiThread({id: 'ai-recent', update_at: RECENT}),
+            ],
+            prepareRecordsOnly: false,
+        });
 
         await autoCacheCleanup(SERVER_URL);
 
@@ -449,8 +425,13 @@ describe('autoCacheCleanup', () => {
     it('spares the currently-viewed AI thread on the active server even when it is stale', async () => {
         jest.spyOn(DatabaseManager, 'getActiveServerUrl').mockResolvedValue(SERVER_URL);
         jest.mocked(EphemeralStore.getCurrentThreadId).mockReturnValue('open-ai-thread');
-        await writeAiThread('open-ai-thread', OLD);
-        await writeAiThread('other', OLD);
+        await operator.handleAIThreads({
+            threads: [
+                TestHelper.fakeAiThread({id: 'open-ai-thread', update_at: OLD}),
+                TestHelper.fakeAiThread({id: 'other', update_at: OLD}),
+            ],
+            prepareRecordsOnly: false,
+        });
 
         await autoCacheCleanup(SERVER_URL);
 
@@ -460,17 +441,25 @@ describe('autoCacheCleanup', () => {
 
     it('deletes all stale AI threads on a non-active server regardless of the viewed thread id', async () => {
         jest.mocked(EphemeralStore.getCurrentThreadId).mockReturnValue('open-ai-thread');
-        await writeAiThread('open-ai-thread', OLD);
+        await operator.handleAIThreads({
+            threads: [TestHelper.fakeAiThread({id: 'open-ai-thread', update_at: OLD})],
+            prepareRecordsOnly: false,
+        });
 
         await autoCacheCleanup(SERVER_URL);
 
-        const threads = await database.get(AI_THREAD).query().fetch();
-        expect(threads.length).toBe(0);
+        const ids = (await database.get(AI_THREAD).query().fetch()).map((r) => r.id);
+        expect(ids).toEqual([]);
     });
 
     it('deletes playbook runs created before the cutoff and keeps newer ones', async () => {
-        await writePlaybookRun('run-old', OLD);
-        await writePlaybookRun('run-recent', RECENT);
+        await operator.handlePlaybookRun({
+            runs: [
+                TestHelper.fakePlaybookRun({id: 'run-old', create_at: OLD, checklists: [TestHelper.fakePlaybookChecklist('run-old', {})]}),
+                TestHelper.fakePlaybookRun({id: 'run-recent', create_at: RECENT, checklists: [TestHelper.fakePlaybookChecklist('run-recent', {})]}),
+            ],
+            ...PLAYBOOK_SEED,
+        });
 
         await autoCacheCleanup(SERVER_URL);
 
@@ -481,8 +470,13 @@ describe('autoCacheCleanup', () => {
     it('spares the currently-viewed playbook run on the active server even when it is stale', async () => {
         jest.spyOn(DatabaseManager, 'getActiveServerUrl').mockResolvedValue(SERVER_URL);
         jest.mocked(EphemeralStore.getCurrentPlaybookRunId).mockReturnValue('open-run');
-        await writePlaybookRun('open-run', OLD);
-        await writePlaybookRun('other-run', OLD);
+        await operator.handlePlaybookRun({
+            runs: [
+                TestHelper.fakePlaybookRun({id: 'open-run', create_at: OLD, checklists: [TestHelper.fakePlaybookChecklist('open-run', {})]}),
+                TestHelper.fakePlaybookRun({id: 'other-run', create_at: OLD, checklists: [TestHelper.fakePlaybookChecklist('other-run', {})]}),
+            ],
+            ...PLAYBOOK_SEED,
+        });
 
         await autoCacheCleanup(SERVER_URL);
 
@@ -492,16 +486,22 @@ describe('autoCacheCleanup', () => {
 
     it('deletes all stale playbook runs on a non-active server regardless of the viewed run id', async () => {
         jest.mocked(EphemeralStore.getCurrentPlaybookRunId).mockReturnValue('open-run');
-        await writePlaybookRun('open-run', OLD);
+        await operator.handlePlaybookRun({
+            runs: [TestHelper.fakePlaybookRun({id: 'open-run', create_at: OLD, checklists: [TestHelper.fakePlaybookChecklist('open-run', {})]})],
+            ...PLAYBOOK_SEED,
+        });
 
         await autoCacheCleanup(SERVER_URL);
 
-        const runs = await database.get(PLAYBOOK_RUN).query().fetch();
-        expect(runs.length).toBe(0);
+        const ids = (await database.get(PLAYBOOK_RUN).query().fetch()).map((r) => r.id);
+        expect(ids).toEqual([]);
     });
 
     it('cascades deletion of a stale run to its checklists and checklist items', async () => {
-        await writePlaybookRun('run-old', OLD);
+        await operator.handlePlaybookRun({
+            runs: [TestHelper.fakePlaybookRun({id: 'run-old', create_at: OLD, checklists: [TestHelper.fakePlaybookChecklist('run-old', {})]})],
+            ...PLAYBOOK_SEED,
+        });
 
         await autoCacheCleanup(SERVER_URL);
 
