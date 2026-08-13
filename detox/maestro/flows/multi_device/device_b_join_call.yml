@@ -72,7 +72,6 @@ appId: ${MAESTRO_APP_ID}
       id: "users-list"
     timeout: 5000
 - takeScreenshot: calls-device-b-participants-visible
-
 # Leave intentionally omitted here for two-device orchestration:
 # device_a_verify_joined.yml runs on Device A while Device B is still on the call
 # screen, showing both participants. device_b_leave_call.yml handles cleanup after.
