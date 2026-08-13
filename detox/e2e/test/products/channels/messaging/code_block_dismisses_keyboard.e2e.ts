@@ -53,7 +53,7 @@ describe('Messaging - Code Block Dismisses Keyboard', () => {
     // Skip iOS: R1 product — Code preview back (NavigationHeader) not visible; Android uses pressBack
     (isIos() ? it.skip : it)('MM-T1433_1 - should dismiss keyboard when tapping a code block', async () => {
         // # Open channel and post a code block via the app UI.
-        // CI 31506724244: Post.apiCreatePost hung for the full 300s Jest budget with no
+        // Post.apiCreatePost can hang for the full Jest budget with no
         // response / no [client] log (silent TCP stall). UI send uses the app network stack
         // and keeps this suite moving when the Detox API client would otherwise wedge.
         const codeBlockMessage = '```\nconst x = 1;\n```';
@@ -85,7 +85,7 @@ describe('Messaging - Code Block Dismisses Keyboard', () => {
 
         // # Go back from Code preview screen to channel screen.
         // Code route uses custom NavigationHeader (headerBackTitle ''), so by.label('Back')
-        // never matches — CI 29935363789 MM-T1433 timed out on tapNativeBackButton.
+        // never matches — tapNativeBackButton timed out on this screen.
         if (isAndroid()) {
             await device.pressBack();
         } else {

@@ -163,8 +163,8 @@ appId: ${MAESTRO_APP_ID}
 # # Exercise the bookmark from the channel header bar.
 # openLink() uses tryOpenURL → external Safari / Chrome Custom Tab. That hand-off is
 # unreliable under Maestro on CI simulators/emulators (Android already avoided tap for
-# this reason; iOS CI 31506724244 failed waiting for draft notVisible after a successful
-# title tap — Safari never proved open, no bookmark-browser-opened screenshot). Prove
+# this reason; iOS can fail waiting for draft notVisible after a successful
+# title tap — Safari never proved open). Prove
 # interactivity via long-press → options sheet instead (same product path as handleLongPress).
 - waitForAnimationToEnd:
     timeout: 3000

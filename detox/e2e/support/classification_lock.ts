@@ -18,9 +18,9 @@ const DEFAULT_TIMEOUT_MS = timeouts.ONE_MIN * 20;
 const DEFAULT_TTL_MS = timeouts.ONE_MIN * 35;
 const DEFAULT_POLL_MS = timeouts.TWO_SEC;
 
-// A single transient network error used to abort the whole suite. CI run 31477831046 lost
-// all 10 tests of global_classification_banner to one `getaddrinfo ENOTFOUND` on the
-// runner: the spec either side of it passed against the same host, admin login succeeded
+// A single transient network error used to abort the whole suite. One
+// `getaddrinfo ENOTFOUND` on the runner lost all 10 tests of
+// global_classification_banner: the spec either side of it passed against the same host, admin login succeeded
 // one request earlier, the hostname still resolves, and no other shard saw it. The acquire
 // loop below already budgets 20 minutes, so spending a few seconds on retries costs nothing.
 // The retry loop itself lives in @support/utils/transport_retry (kept dependency-free and

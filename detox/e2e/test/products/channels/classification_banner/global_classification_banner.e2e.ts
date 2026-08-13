@@ -24,9 +24,9 @@ jest.setTimeout(timeouts.ONE_MIN * 30);
 // FeatureFlags.ClassificationMarkings is server-GLOBAL config and ~10 Detox shards share
 // each provisioned server (shard parity picks the server; see the "Rotate logical test
 // sites by shard" step in e2e-ios-template.yml). This suite used to flip the flag ~13
-// times, and PR #9926 run 31499667305 shows what that costs: machine-16 ran this suite and
-// machine-20 ran classification_banner_across_screens, both even shards so both on
-// SERVER_B, 20 seconds apart. machine-20 blocked ~13 minutes and then failed with
+// times. Concurrent even shards then collided: this suite and
+// classification_banner_across_screens both landed on SERVER_B, 20 seconds apart.
+// The other suite blocked ~13 minutes and then failed with
 // "FeatureFlagClassificationMarkings did not become true" — it needed the flag steadily on
 // while this suite was toggling it off.
 //
@@ -235,7 +235,7 @@ describe('Classification Banner - Global Classification Banner', () => {
         // The reload-and-retry that used to guard this assertion is gone with its cause:
         // it only existed because MM-T6204_1 turned ClassificationMarkings off immediately
         // before this test, so the first reload could race the client config catching up on
-        // re-enable (CI bc6df62). MM-T6204_1 now runs last and the flag is never off here.
+        // re-enable. MM-T6204_1 now runs last and the flag is never off here.
         await GlobalClassificationBanner.toBeVisible();
 
         await Properties.apiCleanupClassification(siteOneUrl);

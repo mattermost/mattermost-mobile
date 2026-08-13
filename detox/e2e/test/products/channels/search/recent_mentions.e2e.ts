@@ -148,7 +148,7 @@ describe('Search - Recent Mentions', () => {
         await ChannelListScreen.open();
     });
 
-    // Unskipped: Saved Messages page object remounts the freezeOnBlur tab when needed.
+    // Unskipped: Saved Messages unmounts on blur so the list re-reads preferences.
     it('MM-T4909_4 - should be able to save/unsave a recent mention from recent mentions screen', async () => {
         // # Open recent mentions screen
         await RecentMentionsScreen.open();
@@ -251,8 +251,8 @@ describe('Search - Recent Mentions', () => {
             updatedMessage,
         );
 
-        // Force a mentions refetch so the list shows the edited body (CI 59ec6ae
-        // matched /edit$/ against a stale row that never updated).
+        // Force a mentions refetch so the list shows the edited body
+        // (matched /edit$/ against a stale row that never updated).
         await RecentMentionsScreen.open();
         await RecentMentionsScreen.toBeVisible();
 

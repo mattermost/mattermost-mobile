@@ -72,27 +72,18 @@ class SavedMessagesScreen {
         await wait(timeouts.TWO_SEC);
     };
 
-    // freezeOnBlur keeps this tab mounted after the first visit. Detox debug
-    // JSI often does not notify the mount-time preference query, so leaving
-    // and returning does not rebuild the list. Reload remounts withObservables
-    // against current SQLite (same pattern as channel_bookmarks / classification).
-    remount = async () => {
-        await device.reloadReactNative();
-        await waitFor(element(by.id('channel_list.screen'))).toExist().withTimeout(timeouts.TWENTY_SEC);
-        await waitFor(HomeScreen.savedMessagesTab).toExist().withTimeout(timeouts.TEN_SEC);
-        await HomeScreen.savedMessagesTab.tap();
-        await this.toBeVisible();
-    };
-
-    // Poll for a saved post row. If the freezeOnBlur tab still shows the
-    // mount-time list, remount once so withObservables re-reads SQLite.
+    // Saved Messages unmounts on blur, so leaving and returning rebuilds the list.
+    // Tab-switch once if the first paint still lags the preference write.
     waitForPostInList = async (postId: string, text: string) => {
         const {postListPostItem} = this.getPostListPostItem(postId, text);
 
         try {
             await waitFor(postListPostItem).toExist().withTimeout(timeouts.TEN_SEC);
         } catch {
-            await this.remount();
+            await HomeScreen.channelListTab.tap();
+            await wait(timeouts.ONE_SEC);
+            await HomeScreen.savedMessagesTab.tap();
+            await this.toBeVisible();
             await waitFor(postListPostItem).toExist().withTimeout(timeouts.TEN_SEC);
         }
     };
@@ -136,7 +127,10 @@ class SavedMessagesScreen {
         try {
             await waitFor(postListPostItem).not.toExist().withTimeout(timeouts.TEN_SEC);
         } catch {
-            await this.remount();
+            await HomeScreen.channelListTab.tap();
+            await wait(timeouts.ONE_SEC);
+            await HomeScreen.savedMessagesTab.tap();
+            await this.toBeVisible();
             await waitFor(postListPostItem).not.toExist().withTimeout(timeouts.TEN_SEC);
         }
     };

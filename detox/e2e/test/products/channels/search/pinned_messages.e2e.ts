@@ -140,7 +140,7 @@ describe('Search - Pinned Messages', () => {
         await ChannelScreen.back();
     });
 
-    // Skip: failed CI run 29954156963 (both) — was android-only run; android also failed
+    // Skip: edit/reply/delete from pinned messages flake
     it.skip('MM-T4918_3 - should be able to edit, reply to, and delete a pinned message from pinned messages screen', async () => {
         // # Open a channel screen, post a message, open post options for message, tap on pin to channel option, open channel info screen, and open pinned messages screen
         const message = `Message ${getRandomId()}`;
@@ -225,7 +225,7 @@ describe('Search - Pinned Messages', () => {
         await ChannelScreen.back();
     });
 
-    // Skip: failed CI run 29954156963 (both) — unpin from pinned messages flake
+    // Skip: unpin from pinned messages flake
     it.skip('MM-T4918_4 - should be able to unpin a message from pinned messages screen', async () => {
         // # Open a channel screen, post a message, open post options for message, tap on pin to channel option, open channel info screen, and open pinned messages screen
         const message = `Message ${getRandomId()}`;
@@ -261,7 +261,7 @@ describe('Search - Pinned Messages', () => {
         await ChannelScreen.back();
     });
 
-    // Unskipped: Saved Messages page object remounts the freezeOnBlur tab when needed.
+    // Unskipped: Saved Messages unmounts on blur so the list re-reads preferences.
     it('MM-T4918_5 - should be able to save/unsave a pinned message from pinned messages screen', async () => {
         // # Open a channel screen, post a message, open post options for message, tap on pin to channel option, open channel info screen, and open pinned messages screen
         const message = `Message ${getRandomId()}`;

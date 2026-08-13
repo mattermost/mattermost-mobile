@@ -68,7 +68,7 @@ export default function TabLayout() {
                     title: 'Saved',
                     href: null,
                     tabBarButtonTestID: 'tab_bar.saved_messages.tab',
-                    freezeOnBlur: true,
+                    freezeOnBlur: false,
                 }}
             />
             <Tabs.Screen

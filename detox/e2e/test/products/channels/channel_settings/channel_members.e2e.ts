@@ -241,9 +241,9 @@ describe('Channels', () => {
         await ChannelScreen.back();
     });
 
-    // Skip both: failed Android on CI 30437339535 AND 30447839548 — the second run already
-    // carried the waitForElementToExist fix, so existence-vs-visibility is not the cause.
-    // Also failed iOS on 30437339535. Needs real root-cause work, not another wait tweak.
+    // Skip both: Android failed twice after the waitForElementToExist fix, so
+    // existence-vs-visibility is not the cause. Also failed iOS. Needs real
+    // root-cause work, not another wait tweak.
     it.skip('MM-T3196_1 - RN apps Manage members in channel', async () => {
         // # Use pre-created user (already in channel)
         const removedUser = memberUser;
@@ -274,7 +274,7 @@ describe('Channels', () => {
         await wait(timeouts.TWO_SEC);
 
         // Assert existence, not visibility: the dismissing manage-members modal can still
-        // overlay post_list and fail the visibility threshold (CI 30437339535, both platforms).
+        // overlay post_list and fail the visibility threshold.
         const systemMessage = `${removedUser.username} was removed from the channel`;
         await waitForElementToExist(element(by.text(systemMessage).withAncestor(by.id('post_list'))), timeouts.HALF_MIN);
         await ChannelScreen.back();

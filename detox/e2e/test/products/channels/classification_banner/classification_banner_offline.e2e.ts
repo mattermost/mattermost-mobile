@@ -13,7 +13,7 @@
 // SEC-11016: MM-T6207_1 (stale cache after server change while "offline") was
 // removed — setURLBlacklist does not cut the WebSocket, so a server-side
 // property patch can still land in the local DB and the stale-value assert is
-// untrustworthy (CI 59ec6ae). Do not re-add that case until Detox can reliably
+// untrustworthy. Do not re-add that case until Detox can reliably
 // disconnect/block WebSocket (or the app exposes a test-only WS cut hook).
 
 import {acquireClassificationLock, createClassificationLockOwner, releaseClassificationLock} from '@support/classification_lock';
@@ -110,7 +110,7 @@ describe('Classification Banner - Offline / Cache Behaviour', () => {
         });
 
         // Cold start picks up FeatureFlagClassificationMarkings and the property fields more
-        // reliably than reloadReactNative alone (CI 30250131265).
+        // reliably than reloadReactNative alone.
         await device.launchApp({newInstance: true});
         await ChannelListScreen.toBeVisible();
         await GlobalClassificationBanner.toBeVisible();

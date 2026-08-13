@@ -117,8 +117,7 @@ describe('Messaging - Markdown Table', () => {
         // horizontally until the right header and row become visible.
         // Skip iOS (SEC-11012): expanded-table horizontal scroll cannot reveal the right
         // column — content sits at x≈392 in a 581px table inside a ~402px viewport, and
-        // neither whileElement().scroll nor scrollTo('right') reveals it. Reproduced
-        // locally 2026-08-11 and CI 31506724244 (PR #10037).
+        // neither whileElement().scroll nor scrollTo('right') reveals it.
         if (!isIos()) {
             await waitFor(element(by.text('Right header that wraps'))).toBeVisible(50).whileElement(by.id(TableScreen.testID.tableScrollView)).scroll(150, 'right');
             await waitFor(element(by.text('Right text that wraps row'))).toBeVisible(50).whileElement(by.id(TableScreen.testID.tableScrollView)).scroll(150, 'right');

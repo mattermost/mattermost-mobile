@@ -201,8 +201,8 @@ describe('Server Login - Server List', () => {
         await wait(timeouts.ONE_SEC);
 
         // .atIndex(0): the Swipeable's revealed Edit option can render twice
-        // briefly on iOS during the swipe-pan animation (CI run 26368981355,
-        // MM-T4691_4: "Multiple elements found"). All sibling taps in this
+        // briefly on iOS during the swipe-pan animation
+        // (MM-T4691_4: "Multiple elements found"). All sibling taps in this
         // file already use .atIndex(0).
         await ServerListScreen.getServerItemEditOption(serverOneDisplayName).atIndex(0).tap();
 

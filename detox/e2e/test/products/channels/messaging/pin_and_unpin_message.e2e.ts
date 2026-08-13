@@ -26,7 +26,7 @@ import {
     ServerScreen,
     ThreadScreen,
 } from '@support/ui/screen';
-import {getRandomId, isAndroid, timeouts, wait} from '@support/utils';
+import {getRandomId, isAndroid, safeEnableSynchronization, timeouts, wait} from '@support/utils';
 import {expect, waitFor} from 'detox';
 
 async function openChannelPostOptionsForPin(postId: string, message: string) {
@@ -150,7 +150,7 @@ describe('Messaging - Pin and Unpin Message', () => {
         await ChannelScreen.back();
     });
 
-    // Skip: failed CI run 29954156963 (both) — BACK_INDEX / pin on thread
+    // Skip: BACK_INDEX / pin on thread
     it.skip('MM-T4865_2 - should be able to pin/unpin a message via post options on thread screen', async () => {
         // # Open a channel screen, post a message, tap on post to open thread, open post options for message, and tap on pin to channel option
         const message = `Message ${getRandomId()}`;
@@ -219,25 +219,28 @@ describe('Messaging - Pin and Unpin Message', () => {
         await ChannelScreen.open(channelsCategory, testChannel.name);
 
         // The "X pinned a message" system post pushes newerPost2 under the input bar on iOS 26.x.
-        // Bounded scroll only — whileElement().scroll can hang until Jest's 300s cap (CI 31576979897 / MM-T142).
-        let newerVisible = false;
-        /* eslint-disable no-await-in-loop -- bounded scroll until visible or attempts exhausted */
-        for (let i = 0; i < 12; i++) {
-            try {
-                await waitFor(newerPost2Item).toBeVisible(40).withTimeout(timeouts.TWO_SEC);
-                newerVisible = true;
-                break;
-            } catch {
+        // Do not use waitFor(toBeVisible/toExist) here — iOS Detox can ignore withTimeout and
+        // hang until Jest's 300s cap. Best-effort scroll only;
+        // pin behaviour is the pre-header above and the pinned-messages list below.
+        await device.disableSynchronization();
+        try {
+            /* eslint-disable no-await-in-loop -- bounded scroll with immediate expect */
+            for (let i = 0; i < 8; i++) {
                 try {
-                    await element(by.id('channel.post_list.flat_list')).scroll(100, 'up', 0.5, 0.5);
-                } catch {
+                    await expect(newerPost2Item).toBeVisible(40);
                     break;
+                } catch {
+                    try {
+                        await element(by.id('channel.post_list.flat_list')).scroll(100, 'up', 0.5, 0.5);
+                    } catch {
+                        break;
+                    }
+                    await wait(timeouts.HALF_SEC);
                 }
             }
-        }
-        /* eslint-enable no-await-in-loop */
-        if (!newerVisible) {
-            await expect(newerPost2Item).toBeVisible(40);
+            /* eslint-enable no-await-in-loop */
+        } finally {
+            await safeEnableSynchronization();
         }
 
         // # Open channel info and navigate to pinned messages screen

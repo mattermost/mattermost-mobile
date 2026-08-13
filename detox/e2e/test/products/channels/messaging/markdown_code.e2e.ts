@@ -66,7 +66,7 @@ describe('Messaging - Markdown Code', () => {
         await waitFor(postListPostItemCodeBlock).toExist().withTimeout(10000);
 
         // Scroll to dismiss the keyboard when possible. Wrap: scroll up fails when the
-        // post list is already at the top (cold iOS, CI 31435071883).
+        // post list is already at the top (cold iOS).
         try {
             await ChannelScreen.getFlatPostList().scroll(300, 'up', 0.5, 0.5);
         } catch { /* already at top — non-fatal */ }

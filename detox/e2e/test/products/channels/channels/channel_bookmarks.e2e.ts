@@ -121,7 +121,7 @@ describe('Channels - Channel Bookmarks', () => {
                 await waitFor(displayNameEl).toExist().withTimeout(timeouts.FOUR_SEC);
             }
 
-            // CI 31576979897 / MM-T69455_1: list-edge rows can be ~40% visible (visible height ~10 of 24).
+            // List-edge rows can be ~40% visible (visible height ~10 of 24).
             // Default center tap aims below the clip and fails "not hittable at its visible point".
             // Tap near the top of the label (still inside the visible strip) on iOS; Android uses full tap.
             if (isIos()) {
@@ -268,7 +268,7 @@ describe('Channels - Channel Bookmarks', () => {
 
         // * Verify that the "Add a bookmark" option is visible in channel info (Bookmarks Bar).
         // waitFor — FeatureFlagChannelBookmarks / canAddBookmarks may still be settling
-        // after beforeAll reload (CI 29362218938: bare expect raced Config changed).
+        // after beforeAll reload (bare expect raced Config changed).
         await waitFor(element(by.id('channel_info.add_bookmark.button'))).
             toBeVisible().
             withTimeout(timeouts.TWENTY_SEC);
@@ -326,6 +326,10 @@ describe('Channels - Channel Bookmarks', () => {
         await ChannelBookmarkScreen.runUnsynchronized(async () => {
             await linkInput.tap();
             await linkInput.typeText('https://example.com');
+            // Let the OG debounce start, then wait it out so save uses a settled bookmark
+            // (link_url set, image_url already normalized) instead of a mid-fetch payload.
+            await wait(timeouts.ONE_SEC);
+            await ChannelBookmarkScreen.waitForLinkLoadingToFinish(timeouts.TWENTY_SEC);
             const titleInput = ChannelBookmarkScreen.getTitleInput();
             await waitForElementToExist(titleInput, timeouts.TEN_SEC);
             await titleInput.tap();
@@ -848,7 +852,7 @@ describe('Channels - Channel Bookmarks', () => {
         const channelHeaderBookmarksList = by.id('channel_header.bookmarks.list');
 
         // Authoritative sync: both bookmarks must exist in channel info before
-        // trusting the virtualized header FlatList (CI 30250131265: only file chip).
+        // trusting the virtualized header FlatList (file chip can appear first).
         await ChannelInfoScreen.open();
         await ChannelInfoScreen.waitForBookmarkInChannelInfo(
             by.id(`channel_bookmark.${bookmarkFileT69455.id}`).
@@ -910,7 +914,7 @@ describe('Channels - Channel Bookmarks', () => {
         // * Verify long press opens the bookmark options bottom sheet
         await expect(ChannelBookmarkScreen.editOption).toBeVisible();
 
-        // Sheet has Edit/Copy/Share/Delete — no Cancel (CI 59ec6ae screenshot).
+        // Sheet has Edit/Copy/Share/Delete — no Cancel.
         await ChannelBookmarkScreen.dismissOptionsSheet();
         await ChannelScreen.toBeVisible();
 

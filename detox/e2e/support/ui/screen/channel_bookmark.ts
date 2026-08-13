@@ -2,7 +2,7 @@
 // See LICENSE.txt for license information.
 
 import {isAndroid, safeEnableSynchronization, timeouts, wait, waitForElementToExist, waitForElementToNotExist} from '@support/utils';
-import {waitFor} from 'detox';
+import {expect, waitFor} from 'detox';
 
 class ChannelBookmarkScreen {
     testID = {
@@ -120,7 +120,18 @@ class ChannelBookmarkScreen {
     };
 
     waitForLinkLoadingToFinish = async (timeout = timeouts.ONE_MIN) => {
-        await waitFor(this.linkLoading).not.toExist().withTimeout(timeout);
+        const deadline = Date.now() + timeout;
+        /* eslint-disable no-await-in-loop -- poll until the OG spinner is gone */
+        while (Date.now() < deadline) {
+            try {
+                await expect(this.linkLoading).not.toExist();
+                return;
+            } catch {
+                await wait(timeouts.HALF_SEC);
+            }
+        }
+        /* eslint-enable no-await-in-loop */
+        await expect(this.linkLoading).not.toExist();
     };
 
     runUnsynchronized = async <T>(action: () => Promise<T>): Promise<T> => {

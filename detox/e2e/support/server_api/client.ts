@@ -15,9 +15,8 @@ import {CookieJar} from 'tough-cookie';
 
 const jar = new CookieJar();
 
-// Bound hung TCP / silent Cloudflare stalls. CI 31506724244 MM-T1433: apiCreatePost
-// sat in test_fn for exactly 300s (Jest limit) with zero Detox UI actions and no
-// [client] retry log — axios had no timeout, so the suite burned a full shard slot.
+// Bound hung TCP / silent Cloudflare stalls. Without a client timeout, apiCreatePost
+// can sit in test_fn until Jest's 300s cap with zero Detox UI actions.
 const REQUEST_TIMEOUT_MS = 30_000;
 
 const baseClient = wrapper(axios.create({
