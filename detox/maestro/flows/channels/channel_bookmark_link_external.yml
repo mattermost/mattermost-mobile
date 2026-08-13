@@ -11,6 +11,7 @@
 #   - Link bookmark can be created from channel info
 #   - Bookmark appears in channel header bar after closing channel info
 #   - Tapping bookmark opens external browser; dismissing returns to channel
+#     (iOS: Safari's "◀ Mattermost" breadcrumb pill proves the hand-off)
 #
 # testIDs:
 #   - channel_header.channel_quick_actions.button
@@ -24,6 +25,7 @@
 #   - channel_bookmark.edit.save_button
 #   - close.channel_info.button
 #   - channel_header.bookmarks.list
+#   - breadcrumb (iOS: Safari's back-to-app pill, not an app testID)
 tags:
   - MM-T5611
 appId: ${MAESTRO_APP_ID}
@@ -170,29 +172,25 @@ appId: ${MAESTRO_APP_ID}
       # ever opening the browser. Non-optional so a miss fails loudly instead.
       - tapOn:
           text: ".*[Mm]attermost.*"
-      # * Verify the browser actually took over: SFSafariViewController is presented
-      # over the channel, so the channel's draft input can no longer be seen. This is
-      # the assertion that makes the test mean something on iOS.
+      # * Verify the browser actually took over, by anchoring on Safari's
+      # "◀ Mattermost" back-to-app pill (id: breadcrumb) — the same anchor
+      # help_url.yml uses. Do NOT assert the channel's draft input disappeared:
+      # openLink -> tryOpenURL -> Linking.openURL hands off to the *external*
+      # Safari app rather than presenting an in-app SFSafariViewController, so
+      # Mattermost is only suspended, and Maestro's iOS hierarchy still reports
+      # the suspended app's elements alongside Safari's. Evidence: CI run
+      # 31715496229 failed `notVisible: channel.post_draft.post.input` even
+      # though the app logged 'appEntersBackground' / 'Application suspended'
+      # 4s after this tap. This is also why help_url.yml only asserts
+      # notVisible on Android.
       - extendedWaitUntil:
-          notVisible:
-            id: "channel.post_draft.post.input"
+          visible:
+            id: "breadcrumb"
           timeout: 20000
       - takeScreenshot: bookmark-browser-opened
-      # # Dismiss SFSafariViewController — same two branches as help_url.yml.
-      - runFlow:
-          when:
-            visible:
-              id: "breadcrumb"
-          commands:
-            - tapOn:
-                id: "breadcrumb"
-      - runFlow:
-          when:
-            visible:
-              text: "Done"
-          commands:
-            - tapOn:
-                text: "Done"
+      # # Return to the app from Safari via the breadcrumb pill.
+      - tapOn:
+          id: "breadcrumb"
 - runFlow:
     when:
       platform: Android

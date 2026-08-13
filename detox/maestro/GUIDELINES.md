@@ -266,6 +266,23 @@ curl -sS -X PUT \
   "$SITE_1_URL/api/v4/config/patch"
 ```
 
+### External browser hand-off (iOS): never assert `notVisible` on an app element
+
+`Linking.openURL` (behind `openLink` / `tryOpenURL`) hands off to the **external** Safari app; it does not present an in-app `SFSafariViewController`. Mattermost is only *suspended*, and Maestro's iOS hierarchy keeps reporting the suspended app's elements alongside Safari's — so `notVisible: <any app testID>` never becomes true and the flow times out.
+
+Anchor on Safari's "◀ Mattermost" back-to-app pill instead, then tap it to return:
+
+```yaml
+- extendedWaitUntil:
+    visible:
+      id: "breadcrumb"
+    timeout: 20000
+- tapOn:
+    id: "breadcrumb"
+```
+
+Android is the opposite: a Chrome Custom Tab is a separate task, the app's elements do go away, and `notVisible: <app testID>` is the correct assertion there (see `flows/account/help_url.yml`, which asserts `notVisible` on Android only).
+
 ### Cross-platform notes
 
 - **iOS share extension** (deferred branch `rf-split/maestro-ios-deferred-flows`): Maestro must be attached to the host app (Safari/Photos) before the share sheet opens; share target label is **Mattermost**, not **Mattermost Beta**.
