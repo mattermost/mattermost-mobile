@@ -317,10 +317,10 @@ export const waitForUserInAutocomplete = async (
         await new Promise<void>((resolve) => {
             setTimeout(resolve, intervalMs);
         });
-        return poll();
+        await poll();
     };
 
-    return poll();
+    await poll();
 };
 
 export const generateRandomUser = ({prefix = 'user', randomIdLength = 6} = {}) => {
