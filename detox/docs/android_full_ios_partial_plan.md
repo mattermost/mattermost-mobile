@@ -38,6 +38,7 @@ Test System IO discovers Detox specs as normal `*.e2e.ts` paths under `detox/e2e
 |---|---|
 | `detox-include-tags: @ios_pr` | PR iOS phone — only tagged files are registered as dispatch units |
 | `detox-include-tags: @ipad_only` | iPad job — only iPad-tagged specs (specs may live anywhere) |
+| `detox-include-tags: @smoke` | CMT older-server phone legs — smoke subset (specs may live anywhere) |
 | `detox-exclude-tags: @ipad_only` | Phone Android / full iOS — drop iPad-only specs |
 | (empty include) | No include filter |
 

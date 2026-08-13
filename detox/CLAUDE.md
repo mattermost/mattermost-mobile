@@ -96,16 +96,15 @@ cd detox && npm run e2e:save-report
 |------|---------|----------|---------|-------------|-------------|
 | **PR full** | Matterwick + `E2E/Run` label | Detox iOS/Android/iPad + Maestro | 20 Detox (iOS/Android), 1 iPad, 1 Maestro each via Test System IO orchestration | `detox/e2e/test` (full) | ~30–45+ min wall-clock |
 | **Main** | Matterwick main push (`run_type=MASTER` today; `MAIN` also accepted → Test System IO `mobile-main`) | Same as PR | Same as PR | `detox/e2e/test` | Same as PR |
-| **CMT / Release** | Matterwick on `build-release-*` → CMT | Detox + Maestro across server versions | Full suite on latest server (10 Detox workers); smoke subset on older (1) | latest: `detox/e2e/test`; older: `…/smoke_test` | Varies by matrix |
+| **CMT / Release** | Matterwick on `build-release-*` → CMT | Detox + Maestro across server versions | Full suite on latest server (10 Detox workers); `@smoke` include on older (1) | `detox/e2e/test` (both; older filtered by tag) | Varies by matrix |
 
 Status contexts live under the `e2e-test/` namespace, matching the mattermost monorepo. Callers pass `context_name`; templates derive the Test System IO report `name` by stripping `e2e-test/` and swapping `/` for `-`. PR: `e2e-test/detox-ios` (etc.). Merge to main: `…/main`. Merge to release: `…/release`. Release cut: `…/release-cut`. CMT: `e2e-test/detox-ios/cmt-server-${version}` (etc.) — each matrix leg reports its own status; no umbrella context. Commit status + channel notify come from `dispatch-begin` / `summary` (webhook_payload curl).
 
 Matterwick provisions five servers for every mobile server-version entry: two Android-only, two iOS-only, and one shared third site. CMT therefore uses `5 × server version count` installations (up to 25 at the five-version cap). The full latest-version suite needs this isolation for its parallel shards; older-version smoke jobs intentionally retain the same topology for consistent URL semantics, even though their single shard uses less of its capacity. iPad shares the iOS pair, and Maestro uses the first server for its platform.
 
-### Smoke Tests Location
+### Smoke Tests
 
-`detox/e2e/test/products/channels/smoke_test/` — quick regression suite used as the **CMT older-server subset**, not as an automatic every-PR-push tier.
-PR E2E runs the full `detox/e2e/test` tree when labeled.
+Specs tagged `// Tags: … @smoke` (today under `detox/e2e/test/products/channels/smoke_test/`). CMT older-server legs select them with `detox-include-tags: @smoke` over the full tree — not a directory filter. Not an automatic every-PR-push tier (PR iOS uses `@ios_pr`).
 
 ### Workflow Files
 
@@ -216,7 +215,7 @@ detox/
 │           │   ├── channels/      # 16 files
 │           │   ├── account/       # 15 files
 │           │   ├── threads/       # 6 files
-│           │   └── smoke_test/    # quick suite (CMT older-server subset)
+│           │   └── smoke_test/    # @smoke (+ @ios_pr) quick suite
 │           ├── agents/            # AI agent product tests
 │           └── playbooks/         # Playbooks product tests
 ```
@@ -457,9 +456,9 @@ await waitForElementToBeVisible(element(by.id('...')), timeouts.TEN_SEC);
 
 ## TEST COVERAGE MAP
 
-### Smoke (`e2e/test/products/channels/smoke_test/`) — CMT older-server subset
+### Smoke (`// Tags: @smoke`) — CMT older-server subset
 
-Quick regression of core flows. Used when CMT runs against non-latest server versions; PR E2E uses the full suite.
+Quick regression of core flows (files currently under `e2e/test/products/channels/smoke_test/`). CMT older servers include `@smoke`; latest / PR use other filters or the full suite.
 
 ### Search (`e2e/test/products/channels/search/`)
 

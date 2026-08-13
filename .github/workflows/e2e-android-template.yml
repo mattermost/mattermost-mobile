@@ -78,6 +78,13 @@ on:
         required: false
         type: string
         default: "detox/e2e/test"
+      detox-include-tags:
+        description: >
+          Comma-separated // Tags: include filter for Test System IO discovery
+          (e.g. @smoke). Empty = no include filter; callers set explicitly.
+        required: false
+        type: string
+        default: ""
       detox-exclude-tags:
         description: >
           Comma-separated // Tags: exclude filter for Test System IO discovery
@@ -165,6 +172,7 @@ jobs:
       total-units: ${{ steps.begin.outputs.total-units }}
       worker-shards: ${{ steps.matrix.outputs.shards }}
       detox-search-path: ${{ steps.paths.outputs.detox-search-path }}
+      detox-include-tags: ${{ steps.paths.outputs.detox-include-tags }}
       detox-exclude-tags: ${{ steps.paths.outputs.detox-exclude-tags }}
       pr-number: ${{ steps.cfg.outputs.pr-number }}
     steps:
@@ -230,6 +238,7 @@ jobs:
         id: paths
         env:
           SEARCH_PATH: ${{ inputs.search_path }}
+          INCLUDE_TAGS: ${{ inputs.detox-include-tags }}
           EXCLUDE_TAGS: ${{ inputs.detox-exclude-tags }}
         run: |
           set -euo pipefail
@@ -239,9 +248,10 @@ jobs:
           esac
           {
             echo "detox-search-path=${SP}"
+            echo "detox-include-tags=${INCLUDE_TAGS}"
             echo "detox-exclude-tags=${EXCLUDE_TAGS}"
           } >> "$GITHUB_OUTPUT"
-          echo "detox-search-path=${SP} exclude='${EXCLUDE_TAGS}'"
+          echo "detox-search-path=${SP} include='${INCLUDE_TAGS}' exclude='${EXCLUDE_TAGS}'"
 
       - name: Worker matrix JSON
         id: matrix
@@ -263,6 +273,7 @@ jobs:
           total-reports-expected: ${{ inputs.parallelism }}
           detox-dir: detox
           detox-search-path: ${{ steps.paths.outputs.detox-search-path }}
+          detox-include-tags: ${{ steps.paths.outputs.detox-include-tags }}
           detox-exclude-tags: ${{ steps.paths.outputs.detox-exclude-tags }}
           # Post pending commit status after orch-begin (report page exists).
           post-pending-commit-status: "true"
@@ -279,6 +290,8 @@ jobs:
           TOTAL_UNITS: ${{ steps.begin.outputs.total-units }}
           WORKERS: ${{ inputs.parallelism }}
           SEARCH_PATH: ${{ steps.paths.outputs.detox-search-path }}
+          INCLUDE_TAGS: ${{ steps.paths.outputs.detox-include-tags }}
+          EXCLUDE_TAGS: ${{ steps.paths.outputs.detox-exclude-tags }}
         run: |
           {
             echo "## Detox Android orchestration begin"
@@ -287,6 +300,8 @@ jobs:
             echo "- total units: ${TOTAL_UNITS}"
             echo "- workers: ${WORKERS}"
             echo "- search path: \`${SEARCH_PATH}\`"
+            echo "- include tags: \`${INCLUDE_TAGS:-*}\`"
+            echo "- exclude tags: \`${EXCLUDE_TAGS:-none}\`"
           } >> "$GITHUB_STEP_SUMMARY"
 
   workers:

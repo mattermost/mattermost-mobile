@@ -188,7 +188,7 @@ jobs:
           name: android-maestro-build-files-${{ github.run_id }}
           path: android/app/build/outputs/apk/release/
 
-  # latest entry runs full suite, older entries run smoke only. Job-level if: can't conditionally skip matrix legs, so inputs vary instead.
+  # latest: full suite; older: @smoke include-tags. Job-level if: can't conditionally skip matrix legs, so inputs vary instead.
   detox-e2e:
     name: mobile-cmt-ios${{ matrix.server.latest && '-full' || '-smoke' }}-${{ matrix.server.version }}
     permissions:
@@ -229,7 +229,9 @@ jobs:
       MM_TEST_SERVER_URL_2: ${{ matrix.server.ios_site_2_url }}
       MM_TEST_SERVER_URL_3: ${{ matrix.server.site_3_url }}
       MOBILE_VERSION: ${{ inputs.MOBILE_VERSION }}
-      search_path: ${{ matrix.server.latest && 'detox/e2e/test' || 'detox/e2e/test/products/channels/smoke_test' }}
+      search_path: detox/e2e/test
+      # Older servers: @smoke subset. Avoid `latest && '' || tag` — empty is falsy in GHA.
+      detox-include-tags: ${{ matrix.server.latest != true && '@smoke' || '' }}
       detox-exclude-tags: '@ipad_only'
       parallelism: ${{ matrix.server.latest && '10' || '1' }}
       artifact_run_id: ${{ github.run_id }}
@@ -362,7 +364,9 @@ jobs:
       MM_TEST_SERVER_URL_2: ${{ matrix.server.android_site_2_url }}
       MM_TEST_SERVER_URL_3: ${{ matrix.server.site_3_url }}
       MOBILE_VERSION: ${{ inputs.MOBILE_VERSION }}
-      search_path: ${{ matrix.server.latest && 'detox/e2e/test' || 'detox/e2e/test/products/channels/smoke_test' }}
+      search_path: detox/e2e/test
+      # Older servers: @smoke subset. Avoid `latest && '' || tag` — empty is falsy in GHA.
+      detox-include-tags: ${{ matrix.server.latest != true && '@smoke' || '' }}
       detox-exclude-tags: '@ipad_only'
       parallelism: ${{ matrix.server.latest && '10' || '1' }}
       artifact_run_id: ${{ github.run_id }}
