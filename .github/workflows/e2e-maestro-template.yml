@@ -232,7 +232,6 @@ jobs:
           maestro-dir: detox/maestro
           maestro-flow-path: ${{ steps.paths.outputs.maestro-flow-path }}
           maestro-exclude-tags: ${{ steps.exclude-tags.outputs.tags }}
-          # Post pending commit status after orch-begin (report page exists).
           post-pending-commit-status: "true"
           commit-status-context: ${{ inputs.context_name }}
           github-token: ${{ secrets.GITHUB_TOKEN }}

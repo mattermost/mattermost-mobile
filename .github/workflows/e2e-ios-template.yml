@@ -274,7 +274,6 @@ jobs:
           detox-search-path: ${{ steps.paths.outputs.detox-search-path }}
           detox-include-tags: ${{ steps.paths.outputs.detox-include-tags }}
           detox-exclude-tags: ${{ steps.paths.outputs.detox-exclude-tags }}
-          # Post pending commit status after orch-begin (report page exists).
           post-pending-commit-status: "true"
           commit-status-context: ${{ inputs.context_name }}
           github-token: ${{ secrets.GITHUB_TOKEN }}
