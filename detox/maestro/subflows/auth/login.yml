@@ -22,7 +22,7 @@ appId: ${MAESTRO_APP_ID}
     when:
       platform: iOS
     commands:
-      # Retry iOS launchApp after a previous batch; do not retry the whole login.
+      # # Retry iOS launchApp after a previous batch; do not retry the whole login.
       - retry:
           maxRetries: 3
           commands:

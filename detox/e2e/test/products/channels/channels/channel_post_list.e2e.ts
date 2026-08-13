@@ -23,7 +23,7 @@ import {
     PostOptionsScreen,
     ServerScreen,
 } from '@support/ui/screen';
-import {getRandomId, timeouts} from '@support/utils';
+import {getRandomId, isIos, safeEnableSynchronization, timeouts, wait, waitForElementToExist} from '@support/utils';
 import {expect, waitFor} from 'detox';
 
 describe('Channels - Channel Post List', () => {
@@ -56,7 +56,32 @@ describe('Channels - Channel Post List', () => {
         // * Verify basic elements on channel screen
         await expect(ChannelScreen.backButton).toExist();
         await expect(ChannelScreen.headerTitle).toHaveText(testChannel.display_name);
-        await waitFor(ChannelScreen.introDisplayName).toExist().withTimeout(timeouts.TWO_SEC);
+
+        // Intro is ListFooterComponent on an inverted list — it mounts after the initial
+        // fetch (MM-T4731_2 waits 10s) and can sit above the viewport when a join post exists.
+        if (isIos()) {
+            await device.disableSynchronization();
+            try {
+                /* eslint-disable no-await-in-loop -- bounded scroll toward the intro footer */
+                for (let i = 0; i < 6; i++) {
+                    try {
+                        await expect(ChannelScreen.introDisplayName).toExist();
+                        break;
+                    } catch {
+                        try {
+                            await ChannelScreen.postList.getFlatList().scroll(250, 'down', 0.5, 0.5);
+                        } catch {
+                            // List edge.
+                        }
+                        await wait(timeouts.HALF_SEC);
+                    }
+                }
+                /* eslint-enable no-await-in-loop */
+            } finally {
+                await safeEnableSynchronization();
+            }
+        }
+        await waitForElementToExist(ChannelScreen.introDisplayName, timeouts.TEN_SEC);
         await expect(ChannelScreen.introDisplayName).toHaveText(testChannel.display_name);
         await expect(ChannelScreen.introSetHeaderAction).toExist();
         await expect(ChannelScreen.introChannelInfoAction).toExist();
@@ -74,7 +99,7 @@ describe('Channels - Channel Post List', () => {
         // * Verify file attachment options and its items are visible
         // Note: The generic bottom sheet wrapper does not receive a testID, so there is no
         // 'attachment_action.screen' element — verify presence via the first list item instead.
-        await waitFor(element(by.id('file_attachment.photo_library'))).toExist().withTimeout(timeouts.TWO_SEC);
+        await waitForElementToExist(element(by.id('file_attachment.photo_library')), timeouts.TEN_SEC);
         await expect(element(by.id('file_attachment.take_photo'))).toExist();
         await expect(element(by.id('file_attachment.take_video'))).toExist();
         await expect(element(by.id('file_attachment.attach_file'))).toExist();

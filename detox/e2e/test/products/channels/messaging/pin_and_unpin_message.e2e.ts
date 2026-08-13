@@ -26,7 +26,7 @@ import {
     ServerScreen,
     ThreadScreen,
 } from '@support/ui/screen';
-import {getRandomId, isAndroid, safeEnableSynchronization, timeouts, wait} from '@support/utils';
+import {getRandomId, isAndroid, safeEnableSynchronization, timeouts, wait, waitForElementToHaveText} from '@support/utils';
 import {expect, waitFor} from 'detox';
 
 async function openChannelPostOptionsForPin(postId: string, message: string) {
@@ -191,8 +191,7 @@ describe('Messaging - Pin and Unpin Message', () => {
         // # Open a channel screen and post several messages to populate the channel
         await ChannelScreen.open(channelsCategory, testChannel.name);
         const olderMessage = `Older message ${getRandomId()}`;
-        await ChannelScreen.postMessage(olderMessage);
-        const {post: olderPost} = await Post.apiGetLastPostInChannel(siteOneUrl, testChannel.id);
+        const {post: olderPost} = await ChannelScreen.postMessageAndVerify(olderMessage, testChannel.id, siteOneUrl);
 
         // # Post more messages so the older message scrolls up
         const newerMessage1 = `Newer message A ${getRandomId()}`;
@@ -204,14 +203,17 @@ describe('Messaging - Pin and Unpin Message', () => {
         const {post: newerPost2} = await Post.apiGetLastPostInChannel(siteOneUrl, testChannel.id);
         const {postListPostItem: newerPost2Item} = ChannelScreen.getPostListPostItem(newerPost2.id, newerMessage2);
 
+        // Re-open so the keyboard is down and the inverted list is anchored at the newest posts.
+        await ChannelScreen.back();
+        await ChannelScreen.open(channelsCategory, testChannel.name);
+
         // # Long press the older (not the most recent) post and pin it to channel
         await openChannelPostOptionsForPin(olderPost.id, olderMessage);
         await PostOptionsScreen.pinPostOption.tap({x: 1, y: 1});
 
         // * Verify the older message shows a Pinned pre-header (it is pinned)
-        // Use polling to wait for the pre-header to appear after pin operation.
         const {postListPostItemPreHeaderText} = ChannelScreen.getPostListPostItem(olderPost.id, olderMessage);
-        await waitFor(postListPostItemPreHeaderText).toHaveText(pinnedText).withTimeout(timeouts.TEN_SEC);
+        await waitForElementToHaveText(postListPostItemPreHeaderText, pinnedText);
 
         // * Verify the newer messages are still below the older pinned message. Re-open the
         //   channel to reset scroll to the newest messages so newerPost2 is visible.

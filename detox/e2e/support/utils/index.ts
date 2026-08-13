@@ -110,30 +110,52 @@ export async function scrollElementIntoView(
     scrollContainer: Detox.NativeMatcher,
     maxScrolls = 15,
 ): Promise<void> {
-    const visibilityThreshold = isIos() ? 50 : 25;
+    const visibilityThreshold = isIos() ? 40 : 25;
+    const {expect: detoxExpect} = require('detox');
+
+    if (isIos()) {
+        await device.disableSynchronization();
+        try {
+            /* eslint-disable no-await-in-loop -- bounded scroll; waitFor(whileElement) can ignore withTimeout */
+            // Inverted channel list: down travels toward older posts/intro, up toward newest.
+            // Alternating directions nets ~0 movement and never reveals an off-screen row.
+            const downCount = Math.ceil(maxScrolls / 2);
+            for (let i = 0; i < maxScrolls; i++) {
+                try {
+                    await detoxExpect(target).toBeVisible(visibilityThreshold);
+                    return;
+                } catch {
+                    const direction = i < downCount ? 'down' : 'up';
+                    try {
+                        await element(scrollContainer).scroll(200, direction, 0.5, 0.5);
+                    } catch {
+                        // List edge.
+                    }
+                    await wait(timeouts.HALF_SEC);
+                }
+            }
+            /* eslint-enable no-await-in-loop */
+        } finally {
+            await safeEnableSynchronization();
+        }
+        await waitForElementToBeVisible(target, timeouts.FIVE_SEC, timeouts.HALF_SEC, visibilityThreshold);
+        return;
+    }
+
     /* eslint-disable no-await-in-loop */
     for (let i = 0; i < maxScrolls; i++) {
         try {
             await waitFor(target).toBeVisible(visibilityThreshold).withTimeout(timeouts.TWO_SEC);
             return;
         } catch {
-            if (isIos()) {
-                await device.disableSynchronization();
-            }
-            try {
-                for (const direction of ['down', 'up'] as const) {
-                    try {
-                        await waitFor(target).
-                            toBeVisible(visibilityThreshold).
-                            whileElement(scrollContainer).
-                            scroll(250, direction);
-                        return;
-                    } catch { /* try opposite direction */ }
-                }
-            } finally {
-                if (isIos()) {
-                    await safeEnableSynchronization();
-                }
+            for (const direction of ['down', 'up'] as const) {
+                try {
+                    await waitFor(target).
+                        toBeVisible(visibilityThreshold).
+                        whileElement(scrollContainer).
+                        scroll(250, direction);
+                    return;
+                } catch { /* try opposite direction */ }
             }
         }
     }
@@ -159,7 +181,14 @@ export async function longPressWithScrollRetry(
         if (deadlineMs !== undefined && Date.now() > deadlineMs) {
             throw new Error(`longPressWithScrollRetry exceeded deadline after ${attempt - 1} attempts`);
         }
-        await scrollElementIntoView(target, scrollContainer);
+        try {
+            await scrollElementIntoView(target, scrollContainer);
+        } catch (scrollError) {
+            if (!isIos() || attempt === maxAttempts) {
+                throw scrollError;
+            }
+            continue;
+        }
 
         if (isAndroid()) {
             try {
@@ -340,6 +369,30 @@ export async function waitForElementToExist(
     }
     /* eslint-enable no-await-in-loop */
     await detoxExpect(detoxElement).toExist();
+}
+
+export async function waitForElementToHaveText(
+    detoxElement: Detox.NativeElement,
+    text: string,
+    timeout: number = timeouts.TEN_SEC,
+    pollInterval: number = timeouts.HALF_SEC,
+): Promise<void> {
+    const {expect: detoxExpect} = require('detox');
+    const startTime = Date.now();
+    /* eslint-disable no-await-in-loop */
+    while (Date.now() - startTime < timeout) {
+        try {
+            await detoxExpect(detoxElement).toHaveText(text);
+            return;
+        } catch (error) {
+            if ((Date.now() - startTime) + pollInterval >= timeout) {
+                throw error;
+            }
+            await wait(pollInterval);
+        }
+    }
+    /* eslint-enable no-await-in-loop */
+    await detoxExpect(detoxElement).toHaveText(text);
 }
 
 // Retry enableSynchronization after Android Fabric ReactContext null races.

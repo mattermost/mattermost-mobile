@@ -274,10 +274,9 @@ class ChannelScreen {
         }
 
         if (isIos()) {
-            try {
-                await this.postList.getFlatList().swipe('up', 'fast', 0.3);
-                await wait(timeouts.ONE_SEC);
-            } catch { /* ignore */ }
+            // Dismiss the keyboard so the row can pass visibility; do not swipe the
+            // inverted list first — that can move an older post off-screen.
+            await this.dismissKeyboard();
         }
 
         const postTestID = `${this.testID.channelScreenPrefix}post_list.post.${postId}`;
@@ -287,6 +286,8 @@ class ChannelScreen {
             longPressTarget,
             by.id(this.postList.testID.flatList),
             PostOptionsScreen.postOptionsScreen,
+            8,
+            isIos() ? Date.now() + timeouts.ONE_MIN : undefined,
         );
         await wait(timeouts.TWO_SEC);
     };
