@@ -72,7 +72,6 @@ class SavedMessagesScreen {
         await wait(timeouts.TWO_SEC);
     };
 
-    // Saved Messages unmounts on blur, so leaving and returning rebuilds the list.
     // Tab-switch once if the first paint still lags the preference write.
     waitForPostInList = async (postId: string, text: string) => {
         const {postListPostItem} = this.getPostListPostItem(postId, text);

@@ -137,7 +137,8 @@ describe('Search - Search Message Post Actions', () => {
         await ChannelListScreen.toBeVisible();
     });
 
-    // Unskipped: Saved Messages unmounts on blur so the list re-reads preferences.
+    // Unskipped: wait for the flag on the server, then open Saved and retry a
+    // tab switch if the frozen Saved list has not painted the new preference yet.
     it('MM-T5294_11 - should be able to save/unsave a searched message from search results screen', async () => {
         // # Open a channel screen, post a message, go back to channel list screen, and open search messages screen
         const searchTerm = getRandomId();

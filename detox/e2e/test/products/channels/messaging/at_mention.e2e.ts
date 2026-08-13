@@ -170,23 +170,20 @@ describe('Messaging - At-Mention', () => {
         await ChannelScreen.back();
     });
 
-    // Unskipped (at_mention noResultsTerm): remote empty results are no longer cached
-    // permanently, so typing/indexing lag can recover on a later search (MM-T0171_1 / tracker).
+    // Unskipped: type the full @username in one replaceText so iOS does not
+    // cache a short prefix miss in noResultsTerm before the new user is indexed.
     it('MM-T0171_1 - should be able to autocomplete at-mention for out-of-channel member', async () => {
         // # Create a user who is on the team but not in the channel
         const {user: outOfChannelUser} = await User.apiCreateUser(siteOneUrl);
         await Team.apiAddUserToTeam(siteOneUrl, outOfChannelUser.id, testTeam.id);
 
-        // # Open a channel screen and type "@" + full username to activate at-mention autocomplete.
-        // Type the full username in one go to avoid the noResultsTerm race condition in
-        // at_mention.tsx: a short 3-char prefix that only matches a freshly-created user
-        // may return 0 results before the user is indexed, causing noResultsTerm to be set
-        // to the prefix and suppressing all future searches. Typing the full username
-        // maximises specificity so the search resolves to exactly this user once indexed.
+        // # Open a channel screen and set "@" + full username in one update.
+        // typeText sends characters incrementally; a 3-char prefix can miss a
+        // freshly created user and cache noResultsTerm, blocking later searches.
         await ChannelScreen.open(channelsCategory, testChannel.name);
         await ChannelScreen.postInput.tap();
         await wait(timeouts.ONE_SEC);
-        await ChannelScreen.postInput.typeText(`@${outOfChannelUser.username}`);
+        await ChannelScreen.postInput.replaceText(`@${outOfChannelUser.username}`);
 
         // * Verify at-mention autocomplete contains the out-of-channel user suggestion.
         // Poll directly for the specific item (not the generic sectionAtMentionList) so

@@ -246,10 +246,7 @@ const AtMention = ({
             return;
         }
 
-        // Prefix short-circuit only for local filters where the candidate set is complete.
-        // Remote searches can miss freshly created users before server indexing finishes;
-        // caching that miss permanently made MM-T0171_1 unrecoverable on iOS.
-        if (useLocal && noResultsTerm != null && matchTerm.startsWith(noResultsTerm)) {
+        if (noResultsTerm != null && matchTerm.startsWith(noResultsTerm)) {
             return;
         }
 
@@ -274,7 +271,7 @@ const AtMention = ({
         }
         const nSections = newSections.length;
 
-        if (!loading && !nSections && noResultsTerm == null && useLocal) {
+        if (!loading && !nSections && noResultsTerm == null) {
             setNoResultsTerm(matchTerm);
         }
 
