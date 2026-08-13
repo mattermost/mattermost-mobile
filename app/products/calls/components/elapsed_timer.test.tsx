@@ -83,7 +83,7 @@ describe('ElapsedTimer', () => {
         expect(getByText('01:00')).toBeVisible();
     });
 
-    it('should count from the new start time when the value changes', () => {
+    it('should count from the new start time when the value changes', async () => {
         const {getByText, rerenderTimer} = renderTimer({value: secondsAgo(65), updateIntervalInSeconds: 1});
         expect(getByText('01:05')).toBeVisible();
 
@@ -92,5 +92,13 @@ describe('ElapsedTimer', () => {
         rerenderTimer({value: now, updateIntervalInSeconds: 1});
 
         expect(getByText('00:00')).toBeVisible();
+
+        // The interval has to be counting from the new value too: one that still closed over the old value
+        // would reset above and then jump back to 01:06 here.
+        await act(async () => {
+            await advanceTimers(1000);
+        });
+
+        expect(getByText('00:01')).toBeVisible();
     });
 });

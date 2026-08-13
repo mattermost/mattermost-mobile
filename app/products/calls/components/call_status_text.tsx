@@ -50,7 +50,7 @@ export function CallStatusText({
                 numberOfLines={1}
                 ellipsizeMode='middle'
             >
-                {displayUsername(sessionsDict[speaker].userModel, intl.locale, teammateNameDisplay)}
+                {displayUsername(sessionsDict[speaker]?.userModel, intl.locale, teammateNameDisplay)}
                 {' '}
                 <Text style={speakingPostfixStyle}>{
                     intl.formatMessage({

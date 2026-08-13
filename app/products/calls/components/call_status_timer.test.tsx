@@ -5,7 +5,7 @@ import React, {type ComponentProps} from 'react';
 
 import {renderWithIntl} from '@test/intl-test-helper';
 
-import CallStatusTimer from './call_status_timer';
+import {CallStatusTimer} from './call_status_timer';
 
 describe('CallStatusTimer', () => {
     const now = new Date('2026-01-01T12:00:00Z').getTime();
