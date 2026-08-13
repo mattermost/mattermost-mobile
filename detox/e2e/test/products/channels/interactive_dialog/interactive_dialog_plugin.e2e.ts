@@ -928,7 +928,8 @@ describe('Interactive Dialog - Basic Dialog (Plugin)', () => {
         await ensureDialogClosed();
 
         // * Verify submission post: local_manual must be populated with a UTC ISO timestamp
-        // whose minute portion is 30 (manual entry preserves typed minutes; rounded-picker values would be :00)
+        // whose minute portion is 30 (manual entry preserves typed minutes; rounded-picker
+        // values would be :00). Sub-second digits are not stable across iOS simulators.
         await wait(1000);
         const {post} = await Post.apiGetLastPostInChannel(siteOneUrl, testChannel.id);
         const match = post.message.match(/local_manual:\s*(\S+)/);
@@ -936,7 +937,7 @@ describe('Interactive Dialog - Basic Dialog (Plugin)', () => {
             throw new Error(`Expected local_manual to have a value but got: ${post.message}`);
         }
         const submitted = match[1];
-        if (!/T\d{2}:30:00\.000Z$/.test(submitted)) {
+        if (!/T\d{2}:30:\d{2}(?:\.\d+)?Z$/.test(submitted)) {
             throw new Error(`Expected manually-entered minutes (:30) in local_manual but got: ${submitted}`);
         }
     });
