@@ -17,17 +17,59 @@ describe('ClientChannelBookmarks', () => {
 
     test('createChannelBookmark', async () => {
         const channelId = 'channel_id';
-        const bookmark = {id: 'bookmark_id', display_name: 'bookmark_name'} as ChannelBookmark;
+        const bookmark = {
+            id: '',
+            create_at: 0,
+            update_at: 0,
+            delete_at: 0,
+            channel_id: channelId,
+            owner_id: 'owner_id',
+            display_name: 'bookmark_name',
+            sort_order: 0,
+            link_url: 'https://example.com',
+            image_url: 'https://example.com/favicon.ico',
+            type: 'link',
+        } as ChannelBookmark;
         const expectedUrl = client.getChannelBookmarksRoute(channelId);
         const expectedOptions = {
             method: 'post',
-            body: bookmark,
+            body: {
+                channel_id: channelId,
+                display_name: bookmark.display_name,
+                image_url: bookmark.image_url,
+                link_url: bookmark.link_url,
+                type: bookmark.type,
+            },
             headers: {'Connection-Id': ''},
         };
 
         await client.createChannelBookmark(channelId, bookmark);
 
         expect(client.doFetch).toHaveBeenCalledWith(expectedUrl, expectedOptions);
+    });
+
+    test('createChannelBookmark omits an invalid image URL', async () => {
+        const bookmark = {
+            channel_id: 'channel_id',
+            display_name: 'bookmark_name',
+            image_url: 'data:image/png;base64,image',
+            link_url: 'https://example.com',
+            type: 'link',
+        } as ChannelBookmark;
+
+        await client.createChannelBookmark(bookmark.channel_id, bookmark);
+
+        expect(client.doFetch).toHaveBeenCalledWith(
+            client.getChannelBookmarksRoute(bookmark.channel_id),
+            expect.objectContaining({
+                body: {
+                    channel_id: bookmark.channel_id,
+                    display_name: bookmark.display_name,
+                    link_url: bookmark.link_url,
+                    type: bookmark.type,
+                },
+            }),
+        );
     });
 
     test('updateChannelBookmark', async () => {
