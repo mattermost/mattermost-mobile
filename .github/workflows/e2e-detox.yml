@@ -80,7 +80,6 @@ jobs:
       branch: ${{ inputs.branch }}
       pr_number: ${{ inputs.pr_number }}
       commit_sha: ${{ inputs.commit_sha }}
-      durations_key: detox-ios
       # PR: full tree + // Tags: @ios_pr. MAIN/MASTER/RELEASE/RELEASE_CUT: full phone suite.
       # Phone legs exclude @ipad_only (tag filter — not directory).
       search_path: detox/e2e/test
@@ -119,7 +118,6 @@ jobs:
       branch: ${{ inputs.branch }}
       pr_number: ${{ inputs.pr_number }}
       commit_sha: ${{ inputs.commit_sha }}
-      durations_key: detox-android
       search_path: detox/e2e/test
       detox-exclude-tags: '@ipad_only'
       record_tests_in_zephyr: ${{ inputs.run_type == 'RELEASE' || inputs.run_type == 'RELEASE_CUT' || inputs.run_type == 'MAIN' || inputs.run_type == 'MASTER' }}
@@ -152,7 +150,6 @@ jobs:
       branch: ${{ inputs.branch }}
       pr_number: ${{ inputs.pr_number }}
       commit_sha: ${{ inputs.commit_sha }}
-      durations_key: detox-ipad
       MOBILE_VERSION: ${{ inputs.MOBILE_VERSION }}
       MM_TEST_SERVER_URL: ${{ inputs.IOS_SITE_1_URL }}
       MM_TEST_SERVER_URL_2: ${{ inputs.IOS_SITE_2_URL }}

@@ -136,11 +136,6 @@ on:
         required: false
         type: string
         default: ""
-      durations_key:
-        description: "Unused with orchestration (kept for caller compatibility)"
-        required: false
-        type: string
-        default: ""
 
 # Pin: mattermost-test-system-io @ bd85927 (Detox preamble parse + summary unit-fail).
 env:

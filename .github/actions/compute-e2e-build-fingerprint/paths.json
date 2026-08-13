@@ -52,8 +52,6 @@
     "detox/utils/**",
     ".github/workflows/e2e-*.yml",
     ".github/actions/compute-e2e-build-fingerprint/**",
-    ".github/actions/s3-build-cache/**",
-    ".github/actions/s3-spec-durations/**",
-    ".github/actions/generate-specs/**"
+    ".github/actions/s3-build-cache/**"
   ]
 }

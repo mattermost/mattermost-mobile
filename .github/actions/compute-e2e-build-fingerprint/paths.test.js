@@ -34,13 +34,12 @@ describe('e2e impact paths', () => {
         }
     });
 
-    it('should keep test-only and sharding infra in triggerExtra (run E2E, not fingerprint)', () => {
+    it('should keep test-only infra in triggerExtra (run E2E, not fingerprint)', () => {
         expect(paths.triggerExtra).toEqual(expect.arrayContaining([
             'detox/e2e/**',
             'detox/maestro/**',
             'detox/utils/**',
-            '.github/actions/generate-specs/**',
-            '.github/actions/s3-spec-durations/**',
+            '.github/actions/s3-build-cache/**',
         ]));
         for (const extra of paths.triggerExtra) {
             expect(paths.fingerprintShared).not.toContain(extra.replace(/\/\*\*$/, '/'));
