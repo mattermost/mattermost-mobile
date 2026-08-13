@@ -149,7 +149,7 @@ type AppForm = {
     depends_on?: string[];
 };
 
-type AppFormValue = string | boolean | number | AppSelectOption | AppSelectOption[] | null;
+type AppFormValue = string | boolean | number | AppSelectOption | AppSelectOption[] | string[] | null;
 type AppFormValues = {[name: string]: AppFormValue};
 
 type AppSelectOption = {
@@ -179,12 +179,20 @@ type AppField = {
     position?: number;
 
     modal_label?: string;
+    label_position?: 'before' | 'after';
 
     // Select props
     refresh?: boolean;
     options?: AppSelectOption[];
     multiselect?: boolean;
     lookup?: AppCall;
+
+    // Checkbox matrix props
+    matrix_config?: {
+        rows: AppSelectOption[];
+        columns: AppSelectOption[];
+        row_selection?: 'multiple' | 'single';
+    };
 
     // Text props
     subtype?: string;
