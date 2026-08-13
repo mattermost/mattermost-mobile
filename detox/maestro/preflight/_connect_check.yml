@@ -15,7 +15,7 @@
 # login" this way. Running the connect path once up front also warms the device's trust
 # evaluation before the reported flows.
 #
-# This flow lives outside flows/<category>/ so run_ci_batches.sh never picks it up.
+# This flow lives outside flows/<category>/ so orchestration discovery never picks it up.
 appId: ${MAESTRO_APP_ID}
 ---
 # # Launch from a clean state to simulate a fresh install

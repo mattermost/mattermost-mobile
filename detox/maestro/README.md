@@ -406,24 +406,10 @@ No Detox dependency is installed (see `android/settings.gradle`).
 | iOS | `macos-26`, iPhone 17 Pro / iOS 26.2 | `preboot_ios_simulator.sh` with `PREBOOT_SKIP_PREWARM=1`, then `listapps` readiness poll |
 | Android | `ubuntu-latest-8-cores`, `detox_pixel_8_api_35` | `detox/create_android_emulator.sh` with `BOOTSTRAP_ONLY=true` + `MAESTRO_ANDROID=true` (no Metro) |
 
-### iOS CI runtime (optional parallelization)
+### iOS CI runtime
 
-Maestro iOS currently runs ~8 sequential batches on one `macos-26` runner (~60+ minutes).
-Each batch repeats `login.yml` with `clearState:true`, which dominates wall time.
-
-**Option A — matrix split (recommended if infra approves):** add a `batch-range` input to
-`e2e-maestro-template.yml` and run 2–3 parallel macOS jobs (e.g. batches 1–3 / 4–6 / 7–8).
-Wall time drops roughly proportionally; runner cost increases. Requires separate JUnit merge
-across matrix legs (already supported via `mergeMaestroJunitReports`).
-
-**Option B — smoke gate:** run `account/login.yml` + one channel flow on every PR; run the
-full suite only when labeled or on master/CMT runs.
-
-**Option C — combine stable batches:** merge attach_logs batches (already split on Android
-for isolation). Risk: one wedged flow blocks the whole combined batch.
-
-Discuss Option A with GitHub infra + Maestro owners before enabling — parallel simulators on
-one host are not supported; each matrix leg needs its own runner + simulator UDID.
+Maestro CI parallelizes via Test System IO worker leasing (one flow per worker).
+Further wall-time reductions come from raising `parallelism` / worker count.
 
 ### Test servers (PR runs)
 
@@ -442,31 +428,24 @@ PR vs nightly vs manual coverage is summarized below (and in `config/exclude_tag
 
 | Tier | Zephyr label (recommended) | Meaning |
 |------|---------------------------|---------|
-| PR Maestro (iOS + Android) | `automated-e2e-pr-maestro` | In default `run_ci_batches.sh` on both platforms |
-| PR Maestro (Android only) | `automated-e2e-pr-maestro-android-only` | Calls flows — iOS skips `flows/calls/` |
-| Dedicated workflow step | `automated-e2e-nightly-maestro` | e.g. MM-T67856_4, start_call, file_type_preview |
+| PR Maestro (iOS + Android) | `automated-e2e-pr-maestro` | Discovered by Test System IO on both platforms |
+| PR Maestro (Android only) | `automated-e2e-pr-maestro-android-only` | Calls flows — iOS excludes Calls tags |
+| Dedicated / seeded flows | `automated-e2e-nightly-maestro` | e.g. MM-T67856_4, start_call, file_type_preview |
 | Two physical devices | `automated-e2e-manual-maestro` | MM-T3055/3056, MM-T4830/4831 |
 | Detox only | `automated-e2e-detox` | Bookmarks MM-T5602–5612, MM-T5725, MM-T107, MM-T3251 |
 
-**PR Maestro flow count (approx.):** iOS ~8 batches, Android ~11 batches (Android includes calls/).
-
-- Default flow dirs live in `detox/maestro/scripts/run_ci_batches.sh`; override with `FLOW_PATH` or workflow `flow-path` input.
-- One flow per `maestro test` batch on iOS and Android.
-- **Skipped in default PR batch** (`should_skip_flow` in `run_ci_batches.sh`):
-  - `flows/multi_device/*` — two-device manual (`run_two_device.sh`, `run_calls_two_device.sh`)
-  - `*_picker.yml` — sub-flows invoked by parent flows
-  - `attach_logs_disabled_when_download_logs_off.yml` — dedicated step (MM-T67856_4)
-  - `file_type_preview.yml` — needs `seed_file_preview.ts`
-  - `start_call.yml` — needs `calls_seed.ts`
-  - **iOS only:** entire `flows/calls/` directory (CallKit/WebRTC unreliable on simulator)
-- `MM-T67856_4` runs in a dedicated CI step with `AllowDownloadLogs=false` patched on the server. Tag `MM-T67856_4` is listed in `detox/maestro/config/exclude_tags.json` (`default` key) so the default batch does not duplicate it.
+- Default flow discovery uses `detox/maestro/flows` (override with workflow `flow-path` input).
+- Exclusions come from `detox/maestro/config/exclude_tags.json` (`maestro-exclude-tags`).
+- **Skipped in default PR discovery** (via exclude tags / path conventions):
+  - `@multi_device` — two-device manual (`run_two_device.sh`, `run_calls_two_device.sh`)
+  - `MM-T67856_4`, `MM-T3244`, `MM-T4829` — need dedicated seed / server config
+  - **iOS only:** Calls tags `MM-T1411` / `MM-T4832` / `MM-T4833` (CallKit/WebRTC unreliable on simulator)
 - Multi-device sync (`MM-T3055`/`MM-T3056`) requires two physical devices via `run_two_device.sh`.
 
 ### Reports
 
-- JUnit XML: `build/maestro-report.xml`
-- HTML report + screenshots uploaded to S3 and as GitHub Actions artifacts
-- Commit status + channel notify: `maestro-ios` / `maestro-android` via `test-system-io-dispatch-begin` + `test-system-io-summary`
+- Per-flow results + screenshots: Test System IO report page
+- Commit status + channel notify: `e2e-test/maestro-ios` / `e2e-test/maestro-android` via `test-system-io-dispatch-begin` + `test-system-io-summary`
 
 ---
 

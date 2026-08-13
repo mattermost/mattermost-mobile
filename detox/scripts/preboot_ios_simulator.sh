@@ -14,7 +14,7 @@
 #   PREBOOT_PREWARM_SECS       — first pre-warm wait (default 15; iPad often needs 10–15s).
 #
 # Grants notifications only. Maestro's Calls flows need mic/camera and grant them
-# themselves per batch (detox/maestro/scripts/run_ci_batches.sh
+# themselves per Maestro worker / local run
 # grant_ios_calls_permissions), so this script does not — see grant_notifications
 # for why extra privacy grants are avoided here.
 

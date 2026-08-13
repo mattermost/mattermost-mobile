@@ -83,13 +83,11 @@ async function saveArtifacts(platform) {
                     return reject(new Error(err));
                 }
 
-                // Detox runs use jest-stare to produce an HTML report; maestro
-                // produces its own HTML via generateMaestroHtmlReport(). Pick the
-                // right URL so the logged "Uploaded:" line points at a file that
-                // actually exists.
+                // Detox runs use jest-stare HTML; Maestro reporting is handled by
+                // Test System IO (no local HTML report upload here).
                 const isMaestro = platform.startsWith('maestro-');
                 const reportLink = isMaestro ?
-                    `https://${DETOX_AWS_S3_BUCKET}.s3.amazonaws.com/${REPORT_PATH}/${platform}/maestro-report.html` :
+                    `https://${DETOX_AWS_S3_BUCKET}.s3.amazonaws.com/${REPORT_PATH}/${platform}/` :
                     `https://${DETOX_AWS_S3_BUCKET}.s3.amazonaws.com/${REPORT_PATH}/jest-stare/${platform}-report.html`;
                 resolve({success: true, reportLink});
             },

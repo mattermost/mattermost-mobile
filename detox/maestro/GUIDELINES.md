@@ -334,9 +334,9 @@ Single source of truth: [`maestro-version.json`](./maestro-version.json)
 |---|---|
 | `e2e-detox-pr.yml` | Matterwick entry point: builds, provisioning, header validation, dispatches Maestro |
 | `e2e-maestro-pr.yml` | Maestro status contexts, orchestration (reusable) |
-| `e2e-maestro-template.yml` | Simulator/emulator, seed, batch test runner, report |
+| `e2e-maestro-template.yml` | Simulator/emulator, seed, Test System IO orchestration |
 
-Maestro runs via `detox/maestro/scripts/run_ci_batches.sh` (one flow per batch). JUnit reports are merged before HTML generation.
+Maestro CI runs via Test System IO (`dispatch-begin` / `dispatch-run` / `summary`). Each worker leases one flow at a time.
 
 Device targets (same as Detox):
 
@@ -389,9 +389,7 @@ source detox/maestro/.maestro-test-env.sh
 ~/.maestro/bin/maestro test detox/maestro/flows/<flow>.yml
 ```
 
-For CI parity, use `detox/maestro/scripts/run_ci_batches.sh` (batch mode) with the CI-built `.app`/APK — not isolated single-flow runs only.
-
-Use the Maestro CLI for final verification (matches CI). Use `maestro hierarchy` / MCP inspect tools during authoring iteration.
+For CI-like local runs, use the same seeded env and the CI-built `.app`/APK. Use `maestro hierarchy` / MCP inspect tools during authoring iteration.
 
 ---
 

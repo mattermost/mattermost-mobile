@@ -1,7 +1,7 @@
 # MM-T1325: Timezone display settings reflect the device timezone after app restart.
 #
 # PRE-CONDITIONS:
-#   - CI: run_ci_batches.sh sets emulator/sim TZ to SIMULATOR_TIMEZONE (default America/New_York)
+#   - CI: Maestro workers pass SIMULATOR_TIMEZONE (default America/New_York) via maestro-env
 #   - Local: use scripts/run_timezone_test.sh to set device TZ and EXPECTED_TIMEZONE_REGION
 #
 # REQUIRED ENV VARS:
