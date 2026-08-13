@@ -76,6 +76,7 @@ export type Props = {
     teammateNameDisplay: string;
     displayName?: string;
     isOwnDirectMessage: boolean;
+    isDM: boolean;
     otherParticipants: boolean;
     isAdmin: boolean;
     isHost: boolean;
@@ -312,6 +313,7 @@ const CallScreen = ({
     teammateNameDisplay,
     displayName,
     isOwnDirectMessage,
+    isDM,
     otherParticipants,
     isAdmin,
     isHost,
@@ -785,21 +787,23 @@ const CallScreen = ({
                                     style={style.buttonText}
                                 />
                             </Pressable>
-                            <Pressable
-                                style={[style.button, isLandscape && style.buttonLandscape]}
-                                onPress={openParticipantsList}
-                            >
-                                <CompassIcon
-                                    name={'account-multiple-outline'}
-                                    size={32}
-                                    style={[style.buttonIcon, isLandscape && style.buttonIconLandscape]}
-                                />
-                                <FormattedText
-                                    id={'mobile.calls_people'}
-                                    defaultMessage={'People'}
-                                    style={style.buttonText}
-                                />
-                            </Pressable>
+                            {!isDM && (
+                                <Pressable
+                                    style={[style.button, isLandscape && style.buttonLandscape]}
+                                    onPress={openParticipantsList}
+                                >
+                                    <CompassIcon
+                                        name={'account-multiple-outline'}
+                                        size={32}
+                                        style={[style.buttonIcon, isLandscape && style.buttonIconLandscape]}
+                                    />
+                                    <FormattedText
+                                        id={'mobile.calls_people'}
+                                        defaultMessage={'People'}
+                                        style={style.buttonText}
+                                    />
+                                </Pressable>
+                            )}
                             {!isLandscape && (isHost || ccAvailable) &&
                                 <Pressable
                                     style={[style.button, isLandscape && style.buttonLandscape]}
