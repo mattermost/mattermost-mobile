@@ -109,20 +109,10 @@ describe('Messaging - Markdown Table', () => {
         await expect(element(by.text('Left text that wraps row'))).toBeVisible(50);
         await expect(element(by.text('Center text that wraps row'))).toBeVisible(50);
 
-        // Both platforms push the right-side column beyond the viewport, so scroll the table
-        // horizontally to reveal it.
-        //
-        // Use scrollTo('right') rather than whileElement(...).scroll(150, 'right'): this table
-        // is only 3 columns, so the content is 3 * CELL_MAX_WIDTH = 576pt against a 402pt
-        // viewport, leaving just ~174pt of scrollable extent. Detox refuses a 150pt gesture
-        // that close to the edge and throws "Unable to scroll right" without moving at all
-        // (the failure view hierarchy shows the table still at offset 0, while UIKit reports
-        // "Horizontal scroll bar, 2 pages" — the extent is real, the gesture just won't fit).
-        // MM-T4899_5 gets away with the gesture form because its 8-column table has ~558pt of
-        // extent. MM-T4899_3 already uses scrollTo('right') on this same scroll view.
-        await TableScreen.tableScrollView.scrollTo('right');
-        await expect(element(by.text('Right header that wraps'))).toBeVisible(50);
-        await expect(element(by.text('Right text that wraps row'))).toBeVisible(50);
+        // Android pushes the right-side columns beyond the viewport, so scroll the table
+        // horizontally until the right header and row become visible.
+        await waitFor(element(by.text('Right header that wraps'))).toBeVisible(50).whileElement(by.id(TableScreen.testID.tableScrollView)).scroll(150, 'right');
+        await waitFor(element(by.text('Right text that wraps row'))).toBeVisible(50).whileElement(by.id(TableScreen.testID.tableScrollView)).scroll(150, 'right');
 
         // # Go back to channel list screen
         await TableScreen.back();
