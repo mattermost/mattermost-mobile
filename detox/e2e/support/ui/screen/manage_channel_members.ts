@@ -72,6 +72,13 @@ class ManageChannelMembersScreen {
         await waitFor(ChannelInfoScreen.membersOption).toBeVisible().withTimeout(timeouts.TEN_SEC);
         await ChannelInfoScreen.membersOption.tap();
 
+        // SEC-11049: on Android the first-run onboarding tutorial (a React Native Modal)
+        // opens over ManageChannelMembersScreen and steals Espresso's window focus, so
+        // `manage_members.screen` is not matchable until the tutorial is dismissed.
+        if (isAndroid()) {
+            await this.closeTutorial();
+        }
+
         return this.toBeVisible();
     };
 

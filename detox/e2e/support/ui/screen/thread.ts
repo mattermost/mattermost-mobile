@@ -119,8 +119,34 @@ class ThreadScreen {
     };
 
     back = async () => {
-        await waitForElementToExist(this.backButton, timeouts.TEN_SEC);
-        await NavigationHeader.tapTopmostBackButton();
+        let navigated = false;
+        try {
+            const backTimeout = isAndroid() ? timeouts.HALF_MIN : timeouts.TEN_SEC;
+            await waitForElementToExist(this.backButton, backTimeout);
+            await NavigationHeader.tapTopmostBackButton();
+            navigated = true;
+        } catch {
+            // Back button not in hierarchy or tap failed — fall through.
+        }
+        if (!navigated && isAndroid()) {
+            // SEC-11015: thread-from-search can leave no hittable header back; a single
+            // system back sometimes only dismisses the keyboard or a transient overlay.
+            /* eslint-disable no-await-in-loop */
+            for (let attempt = 0; attempt < 2 && !navigated; attempt++) {
+                try {
+                    await device.pressBack();
+                    await wait(timeouts.TWO_SEC);
+                    await waitFor(this.threadScreen).not.toBeVisible().withTimeout(timeouts.FIVE_SEC);
+                    navigated = true;
+                } catch {
+                    // still visible, retry
+                }
+            }
+            /* eslint-enable no-await-in-loop */
+        }
+        if (!navigated) {
+            throw new Error('ThreadScreen.back: could not navigate back');
+        }
         await waitFor(this.threadScreen).not.toBeVisible().withTimeout(timeouts.TEN_SEC);
 
         // Wait for the previous screen to be fully loaded and rendered

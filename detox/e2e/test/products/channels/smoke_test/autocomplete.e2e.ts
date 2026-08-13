@@ -86,7 +86,9 @@ describe('Smoke Test - Autocomplete', () => {
         await ChannelScreen.hasPostMessage(post.id, `@${testUser.username}`);
     });
 
-    // Skip iOS: R1+R3 product — channel mention suggestion not hittable at visible point
+    // SEC-10998: porting the MM-T4879_7 display-name tap (PR #9893) still fails on iOS —
+    // channel_mention_item stays under 40% visible behind the sticky header (MM-70015).
+    // Keep the tapSuggestion body for the next unskip; iOS stays skipped until PE/layout.
     (isIos() ? it.skip : it)('MM-T4886_2 - should be able to select and post channel mention suggestion', async () => {
         // # Type in "~" to activate channel mention autocomplete
         await ChannelScreen.postInput.typeText('~');
