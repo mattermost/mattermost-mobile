@@ -142,7 +142,7 @@ describe('DraftInput', () => {
         });
 
         it('opens scheduled post options on long press and verify action', async () => {
-            jest.mocked(navigateToScreen).mockImplementation(() => {});
+            jest.mocked(navigateToScreen).mockImplementation(() => true);
 
             // make this a re-usable function
             await operator.handleConfigs({
@@ -171,7 +171,7 @@ describe('DraftInput', () => {
         });
 
         it('should not open scheduled post options if scheduled post are disabled', async () => {
-            jest.mocked(navigateToScreen).mockImplementation(() => {});
+            jest.mocked(navigateToScreen).mockImplementation(() => true);
             const props = {
                 ...baseProps,
                 scheduledPostsEnabled: false,

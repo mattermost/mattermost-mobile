@@ -540,6 +540,7 @@
   "inline_action_button.failed": "Action failed to execute.",
   "inline_action_button.timeout": "Action timed out. Try again.",
   "integration_selector.multiselect.submit": "Done",
+  "interactive_dialog.action_button.error": "Action failed",
   "interactive_dialog.error.bad_email": "Must be a valid email address.",
   "interactive_dialog.error.bad_number": "Must be a number.",
   "interactive_dialog.error.bad_url": "URL must include http:// or https://.",
