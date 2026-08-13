@@ -72,23 +72,7 @@ describe('Messaging - Markdown Table', () => {
         await ChannelScreen.back();
     });
 
-    // Skip iOS: the full-view step asserts a horizontal scroll that iOS does not have.
-    // MarkdownTable.shouldRenderAsFlex(isFullView=true) returns true for a 3-4 column table
-    // on a phone, so the expanded table is flex-fitted to the viewport instead of being laid
-    // out at getTableWidth(true). table.scroll_view then has no horizontal scrollable extent,
-    // and Detox fails the very first scroll with "Unable to scroll right" (testFnFailure.png
-    // shows the table still at offset 0). MM-T4899_3 scrolls fine because its 8-column table
-    // takes the non-flex branch and does get an explicit width.
-    //
-    // This was already skipped for exactly this reason ("expanded-table horizontal scroll
-    // cannot reveal the right column", CI run 30000635898). PR #9989 un-skipped four iOS
-    // tests in this file at once; it fixed the NavigationHeader problems behind the other
-    // three, but not this one. Reproduced on main 10207015 (run 31700057852) and on
-    // run 31715496229 — deterministic, not a flake.
-    //
-    // Re-enable once the clipped right column in the flex-rendered full view is addressed;
-    // that is an app layout question, not a test-harness one.
-    (isIos() ? it.skip : it)('MM-T4899_2 - should be able to display markdown table with long text wrapped properly', async () => {
+    it('MM-T4899_2 - should be able to display markdown table with long text wrapped properly', async () => {
         // # Open a channel screen and post a markdown table with long text
         const markdownTable =
             '| Left header that wraps | Center header that wraps | Right header that wraps |\n' +
@@ -125,10 +109,20 @@ describe('Messaging - Markdown Table', () => {
         await expect(element(by.text('Left text that wraps row'))).toBeVisible(50);
         await expect(element(by.text('Center text that wraps row'))).toBeVisible(50);
 
-        // Android pushes the right-side columns beyond the viewport, so scroll the table
-        // horizontally until the right header and row become visible.
-        await waitFor(element(by.text('Right header that wraps'))).toBeVisible(50).whileElement(by.id(TableScreen.testID.tableScrollView)).scroll(150, 'right');
-        await waitFor(element(by.text('Right text that wraps row'))).toBeVisible(50).whileElement(by.id(TableScreen.testID.tableScrollView)).scroll(150, 'right');
+        // Both platforms push the right-side column beyond the viewport, so scroll the table
+        // horizontally to reveal it.
+        //
+        // Use scrollTo('right') rather than whileElement(...).scroll(150, 'right'): this table
+        // is only 3 columns, so the content is 3 * CELL_MAX_WIDTH = 576pt against a 402pt
+        // viewport, leaving just ~174pt of scrollable extent. Detox refuses a 150pt gesture
+        // that close to the edge and throws "Unable to scroll right" without moving at all
+        // (the failure view hierarchy shows the table still at offset 0, while UIKit reports
+        // "Horizontal scroll bar, 2 pages" — the extent is real, the gesture just won't fit).
+        // MM-T4899_5 gets away with the gesture form because its 8-column table has ~558pt of
+        // extent. MM-T4899_3 already uses scrollTo('right') on this same scroll view.
+        await TableScreen.tableScrollView.scrollTo('right');
+        await expect(element(by.text('Right header that wraps'))).toBeVisible(50);
+        await expect(element(by.text('Right text that wraps row'))).toBeVisible(50);
 
         // # Go back to channel list screen
         await TableScreen.back();
