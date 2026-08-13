@@ -184,8 +184,7 @@ jobs:
           GITHUB_REPOSITORY: ${{ github.repository }}
         run: |
           set -euo pipefail
-          # Derive the report name from the commit-status context: drop e2e-test/
-          # and swap remaining / for - (mattermost Playwright/Cypress pattern).
+          # Report name: strip e2e-test/ prefix, replace / with -.
           NAME="${CONTEXT_NAME#e2e-test/}"
           NAME="${NAME//\//-}"
           if [ -z "$COMMIT_SHA" ]; then
@@ -616,8 +615,7 @@ jobs:
           pr-number: ${{ needs.begin.outputs.pr-number }}
           ref-branch: ${{ needs.begin.outputs.identity-branch }}
 
-      # Same pattern as mattermost Playwright/Cypress: summary builds webhook_payload;
-      # the workflow only POSTs it. Commit status is handled by begin + summary.
+      # POST webhook_payload from summary.
       - name: Publish Mattermost webhook
         if: steps.e2e-override.outputs.override != 'true'
         env:

@@ -275,8 +275,7 @@ jobs:
               || 'e2e tests overridden' }}
           target_url: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
 
-  # Branch + context_suffix for Test System IO (mattermost Playwright/Cypress pattern).
-  # Templates build composite identity from context_name + these outputs via inline jq.
+  # Branch + context_suffix for template identity / status contexts.
   generate-e2e-variables:
     name: Generate E2E identity variables
     runs-on: ubuntu-24.04
@@ -297,8 +296,7 @@ jobs:
           RUN_TYPE: ${{ inputs.run_type || 'PR' }}
         run: |
           set -euo pipefail
-          # Match mattermost Playwright/Cypress: PR runs group under pr-{number}
-          # so report URLs stay stable across head-branch renames/pushes.
+          # PR identity branch: pr-{number}.
           PR_DIGITS=$(echo "${PR_NUMBER}" | tr -cd '0-9')
           RUN_TYPE_UPPER=$(echo "${RUN_TYPE}" | tr '[:lower:]' '[:upper:]')
           VERSION_NAME="${VERSION_NAME#refs/heads/}"
@@ -1062,6 +1060,4 @@ jobs:
           BRANCH: ${{ github.ref_name }}
           WORKFLOW_CONCLUSION: ${{ job.status }}
 
-  # Per-platform GitHub commit status + Mattermost channel notify are handled by
-  # test-system-io-dispatch-begin / test-system-io-summary in each Detox/Maestro
-  # template (same as mattermost Playwright/Cypress). No custom rollup job.
+  # Per-platform commit status + channel notify come from begin/summary in each template.
