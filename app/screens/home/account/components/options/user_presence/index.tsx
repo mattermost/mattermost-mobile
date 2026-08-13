@@ -75,10 +75,7 @@ const UserStatus = ({currentUser}: Props) => {
         setStatus(serverUrl, userStatus);
     }, [currentUser.id, serverUrl]);
 
-    // Dismiss the sheet and let Fabric finish unmounting slide-up views before
-    // updateLocalUser remounts the presence indicator. Updating status while the
-    // sheet is still tearing down redboxes Android addViewAt ("child already has
-    // a parent") and leaves Detox with ReactContext null (CI MM-T4988_2).
+    // Dismiss the sheet, wait for slide-up views to unmount, then update status.
     const dismissThenUpdateStatus = useCallback(async (status: string) => {
         await dismiss();
         await new Promise((resolve) => setTimeout(resolve, 150));
