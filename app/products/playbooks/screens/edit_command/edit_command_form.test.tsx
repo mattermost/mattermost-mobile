@@ -22,7 +22,7 @@ jest.mock('@components/autocomplete', () => ({
     __esModule: true,
     default: jest.fn(),
 }));
-jest.mocked(Autocomplete).mockImplementation((props) => React.createElement('Autocomplete', {testID: 'autocomplete', ...props}));
+jest.mocked(Autocomplete).mockImplementation((props: ComponentProps<typeof Autocomplete>) => React.createElement('Autocomplete', {testID: 'autocomplete', ...props}));
 
 const serverUrl = 'some.server.url';
 

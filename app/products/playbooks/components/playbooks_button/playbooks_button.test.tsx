@@ -24,7 +24,11 @@ describe('PlaybooksButton', () => {
         const {getByTestId, getByText} = renderWithIntl(<PlaybooksButton/>);
 
         const icon = getByTestId('channel_list.playbooks.button-icon');
-        expect(icon).toHaveProp('name', 'product-playbooks');
+
+        // CompassIcon (name='product-playbooks') renders as a Text node; the 'name' prop is consumed
+        // internally and does not appear on rendered props. Verify the glyph (0xe82d) instead.
+        const PRODUCT_PLAYBOOKS = String.fromCodePoint(0xe82d);
+        expect(icon.props.children).toContain(PRODUCT_PLAYBOOKS);
         expect(getByText('Playbook checklists')).toBeTruthy();
     });
 

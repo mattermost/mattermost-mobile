@@ -152,6 +152,25 @@ export function useTheme(): Theme {
     return React.useContext(ThemeContext);
 }
 
+export function useThemeByAppearanceWithDefault(themeProp?: Theme): Theme {
+    const [theme, setTheme] = useState<Theme>(() => {
+        return themeProp || getDefaultThemeByAppearance();
+    });
+
+    useEffect(() => {
+        const listener = Appearance.addChangeListener(() => {
+            const newTheme = getDefaultThemeByAppearance();
+            if (theme !== newTheme) {
+                setTheme(newTheme);
+            }
+        });
+
+        return () => listener.remove();
+    }, [theme]);
+
+    return theme;
+}
+
 const enhancedThemeProvider = withObservables([], ({database}: {database: Database}) => ({
     currentTeamId: observeCurrentTeamId(database),
     darkThemes: queryDarkThemePreferences(database).observeWithColumns(['value']),

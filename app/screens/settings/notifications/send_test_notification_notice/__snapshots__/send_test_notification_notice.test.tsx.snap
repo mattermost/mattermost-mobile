@@ -38,16 +38,30 @@ exports[`SendTestNotificationNotice should match snapshot 1`] = `
         }
       }
     >
-      <Icon
-        name="lightbulb-outline"
-        size={20}
+      <Text
+        allowFontScaling={false}
+        selectable={false}
         style={
-          {
-            "color": "#5d89ea",
-          }
+          [
+            {
+              "color": "black",
+              "fontSize": 20,
+            },
+            {
+              "color": "#5d89ea",
+            },
+            {
+              "fontFamily": "compass-icons",
+              "fontStyle": "normal",
+              "fontWeight": "normal",
+            },
+            undefined,
+          ]
         }
         testID="sectionNoticeHeaderIcon"
-      />
+      >
+        󰌶
+      </Text>
       <View
         style={
           {
@@ -146,7 +160,9 @@ exports[`SendTestNotificationNotice should match snapshot 1`] = `
               accessible={true}
               collapsable={false}
               focusable={true}
+              onBlur={[Function]}
               onClick={[Function]}
+              onFocus={[Function]}
               onResponderGrant={[Function]}
               onResponderMove={[Function]}
               onResponderRelease={[Function]}
@@ -154,9 +170,12 @@ exports[`SendTestNotificationNotice should match snapshot 1`] = `
               onResponderTerminationRequest={[Function]}
               onStartShouldSetResponder={[Function]}
               style={
-                {
-                  "opacity": 1,
-                }
+                [
+                  undefined,
+                  {
+                    "opacity": 1,
+                  },
+                ]
               }
             >
               <View
@@ -240,7 +259,9 @@ exports[`SendTestNotificationNotice should match snapshot 1`] = `
               accessible={true}
               collapsable={false}
               focusable={true}
+              onBlur={[Function]}
               onClick={[Function]}
+              onFocus={[Function]}
               onResponderGrant={[Function]}
               onResponderMove={[Function]}
               onResponderRelease={[Function]}
@@ -248,9 +269,12 @@ exports[`SendTestNotificationNotice should match snapshot 1`] = `
               onResponderTerminationRequest={[Function]}
               onStartShouldSetResponder={[Function]}
               style={
-                {
-                  "opacity": 1,
-                }
+                [
+                  undefined,
+                  {
+                    "opacity": 1,
+                  },
+                ]
               }
             >
               <View
@@ -280,12 +304,28 @@ exports[`SendTestNotificationNotice should match snapshot 1`] = `
                   testID="undefined-text-container"
                 >
                   <View>
-                    <Icon
-                      color="#1c58d9"
-                      name="open-in-new"
-                      size={18}
+                    <Text
+                      allowFontScaling={false}
+                      selectable={false}
+                      style={
+                        [
+                          {
+                            "color": "#1c58d9",
+                            "fontSize": 18,
+                          },
+                          undefined,
+                          {
+                            "fontFamily": "compass-icons",
+                            "fontStyle": "normal",
+                            "fontWeight": "normal",
+                          },
+                          undefined,
+                        ]
+                      }
                       testID="undefined-icon"
-                    />
+                    >
+                      󰏌
+                    </Text>
                   </View>
                   <Text
                     numberOfLines={1}

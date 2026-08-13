@@ -100,30 +100,37 @@ class CustomPushNotification(
 
     private suspend fun finishProcessingNotification(serverUrl: String?, type: String?, channelId: String?, notificationId: Int) {
         val isReactInit = mAppLifecycleFacade.isReactInitialized()
+        val bundle = mNotificationProps.asBundle()
+        val currentActivityName = mAppLifecycleFacade.runningReactContext?.currentActivity?.componentName?.className ?: ""
+        val isAppVisible = mAppLifecycleFacade.isAppVisible()
+        val isMainActivity = currentActivityName.contains("MainActivity")
+        TurboLog.i("CustomPushNotification", currentActivityName)
 
         when (type) {
-            CustomPushNotificationHelper.PUSH_TYPE_MESSAGE, CustomPushNotificationHelper.PUSH_TYPE_SESSION -> {
-                val currentActivityName = mAppLifecycleFacade.runningReactContext?.currentActivity?.componentName?.className ?: ""
-                TurboLog.i("ReactNative", currentActivityName)
-                if (!mAppLifecycleFacade.isAppVisible() || !currentActivityName.contains("MainActivity")) {
-                    var createSummary = type == CustomPushNotificationHelper.PUSH_TYPE_MESSAGE
-                    if (type == CustomPushNotificationHelper.PUSH_TYPE_MESSAGE) {
-                        channelId?.let {
-                            val notificationBundle = mNotificationProps.asBundle()
-                            serverUrl?.let {
-                                val notificationResult = dataHelper.fetchAndStoreDataForPushNotification(notificationBundle, isReactInit)
-                                notificationResult?.let { result ->
-                                    notificationBundle.putBundle("data", result)
-                                    mNotificationProps = createProps(notificationBundle)
-                                }
+            CustomPushNotificationHelper.PUSH_TYPE_MESSAGE -> {
+                if (!isAppVisible || !isMainActivity) {
+                    val createSummary = channelId?.let {
+                        serverUrl?.let {
+                            val notificationResult = dataHelper.fetchAndStoreDataForPushNotification(bundle, isReactInit)
+                            notificationResult?.let { result ->
+                                bundle.putBundle("data", result)
+                                mNotificationProps = createProps(bundle)
                             }
-                            createSummary = NotificationHelper.addNotificationToPreferences(mContext, notificationId, notificationBundle)
                         }
-                    }
+
+                        NotificationHelper.addNotificationToPreferences(mContext, notificationId, bundle)
+                    } ?: true
+                    
                     buildNotification(notificationId, createSummary)
                 }
             }
-            CustomPushNotificationHelper.PUSH_TYPE_CLEAR -> NotificationHelper.clearChannelOrThreadNotifications(mContext, mNotificationProps.asBundle())
+            CustomPushNotificationHelper.PUSH_TYPE_SESSION -> {
+                val message = bundle.getString("message") ?: bundle.getString("body")
+                if (!message.isNullOrEmpty() && (!isAppVisible || !isMainActivity)) {
+                    buildNotification(notificationId, false)
+                }
+            }
+            CustomPushNotificationHelper.PUSH_TYPE_CLEAR -> NotificationHelper.clearChannelOrThreadNotifications(mContext, bundle)
         }
 
         if (isReactInit) {

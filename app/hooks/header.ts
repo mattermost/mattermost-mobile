@@ -2,8 +2,9 @@
 // See LICENSE.txt for license information.
 
 import React, {useCallback, useMemo, useState} from 'react';
-import Animated, {runOnJS, scrollTo, useAnimatedRef, useAnimatedScrollHandler, useDerivedValue, useSharedValue, withTiming} from 'react-native-reanimated';
+import Animated, {scrollTo, useAnimatedRef, useAnimatedScrollHandler, useDerivedValue, useSharedValue, withTiming} from 'react-native-reanimated';
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
+import {scheduleOnRN} from 'react-native-worklets';
 
 import ViewConstants from '@constants/view';
 import {useIsTablet} from '@hooks/device';
@@ -72,9 +73,9 @@ export const useCollapsibleHeader = <T>(isLargeTitle: boolean, onSnap?: (offset:
         if (onSnap && !snapping.value) {
             snapping.value = true;
             if (dir === 'down' && offset < largeHeight) {
-                runOnJS(onSnap)(0);
+                scheduleOnRN(onSnap, 0);
             } else if (dir === 'up' && offset < (defaultHeight)) {
-                runOnJS(onSnap)(headerOffset);
+                scheduleOnRN(onSnap, headerOffset);
             }
             snapping.value = Boolean(withTiming(0, {duration: 100}));
         }
@@ -124,7 +125,7 @@ export const useCollapsibleHeader = <T>(isLargeTitle: boolean, onSnap?: (offset:
                     const offset = Math.abs(e.contentOffset.y);
 
                     if (onSnap && offset < largeHeight) {
-                        runOnJS(onSnap)(0);
+                        scheduleOnRN(onSnap, 0);
                     }
                     ctx.momentum = undefined;
                 }

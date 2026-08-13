@@ -4,27 +4,32 @@
 import {
     Alert,
 } from '@support/ui/component';
-import {timeouts, wait} from '@support/utils';
+import {timeouts, wait, waitForElementToNotExist} from '@support/utils';
+import {tapNativeBackButton} from '@support/utils/detoxhelpers';
 import {expect, waitFor} from 'detox';
 
 class ChannelSettingsScreen {
     testID = {
         channelSettingsScreen: 'channel_settings.screen',
-        closeButton: 'screen.back.button',
+        closeButton: 'navigation.header.back',
         scrollView: 'channel_settings.scroll_view',
         channelInfoOption: 'channel_settings.channel_info.option',
+        configurationOption: 'channel_settings.configuration.option',
         convertPrivateOption: 'channel_settings.convert_private.option',
         archiveChannelOption: 'channel_settings.archive_channel.option',
         unarchiveChannelOption: 'channel_settings.unarchive_channel.option',
+        shareWithConnectedWorkspacesOption: 'channel_settings.share_with_connected_workspaces.option',
     };
 
     channelSettingsScreen = element(by.id(this.testID.channelSettingsScreen));
     closeButton = element(by.id(this.testID.closeButton));
     scrollView = element(by.id(this.testID.scrollView));
     channelInfoOption = element(by.id(this.testID.channelInfoOption));
+    configurationOption = element(by.id(this.testID.configurationOption));
     convertPrivateOption = element(by.id(this.testID.convertPrivateOption));
     archiveChannelOption = element(by.id(this.testID.archiveChannelOption));
     unarchiveChannelOption = element(by.id(this.testID.unarchiveChannelOption));
+    shareWithConnectedWorkspacesOption = element(by.id(this.testID.shareWithConnectedWorkspacesOption));
 
     toBeVisible = async () => {
         await waitFor(this.channelSettingsScreen).toExist().withTimeout(timeouts.TEN_SEC);
@@ -33,8 +38,16 @@ class ChannelSettingsScreen {
     };
 
     close = async () => {
-        await this.closeButton.tap();
-        await expect(this.channelSettingsScreen).not.toBeVisible();
+        // Use platform-native back chevron: Android via 'Navigate up' label,
+        // iOS via 'Back' label. The custom NavigationHeader testID does not
+        // exist on this screen (expo-router native stack with getHeaderOptions).
+        await tapNativeBackButton();
+        await waitFor(this.channelSettingsScreen).not.toBeVisible().withTimeout(timeouts.TEN_SEC);
+    };
+
+    openConfiguration = async () => {
+        await waitFor(this.configurationOption).toBeVisible().whileElement(by.id(this.testID.scrollView)).scroll(50, 'down');
+        await this.configurationOption.tap({x: 1, y: 1});
     };
 
     archiveChannel = async (alertArchiveChannelTitle: Detox.NativeElement, {confirm = true} = {}) => {
@@ -50,11 +63,15 @@ class ChannelSettingsScreen {
         await expect(yesButton).toBeVisible();
         if (confirm) {
             await yesButton.tap();
-            await wait(timeouts.ONE_SEC);
-            await expect(this.channelSettingsScreen).not.toExist();
+
+            // Wait for the alert to be fully dismissed before proceeding — a fixed sleep
+            // is insufficient on slow iOS CI runners where the dismiss animation can take
+            // longer, leaving the dimming view blocking subsequent taps.
+            await waitFor(alertArchiveChannelTitle).not.toExist().withTimeout(timeouts.TEN_SEC);
+            await waitForElementToNotExist(this.channelSettingsScreen, timeouts.TEN_SEC);
         } else {
             await noButton.tap();
-            await wait(timeouts.ONE_SEC);
+            await waitFor(alertArchiveChannelTitle).not.toExist().withTimeout(timeouts.TEN_SEC);
             await expect(this.channelSettingsScreen).toExist();
         }
     };
@@ -69,7 +86,13 @@ class ChannelSettingsScreen {
 
     convertToPrivateChannel = async (channelDisplayName: string, {confirm = true} = {}) => {
         await this.scrollView.tap({x: 1, y: 1});
-        await this.scrollView.scroll(100, 'down');
+
+        // Scroll down to reveal the convert option. The scroll can fail with
+        // "Unable to scroll" if the settings content is short enough to fit
+        // without scrolling (e.g. newly created channel with no custom settings).
+        try {
+            await this.scrollView.scroll(100, 'down');
+        } catch { /* content may already fit without scrolling */ }
         await waitFor(this.convertPrivateOption).toBeVisible().whileElement(by.id(this.testID.scrollView)).scroll(50, 'down');
         await this.convertPrivateOption.tap({x: 1, y: 1});
         const {
@@ -79,18 +102,27 @@ class ChannelSettingsScreen {
             okButton,
             yesButton2,
         } = Alert;
-        await expect(convertToPrivateChannelTitle(channelDisplayName)).toBeVisible();
+        const convertTitle = convertToPrivateChannelTitle(channelDisplayName);
+        await expect(convertTitle).toBeVisible();
         await expect(noButton2).toBeVisible();
         await expect(yesButton2).toBeVisible();
         if (confirm) {
             await yesButton2.tap();
-            await expect(channelNowPrivateTitle(channelDisplayName)).toBeVisible();
+
+            // Wait for the first alert to dismiss and the "now private" confirmation to appear
+            await waitFor(convertTitle).not.toExist().withTimeout(timeouts.TEN_SEC);
+            const nowPrivateTitle = channelNowPrivateTitle(channelDisplayName);
+            await expect(nowPrivateTitle).toBeVisible();
             await okButton.tap();
-            await wait(timeouts.ONE_SEC);
+
+            // Wait for the confirmation alert to be fully dismissed before proceeding — a fixed
+            // sleep is insufficient on slow iOS CI runners where the UIAlertController dimming
+            // view can block subsequent taps on the channel list header plus button.
+            await waitFor(nowPrivateTitle).not.toExist().withTimeout(timeouts.TEN_SEC);
             await expect(this.channelSettingsScreen).toExist();
         } else {
             await noButton2.tap();
-            await wait(timeouts.ONE_SEC);
+            await waitFor(convertTitle).not.toExist().withTimeout(timeouts.TEN_SEC);
             await expect(this.channelSettingsScreen).toExist();
         }
     };
@@ -108,11 +140,15 @@ class ChannelSettingsScreen {
         await expect(yesButton).toBeVisible();
         if (confirm) {
             await yesButton.tap();
-            await wait(timeouts.ONE_SEC);
+
+            // Wait for the alert to be fully dismissed before proceeding — a fixed sleep
+            // is insufficient on slow iOS CI runners where the dismiss animation can take
+            // longer, leaving the dimming view blocking subsequent taps.
+            await waitFor(alertUnarchiveChannelTitle).not.toExist().withTimeout(timeouts.TEN_SEC);
             await expect(this.channelSettingsScreen).not.toExist();
         } else {
             await noButton.tap();
-            await wait(timeouts.ONE_SEC);
+            await waitFor(alertUnarchiveChannelTitle).not.toExist().withTimeout(timeouts.TEN_SEC);
             await expect(this.channelSettingsScreen).toExist();
         }
     };

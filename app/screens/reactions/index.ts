@@ -11,10 +11,15 @@ import {observeReactionsForPost} from '@queries/servers/reaction';
 import Reactions from './reactions';
 
 import type {WithDatabaseArgs} from '@typings/database/database';
+import type {AvailableScreens} from '@typings/screens/navigation';
 
-type EnhancedProps = WithDatabaseArgs & {
+export type ReactionsProps = {
     postId: string;
+    initialEmoji: string;
+    location: AvailableScreens;
 }
+
+type EnhancedProps = ReactionsProps & WithDatabaseArgs;
 
 const enhanced = withObservables([], ({postId, database}: EnhancedProps) => {
     const post = observePost(database, postId);

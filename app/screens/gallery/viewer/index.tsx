@@ -2,7 +2,7 @@
 // See LICENSE.txt for license information.
 
 import React, {useCallback, useRef} from 'react';
-import {runOnJS} from 'react-native-reanimated';
+import {scheduleOnRN} from 'react-native-worklets';
 
 import Pager from '../pager';
 import ImageRenderer from '../renderers/image';
@@ -16,7 +16,7 @@ export interface GalleryViewerProps {
     items: GalleryItemType[];
     numToRender?: number;
     onIndexChange?: (nextIndex: number) => void;
-    renderPage?: (props: GalleryPagerItem, index: number) => JSX.Element | null;
+    renderPage?: (props: GalleryPagerItem, index: number) => React.ReactNode;
     width: number;
     hideHeaderAndFooter: (hide: boolean) => void;
 }
@@ -34,7 +34,7 @@ const GalleryViewer = ({
     const onIndexChangeWorklet = useCallback((nextIndex: number) => {
         'worklet';
 
-        runOnJS(setTempIndex)(nextIndex);
+        scheduleOnRN(setTempIndex, nextIndex);
 
         if (onIndexChange) {
             onIndexChange(nextIndex);

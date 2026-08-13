@@ -4,10 +4,11 @@
 import {act, waitFor} from '@testing-library/react-native';
 import React from 'react';
 
+import {Screens} from '@constants';
 import useAndroidHardwareBackHandler from '@hooks/android_back_handler';
 import {fetchFinishedRunsForChannel} from '@playbooks/actions/remote/runs';
 import RunList from '@playbooks/components/run_list';
-import {popTopScreen} from '@screens/navigation';
+import {navigateBack} from '@screens/navigation';
 import {renderWithIntl} from '@test/intl-test-helper';
 import TestHelper from '@test/test_helper';
 
@@ -28,6 +29,8 @@ jest.mock('@context/server', () => ({
     useServerUrl: jest.fn(() => 'server-url'),
 }));
 
+jest.mock('@screens/navigation');
+
 jest.mock('@hooks/android_back_handler');
 
 describe('PlaybookRuns', () => {
@@ -45,7 +48,6 @@ describe('PlaybookRuns', () => {
         const {getByTestId} = renderWithIntl(
             <PlaybookRuns
                 allRuns={[]}
-                componentId={'PlaybookRuns'}
                 channelId={'channel-id-1'}
             />,
         );
@@ -60,7 +62,6 @@ describe('PlaybookRuns', () => {
         const {getByTestId} = renderWithIntl(
             <PlaybookRuns
                 allRuns={[inProgressRun, finishedRun]}
-                componentId={'PlaybookRuns'}
                 channelId={'channel-id-1'}
             />,
         );
@@ -75,7 +76,6 @@ describe('PlaybookRuns', () => {
         const {getByTestId} = renderWithIntl(
             <PlaybookRuns
                 allRuns={[inProgressRun, finishedRun]}
-                componentId={'PlaybookRuns'}
                 channelId={'channel-id-1'}
             />,
         );
@@ -89,7 +89,6 @@ describe('PlaybookRuns', () => {
         const {getByTestId} = renderWithIntl(
             <PlaybookRuns
                 allRuns={[inProgressRun]}
-                componentId={'PlaybookRuns'}
                 channelId={'channel-id-1'}
             />,
         );
@@ -113,7 +112,6 @@ describe('PlaybookRuns', () => {
         const {getByTestId} = renderWithIntl(
             <PlaybookRuns
                 allRuns={[inProgressRun]}
-                componentId={'PlaybookRuns'}
                 channelId={'channel-id-1'}
             />,
         );
@@ -162,12 +160,10 @@ describe('PlaybookRuns', () => {
         const {getByTestId} = renderWithIntl(
             <PlaybookRuns
                 allRuns={[inProgressRun]}
-                componentId={'PlaybookRuns'}
                 channelId={'channel-id-1'}
             />,
         );
 
-        const runList = getByTestId('run-list');
         let resolvePromise: (() => void) | undefined;
         jest.mocked(fetchFinishedRunsForChannel).mockImplementation(() => {
             const promise = new Promise<{runs: PlaybookRun[]; has_more: boolean}>((resolve) => {
@@ -176,31 +172,36 @@ describe('PlaybookRuns', () => {
             return promise;
         });
 
+        const runList = getByTestId('run-list');
         act(() => {
             runList.props.fetchMoreRuns('finished');
         });
 
         await waitFor(() => {
-            expect(runList.props.fetching).toBe(true);
+            expect(getByTestId('run-list').props.fetching).toBe(true);
         });
         expect(fetchFinishedRunsForChannel).toHaveBeenCalledTimes(1);
         expect(fetchFinishedRunsForChannel).toHaveBeenCalledWith('server-url', 'channel-id-1', 0);
 
+        // Get the updated props after state change
+        const updatedRunList = getByTestId('run-list');
         act(() => {
-            runList.props.fetchMoreRuns('finished');
+            updatedRunList.props.fetchMoreRuns('finished');
         });
 
         await waitFor(() => {
             expect(fetchFinishedRunsForChannel).toHaveBeenCalledTimes(1);
         });
-        resolvePromise?.();
+
+        await act(async () => {
+            resolvePromise?.();
+        });
     });
 
     it('an error on fetch more runs hides the show more button', async () => {
         const {getByTestId} = renderWithIntl(
             <PlaybookRuns
                 allRuns={[inProgressRun]}
-                componentId={'PlaybookRuns'}
                 channelId={'channel-id-1'}
             />,
         );
@@ -222,7 +223,6 @@ describe('PlaybookRuns', () => {
         const {getByTestId} = renderWithIntl(
             <PlaybookRuns
                 allRuns={[inProgressRun]}
-                componentId={'PlaybookRuns'}
                 channelId={'channel-id-1'}
             />,
         );
@@ -239,26 +239,24 @@ describe('PlaybookRuns', () => {
         renderWithIntl(
             <PlaybookRuns
                 allRuns={[inProgressRun]}
-                componentId={'PlaybookRuns'}
                 channelId={'channel-id-1'}
             />,
         );
 
-        expect(useAndroidHardwareBackHandler).toHaveBeenCalledWith('PlaybookRuns', expect.any(Function));
+        expect(useAndroidHardwareBackHandler).toHaveBeenCalledWith(Screens.PLAYBOOKS_RUNS, expect.any(Function));
 
         const closeHandler = jest.mocked(useAndroidHardwareBackHandler).mock.calls[0][1];
         await act(async () => {
             closeHandler();
         });
 
-        expect(popTopScreen).toHaveBeenCalledWith('PlaybookRuns');
+        expect(navigateBack).toHaveBeenCalled();
     });
 
     it('passes down the channel id to the run list', () => {
         const {getByTestId} = renderWithIntl(
             <PlaybookRuns
                 allRuns={[inProgressRun]}
-                componentId={'PlaybookRuns'}
                 channelId={'channel-id-1'}
             />,
         );

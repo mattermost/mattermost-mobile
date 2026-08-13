@@ -11,6 +11,7 @@ import {queryPlaybookRunsPerChannel} from '@playbooks/database/queries/run';
 import {observeIsPlaybooksEnabled} from '@playbooks/database/queries/version';
 import {observeChannel, observeChannelInfo, observeIsChannelAutotranslated} from '@queries/servers/channel';
 import {observeCanAddBookmarks, queryBookmarks} from '@queries/servers/channel_bookmark';
+import {observeChannelBookmarksEnabled} from '@queries/servers/features';
 import {observeConfigBooleanValue, observeCurrentTeamId, observeCurrentUserId} from '@queries/servers/system';
 import {observeIsUserLanguageSupportedByAutotranslation, observeUser} from '@queries/servers/user';
 import {
@@ -94,7 +95,7 @@ const enhanced = withObservables(['channelId'], ({channelId, database}: OwnProps
         distinctUntilChanged(),
     );
 
-    const isBookmarksEnabled = observeConfigBooleanValue(database, 'FeatureFlagChannelBookmarks');
+    const isBookmarksEnabled = observeChannelBookmarksEnabled(database);
     const canAddBookmarks = observeCanAddBookmarks(database, channelId);
 
     const activeRuns = isPlaybooksEnabled.pipe(

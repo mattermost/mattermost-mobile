@@ -31,7 +31,7 @@ function Typing({
     rootId,
 }: Props) {
     const typing = useRef<Array<{id: string; now: number; username: string}>>([]);
-    const timeoutToDisappear = useRef<NodeJS.Timeout>();
+    const timeoutToDisappear = useRef<NodeJS.Timeout | undefined>(undefined);
     const mounted = useRef(false);
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const [refresh, setRefresh] = useState(0); // Used to trigger re-renders when typing state changes

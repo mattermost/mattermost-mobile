@@ -7,11 +7,15 @@ import {act, renderWithIntl} from '@test/intl-test-helper';
 
 import BookmarkIcon from './bookmark_icon';
 
-jest.mock('@context/theme', () => ({
-    useTheme: () => ({
-        centerChannelColor: '#000',
-    }),
-}));
+jest.mock('@context/theme', () => {
+    const {Preferences} = jest.requireActual('@constants');
+    return {
+        useTheme: () => ({
+            centerChannelColor: '#000',
+        }),
+        getDefaultThemeByAppearance: () => Preferences.THEMES.denim,
+    };
+});
 jest.mock('@components/emoji', () => 'Emoji');
 
 describe('components/channel_bookmarks/channel_bookmark/BookmarkIcon', () => {

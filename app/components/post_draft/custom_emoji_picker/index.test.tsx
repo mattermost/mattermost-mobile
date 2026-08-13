@@ -2,9 +2,8 @@
 // See LICENSE.txt for license information.
 
 import React from 'react';
-import {useSharedValue} from 'react-native-reanimated';
 
-import {useKeyboardAnimationContext} from '@context/keyboard_animation';
+import {useKeyboardState} from '@context/keyboard_state';
 import {renderWithIntlAndTheme} from '@test/intl-test-helper';
 import {EmojiIndicesByAlias, Emojis} from '@utils/emoji';
 
@@ -12,8 +11,10 @@ import EmojiPicker from './emoji_picker';
 
 import CustomEmojiPicker from './index';
 
-jest.mock('@context/keyboard_animation', () => ({
-    useKeyboardAnimationContext: jest.fn(),
+import type {EmojiPickerProps} from './emoji_picker/emoji_picker';
+
+jest.mock('@context/keyboard_state', () => ({
+    useKeyboardState: jest.fn(),
 }));
 
 jest.mock('react-native-reanimated', () => {
@@ -29,32 +30,43 @@ jest.mock('./emoji_picker', () => ({
 
 let mockOnEmojiPress: ((emoji: string) => void) | null = null;
 
-jest.mocked(EmojiPicker).mockImplementation((props) => {
+jest.mocked(EmojiPicker).mockImplementation((props: EmojiPickerProps) => {
     mockOnEmojiPress = props.onEmojiPress;
     return null;
 });
 
 describe('CustomEmojiPicker', () => {
-    const mockUseKeyboardAnimationContext = jest.mocked(useKeyboardAnimationContext);
+    const mockUseKeyboardState = jest.mocked(useKeyboardState);
     const mockUpdateValue = jest.fn();
     const mockUpdateCursorPosition = jest.fn();
-    const mockClearCursorPositionPreservation = jest.fn();
-    const mockCursorPositionRef = {current: 0};
 
-    const mockHeight = useSharedValue(300);
+    let mockCursorPosition = 0;
+    const mockGetCursorPosition = jest.fn(() => mockCursorPosition);
+    const mockSetCursorPosition = jest.fn((pos: number) => {
+        mockCursorPosition = pos;
+    });
 
     const defaultContextValue = {
-        cursorPositionRef: mockCursorPositionRef,
+        stateContext: {
+            inputAccessoryHeight: {value: 300},
+        },
         updateValue: mockUpdateValue,
         updateCursorPosition: mockUpdateCursorPosition,
-        clearCursorPositionPreservation: mockClearCursorPositionPreservation,
-    } as unknown as ReturnType<typeof useKeyboardAnimationContext>;
+        getCursorPosition: mockGetCursorPosition,
+        setCursorPosition: mockSetCursorPosition,
+        isEmojiSearchFocused: false,
+        setIsEmojiSearchFocused: jest.fn(),
+    } as unknown as ReturnType<typeof useKeyboardState>;
 
     beforeEach(() => {
         jest.clearAllMocks();
-        mockCursorPositionRef.current = 0;
+        mockCursorPosition = 0;
+        mockGetCursorPosition.mockImplementation(() => mockCursorPosition);
+        mockSetCursorPosition.mockImplementation((pos: number) => {
+            mockCursorPosition = pos;
+        });
         mockOnEmojiPress = null;
-        mockUseKeyboardAnimationContext.mockReturnValue(defaultContextValue);
+        mockUseKeyboardState.mockReturnValue(defaultContextValue);
     });
 
     const triggerEmojiPress = (emojiName: string) => {
@@ -65,16 +77,10 @@ describe('CustomEmojiPicker', () => {
 
     describe('emoji insertion at cursor position', () => {
         it('should insert emoji at the beginning of text when cursor is at position 0', () => {
-            mockCursorPositionRef.current = 0;
+            mockCursorPosition = 0;
             const initialValue = 'Hello world';
 
-            renderWithIntlAndTheme(
-                <CustomEmojiPicker
-                    height={mockHeight}
-                    setIsEmojiSearchFocused={jest.fn()}
-                    isEmojiSearchFocused={false}
-                />,
-            );
+            renderWithIntlAndTheme(<CustomEmojiPicker/>);
 
             const emojiName = 'smile';
             triggerEmojiPress(emojiName);
@@ -91,16 +97,10 @@ describe('CustomEmojiPicker', () => {
         });
 
         it('should insert emoji at the middle of text when cursor is at position 5', () => {
-            mockCursorPositionRef.current = 5;
+            mockCursorPosition = 5;
             const initialValue = 'Hello world';
 
-            renderWithIntlAndTheme(
-                <CustomEmojiPicker
-                    height={mockHeight}
-                    setIsEmojiSearchFocused={jest.fn()}
-                    isEmojiSearchFocused={false}
-                />,
-            );
+            renderWithIntlAndTheme(<CustomEmojiPicker/>);
 
             const emojiName = 'smile';
             triggerEmojiPress(emojiName);
@@ -117,16 +117,10 @@ describe('CustomEmojiPicker', () => {
         });
 
         it('should insert emoji at the end of text when cursor is at the end', () => {
-            mockCursorPositionRef.current = 11;
+            mockCursorPosition = 11;
             const initialValue = 'Hello world';
 
-            renderWithIntlAndTheme(
-                <CustomEmojiPicker
-                    height={mockHeight}
-                    setIsEmojiSearchFocused={jest.fn()}
-                    isEmojiSearchFocused={false}
-                />,
-            );
+            renderWithIntlAndTheme(<CustomEmojiPicker/>);
 
             const emojiName = 'smile';
             triggerEmojiPress(emojiName);
@@ -137,20 +131,13 @@ describe('CustomEmojiPicker', () => {
 
             expect(result.substring(0, 11)).toBe('Hello world');
             expect(result.length).toBeGreaterThan(initialValue.length);
-
             expect(result.substring(11)).not.toBe('');
         });
 
         it('should update cursor position after emoji insertion', () => {
-            mockCursorPositionRef.current = 5;
+            mockCursorPosition = 5;
 
-            renderWithIntlAndTheme(
-                <CustomEmojiPicker
-                    height={mockHeight}
-                    setIsEmojiSearchFocused={jest.fn()}
-                    isEmojiSearchFocused={false}
-                />,
-            );
+            renderWithIntlAndTheme(<CustomEmojiPicker/>);
 
             const emojiName = 'smile';
             triggerEmojiPress(emojiName);
@@ -176,39 +163,29 @@ describe('CustomEmojiPicker', () => {
             }
 
             expect(mockUpdateCursorPosition).toHaveBeenCalledWith(5 + insertedTextLength);
-            expect(mockCursorPositionRef.current).toBe(5 + insertedTextLength);
+            expect(mockCursorPosition).toBe(5 + insertedTextLength);
         });
 
-        it('should clear preservation flags after emoji insertion', () => {
-            mockCursorPositionRef.current = 5;
+        it('should set cursor position immediately via setCursorPosition after emoji insertion', () => {
+            mockCursorPosition = 5;
 
-            renderWithIntlAndTheme(
-                <CustomEmojiPicker
-                    height={mockHeight}
-                    setIsEmojiSearchFocused={jest.fn()}
-                    isEmojiSearchFocused={false}
-                />,
-            );
+            renderWithIntlAndTheme(<CustomEmojiPicker/>);
 
             const emojiName = 'smile';
             triggerEmojiPress(emojiName);
 
-            expect(mockClearCursorPositionPreservation).toHaveBeenCalled();
+            expect(mockSetCursorPosition).toHaveBeenCalled();
+            const newPos = mockSetCursorPosition.mock.calls[0][0];
+            expect(newPos).toBeGreaterThan(5);
         });
     });
 
     describe('multiple emoji insertions', () => {
         it('should insert second emoji at correct position after first emoji', () => {
-            mockCursorPositionRef.current = 5;
+            mockCursorPosition = 5;
             const initialValue = 'Hello world';
 
-            renderWithIntlAndTheme(
-                <CustomEmojiPicker
-                    height={mockHeight}
-                    setIsEmojiSearchFocused={jest.fn()}
-                    isEmojiSearchFocused={false}
-                />,
-            );
+            renderWithIntlAndTheme(<CustomEmojiPicker/>);
 
             // First emoji insertion
             const firstEmojiName = 'smile';
@@ -240,9 +217,8 @@ describe('CustomEmojiPicker', () => {
             }
 
             const expectedCursorAfterFirst = 5 + firstEmojiLength;
-            expect(mockCursorPositionRef.current).toBe(expectedCursorAfterFirst);
+            expect(mockCursorPosition).toBe(expectedCursorAfterFirst);
 
-            mockCursorPositionRef.current = expectedCursorAfterFirst;
             mockUpdateValue.mockClear();
 
             const secondEmojiName = 'heart';
@@ -258,16 +234,10 @@ describe('CustomEmojiPicker', () => {
 
     describe('custom emoji insertion', () => {
         it('should insert custom emoji with :emoji_name: format', () => {
-            mockCursorPositionRef.current = 5;
+            mockCursorPosition = 5;
             const initialValue = 'Hello world';
 
-            renderWithIntlAndTheme(
-                <CustomEmojiPicker
-                    height={mockHeight}
-                    setIsEmojiSearchFocused={jest.fn()}
-                    isEmojiSearchFocused={false}
-                />,
-            );
+            renderWithIntlAndTheme(<CustomEmojiPicker/>);
 
             // Use an emoji name that doesn't exist in EmojiIndicesByAlias
             // This will trigger the fallback to :emoji_name: format

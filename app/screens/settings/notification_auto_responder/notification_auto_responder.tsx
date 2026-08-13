@@ -11,18 +11,16 @@ import FormattedText from '@components/formatted_text';
 import SettingContainer from '@components/settings/container';
 import SettingOption from '@components/settings/option';
 import SettingSeparator from '@components/settings/separator';
-import {General} from '@constants';
+import {General, Screens} from '@constants';
 import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
 import useAndroidHardwareBackHandler from '@hooks/android_back_handler';
 import useBackNavigation from '@hooks/navigate_back';
-import {popTopScreen} from '@screens/navigation';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
 import {getNotificationProps} from '@utils/user';
 
 import type UserModel from '@typings/database/models/servers/user';
-import type {AvailableScreens} from '@typings/screens/navigation';
 
 const label = defineMessage({
     id: 'notification_settings.auto_responder.message',
@@ -47,10 +45,9 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
 });
 
 type NotificationAutoResponderProps = {
-    componentId: AvailableScreens;
     currentUser?: UserModel;
 }
-const NotificationAutoResponder = ({currentUser, componentId}: NotificationAutoResponderProps) => {
+const NotificationAutoResponder = ({currentUser}: NotificationAutoResponderProps) => {
     const theme = useTheme();
     const serverUrl = useServerUrl();
     const intl = useIntl();
@@ -79,12 +76,11 @@ const NotificationAutoResponder = ({currentUser, componentId}: NotificationAutoR
                 fetchStatusInBatch(serverUrl, currentUser.id);
             }
         }
-        popTopScreen(componentId);
-    }, [componentId, initialAutoResponderActive, autoResponderActive, initialOOOMsg, autoResponderMessage, serverUrl, notifyProps, currentUser]);
+    }, [initialAutoResponderActive, autoResponderActive, initialOOOMsg, autoResponderMessage, serverUrl, notifyProps, currentUser]);
 
     useBackNavigation(saveAutoResponder);
 
-    useAndroidHardwareBackHandler(componentId, saveAutoResponder);
+    useAndroidHardwareBackHandler(Screens.SETTINGS_NOTIFICATION_AUTO_RESPONDER, saveAutoResponder);
 
     return (
         <SettingContainer testID='auto_responder_notification_settings'>

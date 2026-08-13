@@ -2,37 +2,57 @@
 // See LICENSE.txt for license information.
 
 import React, {useCallback} from 'react';
-import {type SharedValue} from 'react-native-reanimated';
+import {View} from 'react-native';
+import Animated, {useAnimatedStyle} from 'react-native-reanimated';
 
-import {useKeyboardAnimationContext} from '@context/keyboard_animation';
+import {isEdgeToEdge} from '@constants/device';
+import {useKeyboardState} from '@context/keyboard_state';
+import {useTheme} from '@context/theme';
 import {EmojiIndicesByAlias, Emojis} from '@utils/emoji';
+import {makeStyleSheetFromTheme} from '@utils/theme';
 
 import EmojiPicker from './emoji_picker';
 
-type Props = {
-    height: SharedValue<number>;
-    onEmojiPress?: (emoji: string) => void;
-    setIsEmojiSearchFocused: React.Dispatch<React.SetStateAction<boolean>>;
-    isEmojiSearchFocused: boolean;
-}
+const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
+    container: {
+        position: 'absolute',
+        bottom: 0,
+        left: 0,
+        right: 0,
+    },
+    animatedContainer: {
+        backgroundColor: theme.centerChannelBg,
+        overflow: 'hidden',
+        width: '100%',
+    },
+}));
 
-const CustomEmojiPicker: React.FC<Props> = ({
-    height,
-    isEmojiSearchFocused,
-    onEmojiPress,
-    setIsEmojiSearchFocused,
-}) => {
-    const {cursorPositionRef, updateValue, updateCursorPosition, clearCursorPositionPreservation} = useKeyboardAnimationContext();
+const CustomEmojiPicker: React.FC = () => {
+    const theme = useTheme();
+    const styles = getStyleSheet(theme);
+
+    const {
+        stateContext,
+        updateValue,
+        updateCursorPosition,
+        getCursorPosition,
+        setCursorPosition,
+        isEmojiSearchFocused,
+        setIsEmojiSearchFocused,
+    } = useKeyboardState();
+
+    const animatedStyle = useAnimatedStyle(() => {
+        const height = stateContext.inputAccessoryHeight.value;
+        return {
+            height,
+        };
+
+        // Shared values don't need to be in dependencies - they're stable references
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, []);
 
     const handleEmojiPress = useCallback((emojiName: string) => {
-        // If onEmojiPress prop is provided, use it (for other use cases)
-        if (onEmojiPress) {
-            onEmojiPress(emojiName);
-            return;
-        }
-
-        // Otherwise, use context-based insertion (for input accessory view)
-        if (!updateValue || !updateCursorPosition || !cursorPositionRef) {
+        if (!updateValue || !updateCursorPosition) {
             return;
         }
 
@@ -62,20 +82,16 @@ const CustomEmojiPicker: React.FC<Props> = ({
 
         // Read cursor position and calculate new position immediately
         // This ensures rapid clicks use the correct position
-        const currentCursorPosition = cursorPositionRef.current;
+        const currentCursorPosition = getCursorPosition();
         const insertedTextLength = insertedText.length;
         const newCursorPosition = currentCursorPosition + insertedTextLength;
 
-        // Update cursorPositionRef IMMEDIATELY (before React processes the update)
+        // Update cursor position IMMEDIATELY (before React processes the update)
         // This ensures the next rapid click uses the updated position
-        cursorPositionRef.current = newCursorPosition;
+        setCursorPosition(newCursorPosition);
 
-        // Update cursor position state (for Android and to keep state in sync)
+        // Update cursor position state
         updateCursorPosition(newCursorPosition);
-
-        // Clear preservation flags after emoji is inserted
-        // This allows normal cursor updates to proceed
-        clearCursorPositionPreservation?.();
 
         const insertEmoji = (v: string): string => {
             // Use the captured cursor position from when the function was created
@@ -83,16 +99,20 @@ const CustomEmojiPicker: React.FC<Props> = ({
         };
 
         updateValue(insertEmoji);
-    }, [onEmojiPress, updateValue, updateCursorPosition, cursorPositionRef, clearCursorPositionPreservation]);
+    }, [updateValue, updateCursorPosition, getCursorPosition, setCursorPosition]);
 
     return (
-        <EmojiPicker
-            onEmojiPress={handleEmojiPress}
-            testID='custom_emoji_picker'
-            setIsEmojiSearchFocused={setIsEmojiSearchFocused}
-            isEmojiSearchFocused={isEmojiSearchFocused}
-            emojiPickerHeight={height}
-        />
+        <View style={isEdgeToEdge && styles.container}>
+            <Animated.View style={[styles.animatedContainer, animatedStyle]}>
+                <EmojiPicker
+                    onEmojiPress={handleEmojiPress}
+                    testID='custom_emoji_picker'
+                    setIsEmojiSearchFocused={setIsEmojiSearchFocused}
+                    isEmojiSearchFocused={isEmojiSearchFocused}
+                    emojiPickerHeight={stateContext.inputAccessoryHeight}
+                />
+            </Animated.View>
+        </View>
     );
 };
 

@@ -1,0 +1,160 @@
+# MM-T4833: User can leave a call from the call screen or the minimized call bar.
+#
+# PRE-CONDITIONS:
+#   - Calls plugin enabled on test channel (seeded by the Calls provisioner)
+#   - Active call started during the flow
+#
+# REQUIRED ENV VARS:
+#   - MAESTRO_APP_ID, SITE_1_URL, TEST_USER_EMAIL, TEST_USER_PASSWORD, TEST_CHANNEL_NAME
+#
+# ASSERTIONS:
+#   - Leaving from full call screen dismisses call UI
+#   - Leaving from minimized call bar after navigating away also ends the call
+#   - Current call bar is no longer visible after leave
+#
+# testIDs:
+#   - calls.collapse.button
+#   - calls.current_call_bar
+#   - calls.current_call_bar.leave
+#   - mute-unmute
+#   - leave
+tags:
+  - MM-T4833
+appId: ${MAESTRO_APP_ID}
+---
+# # Log in and open the test channel
+- runFlow: ../../subflows/auth/login.yml
+- runFlow: ../../subflows/navigation/navigate_to_channel.yml
+
+# # Path 1: start a call, then leave from the full call screen
+- runFlow: ../../subflows/calls/join_channel_call.yml
+
+- waitForAnimationToEnd:
+    timeout: 3000
+
+# # Expand the call bar into the full call screen (retries the tap; see subflow header).
+- runFlow: ../../subflows/calls/open_call_screen.yml
+- takeScreenshot: calls-leave-full-screen-before-leave
+
+# # Leave the call and confirm
+- tapOn:
+    id: "leave"
+- tapOn:
+    text: "Leave call"
+    optional: true
+
+# * Verify the call screen is dismissed after leaving
+- extendedWaitUntil:
+    notVisible:
+      id: "mute-unmute"
+    timeout: 10000
+- takeScreenshot: calls-leave-full-screen-after-leave
+
+# # Path 2: re-anchor on Home before re-entering the channel for the call-bar leave.
+# CI bc6df62 Android (maestro-android): Path 1 leave succeeded and landed on the
+# channel list (calls-leave-full-screen-after-leave), then navigate_to_channel
+# timed out on channel.post_draft.post.input (30s).
+- extendedWaitUntil:
+    visible:
+      id: "tab_bar.home.tab"
+    timeout: 20000
+- tapOn:
+    id: "tab_bar.home.tab"
+- waitForAnimationToEnd:
+    timeout: 3000
+
+# # Recover the sidebar only if the CHANNELS category header is missing.
+# Anchor on the category header, not the channel item: the item is also absent when
+# the CHANNELS category is merely collapsed, and navigate_to_channel already expands
+# it. Keying off the item would relaunch the app for a healthy sidebar and re-enter
+# the cold-start login path this suite is trying to avoid.
+- runFlow:
+    when:
+      notVisible:
+        id: "channel_list.category_header.channels.display_name"
+    commands:
+      # # iOS: stopApp:true is safe. Android: stopApp:false — stopApp:true sets the
+      # force-stopped flag and Maestro's subsequent launch intent can fail.
+      - runFlow:
+          when:
+            platform: iOS
+          commands:
+            - launchApp:
+                stopApp: true
+                clearState: false
+      - runFlow:
+          when:
+            platform: Android
+          commands:
+            - launchApp:
+                stopApp: false
+                clearState: false
+      - waitForAnimationToEnd:
+          timeout: 30000
+      # # A cold relaunch lands on loading/login, so re-anchor on Home before navigating.
+      - runFlow: ../../subflows/waits/wait_for_home_tab.yml
+- runFlow: ../../subflows/navigation/navigate_to_channel.yml
+
+# # Start a second call and open its full screen
+- runFlow: ../../subflows/calls/join_channel_call.yml
+
+- waitForAnimationToEnd:
+    timeout: 3000
+
+- runFlow: ../../subflows/calls/open_call_screen.yml
+
+# # Minimize the full call screen back to CurrentCallBar.
+# iOS 26+: Maestro `back` triggers leave-call confirmation — do not use it here.
+- tapOn:
+    id: "calls.collapse.button"
+- waitForAnimationToEnd:
+    timeout: 3000
+
+# # Safety net: relaunch keeps the session and usually lands on channel with call minimized.
+- runFlow:
+    when:
+      visible:
+        id: "mute-unmute"
+    commands:
+      - runFlow:
+          when:
+            platform: iOS
+          commands:
+            - launchApp:
+                stopApp: true
+                clearState: false
+      - runFlow:
+          when:
+            platform: Android
+          commands:
+            - launchApp:
+                stopApp: false
+                clearState: false
+      - waitForAnimationToEnd:
+          timeout: 30000
+      - runFlow:
+          when:
+            visible:
+              id: "tab_bar.home.tab"
+          file: ../../subflows/navigation/navigate_to_channel.yml
+
+# * Verify the minimized call bar is showing the still-active call
+- extendedWaitUntil:
+    visible:
+      id: "calls.current_call_bar"
+    timeout: 10000
+- takeScreenshot: calls-leave-current-call-bar-visible
+
+# # Leave the call from the minimized call bar and confirm
+- tapOn:
+    id: "calls.current_call_bar.leave"
+- tapOn:
+    text: "Leave call"
+    optional: true
+
+# * Verify the call bar is gone after leaving from the minimized bar
+- extendedWaitUntil:
+    notVisible:
+      id: "calls.current_call_bar"
+    timeout: 10000
+- takeScreenshot: calls-leave-current-call-bar-after-leave

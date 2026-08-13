@@ -1,0 +1,293 @@
+# Sub-flow: Login to Mattermost
+# Usage: - runFlow: ../../subflows/auth/login.yml
+# Requires: SITE_1_URL, TEST_USER_EMAIL, TEST_USER_PASSWORD env vars
+# Optional: MAESTRO_APP_ID (defaults to com.mattermost.rnbeta)
+#
+# iOS: clearState:true is used here. It simulates a fresh install and triggers
+# the native "Allow Notifications?" dialog — handled below with an optional tap.
+# Android: clearState:true wipes app data (including granted permissions) so a
+# stale session can't interfere, but it re-triggers the notification permission
+# dialog. The flow handles this with a timed wait + optional Allow tap.
+appId: ${MAESTRO_APP_ID}
+---
+# # Relaunch the app from a clean state so no stale session interferes.
+# iOS: stopApp:true force-kills the app before relaunch. This clears any stuck
+# state from a previous test run (e.g. a blank WebRTC call screen with no
+# accessible elements). Safe on iOS — does NOT set Android's force-stopped flag.
+# Android: stopApp:false is required. Maestro 2.x with stopApp:true sets Android's
+# force-stopped flag and then immediately fails its own launch intent.
+# Android: clearState:true wipes app data so no stale session from a previous
+# seed run can interfere (equivalent to adb pm clear — does not set force-stop).
+- runFlow:
+    when:
+      platform: iOS
+    commands:
+      - launchApp:
+          stopApp: true
+          clearState: true
+      # # After clearState, the JS bundle loads fresh + notification dialog
+      # may appear. Wait longer for bundle + permission dialog.
+      - waitForAnimationToEnd:
+          timeout: 45000
+      # # Notification permission dialog — dismiss if present.
+      - tapOn:
+          text: "Allow"
+          optional: true
+      # * Verify the fresh install shows the server form once the JS bundle loads.
+      # iOS: FloatingTextInput testID (server_url.input) is NOT exposed to the
+      # native accessibility tree that Maestro queries — use display_help
+      # (a FormattedText) as the anchor instead. See connect_server.yml note.
+      - extendedWaitUntil:
+          visible:
+            id: "server_form.display_help"
+          timeout: 180000
+- runFlow:
+    when:
+      platform: Android
+    commands:
+      - launchApp:
+          stopApp: false
+          clearState: true
+      # # After clearState, the Android notification permission dialog appears
+      # shortly after launch. Give it time to render, then dismiss if present.
+      - waitForAnimationToEnd:
+          timeout: 5000
+      - tapOn:
+          text: "Allow"
+          optional: true
+      # * Verify the server connect form is shown. After clearState the app has no
+      # server registered and always shows it. Wait up to 90s for the JS bundle to
+      # load on slow emulators.
+      - extendedWaitUntil:
+          visible:
+            id: "server_form.server_url.input"
+          timeout: 90000
+
+# # Dismiss the notification permission dialog on either platform. It may appear on
+# first launch after a device wipe or new test session, and on Android it can surface
+# later than the in-branch attempt above. Allow so push can work; optional so it is
+# silently skipped when the dialog is absent.
+- tapOn:
+    text: "Allow"
+    optional: true
+
+# # If on the full call screen, leave the call first so back presses work cleanly.
+# Each back press on the call screen triggers a leave-confirmation dialog, which
+# means 3 back presses can never escape the call screen. Tap Leave + confirm instead.
+- runFlow:
+    when:
+      visible:
+        id: "mute-unmute"
+    commands:
+      - tapOn:
+          id: "leave"
+      - tapOn:
+          text: "Leave call"
+          optional: true
+      - extendedWaitUntil:
+          notVisible:
+            id: "mute-unmute"
+          timeout: 10000
+
+# # If on a channel screen (tab bar hidden inside channel nav stack), tap the
+# navigation back button to return to the channel list where the tab bar
+# becomes visible. Using the header back button because iOS swipe-back
+# gesture ('back') may be disabled on this screen by react-native-navigation.
+- runFlow:
+    when:
+      visible:
+        id: "channel.post_draft.post.input"
+    commands:
+      - tapOn:
+          id: "navigation.header.back"
+
+# # If the app is already on the home screen (tab bar visible), log out before
+# pressing back. This handles the case where a previous flow left the app on
+# the channel list — pressing back from the home screen on Android navigates
+# away from the app entirely, making the tab bar check below unreliable.
+- runFlow:
+    when:
+      visible:
+        id: "tab_bar.home.tab"
+    file: logout.yml
+
+# # On iOS, logout navigates to the server list (not the login form).
+# Tap the first server to navigate to the login form.
+- runFlow:
+    when:
+      visible:
+        id: "server_list.screen"
+    commands:
+      - tapOn:
+          id: "server_list.server_item.server_1"
+
+# # Only press back if we are NOT already on the login form, NOT on the server
+# connect form, AND NOT on the home screen. If we're on the home screen, the
+# logout block below will handle it. Without this home-screen check, back
+# presses fire on the home screen and navigate away from the app entirely.
+- runFlow:
+    when:
+      notVisible:
+        id: "login_form.forgot_password.button"
+    commands:
+      - runFlow:
+          when:
+            notVisible:
+              id: "server_form.display_help"
+          commands:
+            - runFlow:
+                when:
+                  notVisible:
+                    id: "tab_bar.home.tab"
+                commands:
+                  - back
+                  - back
+                  - back
+
+# # If back presses returned us to the home screen, logout to reach login form.
+- runFlow:
+    when:
+      visible:
+        id: "tab_bar.home.tab"
+    file: logout.yml
+
+# # Android: notification permission dialog may appear after the initial navigation
+# cleanup (dialog takes longer to surface than on iOS). Second optional dismiss
+# handles the case where the dialog was not yet visible on the first attempt above.
+- tapOn:
+    text: "Allow"
+    optional: true
+
+# # Server connection section — only runs when the server form is visible.
+# After a fresh DB wipe or first run, no server is registered and the form
+# shows empty. After logout the server stays in the DB and the login form
+# appears directly, bypassing this block entirely.
+# iOS uses connect_server_ios.yml: the URL must be re-entered on a retry (inputText can
+# drop characters) and a retry must be gated on the inline URL error so a slow-but-working
+# connect is never submitted twice. Android keeps connect_server.yml unchanged.
+- runFlow:
+    when:
+      platform: iOS
+      visible:
+        id: "server_form.display_help"
+    file: ../server/connect_server_ios.yml
+- runFlow:
+    when:
+      platform: Android
+      visible:
+        id: "server_form.display_help"
+    file: ../server/connect_server.yml
+
+# # If connect_server navigated to an already-logged-in home screen (server was
+# previously registered with an active session), logout to reach the login form.
+- runFlow:
+    when:
+      visible:
+        id: "tab_bar.home.tab"
+    file: logout.yml
+
+# * Verify the login screen is shown — allow slow JS bundle load on iOS CI
+# (Release sim, no Metro).
+- extendedWaitUntil:
+    visible:
+      id: "login_form.forgot_password.button"
+    timeout: 180000
+
+# # Enter credentials
+- runFlow:
+    when:
+      platform: iOS
+    commands:
+      # # Cold-start first Maestro batch: Next+inputText can miss the password
+      # field (FloatingTextInput + secureTextEntry). Empty password keeps
+      # testID login_form.signin.button.disabled — Maestro then fails waiting
+      # for login_form.signin.button.
+      - retry:
+          maxRetries: 4
+          commands:
+            - tapOn:
+                text: "Email, Username or AD/LDAP Username"
+            - eraseText: 80
+            - inputText: ${TEST_USER_EMAIL}
+            - tapOn:
+                text: "Next"
+            # # Erase first: on a retry the password field still holds the previous
+            # attempt's text, and inputText would append to it.
+            - eraseText: 80
+            - inputText: ${TEST_USER_PASSWORD}
+            # # Dismiss keyboard so Log In is on-screen (Detox taps this description).
+            - tapOn:
+                id: "login_options.description.enter_credentials"
+                optional: true
+            - extendedWaitUntil:
+                visible:
+                  id: "login_form.signin.button"
+                timeout: 20000
+- runFlow:
+    when:
+      platform: Android
+    commands:
+      - tapOn:
+          id: "login_form.username.input"
+      - inputText: ${TEST_USER_EMAIL}
+      - tapOn:
+          id: "login_form.password.input"
+      - inputText: ${TEST_USER_PASSWORD}
+      - extendedWaitUntil:
+          visible:
+            id: "login_form.signin.button"
+          timeout: 10000
+
+- retry:
+    maxRetries: 3
+    commands:
+      - runFlow:
+          when:
+            notVisible:
+              id: "tab_bar.home.tab"
+          commands:
+            - runFlow:
+                when:
+                  platform: iOS
+                commands:
+                  - waitForAnimationToEnd:
+                      timeout: 8000
+            # # Re-check after the animation wait: a slow login can land during those 8s,
+            # at which point the button is gone and tapping it would fail the retry.
+            - runFlow:
+                when:
+                  notVisible:
+                    id: "tab_bar.home.tab"
+                commands:
+                  - tapOn:
+                      id: "login_form.signin.button"
+      # # Dismiss password/save prompts each attempt so they do not block home tab.
+      - tapOn:
+          text: "Not Now"
+          optional: true
+      - tapOn:
+          text: "Save"
+          optional: true
+      - tapOn:
+          text: "Later"
+          optional: true
+      - tapOn:
+          text: "Skip"
+          optional: true
+      # * Verify login succeeded by waiting for the home tab.
+      - runFlow:
+          when:
+            platform: iOS
+          commands:
+            - extendedWaitUntil:
+                visible:
+                  id: "tab_bar.home.tab"
+                timeout: 100000
+      - runFlow:
+          when:
+            platform: Android
+          commands:
+            - extendedWaitUntil:
+                visible:
+                  id: "tab_bar.home.tab"
+                timeout: 180000

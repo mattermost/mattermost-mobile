@@ -66,6 +66,7 @@ type Props = {
     autocompleteProviders?: AutocompleteProviders;
     useAllAvailableSpace?: boolean;
     horizontalPadding?: number;
+    portalName?: string;
     usePortal?: boolean;
 }
 
@@ -104,6 +105,7 @@ const Autocomplete = ({
     useAllAvailableSpace = false,
     horizontalPadding = 8,
     usePortal = false,
+    portalName = 'autocomplete',
 }: Props) => {
     const theme = useTheme();
     const isTablet = useIsTablet();
@@ -130,13 +132,14 @@ const Autocomplete = ({
     }, [defaultMaxHeight, useAllAvailableSpace, availableSpace]);
 
     const containerAnimatedStyle = useAnimatedStyle(() => {
-        return growDown ?
-            {top: position.value, bottom: Platform.OS === 'ios' ? 'auto' : undefined, maxHeight: maxHeight.value} :
-            {top: Platform.OS === 'ios' ? 'auto' : undefined, bottom: position.value, maxHeight: maxHeight.value};
+        if (growDown) {
+            return {top: position.value, bottom: 'auto', maxHeight: maxHeight.value};
+        }
+        return {top: 'auto', bottom: position.value, maxHeight: maxHeight.value};
     }, [growDown, position]);
 
     const containerStyles = useMemo(() => {
-        const s: StyleProp<ViewStyle> = [style.base, {left: horizontalPadding, right: horizontalPadding}, containerAnimatedStyle];
+        const s: Array<StyleProp<ViewStyle>> = [style.base, {left: horizontalPadding, right: horizontalPadding}];
         if (hasElements) {
             s.push(style.borders);
         }
@@ -147,12 +150,12 @@ const Autocomplete = ({
             s.push(containerStyle);
         }
         return s;
-    }, [style.base, style.borders, style.shadow, horizontalPadding, containerAnimatedStyle, hasElements, containerStyle]);
+    }, [style.base, style.borders, style.shadow, horizontalPadding, hasElements, containerStyle]);
 
     const component = (
         <Animated.View
             testID='autocomplete'
-            style={containerStyles}
+            style={[containerStyles, containerAnimatedStyle]}
         >
             {isAppsEnabled && channelId && autocompleteProviders.slash && (
                 <AppSlashSuggestion
@@ -230,7 +233,7 @@ const Autocomplete = ({
 
     if (usePortal && Platform.OS === 'android') {
         return (
-            <Portal>
+            <Portal hostName={portalName}>
                 {component}
             </Portal>
         );

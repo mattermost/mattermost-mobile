@@ -3,6 +3,8 @@
 
 import React from 'react';
 
+import {Preferences} from '@constants';
+import {getDefaultThemeByAppearance} from '@context/theme';
 import {renderWithIntl, screen} from '@test/intl-test-helper';
 
 import ConnectionBanner from './connection_banner';
@@ -17,7 +19,10 @@ jest.mock('@context/theme', () => ({
         onlineIndicator: '#06d6a0',
         sidebarBg: '#2f3e4e',
     }),
+    getDefaultThemeByAppearance: jest.fn(),
 }));
+
+jest.mocked(getDefaultThemeByAppearance).mockReturnValue(Preferences.THEMES.denim);
 
 jest.mock('@hooks/device', () => ({
     useAppState: () => 'active',

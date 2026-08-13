@@ -1,10 +1,11 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {act, waitFor} from '@testing-library/react-native';
+import {act, cleanup, waitFor} from '@testing-library/react-native';
 import React from 'react';
 
 import {SYSTEM_IDENTIFIERS} from '@constants/database';
+import {useIsInitialSync} from '@hooks/is_initial_sync';
 import {getTeamById} from '@queries/servers/team';
 import {renderWithEverything} from '@test/intl-test-helper';
 import TestHelper from '@test/test_helper';
@@ -13,6 +14,10 @@ import CategoriesList from './categories_list';
 
 import type ServerDataOperator from '@database/operator/server_data_operator';
 import type Database from '@nozbe/watermelondb/Database';
+
+jest.mock('@hooks/is_initial_sync', () => ({
+    useIsInitialSync: jest.fn(),
+}));
 
 describe('components/categories_list', () => {
     let database: Database;
@@ -28,6 +33,13 @@ describe('components/categories_list', () => {
                 team.displayName = 'Test Team!';
             });
         });
+    });
+
+    afterEach(async () => {
+        cleanup();
+
+        // Allow observables to settle before next test
+        await new Promise((resolve) => setTimeout(resolve, 0));
     });
 
     it('should render', async () => {
@@ -199,5 +211,24 @@ describe('components/categories_list', () => {
             {database},
         );
         expect(wrapper.getByText('Playbook checklists')).toBeTruthy();
+    });
+
+    it('should suppress LoadChannelsError while initial sync is in progress', () => {
+        (useIsInitialSync as jest.Mock).mockReturnValue(true);
+
+        const wrapper = renderWithEverything(
+            <CategoriesList
+                moreThanOneTeam={false}
+                hasChannels={false}
+                draftsCount={0}
+                scheduledPostCount={0}
+                scheduledPostHasError={false}
+            />,
+            {database},
+        );
+
+        expect(wrapper.queryByText('There was a problem loading content for this team.')).toBeNull();
+
+        (useIsInitialSync as jest.Mock).mockReset();
     });
 });

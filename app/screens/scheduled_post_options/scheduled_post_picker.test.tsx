@@ -6,6 +6,7 @@ import React from 'react';
 
 import {dismissBottomSheet} from '@screens/navigation';
 import {ScheduledPostOptions} from '@screens/scheduled_post_options/scheduled_post_picker';
+import CallbackStore from '@store/callback_store';
 import {renderWithEverything} from '@test/intl-test-helper';
 import TestHelper from '@test/test_helper';
 import {showScheduledPostCreationErrorSnackbar} from '@utils/snack_bar';
@@ -88,10 +89,10 @@ describe('ScheduledPostOptions', () => {
         const onSchedule = jest.fn().mockResolvedValue({data: true});
         jest.spyOn(Date, 'now').mockImplementation(() => 1735693200000); //1st Jan 2025, Wednesday 12:00 AM (New year!!!)
 
+        CallbackStore.setCallback(onSchedule);
         renderWithEverything(
             <ScheduledPostOptions
                 {...baseProps}
-                onSchedule={onSchedule}
             />,
             {database},
         );
@@ -117,10 +118,10 @@ describe('ScheduledPostOptions', () => {
     it('handles scheduling errors correctly', () => {
         const error = 'Network error';
         const onSchedule = jest.fn().mockResolvedValue({error});
+        CallbackStore.setCallback(onSchedule);
         renderWithEverything(
             <ScheduledPostOptions
                 {...baseProps}
-                onSchedule={onSchedule}
             />,
             {database},
         );
@@ -151,10 +152,10 @@ describe('ScheduledPostOptions', () => {
             });
         });
 
+        CallbackStore.setCallback(slowSchedule);
         renderWithEverything(
             <ScheduledPostOptions
                 {...baseProps}
-                onSchedule={slowSchedule}
             />,
             {database},
         );

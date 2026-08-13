@@ -14,9 +14,8 @@ import {useDebounce} from '@hooks/utils';
 import {AppCommandParser, type ExtendedAutocompleteSuggestion} from '../app_command_parser/app_command_parser';
 import SlashSuggestionItem from '../slash_suggestion_item';
 
-export type Props = {
+export type AppSlashSuggestionPropsProps = {
     currentTeamId: string;
-    isSearch?: boolean;
     updateValue: (text: string) => void;
     onShowingChange: (c: boolean) => void;
     value: string;
@@ -54,7 +53,7 @@ const AppSlashSuggestion = ({
     updateValue,
     onShowingChange,
     listStyle,
-}: Props) => {
+}: AppSlashSuggestionPropsProps) => {
     const intl = useIntl();
     const serverUrl = useServerUrl();
     const appCommandParser = useRef<AppCommandParser>(new AppCommandParser(serverUrl, intl, channelId, currentTeamId, rootId));

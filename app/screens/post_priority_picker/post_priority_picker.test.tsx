@@ -14,13 +14,10 @@ const mockedIsTablet = jest.mocked(useIsTablet);
 
 function getBaseProps(): ComponentProps<typeof PostPriorityPicker> {
     return {
-        closeButtonId: '',
-        componentId: 'BottomSheet',
         isPersistenNotificationsEnabled: true,
         isPostAcknowledgementEnabled: true,
         persistentNotificationInterval: 0,
         postPriority: {priority: ''},
-        updatePostPriority: jest.fn(),
     };
 }
 describe('post_priority_picker', () => {

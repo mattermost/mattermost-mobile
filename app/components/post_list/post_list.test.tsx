@@ -1,14 +1,13 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {act} from '@testing-library/react-native';
-import React, {createRef, type ComponentProps} from 'react';
-import {DeviceEventEmitter, type FlatList, Platform} from 'react-native';
+import React, {type ComponentProps} from 'react';
+import {DeviceEventEmitter, Platform} from 'react-native';
 
 import * as localPostFunctions from '@actions/local/post';
 import * as postFunctions from '@actions/remote/post';
 import {Events, Screens} from '@constants';
-import {renderWithEverything} from '@test/intl-test-helper';
+import {act, waitFor, renderWithEverything} from '@test/intl-test-helper';
 import TestHelper from '@test/test_helper';
 
 import PostList from './post_list';
@@ -22,6 +21,7 @@ jest.mock('@actions/remote/post', () => {
     return {
         fetchPosts: jest.fn(),
         fetchPostThread: jest.fn(),
+        refreshPostsForChannel: jest.fn(),
     };
 });
 jest.mock('@actions/local/post', () => ({
@@ -34,7 +34,7 @@ import type Database from '@nozbe/watermelondb/Database';
 describe('components/post_list/PostList', () => {
     let database: Database;
     const serverUrl = 'https://server.com';
-    const fetchPostsSpy = jest.spyOn(postFunctions, 'fetchPosts');
+    const refreshPostsSpy = jest.spyOn(postFunctions, 'refreshPostsForChannel');
     const fetchPostThreadSpy = jest.spyOn(postFunctions, 'fetchPostThread');
     const removePostSpy = jest.spyOn(localPostFunctions, 'removePost');
     const unrelatedNativeEventsAttributes = {
@@ -68,10 +68,13 @@ describe('components/post_list/PostList', () => {
 
     const baseProps: ComponentProps<typeof PostList> = {
         appsEnabled: false,
+        mmBlocksEnabled: false,
         channelId: 'channel-id',
-        currentTimezone: 'UTC',
-        currentUserId: 'current-user',
-        currentUsername: 'username',
+        currentUser: TestHelper.fakeUserModel({
+            id: 'current-user',
+            username: 'username',
+            timezone: {useAutomaticTimezone: true, automaticTimezone: 'UTC', manualTimezone: ''},
+        }),
         customEmojiNames: [],
         lastViewedAt: 0,
         location: Screens.CHANNEL,
@@ -80,7 +83,6 @@ describe('components/post_list/PostList', () => {
         testID: 'post_list',
         shouldShowJoinLeaveMessages: false,
         isChannelAutotranslated: false,
-        listRef: createRef<FlatList<string | PostModel>>(),
     };
 
     it('renders correctly with basic props', () => {
@@ -127,7 +129,20 @@ describe('components/post_list/PostList', () => {
             flatList.props.onRefresh();
         });
 
-        expect(fetchPostsSpy).toHaveBeenCalledWith('https://server.com', 'channel-id');
+        // isBlank is false: the list has posts, so refresh must not reset the cache
+        expect(refreshPostsSpy).toHaveBeenCalledWith('https://server.com', 'channel-id', false);
+    });
+
+    it('should pass isBlank when the list renders nothing', async () => {
+        const props = {...baseProps, posts: []};
+        const {getByTestId} = renderWithEverything(<PostList {...props}/>, {database, serverUrl});
+        const flatList = getByTestId('post_list.flat_list');
+
+        await act(async () => {
+            await flatList.props.onRefresh();
+        });
+
+        expect(refreshPostsSpy).toHaveBeenCalledWith('https://server.com', 'channel-id', true);
     });
 
     it('handles refresh in thread', async () => {
@@ -244,6 +259,7 @@ describe('components/post_list/PostList', () => {
     });
 
     it('handles onViewableItemsChanged callback', async () => {
+        jest.useFakeTimers({doNotFake: ['nextTick']});
         const emitSpy = jest.spyOn(DeviceEventEmitter, 'emit');
         const {getByTestId} = renderWithEverything(
             <PostList {...baseProps}/>,
@@ -261,10 +277,19 @@ describe('components/post_list/PostList', () => {
         });
 
         // Verify the DeviceEventEmitter.emit was called with correct params
-        expect(emitSpy).toHaveBeenCalledWith(
-            Events.ITEM_IN_VIEWPORT,
-            {[`${Screens.CHANNEL}-${mockPosts[0].id}`]: true},
-        );
+        await waitFor(() => {
+            expect(emitSpy).toHaveBeenCalledWith(
+                Events.ITEM_IN_VIEWPORT,
+                {[`${Screens.CHANNEL}-${mockPosts[0].id}`]: true},
+            );
+        });
+
+        // Flush the 250ms debounce timer (trackInitialRenderMetrics → setShowAllPosts)
+        // so it doesn't fire outside act() after the test ends.
+        act(() => {
+            jest.runAllTimers();
+        });
+        jest.useRealTimers();
     });
 
     it('handles scroll to index failure', async () => {
@@ -410,6 +435,6 @@ describe('components/post_list/PostList', () => {
             flatList.props.onRefresh();
         });
 
-        expect(fetchPostsSpy).not.toHaveBeenCalled();
+        expect(refreshPostsSpy).not.toHaveBeenCalled();
     });
 });

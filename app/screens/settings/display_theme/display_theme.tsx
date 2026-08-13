@@ -9,19 +9,16 @@ import SettingBlock from '@components/settings/block';
 import SettingContainer from '@components/settings/container';
 import SettingOption from '@components/settings/option';
 import SettingSeparator from '@components/settings/separator';
-import {Preferences} from '@constants';
+import {Preferences, Screens} from '@constants';
 import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
 import useAndroidHardwareBackHandler from '@hooks/android_back_handler';
 import useDidUpdate from '@hooks/did_update';
-import useBackNavigation from '@hooks/navigate_back';
 import {usePreventDoubleTap} from '@hooks/utils';
-import {popTopScreen} from '@screens/navigation';
+import {navigateBack} from '@screens/navigation';
 
 import CustomTheme from './custom_theme';
 import {ThemeTiles} from './theme_tiles';
-
-import type {AvailableScreens} from '@typings/screens/navigation';
 
 const messages = defineMessages({
     autoSwitchDescription: {
@@ -68,7 +65,6 @@ const ThemeSection = ({
 
 type DisplayThemeProps = {
     allowedThemeKeys: string[];
-    componentId: AvailableScreens;
     currentTeamId: string;
     currentUserId: string;
     darkTheme?: Theme;
@@ -77,7 +73,6 @@ type DisplayThemeProps = {
 };
 const DisplayTheme = ({
     allowedThemeKeys,
-    componentId,
     currentTeamId,
     currentUserId,
     darkTheme,
@@ -132,8 +127,6 @@ const DisplayTheme = ({
         }]);
     }, [currentUserId, serverUrl]);
 
-    const close = () => popTopScreen(componentId);
-
     // When auto-switch is OFF, save theme immediately on tap (existing behavior)
     const handleImmediateThemeChange = usePreventDoubleTap(
         useCallback(
@@ -180,8 +173,7 @@ const DisplayTheme = ({
         }
     }, [currentTeamId, currentUserId, customDarkTheme, serverUrl]);
 
-    useBackNavigation(close);
-    useAndroidHardwareBackHandler(componentId, close);
+    useAndroidHardwareBackHandler(Screens.SETTINGS_DISPLAY_THEME, navigateBack);
 
     if (autoSwitch) {
         return (

@@ -28,11 +28,7 @@ const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
         teamPicker: {
             flexDirection: 'row',
             alignItems: 'center',
-            justifyContent: 'flex-end',
-            width: '100%',
-        },
-        container: {
-            flex: 1,
+            flexGrow: 1,
         },
         teamName: {
             color: theme.centerChannelColor,
@@ -64,8 +60,6 @@ const TeamPicker = ({setTeamId, teams, teamId, crossTeamSearchEnabled}: Props) =
 
     const selectedTeam = teamList.find((t) => t.id === teamId);
 
-    const title = intl.formatMessage({id: 'mobile.search.team.select', defaultMessage: 'Select a team to search'});
-
     const handleTeamChange = usePreventDoubleTap(useCallback(() => {
         const renderContent = () => {
             return (
@@ -73,7 +67,7 @@ const TeamPicker = ({setTeamId, teams, teamId, crossTeamSearchEnabled}: Props) =
                     setTeamId={setTeamId}
                     teams={teamList}
                     teamId={teamId}
-                    title={title}
+                    title={intl.formatMessage({id: 'mobile.search.team.select', defaultMessage: 'Select a team to search'})}
                     crossTeamSearchEnabled={crossTeamSearchEnabled}
                 />
             );
@@ -83,21 +77,15 @@ const TeamPicker = ({setTeamId, teams, teamId, crossTeamSearchEnabled}: Props) =
             1,
 
             // use teams to check if teams is empty
-            teams.length ? bottomSheetSnapPoint(Math.min(3, teamList.length), ITEM_HEIGHT) + (2 * TITLE_HEIGHT) : NO_TEAMS_HEIGHT,
+            (teams.length ? bottomSheetSnapPoint(Math.min(3, teamList.length), ITEM_HEIGHT) + (2 * TITLE_HEIGHT) : NO_TEAMS_HEIGHT),
         ];
 
         if (teamList.length > 3) {
             snapPoints.push('80%');
         }
 
-        bottomSheet({
-            closeButtonId: 'close-team_list',
-            renderContent,
-            snapPoints,
-            theme,
-            title,
-        });
-    }, [teams, teamList, theme, title, setTeamId, teamId, crossTeamSearchEnabled]));
+        bottomSheet(renderContent, snapPoints);
+    }, [teams.length, teamList, setTeamId, teamId, intl, crossTeamSearchEnabled]));
 
     return (
         <>
@@ -108,7 +96,7 @@ const TeamPicker = ({setTeamId, teams, teamId, crossTeamSearchEnabled}: Props) =
                     testID='team_picker.button'
                     style={styles.teamPicker}
                 >
-                    <View style={styles.container}>
+                    <View>
                         <Text
                             id={selectedTeam.id}
                             numberOfLines={1}

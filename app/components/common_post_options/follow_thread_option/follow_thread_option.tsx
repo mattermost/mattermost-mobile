@@ -9,11 +9,10 @@ import {BaseOption} from '@components/common_post_options';
 import {useServerUrl} from '@context/server';
 import {dismissBottomSheet} from '@screens/navigation';
 
+import type {CompassIconName} from '@components/compass_icon';
 import type ThreadModel from '@typings/database/models/servers/thread';
-import type {AvailableScreens} from '@typings/screens/navigation';
 
 type FollowThreadOptionProps = {
-    bottomSheetId: AvailableScreens;
     thread: ThreadModel;
     teamId?: string;
 };
@@ -36,9 +35,9 @@ const messages = defineMessages({
         defaultMessage: 'Unfollow Message',
     },
 });
-const FollowThreadOption = ({bottomSheetId, thread, teamId}: FollowThreadOptionProps) => {
+const FollowThreadOption = ({thread, teamId}: FollowThreadOptionProps) => {
     let message: MessageDescriptor;
-    let icon: string;
+    let icon: CompassIconName;
 
     if (thread.isFollowing) {
         icon = 'message-minus-outline';
@@ -62,9 +61,9 @@ const FollowThreadOption = ({bottomSheetId, thread, teamId}: FollowThreadOptionP
         if (teamId == null) {
             return;
         }
-        await dismissBottomSheet(bottomSheetId);
+        await dismissBottomSheet();
         updateThreadFollowing(serverUrl, teamId, thread.id, !thread.isFollowing, true);
-    }, [bottomSheetId, serverUrl, teamId, thread.id, thread.isFollowing]);
+    }, [serverUrl, teamId, thread.id, thread.isFollowing]);
 
     const followThreadOptionTestId = thread.isFollowing ? 'post_options.following_thread.option' : 'post_options.follow_thread.option';
 

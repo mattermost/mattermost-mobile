@@ -5,6 +5,7 @@ import {Q} from '@nozbe/watermelondb';
 import deepEqual from 'deep-equal';
 import {DeviceEventEmitter} from 'react-native';
 
+import {removePushSigningKey, storePushSigningKey} from '@actions/app/global';
 import {Events} from '@constants';
 import {MM_TABLES, SYSTEM_IDENTIFIERS} from '@constants/database';
 import {PostTypes, BOR_POST_CLEANUP_MIN_RUN_INTERVAL} from '@constants/post';
@@ -22,7 +23,9 @@ import {
     getLastBoRPostCleanupRun,
 } from '@queries/servers/system';
 import PostModel from '@typings/database/models/servers/post';
+import SystemModel from '@typings/database/models/servers/system';
 import {isExpiredBoRPost} from '@utils/bor';
+import {isZeroPersistenceConfig} from '@utils/config';
 import {logError} from '@utils/log';
 
 import {deletePostsForChannelsWithAutotranslation} from './channel';
@@ -30,7 +33,78 @@ import {deletePosts} from './post';
 
 import type {DataRetentionPoliciesRequest} from '@actions/remote/systems';
 
-const {SERVER: {POST}} = MM_TABLES;
+const {SERVER: {POST, SYSTEM}} = MM_TABLES;
+
+export async function setDisconnectedSince(serverUrl: string, value: number | null): Promise<void> {
+    try {
+        const {database, operator} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
+
+        if (value === null) {
+            const record = await database.get<SystemModel>(SYSTEM).find(SYSTEM_IDENTIFIERS.DISCONNECTED_SINCE).catch(() => null);
+            if (record) {
+                await database.write(async () => {
+                    await record.destroyPermanently();
+                });
+            }
+            return;
+        }
+
+        await operator.handleSystem({
+            systems: [{id: SYSTEM_IDENTIFIERS.DISCONNECTED_SINCE, value}],
+            prepareRecordsOnly: false,
+        });
+    } catch (error) {
+        logError('setDisconnectedSince', error);
+    }
+}
+
+export async function setOfflineSince(serverUrl: string, value: number): Promise<void> {
+    try {
+        const {operator} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
+
+        await operator.handleSystem({
+            systems: [{id: SYSTEM_IDENTIFIERS.OFFLINE_SINCE, value}],
+            prepareRecordsOnly: false,
+        });
+    } catch (error) {
+        logError('setOfflineSince', error);
+    }
+}
+
+export async function setLastSeenTime(serverUrl: string, value: number): Promise<void> {
+    try {
+        const {operator} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
+
+        await operator.handleSystem({
+            systems: [{id: SYSTEM_IDENTIFIERS.LAST_SEEN_TIME, value}],
+            prepareRecordsOnly: false,
+        });
+    } catch (error) {
+        logError('setLastSeenTime', error);
+    }
+}
+
+export async function clearEphemeralModeState(serverUrl: string): Promise<void> {
+    try {
+        const {database} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
+        const records = await database.get<SystemModel>(SYSTEM).query(
+            Q.where('id', Q.oneOf([
+                SYSTEM_IDENTIFIERS.OFFLINE_SINCE,
+                SYSTEM_IDENTIFIERS.LAST_SEEN_TIME,
+            ])),
+        ).fetch();
+
+        if (records.length === 0) {
+            return;
+        }
+
+        await database.write(async () => {
+            await database.batch(...records.map((r) => r.prepareDestroyPermanently()));
+        });
+    } catch (error) {
+        logError('clearEphemeralModeState', error);
+    }
+}
 
 export async function storeConfigAndLicense(serverUrl: string, config: ClientConfig, license: ClientLicense) {
     try {
@@ -53,7 +127,9 @@ export async function storeConfigAndLicense(serverUrl: string, config: ClientCon
                 DeviceEventEmitter.emit(Events.LICENSE_CHANGED, {serverUrl, license});
             }
 
-            return await storeConfig(serverUrl, config);
+            const result = await storeConfig(serverUrl, config);
+
+            return result;
         }
     } catch (error) {
         logError('An error occurred while saving config & license', error);
@@ -91,6 +167,23 @@ export async function storeConfig(serverUrl: string, config: ClientConfig | unde
                     value: currentConfig[k],
                 });
             }
+        }
+
+        const wasZeroPersistence = isZeroPersistenceConfig(currentConfig);
+        const isZeroPersistence = isZeroPersistenceConfig(config);
+        const signingKeyChanged = currentConfig?.AsymmetricSigningPublicKey !== config.AsymmetricSigningPublicKey;
+        const enteringZeroPersistence = isZeroPersistence && !wasZeroPersistence;
+        const hasNoPriorConfig = Object.keys(currentConfig ?? {}).length === 0;
+
+        // signing key is stored in global storage to be used for push notifications, even when running in zero persistence mode.
+        if (isZeroPersistence && (signingKeyChanged || enteringZeroPersistence)) {
+            if (config.AsymmetricSigningPublicKey) {
+                await storePushSigningKey(serverUrl, config.AsymmetricSigningPublicKey);
+            } else {
+                await removePushSigningKey(serverUrl);
+            }
+        } else if (!isZeroPersistence && (hasNoPriorConfig || wasZeroPersistence)) {
+            await removePushSigningKey(serverUrl);
         }
 
         if (configsToDelete.length || configsToUpdate.length) {

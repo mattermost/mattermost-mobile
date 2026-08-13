@@ -3,19 +3,18 @@
 
 import RNUtils from '@mattermost/rnutils';
 import {CameraRoll} from '@react-native-camera-roll/camera-roll';
+import {viewDocument} from '@react-native-documents/viewer';
 import {applicationName} from 'expo-application';
-import {deleteAsync} from 'expo-file-system';
 import React, {useEffect, useRef, useState} from 'react';
 import {useIntl} from 'react-intl';
 import {Platform, StyleSheet, Text, View} from 'react-native';
-import FileViewer from 'react-native-file-viewer';
 import {useAnimatedStyle, withTiming} from 'react-native-reanimated';
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
 import Share from 'react-native-share';
 
 import {updateLocalFilePath} from '@actions/local/file';
 import {downloadFile, downloadProfileImage} from '@actions/remote/file';
-import CompassIcon from '@components/compass_icon';
+import CompassIcon, {type CompassIconName} from '@components/compass_icon';
 import PressableOpacity from '@components/pressable_opacity';
 import ProgressBar from '@components/progress_bar';
 import Toast from '@components/toast';
@@ -25,7 +24,7 @@ import {useTheme} from '@context/theme';
 import useDidMount from '@hooks/did_mount';
 import {alertFailedToOpenDocument, alertOnlyPDFSupported} from '@utils/document';
 import {getFullErrorMessage} from '@utils/errors';
-import {fileExists, getLocalFilePathFromFile, hasWriteStoragePermission, isPdf, pathWithPrefix} from '@utils/file';
+import {deleteFile, fileExists, getLocalFilePathFromFile, hasWriteStoragePermission, isPdf, pathWithPrefix} from '@utils/file';
 import {galleryItemToFileInfo} from '@utils/gallery';
 import {logDebug} from '@utils/log';
 import {previewPdf} from '@utils/navigation';
@@ -41,6 +40,7 @@ type Props = {
     item: GalleryItemType;
     setAction: (action: GalleryAction) => void;
     onDownloadSuccess?: (path: string) => void;
+    onShareCallback?: () => void;
 }
 
 const styles = StyleSheet.create({
@@ -74,7 +74,7 @@ const styles = StyleSheet.create({
     },
 });
 
-const DownloadWithAction = ({action, enableSecureFilePreview, item, onDownloadSuccess, setAction, galleryView = true}: Props) => {
+const DownloadWithAction = ({action, enableSecureFilePreview, item, onShareCallback, onDownloadSuccess, setAction, galleryView = true}: Props) => {
     const intl = useIntl();
     const serverUrl = useServerUrl();
     const theme = useTheme();
@@ -84,10 +84,10 @@ const DownloadWithAction = ({action, enableSecureFilePreview, item, onDownloadSu
     const [saved, setSaved] = useState(false);
     const [progress, setProgress] = useState(0);
     const mounted = useRef(false);
-    const downloadPromise = useRef<ProgressPromise<ClientResponse>>();
+    const downloadPromise = useRef<ProgressPromise<ClientResponse> | undefined>(undefined);
 
     let title;
-    let iconName;
+    let iconName: CompassIconName | undefined;
     let message;
     let toastStyle = styles.toast;
 
@@ -131,12 +131,12 @@ const DownloadWithAction = ({action, enableSecureFilePreview, item, onDownloadSu
         };
     });
 
-    const cancel = async () => {
+    const cancel = () => {
         try {
             downloadPromise.current?.cancel?.();
             const path = getLocalFilePathFromFile(serverUrl, galleryItemToFileInfo(item));
             downloadPromise.current = undefined;
-            await deleteAsync(path);
+            deleteFile(path);
         } catch {
             // do nothing
         } finally {
@@ -165,10 +165,10 @@ const DownloadWithAction = ({action, enableSecureFilePreview, item, onDownloadSu
                         alertOnlyPDFSupported(intl);
                     }
                 } else {
-                    FileViewer.open(path, {
-                        displayName: item.name,
-                        showAppsSuggestions: true,
-                        showOpenWithDialog: true,
+                    viewDocument({
+                        uri: pathWithPrefix('file://', path),
+                        headerTitle: decodeURIComponent(item.name),
+                        mimeType: item.mime_type,
                     }).catch(() => {
                         const file = galleryItemToFileInfo(item);
                         alertFailedToOpenDocument(file, intl);
@@ -198,6 +198,8 @@ const DownloadWithAction = ({action, enableSecureFilePreview, item, onDownloadSu
                 saveToFiles: true,
             }).catch(() => {
                 // do nothing
+            }).finally(() => {
+                onShareCallback?.();
             });
 
             setAction('none');
@@ -254,6 +256,8 @@ const DownloadWithAction = ({action, enableSecureFilePreview, item, onDownloadSu
                     showAppsToView: true,
                 }).catch(() => {
                     // do nothing
+                }).finally(() => {
+                    onShareCallback?.();
                 });
             }
             setShowToast(false);
@@ -264,7 +268,7 @@ const DownloadWithAction = ({action, enableSecureFilePreview, item, onDownloadSu
         try {
             const path = getLocalFilePathFromFile(serverUrl, galleryItemToFileInfo(item));
             if (path) {
-                const exists = await fileExists(path);
+                const exists = fileExists(path);
                 let actionToExecute: (response: ClientResponse) => Promise<void>;
                 switch (action) {
                     case 'sharing':

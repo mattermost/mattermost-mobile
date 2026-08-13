@@ -13,8 +13,6 @@ import {typography} from '@utils/typography';
 
 import type AiThreadModel from '@agents/types/database/models/ai_thread';
 
-export const THREAD_ITEM_HEIGHT = 88;
-
 type Props = {
     thread: AiThreadModel;
     onPress: (thread: AiThreadModel) => void;

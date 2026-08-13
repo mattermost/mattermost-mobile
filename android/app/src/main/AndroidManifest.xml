@@ -21,6 +21,9 @@
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE_MICROPHONE"/>
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE_DATA_SYNC"/>
 
+    <!-- Opt out of react-native-nitro-bg-timer-plus foreground service (Play Store special-use review not needed) -->
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_SPECIAL_USE" tools:node="remove" />
+
     <!-- Request legacy Bluetooth permissions on older devices. -->
     <uses-permission android:name="android.permission.BLUETOOTH"
         android:maxSdkVersion="30" />
@@ -54,11 +57,21 @@
         <meta-data android:name="firebase_analytics_collection_deactivated" android:value="true" />
         <meta-data android:name="android.content.APP_RESTRICTIONS"
                    android:resource="@xml/app_restrictions" />
+        <provider
+            android:name="androidx.core.content.FileProvider"
+            android:authorities="${applicationId}.provider"
+            android:exported="false"
+            android:grantUriPermissions="true">
+            <meta-data
+                android:name="android.support.FILE_PROVIDER_PATHS"
+                android:resource="@xml/file_viewer_provider_paths" />
+        </provider>
       <activity
         android:name=".MainActivity"
         android:configChanges="keyboard|keyboardHidden|orientation|screenLayout|screenSize|smallestScreenSize|uiMode"
         android:windowSoftInputMode="adjustResize"
         android:launchMode="singleTask"
+        android:theme="@style/AppTheme"
         android:exported="true"
         android:taskAffinity=""
       >
@@ -87,12 +100,6 @@
                android:enabled="true"
                android:exported="false" />
       <activity
-        android:name="com.reactnativenavigation.controllers.NavigationActivity"
-        android:configChanges="keyboard|keyboardHidden|orientation|screenLayout|screenSize|smallestScreenSize|uiMode"
-        android:resizeableActivity="true"
-        android:exported="false"
-      />
-      <activity
         android:name="com.mattermost.rnshare.ShareActivity"
         android:configChanges="keyboard|keyboardHidden|orientation|screenLayout|screenSize|smallestScreenSize|uiMode"
         android:windowSoftInputMode="adjustResize"
@@ -109,13 +116,6 @@
           </intent-filter>
       </activity>
 
-        <!-- For Calls microphone to work in the background -->
-        <service
-                android:name="com.voximplant.foregroundservice.VIForegroundService"
-                android:foregroundServiceType="microphone"
-                android:exported="false"
-        />
-
       <!-- Android 14 requires the correct Foreground Service (FGS) type for RNShare -->
       <service
           android:name="androidx.work.impl.foreground.SystemForegroundService"
@@ -124,6 +124,9 @@
           android:stopWithTask="false"
           tools:node="merge"
       />
+
+        <!-- Opt out of react-native-nitro-bg-timer-plus foreground service -->
+        <service android:name="com.margelo.nitro.backgroundtimer.NitroBackgroundTimerService" tools:node="remove" />
 
     </application>
 </manifest>

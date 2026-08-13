@@ -5,8 +5,9 @@
 
 import assert from 'assert';
 
-import {act, renderHook} from '@testing-library/react-hooks'; // Use instead of react-native version due to different behavior. Consider migrating
-import {AppState} from 'react-native';
+import CallsNative from '@mattermost/calls-native';
+import {act, renderHook} from '@testing-library/react-native';
+import {AppState, Platform} from 'react-native';
 
 import {needsRecordingAlert} from '@calls/alerts';
 import {
@@ -49,7 +50,6 @@ import {
     setPluginEnabled,
     setRaisedHand,
     setScreenShareURL,
-    setSpeakerPhone,
     setUserMuted,
     setUserVoiceOn,
     userJoinedCall,
@@ -75,10 +75,14 @@ import Calls from '@constants/calls';
 import DatabaseManager from '@database/manager';
 import {getUserById} from '@queries/servers/user';
 import TestHelper from '@test/test_helper';
+import {advanceTimers, disableFakeTimers, enableFakeTimers} from '@test/timer_helpers';
 
 import type {CallJobState, LiveCaptionData} from '@mattermost/calls/lib/types';
 
 jest.mock('@calls/alerts');
+jest.mock('@calls/native_call', () => ({
+    endNativeCall: jest.fn(),
+}));
 
 jest.mock('@constants/calls', () => ({
     ...jest.requireActual('@constants/calls'),
@@ -108,15 +112,6 @@ jest.mock('@queries/servers/user', () => ({
 
 const user5 = TestHelper.fakeUserModel({username: 'user-5'});
 jest.mocked(getUserById).mockResolvedValue(user5);
-
-jest.mock('react-native-navigation', () => ({
-    Navigation: {
-        pop: jest.fn(() => Promise.resolve({
-            catch: jest.fn(),
-        })),
-        setDefaultOptions: jest.fn(),
-    },
-}));
 
 const call1: Call = {
     id: 'call1',
@@ -197,6 +192,10 @@ describe('useCallsState', () => {
             setChannelsWithCalls('server1', {});
             setCurrentCall(null);
         });
+    });
+
+    afterEach(async () => {
+        await DatabaseManager.destroyServerDatabase('server1');
     });
 
     it('default state', () => {
@@ -463,6 +462,72 @@ describe('useCallsState', () => {
         assert.deepEqual(result.current[2], expectedCurrentCallState);
     });
 
+    it('userLeftCall ends the native overlay when the last session leaves', () => {
+        const {endNativeCall} = require('@calls/native_call');
+        jest.clearAllMocks();
+
+        const soloCall = {
+            ...call1,
+            sessions: {
+                session1: {sessionId: 'session1', userId: 'user-1', muted: false, raisedHand: 0},
+            },
+        };
+        act(() => {
+            setCallsState('server1', {...DefaultCallsState, calls: {'channel-1': soloCall}});
+            setChannelsWithCalls('server1', {'channel-1': true});
+        });
+
+        act(() => userLeftCall('server1', 'channel-1', 'session1'));
+
+        expect(endNativeCall).toHaveBeenCalledWith('server1', 'channel-1', 'remoteEnded');
+    });
+
+    it('userLeftCall does not end the native overlay when other sessions remain', () => {
+        const {endNativeCall} = require('@calls/native_call');
+        jest.clearAllMocks();
+
+        act(() => {
+            setCallsState('server1', {...DefaultCallsState, calls: {'channel-1': call1}});
+            setChannelsWithCalls('server1', {'channel-1': true});
+        });
+
+        act(() => userLeftCall('server1', 'channel-1', 'session1'));
+
+        expect(endNativeCall).not.toHaveBeenCalled();
+    });
+
+    it('setCalls ends the native overlay for calls that disappeared from the server snapshot', async () => {
+        const {endNativeCall} = require('@calls/native_call');
+        jest.clearAllMocks();
+
+        // Pre-existing state: two calls tracked locally.
+        act(() => {
+            setCallsState('server1', {...DefaultCallsState, calls: {'channel-1': call1, 'channel-2': call2}});
+            setChannelsWithCalls('server1', {'channel-1': true, 'channel-2': true});
+        });
+
+        // Server now reports only channel-1; channel-2's call vanished while
+        // we were disconnected (caller cancelled, or we missed call_end).
+        await act(async () => setCalls('server1', 'myId', {'channel-1': call1}, {}));
+
+        expect(endNativeCall).toHaveBeenCalledWith('server1', 'channel-2', 'remoteEnded');
+        expect(endNativeCall).not.toHaveBeenCalledWith('server1', 'channel-1', expect.anything());
+    });
+
+    it('setCalls does not end the native overlay for calls still present', async () => {
+        const {endNativeCall} = require('@calls/native_call');
+        jest.clearAllMocks();
+
+        act(() => {
+            setCallsState('server1', {...DefaultCallsState, calls: {'channel-1': call1}});
+            setChannelsWithCalls('server1', {'channel-1': true});
+        });
+
+        await act(async () => setCalls('server1', 'myId', {'channel-1': call1, 'channel-2': call2}, {}));
+
+        expect(endNativeCall).not.toHaveBeenCalled();
+    });
+
     it('callStarted', async () => {
         const initialCurrentCallState: CurrentCall = {
             ...DefaultCurrentCall,
@@ -490,7 +555,7 @@ describe('useCallsState', () => {
         assert.deepEqual(result.current[0].calls, {'channel-1': call1});
         assert.deepEqual(result.current[1], {'channel-1': true});
         assert.deepEqual(result.current[2], initialCurrentCallState);
-        expect(updateThreadFollowing).toBeCalled();
+        expect(updateThreadFollowing).toHaveBeenCalled();
     });
 
     it('callEnded', () => {
@@ -801,52 +866,6 @@ describe('useCallsState', () => {
         assert.deepEqual(result.current[1], null);
     });
 
-    it('setSpeakerPhoneOn', () => {
-        const initialCallsState = {
-            ...DefaultCallsState,
-            myUserId: 'myUserId',
-            calls: {'channel-1': call1, 'channel-2': call2},
-        };
-        const newCall1 = {
-            ...call1,
-            sessions: {
-                ...call1.sessions,
-                mySessionId: {sessionId: 'mySessionId', userId: 'myUserId', muted: true, raisedHand: 0},
-            },
-        };
-        const expectedCallsState = {
-            ...initialCallsState,
-            calls: {
-                ...initialCallsState.calls,
-                'channel-1': newCall1,
-            },
-        };
-
-        // setup
-        const {result} = renderHook(() => {
-            return [useCallsState('server1'), useCurrentCall()] as const;
-        });
-        act(() => setCallsState('server1', initialCallsState));
-        assert.deepEqual(result.current[0], initialCallsState);
-        assert.deepEqual(result.current[1], null);
-
-        // test
-        act(() => newCurrentCall('server1', 'channel-1', 'myUserId'));
-        act(() => userJoinedCall('server1', 'channel-1', 'myUserId', 'mySessionId'));
-        assert.deepEqual((result.current[1])?.speakerphoneOn, false);
-        act(() => setSpeakerPhone(true));
-        assert.deepEqual((result.current[1])?.speakerphoneOn, true);
-        act(() => setSpeakerPhone(false));
-        assert.deepEqual((result.current[1])?.speakerphoneOn, false);
-        assert.deepEqual(result.current[0], expectedCallsState);
-        act(() => {
-            myselfLeftCall();
-            setSpeakerPhone(true);
-        });
-        assert.deepEqual(result.current[0], expectedCallsState);
-        assert.deepEqual(result.current[1], null);
-    });
-
     it('setAudioDeviceInfo', () => {
         const initialCallsState = {
             ...DefaultCallsState,
@@ -891,7 +910,6 @@ describe('useCallsState', () => {
         assert.deepEqual((result.current[1])?.audioDeviceInfo, defaultAudioDeviceInfo);
         act(() => setAudioDeviceInfo(newAudioDeviceInfo));
         assert.deepEqual((result.current[1])?.audioDeviceInfo, newAudioDeviceInfo);
-        assert.deepEqual((result.current[1])?.speakerphoneOn, false);
         assert.deepEqual(result.current[0], expectedCallsState);
         act(() => {
             myselfLeftCall();
@@ -1289,7 +1307,7 @@ describe('useCallsState', () => {
         assert.deepEqual((result.current[0]).calls['channel-2'], {...call2, recState});
         assert.deepEqual((result.current[1]), expectedCurrentCallState);
         act(() => setRecordingState('server1', 'channel-1', {...recState, start_at: recState.start_at + 1}));
-        expect(needsRecordingAlert).toBeCalled();
+        expect(needsRecordingAlert).toHaveBeenCalled();
     });
 
     it('setHost', () => {
@@ -1342,7 +1360,7 @@ describe('useCallsState', () => {
         assert.deepEqual((result.current[0]).calls['channel-2'], {...call2, hostId: 'user-1923'});
         assert.deepEqual((result.current[1]), expectedCurrentCallState);
         act(() => setHost('server1', 'channel-1', 'myUserId'));
-        expect(needsRecordingAlert).toBeCalled();
+        expect(needsRecordingAlert).toHaveBeenCalled();
     });
 
     it('incoming calls', async () => {
@@ -1455,79 +1473,125 @@ describe('useCallsState', () => {
 
     // TODO: Flaky test - disabled until root cause is identified
     // See https://mattermost.atlassian.net/browse/MM-67173
-    it.skip('playIncomingCallsRinging', async () => {
+    it('should not ring on iOS (CallKit handles it)', async () => {
         const initialIncomingCalls = {
             ...DefaultIncomingCalls,
             incomingCalls: [{
-                callID: 'callDM',
+                callID: 'call1',
                 callerID: 'user-5',
                 callerModel: TestHelper.fakeUserModel({username: 'user-5'}),
-                channelID: 'channel-private',
+                channelID: 'channel-dm',
                 myUserId: 'myId',
                 serverUrl: 'server1',
                 startAt: 123,
                 type: 0,
             }],
-            currentRingingCallId: undefined,
         };
 
-        // setup
         await DatabaseManager.init(['server1']);
         const {result} = renderHook(() => useIncomingCalls());
         await act(async () => {
-            await setIncomingCalls(initialIncomingCalls);
+            setIncomingCalls(initialIncomingCalls);
         });
-        assert.deepEqual(result.current, initialIncomingCalls);
         AppState.currentState = 'active';
 
-        const getCurrentUser = require('@queries/servers/user').getCurrentUser;
-        getCurrentUser.mockResolvedValueOnce({
-            id: 'user-5',
-            roles: 'user',
-            notifyProps: {
-                calls_mobile_sound: 'true',
-                calls_mobile_notification_sound: 'Calm',
-            },
-        });
-
-        // test: should not ring when in DND
-        await act(async () => {
-            await playIncomingCallsRinging('server1', 'call1', 'dnd');
-        });
-        assert.deepEqual(result.current, initialIncomingCalls);
-
-        // test: should not ring when in OOO
-        await act(async () => {
-            await playIncomingCallsRinging('server1', 'call1', 'ooo');
-        });
-        assert.deepEqual(result.current, initialIncomingCalls);
-
-        // test: should ring when online
+        // Platform.OS defaults to 'ios' in the test environment
         await act(async () => {
             await playIncomingCallsRinging('server1', 'call1', 'online');
         });
-        assert.deepEqual(result.current, {
-            ...initialIncomingCalls,
-            currentRingingCallId: 'call1',
-            callIdHasRung: {call1: true},
-        });
 
-        // test: should not ring for same call again
-        await act(async () => {
-            setIncomingCalls(initialIncomingCalls);
-            await playIncomingCallsRinging('server1', 'call1', 'online');
-        });
+        expect(CallsNative.startRingtone).not.toHaveBeenCalled();
         assert.deepEqual(result.current, initialIncomingCalls);
+    });
 
-        // test: should not ring when already ringing
-        await act(async () => {
-            setIncomingCalls({
-                ...initialIncomingCalls,
-                currentRingingCallId: 'call2',
+    it('should ring on Android with correct guards and expire after RING_LENGTH', async () => {
+        enableFakeTimers();
+        const originalOS = Platform.OS;
+        Platform.OS = 'android';
+
+        try {
+            const initialIncomingCalls = {
+                ...DefaultIncomingCalls,
+                incomingCalls: [{
+                    callID: 'call1',
+                    callerID: 'user-5',
+                    callerModel: TestHelper.fakeUserModel({username: 'user-5'}),
+                    channelID: 'channel-dm',
+                    myUserId: 'myId',
+                    serverUrl: 'server1',
+                    startAt: 123,
+                    type: 0,
+                }],
+            };
+
+            await DatabaseManager.init(['server1']);
+            const {result} = renderHook(() => useIncomingCalls());
+            await act(async () => {
+                setIncomingCalls(initialIncomingCalls);
             });
-            await playIncomingCallsRinging('server1', 'call3', 'online');
-        });
-        assert.deepEqual(result.current.currentRingingCallId, 'call2');
+            AppState.currentState = 'active';
+
+            const getCurrentUser = require('@queries/servers/user').getCurrentUser;
+            getCurrentUser.mockResolvedValue({
+                id: 'user-5',
+                roles: 'user',
+                notifyProps: {
+                    calls_mobile_sound: 'true',
+                    calls_mobile_notification_sound: 'Calm',
+                },
+            });
+
+            // should not ring when in DND
+            await act(async () => {
+                await playIncomingCallsRinging('server1', 'call1', 'dnd');
+            });
+            expect(CallsNative.startRingtone).not.toHaveBeenCalled();
+            assert.deepEqual(result.current, initialIncomingCalls);
+
+            // should not ring when OOO
+            await act(async () => {
+                await playIncomingCallsRinging('server1', 'call1', 'ooo');
+            });
+            expect(CallsNative.startRingtone).not.toHaveBeenCalled();
+
+            // should ring when online
+            await act(async () => {
+                await playIncomingCallsRinging('server1', 'call1', 'online');
+            });
+            expect(CallsNative.startRingtone).toHaveBeenCalledWith('calls_calm', Calls.RING_LENGTH / 1000);
+            assert.deepEqual(result.current, {
+                ...initialIncomingCalls,
+                currentRingingCallId: 'call1',
+                callIdHasRung: {call1: true},
+            });
+
+            // should stop ringing and clear currentRingingCallId after RING_LENGTH
+            await act(async () => {
+                await advanceTimers(Calls.RING_LENGTH);
+            });
+            expect(CallsNative.stopRingtone).toHaveBeenCalled();
+            assert.deepEqual(result.current.currentRingingCallId, undefined);
+
+            // should not ring for the same call again (callIdHasRung blocks it)
+            await act(async () => {
+                setIncomingCalls({
+                    ...initialIncomingCalls,
+                    callIdHasRung: {call1: true},
+                });
+                await playIncomingCallsRinging('server1', 'call1', 'online');
+            });
+            expect(CallsNative.startRingtone).toHaveBeenCalledTimes(1);
+
+            // should not ring when already ringing for a different call
+            await act(async () => {
+                setIncomingCalls({...initialIncomingCalls, currentRingingCallId: 'call2'});
+                await playIncomingCallsRinging('server1', 'call1', 'online');
+            });
+            assert.deepEqual(result.current.currentRingingCallId, 'call2');
+        } finally {
+            Platform.OS = originalOS;
+            disableFakeTimers();
+        }
     });
 
     it('callsOnAppStateChange', async () => {

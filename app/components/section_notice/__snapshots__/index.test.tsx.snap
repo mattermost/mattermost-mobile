@@ -29,16 +29,30 @@ exports[`Section notice match snapshot 1`] = `
       }
     }
   >
-    <Icon
-      name="information-outline"
-      size={20}
+    <Text
+      allowFontScaling={false}
+      selectable={false}
       style={
-        {
-          "color": "#5d89ea",
-        }
+        [
+          {
+            "color": "black",
+            "fontSize": 20,
+          },
+          {
+            "color": "#5d89ea",
+          },
+          {
+            "fontFamily": "compass-icons",
+            "fontStyle": "normal",
+            "fontWeight": "normal",
+          },
+          undefined,
+        ]
       }
       testID="sectionNoticeHeaderIcon"
-    />
+    >
+      󰋽
+    </Text>
     <View
       style={
         {
@@ -137,7 +151,9 @@ exports[`Section notice match snapshot 1`] = `
             accessible={true}
             collapsable={false}
             focusable={true}
+            onBlur={[Function]}
             onClick={[Function]}
+            onFocus={[Function]}
             onResponderGrant={[Function]}
             onResponderMove={[Function]}
             onResponderRelease={[Function]}
@@ -145,9 +161,12 @@ exports[`Section notice match snapshot 1`] = `
             onResponderTerminationRequest={[Function]}
             onStartShouldSetResponder={[Function]}
             style={
-              {
-                "opacity": 1,
-              }
+              [
+                undefined,
+                {
+                  "opacity": 1,
+                },
+              ]
             }
           >
             <View
@@ -177,12 +196,28 @@ exports[`Section notice match snapshot 1`] = `
                 testID="undefined-text-container"
               >
                 <View>
-                  <Icon
-                    color="#ffffff"
-                    name="chevron-right"
-                    size={18}
+                  <Text
+                    allowFontScaling={false}
+                    selectable={false}
+                    style={
+                      [
+                        {
+                          "color": "#ffffff",
+                          "fontSize": 18,
+                        },
+                        undefined,
+                        {
+                          "fontFamily": "compass-icons",
+                          "fontStyle": "normal",
+                          "fontWeight": "normal",
+                        },
+                        undefined,
+                      ]
+                    }
                     testID="undefined-icon"
-                  />
+                  >
+                    󰅂
+                  </Text>
                 </View>
                 <Text
                   numberOfLines={1}
@@ -239,7 +274,9 @@ exports[`Section notice match snapshot 1`] = `
             accessible={true}
             collapsable={false}
             focusable={true}
+            onBlur={[Function]}
             onClick={[Function]}
+            onFocus={[Function]}
             onResponderGrant={[Function]}
             onResponderMove={[Function]}
             onResponderRelease={[Function]}
@@ -247,9 +284,12 @@ exports[`Section notice match snapshot 1`] = `
             onResponderTerminationRequest={[Function]}
             onStartShouldSetResponder={[Function]}
             style={
-              {
-                "opacity": 1,
-              }
+              [
+                undefined,
+                {
+                  "opacity": 1,
+                },
+              ]
             }
           >
             <View
@@ -279,12 +319,28 @@ exports[`Section notice match snapshot 1`] = `
                 testID="undefined-text-container"
               >
                 <View>
-                  <Icon
-                    color="#1c58d9"
-                    name="chevron-right"
-                    size={18}
+                  <Text
+                    allowFontScaling={false}
+                    selectable={false}
+                    style={
+                      [
+                        {
+                          "color": "#1c58d9",
+                          "fontSize": 18,
+                        },
+                        undefined,
+                        {
+                          "fontFamily": "compass-icons",
+                          "fontStyle": "normal",
+                          "fontWeight": "normal",
+                        },
+                        undefined,
+                      ]
+                    }
                     testID="undefined-icon"
-                  />
+                  >
+                    󰅂
+                  </Text>
                 </View>
                 <Text
                   numberOfLines={1}
@@ -341,7 +397,9 @@ exports[`Section notice match snapshot 1`] = `
             accessible={true}
             collapsable={false}
             focusable={true}
+            onBlur={[Function]}
             onClick={[Function]}
+            onFocus={[Function]}
             onResponderGrant={[Function]}
             onResponderMove={[Function]}
             onResponderRelease={[Function]}
@@ -349,9 +407,12 @@ exports[`Section notice match snapshot 1`] = `
             onResponderTerminationRequest={[Function]}
             onStartShouldSetResponder={[Function]}
             style={
-              {
-                "opacity": 1,
-              }
+              [
+                undefined,
+                {
+                  "opacity": 1,
+                },
+              ]
             }
           >
             <View
@@ -381,12 +442,28 @@ exports[`Section notice match snapshot 1`] = `
                 testID="undefined-text-container"
               >
                 <View>
-                  <Icon
-                    color="#1c58d9"
-                    name="chevron-right"
-                    size={18}
+                  <Text
+                    allowFontScaling={false}
+                    selectable={false}
+                    style={
+                      [
+                        {
+                          "color": "#1c58d9",
+                          "fontSize": 18,
+                        },
+                        undefined,
+                        {
+                          "fontFamily": "compass-icons",
+                          "fontStyle": "normal",
+                          "fontWeight": "normal",
+                        },
+                        undefined,
+                      ]
+                    }
                     testID="undefined-icon"
-                  />
+                  >
+                    󰅂
+                  </Text>
                 </View>
                 <Text
                   numberOfLines={1}
@@ -453,10 +530,27 @@ exports[`Section notice match snapshot 1`] = `
     }
     testID="sectionNoticeDismissButton"
   >
-    <Icon
-      name="close"
-      size={18}
-    />
+    <Text
+      allowFontScaling={false}
+      selectable={false}
+      style={
+        [
+          {
+            "color": "black",
+            "fontSize": 18,
+          },
+          undefined,
+          {
+            "fontFamily": "compass-icons",
+            "fontStyle": "normal",
+            "fontWeight": "normal",
+          },
+          undefined,
+        ]
+      }
+    >
+      󰅖
+    </Text>
   </View>
 </View>
 `;

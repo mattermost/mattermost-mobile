@@ -1,40 +1,48 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-// eslint-disable-next-line @typescript-eslint/ban-ts-comment
-// @ts-ignore
-import VIForegroundService from '@voximplant/react-native-foreground-service';
+import CallsNative from '@mattermost/calls-native';
+import {defineMessages, type IntlShape} from 'react-intl';
+import {Platform} from 'react-native';
 
-import {logError} from '@utils/log';
+// Localized strings for the Android foreground-service notification. iOS
+// doesn't use a foreground service; AVAudioSession + the `audio`
+// background mode keep the mic alive on its own.
+const messages = defineMessages({
+    channelName: {
+        id: 'mobile.calls.foreground_service.channel_name',
+        defaultMessage: 'Mattermost Calls',
+    },
+    channelDescription: {
+        id: 'mobile.calls.foreground_service.channel_description',
+        defaultMessage: 'Keeps the microphone active while a call is in progress',
+    },
+    title: {
+        id: 'mobile.calls.foreground_service.title',
+        defaultMessage: 'Mattermost',
+    },
+    text: {
+        id: 'mobile.calls.foreground_service.text',
+        defaultMessage: 'Call in progress',
+    },
+});
 
-const channelConfig = {
-    id: 'calls_channel',
-    name: 'Mattermost',
-    description: 'Mattermost Calls microphone while app is in the background',
-    enableVibration: false,
-};
-
-// Note: multiple calls with same arguments are a noop.
-export const foregroundServiceSetup = () => {
-    VIForegroundService.getInstance().createNotificationChannel(channelConfig);
-};
-
-export const foregroundServiceStart = async () => {
-    const notificationConfig = {
-        channelId: 'calls_channel',
-        id: 345678,
-        title: 'Mattermost',
-        text: 'Mattermost Calls Microphone',
-        icon: '',
-        button: 'Stop',
-    };
-    try {
-        await VIForegroundService.getInstance().startService(notificationConfig);
-    } catch (e) {
-        logError('Calls: Cannot start ForegroundService, error:', e);
+export const foregroundServiceStart = (intl: IntlShape) => {
+    if (Platform.OS !== 'android') {
+        return;
     }
+    CallsNative.foregroundServiceStart({
+        channelId: 'calls_channel',
+        channelName: intl.formatMessage(messages.channelName),
+        channelDescription: intl.formatMessage(messages.channelDescription),
+        title: intl.formatMessage(messages.title),
+        text: intl.formatMessage(messages.text),
+    });
 };
 
-export const foregroundServiceStop = async () => {
-    await VIForegroundService.getInstance().stopService();
+export const foregroundServiceStop = () => {
+    if (Platform.OS !== 'android') {
+        return;
+    }
+    CallsNative.foregroundServiceStop();
 };

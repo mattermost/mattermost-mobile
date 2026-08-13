@@ -7,11 +7,10 @@ import {View} from 'react-native';
 import BookmarkType from '@components/channel_bookmarks/bookmark_type';
 import FormattedText from '@components/formatted_text';
 import {useTheme} from '@context/theme';
-import {useIsTablet} from '@hooks/device';
 import {makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
 
-type Props = {
+export type AddBookmarkOptionsProps = {
     channelId: string;
     currentUserId: string;
 }
@@ -25,22 +24,19 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => ({
     },
 }));
 
-const AddBookmarkOptions = ({channelId, currentUserId}: Props) => {
+const AddBookmarkOptions = ({channelId, currentUserId}: AddBookmarkOptionsProps) => {
     const theme = useTheme();
-    const isTablet = useIsTablet();
     const styles = getStyleSheet(theme);
 
     return (
         <>
-            {!isTablet && (
-                <View style={styles.listHeader}>
-                    <FormattedText
-                        id='channel_info.add_bookmark'
-                        defaultMessage={'Add a bookmark'}
-                        style={styles.listHeaderText}
-                    />
-                </View>
-            )}
+            <View style={styles.listHeader}>
+                <FormattedText
+                    id='channel_info.add_bookmark'
+                    defaultMessage={'Add a bookmark'}
+                    style={styles.listHeaderText}
+                />
+            </View>
             <View style={styles.flex}>
                 <BookmarkType
                     channelId={channelId}

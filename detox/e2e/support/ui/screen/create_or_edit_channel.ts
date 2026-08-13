@@ -7,14 +7,14 @@ import {
     ChannelListScreen,
     ChannelSettingsScreen,
 } from '@support/ui/screen';
-import {timeouts} from '@support/utils';
-import {expect} from 'detox';
+import {isIos, tapNativeBackButton, timeouts, wait, waitForElementToBeVisible} from '@support/utils';
+import {expect, waitFor} from 'detox';
 
 class CreateOrEditChannelScreen {
     testID = {
         createOrEditChannelScreen: 'create_or_edit_channel.screen',
         closeButton: 'close.create_or_edit_channel.button',
-        backButton: 'screen.back.button',
+        backButton: 'navigation.header.back',
         createButton: 'create_or_edit_channel.create.button',
         saveButton: 'create_or_edit_channel.save.button',
         scrollView: 'create_or_edit_channel.scroll_view',
@@ -50,8 +50,17 @@ class CreateOrEditChannelScreen {
     };
 
     openCreateChannel = async () => {
-        // # Open create channel screen
-        await ChannelListScreen.headerPlusButton.tap();
+        if (isIos()) {
+            try {
+                await waitFor(element(by.text('Not Now'))).toBeVisible().withTimeout(3000);
+                await element(by.text('Not Now')).tap();
+            } catch {
+                // No system alert.
+            }
+        }
+
+        await ChannelListScreen.openPlusMenu();
+        await waitForElementToBeVisible(ChannelListScreen.createNewChannelItem, timeouts.TEN_SEC);
         await ChannelListScreen.createNewChannelItem.tap();
 
         return this.toBeVisible();
@@ -78,13 +87,53 @@ class CreateOrEditChannelScreen {
     };
 
     back = async () => {
-        await this.backButton.tap();
+        await tapNativeBackButton();
         await expect(this.createOrEditChannelScreen).not.toBeVisible();
     };
 
     close = async () => {
         await this.closeButton.tap();
         await expect(this.createOrEditChannelScreen).not.toBeVisible();
+    };
+
+    save = async () => {
+        // The save button sits in the modal header, above the keyboard. A blind pressBack here
+        // dismisses create_or_edit_channel.screen itself and the save button with it.
+        await this.saveButton.tap();
+
+        // Save can leave an empty create_or_edit_channel.screen shell that blocks not.toExist, so
+        // require the save button to disappear before accepting the destination screen.
+        const {channelInfoScreen} = ChannelInfoScreen;
+        const {channelSettingsScreen} = ChannelSettingsScreen;
+        const startTime = Date.now();
+        /* eslint-disable no-await-in-loop */
+        while (Date.now() - startTime < timeouts.HALF_MIN) {
+            try {
+                await expect(this.saveButton).not.toExist();
+            } catch {
+                await wait(timeouts.HALF_SEC);
+                continue;
+            }
+
+            try {
+                await expect(channelInfoScreen).toExist();
+                return;
+            } catch {
+                /* not on channel info yet */
+            }
+            try {
+                await expect(channelSettingsScreen).toExist();
+                return;
+            } catch {
+                /* not on channel settings yet */
+            }
+
+            // Modal dismissed even if destination matcher is still settling.
+            return;
+        }
+        /* eslint-enable no-await-in-loop */
+
+        throw new Error('save: edit channel screen did not dismiss after save');
     };
 
     toggleMakePrivateOn = async () => {

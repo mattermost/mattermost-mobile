@@ -15,10 +15,11 @@ import Checklist from './';
 import type ServerDataOperator from '@database/operator/server_data_operator';
 import type {Database} from '@nozbe/watermelondb';
 import type {PlaybookChecklistModel} from '@playbooks/database/models';
+import type PlaybookChecklistModelType from '@playbooks/types/database/models/playbook_checklist';
 
 jest.mock('./checklist');
 jest.mocked(ChecklistComponent).mockImplementation(
-    (props) => React.createElement('Checklist', {testID: 'checklist', ...props}),
+    (props: ComponentProps<typeof ChecklistComponent>) => React.createElement('Checklist', {testID: 'checklist', ...props}),
 );
 
 jest.mock('@playbooks/utils/progress');
@@ -205,7 +206,7 @@ describe('Checklist', () => {
 
             database.write(async () => {
                 if ('update' in props.checklist) {
-                    await props.checklist.update((c) => {
+                    await props.checklist.update((c: PlaybookChecklistModelType) => {
                         c.itemsOrder = [itemsIds[0], itemsIds[1]];
                     });
                 }

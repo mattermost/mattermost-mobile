@@ -55,5 +55,5 @@ repositories {
 
 dependencies {
     implementation 'com.facebook.react:react-native'
-    implementation 'androidx.work:work-runtime:2.10.0'
+    implementation 'androidx.work:work-runtime:2.11.2'
 }

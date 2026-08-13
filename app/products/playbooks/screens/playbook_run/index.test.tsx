@@ -88,7 +88,6 @@ describe('PlaybookRun', () => {
             return {
                 playbookRunId,
                 playbookRun: baseRun,
-                componentId: 'PlaybookRuns' as const,
             };
         }
 
@@ -159,7 +158,6 @@ describe('PlaybookRun', () => {
         function getBaseProps(): ComponentProps<typeof PlaybookRun> {
             return {
                 playbookRunId,
-                componentId: 'PlaybookRuns',
             };
         }
 

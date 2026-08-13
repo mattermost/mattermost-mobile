@@ -1,21 +1,21 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {renderHook} from '@testing-library/react-hooks';
+import {renderHook} from '@testing-library/react-native';
 import React from 'react';
 import {IntlProvider} from 'react-intl';
 
 import {handleBindingClick} from '@actions/remote/apps';
 import {handleGotoLocation} from '@actions/remote/command';
 import {AppCallResponseTypes} from '@constants/apps';
-import {showAppForm} from '@screens/navigation';
+import {navigateToScreen} from '@screens/navigation';
 
 import {useAppBinding} from './apps';
 
 jest.mock('@actions/remote/apps');
 jest.mock('@actions/remote/command');
 jest.mock('@screens/navigation', () => ({
-    showAppForm: jest.fn(),
+    navigateToScreen: jest.fn(),
 }));
 jest.mock('@context/server', () => ({
     useServerUrl: () => 'http://localhost:8065',
@@ -133,7 +133,7 @@ describe('useAppBinding', () => {
         await callback();
 
         expect(config.onForm).toHaveBeenCalledWith(formResponse.form);
-        expect(showAppForm).not.toHaveBeenCalled();
+        expect(navigateToScreen).not.toHaveBeenCalled();
         expect(config.onSuccess).not.toHaveBeenCalled();
         expect(config.onError).not.toHaveBeenCalled();
     });

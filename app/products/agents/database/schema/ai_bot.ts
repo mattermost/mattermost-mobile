@@ -1,8 +1,9 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {AGENTS_TABLES} from '@agents/constants/database';
 import {tableSchema} from '@nozbe/watermelondb';
+
+import {AGENTS_TABLES} from '@agents/constants/database';
 
 const {AI_BOT} = AGENTS_TABLES;
 

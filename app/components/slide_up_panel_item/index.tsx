@@ -5,7 +5,7 @@ import {type ImageSource, type ImageStyle} from 'expo-image';
 import React from 'react';
 import {type StyleProp, Text, type TextStyle, TouchableHighlight, View, type ViewStyle} from 'react-native';
 
-import CompassIcon from '@components/compass_icon';
+import CompassIcon, {type CompassIconName} from '@components/compass_icon';
 import ExpoImage from '@components/expo_image';
 import {useTheme} from '@context/theme';
 import {usePreventDoubleTap} from '@hooks/utils';
@@ -16,10 +16,10 @@ import {isValidUrl} from '@utils/url';
 
 type SlideUpPanelProps = {
     destructive?: boolean;
-    leftIcon?: string | ImageSource;
+    leftIcon?: CompassIconName | ImageSource;
     leftImageStyles?: StyleProp<ImageStyle>;
     leftIconStyles?: StyleProp<TextStyle>;
-    rightIcon?: string | ImageSource;
+    rightIcon?: CompassIconName | ImageSource;
     rightImageStyles?: StyleProp<ImageStyle>;
     rightIconStyles?: StyleProp<TextStyle>;
     onPress: () => void;
@@ -112,7 +112,7 @@ const SlideUpPanelItem = ({
     );
 };
 
-const useImageAndStyle = (icon: string | ImageSource | undefined, imageStyles: StyleProp<ImageStyle>, iconStyles: StyleProp<TextStyle>, destructive: boolean) => {
+const useImageAndStyle = (icon: CompassIconName | ImageSource | undefined, imageStyles: StyleProp<ImageStyle>, iconStyles: StyleProp<TextStyle>, destructive: boolean) => {
     const theme = useTheme();
     const style = getStyleSheet(theme);
 

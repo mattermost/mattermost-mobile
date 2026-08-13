@@ -1,21 +1,23 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React, {useCallback, useMemo, useState} from 'react';
+import React, {useCallback, useEffect, useMemo, useState} from 'react';
 import {useIntl} from 'react-intl';
-import {Platform, View} from 'react-native';
+import {View} from 'react-native';
+import {useSafeAreaInsets} from 'react-native-safe-area-context';
 
 import FormattedText from '@components/formatted_text';
 import {getItemHeightWithDescription} from '@components/option_item';
 import {ITEM_HEIGHT} from '@components/slide_up_panel_item';
 import {Screens} from '@constants';
+import {isEdgeToEdge} from '@constants/device';
 import {PostPriorityColors, PostPriorityType} from '@constants/post';
+import {NOT_EDGE_TO_EDGE_BOTTOM_SHEET_MARGIN} from '@constants/view';
 import {useTheme} from '@context/theme';
 import useAndroidHardwareBackHandler from '@hooks/android_back_handler';
-import {useIsTablet} from '@hooks/device';
-import useNavButtonPressed from '@hooks/navigation_button_pressed';
 import BottomSheet from '@screens/bottom_sheet';
 import {dismissBottomSheet} from '@screens/navigation';
+import CallbackStore from '@store/callback_store';
 import {bottomSheetSnapPoint} from '@utils/helpers';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
@@ -25,15 +27,11 @@ import Footer, {FOOTER_HEIGHT} from './footer';
 import {labels} from './utils';
 
 import type {BottomSheetFooterProps} from '@gorhom/bottom-sheet';
-import type {AvailableScreens} from '@typings/screens/navigation';
 
-type Props = {
-    componentId: AvailableScreens;
+export type PostPriorityPickerProps = {
     isPostAcknowledgementEnabled: boolean;
     isPersistenNotificationsEnabled: boolean;
     postPriority: PostPriority;
-    updatePostPriority: (data: PostPriority) => void;
-    closeButtonId: string;
     persistentNotificationInterval: number;
 };
 
@@ -41,6 +39,7 @@ const TITLE_HEIGHT = 30; // typography 600 line height
 const OPTIONS_PADDING = 12;
 const OPTIONS_SEPARATOR_HEIGHT = 1;
 const TOGGLE_OPTION_MARGIN_TOP = 16;
+const BUTTONS_SEPARATOR = 9;
 
 const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
     container: {
@@ -64,7 +63,6 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
         color: '#fff',
         ...typography('Body', 25, 'SemiBold'),
     },
-
     optionsContainer: {
         paddingTop: OPTIONS_PADDING,
     },
@@ -80,44 +78,47 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
 }));
 
 const PostPriorityPicker = ({
-    componentId,
     isPostAcknowledgementEnabled,
     isPersistenNotificationsEnabled,
     persistentNotificationInterval,
     postPriority,
-    updatePostPriority,
-    closeButtonId,
-}: Props) => {
+}: PostPriorityPickerProps) => {
     const intl = useIntl();
-    const isTablet = useIsTablet();
     const theme = useTheme();
+    const {bottom} = useSafeAreaInsets();
     const [data, setData] = useState<PostPriority>(postPriority);
 
     const style = getStyleSheet(theme);
 
     const closeBottomSheet = useCallback(() => {
-        return dismissBottomSheet(Screens.POST_PRIORITY_PICKER);
+        return dismissBottomSheet();
     }, []);
 
-    useNavButtonPressed(closeButtonId, componentId, closeBottomSheet, []);
-    useAndroidHardwareBackHandler(componentId, closeBottomSheet);
+    useEffect(() => {
+        return () => {
+            CallbackStore.removeCallback();
+        };
+    }, []);
+
+    useAndroidHardwareBackHandler(Screens.POST_PRIORITY_PICKER, closeBottomSheet);
 
     const displayPersistentNotifications = isPersistenNotificationsEnabled && data.priority === PostPriorityType.URGENT;
 
     const snapPoints = useMemo(() => {
         const paddingBottom = 10;
-        const bottomSheetAdjust = Platform.select({ios: 5, default: 20});
-        let COMPONENT_HEIGHT = TITLE_HEIGHT + OPTIONS_PADDING + FOOTER_HEIGHT + bottomSheetSnapPoint(3, ITEM_HEIGHT) + paddingBottom + bottomSheetAdjust;
+        let componentHeight = TITLE_HEIGHT + BUTTONS_SEPARATOR + (2 * OPTIONS_PADDING) + FOOTER_HEIGHT + bottomSheetSnapPoint(3, ITEM_HEIGHT) + paddingBottom;
 
         if (isPostAcknowledgementEnabled) {
-            COMPONENT_HEIGHT += OPTIONS_SEPARATOR_HEIGHT + TOGGLE_OPTION_MARGIN_TOP + getItemHeightWithDescription(2);
+            componentHeight += OPTIONS_SEPARATOR_HEIGHT + TOGGLE_OPTION_MARGIN_TOP + getItemHeightWithDescription(2) + bottom;
             if (displayPersistentNotifications) {
-                COMPONENT_HEIGHT += OPTIONS_SEPARATOR_HEIGHT + TOGGLE_OPTION_MARGIN_TOP + getItemHeightWithDescription(2);
+                componentHeight += OPTIONS_SEPARATOR_HEIGHT + TOGGLE_OPTION_MARGIN_TOP + getItemHeightWithDescription(2) + bottom;
             }
         }
 
-        return [1, COMPONENT_HEIGHT];
-    }, [displayPersistentNotifications, isPostAcknowledgementEnabled]);
+        const snapBottom = isEdgeToEdge ? bottom : NOT_EDGE_TO_EDGE_BOTTOM_SHEET_MARGIN;
+
+        return [1, componentHeight + snapBottom];
+    }, [bottom, displayPersistentNotifications, isPostAcknowledgementEnabled]);
 
     const handleUpdatePriority = useCallback((priority: PostPriority['priority']) => {
         setData((prevData) => ({
@@ -136,28 +137,27 @@ const PostPriorityPicker = ({
     }, []);
 
     const handleSubmit = useCallback(() => {
-        updatePostPriority(data);
+        const updatePostPriority = CallbackStore.getCallback<((postPriority: PostPriority) => void)>();
+        updatePostPriority?.(data);
         closeBottomSheet();
-    }, [closeBottomSheet, data, updatePostPriority]);
+    }, [closeBottomSheet, data]);
 
     const renderContent = () => (
         <View style={style.container}>
-            {!isTablet &&
-                <View style={style.titleContainer}>
+            <View style={style.titleContainer}>
+                <FormattedText
+                    id='post_priority.picker.title'
+                    defaultMessage='Message priority'
+                    style={style.title}
+                />
+                <View style={style.betaContainer}>
                     <FormattedText
-                        id='post_priority.picker.title'
-                        defaultMessage='Message priority'
-                        style={style.title}
+                        id='post_priority.picker.beta'
+                        defaultMessage='BETA'
+                        style={style.beta}
                     />
-                    <View style={style.betaContainer}>
-                        <FormattedText
-                            id='post_priority.picker.beta'
-                            defaultMessage='BETA'
-                            style={style.beta}
-                        />
-                    </View>
                 </View>
-            }
+            </View>
             <View style={style.optionsContainer}>
                 <PickerOption
                     action={handleUpdatePriority}
@@ -233,8 +233,7 @@ const PostPriorityPicker = ({
     return (
         <BottomSheet
             renderContent={renderContent}
-            closeButtonId={closeButtonId}
-            componentId={Screens.POST_PRIORITY_PICKER}
+            screen={Screens.POST_PRIORITY_PICKER}
             footerComponent={renderFooter}
             initialSnapIndex={1}
             snapPoints={snapPoints}

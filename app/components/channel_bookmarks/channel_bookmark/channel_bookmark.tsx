@@ -2,18 +2,16 @@
 // See LICENSE.txt for license information.
 
 import {useManagedConfig} from '@mattermost/react-native-emm';
-import {Button} from '@rneui/base';
-import React, {useCallback, useEffect, useMemo, useState} from 'react';
+import React, {useCallback, useMemo} from 'react';
 import {useIntl} from 'react-intl';
-import {StyleSheet} from 'react-native';
+import {Pressable, StyleSheet} from 'react-native';
 import Animated from 'react-native-reanimated';
 
 import {ITEM_HEIGHT} from '@components/option_item';
 import {useServerUrl} from '@context/server';
-import {useTheme} from '@context/theme';
 import {useGalleryItem} from '@hooks/gallery';
 import {TITLE_HEIGHT} from '@screens/bottom_sheet';
-import {bottomSheet, dismissOverlay} from '@screens/navigation';
+import {bottomSheet} from '@screens/navigation';
 import {isDocument} from '@utils/file';
 import {bottomSheetSnapPoint} from '@utils/helpers';
 import {openLink} from '@utils/url/links';
@@ -24,7 +22,6 @@ import ChannelBookmarkOptions from './bookmark_options';
 
 import type ChannelBookmarkModel from '@typings/database/models/servers/channel_bookmark';
 import type FileModel from '@typings/database/models/servers/file';
-import type {GalleryAction} from '@typings/screens/gallery';
 
 type Props = {
     bookmark: ChannelBookmarkModel;
@@ -41,14 +38,11 @@ type Props = {
 }
 
 const styles = StyleSheet.create({
-    container: {
+    pressable: {
         alignItems: 'center',
         flexDirection: 'row',
         paddingVertical: 6,
         height: 48,
-    },
-    button: {
-        backgroundColor: 'transparent',
         paddingHorizontal: 0,
     },
 });
@@ -57,22 +51,20 @@ const ChannelBookmark = ({
     bookmark, canDeleteBookmarks, canDownloadFiles, canEditBookmarks, enableSecureFilePreview,
     file, galleryIdentifier, index, onPress, publicLinkEnabled, siteURL,
 }: Props) => {
-    const theme = useTheme();
     const managedConfig = useManagedConfig<ManagedConfig>();
     const serverUrl = useServerUrl();
     const intl = useIntl();
-    const [action, setAction] = useState<GalleryAction>('none');
     const isDocumentFile = useMemo(() => isDocument(file), [file]);
     const canCopyPublicLink = !enableSecureFilePreview && Boolean((bookmark.type === 'link' || (file?.id && publicLinkEnabled)) && managedConfig.copyAndPasteProtection !== 'true');
 
     const handlePress = useCallback(() => {
         if (bookmark.linkUrl) {
-            openLink(bookmark.linkUrl, siteURL, serverUrl, intl);
+            openLink(bookmark.linkUrl, serverUrl, siteURL, intl);
             return;
         }
 
-        onPress?.(index || 0);
-    }, [bookmark, index, intl, onPress, serverUrl, siteURL]);
+        onPress?.(index ?? 0);
+    }, [bookmark.linkUrl, index, intl, onPress, serverUrl, siteURL]);
 
     const handleLongPress = useCallback(() => {
         const canShare = !enableSecureFilePreview && (canDownloadFiles || bookmark.type === 'link');
@@ -88,30 +80,14 @@ const ChannelBookmark = ({
                 canEditBookmarks={canEditBookmarks}
                 enableSecureFilePreview={enableSecureFilePreview}
                 file={file}
-                setAction={setAction}
             />
         );
 
-        bottomSheet({
-            title: bookmark.displayName,
-            renderContent,
-            snapPoints: [1, bottomSheetSnapPoint(1, (count * ITEM_HEIGHT)) + TITLE_HEIGHT],
-            theme,
-            closeButtonId: 'close-channel-bookmark-actions',
-        });
-    }, [bookmark, canCopyPublicLink, canDeleteBookmarks, canDownloadFiles, canEditBookmarks, enableSecureFilePreview, file, theme]);
+        const snapPoints = [1, bottomSheetSnapPoint(count, ITEM_HEIGHT) + TITLE_HEIGHT];
+        bottomSheet(renderContent, snapPoints);
+    }, [bookmark, canCopyPublicLink, canDeleteBookmarks, canDownloadFiles, canEditBookmarks, enableSecureFilePreview, file]);
 
-    const {onGestureEvent, ref} = useGalleryItem(galleryIdentifier, index || 0, handlePress);
-
-    useEffect(() => {
-        if (action === 'none' && bookmark.id) {
-            dismissOverlay(bookmark.id);
-        }
-
-    // We don't care about `bookmark.id` changes as long as
-    // it is up to date when the effect runs.
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [action]);
+    const {onGestureEvent, ref} = useGalleryItem(galleryIdentifier, index ?? 0, handlePress);
 
     if (isDocumentFile) {
         return (
@@ -126,18 +102,21 @@ const ChannelBookmark = ({
     }
 
     return (
-        <Animated.View ref={ref}>
-            <Button
-                containerStyle={styles.container}
-                buttonStyle={styles.button}
+        <Animated.View
+            ref={ref}
+        >
+            <Pressable
+                accessibilityRole='button'
+                style={({pressed}) => [styles.pressable, pressed && {opacity: 0.72}]}
                 onPress={onGestureEvent}
                 onLongPress={handleLongPress}
+                testID={`channel_bookmark.${bookmark.id}`}
             >
                 <BookmarkDetails
                     bookmark={bookmark}
                     file={file}
                 />
-            </Button>
+            </Pressable>
         </Animated.View>
     );
 };

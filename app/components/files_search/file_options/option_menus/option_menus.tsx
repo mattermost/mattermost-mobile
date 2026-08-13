@@ -1,13 +1,12 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
+
 import React, {useCallback} from 'react';
 import {useIntl} from 'react-intl';
 
 import {showPermalink} from '@actions/remote/permalink';
 import OptionItem from '@components/option_item';
 import {useServerUrl} from '@context/server';
-import {useIsTablet} from '@hooks/device';
-import {dismissBottomSheet} from '@screens/navigation';
 
 import type {GalleryAction} from '@typings/screens/gallery';
 
@@ -26,36 +25,26 @@ const OptionMenus = ({
     setAction,
 }: Props) => {
     const serverUrl = useServerUrl();
-    const isTablet = useIsTablet();
     const intl = useIntl();
 
     const handleDownload = useCallback(async () => {
-        if (!isTablet) {
-            await dismissBottomSheet();
-        }
         setAction('downloading');
-    }, [isTablet, setAction]);
+    }, [setAction]);
 
     const handleCopyLink = useCallback(async () => {
-        if (!isTablet) {
-            await dismissBottomSheet();
-        }
         setAction('copying');
-    }, [isTablet, setAction]);
+    }, [setAction]);
 
     const handlePermalink = useCallback(async () => {
         if (fileInfo.post_id) {
-            if (!isTablet) {
-                await dismissBottomSheet();
-            }
             showPermalink(serverUrl, '', fileInfo.post_id);
             setAction('opening');
         }
-    }, [fileInfo.post_id, isTablet, serverUrl, setAction]);
+    }, [fileInfo.post_id, serverUrl, setAction]);
 
     return (
         <>
-            {(!enableSecureFilePreview && canDownloadFiles) &&
+            {canDownloadFiles &&
                 <OptionItem
                     key={'download'}
                     action={handleDownload}

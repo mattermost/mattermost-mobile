@@ -24,7 +24,7 @@ import TestHelper from '@test/test_helper';
 import * as alerts from '@utils/alerts';
 import {toMilliseconds} from '@utils/datetime';
 
-import SecurityManager from '.';
+import SecurityManager from './index';
 
 jest.mock('@mattermost/react-native-emm', () => ({
     isDeviceSecured: jest.fn(),
@@ -749,7 +749,7 @@ describe('SecurityManager - Event Handlers', () => {
         describe('setActiveServer options', () => {
             beforeEach(async () => {
                 jest.mocked(IntuneManager.isIntuneMAMEnabledForServer).mockResolvedValue(true);
-                jest.mocked(IntuneManager.isManagedServer).mockResolvedValue(false);
+                jest.mocked(IntuneManager.isManagedServer).mockReturnValue(false);
                 jest.mocked(isRootedExperimentalAsync).mockResolvedValue(true);
                 jest.mocked(Emm.isDeviceSecured).mockResolvedValue(true);
                 jest.mocked(Emm.authenticate).mockResolvedValue(true);

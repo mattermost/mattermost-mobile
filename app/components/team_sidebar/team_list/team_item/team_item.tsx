@@ -32,7 +32,6 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
             padding: 3,
             borderRadius: 10,
             marginVertical: 3,
-            overflow: 'hidden',
         },
         containerSelected: {
             borderWidth: 3,

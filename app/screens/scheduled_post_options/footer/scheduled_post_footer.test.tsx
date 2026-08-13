@@ -8,7 +8,7 @@ import {useIsTablet} from '@hooks/device';
 import {renderWithEverything} from '@test/intl-test-helper';
 import TestHelper from '@test/test_helper';
 
-import ScheduledPostFooter from '.';
+import ScheduledPostFooter from './index';
 
 import type Database from '@nozbe/watermelondb/Database';
 
@@ -17,7 +17,6 @@ jest.mock('@hooks/device', () => ({
 }));
 
 jest.mock('@gorhom/bottom-sheet', () => ({
-    ...jest.requireActual('@gorhom/bottom-sheet'),
     useBottomSheetInternal: jest.fn().mockReturnValue({
         animatedIndex: {value: 1},
         animatedPosition: {value: 0},
@@ -31,13 +30,11 @@ jest.mock('react-native-reanimated', () => ({
         bezier: jest.fn(),
         out: jest.fn(),
     },
-    runOnJS: jest.fn((fn) => fn),
     useAnimatedRef: jest.fn(() => ({})),
     useAnimatedStyle: jest.fn((fn) => fn()),
     useEvent: jest.fn(),
     useSharedValue: jest.fn(),
     withTiming: jest.fn(),
-    addWhitelistedUIProps: jest.fn(),
     createAnimatedComponent: jest.fn(),
 }));
 

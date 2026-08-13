@@ -2,15 +2,13 @@
 // See LICENSE.txt for license information.
 
 import React, {useCallback} from 'react';
-import {useIntl} from 'react-intl';
 
 import CompassIcon from '@components/compass_icon';
 import TouchableWithFeedback from '@components/touchable_with_feedback';
 import {ICON_SIZE} from '@constants/post_draft';
-import {useKeyboardAnimationContext} from '@context/keyboard_animation';
+import {useKeyboardState} from '@context/keyboard_state';
 import {useTheme} from '@context/theme';
-import {openAttachmentOptions} from '@screens/navigation';
-import {dismissKeyboard} from '@utils/keyboard';
+import {openAttachmentOptions} from '@utils/navigation';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 
 import type {QuickActionAttachmentProps} from '@typings/components/post_draft_quick_action';
@@ -43,17 +41,15 @@ export default function AttachmentQuickAction({
     showAttachLogs,
     testID = '',
 }: QuickActionAttachmentProps) {
-    const intl = useIntl();
     const theme = useTheme();
-    const {closeInputAccessoryView} = useKeyboardAnimationContext();
+    const {blurAndDismissKeyboard} = useKeyboardState();
     const style = getStyleSheet(theme);
     const iconColor = disabled ? changeOpacity(theme.centerChannelColor, 0.16) : changeOpacity(theme.centerChannelColor, 0.64);
 
     const openFileAttachmentOptions = useCallback(async () => {
-        closeInputAccessoryView();
-        await dismissKeyboard();
+        await blurAndDismissKeyboard();
 
-        openAttachmentOptions(intl, theme, {
+        openAttachmentOptions({
             onUploadFiles,
             maxFilesReached,
             canUploadFiles: !disabled,
@@ -62,7 +58,7 @@ export default function AttachmentQuickAction({
             fileCount,
             maxFileCount,
         });
-    }, [closeInputAccessoryView, intl, theme, onUploadFiles, maxFilesReached, disabled, showAttachLogs, testID, fileCount, maxFileCount]);
+    }, [blurAndDismissKeyboard, onUploadFiles, maxFilesReached, disabled, showAttachLogs, testID, fileCount, maxFileCount]);
 
     const actionTestID = disabled ? `${testID}.disabled` : testID;
 

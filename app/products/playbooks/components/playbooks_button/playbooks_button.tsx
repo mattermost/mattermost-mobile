@@ -2,7 +2,6 @@
 // See LICENSE.txt for license information.
 
 import React, {useCallback, useMemo} from 'react';
-import {useIntl} from 'react-intl';
 import {TouchableOpacity, View} from 'react-native';
 
 import {
@@ -13,8 +12,11 @@ import {
 import CompassIcon from '@components/compass_icon';
 import FormattedText from '@components/formatted_text';
 import {HOME_PADDING} from '@constants/view';
+import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
+import {useIsTablet} from '@hooks/device';
 import {usePreventDoubleTap} from '@hooks/utils';
+import {switchToGlobalPlaybooks} from '@playbooks/actions/local/checklist';
 import {goToParticipantPlaybooks} from '@playbooks/screens/navigation';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 
@@ -32,36 +34,43 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
     },
 }));
 
-const PlaybooksButton = () => {
-    const intl = useIntl();
+const PlaybooksButton = ({shouldHighlightActive = false}: {shouldHighlightActive?: boolean}) => {
     const theme = useTheme();
+    const serverUrl = useServerUrl();
+    const isTablet = useIsTablet();
     const commonChannelItemStyles = getChannelItemStyleSheet(theme);
     const styles = getStyleSheet(theme);
 
     const handlePress = usePreventDoubleTap(useCallback(() => {
-        goToParticipantPlaybooks(intl);
-    }, [intl]));
+        switchToGlobalPlaybooks(serverUrl);
+        goToParticipantPlaybooks(isTablet);
+    }, [isTablet, serverUrl]));
 
     const [containerStyle, iconStyle, textStyle] = useMemo(() => {
         const container = [
             commonChannelItemStyles.container,
             HOME_PADDING,
+            shouldHighlightActive && commonChannelItemStyles.activeItem,
+            shouldHighlightActive && {
+                paddingLeft: HOME_PADDING.paddingLeft - commonChannelItemStyles.activeItem.borderLeftWidth,
+            },
             {minHeight: ROW_HEIGHT},
         ];
 
         const icon = [
             styles.icon,
+            shouldHighlightActive && styles.iconActive,
         ];
 
         const text = [
             styles.text,
             channelItemTextStyle.regular,
             commonChannelItemStyles.text,
+            shouldHighlightActive && commonChannelItemStyles.textActive,
         ];
 
         return [container, icon, text];
-    }, [styles, commonChannelItemStyles]);
-
+    }, [commonChannelItemStyles.container, commonChannelItemStyles.activeItem, commonChannelItemStyles.text, commonChannelItemStyles.textActive, shouldHighlightActive, styles.icon, styles.iconActive, styles.text]);
     return (
         <TouchableOpacity
             onPress={handlePress}

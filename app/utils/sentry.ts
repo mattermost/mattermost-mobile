@@ -2,7 +2,6 @@
 // See LICENSE.txt for license information.
 
 import {Platform} from 'react-native';
-import {Navigation} from 'react-native-navigation';
 
 import Config from '@assets/config.json';
 import ClientError from '@client/rest/error';
@@ -15,7 +14,7 @@ import {isBetaApp} from '@utils/general';
 import {logError, logWarning} from './log';
 
 import type {Database} from '@nozbe/watermelondb';
-import type {Breadcrumb, ErrorEvent} from '@sentry/types';
+import type {Breadcrumb, ErrorEvent} from '@sentry/core';
 
 export const BREADCRUMB_UNCAUGHT_APP_ERROR = 'uncaught-app-error';
 export const BREADCRUMB_UNCAUGHT_NON_ERROR = 'uncaught-non-error';
@@ -54,9 +53,6 @@ export function initializeSentry() {
         ...mmConfig,
         ...sentryOptions,
         enableCaptureFailedRequests: false,
-        integrations: [
-            Sentry.reactNativeNavigationIntegration({navigation: Navigation}),
-        ],
         beforeSend: (event: ErrorEvent) => {
             if (isBetaApp || (event?.level && eventFilter.includes(event.level))) {
                 return event;

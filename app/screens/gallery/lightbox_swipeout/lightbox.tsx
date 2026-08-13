@@ -5,10 +5,11 @@ import {type ImageSource} from 'expo-image';
 import React, {useMemo, useState} from 'react';
 import {type ImageStyle, type StyleProp, StyleSheet, View, type ViewStyle} from 'react-native';
 import Animated, {
-    interpolate, runOnJS, runOnUI,
+    interpolate,
     useAnimatedStyle, withTiming,
     type AnimatedStyle,
 } from 'react-native-reanimated';
+import {scheduleOnRN, scheduleOnUI} from 'react-native-worklets';
 
 import {ExpoImageAnimated} from '@components/expo_image';
 import useDidMount from '@hooks/did_mount';
@@ -30,8 +31,8 @@ export interface RenderItemInfo {
 
 interface LightboxProps {
     children: React.ReactNode;
-    renderBackdropComponent?: (info: BackdropProps) => JSX.Element;
-    renderItem: (info: RenderItemInfo) => JSX.Element | null;
+    renderBackdropComponent?: (info: BackdropProps) => React.JSX.Element;
+    renderItem: (info: RenderItemInfo) => React.ReactNode;
     sharedValues: GalleryManagerSharedValues;
     source: ImageSource | string;
 }
@@ -61,7 +62,7 @@ export default function Lightbox({
         targetDimensions,
     } = useLightboxSharedValues();
     const [renderChildren, setRenderChildren] = useState<boolean>(false);
-    const childLayoutTimeoutRef = React.useRef<NodeJS.Timeout>();
+    const childLayoutTimeoutRef = React.useRef<NodeJS.Timeout | undefined>(undefined);
 
     const animateOnMount = () => {
         'worklet';
@@ -73,13 +74,13 @@ export default function Lightbox({
             'worklet';
 
             childrenOpacity.value = 1;
-            runOnJS(setRenderChildren)(true);
-            runOnJS(onChildrenLayout)();
+            scheduleOnRN(setRenderChildren, true);
+            scheduleOnRN(onChildrenLayout);
         });
     };
 
     useDidMount(() => {
-        runOnUI(animateOnMount)();
+        scheduleOnUI(animateOnMount);
 
         return () => {
             if (childLayoutTimeoutRef.current) {

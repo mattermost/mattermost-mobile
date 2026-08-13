@@ -10,17 +10,21 @@ export const ToolCallStatus = {
     Rejected: 2,
     Error: 3,
     Success: 4,
+    AutoApproved: 5,
 } as const;
 
 // eslint-disable-next-line @typescript-eslint/no-redeclare -- TypeScript supports same-name type/value pairs as enum alternative
 export type ToolCallStatus = typeof ToolCallStatus[keyof typeof ToolCallStatus];
 
 /**
- * Tool approval stage values
+ * Tool approval stage values. Mirrors the server-computed approval state for
+ * a post. 'done' means no user decision remains (auto-run, keep private, all
+ * rejected, or no tool_use blocks at all) — render no buttons.
  */
 export const ToolApprovalStage = {
     Call: 'call',
     Result: 'result',
+    Done: 'done',
 } as const;
 
 // eslint-disable-next-line @typescript-eslint/no-redeclare -- TypeScript supports same-name type/value pairs as enum alternative
@@ -52,12 +56,32 @@ export interface Annotation {
 }
 
 /**
+ * Reasoning summary extracted from an assistant turn's thinking blocks.
+ */
+export interface Reasoning {
+    summary: string;
+    signature: string;
+}
+
+/**
+ * One assistant turn in a response. A multi-step answer renders these as a
+ * vertical sequence: text -> tools -> text -> tools -> final text.
+ */
+export interface Round {
+    id: string;
+    text: string;
+    toolCalls: ToolCall[];
+    reasoning: Reasoning;
+    annotations: Annotation[];
+}
+
+/**
  * WebSocket message data for agent post updates
  */
 export interface PostUpdateWebsocketMessage {
     post_id: string;
     next?: string; // Full accumulated message text
-    control?: string; // Control signals: 'start', 'end', 'cancel', 'reasoning_summary', 'tool_call', 'annotations'
+    control?: string; // Control signals: 'start', 'end', 'cancel', 'continue', 'reasoning_summary', 'reasoning_summary_done', 'tool_call', 'annotations'
     tool_call?: string; // JSON-encoded tool calls
     reasoning?: string; // Reasoning summary text
     annotations?: string; // JSON-encoded citations
@@ -74,21 +98,38 @@ export interface StreamingState {
     reasoning: string; // Accumulated reasoning text
     isReasoningLoading: boolean; // True while reasoning is being generated
     showReasoning: boolean; // True if reasoning should be displayed
-    toolCalls: ToolCall[]; // Tool calls pending approval or processed
-    annotations: Annotation[]; // Citations/annotations for the post
+    toolCalls: ToolCall[]; // Tool calls pending approval or processed (current round)
+    annotations: Annotation[]; // Citations/annotations for the post (current round)
+    rounds: Round[]; // Completed rounds snapshotted as each tool round resolves
+    stopped: boolean; // True after the user taps Stop; suppresses late `next` events
+    continueSeq: number; // Bumped on a tool-approval `continue` resume to trigger a refetch
 }
 
-/**
- * AI thread data structure from the server
- */
+// Normalised mobile shape: `id` is always the root post id (see fetchAIThreads).
 export interface AIThread {
-    id: string; // Post ID
-    message: string; // Preview text
-    title: string; // Thread title
-    channel_id: string; // DM channel with bot
-    reply_count: number; // Number of replies
-    update_at: number; // Last update timestamp
+    id: string;
+    message: string;
+    title: string;
+    channel_id: string;
+    reply_count: number;
+    update_at: number;
+
+    // Raw plugin >= 2.0 fields, surfaced for callers that need them.
+    root_post_id?: string | null;
+    bot_id?: string;
 }
+
+// Wire-format AI thread before normalisation. plugin < 2.0 omits root_post_id.
+export type RawAIThread = {
+    id: string;
+    message?: string;
+    title?: string;
+    channel_id?: string | null;
+    reply_count?: number;
+    update_at?: number;
+    root_post_id?: string | null;
+    bot_id?: string;
+};
 
 /**
  * Channel access level values
@@ -128,6 +169,9 @@ export interface LLMBot {
     userAccessLevel: UserAccessLevel;
     userIDs: string[];
     teamIDs: string[];
+
+    // System-wide default bot flag. Absent on older servers.
+    is_default?: boolean;
 }
 
 /**
@@ -139,13 +183,17 @@ export interface AIBotsResponse {
     allowUnsafeLinks: boolean;
 }
 
-// ============================================================================
-// Rewrite Types
-// ============================================================================
+export {
+    BlockType,
+    ToolCallStatusString,
+    type Citation,
+    type ContentBlock,
+    type ConversationResponse,
+    type Turn,
+    type TurnRole,
+    type WebSearchContext,
+} from './conversation';
 
 export type {Agent} from './api';
 
-/**
- * Available rewrite action types
- */
 export type RewriteAction = 'shorten' | 'elaborate' | 'improve_writing' | 'fix_spelling' | 'simplify' | 'summarize' | 'custom';

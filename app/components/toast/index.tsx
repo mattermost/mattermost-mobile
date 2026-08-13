@@ -3,18 +3,18 @@
 
 import React, {useMemo} from 'react';
 import {type StyleProp, Text, type TextStyle, useWindowDimensions, View, type ViewStyle} from 'react-native';
-import Animated from 'react-native-reanimated';
+import Animated, {type AnimatedStyle} from 'react-native-reanimated';
 
-import CompassIcon from '@components/compass_icon';
+import CompassIcon, {type CompassIconName} from '@components/compass_icon';
 import {useTheme} from '@context/theme';
 import {useIsTablet} from '@hooks/device';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
 
 type ToastProps = {
-    animatedStyle: StyleProp<ViewStyle>;
+    animatedStyle: AnimatedStyle<ViewStyle> | StyleProp<ViewStyle>;
     children?: React.ReactNode;
-    iconName?: string;
+    iconName?: CompassIconName;
     message?: string;
     style?: StyleProp<ViewStyle>;
     textStyle?: StyleProp<TextStyle>;

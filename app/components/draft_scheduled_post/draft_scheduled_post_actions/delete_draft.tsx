@@ -17,10 +17,7 @@ import {deleteScheduledPostConfirmation} from '@utils/scheduled_post';
 import {makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
 
-import type {AvailableScreens} from '@typings/screens/navigation';
-
 type Props = {
-    bottomSheetId: AvailableScreens;
     channelId: string;
     rootId: string;
     draftType?: DraftType;
@@ -42,7 +39,6 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
 }));
 
 const DeleteDraft: React.FC<Props> = ({
-    bottomSheetId,
     channelId,
     rootId,
     draftType,
@@ -54,7 +50,7 @@ const DeleteDraft: React.FC<Props> = ({
     const intl = useIntl();
 
     const draftDeleteHandler = async () => {
-        await dismissBottomSheet(bottomSheetId);
+        await dismissBottomSheet();
         if (draftType === DRAFT_TYPE_DRAFT) {
             deleteDraftConfirmation({
                 intl,

@@ -19,7 +19,7 @@ type Props = {
     item: ModifierItem;
     setSearchValue: Dispatch<SetStateAction<string>>;
     searchValue?: string;
-    searchRef: RefObject<SearchRef>;
+    searchRef: RefObject<SearchRef | null>;
 }
 
 const Modifier = ({item, searchRef, searchValue, setSearchValue}: Props) => {

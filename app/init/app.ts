@@ -3,25 +3,23 @@
 
 import {CallsManager} from '@calls/calls_manager';
 import DatabaseManager from '@database/manager';
+import CallsNative from '@init/calls_native';
 import {getAllServerCredentials} from '@init/credentials';
-import {initialLaunch} from '@init/launch';
 import ManagedApp from '@init/managed_app';
 import PushNotifications from '@init/push_notifications';
+import EphemeralModeManager from '@managers/ephemeral_mode_manager';
 import GlobalEventHandler from '@managers/global_event_handler';
 import NetworkManager from '@managers/network_manager';
 import SecurityManager from '@managers/security_manager';
 import SessionManager from '@managers/session_manager';
 import WebsocketManager from '@managers/websocket_manager';
-import {registerScreens} from '@screens/index';
-import {registerNavigationListeners} from '@screens/navigation';
 import EphemeralStore from '@store/ephemeral_store';
-import NavigationStore from '@store/navigation_store';
+import {NavigationStore} from '@store/navigation_store';
 
 // Controls whether the main initialization (database, etc...) is done, either on app launch
 // or on the Share Extension, for example.
 let baseAppInitialized = false;
-
-let serverCredentials: ServerCredential[];
+let serverCredentials: ServerCredential[] = [];
 
 // Fallback Polyfill for Promise.allSettle
 Promise.allSettled = Promise.allSettled || (<T>(promises: Array<Promise<T>>) => Promise.all(
@@ -45,29 +43,35 @@ export async function initialize() {
 
         await DatabaseManager.init(serverUrls);
         await NetworkManager.init(serverCredentials);
-        await SecurityManager.init();
 
-        GlobalEventHandler.init();
-        ManagedApp.init();
-        SessionManager.init();
-        CallsManager.initialize();
+        // EphemeralModeManager init runs before WS init so any pending wipes
+        // complete before WebSocket clients start populating server databases.
+        await EphemeralModeManager.init(serverCredentials);
+        await WebsocketManager.init(serverCredentials);
     }
-}
 
-export async function start() {
-    // Clean relevant information on ephemeral stores
     NavigationStore.reset();
     EphemeralStore.setCurrentThreadId('');
     EphemeralStore.setProcessingNotification('');
 
-    await initialize();
+    await SecurityManager.init();
+
+    GlobalEventHandler.init();
+    ManagedApp.init();
+    SessionManager.init();
+    CallsManager.initialize();
+    CallsNative.init();
 
     PushNotifications.init(serverCredentials.length > 0);
+}
 
-    registerNavigationListeners();
-    registerScreens();
-
-    await WebsocketManager.init(serverCredentials);
-
-    initialLaunch();
+export function cleanup() {
+    ManagedApp.cleanup();
+    GlobalEventHandler.cleanup();
+    SecurityManager.cleanup();
+    SessionManager.cleanup();
+    CallsManager.cleanup();
+    CallsNative.cleanup();
+    PushNotifications.cleanup();
+    EphemeralModeManager.cleanup();
 }

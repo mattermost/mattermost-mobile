@@ -1,7 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React, {useState, useCallback, useRef} from 'react';
+import React, {useState, useCallback} from 'react';
 import {useIntl} from 'react-intl';
 import {
     type LayoutChangeEvent,
@@ -56,8 +56,7 @@ export default function EditCommandForm({
 
     const [commandFieldHeight, setCommandFieldHeight] = useState(0);
 
-    const mainView = useRef<View>(null);
-    const keyboardOverlap = useKeyboardOverlap(mainView, wrapperHeight);
+    const keyboardOverlap = useKeyboardOverlap();
 
     const labelCommand = formatMessage({id: 'playbooks.edit_command.label', defaultMessage: 'Command'});
     const placeholderCommand = formatMessage({id: 'playbooks.edit_command.placeholder', defaultMessage: 'Type a command here'});
@@ -85,7 +84,6 @@ export default function EditCommandForm({
             style={styles.container}
             testID='playbooks.edit_command.form'
             onLayout={onLayoutWrapper}
-            ref={mainView}
         >
             <View style={styles.mainView}>
                 <FloatingTextInput

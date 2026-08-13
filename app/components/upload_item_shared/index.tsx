@@ -4,7 +4,7 @@
 import React, {useMemo} from 'react';
 import {useIntl} from 'react-intl';
 import {TouchableWithoutFeedback, View, Text, type ViewStyle} from 'react-native';
-import Animated from 'react-native-reanimated';
+import Animated, {type AnimatedStyle} from 'react-native-reanimated';
 
 import ExpoImage from '@components/expo_image';
 import FileIcon from '@components/files/file_icon';
@@ -38,7 +38,7 @@ export interface UploadItemProps {
     loading?: boolean;
     progress?: number;
     showRetryButton?: boolean;
-    galleryStyles?: Animated.AnimateStyle<ViewStyle>;
+    galleryStyles?: AnimatedStyle<ViewStyle>;
     testID?: string;
     fullWidth?: boolean;
     isShareExtension?: boolean;

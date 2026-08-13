@@ -4,7 +4,7 @@
 import React from 'react';
 
 import {storeGlobal} from '@actions/app/global';
-import {ActionType, Tutorial, Screens} from '@constants';
+import {ActionType, Tutorial} from '@constants';
 import {SYSTEM_IDENTIFIERS} from '@constants/database';
 import DatabaseManager from '@database/manager';
 import {act, renderWithEverything, waitFor} from '@test/intl-test-helper';
@@ -54,9 +54,7 @@ describe('GlobalScheduledPostList', () => {
 
     it('should return empty array is there is no scheduled post', async () => {
         const {getByTestId} = renderWithEverything(
-            <EnhancedGlobalScheduledPostList
-                location={Screens.GLOBAL_DRAFTS}
-            />,
+            <EnhancedGlobalScheduledPostList/>,
             {database},
         );
 
@@ -66,9 +64,7 @@ describe('GlobalScheduledPostList', () => {
 
     it('should show scheduled post when one exists', async () => {
         const {getByTestId} = renderWithEverything(
-            <EnhancedGlobalScheduledPostList
-                location={Screens.GLOBAL_DRAFTS}
-            />,
+            <EnhancedGlobalScheduledPostList/>,
             {database},
         );
 
@@ -105,16 +101,18 @@ describe('GlobalScheduledPostList', () => {
 
     it('should correctly handle tutorial watched state', async () => {
         const {getByTestId} = renderWithEverything(
-            <EnhancedGlobalScheduledPostList
-                location={Screens.GLOBAL_DRAFTS}
-            />,
+            <EnhancedGlobalScheduledPostList/>,
             {database},
         );
 
-        const globalScheduledPostList = getByTestId('global-scheduled-post-list');
-        expect(globalScheduledPostList.props.tutorialWatched).toBe(false);
+        await waitFor(() => {
+            const globalScheduledPostList = getByTestId('global-scheduled-post-list');
+            expect(globalScheduledPostList.props.tutorialWatched).toBe(false);
+        });
 
-        await storeGlobal(Tutorial.SCHEDULED_POSTS_LIST, 'true', false);
+        await act(async () => {
+            await storeGlobal(Tutorial.SCHEDULED_POSTS_LIST, 'true', false);
+        });
 
         await waitFor(() => {
             const updatedGlobalScheduledPostList = getByTestId('global-scheduled-post-list');
@@ -124,9 +122,7 @@ describe('GlobalScheduledPostList', () => {
 
     it('should only show scheduled posts for current team', async () => {
         const {getByTestId} = renderWithEverything(
-            <EnhancedGlobalScheduledPostList
-                location={Screens.GLOBAL_DRAFTS}
-            />,
+            <EnhancedGlobalScheduledPostList/>,
             {database},
         );
 
@@ -174,9 +170,7 @@ describe('GlobalScheduledPostList', () => {
 
     it('should include DMs and GMs in scheduled posts', async () => {
         const {getByTestId} = renderWithEverything(
-            <EnhancedGlobalScheduledPostList
-                location={Screens.GLOBAL_DRAFTS}
-            />,
+            <EnhancedGlobalScheduledPostList/>,
             {database},
         );
 

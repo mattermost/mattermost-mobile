@@ -12,9 +12,9 @@ import {withServerUrl} from '@context/server';
 import {observeIsPlaybooksEnabled} from '@playbooks/database/queries/version';
 import {observeChannelAutotranslation, observeCurrentChannel} from '@queries/servers/channel';
 import {observeCanAddBookmarks} from '@queries/servers/channel_bookmark';
+import {observeChannelBookmarksEnabled} from '@queries/servers/features';
 import {observeCanManageChannelAutotranslations, observeCanManageChannelMembers, observeCanManageChannelSettings, observePermissionForChannel, observePermissionForTeam} from '@queries/servers/role';
 import {
-    observeConfigBooleanValue,
     observeConfigValue,
     observeCurrentChannelId,
     observeCurrentTeamId,
@@ -241,7 +241,7 @@ const enhanced = withObservables([], ({serverUrl, database}: Props) => {
         distinctUntilChanged(),
     );
 
-    const isBookmarksEnabled = observeConfigBooleanValue(database, 'FeatureFlagChannelBookmarks');
+    const isBookmarksEnabled = observeChannelBookmarksEnabled(database);
 
     const canAddBookmarks = channelId.pipe(
         switchMap((cId) => {
@@ -254,6 +254,7 @@ const enhanced = withObservables([], ({serverUrl, database}: Props) => {
     );
 
     const isPlaybooksEnabled = observeIsPlaybooksEnabled(database);
+    const channelDisplayName = channel.pipe(switchMap((c) => of$(c?.displayName || '')));
     return {
         type,
         isCallsEnabledInChannel,
@@ -264,6 +265,7 @@ const enhanced = withObservables([], ({serverUrl, database}: Props) => {
         isPlaybooksEnabled,
         hasChannelSettingsActions: observeHasChannelSettingsActions(database, serverUrl, channelId, channel, currentUser, type),
         isAutotranslationEnabledForThisChannel,
+        channelDisplayName,
     };
 });
 

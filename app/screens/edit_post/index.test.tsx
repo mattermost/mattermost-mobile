@@ -3,7 +3,6 @@
 
 import React from 'react';
 
-import {Screens} from '@constants';
 import {SYSTEM_IDENTIFIERS} from '@constants/database';
 import DatabaseManager from '@database/manager';
 import {renderWithEverything, waitFor} from '@test/intl-test-helper';
@@ -30,9 +29,7 @@ describe('EditPost', () => {
     let operator: ServerDataOperator;
 
     const baseProps: Parameters<typeof EnhancedEditPost>[0] = {
-        componentId: Screens.EDIT_POST,
-        closeButtonId: 'close-button',
-        post: TestHelper.fakePostModel({id: 'post-1'}),
+        postId: 'post-1',
         canDelete: true,
         files: [],
     };

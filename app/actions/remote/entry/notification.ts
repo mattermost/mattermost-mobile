@@ -7,19 +7,22 @@ import {fetchMyChannel, switchToChannelById} from '@actions/remote/channel';
 import {fetchPostById} from '@actions/remote/post';
 import {fetchMyTeam} from '@actions/remote/team';
 import {fetchAndSwitchToThread} from '@actions/remote/thread';
+import {refetchCurrentUser} from '@actions/remote/user';
 import {Preferences} from '@constants';
 import {getDefaultThemeByAppearance, resolveThemeFromPreferences} from '@context/theme';
 import DatabaseManager from '@database/manager';
 import PerformanceMetricsManager from '@managers/performance_metrics_manager';
 import WebsocketManager from '@managers/websocket_manager';
+import {getServer} from '@queries/app/servers';
 import {getMyChannel} from '@queries/servers/channel';
 import {getPostById} from '@queries/servers/post';
 import {queryDarkThemePreferences, queryThemeAutoSwitchPreference, queryThemePreferences} from '@queries/servers/preference';
-import {getCurrentTeamId} from '@queries/servers/system';
+import {getCurrentTeamId, getCurrentUserId} from '@queries/servers/system';
 import {getMyTeamById} from '@queries/servers/team';
 import {getIsCRTEnabled} from '@queries/servers/thread';
 import EphemeralStore from '@store/ephemeral_store';
 import {isErrorWithStatusCode} from '@utils/errors';
+import {dismissKeyboard} from '@utils/keyboard';
 import {emitNotificationError} from '@utils/notification';
 import {updateThemeIfNeeded} from '@utils/theme';
 
@@ -36,6 +39,9 @@ export async function pushNotificationEntry(serverUrl: string, notification: Not
     if (!operator) {
         return {error: `${serverUrl} database not found`};
     }
+
+    // Cold start from push: ensure keyboard is not stuck over the channel after navigation
+    await dismissKeyboard();
 
     PerformanceMetricsManager.startTimeToInteraction();
 
@@ -54,7 +60,7 @@ export async function pushNotificationEntry(serverUrl: string, notification: Not
         await DatabaseManager.setActiveServerDatabase(serverUrl);
     }
 
-    if (!EphemeralStore.theme) {
+    if (!EphemeralStore.getTheme()) {
         // When opening the app from a push notification the theme may not be set in the EphemeralStore
         // causing the goToScreen to use the Appearance theme instead and that causes the screen background color to potentially
         // not match the theme
@@ -78,9 +84,20 @@ export async function pushNotificationEntry(serverUrl: string, notification: Not
         updateThemeIfNeeded(theme, true);
     }
 
+    const server = await getServer(serverUrl);
+    const isZeroPersistence = server?.persistenceFlag === 'zero-persistence';
+
     // To make the switch faster we determine if we already have the team & channel
     let myChannel: MyChannelModel | ChannelMembership | undefined = await getMyChannel(database, channelId);
     let myTeam: MyTeamModel | TeamMembership | undefined = await getMyTeamById(database, teamId);
+
+    if (isZeroPersistence && !myChannel && !myTeam) {
+        // no values in db and zero persistence mode means we probably need to refetch current user id
+        const existingUserId = await getCurrentUserId(database);
+        if (!existingUserId) {
+            await refetchCurrentUser(serverUrl, undefined);
+        }
+    }
 
     if (!myTeam) {
         const resp = await fetchMyTeam(serverUrl, teamId, false, groupLabel);

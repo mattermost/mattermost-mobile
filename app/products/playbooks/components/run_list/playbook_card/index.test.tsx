@@ -3,6 +3,7 @@
 
 import React, {type ComponentProps} from 'react';
 
+import {Screens} from '@constants';
 import DatabaseManager from '@database/manager';
 import {renderWithEverything} from '@test/intl-test-helper';
 import TestHelper from '@test/test_helper';
@@ -66,7 +67,7 @@ describe('PlaybookCard', () => {
                         }),
                     ],
                 }),
-                location: 'PlaybookRuns',
+                location: Screens.PLAYBOOKS_RUNS,
             };
         }
 
@@ -135,7 +136,7 @@ describe('PlaybookCard', () => {
             });
             return {
                 run: model[0] as PlaybookRunModel,
-                location: 'PlaybookRuns',
+                location: Screens.PLAYBOOKS_RUNS,
             };
         }
 

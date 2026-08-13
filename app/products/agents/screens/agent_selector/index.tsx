@@ -2,34 +2,30 @@
 // See LICENSE.txt for license information.
 
 import {BottomSheetFlatList} from '@gorhom/bottom-sheet';
-import React, {useCallback, useMemo} from 'react';
+import React, {useCallback, useMemo, useRef} from 'react';
 import {type ListRenderItemInfo, View} from 'react-native';
-import {FlatList} from 'react-native-gesture-handler';
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
 
 import {ITEM_HEIGHT} from '@components/option_item';
 import {Screens} from '@constants';
+import {isEdgeToEdge} from '@constants/device';
+import {NOT_EDGE_TO_EDGE_BOTTOM_SHEET_MARGIN} from '@constants/view';
 import {useTheme} from '@context/theme';
 import useAndroidHardwareBackHandler from '@hooks/android_back_handler';
-import {useBottomSheetListsFix} from '@hooks/bottom_sheet_lists_fix';
-import {useIsTablet} from '@hooks/device';
-import useNavButtonPressed from '@hooks/navigation_button_pressed';
-import BottomSheet from '@screens/bottom_sheet';
-import {dismissModal} from '@screens/navigation';
+import useDidMount from '@hooks/did_mount';
+import BottomSheet, {type BottomSheetRef} from '@screens/bottom_sheet';
+import CallbackStore from '@store/callback_store';
 import {bottomSheetSnapPoint} from '@utils/helpers';
 import {makeStyleSheetFromTheme} from '@utils/theme';
 
 import AgentItem from './agent_item';
 
 import type {Agent} from '@agents/types';
-import type {AvailableScreens} from '@typings/screens/navigation';
 
-type Props = {
-    componentId: AvailableScreens;
-    closeButtonId: string;
+export type Props = {
     agents: Agent[];
     selectedAgentId: string;
-    onSelectAgent: (agent: Agent) => void;
+    onSelectAgent?: (agent: Agent) => void;
 };
 
 const OPTIONS_PADDING = 12;
@@ -47,31 +43,32 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
 const keyExtractor = (item: Agent) => item.id;
 
 const AgentSelector = ({
-    componentId,
-    closeButtonId,
     agents,
     selectedAgentId,
     onSelectAgent,
 }: Props) => {
     const theme = useTheme();
     const styles = getStyleSheet(theme);
-    const isTablet = useIsTablet();
     const insets = useSafeAreaInsets();
-    const {enabled, panResponder} = useBottomSheetListsFix();
+    const bottomSheetRef = useRef<BottomSheetRef>(null);
 
-    const close = useCallback(() => {
-        dismissModal({componentId});
-    }, [componentId]);
+    useDidMount(() => {
+        return () => {
+            CallbackStore.removeCallback();
+        };
+    });
 
-    useNavButtonPressed(closeButtonId, componentId, close, []);
-    useAndroidHardwareBackHandler(componentId, close);
+    const close = useCallback(async () => {
+        bottomSheetRef.current?.close();
+        await new Promise((resolve) => setTimeout(resolve, 250));
+    }, []);
+
+    useAndroidHardwareBackHandler(Screens.AGENTS_SELECTOR, close);
 
     const handleSelectAgent = useCallback((agent: Agent) => {
-        onSelectAgent(agent);
+        onSelectAgent?.(agent);
         close();
     }, [onSelectAgent, close]);
-
-    const List = useMemo(() => (isTablet ? FlatList : BottomSheetFlatList), [isTablet]);
 
     const renderItem = useCallback(({item}: ListRenderItemInfo<Agent>) => (
         <AgentItem
@@ -86,7 +83,8 @@ const AgentSelector = ({
 
         // Calculate height based on number of agents
         const optionsHeight = OPTIONS_PADDING + bottomSheetSnapPoint(agents.length, ITEM_HEIGHT);
-        const componentHeight = optionsHeight + paddingBottom + insets.bottom;
+        const bottom = isEdgeToEdge ? insets.bottom : NOT_EDGE_TO_EDGE_BOTTOM_SHEET_MARGIN;
+        const componentHeight = optionsHeight + paddingBottom + bottom;
 
         const points: Array<string | number> = [1, componentHeight];
 
@@ -100,23 +98,21 @@ const AgentSelector = ({
 
     const renderContent = () => (
         <View style={styles.container}>
-            <List
+            <BottomSheetFlatList
                 data={agents}
                 renderItem={renderItem}
                 keyExtractor={keyExtractor}
                 contentContainerStyle={styles.contentContainer}
                 testID='ai_agent_selector.flat_list'
-                scrollEnabled={enabled}
-                {...panResponder.panHandlers}
             />
         </View>
     );
 
     return (
         <BottomSheet
+            ref={bottomSheetRef}
             renderContent={renderContent}
-            closeButtonId={closeButtonId}
-            componentId={Screens.AGENTS_SELECTOR}
+            screen={Screens.AGENTS_SELECTOR}
             initialSnapIndex={1}
             snapPoints={snapPoints}
             testID='ai_agent_selector'

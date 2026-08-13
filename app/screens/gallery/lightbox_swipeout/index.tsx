@@ -32,8 +32,8 @@ interface LightboxSwipeoutProps {
     onAnimationFinished: () => void;
     onSwipeActive: (translateY: number) => void;
     onSwipeFailure: () => void;
-    renderBackdropComponent?: (info: BackdropProps) => JSX.Element;
-    renderItem: (info: RenderItemInfo) => JSX.Element | null;
+    renderBackdropComponent?: (info: BackdropProps) => React.JSX.Element;
+    renderItem: (info: RenderItemInfo) => React.ReactNode;
     sharedValues: GalleryManagerSharedValues;
     source: ImageSource | string;
     target: GalleryItemType;

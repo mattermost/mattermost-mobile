@@ -6,7 +6,7 @@ import React from 'react';
 import {updateDraftFile} from '@actions/local/draft';
 import FileIcon from '@components/files/file_icon';
 import ImageFile from '@components/files/image_file';
-import {EditPostProvider} from '@context/edit_post';
+import {useEditPost} from '@context/edit_post';
 import DraftEditPostUploadManager from '@managers/draft_upload_manager';
 import {fireEvent, renderWithEverything} from '@test/intl-test-helper';
 import TestHelper from '@test/test_helper';
@@ -29,6 +29,11 @@ jest.mock('@managers/draft_upload_manager', () => ({
 
 jest.mock('@context/server', () => ({
     useServerUrl: () => 'serverUrl',
+}));
+
+jest.mock('@context/edit_post', () => ({
+    EditPostProvider: ({children}: {children: React.ReactNode}) => children,
+    useEditPost: jest.fn(() => ({isEditMode: false, updateFileCallback: undefined, onFileRemove: undefined})),
 }));
 
 jest.mock('@utils/file', () => ({
@@ -56,6 +61,9 @@ describe('UploadItem', () => {
 
     beforeEach(async () => {
         jest.clearAllMocks();
+        jest.mocked(useEditPost).mockReturnValue({isEditMode: false, updateFileCallback: undefined, onFileRemove: undefined});
+        jest.mocked(ImageFile).mockImplementation((props) => React.createElement('ImageFile', {testID: 'image-file', ...props}));
+        jest.mocked(FileIcon).mockImplementation((props) => React.createElement('FileIcon', {...props}));
         database = (await TestHelper.setupServerDatabase(serverUrl)).database;
     });
 
@@ -101,16 +109,11 @@ describe('UploadItem', () => {
             };
 
             const {getByTestId, queryByText} = renderWithEverything(
-                <EditPostProvider isEditMode={false}>
-                    <UploadItem {...props}/>
-                </EditPostProvider>,
+                <UploadItem {...props}/>,
                 {database},
             );
 
-            // Should display image thumbnail
             expect(getByTestId('image-file')).toBeTruthy();
-
-            // For image files, file name and size should not be displayed
             expect(queryByText('image.jpg')).toBeNull();
             expect(queryByText('JPG')).toBeNull();
             expect(queryByText('1024 KB')).toBeNull();
@@ -131,13 +134,10 @@ describe('UploadItem', () => {
             };
 
             const {queryByText} = renderWithEverything(
-                <EditPostProvider isEditMode={false}>
-                    <UploadItem {...props}/>
-                </EditPostProvider>,
+                <UploadItem {...props}/>,
                 {database},
             );
 
-            // Should not display file name or size information
             expect(queryByText('test-image.png')).toBeNull();
             expect(queryByText('PNG')).toBeNull();
             expect(queryByText('2048 KB')).toBeNull();
@@ -164,19 +164,12 @@ describe('UploadItem', () => {
             };
 
             const {getByText, getByTestId} = renderWithEverything(
-                <EditPostProvider isEditMode={false}>
-                    <UploadItem {...props}/>
-                </EditPostProvider>,
+                <UploadItem {...props}/>,
                 {database},
             );
 
-            // Should display file icon
             expect(getByTestId('id')).toBeTruthy();
-
-            // Should display file name
             expect(getByText('document.pdf')).toBeTruthy();
-
-            // Should display extension and formatted size
             expect(getByText('PDF 5120 KB')).toBeTruthy();
         });
 
@@ -195,9 +188,7 @@ describe('UploadItem', () => {
             };
 
             const {getByText} = renderWithEverything(
-                <EditPostProvider isEditMode={false}>
-                    <UploadItem {...props}/>
-                </EditPostProvider>,
+                <UploadItem {...props}/>,
                 {database},
             );
 
@@ -220,9 +211,7 @@ describe('UploadItem', () => {
             };
 
             const {getByText} = renderWithEverything(
-                <EditPostProvider isEditMode={false}>
-                    <UploadItem {...props}/>
-                </EditPostProvider>,
+                <UploadItem {...props}/>,
                 {database},
             );
 
@@ -245,9 +234,7 @@ describe('UploadItem', () => {
             };
 
             const {getByText} = renderWithEverything(
-                <EditPostProvider isEditMode={false}>
-                    <UploadItem {...props}/>
-                </EditPostProvider>,
+                <UploadItem {...props}/>,
                 {database},
             );
 
@@ -258,6 +245,8 @@ describe('UploadItem', () => {
 
     it('When file is failed, onclick of retry button, it should call prepareUpload with correct arguments in edit mode', () => {
         const updateFileCallback = jest.fn();
+        jest.mocked(useEditPost).mockReturnValue({isEditMode: true, updateFileCallback, onFileRemove: undefined});
+
         const failedFile = {
             ...baseProps.file,
             failed: true,
@@ -269,12 +258,7 @@ describe('UploadItem', () => {
         };
 
         const {getByTestId} = renderWithEverything(
-            <EditPostProvider
-                isEditMode={true}
-                updateFileCallback={updateFileCallback}
-            >
-                <UploadItem {...props}/>
-            </EditPostProvider>,
+            <UploadItem {...props}/>,
             {database},
         );
 
@@ -297,6 +281,8 @@ describe('UploadItem', () => {
 
     it('When file is failed, onclick of retry button, it should call prepareUpload with correct arguments in draft mode', () => {
         const updateFileCallback = jest.fn();
+        jest.mocked(useEditPost).mockReturnValue({isEditMode: false, updateFileCallback, onFileRemove: undefined});
+
         const failedFile = {
             ...baseProps.file,
             failed: true,
@@ -308,12 +294,7 @@ describe('UploadItem', () => {
         };
 
         const {getByTestId} = renderWithEverything(
-            <EditPostProvider
-                isEditMode={false}
-                updateFileCallback={updateFileCallback}
-            >
-                <UploadItem {...props}/>
-            </EditPostProvider>,
+            <UploadItem {...props}/>,
             {database},
         );
 

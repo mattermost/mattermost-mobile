@@ -1,11 +1,12 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+/* eslint-disable max-lines */
+
 import {renderHook, act, waitFor} from '@testing-library/react-native';
 
-import {useConnectionBanner} from './use_connection_banner';
+import {useConnectionBanner, type UseConnectionBannerParams} from './use_connection_banner';
 
-import type {NetworkPerformanceState} from '@managers/network_performance_manager';
 import type {NetInfoState} from '@react-native-community/netinfo';
 import type {IntlShape} from 'react-intl';
 
@@ -47,8 +48,8 @@ describe('useConnectionBanner', () => {
     describe('initial session behavior', () => {
         it('should not show disconnection banner during initial session', async () => {
             const {result} = renderHook(() => useConnectionBanner({
-                websocketState: 'not_connected' as WebsocketConnectedState,
-                networkPerformanceState: 'normal' as NetworkPerformanceState,
+                websocketState: 'not_connected',
+                networkPerformanceState: 'normal',
                 netInfo: createMockNetInfo(),
                 appState: 'active',
                 intl: mockIntl,
@@ -62,8 +63,8 @@ describe('useConnectionBanner', () => {
 
         it('should not show connecting banner during initial session', async () => {
             const {result} = renderHook(() => useConnectionBanner({
-                websocketState: 'connecting' as WebsocketConnectedState,
-                networkPerformanceState: 'normal' as NetworkPerformanceState,
+                websocketState: 'connecting',
+                networkPerformanceState: 'normal',
                 netInfo: createMockNetInfo(),
                 appState: 'active',
                 intl: mockIntl,
@@ -76,8 +77,8 @@ describe('useConnectionBanner', () => {
 
         it('should show internet unreachable banner even during initial session', async () => {
             const {result} = renderHook(() => useConnectionBanner({
-                websocketState: 'not_connected' as WebsocketConnectedState,
-                networkPerformanceState: 'normal' as NetworkPerformanceState,
+                websocketState: 'not_connected',
+                networkPerformanceState: 'normal',
                 netInfo: createMockNetInfo(false),
                 appState: 'active',
                 intl: mockIntl,
@@ -93,14 +94,14 @@ describe('useConnectionBanner', () => {
     describe('after initial session (post-first-connection)', () => {
         it('should show disconnection banner after initial connection is established', async () => {
             const {result, rerender} = renderHook(
-                ({websocketState, ...rest}) => useConnectionBanner({
+                ({websocketState, ...rest}: UseConnectionBannerParams) => useConnectionBanner({
                     websocketState,
                     ...rest,
                 }),
                 {
                     initialProps: {
-                        websocketState: 'connecting' as WebsocketConnectedState,
-                        networkPerformanceState: 'normal' as NetworkPerformanceState,
+                        websocketState: 'connecting',
+                        networkPerformanceState: 'normal',
                         netInfo: createMockNetInfo(),
                         appState: 'active',
                         intl: mockIntl,
@@ -111,8 +112,8 @@ describe('useConnectionBanner', () => {
             // First, establish connection (ends initial session)
             act(() => {
                 rerender({
-                    websocketState: 'connected' as WebsocketConnectedState,
-                    networkPerformanceState: 'normal' as NetworkPerformanceState,
+                    websocketState: 'connected',
+                    networkPerformanceState: 'normal',
                     netInfo: createMockNetInfo(),
                     appState: 'active',
                     intl: mockIntl,
@@ -127,8 +128,8 @@ describe('useConnectionBanner', () => {
             // Now disconnect - should show banner
             act(() => {
                 rerender({
-                    websocketState: 'not_connected' as WebsocketConnectedState,
-                    networkPerformanceState: 'normal' as NetworkPerformanceState,
+                    websocketState: 'not_connected',
+                    networkPerformanceState: 'normal',
                     netInfo: createMockNetInfo(),
                     appState: 'active',
                     intl: mockIntl,
@@ -143,11 +144,11 @@ describe('useConnectionBanner', () => {
 
         it('should show connecting banner after initial session', async () => {
             const {result, rerender} = renderHook(
-                (props) => useConnectionBanner(props),
+                (props: UseConnectionBannerParams) => useConnectionBanner(props),
                 {
                     initialProps: {
-                        websocketState: 'not_connected' as WebsocketConnectedState,
-                        networkPerformanceState: 'normal' as NetworkPerformanceState,
+                        websocketState: 'not_connected',
+                        networkPerformanceState: 'normal',
                         netInfo: createMockNetInfo(),
                         appState: 'active',
                         intl: mockIntl,
@@ -158,8 +159,8 @@ describe('useConnectionBanner', () => {
             // First connect to end initial session
             act(() => {
                 rerender({
-                    websocketState: 'connected' as WebsocketConnectedState,
-                    networkPerformanceState: 'normal' as NetworkPerformanceState,
+                    websocketState: 'connected',
+                    networkPerformanceState: 'normal',
                     netInfo: createMockNetInfo(),
                     appState: 'active',
                     intl: mockIntl,
@@ -169,8 +170,8 @@ describe('useConnectionBanner', () => {
             // Disconnect
             act(() => {
                 rerender({
-                    websocketState: 'not_connected' as WebsocketConnectedState,
-                    networkPerformanceState: 'normal' as NetworkPerformanceState,
+                    websocketState: 'not_connected',
+                    networkPerformanceState: 'normal',
                     netInfo: createMockNetInfo(),
                     appState: 'active',
                     intl: mockIntl,
@@ -180,8 +181,8 @@ describe('useConnectionBanner', () => {
             // Now go to connecting state - should show banner
             act(() => {
                 rerender({
-                    websocketState: 'connecting' as WebsocketConnectedState,
-                    networkPerformanceState: 'normal' as NetworkPerformanceState,
+                    websocketState: 'connecting',
+                    networkPerformanceState: 'normal',
                     netInfo: createMockNetInfo(),
                     appState: 'active',
                     intl: mockIntl,
@@ -196,11 +197,11 @@ describe('useConnectionBanner', () => {
 
         it('should show connection restored banner on reconnection', async () => {
             const {result, rerender} = renderHook(
-                (props) => useConnectionBanner(props),
+                (props: UseConnectionBannerParams) => useConnectionBanner(props),
                 {
                     initialProps: {
-                        websocketState: 'not_connected' as WebsocketConnectedState,
-                        networkPerformanceState: 'normal' as NetworkPerformanceState,
+                        websocketState: 'not_connected',
+                        networkPerformanceState: 'normal',
                         netInfo: createMockNetInfo(),
                         appState: 'active',
                         intl: mockIntl,
@@ -211,8 +212,8 @@ describe('useConnectionBanner', () => {
             // First connect to end initial session
             act(() => {
                 rerender({
-                    websocketState: 'connected' as WebsocketConnectedState,
-                    networkPerformanceState: 'normal' as NetworkPerformanceState,
+                    websocketState: 'connected',
+                    networkPerformanceState: 'normal',
                     netInfo: createMockNetInfo(),
                     appState: 'active',
                     intl: mockIntl,
@@ -226,8 +227,8 @@ describe('useConnectionBanner', () => {
             // Disconnect
             act(() => {
                 rerender({
-                    websocketState: 'not_connected' as WebsocketConnectedState,
-                    networkPerformanceState: 'normal' as NetworkPerformanceState,
+                    websocketState: 'not_connected',
+                    networkPerformanceState: 'normal',
                     netInfo: createMockNetInfo(),
                     appState: 'active',
                     intl: mockIntl,
@@ -242,8 +243,8 @@ describe('useConnectionBanner', () => {
             // Reconnect - should show "Connection restored"
             act(() => {
                 rerender({
-                    websocketState: 'connected' as WebsocketConnectedState,
-                    networkPerformanceState: 'normal' as NetworkPerformanceState,
+                    websocketState: 'connected',
+                    networkPerformanceState: 'normal',
                     netInfo: createMockNetInfo(),
                     appState: 'active',
                     intl: mockIntl,
@@ -261,8 +262,8 @@ describe('useConnectionBanner', () => {
     describe('slow network state', () => {
         it('should show slow network banner when network is slow', async () => {
             const {result} = renderHook(() => useConnectionBanner({
-                websocketState: 'connected' as WebsocketConnectedState,
-                networkPerformanceState: 'slow' as NetworkPerformanceState,
+                websocketState: 'connected',
+                networkPerformanceState: 'slow',
                 netInfo: createMockNetInfo(),
                 appState: 'active',
                 intl: mockIntl,
@@ -278,14 +279,14 @@ describe('useConnectionBanner', () => {
             jest.useFakeTimers();
 
             const {result, rerender} = renderHook(
-                ({networkPerformanceState, ...rest}) => useConnectionBanner({
+                ({networkPerformanceState, ...rest}: UseConnectionBannerParams) => useConnectionBanner({
                     networkPerformanceState,
                     ...rest,
                 }),
                 {
                     initialProps: {
-                        websocketState: 'connected' as WebsocketConnectedState,
-                        networkPerformanceState: 'slow' as NetworkPerformanceState,
+                        websocketState: 'connected',
+                        networkPerformanceState: 'slow',
                         netInfo: createMockNetInfo(),
                         appState: 'active',
                         intl: mockIntl,
@@ -305,8 +306,8 @@ describe('useConnectionBanner', () => {
             // Go to normal then back to slow
             act(() => {
                 rerender({
-                    websocketState: 'connected' as WebsocketConnectedState,
-                    networkPerformanceState: 'normal' as NetworkPerformanceState,
+                    websocketState: 'connected',
+                    networkPerformanceState: 'normal',
                     netInfo: createMockNetInfo(),
                     appState: 'active',
                     intl: mockIntl,
@@ -315,8 +316,8 @@ describe('useConnectionBanner', () => {
 
             act(() => {
                 rerender({
-                    websocketState: 'connected' as WebsocketConnectedState,
-                    networkPerformanceState: 'slow' as NetworkPerformanceState,
+                    websocketState: 'connected',
+                    networkPerformanceState: 'slow',
                     netInfo: createMockNetInfo(),
                     appState: 'active',
                     intl: mockIntl,
@@ -333,8 +334,8 @@ describe('useConnectionBanner', () => {
     describe('banner priorities', () => {
         it('should prioritize internet unreachable over disconnected', async () => {
             const {result} = renderHook(() => useConnectionBanner({
-                websocketState: 'not_connected' as WebsocketConnectedState,
-                networkPerformanceState: 'normal' as NetworkPerformanceState,
+                websocketState: 'not_connected',
+                networkPerformanceState: 'normal',
                 netInfo: createMockNetInfo(false),
                 appState: 'active',
                 intl: mockIntl,
@@ -350,8 +351,8 @@ describe('useConnectionBanner', () => {
             jest.useFakeTimers();
 
             const {result} = renderHook(() => useConnectionBanner({
-                websocketState: 'connected' as WebsocketConnectedState,
-                networkPerformanceState: 'normal' as NetworkPerformanceState,
+                websocketState: 'connected',
+                networkPerformanceState: 'normal',
                 netInfo: createMockNetInfo(false),
                 appState: 'active',
                 intl: mockIntl,
@@ -373,11 +374,11 @@ describe('useConnectionBanner', () => {
 
         it('should not show other banners when one is already visible with timeout', async () => {
             const {result, rerender} = renderHook(
-                (props) => useConnectionBanner(props),
+                (props: UseConnectionBannerParams) => useConnectionBanner(props),
                 {
                     initialProps: {
-                        websocketState: 'connected' as WebsocketConnectedState,
-                        networkPerformanceState: 'normal' as NetworkPerformanceState,
+                        websocketState: 'connected',
+                        networkPerformanceState: 'normal',
                         netInfo: createMockNetInfo(false),
                         appState: 'active',
                         intl: mockIntl,
@@ -393,8 +394,8 @@ describe('useConnectionBanner', () => {
             // Try to trigger slow network while banner is visible
             act(() => {
                 rerender({
-                    websocketState: 'connected' as WebsocketConnectedState,
-                    networkPerformanceState: 'slow' as NetworkPerformanceState,
+                    websocketState: 'connected',
+                    networkPerformanceState: 'slow',
                     netInfo: createMockNetInfo(false),
                     appState: 'active',
                     intl: mockIntl,
@@ -411,14 +412,14 @@ describe('useConnectionBanner', () => {
     describe('app state changes', () => {
         it('should hide banner when app goes to background', async () => {
             const {result, rerender} = renderHook(
-                ({appState, ...rest}) => useConnectionBanner({
+                ({appState, ...rest}: UseConnectionBannerParams) => useConnectionBanner({
                     appState,
                     ...rest,
                 }),
                 {
                     initialProps: {
-                        websocketState: 'connected' as WebsocketConnectedState,
-                        networkPerformanceState: 'normal' as NetworkPerformanceState,
+                        websocketState: 'connected',
+                        networkPerformanceState: 'normal',
                         netInfo: createMockNetInfo(false),
                         appState: 'active',
                         intl: mockIntl,
@@ -433,8 +434,8 @@ describe('useConnectionBanner', () => {
             // Go to background
             act(() => {
                 rerender({
-                    websocketState: 'connected' as WebsocketConnectedState,
-                    networkPerformanceState: 'normal' as NetworkPerformanceState,
+                    websocketState: 'connected',
+                    networkPerformanceState: 'normal',
                     netInfo: createMockNetInfo(false),
                     appState: 'background',
                     intl: mockIntl,
@@ -449,15 +450,15 @@ describe('useConnectionBanner', () => {
 
         it('should reset slow banner flag when app goes to background', async () => {
             const {result, rerender} = renderHook(
-                ({appState, networkPerformanceState, ...rest}) => useConnectionBanner({
+                ({appState, networkPerformanceState, ...rest}: UseConnectionBannerParams) => useConnectionBanner({
                     appState,
                     networkPerformanceState,
                     ...rest,
                 }),
                 {
                     initialProps: {
-                        websocketState: 'connected' as WebsocketConnectedState,
-                        networkPerformanceState: 'slow' as NetworkPerformanceState,
+                        websocketState: 'connected',
+                        networkPerformanceState: 'slow',
                         netInfo: createMockNetInfo(),
                         appState: 'active',
                         intl: mockIntl,
@@ -472,8 +473,8 @@ describe('useConnectionBanner', () => {
             // Go to background
             act(() => {
                 rerender({
-                    websocketState: 'connected' as WebsocketConnectedState,
-                    networkPerformanceState: 'slow' as NetworkPerformanceState,
+                    websocketState: 'connected',
+                    networkPerformanceState: 'slow',
                     netInfo: createMockNetInfo(),
                     appState: 'background',
                     intl: mockIntl,
@@ -483,8 +484,8 @@ describe('useConnectionBanner', () => {
             // Come back to active
             act(() => {
                 rerender({
-                    websocketState: 'connected' as WebsocketConnectedState,
-                    networkPerformanceState: 'slow' as NetworkPerformanceState,
+                    websocketState: 'connected',
+                    networkPerformanceState: 'slow',
                     netInfo: createMockNetInfo(),
                     appState: 'active',
                     intl: mockIntl,
@@ -500,15 +501,15 @@ describe('useConnectionBanner', () => {
 
         it('should not show connection restored banner when returning from background if websocket stayed connected', async () => {
             const {result, rerender} = renderHook(
-                ({appState, websocketState, ...rest}) => useConnectionBanner({
+                ({appState, websocketState, ...rest}: UseConnectionBannerParams) => useConnectionBanner({
                     appState,
                     websocketState,
                     ...rest,
                 }),
                 {
                     initialProps: {
-                        websocketState: 'not_connected' as WebsocketConnectedState,
-                        networkPerformanceState: 'normal' as NetworkPerformanceState,
+                        websocketState: 'not_connected',
+                        networkPerformanceState: 'normal',
                         netInfo: createMockNetInfo(),
                         appState: 'active',
                         intl: mockIntl,
@@ -518,8 +519,8 @@ describe('useConnectionBanner', () => {
 
             act(() => {
                 rerender({
-                    websocketState: 'connected' as WebsocketConnectedState,
-                    networkPerformanceState: 'normal' as NetworkPerformanceState,
+                    websocketState: 'connected',
+                    networkPerformanceState: 'normal',
                     netInfo: createMockNetInfo(),
                     appState: 'active',
                     intl: mockIntl,
@@ -532,8 +533,8 @@ describe('useConnectionBanner', () => {
 
             act(() => {
                 rerender({
-                    websocketState: 'connected' as WebsocketConnectedState,
-                    networkPerformanceState: 'normal' as NetworkPerformanceState,
+                    websocketState: 'connected',
+                    networkPerformanceState: 'normal',
                     netInfo: createMockNetInfo(),
                     appState: 'background',
                     intl: mockIntl,
@@ -542,8 +543,8 @@ describe('useConnectionBanner', () => {
 
             act(() => {
                 rerender({
-                    websocketState: 'connected' as WebsocketConnectedState,
-                    networkPerformanceState: 'normal' as NetworkPerformanceState,
+                    websocketState: 'connected',
+                    networkPerformanceState: 'normal',
                     netInfo: createMockNetInfo(),
                     appState: 'active',
                     intl: mockIntl,
@@ -563,11 +564,11 @@ describe('useConnectionBanner', () => {
             jest.useFakeTimers();
 
             const {result, rerender} = renderHook(
-                (props) => useConnectionBanner(props),
+                (props: UseConnectionBannerParams) => useConnectionBanner(props),
                 {
                     initialProps: {
-                        websocketState: 'connected' as WebsocketConnectedState,
-                        networkPerformanceState: 'normal' as NetworkPerformanceState,
+                        websocketState: 'connected',
+                        networkPerformanceState: 'normal',
                         netInfo: createMockNetInfo(false),
                         appState: 'active',
                         intl: mockIntl,
@@ -581,8 +582,8 @@ describe('useConnectionBanner', () => {
             // Internet becomes reachable again, then wait for timeout
             act(() => {
                 rerender({
-                    websocketState: 'connected' as WebsocketConnectedState,
-                    networkPerformanceState: 'normal' as NetworkPerformanceState,
+                    websocketState: 'connected',
+                    networkPerformanceState: 'normal',
                     netInfo: createMockNetInfo(true),
                     appState: 'active',
                     intl: mockIntl,
@@ -599,11 +600,11 @@ describe('useConnectionBanner', () => {
             jest.useFakeTimers();
 
             const {result, rerender} = renderHook(
-                (props) => useConnectionBanner(props),
+                (props: UseConnectionBannerParams) => useConnectionBanner(props),
                 {
                     initialProps: {
-                        websocketState: 'connected' as WebsocketConnectedState,
-                        networkPerformanceState: 'slow' as NetworkPerformanceState,
+                        websocketState: 'connected',
+                        networkPerformanceState: 'slow',
                         netInfo: createMockNetInfo(),
                         appState: 'active',
                         intl: mockIntl,
@@ -617,8 +618,8 @@ describe('useConnectionBanner', () => {
             // Network becomes normal, then wait for timeout
             act(() => {
                 rerender({
-                    websocketState: 'connected' as WebsocketConnectedState,
-                    networkPerformanceState: 'normal' as NetworkPerformanceState,
+                    websocketState: 'connected',
+                    networkPerformanceState: 'normal',
                     netInfo: createMockNetInfo(),
                     appState: 'active',
                     intl: mockIntl,
@@ -635,11 +636,11 @@ describe('useConnectionBanner', () => {
             jest.useFakeTimers();
 
             const {result, rerender} = renderHook(
-                (props) => useConnectionBanner(props),
+                (props: UseConnectionBannerParams) => useConnectionBanner(props),
                 {
                     initialProps: {
-                        websocketState: 'not_connected' as WebsocketConnectedState,
-                        networkPerformanceState: 'normal' as NetworkPerformanceState,
+                        websocketState: 'not_connected',
+                        networkPerformanceState: 'normal',
                         netInfo: createMockNetInfo(),
                         appState: 'active',
                         intl: mockIntl,
@@ -650,8 +651,8 @@ describe('useConnectionBanner', () => {
             // First connect to end initial session
             act(() => {
                 rerender({
-                    websocketState: 'connected' as WebsocketConnectedState,
-                    networkPerformanceState: 'normal' as NetworkPerformanceState,
+                    websocketState: 'connected',
+                    networkPerformanceState: 'normal',
                     netInfo: createMockNetInfo(),
                     appState: 'active',
                     intl: mockIntl,
@@ -663,8 +664,8 @@ describe('useConnectionBanner', () => {
             // Disconnect
             act(() => {
                 rerender({
-                    websocketState: 'not_connected' as WebsocketConnectedState,
-                    networkPerformanceState: 'normal' as NetworkPerformanceState,
+                    websocketState: 'not_connected',
+                    networkPerformanceState: 'normal',
                     netInfo: createMockNetInfo(),
                     appState: 'active',
                     intl: mockIntl,
@@ -677,8 +678,8 @@ describe('useConnectionBanner', () => {
             // Reconnect - should show "Connection restored"
             act(() => {
                 rerender({
-                    websocketState: 'connected' as WebsocketConnectedState,
-                    networkPerformanceState: 'normal' as NetworkPerformanceState,
+                    websocketState: 'connected',
+                    networkPerformanceState: 'normal',
                     netInfo: createMockNetInfo(),
                     appState: 'active',
                     intl: mockIntl,

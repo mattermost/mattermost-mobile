@@ -16,6 +16,7 @@ interface ClientLicense {
     GuestAccounts: string;
     GuestAccountsPermissions: string;
     IDLoadedPushNotifications: string;
+    IsGovSku?: string;
     IsLicensed: string;
     LDAP: string;
     LDAPGroups: string;

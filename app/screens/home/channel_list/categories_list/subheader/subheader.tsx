@@ -32,10 +32,7 @@ const SubHeader = ({unreadsOnTop}: Props) => {
 
     useEffect(() => {
         showFilter.value = !unreadsOnTop;
-
-    // We only want to update the shared value when `unreadsOnTop` changes.
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [unreadsOnTop]);
+    }, [showFilter, unreadsOnTop]);
 
     return (
         <View style={style.container}>

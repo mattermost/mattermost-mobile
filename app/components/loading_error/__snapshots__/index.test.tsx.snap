@@ -448,7 +448,9 @@ exports[`Loading Error should match snapshot 1`] = `
         accessible={true}
         collapsable={false}
         focusable={true}
+        onBlur={[Function]}
         onClick={[Function]}
+        onFocus={[Function]}
         onResponderGrant={[Function]}
         onResponderMove={[Function]}
         onResponderRelease={[Function]}
@@ -456,9 +458,12 @@ exports[`Loading Error should match snapshot 1`] = `
         onResponderTerminationRequest={[Function]}
         onStartShouldSetResponder={[Function]}
         style={
-          {
-            "opacity": 1,
-          }
+          [
+            undefined,
+            {
+              "opacity": 1,
+            },
+          ]
         }
       >
         <View

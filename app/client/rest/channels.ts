@@ -27,6 +27,14 @@ export interface ClientChannelsMix {
     getChannels: (teamId: string, page?: number, perPage?: number) => Promise<Channel[]>;
     getArchivedChannels: (teamId: string, page?: number, perPage?: number) => Promise<Channel[]>;
     getSharedChannels: (teamId: string, page?: number, perPage?: number) => Promise<Channel[]>;
+    getRemoteClusters: (options?: {
+        excludePlugins?: boolean;
+        notInChannel?: string;
+        onlyConfirmed?: boolean;
+    }) => Promise<RemoteClusterInfo[]>;
+    getChannelSharedRemotes: (channelId: string) => Promise<RemoteClusterInfo[]>;
+    shareChannelWithRemote: (channelId: string, remoteId: string) => Promise<void>;
+    unshareChannelFromRemote: (channelId: string, remoteId: string) => Promise<void>;
     getMyChannels: (teamId: string, includeDeleted?: boolean, lastDeleteAt?: number, groupLabel?: RequestGroupLabel) => Promise<Channel[]>;
     getMyChannelMember: (channelId: string) => Promise<ChannelMembership>;
     getMyChannelMembers: (teamId: string, groupLabel?: RequestGroupLabel) => Promise<ChannelMembership[]>;
@@ -51,6 +59,7 @@ export interface ClientChannelsMix {
     convertGroupMessageToPrivateChannel: (channelId: string, teamId: string, displayName: string, name: string) => Promise<Channel>;
     getAllChannelsFromAllTeams: (lastDeleteAt: number, includeDeleted: boolean, groupLabel?: RequestGroupLabel) => Promise<Channel[]>;
     getAllMyChannelMembersFromAllTeams: (page: number, perPage: number, groupLabel?: RequestGroupLabel) => Promise<ChannelMembership[]>;
+    getManagedCategories: (teamId: string, groupLabel?: RequestGroupLabel) => Promise<Record<string, string>>;
 }
 
 const ClientChannels = <TBase extends Constructor<ClientBase>>(superclass: TBase) => class extends superclass {
@@ -88,6 +97,13 @@ const ClientChannels = <TBase extends Constructor<ClientBase>>(superclass: TBase
 
         return this.doFetch(
             `${this.getUserRoute('me')}/channel_members${buildQueryString(queryData)}`,
+            {method: 'get', groupLabel},
+        );
+    };
+
+    getManagedCategories = async (teamId: string, groupLabel?: RequestGroupLabel) => {
+        return this.doFetch(
+            `${this.getTeamRoute(teamId)}/channels/managed_categories`,
             {method: 'get', groupLabel},
         );
     };
@@ -217,6 +233,48 @@ const ClientChannels = <TBase extends Constructor<ClientBase>>(superclass: TBase
         return this.doFetch(
             `${this.getSharedChannelsRoute()}/${teamId}${buildQueryString({page, per_page: perPage})}`,
             {method: 'get'},
+        );
+    };
+
+    getRemoteClusters = async (options: {
+        excludePlugins?: boolean;
+        notInChannel?: string;
+        onlyConfirmed?: boolean;
+    } = {}) => {
+        const params: Record<string, string | boolean> = {};
+        if (options.excludePlugins !== undefined) {
+            params.exclude_plugins = options.excludePlugins;
+        }
+        if (options.notInChannel !== undefined) {
+            params.not_in_channel = options.notInChannel;
+        }
+        if (options.onlyConfirmed !== undefined) {
+            params.only_confirmed = options.onlyConfirmed;
+        }
+        return this.doFetch(
+            `${this.getRemoteClustersRoute()}${buildQueryString(params)}`,
+            {method: 'get'},
+        );
+    };
+
+    getChannelSharedRemotes = async (channelId: string) => {
+        return this.doFetch(
+            `${this.getChannelRemotesRoute(channelId)}`,
+            {method: 'get'},
+        );
+    };
+
+    shareChannelWithRemote = async (channelId: string, remoteId: string) => {
+        return this.doFetch(
+            `${this.getRemoteClusterChannelRoute(remoteId, channelId)}/invite`,
+            {method: 'post'},
+        );
+    };
+
+    unshareChannelFromRemote = async (channelId: string, remoteId: string) => {
+        return this.doFetch(
+            `${this.getRemoteClusterChannelRoute(remoteId, channelId)}/uninvite`,
+            {method: 'post'},
         );
     };
 

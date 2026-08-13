@@ -1,64 +1,56 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {fetchAgents} from '@agents/actions/remote/agents';
-
 import {setLastServerVersionCheck} from '@actions/local/systems';
-import {fetchConfigAndLicense} from '@actions/remote/systems';
+import {refetchCurrentUser} from '@actions/remote/user';
+import {fetchAgents} from '@agents/actions/remote/agents';
 import DatabaseManager from '@database/manager';
 import PerformanceMetricsManager from '@managers/performance_metrics_manager';
 import WebsocketManager from '@managers/websocket_manager';
-import {prepareCommonSystemValues} from '@queries/servers/system';
-import {deleteV1Data} from '@utils/file';
+import {getCurrentUserId, prepareCommonSystemValues} from '@queries/servers/system';
+import {getFullErrorMessage} from '@utils/errors';
+import {logError} from '@utils/log';
 
 import {verifyPushProxy} from './common';
 
 export async function appEntry(serverUrl: string, since = 0) {
-    const operator = DatabaseManager.serverDatabases[serverUrl]?.operator;
-    if (!operator) {
-        return {error: `${serverUrl} database not found`};
-    }
-
-    PerformanceMetricsManager.startTimeToInteraction();
-
-    if (!since) {
-        if (Object.keys(DatabaseManager.serverDatabases).length === 1) {
-            await setLastServerVersionCheck(serverUrl, true);
-        }
-    }
-
-    // clear lastUnreadChannelId
-    const removeLastUnreadChannelId = await prepareCommonSystemValues(operator, {lastUnreadChannelId: ''});
-    if (removeLastUnreadChannelId) {
-        await operator.batchRecords(removeLastUnreadChannelId, 'appEntry - removeLastUnreadChannelId');
-    }
-
-    WebsocketManager.openAll('Cold Start');
-
-    verifyPushProxy(serverUrl);
-
-    // Fetch agents to determine if AI features are available
-    fetchAgents(serverUrl);
-
-    return {};
-}
-
-export async function upgradeEntry(serverUrl: string) {
-    const dt = Date.now();
-
     try {
-        const configAndLicense = await fetchConfigAndLicense(serverUrl, false);
-        const entryData = await appEntry(serverUrl, 0);
-        const error = configAndLicense.error || entryData.error;
+        const {database, operator} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
 
-        if (!error) {
-            await DatabaseManager.updateServerIdentifier(serverUrl, configAndLicense.config!.DiagnosticId);
-            await DatabaseManager.setActiveServerDatabase(serverUrl);
-            deleteV1Data();
+        PerformanceMetricsManager.startTimeToInteraction();
+
+        if (!since) {
+            if (Object.keys(DatabaseManager.serverDatabases).length === 1) {
+                await setLastServerVersionCheck(serverUrl, true);
+            }
         }
 
-        return {error, time: Date.now() - dt};
-    } catch (e) {
-        return {error: e, time: Date.now() - dt};
+        // clear lastUnreadChannelId
+        const removeLastUnreadChannelId = await prepareCommonSystemValues(operator, {lastUnreadChannelId: ''});
+        if (removeLastUnreadChannelId) {
+            await operator.batchRecords(removeLastUnreadChannelId, 'appEntry - removeLastUnreadChannelId');
+        }
+
+        // during cold start while on zero persistence mode DB is empty and we need to
+        // seed the current user before WS connects
+        const existingUserId = await getCurrentUserId(database);
+        if (!existingUserId) {
+            const {currentUserId: seededUserId} = await refetchCurrentUser(serverUrl, undefined);
+            if (!seededUserId) {
+                throw new Error('appEntry: failed to seed current user');
+            }
+        }
+
+        WebsocketManager.openAll('Cold Start');
+
+        verifyPushProxy(serverUrl);
+
+        // Fetch agents to determine if AI features are available
+        fetchAgents(serverUrl);
+
+        return {};
+    } catch (error) {
+        logError('appEntry', serverUrl, getFullErrorMessage(error));
+        return {error};
     }
 }

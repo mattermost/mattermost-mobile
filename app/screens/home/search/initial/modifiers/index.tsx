@@ -77,7 +77,7 @@ const getModifiersSectionsData = (intl: IntlShape, teamId: string): ModifierItem
 
 type Props = {
     scrollEnabled: SharedValue<boolean>;
-    searchRef: RefObject<SearchRef>;
+    searchRef: RefObject<SearchRef | null>;
     setSearchValue: Dispatch<SetStateAction<string>>;
     searchValue?: string;
     setTeamId: (id: string) => void;
@@ -92,7 +92,7 @@ const Modifiers = ({scrollEnabled, searchValue, setSearchValue, searchRef, setTe
     const [showMore, setShowMore] = useState(false);
     const height = useSharedValue(NUM_ITEMS_BEFORE_EXPAND * MODIFIER_LABEL_HEIGHT);
     const data = useMemo(() => getModifiersSectionsData(intl, teamId), [intl, teamId]);
-    const timeoutRef = useRef<NodeJS.Timeout | undefined>();
+    const timeoutRef = useRef<NodeJS.Timeout | undefined>(undefined);
 
     const styles = getStyleFromTheme(theme);
     const animatedStyle = useAnimatedStyle(() => ({

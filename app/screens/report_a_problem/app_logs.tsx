@@ -1,5 +1,6 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
+
 import TurboLogger from '@mattermost/react-native-turbo-log';
 import RNUtils from '@mattermost/rnutils';
 import React, {useCallback, useEffect, useState} from 'react';
@@ -71,7 +72,7 @@ const AppLogs = () => {
 
         if (zipFilePath) {
             try {
-                await deleteFile(zipFilePath);
+                deleteFile(zipFilePath);
             } catch (error) {
                 logDebug('Failed to delete zip file', error);
             }
@@ -110,6 +111,7 @@ const AppLogs = () => {
                     theme={theme}
                     iconName='download-outline'
                     disabled={!hasLogs}
+                    testID='app_logs_download_button'
                 />
             </View>
         </View>

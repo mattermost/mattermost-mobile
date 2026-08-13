@@ -1,10 +1,10 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React, {type ReactElement} from 'react';
+import React from 'react';
 
 type MarkdownListProps = {
-   children: ReactElement[];
+   children: Array<React.ReactElement<any>>;
    ordered: boolean;
    start: number;
    tight: boolean;

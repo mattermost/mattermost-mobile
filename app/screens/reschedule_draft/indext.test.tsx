@@ -3,7 +3,6 @@
 
 import React from 'react';
 
-import {Screens} from '@constants';
 import {SYSTEM_IDENTIFIERS} from '@constants/database';
 import DatabaseManager from '@database/manager/__mocks__';
 import {renderWithEverything} from '@test/intl-test-helper';
@@ -45,12 +44,11 @@ describe('EnhancedRescheduledDraft', () => {
 
     it('should correctly return the current user timezone', async () => {
         await operator.handleUsers({users: [TestHelper.fakeUser({id: 'user1', timezone: {useAutomaticTimezone: false, manualTimezone: 'America/New_York', automaticTimezone: 'America/New_York'}})], prepareRecordsOnly: false});
+        await operator.handleScheduledPosts({scheduledPosts: [TestHelper.fakeScheduledPost({id: 'draft1'})], actionType: 'create', prepareRecordsOnly: false});
 
         const {getByTestId} = renderWithEverything(
             <EnhancedRescheduledDraft
-                componentId={Screens.RESCHEDULE_DRAFT}
-                closeButtonId={'close-button'}
-                draft={TestHelper.fakeScheduledPostModel({id: 'draft1'})}
+                draftId='draft1'
             />,
             {database},
         );
@@ -65,12 +63,11 @@ describe('EnhancedRescheduledDraft', () => {
 
     it('should return undefined if the current user timezone is not set', async () => {
         await operator.handleUsers({users: [TestHelper.fakeUser({id: 'user1', timezone: undefined})], prepareRecordsOnly: false});
+        await operator.handleScheduledPosts({scheduledPosts: [TestHelper.fakeScheduledPost({id: 'draft1'})], actionType: 'create', prepareRecordsOnly: false});
 
         const {getByTestId} = renderWithEverything(
             <EnhancedRescheduledDraft
-                componentId={Screens.RESCHEDULE_DRAFT}
-                closeButtonId={'close-button'}
-                draft={TestHelper.fakeScheduledPostModel({id: 'draft1'})}
+                draftId='draft1'
             />,
             {database},
         );

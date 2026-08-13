@@ -14,7 +14,6 @@ import SelectDateEnhanced from './index';
 
 import type ServerDataOperator from '@database/operator/server_data_operator';
 import type {Database} from '@nozbe/watermelondb';
-import type {AvailableScreens} from '@typings/screens/navigation';
 
 // Mock dependencies
 jest.mock('./select_date', () => ({
@@ -33,9 +32,7 @@ describe('SelectDate Enhanced Component', () => {
 
     function getBaseProps(): ComponentProps<typeof SelectDateEnhanced> {
         return {
-            componentId: 'SelectDate' as AvailableScreens,
             selectedDate: undefined,
-            onSave: jest.fn(),
         };
     }
 

@@ -3,7 +3,7 @@
 
 import React, {useMemo} from 'react';
 import {Text} from 'react-native';
-import Animated, {useAnimatedStyle} from 'react-native-reanimated';
+import Animated, {useAnimatedStyle, type DerivedValue} from 'react-native-reanimated';
 
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
@@ -14,7 +14,7 @@ type Props = {
     subtitle?: string;
     theme: Theme;
     title: string;
-    translateY: Animated.DerivedValue<number>;
+    translateY: DerivedValue<number>;
 }
 
 const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({

@@ -5,7 +5,7 @@ This document describes how to add and structure unit tests in the Mattermost Mo
 ## Where tests live
 
 - Tests are **co-located** with source files: `*.test.ts` or `*.test.tsx` next to the file under test (e.g. `channel.test.ts` beside `channel.ts`).
-- Screen entry points often have an `index.test.tsx` that tests the wrapper and passes through to the main screen component.
+- When a component is split into `index.tsx` (the `withDatabase`/`withObservables` wiring) and `{name}.tsx` (the component), test the **bare component**: name the test `{name}.test.tsx`, import `./{name}`, and pass the enhancer-injected props (e.g. `isMilitaryTime`) directly. Don't render-test the `index.tsx` wiring. Example: [date_time_selector.test.tsx](../app/components/date_time_selector/date_time_selector.test.tsx).
 - Reference: [app/products/playbooks](../app/products/playbooks) for the full pattern.
 
 ## What to test by layer
@@ -39,7 +39,8 @@ This document describes how to add and structure unit tests in the Mattermost Mo
 ### Screens and UI
 
 - Use **`renderWithEverything`** from `@test/intl-test-helper` when the component needs database or server URL (pass `{database}` and optionally `serverUrl`). Use **`renderWithIntlAndTheme`** when it only needs theme/intl (no DB).
-- Mock heavy or external deps: navigation, remote actions, `useServerUrl`, etc., with `jest.mock(...)`. Mock child components with `mockImplementation((props) => React.createElement('ComponentName', { testID: '...', ...props }))` so they render with a stable `testID` and forward props.
+- Mock heavy or external deps: navigation, remote actions, `useServerUrl`, etc., with `jest.mock(...)`.
+- **Mocking child components** : (1) Mock the module with a factory that returns only `{ __esModule: true, default: jest.fn() }`—do **not** use `require()` or other out-of-scope variables inside the factory, or Jest will throw. (2) Import the child component (it will be the mocked reference after hoisting). (3) Call `jest.mocked(ChildComponent).mockImplementation((props) => React.createElement(View, { testID: '...', ...props }))` (or `React.createElement('ComponentName', ...)`) so the implementation runs in test scope where `React` and `View` are in scope. This keeps a stable `testID` and forwards props. Example: [app/products/playbooks/screens/select_user/select_user.test.tsx](../app/products/playbooks/screens/select_user/select_user.test.tsx), [app/products/playbooks/screens/participant_playbooks/participant_playbooks.test.tsx](../app/products/playbooks/screens/participant_playbooks/participant_playbooks.test.tsx).
 - **Asserting on props passed to children:** Query the **screen** for the rendered element (e.g. `getByTestId('...')` or `getAllByTestId('...')`), then assert with `expect(element).toHaveProp('propName', value)`. **Do not** use `jest.mocked(Component).mock.calls` or `mock.calls[0][0]` to inspect props—assert on what is in the tree, as in playbooks screen tests.
 - Assert that key elements render (e.g. by `testID`) and that user actions (e.g. toggle, button press) call the expected handlers or actions.
 - Use `fireEvent.press()` for button/toggle interactions; wrap async updates in `act()` or `waitFor` when needed.

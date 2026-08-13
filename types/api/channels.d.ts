@@ -1,6 +1,6 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
-type ChannelType = 'O' | 'P' | 'D' | 'G';
+type ChannelType = 'O' | 'P' | 'D' | 'G' | 'BO' | 'BP';
 type ChannelStats = {
     channel_id: string;
     guest_count: number;
@@ -178,3 +178,14 @@ type ChannelBannerInfo = {
 }
 
 type ChannelAccessControlAttributes = Record<string, string[]>;
+
+/** Connected workspace (remote cluster) for shared channels */
+type RemoteClusterInfo = {
+    remote_id: string;
+    name: string;
+    display_name: string;
+    create_at: number;
+    delete_at: number;
+    last_ping_at: number;
+    site_url?: string;
+};

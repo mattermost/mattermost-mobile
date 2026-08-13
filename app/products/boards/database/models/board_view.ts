@@ -1,0 +1,54 @@
+// Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
+// See LICENSE.txt for license information.
+
+import {BOARDS_TABLES} from '@boards/constants/database';
+import {field, json} from '@nozbe/watermelondb/decorators';
+import Model, {type Associations} from '@nozbe/watermelondb/Model';
+
+import {safeParseJSON} from '@utils/helpers';
+
+import type BoardViewModelInterface from '@boards/types/database/models/board_view';
+
+const {BOARD_VIEW} = BOARDS_TABLES;
+
+/**
+ * The BoardView model represents the 'BoardView' table and describes the per-channel
+ * kanban presentation of a board. One channel can have multiple views.
+ */
+export default class BoardViewModel extends Model implements BoardViewModelInterface {
+    /** table (name) : BoardView */
+    static table = BOARD_VIEW;
+
+    /** associations : Describes every relationship to this table. */
+    static associations: Associations = {};
+
+    /** channel_id : The channel this view belongs to */
+    @field('channel_id') channelId!: string;
+
+    /** type : The view type (e.g. 'kanban') */
+    @field('type') type!: ViewType;
+
+    /** creator_id : The user that created this view */
+    @field('creator_id') creatorId!: string;
+
+    /** title : The view title */
+    @field('title') title!: string;
+
+    /** description : Optional view description */
+    @field('description') description!: string | null;
+
+    /** sort_order : The ordering position of this view within the channel */
+    @field('sort_order') sortOrder!: number;
+
+    /** props : Typed kanban presentation props (group_by, columns, …) */
+    @json('props', safeParseJSON) props!: KanbanProps | null;
+
+    /** create_at : The timestamp when this view was created */
+    @field('create_at') createAt!: number;
+
+    /** update_at : The timestamp when this view was last updated */
+    @field('update_at') updateAt!: number;
+
+    /** delete_at : The timestamp when this view was deleted (0 if not deleted) */
+    @field('delete_at') deleteAt!: number;
+}

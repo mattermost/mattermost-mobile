@@ -9,7 +9,7 @@ import FloatingTextInput from '@components/floating_input/floating_text_input_la
 import OptionItem from '@components/option_item';
 import UserItem from '@components/user_item';
 import {Screens} from '@constants';
-import {goToScreen} from '@screens/navigation';
+import {navigateToSettingsScreen} from '@screens/navigation';
 import {fireEvent, renderWithIntl} from '@test/intl-test-helper';
 import TestHelper from '@test/test_helper';
 
@@ -46,7 +46,7 @@ jest.mocked(SelectedUserChip).mockImplementation(
 
 jest.mock('@components/user_item');
 jest.mocked(UserItem).mockImplementation(
-    (props) => React.createElement('UserItem', {testID: 'user-item', ...props}),
+    (props: ComponentProps<typeof UserItem>) => React.createElement('UserItem', {testID: 'user-item', ...props}),
 );
 
 jest.mock('@components/option_item');
@@ -63,7 +63,7 @@ jest.mocked(FloatingTextInput).mockImplementation(
 );
 
 jest.mock('@screens/navigation', () => ({
-    goToScreen: jest.fn(),
+    navigateToSettingsScreen: jest.fn(),
 }));
 
 describe('Selection', () => {
@@ -242,9 +242,8 @@ describe('Selection', () => {
 
         const channelOption = getByTestId('invite.selected_channels');
         channelOption.props.action();
-        expect(goToScreen).toHaveBeenCalledWith(
+        expect(navigateToSettingsScreen).toHaveBeenCalledWith(
             Screens.INTEGRATION_SELECTOR,
-            expect.any(String),
             expect.objectContaining({
                 dataSource: 'channels',
                 isMultiselect: true,

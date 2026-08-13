@@ -1,10 +1,10 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-export const AGENT_CHAT = 'AgentChat';
-export const AGENT_THREADS_LIST = 'AgentThreadsList';
-export const AGENTS_SELECTOR = 'AgentsSelector';
-export const AGENTS_REWRITE_OPTIONS = 'AgentsRewriteOptions';
+export const AGENT_CHAT = 'agent_chat';
+export const AGENT_THREADS_LIST = 'agent_threads_list';
+export const AGENTS_SELECTOR = 'agents_selector';
+export const AGENTS_REWRITE_OPTIONS = 'agents_rewrite_options';
 
 export default {
     AGENT_CHAT,

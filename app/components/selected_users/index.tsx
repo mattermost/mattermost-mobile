@@ -3,6 +3,7 @@
 
 import React, {useCallback, useEffect, useMemo, useState} from 'react';
 import {type LayoutChangeEvent, Platform, ScrollView, View} from 'react-native';
+import {useAnimatedKeyboard} from 'react-native-keyboard-controller';
 import Animated, {useAnimatedStyle, useDerivedValue, useSharedValue, withTiming} from 'react-native-reanimated';
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
 
@@ -11,25 +12,22 @@ import {CHIP_HEIGHT} from '@components/chips/constants';
 import SelectedUserChipById from '@components/chips/selected_user_chip_by_id';
 import Toast from '@components/toast';
 import {useTheme} from '@context/theme';
-import {useIsTablet, useKeyboardHeightWithDuration} from '@hooks/device';
+import {useIsTablet} from '@hooks/device';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
+
+import type {CompassIconName} from '@components/compass_icon';
 
 type Props = {
 
     /**
      * Name of the button Icon
      */
-    buttonIcon: string;
+    buttonIcon: CompassIconName;
 
     /*
      * Text displayed on the action button
      */
     buttonText: string;
-
-    /**
-     * the overlap of the keyboard with this list
-     */
-    keyboardOverlap?: number;
 
     /**
      * A handler function that will trigger when the button is pressed.
@@ -69,7 +67,7 @@ type Props = {
     /**
      * toast Icon
      */
-    toastIcon?: string;
+    toastIcon?: CompassIconName;
 
     /**
      * toast Message
@@ -141,7 +139,6 @@ const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
 export default function SelectedUsers({
     buttonIcon,
     buttonText,
-    keyboardOverlap = 0,
     onPress,
     onRemove,
     selectedIds,
@@ -155,7 +152,7 @@ export default function SelectedUsers({
 }: Props) {
     const theme = useTheme();
     const style = getStyleFromTheme(theme);
-    const keyboard = useKeyboardHeightWithDuration();
+    const kb = useAnimatedKeyboard();
     const isTablet = useIsTablet();
     const insets = useSafeAreaInsets();
 
@@ -203,10 +200,10 @@ export default function SelectedUsers({
     });
 
     const animatedContainerStyle = useAnimatedStyle(() => ({
-        marginBottom: withTiming(keyboardOverlap + ((Platform.OS === 'android' || isTablet) ? MARGIN_BOTTOM : -MARGIN_BOTTOM), {duration: keyboard.duration}),
+        marginBottom: kb.height.value + ((Platform.OS === 'android' || isTablet) ? MARGIN_BOTTOM : 0),
         backgroundColor: isVisible ? theme.centerChannelBg : 'transparent',
         ...androidMaxHeight,
-    }), [keyboardOverlap, keyboard.duration, isVisible, isTablet, theme.centerChannelBg]);
+    }), [isVisible, isTablet, theme.centerChannelBg]);
 
     const animatedToastStyle = useAnimatedStyle(() => {
         return {
@@ -244,7 +241,7 @@ export default function SelectedUsers({
 
     const isDisabled = Boolean(maxUsers && (numberSelectedIds > maxUsers));
     return (
-        <Animated.View style={animatedContainerStyle}>
+        <Animated.View style={[style.container, animatedContainerStyle, animatedViewStyle]}>
             {showToast &&
             <Toast
                 animatedStyle={animatedToastStyle}
@@ -253,27 +250,25 @@ export default function SelectedUsers({
                 message={toastMessage}
             />
             }
-            <Animated.View style={[style.container, animatedViewStyle]}>
-                <ScrollView style={style.usersScroll}>
-                    <View
-                        style={style.users}
-                        onLayout={onLayout}
-                    >
-                        {users}
-                    </View>
-                </ScrollView>
-                <Animated.View style={animatedButtonStyle}>
-                    <Button
-                        onPress={handlePress}
-                        iconName={buttonIcon}
-                        text={buttonText}
-                        theme={theme}
-                        emphasis={'primary'}
-                        size={'lg'}
-                        testID={`${testID}.start.button`}
-                        disabled={isDisabled}
-                    />
-                </Animated.View>
+            <ScrollView style={style.usersScroll}>
+                <View
+                    style={style.users}
+                    onLayout={onLayout}
+                >
+                    {users}
+                </View>
+            </ScrollView>
+            <Animated.View style={animatedButtonStyle}>
+                <Button
+                    onPress={handlePress}
+                    iconName={buttonIcon}
+                    text={buttonText}
+                    theme={theme}
+                    emphasis={'primary'}
+                    size={'lg'}
+                    testID={`${testID}.start.button`}
+                    disabled={isDisabled}
+                />
             </Animated.View>
         </Animated.View>
     );

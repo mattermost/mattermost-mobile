@@ -7,4 +7,5 @@ export type ReportAProblemMetadata = {
     serverVersion: string;
     appVersion: string;
     appPlatform: string;
+    deviceModel: string;
 };

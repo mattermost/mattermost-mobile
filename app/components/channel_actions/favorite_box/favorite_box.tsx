@@ -15,11 +15,12 @@ type Props = {
     channelId: string;
     containerStyle?: StyleProp<ViewStyle>;
     isFavorited: boolean;
+    isManaged?: boolean;
     showSnackBar?: boolean;
     testID?: string;
 }
 
-const FavoriteBox = ({channelId, containerStyle, isFavorited, showSnackBar = false, testID}: Props) => {
+const FavoriteBox = ({channelId, containerStyle, isFavorited, isManaged = false, showSnackBar = false, testID}: Props) => {
     const intl = useIntl();
     const serverUrl = useServerUrl();
 
@@ -29,6 +30,10 @@ const FavoriteBox = ({channelId, containerStyle, isFavorited, showSnackBar = fal
     }, [serverUrl, channelId, showSnackBar]);
 
     const favoriteActionTestId = isFavorited ? `${testID}.unfavorite.action` : `${testID}.favorite.action`;
+
+    if (isManaged) {
+        return null;
+    }
 
     return (
         <OptionBox

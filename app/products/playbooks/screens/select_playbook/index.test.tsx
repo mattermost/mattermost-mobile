@@ -1,7 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React, {type ComponentProps} from 'react';
+import React from 'react';
 
 import {SYSTEM_IDENTIFIERS} from '@constants/database';
 import DatabaseManager from '@database/manager';
@@ -23,12 +23,6 @@ jest.mocked(SelectPlaybookComponent).mockImplementation(
 const serverUrl = 'server-url';
 
 describe('SelectPlaybook', () => {
-    function getBaseProps(): ComponentProps<typeof SelectPlaybook> {
-        return {
-            componentId: 'PlaybooksSelectPlaybook',
-        };
-    }
-
     let database: Database;
     let operator: ServerDataOperator;
 
@@ -45,8 +39,7 @@ describe('SelectPlaybook', () => {
     });
 
     it('should render correctly with no data', () => {
-        const props = getBaseProps();
-        const {getByTestId} = renderWithEverything(<SelectPlaybook {...props}/>, {database});
+        const {getByTestId} = renderWithEverything(<SelectPlaybook/>, {database});
 
         const selectPlaybook = getByTestId('select-playbook');
 
@@ -71,8 +64,7 @@ describe('SelectPlaybook', () => {
             prepareRecordsOnly: false,
         });
 
-        const props = getBaseProps();
-        const {getByTestId} = renderWithEverything(<SelectPlaybook {...props}/>, {database});
+        const {getByTestId} = renderWithEverything(<SelectPlaybook/>, {database});
 
         const selectPlaybook = getByTestId('select-playbook');
         expect(selectPlaybook.props.currentUserId).toBe('current-user-id');
@@ -107,8 +99,7 @@ describe('SelectPlaybook', () => {
             removeAssociatedRecords: false,
         });
 
-        const props = getBaseProps();
-        const {getByTestId} = renderWithEverything(<SelectPlaybook {...props}/>, {database});
+        const {getByTestId} = renderWithEverything(<SelectPlaybook/>, {database});
 
         await waitFor(() => {
             const selectPlaybook = getByTestId('select-playbook');
@@ -131,8 +122,7 @@ describe('SelectPlaybook', () => {
             prepareRecordsOnly: false,
         });
 
-        const props = getBaseProps();
-        const {getByTestId} = renderWithEverything(<SelectPlaybook {...props}/>, {database});
+        const {getByTestId} = renderWithEverything(<SelectPlaybook/>, {database});
 
         await waitFor(() => {
             const selectPlaybook = getByTestId('select-playbook');
@@ -168,8 +158,7 @@ describe('SelectPlaybook', () => {
             removeAssociatedRecords: false,
         });
 
-        const props = getBaseProps();
-        const {getByTestId} = renderWithEverything(<SelectPlaybook {...props}/>, {database});
+        const {getByTestId} = renderWithEverything(<SelectPlaybook/>, {database});
 
         await waitFor(() => {
             const selectPlaybook = getByTestId('select-playbook');
@@ -222,8 +211,7 @@ describe('SelectPlaybook', () => {
             prepareRecordsOnly: false,
         });
 
-        const props = getBaseProps();
-        const {getByTestId} = renderWithEverything(<SelectPlaybook {...props}/>, {database});
+        const {getByTestId} = renderWithEverything(<SelectPlaybook/>, {database});
 
         const selectPlaybook = getByTestId('select-playbook');
         expect(selectPlaybook.props.currentUserId).toBe('current-user-id');
@@ -292,8 +280,7 @@ describe('SelectPlaybook', () => {
             removeAssociatedRecords: false,
         });
 
-        const props = getBaseProps();
-        const {getByTestId} = renderWithEverything(<SelectPlaybook {...props}/>, {database});
+        const {getByTestId} = renderWithEverything(<SelectPlaybook/>, {database});
 
         await waitFor(() => {
             const selectPlaybook = getByTestId('select-playbook');

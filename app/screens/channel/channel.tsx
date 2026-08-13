@@ -1,37 +1,32 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React, {useCallback, useEffect, useState, useMemo} from 'react';
-import {Platform, DeviceEventEmitter, type LayoutChangeEvent, StyleSheet} from 'react-native';
-import {KeyboardProvider} from 'react-native-keyboard-controller';
+import React, {useCallback, useEffect, useMemo, useState} from 'react';
+import {DeviceEventEmitter, type LayoutChangeEvent, StyleSheet} from 'react-native';
 import {type Edge, SafeAreaView, useSafeAreaInsets} from 'react-native-safe-area-context';
 
 import {storeLastViewedChannelIdAndServer, removeLastViewedChannelIdAndServer} from '@actions/app/global';
 import {fetchPostsForChannel} from '@actions/remote/post';
 import FloatingCallContainer from '@calls/components/floating_call_container';
-import FreezeScreen from '@components/freeze_screen';
-import {Events} from '@constants';
+import {Events, Screens} from '@constants';
 import {useServerUrl} from '@context/server';
 import useAndroidHardwareBackHandler from '@hooks/android_back_handler';
 import {useChannelSwitch} from '@hooks/channel_switch';
 import {useIsTablet} from '@hooks/device';
 import {useDefaultHeaderHeight} from '@hooks/header';
 import {useTeamSwitch} from '@hooks/team_switch';
-import {useIsScreenVisible} from '@hooks/use_screen_visibility';
-import SecurityManager from '@managers/security_manager';
-import {popTopScreen} from '@screens/navigation';
+import {navigateBack} from '@screens/navigation';
 import EphemeralStore from '@store/ephemeral_store';
+import {useCurrentScreen} from '@store/navigation_store';
 
 import ChannelContent from './channel_content';
 import ChannelHeader from './header';
 import useGMasDMNotice from './use_gm_as_dm_notice';
 
 import type PreferenceModel from '@typings/database/models/servers/preference';
-import type {AvailableScreens} from '@typings/screens/navigation';
 
 type ChannelProps = {
     channelId: string;
-    componentId?: AvailableScreens;
     showJoinCallBanner: boolean;
     isInACall: boolean;
     isCallsEnabledInChannel: boolean;
@@ -55,7 +50,6 @@ const styles = StyleSheet.create({
 
 const Channel = ({
     channelId,
-    componentId,
     showJoinCallBanner,
     isInACall,
     isCallsEnabledInChannel,
@@ -80,24 +74,23 @@ const Channel = ({
     const [containerHeight, setContainerHeight] = useState(0);
     const serverUrl = useServerUrl();
     const shouldRender = !switchingTeam && !switchingChannels && shouldRenderPosts && Boolean(channelId);
-    const isVisible = useIsScreenVisible(componentId);
-    const [isEmojiSearchFocused, setIsEmojiSearchFocused] = useState(false);
+    const currentScreen = useCurrentScreen();
+    const isVisible = useMemo(() => {
+        if (isTablet) {
+            return currentScreen === Screens.CHANNEL_LIST;
+        }
+
+        return currentScreen === Screens.CHANNEL;
+    }, [currentScreen, isTablet]);
 
     const safeAreaViewEdges: Edge[] = useMemo(() => {
         if (isTablet) {
             return ['left', 'right'];
         }
-        if (isEmojiSearchFocused) {
-            return ['left', 'right'];
-        }
         return ['left', 'right', 'bottom'];
-    }, [isTablet, isEmojiSearchFocused]);
+    }, [isTablet]);
 
-    const handleBack = useCallback(() => {
-        popTopScreen(componentId);
-    }, [componentId]);
-
-    useAndroidHardwareBackHandler(componentId, handleBack);
+    useAndroidHardwareBackHandler(Screens.CHANNEL, navigateBack);
 
     useEffect(() => {
         const listener = DeviceEventEmitter.addListener(Events.POST_DELETED_FOR_CHANNEL, ({serverUrl: url, channelId: id}) => {
@@ -138,61 +131,40 @@ const Channel = ({
     const showFloatingCallContainer = showJoinCallBanner || isInACall || showIncomingCalls;
 
     return (
-        <FreezeScreen>
-            <SafeAreaView
-                style={styles.flex}
-                mode='margin'
-                edges={safeAreaViewEdges}
-                testID='channel.screen'
-                onLayout={onLayout}
-                nativeID={componentId ? SecurityManager.getShieldScreenId(componentId) : undefined}
-            >
-                <ChannelHeader
+        <SafeAreaView
+            style={styles.flex}
+            edges={safeAreaViewEdges}
+            testID='channel.screen'
+            onLayout={onLayout}
+        >
+            <ChannelHeader
+                channelId={channelId}
+                callsEnabledInChannel={isCallsEnabledInChannel}
+                groupCallsAllowed={groupCallsAllowed}
+                isTabletView={isTabletView}
+                shouldRenderBookmarks={shouldRender}
+                shouldRenderChannelBanner={includeChannelBanner}
+            />
+            {shouldRender && (
+                <ChannelContent
                     channelId={channelId}
-                    componentId={componentId}
-                    callsEnabledInChannel={isCallsEnabledInChannel}
-                    groupCallsAllowed={groupCallsAllowed}
-                    isTabletView={isTabletView}
-                    shouldRenderBookmarks={shouldRender}
-                    shouldRenderChannelBanner={includeChannelBanner}
+                    marginTop={marginTop}
+                    scheduledPostCount={scheduledPostCount}
+                    containerHeight={containerHeight}
+                    enabled={isVisible}
                 />
-                {Platform.OS === 'ios' ? (
-                    <KeyboardProvider>
-                        {shouldRender && (
-                            <ChannelContent
-                                channelId={channelId}
-                                marginTop={marginTop}
-                                scheduledPostCount={scheduledPostCount}
-                                containerHeight={containerHeight}
-                                enabled={isVisible || shouldRender}
-                                onEmojiSearchFocusChange={setIsEmojiSearchFocused}
-                            />
-                        )}
-                    </KeyboardProvider>
-                ) : (
-                    shouldRender && (
-                        <ChannelContent
-                            channelId={channelId}
-                            marginTop={marginTop}
-                            scheduledPostCount={scheduledPostCount}
-                            containerHeight={containerHeight}
-                            enabled={isVisible || shouldRender}
-                            onEmojiSearchFocusChange={setIsEmojiSearchFocused}
-                        />
-                    )
-                )}
-                {showFloatingCallContainer && shouldRender &&
-                    <FloatingCallContainer
-                        channelId={channelId}
-                        showJoinCallBanner={showJoinCallBanner}
-                        showIncomingCalls={showIncomingCalls}
-                        isInACall={isInACall}
-                        includeBookmarkBar={includeBookmarkBar}
-                        includeChannelBanner={includeChannelBanner}
-                    />
-                }
-            </SafeAreaView>
-        </FreezeScreen>
+            )}
+            {showFloatingCallContainer && shouldRender &&
+            <FloatingCallContainer
+                channelId={channelId}
+                showJoinCallBanner={showJoinCallBanner}
+                showIncomingCalls={showIncomingCalls}
+                isInACall={isInACall}
+                includeBookmarkBar={includeBookmarkBar}
+                includeChannelBanner={includeChannelBanner}
+            />
+            }
+        </SafeAreaView>
     );
 };
 

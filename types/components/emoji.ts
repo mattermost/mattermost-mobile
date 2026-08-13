@@ -3,6 +3,7 @@
 
 import type CustomEmojiModel from '@typings/database/models/servers/custom_emoji';
 import type {ImageStyle} from 'expo-image';
+import type React from 'react';
 import type {StyleProp, TextStyle} from 'react-native';
 
 // The intersection of the image styles and text styles
@@ -21,4 +22,4 @@ export type EmojiProps = {
     testID?: string;
 }
 
-export type EmojiComponent = (props: Omit<EmojiProps, 'customEmojis'>) => JSX.Element;
+export type EmojiComponent = (props: Omit<EmojiProps, 'customEmojis'>) => React.JSX.Element;

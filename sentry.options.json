@@ -1,0 +1,7 @@
+{
+  "dsn": "",
+  "debug": false,
+  "enableAppHangTracking": false,
+  "enableCaptureFailedRequests": false,
+  "enableAutoSessionTracking": true
+}

@@ -8,7 +8,7 @@ import {MM_TABLES} from '@constants/database';
 const {INFO, GLOBAL, SERVERS} = MM_TABLES.APP;
 
 export const schema: AppSchema = appSchema({
-    version: 1,
+    version: 2,
     tables: [
         tableSchema({
             name: INFO,
@@ -32,6 +32,7 @@ export const schema: AppSchema = appSchema({
                 {name: 'identifier', type: 'string', isIndexed: true},
                 {name: 'last_active_at', type: 'number', isIndexed: true},
                 {name: 'url', type: 'string', isIndexed: true},
+                {name: 'persistence_flag', type: 'string'},
             ],
         }),
     ],

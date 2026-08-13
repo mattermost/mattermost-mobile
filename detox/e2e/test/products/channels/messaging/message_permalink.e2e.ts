@@ -36,8 +36,8 @@ describe('Messaging - Message Permalink Preview', () => {
     let testUser: any;
     let testOtherUser: any;
 
-    const copyLinkFromPost = async (postItem: any) => {
-        await postItem.longPress();
+    const copyLinkFromPost = async (postId: string, message: string) => {
+        await ChannelScreen.openPostOptionsFor(postId, message);
         await PostOptionsScreen.toBeVisible();
         await PostOptionsScreen.copyLinkOption.tap();
         await wait(timeouts.FOUR_SEC);
@@ -53,7 +53,10 @@ describe('Messaging - Message Permalink Preview', () => {
 
     const expectPermalinkPreviewVisible = async (message: string, channelName: string) => {
         const container = element(by.id('permalink-preview-container'));
-        await waitFor(container).toBeVisible().withTimeout(timeouts.FOUR_SEC);
+
+        // Use TEN_SEC: posting a permalink URL triggers a server fetch + re-render that
+        // can exceed 4s on a loaded CI runner, causing intermittent timeouts.
+        await waitFor(container).toBeVisible().withTimeout(timeouts.TEN_SEC);
         await expect(element(by.text(message).withAncestor(by.id('permalink-preview-container')))).toBeVisible();
         await expect(element(by.text(`Originally posted in ~${channelName}`).withAncestor(by.id('permalink-preview-container')))).toBeVisible();
     };
@@ -65,6 +68,9 @@ describe('Messaging - Message Permalink Preview', () => {
         testUser = user;
 
         ({user: testOtherUser} = await User.apiCreateUser(siteOneUrl));
+        if (!testOtherUser?.id) {
+            throw new Error('[beforeAll] Failed to create testOtherUser');
+        }
         await Team.apiAddUserToTeam(siteOneUrl, testOtherUser.id, testTeam.id);
         await Channel.apiAddUserToChannel(siteOneUrl, testOtherUser.id, testChannel.id);
 
@@ -91,8 +97,7 @@ describe('Messaging - Message Permalink Preview', () => {
         await wait(timeouts.FOUR_SEC);
         await ChannelScreen.open(channelsCategory, testChannel.name);
 
-        const {postListPostItem} = ChannelScreen.getPostListPostItem(targetPost.post.id, targetMessage);
-        await copyLinkFromPost(postListPostItem);
+        await copyLinkFromPost(targetPost.post.id, targetMessage);
 
         const copiedPermalink = `${serverOneUrl}/${testTeam.name}/pl/${targetPost.post.id}`;
         const messageWithPastedLink = `Check this out ${copiedPermalink}`;
@@ -117,8 +122,7 @@ describe('Messaging - Message Permalink Preview', () => {
         await Channel.apiAddUserToChannel(siteOneUrl, testUser.id, otherChannel.id);
         await wait(timeouts.FOUR_SEC);
         await ChannelScreen.open(channelsCategory, testChannel.name);
-        const {postListPostItem} = ChannelScreen.getPostListPostItem(targetPost.post.id, targetMessage);
-        await copyLinkFromPost(postListPostItem);
+        await copyLinkFromPost(targetPost.post.id, targetMessage);
 
         await wait(timeouts.FOUR_SEC); // Wait for toast/animation if any
         await ChannelScreen.back();
@@ -151,8 +155,7 @@ describe('Messaging - Message Permalink Preview', () => {
         });
         await wait(timeouts.FOUR_SEC);
         await ChannelScreen.open(channelsCategory, targetChannel.name);
-        const {postListPostItem} = ChannelScreen.getPostListPostItem(targetPost.post.id, targetMessage);
-        await copyLinkFromPost(postListPostItem);
+        await copyLinkFromPost(targetPost.post.id, targetMessage);
 
         await wait(timeouts.FOUR_SEC);
         await ChannelScreen.back();
@@ -169,6 +172,17 @@ describe('Messaging - Message Permalink Preview', () => {
         const permalinkPreview = element(by.id('permalink-preview-container'));
         await permalinkPreview.tap();
         await wait(timeouts.ONE_SEC);
+
+        // If the target channel was created after login, a "Join channel" modal may
+        // appear due to stale WebSocket sync. Handle it gracefully — the permalink
+        // navigation still works after joining.
+        try {
+            await waitFor(element(by.text('Join channel')).atIndex(0)).toExist().withTimeout(timeouts.FOUR_SEC);
+            await element(by.text('Join channel')).atIndex(1).tap();
+            await wait(timeouts.FOUR_SEC);
+        } catch {
+            // No Join modal — user was already a member, proceed normally.
+        }
 
         await PermalinkScreen.toBeVisible();
 
@@ -194,8 +208,7 @@ describe('Messaging - Message Permalink Preview', () => {
         });
 
         await ChannelScreen.open(channelsCategory, testChannel.name);
-        const {postListPostItem} = ChannelScreen.getPostListPostItem(targetPost.post.id, originalMessage);
-        await copyLinkFromPost(postListPostItem);
+        await copyLinkFromPost(targetPost.post.id, originalMessage);
 
         await wait(timeouts.FOUR_SEC);
 
@@ -240,8 +253,7 @@ describe('Messaging - Message Permalink Preview', () => {
         });
 
         await ChannelScreen.open(channelsCategory, testChannel.name);
-        const {postListPostItem} = ChannelScreen.getPostListPostItem(targetPost.post.id, longMessage);
-        await copyLinkFromPost(postListPostItem);
+        await copyLinkFromPost(targetPost.post.id, longMessage);
 
         await wait(timeouts.FOUR_SEC);
         await ChannelScreen.back();
@@ -275,7 +287,7 @@ describe('Messaging - Message Permalink Preview', () => {
         const {postListPostItem} = ChannelScreen.getPostListPostItem(targetPost.id, targetMessage);
         await expect(postListPostItem).toBeVisible();
         await wait(timeouts.ONE_SEC);
-        await copyLinkFromPost(postListPostItem);
+        await copyLinkFromPost(targetPost.id, targetMessage);
 
         await wait(timeouts.FOUR_SEC);
 
@@ -295,7 +307,7 @@ describe('Messaging - Message Permalink Preview', () => {
         await ChannelScreen.open(channelsCategory, testChannel.name);
 
         const {postListPostItem: postToDelete} = ChannelScreen.getPostListPostItem(targetPost.id, targetMessage);
-        await postToDelete.longPress();
+        await postToDelete.longPress(timeouts.TWO_SEC);
 
         await PostOptionsScreen.toBeVisible();
         await PostOptionsScreen.deletePost({confirm: true});

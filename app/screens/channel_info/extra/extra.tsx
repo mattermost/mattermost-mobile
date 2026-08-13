@@ -167,15 +167,9 @@ const Extra = ({channelId, createdAt, createdBy, customStatus, header, isCustomS
                 </View>
             );
 
-            bottomSheet({
-                closeButtonId: 'close-markdown-link',
-                renderContent,
-                snapPoints: [1, bottomSheetSnapPoint(url ? 3 : 2, ITEM_HEIGHT)],
-                title: intl.formatMessage({id: 'post.options.title', defaultMessage: 'Options'}),
-                theme,
-            });
+            bottomSheet(renderContent, [1, bottomSheetSnapPoint(url ? 3 : 2, ITEM_HEIGHT)]);
         }
-    }, [managedConfig?.copyAndPasteProtection, intl, theme, header]);
+    }, [managedConfig?.copyAndPasteProtection, intl, header]);
 
     const touchableHandleLongPress = useCallback(() => handleLongPress(), [handleLongPress]);
 

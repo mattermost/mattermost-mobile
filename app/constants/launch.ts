@@ -7,7 +7,6 @@ const LaunchType = {
     Normal: 'normal',
     DeepLink: 'deeplink',
     Notification: 'notification',
-    Upgrade: 'upgrade',
 } as const;
 
 export default LaunchType;

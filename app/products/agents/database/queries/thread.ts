@@ -1,10 +1,11 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {AGENTS_TABLES} from '@agents/constants/database';
 import {Q, type Database} from '@nozbe/watermelondb';
 import {of as of$} from 'rxjs';
 import {switchMap} from 'rxjs/operators';
+
+import {AGENTS_TABLES} from '@agents/constants/database';
 
 import type AiThreadModel from '@agents/types/database/models/ai_thread';
 

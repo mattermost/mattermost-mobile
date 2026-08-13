@@ -1,11 +1,11 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {ToolApprovalStage, ToolCallStatus, type ToolCall} from '@agents/types';
 import React, {useCallback, useEffect, useMemo} from 'react';
-import {Pressable, Text, View} from 'react-native';
-import Animated, {useAnimatedStyle, useSharedValue, withTiming} from 'react-native-reanimated';
+import {Platform, Pressable, Text, View} from 'react-native';
+import Animated, {FadeIn, FadeOut, useAnimatedStyle, useSharedValue, withTiming} from 'react-native-reanimated';
 
+import {ToolApprovalStage, ToolCallStatus, type ToolCall} from '@agents/types';
 import CompassIcon from '@components/compass_icon';
 import FormattedText from '@components/formatted_text';
 import Loading from '@components/loading';
@@ -31,10 +31,12 @@ interface ToolCardProps {
     onToggleCollapse: (toolId: string) => void;
     onApprove?: (toolId: string) => void;
     onReject?: (toolId: string) => void;
-    approvalStage: ToolApprovalStage | null;
+    approvalStage: ToolApprovalStage;
     canExpand?: boolean;
+    canApprove?: boolean;
     showArguments?: boolean;
     showResults?: boolean;
+    isAutoApproved?: boolean;
 }
 
 const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
@@ -77,6 +79,19 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
         responseLabelText: {
             color: changeOpacity(theme.centerChannelColor, 0.75),
             ...typography('Body', 100),
+        },
+        autoApprovedBadge: {
+            flexDirection: 'row',
+            alignItems: 'center',
+            gap: 4,
+            paddingVertical: 2,
+            paddingHorizontal: 8,
+            borderRadius: 4,
+            backgroundColor: changeOpacity(theme.onlineIndicator, 0.12),
+        },
+        autoApprovedBadgeText: {
+            color: theme.onlineIndicator,
+            ...typography('Body', 75, 'SemiBold'),
         },
         resultContainer: {
             marginLeft: CONTENT_INDENT,
@@ -187,36 +202,42 @@ const ToolCard = ({
     onReject,
     approvalStage,
     canExpand = true,
+    canApprove = true,
     showArguments = true,
     showResults = true,
+    isAutoApproved = false,
 }: ToolCardProps) => {
     const theme = useTheme();
     const styles = getStyleSheet(theme);
-    const contentOpacity = useSharedValue(isCollapsed ? 0 : 1);
     const chevronRotation = useSharedValue(isCollapsed ? 0 : 90);
 
     useEffect(() => {
-        contentOpacity.value = isCollapsed ? 0 : 1;
-        chevronRotation.value = isCollapsed ? 0 : 90;
-    }, [isCollapsed, contentOpacity, chevronRotation]);
+        chevronRotation.value = withTiming(isCollapsed ? 0 : 90, {duration: 200});
+    }, [isCollapsed, chevronRotation]);
 
     const isPending = tool.status === ToolCallStatus.Pending;
+
+    // Accepted is the in-flight state between approval and the result landing;
+    // show the same processing spinner as Pending.
+    const isAccepted = tool.status === ToolCallStatus.Accepted;
     const hasLocalDecision = localDecision !== undefined && localDecision !== null;
-    const isSuccess = tool.status === ToolCallStatus.Success;
+    const isAutoApprovedStatus = tool.status === ToolCallStatus.AutoApproved || isAutoApproved;
+
+    // Treat auto-approved as success so the result affordances render.
+    const isSuccess = tool.status === ToolCallStatus.Success || isAutoApprovedStatus;
     const isError = tool.status === ToolCallStatus.Error;
     const isRejected = tool.status === ToolCallStatus.Rejected;
     const isResultPhase = approvalStage === ToolApprovalStage.Result;
 
-    // Convert underscores to spaces and capitalize first letter of each word
     const displayName = useMemo(() => {
         return tool.name.
             replace(/_/g, ' ').
             replace(/\b\w/g, (char) => char.toUpperCase());
     }, [tool.name]);
 
-    // Render arguments as JSON code block
     const argumentsMarkdown = useMemo(() => {
-        return `\`\`\`json\n${JSON.stringify(tool.arguments, null, 2)}\n\`\`\``;
+        const value = tool.arguments ?? {};
+        return `\`\`\`json\n${JSON.stringify(value, null, 2)}\n\`\`\``;
     }, [tool.arguments]);
 
     // Render result as code block - try to detect if it's JSON
@@ -236,11 +257,8 @@ const ToolCard = ({
         if (!canExpand) {
             return;
         }
-        const newCollapsed = !isCollapsed;
-        contentOpacity.value = withTiming(newCollapsed ? 0 : 1, {duration: 200});
-        chevronRotation.value = withTiming(newCollapsed ? 0 : 90, {duration: 200});
         onToggleCollapse(tool.id);
-    }, [canExpand, isCollapsed, contentOpacity, chevronRotation, onToggleCollapse, tool.id]);
+    }, [canExpand, onToggleCollapse, tool.id]);
 
     const handleApprove = usePreventDoubleTap(useCallback(() => {
         onApprove?.(tool.id);
@@ -254,13 +272,9 @@ const ToolCard = ({
         transform: [{rotate: `${chevronRotation.value}deg`}],
     }));
 
-    const contentAnimatedStyle = useAnimatedStyle(() => ({
-        opacity: contentOpacity.value,
-    }));
-
     // Determine icon based on status
     const getStatusIcon = () => {
-        if (isPending) {
+        if (isPending || isAccepted) {
             return (
                 <Loading
                     size='small'
@@ -335,10 +349,30 @@ const ToolCard = ({
                 >
                     {displayName}
                 </Text>
+                {isAutoApprovedStatus && (
+                    <View
+                        style={styles.autoApprovedBadge}
+                        testID={`${testIdPrefix}.auto_approved_badge`}
+                    >
+                        <CompassIcon
+                            name='check-circle'
+                            size={12}
+                            color={theme.onlineIndicator}
+                        />
+                        <FormattedText
+                            id='agents.tool_call.auto_approved_badge'
+                            defaultMessage='Auto-approved'
+                            style={styles.autoApprovedBadgeText}
+                        />
+                    </View>
+                )}
             </Pressable>
 
             {!isCollapsed && (
-                <Animated.View style={contentAnimatedStyle}>
+                <Animated.View
+                    entering={FadeIn.duration(200)}
+                    exiting={Platform.select({ios: FadeOut.duration(200)})}
+                >
                     {showArguments && (
                         <View
                             style={styles.argumentsContainer}
@@ -387,7 +421,7 @@ const ToolCard = ({
                                     location={Screens.CHANNEL}
                                 />
                             </View>
-                            {isResultPhase && (
+                            {isResultPhase && canApprove && (
                                 <View
                                     style={styles.warningCallout}
                                     testID={`${testIdPrefix}.warning`}

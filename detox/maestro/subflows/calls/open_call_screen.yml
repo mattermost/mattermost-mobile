@@ -1,0 +1,32 @@
+# Sub-flow: expand the minimized CurrentCallBar into the full call screen.
+# Usage: - runFlow: ../../subflows/calls/open_call_screen.yml
+# Requires: a call is already active (see join_channel_call.yml).
+#
+# Root cause this flow guards against (CI run 30393809253, PR #9893, SHA 05f941d):
+#   leave_call.yml failed on Android with "Assertion is false: id: mute-unmute is visible"
+#   after ~145s — the same elapsed point at which call_ui_permission.yml (batch 7) and
+#   mute_unmute.yml (batch 9) reached the call screen and passed. All three shared a
+#   one-shot `runFlow when visible calls.current_call_bar -> tapOn`: if that single tap
+#   lands while the bar is still animating in, nothing expands and the following 30s wait
+#   can only time out. Re-tapping the bar until mute-unmute appears removes the race.
+appId: ${MAESTRO_APP_ID}
+---
+# # Re-tap the call bar until the full call screen is up
+- retry:
+    maxRetries: 3
+    commands:
+      - runFlow:
+          when:
+            visible:
+              id: "calls.current_call_bar"
+            notVisible:
+              id: "mute-unmute"
+          commands:
+            - tapOn:
+                id: "calls.current_call_bar"
+            - waitForAnimationToEnd:
+                timeout: 3000
+      - extendedWaitUntil:
+          visible:
+            id: "mute-unmute"
+          timeout: 20000

@@ -8,18 +8,18 @@ import {type Edge, SafeAreaView} from 'react-native-safe-area-context';
 
 import {getAllSupportedTimezones} from '@actions/remote/user';
 import Search from '@components/search';
+import {Screens} from '@constants';
 import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
 import useAndroidHardwareBackHandler from '@hooks/android_back_handler';
 import useDidMount from '@hooks/did_mount';
-import {popTopScreen} from '@screens/navigation';
+import {navigateBack} from '@screens/navigation';
+import SettingsStore from '@store/settings_store';
 import {changeOpacity, getKeyboardAppearanceFromTheme, makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
 import {getTimezoneRegion} from '@utils/user';
 
 import TimezoneRow from './timezone_row';
-
-import type {AvailableScreens} from '@typings/screens/navigation';
 
 const getStyleSheet = makeStyleSheetFromTheme((theme) => {
     return {
@@ -57,11 +57,9 @@ const getItemLayout = (_data: string[], index: number) => ({
 });
 
 type SelectTimezonesProps = {
-    componentId: AvailableScreens;
-    onBack: (tz: string) => void;
     currentTimezone: string;
 }
-const SelectTimezones = ({componentId, onBack, currentTimezone}: SelectTimezonesProps) => {
+const SelectTimezones = ({currentTimezone}: SelectTimezonesProps) => {
     const intl = useIntl();
     const serverUrl = useServerUrl();
     const theme = useTheme();
@@ -103,9 +101,11 @@ const SelectTimezones = ({componentId, onBack, currentTimezone}: SelectTimezones
     }, [searchRegion, timezones, initialScrollIndex]);
 
     const close = useCallback((newTimezone?: string) => {
-        onBack(newTimezone || currentTimezone);
-        popTopScreen(componentId);
-    }, [onBack, currentTimezone, componentId]);
+        SettingsStore.getUpdateAutomaticTimezoneCallback()?.(newTimezone || currentTimezone);
+        if (newTimezone) {
+            navigateBack();
+        }
+    }, [currentTimezone]);
 
     const onPressTimezone = useCallback((selectedTimezone: string) => {
         close(selectedTimezone);
@@ -136,7 +136,7 @@ const SelectTimezones = ({componentId, onBack, currentTimezone}: SelectTimezones
         getSupportedTimezones();
     });
 
-    useAndroidHardwareBackHandler(componentId, close);
+    useAndroidHardwareBackHandler(Screens.SETTINGS_DISPLAY_TIMEZONE_SELECT, close);
 
     return (
         <SafeAreaView

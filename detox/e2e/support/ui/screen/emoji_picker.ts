@@ -3,8 +3,7 @@
 
 import {SearchBar} from '@support/ui/component';
 import {PostOptionsScreen} from '@support/ui/screen';
-import {isIos, timeouts, wait} from '@support/utils';
-import {expect} from 'detox';
+import {isAndroid, isIos, timeouts, wait, waitForElementToBeVisible, waitForElementToExist} from '@support/utils';
 
 class EmojiPickerScreen {
     testID = {
@@ -25,17 +24,32 @@ class EmojiPickerScreen {
     clearButton = SearchBar.getClearButton(this.testID.emojiPickerScreenPrefix);
 
     toBeVisible = async () => {
-        await waitFor(this.emojiPickerScreen).toExist().withTimeout(timeouts.TEN_SEC);
+        try {
+            await waitFor(this.toolTipCloseButton).toBeVisible().withTimeout(timeouts.TWO_SEC);
+            await this.toolTipCloseButton.tap();
+        } catch {
+            // Skin-tone tooltip may not appear on every open.
+        }
 
-        return this.emojiPickerScreen;
+        const inputTimeout = isAndroid() ? timeouts.TWENTY_SEC : timeouts.TEN_SEC;
+        await waitForElementToExist(this.searchInput, inputTimeout);
+        if (isAndroid()) {
+            await waitForElementToBeVisible(this.searchInput, inputTimeout);
+        } else {
+            await waitFor(this.searchInput).toBeVisible().withTimeout(inputTimeout);
+        }
+
+        return this.searchInput;
     };
 
-    open = async (closeToolTip = false) => {
+    open = async () => {
         // # Open emoji picker screen
         await PostOptionsScreen.pickReactionButton.tap();
-        if (closeToolTip) {
-            await wait(timeouts.ONE_SEC);
+        try {
+            await waitFor(this.toolTipCloseButton).toBeVisible().withTimeout(timeouts.TWO_SEC);
             await this.toolTipCloseButton.tap();
+        } catch {
+            // Tooltip did not appear — continue normally
         }
 
         return this.toBeVisible();
@@ -43,13 +57,70 @@ class EmojiPickerScreen {
 
     close = async () => {
         if (isIos()) {
-            await this.emojiPickerScreen.swipe('down');
+            // Swipe down on the search input — it's at the top of the sheet
+            // content, and dragging it down dismisses the bottom-sheet
+            // identically to dragging the sheet container.
+            await this.searchInput.swipe('down');
         } else {
+            // First pressBack may dismiss the soft keyboard if it is still open
+            // (e.g. after search interactions). A second pressBack is then needed
+            // to actually close the emoji picker modal.
             await device.pressBack();
+            try {
+                await waitFor(this.searchInput).not.toExist().withTimeout(timeouts.ONE_SEC);
+            } catch {
+                // Picker is still visible — keyboard was dismissed first; close the picker now
+                await device.pressBack();
+            }
         }
         await wait(timeouts.ONE_SEC);
-        await expect(this.emojiPickerScreen).not.toBeVisible();
+        await waitFor(this.searchInput).not.toExist().withTimeout(timeouts.TEN_SEC);
         await wait(timeouts.ONE_SEC);
+    };
+
+    tapSearchResultEmoji = async (glyph: string, emojiShortName?: string) => {
+        // The filtered picker debounces a network search on each keystroke, so the app never reports
+        // idle and synchronized waitFor/tap times out. Android matches the row text, not the testID.
+        await device.disableSynchronization();
+        try {
+            const candidates: Detox.NativeMatcher[] = [];
+            if (emojiShortName && isIos()) {
+                candidates.push(by.id(`emoji_picker.search_result.${emojiShortName}`));
+            }
+
+            // Prefer the stable ":name:" text (what the row renders) over the raw glyph.
+            const labels = emojiShortName ? [`:${emojiShortName}:`, glyph] : [glyph];
+            const ancestors = [
+                by.id('emoji_picker'),
+                by.id(this.testID.emojiPickerScreen),
+                by.id('custom_emoji_picker'),
+            ];
+            for (const label of labels) {
+                for (const ancestor of ancestors) {
+                    candidates.push(by.text(label).withAncestor(ancestor));
+                }
+
+                // Last resort: the ":name:" text is unique on the filtered results screen.
+                candidates.push(by.text(label));
+            }
+
+            /* eslint-disable no-await-in-loop -- try each matcher until one is visible and taps */
+            for (const matcher of candidates) {
+                try {
+                    const el = element(matcher).atIndex(0);
+                    await waitForElementToBeVisible(el, timeouts.FIVE_SEC);
+                    await el.tap();
+                    return;
+                } catch {
+                    // Try the next matcher.
+                }
+            }
+            /* eslint-enable no-await-in-loop */
+
+            throw new Error(`tapSearchResultEmoji: could not tap ${glyph}`);
+        } finally {
+            await device.enableSynchronization();
+        }
     };
 }
 

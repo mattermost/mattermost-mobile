@@ -3,11 +3,10 @@
 
 import {createIntl} from 'react-intl';
 import {DeviceEventEmitter} from 'react-native';
-import {Navigation} from 'react-native-navigation';
 
 import {doPing} from '@actions/remote/general';
 import {fetchConfigAndLicense} from '@actions/remote/systems';
-import {Events, Preferences, Screens} from '@constants';
+import {Events} from '@constants';
 import DatabaseManager from '@database/manager';
 import {DEFAULT_LOCALE, getTranslations} from '@i18n';
 import {getPreauthSecret} from '@init/credentials';
@@ -17,7 +16,7 @@ import {getServer, getServerByIdentifier} from '@queries/app/servers';
 import TestHelper from '@test/test_helper';
 import {logError} from '@utils/log';
 import {canReceiveNotifications} from '@utils/push_proxy';
-import {alertServerAlreadyConnected, alertServerError, loginToServer} from '@utils/server';
+import {alertServerAlreadyConnected, alertServerError} from '@utils/server';
 
 import * as Actions from './server';
 
@@ -35,11 +34,9 @@ jest.mock('@utils/push_proxy');
 jest.mock('@utils/server');
 jest.mock('@actions/remote/general');
 jest.mock('@actions/remote/systems');
-jest.mock('react-native-navigation');
 
 const translations = getTranslations(DEFAULT_LOCALE);
 const intl = createIntl({locale: DEFAULT_LOCALE, messages: translations});
-const theme = Preferences.THEMES.denim;
 
 // Tests for switchToServer
 describe('switchToServer', () => {
@@ -66,7 +63,7 @@ describe('switchToServer', () => {
 
     it('should log error when server is not found', async () => {
         jest.mocked(getServer).mockResolvedValueOnce(undefined);
-        await Actions.switchToServer('serverUrl', theme, intl, jest.fn());
+        await Actions.switchToServer('serverUrl');
         expect(logError).toHaveBeenCalledWith('Switch to Server with url serverUrl not found');
     });
 
@@ -77,7 +74,7 @@ describe('switchToServer', () => {
         jest.mocked(SecurityManager).isDeviceJailbroken.mockResolvedValueOnce(false);
         jest.mocked(SecurityManager).authenticateWithBiometricsIfNeeded.mockResolvedValueOnce(true);
 
-        await Actions.switchToServer('serverUrl', theme, intl, jest.fn());
+        await Actions.switchToServer('serverUrl');
 
         // Wait for the async database operation to complete (setActiveServerDatabase is called without await)
         await TestHelper.wait(10);
@@ -88,7 +85,6 @@ describe('switchToServer', () => {
             forceSwitch: false,
         };
 
-        expect(Navigation.updateProps).toHaveBeenCalledWith(Screens.HOME, {extra: undefined});
         expect(setActiveSpy).toHaveBeenCalledWith('serverUrl', options);
         expect(emitSpy).toHaveBeenCalledWith(Events.ACTIVE_SERVER_CHANGED, {serverUrl: 'serverUrl', options});
         expect(SecurityManager.setActiveServer).toHaveBeenCalledWith({serverUrl: 'serverUrl', options});
@@ -101,9 +97,8 @@ describe('switchToServer', () => {
         jest.mocked(SecurityManager.isDeviceJailbroken).mockResolvedValueOnce(true);
         jest.mocked(SecurityManager.authenticateWithBiometricsIfNeeded).mockResolvedValueOnce(true);
 
-        await Actions.switchToServer('serverUrl', theme, intl, jest.fn());
+        await Actions.switchToServer('serverUrl');
 
-        expect(Navigation.updateProps).not.toHaveBeenCalled();
         expect(DatabaseManager.setActiveServerDatabase).not.toHaveBeenCalled();
         expect(SecurityManager.setActiveServer).not.toHaveBeenCalled();
         expect(WebsocketManager.initializeClient).not.toHaveBeenCalled();
@@ -115,7 +110,7 @@ describe('switchToServer', () => {
 describe('switchToServerAndLogin', () => {
     it('should log error when server is not found', async () => {
         jest.mocked(getServer).mockResolvedValueOnce(undefined);
-        await Actions.switchToServerAndLogin('serverUrl', theme, intl, jest.fn());
+        await Actions.switchToServerAndLogin('serverUrl', intl, jest.fn());
         expect(logError).toHaveBeenCalledWith('Switch to Server with url serverUrl not found');
     });
 
@@ -124,7 +119,7 @@ describe('switchToServerAndLogin', () => {
         jest.mocked(getServer).mockResolvedValueOnce(server);
         jest.mocked(doPing).mockResolvedValueOnce({error: 'ping error'});
 
-        await Actions.switchToServerAndLogin('serverUrl', theme, intl, jest.fn());
+        await Actions.switchToServerAndLogin('serverUrl', intl, jest.fn());
 
         expect(alertServerError).toHaveBeenCalledWith(intl, 'ping error');
     });
@@ -135,7 +130,7 @@ describe('switchToServerAndLogin', () => {
         jest.mocked(doPing).mockResolvedValueOnce({});
         jest.mocked(fetchConfigAndLicense).mockResolvedValueOnce({error: 'config error'});
 
-        await Actions.switchToServerAndLogin('serverUrl', theme, intl, jest.fn());
+        await Actions.switchToServerAndLogin('serverUrl', intl, jest.fn());
 
         expect(alertServerError).toHaveBeenCalledWith(intl, 'config error');
     });
@@ -148,7 +143,7 @@ describe('switchToServerAndLogin', () => {
         jest.mocked(fetchConfigAndLicense).mockResolvedValueOnce({config});
         jest.mocked(getServerByIdentifier).mockResolvedValueOnce({lastActiveAt: 123} as ServersModel);
 
-        await Actions.switchToServerAndLogin('serverUrl', theme, intl, jest.fn());
+        await Actions.switchToServerAndLogin('serverUrl', intl, jest.fn());
 
         expect(alertServerAlreadyConnected).toHaveBeenCalledWith(intl);
     });
@@ -163,10 +158,11 @@ describe('switchToServerAndLogin', () => {
         jest.mocked(getServerByIdentifier).mockResolvedValueOnce(undefined);
         jest.mocked(SecurityManager.authenticateWithBiometrics).mockResolvedValueOnce(true);
 
-        await Actions.switchToServerAndLogin('serverUrl', theme, intl, jest.fn());
+        const callback = jest.fn();
+        await Actions.switchToServerAndLogin('serverUrl', intl, callback);
 
         expect(canReceiveNotifications).toHaveBeenCalledWith('serverUrl', undefined, intl);
-        expect(loginToServer).toHaveBeenCalledWith(theme, 'serverUrl', 'Server', config, license);
+        expect(callback).toHaveBeenCalledWith({config, license});
     });
 
     it('should not proceed if device is jailbroken', async () => {
@@ -179,7 +175,7 @@ describe('switchToServerAndLogin', () => {
         jest.mocked(SecurityManager.isDeviceJailbroken).mockResolvedValueOnce(true);
 
         const callback = jest.fn();
-        await Actions.switchToServerAndLogin('serverUrl', theme, intl, callback);
+        await Actions.switchToServerAndLogin('serverUrl', intl, callback);
 
         expect(SecurityManager.isDeviceJailbroken).toHaveBeenCalledWith('serverUrl');
         expect(callback).toHaveBeenCalled();
@@ -197,7 +193,7 @@ describe('switchToServerAndLogin', () => {
         jest.mocked(fetchConfigAndLicense).mockResolvedValueOnce({config, license});
         jest.mocked(getServerByIdentifier).mockResolvedValueOnce(undefined);
 
-        await Actions.switchToServerAndLogin('serverUrl', theme, intl, jest.fn());
+        await Actions.switchToServerAndLogin('serverUrl', intl, jest.fn());
 
         expect(getPreauthSecret).toHaveBeenCalledWith('serverUrl');
         expect(doPing).toHaveBeenCalledWith('serverUrl', true, 5000, preauthSecret);
@@ -214,7 +210,7 @@ describe('switchToServerAndLogin', () => {
         jest.mocked(fetchConfigAndLicense).mockResolvedValueOnce({config, license});
         jest.mocked(getServerByIdentifier).mockResolvedValueOnce(undefined);
 
-        await Actions.switchToServerAndLogin('serverUrl', theme, intl, jest.fn());
+        await Actions.switchToServerAndLogin('serverUrl', intl, jest.fn());
 
         expect(getPreauthSecret).toHaveBeenCalledWith('serverUrl');
         expect(doPing).toHaveBeenCalledWith('serverUrl', true, 5000, undefined);
@@ -228,7 +224,7 @@ describe('switchToServerAndLogin', () => {
         jest.mocked(getPreauthSecret).mockResolvedValueOnce(preauthSecret);
         jest.mocked(doPing).mockResolvedValueOnce({error: 'ping error'});
 
-        await Actions.switchToServerAndLogin('serverUrl', theme, intl, jest.fn());
+        await Actions.switchToServerAndLogin('serverUrl', intl, jest.fn());
 
         expect(getPreauthSecret).toHaveBeenCalledWith('serverUrl');
         expect(doPing).toHaveBeenCalledWith('serverUrl', true, 5000, preauthSecret);

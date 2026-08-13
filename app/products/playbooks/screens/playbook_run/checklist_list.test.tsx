@@ -1,7 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React from 'react';
+import React, {type ComponentProps} from 'react';
 
 import {renderWithIntl} from '@test/intl-test-helper';
 import TestHelper from '@test/test_helper';
@@ -11,7 +11,7 @@ import ChecklistList from './checklist_list';
 
 jest.mock('./checklist');
 jest.mocked(Checklist).mockImplementation(
-    (props) => React.createElement('Checklist', {testID: 'checklist-component', ...props}),
+    (props: ComponentProps<typeof Checklist>) => React.createElement('Checklist', {testID: 'checklist-component', ...props}),
 );
 
 describe('ChecklistList', () => {

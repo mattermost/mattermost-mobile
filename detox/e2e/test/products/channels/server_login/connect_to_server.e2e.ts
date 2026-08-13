@@ -77,7 +77,7 @@ describe('Server Login - Connect to Server', () => {
         await wait(timeouts.ONE_SEC);
 
         // * Verify invalid url error
-        await waitFor(serverUrlInputError).toExist().withTimeout(timeouts.FOUR_SEC);
+        await waitFor(serverUrlInputError).toExist().withTimeout(timeouts.TEN_SEC);
         const expectedErrorText = isIos()
             ? 'URLSessionTask failed with error: A server with the specified hostname could not be found.'
             : 'Unable to resolve host "invalid": No address associated with hostname';
@@ -86,10 +86,9 @@ describe('Server Login - Connect to Server', () => {
     });
 
     it('MM-T4676_4 - should show connection error on invalid ssl or invalid host', async () => {
-        // # Connect with invalid ssl and non-empty server display name
+        // # Connect to a real host with an expired SSL certificate — no URL blacklist, so this
+        // # exercises the device's actual TLS handshake and native cert-trust prompt
         const expiredServerUrl = 'expired.badssl.com';
-        const wrongHostServerUrl = 'wrong.host.badssl.com';
-        await device.setURLBlacklist([expiredServerUrl, wrongHostServerUrl]);
 
         await serverUrlInput.replaceText(expiredServerUrl);
         await serverDisplayNameInput.replaceText('Server 1');
@@ -97,7 +96,7 @@ describe('Server Login - Connect to Server', () => {
         await wait(timeouts.ONE_SEC);
 
         // * Verify invalid SSL cert error
-        await waitFor(serverUrlInputError).toExist().withTimeout(timeouts.FOUR_SEC);
+        await waitFor(serverUrlInputError).toExist().withTimeout(timeouts.TEN_SEC);
         await expect(serverUrlInputError).toBeVisible();
     });
 
@@ -109,9 +108,13 @@ describe('Server Login - Connect to Server', () => {
         await wait(timeouts.ONE_SEC);
 
         if (isIos() && !process.env.CI) {
-            // # Tap alert okay button
-            await waitFor(Alert.okayButton).toExist().withTimeout(timeouts.TEN_SEC);
-            await Alert.okayButton.tap();
+            // # Tap alert okay button (may not appear if server has push notifications configured)
+            try {
+                await waitFor(Alert.okayButton).toExist().withTimeout(timeouts.TEN_SEC);
+                await Alert.okayButton.tap();
+            } catch {
+                // Alert did not appear — server has push notifications configured
+            }
         }
 
         // * Verify on login screen

@@ -72,6 +72,15 @@ export const getActiveServerUrl = async () => {
     return server?.url || '';
 };
 
+export const getWipedServers = async () => {
+    try {
+        const {database} = DatabaseManager.getAppDatabaseAndOperator();
+        return database.get<ServerModel>(SERVERS).query(Q.where('persistence_flag', 'wiped')).fetch();
+    } catch {
+        return [];
+    }
+};
+
 export const getServerByIdentifier = async (identifier: string) => {
     try {
         const {database} = DatabaseManager.getAppDatabaseAndOperator();
@@ -124,4 +133,29 @@ export const areAllServersSupported = async () => {
     }
 
     return true;
+};
+
+export const observeServerById = (serverId: string) => {
+    try {
+        const {database} = DatabaseManager.getAppDatabaseAndOperator();
+        return database.get<ServerModel>(SERVERS).query(
+            Q.where('id', serverId),
+            Q.take(1),
+        ).observe().pipe(
+            switchMap((servers) => (servers.length ? servers[0].observe() : of$(undefined))),
+        );
+    } catch {
+        return of$(undefined);
+    }
+};
+
+export const observeServersByIds = (serverIds: string[]) => {
+    try {
+        const {database} = DatabaseManager.getAppDatabaseAndOperator();
+        return database.get<ServerModel>(SERVERS).query(
+            Q.where('id', Q.oneOf(serverIds)),
+        ).observe();
+    } catch {
+        return of$([]);
+    }
 };

@@ -1,16 +1,14 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import RNUtils from '@mattermost/rnutils';
 import {Image} from 'expo-image';
 import React, {type RefObject} from 'react';
-import {DeviceEventEmitter, Keyboard, Platform, View} from 'react-native';
-import {Navigation, type Options, type OptionsLayout} from 'react-native-navigation';
+import {Keyboard, View} from 'react-native';
 import {measure, type AnimatedRef} from 'react-native-reanimated';
 
-import {Events, Screens} from '@constants';
+import {Screens} from '@constants';
 import {SNACK_BAR_TYPE} from '@constants/snack_bar';
-import {allOrientations, showOverlay} from '@screens/navigation';
+import {navigateToScreen} from '@screens/navigation';
 import EphemeralStore from '@store/ephemeral_store';
 import {isImage, isVideo} from '@utils/file';
 import {generateId} from '@utils/general';
@@ -59,10 +57,6 @@ export const fileToGalleryItem = (file: FileInfo, authorId?: string, postProps?:
         postProps: postProps || file.postProps,
         cacheKey,
     };
-};
-
-export const freezeOtherScreens = (value: boolean) => {
-    DeviceEventEmitter.emit(Events.FREEZE_SCREEN, value);
 };
 
 export const friction = (value: number) => {
@@ -126,7 +120,7 @@ export function measureItem(ref: AnimatedRef<any>, sharedValues: GalleryManagerS
     }
 }
 
-export function measureViewInWindow(ref: RefObject<View>): Promise<{x: number; y: number; width: number; height: number}> {
+export function measureViewInWindow(ref: RefObject<View | null>): Promise<{x: number; y: number; width: number; height: number}> {
     return new Promise((resolve) => {
         if (ref.current) {
             ref.current.measure((x, y, width, height, pageX, pageY) => {
@@ -169,42 +163,8 @@ export function openGalleryAtIndex(galleryIdentifier: string, initialIndex: numb
         initialIndex,
         items,
     };
-    const layout: OptionsLayout = {
-        orientation: allOrientations,
-    };
-    const options: Options = {
-        layout,
-        topBar: {
-            background: {
-                color: '#000',
-            },
-            visible: Platform.OS === 'android',
-        },
-        statusBar: {
-            backgroundColor: '#000',
-            style: 'light',
-        },
-        animations: {
-            showModal: {
-                waitForRender: false,
-                enabled: false,
-            },
-            dismissModal: {
-                enabled: false,
-            },
-        },
-    };
 
-    if (Platform.OS === 'ios') {
-        // on iOS we need both the navigation & the module
-        Navigation.setDefaultOptions({layout});
-        RNUtils.unlockOrientation();
-    }
-    showOverlay(Screens.GALLERY, props, options);
-
-    setTimeout(() => {
-        freezeOtherScreens(true);
-    }, 500);
+    navigateToScreen(Screens.GALLERY, props);
 }
 
 export const typedMemo: <T>(c: T) => T = React.memo;

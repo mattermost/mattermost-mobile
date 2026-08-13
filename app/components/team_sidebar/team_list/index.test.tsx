@@ -88,7 +88,7 @@ describe('withTeams HOC', () => {
                 expect.objectContaining({
                     myOrderedTeams: [{id: '1', roles: 'team_user'}],
                 }),
-                expect.anything(),
+                undefined,
             );
         });
     });
@@ -116,7 +116,7 @@ describe('withTeams HOC', () => {
                 expect.objectContaining({
                     myOrderedTeams: [{id: '1', roles: 'team_user'}],
                 }),
-                expect.anything(),
+                undefined,
             );
         });
     });
@@ -144,7 +144,7 @@ describe('withTeams HOC', () => {
                 expect.objectContaining({
                     myOrderedTeams: [{id: '1', roles: 'team_user'}],
                 }),
-                expect.anything(),
+                undefined,
             );
         });
     });
@@ -178,7 +178,7 @@ describe('withTeams HOC', () => {
                         {id: '2', roles: 'team_user'},
                     ],
                 }),
-                expect.anything(),
+                undefined,
             );
         });
     });
@@ -212,7 +212,7 @@ describe('withTeams HOC', () => {
                         {id: '2', roles: 'team_user'},
                     ],
                 }),
-                expect.anything(),
+                undefined,
             );
         });
     });
@@ -236,7 +236,7 @@ describe('withTeams HOC', () => {
                 expect.objectContaining({
                     myOrderedTeams: [],
                 }),
-                expect.anything(),
+                undefined,
             );
         });
     });

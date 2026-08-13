@@ -1,8 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {renderHook} from '@testing-library/react-hooks';
-import {act} from '@testing-library/react-native';
+import {act, renderHook} from '@testing-library/react-native';
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
 
 import ViewConstants from '@constants/view';
@@ -154,10 +153,9 @@ describe('Header Hooks', () => {
         it('should handle hideHeader with scrollTo', () => {
             const {result} = renderHook(() => useCollapsibleHeader(true));
 
-            // @ts-expect-error override for test mock
             result.current.scrollRef.current = {
                 scrollTo: mockScrollTo,
-            } as any;
+            };
 
             act(() => {
                 result.current.hideHeader();
@@ -172,10 +170,9 @@ describe('Header Hooks', () => {
         it('should handle hideHeader with scrollToOffset', () => {
             const {result} = renderHook(() => useCollapsibleHeader(true));
 
-            // @ts-expect-error override for test mock
             result.current.scrollRef.current = {
                 scrollToOffset: mockScrollToOffset,
-            } as any;
+            };
 
             act(() => {
                 result.current.hideHeader();

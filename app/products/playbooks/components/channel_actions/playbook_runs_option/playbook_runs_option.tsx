@@ -34,8 +34,8 @@ const PlaybookRunsOption = ({
 
     const onPress = useCallback(async () => {
         await dismissBottomSheet();
-        goToPlaybookRuns(intl, channelId, channelName);
-    }, [intl, channelId, channelName]);
+        goToPlaybookRuns(channelId, channelName, location === 'channel_actions');
+    }, [channelId, channelName, location]);
 
     if (location === 'quick_actions') {
         return (

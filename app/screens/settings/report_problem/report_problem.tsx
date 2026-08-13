@@ -6,17 +6,11 @@ import {defineMessages, useIntl} from 'react-intl';
 
 import SettingItem from '@components/settings/item';
 import {Screens} from '@constants';
-import {goToScreen} from '@screens/navigation';
-import {emailLogs} from '@utils/share_logs';
-
-import type {ReportAProblemMetadata} from '@typings/screens/report_a_problem';
+import {navigateToSettingsScreen} from '@screens/navigation';
 
 type ReportProblemProps = {
     allowDownloadLogs?: boolean;
-    reportAProblemMail?: string;
     reportAProblemType?: string;
-    siteName?: string;
-    metadata: ReportAProblemMetadata;
 }
 
 const messages = defineMessages({
@@ -26,24 +20,19 @@ const messages = defineMessages({
 
 const ReportProblem = ({
     allowDownloadLogs,
-    reportAProblemMail,
     reportAProblemType,
-    siteName,
-    metadata,
 }: ReportProblemProps) => {
     const intl = useIntl();
+
+    // When the admin hides the report action there is nothing to report to, but the screen is
+    // still useful to get to the app logs.
     const onlyAllowLogs = allowDownloadLogs && reportAProblemType === 'hidden';
-    const skipReportAProblemScreen = reportAProblemType === 'email' && !allowDownloadLogs;
 
     const onPress = useCallback(() => {
-        if (skipReportAProblemScreen) {
-            emailLogs(metadata, siteName, reportAProblemMail, true);
-        } else {
-            const message = onlyAllowLogs ? messages.downloadLogs : messages.reportProblem;
-            const title = intl.formatMessage(message);
-            goToScreen(Screens.REPORT_PROBLEM, title);
-        }
-    }, [intl, metadata, onlyAllowLogs, reportAProblemMail, siteName, skipReportAProblemScreen]);
+        const message = onlyAllowLogs ? messages.downloadLogs : messages.reportProblem;
+        const title = intl.formatMessage(message);
+        navigateToSettingsScreen(Screens.REPORT_PROBLEM, {title});
+    }, [intl, onlyAllowLogs]);
 
     if (onlyAllowLogs) {
         return (

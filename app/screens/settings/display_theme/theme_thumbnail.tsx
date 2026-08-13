@@ -13,7 +13,7 @@ type ThemeThumbnailProps = {
     width: number;
 }
 
-const ThemeThumbnail = ({borderColorBase, borderColorMix, theme, width}: ThemeThumbnailProps): JSX.Element => {
+const ThemeThumbnail = ({borderColorBase, borderColorMix, theme, width}: ThemeThumbnailProps): React.JSX.Element => {
     // the original height of the thumbnail
     const baseWidth = 180;
     const baseHeight = 134;

@@ -2,6 +2,7 @@
 // See LICENSE.txt for license information.
 
 import React, {useEffect, useState} from 'react';
+import {useSafeAreaInsets} from 'react-native-safe-area-context';
 
 import Autocomplete from '@components/autocomplete';
 import {useServerUrl} from '@context/server';
@@ -31,6 +32,7 @@ type Props = {
     canShowPostPriority?: boolean;
     location: AvailableScreens;
     onPostCreated?: (postId: string) => void;
+    portalName?: string;
 }
 
 function PostDraft({
@@ -49,6 +51,7 @@ function PostDraft({
     canShowPostPriority,
     location,
     onPostCreated,
+    portalName,
 }: Props) {
     const [value, setValue] = useState(message);
     const [cursorPosition, setCursorPosition] = useState(message.length);
@@ -56,14 +59,19 @@ function PostDraft({
     const [isFocused, setIsFocused] = useState(false);
     const headerHeight = useDefaultHeaderHeight();
     const serverUrl = useServerUrl();
+    const {bottom} = useSafeAreaInsets();
 
     // Update draft in case we switch channels or threads
     useEffect(() => {
         setValue(message);
         setCursorPosition(message.length);
-    }, [channelId, message, rootId]);
 
-    const autocompletePosition = postInputTop + AUTOCOMPLETE_ADJUST;
+        // message is intentionally excluded — including it would reset the input on every parent re-render,
+        // overwriting what the user is currently typing. We only want to reset when switching channels/threads.
+        //eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [channelId, rootId]);
+
+    const autocompletePosition = (postInputTop - bottom) + AUTOCOMPLETE_ADJUST;
     const autocompleteAvailableSpace = containerHeight - autocompletePosition - (isChannelScreen ? headerHeight : 0);
     const [animatedAutocompletePosition, animatedAutocompleteAvailableSpace] = useAutocompleteDefaultAnimatedValues(autocompletePosition, autocompleteAvailableSpace);
 
@@ -120,6 +128,7 @@ function PostDraft({
             availableSpace={animatedAutocompleteAvailableSpace}
             serverUrl={serverUrl}
             usePortal={true}
+            portalName={portalName}
         />
     ) : null;
 

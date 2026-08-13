@@ -33,7 +33,7 @@ const PostListRefreshControl = ({children, enabled, onRefresh, refreshing, style
     const refreshControl = <RefreshControl {...props}/>;
 
     return React.cloneElement(
-        children,
+        children as React.ReactElement<any>,
         {refreshControl, inverted: true},
     );
 };

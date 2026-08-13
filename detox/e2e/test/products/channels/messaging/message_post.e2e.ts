@@ -22,8 +22,8 @@ import {
     LoginScreen,
     ServerScreen,
 } from '@support/ui/screen';
-import {getRandomId, timeouts, wait} from '@support/utils';
-import {expect} from 'detox';
+import {getRandomId, isAndroid, timeouts, wait} from '@support/utils';
+import {expect, waitFor} from 'detox';
 
 describe('Messaging - Message Post', () => {
     const serverOneDisplayName = 'Server 1';
@@ -37,6 +37,9 @@ describe('Messaging - Message Post', () => {
         // # Log in to server
         await ServerScreen.connectToServer(serverOneUrl, serverOneDisplayName);
         await LoginScreen.login(user);
+
+        // # Ensure channel has propagated to the sidebar before any test runs.
+        await ChannelListScreen.waitForSidebarPublicChannelDisplayNameVisible(testChannel.name);
     });
 
     beforeEach(async () => {
@@ -79,23 +82,61 @@ describe('Messaging - Message Post', () => {
     });
 
     it('MM-T4782_2 - should be able to post a long message', async () => {
-        // # Open a channel screen, post a long message, and a short message after
+        // # Open a channel screen and post a long message
         const longMessage = 'The quick brown fox jumps over the lazy dog.'.repeat(40);
         await ChannelScreen.open(channelsCategory, testChannel.name);
         await ChannelScreen.postMessage(longMessage);
         const {post} = await Post.apiGetLastPostInChannel(siteOneUrl, testChannel.id);
-        await ChannelScreen.postMessage('short message');
 
+        // * Verify the long post exists — use toExist (not toBeVisible) since the post is taller
+        // than the viewport and fails the 75% visibility threshold even when on-screen.
         const {postListPostItem, postListPostItemShowLessButton, postListPostItemShowMoreButton} = ChannelScreen.getPostListPostItem(post.id, longMessage);
         await expect(postListPostItem).toExist();
-        await expect(postListPostItemShowMoreButton).toExist();
 
-        // # Tap on show more button on long message post
+        // # Dismiss Android keyboard so the show-more button isn't hidden behind the draft input.
+        // Show-more requires multiple layout cycles to appear, so wait up to 10s.
+        if (isAndroid()) {
+            await device.pressBack();
+        }
+        await waitFor(postListPostItemShowMoreButton).toExist().withTimeout(timeouts.TEN_SEC);
+
+        // # Tap on show more button on long message post.
         await postListPostItemShowMoreButton.tap();
         await wait(timeouts.TWO_SEC);
 
         // * Verify long message post displays show less button (chevron up button)
-        await expect(postListPostItemShowLessButton).toBeVisible();
+        await waitFor(postListPostItemShowLessButton).toBeVisible().withTimeout(timeouts.TEN_SEC);
+
+        // # Post a short message and go back to channel list screen
+        await ChannelScreen.postMessage('short message');
+        await ChannelScreen.back();
+    });
+
+    it('MM-T72 - should highlight @here. @all. @channel. even when followed by a period', async () => {
+        // # Open a channel screen and post a message with @here followed by a period
+        await ChannelScreen.open(channelsCategory, testChannel.name);
+        await ChannelScreen.postMessage('@here. Some text');
+
+        // * Verify the post exists in the channel and @here is rendered (period is not part of the highlighted mention)
+        const {post: atHerePost} = await Post.apiGetLastPostInChannel(siteOneUrl, testChannel.id);
+        const {postListPostItem: atHerePostItem} = ChannelScreen.getPostListPostItem(atHerePost.id, '@here. Some text');
+        await expect(atHerePostItem).toBeVisible();
+
+        // # Post a message with @all followed by a period
+        await ChannelScreen.postMessage('@all. Some text');
+
+        // * Verify the @all mention text is present in the post
+        const {post: atAllPost} = await Post.apiGetLastPostInChannel(siteOneUrl, testChannel.id);
+        const {postListPostItem: atAllPostItem} = ChannelScreen.getPostListPostItem(atAllPost.id, '@all. Some text');
+        await expect(atAllPostItem).toBeVisible();
+
+        // # Post a message with @channel followed by a period
+        await ChannelScreen.postMessage('@channel. Some text');
+
+        // * Verify the @channel mention text is present in the post
+        const {post: atChannelPost} = await Post.apiGetLastPostInChannel(siteOneUrl, testChannel.id);
+        const {postListPostItem: atChannelPostItem} = ChannelScreen.getPostListPostItem(atChannelPost.id, '@channel. Some text');
+        await expect(atChannelPostItem).toBeVisible();
 
         // # Go back to channel list screen
         await ChannelScreen.back();

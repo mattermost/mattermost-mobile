@@ -19,6 +19,23 @@ export function isValidUrl(url = '') {
     return regex.test(url);
 }
 
+export function isUrlSafe(url: string): boolean {
+    let unescaped: string;
+
+    try {
+        unescaped = decodeURIComponent(url);
+    } catch {
+        unescaped = unescape(url);
+    }
+
+    unescaped = unescaped.replace(/[^\w:]/g, '').toLowerCase();
+
+    // eslint-disable-next-line no-script-url
+    return !unescaped.startsWith('javascript:') &&
+        !unescaped.startsWith('vbscript:') &&
+        !unescaped.startsWith('data:');
+}
+
 export function isParsableUrl(url: string): boolean {
     try {
         const parsedUrl = new URL(url);

@@ -2,15 +2,13 @@
 // See LICENSE.txt for license information.
 
 import React from 'react';
-import {useIntl} from 'react-intl';
 
 import {fetchUsersByIds} from '@actions/remote/user';
 import UserItem from '@components/user_item';
-import {Screens} from '@constants';
 import {useServerUrl} from '@context/server';
-import {useTheme} from '@context/theme';
 import useDidMount from '@hooks/did_mount';
-import {openUserProfileModal} from '@screens/navigation';
+import {dismissBottomSheet} from '@screens/navigation';
+import {openUserProfile} from '@utils/navigation';
 
 import type ReactionModel from '@typings/database/models/servers/reaction';
 import type UserModel from '@typings/database/models/servers/user';
@@ -24,16 +22,15 @@ type Props = {
 }
 
 const Reactor = ({channelId, location, reaction, user}: Props) => {
-    const intl = useIntl();
-    const theme = useTheme();
     const serverUrl = useServerUrl();
-    const openUserProfile = async () => {
+    const openProfile = async () => {
         if (user) {
-            openUserProfileModal(intl, theme, {
+            await dismissBottomSheet();
+            openUserProfile({
                 userId: user.id,
                 channelId,
                 location,
-            }, Screens.REACTIONS);
+            });
         }
     };
 
@@ -47,7 +44,7 @@ const Reactor = ({channelId, location, reaction, user}: Props) => {
         <UserItem
             user={user}
             testID='reactions.reactor_item'
-            onUserPress={openUserProfile}
+            onUserPress={openProfile}
         />
     );
 };

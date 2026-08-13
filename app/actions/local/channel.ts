@@ -20,8 +20,9 @@ import {queryDisplayNamePreferences} from '@queries/servers/preference';
 import {prepareCommonSystemValues, type PrepareCommonSystemValuesArgs, getCommonSystemValues, getCurrentTeamId, setCurrentChannelId, getCurrentUserId, getConfig, getLicense} from '@queries/servers/system';
 import {addChannelToTeamHistory, addTeamToTeamHistory, getTeamById, removeChannelFromTeamHistory} from '@queries/servers/team';
 import {getCurrentUser, queryUsersById} from '@queries/servers/user';
-import {dismissAllModalsAndPopToRoot, dismissAllModalsAndPopToScreen} from '@screens/navigation';
+import {navigateToRoot, dismissAllRoutesAndPopToScreen} from '@screens/navigation';
 import EphemeralStore from '@store/ephemeral_store';
+import {NavigationStore} from '@store/navigation_store';
 import {isTablet} from '@utils/helpers';
 import {logDebug, logError, logInfo} from '@utils/log';
 import {displayGroupMessageName, displayUsername, getUserIdFromChannelName} from '@utils/user';
@@ -90,13 +91,16 @@ export async function switchToChannel(serverUrl: string, channelId: string, team
                 }
 
                 if (isTabletDevice) {
-                    await dismissAllModalsAndPopToRoot();
+                    if (NavigationStore.isScreenInStack(Screens.HOME)) {
+                        await navigateToRoot();
+                    }
                     DeviceEventEmitter.emit(NavigationConstants.NAVIGATION_HOME, Screens.CHANNEL);
                 } else {
-                    await dismissAllModalsAndPopToScreen(Screens.CHANNEL, '', undefined, {topBar: {visible: false}});
+                    await NavigationStore.waitUntilScreenHasLoaded(Screens.CHANNEL_LIST);
+                    await dismissAllRoutesAndPopToScreen(Screens.CHANNEL);
                 }
 
-                logInfo('channel switch to', channel?.displayName, channelId, (Date.now() - dt), 'ms');
+                logInfo('channel switch to', channelId, 'type', channel?.type, (Date.now() - dt), 'ms');
             }
         } else {
             logDebug('failed to navigate to channel because there was no membership, channel id: ', channelId);
@@ -309,7 +313,7 @@ export async function updateMyChannelFromWebsocket(serverUrl: string, channelMem
                 m.autotranslationDisabled = channelMember.autotranslation_disabled ?? false;
             });
             if (!prepareRecordsOnly) {
-                operator.batchRecords([member], 'updateMyChannelFromWebsocket');
+                await operator.batchRecords([member], 'updateMyChannelFromWebsocket');
             }
         }
         return {model: member};
@@ -329,7 +333,7 @@ export async function updateChannelInfoFromChannel(serverUrl: string, channel: C
         }],
         prepareRecordsOnly: true});
         if (!prepareRecordsOnly) {
-            operator.batchRecords(newInfo, 'updateChannelInfoFromChannel');
+            await operator.batchRecords(newInfo, 'updateChannelInfoFromChannel');
         }
         return {model: newInfo};
     } catch (error) {
@@ -503,21 +507,18 @@ export async function deletePostsForChannel(serverUrl: string, channelId: string
             return {models: []};
         }
 
+        // Note: intervals are cleared even when there are no posts left. A PostsInChannel
+        // row that no longer contains any post still wins postsInChannel[0] and hides the
+        // channel, so returning early here would leave the channel blank.
         const posts = await channel.posts.fetch();
-        if (!posts.length) {
-            return {models: []};
-        }
 
         const preparedPostsPromises = posts.map((post) => prepareDeletePost(post));
         const preparedPostsArrays = await Promise.all(preparedPostsPromises);
         const preparedModels: Model[] = preparedPostsArrays.flat();
 
-        const postsInChannel = await queryPostsInChannel(database, channelId);
-        if (postsInChannel.length) {
-            for (const postRange of postsInChannel) {
-                const preparedPostRanges = postRange.prepareDestroyPermanently();
-                preparedModels.push(preparedPostRanges);
-            }
+        const postsInChannel = await queryPostsInChannel(database, channelId).fetch();
+        for (const postRange of postsInChannel) {
+            preparedModels.push(postRange.prepareDestroyPermanently());
         }
 
         const threadPromises = posts.filter((post) => post.rootId === '').map((post) => {

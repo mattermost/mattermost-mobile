@@ -5,7 +5,7 @@ import {fireEvent, render, waitFor, screen} from '@testing-library/react-native'
 import React from 'react';
 import {Animated} from 'react-native';
 
-import AnimatedNumber from '.';
+import AnimatedNumber from './index';
 
 const NUMBER_HEIGHT = 10;
 

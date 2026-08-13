@@ -4,10 +4,9 @@
 import TurboLogger from '@mattermost/react-native-turbo-log';
 import RNUtils from '@mattermost/rnutils';
 import {fireEvent, waitFor} from '@testing-library/react-native';
-import {getInfoAsync} from 'expo-file-system';
+import {File} from 'expo-file-system';
 import {Alert} from 'react-native';
 
-import {Screens} from '@constants';
 import {dismissBottomSheet} from '@screens/navigation';
 import {renderWithIntlAndTheme} from '@test/intl-test-helper';
 import PickerUtil from '@utils/file/file_picker';
@@ -47,7 +46,6 @@ describe('AttachmentOptions', () => {
     const mockAttachFileFromFiles = jest.fn();
 
     const baseProps = {
-        componentId: 'Channel' as const,
         onUploadFiles: jest.fn(),
         maxFileCount: 10,
         fileCount: 0,
@@ -77,7 +75,7 @@ describe('AttachmentOptions', () => {
             fireEvent.press(photoLibraryItem);
 
             await waitFor(() => {
-                expect(mockDismissBottomSheet).toHaveBeenCalledWith(Screens.ATTACHMENT_OPTIONS);
+                expect(mockDismissBottomSheet).toHaveBeenCalledWith();
                 expect(mockAttachFileFromPhotoGallery).toHaveBeenCalledWith(10);
             });
         });
@@ -91,7 +89,7 @@ describe('AttachmentOptions', () => {
             fireEvent.press(takePhotoItem);
 
             await waitFor(() => {
-                expect(mockDismissBottomSheet).toHaveBeenCalledWith(Screens.ATTACHMENT_OPTIONS);
+                expect(mockDismissBottomSheet).toHaveBeenCalledWith();
                 expect(mockAttachFileFromCamera).toHaveBeenCalledWith({
                     quality: 0.8,
                     mediaType: 'photo',
@@ -109,7 +107,7 @@ describe('AttachmentOptions', () => {
             fireEvent.press(takeVideoItem);
 
             await waitFor(() => {
-                expect(mockDismissBottomSheet).toHaveBeenCalledWith(Screens.ATTACHMENT_OPTIONS);
+                expect(mockDismissBottomSheet).toHaveBeenCalledWith();
                 expect(mockAttachFileFromCamera).toHaveBeenCalledWith({
                     quality: 0.8,
                     videoQuality: 'high',
@@ -128,7 +126,7 @@ describe('AttachmentOptions', () => {
             fireEvent.press(attachFileItem);
 
             await waitFor(() => {
-                expect(mockDismissBottomSheet).toHaveBeenCalledWith(Screens.ATTACHMENT_OPTIONS);
+                expect(mockDismissBottomSheet).toHaveBeenCalledWith();
                 expect(mockAttachFileFromFiles).toHaveBeenCalledWith(undefined, true);
             });
         });
@@ -148,7 +146,7 @@ describe('AttachmentOptions', () => {
             fireEvent.press(photoLibraryItem);
 
             await waitFor(() => {
-                expect(mockDismissBottomSheet).toHaveBeenCalledWith(Screens.ATTACHMENT_OPTIONS);
+                expect(mockDismissBottomSheet).toHaveBeenCalledWith();
                 expect(Alert.alert).toHaveBeenCalledWith(
                     'Error',
                     'File uploads are disabled',
@@ -170,7 +168,7 @@ describe('AttachmentOptions', () => {
             fireEvent.press(takePhotoItem);
 
             await waitFor(() => {
-                expect(mockDismissBottomSheet).toHaveBeenCalledWith(Screens.ATTACHMENT_OPTIONS);
+                expect(mockDismissBottomSheet).toHaveBeenCalledWith();
                 expect(Alert.alert).toHaveBeenCalledWith(
                     'Error',
                     'File uploads are disabled',
@@ -192,7 +190,7 @@ describe('AttachmentOptions', () => {
             fireEvent.press(attachFileItem);
 
             await waitFor(() => {
-                expect(mockDismissBottomSheet).toHaveBeenCalledWith(Screens.ATTACHMENT_OPTIONS);
+                expect(mockDismissBottomSheet).toHaveBeenCalledWith();
                 expect(Alert.alert).toHaveBeenCalledWith(
                     'Error',
                     'File uploads are disabled',
@@ -217,7 +215,7 @@ describe('AttachmentOptions', () => {
             fireEvent.press(photoLibraryItem);
 
             await waitFor(() => {
-                expect(mockDismissBottomSheet).toHaveBeenCalledWith(Screens.ATTACHMENT_OPTIONS);
+                expect(mockDismissBottomSheet).toHaveBeenCalledWith();
                 expect(Alert.alert).toHaveBeenCalledWith(
                     'Error',
                     'Maximum 10 files allowed',
@@ -240,7 +238,7 @@ describe('AttachmentOptions', () => {
             fireEvent.press(takePhotoItem);
 
             await waitFor(() => {
-                expect(mockDismissBottomSheet).toHaveBeenCalledWith(Screens.ATTACHMENT_OPTIONS);
+                expect(mockDismissBottomSheet).toHaveBeenCalledWith();
                 expect(Alert.alert).toHaveBeenCalledWith(
                     'Error',
                     'Maximum 10 files allowed',
@@ -263,7 +261,7 @@ describe('AttachmentOptions', () => {
             fireEvent.press(attachFileItem);
 
             await waitFor(() => {
-                expect(mockDismissBottomSheet).toHaveBeenCalledWith(Screens.ATTACHMENT_OPTIONS);
+                expect(mockDismissBottomSheet).toHaveBeenCalledWith();
                 expect(Alert.alert).toHaveBeenCalledWith(
                     'Error',
                     'Maximum 10 files allowed',
@@ -286,7 +284,7 @@ describe('AttachmentOptions', () => {
             fireEvent.press(photoLibraryItem);
 
             await waitFor(() => {
-                expect(mockDismissBottomSheet).toHaveBeenCalledWith(Screens.ATTACHMENT_OPTIONS);
+                expect(mockDismissBottomSheet).toHaveBeenCalledWith();
                 expect(Alert.alert).not.toHaveBeenCalled();
                 expect(mockAttachFileFromPhotoGallery).toHaveBeenCalled();
             });
@@ -349,17 +347,6 @@ describe('AttachmentOptions', () => {
     });
 
     describe('edge cases', () => {
-        it('should use default closeButtonId when not provided', () => {
-            const props = {
-                ...baseProps,
-            };
-            delete (props as {closeButtonId?: string}).closeButtonId;
-
-            renderWithIntlAndTheme(<AttachmentOptions {...props}/>);
-
-            // Component should render without errors
-        });
-
         it('should use default fileCount when not provided', async () => {
             const props = {
                 ...baseProps,
@@ -439,7 +426,18 @@ describe('AttachmentOptions', () => {
         it('should call onUploadFiles with zip file info on successful attach', async () => {
             jest.mocked(TurboLogger.getLogPaths).mockResolvedValue(['/path/to/log1.txt', '/path/to/log2.txt']);
             jest.mocked(RNUtils.createZipFile).mockResolvedValue('/path/to/logs.zip');
-            jest.mocked(getInfoAsync).mockResolvedValue({exists: true, size: 1234, uri: 'file:///path/to/logs.zip', isDirectory: false, modificationTime: 0, md5: ''});
+            jest.mocked(File).mockImplementation((uri: string) => ({
+                uri,
+                exists: true,
+                size: 1234,
+                delete: jest.fn(),
+                info: jest.fn(),
+                move: jest.fn(),
+                copy: jest.fn(),
+                create: jest.fn(),
+                write: jest.fn(),
+                text: jest.fn(() => Promise.resolve('')),
+            } as unknown as InstanceType<typeof File>));
 
             const props = {...baseProps, showAttachLogs: true};
             const {getByTestId} = renderWithIntlAndTheme(
@@ -548,7 +546,7 @@ describe('AttachmentOptions', () => {
     });
 
     describe('tablet rendering', () => {
-        it('should not render title when isTablet is true', () => {
+        it('should render title when isTablet is true', () => {
             const useIsTablet = require('@hooks/device').useIsTablet;
             useIsTablet.mockReturnValue(true);
 
@@ -556,7 +554,7 @@ describe('AttachmentOptions', () => {
                 <AttachmentOptions {...baseProps}/>,
             );
 
-            expect(queryByText('Files and media')).toBeNull();
+            expect(queryByText('Files and media')).toBeTruthy();
         });
 
         it('should render title when isTablet is false', () => {

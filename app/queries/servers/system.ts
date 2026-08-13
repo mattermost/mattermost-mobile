@@ -5,6 +5,7 @@
 
 import {Database, Q} from '@nozbe/watermelondb';
 import {nativeApplicationVersion, nativeBuildVersion} from 'expo-application';
+import {modelName} from 'expo-device';
 import {Platform} from 'react-native';
 import {of as of$, Observable, combineLatest} from 'rxjs';
 import {switchMap, distinctUntilChanged} from 'rxjs/operators';
@@ -12,6 +13,7 @@ import {switchMap, distinctUntilChanged} from 'rxjs/operators';
 import {Preferences, License} from '@constants';
 import {MM_TABLES, SYSTEM_IDENTIFIERS} from '@constants/database';
 import {PUSH_PROXY_STATUS_UNKNOWN} from '@constants/push_proxy';
+import {getFullErrorMessage} from '@utils/errors';
 import {isMinimumLicenseTier, isMinimumServerVersion, type LicenseTierSku} from '@utils/helpers';
 import {logError} from '@utils/log';
 
@@ -22,6 +24,7 @@ import type SystemModel from '@typings/database/models/servers/system';
 export type PrepareCommonSystemValuesArgs = {
     lastUnreadChannelId?: string;
     currentChannelId?: string;
+    currentPushVerificationStatus?: string;
     currentTeamId?: string;
     currentUserId?: string;
     license?: ClientLicense;
@@ -169,10 +172,42 @@ export const getConfigValue = async (database: Database, key: keyof ClientConfig
     return list.length ? list[0].value : undefined;
 };
 
+export const getConfigBooleanValue = async (database: Database, key: keyof ClientConfig, defaultValue = false) => {
+    const v = await getConfigValue(database, key);
+    return v ? v === 'true' : defaultValue;
+};
+
 export const getLastGlobalDataRetentionRun = async (database: Database) => {
     try {
         const data = await database.get<SystemModel>(SYSTEM).find(SYSTEM_IDENTIFIERS.LAST_DATA_RETENTION_RUN);
         return data?.value || 0;
+    } catch {
+        return undefined;
+    }
+};
+
+export const getDisconnectedSince = async (database: Database): Promise<number | undefined> => {
+    try {
+        const data = await database.get<SystemModel>(SYSTEM).find(SYSTEM_IDENTIFIERS.DISCONNECTED_SINCE);
+        return data?.value as number | undefined;
+    } catch {
+        return undefined;
+    }
+};
+
+export const getOfflineSince = async (database: Database): Promise<number | undefined> => {
+    try {
+        const data = await database.get<SystemModel>(SYSTEM).find(SYSTEM_IDENTIFIERS.OFFLINE_SINCE);
+        return data?.value as number | undefined;
+    } catch {
+        return undefined;
+    }
+};
+
+export const getLastSeenTime = async (database: Database): Promise<number | undefined> => {
+    try {
+        const data = await database.get<SystemModel>(SYSTEM).find(SYSTEM_IDENTIFIERS.LAST_SEEN_TIME);
+        return data?.value as number | undefined;
     } catch {
         return undefined;
     }
@@ -256,6 +291,26 @@ export const observeConfigBooleanValue = (database: Database, key: keyof ClientC
 export const observeConfigIntValue = (database: Database, key: keyof ClientConfig, defaultValue = 0) => {
     return observeConfigValue(database, key).pipe(
         switchMap((v) => of$((parseInt(v || '0', 10) || defaultValue))),
+    );
+};
+
+// The deprecated ExperimentalViewArchivedChannels setting was the last gate on viewing archived
+// channels. It is always enabled on servers newer than v10.11, which stopped sending it in the client
+// config, so an absent value means the feature is on. Supported older servers (down to v5.26.2) still
+// send it and may have explicitly disabled it, so only an explicit 'false' turns archived channels off.
+//
+// TODO: once we drop support for servers <= v10.11 the field is never sent, so these helpers and all of
+// their callers can be removed and archived channels treated as always viewable.
+const archivedChannelsViewable = (value?: string) => value !== 'false';
+
+export const canViewArchivedChannels = async (database: Database) => {
+    return archivedChannelsViewable(await getConfigValue(database, 'ExperimentalViewArchivedChannels'));
+};
+
+export const observeCanViewArchivedChannels = (database: Database) => {
+    return observeConfigValue(database, 'ExperimentalViewArchivedChannels').pipe(
+        switchMap((value) => of$(archivedChannelsViewable(value))),
+        distinctUntilChanged(),
     );
 };
 
@@ -382,7 +437,7 @@ export const patchTeamHistory = (operator: ServerDataOperator, value: string[], 
 export async function prepareCommonSystemValues(
     operator: ServerDataOperator, values: PrepareCommonSystemValuesArgs): Promise<SystemModel[]> {
     try {
-        const {lastUnreadChannelId, currentChannelId, currentTeamId, currentUserId, license} = values;
+        const {lastUnreadChannelId, currentChannelId, currentPushVerificationStatus, currentTeamId, currentUserId, license} = values;
         const systems: IdValue[] = [];
 
         if (license !== undefined) {
@@ -417,6 +472,13 @@ export async function prepareCommonSystemValues(
             systems.push({
                 id: SYSTEM_IDENTIFIERS.CURRENT_CHANNEL_ID,
                 value: currentChannelId,
+            });
+        }
+
+        if (currentPushVerificationStatus !== undefined) {
+            systems.push({
+                id: SYSTEM_IDENTIFIERS.PUSH_VERIFICATION_STATUS,
+                value: currentPushVerificationStatus,
             });
         }
 
@@ -466,7 +528,7 @@ export async function setCurrentTeamId(operator: ServerDataOperator, teamId: str
 
         return {currentTeamId: teamId};
     } catch (error) {
-        logError(error);
+        logError('Failed setCurrentTeamId', getFullErrorMessage(error));
         return {error};
     }
 }
@@ -615,6 +677,17 @@ const observeIsSelfHosterStarter = (database: Database) => {
     );
 };
 
+export const observeIsFreeEdition = (database: Database) => {
+    return observeLicense(database).pipe(
+        switchMap((license) => {
+            const isLicensed = license?.IsLicensed === 'true';
+            const isEntry = license?.SkuShortName === License.SKU_SHORT_NAME.Entry;
+            return of$(!isLicensed || isEntry);
+        }),
+        distinctUntilChanged(),
+    );
+};
+
 export const observeReportAProblemMetadata = (database: Database) => {
     const currentUserId = observeCurrentUserId(database);
     const currentTeamId = observeCurrentTeamId(database);
@@ -633,6 +706,7 @@ export const observeReportAProblemMetadata = (database: Database) => {
             serverVersion: `${version} (Build ${build})`,
             appVersion: `${nativeApplicationVersion} (Build ${nativeBuildVersion})`,
             appPlatform: Platform.OS,
+            deviceModel: modelName ?? 'Unknown',
         })),
     );
 };

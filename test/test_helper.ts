@@ -9,6 +9,7 @@ import {random} from 'lodash';
 import nock from 'nock';
 import {of as of$} from 'rxjs';
 
+import {ChannelAccessLevel, UserAccessLevel, type AIThread, type LLMBot} from '@agents/types';
 import Config from '@assets/config.json';
 import {Client} from '@client/rest';
 import {ActionType} from '@constants';
@@ -315,6 +316,20 @@ class TestHelperSingleton {
         };
     };
 
+    fakeRemoteClusterInfo = (overwrite: Partial<RemoteClusterInfo> = {}): RemoteClusterInfo => {
+        const id = overwrite.remote_id ?? this.generateId();
+        return {
+            remote_id: id,
+            name: `remote-${id}`,
+            display_name: `Remote ${id}`,
+            create_at: 1507840900004,
+            delete_at: 0,
+            last_ping_at: Date.now(),
+            site_url: `https://remote-${id}.example.com`,
+            ...overwrite,
+        };
+    };
+
     fakeDmChannel = (userId: string, otherUserId: string): Partial<Channel> => {
         return {
             name: userId > otherUserId ? otherUserId + '__' + userId : userId + '__' + otherUserId,
@@ -589,6 +604,7 @@ class TestHelperSingleton {
             threadParticipations: this.fakeQuery([]),
 
             prepareStatus: () => null,
+            toAPI: () => ({} as UserProfile),
 
             ...overwrite,
         };
@@ -1005,6 +1021,34 @@ class TestHelperSingleton {
         };
     };
 
+    fakeLLMBot = (overwrite?: Partial<LLMBot>): LLMBot => {
+        return {
+            id: this.generateId(),
+            displayName: this.generateId(),
+            username: this.generateId(),
+            lastIconUpdate: 0,
+            dmChannelID: this.generateId(),
+            channelAccessLevel: ChannelAccessLevel.All,
+            channelIDs: [],
+            userAccessLevel: UserAccessLevel.All,
+            userIDs: [],
+            teamIDs: [],
+            ...overwrite,
+        };
+    };
+
+    fakeAiThread = (overwrite?: Partial<AIThread>): AIThread => {
+        return {
+            id: this.generateId(),
+            message: this.generateId(),
+            title: this.generateId(),
+            channel_id: this.generateId(),
+            reply_count: 0,
+            update_at: Date.now(),
+            ...overwrite,
+        };
+    };
+
     fakeUserNotifyProps = (overwrite?: Partial<UserNotifyProps>): UserNotifyProps => {
         return {
             channel: 'false',
@@ -1147,6 +1191,51 @@ class TestHelperSingleton {
         target_id: runId,
         update_at: Date.now(),
         value: `Value ${index + 1}`,
+    });
+
+    createView = (channelId: string, index: number): BoardView => ({
+        id: `${channelId}-view_${index}`,
+        channel_id: channelId,
+        type: 'kanban',
+        creator_id: 'creator_id',
+        title: `View ${index + 1}`,
+        description: `Description ${index + 1}`,
+        sort_order: index,
+        props: {},
+        create_at: 1700000000000 + index,
+        update_at: 1700000000000 + index,
+        delete_at: 0,
+    });
+
+    createPropertyField = (targetId: string, targetType: PropertyFieldTargetLevel, index: number): PropertyField => ({
+        id: `${targetId}-prop_field_${index}`,
+        group_id: 'group_1',
+        name: `Property ${index + 1}`,
+        type: 'text',
+        attrs: {sort_order: index},
+        object_type: 'card',
+        target_id: targetId,
+        target_type: targetType,
+        protected: false,
+        create_at: 1700000000000 + index,
+        update_at: 1700000000000 + index,
+        delete_at: 0,
+        created_by: 'creator_id',
+        updated_by: 'creator_id',
+    });
+
+    createPropertyValue = (fieldId: string, targetId: string, index: number): PropertyValue => ({
+        id: `${targetId}-${fieldId}-value_${index}`,
+        field_id: fieldId,
+        target_id: targetId,
+        target_type: 'post',
+        group_id: 'group_1',
+        value: `Value ${index + 1}`,
+        create_at: 1700000000000 + index,
+        update_at: 1700000000000 + index,
+        delete_at: 0,
+        created_by: 'creator_id',
+        updated_by: 'creator_id',
     });
 
     createPlaybookChecklist = (prefix: string, itemsCount: number, index: number): PlaybookChecklist => {
@@ -1646,7 +1735,7 @@ class TestHelperSingleton {
         };
     };
 
-    tearDown = async () => {
+    tearDown = async (url?: string) => {
         nock.restore();
 
         this.basicClient = null;
@@ -1656,6 +1745,10 @@ class TestHelperSingleton {
         this.basicChannel = null;
         this.basicChannelMember = null;
         this.basicPost = null;
+
+        if (url) {
+            await DatabaseManager.destroyServerDatabase(url);
+        }
     };
 
     wait = (time: number) => new Promise((resolve) => setTimeout(resolve, time));

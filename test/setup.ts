@@ -22,8 +22,6 @@ process.env.EXPO_OS = 'ios';
 
 setGenerator(uuidv4);
 
-require('isomorphic-fetch');
-
 jest.mock('expo-application', () => {
     return {
         nativeApplicationVersion: '0.0.0',
@@ -52,20 +50,30 @@ jest.mock('expo-device', () => {
     };
 });
 
-jest.mock('expo-file-system', () => ({
-    downloadAsync: jest.fn(() => Promise.resolve({md5: 'md5', uri: 'uri'})),
-    getInfoAsync: jest.fn(() => Promise.resolve({exists: true, md5: 'md5', uri: 'uri'})),
-    readAsStringAsync: jest.fn(() => Promise.resolve()),
-    writeAsStringAsync: jest.fn(() => Promise.resolve()),
-    deleteAsync: jest.fn(() => Promise.resolve()),
-    moveAsync: jest.fn(() => Promise.resolve()),
-    copyAsync: jest.fn(() => Promise.resolve()),
-    makeDirectoryAsync: jest.fn(() => Promise.resolve()),
-    readDirectoryAsync: jest.fn(() => Promise.resolve()),
-    createDownloadResumable: jest.fn(() => Promise.resolve()),
-    documentDirectory: 'file:///test-directory/',
-    cacheDirectory: 'file://test-cache-directory/',
-}));
+jest.mock('expo-file-system', () => {
+    const mockInfo = {exists: true, uri: 'file:///mock', size: 0, modificationTime: 0};
+
+    function makeFileInstance(uri: string) {
+        return {uri, exists: true, size: 0, delete: jest.fn(), info: jest.fn(() => mockInfo), move: jest.fn(), copy: jest.fn(), create: jest.fn(), write: jest.fn(), text: jest.fn(() => Promise.resolve(''))};
+    }
+    function makeDirectoryInstance(uri: string) {
+        return {uri, exists: true, size: 0, delete: jest.fn(), info: jest.fn(() => mockInfo), create: jest.fn(), list: jest.fn(() => []), move: jest.fn(), copy: jest.fn()};
+    }
+
+    // Both MockFile and MockDirectory are jest.fn() constructors so that individual
+    // tests can call jest.mocked(File).mockImplementation(...) or inspect .mock.instances.
+    const MockFile = jest.fn().mockImplementation((...args: string[]) => makeFileInstance(args.join('')));
+    (MockFile as jest.Mock & {downloadFileAsync: jest.Mock}).downloadFileAsync = jest.fn(() => Promise.resolve(makeFileInstance('file:///downloaded')));
+    const MockDirectory = jest.fn().mockImplementation((...args: string[]) => makeDirectoryInstance(args.join('')));
+    return {
+        File: MockFile,
+        Directory: MockDirectory,
+        Paths: {
+            cache: makeDirectoryInstance('file://test-cache-directory/'),
+            document: makeDirectoryInstance('file:///test-directory/'),
+        },
+    };
+});
 
 jest.mock('expo-web-browser', () => ({
     openAuthSessionAsync: jest.fn().mockResolvedValue(({
@@ -74,11 +82,110 @@ jest.mock('expo-web-browser', () => ({
     })),
 }));
 
+jest.mock('expo-router', () => ({
+    router: {
+        push: jest.fn(),
+        replace: jest.fn(),
+        back: jest.fn(),
+        canGoBack: jest.fn(() => true),
+        canDismiss: jest.fn(() => true),
+        dismiss: jest.fn(),
+        dismissAll: jest.fn(),
+        dismissTo: jest.fn(),
+        setParams: jest.fn(),
+        navigate: jest.fn(),
+    },
+    useRouter: () => ({
+        push: jest.fn(),
+        replace: jest.fn(),
+        back: jest.fn(),
+        canGoBack: jest.fn(() => true),
+        navigate: jest.fn(),
+    }),
+    useNavigation: () => ({
+        navigate: jest.fn(),
+        goBack: jest.fn(),
+        canGoBack: jest.fn(() => true),
+        setOptions: jest.fn(),
+        setParams: jest.fn(),
+        getState: jest.fn(() => ({})),
+        addListener: jest.fn(() => jest.fn()),
+    }),
+    useSegments: () => [],
+    usePathname: () => '/',
+    useLocalSearchParams: () => ({}),
+    useGlobalSearchParams: () => ({}),
+    Link: 'Link',
+    Redirect: 'Redirect',
+    Stack: {
+        Screen: 'Screen',
+    },
+    Tabs: {
+        Screen: 'Screen',
+    },
+}));
+
 jest.mock('@react-native-camera-roll/camera-roll', () => ({}));
 
+jest.mock('@react-native-documents/viewer', () => ({
+    viewDocument: jest.fn(),
+}));
+
 jest.mock('@mattermost/react-native-turbo-log', () => ({
+    configure: jest.fn(),
+    logDebug: jest.fn(),
+    logInfo: jest.fn(),
+    logWarning: jest.fn(),
+    logError: jest.fn(),
     getLogPaths: jest.fn(),
 }));
+
+jest.mock('@mattermost/calls-native', () => ({
+    __esModule: true,
+    default: {
+        reportOutgoingCall: jest.fn(() => Promise.resolve({uuid: 'native-uuid'})),
+        reportConnected: jest.fn(() => Promise.resolve()),
+        reportEnded: jest.fn(() => Promise.resolve()),
+        setMuted: jest.fn(() => Promise.resolve()),
+        foregroundServiceStart: jest.fn(),
+        foregroundServiceStop: jest.fn(),
+        startAudioSession: jest.fn(() => Promise.resolve()),
+        stopAudioSession: jest.fn(() => Promise.resolve()),
+        setAudioRoute: jest.fn(() => Promise.resolve()),
+        getAudioRoute: jest.fn(() => Promise.resolve({selectedAudioDevice: 'SPEAKER_PHONE', availableAudioDeviceList: ['SPEAKER_PHONE', 'EARPIECE']})),
+        startRingtone: jest.fn(() => Promise.resolve()),
+        stopRingtone: jest.fn(() => Promise.resolve()),
+        onVoIPTokenUpdated: jest.fn(() => ({remove: jest.fn()})),
+        onIncomingCall: jest.fn(() => ({remove: jest.fn()})),
+        onCallAnswered: jest.fn(() => ({remove: jest.fn()})),
+        onCallDeclined: jest.fn(() => ({remove: jest.fn()})),
+        onCallEnded: jest.fn(() => ({remove: jest.fn()})),
+        onMuteChanged: jest.fn(() => ({remove: jest.fn()})),
+        onAudioRouteChanged: jest.fn(() => ({remove: jest.fn()})),
+    },
+    AudioDevice: {
+        Speakerphone: 'SPEAKER_PHONE',
+        Earpiece: 'EARPIECE',
+        Bluetooth: 'BLUETOOTH',
+        WiredHeadset: 'WIRED_HEADSET',
+        None: 'NONE',
+    },
+}));
+
+jest.mock('react-native-webrtc', () => {
+    const getTracks = jest.fn(() => []);
+    const getUserMedia = jest.fn(() => Promise.resolve({getTracks}));
+    return {
+        mediaDevices: {
+            enumerateDevices: jest.fn(() => Promise.resolve([])),
+            getUserMedia,
+        },
+        MediaStream: jest.fn(),
+        MediaStreamTrack: jest.fn(),
+        RTCSessionDescription: jest.fn(),
+        registerGlobals: jest.fn(),
+    };
+});
 
 jest.mock('@nozbe/watermelondb/utils/common/randomId/randomId', () => ({}));
 jest.mock('@nozbe/watermelondb/react/withObservables/garbageCollector', () => {
@@ -111,6 +218,8 @@ jest.mock('@managers/intune_manager', () => ({
         subscribeToAuthRequired: jest.fn(() => ({remove: jest.fn()})),
         subscribeToConditionalLaunchBlocked: jest.fn(() => ({remove: jest.fn()})),
         subscribeToIdentitySwitchRequired: jest.fn(() => ({remove: jest.fn()})),
+        subscribeToComplianceFailed: jest.fn(() => ({remove: jest.fn()})),
+        subscribeToComplianceCompleted: jest.fn(() => ({remove: jest.fn()})),
     },
 }));
 
@@ -121,7 +230,6 @@ jest.doMock('react-native', () => {
         StyleSheet,
         requireNativeComponent,
         Alert: RNAlert,
-        InteractionManager: RNInteractionManager,
         NativeModules: RNNativeModules,
         Linking: RNLinking,
         Keyboard: RNKeyboard,
@@ -138,33 +246,6 @@ jest.doMock('react-native', () => {
         addEventListener: jest.fn(() => ({
             remove: jest.fn(),
         })),
-    };
-
-    let activeInteractions = 0;
-    const pendingCallbacks: Array<() => void> = [];
-    const InteractionManager = {
-        ...RNInteractionManager,
-        createInteractionHandle: jest.fn(() => {
-            activeInteractions += 1;
-            return activeInteractions;
-        }),
-        clearInteractionHandle: jest.fn(() => {
-            activeInteractions = Math.max(0, activeInteractions - 1);
-            if (activeInteractions === 0) {
-                // Execute pending callbacks when interactions are cleared
-                while (pendingCallbacks.length > 0) {
-                    const cb = pendingCallbacks.shift();
-                    cb?.();
-                }
-            }
-        }),
-        runAfterInteractions: jest.fn((callback) => {
-            if (activeInteractions === 0) {
-                callback();
-            } else {
-                pendingCallbacks.push(callback); // Delay execution until interactions finish
-            }
-        }),
     };
 
     const NativeModules = {
@@ -237,6 +318,8 @@ jest.doMock('react-native', () => {
 
             unlockOrientation: jest.fn(),
             getWindowDimensions: jest.fn().mockReturnValue({width: 426, height: 952}),
+
+            deleteDatabaseDirectory: jest.fn(),
         },
         APIClient: {
             getConstants: () => ({
@@ -317,7 +400,6 @@ jest.doMock('react-native', () => {
         requireNativeComponent,
         Alert,
         AppState,
-        InteractionManager,
         NativeModules,
         Linking,
         Keyboard,
@@ -333,22 +415,13 @@ jest.doMock('react-native', () => {
                 start: jest.fn((callback) => callback?.({finished: true})),
             })),
         },
+        LogBox: {
+            ...ReactNative.LogBox,
+            ignoreLogs: jest.fn(),
+            ignoreAllLogs: jest.fn(),
+        },
+        findNodeHandle: jest.fn(() => null),
     }, ReactNative);
-});
-
-jest.mock('react-native-vector-icons', () => {
-    const React = jest.requireActual('react');
-    class CompassIcon extends React.PureComponent {
-        render() {
-            return React.createElement('Icon', this.props);
-        }
-    }
-    CompassIcon.getImageSource = jest.fn().mockResolvedValue({});
-    return {
-        createIconSet: () => CompassIcon,
-
-        createIconSetFromFontello: () => CompassIcon,
-    };
 });
 
 // Mock Intune module - use virtual: true since module may not exist when Intune is disabled
@@ -422,15 +495,32 @@ jest.mock('../node_modules/react-native/Libraries/EventEmitter/NativeEventEmitte
 jest.mock('react-native-keyboard-controller', () => {
     return {
         KeyboardProvider: ({children}: {children: React.ReactNode}) => children,
-        KeyboardController: {
-            dismiss: jest.fn(),
-            isVisible: jest.fn(() => false),
-        },
         useKeyboardHandler: jest.fn(),
+        useReanimatedFocusedInput: jest.fn(() => ({input: {value: null}})),
         useKeyboardState: jest.fn(() => ({
             isVisible: false,
         })),
         KeyboardGestureArea: ({children}: {children: React.ReactNode}) => children,
+        useAnimatedKeyboard: jest.fn(() => ({
+            height: {value: 0},
+            progress: {value: 0},
+            state: {value: 0},
+        })),
+        KeyboardController: {
+            setInputMode: jest.fn(),
+            setDefaultMode: jest.fn(),
+            isVisible: jest.fn(() => false),
+            dismiss: jest.fn(() => Promise.resolve()),
+        },
+        KeyboardAwareScrollView: 'KeyboardAwareScrollView',
+        KeyboardAvoidingView: 'KeyboardAvoidingView',
+        KeyboardState: {
+            UNKNOWN: 0,
+            OPENING: 1,
+            OPEN: 2,
+            CLOSING: 3,
+            CLOSED: 4,
+        },
     };
 });
 
@@ -443,7 +533,7 @@ jest.mock('react-native-localize', () => ({
     ]),
 }));
 
-jest.mock('@react-native-cookies/cookies', () => ({
+jest.mock('@preeternal/react-native-cookie-manager', () => ({
     addEventListener: jest.fn(),
     removeEventListener: jest.fn(),
     openURL: jest.fn(),
@@ -457,42 +547,6 @@ jest.mock('@react-native-cookies/cookies', () => ({
         },
     })),
 }));
-
-jest.mock('react-native-navigation', () => {
-    const RNN = jest.requireActual('react-native-navigation');
-    RNN.Navigation.setLazyComponentRegistrator = jest.fn();
-    RNN.Navigation.setDefaultOptions = jest.fn();
-    RNN.Navigation.registerComponent = jest.fn();
-    return {
-        ...RNN,
-        Navigation: {
-            ...RNN.Navigation,
-            events: () => ({
-                registerAppLaunchedListener: jest.fn(),
-                registerComponentListener: jest.fn(() => {
-                    return {remove: jest.fn()};
-                }),
-                bindComponent: jest.fn(() => {
-                    return {remove: jest.fn()};
-                }),
-                registerNavigationButtonPressedListener: jest.fn(() => {
-                    return {remove: jest.fn()};
-                }),
-            }),
-            setRoot: jest.fn(),
-            pop: jest.fn(),
-            push: jest.fn(),
-            showModal: jest.fn(),
-            dismissModal: jest.fn(),
-            dismissAllModals: jest.fn(),
-            popToRoot: jest.fn(),
-            mergeOptions: jest.fn(),
-            showOverlay: jest.fn(),
-            dismissOverlay: jest.fn(),
-            updateProps: jest.fn(),
-        },
-    };
-});
 
 jest.mock('react-native-notifications', () => {
     let deliveredNotifications: ReactNative.PushNotification[] = [];
@@ -516,7 +570,7 @@ jest.mock('react-native-notifications', () => {
             ios: {
                 getDeliveredNotifications: jest.fn().mockImplementation(() => Promise.resolve(deliveredNotifications)),
                 removeDeliveredNotifications: jest.fn((ids) => {
-                    // eslint-disable-next-line
+
                     // @ts-ignore
                     deliveredNotifications = deliveredNotifications.filter((n) => !ids.includes(n.identifier));
                 }),
@@ -529,31 +583,6 @@ jest.mock('react-native-notifications', () => {
 
 jest.mock('react-native-share', () => ({
     default: jest.fn(),
-}));
-
-jest.mock('@screens/navigation', () => ({
-    ...jest.requireActual('@screens/navigation'),
-    resetToChannel: jest.fn(),
-    resetToSelectServer: jest.fn(),
-    resetToTeams: jest.fn(),
-    goToScreen: jest.fn(),
-    popTopScreen: jest.fn(),
-    showModal: jest.fn(),
-    showModalOverCurrentContext: jest.fn(),
-    setButtons: jest.fn(),
-    showOverlay: jest.fn(),
-    mergeNavigationOptions: jest.fn(),
-    popToRoot: jest.fn(() => Promise.resolve()),
-    dismissModal: jest.fn(() => Promise.resolve()),
-    dismissAllModals: jest.fn(() => Promise.resolve()),
-    dismissAllModalsAndPopToScreen: jest.fn(),
-    dismissAllModalsAndPopToRoot: jest.fn(),
-    dismissOverlay: jest.fn(() => Promise.resolve()),
-    dismissAllOverlays: jest.fn(() => Promise.resolve()),
-    dismissBottomSheet: jest.fn(),
-    openUserProfileModal: jest.fn(),
-    popTo: jest.fn(),
-    bottomSheet: jest.fn(),
 }));
 
 jest.mock('@mattermost/react-native-emm', () => ({
@@ -572,9 +601,22 @@ jest.mock('@mattermost/react-native-emm', () => ({
     useManagedConfig: () => ({}),
 }));
 
+jest.mock('@mattermost/react-native-paste-input', () => {
+    const React = require('react');
+    const MockedPasteTextInput = React.forwardRef((props: any, ref: any) => {
+        const {TextInput} = require('react-native');
+        return React.createElement(TextInput, {...props, ref});
+    });
+    MockedPasteTextInput.displayName = 'PasteTextInput';
+    return {
+        __esModule: true,
+        default: MockedPasteTextInput,
+    };
+});
+
 jest.mock('@react-native-clipboard/clipboard', () => ({}));
 
-jest.mock('react-native-document-picker', () => ({}));
+jest.mock('@react-native-documents/picker', () => ({}));
 
 jest.mock('@mattermost/react-native-network-client', () => ({
     getOrCreateAPIClient: jest.fn((serverUrl: string) => Promise.resolve({client: {
@@ -590,18 +632,46 @@ jest.mock('@mattermost/react-native-network-client', () => ({
 
 jest.mock('react-native-safe-area-context', () => mockSafeAreaContext);
 
+jest.mock('react-native-worklets', () => {
+    const mock = require('react-native-worklets/src/mock');
+    return {
+        ...mock,
+
+        // Override scheduleOnRN to call synchronously so state updates from
+        // useAnimatedReaction fire inside act() rather than via queueMicrotask.
+        scheduleOnRN: <Args extends unknown[]>(fn: (...args: Args) => unknown, ...args: Args) => {
+            fn(...args);
+        },
+    };
+});
+
 require('@shopify/flash-list/jestSetup');
 
 require('react-native-reanimated').setUpTests();
 jest.mock('react-native-permissions', () => require('react-native-permissions/mock'));
 
-jest.mock('react-native-haptic-feedback', () => {
-    const RNHF = jest.requireActual('react-native-haptic-feedback/src/types');
-    return {
-        ...RNHF,
-        trigger: () => '',
-    };
-});
+jest.mock('react-native-haptic-feedback', () => ({
+    trigger: () => '',
+    HapticFeedbackTypes: {
+        selection: 'selection',
+        impactLight: 'impactLight',
+        impactMedium: 'impactMedium',
+        impactHeavy: 'impactHeavy',
+        rigid: 'rigid',
+        soft: 'soft',
+        notificationSuccess: 'notificationSuccess',
+        notificationWarning: 'notificationWarning',
+        notificationError: 'notificationError',
+    },
+}));
+
+jest.mock('react-native-nitro-bg-timer-plus', () => ({
+    BackgroundTimer: {
+        setTimeout: jest.fn(),
+        clearTimeout: jest.fn(),
+        disableForegroundService: jest.fn(),
+    },
+}));
 
 jest.mock('@utils/log', () => ({
     logError: jest.fn(),
@@ -619,6 +689,16 @@ declare const global: {
 
 global.requestAnimationFrame = (callback) => {
     setTimeout(callback, 0);
+};
+
+// @ts-expect-error requestIdleCallback does not exist in global type
+global.requestIdleCallback = (callback: IdleRequestCallback) => {
+    return setTimeout(callback, 0) as unknown as number;
+};
+
+// @ts-expect-error cancelIdleCallback does not exist in global type
+global.cancelIdleCallback = (id: number) => {
+    clearTimeout(id);
 };
 
 global.performance.now = () => Date.now();

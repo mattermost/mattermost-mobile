@@ -4,6 +4,7 @@
 import React from 'react';
 import {Text} from 'react-native';
 
+import {getFullErrorMessage} from '@utils/errors';
 import {logError} from '@utils/log';
 import {makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
@@ -13,7 +14,7 @@ type State = {
 }
 
 type Props = {
-    children: JSX.Element;
+    children: React.ReactNode;
     error: string;
     theme: Theme;
 }
@@ -35,7 +36,7 @@ class ErrorBoundary extends React.PureComponent<Props, State> {
     }
 
     componentDidCatch(error: unknown) {
-        logError('Error in ErrorBoundary:', error);
+        logError('Error in ErrorBoundary:', getFullErrorMessage(error));
         this.setState({hasError: true});
     }
 

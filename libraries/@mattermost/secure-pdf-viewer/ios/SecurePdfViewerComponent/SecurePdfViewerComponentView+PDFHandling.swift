@@ -1,6 +1,34 @@
 import PDFKit
 
 extension SecurePdfViewerComponentView {
+    @objc public func resetPDFState() {
+        // Clear PDF state immediately
+        pdfView.document = nil
+        pdfDocument = nil
+        normalizedSource = ""
+        customThumbnailView.pdfView = nil
+
+        // Reset and hide page indicator
+        pageIndicator?.updatePage(current: 0, total: 0)
+        pageIndicator?.setAlpha(0)
+        pageIndicator?.isHidden = true
+        pageIndicatorLeadingConstraint.constant = 16
+        hideTimer?.invalidate()
+        hideTimer = nil
+
+        // Reset thumbnail view to closed state
+        customThumbnailView.isHidden = true
+        if thumbnailLayoutMode == .panel {
+            thumbnailLeadingConstraint.constant = -thumbnailWidthConstraint.constant
+            pdfViewLeadingConstraint.constant = 0
+        } else if thumbnailLayoutMode == .drawer {
+            thumbnailLeadingConstraint.constant = -thumbnailWidthConstraint.constant
+        }
+
+        // Force layout update
+        layoutIfNeeded()
+    }
+
     func loadPDF() {
         let filePath = normalizedSource
         let fileKey = HashUtils.hashOfFilePathOrId(filePath)
@@ -26,18 +54,21 @@ extension SecurePdfViewerComponentView {
             pdfDocument = document
 
             if document.isEncrypted {
+                // Clear the view to prevent showing old document while waiting for password
+                pdfView.document = nil
+                pageIndicator?.setAlpha(0)
                 let passwordAttempts = attemptStore.getRemainingAttempts(for: fileKey)
                 onPasswordRequired!(["maxAttempts": attemptStore.maxAllowedAttempts, "remainingAttempts": passwordAttempts])
             } else {
                 pdfView.document = document
                 customThumbnailView.pdfView = pdfView
                 updatePageIndicator()
-                
+
                 if thumbnailLayoutMode == .panel {
                     customThumbnailView.isHidden = false
                     layoutIfNeeded()
                 }
-                
+
                 onLoad?([:])
             }
         } else {
@@ -126,7 +157,7 @@ extension SecurePdfViewerComponentView {
         let totalPages = doc.pageCount
 
         pageIndicator?.updatePage(current: pageIndex, total: totalPages)
-
+        pageIndicator?.isHidden = false
         pageIndicator?.setAlpha(1)
         hidePageIndicator()
     }

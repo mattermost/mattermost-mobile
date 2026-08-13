@@ -171,9 +171,19 @@ class RNUtilsModuleImpl(private val reactContext: ReactApplicationContext): Life
         return map
     }
 
-    fun unlockOrientation() {}
+    fun unlockOrientation() {
+        val activity = reactContext.currentActivity ?: return
+        activity.runOnUiThread {
+            activity.requestedOrientation = android.content.pm.ActivityInfo.SCREEN_ORIENTATION_FULL_SENSOR
+        }
+    }
 
-    fun lockPortrait() {}
+    fun lockPortrait() {
+        val activity = reactContext.currentActivity ?: return
+        activity.runOnUiThread {
+            activity.requestedOrientation = android.content.pm.ActivityInfo.SCREEN_ORIENTATION_SENSOR_PORTRAIT
+        }
+    }
 
     fun deleteDatabaseDirectory(): WritableMap {
         val map = Arguments.createMap()
@@ -233,7 +243,7 @@ class RNUtilsModuleImpl(private val reactContext: ReactApplicationContext): Life
 
     fun setNavigationBarColor(colorHex: String, lightIcons: Boolean) {
         val currentActivity: Activity = reactContext.currentActivity ?: return
-        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.LOLLIPOP) {
             return
         }
 

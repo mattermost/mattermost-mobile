@@ -1,21 +1,34 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {useEffect} from 'react';
-import {Navigation} from 'react-native-navigation';
-
-const BACK_BUTTON = 'RNN.back';
+import {useNavigation} from 'expo-router';
+import {useEffect, useRef} from 'react';
 
 const useBackNavigation = (callback: () => void) => {
+    const navigation = useNavigation();
+    const callbackRef = useRef(callback);
+    const hasCalledRef = useRef(false);
+
     useEffect(() => {
-        const backListener = Navigation.events().registerNavigationButtonPressedListener(({buttonId}) => {
-            if (buttonId === BACK_BUTTON) {
-                callback();
+        callbackRef.current = callback;
+    }, [callback]);
+
+    useEffect(() => {
+        const backListener = navigation.addListener('beforeRemove', () => {
+            // Only call the callback once per navigation lifecycle
+            if (!hasCalledRef.current) {
+                hasCalledRef.current = true;
+                callbackRef.current();
             }
         });
 
-        return () => backListener.remove();
-    }, [callback]);
+        return () => {
+            backListener();
+
+            // Reset for next time the screen is mounted
+            hasCalledRef.current = false;
+        };
+    }, [navigation]);
 };
 
 export default useBackNavigation;

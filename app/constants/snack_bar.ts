@@ -5,6 +5,8 @@ import {defineMessages, type MessageDescriptor} from 'react-intl';
 
 import keyMirror from '@utils/key_mirror';
 
+import type {CompassIconName} from '@components/compass_icon';
+
 export const SNACK_BAR_TYPE = keyMirror({
     ADD_CHANNEL_MEMBERS: null,
     AGENT_STOP_ERROR: null,
@@ -45,7 +47,7 @@ export const MESSAGE_TYPE = {
 
 export type SnackBarConfig = {
     message: MessageDescriptor;
-    iconName: string;
+    iconName: CompassIconName;
     hasAction: boolean;
     type?: typeof MESSAGE_TYPE[keyof typeof MESSAGE_TYPE];
 };

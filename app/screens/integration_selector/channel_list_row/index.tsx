@@ -7,7 +7,7 @@ import {
     View,
 } from 'react-native';
 
-import CompassIcon from '@components/compass_icon';
+import CompassIcon, {type CompassIconName} from '@components/compass_icon';
 import {makeStyleSheetFromTheme, changeOpacity} from '@utils/theme';
 import {typography} from '@utils/typography';
 
@@ -22,8 +22,8 @@ type ChannelListRowProps = {
 
 type Props = ChannelListRowProps & CustomListRowProps;
 
-const getIconForChannel = (selectedChannel: Channel): string => {
-    let icon = 'globe';
+const getIconForChannel = (selectedChannel: Channel): CompassIconName => {
+    let icon: CompassIconName = 'globe';
 
     if (selectedChannel.type === 'P') {
         icon = 'lock-outline';
@@ -60,11 +60,9 @@ const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
         outerContainer: {
             flex: 1,
             flexDirection: 'row',
-            paddingHorizontal: 15,
             overflow: 'hidden',
         },
         purpose: {
-            marginTop: 7,
             color: changeOpacity(theme.centerChannelColor, 0.5),
             ...typography('Body', 100, 'Regular'),
         },
@@ -79,22 +77,6 @@ const ChannelListRow = ({
     const onPressRow = useCallback((): void => {
         onPress(channel);
     }, [onPress, channel]);
-
-    const renderPurpose = (channelPurpose: string): JSX.Element | null => {
-        if (!channelPurpose) {
-            return null;
-        }
-
-        return (
-            <Text
-                style={style.purpose}
-                ellipsizeMode='tail'
-                numberOfLines={1}
-            >
-                {channel.purpose}
-            </Text>
-        );
-    };
 
     const itemTestID = `${testID}.${id}`;
     const channelDisplayNameTestID = `${testID}.display_name`;
@@ -126,8 +108,6 @@ const ChannelListRow = ({
                             {channel.display_name}
                         </Text>
                     </View>
-
-                    {renderPurpose(channel.purpose)}
                 </View>
             </CustomListRow>
         </View>

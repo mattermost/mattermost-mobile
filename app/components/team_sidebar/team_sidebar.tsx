@@ -55,10 +55,7 @@ export default function TeamSidebar({iconPad, canJoinOtherTeams, hasMoreThanOneT
 
     useEffect(() => {
         marginTop.value = iconPad ? 44 : 0;
-
-    // Update the shared value only when the iconPad changes.
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [iconPad]);
+    }, [iconPad, marginTop]);
 
     useEffect(() => {
         width.value = hasMoreThanOneTeam ? TEAM_SIDEBAR_WIDTH : 0;

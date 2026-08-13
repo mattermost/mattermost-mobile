@@ -6,9 +6,11 @@ import {useIntl, type MessageDescriptor} from 'react-intl';
 
 import OptionItem from '@components/option_item';
 
+import type {CompassIconName} from '@components/compass_icon';
+
 type BaseOptionType = {
     message: MessageDescriptor;
-    iconName: string;
+    iconName: CompassIconName;
     isDestructive?: boolean;
     onPress: () => void;
     testID: string;

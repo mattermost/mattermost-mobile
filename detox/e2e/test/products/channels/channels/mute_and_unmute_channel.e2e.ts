@@ -21,7 +21,7 @@ import {
     ChannelInfoScreen,
 } from '@support/ui/screen';
 import {timeouts, wait} from '@support/utils';
-import {expect} from 'detox';
+import {expect, waitFor} from 'detox';
 
 describe('Channels - Mute and Unmute Channel', () => {
     const serverOneDisplayName = 'Server 1';
@@ -54,8 +54,10 @@ describe('Channels - Mute and Unmute Channel', () => {
         await wait(timeouts.ONE_SEC);
         await ChannelScreen.muteQuickAction.tap();
 
-        // * Verify muted toast message appears
-        await wait(timeouts.ONE_SEC);
+        // * Verify muted toast message appears. Use waitFor instead of immediate
+        // expect — the toast renders via Animated.View which on iOS 26 triggers
+        // the "Main Run Loop is awake" sync blocker, delaying element availability.
+        await waitFor(ChannelScreen.toastMessage).toBeVisible().withTimeout(timeouts.TEN_SEC);
         await expect(ChannelScreen.toastMessage).toHaveText('This channel was muted');
         await waitFor(ChannelScreen.toastMessage).not.toExist().withTimeout(timeouts.TEN_SEC);
 
@@ -65,7 +67,7 @@ describe('Channels - Mute and Unmute Channel', () => {
         await ChannelScreen.unmuteQuickAction.tap();
 
         // * Verify unmuted toast message appears
-        await wait(timeouts.ONE_SEC);
+        await waitFor(ChannelScreen.toastMessage).toBeVisible().withTimeout(timeouts.TEN_SEC);
         await expect(ChannelScreen.toastMessage).toHaveText('This channel was unmuted');
         await waitFor(ChannelScreen.toastMessage).not.toExist().withTimeout(timeouts.TEN_SEC);
 
@@ -84,7 +86,7 @@ describe('Channels - Mute and Unmute Channel', () => {
         await wait(timeouts.FOUR_SEC);
 
         // # Tap on muted action to unmute the channel
-        await ChannelInfoScreen.unmuteAction.longPress();
+        await ChannelInfoScreen.unmuteAction.tap();
 
         // * Verify channel is unmuted
         await expect(ChannelInfoScreen.muteAction).toBeVisible();

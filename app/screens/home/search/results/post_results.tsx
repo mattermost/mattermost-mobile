@@ -9,7 +9,7 @@ import NoResultsWithTerm from '@components/no_results_with_term';
 import DateSeparator from '@components/post_list/date_separator';
 import PostWithChannelInfo from '@components/post_with_channel_info';
 import {Events, Screens} from '@constants';
-import {ExtraKeyboardProvider} from '@context/extra_keyboard';
+import {PostConfigProvider} from '@context/post_config';
 import {useTheme} from '@context/theme';
 import {convertSearchTermToRegex, parseSearchTerms} from '@utils/markdown';
 import {getDateForDateLine, selectOrderedPosts} from '@utils/post_list';
@@ -19,6 +19,7 @@ import {typography} from '@utils/typography';
 
 import type {PostListItem, PostListOtherItem, ViewableItemsChanged} from '@typings/components/post_list';
 import type PostModel from '@typings/database/models/servers/post';
+import type UserModel from '@typings/database/models/servers/user';
 import type {SearchPattern} from '@typings/global/markdown';
 
 const getStyles = makeStyleSheetFromTheme((theme: Theme) => ({
@@ -32,6 +33,7 @@ const getStyles = makeStyleSheetFromTheme((theme: Theme) => ({
 type Props = {
     appsEnabled: boolean;
     customEmojiNames: string[];
+    currentUser: UserModel;
     currentTimezone: string;
     posts: PostModel[];
     matches?: SearchMatches;
@@ -42,6 +44,7 @@ type Props = {
 const PostResults = ({
     appsEnabled,
     currentTimezone,
+    currentUser,
     customEmojiNames,
     posts,
     matches,
@@ -77,6 +80,7 @@ const PostResults = ({
 
                 return (
                     <PostWithChannelInfo
+                        currentUser={currentUser}
                         appsEnabled={appsEnabled}
                         customEmojiNames={customEmojiNames}
                         key={key}
@@ -90,7 +94,7 @@ const PostResults = ({
             default:
                 return null;
         }
-    }, [currentTimezone, searchValue, matches, appsEnabled, customEmojiNames]);
+    }, [currentTimezone, searchValue, matches, currentUser, appsEnabled, customEmojiNames]);
 
     const noResults = useMemo(() => (
         <NoResultsWithTerm
@@ -115,7 +119,7 @@ const PostResults = ({
     }, []);
 
     return (
-        <ExtraKeyboardProvider>
+        <PostConfigProvider>
             <FlatList
                 ListHeaderComponent={
                     <FormattedText
@@ -144,8 +148,8 @@ const PostResults = ({
                 onViewableItemsChanged={onViewableItemsChanged}
                 testID='search_results.post_list.flat_list'
             />
-        </ExtraKeyboardProvider>
+        </PostConfigProvider>
     );
 };
 
-export default PostResults;
+export default React.memo(PostResults);

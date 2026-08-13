@@ -5,7 +5,7 @@ import {Database} from '@nozbe/watermelondb';
 import {act, fireEvent} from '@testing-library/react-native';
 import React from 'react';
 
-import {renderWithEverything} from '@test/intl-test-helper';
+import {renderWithEverything, waitFor} from '@test/intl-test-helper';
 import TestHelper from '@test/test_helper';
 
 import GlobalDraftsAndScheduledPosts from './global_drafts';
@@ -29,7 +29,9 @@ describe('screens/global_drafts', () => {
             {database},
         );
 
-        expect(getByTestId('global_drafts.screen')).toBeVisible();
+        await waitFor(() => {
+            expect(getByTestId('global_drafts.screen')).toBeVisible();
+        });
         expect(queryByTestId('draft_tab_container')).not.toBeVisible();
     });
 
@@ -41,11 +43,14 @@ describe('screens/global_drafts', () => {
             {database},
         );
 
+        await waitFor(() => {
+            expect(getByTestId('tabs.drafts.button')).toBeVisible();
+        });
+
         await act(async () => {
             await TestHelper.wait(200); // Wait until the badge renders
         });
 
-        expect(getByTestId('tabs.drafts.button')).toBeVisible();
         expect(getByTestId('tabs.scheduled_posts.button')).toBeVisible();
     });
 
