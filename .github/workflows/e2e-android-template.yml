@@ -308,7 +308,7 @@ jobs:
     needs: [begin]
     if: needs.begin.result == 'success'
     runs-on: ubuntu-latest-8-cores
-    timeout-minutes: ${{ inputs.low_bandwidth_mode && 240 || 180 }}
+    timeout-minutes: 60
     strategy:
       fail-fast: false
       matrix:

@@ -264,7 +264,7 @@ jobs:
     needs: [begin]
     if: needs.begin.result == 'success' && (inputs.platform == 'ios' || inputs.platform == '')
     runs-on: macos-26
-    timeout-minutes: 120
+    timeout-minutes: 60
     permissions:
       contents: read
       id-token: write
@@ -471,7 +471,7 @@ jobs:
     needs: [begin]
     if: needs.begin.result == 'success' && inputs.platform == 'android'
     runs-on: ubuntu-latest-8-cores
-    timeout-minutes: 120
+    timeout-minutes: 60
     permissions:
       contents: read
       id-token: write
