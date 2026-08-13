@@ -171,7 +171,7 @@ E2E results are orchestrated via Test System IO (`dispatch-begin` / `dispatch-ru
 |------|------------|---------------------|
 | PR E2E | `e2e-test/detox-ios`, `e2e-test/detox-android`, `e2e-test/detox-ipad`, `e2e-test/maestro-ios`, `e2e-test/maestro-android` | `mobile-pr-<job>` (e.g. `mobile-pr-detox-ios`) |
 | Main E2E (`run_type=MAIN` or Matterwick `MASTER`) | same per-job contexts | `mobile-main-<job>` |
-| Compatibility matrix | per shard `e2e-test/<test-system-io-shard-name>` + umbrella `e2e-test/compatibility-matrix-testing` | `mobile-release-<test-system-io-shard-name>` |
+| Compatibility matrix | per leg `e2e-test/<platform>/cmt-server-${version}` | `<platform>-cmt-server-${version}` (derived from context) |
 
 ### Testing Patterns
 

@@ -406,53 +406,6 @@ jobs:
       artifact_run_id: ${{ github.run_id }}
       record_tests_in_zephyr: true
 
-  update-final-status:
-    runs-on: ubuntu-24.04
-    if: always()
-    permissions:
-      contents: read
-      statuses: write
-    needs:
-      - calculate-commit-hash
-      - detox-e2e
-      - detox-android-e2e
-      - detox-ipad-e2e
-      - maestro-ios-e2e
-      - maestro-android-e2e
-    steps:
-      - name: Resolve upstream matrix outcome
-        id: upstream
-        run: |
-          UPSTREAM="true"
-          for r in "${{ needs.detox-e2e.result }}" "${{ needs.detox-android-e2e.result }}" "${{ needs.detox-ipad-e2e.result }}" "${{ needs.maestro-ios-e2e.result }}" "${{ needs.maestro-android-e2e.result }}"; do
-            case "$r" in
-              success|skipped) ;;
-              *) UPSTREAM="false" ;;
-            esac
-          done
-          echo "succeeded=$UPSTREAM" >> "$GITHUB_OUTPUT"
-
-      # Umbrella context only — each matrix leg already finalized
-      # e2e-test/*/cmt-server-* via test-system-io-summary.
-      - name: Finalize umbrella CMT commit status from CI job results
-        env:
-          GITHUB_TOKEN: ${{ github.token }}
-          COMMIT_SHA: ${{ needs.calculate-commit-hash.outputs.MOBILE_SHA }}
-          REPO: ${{ github.repository }}
-          TARGET_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
-          UPSTREAM: ${{ steps.upstream.outputs.succeeded }}
-        run: |
-          if [ "$UPSTREAM" = "true" ]; then
-            STATE=success
-            DESC="Compatibility Matrix Testing completed — see per-job e2e-test/* checks"
-          else
-            STATE=failure
-            DESC="Compatibility Matrix Testing failed — see per-job e2e-test/* checks"
-          fi
-          gh api --method POST "repos/${REPO}/statuses/${COMMIT_SHA}" \
-            -f state="$STATE" \
-            -f context="e2e-test/compatibility-matrix-testing" \
-            -f description="$DESC" \
-            -f target_url="$TARGET_URL"
-
-      # Instance cleanup is handled by matterwick on workflow_run completed.
+  # Instance cleanup is handled by matterwick on workflow_run completed.
+  # Each matrix leg posts its own e2e-test/*/cmt-server-* commit status via
+  # test-system-io-summary — no umbrella status job.
