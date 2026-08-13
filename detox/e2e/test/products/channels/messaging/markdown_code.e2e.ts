@@ -22,7 +22,8 @@ import {
     LoginScreen,
     ServerScreen,
 } from '@support/ui/screen';
-import {expect} from 'detox';
+import {timeouts} from '@support/utils';
+import {expect, waitFor} from 'detox';
 
 describe('Messaging - Markdown Code', () => {
     const serverOneDisplayName = 'Server 1';
@@ -57,17 +58,12 @@ describe('Messaging - Markdown Code', () => {
         const markdownCodeBlock = `\`\`\`\n${message}\n\`\`\``;
         await ChannelScreen.open(channelsCategory, testChannel.name);
         await ChannelScreen.postMessage(markdownCodeBlock);
+        await ChannelScreen.dismissKeyboard();
 
         // * Verify markdown code block is displayed
         const {post} = await Post.apiGetLastPostInChannel(siteOneUrl, testChannel.id);
         const {postListPostItemCodeBlock} = ChannelScreen.getPostListPostItem(post.id);
-        await waitFor(postListPostItemCodeBlock).toExist().withTimeout(10000);
-
-        // Scroll to dismiss the keyboard when possible. Wrap: scroll up fails when the
-        // post list is already at the top (cold iOS).
-        try {
-            await ChannelScreen.getFlatPostList().scroll(300, 'up', 0.5, 0.5);
-        } catch { /* already at top — non-fatal */ }
+        await waitFor(postListPostItemCodeBlock).toExist().withTimeout(timeouts.TEN_SEC);
 
         // toExist() confirms the code block rendered: the message input bar can clip a short block
         // below even the 50% visibility threshold.
@@ -83,17 +79,12 @@ describe('Messaging - Markdown Code', () => {
         const markdownHtml = `\`\`\`html\n${message}\n\`\`\``;
         await ChannelScreen.open(channelsCategory, testChannel.name);
         await ChannelScreen.postMessage(markdownHtml);
+        await ChannelScreen.dismissKeyboard();
 
         // * Verify markdown html is displayed
         const {post} = await Post.apiGetLastPostInChannel(siteOneUrl, testChannel.id);
         const {postListPostItemCodeBlock} = ChannelScreen.getPostListPostItem(post.id);
-        await waitFor(postListPostItemCodeBlock).toExist().withTimeout(10000);
-
-        // Scroll the post list to dismiss the keyboard before the visibility check.
-        // Wrap in try-catch: scroll up fails when the post list is already at the top.
-        try {
-            await ChannelScreen.getFlatPostList().scroll(100, 'up', 0.5, 0.5);
-        } catch { /* already at top — non-fatal */ }
+        await waitFor(postListPostItemCodeBlock).toExist().withTimeout(timeouts.TEN_SEC);
 
         // toExist() confirms the code block rendered correctly; toBeVisible(50) is fragile
         // when the message input bar clips a short block below the 50% threshold.

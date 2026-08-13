@@ -104,18 +104,16 @@ describe('Messaging - Markdown Table', () => {
         await expect(element(by.text('Left header that wraps'))).toBeVisible(50);
         await expect(element(by.text('Center header that wraps'))).toBeVisible(50);
 
-        // Assert the left and centre cells before scrolling right — on Android the scroll pushes
-        // the left column off-screen. Wrap coverage is these cells; the right-column scroll
-        // below is Android-only viewport behaviour.
+        // Assert the left and centre cells before scrolling right — on Android the scroll
+        // can push the left column off-screen. Wrap coverage is these cells.
         await expect(element(by.text('Left text that wraps row'))).toBeVisible(50);
         await expect(element(by.text('Center text that wraps row'))).toBeVisible(50);
 
-        // Android pushes the right-side columns beyond the viewport, so scroll the table
-        // horizontally until the right header and row become visible.
-        if (!isIos()) {
-            await waitFor(element(by.text('Right header that wraps'))).toBeVisible(50).whileElement(by.id(TableScreen.testID.tableScrollView)).scroll(150, 'right');
-            await waitFor(element(by.text('Right text that wraps row'))).toBeVisible(50).whileElement(by.id(TableScreen.testID.tableScrollView)).scroll(150, 'right');
-        }
+        // Right-side columns can sit past the expanded viewport. waitFor succeeds
+        // immediately when they are already on-screen (typical iOS) and scrolls
+        // when they are not (typical Android).
+        await waitFor(element(by.text('Right header that wraps'))).toBeVisible(50).whileElement(by.id(TableScreen.testID.tableScrollView)).scroll(150, 'right');
+        await waitFor(element(by.text('Right text that wraps row'))).toBeVisible(50).whileElement(by.id(TableScreen.testID.tableScrollView)).scroll(150, 'right');
 
         // # Go back to channel list screen
         await TableScreen.back();

@@ -26,10 +26,21 @@ import {
     ServerListScreen,
     ServerScreen,
 } from '@support/ui/screen';
-import {isAndroid, isIos, timeouts, wait} from '@support/utils';
+import {isAndroid, isIos, timeouts, wait, waitForElementToBeVisible, waitForElementToExist} from '@support/utils';
 import {expect, waitFor} from 'detox';
 
 const itWithSecondServer = hasSecondServer ? it : it.skip;
+
+const revealServerListItems = async () => {
+    if (isIos()) {
+        // Partial swipe: a full swipe pushes rows too close to the edge for hittable actions.
+        await ServerListScreen.serverListTitle.swipe('up', 'fast', 0.3, 0.5, 0.5);
+    } else if (isAndroid()) {
+        await waitFor(ServerListScreen.serverListTitle).toBeVisible().withTimeout(timeouts.TWO_SEC);
+        await ServerListScreen.serverListTitle.swipe('up', 'fast', 0.1, 0.5, 0.3);
+    }
+    await wait(timeouts.ONE_SEC);
+};
 
 describe('Smoke Test - Server Login', () => {
     const serverOneDisplayName = 'Server 1';
@@ -60,9 +71,7 @@ describe('Smoke Test - Server Login', () => {
         await expect(ChannelListScreen.headerServerDisplayName).toHaveText(serverOneDisplayName);
     });
 
-    // Skip iOS: CI run 30437339535 — the add-server/login/logout flow exceeds the 300s Jest
-    // test timeout, matching the MM-T142 iOS overrun already quarantined on this branch.
-    (isIos() ? it.skip : itWithSecondServer)('MM-T4675_2 - should be able to add a new server and log-in-to/log-out-from the new server', async () => {
+    itWithSecondServer('MM-T4675_2 - should be able to add a new server and log-in-to/log-out-from the new server', async () => {
         // # Open server list screen
         await ServerListScreen.open();
         await ServerListScreen.closeTutorial();
@@ -82,7 +91,9 @@ describe('Smoke Test - Server Login', () => {
         await wait(timeouts.TWO_SEC);
         await waitFor(ServerScreen.headerTitleAddServer).toExist().withTimeout(timeouts.HALF_MIN);
         await ServerScreen.connectToServer(serverTwoUrl, serverTwoDisplayName);
-        await LoginScreen.login(user);
+        // login() retries via reload + reconnect to Server 1, which overruns the
+        // 300s Jest timeout on this add-server path. Stay on the current form.
+        await LoginScreen.loginWithRetryIfStuck(user);
 
         // * Verify on channel list screen of the second server
         await ChannelListScreen.toBeVisible();
@@ -91,43 +102,37 @@ describe('Smoke Test - Server Login', () => {
         // # Go back to first server, open server list screen, swipe left on second server and tap on logout option
         await ServerListScreen.open();
         await wait(timeouts.ONE_SEC);
-        if (isIos()) {
-            await ServerListScreen.serverListTitle.swipe('up');
-        } else if (isAndroid()) {
-            await ServerListScreen.serverListTitle.swipe('up', 'fast', 0.1, 0.5, 0.3);
-        }
-        await wait(timeouts.ONE_SEC);
-        await waitFor(ServerListScreen.getServerItemInactive(serverOneDisplayName)).toBeVisible().withTimeout(timeouts.TEN_SEC);
-        await ServerListScreen.getServerItemInactive(serverOneDisplayName).tap();
+        await revealServerListItems();
+        await waitForElementToExist(ServerListScreen.getServerItemInactive(serverOneDisplayName), timeouts.TEN_SEC);
+        await ServerListScreen.getServerItemInactive(serverOneDisplayName).atIndex(0).tap();
         await wait(timeouts.TWO_SEC);
         await ServerListScreen.open();
         await wait(timeouts.ONE_SEC);
-        if (isIos()) {
-            await ServerListScreen.serverListTitle.swipe('up');
-        } else if (isAndroid()) {
-            await waitFor(ServerListScreen.serverListTitle).toBeVisible().withTimeout(timeouts.TWO_SEC);
-            await ServerListScreen.serverListTitle.swipe('up', 'fast', 0.1, 0.5, 0.3);
-        }
-        await wait(timeouts.ONE_SEC);
-        await waitFor(ServerListScreen.getServerItemInactive(serverTwoDisplayName)).toBeVisible().withTimeout(timeouts.TEN_SEC);
-        await ServerListScreen.getServerItemInactive(serverTwoDisplayName).swipe('left');
+        await revealServerListItems();
+        await waitForElementToExist(ServerListScreen.getServerItemInactive(serverTwoDisplayName), timeouts.TEN_SEC);
+        await ServerListScreen.getServerItemInactive(serverTwoDisplayName).atIndex(0).swipe('left', 'slow');
         await wait(timeouts.ONE_SEC);
 
+        if (isIos()) {
+            await waitFor(ServerListScreen.getServerItemLogoutOption(serverTwoDisplayName)).
+                toBeVisible(100).
+                withTimeout(timeouts.TEN_SEC);
+        }
+
         // .atIndex(0): the Swipeable's revealed Logout option can render twice
-        // briefly on iOS during the swipe-pan animation ("Multiple elements found"
-        // in CI run 26368981355). Matches the .atIndex(0) pattern used throughout
-        // the dedicated server_list spec.
+        // briefly on iOS during the swipe-pan animation.
         await ServerListScreen.getServerItemLogoutOption(serverTwoDisplayName).atIndex(0).tap();
 
         // * Verify logout server alert is displayed
-        await expect(Alert.logoutTitle(serverTwoDisplayName)).toBeVisible();
+        await waitForElementToBeVisible(Alert.logoutTitle(serverTwoDisplayName), timeouts.TEN_SEC);
 
         // # Tap on logout button
+        await waitForElementToBeVisible(Alert.logoutButton, timeouts.TEN_SEC);
         await Alert.logoutButton.tap();
         await wait(timeouts.FOUR_SEC);
 
         // * Verify second server is logged out
-        await ServerListScreen.getServerItemInactive(serverTwoDisplayName).swipe('left');
+        await ServerListScreen.getServerItemInactive(serverTwoDisplayName).atIndex(0).swipe('left', 'slow');
         await wait(timeouts.ONE_SEC);
         await expect(ServerListScreen.getServerItemLoginOption(serverTwoDisplayName).atIndex(0)).toBeVisible();
 
