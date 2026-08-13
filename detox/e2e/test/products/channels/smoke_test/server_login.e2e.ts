@@ -91,6 +91,7 @@ describe('Smoke Test - Server Login', () => {
         await wait(timeouts.TWO_SEC);
         await waitFor(ServerScreen.headerTitleAddServer).toExist().withTimeout(timeouts.HALF_MIN);
         await ServerScreen.connectToServer(serverTwoUrl, serverTwoDisplayName);
+
         // login() retries via reload + reconnect to Server 1, which overruns the
         // 300s Jest timeout on this add-server path. Stay on the current form.
         await LoginScreen.loginWithRetryIfStuck(user);
