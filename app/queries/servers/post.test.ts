@@ -581,7 +581,7 @@ describe('post query helpers', () => {
             });
         };
 
-        it('should return the create_at of the nth oldest post older than the anchor', async () => {
+        it('should return the create_at of the nth newest post older than the anchor', async () => {
             await savePosts([
                 ...Array.from({length: 6}, (_, idx) => TestHelper.fakePost({
                     channel_id: channelId,

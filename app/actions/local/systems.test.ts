@@ -358,11 +358,12 @@ describe('dataRetentionCleanPosts', () => {
 
         expect(error).toBeUndefined();
 
-        const deletedIds = unsafeExecuteSpy.mock.calls.flatMap(([operations]) => {
+        const batches = unsafeExecuteSpy.mock.calls.map(([operations]) => {
             const [[, batch]] = (operations as {sqls: Array<[string, string[]]>}).sqls;
             return batch;
         });
-        expect(deletedIds.sort()).toEqual([...postIds].sort());
+        expect(batches.map((batch) => batch.length).sort((a, b) => b - a)).toEqual([1000, 500]);
+        expect(batches.flat().sort()).toEqual([...postIds].sort());
     });
 });
 
