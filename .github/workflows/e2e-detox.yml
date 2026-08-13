@@ -37,8 +37,24 @@ on:
         description: "Run ID of the parent workflow that uploaded build artifacts"
         required: true
         type: string
-      test-system-io-job-configs:
-        description: "JSON map of per-platform Test System IO configs from parent calculate-test-system-io-identity"
+      context_suffix:
+        description: >
+          Suffix appended to e2e-test/detox-* contexts (/main, /release, /release-cut).
+          Empty for PR runs.
+        required: false
+        type: string
+        default: ""
+      branch:
+        description: "Branch segment for Test System IO composite identity"
+        required: true
+        type: string
+      pr_number:
+        description: "PR number for composite identity; empty for non-PR runs"
+        required: false
+        type: string
+        default: ""
+      commit_sha:
+        description: "Commit SHA for composite identity and commit statuses"
         required: true
         type: string
 
@@ -60,17 +76,19 @@ jobs:
     uses: ./.github/workflows/e2e-ios-template.yml
     with:
       run-type: ${{ inputs.run_type || 'PR' }}
-      test-system-io-config: ${{ toJSON(fromJSON(inputs.test-system-io-job-configs)['detox-ios']) }}
-      test-system-io-shard-name: detox-ios
+      context_name: e2e-test/detox-ios${{ inputs.context_suffix }}
+      branch: ${{ inputs.branch }}
+      pr_number: ${{ inputs.pr_number }}
+      commit_sha: ${{ inputs.commit_sha }}
       durations_key: detox-ios
-      # PR: full tree + // Tags: @ios_pr. MAIN/MASTER/RELEASE: full phone suite.
+      # PR: full tree + // Tags: @ios_pr. MAIN/MASTER/RELEASE/RELEASE_CUT: full phone suite.
       # Phone legs exclude @ipad_only (tag filter — not directory).
       search_path: detox/e2e/test
       # Avoid `cond && '' || tag` — empty string is falsy in GHA expressions.
-      detox-include-tags: ${{ (inputs.run_type != 'MAIN' && inputs.run_type != 'MASTER' && inputs.run_type != 'RELEASE') && '@ios_pr' || '' }}
+      detox-include-tags: ${{ (inputs.run_type != 'MAIN' && inputs.run_type != 'MASTER' && inputs.run_type != 'RELEASE' && inputs.run_type != 'RELEASE_CUT') && '@ios_pr' || '' }}
       detox-exclude-tags: '@ipad_only'
       parallelism: "20"
-      record_tests_in_zephyr: ${{ inputs.run_type == 'RELEASE' || inputs.run_type == 'MAIN' || inputs.run_type == 'MASTER' }}
+      record_tests_in_zephyr: ${{ inputs.run_type == 'RELEASE' || inputs.run_type == 'RELEASE_CUT' || inputs.run_type == 'MAIN' || inputs.run_type == 'MASTER' }}
       MOBILE_VERSION: ${{ inputs.MOBILE_VERSION }}
       MM_TEST_SERVER_URL: ${{ inputs.IOS_SITE_1_URL }}
       MM_TEST_SERVER_URL_2: ${{ inputs.IOS_SITE_2_URL }}
@@ -97,12 +115,14 @@ jobs:
     with:
       run-android-tests: true
       run-type: ${{ inputs.run_type || 'PR' }}
-      test-system-io-config: ${{ toJSON(fromJSON(inputs.test-system-io-job-configs)['detox-android']) }}
-      test-system-io-shard-name: detox-android
+      context_name: e2e-test/detox-android${{ inputs.context_suffix }}
+      branch: ${{ inputs.branch }}
+      pr_number: ${{ inputs.pr_number }}
+      commit_sha: ${{ inputs.commit_sha }}
       durations_key: detox-android
       search_path: detox/e2e/test
       detox-exclude-tags: '@ipad_only'
-      record_tests_in_zephyr: ${{ inputs.run_type == 'RELEASE' || inputs.run_type == 'MAIN' || inputs.run_type == 'MASTER' }}
+      record_tests_in_zephyr: ${{ inputs.run_type == 'RELEASE' || inputs.run_type == 'RELEASE_CUT' || inputs.run_type == 'MAIN' || inputs.run_type == 'MASTER' }}
       MOBILE_VERSION: ${{ inputs.MOBILE_VERSION }}
       MM_TEST_SERVER_URL: ${{ inputs.ANDROID_SITE_1_URL }}
       MM_TEST_SERVER_URL_2: ${{ inputs.ANDROID_SITE_2_URL }}
@@ -128,8 +148,10 @@ jobs:
     uses: ./.github/workflows/e2e-ios-template.yml
     with:
       run-type: ${{ inputs.run_type || 'PR' }}
-      test-system-io-config: ${{ toJSON(fromJSON(inputs.test-system-io-job-configs)['detox-ipad']) }}
-      test-system-io-shard-name: detox-ipad
+      context_name: e2e-test/detox-ipad${{ inputs.context_suffix }}
+      branch: ${{ inputs.branch }}
+      pr_number: ${{ inputs.pr_number }}
+      commit_sha: ${{ inputs.commit_sha }}
       durations_key: detox-ipad
       MOBILE_VERSION: ${{ inputs.MOBILE_VERSION }}
       MM_TEST_SERVER_URL: ${{ inputs.IOS_SITE_1_URL }}

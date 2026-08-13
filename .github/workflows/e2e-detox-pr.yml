@@ -63,7 +63,10 @@ on:
         required: false
         type: string
       run_type:
-        description: "Run type for test reporting (PR/RELEASE/MAIN). MASTER is accepted as an alias for MAIN (Matterwick main-push)."
+        description: >-
+          Run type for test reporting and commit-status context suffixes
+          (PR, MAIN/MASTER→/main, RELEASE→/release, RELEASE_CUT→/release-cut).
+          MASTER is accepted as an alias for MAIN (Matterwick main-push).
         required: false
         default: "PR"
         type: string
@@ -272,28 +275,22 @@ jobs:
               || 'e2e tests overridden' }}
           target_url: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
 
-  calculate-test-system-io-identity:
-    name: Calculate Test System IO per-job identities
+  # Branch + context_suffix for Test System IO (mattermost Playwright/Cypress pattern).
+  # Templates build composite identity from context_name + these outputs via inline jq.
+  generate-e2e-variables:
+    name: Generate E2E identity variables
     runs-on: ubuntu-24.04
     permissions:
       contents: read
-      pull-requests: read
     needs: resolve-e2e-policy
     if: needs.resolve-e2e-policy.outputs.e2e_override != 'true'
     outputs:
-      job-configs: ${{ steps.id.outputs.job-configs }}
-      job-keys: ${{ steps.id.outputs.job-keys }}
+      branch: ${{ steps.vars.outputs.branch }}
+      context_suffix: ${{ steps.vars.outputs.context_suffix }}
+      pr_number: ${{ steps.vars.outputs.pr_number }}
     steps:
-      - name: Sparse checkout Test System IO job-config helper
-        uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
-        with:
-          ref: ${{ inputs.MOBILE_VERSION }}
-          persist-credentials: false
-          sparse-checkout: |
-            detox/utils/build-test-system-io-job-config.js
-
-      - name: Resolve Test System IO branch segment
-        id: branch
+      - name: Resolve branch and context suffix
+        id: vars
         env:
           VERSION_NAME: ${{ inputs.version_name }}
           PR_NUMBER: ${{ inputs.pr_number }}
@@ -308,50 +305,24 @@ jobs:
           VERSION_NAME="${VERSION_NAME#refs/tags/}"
           if [ -n "${PR_DIGITS}" ]; then
             echo "branch=pr-${PR_DIGITS}" >> "$GITHUB_OUTPUT"
+            echo "pr_number=${PR_DIGITS}" >> "$GITHUB_OUTPUT"
           elif [ "${RUN_TYPE_UPPER}" = "MAIN" ] || [ "${RUN_TYPE_UPPER}" = "MASTER" ]; then
             echo "branch=main" >> "$GITHUB_OUTPUT"
+            echo "pr_number=" >> "$GITHUB_OUTPUT"
           elif [ -n "${VERSION_NAME}" ]; then
             echo "branch=${VERSION_NAME}" >> "$GITHUB_OUTPUT"
+            echo "pr_number=" >> "$GITHUB_OUTPUT"
           else
             echo "branch=${GITHUB_REF_NAME:-main}" >> "$GITHUB_OUTPUT"
+            echo "pr_number=" >> "$GITHUB_OUTPUT"
           fi
-
-      - id: id
-        env:
-          PLATFORM: ${{ inputs.PLATFORM }}
-          GITHUB_REPOSITORY: ${{ github.repository }}
-          MM_SHA: ${{ inputs.MOBILE_VERSION }}
-          PR_NUMBER: ${{ inputs.pr_number }}
-          RUN_TYPE: ${{ inputs.run_type || 'PR' }}
-          BRANCH: ${{ steps.branch.outputs.branch }}
-        run: |
-          # Matterwick main-push still sends MASTER; canonicalize to MAIN → mobile-main.
-          if [ "${RUN_TYPE}" = "MASTER" ]; then
-            RUN_TYPE=MAIN
-          fi
-          RUN_TYPE_LOWER=$(echo "${RUN_TYPE}" | tr '[:upper:]' '[:lower:]')
-          RUN_NAME="mobile-${RUN_TYPE_LOWER}"
-          PR_DIGITS=$(echo "${PR_NUMBER}" | tr -cd '0-9')
-          if [ -n "${PR_DIGITS}" ]; then
-            BASE=$(jq -nc \
-              --arg repo "$GITHUB_REPOSITORY" --arg sha "$MM_SHA" --arg run_id "$GITHUB_RUN_ID" \
-              --arg attempt "$GITHUB_RUN_ATTEMPT" --arg branch "$BRANCH" --arg pr "$PR_DIGITS" --arg name "$RUN_NAME" \
-              '{repository:$repo, commit_sha:$sha, gh_run_id:$run_id, gh_run_attempt:$attempt, branch:$branch, name:$name, run_group:$name, gh_pr_number:$pr, framework:"detox"}')
-          else
-            BASE=$(jq -nc \
-              --arg repo "$GITHUB_REPOSITORY" --arg sha "$MM_SHA" --arg run_id "$GITHUB_RUN_ID" \
-              --arg attempt "$GITHUB_RUN_ATTEMPT" --arg branch "$BRANCH" --arg name "$RUN_NAME" \
-              '{repository:$repo, commit_sha:$sha, gh_run_id:$run_id, gh_run_attempt:$attempt, branch:$branch, name:$name, run_group:$name, framework:"detox"}')
-          fi
-          export BASE PLATFORM
-          JOB_CONFIGS=$(node -e '
-            const {buildTestSystemIoJobConfigMap, jobKeysForPlatform} = require("./detox/utils/build-test-system-io-job-config.js");
-            const base = JSON.parse(process.env.BASE);
-            const keys = jobKeysForPlatform(process.env.PLATFORM);
-            process.stdout.write(JSON.stringify(buildTestSystemIoJobConfigMap(base, keys)));
-          ')
-          echo "job-configs=$JOB_CONFIGS" >> "$GITHUB_OUTPUT"
-          echo "job-keys=$(echo "$JOB_CONFIGS" | jq -r 'keys | join(",")')" >> "$GITHUB_OUTPUT"
+          # Mobile uses /main (not /master) for merge-to-main commit-status contexts.
+          case "${RUN_TYPE_UPPER}" in
+            MAIN|MASTER) echo "context_suffix=/main" >> "$GITHUB_OUTPUT" ;;
+            RELEASE) echo "context_suffix=/release" >> "$GITHUB_OUTPUT" ;;
+            RELEASE_CUT) echo "context_suffix=/release-cut" >> "$GITHUB_OUTPUT" ;;
+            *) echo "context_suffix=" >> "$GITHUB_OUTPUT" ;;
+          esac
 
   resolve-server-topology:
     name: Resolve test server topology
@@ -771,7 +742,7 @@ jobs:
     name: Detox iOS E2E
     needs:
       - resolve-e2e-policy
-      - calculate-test-system-io-identity
+      - generate-e2e-variables
       - build-ios-simulator
       - provision-servers
       - resolve-server-topology
@@ -800,14 +771,17 @@ jobs:
       SITE_3_URL: ${{ needs.resolve-server-topology.outputs.site-3-url }}
       run_type: ${{ inputs.run_type || 'PR' }}
       artifact_run_id: ${{ github.run_id }}
-      test-system-io-job-configs: ${{ needs.calculate-test-system-io-identity.outputs.job-configs }}
+      context_suffix: ${{ needs.generate-e2e-variables.outputs.context_suffix }}
+      branch: ${{ needs.generate-e2e-variables.outputs.branch }}
+      pr_number: ${{ needs.generate-e2e-variables.outputs.pr_number }}
+      commit_sha: ${{ inputs.MOBILE_VERSION }}
     secrets: inherit
 
   run-detox-android:
     name: Detox Android E2E
     needs:
       - resolve-e2e-policy
-      - calculate-test-system-io-identity
+      - generate-e2e-variables
       - build-android-apk
       - provision-servers
       - resolve-server-topology
@@ -836,7 +810,10 @@ jobs:
       SITE_3_URL: ${{ needs.resolve-server-topology.outputs.site-3-url }}
       run_type: ${{ inputs.run_type || 'PR' }}
       artifact_run_id: ${{ github.run_id }}
-      test-system-io-job-configs: ${{ needs.calculate-test-system-io-identity.outputs.job-configs }}
+      context_suffix: ${{ needs.generate-e2e-variables.outputs.context_suffix }}
+      branch: ${{ needs.generate-e2e-variables.outputs.branch }}
+      pr_number: ${{ needs.generate-e2e-variables.outputs.pr_number }}
+      commit_sha: ${{ inputs.MOBILE_VERSION }}
     secrets: inherit
 
   validate-maestro-flow-headers:
@@ -865,7 +842,7 @@ jobs:
     name: Maestro iOS E2E
     needs:
       - resolve-e2e-policy
-      - calculate-test-system-io-identity
+      - generate-e2e-variables
       - build-ios-simulator
       - provision-servers
       - validate-maestro-flow-headers
@@ -896,15 +873,18 @@ jobs:
       SITE_3_URL: ${{ needs.resolve-server-topology.outputs.site-3-url }}
       run_type: ${{ inputs.run_type || 'PR' }}
       artifact_run_id: ${{ github.run_id }}
-      record_tests_in_zephyr: ${{ inputs.run_type == 'RELEASE' || inputs.run_type == 'MAIN' || inputs.run_type == 'MASTER' }}
-      test-system-io-job-configs: ${{ needs.calculate-test-system-io-identity.outputs.job-configs }}
+      record_tests_in_zephyr: ${{ inputs.run_type == 'RELEASE' || inputs.run_type == 'RELEASE_CUT' || inputs.run_type == 'MAIN' || inputs.run_type == 'MASTER' }}
+      context_suffix: ${{ needs.generate-e2e-variables.outputs.context_suffix }}
+      branch: ${{ needs.generate-e2e-variables.outputs.branch }}
+      pr_number: ${{ needs.generate-e2e-variables.outputs.pr_number }}
+      commit_sha: ${{ inputs.MOBILE_VERSION }}
     secrets: inherit
 
   run-maestro-android:
     name: Maestro Android E2E
     needs:
       - resolve-e2e-policy
-      - calculate-test-system-io-identity
+      - generate-e2e-variables
       - build-android-apk-maestro
       - provision-servers
       - validate-maestro-flow-headers
@@ -935,8 +915,11 @@ jobs:
       SITE_3_URL: ${{ needs.resolve-server-topology.outputs.site-3-url }}
       run_type: ${{ inputs.run_type || 'PR' }}
       artifact_run_id: ${{ github.run_id }}
-      record_tests_in_zephyr: ${{ inputs.run_type == 'RELEASE' || inputs.run_type == 'MAIN' || inputs.run_type == 'MASTER' }}
-      test-system-io-job-configs: ${{ needs.calculate-test-system-io-identity.outputs.job-configs }}
+      record_tests_in_zephyr: ${{ inputs.run_type == 'RELEASE' || inputs.run_type == 'RELEASE_CUT' || inputs.run_type == 'MAIN' || inputs.run_type == 'MASTER' }}
+      context_suffix: ${{ needs.generate-e2e-variables.outputs.context_suffix }}
+      branch: ${{ needs.generate-e2e-variables.outputs.branch }}
+      pr_number: ${{ needs.generate-e2e-variables.outputs.pr_number }}
+      commit_sha: ${{ inputs.MOBILE_VERSION }}
     secrets: inherit
 
   e2e-remove-matterwick-label:

@@ -42,8 +42,24 @@ on:
         required: false
         type: boolean
         default: false
-      test-system-io-job-configs:
-        description: "JSON map of per-platform Test System IO configs from parent calculate-test-system-io-identity"
+      context_suffix:
+        description: >
+          Suffix appended to e2e-test/maestro-* contexts (/main, /release, /release-cut).
+          Empty for PR runs.
+        required: false
+        type: string
+        default: ""
+      branch:
+        description: "Branch segment for Test System IO composite identity"
+        required: true
+        type: string
+      pr_number:
+        description: "PR number for composite identity; empty for non-PR runs"
+        required: false
+        type: string
+        default: ""
+      commit_sha:
+        description: "Commit SHA for composite identity and commit statuses"
         required: true
         type: string
 
@@ -80,8 +96,10 @@ jobs:
       MM_TEST_SERVER_URL: ${{ inputs.IOS_SITE_1_URL }}
       artifact_run_id: ${{ inputs.artifact_run_id }}
       record_tests_in_zephyr: ${{ inputs.record_tests_in_zephyr }}
-      test-system-io-config: ${{ toJSON(fromJSON(inputs.test-system-io-job-configs)['maestro-ios']) }}
-      test-system-io-shard-name: maestro-ios
+      context_name: e2e-test/maestro-ios${{ inputs.context_suffix }}
+      branch: ${{ inputs.branch }}
+      pr_number: ${{ inputs.pr_number }}
+      commit_sha: ${{ inputs.commit_sha }}
     secrets: inherit
 
   run-maestro-android:
@@ -95,6 +113,8 @@ jobs:
       MM_TEST_SERVER_URL: ${{ inputs.ANDROID_SITE_1_URL }}
       artifact_run_id: ${{ inputs.artifact_run_id }}
       record_tests_in_zephyr: ${{ inputs.record_tests_in_zephyr }}
-      test-system-io-config: ${{ toJSON(fromJSON(inputs.test-system-io-job-configs)['maestro-android']) }}
-      test-system-io-shard-name: maestro-android
+      context_name: e2e-test/maestro-android${{ inputs.context_suffix }}
+      branch: ${{ inputs.branch }}
+      pr_number: ${{ inputs.pr_number }}
+      commit_sha: ${{ inputs.commit_sha }}
     secrets: inherit

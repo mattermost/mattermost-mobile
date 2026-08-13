@@ -26,6 +26,7 @@ jobs:
     runs-on: ubuntu-24.04
     outputs:
       MOBILE_SHA: ${{ steps.repo.outputs.MOBILE_SHA }}
+      BRANCH: ${{ steps.repo.outputs.BRANCH }}
     steps:
       - name: cmt/checkout-mobile
         uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
@@ -35,61 +36,13 @@ jobs:
 
       - name: cmt/calculate-mattermost-sha
         id: repo
-        run: echo "MOBILE_SHA=$(git rev-parse HEAD)" >> "${GITHUB_OUTPUT}"
-
-  # Phase 5 — base Test System IO identity for this CMT run. Each matrix leg builds its
-  # own per-job report group from this base + test-system-io-shard-name. Worker counts
-  # match template parallelism (10 latest Detox phone, else 1).
-  cmt-identity:
-    name: Calculate CMT Test System IO base identity
-    runs-on: ubuntu-24.04
-    permissions:
-      contents: read
-    needs:
-      - calculate-commit-hash
-      - prepare-maestro-matrix
-    outputs:
-      test-system-io-base-config: ${{ steps.id.outputs.test-system-io-base-config }}
-      test-system-io-job-configs: ${{ steps.id.outputs.test-system-io-job-configs }}
-    steps:
-      - name: Sparse checkout Test System IO job-config helper
-        uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
-        with:
-          ref: ${{ inputs.MOBILE_VERSION }}
-          persist-credentials: false
-          sparse-checkout: |
-            detox/utils/build-test-system-io-job-config.js
-
-      - id: id
         env:
-          GITHUB_REPOSITORY: ${{ github.repository }}
-          MM_SHA: ${{ needs.calculate-commit-hash.outputs.MOBILE_SHA }}
           MOBILE_VERSION: ${{ inputs.MOBILE_VERSION }}
-          CMT_MATRIX: ${{ inputs.CMT_MATRIX }}
-          MAESTRO_MATRIX: ${{ needs.prepare-maestro-matrix.outputs.matrix }}
         run: |
-          BRANCH=$(echo "$MOBILE_VERSION" | sed 's#^refs/heads/##; s#^refs/tags/##')
-          BASE=$(jq -nc \
-            --arg repo "$GITHUB_REPOSITORY" --arg sha "$MM_SHA" --arg run_id "$GITHUB_RUN_ID" \
-            --arg attempt "$GITHUB_RUN_ATTEMPT" --arg branch "$BRANCH" \
-            '{repository:$repo, commit_sha:$sha, gh_run_id:$run_id, gh_run_attempt:$attempt, branch:$branch, name:"mobile-release", run_group:"mobile-release", framework:"detox"}')
-          # No status_context — templates expand per test-system-io-shard-name via buildTestSystemIoJobConfig.
-          TEST_SYSTEM_IO_BASE=$(jq -nc --argjson identity "$BASE" \
-            '{composite_identity: $identity, total_reports_expected: 1}')
-          echo "test-system-io-base-config=$TEST_SYSTEM_IO_BASE" >> "$GITHUB_OUTPUT"
-
-          # Per-shard configs so the final rollup can poll every leg's Test System IO group.
-          export BASE CMT_MATRIX MAESTRO_MATRIX
-          JOB_CONFIGS=$(node -e '
-            const {buildCmtTestSystemIoJobConfigMap} = require("./detox/utils/build-test-system-io-job-config.js");
-            const base = JSON.parse(process.env.BASE);
-            process.stdout.write(JSON.stringify(buildCmtTestSystemIoJobConfigMap(
-              base,
-              JSON.parse(process.env.CMT_MATRIX),
-              JSON.parse(process.env.MAESTRO_MATRIX),
-            )));
-          ')
-          echo "test-system-io-job-configs=$JOB_CONFIGS" >> "$GITHUB_OUTPUT"
+          echo "MOBILE_SHA=$(git rev-parse HEAD)" >> "${GITHUB_OUTPUT}"
+          BRANCH="${MOBILE_VERSION#refs/heads/}"
+          BRANCH="${BRANCH#refs/tags/}"
+          echo "BRANCH=${BRANCH}" >> "${GITHUB_OUTPUT}"
 
   # Maestro only runs against the latest server version; matrix filtering happens here since job-level if: can't access matrix.
   prepare-maestro-matrix:
@@ -250,7 +203,7 @@ jobs:
     uses: ./.github/workflows/e2e-ios-template.yml
     needs:
       - build-ios-simulator
-      - cmt-identity
+      - calculate-commit-hash
     strategy:
       fail-fast: false
       matrix: ${{ fromJson(inputs.CMT_MATRIX) }}
@@ -268,8 +221,9 @@ jobs:
       MM_MOBILE_E2E_WEBHOOK_PUBLIC_BASE_URL: ${{ secrets.MM_MOBILE_E2E_WEBHOOK_PUBLIC_BASE_URL }}
       MM_MOBILE_E2E_CLOUDFLARED_TUNNEL_TOKEN: ${{ secrets.MM_MOBILE_E2E_CLOUDFLARED_TUNNEL_TOKEN }}
     with:
-      test-system-io-config: ${{ needs.cmt-identity.outputs.test-system-io-base-config }}
-      test-system-io-shard-name: detox-ios-Server_${{ matrix.server.version }}
+      context_name: e2e-test/detox-ios/cmt-server-${{ matrix.server.version }}
+      branch: ${{ needs.calculate-commit-hash.outputs.BRANCH }}
+      commit_sha: ${{ needs.calculate-commit-hash.outputs.MOBILE_SHA }}
       run-type: "RELEASE"
       MM_TEST_SERVER_URL: ${{ matrix.server.ios_site_1_url }}
       MM_TEST_SERVER_URL_2: ${{ matrix.server.ios_site_2_url }}
@@ -293,7 +247,7 @@ jobs:
     uses: ./.github/workflows/e2e-ios-template.yml
     needs:
       - build-ios-simulator
-      - cmt-identity
+      - calculate-commit-hash
     strategy:
       fail-fast: false
       matrix: ${{ fromJson(inputs.CMT_MATRIX) }}
@@ -311,8 +265,9 @@ jobs:
       MM_MOBILE_E2E_WEBHOOK_PUBLIC_BASE_URL: ${{ secrets.MM_MOBILE_E2E_WEBHOOK_PUBLIC_BASE_URL }}
       MM_MOBILE_E2E_CLOUDFLARED_TUNNEL_TOKEN: ${{ secrets.MM_MOBILE_E2E_CLOUDFLARED_TUNNEL_TOKEN }}
     with:
-      test-system-io-config: ${{ needs.cmt-identity.outputs.test-system-io-base-config }}
-      test-system-io-shard-name: detox-ipad-Server_${{ matrix.server.version }}
+      context_name: e2e-test/detox-ipad/cmt-server-${{ matrix.server.version }}
+      branch: ${{ needs.calculate-commit-hash.outputs.BRANCH }}
+      commit_sha: ${{ needs.calculate-commit-hash.outputs.MOBILE_SHA }}
       run-type: "RELEASE"
       MM_TEST_SERVER_URL: ${{ matrix.server.ios_site_1_url }}
       MM_TEST_SERVER_URL_2: ${{ matrix.server.ios_site_2_url }}
@@ -342,7 +297,7 @@ jobs:
     needs:
       - build-ios-simulator
       - prepare-maestro-matrix
-      - cmt-identity
+      - calculate-commit-hash
     strategy:
       fail-fast: false
       matrix: ${{ fromJson(needs.prepare-maestro-matrix.outputs.matrix) }}
@@ -357,8 +312,9 @@ jobs:
       MM_E2E_MASTER_HEALTH_WEBHOOK_URL: ${{ secrets.MM_E2E_MASTER_HEALTH_WEBHOOK_URL }}
       MM_E2E_RELEASE_WEBHOOK_URL: ${{ secrets.MM_E2E_RELEASE_WEBHOOK_URL }}
     with:
-      test-system-io-config: ${{ needs.cmt-identity.outputs.test-system-io-base-config }}
-      test-system-io-shard-name: maestro-ios-Server_${{ matrix.server.version }}
+      context_name: e2e-test/maestro-ios/cmt-server-${{ matrix.server.version }}
+      branch: ${{ needs.calculate-commit-hash.outputs.BRANCH }}
+      commit_sha: ${{ needs.calculate-commit-hash.outputs.MOBILE_SHA }}
       platform: ios
       run-type: "RELEASE"
       MM_TEST_SERVER_URL: ${{ matrix.server.ios_site_1_url }}
@@ -379,7 +335,7 @@ jobs:
     uses: ./.github/workflows/e2e-android-template.yml
     needs:
       - build-android-apk
-      - cmt-identity
+      - calculate-commit-hash
     strategy:
       fail-fast: false
       matrix: ${{ fromJson(inputs.CMT_MATRIX) }}
@@ -397,8 +353,9 @@ jobs:
       MM_MOBILE_E2E_WEBHOOK_PUBLIC_BASE_URL: ${{ secrets.MM_MOBILE_E2E_WEBHOOK_PUBLIC_BASE_URL }}
       MM_MOBILE_E2E_CLOUDFLARED_TUNNEL_TOKEN: ${{ secrets.MM_MOBILE_E2E_CLOUDFLARED_TUNNEL_TOKEN }}
     with:
-      test-system-io-config: ${{ needs.cmt-identity.outputs.test-system-io-base-config }}
-      test-system-io-shard-name: detox-android-Server_${{ matrix.server.version }}
+      context_name: e2e-test/detox-android/cmt-server-${{ matrix.server.version }}
+      branch: ${{ needs.calculate-commit-hash.outputs.BRANCH }}
+      commit_sha: ${{ needs.calculate-commit-hash.outputs.MOBILE_SHA }}
       run-android-tests: true
       run-type: "RELEASE"
       MM_TEST_SERVER_URL: ${{ matrix.server.android_site_1_url }}
@@ -424,7 +381,7 @@ jobs:
     needs:
       - build-android-apk-maestro
       - prepare-maestro-matrix
-      - cmt-identity
+      - calculate-commit-hash
     strategy:
       fail-fast: false
       matrix: ${{ fromJson(needs.prepare-maestro-matrix.outputs.matrix) }}
@@ -439,8 +396,9 @@ jobs:
       MM_E2E_MASTER_HEALTH_WEBHOOK_URL: ${{ secrets.MM_E2E_MASTER_HEALTH_WEBHOOK_URL }}
       MM_E2E_RELEASE_WEBHOOK_URL: ${{ secrets.MM_E2E_RELEASE_WEBHOOK_URL }}
     with:
-      test-system-io-config: ${{ needs.cmt-identity.outputs.test-system-io-base-config }}
-      test-system-io-shard-name: maestro-android-Server_${{ matrix.server.version }}
+      context_name: e2e-test/maestro-android/cmt-server-${{ matrix.server.version }}
+      branch: ${{ needs.calculate-commit-hash.outputs.BRANCH }}
+      commit_sha: ${{ needs.calculate-commit-hash.outputs.MOBILE_SHA }}
       platform: android
       run-type: "RELEASE"
       MM_TEST_SERVER_URL: ${{ matrix.server.android_site_1_url }}
@@ -455,7 +413,6 @@ jobs:
       contents: read
       statuses: write
     needs:
-      - cmt-identity
       - calculate-commit-hash
       - detox-e2e
       - detox-android-e2e
@@ -475,8 +432,8 @@ jobs:
           done
           echo "succeeded=$UPSTREAM" >> "$GITHUB_OUTPUT"
 
-      # Umbrella context only — each matrix leg already finalized e2e-test/<shard>
-      # via test-system-io-summary (and posted its Mattermost webhook_payload).
+      # Umbrella context only — each matrix leg already finalized
+      # e2e-test/*/cmt-server-* via test-system-io-summary.
       - name: Finalize umbrella CMT commit status from CI job results
         env:
           GITHUB_TOKEN: ${{ github.token }}

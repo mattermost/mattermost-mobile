@@ -44,15 +44,25 @@ on:
         required: false
         type: string
         default: "1"
-      test-system-io-config:
+      context_name:
         description: >
-          Test System IO reporting config: {"composite_identity":{...},"status_context":"..."}.
-          Empty disables orchestration for this platform.
+          GitHub commit-status context (e.g. e2e-test/maestro-ios, e2e-test/maestro-ios/main,
+          e2e-test/maestro-ios/cmt-server-11.9.0). Empty disables orchestration.
         required: false
         type: string
         default: ""
-      test-system-io-shard-name:
-        description: "Display name for this shard in Test System IO (e.g. maestro-ios)"
+      branch:
+        description: "Branch segment for Test System IO composite identity (e.g. pr-123, main, release-2.40)"
+        required: false
+        type: string
+        default: ""
+      pr_number:
+        description: "PR number for composite identity (digits only used); empty for non-PR runs"
+        required: false
+        type: string
+        default: ""
+      commit_sha:
+        description: "Commit SHA for composite identity and commit statuses (defaults to MOBILE_VERSION)"
         required: false
         type: string
         default: ""
@@ -84,7 +94,6 @@ permissions:
   issues: read
 
 env:
-  TEST_SYSTEM_IO_ACTIONS_SHA: d75592167f4616520161d32475e8486bd8f13ed4
   ADMIN_EMAIL: ${{ secrets.MM_MOBILE_E2E_ADMIN_EMAIL }}
   ADMIN_USERNAME: ${{ secrets.MM_MOBILE_E2E_ADMIN_USERNAME }}
   ADMIN_PASSWORD: ${{ secrets.MM_MOBILE_E2E_ADMIN_PASSWORD }}
@@ -102,8 +111,8 @@ env:
 
 jobs:
   begin:
-    name: orch-begin-${{ inputs.test-system-io-shard-name != '' && inputs.test-system-io-shard-name || format('maestro-{0}', inputs.platform) }}
-    if: inputs.test-system-io-config != ''
+    name: orch-begin
+    if: inputs.context_name != ''
     runs-on: ubuntu-24.04
     permissions:
       contents: read
@@ -126,35 +135,57 @@ jobs:
           ref: ${{ inputs.MOBILE_VERSION }}
           persist-credentials: false
 
-      - name: Resolve Test System IO config
+      - name: Build Test System IO composite identity
         id: cfg
         env:
-          TEST_SYSTEM_IO_CONFIG: ${{ inputs.test-system-io-config }}
-          TEST_SYSTEM_IO_SHARD_NAME: ${{ inputs.test-system-io-shard-name }}
-          TEST_SYSTEM_IO_WORKERS: ${{ inputs.parallelism }}
+          CONTEXT_NAME: ${{ inputs.context_name }}
+          BRANCH: ${{ inputs.branch }}
+          PR_NUMBER: ${{ inputs.pr_number }}
+          COMMIT_SHA: ${{ inputs.commit_sha || inputs.MOBILE_VERSION }}
+          GITHUB_REPOSITORY: ${{ github.repository }}
         run: |
           set -euo pipefail
-          # PR/main pass a full per-job config; CMT passes a base identity + shard name.
-          CFG=$(bash detox/utils/resolve-test-system-io-job-config.sh)
-          IDENTITY=$(echo "$CFG" | jq -c '.composite_identity')
-          CONTEXT=$(echo "$CFG" | jq -r '.status_context // empty')
-          if [ -z "$CONTEXT" ]; then
-            echo "::error::resolved test-system-io-config.status_context is empty"
+          # Derive the report name from the commit-status context: drop e2e-test/
+          # and swap remaining / for - (mattermost Playwright/Cypress pattern).
+          NAME="${CONTEXT_NAME#e2e-test/}"
+          NAME="${NAME//\//-}"
+          if [ -z "$COMMIT_SHA" ]; then
+            echo "::error::commit_sha is empty"
             exit 1
           fi
-          BRANCH=$(echo "$IDENTITY" | jq -r '.branch // empty')
-          PR=$(echo "$IDENTITY" | jq -r '.gh_pr_number // empty')
-          if [ -n "$PR" ] && [ "$PR" != "null" ]; then
-            IDENTITY_BRANCH="pr-${PR}"
+          PR_DIGITS=$(echo "${PR_NUMBER}" | tr -cd '0-9')
+          if [ -n "$PR_DIGITS" ]; then
+            IDENTITY_BRANCH="pr-${PR_DIGITS}"
+            IDENTITY=$(jq -nc \
+              --arg repo "${GITHUB_REPOSITORY}" \
+              --arg sha "${COMMIT_SHA}" \
+              --arg run_id "${GITHUB_RUN_ID}" \
+              --arg name "${NAME}" \
+              --arg attempt "${GITHUB_RUN_ATTEMPT}" \
+              --arg branch "${IDENTITY_BRANCH}" \
+              --arg pr "${PR_DIGITS}" \
+              '{repository:$repo, commit_sha:$sha, gh_run_id:$run_id, name:$name, gh_run_attempt:$attempt, branch:$branch, gh_pr_number:$pr}')
           else
-            IDENTITY_BRANCH="$BRANCH"
+            IDENTITY_BRANCH="${BRANCH}"
+            if [ -z "$IDENTITY_BRANCH" ]; then
+              echo "::error::branch is empty when pr_number is unset"
+              exit 1
+            fi
+            IDENTITY=$(jq -nc \
+              --arg repo "${GITHUB_REPOSITORY}" \
+              --arg sha "${COMMIT_SHA}" \
+              --arg run_id "${GITHUB_RUN_ID}" \
+              --arg name "${NAME}" \
+              --arg attempt "${GITHUB_RUN_ATTEMPT}" \
+              --arg branch "${IDENTITY_BRANCH}" \
+              '{repository:$repo, commit_sha:$sha, gh_run_id:$run_id, name:$name, gh_run_attempt:$attempt, branch:$branch}')
+            PR_DIGITS=""
           fi
-          IDENTITY=$(echo "$IDENTITY" | jq -c --arg b "$IDENTITY_BRANCH" '.branch = $b')
           {
             echo "identity-json=${IDENTITY}"
-            echo "status-context=${CONTEXT}"
+            echo "status-context=${CONTEXT_NAME}"
             echo "identity-branch=${IDENTITY_BRANCH}"
-            echo "pr-number=${PR}"
+            echo "pr-number=${PR_DIGITS}"
           } >> "$GITHUB_OUTPUT"
 
       - name: Resolve maestro-flow-path
@@ -192,7 +223,7 @@ jobs:
 
       - name: test-system-io dispatch begin
         id: begin
-        uses: mattermost/mattermost-test-system-io/.github/actions/test-system-io-dispatch-begin@d75592167f4616520161d32475e8486bd8f13ed4
+        uses: mattermost/mattermost-test-system-io/.github/actions/test-system-io-dispatch-begin@bd85927753015f3f63fdd5331c2c01e7622b8e30
         with:
           use-staging: ${{ vars.E2E_USE_STAGING_TEST_IO_URL == 'true' }}
           framework: maestro
@@ -204,7 +235,7 @@ jobs:
           maestro-exclude-tags: ${{ steps.exclude-tags.outputs.tags }}
           # Post pending commit status after orch-begin (report page exists).
           post-pending-commit-status: "true"
-          commit-status-context: ${{ steps.cfg.outputs.status-context }}
+          commit-status-context: ${{ inputs.context_name }}
           github-token: ${{ secrets.GITHUB_TOKEN }}
           retest-on-fail: "false"
           retest-budget: "0"
@@ -413,7 +444,7 @@ jobs:
           exit 1
 
       - name: test-system-io dispatch run
-        uses: mattermost/mattermost-test-system-io/.github/actions/test-system-io-dispatch-run@d75592167f4616520161d32475e8486bd8f13ed4
+        uses: mattermost/mattermost-test-system-io/.github/actions/test-system-io-dispatch-run@bd85927753015f3f63fdd5331c2c01e7622b8e30
         with:
           use-staging: ${{ vars.E2E_USE_STAGING_TEST_IO_URL == 'true' }}
           framework: maestro
@@ -654,7 +685,7 @@ jobs:
           } >> "$GITHUB_OUTPUT"
 
       - name: test-system-io dispatch run
-        uses: mattermost/mattermost-test-system-io/.github/actions/test-system-io-dispatch-run@d75592167f4616520161d32475e8486bd8f13ed4
+        uses: mattermost/mattermost-test-system-io/.github/actions/test-system-io-dispatch-run@bd85927753015f3f63fdd5331c2c01e7622b8e30
         with:
           use-staging: ${{ vars.E2E_USE_STAGING_TEST_IO_URL == 'true' }}
           framework: maestro
@@ -679,7 +710,7 @@ jobs:
           pkill -9 -f emulator 2>/dev/null || true
 
   summary:
-    name: ${{ inputs.test-system-io-shard-name != '' && inputs.test-system-io-shard-name || format('orch-summary-maestro-{0}', inputs.platform) }}
+    name: orch-summary
     needs: [begin, workers-ios, workers-android]
     if: always() && needs.begin.result == 'success'
     runs-on: ubuntu-24.04
@@ -696,7 +727,6 @@ jobs:
           persist-credentials: false
           sparse-checkout: |
             .github/actions/e2e-override-label
-            detox/utils
 
       - name: Resolve E2E/Override
         id: e2e-override
@@ -707,12 +737,12 @@ jobs:
       - name: test-system-io summary
         id: summary
         continue-on-error: true
-        uses: mattermost/mattermost-test-system-io/.github/actions/test-system-io-summary@d75592167f4616520161d32475e8486bd8f13ed4
+        uses: mattermost/mattermost-test-system-io/.github/actions/test-system-io-summary@bd85927753015f3f63fdd5331c2c01e7622b8e30
         with:
           use-staging: ${{ vars.E2E_USE_STAGING_TEST_IO_URL == 'true' }}
           framework: maestro
           composite-identity: ${{ needs.begin.outputs.identity-json }}
-          commit-status-context: ${{ needs.begin.outputs.status-context }}
+          commit-status-context: ${{ inputs.context_name }}
           github-token: ${{ secrets.GITHUB_TOKEN }}
           update-commit-status: ${{ steps.e2e-override.outputs.override != 'true' && 'true' || 'false' }}
           fail-on-test-failures: ${{ steps.e2e-override.outputs.override != 'true' && 'true' || 'false' }}
@@ -734,7 +764,7 @@ jobs:
           set -euo pipefail
           case "${RUN_TYPE}" in
             MAIN|MASTER) WEBHOOK_URL="${MM_E2E_MASTER_HEALTH_WEBHOOK_URL}" ;;
-            RELEASE) WEBHOOK_URL="${MM_E2E_RELEASE_WEBHOOK_URL}" ;;
+            RELEASE|RELEASE_CUT) WEBHOOK_URL="${MM_E2E_RELEASE_WEBHOOK_URL}" ;;
             *) WEBHOOK_URL="${MM_MOBILE_E2E_WEBHOOK_URL}" ;;
           esac
           if [ -z "${WEBHOOK_URL}" ] || [ -z "${PAYLOAD}" ]; then
@@ -751,9 +781,9 @@ jobs:
           [ "$SUMMARY_OUTCOME" = "success" ]
 
   finalize-skipped:
-    name: finalize-skipped-${{ inputs.test-system-io-shard-name != '' && inputs.test-system-io-shard-name || format('maestro-{0}', inputs.platform) }}
+    name: finalize-skipped
     needs: [begin]
-    if: always() && needs.begin.result == 'skipped' && inputs.test-system-io-config != ''
+    if: always() && needs.begin.result == 'skipped' && inputs.context_name != ''
     runs-on: ubuntu-24.04
     permissions:
       contents: read
@@ -765,20 +795,7 @@ jobs:
           ref: ${{ inputs.MOBILE_VERSION }}
           persist-credentials: false
           sparse-checkout: |
-            detox/utils
             .github/actions/update-commit-status
-
-      - name: Resolve Test System IO config
-        id: cfg
-        env:
-          TEST_SYSTEM_IO_CONFIG: ${{ inputs.test-system-io-config }}
-          TEST_SYSTEM_IO_SHARD_NAME: ${{ inputs.test-system-io-shard-name }}
-          TEST_SYSTEM_IO_WORKERS: ${{ inputs.parallelism }}
-        run: |
-          set -euo pipefail
-          CFG=$(bash detox/utils/resolve-test-system-io-job-config.sh)
-          echo "status-context=$(echo "$CFG" | jq -r '.status_context')" >> "$GITHUB_OUTPUT"
-          echo "commit-sha=$(echo "$CFG" | jq -r '.composite_identity.commit_sha')" >> "$GITHUB_OUTPUT"
 
       - name: Mark commit status skipped
         uses: ./.github/actions/update-commit-status
@@ -786,7 +803,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           repository_full_name: ${{ github.repository }}
-          commit_sha: ${{ steps.cfg.outputs.commit-sha }}
-          context: ${{ steps.cfg.outputs.status-context }}
+          commit_sha: ${{ inputs.commit_sha || inputs.MOBILE_VERSION }}
+          context: ${{ inputs.context_name }}
           description: "E2E orchestration skipped"
           status: error

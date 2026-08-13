@@ -376,10 +376,7 @@ jobs:
             });
 
   # Post success statuses when E2E is skipped so the PR is not blocked. Reuses
-  # e2e-override-status (a generic "post success with this description on all 5
-  # required contexts" tool) instead of hardcoding the context list a second time
-  # — the whole point of single-sourcing E2E_STATUS_CONTEXTS is that this list
-  # cannot drift from branch protection's required checks.
+  # e2e-override-status (posts success on the five required PR e2e-test/* contexts).
   post-skip-status:
     needs: detect-e2e-impact
     if: >-
@@ -396,8 +393,7 @@ jobs:
     steps:
       # Base, not the PR head. `uses: ./.github/actions/...` loads the composite
       # action from the checked-out workspace, so a PR-head checkout would run
-      # PR-authored action code in a job holding write scopes — and the status
-      # actions also require() detox/utils/build-test-system-io-job-config.js from it.
+      # PR-authored action code in a job holding write scopes.
       # Nothing here needs PR content: the SHAs come from the event payload.
       - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
         with:
@@ -436,8 +432,7 @@ jobs:
     steps:
       # Base, not the PR head. `uses: ./.github/actions/...` loads the composite
       # action from the checked-out workspace, so a PR-head checkout would run
-      # PR-authored action code in a job holding write scopes — and the status
-      # actions also require() detox/utils/build-test-system-io-job-config.js from it.
+      # PR-authored action code in a job holding write scopes.
       # Nothing here needs PR content: the SHAs come from the event payload.
       - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
         with:
@@ -522,8 +517,7 @@ jobs:
     steps:
       # Base, not the PR head. `uses: ./.github/actions/...` loads the composite
       # action from the checked-out workspace, so a PR-head checkout would run
-      # PR-authored action code in a job holding write scopes — and the status
-      # actions also require() detox/utils/build-test-system-io-job-config.js from it.
+      # PR-authored action code in a job holding write scopes.
       # Nothing here needs PR content: the SHAs come from the event payload.
       - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
         with:

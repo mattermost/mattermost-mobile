@@ -60,9 +60,16 @@ runs:
             throw new Error(`e2e-verified-status: mode must be 'apply' or 'reset', got '${mode}'`);
           }
 
-          // Relative requires resolve against the workspace, so the repo must be
-          // checked out before this action runs.
-          const {E2E_STATUS_CONTEXTS} = require('./detox/utils/build-test-system-io-job-config.js');
+          // Required PR commit-status contexts (branch protection). Keep in sync
+          // with e2e-override-status and e2e-label-manager's cancel list.
+          // Only unsuffixed PR contexts — not /main, /release, or /cmt-server-*.
+          const E2E_STATUS_CONTEXTS = [
+            'e2e-test/detox-ios',
+            'e2e-test/detox-android',
+            'e2e-test/detox-ipad',
+            'e2e-test/maestro-ios',
+            'e2e-test/maestro-android',
+          ];
 
           // Embedded in every description this action writes, so reset can find
           // (and only touch) the contexts apply actually changed — never a
