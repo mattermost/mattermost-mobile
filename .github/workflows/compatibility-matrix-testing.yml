@@ -141,7 +141,7 @@ jobs:
       - name: Detox build
         run: |
           cd detox
-          npm ci --prefer-offline --no-audit --no-fund
+          npm ci
           npm run e2e:android-build
 
       - name: Upload Android Build

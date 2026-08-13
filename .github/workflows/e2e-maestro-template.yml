@@ -284,7 +284,7 @@ jobs:
         uses: ./.github/actions/prepare-node-deps
 
       - name: Install Detox dependencies
-        run: cd detox && npm ci --prefer-offline --no-audit --no-fund
+        run: cd detox && npm ci
 
       - name: Cache Maestro
         id: maestro-cache
@@ -366,7 +366,7 @@ jobs:
       - name: Seed test data
         run: |
           cd detox/maestro
-          npm ci --prefer-offline --no-audit --no-fund
+          npm ci
           npx tsx fixtures/seed.ts
         env:
           SITE_1_URL: ${{ env.SITE_1_URL }}
@@ -526,7 +526,7 @@ jobs:
       - name: Seed test data
         run: |
           cd detox/maestro
-          npm ci --prefer-offline --no-audit --no-fund
+          npm ci
           npx tsx fixtures/seed.ts
         env:
           SITE_1_URL: ${{ env.SITE_1_URL }}

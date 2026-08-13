@@ -402,7 +402,7 @@ jobs:
           restore-keys: ${{ runner.os }}-detox-deps-
 
       - name: Install Detox dependencies
-        run: cd detox && npm ci --prefer-offline --no-audit --no-fund
+        run: cd detox && npm ci
 
       - name: Get Xcode version
         id: xcode-version
