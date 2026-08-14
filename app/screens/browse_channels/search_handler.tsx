@@ -144,8 +144,6 @@ export default function SearchHandler(props: Props) {
     const searchTimeout = useRef<NodeJS.Timeout | undefined>(undefined);
     const searchRequestId = useRef(0);
     const [searchResults, setSearchResults] = useState<Channel[]>(defaultSearchResults);
-    const searchResultsRef = useRef(searchResults);
-    searchResultsRef.current = searchResults;
 
     const isSearch = Boolean(term);
 
@@ -239,7 +237,7 @@ export default function SearchHandler(props: Props) {
                 dispatch(StopAction);
             }, 500);
             setTerm(text);
-            setVisibleChannels(searchResultsRef.current);
+            setVisibleChannels(defaultSearchResults);
             dispatch(LoadAction);
         } else {
             stopSearch();
