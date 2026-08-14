@@ -679,7 +679,61 @@ jobs:
             echo "EOF"
           } >> "$GITHUB_OUTPUT"
 
+      # A device lost between bootstrap and the run surfaces inside Maestro as an
+      # opaque `StatusRuntimeException: UNAVAILABLE` at flow init (dadb cannot reach
+      # the adb server), failing every remaining flow in the shard at 0ms. Fail here
+      # instead, with the device state named.
+      - name: Verify emulator is still responsive
+        env:
+          DEVICE: emulator-5554
+        run: |
+          set -uo pipefail
+
+          # A dead adb server reports no devices at all; restart once before judging.
+          if ! adb devices | grep -q "^${DEVICE}[[:space:]]"; then
+            echo "==> ${DEVICE} absent from adb; restarting adb server"
+            adb kill-server 2>/dev/null || true
+            adb start-server 2>/dev/null || true
+          fi
+
+          # Poll rather than `adb wait-for-device`, which blocks forever when the
+          # device never returns and would hang the job until its timeout-minutes.
+          STATE=""
+          for _ in $(seq 1 30); do
+            STATE=$(adb devices | awk -v d="${DEVICE}" '$1 == d {print $2}')
+            [ "${STATE}" = "device" ] && break
+            sleep 2
+          done
+
+          if [ "${STATE}" != "device" ]; then
+            echo "::error::${DEVICE} is in state '${STATE:-missing}', not 'device'"
+            adb devices -l || true
+            exit 1
+          fi
+
+          # adbd answering can precede a usable framework, so probe through a shell:
+          # this is what actually proves Maestro's driver can be installed and reached.
+          BOOTED=""
+          for _ in $(seq 1 15); do
+            BOOTED=$(adb -s "${DEVICE}" shell getprop sys.boot_completed 2>/dev/null | tr -d '\r\n')
+            [ "${BOOTED}" = "1" ] && break
+            sleep 2
+          done
+
+          if [ "${BOOTED}" != "1" ]; then
+            echo "::error::${DEVICE} reachable but sys.boot_completed='${BOOTED:-empty}'"
+            adb devices -l || true
+            exit 1
+          fi
+
+          echo "==> ${DEVICE} is responsive (boot_completed=1)"
+
       - name: test-system-io dispatch run
+        # Process env, not a flow variable: the Maestro CLI reads this itself. The
+        # emulator is slower than the simulator to accept the on-device driver, so
+        # it needs the same allowance the iOS pre-flight uses.
+        env:
+          MAESTRO_DRIVER_STARTUP_TIMEOUT: "180000"
         uses: mattermost/mattermost-test-system-io/.github/actions/test-system-io-dispatch-run@aa0d692f255d98be1621b500e59387ca0debfb3d
         with:
           use-staging: ${{ vars.E2E_USE_STAGING_TEST_IO_URL == 'true' }}
