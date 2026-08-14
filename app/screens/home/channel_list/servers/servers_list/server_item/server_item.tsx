@@ -273,7 +273,7 @@ const ServerItem = ({
             await switchToServerAndLogin(server.url, intl, async (data?: ConfigAndLicenseRequest) => {
                 await dismissBottomSheet();
                 if (data?.config && data.license) {
-                    loginToServer(theme, server.url, server.displayName, data.config, data.license);
+                    await loginToServer(theme, server.url, server.displayName, data.config, data.license);
                 }
             });
         } finally {

@@ -124,9 +124,10 @@ class ThreadScreen {
             const backTimeout = isAndroid() ? timeouts.HALF_MIN : timeouts.TEN_SEC;
             await waitForElementToExist(this.backButton, backTimeout);
             await NavigationHeader.tapTopmostBackButton();
+            await waitFor(this.threadScreen).not.toBeVisible().withTimeout(timeouts.FIVE_SEC);
             navigated = true;
         } catch {
-            // Back button not in hierarchy or tap failed — fall through.
+            // Back button not in hierarchy, tap failed, or thread remained visible — fall through.
         }
         if (!navigated && isAndroid()) {
             // Thread-from-search can leave no hittable header back; a single

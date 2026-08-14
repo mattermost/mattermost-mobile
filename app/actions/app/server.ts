@@ -44,7 +44,7 @@ export async function switchToServer(serverUrl: string, callback?: () => void) {
     callback?.();
 }
 
-export async function switchToServerAndLogin(serverUrl: string, intl: IntlShape, callback: (data?: ConfigAndLicenseRequest) => void) {
+export async function switchToServerAndLogin(serverUrl: string, intl: IntlShape, callback: (data?: ConfigAndLicenseRequest) => void | Promise<void>) {
     const server = await getServer(serverUrl);
     if (!server) {
         logError(`Switch to Server with url ${serverUrl} not found`);
@@ -57,28 +57,28 @@ export async function switchToServerAndLogin(serverUrl: string, intl: IntlShape,
     const result = await doPing(server.url, true, 5000, preauthSecret);
     if (result.error) {
         alertServerError(intl, result.error);
-        callback();
+        await callback();
         return;
     }
 
     const data = await fetchConfigAndLicense(server.url, true);
     if (data.error) {
         alertServerError(intl, data.error);
-        callback?.();
+        await callback();
         return;
     }
 
     const existingServer = await getServerByIdentifier(data.config!.DiagnosticId);
     if (existingServer && existingServer.lastActiveAt > 0) {
         alertServerAlreadyConnected(intl);
-        callback?.();
+        await callback();
         return;
     }
 
     if (data.config?.MobileJailbreakProtection === 'true') {
         const isJailbroken = await SecurityManager.isDeviceJailbroken(server.url);
         if (isJailbroken) {
-            callback?.();
+            await callback();
             return;
         }
     }
@@ -90,9 +90,9 @@ export async function switchToServerAndLogin(serverUrl: string, intl: IntlShape,
 
     if (authenticated) {
         canReceiveNotifications(server.url, result.canReceiveNotifications as string, intl);
-        callback(data);
+        await callback(data);
         return;
     }
 
-    callback();
+    await callback();
 }

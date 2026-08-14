@@ -257,7 +257,7 @@ export default function PostInput({
                     }),
                     [{
                         text: intl.formatMessage({
-                            id: 'mobile.server_upgrade.button',
+                            id: 'mobile.message_length.ok',
                             defaultMessage: 'OK',
                         }),
                         style: 'cancel',

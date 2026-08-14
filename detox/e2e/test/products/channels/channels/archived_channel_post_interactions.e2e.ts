@@ -16,7 +16,7 @@ import {
     closeArchivedChannel,
     openArchivedChannel,
 } from '@support/ui/screen';
-import {timeouts, wait} from '@support/utils';
+import {isAndroid, timeouts, wait} from '@support/utils';
 import {expect} from 'detox';
 
 // Android skipped — Detox/Fabric text-input idle check crashes on API 35.
@@ -58,7 +58,7 @@ describe('Channels - Archived Channel Post Interactions', () => {
         await HomeScreen.logout();
     });
 
-    it('MM-T1718_1 - should not show add reaction option in post options for archived channels', async () => {
+    (isAndroid() ? it.skip : it)('MM-T1718_1 - should not show add reaction option in post options for archived channels', async () => {
         // # Create a public channel, post a unique searchable message, and archive it.
         const message = `archived-channel-reaction-test-${Date.now()}`;
         const {channel: archivedChannel} = await Channel.apiCreateChannel(

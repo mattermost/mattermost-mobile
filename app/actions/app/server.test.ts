@@ -162,6 +162,27 @@ describe('switchToServerAndLogin', () => {
         expect(callback).toHaveBeenCalledWith({config, license});
     });
 
+    it('should await an async callback before resolving', async () => {
+        const server = {url: 'serverUrl', displayName: 'Server'} as ServersModel;
+        const config = {DiagnosticId: 'diagId'} as ClientConfig;
+        const license = {} as ClientLicense;
+        jest.mocked(getServer).mockResolvedValueOnce(server);
+        jest.mocked(doPing).mockResolvedValueOnce({});
+        jest.mocked(fetchConfigAndLicense).mockResolvedValueOnce({config, license});
+        jest.mocked(getServerByIdentifier).mockResolvedValueOnce(undefined);
+
+        let callbackFinished = false;
+        const callback = jest.fn(async () => {
+            await Promise.resolve();
+            callbackFinished = true;
+        });
+
+        await Actions.switchToServerAndLogin('serverUrl', intl, callback);
+
+        expect(callback).toHaveBeenCalledWith({config, license});
+        expect(callbackFinished).toBe(true);
+    });
+
     it('should not proceed if device is jailbroken', async () => {
         const server = {url: 'serverUrl'} as ServersModel;
         const config = {DiagnosticId: 'diagId', MobileJailbreakProtection: 'true'} as ClientConfig;
