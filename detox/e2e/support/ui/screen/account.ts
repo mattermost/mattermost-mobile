@@ -116,8 +116,7 @@ class AccountScreen {
 
         // Dismiss iOS native dialogs whose backdrop UIView covers the full screen and
         // blocks all hit-tests — these appear after login on iOS 26+ (iPad and iPhone).
-        // Save Password is primarily disabled at simulator preboot (autofill-v2);
-        // keep a single cheap Not Now probe only.
+        // Single Not Now probe for the Save Password sheet.
         if (device.getPlatform() === 'ios') {
             await dismissIosSavePasswordIfVisible();
 
