@@ -52,7 +52,7 @@ const Table = ({renderAsFlex, width}: TableScreenProps) => {
     const insets = useSafeAreaInsets();
 
     // iOS: flex:1 inside a vertical ScrollView leaves content width ambiguous
-    // and clips 3-column wrap tables (MM-T4899_2). Size to the safe viewport.
+    // and clips wrapped multi-column tables. Size to the safe viewport.
     // Android already nests a horizontal ScrollView and must keep its previous
     // flex:1 / explicit-width behavior so production layout does not change.
     let viewStyle: {width: number} | {flex: number} = {width};

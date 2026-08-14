@@ -4,7 +4,7 @@
 import {Keyboard} from 'react-native';
 import {KeyboardController} from 'react-native-keyboard-controller';
 
-import * as Device from '@constants/device';
+import {isEdgeToEdge} from '@constants/device';
 
 /**
  * Dismisses the keyboard using platform-specific implementation.
@@ -13,7 +13,7 @@ import * as Device from '@constants/device';
  *   is not used on Android (to avoid layout issues)
  */
 export const dismissKeyboard = async (): Promise<void> => {
-    if (Device.isEdgeToEdge) {
+    if (isEdgeToEdge) {
         await KeyboardController.dismiss({animated: false});
     } else {
         Keyboard.dismiss();
@@ -28,7 +28,7 @@ export const dismissKeyboard = async (): Promise<void> => {
  *   is not used on Android (to avoid layout issues)
  */
 export const isKeyboardVisible = (): boolean => {
-    if (Device.isEdgeToEdge) {
+    if (isEdgeToEdge) {
         return KeyboardController.isVisible();
     }
     return Keyboard.isVisible();

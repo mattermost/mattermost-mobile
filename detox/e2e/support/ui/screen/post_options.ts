@@ -128,6 +128,19 @@ class PostOptionsScreen {
         await longPressWithRetry(this.searchedPostListItem(postId), this.postOptionsScreen);
     };
 
+    // Gorhom + Reanimated keeps Detox's idle timer busy, so a synced
+    // element.tap() can sit until the Jest timeout.
+    // Corner tap avoids the row-center hit-test miss.
+    private tapSheetRowIos = async (option: Detox.NativeElement) => {
+        await waitFor(option).toExist().withTimeout(timeouts.TEN_SEC);
+        await device.disableSynchronization();
+        try {
+            await option.tap({x: 1, y: 1});
+        } finally {
+            await safeEnableSynchronization();
+        }
+    };
+
     private tapPostOption = async (
         option: Detox.NativeElement,
         optionLabel: Detox.NativeElement,
@@ -136,8 +149,7 @@ class PostOptionsScreen {
         await this.toBeVisible();
 
         if (isIos()) {
-            // Corner tap avoids center hit-test failures on gorhom sheet rows (SEC-11009).
-            await option.tap({x: 1, y: 1});
+            await this.tapSheetRowIos(option);
             return;
         }
 
@@ -178,10 +190,8 @@ class PostOptionsScreen {
     private tapPinOption = async (option: Detox.NativeElement) => {
         await this.toBeVisible();
 
-        // iOS: same path as Save (SEC-11009). whileElement().scroll() on this
-        // sheet bounced until the 300s Jest timeout (MM-T4911_3 / MM-T4909_5).
         if (isIos()) {
-            await option.tap({x: 1, y: 1});
+            await this.tapSheetRowIos(option);
             return;
         }
 

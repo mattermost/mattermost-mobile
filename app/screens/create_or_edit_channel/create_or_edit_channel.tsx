@@ -177,7 +177,7 @@ const CreateOrEditChannel = ({
         close();
     }, [channel, isValidDisplayName, header, displayName, purpose, serverUrl]);
 
-    const createEnabled = canSave && !appState.saving;
+    const isEnabled = canSave && !appState.saving;
 
     useEffect(() => {
         const buttonText = editing ? formatMessage({id: 'mobile.edit_channel', defaultMessage: 'Save'}) : formatMessage({id: 'mobile.create_channel', defaultMessage: 'Create'});
@@ -187,12 +187,12 @@ const CreateOrEditChannel = ({
                     onPress={editing ? onUpdateChannel : onCreateChannel}
                     text={buttonText}
                     testID={editing ? 'create_or_edit_channel.save.button' : 'create_or_edit_channel.create.button'}
-                    color={createEnabled ? theme.sidebarHeaderTextColor : changeOpacity(theme.sidebarHeaderTextColor, 0.5)}
-                    disabled={!createEnabled}
+                    color={isEnabled ? theme.sidebarHeaderTextColor : changeOpacity(theme.sidebarHeaderTextColor, 0.5)}
+                    disabled={!isEnabled}
                 />
             ),
         });
-    }, [editing, formatMessage, navigation, onUpdateChannel, onCreateChannel, createEnabled, theme.sidebarHeaderTextColor]);
+    }, [editing, formatMessage, navigation, onUpdateChannel, onCreateChannel, isEnabled, theme.sidebarHeaderTextColor]);
 
     useEffect(() => {
         setCanSave(

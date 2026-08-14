@@ -9,7 +9,6 @@
 
 import {
     Channel,
-    Post,
     Setup,
     Team,
     User,
@@ -129,12 +128,11 @@ describe('Smoke Test - Channels', () => {
         // # Open a channel screen and post a message
         const message = `Message ${getRandomId()}`;
         await ChannelScreen.open(channelsCategory, testChannel.name);
-        await ChannelScreen.postMessage(message);
 
-        // * Verify message is posted
-        const {post} = await Post.apiGetLastPostInChannel(siteOneUrl, testChannel.id);
+        // First post in this channel — iOS sim can drop the create POST (-1005).
+        const {post} = await ChannelScreen.postMessageAndVerify(message, testChannel.id, siteOneUrl);
         const {postListPostItem} = ChannelScreen.getPostListPostItem(post.id, message);
-        await expect(postListPostItem).toBeVisible();
+        await waitFor(postListPostItem).toExist().withTimeout(timeouts.TEN_SEC);
 
         // # Go back to channel list screen
         await ChannelScreen.back();

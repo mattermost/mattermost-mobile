@@ -66,7 +66,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
         marginLeft: 0,
 
         // RNEUI iOS SearchBar animates marginRight to make room for Cancel; pinning
-        // it to 0 keeps the input full-width so the clear "x" overlaps Cancel (SEC-11111).
+        // it to 0 keeps the input full-width so the clear "x" overlaps Cancel.
         marginRight: Platform.select({android: 0, ios: undefined}),
     },
     inputStyle: {

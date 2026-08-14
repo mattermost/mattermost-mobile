@@ -99,6 +99,12 @@ appId: ${MAESTRO_APP_ID}
           timeout: 10000
       - tapOn:
           id: "account.settings.option"
+      # Relaunch is a second cold start; wait for Settings before scrolling
+      # to Report a Problem (the row is config-gated and can be below the fold).
+      - extendedWaitUntil:
+          visible:
+            id: "settings"
+          timeout: 15000
 - runFlow:
     when:
       platform: Android
@@ -110,5 +116,9 @@ appId: ${MAESTRO_APP_ID}
     element:
       id: "settings.report_problem.option"
     direction: DOWN
-    timeout: 15000
+    timeout: 30000
+- extendedWaitUntil:
+    visible:
+      id: "settings.report_problem.option"
+    timeout: 30000
 - takeScreenshot: report-problem-dismissed
