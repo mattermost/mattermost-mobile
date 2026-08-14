@@ -73,7 +73,7 @@ Test System IO discovers Maestro flows by path + `tags:`. Plan tags are **`@snak
 | `"@ios_only"` | iOS-specific surface (e.g. Safari hand-off) | iOS only |
 | `"@multi_device"` | Needs two devices (manual / special runners) | Excluded from single-device CI |
 
-Configured in `detox/maestro/config/exclude_tags.json` (`ios` excludes `@android_only` + `@multi_device`; `android` excludes `@ios_only` + `@multi_device`). Full plan: `detox/docs/android_full_ios_partial_plan.md`.
+Configured in `detox/maestro/config/exclude_tags.json` (`ios` excludes `@android_only` + `@multi_device`; `android` excludes `@ios_only` + `@multi_device`).
 
 **Exempt from this contract** (enforced by `scripts/validate-flow-headers.sh`, which scans only `flows/**` and skips `_`-prefixed basenames):
 
