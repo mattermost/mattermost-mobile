@@ -1,6 +1,8 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import {isTransportFailure} from '@support/utils/transport_retry';
+
 import Channel from './channel';
 import {isTransientHttpStatus, MAX_RETRY_AFTER_SEC} from './client';
 import Team from './team';
@@ -40,7 +42,8 @@ const retryTransient = async <T extends {error?: any; status?: number}>(
     const err = result.error;
     const transient = Boolean(err) && (
         isTransientServerError(err) ||
-        isTransientHttpStatus(result.status)
+        isTransientHttpStatus(result.status) ||
+        isTransportFailure({error: err, status: result.status})
     );
     if (!err || !transient || attempt >= maxAttempts) {
         return result;

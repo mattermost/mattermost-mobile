@@ -33,8 +33,8 @@ import {
     ServerScreen,
     ThreadScreen,
 } from '@support/ui/screen';
-import {getRandomId, timeouts, waitForElementToBeVisible, waitForElementToNotExist} from '@support/utils';
-import {by, element, expect, waitFor} from 'detox';
+import {getRandomId, safeEnableSynchronization, timeouts, waitForElementToBeVisible, waitForElementToExist, waitForElementToNotExist} from '@support/utils';
+import {by, element, expect} from 'detox';
 
 describe('Search - Recent Mentions', () => {
     const serverOneDisplayName = 'Server 1';
@@ -183,7 +183,6 @@ describe('Search - Recent Mentions', () => {
         // # Open post options for the fixture mention and tap Pin to Channel
         await RecentMentionsScreen.openPostOptionsFor(mentionPost.id, mentionPost.messageText);
         await PostOptionsScreen.tapPinPost();
-        await waitFor(PostOptionsScreen.postOptionsScreen).not.toExist().withTimeout(timeouts.TEN_SEC);
         await Post.waitForPostPinned(siteOneUrl, testChannel.id, mentionPost.id);
 
         // # Navigate to the channel's Pinned Messages screen
@@ -194,7 +193,12 @@ describe('Search - Recent Mentions', () => {
 
         // * Verify mention is displayed on pinned messages screen
         const {postListPostItem} = PinnedMessagesScreen.getPostListPostItem(mentionPost.id, mentionPost.messageText);
-        await waitFor(postListPostItem).toExist().withTimeout(timeouts.TEN_SEC);
+        await device.disableSynchronization();
+        try {
+            await waitForElementToExist(postListPostItem, timeouts.TEN_SEC);
+        } finally {
+            await safeEnableSynchronization();
+        }
 
         // # Unpin and verify removal
         await PinnedMessagesScreen.back();
@@ -203,7 +207,6 @@ describe('Search - Recent Mentions', () => {
         await RecentMentionsScreen.open();
         await RecentMentionsScreen.openPostOptionsFor(mentionPost.id, mentionPost.messageText);
         await PostOptionsScreen.tapUnpinPost();
-        await waitFor(PostOptionsScreen.postOptionsScreen).not.toExist().withTimeout(timeouts.TEN_SEC);
         await Post.waitForPostUnpinned(siteOneUrl, testChannel.id, mentionPost.id);
 
         // * Verify mention is no longer pinned
@@ -211,7 +214,12 @@ describe('Search - Recent Mentions', () => {
         await ChannelScreen.open(channelsCategory, testChannel.name);
         await ChannelInfoScreen.open();
         await PinnedMessagesScreen.open();
-        await waitForElementToNotExist(postListPostItem, timeouts.TWENTY_SEC);
+        await device.disableSynchronization();
+        try {
+            await waitForElementToNotExist(postListPostItem, timeouts.TWENTY_SEC);
+        } finally {
+            await safeEnableSynchronization();
+        }
 
         // # Go back to channel list screen
         await PinnedMessagesScreen.back();

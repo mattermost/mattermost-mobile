@@ -2,7 +2,7 @@
 // See LICENSE.txt for license information.
 
 import {Alert} from '@support/ui/component';
-import {isAndroid, isIos, longPressWithRetry, safeEnableSynchronization, timeouts, wait, waitForElementToNotExist} from '@support/utils';
+import {isAndroid, isIos, longPressWithRetry, safeEnableSynchronization, timeouts, wait, waitForElementToExist, waitForElementToNotExist} from '@support/utils';
 import {expect, waitFor} from 'detox';
 
 class PostOptionsScreen {
@@ -53,7 +53,7 @@ class PostOptionsScreen {
 
     toBeVisible = async () => {
         const timeout = isAndroid() ? timeouts.TWENTY_SEC : timeouts.TEN_SEC;
-        await waitFor(this.postOptionsScreen).toExist().withTimeout(timeout);
+        await waitForElementToExist(this.postOptionsScreen, timeout);
 
         return postOptionsScreen;
     };
@@ -128,14 +128,21 @@ class PostOptionsScreen {
         await longPressWithRetry(this.searchedPostListItem(postId), this.postOptionsScreen);
     };
 
-    // Gorhom + Reanimated keeps Detox's idle timer busy, so a synced
-    // element.tap() can sit until the Jest timeout.
-    // Corner tap avoids the row-center hit-test miss.
+    // Gorhom + Reanimated keeps Detox's idle timer busy, so waitFor().withTimeout()
+    // never fires and Jest hits 300s (MM-T4909_5 / MM-T4911_3). Disable sync
+    // before any matcher, then poll. Corner tap avoids the row-center miss.
     private tapSheetRowIos = async (option: Detox.NativeElement) => {
-        await waitFor(option).toExist().withTimeout(timeouts.TEN_SEC);
         await device.disableSynchronization();
         try {
+            await waitForElementToExist(this.postOptionsScreen, timeouts.TEN_SEC);
+            await waitForElementToExist(option, timeouts.TEN_SEC);
             await option.tap({x: 1, y: 1});
+            try {
+                await waitForElementToNotExist(this.postOptionsScreen, timeouts.FIVE_SEC);
+            } catch {
+                await option.tap({x: 1, y: 1});
+                await waitForElementToNotExist(this.postOptionsScreen, timeouts.FIVE_SEC);
+            }
         } finally {
             await safeEnableSynchronization();
         }
@@ -146,12 +153,12 @@ class PostOptionsScreen {
         optionLabel: Detox.NativeElement,
         labelText: string,
     ) => {
-        await this.toBeVisible();
-
         if (isIos()) {
             await this.tapSheetRowIos(option);
             return;
         }
+
+        await this.toBeVisible();
 
         // Android gorhom sheets + edge-to-edge: testID visibility can fail while the
         // label text is hittable (CI MM-T4864 testFnFailure — Save visible, matcher not).
@@ -188,12 +195,12 @@ class PostOptionsScreen {
     };
 
     private tapPinOption = async (option: Detox.NativeElement) => {
-        await this.toBeVisible();
-
         if (isIos()) {
             await this.tapSheetRowIos(option);
             return;
         }
+
+        await this.toBeVisible();
 
         try {
             await waitFor(option).

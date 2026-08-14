@@ -1,0 +1,29 @@
+# Sub-flow: open the Account tab after login.
+# Fresh login can leave Save Password / notification / scheduled-post overlays
+# on the account tab (same set AccountScreen.open dismisses). Retry the tab tap
+# so a swallowed first tap does not fail the 10s account.screen wait
+# (CI 31829028796: help_url, attach_logs_toggle_visible).
+appId: ${MAESTRO_APP_ID}
+---
+- runFlow: dismiss_scheduled_post_tooltip.yml
+- tapOn:
+    text: "Not Now"
+    optional: true
+- tapOn:
+    text: "Okay"
+    optional: true
+- tapOn:
+    text: "Allow"
+    optional: true
+- retry:
+    maxRetries: 3
+    commands:
+      - tapOn:
+          id: "tab_bar.account.tab"
+      - tapOn:
+          text: "Not Now"
+          optional: true
+      - extendedWaitUntil:
+          visible:
+            id: "account.screen"
+          timeout: 15000

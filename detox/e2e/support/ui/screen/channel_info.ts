@@ -6,7 +6,7 @@ import {
     ProfilePicture,
 } from '@support/ui/component';
 import {ChannelScreen} from '@support/ui/screen';
-import {isAndroid, safeEnableSynchronization, timeouts, wait} from '@support/utils';
+import {isAndroid, isIos, safeEnableSynchronization, timeouts, wait, waitForElementToExist, waitForElementToNotExist} from '@support/utils';
 import {expect, waitFor} from 'detox';
 
 class ChannelInfoScreen {
@@ -92,25 +92,50 @@ class ChannelInfoScreen {
     };
 
     toBeVisible = async () => {
-        // Use HALF_MIN for iOS (up from TEN_SEC): after unarchiving/converting a channel,
-        // the navigation stack settles slowly on iOS 26.x, and the channel info screen
-        // can take >10 s to appear. Use polling waitForElementToExist to avoid bridge-idle
-        // sync stalls on both platforms.
+        // HALF_MIN on iOS: after unarchiving/converting a channel the stack settles
+        // slowly on iOS 26.x. Poll so a busy idle timer cannot swallow withTimeout.
         const timeout = isAndroid() ? timeouts.TWENTY_SEC : timeouts.HALF_MIN;
-        await waitFor(this.channelInfoScreen).toExist().withTimeout(timeout);
+        await waitForElementToExist(this.channelInfoScreen, timeout);
 
         return this.channelInfoScreen;
     };
 
     open = async () => {
         // # Open channel info screen
-        await waitFor(ChannelScreen.headerTitle).toBeVisible().withTimeout(timeouts.TEN_SEC);
+        if (isIos()) {
+            // Keyboard + leftover sheet animations keep Detox idle busy, so
+            // waitFor(headerTitle).toBeVisible() can sit until Jest's 300s cap.
+            await device.disableSynchronization();
+            try {
+                await ChannelScreen.dismissKeyboard();
+                await waitForElementToExist(ChannelScreen.headerTitle, timeouts.TEN_SEC);
+                await ChannelScreen.headerTitle.tap();
+                await waitForElementToExist(this.channelInfoScreen, timeouts.HALF_MIN);
+            } finally {
+                await safeEnableSynchronization();
+            }
+            return this.channelInfoScreen;
+        }
+
+        await waitForElementToExist(ChannelScreen.headerTitle, timeouts.TEN_SEC);
         await ChannelScreen.headerTitle.tap();
 
         return this.toBeVisible();
     };
 
     close = async () => {
+        if (isIos()) {
+            await device.disableSynchronization();
+            try {
+                await waitForElementToExist(this.closeButton, timeouts.TEN_SEC);
+                await this.closeButton.tap();
+                await waitForElementToNotExist(this.channelInfoScreen, timeouts.TEN_SEC);
+            } finally {
+                await safeEnableSynchronization();
+            }
+            return;
+        }
+
         await waitFor(this.closeButton).toBeVisible().withTimeout(timeouts.TEN_SEC);
         await this.closeButton.tap();
         await waitFor(this.channelInfoScreen).not.toBeVisible().withTimeout(timeouts.TEN_SEC);

@@ -10,6 +10,7 @@ import {dismissKnownModals} from '@support/ui/modal_dismiss';
 import {HomeScreen} from '@support/ui/screen';
 import {
     isAndroid,
+    isIos,
     safeEnableSynchronization,
     tapNativeBackButton,
     timeouts,
@@ -188,6 +189,23 @@ class ChannelListScreen {
         await dismissKnownModals(5);
     };
 
+    // Leftover gorhom post-options keep Detox idle busy, so beforeEach
+    // waitFor() never times out (MM-T4911_4 hook 300s after MM-T4911_3).
+    private dismissPostOptionsIfOpen = async (): Promise<void> => {
+        const sheet = element(by.id('post_options.screen'));
+        try {
+            await waitForElementToExist(sheet, timeouts.ONE_SEC);
+        } catch {
+            return;
+        }
+        if (isIos()) {
+            await sheet.swipe('down');
+        } else {
+            await device.pressBack();
+        }
+        await waitForElementToNotExist(sheet, timeouts.FIVE_SEC);
+    };
+
     private popBackUntilChannelList = async (): Promise<void> => {
         /* eslint-disable no-await-in-loop -- sequential back navigation */
         for (let i = 0; i < 3; i++) {
@@ -214,7 +232,7 @@ class ChannelListScreen {
             // Search & permalink are bottom tabs with no close or back button, so switch to the
             // channel-list tab rather than falling through to a shard-poisoning relaunch.
             try {
-                await waitFor(HomeScreen.channelListTab).toExist().withTimeout(timeouts.TWO_SEC);
+                await waitForElementToExist(HomeScreen.channelListTab, timeouts.TWO_SEC);
                 await HomeScreen.channelListTab.tap();
                 await wait(timeouts.ONE_SEC);
                 popped = true;
@@ -223,7 +241,7 @@ class ChannelListScreen {
             }
             if (!popped) {
                 try {
-                    await waitFor(NavigationHeader.backButton).toExist().withTimeout(timeouts.TWO_SEC);
+                    await waitForElementToExist(NavigationHeader.backButton, timeouts.TWO_SEC);
                     await NavigationHeader.backButton.tap();
                     await wait(timeouts.ONE_SEC);
                     popped = true;
@@ -248,15 +266,31 @@ class ChannelListScreen {
     };
 
     toBeVisible = async (timeout = timeouts.HALF_MIN) => {
-
         try {
+            if (isIos()) {
+                await device.disableSynchronization();
+                try {
+                    await this.dismissPostOptionsIfOpen();
+                } finally {
+                    await safeEnableSynchronization();
+                }
+            }
             await this.dismissAnyOpenModals();
             await this.popBackUntilChannelList();
         } catch {
             // Recovery is best-effort.
         }
         try {
-            await waitForElementToExist(this.channelListScreen, timeout);
+            if (isIos()) {
+                await device.disableSynchronization();
+                try {
+                    await waitForElementToExist(this.channelListScreen, timeout);
+                } finally {
+                    await safeEnableSynchronization();
+                }
+            } else {
+                await waitForElementToExist(this.channelListScreen, timeout);
+            }
         } catch (firstError) {
             // eslint-disable-next-line no-console
             console.warn('[ChannelListScreen.toBeVisible] Channel list not found — attempting recovery relaunch');
@@ -265,7 +299,7 @@ class ChannelListScreen {
 
                 try {
                     const savePasswordAlert = element(by.label('Save Password')).atIndex(0);
-                    await waitFor(savePasswordAlert).toExist().withTimeout(timeouts.TWO_SEC);
+                    await waitForElementToExist(savePasswordAlert, timeouts.TWO_SEC);
                     await element(by.label('Not Now')).atIndex(0).tap();
                     await wait(timeouts.ONE_SEC);
                 } catch {
@@ -276,7 +310,7 @@ class ChannelListScreen {
                 for (let i = 0; i < 3; i++) {
                     try {
                         // Quick probe — don't wait long; if back button isn't there, we're done.
-                        await waitFor(NavigationHeader.backButton).toExist().withTimeout(timeouts.FOUR_SEC);
+                        await waitForElementToExist(NavigationHeader.backButton, timeouts.FOUR_SEC);
                         await NavigationHeader.backButton.tap();
                         await wait(timeouts.ONE_SEC);
                     } catch {
@@ -300,9 +334,19 @@ class ChannelListScreen {
 
     open = async () => {
         // # Open channel list screen
-        await waitFor(HomeScreen.channelListTab).toExist().withTimeout(timeouts.TEN_SEC);
+        if (isIos()) {
+            await device.disableSynchronization();
+            try {
+                await this.dismissPostOptionsIfOpen();
+                await waitForElementToExist(HomeScreen.channelListTab, timeouts.TEN_SEC);
+                await HomeScreen.channelListTab.tap();
+            } finally {
+                await safeEnableSynchronization();
+            }
+            return this.toBeVisible();
+        }
 
-        // iOS 26.x: corner-tap fails 100% visibility on tab_bar.home.tab (MM-T3393_2 trace).
+        await waitForElementToExist(HomeScreen.channelListTab, timeouts.TEN_SEC);
         await HomeScreen.channelListTab.tap();
 
         return this.toBeVisible();

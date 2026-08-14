@@ -6,8 +6,8 @@ import {
     ChannelInfoScreen,
     PostOptionsScreen,
 } from '@support/ui/screen';
-import {isAndroid, longPressWithRetry, tapNativeBackButton, timeouts, wait, waitForElementToBeVisible, waitForElementToExist, waitForElementToNotExist} from '@support/utils';
-import {expect, waitFor} from 'detox';
+import {isAndroid, isIos, longPressWithRetry, safeEnableSynchronization, tapNativeBackButton, timeouts, wait, waitForElementToBeVisible, waitForElementToExist, waitForElementToNotExist} from '@support/utils';
+import {expect} from 'detox';
 
 class PinnedMessagesScreen {
     testID = {
@@ -37,13 +37,34 @@ class PinnedMessagesScreen {
 
     toBeVisible = async () => {
         const timeout = isAndroid() ? timeouts.HALF_MIN : timeouts.TEN_SEC;
-        await waitFor(this.pinnedMessagesScreen).toExist().withTimeout(timeout);
+        if (isIos()) {
+            await device.disableSynchronization();
+            try {
+                await waitForElementToExist(this.pinnedMessagesScreen, timeout);
+            } finally {
+                await safeEnableSynchronization();
+            }
+            return this.pinnedMessagesScreen;
+        }
+        await waitForElementToExist(this.pinnedMessagesScreen, timeout);
 
         return this.pinnedMessagesScreen;
     };
 
     open = async () => {
         // # Open pinned messages screen
+        if (isIos()) {
+            await device.disableSynchronization();
+            try {
+                await waitForElementToExist(ChannelInfoScreen.pinnedMessagesOption, timeouts.TEN_SEC);
+                await ChannelInfoScreen.pinnedMessagesOption.tap();
+                await waitForElementToExist(this.pinnedMessagesScreen, timeouts.TEN_SEC);
+            } finally {
+                await safeEnableSynchronization();
+            }
+            return this.pinnedMessagesScreen;
+        }
+
         await ChannelInfoScreen.pinnedMessagesOption.tap();
 
         return this.toBeVisible();
@@ -53,10 +74,17 @@ class PinnedMessagesScreen {
         if (isAndroid()) {
             // Prefer native-stack header back over device.pressBack() (UiAutomator flakes on API 35).
             await tapNativeBackButton();
-        } else {
-            await this.pinnedMessagesScreen.swipe('right', 'fast', 0.8, 0.05, 0.5);
+            await waitForElementToNotExist(this.pinnedMessagesScreen, timeouts.TEN_SEC);
+            return;
         }
-        await waitForElementToNotExist(this.pinnedMessagesScreen, timeouts.TEN_SEC);
+
+        await device.disableSynchronization();
+        try {
+            await this.pinnedMessagesScreen.swipe('right', 'fast', 0.8, 0.05, 0.5);
+            await waitForElementToNotExist(this.pinnedMessagesScreen, timeouts.TEN_SEC);
+        } finally {
+            await safeEnableSynchronization();
+        }
     };
 
     openPostOptionsFor = async (postId: string, text: string) => {
