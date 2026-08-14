@@ -194,7 +194,6 @@ describe('Scheduled Draft,', () => {
     });
 
     // Reschedule UI path is iOS-only below (Android native date picker is not Detox-interactable).
-    // SEC-11022 / PE Invalid Date: empty user timezone no longer poisons Intl/moment formatting.
     it('MM-T5720 should be able to Reschedule a scheduled Message', async () => {
         const scheduledMessageText = 'Scheduled Message In a channel';
         await ChannelScreen.open(channelsCategory, testChannel.name);

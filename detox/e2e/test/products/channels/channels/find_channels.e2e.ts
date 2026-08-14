@@ -106,7 +106,6 @@ describe('Channels - Find Channels', () => {
         await FindChannelsScreen.close();
     });
 
-    // SEC-11049: tap display_name (40% visible), not the user_item container.
     it('MM-T4907_4 - should be able to find direct and group message channels', async () => {
         // # Create direct and group message channels, open find channels screen, and search for the direct message channel
         const {user: testOtherUser1} = await User.apiCreateUser(siteOneUrl, {prefix: 'a'});

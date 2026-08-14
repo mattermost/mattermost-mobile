@@ -73,16 +73,9 @@ describe('Autocomplete - Channel Mention', () => {
     });
 
     afterAll(async () => {
-        // Resilient cleanup. Previous version awaited ChannelScreen.back() then
-        // HomeScreen.logout() unconditionally — if a prior test (e.g. MM-T4879_7
-        // in CI run 26368981355) left the UI wedged, the back/logout sequence
-        // hit jest's 240s testTimeout, causing testExecError on the whole suite
-        // and (combined with the 60-min step timeout) ending the entire shard
-        // mid-test-run, dropping junit XMLs for every spec on it.
-        //
-        // Now: each step is best-effort with its own short timeout. If both
-        // fail, force a clean simulator state via launchApp so the next spec
-        // on this shard starts fresh instead of inheriting our wedge.
+        // Resilient cleanup: each step is best-effort with its own short timeout.
+        // If both fail, force a clean simulator state via launchApp so the next
+        // spec on this shard starts fresh instead of inheriting a wedged UI.
         try {
             await Promise.race([
                 ChannelScreen.back(),

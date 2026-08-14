@@ -174,7 +174,7 @@ describe('Channels - Browse Channels', () => {
         await BrowseChannelsScreen.close();
     });
 
-    // SEC-11021: ExperimentalViewArchivedChannels lives under TeamSettings (not ServiceSettings).
+    // ExperimentalViewArchivedChannels lives under TeamSettings (not ServiceSettings).
     // Provision already enables it; absent client-config value also means "on" (app treats
     // only explicit 'false' as off). Re-assert TeamSettings + reload so the logged-in client
     // DB picks up the flag before Browse Channels renders the archived dropdown item.

@@ -152,8 +152,8 @@ const Autocomplete = ({
         return s;
     }, [style.borders, style.shadow, hasElements, containerStyle]);
 
-    // SEC-10998: keep testID on a non-Reanimated View. Detox mis-measures
-    // Animated.View frames (often {0,0}) so suggestion taps fail visibility checks.
+    // Keep testID on a non-Reanimated View. Detox mis-measures Animated.View
+    // frames (often {0,0}) so suggestion taps fail visibility checks.
     const component = (
         <Animated.View
             pointerEvents='box-none'

@@ -67,7 +67,6 @@
     "start:webhook": "node webhook_server.js",
     "provision": "tsx provision/index.ts",
     "tsc": "NODE_OPTIONS=--max_old_space_size=12000 tsc --noEmit",
-    "skip-inventory": "node scripts/skip_inventory.js",
     "postinstall": "node scripts/postinstall.js"
   },
   "dependencies": {

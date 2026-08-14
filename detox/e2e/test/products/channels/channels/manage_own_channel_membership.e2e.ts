@@ -54,7 +54,6 @@ describe('Channels - Manage Own Channel Membership', () => {
         await HomeScreen.logout();
     });
 
-    // SEC-11049: per-userId display_name + guarded Android tutorial dismiss (no blind pressBack).
     it('MM-66375 - should be able to see and manage own membership in channel members list', async () => {
         // # Create a channel and add the test user to it
         const {channel} = await Channel.apiCreateChannel(siteOneUrl, {teamId: testTeam.id});
@@ -71,7 +70,7 @@ describe('Channels - Manage Own Channel Membership', () => {
         // # Open manage channel members screen
         await ManageChannelMembersScreen.open();
 
-        // # Close tutorial (guarded — SEC-11049 / API 35 pressBack under tutorial Modal)
+        // # Close tutorial
         await ManageChannelMembersScreen.closeTutorial();
 
         // * Verify manage channel members screen is visible

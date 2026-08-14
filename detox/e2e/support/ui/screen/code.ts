@@ -18,7 +18,7 @@ class CodeScreen {
         return this.title;
     };
 
-    // Unique back testID (MM-70011) — avoids duplicate navigation.header.back under expo-router.
+    // Unique back testID — avoids duplicate navigation.header.back under expo-router.
     // iOS: tapAtPoint for Detox frame offset; Android: plain tap, hardware back as caller fallback.
     back = async () => {
         await waitFor(this.backButton).toExist().withTimeout(timeouts.TEN_SEC);

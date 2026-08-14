@@ -76,7 +76,7 @@ const CustomStatus = ({isTablet, currentUser}: CustomStatusProps) => {
             return;
         }
 
-        // Await so observers emit before Detox asserts clear.button left the tree (MM-70007).
+        // Await so observers emit before Detox asserts clear.button left the tree.
         await updateLocalCustomStatus(serverUrl, currentUser, undefined);
     }, [currentUser, serverUrl]));
 

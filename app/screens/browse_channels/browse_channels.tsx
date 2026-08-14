@@ -129,9 +129,7 @@ export default function BrowseChannels(props: Props) {
         // requires the channel + membership to be in the local DB via `getMyChannel`,
         // and Browse Channels' API fetch doesn't persist them — it only populates the
         // browse list. Calling `switchToChannelById` directly was a no-op on iOS,
-        // leaving the test waiting for `channel.screen` until the 60s timeout
-        // (CI run 26368981355, all 7 tests in
-        // detox/e2e/test/products/channels/channels/archived_channel_interactions.e2e.ts).
+        // leaving the test waiting for `channel.screen` until the 60s timeout.
         //
         // `fetchMyChannel` pulls channel + membership from the server and persists
         // them via `storeMyChannelsForTeam`, exactly mirroring what joinChannel does

@@ -31,7 +31,7 @@ export async function switchToServer(serverUrl: string, callback?: () => void) {
         const authenticated = await SecurityManager.authenticateWithBiometricsIfNeeded(server.url);
         if (authenticated) {
             // Must await: withServerDatabase observes last_active_at; fire-and-forget
-            // races dismissBottomSheet and leaves the UI on the previous server (SEC-11017).
+            // races dismissBottomSheet and leaves the UI on the previous server.
             await DatabaseManager.setActiveServerDatabase(server.url, {
                 skipJailbreakCheck: true,
                 skipBiometricCheck: true,

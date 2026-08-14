@@ -482,10 +482,8 @@ describe('Interactive Dialog - Basic Dialog (Plugin)', () => {
         await ChannelScreen.hasPostMessage(post.id, 'Dialog Submitted:');
     });
 
-    // iOS kept skipped (SEC-11020) after live re-verification: post_input is not found
-    // ("No elements found") in beforeEach clearText and the test body. Artifact shows a
-    // Detox visibility check on a PasteInput RCTUITextView — a paste overlay may cover
-    // the composer. Android still covers this case.
+    // iOS skipped: post_input is not found in beforeEach clearText and the test body.
+    // A paste overlay may cover the composer. Android still covers this case.
     (isIos() ? it.skip : it)('MM-T4201 should fill and submit all text field types (Plugin)', async () => {
         await ensureDialogClosed();
         await ChannelScreen.postSlashCommand('/dialog textfields');

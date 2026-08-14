@@ -265,7 +265,7 @@ const ServerItem = ({
         try {
             if (server.lastActiveAt) {
                 // Switch before dismiss so last_active_at is committed while the sheet
-                // is still mounted; dismiss-first left SEC-11017 stuck on the prior server.
+                // is still mounted; dismiss-first left the UI on the prior server.
                 await switchToServer(server.url);
                 await dismissBottomSheet();
                 return;

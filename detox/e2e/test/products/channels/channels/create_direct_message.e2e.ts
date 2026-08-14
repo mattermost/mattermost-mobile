@@ -68,7 +68,6 @@ describe('Channels - Create Direct Message', () => {
         await CreateDirectMessageScreen.close();
     });
 
-    // SEC-11049: select via per-userId display_name (avoids ambiguous/partially-visible user_item rows).
     it('MM-T4730_2 - should be able to create a direct message', async () => {
         // # As admin, create a new user to open direct message with
         const {user: newUser} = await User.apiCreateUser(siteOneUrl);
@@ -104,7 +103,6 @@ describe('Channels - Create Direct Message', () => {
         await expect(ChannelListScreen.getChannelItemDisplayName(directMessagesCategory, directMessageChannel.name)).toHaveText(newUserDisplayName);
     });
 
-    // SEC-11049: same per-userId display_name selection as MM-T4730_2.
     it('MM-T4730_3 - should be able to create a group message', async () => {
         // # As admin, create two new users to open group message with
         const {user: firstNewUser} = await User.apiCreateUser(siteOneUrl, {prefix: 'a'});
@@ -146,7 +144,6 @@ describe('Channels - Create Direct Message', () => {
         await ChannelListScreen.toBeVisible();
     });
 
-    // SEC-11049: Android edge-to-edge empty-state copy often sits under the 50%/75% visibility threshold.
     it('MM-T4730_4 - should display empty search state for create direct message', async () => {
         // # Open create direct message screen and search for a non-existent user
         const searchTerm = 'blahblahblahblah';
@@ -163,7 +160,6 @@ describe('Channels - Create Direct Message', () => {
         await CreateDirectMessageScreen.close();
     });
 
-    // SEC-11049: assert via per-userId display_name before/after deactivate.
     it('MM-T63374 - should not display deactivated users in the create direct message screen', async () => {
         // # As admin, create a new user to test with
         const {user: deactivatedUser} = await User.apiCreateUser(siteOneUrl);

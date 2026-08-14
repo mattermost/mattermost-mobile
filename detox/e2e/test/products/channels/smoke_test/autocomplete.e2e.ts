@@ -88,8 +88,6 @@ describe('Smoke Test - Autocomplete', () => {
         await ChannelScreen.hasPostMessage(post.id, `@${testUser.username}`);
     });
 
-    // iOS stays skipped until MM-70015 (opaque row press area) is proven 3× here.
-    // The #9893 display-name tap is not the product fix and already failed on this path.
     (isIos() ? it.skip : it)('MM-T4886_2 - should be able to select and post channel mention suggestion', async () => {
         // # Type in "~" to activate channel mention autocomplete
         await ChannelScreen.postInput.typeText('~');
@@ -102,7 +100,7 @@ describe('Smoke Test - Autocomplete', () => {
         const {channelMentionItem} = Autocomplete.getChannelMentionItem(testChannel.name);
         await waitFor(channelMentionItem).toExist().withTimeout(timeouts.TEN_SEC);
 
-        // # Select the row (MM-70015: pressable owns the row testID)
+        // # Select the row
         await channelMentionItem.tap();
         await ChannelScreen.sendButton.tap();
 

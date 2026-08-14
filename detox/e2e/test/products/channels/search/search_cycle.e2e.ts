@@ -112,8 +112,6 @@ describe('Search - Search Cycle', () => {
         await ChannelListScreen.open();
     });
 
-    // SEC-11015: BACK_INDEX unskip — ThreadScreen.back after reply before leaving
-    // search (tapTopmostBackButton). Skip was BACK_INDEX / comment from search only.
     it('MM-T373 - should be able to post a comment from search results', async () => {
         // # Post message with unique term "asparagus" + random suffix for isolation
         const uniqueSuffix = getRandomId();

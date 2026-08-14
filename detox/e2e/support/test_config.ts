@@ -62,6 +62,6 @@ export const hasStableWebhookIngress = Boolean(
     process.env.WEBHOOK_CALLBACKS_REACHABLE !== 'false',
 );
 
-/** Custom profile attributes (MM-T5781). Spinwick does not set this flag (MM-70014). */
+/** Custom profile attributes. Spinwick does not set this flag. */
 export const hasCustomProfileAttributes =
     process.env.MM_FEATUREFLAGS_CUSTOMPROFILEATTRIBUTES === 'true';

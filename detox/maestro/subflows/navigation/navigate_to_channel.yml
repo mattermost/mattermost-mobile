@@ -5,8 +5,6 @@
 # NOTE: The "Schedule a message" tutorial tooltip may appear on the first channel visit.
 # Dismiss it via testID if present.
 #
-# CI flake (MM-T5611 / runs 31434596229, 31506724244): waiting only for
-# channel.post_draft.post.input timed out after the list item went notVisible.
 # Anchor on channel.screen (route mount) first; recover via Home + re-tap if the
 # composer is still missing.
 appId: ${MAESTRO_APP_ID}

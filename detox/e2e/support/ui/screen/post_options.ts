@@ -212,8 +212,8 @@ class PostOptionsScreen {
     };
 
     tapUnpinPost = async () => {
-        // SEC-11009: the unpin option container is not 100% hittable (lower in the
-        // sheet), so tap the label — pin's option tap can succeed where unpin fails.
+        // The unpin option container is not 100% hittable (lower in the sheet),
+        // so tap the label — pin's option tap can succeed where unpin fails.
         await this.toBeVisible();
         await waitFor(this.unpinPostOptionLabel).toExist().withTimeout(timeouts.TEN_SEC);
         await this.unpinPostOptionLabel.tap();

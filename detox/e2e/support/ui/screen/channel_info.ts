@@ -263,7 +263,6 @@ class ChannelInfoScreen {
         }
 
         // A 200px scroll step does not always reach the bookmarks list on CI.
-        // Evidence: CI run 28476574698 (MM-T5602, MM-T5604, MM-T5608).
         try {
             await waitFor(bookmarksList).
                 toExist().

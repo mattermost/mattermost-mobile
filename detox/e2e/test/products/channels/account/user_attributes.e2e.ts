@@ -33,7 +33,7 @@ import {
 import {isAndroid, timeouts, wait} from '@support/utils';
 import {expect, waitFor} from 'detox';
 
-// MM-70014 / SEC-11052: Spinwick does not set MM_FEATUREFLAGS_CUSTOMPROFILEATTRIBUTES.
+// Spinwick does not set MM_FEATUREFLAGS_CUSTOMPROFILEATTRIBUTES.
 (hasCustomProfileAttributes ? describe : describe.skip)('Account - User Attributes (MM-T5781_1, MM-T5781_2)', () => {
     const serverOneDisplayName = 'Server 1';
     const channelsCategory = 'channels';

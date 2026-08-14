@@ -185,8 +185,6 @@ describe('Messaging - Mark as Unread', () => {
         await expect(ChannelListScreen.getChannelItemDisplayName(directMessagesCategory, dmChannel.name)).toBeVisible();
     });
 
-    // SEC-11015: BACK_INDEX unskip — ThreadScreen.back (tapTopmostBackButton) +
-    // screen.openPostOptionsFor. Skip was BACK_INDEX / thread unread only.
     it('MM-T250_1 - should mark a reply as unread in thread view and show unread indicator', async () => {
         // # Create a root message and two replies via API (as admin) so testUser can mark
         // someone else's reply as unread.

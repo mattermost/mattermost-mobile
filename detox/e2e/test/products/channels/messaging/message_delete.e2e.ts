@@ -134,8 +134,6 @@ describe('Messaging - Message Delete', () => {
         await ChannelScreen.back();
     });
 
-    // SEC-11015: safest BACK_INDEX unskip — uses postMessageAndVerify + ThreadScreen.back
-    // (tapTopmostBackButton). Skip comment was BACK_INDEX only.
     it('MM-T4784_3 - should be able to delete a post message from reply thread', async () => {
         // # Open a channel screen, post a message, and tap on the post to open reply thread
         const message = `Message ${getRandomId()}`;

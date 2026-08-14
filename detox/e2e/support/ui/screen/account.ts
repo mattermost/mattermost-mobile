@@ -43,8 +43,8 @@ class AccountScreen {
     customStatusFailureMessage = element(by.id(this.testID.customStatusFailureMessage));
     customStatusClearButton = element(by.id(this.testID.customStatusClearButton));
 
-    // MM-70007 harness: sibling ClearButton can miss center tap on iOS (hittest).
-    // Shared helper — Android plain tap first; iOS tapAtPoint then plain tap.
+    // Sibling ClearButton can miss center tap on iOS (hittest).
+    // Android plain tap first; iOS tapAtPoint then plain tap.
     clearCustomStatus = async () => {
         await waitFor(this.customStatusClearButton).toExist().withTimeout(timeouts.TEN_SEC);
         if (isIos()) {

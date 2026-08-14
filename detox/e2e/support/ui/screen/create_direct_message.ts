@@ -54,7 +54,7 @@ class CreateDirectMessageScreen {
     };
 
     // App builds user_item.{id}.{userId} (UserListRow + UserItem). Prefer display_name —
-    // the row container can fail Detox visibility/hittest while the text child is unique (SEC-11049).
+    // the row container can fail Detox visibility/hittest while the text child is unique.
     getUserItem = (userId: string) => {
         return element(by.id(`${this.testID.userItemPrefix}${userId}.${userId}`));
     };

@@ -140,7 +140,6 @@ describe('Search - Pinned Messages', () => {
         await ChannelScreen.back();
     });
 
-    // Harness matches MM-T4910_3 (id-only matcher after edit) + waitForPostPinned (SEC-11007).
     it('MM-T4918_3 - should be able to edit, reply to, and delete a pinned message from pinned messages screen', async () => {
         // # Open a channel screen, post a message, open post options for message, tap on pin to channel option, open channel info screen, and open pinned messages screen
         const message = `Message ${getRandomId()}`;
@@ -235,8 +234,6 @@ describe('Search - Pinned Messages', () => {
         await ChannelScreen.back();
     });
 
-    // Overlay hittability: tap the unpin *label* (same as MM-T4786_4 / tapUnpinPost)
-    // and wait for the server pin bit before asserting the list (SEC-11007).
     it('MM-T4918_4 - should be able to unpin a message from pinned messages screen', async () => {
         // # Open a channel screen, post a message, open post options for message, tap on pin to channel option, open channel info screen, and open pinned messages screen
         const message = `Message ${getRandomId()}`;

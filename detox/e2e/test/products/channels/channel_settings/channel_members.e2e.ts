@@ -226,7 +226,6 @@ describe('Channels', () => {
         await ChannelScreen.back();
     });
 
-    // Tutorial overlay stole manage-mode taps (SEC-11049). Same path as green MM-T3205.
     it('MM-T3196_1 - RN apps Manage members in channel', async () => {
         // # Use pre-created user (already in channel)
         const removedUser = memberUser;
@@ -300,8 +299,6 @@ describe('Channels', () => {
         await ChannelScreen.back();
     });
 
-    // SEC-11019: RF→Detox iOS skip had no recorded failure; siblings in this file run on iOS
-    // and this case already has an iOS close path after searchAndRemoveUser.
     it('MM-T3205 - RN apps Remove user from private channel', async () => {
         // # Use pre-created private channel and user (already in channel)
         const privateChannel = privateChannel2;

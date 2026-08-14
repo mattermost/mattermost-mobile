@@ -7,13 +7,8 @@
 // - Use element testID when selecting an element. Create one if none.
 // *******************************************************************
 
-// Split out of `search_behaviors.e2e.ts` (which packed 13 tests / 616 lines
-// into one file and overran iOS shard time budgets — see CI run 26352177261
-// shard 17, which dropped search_cycle + search_messages because
-// search_behaviors burned 29 minutes).
-//
-// This file groups tests that exercise search MODIFIERS (`in:`, `from:`),
-// the @recent-mentions tab, and special-character usernames in results.
+// Split out of `search_behaviors.e2e.ts` so this file groups search modifiers
+// (`in:`, `from:`), the @recent-mentions tab, and special-character usernames.
 
 import {
     Channel,

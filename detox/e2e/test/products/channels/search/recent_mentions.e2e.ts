@@ -221,7 +221,7 @@ describe('Search - Recent Mentions', () => {
     });
 
     // Must run last — mutates the shared mention fixture. Mentions list observes
-    // message/edit_at columns (MM-70005) so the edited body can re-render.
+    // message/edit_at columns so the edited body can re-render.
     it('MM-T4909_3 - should be able to edit, reply to, and delete a recent mention from recent mentions screen', async () => {
         // # Open recent mentions screen
         await RecentMentionsScreen.open();

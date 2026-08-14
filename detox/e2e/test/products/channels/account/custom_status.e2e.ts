@@ -214,7 +214,6 @@ describe('Account - Custom Status', () => {
         await wait(timeouts.ONE_SEC);
     });
 
-    // MM-70007: clear is a sibling control + local clear awaits DB write / empty status is expired.
     it('MM-T4990_4 - should be able to clear custom status from account', async () => {
         const status = STATUSES.IN_MEETING;
 
@@ -300,7 +299,6 @@ describe('Account - Custom Status', () => {
         await wait(timeouts.ONE_SEC);
     });
 
-    // MM-70007: same clear.button residual fix as MM-T4990_4.
     it('MM-T3891 - should be able to set custom status with emoji picker and manage it', async () => {
         const customStatusText = `Status ${getRandomId()}`;
         const customEmojiName = 'fire';
@@ -609,7 +607,7 @@ const verifyStatusSetOnAccountScreen = async (status: {emoji: string; text: stri
 
 const verifyStatusCleared = async () => {
     // Prefer not.toExist: on iOS the clear control can linger as "not visible" after a
-    // successful clear (CI 30250131265). Retry clear once for missed taps (MM-70007 harness).
+    // successful clear. Retry clear once for missed taps.
     try {
         await waitFor(AccountScreen.customStatusClearButton).not.toExist().withTimeout(timeouts.TEN_SEC);
     } catch {

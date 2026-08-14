@@ -75,7 +75,7 @@ describe('Messaging - Post Display Behavior', () => {
         await ChannelScreen.back();
     });
 
-    // SEC-11084: prove "left the bottom" by an OLDER post becoming visible — not by a short
+    // Prove "left the bottom" by an older post becoming visible — not by a short
     // newest row clearing Espresso's 50% not.toBeVisible() gate (Android 91px rows never did).
     it('MM-T216_1 - should scroll to bottom when sending a message after scrolling up', async () => {
         // # Create many posts via API to fill the channel history and enable scrolling

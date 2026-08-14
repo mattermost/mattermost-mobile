@@ -178,11 +178,8 @@ appId: ${MAESTRO_APP_ID}
       # openLink -> tryOpenURL -> Linking.openURL hands off to the *external*
       # Safari app rather than presenting an in-app SFSafariViewController, so
       # Mattermost is only suspended, and Maestro's iOS hierarchy still reports
-      # the suspended app's elements alongside Safari's. Evidence: CI run
-      # 31715496229 failed `notVisible: channel.post_draft.post.input` even
-      # though the app logged 'appEntersBackground' / 'Application suspended'
-      # 4s after this tap. This is also why help_url.yml only asserts
-      # notVisible on Android.
+      # the suspended app's elements alongside Safari's. This is also why
+      # help_url.yml only asserts notVisible on Android.
       - extendedWaitUntil:
           visible:
             id: "breadcrumb"
@@ -212,10 +209,8 @@ appId: ${MAESTRO_APP_ID}
       - pressKey: Back
 
 # * Verify back on the channel screen (browser dismissed on iOS, options sheet on Android).
-# 30s, not 10s: on iOS this assertion now runs straight after returning from Safari, so the
-# app is resuming from suspension rather than finishing an in-app transition. CI run
-# 31732059826 got past the breadcrumb tap and then failed here on the 10s budget.
-# help_url.yml allows 30s for the same post-hand-off return.
+# 30s, not 10s: on iOS this assertion runs after returning from Safari, so the
+# app is resuming from suspension rather than finishing an in-app transition.
 - extendedWaitUntil:
     visible:
       id: "channel_header.bookmarks.list"

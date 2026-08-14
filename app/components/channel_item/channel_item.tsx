@@ -92,7 +92,7 @@ export const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
     },
 
     // Autocomplete sits on the center canvas. Without a fill the row's
-    // press target collapses to the text glyphs (MM-70015 / MM-T4879_7).
+    // press target collapses to the text glyphs.
     onCenterBg: {
         backgroundColor: theme.centerChannelBg,
     },

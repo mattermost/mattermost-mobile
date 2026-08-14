@@ -129,7 +129,7 @@ class ThreadScreen {
             // Back button not in hierarchy or tap failed — fall through.
         }
         if (!navigated && isAndroid()) {
-            // SEC-11015: thread-from-search can leave no hittable header back; a single
+            // Thread-from-search can leave no hittable header back; a single
             // system back sometimes only dismisses the keyboard or a transient overlay.
             /* eslint-disable no-await-in-loop */
             for (let attempt = 0; attempt < 2 && !navigated; attempt++) {

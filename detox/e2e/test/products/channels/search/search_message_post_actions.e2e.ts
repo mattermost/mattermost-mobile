@@ -60,8 +60,6 @@ describe('Search - Search Message Post Actions', () => {
         await HomeScreen.logout();
     });
 
-    // SEC-11015: BACK_INDEX unskip — ThreadScreen.back after reply path
-    // (tapTopmostBackButton). Skip was BACK_INDEX / edit-reply-delete from search only.
     it('MM-T5294_10 - should be able to edit, reply to, and delete a searched message from search results screen', async () => {
         // # Open a channel screen, post a message, go back to channel list screen, and open search messages screen
         const searchTerm = getRandomId();

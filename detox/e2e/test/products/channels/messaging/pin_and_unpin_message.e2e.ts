@@ -150,8 +150,6 @@ describe('Messaging - Pin and Unpin Message', () => {
         await ChannelScreen.back();
     });
 
-    // SEC-11015: BACK_INDEX unskip — postMessageAndVerify + ThreadScreen.back
-    // (tapTopmostBackButton). Skip was BACK_INDEX / pin on thread only.
     it('MM-T4865_2 - should be able to pin/unpin a message via post options on thread screen', async () => {
         // # Open a channel screen, post a message, tap on post to open thread, open post options for message, and tap on pin to channel option
         const message = `Message ${getRandomId()}`;
@@ -186,8 +184,6 @@ describe('Messaging - Pin and Unpin Message', () => {
         await ChannelScreen.back();
     });
 
-    // SEC-11013: iOS previously overran the 5m timeout on the 75% visibility scroll after pin.
-    // Re-enable with a 40% visibility wait; hang-step profiling still needed if CI overruns again.
     it('MM-T142 - pinning an older message should not move it to bottom of channel, and pinned posts should display with newest at top', async () => {
         // # Open a channel screen and post several messages to populate the channel
         await ChannelScreen.open(channelsCategory, testChannel.name);

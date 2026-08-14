@@ -215,7 +215,7 @@ export default function SearchHandler(props: Props) {
             }
 
             // Autocomplete omits deleted channels; archived browse must use search_archived
-            // or MM-T4729_5 / SEC-11021 shows "No matches" after filtering delete_at !== 0.
+            // or the list shows "No matches" after filtering delete_at !== 0.
             const searchFn = typeOfChannels === ARCHIVED ? searchArchivedChannels : searchChannels;
             searchTimeout.current = setTimeout(async () => {
                 const results = await searchFn(serverUrl, text, currentTeamId);
