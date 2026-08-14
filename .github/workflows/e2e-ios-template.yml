@@ -136,7 +136,6 @@ on:
         type: string
         default: ""
 
-# Pin: mattermost-test-system-io @ bd85927 (Detox preamble parse + summary unit-fail).
 env:
   AWS_REGION: "us-east-1"
   ADMIN_EMAIL: ${{ secrets.MM_MOBILE_E2E_ADMIN_EMAIL }}
