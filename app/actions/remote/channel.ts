@@ -228,24 +228,33 @@ export async function createChannel(serverUrl: string, displayName: string, purp
 
         const channelData = await client.createChannel(channel);
 
-        const member = await client.getChannelMember(channelData.id, currentUserId);
+        try {
+            const member = await client.getChannelMember(channelData.id, currentUserId);
 
-        const models: Model[] = [];
-        const channelModels = await prepareMyChannelsForTeam(operator, channelData.team_id, [channelData], [member]);
-        if (channelModels.length) {
-            const resolvedModels = await Promise.all(channelModels);
-            models.push(...resolvedModels.flat());
+            const models: Model[] = [];
+            const channelModels = await prepareMyChannelsForTeam(operator, channelData.team_id, [channelData], [member]);
+            if (channelModels.length) {
+                const resolvedModels = await Promise.all(channelModels);
+                models.push(...resolvedModels.flat());
+            }
+
+            const categoriesModels = await addChannelToDefaultCategory(serverUrl, channelData, true);
+            if (categoriesModels.models?.length) {
+                models.push(...categoriesModels.models);
+            }
+            if (models.length) {
+                await operator.batchRecords(models, 'createChannel');
+            }
+            fetchChannelStats(serverUrl, channelData.id, false);
+        } catch (persistError) {
+            logDebug('error on createChannel persist', getFullErrorMessage(persistError));
+            forceLogoutIfNecessary(serverUrl, persistError);
+        } finally {
+            EphemeralStore.creatingChannel = false;
         }
 
-        const categoriesModels = await addChannelToDefaultCategory(serverUrl, channelData, true);
-        if (categoriesModels.models?.length) {
-            models.push(...categoriesModels.models);
-        }
-        if (models.length) {
-            await operator.batchRecords(models, 'createChannel');
-        }
-        fetchChannelStats(serverUrl, channelData.id, false);
-        EphemeralStore.creatingChannel = false;
+        // Server already created the channel. Return it even if local persist
+        // failed so the UI can open it instead of retrying the same name.
         return {channel: channelData};
     } catch (error) {
         logDebug('error on createChannel', getFullErrorMessage(error));

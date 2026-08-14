@@ -276,6 +276,8 @@ describe('Classification Banner - Global Classification Banner', () => {
 
             await waitFor(element(by.id('global_classification_banner'))).not.toBeVisible().withTimeout(timeouts.TEN_SEC);
         } finally {
+            // Restore while still holding the lock, including when reload/assert fail,
+            // so later shards do not inherit the flag off.
             await enableClassificationMarkings(siteOneUrl);
         }
     });
