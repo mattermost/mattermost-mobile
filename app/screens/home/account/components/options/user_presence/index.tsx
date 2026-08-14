@@ -75,22 +75,16 @@ const UserStatus = ({currentUser}: Props) => {
         setStatus(serverUrl, userStatus);
     }, [currentUser.id, serverUrl]);
 
-    // Dismiss the sheet, wait for slide-up views to unmount, then update status.
-    const dismissThenUpdateStatus = useCallback(async (status: string) => {
-        await dismiss();
-        await new Promise((resolve) => setTimeout(resolve, 150));
-        updateStatus(status);
-    }, [dismiss, updateStatus]);
-
     const setUserStatus = useCallback(async (status: string) => {
         if (currentUser.status === OUT_OF_OFFICE) {
             await dismiss();
             return confirmOutOfOfficeDisabled(intl, status, updateStatus);
         }
 
-        await dismissThenUpdateStatus(status);
+        updateStatus(status);
+        await dismiss();
         return null;
-    }, [currentUser.status, dismiss, dismissThenUpdateStatus, intl, updateStatus]);
+    }, [currentUser.status, dismiss, intl, updateStatus]);
 
     const handleSetStatus = usePreventDoubleTap(useCallback(() => {
         const renderContent = () => (
