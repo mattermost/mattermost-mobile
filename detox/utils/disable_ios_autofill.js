@@ -68,11 +68,9 @@ function deviceDataRoot(udid) {
 }
 
 /**
- * Restriction keys Settings → Passwords → AutoFill Passwords writes.
- * allowPasswordAutoFill=NO is the primary kill switch for credential UI on
- * older iOS; on iOS 18+/26 we still write it plus every Effective* mirror and
- * Passwords defaults because SharedWebCredentialViewService ignores a single
- * plist when the others still say YES.
+ * Restriction keys for AutoFill Passwords.
+ * Write allowPasswordAutoFill=NO (and mirrors) in every plist credential UI reads;
+ * a single plist left YES is enough for prompts to keep appearing.
  */
 const RESTRICTION_KEYS = [
     {
