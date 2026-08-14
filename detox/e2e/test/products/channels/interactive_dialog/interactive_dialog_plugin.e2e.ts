@@ -9,6 +9,8 @@
 // - Use element testID when selecting an element. Create one if none.
 // *******************************************************************
 
+import path from 'path';
+
 import {
     Command,
     DemoPlugin,
@@ -18,10 +20,12 @@ import {
     User,
     Post,
 } from '@support/server_api';
+import {apiClearDemoPluginFileUploadKV, apiSubmitDemoPluginFileUploadDialog} from '@support/server_api/plugin';
 import {
     serverOneUrl,
     siteOneUrl,
 } from '@support/test_config';
+import {AttachmentOptions} from '@support/ui/component';
 import {
     ChannelListScreen,
     ChannelScreen,
@@ -34,9 +38,54 @@ import {
 import {wait, isAndroid, isIos, safeEnableSynchronization, timeouts, waitForElementToBeVisible, waitForElementToExist} from '@support/utils';
 import {expect} from 'detox';
 
+const FILE_UPLOAD_FIXTURE = path.resolve(__dirname, '../../../../support/fixtures/sample.txt');
 const ISO_DATETIME_PATTERN = /\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d+)?(?:Z|[+-]\d{2}:\d{2})/;
 
 // MM-66558: dialog fields use replaceText instead of typeText.
+
+async function dismissAttachmentOptions() {
+    try {
+        await waitFor(AttachmentOptions.photoLibrary).toExist().withTimeout(3000);
+        await AttachmentOptions.photoLibrary.swipe('down', 'fast', 0.5);
+        await waitFor(AttachmentOptions.photoLibrary).not.toExist().withTimeout(3000);
+    } catch {}
+}
+
+async function seedFileUploadDialogViaApi(
+    user: any,
+    testChannelId: string,
+    testTeamId: string,
+    fieldName = 'single_file',
+) {
+
+    const loginResult = await User.apiLogin(siteOneUrl, {
+        username: user.username,
+        password: user.newUser.password,
+    });
+    if (loginResult.error) {
+        throw new Error(`Failed to login as test user for file upload seed: ${JSON.stringify(loginResult.error)}`);
+    }
+
+    const {fileId, error: uploadError} = await Post.apiUploadFileToChannel(siteOneUrl, testChannelId, FILE_UPLOAD_FIXTURE);
+    if (uploadError || !fileId) {
+        throw new Error(`Failed to upload fixture for file upload seed: ${JSON.stringify(uploadError)}`);
+    }
+
+    const submitResult = await apiSubmitDemoPluginFileUploadDialog(siteOneUrl, {
+        userId: user.id,
+        channelId: testChannelId,
+        teamId: testTeamId,
+        submission: {[fieldName]: fileId},
+        fileIds: [fileId],
+    });
+    if (submitResult.error) {
+        throw new Error(`Failed to seed file upload dialog via plugin: ${JSON.stringify(submitResult.error)}`);
+    }
+
+    await User.apiAdminLogin(siteOneUrl);
+
+    return fileId;
+}
 
 // ===== Helper Functions =====
 async function waitForDialogSelectorButton(testId: string) {
@@ -176,6 +225,13 @@ async function selectChannel(channel?: {id: string; display_name: string}, {mult
     throw new Error('selectChannel: could not select a channel row');
 }
 
+async function postSlashCommandDirect(command: string) {
+    await ChannelScreen.postInput.tap();
+    await ChannelScreen.postInput.replaceText(command);
+    await ChannelScreen.sendButton.tap();
+    await waitFor(InteractiveDialogScreen.interactiveDialogScreen).toExist().withTimeout(timeouts.FIVE_SEC);
+}
+
 async function ensureDialogClosed() {
     try {
         await waitFor(InteractiveDialogScreen.interactiveDialogScreen).not.toExist().withTimeout(3000);
@@ -237,16 +293,30 @@ describe('Interactive Dialog - Basic Dialog (Plugin)', () => {
     const serverOneDisplayName = 'Server 1';
     const channelsCategory = 'channels';
     let testChannel: any;
+    let testTeam: any;
     let testUser: any;
 
     beforeAll(async () => {
-        const {channel, user} = await Setup.apiInit(siteOneUrl);
+        const {channel, team, user} = await Setup.apiInit(siteOneUrl);
         testChannel = channel;
+        testTeam = team;
         testUser = user;
 
         await User.apiAdminLogin(siteOneUrl);
         const configResult = await System.apiUpdateConfig(siteOneUrl, {
+            ServiceSettings: {
+                EnableGifPicker: true,
+                EnableMobileFileUpload: true,
+            },
+            FileSettings: {
+                EnablePublicLink: true,
+                EnableFileAttachments: true,
+            },
+            FeatureFlags: {InteractiveDialogAppsForm: true},
             PluginSettings: {
+                Enable: true,
+                AllowInsecureDownloadUrl: true,
+                EnableUploads: true,
                 PluginStates: {
                     [DemoPlugin.id]: {Enable: true},
                 },
@@ -710,6 +780,168 @@ describe('Interactive Dialog - Basic Dialog (Plugin)', () => {
         await expect(element(by.id('AppFormElement.min_os_version.input'))).toExist();
         await InteractiveDialogScreen.cancel();
         await ensureDialogClosed();
+    });
+
+    describe('Interactive Dialog - File Upload (Plugin)', () => {
+        beforeEach(async () => {
+            // Restore mobile file upload setting in case MM-T6074_1 crashed before cleanup.
+            await System.apiUpdateConfig(siteOneUrl, {
+                FileSettings: {EnableMobileUpload: true},
+            });
+
+            // Clear any persisted file IDs from a previous test so every test opens
+            // a fresh dialog without stale hydration. Use the plugin KV API directly
+            // instead of the slash command — the slash command returns an ephemeral
+            // message (not a dialog), so postSlashCommandDirect always times out 5s.
+            try {
+                await apiClearDemoPluginFileUploadKV(siteOneUrl, testUser.id);
+            } catch {}
+        });
+
+        it('MM-T6070_1 - should render file upload dialog, open attachment options, and submit with no files (Plugin)', async () => {
+            await ensureDialogClosed();
+            await postSlashCommandDirect('/dialog file-upload');
+            await ensureDialogOpen();
+
+            await expect(element(by.text('File Upload Dialog Demo'))).toExist();
+
+            // 'Single File Upload' and choose buttons are inside AppsFormFileField, which is
+            // wrapped by withObservables (canUploadFiles). Wait for the HOC's first emission.
+            await waitFor(element(by.text('Single File Upload'))).toExist().withTimeout(timeouts.THREE_SEC);
+            await waitFor(element(by.text('Multiple File Upload'))).toExist().withTimeout(timeouts.THREE_SEC);
+            await waitFor(InteractiveDialogScreen.getFileFieldChooseButton('single_file')).toExist().withTimeout(timeouts.THREE_SEC);
+            await waitFor(InteractiveDialogScreen.getFileFieldChooseButton('multi_file')).toExist().withTimeout(timeouts.THREE_SEC);
+
+            await InteractiveDialogScreen.tapFileFieldChooseButton('single_file');
+            await waitFor(AttachmentOptions.photoLibrary).toExist().withTimeout(3000);
+            await expect(AttachmentOptions.attachFile).toExist();
+            await dismissAttachmentOptions();
+
+            await InteractiveDialogScreen.submit();
+            await ensureDialogClosed();
+
+            const {post} = await Post.apiGetLastPostInChannel(siteOneUrl, testChannel.id);
+            let match = post.message.match(/(.+) submitted a file upload dialog/);
+            if (!match || !match[1]) {
+                throw new Error(`Expected post to contain submission confirmation but got: ${post.message}`);
+            }
+            match = post.message.match(/\*\*Files:\*\* (.+)/);
+            if (!match || !match[1]) {
+                throw new Error(`Expected post to contain Files field but got: ${post.message}`);
+            }
+
+            const filesSubmitted = match[1];
+            if (!/none/.test(filesSubmitted)) {
+                throw new Error(`Expected no files to be submitted but got: ${filesSubmitted}`);
+            }
+        });
+
+        it('MM-T6071_1 - should submit file upload dialog with pre-loaded file and verify success post (Plugin)', async () => {
+            await ensureDialogClosed();
+
+            let fileId: string;
+            try {
+                fileId = await seedFileUploadDialogViaApi(testUser, testChannel.id, testTeam.id);
+            } catch (err: any) {
+                throw new Error(`File upload seed failed: ${err.message || err}`);
+            }
+
+            await postSlashCommandDirect('/dialog file-upload');
+            await ensureDialogOpen();
+
+            // * Verify seeded file preview appears before submit
+            await InteractiveDialogScreen.expectHydratedFilePreview('single_file', fileId);
+
+            // # Submit the dialog with the pre-loaded file
+            await InteractiveDialogScreen.submit();
+            await ensureDialogClosed();
+
+            // * Verify success post appears and contains the submitted file ID
+            const {post} = await Post.apiGetLastPostInChannel(siteOneUrl, testChannel.id);
+            const submissionMatch = post.message.match(/(.+) submitted a file upload dialog/);
+            if (!submissionMatch) {
+                throw new Error(`Expected submission confirmation post but got: ${post.message}`);
+            }
+            const filesMatch = post.message.match(/\*\*File IDs \(\d+\):\*\* (.+)/);
+            if (!filesMatch || !filesMatch[1]) {
+                throw new Error(`Expected post to contain File IDs field but got: ${post.message}`);
+            }
+            if (!filesMatch[1].includes(fileId)) {
+                throw new Error(`Expected post to contain fileId ${fileId} but got: ${filesMatch[1]}`);
+            }
+        });
+
+        it('MM-T6072_1 - allow_multiple field keeps choose button enabled when file is attached; single-file field disables it (Plugin)', async () => {
+            await ensureDialogClosed();
+
+            let multiFileId: string;
+            try {
+                multiFileId = await seedFileUploadDialogViaApi(testUser, testChannel.id, testTeam.id, 'multi_file');
+            } catch (err: any) {
+                throw new Error(`Multi-file seed failed: ${err.message || err}`);
+            }
+
+            await postSlashCommandDirect('/dialog file-upload');
+            await ensureDialogOpen();
+
+            // * multi_file field has a seeded file but its choose button stays enabled (allow_multiple=true)
+            await InteractiveDialogScreen.expectHydratedFilePreview('multi_file', multiFileId);
+            await InteractiveDialogScreen.expectFileFieldChooseButtonEnabled('multi_file');
+
+            // * single_file field has no file and its choose button is enabled
+            await InteractiveDialogScreen.expectFileFieldChooseButtonEnabled('single_file');
+
+            await InteractiveDialogScreen.cancel();
+            await ensureDialogClosed();
+        });
+
+        it('MM-T6074_1 - should show upload disabled warning on file fields when mobile upload is disabled (Plugin)', async () => {
+            await ensureDialogClosed();
+            await System.apiUpdateConfig(siteOneUrl, {
+                FileSettings: {EnableMobileUpload: false},
+            });
+            await wait(2000);
+
+            await postSlashCommandDirect('/dialog file-upload');
+            await ensureDialogOpen();
+            await InteractiveDialogScreen.expectFileFieldUploadDisabledWarning('single_file');
+            await InteractiveDialogScreen.expectFileFieldUploadDisabledWarning('multi_file');
+
+            await InteractiveDialogScreen.cancel();
+            await ensureDialogClosed();
+
+            await System.apiUpdateConfig(siteOneUrl, {
+                FileSettings: {EnableMobileUpload: true},
+            });
+            await wait(2000);
+        });
+
+        it('MM-T6075_1 - should hydrate file field from plugin persisted file IDs and re-enable choose button after removal (Plugin)', async () => {
+            await ensureDialogClosed();
+
+            let fileId: string;
+            try {
+                fileId = await seedFileUploadDialogViaApi(testUser, testChannel.id, testTeam.id);
+            } catch (err: any) {
+                throw new Error(`File upload hydration seed failed (check file ownership / plugin file-upload support): ${err.message || err}`);
+            }
+
+            await postSlashCommandDirect('/dialog file-upload');
+            await ensureDialogOpen();
+            await InteractiveDialogScreen.expectHydratedFilePreview('single_file', fileId);
+
+            // * Choose button should be disabled while a file is attached
+            await InteractiveDialogScreen.expectFileFieldChooseButtonDisabled('single_file');
+
+            // # Remove the file
+            await InteractiveDialogScreen.tapFileFieldRemoveButton('single_file', fileId);
+
+            // * Choose button should be enabled after removal
+            await InteractiveDialogScreen.expectFileFieldChooseButtonEnabled('single_file');
+
+            await InteractiveDialogScreen.cancel();
+            await ensureDialogClosed();
+        });
     });
 
     it('MM-T2530A should open date/datetime dialog and display fields', async () => {
