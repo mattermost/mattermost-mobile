@@ -35,7 +35,7 @@ on:
         type: string
         default: ""
       record_tests_in_zephyr:
-        description: "Record Maestro test results in Zephyr Scale (reserved; Test System IO is primary)"
+        description: "Record test results in Zephyr"
         required: false
         type: boolean
         default: false
