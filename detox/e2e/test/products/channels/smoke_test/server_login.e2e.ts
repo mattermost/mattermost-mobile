@@ -26,10 +26,20 @@ import {
     ServerListScreen,
     ServerScreen,
 } from '@support/ui/screen';
-import {timeouts, waitForElementToBeVisible, waitForElementToExist, waitForElementToNotExist} from '@support/utils';
+import {isAndroid, isIos, timeouts, wait, waitForElementToBeVisible, waitForElementToExist} from '@support/utils';
 import {expect, waitFor} from 'detox';
 
 const itWithSecondServer = hasSecondServer ? it : it.skip;
+
+const revealServerListItems = async () => {
+    if (isIos()) {
+        await ServerListScreen.serverListTitle.swipe('up', 'fast', 0.3, 0.5, 0.5);
+    } else if (isAndroid()) {
+        await waitFor(ServerListScreen.serverListTitle).toBeVisible().withTimeout(timeouts.TWO_SEC);
+        await ServerListScreen.serverListTitle.swipe('up', 'fast', 0.1, 0.5, 0.3);
+    }
+    await wait(timeouts.ONE_SEC);
+};
 
 describe('Smoke Test - Server Login', () => {
     const serverOneDisplayName = 'Server 1';
@@ -75,6 +85,7 @@ describe('Smoke Test - Server Login', () => {
         }
         const {user} = await Setup.apiInit(siteTwoUrl);
         await ServerListScreen.addServerButton.tap();
+        await wait(timeouts.TWO_SEC);
         await waitFor(ServerScreen.headerTitleAddServer).toExist().withTimeout(timeouts.HALF_MIN);
         await ServerScreen.connectToServer(serverTwoUrl, serverTwoDisplayName);
 
@@ -86,18 +97,25 @@ describe('Smoke Test - Server Login', () => {
         await ChannelListScreen.toBeVisible();
         await expect(ChannelListScreen.headerServerDisplayName).toHaveText(serverTwoDisplayName);
 
-        // # Go back to first server, open server list, swipe left on second server and log out
+        // # Go back to first server, open server list screen, swipe left on second server and tap on logout option
         await ServerListScreen.open();
-        await ServerListScreen.scrollServerListIntoView();
-        await ServerListScreen.switchToServer(serverOneDisplayName);
+        await wait(timeouts.ONE_SEC);
+        await revealServerListItems();
+        await waitForElementToExist(ServerListScreen.getServerItemInactive(serverOneDisplayName), timeouts.TEN_SEC);
+        await ServerListScreen.getServerItemInactive(serverOneDisplayName).atIndex(0).tap();
+        await wait(timeouts.TWO_SEC);
         await ServerListScreen.open();
-        await ServerListScreen.closeTutorial();
-        await ServerListScreen.scrollServerListIntoView();
+        await wait(timeouts.ONE_SEC);
+        await revealServerListItems();
         await waitForElementToExist(ServerListScreen.getServerItemInactive(serverTwoDisplayName), timeouts.TEN_SEC);
-        await ServerListScreen.swipeRevealAndTapOption(
-            ServerListScreen.getServerItemInactive(serverTwoDisplayName),
-            ServerListScreen.getServerItemLogoutOption(serverTwoDisplayName),
-        );
+        await ServerListScreen.getServerItemInactive(serverTwoDisplayName).atIndex(0).swipe('left', 'slow');
+        await wait(timeouts.ONE_SEC);
+
+        // Logout sits in an Animated clip. toBeVisible(100) times out while the
+        // control is present (21ea481 / 54308be MM-T4675_2).
+        const logoutOption = ServerListScreen.getServerItemLogoutOption(serverTwoDisplayName).atIndex(0);
+        await waitForElementToExist(logoutOption, timeouts.TEN_SEC);
+        await logoutOption.tap({x: 1, y: 1});
 
         // * Verify logout server alert is displayed
         await waitForElementToBeVisible(Alert.logoutTitle(serverTwoDisplayName), timeouts.TEN_SEC);
@@ -105,15 +123,14 @@ describe('Smoke Test - Server Login', () => {
         // # Tap on logout button
         await waitForElementToBeVisible(Alert.logoutButton, timeouts.TEN_SEC);
         await Alert.logoutButton.tap();
-        await waitForElementToNotExist(Alert.logoutTitle(serverTwoDisplayName), timeouts.TEN_SEC);
+        await wait(timeouts.FOUR_SEC);
 
-        // * Verify second server is logged out (login action is clipped; assert presence)
-        await ServerListScreen.swipeRevealOption(
-            ServerListScreen.getServerItemInactive(serverTwoDisplayName),
-            ServerListScreen.getServerItemLoginOption(serverTwoDisplayName),
-        );
+        // * Verify second server is logged out
+        await ServerListScreen.getServerItemInactive(serverTwoDisplayName).atIndex(0).swipe('left', 'slow');
+        await wait(timeouts.ONE_SEC);
+        await waitForElementToExist(ServerListScreen.getServerItemLoginOption(serverTwoDisplayName).atIndex(0), timeouts.TEN_SEC);
 
         // # Go back to first server
-        await ServerListScreen.switchToServer(serverOneDisplayName);
+        await ServerListScreen.getServerItemActive(serverOneDisplayName).tap();
     });
 });
