@@ -169,14 +169,29 @@ class CreateOrEditChannelScreen {
                 await this.headerInput.replaceText(header);
                 await this.createButton.tap();
 
+                // Coachmark ("Type a message and long press…") can mount over channel.screen
+                // and make toExist fail — dismiss before waiting, then confirm channel.
+                await ChannelScreen.dismissScheduledPostTooltip();
                 await waitFor(ChannelScreen.channelScreen).toExist().withTimeout(timeouts.TEN_SEC);
                 await ChannelScreen.dismissScheduledPostTooltip();
-                await ChannelScreen.toBeVisible();
+                await ChannelScreen.toBeVisible(timeouts.TEN_SEC);
                 return {displayName, purpose, header};
             } catch (error) {
                 lastError = error;
 
+                // Create may have succeeded while the coachmark blocked matchers — dismiss and re-check.
+                await ChannelScreen.dismissScheduledPostTooltip();
                 try {
+                    await expect(ChannelScreen.channelScreen).toExist();
+                    await ChannelScreen.toBeVisible(timeouts.TEN_SEC);
+                    return {displayName, purpose, header};
+                } catch {
+                    // Still not on channel.
+                }
+
+                // Only retry from a clean channel list: close create form if it is still up.
+                try {
+                    await expect(this.createOrEditChannelScreen).toExist();
                     await this.close();
                 } catch {
                     try {
