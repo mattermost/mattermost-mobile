@@ -56,7 +56,7 @@ const useSlidesData = () => {
     const slidesData: OnboardingItem[] = [
         {
             title: intl.formatMessage({id: 'onboarding.welcome', defaultMessage: 'Welcome'}),
-            description: intl.formatMessage({id: 'onboaring.welcome_description', defaultMessage: 'Mattermost is a sovereign collaboration platform built for operational environments and uncompromising security'}),
+            description: intl.formatMessage({id: 'onboaring.welcome_description', defaultMessage: 'Mattermost is a sovereign collaboration platform built for operational environments and uncompromising security.'}),
             image: chatSvg,
         },
         {
