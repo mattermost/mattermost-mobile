@@ -125,7 +125,7 @@ async function loginAdmin(): Promise<void> {
             }
             console.warn(`⚠️ Admin login attempt ${attempt} failed, retrying...`);
 
-            // Cloudflare 524 / AggregateError under parallel CI needs longer backoff.
+            // 524 / AggregateError under parallel CI needs longer backoff.
             const msg = JSON.stringify(loginError);
             const delay = (msg.includes('524') || msg.includes('AggregateError')) ? 120_000 * attempt : 2000 * attempt;
             await new Promise((resolve) => setTimeout(resolve, delay));

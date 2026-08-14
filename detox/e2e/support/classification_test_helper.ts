@@ -24,7 +24,7 @@ const retryTransient = async <T extends {error?: unknown}>(
     let result: T = {error: new Error(`${label}: no attempts`)} as T;
     for (let attempt = 0; attempt < attempts; attempt++) {
         if (attempt > 0) {
-            // Cloudflare 524 responses ask for ~120s backoff.
+            // 524 responses ask for ~120s backoff.
             // eslint-disable-next-line no-await-in-loop
             await wait(timeouts.ONE_MIN * 2 * attempt);
         }
