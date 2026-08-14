@@ -297,6 +297,7 @@ export default function SearchHandler(props: Props) {
             searchTimeout.current = undefined;
         }
         doSearchChannels(term);
+
         // Re-issue only when the channel type changes; term updates go through doSearchChannels.
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [typeOfChannels, isSearch, doGetChannels, doSearchChannels]);
