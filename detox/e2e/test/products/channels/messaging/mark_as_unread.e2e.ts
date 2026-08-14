@@ -225,13 +225,13 @@ describe('Messaging - Mark as Unread', () => {
         await ChannelScreen.back();
     });
 
-    // Skip: failed CI run 29954156963 (both) — GM unread flake
-    it.skip('MM-T1280_1 - should mark a GM post as unread and show the GM channel as unread in channel list', async () => {
+    it('MM-T1280_1 - should mark a GM post as unread and show the GM channel as unread in channel list', async () => {
         // # GM channel and message were created in beforeAll before login so they appear in the sidebar
 
         // # Open the GM channel from the channel list
-        await waitFor(ChannelListScreen.getChannelItemDisplayName(directMessagesCategory, gmChannel.name)).toBeVisible().withTimeout(timeouts.TEN_SEC);
-        await ChannelListScreen.getChannelItemDisplayName(directMessagesCategory, gmChannel.name).tap();
+        await ChannelListScreen.ensureCategoryExpanded(directMessagesCategory);
+        await waitFor(ChannelListScreen.getChannelItemDisplayName(directMessagesCategory, gmChannel.name)).toBeVisible(40).withTimeout(timeouts.TEN_SEC);
+        await ChannelListScreen.getChannelItemDisplayName(directMessagesCategory, gmChannel.name).tap({x: 1, y: 1});
         await ChannelScreen.toBeVisible();
 
         // * Verify the GM message is visible
@@ -249,7 +249,7 @@ describe('Messaging - Mark as Unread', () => {
         await ChannelScreen.back();
 
         // * Verify the GM channel is still listed in the direct messages category
-        await waitFor(ChannelListScreen.getChannelItemDisplayName(directMessagesCategory, gmChannel.name)).toBeVisible().withTimeout(timeouts.TEN_SEC);
-        await expect(ChannelListScreen.getChannelItemDisplayName(directMessagesCategory, gmChannel.name)).toBeVisible();
+        await ChannelListScreen.ensureCategoryExpanded(directMessagesCategory);
+        await waitFor(ChannelListScreen.getChannelItemDisplayName(directMessagesCategory, gmChannel.name)).toBeVisible(40).withTimeout(timeouts.TEN_SEC);
     });
 });

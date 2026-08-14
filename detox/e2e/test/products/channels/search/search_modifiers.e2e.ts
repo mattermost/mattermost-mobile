@@ -139,9 +139,7 @@ describe('Search - Modifiers', () => {
         await ChannelListScreen.open();
     });
 
-    // CI 59ec6ae/ce729d/bc6df62 iOS: exceeds 300s Jest timeout after disableSynchronization
-    // + cleanup harden (recent-item race / hung search return). Skip until search sync is stable.
-    it.skip('MM-T585_1 - unfiltered search is not affected by previous modifier searches', async () => {
+    it('MM-T585_1 - unfiltered search is not affected by previous modifier searches', async () => {
         // # Post a message for plain text search
         const plainTerm = `plain${getRandomId()}`;
         const message = `Message ${plainTerm}`;
@@ -171,20 +169,14 @@ describe('Search - Modifiers', () => {
         await SearchMessagesScreen.searchModifierFrom.tap();
         await SearchMessagesScreen.searchInput.typeText(testUser.username);
 
-        await device.disableSynchronization();
-        try {
-            await SearchMessagesScreen.searchInput.tapReturnKey();
+        await SearchMessagesScreen.searchInput.tapReturnKey();
+        await SearchMessagesScreen.searchInput.replaceText(plainTerm);
+        await SearchMessagesScreen.searchInput.tapReturnKey();
 
-            await SearchMessagesScreen.searchInput.replaceText(plainTerm);
-            await SearchMessagesScreen.searchInput.tapReturnKey();
-
-            // * Verify that plain text search returns the expected result
-            // (not affected by previous from: filter)
-            const {postListPostItem} = SearchMessagesScreen.getPostListPostItem(plainPost.id, message);
-            await waitForElementToExist(postListPostItem, timeouts.HALF_MIN);
-        } finally {
-            await device.enableSynchronization();
-        }
+        // * Verify that plain text search returns the expected result
+        // (not affected by previous from: filter)
+        const {postListPostItem} = SearchMessagesScreen.getPostListPostItem(plainPost.id, message);
+        await waitForElementToExist(postListPostItem, timeouts.HALF_MIN);
 
         // Cleanup must run with sync on — under disableSynchronization the recent-item
         // row can exist then vanish before tap (CI 59ec6ae iOS MM-T585_1).

@@ -22,6 +22,7 @@ import {
     ChannelListScreen,
     HomeScreen,
     LoginScreen,
+    PostOptionsScreen,
     ServerScreen,
     ThreadScreen,
 } from '@support/ui/screen';
@@ -180,18 +181,17 @@ describe('Messaging - Message Draft', () => {
         await ChannelScreen.back();
     });
 
-    // Skip both: CI run 30000635898 — thread draft input is missing or the channel-open cascade prevents setup.
-    // Not addressed by Message Length alert fix (MM-70004); leave skipped.
-    it.skip('MM-T4781_4 - should be able to create a message draft from reply thread', async () => {
-        // # Open a channel screen, post a message, and tap on the post to open reply thread
+    // Open via Reply (same path as MM-T4785_1). Parent-post tap never mounted
+    // thread.post_draft.post.input (CI 30000635898). Not the Message Length alert (MM-70004).
+    it('MM-T4781_4 - should be able to create a message draft from reply thread', async () => {
+        // # Open a channel screen, post a message, and open the reply thread
         const message = `Message ${getRandomId()}`;
         await ChannelScreen.open(channelsCategory, testChannel.name);
-        await ChannelScreen.postMessage(message);
-        const {post: parentPost} = await Post.apiGetLastPostInChannel(siteOneUrl, testChannel.id);
-        const {postListPostItem: parentPostListPostItem} = ChannelScreen.getPostListPostItem(parentPost.id, message);
-        await parentPostListPostItem.tap();
+        const {post: parentPost} = await ChannelScreen.postMessageAndVerify(message, testChannel.id, siteOneUrl);
+        await ChannelScreen.openPostOptionsFor(parentPost.id, message);
+        await PostOptionsScreen.replyPostOption.tap();
 
-        // * Verify on thread screen
+        // * Verify on thread screen (waits for thread.post_draft.post.input)
         await ThreadScreen.toBeVisible();
 
         // # Create a reply message draft
@@ -209,9 +209,11 @@ describe('Messaging - Message Draft', () => {
         const {postListPostItem: replyPostListPostItem} = ThreadScreen.getPostListPostItem(post.id, replyMessage);
         await expect(replyPostListPostItem).not.toExist();
 
-        // # Go back to channel screen and tap on parent post again
+        // # Go back to channel screen and reopen the thread via Reply
         await ThreadScreen.back();
-        await parentPostListPostItem.tap();
+        await ChannelScreen.openPostOptionsFor(parentPost.id, message);
+        await PostOptionsScreen.replyPostOption.tap();
+        await ThreadScreen.toBeVisible();
 
         // * Verify reply message draft still exists in post draft
         if (isIos()) {

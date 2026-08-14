@@ -61,3 +61,7 @@ export const hasStableWebhookIngress = Boolean(
     !(isLoopbackWebhook && process.env.CI === 'true') &&
     process.env.WEBHOOK_CALLBACKS_REACHABLE !== 'false',
 );
+
+/** Custom profile attributes (MM-T5781). Spinwick does not set this flag (MM-70014). */
+export const hasCustomProfileAttributes =
+    process.env.MM_FEATUREFLAGS_CUSTOMPROFILEATTRIBUTES === 'true';

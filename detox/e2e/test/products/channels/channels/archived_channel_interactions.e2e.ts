@@ -32,7 +32,7 @@ import {
     waitForElementToBeVisible,
     waitForElementToExist,
 } from '@support/utils';
-import {expect} from 'detox';
+import {expect, waitFor} from 'detox';
 
 // Wait for archived channel screen after non-tap navigation (e.g. permalink).
 async function waitForArchivedChannelScreen() {
@@ -118,8 +118,7 @@ describe('Channels - Archived Channel Interactions', () => {
         await ChannelListScreen.toBeVisible();
     });
 
-    // Skip: leave archived public channel from channel info flake
-    it.skip('MM-T1685_1 - should be able to leave an archived public channel from channel info', async () => {
+    it('MM-T1685_1 - should be able to leave an archived public channel from channel info', async () => {
         // # Create a public channel, add user, post a sentinel message, then archive.
         const {channel: archivedChannel} = await Channel.apiCreateChannel(
             siteOneUrl,
@@ -143,14 +142,15 @@ describe('Channels - Archived Channel Interactions', () => {
 
         // * Verify user is back on channel list screen (left the channel)
         await ChannelListScreen.toBeVisible();
+        await Alert.dismissChannelRemoveOrArchiveAlert();
 
         // * Verify the archived channel is no longer in the user's channel list sidebar
-        await expect(
+        await waitFor(
             ChannelListScreen.getChannelItemDisplayName(
                 'channels',
                 archivedChannel.name,
             ),
-        ).not.toExist();
+        ).not.toExist().withTimeout(timeouts.TEN_SEC);
     });
 
     it('MM-T1679_1 - should be able to open an archived channel from search results', async () => {
@@ -217,9 +217,7 @@ describe('Channels - Archived Channel Interactions', () => {
         await ChannelListScreen.open();
     });
 
-    // Skip Android: manage-members visibility <15% after archive
-    // (tutorial/overlay occlusion unclear from artifact; same suite already skips MM-T1671/1685).
-    (isAndroid() ? it.skip : it)('MM-T1719_1 - should not be able to remove members from an archived channel', async () => {
+    it('MM-T1719_1 - should not be able to remove members from an archived channel', async () => {
         // iOS uses the search/permalink fallback path (MM-T1679_1 path) because
         // tapping an archived channel in Browse Channels does not reliably navigate
         // on iOS in CI. See openArchivedChannel().
@@ -244,24 +242,9 @@ describe('Channels - Archived Channel Interactions', () => {
         // # Open channel info
         await ChannelInfoScreen.open();
 
-        // # Tap Members — Android: tutorial Dialog blocks Espresso from finding the screen behind it.
-        await waitForElementToExist(ChannelInfoScreen.membersOption, timeouts.TEN_SEC);
-        await ChannelInfoScreen.membersOption.tap();
-
-        // # Dismiss the long-press tutorial on BOTH platforms — its Modal overlay consumes
-        // touches across the whole screen and blocks back-nav/swipe-pop.
-        if (isAndroid()) {
-            try {
-                await waitForElementToBeVisible(
-                    element(by.text("Long-press on an item to view a user's profile")),
-                    timeouts.TEN_SEC,
-                );
-            } catch {
-                // Tutorial already dismissed
-            }
-        }
+        // # Open members (open() dismisses the Android tutorial overlay)
+        await ManageChannelMembersScreen.open();
         await ManageChannelMembersScreen.closeTutorial();
-        await ManageChannelMembersScreen.toBeVisible();
 
         // * Verify the Manage button is visible — archived channels still render it but gate
         // showManageMode so no remove controls appear in the rows.

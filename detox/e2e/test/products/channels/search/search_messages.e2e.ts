@@ -28,7 +28,7 @@ import {
     ServerScreen,
     TeamDropdownMenuScreen,
 } from '@support/ui/screen';
-import {getRandomId, isIos, timeouts, wait, waitForElementToBeVisible, waitForElementToExist} from '@support/utils';
+import {getRandomId, timeouts, wait, waitForElementToBeVisible, waitForElementToExist} from '@support/utils';
 import {expect} from 'detox';
 
 describe('Search - Search Messages', () => {
@@ -137,10 +137,7 @@ describe('Search - Search Messages', () => {
         await ChannelListScreen.toBeVisible();
     });
 
-    // Skip iOS (SEC-10996): the channel-mention row never passes Detox's 100% visibility
-    // gate, so the tap fails at centre and at corner alike. Failed CI 31329196036,
-    // 31368420580, 31424626068. The beforeEach searchClearButton reset keeps _4.._9 green.
-    (isIos() ? it.skip : it)('MM-T5294_3 - should be able to search messages in a specific channel', async () => {
+    it('MM-T5294_3 - should be able to search messages in a specific channel', async () => {
         // # Open a channel screen, post a message, go back to channel list screen, and open search messages screen
         const message = `Message ${getRandomId()}`;
         await ChannelScreen.open(channelsCategory, testChannel.name);
@@ -156,10 +153,11 @@ describe('Search - Search Messages', () => {
         // modal's UITransitionView (same workaround as PostOptionsScreen.deletePost).
         await SearchMessagesScreen.searchModifierIn.tap({x: 1, y: 1});
         await SearchMessagesScreen.searchInput.typeText(testChannel.name);
-        const {channelMentionItem} = Autocomplete.getChannelMentionItem(testChannel.name);
-
-        await waitForElementToBeVisible(channelMentionItem, timeouts.TWO_SEC);
-        await channelMentionItem.tap();
+        const {
+            channelMentionItem,
+            channelMentionItemChannelDisplayName,
+        } = Autocomplete.getChannelMentionItem(testChannel.name);
+        await Autocomplete.tapSuggestion(channelMentionItem, channelMentionItemChannelDisplayName);
         await SearchMessagesScreen.searchInput.tapReturnKey();
 
         // * Verify search results contain messages in channel

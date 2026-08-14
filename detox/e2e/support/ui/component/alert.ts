@@ -129,8 +129,10 @@ class Alert {
                     () => element(by.label('OK')).atIndex(0).tap(),
                     () => element(by.label('OK')).atIndex(1).tap(),
                     () => this.okButton.tap(),
+
                     // Relative tap below title into the action row (Maestro: index unreliable).
                     () => this.messageLengthTitle.tap({x: 120, y: 160}),
+
                     // Absolute taps: single OK centered on iPhone 17 Pro (402x874); same Y band as logout.yml.
                     () => device.tap({x: 201, y: 502}),
                     () => device.tap({x: 201, y: 470}),

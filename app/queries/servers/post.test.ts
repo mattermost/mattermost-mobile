@@ -3,6 +3,7 @@
 
 import {Database} from '@nozbe/watermelondb';
 import {firstValueFrom} from 'rxjs';
+import {filter, take} from 'rxjs/operators';
 
 import {ActionType, License} from '@constants';
 import {SYSTEM_IDENTIFIERS} from '@constants/database';
@@ -21,6 +22,7 @@ import {
     queryPostsBetween,
     queryPinnedPostsInChannel,
     observePinnedPostsInChannel,
+    observePostsById,
     getIsPostPriorityEnabled,
     getIsPostAcknowledgementsEnabled,
     observeIsPostPriorityEnabled,
@@ -510,6 +512,59 @@ describe('post query helpers', () => {
             await operator.handlePosts({posts: [post], order: [post.id], previousPostId: '', actionType: ActionType.POSTS.RECEIVED_NEW, prepareRecordsOnly: false});
             const results = await firstValueFrom(observePinnedPostsInChannel(database, TestHelper.basicChannel!.id));
             expect(results.map((p) => p.id)).toContain(post.id);
+        });
+
+        it('observePinnedPostsInChannel emits when a pinned post message is edited', async () => {
+            const post = TestHelper.fakePost({
+                channel_id: TestHelper.basicChannel!.id,
+                is_pinned: true,
+                message: 'original pinned',
+            });
+            await operator.handlePosts({posts: [post], order: [post.id], previousPostId: '', actionType: ActionType.POSTS.RECEIVED_NEW, prepareRecordsOnly: false});
+
+            const edited$ = observePinnedPostsInChannel(database, TestHelper.basicChannel!.id).pipe(
+                filter((rows) => rows.some((p) => p.id === post.id && p.message === 'edited pinned')),
+                take(1),
+            );
+            const editedPromise = firstValueFrom(edited$);
+
+            await operator.handlePosts({
+                posts: [{...post, message: 'edited pinned', edit_at: post.update_at + 1, update_at: post.update_at + 1}],
+                order: [post.id],
+                previousPostId: '',
+                actionType: ActionType.POSTS.RECEIVED_NEW,
+                prepareRecordsOnly: false,
+            });
+
+            const results = await editedPromise;
+            expect(results.find((p) => p.id === post.id)?.message).toBe('edited pinned');
+        });
+    });
+
+    describe('observePostsById', () => {
+        it('emits when an existing post message is edited', async () => {
+            const post = TestHelper.fakePost({
+                channel_id: TestHelper.basicChannel!.id,
+                message: 'original mention',
+            });
+            await operator.handlePosts({posts: [post], order: [post.id], previousPostId: '', actionType: ActionType.POSTS.RECEIVED_NEW, prepareRecordsOnly: false});
+
+            const edited$ = observePostsById(database, [post.id]).pipe(
+                filter((rows) => rows.some((p) => p.id === post.id && p.message === 'edited mention')),
+                take(1),
+            );
+            const editedPromise = firstValueFrom(edited$);
+
+            await operator.handlePosts({
+                posts: [{...post, message: 'edited mention', edit_at: post.update_at + 1, update_at: post.update_at + 1}],
+                order: [post.id],
+                previousPostId: '',
+                actionType: ActionType.POSTS.RECEIVED_NEW,
+                prepareRecordsOnly: false,
+            });
+
+            const results = await editedPromise;
+            expect(results.find((p) => p.id === post.id)?.message).toBe('edited mention');
         });
     });
 

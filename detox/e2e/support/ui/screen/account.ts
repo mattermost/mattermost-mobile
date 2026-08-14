@@ -63,6 +63,7 @@ class AccountScreen {
                         await this.customStatusClearButton.tap();
                     }
                 }
+
                 // Second tap if first landed but press was eaten by nested row.
                 try {
                     await waitFor(this.customStatusClearButton).toExist().withTimeout(timeouts.ONE_SEC);
@@ -86,7 +87,6 @@ class AccountScreen {
         }
         await wait(timeouts.FOUR_SEC);
     };
-
 
     getUserInfo = (userId: string) => {
         const userInfoTestId = `${this.testID.userInfoPrefix}${userId}`;

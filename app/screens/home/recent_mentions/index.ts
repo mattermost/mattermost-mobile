@@ -8,7 +8,7 @@ import {of as of$} from 'rxjs';
 import {switchMap} from 'rxjs/operators';
 
 import {queryAllCustomEmojis} from '@queries/servers/custom_emoji';
-import {queryPostsById} from '@queries/servers/post';
+import {observePostsById} from '@queries/servers/post';
 import {observeConfigBooleanValue, observeRecentMentions} from '@queries/servers/system';
 import {observeCurrentUser} from '@queries/servers/user';
 import {mapCustomEmojiNames} from '@utils/emoji/helpers';
@@ -29,7 +29,7 @@ const enhance = withObservables([], ({database}: WithDatabaseArgs) => {
                 if (!recentMentions.length) {
                     return of$([]);
                 }
-                return queryPostsById(database, recentMentions, Q.asc).observe();
+                return observePostsById(database, recentMentions, Q.asc);
             }),
         ),
         currentTimezone: currentUser.pipe((switchMap((user) => of$(getTimezone(user?.timezone || null))))),

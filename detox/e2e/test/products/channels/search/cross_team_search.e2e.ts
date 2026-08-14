@@ -28,7 +28,7 @@ import {
     ServerScreen,
     TeamDropdownMenuScreen,
 } from '@support/ui/screen';
-import {isAndroid, timeouts, wait, waitForElementToExist, isIos} from '@support/utils';
+import {isAndroid, timeouts, wait, waitForElementToExist} from '@support/utils';
 import {expect, waitFor} from 'detox';
 
 describe('Search - Cross Team Search', () => {
@@ -92,8 +92,7 @@ describe('Search - Cross Team Search', () => {
         await HomeScreen.logout();
     });
 
-    // Skip: failed CI run 29954156963 (ios) — cross-team search navigate flake
-    (isIos() ? it.skip : it)('MM-T5827 - should be able to search messages across multiple teams and navigate to results', async () => {
+    it('MM-T5827 - should be able to search messages across multiple teams and navigate to results', async () => {
         // # a) Click on Off-Topic channel and dismiss tutorial if present
         await ChannelScreen.open(channelsCategory, offTopicChannel.name);
 
@@ -190,6 +189,12 @@ describe('Search - Cross Team Search', () => {
         // never recover — the sheet is dismissed — producing a 10s timeout.
         await waitFor(TeamDropdownMenuScreen.teamDropdownMenuScreen).not.toExist().withTimeout(timeouts.TEN_SEC);
 
+        // * j.5) Wait for the search index to catch up on both freshly posted
+        // messages before the UI search runs — Bleve indexes async, so an
+        // immediate UI search can race the index and return empty results.
+        await Post.waitForPostMessageInSearch(siteOneUrl, 'horses', offTopicPost.id, searchTerm);
+        await Post.waitForPostMessageInSearch(siteOneUrl, 'horses', townSquarePost.id, searchTerm);
+
         // # k) In the "Search messages and files" field, type "horses" and press Enter
         await SearchMessagesScreen.searchInput.typeText('horses');
         await SearchMessagesScreen.searchInput.tapReturnKey();
@@ -198,8 +203,8 @@ describe('Search - Cross Team Search', () => {
         // * k) Verify search results contain messages from both teams
         const {postListPostItem: offTopicSearchResult} = SearchMessagesScreen.getPostListPostItem(offTopicPost.id, searchTerm);
         const {postListPostItem: townSquareSearchResult} = SearchMessagesScreen.getPostListPostItem(townSquarePost.id, searchTerm);
-        await expect(offTopicSearchResult).toBeVisible();
-        await expect(townSquareSearchResult).toBeVisible();
+        await waitFor(offTopicSearchResult).toBeVisible(40).withTimeout(timeouts.TEN_SEC);
+        await waitFor(townSquareSearchResult).toBeVisible(40).withTimeout(timeouts.TEN_SEC);
 
         // # l) Tap on the "All teams" with the drop-down arrow selector and select "Team Open"
         await SearchMessagesScreen.teamPickerButton.tap();

@@ -21,7 +21,7 @@ import {
     LoginScreen,
     ServerScreen,
 } from '@support/ui/screen';
-import {getRandomId, timeouts, wait} from '@support/utils';
+import {getRandomId, isAndroid, timeouts, wait} from '@support/utils';
 import {expect} from 'detox';
 
 describe('Channel Settings - Copy Tests', () => {
@@ -79,8 +79,8 @@ describe('Channel Settings - Copy Tests', () => {
         await ChannelListScreen.toBeVisible();
     });
 
-    // Skipped: Fabric idling-resource deadlock on Android copy bottom-sheet tap (CI 28290273101) — needs Detox/Fabric fix.
-    it.skip('MM-T868_1 - should show Copy option when long-pressing channel purpose text', async () => {
+    // Android Fabric idling deadlock on copy tap (SEC-10994 / CI 28290273101).
+    (isAndroid() ? it.skip : it)('MM-T868_1 - should show Copy option when long-pressing channel purpose text', async () => {
         const purposeText = `Purpose text for copying ${getRandomId()}`;
         const {channel: channelWithPurpose} = await Channel.apiCreateChannel(siteOneUrl, {
             teamId: testTeam.id,
@@ -122,8 +122,7 @@ describe('Channel Settings - Copy Tests', () => {
         await ChannelListScreen.toBeVisible();
     });
 
-    // Skipped: same Fabric idling deadlock as MM-T868_1 (copy_header_text bottom-sheet).
-    it.skip('MM-T869_1 - should show Copy URL option when long-pressing a URL in the channel header', async () => {
+    (isAndroid() ? it.skip : it)('MM-T869_1 - should show Copy URL option when long-pressing a URL in the channel header', async () => {
         const headerUrl = 'https://mattermost.com';
         const {channel: channelWithHeaderUrl} = await Channel.apiCreateChannel(siteOneUrl, {
             teamId: testTeam.id,

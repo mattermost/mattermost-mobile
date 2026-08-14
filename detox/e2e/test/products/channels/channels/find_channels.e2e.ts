@@ -26,7 +26,7 @@ import {
     LoginScreen,
     ServerScreen,
 } from '@support/ui/screen';
-import {isIos, timeouts, wait} from '@support/utils';
+import {timeouts, wait} from '@support/utils';
 import {expect, waitFor} from 'detox';
 
 describe('Channels - Find Channels', () => {
@@ -106,8 +106,8 @@ describe('Channels - Find Channels', () => {
         await FindChannelsScreen.close();
     });
 
-    // Skip iOS: R1+R3 product — filtered_list user_item not found for DM/GM search
-    (isIos() ? it.skip : it)('MM-T4907_4 - should be able to find direct and group message channels', async () => {
+    // SEC-11049: tap display_name (40% visible), not the user_item container.
+    it('MM-T4907_4 - should be able to find direct and group message channels', async () => {
         // # Create direct and group message channels, open find channels screen, and search for the direct message channel
         const {user: testOtherUser1} = await User.apiCreateUser(siteOneUrl, {prefix: 'a'});
         await Team.apiAddUserToTeam(siteOneUrl, testOtherUser1.id, testTeam.id);
@@ -133,10 +133,9 @@ describe('Channels - Find Channels', () => {
             await waitFor(FindChannelsScreen.getFilteredChannelItem(directMessageChannel.name)).
                 toExist().
                 withTimeout(timeouts.TWENTY_SEC);
+            await FindChannelsScreen.getFilteredChannelItemDisplayName(directMessageChannel.name).tap();
         } catch {
-            await waitFor(element(by.id(`find_channels.filtered_list.user_item.${testOtherUser1.id}`))).
-                toExist().
-                withTimeout(timeouts.HALF_MIN);
+            await FindChannelsScreen.tapFilteredUserItem(testOtherUser1.id);
         }
 
         // # Search for the group message channel
@@ -150,12 +149,9 @@ describe('Channels - Find Channels', () => {
             await waitFor(FindChannelsScreen.getFilteredChannelItem(groupMessageChannel.name)).
                 toExist().
                 withTimeout(timeouts.TWENTY_SEC);
-            await FindChannelsScreen.getFilteredChannelItem(groupMessageChannel.name).tap();
+            await FindChannelsScreen.getFilteredChannelItemDisplayName(groupMessageChannel.name).tap();
         } catch {
-            await waitFor(element(by.id(`find_channels.filtered_list.user_item.${testOtherUser2.id}`))).
-                toExist().
-                withTimeout(timeouts.HALF_MIN);
-            await element(by.id(`find_channels.filtered_list.user_item.${testOtherUser2.id}`)).tap();
+            await FindChannelsScreen.tapFilteredUserItem(testOtherUser2.id);
         }
         await wait(timeouts.FOUR_SEC);
 

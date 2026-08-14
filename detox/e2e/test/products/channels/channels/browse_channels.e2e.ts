@@ -80,8 +80,7 @@ describe('Channels - Browse Channels', () => {
         await BrowseChannelsScreen.close();
     });
 
-    // Skip Android: R1 product — join target channel name not found in browse list
-    (isAndroid() ? it.skip : it)('MM-T4729_2 - should be able to browse and join an unjoined public channel', async () => {
+    it('MM-T4729_2 - should be able to browse and join an unjoined public channel', async () => {
         // # As admin, create a new public channel so that user can join
         const {channel} = await Channel.apiCreateChannel(siteOneUrl, {teamId: testTeam.id});
 
@@ -93,11 +92,13 @@ describe('Channels - Browse Channels', () => {
         await BrowseChannelsScreen.searchInput.replaceText(channel.name);
 
         // * Verify search returns the new public channel item
-        await wait(timeouts.ONE_SEC);
+        await waitFor(BrowseChannelsScreen.getChannelItemDisplayName(channel.name)).
+            toBeVisible(40).
+            withTimeout(timeouts.TEN_SEC);
         await expect(BrowseChannelsScreen.getChannelItemDisplayName(channel.name)).toHaveText(channel.display_name);
 
         // # Tap on the new public channel item
-        await BrowseChannelsScreen.getChannelItem(channel.name).multiTap(2);
+        await BrowseChannelsScreen.getChannelItemDisplayName(channel.name).tap({x: 1, y: 1});
         await wait(timeouts.ONE_SEC);
         await BrowseChannelsScreen.dismissScheduledPostTooltip();
 
@@ -111,7 +112,9 @@ describe('Channels - Browse Channels', () => {
         await ChannelListScreen.toBeVisible();
 
         // * Verify newly joined public channel is added to channel list
-        await expect(ChannelListScreen.getChannelItemDisplayName(channelsCategory, channel.name)).toBeVisible();
+        await waitFor(ChannelListScreen.getChannelItemDisplayName(channelsCategory, channel.name)).
+            toBeVisible(40).
+            withTimeout(timeouts.TEN_SEC);
     });
 
     it('MM-T4729_3 - should display empty search state for browse channels', async () => {

@@ -3,7 +3,7 @@
 
 import React, {useCallback, useMemo} from 'react';
 import {useIntl} from 'react-intl';
-import {StyleSheet, TouchableOpacity, View} from 'react-native';
+import {Pressable, StyleSheet, View} from 'react-native';
 
 import Badge from '@components/badge';
 import ChannelIcon from '@components/channel_icon';
@@ -41,6 +41,8 @@ type Props = {
 
 export const ROW_HEIGHT = 40;
 export const ROW_HEIGHT_WITH_TEAM = 58;
+
+const PRESSED_STYLE = {opacity: 0.72};
 
 export const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
     container: {
@@ -88,7 +90,9 @@ export const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
         borderLeftColor: theme.sidebarTextActiveBorder,
         borderLeftWidth: 5,
     },
-    // Opaque fill so Detox visibility checks pass for autocomplete rows (SEC-10998).
+
+    // Autocomplete sits on the center canvas. Without a fill the row's
+    // press target collapses to the text glyphs (MM-70015 / MM-T4879_7).
     onCenterBg: {
         backgroundColor: theme.centerChannelBg,
     },
@@ -177,8 +181,9 @@ const ChannelItem = ({
     ], [height, showActive, styles, isOnHome, isOnCenterBg]);
 
     return (
-        <TouchableOpacity
+        <Pressable
             onPress={handleOnPress}
+            style={({pressed}) => [pressed && PRESSED_STYLE]}
             testID={channelItemTestId}
         >
             <View style={containerStyle}>
@@ -219,7 +224,7 @@ const ChannelItem = ({
                 />
                 }
             </View>
-        </TouchableOpacity>
+        </Pressable>
     );
 };
 

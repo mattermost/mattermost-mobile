@@ -462,6 +462,26 @@ PR vs nightly vs manual coverage is summarized below (and in `config/exclude_tag
 - `MM-T67856_4` runs in a dedicated CI step with `AllowDownloadLogs=false` patched on the server. Tag `MM-T67856_4` is listed in `detox/maestro/config/exclude_tags.json` (`default` key) so the default batch does not duplicate it.
 - Multi-device sync (`MM-T3055`/`MM-T3056`) requires two physical devices via `run_two_device.sh`.
 
+#### Current `exclude_tags.json` entries (SEC-10999)
+
+`run_ci_batches.sh` joins `default` plus the platform key (`ios` / `android`). Reasons live in the JSON `_` comment keys and are summarized here so quarantine is visible next to the runner docs. Do not un-exclude without a named mechanism and a failing-run ID if it flakes again.
+
+| Tag | Key | Kind | Evidence | Reason |
+|-----|-----|------|----------|--------|
+| `MM-T67856_4` | `default` | Dedicated CI step (not a flake) | `.github/workflows/e2e-maestro-template.yml` — “Run MM-T67856_4 with AllowDownloadLogs=false” (iOS and Android jobs) | Isolated attach-logs variant with `SupportSettings.AllowDownloadLogs=false`. See SEC-11024. |
+| `MM-T5603` | `ios` | Intermittent failure | Local 2026-08-11: 1 fail / 1 pass (`_MM-T5603`) | File bookmark upload shows “Error uploading file” on Add bookmark. Same fixture via `POST /api/v4/files` returns 201. Mechanism unknown; do not re-enable on a single green run. |
+| `MM-T3260` | `android` | Driver / platform | CI `30331493720` (PR #9893) | After Chrome Custom Tab, Maestro cannot relaunch `com.mattermost.rnbeta` on API 35 (SEC-11001). iOS was un-excluded 2026-08-11. |
+
+Removed as dead entries on 2026-08-11 (`_DEAD_ENTRIES_REMOVED`): `MM-T1411`, `MM-T4832`, `MM-T4833` — iOS already skips `flows/calls/` in the runner. Un-excluded 2026-08-11 (`_UNEXCLUDED_2026_08_11`): `MM-T1325`, `MM-T3260` (iOS), `MM-T5611`, `MM-T67856_1`, `MM-T67856_2`.
+
+#### Dedicated MM-T67856_4 step (SEC-11024)
+
+This is **intentional topology**, not a flake to “fix” by putting the tag back in the default PR batch.
+
+- **CI:** `.github/workflows/e2e-maestro-template.yml` — each of the iOS and Android Maestro jobs has a step that patches `SupportSettings.AllowDownloadLogs=false`, runs `detox/maestro/flows/account/attach_logs_disabled_when_download_logs_off.yml`, and restores `true` via `trap` on EXIT. `continue-on-error: true`; the main batch report is the source of truth.
+- **Local:** same curl as `detox/maestro/GUIDELINES.md` (AllowDownloadLogs is under `SupportSettings`, not `ServiceSettings`), then `maestro test` that flow, then restore.
+- **Tracker:** dedicated vs quarantine — `MM-T67856_4` is env-gated; `MM-T67856_1`/`_2` were a different exclusion (SEC-11051) and are no longer tag-excluded.
+
 ### Reports
 
 - JUnit XML: `build/maestro-report.xml`

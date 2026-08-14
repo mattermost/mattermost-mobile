@@ -31,8 +31,8 @@ import {by, device, element, expect, waitFor} from 'detox';
 // Lock wait is up to 20m; leave headroom for enable/setup after acquire.
 jest.setTimeout(timeouts.ONE_MIN * 30);
 
-// Skip Android: suite flaking on Detox Android (MM-T6209_1 … MM-T6213_1).
-(isAndroid() ? describe.skip : describe)('Classification Banner - Visibility Across Screens', () => {
+// Skip Android: suite flaking on Detox Android (MM-T6209_1 … MM-T6213_1). SEC-11047.
+(isAndroid() ? describe.skip : describe)('Classification Banner - Visibility Across Screens (MM-T6209_1)', () => {
     const serverOneDisplayName = 'Server 1';
     let lockOwner = '';
     let lockAcquired = false;

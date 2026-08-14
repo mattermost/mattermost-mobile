@@ -226,10 +226,8 @@ describe('Channels', () => {
         await ChannelScreen.back();
     });
 
-    // Skip both: Android failed twice after the waitForElementToExist fix, so
-    // existence-vs-visibility is not the cause. Also failed iOS. Needs real
-    // root-cause work, not another wait tweak.
-    it.skip('MM-T3196_1 - RN apps Manage members in channel', async () => {
+    // Tutorial overlay stole manage-mode taps (SEC-11049). Same path as green MM-T3205.
+    it('MM-T3196_1 - RN apps Manage members in channel', async () => {
         // # Use pre-created user (already in channel)
         const removedUser = memberUser;
 
@@ -241,9 +239,11 @@ describe('Channels', () => {
         await wait(timeouts.ONE_SEC);
 
         await tapMembersOption();
+        await ManageChannelMembersScreen.closeTutorial();
+        await ManageChannelMembersScreen.toBeVisible();
 
         await wait(timeouts.TWO_SEC);
-        await ManageChannelMembersScreen.manageButton.tap({x: 1, y: 1});
+        await ManageChannelMembersScreen.toggleManageMode();
         await wait(timeouts.TWO_SEC);
 
         // # Search and remove user

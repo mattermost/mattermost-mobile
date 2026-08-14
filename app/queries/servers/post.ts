@@ -209,6 +209,15 @@ export const queryPostsById = (database: Database, postIds: string[], sort?: Q.S
     return database.get<PostModel>(POST).query(...clauses);
 };
 
+// Query.observe() only emits when the matching *set* changes. Edits keep the
+// same ids, so lists that render post.message (Recent Mentions, Saved, Pinned)
+// must also observe body columns. Matches combined_user_activity.
+const POST_BODY_COLUMNS = ['message', 'edit_at', 'update_at', 'delete_at'];
+
+export const observePostsById = (database: Database, postIds: string[], sort?: Q.SortOrder) => {
+    return queryPostsById(database, postIds, sort).observeWithColumns(POST_BODY_COLUMNS);
+};
+
 export const queryPostsByType = (database: Database, type: string) => {
     const clauses: Q.Clause[] = [Q.where('type', type)];
     return database.get<PostModel>(POST).query(...clauses);
@@ -250,7 +259,7 @@ export const queryPinnedPostsInChannel = (database: Database, channelId: string)
 };
 
 export const observePinnedPostsInChannel = (database: Database, channelId: string) => {
-    return queryPinnedPostsInChannel(database, channelId).observe();
+    return queryPinnedPostsInChannel(database, channelId).observeWithColumns([...POST_BODY_COLUMNS, 'is_pinned']);
 };
 
 export const observeSavedPostsByIds = (database: Database, postIds: string[], serverUrl?: string) => {

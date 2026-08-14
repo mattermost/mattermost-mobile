@@ -189,16 +189,23 @@ class ChannelInfoScreen {
     };
 
     cancelCopyChannelHeader = async (headerText: string) => {
-        // Long press on header text
         await element(by.text(headerText)).longPress(timeouts.TWO_SEC);
 
-        // Wait for bottom sheet
         await waitFor(element(by.id(this.testID.copyHeaderTextAction))).
             toBeVisible().
             withTimeout(timeouts.TWO_SEC);
 
-        // Cancel
-        await element(by.id(this.testID.copyHeaderCancelAction)).tap();
+        if (isAndroid()) {
+            await device.disableSynchronization();
+        }
+        try {
+            await element(by.id(this.testID.copyHeaderCancelAction)).tap();
+            await wait(timeouts.ONE_SEC);
+        } finally {
+            if (isAndroid()) {
+                await safeEnableSynchronization();
+            }
+        }
     };
 
     copyChannelPurpose = async (purposeText: string) => {

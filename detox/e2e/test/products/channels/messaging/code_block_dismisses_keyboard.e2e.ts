@@ -15,7 +15,6 @@ import {
     serverOneUrl,
     siteOneUrl,
 } from '@support/test_config';
-import {NavigationHeader} from '@support/ui/component';
 import {
     ChannelListScreen,
     ChannelScreen,
@@ -50,7 +49,8 @@ describe('Messaging - Code Block Dismisses Keyboard', () => {
         await HomeScreen.logout();
     });
 
-    // Skip iOS: R1 product — Code preview back (NavigationHeader) not visible; Android uses pressBack
+    // iOS stays skipped until MM-70011 (code.screen.back) is proven 3×.
+    // Android already leaves via hardware back.
     (isIos() ? it.skip : it)('MM-T1433_1 - should dismiss keyboard when tapping a code block', async () => {
         // # Open channel and post a code block via the app UI.
         // Post.apiCreatePost can hang for the full Jest budget with no
@@ -83,14 +83,13 @@ describe('Messaging - Code Block Dismisses Keyboard', () => {
         // * Verify Code preview opened
         await CodeScreen.toBeVisible();
 
-        // # Go back from Code preview screen to channel screen.
-        // Code route uses custom NavigationHeader (headerBackTitle ''), so by.label('Back')
-        // never matches — tapNativeBackButton timed out on this screen.
+        // # Go back from Code preview. Android hardware back is the proven path.
+        // iOS uses the scoped code.screen.back (MM-70011) so the tap does not
+        // land on the still-mounted channel header.
         if (isAndroid()) {
             await device.pressBack();
         } else {
-            await waitFor(NavigationHeader.backButton).toExist().withTimeout(timeouts.TEN_SEC);
-            await NavigationHeader.backButton.tap();
+            await CodeScreen.back();
         }
         await ChannelScreen.toBeVisible();
 

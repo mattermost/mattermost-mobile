@@ -113,7 +113,6 @@ class Autocomplete {
         };
     };
 
-
     // SEC-10998: Detox often mis-measures suggestion rows (Reanimated / transparent hit).
     // Shared: wait existence, prefer opaque label. Platform taps keep both green —
     // iOS tapAtPoint for bad frames; Android plain tap first, corner only on miss.

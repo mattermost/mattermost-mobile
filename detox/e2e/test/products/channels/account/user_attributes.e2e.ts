@@ -8,7 +8,7 @@
 // *******************************************************************
 
 import {Post, Setup} from '@support/server_api';
-import {serverOneUrl, siteOneUrl} from '@support/test_config';
+import {serverOneUrl, siteOneUrl, hasCustomProfileAttributes} from '@support/test_config';
 import {
     AccountScreen,
     ChannelListScreen,
@@ -33,9 +33,8 @@ import {
 import {isAndroid, timeouts, wait} from '@support/utils';
 import {expect, waitFor} from 'detox';
 
-// Spinwick does not yet set MM_FEATUREFLAGS_CUSTOMPROFILEATTRIBUTES, and the server
-// forces the client flag back to false after API config updates.
-describe.skip('Account - User Attributes', () => {
+// MM-70014 / SEC-11052: Spinwick does not set MM_FEATUREFLAGS_CUSTOMPROFILEATTRIBUTES.
+(hasCustomProfileAttributes ? describe : describe.skip)('Account - User Attributes (MM-T5781_1, MM-T5781_2)', () => {
     const serverOneDisplayName = 'Server 1';
     const channelsCategory = 'channels';
 

@@ -220,9 +220,9 @@ describe('Search - Recent Mentions', () => {
         await ChannelListScreen.open();
     });
 
-    // Must run last — mutates the shared mention fixture. Skip: the edited mention UI never
-    // updates on Android CI (29cdff, 59ec6ae, a4c0e33).
-    it.skip('MM-T4909_3 - should be able to edit, reply to, and delete a recent mention from recent mentions screen', async () => {
+    // Must run last — mutates the shared mention fixture. Mentions list observes
+    // message/edit_at columns (MM-70005) so the edited body can re-render.
+    it('MM-T4909_3 - should be able to edit, reply to, and delete a recent mention from recent mentions screen', async () => {
         // # Open recent mentions screen
         await RecentMentionsScreen.open();
         await RecentMentionsScreen.toBeVisible();
@@ -252,7 +252,10 @@ describe('Search - Recent Mentions', () => {
         await RecentMentionsScreen.toBeVisible();
 
         // * Verify the edited state in the recent-mentions UI.
-        await RecentMentionsScreen.verifyPostEdited(ownMentionPost.id, updatedMessage);
+        // Use the regex-based assertPostMessageEdited (same as MM-T4910_3 / MM-T4918_3):
+        // the post body renders as one text node "<message> edit ...Edited", so exact-text
+        // matchers (verifyPostEdited's by.text('edit')/'Edited') miss the combined node.
+        await ChannelScreen.assertPostMessageEdited(ownMentionPost.id, updatedMessage, 'recent_mentions_page');
 
         // # Open post options via header date_time long-press (avoids the @mention tap handler)
         await element(by.id('post_header.date_time').withAncestor(by.id(`recent_mentions.post_list.post.${ownMentionPost.id}`))).longPress(timeouts.TWO_SEC);

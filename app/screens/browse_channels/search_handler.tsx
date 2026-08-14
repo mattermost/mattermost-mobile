@@ -213,6 +213,7 @@ export default function SearchHandler(props: Props) {
             if (searchTimeout.current) {
                 clearTimeout(searchTimeout.current);
             }
+
             // Autocomplete omits deleted channels; archived browse must use search_archived
             // or MM-T4729_5 / SEC-11021 shows "No matches" after filtering delete_at !== 0.
             const searchFn = typeOfChannels === ARCHIVED ? searchArchivedChannels : searchChannels;

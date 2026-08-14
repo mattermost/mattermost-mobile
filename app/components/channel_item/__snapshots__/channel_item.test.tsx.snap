@@ -22,7 +22,9 @@ exports[`components/channel_list/categories/body/channel_item should match snaps
   accessible={true}
   collapsable={false}
   focusable={true}
+  onBlur={[Function]}
   onClick={[Function]}
+  onFocus={[Function]}
   onResponderGrant={[Function]}
   onResponderMove={[Function]}
   onResponderRelease={[Function]}
@@ -30,10 +32,11 @@ exports[`components/channel_list/categories/body/channel_item should match snaps
   onResponderTerminationRequest={[Function]}
   onStartShouldSetResponder={[Function]}
   style={
-    {
-      "opacity": 1,
-    }
+    [
+      false,
+    ]
   }
+  testID="channel_item.hello"
 >
   <View
     style={
@@ -45,12 +48,12 @@ exports[`components/channel_list/categories/body/channel_item should match snaps
         false,
         false,
         false,
+        false,
         {
           "minHeight": 40,
         },
       ]
     }
-    testID="channel_item.hello"
   >
     <Text
       allowFontScaling={false}
@@ -158,7 +161,9 @@ exports[`components/channel_list/categories/body/channel_item should match snaps
   accessible={true}
   collapsable={false}
   focusable={true}
+  onBlur={[Function]}
   onClick={[Function]}
+  onFocus={[Function]}
   onResponderGrant={[Function]}
   onResponderMove={[Function]}
   onResponderRelease={[Function]}
@@ -166,10 +171,11 @@ exports[`components/channel_list/categories/body/channel_item should match snaps
   onResponderTerminationRequest={[Function]}
   onStartShouldSetResponder={[Function]}
   style={
-    {
-      "opacity": 1,
-    }
+    [
+      false,
+    ]
   }
+  testID="channel_item.hello"
 >
   <View
     style={
@@ -181,12 +187,12 @@ exports[`components/channel_list/categories/body/channel_item should match snaps
         false,
         false,
         false,
+        false,
         {
           "minHeight": 40,
         },
       ]
     }
-    testID="channel_item.hello"
   >
     <Text
       allowFontScaling={false}
@@ -335,7 +341,9 @@ exports[`components/channel_list/categories/body/channel_item should match snaps
   accessible={true}
   collapsable={false}
   focusable={true}
+  onBlur={[Function]}
   onClick={[Function]}
+  onFocus={[Function]}
   onResponderGrant={[Function]}
   onResponderMove={[Function]}
   onResponderRelease={[Function]}
@@ -343,10 +351,11 @@ exports[`components/channel_list/categories/body/channel_item should match snaps
   onResponderTerminationRequest={[Function]}
   onStartShouldSetResponder={[Function]}
   style={
-    {
-      "opacity": 1,
-    }
+    [
+      false,
+    ]
   }
+  testID="channel_item.hello"
 >
   <View
     style={
@@ -358,12 +367,12 @@ exports[`components/channel_list/categories/body/channel_item should match snaps
         false,
         false,
         false,
+        false,
         {
           "minHeight": 40,
         },
       ]
     }
-    testID="channel_item.hello"
   >
     <Text
       allowFontScaling={false}

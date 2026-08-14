@@ -70,6 +70,7 @@ describe('Smoke Test - Server Login', () => {
         await expect(ChannelListScreen.headerServerDisplayName).toHaveText(serverOneDisplayName);
     });
 
+    // SEC-11048: named waits + restored swipe helpers. Env-gated via itWithSecondServer (needs SITE_2).
     itWithSecondServer('MM-T4675_2 - should be able to add a new server and log-in-to/log-out-from the new server', async () => {
         // # Open server list screen
         await ServerListScreen.open();

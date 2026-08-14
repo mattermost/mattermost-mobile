@@ -25,7 +25,7 @@ import {
     ServerScreen,
 } from '@support/ui/screen';
 import {isIos, timeouts} from '@support/utils';
-import {expect, waitFor} from 'detox';
+import {waitFor} from 'detox';
 
 describe('Smoke Test - Autocomplete', () => {
     const serverOneDisplayName = 'Server 1';
@@ -74,11 +74,13 @@ describe('Smoke Test - Autocomplete', () => {
         await ChannelScreen.postInput.typeText(testUser.username);
 
         // * Verify at-mention autocomplete contains associated user suggestion
-        const {atMentionItem} = Autocomplete.getAtMentionItem(testUser.id);
-        await expect(atMentionItem).toExist();
+        const {
+            atMentionItem,
+            atMentionItemUserDisplayName,
+        } = Autocomplete.getAtMentionItem(testUser.id);
 
-        // # Select and post at-mention suggestion
-        await atMentionItem.tap();
+        // # Select and post at-mention suggestion (existence + label tap / tapAtPoint)
+        await Autocomplete.tapSuggestion(atMentionItem, atMentionItemUserDisplayName);
         await ChannelScreen.sendButton.tap();
 
         // * Verify at-mention suggestion is posted
@@ -86,9 +88,8 @@ describe('Smoke Test - Autocomplete', () => {
         await ChannelScreen.hasPostMessage(post.id, `@${testUser.username}`);
     });
 
-    // SEC-10998: porting the MM-T4879_7 display-name tap (PR #9893) still fails on iOS —
-    // channel_mention_item stays under 40% visible behind the sticky header (MM-70015).
-    // Keep the tapSuggestion body for the next unskip; iOS stays skipped until PE/layout.
+    // iOS stays skipped until MM-70015 (opaque row press area) is proven 3× here.
+    // The #9893 display-name tap is not the product fix and already failed on this path.
     (isIos() ? it.skip : it)('MM-T4886_2 - should be able to select and post channel mention suggestion', async () => {
         // # Type in "~" to activate channel mention autocomplete
         await ChannelScreen.postInput.typeText('~');
@@ -99,10 +100,9 @@ describe('Smoke Test - Autocomplete', () => {
 
         // * Verify channel mention autocomplete contains associated channel suggestion
         const {channelMentionItem} = Autocomplete.getChannelMentionItem(testChannel.name);
-        await expect(channelMentionItem).toExist();
+        await waitFor(channelMentionItem).toExist().withTimeout(timeouts.TEN_SEC);
 
-        // # Select and post channel mention suggestion
-        // Default center tap — {x:1,y:1} fails Detox hit-testing on iOS (CI MM-T4886_2).
+        // # Select the row (MM-70015: pressable owns the row testID)
         await channelMentionItem.tap();
         await ChannelScreen.sendButton.tap();
 

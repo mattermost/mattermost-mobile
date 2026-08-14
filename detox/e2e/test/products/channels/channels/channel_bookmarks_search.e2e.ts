@@ -23,7 +23,7 @@ import {
     SearchMessagesScreen,
     ServerScreen,
 } from '@support/ui/screen';
-import {isAndroid, isIos, timeouts, wait} from '@support/utils';
+import {isAndroid, timeouts, wait} from '@support/utils';
 import {expect, waitFor} from 'detox';
 
 describe('Channels - Channel Bookmarks Search', () => {
@@ -119,8 +119,9 @@ describe('Channels - Channel Bookmarks Search', () => {
         await HomeScreen.logout();
     });
 
-    // Skip iOS: R1 product — bookmark not found in channel_info.bookmarks.list after create
-    (isIos() ? it.skip : it)('MM-T5610_2 - should be able to delete a bookmark via channel info', async () => {
+    // API-created bookmarks can lag in channel_info.bookmarks.list; reuse
+    // ChannelInfoScreen.waitForBookmarkInChannelInfo (same as channel_bookmarks.e2e.ts).
+    it('MM-T5610_2 - should be able to delete a bookmark via channel info', async () => {
         // # Navigate to the channel
         await openChannel(channelDelete);
 
@@ -133,7 +134,10 @@ describe('Channels - Channel Bookmarks Search', () => {
                 id(`channel_bookmark.${bookmarkDelete.id}`).
                 withAncestor(by.id('channel_info.bookmarks.list')),
         );
-        await waitFor(bookmarkEl).toExist().withTimeout(timeouts.HALF_MIN);
+        await ChannelInfoScreen.waitForBookmarkInChannelInfo(
+            by.id(`channel_bookmark.${bookmarkDelete.id}`).withAncestor(by.id('channel_info.bookmarks.list')),
+            {bookmarkId: bookmarkDelete.id, textFallback: 'Delete Bookmark Test'},
+        );
 
         // # Long press on the bookmark to open options
         await bookmarkEl.longPress(timeouts.TWO_SEC);
