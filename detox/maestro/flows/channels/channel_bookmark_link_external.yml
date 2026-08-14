@@ -10,8 +10,8 @@
 # ASSERTIONS:
 #   - Link bookmark can be created from channel info
 #   - Bookmark appears in channel header bar after closing channel info
-#   - Long-pressing bookmark opens options sheet (Edit); dismissing returns to channel
-#     (external-browser tap path is flaky under Maestro CI — see body comments)
+#   - Tapping bookmark opens external browser; dismissing returns to channel
+#     (iOS: Safari's "◀ Mattermost" breadcrumb pill proves the hand-off)
 #
 # testIDs:
 #   - channel_header.channel_quick_actions.button
@@ -25,8 +25,7 @@
 #   - channel_bookmark.edit.save_button
 #   - close.channel_info.button
 #   - channel_header.bookmarks.list
-#   - channel_bookmark.<id>.title
-#   - channel_bookmark.options.edit
+#   - breadcrumb (iOS: Safari's back-to-app pill, not an app testID)
 tags:
   - MM-T5611
 appId: ${MAESTRO_APP_ID}
@@ -160,44 +159,65 @@ appId: ${MAESTRO_APP_ID}
       id: "channel_header.bookmarks.list"
     timeout: 10000
 
-# # Exercise the bookmark from the channel header bar.
-# openLink() uses tryOpenURL → external Safari / Chrome Custom Tab. That hand-off is
-# unreliable under Maestro on CI simulators/emulators (Android already avoided tap for
-# this reason; iOS can fail waiting for draft notVisible after a successful
-# title tap — Safari never proved open). Prove
-# interactivity via long-press → options sheet instead (same product path as handleLongPress).
-- waitForAnimationToEnd:
-    timeout: 3000
-# # Long-press the bookmark title (stable testID; avoids OG title text / locale).
-- longPressOn:
-    id: "channel_bookmark\\..+\\.title"
-# * Verify the bookmark is interactive: the options sheet Edit action is shown
-- extendedWaitUntil:
-    visible:
-      id: "channel_bookmark.options.edit"
-    timeout: 15000
-- takeScreenshot: bookmark-options-visible
-# # Dismiss the options bottom sheet.
-# Sheet has Edit/Copy/Share/Delete — no Cancel (Detox ChannelBookmarkScreen.dismissOptionsSheet).
+# # Tap the bookmark to open it in the browser.
+# OG metadata sets the title (e.g. "Mattermost"); tap the bookmark bar item by URL text.
 - runFlow:
     when:
       platform: iOS
     commands:
-      - swipe:
-          start: "50%, 60%"
-          end: "50%, 95%"
-          duration: 300
-      - waitForAnimationToEnd:
-          timeout: 1000
+      # # Match the bookmark by its OG-autofilled title as a REGEX. Maestro's `text`
+      # matcher is a full-string match, so the previous exact "Mattermost" could never
+      # match the rendered "Mattermost | Collaboration Platform..." — and because both
+      # taps were `optional`, they no-opped silently and the flow passed on iOS without
+      # ever opening the browser. Non-optional so a miss fails loudly instead.
+      - tapOn:
+          text: ".*[Mm]attermost.*"
+      # * Verify the browser actually took over, by anchoring on Safari's
+      # "◀ Mattermost" back-to-app pill (id: breadcrumb) — the same anchor
+      # help_url.yml uses. Do NOT assert the channel's draft input disappeared:
+      # openLink -> tryOpenURL -> Linking.openURL hands off to the *external*
+      # Safari app rather than presenting an in-app SFSafariViewController, so
+      # Mattermost is only suspended, and Maestro's iOS hierarchy still reports
+      # the suspended app's elements alongside Safari's. Evidence: CI run
+      # 31715496229 failed `notVisible: channel.post_draft.post.input` even
+      # though the app logged 'appEntersBackground' / 'Application suspended'
+      # 4s after this tap. This is also why help_url.yml only asserts
+      # notVisible on Android.
+      - extendedWaitUntil:
+          visible:
+            id: "breadcrumb"
+          timeout: 20000
+      - takeScreenshot: bookmark-browser-opened
+      # # Return to the app from Safari via the breadcrumb pill.
+      - tapOn:
+          id: "breadcrumb"
 - runFlow:
     when:
       platform: Android
     commands:
+      - waitForAnimationToEnd:
+          timeout: 3000
+      # # Long-press the bookmark to open the options bottom sheet (handleLongPress).
+      # The tap handler (openLink) requires external browser support that may not be
+      # available on all emulators, so exercise the long-press path instead.
+      - longPressOn:
+          id: "channel_bookmark\\..+\\.title"
+      # * Verify the bookmark is interactive: the options sheet is shown
+      - extendedWaitUntil:
+          visible:
+            text: "Edit"
+          timeout: 15000
+      - takeScreenshot: bookmark-options-visible
+      # # Dismiss the options bottom sheet
       - pressKey: Back
 
-# * Verify back on the channel screen (options dismissed)
+# * Verify back on the channel screen (browser dismissed on iOS, options sheet on Android).
+# 30s, not 10s: on iOS this assertion now runs straight after returning from Safari, so the
+# app is resuming from suspension rather than finishing an in-app transition. CI run
+# 31732059826 got past the breadcrumb tap and then failed here on the 10s budget.
+# help_url.yml allows 30s for the same post-hand-off return.
 - extendedWaitUntil:
     visible:
       id: "channel_header.bookmarks.list"
-    timeout: 10000
+    timeout: 30000
 - takeScreenshot: bookmark-options-dismissed
