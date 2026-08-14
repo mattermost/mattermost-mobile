@@ -142,9 +142,10 @@ export default function SearchHandler(props: Props) {
     const loadedChannels = useRef<(data: Channel[] | undefined, typeOfChannels: string) => Promise<void>>(async () => {/* Do nothing */});
 
     const searchTimeout = useRef<NodeJS.Timeout | undefined>(undefined);
-    const typeOfChannelsRef = useRef(typeOfChannels);
-    typeOfChannelsRef.current = typeOfChannels;
+    const searchRequestId = useRef(0);
     const [searchResults, setSearchResults] = useState<Channel[]>(defaultSearchResults);
+    const searchResultsRef = useRef(searchResults);
+    searchResultsRef.current = searchResults;
 
     const isSearch = Boolean(term);
 
@@ -204,25 +205,32 @@ export default function SearchHandler(props: Props) {
             activeChannels = channels;
     }
 
+    const invalidatePendingSearch = useCallback(() => {
+        searchRequestId.current += 1;
+        if (searchTimeout.current) {
+            clearTimeout(searchTimeout.current);
+            searchTimeout.current = undefined;
+        }
+    }, []);
+
     const stopSearch = useCallback(() => {
+        invalidatePendingSearch();
         setSearchResults(defaultSearchResults);
         setTerm('');
-    }, []);
+    }, [invalidatePendingSearch]);
 
     const doSearchChannels = useCallback((text: string) => {
         if (text) {
             setSearchResults(defaultSearchResults);
-            if (searchTimeout.current) {
-                clearTimeout(searchTimeout.current);
-            }
+            invalidatePendingSearch();
+            const requestId = searchRequestId.current;
 
             // Autocomplete omits deleted channels; archived browse must use search_archived
             // or the list shows "No matches" after filtering delete_at !== 0.
-            const requestedType = typeOfChannels;
-            const searchFn = requestedType === ARCHIVED ? searchArchivedChannels : searchChannels;
+            const searchFn = typeOfChannels === ARCHIVED ? searchArchivedChannels : searchChannels;
             searchTimeout.current = setTimeout(async () => {
                 const results = await searchFn(serverUrl, text, currentTeamId);
-                if (requestedType !== typeOfChannelsRef.current) {
+                if (requestId !== searchRequestId.current) {
                     return;
                 }
                 if (results.channels) {
@@ -231,12 +239,12 @@ export default function SearchHandler(props: Props) {
                 dispatch(StopAction);
             }, 500);
             setTerm(text);
-            setVisibleChannels(searchResults);
+            setVisibleChannels(searchResultsRef.current);
             dispatch(LoadAction);
         } else {
             stopSearch();
         }
-    }, [searchResults, serverUrl, currentTeamId, stopSearch, typeOfChannels]);
+    }, [invalidatePendingSearch, serverUrl, currentTeamId, stopSearch, typeOfChannels]);
 
     const changeChannelType = useCallback((channelType: string) => {
         setTypeOfChannels(channelType);
@@ -289,18 +297,15 @@ export default function SearchHandler(props: Props) {
 
     useEffect(() => {
         if (!isSearch) {
+            invalidatePendingSearch();
             doGetChannels(typeOfChannels);
             return;
-        }
-        if (searchTimeout.current) {
-            clearTimeout(searchTimeout.current);
-            searchTimeout.current = undefined;
         }
         doSearchChannels(term);
 
         // Re-issue only when the channel type changes; term updates go through doSearchChannels.
         // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [typeOfChannels, isSearch, doGetChannels, doSearchChannels]);
+    }, [typeOfChannels, isSearch, doGetChannels, doSearchChannels, invalidatePendingSearch]);
 
     useDidUpdate(() => {
         if (isSearch) {

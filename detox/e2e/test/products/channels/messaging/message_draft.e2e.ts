@@ -29,6 +29,15 @@ import {
 import {getRandomId, isIos, timeouts, wait} from '@support/utils';
 import {expect} from 'detox';
 
+function requirePositiveIntMaxPostSize(config: {ServiceSettings?: {MaxPostSize?: string}} | undefined): number {
+    const raw = config?.ServiceSettings?.MaxPostSize;
+    const maxPostSize = Number(raw);
+    if (!Number.isInteger(maxPostSize) || maxPostSize <= 0) {
+        throw new Error(`Expected a positive integer ServiceSettings.MaxPostSize, got ${String(raw)}`);
+    }
+    return maxPostSize;
+}
+
 describe('Messaging - Message Draft', () => {
     const serverOneDisplayName = 'Server 1';
     const offTopicChannelName = 'off-topic';
@@ -131,7 +140,10 @@ describe('Messaging - Message Draft', () => {
 
     it('MM-T4781_3 - should show character count warning when message exceeds character limit', async () => {
         const {config} = await System.apiGetConfig(siteOneUrl);
-        const maxPostSize = Number(config?.ServiceSettings?.MaxPostSize) || 16383;
+        if (!config) {
+            throw new Error('Expected server config for MaxPostSize');
+        }
+        const maxPostSize = requirePositiveIntMaxPostSize(config);
         const overLimitMessage = 'a'.repeat(maxPostSize + 1);
         const atLimitMessage = 'a'.repeat(maxPostSize);
 
@@ -162,7 +174,10 @@ describe('Messaging - Message Draft', () => {
         // MaxPostSize comes from server config, so a hard-coded 4001 chars does not exceed the
         // common 16383 value and the send button stays enabled.
         const {config} = await System.apiGetConfig(siteOneUrl);
-        const maxPostSize = Number(config?.ServiceSettings?.MaxPostSize) || 16383;
+        if (!config) {
+            throw new Error('Expected server config for MaxPostSize');
+        }
+        const maxPostSize = requirePositiveIntMaxPostSize(config);
         const overLimitMessage = 'a'.repeat(maxPostSize + 1);
 
         // # Open a channel and type a message over the character limit
