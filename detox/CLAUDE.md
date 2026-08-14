@@ -91,8 +91,8 @@ npx detox test -c android.emu.debug e2e/test/products/channels/search/search_mes
 
 | Tier | Trigger | Platform | Workers | Search Path | Approx Time |
 |------|---------|----------|---------|-------------|-------------|
-| **PR full** | Matterwick + `E2E/Run` label | Detox iOS/Android/iPad + Maestro | 20 Detox (iOS/Android), 1 iPad, 1 Maestro each via Test System IO orchestration | `detox/e2e/test` (full) | ~30–45+ min wall-clock |
-| **Main** | Matterwick main push (`run_type=MASTER` today; `MAIN` also accepted → Test System IO `mobile-main`) | Same as PR | Same as PR | `detox/e2e/test` | Same as PR |
+| **PR full** | Matterwick + `E2E/Run` label | Detox iOS/Android/iPad + Maestro | Detox Android 20 (full); Detox iOS phone 10 (`@ios_pr`); iPad 1; Maestro 1 each | `detox/e2e/test` | ~30–45+ min wall-clock |
+| **Main** | Matterwick main push (`run_type=MASTER` today; `MAIN` also accepted → Test System IO `mobile-main`) | Same as PR | Detox phone iOS/Android 20 (full); iPad 1; Maestro 1 each | `detox/e2e/test` | Same as PR |
 | **CMT / Release** | Matterwick on `build-release-*` → CMT | Detox + Maestro across server versions | Full suite on latest server (10 Detox workers); `@smoke` include on older (1) | `detox/e2e/test` (both; older filtered by tag) | Varies by matrix |
 
 Status contexts live under the `e2e-test/` namespace, matching the mattermost monorepo. Callers pass `context_name`; templates derive the Test System IO report `name` by stripping `e2e-test/` and swapping `/` for `-`. PR: `e2e-test/detox-ios` (etc.). Merge to main: `…/main`. Merge to release: `…/release`. Release cut: `…/release-cut`. CMT: `e2e-test/detox-ios/cmt-server-${version}` (etc.) — each matrix leg reports its own status; no umbrella context. Commit status + channel notify come from `dispatch-begin` / `summary` (webhook_payload curl).
