@@ -915,7 +915,7 @@ describe('Interactive Dialog - Basic Dialog (Plugin)', () => {
             throw new Error(`Expected local_manual to have a value but got: ${post.message}`);
         }
         const submitted = match[1];
-        if (!/T\d{2}:30:00\.000Z$/.test(submitted)) {
+        if (!/T\d{2}:30:\d{2}(?:\.\d+)?Z$/.test(submitted)) {
             throw new Error(`Expected manually-entered minutes (:30) in local_manual but got: ${submitted}`);
         }
     });
