@@ -19,9 +19,7 @@ import {by, device, element, expect, waitFor} from 'detox';
 // Lock wait is up to 20m; leave headroom for enable/setup after acquire.
 jest.setTimeout(timeouts.ONE_MIN * 30);
 
-// FeatureFlagClassificationMarkings toggles require a Mattermost server restart;
-// CI workers cannot restart Matterwick hosts. Re-enable on a provisioned server.
-describe.skip('Classification Banner - Global Classification Banner', () => {
+describe('Classification Banner - Global Classification Banner', () => {
     const serverOneDisplayName = 'Server 1';
     let lockOwner = '';
     let lockAcquired = false;
@@ -230,7 +228,8 @@ describe.skip('Classification Banner - Global Classification Banner', () => {
         await GlobalClassificationBanner.toNotBeVisible();
     });
 
-    it('MM-T6204_1 - should remove the banner when the feature flag is toggled off', async () => {
+    // Toggling ClassificationMarkings off requires a server restart.
+    it.skip('MM-T6204_1 - should remove the banner when the feature flag is toggled off', async () => {
         await enableClassificationMarkings(siteOneUrl);
         await Properties.apiSetupClassificationWithBanner(siteOneUrl, {
             levelId: 'lvltopsecret00000000000000',
