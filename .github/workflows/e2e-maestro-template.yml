@@ -453,7 +453,7 @@ jobs:
           maestro-platform: ios
           maestro-device: ${{ env.SIMULATOR_ID }}
           maestro-env: ${{ steps.maestro-env.outputs.env }}
-          maestro-timeout-ms: "540000"
+          maestro-timeout-ms: "540000" # 9m
 
       - name: Cleanup simulator
         if: always()
@@ -693,7 +693,7 @@ jobs:
           maestro-platform: android
           maestro-device: emulator-5554
           maestro-env: ${{ steps.maestro-env.outputs.env }}
-          maestro-timeout-ms: "540000"
+          maestro-timeout-ms: "540000" # 9m
 
       - name: Cleanup emulator
         if: always()
