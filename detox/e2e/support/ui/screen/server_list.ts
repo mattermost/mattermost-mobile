@@ -3,21 +3,21 @@
 
 import {dismissKnownModals} from '@support/ui/modal_dismiss';
 import {ChannelListScreen} from '@support/ui/screen';
-import {isAndroid, isIos, timeouts, wait, waitForElementToExist} from '@support/utils';
+import {isAndroid, isIos, timeouts, wait, waitForElementToBeVisible, waitForElementToExist} from '@support/utils';
 import {expect, waitFor} from 'detox';
 
 class ServerListScreen {
     testID = {
         serverListScreen: 'server_list.screen',
         serverListTitle: 'server_list.title',
-        addServerButton: 'server_list.add_a_server.button',
+        addServerButton: 'servers.create_button',
         tutorialHighlight: 'tutorial_highlight',
         tutorialSwipeLeft: 'tutorial_swipe_left',
     };
 
     serverListScreen = element(by.id(this.testID.serverListScreen));
     serverListTitle = element(by.id(this.testID.serverListTitle));
-    addServerButton = element(by.text('Add a server'));
+    addServerButton = element(by.id(this.testID.addServerButton));
     tutorialHighlight = element(by.id(this.testID.tutorialHighlight));
     tutorialSwipeLeft = element(by.id(this.testID.tutorialSwipeLeft));
 
@@ -95,15 +95,78 @@ class ServerListScreen {
     };
 
     closeTutorial = async () => {
-        if (isIos()) {
-            await waitFor(this.tutorialHighlight).toExist().withTimeout(timeouts.TEN_SEC);
-            await this.tutorialSwipeLeft.tap();
-            await expect(this.tutorialHighlight).not.toExist();
-        } else {
-            await wait(timeouts.ONE_SEC);
-            await device.pressBack();
-            await wait(timeouts.ONE_SEC);
+        try {
+            await waitFor(this.tutorialHighlight).toExist().withTimeout(timeouts.TWO_SEC);
+        } catch {
+            return;
         }
+
+        // SVG overlay mounts only after measure(); swipe tooltip is a sibling.
+        try {
+            await waitFor(this.tutorialSwipeLeft).toExist().withTimeout(timeouts.TEN_SEC);
+        } catch {
+            // Still try the modal tap if bounds have not measured.
+        }
+
+        // tutorial_swipe_left is pointerEvents=none. Dismiss is on the Modal /
+        // highlight SVG (MM-T4675_2 CI: overlay still up when asserting Logout).
+        await this.tutorialHighlight.tap({x: 10, y: 10});
+        await waitFor(this.tutorialHighlight).not.toExist().withTimeout(timeouts.TEN_SEC);
+    };
+
+    scrollServerListIntoView = async () => {
+        if (isIos()) {
+            await this.serverListTitle.swipe('up', 'fast', 0.3, 0.5, 0.5);
+            return;
+        }
+        if (isAndroid()) {
+            await waitForElementToBeVisible(this.serverListTitle, timeouts.TWO_SEC);
+            await this.serverListTitle.swipe('up', 'fast', 0.1, 0.5, 0.3);
+        }
+    };
+
+    // Revealed swipe actions sit in an Animated clip. Detox visibility % times
+    // out while the control is present and tappable (MM-T4675_2 / SEC-11017).
+    swipeRevealOption = async (
+        row: {atIndex: (index: number) => Detox.NativeElement},
+        option: {atIndex: (index: number) => Detox.NativeElement},
+    ) => {
+        await this.closeTutorial();
+        await row.atIndex(0).swipe('left', 'slow');
+        const revealed = option.atIndex(0);
+        await waitForElementToExist(revealed, timeouts.TEN_SEC);
+        return revealed;
+    };
+
+    swipeRevealAndTapOption = async (
+        row: {atIndex: (index: number) => Detox.NativeElement},
+        option: {atIndex: (index: number) => Detox.NativeElement},
+    ) => {
+        const revealed = await this.swipeRevealOption(row, option);
+        try {
+            await revealed.tap();
+        } catch (error) {
+            const msg = String(error);
+            if (!msg.includes('hittable') && !msg.includes('not visible')) {
+                throw error;
+            }
+            await revealed.tap({x: 1, y: 1});
+        }
+    };
+
+    switchToServer = async (serverDisplayName: string) => {
+        const inactive = this.getServerItemInactive(serverDisplayName);
+        const active = this.getServerItemActive(serverDisplayName);
+        try {
+            await waitForElementToExist(inactive, timeouts.FOUR_SEC);
+            await inactive.atIndex(0).tap();
+        } catch {
+            await waitForElementToExist(active, timeouts.FOUR_SEC);
+            await active.atIndex(0).tap();
+        }
+        await waitFor(ChannelListScreen.headerServerDisplayName).
+            toHaveText(serverDisplayName).
+            withTimeout(timeouts.HALF_MIN);
     };
 }
 

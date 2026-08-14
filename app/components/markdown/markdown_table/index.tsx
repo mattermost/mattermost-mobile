@@ -213,13 +213,13 @@ function MarkdownTable({children, numColumns}: MarkdownTableProps) {
     const handlePress = usePreventDoubleTap(useCallback(() => {
         const screen = Screens.TABLE;
         const passProps = {
-            renderAsFlex: false,
+            renderAsFlex: shouldRenderAsFlex(true),
             width: getTableWidth(true),
         };
         CallbackStore.setCallback(renderRows);
 
         navigateToScreen(screen, passProps);
-    }, [getTableWidth, renderRows]));
+    }, [getTableWidth, renderRows, shouldRenderAsFlex]));
 
     const handleContainerLayout = useCallback((e: LayoutChangeEvent) => {
         setContainerWidth(e.nativeEvent.layout.width);

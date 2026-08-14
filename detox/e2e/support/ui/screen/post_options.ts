@@ -176,15 +176,33 @@ class PostOptionsScreen {
     };
 
     private tapPinOption = async (option: Detox.NativeElement) => {
-        try {
-            await waitFor(option).
-                toBeVisible().
-                whileElement(by.id(this.testID.scrollView)).
-                scroll(100, 'down');
-        } catch {
-            // The option may already be visible or the sheet may not be scrollable.
-        }
+        await this.toBeVisible();
         await waitFor(option).toExist().withTimeout(timeouts.TEN_SEC);
+
+        // Do not use waitFor().whileElement().scroll() here — Detox keeps
+        // bouncing the sheet until the 300s Jest timeout (MM-T4911_3).
+        const visibility = isIos() ? 40 : 25;
+        try {
+            await waitFor(option).toBeVisible(visibility).withTimeout(timeouts.TWO_SEC);
+        } catch {
+            const sheet = element(by.id(this.testID.scrollView));
+            /* eslint-disable no-await-in-loop */
+            for (let i = 0; i < 5; i++) {
+                try {
+                    await sheet.scroll(100, 'down');
+                } catch {
+                    break;
+                }
+                try {
+                    await waitFor(option).toBeVisible(visibility).withTimeout(timeouts.ONE_SEC);
+                    break;
+                } catch {
+                    // Option still below the fold.
+                }
+            }
+            /* eslint-enable no-await-in-loop */
+        }
+
         await option.tap({x: 1, y: 1});
     };
 

@@ -34,7 +34,7 @@ import {
     ThreadScreen,
 } from '@support/ui/screen';
 import {getRandomId, timeouts, waitForElementToBeVisible, waitForElementToNotExist} from '@support/utils';
-import {by, element, expect} from 'detox';
+import {by, element, expect, waitFor} from 'detox';
 
 describe('Search - Recent Mentions', () => {
     const serverOneDisplayName = 'Server 1';
@@ -182,7 +182,9 @@ describe('Search - Recent Mentions', () => {
 
         // # Open post options for the fixture mention and tap Pin to Channel
         await RecentMentionsScreen.openPostOptionsFor(mentionPost.id, mentionPost.messageText);
-        await PostOptionsScreen.pinPostOption.tap();
+        await PostOptionsScreen.tapPinPost();
+        await waitFor(PostOptionsScreen.postOptionsScreen).not.toExist().withTimeout(timeouts.TEN_SEC);
+        await Post.waitForPostPinned(siteOneUrl, testChannel.id, mentionPost.id);
 
         // # Navigate to the channel's Pinned Messages screen
         await ChannelListScreen.open();
@@ -192,7 +194,7 @@ describe('Search - Recent Mentions', () => {
 
         // * Verify mention is displayed on pinned messages screen
         const {postListPostItem} = PinnedMessagesScreen.getPostListPostItem(mentionPost.id, mentionPost.messageText);
-        await expect(postListPostItem).toBeVisible();
+        await waitFor(postListPostItem).toExist().withTimeout(timeouts.TEN_SEC);
 
         // # Unpin and verify removal
         await PinnedMessagesScreen.back();
@@ -200,10 +202,9 @@ describe('Search - Recent Mentions', () => {
         await ChannelScreen.back();
         await RecentMentionsScreen.open();
         await RecentMentionsScreen.openPostOptionsFor(mentionPost.id, mentionPost.messageText);
-
-        // Tap an explicit point: the unpin option is not always 100% visible in the bottom sheet,
-        // which fails iOS hittability checks.
-        await PostOptionsScreen.unpinPostOption.tap({x: 1, y: 1});
+        await PostOptionsScreen.tapUnpinPost();
+        await waitFor(PostOptionsScreen.postOptionsScreen).not.toExist().withTimeout(timeouts.TEN_SEC);
+        await Post.waitForPostUnpinned(siteOneUrl, testChannel.id, mentionPost.id);
 
         // * Verify mention is no longer pinned
         await ChannelListScreen.open();

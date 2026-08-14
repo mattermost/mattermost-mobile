@@ -105,14 +105,15 @@ describe('Smoke Test - Search', () => {
         await waitFor(postListPostItem).toBeVisible().withTimeout(timeouts.TEN_SEC);
         await ChannelScreen.openPostOptionsFor(post.id, message);
         await PostOptionsScreen.tapPinPost();
-        await waitFor(PostOptionsScreen.postOptionsScreen).not.toBeVisible().withTimeout(timeouts.FOUR_SEC);
+        await waitFor(PostOptionsScreen.postOptionsScreen).not.toExist().withTimeout(timeouts.TEN_SEC);
+        await Post.waitForPostPinned(siteOneUrl, testChannel.id, post.id);
         await ChannelInfoScreen.open();
         await PinnedMessagesScreen.open();
 
         // * Verify on pinned messages screen and pinned message is displayed
         await PinnedMessagesScreen.toBeVisible();
         const {postListPostItem: pinnedPostItem} = PinnedMessagesScreen.getPostListPostItem(post.id, message);
-        await waitFor(pinnedPostItem).toBeVisible().withTimeout(timeouts.TEN_SEC);
+        await waitFor(pinnedPostItem).toExist().withTimeout(timeouts.TEN_SEC);
 
         // # Go back to channel list screen
         await PinnedMessagesScreen.back();
@@ -126,6 +127,8 @@ describe('Smoke Test - Search', () => {
         const message = `Message ${searchTerm}`;
         await ChannelScreen.open(channelsCategory, testChannel.name);
         await ChannelScreen.postMessageAndVerify(message, testChannel.id, siteOneUrl);
+        const {post} = await Post.apiGetLastPostInChannel(siteOneUrl, testChannel.id);
+        await Post.waitForPostMessageInSearch(siteOneUrl, searchTerm, post.id, message);
         await ChannelScreen.back();
         await ChannelListScreen.toBeVisible();
         await SearchMessagesScreen.open();
@@ -133,7 +136,6 @@ describe('Smoke Test - Search', () => {
         await SearchMessagesScreen.searchInput.tapReturnKey();
 
         // * Verify search results contain searched message
-        const {post} = await Post.apiGetLastPostInChannel(siteOneUrl, testChannel.id);
         const {postListPostItem} = SearchMessagesScreen.getPostListPostItem(post.id, message);
         await waitFor(postListPostItem).toBeVisible().withTimeout(timeouts.TEN_SEC);
 

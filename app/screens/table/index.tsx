@@ -9,10 +9,13 @@ import {SafeAreaView, type Edge} from 'react-native-safe-area-context';
 import {Screens} from '@constants';
 import {useTheme} from '@context/theme';
 import useAndroidHardwareBackHandler from '@hooks/android_back_handler';
+import {useWindowDimensions} from '@hooks/device';
 import {navigateBack} from '@screens/navigation';
 import CallbackStore from '@store/callback_store';
 import {makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
+
+const TABLE_HORIZONTAL_PADDING = 10;
 
 export type TableScreenProps = {
     renderAsFlex: boolean;
@@ -30,16 +33,6 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
         height: '100%',
         paddingHorizontal: 5,
     },
-    displayFlex: {
-        ...Platform.select({
-            android: {
-                flex: 1,
-            },
-            ios: {
-                flex: 0,
-            },
-        }),
-    },
     noTableText: {
         color: theme.dndIndicator,
         ...typography('Body', 200, 'Regular'),
@@ -55,7 +48,12 @@ const Table = ({renderAsFlex, width}: TableScreenProps) => {
     const intl = useIntl();
     const theme = useTheme();
     const styles = getStyleSheet(theme);
-    const viewStyle = renderAsFlex ? styles.displayFlex : {width};
+    const {width: windowWidth} = useWindowDimensions();
+
+    // Flex tables must use the viewport width. `flex: 1` inside a ScrollView
+    // leaves iOS content width ambiguous, so 3-column wrap tables clip the
+    // right column and cannot scroll horizontally (MM-T4899_2).
+    const viewStyle = renderAsFlex ? {width: windowWidth - TABLE_HORIZONTAL_PADDING} : {width};
 
     useEffect(() => {
         return () => {
