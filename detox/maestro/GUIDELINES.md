@@ -64,7 +64,7 @@ appId: ${MAESTRO_APP_ID}
 
 ### Plan tags (PR discovery)
 
-Test System IO discovers Maestro flows by path + `tags:`. Plan tags are **`@snake_case` only**, always `@`-prefixed, and **YAML-quoted** (e.g. `- "@android_only"`). Unquoted `@…` is invalid YAML and Maestro reports `Parsing Failed`. **Untagged (aside from Zephyr id) = all platforms** — do not add a `shared` tag.
+Test System IO discovers Maestro flows by path + `tags:`. Plan tags are **`@snake_case` only**, always `@`-prefixed, and **YAML-quoted** (e.g. `- "@android_only"`). Unquoted `@…` is invalid YAML and Maestro reports `Parsing Failed`. **Untagged (aside from Zephyr id) = all platforms**.
 
 | Tag | Meaning | Dispatch |
 |---|---|---|

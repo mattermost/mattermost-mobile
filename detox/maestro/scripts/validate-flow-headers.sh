@@ -64,9 +64,6 @@ validate_flow() {
   # Plan tags: @snake_case, always @-prefixed, and YAML-quoted (unquoted @ is invalid
   # YAML and Maestro fails with "Parsing Failed"). Untagged = all platforms.
   # At most one of @ios_only / @android_only. @multi_device is optional (two-device flows).
-  if printf '%s\n' "${header}" | grep -qE '^[[:space:]]*-[[:space:]]+(shared|ios-only|android-only)[[:space:]]*$'; then
-    fail "${rel}" "legacy platform tags are forbidden — use \"@ios_only\" / \"@android_only\" / \"@multi_device\" (or omit for all platforms)"
-  fi
   if printf '%s\n' "${header}" | grep -qE '^[[:space:]]*-[[:space:]]+@[A-Za-z0-9_]+[[:space:]]*$'; then
     fail "${rel}" 'plan tags must be YAML-quoted (e.g. - "@android_only") — unquoted @ is invalid YAML and Maestro cannot parse the flow'
   fi
