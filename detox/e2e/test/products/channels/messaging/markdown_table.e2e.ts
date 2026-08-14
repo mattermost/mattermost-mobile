@@ -109,10 +109,19 @@ describe('Messaging - Markdown Table', () => {
         await expect(element(by.text('Left text that wraps row'))).toBeVisible(50);
         await expect(element(by.text('Center text that wraps row'))).toBeVisible(50);
 
-        // Android pushes the right-side columns beyond the viewport, so scroll the table
-        // horizontally until the right header and row become visible.
-        await waitFor(element(by.text('Right header that wraps'))).toBeVisible(50).whileElement(by.id(TableScreen.testID.tableScrollView)).scroll(150, 'right');
-        await waitFor(element(by.text('Right text that wraps row'))).toBeVisible(50).whileElement(by.id(TableScreen.testID.tableScrollView)).scroll(150, 'right');
+        // Both platforms push the right-side column beyond the viewport, so pan the table to
+        // reveal it.
+        //
+        // Use swipe(), not scroll()/scrollTo(): this table is 3 columns, so the content is
+        // 3 * CELL_MAX_WIDTH = 576pt against a 402pt viewport, leaving only ~174pt of
+        // scrollable extent. Detox will not drive a 150pt scroll that close to the edge —
+        // it throws "Unable to scroll right" without moving at all — and scrollTo('right')
+        // is a no-op here too. A swipe works: verified by hand on iPhone 17 Pro / iOS 26.2,
+        // where one swipe brings the right column fully on screen and it pans back again.
+        // MM-T4899_5 gets away with scroll() because its 8-column table has ~558pt of extent.
+        await TableScreen.tableScrollView.swipe('left', 'slow', 0.6);
+        await expect(element(by.text('Right header that wraps'))).toBeVisible(50);
+        await expect(element(by.text('Right text that wraps row'))).toBeVisible(50);
 
         // # Go back to channel list screen
         await TableScreen.back();
