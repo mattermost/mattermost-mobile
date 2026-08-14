@@ -119,6 +119,11 @@ export function checkDialogElementForError(elem: DialogElement, value: any, intl
         if (!elem.optional && (typeof value === 'undefined' || value !== true)) {
             return fieldRequiredError;
         }
+    } else if (type === DialogElementTypes.DATE || type === DialogElementTypes.DATETIME) {
+        // Required date/datetime fields must have a value
+        if (!elem.optional && (value == null || value === '')) {
+            return fieldRequiredError;
+        }
     }
 
     return null;

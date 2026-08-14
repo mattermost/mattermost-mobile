@@ -6,7 +6,7 @@ import {useSharedValue} from 'react-native-reanimated';
 
 import {useGallery} from '@context/gallery';
 
-import {useGalleryControls, useGalleryItem, diff} from './gallery';
+import {useGalleryControls, useGalleryItem, diff, type DiffContext} from './gallery';
 
 import type {DefaultStyle} from 'react-native-reanimated/lib/typescript/hook/commonTypes';
 
@@ -33,19 +33,19 @@ jest.mock('react-native', () => ({
 
 describe('gallery hooks', () => {
     test('diff', () => {
-        const context = {} as {___diffs?: any};
+        const context = {} as DiffContext;
         const name = 'test';
         const value = 10;
 
         const result = diff(context, name, value);
 
         expect(result).toBe(0);
-        expect(context.___diffs[name].stash).toBe(0);
-        expect(context.___diffs[name].prev).toBe(value);
+        expect(context.___diffs![name].stash).toBe(0);
+        expect(context.___diffs![name].prev).toBe(value);
     });
 
     test('diff should return 0 for the same value', () => {
-        const context = {} as {___diffs?: any};
+        const context = {} as DiffContext;
         const name = 'test';
         const value = 10;
 
@@ -53,8 +53,8 @@ describe('gallery hooks', () => {
         const result = diff(context, name, value);
 
         expect(result).toBe(0);
-        expect(context.___diffs[name].stash).toBe(0);
-        expect(context.___diffs[name].prev).toBe(value);
+        expect(context.___diffs![name].stash).toBe(0);
+        expect(context.___diffs![name].prev).toBe(value);
     });
 
     test('useGalleryControls', () => {

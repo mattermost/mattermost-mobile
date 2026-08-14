@@ -45,9 +45,7 @@ class ServerScreen {
     usernameInput = element(by.id(this.testID.usernameInput));
 
     toBeVisible = async () => {
-        // iOS 26.2 on macos-15 CI runners takes longer than 10s to present the
-        // server screen after cold launch. Use HALF_MIN for both platforms so the
-        // first-launch case never races with OS-level app registration delays.
+        // iOS 26.2 CI: use HALF_MIN for server screen — cold launch can exceed 10s.
         const timeout = timeouts.HALF_MIN;
         await waitFor(this.serverScreen).toExist().withTimeout(timeout);
         await waitFor(this.serverUrlInput).toExist().withTimeout(timeout);
@@ -64,7 +62,35 @@ class ServerScreen {
         if (isAndroid()) {
             await this.waitForAndroidLoginAvailable(timeouts.ONE_MIN);
         } else {
-            await waitForElementToExist(this.usernameInput, timeouts.HALF_MIN);
+            // iOS: retry if the server returns "Cannot connect" (transient infra issue).
+            // Re-entering the URL re-validates the form and re-enables the Connect button.
+            const MAX_CONNECT_ATTEMPTS = 3;
+            let lastError: unknown;
+            /* eslint-disable no-await-in-loop -- sequential retry: each attempt must complete before deciding to retry */
+            for (let attempt = 1; attempt <= MAX_CONNECT_ATTEMPTS; attempt++) {
+                if (attempt > 1) {
+                    await this.serverUrlInput.clearText();
+                    await wait(timeouts.TWO_SEC);
+                    await this.serverUrlInput.replaceText(serverUrl);
+                    await wait(timeouts.ONE_SEC);
+                    await this.tapConnectButton();
+                }
+                try {
+                    await waitForElementToExist(this.usernameInput, timeouts.HALF_MIN);
+                    lastError = undefined;
+                    break;
+                } catch (e) {
+                    lastError = e;
+                    if (attempt < MAX_CONNECT_ATTEMPTS) {
+                        // eslint-disable-next-line no-console
+                        console.warn(`[connectToServer] Attempt ${attempt}/${MAX_CONNECT_ATTEMPTS} — login form did not appear, retrying`);
+                    }
+                }
+            }
+            /* eslint-enable no-await-in-loop */
+            if (lastError) {
+                throw lastError;
+            }
         }
 
         if (isIos()) {
@@ -82,7 +108,7 @@ class ServerScreen {
     waitForAndroidLoginAvailable = async (timeout: number) => {
         const deadline = Date.now() + timeout;
         const POLL = 1000;
-        const okayButton = element(by.text('OKAY'));
+        const okayButton = element(by.text('Okay'));
         /* eslint-disable no-await-in-loop -- sequential probes by design */
         while (Date.now() < deadline) {
             // First: dismiss the alert if it's up (alert window steals Espresso
@@ -197,9 +223,7 @@ class ServerScreen {
         // views under the same testID (the ReactEditText wrapper + the inner EditText).
         // Use atIndex(0) to unambiguously target the first match and avoid the
         // "AmbiguousMatcher" failure. On iOS there is always exactly one match.
-        const input = isAndroid()
-            ? element(by.id(this.testID.preauthSecretInput)).atIndex(0)
-            : this.preauthSecretInput;
+        const input = isAndroid() ? element(by.id(this.testID.preauthSecretInput)).atIndex(0) : this.preauthSecretInput;
         await waitFor(input).toExist().withTimeout(timeouts.TEN_SEC);
         await input.replaceText(secret);
     };
@@ -222,7 +246,7 @@ class ServerScreen {
             // Dismiss "Notifications cannot be received from this server" dialog if it appears.
             try {
                 await waitFor(Alert.notificationsCannotBeReceivedTitle).toExist().withTimeout(timeouts.TEN_SEC);
-                await element(by.text('OKAY')).tap();
+                await element(by.text('Okay')).tap();
             } catch {
                 // Dialog did not appear — proceed normally
             }

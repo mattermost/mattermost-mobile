@@ -50,6 +50,38 @@ fun DatabaseHelper.getServerUrlForIdentifier(identifier: String): String? {
     return null
 }
 
+fun DatabaseHelper.isZeroPersistenceServer(serverUrl: String): Boolean {
+    try {
+        val query = "SELECT persistence_flag FROM Servers WHERE url=?"
+        var flag: String? = null
+        defaultDatabase!!.rawQuery(query, arrayOf(serverUrl)).use { cursor ->
+            if (cursor.count == 1) {
+                cursor.moveToFirst()
+                flag = cursor.getString(0)
+            }
+        }
+        return flag == "zero-persistence"
+    } catch (e: Exception) {
+        e.printStackTrace()
+    }
+    return false
+}
+
+fun DatabaseHelper.getZeroPersistenceSigningKey(serverUrl: String): String? {
+    try {
+        val query = "SELECT value FROM Global WHERE id=?"
+        defaultDatabase!!.rawQuery(query, arrayOf("pushSigningKey$serverUrl")).use { cursor ->
+            if (cursor.count == 1) {
+                cursor.moveToFirst()
+                return cursor.getString(0)
+            }
+        }
+    } catch (e: Exception) {
+        e.printStackTrace()
+    }
+    return null
+}
+
 fun DatabaseHelper.getDatabaseForServer(context: Context?, serverUrl: String): WMDatabase? {
     try {
         val query = "SELECT db_path FROM Servers WHERE url=?"

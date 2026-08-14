@@ -1,0 +1,167 @@
+# yaml-language-server: $schema=https://json.schemastore.org/github-action.json
+name: Publish E2E/Override commit statuses
+description: >-
+  Unblock the required e2e-test/* commit statuses for a SHA so a PR carrying
+  E2E/Override (or one that skipped E2E entirely) can merge under required
+  checks.
+
+  Only touches contexts that are actually blocking — pending, failing, or with
+  no status yet. A context that is genuinely green keeps its own result and
+  description, so the checks list still shows what really passed instead of
+  reporting every platform as overridden.
+
+  A failing context keeps its real pass/fail counts and gains an "- e2e
+  overridden" suffix, so the check reads "522 passed, 1 failed, 81 skipped -
+  e2e overridden" rather than hiding what failed.
+
+  Covers all three override paths: E2E never dispatched, E2E already failed
+  (statuses are keyed by SHA, so this overwrites the failures), and E2E still
+  running. In-flight runs are never cancelled — their finalize step re-checks
+  the label (.github/actions/e2e-override-label) so a late result cannot re-red
+  a check the maintainer deliberately bypassed.
+
+inputs:
+  commit_sha:
+    description: Commit SHA to post statuses on (the PR head SHA)
+    required: true
+  state:
+    description: >-
+      Commit status state (success | pending). Use pending to re-block the PR
+      when E2E/Override is removed, so the waiver does not linger on the SHA.
+      pending only resets contexts this action previously overrode.
+    required: false
+    default: success
+  description:
+    description: >-
+      Commit status description for contexts that were pending or had no status.
+      A failing context keeps its own description plus an override suffix.
+    required: false
+    default: e2e overridden
+  target_url:
+    description: Link shown on the check
+    required: false
+    default: ''
+
+runs:
+  using: composite
+  steps:
+    - uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9.0.0
+      env:
+        COMMIT_SHA: ${{ inputs.commit_sha }}
+        STATE: ${{ inputs.state }}
+        DESCRIPTION: ${{ inputs.description }}
+        TARGET_URL: ${{ inputs.target_url }}
+      with:
+        script: |
+          const owner = context.repo.owner;
+          const repo = context.repo.repo;
+          const sha = process.env.COMMIT_SHA;
+          const state = process.env.STATE || 'success';
+          const description = (process.env.DESCRIPTION || '').substring(0, 140);
+          const targetUrl = process.env.TARGET_URL?.trim();
+
+          if (!sha) {
+            throw new Error('e2e-override-status: commit_sha is required');
+          }
+
+          // Relative requires resolve against the workspace, so the repo must be
+          // checked out before this action runs.
+          const {E2E_STATUS_CONTEXTS} = require('./detox/utils/build-tsio-job-config.js');
+
+          // Present in every success description this action writes, so the
+          // pending path can reset exactly the contexts it overrode and never a
+          // platform that passed on its own merits.
+          const OVERRIDE_MARKER = 'e2e overridden';
+
+          // getCombinedStatusForRef caps statuses at 100 per page. This repo only
+          // has 5 required contexts today, but other tooling can post legacy
+          // statuses on the same SHA — paginate so a busy commit can't silently
+          // hide one of the 5 required contexts past page 1.
+          const statuses = [];
+          for (let page = 1; ; page++) {
+            const {data: combined} = await github.rest.repos.getCombinedStatusForRef({
+              owner, repo, ref: sha, per_page: 100, page,
+            });
+            statuses.push(...combined.statuses);
+            if (combined.statuses.length < 100) {
+              break;
+            }
+          }
+
+          // Only the latest status per context matters — this is current state,
+          // not history.
+          const latestByContext = new Map(
+            statuses.map((status) => [status.context, status]),
+          );
+
+          const failures = [];
+          let touched = 0;
+          for (const statusContext of E2E_STATUS_CONTEXTS) {
+            const latest = latestByContext.get(statusContext);
+            const latestDescription = latest?.description || '';
+            let statusDescription;
+            let statusTargetUrl;
+
+            if (state === 'pending') {
+              // Undo only what this action did. A context that never carried the
+              // override — including one that failed on its own after a later
+              // push — keeps its real result.
+              if (!latestDescription.includes(OVERRIDE_MARKER)) {
+                continue;
+              }
+              statusDescription = description;
+              statusTargetUrl = targetUrl;
+            } else if (latest?.state === 'success') {
+              // Nothing to unblock: either genuinely green — leave the real result
+              // and its counts alone — or already overridden, in which case
+              // re-posting would only replace a description carrying the real
+              // counts with a bare one.
+              continue;
+            } else if (latest?.state === 'failure' || latest?.state === 'error') {
+              // Keep the real counts so the check still says what failed.
+              // Reserve room for the suffix before truncating the base: TSIO
+              // descriptions are already capped at 140 (decideStatus in
+              // tsio-report-status.js), and truncating after concatenation could
+              // cut the marker off a long one, leaving the pending path unable to
+              // recognise this context as overridden.
+              const suffix = ` - ${OVERRIDE_MARKER}`;
+              const base = latestDescription.substring(0, Math.max(0, 140 - suffix.length));
+              statusDescription = `${base}${suffix}`.substring(0, 140);
+              // Keep the link to the real report — that is what a reviewer needs
+              // to judge whether the bypass was reasonable, not this action's run.
+              statusTargetUrl = latest.target_url || targetUrl;
+            } else {
+              // Pending, or no status at all (E2E never dispatched / new SHA).
+              statusDescription = description;
+              statusTargetUrl = targetUrl;
+            }
+
+            touched++;
+            try {
+              await github.rest.repos.createCommitStatus({
+                owner,
+                repo,
+                sha,
+                state,
+                context: statusContext,
+                description: statusDescription,
+                ...(statusTargetUrl ? {target_url: statusTargetUrl} : {}),
+              });
+              core.info(`Published ${state} for ${statusContext} on ${sha}`);
+            } catch (err) {
+              core.warning(`createCommitStatus ${statusContext} on ${sha}: ${err.message}`);
+              failures.push(`${statusContext}: ${err.message}`);
+            }
+          }
+
+          if (touched === 0) {
+            core.info(
+              state === 'pending' ?
+                `No e2e-test/* contexts carry the override marker for ${sha} — nothing to reset.` :
+                `All required e2e-test/* contexts already pass on their own for ${sha} — nothing to override.`,
+            );
+          }
+
+          if (failures.length > 0) {
+            throw new Error(`Failed to publish ${failures.length} E2E/Override ${state} status(es): ${failures.join('; ')}`);
+          }

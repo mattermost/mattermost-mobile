@@ -90,6 +90,11 @@ export const getFirstLaunch = async () => {
     return records[0].value;
 };
 
+export const getLastViewedTeamIdAndServer = async () => {
+    const records = await queryGlobalValue(GLOBAL_IDENTIFIERS.LAST_VIEWED_TEAM)?.fetch();
+    return records?.[0]?.value;
+};
+
 export const getLastViewedChannelIdAndServer = async () => {
     const records = await queryGlobalValue(GLOBAL_IDENTIFIERS.LAST_VIEWED_CHANNEL)?.fetch();
     return records?.[0]?.value;

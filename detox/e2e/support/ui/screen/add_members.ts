@@ -98,12 +98,10 @@ class AddMembersScreen {
         await wait(timeouts.ONE_SEC);
 
         // Keyboard can re-open after selection; dismiss again before tapping Add Members.
-        if (isIos()) {
-            try {
-                await this.searchInput.tapReturnKey();
-            } catch { /* keyboard may already be dismissed */ }
-            await wait(timeouts.HALF_SEC);
-        }
+        try {
+            await this.searchInput.tapReturnKey();
+        } catch { /* keyboard may already be dismissed */ }
+        await wait(timeouts.HALF_SEC);
 
         await waitForElementToBeVisible(this.addChannelMembersButton, timeouts.HALF_MIN);
         await this.addChannelMembersButton.tap();
