@@ -8,7 +8,7 @@ import {
     System,
     User,
 } from '@support/server_api';
-import {siteOneUrl} from '@support/test_config';
+import {siteOneUrl, hasStableWebhookIngress} from '@support/test_config';
 import {
     ChannelScreen,
     HomeScreen,
@@ -16,20 +16,44 @@ import {
 } from '@support/ui/screen';
 import {expect} from 'detox';
 
+// T6230 is API-only (always run). Callback specs need Mattermost→sidecar reachability.
+const itNeedsStableIngress = hasStableWebhookIngress ? it : it.skip;
+
 describe('Interactive mm_blocks (ephemeral post)', () => {
     let testChannel: any;
     let testTeam: any;
     let testUser: any;
 
     beforeAll(async () => {
+        // Callback specs need the sidecar; render-only T6230 uses the Post API only.
+        if (hasStableWebhookIngress) {
+            await MmBlocksTestHelper.requireWebhookSidecar();
+        }
         const setup = await MmBlocksTestHelper.setupChannelTest();
         testChannel = setup.channel;
         testTeam = setup.team;
         testUser = setup.user;
     });
+
+    beforeEach(() => {
+        MmBlocksTestHelper.assertSuiteRunnable();
+    });
+
+    afterEach(async () => {
+        try {
+            await MmBlocksTestHelper.ensureOnChannelScreen();
+        } catch {
+            // Next test will re-assert / abort if the suite is blocked.
+        }
+    });
+
     afterAll(async () => {
-        await MmBlocksTestHelper.ensureOnChannelScreen();
-        await ChannelScreen.back();
+        try {
+            await MmBlocksTestHelper.ensureOnChannelScreen();
+            await ChannelScreen.back();
+        } catch {
+            // Relaunch recovery may already be on the channel list (CI 30340678924).
+        }
         await HomeScreen.logout();
     });
 
@@ -55,14 +79,7 @@ describe('Interactive mm_blocks (ephemeral post)', () => {
         await expect(element(by.text(secondLine))).toExist();
     });
 
-    it('MM-T6231_1 - should show integration ephemeral after mm_blocks button in thread', async () => {
-        const webhookReachable = await MmBlocksTestHelper.isWebhookSidecarReachable();
-        if (!webhookReachable) {
-            // eslint-disable-next-line no-console
-            console.warn('Skipping: webhook sidecar not reachable at', MmBlocksTestHelper.WEBHOOK_BASE_URL);
-            return;
-        }
-
+    itNeedsStableIngress('MM-T6231_1 - should show integration ephemeral after mm_blocks button in thread', async () => {
         const anchorMarker = MmBlocksTestHelper.randomMarker('E2E mm_blocks anchor');
         const ephemeralMarker = MmBlocksTestHelper.randomMarker('E2E mm_blocks ephemeral action');
 
@@ -107,14 +124,7 @@ describe('Interactive mm_blocks (ephemeral post)', () => {
         await ThreadScreen.back();
     });
 
-    it('MM-T6232_1 - should apply integration update to ephemeral mm_blocks post in thread', async () => {
-        const webhookReachable = await MmBlocksTestHelper.isWebhookSidecarReachable();
-        if (!webhookReachable) {
-            // eslint-disable-next-line no-console
-            console.warn('Skipping: webhook sidecar not reachable at', MmBlocksTestHelper.WEBHOOK_BASE_URL);
-            return;
-        }
-
+    itNeedsStableIngress('MM-T6232_1 - should apply integration update to ephemeral mm_blocks post in thread', async () => {
         const anchorMarker = MmBlocksTestHelper.randomMarker('E2E mm_blocks anchor');
         const ephemeralMarker = MmBlocksTestHelper.randomMarker('E2E mm_blocks ephemeral update');
 
@@ -158,14 +168,7 @@ describe('Interactive mm_blocks (ephemeral post)', () => {
         await ThreadScreen.back();
     });
 
-    it('MM-T6233_1 - should keep username override after integration update in thread', async () => {
-        const webhookReachable = await MmBlocksTestHelper.isWebhookSidecarReachable();
-        if (!webhookReachable) {
-            // eslint-disable-next-line no-console
-            console.warn('Skipping: webhook sidecar not reachable at', MmBlocksTestHelper.WEBHOOK_BASE_URL);
-            return;
-        }
-
+    itNeedsStableIngress('MM-T6233_1 - should keep username override after integration update in thread', async () => {
         await User.apiAdminLogin(siteOneUrl);
         await System.apiPatchConfig(siteOneUrl, {
             ServiceSettings: {EnablePostUsernameOverride: true},
@@ -218,14 +221,7 @@ describe('Interactive mm_blocks (ephemeral post)', () => {
         await ThreadScreen.back();
     });
 
-    it('MM-T6234_1 - should merge mm_blocks_actions query with block query on integration URL', async () => {
-        const webhookReachable = await MmBlocksTestHelper.isWebhookSidecarReachable();
-        if (!webhookReachable) {
-            // eslint-disable-next-line no-console
-            console.warn('Skipping: webhook sidecar not reachable at', MmBlocksTestHelper.WEBHOOK_BASE_URL);
-            return;
-        }
-
+    itNeedsStableIngress('MM-T6234_1 - should merge mm_blocks_actions query with block query on integration URL', async () => {
         const anchorMarker = MmBlocksTestHelper.randomMarker('E2E mm_blocks eph query anchor');
         const ephemeralMarker = MmBlocksTestHelper.randomMarker('E2E mm_blocks eph query merge');
 
@@ -272,14 +268,7 @@ describe('Interactive mm_blocks (ephemeral post)', () => {
         await ThreadScreen.back();
     });
 
-    it('MM-T6235_1 - should let block query override duplicate mm_blocks_actions query keys', async () => {
-        const webhookReachable = await MmBlocksTestHelper.isWebhookSidecarReachable();
-        if (!webhookReachable) {
-            // eslint-disable-next-line no-console
-            console.warn('Skipping: webhook sidecar not reachable at', MmBlocksTestHelper.WEBHOOK_BASE_URL);
-            return;
-        }
-
+    itNeedsStableIngress('MM-T6235_1 - should let block query override duplicate mm_blocks_actions query keys', async () => {
         const anchorMarker = MmBlocksTestHelper.randomMarker('E2E mm_blocks eph override anchor');
         const ephemeralMarker = MmBlocksTestHelper.randomMarker('E2E mm_blocks eph query override');
 
@@ -325,14 +314,7 @@ describe('Interactive mm_blocks (ephemeral post)', () => {
         await ThreadScreen.back();
     });
 
-    it('MM-T6236_1 - should merge static_select action and element query on integration URL', async () => {
-        const webhookReachable = await MmBlocksTestHelper.isWebhookSidecarReachable();
-        if (!webhookReachable) {
-            // eslint-disable-next-line no-console
-            console.warn('Skipping: webhook sidecar not reachable at', MmBlocksTestHelper.WEBHOOK_BASE_URL);
-            return;
-        }
-
+    itNeedsStableIngress('MM-T6236_1 - should merge static_select action and element query on integration URL', async () => {
         const anchorMarker = MmBlocksTestHelper.randomMarker('E2E mm_blocks eph select query anchor');
         const ephemeralMarker = MmBlocksTestHelper.randomMarker('E2E mm_blocks eph static_select query');
 
@@ -383,14 +365,7 @@ describe('Interactive mm_blocks (ephemeral post)', () => {
         await ThreadScreen.back();
     });
 
-    it('MM-T6237_1 - should send selected user id from static_select data_source users', async () => {
-        const webhookReachable = await MmBlocksTestHelper.isWebhookSidecarReachable();
-        if (!webhookReachable) {
-            // eslint-disable-next-line no-console
-            console.warn('Skipping: webhook sidecar not reachable at', MmBlocksTestHelper.WEBHOOK_BASE_URL);
-            return;
-        }
-
+    itNeedsStableIngress('MM-T6237_1 - should send selected user id from static_select data_source users', async () => {
         const anchorMarker = MmBlocksTestHelper.randomMarker('E2E mm_blocks eph ds users anchor');
         const ephemeralMarker = MmBlocksTestHelper.randomMarker('E2E mm_blocks eph static_select users');
 
@@ -436,14 +411,7 @@ describe('Interactive mm_blocks (ephemeral post)', () => {
         await ThreadScreen.back();
     });
 
-    it('MM-T6238_1 - should send selected channel id from static_select data_source channels', async () => {
-        const webhookReachable = await MmBlocksTestHelper.isWebhookSidecarReachable();
-        if (!webhookReachable) {
-            // eslint-disable-next-line no-console
-            console.warn('Skipping: webhook sidecar not reachable at', MmBlocksTestHelper.WEBHOOK_BASE_URL);
-            return;
-        }
-
+    itNeedsStableIngress('MM-T6238_1 - should send selected channel id from static_select data_source channels', async () => {
         const anchorMarker = MmBlocksTestHelper.randomMarker('E2E mm_blocks eph ds channels anchor');
         const ephemeralMarker = MmBlocksTestHelper.randomMarker('E2E mm_blocks eph static_select channels');
 
@@ -489,14 +457,7 @@ describe('Interactive mm_blocks (ephemeral post)', () => {
         await ThreadScreen.back();
     });
 
-    it('MM-T6239_1 - should send mm_blocks_actions context to integration', async () => {
-        const webhookReachable = await MmBlocksTestHelper.isWebhookSidecarReachable();
-        if (!webhookReachable) {
-            // eslint-disable-next-line no-console
-            console.warn('Skipping: webhook sidecar not reachable at', MmBlocksTestHelper.WEBHOOK_BASE_URL);
-            return;
-        }
-
+    itNeedsStableIngress('MM-T6239_1 - should send mm_blocks_actions context to integration', async () => {
         const anchorMarker = MmBlocksTestHelper.randomMarker('E2E mm_blocks eph context anchor');
         const ephemeralMarker = MmBlocksTestHelper.randomMarker('E2E mm_blocks eph action_context');
         const contextMarker = MmBlocksTestHelper.randomMarker('ctx');
@@ -542,7 +503,7 @@ describe('Interactive mm_blocks (ephemeral post)', () => {
         await ThreadScreen.back();
     });
 
-    it('MM-T6240_1 - should navigate via openURL action from ephemeral mm_blocks button', async () => {
+    itNeedsStableIngress('MM-T6240_1 - should navigate via openURL action from ephemeral mm_blocks button', async () => {
         const anchorMarker = MmBlocksTestHelper.randomMarker('E2E mm_blocks eph openurl anchor');
         const ephemeralMarker = MmBlocksTestHelper.randomMarker('E2E mm_blocks eph openurl');
 

@@ -3,7 +3,7 @@
 
 import {NotificationSettingsScreen} from '@support/ui/screen';
 import {isIos, tapNativeBackButton, timeouts} from '@support/utils';
-import {expect} from 'detox';
+import {expect, waitFor} from 'detox';
 
 class AutoResponderNotificationSettingsScreen {
     testID = {

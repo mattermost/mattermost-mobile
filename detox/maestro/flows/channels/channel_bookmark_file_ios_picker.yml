@@ -16,10 +16,13 @@ tags:
   - MM-T5603
 appId: ${MAESTRO_APP_ID}
 ---
+# * Verify the picker opened on Recents
 - extendedWaitUntil:
     visible:
       text: "Recents"
     timeout: 15000
+
+# # Navigate Browse → On My iPhone
 - extendedWaitUntil:
     visible:
       text: "Browse"
@@ -32,7 +35,8 @@ appId: ${MAESTRO_APP_ID}
     timeout: 10000
 - tapOn:
     text: "On My iPhone"
-# Tap by resource-id (iOS file picker assigns resource-id="<filename>, <ext>").
+
+# # Select the file by resource-id (iOS file picker assigns resource-id="<filename>, <ext>").
 # Using text: "test_bookmark" only matches the label sub-element and does NOT trigger selection.
 - extendedWaitUntil:
     visible:

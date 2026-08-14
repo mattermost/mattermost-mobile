@@ -13,7 +13,7 @@ import {Screens} from '@constants';
 import StatusUpdatePost from '@playbooks/components/status_update_post';
 import {PLAYBOOKS_UPDATE_STATUS_POST_TYPE} from '@playbooks/constants/plugin';
 import {isEdited as postEdited, isPostFailed, hasInteractivePostContent} from '@utils/post';
-import {makeStyleSheetFromTheme} from '@utils/theme';
+import {blendColors, makeStyleSheetFromTheme} from '@utils/theme';
 
 import Acknowledgements from './acknowledgements';
 import AddMembers from './add_members';
@@ -64,8 +64,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
         },
         messageContainer: {width: '100%'},
         replyBar: {
-            backgroundColor: theme.centerChannelColor,
-            opacity: 0.1,
+            backgroundColor: blendColors(theme.centerChannelBg, theme.centerChannelColor, 0.1),
             marginLeft: 1,
             marginRight: 7,
             width: 3,

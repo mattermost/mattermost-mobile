@@ -36,9 +36,6 @@ export enum Ringtone {
 
 const RINGTONE_DEFAULT = Ringtone.Calm;
 
-// 30 seconds of vibration (there is no loop setting)
-const RINGTONE_VIBRATE_PATTERN = [1000, 500, 1000, 500, 1000, 500, 1000, 500, 1000, 1000, 500, 1000, 500, 1000, 500, 1000, 500, 1000, 1000, 500, 1000, 500, 1000, 500, 1000, 500, 1000, 1000, 500, 1000, 500, 1000, 500, 1000, 500, 1000, 1000, 500, 1000, 500, 1000];
-
 export enum MessageBarType {
     Microphone,
     CallQuality,
@@ -64,5 +61,4 @@ export default {
     JOB_TYPE_CAPTIONING,
     RING_LENGTH,
     RINGTONE_DEFAULT,
-    RINGTONE_VIBRATE_PATTERN,
 };

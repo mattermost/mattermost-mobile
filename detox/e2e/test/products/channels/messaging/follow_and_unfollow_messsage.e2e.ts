@@ -113,19 +113,25 @@ describe('Messaging - Follow and Unfollow Message', () => {
         const {postListPostItem} = ChannelScreen.getPostListPostItem(post.id, message);
         await waitForElementToBeVisible(postListPostItem);
 
+        // # Wait for thread to be created in DB (CRT creates threads asynchronously)
+        await wait(timeouts.TWO_SEC);
+
         await ChannelScreen.openPostOptionsFor(post.id, message);
         await waitFor(PostOptionsScreen.followThreadOption).toBeVisible().withTimeout(timeouts.FOUR_SEC);
         await PostOptionsScreen.followThreadOption.tap();
 
         // * Verify message is followed by user via post footer
+        // The footer only renders after the follow round-trips to the server and the thread
+        // record lands in the local DB, so this needs the same wait MM-T4863_1 above uses —
+        // TWO_SEC here was the single tightest budget in the file and the one that failed.
         const {postListPostItemFooterFollowingButton} = ChannelScreen.getPostListPostItem(post.id, message);
-        await waitFor(postListPostItemFooterFollowingButton).toBeVisible().withTimeout(timeouts.TWO_SEC);
+        await waitForElementToBeVisible(postListPostItemFooterFollowingButton);
 
         // # Tap on following button via post footer
         await postListPostItemFooterFollowingButton.tap();
 
         // * Verify message is not followed by user via post footer
-        await waitFor(postListPostItemFooterFollowingButton).not.toBeVisible().withTimeout(timeouts.TWO_SEC);
+        await waitFor(postListPostItemFooterFollowingButton).not.toBeVisible().withTimeout(timeouts.TEN_SEC);
 
         // # Go back to channel list screen
         await ChannelScreen.back();

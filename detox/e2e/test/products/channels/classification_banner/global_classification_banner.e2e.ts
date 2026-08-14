@@ -7,6 +7,8 @@
 // - Use element testID when selecting an element. Create one if none.
 // *******************************************************************
 
+import {acquireClassificationLock, createClassificationLockOwner, releaseClassificationLock} from '@support/classification_lock';
+import {enableClassificationMarkings} from '@support/classification_test_helper';
 import {Properties, Setup, System} from '@support/server_api';
 import {serverOneUrl, siteOneUrl} from '@support/test_config';
 import {GlobalClassificationBanner} from '@support/ui/component';
@@ -14,11 +16,20 @@ import {ChannelListScreen, ChannelScreen, GlobalThreadsScreen, HomeScreen, Login
 import {timeouts, wait} from '@support/utils';
 import {by, device, element, expect, waitFor} from 'detox';
 
+// Lock wait is up to 20m; leave headroom for enable/setup after acquire.
+jest.setTimeout(timeouts.ONE_MIN * 30);
+
 describe('Classification Banner - Global Classification Banner', () => {
     const serverOneDisplayName = 'Server 1';
+    let lockOwner = '';
+    let lockAcquired = false;
     let testUser: any;
 
     beforeAll(async () => {
+        lockOwner = createClassificationLockOwner();
+        await acquireClassificationLock(siteOneUrl, lockOwner);
+        lockAcquired = true;
+
         await System.apiPatchConfig(siteOneUrl, {
             FeatureFlags: {
                 ClassificationMarkings: false,
@@ -35,17 +46,34 @@ describe('Classification Banner - Global Classification Banner', () => {
     });
 
     afterAll(async () => {
-        await Properties.apiCleanupClassification(siteOneUrl);
-        await System.apiPatchConfig(siteOneUrl, {
-            FeatureFlags: {
-                ClassificationMarkings: false,
-            },
-        });
+        // Never tear down shared server state we do not own — see the same guard in
+        // classification_banner_across_screens.e2e.ts.
+        if (!lockAcquired) {
+            return;
+        }
 
-        await HomeScreen.logout();
+        try {
+            await Properties.apiCleanupClassification(siteOneUrl);
+            await System.apiPatchConfig(siteOneUrl, {
+                FeatureFlags: {
+                    ClassificationMarkings: false,
+                },
+            });
+
+            await HomeScreen.logout();
+        } finally {
+            await releaseClassificationLock(siteOneUrl, lockOwner);
+        }
     });
 
     afterEach(async () => {
+        // Same ownership guard as afterAll: jest-circus still runs afterEach for each
+        // test it marks failed after a beforeAll failure, so a shard that never acquired
+        // the lock would delete the classification config of the shard that did.
+        if (!lockAcquired) {
+            return;
+        }
+
         await Properties.apiCleanupClassification(siteOneUrl);
     });
 
@@ -63,13 +91,10 @@ describe('Classification Banner - Global Classification Banner', () => {
     });
 
     it('MM-T6197_1 - should render the banner on the channel list screen when classification is configured', async () => {
-        await System.apiPatchConfig(siteOneUrl, {
-            FeatureFlags: {
-                ClassificationMarkings: true,
-            },
-        });
+        await enableClassificationMarkings(siteOneUrl);
         await Properties.apiSetupClassificationWithBanner(siteOneUrl, {
-            levelId: 'lvl-top-secret',
+            levelId: 'lvltopsecret00000000000000',
+            user: testUser,
         });
         await device.reloadReactNative();
 
@@ -81,13 +106,10 @@ describe('Classification Banner - Global Classification Banner', () => {
     });
 
     it('MM-T6198_1 - should render the banner on the channel screen when classification is configured', async () => {
-        await System.apiPatchConfig(siteOneUrl, {
-            FeatureFlags: {
-                ClassificationMarkings: true,
-            },
-        });
+        await enableClassificationMarkings(siteOneUrl);
         await Properties.apiSetupClassificationWithBanner(siteOneUrl, {
-            levelId: 'lvl-top-secret',
+            levelId: 'lvltopsecret00000000000000',
+            user: testUser,
         });
         await device.reloadReactNative();
 
@@ -104,13 +126,10 @@ describe('Classification Banner - Global Classification Banner', () => {
     });
 
     it('MM-T6199_1 - should render the banner on the global threads screen when classification is configured', async () => {
-        await System.apiPatchConfig(siteOneUrl, {
-            FeatureFlags: {
-                ClassificationMarkings: true,
-            },
-        });
+        await enableClassificationMarkings(siteOneUrl);
         await Properties.apiSetupClassificationWithBanner(siteOneUrl, {
-            levelId: 'lvl-top-secret',
+            levelId: 'lvltopsecret00000000000000',
+            user: testUser,
         });
         await device.reloadReactNative();
 
@@ -125,11 +144,7 @@ describe('Classification Banner - Global Classification Banner', () => {
     });
 
     it('MM-T6200_1 - should not render the banner when no classification value is set', async () => {
-        await System.apiPatchConfig(siteOneUrl, {
-            FeatureFlags: {
-                ClassificationMarkings: true,
-            },
-        });
+        await enableClassificationMarkings(siteOneUrl);
         await device.reloadReactNative();
 
         await ChannelListScreen.toBeVisible();
@@ -138,13 +153,10 @@ describe('Classification Banner - Global Classification Banner', () => {
     });
 
     it('MM-T6201_1 - should persist the banner across channel navigation', async () => {
-        await System.apiPatchConfig(siteOneUrl, {
-            FeatureFlags: {
-                ClassificationMarkings: true,
-            },
-        });
+        await enableClassificationMarkings(siteOneUrl);
         await Properties.apiSetupClassificationWithBanner(siteOneUrl, {
-            levelId: 'lvl-top-secret',
+            levelId: 'lvltopsecret00000000000000',
+            user: testUser,
         });
         await device.reloadReactNative();
 
@@ -167,14 +179,15 @@ describe('Classification Banner - Global Classification Banner', () => {
     });
 
     it('MM-T6202_1 - should update the banner when classification level changes', async () => {
-        await System.apiPatchConfig(siteOneUrl, {
-            FeatureFlags: {
-                ClassificationMarkings: true,
-            },
+        await enableClassificationMarkings(siteOneUrl);
+        const {linkedFieldId, optionIdsByName} = await Properties.apiSetupClassificationWithBanner(siteOneUrl, {
+            levelId: 'lvltopsecret00000000000000',
+            user: testUser,
         });
-        const {linkedFieldId} = await Properties.apiSetupClassificationWithBanner(siteOneUrl, {
-            levelId: 'lvl-top-secret',
-        });
+        const secretOptionId = optionIdsByName.SECRET;
+        if (!secretOptionId) {
+            throw new Error(`SECRET option id missing from setup. Available: ${Object.keys(optionIdsByName).join(', ')}`);
+        }
         await device.reloadReactNative();
 
         await ChannelListScreen.toBeVisible();
@@ -183,7 +196,7 @@ describe('Classification Banner - Global Classification Banner', () => {
         await expect(element(by.text('TOP SECRET'))).toBeVisible();
 
         await Properties.apiPatchSystemPropertyValues(siteOneUrl, 'access_control', [
-            {field_id: linkedFieldId, value: 'lvl-secret'},
+            {field_id: linkedFieldId, value: secretOptionId},
         ]);
 
         await device.reloadReactNative();
@@ -195,13 +208,10 @@ describe('Classification Banner - Global Classification Banner', () => {
     });
 
     it('MM-T6203_1 - should remove the banner when classification configuration is deleted', async () => {
-        await System.apiPatchConfig(siteOneUrl, {
-            FeatureFlags: {
-                ClassificationMarkings: true,
-            },
-        });
+        await enableClassificationMarkings(siteOneUrl);
         await Properties.apiSetupClassificationWithBanner(siteOneUrl, {
-            levelId: 'lvl-top-secret',
+            levelId: 'lvltopsecret00000000000000',
+            user: testUser,
         });
         await device.reloadReactNative();
 
@@ -219,13 +229,10 @@ describe('Classification Banner - Global Classification Banner', () => {
     });
 
     it('MM-T6204_1 - should remove the banner when the feature flag is toggled off', async () => {
-        await System.apiPatchConfig(siteOneUrl, {
-            FeatureFlags: {
-                ClassificationMarkings: true,
-            },
-        });
+        await enableClassificationMarkings(siteOneUrl);
         await Properties.apiSetupClassificationWithBanner(siteOneUrl, {
-            levelId: 'lvl-top-secret',
+            levelId: 'lvltopsecret00000000000000',
+            user: testUser,
         });
         await device.reloadReactNative();
 
@@ -248,18 +255,24 @@ describe('Classification Banner - Global Classification Banner', () => {
     });
 
     it('MM-T6205_1 - should not render the banner on the channel screen when classification is removed while on channel list', async () => {
-        await System.apiPatchConfig(siteOneUrl, {
-            FeatureFlags: {
-                ClassificationMarkings: true,
-            },
-        });
+        await enableClassificationMarkings(siteOneUrl);
         await Properties.apiSetupClassificationWithBanner(siteOneUrl, {
-            levelId: 'lvl-top-secret',
+            levelId: 'lvltopsecret00000000000000',
+            user: testUser,
         });
         await device.reloadReactNative();
 
         await ChannelListScreen.toBeVisible();
-        await GlobalClassificationBanner.toBeVisible();
+
+        // After MM-T6204 turns ClassificationMarkings off, the first reload after re-enable can
+        // miss the banner; one extra reload lets the client config catch up (CI bc6df62).
+        try {
+            await GlobalClassificationBanner.toBeVisible();
+        } catch {
+            await device.reloadReactNative();
+            await ChannelListScreen.toBeVisible();
+            await GlobalClassificationBanner.toBeVisible();
+        }
 
         await Properties.apiCleanupClassification(siteOneUrl);
         await device.reloadReactNative();

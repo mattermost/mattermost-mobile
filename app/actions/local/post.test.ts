@@ -4,7 +4,8 @@
 import {ActionType, Post} from '@constants';
 import {MM_TABLES, SYSTEM_IDENTIFIERS} from '@constants/database';
 import DatabaseManager from '@database/manager';
-import {getPostById} from '@queries/servers/post';
+import {getMyChannel} from '@queries/servers/channel';
+import {getPostById, queryPostsInChannel} from '@queries/servers/post';
 import TestHelper from '@test/test_helper';
 import {COMBINED_USER_ACTIVITY} from '@utils/post_list';
 
@@ -227,6 +228,33 @@ describe('storePostsForChannel', () => {
         expect(error).toBeUndefined();
         expect(models).toBeDefined();
         expect(models?.length).toBe(4); // Post, PostsInChannel, User, MyChannel
+    });
+
+    it('should not advance lastFetchedAt for a thread payload', async () => {
+        await operator.handleMyChannel({channels: [channel], myChannels: [channelMember], prepareRecordsOnly: false});
+
+        const seed = [100, 105, 110].map((t) => TestHelper.fakePost({
+            id: `seed-${t}`, channel_id: channelId, user_id: user.id, create_at: t, update_at: t,
+        }));
+        await storePostsForChannel(serverUrl, channelId, seed, seed.map((p) => p.id), '', ActionType.POSTS.RECEIVED_IN_CHANNEL, [user]);
+
+        const database = DatabaseManager.serverDatabases[serverUrl]!.database;
+        expect((await getMyChannel(database, channelId))?.lastFetchedAt).toBe(110);
+        const intervalsBefore = await queryPostsInChannel(database, channelId).fetch();
+        expect(intervalsBefore.length).toBe(1);
+
+        // A thread reply far newer than the channel tail, as delivered by a push notification.
+        const root = TestHelper.fakePost({id: 'root', channel_id: channelId, user_id: user.id, create_at: 90, update_at: 90});
+        const reply = TestHelper.fakePost({id: 'reply', channel_id: channelId, user_id: user.id, create_at: 200, update_at: 200, root_id: 'root'});
+        await storePostsForChannel(serverUrl, channelId, [root, reply], [reply.id, root.id], '', ActionType.POSTS.RECEIVED_IN_THREAD, [user]);
+
+        // The watermark must stay put: posts created between 110 and 200 were never fetched,
+        // and getPostsSince would skip them forever if it moved.
+        expect((await getMyChannel(database, channelId))?.lastFetchedAt).toBe(110);
+
+        const intervalsAfter = await queryPostsInChannel(database, channelId).fetch();
+        expect(intervalsAfter.length).toBe(1);
+        expect(intervalsAfter[0].latest).toBe(110);
     });
 });
 

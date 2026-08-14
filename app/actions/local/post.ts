@@ -247,9 +247,11 @@ export async function prepareModelsForChannelPosts(
         models.push(...userModels);
     }
 
+    // A thread payload doesn't cover the channel timeline, so it must not advance the
+    // channel watermark; handlePosts skips PostsInChannel for the same reason.
     const lastFetchedAt = getLastFetchedAtFromPosts(posts);
     let myChannelModel: MyChannelModel | undefined;
-    if (lastFetchedAt) {
+    if (lastFetchedAt && actionType !== ActionType.POSTS.RECEIVED_IN_THREAD) {
         const {member} = await updateMyChannelLastFetchedAt(serverUrl, channelId, lastFetchedAt, true);
         myChannelModel = member;
     }
