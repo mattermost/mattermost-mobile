@@ -73,6 +73,22 @@ class ThemeDisplaySettingsScreen {
         await expect(this.autoSwitchToggleOff).toBeVisible();
     };
 
+    ensureAutoSwitchOn = async () => {
+        try {
+            await waitFor(this.autoSwitchToggleOn).toBeVisible().withTimeout(timeouts.ONE_SEC);
+        } catch {
+            await this.toggleAutoSwitchOn();
+        }
+    };
+
+    ensureAutoSwitchOff = async () => {
+        try {
+            await waitFor(this.autoSwitchToggleOff).toBeVisible().withTimeout(timeouts.ONE_SEC);
+        } catch {
+            await this.toggleAutoSwitchOff();
+        }
+    };
+
     // When auto-switch is on, theme tiles appear in both light (index 0) and dark (index 1) sections.
     getLightThemeOption = (themeKey: string) => {
         return element(by.id(`theme_display_settings.${themeKey}.option`)).atIndex(0);

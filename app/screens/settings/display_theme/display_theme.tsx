@@ -85,13 +85,15 @@ const DisplayTheme = ({
     const lightThemeType = lightTheme?.type?.toLowerCase();
     const darkThemeType = darkTheme?.type?.toLowerCase();
     const [autoSwitch, setAutoSwitch] = useState(themeAutoSwitch);
-    const [selectedLightTheme, setSelectedLightTheme] = useState<string | undefined>(lightThemeType ?? activeTheme.type?.toLowerCase());
+    const [selectedLightTheme, setSelectedLightTheme] = useState<string | undefined>(
+        lightThemeType ?? (themeAutoSwitch ? undefined : activeTheme.type?.toLowerCase()),
+    );
     const [selectedDarkTheme, setSelectedDarkTheme] = useState<string | undefined>(darkThemeType ?? 'onyx');
     const getInitialCustomTheme = () => {
         if (lightThemeType === 'custom') {
             return lightTheme;
         }
-        if (activeTheme.type?.toLowerCase() === 'custom') {
+        if (!themeAutoSwitch && activeTheme.type?.toLowerCase() === 'custom') {
             return activeTheme;
         }
         return undefined;
@@ -106,16 +108,26 @@ const DisplayTheme = ({
     useDidUpdate(() => {
         if (lightThemeType === 'custom') {
             setCustomTheme(lightTheme);
-        } else if (activeTheme.type?.toLowerCase() === 'custom') {
+        } else if (!autoSwitch && activeTheme.type?.toLowerCase() === 'custom') {
             setCustomTheme(activeTheme);
         }
-    }, [lightThemeType, activeTheme.type]);
+    }, [autoSwitch, lightTheme, lightThemeType, activeTheme]);
 
     useDidUpdate(() => {
         if (darkThemeType === 'custom') {
             setCustomDarkTheme(darkTheme);
         }
-    }, [darkThemeType]);
+    }, [darkTheme, darkThemeType]);
+
+    useDidUpdate(() => {
+        if (!autoSwitch) {
+            return;
+        }
+        if (lightThemeType) {
+            setSelectedLightTheme(lightThemeType);
+        }
+        setSelectedDarkTheme(darkThemeType ?? 'onyx');
+    }, [autoSwitch, lightThemeType, darkThemeType]);
 
     const handleAutoSwitchToggle = useCallback(async (enabled: boolean) => {
         setAutoSwitch(enabled);

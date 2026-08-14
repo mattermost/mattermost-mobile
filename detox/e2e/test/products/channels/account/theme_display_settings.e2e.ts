@@ -64,6 +64,9 @@ describe('Account - Settings - Theme Display Settings', () => {
     });
 
     it('MM-T5111_2 - should be able to select a theme and save by tapping navigation back button', async () => {
+        // # Ensure single-theme mode
+        await ThemeDisplaySettingsScreen.ensureAutoSwitchOff();
+
         // # Tap on a sapphire option and tap on back button
         await ThemeDisplaySettingsScreen.sapphireOption.tap();
         await ThemeDisplaySettingsScreen.back();
@@ -94,7 +97,10 @@ describe('Account - Settings - Theme Display Settings', () => {
     });
 
     it('MM-T5111_3 - should display auto-switch toggle on theme settings screen', async () => {
-        // * Verify the auto-switch toggle is visible and initially off
+        // # Ensure single-theme mode so the toggle and tiles are in a known state
+        await ThemeDisplaySettingsScreen.ensureAutoSwitchOff();
+
+        // * Verify the auto-switch toggle is visible and off
         await expect(ThemeDisplaySettingsScreen.autoSwitchToggleOff).toBeVisible();
 
         // * Verify all 5 theme options are still visible alongside the toggle
@@ -106,8 +112,8 @@ describe('Account - Settings - Theme Display Settings', () => {
     });
 
     it('MM-T5111_4 - should be able to enable auto-switch and select light/dark themes', async () => {
-        // # Toggle auto-switch on
-        await ThemeDisplaySettingsScreen.toggleAutoSwitchOn();
+        // # Enable auto-switch
+        await ThemeDisplaySettingsScreen.ensureAutoSwitchOn();
 
         // * Verify theme tiles are still visible (light section)
         await expect(ThemeDisplaySettingsScreen.getLightThemeOption('denim')).toBeVisible();
@@ -140,6 +146,11 @@ describe('Account - Settings - Theme Display Settings', () => {
     });
 
     it('MM-T5111_5 - should persist light and dark theme changes independently', async () => {
+        // # Seed auto-switch with Sapphire light and Indigo dark
+        await ThemeDisplaySettingsScreen.ensureAutoSwitchOn();
+        await ThemeDisplaySettingsScreen.selectLightTheme('sapphire');
+        await ThemeDisplaySettingsScreen.selectDarkTheme('indigo');
+
         // # Change only the light theme to Quartz
         await ThemeDisplaySettingsScreen.selectLightTheme('quartz');
 
@@ -176,7 +187,8 @@ describe('Account - Settings - Theme Display Settings', () => {
     });
 
     it('MM-T5111_6 - should be able to disable auto-switch and return to single theme selection', async () => {
-        // # Toggle auto-switch off
+        // # Start from auto-switch on, then disable it
+        await ThemeDisplaySettingsScreen.ensureAutoSwitchOn();
         await ThemeDisplaySettingsScreen.toggleAutoSwitchOff();
 
         // * Verify standard single theme tiles are shown
@@ -207,6 +219,9 @@ describe('Account - Settings - Theme Display Settings', () => {
     });
 
     it('MM-T5111_7 - should auto-save theme on tap without navigating back', async () => {
+        // # Ensure single-theme mode
+        await ThemeDisplaySettingsScreen.ensureAutoSwitchOff();
+
         // # Tap Sapphire option (saves immediately on tap)
         await ThemeDisplaySettingsScreen.sapphireOption.tap();
 
@@ -216,13 +231,11 @@ describe('Account - Settings - Theme Display Settings', () => {
 
         // * Verify Sapphire is selected (proves save happened on tap, not on close)
         await expect(ThemeDisplaySettingsScreen.sapphireOptionSelected).toBeVisible();
-
-        // # Restore Denim for next tests
-        await ThemeDisplaySettingsScreen.denimOption.tap();
     });
 
     it('MM-T5111_8 - should auto-save auto-switch toggle on tap', async () => {
-        // # Toggle auto-switch ON (saves immediately)
+        // # Start from auto-switch off, then enable it (saves immediately)
+        await ThemeDisplaySettingsScreen.ensureAutoSwitchOff();
         await ThemeDisplaySettingsScreen.toggleAutoSwitchOn();
 
         // # Navigate back without selecting any theme
@@ -244,8 +257,8 @@ describe('Account - Settings - Theme Display Settings', () => {
             return;
         }
 
-        // # Auto-switch should be ON (from MM-T5111_8)
-        // # Select Quartz as light theme
+        // # Seed auto-switch with Quartz light and Onyx dark
+        await ThemeDisplaySettingsScreen.ensureAutoSwitchOn();
         await ThemeDisplaySettingsScreen.selectLightTheme('quartz');
 
         // # Select Onyx as dark theme
@@ -280,7 +293,8 @@ describe('Account - Settings - Theme Display Settings', () => {
     });
 
     it('MM-T5111_10 - should disable auto-switch and return to single theme mode (regression)', async () => {
-        // # Toggle auto-switch OFF
+        // # Start from auto-switch on, then disable it
+        await ThemeDisplaySettingsScreen.ensureAutoSwitchOn();
         await ThemeDisplaySettingsScreen.toggleAutoSwitchOff();
 
         // * Verify standard single theme tiles are shown (no light/dark sections)
