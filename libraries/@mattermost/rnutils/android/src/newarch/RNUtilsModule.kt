@@ -53,10 +53,6 @@ class RNUtilsModule(val reactContext: ReactApplicationContext) : NativeRNUtilsSp
         return implementation.deleteEntitiesFile()
     }
 
-    override fun areTutorialsDisabled(): Boolean {
-        return implementation.areTutorialsDisabled()
-    }
-
     override fun getDeliveredNotifications(promise: Promise?) {
         implementation.getDeliveredNotifications(promise)
     }

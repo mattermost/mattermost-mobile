@@ -184,11 +184,8 @@ beforeAll(async () => {
 
     const isFirstFile = !process.env.DETOX_SETUP_DONE;
 
-    // App treats tutorials as watched when this is set (RNUtils) or when
-    // RUNNING_E2E=true is baked/served via Metro (.env).
     const launchArgs = {
         detoxDisableSynchronization: 'YES',
-        disableTutorials: true,
     };
 
     const APP_READY_TIMEOUT = device.getPlatform() === 'android' ? 90_000 : 30_000;
