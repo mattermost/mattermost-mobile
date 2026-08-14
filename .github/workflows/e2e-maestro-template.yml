@@ -47,10 +47,9 @@ on:
       context_name:
         description: >
           GitHub commit-status context (e.g. e2e-test/maestro-ios, e2e-test/maestro-ios/main,
-          e2e-test/maestro-ios/cmt-server-11.9.0). Empty disables orchestration.
-        required: false
+          e2e-test/maestro-ios/cmt-server-11.9.0).
+        required: true
         type: string
-        default: ""
       branch:
         description: "Branch segment for Test System IO composite identity (e.g. pr-123, main, release-2.40)"
         required: false
@@ -112,7 +111,6 @@ env:
 jobs:
   begin:
     name: orch-begin
-    if: inputs.context_name != ''
     runs-on: ubuntu-24.04
     permissions:
       contents: read
@@ -776,31 +774,3 @@ jobs:
           SUMMARY_OUTCOME: ${{ steps.summary.outcome }}
         run: |
           [ "$SUMMARY_OUTCOME" = "success" ]
-
-  finalize-skipped:
-    name: finalize-skipped
-    needs: [begin]
-    if: always() && needs.begin.result == 'skipped' && inputs.context_name != ''
-    runs-on: ubuntu-24.04
-    permissions:
-      contents: read
-      statuses: write
-    steps:
-      - name: Checkout helpers
-        uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
-        with:
-          ref: ${{ inputs.MOBILE_VERSION }}
-          persist-credentials: false
-          sparse-checkout: |
-            .github/actions/update-commit-status
-
-      - name: Mark commit status skipped
-        uses: ./.github/actions/update-commit-status
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          repository_full_name: ${{ github.repository }}
-          commit_sha: ${{ inputs.commit_sha || inputs.MOBILE_VERSION }}
-          context: ${{ inputs.context_name }}
-          description: "E2E orchestration skipped"
-          status: error
