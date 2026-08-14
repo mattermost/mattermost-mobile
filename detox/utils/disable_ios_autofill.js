@@ -3,16 +3,12 @@
 /* eslint-disable no-console, no-process-env */
 
 /**
- * Disable iOS Simulator password AutoFill / Save Password prompts for E2E.
+ * Disable Simulator password AutoFill / Save Password for E2E.
  *
- * Detox cannot reliably dismiss Passwords.app "Save Password?" on iOS 18+/26
- * (system dialog; sendToHome hangs). This script writes the same restriction
- * keys the Settings → Passwords → AutoFill Passwords toggle changes, across
- * every plist iOS is known to read, plus WebUI / Passwords preference domains.
- *
- * Must run while the simulator is shut down for the ConfigurationProfiles
- * plists; call again after boot (or use --seed-defaults) to fight iOS resetting
- * EffectiveUserSettings during first-boot.
+ * Writes restriction keys across ConfigurationProfiles + UserConfigurationProfiles
+ * plists and WebUI / Passwords preference domains. ConfigurationProfiles must be
+ * edited while the simulator is shut down; re-run after boot (or --seed-defaults)
+ * if EffectiveUserSettings is reset on first boot.
  */
 
 const os = require('os');
