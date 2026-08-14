@@ -26,8 +26,7 @@ import {
 import {isAndroid, timeouts, wait} from '@support/utils';
 import {device, expect, waitFor} from 'detox';
 
-// Skip: flaky under Test System IO parallel CI — ask_agents / quick_actions (runs 31407140087, 31418589782).
-describe.skip('Agents - Channel Summary', () => {
+describe('Agents - Channel Summary', () => {
     const serverOneDisplayName = 'Server 1';
     const channelsCategory = 'channels';
     let testChannel: any;
@@ -82,20 +81,11 @@ describe.skip('Agents - Channel Summary', () => {
                 console.warn('Ask Agents quick action not visible on iOS — tests remain skipped');
             }
             try {
-                // Dismiss via the sheet root — ask_agents is absent when Agents UI isn't ready.
-                await element(by.id('channel.quick_actions')).swipe('down', 'fast');
+                await element(by.id('channel.quick_actions.ask_agents')).swipe('down', 'fast');
             } catch {
-                try {
-                    await element(by.id('channel.quick_actions.ask_agents')).swipe('down', 'fast');
-                } catch {
-                    // Sheet may already be closed.
-                }
+                // Sheet may already be closed if ask_agents was not visible.
             }
-            try {
-                await ChannelScreen.back();
-            } catch {
-                // beforeAll must not throw — tests no-op when Ask Agents is unavailable.
-            }
+            await ChannelScreen.back();
         }
     });
 
@@ -141,7 +131,7 @@ describe.skip('Agents - Channel Summary', () => {
         if (isAndroid()) {
             await device.pressBack();
         } else {
-            await element(by.id('channel.quick_actions')).swipe('down', 'fast');
+            await element(by.id('channel.quick_actions.ask_agents')).swipe('down', 'fast');
         }
         await ChannelScreen.back();
     });
