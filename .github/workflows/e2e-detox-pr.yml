@@ -72,9 +72,8 @@ on:
         type: string
       version_name:
         description: >
-          Branch or version ref under test (e.g. feature-branch, main, release-2.40).
-          For PR runs the Test System IO branch is always `pr-{number}` (mattermost
-          monorepo pattern); this value is only used when there is no pr_number.
+          Identity branch when pr_number is unset (e.g. main, release-2.40).
+          Ignored when pr_number is set; identity branch becomes pr-{number}.
         required: false
         type: string
 
