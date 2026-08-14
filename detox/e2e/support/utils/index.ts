@@ -60,10 +60,7 @@ export const timeouts = {
     FOUR_MIN: MINUTE * 4,
 };
 
-/**
- * Cheap best-effort dismiss for iOS "Save Password?" when it appears in the
- * app hierarchy. Primary prevention is autofill-v2 at simulator preboot.
- */
+/** Best-effort Not Now tap if the iOS Save Password sheet is visible. */
 export const dismissIosSavePasswordIfVisible = async (): Promise<boolean> => {
     if (isAndroid()) {
         return false;
