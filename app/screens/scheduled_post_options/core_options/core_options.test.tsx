@@ -16,6 +16,17 @@ jest.mock('@utils/time', () => ({
     getFormattedTime: jest.fn().mockReturnValue('9:00 AM'),
 }));
 
+const originalIsoWeekday = moment.prototype.isoWeekday;
+
+function mockIsoWeekday(day: number) {
+    jest.spyOn(moment.prototype, 'isoWeekday').mockImplementation(function mockIsoWeekdayImpl(this: moment.Moment, dow?: number) {
+        if (dow === undefined) {
+            return day;
+        }
+        return originalIsoWeekday.call(this, dow);
+    });
+}
+
 describe('ScheduledPostCoreOptions', () => {
     let database: Database;
     const baseProps = {
@@ -35,8 +46,7 @@ describe('ScheduledPostCoreOptions', () => {
     });
 
     it('renders correctly for Sunday', () => {
-        // Sunday is weekday 7 in moment
-        jest.spyOn(moment.prototype, 'weekday').mockReturnValue(7);
+        mockIsoWeekday(7);
 
         const {getByText, queryByText} = renderWithEverything(
             <ScheduledPostCoreOptions {...baseProps}/>,
@@ -55,8 +65,7 @@ describe('ScheduledPostCoreOptions', () => {
     });
 
     it('renders correctly for Monday', () => {
-        // Monday is weekday 1 in moment
-        jest.spyOn(moment.prototype, 'weekday').mockReturnValue(1);
+        mockIsoWeekday(1);
 
         const {getByText, queryByText} = renderWithEverything(
             <ScheduledPostCoreOptions {...baseProps}/>,
@@ -75,8 +84,7 @@ describe('ScheduledPostCoreOptions', () => {
     });
 
     it('renders correctly for Friday', () => {
-        // Friday is weekday 5 in moment
-        jest.spyOn(moment.prototype, 'weekday').mockReturnValue(5);
+        mockIsoWeekday(5);
 
         const {getByText, queryByText} = renderWithEverything(
             <ScheduledPostCoreOptions {...baseProps}/>,
@@ -95,8 +103,7 @@ describe('ScheduledPostCoreOptions', () => {
     });
 
     it('renders correctly for Saturday', () => {
-        // Saturday is weekday 6 in moment
-        jest.spyOn(moment.prototype, 'weekday').mockReturnValue(6);
+        mockIsoWeekday(6);
 
         const {getByText, queryByText} = renderWithEverything(
             <ScheduledPostCoreOptions {...baseProps}/>,
@@ -117,7 +124,7 @@ describe('ScheduledPostCoreOptions', () => {
     it('calls onSelectOption with correct timestamp when Tomorrow is selected', () => {
         const mockDate = moment.tz('2023-05-15 12:00', 'America/New_York');
         jest.spyOn(moment, 'tz').mockReturnValue(mockDate);
-        jest.spyOn(moment.prototype, 'weekday').mockReturnValue(1);
+        mockIsoWeekday(1);
         jest.spyOn(moment.prototype, 'clone').mockReturnValue(mockDate);
         jest.spyOn(moment.prototype, 'valueOf').mockReturnValue(1684242000000);
 
@@ -135,7 +142,7 @@ describe('ScheduledPostCoreOptions', () => {
     it('calls onSelectOption with correct timestamp when Monday is selected', () => {
         const mockDate = moment.tz('2023-05-11 12:00', 'America/New_York');
         jest.spyOn(moment, 'tz').mockReturnValue(mockDate);
-        jest.spyOn(moment.prototype, 'weekday').mockReturnValue(4);
+        mockIsoWeekday(4);
 
         const {getByText} = renderWithEverything(
             <ScheduledPostCoreOptions {...baseProps}/>,
@@ -152,7 +159,7 @@ describe('ScheduledPostCoreOptions', () => {
     it('calls onSelectOption with correct timestamp when Next Monday is selected', () => {
         const mockDate = moment.tz('2023-05-15 12:00', 'America/New_York');
         jest.spyOn(moment, 'tz').mockReturnValue(mockDate);
-        jest.spyOn(moment.prototype, 'weekday').mockReturnValue(1);
+        mockIsoWeekday(1);
 
         const {getByText} = renderWithEverything(
             <ScheduledPostCoreOptions {...baseProps}/>,
