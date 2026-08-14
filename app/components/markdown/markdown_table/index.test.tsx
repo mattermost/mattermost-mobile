@@ -2,7 +2,7 @@
 // See LICENSE.txt for license information.
 
 import React from 'react';
-import {View} from 'react-native';
+import {Platform, View} from 'react-native';
 
 import {Screens} from '@constants';
 import {navigateToScreen} from '@screens/navigation';
@@ -34,7 +34,13 @@ describe('MarkdownTable', () => {
         jest.mocked(navigateToScreen).mockClear();
     });
 
-    it('should open a 3-column full table as flex on a phone', async () => {
+    const originalOS = Platform.OS;
+
+    afterEach(() => {
+        Platform.OS = originalOS;
+    });
+
+    it('should open a 3-column full table as flex on iOS', async () => {
         const {getByTestId} = renderWithIntlAndTheme(
             <MarkdownTable numColumns={3}>
                 {tableRows(3)}
@@ -57,6 +63,27 @@ describe('MarkdownTable', () => {
         const {getByTestId} = renderWithIntlAndTheme(
             <MarkdownTable numColumns={8}>
                 {tableRows(8)}
+            </MarkdownTable>,
+        );
+
+        await act(async () => {
+            await Promise.resolve();
+        });
+
+        fireEvent.press(getByTestId('markdown_table'));
+
+        expect(navigateToScreen).toHaveBeenCalledWith(
+            Screens.TABLE,
+            expect.objectContaining({renderAsFlex: false}),
+        );
+    });
+
+    it('should keep Android expanded tables on an explicit width', async () => {
+        Platform.OS = 'android';
+
+        const {getByTestId} = renderWithIntlAndTheme(
+            <MarkdownTable numColumns={3}>
+                {tableRows(3)}
             </MarkdownTable>,
         );
 

@@ -4,7 +4,7 @@
 import React, {useEffect} from 'react';
 import {useIntl} from 'react-intl';
 import {Platform, ScrollView, Text, View} from 'react-native';
-import {SafeAreaView, type Edge} from 'react-native-safe-area-context';
+import {SafeAreaView, useSafeAreaInsets, type Edge} from 'react-native-safe-area-context';
 
 import {Screens} from '@constants';
 import {useTheme} from '@context/theme';
@@ -49,11 +49,18 @@ const Table = ({renderAsFlex, width}: TableScreenProps) => {
     const theme = useTheme();
     const styles = getStyleSheet(theme);
     const {width: windowWidth} = useWindowDimensions();
+    const insets = useSafeAreaInsets();
 
-    // Flex tables must use the viewport width. `flex: 1` inside a ScrollView
-    // leaves iOS content width ambiguous, so 3-column wrap tables clip the
-    // right column and cannot scroll horizontally (MM-T4899_2).
-    const viewStyle = renderAsFlex ? {width: windowWidth - TABLE_HORIZONTAL_PADDING} : {width};
+    // iOS: flex:1 inside a vertical ScrollView leaves content width ambiguous
+    // and clips 3-column wrap tables (MM-T4899_2). Size to the safe viewport.
+    // Android already nests a horizontal ScrollView and must keep its previous
+    // flex:1 / explicit-width behavior so production layout does not change.
+    let viewStyle: {width: number} | {flex: number} = {width};
+    if (renderAsFlex) {
+        viewStyle = Platform.OS === 'android' ? {flex: 1} : {
+            width: windowWidth - insets.left - insets.right - TABLE_HORIZONTAL_PADDING,
+        };
+    }
 
     useEffect(() => {
         return () => {

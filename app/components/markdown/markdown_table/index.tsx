@@ -213,7 +213,10 @@ function MarkdownTable({children, numColumns}: MarkdownTableProps) {
     const handlePress = usePreventDoubleTap(useCallback(() => {
         const screen = Screens.TABLE;
         const passProps = {
-            renderAsFlex: shouldRenderAsFlex(true),
+
+            // Android expanded tables already scroll horizontally at CELL_MAX_WIDTH.
+            // Only iOS needs renderAsFlex so the full-view container gets a real width.
+            renderAsFlex: Platform.OS === 'ios' && shouldRenderAsFlex(true),
             width: getTableWidth(true),
         };
         CallbackStore.setCallback(renderRows);
