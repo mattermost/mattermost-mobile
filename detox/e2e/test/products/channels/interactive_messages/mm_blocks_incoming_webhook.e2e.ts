@@ -17,8 +17,7 @@ import {
 import {getRandomId} from '@support/utils';
 import {expect} from 'detox';
 
-// Entire suite needs stable ingress: trycloudflare post/render flakes the same as
-// callbacks (CI a4c0e33 — T6215/T6216/T6228/T6229 waitForPostText failures).
+// Skip suite without stable webhook ingress: post/render and callback flakes.
 const describeMmBlocks = hasStableWebhookIngress ? describe : describe.skip;
 const itNeedsStableIngress = hasStableWebhookIngress ? it : it.skip;
 
@@ -52,7 +51,7 @@ describeMmBlocks('Interactive mm_blocks (incoming webhook)', () => {
             await MmBlocksTestHelper.ensureOnChannelScreen();
             await ChannelScreen.back();
         } catch {
-            // Relaunch recovery may already be on the channel list (CI 30340678924).
+            // Relaunch recovery may already be on the channel list.
         }
         await HomeScreen.logout();
     });

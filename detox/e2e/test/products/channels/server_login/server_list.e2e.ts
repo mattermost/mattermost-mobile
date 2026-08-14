@@ -202,10 +202,7 @@ describe('Server Login - Server List', () => {
         await ServerListScreen.getServerItemActive(serverOneDisplayName).atIndex(0).swipe('left', 'slow');
         await wait(timeouts.ONE_SEC);
 
-        // .atIndex(0): the Swipeable's revealed Edit option can render twice
-        // briefly on iOS during the swipe-pan animation (CI run 26368981355,
-        // MM-T4691_4: "Multiple elements found"). All sibling taps in this
-        // file already use .atIndex(0).
+        // .atIndex(0): Edit option can render twice during iOS swipe-pan animation.
         await ServerListScreen.getServerItemEditOption(serverOneDisplayName).atIndex(0).tap();
 
         // * Verify on edit server screen
@@ -238,7 +235,7 @@ describe('Server Login - Server List', () => {
         await ServerListScreen.getServerItemActive(serverOneDisplayName).atIndex(0).tap();
     });
 
-    // Skip iOS: CI run 30000635898 — swipe action Remove does not become reliably hittable.
+    // Skip iOS: swipe action Remove does not become reliably hittable.
     (isIos() ? it.skip : itWithThreeServers)('MM-T4691_5 - should be able to remove a server from the list', async () => {
         // * Verify on channel list screen of the first server
         await expect(ChannelListScreen.headerServerDisplayName).toHaveText(serverOneDisplayName);
@@ -289,7 +286,7 @@ describe('Server Login - Server List', () => {
         await LoginScreen.login(serverOneUser);
     });
 
-    // Skip iOS: CI run 30000635898 — revealed Logout action remains unhittable.
+    // Skip iOS: revealed Logout action remains unhittable.
     (isIos() ? it.skip : itWithThreeServers)('MM-T4691_6 - should be able to log out a server from the list', async () => {
         // * Verify on channel list screen of the first server
         await expect(ChannelListScreen.headerServerDisplayName).toHaveText(serverOneDisplayName);
@@ -335,7 +332,7 @@ describe('Server Login - Server List', () => {
         await ServerListScreen.getServerItemActive(serverOneDisplayName).atIndex(0).tap();
     });
 
-    // Skip iOS: CI run 30000635898 — server-list Add Server action remains unhittable after scrolling.
+    // Skip iOS: server-list Add Server action remains unhittable after scrolling.
     (isIos() ? it.skip : itWithThreeServers)('MM-T4691_7 - should not be able to add server for an already existing server', async () => {
         // * Verify on channel list screen of the first server
         await expect(ChannelListScreen.headerServerDisplayName).toHaveText(serverOneDisplayName);

@@ -228,8 +228,7 @@ describe('Search - Recent Mentions', () => {
         await ChannelListScreen.open();
     });
 
-    // Must run last — mutates the shared mention fixture. Skip: the edited mention UI never
-    // updates on Android CI (29cdff, 59ec6ae, a4c0e33).
+    // Must run last — mutates the shared mention fixture. Skip: edited mention UI never updates on Android.
     it.skip('MM-T4909_3 - should be able to edit, reply to, and delete a recent mention from recent mentions screen', async () => {
         // # Open recent mentions screen
         await RecentMentionsScreen.open();
@@ -254,8 +253,8 @@ describe('Search - Recent Mentions', () => {
             updatedMessage,
         );
 
-        // Force a mentions refetch so the list shows the edited body (CI 59ec6ae
-        // matched /edit$/ against a stale row that never updated).
+        // Force a mentions refetch so the list shows the edited body
+        // (regex /edit$/ can match a stale row that never updated).
         await RecentMentionsScreen.open();
         await RecentMentionsScreen.toBeVisible();
 

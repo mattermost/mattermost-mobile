@@ -92,7 +92,7 @@ describe('Search - Cross Team Search', () => {
         await HomeScreen.logout();
     });
 
-    // Skip: failed CI run 29954156963 (ios) — cross-team search navigate flake
+    // Skip: cross-team search navigate flake.
     (isIos() ? it.skip : it)('MM-T5827 - should be able to search messages across multiple teams and navigate to results', async () => {
         // # a) Click on Off-Topic channel and dismiss tutorial if present
         await ChannelScreen.open(channelsCategory, offTopicChannel.name);
@@ -269,6 +269,6 @@ describe('Search - Cross Team Search', () => {
         // # Go back to channel list screen
         await ChannelScreen.back();
 
-    // 360s timeout: cross-team flow ~236s on iOS 26.2 sim (CI 28290273101) — budget, not app bug.
+    // 360s timeout: cross-team flow can take ~236s on iOS sim — budget, not app bug.
     }, 360000);
 });

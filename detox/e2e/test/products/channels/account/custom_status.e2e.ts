@@ -216,8 +216,7 @@ describe('Account - Custom Status', () => {
         await wait(timeouts.ONE_SEC);
     });
 
-    // Skip: clear.button stays in the tree after tapping account clear (CI 29cdff Android,
-    // bc6df62 iOS) and additional waits did not help.
+    // Skip: clear.button stays in the tree after tapping account clear.
     it.skip('MM-T4990_4 - should be able to clear custom status from account', async () => {
         const status = STATUSES.IN_MEETING;
 
@@ -305,8 +304,7 @@ describe('Account - Custom Status', () => {
         await wait(timeouts.ONE_SEC);
     });
 
-    // CI 59ec6ae/ce729d Android + bc6df62 iOS: same clear.button residual after account
-    // clear (verifyStatusCleared NOT TOEXIST, 10s). Skip both; no proven app/ fix.
+    // Skip: clear.button residual after account clear.
     it.skip('MM-T3891 - should be able to set custom status with emoji picker and manage it', async () => {
         const customStatusText = `Status ${getRandomId()}`;
         const customEmojiName = 'fire';
@@ -615,7 +613,7 @@ const verifyStatusSetOnAccountScreen = async (status: {emoji: string; text: stri
 
 const verifyStatusCleared = async () => {
     // Prefer not.toExist: on iOS the clear control can linger as "not visible" after a
-    // successful clear (CI 30250131265).
+    // successful clear.
     await waitFor(AccountScreen.customStatusClearButton).not.toExist().withTimeout(timeouts.TEN_SEC);
     await expect(AccountScreen.setStatusOption).toExist();
 };

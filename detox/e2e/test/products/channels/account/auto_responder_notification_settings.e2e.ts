@@ -74,8 +74,7 @@ describe('Account - Settings - Auto-Responder Notification Settings', () => {
         await expect(AutoResponderNotificationSettingsScreen.messageInputDescription).toHaveText('Set a custom message that is automatically sent in response to direct messages, such as an out of office or vacation reply. Enabling this setting changes your status to Out of Office and disables notifications.');
     });
 
-    // Skip iOS: CI 30447839548 — TOHAVETEXT("On") on automatic_replies.option.info failed and
-    // cascaded into an afterAll Back-button timeout, failing the whole spec. Android passes.
+    // Skip iOS: automatic_replies.option.info never shows "On"; cascades to afterAll.
     (isIos() ? it.skip : it)('MM-T5110_2 - should be able to change auto-responder notification settings and save by tapping navigation back button', async () => {
         // # Toggle enable automatic replies option on, type in message, and tap on back button
         const message = `Message ${getRandomId()}`;

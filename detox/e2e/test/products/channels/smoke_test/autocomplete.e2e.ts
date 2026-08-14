@@ -132,8 +132,7 @@ describe('Smoke Test - Autocomplete', () => {
         await ChannelScreen.hasPostMessage(post.id, '🦊');
     });
 
-    // Skip Android: CI run 30424009936 (f86f99e1) failed both attempts — the slash autocomplete
-    // never becomes visible after typing "/" (Autocomplete.toBeVisible, 10s).
+    // Skip Android: slash autocomplete never visible after typing "/".
     (isAndroid() ? it.skip : it)('MM-T4886_4 - should be able to select and post slash suggestion', async () => {
         // # Type in "/" to activate slash suggestion autocomplete
         await ChannelScreen.postInput.typeText('/');

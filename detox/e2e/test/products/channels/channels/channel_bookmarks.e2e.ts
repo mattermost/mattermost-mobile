@@ -29,7 +29,7 @@ import {
 import {isAndroid, isIos, safeEnableSynchronization, timeouts, wait, waitForElementToExist, waitForElementToNotExist} from '@support/utils';
 import {expect, waitFor} from 'detox';
 
-// Skip: flaky under Test System IO parallel CI — channel.screen / bookmark UI (run 31418589782).
+// Skip: flaky channel.screen / bookmark UI.
 describe.skip('Channels - Channel Bookmarks', () => {
     const serverOneDisplayName = 'Server 1';
     const channelsCategory = 'channels';
@@ -254,7 +254,7 @@ describe.skip('Channels - Channel Bookmarks', () => {
 
         // * Verify that the "Add a bookmark" option is visible in channel info (Bookmarks Bar).
         // waitFor — FeatureFlagChannelBookmarks / canAddBookmarks may still be settling
-        // after beforeAll reload (CI 29362218938: bare expect raced Config changed).
+        // after beforeAll reload (bare expect raced Config changed).
         await waitFor(element(by.id('channel_info.add_bookmark.button'))).
             toBeVisible().
             withTimeout(timeouts.TWENTY_SEC);
@@ -387,8 +387,7 @@ describe.skip('Channels - Channel Bookmarks', () => {
         await ChannelScreen.back();
     });
 
-    // Skip iOS: CI run 30424009936 (f86f99e1) — openChannel's channel row is clipped at the list
-    // edge, so tap() fails the 100% visibility threshold despite the scroll fallback.
+    // Skip iOS: channel row clipped; tap fails 100% visibility despite scroll fallback.
     (isIos() ? it.skip : it)('MM-T5604_1 - should auto-populate title from page when adding a bookmark link', async () => {
         // # Navigate to the channel
         await openChannel(channelT5604);
@@ -835,7 +834,7 @@ describe.skip('Channels - Channel Bookmarks', () => {
         const channelHeaderBookmarksList = by.id('channel_header.bookmarks.list');
 
         // Authoritative sync: both bookmarks must exist in channel info before
-        // trusting the virtualized header FlatList (CI 30250131265: only file chip).
+        // trusting the virtualized header FlatList (only file chip).
         await ChannelInfoScreen.open();
         await ChannelInfoScreen.waitForBookmarkInChannelInfo(
             by.id(`channel_bookmark.${bookmarkFileT69455.id}`).
@@ -897,7 +896,7 @@ describe.skip('Channels - Channel Bookmarks', () => {
         // * Verify long press opens the bookmark options bottom sheet
         await expect(ChannelBookmarkScreen.editOption).toBeVisible();
 
-        // Sheet has Edit/Copy/Share/Delete — no Cancel (CI 59ec6ae screenshot).
+        // Sheet has Edit/Copy/Share/Delete — no Cancel.
         await ChannelBookmarkScreen.dismissOptionsSheet();
         await ChannelScreen.toBeVisible();
 

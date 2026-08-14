@@ -30,7 +30,7 @@ import {
 import {getRandomId, isAndroid, timeouts, wait, waitForElementToBeVisible} from '@support/utils';
 import {expect} from 'detox';
 
-// Skip: flaky under Test System IO parallel CI — recent mentions / visibility (runs 31418589782, 31424131052).
+// Skip: flaky recent mentions / visibility.
 describe.skip('Search - Hashtag Search', () => {
     const serverOneDisplayName = 'Server 1';
     const channelsCategory = 'channels';

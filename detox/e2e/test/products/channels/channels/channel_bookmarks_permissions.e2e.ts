@@ -204,7 +204,7 @@ describe('Channels - Channel Bookmarks Permissions', () => {
         await wait(timeouts.ONE_SEC);
 
         // Assert while any options sheet is up, then dismiss so close is hittable.
-        // Archived sheet is Copy Link / Share only — no Cancel (CI 59ec6ae screenshot).
+        // Archived sheet is Copy Link / Share only — no Cancel.
         await expect(element(by.id('channel_info.screen'))).toExist();
         await expect(ChannelBookmarkScreen.editOption).not.toExist();
         await expect(ChannelBookmarkScreen.deleteOption).not.toExist();

@@ -79,7 +79,7 @@ describe('Channel Settings - Copy Tests', () => {
         await ChannelListScreen.toBeVisible();
     });
 
-    // Skipped: Fabric idling-resource deadlock on Android copy bottom-sheet tap (CI 28290273101) — needs Detox/Fabric fix.
+    // Skip: Fabric idling-resource deadlock on Android copy bottom-sheet tap.
     it.skip('MM-T868_1 - should show Copy option when long-pressing channel purpose text', async () => {
         const purposeText = `Purpose text for copying ${getRandomId()}`;
         const {channel: channelWithPurpose} = await Channel.apiCreateChannel(siteOneUrl, {

@@ -183,8 +183,7 @@ describe('Smoke Test - Channels', () => {
         await ChannelListScreen.toBeVisible();
     });
 
-    // Skip iOS: failed on CI 30437339535. The waitFor-polling fix added afterwards was never
-    // exercised — its shard was cancelled on 30447839548 — so treat it as unverified. Android passes.
+    // Skip iOS: favorite/mute channel flake; Android passes.
     (isIos() ? it.skip : it)('MM-T4774_5 - should be able to favorite and mute a channel', async () => {
         // # Reload React Native to establish a fresh WebSocket connection.
         await device.reloadReactNative();
@@ -207,7 +206,7 @@ describe('Smoke Test - Channels', () => {
             }
         } else {
             // Favorite/mute land via a preference update, so poll like Android instead of
-            // asserting instantly (CI 30437339535 iOS: unfavorite.action not found).
+            // asserting instantly (unfavorite.action not found).
             await waitFor(ChannelInfoScreen.unfavoriteAction).toBeVisible().withTimeout(timeouts.HALF_MIN);
             await waitFor(ChannelInfoScreen.unmuteAction).toBeVisible().withTimeout(timeouts.TEN_SEC);
         }

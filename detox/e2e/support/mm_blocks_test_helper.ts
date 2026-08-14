@@ -40,8 +40,8 @@ export class MmBlocksTestHelper {
     static readonly QUERY_OK_MESSAGE = /.*Detox mm_blocks query OK.*/;
     static readonly STATIC_SELECT_OK_MESSAGE = /.*Detox mm_blocks static_select OK \(selected_option: .+\).*/;
 
-    // Once set, remaining specs in this process abort immediately (CI 59ec6ae burned
-    // ~23×300s after sidecar health passed but thread-open / callbacks stalled).
+    // Once set, remaining specs in this process abort immediately
+    // (avoids burning retries after sidecar health passed but thread-open/callbacks stalled).
     private static suiteBlockedReason: string | undefined;
 
     // Last channel opened by setupChannelTest — used when launchApp recovery lands on the list.
@@ -251,13 +251,12 @@ export class MmBlocksTestHelper {
         try {
             await waitFor(ChannelScreen.channelScreen).toExist().withTimeout(timeouts.TEN_SEC);
         } catch {
-            // Recover from a stuck Detox sync / wrong screen (CI 59ec6ae).
+            // Recover from a stuck Detox sync / wrong screen.
             await device.launchApp({newInstance: false});
             try {
                 await waitFor(ChannelScreen.channelScreen).toExist().withTimeout(timeouts.TEN_SEC);
             } catch {
-                // Relaunch often restores the channel list, not channel.screen
-                // (CI 30340678924 mm_blocks_ephemeral afterAllFailure.png iOS+Android).
+                // Relaunch often restores the channel list, not channel.screen.
                 await ChannelListScreen.toBeVisible();
                 if (!this.lastChannelName) {
                     throw new Error('ensureOnChannelScreen: on channel list but lastChannelName unset');
@@ -349,7 +348,7 @@ export class MmBlocksTestHelper {
 
     static async openThreadForPost(postId: string, postMessage: string): Promise<void> {
         // Hard-bound budget: stacked longPress retries previously burned the 300s Jest
-        // timeout (CI 59ec6ae). Prefer date_time with maxAttempts=2, then one fallback.
+        // timeout. Prefer date_time with maxAttempts=2, then one fallback.
         const deadline = Date.now() + timeouts.ONE_MIN;
         const postTestID = `channel.post_list.post.${postId}`;
         const scroll = by.id(ChannelScreen.postList.testID.flatList);

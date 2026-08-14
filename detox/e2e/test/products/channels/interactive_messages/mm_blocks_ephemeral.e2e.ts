@@ -52,7 +52,7 @@ describe('Interactive mm_blocks (ephemeral post)', () => {
             await MmBlocksTestHelper.ensureOnChannelScreen();
             await ChannelScreen.back();
         } catch {
-            // Relaunch recovery may already be on the channel list (CI 30340678924).
+            // Relaunch recovery may already be on the channel list.
         }
         await HomeScreen.logout();
     });

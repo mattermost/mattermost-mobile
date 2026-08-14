@@ -31,7 +31,7 @@ import {
 import {getRandomId, isIos, timeouts, wait, waitForElementToBeVisible, waitForElementToExist} from '@support/utils';
 import {expect} from 'detox';
 
-// Skip: flaky under Test System IO parallel CI — search suite visibility (run 31418589782).
+// Skip: flaky search suite visibility.
 describe.skip('Search - Search Messages', () => {
     const serverOneDisplayName = 'Server 1';
     const channelsCategory = 'channels';
@@ -61,7 +61,7 @@ describe.skip('Search - Search Messages', () => {
         // A test that fails mid-flow never reaches its own searchClearButton tap, so its
         // query stays in the search box. The next test then opens onto the results view
         // instead of "Search options", and its searchModifier* lookups fail — which is how
-        // a single failure took out all six of MM-T5294_3.._8 in CI 31329196036. Closing
+        // a single failure took out all six of MM-T5294_3.._8. Closing
         // the screen alone does not reset the query, so clear it here first.
         try {
             await waitForElementToExist(SearchMessagesScreen.searchClearButton, timeouts.TWO_SEC);
@@ -138,9 +138,7 @@ describe.skip('Search - Search Messages', () => {
         await ChannelListScreen.toBeVisible();
     });
 
-    // Skip iOS (SEC-10996): the channel-mention row never passes Detox's 100% visibility
-    // gate, so the tap fails at centre and at corner alike. Failed CI 31329196036,
-    // 31368420580, 31424626068. The beforeEach searchClearButton reset keeps _4.._9 green.
+    // Skip iOS (SEC-10996): channel-mention row never passes 100% visibility gate.
     (isIos() ? it.skip : it)('MM-T5294_3 - should be able to search messages in a specific channel', async () => {
         // # Open a channel screen, post a message, go back to channel list screen, and open search messages screen
         const message = `Message ${getRandomId()}`;
@@ -199,7 +197,7 @@ describe.skip('Search - Search Messages', () => {
 
         // Corner-tap: a centre tap here landed without inserting the "-" modifier, so the
         // query became "Message<term>" instead of "Message -<term>" and returned 0 results
-        // (CI 31329196036 MM-T5294_4). Same clip as searchModifierIn/Phrases.
+        // (MM-T5294_4). Same clip as searchModifierIn/Phrases.
         await SearchMessagesScreen.searchModifierExclude.tap({x: 1, y: 1});
         await SearchMessagesScreen.searchInput.typeText(excludedTerm);
         await SearchMessagesScreen.searchInput.tapReturnKey();

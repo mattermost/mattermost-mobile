@@ -70,7 +70,7 @@ async function openPostOptionsFor(postId: string, message: string, screen: typeo
     }
 }
 
-// Skip: flaky under Test System IO parallel CI — sidebar channel display name not visible (run 31429345000).
+// Skip: flaky sidebar channel display name not visible.
 describe.skip('Messaging - Mark as Unread', () => {
     const serverOneDisplayName = 'Server 1';
     const channelsCategory = 'channels';
@@ -220,7 +220,7 @@ describe.skip('Messaging - Mark as Unread', () => {
         await expect(ChannelListScreen.getChannelItemDisplayName(directMessagesCategory, dmChannel.name)).toBeVisible();
     });
 
-    // Skip: failed CI run 29954156963 (both) — BACK_INDEX / thread unread
+    // Skip: BACK_INDEX / thread unread.
     it.skip('MM-T250_1 - should mark a reply as unread in thread view and show unread indicator', async () => {
         // # Create a root message and two replies via API (as admin) so testUser can mark
         // someone else's reply as unread.
@@ -259,7 +259,7 @@ describe.skip('Messaging - Mark as Unread', () => {
         await ChannelScreen.back();
     });
 
-    // Skip: failed CI run 29954156963 (both) — GM unread flake
+    // Skip: GM unread flake.
     it.skip('MM-T1280_1 - should mark a GM post as unread and show the GM channel as unread in channel list', async () => {
         // # GM channel and message were created in beforeAll before login so they appear in the sidebar
 

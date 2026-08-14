@@ -267,7 +267,7 @@ describe.skip('Classification Banner - Global Classification Banner', () => {
         await ChannelListScreen.toBeVisible();
 
         // After MM-T6204 turns ClassificationMarkings off, the first reload after re-enable can
-        // miss the banner; one extra reload lets the client config catch up (CI bc6df62).
+        // miss the banner; one extra reload lets the client config catch up.
         try {
             await GlobalClassificationBanner.toBeVisible();
         } catch {

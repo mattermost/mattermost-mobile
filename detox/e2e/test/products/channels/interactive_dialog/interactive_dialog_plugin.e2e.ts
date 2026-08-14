@@ -252,7 +252,7 @@ describe('Interactive Dialog - Basic Dialog (Plugin)', () => {
         await ChannelScreen.open(channelsCategory, testChannel.name);
 
         // Warm slash-command / IntegrationsManager state — first /dialog after login
-        // can return "Error Executing Command" before commands are ready (CI MM-T4101/4102).
+        // can return "Error Executing Command" before commands are ready.
         try {
             await ChannelScreen.postInput.typeText('/');
             await wait(timeouts.TWO_SEC);
@@ -368,7 +368,7 @@ describe('Interactive Dialog - Basic Dialog (Plugin)', () => {
         await ChannelScreen.hasPostMessage(post.id, 'Dialog Submitted:');
     });
 
-    // TODO: previously failed when selectUser tapped search-field text (CI 30250131265).
+    // TODO: previously failed when selectUser tapped search-field text.
     it('MM-T4498 should open and handle interactive dialog with select fields (Plugin)', async () => {
         await ensureDialogClosed();
         await ChannelScreen.postSlashCommand('/dialog selectfields');
@@ -826,7 +826,7 @@ describe('Interactive Dialog - Basic Dialog (Plugin)', () => {
 
         // * Verify timezone indicator appears for London field
         // London is GMT in winter, BST in summer — mobile renders without emoji.
-        // Datetime-timezone dialog can show the indicator twice (CI 30216081940).
+        // Datetime-timezone dialog can show the indicator twice.
         try {
             await expect(element(by.text('Times in GMT')).atIndex(0)).toExist();
         } catch {

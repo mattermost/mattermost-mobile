@@ -27,9 +27,7 @@ import {expect, device, element, by, waitFor} from 'detox';
 jest.setTimeout(360000);
 
 describe('Share with connected workspaces', () => {
-    // Skipped on PR/main CI: beforeAll hits 360s hook timeout without Shared Channels
-    // license + EnableSharedChannels + remote clusters (run 29935363789 both platforms).
-    // Re-enable when Matterwick PR cloud guarantees Shared Channels remotes.
+    // Skip: beforeAll 360s timeout without Shared Channels license/remotes.
     const serverOneDisplayName = 'Server 1';
     const channelsCategory = 'channels';
     let testUser: any;

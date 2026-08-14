@@ -153,7 +153,7 @@ describe('Channels - Edit Channel', () => {
         await ChannelInfoScreen.close();
     });
 
-    // Flake: ReactContext is null in CreateDirectMessageScreen.open (CI run 31469235593).
+    // Flake: ReactContext is null in CreateDirectMessageScreen.open.
     it.skip('MM-T4906_3 - should be able edit direct message channel', async () => {
         // # Create a direct message with another user
         await ChannelScreen.back();

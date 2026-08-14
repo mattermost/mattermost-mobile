@@ -90,9 +90,8 @@ describe.skip('Account - User Attributes', () => {
         await ChannelListScreen.waitForSidebarPublicChannelDisplayNameVisible(testChannel.name);
 
         // Reload so client config + custom profile fields sync after the flag was enabled.
-        // ponytail: CI 28476574698/28485624548 — reloadReactNative may not
-        // trigger config re-fetch from local DB. Use launchApp newInstance
-        // to force full re-init which re-reads stored config.
+        // reloadReactNative may not trigger config re-fetch from local DB; use
+        // launchApp newInstance to force full re-init which re-reads stored config.
         await device.launchApp({
             newInstance: true,
             ...(device.getPlatform() === 'ios' ? {permissions: {notifications: 'YES'}} : {}),

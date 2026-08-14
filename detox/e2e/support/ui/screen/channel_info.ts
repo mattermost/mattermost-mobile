@@ -255,8 +255,7 @@ class ChannelInfoScreen {
             // Bookmarks section may be below the fold — scroll channel info.
         }
 
-        // A 200px scroll step does not always reach the bookmarks list on CI.
-        // Evidence: CI run 28476574698 (MM-T5602, MM-T5604, MM-T5608).
+        // A 200px scroll step does not always reach the bookmarks list.
         try {
             await waitFor(bookmarksList).
                 toExist().
@@ -314,8 +313,8 @@ class ChannelInfoScreen {
     };
 
     // Close/reopen channel info to re-trigger bookmark fetch when API-created
-    // bookmarks are not yet in the client after beforeAll reload (CI 29935363789:
-    // Add bookmark visible but pre-created titles missing from bookmarks.list).
+    // bookmarks are not yet in the client after beforeAll reload
+    // (Add bookmark visible but pre-created titles missing from bookmarks.list).
     waitForBookmarkInChannelInfo = async (
         bookmarkMatcher: Detox.NativeMatcher,
         {

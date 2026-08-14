@@ -7,13 +7,7 @@
 // - Use element testID when selecting an element. Create one if none.
 // *******************************************************************
 
-// Split out of `search_behaviors.e2e.ts` (which packed 13 tests / 616 lines
-// into one file and overran iOS shard time budgets — see CI run 26352177261
-// shard 17, which dropped search_cycle + search_messages because
-// search_behaviors burned 29 minutes).
-//
-// This file groups tests that exercise search MODIFIERS (`in:`, `from:`),
-// the @recent-mentions tab, and special-character usernames in results.
+// Split from search_behaviors.e2e.ts: modifiers (`in:`, `from:`), recent-mentions, special-char usernames.
 
 import {
     Channel,
@@ -139,8 +133,7 @@ describe('Search - Modifiers', () => {
         await ChannelListScreen.open();
     });
 
-    // CI 59ec6ae/ce729d/bc6df62 iOS: exceeds 300s Jest timeout after disableSynchronization
-    // + cleanup harden (recent-item race / hung search return). Skip until search sync is stable.
+    // Skip: exceeds 300s Jest timeout (recent-item race / hung search return).
     it.skip('MM-T585_1 - unfiltered search is not affected by previous modifier searches', async () => {
         // # Post a message for plain text search
         const plainTerm = `plain${getRandomId()}`;
@@ -187,7 +180,7 @@ describe('Search - Modifiers', () => {
         }
 
         // Cleanup must run with sync on — under disableSynchronization the recent-item
-        // row can exist then vanish before tap (CI 59ec6ae iOS MM-T585_1).
+        // row can exist then vanish before tap.
         await SearchMessagesScreen.searchClearButton.tap();
         const plainRemove = SearchMessagesScreen.getRecentSearchItemRemoveButton(plainTerm);
         await waitFor(plainRemove).toExist().withTimeout(timeouts.TEN_SEC);
