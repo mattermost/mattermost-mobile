@@ -82,8 +82,7 @@
         "test/**/*.ts",
         "test/**/*.tsx",
         "types/**/*.ts",
-        "types/**/*.tsx",
-        "env.d.ts"
+        "types/**/*.tsx"
     ],
     "exclude": [
         "node_modules",
