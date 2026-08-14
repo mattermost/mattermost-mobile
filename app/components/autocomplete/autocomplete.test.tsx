@@ -130,14 +130,13 @@ describe('Autocomplete', () => {
         const props = getBaseProps();
         const {getByTestId, rerender} = render(<Autocomplete {...props}/>);
 
-        // Default horizontal padding is 8
-        expect(getByTestId('autocomplete')).toHaveStyle({left: 8, right: 8});
+        // Layout styles live on the Animated.View; Detox taps the inner `autocomplete` View.
+        expect(getByTestId('autocomplete.container')).toHaveStyle({left: 8, right: 8});
 
-        // Set horizontal padding to 20
         props.horizontalPadding = 20;
         rerender(<Autocomplete {...props}/>);
 
-        expect(getByTestId('autocomplete')).toHaveStyle({left: 20, right: 20});
+        expect(getByTestId('autocomplete.container')).toHaveStyle({left: 20, right: 20});
     });
 
     it('should set the correct max height by default', () => {
@@ -145,8 +144,7 @@ describe('Autocomplete', () => {
         props.availableSpace = {value: 1000} as SharedValue<number>;
         const {getByTestId} = render(<Autocomplete {...props}/>);
 
-        // Default max height is 230
-        expect(getByTestId('autocomplete')).toHaveStyle({maxHeight: 230});
+        expect(getByTestId('autocomplete.container')).toHaveStyle({maxHeight: 230});
     });
 
     it('should set the correct max height when useAllAvailableSpace is true', () => {
@@ -155,6 +153,6 @@ describe('Autocomplete', () => {
         props.useAllAvailableSpace = true;
         const {getByTestId} = render(<Autocomplete {...props}/>);
 
-        expect(getByTestId('autocomplete')).toHaveStyle({maxHeight: 1000});
+        expect(getByTestId('autocomplete.container')).toHaveStyle({maxHeight: 1000});
     });
 });

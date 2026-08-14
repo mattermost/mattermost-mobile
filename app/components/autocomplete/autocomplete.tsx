@@ -156,6 +156,7 @@ const Autocomplete = ({
     // frames (often {0,0}) so suggestion taps fail visibility checks.
     const component = (
         <Animated.View
+            testID='autocomplete.container'
             pointerEvents='box-none'
             style={[style.base, {left: horizontalPadding, right: horizontalPadding}, containerAnimatedStyle]}
         >
