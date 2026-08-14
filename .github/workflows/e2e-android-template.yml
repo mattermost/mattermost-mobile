@@ -562,9 +562,6 @@ jobs:
           gh-job-name: detox-android-worker-${{ matrix.shard }}
           detox-dir: detox
           detox-config: android.emu.debug
-          batch-size: "1"
-          detox-max-workers: "1"
-          max-idle-polls: "8"
 
       - name: Upload Detox debug artifacts
         if: always()

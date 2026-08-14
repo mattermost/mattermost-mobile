@@ -454,7 +454,6 @@ jobs:
           maestro-device: ${{ env.SIMULATOR_ID }}
           maestro-env: ${{ steps.maestro-env.outputs.env }}
           maestro-timeout-ms: "540000"
-          max-idle-polls: "8"
 
       - name: Cleanup simulator
         if: always()
@@ -695,7 +694,6 @@ jobs:
           maestro-device: emulator-5554
           maestro-env: ${{ steps.maestro-env.outputs.env }}
           maestro-timeout-ms: "540000"
-          max-idle-polls: "8"
 
       - name: Cleanup emulator
         if: always()

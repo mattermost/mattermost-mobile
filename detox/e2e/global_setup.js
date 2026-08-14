@@ -128,9 +128,9 @@ async function retryAxios(fn, {retries = 4, delayMs = 3000, label = 'request'} =
 }
 
 function serverSetupMarkerPath() {
-    // Orchestration (batch-size 1) invokes Jest once per leased spec. Server
-    // mutations must not re-run every time — racing workers would disable
-    // plugins (e.g. mattermost-ai) that later specs still need.
+    // Each leased Detox unit runs its own Jest process. Server mutations
+    // must not re-run every time — racing workers would disable plugins
+    // (e.g. mattermost-ai) that later specs still need.
     const key = Buffer.from(SITE_URL).toString('base64url').slice(0, 48);
     return path.join(os.tmpdir(), `detox-global-setup-${key}`);
 }

@@ -464,9 +464,6 @@ jobs:
           gh-job-name: detox-ios-worker-${{ matrix.shard }}
           detox-dir: detox
           detox-config: ${{ inputs.detox_config }}
-          batch-size: "1"
-          detox-max-workers: "1"
-          max-idle-polls: "8"
 
       - name: Upload Detox debug artifacts
         if: always()
