@@ -367,7 +367,7 @@ jobs:
       search_path: detox/e2e/test
       # Older servers: @smoke subset. Avoid `latest && '' || tag` — empty is falsy in GHA.
       detox-include-tags: ${{ matrix.server.latest != true && '@smoke' || '' }}
-      detox-exclude-tags: '@ipad_only'
+      detox-exclude-tags: '@ipad_only,@ios_only'
       parallelism: ${{ matrix.server.latest && '10' || '1' }}
       artifact_run_id: ${{ github.run_id }}
 

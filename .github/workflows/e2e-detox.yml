@@ -80,11 +80,11 @@ jobs:
       branch: ${{ inputs.branch }}
       pr_number: ${{ inputs.pr_number }}
       commit_sha: ${{ inputs.commit_sha }}
-      # PR: @ios_pr subset (10 workers). MAIN/MASTER/RELEASE/RELEASE_CUT: full phone suite (20).
+      # PR: @ios_pr or @ios_only (10 workers). MAIN/MASTER/RELEASE/RELEASE_CUT: full phone suite (20).
       # Phone legs exclude @ipad_only (tag filter — not directory).
       search_path: detox/e2e/test
       # Avoid `cond && '' || tag` — empty string is falsy in GHA expressions.
-      detox-include-tags: ${{ (inputs.run_type != 'MAIN' && inputs.run_type != 'MASTER' && inputs.run_type != 'RELEASE' && inputs.run_type != 'RELEASE_CUT') && '@ios_pr' || '' }}
+      detox-include-tags: ${{ (inputs.run_type != 'MAIN' && inputs.run_type != 'MASTER' && inputs.run_type != 'RELEASE' && inputs.run_type != 'RELEASE_CUT') && '@ios_pr,@ios_only' || '' }}
       detox-exclude-tags: '@ipad_only'
       parallelism: ${{ (inputs.run_type == 'MAIN' || inputs.run_type == 'MASTER' || inputs.run_type == 'RELEASE' || inputs.run_type == 'RELEASE_CUT') && '20' || '10' }}
       record_tests_in_zephyr: ${{ inputs.run_type == 'RELEASE' || inputs.run_type == 'RELEASE_CUT' || inputs.run_type == 'MAIN' || inputs.run_type == 'MASTER' }}
@@ -119,8 +119,8 @@ jobs:
       pr_number: ${{ inputs.pr_number }}
       commit_sha: ${{ inputs.commit_sha }}
       search_path: detox/e2e/test
-      detox-exclude-tags: '@ipad_only'
-      # Full suite on every run type.
+      # Full suite on every run type; skip iPad- and iOS-only specs.
+      detox-exclude-tags: '@ipad_only,@ios_only'
       parallelism: "20"
       record_tests_in_zephyr: ${{ inputs.run_type == 'RELEASE' || inputs.run_type == 'RELEASE_CUT' || inputs.run_type == 'MAIN' || inputs.run_type == 'MASTER' }}
       MOBILE_VERSION: ${{ inputs.MOBILE_VERSION }}

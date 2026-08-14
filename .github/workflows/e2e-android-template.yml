@@ -88,7 +88,7 @@ on:
       detox-exclude-tags:
         description: >
           Comma-separated // Tags: exclude filter for Test System IO discovery
-          (e.g. @ipad_only). Empty = no exclude filter; callers set explicitly.
+          (e.g. @ipad_only,@ios_only). Empty = no exclude filter; callers set explicitly.
         required: false
         type: string
         default: ""

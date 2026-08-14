@@ -87,14 +87,14 @@ on:
       detox-include-tags:
         description: >
           Comma-separated // Tags: include filter for Test System IO discovery
-          (e.g. @ios_pr, @ipad_only). Empty = no include filter.
+          (e.g. @ios_pr,@ios_only or @ipad_only). Empty = no include filter.
         required: false
         type: string
         default: ""
       detox-exclude-tags:
         description: >
           Comma-separated // Tags: exclude filter for Test System IO discovery
-          (e.g. @ipad_only). Empty = no exclude filter; callers set explicitly.
+          (e.g. @ipad_only,@ios_only). Empty = no exclude filter; callers set explicitly.
         required: false
         type: string
         default: ""

@@ -91,7 +91,7 @@ npx detox test -c android.emu.debug e2e/test/products/channels/search/search_mes
 
 | Tier | Trigger | Platform | Workers | Search Path | Approx Time |
 |------|---------|----------|---------|-------------|-------------|
-| **PR full** | Matterwick + `E2E/Run` label | Detox iOS/Android/iPad + Maestro | Detox Android 20 (full); Detox iOS phone 10 (`@ios_pr`); iPad 1; Maestro 1 each | `detox/e2e/test` | ~30–45+ min wall-clock |
+| **PR full** | Matterwick + `E2E/Run` label | Detox iOS/Android/iPad + Maestro | Detox Android 20 (full, excludes `@ipad_only`/`@ios_only`); Detox iOS phone 10 (`@ios_pr` or `@ios_only`); iPad 1; Maestro 1 each | `detox/e2e/test` | ~30–45+ min wall-clock |
 | **Main** | Matterwick main push (`run_type=MASTER` today; `MAIN` also accepted → Test System IO `mobile-main`) | Same as PR | Detox phone iOS/Android 20 (full); iPad 1; Maestro 1 each | `detox/e2e/test` | Same as PR |
 | **CMT / Release** | Matterwick on `build-release-*` → CMT | Detox + Maestro across server versions | Full suite on latest server (10 Detox workers); `@smoke` include on older (1) | `detox/e2e/test` (both; older filtered by tag) | Varies by matrix |
 
@@ -101,7 +101,7 @@ Matterwick provisions five servers for every mobile server-version entry: two An
 
 ### Smoke Tests
 
-Specs tagged `// Tags: … @smoke` (today under `detox/e2e/test/products/channels/smoke_test/`). CMT older-server legs select them with `detox-include-tags: @smoke` over the full tree — not a directory filter. Not an automatic every-PR-push tier (PR iOS uses `@ios_pr`).
+Specs tagged `// Tags: … @smoke` (today under `detox/e2e/test/products/channels/smoke_test/`). CMT older-server legs select them with `detox-include-tags: @smoke` over the full tree — not a directory filter. Not an automatic every-PR-push tier (PR iOS includes `@ios_pr` or `@ios_only`).
 
 ### Workflow Files
 
