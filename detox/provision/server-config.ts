@@ -32,6 +32,9 @@ const TEST_SERVER_CONFIG_PATCH = {
     },
     FileSettings: {
         MaxFileSize: DEFAULT_MAX_FILE_SIZE_BYTES,
+
+        // Required to start the demo plugin
+        EnablePublicLink: true,
     },
     SupportSettings: {
         AllowDownloadLogs: true,

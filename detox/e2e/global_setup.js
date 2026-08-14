@@ -87,22 +87,12 @@ const SITE_URL = process.env.SITE_1_URL || 'http://localhost:8065';
 const ADMIN_USERNAME = process.env.ADMIN_USERNAME || 'sysadmin';
 const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || 'Sys@dmin-sample1';
 
-// Prepackaged plugins to keep enabled.
+// Plugin IDs to keep enabled — see support/prepackaged_plugins.json.
+const prepackagedPluginsManifest = require('./support/prepackaged_plugins.json');
+
 const PREPACKAGED_PLUGINS = new Set([
-    'antivirus',
-    'mattermost-autolink',
-    'com.mattermost.aws-sns',
-    'com.mattermost.plugin-channel-export',
-    'com.mattermost.custom-attributes',
-    'github',
-    'com.github.manland.mattermost-plugin-gitlab',
-    'com.mattermost.plugin-incident-management',
-    'jenkins',
-    'jira',
-    'com.mattermost.calls',
-    'com.mattermost.nps',
-    'com.mattermost.welcomebot',
-    'zoom',
+    ...Object.keys(prepackagedPluginsManifest.makefile),
+    ...Object.keys(prepackagedPluginsManifest.esr),
 ]);
 
 async function retryAxios(fn, {retries = 4, delayMs = 3000, label = 'request'} = {}) {

@@ -4,6 +4,8 @@
 import fs from 'fs';
 import path from 'path';
 
+import prepackagedPluginsManifest from '../prepackaged_plugins.json';
+
 import client from './client';
 import {apiUploadFile, getResponseFromError} from './common';
 import {apiGetConfig, apiUpdateConfig} from './system';
@@ -20,21 +22,10 @@ import {apiGetConfig, apiUpdateConfig} from './system';
 // - return value defined by `@return`
 // ****************************************************************
 
+// See ../prepackaged_plugins.json.
 const prepackagedPlugins = new Set([
-    'antivirus',
-    'mattermost-autolink',
-    'com.mattermost.aws-sns',
-    'com.mattermost.plugin-channel-export',
-    'com.mattermost.custom-attributes',
-    'github',
-    'com.github.manland.mattermost-plugin-gitlab',
-    'com.mattermost.plugin-incident-management',
-    'jenkins',
-    'jira',
-    'com.mattermost.calls',
-    'com.mattermost.nps',
-    'com.mattermost.welcomebot',
-    'zoom',
+    ...Object.keys(prepackagedPluginsManifest.makefile),
+    ...Object.keys(prepackagedPluginsManifest.esr),
 ]);
 
 /**
