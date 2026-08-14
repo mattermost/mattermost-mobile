@@ -21,10 +21,7 @@
 set -euo pipefail
 
 readonly BUNDLE_ID="com.mattermost.rnbeta"
-# v2: also writes Library/UserConfigurationProfiles mirrors + WebUI AutoFillPasswords
-# (v1 only touched ConfigurationProfiles/UserSettings and missed the Effective mirrors
-# Settings.app updates — iOS 18+/26 still showed Passwords.app "Save Password?").
-readonly AUTOFILL_MARKER="mattermost-ci-autofill-v2"
+readonly AUTOFILL_MARKER="mattermost-ci-autofill"
 readonly PREWARM_SECS="${PREBOOT_PREWARM_SECS:-15}"
 readonly REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
 
@@ -256,7 +253,7 @@ SETTINGS_PLIST="$SETTINGS_DIR/UserSettings.plist"
 AUTOFILL_STAMP="$SETTINGS_DIR/.$AUTOFILL_MARKER"
 
 if autofill_already_configured; then
-    log "Autofill restrictions already configured (v2) — skipping offline plist edit"
+    log "Autofill restrictions already configured — skipping offline plist edit"
     if [ "$(sim_state)" != "Booted" ]; then
         boot_and_wait
     else
