@@ -81,9 +81,6 @@ cd detox && npm run e2e:ios-test
 # Run a single test file
 npx detox test -c ios.sim.debug e2e/test/products/channels/search/search_messages.e2e.ts
 npx detox test -c android.emu.debug e2e/test/products/channels/search/search_messages.e2e.ts
-
-# Generate report (CI use)
-cd detox && npm run e2e:save-report
 ```
 
 ---
