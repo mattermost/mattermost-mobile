@@ -74,18 +74,24 @@ class ScheduledMessageScreen {
         // iOS spinner so onChange runs (MM-T5720).
         await this.selectTimeButton.tap();
         if (isIos()) {
+            let swiped = false;
             /* eslint-disable no-await-in-loop -- successive picker nudges until Save enables */
-            for (let attempt = 0; attempt < 3; attempt++) {
+            for (let attempt = 0; attempt < 3 && !swiped; attempt++) {
                 try {
                     await element(by.type('UIDatePicker')).swipe('up', 'slow', 0.2);
+                    swiped = true;
                 } catch {
                     try {
                         await element(by.type('UIPickerView')).atIndex(0).swipe('up', 'slow', 0.2);
+                        swiped = true;
                     } catch { /* picker type varies by iOS */ }
                 }
                 await wait(timeouts.HALF_SEC);
             }
             /* eslint-enable no-await-in-loop */
+            if (!swiped) {
+                throw new Error('ScheduleMessageScreen.selectDateTime: no iOS date picker was available to swipe');
+            }
 
             // Prefer testID; text matcher can hit the disabled gray "Save" label.
             await waitFor(element(by.id('reschedule_draft.save.button'))).toExist().withTimeout(timeouts.FIVE_SEC);

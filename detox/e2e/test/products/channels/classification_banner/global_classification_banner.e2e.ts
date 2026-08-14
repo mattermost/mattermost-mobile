@@ -269,14 +269,14 @@ describe('Classification Banner - Global Classification Banner', () => {
                 ClassificationMarkings: false,
             },
         });
-        await device.reloadReactNative();
+        try {
+            await device.reloadReactNative();
 
-        await ChannelListScreen.toBeVisible();
+            await ChannelListScreen.toBeVisible();
 
-        await waitFor(element(by.id('global_classification_banner'))).not.toBeVisible().withTimeout(timeouts.TEN_SEC);
-
-        // # Restore the suite invariant while still holding the lock, so the server is left
-        // with the flag enabled for whichever suite runs next on it.
-        await enableClassificationMarkings(siteOneUrl);
+            await waitFor(element(by.id('global_classification_banner'))).not.toBeVisible().withTimeout(timeouts.TEN_SEC);
+        } finally {
+            await enableClassificationMarkings(siteOneUrl);
+        }
     });
 });

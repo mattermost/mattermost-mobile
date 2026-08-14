@@ -179,50 +179,55 @@ describe('Channels - Browse Channels', () => {
     // only explicit 'false' as off). Re-assert TeamSettings + reload so the logged-in client
     // DB picks up the flag before Browse Channels renders the archived dropdown item.
     it('MM-T4729_5 - should be able to browse an archived channel', async () => {
-        // # Enable archived channel visibility on the server, then reload so the app
-        // picks up the new config (the ChannelDropdown only renders when this is true)
-        await System.apiUpdateConfig(siteOneUrl, {TeamSettings: {ExperimentalViewArchivedChannels: true}});
+        const {config: originalConfig} = await System.apiGetConfig(siteOneUrl);
+        const originalArchived = originalConfig?.TeamSettings?.ExperimentalViewArchivedChannels;
+        try {
+            // # Enable archived channel visibility on the server, then reload so the app
+            // picks up the new config (the ChannelDropdown only renders when this is true)
+            await System.apiUpdateConfig(siteOneUrl, {TeamSettings: {ExperimentalViewArchivedChannels: true}});
 
-        // App semantics: missing flag === enabled. Accept 'true' OR absent (not 'false').
-        const archivedChannelsConfigReady = await System.waitForClientConfigFlag(siteOneUrl, 'ExperimentalViewArchivedChannels', 'true', {
-            maxAttempts: 10,
-            acceptAbsentAsEnabled: true,
-        });
-        if (!archivedChannelsConfigReady) {
-            throw new Error('ExperimentalViewArchivedChannels did not propagate to the client config (still explicitly false)');
+            // App semantics: missing flag === enabled. Accept 'true' OR absent (not 'false').
+            const archivedChannelsConfigReady = await System.waitForClientConfigFlag(siteOneUrl, 'ExperimentalViewArchivedChannels', 'true', {
+                maxAttempts: 10,
+                acceptAbsentAsEnabled: true,
+            });
+            if (!archivedChannelsConfigReady) {
+                throw new Error('ExperimentalViewArchivedChannels did not propagate to the client config (still explicitly false)');
+            }
+
+            // Server client-config poll is not enough — the in-app DB config needs a refresh.
+            await device.reloadReactNative();
+            await ChannelListScreen.toBeVisible();
+
+            // # Create a channel, add the test user, then archive it
+            const {channel: archivedChannel} = await Channel.apiCreateChannel(siteOneUrl, {teamId: testTeam.id});
+            await Channel.apiAddUserToChannel(siteOneUrl, testUser.id, archivedChannel.id);
+            await Channel.apiDeleteChannel(siteOneUrl, archivedChannel.id);
+            await wait(timeouts.FOUR_SEC);
+
+            // # Open browse channels screen and switch to archived channels view
+            await BrowseChannelsScreen.open();
+
+            await waitFor(BrowseChannelsScreen.channelDropdownTextPublic).toExist().withTimeout(timeouts.TEN_SEC);
+
+            // Keep Detox sync enabled for archived filter tap — disableSynchronization
+            // amplifies Fabric addViewAt races when the slide-up unmounts (CI 29362218938).
+            await BrowseChannelsScreen.channelDropdownTextPublic.tap();
+            await waitFor(ChannelDropdownMenuScreen.archivedChannelsItem).toBeVisible().withTimeout(timeouts.TEN_SEC);
+            await ChannelDropdownMenuScreen.archivedChannelsItem.tap();
+            await wait(timeouts.TWO_SEC);
+
+            // Filter by name — product now routes archived browse search through search_archived
+            // (autocomplete omits deleted channels).
+            await BrowseChannelsScreen.searchInput.replaceText(archivedChannel.name);
+            await waitFor(BrowseChannelsScreen.getChannelItem(archivedChannel.name)).
+                toExist().
+                withTimeout(timeouts.TEN_SEC);
+
+            await BrowseChannelsScreen.close();
+        } finally {
+            await System.apiUpdateConfig(siteOneUrl, {TeamSettings: {ExperimentalViewArchivedChannels: originalArchived}});
         }
-
-        // Server client-config poll is not enough — the in-app DB config needs a refresh.
-        await device.reloadReactNative();
-        await ChannelListScreen.toBeVisible();
-
-        // # Create a channel, add the test user, then archive it
-        const {channel: archivedChannel} = await Channel.apiCreateChannel(siteOneUrl, {teamId: testTeam.id});
-        await Channel.apiAddUserToChannel(siteOneUrl, testUser.id, archivedChannel.id);
-        await Channel.apiDeleteChannel(siteOneUrl, archivedChannel.id);
-        await wait(timeouts.FOUR_SEC);
-
-        // # Open browse channels screen and switch to archived channels view
-        await BrowseChannelsScreen.open();
-
-        await waitFor(BrowseChannelsScreen.channelDropdownTextPublic).toExist().withTimeout(timeouts.TEN_SEC);
-
-        // Keep Detox sync enabled for archived filter tap — disableSynchronization
-        // amplifies Fabric addViewAt races when the slide-up unmounts (CI 29362218938).
-        await BrowseChannelsScreen.channelDropdownTextPublic.tap();
-        await waitFor(ChannelDropdownMenuScreen.archivedChannelsItem).toBeVisible().withTimeout(timeouts.TEN_SEC);
-        await ChannelDropdownMenuScreen.archivedChannelsItem.tap();
-        await wait(timeouts.TWO_SEC);
-
-        // Filter by name — product now routes archived browse search through search_archived
-        // (autocomplete omits deleted channels).
-        await BrowseChannelsScreen.searchInput.replaceText(archivedChannel.name);
-        await waitFor(BrowseChannelsScreen.getChannelItem(archivedChannel.name)).
-            toExist().
-            withTimeout(timeouts.TEN_SEC);
-
-        // # Go back to channel list screen (leave provision TeamSettings enabled)
-        await BrowseChannelsScreen.close();
     });
 
     it('MM-T4729_6 - should not be able to browse a joined public channel', async () => {

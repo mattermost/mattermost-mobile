@@ -278,6 +278,7 @@ describe('Search - Pinned Messages', () => {
 
         await ChannelScreen.openPostOptionsFor(pinnedPost.id, message);
         await PostOptionsScreen.pinPostOption.tap();
+        await Post.waitForPostPinned(siteOneUrl, testChannel.id, pinnedPost.id);
         await ChannelInfoScreen.open();
         await PinnedMessagesScreen.open();
 

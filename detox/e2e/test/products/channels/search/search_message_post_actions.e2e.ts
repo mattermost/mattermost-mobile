@@ -124,8 +124,9 @@ describe('Search - Search Message Post Actions', () => {
         await element(by.id(`search_results.post_list.post.${searchedPost.id}`)).longPress(timeouts.TWO_SEC);
         await PostOptionsScreen.deletePost({confirm: true});
 
-        // * Verify updated searched message is deleted
-        await expect(postListPostItem).not.toExist();
+        // * Verify the searched parent (not the thread reply matcher) is gone
+        const {postListPostItem: searchedItem} = SearchMessagesScreen.getPostListPostItem(searchedPost.id, updatedMessage);
+        await waitFor(searchedItem).not.toExist().withTimeout(timeouts.TEN_SEC);
 
         // # Clear search input, remove recent search item, and go back to channel list screen
         await SearchMessagesScreen.searchClearButton.tap();
@@ -174,11 +175,14 @@ describe('Search - Search Message Post Actions', () => {
         await SearchMessagesScreen.open();
         try {
             await waitFor(SearchMessagesScreen.searchClearButton).toExist().withTimeout(timeouts.FIVE_SEC);
-            await SearchMessagesScreen.searchClearButton.tap();
-            await SearchMessagesScreen.removeRecentSearchItem(searchTerm);
         } catch {
             // Search query is gone if this tab remounted; save/unsave already asserted.
+            await SearchMessagesScreen.close();
+            await ChannelListScreen.toBeVisible();
+            return;
         }
+        await SearchMessagesScreen.searchClearButton.tap();
+        await SearchMessagesScreen.removeRecentSearchItem(searchTerm);
         await SearchMessagesScreen.close();
         await ChannelListScreen.toBeVisible();
     });

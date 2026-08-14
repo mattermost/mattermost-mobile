@@ -219,8 +219,7 @@ describe('Messaging - Pin and Unpin Message', () => {
 
         // The "X pinned a message" system post pushes newerPost2 under the input bar on iOS 26.x.
         // Do not use waitFor(toBeVisible/toExist) here — iOS Detox can ignore withTimeout and
-        // hang until Jest's 300s cap. Best-effort scroll only;
-        // pin behaviour is the pre-header above and the pinned-messages list below.
+        // hang until Jest's 300s cap. Bounded scroll, then a single expect so exhaustion fails.
         await device.disableSynchronization();
         try {
             /* eslint-disable no-await-in-loop -- bounded scroll with immediate expect */
@@ -237,6 +236,7 @@ describe('Messaging - Pin and Unpin Message', () => {
                     await wait(timeouts.HALF_SEC);
                 }
             }
+            await expect(newerPost2Item).toBeVisible(40);
             /* eslint-enable no-await-in-loop */
         } finally {
             await safeEnableSynchronization();

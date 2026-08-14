@@ -15,7 +15,7 @@
  * - MM-T851: RN apps: Pinned Messages
  */
 
-import {Setup} from '@support/server_api';
+import {Post, Setup} from '@support/server_api';
 import {
     serverOneUrl,
     siteOneUrl,
@@ -126,9 +126,10 @@ describe('Channel Settings - Smoke', () => {
         // # Pin the message via post options
         await ChannelScreen.openPostOptionsFor(post.id, message);
         await PostOptionsScreen.tapPinPost();
+        await waitFor(PostOptionsScreen.postOptionsScreen).not.toExist().withTimeout(timeouts.TEN_SEC);
+        await Post.waitForPostPinned(siteOneUrl, testChannel.id, post.id);
 
         // * Verify pinned pre-header is shown on the post
-        await wait(timeouts.ONE_SEC);
         const {postListPostItemPreHeaderText} = ChannelScreen.getPostListPostItem(post.id, message);
         await expect(postListPostItemPreHeaderText).toHaveText(pinnedText);
 

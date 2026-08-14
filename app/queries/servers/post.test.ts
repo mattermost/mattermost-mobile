@@ -514,15 +514,19 @@ describe('post query helpers', () => {
             expect(results.map((p) => p.id)).toContain(post.id);
         });
 
-        it('observePinnedPostsInChannel emits when a pinned post message is edited', async () => {
+        it('should emit when a pinned post message is edited', async () => {
+            const channelId = TestHelper.basicChannel?.id;
+            if (!channelId) {
+                throw new Error('basicChannel is required');
+            }
             const post = TestHelper.fakePost({
-                channel_id: TestHelper.basicChannel!.id,
+                channel_id: channelId,
                 is_pinned: true,
                 message: 'original pinned',
             });
             await operator.handlePosts({posts: [post], order: [post.id], previousPostId: '', actionType: ActionType.POSTS.RECEIVED_NEW, prepareRecordsOnly: false});
 
-            const edited$ = observePinnedPostsInChannel(database, TestHelper.basicChannel!.id).pipe(
+            const edited$ = observePinnedPostsInChannel(database, channelId).pipe(
                 filter((rows) => rows.some((p) => p.id === post.id && p.message === 'edited pinned')),
                 take(1),
             );
@@ -537,14 +541,19 @@ describe('post query helpers', () => {
             });
 
             const results = await editedPromise;
+            expect(results).toHaveLength(1);
             expect(results.find((p) => p.id === post.id)?.message).toBe('edited pinned');
         });
     });
 
     describe('observePostsById', () => {
-        it('emits when an existing post message is edited', async () => {
+        it('should emit when an existing post message is edited', async () => {
+            const channelId = TestHelper.basicChannel?.id;
+            if (!channelId) {
+                throw new Error('basicChannel is required');
+            }
             const post = TestHelper.fakePost({
-                channel_id: TestHelper.basicChannel!.id,
+                channel_id: channelId,
                 message: 'original mention',
             });
             await operator.handlePosts({posts: [post], order: [post.id], previousPostId: '', actionType: ActionType.POSTS.RECEIVED_NEW, prepareRecordsOnly: false});
@@ -564,6 +573,7 @@ describe('post query helpers', () => {
             });
 
             const results = await editedPromise;
+            expect(results).toHaveLength(1);
             expect(results.find((p) => p.id === post.id)?.message).toBe('edited mention');
         });
     });

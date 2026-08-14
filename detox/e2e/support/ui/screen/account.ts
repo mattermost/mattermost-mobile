@@ -85,7 +85,7 @@ class AccountScreen {
                 await this.customStatusClearButton.tap({x: 1, y: 1});
             }
         }
-        await wait(timeouts.FOUR_SEC);
+        await waitForElementToNotExist(this.customStatusClearButton, timeouts.TEN_SEC);
     };
 
     getUserInfo = (userId: string) => {

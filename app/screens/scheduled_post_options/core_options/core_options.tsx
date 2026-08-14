@@ -109,7 +109,7 @@ export function ScheduledPostCoreOptions({userTimezone, isMilitaryTime, onSelect
 
     let options: React.ReactElement[] = [];
 
-    switch (now.weekday()) {
+    switch (now.isoWeekday()) {
         // Sunday
         case 7:
             options = [optionTomorrow];

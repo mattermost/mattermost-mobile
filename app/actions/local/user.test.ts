@@ -84,7 +84,8 @@ describe('updateLocalCustomStatus', () => {
         const clearResult = await updateLocalCustomStatus(serverUrl, userModels[0], undefined);
         expect(clearResult).not.toHaveProperty('error');
 
-        const cleared = await getUserById(DatabaseManager.serverDatabases[serverUrl]!.database, user.id);
+        const {database} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
+        const cleared = await getUserById(database, user.id);
         expect(cleared?.props?.customStatus).toBe('');
     });
 });

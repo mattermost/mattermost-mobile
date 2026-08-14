@@ -134,6 +134,9 @@ const DraftAndScheduledPostHeader: React.FC<Props> = ({
             isMilitaryTime,
             currentUser?.locale || DEFAULT_LOCALE,
         );
+        if (!isSent && !scheduledTime) {
+            return null;
+        }
 
         return (
             <View style={style.scheduledContainer}>

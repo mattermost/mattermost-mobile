@@ -110,20 +110,23 @@ export const waitForClientConfigFlag = async (
 
     for (let attempt = 0; attempt < maxAttempts; attempt++) {
         // eslint-disable-next-line no-await-in-loop -- client config propagation is asynchronous
-        const {config} = await apiGetClientConfigOld(baseUrl);
-        const value = config?.[flagKey];
-        if (value === expectedValue) {
-            return true;
-        }
+        const {config, error} = await apiGetClientConfigOld(baseUrl);
+        if (!error && config) {
+            const value = config[flagKey];
+            if (value === expectedValue) {
+                return true;
+            }
 
-        // Mobile treats a missing ExperimentalViewArchivedChannels as enabled
-        // (only explicit 'false' turns the feature off).
-        if (acceptAbsentAsEnabled && (value === undefined || value === null || value === '')) {
-            return true;
-        }
+            // Mobile treats a missing ExperimentalViewArchivedChannels as enabled
+            // (only explicit 'false' turns the feature off). Failed fetches are
+            // not "absent" — keep polling until a successful payload arrives.
+            if (acceptAbsentAsEnabled && (value === undefined || value === null || value === '')) {
+                return true;
+            }
 
-        if (value === 'false' && acceptAbsentAsEnabled) {
-            // Still explicitly off — keep polling for the patch to land.
+            if (value === 'false' && acceptAbsentAsEnabled) {
+                // Still explicitly off — keep polling for the patch to land.
+            }
         }
 
         if (attempt < maxAttempts - 1) {

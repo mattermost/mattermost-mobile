@@ -130,26 +130,27 @@ describe('Messaging - Message Draft', () => {
     });
 
     it('MM-T4781_3 - should show character count warning when message exceeds character limit', async () => {
-        // # Open a channel screen and create a message draft that exceeds character limit (> 16383)
-        let message = '1234567890'.repeat(1638) + '1234';
+        const {config} = await System.apiGetConfig(siteOneUrl);
+        const maxPostSize = Number(config?.ServiceSettings?.MaxPostSize) || 16383;
+        const overLimitMessage = 'a'.repeat(maxPostSize + 1);
+        const atLimitMessage = 'a'.repeat(maxPostSize);
+
         await ChannelScreen.open(channelsCategory, testChannel.name);
         await ChannelScreen.postInput.tap();
         await ChannelScreen.postInput.clearText();
-        await ChannelScreen.postInput.replaceText(message);
+        await ChannelScreen.postInput.replaceText(overLimitMessage);
 
         // * Verify warning message is displayed and send button is disabled
         await expect(Alert.messageLengthTitle).toBeVisible();
-        await expect(element(by.text('Your current message is too long. Current character count: 16384/16383')).atIndex(0)).toBeVisible();
+        await expect(element(by.text(`Your current message is too long. Current character count: ${maxPostSize + 1}/${maxPostSize}`)).atIndex(0)).toBeVisible();
         await Alert.dismissMessageLengthAlert();
         await expect(ChannelScreen.sendButtonDisabled).toBeVisible();
 
-        // # Replace message draft with length less than the character limit (16383)
-        message = '1234567890'.repeat(1638) + '123';
-        await ChannelScreen.postInput.replaceText(message);
+        await ChannelScreen.postInput.replaceText(atLimitMessage);
 
         // * Verify warning message is not displayed and send button is enabled
         await expect(Alert.messageLengthTitle).not.toBeVisible();
-        await expect(element(by.text('Your current message is too long. Current character count: 16383/16383')).atIndex(0)).not.toBeVisible();
+        await expect(element(by.text(`Your current message is too long. Current character count: ${maxPostSize}/${maxPostSize}`)).atIndex(0)).not.toBeVisible();
         await expect(ChannelScreen.sendButton).toBeVisible();
 
         // # Clear post draft and go back to channel list screen

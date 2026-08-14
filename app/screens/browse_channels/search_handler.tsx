@@ -142,6 +142,8 @@ export default function SearchHandler(props: Props) {
     const loadedChannels = useRef<(data: Channel[] | undefined, typeOfChannels: string) => Promise<void>>(async () => {/* Do nothing */});
 
     const searchTimeout = useRef<NodeJS.Timeout | undefined>(undefined);
+    const typeOfChannelsRef = useRef(typeOfChannels);
+    typeOfChannelsRef.current = typeOfChannels;
     const [searchResults, setSearchResults] = useState<Channel[]>(defaultSearchResults);
 
     const isSearch = Boolean(term);
@@ -216,9 +218,13 @@ export default function SearchHandler(props: Props) {
 
             // Autocomplete omits deleted channels; archived browse must use search_archived
             // or the list shows "No matches" after filtering delete_at !== 0.
-            const searchFn = typeOfChannels === ARCHIVED ? searchArchivedChannels : searchChannels;
+            const requestedType = typeOfChannels;
+            const searchFn = requestedType === ARCHIVED ? searchArchivedChannels : searchChannels;
             searchTimeout.current = setTimeout(async () => {
                 const results = await searchFn(serverUrl, text, currentTeamId);
+                if (requestedType !== typeOfChannelsRef.current) {
+                    return;
+                }
                 if (results.channels) {
                     setSearchResults(results.channels);
                 }
@@ -284,8 +290,16 @@ export default function SearchHandler(props: Props) {
     useEffect(() => {
         if (!isSearch) {
             doGetChannels(typeOfChannels);
+            return;
         }
-    }, [typeOfChannels, isSearch, doGetChannels]);
+        if (searchTimeout.current) {
+            clearTimeout(searchTimeout.current);
+            searchTimeout.current = undefined;
+        }
+        doSearchChannels(term);
+        // Re-issue only when the channel type changes; term updates go through doSearchChannels.
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [typeOfChannels, isSearch, doGetChannels, doSearchChannels]);
 
     useDidUpdate(() => {
         if (isSearch) {

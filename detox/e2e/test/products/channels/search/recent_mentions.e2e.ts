@@ -280,7 +280,7 @@ describe('Search - Recent Mentions', () => {
         await PostOptionsScreen.deletePost({confirm: true});
 
         // * Verify mention is removed
-        await expect(element(by.id(`recent_mentions.post_list.post.${ownMentionPost.id}`))).not.toExist();
+        await waitFor(element(by.id(`recent_mentions.post_list.post.${ownMentionPost.id}`))).not.toExist().withTimeout(timeouts.TEN_SEC);
 
         // # Go back to channel list screen
         await ChannelListScreen.open();

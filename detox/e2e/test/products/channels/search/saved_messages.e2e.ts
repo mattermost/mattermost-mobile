@@ -185,7 +185,7 @@ describe('Search - Saved Messages', () => {
         await PostOptionsScreen.deletePost({confirm: true});
 
         // * Verify updated saved message is deleted
-        await expect(postListPostItem).not.toExist();
+        await waitFor(postListPostItem).not.toExist().withTimeout(timeouts.TEN_SEC);
 
         // # Go back to channel list screen
         await SavedMessagesScreen.close();
@@ -202,8 +202,10 @@ describe('Search - Saved Messages', () => {
         await waitForElementToBeVisible(channelPostListPostItem);
         await ChannelScreen.openPostOptionsFor(savedPost.id, message);
         await PostOptionsScreen.savePostOption.tap();
+        await Post.waitForPostFlagged(siteOneUrl, testUser.id, savedPost.id);
         await ChannelScreen.back();
         await SavedMessagesScreen.open();
+        await SavedMessagesScreen.waitForPostInList(savedPost.id, message);
 
         // * Verify on saved messages screen
         await SavedMessagesScreen.toBeVisible();
@@ -235,8 +237,10 @@ describe('Search - Saved Messages', () => {
         await waitForElementToBeVisible(channelPostListPostItem);
         await ChannelScreen.openPostOptionsFor(savedPost.id, message);
         await PostOptionsScreen.savePostOption.tap();
+        await Post.waitForPostFlagged(siteOneUrl, testUser.id, savedPost.id);
         await ChannelScreen.back();
         await SavedMessagesScreen.open();
+        await SavedMessagesScreen.waitForPostInList(savedPost.id, message);
 
         // * Verify on saved messages screen
         await SavedMessagesScreen.toBeVisible();

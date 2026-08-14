@@ -177,6 +177,16 @@ class CreateOrEditChannelScreen {
 
         await wait(timeouts.TWO_SEC);
         await this.createButton.tap();
+        try {
+            await waitFor(ChannelScreen.channelScreen).toExist().withTimeout(timeouts.TEN_SEC);
+        } catch {
+            throw new Error('CreateOrEditChannel.tapCreateAndWaitForChannel: channel did not open after retry');
+        }
+        try {
+            await expect(errorText).not.toBeVisible();
+        } catch {
+            throw new Error('CreateOrEditChannel.tapCreateAndWaitForChannel: create error remained after retry');
+        }
     };
 }
 
