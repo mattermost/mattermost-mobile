@@ -410,7 +410,3 @@ jobs:
       MOBILE_VERSION: ${{ inputs.MOBILE_VERSION }}
       artifact_run_id: ${{ github.run_id }}
       record_tests_in_zephyr: true
-
-  # Instance cleanup is handled by matterwick on workflow_run completed.
-  # Each matrix leg posts its own e2e-test/*/cmt-server-* commit status via
-  # test-system-io-summary — no umbrella status job.
