@@ -477,12 +477,8 @@ export const apiInstallPluginFromMarketplace = async (baseUrl: string, pluginId:
 };
 
 /**
- * Ensure demo plugin is active with DialogOnlyMode for interactive dialog specs.
- *
- * Provisioning already applies this config. Under parallel CI, every dialog
- * beforeAll hitting PUT /api/v4/config concurrently stalls the Matterwick
- * origin past Cloudflare's 120s proxy read timeout (HTTP 524). Skip the patch
- * when the setting is already present.
+ * Ensure demo plugin is active with DialogOnlyMode.
+ * Skip the config PUT when that setting is already present.
  */
 export const ensureDemoPluginForDialogTests = async (baseUrl: string): Promise<void> => {
     const statusCheck = await apiGetPluginStatus(baseUrl, DemoPlugin.id);
