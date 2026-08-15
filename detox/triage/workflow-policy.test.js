@@ -73,6 +73,42 @@ test('the ledger branch does not collapse a PR run onto the baseline', () => {
     assert.doesNotMatch(triageWorkflow, /inputs\.run_type == 'PR' && '' \|\| 'main'/);
 });
 
+test('triage still runs under E2E/Override, but only observes', () => {
+    const prWorkflow = fs.readFileSync(
+        path.join(repoRoot, '.github/workflows/e2e-detox-pr.yml'), 'utf8');
+
+    // Bounded to this job. Slicing to end-of-file swept in later jobs that
+    // legitimately still gate on the override.
+    const start = prWorkflow.indexOf('\n  e2e-ai-triage:');
+    const rest = prWorkflow.slice(start + 1);
+    const nextJob = rest.search(/\n {2}[a-z][a-z0-9-]*:\n/);
+    const job = nextJob === -1 ? rest : rest.slice(0, nextJob);
+
+    // Skipping triage on override suppressed the diagnosis at exactly the moment
+    // a maintainer had decided to bypass the gate — and left no ledger row, so
+    // the false-green metric could never be computed over the runs humans
+    // disagreed with. Participation is unconditional; authority is not.
+    assert.doesNotMatch(job, /e2e_override != 'true'/);
+    assert.match(job, /if: always\(\) && !cancelled\(\)/);
+    assert.match(job, /mode: \$\{\{ needs\.resolve-e2e-policy\.outputs\.e2e_override == 'true' && 'shadow' \|\| 'gate' \}\}/);
+});
+
+test('the status marker survives repeated application exactly once', () => {
+    // Three contexts on #9996 read "... - e2e overridden - e2e overridden": the
+    // action runs more than once per SHA and appending is not idempotent.
+    assert.match(overrideStatusAction, /const stripMarkers = \(text\) => \{/);
+    assert.match(overrideStatusAction, /e2e overridden\|verified to be/);
+    assert.equal(
+        (overrideStatusAction.match(/stripMarkers\(latestDescription\)/g) || []).length, 2,
+        'both suffix-appending branches must strip first',
+    );
+    assert.doesNotMatch(
+        overrideStatusAction,
+        /const base = latestDescription\.substring\(0, Math\.max\(0, 140 - suffix\.length\)\)/,
+        'no branch may append to the raw description',
+    );
+});
+
 test('AI hypotheses narrow reruns and safely fall back when unavailable', () => {
     const candidate = triageWorkflow.indexOf('  ai-candidates:');
     const prepare = triageWorkflow.indexOf('  prepare-rerun:');

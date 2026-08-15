@@ -104,6 +104,24 @@ runs:
           const OVERRIDE_MARKER = 'e2e overridden';
           const marker = requestedSuffix || OVERRIDE_MARKER;
 
+          // Appending is not idempotent on its own, and this action runs more
+          // than once per SHA — the label manager alone has four call sites, and
+          // a context can be re-posted red by a later job after an earlier
+          // override already suffixed it. That produced
+          // "512 passed, 2 failed, 92 skipped - e2e overridden - e2e overridden"
+          // on three contexts of mattermost-mobile#9996. Strip any markers
+          // already present before adding one, so N applications read as one.
+          const stripMarkers = (text) => {
+            let out = text;
+            for (;;) {
+              const next = out.replace(/ - (?:e2e overridden|verified to be [^-]*?)\s*$/, '');
+              if (next === out) {
+                return out;
+              }
+              out = next;
+            }
+          };
+
           // getCombinedStatusForRef caps statuses at 100 per page. This repo only
           // has 5 required contexts today, but other tooling can post legacy
           // statuses on the same SHA — paginate so a busy commit can't silently
@@ -160,7 +178,8 @@ runs:
               continue;
             } else if (latest?.state === 'success') {
               const suffix = ` - ${marker}`;
-              const base = latestDescription.substring(0, Math.max(0, 140 - suffix.length));
+              const stripped = stripMarkers(latestDescription);
+              const base = stripped.substring(0, Math.max(0, 140 - suffix.length));
               statusDescription = `${base}${suffix}`.substring(0, 140);
               statusTargetUrl = latest.target_url || targetUrl;
             } else if (latest?.state === 'failure' || latest?.state === 'error') {
@@ -171,7 +190,8 @@ runs:
               // cut the marker off a long one, leaving the pending path unable to
               // recognise this context as overridden.
               const suffix = ` - ${marker}`;
-              const base = latestDescription.substring(0, Math.max(0, 140 - suffix.length));
+              const stripped = stripMarkers(latestDescription);
+              const base = stripped.substring(0, Math.max(0, 140 - suffix.length));
               statusDescription = `${base}${suffix}`.substring(0, 140);
               // Keep the link to the real report — that is what a reviewer needs
               // to judge whether the bypass was reasonable, not this action's run.

@@ -986,12 +986,21 @@ jobs:
     secrets: inherit
 
   # Failure triage runs after every test job so it can classify the complete run.
+  #
+  # It runs under E2E/Override too. Skipping it there conflated two different
+  # things: the override decides whether the PR may merge, triage decides what
+  # the failure *was*. Suppressing the diagnosis at exactly the moment a
+  # maintainer has decided to bypass the gate throws away the case most worth
+  # recording — and the ledger it writes is what the false-green metric is
+  # computed from, so an overridden run leaving no row makes triage's accuracy
+  # permanently unmeasurable on the runs humans disagreed with.
+  #
+  # Authority is what changes, not participation: an overridden run triages in
+  # shadow, so it records a verdict and posts its own context without waiving or
+  # touching the platform contexts the override has already resolved.
   e2e-ai-triage:
     name: AI failure triage
-    if: >-
-      always() &&
-      needs.resolve-e2e-policy.outputs.e2e_override != 'true' &&
-      !cancelled()
+    if: always() && !cancelled()
     needs:
       - resolve-e2e-policy
       - resolve-server-topology
@@ -1014,6 +1023,10 @@ jobs:
       run_type: ${{ inputs.run_type }}
       version_name: ${{ inputs.version_name }}
       platform: ${{ inputs.PLATFORM }}
+      # An overridden run is observed, not adjudicated. The maintainer has
+      # already made the merge decision, so triage must not also be flipping the
+      # contexts that decision resolved.
+      mode: ${{ needs.resolve-e2e-policy.outputs.e2e_override == 'true' && 'shadow' || 'gate' }}
       # PR #101 is deployed to staging for pre-merge integration testing.
       # Revert to false after the TSIO changes merge to production.
       use_staging: true
