@@ -395,6 +395,35 @@ jobs:
               -f target_url="$TARGET_URL"
           done
 
+      # Claim the triage context up front, for the benefit of the automations
+      # that read this commit rather than the humans who do.
+      #
+      # `e2e-test/ai-triage` was posted only when adjudication finished, roughly
+      # two hours after the platform contexts go red — reruns are two repetitions
+      # on real devices. For that whole window an agent polling this SHA saw
+      # per-platform failures and no triage context at all, and an absent context
+      # is indistinguishable from a triage that ran and had no opinion.
+      #
+      # The consequence is not cosmetic. The PR babysitter reacts to a red E2E
+      # check by pushing an empty commit to retrigger, and a push cancels the
+      # in-flight run through its concurrency group — so the retrigger kills the
+      # very run that was about to explain the failure, produces another red, and
+      # loops. Pending states that plainly, so "still working" and "no opinion"
+      # stop looking the same.
+      - name: Post pending status for AI triage
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+          COMMIT_SHA: ${{ inputs.MOBILE_VERSION }}
+          REPO: ${{ github.repository }}
+          TARGET_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+        run: |
+          set -euo pipefail
+          gh api --method POST "repos/${REPO}/statuses/${COMMIT_SHA}" \
+            -f state=pending \
+            -f context=e2e-test/ai-triage \
+            -f description="classifying E2E failures — do not retrigger until this resolves" \
+            -f target_url="$TARGET_URL"
+
   resolve-server-topology:
     name: Resolve test server topology
     runs-on: ubuntu-24.04

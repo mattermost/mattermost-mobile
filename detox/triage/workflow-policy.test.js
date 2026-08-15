@@ -93,6 +93,24 @@ test('triage still runs under E2E/Override, but only observes', () => {
     assert.match(job, /mode: \$\{\{ needs\.resolve-e2e-policy\.outputs\.e2e_override == 'true' && 'shadow' \|\| 'gate' \}\}/);
 });
 
+test('the triage context exists before it has an answer', () => {
+    const prWorkflow = fs.readFileSync(
+        path.join(repoRoot, '.github/workflows/e2e-detox-pr.yml'), 'utf8');
+
+    // An absent context and a context that resolved with no opinion are the same
+    // observation to anything polling this commit. The PR babysitter reacts to a
+    // red E2E check by pushing an empty commit, which cancels the in-flight run
+    // through its concurrency group — so during the ~2h a rerun takes, the
+    // retrigger killed the run that was about to explain the failure.
+    const pending = prWorkflow.indexOf('Post pending status for AI triage');
+    const triageJob = prWorkflow.indexOf('\n  e2e-ai-triage:');
+
+    assert.ok(pending > 0, 'triage must claim its context up front');
+    assert.ok(pending < triageJob, 'the claim must precede the job that resolves it');
+    assert.match(prWorkflow, /-f context=e2e-test\/ai-triage \\\n\s+-f description="classifying/);
+    assert.match(prWorkflow, /do not retrigger until this resolves/);
+});
+
 test('the status marker survives repeated application exactly once', () => {
     // Three contexts on #9996 read "... - e2e overridden - e2e overridden": the
     // action runs more than once per SHA and appending is not idempotent.
