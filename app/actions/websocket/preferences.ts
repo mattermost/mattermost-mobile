@@ -6,10 +6,18 @@ import {fetchPostById} from '@actions/remote/post';
 import {handleCRTToggled} from '@actions/remote/preference';
 import {Preferences} from '@constants';
 import DatabaseManager from '@database/manager';
+import DraftSyncManager from '@managers/draft_sync_manager';
 import {getPostById} from '@queries/servers/post';
 import {deletePreferences, differsFromLocalNameFormat, getHasCRTChanged} from '@queries/servers/preference';
 import EphemeralStore from '@store/ephemeral_store';
 import {logDebug} from '@utils/log';
+
+// affectsDraftSync: whether a preference batch includes the advanced_settings/sync_drafts opt-out that
+// gates draft synchronization, so the coordinator's capability only re-evaluates when it actually changed.
+function affectsDraftSync(preferences: PreferenceType[]) {
+    return preferences.some((p) =>
+        p.category === Preferences.CATEGORIES.ADVANCED_SETTINGS && p.name === Preferences.ADVANCED_SYNC_DRAFTS);
+}
 
 function filterStaleSavedPostPreferences(serverUrl: string, preferences: PreferenceType[]) {
     return preferences.filter((preference) => {
@@ -55,6 +63,10 @@ export async function handlePreferenceChangedEvent(serverUrl: string, msg: WebSo
         if (crtToggled) {
             handleCRTToggled(serverUrl);
         }
+
+        if (affectsDraftSync(preferences)) {
+            await DraftSyncManager.handleCapabilityChange(serverUrl);
+        }
     } catch (error) {
         // Do nothing
     }
@@ -95,6 +107,10 @@ export async function handlePreferencesChangedEvent(serverUrl: string, msg: WebS
         if (crtToggled) {
             handleCRTToggled(serverUrl);
         }
+
+        if (affectsDraftSync(preferences)) {
+            await DraftSyncManager.handleCapabilityChange(serverUrl);
+        }
     } catch (error) {
         // Do nothing
     }
@@ -104,7 +120,14 @@ export async function handlePreferencesDeletedEvent(serverUrl: string, msg: WebS
     try {
         const databaseAndOperator = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
         const preferences: PreferenceType[] = JSON.parse(msg.data.preferences);
-        deletePreferences(databaseAndOperator, preferences);
+
+        // Await so a following capability re-read observes the committed deletion.
+        await deletePreferences(databaseAndOperator, preferences);
+
+        // Deleting the sync_drafts opt-out reverts draft sync to its default (enabled): re-evaluate.
+        if (affectsDraftSync(preferences)) {
+            await DraftSyncManager.handleCapabilityChange(serverUrl);
+        }
     } catch {
         // Do nothing
     }

@@ -1,11 +1,10 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-/* eslint-disable max-lines */
-
 import {PER_PAGE_DEFAULT} from '@client/rest/constants';
 import {SYSTEM_IDENTIFIERS} from '@constants/database';
 import DatabaseManager from '@database/manager';
+import DraftSyncManager from '@managers/draft_sync_manager';
 import NetworkManager from '@managers/network_manager';
 import {getActiveServerUrl} from '@queries/app/servers';
 import EphemeralStore from '@store/ephemeral_store';
@@ -35,6 +34,11 @@ import {
 
 jest.mock('./scheduled_post', () => ({
     fetchScheduledPosts: jest.fn(),
+}));
+
+jest.mock('@managers/draft_sync_manager', () => ({
+    __esModule: true,
+    default: {requestReconcile: jest.fn()},
 }));
 
 import type ServerDataOperator from '@database/operator/server_data_operator';
@@ -126,7 +130,7 @@ const mockClient = {
 };
 
 beforeAll(() => {
-    // eslint-disable-next-line
+
     // @ts-ignore
     NetworkManager.getClient = () => mockClient;
 });
@@ -480,6 +484,7 @@ describe('teams', () => {
         expect(result).toBeDefined();
         expect(result?.error).toBeUndefined();
         expect(fetchScheduledPosts).toHaveBeenCalledWith(serverUrl, teamId, false);
+        expect(DraftSyncManager.requestReconcile).toHaveBeenCalledWith(serverUrl, teamId, 'team_switch');
     });
 
     it('handleKickFromTeam - base case', async () => {

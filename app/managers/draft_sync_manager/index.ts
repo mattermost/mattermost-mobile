@@ -10,6 +10,7 @@ import {DRAFT_ABSENCE_CONFIRMATION_DELAY_MS, DRAFT_SYNC_RETRY_BASE_MS, DRAFT_SYN
 import DatabaseManager from '@database/manager';
 import {getChannelById, getMyChannel} from '@queries/servers/channel';
 import {buildDraftOutboxId, getIsDraftSyncEnabled, mutateDraftAndOutbox} from '@queries/servers/drafts';
+import {getCurrentTeamId} from '@queries/servers/system';
 import {logDebug} from '@utils/log';
 
 import type DraftOutboxModel from '@typings/database/models/servers/draft_outbox';
@@ -208,11 +209,18 @@ class DraftSyncManagerSingleton {
             return;
         }
 
+        if (!teamId) {
+            // The draft GET is per-team (/users/me/teams/{team_id}/drafts); an empty team id cannot be
+            // reconciled. Skip rather than hit an invalid route (e.g. a trigger fired before a team is set).
+            logDebug('DraftSyncManager.requestReconcile: no team id, skipping', serverUrl, reason);
+            return;
+        }
+
         this.lastReconcile[serverUrl] = {teamId, reason};
         logDebug('DraftSyncManager.requestReconcile', serverUrl, reason);
 
-        // Phase 4.1: additive baseline reconciliation (GET drafts for the team, apply the snapshot).
-        // Absence-based deletion and POST/DELETE draining are deliberately NOT done here.
+        // Additive baseline reconciliation (GET drafts for the team, apply the snapshot), then absence
+        // detection and outbox draining (all downstream of a successful GET inside reconcile()).
         this.reconcile(serverUrl, teamId);
     };
 
@@ -396,9 +404,14 @@ class DraftSyncManagerSingleton {
     };
 
     /**
-     * enqueueWebSocketEvent: appends an inbound event synchronously before returning. Enforces the
-     * buffer cap: when the buffer is full the event is dropped and an overflow is logged. Ignored
-     * when disabled/invalidated. Does NOT process the event (Phase 4 drains it).
+     * enqueueWebSocketEvent: appends an inbound draft event synchronously, then triggers an
+     * authoritative resync. Phase 5 treats WS events (draft_created/draft_deleted) as CHANGE SIGNALS,
+     * not as data to apply directly: the server only broadcasts these to the owning user's other
+     * sessions, but an empty-message upsert deletes a draft with NO event, so a GET reconciliation is
+     * required regardless. The trigger reconciles the current team (whose GET also returns the user's
+     * DM/GM drafts); bursts collapse via reconcile()'s single-flight coalescing. The buffered events
+     * themselves are reserved for a future direct-apply optimization. Ignored when disabled/invalidated;
+     * enforces the buffer cap (dropping the newest with an overflow log) so a flood cannot grow unbounded.
      */
     public enqueueWebSocketEvent = (serverUrl: string, event: WebSocketMessage): void => {
         if (!this.isActive(serverUrl)) {
@@ -412,6 +425,54 @@ class DraftSyncManagerSingleton {
         }
 
         buffer.push(event);
+        this.reconcileCurrentTeam(serverUrl, 'ws_event', true);
+    };
+
+    /**
+     * onForeground: lifecycle entry point invoked by WebsocketManager when the app becomes active (it
+     * owns the single AppState listener; the manager adds none). Re-syncs each active server's current
+     * team so a snapshot that went stale while backgrounded refreshes — covering the case where the
+     * socket stayed open (no reconnect fired). requestReconcile coalesces with any concurrent reconnect.
+     */
+    public onForeground = (): void => {
+        for (const serverUrl of Object.keys(this.eventBuffers)) {
+            if (this.isActive(serverUrl)) {
+                this.reconcileCurrentTeam(serverUrl, 'foreground', false);
+            }
+        }
+    };
+
+    /**
+     * reconcileCurrentTeam: resolve the current team and request an authoritative reconcile of it
+     * (fire-and-forget). Epoch-guarded around the async team lookup. For a WS trigger, clearBuffer drops
+     * the buffered signals since the GET supersedes them; requestReconcile guards an empty team and
+     * coalesces bursts. Shared by the WS-event trigger and the foreground lifecycle trigger.
+     */
+    private reconcileCurrentTeam = async (serverUrl: string, reason: string, clearBuffer: boolean): Promise<void> => {
+        const database = this.getDatabase(serverUrl);
+        if (!database || !this.isActive(serverUrl)) {
+            return;
+        }
+
+        const captured = this.captureEpoch(serverUrl);
+
+        let teamId: string;
+        try {
+            teamId = await getCurrentTeamId(database);
+        } catch (error) {
+            logDebug('DraftSyncManager.reconcileCurrentTeam: current team lookup failed', serverUrl);
+            return;
+        }
+
+        if (this.isEpochStale(serverUrl, captured) || !this.isActive(serverUrl)) {
+            return;
+        }
+
+        if (clearBuffer) {
+            // Signals consumed: the authoritative GET below supersedes the buffered events.
+            this.eventBuffers[serverUrl] = [];
+        }
+        this.requestReconcile(serverUrl, teamId, reason);
     };
 
     /**

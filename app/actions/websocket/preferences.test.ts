@@ -6,6 +6,7 @@ import {fetchPostById} from '@actions/remote/post';
 import {handleCRTToggled} from '@actions/remote/preference';
 import {Preferences} from '@constants';
 import DatabaseManager from '@database/manager';
+import DraftSyncManager from '@managers/draft_sync_manager';
 import {getPostById} from '@queries/servers/post';
 import {deletePreferences, differsFromLocalNameFormat, getHasCRTChanged} from '@queries/servers/preference';
 import EphemeralStore from '@store/ephemeral_store';
@@ -21,6 +22,18 @@ jest.mock('@database/manager');
 jest.mock('@queries/servers/post');
 jest.mock('@queries/servers/preference');
 jest.mock('@store/ephemeral_store');
+
+jest.mock('@managers/draft_sync_manager', () => ({
+    __esModule: true,
+    default: {handleCapabilityChange: jest.fn()},
+}));
+
+const syncDraftsPreference = {
+    category: Preferences.CATEGORIES.ADVANCED_SETTINGS,
+    name: Preferences.ADVANCED_SYNC_DRAFTS,
+    user_id: 'user1',
+    value: 'false',
+};
 
 describe('WebSocket Preferences Actions', () => {
     const serverUrl = 'baseHandler.test.com';
@@ -81,6 +94,24 @@ describe('WebSocket Preferences Actions', () => {
                 preferences: [mockPreference],
             });
             expect(fetchPostById).toHaveBeenCalledWith(serverUrl, 'post1', false);
+
+            // An unrelated preference must NOT re-evaluate draft-sync capability.
+            expect(DraftSyncManager.handleCapabilityChange).not.toHaveBeenCalled();
+        });
+
+        it('re-evaluates draft-sync capability when the sync_drafts preference changes (Phase 5)', async () => {
+            const msg = {
+                data: {
+                    preference: JSON.stringify(syncDraftsPreference),
+                },
+            } as WebSocketMessage;
+
+            jest.mocked(differsFromLocalNameFormat).mockResolvedValue(false);
+            jest.mocked(getHasCRTChanged).mockResolvedValue(false);
+
+            await handlePreferenceChangedEvent(serverUrl, msg);
+
+            expect(DraftSyncManager.handleCapabilityChange).toHaveBeenCalledWith(serverUrl);
         });
 
         it('should handle name format changes', async () => {

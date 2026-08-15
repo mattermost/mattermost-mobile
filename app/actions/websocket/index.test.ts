@@ -14,6 +14,7 @@ import {loadConfigAndCalls} from '@calls/actions/calls';
 import {isSupportedServerCalls} from '@calls/utils';
 import DatabaseManager from '@database/manager';
 import AppsManager from '@managers/apps_manager';
+import DraftSyncManager from '@managers/draft_sync_manager';
 import {handlePlaybookReconnect} from '@playbooks/actions/websocket/reconnect';
 import {getActiveServerUrl} from '@queries/app/servers';
 import {getLastPostInThread} from '@queries/servers/post';
@@ -52,6 +53,11 @@ jest.mock('@utils/helpers', () => ({
 }));
 
 jest.mock('@playbooks/actions/websocket/reconnect');
+
+jest.mock('@managers/draft_sync_manager', () => ({
+    __esModule: true,
+    default: {requestReconcile: jest.fn()},
+}));
 
 describe('WebSocket Index Actions', () => {
     const serverUrl = 'baseHandler.test.com';
@@ -107,6 +113,7 @@ describe('WebSocket Index Actions', () => {
             expect(loadConfigAndCalls).toHaveBeenCalled();
             expect(deferredAppEntryActions).toHaveBeenCalled();
             expect(handlePlaybookReconnect).toHaveBeenCalledWith(serverUrl);
+            expect(DraftSyncManager.requestReconcile).toHaveBeenCalledWith(serverUrl, currentTeamId, 'reconnect');
         });
 
         it('should handle error when server database not found', async () => {

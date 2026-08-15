@@ -15,6 +15,7 @@ import {hasActiveNativeCall} from '@calls/native_call_mappings';
 import WebSocketClient from '@client/websocket';
 import {General} from '@constants';
 import DatabaseManager from '@database/manager';
+import DraftSyncManager from '@managers/draft_sync_manager';
 import {getCurrentUserId} from '@queries/servers/system';
 import {queryAllUsers} from '@queries/servers/user';
 import {toMilliseconds} from '@utils/datetime';
@@ -294,6 +295,10 @@ class WebsocketManagerSingleton {
             if (this.netConnected) {
                 this.openAll('WebSocket Reconnect');
             }
+
+            // Foreground draft re-sync: covers a socket that stayed open across a brief background (no
+            // reconnect fired). Coalesces with any reconnect-driven reconcile; a no-op when sync is off.
+            DraftSyncManager.onForeground();
 
             return;
         }

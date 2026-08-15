@@ -10,6 +10,7 @@ import {handlePlaybookEvents} from '@playbooks/actions/websocket/events';
 
 import * as category from './category';
 import * as channel from './channel';
+import * as draft from './draft';
 import {handleWebSocketEvent} from './event';
 import * as group from './group';
 import {handleOpenDialogEvent} from './integrations';
@@ -37,6 +38,7 @@ jest.mock('@calls/connection/websocket_event_handlers');
 jest.mock('./group');
 jest.mock('@actions/local/channel_bookmark');
 jest.mock('@actions/websocket/scheduled_post');
+jest.mock('./draft');
 jest.mock('@actions/websocket/burn_on_read');
 jest.mock('@playbooks/actions/websocket/events');
 
@@ -526,6 +528,18 @@ describe('handleWebSocketEvent', () => {
         msg.event = WebsocketEvents.SCHEDULED_POST_DELETED;
         await handleWebSocketEvent(serverUrl, msg);
         expect(scheduledPost.handleDeleteScheduledPost).toHaveBeenCalledWith(serverUrl, msg);
+    });
+
+    it('should handle DRAFT_CREATED event', async () => {
+        msg.event = WebsocketEvents.DRAFT_CREATED;
+        await handleWebSocketEvent(serverUrl, msg);
+        expect(draft.handleDraftWebSocketEvent).toHaveBeenCalledWith(serverUrl, msg);
+    });
+
+    it('should handle DRAFT_DELETED event', async () => {
+        msg.event = WebsocketEvents.DRAFT_DELETED;
+        await handleWebSocketEvent(serverUrl, msg);
+        expect(draft.handleDraftWebSocketEvent).toHaveBeenCalledWith(serverUrl, msg);
     });
 
     it('should handle BOR_POST_REVEALED event', async () => {

@@ -8,6 +8,7 @@ import {fetchCategories} from '@actions/remote/category';
 import {applyPersistenceModeChange} from '@actions/remote/refresh';
 import {SYSTEM_IDENTIFIERS} from '@constants/database';
 import DatabaseManager from '@database/manager';
+import DraftSyncManager from '@managers/draft_sync_manager';
 import {getConfig, getCurrentTeamId, getLicense} from '@queries/servers/system';
 import EphemeralStore from '@store/ephemeral_store';
 import {getFullErrorMessage} from '@utils/errors';
@@ -40,6 +41,10 @@ export async function handleConfigChangedEvent(serverUrl: string, msg: WebSocket
         if (config?.LockTeammateNameDisplay && (prevConfig?.LockTeammateNameDisplay !== config.LockTeammateNameDisplay)) {
             updateDmGmDisplayName(serverUrl);
         }
+
+        // Re-evaluate draft-sync capability: the AllowSyncedDrafts server config may have just changed
+        // (a persistence-mode change below re-initializes the manager, which re-reads capability too).
+        await DraftSyncManager.handleCapabilityChange(serverUrl);
 
         const prevManagedSetting = prevConfig?.EnableManagedChannelCategories;
         const newManagedSetting = config?.EnableManagedChannelCategories;

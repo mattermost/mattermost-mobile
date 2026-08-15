@@ -21,6 +21,7 @@ import {isSupportedServerCalls} from '@calls/utils';
 import {Screens} from '@constants';
 import DatabaseManager from '@database/manager';
 import AppsManager from '@managers/apps_manager';
+import DraftSyncManager from '@managers/draft_sync_manager';
 import {handlePlaybookReconnect} from '@playbooks/actions/websocket/reconnect';
 import {getActiveServerUrl} from '@queries/app/servers';
 import {getLastPostInThread} from '@queries/servers/post';
@@ -94,6 +95,10 @@ async function doReconnect(serverUrl: string, groupLabel?: BaseRequestGroupLabel
 
         handlePlaybookReconnect(serverUrl);
         handleAgentsReconnect(serverUrl);
+
+        // Re-sync drafts for the team the user landed on (its GET also returns the user's DM/GM drafts).
+        // requestReconcile guards an empty team id and is a no-op when draft sync is disabled.
+        DraftSyncManager.requestReconcile(serverUrl, initialTeamId || currentTeamId, 'reconnect');
 
         if (isSupportedServerCalls(config?.Version)) {
             loadConfigAndCalls(serverUrl, currentUserId, groupLabel);

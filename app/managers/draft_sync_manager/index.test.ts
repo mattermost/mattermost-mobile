@@ -4,7 +4,7 @@
 import {Q, type Database} from '@nozbe/watermelondb';
 
 import {confirmDeleteTombstone, deleteAbsentCleanDraft, getReconcilableKeys, processOutboxDelete, processOutboxUpsert, reconcileTeamDrafts, type ReconcileKey} from '@actions/remote/draft';
-import {MM_TABLES} from '@constants/database';
+import {MM_TABLES, SYSTEM_IDENTIFIERS} from '@constants/database';
 import {DRAFT_ABSENCE_CONFIRMATION_DELAY_MS, DraftOutboxOperation, DraftOutboxStatus, MAX_DRAFT_SYNC_EVENT_BUFFER} from '@constants/draft';
 import DatabaseManager from '@database/manager';
 import NetworkManager from '@managers/network_manager';
@@ -84,6 +84,13 @@ describe('DraftSyncManager (Phase 3 shell)', () => {
         await operator.handleConfigs({
             configs: [{id: 'AllowSyncedDrafts', value}],
             configsToDelete: [],
+            prepareRecordsOnly: false,
+        });
+    };
+
+    const setCurrentTeam = async (teamId: string) => {
+        await operator.handleSystem({
+            systems: [{id: SYSTEM_IDENTIFIERS.CURRENT_TEAM_ID, value: teamId}],
             prepareRecordsOnly: false,
         });
     };
@@ -263,6 +270,55 @@ describe('DraftSyncManager (Phase 3 shell)', () => {
             SERVER_URL,
             MAX_DRAFT_SYNC_EVENT_BUFFER,
         );
+    });
+
+    it('enqueueWebSocketEvent triggers a reconcile of the current team and clears the buffer (Phase 5)', async () => {
+        await setSyncConfig('true');
+        await setCurrentTeam('team1');
+        await manager.initialize(SERVER_URL);
+
+        manager.enqueueWebSocketEvent(SERVER_URL, fakeEvent());
+        await flushMicrotasks();
+
+        // A WS event is a change signal: it reconciles the current team (whose GET also returns DM/GM
+        // drafts) via the authoritative GET path, and the buffered signal is consumed (cleared).
+        expect(mockedReconcile).toHaveBeenCalledWith(SERVER_URL, 'team1', expect.any(Object));
+        expect(internals(manager).eventBuffers[SERVER_URL].length).toBe(0);
+    });
+
+    it('enqueueWebSocketEvent does not reconcile when there is no current team (Phase 5 empty-team guard)', async () => {
+        await setSyncConfig('true');
+
+        // No CURRENT_TEAM_ID set -> getCurrentTeamId returns '' -> requestReconcile is a no-op.
+        await manager.initialize(SERVER_URL);
+
+        manager.enqueueWebSocketEvent(SERVER_URL, fakeEvent());
+        await flushMicrotasks();
+
+        expect(mockedReconcile).not.toHaveBeenCalled();
+    });
+
+    it('onForeground reconciles the current team of each active server (Phase 5)', async () => {
+        await setSyncConfig('true');
+        await setCurrentTeam('team1');
+        await manager.initialize(SERVER_URL);
+
+        manager.onForeground();
+        await flushMicrotasks();
+
+        expect(mockedReconcile).toHaveBeenCalledWith(SERVER_URL, 'team1', expect.any(Object));
+    });
+
+    it('onForeground does not reconcile a disabled/invalidated server (Phase 5)', async () => {
+        await setSyncConfig('true');
+        await setCurrentTeam('team1');
+        await manager.initialize(SERVER_URL);
+        manager.invalidate(SERVER_URL);
+
+        manager.onForeground();
+        await flushMicrotasks();
+
+        expect(mockedReconcile).not.toHaveBeenCalled();
     });
 
     it('handleCapabilityChange clears the baseline gate on disable and requires a fresh GET on re-enable, keeping durable rows', async () => {

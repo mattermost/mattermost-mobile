@@ -6,6 +6,7 @@ import {reconcilePersistenceFlag} from '@actions/local/ephemeral_mode/wipe';
 import {storeConfig} from '@actions/local/systems';
 import {SYSTEM_IDENTIFIERS} from '@constants/database';
 import DatabaseManager from '@database/manager';
+import DraftSyncManager from '@managers/draft_sync_manager';
 import {getConfig, getLicense} from '@queries/servers/system';
 
 import {handleLicenseChangedEvent, handleConfigChangedEvent} from './system';
@@ -17,6 +18,11 @@ jest.mock('@actions/local/ephemeral_mode/wipe');
 jest.mock('@actions/local/systems');
 jest.mock('@database/manager');
 jest.mock('@queries/servers/system');
+
+jest.mock('@managers/draft_sync_manager', () => ({
+    __esModule: true,
+    default: {handleCapabilityChange: jest.fn()},
+}));
 
 describe('WebSocket System Actions', () => {
     const serverUrl = 'baseHandler.test.com';
@@ -133,6 +139,9 @@ describe('WebSocket System Actions', () => {
 
             expect(storeConfig).toHaveBeenCalledWith(serverUrl, mockConfig);
             expect(updateDmGmDisplayName).not.toHaveBeenCalled();
+
+            // AllowSyncedDrafts may have changed with the config: re-evaluate draft-sync capability.
+            expect(DraftSyncManager.handleCapabilityChange).toHaveBeenCalledWith(serverUrl);
         });
 
         it('should handle config update with display name change', async () => {

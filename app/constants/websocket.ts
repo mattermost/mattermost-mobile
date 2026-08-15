@@ -102,6 +102,13 @@ const WebsocketEvents = {
     SCHEDULED_POST_CREATED: 'scheduled_post_created',
     SCHEDULED_POST_UPDATED: 'scheduled_post_updated',
     SCHEDULED_POST_DELETED: 'scheduled_post_deleted',
+
+    // Synchronized drafts. The server currently broadcasts only draft_created (for create AND update)
+    // and draft_deleted, scoped to the owning user's other sessions. DRAFT_UPDATED is defined for
+    // forward-compatibility but is not emitted today.
+    DRAFT_CREATED: 'draft_created',
+    DRAFT_UPDATED: 'draft_updated',
+    DRAFT_DELETED: 'draft_deleted',
     CUSTOM_PROFILE_ATTRIBUTES_VALUES_UPDATED: 'custom_profile_attributes_values_updated',
     PROPERTY_FIELD_CREATED: 'property_field_created',
     PROPERTY_FIELD_UPDATED: 'property_field_updated',

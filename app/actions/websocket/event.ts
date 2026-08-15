@@ -17,6 +17,7 @@ import {handlePlaybookEvents} from '@playbooks/actions/websocket/events';
 
 import * as category from './category';
 import * as channel from './channel';
+import {handleDraftWebSocketEvent} from './draft';
 import * as files from './files';
 import * as group from './group';
 import {handleOpenDialogEvent} from './integrations';
@@ -300,6 +301,13 @@ export async function handleWebSocketEvent(serverUrl: string, msg: WebSocketMess
             break;
         case WebsocketEvents.SCHEDULED_POST_DELETED:
             scheduledPost.handleDeleteScheduledPost(serverUrl, msg);
+            break;
+
+        // synchronized drafts (draft_updated is not emitted by the server today; routed for safety)
+        case WebsocketEvents.DRAFT_CREATED:
+        case WebsocketEvents.DRAFT_UPDATED:
+        case WebsocketEvents.DRAFT_DELETED:
+            handleDraftWebSocketEvent(serverUrl, msg);
             break;
         case WebsocketEvents.CUSTOM_PROFILE_ATTRIBUTES_VALUES_UPDATED:
             handleCustomProfileAttributesValuesUpdatedEvent(serverUrl, msg);

@@ -10,6 +10,7 @@ import {PER_PAGE_DEFAULT} from '@client/rest/constants';
 import {Events} from '@constants';
 import DatabaseManager from '@database/manager';
 import {removeDuplicatesModels} from '@helpers/database';
+import DraftSyncManager from '@managers/draft_sync_manager';
 import NetworkManager from '@managers/network_manager';
 import {getActiveServerUrl} from '@queries/app/servers';
 import {prepareCategoriesAndCategoriesChannels} from '@queries/servers/categories';
@@ -435,6 +436,10 @@ export async function handleTeamChange(serverUrl: string, teamId: string) {
     if (currentTeamId === teamId) {
         return {};
     }
+
+    // Re-sync drafts for the newly active team (before the tablet fast-path early-return below, so both
+    // paths trigger it). requestReconcile is a no-op when draft sync is disabled.
+    DraftSyncManager.requestReconcile(serverUrl, teamId, 'team_switch');
 
     let channelId = '';
     DeviceEventEmitter.emit(Events.TEAM_SWITCH, true);
