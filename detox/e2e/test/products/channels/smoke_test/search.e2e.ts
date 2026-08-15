@@ -141,7 +141,9 @@ describe('Smoke Test - Search', () => {
 
         // # Clear search input, remove recent search item, and go back to channel list screen
         await SearchMessagesScreen.searchClearButton.tap();
-        await SearchMessagesScreen.getRecentSearchItemRemoveButton(searchTerm).tap();
+        const removeButton = SearchMessagesScreen.getRecentSearchItemRemoveButton(searchTerm);
+        await waitForElementToExist(removeButton, timeouts.TEN_SEC);
+        await removeButton.tap();
         await ChannelListScreen.open();
     });
 });

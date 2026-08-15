@@ -221,12 +221,13 @@ const SearchScreen = ({teamId, teams, crossTeamSearchEnabled}: Props) => {
         handleLoading(true);
         setLastSearchedValue(term);
 
-        if (newSearchTeamId !== ALL_TEAMS_ID) {
-            addSearchToTeamSearchHistory(serverUrl, newSearchTeamId, term);
-        }
+        const persistHistory = newSearchTeamId !== ALL_TEAMS_ID
+            ? addSearchToTeamSearchHistory(serverUrl, newSearchTeamId, term)
+            : undefined;
         const [postResults, {files, channels}] = await Promise.all([
             searchPosts(serverUrl, newSearchTeamId, searchParams),
             searchFiles(serverUrl, newSearchTeamId, searchParams),
+            persistHistory,
         ]);
 
         setFileInfos(files?.length ? files : emptyFileResults);
