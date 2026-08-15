@@ -368,9 +368,9 @@ jobs:
       contents: read
       actions: read
       id-token: write
-    uses: mattermost/mattermost-test-automation-toolkit/.github/workflows/e2e-ai-triage-candidates.yml@8b99fd8746cbb5e7e369cb1d752bd987c232d423
+    uses: mattermost/mattermost-test-automation-toolkit/.github/workflows/e2e-ai-triage-candidates.yml@93be4116bc0a0c138d384a2cd031044a529e0f35
     with:
-      toolkit_ref: 8b99fd8746cbb5e7e369cb1d752bd987c232d423
+      toolkit_ref: 93be4116bc0a0c138d384a2cd031044a529e0f35
       target_repo: ${{ github.repository }}
       commit_sha: ${{ inputs.MOBILE_VERSION }}
       evidence_artifact: ${{ needs.plan.outputs.evidence_artifact }}
@@ -626,18 +626,25 @@ jobs:
       pull-requests: write
       issues: write
       id-token: write
-    uses: mattermost/mattermost-test-automation-toolkit/.github/workflows/e2e-ai-triage.yml@8b99fd8746cbb5e7e369cb1d752bd987c232d423
+    uses: mattermost/mattermost-test-automation-toolkit/.github/workflows/e2e-ai-triage.yml@93be4116bc0a0c138d384a2cd031044a529e0f35
     with:
       # Keep this aligned with the immutable `uses:` SHA above. A called workflow
       # sees the caller's ref, so it cannot derive its own checkout ref.
-      toolkit_ref: 8b99fd8746cbb5e7e369cb1d752bd987c232d423
+      toolkit_ref: 93be4116bc0a0c138d384a2cd031044a529e0f35
       target_repo: ${{ github.repository }}
       commit_sha: ${{ inputs.MOBILE_VERSION }}
       pr_number: ${{ inputs.pr_number }}
       # Matterwick does not send version_name on either path, so fall back to
       # main for baseline runs — the ledger row's branch is what later
       # accuracy and amnesty queries filter on.
-      branch: ${{ inputs.version_name || (inputs.run_type == 'PR' && '' || 'main') }}
+      #
+      # The non-empty value has to sit on the `&&` side. Written the other way
+      # round — `run_type == 'PR' && '' || 'main'` — GitHub evaluates `true && ''`
+      # to `''`, finds it falsy, and falls through to `'main'`, so every PR run
+      # filed its ledger rows against the baseline branch. That is the branch
+      # amnesty counts against, so PR waivers would have been spending main's
+      # budget and polluting its accuracy metrics.
+      branch: ${{ inputs.version_name || (inputs.run_type != 'PR' && 'main' || '') }}
       run_type: ${{ inputs.run_type }}
       status_context: ${{ inputs.status_context }}
       # finalize falls back to the plan artifact when no rerun ran, so this is
@@ -646,8 +653,12 @@ jobs:
       evidence_run_id: ${{ github.run_id }}
       candidate_artifact: ${{ needs.ai-candidates.outputs.available == 'true' && needs.ai-candidates.outputs.artifact_name || '' }}
       candidate_run_id: ${{ github.run_id }}
-      # Shadow until the false-green count has been zero over a real sample.
-      # Promotion is a deliberate repo-variable change, not a code change.
+      # `gate` — triage's waivers are authoritative and do flip required
+      # contexts. The mode input still accepts shadow and assist (validated in
+      # ci/validate-triage-mode) so a caller can dial authority down per
+      # invocation, but there is deliberately no repository-variable override:
+      # a silent, unreviewable switch on whether a bot can green the merge
+      # button is not something that should live outside the diff.
       mode: ${{ needs.plan.outputs.triage_mode }}
       # Map unknown to true so an unavailable or skipped diff vetoes a
       # MAIN_REGRESSION waiver.
@@ -748,8 +759,17 @@ jobs:
           ref: ${{ github.event.repository.default_branch }}
           persist-credentials: false
 
+      # Both states publish. success flips the required context green with
+      # "verified to be flaky"; failure leaves it red but appends the diagnosis
+      # ("verified to be a test bug", "verified to be a product bug") to the real
+      # counts. Publishing only the green half meant a reviewer looking at a
+      # blocked PR saw the raw failure counts and nothing else — the
+      # classification existed only in the triage job log and on
+      # `e2e-test/ai-triage`, which is not a required context. The action skips
+      # any context that is not already red, so this cannot red a passing
+      # platform.
       - name: ci/publish-ios-outcome
-        if: steps.platforms.outputs.ios_state == 'success'
+        if: steps.platforms.outputs.ios_state != ''
         uses: ./.github/actions/e2e-override-status
         with:
           commit_sha: ${{ inputs.MOBILE_VERSION }}
@@ -760,7 +780,7 @@ jobs:
           platform: ios
 
       - name: ci/publish-android-outcome
-        if: steps.platforms.outputs.android_state == 'success'
+        if: steps.platforms.outputs.android_state != ''
         uses: ./.github/actions/e2e-override-status
         with:
           commit_sha: ${{ inputs.MOBILE_VERSION }}

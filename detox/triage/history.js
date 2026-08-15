@@ -29,6 +29,20 @@ async function fetchJson(url, timeoutMs = FETCH_TIMEOUT_MS) {
         if (!res.ok) {
             return {error: `${res.status} ${res.statusText}`};
         }
+
+        // A TSIO deployment without the triage routes serves its single-page app
+        // on every unmatched path, so a missing endpoint arrives as 200
+        // text/html rather than a 404. res.ok is true and res.json() then fails
+        // with `Unexpected token '<'`, which is recorded as history_error and
+        // — because unavailable history counts as spent amnesty — quietly turns
+        // every confirmed flake into a regression. That is the correct direction
+        // to fail, but the reason has to be legible: the message below names the
+        // deployment gap instead of leaving a JSON parse error to be traced back
+        // through three repositories.
+        const contentType = res.headers.get('content-type') || '';
+        if (!contentType.includes('json')) {
+            return {error: `endpoint not served by this TSIO deployment (${res.status} ${contentType || 'no content-type'})`};
+        }
         return {data: await res.json()};
     } catch (err) {
         return {error: err.message};

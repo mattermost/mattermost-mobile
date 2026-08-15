@@ -30,6 +30,8 @@ inputs:
       Commit status state (success | failure | pending). Use pending to re-block the PR
       when E2E/Override is removed, so the waiver does not linger on the SHA.
       pending only resets contexts this action previously overrode.
+      failure annotates the diagnosis onto contexts that are already failing and
+      never reds a context that passed, is pending, or never ran.
     required: false
     default: success
   description:
@@ -140,6 +142,16 @@ runs:
               }
               statusDescription = description;
               statusTargetUrl = targetUrl;
+            } else if (state === 'failure' &&
+                       latest?.state !== 'failure' && latest?.state !== 'error') {
+              // failure means "annotate the diagnosis onto a check that is
+              // already red", which is how triage labels a platform PRODUCT_BUG
+              // or TEST_BUG. It must never *create* a red: a platform that
+              // passed, is still pending, or never ran has nothing to diagnose,
+              // and reddening it here would fail a PR on the strength of another
+              // platform's verdict. Unlike pending, this path is not an undo, so
+              // it cannot key off the override marker.
+              continue;
             } else if (latest?.state === 'success' && state === 'success') {
               // Nothing to unblock: either genuinely green — leave the real result
               // and its counts alone — or already overridden, in which case
